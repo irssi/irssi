@@ -522,7 +522,6 @@ void irc_dcc_init(void)
     settings_add_str("dcc", "dcc_upload_path", "~");
 
     settings_add_bool("dcc", "dcc_mirc_ctcp", FALSE);
-    settings_add_bool("dcc", "dcc_autodisplay_dialog", TRUE);
     settings_add_int("dcc", "dcc_block_size", 2048);
     settings_add_int("dcc", "dcc_port", 0);
     settings_add_int("dcc", "dcc_timeout", 300);
