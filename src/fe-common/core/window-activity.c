@@ -38,8 +38,9 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char 
 	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
-	new_data = (level & MSGLEVEL_HILIGHT) ?
-		NEWDATA_HILIGHT : NEWDATA_TEXT;
+	new_data = (level & (MSGLEVEL_HILIGHT|MSGLEVEL_MSGS)) ?
+		NEWDATA_HILIGHT :
+		((level & MSGLEVEL_PUBLIC) ? NEWDATA_MSG : NEWDATA_TEXT);
 
 	if (new_data < NEWDATA_HILIGHT &&
 	    channel != NULL && find_substr(noact_channels, channel))
