@@ -101,9 +101,9 @@ int
 timeout_add(msecs, func, data)
 	int msecs
 	SV *func
-	void *data
+	SV *data
 CODE:
-	RETVAL = perl_timeout_add(msecs, func, ST(2));
+	RETVAL = perl_timeout_add(msecs, func, data);
 OUTPUT:
 	RETVAL
 
@@ -133,9 +133,9 @@ input_add(source, condition, func, data)
 	int source
 	int condition
 	SV *func
-	void *data
+	SV *data
 CODE:
-	RETVAL = perl_input_add(source, condition, func, ST(2));
+	RETVAL = perl_input_add(source, condition, func, data);
 OUTPUT:
 	RETVAL
 
