@@ -20,6 +20,6 @@ parameter handling:
 
 $[30]1    prints parameter 1 cut/padded to 30 chars
 $[!30]1   prints parameter 1 padded to min. 30 chars
-$[-30]1   prints parameter 1 right padded
+$[-30]1   prints parameter 1 right aligned
 $[30?]1   prints parameter 1 padded with '?' characters
 $[30.0]1  prints parameter 1 padded with '0' characters

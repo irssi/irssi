@@ -190,6 +190,8 @@ Server::values()
 	"username" - User name
 	"realname" - Real name
 	"usermode" - Current user mode
+	"usermode_away" - Are we marked as away? 1|0
+	"away_reason" - Away reason
 	"connected" - Is connection finished? 1|0
 	"connection_lost" - Did we lose the connection (1) or was
 	                    the connection meant to be disconnected (0)
