@@ -497,13 +497,17 @@ static char *cmd_get_quoted_param(char **data)
 	quote = **data; (*data)++;
 
 	pos = *data;
-	while (**data != '\0' && **data != quote) {
+	while (**data != '\0' && (**data != quote || (*data)[1] != ' ')) {
 		if (**data == '\\' && (*data)[1] != '\0')
                         g_memmove(*data, (*data)+1, strlen(*data));
 		(*data)++;
 	}
 
-	if (**data != '\0') *(*data)++ = '\0';
+	if (**data == quote) {
+		*(*data)++ = '\0';
+		if (**data == ' ')
+			(*data)++;
+	}
 
 	return pos;
 }
