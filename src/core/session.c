@@ -182,6 +182,8 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "password", server->connrec->password);
 	config_node_set_str(config, node, "nick", server->nick);
 
+	config_node_set_bool(config, node, "use_ssl", server->connrec->use_ssl);
+
 	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
 	config_node_set_int(config, node, "handle", handle);
 

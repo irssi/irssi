@@ -144,6 +144,9 @@ static void cmd_server_add(const char *data)
         else if (g_hash_table_lookup(optlist, "4"))
 		rec->family = AF_INET;
 
+	if (g_hash_table_lookup(optlist, "ssl"))
+		rec->use_ssl = TRUE;
+
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
 	if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
@@ -327,7 +330,7 @@ void fe_server_init(void)
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
-	command_set_options("server add", "4 6 auto noauto proxy noproxy -host -port");
+	command_set_options("server add", "4 6 ssl auto noauto proxy noproxy -host -port");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

@@ -30,6 +30,7 @@ libcore_a_SOURCES = \
 	net-nonblock.c \
 	net-sendbuffer.c \
 	network.c \
+	network-openssl.c \
 	nicklist.c \
 	nickmatch-cache.c \
 	pidwait.c \

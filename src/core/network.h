@@ -44,6 +44,8 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
+/* Connect to socket with ip address and SSL*/
+GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip);
 /* Connect to socket with ip address */
 GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
 /* Connect to named UNIX socket */

@@ -108,6 +108,8 @@ void server_setup_fill_reconn(SERVER_CONNECT_REC *conn,
 	if (sserver->password != NULL && conn->password == NULL)
 		conn->password = g_strdup(sserver->password);
 
+	conn->use_ssl = sserver->use_ssl;
+
 	signal_emit("server setup fill reconn", 2, conn, sserver);
 }
 
@@ -391,6 +393,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		(g_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
+	rec->use_ssl = config_node_get_bool(node, "use_ssl", FALSE);
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
 	rec->no_proxy = config_node_get_bool(node, "no_proxy", FALSE);
@@ -420,6 +423,7 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 
 	iconfig_node_set_int(node, "port", rec->port);
 	iconfig_node_set_str(node, "password", rec->password);
+	iconfig_node_set_bool(node, "use_ssl", rec->use_ssl);
 	iconfig_node_set_str(node, "own_host", rec->own_host);
 
 	iconfig_node_set_str(node, "family",

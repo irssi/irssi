@@ -917,6 +917,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 378", (SIGNAL_FUNC) event_whois_realhost);
 	signal_add("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_add("event 320", (SIGNAL_FUNC) event_whois_special);
+	signal_add("event 275", (SIGNAL_FUNC) event_whois_special);
 	signal_add("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
@@ -1002,6 +1003,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 378", (SIGNAL_FUNC) event_whois_realhost);
 	signal_remove("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_remove("event 320", (SIGNAL_FUNC) event_whois_special);
+	signal_remove("event 275", (SIGNAL_FUNC) event_whois_special);
 	signal_remove("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_remove("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);

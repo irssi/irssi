@@ -178,13 +178,18 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			 server->connrec->own_ip4);
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
-		handle = net_connect_ip(ip, port, own_ip);
+		handle = server->connrec->use_ssl ?
+			net_connect_ip_ssl(ip, port, own_ip) :
+			net_connect_ip(ip, port, own_ip);
 	} else {
 		handle = net_connect_unix(unix_socket);
 	}
 
 	if (handle == NULL) {
 		/* failed */
+		if (server->connrec->use_ssl && errno == ENOSYS)
+			server->no_reconnect = TRUE;
+
 		server->connection_lost = TRUE;
 		server_connect_failed(server, g_strerror(errno));
 	} else {

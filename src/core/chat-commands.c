@@ -88,11 +88,15 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	else if (g_hash_table_lookup(optlist, "4") != NULL)
 		conn->family = AF_INET;
 
+	if(g_hash_table_lookup(optlist, "ssl") != NULL)
+		conn->use_ssl = TRUE;
+
 	if (g_hash_table_lookup(optlist, "!") != NULL)
 		conn->no_autojoin_channels = TRUE;
 
 	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
                 g_free_and_null(conn->proxy);
+
 
 	*rawlog_file = g_strdup(g_hash_table_lookup(optlist, "rawlog"));
 
@@ -108,7 +112,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         return conn;
 }
 
-/* SYNTAX: CONNECT [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ircnet <ircnet>] [-host <hostname>]
                    <address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_connect(const char *data)
 {
@@ -209,7 +213,7 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
         signal_emit("command server connect", 3, data, server, item);
 }
 
-/* SYNTAX: SERVER [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: SERVER [-4 | -6] [-ssl] [-ircnet <ircnet>] [-host <hostname>]
                   [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
@@ -439,7 +443,7 @@ void chat_commands_init(void)
 
         signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 
-	command_set_options("connect", "4 6 !! +host noproxy -rawlog");
+	command_set_options("connect", "4 6 !! ssl +host noproxy -rawlog");
 	command_set_options("join", "invite");
 	command_set_options("msg", "channel nick");
 }

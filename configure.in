@@ -112,7 +112,7 @@ if test "x$prefix" != "xNONE"; then
 fi
 
 AC_ARG_WITH(tests,
-[  --with-glib2           Use GLIB 2.0 instead of 1.2],
+[  --with-glib2            Use GLIB 2.0 instead of 1.2],
 	if test x$withval = xyes; then
 		want_glib2=yes
 	else
@@ -126,7 +126,7 @@ AC_ARG_WITH(tests,
 
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
-                        statically in irssi, default is no],
+                          statically in irssi, default is no],
 	if test x$withval = xyes; then
 		want_staticperllib=yes
 	else
@@ -141,7 +141,7 @@ AC_ARG_WITH(perl-staticlib,
 
 AC_ARG_WITH(perl-lib,
 [  --with-perl-lib=[site|vendor|DIR]  Specify where to install the
-                        Perl libraries for irssi, default is site],
+                          Perl libraries for irssi, default is site],
 	if test "x$withval" = xyes; then
 		want_perl=yes
 	elif test "x$withval" = xno; then
@@ -170,8 +170,8 @@ AC_ARG_WITH(perl-lib,
 
 AC_ARG_WITH(perl,
 [  --with-perl[=yes|no|module]  Build with Perl support - also specifies
-                        if it should be built into main irssi binary
-                        (static, default) or as module],
+                          if it should be built into main irssi binary
+                          (static, default) or as module],
 	if test x$withval = xyes; then
 		want_perl=static
 	elif test x$withval = xstatic; then
@@ -195,6 +195,62 @@ AC_ARG_ENABLE(ipv6,
 		fi
 	fi,
 	want_ipv6=no)
+
+dnl **
+dnl ** SSL Library checks (OpenSSL)
+dnl **
+
+AC_ARG_ENABLE(ssl, 
+	    [  --disable-ssl           Turn on Secure Sockets Layer support [default=yes]],,
+	    enable_ssl=yes)
+
+AC_ARG_WITH(openssl-includes,
+	    [  --with-openssl-includes Specify location of OpenSSL header files],
+	    [openssl_inc_prefix=-I$withval])
+
+AC_ARG_WITH(openssl-libs,
+	    [  --with-openssl-libs     Specify location of OpenSSL libs],
+	    [openssl_prefix=$withval], 
+	    [openssl_prefix=/usr/lib])
+
+if test "x$enable_ssl" = xyes; then
+	###
+	### Check for OpenSSL
+	###
+	save_CFLAGS=$CFLAGS;
+	CFLAGS="-lcrypto";
+
+	enable_openssl="no"; 
+	OPENSSL_LDFLAGS="";
+	AC_CHECK_LIB(ssl, SSL_read,
+			AC_CHECK_LIB(crypto, X509_new,
+					AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h,
+						[
+							enable_openssl="yes";
+							OPENSSL_LDFLAGS="-lssl -lcrypto"
+						],
+					AC_ERROR([Cannot find OpenSSL includes !])),
+				AC_ERROR([Cannot find libCrypto !])),
+			AC_ERROR([Cannot find libSSL !]))
+	CFLAGS=$save_CFLAGS
+
+	if test "x$enable_openssl" = xyes; then
+		AC_DEFINE(HAVE_OPENSSL)
+		OPENSSL_LIBS="-L$openssl_prefix $OPENSSL_LDFLAGS"
+		OPENSSL_CFLAGS="$openssl_inc_prefix"
+	else
+		OPENSSL_LIBS=
+		OPENSSL_CFLAGS=
+	fi
+
+	AC_SUBST(OPENSSL_CFLAGS)
+	AC_SUBST(OPENSSL_LIBS)
+	LIBS="$LIBS $OPENSSL_LIBS"
+	CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+else
+	enable_openssl="no"
+fi
+
 
 dnl **
 dnl ** just some generic stuff...
@@ -830,7 +886,6 @@ fi
 echo "Building text frontend ..... : $text"
 echo "Building irssi bot ......... : $want_irssibot"
 echo "Building irssi proxy ....... : $want_irssiproxy"
-echo "Building with IPv6 support . : $want_ipv6"
 if test "x$have_gmodule" = "xyes"; then
 	echo "Building with module support : yes"
 else
@@ -877,8 +932,12 @@ if test "x$want_perl" != "xno"; then
 		echo "  Anyway, installing perl to this directory should work just as well."
 	fi
 fi
-
 echo "Install prefix ............. : $prefix"
+
+echo
+
+echo "Building with IPv6 support . : $want_ipv6"
+echo "Building with SSL support .. : ${enable_openssl}"
 
 echo
 echo "If there was any problems, read the INSTALL file."
