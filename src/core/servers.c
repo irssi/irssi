@@ -292,14 +292,14 @@ void server_connect_init(SERVER_REC *server)
 		g_free_not_null(server->connrec->username);
 
 		str = g_get_user_name();
-		if (*str == '\0') str = "-";
+		if (*str == '\0') str = "unknown";
 		server->connrec->username = g_strdup(str);
 	}
 	if (server->connrec->realname == NULL || *server->connrec->realname == '\0') {
 		g_free_not_null(server->connrec->realname);
 
 		str = g_get_real_name();
-		if (*str == '\0') str = "-";
+		if (*str == '\0') str = server->connrec->username;
 		server->connrec->realname = g_strdup(str);
 	}
 
