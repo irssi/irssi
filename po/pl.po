@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-01-16 17:44+0200\n"
+"POT-Creation-Date: 2000-01-16 21:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -140,8 +140,8 @@ msgstr ""
 
 #. ----
 #: src/gui-gnome/dialog-status.c:86 src/gui-gnome/gui-event-whois.c:41
-#: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lists.c:431
-#: src/gui-gnome/setup-lookandfeel.c:95 src/ui-common/ui-formats.c:52
+#: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lookandfeel.c:95
+#: src/ui-common/ui-formats.c:52
 msgid "Channels"
 msgstr "Kana³y"
 
@@ -406,7 +406,7 @@ msgstr "%K<%W$3%K>%n $2"
 msgid "%K[%rnotice%K(%R$1%K)]%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:124 src/ui-common/ui-formats.c:144
+#: src/ui-common/ui-formats.c:124 src/ui-common/ui-formats.c:146
 msgid "%W * $1%n $2"
 msgstr "%W * $1%n $2"
 
@@ -432,137 +432,147 @@ msgid "%K<%Y$1%K:%c$2%K>%n $3"
 msgstr "%K<%Y$1%K:%c$2%K>%n $3"
 
 #: src/ui-common/ui-formats.c:133
+#, fuzzy
+msgid "%K<$1$2%K>%n $3"
+msgstr "%K<%R$1%K>%n $3"
+
+#: src/ui-common/ui-formats.c:134
+#, fuzzy
+msgid "%K<$1$2%K:%c$3%K>%n $4"
+msgstr "%K<%Y$1%K:%c$2%K>%n $3"
+
+#: src/ui-common/ui-formats.c:135
 msgid "%K<%n$1%K>%n $2"
 msgstr "%K<%n$1%K>%n $2"
 
-#: src/ui-common/ui-formats.c:134
+#: src/ui-common/ui-formats.c:136
 msgid "%K<%n$1%K:%c$2%K>%n $3"
 msgstr "%K<%n$1%K:%c$2%K>%n $3"
 
-#: src/ui-common/ui-formats.c:135
+#: src/ui-common/ui-formats.c:137
 msgid "%K[%R$1%K(%r$2%K)]%n $3"
 msgstr "%K[%R$1%K(%r$2%K)]%n $3"
 
-#: src/ui-common/ui-formats.c:136
+#: src/ui-common/ui-formats.c:138
 msgid "%K<%R$1%K>%n $3"
 msgstr "%K<%R$1%K>%n $3"
 
-#: src/ui-common/ui-formats.c:137
+#: src/ui-common/ui-formats.c:139
 msgid "%K[%G$1%K(%gdcc%K)]%n $2"
 msgstr "%K[%G$1%K(%gdcc%K)]%n $2"
 
-#: src/ui-common/ui-formats.c:138
+#: src/ui-common/ui-formats.c:140
 #, c-format
 msgid "%g!$1%n $2"
 msgstr "%g!$1%n $2"
 
-#: src/ui-common/ui-formats.c:139
+#: src/ui-common/ui-formats.c:141
 msgid "%K-%M$1%K:%m$2%K-%n $3"
 msgstr "%K-%M$1%K:%m$2%K-%n $3"
 
-#: src/ui-common/ui-formats.c:140
+#: src/ui-common/ui-formats.c:142
 msgid "%K-%M$1%K(%m$2%K)-%n $3"
 msgstr "%K-%M$1%K(%m$2%K)-%n $3"
 
-#: src/ui-common/ui-formats.c:141
+#: src/ui-common/ui-formats.c:143
 msgid "%W (*dcc*) $1%n $2"
 msgstr "%W (*dcc*) $1%n $2"
 
-#: src/ui-common/ui-formats.c:142
+#: src/ui-common/ui-formats.c:144
 msgid "%W (*) $1%n $3"
 msgstr "%W (*) $1%n $3"
 
-#: src/ui-common/ui-formats.c:143
+#: src/ui-common/ui-formats.c:145
 msgid "%W * $1%n $3"
 msgstr "%W * $1%n $3"
 
-#: src/ui-common/ui-formats.c:145
+#: src/ui-common/ui-formats.c:147
 msgid "%W * $1%K:%c$2%n $3"
 msgstr "%W * $1%K:%c$2%n $3"
 
 #. ----
-#: src/ui-common/ui-formats.c:148
+#: src/ui-common/ui-formats.c:150
 msgid "CTCPs"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:150
+#: src/ui-common/ui-formats.c:152
 msgid "CTCP %_$1%_ reply from %_$2%_%K:%n $3"
 msgstr "Odpowied¼ CTCP %_$1%_ od %_$2%_%K:%n $3"
 
-#: src/ui-common/ui-formats.c:151
+#: src/ui-common/ui-formats.c:153
 msgid "CTCP %_PING%_ reply from %_$1%_: $2.$3 seconds"
 msgstr "Odpowied¼ CTCP %_PING%_ od %_$1%_: $2.$3 sekund"
 
-#: src/ui-common/ui-formats.c:152
+#: src/ui-common/ui-formats.c:154
 msgid "%g>>> %_$1%_ %K[%g$2%K] %grequested %_$3%_ from %_$4"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:153
+#: src/ui-common/ui-formats.c:155
 msgid "%g>>> DCC CTCP received from %_$1%_%K: %g$2"
 msgstr "%g>>> DCC CTCP otrzymane od %_$1%_%K: %g$2"
 
 #. ----
-#: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:156
+#: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:158
 msgid "DCC"
 msgstr "DCC"
 
-#: src/ui-common/ui-formats.c:158
+#: src/ui-common/ui-formats.c:160
 msgid "%gDCC CHAT from %_$1%_ %K[%g$2 port $3%K]"
 msgstr "%gDCC CHAT od %_$1%_ %K[%g$2 port $3%K]"
 
-#: src/ui-common/ui-formats.c:159
+#: src/ui-common/ui-formats.c:161
 msgid "%gNo DCC CHAT connection open to %_$1"
 msgstr "%gBrak otwartego po³±czenia DCC CHAT do %_$1"
 
-#: src/ui-common/ui-formats.c:160
+#: src/ui-common/ui-formats.c:162
 msgid ""
 "%gDCC %_CHAT%_ connection with %_$1%_ %K%K[%g$2 port $3%K]%g established"
 msgstr "%gUstanowione po³±czenie DCC %_CHAT%_ z %_$1%_ %K%K[%g$2 port $3%K]%g"
 
-#: src/ui-common/ui-formats.c:161
+#: src/ui-common/ui-formats.c:163
 msgid "%gDCC lost chat to %_$1"
 msgstr "%gStracone po³±czenie DCC CHAT do %_$1"
 
-#: src/ui-common/ui-formats.c:162
+#: src/ui-common/ui-formats.c:164
 msgid "%gDCC SEND from %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bytes%K]"
 msgstr "%gDCC SEND od %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bajtów%K]"
 
-#: src/ui-common/ui-formats.c:163
+#: src/ui-common/ui-formats.c:165
 msgid "%gDCC already sending file %G$1%g for %_$2%_"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:164
+#: src/ui-common/ui-formats.c:166
 msgid "%gDCC not sending file %G$2%g to %_$1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:165
+#: src/ui-common/ui-formats.c:167
 #, c-format
 msgid "%gDCC file not found: %G$1%g"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:166
+#: src/ui-common/ui-formats.c:168
 msgid "%gDCC sending file %G$1%g for %_$2%_ %K[%g$3 port $4%K]"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:167
+#: src/ui-common/ui-formats.c:169
 msgid ""
 "%gDCC sent file $1 %K[%g%_$2%_kb%K]%g for %_$3%_ in %_$4%_ secs "
 "%K[%g%_$5kb/s%_%K]"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:168
+#: src/ui-common/ui-formats.c:170
 msgid "%gDCC aborted sending file $1 for %_$2%_"
 msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
 
-#: src/ui-common/ui-formats.c:169
+#: src/ui-common/ui-formats.c:171
 msgid "%gDCC no file offered by %_$1"
 msgstr "%gDCC %_$1 nie oferuje ci plików"
 
-#: src/ui-common/ui-formats.c:170
+#: src/ui-common/ui-formats.c:172
 msgid "%gDCC receiving file %G$1%g from %_$2%_ %K[%g$3 port $4%K]"
 msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
 
-#: src/ui-common/ui-formats.c:171
+#: src/ui-common/ui-formats.c:173
 msgid ""
 "%gDCC received file %G$1%g %K[%g$2kb%K]%g from %_$3%_ in %_$4%_ secs "
 "%K[%g$5kb/s%K]"
@@ -570,189 +580,189 @@ msgstr ""
 "DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
 "%K[%g$5kb/s%K"
 
-#: src/ui-common/ui-formats.c:172
+#: src/ui-common/ui-formats.c:174
 msgid "%gDCC aborted receiving file $1 from %_$2%_"
 msgstr "%gDCC przerwane otrzymywanie pliku $1 od %_$2%_"
 
-#: src/ui-common/ui-formats.c:173
+#: src/ui-common/ui-formats.c:175
 msgid "%gDCC unknown ctcp %G$1%g from %_$2%_ %K[%g$3%K]"
 msgstr "%gDCC nieznane ctcp %G$1%g od %_$2%_ %K[%g$3%K]"
 
-#: src/ui-common/ui-formats.c:174
+#: src/ui-common/ui-formats.c:176
 msgid "%gDCC unknown reply %G$1%g from %_$2%_ %K[%g$3%K]"
 msgstr "%gDCC nieznana odpowied¼ %G$1%g od %_$2%_ %K[%g$3%K]"
 
-#: src/ui-common/ui-formats.c:175
+#: src/ui-common/ui-formats.c:177
 #, c-format
 msgid "%gDCC unknown command: $1"
 msgstr "%gNieznana komenda DCC: $1"
 
-#: src/ui-common/ui-formats.c:176
+#: src/ui-common/ui-formats.c:178
 msgid "%gDCC unknown type %_$1"
 msgstr "%gNieznay typ DCC %_$1"
 
-#: src/ui-common/ui-formats.c:177
+#: src/ui-common/ui-formats.c:179
 msgid "%gDCC can't connect to %_$1%_ port %_$2"
 msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
 
-#: src/ui-common/ui-formats.c:178
+#: src/ui-common/ui-formats.c:180
 #, c-format
 msgid "%gDCC can't create file %G$1%g"
 msgstr "%gDCC nie mo¿na utworzyæ pliku %G$1%g"
 
-#: src/ui-common/ui-formats.c:179
+#: src/ui-common/ui-formats.c:181
 msgid "%gDCC %G$1%g was rejected by %_$2%_ %K[%G$3%K]"
 msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
 
-#: src/ui-common/ui-formats.c:180
+#: src/ui-common/ui-formats.c:182
 msgid "%gDCC %G$1%g close for %_$2%_ %K[%G$3%K]"
 msgstr ""
 
 #. ----
-#: src/ui-common/ui-formats.c:183
+#: src/ui-common/ui-formats.c:185
 msgid "Other server events"
 msgstr "Inne zdarzenia serwera"
 
-#: src/ui-common/ui-formats.c:185
+#: src/ui-common/ui-formats.c:187
 msgid "Users online: %_$1"
 msgstr "U¿ytkowników online: %_$1"
 
-#: src/ui-common/ui-formats.c:186
+#: src/ui-common/ui-formats.c:188
 msgid "PONG received from $1: $2"
 msgstr "Otrzymany PONG od $1: $2"
 
-#: src/ui-common/ui-formats.c:187
+#: src/ui-common/ui-formats.c:189
 msgid "%WWALLOP%n $1: $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:188
+#: src/ui-common/ui-formats.c:190
 msgid "%WWALLOP * $1%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:189
+#: src/ui-common/ui-formats.c:191
 msgid "%_ERROR%_ $1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:190
+#: src/ui-common/ui-formats.c:192
 msgid "Unknown mode character $1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:191
+#: src/ui-common/ui-formats.c:193
 msgid "You're not channel operator in $1"
 msgstr "Nie jeste¶ operatorem kana³u na $1"
 
 #. ----
-#: src/ui-common/ui-formats.c:194
+#: src/ui-common/ui-formats.c:196
 msgid "Logging"
 msgstr "Logowanie"
 
-#: src/ui-common/ui-formats.c:196
+#: src/ui-common/ui-formats.c:198
 msgid "Log file %W$1%n opened"
 msgstr "Plik logu %W$1%n otwarty"
 
-#: src/ui-common/ui-formats.c:197
+#: src/ui-common/ui-formats.c:199
 msgid "Couldn't open log file %W$1"
 msgstr "Nie mozna otworzyæ plik logu %W$1"
 
-#: src/ui-common/ui-formats.c:198
+#: src/ui-common/ui-formats.c:200
 msgid "Log file %W$1%n not open"
 msgstr "Plik logu %W$1%n nie otwarty"
 
-#: src/ui-common/ui-formats.c:199
+#: src/ui-common/ui-formats.c:201
 msgid "Closed log file %W$1"
 msgstr "Zamkniêcie pliku logu %W$1"
 
-#: src/ui-common/ui-formats.c:200
+#: src/ui-common/ui-formats.c:202
 msgid "%W$1%K:%n $2"
 msgstr "%W$1%K:%n $2"
 
-#: src/ui-common/ui-formats.c:201
+#: src/ui-common/ui-formats.c:203
 msgid "     + %W$1%K:%n $2"
 msgstr "     + %W$1%K:%n $2"
 
 #. ----
 #: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:158
-#: src/ui-common/ui-formats.c:204
+#: src/ui-common/ui-formats.c:206
 msgid "Misc"
 msgstr "Ró¿ne"
 
-#: src/ui-common/ui-formats.c:206
+#: src/ui-common/ui-formats.c:208
 msgid "You must specify one of the following levels: $1"
 msgstr "Nale¿y wybraæ jeden z nastêpuj±cych poziomów: $1"
 
-#: src/ui-common/ui-formats.c:207
+#: src/ui-common/ui-formats.c:209
 msgid "Ignoring %_$1%_ from %_$2%_"
 msgstr "Ignorowanie %_$1%_ od %_$2%_"
 
-#: src/ui-common/ui-formats.c:208
+#: src/ui-common/ui-formats.c:210
 msgid "Unignored %_$1%_ from %_$2%_"
 msgstr "Nieignorowanie %_$1%_ od %_$2%_"
 
-#: src/ui-common/ui-formats.c:209
+#: src/ui-common/ui-formats.c:211
 msgid "%_$1%_ is not being ignored"
 msgstr "%_$1%_ nie bêdzie ignorowany"
 
-#: src/ui-common/ui-formats.c:210
+#: src/ui-common/ui-formats.c:212
 msgid "Flood detected from %_$1%_, autoignoring for %_$2%_ minutes"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:211
+#: src/ui-common/ui-formats.c:213
 msgid "Unignoring %_$1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:212
+#: src/ui-common/ui-formats.c:214
 msgid "%_Lastlog:"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:213
+#: src/ui-common/ui-formats.c:215
 msgid "%_End of lastlog"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:214
+#: src/ui-common/ui-formats.c:216
 msgid "%_$1%_ %K[%n$2@$3%K] [%n%_$4%_%K]%n has joined to $5"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:215
+#: src/ui-common/ui-formats.c:217
 msgid "%_$1%_ has left $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:216
+#: src/ui-common/ui-formats.c:218
 msgid "On $1: %_$2%_"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:217
+#: src/ui-common/ui-formats.c:219
 msgid "offline: $1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:218
+#: src/ui-common/ui-formats.c:220
 msgid "No query with %_$1%_"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:219
+#: src/ui-common/ui-formats.c:221
 msgid "Error loading plugin %_$1%_: $2"
 msgstr "B³±d podczas ³±dowania wtyczki %_$1%_: $2"
 
-#: src/ui-common/ui-formats.c:220
+#: src/ui-common/ui-formats.c:222
 msgid "Plugin %_$1%_ is not irssi plugin"
 msgstr "Wtyczka %_$1%_ nie jest wtyczk± irssi"
 
-#: src/ui-common/ui-formats.c:221
+#: src/ui-common/ui-formats.c:223
 msgid "Plugin %_$1%_ isn't compatible with this irssi version"
 msgstr "Wtyczka %_$1%_ nie pasuje do tej wersji irssi"
 
-#: src/ui-common/ui-formats.c:222
+#: src/ui-common/ui-formats.c:224
 msgid "Plugin %_$1%_ is already loaded"
 msgstr "Wtyczka %_$1%_ jest ju¿ za³adowana"
 
-#: src/ui-common/ui-formats.c:223
+#: src/ui-common/ui-formats.c:225
 msgid "Plugin %_$1%_ not loaded"
 msgstr "Wtyczka %_$1%_ nie jest za³adowana"
 
-#: src/ui-common/ui-printtext.c:835
+#: src/ui-common/ui-printtext.c:830
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/ui-common/ui-printtext.c:837
+#: src/ui-common/ui-printtext.c:832
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
@@ -1854,7 +1864,7 @@ msgstr "Zamknij"
 msgid "Away reason:"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:511 src/gui-gnome/gui-windows.c:714
+#: src/gui-gnome/gui-menu-commands.c:511 src/gui-gnome/gui-windows.c:717
 msgid "(empty)"
 msgstr "(pusty)"
 
@@ -1925,15 +1935,15 @@ msgstr ""
 msgid "Ping"
 msgstr ""
 
-#: src/gui-gnome/gui-windows.c:571 src/gui-gnome/gui-windows.c:589
+#: src/gui-gnome/gui-windows.c:574 src/gui-gnome/gui-windows.c:592
 msgid "Close window"
 msgstr "Zamknij okno"
 
-#: src/gui-gnome/gui-windows.c:577 src/gui-gnome/gui-windows.c:595
+#: src/gui-gnome/gui-windows.c:580 src/gui-gnome/gui-windows.c:598
 msgid "Move window tab to left"
 msgstr ""
 
-#: src/gui-gnome/gui-windows.c:583 src/gui-gnome/gui-windows.c:602
+#: src/gui-gnome/gui-windows.c:586 src/gui-gnome/gui-windows.c:605
 msgid "Move window tab to right"
 msgstr ""
 
@@ -2397,6 +2407,11 @@ msgstr ""
 #: src/gui-gnome/setup-lists.c:430 src/gui-gnome/setup-lists.c:436
 msgid "Text"
 msgstr "Tekst"
+
+#: src/gui-gnome/setup-lists.c:431
+#, fuzzy
+msgid "Color + Channels"
+msgstr "Kana³y"
 
 #: src/gui-gnome/setup-lists.c:434
 msgid "Hilight Texts"
