@@ -85,8 +85,8 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 
         optarget = g_strconcat("@", target, NULL);
 	printformat_module("fe-common/core", server, target,
-			   MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
-			   TXT_PUBMSG_ME_CHANNEL,
+			   MSGLEVEL_PUBLIC,
+			   TXT_PUBMSG_CHANNEL,
 			   nick, optarget, msg, nickmode);
         g_free(optarget);
 }

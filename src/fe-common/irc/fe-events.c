@@ -94,14 +94,8 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 			server->real_address;
 	}
 
-	if (*target == '@' && ischannel(target[1])) {
-		/* /WALLCHOPS received */
-		signal_emit("message irc op_public", 5,
-			    server, msg, nick, addr, target+1);
-	} else {
-		signal_emit("message irc notice", 5,
-			    server, msg, nick, addr, target);
-	}
+	signal_emit("message irc notice", 5,
+		    server, msg, nick, addr, target);
 	g_free(params);
 }
 
@@ -316,7 +310,7 @@ static void event_connected(IRC_SERVER_REC *server)
 		return;
 
 	/* someone has our nick, find out who. */
-	server_redirect_event(server, "whois", 1, nick, FALSE, NULL,
+	server_redirect_event(server, "whois", 1, nick, TRUE, NULL,
 			      "event 311", "nickfind event whois",
 			      "", "event empty", NULL);
 	irc_send_cmdv(server, "WHOIS %s", nick);
