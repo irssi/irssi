@@ -161,7 +161,7 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 				     int flags)
 {
 	int index;
-	char chr;
+	unsigned char chr;
 
 	chr = **format;
 	if ((chr == '$' || chr == '%') &&
@@ -481,13 +481,13 @@ static void theme_read_replaces(CONFIG_REC *config, THEME_REC *theme)
 	const char *p;
         int index;
 
-	node = config_node_traverse(config, "replaces", FALSE);
-	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
-
         /* reset replace keys */
 	for (index = 0; index < 256; index++)
                 theme->replace_keys[index] = -1;
 	index = 0;
+
+	node = config_node_traverse(config, "replaces", FALSE);
+	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
