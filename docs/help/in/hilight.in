@@ -4,11 +4,22 @@
    -mask: Match only for nick, <text> is a nick mask
    -regexp: <text> is a regular expression
    -word: <text> must match to full words
-   -nick: Hilight only the nick, not the whole line
-   -color: Print the message with <color>
+   -nick: Hilight only the nick, not the whole line (default)
+   -nonick: Hilight the whole line with the hilight color.
+   -color: Print the message with <color>, it can be either
+           numeric MIRC color (see docs/formats.txt) or
+           a named english color
    -level: Match only for <level> messages, default is
            publics,msgs,notices,actions
    -channels: Match only in <channels>
+
+Examples:
+
+Hilight lines that have "mynick" word:
+  /HILIGHT mynick
+
+Hilight lines that were written by nicks from *.fi
+  /HILIGHT -mask *!*@*.fi
 
 For regular expressions, see `man 7 regex`.
 
