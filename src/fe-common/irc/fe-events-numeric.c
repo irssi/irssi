@@ -222,17 +222,21 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 
 static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *timestr, *channel, *topicby, *topictime;
+	char *params, *timestr, *channel, *bynick, *byhost, *topictime;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, &channel,
-				  &topicby, &topictime);
+				  &bynick, &topictime);
 
         timestr = my_asctime((time_t) atol(topictime));
 
-	printformat(server, channel, MSGLEVEL_CRAP,
-		    IRCTXT_TOPIC_INFO, topicby, timestr);
+	byhost = strchr(bynick, '!');
+	if (byhost != NULL)
+		*byhost++ = '\0';
+
+	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_TOPIC_INFO,
+		    bynick, timestr, byhost == NULL ? "" : byhost);
 	g_free(timestr);
 	g_free(params);
 }
