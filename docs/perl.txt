@@ -200,11 +200,7 @@ command(cmd)
 Server::command(cmd)
 Window::command(cmd)
 Windowitem::command(cmd)
-  Send a command `cmd' (in current channel). This will work just as if you
-  had typed `cmd' in command line, so you'll need to use /COMMANDS or the
-  text will be sent to the channel.
-
-  Just like above, except different calling method.
+  Send a command `cmd' (in current channel). The '/' char isn't needed.
 
 
  *** Themes
