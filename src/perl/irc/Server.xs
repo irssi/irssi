@@ -52,7 +52,7 @@ PREINIT:
 	char *ret;
 PPCODE:
 	ret = irc_server_get_channels(server);
-	xPUSHs(sv_2mortal(new_pv(ret)));
+	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 
 void

@@ -14,7 +14,28 @@ static MGVTBL vtbl_free_text_dest =
     NULL, NULL, NULL, NULL, magic_free_text_dest
 };
 
-MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::Window
+static SV *perl_format_create_dest(SERVER_REC *server, char *target,
+				   int level, WINDOW_REC *window)
+{
+	TEXT_DEST_REC *dest;
+	SV *sv, *ret_sv;
+
+	dest = g_new0(TEXT_DEST_REC, 1);
+	format_create_dest(dest, server, g_strdup(target), level, window);
+
+	ret_sv = plain_bless(dest, "Irssi::UI::TextDest");
+
+	sv = *hv_fetch(hvref(ret_sv), "_irssi", 6, 0);
+	sv_magic(sv, NULL, '~', NULL, 0);
+
+	SvMAGIC(sv)->mg_private = 0x1551; /* HF */
+	SvMAGIC(sv)->mg_virtual = &vtbl_free_text_dest;
+	SvMAGIC(sv)->mg_ptr = (char *) dest;
+
+	return ret_sv;
+}
+
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
 int
@@ -33,8 +54,21 @@ PREINIT:
 	char *ret;
 PPCODE:
 	ret = strip_codes(input);
-	xPUSHs(sv_2mortal(new_pv(ret)));
+	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
+
+
+void
+format_create_dest(target, level=MSGLEVEL_CLIENTNOTICE, window=NULL)
+	char *target
+	int level
+	Irssi::UI::Window window
+PPCODE:
+	XPUSHs(sv_2mortal(perl_format_create_dest(NULL, target, level, window)));
+
+#*******************************
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::Window
+#*******************************
 
 void
 format_get_text(window, module, server, target, formatnum, ...)
@@ -64,7 +98,20 @@ PPCODE:
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
 
-MODULE = Irssi::UI::Formats  PACKAGE = Irssi
+#*******************************
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::Window
+#*******************************
+
+void
+format_create_dest(window=NULL, level=MSGLEVEL_CLIENTNOTICE)
+	Irssi::UI::Window window
+	int level
+PPCODE:
+	XPUSHs(sv_2mortal(perl_format_create_dest(NULL, NULL, level, window)));
+
+#*******************************
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::Server
+#*******************************
 
 void
 format_create_dest(server, target=NULL, level=MSGLEVEL_CLIENTNOTICE, window=NULL)
@@ -72,24 +119,12 @@ format_create_dest(server, target=NULL, level=MSGLEVEL_CLIENTNOTICE, window=NULL
 	char *target
 	int level
 	Irssi::UI::Window window
-PREINIT:
-	TEXT_DEST_REC *dest;
-	SV *sv;
 PPCODE:
-	dest = g_new0(TEXT_DEST_REC, 1);
-	format_create_dest(dest, server, g_strdup(target), level, window);
+	XPUSHs(sv_2mortal(perl_format_create_dest(server, target, level, window)));
 
-	sv = plain_bless(dest, "Irssi::UI::TextDest");
-	XPUSHs(sv_2mortal(sv));
-
-	sv = *hv_fetch(hvref(sv), "_irssi", 6, 0);
-	sv_magic(sv, NULL, '~', NULL, 0);
-
-	SvMAGIC(sv)->mg_private = 0x1551; /* HF */
-	SvMAGIC(sv)->mg_virtual = &vtbl_free_text_dest;
-	SvMAGIC(sv)->mg_ptr = (char *) dest;
-
+#*******************************
 MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::TextDest
+#*******************************
 
 void
 print(dest, str)

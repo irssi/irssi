@@ -452,7 +452,7 @@ PREINIT:
 	char *ret;
 PPCODE:
 	ret = bits2level(bits);
-	xPUSHs(sv_2mortal(new_pv(ret)));
+	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 
 int

@@ -232,7 +232,6 @@ theme_get_format(theme, module, tag)
 PREINIT:
 	MODULE_THEME_REC *modtheme;
 	FORMAT_REC *formats;
-	char *ret;
 	int i;
 CODE:
 	formats = g_hash_table_lookup(default_formats, module);

@@ -12,7 +12,7 @@ PREINIT:
 	char *ret;
 PPCODE:
 	ret = modes_join(old, mode, channel);
-	xPUSHs(sv_2mortal(new_pv(ret)));
+	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 
 #*******************************
@@ -28,7 +28,7 @@ PREINIT:
 	char *ret;
 PPCODE:
 	ret = ban_get_mask(channel, nick, ban_type);
-	xPUSHs(sv_2mortal(new_pv(ret)));
+	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 
 Irssi::Irc::Ban
