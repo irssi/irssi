@@ -121,6 +121,7 @@ int init_screen(void)
 
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_str("misc", "ignore_signals", "");
+	read_settings();
 
 	use_colors = settings_get_bool("colors") && has_colors();
 	if (has_colors()) start_color();
