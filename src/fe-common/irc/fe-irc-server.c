@@ -49,8 +49,8 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 		g_free_and_null(rec->chatnet);
 		if (*value != '\0') {
 			ircnet = ircnet_find(value);
-			rec->chatnet = ircnet != NULL ? ircnet->name :
-				g_strdup(value);
+			rec->chatnet = ircnet != NULL ?
+				g_strdup(ircnet->name) : g_strdup(value);
 		}
 	}
 
