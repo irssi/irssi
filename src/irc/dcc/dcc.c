@@ -284,9 +284,9 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     char *type, *arg, *addrstr, *portstr, *sizestr, *str;
     void *free_arg;
     const char *cstr;
-    DCC_REC *dcc;
+    DCC_REC *dcc, *olddcc;
     long size;
-    int port;
+    int dcctype, port;
 
     g_return_if_fail(data != NULL);
     g_return_if_fail(sender != NULL);
@@ -298,7 +298,27 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     if (sscanf(portstr, "%d", &port) != 1) port = 0;
     if (sscanf(sizestr, "%ld", &size) != 1) size = 0;
 
-    dcc = dcc_create(SWAP_SENDGET(dcc_str2type(type)), -1, sender, arg, server, chat);
+    dcctype = SWAP_SENDGET(dcc_str2type(type));
+    olddcc = dcc_find_item(dcctype, sender,
+			   dcctype == DCC_TYPE_CHAT ? NULL : arg);
+    if (olddcc != NULL) {
+	    /* same DCC request offered again */
+	    if (olddcc->type == DCC_TYPE_CHAT &&
+		olddcc->handle != -1 && olddcc->starttime == 0) {
+		    /* we requested dcc chat, they requested
+		       dcc chat from us .. allow it. */
+		    dcc_destroy(olddcc);
+	    } else {
+		    /* if the connection isn't open, update the port,
+		       otherwise just ignore */
+		    if (olddcc->handle == -1)
+			    olddcc->port = port;
+		    cmd_params_free(free_arg);
+		    return;
+	    }
+    }
+
+    dcc = dcc_create(dcctype, -1, sender, arg, server, chat);
     dcc_get_address(addrstr, &dcc->addr);
     net_ip2host(&dcc->addr, dcc->addrstr);
     dcc->port = port;
@@ -327,7 +347,8 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
 
 	case DCC_TYPE_CHAT:
 	    cstr = settings_get_str("dcc_autochat_masks");
-	    if (*cstr != '\0' && masks_match(SERVER(server), cstr, sender, sendaddr))
+	    if (olddcc != NULL ||
+		(*cstr != '\0' && masks_match(SERVER(server), cstr, sender, sendaddr)))
 	    {
                 /* automatically accept chat */
                 str = g_strdup_printf("CHAT %s", dcc->nick);
