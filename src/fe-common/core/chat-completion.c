@@ -154,6 +154,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 			msgnick[strlen(msgnick)-1] = '\0';
 			nick = nicklist_find(channel, msgnick);
 		}
+                g_free(msgnick);
 		if (nick != NULL && nick != channel->ownnick)
 			CHANNEL_LAST_MSG_ADD(channel, nick->nick, TRUE);
 	}
