@@ -79,6 +79,7 @@ noinst_HEADERS = \
 	net-nonblock.h \
 	net-sendbuffer.h \
 	network.h \
+	nick-rec.h \
 	nicklist.h \
 	pidwait.h \
 	queries.h \

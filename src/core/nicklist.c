@@ -39,6 +39,10 @@ NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
 
 	rec = g_new0(NICK_REC, 1);
 
+	MODULE_DATA_INIT(rec);
+	rec->type = module_get_uniq_id("NICK", 0);
+        rec->chat_type = channel->chat_type;
+
 	if (op) rec->op = TRUE;
 	if (voice) rec->voice = TRUE;
 
@@ -310,4 +314,6 @@ void nicklist_deinit(void)
 {
 	signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+
+	module_uniq_destroy("NICK");
 }

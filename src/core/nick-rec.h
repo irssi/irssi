@@ -1,0 +1,23 @@
+/* NICK_REC definition, used for inheritance */
+
+int type; /* module_get_uniq_id("NICK", 0) */
+int chat_type; /* chat_protocol_lookup(xx) */
+
+time_t last_check; /* last time gone was checked */
+
+char *nick;
+char *host;
+char *realname;
+int hops;
+
+/* status in server */
+unsigned int gone:1;
+unsigned int serverop:1;
+
+/* status in channel */
+unsigned int send_massjoin:1; /* Waiting to be sent in massjoin signal */
+unsigned int op:1;
+unsigned int halfop:1;
+unsigned int voice:1;
+
+GHashTable *module_data;
