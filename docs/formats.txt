@@ -13,6 +13,7 @@
    %c      %C      %6      cyan            bold cyan       cyan
    %w      %W      %7      white           bold white      white
    %n      %N              Turn off all colors and other formatting
+   %F                      Blinking on/off (think: flash)
    %U                      Underline on/off
    %8                      Reverse on/off
    %9      %_              Bold on/off

@@ -62,6 +62,7 @@ void channel_destroy(CHANNEL_REC *channel)
 	signal_emit("channel destroyed", 1, channel);
 
         MODULE_DATA_DEINIT(channel);
+	g_free_not_null(channel->hilight_color);
 	g_free_not_null(channel->topic);
 	g_free_not_null(channel->topic_by);
 	g_free_not_null(channel->key);

@@ -93,7 +93,9 @@ int format_expand_styles(GString *out, char format)
 		g_string_append_c(out, FORMAT_STYLE_INDENT);
 		break;
 	case 'F':
-		/* flashing - ignore */
+		/* blink */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_BLINK);
 		break;
 	case 'n':
 	case 'N':
@@ -845,6 +847,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			/* user specific colors */
 			flags &= ~PRINTFLAG_MIRC_COLOR;
 			switch (*ptr) {
+			case FORMAT_STYLE_BLINK:
+				flags ^= PRINTFLAG_BLINK;
+				break;
 			case FORMAT_STYLE_UNDERLINE:
 				flags ^= PRINTFLAG_UNDERLINE;
 				break;

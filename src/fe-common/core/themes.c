@@ -186,16 +186,13 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
                         chr = **format;
 			if (**format == 'n') {
 				/* %n = change to default color */
-				if (default_fg == 'n' || default_bg == 'n') {
-					if (*last_fg != 'n')
-						g_string_append(str, "%n");
-					*last_bg = *last_fg = 'n';
-				}
-				if (default_bg != *last_bg) {
+				g_string_append(str, "%n");
+
+				if (default_bg != 'n') {
 					g_string_append_c(str, '%');
 					g_string_append_c(str, default_bg);
 				}
-				if (default_fg != *last_fg) {
+				if (default_fg != 'n') {
 					g_string_append_c(str, '%');
 					g_string_append_c(str, default_fg);
 				}

@@ -62,6 +62,7 @@ void query_destroy(QUERY_REC *query)
 	signal_emit("query destroyed", 1, query);
 
         MODULE_DATA_DEINIT(query);
+	g_free_not_null(query->hilight_color);
         g_free_not_null(query->server_tag);
         g_free_not_null(query->address);
 	g_free(query->name);

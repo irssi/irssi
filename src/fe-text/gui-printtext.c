@@ -307,7 +307,7 @@ static void get_colors(int flags, int *fg, int *bg)
 		*fg |= 8;
 	}
 	if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
-	if (flags & PRINTFLAG_BLINK) *bg |= 0x80;
+	if (flags & PRINTFLAG_BLINK) *bg |= 0x08;
 }
 
 static void linebuf_add(GUI_WINDOW_REC *gui, const char *str, int len)
