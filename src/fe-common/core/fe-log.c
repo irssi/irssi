@@ -350,7 +350,8 @@ static void sig_window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
 		LOG_REC *rec = tmp->data;
 
-		if (rec->temp && g_strcasecmp(rec->items[0], item->name) == 0) {
+		if (rec->temp && rec->items != NULL && 
+		    g_strcasecmp(rec->items[0], item->name) == 0) {
                         log_close(rec);
 			break;
 		}
