@@ -278,7 +278,7 @@ void channel_events_init(void)
 	signal_add_first("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
 
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
-	signal_add("event join", (SIGNAL_FUNC) event_join);
+	signal_add_first("event join", (SIGNAL_FUNC) event_join);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event invite", (SIGNAL_FUNC) event_invite);
