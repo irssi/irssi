@@ -251,7 +251,7 @@ static char *expando_serverversion(SERVER_REC *server, void *item, int *free_ret
 /* target of current input (channel or QUERY nickname) */
 static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
 {
-	return ((WI_ITEM_REC *) item)->name;
+	return item == NULL ? "" : ((WI_ITEM_REC *) item)->name;
 }
 
 /* client release date (numeric version string) */
