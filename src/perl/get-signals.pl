@@ -43,6 +43,7 @@ while (<STDIN>) {
 	# fe-common
 	s/THEME_REC[^,]*/Irssi::Theme/g;
 	s/KEYINFO_REC[^,]*/Irssi::Keyinfo/g;
+	s/PROCESS_REC[^,]*/Irssi::Process/g;
 	s/WINDOW_REC[^,]*/Irssi::Window/g;
 	s/WI_ITEM_REC[^,]*/iobject/g;
 

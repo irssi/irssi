@@ -28,47 +28,12 @@
 #include "levels.h"
 
 #include "printtext.h"
+#include "fe-exec.h"
 #include "fe-windows.h"
 #include "window-items.h"
 
 #include <signal.h>
 #include <sys/wait.h>
-
-#define EXEC_WI(query) \
-	MODULE_CHECK_CAST_MODULE(query, EXEC_WI_REC, type, \
-			      "WINDOW ITEM TYPE", "EXEC")
-
-#define IS_EXEC_WI(query) \
-	(EXEC_WI(query) ? TRUE : FALSE)
-
-typedef struct PROCESS_REC PROCESS_REC;
-
-#define STRUCT_SERVER_REC void
-typedef struct {
-#include "window-item-rec.h"
-	PROCESS_REC *process;
-	unsigned int destroying:1;
-} EXEC_WI_REC;
-
-struct PROCESS_REC {
-        int id;
-	char *name;
-        char *args;
-
-	int pid;
-	GIOChannel *in;
-        NET_SENDBUF_REC *out;
-        LINEBUF_REC *databuf;
-	int read_tag;
-
-        char *target; /* send text with /msg <target> ... */
-	WINDOW_REC *target_win; /* print text to this window */
-        EXEC_WI_REC *target_item; /* print text to this exec window item */
-
-	unsigned int shell:1; /* start the program via /bin/sh */
-	unsigned int notice:1; /* send text with /notice, not /msg if target is set */
-	unsigned int silent:1; /* don't print "process exited with level xx" */
-};
 
 static GSList *processes;
 static int signal_exec_input;
@@ -198,8 +163,7 @@ static void process_destroy(PROCESS_REC *rec, int status)
 {
 	processes = g_slist_remove(processes, rec);
 
-	signal_emit("exec remove", 4, GINT_TO_POINTER(rec->id), rec->name,
-		    GINT_TO_POINTER(rec->pid), GINT_TO_POINTER(status));
+	signal_emit("exec remove", 2, rec, GINT_TO_POINTER(status));
 
 	if (rec->read_tag != -1)
 		g_source_remove(rec->read_tag);
@@ -535,8 +499,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	if (rec->target == NULL && interactive)
 		rec->target_item = exec_wi_create(active_win, rec);
 
-	signal_emit("exec new", 4, GINT_TO_POINTER(rec->id), rec->name,
-		    GINT_TO_POINTER(rec->pid), rec->args);
+	signal_emit("exec new", 1, rec);
 }
 
 /* SYNTAX: EXEC [-] [-nosh] [-out | -msg <target> | -notice <target>]

@@ -38,6 +38,7 @@
 
 #include "perl-common.h"
 
+#include "fe-common/core/fe-exec.h"
 #include "fe-common/core/formats.h"
 #include "fe-common/core/printtext.h"
 
@@ -390,6 +391,25 @@ void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
 }
 
+void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
+{
+	HV *stash;
+
+	hv_store(hv, "id", 2, newSViv(process->id), 0);
+	hv_store(hv, "name", 4, new_pv(process->name), 0);
+	hv_store(hv, "args", 4, new_pv(process->args), 0);
+
+	hv_store(hv, "pid", 3, newSViv(process->pid), 0);
+	hv_store(hv, "target", 6, new_pv(process->target), 0);
+	if (process->target_win != NULL) {
+		stash = gv_stashpv("Irssi::Window", 0);
+		hv_store(hv, "target_win", 10, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(process->target_win))), stash), 0);
+	}
+	hv_store(hv, "shell", 5, newSViv(process->shell), 0);
+	hv_store(hv, "notice", 6, newSViv(process->notice), 0);
+	hv_store(hv, "silent", 6, newSViv(process->silent), 0);
+}
+
 void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 {
 	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
@@ -567,6 +587,7 @@ void perl_common_init(void)
 		{ "Irssi::Logitem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
 		{ "Irssi::Rawlog", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
 		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
+		{ "Irssi::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
 		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
 
 		{ NULL, NULL }
