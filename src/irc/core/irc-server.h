@@ -85,6 +85,7 @@ typedef struct {
 	char *away_reason;
 	int usermode_away:1;
 	int server_operator:1;
+	int banned:1; /* not allowed to connect to this server */
 
 	int whois_coming:1; /* Mostly just to display away message right.. */
 	int whois_found:1; /* Did WHOIS return any entries? */

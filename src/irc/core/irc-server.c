@@ -66,7 +66,7 @@ void irc_server_connect_free(IRC_SERVER_CONNECT_REC *rec)
         g_free_not_null(rec->channels);
         g_free_not_null(rec->away_reason);
         g_free_not_null(rec->usermode);
-	g_free(rec->address);
+	g_free_not_null(rec->address);
         g_free(rec);
 }
 
@@ -404,6 +404,22 @@ static void event_server_info(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void event_server_banned(const char *data, IRC_SERVER_REC *server)
+{
+	g_return_if_fail(server != NULL);
+
+        server->banned = TRUE;
+}
+
+static void event_error(const char *data, IRC_SERVER_REC *server)
+{
+	g_return_if_fail(server != NULL);
+
+	if (!server->connected && (stristr(data, "Unauthorized") != NULL ||
+				   stristr(data, "K-lined") != NULL))
+		server->banned = TRUE;
+}
+
 static void event_ping(const char *data, IRC_SERVER_REC *server)
 {
 	char *str;
@@ -432,6 +448,8 @@ void irc_servers_init(void)
 	signal_add_last("server connect failed", (SIGNAL_FUNC) sig_connect_failed);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_add("event 465", (SIGNAL_FUNC) event_server_banned);
+	signal_add("event error", (SIGNAL_FUNC) event_error);
 	signal_add("event ping", (SIGNAL_FUNC) event_ping);
 	signal_add("event empty", (SIGNAL_FUNC) event_empty);
 
@@ -455,6 +473,8 @@ void irc_servers_deinit(void)
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_connect_failed);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_remove("event 465", (SIGNAL_FUNC) event_server_banned);
+	signal_remove("event error", (SIGNAL_FUNC) event_error);
 	signal_remove("event ping", (SIGNAL_FUNC) event_ping);
 	signal_remove("event empty", (SIGNAL_FUNC) event_empty);
 

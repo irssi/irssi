@@ -18,7 +18,8 @@ typedef struct {
 	IPADDR *own_ip; /* resolved own_address if not NULL */
 
 	time_t last_connect; /* to avoid reconnecting too fast.. */
-	int last_failed; /* if last connection attempt failed */
+	int last_failed:1; /* if last connection attempt failed */
+	int banned:1; /* if we're banned from this server */
 } SETUP_SERVER_REC;
 
 extern GSList *setupservers; /* list of irc servers */

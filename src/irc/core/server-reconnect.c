@@ -128,6 +128,10 @@ static void server_connect_copy_skeleton(IRC_SERVER_CONNECT_REC *dest, IRC_SERVE
 	dest->max_msgs = src->max_msgs;
 }
 
+#define server_should_reconnect(server) \
+	(irc_server_check(server) && (server)->connection_lost && \
+	((server)->connrec->ircnet != NULL || !(server)->banned))
+
 static void sig_reconnect(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -138,7 +142,7 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	if (reconnect_time == -1 || !server->connection_lost || !irc_server_check(server))
+	if (reconnect_time == -1 || !server_should_reconnect(server))
 		return;
 
 	conn = g_new0(IRC_SERVER_CONNECT_REC, 1);
@@ -168,6 +172,7 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		sserver->last_connect = server->connect_time == 0 ?
 			time(NULL) : server->connect_time;
 		sserver->last_failed = !server->connected;
+                if (server->banned) sserver->banned = TRUE;
 	}
 
 	if (sserver == NULL || conn->ircnet == NULL) {
@@ -198,10 +203,9 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SETUP_SERVER_REC *rec = tmp->data;
 
-		if (rec->ircnet == NULL || g_strcasecmp(conn->ircnet, rec->ircnet) != 0)
-			continue;
-
-		if (!rec->last_connect || !rec->last_failed || rec->last_connect < now-FAILED_RECONNECT_WAIT) {
+		if (rec->ircnet != NULL && g_strcasecmp(conn->ircnet, rec->ircnet) == 0 &&
+		    !rec->banned && (!rec->last_connect || !rec->last_failed ||
+				     rec->last_connect < now-FAILED_RECONNECT_WAIT)) {
 			sserver_connect(rec, conn);
 			return;
 		}
@@ -215,7 +219,8 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		if (!found && g_strcasecmp(rec->address, server->connrec->address) == 0 &&
 		    server->connrec->port == rec->port)
 			found = TRUE;
-		else if (found && rec->ircnet != NULL && g_strcasecmp(conn->ircnet, rec->ircnet) == 0) {
+		else if (found && !rec->banned && rec->ircnet != NULL &&
+			 g_strcasecmp(conn->ircnet, rec->ircnet) == 0) {
 			sserver_connect(rec, conn);
 			break;
 		}
@@ -228,6 +233,7 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		if (through) {
 			/* shouldn't happen unless there's no servers in
 			   this ircnet in setup.. */
+                        irc_server_connect_free(conn);
 			break;
 		}
 
