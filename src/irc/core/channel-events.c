@@ -156,14 +156,17 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 }
 
 static void event_topic(IRC_SERVER_REC *server, const char *data,
-			const char *nick)
+			const char *nick, const char *addr)
 {
-	char *params, *channel, *topic;
+	char *params, *channel, *topic, *mask;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, &channel, &topic);
-	channel_change_topic(server, channel, topic, nick, time(NULL));
+	mask = addr == NULL ? g_strdup(nick) :
+		g_strconcat(nick, "!", addr, NULL);
+	channel_change_topic(server, channel, topic, mask, time(NULL));
+	g_free(mask);
 	g_free(params);
 }
 
