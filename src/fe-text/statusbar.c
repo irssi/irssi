@@ -133,8 +133,13 @@ static void statusbar_get_sizes(STATUSBAR_REC *bar, int max_width)
 
 static void statusbar_redraw_line(STATUSBAR_REC *bar)
 {
+        WINDOW_REC *old_active_win;
 	GSList *tmp;
 	int xpos, rxpos;
+
+	old_active_win = active_win;
+        if (bar->window != NULL)
+		active_win = bar->window->active;
 
 	statusbar_get_sizes(bar, COLS-2);
 
@@ -159,6 +164,8 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 			rec->func(rec, FALSE);
 		}
 	}
+
+	active_win = old_active_win;
 }
 
 static void statusbar_redraw_all(void)

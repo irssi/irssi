@@ -596,6 +596,7 @@ static void sig_mainwindow_created(MAIN_WINDOW_REC *window)
 	window->statusbar =
 		statusbar_create(STATUSBAR_POS_MIDDLE,
 				 window->first_line+window->height);
+        ((STATUSBAR_REC *) window->statusbar)->window = window;
 	sidebar_add_items(window);
 }
 

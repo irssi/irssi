@@ -1,6 +1,8 @@
 #ifndef __STATUSBAR_H
 #define __STATUSBAR_H
 
+#include "mainwindows.h"
+
 #define SBAR_PRIORITY_HIGH	100
 #define SBAR_PRIORITY_NORMAL	0
 #define SBAR_PRIORITY_LOW	-100
@@ -15,6 +17,8 @@ typedef struct SBAR_ITEM_REC SBAR_ITEM_REC;
 typedef void (*STATUSBAR_FUNC) (SBAR_ITEM_REC *item, int get_size_only);
 
 typedef struct {
+	MAIN_WINDOW_REC *window;
+
 	int pos;
 	int line;
 
