@@ -101,8 +101,11 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 #define ignore_match_level(rec, level) \
         ((level & (rec)->level) != 0)
 
-#define ignore_match_nickmask(rec, nickmask) \
-	((rec)->mask == NULL || match_wildcards((rec)->mask, nickmask))
+#define ignore_match_nickmask(rec, nick, nickmask) \
+	((rec)->mask == NULL || \
+	(strchr((rec)->mask, '!') != NULL ? \
+		match_wildcards((rec)->mask, nickmask) : \
+		match_wildcards((rec)->mask, nick)))
 
 #define ignore_match_server(rec, server) \
 	((rec)->servertag == NULL || \
@@ -178,7 +181,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		if (ignore_match_level(rec, level) &&
 		    ignore_match_server(rec, server) &&
 		    ignore_match_channel(rec, channel) &&
-		    ignore_match_nickmask(rec, nickmask) &&
+		    ignore_match_nickmask(rec, nick, nickmask) &&
 		    ignore_match_pattern(rec, text)) {
 			len = rec->mask == NULL ? 0 : strlen(rec->mask);
 			if (len > best_mask) {
@@ -425,7 +428,7 @@ static void ignore_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
-		if (ignore_match_nickmask(rec, nickmask) &&
+		if (ignore_match_nickmask(rec, nick->nick, nickmask) &&
 		    ignore_match_server(rec, channel->server) &&
 		    ignore_match_channel(rec, channel->name))
 			matches = g_slist_append(matches, rec);
