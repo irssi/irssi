@@ -233,11 +233,25 @@ For example:
 settings_get_str(key)
 settings_get_int(key)
 settings_get_bool(key)
+settings_get_time(key)
+settings_get_level(key)
+settings_get_size(key)
   Return value for setting.
+
+settings_set_str(key)
+settings_set_int(key)
+settings_set_bool(key)
+settings_set_time(key)
+settings_set_level(key)
+settings_set_size(key)
+  Set value for setting.
 
 settings_add_str(section, key, def)
 settings_add_int(section, key, def)
 settings_add_bool(section, key, def)
+settings_add_time(section, key, def)
+settings_add_level(section, key, def)
+settings_add_size(section, key, def)
   Create new setting.
 
 settings_remove(key)
