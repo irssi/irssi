@@ -193,7 +193,7 @@ static int expand_combo(const char *start, const char *end, GSList **out)
         KEY_REC *rec;
 	KEYINFO_REC *info;
         GSList *tmp, *tmp2, *list, *copy, *newout;
-	char *str;
+	char *str, *p;
 
 	if (start == end) {
 		/* single key */
@@ -214,10 +214,16 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 		if (strcmp(rec->data, str) == 0)
                         list = g_slist_append(list, rec);
 	}
-	g_free(str);
 
-	if (list == NULL)
-		return FALSE;
+	if (list == NULL) {
+		/* unknown keycombo - add it as-is, maybe the GUI will
+		   feed it to us as such */
+		for (p = str; *p != '\0'; p++)
+			expand_out_char(*out, *p);
+		g_free(str);
+		return TRUE;
+	}
+	g_free(str);
 
 	if (list->next == NULL) {
                 /* only one way to generate the combo, good */
