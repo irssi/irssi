@@ -324,7 +324,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	server = cmd_options_get_server("msg", optlist, SERVER(server));
+	server = cmd_options_get_server("msg", optlist, server);
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
