@@ -159,12 +159,9 @@ void core_init_paths(int argc, char *argv[])
                         len = strlen(irssi_dir);
 			if (irssi_dir[len-1] == G_DIR_SEPARATOR)
 				irssi_dir[len-1] = '\0';
-                        break;
-		}
-		if (strncmp(argv[n], "--config=", 9) == 0) {
+		} else if (strncmp(argv[n], "--config=", 9) == 0) {
                         g_free_not_null(irssi_config_file);
 			irssi_config_file = convert_home(argv[n]+9);
-                        break;
 		}
 	}
 
