@@ -729,8 +729,10 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			flags |= GUI_PRINT_FLAG_REVERSE;
 			break;
 		default:
-			if (num >= 30 && num <= 37)
+			if (num >= 30 && num <= 37) {
+				if (fg == -1) fg = 0;
 				fg = (fg & 0xf8) | ansitab[num-30];
+			}
 			if (num >= 40 && num <= 47) {
 				if (bg == -1) bg = 0;
 				bg = (bg & 0xf8) | ansitab[num-40];
@@ -875,8 +877,10 @@ char *strip_codes(const char *input)
                         }
 		}
 
-		if (*p == 27 && p[1] != '\0')
+		if (*p == 27 && p[1] != '\0') {
+                        p++;
 			p = get_ansi_color(current_theme, p, NULL, NULL, NULL);
+		}
 
                 if (!IS_COLOR_CODE(*p))
                         *out++ = *p;   
