@@ -61,9 +61,10 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 	if (window_item_window(query) == NULL) {
 		window_item_create((WI_ITEM_REC *) query,
 				   GPOINTER_TO_INT(automatic));
-		printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-			    TXT_QUERY_STARTED, query->name);
 	}
+
+	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
+		    TXT_QUERY_START, query->name);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)
@@ -81,6 +82,9 @@ static void signal_query_destroyed(QUERY_REC *query)
 
 	window = window_item_window((WI_ITEM_REC *) query);
 	if (window != NULL) {
+		printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
+			    TXT_QUERY_STOP, query->name);
+
 		window_item_destroy((WI_ITEM_REC *) query);
 
 		if (!query->unwanted)
