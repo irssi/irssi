@@ -327,7 +327,8 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	query = privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
 
 	/* reset the query's last_unread_msg timestamp */
-        query->last_unread_msg = time(NULL);
+        if (query != NULL)
+		query->last_unread_msg = time(NULL);
 }
 
 static void read_settings(void)
