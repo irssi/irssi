@@ -227,9 +227,10 @@ static void paste_buffer_join_lines(GArray *buf)
 			/* whitespace, ignore */
 		} else if (arr[i] == '\n') {
 			if (!last_lf && i+1 != buf->len &&
-			    IS_WHITE(arr[i+1]))
+			    IS_WHITE(arr[i+1])) {
 				last_lf_pos = dest;
-			else {
+				*dest++ = ' ';
+			} else {
 				*dest++ = '\n'; /* double-LF */
 				line_len = 0;
 				last_lf_pos = NULL;
