@@ -329,7 +329,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	TEXT_DEST_REC dest;
 	GString *str;
 	GSList *tmp;
-        char *format, *stripped;
+        char *format, *stripped, *prefix_format;
 	char *linebuf, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
         int item_extra, linebuf_size, formatnum;
@@ -351,7 +351,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	    max_width > settings_get_int("names_max_width"))
 		max_width = settings_get_int("names_max_width");
 
-        /* remove width of timestamp from max_width */
+        /* remove width of the timestamp from max_width */
 	format_create_dest(&dest, channel->server, channel->name,
 			   MSGLEVEL_CLIENTCRAP, NULL);
 	format = format_get_line_start(current_theme, &dest, time(NULL));
@@ -360,6 +360,16 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		max_width -= strlen(stripped);
 		g_free(stripped);
 		g_free(format);
+	}
+
+        /* remove width of the prefix from max_width */
+	prefix_format = format_get_text(MODULE_NAME, NULL,
+					channel->server, channel->name,
+					TXT_NAMES_PREFIX, channel->name);
+	if (prefix_format != NULL) {
+		stripped = strip_codes(prefix_format);
+		max_width -= strlen(stripped);
+		g_free(stripped);
 	}
 
 	/* calculate columns */
@@ -373,7 +383,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	if (last_col_rows == 0)
                 last_col_rows = rows;
 
-	str = g_string_new(NULL);
+	str = g_string_new(prefix_format);
 	linebuf_size = max_width+1; linebuf = g_malloc(linebuf_size);
 
         col = 0; row = 0;
@@ -404,6 +414,8 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 			printtext(channel->server, channel->name,
 				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
 			g_string_truncate(str, 0);
+			if (prefix_format != NULL)
+                                g_string_assign(str, prefix_format);
 			col = 0; row++;
 
 			if (row == last_col_rows)
@@ -419,6 +431,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	g_slist_free(nicklist);
 	g_string_free(str, TRUE);
 	g_free_not_null(columns);
+	g_free_not_null(prefix_format);
 	g_free(linebuf);
 }
 
