@@ -21,6 +21,7 @@
 #undef SCO_FLAVOR
 
 /* our own curses checks */
+#undef USE_CURSES_WINDOWS
 #undef HAVE_NCURSES_USE_DEFAULT_COLORS
 #undef HAVE_CURSES_IDCOK
 #undef HAVE_CURSES_RESIZETERM
