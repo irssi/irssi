@@ -306,7 +306,7 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	chanrec = channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
-	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s %s",
+	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
 		      channame, msg);
 
 	g_free(params);
@@ -592,7 +592,7 @@ static void cmd_cycle(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	chanrec = channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
-	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s %s",
+	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
 		      channame, msg);
 	irc_send_cmdv(server, chanrec->key == NULL ? "JOIN %s" : "JOIN %s %s",
 		      channame, chanrec->key);
