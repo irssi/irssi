@@ -26,6 +26,11 @@
 #include "term.h"
 #include "mainwindows.h"
 
+#ifdef HAVE_NL_LANGINFO
+#  include <locale.h>
+#  include <langinfo.h>
+#endif
+
 #ifdef HAVE_SYS_IOCTL_H
 #  include <sys/ioctl.h>
 #endif
@@ -100,7 +105,7 @@ static void read_settings(void)
 
         /* set terminal type */
 	str = settings_get_str("term_type");
-	if (g_strcasecmp(str, "utf8") == 0)
+	if (g_strcasecmp(str, "utf-8") == 0)
 		term_type = TERM_TYPE_UTF8;
 	else if (g_strcasecmp(str, "big5") == 0)
 		term_type = TERM_TYPE_BIG5;
@@ -136,6 +141,14 @@ void term_common_init(void)
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
         read_settings();
+
+#ifdef HAVE_NL_LANGINFO
+        setlocale(LC_CTYPE, "");
+	if (strcmp(nl_langinfo(CODESET), "UTF-8") == 0) {
+		term_type = TERM_TYPE_UTF8;
+		term_set_input_type(TERM_TYPE_UTF8);
+	}
+#endif
 
 	signal_add("beep", (SIGNAL_FUNC) term_beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
