@@ -283,6 +283,8 @@ void command_runsub(const char *cmd, const char *data,
 
 	g_return_if_fail(data != NULL);
 
+        while (*data == ' ') data++;
+
 	if (*data == '\0') {
                 /* no subcommand given - list the subcommands */
 		signal_emit("list subcommands", 2, cmd);
