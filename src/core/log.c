@@ -252,15 +252,9 @@ static int itemcmp(const char *patt, const char *item)
 
 	if (item == NULL)
 		return g_strcasecmp(patt, "*") != 0;
-
-	for (;*patt != '\0'; patt++, item++)
-	{
-		if (*patt == '*')
-			return 0;
-		if (*patt != *item)
-			return 1;
-	}
-	return 0;
+	if (*patt == '*')
+		return 0;
+        return g_strcasecmp(patt, item);
 }
 
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
