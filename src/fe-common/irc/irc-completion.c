@@ -590,7 +590,7 @@ static void completion_deinit_channel(CHANNEL_REC *channel)
 void irc_completion_init(void)
 {
 	settings_add_str("completion", "completion_char", ":");
-	settings_add_bool("completion", "completion_disable_auto", FALSE);
+	settings_add_bool("completion", "completion_disable_auto", TRUE);
 	settings_add_int("completion", "completion_keep_publics", 180);
 	settings_add_int("completion", "completion_keep_ownpublics", 360);
 	settings_add_int("completion", "completion_keep_privates", 10);
