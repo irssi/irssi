@@ -27,6 +27,7 @@
 #include "levels.h"
 
 #include "fe-windows.h"
+#include "window-items.h"
 #include "formats.h"
 #include "themes.h"
 #include "translation.h"
@@ -388,12 +389,10 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 			/* argument */
 			char *ret;
 
-			ret = parse_special((char **) &text,
-					    active_win == NULL ? NULL :
-					    active_win->active_server,
-					    active_win == NULL ? NULL :
-					    active_win->active, arglist,
-					    &need_free, NULL, 0);
+			ret = parse_special((char **) &text, dest->server,
+					    dest->target == NULL ? NULL :
+					    window_item_find(dest->server, dest->target),
+					    arglist, &need_free, NULL, 0);
 
 			if (ret != NULL) {
 				/* string shouldn't end with \003 or it could

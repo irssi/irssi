@@ -119,7 +119,8 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 	abstract = theme_format_expand_data(theme, (const char **) &abstract,
 					    default_fg, default_bg,
 					    last_fg, last_bg, flags);
-	ret = parse_special_string(abstract, NULL, NULL, data, NULL, 0);
+	ret = parse_special_string(abstract, NULL, NULL, data, NULL,
+				   PARSE_FLAG_ONLY_PARAMS);
 	g_free(abstract);
 	return ret;
 }
@@ -143,7 +144,7 @@ static void theme_format_append_variable(GString *str, const char **format)
 	(*format)++;
 
 	value = parse_special((char **) format, NULL, NULL,
-			      args, &free_ret, NULL, 0);
+			      args, &free_ret, NULL, PARSE_FLAG_ONLY_PARAMS);
 	if (free_ret) g_free(value);
 	(*format)++;
 
@@ -300,7 +301,8 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 		g_free(tmp);
 	}
 
-	ret = parse_special_string(abstract, NULL, NULL, data, NULL, 0);
+	ret = parse_special_string(abstract, NULL, NULL, data, NULL,
+				   PARSE_FLAG_ONLY_PARAMS);
 	g_free(abstract);
         g_free(data);
 	abstract = ret;
