@@ -731,6 +731,22 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
                         /* they're forcing us smaller than minimum size.. */
 			len = format_real_length(tmpstr, item->size);
                         tmpstr[len] = '\0';
+		} else {
+			/* make sure the str is big enough to fill the
+			   requested size, so it won't corrupt screen */
+			len = format_get_length(tmpstr);
+			if (len < item->size) {
+				char *fill;
+
+				len = item->size-len;
+				fill = g_malloc(len + 1);
+				memset(fill, ' ', len); fill[len] = '\0';
+
+				tmpstr2 = g_strconcat(tmpstr, fill, NULL);
+				g_free(fill);
+				g_free(tmpstr);
+				tmpstr = tmpstr2;
+			}
 		}
 
 		tmpstr2 = update_statusbar_bg(tmpstr, item->bar->color);
