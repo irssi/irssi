@@ -318,6 +318,17 @@ int signal_get_emitted_id(void)
 	return rec->id;
 }
 
+/* return TRUE if specified signal was stopped */
+int signal_is_stopped(int signal_id)
+{
+	SIGNAL_REC *rec;
+
+	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
+	g_return_val_if_fail(rec != NULL, FALSE);
+
+        return rec->emitting <= rec->stop_emit;
+}
+
 static void signal_remove_module(void *signal, SIGNAL_REC *rec,
 				 const char *module)
 {

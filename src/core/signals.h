@@ -42,6 +42,8 @@ void signal_stop_by_name(const char *signal);
 const char *signal_get_emitted(void);
 /* return the ID of the signal that is currently being emitted */
 int signal_get_emitted_id(void);
+/* return TRUE if specified signal was stopped */
+int signal_is_stopped(int signal_id);
 
 /* remove all signals that belong to `module' */
 void signals_remove_module(const char *module);

@@ -49,8 +49,8 @@ static PERL_SIGNAL_ARGS_REC *perl_signal_args_find(int signal_id)
 	return NULL;
 }
 
-static int perl_call_signal(const char *func, int signal_id,
-			    gconstpointer *args)
+static void perl_call_signal(const char *func, int signal_id,
+			     gconstpointer *args)
 {
 	dSP;
 	int retcount, ret;
@@ -106,28 +106,18 @@ static int perl_call_signal(const char *func, int signal_id,
 	}
 
 	PUTBACK;
-	retcount = perl_call_pv((char *) func, G_EVAL|G_SCALAR);
+	retcount = perl_call_pv((char *) func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
-	ret = 0;
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
 
 		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
-		(void)POPs;
-	} else if (retcount > 0) {
-		SV *sv = POPs;
-
-		if (SvIOK(sv) && SvIV(sv) == 1) ret = 1;
-		while (--retcount > 0)
-			(void)POPi;
 	}
 
 	PUTBACK;
 	FREETMPS;
 	LEAVE;
-
-	return ret;
 }
 
 static void sig_func(int priority, gconstpointer *args)
@@ -141,10 +131,9 @@ static void sig_func(int priority, gconstpointer *args)
 	for (tmp = list == NULL ? NULL : *list; tmp != NULL; tmp = tmp->next) {
 		PERL_SIGNAL_REC *rec = tmp->data;
 
-		if (perl_call_signal(rec->func, signal_id, args)) {
-			signal_stop();
-			break;
-		}
+		perl_call_signal(rec->func, signal_id, args);
+		if (signal_is_stopped(signal_id))
+                        break;
 	}
 }
 

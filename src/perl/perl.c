@@ -317,7 +317,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	XPUSHs(sv_2mortal(new_pv(rec->data)));
 	PUTBACK;
 
-	retcount = perl_call_pv(rec->func, G_EVAL|G_SCALAR);
+	retcount = perl_call_pv(rec->func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
