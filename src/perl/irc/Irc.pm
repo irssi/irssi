@@ -7,7 +7,7 @@ package Irssi::Irc;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
-$VERSION = "0.20";
+$VERSION = "0.8";
 
 require Exporter;
 require DynaLoader;

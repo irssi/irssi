@@ -82,6 +82,7 @@ PREINIT:
 	static int initialized = FALSE;
 CODE:
 	if (initialized) return;
+	perl_api_version_check("Irssi::TextUI");
 	initialized = TRUE;
 
         irssi_add_plains(textui_plains);

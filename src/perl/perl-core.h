@@ -32,6 +32,26 @@ PERL_SCRIPT_REC *perl_script_find_package(const char *package);
 /* Returns full path for the script */
 char *perl_script_get_path(const char *name);
 
+/* If core should handle printing script errors */
+void perl_core_print_script_error(int print);
+
+/* Returns the perl module's API version. */
+int perl_get_api_version(void);
+
+/* Checks that the API version is correct. */
+#define perl_api_version_check(library) \
+	if (perl_get_api_version() != IRSSI_PERL_API_VERSION) { \
+		char *str; \
+		str = g_strdup_printf("Version of perl module (%d) " \
+				      "doesn't match the version of " \
+				      library" library (%d)", \
+				      perl_get_api_version(), \
+				      IRSSI_PERL_API_VERSION); \
+		signal_emit("gui dialog", 2, "error", str); \
+		g_free(str); \
+		return; \
+        }
+
 void perl_core_init(void);
 void perl_core_deinit(void);
 

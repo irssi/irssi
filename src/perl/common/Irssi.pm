@@ -7,7 +7,7 @@ package Irssi;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
-$VERSION = "0.20";
+$VERSION = "0.8";
 
 require Exporter;
 require DynaLoader;
@@ -28,6 +28,8 @@ bootstrap Irssi $VERSION;
 
 @Irssi::Channel::ISA = qw(Irssi::Windowitem);
 @Irssi::Query::ISA = qw(Irssi::Windowitem);
+
+Irssi::init();
 
 1;
 

@@ -41,6 +41,8 @@ extern void xs_init(void);
 GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
+static int print_script_errors;
+
 #define IS_PERL_SCRIPT(file) \
 	(strlen(file) > 3 && strcmp(file+strlen(file)-3, ".pl") == 0)
 
@@ -112,9 +114,14 @@ void perl_scripts_deinit(void)
         while (perl_scripts != NULL)
 		perl_script_destroy(perl_scripts->data);
 
+        signal_emit("perl scripts deinit", 0);
+
         perl_signals_stop();
 	perl_sources_stop();
-        perl_common_stop();
+	perl_common_stop();
+
+        /* Unload all perl libraries loaded with dynaloader */
+	perl_eval_pv("foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); }", TRUE);
 
 	/* perl interpreter */
 	perl_destruct(my_perl);
@@ -320,6 +327,18 @@ char *perl_script_get_path(const char *name)
         return path;
 }
 
+/* If core should handle printing script errors */
+void perl_core_print_script_error(int print)
+{
+        print_script_errors = print;
+}
+
+/* Returns the perl module's API version. */
+int perl_get_api_version(void)
+{
+        return IRSSI_PERL_API_VERSION;
+}
+
 static void perl_scripts_autorun(void)
 {
 	DIR *dirp;
@@ -348,8 +367,18 @@ static void perl_scripts_autorun(void)
 	g_free(path);
 }
 
-static void sig_script_error(PERL_SCRIPT_REC *script)
+static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 {
+	char *str;
+
+	if (print_script_errors) {
+		str = g_strdup_printf("Script '%s' error:",
+				      script == NULL ? "??" : script->name);
+		signal_emit("gui dialog", 2, "error", str);
+		signal_emit("gui dialog", 2, "error", error);
+                g_free(str);
+	}
+
 	if (script != NULL) {
 		perl_script_destroy(script);
                 signal_stop();
@@ -358,6 +387,8 @@ static void sig_script_error(PERL_SCRIPT_REC *script)
 
 void perl_core_init(void)
 {
+        print_script_errors = 1;
+
 	PL_perl_destruct_level = 1;
 	perl_signals_init();
         signal_add_last("script error", (SIGNAL_FUNC) sig_script_error);

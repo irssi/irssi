@@ -19,3 +19,7 @@ extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implemen
 #include "common.h"
 
 #define MODULE_NAME "perl/core"
+
+/* Change this every time when some API changes between irssi's perl module
+   and irssi's perl libraries. */
+#define IRSSI_PERL_API_VERSION 20011020

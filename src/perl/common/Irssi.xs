@@ -4,6 +4,11 @@ MODULE = Irssi  PACKAGE = Irssi
 
 PROTOTYPES: ENABLE
 
+void
+init()
+CODE:
+	perl_api_version_check("Irssi");
+
 INCLUDE: Channel.xs
 INCLUDE: Core.xs
 INCLUDE: Ignore.xs

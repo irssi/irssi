@@ -151,6 +151,7 @@ PREINIT:
 	int chat_type;
 CODE:
 	if (initialized) return;
+	perl_api_version_check("Irssi::Irc");
 	initialized = TRUE;
 
 	chat_type = chat_protocol_lookup("IRC");
