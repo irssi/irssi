@@ -16,6 +16,7 @@ enum {
 	LINE_CMD_EOL=0x80,	/* line ends here. */
 	LINE_CMD_CONTINUE,	/* line continues in next block */
 	LINE_CMD_OVERFLOW,	/* buffer overflow! */
+	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
 	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
 	LINE_CMD_INDENT		/* if line is split, indent it at this position */
@@ -37,7 +38,10 @@ typedef struct {
 typedef struct {
 	/* text in the line. \0 means that the next char will be a
 	   color or command. <= 127 = color or if 8.bit is set, the
-	   first 7 bits are the command. See LINE_CMD_xxxx. */
+	   first 7 bits are the command. See LINE_CMD_xxxx.
+
+	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
+	   LINE_CMD_COLOR0 instead. */
 	char *text;
 
 	int level;

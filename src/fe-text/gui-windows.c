@@ -287,6 +287,9 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
+			case LINE_CMD_COLOR0:
+				color = color & ATTR_UNDERLINE;
+				break;
 			case LINE_CMD_COLOR8:
 				color &= 0xfff0;
 				color |= 8|ATTR_COLOR8;
@@ -412,6 +415,9 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 				return;
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
+				break;
+			case LINE_CMD_COLOR0:
+				color = color & ATTR_UNDERLINE;
 				break;
 			case LINE_CMD_COLOR8:
 				color &= 0xfff0;

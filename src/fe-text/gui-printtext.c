@@ -225,7 +225,7 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 	if (((fg & ATTR_COLOR8) == 0 && (fg|(bg << 4)) != gui->last_color) ||
 	    ((fg & ATTR_COLOR8) && (fg & 0xf0) != (gui->last_color & 0xf0))) {
 		buffer[pos++] = 0;
-		buffer[pos++] = color;
+		buffer[pos++] = color == 0 ? LINE_CMD_COLOR0 : color;
 	}
 
 	if ((flags & PRINTFLAG_UNDERLINE) != (gui->last_flags & PRINTFLAG_UNDERLINE)) {
