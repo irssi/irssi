@@ -15,8 +15,8 @@ proplist_t config_set_str(proplist_t prop, gchar *key, gchar *value);
 proplist_t config_set_int(proplist_t prop, gchar *key, gint value);
 proplist_t config_set_bool(proplist_t prop, gchar *key, gboolean value);
 
-proplist_t config_section(proplist_t prop, gchar *section);
-proplist_t config_list_section(proplist_t prop, gchar *section);
+proplist_t config_section(proplist_t *prop, gchar *section);
+proplist_t config_list_section(proplist_t *prop, gchar *section);
 proplist_t config_make_dict(proplist_t prop, gchar *section);
 proplist_t config_clean_key(proplist_t prop, gchar *key);
 

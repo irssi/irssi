@@ -134,34 +134,32 @@ proplist_t config_clean_key(proplist_t prop, gchar *key)
     return prop;
 }
 
-proplist_t config_section(proplist_t prop, gchar *section)
+proplist_t config_section(proplist_t *prop, gchar *section)
 {
-    proplist_t ret, pkey, psect;
+    proplist_t ret, pkey;
 
     pkey = PLMakeString(section);
-    ret = PLGetDictionaryEntry(prop, pkey);
+    ret = PLGetDictionaryEntry(*prop, pkey);
     if (ret == NULL)
     {
-	psect = PLMakeDictionaryFromEntries(NULL, NULL);
-	prop = PLInsertDictionaryEntry(prop, pkey, psect);
-	ret = PLGetDictionaryEntry(prop, pkey);
+	ret = PLMakeDictionaryFromEntries(NULL, NULL);
+	*prop = PLInsertDictionaryEntry(*prop, pkey, ret);
     }
     PLRelease(pkey);
 
     return ret;
 }
 
-proplist_t config_list_section(proplist_t prop, gchar *section)
+proplist_t config_list_section(proplist_t *prop, gchar *section)
 {
-    proplist_t ret, pkey, psect;
+    proplist_t ret, pkey;
 
     pkey = PLMakeString(section);
-    ret = PLGetDictionaryEntry(prop, pkey);
+    ret = PLGetDictionaryEntry(*prop, pkey);
     if (ret == NULL)
     {
-	psect = PLMakeArrayFromElements(NULL);
-	prop = PLInsertDictionaryEntry(prop, pkey, psect);
-	ret = PLGetDictionaryEntry(prop, pkey);
+	ret = PLMakeArrayFromElements(NULL);
+	*prop = PLInsertDictionaryEntry(*prop, pkey, ret);
     }
     PLRelease(pkey);
 
