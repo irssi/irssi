@@ -10,10 +10,10 @@ randomly. If after crash you see text:
 
  "segmentation fault (core dumped)"
 
-It writes a file named "core" to directory where you started irssi. If it
-doesn't print the "(core dumped)" or you can't find the core file, you'll
-have to raise the limit for max. core file size before running irssi. To
-do this, say:
+It writes a file named "core" or "irssi.core" depending on your OS to
+directory where you started irssi. If it doesn't print the "(core dumped)"
+or you can't find the core file, you'll have to raise the limit for max.
+core file size before running irssi. To do this, say:
 
  ulimit -c unlimited
 
