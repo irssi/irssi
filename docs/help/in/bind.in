@@ -13,7 +13,9 @@ Most most commonly used keystrokes are:
 Irssi has by default also defined several other keys which you can use:
 
  return                  - The return/enter key
+ space, backspace        - Space / backspace
  up, down, left, right   - Arrow keys
+ cleft, cright           - Ctrl-left/right
  home, end, prior, next  - prior = Page Up, next = Page Down
  insert, delete
 
@@ -83,6 +85,7 @@ Command can be one of:
 
 (Word completion)
   word_completion
+  erase_completion
   check_replaces - Check word replaces
 
 (Misc)
@@ -90,6 +93,7 @@ Command can be one of:
   yank_from_cutbuffer - "Undelete" line
   transpose_characters - Swap current and previous character
   insert_text - Insert data to entry line, data may contain $variables.
+  stop_irc - Send SIGSTOP to client (^Z)
 
 Examples:
 
