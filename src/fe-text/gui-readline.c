@@ -57,7 +57,7 @@ static int readtag;
 static unichar prev_key;
 static GTimeVal last_keypress;
 
-static int paste_detect_time, paste_detect_keycount, paste_verify_line_count;
+static int paste_detect_time, paste_verify_line_count;
 static int paste_state;
 static char *paste_entry, *prev_entry;
 static int paste_entry_pos, prev_entry_pos;
@@ -850,10 +850,6 @@ static void setup_changed(void)
 	else if (paste_state == -1)
 		paste_state = 0;
 
-	paste_detect_keycount = settings_get_int("paste_detect_keycount");
-	if (paste_detect_keycount < 2)
-		paste_state = -1;
-
         paste_verify_line_count = settings_get_int("paste_verify_line_count");
 }
 
@@ -878,7 +874,6 @@ void gui_readline_init(void)
 	settings_add_time("misc", "paste_detect_time", "5msecs");
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
-	settings_add_int("misc", "paste_detect_keycount", 10);
 	settings_add_int("misc", "paste_verify_line_count", 5);
         setup_changed();
 
