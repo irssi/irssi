@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002120601';
+$VERSION = '2002120801';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -982,6 +982,7 @@ sub toggle_autorun ($) {
 sub sig_gui_print_text ($$$$$$) {
     my ($win, $fg, $bg, $flags, $text, $dest) = @_;
     return if $flags > 1;
+    return unless Irssi::settings_get_bool('scriptassist_catch_script_errors');
     if ($text =~ /Can't locate (.*?)\.pm in \@INC \(\@INC contains:(.*?) at/) {
         my $module = $1;
         $module =~ s/\//::/g;
@@ -1077,7 +1078,7 @@ Irssi::settings_add_str($IRSSI{name}, 'scriptassist_script_sources', 'http://scr
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_cache_sources', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_update_verbose', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_check_verbose', 1);
-Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_show_new_scripts', 1);
+Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_catch_script_errors', 1);
 
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_install_unsigned_scripts', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_use_gpg', 1);
