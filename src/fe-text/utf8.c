@@ -78,17 +78,17 @@ unichar get_utf8_char(const unsigned char **ptr, int len)
 
         mask = 0;
 	UTF8_COMPUTE(**ptr, mask, chrlen);
-	if (len == -1)
+	if (chrlen == -1)
 		return (unichar) -2;
 
 	if (chrlen > len)
                 return (unichar) -1;
 
-	UTF8_GET(result, *ptr, i, mask, len);
+	UTF8_GET(result, *ptr, i, mask, chrlen);
 	if (result == -1)
                 return (unichar) -2;
 
-	*ptr += len-1;
+	*ptr += chrlen-1;
         return result;
 }
 
