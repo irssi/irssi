@@ -63,6 +63,7 @@ enum {
 #define CHANNEL_IS_MODE_QUERY(a) ((a) != CHANNEL_QUERY_WHO)
 
 typedef struct {
+	int last_query;
 	char *last_query_chan;
         GSList *queries[CHANNEL_QUERIES];
 } SERVER_QUERY_REC;
@@ -223,8 +224,14 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanrec->name, 2,
+			/* check all the multichannel problems with all
+			   mode requests - if channels are joined manually
+			   irssi could ask modes separately but afterwards
+			   join the two b/e/I modes together */
+			server_redirect_event((SERVER_REC *) server, chanstr, 4,
 					      "event 403", "chanquery mode abort", 1,
+					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
+					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 					      "event 368", "chanquery ban end", 1,
 					      "event 367", "chanquery ban", 1, NULL);
 		}
@@ -235,8 +242,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanrec->name, 2,
+			server_redirect_event((SERVER_REC *) server, chanstr, 4,
 					      "event 403", "chanquery mode abort", 1,
+					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
+					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 					      "event 349", "chanquery eban end", 1,
 					      "event 348", "chanquery eban", 1, NULL);
 		}
@@ -247,8 +256,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanrec->name, 2,
+			server_redirect_event((SERVER_REC *) server, chanstr, 4,
 					      "event 403", "chanquery mode abort", 1,
+					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
+					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 					      "event 347", "chanquery ilist end", 1,
 					      "event 346", "chanquery ilist", 1, NULL);
 		}
@@ -264,6 +275,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	/* Get the channel of last query */
 	chanrec = g_slist_last(chans)->data;
 	rec->last_query_chan = g_strdup(chanrec->name);
+	rec->last_query = query;
 
 	if (!onlyone) {
 		/* all channels queried, set to NULL */
@@ -351,7 +363,8 @@ static void channel_checksync(IRC_CHANNEL_REC *channel)
 	signal_emit("channel sync", 1, channel);
 }
 
-static void channel_got_query(IRC_SERVER_REC *server, IRC_CHANNEL_REC *chanrec, const char *channel)
+static void channel_got_query(IRC_SERVER_REC *server, IRC_CHANNEL_REC *chanrec,
+			      const char *channel)
 {
 	SERVER_QUERY_REC *rec;
 
@@ -362,12 +375,12 @@ static void channel_got_query(IRC_SERVER_REC *server, IRC_CHANNEL_REC *chanrec, 
 	g_return_if_fail(rec != NULL);
 	g_return_if_fail(rec->last_query_chan != NULL);
 
+	/* check if channel is synced */
+	if (chanrec != NULL) channel_checksync(chanrec);
+
 	/* check if we need to get another query.. */
 	if (g_strcasecmp(rec->last_query_chan, channel) == 0)
 		channels_query_check(server);
-
-	/* check if channel is synced */
-	if (chanrec != NULL) channel_checksync(chanrec);
 }
 
 static void event_channel_mode(char *data, IRC_SERVER_REC *server, const char *nick)
@@ -507,7 +520,8 @@ static void channel_lost(IRC_SERVER_REC *server, const char *channel)
 	channel_got_query(server, chanrec, channel);
 }
 
-static void multi_command_error(IRC_SERVER_REC *server, const char *data, int query, const char *event)
+static void multi_command_error(IRC_SERVER_REC *server, const char *data,
+				int query, const char *event)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, **chans;
@@ -540,8 +554,10 @@ static void event_mode_abort(const char *data, IRC_SERVER_REC *server)
 	if (strchr(channel, ',') == NULL) {
 		channel_lost(server, channel);
 	} else {
+		SERVER_QUERY_REC *rec = server->chanqueries;
+
 		server->no_multi_mode = TRUE;
-		multi_command_error(server, data, CHANNEL_QUERY_MODE, "event 324");
+		multi_command_error(server, data, rec->last_query, "event 324");
 	}
 
 	g_free(params);
