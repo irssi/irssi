@@ -121,6 +121,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
 	{ "bind_key", "$[10]0 $1 $2", 3, { 0, 0, 0 } },
 	{ "bind_unknown_id", "Unknown bind action: $0", 1, { 0 } },
+	{ "config_saved", "Saved configuration to file $0", 1, { 0 } },
+	{ "config_reloaded", "Reloaded configuration", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };

@@ -673,21 +673,6 @@ static void cmd_cd(const char *data)
 	g_free(str);
 }
 
-static void cmd_reload(const char *data)
-{
-	char *fname;
-
-	fname = *data != '\0' ? g_strdup(data) :
-		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
-        settings_reread(fname);
-	g_free(fname);
-}
-
-static void cmd_save(const char *data)
-{
-	settings_save(*data != '\0' ? data : NULL);
-}
-
 void commands_init(void)
 {
 	commands = NULL;
@@ -701,8 +686,6 @@ void commands_init(void)
 
 	command_bind("eval", NULL, (SIGNAL_FUNC) cmd_eval);
 	command_bind("cd", NULL, (SIGNAL_FUNC) cmd_cd);
-	command_bind("reload", NULL, (SIGNAL_FUNC) cmd_reload);
-	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 }
 
 void commands_deinit(void)
@@ -714,6 +697,4 @@ void commands_deinit(void)
 
 	command_unbind("eval", (SIGNAL_FUNC) cmd_eval);
 	command_unbind("cd", (SIGNAL_FUNC) cmd_cd);
-	command_unbind("reload", (SIGNAL_FUNC) cmd_reload);
-	command_unbind("save", (SIGNAL_FUNC) cmd_save);
 }

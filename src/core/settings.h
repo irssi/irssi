@@ -54,8 +54,8 @@ GSList *settings_get_sorted(void);
 SETTINGS_REC *settings_get_record(const char *key);
 
 /* if `fname' is NULL, the default is used */
-void settings_reread(const char *fname);
-void settings_save(const char *fname);
+int settings_reread(const char *fname);
+int settings_save(const char *fname);
 
 void settings_init(void);
 void settings_deinit(void);

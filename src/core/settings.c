@@ -285,7 +285,7 @@ static void init_configfile(void)
 	signal(SIGTERM, sig_term);
 }
 
-void settings_reread(const char *fname)
+int settings_reread(const char *fname)
 {
 	CONFIG_REC *tempconfig;
 	char *str;
@@ -298,7 +298,7 @@ void settings_reread(const char *fname)
 
 	if (tempconfig == NULL) {
 		signal_emit("gui dialog", 2, "error", g_strerror(errno));
-		return;
+		return FALSE;
 	}
 
 	if (config_last_error(tempconfig) != NULL) {
@@ -308,7 +308,7 @@ void settings_reread(const char *fname)
 		g_free(str);
 
 		config_close(tempconfig);
-                return;
+                return FALSE;
 	}
 
 	config_close(mainconfig);
@@ -316,20 +316,22 @@ void settings_reread(const char *fname)
 
 	signal_emit("setup changed", 0);
 	signal_emit("setup reread", 0);
+        return TRUE;
 }
 
-void settings_save(const char *fname)
+int settings_save(const char *fname)
 {
 	char *str;
 
 	if (config_write(mainconfig, fname, 0660) == 0)
-		return;
+		return TRUE;
 
 	/* error */
 	str = g_strdup_printf(_("Couldn't save configuration file: %s"),
 			      config_last_error(mainconfig));
 	signal_emit("gui dialog", 2, "error", str);
 	g_free(str);
+        return FALSE;
 }
 
 void settings_init(void)

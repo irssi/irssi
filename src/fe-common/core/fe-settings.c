@@ -227,12 +227,36 @@ static void cmd_unalias(const char *data)
 	alias_remove(data);
 }
 
+static void cmd_reload(const char *data)
+{
+	char *fname;
+
+	fname = *data != '\0' ? g_strdup(data) :
+		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
+	if (settings_reread(fname)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_CONFIG_RELOADED, fname);
+	}
+	g_free(fname);
+}
+
+static void cmd_save(const char *data)
+{
+	if (settings_save(*data != '\0' ? data : NULL)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_CONFIG_SAVED, *data != '\0' ? data :
+			    mainconfig->fname);
+	}
+}
+
 void fe_settings_init(void)
 {
 	command_bind("set", NULL, (SIGNAL_FUNC) cmd_set);
 	command_bind("toggle", NULL, (SIGNAL_FUNC) cmd_toggle);
 	command_bind("alias", NULL, (SIGNAL_FUNC) cmd_alias);
 	command_bind("unalias", NULL, (SIGNAL_FUNC) cmd_unalias);
+	command_bind("reload", NULL, (SIGNAL_FUNC) cmd_reload);
+	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 
 	command_set_options("set", "clear");
 }
@@ -243,4 +267,6 @@ void fe_settings_deinit(void)
 	command_unbind("toggle", (SIGNAL_FUNC) cmd_toggle);
 	command_unbind("alias", (SIGNAL_FUNC) cmd_alias);
 	command_unbind("unalias", (SIGNAL_FUNC) cmd_unalias);
+	command_unbind("reload", (SIGNAL_FUNC) cmd_reload);
+	command_unbind("save", (SIGNAL_FUNC) cmd_save);
 }
