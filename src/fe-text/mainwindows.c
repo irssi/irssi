@@ -129,7 +129,7 @@ static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
 void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 			      WINDOW_REC *skip_window)
 {
-        WINDOW_REC *window;
+        WINDOW_REC *window, *other;
 	GSList *tmp;
 
         mainwin->active = NULL;
@@ -149,16 +149,21 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 		}
 	}
 
+        other = NULL;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec != skip_window && WINDOW_MAIN(rec) != mainwin) {
-			window_set_active(rec);
-                        break;
+		if (rec != skip_window) {
+			if (WINDOW_MAIN(rec) == mainwin) {
+				window_set_active(rec);
+				return;
+			}
+                        other = rec;
 		}
 	}
 
-        /* no more non-sticky windows, remove main window */
+	/* no more non-sticky windows, remove main window */
+	window_set_active(other);
 	mainwindow_destroy(mainwin);
 }
 
