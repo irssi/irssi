@@ -50,24 +50,20 @@ CODE:
 		perl_signal_add_hash(1, ST(0));
 
 void
-signal_add_first(signal, func)
-	char *signal
-	SV *func
+signal_add_first(...)
 CODE:
 	if (items != 1 && items != 2)
-		croak("Usage: Irssi::signal_add(signal, func)");
+		croak("Usage: Irssi::signal_add_first(signal, func)");
 	if (items == 2)
 		perl_signal_add_first((char *)SvPV(ST(0),PL_na), ST(1));
 	else
 		perl_signal_add_hash(0, ST(0));
 
 void
-signal_add_last(signal, func)
-	char *signal
-	SV *func
+signal_add_last(...)
 CODE:
 	if (items != 1 && items != 2)
-		croak("Usage: Irssi::signal_add(signal, func)");
+		croak("Usage: Irssi::signal_add_last(signal, func)");
 	if (items == 2)
 		perl_signal_add_last((char *)SvPV(ST(0),PL_na), ST(1));
 	else
