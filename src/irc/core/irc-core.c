@@ -74,6 +74,8 @@ void irc_core_init(void)
 	rec->fullname = "Internet Relay Chat";
 	rec->chatnet = "ircnet";
 
+        rec->case_insensitive = TRUE;
+
 	rec->create_chatnet = create_chatnet;
         rec->create_server_setup = create_server_setup;
         rec->create_channel_setup = create_channel_setup;

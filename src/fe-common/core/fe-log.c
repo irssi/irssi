@@ -22,6 +22,7 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "chat-protocols.h"
 #include "servers.h"
 #include "levels.h"
 #include "misc.h"
@@ -414,6 +415,9 @@ static void autolog_open(SERVER_REC *server, const char *target)
 
 	   '%' -> '%%' - so strftime() won't mess with them */
 	fixed_target = escape_target(target);
+	if (CHAT_PROTOCOL(server)->case_insensitive)
+		g_strdown(fixed_target);
+
 	fname = parse_special_string(autolog_path, server, NULL,
 				     fixed_target, NULL, 0);
 	g_free(fixed_target);
