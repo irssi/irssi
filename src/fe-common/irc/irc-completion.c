@@ -26,6 +26,7 @@
 #include "settings.h"
 
 #include "irc.h"
+#include "irc-commands.h"
 #include "server.h"
 #include "channels.h"
 #include "channels-setup.h"
@@ -214,6 +215,8 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "msg", &optlist, &target, &msg))
 		return;
+	server = irccmd_options_get_server(optlist, server);
+
 	if (*target != '\0' && *msg != '\0') {
 		if (!ischannel(*target) && *target != '=' && server != NULL)
 			add_private_msg(server, target);
