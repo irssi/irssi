@@ -9,3 +9,5 @@
 #if defined (HAVE_CURSES) || defined (HAVE_SLANG)
 #include "gui-text/irssi.h"
 #endif
+
+#undef MODULE_NAME
