@@ -39,7 +39,7 @@
 
 /* convert _underlined_ and *bold* words (and phrases) to use real
    underlining or bolding */
-char *expand_emphasis(const char *text)
+char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 {
 	GString *str;
 	char *ret;
@@ -70,6 +70,19 @@ char *expand_emphasis(const char *text)
 		if (!ishighalnum(end[-1]) ||
 		    isalnum(end[1]) || end[1] == type)
 			continue;
+
+		if (IS_CHANNEL(item)) {
+			/* check that this isn't a _nick_, we don't want to
+			   use emphasis on them. */
+			int found;
+                        char c;
+
+			c = end[1];
+                        end[1] = '\0';
+                        found = nicklist_find(CHANNEL(item), bgn) != NULL;
+			end[1] = c;
+			if (found) continue;
+		}
 
 		/* allow only *word* emphasis, not *multiple words* */
 		if (!settings_get_bool("emphasis_multiword")) {
@@ -141,7 +154,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 				   MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT);
 
 	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis(msg);
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
         else
 		freemsg = NULL;
 
@@ -183,12 +196,13 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	QUERY_REC *query;
         char *freemsg;
 
+	query = query_find(server, nick);
+
 	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis(msg);
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
         else
 		freemsg = NULL;
 
-	query = query_find(server, nick);
 	printformat(server, nick, MSGLEVEL_MSGS,
 		    query == NULL ? IRCTXT_MSG_PRIVATE :
 		    IRCTXT_MSG_PRIVATE_QUERY, nick, address, msg);

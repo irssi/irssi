@@ -3,6 +3,6 @@
 
 /* convert _underlined_ and *bold* words (and phrases) to use real
    underlining or bolding */
-char *expand_emphasis(const char *text);
+char *expand_emphasis(WI_ITEM_REC *item, const char *text);
 
 #endif
