@@ -395,7 +395,7 @@ irssi.spec)
 
 echo
 
-if test "$GUI_LIBS" != "x"; then
+if test "x$GUI_LIBS" != "x"; then
   echo Building GTK frontend ...... : yes
 else
   echo Building GTK frontend ...... : no
