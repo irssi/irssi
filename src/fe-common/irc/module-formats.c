@@ -49,7 +49,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ NULL, "Channels", 0 },
 
 	{ "join", "%c%_$0%_ %K[%c$1%K]%n has joined %_$2", 3, { 0, 0, 0 } },
-	{ "part", "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%K]", 4, { 0, 0, 0, 0 } },
+	{ "part", "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%n%K]", 4, { 0, 0, 0, 0 } },
 	{ "joinerror_toomany", "Cannot join to channel %_$0%_ %K(%nYou have joined to too many channels%K)", 1, { 0 } },
 	{ "joinerror_full", "Cannot join to channel %_$0%_ %K(%nChannel is full%K)", 1, { 0 } },
 	{ "joinerror_invite", "Cannot join to channel %_$0%_ %K(%nYou must be invited%K)", 1, { 0 } },
@@ -58,7 +58,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "joinerror_bad_mask", "Cannot join to channel %_$0%_ %K(%nBad channel mask%K)", 1, { 0 } },
 	{ "joinerror_unavail", "Cannot join to channel %_$0%_ %K(%nChannel is temporarily unavailable%K)", 1, { 0 } },
 	{ "kick", "%c$0%n was kicked from %_$1%_ by %_$2%_ %K[%n$3%K]", 4, { 0, 0, 0, 0 } },
-	{ "quit", "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]", 3, { 0, 0, 0 } },
+	{ "quit", "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%n%K]", 3, { 0, 0, 0 } },
 	{ "quit_once", "%_$3%_ %c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]", 4, { 0, 0, 0, 0 } },
 	{ "invite", "%_$0%_ invites you to %_$1", 2, { 0, 0 } },
 	{ "inviting", "Inviting $0 to %_$1", 2, { 0, 0 } },
