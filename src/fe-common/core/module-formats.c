@@ -51,6 +51,28 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "unknown_server_tag", "Unknown server tag %_$0%_", 1, { 0 } },
 
 	/* ---- */
+	{ NULL, "Channels", 0 },
+
+	{ "talking_in", "You are now talking in %_$0%_", 1, { 0 } },
+	{ "not_in_channels", "You are not on any channels", 0 },
+	{ "current_channel", "Current channel $0", 1, { 0 } },
+	{ "chanlist_header", "You are on the following channels:", 0 },
+	{ "chanlist_line", "$[-10]0 %|+$1 ($2): $3", 4, { 0, 0, 0, 0 } },
+	{ "chansetup_not_found", "Channel $0 not found", 2, { 0, 0 } },
+	{ "chansetup_added", "Channel $0 saved", 2, { 0, 0 } },
+	{ "chansetup_removed", "Channel $0 removed", 2, { 0, 0 } },
+	{ "chansetup_header", "Channel         IRC net    Password   Settings", 0 },
+	{ "chansetup_line", "$[15]0 %|$[10]1 $[10]2 $3", 4, { 0, 0, 0, 0 } },
+	{ "chansetup_footer", "", 0 },
+
+	/* ---- */
+	{ NULL, "Queries", 0 },
+
+	{ "query_start", "Starting query with %_$0%_", 1, { 0 } },
+	{ "no_query", "No query with %_$0%_", 1, { 0 } },
+	{ "query_server_changed", "Query with %_$2%_ changed to server %_$1%_", 3, { 0, 0, 0 } },
+
+	/* ---- */
 	{ NULL, "Highlighting", 0 },
 
 	{ "hilight_header", "Highlights:", 0 },

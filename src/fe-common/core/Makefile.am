@@ -10,10 +10,12 @@ libfe_common_core_a_SOURCES = \
 	autorun.c \
 	command-history.c \
 	completion.c \
+	fe-channels.c \
 	fe-common-core.c \
 	fe-core-commands.c \
 	fe-log.c \
 	fe-modules.c \
+	fe-queries.c \
 	fe-server.c \
 	fe-settings.c \
 	hilight-text.c \
@@ -32,6 +34,7 @@ noinst_HEADERS = \
 	command-history.h \
 	completion.h \
 	fe-common-core.h \
+	fe-queries.h \
 	hilight-text.h \
 	keyboard.h \
 	module-formats.h \

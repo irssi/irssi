@@ -113,7 +113,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 			print_channel_msg(server, msg, nick, addr, target);
 		} else {
 			/* private message */
-			item = (WI_ITEM_REC *) privmsg_get_query(server, nick, FALSE);
+			item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), nick, FALSE);
 			printformat(server, nick, MSGLEVEL_MSGS,
 				    item == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
 		}
@@ -156,7 +156,7 @@ static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 		}
 	} else {
 		/* private action */
-		item = (WI_ITEM_REC *) privmsg_get_query(server, nick, FALSE);
+		item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), nick, FALSE);
 		printformat(server, nick, level,
 			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, addr == NULL ? "" : addr, data);

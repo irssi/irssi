@@ -12,7 +12,7 @@ INCLUDES = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
 libfe_common_irc_a_SOURCES = \
-	fe-channels.c \
+	fe-irc-channels.c \
 	fe-irc-commands.c \
 	fe-irc-server.c \
 	fe-ircnet.c \
@@ -22,7 +22,6 @@ libfe_common_irc_a_SOURCES = \
 	fe-ignore.c \
 	fe-netjoin.c \
 	fe-netsplit.c \
-	fe-queries.c \
 	fe-common-irc.c \
 	irc-completion.c \
 	irc-window-activity.c \
@@ -32,7 +31,6 @@ libfe_common_irc_a_SOURCES = \
 
 noinst_HEADERS = \
 	fe-common-irc.h \
-	fe-queries.h \
 	irc-hilight-text.h \
 	module.h \
 	module-formats.h

@@ -28,6 +28,21 @@ typedef CHANNEL_REC *(*CHANNEL_FIND_FUNC)(SERVER_REC *, const char *);
 
 GSList *channels; /* List of all channels */
 
+/* Create a new channel */
+CHANNEL_REC *channel_create(int chat_type, SERVER_REC *server,
+			    const char *name, int automatic)
+{
+	CHANNEL_REC *channel;
+
+	g_return_val_if_fail(server == NULL || IS_SERVER(server), NULL);
+	g_return_val_if_fail(name != NULL, NULL);
+
+	channel = NULL;
+	signal_emit("channel create", 5, &channel, GINT_TO_POINTER(chat_type),
+		    server, name, GINT_TO_POINTER(automatic));
+	return channel;
+}
+
 void channel_init(CHANNEL_REC *channel, int automatic)
 {
 	g_return_if_fail(channel != NULL);
@@ -40,7 +55,7 @@ void channel_init(CHANNEL_REC *channel, int automatic)
 	}
 
         MODULE_DATA_INIT(channel);
-	channel->type = module_get_uniq_id("CHANNEL", 0);
+	channel->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
         channel->mode = g_strdup("");
 	channel->createtime = time(NULL);
 

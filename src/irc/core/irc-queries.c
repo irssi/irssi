@@ -41,6 +41,21 @@ QUERY_REC *irc_query_create(IRC_SERVER_REC *server,
 	return rec;
 }
 
+static void sig_query_create(QUERY_REC **query,
+			     void *chat_type, IRC_SERVER_REC *server,
+			     const char *nick, void *automatic)
+{
+	if (chat_protocol_lookup("IRC") != GPOINTER_TO_INT(chat_type))
+		return;
+
+	g_return_if_fail(server == NULL || IS_IRC_SERVER(server));
+	g_return_if_fail(query != NULL);
+	g_return_if_fail(nick != NULL);
+
+	*query = irc_query_create(server, nick, GPOINTER_TO_INT(automatic));
+	signal_stop();
+}
+
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
 	char *params, *target, *msg;
@@ -86,12 +101,14 @@ static void event_nick(const char *data, IRC_SERVER_REC *server, const char *ori
 
 void irc_queries_init(void)
 {
+	signal_add("query create", (SIGNAL_FUNC) sig_query_create);
 	signal_add_last("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 }
 
 void irc_queries_deinit(void)
 {
+	signal_remove("query create", (SIGNAL_FUNC) sig_query_create);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 }

@@ -61,6 +61,22 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 	return rec;
 }
 
+static void sig_channel_create(IRC_CHANNEL_REC **channel,
+			       void *chat_type, IRC_SERVER_REC *server,
+			       const char *name, void *automatic)
+{
+	if (chat_protocol_lookup("IRC") != GPOINTER_TO_INT(chat_type))
+		return;
+
+	g_return_if_fail(server == NULL || IS_IRC_SERVER(server));
+	g_return_if_fail(channel != NULL);
+	g_return_if_fail(name != NULL);
+
+	*channel = irc_channel_create(server, name,
+				      GPOINTER_TO_INT(automatic));
+	signal_stop();
+}
+
 static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	if (!IS_IRC_CHANNEL(channel))
@@ -179,6 +195,7 @@ static void sig_connected(SERVER_REC *server)
 
 void irc_channels_init(void)
 {
+	signal_add("channel create", (SIGNAL_FUNC) sig_channel_create);
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
@@ -196,6 +213,7 @@ void irc_channels_init(void)
 
 void irc_channels_deinit(void)
 {
+	signal_remove("channel create", (SIGNAL_FUNC) sig_channel_create);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 

@@ -27,8 +27,6 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "irc.h"
-#include "irc-channels.h"
 #include "channels-setup.h"
 #include "nicklist.h"
 
@@ -70,22 +68,20 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 
 static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
 {
-	IRC_CHANNEL_REC *channel;
+	CHANNEL_REC *channel;
 
 	g_return_if_fail(window != NULL);
 
-	channel = IRC_CHANNEL(item);
-        if (channel != NULL) channel_destroy(CHANNEL(channel));
+	channel = CHANNEL(item);
+        if (channel != NULL) channel_destroy(channel);
 }
 
-static void sig_disconnected(IRC_SERVER_REC *server)
+static void sig_disconnected(SERVER_REC *server)
 {
 	WINDOW_REC *window;
 	GSList *tmp;
 
-	g_return_if_fail(server != NULL);
-	if (!IS_IRC_SERVER(server))
-		return;
+	g_return_if_fail(IS_SERVER(server));
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
@@ -101,7 +97,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 	g_return_if_fail(window != NULL);
 	if (item == NULL) return;
 
-	if (g_slist_length(window->items) > 1 && IS_IRC_CHANNEL(item)) {
+	if (g_slist_length(window->items) > 1 && IS_CHANNEL(item)) {
 		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_TALKING_IN, item->name);
                 signal_stop();
@@ -146,7 +142,7 @@ static void cmd_wjoin_post(const char *data)
 
 static void cmd_channel_list_joined(void)
 {
-	IRC_CHANNEL_REC *channel;
+	CHANNEL_REC *channel;
 	GString *nicks;
 	GSList *nicklist, *tmp, *ntmp;
 
@@ -156,7 +152,7 @@ static void cmd_channel_list_joined(void)
 	}
 
 	/* print active channel */
-	channel = IRC_CHANNEL(active_win->active);
+	channel = CHANNEL(active_win->active);
 	if (channel != NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CURRENT_CHANNEL, channel->name);
 
@@ -165,7 +161,7 @@ static void cmd_channel_list_joined(void)
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		channel = tmp->data;
 
-		nicklist = nicklist_getnicks(CHANNEL(channel));
+		nicklist = nicklist_getnicks(channel);
 		nicks = g_string_new(NULL);
 		for (ntmp = nicklist; ntmp != NULL; ntmp = ntmp->next) {
 			NICK_REC *rec = ntmp->data;
@@ -210,39 +206,37 @@ static void cmd_channel_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_FOOTER);
 }
 
-static void cmd_channel(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	if (*data == '\0')
 		cmd_channel_list_joined();
-	else if (ischannel(*data))
-		signal_emit("command join", 2, data, server);
 	else
 		command_runsub("channel", data, server, item);
 }
 
 /* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-                       <channel> <ircnet> [<password>] */
+                       <channel> <chatnet> [<password>] */
 static void cmd_channel_add(const char *data)
 {
 	GHashTable *optlist;
 	CHANNEL_SETUP_REC *rec;
-	char *botarg, *botcmdarg, *ircnet, *channel, *password;
+	char *botarg, *botcmdarg, *chatnet, *channel, *password;
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
-			    "channel add", &optlist, &channel, &ircnet, &password))
+			    "channel add", &optlist, &channel, &chatnet, &password))
 		return;
 
 	botarg = g_hash_table_lookup(optlist, "bots");
 	botcmdarg = g_hash_table_lookup(optlist, "botcmd");
 
-	if (*ircnet == '\0' || *channel == '\0')
+	if (*chatnet == '\0' || *channel == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	rec = channels_setup_find(channel, ircnet);
+	rec = channels_setup_find(channel, chatnet);
 	if (rec == NULL) {
 		rec = g_new0(CHANNEL_SETUP_REC, 1);
 		rec->name = g_strdup(channel);
-		rec->chatnet = g_strdup(ircnet);
+		rec->chatnet = g_strdup(chatnet);
 	} else {
 		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
 		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
@@ -254,28 +248,28 @@ static void cmd_channel_add(const char *data)
 	if (botcmdarg != NULL && *botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	channels_setup_create(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_ADDED, channel, ircnet);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_ADDED, channel, chatnet);
 
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: CHANNEL REMOVE <channel> <ircnet> */
+/* SYNTAX: CHANNEL REMOVE <channel> <chatnet> */
 static void cmd_channel_remove(const char *data)
 {
 	CHANNEL_SETUP_REC *rec;
-	char *ircnet, *channel;
+	char *chatnet, *channel;
 	void *free_arg;
 
-	if (!cmd_get_params(data, &free_arg, 2, &channel, &ircnet))
+	if (!cmd_get_params(data, &free_arg, 2, &channel, &chatnet))
 		return;
-	if (*ircnet == '\0' || *channel == '\0')
+	if (*chatnet == '\0' || *channel == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	rec = channels_setup_find(channel, ircnet);
+	rec = channels_setup_find(channel, chatnet);
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_NOT_FOUND, channel, ircnet);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_NOT_FOUND, channel, chatnet);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_REMOVED, channel, ircnet);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_REMOVED, channel, chatnet);
 		channels_setup_destroy(rec);
 	}
 	cmd_params_free(free_arg);

@@ -27,7 +27,6 @@
 
 #include "levels.h"
 #include "irc.h"
-#include "irc-commands.h"
 #include "servers.h"
 #include "mode-lists.h"
 #include "nicklist.h"
@@ -56,7 +55,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 			"msg", &optlist, &target, &msg))
 	    return;
     if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-    server = irccmd_options_get_server("msg", optlist, server);
+    server = IRC_SERVER(cmd_options_get_server("msg", optlist, SERVER(server)));
 
     if (*target == '=')
     {
@@ -119,7 +118,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     else
     {
         /* private message */
-        item = (WI_ITEM_REC *) privmsg_get_query(server, target, TRUE);
+        item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), target, TRUE);
 	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }

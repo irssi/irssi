@@ -26,9 +26,9 @@
 #include "settings.h"
 #include "window-item-def.h"
 
-#include "nicklist.h"
 #include "servers-redirect.h"
 #include "servers-setup.h"
+#include "nicklist.h"
 
 #include "bans.h"
 #include "irc.h"
@@ -47,44 +47,6 @@ typedef struct {
 
 static GString *tmpstr;
 static int knockout_tag;
-
-/* `optlist' should contain only one key - the server tag.
-   returns NULL if there was unknown -option */
-IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
-					  GHashTable *optlist,
-					  IRC_SERVER_REC *defserver)
-{
-	SERVER_REC *server;
-	GSList *list, *tmp, *next;
-
-	/* get all the options, then remove the known ones. there should
-	   be only one left - the server tag. */
-	list = hashtable_get_keys(optlist);
-	for (tmp = list; tmp != NULL; tmp = next) {
-		char *option = tmp->data;
-		next = tmp->next;
-
-		if (command_have_option(cmd, option))
-			list = g_slist_remove(list, option);
-	}
-
-	if (list == NULL)
-		return defserver;
-
-	server = server_find_tag(list->data);
-	if (server == NULL || list->next != NULL) {
-		/* unknown option (not server tag) */
-		signal_emit("error command", 2,
-			    GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN),
-			    server == NULL ? list->data : list->next->data);
-		signal_stop();
-
-		server = NULL;
-	}
-
-	g_slist_free(list);
-	return (IRC_SERVER_REC *) server;
-}
 
 static SERVER_REC *irc_connect_server(const char *data)
 {
@@ -259,7 +221,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	server = irccmd_options_get_server("msg", optlist, server);
+	server = IRC_SERVER(cmd_options_get_server("msg", optlist, SERVER(server)));
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
@@ -364,7 +326,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 			irc_channels_join(server, server->last_invite, FALSE);
 	} else {
 		/* -<server tag> */
-		server = irccmd_options_get_server("join", optlist, server);
+		server = IRC_SERVER(cmd_options_get_server("join", optlist, SERVER(server)));
 		if (server != NULL) irc_channels_join(server, channels, FALSE);
 	}
 

@@ -33,7 +33,12 @@ void module_unload(MODULE_REC *module);
 
 #define MODULE_CHECK_CAST(object, cast, type_field, id) \
 	((cast *) module_check_cast(object, offsetof(cast, type_field), id))
+#define MODULE_CHECK_CAST_MODULE(object, cast, type_field, module, id) \
+	((cast *) module_check_cast_module(object, \
+				offsetof(cast, type_field), module, id))
 void *module_check_cast(void *object, int type_pos, const char *id);
+void *module_check_cast_module(void *object, int type_pos,
+			       const char *module, const char *id);
 
 /* return unique number across all modules for `id' */
 int module_get_uniq_id(const char *module, int id);

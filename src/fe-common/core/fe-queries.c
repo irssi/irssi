@@ -25,10 +25,8 @@
 #include "commands.h"
 #include "settings.h"
 
-#include "irc.h"
-#include "irc-commands.h"
 #include "levels.h"
-#include "irc-queries.h"
+#include "queries.h"
 
 #include "windows.h"
 #include "window-items.h"
@@ -36,14 +34,17 @@
 static int queryclose_tag, query_auto_close;
 
 /* Return query where to put the private message. */
-QUERY_REC *privmsg_get_query(IRC_SERVER_REC *server, const char *nick, int own)
+QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick, int own)
 {
 	QUERY_REC *query;
 
-	query = irc_query_find(server, nick);
+	g_return_val_if_fail(IS_SERVER(server), NULL);
+        g_return_val_if_fail(nick != NULL, NULL);
+
+	query = query_find(server, nick);
 	if (query == NULL && settings_get_bool("autocreate_query") &&
 	    (!own || settings_get_bool("autocreate_own_query")))
-		query = irc_query_create(server, nick, TRUE);
+		query = query_create(server->chat_type, server, nick, TRUE);
 
 	return query;
 }
@@ -87,15 +88,15 @@ static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
 
 	g_return_if_fail(window != NULL);
 
-	query = IRC_QUERY(item);
+	query = QUERY(item);
 	if (query != NULL) query_destroy(query);
 }
 
-static void sig_server_connected(IRC_SERVER_REC *server)
+static void sig_server_connected(SERVER_REC *server)
 {
 	GSList *tmp;
 
-	if (!IS_IRC_SERVER(server))
+	if (!IS_SERVER(server))
 		return;
 
 	/* check if there's any queries without server */
@@ -117,20 +118,24 @@ static void cmd_window_server(const char *data)
 	g_return_if_fail(data != NULL);
 
 	server = server_find_tag(data);
-	if (IS_IRC_SERVER(server) && IS_IRC_QUERY(active_win->active)) {
-                /* /WINDOW SERVER used in a query window */
-		query_change_server((QUERY_REC *) active_win->active, server);
-		window_change_server(active_win, server);
+	if (!IS_SERVER(server) || !IS_QUERY(active_win->active))
+		return;
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_QUERY_SERVER_CHANGED, server->tag, server->connrec->address,
-			    server->connrec->chatnet == NULL ? "" : server->connrec->chatnet);
+	/* /WINDOW SERVER used in a query window */
+	query_change_server(QUERY(active_win->active), server);
+	window_change_server(active_win, server);
 
-		signal_stop();
-	}
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_QUERY_SERVER_CHANGED,
+		    server->tag, server->connrec->address,
+		    server->connrec->chatnet == NULL ? "" :
+		    server->connrec->chatnet);
+
+	signal_stop();
 }
 
 /* SYNTAX: UNQUERY [<nick>] */
-static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_unquery(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	QUERY_REC *query;
 
@@ -138,12 +143,13 @@ static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *i
 
 	if (*data == '\0') {
 		/* remove current query */
-		query = IRC_QUERY(item);
+		query = QUERY(item);
 		if (query == NULL) return;
 	} else {
-		query = irc_query_find(server, data);
+		query = query_find(server, data);
 		if (query == NULL) {
-			printformat(server, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_NO_QUERY, data);
+			printformat(server, NULL, MSGLEVEL_CLIENTERROR,
+				    IRCTXT_NO_QUERY, data);
 			return;
 		}
 	}
@@ -152,7 +158,7 @@ static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *i
 }
 
 /* SYNTAX: QUERY [-window] <nick> */
-static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	WINDOW_REC *window;
@@ -173,7 +179,8 @@ static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 			    "query", &optlist, &nick))
 		return;
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	server = irccmd_options_get_server("query", optlist, server);
+
+	server = cmd_options_get_server("query", optlist, server);
 	if (server == NULL) {
 		cmd_params_free(free_arg);
                 return;
@@ -187,9 +194,9 @@ static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 			   (SIGNAL_FUNC) signal_query_created_curwin);
 	}
 
-	query = irc_query_find(server, nick);
+	query = query_find(server, nick);
 	if (query == NULL)
-		irc_query_create(server, nick, FALSE);
+		query_create(server->chat_type, server, nick, FALSE);
 	else {
 		/* query already existed - change to query window */
 		window = window_item_window((WI_ITEM_REC *) query);
@@ -214,7 +221,7 @@ static int window_has_query(WINDOW_REC *window)
 	g_return_val_if_fail(window != NULL, FALSE);
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		if (IS_IRC_QUERY(tmp->data))
+		if (IS_QUERY(tmp->data))
 			return TRUE;
 	}
 
@@ -233,29 +240,6 @@ static void sig_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
 		window->last_line = time(NULL);
 	if (old_window != NULL && window_has_query(old_window))
 		old_window->last_line = time(NULL);
-}
-
-static void sig_window_restore_item(WINDOW_REC *window, const char *item)
-{
-        IRC_SERVER_REC *server;
-	QUERY_REC *rec;
-	char *tag, *nick;
-
-	tag = g_strdup(item);
-	nick = strchr(tag, ' ');
-	if (nick == NULL || ischannel(*(nick+1))) {
-		g_free(tag);
-		return;
-	}
-
-	server = (IRC_SERVER_REC *) server_find_tag(tag);
-
-	rec = irc_query_create(server, nick+1, TRUE);
-	if (server == NULL)
-		rec->server_tag = g_strdup(tag);
-
-	g_free(tag);
-        signal_stop();
 }
 
 static int sig_query_autoclose(void)
@@ -288,7 +272,7 @@ static void read_settings(void)
 	}
 }
 
-void fe_query_init(void)
+void fe_queries_init(void)
 {
 	settings_add_bool("lookandfeel", "autocreate_query", TRUE);
 	settings_add_bool("lookandfeel", "autocreate_own_query", TRUE);
@@ -302,7 +286,6 @@ void fe_query_init(void)
 	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
-	signal_add("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_bind("query", NULL, (SIGNAL_FUNC) cmd_query);
@@ -312,7 +295,7 @@ void fe_query_init(void)
 	command_set_options("query", "window");
 }
 
-void fe_query_deinit(void)
+void fe_queries_deinit(void)
 {
 	if (queryclose_tag != -1) g_source_remove(queryclose_tag);
 
@@ -321,7 +304,6 @@ void fe_query_deinit(void)
 	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
-	signal_remove("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_unbind("query", (SIGNAL_FUNC) cmd_query);

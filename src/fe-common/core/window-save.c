@@ -21,25 +21,55 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
-#include "servers.h"
+#include "levels.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "levels.h"
+#include "chat-protocols.h"
+#include "servers.h"
+#include "queries.h"
 
 #include "themes.h"
 #include "windows.h"
 #include "window-items.h"
 
-static void sig_window_restore_item(WINDOW_REC *window, const char *item)
+static void sig_window_restore_item(WINDOW_REC *window, const char *type,
+				    CONFIG_NODE *node)
 {
-	window->waiting_channels =
-		g_slist_append(window->waiting_channels, g_strdup(item));
+	char *name, *tag, *chat_type, *str;
+
+	chat_type = config_node_get_str(node, "chat_type", NULL);
+	name = config_node_get_str(node, "name", NULL);
+	tag = config_node_get_str(node, "tag", NULL);
+	if (name == NULL) return;
+
+	if (g_strcasecmp(type, "CHANNEL") == 0) {
+		/* add channel to "waiting channels" list */
+		str = tag == NULL ? g_strdup(name) :
+			g_strdup_printf("%s %s", tag, name);
+
+		window->waiting_channels =
+			g_slist_append(window->waiting_channels, str);
+	} else if (g_strcasecmp(type, "QUERY") == 0) {
+		/* create query immediately */
+		QUERY_REC *query;
+		SERVER_REC *server;
+
+		if (chat_type == NULL)
+			return;
+
+		server = tag == NULL ? NULL : server_find_tag(tag);
+		query = query_create(chat_protocol_lookup(chat_type),
+				     server, name, TRUE);
+		if (server == NULL && tag != NULL)
+                        query->server_tag = g_strdup(tag);
+	}
 }
 
 static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	GSList *tmp;
+	char *type;
 
 	if (node == NULL)
 		return;
@@ -47,7 +77,11 @@ static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		signal_emit("window restore item", 2, window, node->value);
+		type = config_node_get_str(node->value, "type", NULL);
+		if (type != NULL) {
+			signal_emit("window restore item", 3,
+				    window, type, node->value);
+		}
 	}
 }
 
@@ -81,21 +115,27 @@ void windows_restore(void)
 
 static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
+	CONFIG_NODE *subnode;
 	GSList *tmp;
-	char *str;
+	const char *type;
 
 	node = config_node_section(node, "items", NODE_TYPE_LIST);
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		WI_ITEM_REC *rec = tmp->data;
 		SERVER_REC *server = rec->server;
 
-		if (server == NULL)
-			iconfig_node_set_str(node, NULL, rec->name);
-		else {
-			str = g_strdup_printf("%s %s", server->tag, rec->name);
-			iconfig_node_set_str(node, NULL, str);
-			g_free(str);
-		}
+		type = module_find_id_str("WINDOW ITEM TYPE", rec->type);
+		if (type == NULL) continue;
+
+		subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+
+		iconfig_node_set_str(subnode, "type", type);
+		iconfig_node_set_str(subnode, "chat_type",
+				     chat_protocol_get_name(rec->chat_type));
+		iconfig_node_set_str(subnode, "name", rec->name);
+
+		if (server != NULL)
+			iconfig_node_set_str(subnode, "tag", server->tag);
 	}
 }
 

@@ -34,8 +34,8 @@
 void fe_irc_modules_init(void);
 void fe_irc_modules_deinit(void);
 
-void fe_channels_init(void);
-void fe_channels_deinit(void);
+void fe_irc_channels_init(void);
+void fe_irc_channels_deinit(void);
 
 void fe_irc_commands_init(void);
 void fe_irc_commands_deinit(void);
@@ -57,9 +57,6 @@ void fe_events_numeric_deinit(void);
 
 void fe_ignore_init(void);
 void fe_ignore_deinit(void);
-
-void fe_query_init(void);
-void fe_query_deinit(void);
 
 void irc_completion_init(void);
 void irc_completion_deinit(void);
@@ -109,7 +106,7 @@ void fe_common_irc_init(void)
 
 	theme_register(fecommon_irc_formats);
 
-	fe_channels_init();
+	fe_irc_channels_init();
 	fe_irc_commands_init();
 	fe_ircnet_init();
 	fe_irc_server_init();
@@ -119,7 +116,6 @@ void fe_common_irc_init(void)
 	fe_ignore_init();
 	fe_netsplit_init();
 	fe_netjoin_init();
-	fe_query_init();
 	irc_completion_init();
 	irc_hilight_text_init();
 	irc_window_activity_init();
@@ -131,7 +127,7 @@ void fe_common_irc_deinit(void)
 {
 	fe_irc_modules_deinit();
 
-	fe_channels_deinit();
+	fe_irc_channels_deinit();
 	fe_irc_commands_deinit();
 	fe_ircnet_deinit();
 	fe_irc_server_deinit();
@@ -141,7 +137,6 @@ void fe_common_irc_deinit(void)
 	fe_ignore_deinit();
 	fe_netsplit_deinit();
 	fe_netjoin_deinit();
-	fe_query_deinit();
 	irc_completion_deinit();
 	irc_hilight_text_deinit();
 	irc_window_activity_deinit();

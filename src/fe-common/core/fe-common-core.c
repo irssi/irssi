@@ -23,6 +23,7 @@
 #include "levels.h"
 #include "settings.h"
 
+#include "fe-queries.h"
 #include "hilight-text.h"
 #include "command-history.h"
 #include "completion.h"
@@ -38,6 +39,9 @@
 
 void autorun_init(void);
 void autorun_deinit(void);
+
+void fe_channels_init(void);
+void fe_channels_deinit(void);
 
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
@@ -92,6 +96,8 @@ void fe_common_core_init(void)
 	completion_init();
 	keyboard_init();
 	printtext_init();
+        fe_channels_init();
+        fe_queries_init();
 	fe_log_init();
 	fe_modules_init();
 	fe_server_init();
@@ -113,6 +119,8 @@ void fe_common_core_deinit(void)
 	completion_deinit();
 	keyboard_deinit();
 	printtext_deinit();
+        fe_channels_deinit();
+        fe_queries_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
 	fe_server_deinit();

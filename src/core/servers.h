@@ -48,4 +48,10 @@ SERVER_REC *server_find_chatnet(const char *chatnet);
 int server_start_connect(SERVER_REC *server);
 void server_connect_free(SERVER_CONNECT_REC *conn);
 
+/* `optlist' should contain only one key - the server tag.
+   returns NULL if there was unknown -option */
+SERVER_REC *cmd_options_get_server(const char *cmd,
+				   GHashTable *optlist,
+				   SERVER_REC *defserver);
+
 #endif

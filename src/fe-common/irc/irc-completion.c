@@ -26,7 +26,6 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "irc-commands.h"
 #include "servers.h"
 #include "irc-channels.h"
 #include "irc-queries.h"
@@ -260,7 +259,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "msg", &optlist, &target, &msg))
 		return;
-	server = irccmd_options_get_server("msg", optlist, server);
+	server = IRC_SERVER(cmd_options_get_server("msg", optlist, SERVER(server)));
 
 	if (*target != '\0' && *msg != '\0') {
 		if (!ischannel(*target) && *target != '=' && server != NULL)

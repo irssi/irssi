@@ -30,8 +30,16 @@ static int next_uniq_id;
 
 void *module_check_cast(void *object, int type_pos, const char *id)
 {
-	return object == NULL ||
-		module_find_id(id, G_STRUCT_MEMBER(int, object, type_pos)) == -1 ? NULL : object;
+	return object == NULL || module_find_id(id,
+		G_STRUCT_MEMBER(int, object, type_pos)) == -1 ? NULL : object;
+}
+
+void *module_check_cast_module(void *object, int type_pos,
+			       const char *module, const char *id)
+{
+	return object == NULL || strcmp(module_find_id_str(module,
+		G_STRUCT_MEMBER(int, object, type_pos)), id) == 0 ?
+		NULL : object;
 }
 
 /* return unique number across all modules for `id' */

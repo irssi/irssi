@@ -28,6 +28,21 @@ GSList *queries;
 
 typedef QUERY_REC *(*QUERY_FIND_FUNC)(SERVER_REC *, const char *);
 
+/* Create a new query */
+QUERY_REC *query_create(int chat_type, SERVER_REC *server,
+			const char *nick, int automatic)
+{
+	QUERY_REC *query;
+
+	g_return_val_if_fail(server == NULL || IS_SERVER(server), NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+
+	query = NULL;
+	signal_emit("query create", 5, &query, GINT_TO_POINTER(chat_type),
+		    server, nick, GINT_TO_POINTER(automatic));
+	return query;
+}
+
 void query_init(QUERY_REC *query, int automatic)
 {
 	g_return_if_fail(query != NULL);
@@ -40,7 +55,7 @@ void query_init(QUERY_REC *query, int automatic)
 	}
 
         MODULE_DATA_INIT(query);
-	query->type = module_get_uniq_id("QUERY", 0);
+	query->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
 	if (query->server != NULL)
 		query->server_tag = g_strdup(query->server->tag);
 
