@@ -40,6 +40,7 @@ banlist_add(channel, ban, nick, time)
 	time_t time
 
 void
-banlist_remove(channel, ban)
+banlist_remove(channel, ban, nick)
 	Irssi::Irc::Channel channel
 	char *ban
+	char *nick
