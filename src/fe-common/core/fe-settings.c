@@ -136,6 +136,8 @@ static void cmd_toggle(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
 		return;
 
+        if (*key == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
 	type = settings_get_type(key);
         if (type == -1)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown setting %_%s", key);
