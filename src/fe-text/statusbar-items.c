@@ -38,8 +38,12 @@
 #include "statusbar.h"
 #include "gui-windows.h"
 
-/* how often to redraw lagging time */
+/* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10
+
+/* how often to check for new mail (seconds) */
+#define MAIL_REFRESH_TIME 60
+
 /* If we haven't been able to check lag for this long, "(??)" is added after
    the lag */
 #define MAX_LAG_UNKNOWN_TIME 30
@@ -70,6 +74,10 @@ static SBAR_ITEM_REC *more_item;
 static SBAR_ITEM_REC *lag_item;
 static int lag_timetag, lag_min_show;
 static time_t lag_last_draw;
+
+/* mbox counter */
+static SBAR_ITEM_REC *mail_item;
+static int mail_timetag;
 
 /* topic */
 static SBAR_ITEM_REC *topic_item;
@@ -570,6 +578,67 @@ static int statusbar_lag_timeout(void)
 	return 1;
 }
 
+/* FIXME: this isn't very good.. it handles only mbox mailboxes.
+   this whole mail feature should really be in it's own module with lots
+   of other mail formats supported and people who don't want to use it
+   wouldn't need to.. */
+static int get_mail_count(void)
+{
+	FILE *f;
+	char str[512];
+	int count;
+
+	f = fopen(g_getenv("MAIL"), "r");
+	if (f == NULL) return 0;
+
+	count = 0;
+	while (fgets(str, sizeof(str), f) != NULL) {
+		if (strncmp(str, "From ", 5) == 0)
+			count++;
+	}
+
+	fclose(f);
+	return count;
+}
+
+static void statusbar_mail(SBAR_ITEM_REC *item, int ypos)
+{
+	char str[MAX_INT_STRLEN];
+	int size_needed, mail_count;
+
+	mail_count = get_mail_count();
+	ltoa(str, mail_count);
+
+	if (*str == '\0' || mail_count <= 0)
+		size_needed = 0;
+	else
+		size_needed = strlen(str) + 8;
+
+	if (item->size != size_needed) {
+		/* we need more (or less..) space! */
+		statusbar_item_resize(item, size_needed);
+		return;
+	}
+
+	if (size_needed == 0)
+		return;
+
+	move(ypos, item->xpos);
+	set_color((1 << 4)+3); addch('[');
+	set_color((1 << 4)+7); addstr("Mail: ");
+
+	set_color((1 << 4)+15); addstr(str);
+	set_color((1 << 4)+3); addch(']');
+
+	screen_refresh();
+}
+
+static int statusbar_mail_timeout(void)
+{
+	statusbar_item_redraw(mail_item);
+	return 1;
+}
+
 static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 {
 	CHANNEL_REC *channel;
@@ -659,6 +728,7 @@ static void mainbar_remove_items(void)
         statusbar_item_remove(channel_item);
         statusbar_item_remove(activity_item);
 	statusbar_item_remove(lag_item);
+	statusbar_item_remove(mail_item);
 }
 
 static void mainbar_add_items(MAIN_WINDOW_REC *window)
@@ -671,6 +741,7 @@ static void mainbar_add_items(MAIN_WINDOW_REC *window)
 	channel_item = statusbar_item_create(mainbar, 2, FALSE, statusbar_channel);
 	activity_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_activity);
 	lag_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_lag);
+	mail_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_mail);
 }
 
 static void sidebar_add_items(MAIN_WINDOW_REC *window)
@@ -780,6 +851,9 @@ void statusbar_items_init(void)
 	signal_add("server lag", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
 	signal_add("window server changed", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
 
+	/* mail */
+	mail_timetag = g_timeout_add(1000*MAIL_REFRESH_TIME, (GSourceFunc) statusbar_mail_timeout, NULL);
+
 	/* topic */
 	topic_item = NULL; topic_bar = NULL;
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
@@ -837,6 +911,9 @@ void statusbar_items_deinit(void)
 	g_source_remove(lag_timetag);
 	signal_remove("server lag", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
 	signal_remove("window server changed", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
+
+	/* mail */
+	g_source_remove(mail_timetag);
 
 	/* topic */
 	topicbar_destroy();
