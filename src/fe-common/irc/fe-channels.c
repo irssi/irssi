@@ -59,7 +59,7 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 		window_remove_item(window, (WI_ITEM_REC *) channel);
 
 		if (windows->next != NULL && (!channel->joined || channel->left) &&
-		    settings_get_bool("window_close_on_part")) {
+		    settings_get_bool("autoclose_windows")) {
 			window_destroy(window);
 		}
 	}
@@ -250,7 +250,7 @@ static void cmd_channel_remove(const char *data)
 
 void fe_channels_init(void)
 {
-	settings_add_bool("lookandfeel", "window_close_on_part", TRUE);
+	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
 
 	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);

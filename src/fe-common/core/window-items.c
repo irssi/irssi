@@ -241,7 +241,9 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 	str = item->server == NULL ? NULL :
 		g_strdup_printf("%s %s", ((SERVER_REC *) item->server)->tag, item->name);
 
-	reuse_unused_windows = settings_get_bool("reuse_unused_windows");
+	reuse_unused_windows =
+		settings_get_bool("autoclose_windows") &&
+		settings_get_bool("reuse_unused_windows") ;
 
 	clear_waiting = TRUE;
 	window = NULL;

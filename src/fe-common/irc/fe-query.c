@@ -72,7 +72,7 @@ static void signal_query_destroyed(QUERY_REC *query)
 		window_remove_item(window, (WI_ITEM_REC *) query);
 
 		if (windows->next != NULL && !query->unwanted &&
-		    settings_get_bool("window_close_on_part"))
+		    settings_get_bool("autoclose_windows"))
 			window_destroy(window);
 	}
 }
