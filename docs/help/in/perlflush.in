@@ -1,8 +1,0 @@
-
-@SYNTAX:perlflush@
-
-Stops and removes all Perl scripts which have been run.
-Also undefines all the commands defined by Perl scripts.
-
-See also: RUN
-

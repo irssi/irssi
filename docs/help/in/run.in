@@ -1,7 +1,0 @@
-
-@SYNTAX:run@
-
-Runs a perl-script. For more information, see the
-perl.txt in the docs-directory of irssi.
-
-See also: PERLFLUSH
