@@ -71,4 +71,6 @@ SETUP_CHANNEL_REC;
 
 extern GList *setupchannels;
 
+extern gboolean readonly;
+
 #endif
