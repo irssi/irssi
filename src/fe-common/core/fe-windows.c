@@ -338,21 +338,9 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 
 	item = server == NULL ? NULL :
 		window_item_find(server, name);
-	if (item == NULL && server == NULL) {
+	if (item == NULL) {
 		/* not found from the active server - any server? */
 		item = window_item_find(NULL, name);
-	}
-
-	if (item == NULL) {
-		char *chan;
-
-		/* still nothing? maybe user just left the # in front of
-		   channel, try again with it.. */
-		chan = g_strdup_printf("#%s", name);
-		item = server == NULL ? NULL :
-			window_item_find(server, chan);
-		if (item == NULL) item = window_item_find(NULL, chan);
-		g_free(chan);
 	}
 
 	if (item == NULL)
