@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002112201';
+$VERSION = '2002112301';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -814,11 +814,12 @@ sub compare_versions ($$) {
     my ($ver1, $ver2) = @_;
     my @ver1 = split /\./, $ver1;
     my @ver2 = split /\./, $ver2;
-    if (scalar(@ver2) != scalar(@ver1)) {
-        return 0;
-    }       
+    #if (scalar(@ver2) != scalar(@ver1)) {
+    #    return 0;
+    #}       
     my $cmp = 0;
-    $cmp ||= $ver1[$_] <=> $ver2[$_] for 0..scalar(@ver2);
+    ### Special thanks to Clemens Heidinger
+    $cmp ||= $ver1[$_] <=> $ver2[$_] || $ver1[$_] cmp $ver2[$_] for 0..scalar(@ver2);
     return 'newer' if $cmp == 1;
     return 'older' if $cmp == -1;
     return 'equal';
