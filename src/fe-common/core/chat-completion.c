@@ -954,8 +954,8 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	}
 
 	/* use "--" just in case the nick contains '-' character */
-	str = g_strdup_printf(IS_CHANNEL(item) ? "-channel %s -- %s" :
-			      IS_QUERY(item) ? "-nick %s -- %s" : "-- %s %s",
+	str = g_strdup_printf(IS_CHANNEL(item) ? "-channel \"%s\" %s" :
+			      IS_QUERY(item) ? "-nick \"%s\" %s" : "%s %s",
                               window_item_get_target(item), line);
 
 	signal_emit("command msg", 3, str, server, item);
