@@ -321,7 +321,7 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 	nick = g_strdup_printf("%s :%s", nick, nick);
 	server_redirect_event(SERVER(server), nick, 5,
-			      "event nick", "nickchange over", 0,
+			      "event nick", "nickchange over", -1,
 			      "event 433", "nickchange over", 1,
 			      /* 437: ircnet = target unavailable,
 				      dalnet = banned in channel,
