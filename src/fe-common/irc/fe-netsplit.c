@@ -251,8 +251,7 @@ static int sig_check_splits(void)
 	return 1;
 }
 
-static void sig_netsplit_servers(IRC_SERVER_REC *server,
-				 NETSPLIT_SERVER_REC *rec)
+static void sig_netsplit_servers(void)
 {
 	if (settings_get_bool("hide_netsplit_quits") && split_tag == -1) {
 		split_tag = g_timeout_add(1000,
@@ -302,7 +301,7 @@ void fe_netsplit_init(void)
 	split_tag = -1;
 
 	read_settings();
-	signal_add("netsplit server new", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_add("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("netsplit", NULL, (SIGNAL_FUNC) cmd_netsplit);
 }
@@ -311,7 +310,7 @@ void fe_netsplit_deinit(void)
 {
 	if (split_tag != -1) g_source_remove(split_tag);
 
-	signal_remove("netsplit server new", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_remove("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("netsplit", (SIGNAL_FUNC) cmd_netsplit);
 }
