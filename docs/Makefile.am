@@ -5,6 +5,7 @@ doc_DATA = \
 	design.txt \
 	formats.txt \
 	manual.txt \
+	faq.txt \
 	perl.txt \
 	signals.txt \
 	special_vars.txt \
