@@ -106,6 +106,9 @@ int masks_match(SERVER_REC *server, const char *masks,
 	g_return_val_if_fail(masks != NULL &&
 			     nick != NULL && address != NULL, FALSE);
 
+	if (*masks == '\0')
+                return FALSE;
+
 	mask_match_func = server != NULL && server->mask_match_func != NULL ?
 		server->mask_match_func : match_wildcards;
 
