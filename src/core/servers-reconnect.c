@@ -353,25 +353,39 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	RECONNECT_REC *rec;
-	int tag;
+	char *tag, *msg;
+	void *free_arg;
+	int tagnum;
 
-	if (*data == '\0' && server != NULL) {
-		/* reconnect back to same server */
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
+		return;
+
+	if (*tag != '\0' && strcmp(tag, "*") != 0)
+		server = server_find_tag(tag);
+
+	if (server != NULL) {
+		/* reconnect connected server */
 		conn = server_connect_copy_skeleton(server->connrec, TRUE);
 
 		if (server->connected)
 			reconnect_save_status(conn, server);
-		signal_emit("command disconnect", 2, "* Reconnecting", server);
+
+		msg = g_strconcat("* ", *msg == '\0' ?
+				  "Reconnecting" : msg, NULL);
+		signal_emit("command disconnect", 2, msg, server);
+		g_free(msg);
 
 		conn->reconnection = TRUE;
 		server_connect(conn);
 		server_connect_unref(conn);
+		cmd_params_free(free_arg);
                 return;
 	}
 
-	if (g_strcasecmp(data, "all") == 0) {
+	if (g_strcasecmp(tag, "all") == 0) {
 		/* reconnect all servers in reconnect queue */
                 reconnect_all();
+		cmd_params_free(free_arg);
                 return;
 	}
 
@@ -384,20 +398,21 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 		if (g_strncasecmp(data, "RECON-", 6) == 0)
 			data += 6;
 
-		tag = atoi(data);
-		rec = tag <= 0 ? NULL : reconnect_find_tag(tag);
-
-		if (rec == NULL) {
-			signal_emit("server reconnect not found", 1, data);
-                        return;
-		}
+		tagnum = atoi(tag);
+		rec = tagnum <= 0 ? NULL : reconnect_find_tag(tagnum);
 	}
 
-	conn = rec->conn;
-	server_connect_ref(conn);
-	server_reconnect_destroy(rec);
-	server_connect(conn);
-	server_connect_unref(conn);
+	if (rec == NULL) {
+		signal_emit("server reconnect not found", 1, data);
+	} else {
+		conn = rec->conn;
+		server_connect_ref(conn);
+		server_reconnect_destroy(rec);
+		server_connect(conn);
+		server_connect_unref(conn);
+	}
+
+	cmd_params_free(free_arg);
 }
 
 static void cmd_disconnect(const char *data, SERVER_REC *server)
