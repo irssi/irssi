@@ -744,7 +744,9 @@ void gui_readline_init(void)
 
 	settings_add_str("history", "scroll_page_count", "/2");
 	settings_add_time("misc", "paste_detect_time", "10msecs");
-	settings_add_int("misc", "paste_detect_keycount", 5);
+	/* NOTE: function keys can generate at least 5 characters long
+	   keycodes. this must be larger to allow them to work. */
+	settings_add_int("misc", "paste_detect_keycount", 6);
         setup_changed();
 
 	keyboard = keyboard_create(NULL);
