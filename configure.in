@@ -482,6 +482,7 @@ if test "$enable_ssl" = "yes"; then
   fi
   if test "$enable_openssl" = "yes"; then
     AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
+    LIBS="$LIBS $SSL_LIBS"
   fi
 fi
 
