@@ -105,7 +105,7 @@ int strlen_utf8(const char *str)
         return len;
 }
 
-int utf16_char_to_utf8(unichar c, unsigned char *outbuf)
+int utf16_char_to_utf8(unichar c, char *outbuf)
 {
 	int len, i, first;
 

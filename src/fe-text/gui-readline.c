@@ -144,7 +144,7 @@ void handle_key(unichar key)
 		return;
 	}
 
-	if (key >= 0 && key < 32) {
+	if (key < 32) {
 		/* control key */
                 str[0] = '^';
 		str[1] = (char)key+'@';
