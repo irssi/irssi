@@ -64,7 +64,7 @@ sub autoop {
 
                 if (!$temp_opped{$nick} &&
 		    $server->masks_match($masks, $nick, $host)) {
-			$channel->command("/op $nick");
+			$channel->command("op $nick");
 			$temp_opped{$nick} = 1;
 		}
 	}

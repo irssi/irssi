@@ -38,7 +38,7 @@ sub cmd_quit {
 	close(f);
 
 	foreach my $server (Irssi::servers) {
-		$server->command("/disconnect ".$server->{tag}." $quitmsg");
+		$server->command("disconnect ".$server->{tag}." $quitmsg");
 	}
 }
 
