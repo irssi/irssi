@@ -105,7 +105,8 @@ static void cmd_upgrade(const char *data)
 	/* irssi -! --session ~/.irssi/session
 	   data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
-	str = g_strdup_printf("%s -! --session %s", data, session_file);
+	str = g_strdup_printf("%s --noconnect --session=%s --home=%s --config=%s",
+			      data, session_file, get_irssi_dir(), get_irssi_config());
         session_args = g_strsplit(str, " ", -1);
         g_free(str);
 
