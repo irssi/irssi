@@ -1,8 +1,9 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 
-#define IRSSI_AUTHOR "Timo Sirainen <cras@irssi.org>"
 #define IRSSI_WEBSITE "http://irssi.org/"
+#define IRSSI_AUTHOR_EMAIL "cras@irssi.org"
+#define IRSSI_AUTHOR "Timo Sirainen <"IRSSI_AUTHOR_EMAIL">"
 
 #define IRSSI_DIR_SHORT "~/.irssi"
 #define IRSSI_DIR_FULL "%s/.irssi" /* %s == g_get_home_dir() */
