@@ -1,7 +1,11 @@
 
 @SYNTAX:lastlog@
 
+    -clear: remove all lastlog lines from window
+
     -: don't print the "Lastlog:" and "End of Lastlog" messages.
+    -file: write lastlog to file instead of screen
+    -window: which window's lastlog to check (output is always to active)
     -new: show only lines since last /LASTLOG
     -regexp: `text' is a regular expression
     -word: `text' must match to full words

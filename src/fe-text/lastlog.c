@@ -291,7 +291,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 }
 
 /* SYNTAX: LASTLOG [-] [-file <filename>] [-clear] [-<level> -<level...>]
-		   [-new | -away] [-regexp | -word]
+		   [-new | -away] [-regexp | -word] [-window <ref#|name>]
 		   [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
 {
