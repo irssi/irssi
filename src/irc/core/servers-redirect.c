@@ -507,6 +507,7 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 			if (strncmp(event, "event ", 6) == 0 &&
 			    isdigit(event[6])) {
 				signal = (*redirect)->default_signal;
+                                *match = MATCH_START;
 			} else {
 				/* not a numeric, so we've lost the
 				   stop event.. */
@@ -554,12 +555,16 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 
 const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
 					const char *event,
-					const char *args)
+					const char *args,
+					int *redirected)
 {
-        REDIRECT_REC *redirect;
+	REDIRECT_REC *redirect;
+        const char *signal;
 	int match;
 
-	return server_redirect_get(server, event, args, &redirect, &match);
+	signal = server_redirect_get(server, event, args, &redirect, &match);
+	*redirected = match != MATCH_NONE;
+        return signal;
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)

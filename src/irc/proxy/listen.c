@@ -309,6 +309,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
         void *client;
         const char *signal;
 	char *event, *args;
+        int redirected;
 
 	g_return_if_fail(line != NULL);
 	if (!IS_IRC_SERVER(server))
@@ -321,15 +322,16 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	while (*args == ' ') args++;
         g_strdown(event);
 
-	signal = server_redirect_peek_signal(server, event, args);
-	if (signal != NULL) {
+	signal = server_redirect_peek_signal(server, event, args, &redirected);
+	if ((signal != NULL && strncmp(signal, "proxy ", 6) != 0) ||
+	    (signal == NULL && redirected)) {
 		/* we want to send this to one client (or proxy itself) only */
-		if (strncmp(signal, "proxy ", 6) != 0) {
-			/* proxy only */
-			g_free(event);
-			return;
-		}
+		/* proxy only */
+		g_free(event);
+		return;
+	}
 
+	if (signal != NULL) {
                 server_redirect_get_signal(server, event, args);
 		if (sscanf(signal+6, "%p", &client) == 1) {
 			/* send it to specific client only */

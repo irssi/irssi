@@ -68,10 +68,13 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 				       const char *args);
 /* Returns the redirection signal for specified event.
    Doesn't change the server state in any way, so if you really wish to
-   use the signal, call server_redirect_get_signal() after this. */
+   use the signal, call server_redirect_get_signal() after this.
+   `redirected' is set to TRUE, if this event belongs to redirection even
+   while there might be no redirection signal. */
 const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
 					const char *event,
-					const char *args);
+					const char *args,
+					int *redirected);
 
 /* Destroy redirection record */
 void server_redirect_destroy(REDIRECT_REC *rec);
