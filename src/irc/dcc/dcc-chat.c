@@ -257,43 +257,50 @@ static void dcc_chat_connect(DCC_REC *dcc)
 /* command: DCC CHAT */
 static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 {
+	void *free_arg;
 	DCC_REC *dcc;
 	IPADDR own_ip;
-	char *str, host[MAX_IP_LEN];
+	char *nick, *str, host[MAX_IP_LEN];
 	int port, handle;
 
 	g_return_if_fail(data != NULL);
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, data, NULL);
+	if (!cmd_get_params(data, &free_arg, 1, &nick))
+		return;
+	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	dcc = dcc_find_item(DCC_TYPE_CHAT, nick, NULL);
 	if (dcc != NULL) {
 		/* found from dcc list - so we're the connecting side.. */
 		dcc_chat_connect(dcc);
+		cmd_params_free(free_arg);
 		return;
 	}
 
 	/* send dcc chat request */
 	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	if (net_getsockname(server->handle, &own_ip, NULL) == -1)
-		cmd_return_error(CMDERR_ERRNO);
+		cmd_param_error(CMDERR_ERRNO);
 
 	port = settings_get_int("dcc_port");
 	handle = net_listen(&own_ip, &port);
 	if (handle == -1)
-		cmd_return_error(CMDERR_ERRNO);
+		cmd_param_error(CMDERR_ERRNO);
 
-	dcc = dcc_create(DCC_TYPE_CHAT, handle, data, "chat", server, NULL);
+	dcc = dcc_create(DCC_TYPE_CHAT, handle, nick, "chat", server, NULL);
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) dcc_chat_listen, dcc);
 
 	/* send the request */
 	dcc_make_address(&own_ip, host);
 	str = g_strdup_printf("PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
-			      data, host, port);
+			      nick, host, port);
 	irc_send_cmd(server, str);
 	g_free(str);
+
+	cmd_params_free(free_arg);
 }
 
 static void cmd_mircdcc(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
