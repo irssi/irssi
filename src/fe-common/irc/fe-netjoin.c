@@ -184,7 +184,8 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 		next = tmp->next;
 		while (rec->now_channels != NULL) {
 			char *channel = rec->now_channels->data;
-			char *realchannel = channel + isnickflag(*channel);
+			char *realchannel = channel +
+				(isnickflag(*channel) && ischannel(channel[1]));
 
 			temp = g_hash_table_lookup(channels, realchannel);
 			if (temp == NULL) {
