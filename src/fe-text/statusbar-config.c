@@ -443,7 +443,8 @@ static void cmd_statusbar(const char *data)
 void statusbar_config_init(void)
 {
         read_statusbar_config();
-	signal_add("setup reread", (SIGNAL_FUNC) read_statusbar_config);
+	signal_add_last("setup reread", (SIGNAL_FUNC) read_statusbar_config);
+	signal_add("theme changed", (SIGNAL_FUNC) read_statusbar_config);
 
         command_bind("statusbar", NULL, (SIGNAL_FUNC) cmd_statusbar);
         command_bind("statusbar enable", NULL, (SIGNAL_FUNC) cmd_statusbar_enable);
@@ -461,6 +462,7 @@ void statusbar_config_init(void)
 void statusbar_config_deinit(void)
 {
 	signal_remove("setup reread", (SIGNAL_FUNC) read_statusbar_config);
+	signal_remove("theme changed", (SIGNAL_FUNC) read_statusbar_config);
 
         command_unbind("statusbar", (SIGNAL_FUNC) cmd_statusbar);
         command_unbind("statusbar enable", (SIGNAL_FUNC) cmd_statusbar_enable);

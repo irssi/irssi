@@ -1173,6 +1173,8 @@ static void change_theme(const char *name, int verbose)
 	rec = theme_load(name);
 	if (rec != NULL) {
 		current_theme = rec;
+                signal_emit("theme changed", 1, rec);
+
 		if (verbose) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				    TXT_THEME_CHANGED,
