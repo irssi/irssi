@@ -134,8 +134,10 @@ void ban_set(CHANNEL_REC *channel, const char *bans)
 	}
 	g_strfreev(banlist);
 
-	g_string_truncate(str, str->len-1);
-	channel_set_singlemode(channel->server, channel->name, str->str, "+b");
+	if (str->len > 0) {
+		g_string_truncate(str, str->len-1);
+		channel_set_singlemode(channel->server, channel->name, str->str, "+b");
+	}
 	g_string_free(str, TRUE);
 }
 
@@ -157,7 +159,8 @@ void ban_remove(CHANNEL_REC *channel, const char *bans)
 	}
 	g_strfreev(banlist);
 
-	channel_set_singlemode(channel->server, channel->name, str->str, "-b");
+	if (str->len > 0)
+		channel_set_singlemode(channel->server, channel->name, str->str, "-b");
 	g_string_free(str, TRUE);
 }
 
@@ -173,7 +176,12 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
 				item, &channel, &nicks);
 	if (!ischannel(*channel)) cmd_param_error(CMDERR_NOT_JOINED);
-	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*nicks == '\0') {
+		if (strcmp(data, "*") != 0)
+			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+                /* /BAN * or /UNBAN * - ban/unban everyone */
+		nicks = data;
+	}
 
 	chanrec = channel_find(server, channel);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
