@@ -1,3 +1,10 @@
+v0.8.4 2002-03-13  Timo Sirainen <tss@iki.fi>
+
+	* Continuing to fix my stupid mistakes...
+
+	- When a queried nick did a nick change, it might have crashed irssi
+	- read ChangeLog for some other minor changes
+
 v0.8.3 2002-03-13  Timo Sirainen <tss@iki.fi>
 
 	- Perl scripts handling channel parts/kicks/quits printed some
