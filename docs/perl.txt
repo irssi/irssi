@@ -535,69 +535,96 @@ Reconnect->{}
   next_connect - Unix time stamp when the next connection occurs
 
 
- *** Server redirections
+ *** Chat networks
 
-WARNING: It's easy to mess up the Irssi's internal server expectations
-with these commands!
+Chatnet->{}
+  type - "CHATNET" text
+  chat_type - String ID of chat protocol, for example "IRC"
+
+  name - name of chat network
+
+  nick - if not empty, nick preferred in this network
+  username - if not empty, username preferred in this network
+  realname - if not empty, realname preferred in this network
+
+  own_host - address to use when connecting this network
+  autosendcmd - command to send after connecting to this network
+
+chatnet_find(name)
+  Find chat network with name.
+
+
+ *** Server redirections
 
 This is a powerful feature of Irssi that I haven't seen in other IRC
 clients. You can EASILY grab the server's reply for a command you send
 to server without any horrible kludges.
 
-Server::redirect_init(command, last, ...)
-  Initialize redirection for specified command. This needs to be done
-  only once. Irssi already initializes commands WHOIS, WHO, LIST,
-  USERHOST and ISON.
+redirect_register(command, remote, timeout, start, stop, opt)
+   Register new redirection command. By default irssi has already
+   registered at least: whois, whowas, who, list, ison, userhost, ping,
+   "mode channel" (/MODE #channel), "mode b" (/MODE #channel b), "mode e"
+   and "mode I".
 
-  `command' is the whole name of the signal, like "command whois".
-  `last' specifies how many of the items in `...' is considered as the
-  "last event" from the command.
+   `command' specifies the name of the command to register, it doesn't
+   have to be a real command name, but something you just specify to
+   redirect_event() when using this redirection.
+
+   `remote' specifies if the command is by default a remote command
+   (eg. sent to another server). redirect_event() may override this.
+
+   `timeout' - If remote is TRUE, specifies how many seconds to wait for
+   reply before aborting.
+
+   `start', `stop', `opt' - hash references with "event" => argpos entries.
+   List of events that start and stop this redirection.
+   Start event list may be empty, but there must be at least one
+   stop event. Optional events are checked only if they are received
+   immediately after one of the stop-events. `argpos' specifies the
+   word number in event string which is compared to wanted argument,
+   -1 = don't compare, TRUE always.
+
+  Example (already done by irssi):
+
+  Irssi::redirection_register('mode channel', 0, 0,
+  	undef, # no start events
+	{ # stop events
+	  "event 324" => 1, # MODE-reply
+	  "event 403" => 1, # no such channel
+	  "event 442" => 1, # "you're not on that channel"
+	  "event 479" => 1  # "Cannot join channel (illegal name)"
+	}, { # optional events
+	  "event 329", 1 # Channel create time
+	} );
+
+Server::redirect_event(command, count, arg, remote, failure_signal, signals)
+   Specify that the next command sent to server will be redirected.
+   NOTE: This command MUST be called before sending the command to server.
+
+   `command' - Name of the registered redirection that we're using.
+
+   `count' - How many times to execute the redirection. Some commands may
+   send multiple stop events, like MODE #a,#b.
+
+   `arg' - The argument to be compared in event strings. You can give multiple
+   arguments separated with space.
+
+   `remote' - Specifies if the command is a remote command, -1 = use default.
+
+   `failure_signal' - If irssi can't find the stop signal for the redirection,
+   this signal is called.
+
+   `signals' - hash reference with "event" => "redir signal" entries.
+   If the event is "", all the events belonging to the redirection but not
+   specified here, will be sent there.
 
   Example:
 
-  $server->redirection_init('command who',
-        2,             # 2 first events will finish the command
-        'event 401',   # unknown nick (finished)
-        'event 315',   # end of who (finished)
-        'event 352');  # who line (wait..)
-
-Server::redirect_event(arg, last, ...)
-  Add redirection. `arg' is a space separated list of arguments that should
-  match before Irssi will redirect the event (think of /WHOIS nick nick and
-  doing another to different nick immediately after it, there's no way of
-  knowing which will return first. so, arg would be in this case 'nick').
-
-  `last' specifies how many of the following events are considered as
-  "last event" from command - just like in redirect_init().
-
-  `...' is `event, signal, argpos, ...`, where
-  `event' is the event we're waiting from server.
-  `signal' is the signal we will send after receiving the event. It should
-           always start with 'redir ' so that Irssi's perl handler knows to
-           send correct arguments to signal handler.
-  `argpos' is the argument position in event's data or -1 if it
-           should be ignored.
-
-  Example:
-  $server->send_raw('WHOIS :cras');
-  $server->redirect_event('cras', 2,
-        "event 318", "redir end_of_whois", 1,
-        "event 402", "redir no_such_server", 1,
-        "event 401", "redir no_such_nick", 1,
-        "event 311", "redir whois", 1,
-        "event 301", "redir whois_away", 1,
-        "event 312", "redir whois_server", 1,
-        "event 313", "redir whois_oper", 1,
-        "event 317", "redir whois_idle", 1,
-        "event 319", "redir whois_channels", 1);
-
-  In the 402-case we tried "/WHOIS nick nick" but nick didn't exist. If
-  you need to handle "/WHOIS server nick" situation, you should put both
-  to arg with "server nick".
-
-Server::redirect_single_event(arg, last, group, event, signal, argpos)
-  Same as redirect_event() except you can set it up in pieces.
-  If `group' is 0, it will create new group and return it's id.
+  # ignore all events generated by whois query, except 311.
+  $server->redirect_event("whois", 1, "cras", 0, undef, {
+			  "event 311" => "redir whois",
+			  "" => "event empty" });
+  $server->send_raw("WHOIS :cras");
 
 
  *** Window items
@@ -1095,3 +1122,19 @@ Server::notifylist_ison_server(nick)
 
 Notifylist::ircnets_match(ircnet)
   Returns 1 if notify is checked in `ircnet'.
+
+
+ *** /EXEC processes
+
+Process->{}
+  id - ID for the process
+  name - Name for the process (if given)
+  args - The command that is being executed
+
+  pid - PID for the executed command
+  target - send text with /msg <target> ...
+  target_win - print text to this window
+
+  shell - start the program via /bin/sh
+  notice - send text with /notice, not /msg if target is set
+  silent - don't print "process exited with level xx"
