@@ -85,18 +85,20 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 		g_free_and_null(rec->key);
 		if (channel_have_key(chanrec))
 			rec->key = g_strdup(chanrec->key);
-		return;
+	} else {
+		/* new rejoin */
+		rec = g_new0(REJOIN_REC, 1);
+		rec->channel = g_strdup(channel);
+		if (channel_have_key(chanrec))
+			rec->key = g_strdup(chanrec->key);
+
+		server->rejoin_channels =
+			g_slist_append(server->rejoin_channels, rec);
+		signal_emit("channel rejoin new", 2, server, rec);
 	}
 
-	/* new rejoin */
-	rec = g_new0(REJOIN_REC, 1);
-	rec->channel = g_strdup(channel);
-	if (channel_have_key(chanrec))
-		rec->key = g_strdup(chanrec->key);
-
-	server->rejoin_channels =
-		g_slist_append(server->rejoin_channels, rec);
-	signal_emit("channel rejoin new", 2, server, rec);
+	chanrec->left = TRUE;
+	channel_destroy(CHANNEL(chanrec));
 }
 
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)

@@ -56,7 +56,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "joinerror_bad_mask", "Cannot join to channel %_$0%_ %K(%nBad channel mask%K)", 1, { 0 } },
 	{ "joinerror_unavail", "Cannot join to channel %_$0%_ %K(%nChannel is temporarily unavailable%K)", 1, { 0 } },
 	{ "joinerror_duplicate", "Channel %_$0%_ already exists - cannot create it", 1, { 0 } },
-	{ "channel_rejoin", "Channel %_$0%_ is temporarily unavailable, this is normally because of netsplits. Irssi will now automatically try to rejoin to this channel until the join is successfull. Use /RMREJOINS command if you wish to abort this.", 1, { 0 } },
+	{ "channel_rejoin", "Channel %_$0%_ is temporarily unavailable, this is normally because of netsplits. Irssi will now automatically try to rejoin back to this channel until the join is successful. Use /RMREJOINS command if you wish to abort this.", 1, { 0 } },
 	{ "inviting", "Inviting $0 to %_$1", 2, { 0, 0 } },
 	{ "not_invited", "You have not been invited to a channel!", 0 },
 	{ "names", "%K[%g%_Users%_%K(%g$0%K)]%n $1", 2, { 0, 0 } },
