@@ -83,7 +83,7 @@ static COMMAND_MODULE_REC *command_module_find_func(COMMAND_REC *rec,
 	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
 		COMMAND_MODULE_REC *rec = tmp->data;
 
-                if (g_slist_find(rec->signals, func) != NULL)
+                if (g_slist_find(rec->signals, (void *) func) != NULL)
 			return rec;
 	}
 
@@ -150,7 +150,7 @@ void command_bind_to(const char *module, int pos, const char *cmd,
 	}
         modrec = command_module_get(rec, module, protocol);
 
-        modrec->signals = g_slist_append(modrec->signals, func);
+        modrec->signals = g_slist_append(modrec->signals, (void *) func);
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
@@ -226,7 +226,8 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func)
 		modrec = command_module_find_func(rec, func);
 		g_return_if_fail(modrec != NULL);
 
-		modrec->signals = g_slist_remove(modrec->signals, func);
+		modrec->signals =
+			g_slist_remove(modrec->signals, (void *) func);
 		if (modrec->signals == NULL)
 			command_module_destroy(rec, modrec);
 	}
@@ -764,7 +765,7 @@ static void command_module_unbind_all(COMMAND_REC *rec,
 	for (tmp = modrec->signals; tmp != NULL; tmp = next) {
 		next = tmp->next;
 
-		command_unbind(rec->cmd, tmp->data);
+		command_unbind(rec->cmd, (SIGNAL_FUNC) tmp->data);
 	}
 
 	if (g_slist_find(commands, rec) != NULL) {

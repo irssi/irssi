@@ -173,7 +173,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				break;
 
 			if (cmd == LINE_CMD_CONTINUE) {
-				char *tmp;
+				unsigned char *tmp;
 
 				memcpy(&tmp, ptr, sizeof(char *));
 				ptr = tmp;
@@ -308,7 +308,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
         INDENT_FUNC indent_func;
 	LINE_CACHE_REC *cache;
         const unsigned char *text, *text_newline;
-	char *tmp;
+	unsigned char *tmp;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
@@ -601,7 +601,7 @@ static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
 void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func)
 {
 	g_slist_foreach(views, (GFunc) view_unregister_indent_func,
-			indent_func);
+			(void *) indent_func);
 }
 
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll)

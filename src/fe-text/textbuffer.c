@@ -73,7 +73,7 @@ static TEXT_CHUNK_REC *text_chunk_find(TEXT_BUFFER_REC *buffer,
 static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 {
 	TEXT_CHUNK_REC *rec;
-	char *buf, *ptr, **pptr;
+	unsigned char *buf, *ptr, **pptr;
 
 	rec = g_mem_chunk_alloc(text_chunk);
 	rec->pos = 0;
@@ -90,7 +90,7 @@ static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 		   breaks at least NetBSD/Alpha, so don't go "optimize"
 		   it :) */
 		ptr = rec->buffer; pptr = &ptr;
-		memcpy(buf, pptr, sizeof(char *));
+		memcpy(buf, pptr, sizeof(unsigned char *));
 	} else {
 		/* just to be safe */
 		mark_temp_eol(rec);
@@ -140,7 +140,7 @@ static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 }
 
 static void text_chunk_append(TEXT_BUFFER_REC *buffer,
-			      const char *data, int len)
+			      const unsigned char *data, int len)
 {
         TEXT_CHUNK_REC *chunk;
 	int left;
@@ -382,8 +382,7 @@ static void set_color(GString *str, int cmd, int *last_fg, int *last_bg)
 
 void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 {
-        unsigned char cmd;
-	char *ptr, *tmp;
+        unsigned char cmd, *ptr, *tmp;
         int last_fg, last_bg;
 
 	g_return_if_fail(line != NULL);
@@ -394,13 +393,13 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
         last_fg = last_bg = -1;
 	for (ptr = line->text;;) {
 		if (*ptr != 0) {
-			g_string_append_c(str, *ptr);
+			g_string_append_c(str, (char) *ptr);
                         ptr++;
 			continue;
 		}
 
 		ptr++;
-                cmd = (unsigned char) *ptr;
+                cmd = *ptr;
 		ptr++;
 
 		if (cmd == LINE_CMD_EOL || cmd == LINE_CMD_FORMAT) {
@@ -410,7 +409,7 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 
 		if (cmd == LINE_CMD_CONTINUE) {
                         /* line continues in another address.. */
-			memcpy(&tmp, ptr, sizeof(char *));
+			memcpy(&tmp, ptr, sizeof(unsigned char *));
 			ptr = tmp;
                         continue;
 		}

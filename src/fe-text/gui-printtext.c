@@ -51,7 +51,7 @@ void gui_register_indent_func(const char *name, INDENT_FUNC func)
                 list = NULL;
 	}
 
-	list = g_slist_append(list, func);
+	list = g_slist_append(list, (void *) func);
 	g_hash_table_insert(indent_functions, key, list);
 }
 
@@ -63,7 +63,7 @@ void gui_unregister_indent_func(const char *name, INDENT_FUNC func)
 	if (g_hash_table_lookup_extended(indent_functions, name, &key, &value)) {
 		list = value;
 
-		list = g_slist_remove(list, func);
+		list = g_slist_remove(list, (void *) func);
 		g_hash_table_remove(indent_functions, key);
 		if (list == NULL)
 			g_free(key);
@@ -273,7 +273,8 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
                 line_add_indent_func(view->buffer, &insert_after, str);
 	} else {
 		insert_after = textbuffer_insert(view->buffer, insert_after,
-						 str, strlen(str), &lineinfo);
+						 (unsigned char *) str,
+						 strlen(str), &lineinfo);
 	}
 	if (gui->use_insert_after)
                 gui->insert_after = insert_after;

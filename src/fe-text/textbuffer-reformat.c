@@ -192,7 +192,8 @@ void textbuffer_reformat_line(WINDOW_REC *window, LINE_REC *line)
 		g_free(tmp);
 
                 line = textbuffer_insert(gui->view->buffer, gui->insert_after,
-					 raw->str, raw->len, &line_info);
+					 (unsigned char *) raw->str,
+					 raw->len, &line_info);
 		textbuffer_view_insert_line(gui->view, line);
 	}
 	g_string_free(raw, TRUE);
@@ -247,7 +248,8 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 		gui->insert_after : gui->view->buffer->cur_line;
 
 	textbuffer_insert(gui->view->buffer, insert_after,
-			  format->str, format->len, NULL);
+			  (unsigned char *) format->str,
+			  format->len, NULL);
 
 	g_string_truncate(format, 0);
 }

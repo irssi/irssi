@@ -68,7 +68,7 @@ void statusbar_item_register(const char *name, const char *value,
 	if (func != NULL) {
 		if (g_hash_table_lookup(sbar_item_funcs, name) == NULL) {
 			g_hash_table_insert(sbar_item_funcs,
-					    g_strdup(name), func);
+					    g_strdup(name), (void *) func);
 		}
 	}
 }
@@ -859,7 +859,8 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 	rec->bar = bar;
 	rec->config = config;
 
-	rec->func = g_hash_table_lookup(sbar_item_funcs, config->name);
+	rec->func = (STATUSBAR_FUNC) g_hash_table_lookup(sbar_item_funcs,
+							 config->name);
 	if (rec->func == NULL)
 		rec->func = statusbar_item_default_func;
 	statusbar_item_default_signals(rec);
