@@ -38,6 +38,8 @@ GSList *windows; /* first in the list is the active window,
 WINDOW_REC *active_win;
 
 static int daytag;
+static int daycheck; /* 0 = don't check, 1 = time is 00:00, check,
+                        2 = time is 00:00, already checked */
 
 static int window_get_new_refnum(void)
 {
@@ -385,56 +387,85 @@ static void sig_server_disconnected(void *server)
 	}
 }
 
-static int sig_check_daychange(void)
+static void sig_print_text(void)
 {
-	static int lastday = -1;
 	GSList *tmp;
 	time_t t;
 	struct tm *tm;
 
-	if (!settings_get_bool("timestamps")) {
-		/* display day change notice only when using timestamps */
-		return TRUE;
-	}
-
 	t = time(NULL);
 	tm = localtime(&t);
 
-	if (lastday == -1) {
-		/* First check, don't display. */
-		lastday = tm->tm_mday;
-		return TRUE;
-	}
+	if (tm->tm_hour != 0 || tm->tm_min != 0)
+		return;
 
-	if (tm->tm_mday == lastday)
-		return TRUE;
+	daycheck = 2;
+	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	/* day changed, print notice about it to every window */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		printformat_window(tmp->data, MSGLEVEL_NEVER, IRCTXT_DAYCHANGE,
 				   tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year);
 	}
+}
 
-	lastday = tm->tm_mday;
+static int sig_check_daychange(void)
+{
+	time_t t;
+	struct tm *tm;
+
+	t = time(NULL);
+	tm = localtime(&t);
+
+	if (daycheck == 1 && tm->tm_hour == 0 && tm->tm_min == 0) {
+		sig_print_text();
+		return TRUE;
+	}
+
+	if (tm->tm_hour != 23 || tm->tm_min != 59) {
+		daycheck = 0;
+		return TRUE;
+	}
+
+	/* time is 23:59 */
+	if (daycheck == 0) {
+		daycheck = 1;
+		signal_add("print text", (SIGNAL_FUNC) sig_print_text);
+	}
 	return TRUE;
+}
+
+static void read_settings(void)
+{
+	if (daytag != -1) {
+		g_source_remove(daytag);
+		daytag = -1;
+	}
+
+	if (settings_get_bool("timestamps"))
+		daytag = g_timeout_add(30000, (GSourceFunc) sig_check_daychange, NULL);
 }
 
 void windows_init(void)
 {
 	active_win = NULL;
+	daycheck = 0; daytag = -1;
 	settings_add_bool("lookandfeel", "window_auto_change", FALSE);
 
-	daytag = g_timeout_add(30000, (GSourceFunc) sig_check_daychange, NULL);
+	read_settings();
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void windows_deinit(void)
 {
-	g_source_remove(daytag);
+	if (daytag != -1) g_source_remove(daytag);
+	if (daycheck == 1) signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
