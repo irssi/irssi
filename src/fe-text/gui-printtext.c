@@ -55,6 +55,7 @@ static LINE_REC *create_line(GUI_WINDOW_REC *gui, int level)
 	rec->time = time(NULL);
 
 	mark_temp_eol(gui->cur_text);
+	gui->cur_text->lines++;
 
 	gui->last_color = -1;
 	gui->last_flags = 0;
@@ -154,6 +155,7 @@ void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 			}
 			if ((unsigned char) *text & 0x80)
 				text++;
+			continue;
 		}
 
 		text++;
@@ -209,7 +211,7 @@ static void remove_old_lines(WINDOW_REC *window)
 
 	gui = WINDOW_GUI(window);
 
-	old_time = time(NULL)-(scrollback_hours*3600);
+	old_time = time(NULL)-(scrollback_hours*3600)+1;
 	if (scrollback_lines > 0) {
                 /* remove lines by line count */
 		while (window->lines > scrollback_lines) {
@@ -358,7 +360,6 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 		line = create_line(gui, 0);
 		gui_window_newline(gui, visible && gui->temp_line == NULL);
 
-		gui->cur_text->lines++;
 		gui->last_subline = 0;
 	} else {
 		line = gui->temp_line != NULL ? gui->temp_line :

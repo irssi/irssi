@@ -926,6 +926,7 @@ static char *line_read_format(unsigned const char **text)
 				continue;
 			} else if (**text & 0x80)
 				(*text)++;
+			continue;
 		}
 
 		g_string_append_c(str, (char) **text);
