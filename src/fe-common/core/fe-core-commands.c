@@ -136,8 +136,10 @@ static void cmd_cat(const char *data)
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0)
-			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
+		if (ret > 0) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP |
+				  MSGLEVEL_NEVER, "%s", str);
+		}
 	} while (ret > 0);
 	line_split_free(buffer);
 
