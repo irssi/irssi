@@ -52,7 +52,7 @@ default_color = "-1";
 
 # these characters are automatically replaced with specified color
 # (dark grey by default)
-replaces = { "[]<>=" = "%K$*%n"; };
+replaces = { "[]=" = "%K$*%n"; };
 
 abstracts = {
   ##
@@ -115,7 +115,7 @@ abstracts = {
   ##
 
   # the basic styling of how to print message, $0 = nick mode, $1 = nick
-  msgnick = "<$0$1-> %|";
+  msgnick = "%K<%n$0$1-%K>%n %|";
 
   # message from you is printed. "msgownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
