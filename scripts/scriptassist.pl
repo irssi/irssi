@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002121001';
+$VERSION = '2002121101';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -727,7 +727,6 @@ sub print_update (%) {
 
 sub contact_author ($) {
     my ($script) = @_;
-    $script =~ s/-/_/g;
     no strict 'refs';
     return unless defined %{ "Irssi::Script::${script}::" };
     my %header = %{ "Irssi::Script::${script}::IRSSI" };
@@ -803,13 +802,11 @@ sub get_scripts {
 
 sub get_remote_version ($$) {
     my ($script, $database) = @_;
-    $script =~ s/_/-/g;
     return $database->{$script.".pl"}{version};
 }
 
 sub get_local_version ($) {
     my ($script) = @_;
-    $script =~ s/-/_/g;
     no strict 'refs';
     return unless defined %{ "Irssi::Script::${script}::" };
     my $version = ${ "Irssi::Script::${script}::VERSION" };
@@ -873,7 +870,6 @@ sub check_scripts {
 sub download_script ($$) {
     my ($script, $xml) = @_;
     my %result;
-    $script =~ s/_/-/;
     my $site = $xml->{$script.".pl"}{source};
     $result{installed} = 0;
     $result{signed} = 0;
