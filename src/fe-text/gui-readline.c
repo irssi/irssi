@@ -472,7 +472,7 @@ static void key_check_replaces(void)
 
 static void key_previous_window(void)
 {
-	signal_emit("command window prev", 3, "", active_win->active_server, active_win->active);
+	signal_emit("command window previous", 3, "", active_win->active_server, active_win->active);
 }
 
 static void key_next_window(void)
