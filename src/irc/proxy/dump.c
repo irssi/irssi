@@ -18,107 +18,198 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "common.h"
+#include "module.h"
 #include "network.h"
-#include "servers.h"
-#include "irc-servers.h"
-#include "channels.h"
-#include "modes.h"
-#include "nicklist.h"
 #include "settings.h"
-#include "proxy.h"
 
-static void outdata(gint handle, gchar *data, ...)
+#include "irc-servers.h"
+#include "irc-channels.h"
+#include "irc-nicklist.h"
+#include "modes.h"
+
+void proxy_outdata(CLIENT_REC *client, const char *data, ...)
 {
-    va_list args;
-    gchar *str;
+	va_list args;
+	char *str;
 
-    va_start(args, data);
+	g_return_if_fail(client != NULL);
+	g_return_if_fail(data != NULL);
 
-    str = g_strdup_vprintf(data, args);
-    net_transmit(handle, str, strlen(str));
-    g_free(str);
+	va_start(args, data);
 
-    va_end(args);
+	str = g_strdup_vprintf(data, args);
+	net_transmit(client->handle, str, strlen(str));
+	g_free(str);
+
+	va_end(args);
 }
 
-static void outserver(gint handle, SERVER_REC *server, gchar *data, ...)
+void proxy_outdata_all(IRC_SERVER_REC *server, const char *data, ...)
 {
-    va_list args;
-    gchar *str;
+	va_list args;
+	GSList *tmp;
+	char *str;
+	int len;
 
-    va_start(args, data);
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(data != NULL);
 
-    str = g_strdup_vprintf(data, args);
-    outdata(handle, ":%s!%s@proxy %s\n", server->nick, settings_get_str("user_name"), str);
-    g_free(str);
+	va_start(args, data);
 
-    va_end(args);
+	str = g_strdup_vprintf(data, args);
+	len = strlen(str);
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		if (rec->connected && rec->server == server)
+			net_transmit(rec->handle, str, len);
+	}
+	g_free(str);
+
+	va_end(args);
+}
+
+void proxy_outserver(CLIENT_REC *client, const char *data, ...)
+{
+	va_list args;
+	char *str;
+
+	g_return_if_fail(client != NULL);
+	g_return_if_fail(data != NULL);
+
+	va_start(args, data);
+
+	str = g_strdup_vprintf(data, args);
+	proxy_outdata(client, ":%s!%s@proxy %s\n", client->nick,
+		      settings_get_str("user_name"), str);
+	g_free(str);
+
+	va_end(args);
+}
+
+/*void proxy_outserver_all(IRC_SERVER_REC *server, const char *data, ...)
+{
+	va_list args;
+	GSList *tmp;
+	char *str;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(data != NULL);
+
+	va_start(args, data);
+
+	str = g_strdup_vprintf(data, args);
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		if (rec->connected && rec->server == server) {
+			proxy_outdata(rec, ":%s!%s@proxy %s\n", rec->nick,
+				      settings_get_str("user_name"), str);
+		}
+	}
+	g_free(str);
+
+	va_end(args);
+}*/
+
+void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...)
+{
+	va_list args;
+	GSList *tmp;
+	char *str;
+
+	g_return_if_fail(client != NULL);
+	g_return_if_fail(data != NULL);
+
+	va_start(args, data);
+
+	str = g_strdup_vprintf(data, args);
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		if (rec->connected && rec != client &&
+		    rec->server == client->server) {
+			proxy_outdata(rec, ":%s!%s@proxy %s\n", rec->nick,
+				      settings_get_str("user_name"), str);
+		}
+	}
+	g_free(str);
+
+	va_end(args);
+}
+
+static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
+{
+	GSList *tmp, *nicks;
+	GString *str;
+
+	proxy_outserver(client, "JOIN %s", channel->name);
+	proxy_outdata(client, ":proxy 353 %s %c %s :", client->nick,
+		      channel_mode_is_set(channel, 'p') ? '*' :
+		      channel_mode_is_set(channel, 's') ? '@' : '=',
+		      channel->name);
+
+	str = g_string_new(NULL);
+
+	nicks = nicklist_getnicks(CHANNEL(channel));
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+		NICK_REC *nick = tmp->data;
+
+		if (tmp != nicks)
+                        g_string_append_c(str, ' ');
+
+		if (nick->op)
+                        g_string_append_c(str, '@');
+		else if (nick->halfop)
+                        g_string_append_c(str, '%');
+		else if (nick->voice)
+                        g_string_append_c(str, '+');
+		g_string_append(str, nick->nick);
+	}
+	g_slist_free(nicks);
+
+	g_string_append_c(str, '\n');
+	proxy_outdata(client, str->str);
+	g_string_free(str, TRUE);
+
+	proxy_outdata(client, ":proxy 366 %s %s :End of /NAMES list.\n",
+		      client->nick, channel->name);
+	if (channel->topic != NULL) {
+		proxy_outdata(client, ":proxy 332 %s %s :%s\n",
+			      client->nick, channel->name, channel->topic);
+	}
 }
 
 void plugin_proxy_dump_data(CLIENT_REC *client)
 {
-    SERVER_REC *server;
-    GSList *tmp, *tmp2, *nicks;
-    gint handle;
-
-    handle = client->handle;
-    server = servers->data;
-    if (strcmp(server->nick, client->nick) != 0)
-    {
-	/* change nick first so that clients won't try to eg. set their own
-	   user mode with wrong nick.. hopefully works with all clients. */
-	outdata(handle, ":%s!proxy NICK :%s\n", client->nick, server->nick);
-	g_free(client->nick);
-	client->nick = g_strdup(server->nick);
-    }
-    outdata(handle, ":proxy 001 %s :Welcome to the Internet Relay Network\n", client->nick);
-    outdata(handle, ":proxy 002 %s :Your host is irssi-proxy, running version %s\n", client->nick, VERSION);
-    outdata(handle, ":proxy 003 %s :This server was created ...\n", client->nick);
-    if (!IRC_SERVER(server)->emode_known)
-	    outdata(handle, ":proxy 004 %s proxy %s oirw abiklmnopqstv\n", client->nick, VERSION);
-    else
-	    outdata(handle, ":proxy 004 %s proxy %s oirw abeIiklmnopqstv\n", client->nick, VERSION);
-    outdata(handle, ":proxy 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->nick);
-    outdata(handle, ":proxy 255 %s :I have 0 clients, 0 services and 0 servers\n", client->nick);
-    outdata(handle, ":proxy 422 %s :MOTD File is missing\n", client->nick);
-
-    /* nick / mode */
-    outserver(handle, server, "MODE %s :+%s", server->nick, IRC_SERVER(server)->usermode);
-
-    if (server->usermode_away)
-	outdata(handle, ":proxy 306 %s :You have been marked as being away\n", server->nick);
-
-    /* Send channel joins */
-    for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
-    {
-        CHANNEL_REC *rec = tmp->data;
-
-        outserver(handle, rec->server, "JOIN %s", rec->name);
-        outdata(handle, ":proxy 353 %s %c %s :", rec->server->nick,
-	        	channel_mode_is_set(IRC_CHANNEL(rec), 'p') ? '*' : 
-				channel_mode_is_set(IRC_CHANNEL(rec), 's') ? '@' : '=',
-                rec->name);
-
-        nicks = nicklist_getnicks(rec);
-        for (tmp2 = nicks; tmp2 != NULL; tmp2 = tmp2->next)
-        {
-            NICK_REC *nick = tmp2->data;
-
-            if (tmp2 != nicks)
-                net_transmit(handle, " ", 1);
-
-            if (nick->op)
-                net_transmit(handle, "@", 1);
-            else if (nick->voice)
-                net_transmit(handle, "+", 1);
-            net_transmit(handle, nick->nick, strlen(nick->nick));
+	if (strcmp(client->server->nick, client->nick) != 0) {
+		/* change nick first so that clients won't try to eg. set
+		   their own user mode with wrong nick.. hopefully works
+		   with all clients. */
+		proxy_outdata(client, ":%s!proxy NICK :%s\n",
+			client->nick, client->server->nick);
+		g_free(client->nick);
+		client->nick = g_strdup(client->server->nick);
 	}
-	g_slist_free(nicks);
-        net_transmit(handle, "\n", 1);
 
-        outdata(handle, ":proxy 366 %s %s :End of /NAMES list.\n", rec->server->nick, rec->name);
-        if (rec->topic != NULL)
-	    outdata(handle, ":proxy 332 %s %s :%s\n", rec->server->nick, rec->name, rec->topic);
-    }
+	/* welcome info */
+	proxy_outdata(client, ":proxy 001 %s :Welcome to the Internet Relay Network\n", client->nick);
+	proxy_outdata(client, ":proxy 002 %s :Your host is irssi-proxy, running version %s\n", client->nick, VERSION);
+	proxy_outdata(client, ":proxy 003 %s :This server was created ...\n", client->nick);
+	if (!client->server->emode_known)
+		proxy_outdata(client, ":proxy 004 %s proxy %s oirw abiklmnopqstv\n", client->nick, VERSION);
+	else
+		proxy_outdata(client, ":proxy 004 %s proxy %s oirw abeIiklmnopqstv\n", client->nick, VERSION);
+	proxy_outdata(client, ":proxy 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->nick);
+	proxy_outdata(client, ":proxy 255 %s :I have 0 clients, 0 services and 0 servers\n", client->nick);
+	proxy_outdata(client, ":proxy 422 %s :MOTD File is missing\n", client->nick);
+
+        /* user mode / away status */
+	proxy_outserver(client, "MODE %s :+%s", client->server->nick,
+			client->server->usermode);
+	if (client->server->usermode_away)
+		proxy_outdata(client, ":proxy 306 %s :You have been marked as being away\n", client->nick);
+
+	/* Send channel joins */
+	g_slist_foreach(client->server->channels, (GFunc) dump_join, client);
 }

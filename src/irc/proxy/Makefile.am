@@ -12,5 +12,4 @@ libproxy_la_SOURCES = \
 	listen.c
 
 noinst_HEADERS = \
-	proxy.h \
 	module.h
