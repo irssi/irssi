@@ -68,7 +68,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 		return;
 
 	if (server->connrec->away_reason != NULL)
-		signal_emit("command away", 2, server->connrec->away_reason, server, NULL);
+		irc_send_cmdv(server, "AWAY :%s", server->connrec->away_reason);
 }
 
 static void event_nick_collision(IRC_SERVER_REC *server, const char *data)
