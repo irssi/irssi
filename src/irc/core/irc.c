@@ -50,6 +50,10 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	char str[513];
 	int len;
 
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(cmd != NULL);
+	if (server->disconnected) return;
+
 	len = strlen(cmd);
 	server->cmdcount++;
 
@@ -108,9 +112,6 @@ void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 	GTimeVal now;
 	int send_now;
 
-	g_return_if_fail(cmd != NULL);
-	if (server == NULL) return;
-
         g_get_current_time(&now);
 	send_now = g_timeval_cmp(&now, &server->wait_cmd) >= 0 &&
 		(server->cmdcount < server->max_cmds_at_once ||
@@ -139,7 +140,6 @@ void irc_send_cmdv(IRC_SERVER_REC *server, const char *cmd, ...)
 void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd)
 {
 	g_return_if_fail(cmd != NULL);
-	if (server == NULL) return;
 
         irc_send_cmd_full(server, cmd, TRUE, TRUE, FALSE);
 }
