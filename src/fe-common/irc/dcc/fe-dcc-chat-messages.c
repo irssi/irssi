@@ -38,7 +38,8 @@ static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 	query = query_find(NULL, tag);
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
-			       MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT, NULL);
+			       MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT |
+			       MSGLEVEL_NO_ACT, NULL);
 
 	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_QUERY :
 			 IRCTXT_OWN_DCC, dcc->mynick, dcc->id, msg);
@@ -56,7 +57,7 @@ static void sig_message_dcc_own_action(CHAT_DCC_REC *dcc, const char *msg)
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS |
-			       MSGLEVEL_NOHILIGHT, NULL);
+			       MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, NULL);
 
 	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
 			 IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, msg);
@@ -72,7 +73,8 @@ static void sig_message_dcc_own_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 	tag = g_strconcat("=", dcc->id, NULL);
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
-			       MSGLEVEL_DCC | MSGLEVEL_CTCPS, NULL);
+			       MSGLEVEL_DCC | MSGLEVEL_CTCPS |
+			       MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, NULL);
 
 	printformat_dest(&dest, IRCTXT_OWN_DCC_CTCP, dcc->id, cmd, data);
         g_free(tag);
