@@ -126,12 +126,15 @@ void write_buffer_flush(void)
         block_count = 0;
 }
 
+static int flush_timeout(void)
+{
+	write_buffer_flush();
+        return 1;
+}
+
 static void read_settings(void)
 {
 	int msecs;
-
-	if (timeout_tag != -1)
-                g_source_remove(timeout_tag);
 
 	write_buffer_flush();
 
@@ -140,9 +143,14 @@ static void read_settings(void)
 
 	if (settings_get_int("write_buffer_mins") > 0) {
                 msecs = settings_get_int("write_buffer_mins")*60*1000;
-		timeout_tag = g_timeout_add(msecs,
-					    (GSourceFunc) write_buffer_flush,
-					    NULL);
+		if (timeout_tag == -1) {
+			timeout_tag = g_timeout_add(msecs,
+						    (GSourceFunc) flush_timeout,
+						    NULL);
+		}
+	} else if (timeout_tag != -1) {
+		g_source_remove(timeout_tag);
+                timeout_tag = -1;
 	}
 }
 

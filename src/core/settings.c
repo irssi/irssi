@@ -605,13 +605,13 @@ int settings_save(const char *fname, int autosave)
         return !error;
 }
 
-static void sig_autosave(void)
+static int sig_autosave(void)
 {
 	char *fname, *str;
 
 	if (!settings_get_bool("settings_autosave") ||
 	    config_last_modifycounter == mainconfig->modifycounter)
-		return;
+		return 1;
 
 	if (!irssi_config_is_changed(NULL))
 		settings_save(NULL, TRUE);
@@ -628,6 +628,8 @@ static void sig_autosave(void)
                 settings_save(fname, TRUE);
 		g_free(fname);
 	}
+
+        return 1;
 }
 
 void settings_init(void)
