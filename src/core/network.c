@@ -249,7 +249,7 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 	/* create the socket */
 	handle = socket(so.sin.sin_family, SOCK_STREAM, 0);
 #ifdef HAVE_IPV6
-	if (handle == -1 && errno == EINVAL) {
+	if (handle == -1 && (errno == EINVAL || errno == EPROTONOSUPPORT)) {
 		/* IPv6 is not supported by OS */
 		so.sin.sin_family = AF_INET;
 		so.sin.sin_addr.s_addr = INADDR_ANY;
