@@ -89,9 +89,10 @@ static void event_nick(SERVER_REC *server, const char *data,
 	char *params, *nick;
 
 	query = query_find(server, orignick);
-	if (query != NULL && strcmp(query->name, nick) != 0) {
+	if (query != NULL) {
 		params = event_get_params(data, 1, &nick);
-		query_change_nick(query, nick);
+		if (strcmp(query->name, nick) != 0)
+			query_change_nick(query, nick);
 		g_free(params);
 	}
 }
