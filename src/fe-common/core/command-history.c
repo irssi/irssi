@@ -93,9 +93,9 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 
 	pos = *phistpos;
 	if (*phistpos == NULL)
-		*phistpos = window_history ? window->cmdhist : cmdhist;
-	else
-		*phistpos = (*phistpos)->next;
+		return "";
+
+	*phistpos = (*phistpos)->next;
 
 	if (*text != '\0' &&
 	    (pos == NULL || strcmp(pos->data, text) != 0)) {
