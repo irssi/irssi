@@ -462,11 +462,11 @@ static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 /* redraw -- more -- */
 static void statusbar_more(SBAR_ITEM_REC *item, int ypos)
 {
-    if (item->size != 10) return;
+	if (item->size != 10) return;
 
-    move(ypos, item->xpos);
-    set_color((1 << 4)+15); addstr("-- more --");
-    screen_refresh();
+	move(ypos, item->xpos);
+	set_color((1 << 4)+15); addstr("-- more --");
+	screen_refresh();
 }
 
 static void sig_statusbar_more_check_remove(WINDOW_REC *window)
@@ -490,8 +490,10 @@ static void sig_statusbar_more_check(WINDOW_REC *window)
 		return;
 
 	if (!WINDOW_GUI(window)->bottom) {
-		if (more_item == NULL)
+		if (more_item == NULL) {
 			more_item = statusbar_item_create(mainbar, 10, FALSE, statusbar_more);
+			statusbar_redraw(mainbar);
+		}
 	} else if (more_item != NULL) {
 		statusbar_item_remove(more_item);
 		more_item = NULL;
@@ -769,6 +771,7 @@ void statusbar_items_init(void)
 	more_item = NULL;
 	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
 	signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_more_check);
+	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_add("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
 
 	/* lag */
@@ -826,6 +829,7 @@ void statusbar_items_deinit(void)
 	/* more */
 	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
 	signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_more_check);
+	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
 
 	/* lag */
