@@ -5,7 +5,7 @@
 package Irssi;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use vars qw($VERSION $in_irssi @ISA @EXPORT @EXPORT_OK);
 
 sub VERSION {
   my $version = $_[1];
@@ -16,6 +16,10 @@ sub VERSION {
 sub EXPORT_ALL () {
   no strict 'refs';
   @EXPORT_OK = grep { /[a-z]/ && defined *{$_}{CODE} } keys %Irssi::;
+}
+
+sub in_irssi {
+  return $in_irssi;
 }
 
 $VERSION = "0.9";
@@ -35,14 +39,25 @@ require DynaLoader;
 );
 @EXPORT_OK = qw();
 
-bootstrap Irssi $VERSION if (!Irssi::Core::is_static());
+my $static = 0;
 
-@Irssi::Channel::ISA = qw(Irssi::Windowitem);
-@Irssi::Query::ISA = qw(Irssi::Windowitem);
+eval {
+  $static = Irssi::Core::is_static();
+};
+$in_irssi = $@ ? 0 : 1;
 
-Irssi::init();
+if (!in_irssi()) {
+  print "Warning: This script should be run inside irssi\n";
+} else {
+  bootstrap Irssi $VERSION if (!$static);
 
-Irssi::EXPORT_ALL();
+  @Irssi::Channel::ISA = qw(Irssi::Windowitem);
+  @Irssi::Query::ISA = qw(Irssi::Windowitem);
+
+  Irssi::init();
+
+  Irssi::EXPORT_ALL();
+}
 
 1;
 
