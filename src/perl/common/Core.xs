@@ -3,6 +3,7 @@
 #include "core.h"
 
 #include "pidwait.h"
+#include "session.h"
 
 #define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
 
@@ -545,6 +546,13 @@ char *
 get_irssi_config()
 CODE:
 	RETVAL = (char *) get_irssi_config();
+OUTPUT:
+	RETVAL
+
+char *
+get_irssi_binary()
+CODE:
+	RETVAL = irssi_binary;
 OUTPUT:
 	RETVAL
 
