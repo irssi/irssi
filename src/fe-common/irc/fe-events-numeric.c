@@ -446,6 +446,7 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 	if (strcmp(txt_real, "real") != 0 ||
 	    strcmp(txt_hostname, "hostname") != 0) {
 		/* <yournick> <nick> :... from <hostname> */
+                g_free(params);
 		params = event_get_params(data, 3, NULL, &nick, &hostname);
 
 		from = strstr(hostname, "from ");
@@ -459,15 +460,23 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *txt_usermodes, *nick, *usermode;
+	char *params, *txt_usermodes, *nick, *usermode, *text;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, &txt_usermodes,
 				  &nick, &usermode);
 
-	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_USERMODE, nick, usermode);
+	if (strcmp(txt_usermodes, "usermodes") == 0) {
+		/* <yournick> usermodes <nick> usermode */
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_USERMODE, nick, usermode);
+	} else {
+                /* some servers use this as motd too.. */
+                g_free(params);
+		params = event_get_params(data, 2, NULL, &text);
+                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
+	}
 	g_free(params);
 }
 
