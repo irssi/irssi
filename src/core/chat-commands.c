@@ -297,8 +297,12 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 				       NULL, &free_ret, NULL, 0);
 		if (target != NULL && *target == '\0')
 			target = NULL;
-	} else if (strcmp(target, "*") == 0 && item != NULL)
+	} else if (strcmp(target, "*") == 0) {
+		if (item == NULL)
+			cmd_param_error(CMDERR_NOT_JOINED);
+
 		target = item->name;
+	}
 
 	if (target != NULL)
 		server->send_message(server, target, msg);
