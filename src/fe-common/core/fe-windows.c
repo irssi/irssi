@@ -74,7 +74,7 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 	windows = g_slist_prepend(windows, rec);
 	signal_emit("window created", 2, rec, GINT_TO_POINTER(automatic));
 
-	if (item != NULL) window_add_item(rec, item, automatic);
+	if (item != NULL) window_item_add(rec, item, automatic);
 	if (windows->next == NULL || !automatic || settings_get_bool("window_auto_change")) {
 		if (automatic && windows->next != NULL)
 			signal_emit("window changed automatic", 1, rec);
@@ -113,7 +113,7 @@ void window_destroy(WINDOW_REC *window)
 	}
 
 	while (window->items != NULL)
-		window_remove_item(window, window->items->data);
+		window_item_destroy(window, window->items->data);
 
 	windows_pack(window->refnum);
 
@@ -276,7 +276,7 @@ WINDOW_REC *window_find_name(const char *name)
 	return NULL;
 }
 
-WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
+WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 {
 	WINDOW_REC *rec;
 	WI_ITEM_REC *item;
@@ -286,10 +286,9 @@ WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
 	rec = window_find_name(name);
 	if (rec != NULL) return rec;
 
-	item = window == NULL ? NULL :
-		window_item_find(window->active_server, name);
-	if (item == NULL && (window == NULL ||
-			     window->active_server != NULL)) {
+	item = server == NULL ? NULL :
+		window_item_find(server, name);
+	if (item == NULL && server == NULL) {
 		/* not found from the active server - any server? */
 		item = window_item_find(NULL, name);
 	}
@@ -300,8 +299,8 @@ WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
 		/* still nothing? maybe user just left the # in front of
 		   channel, try again with it.. */
 		chan = g_strdup_printf("#%s", name);
-		item = window == NULL ? NULL :
-			window_item_find(window->active_server, chan);
+		item = server == NULL ? NULL :
+			window_item_find(server, chan);
 		if (item == NULL) item = window_item_find(NULL, chan);
 		g_free(chan);
 	}

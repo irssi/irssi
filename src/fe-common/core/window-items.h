@@ -3,10 +3,12 @@
 
 #include "fe-windows.h"
 
-/* Add/remove window item from `window' */
-void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);
-void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item);
-/* Find a window for `item' and call window_add_item(). */
+/* Add/remove/destroy window item from `window' */
+void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);
+void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item);
+void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item);
+
+/* Find a window for `item' and call window_item_add(). */
 void window_item_create(WI_ITEM_REC *item, int automatic);
 
 WINDOW_REC *window_item_window(WI_ITEM_REC *item);

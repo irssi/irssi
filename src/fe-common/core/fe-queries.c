@@ -65,7 +65,7 @@ static void signal_query_created_curwin(QUERY_REC *query)
 {
 	g_return_if_fail(query != NULL);
 
-	window_add_item(active_win, (WI_ITEM_REC *) query, FALSE);
+	window_item_add(active_win, (WI_ITEM_REC *) query, FALSE);
 }
 
 static void signal_query_destroyed(QUERY_REC *query)
@@ -76,7 +76,7 @@ static void signal_query_destroyed(QUERY_REC *query)
 
 	window = window_item_window((WI_ITEM_REC *) query);
 	if (window != NULL) {
-		window_remove_item(window, (WI_ITEM_REC *) query);
+		window_item_destroy(window, (WI_ITEM_REC *) query);
 
 		if (window->items == NULL && windows->next != NULL &&
 		    !query->unwanted && settings_get_bool("autoclose_windows"))
@@ -84,7 +84,7 @@ static void signal_query_destroyed(QUERY_REC *query)
 	}
 }
 
-static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
+static void signal_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
 {
 	QUERY_REC *query;
 
@@ -289,7 +289,7 @@ void fe_queries_init(void)
 
 	signal_add("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_add("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
-	signal_add_last("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
+	signal_add_last("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add_first("message private", (SIGNAL_FUNC) sig_message_private);
@@ -308,7 +308,7 @@ void fe_queries_deinit(void)
 
 	signal_remove("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_remove("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
-	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
+	signal_remove("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);

@@ -130,7 +130,7 @@ window_find_closest(server, name, level)
 
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Window
+MODULE = Irssi	PACKAGE = Irssi::Window  PREFIX=window_
 #*******************************
 
 void
@@ -184,13 +184,18 @@ CODE:
 	signal_emit("send command", 3, cmd, server, item);
 
 void
-window_add_item(window, item, automatic)
+window_item_add(window, item, automatic)
 	Irssi::Window window
 	Irssi::Windowitem item
 	int automatic
 
 void
-window_remove_item(window, item)
+window_item_remove(window, item)
+	Irssi::Window window
+	Irssi::Windowitem item
+
+void
+window_item_destroy(window, item)
 	Irssi::Window window
 	Irssi::Windowitem item
 
@@ -240,10 +245,19 @@ window_get_active_name(window)
 	Irssi::Window window
 
 Irssi::Window
-window_find_item(window, name)
-	Irssi::Window window
+window_find_item(server, name)
+	Irssi::Server server
 	char *name
 
+Irssi::Windowitem
+window_item_find(window, server, name)
+	Irssi::Window window
+	Irssi::Server server
+	char *name
+CODE:
+	RETVAL = window_item_find_window(window, server, name);
+OUTPUT:
+	RETVAL
 
 #*******************************
 MODULE = Irssi	PACKAGE = Irssi::Windowitem

@@ -588,7 +588,7 @@ static void cmd_window_hide(const char *data)
 	else if (is_numeric(data, 0))
 		window = window_find_refnum(atoi(data));
 	else
-		window = window_find_item(active_win, data);
+		window = window_find_item(active_win->active_server, data);
 
 	if (window == NULL) return;
 	if (!is_window_visible(window)) return;
@@ -610,7 +610,7 @@ static void cmd_window_show(const char *data)
 
 	window = is_numeric(data, 0) ?
 		window_find_refnum(atoi(data)) :
-		window_find_item(active_win, data);
+		window_find_item(active_win->active_server, data);
 
 	if (window == NULL) return;
 	if (is_window_visible(window)) return;

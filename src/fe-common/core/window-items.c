@@ -31,7 +31,7 @@
 #include "window-items.h"
 #include "printtext.h"
 
-void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
+void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 {
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(item != NULL);
@@ -58,7 +58,7 @@ void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 	}
 }
 
-void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item)
+void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 {
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(item != NULL);
@@ -75,6 +75,13 @@ void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 
 	signal_emit("window item remove", 2, window, item);
+}
+
+void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
+{
+        window_item_remove(window, item);
+
+	signal_emit("window item destroy", 2, window, item);
 }
 
 WINDOW_REC *window_item_window(WI_ITEM_REC *item)
@@ -97,32 +104,14 @@ void window_item_change_server(WI_ITEM_REC *item, void *server)
 	if (window->active == item) window_change_server(window, item->server);
 }
 
-static void window_item_move(WINDOW_REC *window, WI_ITEM_REC *item)
-{
-        WINDOW_REC *oldwin;
-
-        /* remove from old window */
-        oldwin = window_item_window(item);
-        oldwin->items = g_slist_remove(oldwin->items, item);
-        window->items = g_slist_append(window->items, item);
-
-	MODULE_DATA_SET(item, window);
-
-	if (oldwin->active == item) {
-                window_item_set_active(oldwin, oldwin->items == NULL ? NULL :
-				       oldwin->items->data);
-        }
-
-        signal_emit("window item moved", 2, window, item);
-}
-
 void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 {
         g_return_if_fail(window != NULL);
 
         if (item != NULL && window_item_window(item) != window) {
                 /* move item to different window */
-                window_item_move(window, item);
+                window_item_remove(window_item_window(item), item);
+                window_item_add(window, item, FALSE);
         }
 
 	if (window->active != item) {
@@ -299,7 +288,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		window = window_create(item, automatic);
 	} else {
 		/* use existing window */
-		window_add_item(window, item, automatic);
+		window_item_add(window, item, automatic);
 	}
 
 	if (clear_waiting) {

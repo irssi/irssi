@@ -62,7 +62,7 @@ WINDOW_REC *window_find_level(void *server, int level);
 WINDOW_REC *window_find_closest(void *server, const char *name, int level);
 WINDOW_REC *window_find_refnum(int refnum);
 WINDOW_REC *window_find_name(const char *name);
-WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name);
+WINDOW_REC *window_find_item(SERVER_REC *server, const char *name);
 
 int window_refnum_prev(int refnum, int wrap);
 int window_refnum_next(int refnum, int wrap);

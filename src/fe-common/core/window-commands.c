@@ -127,7 +127,7 @@ static void cmd_window_goto(const char *data)
 	if (g_strcasecmp(data, "active") == 0)
                 window = window_highest_activity(active_win);
 	else
-                window = window_find_item(active_win, data);
+                window = window_find_item(active_win->active_server, data);
 
 	if (window != NULL)
 		window_set_active(window);
