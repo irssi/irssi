@@ -48,24 +48,22 @@ typedef struct {
 static int flood_tag;
 static int flood_max_msgs, flood_timecheck;
 
-static int flood_hash_check_remove(const char *key, FLOOD_REC *flood, gpointer nowp)
+static int flood_hash_check_remove(const char *key, FLOOD_REC *flood,
+				   time_t *now)
 {
 	GSList *tmp, *next;
-	time_t now;
 
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(flood != NULL, FALSE);
 
-        now = (time_t) GPOINTER_TO_INT(nowp);
 	for (tmp = flood->items; tmp != NULL; tmp = next) {
 		FLOOD_ITEM_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (now-rec->first >= flood_timecheck) {
+		if (*now-rec->first >= flood_timecheck) {
 			flood->items = g_slist_remove(flood->items, rec);
 			g_free(rec->target);
 			g_free(rec);
-			rec->msgcount--;
 		}
 	}
 
@@ -92,7 +90,9 @@ static int flood_timeout(void)
                         continue;
 
 		mserver = MODULE_DATA(rec);
-		g_hash_table_foreach_remove(mserver->floodlist, (GHRFunc) flood_hash_check_remove, GINT_TO_POINTER((int) now));
+		g_hash_table_foreach_remove(mserver->floodlist,
+					    (GHRFunc) flood_hash_check_remove,
+					    &now);
 	}
 	return 1;
 }
@@ -110,7 +110,8 @@ static void flood_init_server(IRC_SERVER_REC *server)
 	rec = g_new0(MODULE_SERVER_REC, 1);
 	MODULE_DATA_SET(server, rec);
 
-	rec->floodlist = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	rec->floodlist = g_hash_table_new((GHashFunc) g_istr_hash,
+					  (GCompareFunc) g_istr_equal);
 }
 
 static void flood_hash_destroy(const char *key, FLOOD_REC *flood)
@@ -142,20 +143,23 @@ static void flood_deinit_server(IRC_SERVER_REC *server)
 	if (mserver != NULL && mserver->floodlist != NULL) {
 		flood_timecheck = 0;
 
-		g_hash_table_foreach(mserver->floodlist, (GHFunc) flood_hash_destroy, NULL);
+		g_hash_table_foreach(mserver->floodlist,
+				     (GHFunc) flood_hash_destroy, NULL);
 		g_hash_table_destroy(mserver->floodlist);
 	}
 	g_free(mserver);
 }
 
-static FLOOD_ITEM_REC *flood_find(FLOOD_REC *flood, int level, const char *target)
+static FLOOD_ITEM_REC *flood_find(FLOOD_REC *flood, int level,
+				  const char *target)
 {
 	GSList *tmp;
 
 	for (tmp = flood->items; tmp != NULL; tmp = tmp->next) {
 		FLOOD_ITEM_REC *rec = tmp->data;
 
-		if (rec->level == level && g_strcasecmp(rec->target, target) == 0)
+		if (rec->level == level &&
+		    g_strcasecmp(rec->target, target) == 0)
 			return rec;
 	}
 
@@ -163,7 +167,8 @@ static FLOOD_ITEM_REC *flood_find(FLOOD_REC *flood, int level, const char *targe
 }
 
 /* All messages should go through here.. */
-static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick, const char *host, const char *target)
+static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
+			 const char *host, const char *target)
 {
 	MODULE_SERVER_REC *mserver;
 	FLOOD_REC *flood;
@@ -180,7 +185,8 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick, co
 		if (++rec->msgcount > flood_max_msgs) {
 			/* flooding! */
                         rec->first = 0;
-			signal_emit("flood", 5, server, nick, host, GINT_TO_POINTER(rec->level), target);
+			signal_emit("flood", 5, server, nick, host,
+				    GINT_TO_POINTER(rec->level), target);
 		}
 		return;
 	}
