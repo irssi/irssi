@@ -59,14 +59,16 @@ static GString *tmpstr;
 static int knockout_tag;
 
 /* SYNTAX: NOTICE <targets> <message> */
-static void cmd_notice(const char *data, IRC_SERVER_REC *server)
+static void cmd_notice(const char *data, IRC_SERVER_REC *server,
+		       WI_ITEM_REC *item)
 {
 	char *target, *msg;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTCHAN, item, &target, &msg))
 		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -77,14 +79,17 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: CTCP <targets> <ctcp command> [<ctcp data>] */
-static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
+static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
+		     WI_ITEM_REC *item)
 {
 	char *target, *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTCHAN, item,
+			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -99,14 +104,17 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: NCTCP <targets> <ctcp command> [<ctcp data>] */
-static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
+static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
+		      WI_ITEM_REC *item)
 {
 	char *target, *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			    PARAM_FLAG_OPTCHAN, item,
+			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -118,14 +126,16 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: PART [<channels>] [<message>] */
-static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_part(const char *data, IRC_SERVER_REC *server,
+		     WI_ITEM_REC *item)
 {
 	char *channame, *msg;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | 
+			    PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -148,8 +158,9 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
-			    item, &channame, &nicks, &reason))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTCHAN, item,
+			    &channame, &nicks, &reason))
 		return;
 
 	if (*channame == '\0' || *nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
