@@ -153,7 +153,7 @@ FORMAT_REC fecommon_irc_formats[] = {
         { "kill_server", "You were {error killed} by {server $0} {reason $1} {comment Path: $2}", 3, { 0, 0, 0 } },
 	{ "error", "{error ERROR} $0", 1, { 0 } },
 	{ "unknown_mode", "Unknown mode character $0", 1, { 0 } },
-	{ "default_event", "[$0] $1", 2, { 0, 0 } },
+	{ "default_event", "[$0] $1", 3, { 0, 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Misc", 0 },

@@ -846,7 +846,8 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 		printtext(server, target, MSGLEVEL_CRAP, "%s", args);
 	else {
 		printformat(server, target, MSGLEVEL_CRAP,
-			    IRCTXT_DEFAULT_EVENT, nick, args);
+			    IRCTXT_DEFAULT_EVENT, nick, args,
+			    current_server_event);
 	}
 	g_free(args);
 }
