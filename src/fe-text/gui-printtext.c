@@ -232,6 +232,6 @@ void gui_printtext_init(void)
 void gui_printtext_deinit(void)
 {
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
-	signal_remove("print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
+	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

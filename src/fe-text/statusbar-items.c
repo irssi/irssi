@@ -690,7 +690,7 @@ void statusbar_items_init(void)
 	more_item = NULL;
 	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
 	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
-	signal_add("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
+	signal_add_last("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_check);
 
 	/* lag */
 	lag_timetag = g_timeout_add(1000*LAG_REFRESH_TIME, (GSourceFunc) statusbar_lag_timeout, NULL);
@@ -751,7 +751,7 @@ void statusbar_items_deinit(void)
 	/* more */
 	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
-	signal_remove("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
+	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_check);
 
 	/* lag */
 	g_source_remove(lag_timetag);
