@@ -83,12 +83,11 @@ static void cmd_set(char *data)
 			    "set", &optlist, &key, &value))
 		return;
 
-	if (*key == '\0') {
-		cmd_params_free(free_arg);
-		return;
-	}
 	clear = g_hash_table_lookup(optlist, "clear") != NULL;
 	set_default = g_hash_table_lookup(optlist, "default") != NULL;
+
+	if (*key == '\0')
+		clear = set_default = FALSE;
 
 	last_section = ""; found = 0;
 	sets = settings_get_sorted();
