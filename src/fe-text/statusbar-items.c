@@ -763,9 +763,9 @@ static void mainbar_remove_items(void)
         statusbar_item_remove(clock_item);
         statusbar_item_remove(nick_item);
         statusbar_item_remove(channel_item);
-        statusbar_item_remove(activity_item);
-	statusbar_item_remove(lag_item);
 	statusbar_item_remove(mail_item);
+	statusbar_item_remove(lag_item);
+        statusbar_item_remove(activity_item);
 }
 
 static void mainbar_add_items(MAIN_WINDOW_REC *window)
@@ -776,9 +776,9 @@ static void mainbar_add_items(MAIN_WINDOW_REC *window)
 	clock_item = statusbar_item_create(mainbar, 7, FALSE, statusbar_clock);
 	nick_item = statusbar_item_create(mainbar, 2, FALSE, statusbar_nick);
 	channel_item = statusbar_item_create(mainbar, 2, FALSE, statusbar_channel);
-	activity_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_activity);
-	lag_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_lag);
 	mail_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_mail);
+	lag_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_lag);
+	activity_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_activity);
 }
 
 static void sidebar_add_items(MAIN_WINDOW_REC *window)
