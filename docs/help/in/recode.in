@@ -1,0 +1,14 @@
+
+@SYNTAX:recode@
+
+RECODE
+    %|List the conversion database
+
+RECODE ADD %|[<target>] <charset>
+    %|Add an entry to the conversion database (if target is omitted,
+    the current channel or query will be used)
+
+RECODE REMOVE %|[<target>]
+    %|Remove an entry from the conversion database (if target is
+    omitted, the current channel or query will be used)
+
