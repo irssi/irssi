@@ -128,11 +128,15 @@ static void sig_layout_restore(void)
 		/* create a new window + mainwindow */
 		signal_emit("gui window create override", 1,
 			    GINT_TO_POINTER(0));
+
 		window = window_create(NULL, TRUE);
                 window_set_refnum(window, atoi(node->key));
 
 		if (lower_size > 0)
 			mainwindow_set_size(lower_window, lower_size);
+
+		window_set_active(window);
+                active_mainwin = WINDOW_MAIN(window);
 
                 lower_window = WINDOW_MAIN(window);
 		lower_size = config_node_get_int(node, "lines", 0);
