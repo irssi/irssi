@@ -364,7 +364,9 @@ static void sig_channel_joined(IRC_CHANNEL_REC *channel)
 	/* Add channel to query lists */
 	if (!channel->no_modes)
 		query_add_channel(channel, CHANNEL_QUERY_MODE);
-	query_add_channel(channel, CHANNEL_QUERY_WHO);
+	if (g_hash_table_size(channel->nicks) <
+	    settings_get_int("channel_max_who_sync"))
+		query_add_channel(channel, CHANNEL_QUERY_WHO);
 	if (!channel->no_modes)
 		query_add_channel(channel, CHANNEL_QUERY_BMODE);
 
@@ -481,6 +483,7 @@ static void event_end_of_banlist(IRC_SERVER_REC *server, const char *data)
 void channels_query_init(void)
 {
 	settings_add_bool("misc", "channel_sync", TRUE);
+	settings_add_int("misc", "channel_max_who_sync", 1000);
 
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
