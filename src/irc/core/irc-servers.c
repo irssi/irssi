@@ -325,7 +325,7 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 	   actually is 1sec / 100 bytes penalty, but we rather want to deal
 	   with the max. 1000 bytes input buffer problem. If we send more
 	   than that with the burst, we'll get excess flooded. */
-	if (len < 100)
+	if (len < 100 || server->cmd_queue_speed <= 10)
 		server->wait_cmd.tv_sec = 0;
 	else {
 		memcpy(&server->wait_cmd, &server->last_cmd, sizeof(GTimeVal));
