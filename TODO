@@ -1,6 +1,12 @@
 
 *** Bugs
 
+ - %| doesn't work with irssi text widget
+ - when changing server (/server), irssi will automatically join back to the
+   channels that were joined in previous server. If IRC network is different
+   than in previous server it shouldn't join the channels..
+ - some problems when using multiple windows with focus being all the time in
+   one of the windows and it can't be changed to different window?!
  - split windows are buggy, destroying them doesn't really work well..
  - irssi can't find new themes in ~/.irssi/ while running - scan for new
    themes when opening themes dialog? irssi-text also needs to be restarted
@@ -130,7 +136,6 @@
  - check new irssi versions with http rather than with irssibot..
  - implement requesting files with DCC GET from remote client for dcc file
    servers. good for people behind firewalls.
- - support for ircii translation tables (/usr/lib/irc/translation/*)
  - use different nicks/realnames in different irc networks
  - gnome statubar:
     - clock?

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Irssi 0.7.23\n"
-"POT-Creation-Date: 2000-02-19 18:58+0200\n"
+"POT-Creation-Date: 2000-03-11 19:59+0200\n"
 "PO-Revision-Date: 1999-12-01 10:35-0200\n"
 "Last-Translator: Thomas Heinen <cochi@uni-paderborn.de>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -91,16 +91,18 @@ msgid "%B-%W!%B- %WIrssi:%n "
 msgstr "%B-%W!%B- %WIrssi:%n"
 
 #: src/ui-common/ui-formats.c:35
-msgid "[$[2.0]4:$[2.0]5] "
+#, fuzzy
+msgid "[$[-2.0]4:$[-2.0]5] "
 msgstr "[$[2.0]4:$[2.0]5] "
 
 #: src/ui-common/ui-formats.c:36
-msgid "Day changed to $[2.0]2-$[2.0]1 $3"
+#, fuzzy
+msgid "Day changed to $[-2.0]2-$[-2.0]1 $3"
 msgstr "Tag geaendert auf $[2.0]2-$[2.0]1 $3"
 
 #. ----
-#: src/gui-gnome/dialog-links.c:350 src/gui-gnome/setup-servers.c:257
-#: src/gui-gnome/setup-servers.c:489 src/ui-common/ui-formats.c:39
+#: src/gui-gnome/dialog-links.c:350 src/gui-gnome/setup-servers.c:266
+#: src/gui-gnome/setup-servers.c:498 src/ui-common/ui-formats.c:39
 msgid "Server"
 msgstr "Server"
 
@@ -140,76 +142,98 @@ msgstr "Geaendert zu %_$3%_ Server %_$2%_"
 msgid "Unknown server tag %_$1%_"
 msgstr "Unbekanntes Server-Tag %_$1%_"
 
+#: src/ui-common/ui-formats.c:50
+msgid "%_$1%_: $2:$3 ($4)"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:51
+msgid "%_$1%_: $2:$3 ($4) (connecting...)"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:52
+msgid "%_$1%_: $2:$3 ($4) ($6 left before reconnecting)"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:53
+#, fuzzy
+msgid "Removed reconnection to server %_$1%_ port %_$2%_"
+msgstr "Keine Verbindung moeglich mit Server %_$1%_ porta %_$2%_ %K[%n$3%K]"
+
+#: src/ui-common/ui-formats.c:54
+#, fuzzy
+msgid "Reconnection tag %_$1%_ not found"
+msgstr "Verbindung zu %_$1%_ etabliert"
+
 #. ----
 #: src/gui-gnome/dialog-status.c:86 src/gui-gnome/gui-event-whois.c:41
 #: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lookandfeel.c:95
-#: src/ui-common/ui-formats.c:52
+#: src/ui-common/ui-formats.c:57
 msgid "Channels"
 msgstr "Channels"
 
-#: src/ui-common/ui-formats.c:54
+#: src/ui-common/ui-formats.c:59
 msgid "%c%_$1%_ %K[%c$2%K]%n has joined %_$3"
 msgstr "%c%_$1%_ %K[%c$2%K]%n betritt %_$3"
 
-#: src/ui-common/ui-formats.c:55
+#: src/ui-common/ui-formats.c:60
 msgid "%c$1 %K[%n$2%K]%n has left %_$3%_ %K[%n$4%K]"
 msgstr "%c$1 %K[%n$2%K]%n verlaesst %_$3%_ %K[%n$4%K]"
 
-#: src/ui-common/ui-formats.c:56
+#: src/ui-common/ui-formats.c:61
 msgid "You are now talking to channel %_$1%_"
 msgstr "Du sprichst jetzt auf %_$1%_"
 
-#: src/ui-common/ui-formats.c:57
+#: src/ui-common/ui-formats.c:62
 msgid ""
 "Cannot join to channel %_$1%_ %K(%nYou have joined to too many channels%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nZuviele Channels%K)"
 
-#: src/ui-common/ui-formats.c:58
+#: src/ui-common/ui-formats.c:63
 msgid "Cannot join to channel %_$1%_ %K(%nChannel is full%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nChannel ist voll%K)"
 
-#: src/ui-common/ui-formats.c:59
+#: src/ui-common/ui-formats.c:64
 msgid "Cannot join to channel %_$1%_ %K(%nYou must be invited%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nNicht eingeladen%K)"
 
-#: src/ui-common/ui-formats.c:60
+#: src/ui-common/ui-formats.c:65
 msgid "Cannot join to channel %_$1%_ %K(%nYou are banned%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nGebanned%K)"
 
-#: src/ui-common/ui-formats.c:61
+#: src/ui-common/ui-formats.c:66
 msgid "Cannot join to channel %_$1%_ %K(%nBad channel key%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nChannel-Key falsch%K)"
 
-#: src/ui-common/ui-formats.c:62
+#: src/ui-common/ui-formats.c:67
 msgid "Cannot join to channel %_$1%_ %K(%nBad channel mask%K)"
 msgstr "Kann Channel %_$1%_ nicht betreten %K(%nInkorrekte Channelmaske%K)"
 
-#: src/ui-common/ui-formats.c:63
+#: src/ui-common/ui-formats.c:68
 msgid ""
 "Cannot join to channel %_$1%_ %K(%nChannel is temporarily unavailable%K)"
 msgstr ""
 "Kann Channel %_$1%_ nicht betreten %K(%nChannel voruebergehend nicht "
 "verfuegbar%K)"
 
-#: src/ui-common/ui-formats.c:64
+#: src/ui-common/ui-formats.c:69
 #, fuzzy
 msgid "%c$1%n was kicked from %_$2%_ by %_$3%_ %K[%n$4%K]"
 msgstr "%c%_$1%_%n wurde gekickt von $2 durch %_$3%_ %K[%n$4%K]"
 
-#: src/ui-common/ui-formats.c:65
+#: src/ui-common/ui-formats.c:70
 #, fuzzy
 msgid "%c$1 %K[%n$2%K]%n has quit IRC %K[%n$3%K]"
 msgstr "%c%_$1%_ %K[%n$2%K]%n verlaesst den IRC %K[%n$3%K]"
 
-#: src/ui-common/ui-formats.c:66
+#: src/ui-common/ui-formats.c:71
 msgid "%_$1%_ invites you to %_$2"
 msgstr "%_$1%_ laed Dich ein auf %_$2"
 
-#: src/ui-common/ui-formats.c:67
+#: src/ui-common/ui-formats.c:72
 msgid "%K[%g%_Users%_%K(%g$1%K)]%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:68
+#: src/ui-common/ui-formats.c:73
 msgid ""
 "%g%_$1%_%K:%n Total of %_$2%_ nicks %K[%n%_$3%_ ops, %_$4%_ voices, %_$5%_ "
 "normal%K]"
@@ -217,345 +241,351 @@ msgstr ""
 "%g%_$1%_%K:%n Insgesamt %_$2%_ Nicks %K[%n%_$3%_ Op, %_$4%_ Voice, %_$5%_ "
 "Normal%K]"
 
-#: src/ui-common/ui-formats.c:69
+#: src/ui-common/ui-formats.c:74
 msgid "Channel %_$1%_ created $2"
 msgstr "Channel %_$1%_ erzeugt $2"
 
-#: src/ui-common/ui-formats.c:70
+#: src/ui-common/ui-formats.c:75
 msgid "Topic for %c$1%K:%n $2"
 msgstr "Topic ist %c$1%K:%n $2"
 
-#: src/ui-common/ui-formats.c:71
+#: src/ui-common/ui-formats.c:76
 #, c-format
 msgid "No topic set for %c$1"
 msgstr "Kein Topic gesetzt auf %c$1"
 
-#: src/ui-common/ui-formats.c:72
+#: src/ui-common/ui-formats.c:77
 msgid "%_$1%_ changed the topic of %c$2%n to%K:%n $3"
 msgstr "%_$1%_ aenderte das Topic von %c$2%n auf%K:%n $3"
 
-#: src/ui-common/ui-formats.c:73
+#: src/ui-common/ui-formats.c:78
 msgid "Topic unset by %_$1%_ on %c$2"
 msgstr "Topic geloescht von %_$1%_ auf %c$2"
 
-#: src/ui-common/ui-formats.c:74
+#: src/ui-common/ui-formats.c:79
 msgid "Topic set by %_$1%_ %K[%n$2%K]"
 msgstr "Topic gesetzt von %_$1%_ %K[%n$2%K]"
 
-#: src/ui-common/ui-formats.c:75
+#: src/ui-common/ui-formats.c:80
 msgid "mode/%c$1 %K[%n$2%K]%n by %_$3"
 msgstr "mode/%c$1 %K[%n$2%K]%n von %_$3"
 
-#: src/ui-common/ui-formats.c:76
+#: src/ui-common/ui-formats.c:81
 #, fuzzy
 msgid "%RServerMode/%c$1 %K[%n$2%K]%n by %_$3"
 msgstr "%RServermode/%c$1 %K[%n$2%K]%n von %_$3"
 
-#: src/ui-common/ui-formats.c:77
+#: src/ui-common/ui-formats.c:82
 msgid "mode/%c$1 %K[%n$2%K]"
 msgstr "mode/%c$1 %K[%n$2%K]"
 
-#: src/ui-common/ui-formats.c:78
+#: src/ui-common/ui-formats.c:83
 msgid "Ban type changed to %_$1"
 msgstr "Ban geaendert auf %_$1"
 
-#: src/ui-common/ui-formats.c:79
+#: src/ui-common/ui-formats.c:84
 msgid "%_$1%_: ban %c$2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:80
+#: src/ui-common/ui-formats.c:85
 msgid "%_$1%_: ban %c$2 %K[%nby %_$3%_, $4 secs ago%K]"
 msgstr "%_$1%_: ban %c$2 %K[%nvon %_$3%_, vor $4 Sekunden%K]"
 
-#: src/ui-common/ui-formats.c:81
+#: src/ui-common/ui-formats.c:86
 msgid "%_$1%_: ban exception %c$2"
 msgstr "%_$1%_: Ban-Ausnahme %c$2"
 
-#: src/ui-common/ui-formats.c:82
+#: src/ui-common/ui-formats.c:87
 msgid "%_$1%_: ban exception %c$2 %K[%nby %_$3%_, $4 secs ago%K]"
 msgstr "%_$1%_: Ban-Ausnahme %c$2 %K[%nvon %_$3%_, vor $4 Sekunden%K]"
 
-#: src/ui-common/ui-formats.c:83
+#: src/ui-common/ui-formats.c:88
 msgid "%_$1%_: invite %c$2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:84
+#: src/ui-common/ui-formats.c:89
 msgid "$1: No such channel"
 msgstr "$1: Kein solcher Channel"
 
-#: src/ui-common/ui-formats.c:85
+#: src/ui-common/ui-formats.c:90
 msgid "Join to %_$1%_ was synced in %_$2%_ secs"
 msgstr "Betreten von %_$1%_ synchronisiert in %_$2%_ Sek"
 
 #. ----
 #: src/gui-gnome/dialog-dcc.c:169 src/gui-gnome/dialog-notifylist.c:243
 #: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/setup-ircnets.c:197
-#: src/gui-gnome/setup-servers.c:554 src/ui-common/ui-formats.c:88
+#: src/gui-gnome/setup-servers.c:563 src/ui-common/ui-formats.c:93
 msgid "Nick"
 msgstr "Nick"
 
-#: src/ui-common/ui-formats.c:90
+#: src/ui-common/ui-formats.c:95
 msgid "Mode change %K[%n%_$1%_%K]%n for user %c$2"
 msgstr "Moduswechsel %K[%n%_$1%_%K]%n fuer User %c$2"
 
-#: src/ui-common/ui-formats.c:91
+#: src/ui-common/ui-formats.c:96
 msgid "Your user mode is %K[%n%_$1%_%K]"
 msgstr "Dein Usermodus ist %K[%n%_$1%_%K]"
 
-#: src/ui-common/ui-formats.c:92
+#: src/ui-common/ui-formats.c:97
 msgid "You have been marked as being away"
 msgstr "Du bist away"
 
-#: src/ui-common/ui-formats.c:93
+#: src/ui-common/ui-formats.c:98
 msgid "You are no longer marked as being away"
 msgstr "Du bist nicht mehr away"
 
-#: src/ui-common/ui-formats.c:94
+#: src/ui-common/ui-formats.c:99
 msgid "$1 is away: $2"
 msgstr "$1 ist away: $2"
 
-#: src/ui-common/ui-formats.c:95
+#: src/ui-common/ui-formats.c:100
 msgid "$1: No such nick/channel"
 msgstr "$1: Kein solcher Nick/Channel"
 
-#: src/ui-common/ui-formats.c:96
+#: src/ui-common/ui-formats.c:101
 #, c-format
 msgid "You're now known as %c$1"
 msgstr "Du bist jetzt bekannt als %c$1"
 
-#: src/ui-common/ui-formats.c:97
+#: src/ui-common/ui-formats.c:102
 msgid "%_$1%_ is now known as %c$2"
 msgstr "%_$1%_ ist jetzt bekannt als %c$2"
 
-#: src/ui-common/ui-formats.c:98
+#: src/ui-common/ui-formats.c:103
 msgid "Nick %_$1%_ is already in use"
 msgstr "Nick %_$1%_ wird schon verwendet"
 
-#: src/ui-common/ui-formats.c:99
+#: src/ui-common/ui-formats.c:104
 msgid "Nick %_$1%_ is temporarily unavailable"
 msgstr "Nick %_$1%_ ist temporaer nicht verfuegbar"
 
-#: src/ui-common/ui-formats.c:100
+#: src/ui-common/ui-formats.c:105
 msgid "Your nick is owned by %_$4%_ %K[%n$2@$3%K]"
 msgstr "Dein Nick ist belegt von %_$4%_ %K[%n$2@$3%K]"
 
 #. ----
-#: src/ui-common/ui-formats.c:103
+#: src/ui-common/ui-formats.c:108
 msgid "Who queries"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:105
+#: src/ui-common/ui-formats.c:110
 msgid "%_$1%_ %K[%n$2@$3%K]%n%: ircname  : $4"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:106
+#: src/ui-common/ui-formats.c:111
 msgid " idle     : $2 hours $3 mins $4 secs"
 msgstr " idle : $2 Stunden $3 Minuten $4 Sekunden"
 
-#: src/ui-common/ui-formats.c:107
-msgid " idle     : $2 hours $3 mins $4 secs %K[%nsignon: $5]"
+#: src/ui-common/ui-formats.c:112
+#, fuzzy
+msgid " idle     : $2 hours $3 mins $4 secs %K[%nsignon: $5%K]"
 msgstr " idle : $2 Stunden $3 Minuten $4 Sekunden %K[%nSignon: $5]"
 
-#: src/ui-common/ui-formats.c:108
-msgid " server   : $2 ($3)"
+#: src/ui-common/ui-formats.c:113
+#, fuzzy
+msgid " server   : $2 %K[%n$3%K]"
 msgstr " server     : $2 ($3)"
 
-#: src/ui-common/ui-formats.c:109
+#: src/ui-common/ui-formats.c:114
 msgid "          : %_IRC operator%_"
 msgstr "          : %_IRC Operator%_"
 
-#: src/ui-common/ui-formats.c:110
+#: src/ui-common/ui-formats.c:115
 msgid " channels : $2"
 msgstr " Channels : $2"
 
-#: src/ui-common/ui-formats.c:111
+#: src/ui-common/ui-formats.c:116
 msgid " away     : $2"
 msgstr " Away     : $2"
 
-#: src/ui-common/ui-formats.c:112
+#: src/ui-common/ui-formats.c:117
 msgid "End of WHOIS"
 msgstr "End of WHOIS"
 
-#: src/ui-common/ui-formats.c:113
-msgid "$[10]1 %_$[!9]2%_ $[!3]3 $[!2]4 $5@$6 %K(%W$7%K)"
+#: src/ui-common/ui-formats.c:118
+msgid "$[-10]1 %_$[!9]2%_ $[!3]3 $[!2]4 $5@$6 %K(%W$7%K)"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:114
+#: src/ui-common/ui-formats.c:119
 msgid "End of /WHO list"
 msgstr "Ende der /WHO Liste"
 
 #. ----
-#: src/ui-common/ui-formats.c:117
+#: src/ui-common/ui-formats.c:122
 msgid "Your messages"
 msgstr "Deine Nachrichten"
 
-#: src/ui-common/ui-formats.c:119
-msgid "%K<%n$3%W$1%K>%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:120
-msgid "%K<%n$4%W$1%K:%c$2%K>%n $3"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:121
-msgid "%K[%rmsg%K(%R$1%K)]%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:122
-msgid "%K<%W$3%K>%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:123
-msgid "%K[%rnotice%K(%R$1%K)]%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:124 src/ui-common/ui-formats.c:146
-msgid "%W * $1%n $2"
+#: src/ui-common/ui-formats.c:124
+msgid "%K<%n$3%W$1%K>%n %|$2"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:125
-msgid "%K[%rctcp%K(%R$1%K)]%n $2 $3"
+msgid "%K<%n$4%W$1%K:%c$2%K>%n %|$3"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:126
+msgid "%K[%rmsg%K(%R$1%K)]%n $2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:127
+msgid "%K<%W$3%K>%n %|$2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:128
+msgid "%K[%rnotice%K(%R$1%K)]%n $2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:129 src/ui-common/ui-formats.c:152
+msgid "%W * $1%n $2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:130
+msgid "%K[%rctcp%K(%R$1%K)]%n $2 $3"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:131
 msgid "%K[%rdcc%K(%R$1%K)]%n $2"
 msgstr ""
 
 #. ----
-#: src/ui-common/ui-formats.c:129
+#: src/ui-common/ui-formats.c:134
 msgid "Received messages"
 msgstr "Empfangene Nachrichten"
 
-#: src/ui-common/ui-formats.c:131
-msgid "%K<%n$3%Y$1%K>%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:132
-msgid "%K<%n$4%Y$1%K:%c$2%K>%n $3"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:133
-msgid "%K<%n$4$1$2%K>%n $3"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:134
-msgid "%K<%n$5$1$2%K:%c$3%K>%n $4"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:135
-msgid "%K<%n$3$1%K>%n $2"
-msgstr ""
-
 #: src/ui-common/ui-formats.c:136
-msgid "%K<%n$4$1%K:%c$2%K>%n $3"
+msgid "%K<%n$3%Y$1%K>%n %|$2"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:137
-msgid "%K[%R$1%K(%r$2%K)]%n $3"
+msgid "%K<%n$4%Y$1%K:%c$2%K>%n %|$3"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:138
-msgid "%K<%R$1%K>%n $3"
+msgid "%K<%n$4$1$2%K>%n %|$3"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:139
-msgid "%K[%G$1%K(%gdcc%K)]%n $2"
+msgid "%K<%n$5$1$2%K:%c$3%K>%n %|$4"
 msgstr ""
 
 #: src/ui-common/ui-formats.c:140
+msgid "%K<%n$3$1%K>%n %|$2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:141
+msgid "%K<%n$4$1%K:%c$2%K>%n %|$3"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:142
+msgid "%K[%R$1%K(%r$2%K)]%n $3"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:143
+msgid "%K<%R$1%K>%n %|$3"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:144
+msgid "%K[%G$1%K(%gdcc%K)]%n $2"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:145
 #, c-format
 msgid "%g!$1%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:141
+#: src/ui-common/ui-formats.c:146
 msgid "%K-%M$1%K:%m$2%K-%n $3"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:142
+#: src/ui-common/ui-formats.c:147
+msgid "%K-%M$1%K:%m@$2%K-%n $3"
+msgstr ""
+
+#: src/ui-common/ui-formats.c:148
 msgid "%K-%M$1%K(%m$2%K)-%n $3"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:143
+#: src/ui-common/ui-formats.c:149
 msgid "%W (*dcc*) $1%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:144
+#: src/ui-common/ui-formats.c:150
 msgid "%W (*) $1%n $3"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:145
+#: src/ui-common/ui-formats.c:151
 msgid "%W * $1%n $3"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:147
+#: src/ui-common/ui-formats.c:153
 msgid "%W * $1%K:%c$2%n $3"
 msgstr ""
 
 #. ----
-#: src/ui-common/ui-formats.c:150
+#: src/ui-common/ui-formats.c:156
 msgid "CTCPs"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:152
+#: src/ui-common/ui-formats.c:158
 msgid "CTCP %_$1%_ reply from %_$2%_%K:%n $3"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:153
+#: src/ui-common/ui-formats.c:159
 msgid "CTCP %_PING%_ reply from %_$1%_: $2.$3 seconds"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:154
+#: src/ui-common/ui-formats.c:160
 msgid "%g>>> %_$1%_ %K[%g$2%K] %grequested %_$3%_ from %_$4"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:155
+#: src/ui-common/ui-formats.c:161
 msgid "%g>>> DCC CTCP received from %_$1%_%K: %g$2"
 msgstr "%g>>> DCC CTCP empfangen von %_$1%_%K: %g$2"
 
 #. ----
-#: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:158
+#: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:164
 msgid "DCC"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:160
+#: src/ui-common/ui-formats.c:166
 msgid "%gDCC CHAT from %_$1%_ %K[%g$2 port $3%K]"
 msgstr "%gDCC CHAT von %_$1%_ %K[%g$2 Port $3%K]"
 
-#: src/ui-common/ui-formats.c:161
+#: src/ui-common/ui-formats.c:167
 msgid "%gNo DCC CHAT connection open to %_$1"
 msgstr "%gKeine DCC CHAT Verbindung zu %_$1"
 
-#: src/ui-common/ui-formats.c:162
+#: src/ui-common/ui-formats.c:168
 msgid ""
 "%gDCC %_CHAT%_ connection with %_$1%_ %K%K[%g$2 port $3%K]%g established"
 msgstr "%gDCC %_CHAT%_ Verbindung mit %_$1%_ %K%K[%g$2 Port $3%K]%g etabliert"
 
-#: src/ui-common/ui-formats.c:163
+#: src/ui-common/ui-formats.c:169
 msgid "%gDCC lost chat to %_$1"
 msgstr "%gDCC chat abgebrochen mit %_$1"
 
-#: src/ui-common/ui-formats.c:164
+#: src/ui-common/ui-formats.c:170
 msgid "%gDCC SEND from %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bytes%K]"
 msgstr "%gDCC SEND von %_$1%_ %K[%g$2 Port $3%K]: %g$4 %K[%g$5 bytes%K]"
 
-#: src/ui-common/ui-formats.c:165
+#: src/ui-common/ui-formats.c:171
 msgid "%gDCC already sending file %G$1%g for %_$2%_"
 msgstr "%gDCC Datei %G$1%g wird schon an %_$2%_ gesendet"
 
-#: src/ui-common/ui-formats.c:166
+#: src/ui-common/ui-formats.c:172
 msgid "%gDCC not sending file %G$2%g to %_$1"
 msgstr "%gDCC Datei %G$2%g wird nicht an %_$1%_ gesendet"
 
-#: src/ui-common/ui-formats.c:167
+#: src/ui-common/ui-formats.c:173
 #, c-format
 msgid "%gDCC file not found: %G$1%g"
 msgstr "%gDCC Datei nicht gefunden: %G$1%g"
 
-#: src/ui-common/ui-formats.c:168
+#: src/ui-common/ui-formats.c:174
 msgid "%gDCC sending file %G$1%g for %_$2%_ %K[%g$3 port $4%K]"
 msgstr "%gDCC Sende Datei %G$1%g an %_$2%_ %K[%g$3 Port $4%K]"
 
-#: src/ui-common/ui-formats.c:169
+#: src/ui-common/ui-formats.c:175
 msgid ""
 "%gDCC sent file $1 %K[%g%_$2%_kb%K]%g for %_$3%_ in %_$4%_ secs "
 "%K[%g%_$5kb/s%_%K]"
@@ -563,19 +593,19 @@ msgstr ""
 "%gDCC Datei gesendet $1 %K[%g%_$2%_kb%K]%g an %_$3%_ in %_$4%_ Sek "
 "%K[%g%_$5kb/s%_%K]"
 
-#: src/ui-common/ui-formats.c:170
+#: src/ui-common/ui-formats.c:176
 msgid "%gDCC aborted sending file $1 for %_$2%_"
 msgstr "%gDCC Dateisenden an %_$2%_ abgebrochen ($1)"
 
-#: src/ui-common/ui-formats.c:171
+#: src/ui-common/ui-formats.c:177
 msgid "%gDCC no file offered by %_$1"
 msgstr "%gDCC keine Datei angeboten durch %_$1"
 
-#: src/ui-common/ui-formats.c:172
+#: src/ui-common/ui-formats.c:178
 msgid "%gDCC receiving file %G$1%g from %_$2%_ %K[%g$3 port $4%K]"
 msgstr "%gDCC empfange Datei %G$1%g von %_$2%_ %K[%g$3 Port $4%K]"
 
-#: src/ui-common/ui-formats.c:173
+#: src/ui-common/ui-formats.c:179
 msgid ""
 "%gDCC received file %G$1%g %K[%g$2kb%K]%g from %_$3%_ in %_$4%_ secs "
 "%K[%g$5kb/s%K]"
@@ -583,184 +613,189 @@ msgstr ""
 "DCC Datei empfangen %G$1%g %K[%g$2kb%K]%g von %_$3%_ in %_$4%_ Sek "
 "%K[%g$5kb/s%K]"
 
-#: src/ui-common/ui-formats.c:174
+#: src/ui-common/ui-formats.c:180
 msgid "%gDCC aborted receiving file $1 from %_$2%_"
 msgstr "%gDCC Dateiempfang von %_$2%_ abgebrochen ($1)"
 
-#: src/ui-common/ui-formats.c:175
+#: src/ui-common/ui-formats.c:181
 msgid "%gDCC unknown ctcp %G$1%g from %_$2%_ %K[%g$3%K]"
 msgstr "%gDCC unbekanntes CTCP %G$1%g von %_$2%_ %K[%g$3%K]"
 
-#: src/ui-common/ui-formats.c:176
+#: src/ui-common/ui-formats.c:182
 msgid "%gDCC unknown reply %G$1%g from %_$2%_ %K[%g$3%K]"
 msgstr "%gDCC unbekannte Antwort %G$1%g von %_$2%_ %K[%g$3%K]"
 
-#: src/ui-common/ui-formats.c:177
+#: src/ui-common/ui-formats.c:183
 msgid "%gDCC unknown type %_$1"
 msgstr "%gDCC Typ unbekannt %_$1"
 
-#: src/ui-common/ui-formats.c:178
+#: src/ui-common/ui-formats.c:184
 msgid "%gDCC can't connect to %_$1%_ port %_$2"
 msgstr "%gDCC Keine Verbindung zu %_$1%_ Port %_$2%_ moeglich"
 
-#: src/ui-common/ui-formats.c:179
+#: src/ui-common/ui-formats.c:185
 #, c-format
 msgid "%gDCC can't create file %G$1%g"
 msgstr "%gDCC Datei %G$1%g kann nicht erzeugt werden"
 
-#: src/ui-common/ui-formats.c:180
+#: src/ui-common/ui-formats.c:186
 msgid "%gDCC %G$1%g was rejected by %_$2%_ %K[%G$3%K]"
 msgstr "%gDCC %G$1%g wurde abgelehnt von %_$2%_ %K[%G$3%K]"
 
-#: src/ui-common/ui-formats.c:181
+#: src/ui-common/ui-formats.c:187
 msgid "%gDCC %G$1%g close for %_$2%_ %K[%G$3%K]"
 msgstr "%gDCC %G$1%g geschlossen von %_$2%_ %K[%G$3%K]"
 
 #. ----
-#: src/ui-common/ui-formats.c:184
+#: src/ui-common/ui-formats.c:190
 msgid "Other server events"
 msgstr "Andere Serverereignisse"
 
-#: src/ui-common/ui-formats.c:186
+#: src/ui-common/ui-formats.c:192
 msgid "Users online: %_$1"
 msgstr "Benutzer online: %_$1"
 
-#: src/ui-common/ui-formats.c:187
+#: src/ui-common/ui-formats.c:193
 msgid "PONG received from $1: $2"
 msgstr "PONG empfangen von $1: $2"
 
-#: src/ui-common/ui-formats.c:188
+#: src/ui-common/ui-formats.c:194
 msgid "%WWALLOP%n $1: $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:189
+#: src/ui-common/ui-formats.c:195
 msgid "%WWALLOP * $1%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:190
+#: src/ui-common/ui-formats.c:196
 msgid "%_ERROR%_ $1"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:191
+#: src/ui-common/ui-formats.c:197
 msgid "Unknown mode character $1"
 msgstr "Unbekannter Modus $1"
 
-#: src/ui-common/ui-formats.c:192
+#: src/ui-common/ui-formats.c:198
 msgid "You're not channel operator in $1"
 msgstr "Du bist kein Operator auf $1"
 
 #. ----
-#: src/ui-common/ui-formats.c:195
+#: src/ui-common/ui-formats.c:201
 msgid "Logging"
 msgstr "Logging"
 
-#: src/ui-common/ui-formats.c:197
+#: src/ui-common/ui-formats.c:203
 msgid "Log file %W$1%n opened"
 msgstr "Logfile %W$1%n geoeffnet"
 
-#: src/ui-common/ui-formats.c:198
+#: src/ui-common/ui-formats.c:204
 msgid "Couldn't open log file %W$1"
 msgstr "Konnte Logfile %W$1 nicht oeffnen"
 
-#: src/ui-common/ui-formats.c:199
+#: src/ui-common/ui-formats.c:205
 msgid "Log file %W$1%n not open"
 msgstr "Logfile %W$1%n nicht geoeffnet"
 
-#: src/ui-common/ui-formats.c:200
+#: src/ui-common/ui-formats.c:206
 msgid "Closed log file %W$1"
 msgstr "Logfile %W$1 geschlossen"
 
-#: src/ui-common/ui-formats.c:201
+#: src/ui-common/ui-formats.c:207
 msgid "%W$1%K:%n $2"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:202
+#: src/ui-common/ui-formats.c:208
 msgid "     + %W$1%K:%n $2"
 msgstr ""
 
 #. ----
-#: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:158
-#: src/ui-common/ui-formats.c:205
+#: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:165
+#: src/ui-common/ui-formats.c:211
 msgid "Misc"
 msgstr "Sonstiges"
 
-#: src/ui-common/ui-formats.c:207
+#: src/ui-common/ui-formats.c:213
 msgid "You must specify one of the following levels: $1"
 msgstr "Du must eines der folgenden Level angeben: $1"
 
-#: src/ui-common/ui-formats.c:208
+#: src/ui-common/ui-formats.c:214
 msgid "Ignoring %_$1%_ from %_$2%_"
 msgstr "Ignoriere %_$1%_ von %_$2%_"
 
-#: src/ui-common/ui-formats.c:209
+#: src/ui-common/ui-formats.c:215
 msgid "Unignored %_$1%_ from %_$2%_"
 msgstr "Ignorieren von %_$2%_ (%_$1%_) aufgehoben"
 
-#: src/ui-common/ui-formats.c:210
+#: src/ui-common/ui-formats.c:216
 msgid "%_$1%_ is not being ignored"
 msgstr "%_$1%_ wird nicht ignoriert"
 
-#: src/ui-common/ui-formats.c:211
+#: src/ui-common/ui-formats.c:217
 msgid "Flood detected from %_$1%_, autoignoring for %_$2%_ minutes"
 msgstr "Flood von %_$1%_, Autoignore fuer %_$2%_ Minuten"
 
-#: src/ui-common/ui-formats.c:212
+#: src/ui-common/ui-formats.c:218
 msgid "Unignoring %_$1"
 msgstr "Ignorieren von %_$1%_ aufgehoben"
 
-#: src/ui-common/ui-formats.c:213
+#: src/ui-common/ui-formats.c:219
 msgid "%_Lastlog:"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:214
-msgid "%_End of lastlog"
+#: src/ui-common/ui-formats.c:220
+#, fuzzy
+msgid "%_End of Lastlog"
 msgstr "%_End of lastlog"
 
-#: src/ui-common/ui-formats.c:215
+#: src/ui-common/ui-formats.c:221
 msgid "%_$1%_ %K[%n$2@$3%K] [%n%_$4%_%K]%n has joined to $5"
 msgstr "%_$1%_ %K[%n$2@$3%K] [%n%_$4%_%K]%n betritt $5"
 
-#: src/ui-common/ui-formats.c:216
+#: src/ui-common/ui-formats.c:222
 msgid "%_$1%_ has left $2"
 msgstr "%_$1%_ verlaesst $2"
 
-#: src/ui-common/ui-formats.c:217
+#: src/ui-common/ui-formats.c:223
 msgid "On $1: %_$2%_"
 msgstr "On $1: %_$2%_"
 
-#: src/ui-common/ui-formats.c:218
+#: src/ui-common/ui-formats.c:224
 msgid "offline: $1"
 msgstr "offline: $1"
 
-#: src/ui-common/ui-formats.c:219
+#: src/ui-common/ui-formats.c:225
 msgid "No query with %_$1%_"
 msgstr "Kein Query mit %_$1%_"
 
-#: src/ui-common/ui-formats.c:220
+#: src/ui-common/ui-formats.c:226
 msgid "Error loading plugin %_$1%_: $2"
 msgstr "Plugin %_$1%_ konnte nicht geladen werden: $2"
 
-#: src/ui-common/ui-formats.c:221
+#: src/ui-common/ui-formats.c:227
 msgid "Plugin %_$1%_ is not irssi plugin"
 msgstr "Plugin%_$1%_ ist kein Irssi-Plugin"
 
-#: src/ui-common/ui-formats.c:222
+#: src/ui-common/ui-formats.c:228
 msgid "Plugin %_$1%_ isn't compatible with this irssi version"
 msgstr "Plugin %_$1%_ ist nicht kompatibel mit dieser Irssi Version"
 
-#: src/ui-common/ui-formats.c:223
+#: src/ui-common/ui-formats.c:229
 msgid "Plugin %_$1%_ is already loaded"
 msgstr "Plugin %_$1%_ bereits geladen"
 
-#: src/ui-common/ui-formats.c:224
+#: src/ui-common/ui-formats.c:230
 msgid "Plugin %_$1%_ not loaded"
 msgstr "Plugin %_$1%_ nicht geladen"
 
-#: src/ui-common/ui-printtext.c:841
+#: src/ui-common/ui-formats.c:231
+msgid "Perl error: $1"
+msgstr ""
+
+#: src/ui-common/ui-printtext.c:876
 msgid "%_Warning:%_ %s"
 msgstr "%_Warnung:%_ %s"
 
-#: src/ui-common/ui-printtext.c:843
+#: src/ui-common/ui-printtext.c:878
 msgid "%_Error:%_ %s"
 msgstr "%_Fehler:%_ %s"
 
@@ -786,13 +821,13 @@ msgstr "Channel"
 
 #. irc network
 #: src/gui-gnome/dialog-channels.c:184 src/gui-gnome/dialog-connect.c:129
-#: src/gui-gnome/dialog-disconnect.c:126 src/gui-gnome/dialog-join.c:128
+#: src/gui-gnome/dialog-disconnect.c:159 src/gui-gnome/dialog-join.c:128
 #: src/gui-gnome/setup-ircnets.c:181
 msgid "IRC Network"
 msgstr "IRC Netzwerk"
 
 #. bot masks, bot command
-#: src/gui-gnome/dialog-channels.c:212 src/gui-gnome/setup-servers.c:267
+#: src/gui-gnome/dialog-channels.c:212 src/gui-gnome/setup-servers.c:276
 msgid "Password"
 msgstr "Passwort"
 
@@ -852,7 +887,7 @@ msgstr ""
 msgid "Part"
 msgstr ""
 
-#: src/gui-gnome/dialog-channels.c:501 src/gui-gnome/setup-themes.c:279
+#: src/gui-gnome/dialog-channels.c:501 src/gui-gnome/setup-themes.c:280
 msgid "Add..."
 msgstr "Hinzufuegen..."
 
@@ -861,7 +896,7 @@ msgid "Edit..."
 msgstr "Aendern..."
 
 #: src/gui-gnome/dialog-channels.c:511 src/gui-gnome/dialog-log.c:598
-#: src/gui-gnome/setup-lists.c:354 src/gui-gnome/setup-themes.c:284
+#: src/gui-gnome/setup-lists.c:354 src/gui-gnome/setup-themes.c:285
 msgid "Delete"
 msgstr "Loeschen"
 
@@ -869,14 +904,14 @@ msgstr "Loeschen"
 msgid "Quick join..."
 msgstr "Quick join..."
 
-#: src/gui-gnome/dialog-connect.c:129 src/gui-gnome/dialog-disconnect.c:127
+#: src/gui-gnome/dialog-connect.c:129 src/gui-gnome/dialog-disconnect.c:160
 #: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:61
 msgid "Address"
 msgstr "Addresse"
 
-#: src/gui-gnome/dialog-connect.c:130 src/gui-gnome/dialog-disconnect.c:127
+#: src/gui-gnome/dialog-connect.c:130 src/gui-gnome/dialog-disconnect.c:160
 #: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:66
-#: src/gui-gnome/setup-servers.c:262
+#: src/gui-gnome/setup-servers.c:271
 msgid "Port"
 msgstr "Port"
 
@@ -913,11 +948,11 @@ msgstr "Dateiname"
 msgid "Create dialog"
 msgstr "Dialog erzeugen"
 
-#: src/gui-gnome/dialog-disconnect.c:126 src/gui-gnome/dialog-join.c:128
+#: src/gui-gnome/dialog-disconnect.c:159 src/gui-gnome/dialog-join.c:128
 msgid "Server Tag"
 msgstr "Server Tag"
 
-#: src/gui-gnome/dialog-disconnect.c:129 src/gui-gnome/gui-menu-commands.c:262
+#: src/gui-gnome/dialog-disconnect.c:162 src/gui-gnome/gui-menu-commands.c:262
 msgid "Disconnect"
 msgstr "Disconnect"
 
@@ -1212,7 +1247,7 @@ msgid "Banlist exceptions"
 msgstr "Ban Ausnahmen"
 
 #: src/gui-gnome/dialog-modes.c:575 src/gui-gnome/dialog-modes.c:595
-#: src/gui-gnome/setup-ircnets.c:410 src/gui-gnome/setup-servers.c:517
+#: src/gui-gnome/setup-ircnets.c:410 src/gui-gnome/setup-servers.c:526
 #: src/gui-gnome/setup-session.c:139
 msgid "Remove"
 msgstr "Entfernen"
@@ -1313,7 +1348,7 @@ msgstr ""
 msgid ""
 "Can't save the rawlog,\n"
 "the server has been disconnected"
-msgstr "" 
+msgstr ""
 "Rawlog konnte nicht gespeichert werden,\n"
 "keine Verbindung zum Server"
 
@@ -1441,7 +1476,7 @@ msgstr ""
 msgid "Apply"
 msgstr "Ausfuehren"
 
-#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:445
+#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:447
 #: src/gui-gnome/setup-colors.c:195
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -1572,7 +1607,7 @@ msgstr "/WHO hat nichts gefunden"
 msgid "Status"
 msgstr ""
 
-#: src/gui-gnome/gui-event-who.c:256 src/gui-gnome/setup-servers.c:566
+#: src/gui-gnome/gui-event-who.c:256 src/gui-gnome/setup-servers.c:575
 msgid "Real name"
 msgstr "Realname"
 
@@ -1624,39 +1659,39 @@ msgstr "[IRC Operator]"
 msgid "Away: %s"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:783
+#: src/gui-gnome/gui-mainwindows.c:785
 msgid "Nick completion"
 msgstr "Nick completion"
 
-#: src/gui-gnome/gui-mainwindows.c:784
+#: src/gui-gnome/gui-mainwindows.c:786
 msgid "Check word replaces"
 msgstr "Wortersetzungen pruefen"
 
-#: src/gui-gnome/gui-mainwindows.c:786
+#: src/gui-gnome/gui-mainwindows.c:788
 msgid "Previous window"
 msgstr "Voriges Fenster"
 
-#: src/gui-gnome/gui-mainwindows.c:787
+#: src/gui-gnome/gui-mainwindows.c:789
 msgid "Next window"
 msgstr "Naechstes Fenster"
 
-#: src/gui-gnome/gui-mainwindows.c:792
+#: src/gui-gnome/gui-mainwindows.c:794
 msgid "Command history"
 msgstr "History der Befehle"
 
-#: src/gui-gnome/gui-mainwindows.c:794
+#: src/gui-gnome/gui-mainwindows.c:796
 msgid "Previous page in window"
 msgstr "Vorige Seite im Fenster"
 
-#: src/gui-gnome/gui-mainwindows.c:795
+#: src/gui-gnome/gui-mainwindows.c:797
 msgid "Next page in window"
 msgstr "Naechste Seite im Fenster"
 
-#: src/gui-gnome/gui-mainwindows.c:797
+#: src/gui-gnome/gui-mainwindows.c:799
 msgid "Insert special character"
 msgstr "Sonderzeichen einfuegen"
 
-#: src/gui-gnome/gui-mainwindows.c:808
+#: src/gui-gnome/gui-mainwindows.c:810
 msgid "Change window"
 msgstr "Fenster wechseln"
 
@@ -1993,14 +2028,18 @@ msgid "GNOME Panel"
 msgstr ""
 
 #: src/gui-gnome/setup-appearance.c:114
+msgid "Start GNOME panel applet at startup"
+msgstr ""
+
+#: src/gui-gnome/setup-appearance.c:118
 msgid "Limit the number of channels shown in panel"
 msgstr "Channelanzahl im Panel begrenzen"
 
-#: src/gui-gnome/setup-appearance.c:129
+#: src/gui-gnome/setup-appearance.c:133
 msgid "channels"
 msgstr ""
 
-#: src/gui-gnome/setup-appearance.c:142
+#: src/gui-gnome/setup-appearance.c:146
 msgid "Look #2"
 msgstr ""
 
@@ -2355,11 +2394,11 @@ msgstr "Maximale Modi pro cmd"
 msgid "Max msgs per cmd"
 msgstr "Maximale Nachrichten pro cmd"
 
-#: src/gui-gnome/setup-ircnets.c:400 src/gui-gnome/setup-servers.c:509
+#: src/gui-gnome/setup-ircnets.c:400 src/gui-gnome/setup-servers.c:518
 msgid "Add"
 msgstr "Hinzufuegen"
 
-#: src/gui-gnome/setup-ircnets.c:405 src/gui-gnome/setup-servers.c:513
+#: src/gui-gnome/setup-ircnets.c:405 src/gui-gnome/setup-servers.c:522
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -2429,7 +2468,7 @@ msgstr "Text"
 
 #: src/gui-gnome/setup-lists.c:431
 #, fuzzy
-msgid "Color + Channels"
+msgid "Color# (optional) and Channels"
 msgstr "Farbe + Channels"
 
 #: src/gui-gnome/setup-lists.c:434
@@ -2596,47 +2635,60 @@ msgid "CTCP VERSION reply"
 msgstr "CTCP VERSION Antwort"
 
 #: src/gui-gnome/setup-misc.c:134
+msgid "Translation table file (ircII style)"
+msgstr ""
+
+#: src/gui-gnome/setup-misc.c:137
 #, fuzzy
 msgid "Awaylog file name"
 msgstr "Awaylog Dateiname"
 
-#: src/gui-gnome/setup-misc.c:137
+#: src/gui-gnome/setup-misc.c:140
 msgid "Awaylog logging level"
 msgstr ""
 
-#: src/gui-gnome/setup-misc.c:148
+#: src/gui-gnome/setup-misc.c:151
 msgid "Knockout bans for"
 msgstr "knockout bannt fuer"
 
-#: src/gui-gnome/setup-misc.c:148
+#: src/gui-gnome/setup-misc.c:151
 msgid "seconds (requires ops)"
 msgstr "Sekunden (erfordert Ops)"
 
-#: src/gui-gnome/setup-misc.c:150
+#: src/gui-gnome/setup-misc.c:155
+#, fuzzy
+msgid "Show timestamps after"
+msgstr "Zeitangaben zeigen"
+
+#: src/gui-gnome/setup-misc.c:155
+msgid "seconds idle time"
+msgstr ""
+
+#: src/gui-gnome/setup-misc.c:157
 msgid "Automatically checking new Irssi versions..."
 msgstr "Automatisches Pruefen auf neue Irssi Versionen..."
 
-#: src/gui-gnome/setup-servers.c:176
+#: src/gui-gnome/setup-servers.c:185
 msgid "y"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:241
+#: src/gui-gnome/setup-servers.c:250
 msgid "Clear"
 msgstr "Loeschen"
 
-#: src/gui-gnome/setup-servers.c:252 src/gui-gnome/setup-servers.c:489
+#: src/gui-gnome/setup-servers.c:261 src/gui-gnome/setup-servers.c:498
 msgid "IRC Net"
 msgstr "IRC Netz"
 
-#: src/gui-gnome/setup-servers.c:272
+#: src/gui-gnome/setup-servers.c:281
 msgid "Timeout between sending commands to server (0 = default)"
 msgstr "Timeout zwischen Befehlen an den Server (0 = default)"
 
-#: src/gui-gnome/setup-servers.c:302
+#: src/gui-gnome/setup-servers.c:311
 msgid "Autoconnect at startup"
 msgstr "Autoconnect beim Start"
 
-#: src/gui-gnome/setup-servers.c:373
+#: src/gui-gnome/setup-servers.c:382
 msgid ""
 "You have empty entries!\n"
 "At least IRC Net, Server and Port\n"
@@ -2647,40 +2699,40 @@ msgstr ""
 "muessen angegeben werden."
 
 #. 'IRC servers' frame
-#: src/gui-gnome/setup-servers.c:474
+#: src/gui-gnome/setup-servers.c:483
 msgid "IRC Servers"
 msgstr "IRC Server"
 
-#: src/gui-gnome/setup-servers.c:489
+#: src/gui-gnome/setup-servers.c:498
 msgid "AC"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:521
+#: src/gui-gnome/setup-servers.c:530
 msgid "User information"
 msgstr "Benutzer Information"
 
 #. skip motd
-#: src/gui-gnome/setup-servers.c:525
+#: src/gui-gnome/setup-servers.c:534
 msgid "Skip MOTD"
 msgstr "MOTD ueberspringen"
 
-#: src/gui-gnome/setup-servers.c:533
+#: src/gui-gnome/setup-servers.c:542
 msgid "Seconds to wait before reconnecting (-1 = never)"
 msgstr "Sekunden vor Reconnect (-1 = nie)"
 
-#: src/gui-gnome/setup-servers.c:543
+#: src/gui-gnome/setup-servers.c:552
 msgid "Source host (empty=default)"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:558
+#: src/gui-gnome/setup-servers.c:567
 msgid "Alternate nick"
 msgstr "Alternativnick"
 
-#: src/gui-gnome/setup-servers.c:562
+#: src/gui-gnome/setup-servers.c:571
 msgid "User name"
 msgstr "Benutzername"
 
-#: src/gui-gnome/setup-servers.c:575
+#: src/gui-gnome/setup-servers.c:584
 msgid "Servers"
 msgstr "Server"
 
@@ -2700,16 +2752,16 @@ msgstr "Neuer Channel..."
 msgid "Session"
 msgstr ""
 
-#: src/gui-gnome/setup-themes.c:208
+#: src/gui-gnome/setup-themes.c:209
 msgid "Add new theme"
 msgstr "Neues Theme erzeugen"
 
-#: src/gui-gnome/setup-themes.c:240
+#: src/gui-gnome/setup-themes.c:241
 #, c-format
 msgid "Really delete theme %s"
 msgstr "Thema %s wirklich loeschen"
 
-#: src/gui-gnome/setup-themes.c:259
+#: src/gui-gnome/setup-themes.c:260
 msgid "Theme selector"
 msgstr ""
 
@@ -2727,7 +2779,8 @@ msgid ""
 "use them, you should enable this workaround. Without it\n"
 "X server's memory usage grows all the time. If you enable\n"
 "it, you won't see the nicks' gone status in nicklist"
-msgstr "GTK pixmap Themen sind etwas fehlerhaft. Wenn du sie\n"
+msgstr ""
+"GTK pixmap Themen sind etwas fehlerhaft. Wenn du sie\n"
 "wirklich benutzen willst, solltest Du dieses Workaround aktivieren.\n"
 "Ohne dieses wuerde die Speicheranforderung des X-Servers die ganze\n"
 "Zeit zunehmen. Wenn es aktiviert ist, siehst Du den 'gone' Status\n"

@@ -1,4 +1,63 @@
-v0.7.27 2000-02-26  Timo Sirainen <tss@iki.fi>
+v0.7.28 2000-03-11  Timo Sirainen <tss@iki.fi>
+
+	+ irssi-text: New improved "text widget". It takes less memory and
+	  if you resize the terminal horizonally, the text automatically
+	  changes to right size. Several other changes too:
+
+	  /CLEAR only clears the screen, you can still scroll the window up.
+	  /SCROLLBACK, or the default alias /SB:
+            /SB CLEAR - Clear screen, free all memory used by texts in window.
+            /SB HOME - Jump to start of the buffer
+            /SB END - Jump to end of the buffer
+            /SB GOTO [[-|+]line#|time] - Jump to specified line or timestamp.
+
+	    -100 jumps back 100 lines, +100 jumps forward 100 lines, or
+	    100 simply jumps to 100. line in scrollback.
+
+	    Time is the format [dd.mm | -<days ago>] hh:mi[:ss]
+
+	    Examples:
+	      /SB GOTO 15:00 - Jump to first text that came after 15:00 today
+	      /SB GOTO -1 15:00 - First text after 15:00 yesterday
+	      /SB GOTO 1.2 - First text in 1. February
+	      /SB GOTO -100 - Jump back 100 lines
+	      /SB GOTO +100 - Jump for
+
+	+ After lost connection to server and reconnected or changed the
+	  server manually with /SERVER, Irssi will rejoin back to the same
+	  channels that you were in before disconnection. They will also be
+	  placed to same windows they were, even if you were in same channel
+	  in multiple servers.
+	+ /SERVERS and disconnect dialog displays also servers that are
+	  being currently connected and waiting reconnections. You can remove
+	  them with /DISCONNECT <tag>.
+	+ If you are in multiple irc servers and the active server of the
+	  window isn't the same as where the message came from, the message
+	  is prefixed with a [server tag].
+	+ If you don't specify the path for Perl scripts, Irssi tries to
+	  find them from ~/.irssi/scripts/ or /usr/lib/irssi/scripts/
+	  directories. Irssi will also run automatically scripts in
+	  ~/.irssi/scripts/autorun/ at startup. Several other updates to
+	  Perl support too.
+	+ Support for ircII translation tables, /set translation <file>
+	  See /usr/share/ircII/translation/* (at least in Debian)
+	+ /ACTION <target> <text> - Send action to target (like /ME), target
+	  is either #channel, nick or =dcc_char_nick
+	+ 5 CTRL-C's in a row quits irssi-text.
+	+ %| in themes marks the line indentation position - works only in
+	  irssi-text for now..
+	+ You can have several msgs/status windows, one for each server.
+	+ Option: start GNOME panel applet at startup
+	+ --without-gtk option for configure disables building GTK frontend
+	+ /LAST -new shows only the texts that came after latest /LAST.
+	- Autojoining doesn't switch automatically to the joined channel's
+	  window (try #2 :)
+	- Several (Perl) compilation problems fixed.
+	- Text hilight color was dark grey, changed to white..
+	- /LAST doesn't display the texts found from previous /LAST blocks
+	- Fixed a few memory leaks
+
+v0.7.27 2000-02-25  Timo Sirainen <tss@iki.fi>
 
 	* Perl support - finally! Took only a year or so to imlement it ;)
 	  Well, I could have done it ages ago but it wouldn't have had

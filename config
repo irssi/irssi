@@ -3,16 +3,20 @@
     {server = irc.funet.fi;ircnet = IRCNet;port = 6667;autoconnect = No;},
     {server = irc.efnet.net;ircnet = EFNet;port = 6667;autoconnect = No;},
     {server = irc.undernet.net;ircnet = Undernet;port = 6667;autoconnect = No;},
+    {server = irc.dal.net;ircnet = DALNet;port = 6667;autoconnect = No;},
     {server = irc.openprojects.net;ircnet = OPN;port = 6667;autoconnect = No;},
-    {server = irc.ptlink.net;ircnet = PTlink;port = 6667;autoconnect = No;}
+    {server = irc.ptlink.net;ircnet = PTlink;port = 6667;autoconnect = No;},
+    {server = irc.multichat.org;ircnet = Multichat;port = 6667;autoconnect = No;}
   );
 
   ircnets = (
     {name = IRCNet;max_kicks = 4;max_modes = 3;max_msgs = 3;},
     {name = EFNet;max_kicks = 4;max_modes = 4;max_msgs = 3;},
     {name = Undernet;max_kicks = 4;max_modes = 3;max_msgs = 3;},
+    {name = DALNet;max_kicks = 4;max_modes = 6;max_msgs = 3;},
     {name = OPN;max_kicks = 1;max_modes = 6;max_msgs = 100;},
-    {name = PTlink;max_kicks = 1;max_modes = 6;max_msgs = 100;}
+    {name = PTlink;max_kicks = 1;max_modes = 6;max_msgs = 100;},
+    {name = Multichat;max_kicks = 1;max_modes = 6;max_msgs = 100;}
   );
 
   channels = (
@@ -42,6 +46,8 @@
     {alias = UB;command = "/unban &1";},
     {alias = IG;command = "/ignore &1";},
     {alias = UNIG;command = "/unignore &1";}
+    {alias = SB;command = "/scrollback &1";}
+    {alias = UMODE;command = "/mode %n &1";}
   );
   popups = (
     {label = "<MULTICOMMA>Whois";command = "/whois %s";},
