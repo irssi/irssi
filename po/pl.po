@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-06-14 23:12+0300\n"
+"POT-Creation-Date: 2000-06-20 12:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,7 +45,7 @@ msgstr ""
 #: src/core/settings.c:262
 #, c-format
 msgid "Couldn't create %s/.irssi directory"
-msgstr ""
+msgstr "Nie mo¿na utworzyæ katalogu %s/.irssi"
 
 #: src/core/settings.c:265
 #, c-format
@@ -71,15 +71,15 @@ msgstr ""
 
 #. error
 #: src/core/settings.c:323
-#, fuzzy, c-format
+#, c-format
 msgid "Couldn't save configuration file: %s"
-msgstr "Nie mozna otworzyæ plik logu %W$1"
+msgstr ""
 
-#: src/fe-common/core/printtext.c:880
+#: src/fe-common/core/printtext.c:882
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/fe-common/core/printtext.c:882
+#: src/fe-common/core/printtext.c:884
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
@@ -90,35 +90,35 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:80
+#: src/fe-common/irc/fe-common-irc.c:83
 msgid "Automatically connect to server/ircnet"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:80 src/fe-common/irc/fe-common-irc.c:81
+#: src/fe-common/irc/fe-common-irc.c:83 src/fe-common/irc/fe-common-irc.c:84
 msgid "SERVER"
 msgstr "SERWER"
 
-#: src/fe-common/irc/fe-common-irc.c:81
+#: src/fe-common/irc/fe-common-irc.c:84
 msgid "Autoconnect password"
 msgstr "Has³o autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:82
+#: src/fe-common/irc/fe-common-irc.c:85
 msgid "Autoconnect port"
 msgstr "Port autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:82
+#: src/fe-common/irc/fe-common-irc.c:85
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:83
+#: src/fe-common/irc/fe-common-irc.c:86
 msgid "Disable autoconnecting"
 msgstr "Wy³±czenie autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:87
 msgid "Specify nick to use"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:88
 msgid "Specify host name to use"
 msgstr ""
 
@@ -127,14 +127,12 @@ msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
 #: src/lib-popt/popthelp.c:35
-#, fuzzy
 msgid "Show this help message"
-msgstr "Pokazuj czas"
+msgstr ""
 
 #: src/lib-popt/popthelp.c:36
-#, fuzzy
 msgid "Display brief usage message"
-msgstr "prywatne komunikaty"
+msgstr ""
 
 #~ msgid "%B-%W!%B-%n "
 #~ msgstr "%B-%W!%B-%n"
