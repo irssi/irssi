@@ -6,6 +6,7 @@
 #define CHANNEL_NICKLIST_FLAG_VOICES    0x04
 #define CHANNEL_NICKLIST_FLAG_NORMAL    0x08
 #define CHANNEL_NICKLIST_FLAG_ALL       0x0f
+#define CHANNEL_NICKLIST_FLAG_COUNT     0x10
 
 void fe_channels_nicklist(CHANNEL_REC *channel, int flags);
 

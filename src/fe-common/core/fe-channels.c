@@ -465,7 +465,8 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	/* display the nicks */
 	printformat(channel->server, channel->name,
 		    MSGLEVEL_CRAP, TXT_NAMES, channel->name, "");
-	display_sorted_nicks(channel, sorted);
+        if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0)
+		display_sorted_nicks(channel, sorted);
 	g_slist_free(sorted);
 
 	printformat(channel->server, channel->name,
@@ -473,7 +474,7 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 		    channel->name, nicks, ops, voices, normal);
 }
 
-/* SYNTAX: NAMES [-ops -halfops -voices -normal] [<channels> | **] */
+/* SYNTAX: NAMES [-count | -ops -halfops -voices -normal] [<channels> | **] */
 static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	CHANNEL_REC *chanrec;
@@ -507,6 +508,8 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		flags |= CHANNEL_NICKLIST_FLAG_VOICES;
 	if (g_hash_table_lookup(optlist, "normal") != NULL)
 		flags |= CHANNEL_NICKLIST_FLAG_NORMAL;
+	if (g_hash_table_lookup(optlist, "count") != NULL)
+		flags |= CHANNEL_NICKLIST_FLAG_COUNT;
 
         if (flags == 0) flags = CHANNEL_NICKLIST_FLAG_ALL;
 
@@ -587,7 +590,7 @@ void fe_channels_init(void)
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
-	command_set_options("names", "ops halfops voices normal");
+	command_set_options("names", "count ops halfops voices normal");
 	command_set_options("join", "window");
 }
 
