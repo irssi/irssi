@@ -331,9 +331,12 @@ static void autolog_log(void *server, const char *target)
 	g_free(fname);
 }
 
-static void sig_printtext_stripped(WINDOW_REC *window, void *server, const char *target, gpointer levelp, const char *text)
+static void sig_printtext_stripped(WINDOW_REC *window, void *server,
+				   const char *target, gpointer levelp,
+				   const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
+	char **targets, **tmp;
 	LOG_REC *log;
 	int level;
 
@@ -341,8 +344,14 @@ static void sig_printtext_stripped(WINDOW_REC *window, void *server, const char 
 	if (level == MSGLEVEL_NEVER) return;
 
 	/* let autolog create the log records */
-	if ((autolog_level & level) && target != NULL && *target != '\0')
-                autolog_log(server, target);
+	if ((autolog_level & level) && target != NULL && *target != '\0') {
+                /* there can be multiple targets separated with comma */
+		targets = g_strsplit(target, ",", -1);
+		for (tmp = targets; *tmp != NULL; tmp++) {
+			autolog_log(server, *tmp);
+		}
+		g_strfreev(targets);
+	}
 
         /* save to log created with /WINDOW LOG */
 	ltoa(windownum, window->refnum);
@@ -438,7 +447,7 @@ void fe_log_init(void)
 	autoremove_tag = g_timeout_add(60000, (GSourceFunc) sig_autoremove, NULL);
 
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
-	settings_add_str("log", "autolog_level", "all");
+	settings_add_str("log", "autolog_level", "all -crap");
         settings_add_bool("log", "autolog", FALSE);
 
 	autolog_level = 0;

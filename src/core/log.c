@@ -347,13 +347,24 @@ static void sig_printtext_stripped(void *window, void *server,
 				   const char *item, gpointer levelp,
 				   const char *str)
 {
+	char **items, **tmp;
 	int level;
 
 	g_return_if_fail(str != NULL);
 
 	level = GPOINTER_TO_INT(levelp);
-	if (logs != NULL && level != MSGLEVEL_NEVER)
-		log_file_write(item, level, str, FALSE);
+	if (logs == NULL || level == MSGLEVEL_NEVER)
+		return;
+
+        if (item == NULL)
+		log_file_write(NULL, level, str, FALSE);
+	else {
+		/* there can be multiple items separated with comma */
+		items = g_strsplit(item, ",", -1);
+		for (tmp = items; *tmp != NULL; tmp++)
+			log_file_write(*tmp, level, str, FALSE);
+		g_strfreev(items);
+	}
 }
 
 static int sig_rotate_check(void)
