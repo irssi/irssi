@@ -178,11 +178,15 @@ CODE:
 		     "@Irssi::Irc::Dcc::Send::ISA = qw(Irssi::Irc::Dcc);\n",
 		     TRUE);
 
-INCLUDE: IrcServer.xs
-INCLUDE: IrcChannel.xs
-INCLUDE: IrcQuery.xs
-INCLUDE: Modes.xs
-INCLUDE: Netsplit.xs
+void
+deinit()
+CODE:
 
-INCLUDE: Dcc.xs
-INCLUDE: Notifylist.xs
+BOOT:
+	irssi_boot(Irc__Channel);
+	irssi_boot(Irc__Dcc);
+	irssi_boot(Irc__Modes);
+	irssi_boot(Irc__Netsplit);
+	irssi_boot(Irc__Notifylist);
+	irssi_boot(Irc__Query);
+	irssi_boot(Irc__Server);

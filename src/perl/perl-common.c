@@ -190,6 +190,16 @@ char *perl_get_use_list(void)
         return ret;
 }
 
+void irssi_callXS(void (*subaddr)(CV* cv), CV *cv, SV **mark)
+{
+	dSP;
+
+	PUSHMARK(mark);
+	(*subaddr)(cv);
+
+	PUTBACK;
+}
+
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 {
 	char *type, *chat_type;

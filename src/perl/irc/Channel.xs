@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Channel  PREFIX = irc_
+#include "module.h"
+
+MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc::Channel  PREFIX = irc_
+PROTOTYPES: ENABLE
 
 void
 bans(channel)
@@ -42,7 +45,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Server  PREFIX = irc_
+MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc::Server  PREFIX = irc_
 
 Irssi::Irc::Channel
 irc_channel_create(server, name, automatic)

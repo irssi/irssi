@@ -2,5 +2,6 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile('NAME' => 'Irssi',
               'LIBS' => '',
+	      'OBJECT' => '$(O_FILES)',
               'INC' => '-I../../.. -I@top_srcdir@ -I@top_srcdir@/src -I@top_srcdir@/src/core @GLIB_CFLAGS@',
 	      'VERSION_FROM' => '@srcdir@/Irssi.pm');

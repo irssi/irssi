@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Server
+#include "module.h"
+
+MODULE = Irssi::Irc::Netsplit	PACKAGE = Irssi::Irc::Server
+PROTOTYPES: ENABLE
 
 Irssi::Irc::Netsplit
 netsplit_find(server, nick, address)

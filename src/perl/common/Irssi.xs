@@ -9,12 +9,17 @@ init()
 CODE:
 	perl_api_version_check("Irssi");
 
-INCLUDE: Channel.xs
-INCLUDE: Core.xs
-INCLUDE: Ignore.xs
-INCLUDE: Log.xs
-INCLUDE: Masks.xs
-INCLUDE: Query.xs
-INCLUDE: Rawlog.xs
-INCLUDE: Server.xs
-INCLUDE: Settings.xs
+void
+deinit()
+CODE:
+
+BOOT:
+        irssi_boot(Channel);
+	irssi_boot(Core);
+	irssi_boot(Ignore);
+	irssi_boot(Log);
+	irssi_boot(Masks);
+	irssi_boot(Query);
+	irssi_boot(Rawlog);
+	irssi_boot(Server);
+	irssi_boot(Settings);

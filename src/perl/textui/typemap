@@ -5,6 +5,7 @@ Irssi::TextUI::TextBufferView	T_PlainObj
 Irssi::TextUI::Line		T_PlainObj
 Irssi::TextUI::LineCache	T_PlainObj
 Irssi::TextUI::LineInfo		T_PlainObj
+Irssi::TextUI::StatusbarItem   	T_PlainObj
 
 INPUT
 

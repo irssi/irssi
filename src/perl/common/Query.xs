@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Query  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 queries()
@@ -20,7 +23,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Server
+MODULE = Irssi::Query  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -41,7 +44,7 @@ query_find(server, nick)
 	char *nick
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Query  PREFIX = query_
+MODULE = Irssi::Query  PACKAGE = Irssi::Query  PREFIX = query_
 #*******************************
 
 void

@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Server  PREFIX = irc_server_
+#include "module.h"
+
+MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server  PREFIX = irc_server_
+PROTOTYPES: ENABLE
 
 char *
 irc_server_get_channels(server)
@@ -32,7 +35,7 @@ ctcp_send_reply(server, data)
 	Irssi::Irc::Server server
 	char *data
 
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Connect  PREFIX = irc_server_
+MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Connect  PREFIX = irc_server_
 
 Irssi::Irc::Server
 irc_server_connect(conn)

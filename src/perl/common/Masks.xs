@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Masks  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 int
 mask_match(mask, nick, user, host)
@@ -32,7 +35,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Server
+MODULE = Irssi::Masks	PACKAGE = Irssi::Server
 #*******************************
 
 int

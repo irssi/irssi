@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Server  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 servers()
@@ -36,7 +39,7 @@ server_find_chatnet(chatnet)
 	char *chatnet
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Server  PREFIX = server_
+MODULE = Irssi::Server	PACKAGE = Irssi::Server  PREFIX = server_
 #*******************************
 
 void

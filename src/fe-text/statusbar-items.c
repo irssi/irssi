@@ -33,7 +33,6 @@
 #define MAX_LAG_UNKNOWN_TIME 30
 
 /* activity */
-static GSList *activity_items;
 static GList *activity_list;
 
 static GHashTable *input_entries;
@@ -195,7 +194,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 			activity_list = g_list_remove(activity_list, window);
 		if (window->data_level != 0)
 			activity_list = g_list_prepend(activity_list, window);
-		statusbar_items_redraw(activity_items);
+		statusbar_items_redraw("act");
 		return;
 	}
 
@@ -204,12 +203,12 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 		if (window->data_level == 0) {
 			/* remove from activity list */
 			activity_list = g_list_remove(activity_list, window);
-			statusbar_items_redraw(activity_items);
+			statusbar_items_redraw("act");
 		} else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
 			 window->hilight_color != 0) {
 			/* different level as last time (or maybe different
 			   hilight color?), just redraw it. */
-			statusbar_items_redraw(activity_items);
+			statusbar_items_redraw("act");
 		}
 		return;
 	}
@@ -231,7 +230,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 	if (tmp == NULL)
 		activity_list = g_list_append(activity_list, window);
 
-	statusbar_items_redraw(activity_items);
+	statusbar_items_redraw("act");
 }
 
 static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
@@ -240,12 +239,12 @@ static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 
 	if (g_list_find(activity_list, window) != NULL)
 		activity_list = g_list_remove(activity_list, window);
-	statusbar_items_redraw(activity_items);
+	statusbar_items_redraw("act");
 }
 
 static void sig_statusbar_activity_updated(void)
 {
-	statusbar_items_redraw(activity_items);
+	statusbar_items_redraw("act");
 }
 
 static void item_more(SBAR_ITEM_REC *item, int get_size_only)
@@ -276,24 +275,14 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	}
 }
 
-static void sig_statusbar_item_created(SBAR_ITEM_REC *item)
-{
-	if (item->func == item_act)
-		activity_items = g_slist_prepend(activity_items, item);
-}
-
 static void sig_statusbar_item_destroyed(SBAR_ITEM_REC *item)
 {
-	if (item->func == item_act)
-		activity_items = g_slist_remove(activity_items, item);
-	else {
-		GUI_ENTRY_REC *rec;
+	GUI_ENTRY_REC *rec;
 
-		rec = g_hash_table_lookup(input_entries, item);
-		if (rec != NULL) {
-			gui_entry_destroy(rec);
-                        g_hash_table_remove(input_entries, item);
-		}
+	rec = g_hash_table_lookup(input_entries, item);
+	if (rec != NULL) {
+		gui_entry_destroy(rec);
+		g_hash_table_remove(input_entries, item);
 	}
 }
 
@@ -319,7 +308,6 @@ void statusbar_items_init(void)
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
-	signal_add("statusbar item created", (SIGNAL_FUNC) sig_statusbar_item_created);
 	signal_add("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }
 
@@ -334,6 +322,5 @@ void statusbar_items_deinit(void)
 	g_list_free(activity_list);
         activity_list = NULL;
 
-	signal_remove("statusbar item created", (SIGNAL_FUNC) sig_statusbar_item_created);
 	signal_remove("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }

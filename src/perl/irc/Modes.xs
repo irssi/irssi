@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc
+#include "module.h"
+
+MODULE = Irssi::Irc::Modes	PACKAGE = Irssi::Irc
+PROTOTYPES: ENABLE
 
 char *
 modes_join(old, mode, channel)
@@ -7,7 +10,7 @@ modes_join(old, mode, channel)
         int channel
 
 #*******************************
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Channel  PREFIX = channel_
+MODULE = Irssi::Irc::Modes	PACKAGE = Irssi::Irc::Channel  PREFIX = channel_
 #*******************************
 
 char *

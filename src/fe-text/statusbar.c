@@ -39,10 +39,11 @@ STATUSBAR_GROUP_REC *active_statusbar_group;
    sbar_item_funcs: char *name => STATUSBAR_FUNC func
    sbar_signal_items: int signal_id => GSList *(SBAR_ITEM_REC *items)
    sbar_item_signals: SBAR_ITEM_REC *item => GSList *(int *signal_ids)
-
+   named_sbar_items: const char *name => GSList *(SBAR_ITEM_REC *items)
 */
 static GHashTable *sbar_item_defs, *sbar_item_funcs;
 static GHashTable *sbar_signal_items, *sbar_item_signals;
+static GHashTable *named_sbar_items;
 
 void statusbar_item_register(const char *name, const char *value,
 			     STATUSBAR_FUNC func)
@@ -322,6 +323,12 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 	active_win = old_active_win;
 }
 
+void statusbar_items_redraw(const char *name)
+{
+	g_slist_foreach(g_hash_table_lookup(named_sbar_items, name),
+			(GFunc) statusbar_item_redraw, NULL);
+}
+
 static void statusbars_recalc_ypos(STATUSBAR_REC *bar)
 {
 	GSList *tmp, *bar_group;
@@ -530,6 +537,32 @@ void statusbar_destroy(STATUSBAR_REC *bar)
 	}
 
 	g_free(bar);
+}
+
+void statusbar_recreate_items(STATUSBAR_REC *bar)
+{
+	GSList *tmp;
+
+	/* destroy */
+	while (bar->items != NULL)
+		statusbar_item_destroy(bar->items->data);
+
+        /* create */
+	for (tmp = bar->config->items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_CONFIG_REC *rec = tmp->data;
+
+                statusbar_item_create(bar, rec);
+	}
+
+        statusbar_redraw(bar);
+}
+
+void statusbars_recreate_items(void)
+{
+	if (active_statusbar_group != NULL) {
+		g_slist_foreach(active_statusbar_group->bars,
+				(GFunc) statusbar_recreate_items, NULL);
+	}
 }
 
 STATUSBAR_REC *statusbar_find(STATUSBAR_GROUP_REC *group, const char *name,
@@ -782,6 +815,7 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 				     SBAR_ITEM_CONFIG_REC *config)
 {
 	SBAR_ITEM_REC *rec;
+        GSList *items;
 
 	g_return_val_if_fail(bar != NULL, NULL);
 	g_return_val_if_fail(config != NULL, NULL);
@@ -796,6 +830,10 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 	if (rec->func == NULL)
 		rec->func = statusbar_item_default_func;
 	statusbar_item_default_signals(rec);
+
+	items = g_hash_table_lookup(named_sbar_items, config->name);
+	items = g_slist_append(items, rec);
+        g_hash_table_insert(named_sbar_items, config->name, items);
 
         signal_emit("statusbar item created", 1, rec);
 	return rec;
@@ -834,6 +872,14 @@ void statusbar_item_destroy(SBAR_ITEM_REC *item)
 	g_return_if_fail(item != NULL);
 
 	item->bar->items = g_slist_remove(item->bar->items, item);
+
+	list = g_hash_table_lookup(named_sbar_items, item->config->name);
+	list = g_slist_remove(list, item);
+	if (list == NULL)
+		g_hash_table_remove(named_sbar_items, item->config->name);
+        else
+		g_hash_table_insert(named_sbar_items, item->config->name, list);
+
         signal_emit("statusbar item destroyed", 1, item);
 
 	list = g_hash_table_lookup(sbar_item_signals, item);
@@ -943,13 +989,15 @@ void statusbar_init(void)
 	statusbar_groups = NULL;
 	active_statusbar_group = NULL;
 	sbar_item_defs = g_hash_table_new((GHashFunc) g_str_hash,
-					       (GCompareFunc) g_str_equal);
+					  (GCompareFunc) g_str_equal);
 	sbar_item_funcs = g_hash_table_new((GHashFunc) g_str_hash,
 					   (GCompareFunc) g_str_equal);
 	sbar_signal_items = g_hash_table_new((GHashFunc) g_direct_hash,
 					     (GCompareFunc) g_direct_equal);
 	sbar_item_signals = g_hash_table_new((GHashFunc) g_direct_hash,
 					     (GCompareFunc) g_direct_equal);
+	named_sbar_items = g_hash_table_new((GHashFunc) g_str_hash,
+					    (GCompareFunc) g_str_equal);
 
         signal_add("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_add("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
@@ -980,6 +1028,7 @@ void statusbar_deinit(void)
 	g_hash_table_foreach(sbar_item_signals,
 			     (GHFunc) statusbar_item_signal_destroy, NULL);
 	g_hash_table_destroy(sbar_item_signals);
+	g_hash_table_destroy(named_sbar_items);
 
         signal_remove("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_remove("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);

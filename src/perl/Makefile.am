@@ -90,9 +90,9 @@ IRC_SOURCES = \
 	irc/Irc.xs \
 	irc/Irc.pm \
 	irc/Dcc.xs \
-	irc/IrcChannel.xs \
-	irc/IrcQuery.xs \
-	irc/IrcServer.xs \
+	irc/Channel.xs \
+	irc/Query.xs \
+	irc/Server.xs \
 	irc/Modes.xs \
 	irc/Netsplit.xs \
 	irc/Notifylist.xs \
@@ -114,6 +114,7 @@ TEXTUI_SOURCES = \
 	textui/TextUI.pm \
 	textui/TextBuffer.xs \
 	textui/TextBufferView.xs \
+	textui/Statusbar.xs \
 	textui/Makefile.PL.in \
 	textui/typemap \
 	textui/module.h

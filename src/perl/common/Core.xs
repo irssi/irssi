@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Core  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 signal_emit(signal, ...)
@@ -374,7 +377,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Server
+MODULE = Irssi::Core	PACKAGE = Irssi::Server
 #*******************************
 
 char *
@@ -389,7 +392,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Windowitem
+MODULE = Irssi::Core	PACKAGE = Irssi::Windowitem
 #*******************************
 
 char *

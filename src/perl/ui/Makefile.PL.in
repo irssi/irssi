@@ -2,6 +2,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile('NAME' => 'Irssi::UI',
               'LIBS' => '',
+	      'OBJECT' => '$(O_FILES)',
               'TYPEMAPS' => ['../common/typemap'],
               'INC' => '-I../../.. -I@top_srcdir@/src -I@top_srcdir@/src/core -I@top_srcdir@/src/fe-common/core @GLIB_CFLAGS@',
 	      'VERSION_FROM' => '@srcdir@/UI.pm');

@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc
+#include "module.h"
+
+MODULE = Irssi::Irc::Dcc  PACKAGE = Irssi::Irc
+PROTOTYPES: ENABLE
 
 void
 dccs()
@@ -60,7 +63,7 @@ dcc_get_download_path(fname)
 	char *fname
 
 #*******************************
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Dcc  PREFIX = dcc_
+MODULE = Irssi::Irc::Dcc  PACKAGE = Irssi::Irc::Dcc  PREFIX = dcc_
 #*******************************
 
 void
@@ -85,7 +88,7 @@ dcc_reject(dcc, server)
 	Irssi::Irc::Server server
 
 #*******************************
-MODULE = Irssi::Irc  PACKAGE = Irssi::Windowitem  PREFIX = item_
+MODULE = Irssi::Irc::Dcc  PACKAGE = Irssi::Windowitem  PREFIX = item_
 #*******************************
 
 Irssi::Irc::Dcc::Chat

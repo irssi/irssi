@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Settings  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 char *
 settings_get_str(key)

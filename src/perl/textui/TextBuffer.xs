@@ -1,10 +1,13 @@
-MODULE = Irssi::TextUI  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 Irssi::TextUI::TextBuffer
 textbuffer_create()
 
 #*******************************
-MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
+MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
 #*******************************
 
 void
@@ -36,7 +39,7 @@ textbuffer_remove_all_lines(buffer)
 	Irssi::TextUI::TextBuffer buffer
 
 #*******************************
-MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::Line  PREFIX = textbuffer_line_
+MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi::TextUI::Line  PREFIX = textbuffer_line_
 #*******************************
 
 Irssi::TextUI::Line

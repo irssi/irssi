@@ -1,4 +1,7 @@
-MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
+#include "module.h"
+
+MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
+PROTOTYPES: ENABLE
 
 Irssi::TextUI::TextBufferView
 textbuffer_view_create(buffer, width, height, default_indent, longword_noindent, scroll)
@@ -10,7 +13,7 @@ textbuffer_view_create(buffer, width, height, default_indent, longword_noindent,
 	int scroll
 
 #*******************************
-MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::TextBufferView  PREFIX = textbuffer_view_
+MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::TextUI::TextBufferView  PREFIX = textbuffer_view_
 #*******************************
 
 void
@@ -92,7 +95,7 @@ textbuffer_view_redraw(view)
 	Irssi::TextUI::TextBufferView view
 
 #*******************************
-MODULE = Irssi::TextUI  PACKAGE = Irssi::UI::Window
+MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::UI::Window
 #*******************************
 
 Irssi::TextUI::TextBufferView

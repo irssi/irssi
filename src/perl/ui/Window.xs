@@ -1,4 +1,7 @@
-MODULE = Irssi::UI  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::UI::Window  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 windows()
@@ -93,7 +96,7 @@ OUTPUT:
 
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::Server
+MODULE = Irssi::UI::Window  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -135,7 +138,7 @@ window_find_closest(server, name, level)
 
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::UI::Window  PREFIX=window_
+MODULE = Irssi::UI::Window  PACKAGE = Irssi::UI::Window  PREFIX=window_
 #*******************************
 
 void
@@ -230,7 +233,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::Windowitem  PREFIX = window_item_
+MODULE = Irssi::UI::Window  PACKAGE = Irssi::Windowitem  PREFIX = window_item_
 #*******************************
 
 void

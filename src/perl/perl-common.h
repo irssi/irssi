@@ -48,6 +48,12 @@ void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects);
 
 char *perl_get_use_list(void);
 
+#define irssi_boot(x) { \
+	extern void boot_Irssi__##x(CV *cv); \
+	irssi_callXS(boot_Irssi__##x, cv, mark); \
+	}
+void irssi_callXS(void (*subaddr)(CV* cv), CV *cv, SV **mark);
+
 void perl_common_start(void);
 void perl_common_stop(void);
 

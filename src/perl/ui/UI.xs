@@ -104,12 +104,6 @@ static PLAIN_OBJECT_INIT_REC fe_plains[] = {
 	{ NULL, NULL }
 };
 
-static void sig_deinit(void)
-{
-	signal_remove("script destroy", (SIGNAL_FUNC) sig_script_destroy);
-	signal_remove("perl scripts deinit", (SIGNAL_FUNC) sig_deinit);
-}
-
 MODULE = Irssi::UI  PACKAGE = Irssi::UI
 
 PROTOTYPES: ENABLE
@@ -126,8 +120,12 @@ CODE:
         irssi_add_plains(fe_plains);
 
 	signal_add("script destroy", (SIGNAL_FUNC) sig_script_destroy);
-	signal_add("perl scripts deinit", (SIGNAL_FUNC) sig_deinit);
 
+void
+deinit()
+CODE:
+	signal_remove("script destroy", (SIGNAL_FUNC) sig_script_destroy);
 
-INCLUDE: Themes.xs
-INCLUDE: Window.xs
+BOOT:
+	irssi_boot(UI__Themes);
+	irssi_boot(UI__Window);

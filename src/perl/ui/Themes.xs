@@ -1,5 +1,7 @@
+#include "module.h"
 
-MODULE = Irssi::UI  PACKAGE = Irssi
+MODULE = Irssi::UI::Themes  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 theme_register(formats)
@@ -53,7 +55,7 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::Server
+MODULE = Irssi::UI::Themes  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -77,7 +79,7 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::UI::Window
+MODULE = Irssi::UI::Themes  PACKAGE = Irssi::UI::Window
 #*******************************
 
 void
@@ -100,7 +102,7 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi::UI  PACKAGE = Irssi::Windowitem
+MODULE = Irssi::UI::Themes  PACKAGE = Irssi::Windowitem
 #*******************************
 
 void

@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Log  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 logs()
@@ -19,7 +22,7 @@ log_find(fname)
 	char *fname
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Log  PREFIX = log_
+MODULE = Irssi::Log  PACKAGE = Irssi::Log  PREFIX = log_
 #*******************************
 
 void

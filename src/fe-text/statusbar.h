@@ -100,8 +100,10 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 /* redraw statusbar, NULL = all */
 void statusbar_redraw(STATUSBAR_REC *bar);
 void statusbar_item_redraw(SBAR_ITEM_REC *item);
-#define statusbar_items_redraw(list) \
-        g_slist_foreach(list, (GFunc) statusbar_item_redraw, NULL);
+void statusbar_items_redraw(const char *name);
+
+void statusbar_recreate_items(STATUSBAR_REC *bar);
+void statusbars_recreate_items(void);
 
 void statusbar_init(void);
 void statusbar_deinit(void);

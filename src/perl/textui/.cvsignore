@@ -1,7 +1,7 @@
 Makefile
 Makefile.PL
-TextUI.c
 TextUI.bs
+*.c
 *.o
 pm_to_blib
 blib

@@ -61,6 +61,14 @@ static void perl_line_info_fill_hash(HV *hv, LINE_INFO_REC *info)
 	hv_store(hv, "time", 4, newSViv(info->time), 0);
 }
 
+static void perl_statusbar_item_fill_hash(HV *hv, SBAR_ITEM_REC *item)
+{
+	hv_store(hv, "min_size", 8, newSViv(item->min_size), 0);
+	hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);
+	hv_store(hv, "xpos", 4, newSViv(item->xpos), 0);
+	hv_store(hv, "size", 4, newSViv(item->size), 0);
+}
+
 static PLAIN_OBJECT_INIT_REC textui_plains[] = {
 	{ "Irssi::TextUI::MainWindow", (PERL_OBJECT_FUNC) perl_main_window_fill_hash },
 	{ "Irssi::TextUI::TextBuffer", (PERL_OBJECT_FUNC) perl_text_buffer_fill_hash },
@@ -68,6 +76,7 @@ static PLAIN_OBJECT_INIT_REC textui_plains[] = {
 	{ "Irssi::TextUI::Line", (PERL_OBJECT_FUNC) perl_line_fill_hash },
 	{ "Irssi::TextUI::LineCache", (PERL_OBJECT_FUNC) perl_line_cache_fill_hash },
 	{ "Irssi::TextUI::LineInfo", (PERL_OBJECT_FUNC) perl_line_info_fill_hash },
+	{ "Irssi::TextUI::StatusbarItem", (PERL_OBJECT_FUNC) perl_statusbar_item_fill_hash },
 
 	{ NULL, NULL }
 };
@@ -86,6 +95,12 @@ CODE:
 	initialized = TRUE;
 
         irssi_add_plains(textui_plains);
+        perl_statusbar_init();
+
+void
+deinit()
+CODE:
+        perl_statusbar_deinit();
 
 MODULE = Irssi::TextUI PACKAGE = Irssi
 
@@ -95,5 +110,7 @@ gui_printtext(xpos, ypos, str)
 	int ypos
 	char *str
 
-INCLUDE: TextBuffer.xs
-INCLUDE: TextBufferView.xs
+BOOT:
+	irssi_boot(TextUI__Statusbar);
+	irssi_boot(TextUI__TextBuffer);
+	irssi_boot(TextUI__TextBufferView);

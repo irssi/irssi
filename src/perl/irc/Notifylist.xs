@@ -1,4 +1,7 @@
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc
+#include "module.h"
+
+MODULE = Irssi::Irc::Notifylist  PACKAGE = Irssi::Irc
+PROTOTYPES: ENABLE
 
 void
 notifies()
@@ -31,7 +34,7 @@ notifylist_find(mask, ircnet)
 	char *ircnet
 
 #*******************************
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Server
+MODULE = Irssi::Irc::Notifylist  PACKAGE = Irssi::Irc::Server
 #*******************************
 
 int
@@ -40,7 +43,7 @@ notifylist_ison_server(server, nick)
 	char *nick
 
 #*******************************
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Notifylist  PREFIX = notifylist_
+MODULE = Irssi::Irc::Notifylist	PACKAGE = Irssi::Irc::Notifylist  PREFIX = notifylist_
 #*******************************
 
 int

@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Ignore  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 ignores()
@@ -22,7 +25,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Server
+MODULE = Irssi::Ignore  PACKAGE = Irssi::Server
 #*******************************
 
 int
@@ -35,7 +38,7 @@ ignore_check(server, nick, host, channel, text, level)
 	int level
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Ignore  PREFIX = ignore_
+MODULE = Irssi::Ignore  PACKAGE = Irssi::Ignore  PREFIX = ignore_
 #*******************************
 
 void

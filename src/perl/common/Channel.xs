@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Channel  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 channels()
@@ -18,7 +21,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Server
+MODULE = Irssi::Channel  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -68,7 +71,7 @@ PPCODE:
 	g_slist_free(list);
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Channel  PREFIX = channel_
+MODULE = Irssi::Channel  PACKAGE = Irssi::Channel  PREFIX = channel_
 #*******************************
 
 void

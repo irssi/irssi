@@ -1,4 +1,7 @@
-MODULE = Irssi  PACKAGE = Irssi
+#include "module.h"
+
+MODULE = Irssi::Rawlog  PACKAGE = Irssi
+PROTOTYPES: ENABLE
 
 void
 rawlog_set_size(lines)
@@ -8,7 +11,7 @@ Irssi::Rawlog
 rawlog_create()
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Rawlog  PREFIX = rawlog_
+MODULE = Irssi::Rawlog  PACKAGE = Irssi::Rawlog  PREFIX = rawlog_
 #*******************************
 
 void
