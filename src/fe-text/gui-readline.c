@@ -146,6 +146,7 @@ void handle_key(int key)
 
 static void key_send_line(void)
 {
+	WINDOW_REC *history_window;
         char *str, *add_history;
 
 	str = gui_entry_get_text(active_entry);
@@ -154,6 +155,7 @@ static void key_send_line(void)
 	/* we can't use gui_entry_get_text() later, since the entry might
 	   have been destroyed after we get back */
 	add_history = g_strdup(str);
+	history_window = active_win;
 	translate_output(str);
 
 	if (redir == NULL) {
@@ -162,12 +164,14 @@ static void key_send_line(void)
 			    active_win->active);
 	} else {
 		if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-			g_free_and_null(add_history);
+			history_window = NULL;
 		handle_entry_redirect(str);
 	}
 
 	if (add_history != NULL) {
-		command_history_add(active_win, add_history, FALSE);
+		if (history_window != NULL &&
+		    g_slist_find(windows, history_window) != NULL)
+			command_history_add(history_window, add_history, FALSE);
                 g_free(add_history);
 	}
 
