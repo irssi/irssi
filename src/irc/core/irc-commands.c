@@ -709,6 +709,43 @@ static void cmd_wall_hash(gpointer key, NICK_REC *nick, GSList **nicks)
 	if (nick->op) *nicks = g_slist_append(*nicks, nick);
 }
 
+/* SYNTAX: WAIT [-<server tag>] <milliseconds> */
+static void cmd_wait(const char *data, IRC_SERVER_REC *server)
+{
+	GHashTable *optlist;
+	char *msecs;
+	void *free_arg;
+	int n;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    NULL, &optlist, &msecs))
+		return;
+
+	if (*msecs == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	/* -<server tag> */
+	server = IRC_SERVER(cmd_options_get_server(NULL, optlist,
+						   SERVER(server)));
+
+	n = atoi(msecs);
+	if (server != NULL && n > 0) {
+		g_get_current_time(&server->wait_cmd);
+		server->wait_cmd.tv_sec += n/1000;
+		server->wait_cmd.tv_usec += n%1000;
+		if (server->wait_cmd.tv_usec >= 1000) {
+			server->wait_cmd.tv_sec++;
+			server->wait_cmd.tv_usec -= 1000;
+		}
+	}
+	cmd_params_free(free_arg);
+}
+
 /* SYNTAX: WALL [<channel>] <message> */
 static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -1106,6 +1143,7 @@ void irc_commands_init(void)
 	command_bind("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("quote", NULL, (SIGNAL_FUNC) cmd_quote);
 	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
+	command_bind("wait", NULL, (SIGNAL_FUNC) cmd_wait);
 	/* SYNTAX: WALLOPS <message> */
 	command_bind("wallops", NULL, (SIGNAL_FUNC) command_1self);
 	/* SYNTAX: WALLCHOPS <channel> <message> */
@@ -1180,6 +1218,7 @@ void irc_commands_deinit(void)
 	command_unbind("userhost", (SIGNAL_FUNC) command_self);
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
+	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
 	command_unbind("wallchops", (SIGNAL_FUNC) command_2self);
 	command_unbind("cycle", (SIGNAL_FUNC) cmd_cycle);

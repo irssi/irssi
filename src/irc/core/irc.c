@@ -24,6 +24,7 @@
 #include "net-sendbuffer.h"
 #include "line-split.h"
 #include "rawlog.h"
+#include "misc.h"
 
 #include "irc.h"
 #include "irc-servers.h"
@@ -75,14 +76,17 @@ static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int 
 /* Send command to IRC server */
 void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 {
+	GTimeVal now;
 	int send_now;
 
 	g_return_if_fail(cmd != NULL);
 	if (server == NULL) return;
 
+        g_get_current_time(&now);
 	send_now = !server->cmd_last_split &&
 		(server->cmdcount < server->max_cmds_at_once ||
-		 server->cmd_queue_speed <= 0);
+		 server->cmd_queue_speed <= 0) &&
+		g_timeval_cmp(&now, &server->wait_cmd) >= 0;
 
         cmd_send(server, cmd, send_now, FALSE);
 }

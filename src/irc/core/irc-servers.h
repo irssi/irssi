@@ -61,6 +61,7 @@ typedef struct {
 	int cmd_last_split; /* Last command wasn't sent entirely to server.
 	                       First item in `cmdqueue' should be re-sent. */
 	GSList *cmdqueue;
+	GTimeVal wait_cmd; /* don't send anything to server before this */
 	GTimeVal last_cmd; /* last time command was sent to server */
 
 	int max_cmds_at_once; /* How many messages can be sent immediately before timeouting starts */

@@ -233,7 +233,10 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 		return;
 
 	if (!server->cmd_last_split) {
-		usecs = get_timeval_diff(now, &server->last_cmd);
+		if (g_timeval_cmp(now, &server->wait_cmd) == -1)
+			return;
+
+                usecs = get_timeval_diff(now, &server->last_cmd);
 		if (usecs < server->cmd_queue_speed)
 			return;
 	}
@@ -253,6 +256,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 		return;
 	}
 
+	server->wait_cmd.tv_sec = 0;
 	memcpy(&server->last_cmd, now, sizeof(GTimeVal));
 	if (server->cmd_last_split)
 		server->cmd_last_split = FALSE;
