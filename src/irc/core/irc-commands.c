@@ -334,16 +334,18 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *channame, *topic;
+	char *params, *args, *channame, *topic;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &topic);
+	params = cmd_get_params(data, 3 | PARAM_FLAG_OPTCHAN |
+				PARAM_FLAG_OPTARGS | PARAM_FLAG_GETREST,
+				item, &args, &channame, &topic);
 
-	irc_send_cmdv(server, *topic == '\0' ? "TOPIC %s" : "TOPIC %s :%s",
-			 channame, topic);
+	irc_send_cmdv(server, *topic == '\0' && strstr(args, "-d") == NULL ?
+		      "TOPIC %s" : "TOPIC %s :%s", channame, topic);
 
 	g_free(params);
 }

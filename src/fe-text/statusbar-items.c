@@ -590,13 +590,14 @@ static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 	query = irc_item_query(active_win->active);
 	if (channel != NULL && channel->topic != NULL) topic = channel->topic;
 	if (query != NULL && query->address != NULL) topic = query->address;
-	if (topic == NULL) return;
 
-	topic = strip_codes(topic);
-	str = g_strdup_printf("%.*s", item->size, topic);
-	set_color((1<<4)+15); addstr(str);
-	g_free(str);
-	g_free(topic);
+	if (topic != NULL) {
+		topic = strip_codes(topic);
+		str = g_strdup_printf("%.*s", item->size, topic);
+		set_color((1<<4)+15); addstr(str);
+		g_free(str);
+		g_free(topic);
+	}
 
 	screen_refresh();
 }
