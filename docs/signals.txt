@@ -58,7 +58,7 @@ nicklist.c:
  "nick serverop changed", CHANNEL_REC, NICK_REC
 
 pidwait.c:
- "pidwait", int pid
+ "pidwait", int pid, int status
 
 queries.c:
  "query created", QUERY_REC, int automatic
