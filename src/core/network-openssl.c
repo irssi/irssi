@@ -51,8 +51,10 @@ static void irssi_ssl_free(GIOChannel *handle)
 
 #ifdef G_CAN_INLINE
 G_INLINE_FUNC
+#else
+static
 #endif
-static GIOError ssl_errno(gint e)
+GIOError ssl_errno(gint e)
 {
 	switch(e)
 	{
@@ -118,7 +120,7 @@ static GIOError irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint 
 	return -1;
 }
 
-static GIOError irssi_ssl_write(GIOChannel *handle, const gchar *buf, guint len, guint *ret)
+static GIOError irssi_ssl_write(GIOChannel *handle, gchar *buf, guint len, guint *ret)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
