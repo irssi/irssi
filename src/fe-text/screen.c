@@ -49,8 +49,6 @@ static void deinit_screen_int(void);
 
 static void sig_winch(int p)
 {
-	int ychange, xchange;
-
 #if defined (TIOCGWINSZ) && defined (HAVE_CURSES_RESIZETERM)
 	struct winsize ws;
 
@@ -67,24 +65,14 @@ static void sig_winch(int p)
 		ws.ws_col = MIN_SCREEN_WIDTH;
 
 	/* Resize curses terminal */
-	ychange = ws.ws_row-LINES;
-	xchange = ws.ws_col-COLS;
 	resizeterm(ws.ws_row, ws.ws_col);
 #else
-	int old_lines, old_cols;
-
-	old_lines = LINES;
-	old_cols = COLS;
-
 	deinit_screen_int();
 	init_screen_int();
 	mainwindows_recreate();
-
-        ychange = LINES-old_lines;
-        xchange = COLS-old_cols;
 #endif
 
-	mainwindows_resize(ychange, xchange != 0);
+	mainwindows_resize(COLS, LINES);
 }
 #endif
 

@@ -36,6 +36,7 @@ GSList *mainwindows;
 MAIN_WINDOW_REC *active_mainwin;
 
 static int reserved_up, reserved_down;
+static int screen_width, screen_height;
 
 static MAIN_WINDOW_REC *find_window_with_room(void)
 {
@@ -47,7 +48,7 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->lines;
+		space = rec->height;
 		if (space >= WINDOW_MIN_SIZE+NEW_WINDOW_SIZE && space > biggest) {
 			biggest = space;
 			biggest_rec = rec;
@@ -60,21 +61,24 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 #ifdef USE_CURSES_WINDOWS
 static void create_curses_window(MAIN_WINDOW_REC *window)
 {
-	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
+	window->curses_win = newwin(window->height, window->width,
+				    window->first_line, 0);
         idlok(window->curses_win, 1);
 }
 #endif
 
-static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
+static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 {
 	GSList *tmp;
 
-	if (ychange == 0 && !xchange) return;
+	if (xdiff == 0 && ydiff == 0)
+                return;
 
-	window->lines = window->last_line-window->first_line+1;
+        window->width += xdiff;
+	window->height = window->last_line-window->first_line+1;
 #ifdef USE_CURSES_WINDOWS
 #ifdef HAVE_CURSES_WRESIZE
-	wresize(window->curses_win, window->lines, COLS);
+	wresize(window->curses_win, window->height, window->width);
 	mvwin(window->curses_win, window->first_line, 0);
 #else
 	delwin(window->curses_win);
@@ -87,10 +91,11 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 
 		if (rec->gui_data != NULL &&
 		    WINDOW_GUI(rec)->parent == window)
-			gui_window_resize(rec, ychange, xchange);
+			gui_window_resize(rec, window->width, window->height);
 	}
 
-	gui_window_redraw(window->active);
+	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
+				   window->curses_win);
 	signal_emit("mainwindow resized", 1, window);
 }
 
@@ -104,7 +109,8 @@ void mainwindows_recreate(void)
 #ifdef USE_CURSES_WINDOWS
 		create_curses_window(rec);
 #endif
-		gui_window_redraw(rec->active);
+		textbuffer_view_set_window(WINDOW_GUI(rec->active)->view,
+					   rec->curses_win);
 	}
 }
 
@@ -120,27 +126,29 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		active_mainwin = rec;
 
 		rec->first_line = reserved_up;
-		rec->last_line = LINES-1-reserved_down-rec->statusbar_lines;
-		rec->lines = rec->last_line-rec->first_line+1;
+		rec->last_line = screen_height-1 -
+			reserved_down-rec->statusbar_lines;
+                rec->width = screen_width;
+		rec->height = rec->last_line-rec->first_line+1;
 	} else {
 		parent = WINDOW_GUI(active_win)->parent;
-		if (parent->lines < WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
+		if (parent->height < WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
 			parent = find_window_with_room();
 		if (parent == NULL)
 			return NULL; /* not enough space */
 
-		space = (parent->lines-parent->statusbar_lines)/2;
+		space = (parent->height-parent->statusbar_lines)/2;
 		rec->first_line = parent->first_line;
 		rec->last_line = rec->first_line + space-rec->statusbar_lines;
-		rec->lines = rec->last_line-rec->first_line+1;
+		rec->height = rec->last_line-rec->first_line+1;
 		parent->first_line = rec->last_line+1+rec->statusbar_lines;
-		parent->lines = parent->last_line-parent->first_line+1;
+		parent->height = parent->last_line-parent->first_line+1;
 
-		mainwindow_resize(parent, -space-1, FALSE);
+		mainwindow_resize(parent, 0, -space-1);
 	}
 
 #ifdef USE_CURSES_WINDOWS
-	rec->curses_win = newwin(rec->lines, COLS, rec->first_line, 0);
+	rec->curses_win = newwin(rec->height, rec->width, rec->first_line, 0);
 	refresh();
 #endif
 
@@ -196,14 +204,14 @@ static void mainwindows_add_space(int first_line, int last_line)
 	rec = mainwindows_find_lower(last_line);
 	if (rec != NULL) {
 		rec->first_line = first_line;
-		mainwindow_resize(rec, size, FALSE);
+		mainwindow_resize(rec, 0, size);
 		return;
 	}
 
 	rec = mainwindows_find_upper(first_line);
 	if (rec != NULL) {
 		rec->last_line = last_line-rec->statusbar_lines;
-		mainwindow_resize(rec, size, FALSE);
+		mainwindow_resize(rec, 0, size);
 	}
 }
 
@@ -280,7 +288,7 @@ GSList *mainwindows_get_sorted(int reverse)
 	return list;
 }
 
-static void mainwindows_resize_too_small(int ychange, int xchange)
+static void mainwindows_resize_too_small(int xdiff, int ydiff)
 {
 	GSList *sorted, *tmp;
         int space, moved;
@@ -291,8 +299,8 @@ static void mainwindows_resize_too_small(int ychange, int xchange)
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->lines;
-		if (ychange == 0 || space <= 0) {
+		space = rec->height;
+		if (ydiff == 0 || space <= 0) {
 			if (moved > 0) {
 				rec->first_line -= moved;
 				rec->last_line -= moved;
@@ -301,17 +309,17 @@ static void mainwindows_resize_too_small(int ychange, int xchange)
 			continue;
 		}
 
-		if (space > -ychange) space = -ychange;
-		ychange += space;
+		if (space > -ydiff) space = -ydiff;
+		ydiff += space;
 		rec->first_line -= moved;
 		moved += space;
 		rec->last_line -= space;
-		mainwindow_resize(rec, -space, xchange);
+		mainwindow_resize(rec, xdiff, -space);
 	}
 	g_slist_free(sorted);
 }
 
-static void mainwindows_resize_smaller(int ychange, int xchange)
+static void mainwindows_resize_smaller(int xdiff, int ydiff)
 {
 	GSList *sorted, *tmp;
         int space;
@@ -320,40 +328,40 @@ static void mainwindows_resize_smaller(int ychange, int xchange)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space += rec->lines-WINDOW_MIN_SIZE;
+		space += rec->height-WINDOW_MIN_SIZE;
 	}
 
-	if (space < -ychange) {
+	if (space < -ydiff) {
 		/* not enough space, use different algorithm */
-		mainwindows_resize_too_small(ychange, xchange);
+		mainwindows_resize_too_small(xdiff, ydiff);
 		return;
 	}
 
 	/* resize windows that have space */
 	sorted = mainwindows_get_sorted(TRUE);
-	for (tmp = sorted; tmp != NULL && ychange < 0; tmp = tmp->next) {
+	for (tmp = sorted; tmp != NULL && ydiff < 0; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->lines-WINDOW_MIN_SIZE;
+		space = rec->height-WINDOW_MIN_SIZE;
 		if (space <= 0) {
-			rec->first_line += ychange;
-			rec->last_line += ychange;
+			rec->first_line += ydiff;
+			rec->last_line += ydiff;
 			signal_emit("mainwindow moved", 1, rec);
 			continue;
 		}
 
 		if (space <= 0) space = 1;
-		if (space > -ychange) space = -ychange;
-		rec->last_line += ychange;
-		ychange += space;
-		rec->first_line += ychange;
+		if (space > -ydiff) space = -ydiff;
+		rec->last_line += ydiff;
+		ydiff += space;
+		rec->first_line += ydiff;
 
-		mainwindow_resize(rec, -space, xchange);
+		mainwindow_resize(rec, xdiff, -space);
 	}
 	g_slist_free(sorted);
 }
 
-static void mainwindows_resize_bigger(int ychange, int xchange)
+static void mainwindows_resize_bigger(int xdiff, int ydiff)
 {
 	GSList *sorted, *tmp;
         int moved, space;
@@ -363,8 +371,8 @@ static void mainwindows_resize_bigger(int ychange, int xchange)
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->lines-WINDOW_MIN_SIZE;
-		if (ychange == 0 || (space >= 0 && tmp->next != NULL)) {
+		space = rec->height-WINDOW_MIN_SIZE;
+		if (ydiff == 0 || (space >= 0 && tmp->next != NULL)) {
 			if (moved > 0) {
 				rec->first_line += moved;
 				rec->last_line += moved;
@@ -376,41 +384,48 @@ static void mainwindows_resize_bigger(int ychange, int xchange)
 		if (space < 0 && tmp->next != NULL) {
                         /* space below minimum */
 			space = -space;
-			if (space > ychange) space = ychange;
+			if (space > ydiff) space = ydiff;
 		} else {
 			/* lowest window - give all the extra space for it */
-			space = ychange;
+			space = ydiff;
 		}
-		ychange -= space;
+		ydiff -= space;
 		rec->first_line += moved;
                 moved += space;
 		rec->last_line += moved;
 
-		mainwindow_resize(rec, space, xchange);
+		mainwindow_resize(rec, xdiff, space);
 	}
 	g_slist_free(sorted);
 }
 
-void mainwindows_resize_horiz(int xchange)
+void mainwindows_resize_horiz(int xdiff)
 {
 	GSList *tmp;
 
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		mainwindow_resize(rec, 0, xchange);
+		mainwindow_resize(rec, xdiff, 0);
 	}
 }
 
-void mainwindows_resize(int ychange, int xchange)
+void mainwindows_resize(int width, int height)
 {
+	int xdiff, ydiff;
+
+	xdiff = width-screen_width;
+	ydiff = height-screen_height;
+        screen_width = width;
+        screen_height = height;
+
 	screen_refresh_freeze();
-	if (ychange < 0)
-		mainwindows_resize_smaller(ychange, xchange);
-	else if (ychange > 0)
-		mainwindows_resize_bigger(ychange, xchange);
-	else if (xchange != 0)
-		mainwindows_resize_horiz(xchange);
+	if (ydiff < 0)
+		mainwindows_resize_smaller(xdiff, ydiff);
+	else if (ydiff > 0)
+		mainwindows_resize_bigger(xdiff, ydiff);
+        else if (xdiff != 0)
+		mainwindows_resize_horiz(xdiff);
 
 	irssi_redraw();
 	screen_refresh_thaw();
@@ -435,7 +450,7 @@ int mainwindows_reserve_lines(int count, int up)
 		ret = reserved_down;
 		reserved_down += count;
 
-		window = mainwindows_find_upper(LINES);
+		window = mainwindows_find_upper(screen_height);
 		if (window != NULL) window->last_line -= count;
 	}
 
@@ -462,14 +477,14 @@ static int mainwindow_grow(MAIN_WINDOW_REC *window, int count)
 
 	/* shrink lower window */
 	shrink_win = mainwindows_find_lower(window->last_line);
-	if (shrink_win != NULL && shrink_win->lines-count >= WINDOW_MIN_SIZE) {
+	if (shrink_win != NULL && shrink_win->height-count >= WINDOW_MIN_SIZE) {
                 window->last_line += count;
 		shrink_win->first_line += count;
 	} else {
 		/* shrink upper window */
 		shrink_win = mainwindows_find_upper(window->first_line);
 		if (shrink_win == NULL ||
-		    shrink_win->lines-count < WINDOW_MIN_SIZE)
+		    shrink_win->height-count < WINDOW_MIN_SIZE)
 			return FALSE;
 
 		window->first_line -= count;
@@ -484,7 +499,7 @@ static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
 
-	if (window->lines-count < WINDOW_MIN_SIZE)
+	if (window->height-count < WINDOW_MIN_SIZE)
                 return FALSE;
 
 	grow_win = mainwindows_find_lower(window->last_line);
@@ -505,7 +520,7 @@ static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count)
 
 void mainwindow_set_size(MAIN_WINDOW_REC *window, int size)
 {
-        size -= window->lines;
+        size -= window->height;
 	if (size < 0)
 		mainwindow_shrink(window, size);
 	else
@@ -551,7 +566,7 @@ static void cmd_window_size(const char *data)
 	if (!is_numeric(data, 0)) return;
 	size = atoi(data);
 
-	size -= WINDOW_GUI(active_win)->parent->lines;
+	size -= WINDOW_GUI(active_win)->parent->height;
 	if (size == 0) return;
 
 	ltoa(sizestr, size < 0 ? -size : size);
@@ -571,7 +586,7 @@ static void cmd_window_balance(void)
 	windows = g_slist_length(mainwindows);
 	if (windows == 1) return;
 
-	avail_size = LINES-reserved_up-reserved_down;
+	avail_size = screen_height - reserved_up-reserved_down;
 	unit_size = avail_size/windows;
 	bigger_units = avail_size%windows;
 
@@ -580,11 +595,11 @@ static void cmd_window_balance(void)
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		old_size = rec->lines;
+		old_size = rec->height;
 		rec->first_line = last_line+1;
 		rec->last_line = rec->first_line-1 + unit_size -
 			rec->statusbar_lines;
-		rec->lines = rec->last_line-rec->first_line+1;
+		rec->height = rec->last_line-rec->first_line+1;
 
 		if (bigger_units > 0) {
 			rec->last_line++;
@@ -592,7 +607,7 @@ static void cmd_window_balance(void)
 		}
 		last_line = rec->last_line + rec->statusbar_lines;
 
-		mainwindow_resize(rec, rec->lines-old_size, FALSE);
+		mainwindow_resize(rec, rec->height-old_size, FALSE);
 	}
 	g_slist_free(sorted);
 
@@ -847,6 +862,9 @@ static void cmd_window_stick(const char *data)
 
 void mainwindows_init(void)
 {
+	screen_width = COLS;
+	screen_height = LINES;
+
 	mainwindows = NULL;
 	active_mainwin = NULL;
 	reserved_up = reserved_down = 0;

@@ -350,7 +350,7 @@ static void sig_statusbar_more_check_remove(WINDOW_REC *window)
 	if (!is_window_visible(window))
 		return;
 
-	if (more_item != NULL && WINDOW_GUI(window)->bottom) {
+	if (more_item != NULL && WINDOW_GUI(window)->view->bottom) {
 		statusbar_item_remove(more_item);
 		more_item = NULL;
 	}
@@ -361,7 +361,7 @@ static void sig_statusbar_more_check(WINDOW_REC *window)
 	if (window == NULL || !is_window_visible(window))
 		return;
 
-	if (!WINDOW_GUI(window)->bottom) {
+	if (!WINDOW_GUI(window)->view->bottom) {
 		if (more_item == NULL) {
 			more_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_more);
 			statusbar_redraw(mainbar);
@@ -593,7 +593,9 @@ static void sidebar_remove_items(MAIN_WINDOW_REC *window)
 
 static void sig_mainwindow_created(MAIN_WINDOW_REC *window)
 {
-	window->statusbar = statusbar_create(STATUSBAR_POS_MIDDLE, window->first_line+window->lines);
+	window->statusbar =
+		statusbar_create(STATUSBAR_POS_MIDDLE,
+				 window->first_line+window->height);
 	sidebar_add_items(window);
 }
 

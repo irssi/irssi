@@ -24,17 +24,19 @@ irssi_SOURCES = \
 	gui-expandos.c \
         gui-printtext.c \
         gui-readline.c \
-        gui-textwidget.c \
         gui-windows.c \
 	lastlog.c \
         mainwindows.c \
         mainwindow-activity.c \
         mainwindows-save.c \
+        screen.c \
         statusbar.c \
         statusbar-items.c \
+        textbuffer.c \
+        textbuffer-commands.c \
+        textbuffer-view.c \
         irssi.c \
-	module-formats.c \
-        screen.c
+	module-formats.c
 
 noinst_HEADERS = \
         gui-entry.h \
@@ -44,5 +46,7 @@ noinst_HEADERS = \
         mainwindows.h \
         statusbar.h \
         screen.h \
+        textbuffer.h \
+        textbuffer-view.h \
 	module.h \
 	module-formats.h

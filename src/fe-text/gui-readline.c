@@ -101,7 +101,7 @@ static int get_scroll_count(void)
                 count = 1.0/count;
 
 	if (*str == '/')
-		count = WINDOW_GUI(active_win)->parent->lines/count;
+		count = WINDOW_GUI(active_win)->parent->height/count;
 	return (int)count;
 }
 

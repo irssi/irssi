@@ -1,94 +1,20 @@
 #ifndef __GUI_WINDOWS_H
 #define __GUI_WINDOWS_H
 
-#include "servers.h"
 #include "mainwindows.h"
+#include "textbuffer-view.h"
 
 #define WINDOW_GUI(a) ((GUI_WINDOW_REC *) ((a)->gui_data))
 
 #define is_window_visible(win) \
     (WINDOW_GUI(win)->parent->active == (win))
 
-#define LINE_TEXT_CHUNK_SIZE 2048
-
-/* 7 first bits of LINE_REC's info byte. */
-enum {
-	LINE_CMD_EOL=0x80,	/* line ends here. */
-	LINE_CMD_CONTINUE,	/* line continues in next block */
-	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
-	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
-	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
-	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
-	LINE_CMD_BLINK,		/* blinking background */
-	LINE_CMD_FORMAT,	/* end of line, but next will come the format that was used to create the
-				   text in format <module><format_name><arg><arg2...> - fields are separated
-				   with \0<format> and last argument ends with \0<eol>. \0<continue> is allowed
-				   anywhere */
-	LINE_CMD_FORMAT_CONT    /* multiline format, continues to next line */
-};
-
-typedef struct {
-	char *start;
-	int indent;
-	int color;
-	unsigned int continues:1; /* first word in line belong to the end of the last word in previous line */
-} LINE_CACHE_SUB_REC;
-
-typedef struct {
-	time_t last_access;
-
-	int count; /* number of real lines */
-        LINE_CACHE_SUB_REC *lines;
-} LINE_CACHE_REC;
-
-typedef struct {
-	/* text in the line. \0 means that the next char will be a
-	   color or command. <= 127 = color or if 8.bit is set, the
-	   first 7 bits are the command. See LINE_CMD_xxxx.
-
-	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
-	   LINE_CMD_COLOR0 instead. */
-	char *text;
-
-	int level;
-	time_t time;
-} LINE_REC;
-
-typedef struct {
-	char buffer[LINE_TEXT_CHUNK_SIZE];
-	int pos;
-	int lines;
-} TEXT_CHUNK_REC;
-
 typedef struct {
 	MAIN_WINDOW_REC *parent;
+	TEXT_BUFFER_VIEW_REC *view;
 
-	GMemChunk *line_chunk;
-	GSList *text_chunks;
-	GList *lines;
-	GHashTable *line_cache;
-
-	LINE_REC *cur_line, *temp_line;
-	TEXT_CHUNK_REC *cur_text;
-
-	int xpos, ypos; /* cursor position in screen */
-	GList *startline; /* line at the top of the screen */
-	int subline; /* number of "real lines" to skip from `startline' */
-
-	GList *bottom_startline; /* marks the bottom of the text buffer */
-	int bottom_subline;
-	int empty_linecount; /* how many empty lines are in screen.
-	                        a screenful when started or used /CLEAR */
-	unsigned int bottom:1; /* window is at the bottom of the text buffer */
-	unsigned int eol_marked:1; /* last line marked for eol */
-
-	/* For /LAST -new and -away */
-	GList *lastlog_last_check;
-	GList *lastlog_last_away;
-
-	/* for gui-printtext.c */
-	int last_subline;
-	int last_color, last_flags;
+	unsigned int use_insert_after:1;
+        LINE_REC *insert_after;
 } GUI_WINDOW_REC;
 
 void gui_windows_init(void);
@@ -96,30 +22,15 @@ void gui_windows_deinit(void);
 
 WINDOW_REC *gui_window_create(MAIN_WINDOW_REC *parent);
 
-void gui_window_set_server(WINDOW_REC *window, SERVER_REC *server);
-
-void gui_window_line2text(LINE_REC *line, int coloring, GString *str);
-GList *gui_window_find_text(WINDOW_REC *window, GList *startline,
-			    int level, int nolevel, const char *text,
-			    int regexp, int fullword, int case_sensitive);
-
-/* get number of real lines that line record takes */
-int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line);
-void gui_window_cache_remove(GUI_WINDOW_REC *gui, LINE_REC *line);
-int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip, int max);
-
-void gui_window_clear(WINDOW_REC *window);
-void gui_window_redraw(WINDOW_REC *window);
-void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line);
-void gui_window_resize(WINDOW_REC *window, int ychange, int xchange);
+void gui_window_resize(WINDOW_REC *window, int width, int height);
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent);
 
-#define is_window_bottom(gui) \
-	((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line)
+#define gui_window_redraw(window) \
+	textbuffer_view_redraw(WINDOW_GUI(window)->view)
+
+void gui_window_scroll(WINDOW_REC *window, int lines);
+void gui_window_scroll_line(WINDOW_REC *window, LINE_REC *line);
 
 void window_update_prompt(void);
-void gui_window_newline(GUI_WINDOW_REC *gui, int visible);
-void gui_window_scroll(WINDOW_REC *window, int lines);
-void gui_window_update_ypos(GUI_WINDOW_REC *gui);
 
 #endif

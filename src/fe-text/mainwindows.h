@@ -12,8 +12,10 @@ typedef struct {
 
 #ifdef USE_CURSES_WINDOWS
 	WINDOW *curses_win;
+#else
+#error disable-curses-windows is currently broken /* FIXME */
 #endif
-	int first_line, last_line, lines;
+	int first_line, last_line, width, height;
 	int statusbar_lines;
 	void *statusbar;
 	void *statusbar_window_item;
@@ -32,7 +34,7 @@ void mainwindows_redraw(void);
 void mainwindows_recreate(void);
 
 void mainwindow_set_size(MAIN_WINDOW_REC *window, int size);
-void mainwindows_resize(int ychange, int xchange);
+void mainwindows_resize(int width, int height);
 
 int mainwindows_reserve_lines(int count, int up);
 GSList *mainwindows_get_sorted(int reverse);

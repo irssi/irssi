@@ -37,7 +37,7 @@ static void main_window_save(MAIN_WINDOW_REC *window, CONFIG_NODE *node)
 	node = config_node_section(node, num, NODE_TYPE_BLOCK);
 
 	iconfig_node_set_int(node, "first_line", window->first_line);
-	iconfig_node_set_int(node, "lines", window->lines);
+	iconfig_node_set_int(node, "lines", window->height);
 
 	str = g_string_new(NULL);
 	for (tmp = window->sticky_windows; tmp != NULL; tmp = tmp->next) {
@@ -141,7 +141,7 @@ static void sig_windows_restored(void)
 		active_mainwin = NULL;
 		window_set_active(window);
 
-                if (lowerwin->lines > WINDOW_MIN_SIZE)
+                if (lowerwin->height > WINDOW_MIN_SIZE)
 			mainwindow_set_size(lowerwin, WINDOW_MIN_SIZE);
 		count--;
 

@@ -35,16 +35,20 @@
 
 static void window_lastlog_clear(WINDOW_REC *window)
 {
+        TEXT_BUFFER_VIEW_REC *view;
 	GList *tmp, *next;
 
-	for (tmp = WINDOW_GUI(window)->lines; tmp != NULL; tmp = next) {
+        screen_refresh_freeze();
+	view = WINDOW_GUI(window)->view;
+	for (tmp = textbuffer_view_get_lines(view); tmp != NULL; tmp = next) {
 		LINE_REC *line = tmp->data;
 
                 next = tmp->next;
-                if (line->level & MSGLEVEL_LASTLOG)
-			gui_window_line_remove(window, line, FALSE);
+                if (line->info.level & MSGLEVEL_LASTLOG)
+			textbuffer_view_remove_line(view, line);
 	}
-        gui_window_redraw(window);
+        screen_refresh_thaw();
+	//gui_window_redraw(window);
 }
 
 /* Only unknown keys in `optlist' should be levels.
@@ -89,8 +93,9 @@ int cmd_options_get_level(const char *cmd, GHashTable *optlist)
 static void show_lastlog(const char *searchtext, GHashTable *optlist,
 			 int start, int count, int fhandle)
 {
-        WINDOW_REC *window;
-	GList *startline, *list, *tmp;
+	WINDOW_REC *window;
+        LINE_REC *startline;
+	GList *list, *tmp;
 	GString *line;
         char *str;
 	int level, len;
@@ -120,14 +125,18 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	}
 
 	if (g_hash_table_lookup(optlist, "new") != NULL)
-		startline = WINDOW_GUI(window)->lastlog_last_check;
+		startline = textbuffer_view_get_bookmark(WINDOW_GUI(window)->view, "lastlog_last_check");
 	else if (g_hash_table_lookup(optlist, "away") != NULL)
-		startline = WINDOW_GUI(window)->lastlog_last_away;
+		startline = textbuffer_view_get_bookmark(WINDOW_GUI(window)->view, "lastlog_last_away");
 	else
 		startline = NULL;
-	if (startline == NULL) startline = WINDOW_GUI(window)->lines;
 
-	list = gui_window_find_text(window, startline,
+	if (startline == NULL) {
+                list = textbuffer_view_get_lines(WINDOW_GUI(window)->view);
+		startline = list == NULL ? NULL : list->data;
+	}
+
+	list = textbuffer_find_text(WINDOW_GUI(window)->view->buffer, startline,
 				    level, MSGLEVEL_LASTLOG,
 				    searchtext,
 				    g_hash_table_lookup(optlist, "regexp") != NULL,
@@ -163,9 +172,9 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		LINE_REC *rec = tmp->data;
 
                 /* get the line text */
-		gui_window_line2text(rec, fhandle == -1, line);
+		textbuffer_line2text(rec, fhandle == -1, line);
 		if (!settings_get_bool("timestamps")) {
-			struct tm *tm = localtime(&rec->time);
+			struct tm *tm = localtime(&rec->info.time);
                         char timestamp[10];
 
 			g_snprintf(timestamp, sizeof(timestamp),
@@ -191,9 +200,10 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	if (fhandle == -1 && g_hash_table_lookup(optlist, "-") == NULL)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_END);
 
-	WINDOW_GUI(window)->lastlog_last_check =
-		g_list_last(WINDOW_GUI(window)->bottom_startline);
+	textbuffer_view_set_bookmark_bottom(WINDOW_GUI(window)->view,
+					    "lastlog_last_check");
 
+        textbuffer_line_unref_list(WINDOW_GUI(window)->view->buffer, list);
 	g_list_free(list);
 }
 
