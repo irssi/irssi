@@ -196,6 +196,9 @@ abstracts = {
   ## other IRC events
   ##
 
+  # whois
+  whois = " $[8]0 : $1-";
+
   # notices
   ownnotice = "[%r$0%K(%R$1-%K)]%n ";
   notice = "%K-%M$0-%K-%n ";
