@@ -179,7 +179,8 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 
 	if (len > MAX_LINES_WITHOUT_FORCE && fhandle == -1 &&
 	    g_hash_table_lookup(optlist, "force") == NULL) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+		printformat_window(active_win,
+				   MSGLEVEL_CLIENTNOTICE|MSGLEVEL_LASTLOG,
 				   TXT_LASTLOG_TOO_LONG, len);
 		g_list_free(list);
 		return;
