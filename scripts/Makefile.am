@@ -8,8 +8,10 @@ script_DATA = \
 	buf.pl \
 	dns.pl \
 	kills.pl \
+	mail.pl \
 	mlock.pl \
 	quitmsg.pl \
-	splitlong.pl
+	splitlong.pl \
+	usercount.pl
 
 EXTRA_DIST = $(script_DATA)
