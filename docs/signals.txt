@@ -86,7 +86,8 @@ server.c:
 
 settings.c:
  "setup changed"
- "setup reread"
+ "setup reread", char *fname
+ "setup saved", char *fname, int autosaved
 
 signal.c:
 
