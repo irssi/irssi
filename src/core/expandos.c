@@ -323,7 +323,7 @@ static char *expando_cmdchar(SERVER_REC *server, void *item, int *free_ret)
 {
 	char str[2] = { 0, 0 };
 
-	str[0] = *settings_get_str("cmdchar");
+	str[0] = *settings_get_str("cmdchars");
 
 	*free_ret = TRUE;
 	return g_strdup(str);
