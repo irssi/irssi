@@ -571,7 +571,9 @@ static void sig_autosave(void)
 		fname = g_strconcat(mainconfig->fname, ".autosave", NULL);
 		str = g_strdup_printf(_("Configuration file was modified "
 					"while irssi was running. Saving "
-					"configuration to file '%s' instead"),
+					"configuration to file '%s' instead. "
+					"Use /SAVE or /RELOAD to get rid of "
+					"this message."),
 					fname);
 		signal_emit("gui dialog", 2, "warning", str);
 		g_free(str);
