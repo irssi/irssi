@@ -147,9 +147,12 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		char *server = strchr(args, ':');
 		if (server == NULL ||
 		    strcmp(server+1, client->proxy_address) == 0) {
-			if (server != NULL) *server = '\0';
+			if (server != NULL) {
+				if (server[-1] == ' ') server--;
+				*server = '\0';
+			}
 			if (*args == '\0') args = client->nick;
-			proxy_outdata(client, ":%s PONG proxy :%s", client->proxy_address, args);
+			proxy_outdata(client, ":%s PONG proxy :%s\n", client->proxy_address, args);
 			return;
 		}
 	}
