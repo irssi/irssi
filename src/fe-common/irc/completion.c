@@ -269,6 +269,48 @@ static GList *completion_getmsglist(IRC_SERVER_REC *server, gchar *nick)
     return list;
 }
 
+/* expand \n, \t and \\ */
+static char *expand_escapes(const char *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
+{
+	char *ptr, *ret;
+
+	ret = ptr = g_malloc(strlen(line)+1);
+	while (*line != '\0') {
+		if (*line != '\\')
+			*ptr++ = *line;
+		else {
+			line++;
+			if (*line == '\0') {
+                                *ptr++ = '\\';
+				break;
+			}
+
+			switch (*line) {
+			case 'n':
+				/* newline .. we need to send another "send text" event to handle it (or actually the text before the newline..) */
+				*ptr = '\0';
+                                signal_emit("send text", 3, line, server, item);
+				ptr = ret;
+				break;
+			case 't':
+				*ptr++ = '\t';
+				break;
+			case '\\':
+                                *ptr++ = '\\';
+				break;
+			default:
+				*ptr++ = '\\';
+				*ptr++ = *line;
+				break;
+			}
+		}
+		line++;
+	}
+
+	*ptr = '\0';
+	return ret;
+}
+
 static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
     CHANNEL_REC *channel;
@@ -280,7 +322,8 @@ static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
     if (!irc_item_check(item))
 	    return;
 
-    line = g_strdup(line);
+    line = settings_get_bool("expand_escapes") ?
+	    expand_escapes(line, server, item) : g_strdup(line);
 
     /* check for nick completion */
     if (settings_get_bool("completion_disable_auto") || *settings_get_str("completion_char") == '\0')
@@ -574,6 +617,7 @@ void completion_init(void)
 	settings_add_int("completion", "completion_keep_publics", 180);
 	settings_add_int("completion", "completion_keep_ownpublics", 360);
 	settings_add_int("completion", "completion_keep_privates", 10);
+	settings_add_bool("completion", "expand_escapes", FALSE);
 
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("send text", (SIGNAL_FUNC) event_text);

@@ -506,6 +506,20 @@ static void print_string(TEXT_DEST_REC *dest, const char *text)
 	if (str != text) g_free(str);
 }
 
+/* append string to `out', expand newlines. */
+static void printtext_append_str(TEXT_DEST_REC *dest, GString *out, const char *str)
+{
+	while (*str != '\0') {
+		if (*str != '\n')
+			g_string_append_c(out, *str);
+		else {
+			print_string(dest, out->str);
+			g_string_truncate(out, 0);
+		}
+		str++;
+	}
+}
+
 static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va)
 {
 	GString *out;
@@ -525,7 +539,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 		switch (*str) {
 		case 's': {
 			char *s = (char *) va_arg(va, char *);
-			if (s && *s) g_string_append(out, s);
+			if (s && *s) printtext_append_str(dest, out, s);
 			break;
 		}
 		case 'd': {

@@ -414,7 +414,16 @@ char *parse_special_string(const char *cmd, void *server, void *item, const char
 	str = g_string_new(NULL);
 	while (*cmd != '\0') {
 		if (code == '\\'){
-			g_string_append_c(str, *cmd);
+			switch (*cmd) {
+			case 't':
+				g_string_append_c(str, '\t');
+				break;
+			case 'n':
+				g_string_append_c(str, '\n');
+				break;
+			default:
+				g_string_append_c(str, *cmd);
+			}
 			code = 0;
 		} else if (code == '$') {
 			char *ret;
