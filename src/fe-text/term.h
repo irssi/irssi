@@ -23,7 +23,7 @@ typedef struct _TERM_WINDOW TERM_WINDOW;
 #endif
 
 extern TERM_WINDOW *root_window;
-extern int term_width, term_height, term_use_colors;
+extern int term_width, term_height, term_use_colors, term_detached;
 
 /* Initialize / deinitialize terminal */
 int term_init(void);
@@ -71,6 +71,11 @@ void term_move_cursor(int x, int y);
 void term_refresh_freeze(void);
 void term_refresh_thaw(void);
 void term_refresh(TERM_WINDOW *window);
+
+/* Automatically detach irssi when terminal is lost */
+void term_auto_detach(int set);
+void term_detach(void);
+void term_attach(FILE *in, FILE *out);
 
 void term_stop(void);
 int term_gets(unsigned char *buffer, int size);

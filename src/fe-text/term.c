@@ -93,6 +93,8 @@ static void read_settings(void)
 {
 	int old_colors = term_use_colors;
 
+        term_auto_detach(settings_get_bool("term_auto_detach"));
+
 	if (force_colors != settings_get_bool("term_force_colors")) {
 		force_colors = settings_get_bool("term_force_colors");
 		term_force_colors(force_colors);
@@ -112,6 +114,7 @@ void term_common_init(void)
 #endif
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
+        settings_add_bool("lookandfeel", "term_auto_detach", FALSE);
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");

@@ -30,7 +30,6 @@
 #include "translation.h"
 
 #include "term.h"
-#include "detach.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
 
@@ -366,8 +365,6 @@ static void sig_input(void)
 		/* lost terminal */
 		if (!term_detached)
 			signal_emit("command quit", 1, "Lost terminal");
-		else
-			irssi_detach();
 	} else {
 		for (i = 0; i < ret; i++)
 			handle_key(buffer[i]);

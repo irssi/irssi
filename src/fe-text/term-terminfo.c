@@ -35,13 +35,16 @@ struct _TERM_WINDOW {
 };
 
 TERM_WINDOW *root_window;
-int term_width, term_height;
-char *term_lines_empty; /* 1 if line is entirely empty */
+int term_width, term_height, term_detached;
 
+static char *term_lines_empty; /* 1 if line is entirely empty */
 static int vcmove, vcx, vcy, curs_visible;
 static int crealx, crealy, cforcemove;
 static int curs_x, curs_y;
+static int auto_detach;
+
 static int last_fg, last_bg, last_attrs;
+
 static int redraw_needed, redraw_tag;
 static int freeze_counter;
 
@@ -87,6 +90,7 @@ int term_init(void)
 	term_width = current_term->width;
 	term_height = current_term->height;
 	root_window = term_window_create(0, 0, term_width, term_height);
+        term_detached = FALSE;
 
         term_lines_empty = g_new0(char, term_height);
 
@@ -104,6 +108,8 @@ void term_deinit(void)
 
 static void term_move_real(void)
 {
+	if (term_detached) return;
+
 	if (vcx != crealx || vcy != crealy || cforcemove) {
 		if (curs_visible) {
 			terminfo_set_cursor_visible(FALSE);
@@ -167,12 +173,16 @@ int term_has_colors(void)
 /* Force the colors on any way you can */
 void term_force_colors(int set)
 {
+	if (term_detached) return;
+
 	terminfo_setup_colors(current_term, set);
 }
 
 /* Clear screen */
 void term_clear(void)
 {
+	if (term_detached) return;
+
         term_set_color(root_window, 0);
 	terminfo_clear();
         term_move_reset(0, 0);
@@ -183,6 +193,8 @@ void term_clear(void)
 /* Beep */
 void term_beep(void)
 {
+	if (term_detached) return;
+
         terminfo_beep(current_term);
 }
 
@@ -219,6 +231,8 @@ void term_window_clear(TERM_WINDOW *window)
 {
 	int y;
 
+	if (term_detached) return;
+
         terminfo_set_normal();
         if (window->y == 0 && window->height == term_height) {
         	term_clear();
@@ -235,6 +249,8 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 {
 	int y;
 
+	if (term_detached) return;
+
 	terminfo_scroll(window->y, window->y+window->height-1, count);
         term_move_reset(vcx, vcy);
 
@@ -247,6 +263,8 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 void term_set_color(TERM_WINDOW *window, int col)
 {
 	int set_normal;
+
+	if (term_detached) return;
 
         set_normal = ((col & ATTR_RESETFG) && last_fg != -1) ||
 		((col & ATTR_RESETBG) && last_bg != -1);
@@ -343,6 +361,8 @@ static void term_printed_text(int count)
 
 void term_addch(TERM_WINDOW *window, int chr)
 {
+	if (term_detached) return;
+
 	if (vcmove) term_move_real();
         term_printed_text(1);
 	if (vcy != term_height || vcx != 0)
@@ -352,6 +372,8 @@ void term_addch(TERM_WINDOW *window, int chr)
 void term_addstr(TERM_WINDOW *window, const char *str)
 {
 	int len;
+
+	if (term_detached) return;
 
 	if (vcmove) term_move_real();
 	len = strlen(str);
@@ -365,6 +387,8 @@ void term_addstr(TERM_WINDOW *window, const char *str)
 
 void term_clrtoeol(TERM_WINDOW *window)
 {
+	if (term_detached) return;
+
 	/* clrtoeol() doesn't necessarily understand colors */
 	if (last_fg == -1 && last_bg == -1 &&
 	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE)) == 0) {
@@ -390,7 +414,7 @@ void term_move_cursor(int x, int y)
 
 void term_refresh(TERM_WINDOW *window)
 {
-	if (freeze_counter > 0)
+	if (term_detached || freeze_counter > 0)
 		return;
 
 	term_move(root_window, curs_x, curs_y);
@@ -407,7 +431,8 @@ void term_refresh(TERM_WINDOW *window)
 void term_refresh_freeze(void)
 {
         freeze_counter++;
-	if (curs_visible) {
+
+	if (!term_detached && curs_visible) {
 		terminfo_set_cursor_visible(FALSE);
                 curs_visible = FALSE;
 	}
@@ -419,23 +444,60 @@ void term_refresh_thaw(void)
                 term_refresh(NULL);
 }
 
-void term_stop(void)
+void term_auto_detach(int set)
 {
-        terminfo_stop(current_term);
-	kill(getpid(), SIGSTOP);
+        auto_detach = set;
+}
+
+void term_detach(void)
+{
+	terminfo_stop(current_term);
+
+        fclose(current_term->in);
+        fclose(current_term->out);
+
+	current_term->in = NULL;
+	current_term->out = NULL;
+        term_detached = TRUE;
+}
+
+void term_attach(FILE *in, FILE *out)
+{
+	current_term->in = in;
+	current_term->out = out;
+        term_detached = FALSE;
+
 	terminfo_cont(current_term);
 	irssi_redraw();
+}
+
+void term_stop(void)
+{
+	if (term_detached) {
+		kill(getpid(), SIGSTOP);
+	} else {
+		terminfo_stop(current_term);
+		kill(getpid(), SIGSTOP);
+		terminfo_cont(current_term);
+		irssi_redraw();
+	}
 }
 
 int term_gets(unsigned char *buffer, int size)
 {
 	int ret;
 
+	if (term_detached)
+		return 0;
+
         /* fread() doesn't work */
         ret = read(fileno(current_term->in), buffer, size);
-	if (ret == 0)
-                ret = -1;/* EOF - terminal got lost */
-	else if (ret == -1 && (errno == EINTR || errno == EAGAIN))
+	if (ret == 0) {
+		/* EOF - terminal got lost */
+		if (auto_detach)
+                        term_detach();
+		ret = -1;
+	} else if (ret == -1 && (errno == EINTR || errno == EAGAIN))
 		ret = 0;
 
 	return ret;

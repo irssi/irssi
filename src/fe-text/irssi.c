@@ -309,6 +309,7 @@ int main(int argc, char **argv)
 	core_init_paths(argc, argv);
 
 	check_files();
+
 #ifdef WIN32
         winsock_init();
 #endif
