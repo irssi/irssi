@@ -1,4 +1,5 @@
 TYPEMAP
+Irssi::Chatnet		T_PTROBJ
 Irssi::Server		T_PTROBJ
 Irssi::Connect		T_PTROBJ
 Irssi::Reconnect	T_PTROBJ
@@ -10,5 +11,8 @@ Irssi::Ignore		T_PTROBJ
 Irssi::Log		T_PTROBJ
 Irssi::LogItem       	T_PTROBJ
 Irssi::Rawlog		T_PTROBJ
+Irssi::Module		T_PTROBJ
+Irssi::Theme		T_PTROBJ
+Irssi::Keyinfo		T_PTROBJ
 Irssi::Window		T_PTROBJ
 Irssi::Windowitem	T_PTROBJ
