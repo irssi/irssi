@@ -41,6 +41,10 @@ void command_history_add(HISTORY_REC *history, const char *text)
 	g_return_if_fail(history != NULL);
 	g_return_if_fail(text != NULL);
 
+	link = g_list_last(history->list);
+	if (link != NULL && strcmp(link->data, text) == 0)
+	  return; /* same as previous entry */
+
 	if (settings_get_int("max_command_history") < 1 || 
 	    history->lines < settings_get_int("max_command_history"))
 		history->lines++;
