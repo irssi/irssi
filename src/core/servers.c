@@ -425,7 +425,7 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
         g_free(conn);
 }
 
-/* `optlist' should contain only one key - the server tag.
+/* `optlist' should contain only one unknown key - the server tag.
    returns NULL if there was unknown -option */
 SERVER_REC *cmd_options_get_server(const char *cmd,
 				   GHashTable *optlist,

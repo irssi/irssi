@@ -61,7 +61,7 @@ void server_connect_finished(SERVER_REC *server);
 /* connection to server failed */
 void server_connect_failed(SERVER_REC *server, const char *msg);
 
-/* `optlist' should contain only one key - the server tag.
+/* `optlist' should contain only one unknown key - the server tag.
    returns NULL if there was unknown -option */
 SERVER_REC *cmd_options_get_server(const char *cmd,
 				   GHashTable *optlist,
