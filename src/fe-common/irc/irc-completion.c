@@ -105,6 +105,9 @@ static int nick_completion_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
+		if (!irc_server_check(rec))
+			continue;
+
 		len = g_slist_length(rec->lastmsgs);
 		if (len > 0 && len >= settings_get_int("completion_keep_privates")) {
 			link = g_slist_last(rec->lastmsgs);

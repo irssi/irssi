@@ -159,6 +159,9 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
+	if (!irc_server_check(server))
+		return;
+
 	server->eventtable = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
 	server->eventgrouptable = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 	server->cmdtable = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
@@ -195,6 +198,9 @@ static int server_remove_channels(IRC_SERVER_REC *server)
 static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	int chans;
+
+	if (!irc_server_check(server))
+		return;
 
 	/* close all channels */
 	chans = server_remove_channels(server);
@@ -234,6 +240,9 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	long usecs;
 	char *cmd;
 	int len, ret, add_rawlog;
+
+	if (!irc_server_check(server))
+		return;
 
 	if (server->cmdcount == 0 && server->cmdqueue == NULL)
 		return;

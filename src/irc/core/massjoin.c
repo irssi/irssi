@@ -231,8 +231,12 @@ static int sig_massjoin_timeout(void)
 	time_t max;
 
 	max = time(NULL)-settings_get_int("massjoin_max_wait");
-	for (tmp = servers; tmp != NULL; tmp = tmp->next)
-                server_check_massjoins(tmp->data, max);
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *server = tmp->data;
+
+                if (irc_server_check(server))
+			server_check_massjoins(server, max);
+	}
 
 	return 1;
 }

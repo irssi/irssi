@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
@@ -304,7 +305,8 @@ static int split_check_old(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
 
-		g_hash_table_foreach_remove(server->splits, (GHRFunc) split_server_check, server);
+		if (irc_server_check(server))
+			g_hash_table_foreach_remove(server->splits, (GHRFunc) split_server_check, server);
 	}
 
 	return 1;

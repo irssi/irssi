@@ -229,7 +229,8 @@ static int sig_idle_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
-		if (rec->idles != NULL && rec->cmdcount == 0) {
+		if (irc_server_check(rec) &&
+		    rec->idles != NULL && rec->cmdcount == 0) {
 			/* We're idling and we have idle commands to run! */
 			server_idle_next(rec);
 		}
