@@ -58,6 +58,11 @@ static void exec_wi_destroy(EXEC_WI_REC *rec)
         g_free(rec);
 }
 
+static const char *exec_get_target(WI_ITEM_REC *item)
+{
+	return ((EXEC_WI_REC *) item)->visible_name;
+}
+
 static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
 {
 	EXEC_WI_REC *item;
@@ -68,6 +73,7 @@ static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
 	item = g_new0(EXEC_WI_REC, 1);
 	item->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC");
         item->destroy = (void (*) (WI_ITEM_REC *)) exec_wi_destroy;
+	item->get_target = exec_get_target;
 	item->visible_name = rec->name != NULL ? g_strdup(rec->name) :
 		g_strdup_printf("%%%d", rec->id);
 
