@@ -531,7 +531,18 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 
 			count++;
 			arg = cmd_get_param(&modestr);
-			if (*arg != '\0') g_string_sprintfa(targs, " %s", arg);
+			if (*arg == '\0' && type == '-' && *curmode == 'k') {
+				/* "/mode #channel -k" - no reason why it
+				   shouldn't work really, so append the key */
+				IRC_CHANNEL_REC *chanrec;
+
+				chanrec = irc_channel_find(server, channel);
+				if (chanrec != NULL && chanrec->key != NULL)
+                                        arg = chanrec->key;
+			}
+
+			if (*arg != '\0')
+				g_string_sprintfa(targs, " %s", arg);
 		}
 	}
 
