@@ -7,6 +7,8 @@ typedef struct _SCREEN_WINDOW SCREEN_WINDOW;
 #define ATTR_COLOR8    0x200
 #define ATTR_REVERSE   0x400
 
+#define ATTR_NOCOLORS (ATTR_UNDERLINE|ATTR_REVERSE)
+
 /* XXX I hope this could be integrated into BX.
  * XXX Well, this should be done via libc,
  *     but FreeBSD libc support is quite LAME.

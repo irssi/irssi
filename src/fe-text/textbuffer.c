@@ -387,6 +387,9 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 		case LINE_CMD_UNDERLINE:
 			g_string_append_c(str, 31);
 			break;
+		case LINE_CMD_REVERSE:
+			g_string_append_c(str, 22);
+			break;
 		case LINE_CMD_COLOR0:
 			g_string_sprintfa(str, "\004%c%c",
 					  '0', FORMAT_COLOR_NOCHANGE);

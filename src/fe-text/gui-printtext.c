@@ -112,7 +112,7 @@ static void get_colors(int flags, int *fg, int *bg)
 static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 			    int fg, int bg, int flags)
 {
-	unsigned char data[12];
+	unsigned char data[20];
 	int color, pos;
 
 	/* color should never have last bit on or it would be treated as a
@@ -129,6 +129,10 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_UNDERLINE;
+	}
+	if ((flags & GUI_PRINT_FLAG_REVERSE) != (last_flags & GUI_PRINT_FLAG_REVERSE)) {
+		data[pos++] = 0;
+		data[pos++] = LINE_CMD_REVERSE;
 	}
 	if (fg & ATTR_COLOR8) {
 		data[pos++] = 0;

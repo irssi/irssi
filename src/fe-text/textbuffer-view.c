@@ -139,13 +139,16 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 			if ((cmd & 0x80) == 0) {
 				/* set color */
-				color = (color & ATTR_UNDERLINE) | cmd;
+				color = (color & ATTR_NOCOLORS) | cmd;
 			} else switch (cmd) {
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
+			case LINE_CMD_REVERSE:
+				color ^= ATTR_REVERSE;
+				break;
 			case LINE_CMD_COLOR0:
-				color = color & ATTR_UNDERLINE;
+				color = color & ATTR_NOCOLORS;
 				break;
 			case LINE_CMD_COLOR8:
 				color &= 0xfff0;
@@ -277,7 +280,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 			if ((*text & 0x80) == 0) {
 				/* set color */
-				color = (color & ATTR_UNDERLINE) | *text;
+				color = (color & ATTR_NOCOLORS) | *text;
 			} else if (*text == LINE_CMD_CONTINUE) {
                                 /* jump to next block */
 				memcpy(&tmp, text+1, sizeof(unsigned char *));
@@ -287,8 +290,11 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
+			case LINE_CMD_REVERSE:
+				color ^= ATTR_REVERSE;
+				break;
 			case LINE_CMD_COLOR0:
-				color = color & ATTR_UNDERLINE;
+				color = color & ATTR_NOCOLORS;
 				break;
 			case LINE_CMD_COLOR8:
 				color &= 0xfff0;
