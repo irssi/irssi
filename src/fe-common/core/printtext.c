@@ -273,7 +273,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	   it would be written to log files too */
 	tmp = format_get_line_start(current_theme, dest);
 	str = format_add_linestart(text, tmp);
-	g_free(tmp);
+	g_free_not_null(tmp);
 
 	format_send_to_gui(dest, str);
 	g_free(str);
