@@ -346,7 +346,7 @@ EOF
     fi
   fi
 fi
-rm -rf conftest.* libconftest.* .libs
+rm -rf conftest conftest.* libconftest.* .libs
 
 dnl **
 dnl ** curses checks
