@@ -335,6 +335,7 @@ int module_load(const char *path, char **prefixes)
 	name = module_get_name(path, &start, &end);
 	if (module_find(name)) {
 		module_error(MODULE_ERROR_ALREADY_LOADED, name, NULL);
+                g_free(name);
 		return FALSE;
 	}
 
