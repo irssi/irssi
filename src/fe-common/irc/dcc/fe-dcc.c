@@ -313,7 +313,7 @@ static void cmd_msg(const char *data)
 	} else {
 		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
 			    query_find(NULL, target) ? IRCTXT_OWN_DCC_QUERY :
-			    IRCTXT_OWN_DCC, dcc->mynick, text);
+			    IRCTXT_OWN_DCC, dcc->mynick, target, text);
 	}
 
 	cmd_params_free(free_arg);
