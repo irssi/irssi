@@ -311,15 +311,14 @@ static void cmd_msg(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
 
-        target++;
-	dcc = dcc_find_item(DCC_TYPE_CHAT, target, NULL);
+	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
 	if (dcc == NULL || dcc->sendbuf == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
 			    query_find(NULL, target) ? IRCTXT_OWN_DCC_QUERY :
-			    IRCTXT_OWN_DCC, dcc->mynick, target, text);
+			    IRCTXT_OWN_DCC, dcc->mynick, target+1, text);
 	}
 
 	cmd_params_free(free_arg);
