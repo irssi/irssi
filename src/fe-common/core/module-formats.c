@@ -98,7 +98,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "pubmsg_hilight_channel", "{msgnick $4$0$1{msgchannel 2}}$3", 5, { 0, 0, 0, 0, 0 } },
 	{ "pubmsg", "{msgnick $2$0}$1", 3, { 0, 0, 0 } },
 	{ "pubmsg_channel", "{msgnick $3$0{msgchannel $1}}$2", 4, { 0, 0, 0, 0 } },
-	{ "msg_private", "{privmsgnick $0{privmsghost $1}}$2", 3, { 0, 0, 0 } },
+	{ "msg_private", "{privmsg {privmsgnick $0{privmsghost $1}}}$2", 3, { 0, 0, 0 } },
 	{ "msg_private_query", "{msgnick {privmsgnick $0}}$2", 3, { 0, 0, 0 } },
 	{ "no_msgs_got", "You have not received a message from anyone yet", 0 },
 	{ "no_msgs_sent", "You have not sent a message to anyone yet", 0 },
