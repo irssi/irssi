@@ -28,7 +28,6 @@
 #include "rawlog.h"
 #include "settings.h"
 
-
 #include "chat-protocols.h"
 #include "servers.h"
 #include "servers-reconnect.h"
@@ -196,13 +195,10 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	handle = ip == NULL ? NULL : net_connect_ip(ip, port, own_ip);
 	if (handle == NULL) {
 		/* failed */
-		if (iprec.error == 0 || !net_hosterror_notfound(iprec.error)) {
-			/* reconnect back only if either
-                            1) connect() failed
-                            2) host name lookup failed not because the host
-                               wasn't found, but because there was some
-                               other error in nameserver */
-			server->connection_lost = TRUE;
+		if (iprec.error != 0 && net_hosterror_notfound(iprec.error)) {
+			/* IP wasn't found for the host, don't try to reconnect
+			   back to this server */
+			server->dns_error = TRUE;
 		}
 
 		if (iprec.error == 0) {
@@ -213,6 +209,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
 				"Host lookup failed";
 		}
+		server->connection_lost = TRUE;
 		server_connect_failed(server, errormsg);
 		g_free_not_null(iprec.errorstr);
 		return;

@@ -158,15 +158,19 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 }
 
 #define server_should_reconnect(server) \
-	((server)->connection_lost && \
-	((server)->connrec->chatnet != NULL || !(server)->banned))
+	((server)->connection_lost && ((server)->connrec->chatnet != NULL || \
+				(!(server)->banned && !(server)->dns_error)))
+
+#define sserver_connect_ok(rec, net) \
+	(!(rec)->banned && !(rec)->dns_error && (rec)->chatnet != NULL && \
+	g_strcasecmp((rec)->chatnet, (net)) == 0)
 
 static void sig_reconnect(SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	SERVER_SETUP_REC *sserver;
 	GSList *tmp;
-	int found, through;
+	int use_next, through;
 	time_t now;
 
 	g_return_if_fail(IS_SERVER(server));
@@ -192,7 +196,8 @@ static void sig_reconnect(SERVER_REC *server)
 		sserver->last_connect = server->connect_time == 0 ?
 			time(NULL) : server->connect_time;
 		sserver->last_failed = !server->connected;
-                if (server->banned) sserver->banned = TRUE;
+		if (server->banned) sserver->banned = TRUE;
+                if (server->dns_error) sserver->dns_error = TRUE;
 	}
 
 	if (sserver == NULL || conn->chatnet == NULL) {
@@ -222,9 +227,9 @@ static void sig_reconnect(SERVER_REC *server)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (rec->chatnet != NULL && g_strcasecmp(conn->chatnet, rec->chatnet) == 0 &&
-		    !rec->banned && (!rec->last_connect || !rec->last_failed ||
-				     rec->last_connect < now-FAILED_RECONNECT_WAIT)) {
+		if (sserver_connect_ok(rec, conn->chatnet) &&
+		    (!rec->last_connect || !rec->last_failed ||
+		     rec->last_connect < now-FAILED_RECONNECT_WAIT)) {
 			if (rec == sserver)
                                 conn->port = server->connrec->port;
 			sserver_connect(rec, conn);
@@ -233,15 +238,14 @@ static void sig_reconnect(SERVER_REC *server)
 	}
 
 	/* just try the next server in list */
-	found = through = FALSE;
+	use_next = through = FALSE;
 	for (tmp = setupservers; tmp != NULL; ) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (!found && g_strcasecmp(rec->address, server->connrec->address) == 0 &&
-		    server->connrec->port == rec->port)
-			found = TRUE;
-		else if (found && !rec->banned && rec->chatnet != NULL &&
-			 g_strcasecmp(conn->chatnet, rec->chatnet) == 0) {
+		if (!use_next && server->connrec->port == rec->port &&
+		    g_strcasecmp(rec->address, server->connrec->address) == 0)
+			use_next = TRUE;
+		else if (use_next && sserver_connect_ok(rec, conn->chatnet)) {
 			if (rec == sserver)
                                 conn->port = server->connrec->port;
 			sserver_connect(rec, conn);
@@ -261,7 +265,7 @@ static void sig_reconnect(SERVER_REC *server)
 		}
 
 		tmp = setupservers;
-		found = through = TRUE;
+		use_next = through = TRUE;
 	}
 }
 
