@@ -12,20 +12,36 @@ $SRC_PATH='src';
 
 $FOO = `find src -name '*.c' -exec ./findsyntax.pl \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
 
-
 while (<docs/help/in/*.in>) {
+   next if (/Makefile/);
+
    open (FILE, "$_");
    @data = <FILE>;
    close (FILE);
+   $count = 0;
    foreach $DATARIVI (@data) {
       if ($DATARIVI =~ /\@SYNTAX\:(.+)\@/) {
           $etsittava = "\U$1 ";
           $SYNTAX = `grep \'^$etsittava\' irssi_syntax`;
 	  $SYNTAX =~ s/\*\///g;
 	  $SYNTAX =~ s/ *$//; $SYNTAX =~ s/ *\n/\n/g;
+
+	  # add %| after "COMMAND SUB " so parameters will indent correctly
+	  $SYNTAX =~ s/^([A-Z ]+)/\1%|/;
+	  $SYNTAX =~ s/(\n[A-Z ]+)/\1%|/g;
+	  # no need for this if there's no parameters
+	  $SYNTAX =~ s/%\|$//;
           $DATARIVI = $SYNTAX;
+      } elsif ($DATARIVI =~ /^\S+/) {
+          chomp $DATARIVI if ($data[$count+1] =~ /^\S+/);
       }
+      $count++;
    }
+
+   # must always end with empty line
+   push @data, "\n" if ($data[@data-1] ne "\n");
+   push @data, "\n" if ($data[@data-2] !~ /\n$/);
+
    $newfilename = $_; $newfilename =~ s/\.in$//;
    $newfilename =~ s/\/in\//\//;
    open (NEWFILE, ">$newfilename");

@@ -178,7 +178,7 @@ dcc*.c:
  "dcc connected", DCC_REC
  "dcc rejecting", DCC_REC
  "dcc closed", DCC_REC
- "dcc request", DCC_REC
+ "dcc request", DCC_REC, char *sendaddr
  "dcc chat message", DCC_REC, char *msg
  "dcc transfer update", DCC_REC
  "dcc get receive", DCC_REC
