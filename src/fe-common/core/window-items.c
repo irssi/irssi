@@ -35,6 +35,7 @@ void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 {
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(item != NULL);
+	g_return_if_fail(item->window == NULL);
 
         item->window = window;
 
