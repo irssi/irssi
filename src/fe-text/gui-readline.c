@@ -93,15 +93,18 @@ static void handle_entry_redirect(const char *line)
 static int get_scroll_count(void)
 {
 	const char *str;
-	int count;
+	double count;
 
 	str = settings_get_str("scroll_page_count");
-	count = atoi(str + (*str == '/'));
-	if (count < 0) count = 1;
-	
+	count = atof(str + (*str == '/'));
+	if (count <= 0)
+		count = 1;
+	else if (count < 1)
+                count = 1.0/count;
+
 	if (*str == '/')
 		count = WINDOW_GUI(active_win)->parent->lines/count;
-	return count;
+	return (int)count;
 }
 
 static void window_prev_page(void)
