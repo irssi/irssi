@@ -37,6 +37,19 @@ AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 # check posix headers..
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
 
+AC_ARG_WITH(big5,
+[  --with-big5             Build with tr-Chinese Big5 support],
+	if test x$withval = xyes; then
+		want_big5=yes
+	else
+		if test "x$withval" = xno; then
+			want_big5=no
+		else
+			want_big5=yes
+		fi
+	fi,
+	want_big5=no)
+
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
 	if test x$withval = xyes; then
@@ -682,6 +695,14 @@ if test "x$want_memdebug" = "xyes"; then
 	AC_DEFINE(MEM_DEBUG)
 fi
 AM_CONDITIONAL(BUILD_MEMDEBUG, test "x$want_memdebug" = "xyes")
+
+dnl **
+dnl ** tr-Chinese Big5 support
+dnl **
+
+if test "x$want_big5" = "xyes"; then
+	AC_DEFINE(WANT_BIG5)
+fi
 
 dnl **
 dnl ** IPv6 support
