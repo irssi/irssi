@@ -56,7 +56,7 @@ static NETSPLIT_SERVER_REC *netsplit_server_create(IRC_SERVER_REC *server, const
 	rec->destserver = g_strdup(destserver);
 
 	server->split_servers = g_slist_append(server->split_servers, rec);
-	signal_emit("netsplit new server", 1, rec);
+	signal_emit("netsplit new server", 2, server, rec);
 	return rec;
 }
 
@@ -184,8 +184,6 @@ int quitmsg_is_split(const char *msg)
 	int ok;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
-
-	if (msg[strlen(msg)-1] == ' ') msg[strlen(msg)-1] = '\0'; /*FIXME: remove - for debugging!*/
 
 	/* must have only two words */
 	p = strchr(msg, ' ');

@@ -26,9 +26,9 @@
 #include "levels.h"
 #include "netsplit.h"
 
-static void sig_netsplit_servers(NETSPLIT_SERVER_REC *rec)
+static void sig_netsplit_servers(IRC_SERVER_REC *server, NETSPLIT_SERVER_REC *rec)
 {
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETSPLIT, rec->server, rec->destserver);
+    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETSPLIT, rec->server, rec->destserver, server->tag);
 }
 
 static void split_print(const char *nick, NETSPLIT_REC *rec)

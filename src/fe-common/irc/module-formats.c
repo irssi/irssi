@@ -42,7 +42,7 @@ FORMAT_REC fecommon_irc_formats[] =
     { "setupserver_header", "Server               Port  IRC Net    Settings", 0 },
     { "setupserver_line", "%|$[!20]0 $[5]1 $[10]2 $3", 4, { 0, 1, 0, 0 } },
     { "setupserver_footer", "", 0 },
-    { "netsplit", "%RNetsplit%n detected between servers %_$0%_ and %_$1%_%:Use /NETSPLIT to see who left", 2, { 0, 0 } },
+    { "netsplit", "[%_$2%_] %RNetsplit%n detected between servers %_$0%_ and %_$1%_%:Use /NETSPLIT to see who left", 3, { 0, 0, 0 } },
     { "no_netsplits", "There are no net splits", 0 },
     { "netsplits_header", "Nick      Channel    Server               Splitted server", 0 },
     { "netsplits_line", "$[9]0 $[10]1 $[20]2 $3", 4, { 0, 0, 0, 0 } },
