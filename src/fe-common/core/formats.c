@@ -918,13 +918,17 @@ char *strip_codes(const char *input)
 /* send a fully parsed text string for GUI to print */
 void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 {
+        THEME_REC *theme;
 	char *dup, *str, *ptr, type;
 	int fgcolor, bgcolor;
 	int flags;
 
+        theme = dest->window != NULL && dest->window->theme != NULL ?
+		dest->window->theme : current_theme;
+
 	dup = str = g_strdup(text);
 
-	flags = 0; fgcolor = -1; bgcolor = -1;
+	flags = 0; fgcolor = theme->default_color; bgcolor = -1;
 	while (*str != '\0') {
                 type = '\0';
 		for (ptr = str; *ptr != '\0'; ptr++) {
@@ -1009,7 +1013,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				break;
 			}
 			case FORMAT_STYLE_DEFAULTS:
-				fgcolor = bgcolor = -1;
+                                fgcolor = theme->default_color;
+				bgcolor = -1;
 				flags &= GUI_PRINT_FLAG_INDENT;
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
@@ -1049,7 +1054,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			break;
 		case 15:
 			/* remove all styling */
-			fgcolor = bgcolor = -1;
+			fgcolor = theme->default_color;
+			bgcolor = -1;
 			flags &= GUI_PRINT_FLAG_INDENT;
 			break;
 		case 22:
@@ -1065,9 +1071,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 27:
 			/* ansi color code */
 			ptr = (char *)
-				get_ansi_color(dest->window == NULL || dest->window->theme == NULL ?
-					       current_theme : dest->window->theme,
-					       ptr,
+				get_ansi_color(theme, ptr,
 					       hide_text_style ? NULL : &fgcolor,
 					       hide_text_style ? NULL : &bgcolor,
 					       hide_text_style ? NULL : &flags);

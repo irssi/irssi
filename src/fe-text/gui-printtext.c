@@ -150,7 +150,7 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 	}
 
 	if (*fg < 0 || *fg > 15)
-		*fg = current_theme->default_color;
+		*fg = -1;
 	if (*bg < 0 || *bg > 15)
                 *bg = -1;
 
