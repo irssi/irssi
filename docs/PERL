@@ -130,7 +130,7 @@ Server::values()
 	%server_info = %{Irssi::cur_server->values()};
 	Irssi::print("Current server = ".$server_info{'address'});
 
-Server server_connect(address, [port=6667, [password='', [nick='']]])
+Server server_connect(address, [port=6667, [password='', [nick='', [channels='']]]])
   Create new server connection.
 
 Server::disconnect()
@@ -144,6 +144,10 @@ Server server_find_ircnet(ircnet)
 
 Channel channel_find_any(channel)
   Find `channel' from any server
+
+Channel Server::channel_find_level(level)
+  Find channel with level `level' preferably from specified server, but
+  fallbacks to any channel the matching level.
 
 Server::send_raw(cmd)
   Send raw message to server, it will be flood protected so you
