@@ -131,6 +131,7 @@ irc.c:
  "server event", SERVER_REC, char *data, char *sender_nick, char *sender_address
  "event "<cmd>, SERVER_REC, char *args, char *sender_nick, char *sender_address
  "default event", SERVER_REC, char *data, char *sender_nick, char *sender_address
+ "whois default event", SERVER_REC, char *args, char *sender_nick, char *sender_address
 
  "server incoming", SERVER_REC, char *data
 
