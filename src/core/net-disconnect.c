@@ -47,16 +47,20 @@ static void net_disconnect_remove(NET_DISCONNECT_REC *rec)
 
 static void sig_disconnect(NET_DISCONNECT_REC *rec)
 {
-	char buf[128];
-	int ret;
+	char buf[512];
+	int count, ret;
 
-	/* check if there's any data waiting in socket */
-	while ((ret = net_receive(rec->handle, buf, sizeof(buf))) > 0) ;
-
-	if (ret == -1) {
-		/* socket was closed */
-		net_disconnect_remove(rec);
-	}
+	/* check if there's any data waiting in socket. read max. 5kB so
+	   if server just keeps sending us stuff we won't get stuck */
+	count = 0;
+	do {
+		ret = net_receive(rec->handle, buf, sizeof(buf));
+		if (ret == -1) {
+			/* socket was closed */
+			net_disconnect_remove(rec);
+		}
+                count++;
+	} while (ret == sizeof(buf) && count < 10);
 }
 
 static int sig_timeout_disconnect(void)
