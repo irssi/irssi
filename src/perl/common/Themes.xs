@@ -5,6 +5,7 @@ void
 theme_register(formats)
 	SV *formats
 PREINIT:
+        STRLEN n_a;
 	AV *av;
 	FORMAT_REC *formatrecs;
 	char *key, *value;
@@ -23,8 +24,8 @@ CODE:
 	formatrecs[0].def = g_strdup("Perl script");
 
         for (fpos = 1, n = 0; n < len; n++, fpos++) {
-		key = SvPV(*av_fetch(av, n, 0), PL_na); n++;
-		value = SvPV(*av_fetch(av, n, 0), PL_na);
+		key = SvPV(*av_fetch(av, n, 0), n_a); n++;
+		value = SvPV(*av_fetch(av, n, 0), n_a);
 
 		formatrecs[fpos].tag = g_strdup(key);
 		formatrecs[fpos].def = g_strdup(value);
@@ -38,6 +39,7 @@ printformat(level, format, ...)
 	int level
 	char *format
 PREINIT:
+        STRLEN n_a;
 	TEXT_DEST_REC dest;
 	char *arglist[MAX_FORMAT_PARAMS];
 	int n;
@@ -45,7 +47,7 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 2; n < 2+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-2] = n < items ? SvPV(ST(n), PL_na) : "";
+		arglist[n-2] = n < items ? SvPV(ST(n), n_a) : "";
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -61,6 +63,7 @@ printformat(server, target, level, format, ...)
 	int level
 	char *format
 PREINIT:
+        STRLEN n_a;
 	TEXT_DEST_REC dest;
 	char *arglist[MAX_FORMAT_PARAMS];
 	int n;
@@ -68,7 +71,7 @@ CODE:
 	format_create_dest(&dest, server, target, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 4; n < 4+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-4] = n < items ? SvPV(ST(n), PL_na) : "";
+		arglist[n-4] = n < items ? SvPV(ST(n), n_a) : "";
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -83,6 +86,7 @@ printformat(window, level, format, ...)
 	int level
 	char *format
 PREINIT:
+        STRLEN n_a;
 	TEXT_DEST_REC dest;
 	char *arglist[MAX_FORMAT_PARAMS];
 	int n;
@@ -90,7 +94,7 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-3] = n < items ? SvPV(ST(n), PL_na) : "";
+		arglist[n-3] = n < items ? SvPV(ST(n), n_a) : "";
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -105,6 +109,7 @@ printformat(item, level, format, ...)
 	int level
 	char *format
 PREINIT:
+        STRLEN n_a;
 	TEXT_DEST_REC dest;
 	char *arglist[MAX_FORMAT_PARAMS];
 	int n;
@@ -112,7 +117,7 @@ CODE:
 	format_create_dest(&dest, item->server, item->name, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-3] = n < items ? SvPV(ST(n), PL_na) : "";
+		arglist[n-3] = n < items ? SvPV(ST(n), n_a) : "";
 	}
 
         printformat_perl(&dest, format, arglist);
