@@ -14,7 +14,7 @@
 #define terminfo_set_bold() current_term->set_bold(current_term)
 #define terminfo_set_uline(set) current_term->set_uline(current_term, set)
 #define terminfo_set_standout(set) current_term->set_standout(current_term, set)
-#define terminfo_has_colors(term) (term->TI_fg[0] != NULL)
+#define terminfo_is_colors_set(term) (term->TI_fg[0] != NULL)
 #define terminfo_beep(term) current_term->beep(current_term)
 
 typedef struct _TERM_REC TERM_REC;
@@ -62,6 +62,7 @@ struct _TERM_REC {
 	const char *TI_el;
 
 	/* Colors */
+        int has_colors;
 	const char *TI_sgr0; /* turn off all attributes */
 	const char *TI_smul, *TI_rmul; /* underline on/off */
         const char *TI_smso, *TI_rmso; /* standout on/off */
