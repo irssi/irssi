@@ -12,7 +12,14 @@
    %p      %P              magenta (think: purple)
    %c      %C      %6      cyan            bold cyan       cyan
    %w      %W      %7      white           bold white      white
-   %n      %N              Turn off all colors and other formatting
+   %n      %N              Changes the color to "default color", removing
+                           all other coloring and formatting. %N is always
+			   the terminal's default color. %n is usually too,
+			   except in themes it changes to "previous color",
+			   ie. hello = "%Rhello%n" and "%G{hello} world"
+			   would print hello in red, and %n would turn back
+			   into %G making world green.
+                           The resulting color is
    %F                      Blinking on/off (think: flash)
    %U                      Underline on/off
    %8                      Reverse on/off
