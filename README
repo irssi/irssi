@@ -62,14 +62,20 @@ Configure can use these parameters (all of these defaults to yes):
  --without-imlib	Build without Imlib library
  --without-socks       	Build without socks library
  --without-textui	Build without text mode version
+ --without-bot		Build without irssibot
  --enable-memdebug     	Enable memory debugging, great for finding memory
 			leaks
  --enable-gtk-hebrew    Enable Hebrew support - see README-HEBREW
 
 There's also some others, you can get a full list with ./configure --help
 
-If you don't want to run irssi in panel, add --no-applet to command line
-parameters.
+
+ * COMMAND LINE PARAMETERS
+
+ --no-applet            Don't start gnome panel applet
+ --connect -c <server>  Connect to server at startup
+ --port -p <port>         - specify port
+ --noconnect -n         Don't autoconnect to any servers at startup
 
 
  * BUGS / SUGGESTIONS
