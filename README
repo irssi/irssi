@@ -36,7 +36,7 @@ it does:
  - Doubleclicking URL in text widget launches specified web/ftp/email client,
    also doubleclicking channel/nick join to channel or creates query.
  - Aliases, ignores, autoignoring when flooding, notify lists, completing
-   specified words with tab (like home&lt;tab&gt; -> http://my.home.page),
+   specified words with tab (like home<tab> -> http://my.home.page),
    hilighting lines with specified texts
  - Smart nick completion
  - Configurable logging support
