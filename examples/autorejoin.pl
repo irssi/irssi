@@ -2,7 +2,7 @@
 
 # NOTE: I personally don't like this feature, in most channels I'm in it
 # will just result as ban. You've probably misunderstood the idea of /KICK
-# wrong if you kick/get kicked all the time "just for fun" ...
+# if you kick/get kicked all the time "just for fun" ...
 
 use Irssi;
 
