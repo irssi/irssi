@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002112501';
+$VERSION = '2002120101';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -1051,16 +1051,14 @@ sub sig_complete ($$$$$) {
     my ($list, $window, $word, $linestart, $want_space) = @_;
     return unless $linestart =~ /^.script(assist)? (install|rate|ratings|update|check|contact|info|autorun)/;
     my @newlist;
+    my $str = $word;
     foreach (@complist) {
-	#Irssi::print $_;
-	#Irssi::print "-".$word."-";
-	if ($_ =~ /^($word.*)?$/) {
-	    #‰Irssi::print "add";
+	if ($_ =~ /^(\Q$str\E.*)?$/) {
 	    push @newlist, $_;
 	}
     }
     foreach (@{loaded_scripts()}) {
-	push @newlist, $_ if $_ =~ /^($word.*)?$/;
+	push @newlist, $_ if /^(\Q$str\E.*)?$/;
     }
     $want_space = 0;
     push @$list, $_ foreach @newlist;
