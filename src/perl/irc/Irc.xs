@@ -26,6 +26,8 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 {
 	HV *stash;
 
+	hv_store(hv, "type", 4, new_pv(dcc_type2str(dcc->type)), 0);
+	hv_store(hv, "orig_type", 9, new_pv(dcc_type2str(dcc->orig_type)), 0);
 	hv_store(hv, "created", 7, newSViv(dcc->created), 0);
 
 	hv_store(hv, "server", 6, irssi_bless(dcc->server), 0);
@@ -33,7 +35,7 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
 	hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
 
-	stash = gv_stashpv("Irssi::Irc::Dcc", 0);
+	stash = gv_stashpv("Irssi::Irc::Dcc::Chat", 0);
 	hv_store(hv, "chat", 4, new_bless(dcc->chat, stash), 0);
 	hv_store(hv, "target", 6, new_pv(dcc->target), 0);
 	hv_store(hv, "arg", 3, new_pv(dcc->arg), 0);
@@ -43,6 +45,33 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 
 	hv_store(hv, "starttime", 9, newSViv(dcc->starttime), 0);
 	hv_store(hv, "transfd", 7, newSViv(dcc->transfd), 0);
+}
+
+static void perl_dcc_chat_fill_hash(HV *hv, CHAT_DCC_REC *dcc)
+{
+        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
+
+	hv_store(hv, "id", 2, new_pv(dcc->id), 0);
+	hv_store(hv, "mirc_ctcp", 9, newSViv(dcc->mirc_ctcp), 0);
+	hv_store(hv, "connection_lost", 15, newSViv(dcc->connection_lost), 0);
+}
+
+static void perl_dcc_get_fill_hash(HV *hv, GET_DCC_REC *dcc)
+{
+        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
+
+	hv_store(hv, "get_type", 8, newSViv(dcc->get_type), 0);
+	hv_store(hv, "file", 4, new_pv(dcc->file), 0);
+	hv_store(hv, "file_quoted", 11, newSViv(dcc->file_quoted), 0);
+}
+
+static void perl_dcc_send_fill_hash(HV *hv, SEND_DCC_REC *dcc)
+{
+        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
+
+	hv_store(hv, "file_quoted", 11, newSViv(dcc->file_quoted), 0);
+	hv_store(hv, "waitforend", 10, newSViv(dcc->waitforend), 0);
+	hv_store(hv, "gotalldata", 10, newSViv(dcc->gotalldata), 0);
 }
 
 static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
@@ -135,7 +164,21 @@ CODE:
 	irssi_add_object(module_get_uniq_id("SERVER", 0),
 			 chat_type, "Irssi::Irc::Server",
 			 (PERL_OBJECT_FUNC) perl_irc_server_fill_hash);
+	irssi_add_object(module_get_uniq_id_str("DCC", "CHAT"),
+			 0, "Irssi::Irc::Dcc::Chat",
+			 (PERL_OBJECT_FUNC) perl_dcc_chat_fill_hash);
+	irssi_add_object(module_get_uniq_id_str("DCC", "GET"),
+			 0, "Irssi::Irc::Dcc::Get",
+			 (PERL_OBJECT_FUNC) perl_dcc_get_fill_hash);
+	irssi_add_object(module_get_uniq_id_str("DCC", "SEND"),
+			 0, "Irssi::Irc::Dcc::Send",
+			 (PERL_OBJECT_FUNC) perl_dcc_send_fill_hash);
         irssi_add_plains(irc_plains);
+
+	perl_eval_pv("@Irssi::Irc::Dcc::Chat::ISA = qw(Irssi::Irc::Dcc);\n"
+		     "@Irssi::Irc::Dcc::Get::ISA = qw(Irssi::Irc::Dcc);\n"
+		     "@Irssi::Irc::Dcc::Send::ISA = qw(Irssi::Irc::Dcc);\n",
+		     TRUE);
 
 INCLUDE: IrcServer.xs
 INCLUDE: IrcChannel.xs

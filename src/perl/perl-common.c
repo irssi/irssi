@@ -288,6 +288,7 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	type = "NICK";
 	chat_type = (char *) chat_protocol_find_id(nick->chat_type)->name;
 
+	hv_store(hv, "type", 4, new_pv(type), 0);
 	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
 
 	hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
