@@ -77,7 +77,8 @@ static time_t lag_last_draw;
 
 /* mbox counter */
 static SBAR_ITEM_REC *mail_item;
-static int mail_timetag;
+static int mail_timetag, mail_last_count;
+static time_t mail_last_mtime;
 
 /* topic */
 static SBAR_ITEM_REC *topic_item;
@@ -584,11 +585,20 @@ static int statusbar_lag_timeout(void)
    wouldn't need to.. */
 static int get_mail_count(void)
 {
+	struct stat statbuf;
 	FILE *f;
-	char str[512];
+	char str[512], *fname;
 	int count;
 
-	f = fopen(g_getenv("MAIL"), "r");
+	fname = g_getenv("MAIL");
+	if (stat(fname, &statbuf) != 0)
+		return 0;
+
+	if (statbuf.st_mtime == mail_last_mtime)
+		return mail_last_count;
+	mail_last_mtime = statbuf.st_mtime;
+
+	f = fopen(fname, "r");
 	if (f == NULL) return 0;
 
 	count = 0;
@@ -598,6 +608,7 @@ static int get_mail_count(void)
 	}
 
 	fclose(f);
+	mail_last_count = count;
 	return count;
 }
 
@@ -606,9 +617,9 @@ static void statusbar_mail(SBAR_ITEM_REC *item, int ypos)
 	char str[MAX_INT_STRLEN];
 	int size_needed, mail_count;
 
-	mail_count = get_mail_count();
-	ltoa(str, mail_count);
+	mail_count = settings_get_bool("mail_counter") ? get_mail_count() : 0;
 
+	ltoa(str, mail_count);
 	if (*str == '\0' || mail_count <= 0)
 		size_needed = 0;
 	else
@@ -812,6 +823,7 @@ void statusbar_items_init(void)
 	settings_add_int("misc", "lag_min_show", 100);
 	settings_add_bool("lookandfeel", "topicbar", TRUE);
 	settings_add_bool("lookandfeel", "actlist_moves", FALSE);
+	settings_add_bool("misc", "mail_counter", TRUE);
 
 	/* clock */
 	clock_timetag = g_timeout_add(1000, (GSourceFunc) statusbar_clock_timeout, NULL);
