@@ -118,10 +118,10 @@ AC_ARG_WITH(plugins,
 
 AC_ARG_ENABLE(perl,
 [  --enable-perl           Enable Perl scripting],
-	if test x$withval = xyes; then
+	if test x$enableval = xyes; then
     		want_perl=yes
 	else
-		if test "x$withval" = xno; then
+		if test "x$enableval" = xno; then
 			want_perl=no
 		else
         		want_perl=yes
@@ -426,6 +426,7 @@ src/lib-nongui/Makefile
 src/lib-popt/Makefile
 src/settings/Makefile
 servertest/Makefile
+examples/Makefile
 docs/Makefile
 docs/help/Makefile
 plugins/Makefile
@@ -436,16 +437,10 @@ plugins/proxy/Makefile
 plugins/external/Makefile
 plugins/bot/Makefile
 plugins/sql/Makefile
-plugins/perl/Makefile.PL
+plugins/perl/xs/Makefile.PL
+plugins/perl/Makefile
 stamp.h
 irssi.spec)
-
-dnl ** build actual the Makefile for Perl plugin
-if test "x$want_perl" = "xyes"; then
-	cd plugins/perl
-	$perlpath Makefile.PL
-	cd ../..
-fi
 
 echo
 

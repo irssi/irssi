@@ -11,7 +11,7 @@ if BUILD_SERVERTEST
 SERVERTEST=servertest
 endif
 
-SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST) docs
+SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST) docs examples
 
 ## to automatically rebuild aclocal.m4 if any of the macros in
 ## `macros/' change
