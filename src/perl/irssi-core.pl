@@ -37,7 +37,7 @@ sub eval_file {
   local($/) = undef;
   my $data = <FH>;
   close FH;
-  local($/) = '\n';
+  local($/) = "\n";
 
   eval_data($data, $id);
 }
