@@ -18,7 +18,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE /* for crypt() */
+#endif
+
 #include "module.h"
 #include "signals.h"
 #include "misc.h"

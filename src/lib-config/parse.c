@@ -28,12 +28,12 @@ static int g_istr_equal(gconstpointer v, gconstpointer v2)
 /* a char* hash function from ASU */
 static unsigned int g_istr_hash(gconstpointer v)
 {
-	const char *s = (char *) v;
+	const char *s = (const char *) v;
 	unsigned int h = 0, g;
 
 	while (*s != '\0') {
 		h = (h << 4) + toupper(*s);
-		if ((g = h & 0xf0000000)) {
+		if ((g = h & 0xf0000000UL)) {
 			h = h ^ (g >> 24);
 			h = h ^ g;
 		}

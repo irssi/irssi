@@ -2,14 +2,8 @@
    file accompanying popt source distributions, available from 
    ftp://ftp.redhat.com/pub/code/popt */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "common.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #ifdef __NeXT
 /* access macros are not declared in non posix mode in unistd.h -
  don't try to use posix on NeXTstep 3.3 ! */ 
@@ -31,7 +25,7 @@ char * findProgramPath(char * argv0) {
     /* If there is a / in the argv[0], it has to be an absolute
        path */
     if (strchr(argv0, '/'))
-	return strdup(argv0);
+	return g_strdup(argv0);
 
     if (!path) return NULL;
 

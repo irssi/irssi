@@ -30,13 +30,13 @@
 #include "screen.h"
 #include "gui-windows.h"
 
-#define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-sizeof(char*))
+#define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
 static int scrollback_lines, scrollback_hours;
 
 #define mark_temp_eol(text) \
-	memcpy((text)->buffer + (text)->pos, "\0\x80", 2);
+	memcpy((text)->buffer + (text)->pos, "\0\200", 2);
 
 static LINE_REC *create_line(GUI_WINDOW_REC *gui, int level)
 {
@@ -191,7 +191,7 @@ static void get_colors(int flags, int *fg, int *bg)
 	if (flags & PRINTFLAG_BLINK) *bg |= 0x80;
 }
 
-static void linebuf_add(GUI_WINDOW_REC *gui, char *str, int len)
+static void linebuf_add(GUI_WINDOW_REC *gui, const char *str, int len)
 {
 	int left;
 
@@ -271,7 +271,7 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 	/* \n can be only at the start of the line.. */
 	if (*str == '\n') {
 		str++;
-		linebuf_add(gui, "\0\x80", 2); /* mark EOL */
+		linebuf_add(gui, "\0\200", 2); /* mark EOL */
 
 		line = create_line(gui, 0);
 		gui_window_newline(gui, visible);

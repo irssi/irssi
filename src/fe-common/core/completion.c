@@ -27,8 +27,8 @@
 
 #include "completion.h"
 
-#define wordreplace_find(replace) \
-	iconfig_list_find("replaces", "text", replace, "replace")
+#define wordreplace_find(word) \
+	iconfig_list_find("replaces", "text", word, "replace")
 
 #define completion_find(completion) \
 	iconfig_list_find("completions", "short", completion, "long")

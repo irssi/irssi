@@ -95,8 +95,8 @@ struct _botnet_rec {
 
 extern GSList *botnets;
 
-void bot_send_cmd(BOT_REC *bot, char *data);
-void bot_send_cmdv(BOT_REC *bot, char *format, ...);
+void bot_send_cmd(BOT_REC *bot, const char *data);
+void bot_send_cmdv(BOT_REC *bot, const char *format, ...);
 
 /* broadcast a message to everyone in bot network, except for `except_bot'
    if it's not NULL. If botnet is NULL, the message is sent to all botnets. */

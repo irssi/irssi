@@ -37,7 +37,7 @@ void botnet_users_init(void);
 
 GSList *botnets;
 
-void bot_send_cmd(BOT_REC *bot, char *data)
+void bot_send_cmd(BOT_REC *bot, const char *data)
 {
 	g_return_if_fail(bot != NULL);
 	g_return_if_fail(data != NULL);
@@ -46,7 +46,7 @@ void bot_send_cmd(BOT_REC *bot, char *data)
 	net_transmit(bot->handle, "\n", 1);
 }
 
-void bot_send_cmdv(BOT_REC *bot, char *format, ...)
+void bot_send_cmdv(BOT_REC *bot, const char *format, ...)
 {
 	va_list args;
 	char *str;

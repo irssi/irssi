@@ -67,7 +67,8 @@ static void cmd_set(char *data)
 {
         GHashTable *optlist;
 	GSList *sets, *tmp;
-	char *key, *value, *last_section;
+	const char *last_section;
+	char *key, *value;
 	void *free_arg;
 	int found, clear;
 

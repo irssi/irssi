@@ -168,8 +168,10 @@ int copyfile(const char *src, const char *dest)
 		int len;
 		char buf[1024];
 
-		while ((len = fread(buf, 1, sizeof(buf), fs)) > 0)
-			if (fwrite(buf, 1, len, fd) != len) break;
+		while ((len = fread(buf, 1, sizeof(buf), fs)) > 0) {
+			if (fwrite(buf, 1, len, fd) != len)
+				break;
+		}
 		fclose(fd);
 		ret = TRUE;
 	}
@@ -330,8 +332,10 @@ char *stristr(const char *data, const char *key)
 		return NULL;
 
 	max = data+datalen-keylen;
-	for (pos = data; pos <= max; pos++)
-		if (g_strncasecmp(pos, key, keylen) == 0) return (char *) pos;
+	for (pos = data; pos <= max; pos++) {
+		if (g_strncasecmp(pos, key, keylen) == 0)
+			return (char *) pos;
+	}
 
 	return NULL;
 }
@@ -397,12 +401,12 @@ int g_istr_cmp(gconstpointer v, gconstpointer v2)
 /* a char* hash function from ASU */
 unsigned int g_istr_hash(gconstpointer v)
 {
-	const char *s = (char *) v;
+	const char *s = (const char *) v;
 	unsigned int h = 0, g;
 
 	while (*s != '\0') {
 		h = (h << 4) + toupper(*s);
-		if ((g = h & 0xf0000000)) {
+		if ((g = h & 0xf0000000UL)) {
 			h = h ^ (g >> 24);
 			h = h ^ g;
 		}

@@ -2,18 +2,7 @@
    file accompanying popt source distributions, available from 
    ftp://ftp.redhat.com/pub/code/popt */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <errno.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "common.h"
 
 #if HAVE_ALLOCA_H
 # include <alloca.h>
@@ -25,7 +14,7 @@
 
 void poptSetExecPath(poptContext con, const char * path, int allowAbsolute) {
     if (con->execPath) free(con->execPath);
-    con->execPath = strdup(path);
+    con->execPath = g_strdup(path);
     con->execAbsolute = allowAbsolute;
 }
 
@@ -449,7 +438,7 @@ int poptGetNextOpt(poptContext con) {
 
 	if (opt->arg && (opt->argInfo & POPT_ARG_MASK) != POPT_ARG_NONE
 		     && (opt->argInfo & POPT_ARG_MASK) != POPT_ARG_VAL) 
-	    con->finalArgv[con->finalArgvCount++] = strdup(con->os->nextArg);
+	    con->finalArgv[con->finalArgvCount++] = g_strdup(con->os->nextArg);
     }
 
     return opt->val;

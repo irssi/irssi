@@ -95,7 +95,8 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     WINDOW_REC *window;
     CHANNEL_REC *channel;
     NICK_REC *nickrec;
-    char *target, *msg, *nickmode, *freestr, *newtarget;
+    const char *nickmode;
+    char *target, *msg, *freestr, *newtarget;
     void *free_arg;
     int free_ret;
 

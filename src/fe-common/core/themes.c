@@ -361,14 +361,16 @@ static void cmd_format(const char *data)
 			    "format", &optlist, &module, &key, &value))
 		return;
 
-        modules = get_sorted_modules();
-	if (*module != '\0' && theme_search(modules, module) == NULL) {
+	modules = get_sorted_modules();
+	if (*module == '\0')
+		module = NULL;
+	else if (theme_search(modules, module) == NULL) {
 		/* first argument isn't module.. */
 		cmd_params_free(free_arg);
 		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 				    "format", &optlist, &key, &value))
 			return;
-		module = "";
+		module = NULL;
 	}
 
 	reset = FALSE;
@@ -383,7 +385,7 @@ static void cmd_format(const char *data)
 	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 		THEME_SEARCH_REC *rec = tmp->data;
 
-		if (*module == '\0' || g_strcasecmp(rec->short_name, module) == 0)
+		if (module == NULL || g_strcasecmp(rec->short_name, module) == 0)
 			theme_show(rec, key, value, reset);
 	}
 	g_slist_foreach(modules, (GFunc) g_free, NULL);

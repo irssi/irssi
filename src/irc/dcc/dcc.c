@@ -38,7 +38,7 @@ void dcc_files_deinit(void);
 
 #define DCC_TYPES 5
 
-static char *dcc_types[] = {
+static const char *dcc_types[] = {
 	"CHAT",
 	"SEND",
 	"GET",
@@ -282,7 +282,7 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     void *free_arg;
     const char *cstr;
     DCC_REC *dcc;
-    gulong size;
+    long size;
     int port;
 
     g_return_if_fail(data != NULL);
@@ -293,7 +293,7 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
 	    return;
 
     if (sscanf(portstr, "%d", &port) != 1) port = 0;
-    if (sscanf(sizestr, "%lu", &size) != 1) size = 0;
+    if (sscanf(sizestr, "%ld", &size) != 1) size = 0;
 
     dcc = dcc_create(SWAP_SENDGET(dcc_str2type(type)), -1, sender, arg, server, chat);
     dcc_get_address(addrstr, &dcc->addr);

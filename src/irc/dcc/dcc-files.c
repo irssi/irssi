@@ -268,7 +268,7 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 {
 	char *type, *arg, *portstr, *sizestr;
 	void *free_arg;
-	unsigned long size;
+	long size;
         int port;
 	DCC_REC *dcc;
 
@@ -426,7 +426,7 @@ static void dcc_send_read_size(DCC_REC *dcc)
 	memcpy(&bytes, dcc->count_buf, 4);
 	bytes = (guint32) ntohl(bytes);
 
-	dcc->gotalldata = bytes == dcc->transfd;
+	dcc->gotalldata = (long) bytes == dcc->transfd;
 	dcc->count_pos = 0;
 
 	if (!dcc->fastsend) {

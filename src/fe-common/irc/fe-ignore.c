@@ -165,7 +165,7 @@ static void cmd_ignore(const char *data)
 
 	if (ischannel(*mask)) {
 		chanarg = mask;
-		mask = "";
+		mask = NULL;
 	}
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(replace_chars(chanarg, ',', ' '), " ", -1);
@@ -176,7 +176,8 @@ static void cmd_ignore(const char *data)
 	if (rec == NULL) {
 		rec = g_new0(IGNORE_REC, 1);
 
-		rec->mask = *mask == '\0' ? NULL : g_strdup(mask);
+		rec->mask = (mask != NULL && *mask != '\0') ?
+			g_strdup(mask) : NULL;
 		rec->channels = channels;
 	} else {
                 g_free_and_null(rec->pattern);
@@ -226,10 +227,10 @@ static void cmd_unignore(const char *data)
 		rec = tmp == NULL ? NULL : tmp->data;
 	} else {
 		/* with mask */
-		char *chans[2] = { "*", NULL };
+		const char *chans[2] = { "*", NULL };
 
-		if (ischannel(*data)) chans[0] = (char *) data;
-		rec = ignore_find("*", ischannel(*data) ? NULL : data, chans);
+		if (ischannel(*data)) chans[0] = data;
+		rec = ignore_find("*", ischannel(*data) ? NULL : data, (char **) chans);
 	}
 
 	if (rec == NULL)

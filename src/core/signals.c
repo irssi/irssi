@@ -94,7 +94,7 @@ static void signal_destroy(int signal_id)
 
 static int signal_list_find(GPtrArray *array, void *data)
 {
-	int n;
+	unsigned int n;
 
 	for (n = 0; n < array->len; n++) {
 		if (g_ptr_array_index(array, n) == data)

@@ -408,7 +408,7 @@ static void sig_addchar(const char *data)
 	gui_entry_insert_char(*data);
 }
 
-static void sig_window_auto_changed(WINDOW_REC *window)
+static void sig_window_auto_changed(void)
 {
 	command_history_next(active_win, gui_entry_get_text());
 	gui_entry_set_text("");
@@ -452,12 +452,12 @@ void gui_readline_init(void)
 	key_bind("prev page", "Previous page", "ALT-P", NULL, (SIGNAL_FUNC) sig_prev_page);
 	key_bind("next page", "Next page", "ALT-N", NULL, (SIGNAL_FUNC) sig_next_page);
 
-	key_bind("special char", "Insert special character", "CTRL-B", "\x02", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL--", "\x1f", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-C", "\x03", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-V", "\x16", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-G", "\x07", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-O", "\x0f", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", "Insert special character", "CTRL-B", "\002", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL--", "\037", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-C", "\003", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-V", "\026", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-G", "\007", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-O", "\017", (SIGNAL_FUNC) sig_addchar);
 
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("ALT-%c", changekeys[n]);

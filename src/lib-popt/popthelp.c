@@ -4,14 +4,7 @@
    file accompanying popt source distributions, available from 
    ftp://ftp.redhat.com/pub/code/popt */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "common.h"
 
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
@@ -302,5 +295,5 @@ void poptPrintUsage(poptContext con, FILE * f, int flags) {
 
 void poptSetOtherOptionHelp(poptContext con, const char * text) {
     if (con->otherHelp) free(con->otherHelp);
-    con->otherHelp = strdup(text);
+    con->otherHelp = g_strdup(text);
 }

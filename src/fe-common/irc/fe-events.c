@@ -60,7 +60,8 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	int for_me;
-	char *color, *nickmode;
+	const char *nickmode;
+	char *color;
 
 	chanrec = channel_find(server, target);
 	for_me = irc_nick_match(server->nick, msg);

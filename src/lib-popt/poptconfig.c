@@ -2,16 +2,7 @@
    file accompanying popt source distributions, available from 
    ftp://ftp.redhat.com/pub/code/popt */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "common.h"
 
 #if HAVE_ALLOCA_H
 # include <alloca.h>
@@ -58,12 +49,12 @@ static void configLine(poptContext con, char * line) {
 	con->execs = realloc(con->execs, 
 				sizeof(*con->execs) * (con->numExecs + 1));
 	if (longName)
-	    con->execs[con->numExecs].longName = strdup(longName);
+	    con->execs[con->numExecs].longName = g_strdup(longName);
 	else
 	    con->execs[con->numExecs].longName = NULL;
 
 	con->execs[con->numExecs].shortName = shortName;
-	con->execs[con->numExecs].script = strdup(line);
+	con->execs[con->numExecs].script = g_strdup(line);
 	
 	con->numExecs++;
     }

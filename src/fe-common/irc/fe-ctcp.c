@@ -67,17 +67,23 @@ static void ctcp_time_msg(const char *data, IRC_SERVER_REC *server, const char *
 
 static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
-	char *ptr, *str;
+	const char *ctcpdata;
+	char *ctcp, *ptr;
 
 	g_return_if_fail(data != NULL);
 
-	str = g_strdup(data);
-	ptr = strchr(str, ' ');
-	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
+	ctcp = g_strdup(data);
+	ptr = strchr(ctcp, ' ');
+	if (ptr == NULL)
+		ctcpdata = "";
+	else {
+		*ptr = '\0';
+		ctcpdata = ptr+1;
+	}
 
 	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
-		    ischannel(*target) ? IRCTXT_CTCP_REPLY_CHANNEL : IRCTXT_CTCP_REPLY, str, nick, ptr, target);
-	g_free(str);
+		    ischannel(*target) ? IRCTXT_CTCP_REPLY_CHANNEL : IRCTXT_CTCP_REPLY, ctcp, nick, ctcpdata, target);
+	g_free(ctcp);
 }
 
 static void ctcp_ping_reply(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
