@@ -81,7 +81,7 @@ static LINE_REC *create_line(GUI_WINDOW_REC *gui, int level)
 static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
 {
 	TEXT_CHUNK_REC *rec;
-	char *buffer, *ptr;
+	char *buffer, *ptr, **pptr;
 
 	g_return_val_if_fail(gui != NULL, NULL);
 
@@ -94,8 +94,8 @@ static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
 		buffer = gui->cur_text->buffer + gui->cur_text->pos;
 		*buffer++ = 0; *buffer++ = (char) LINE_CMD_CONTINUE;
 
-		ptr = rec->buffer;
-		memcpy(buffer, &ptr, sizeof(char *));
+		ptr = rec->buffer; pptr = &ptr;
+		memcpy(buffer, pptr, sizeof(char *));
 	} else {
 		/* just to be safe */
 		mark_temp_eol(rec);
