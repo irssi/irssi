@@ -868,3 +868,5 @@ fi
 
 echo "Install prefix ............. : $prefix"
 
+echo
+echo "If there was any problems, read the INSTALL file."
