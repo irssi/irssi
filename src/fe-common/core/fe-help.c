@@ -107,7 +107,7 @@ static void help_category(GSList *cmdlist, int items)
 	g_free(linebuf);
 }
 
-static int show_help_rec(COMMAND_REC *cmd)
+static int show_help_file(const char *file)
 {
         const char *helppath;
 	char tmpbuf[1024], *str, *path;
@@ -117,9 +117,7 @@ static int show_help_rec(COMMAND_REC *cmd)
         helppath = settings_get_str("help_path");
 
 	/* helpdir/command or helpdir/category/command */
-	path = cmd->category == NULL ?
-		g_strdup_printf("%s/%s", helppath, cmd->cmd) :
-		g_strdup_printf("%s/%s/%s", helppath, cmd->category, cmd->cmd);
+	path = g_strdup_printf("%s/%s", helppath, file);
 	f = open(path, O_RDONLY);
 	g_free(path);
 
@@ -146,10 +144,10 @@ static int show_help_rec(COMMAND_REC *cmd)
 
 static void show_help(const char *data)
 {
-	COMMAND_REC *rec, *last, *helpitem;
+	COMMAND_REC *rec, *last;
 	GSList *tmp, *cmdlist;
 	int items, findlen;
-	int header, found;
+	int header, found, fullmatch;
 
 	g_return_if_fail(data != NULL);
 
@@ -157,7 +155,7 @@ static void show_help(const char *data)
 	commands = g_slist_sort(commands, (GCompareFunc) commands_equal);
 
 	/* print command, sort by category */
-	cmdlist = NULL; last = NULL; header = FALSE; helpitem = NULL;
+	cmdlist = NULL; last = NULL; header = FALSE; fullmatch = FALSE;
 	items = 0; findlen = strlen(data); found = FALSE;
 	for (tmp = commands; tmp != NULL; last = rec, tmp = tmp->next) {
 		rec = tmp->data;
@@ -188,7 +186,7 @@ static void show_help(const char *data)
 		if ((int)strlen(rec->cmd) >= findlen &&
 		    g_strncasecmp(rec->cmd, data, findlen) == 0) {
 			if (rec->cmd[findlen] == '\0') {
-				helpitem = rec;
+				fullmatch = TRUE;
 				found = TRUE;
 				break;
 			}
@@ -201,7 +199,7 @@ static void show_help(const char *data)
 		}
 	}
 
-	if (!found || (helpitem != NULL && !show_help_rec(helpitem))) {
+	if ((!found || fullmatch) && !show_help_file(data)) {
 		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 			  "No help for %s", data);
 	}
