@@ -451,6 +451,7 @@ static NICK_REC *nick_nfind(CHANNEL_REC *channel, const char *nick, int len)
 		while (rec->next != NULL) {
 			if (strcmp(rec->nick, tmpnick) == 0)
 				break;
+                        rec = rec->next;
 		}
 	}
 
