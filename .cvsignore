@@ -16,6 +16,7 @@ ltmain.sh
 stamp-h
 stamp-h.in
 stamp.h
+stamp-h1
 version.h
 config.h.in
 .exrc
