@@ -125,6 +125,7 @@ static void ctcp_msg_dcc_accept(IRC_SERVER_REC *server, const char *data,
 /* Resume a DCC GET */
 static void dcc_send_resume(GET_DCC_REC *dcc)
 {
+        off_t pos;
 	char *str;
 
 	g_return_if_fail(dcc != NULL);
@@ -139,8 +140,8 @@ static void dcc_send_resume(GET_DCC_REC *dcc)
 
 	dcc->get_type = DCC_GET_RESUME;
 
-	dcc->transfd = lseek(dcc->fhandle, 0, SEEK_END);
-	if (dcc->transfd < 0) dcc->transfd = 0;
+	pos = lseek(dcc->fhandle, 0, SEEK_END);
+	dcc->transfd = pos == (off_t)-1 ? 0 : (unsigned long) pos;
 	dcc->skipped = dcc->transfd;
 
 	if (dcc->skipped == dcc->size) {
