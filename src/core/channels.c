@@ -171,6 +171,7 @@ static void event_connected(SERVER_REC *server)
                 if (channel_find_servers(chatnet_servers, rec->name) == NULL)
 			g_string_sprintfa(chans, "%s,", rec->name);
 	}
+        g_slist_free(chatnet_servers);
 
 	if (chans->len > 0) {
 		g_string_truncate(chans, chans->len-1);
