@@ -547,7 +547,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		}
 
 		if (count == server->max_modes_in_cmd &&
-		    HAS_MODE_ARG(chanrec->server, type, *curmode)) {
+		    HAS_MODE_ARG(server, type, *curmode)) {
 			irc_send_cmdv(server, "MODE %s %s%s",
 				      channel, tmode->str, targs->str);
 
@@ -562,7 +562,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		}
 		g_string_append_c(tmode, *curmode);
 
-		if (HAS_MODE_ARG(chanrec->server, type, *curmode)) {
+		if (HAS_MODE_ARG(server, type, *curmode)) {
 			char *arg;
 
 			count++;
