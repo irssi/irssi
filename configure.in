@@ -493,10 +493,15 @@ if test "x$want_gc" = xyes; then
   if test "$glib_config_major_version" = "2"; then
     AC_CHECK_LIB(gc, GC_malloc, [
       AC_CHECK_HEADER(gc/gc.h, [
-        AC_DEFINE(HAVE_GC)
+        AC_DEFINE(HAVE_GC_GC_H)
         LIBS="$LIBS -lgc"
       ], [
-        want_gc=no
+	AC_CHECK_HEADER(gc.h, [
+	  AC_DEFINE(HAVE_GC_H)
+	  LIBS="$LIBS -lgc"
+	], [
+          want_gc=no
+	])
       ])
     ], [
       want_gc=no

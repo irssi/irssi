@@ -43,7 +43,9 @@
 #include "perl-core.h"
 #include "perl-common.h"
 
-#ifdef HAVE_GC
+#ifdef HAVE_GC_H
+#  include <gc.h>
+#elif defined (HAVE_GC_GC_H)
 #  include <gc/gc.h>
 #endif
 

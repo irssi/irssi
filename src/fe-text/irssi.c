@@ -309,8 +309,12 @@ static void winsock_init(void)
 }
 #endif
 
-#ifdef HAVE_GC
-#include <gc/gc.h>
+#if defined (HAVE_GC_H) || defined (HAVE_GC_GC_H)
+#ifdef HAVE_GC_H
+#  include <gc.h>
+#else
+#  include <gc/gc.h>
+#endif
 GMemVTable gc_mem_table = {
 	GC_malloc,
 	GC_realloc,
