@@ -95,16 +95,16 @@ static void init_userinfo(void)
         set = settings_get_str("real_name");
 	if (set == NULL || *set == '\0') {
 		str = g_getenv("IRCNAME");
-		iconfig_set_str("settings", "real_name",
-				str != NULL ? str : g_get_real_name());
+		settings_set_str("real_name",
+				 str != NULL ? str : g_get_real_name());
 	}
 
 	/* username */
         user_name = settings_get_str("user_name");
 	if (user_name == NULL || *user_name == '\0') {
 		str = g_getenv("IRCUSER");
-		iconfig_set_str("settings", "user_name",
-				str != NULL ? str : g_get_user_name());
+		settings_set_str("user_name",
+				 str != NULL ? str : g_get_user_name());
 
 		user_name = settings_get_str("user_name");
 	}
@@ -113,8 +113,7 @@ static void init_userinfo(void)
         nick = settings_get_str("nick");
 	if (nick == NULL || *nick == '\0') {
 		str = g_getenv("IRCNICK");
-		iconfig_set_str("settings", "nick",
-				str != NULL ? str : user_name);
+		settings_set_str("nick", str != NULL ? str : user_name);
 
 		nick = settings_get_str("nick");
 	}
@@ -128,7 +127,7 @@ static void init_userinfo(void)
 			str = g_strdup(nick);
 			str[strlen(str)-1] = '_';
 		}
-		iconfig_set_str("settings", "alternate_nick", str);
+		settings_set_str("alternate_nick", str);
 		g_free(str);
 	}
 
@@ -137,7 +136,7 @@ static void init_userinfo(void)
 	if (set == NULL || *set == '\0') {
 		str = g_getenv("IRCHOST");
 		if (str != NULL)
-			iconfig_set_str("settings", "hostname", str);
+			settings_set_str("hostname", str);
 	}
 }
 

@@ -71,6 +71,7 @@ void core_init(void)
 	nicklist_init();
 
 	chat_commands_init();
+        settings_check();
 }
 
 void core_deinit(void)

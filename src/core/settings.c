@@ -31,8 +31,11 @@
 
 CONFIG_REC *mainconfig;
 
+static GString *last_errors;
+static char *last_config_error_msg;
+static int fe_initialized;
+
 static GHashTable *settings;
-static char *last_error_msg;
 static int timeout_tag;
 
 static int config_last_modifycounter;
@@ -40,7 +43,7 @@ static time_t config_last_mtime;
 static long config_last_size;
 static unsigned int config_last_checksum;
 
-static const char *settings_get_default_str(const char *key)
+static SETTINGS_REC *settings_find(const char *key)
 {
 	SETTINGS_REC *rec;
 
@@ -53,39 +56,62 @@ static const char *settings_get_default_str(const char *key)
 		return NULL;
 	}
 
-	return rec->def;
-}
-
-static int settings_get_default_int(const char *key)
-{
-	SETTINGS_REC *rec;
-
-	g_return_val_if_fail(key != NULL, -1);
-
-	rec = g_hash_table_lookup(settings, key);
-	if (rec == NULL) {
-		g_warning("settings_get_default_int(%s) : "
-			  "unknown setting", key);
-		return -1;
-	}
-
-	return GPOINTER_TO_INT(rec->def);
+	return rec;
 }
 
 const char *settings_get_str(const char *key)
 {
-	return iconfig_get_str("settings", key, settings_get_default_str(key));
+	SETTINGS_REC *rec;
+	CONFIG_NODE *setnode, *node;
+
+	rec = settings_find(key);
+        g_return_val_if_fail(rec != NULL, NULL);
+
+	setnode = iconfig_node_traverse("settings", FALSE);
+	if (setnode == NULL)
+		return rec->def;
+
+	node = config_node_section(setnode, rec->module, -1);
+	return node == NULL ? rec->def :
+		config_node_get_str(node, key, rec->def);
 }
 
 int settings_get_int(const char *key)
 {
-	return iconfig_get_int("settings", key, settings_get_default_int(key));
+	SETTINGS_REC *rec;
+	CONFIG_NODE *setnode, *node;
+        int def;
+
+	rec = settings_find(key);
+        g_return_val_if_fail(rec != NULL, 0);
+        def = GPOINTER_TO_INT(rec->def);
+
+	setnode = iconfig_node_traverse("settings", FALSE);
+	if (setnode == NULL)
+		return def;
+
+	node = config_node_section(setnode, rec->module, -1);
+	return node == NULL ? def :
+		config_node_get_int(node, key, def);
 }
 
 int settings_get_bool(const char *key)
 {
-	return iconfig_get_bool("settings", key,
-				settings_get_default_int(key));
+	SETTINGS_REC *rec;
+	CONFIG_NODE *setnode, *node;
+        int def;
+
+	rec = settings_find(key);
+        g_return_val_if_fail(rec != NULL, 0);
+        def = GPOINTER_TO_INT(rec->def);
+
+	setnode = iconfig_node_traverse("settings", FALSE);
+	if (setnode == NULL)
+		return def;
+
+	node = config_node_section(setnode, rec->module, -1);
+	return node == NULL ? def :
+		config_node_get_bool(node, key, def);
 }
 
 void settings_add_str_module(const char *module, const char *section,
@@ -191,6 +217,35 @@ void settings_remove_module(const char *module)
 				    (void *) module);
 }
 
+static CONFIG_NODE *settings_get_node(const char *key)
+{
+	SETTINGS_REC *rec;
+        CONFIG_NODE *node;
+
+	g_return_val_if_fail(key != NULL, NULL);
+
+	rec = g_hash_table_lookup(settings, key);
+	g_return_val_if_fail(rec != NULL, NULL);
+
+	node = iconfig_node_traverse("settings", TRUE);
+	return config_node_section(node, rec->module, NODE_TYPE_BLOCK);
+}
+
+void settings_set_str(const char *key, const char *value)
+{
+        iconfig_node_set_str(settings_get_node(key), key, value);
+}
+
+void settings_set_int(const char *key, int value)
+{
+        iconfig_node_set_int(settings_get_node(key), key, value);
+}
+
+void settings_set_bool(const char *key, int value)
+{
+        iconfig_node_set_bool(settings_get_node(key), key, value);
+}
+
 int settings_get_type(const char *key)
 {
 	SETTINGS_REC *rec;
@@ -207,6 +262,89 @@ SETTINGS_REC *settings_get_record(const char *key)
 	g_return_val_if_fail(key != NULL, NULL);
 
 	return g_hash_table_lookup(settings, key);
+}
+
+static void sig_init_finished(void)
+{
+	fe_initialized = TRUE;
+	if (last_errors != NULL) {
+		signal_emit("gui dialog", 2, "error", last_errors->str);
+		g_string_free(last_errors, TRUE);
+	}
+
+	if (last_config_error_msg != NULL) {
+		signal_emit("gui dialog", 2, "error", last_config_error_msg);
+		g_free_and_null(last_config_error_msg);
+	}
+}
+
+/* FIXME: remove after 0.7.98 - only for backward compatibility */
+static void settings_move(SETTINGS_REC *rec, char *value)
+{
+	CONFIG_NODE *setnode, *node;
+
+	setnode = iconfig_node_traverse("settings", TRUE);
+	node = config_node_section(setnode, rec->module, NODE_TYPE_BLOCK);
+
+	iconfig_node_set_str(node, rec->key, value);
+	iconfig_node_set_str(setnode, rec->key, NULL);
+}
+
+/* verify that all settings in config file for `module' are actually found
+   from /SET list */
+void settings_check_module(const char *module)
+{
+        SETTINGS_REC *set;
+	CONFIG_NODE *node;
+        GString *errors;
+	GSList *tmp, *next;
+        int count;
+
+        g_return_if_fail(module != NULL);
+
+	node = iconfig_node_traverse("settings", TRUE);
+	if (node != NULL) {
+		/* FIXME: remove after 0.7.98 */
+		for (tmp = node->value; tmp != NULL; tmp = next) {
+			CONFIG_NODE *node = tmp->data;
+
+                        next = tmp->next;
+			if (node->type != NODE_TYPE_KEY)
+				continue;
+			set = g_hash_table_lookup(settings, node->key);
+                        if (set != NULL)
+				settings_move(set, node->value);
+		}
+	}
+	node = node == NULL ? NULL : config_node_section(node, module, -1);
+	if (node == NULL) return;
+
+        errors = g_string_new(NULL);
+	g_string_sprintf(errors, "Unknown settings in configuration "
+			 "file for module %s:", module);
+
+        count = 0;
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		set = g_hash_table_lookup(settings, node->key);
+		if (set == NULL || strcmp(set->module, module) != 0) {
+			g_string_sprintfa(errors, " %s", node->key);
+                        count++;
+		}
+	}
+	if (count > 0) {
+		if (fe_initialized)
+			signal_emit("gui dialog", 2, "error", errors->str);
+		else {
+			if (last_errors == NULL)
+				last_errors = g_string_new(NULL);
+			else
+				g_string_append_c(last_errors, '\n');
+                        g_string_append(last_errors, errors->str);
+		}
+	}
+        g_string_free(errors, TRUE);
 }
 
 static int settings_compare(SETTINGS_REC *v1, SETTINGS_REC *v2)
@@ -321,15 +459,6 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	return config;
 }
 
-static void sig_print_config_error(void)
-{
-	signal_emit("gui dialog", 2, "error", last_error_msg);
-	signal_remove("irssi init finished",
-		      (SIGNAL_FUNC) sig_print_config_error);
-
-	g_free_and_null(last_error_msg);
-}
-
 static void init_configfile(void)
 {
 	struct stat statbuf;
@@ -354,12 +483,10 @@ static void init_configfile(void)
 
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
-		last_error_msg =
+		last_config_error_msg =
 			g_strdup_printf(_("Ignored errors in configuration "
 					  "file:\n%s"),
 					config_last_error(mainconfig));
-		signal_add("irssi init finished",
-			   (SIGNAL_FUNC) sig_print_config_error);
 	}
 
 	signal(SIGTERM, sig_term);
@@ -450,12 +577,17 @@ void settings_init(void)
 	settings = g_hash_table_new((GHashFunc) g_str_hash,
 				    (GCompareFunc) g_str_equal);
 
+	last_errors = NULL;
+        last_config_error_msg = NULL;
+	fe_initialized = FALSE;
+
 	config_last_mtime = 0;
 	config_last_modifycounter = 0;
 	init_configfile();
 
 	settings_add_bool("misc", "settings_autosave", TRUE);
 	timeout_tag = g_timeout_add(1000*60*60, (GSourceFunc) sig_autosave, NULL);
+	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_autosave);
 }
 
@@ -467,9 +599,9 @@ static void settings_hash_free(const char *key, SETTINGS_REC *rec)
 void settings_deinit(void)
 {
         g_source_remove(timeout_tag);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_autosave);
 
-        g_free_not_null(last_error_msg);
 	g_hash_table_foreach(settings, (GHFunc) settings_hash_free, NULL);
 	g_hash_table_destroy(settings);
 

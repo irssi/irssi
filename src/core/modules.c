@@ -305,6 +305,7 @@ static int module_load_name(const char *path, const char *name)
 	modules = g_slist_append(modules, rec);
 
 	module_init();
+	settings_check_module(name);
 
 	signal_emit("module loaded", 1, rec);
 	return TRUE;

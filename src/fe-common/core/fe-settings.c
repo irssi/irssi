@@ -55,11 +55,11 @@ static void set_print(SETTINGS_REC *rec)
 static void set_boolean(const char *key, const char *value)
 {
 	if (g_strcasecmp(value, "ON") == 0)
-		iconfig_set_bool("settings", key, TRUE);
+		settings_set_bool(key, TRUE);
 	else if (g_strcasecmp(value, "OFF") == 0)
-		iconfig_set_bool("settings", key, FALSE);
+		settings_set_bool(key, FALSE);
 	else if (g_strcasecmp(value, "TOGGLE") == 0)
-		iconfig_set_bool("settings", key, !settings_get_bool(key));
+		settings_set_bool(key, !settings_get_bool(key));
 	else
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOT_TOGGLE);
 }
@@ -102,10 +102,10 @@ static void cmd_set(char *data)
 				set_boolean(key, clear ? FALSE : value);
 				break;
 			case SETTING_TYPE_INT:
-				iconfig_set_int("settings", key, clear ? 0 : atoi(value));
+				settings_set_int(key, clear ? 0 : atoi(value));
 				break;
 			case SETTING_TYPE_STRING:
-				iconfig_set_str("settings", key, clear ? "" : value);
+				settings_set_str(key, clear ? "" : value);
 				break;
 			}
 			signal_emit("setup changed", 0);

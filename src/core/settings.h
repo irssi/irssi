@@ -62,12 +62,21 @@ void settings_remove_module(const char *module);
 #define settings_add_bool(section, key, def) \
 	settings_add_bool_module(MODULE_NAME, section, key, def)
 
+void settings_set_str(const char *key, const char *value);
+void settings_set_int(const char *key, int value);
+void settings_set_bool(const char *key, int value);
+
 /* Get the type (SETTING_TYPE_xxx) of `key' */
 int settings_get_type(const char *key);
 /* Get all settings sorted by section. Free the result with g_slist_free() */
 GSList *settings_get_sorted(void);
 /* Get the record of the setting */
 SETTINGS_REC *settings_get_record(const char *key);
+
+/* verify that all settings in config file for `module' are actually found
+   from /SET list */
+void settings_check_module(const char *module);
+#define settings_check() settings_check_module(MODULE_NAME)
 
 /* if `fname' is NULL, the default is used */
 int settings_reread(const char *fname);

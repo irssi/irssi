@@ -128,6 +128,8 @@ void fe_common_core_init(void)
 
 	fe_messages_init();
 	fe_ignore_messages_init();
+
+        settings_check();
 }
 
 void fe_common_core_deinit(void)

@@ -24,6 +24,7 @@
 #include "signals.h"
 #include "levels.h"
 #include "core.h"
+#include "settings.h"
 
 #include "printtext.h"
 #include "fe-common-core.h"
@@ -123,6 +124,8 @@ static void textui_finish_init(void)
 	mainwindow_activity_init();
 	gui_windows_init();
 	statusbar_init();
+
+	settings_check();
 
 	fe_common_core_finish_init();
 	fe_common_irc_finish_init();

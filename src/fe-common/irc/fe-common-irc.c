@@ -110,6 +110,7 @@ void fe_common_irc_init(void)
 	fe_netjoin_init();
 
 	fe_irc_modules_init();
+	settings_check();
 }
 
 void fe_common_irc_deinit(void)
@@ -138,12 +139,12 @@ void fe_common_irc_finish_init(void)
 
 	if (cmdline_nick != NULL) {
 		/* override nick found from setup */
-		iconfig_set_str("settings", "nick", cmdline_nick);
+		settings_set_str("nick", cmdline_nick);
 	}
 
 	if (cmdline_hostname != NULL) {
 		/* override host name found from setup */
-		iconfig_set_str("settings", "hostname", cmdline_hostname);
+		settings_set_str("hostname", cmdline_hostname);
 	}
 
 	if (autocon_server != NULL) {
