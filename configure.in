@@ -695,7 +695,22 @@ dnl ** IPv6 support
 dnl **
 
 if test "x$want_ipv6" = "xyes"; then
-	AC_DEFINE(HAVE_IPV6)
+	AC_MSG_CHECKING([for IPv6])
+	AC_CACHE_VAL(irssi_cv_type_in6_addr,
+	[AC_TRY_COMPILE([
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <netdb.h>
+	#include <arpa/inet.h>],
+	[struct in6_addr i;],
+	irssi_cv_type_in6_addr=yes,
+	irssi_cv_type_in6_addr=no,
+	)])
+	if test $irssi_cv_type_in6_addr = yes; then
+		AC_DEFINE(HAVE_IPV6)
+	fi
+	AC_MSG_RESULT($irssi_cv_type_in6_addr)
 fi
 
 AC_OUTPUT(
