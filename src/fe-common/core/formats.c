@@ -852,6 +852,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 15:
 			/* remove all styling */
 			fgcolor = bgcolor = -1;
+			flags &= PRINTFLAG_INDENT;
 			break;
 		case 22:
 			/* reverse */
