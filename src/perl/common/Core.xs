@@ -398,6 +398,11 @@ CODE:
 	perl_command_unbind(cmd, func);
 
 void
+command_set_options(cmd, options)
+	char *cmd
+	char *options
+
+void
 pidwait_add(pid)
 	int pid
 
