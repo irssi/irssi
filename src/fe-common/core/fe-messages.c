@@ -501,14 +501,9 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
 			    const char *nick)
 {
-        char *str;
-
 	while (first != NULL) {
-		if (first != ignore) {
-			str = g_hash_table_lookup(printnicks, first->nick);
-			if (str != NULL && strcmp(str, nick) == 0)
-                                return TRUE;
-		}
+		if (first != ignore && strcmp(first->nick, nick) == 0)
+			return TRUE;
                 first = first->next;
 	}
 
@@ -556,7 +551,13 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 
 static void sig_nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 {
-        g_hash_table_remove(printnicks, nick);
+	char *nickname;
+
+	nickname = g_hash_table_lookup(printnicks, nick);
+	if (nickname != NULL) {
+                g_free(nickname);
+		g_hash_table_remove(printnicks, nick);
+	}
 }
 
 static void sig_nicklist_changed(CHANNEL_REC *channel, NICK_REC *nick)
