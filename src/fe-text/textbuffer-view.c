@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "textbuffer-view.h"
+#include "utf8.h"
 
 typedef struct {
 	char *name;
@@ -149,7 +150,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
         unsigned char cmd;
-	char *ptr, *last_space_ptr;
+	const unsigned char *ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
@@ -228,6 +229,9 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			last_space = 0;
 			continue;
 		}
+
+		if (view->utf8)
+			get_utf8_char(&ptr);
 
 		xpos++;
 		if (*ptr++ == ' ') {
@@ -392,9 +396,19 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		}
 
 		if (xpos < term_width) {
-			if ((*text & 127) >= 32)
+			if ((*text & 127) >= 32) {
+				if (view->utf8) {
+                                        /* UTF8 - print multiple chars */
+					const unsigned char *end = text;
+
+					get_utf8_char(&end);
+					while (text < end) {
+						term_addch(view->window, *text);
+                                                text++;
+					}
+				}
 				term_addch(view->window, *text);
-			else {
+			} else {
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
 				term_addch(view->window, (*text & 127)+'A'-1);
@@ -468,7 +482,7 @@ static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int scroll)
+					     int scroll, int utf8)
 {
 	TEXT_BUFFER_VIEW_REC *view;
 
@@ -481,7 +495,8 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 
 	view->width = width;
         view->height = height;
-        view->scroll = scroll;
+	view->scroll = scroll;
+        view->utf8 = utf8;
 
 	view->cache = textbuffer_cache_get(view->siblings, width);
 	textbuffer_view_init_bottom(view);
@@ -595,6 +610,11 @@ void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func)
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll)
 {
         view->scroll = scroll;
+}
+
+void textbuffer_view_set_utf8(TEXT_BUFFER_VIEW_REC *view, int utf8)
+{
+        view->utf8 = utf8;
 }
 
 static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)

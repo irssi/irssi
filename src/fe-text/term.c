@@ -115,6 +115,7 @@ void term_common_init(void)
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
         settings_add_bool("lookandfeel", "term_auto_detach", FALSE);
+        settings_add_bool("lookandfeel", "term_utf8", FALSE);
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");

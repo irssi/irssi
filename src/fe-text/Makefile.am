@@ -61,6 +61,7 @@ irssi_SOURCES = \
         textbuffer-commands.c \
         textbuffer-reformat.c \
         textbuffer-view.c \
+	utf8.c \
         irssi.c \
 	module-formats.c
 
@@ -77,6 +78,7 @@ noinst_HEADERS = \
         textbuffer.h \
         textbuffer-view.h \
         textbuffer-reformat.h \
+	utf8.h \
 	module.h \
 	module-formats.h
 

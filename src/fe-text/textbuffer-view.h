@@ -11,7 +11,7 @@ typedef int (*INDENT_FUNC) (TEXT_BUFFER_VIEW_REC *view,
 			    LINE_REC *line, int ypos);
 
 typedef struct {
-	unsigned char *start;
+	const unsigned char *start;
 	int indent;
         INDENT_FUNC indent_func;
 	int color;
@@ -55,6 +55,7 @@ struct _TEXT_BUFFER_VIEW_REC {
         INDENT_FUNC default_indent_func;
 	unsigned int longword_noindent:1;
 	unsigned int scroll:1; /* scroll down automatically when at bottom */
+	unsigned int utf8:1; /* use UTF8 in this view */
 
 	TEXT_BUFFER_CACHE_REC *cache;
 	int ypos; /* cursor position - visible area is 0..height-1 */
@@ -84,7 +85,7 @@ struct _TEXT_BUFFER_VIEW_REC {
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int scroll);
+					     int scroll, int utf8);
 /* Destroy the view. */
 void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view);
 /* Change the default indent position */
@@ -95,6 +96,7 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func);
 
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll);
+void textbuffer_view_set_utf8(TEXT_BUFFER_VIEW_REC *view, int utf8);
 
 /* Resize the view. */
 void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height);
