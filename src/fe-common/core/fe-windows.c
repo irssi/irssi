@@ -247,7 +247,8 @@ WINDOW_REC *window_find_level(void *server, int level)
 	GSList *tmp;
 
         /* prefer active window if possible */
-	if (WINDOW_LEVEL_MATCH(active_win, server, level))
+	if (active_win != NULL &&
+	    WINDOW_LEVEL_MATCH(active_win, server, level))
                 return active_win;
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {

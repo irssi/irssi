@@ -415,8 +415,14 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
-	g_return_if_fail(dest->window != NULL);
 	g_return_if_fail(text != NULL);
+
+	if (dest->window == NULL) {
+                str = strip_codes(text);
+		printf("NO WINDOWS: %s\n", str);
+                g_free(str);
+                return;
+	}
 
 	msg_beep_check(dest);
 
