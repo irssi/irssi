@@ -8,7 +8,18 @@
 typedef void* (*FOREACH_FIND_FUNC) (void *item, void *data);
 typedef int (*COLUMN_LEN_FUNC)(void *data);
 
+static inline int nearest_power(int num)
+{
+	int n = 1;
+
+	while (n < num) n <<= 1;
+	return n;
+}
+
+/* Returns 1 if tv1 > tv2, -1 if tv2 > tv1 or 0 if they're equal. */
 int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2);
+/* Returns "tv1 - tv2", returns the result in milliseconds. Note that
+   if the difference is too large, the result might be invalid. */
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2);
 
 /* find `item' from a space separated `list' */

@@ -1,7 +1,7 @@
 /*
- args.c : irssi
+ args.c : small frontend to libPopt command line argument parser
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

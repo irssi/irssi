@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "misc.h"
 
 /* Maximum line length - split to two lines if it's longer than this.
 
@@ -37,14 +38,6 @@ struct _LINEBUF_REC {
 	int remove;
         char *str;
 };
-
-static inline int nearest_power(int num)
-{
-	int n = 1;
-
-	while (n < num) n <<= 1;
-	return n;
-}
 
 static void linebuf_append(LINEBUF_REC *rec, const char *data, int len)
 {
