@@ -37,6 +37,7 @@
 #include "printtext.h"
 #include "statusbar.h"
 #include "gui-windows.h"
+#include "gui-printtext.h"
 
 /* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10
@@ -215,7 +216,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     WI_ITEM_REC *witem;
     CHANNEL_REC *channel;
     SERVER_REC *server;
-    gchar channame[21], winnum[MAX_INT_STRLEN], *mode;
+    gchar channame[21], winnum[MAX_INT_STRLEN], *mode, *tmpname;
     int size_needed;
     int mode_size;
 
@@ -239,7 +240,9 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     else
     {
 	/* display channel + mode */
-        strncpy(channame, witem->name, 20); channame[20] = '\0';
+        tmpname = show_lowascii(witem->name);
+        strncpy(channame, tmpname, 20); channame[20] = '\0';
+        g_free(tmpname);
 
 	channel = irc_item_channel(witem);
 	if (channel == NULL) {

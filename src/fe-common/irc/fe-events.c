@@ -21,6 +21,7 @@
 #include "module.h"
 #include "module-formats.h"
 #include "signals.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "irc.h"
@@ -388,8 +389,11 @@ static void event_invite(const char *data, IRC_SERVER_REC *server, const char *n
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
-	if (*channel != '\0' && !ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_INVITES))
+	if (*channel != '\0' && !ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_INVITES)) {
+		channel = show_lowascii(channel);
 		printformat(server, NULL, MSGLEVEL_INVITES, IRCTXT_INVITE, nick, channel);
+		g_free(channel);
+	}
 	g_free(params);
 }
 

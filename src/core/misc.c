@@ -506,3 +506,24 @@ int dec2octal(int decimal)
 
 	return octal;
 }
+
+/* convert all low-ascii (<32) to ^<A..> combinations */
+char *show_lowascii(const char *channel)
+{
+	char *str, *p;
+
+	str = p = g_malloc(strlen(channel)*2+1);
+	while (*channel != '\0') {
+		if ((unsigned char) *channel >= 32)
+			*p++ = *channel;
+		else {
+			*p++ = '^';
+			*p++ = *channel + 'A'-1;
+		}
+		channel++;
+	}
+	*p = '\0';
+
+	return str;
+}
+

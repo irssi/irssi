@@ -627,7 +627,10 @@ void window_update_prompt(WINDOW_REC *window)
 	}
 
 	/* set prompt */
+	text = show_lowascii(text);
 	str = g_strdup_printf("[%1.17s] ", text);
+	g_free(text);
+
 	gui_entry_set_prompt(str);
 	if (*str != '\0') g_free(str);
 }

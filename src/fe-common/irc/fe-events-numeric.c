@@ -447,19 +447,11 @@ static void event_whois_channels(const char *data, IRC_SERVER_REC *server)
 	   colors, bolds, etc. are mostly just to fool people, I think we
 	   should show the channel names as they REALLY are so they could
 	   even be joined without any extra tricks. */
-	str = g_string_new(NULL);
-	for (; *chans != '\0'; chans++) {
-		if ((unsigned char) *chans >= 32)
-			g_string_append_c(str, *chans);
-		else {
-			g_string_append_c(str, '^');
-			g_string_append_c(str, *chans+'A'-1);
-		}
-	}
+        chans = show_lowascii(chans);
+	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_CHANNELS, nick, chans);
+	g_free(chans);
 
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_CHANNELS, nick, str->str);
 	g_free(params);
-	g_string_free(str, TRUE);
 }
 
 static void event_whois_away(const char *data, IRC_SERVER_REC *server)
