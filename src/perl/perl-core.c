@@ -441,19 +441,6 @@ static void sig_autorun(void)
 
 void perl_core_init(void)
 {
-	/* FIXME: remove before .99 - backwards compatibility
-	   fix between CVS versions */
-	CONFIG_NODE *node;
-
-	node = iconfig_node_traverse("settings", FALSE);
-	if (node != NULL)
-                node = config_node_section(node, "perl/core", -1);
-	if (node != NULL) {
-                g_free(node->key);
-		node->key = g_strdup("perl/core/scripts");
-	}
-        /* ----- */
-
         print_script_errors = 1;
 	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
