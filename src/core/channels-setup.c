@@ -54,6 +54,8 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 
 void channel_setup_create(CHANNEL_SETUP_REC *channel)
 {
+	channel->type = module_get_uniq_id("CHANNEL SETUP", 0);
+
 	if (g_slist_find(setupchannels, channel) == NULL)
 		setupchannels = g_slist_append(setupchannels, channel);
 	channel_setup_save(channel);
