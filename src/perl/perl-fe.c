@@ -41,7 +41,8 @@ static void cmd_script_exec(const char *data)
 	char *code;
 	void *free_arg;
 
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST,
 			    "script exec", &optlist, &code))
 		return;
 
@@ -112,7 +113,7 @@ static void cmd_script_list(void)
                 return;
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		    TXT_SCRIPT_LIST_HEADER);
 
 	data = g_string_new(NULL);
@@ -129,19 +130,19 @@ static void cmd_script_list(void)
 			}
 		}
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 			    TXT_SCRIPT_LIST_LINE, rec->name, data->str);
 	}
         g_string_free(data, TRUE);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		    TXT_SCRIPT_LIST_FOOTER);
 }
 
 static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-                    TXT_SCRIPT_ERROR, script->name);
+		    TXT_SCRIPT_ERROR, script == NULL ? "??" : script->name);
 
 	printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%[-s]%s", error);
 }
