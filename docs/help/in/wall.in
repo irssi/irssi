@@ -1,10 +1,11 @@
 
 @SYNTAX:wall@
 
-This command sends the given message to everyone on 
-the network who has user mode +w turned on. If you 
-are not an operator, you will probably receive
-an error message when using this command
+This command sends a message to all operators in a channel. This is internal
+irssi command which sends a message separately to each opearator, so this
+may not be very good idea to use in channel with lots of operators.
 
-See also: OPER, WALLOPS
+Some IRC servers support also /MSG @#channel which you should use if
+possible.
 
+See also: 
