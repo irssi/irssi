@@ -44,7 +44,7 @@ static GSList *mask_add_once(GSList *list, const char *mask)
 
 	ptr = strchr(mask, '!');
 	str = ptr == NULL ? g_strdup(mask) :
-		g_strndup(mask, (int) (ptr-mask)+1);
+		g_strndup(mask, (int) (ptr-mask));
 
 	if (gslist_find_icase_string(list, str) == NULL)
 		return g_slist_append(list, str);
