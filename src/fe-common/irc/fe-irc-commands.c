@@ -188,6 +188,10 @@ static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
 static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 {
 	GSList *tmp;
+        int counter;
+
+	if (!channel->synced)
+		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (channel->banlist == NULL && channel->ebanlist == NULL) {
 		printformat(server, channel->name, MSGLEVEL_CRAP,
@@ -196,14 +200,16 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 	}
 
 	/* show bans.. */
+        counter = 1;
 	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
 		BAN_REC *rec = tmp->data;
 
 		printformat(server, channel->name, MSGLEVEL_CRAP,
 			    (rec->setby == NULL || *rec->setby == '\0') ?
 			    IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-			    channel->name, rec->ban, rec->setby,
+			    counter, channel->name, rec->ban, rec->setby,
 			    (int) (time(NULL)-rec->time));
+                counter++;
 	}
 
 	/* ..and show ban exceptions.. */

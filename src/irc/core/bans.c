@@ -176,7 +176,8 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 	g_string_free(str, TRUE);
 }
 
-static void command_set_ban(const char *data, IRC_SERVER_REC *server, void *item, int set)
+static void command_set_ban(const char *data, IRC_SERVER_REC *server,
+			    WI_ITEM_REC *item, int set)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *channel, *nicks;
@@ -204,8 +205,17 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, void *item
 
 	if (set)
 		ban_set(chanrec, nicks);
-	else
+	else {
+		if (is_numeric(nicks, '\0')) {
+			/* unban with ban number */
+			BAN_REC *ban = g_slist_nth_data(chanrec->banlist,
+							atoi(nicks)-1);
+			if (ban != NULL)
+                                nicks = ban->ban;
+		}
+
 		ban_remove(chanrec, nicks);
+	}
 
 	cmd_params_free(free_arg);
 }
