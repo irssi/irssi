@@ -253,12 +253,11 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL && chanrec->joined) {
-		/* already joined this channel - this check was added
-		   here because of broken irssi proxy :) */
-		g_free(shortchan);
-		g_free(params);
-                return;
-	}
+		/* already joined this channel - probably a broken proxy that
+		   forgot to send PART between */
+		chanrec->left = TRUE;
+		channel_destroy(CHANNEL(chanrec));
+		chanrec = NULL;	}
 
 	if (chanrec == NULL) {
 		/* look again, because of the channel name cut issues. */
