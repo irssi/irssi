@@ -66,7 +66,7 @@ static void set_boolean(const char *key, const char *value)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_NOT_TOGGLE);
 }
 
-/* SYNTAX: SET [-clear] [<key> [<value>]] */
+/* SYNTAX: SET [-clear | -default] [<key> [<value>]] */
 static void cmd_set(char *data)
 {
         GHashTable *optlist;
@@ -74,13 +74,14 @@ static void cmd_set(char *data)
 	const char *last_section;
 	char *key, *value;
 	void *free_arg;
-	int found, clear;
+	int found, clear, set_default;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 			    "set", &optlist, &key, &value))
 		return;
 
 	clear = g_hash_table_lookup(optlist, "clear") != NULL;
+	set_default = g_hash_table_lookup(optlist, "default") != NULL;
 
 	last_section = ""; found = 0;
 	sets = settings_get_sorted();
@@ -98,20 +99,26 @@ static void cmd_set(char *data)
 			last_section = rec->section;
 		}
 
-		if (clear || *value != '\0') {
+		if (clear || set_default || *value != '\0') {
 			/* change the setting */
 			switch (rec->type) {
 			case SETTING_TYPE_BOOLEAN:
                                 if (clear)
 					settings_set_bool(key, FALSE);
-                                else
+				else if (set_default)
+					settings_set_bool(key, GPOINTER_TO_INT(rec->def));
+				else
 					set_boolean(key, value);
 				break;
 			case SETTING_TYPE_INT:
-				settings_set_int(key, clear ? 0 : atoi(value));
+				settings_set_int(key, clear ? 0 :
+						 set_default ? GPOINTER_TO_INT(rec->def) :
+						 atoi(value));
 				break;
 			case SETTING_TYPE_STRING:
-				settings_set_str(key, clear ? "" : value);
+				settings_set_str(key, clear ? "" :
+						 set_default ? rec->def :
+						 value);
 				break;
 			}
 			signal_emit("setup changed", 0);
@@ -334,7 +341,7 @@ void fe_settings_init(void)
 	command_bind("unalias", NULL, (SIGNAL_FUNC) cmd_unalias);
 	command_bind("reload", NULL, (SIGNAL_FUNC) cmd_reload);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
-	command_set_options("set", "clear");
+	command_set_options("set", "clear default");
 
         signal_add("settings errors", (SIGNAL_FUNC) sig_settings_errors);
 }
