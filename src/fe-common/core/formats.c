@@ -169,6 +169,10 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_CLRTOEOL);
 		break;
+	case '#':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_MONOSPACE);
+		break;
 	case '[':
 		/* code */
                 format_expand_code(format, out, flags);
@@ -997,6 +1001,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			case FORMAT_STYLE_REVERSE:
 				flags ^= GUI_PRINT_FLAG_REVERSE;
 				break;
+			case FORMAT_STYLE_MONOSPACE:
+				flags ^= GUI_PRINT_FLAG_MONOSPACE;
+				break;
 			case FORMAT_STYLE_INDENT:
 				flags |= GUI_PRINT_FLAG_INDENT;
 				break;
@@ -1015,7 +1022,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			case FORMAT_STYLE_DEFAULTS:
                                 fgcolor = theme->default_color;
 				bgcolor = -1;
-				flags &= GUI_PRINT_FLAG_INDENT;
+				flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
                                 break;
@@ -1056,7 +1063,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			/* remove all styling */
 			fgcolor = theme->default_color;
 			bgcolor = -1;
-			flags &= GUI_PRINT_FLAG_INDENT;
+			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
 			break;
 		case 22:
 			/* reverse */
