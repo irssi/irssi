@@ -175,7 +175,7 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 		set_color((1 << 4)+7); addstr(server->usermode);
 		set_color((1 << 4)+15); addch(')');
 	}
-	if (server->usermode_away) {
+	if (server != NULL && server->usermode_away) {
 		set_color((1 << 4)+7); addstr(" (");
 		set_color((1 << 4)+10); addstr("zZzZ");
 		set_color((1 << 4)+7); addch(')');
