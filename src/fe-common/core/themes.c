@@ -678,7 +678,8 @@ static void theme_read(THEME_REC *theme, const char *path, const char *data)
 		config = config_open(path, -1);
 		if (config == NULL) {
 			/* didn't exist or no access? */
-			theme->default_color = 15;
+			theme->default_color = 0;
+			theme->default_bold_color = 7;
 			return;
 		}
 		config_parse(config);
@@ -706,7 +707,10 @@ static void theme_read(THEME_REC *theme, const char *path, const char *data)
 		}
 	}
 
-	theme->default_color = config_get_int(config, NULL, "default_color", 15);
+	theme->default_color =
+		config_get_int(config, NULL, "default_color", 0);
+	theme->default_bold_color =
+		config_get_int(config, NULL, "default_bold_color", 7);
         theme_read_replaces(config, theme);
 	theme_read_abstracts(config, theme);
 
@@ -1034,7 +1038,8 @@ static void themes_read(void)
 		fname = g_strdup_printf("%s/.irssi/default.theme",
 					g_get_home_dir());
 		current_theme = theme_create(fname, "default");
-		current_theme->default_color = 15;
+		current_theme->default_color = 0;
+		current_theme->default_bold_color = 7;
                 theme_read(current_theme, NULL, default_theme);
 		g_free(fname);
 	}

@@ -213,11 +213,12 @@ void set_color(WINDOW *window, int col)
 
 	if (!use_colors)
 		attr = (col & 0x70) ? A_REVERSE : 0;
-	else {
-		attr = (col & ATTR_COLOR8) ?
-			(A_DIM | COLOR_PAIR(63)) :
-			(COLOR_PAIR((col&7) + (col&0x70)/2));
-	}
+	else if (col & ATTR_COLOR8)
+                attr = (A_DIM | COLOR_PAIR(63));
+	else if ((col & 0x77) == 0)
+		attr = A_NORMAL;
+	else
+		attr = (COLOR_PAIR((col&7) + (col&0x70)/2));
 
 	if (col & 0x08) attr |= A_BOLD;
 	if (col & 0x80) attr |= A_BLINK;

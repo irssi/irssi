@@ -14,7 +14,7 @@ typedef struct {
 	char *path;
 	char *name;
 
-	int default_color;
+	int default_color, default_bold_color;
 	GHashTable *modules;
 
 	GSList *replace_keys;
