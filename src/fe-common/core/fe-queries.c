@@ -227,7 +227,13 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 			    PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS,
 			    "query", &optlist, &nick, &msg))
 		return;
-	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	if (*nick == '\0') {
+		/* remove current query */
+		cmd_unquery("", server, item);
+		cmd_params_free(free_arg);
+                return;
+	}
 
 	server = cmd_options_get_server("query", optlist, server);
 	if (server == NULL) {
