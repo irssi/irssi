@@ -16,6 +16,7 @@ perl-core.c: perl-signals-list.h irssi-core.pl.h
 INCLUDES = $(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
 	-DPERL_USE_LIB=\""$(PERL_USE_LIB)"\" \
+	-DPERL_STATIC_LIBS=$(PERL_STATIC_LIBS) \
 	$(PERL_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \

@@ -31,6 +31,7 @@
 #include "perl-signals.h"
 #include "perl-sources.h"
 
+#include "XSUB.h"
 #include "irssi-core.pl.h"
 
 /* For compatibility with perl 5.004 and older */
@@ -84,6 +85,26 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
         g_free(script);
 }
 
+#if PERL_STATIC_LIBS == 1
+extern void boot_Irssi(CV *cv);
+
+XS(boot_Irssi_Core)
+{
+	dXSARGS;
+
+	irssi_callXS(boot_Irssi, cv, mark);
+        irssi_boot(Irc);
+        irssi_boot(UI);
+        irssi_boot(TextUI);
+}
+
+static void static_xs_init(void)
+{
+	newXS("Irssi::Core::boot_Irssi_Core", boot_Irssi_Core, __FILE__);
+}
+
+#endif
+
 /* Initialize perl interpreter */
 void perl_scripts_init(void)
 {
@@ -97,7 +118,12 @@ void perl_scripts_init(void)
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
+#if PERL_STATIC_LIBS == 1
+	perl_parse(my_perl, static_xs_init, 3, args, NULL);
+	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
+#else
 	perl_parse(my_perl, xs_init, 3, args, NULL);
+#endif
 
         perl_common_start();
 

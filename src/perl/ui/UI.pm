@@ -16,7 +16,7 @@ require DynaLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw();
 
-bootstrap Irssi::UI $VERSION;
+bootstrap Irssi::UI $VERSION if (!Irssi::Core::is_static());
 
 Irssi::UI::init();
 

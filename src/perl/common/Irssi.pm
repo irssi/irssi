@@ -24,7 +24,7 @@ require DynaLoader;
 );
 @EXPORT_OK = qw();
 
-bootstrap Irssi $VERSION;
+bootstrap Irssi $VERSION if (!Irssi::Core::is_static());
 
 @Irssi::Channel::ISA = qw(Irssi::Windowitem);
 @Irssi::Query::ISA = qw(Irssi::Windowitem);

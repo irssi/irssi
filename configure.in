@@ -106,6 +106,21 @@ if test "x$prefix" != "xNONE"; then
 	perl_prefix_note=yes
 fi
 
+AC_ARG_WITH(perl-staticlib,
+[  --with-perl-staticlib   Specify that we want to link perl libraries
+                        statically in irssi, default is no],
+	if test x$withval = xyes; then
+		want_staticperllib=yes
+	else
+		if test "x$withval" = xno; then
+			want_staticperllib=no
+		else
+			want_staticperllib=yes
+		fi
+	fi,
+	want_staticperllib=no)
+
+
 AC_ARG_WITH(perl-lib,
 [  --with-perl-lib=[site|vendor|DIR]  Specify where to install the
                         Perl libraries for irssi, default is site],
@@ -583,6 +598,14 @@ if test "$want_perl" != "no"; then
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		fi
 
+		if test "x$want_staticperllib" = "xyes"; then
+			PERL_MM_PARAMS="$PERL_MM_PARAMS LINKTYPE=static"
+			PERL_LINK_LIBS="$PERL_LINK_LIBS ../perl/common/blib/arch/auto/Irssi/Irssi.a ../perl/irc/blib/arch/auto/Irssi/Irc/Irc.a ../perl/ui/blib/arch/auto/Irssi/UI/UI.a ../perl/textui/blib/arch/auto/Irssi/TextUI/TextUI.a"
+			PERL_STATIC_LIBS=1
+		else
+			PERL_STATIC_LIBS=0
+		fi
+
 		# figure out the correct @INC path - we'll need to do this
 		# through MakeMaker since it's difficult to get it right
 		# otherwise.
@@ -607,6 +630,7 @@ if test "$want_perl" != "no"; then
 
 		AC_SUBST(PERL_USE_LIB)
 		AC_SUBST(PERL_MM_PARAMS)
+		AC_SUBST(PERL_STATIC_LIBS)
 	fi
 fi
 

@@ -1,11 +1,16 @@
 # NOTE: this is printed through printf()-like function,
 # so no extra percent characters.
 
-# %%s can be used once, it contains the
-# use Irssi; use Irssi::Irc; etc..
+# %%d : must be first - 1 if perl libraries are to be linked 
+#       statically with irssi binary, 0 if not
+# %%s : must be second - use Irssi; use Irssi::Irc; etc..
 package Irssi::Core;
 
 use Symbol qw(delete_package);
+
+sub is_static {
+  return %d;
+}
 
 sub destroy {
   my $package = "Irssi::Script::".$_[0];
