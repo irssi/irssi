@@ -366,7 +366,6 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	if (g_hash_table_lookup(optlist, "in") != NULL) {
 		rec = process_find(g_hash_table_lookup(optlist, "in"), TRUE);
 		if (rec != NULL) {
-			/* FIXME: use net_sendbuf instead */
 			net_sendbuffer_send(rec->out, args, strlen(args));
 			net_sendbuffer_send(rec->out, "\n", 1);
 		}
