@@ -91,7 +91,7 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	if (server->lag_sent == 0 || now-server->lag_sent < 5) {
 		lag_unknown = now-server->lag_last_check >
 			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
-                lag_min_show = settings_get_int("lag_min_show");
+                lag_min_show = settings_get_int("lag_min_show")*10;
 
 		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown)) {
                         /* small lag, don't display */
