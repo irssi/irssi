@@ -23,8 +23,10 @@ configure-stamp:
 build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
+	if test -z "`perl -v|grep '5\.0'`"; then \
 	PERL_MM_OPT=INSTALLDIRS=vendor \
-	    $(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR=
+	    $(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR= ; else \
+	$(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR= ; fi
 	touch build-stamp
 
 clean:
