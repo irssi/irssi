@@ -20,8 +20,8 @@ list of them all:
     NICKS           - Someone changes nick
     DCC             - DCC related messages
     DCCMSGS         - DCC chat messages
-    CLIENTNOTICES   - Irssi's notices
-    CLIENTERRORS    - Irssi's error messages
+    CLIENTNOTICE    - Irssi's notices
+    CLIENTERROR     - Irssi's error messages
     CLIENTCRAP      - Some other messages from Irssi
 
 And a few special ones that could be included with the
