@@ -42,6 +42,11 @@ static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 	CHANNEL_REC *chanrec;
 	GSList *nicks, *tmp;
 
+	g_return_val_if_fail(rec != NULL, FALSE);
+	g_return_val_if_fail(server != NULL, FALSE);
+	g_return_val_if_fail(channel != NULL, FALSE);
+	g_return_val_if_fail(text != NULL, FALSE);
+
 	chanrec = channel_find(server, channel);
 	if (chanrec == NULL) return FALSE;
 
@@ -101,7 +106,8 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 				irc_mask_match_address(rec->mask, nick, host);
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
-				if (!rec->replies || !ignore_check_replies(rec, server, channel, text))
+				if (!rec->replies || channel == NULL ||
+				    !ignore_check_replies(rec, server, channel, text))
 					continue;
 			}
 		}
