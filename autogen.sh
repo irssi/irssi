@@ -99,10 +99,6 @@ aclocal $aclocalinclude
 if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
   echo "Running autoheader..."
   autoheader
-
-  # we don't want VERSION in our config.h
-  grep -v '^#undef VERSION' config.h.in > config.h.in.temp
-  mv -f config.h.in.temp config.h.in
 fi
 echo "Running autoconf ..."
 autoconf
