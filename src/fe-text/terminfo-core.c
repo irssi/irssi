@@ -354,10 +354,7 @@ static void term_fill_capabilities(TERM_REC *term)
 /* Terminal was resized - ask the width/height from terminfo again */
 void terminfo_resize(TERM_REC *term)
 {
-	/* easiest way to do this is just to refill everything, and since
-	   termcap needs that buffer this is probably also the safest way */
-	/* FIXME: leaks memory? does this even work? */
-	term_fill_capabilities(term);
+	/* FIXME: is this possible? */
 }
 
 static void terminfo_colors_deinit(TERM_REC *term)
