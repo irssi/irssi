@@ -185,6 +185,9 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const 
 	return NULL;
 }
 
+/* check if quit message is a netsplit message - there's some paranoia
+   checks which are probably a bit useless since nowadays IRC servers
+   add space after quit message if it looks like a netsplit message. */
 int quitmsg_is_split(const char *msg)
 {
 	char *host1, *host2, *p;
@@ -195,7 +198,7 @@ int quitmsg_is_split(const char *msg)
 
 	/* must have only two words */
 	p = strchr(msg, ' ');
-	if (p == NULL || strchr(p+1, ' ') != NULL) return FALSE;
+	if (p == NULL || p == msg || strchr(p+1, ' ') != NULL) return FALSE;
 
 	/* check that it looks ok.. */
 	if (!match_wildcards("*.* *.*", msg) ||
@@ -203,8 +206,8 @@ int quitmsg_is_split(const char *msg)
 		return FALSE;
 
 	/* get the two hosts */
-	if (!cmd_get_params(msg, &free_arg, 2 | PARAM_FLAG_NOQUOTES, &host1, &host2))
-		return FALSE;
+	host1 = g_strndup(msg, (int) (p-msg));
+	host2 = p;
 
 	ok = FALSE;
 	if (g_strcasecmp(host1, host2) != 0) { /* hosts can't be same.. */
@@ -218,7 +221,7 @@ int quitmsg_is_split(const char *msg)
 			}
 		}
 	}
-	cmd_params_free(free_arg);
+	g_free(host1);
 
 	return ok;
 }
