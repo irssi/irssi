@@ -61,4 +61,5 @@ aliases = {
   WN = "window new hide";
   SV = "say Irssi $J - http://irssi.org/";
   GOTO = "sb goto";
+  CHAT = "dcc chat";
 };
