@@ -510,7 +510,8 @@ static void cmd_window_name(const char *data)
 {
 	if (window_find_name(data) == NULL)
 		window_set_name(active_win, data);
-	else {
+	else if (active_win->name == NULL ||
+		 strcmp(active_win->name, data) != 0) {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 				   TXT_WINDOW_NAME_NOT_UNIQUE, data);
 	}
