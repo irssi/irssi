@@ -209,6 +209,8 @@ static void alias_remove(const char *alias)
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_ALIAS_REMOVED, alias);
 		iconfig_set_str("aliases", alias, NULL);
+
+		signal_emit("aliases removed", 1, alias);
 	}
 }
 
@@ -230,6 +232,7 @@ static void cmd_alias(const char *data)
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_ALIAS_ADDED, alias);
 		iconfig_set_str("aliases", alias, value);
+		signal_emit("aliases added", 2, alias, value);
 	}
         cmd_params_free(free_arg);
 }
