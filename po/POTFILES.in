@@ -75,4 +75,3 @@ src/gui-text/gui-textwidget.c
 src/gui-text/gui-windows.c
 src/gui-text/irssi.c
 src/gui-text/screen.c
-src/gui-text/setup.c
