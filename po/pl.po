@@ -33,7 +33,7 @@ msgstr ""
 #. Display the text when we have already waited for a while
 #: src/irc-base/network.c:647
 msgid "Please wait, waiting for servers to close connections..\n"
-msgstr ""
+msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
 
 #: src/irc-base/args.c:53
 #, c-format
@@ -120,11 +120,11 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:45
 msgid "Connection lost to %_$1%_"
-msgstr ""
+msgstr "Stracone po³±czenie do %_$1%_"
 
 #: src/ui-common/ui-formats.c:46
 msgid "No PONG reply from server %_$1%_ in $2 seconds, disconnecting"
-msgstr ""
+msgstr "Brak odpowiedzi PONG z serwera %_$1%_ przez $2 sekund, roz³±czenie"
 
 #: src/ui-common/ui-formats.c:47
 msgid "Disconnected from %_$1%_ %K[%n$2%K]"
@@ -160,7 +160,7 @@ msgstr "Teraz rozmawiasz na kanale %_$1%_"
 #: src/ui-common/ui-formats.c:57
 msgid ""
 "Cannot join to channel %_$1%_ %K(%nYou have joined to too many channels%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nJeste¶ na zbyt du¿ej liczbie kana³ów%K)"
 
 #: src/ui-common/ui-formats.c:58
 msgid "Cannot join to channel %_$1%_ %K(%nChannel is full%K)"
@@ -394,11 +394,11 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:121
 msgid "%K[%rmsg%K(%R$1%K)]%n $2"
-msgstr ""
+msgstr "%K[%rmsg%K(%R$1%K)]%n $2"
 
 #: src/ui-common/ui-formats.c:122
 msgid "%K<%W$3%K>%n $2"
-msgstr ""
+msgstr "%K<%W$3%K>%n $2"
 
 #: src/ui-common/ui-formats.c:123
 msgid "%K[%rnotice%K(%R$1%K)]%n $2"
@@ -406,15 +406,15 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:124 src/ui-common/ui-formats.c:144
 msgid "%W * $1%n $2"
-msgstr ""
+msgstr "%W * $1%n $2"
 
 #: src/ui-common/ui-formats.c:125
 msgid "%K[%rctcp%K(%R$1%K)]%n $2 $3"
-msgstr ""
+msgstr "%K[%rctcp%K(%R$1%K)]%n $2 $3"
 
 #: src/ui-common/ui-formats.c:126
 msgid "%K[%rdcc%K(%R$1%K)]%n $2"
-msgstr ""
+msgstr "%K[%rdcc%K(%R$1%K)]%n $2"
 
 #. ----
 #: src/ui-common/ui-formats.c:129
@@ -423,60 +423,60 @@ msgstr "Otrzymane wiadomo¶ci"
 
 #: src/ui-common/ui-formats.c:131
 msgid "%K<%Y$1%K>%n $2"
-msgstr ""
+msgstr "%K<%Y$1%K>%n $2"
 
 #: src/ui-common/ui-formats.c:132
 msgid "%K<%Y$1%K:%c$2%K>%n $3"
-msgstr ""
+msgstr "%K<%Y$1%K:%c$2%K>%n $3"
 
 #: src/ui-common/ui-formats.c:133
 msgid "%K<%n$1%K>%n $2"
-msgstr ""
+msgstr "%K<%n$1%K>%n $2"
 
 #: src/ui-common/ui-formats.c:134
 msgid "%K<%n$1%K:%c$2%K>%n $3"
-msgstr ""
+msgstr "%K<%n$1%K:%c$2%K>%n $3"
 
 #: src/ui-common/ui-formats.c:135
 msgid "%K[%R$1%K(%r$2%K)]%n $3"
-msgstr ""
+msgstr "%K[%R$1%K(%r$2%K)]%n $3"
 
 #: src/ui-common/ui-formats.c:136
 msgid "%K<%R$1%K>%n $3"
-msgstr ""
+msgstr "%K<%R$1%K>%n $3"
 
 #: src/ui-common/ui-formats.c:137
 msgid "%K[%G$1%K(%gdcc%K)]%n $2"
-msgstr ""
+msgstr "%K[%G$1%K(%gdcc%K)]%n $2"
 
 #: src/ui-common/ui-formats.c:138
 #, c-format
 msgid "%g!$1%n $2"
-msgstr ""
+msgstr "%g!$1%n $2"
 
 #: src/ui-common/ui-formats.c:139
 msgid "%K-%M$1%K:%m$2%K-%n $3"
-msgstr ""
+msgstr "%K-%M$1%K:%m$2%K-%n $3"
 
 #: src/ui-common/ui-formats.c:140
 msgid "%K-%M$1%K(%m$2%K)-%n $3"
-msgstr ""
+msgstr "%K-%M$1%K(%m$2%K)-%n $3"
 
 #: src/ui-common/ui-formats.c:141
 msgid "%W (*dcc*) $1%n $2"
-msgstr ""
+msgstr "%W (*dcc*) $1%n $2"
 
 #: src/ui-common/ui-formats.c:142
 msgid "%W (*) $1%n $3"
-msgstr ""
+msgstr "%W (*) $1%n $3"
 
 #: src/ui-common/ui-formats.c:143
 msgid "%W * $1%n $3"
-msgstr ""
+msgstr "%W * $1%n $3"
 
 #: src/ui-common/ui-formats.c:145
 msgid "%W * $1%K:%c$2%n $3"
-msgstr ""
+msgstr "%W * $1%K:%c$2%n $3"
 
 #. ----
 #: src/ui-common/ui-formats.c:148
@@ -609,7 +609,7 @@ msgstr ""
 #. ----
 #: src/ui-common/ui-formats.c:183
 msgid "Other server events"
-msgstr ""
+msgstr "Inne zdarzenia serwera"
 
 #: src/ui-common/ui-formats.c:185
 msgid "Users online: %_$1"
@@ -662,11 +662,11 @@ msgstr "Zamkniêcie pliku logu %W$1"
 
 #: src/ui-common/ui-formats.c:200
 msgid "%W$1%K:%n $2"
-msgstr ""
+msgstr "%W$1%K:%n $2"
 
 #: src/ui-common/ui-formats.c:201
 msgid "     + %W$1%K:%n $2"
-msgstr ""
+msgstr "     + %W$1%K:%n $2"
 
 #. ----
 #: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:158
@@ -728,7 +728,7 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:219
 msgid "Error loading plugin %_$1%_: $2"
-msgstr ""
+msgstr "B³±d podczas ³±dowania wtyczki %_$1%_: $2"
 
 #: src/ui-common/ui-formats.c:220
 msgid "Plugin %_$1%_ is not irssi plugin"
@@ -756,7 +756,7 @@ msgstr "%_B³±d:%_ %s"
 
 #: src/gui-gnome/dialog-about.c:33
 msgid "IRC client, "
-msgstr ""
+msgstr "Klient IRC, "
 
 #: src/gui-gnome/dialog-channels.c:125 src/gui-gnome/setup-bg.c:123
 msgid "Select new default font"
@@ -901,7 +901,7 @@ msgstr "Nazwa pliku"
 
 #: src/gui-gnome/dialog-dcc.c:173
 msgid "Create dialog"
-msgstr ""
+msgstr "Utwórz dialog"
 
 #: src/gui-gnome/dialog-disconnect.c:126 src/gui-gnome/dialog-join.c:128
 msgid "Server Tag"
@@ -935,21 +935,27 @@ msgid ""
 "\n"
 "Stable version %s\n"
 "Unstable version %s"
-msgstr ""
+msgstr "Zosta³y og³oszone nowe\n"
+"wersje Irssi\n"
+"\n"
+"Stabilna wersja %s\n"
+"Niestabilan wrsja %s"
 
 #: src/gui-gnome/dialog-irssibot.c:148
 #, c-format
 msgid ""
 "New stable irssi version %s\n"
 "has been released."
-msgstr ""
+msgstr "Og³oszona zosta³a nowa\n"
+"stabilna wersja irssi %s."
 
 #: src/gui-gnome/dialog-irssibot.c:150
 #, c-format
 msgid ""
 "New unstable irssi version %s\n"
 "has been released."
-msgstr ""
+msgstr "Og³oszona zosta³a nowa\n"
+"niestabilna wersja irssi %s."
 
 #: src/gui-gnome/dialog-irssibot.c:166
 msgid "Get stable Irssi via DCC"
@@ -1681,7 +1687,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:114
 msgid "_Invisible"
-msgstr "_Niwwidoczny"
+msgstr "_Niewidoczny"
 
 #: src/gui-gnome/gui-menu-commands.c:116
 msgid "Receive _Wallops"
@@ -2296,14 +2302,12 @@ msgid ""
 msgstr ""
 
 #: src/gui-gnome/setup-ircnets.c:199
-#, fuzzy
 msgid "Username"
-msgstr "Zmieñ nazwê"
+msgstr "Nazwa u¿ytkowanika"
 
 #: src/gui-gnome/setup-ircnets.c:201
-#, fuzzy
 msgid "Realname"
-msgstr "Zmieñ nazwê"
+msgstr "Prawdzine nazwisko"
 
 #: src/gui-gnome/setup-ircnets.c:209
 msgid "Max kicks per cmd"
@@ -2549,9 +2553,8 @@ msgid "CTCP VERSION reply"
 msgstr ""
 
 #: src/gui-gnome/setup-misc.c:134
-#, fuzzy
 msgid "Awaylog file name"
-msgstr "Nazwa pliku logów:"
+msgstr ""
 
 #: src/gui-gnome/setup-misc.c:137
 msgid "Awaylog logging level"
