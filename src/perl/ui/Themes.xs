@@ -223,3 +223,31 @@ PPCODE:
 	}
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
+
+char *
+theme_get_format(theme, module, formatnum)
+	Irssi::UI::Theme theme
+	char *module
+	int formatnum
+PREINIT:
+	MODULE_THEME_REC *modtheme;
+	FORMAT_REC *formats;
+	char *ret;
+CODE:
+	formats = g_hash_table_lookup(default_formats, module);
+	if (formats == NULL)
+		croak("Unknown module: %s", module);
+
+	modtheme = g_hash_table_lookup(theme->modules, module);
+	if (modtheme != NULL && formatnum >= modtheme->count) {
+		croak("Format number out of range (%s: %d < %d)",
+		      module, formatnum, modtheme->count);
+	}
+
+	RETVAL = modtheme == NULL ? NULL : modtheme->formats[formatnum];
+	if (RETVAL == NULL) {
+		formats = g_hash_table_lookup(default_formats, module);
+		RETVAL = formats == NULL ? NULL : formats[formatnum].def;
+	}
+OUTPUT:
+	RETVAL
