@@ -2,10 +2,12 @@
  --------------------
 
 First you'll need to have Perl support on. By default irssi compiles
-Perl as a module, so /LOAD perl probably helps. After that you can run
-scripts with /RUN script (you don't need to give the .pl extension). If
-/RUN complains about "unknown command", you don't have Perl module
-loaded, or maybe Perl support wasn't compiled at all.
+Perl as a module, so /LOAD perl probably helps. If you want to do this
+automatically at startup put the "/LOAD perl" to ~/.irssi/startup file.
+After that you can run scripts with /RUN script (you don't need to give
+the .pl extension). If /RUN complains about "unknown command", you
+don't have Perl module loaded, or maybe Perl support wasn't compiled at
+all.
 
 Place new scripts to ~/.irssi/scripts/ or /usr/local/lib/irssi/scripts/
 directory. Scripts in ~/.irssi/scripts/autorun/ directory are
