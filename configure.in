@@ -450,6 +450,11 @@ if test "x$want_textui" = "xyes"; then
 			want_terminfo=yes
        			AC_CHECK_FUNC(setupterm,, want_termcap=yes)
 		fi
+		if test "x$want_terminfo" = "xyes"; then
+			AC_CHECK_LIB(curses, setupterm,, [
+				want_termcap=yes
+			])
+		fi
 	else
 		AC_CHECK_LIB(tinfo, setupterm, [
 		  LIBS="$LIBS -ltinfo"
