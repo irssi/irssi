@@ -71,6 +71,16 @@ MODULE = Irssi::UI  PACKAGE = Irssi::UI
 PROTOTYPES: ENABLE
 
 void
+processes()
+PREINIT:
+	GSList *tmp;
+PPCODE:
+	for (tmp = processes; tmp != NULL; tmp = tmp->next) {
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::UI::Process")));
+	}
+
+
+void
 init()
 CODE:
 	if (initialized) return;

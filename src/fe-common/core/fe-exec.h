@@ -40,6 +40,8 @@ struct PROCESS_REC {
 	unsigned int silent:1; /* don't print "process exited with level xx" */
 };
 
+extern GSList *processes;
+
 void fe_exec_init(void);
 void fe_exec_deinit(void);
 

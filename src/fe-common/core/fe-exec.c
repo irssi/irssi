@@ -35,7 +35,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-static GSList *processes;
+GSList *processes;
 static int signal_exec_input;
 
 static void exec_wi_destroy(EXEC_WI_REC *rec)
