@@ -72,7 +72,7 @@ static void cmd_script_load(const char *data)
         if (*path == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	fname = perl_script_get_path(data);
+	fname = perl_script_get_path(path);
 	if (fname == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
                             TXT_SCRIPT_NOT_FOUND, data);
@@ -100,7 +100,7 @@ static void cmd_script_unload(const char *data)
         if (*name == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	script = perl_script_find(data);
+	script = perl_script_find(name);
 	if (script == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
                             TXT_SCRIPT_NOT_LOADED, data);
