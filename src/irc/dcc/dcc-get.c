@@ -176,7 +176,7 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 {
 	struct stat statbuf;
 	char *fname, *tempfname;
-        int ret, temphandle, old_umask;
+        int ret, ret_errno, temphandle, old_umask;
 
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
@@ -211,14 +211,18 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 		   if download_path is in some global temp directory */
 		tempfname = g_strconcat(dcc->file, ".XXXXXX", NULL);
 
-                old_umask = umask(066);
+                old_umask = umask(0077);
 		temphandle = mkstemp(tempfname);
-                umask(old_umask);
+		umask(old_umask);
 
 		if (temphandle == -1)
 			ret = -1;
-		else {
+		else
+			ret = fchmod(temphandle, dcc_file_create_mode);
+
+		if (ret != -1) {
 			ret = link(tempfname, dcc->file);
+
 			if (ret == -1 && errno == EPERM) {
 				/* hard links aren't supported - some people
 				   want to download stuff to FAT/NTFS/etc
@@ -229,17 +233,17 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 
 		/* if ret = 0, we're the file owner now */
 		dcc->fhandle = ret == -1 ? -1 :
-			open(dcc->file, O_WRONLY | O_TRUNC,
-			     dcc_file_create_mode);
+			open(dcc->file, O_WRONLY | O_TRUNC);
 
-                /* close/remove the temp file */
+		/* close/remove the temp file */
+		ret_errno = errno;
 		close(temphandle);
 		unlink(tempfname);
 		g_free(tempfname);
 
 		if (dcc->fhandle == -1) {
-			signal_emit("dcc error file create", 2,
-				    dcc, dcc->file);
+			signal_emit("dcc error file create", 3,
+				    dcc, dcc->file, g_strerror(ret_errno));
 			dcc_destroy(DCC(dcc));
 			return;
 		}

@@ -60,7 +60,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_unknown_type", "{dcc DCC unknown type {hilight $0}}", 1, { 0 } },
 	{ "dcc_invalid_ctcp", "{dcc DCC received CTCP {hilight $0} with invalid parameters from {nick $1}}", 4, { 0, 0, 0, 0 } },
 	{ "dcc_connect_error", "{dcc DCC can't connect to {hilight $0} port {hilight $1}}", 2, { 0, 1 } },
-	{ "dcc_cant_create", "{dcc DCC can't create file {dccfile $0}}", 1, { 0 } },
+	{ "dcc_cant_create", "{dcc DCC can't create file {dccfile $0}: $1}", 2, { 0, 0 } },
 	{ "dcc_rejected", "{dcc DCC $0 was rejected by {nick $1} [{hilight $2}]}", 3, { 0, 0, 0 } },
 	{ "dcc_request_send", "{dcc DCC $0 request sent to {nick $1}: $2", 3, { 0, 0, 0 } },
 	{ "dcc_close", "{dcc DCC $0 close for {nick $1} [{hilight $2}]}", 3, { 0, 0, 0 } },

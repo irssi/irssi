@@ -72,9 +72,11 @@ static void dcc_closed(GET_DCC_REC *dcc)
 	}
 }
 
-static void dcc_error_file_create(GET_DCC_REC *dcc, const char *fname)
+static void dcc_error_file_create(GET_DCC_REC *dcc, const char *fname,
+				  const char *error)
 {
-	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CANT_CREATE, fname);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CANT_CREATE,
+		    fname, error);
 }
 
 
