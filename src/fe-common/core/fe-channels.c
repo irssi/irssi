@@ -132,21 +132,12 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	if (channel == NULL)
 		return;
 
+	/* already joined to channel, set it active */
         window = window_item_window(channel);
+	if (window != active_win)
+		window_set_active(window);
 
-	if (window == active_win) {
-		/* channel is in active window, set it active */
-		window_item_set_active(active_win,
-				       (WI_ITEM_REC *) channel);
-	} else {
-		/* notify user how to move the channel to active
-		   window. this was used to be done automatically
-		   but it just confused everyone who did it
-		   accidentally */
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_CHANNEL_MOVE_NOTIFY, channel->name,
-				   window->refnum);
-	}
+	window_item_set_active(active_win, (WI_ITEM_REC *) channel);
 }
 
 static void cmd_wjoin_post(const char *data)
