@@ -316,6 +316,9 @@ static void signal_remove_module(void *signal, SIGNAL_REC *rec, const char *modu
 	signal_id = GPOINTER_TO_INT(signal);
 
 	for (list = 0; list < SIGNAL_LISTS; list++) {
+		if (rec->modulelist[list] == NULL)
+			continue;
+
 		for (index = 0; index < rec->modulelist[list]->len; index++) {
 			if (g_strcasecmp(g_ptr_array_index(rec->modulelist[list], index), module) == 0)
 				signal_remove_from_list(rec, signal_id, list, index);
