@@ -290,7 +290,7 @@ void log_file_write(const char *server_tag, const char *item, int level,
 
 	if (!found && !no_fallbacks && fallbacks != NULL) {
 		/* not found from any items, so write it to all main logs */
-		tmpstr = (level & MSGLEVEL_PUBLIC) ?
+		tmpstr = (level & MSGLEVEL_PUBLIC) && item != NULL ?
 			g_strconcat(item, ": ", str, NULL) :
 			g_strdup(str);
 
