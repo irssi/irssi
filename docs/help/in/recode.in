@@ -27,15 +27,15 @@ Examples:
 /SET recode_fallback <charset> 
 to set the fallback charset for incoming events
 
-This charset will be used when a conversion to 
-the defined charset(/recode add) fails or if the 
-charset for the target(query or channel) is not set.
+This charset is used if your term_charset is UTF-8
+and the conversion for the target is not set and
+the text is not UTF-8.
 
 /SET recode_out_default_charset <charset> 
 to set the global outgoing charset
 
-When it's set to a charset it will be used instead 
-of the charset you have defined with /recode add
+When it's set to a charset it will be used
+if no conversion for the target is set.
 
 /SET recode_transliterate ON 
 to enable the global transliteration.

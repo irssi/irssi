@@ -175,7 +175,9 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
 #if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-	settings_add_str("lookandfeel", "term_charset", nl_langinfo(CODESET));
+	settings_add_str("lookandfeel", "term_charset", 
+			 *nl_langinfo(CODESET) != '\0' ? 
+			 nl_langinfo(CODESET) : "ISO8859-1");
 #else
 	settings_add_str("lookandfeel", "term_charset", "ISO8859-1");
 #endif

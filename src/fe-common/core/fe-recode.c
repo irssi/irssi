@@ -165,7 +165,9 @@ static void read_settings(void)
 	term_charset = settings_get_str("term_charset");
 	if (!is_valid_charset(term_charset)) {
 #if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-		settings_set_str("term_charset", is_valid_charset(old_term_charset) ? old_term_charset : nl_langinfo(CODESET));
+		settings_set_str("term_charset", is_valid_charset(old_term_charset) ? 
+				 old_term_charset : *nl_langinfo(CODESET) != '\0' ?
+				 nl_langinfo(CODESET) : "ISO8859-1");
 #else
 		settings_set_str("term_charset", is_valid_charset(old_term_charset) ? old_term_charset : "ISO8859-1");
 #endif		
