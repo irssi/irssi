@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "signals.h"
+#include "settings.h"
 #include "misc.h"
 
 #include "irc-servers.h"
@@ -74,6 +75,9 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 
 	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(channel != NULL);
+
+	if (!settings_get_bool("channels_rejoin_unavailable"))
+		return;
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL || chanrec->joined) return;
@@ -250,6 +254,8 @@ static void cmd_rmrejoins(const char *data, IRC_SERVER_REC *server)
 
 void channel_rejoin_init(void)
 {
+	settings_add_bool("servers", "channels_rejoin_unavailable", TRUE);
+
 	rejoin_tag = g_timeout_add(REJOIN_TIMEOUT,
 				   (GSourceFunc) sig_rejoin, NULL);
 
