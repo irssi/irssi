@@ -84,6 +84,9 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 #else
 	delwin(window->curses_win);
 	create_curses_window(window);
+
+	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
+				   window->curses_win);
 #endif
 #endif
 
@@ -234,12 +237,12 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 {
 	g_return_if_fail(window != NULL);
 
+	mainwindows = g_slist_remove(mainwindows, window);
+	signal_emit("mainwindow destroyed", 1, window);
+
 #ifdef USE_CURSES_WINDOWS
 	delwin(window->curses_win);
 #endif
-
-	mainwindows = g_slist_remove(mainwindows, window);
-	signal_emit("mainwindow destroyed", 1, window);
 
 	if (!quitting && mainwindows != NULL) {
 		gui_windows_remove_parent(window);
@@ -248,6 +251,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 		mainwindows_redraw();
 		statusbar_redraw(NULL);
 	}
+
 	g_free(window);
 
 	if (active_mainwin == window) active_mainwin = NULL;
