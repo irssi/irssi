@@ -239,8 +239,8 @@ void term_set_color(TERM_WINDOW *window, int col)
 	if ((col & 0xf0) >> 4 != last_bg &&
 	    ((col & 0xf0) != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
-			terminfo_set_bg(last_bg);
 			last_bg = (col & 0xf0) >> 4;
+			terminfo_set_bg(last_bg);
 		}
 	}
 
