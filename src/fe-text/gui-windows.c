@@ -981,7 +981,8 @@ static char *gui_window_line_get_format(WINDOW_REC *window, LINE_REC *line,
 	if (formatnum == -1)
 		ret = NULL;
 	else {
-		argcount = 0;
+                argcount = 0;
+                memset(args, 0, sizeof(args));
 		while (*text != '\0' || text[1] != LINE_CMD_EOL) {
 			args[argcount] = line_read_format(&text);
 			if (raw != NULL) {

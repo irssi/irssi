@@ -59,7 +59,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "channel_rejoin", "Channel {channel $0} is temporarily unavailable, this is normally because of netsplits. Irssi will now automatically try to rejoin back to this channel until the join is successful. Use /RMREJOINS command if you wish to abort this.", 1, { 0 } },
 	{ "inviting", "Inviting {nick $0} to {channel $1}", 2, { 0, 0 } },
 	{ "not_invited", "You have not been invited to a channel!", 0 },
-	{ "names", "{names_users Users {names_channel $0}}$1", 2, { 0, 0 } },
+	{ "names", "{names_users Users {names_channel $0}} $1", 2, { 0, 0 } },
         { "names_nick", "{names_nick $0 $1}", 2, { 0, 0 } },
         { "endofnames", "{channel $0}: Total of {hilight $1} nicks {comment {hilight $2} ops, {hilight $3} voices, {hilight $4} normal}", 5, { 0, 1, 1, 1, 1 } },
 	{ "channel_created", "Channel {channelhilight $0} created $1", 2, { 0, 0 } },
