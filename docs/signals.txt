@@ -69,7 +69,7 @@ pidwait.c:
 queries.c:
  "query created", QUERY_REC, int automatic
  "query destroyed", QUERY_REC
- "query nick changed", QUERY_REC
+ "query nick changed", QUERY_REC, char *orignick
  "query address changed", QUERY_REC
  "query server changed", QUERY_REC, SERVER_REC
 
