@@ -44,6 +44,7 @@ void irc_proxy_init(void)
 	}
 
 	proxy_listen_init();
+	settings_check();
         module_register("proxy", "irc");
 }
 

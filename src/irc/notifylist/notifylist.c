@@ -21,6 +21,7 @@
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "irc-channels.h"
@@ -354,6 +355,7 @@ void irc_notifylist_init(void)
 	signal_add("channel wholist", (SIGNAL_FUNC) sig_channel_wholist);
 	signal_add("setup reread", (SIGNAL_FUNC) notifylist_read_config);
 
+	settings_check();
 	module_register("notifylist", "irc");
 }
 

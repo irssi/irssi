@@ -557,6 +557,7 @@ void irc_dcc_init(void)
 	dcc_autoget_init();
 	dcc_server_init();
 
+	settings_check();
 	module_register("dcc", "irc");
 }
 

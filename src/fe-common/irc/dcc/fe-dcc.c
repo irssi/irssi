@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "network.h"
 #include "levels.h"
+#include "settings.h"
 
 #include "dcc-chat.h"
 #include "dcc-file.h"
@@ -169,6 +170,7 @@ void fe_irc_dcc_init(void)
 	command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
 
 	theme_register(fecommon_irc_dcc_formats);
+	settings_check();
 	module_register("dcc", "fe-irc");
 }
 

@@ -251,6 +251,7 @@ void fe_irc_notifylist_init(void)
 
 	command_set_options("notify", "list");
 
+	settings_check();
 	module_register("notifylist", "fe-irc");
 }
 

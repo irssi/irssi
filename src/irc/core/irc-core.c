@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "chat-protocols.h"
+#include "settings.h"
 
 #include "irc-servers.h"
 #include "irc-chatnets.h"
@@ -117,6 +118,7 @@ void irc_core_init(void)
 	netsplit_init();
 	irc_expandos_init();
 
+	settings_check();
 	module_register("core", "irc");
 }
 

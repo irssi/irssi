@@ -315,6 +315,7 @@ void irc_flood_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) flood_deinit_server);
 
 	autoignore_init();
+	settings_check();
 	module_register("flood", "irc");
 }
 
