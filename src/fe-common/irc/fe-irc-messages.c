@@ -23,6 +23,7 @@
 #include "levels.h"
 #include "channels.h"
 #include "ignore.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "irc-channels.h"
@@ -95,17 +96,23 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
                                    const char *target)
 {
 	void *item;
+        char *freemsg = NULL;
 
         if (ischannel(*target))
 		item = irc_channel_find(server, target);
 	else
 		item = irc_query_find(server, target);
 
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(item, msg);
+
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    item != NULL ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
 		    server->nick, msg, target);
+
+        g_free_not_null(freemsg);
 }
 
 static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
@@ -113,6 +120,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	void *item;
+        char *freemsg = NULL;
 	int level;
 
 	level = MSGLEVEL_ACTIONS |
@@ -121,10 +129,16 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (ignore_check(SERVER(server), nick, address, target, msg, level))
 		return;
 
+	if (ischannel(*target))
+		item = irc_channel_find(server, target);
+        else
+		item = privmsg_get_query(SERVER(server), nick, FALSE, level);
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(item, msg);
+
 	if (ischannel(*target)) {
 		/* channel action */
-		item = irc_channel_find(server, target);
-
 		if (window_item_is_active(item)) {
 			/* message to active channel in window */
 			printformat(server, target, level,
@@ -137,13 +151,13 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 		}
 	} else {
 		/* private action */
-		item = privmsg_get_query(SERVER(server), nick, FALSE,
-					 MSGLEVEL_MSGS);
 		printformat(server, nick, MSGLEVEL_ACTIONS | MSGLEVEL_MSGS,
 			    item == NULL ? IRCTXT_ACTION_PRIVATE :
 			    IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, address == NULL ? "" : address, msg);
 	}
+
+        g_free_not_null(freemsg);
 }
 
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
