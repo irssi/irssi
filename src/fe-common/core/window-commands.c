@@ -173,8 +173,8 @@ static void cmd_window_level(const char *data)
 
 	level = active_win->level == 0 ? g_strdup("NONE") :
 		bits2level(active_win->level);
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Window level is now %s", level);
+	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+			   TXT_WINDOW_LEVEL, level);
 	g_free(level);
 }
 
@@ -186,12 +186,16 @@ static void cmd_window_server(const char *data)
 	g_return_if_fail(data != NULL);
 
 	server = server_find_tag(data);
-	if (server == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNKNOWN_SERVER_TAG, data);
-	else if (active_win->active == NULL) {
+	if (server == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_UNKNOWN_SERVER_TAG, data);
+	} else if (active_win->active == NULL) {
 		window_change_server(active_win, server);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SERVER_CHANGED, server->tag, server->connrec->address,
-			    server->connrec->chatnet == NULL ? "" : server->connrec->chatnet);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_SERVER_CHANGED,
+				   server->tag, server->connrec->address,
+				   server->connrec->chatnet == NULL ? "" :
+				   server->connrec->chatnet);
 	}
 }
 
@@ -257,8 +261,8 @@ static void cmd_window_number(const char *data)
 
 	num = atoi(refnum);
 	if (num < 1) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_REFNUM_TOO_LOW);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_REFNUM_TOO_LOW);
 	} else {
 		window_set_refnum(active_win, num);
 		active_win->sticky_refnum =
@@ -400,11 +404,11 @@ static void cmd_window_theme(const char *data)
 
 	active_win->theme = theme_load(data);
 	if (active_win->theme != NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_WINDOW_THEME_CHANGED, data);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_THEME_CHANGED, data);
 	} else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_THEME_NOT_FOUND, data);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_THEME_NOT_FOUND, data);
 	}
 }
 
