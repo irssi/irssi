@@ -385,16 +385,19 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 static void event_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
+        const char *chatnet;
 
-	if (!IS_IRC_SERVER(server) || server->connrec->chatnet == NULL)
+	if (!IS_IRC_SERVER(server))
 		return;
 
+        chatnet = server->connrec->chatnet;
 	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 		CLIENT_REC *rec = tmp->data;
 
 		if (rec->connected && rec->server == NULL &&
-		    (g_strcasecmp(server->connrec->chatnet, rec->listen->ircnet) == 0 ||
-		     strcmp(rec->listen->ircnet, "*") == 0)) {
+		    (strcmp(rec->listen->ircnet, "*") == 0 ||
+		     (chatnet != NULL &&
+		      g_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
