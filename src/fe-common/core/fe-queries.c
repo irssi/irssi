@@ -30,6 +30,7 @@
 #include "servers.h"
 #include "queries.h"
 
+#include "fe-core-commands.h"
 #include "fe-windows.h"
 #include "window-items.h"
 #include "printtext.h"
@@ -46,7 +47,8 @@ QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick,
         g_return_val_if_fail(nick != NULL, NULL);
 
 	query = query_find(server, nick);
-	if (query == NULL && (querycreate_level & level) != 0 &&
+	if (query == NULL && !command_hide_output &&
+	    (querycreate_level & level) != 0 &&
 	    (!own || settings_get_bool("autocreate_own_query"))) {
 		query = CHAT_PROTOCOL(server)->
 			query_create(server->tag, nick, TRUE);

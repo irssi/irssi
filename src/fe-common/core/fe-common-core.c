@@ -31,6 +31,7 @@
 #include "servers-setup.h"
 
 #include "autorun.h"
+#include "fe-core-commands.h"
 #include "fe-queries.h"
 #include "hilight-text.h"
 #include "command-history.h"
@@ -90,9 +91,6 @@ void fe_settings_deinit(void);
 
 void window_commands_init(void);
 void window_commands_deinit(void);
-
-void fe_core_commands_init(void);
-void fe_core_commands_deinit(void);
 
 static void print_version(void)
 {

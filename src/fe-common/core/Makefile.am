@@ -45,6 +45,7 @@ noinst_HEADERS = \
 	completion.h \
 	fe-channels.h \
 	fe-common-core.h \
+	fe-core-commands.h \
 	fe-exec.h \
 	fe-messages.h \
 	fe-queries.h \
