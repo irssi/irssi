@@ -165,8 +165,10 @@ static void cmd_window_level(const char *data)
 
 	window_set_level(active_win, combine_level(active_win->level, data));
 
-	level = bits2level(active_win->level);
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Window level is now %s", level);
+	level = active_win->level == 0 ? g_strdup("NONE") :
+		bits2level(active_win->level);
+	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Window level is now %s", level);
 	g_free(level);
 }
 

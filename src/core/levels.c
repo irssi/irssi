@@ -158,7 +158,9 @@ int combine_level(int dest, const char *src)
                 g_strup(itemname);
 		itemlevel = level_get(itemname);
 
-		if (**item == '-')
+		if (strcmp(itemname, "NONE") == 0)
+                        dest = 0;
+		else if (**item == '-')
 			dest &= ~(itemlevel);
 		else
 			dest |= itemlevel;
