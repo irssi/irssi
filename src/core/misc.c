@@ -394,6 +394,11 @@ int mkpath(const char *path, int mode)
 	g_return_val_if_fail(path != NULL, -1);
 
 	p = g_path_skip_root((char *) path);
+	if (p == NULL) {
+		/* not a full path, maybe not what we wanted
+		   but continue anyway.. */
+                p = path;
+	}
 	for (;;) {
 		if (*p != G_DIR_SEPARATOR && *p != '\0') {
 			p++;
