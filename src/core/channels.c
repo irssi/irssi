@@ -218,6 +218,9 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 	for (bot = bots; *bot != NULL; bot++) {
 		const char *botnick = *bot;
 
+		if (*botnick == '\0')
+                        continue;
+
 		nick = nicklist_find_mask(channel,
 					  channel->server->isnickflag(*botnick) ?
 					  botnick+1 : botnick);
