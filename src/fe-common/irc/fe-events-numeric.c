@@ -345,12 +345,19 @@ static void event_whois_server(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *params, *nick, *type;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_OPER, nick);
+	params = event_get_params(data, 3, NULL, &nick, &type);
+	if (strlen(type) > 5) {
+		type += 5;
+		if (*type == ' ') type++;
+	}
+
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    *type == '\0' ? IRCTXT_WHOIS_OPER :
+		    IRCTXT_WHOIS_OPER_TYPE, nick, type);
 	g_free(params);
 }
 
@@ -362,6 +369,59 @@ static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 2, NULL, &nick);
 	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_REGISTERED, nick);
+	g_free(params);
+}
+
+static void event_whois_help(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &nick);
+	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_HELP, nick);
+	g_free(params);
+}
+
+static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *modes;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 6, NULL, &nick,
+				  NULL, NULL, NULL, &modes);
+
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_MODES, nick, modes);
+	g_free(params);
+}
+
+static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *str, *from;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &nick, &str);
+
+	from = strstr(str, "from ");
+	if (from == NULL) from = str; else from += 5;
+
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_REALHOST, nick, from);
+	g_free(params);
+}
+
+static void event_whois_special(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *str;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &nick, &str);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_SPECIAL, nick, str);
 	g_free(params);
 }
 
@@ -639,6 +699,10 @@ void fe_events_numeric_init(void)
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_add("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("event 307", (SIGNAL_FUNC) event_whois_registered);
+	signal_add("event 310", (SIGNAL_FUNC) event_whois_help);
+	signal_add("event 379", (SIGNAL_FUNC) event_whois_modes);
+	signal_add("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_add("event 320", (SIGNAL_FUNC) event_whois_special);
 	signal_add("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
@@ -703,6 +767,10 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_remove("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("event 307", (SIGNAL_FUNC) event_whois_registered);
+	signal_remove("event 310", (SIGNAL_FUNC) event_whois_help);
+	signal_remove("event 379", (SIGNAL_FUNC) event_whois_modes);
+	signal_remove("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_remove("event 320", (SIGNAL_FUNC) event_whois_special);
 	signal_remove("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_remove("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);
