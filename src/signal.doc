@@ -25,6 +25,7 @@ channels.c:
  "channel topic changed", CHANNEL_REC
 
  "channel query", CHANNEL_REC
+ "channel wholist", CHANNEL_REC
  "channel sync", CHANNEL_REC
 
 ctcp.c:
