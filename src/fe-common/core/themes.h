@@ -11,6 +11,8 @@ typedef struct {
 } MODULE_THEME_REC;
 
 typedef struct {
+	int refcount;
+
 	char *path;
 	char *name;
         time_t last_modify;
