@@ -135,7 +135,7 @@ int sin_get_port(union sockaddr_union *so)
 }
 
 /* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip, int *error)
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
 	IPADDR ip4, ip6, *ip;
         int family;
@@ -143,11 +143,8 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip, int *error)
 	g_return_val_if_fail(addr != NULL, NULL);
 
         family = my_ip == NULL ? 0 : my_ip->family;
-	if (net_gethostbyname(addr, &ip4, &ip6) == -1) {
-		if (error != NULL)
-			*error = errno;
+	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
 		return NULL;
-	}
 
 	if (my_ip == NULL) {
                 /* prefer IPv4 addresses */
@@ -170,11 +167,11 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip, int *error)
 		}
 	}
 
-	return net_connect_ip(ip, port, my_ip, error);
+	return net_connect_ip(ip, port, my_ip);
 }
 
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error)
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -189,11 +186,8 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error)
         so.sin.sin_family = ip->family;
 	handle = socket(ip->family, SOCK_STREAM, 0);
 
-	if (handle == -1) {
-		if (error != NULL)
-			*error = errno;
+	if (handle == -1)
 		return NULL;
-	}
 
 	/* set socket options */
 #ifndef WIN32
@@ -225,9 +219,9 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error)
 	if (ret < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
 #endif
 	{
-		if (error != NULL)
-			*error = errno;
+		int old_errno = errno;
 		close(handle);
+		errno = old_errno;
 		return NULL;
 	}
 
@@ -235,18 +229,15 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error)
 }
 
 /* Connect to named UNIX socket */
-GIOChannel *net_connect_unix(const char *path, int *error)
+GIOChannel *net_connect_unix(const char *path)
 {
 	struct sockaddr_un sa;
 	int handle, ret;
 
 	/* create the socket */
 	handle = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (handle == -1) {
-		if (error != NULL)
-			*error = errno;
+	if (handle == -1)
 		return NULL;
-	}
 
 	/* set socket options */
 #ifndef WIN32
@@ -261,9 +252,9 @@ GIOChannel *net_connect_unix(const char *path, int *error)
 
 	ret = connect(handle, (struct sockaddr *) &sa, sizeof(sa));
 	if (ret < 0 && errno != EINPROGRESS) {
-		if (error != NULL)
-			*error = errno;
+		int old_errno = errno;
 		close(handle);
+		errno = old_errno;
 		return NULL;
 	}
 

@@ -166,7 +166,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 {
 	GIOChannel *handle;
         IPADDR *own_ip;
-        int port, error;
+        int port;
 
 	g_return_if_fail(ip != NULL || unix_socket != NULL);
 
@@ -178,15 +178,15 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			 server->connrec->own_ip4);
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
-		handle = net_connect_ip(ip, port, own_ip, &error);
+		handle = net_connect_ip(ip, port, own_ip);
 	} else {
-		handle = net_connect_unix(unix_socket, &error);
+		handle = net_connect_unix(unix_socket);
 	}
 
 	if (handle == NULL) {
 		/* failed */
 		server->connection_lost = TRUE;
-		server_connect_failed(server, g_strerror(error));
+		server_connect_failed(server, g_strerror(errno));
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
 		server->connect_tag =
