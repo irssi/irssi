@@ -282,6 +282,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 	HILIGHT_REC *hilight;
 	char *color, *newstr;
 	int old_level, hilight_start, hilight_end, hilight_len;
+	int nick_match;
 
 	if (dest->level & MSGLEVEL_NOHILIGHT)
 		return;
@@ -294,11 +295,15 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 	if (hilight == NULL)
 		return;
 
-	/* update the level / hilight info */
-        old_level = dest->level;
-	hilight_update_text_dest(dest, hilight);
+	nick_match = hilight->nick && (dest->level & (MSGLEVEL_PUBLIC|MSGLEVEL_ACTIONS)) == MSGLEVEL_PUBLIC;
 
-	if (hilight->nick && (dest->level & (MSGLEVEL_PUBLIC|MSGLEVEL_ACTIONS)) == MSGLEVEL_PUBLIC)
+	if (!nick_match || (dest->level & MSGLEVEL_HILIGHT)) {
+		/* update the level / hilight info */
+	        old_level = dest->level;
+		hilight_update_text_dest(dest, hilight);
+	}
+
+	if (nick_match)
 		return; /* fe-messages.c should have taken care of this */
 
 	if (old_level & MSGLEVEL_HILIGHT) {
