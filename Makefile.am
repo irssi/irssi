@@ -1,8 +1,8 @@
 # create default-config.h
 config.h: default-config.h
 
-default-config.h: config
-	./file2header.sh config > default-config.h
+default-config.h: $(srcdir)/config
+	$(srcdir)/file2header.sh $(srcdir)/config > default-config.h
 
 ## if <internationalization support>
 #SUBDIRS = po intl macros support # <your subdirs here>
