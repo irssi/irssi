@@ -275,7 +275,6 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 		}
 	}
 }
-
 void format_create_dest(TEXT_DEST_REC *dest,
 			void *server, const char *target,
 			int level, WINDOW_REC *window)
@@ -296,16 +295,50 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
 }
+#ifdef HAVE_GLIB2
+static gboolean term_is_utf8 (void)
+{
+	const char *charset;
 
+	charset = settings_get_str("term_charset");
+	if (*charset)
+	return ! g_strcasecmp(charset, "utf-8");
+
+	return g_get_charset(&charset);
+}
+
+static int advance (char const **str, gboolean utf8)
+{
+	if (utf8) {
+		gunichar c;
+
+		c = g_utf8_get_char(*str);
+		*str = g_utf8_next_char(*str);
+
+		return utf8_width(c);
+	} else {
+		*str += 1;
+
+		return 1;
+	}
+}
+#endif
 /* Return length of text part in string (ie. without % codes) */
 int format_get_length(const char *str)
 {
-        GString *tmp;
+	GString *tmp;
 	int len;
+#ifdef HAVE_GLIB2
+	gboolean utf8;
+#endif
 
-        g_return_val_if_fail(str != NULL, 0);
+	g_return_val_if_fail(str != NULL, 0);
 
-        tmp = g_string_new(NULL);
+#ifdef HAVE_GLIB2
+	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
+#endif
+
+	tmp = g_string_new(NULL);
 	len = 0;
 	while (*str != '\0') {
 		if (*str == '%' && str[1] != '\0') {
@@ -320,9 +353,12 @@ int format_get_length(const char *str)
 			if (*str != '%')
 				len++;
 		}
-
-                len++;
+#ifdef HAVE_GLIB2
+		len += advance(&str, utf8);
+#else
+          len++;
 		str++;
+#endif
 	}
 
 	g_string_free(tmp, TRUE);
@@ -336,12 +372,18 @@ int format_real_length(const char *str, int len)
 {
 	GString *tmp;
 	const char *start;
+#ifdef HAVE_GLIB2
+	gboolean utf8;
+#endif
+	g_return_val_if_fail(str != NULL, 0);
+	g_return_val_if_fail(len >= 0, 0);
 
-        g_return_val_if_fail(str != NULL, 0);
-        g_return_val_if_fail(len >= 0, 0);
+#ifdef HAVE_GLIB2
+	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
+#endif
 
-        start = str;
-        tmp = g_string_new(NULL);
+	start = str;
+	tmp = g_string_new(NULL);
 	while (*str != '\0' && len > 0) {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
@@ -358,8 +400,12 @@ int format_real_length(const char *str, int len)
 			}
 		}
 
-                len--;
+#ifdef HAVE_GLIB2
+		len -= advance(&str, utf8);
+#else
+          len--;
 		str++;
+#endif
 	}
 
 	g_string_free(tmp, TRUE);
@@ -883,7 +929,7 @@ char *strip_codes(const char *input)
         out = str = g_strdup(input);
         for (p = input; *p != '\0'; p++) {
                 if (*p == 3) {
-                        p++;  
+                        p++;
 
                         /* mirc color */
                         get_mirc_color(&p, NULL, NULL);
@@ -909,11 +955,11 @@ char *strip_codes(const char *input)
 			p = get_ansi_color(current_theme, p, NULL, NULL, NULL);
 			p--;
 		} else if (!IS_COLOR_CODE(*p))
-                        *out++ = *p;   
+                        *out++ = *p;
         }
 
         *out = '\0';
-        return str; 
+        return str;
 }
 
 /* send a fully parsed text string for GUI to print */

@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "channels-setup.h"
 #include "settings.h"
+#include "recode.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -136,13 +137,16 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 				 time_t settime)
 {
 	CHANNEL_REC *chanrec;
-
+	char *recoded = NULL;
+	
 	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec == NULL) return;
-
+	/* the topic may be send out encoded, so we need to 
+	   recode it back or /topic <tab> will not work properly */
+	recoded = recode_in(topic, channel);
 	if (topic != NULL) {
 		g_free_not_null(chanrec->topic);
-		chanrec->topic = *topic == '\0' ? NULL : g_strdup(topic);
+		chanrec->topic = recoded == NULL ? NULL : g_strdup(recoded);
 	}
 	
 	g_free_not_null(chanrec->topic_by);

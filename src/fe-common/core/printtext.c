@@ -23,6 +23,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
+#include "recode.h"
 #include "settings.h"
 
 #include "levels.h"
@@ -159,23 +160,26 @@ void printformat_module_gui(const char *module, int formatnum, ...)
 static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
         THEME_REC *theme;
-	char *str, *tmp, *stripped;
+	char *str, *recoded, *tmp, *stripped;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
-
+	
         theme = window_get_theme(dest->window);
 	tmp = format_get_level_tag(theme, dest);
 	str = !theme->info_eol ? format_add_linestart(text, tmp) :
 		format_add_lineend(text, tmp);
 	g_free_not_null(tmp);
+	
+	recoded = recode_in(str, dest->target);
 
 	/* send both the formatted + stripped (for logging etc.) */
-	stripped = strip_codes(str);
-	signal_emit_id(signal_print_text, 3, dest, str, stripped);
+	stripped = strip_codes(recoded);
+	signal_emit_id(signal_print_text, 3, dest, recoded, stripped);
         g_free_and_null(dest->hilight_color);
 
 	g_free(str);
+	g_free(recoded);
         g_free(stripped);
 }
 

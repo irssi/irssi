@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "expandos.h"
+#include "recode.h"
 #include "special-vars.h"
 
 #include "themes.h"
@@ -684,8 +685,10 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 				    int escape_vars)
 {
 	SERVER_REC *server;
-	WI_ITEM_REC *wiitem;
-        char *tmpstr, *tmpstr2;
+	WI_ITEM_REC *wiitem; 
+	char *tmpstr, *tmpstr2;
+	const char *target;
+	char *recoded;
 	int len;
 
 	if (str == NULL)
@@ -724,7 +727,11 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 	tmpstr2 = reverse_controls(tmpstr);
 	g_free(tmpstr);
 
-	tmpstr = tmpstr2;
+	target = wiitem ? window_item_get_target(wiitem) : NULL;
+	recoded = recode_in(tmpstr2, target);
+	g_free(tmpstr2);
+
+	tmpstr = recoded;
 	if (get_size_only) {
 		item->min_size = item->max_size = format_get_length(tmpstr);
 	} else {

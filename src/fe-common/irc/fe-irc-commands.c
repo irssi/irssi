@@ -22,6 +22,7 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "misc.h"
+#include "recode.h"
 #include "special-vars.h"
 #include "settings.h"
 
@@ -56,6 +57,9 @@ static const char *skip_target(const char *target)
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
+	const char *target;
+	char *recoded;
+
         CMD_IRC_SERVER(server);
 	if (!IS_IRC_ITEM(item))
 		return;
@@ -63,11 +67,16 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	signal_emit("message irc own_action", 3, server, data,
+	target = window_item_get_target(item);
+	recoded = recode_out(data, target);
+
+	signal_emit("message irc own_action", 3, server, recoded,
 		    item->visible_name);
 
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001",
-		      window_item_get_target(item), data);
+		      target, recoded);
+
+	g_free(recoded);
 }
 
 /* SYNTAX: ACTION [-<server tag>] <target> <message> */
@@ -75,6 +84,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
 	const char *target, *text;
+	char *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -90,10 +100,13 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
+	recoded = recode_out(text, target);
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
 
 	target = skip_target(target);
-	signal_emit("message irc own_action", 3, server, text, target);
+	signal_emit("message irc own_action", 3, server, recoded, target);
+
+	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
@@ -101,6 +114,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		       WI_ITEM_REC *item)
 {
 	const char *target, *msg;
+	char *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -113,8 +127,11 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	signal_emit("message irc own_notice", 3, server, msg, target);
+		
+	recoded = recode_out(msg, target);
+	signal_emit("message irc own_notice", 3, server, recoded, target);
+	
+	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 

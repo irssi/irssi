@@ -14,6 +14,7 @@
 #undef HAVE_GC_GC_H
 #undef WANT_BIG5
 #undef USE_GC
+#undef HAVE_GLIB2
 
 /* macros/curses checks */
 #undef HAS_CURSES

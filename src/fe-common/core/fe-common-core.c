@@ -46,6 +46,7 @@
 #include "window-activity.h"
 #include "window-items.h"
 #include "windows-layout.h"
+#include "fe-recode.h"
 
 #include <signal.h>
 
@@ -202,6 +203,7 @@ void fe_common_core_init(void)
 	fe_messages_init();
 	hilight_text_init();
 	fe_ignore_messages_init();
+	fe_recode_init();
 
 	settings_check();
 
@@ -244,6 +246,7 @@ void fe_common_core_deinit(void)
 
 	fe_messages_deinit();
 	fe_ignore_messages_deinit();
+	fe_recode_deinit();
 
         theme_unregister();
 	themes_deinit();

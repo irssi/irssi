@@ -257,7 +257,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 
 		ignore_next = TRUE;
 		if (*msg != '\001' || msg[strlen(msg)-1] != '\001') {
-			signal_emit("message own_public", 4,
+	        	signal_emit(ischannel(*target) ?
+				    "message own_public" : "message own_private", 4,
 				    client->server, msg, target, target);
 		} else if (strncmp(msg+1, "ACTION ", 7) == 0) {
 			/* action */
@@ -528,6 +529,16 @@ static void sig_message_own_public(IRC_SERVER_REC *server, const char *msg,
 		proxy_outserver_all(server, "PRIVMSG %s :%s", target, msg);
 }
 
+static void sig_message_own_private(IRC_SERVER_REC *server, const char *msg,
+                                   const char *target, const char *origtarget)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (!ignore_next)
+		proxy_outserver_all(server, "PRIVMSG %s :%s", target, msg);
+}
+
 static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
                                    const char *target)
 {
@@ -659,6 +670,7 @@ void proxy_listen_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
@@ -675,6 +687,7 @@ void proxy_listen_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

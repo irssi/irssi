@@ -119,7 +119,7 @@ static void read_settings(void)
         term_auto_detach(settings_get_bool("term_auto_detach"));
 
         /* set terminal type */
-	str = settings_get_str("term_type");
+	str = settings_get_str("term_charset");
 	if (g_strcasecmp(str, "utf-8") == 0)
 		term_type = TERM_TYPE_UTF8;
 	else if (g_strcasecmp(str, "big5") == 0)
@@ -152,7 +152,7 @@ void term_common_init(void)
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
         settings_add_bool("lookandfeel", "term_auto_detach", FALSE);
         settings_add_bool("lookandfeel", "mirc_blink_fix", FALSE);
-        settings_add_str("lookandfeel", "term_type", "8bit");
+        settings_add_str("lookandfeel", "term_charset", "ISO8859-1");
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");

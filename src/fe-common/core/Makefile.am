@@ -30,6 +30,7 @@ libfe_common_core_a_SOURCES = \
 	keyboard.c \
 	module-formats.c \
 	printtext.c \
+	fe-recode.c \
 	themes.c \
 	translation.c \
 	window-activity.c \
@@ -56,6 +57,7 @@ pkginc_fe_common_core_HEADERS = \
 	module-formats.h \
 	module.h \
 	printtext.h \
+	fe-recode.h \
 	themes.h \
 	translation.h \
 	window-activity.h \

@@ -788,6 +788,36 @@ GList *completion_get_servers(const char *word)
 	return list;
 }
 
+GList *completion_get_targets(const char *word)
+{
+	CONFIG_NODE *node;
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	/* get the list of all conversion targets */
+	node = iconfig_node_traverse("conversions", FALSE);
+	tmp = node == NULL ? NULL : config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
+		node = tmp->data;
+
+		if (node->type != NODE_TYPE_KEY)
+			continue;
+
+		if (len != 0 && g_strncasecmp(node->key, word, len) != 0)
+			continue;
+
+		list = g_list_append(list, g_strdup(node->key));
+	}
+	
+	return list;
+}
+
 static void sig_complete_connect(GList **list, WINDOW_REC *window,
 				 const char *word, const char *line, 
 				 int *want_space)
@@ -881,7 +911,6 @@ static void sig_complete_alias(GList **list, WINDOW_REC *window,
 	}
 }
 
-
 static void sig_complete_channel(GList **list, WINDOW_REC *window,
 				 const char *word, const char *line,
 				 int *want_space)
@@ -902,6 +931,27 @@ static void sig_complete_server(GList **list, WINDOW_REC *window,
 
 	*list = completion_get_servers(word);
 	if (*list != NULL) signal_stop();
+}
+
+static void sig_complete_target(GList **list, WINDOW_REC *window,
+				const char *word, const char *line,
+				int *want_space)
+{
+	const char *definition;
+	
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line != '\0') {
+		if ((definition = iconfig_get_str("conversions", line ,NULL)) != NULL) {
+			*list = g_list_append(NULL, g_strdup(definition));
+			signal_stop();
+		}
+	} else {	
+		*list = completion_get_targets(word);
+		if (*list != NULL) signal_stop();
+	}
 }
 
 /* expand \n, \t and \\ */
@@ -1090,6 +1140,7 @@ void chat_completion_init(void)
 	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_add("complete command server add", (SIGNAL_FUNC) sig_complete_server);
 	signal_add("complete command server remove", (SIGNAL_FUNC) sig_complete_server);
+	signal_add("complete command recode remove", (SIGNAL_FUNC) sig_complete_target);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
@@ -1126,6 +1177,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_remove("complete command server add", (SIGNAL_FUNC) sig_complete_server);
 	signal_remove("complete command server remove", (SIGNAL_FUNC) sig_complete_server);
+	signal_remove("complete command recode remove", (SIGNAL_FUNC) sig_complete_target);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);

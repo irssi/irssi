@@ -247,6 +247,17 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "ignore_footer", "", 0 },
 
 	/* ---- */
+	{ NULL, "Recode", 0 },
+
+	{ "not_channel_or_query", "The current window is not a channel or query window", 0 },
+	{ "conversion_added", "Added {hilight $0}/{hilight $1} to conversion database", 2, { FORMAT_STRING, FORMAT_STRING } },
+	{ "conversion_removed", "Removed {hilight $0} from conversion database", 1, { FORMAT_STRING } },
+	{ "conversion_not_found", "{hilight $0} not found in conversion database", 1, { FORMAT_STRING } },
+	{ "conversion_not_supported", "Conversion to the character set {hilight $0} is not supported",1, { FORMAT_STRING } },
+	{ "recode_header", "%#Target                         Character set", 0 },
+	{ "recode_line", "%#%|$[!30]0 $1", 2, { FORMAT_STRING, FORMAT_STRING } },
+
+	/* ---- */
 	{ NULL, "Misc", 0 },
 
 	{ "unknown_chat_protocol", "Unknown chat protocol: $0", 1, { 0 } },

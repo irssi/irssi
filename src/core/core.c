@@ -40,6 +40,7 @@
 #include "log.h"
 #include "rawlog.h"
 #include "ignore.h"
+#include "recode.h"
 
 #include "channels.h"
 #include "queries.h"
@@ -241,6 +242,7 @@ void core_init(int argc, char *argv[])
 	log_init();
 	log_away_init();
 	rawlog_init();
+	recode_init();
 
 	channels_init();
 	queries_init();
@@ -276,6 +278,7 @@ void core_deinit(void)
 	queries_deinit();
 	channels_deinit();
 
+	recode_deinit();
 	rawlog_deinit();
 	log_away_deinit();
 	log_deinit();

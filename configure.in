@@ -517,6 +517,17 @@ if test "x$want_gc" = xyes; then
 fi
 
 dnl **
+dnl ** Recode
+dnl **
+AC_MSG_CHECKING([if we can use recode, requires GLIB2])
+if test "$glib_config_major_version" = "2"; then
+  AC_DEFINE(HAVE_GLIB2)
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no, using glib1])
+fi
+
+dnl **
 dnl ** check if we can link dynamic libraries to modules
 dnl ** also checks if libraries are built to .libs dir
 dnl **

@@ -322,7 +322,7 @@ static int sig_query_autoclose(void)
 		    now-rec->last_unread_msg > query_auto_close)
 			query_destroy(rec);
 	}
-        return 1;
+     return 1;
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,
