@@ -42,6 +42,7 @@
 #include "translation.h"
 #include "fe-channels.h"
 #include "fe-windows.h"
+#include "window-activity.h"
 #include "window-items.h"
 #include "windows-layout.h"
 
@@ -86,9 +87,6 @@ void fe_server_deinit(void);
 
 void fe_settings_init(void);
 void fe_settings_deinit(void);
-
-void window_activity_init(void);
-void window_activity_deinit(void);
 
 void window_commands_init(void);
 void window_commands_deinit(void);

@@ -215,6 +215,12 @@ window_set_level(window, level)
 	Irssi::UI::Window window
 	int level
 
+void
+window_activity(window, data_level, hilight_color=NULL)
+	Irssi::UI::Window window
+	int data_level
+	char *hilight_color
+
 char *
 window_get_active_name(window)
 	Irssi::UI::Window window
@@ -268,3 +274,10 @@ window_item_set_active(item)
 	Irssi::Windowitem item
 CODE:
 	window_item_set_active(window_item_window(item), item);
+
+void
+window_item_activity(item, data_level, hilight_color=NULL)
+	Irssi::Windowitem item
+	int data_level
+	char *hilight_color
+

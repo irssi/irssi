@@ -35,8 +35,8 @@
 static char **hide_targets;
 static int hide_level, msg_level, hilight_level;
 
-static void window_activity(WINDOW_REC *window, int data_level,
-			    const char *hilight_color)
+void window_activity(WINDOW_REC *window, int data_level,
+		     const char *hilight_color)
 {
 	int old_data_level;
 
@@ -52,8 +52,8 @@ static void window_activity(WINDOW_REC *window, int data_level,
 		    GINT_TO_POINTER(old_data_level));
 }
 
-static void window_item_activity(WI_ITEM_REC *item, int data_level,
-				 const char *hilight_color)
+void window_item_activity(WI_ITEM_REC *item, int data_level,
+			  const char *hilight_color)
 {
 	int old_data_level;
 

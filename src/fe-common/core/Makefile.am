@@ -56,6 +56,7 @@ noinst_HEADERS = \
 	printtext.h \
 	themes.h \
 	translation.h \
+	window-activity.h \
 	window-items.h \
 	windows-layout.h \
 	fe-windows.h
