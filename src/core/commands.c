@@ -717,7 +717,8 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 		cnt = PARAM_WITHOUT_FLAGS(count);
 		if (count & PARAM_FLAG_OPTCHAN) {
 			/* optional channel as first parameter */
-                        require_name = (count & PARAM_FLAG_OPTCHAN_NAME);
+			require_name = (count & PARAM_FLAG_OPTCHAN_NAME) ==
+				PARAM_FLAG_OPTCHAN_NAME;
 			arg = get_optional_channel(item, &datad, require_name);
 
 			str = (char **) va_arg(args, char **);
