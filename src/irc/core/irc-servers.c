@@ -199,7 +199,7 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 
 	if (server->connrec->port <= 0) {
 		server->connrec->port =
-			server->connrec->use_ssl ? 9999 : 6667;
+			server->connrec->use_ssl ? 6697 : 6667;
 	}
 
 	server->cmd_queue_speed = ircconn->cmd_queue_speed > 0 ?
