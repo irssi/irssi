@@ -142,7 +142,8 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 	server = active_win == NULL ? NULL : active_win->active_server;
 	ircserver = IRC_SERVER(server);
 
-	umode_size = ircserver == NULL || ircserver->usermode == NULL ? 0 :
+	umode_size = ircserver == NULL || ircserver->usermode == NULL ||
+		ircserver->usermode[0] == '\0' ? 0 :
 		strlen(ircserver->usermode)+3;
 
 	/* nick */
