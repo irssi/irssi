@@ -43,7 +43,7 @@ static char *expando_inputline(void *server, void *item, int *free_ret)
 /* FIXME: value of cutbuffer */
 static char *expando_cutbuffer(void *server, void *item, int *free_ret)
 {
-	return NULL;
+	return cutbuffer;
 }
 
 void gui_special_vars_init(void)

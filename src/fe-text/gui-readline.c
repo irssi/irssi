@@ -48,7 +48,7 @@ typedef struct {
 
 static ENTRY_REDIRECT_REC *redir;
 
-static char *savebuffer;
+char *cutbuffer;
 static int readtag, sigint_count = 0;
 static time_t idle_time;
 
@@ -199,15 +199,25 @@ void handle_key(int key)
 
 	case CTRL('u'):
 		/* Ctrl-U, clear line */
-                g_free_not_null(savebuffer);
-		savebuffer = g_strdup(gui_entry_get_text());
+                g_free_not_null(cutbuffer);
+		cutbuffer = g_strdup(gui_entry_get_text());
 
 		gui_entry_set_text("");
 		break;
+	case CTRL('k'):
+		/* C-K - erase the rest of the line */
+		c = gui_entry_get_pos();
+                g_free_not_null(cutbuffer);
+		cutbuffer = g_strdup(gui_entry_get_text()+c);
+
+		gui_entry_set_pos(strlen(gui_entry_get_text()));
+		gui_entry_erase(strlen(gui_entry_get_text()) - c);
+		break;
+
 	case CTRL('y'):
 		/* Ctrl-Y, write last ^U'd line */
-		if (savebuffer != NULL)
-			gui_entry_insert_text(savebuffer);
+		if (cutbuffer != NULL)
+			gui_entry_insert_text(cutbuffer);
 		break;
 	case 9:
 		key_pressed("Tab", NULL);
@@ -230,13 +240,6 @@ void handle_key(int key)
 			gui_entry_move_pos(1);
 			gui_entry_erase(1);
 		}
-		break;
-
-	case CTRL('k'):
-		/* C-K - erase the rest of the line */
-		c = gui_entry_get_pos();
-		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		gui_entry_erase(strlen(gui_entry_get_text()) - c);
 		break;
 
 	case 0:
@@ -434,7 +437,7 @@ void gui_readline_init(void)
 	char *key, data[MAX_INT_STRLEN];
 	int n;
 
-	savebuffer = NULL;
+	cutbuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
 	readtag = g_input_add(0, G_INPUT_READ, (GInputFunction) readline, NULL);
@@ -476,7 +479,7 @@ void gui_readline_init(void)
 
 void gui_readline_deinit(void)
 {
-	g_free_not_null(savebuffer);
+	g_free_not_null(cutbuffer);
 	g_source_remove(readtag);
 
 	key_unbind("completion", (SIGNAL_FUNC) sig_completion);
