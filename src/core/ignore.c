@@ -121,7 +121,7 @@ static int ignore_check_without_mask(GSList *list, CHANNEL_REC *channel,
 	GSList *tmp;
         int len, best_mask, best_match, best_patt;
 
-        best_mask = best_patt = 0; best_match = FALSE;
+        best_mask = best_patt = -1; best_match = FALSE;
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
