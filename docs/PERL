@@ -1,3 +1,72 @@
+ Running Perl scripts
+ --------------------
+
+Place new scripts to ~/.irssi/scripts/, or /usr/lib/irssi/scripts/
+directory and run then with /RUN script. Or you could also run the
+script from another place by specifying the whole path to it.
+
+Using /PERLFLUSH closes and reopens the perl interpreter removing all
+Perl scripts from memory. There's currently no way to unload a single Perl
+script. Also, Irssi doesn't check if you run the same script twice or
+different scripts use signal_add() for the same named function - it will
+probably crash or do some weird things then.
+
+
+ Irssi's signals
+ ---------------
+
+Irssi is pretty much based on sending and handling different signals.
+Like when you receive a message from server, say,
+":nick!user@there.org PRIVMSG you :blahblah". Irssi will first send a
+"server incoming" signal with the raw line as it's first parameter. You
+probably don't want to use this signal. Next thing Irssi does is to
+interpret the header and send a "server event" signal with arguments
+"PRIVMSG you...", server, "nick", "user@there.org". You probably don't
+want to use this either, since next irssi will send an "event privmsg"
+signal with the "you :blahblah" as it's argument. You can at any point
+grab the signal, do whatever you want to do with it and optionally stop
+it from going any further by returning from the function with value 1. 
+
+For example:
+
+--------------------------------------------------------
+sub event_privmsg {
+	# $data = "nick/#channel :text"
+	my ($data, $server, $nick, $address) = @_;
+	my ($target, $text) = $data =~ /^(\S*)\s:(.*)/;
+
+	return 1 if ($text =~ /free.*porn/);
+	return 1 if ($nick =~ /idiot/);
+}
+
+Irssi::signal_add("event privmsg", "event_privmsg")
+--------------------------------------------------------
+
+This will hide all public or private messages that match the regexp
+"free.*porn" or the sender's nick contain the word "idiot".
+
+A list of signals that irssi send can be found from SIGNALS file.
+
+
+ Message levels
+ --------------
+
+Several functions expect message levels. Sometimes numeric and sometimes
+alphabetic. Yes, it's stupid, will fix it :) For now you can use 
+Irssi::level2bits() function to convert the level string to numeric. Here's
+all the levels that irssi supports currently:
+
+CRAP, MSGS, PUBLIC, NOTICES, SNOTES, CTCPS, ACTIONS, JOINS, PARTS
+QUITS, KICKS, MODES, SMODES, TOPICS, WALLOPS, INVITES, NICKS, PONGS
+DCC, CLIENTNOTICE, CLIENTCRAP, CLIENTERROR, HILIGHT
+(and NOHILIGHT if you don't want the message to be hilighted ever..)
+
+For example:
+
+$server->printtext("#channel", Irssi::level2bits('clientcrap'), 'Hello, world');
+
+Writes text to #channel window with clientcrap level.
+
 
  Functions that you can use in Irssi's Perl scripts
  --------------------------------------------------
@@ -14,8 +83,6 @@ or more easily:
   $server->command($cmd);
 
 Commands that don't have the Xxxx prefix are called as Irssi::command();
-
-A list of signals that irssi send can be found from SIGNALS file.
 
 
  *** General
