@@ -194,7 +194,7 @@ static void notifylist_joined(IRC_SERVER_REC *server, const char *nick,
 {
 	g_return_if_fail(nick != NULL);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
+	printformat(server, nick, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
 		    IRCTXT_NOTIFY_JOIN, nick, username, host, realname,
 		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
@@ -205,7 +205,7 @@ static void notifylist_left(IRC_SERVER_REC *server, const char *nick,
 {
 	g_return_if_fail(nick != NULL);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT, IRCTXT_NOTIFY_PART,
+	printformat(server, nick, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT, IRCTXT_NOTIFY_PART,
 		    nick, username, host, realname,
 		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
@@ -217,11 +217,11 @@ static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
 	g_return_if_fail(nick != NULL);
 
 	if (awaymsg != NULL) {
-		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
+		printformat(server, nick, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
 			    IRCTXT_NOTIFY_AWAY, nick, username, host, realname, awaymsg,
 			    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 	} else {
-		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
+		printformat(server, nick, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
 			    IRCTXT_NOTIFY_UNAWAY, nick, username, host, realname,
 			    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 	}
@@ -233,7 +233,7 @@ static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
 {
 	g_return_if_fail(nick != NULL);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
+	printformat(server, nick, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
 		    IRCTXT_NOTIFY_UNIDLE, nick, username, host, realname,
 		    awaymsg != NULL ? awaymsg : "",
 		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
