@@ -74,6 +74,19 @@ AC_ARG_WITH(textui,
 	fi,
 	want_textui=yes)
 
+AC_ARG_WITH(bot,
+[  --with-bot              Build irssi-bot],
+	if test x$withval = xyes; then
+    		want_irssibot=yes
+	else
+		if test "x$withval" = xno; then
+			want_irssibot=no
+		else
+        		want_irssibot=yes
+		fi
+	fi,
+	want_irssibot=yes)
+
 AC_ARG_WITH(plugins,
 [  --with-plugins          Build plugins],
 	if test x$withval = xyes; then
@@ -302,6 +315,9 @@ else
 	has_curses=false
 fi
 AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true)
+
+dnl ** check if we want to build irssibot
+AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = true)
 
 dnl **
 dnl ** memory debugging
