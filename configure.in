@@ -568,21 +568,14 @@ if test "$want_perl" != "no"; then
 		esac
 
 		dnl * check that perl's ldflags actually work
-		AC_CACHE_VAL(irssi_cv_lib_perl_works, [
-			echo "main(){perl_alloc(); return 0;}" > conftest.c
-			$CC $CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
-			if test -s conftest; then
-				irssi_cv_lib_perl_works=yes
-			else
-				irssi_cv_lib_perl_works=no
-			fi
-		])
-
-		if test "x$irssi_cv_lib_perl_works" = "xno"; then
+		echo "main(){perl_alloc(); return 0;}" > conftest.c
+		$CC $CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
+		if test ! -s conftest; then
 			perl_check_error="Error linking with perl libraries: $PERL_LDFLAGS: `cat perl.error.tmp`"
 			AC_MSG_RESULT([error linking with perl libraries, building without Perl])
 			want_perl=no
 		fi
+
 		rm -f perl.error.tmp
 	fi
 
@@ -873,6 +866,10 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 	echo " - NOTE: Perl support will be compiled statically to irssi, not as"
 	echo "   a module as requested. Reason:"
 	echo "   $perl_mod_error"
+
+	if test -f /etc/debian_version; then
+		echo " - Try: apt-get install libperl-dev"
+	fi
 fi
 
 if test "x$want_perl" != "xno"; then
