@@ -605,7 +605,7 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 	cmd = g_strconcat(reply ? "dcc reply " : "dcc ctcp ", msg+1, NULL);
 	if (cmd[strlen(cmd)-1] == 1) cmd[strlen(cmd)-1] = '\0';
 
-	ptr = strchr(cmd+9, ' ');
+	ptr = strchr(cmd+(reply ? 10 : 9), ' ');
 	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
 
 	g_strdown(cmd+9);
