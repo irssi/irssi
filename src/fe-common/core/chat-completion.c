@@ -914,8 +914,10 @@ void chat_completion_init(void)
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_add("complete command query", (SIGNAL_FUNC) sig_complete_msg);
+	signal_add("complete command action", (SIGNAL_FUNC) sig_complete_msg);
 	signal_add("complete erase command msg", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_add("complete erase command query", (SIGNAL_FUNC) sig_erase_complete_msg);
+	signal_add("complete erase command action", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
@@ -940,8 +942,10 @@ void chat_completion_deinit(void)
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_remove("complete command query", (SIGNAL_FUNC) sig_complete_msg);
+	signal_remove("complete command action", (SIGNAL_FUNC) sig_complete_msg);
 	signal_remove("complete erase command msg", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_remove("complete erase command query", (SIGNAL_FUNC) sig_erase_complete_msg);
+	signal_remove("complete erase command action", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);

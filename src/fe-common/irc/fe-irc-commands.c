@@ -69,19 +69,25 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		      item->name, data);
 }
 
-/* SYNTAX: ACTION <target> <message> */
+/* SYNTAX: ACTION [-<server tag>] <target> <message> */
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
+	GHashTable *optlist;
 	char *target, *text;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &target, &text))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "action", &optlist, &target, &text))
 		return;
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	server = IRC_SERVER(cmd_options_get_server("action", optlist, SERVER(server)));
+	if (server == NULL || !server->connected)
+		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
 
