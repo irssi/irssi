@@ -370,7 +370,7 @@ void printtext_multiline(void *server, const char *target, int level,
 
 	lines = g_strsplit(text, "\n", -1);
         for (tmp = lines; *tmp != NULL; tmp++)
-		printtext(NULL, NULL, MSGLEVEL_NEVER, format, *tmp);
+		printtext(NULL, NULL, level, format, *tmp);
 	g_strfreev(lines);
 }
 
