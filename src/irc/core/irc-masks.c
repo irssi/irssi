@@ -73,18 +73,14 @@ char *irc_get_mask(const char *nick, const char *address, int flags)
 	}
 	*host++ = '\0';
 
-	switch (flags & (IRC_MASK_HOST|IRC_MASK_DOMAIN)) {
-	case IRC_MASK_HOST:
-                /* we already have the host */
-		break;
-	case IRC_MASK_DOMAIN:
+	if (flags & IRC_MASK_HOST) {
+		/* we already have the host */
+	} else if (flags & IRC_MASK_DOMAIN) {
 		/* domain - *.blah.org */
 		host = get_domain_mask(host);
-		break;
-	default:
+	} else {
 		/* no domain/host */
 		host = "*";
-		break;
 	}
 
 	ret = g_strdup_printf("%s!%s@%s",

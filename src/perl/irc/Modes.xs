@@ -11,9 +11,10 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Channel  PREFIX = channel_
 #*******************************
 
 char *
-ban_get_mask(channel, nick)
+ban_get_mask(channel, nick, ban_type)
 	Irssi::Irc::Channel channel
 	char *nick
+	int ban_type
 
 Irssi::Irc::Ban
 banlist_add(channel, ban, nick, time)

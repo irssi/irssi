@@ -35,6 +35,7 @@
 #include "fe-queries.h"
 #include "irc-channels.h"
 #include "irc-nicklist.h"
+#include "irc-masks.h"
 #include "fe-windows.h"
 #include "printtext.h"
 
@@ -330,36 +331,41 @@ static void event_nickfind_whois(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_ban_type_changed(const char *bantype)
+static void event_ban_type_changed(void *ban_typep)
 {
 	GString *str;
+	int ban_type;
 
-	g_return_if_fail(bantype != NULL);
+	ban_type = GPOINTER_TO_INT(ban_typep);
 
-	if (strcmp(bantype, "UD") == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Normal");
-	else if (strcmp(bantype, "HD") == 0 || strcmp(bantype, "H") == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Host");
-	else if (strcmp(bantype, "D") == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Domain");
-	else {
+	if (ban_type == 0) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    IRCTXT_BANTYPE, "Error, using Normal");
+                return;
+	}
+
+	if (ban_type == (IRC_MASK_USER|IRC_MASK_DOMAIN)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_BANTYPE, "Normal");
+	} else if (ban_type == (IRC_MASK_HOST|IRC_MASK_DOMAIN)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_BANTYPE, "Host");
+	} else if (ban_type == IRC_MASK_DOMAIN) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_BANTYPE, "Domain");
+	} else {
 		str = g_string_new("Custom:");
-		if (*bantype == 'N') {
+		if (ban_type & IRC_MASK_NICK)
 			g_string_append(str, " Nick");
-			bantype++;
-		}
-		if (*bantype == 'U') {
+		if (ban_type & IRC_MASK_USER)
 			g_string_append(str, " User");
-			bantype++;
-		}
-		if (*bantype == 'H') {
+		if (ban_type & IRC_MASK_HOST)
 			g_string_append(str, " Host");
-			bantype++;
-		}
-		if (*bantype == 'D')
+		if (ban_type & IRC_MASK_DOMAIN)
 			g_string_append(str, " Domain");
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, str->str);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_BANTYPE, str->str);
 		g_string_free(str, TRUE);
 	}
 }

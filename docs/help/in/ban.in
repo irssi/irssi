@@ -2,13 +2,23 @@
 @SYNTAX:ban@
 
 Bans the specified nick or userhost mask.
-If nick is given as parameter, the current
-BANTYPE affects the ban mask.
 
-Example:
+If nick is given as parameter, the ban type is used to generate the ban
+mask. /SET ban_type specified the default ban type. Ban type is one of
+the following:
+
+    Normal - *!user@*.domain.net
+    Host   - *!*@host.domain.net
+    Domain - *!*@*.domain.net
+    Custom [nick] [user] [host] [domain]
+
+Examples:
     /BAN looser    - This bans the nick 'looser'
     /BAN *!*@*.org - This bans all the users coming from any 
                      .org domain.
 
-See also: BANTYPE, KNOCKOUT
+    /SET ban_type custom nick domain - nick!*@*.domain.net
+    /SET ban_type custom user host   - *!user@host.domain.net
+
+See also: KNOCKOUT, KICKBAN
 

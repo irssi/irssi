@@ -789,7 +789,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
         spacenicks = g_strjoinv(" ", nicklist);
 	g_strfreev(nicklist);
 
-	banmasks = ban_get_masks(channel, spacenicks);
+	banmasks = ban_get_masks(channel, spacenicks, 0);
 	g_free(spacenicks);
 
 	if (*banmasks != '\0') {
