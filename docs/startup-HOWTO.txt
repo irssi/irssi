@@ -17,7 +17,7 @@ These settings should give you pretty good defaults (the ones I use):
 /SET autocreate_query_level DCCMSGS
 /SET use_status_window OFF
 /SET use_msgs_window ON
-/SET autoclose_windows ON
+/SET autoclose_windows OFF
 /SET reuse_unused_windows ON
 
 And example how to add servers:
