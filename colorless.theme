@@ -1,6 +1,6 @@
 {
   default_color = 0;
-  colors = {red_100 = 65535;green_100 = 65535;blue_100 = 65535;};
+  colors = {extra_red_0 = 65535;extra_green_0 = 65535;extra_blue_0 = 65535;};
   formats = {
     line_start = "-!- ";
     line_start_irssi = "-!- Irssi: ";
@@ -39,6 +39,7 @@
     your_nick_owned = "Your nick is owned by %_$4%_ [$2@$3]";
     whois = "%_$1%_ [$2@$3]%N ircname  : $4";
     whois_idle_signon = " idle     : $2 hours $3 mins $4 secs [signon: $5]";
+    who = "$[10]1 %_$[!9]2%_ $[!3]3 $[!2]4 $5@$6 (%_$7%_)";
     own_msg = "<$1> $2";
     own_msg_channel = "<$1:$2> $3";
     own_msg_private = "[msg($1)] $2";
