@@ -132,7 +132,7 @@ PREINIT:
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 2; n < items && n < MAX_FORMAT_PARAMS-2; n++) {
+	for (n = 2; n < items && n < MAX_FORMAT_PARAMS+2; n++) {
 		arglist[n-2] = SvPV(ST(n), n_a);
 	}
 
@@ -156,7 +156,7 @@ PREINIT:
 CODE:
 	format_create_dest(&dest, server, target, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 4; n < items && n < MAX_FORMAT_PARAMS-4; n++) {
+	for (n = 4; n < items && n < MAX_FORMAT_PARAMS+4; n++) {
 		arglist[n-4] = SvPV(ST(n), n_a);
 	}
 
@@ -179,7 +179,7 @@ PREINIT:
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 3; n < items && n < MAX_FORMAT_PARAMS-3; n++) {
+	for (n = 3; n < items && n < MAX_FORMAT_PARAMS+3; n++) {
 		arglist[n-3] = SvPV(ST(n), n_a);
 	}
 
@@ -202,7 +202,7 @@ PREINIT:
 CODE:
 	format_create_dest(&dest, item->server, item->name, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 3; n < items && n < MAX_FORMAT_PARAMS-3; n++) {
+	for (n = 3; n < items && n < MAX_FORMAT_PARAMS+3; n++) {
 		arglist[n-3] = SvPV(ST(n), n_a);
 	}
 
