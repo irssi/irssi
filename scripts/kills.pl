@@ -1,9 +1,6 @@
 # Display kills with more understandable messages.
 # for irssi 0.7.98 by Timo Sirainen
 
-# I didn't find anyone else who had done this so I had to figure everything
-# out myself, hope this works correctly and in all irc networks.
-
 # There's one kind of nick collision this script doesn't handle - if the
 # collision is detected by the server you're connected to, it won't use
 # kill as quit reason, but "Nick collision(new)" or "..(old)". This is pretty
