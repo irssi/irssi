@@ -33,7 +33,7 @@
 #include "nicklist.h"
 
 static char *session_file;
-char *irssi_binary;
+char *irssi_binary = NULL;
 
 static char **session_args;
 
@@ -355,7 +355,6 @@ void session_init(void)
 	};
 
 	session_file = NULL;
-        irssi_binary = NULL;
 	args_register(options);
 
 	command_bind("upgrade", NULL, (SIGNAL_FUNC) cmd_upgrade);
