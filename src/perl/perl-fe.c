@@ -61,7 +61,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
 	hv_store(hv, "data_level", 8, newSViv(window->data_level), 0);
-	hv_store(hv, "hilight_color", 10, newSViv(window->hilight_color), 0);
+	hv_store(hv, "hilight_color", 10, new_pv(window->hilight_color), 0);
 	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
 	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
 }

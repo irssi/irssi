@@ -31,6 +31,10 @@
 #include "themes.h"
 #include "translation.h"
 
+static const char *format_backs = "04261537";
+static const char *format_fores = "kbgcrmyw";
+static const char *format_boldfores = "KBGCRMYW";
+
 static int signal_gui_print_text;
 static int hide_text_style;
 
@@ -57,9 +61,6 @@ int format_find_tag(const char *module, const char *tag)
 
 int format_expand_styles(GString *out, char format)
 {
-	static const char *backs = "04261537";
-	static const char *fores = "kbgcrmyw";
-	static const char *boldfores = "KBGCRMYW";
 	char *p;
 
 	switch (format) {
@@ -102,30 +103,30 @@ int format_expand_styles(GString *out, char format)
 		break;
 	default:
 		/* check if it's a background color */
-		p = strchr(backs, format);
+		p = strchr(format_backs, format);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
-			g_string_append_c(out, (char) ((int) (p-backs)+'0'));
+			g_string_append_c(out, (char) ((int) (p-format_backs)+'0'));
 			break;
 		}
 
 		/* check if it's a foreground color */
 		if (format == 'p') format = 'm';
-		p = strchr(fores, format);
+		p = strchr(format_fores, format);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, (char) ((int) (p-fores)+'0'));
+			g_string_append_c(out, (char) ((int) (p-format_fores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
 
 		/* check if it's a bold foreground color */
 		if (format == 'P') format = 'M';
-		p = strchr(boldfores, format);
+		p = strchr(format_boldfores, format);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, (char) (8+(int) (p-boldfores)+'0'));
+			g_string_append_c(out, (char) (8+(int) (p-format_boldfores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
@@ -212,8 +213,7 @@ void format_create_dest(TEXT_DEST_REC *dest,
 		window_find_closest(server, target, level);
 
 	dest->hilight_priority = 0;
-        dest->hilight_color = 0;
-        dest->hilight_bg_color = 0;
+        dest->hilight_color = NULL;
 }
 
 /* Return length of text part in string (ie. without % codes) */
@@ -281,6 +281,40 @@ int format_real_length(const char *str, int len)
 
 	g_string_free(tmp, TRUE);
         return (int) (str-start);
+}
+
+char *format_string_expand(const char *text)
+{
+	GString *out;
+	char code, *ret;
+
+        g_return_val_if_fail(text != NULL, NULL);
+
+	out = g_string_new(NULL);
+
+	code = 0;
+	while (*text != '\0') {
+		if (code == '%') {
+			/* color code */
+			if (!format_expand_styles(out, *text)) {
+				g_string_append_c(out, '%');
+				g_string_append_c(out, '%');
+				g_string_append_c(out, *text);
+			}
+			code = 0;
+		} else {
+			if (*text == '%')
+				code = *text;
+			else
+				g_string_append_c(out, *text);
+		}
+
+		text++;
+	}
+
+	ret = out->str;
+	g_string_free(out, FALSE);
+	return ret;
 }
 
 static char *format_get_text_args(TEXT_DEST_REC *dest,

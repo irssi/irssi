@@ -6,9 +6,8 @@
    -word: <text> must match to full words
    -nick: Hilight only the nick, not the whole line (default)
    -nonick: Hilight the whole line with the hilight color.
-   -color: Print the message with <color>, it can be either
-           numeric MIRC color (see docs/formats.txt) or
-           a named english color
+   -color: Print the message with <color>. color is in %code format
+           (see docs/formats.txt)
    -level: Match only for <level> messages, default is
            publics,msgs,notices,actions
    -channels: Match only in <channels>
@@ -18,8 +17,8 @@ Examples:
 Hilight lines that have "mynick" word:
   /HILIGHT mynick
 
-Hilight lines that were written by nicks from *.fi
-  /HILIGHT -mask *!*@*.fi
+Hilight lines that were written by nicks from *.fi with bold green
+  /HILIGHT -color %G -mask *!*@*.fi
 
 For regular expressions, see `man 7 regex`.
 

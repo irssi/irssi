@@ -226,20 +226,14 @@ static char *get_activity_list(int normal, int hilight)
                         g_string_append(str, "%W");
 			break;
 		default:
-			/*FIXME:if (window->hilight_color > 0) {
-				int bg;
-
-				bg = window->hilight_bg_color == -1 ?
-					sbar_color_background :
-					(window->hilight_bg_color << 4);
-				set_color(stdscr, bg | mirc_colors[window->hilight_color%16]);
-				g_string_append(str, "%M");
-			} else */{
-				g_string_append(str, "%M");
-			}
+			g_string_append(str, window->hilight_color == NULL ?
+					"%M" : window->hilight_color);
 			break;
 		}
-                g_string_sprintfa(str, "%d", window->refnum);
+		g_string_sprintfa(str, "%d", window->refnum);
+
+                /* make sure the background is returned to default */
+		g_string_append(str, "%n");
 	}
 
 	ret = str->len == 0 ? NULL : str->str;

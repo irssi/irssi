@@ -239,7 +239,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 
 	hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
 	hv_store(hv, "data_level", 8, newSViv(item->data_level), 0);
-	hv_store(hv, "hilight_color", 10, newSViv(item->hilight_color), 0);
+	hv_store(hv, "hilight_color", 10, new_pv(item->hilight_color), 0);
 }
 
 void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)

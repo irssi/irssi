@@ -1,5 +1,5 @@
 
- Irssi's colors that you can use in text formats etc. :
+ Irssi's colors that you can use in text formats, hilights, etc. :
 
                            text            text            background
    ---------------------------------------------------------------------
@@ -23,8 +23,8 @@
  In .theme files %n works a bit differently. See default.theme
  for more information.
 
- MIRC colors that you can use when writing text to channel and with
- hilighting text:
+
+ MIRC colors that you can use when writing text to channel:
 
                foreground (fg)     background (bg)
    -------------------------------------------------------

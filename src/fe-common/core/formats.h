@@ -37,7 +37,7 @@ typedef struct {
 	int level;
 
 	int hilight_priority;
-	int hilight_color, hilight_bg_color;
+	char *hilight_color;
 } TEXT_DEST_REC;
 
 int format_find_tag(const char *module, const char *tag);
@@ -48,6 +48,8 @@ int format_get_length(const char *str);
    characters of text is skipped. Like strip_real_length(), except this
    handles %codes. */
 int format_real_length(const char *str, int len);
+
+char *format_string_expand(const char *text);
 
 char *format_get_text(const char *module, WINDOW_REC *window,
 		      void *server, const char *target,
@@ -96,7 +98,7 @@ char *strip_codes(const char *input);
 /* send a fully parsed text string for GUI to print */
 void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 
-#define FORMAT_COLOR_NOCHANGE	('0'-1)
+#define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
 
 #define FORMAT_STYLE_SPECIAL	0x60
 #define FORMAT_STYLE_UNDERLINE	(0x01 + FORMAT_STYLE_SPECIAL)

@@ -391,6 +391,11 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	signal_emit_id(signal_print_text_finished, 1, dest->window);
 }
 
+static void sig_print_text_free(TEXT_DEST_REC *dest, const char *text)
+{
+        g_free_and_null(dest->hilight_color);
+}
+
 void printtext_multiline(void *server, const char *target, int level,
 			 const char *format, const char *text)
 {
@@ -438,6 +443,7 @@ void printtext_init(void)
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_add_last("print text", (SIGNAL_FUNC) sig_print_text_free);
 	signal_add("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
@@ -445,6 +451,7 @@ void printtext_init(void)
 void printtext_deinit(void)
 {
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_remove("print text", (SIGNAL_FUNC) sig_print_text_free);
 	signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

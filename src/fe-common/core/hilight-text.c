@@ -161,51 +161,6 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-/* color name -> mirc color number */
-static int mirc_color_name(const char *name)
-{
-	static const char *names[] = {
-		"bla dbla", /* black */
-		"blu dblu", /* blue */
-		"gree dgree", /* green */
-		"r dr br lr", /* red .. um.. only one of them. */
-		"br dbr dy", /* brown / dark yello */
-		"m p dm dp", /* magenta / purple */
-		"o", /* orange */
-		"y by", /* yellow */
-		"bg lg", /* bright green */
-		"c dc", /* cyan */
-		"bc lc", /* bright cyan */
-		"bb lb", /* bright blue */
-		"bm bp lm lp", /* bright magenta/purple */
-		"dgray dgrey", /* dark grey */
-		"grey gray", /* grey */
-		"w", /* white */
-		NULL
-	};
-
-	const char *p, *pname;
-	int n, ok;
-
-	for (n = 0; names[n] != NULL; n++) {
-		pname = name; ok = TRUE;
-		for (p = names[n]; ; p++) {
-			if (*p == ' ' || *p == '\0') {
-                                if (ok) return n+1;
-				if (*p == '\0') break;
-
-				ok = TRUE;
-				pname = name;
-			} else if (toupper((int) *p) == toupper((int) *pname))
-				pname++;
-			else
-				ok = FALSE;
-		}
-	}
-
-	return -1;
-}
-
 static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 			      int *match_beg, int *match_end)
 {
@@ -291,77 +246,35 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
         return NULL;
 }
 
-static int get_colors(const char *color, int *fg, int *bg)
+static char *hilight_get_act_color(HILIGHT_REC *rec)
 {
-	const char *p;
+	g_return_val_if_fail(rec != NULL, NULL);
 
-	if (!is_numeric(color, ','))
-                return FALSE;
-
-	*fg = atoi(color);
-        *bg = -1;
-
-	p = strchr(color, ',');
-	if (p != NULL) {
-		p++;
-		if (!is_numeric(p, '\0'))
-                        return FALSE;
-		*bg = atoi(p);
-	}
-
-        return TRUE;
+	return g_strdup(rec->act_color != NULL ? rec->act_color :
+			rec->color != NULL ? rec->color :
+			settings_get_str("hilight_act_color"));
 }
 
-char *hilight_get_color(HILIGHT_REC *rec, int activity)
+static char *hilight_get_color(HILIGHT_REC *rec)
 {
 	const char *color;
-	char number[MAX_INT_STRLEN];
-        int colornum, fg, bg;
 
 	g_return_val_if_fail(rec != NULL, NULL);
 
-	color = activity && rec->act_color != NULL ?
-		rec->act_color : rec->color;
-	if (color == NULL) {
-		color = settings_get_str(activity ? "hilight_act_color" :
-					 "hilight_color");
-	}
+	color = rec->color != NULL ? rec->color :
+		settings_get_str("hilight_color");
 
-	if (isalpha((int) *color)) {
-		/* color was specified with it's name - try to convert it */
-		colornum = mirc_color_name(color);
-		if (colornum <= 0) colornum = 16;
-
-		ltoa(number, colornum);
-		color = number;
-	}
-
-	if (get_colors(color, &fg, &bg)) {
-		return bg == -1 ? g_strdup_printf("\003%02d", fg) :
-			g_strdup_printf("\003%d,%02d", fg, bg);
-	}
-	return g_strdup(color);
+	return format_string_expand(color);
 }
 
 static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 {
-	char *color, *bgcolor;
-
 	dest->level |= MSGLEVEL_HILIGHT;
 
 	if (rec->priority > 0)
 		dest->hilight_priority = rec->priority;
 
-	color = hilight_get_color(rec, TRUE);
-	if (*color == 3) {
-		dest->hilight_color = atoi(color+1);
-                bgcolor = color+1;
-		while (*bgcolor != ',' && *bgcolor != '\0')
-			bgcolor++;
-		dest->hilight_bg_color = *bgcolor != ',' ? -1 :
-			atoi(bgcolor+1);
-	}
-	g_free(color);
+        dest->hilight_color = hilight_get_act_color(rec);
 }
 
 static void sig_print_text_stripped(TEXT_DEST_REC *dest, const char *str)
@@ -413,7 +326,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
 	if (next_line_hilight == NULL)
                 return;
 
-	color = hilight_get_color(next_line_hilight, FALSE);
+	color = hilight_get_color(next_line_hilight);
 	next_hilight_len = next_hilight_end-next_hilight_start;
 
 	if (!next_line_hilight->word) {
@@ -482,7 +395,7 @@ char *hilight_match_nick(SERVER_REC *server, const char *channel,
 	rec = hilight_match(server, channel, nick, address,
 			    level, msg, NULL, NULL);
 	color = rec == NULL || !rec->nick ? NULL :
-		hilight_get_color(rec, FALSE);
+		hilight_get_color(rec);
 
         next_nick_hilight = rec;
 	return color;
@@ -747,8 +660,8 @@ static void read_settings(void)
 
 void hilight_text_init(void)
 {
-	settings_add_str("lookandfeel", "hilight_color", "8");
-	settings_add_str("lookandfeel", "hilight_act_color", "13");
+	settings_add_str("lookandfeel", "hilight_color", "%Y");
+	settings_add_str("lookandfeel", "hilight_act_color", "%M");
 	settings_add_str("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
 
 	next_nick_hilight = NULL;

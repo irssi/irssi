@@ -34,8 +34,6 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 			   int level, const char *str,
 			   int *match_beg, int *match_end);
 
-char *hilight_get_color(HILIGHT_REC *rec, int activity);
-
 char *hilight_match_nick(SERVER_REC *server, const char *channel,
 			 const char *nick, const char *address,
 			 int level, const char *msg);
