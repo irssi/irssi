@@ -145,6 +145,8 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 		   colors wrap to 0, 1, ... */
                 if (*bg >= 0) *bg = mirc_colors[*bg % 16];
 		if (*fg >= 0) *fg = mirc_colors[*fg % 16];
+		if (settings_get_bool("mirc_blink_fix"))
+			*bg &= ~0x08;
 	}
 
 	if (*fg < 0 || *fg > 15)
