@@ -278,7 +278,7 @@ static void cmd_window_log(const char *data)
                 open_log = log == NULL;
                 close_log = log != NULL;
 	} else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_TOGGLE);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -600,13 +600,13 @@ static void sig_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
 
 static void sig_log_locked(LOG_REC *log)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 		    TXT_LOG_LOCKED, log->fname);
 }
 
 static void sig_log_create_failed(LOG_REC *log)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 		    TXT_LOG_CREATE_FAILED,
 		    log->real_fname, g_strerror(errno));
 }
