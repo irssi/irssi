@@ -240,8 +240,9 @@ static void event_part(const char *data, IRC_SERVER_REC *server, const char *nic
 
 static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
+	WINDOW_REC *window;
 	GString *chans;
-	GSList *tmp;
+	GSList *tmp, *windows;
 	char *print_channel;
 	int once, count;
 
@@ -254,24 +255,30 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
 
-	count = 0;
+	count = 0; windows = NULL;
 	chans = !once ? NULL : g_string_new(NULL);
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (rec->server == server && nicklist_find(rec, nick) &&
-		    !ignore_check(server, nick, addr, rec->name, data, MSGLEVEL_QUITS)) {
-			if (print_channel == NULL || active_win->active == (WI_ITEM_REC *) rec)
-				print_channel = rec->name;
+		if (rec->server != server || !nicklist_find(rec, nick) ||
+		    ignore_check(server, nick, addr, rec->name, data, MSGLEVEL_QUITS))
+			continue;
 
-			if (!once)
+		if (print_channel == NULL || active_win->active == (WI_ITEM_REC *) rec)
+			print_channel = rec->name;
+
+		if (!once) {
+			window = window_item_window((WI_ITEM_REC *) rec);
+			if (g_slist_find(windows, window) == NULL) {
+				windows = g_slist_append(windows, window);
 				printformat(server, rec->name, MSGLEVEL_QUITS, IRCTXT_QUIT, nick, addr, data);
-			else {
-				g_string_sprintfa(chans, "%s,", rec->name);
-				count++;
 			}
+		} else {
+			g_string_sprintfa(chans, "%s,", rec->name);
+			count++;
 		}
 	}
+	g_slist_free(windows);
 
 	if (once) {
 		g_string_truncate(chans, chans->len-1);
@@ -309,7 +316,7 @@ static void print_nick_change(IRC_SERVER_REC *server, const char *target, const 
 
 static void event_nick(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar *addr)
 {
-	GSList *tmp;
+	GSList *tmp, *windows;
 	char *params, *newnick;
 	int ownnick, msgprint;
 
@@ -323,10 +330,17 @@ static void event_nick(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar
 	msgprint = FALSE;
 	ownnick = g_strcasecmp(sender, server->nick) == 0;
 
+	/* Print to each channel/query where the nick is.
+	   Don't print more than once to the same window. */
+	windows = NULL;
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
+		WINDOW_REC *window =
+			window_item_window((WI_ITEM_REC *) channel);
 
-		if (nicklist_find(channel, sender)) {
+		if (nicklist_find(channel, sender) &&
+		    g_slist_find(windows, window) == NULL) {
+			windows = g_slist_append(windows, window);
 			print_nick_change(server, channel->name, newnick, sender, addr, ownnick);
 			msgprint = TRUE;
 		}
@@ -334,12 +348,17 @@ static void event_nick(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar
 
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *query = tmp->data;
+		WINDOW_REC *window =
+			window_item_window((WI_ITEM_REC *) query);
 
-		if (g_strcasecmp(query->nick, sender) == 0) {
+		if (g_strcasecmp(query->nick, sender) == 0 &&
+		    g_slist_find(windows, window) == NULL) {
+			windows = g_slist_append(windows, window);
 			print_nick_change(server, query->nick, newnick, sender, addr, ownnick);
 			msgprint = TRUE;
 		}
 	}
+	g_slist_free(windows);
 
 	if (!msgprint && ownnick)
 		printformat(server, NULL, MSGLEVEL_NICKS, IRCTXT_YOUR_NICK_CHANGED, newnick);
