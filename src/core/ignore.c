@@ -35,27 +35,18 @@
 GSList *ignores;
 
 /* check if `text' contains ignored nick at the start of the line. */
-static int ignore_check_replies(IGNORE_REC *rec, SERVER_REC *server,
-				const char *channel, const char *text)
+static int ignore_check_replies(IGNORE_REC *rec, CHANNEL_REC *channel,
+				const char *text)
 {
-	CHANNEL_REC *chanrec;
 	GSList *nicks, *tmp;
 
-	g_return_val_if_fail(rec != NULL, FALSE);
-	g_return_val_if_fail(server != NULL, FALSE);
-	g_return_val_if_fail(channel != NULL, FALSE);
-	g_return_val_if_fail(text != NULL, FALSE);
-
-	chanrec = channel_find(server, channel);
-	if (chanrec == NULL) return FALSE;
-
-	nicks = nicklist_find_multiple(chanrec, rec->mask);
+	nicks = nicklist_find_multiple(channel, rec->mask);
 	if (nicks == NULL) return FALSE;
 
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *nick = tmp->data;
 
-		if (nick_match_msg(server, text, nick->nick))
+		if (nick_match_msg(channel->server, text, nick->nick))
 			return TRUE;
 	}
 	g_slist_free(nicks);
@@ -66,11 +57,16 @@ static int ignore_check_replies(IGNORE_REC *rec, SERVER_REC *server,
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
 {
+	CHANNEL_REC *chanrec;
 	GSList *tmp;
 	int ok, mask_len, patt_len;
 	int best_mask, best_patt, best_ignore;
 
 	g_return_val_if_fail(server != NULL, 0);
+
+	chanrec = (channel != NULL && server != NULL &&
+		   server->ischannel(*channel)) ?
+		channel_find(server, channel) : NULL;
 
 	best_mask = 0; best_patt = 0; best_ignore = FALSE;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
@@ -85,9 +81,8 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 
 		/* channel list */
 		if (rec->channels != NULL) {
-			if (channel == NULL || !server->ischannel(*channel))
-				continue;
-			if (strarray_find(rec->channels, channel) == -1)
+			if (chanrec == NULL ||
+			    strarray_find(rec->channels, channel) == -1)
 				continue;
 		}
 
@@ -106,7 +101,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
 				if (!rec->replies || channel == NULL || text == NULL ||
-				    !ignore_check_replies(rec, server, channel, text))
+				    !ignore_check_replies(rec, chanrec, text))
 					continue;
 			}
 		}
