@@ -53,10 +53,10 @@ int level_get(const char *level)
 {
 	int n, len, match;
 
-	if (strcmp(level, "ALL") == 0)
+	if (g_strcasecmp(level, "ALL") == 0)
 		return MSGLEVEL_ALL;
 
-	if (strcmp(level, "NEVER") == 0)
+	if (g_strcasecmp(level, "NEVER") == 0)
 		return MSGLEVEL_NEVER;
 
 	len = strlen(level);
@@ -65,7 +65,7 @@ int level_get(const char *level)
 	/* partial match allowed, as long as it's the only one that matches */
 	match = 0;
 	for (n = 0; levels[n] != NULL; n++) {
-		if (strncmp(levels[n], level, len) == 0) {
+		if (g_strncasecmp(levels[n], level, len) == 0) {
 			if ((int)strlen(levels[n]) == len) {
 				/* full match */
 				return 1L << n;
@@ -92,7 +92,6 @@ int level2bits(const char *level)
 		return 0;
 
 	orig = str = g_strdup(level);
-	g_strup(str);
 
 	ret = 0;
 	for (ptr = str; ; str++) {
