@@ -104,7 +104,7 @@ all-local:
 	    if [ "x$(PERL_LIB_DIR)" = "x" ]; then \
 	      $(perlpath) Makefile.PL; \
 	    else \
-	      $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR) INSTALLDIRS=perl; \
+	      $(perlpath) Makefile.PL PREFIX=$(PERL_LIB_DIR) INSTALLDIRS=perl; \
 	    fi; \
 	  fi && \
 	  ($(MAKE) || $(MAKE)) && \
