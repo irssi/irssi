@@ -102,6 +102,35 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 	channel_destroy(CHANNEL(chanrec));
 }
 
+static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
+{
+	CHANNEL_REC *chanrec;
+	char *params, *channel, *p;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, NULL, &channel);
+	p = strchr(channel, ' ');
+	if (p != NULL) *p = '\0';
+
+	if (channel[0] == '!' && channel[1] != '!') {
+		chanrec = channel_find(SERVER(server), channel);
+		if (chanrec != NULL && !chanrec->names_got) {
+			/* duplicate channel - this should only happen when
+			   there's some sync problem with servers, rejoining
+			   after a while should help.
+
+			   note that this same 407 is sent when trying to
+			   create !!channel that already exists so we don't
+			   want to try rejoining then. */
+			channel_rejoin(server, channel);
+			signal_stop();
+		}
+	}
+
+	g_free(params);
+}
+
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
@@ -225,6 +254,7 @@ void channel_rejoin_init(void)
 				   (GSourceFunc) sig_rejoin, NULL);
 
 	command_bind("rmrejoins", NULL, (SIGNAL_FUNC) cmd_rmrejoins);
+	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add_first("channel joined", (SIGNAL_FUNC) sig_remove_rejoin);
 	signal_add_first("channel destroyed", (SIGNAL_FUNC) sig_remove_rejoin);
@@ -236,6 +266,7 @@ void channel_rejoin_deinit(void)
 	g_source_remove(rejoin_tag);
 
 	command_unbind("rmrejoins", (SIGNAL_FUNC) cmd_rmrejoins);
+	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_remove("channel joined", (SIGNAL_FUNC) sig_remove_rejoin);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_remove_rejoin);
