@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.17)
+AM_INIT_AUTOMAKE(irssi, 0.7.18)
 
 AM_MAINTAINER_MODE
 
@@ -315,7 +315,7 @@ fi
 AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true)
 
 dnl ** check if we want to build irssibot
-AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = true)
+AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "xyes")
 
 dnl **
 dnl ** memory debugging
