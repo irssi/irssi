@@ -227,13 +227,18 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	g_free_not_null(freemsg);
 }
 
-static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
-				      const char *target, const char *msg)
+static void sig_message_own_public(SERVER_REC *server, const char *msg,
+				   const char *target)
 {
 	WINDOW_REC *window;
+	CHANNEL_REC *channel;
 	const char *nickmode;
         char *freemsg = NULL;
 	int print_channel;
+
+	channel = channel_find(server, target);
+	if (channel != NULL)
+		target = channel->visible_name;
 
 	nickmode = channel_get_nickmode(channel, server->nick);
 
@@ -259,18 +264,6 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 	}
 
 	g_free_not_null(freemsg);
-}
-
-static void sig_message_own_public(SERVER_REC *server, const char *msg,
-				   const char *target)
-{
-	CHANNEL_REC *channel;
-
-	g_return_if_fail(server != NULL);
-	g_return_if_fail(msg != NULL);
-
-	channel = channel_find(server, target);
-	print_own_channel_message(server, channel, target, msg);
 }
 
 static void sig_message_own_private(SERVER_REC *server, const char *msg,
