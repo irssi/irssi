@@ -85,12 +85,12 @@ server_redirect_register(command, remote, timeout, start, stop)
 	char *command
 	int remote
 	int timeout
-	void *start
-	void *stop
+	SV *start
+	SV *stop
 CODE:
 	server_redirect_register_list(command, remote, timeout, 
-				      register_hash2list(hvref(ST(3))),
-				      register_hash2list(hvref(ST(4))));
+				      register_hash2list(hvref(start)),
+				      register_hash2list(hvref(stop)));
 
 void
 server_redirect_event(server, command, count, arg, remote, failure_signal, signals)
@@ -100,11 +100,11 @@ server_redirect_event(server, command, count, arg, remote, failure_signal, signa
 	char *arg
 	int remote
 	char *failure_signal
-	void *signals
+	SV *signals
 CODE:
 	server_redirect_event_list(server, command, count, *arg == '\0' ? NULL : arg, remote,
 				   *failure_signal == '\0' ? NULL : failure_signal,
-				   event_hash2list(hvref(ST(5))));
+				   event_hash2list(hvref(signals)));
 
 char *
 server_redirect_get_signal(server, event, args)
