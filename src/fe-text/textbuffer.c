@@ -18,6 +18,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#define	G_LOG_DOMAIN "TextBuffer"
+
 #include "module.h"
 #include "misc.h"
 #include "formats.h"

@@ -18,6 +18,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#define	G_LOG_DOMAIN "TextBufferView"
+
 #include "module.h"
 #include "textbuffer-view.h"
 #include "utf8.h"
@@ -713,6 +715,9 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
                         break;
 		}
 
+		if ((*lines)->next == NULL)
+			break;
+
                 *lines = (*lines)->next;
 	}
 
@@ -879,8 +884,8 @@ LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
 {
 	LINE_CACHE_REC *cache;
 
-        g_return_val_if_fail(view != NULL, NULL);
-        g_return_val_if_fail(line != NULL, NULL);
+        g_assert(view != NULL);
+        g_assert(line != NULL);
 
 	cache = g_hash_table_lookup(view->cache->line_cache, line);
 	if (cache == NULL)
