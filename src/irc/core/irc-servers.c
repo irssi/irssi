@@ -165,8 +165,8 @@ static void server_init(IRC_SERVER_REC *server)
 					    (GCompareFunc) g_istr_equal);
 
 	/* set the standards */
-	g_hash_table_insert(server->isupport, "CHANMODES", "beI,k,l,imnpst");
-	g_hash_table_insert(server->isupport, "PREFIX", "(ohv)@%+");
+	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
+	g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
 
 	server->cmdcount = 0;
 }
@@ -313,11 +313,9 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_free(server->cmdqueue);
         server->cmdqueue = NULL;
 
-	if (server->isupport_sent) {
-		/* these are dynamically allocated only if isupport was sent */
-		g_hash_table_foreach(server->isupport,
-				     (GHFunc) isupport_destroy_hash, server);
-	}
+	/* these are dynamically allocated only if isupport was sent */
+	g_hash_table_foreach(server->isupport,
+			     (GHFunc) isupport_destroy_hash, server);
 	g_hash_table_destroy(server->isupport);
 	server->isupport = NULL;
 
@@ -596,15 +594,11 @@ static void parse_prefix(IRC_SERVER_REC *server, const char *sptr)
 	}
 }
 
-static gboolean hash_clear(gpointer key, gpointer value, gpointer user_data)
-{
-	return TRUE;
-}
-
 static void event_isupport(IRC_SERVER_REC *server, const char *data)
 {
 	char **item, *sptr, *eptr;
 	char **isupport;
+	gpointer key, value;
    
 	g_return_if_fail(server != NULL);
 
@@ -615,14 +609,10 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 		return;
 	sptr++;
 
-	/* remove defaults */
-	g_hash_table_foreach_remove(server->isupport, hash_clear, NULL);
-
 	isupport = g_strsplit(sptr, " ", -1);
 
 	for(item = isupport; *item != NULL; item++) {
 		int removed = FALSE;
-		gpointer key = NULL, value = NULL;
 
 		if (**item == ':')
 			break;
@@ -639,6 +629,7 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 			eptr++;
 		}
 
+		key = value = NULL;
 		if (!g_hash_table_lookup_extended(server->isupport, eptr,
 						  &key, &value) && removed)
 			continue;
@@ -663,7 +654,21 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 		parse_chanmodes(server, sptr);
 
 	/* This is after chanmode because some servers define modes in both */
-	if ((sptr = g_hash_table_lookup(server->isupport, "PREFIX")) == NULL) {
+	if (g_hash_table_lookup_extended(server->isupport, "PREFIX",
+					 &key, &value)) {
+		sptr = value;
+		if (*sptr != '(') {
+			/* server incompatible with isupport draft */
+			g_hash_table_remove(server->isupport, key);
+			g_free(key);
+			g_free(value);
+			sptr = NULL;
+		}
+	} else {
+		sptr = NULL;
+	}
+
+	if (sptr == NULL) {
 		sptr = g_strdup("(ohv)@%+");
 		g_hash_table_insert(server->isupport, g_strdup("PREFIX"), sptr);
 	}
