@@ -319,6 +319,9 @@ dcc/fe-dcc-chat-messages.c:
 Text FE
 -------
 
+gui-readline.c:
+ "gui key pressed", int key
+
 gui-printtext.c:
  "beep"
 

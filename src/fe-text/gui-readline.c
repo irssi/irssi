@@ -134,16 +134,19 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
-void handle_key(unichar key)
+static void sig_gui_key_pressed(gpointer keyp)
 {
+        unichar key;
 	char str[20];
 
-	idle_time = time(NULL);
+	key = GPOINTER_TO_INT(keyp);
 
 	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);
 		return;
 	}
+
+	idle_time = time(NULL);
 
 	if (key < 32) {
 		/* control key */
@@ -367,8 +370,10 @@ static void sig_input(void)
 		if (!term_detached)
 			signal_emit("command quit", 1, "Lost terminal");
 	} else {
-		for (i = 0; i < ret; i++)
-			handle_key(buffer[i]);
+		for (i = 0; i < ret; i++) {
+			signal_emit("gui key pressed", 1,
+				    GINT_TO_POINTER(buffer[i]));
+		}
 	}
 }
 
@@ -762,6 +767,7 @@ void gui_readline_init(void)
 
 	signal_add("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_add("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
+	signal_add("gui key pressed", (SIGNAL_FUNC) sig_gui_key_pressed);
 }
 
 void gui_readline_deinit(void)
@@ -825,4 +831,5 @@ void gui_readline_deinit(void)
 
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
+	signal_remove("gui key pressed", (SIGNAL_FUNC) sig_gui_key_pressed);
 }
