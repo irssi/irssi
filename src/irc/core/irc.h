@@ -70,10 +70,6 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
    and queues. */
 void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd);
 
-/* Nick can be in format "servertag/nick" - Update `nick' to
-   position "nick" and return "servertag" which you need to free */
-char *irc_nick_get_server(char **nick);
-
 #include "commands.h" /* contains the generic PARAM_FLAG_xxx defines */
 
 /* IRC specific: optional channel in first argument */

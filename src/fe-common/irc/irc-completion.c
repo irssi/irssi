@@ -201,12 +201,15 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 {
+	GHashTable *optlist;
 	char *target, *msg;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "msg", &optlist, &target, &msg))
 		return;
 	if (*target != '\0' && *msg != '\0') {
 		if (!ischannel(*target) && *target != '=' && server != NULL)
@@ -244,11 +247,14 @@ static void sig_nick_changed(CHANNEL_REC *channel, NICK_REC *nick, const char *o
 	}
 }
 
-static GList *completion_msg(IRC_SERVER_REC *server, const char *nick, const char *prefix)
+/* Complete /MSG from specified server */
+static GList *completion_msg_server(IRC_SERVER_REC *server, const char *nick, const char *prefix)
 {
 	GSList *tmp;
 	GList *list;
 	int len;
+
+	g_return_val_if_fail(nick != NULL, NULL);
 
 	list = NULL; len = strlen(nick);
 	for (tmp = server->lastmsgs; tmp != NULL; tmp = tmp->next) {
@@ -258,6 +264,41 @@ static GList *completion_msg(IRC_SERVER_REC *server, const char *nick, const cha
 			else
 				list = g_list_append(list, g_strconcat(prefix, " ", tmp->data, NULL));
 		}
+	}
+
+	return list;
+}
+
+/* Complete /MSG - if `server' is NULL, complete nicks from all servers */
+static GList *completion_msg(IRC_SERVER_REC *win_server, IRC_SERVER_REC *find_server,
+			     const char *nick, const char *prefix)
+{
+	GSList *tmp;
+	GList *list, *tmplist;
+	char *newprefix;
+
+	g_return_val_if_fail(nick != NULL, NULL);
+	if (servers == NULL) return NULL;
+
+	if (find_server != NULL)
+		return completion_msg_server(find_server, nick, prefix);
+
+	list = NULL;
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *rec = tmp->data;
+
+		if (rec == win_server)
+			newprefix = g_strdup(prefix);
+		else {
+			newprefix = prefix == NULL ?
+				g_strdup_printf("-%s", rec->tag) :
+				g_strdup_printf("%s -%s", prefix, rec->tag);
+		}
+
+		tmplist = completion_msg_server(rec, nick, newprefix);
+		list = g_list_concat(list, tmplist);
+
+		g_free_not_null(newprefix);
 	}
 
 	return list;
@@ -336,6 +377,31 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 	return list1;
 }
 
+static IRC_SERVER_REC *line_get_server(const char *line)
+{
+	IRC_SERVER_REC *server;
+	const char *ptr;
+	char *tag, *p;
+
+	g_return_val_if_fail(line != NULL, NULL);
+
+	ptr = strchr(line, ' ');
+	if (ptr == NULL) return NULL;
+
+	while (*ptr == ' ') ptr++;
+	if (*ptr != '-') return NULL;
+
+	/* -option found - should be server tag */
+	tag = g_strdup(ptr+1);
+	p = strchr(tag, ' ');
+	if (p != NULL) *p = '\0';
+
+	server = (IRC_SERVER_REC *) server_find_tag(tag);
+
+	g_free(tag);
+	return server;
+}
+
 static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart)
 {
@@ -364,12 +430,13 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	/* check for /MSG completion */
 	cmdchars = settings_get_str("cmdchars");
-	if (*word == '\0' || (*linestart == '\0' && strchr(cmdchars, *word) != NULL &&
-			      g_strcasecmp(word+1, "msg") == 0)) {
+	if ((*linestart == '\0' && *word == '\0') ||
+	    (*linestart == '\0' && strchr(cmdchars, *word) != NULL &&
+	     g_strcasecmp(word+1, "msg") == 0)) {
 		/* pressed TAB at the start of line - add /MSG
 		   ... or ... trying to complete /MSG command */
                 prefix = g_strdup_printf("%cmsg", *cmdchars);
-		*list = completion_msg(server, "", prefix);
+		*list = completion_msg(server, NULL, "", prefix);
 		if (*list == NULL) *list = g_list_append(*list, g_strdup(prefix));
 		g_free(prefix);
 
@@ -380,7 +447,10 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	if (strchr(cmdchars, *linestart) != NULL &&
 	    g_strcasecmp(linestart+1, "msg") == 0) {
                 /* completing /MSG nick */
-		*list = completion_msg(server, word, NULL);
+		IRC_SERVER_REC *msgserver;
+
+		msgserver = line_get_server(linestart);
+		*list = completion_msg(server, msgserver, word, NULL);
 	}
 
 	/* nick completion .. we could also be completing a nick after /MSG

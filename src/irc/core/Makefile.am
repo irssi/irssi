@@ -41,6 +41,7 @@ noinst_HEADERS = \
         channels-setup.h \
         ignore.h \
         irc.h \
+        irc-commands.h \
         irc-server.h \
 	ircnet-setup.h \
         masks.h \

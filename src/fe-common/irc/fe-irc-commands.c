@@ -27,6 +27,7 @@
 
 #include "levels.h"
 #include "irc.h"
+#include "irc-commands.h"
 #include "server.h"
 #include "mode-lists.h"
 #include "nicklist.h"
@@ -90,6 +91,7 @@ static void cmd_query(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
+    GHashTable *optlist;
     WINDOW_REC *window;
     CHANNEL_REC *channel;
     NICK_REC *nickrec;
@@ -99,9 +101,12 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 
     g_return_if_fail(data != NULL);
 
-    if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+    if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			"msg", &optlist, &target, &msg))
 	    return;
     if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+    server = irccmd_options_get_server(optlist, server);
 
     if (*target == '=')
     {

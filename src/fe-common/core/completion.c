@@ -34,8 +34,8 @@
 	iconfig_list_find("completions", "short", completion, "long")
 
 static GList *complist; /* list of commands we're currently completing */
-static char *last_linestart;
-static int last_want_space;
+static char *last_line;
+static int last_want_space, last_line_pos;
 
 #define isseparator_notspace(c) \
         ((c) == ',')
@@ -106,30 +106,23 @@ static void free_completions(void)
 	g_list_free(complist);
         complist = NULL;
 
-	g_free_and_null(last_linestart);
+	g_free_and_null(last_line);
 }
 
 /* manual word completion - called when TAB is pressed */
 char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 {
+	static int startpos = 0, wordlen = 0;
+
 	GString *result;
 	char *word, *wordstart, *linestart, *ret;
-	int startpos, wordlen, want_space;
+	int want_space;
 
 	g_return_val_if_fail(line != NULL, NULL);
 	g_return_val_if_fail(pos != NULL, NULL);
 
-	/* get the word we want to complete */
-	word = get_word_at(line, *pos, &wordstart);
-	startpos = (int) (wordstart-line);
-	wordlen = strlen(word);
-
-	/* get the start of line until the word we're completing */
-	while (wordstart > line && isseparator(wordstart[-1])) wordstart--;
-	linestart = g_strndup(line, (int) (wordstart-line));
-
-	if (complist != NULL && strcmp(linestart, last_linestart) == 0 &&
-	    g_strcasecmp(complist->data, word) == 0) {
+	if (complist != NULL && *pos == last_line_pos &&
+	    strcmp(line, last_line) == 0) {
 		/* complete from old list */
 		complist = complist->next != NULL ? complist->next :
 			g_list_first(complist);
@@ -138,33 +131,66 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		/* get new completion list */
 		free_completions();
 
-		last_linestart = g_strdup(linestart);
+		/* get the word we want to complete */
+		word = get_word_at(line, *pos, &wordstart);
+		startpos = (int) (wordstart-line);
+		wordlen = strlen(word);
+
+		/* get the start of line until the word we're completing */
+		while (wordstart > line && isseparator(wordstart[-1])) wordstart--;
+		linestart = g_strndup(line, (int) (wordstart-line));
+
+		/* completions usually add space after the word, that makes
+		   things a bit harder. When continuing a completion
+		   "/msg nick1 "<tab> we have to cycle to nick2, etc.
+		   BUT if we start completion with "/msg "<tab>, we don't
+		   want to complete the /msg word, but instead complete empty
+		   word with /msg being in linestart. */
+		if (pos > 0 && line[*pos-1] == ' ') {
+			char *old;
+
+                        old = linestart;
+			linestart = *linestart == '\0' ?
+				g_strdup(word) :
+				g_strconcat(linestart, " ", word, NULL);
+			g_free(old);
+
+			g_free(word);
+			word = g_strdup("");
+			startpos = (int) (wordstart-line)+wordlen+1;
+			wordlen = 0;
+		}
+
 		want_space = TRUE;
 		signal_emit("complete word", 5, &complist, window, word, linestart, &want_space);
 		last_want_space = want_space;
+
+		g_free(linestart);
+		g_free(word);
 	}
 
 	if (complist == NULL)
-		ret = NULL;
-	else {
-		/* word completed */
-		*pos = startpos+strlen(complist->data)+1;
+		return NULL;
 
-		/* replace the word in line - we need to return
-		   a full new line */
-		result = g_string_new(line);
-		g_string_erase(result, startpos, wordlen);
-		g_string_insert(result, startpos, complist->data);
+	/* word completed */
+	*pos = startpos+strlen(complist->data)+1;
 
-		if (want_space && !isseparator(result->str[*pos-1]))
-			g_string_insert_c(result, *pos-1, ' ');
+	/* replace the word in line - we need to return
+	   a full new line */
+	result = g_string_new(line);
+	g_string_erase(result, startpos, wordlen);
+	g_string_insert(result, startpos, complist->data);
 
-		ret = result->str;
-		g_string_free(result, FALSE);
-	}
+	if (want_space && !isseparator(result->str[*pos-1]))
+		g_string_insert_c(result, *pos-1, ' ');
 
-	g_free(linestart);
-	g_free(word);
+	wordlen = strlen(complist->data);
+	last_line_pos = *pos;
+	g_free_not_null(last_line);
+	last_line = g_strdup(result->str);
+
+	ret = result->str;
+	g_string_free(result, FALSE);
 	return ret;
 }
 
@@ -339,7 +365,7 @@ static GList *completion_get_subcommands(const char *cmd)
 
 	/* get the number of chars to skip at the start of command. */
 	spacepos = strrchr(cmd, ' ');
-	skip = spacepos == NULL ? 0 :
+	skip = spacepos == NULL ? strlen(cmd)+1 :
 		((int) (spacepos-cmd) + 1);
 
 	len = strlen(cmd);
@@ -370,7 +396,7 @@ GList *completion_get_options(const char *cmd, const char *option)
 	g_return_val_if_fail(option != NULL, NULL);
 
 	rec = command_find(cmd);
-	if (rec == NULL) return NULL;
+	if (rec == NULL || rec->options == NULL) return NULL;
 
 	list = NULL;
 	len = strlen(option);
@@ -566,7 +592,7 @@ static void sig_complete_filename(GList **list, WINDOW_REC *window,
 void completion_init(void)
 {
 	complist = NULL;
-	last_linestart = NULL;
+	last_line = NULL; last_line_pos = -1;
 
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);

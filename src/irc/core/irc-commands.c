@@ -45,6 +45,29 @@ typedef struct {
 static GString *tmpstr;
 static int knockout_tag;
 
+/* `optlist' should contain only one key - the server tag.
+   returns NULL if there was unknown -option */
+IRC_SERVER_REC *irccmd_options_get_server(GHashTable *optlist, IRC_SERVER_REC *defserver)
+{
+	SERVER_REC *server;
+	GSList *list;
+
+	/* -<server tag> */
+	list = hashtable_get_keys(optlist);
+	if (list == NULL) return defserver;
+
+	server = server_find_tag(list->data);
+	if (server == NULL || list->next != NULL) {
+		/* unknown option (not server tag) */
+		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN), list->data);
+
+		server = NULL;
+	}
+
+	g_slist_free(list);
+	return (IRC_SERVER_REC *) server;
+}
+
 static IRC_SERVER_REC *connect_server(const char *data)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -206,16 +229,20 @@ static void cmd_quit(const char *data)
 
 static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
+	GHashTable *optlist;
 	char *target, *msg;
 	void *free_arg;
 	int free_ret;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "msg", &optlist, &target, &msg))
 		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
+	server = irccmd_options_get_server(optlist, server);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
@@ -300,7 +327,6 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 static void cmd_join(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
-	GSList *list;
 	char *channels;
 	void *free_arg;
 
@@ -317,18 +343,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 			channels_join(server, server->last_invite, FALSE);
 	} else {
 		/* -<server tag> */
-                list = hashtable_get_keys(optlist);
-		if (list != NULL) {
-			server = (IRC_SERVER_REC *) server_find_tag(list->data);
-
-			if (server == NULL) {
-				/* unknown option (not server tag) */
-				signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN), list->data);
-				signal_stop();
-			}
-			g_slist_free(list);
-		}
-
+		server = irccmd_options_get_server(optlist, server);
 		if (server != NULL) channels_join(server, channels, FALSE);
 	}
 

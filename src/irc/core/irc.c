@@ -183,25 +183,6 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	g_free(str);
 }
 
-/* Nick can be in format "servertag/nick" - Update `nick' to
-   position "nick" and return "servertag" which you need to free */
-char *irc_nick_get_server(char **nick)
-{
-	char *ptr, *tag;
-
-	ptr = strchr(*nick, '/');
-	if (ptr == NULL) return NULL;
-	if (ptr == *nick) {
-		(*nick)++;
-		return NULL;
-	}
-
-        tag = g_strndup(*nick, (int) (ptr-*nick));
-	*nick = ptr+1;
-
-	return tag;
-}
-
 /* Get next parameter */
 char *event_get_param(char **data)
 {
