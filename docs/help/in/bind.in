@@ -1,0 +1,86 @@
+
+@SYNTAX:bind@
+
+Bind some action to specified keystroke.
+
+Keystroke can have modifiers:
+
+  ctrl-x
+  alt-x
+  alt-shift-x
+
+Where x being either a single character, or one of the special keys:
+
+  Backspace Delete
+  Home End Prior Next
+  Up Down Left Right
+  Insert Return Tab
+
+(these key specifications will some day change to be more epic-like
+when I have time to implement it)
+
+Command can be one of:
+
+  command - Run any IRC command (you could use /command directly without
+                                 specifying this)
+
+(Cursor movement)
+  backward_character
+  forward_character
+  backward_word
+  forward_word
+  beginning_of_line
+  end_of_line
+
+(Scrollback movement)
+  scroll_backward - Previous page
+  scroll_forward - Next page
+  scroll_start - Beginning of the window
+  scroll_end - End of the window
+
+(Switching windows)
+  change_window
+  previous_window
+  next_window
+  upper_window
+  lower_window
+  active_window - Go to next window with the highest activity
+  next_window_item - Next channel/query. In empty windows change
+                     to next server
+  previous_window_item - Previous channel/query. In empty windows change
+                         to previous server
+
+(History)
+  backward_history
+  forward_history
+
+(Deleting text)
+  backspace
+  delete_character
+  delete_character
+  delete_next_word
+  delete_previous_word
+  delete_to_previous_space
+  erase_line
+  erase_to_beg_of_line
+  erase_to_end_of_line
+
+(Word completion)
+  word_completion
+  check_replaces - Check word replaces
+
+(Misc)
+  refresh_screen
+  yank_from_cutbuffer - "Undelete" line
+  transpose_characters - Swap current and previous character
+  special_char - Insert special character, data specifies the character.
+                 This is used mostly for setting bold, underline, color, etc.
+
+Examples:
+
+Clear screen:
+  /BIND Alt-C /CLEAR
+
+People with qwertz layout probably want to swap Alt-Y and Alt-Z:
+  /BIND Alt-Z change_window 16
+  /BIND -delete Alt-Y
