@@ -437,7 +437,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		}
 	}
 
-	if (str->len != 0) {
+	if (str->len > strlen(prefix_format)) {
 		printtext(channel->server, channel->name,
 			  MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	}
@@ -490,13 +490,13 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	/* display the nicks */
         if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0) {
 		printformat(channel->server, channel->name,
-			    MSGLEVEL_CRAP, TXT_NAMES, channel->name, "");
+			    MSGLEVEL_CLIENTCRAP, TXT_NAMES, channel->name, nicks, ops, halfops, voices, normal);
 		display_sorted_nicks(channel, sorted);
 	}
 	g_slist_free(sorted);
 
 	printformat(channel->server, channel->name,
-		    MSGLEVEL_CRAP, TXT_ENDOFNAMES,
+		    MSGLEVEL_CLIENTCRAP, TXT_ENDOFNAMES,
 		    channel->name, nicks, ops, halfops, voices, normal);
 }
 

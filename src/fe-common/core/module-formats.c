@@ -107,7 +107,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "talking_in", "You are now talking in {channel $0}", 1, { 0 } },
 	{ "not_in_channels", "You are not on any channels", 0 },
 	{ "current_channel", "Current channel {channel $0}", 1, { 0 } },
-	{ "names", "{names_users Users {names_channel $0}} $1", 2, { 0, 0 } },
+	{ "names", "{names_users Users {names_channel $0}} $1", 6, { 0, 1, 1, 1, 1, 1 } },
 	{ "names_prefix", "{names_prefix $0}", 1, { 0 } },
         { "names_nick_op", "{names_nick_op $0 $1}", 2, { 0, 0 } },
         { "names_nick_halfop", "{names_nick_halfop $0 $1}", 2, { 0, 0 } },
