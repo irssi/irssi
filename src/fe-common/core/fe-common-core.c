@@ -29,6 +29,7 @@
 #include "completion.h"
 #include "keyboard.h"
 #include "printtext.h"
+#include "formats.h"
 #include "themes.h"
 #include "translation.h"
 #include "windows.h"
@@ -104,6 +105,7 @@ void fe_common_core_init(void)
 	hilight_text_init();
 	keyboard_init();
 	printtext_init();
+	formats_init();
         fe_channels_init();
         fe_queries_init();
 	fe_ignore_init();
@@ -131,6 +133,7 @@ void fe_common_core_deinit(void)
 	completion_deinit();
 	keyboard_deinit();
 	printtext_deinit();
+	formats_deinit();
         fe_channels_deinit();
         fe_queries_deinit();
 	fe_ignore_deinit();

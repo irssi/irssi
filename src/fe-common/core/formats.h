@@ -86,4 +86,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_DEFAULTS	(0x05 + FORMAT_STYLE_SPECIAL)
 int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest);
 
+void formats_init(void);
+void formats_deinit(void);
+
 #endif
