@@ -300,7 +300,7 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 	return list1;
 }
 
-static void sig_word_complete(GList **list, WINDOW_REC *window,
+static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart)
 {
 	IRC_SERVER_REC *server;
@@ -485,7 +485,7 @@ void irc_completion_init(void)
 
 	complete_tag = g_timeout_add(1000, (GSourceFunc) nick_completion_timeout, NULL);
 
-	signal_add("word complete", (SIGNAL_FUNC) sig_word_complete);
+	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
@@ -499,7 +499,7 @@ void irc_completion_deinit(void)
 {
 	g_source_remove(complete_tag);
 
-	signal_remove("word complete", (SIGNAL_FUNC) sig_word_complete);
+	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);

@@ -444,7 +444,7 @@ void fe_irc_dcc_init(void)
     signal_add("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
     signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
     signal_add("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
-    signal_add("command complete dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
+    signal_add("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
     command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
     command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
     command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
@@ -477,7 +477,7 @@ void fe_irc_dcc_deinit(void)
     signal_remove("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
     signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
     signal_remove("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
-    signal_remove("command complete dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
+    signal_remove("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
     command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
     command_unbind("me", (SIGNAL_FUNC) cmd_me);
     command_unbind("action", (SIGNAL_FUNC) cmd_action);

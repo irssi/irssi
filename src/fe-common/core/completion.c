@@ -140,7 +140,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 
 		last_linestart = g_strdup(linestart);
 		want_space = TRUE;
-		signal_emit("word complete", 5, &complist, window, word, linestart, &want_space);
+		signal_emit("complete word", 5, &complist, window, word, linestart, &want_space);
 		last_want_space = want_space;
 	}
 
@@ -340,7 +340,7 @@ static char *line_get_command(const char *line, char **args)
 	return cmd;
 }
 
-static void sig_word_complete(GList **list, WINDOW_REC *window,
+static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart, int *want_space)
 {
 	const char *newword, *cmdchars;
@@ -394,7 +394,7 @@ static void sig_word_complete(GList **list, WINDOW_REC *window,
 
 		cmd = line_get_command(linestart+1, &args);
 		if (cmd != NULL) {
-			signal = g_strconcat("command complete ", cmd, NULL);
+			signal = g_strconcat("complete command ", cmd, NULL);
 			signal_emit(signal, 5, list, window, word, args, want_space);
 
 			g_free(signal);
@@ -408,12 +408,12 @@ void completion_init(void)
 	complist = NULL;
 	last_linestart = NULL;
 
-	signal_add("word complete", (SIGNAL_FUNC) sig_word_complete);
+	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 }
 
 void completion_deinit(void)
 {
         free_completions();
 
-	signal_remove("word complete", (SIGNAL_FUNC) sig_word_complete);
+	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 }
