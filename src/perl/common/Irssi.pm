@@ -120,7 +120,9 @@ sub EXPORT_ALL () {
       push @EXPORT_OK, $_ if /[a-z]/ && defined *{$_}{CODE};
     }
   }
-  select CLIENTCRAP;
+
+  tie *DEFAULT, __PACKAGE__, MSGLEVEL_CLIENTCRAP();
+  select DEFAULT;
 }
 
 sub in_irssi {
