@@ -436,17 +436,38 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *str, *from;
+	char *params, *nick, *txt_real, *txt_hostname, *hostname, *from;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &str);
+        /* <yournick> real hostname <nick> <hostname> */
+	params = event_get_params(data, 5, NULL, &nick, &txt_real,
+				  &txt_hostname, &hostname);
+	if (strcmp(txt_real, "real") != 0 ||
+	    strcmp(txt_hostname, "hostname") != 0) {
+		/* <yournick> <nick> :... from <hostname> */
+		params = event_get_params(data, 3, NULL, &nick, &hostname);
 
-	from = strstr(str, "from ");
-	if (from == NULL) from = str; else from += 5;
+		from = strstr(hostname, "from ");
+                if (from != NULL) hostname = from+5;
+	}
 
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_REALHOST, nick, from);
+		    IRCTXT_WHOIS_REALHOST, nick, hostname);
+	g_free(params);
+}
+
+static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *txt_usermodes, *nick, *usermode;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 4, NULL, &txt_usermodes,
+				  &nick, &usermode);
+
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_USERMODE, nick, usermode);
 	g_free(params);
 }
 
@@ -757,6 +778,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 310", (SIGNAL_FUNC) event_whois_help);
 	signal_add("event 379", (SIGNAL_FUNC) event_whois_modes);
 	signal_add("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_add("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_add("event 320", (SIGNAL_FUNC) event_whois_special);
 	signal_add("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
@@ -832,6 +854,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 310", (SIGNAL_FUNC) event_whois_help);
 	signal_remove("event 379", (SIGNAL_FUNC) event_whois_modes);
 	signal_remove("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_remove("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_remove("event 320", (SIGNAL_FUNC) event_whois_special);
 	signal_remove("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_remove("event 317", (SIGNAL_FUNC) event_whois_idle);

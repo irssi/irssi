@@ -103,6 +103,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_help", "{whois  is available for help}", 1, { 0 } },
 	{ "whois_modes", " {whois modes $1}", 2, { 0, 0 } },
 	{ "whois_realhost", "{whois hostname $1}", 2, { 0, 0 } },
+	{ "whois_usermode", "{whois usermode $1}", 2, { 0, 0 } },
 	{ "whois_channels", "{whois channels %|$1}", 2, { 0, 0 } },
 	{ "whois_away", "{whois away %|$1}", 2, { 0, 0 } },
 	{ "whois_special", "{whois  %|{hilight $1}}", 2, { 0, 0 } },
