@@ -81,6 +81,7 @@ int windows_refnum_last(void);
 int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2);
 GSList *windows_get_sorted(void);
 
+/* Add a new bind to window - if duplicate is found it's returned */
 WINDOW_BIND_REC *window_bind_add(WINDOW_REC *window, const char *servertag,
 				 const char *name);
 void window_bind_destroy(WINDOW_REC *window, WINDOW_BIND_REC *rec);

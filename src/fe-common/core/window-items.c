@@ -241,6 +241,7 @@ static int window_bind_has_sticky(WINDOW_REC *window)
 void window_item_create(WI_ITEM_REC *item, int automatic)
 {
 	WINDOW_REC *window;
+        WINDOW_BIND_REC *bind;
 	GSList *tmp, *sorted;
 	int clear_waiting, reuse_unused_windows;
 
@@ -255,11 +256,16 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		WINDOW_REC *rec = tmp->data;
 
                 /* is item bound to this window? */
-		if (item->server != NULL &&
-		    window_bind_find(rec, item->server->tag, item->name)) {
-			window = rec;
-			clear_waiting = FALSE;
-			break;
+		if (item->server != NULL) {
+			bind = window_bind_find(rec, item->server->tag,
+						item->name);
+			if (bind != NULL) {
+                                if (!bind->sticky)
+					window_bind_destroy(rec, bind);
+				window = rec;
+				clear_waiting = FALSE;
+				break;
+			}
 		}
 
 		/* use this window IF:
