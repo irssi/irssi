@@ -32,8 +32,10 @@
 #include "channels.h"
 #include "queries.h"
 #include "window-item-def.h"
+#include "rawlog.h"
 
-static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
+static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
+					      char **rawlog_file)
 {
         CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
@@ -89,6 +91,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
                 g_free_and_null(conn->proxy);
 
+	*rawlog_file = g_strdup(g_hash_table_lookup(optlist, "rawlog"));
+
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
 		IPADDR ip4, ip6;
@@ -106,12 +110,19 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 static void cmd_connect(const char *data)
 {
 	SERVER_CONNECT_REC *conn;
+	SERVER_REC *server;
+        char *rawlog_file;
 
-	conn = get_server_connect(data, NULL);
+	conn = get_server_connect(data, NULL, &rawlog_file);
 	if (conn != NULL) {
-		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server = CHAT_PROTOCOL(conn)->server_connect(conn);
                 server_connect_unref(conn);
+
+		if (server != NULL && rawlog_file != NULL)
+			rawlog_open(server->rawlog, rawlog_file);
 	}
+
+	g_free(rawlog_file);
 }
 
 static RECONNECT_REC *find_reconnect_server(int chat_type,
@@ -200,18 +211,24 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
+        char *rawlog_file;
 	int plus_addr;
 
 	g_return_if_fail(data != NULL);
 
         /* create connection record */
-	conn = get_server_connect(data, &plus_addr);
+	conn = get_server_connect(data, &plus_addr, &rawlog_file);
 	if (conn != NULL) {
 		if (!plus_addr)
 			update_reconnection(conn, server);
-		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server = CHAT_PROTOCOL(conn)->server_connect(conn);
 		server_connect_unref(conn);
+
+		if (server != NULL && rawlog_file != NULL)
+			rawlog_open(server->rawlog, rawlog_file);
 	}
+
+	g_free(rawlog_file);
 }
 
 /* SYNTAX: DISCONNECT *|<tag> [<message>] */
@@ -400,7 +417,7 @@ void chat_commands_init(void)
 
         signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 
-	command_set_options("connect", "4 6 !! +host noproxy");
+	command_set_options("connect", "4 6 !! +host noproxy -rawlog");
 	command_set_options("join", "invite");
 }
 

@@ -136,7 +136,6 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 void server_connect_finished(SERVER_REC *server)
 {
 	server->connect_time = time(NULL);
-	server->rawlog = rawlog_create();
 
 	servers = g_slist_append(servers, server);
 	signal_emit("server connected", 1, server);
@@ -296,6 +295,7 @@ int server_start_connect(SERVER_REC *server)
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_readpipe,
 			    server);
+	server->rawlog = rawlog_create();
 
 	lookup_servers = g_slist_append(lookup_servers, server);
 
