@@ -12,7 +12,7 @@ botti_LDADD = \
 	@COMMON_NOUI_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_LINK_FLAGS@ \
-	@PROG_LIBS
+	@PROG_LIBS@
 
 botti_SOURCES = \
         irssi.c
