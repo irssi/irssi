@@ -107,7 +107,7 @@ CODE:
 	perl_command(cmd, server, NULL);
 
 void
-print(server, channel, str, level)
+print(server, channel, str, level=MSGLEVEL_CLIENTNOTICE)
 	Irssi::Server server
 	char *channel
 	char *str
