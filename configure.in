@@ -223,6 +223,7 @@ AM_CONDITIONAL(HAVE_GNOME, test "x$want_gnome" = "xyes")
 if test "x$want_gnome" = "xyes"; then
 	AC_DEFINE(HAVE_GTK)
 	AC_DEFINE(HAVE_GNOME)
+	AC_DEFINE(HAVE_IMLIB)
 	GNOME_SUPPORT_CHECKS
 	GUI_CFLAGS="$GNOME_INCLUDEDIR"
 
@@ -232,14 +233,14 @@ if test "x$want_gnome" = "xyes"; then
 
         if test "x$want_gnome_panel" = "xyes"; then
 		AC_CHECK_LIB(panel_applet, applet_widget_init, [
-			GUI_LIBS="$GNOME_LIBDIR $GNOMEGNORBA_LIBS $ZVT_LIBS -lpanel_applet"
+			GUI_LIBS="$GNOME_LIBDIR $GNOMEGNORBA_LIBS -lpanel_applet"
 			AC_DEFINE(HAVE_GNOME_PANEL)
 		], [
-			GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS $ZVT_LIBS"
+			GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS"
                 	want_gnome_panel="no"
 		], $GNOME_LIBDIR $GNOMEGNORBA_LIBS -lpanel_applet)
         else
-		GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS $ZVT_LIBS"
+		GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS"
         fi
 
 else
