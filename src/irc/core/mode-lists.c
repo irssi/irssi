@@ -44,26 +44,6 @@ void banlist_free(GSList *banlist)
 		ban_free(&banlist, banlist->data);
 }
 
-BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban,
-		     const char *nick, time_t time)
-{
-	BAN_REC *rec;
-
-	g_return_val_if_fail(channel != NULL, NULL);
-	g_return_val_if_fail(ban != NULL, NULL);
-
-	rec = g_new(BAN_REC, 1);
-	rec->ban = g_strdup(ban);
-	rec->setby = nick == NULL || *nick == '\0' ? NULL :
-		g_strdup(nick);
-	rec->time = time;
-
-	channel->banlist = g_slist_append(channel->banlist, rec);
-
-	signal_emit("ban new", 2, channel, rec);
-	return rec;
-}
-
 static BAN_REC *banlist_find(GSList *list, const char *ban)
 {
 	GSList *tmp;
@@ -78,6 +58,34 @@ static BAN_REC *banlist_find(GSList *list, const char *ban)
 	}
 
 	return NULL;
+}
+
+BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban,
+		     const char *nick, time_t time)
+{
+	BAN_REC *rec;
+
+	g_return_val_if_fail(channel != NULL, NULL);
+	g_return_val_if_fail(ban != NULL, NULL);
+
+	rec = banlist_find(channel->banlist, ban);
+	if (rec != NULL) {
+		/* duplicate - ignore. some servers send duplicates
+		   for non-ops because they just replace the hostname with
+		   eg. "localhost"... */
+		return NULL;
+	}
+
+	rec = g_new(BAN_REC, 1);
+	rec->ban = g_strdup(ban);
+	rec->setby = nick == NULL || *nick == '\0' ? NULL :
+		g_strdup(nick);
+	rec->time = time;
+
+	channel->banlist = g_slist_append(channel->banlist, rec);
+
+	signal_emit("ban new", 2, channel, rec);
+	return rec;
 }
 
 void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban)
