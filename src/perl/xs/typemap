@@ -1,0 +1,14 @@
+TYPEMAP
+Irssi::Server		T_PTROBJ
+Irssi::Connect  	T_PTROBJ
+Irssi::Reconnect       	T_PTROBJ
+Irssi::Channel		T_PTROBJ
+Irssi::Command		T_PTROBJ
+Irssi::Nick		T_PTROBJ
+Irssi::Ban		T_PTROBJ
+Irssi::Dcc		T_PTROBJ
+Irssi::Netsplit		T_PTROBJ
+Irssi::Autoignore	T_PTROBJ
+Irssi::Log		T_PTROBJ
+Irssi::Logitem		T_PTROBJ
+Irssi::Plugin		T_PTROBJ

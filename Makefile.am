@@ -23,15 +23,14 @@ if HAVE_GNOME
 desktopdir = $(datadir)/gnome/apps/Internet
 desktop_DATA = irssi.desktop
 
-pixmapsdir=$(datadir)/pixmaps
-pixmaps_DATA=irssi-icon.png
-
 corbadir = $(sysconfdir)/CORBA/servers
 corba_DATA = irssi.gnorba
 endif
 
 confdir = $(sysconfdir)/irssi
 conf_DATA = config colorless.theme split.theme
+
+noinst_HEADERS = irssi-version.h
 
 EXTRA_DIST = \
 	autogen.sh \
@@ -40,9 +39,8 @@ EXTRA_DIST = \
 	file2header.sh \
 	irssi.spec \
 	$(conf_DATA) \
-	$(pixmaps_DATA) \
-	$(corba_DATA) \
-	$(desktop_DATA)
+	irssi.gnorba \
+	irssi.desktop
 
 ## make rpms
 rpm: Makefile

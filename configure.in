@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.28)
+AM_INIT_AUTOMAKE(irssi, 0.7.90)
 
 AM_MAINTAINER_MODE
 
@@ -194,7 +194,7 @@ dnl **
 dnl ** just some generic stuff...
 dnl **
 
-AC_CHECK_FUNCS(mkfifo)
+AC_CHECK_FUNCS(mkfifo fcntl)
 
 AC_CHECK_LIB(socket, socket, [
 	PROG_LIBS="$PROG_LIBS -lsocket"
@@ -312,7 +312,7 @@ AC_SUBST(GUI_CFLAGS)
 
 
 dnl **
-dnl ** gui-text checks
+dnl ** fe-text checks
 dnl **
 
 AM_PATH_GLIB(1.2.0,,, gmodule)
@@ -398,6 +398,22 @@ AM_CONDITIONAL(HAVE_PERL, test "$want_perl" = "yes")
 AC_SUBST(MYSQL_LIBS)
 
 dnl **
+dnl ** Keep all the libraries here so each frontend doesn't need to
+dnl ** keep track of them all
+dnl **
+CORE_LIBS="../core/libcore.la ../lib-config/libirssi_config.la"
+IRC_LIBS="../irc/libirc.la ../irc/core/libirc_core.la ../irc/dcc/libirc_dcc.la ../irc/flood/libirc_flood.la ../irc/notifylist/libirc_notifylist.la"
+FE_COMMON_LIBS="../fe-common/core/libfe_common_core.la ../fe-common/irc/libfe_common_irc.la ../fe-common/irc/notifylist/libfe_common_irc_notifylist.la ../fe-common/irc/dcc/libfe_common_irc_dcc.la ../fe-common/irc/flood/libfe_common_irc_flood.la"
+
+AC_SUBST(CORE_LIBS)
+AC_SUBST(IRC_LIBS)
+AC_SUBST(FE_COMMON_LIBS)
+
+dnl ** common libraries needed by frontends
+COMMON_LIBS="$FE_COMMON_LIBS $IRC_LIBS $CORE_LIBS"
+AC_SUBST(COMMON_LIBS)
+
+dnl **
 dnl ** memory debugging
 dnl **
 
@@ -427,18 +443,28 @@ po/Makefile.in
 intl/Makefile
 macros/Makefile
 src/Makefile
-src/irc-base/Makefile
-src/irc-extra/Makefile
-src/ui-common/Makefile
-src/gui-none/Makefile
-src/gui-text/Makefile
-src/gui-gnome/Makefile
-src/gui-gnome/help/Makefile
-src/gui-gnome/help/C/Makefile
-src/gui-gnome/pixmaps/Makefile
+src/core/Makefile
+src/irc/Makefile
+src/irc/core/Makefile
+src/irc/dcc/Makefile
+src/irc/notifylist/Makefile
+src/irc/flood/Makefile
+src/fe-common/Makefile
+src/fe-common/core/Makefile
+src/fe-common/irc/Makefile
+src/fe-common/irc/dcc/Makefile
+src/fe-common/irc/flood/Makefile
+src/fe-common/irc/notifylist/Makefile
+src/fe-none/Makefile
+src/fe-text/Makefile
+src/fe-gnome/Makefile
+src/fe-gnome/help/Makefile
+src/fe-gnome/help/C/Makefile
+src/fe-gnome/pixmaps/Makefile
 src/lib-config/Makefile
 src/lib-popt/Makefile
-src/settings/Makefile
+src/perl/Makefile
+src/perl/xs/Makefile.PL
 servertest/Makefile
 scripts/Makefile
 docs/Makefile
@@ -451,8 +477,6 @@ plugins/proxy/Makefile
 plugins/external/Makefile
 plugins/bot/Makefile
 plugins/sql/Makefile
-plugins/perl/xs/Makefile.PL
-plugins/perl/Makefile
 stamp.h
 irssi.spec)
 

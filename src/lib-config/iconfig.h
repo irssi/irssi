@@ -108,13 +108,17 @@ int config_set_bool(CONFIG_REC *rec, const char *section, const char *key, int v
 CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key);
 /* Find the section from node - if not found create it unless new_type is -1.
    You can also specify in new_type if it's NODE_TYPE_LIST or NODE_TYPE_BLOCK */
-CONFIG_NODE *config_node_section(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int new_type);
+CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type);
 /* Find the section with the whole path.
    Create the path if necessary `create' is TRUE. */
 CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int create);
 /* Get the value of keys `key' and `key_value' and put them to
    `ret_key' and `ret_value'. Returns -1 if not found. */
 int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *value_key, char **ret_key, char **ret_value);
+/* Return all values from from the list `node' in a g_strsplit() array */
+char **config_node_get_list(CONFIG_NODE *node);
+/* Add all values in `array' to `node' */
+void config_node_add_list(CONFIG_NODE *node, char **array);
 
 char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def);
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def);
@@ -124,13 +128,15 @@ void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value
 void config_node_set_int(CONFIG_NODE *parent, const char *key, int value);
 void config_node_set_bool(CONFIG_NODE *parent, const char *key, int value);
 
-/* add/change the value of the `key' */
+/* Add/change the value of the `key' */
 void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value);
-/* remove one node from block/list.
+/* Remove one node from block/list.
    ..set_str() with value = NULL does the same. */
 void config_node_remove(CONFIG_NODE *parent, CONFIG_NODE *node);
+/* Remove n'th node from a list */
+void config_node_list_remove(CONFIG_NODE *node, int index);
 
-/* clear the entire configuration */
+/* Clear the entire configuration */
 void config_nodes_remove_all(CONFIG_REC *rec);
 
 #endif

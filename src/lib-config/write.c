@@ -76,7 +76,7 @@ static int config_has_specials(const char *text)
 	g_return_val_if_fail(text != NULL, FALSE);
 
 	while (*text != '\0') {
-		if ((unsigned char) *text <= 32 || *text == '"' || *text == '\\')
+		if (!isalnum((int) *text))
 			return TRUE;
 		text++;
 	}
@@ -162,7 +162,7 @@ static int config_write_node(CONFIG_REC *rec, CONFIG_NODE *node, int line_feeds)
 	case NODE_TYPE_BLOCK:
 		/* key = { */
 		if (node->key != NULL) {
-			if (config_write_str(rec, node->key) == -1 ||
+			if (config_write_word(rec, node->key, FALSE) == -1 ||
 			    config_write_str(rec, " = ") == -1)
 				return -1;
 		}
@@ -182,7 +182,7 @@ static int config_write_node(CONFIG_REC *rec, CONFIG_NODE *node, int line_feeds)
 	case NODE_TYPE_LIST:
 		/* key = ( */
 		if (node->key != NULL) {
-			if (config_write_str(rec, node->key) == -1 ||
+			if (config_write_word(rec, node->key, FALSE) == -1 ||
 			    config_write_str(rec, " = ") == -1)
 				return -1;
 		}
@@ -327,7 +327,6 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 		config_error(rec, errno == 0 ? "bug" : g_strerror(errno));
 		return -1;
 	}
-	write(rec->handle, "\n", 1);
 
 	close(rec->handle);
 	rec->handle = -1;

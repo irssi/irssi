@@ -1,8 +1,14 @@
 v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 
 	* On the way to 0.8.0 .. Major rewriting/rearranging code. There's
-	  some changes in behaviour because I'm trying to make Irssi a bit
-	  more compatible with EPIC.
+	  some changes in behaviour because I'm trying to make Irssi
+	  compatible with EPIC as much as possible (except the scripting,
+	  perl should be enough?)
+
+	* Irssi isn't anymore IRC specific client, you could easily take the
+	  whole IRC part away and use some other chat protocol instead, or
+	  use both at the same time. Currently however, only IRC protocol
+	  is supported. See docs/design.txt for more information.
 
 	* libPropList isn't needed anymore - I'm using my own configuration
 	  library. This is mostly because different proplists worked a bit
@@ -32,16 +38,125 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 
 	  And finally I'm also using `const' all over the place.
 
+	* Signal handlers changed - you don't anymore return value 0 if you
+	  wish to stop signal. Instead use signal_stop() or
+	  signal_stop_by_name().
+
+	+ Flood protection when sending commands to server works now better.
+	  It allows sending first 5 messages immediately, but after that
+	  only one message is sent every 2.2 seconds.
+
+	  This is the same flood protection that most IRC servers use, so
+	  the only affect this protection has is that when sending a lot of
+	  commands to server you won't get kicked out from server because of
+	  "excessive flood".
+
+	  This can be changed from settings `cmd_max_at_once' and
+	  `cmd_queue_speed'. If you want to disable this for some reason, use
+	  /SET cmd_queue_speed 0
 	+ /EVAL <commands> - Expand all the special variables from string and
 	  run it. Commands can be split with ; character. See
-	  docs/SPECIAL_VARS for more info.
+	  docs/special_vars.txt for more info.
 	+ Aliases are parsed just like /EVAL - arguments are in $0..$9.
 	+ Text formats are also parsed like /EVAL, arguments used to be in
 	  $1..$9, now they're in $0..$8 so it messes up existing themes..
 	+ /SET [key [value]] - no more the '=' character. Boolean values
 	  also need to be changed with ON/OFF/TOGGLE values (not yes/no).
-	  Settings aren't saved to disk until you use /SAVE.
+	+ /SAVE [<filename>] - saves the settings to disk.
+	  /REHASH [<filename>] - re-read the configuration file on the fly
 	+ /TOGGLE <key> [ON/OFF] - same as /SET <key> TOGGLE
+	+ /ALIAS [-]<alias> [<command>], /UNALIAS <alias>
+	  Show, add or remove aliases. /ALIAS -alias = /UNALIAS alias
+	+ /NOTIFY [-list] [-away] [-idle [minutes]] <mask> [ircnet [ircnet...]]
+	    -away notifies about away-status changes
+	    -idle notifies if idle time is first larger than `minutes'
+	     (default is hour) and then it drops down.
+            -list lists the notify list entries with all their settings
+	  /UNNOTIFY <mask>
+
+	  /NOTIFY without any arguments displays if the people in notify
+	  list are online or offline.
+	+ /HILIGHT [-nick | -regexp | -word] [-color <color>]
+	           [-level <level>] [-channels <channels>] <text>
+	    -nick: match only for nick
+	    -regexp: `text' is a regular expression
+	    -word: `text' must match to full words
+	    -color: print the reply with `color' - color can be a bold (^B),
+	            underline (^_) etc. too
+	    -level: match only for `level' messages, default is
+	            publics,msgs,notices,actions
+	    -channels: match only in `channels'
+	  /DEHILIGHT <ref#> | <text>
+	+ /LASTLOG [-] [-new] [-regexp | -word] [-<level> [...]]
+	           [<pattern>] [<count> [<start>]]
+	    -: don't print the "Lastlog:" and "End of Lastlog" messages.
+	    -new: show only lines since last /LASTLOG
+	    -regexp: `text' is a regular expression
+	    -word: `text' must match to full words
+	    -level: what levels to check, like -public -msgs (default is all)
+	    <pattern>: text to search for, or all if empty
+	    <count>: maximum number of lines to show
+	    <start>: skip the last `start' lines
+	+ /IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
+	          [-channels <channel>] <mask> <levels> <^levels>
+	    -regexp: `pattern' is a regular expression
+	    -word: `pattern' must match to full words
+	    -pattern: <pattern> must match to the message's text
+	    -except: *DON'T* ignore
+	    -channels: ignore only in channels
+	    <mask>: either a nick mask or list of channels
+	    <levels>: list of levels to ignore
+	    <^levels>: list of levels to NOT ignore
+	               (/ignore -except nick notices = /ignore nick ^notices)
+	  /UNIGNORE <ref#> | <mask>
+
+	  The best match always wins, so you can have:
+	    /IGNORE * CTCPS
+	    /IGNORE -except *!*@host.org CTCPS
+	+ /LOG OPEN [-noopen] [-autoopen] [-channels <channels>] [-window]
+	            [-rotate hour|day|month] <filename> [<levels>]
+	    -noopen: create the entry to log list, but don't start logging
+	    -autoopen: automatically open this log file at startup
+	    -channels: log only in specified channels/nicks
+	    -window: Log this window
+	    -rotate: Reopen the log file every hour, day or month. This
+	             makes only sense if you specify date/time formats
+		     to file name.
+	    <filename>: File name where to log, it is parsed with strftime(),
+	                so %d=day, etc. see "man strftime" for more info.
+	    <levels>: Defaults to ALL
+          /LOG CLOSE <ref#> | <fname> - close log and remove from log list
+	  /LOG START <ref#> | <fname> - start logging to file
+	  /LOG STOP <ref#> | <fname> - stop logging to file
+	  /LOG - display the log list
+	  NOTE: Log files are locked after opened, so two irssi's can't
+	  accidentally try to write to same log file.
+	+ /WINDOW LOG ON|OFF|TOGGLE [<filename>]
+	  Start/stop logging window, same as /LOG OPEN -window. If file name
+	  isn't given, it defaults to ~/irc.log.<windowname> or
+	  ~/irc.log.Window<ref#> if window doesn't have name.
+	  /WINDOW LOGFILE <filename>
+	  Creates the entry to log list, same as /LOG OPEN -window -noopen.
+	  Also, if /WINDOW LOG ON is used it starts logging to this file.
+	+ /SET AUTOLOG ON|OFF|TOGGLE
+	  /SET AUTOLOG_LEVEL <level>
+	  /SET AUTOLOG_PATH <path> - expandos can be used, $0 is the target.
+	  Enables automatic logging, files are automatically created as
+	  needed and after some time of inactivity, they are closed. If you
+	  are using multiple servers, it makes sense to use the server tag
+	  as part of the file name, for example ~/irclogs/$tag/$0.log (this
+	  is the default).
+	+ /SET window_auto_change - if enabled, irssi will automatically
+	  change to automatically created windows (like queries). It will
+	  also clear your command line and put it to command history so that
+	  you don't accidentally write anything to wrong window. You'll get
+	  the command back by pressing up arrow.
+	+ /SET show_quit_once - show quit message only once instead of in
+	  all channel windows the nick was joined.
+	+ Server reconnections work better. It will now automatically set
+	  your previous user mode and away message (and rejoin the channels,
+	  which it already did before) after reconnected. If you use /SERVER
+	  to connect to different IRC network, none of this will be done.
 
 v0.7.28 2000-03-11  Timo Sirainen <tss@iki.fi>
 

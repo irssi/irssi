@@ -35,7 +35,7 @@
 #include <glib.h>
 #include <gmodule.h>
 
-#include "irc-base/memdebug.h"
+#include "core/memdebug.h"
 #include "nls.h"
 
 #define g_free_not_null(a) \

@@ -1,40 +1,34 @@
- - notifylist ei toimi, /ALIAS, /IGNORE
-- g_strndup() !!!!! auttaa varmaan vaikka miss‰
-- server-specific source_host
+- rikki:
+   - dcc
+   - gnome versio..
+   - pluginit, perlskriptit
+
+- teemat (toimiiko ne edes?)
+ - teeman vaihto tekstiversiolla, tekstien muuttaminen tekstiversiolla
+ - teemoihin tee jotain pient‰ selityst‰ edes!
+ - irssi can't find new themes in ~/.irssi/ while running - scan for new
+   themes when opening themes dialog? irssi-text also needs to be restarted
+   to use new themes..
+ - use different themes in different channels/queries?
+ - logi voisi k‰ytt‰‰ omaa teemaa
+
+- mites se awaylogi?
+- /WALL, ja sen replyt
+- /ON
+- /CAT
+- servereiden ja ircnettien asetusten k‰pistelyyn jotkut k‰skyt
 - curses sijainti jotain rikkoo
-Day changed to 30-26 2000
-[00:10] .. [00:20]
 
- - "away mode changed"
- - dcc on s‰rki
- - /server +blah tekis uuden ikkunan.
+ - /msg =dcc_chatti,#kanava .. ei pelaa tollanen. voisi laittaa coreen tuon
+   ja jotain hookkeja et eri chattiprotoille voisi vaikka menn‰ se teksti..
+   ctcp:lle sama?
+ - who ja listiin ne eri vipuset
 
-[17:37] -!- Magi [^magi@magi.yok.utu.fi] has quit IRC [Killed (Uni-Stuttgart.DE ((^magi@magi.yok.utu.fi)GMD.DE <- (.@vipek-IV.vip.net.pl)*.pl[ircd@hub.irc.pl]))]
-:Magi!^magi@magi.yok.utu.fi QUIT :
-
-Kalled (gart.DE ((^magi@magi.yok.utu.fi)GMD.DE <- (.@vipek-IV.vip.net.pl)*.pl[ircd@hub.irc.pl]))
-      ~cras@0:0:0:0:0:ffff:
- -teemoihin tee jotain pient‰ selityst‰ edes!
- - alt+left/right vaihtaa kanavaa..
-
- - checkkaa miten ne autojoin_channelsit nyt meni.. ett‰ vapautetaan ym.
  - raiseta ikkuna jossa on teksti‰ mut ei over aktiivisen p‰‰lle
  - line-split.c: varmista ett‰ se 64k limitti toimii eik‰ esim. kaada!
 - vaihda /set nimet j‰rkevimmiksi
-- optio ett‰ vaihtaa automaagisesti sinne autocreatettuun ikkunaan. tyhjenn‰
-entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
-- "‰l‰ n‰yt‰ n. sekunttia pienemp‰‰ lagia"
-- cmd line switchi source hostille
-- autojoinikaan ei tunnu oikein pelaavan..? vain kun vaihtuu serveri
-- quit n‰ytett‰isiin vaan yhdess‰ ikkunassa.
 - /exec
- - optionaalisesti voisi niit‰ logeja ajella siin‰ toisessa irssisessiossa
- - msg:iss‰ kun tulee sit‰ away viesti‰ n‰ytt‰isi vaan kerran..
- - logrotate
- - ignoroida tietyt ctcpt. regexpit. ignorettaa teksti‰ ..
-   egopallo/#tv.fi CANAL|MAFIA|...
  - autorun.ircnet
- - flood protectionia paremmaksi
  - bottipluginiin tms. .. channel not available tms. rejoini
 
 *** Bugs
@@ -44,11 +38,9 @@ entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
    channels that were joined in previous server. If IRC network is different
    than in previous server it shouldn't join the channels..
  - some problems when using multiple windows with focus being all the time in
-   one of the windows and it can't be changed to different window?!
+   one of the windows and it can't be changed to different window?! Probably
+   has something to do with click to focus.
  - split windows are buggy, destroying them doesn't really work well..
- - irssi can't find new themes in ~/.irssi/ while running - scan for new
-   themes when opening themes dialog? irssi-text also needs to be restarted
-   to use new themes..
  - mirc ctcp togglemenuitem isn't updated right
  - multiple dcc connections from different irc networks from same nick
    doesn't work. Maybe create "server nick" and "refer nick" variables to
@@ -62,17 +54,8 @@ entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
        activity for example .. make some generic flag for items to use.
      - "you have new mail"
      - active server tag somewhere in window
- - word wrapping doesn't work perfectly, if colors/bolds/etc are used, they're
-   treated as spaces. So things like (<newline>blah blah) can happen (/who)
 
 *** Big things
-
- - Complete modularisation of everything, split irc-extra, ui-common and
-   gui-* (gui especially) into separate logical components. The modules would
-   have init(), deinit(), save_state() and restore_state() - save/restore
-   should save as much as possible so that it would be possible to restart the
-   whole base system. Like when upgrading to newer version you wouldn't need
-   to quit irc at all :)
 
  - session saving thing.. specify what channels/queries/dcc chats to open in
    which window (real/tabbed/in same window with some other), what irc net
@@ -107,30 +90,13 @@ entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
 
 *** Needs rethinking ..
 
- * Logging, check how ircii logging works and try to do everything that it
-   can do ;) currently logging is done by directly writing to disk things
-   that are displayed in screen, it could instead (optionally) print things
-   simply as "JOIN #blah nick (a@b.c)".
-    ... just make a different theme for logging to use? ..
- - log option: add the open/close time to log
- - log directory, automatically log all channels and queries there
-     - overwrite/append
-     - all windows, just queries, only the channels in channel list
-     - you can be joined to same channels in different irc networks (or even
-       the same ircnet!) - create the logs to different directiories/names
- - logging: longer format dd.mm.yy hh:mm:ss (configurable?)
-
- * Notify list, join the two different dialogs, ability to track changes in
-   gone flag
+ * Notify list, join the two different dialogs
  - _one_ popup dialog could open which lists all nicks in notifylist, maybe
    sorted by arrival time, display the dates, latest joined could be with
    different color? etc.
- - nick-specific options: 
-    - check for gone-flag changes (use userhosts instead of isons)
+ - nick-specific options:
     - pop up the dialog
     - run some command (like /exec as soon as I get that done :)
- - dialog: keep track of hosts/realnames so after closing and opening the
-   dialog again they would show up.. 
 
  * common api for statusbar handling
  - it should work just as well in text mode and gui, colors could be done
@@ -144,11 +110,9 @@ entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
 
 *** Little things
 
- - reload configuration file on the fly
  - /savewindows - save the current channel/query positions to file and
    load them at startup.
  - multi-DCC - open multiple sockets to transfer the file
- - re-set away message when reconnecting to server
  - autoaway when idling
  - nickserv support (automatic /msg nickserv identify password)
  - /exec
@@ -168,25 +132,19 @@ entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
    who are away and who are not.. optionally it could instead just watch if
    someone hasn't written anything to channel in n minutes and mark it "away"
    to nicklist.
- - use different themes in different channels/queries?
  - /connect ircnet could connect to ircnet
  - change some GLists to GHashTables, aliases at least
  - check new irssi versions with http rather than with irssibot..
  - implement requesting files with DCC GET from remote client for dcc file
    servers. good for people behind firewalls.
- - use different nicks/realnames in different irc networks
  - gnome statubar:
     - clock?
     - dcc transfer meter (gtk progressbar)
  - you could configure which events (whois, notify, etc.) to show in what
    windows (all, current, status, msgs)
- - gui for configuring plugin specific theme format texts
  - dcc send: allow selection of multiple files to send (also for dnd from
    gmc!) Allow dropping files to anywhere in irssi.
  - /timer, /clones
  - display net splits?
- - regexp for hilighting words?
- - subcommands (dcc, window, ..) could use common function instead of copy and
-   pasting the same function all the time and modifying just two words...
  - {}|~ are same as []\^ (not in all irc networks) - does this really affect
    irssi at all..?

@@ -1,13 +1,13 @@
 if BUILD_TEXTUI
-TEXTUI=gui-text
+TEXTUI=fe-text
 endif
 
 if BUILD_GNOMEUI
-GNOMEUI=gui-gnome
+GNOMEUI=fe-gnome
 endif
 
 if BUILD_IRSSIBOT
-BOTUI=gui-none
+BOTUI=fe-none
 endif
 
 noinst_HEADERS = \
@@ -17,4 +17,4 @@ noinst_HEADERS = \
 	irssi-plugin.h \
 	irssi-plugin-gui.h
 
-SUBDIRS = lib-popt lib-config irc-base irc-extra ui-common $(GNOMEUI) $(TEXTUI) $(BOTUI)
+SUBDIRS = lib-popt lib-config core irc fe-common perl $(GNOMEUI) $(TEXTUI) $(BOTUI)

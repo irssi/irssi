@@ -9,13 +9,12 @@ setupservers = (
 );
 
 ircnets = (
-  {name = IRCNet; max_kicks = 4; max_modes = 3; max_msgs = 5;},
+  {name = IRCNet; max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4;},
   {name = EFNet; max_kicks = 4; max_modes = 4; max_msgs = 3;},
   {name = Undernet; max_kicks = 4; max_modes = 3; max_msgs = 3;},
   {name = DALNet; max_kicks = 4; max_modes = 6; max_msgs = 3;},
   {name = OPN; max_kicks = 1; max_modes = 6; max_msgs = 100;},
-  {name = PTlink; max_kicks = 1; max_modes = 6; max_msgs = 100;},
-  {name = Multichat; max_kicks = 1; max_modes = 6; max_msgs = 100;}
+  {name = PTlink; max_kicks = 1; max_modes = 6; max_msgs = 100;}
 );
 
 channels = (
@@ -25,29 +24,36 @@ channels = (
     autojoin = No;
   }
 );
-aliases = (
-  {alias = J; command = "join";},
-  {alias = LEAVE; command = "part";},
-  {alias = BYE; command = "quit";},
-  {alias = WI; command = "whois";},
-  {alias = WII; command = "whois $0 $0";},
-  {alias = WW; command = "whowas";},
-  {alias = W; command = "who $C";},
-  {alias = N; command = "names $C";},
-  {alias = M; command = "msg";},
-  {alias = T; command = "topic";},
-  {alias = C; command = "clear";},
-  {alias = CL; command = "clear";},
-  {alias = K; command = "kick";},
-  {alias = KB; command = "kickban";},
-  {alias = KN; command = "knockout";},
-  {alias = B; command = "ban";},
-  {alias = UB; command = "unban";},
-  {alias = IG; command = "ignore";},
-  {alias = UNIG; command = "unignore";},
-  {alias = SB; command = "scrollback";},
-  {alias = UMODE; command = "mode $N";}
-);
+aliases = {
+  J = "join";
+  LEAVE = "part";
+  BYE = "quit";
+  EXIT = "quit";
+  SIGNOFF = "quit";
+  DESCRIBE = "action";
+  DATE = "time";
+  HOST = "userhost";
+  LAST = "lastlog";
+  SAY = "msg *";
+  WI = "whois";
+  WII = "whois $0 $0";
+  WW = "whowas";
+  W = "who $C";
+  N = "names $C";
+  M = "msg";
+  T = "topic";
+  C = "clear";
+  CL = "clear";
+  K = "kick";
+  KB = "kickban";
+  KN = "knockout";
+  B = "ban";
+  UB = "unban";
+  IG = "ignore";
+  UNIG = "unignore";
+  SB = "scrollback";
+  UMODE = "mode $N";
+};
 popups = (
   {label = "<MULTICOMMA>Whois"; command = "/whois %s";},
   {label = "DCC Send File"; command = "/dcc send %s";},

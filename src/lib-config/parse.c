@@ -62,7 +62,7 @@ static void config_parse_get_token(GScanner *scanner, CONFIG_NODE *node)
 #undef g_strdup_printf /* This is free'd by GLib itself */
 				scanner->value.v_string = g_strdup_printf("%lu", scanner->value.v_int);
 #ifdef MEM_DEBUG
-#define g_strdup_printf ig_strdup_printf
+#define g_strdup_printf(a, b...) ig_strdup_printf(__FILE__, __LINE__, a, ##b)
 #endif
 			}
 			break;
@@ -127,8 +127,10 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		key = g_strdup(rec->scanner->value.v_string);
 
 		config_parse_get_token(rec->scanner, node);
-		if (rec->scanner->token != '=')
+		if (rec->scanner->token != '=') {
+                        g_free(key);
 			return '=';
+		}
 
 		config_parse_get_token(rec->scanner, node);
 	}
@@ -155,7 +157,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		if (key == NULL && node->type != NODE_TYPE_LIST)
 			return G_TOKEN_ERROR;
 
-		newnode = config_node_section(rec, node, key, NODE_TYPE_BLOCK);
+		newnode = config_node_section(node, key, NODE_TYPE_BLOCK);
 		config_parse_loop(rec, newnode, '}');
 		g_free_not_null(key);
 
@@ -170,7 +172,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		/* list */
 		if (key == NULL)
 			return G_TOKEN_ERROR;
-		newnode = config_node_section(rec, node, key, NODE_TYPE_LIST);
+		newnode = config_node_section(node, key, NODE_TYPE_LIST);
 		config_parse_loop(rec, newnode, ')');
 		g_free_not_null(key);
 
@@ -197,17 +199,18 @@ static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, int expect)
 	g_return_if_fail(rec != NULL);
 	g_return_if_fail(node != NULL);
 
-	do {
+	for (;;) {
+		config_parse_peek_token(rec->scanner, node);
+		if (rec->scanner->next_token == expect ||
+		    rec->scanner->next_token == G_TOKEN_EOF) break;
+
 		expected_token = config_parse_symbol(rec, node);
 		if (expected_token != G_TOKEN_NONE) {
 			if (expected_token == G_TOKEN_ERROR)
 				expected_token = G_TOKEN_NONE;
 			g_scanner_unexp_token(rec->scanner, expected_token, NULL, "symbol", NULL, NULL, TRUE);
 		}
-
-		config_parse_peek_token(rec->scanner, node);
-	} while (rec->scanner->next_token != expect &&
-		 rec->scanner->next_token != G_TOKEN_EOF);
+	}
 }
 
 static void config_parse_error_func(GScanner *scanner, char *message, int is_error)

@@ -40,11 +40,10 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
 
 /* find the section from node - if not found create it unless new_type is -1.
    you can also specify in new_type if it's NODE_TYPE_LIST or NODE_TYPE_BLOCK */
-CONFIG_NODE *config_node_section(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int new_type)
+CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type)
 {
 	CONFIG_NODE *node;
 
-	g_return_val_if_fail(rec != NULL, NULL);
 	g_return_val_if_fail(parent != NULL, NULL);
 	g_return_val_if_fail(is_node_list(parent), NULL);
 
@@ -91,7 +90,7 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 		is_list = **tmp == '(';
 		if (create) new_type = is_list ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
 
-		node = config_node_section(rec, node, *tmp + is_list, new_type);
+		node = config_node_section(node, *tmp + is_list, new_type);
 		if (node == NULL) return NULL;
 	}
 	g_strfreev(list);
@@ -251,4 +250,35 @@ int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *val
 	}
 
 	return -1;
+}
+
+/* Return all values from from the list `node' in a g_strsplit() array */
+char **config_node_get_list(CONFIG_NODE *node)
+{
+	GString *values;
+	GSList *tmp;
+	char **ret;
+
+	g_return_val_if_fail(node != NULL, NULL);
+	g_return_val_if_fail(is_node_list(node), NULL);
+
+	/* put values to string */
+	values = g_string_new(NULL);
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		if (node->type == NODE_TYPE_VALUE)
+			g_string_sprintfa(values, "%s ", (char *) node->value);
+	}
+
+	/* split the values to **str array */
+	if (values->len == 0)
+		ret = NULL;
+	else {
+		g_string_truncate(values, values->len-1);
+                ret = g_strsplit(values->str, " ", -1);
+	}
+
+	g_string_free(values, TRUE);
+        return ret;
 }

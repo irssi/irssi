@@ -94,6 +94,7 @@ There's also some others, you can get a full list with ./configure --help
  --port -p <port>         - specify port
  --noconnect -!         Don't autoconnect to any servers at startup
  --nick -n              Specify what nick to use
+ --hostname -h		Specify what host name to use
 
  * BUGS / SUGGESTIONS
 

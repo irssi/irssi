@@ -14,4 +14,13 @@ PKG_NAME="Irssi"
     exit 1
 }
 
+# get versions
+
+version=`cat configure.in|grep AM_INIT_AUTOMAKE|sed 's/[^,]*, \([^\)]*\).*/\1/'`
+version_date=`date +%Y%m%d`
+
+echo "/* automatically created by autogen.sh */" > irssi-version.h
+echo "#define IRSSI_VERSION \"$version\"" >> irssi-version.h
+echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h
+
 . $srcdir/macros/autogen.sh

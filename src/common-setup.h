@@ -13,9 +13,6 @@
 /* How often to check if there's anyone to be unbanned in knockout list */
 #define KNOCKOUT_TIMECHECK 10000
 
-/* How often to check users in notify list */
-#define NOTIFY_TIMECHECK 30000
-
 /* How often to check for gone status of nick */
 #define MAX_GONE_REFRESH_TIME 300
 
