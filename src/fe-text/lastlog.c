@@ -147,10 +147,8 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	if (count <= 0)
 		tmp = list;
 	else {
-		int pos = len-count;
-
+		int pos = len-count-start;
 		if (pos < 0) pos = 0;
-		pos += start;
 
 		tmp = pos > len ? NULL : g_list_nth(list, pos);
 		len = g_list_length(tmp);
