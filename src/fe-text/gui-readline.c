@@ -165,8 +165,10 @@ static void key_send_line(void)
 		handle_entry_redirect(str);
 	}
 
-	if (add_history != NULL)
+	if (add_history != NULL) {
 		command_history_add(active_win, add_history, FALSE);
+                g_free(add_history);
+	}
 
 	gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
