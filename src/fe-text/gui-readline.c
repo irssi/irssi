@@ -327,15 +327,12 @@ static void key_delete_to_next_space(void)
 
 void readline(void)
 {
-	int key;
+        unsigned char buffer[128];
+	int ret, i;
 
-	for (;;) {
-		key = term_getch();
-		if (key == -1)
-                        break;
-
-		handle_key(key);
-	}
+	ret = term_gets(buffer, sizeof(buffer));
+	for (i = 0; i < ret; i++)
+		handle_key(buffer[i]);
 }
 
 time_t get_idle_time(void)

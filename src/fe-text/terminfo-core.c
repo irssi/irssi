@@ -429,7 +429,7 @@ static void terminfo_input_init(TERM_REC *term)
 	memcpy(&term->tio, &term->old_tio, sizeof(term->tio));
 
 	term->tio.c_lflag &= ~(ICANON | ECHO); /* CBREAK, no ECHO */
-	term->tio.c_cc[VMIN] = 0; /* non-blocking read */
+	term->tio.c_cc[VMIN] = 1; /* read() is satisfied after 1 char */
 	term->tio.c_cc[VTIME] = 0; /* No timer */
 
         /* Disable INTR, QUIT, VDSUSP and SUSP keys */

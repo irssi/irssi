@@ -73,7 +73,7 @@ void term_refresh_thaw(void);
 void term_refresh(TERM_WINDOW *window);
 
 void term_stop(void);
-int term_getch(void);
+int term_gets(unsigned char *buffer, int size);
 
 /* internal */
 void term_common_init(void);

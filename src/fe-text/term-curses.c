@@ -363,18 +363,23 @@ void term_stop(void)
 	irssi_redraw();
 }
 
-int term_getch(void)
+int term_gets(unsigned char *buffer, int size)
 {
-	int key;
+	int key, count;
 
-	key = getch();
-	if (key == ERR)
-		return -1;
-
+	for (count = 0; count < size; ) {
+		key = getch();
 #ifdef KEY_RESIZE
-	if (key == KEY_RESIZE)
-                return -1;
+		if (key == KEY_RESIZE)
+			continue;
 #endif
 
-	return key;
+		if (key == ERR)
+			break;
+
+                buffer[count] = key;
+                count++;
+	}
+
+	return count;
 }

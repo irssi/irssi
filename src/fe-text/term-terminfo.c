@@ -312,7 +312,8 @@ void term_stop(void)
 	irssi_redraw();
 }
 
-int term_getch(void)
+int term_gets(unsigned char *buffer, int size)
 {
-        return fgetc(current_term->in);
+        /* fread() doesn't work */
+        return read(fileno(current_term->in), buffer, size);
 }
