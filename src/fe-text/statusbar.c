@@ -859,8 +859,10 @@ static void statusbar_item_default_signals(SBAR_ITEM_REC *item)
                                 func = NULL;
                                 break;
 			}
-                        if (func != NULL)
-				signal_add_to_id(MODULE_NAME, 1, *pos, func);
+			if (func != NULL) {
+				signal_add_full_id(MODULE_NAME, 1,
+						   *pos, func, NULL);
+			}
 		}
 
 		if (g_slist_find(list, item) == NULL)
@@ -911,10 +913,10 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 
 static void statusbar_signal_remove(int signal_id)
 {
-	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_item);
-	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_server);
-	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_window);
-	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_window_item);
+	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_item, NULL);
+	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_server, NULL);
+	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_window, NULL);
+	signal_remove_id(signal_id, (SIGNAL_FUNC) statusbar_update_window_item, NULL);
 }
 
 static void statusbar_item_remove_signal(SBAR_ITEM_REC *item, int signal_id)

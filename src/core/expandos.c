@@ -179,7 +179,8 @@ void expando_bind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 		func = arg < funccount ? funcs[arg] : NULL;
 		if (func == NULL) func = funcs[EXPANDO_ARG_NONE];
 
-		signal_add_to_id(MODULE_NAME, 1, rec->signal_ids[n], func);
+		signal_add_full_id(MODULE_NAME, 1, rec->signal_ids[n],
+				   func, NULL);
 	}
 }
 
@@ -208,7 +209,7 @@ void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 		func = arg < funccount ? funcs[arg] : NULL;
 		if (func == NULL) func = funcs[EXPANDO_ARG_NONE];
 
-		signal_remove_id(rec->signal_ids[n], func);
+		signal_remove_id(rec->signal_ids[n], func, NULL);
 	}
 }
 

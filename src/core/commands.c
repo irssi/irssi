@@ -154,7 +154,7 @@ void command_bind_to(const char *module, int pos, const char *cmd,
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
-		signal_add_to(module, pos, str, func);
+		signal_add_full(module, pos, str, func, NULL);
 		g_free(str);
 	}
 

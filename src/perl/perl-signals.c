@@ -288,8 +288,8 @@ static void perl_signal_add_to_int(const char *signal, SV *func,
 		g_hash_table_insert(table, signal_idp, siglist);
 
 		if (!command) {
-			signal_add_to_id(MODULE_NAME, priority, rec->signal_id,
-					 perl_signal_get_func(rec));
+			signal_add_full_id(MODULE_NAME, priority, rec->signal_id,
+					   perl_signal_get_func(rec), NULL);
 		}
 	}
 
@@ -321,7 +321,7 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
 
 	*siglist = g_slist_remove(*siglist, rec);
 	if (*siglist == NULL) {
-		signal_remove_id(rec->signal_id, perl_signal_get_func(rec));
+		signal_remove_id(rec->signal_id, perl_signal_get_func(rec), NULL);
 		g_free(siglist);
 		g_hash_table_remove(signals[rec->priority], signal_idp);
 	}
@@ -407,7 +407,8 @@ static int signal_destroy_hash(void *key, GSList **list, PERL_SCRIPT_REC *script
 			*list = g_slist_remove(*list, rec);
 			if (*list == NULL) {
 				signal_remove_id(rec->signal_id,
-						 perl_signal_get_func(rec));
+						 perl_signal_get_func(rec),
+						 NULL);
 			}
 			perl_signal_destroy(rec);
 		}
