@@ -127,67 +127,59 @@ static int statusbar_clock_timeout(void)
 /* redraw nick */
 static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 {
-    CHANNEL_REC *channel;
-    IRC_SERVER_REC *server;
-    NICK_REC *nickrec;
-    int size_needed;
-    int umode_size;
-    gchar nick[10];
+	CHANNEL_REC *channel;
+	IRC_SERVER_REC *server;
+	NICK_REC *nickrec;
+	int size_needed;
+	int umode_size;
+	char nick[10];
 
-    server = (IRC_SERVER_REC *) (active_win == NULL ? NULL : active_win->active_server);
+	server = (IRC_SERVER_REC *) (active_win == NULL ? NULL : active_win->active_server);
 
-    umode_size = server == NULL || server->usermode == NULL ? 0 : strlen(server->usermode)+3;
+	umode_size = server == NULL || server->usermode == NULL ? 0 : strlen(server->usermode)+3;
 
-    /* nick */
-    if (server == NULL || server->nick == NULL)
-    {
-        nick[0] = '\0';
-        nickrec = NULL;
-    }
-    else
-    {
-        strncpy(nick, server->nick, 9);
-	nick[9] = '\0';
+	/* nick */
+	if (server == NULL || server->nick == NULL) {
+		nick[0] = '\0';
+		nickrec = NULL;
+	} else {
+		strncpy(nick, server->nick, 9);
+		nick[9] = '\0';
 
-        channel = irc_item_channel(active_win->active);
-	nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
-    }
+		channel = irc_item_channel(active_win->active);
+		nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
+	}
 
-    size_needed = 2 + strlen(nick) + umode_size +
-        (server != NULL && server->usermode_away ? 7 : 0) +
-        (nickrec != NULL && (nickrec->op || nickrec->voice) ? 1 : 0); /* @ + */
+	size_needed = 2 + strlen(nick) + umode_size +
+		(server != NULL && server->usermode_away ? 7 : 0) +
+		(nickrec != NULL && (nickrec->op || nickrec->voice) ? 1 : 0); /* @ + */
 
-    if (item->size != size_needed)
-    {
-        /* we need more (or less..) space! */
-        statusbar_item_resize(item, size_needed);
-        return;
-    }
+	if (item->size != size_needed) {
+		/* we need more (or less..) space! */
+		statusbar_item_resize(item, size_needed);
+		return;
+	}
 
-    /* size ok, draw the nick */
-    move(ypos, item->xpos);
+	/* size ok, draw the nick */
+	move(ypos, item->xpos);
 
-    set_color((1 << 4)+3); addch('[');
-    if (nickrec != NULL && (nickrec->op || nickrec->voice))
-    {
-        set_color((1 << 4)+15); addch(nickrec->op ? '@' : '+');
-    }
-    set_color((1 << 4)+7); addstr(nick);
-    if (umode_size)
-    {
-        set_color((1 << 4)+15); addch('(');
-        set_color((1 << 4)+3); addch('+');
-        set_color((1 << 4)+7); addstr(server->usermode);
-        set_color((1 << 4)+15); addch(')');
-        if (server->usermode_away)
-        {
-            set_color((1 << 4)+7); addstr(" (");
-            set_color((1 << 4)+10); addstr("zZzZ");
-            set_color((1 << 4)+7); addch(')');
-        }
-    }
-    set_color((1 << 4)+3); addch(']');
-    screen_refresh();
+	set_color((1 << 4)+3); addch('[');
+	if (nickrec != NULL && (nickrec->op || nickrec->voice))
+		set_color((1 << 4)+15); addch(nickrec->op ? '@' : '+');
+	set_color((1 << 4)+7); addstr(nick);
+	if (umode_size) {
+		set_color((1 << 4)+15); addch('(');
+		set_color((1 << 4)+3); addch('+');
+		set_color((1 << 4)+7); addstr(server->usermode);
+		set_color((1 << 4)+15); addch(')');
+	}
+	if (server->usermode_away) {
+		set_color((1 << 4)+7); addstr(" (");
+		set_color((1 << 4)+10); addstr("zZzZ");
+		set_color((1 << 4)+7); addch(')');
+	}
+	set_color((1 << 4)+3); addch(']');
+	screen_refresh();
 }
 
 static void sig_statusbar_nick_redraw(void)
