@@ -100,12 +100,17 @@ static void window_next_page(void)
 
 static const char *get_key_name(int key)
 {
-	static char str[MAX_INT_STRLEN];
-
 	switch (key) {
+	case 8:
+	case 127:
+	case KEY_BACKSPACE:
+		return "Backspace";
+	case 9:
+		return "Tab";
 	case KEY_HOME:
 		return "Home";
 	case KEY_END:
+	case KEY_LL:
 		return "End";
 	case KEY_PPAGE:
 		return "Prior";
@@ -119,17 +124,22 @@ static const char *get_key_name(int key)
 		return "Left";
 	case KEY_RIGHT:
 		return "Right";
+	case KEY_DC:
+		return "Delete";
+	case KEY_IC:
+		return "Insert";
+	case '\n':
+	case 13:
+		return "Return";
 	default:
-		ltoa(str, key);
-		return str;
+		return NULL;
 	}
 }
 
 void handle_key(int key)
 {
-	const char *text;
+        const char *keyname;
 	char *str;
-	int c;
 
 	/* Quit if we get 5 CTRL-C's in a row. */
 	if (key != CTRL('c'))
@@ -147,116 +157,40 @@ void handle_key(int key)
 	switch (key)
 	{
 	case 27:
-		c = getch();
-		if (c == toupper(c) && c != tolower(c))
-			str = g_strdup_printf("ALT-SHIFT-%c", c);
+		key = getch();
+		if (key == 'O') {
+			key = getch();
+			switch (key) {
+			case 'a':
+                                str = g_strdup("CTRL-Up");
+				break;
+			case 'b':
+                                str = g_strdup("CTRL-Down");
+				break;
+			case 'c':
+                                str = g_strdup("CTRL-Right");
+                                break;
+			case 'd':
+                                str = g_strdup("CTRL-Left");
+				break;
+			default:
+				return;
+			}
+		} else if (key == toupper(key) && key != tolower(key))
+			str = g_strdup_printf("ALT-SHIFT-%c", key);
 		else {
-			if (c < 256)
-				str = g_strdup_printf("ALT-%c", toupper(c));
-			else
-				str = g_strdup_printf("ALT-%s", get_key_name(c));
+			keyname = get_key_name(key);
+			if (keyname != NULL)
+				str = g_strdup_printf("ALT-%s", keyname);
+			else if (key >= 32 && key < 256 && key != 128)
+				str = g_strdup_printf("ALT-%c", toupper(key));
+			else {
+				str = g_strdup_printf("ALT-%d", key);
+			}
 		}
 		key_pressed(str, NULL);
 		g_free(str);
 		break;
-
-	case KEY_HOME:
-		/* home */
-		gui_entry_set_pos(0);
-		break;
-	case KEY_END:
-	case KEY_LL:
-		/* end */
-		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		break;
-	case KEY_PPAGE:
-		/* page up */
-		window_prev_page();
-		break;
-	case KEY_NPAGE:
-		/* page down */
-		window_next_page();
-		break;
-
-	case KEY_UP:
-		/* up */
-		text = command_history_prev(active_win, gui_entry_get_text());
-		gui_entry_set_text(text);
-		break;
-	case KEY_DOWN:
-		/* down */
-		text = command_history_next(active_win, gui_entry_get_text());
-		gui_entry_set_text(text);
-		break;
-	case KEY_RIGHT:
-		/* right */
-		gui_entry_move_pos(1);
-		break;
-	case KEY_LEFT:
-		/* left */
-		gui_entry_move_pos(-1);
-		break;
-
-	case CTRL('u'):
-		/* Ctrl-U, clear line */
-                g_free_not_null(cutbuffer);
-		cutbuffer = g_strdup(gui_entry_get_text());
-
-		gui_entry_set_text("");
-		break;
-	case CTRL('k'):
-		/* C-K - erase the rest of the line */
-		c = gui_entry_get_pos();
-                g_free_not_null(cutbuffer);
-		cutbuffer = g_strdup(gui_entry_get_text()+c);
-
-		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		gui_entry_erase(strlen(gui_entry_get_text()) - c);
-		break;
-
-	case CTRL('y'):
-		/* Ctrl-Y, write last ^U'd line */
-		if (cutbuffer != NULL)
-			gui_entry_insert_text(cutbuffer);
-		break;
-	case 9:
-		key_pressed("Tab", NULL);
-		break;
-
-	case 8:
-	case 127:
-	case KEY_BACKSPACE:
-		gui_entry_erase(1);
-		break;
-
-	case CTRL('w'):
-		/* C-w - erase word to the left of marker */
-		gui_entry_erase_word();
-		break;
-
-	case CTRL('d'):
-	case KEY_DC:
-		if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
-			gui_entry_move_pos(1);
-			gui_entry_erase(1);
-		}
-		break;
-
-	case 0:
-		/* Ctrl-space - ignore */
-		break;
-	case CTRL('a'):
-		/* C-A, home */
-		gui_entry_set_pos(0);
-		break;
-	case CTRL('e'):
-		/* C-E, end */
-		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		break;
-	case CTRL('l'):
-		irssi_redraw();
-		break;
-
 	case '\n':
 	case 13:
 		key_pressed("Return", NULL);
@@ -277,8 +211,15 @@ void handle_key(int key)
 		break;
 
 	default:
-		if (key > 0 && key < 32) {
-			str = g_strdup_printf("CTRL-%c", key == 31 ? '-' : key+'A'-1);
+                keyname = get_key_name(key);
+		if (keyname != NULL) {
+			key_pressed(keyname, NULL);
+			break;
+		}
+		if (key >= 0 && key < 32) {
+			str = g_strdup_printf("CTRL-%c",
+					      key == 0 ? ' ' :
+					      (key == 31 ? '-' : key+'A'-1));
 			key_pressed(str, NULL);
 			g_free(str);
 			break;
@@ -293,6 +234,117 @@ void handle_key(int key)
 		}
 		break;
 	}
+}
+
+static void key_backward_history(void)
+{
+	const char *text;
+
+	text = command_history_prev(active_win, gui_entry_get_text());
+	gui_entry_set_text(text);
+}
+
+static void key_forward_history(void)
+{
+	const char *text;
+
+	text = command_history_next(active_win, gui_entry_get_text());
+	gui_entry_set_text(text);
+}
+
+static void key_beginning_of_line(void)
+{
+        gui_entry_set_pos(0);
+}
+
+static void key_end_of_line(void)
+{
+	gui_entry_set_pos(strlen(gui_entry_get_text()));
+}
+
+static void key_backward_character(void)
+{
+	gui_entry_move_pos(-1);
+}
+
+static void key_forward_character(void)
+{
+	gui_entry_move_pos(1);
+}
+
+static void key_backward_word(void)
+{
+	gui_entry_move_words(-1);
+}
+
+static void key_forward_word(void)
+{
+	gui_entry_move_words(1);
+}
+
+static void key_erase_line(void)
+{
+	g_free_not_null(cutbuffer);
+	cutbuffer = g_strdup(gui_entry_get_text());
+
+	gui_entry_set_text("");
+}
+
+static void key_erase_to_beg_of_line(void)
+{
+	int pos;
+
+	pos = gui_entry_get_pos();
+	g_free_not_null(cutbuffer);
+	cutbuffer = g_strndup(gui_entry_get_text(), pos);
+
+	gui_entry_erase(pos);
+}
+
+static void key_erase_to_end_of_line(void)
+{
+	int pos;
+
+	pos = gui_entry_get_pos();
+	g_free_not_null(cutbuffer);
+	cutbuffer = g_strdup(gui_entry_get_text()+pos);
+
+	gui_entry_set_pos(strlen(gui_entry_get_text()));
+	gui_entry_erase(strlen(gui_entry_get_text()) - pos);
+}
+
+static void key_yank_from_cutbuffer(void)
+{
+	if (cutbuffer != NULL)
+		gui_entry_insert_text(cutbuffer);
+}
+
+static void key_delete_character(void)
+{
+	if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
+		gui_entry_move_pos(1);
+		gui_entry_erase(1);
+	}
+}
+
+static void key_backspace(void)
+{
+	gui_entry_erase(1);
+}
+
+static void key_delete_previous_word(void)
+{
+	/* FIXME */
+}
+
+static void key_delete_next_word(void)
+{
+	/* FIXME */
+}
+
+static void key_delete_to_previous_space(void)
+{
+	gui_entry_erase_word();
 }
 
 void readline(void)
@@ -312,22 +364,32 @@ time_t get_idle_time(void)
 	return idle_time;
 }
 
-static void sig_prev_page(void)
+static void key_scroll_backward(void)
 {
 	window_prev_page();
 }
 
-static void sig_next_page(void)
+static void key_scroll_forward(void)
 {
 	window_next_page();
 }
 
-static void sig_change_window(const char *data)
+static void key_scroll_start(void)
+{
+	signal_emit("command scrollback home", 3, NULL, active_win->active_server, active_win->active);
+}
+
+static void key_scroll_end(void)
+{
+	signal_emit("command scrollback end", 3, NULL, active_win->active_server, active_win->active);
+}
+
+static void key_change_window(const char *data)
 {
 	signal_emit("command window goto", 3, data, active_win->active_server, active_win->active);
 }
 
-static void sig_completion(void)
+static void key_word_completion(void)
 {
 	char *line;
 	int pos;
@@ -342,7 +404,7 @@ static void sig_completion(void)
 	}
 }
 
-static void sig_replace(void)
+static void key_check_replaces(void)
 {
 	char *line;
 	int pos;
@@ -357,32 +419,32 @@ static void sig_replace(void)
 	}
 }
 
-static void sig_prev_window(void)
+static void key_previous_window(void)
 {
 	signal_emit("command window prev", 3, "", active_win->active_server, active_win->active);
 }
 
-static void sig_next_window(void)
+static void key_next_window(void)
 {
 	signal_emit("command window next", 3, "", active_win->active_server, active_win->active);
 }
 
-static void sig_up_window(void)
+static void key_upper_window(void)
 {
 	signal_emit("command window up", 3, "", active_win->active_server, active_win->active);
 }
 
-static void sig_down_window(void)
+static void key_lower_window(void)
 {
 	signal_emit("command window down", 3, "", active_win->active_server, active_win->active);
 }
 
-static void sig_window_goto_active(void)
+static void key_active_window(void)
 {
 	signal_emit("command window goto", 3, "active", active_win->active_server, active_win->active);
 }
 
-static void sig_prev_window_item(void)
+static void key_previous_window_item(void)
 {
 	SERVER_REC *server;
 	GSList *pos;
@@ -397,7 +459,7 @@ static void sig_prev_window_item(void)
 	}
 }
 
-static void sig_next_window_item(void)
+static void key_next_window_item(void)
 {
 	SERVER_REC *server;
 	int index;
@@ -413,7 +475,7 @@ static void sig_next_window_item(void)
 	}
 }
 
-static void sig_addchar(const char *data)
+static void key_addchar(const char *data)
 {
 	gui_entry_insert_char(*data);
 }
@@ -445,34 +507,62 @@ void gui_readline_init(void)
 	idle_time = time(NULL);
 	readtag = g_input_add(0, G_INPUT_READ, (GInputFunction) readline, NULL);
 
-	key_bind("completion", "Nick completion", "Tab", NULL, (SIGNAL_FUNC) sig_completion);
-	key_bind("check replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) sig_replace);
-	key_bind("check replaces", NULL, "Return", NULL, (SIGNAL_FUNC) sig_replace);
-	key_bind("window prev", "Previous window", "CTRL-P", NULL, (SIGNAL_FUNC) sig_prev_window);
-	key_bind("window prev", NULL, "ALT-Left", NULL, (SIGNAL_FUNC) sig_prev_window);
-	key_bind("window next", "Next window", "CTRL-N", NULL, (SIGNAL_FUNC) sig_next_window);
-	key_bind("window next", NULL, "ALT-Right", NULL, (SIGNAL_FUNC) sig_next_window);
-	key_bind("window up", "Upper window", "ALT-Up", NULL, (SIGNAL_FUNC) sig_up_window);
-	key_bind("window down", "Lower window", "ALT-Down", NULL, (SIGNAL_FUNC) sig_down_window);
-	key_bind("window active", "Go to next window with the highest activity", "ALT-A", NULL, (SIGNAL_FUNC) sig_window_goto_active);
-	key_bind("window item next", "Next channel", "CTRL-X", NULL, (SIGNAL_FUNC) sig_next_window_item);
-	key_bind("window item prev", "Previous channel", NULL, NULL, (SIGNAL_FUNC) sig_prev_window_item);
+	key_bind("backward_character", "", "Left", NULL, (SIGNAL_FUNC) key_backward_character);
+	key_bind("forward_character", "", "Right", NULL, (SIGNAL_FUNC) key_forward_character);
+ 	key_bind("backward_word", "", "Ctrl-Left", NULL, (SIGNAL_FUNC) key_backward_word);
+	key_bind("forward_word", "", "Ctrl-Right", NULL, (SIGNAL_FUNC) key_forward_word);
+	key_bind("beginning_of_line", "", "Home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
+	key_bind("beginning_of_line", NULL, "Ctrl-A", NULL, (SIGNAL_FUNC) key_beginning_of_line);
+	key_bind("end_of_line", "", "End", NULL, (SIGNAL_FUNC) key_end_of_line);
+	key_bind("end_of_line", NULL, "Ctrl-E", NULL, (SIGNAL_FUNC) key_end_of_line);
 
-	key_bind("redraw", "Redraw window", "CTRL-L", NULL, (SIGNAL_FUNC) irssi_redraw);
-	key_bind("prev page", "Previous page", "ALT-P", NULL, (SIGNAL_FUNC) sig_prev_page);
-	key_bind("next page", "Next page", "ALT-N", NULL, (SIGNAL_FUNC) sig_next_page);
+	key_bind("backward_history", "", "Up", NULL, (SIGNAL_FUNC) key_backward_history);
+	key_bind("forward_history", "", "Down", NULL, (SIGNAL_FUNC) key_forward_history);
 
-	key_bind("special char", "Insert special character", "CTRL-B", "\002", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL--", "\037", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-C", "\003", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-V", "\026", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-G", "\007", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", NULL, "CTRL-O", "\017", (SIGNAL_FUNC) sig_addchar);
+	key_bind("backspace", "", "Backspace", NULL, (SIGNAL_FUNC) key_backspace);
+	key_bind("delete_character", "", "Delete", NULL, (SIGNAL_FUNC) key_delete_character);
+	key_bind("delete_character", NULL, "Ctrl-D", NULL, (SIGNAL_FUNC) key_delete_character);
+	key_bind("delete_next_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_next_word);
+	key_bind("delete_previous_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_previous_word);
+	key_bind("delete_to_previous_space", "", "Ctrl-W", NULL, (SIGNAL_FUNC) key_delete_to_previous_space);
+	key_bind("erase_line", "", "Ctrl-U", NULL, (SIGNAL_FUNC) key_erase_line);
+	key_bind("erase_to_beg_of_line", "", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
+	key_bind("erase_to_end_of_line", "", "Ctrl-K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
+	key_bind("yank_from_cutbuffer", "", "Ctrl-Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
+
+	key_bind("word_completion", "", "Tab", NULL, (SIGNAL_FUNC) key_word_completion);
+	key_bind("check_replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) key_check_replaces);
+	key_bind("check_replaces", NULL, "Return", NULL, (SIGNAL_FUNC) key_check_replaces);
+
+	key_bind("previous_window", "Previous window", "CTRL-P", NULL, (SIGNAL_FUNC) key_previous_window);
+	key_bind("previous_window", NULL, "ALT-Left", NULL, (SIGNAL_FUNC) key_previous_window);
+	key_bind("next_window", "Next window", "CTRL-N", NULL, (SIGNAL_FUNC) key_next_window);
+	key_bind("next_window", NULL, "ALT-Right", NULL, (SIGNAL_FUNC) key_next_window);
+	key_bind("upper_window", "Upper window", "ALT-Up", NULL, (SIGNAL_FUNC) key_upper_window);
+	key_bind("lower_window", "Lower window", "ALT-Down", NULL, (SIGNAL_FUNC) key_lower_window);
+	key_bind("active_window", "Go to next window with the highest activity", "ALT-A", NULL, (SIGNAL_FUNC) key_active_window);
+	key_bind("next_window_item", "Next channel/query", "CTRL-X", NULL, (SIGNAL_FUNC) key_next_window_item);
+	key_bind("previous_window_item", "Previous channel/query", NULL, NULL, (SIGNAL_FUNC) key_previous_window_item);
+
+	key_bind("refresh_screen", "Redraw screen", "CTRL-L", NULL, (SIGNAL_FUNC) irssi_redraw);
+	key_bind("scroll_backward", "Previous page", "Prior", NULL, (SIGNAL_FUNC) key_scroll_backward);
+	key_bind("scroll_backward", NULL, "ALT-P", NULL, (SIGNAL_FUNC) key_scroll_backward);
+	key_bind("scroll_forward", "Next page", "Next", NULL, (SIGNAL_FUNC) key_scroll_forward);
+	key_bind("scroll_forward", NULL, "ALT-N", NULL, (SIGNAL_FUNC) key_scroll_forward);
+	key_bind("scroll_start", "Beginning of the window", "", NULL, (SIGNAL_FUNC) key_scroll_start);
+	key_bind("scroll_end", "", "End of the window", NULL, (SIGNAL_FUNC) key_scroll_end);
+
+	key_bind("special_char", "Insert special character", "CTRL-B", "\002", (SIGNAL_FUNC) key_addchar);
+	key_bind("special_char", NULL, "CTRL--", "\037", (SIGNAL_FUNC) key_addchar);
+	key_bind("special_char", NULL, "CTRL-C", "\003", (SIGNAL_FUNC) key_addchar);
+	key_bind("special_char", NULL, "CTRL-V", "\026", (SIGNAL_FUNC) key_addchar);
+	key_bind("special_char", NULL, "CTRL-G", "\007", (SIGNAL_FUNC) key_addchar);
+	key_bind("special_char", NULL, "CTRL-O", "\017", (SIGNAL_FUNC) key_addchar);
 
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("ALT-%c", changekeys[n]);
 		ltoa(data, n+1);
-		key_bind("window change", "Change window", key, data, (SIGNAL_FUNC) sig_change_window);
+		key_bind("change_window", "Change window", key, data, (SIGNAL_FUNC) key_change_window);
 		g_free(key);
 	}
 
@@ -485,20 +575,20 @@ void gui_readline_deinit(void)
 	g_free_not_null(cutbuffer);
 	g_source_remove(readtag);
 
-	key_unbind("completion", (SIGNAL_FUNC) sig_completion);
-	key_unbind("check replaces", (SIGNAL_FUNC) sig_replace);
-	key_unbind("window prev", (SIGNAL_FUNC) sig_prev_window);
-	key_unbind("window next", (SIGNAL_FUNC) sig_next_window);
-	key_unbind("window active", (SIGNAL_FUNC) sig_window_goto_active);
-	key_unbind("window item next", (SIGNAL_FUNC) sig_next_window_item);
-	key_unbind("window item prev", (SIGNAL_FUNC) sig_prev_window_item);
+	/*key_unbind("completion", (SIGNAL_FUNC) key_completion);
+	key_unbind("check replaces", (SIGNAL_FUNC) key_replace);
+	key_unbind("window prev", (SIGNAL_FUNC) key_prev_window);
+	key_unbind("window next", (SIGNAL_FUNC) key_next_window);
+	key_unbind("window active", (SIGNAL_FUNC) key_window_goto_active);
+	key_unbind("window item next", (SIGNAL_FUNC) key_next_window_item);
+	key_unbind("window item prev", (SIGNAL_FUNC) key_prev_window_item);
 
 	key_unbind("redraw", (SIGNAL_FUNC) irssi_redraw);
-	key_unbind("prev page", (SIGNAL_FUNC) sig_prev_page);
-	key_unbind("next page", (SIGNAL_FUNC) sig_next_page);
+	key_unbind("prev page", (SIGNAL_FUNC) key_prev_page);
+	key_unbind("next page", (SIGNAL_FUNC) key_next_page);
 
-	key_unbind("special char", (SIGNAL_FUNC) sig_addchar);
-	key_unbind("window change", (SIGNAL_FUNC) sig_change_window);
+	key_unbind("special char", (SIGNAL_FUNC) key_addchar);
+	key_unbind("window change", (SIGNAL_FUNC) key_change_window);*/
 
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);

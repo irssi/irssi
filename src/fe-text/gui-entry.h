@@ -19,6 +19,7 @@ void gui_entry_erase_word(void);
 int gui_entry_get_pos(void);
 void gui_entry_set_pos(int pos);
 void gui_entry_move_pos(int pos);
+void gui_entry_move_words(int count);
 
 void gui_entry_redraw(void);
 

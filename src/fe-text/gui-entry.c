@@ -196,6 +196,43 @@ void gui_entry_move_pos(int p)
 	entry_update();
 }
 
+static void gui_entry_move_words_left(int count)
+{
+	if (pos == 0) return;
+
+	while (count > 0 && pos > 0) {
+		while (pos > 0 && entry->str[pos-1] == ' ')
+			pos--;
+		while (pos > 0 && entry->str[pos-1] != ' ')
+			pos--;
+		count--;
+	}
+}
+
+static void gui_entry_move_words_right(int count)
+{
+	if (pos == entry->len) return;
+
+	while (count > 0 && pos < entry->len) {
+		while (pos < entry->len && entry->str[pos] != ' ')
+			pos++;
+		while (pos < entry->len && entry->str[pos] == ' ')
+			pos++;
+		count--;
+	}
+}
+
+void gui_entry_move_words(int count)
+{
+	if (count < 0)
+		gui_entry_move_words_left(-count);
+	else if (count > 0)
+		gui_entry_move_words_right(count);
+
+	entry_screenpos();
+	entry_update();
+}
+
 void gui_entry_redraw(void)
 {
 	gui_entry_set_prompt(NULL);
