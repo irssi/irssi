@@ -47,12 +47,31 @@ int term_type;
 static int force_colors;
 static int resize_dirty;
 
-/* Resize the terminal if needed */
-void term_resize_dirty(void)
+int term_get_size(int *width, int *height)
 {
 #ifdef TIOCGWINSZ
 	struct winsize ws;
+
+	/* Get new window size */
+	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
+		return FALSE;
+
+	*width = ws.ws_col;
+        *height = ws.ws_row;
+
+	if (*width < MIN_SCREEN_WIDTH)
+		*width = MIN_SCREEN_WIDTH;
+	if (*height < 1)
+                *height = 1;
+	return TRUE;
+#else
+        return FALSE;
 #endif
+}
+
+/* Resize the terminal if needed */
+void term_resize_dirty(void)
+{
         int width, height;
 
 	if (!resize_dirty)
@@ -60,27 +79,14 @@ void term_resize_dirty(void)
 
         resize_dirty = FALSE;
 
-#ifdef TIOCGWINSZ
-	/* Get new window size */
-	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
-		return;
+	if (!term_get_size(&width, &height))
+		width = height = -1;
 
-	if (ws.ws_row == term_height && ws.ws_col == term_width) {
-		/* Same size, abort. */
-		return;
+	if (height != term_height || width != term_width) {
+		term_resize(width, height);
+		mainwindows_resize(term_width, term_height);
+		term_resize_final(width, height);
 	}
-
-	if (ws.ws_col < MIN_SCREEN_WIDTH)
-		ws.ws_col = MIN_SCREEN_WIDTH;
-
-	width = ws.ws_col;
-        height = ws.ws_row;
-#else
-        width = height = -1;
-#endif
-        term_resize(width, height);
-	mainwindows_resize(term_width, term_height);
-        term_resize_final(width, height);
 }
 
 #ifdef SIGWINCH

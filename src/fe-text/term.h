@@ -30,6 +30,9 @@ extern int term_use_colors, term_type, term_detached;
 int term_init(void);
 void term_deinit(void);
 
+/* Gets the current terminal size, returns TRUE if ok. */
+int term_get_size(int *width, int *height);
+
 /* Resize terminal - if width or height is negative,
    the new size is unknown and should be figured out somehow */
 void term_resize(int width, int height);

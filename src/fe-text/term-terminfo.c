@@ -77,7 +77,8 @@ static int redraw_timeout(void)
 
 int term_init(void)
 {
-        struct sigaction act;
+	struct sigaction act;
+        int width, height;
 
 	last_fg = last_bg = -1;
 	last_attrs = 0;
@@ -88,6 +89,11 @@ int term_init(void)
 	current_term = terminfo_core_init(stdin, stdout);
 	if (current_term == NULL)
 		return FALSE;
+
+	if (term_get_size(&width, &height)) {
+                current_term->width = width;
+                current_term->height = height;
+	}
 
         /* grab CONT signal */
 	sigemptyset(&act.sa_mask);
