@@ -1,0 +1,10 @@
+
+@SYNTAX:wait@
+
+Wait for <milliseconds> before sending the next command to server.
+
+This could be useful for example when identifying to NickServ; after
+sending the identify message you'd wait 3 seconds before joining to
+channels so NickServ has time to identify you to ChanServ which then
+auto-ops you when joining.
+

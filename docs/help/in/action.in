@@ -2,7 +2,7 @@
 @SYNTAX:action@
 
 Same as ME, but gets channel or nick as an additional parameter.
-Example: /action #irssi yawns
+Example: /ACTION #irssi yawns
 (This outputs the following to #irssi: * Nick yawns)
 
 See also: ME

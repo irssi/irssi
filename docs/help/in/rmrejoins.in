@@ -1,0 +1,9 @@
+
+@SYNTAX:rmrejoins@
+
+Removes the pending rejoins from the channel rejoin list in active
+server. Channels are added to rejoin list when join failed because of
+netsplits in server ("Channel is temporarily unavailable").
+
+See also: JOIN
+

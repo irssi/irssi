@@ -1,0 +1,14 @@
+
+@SYNTAX:load@
+
+Load a plugin. If full path isn't given, irssi searches the plugin from
+directories:
+
+ ~/.irssi/modules/
+ <install dir, /usr/local or /usr maybe>/lib/irssi/modules/
+
+See plugins page of http://irssi.org to see if there's any plugins
+you'd want to use.
+
+See also: UNLOAD
+

@@ -1,0 +1,12 @@
+
+@SYNTAX:savewindows@
+
+Saves the current window layout to configuration (yes, you'll still
+need to use /SAVE to save the configuration to file). Next time you run
+irssi, all the channels and queries are exactly in the same windows
+where they were when you called /SAVEWINDOWS.
+
+Channels aren't actually joined in those windows immediately, they're
+just marked "next time you join to '#channel' in server that has tag
+'ircnet' place it to this window".
+

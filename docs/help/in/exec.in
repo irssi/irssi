@@ -1,0 +1,35 @@
+
+@SYNTAX:exec@
+
+     -: Don't print "process terminated ..." message
+     -nosh: Don't start command through /bin/sh
+     -out: Send output to active channel/query
+     -msg: Send output to specified nick/channel
+     -notice: Send output to specified nick/channel as notices
+     -name: Name the process so it could be accessed easier
+
+     -window: Move the output of specified process to active window
+     -close: Forcibly close (or "forget") a process that doesn't die.
+             This only removes all information from irssi concerning the
+	     process, it doesn't send SIGKILL or anything the process.
+     -<signal>: Send a signal to process. <signal> can be either numeric
+                or one of the few most common ones (hup, term, kill, ...)
+
+     -in: Send text to standard input of the specified process
+
+Execute specified command in background. Output of process is printed
+to active window by default, but can be also sent as messages or
+notices to specified nick or channel.
+
+Processes can be accessed either by their ID or name if you named it.
+Process identifier must always begin with '%' character, like %0 or
+%name.
+
+Once the process is started, it's output can still be redirected
+elsewhere with the -window, -msg, etc. options. You can send text to
+standard input of the process with -in option.
+
+-close option shouldn't probably be used if there's a better way to
+kill the process. It is meant to remove the processes that don't die
+even with SIGKILL. This option just closes the pipes used to
+communicate with the process and frees all memory it used.

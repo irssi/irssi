@@ -1,12 +1,16 @@
 
 @SYNTAX:lastlog@
 
-    -word  Shows only the lines matching the 'word'
-    -new 
-    -away
+    -: don't print the "Lastlog:" and "End of Lastlog" messages.
+    -new: show only lines since last /LASTLOG
+    -regexp: `text' is a regular expression
+    -word: `text' must match to full words
+    -level: what levels to check, like -public -msgs (default is all)
+    <pattern>: text to search for, or all if empty
+    <count>: maximum number of lines to show
+    <start>: skip the last `start' lines
 
-Shows the given number of lines of log from the
-current window. 
+Shows the given number of lines of log from the current window.
 
 See also:
 

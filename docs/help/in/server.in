@@ -1,10 +1,6 @@
 
 @SYNTAX:server@
 
-/SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host 
-            <hostname>] [-cmdspeed <ms>] [-cmdmax <count>] 
-            [-port <port>] <address> [<port> [<password>]]
-            
      -auto: Automatically connect to server at startup (default)
      -noauto: Don't connect to server at startup
      -ircnet: Specify what IRC network this server belongs to
