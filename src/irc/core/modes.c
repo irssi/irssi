@@ -466,10 +466,16 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &mode);
+	if (*data == '+' || *data == '-') {
+		target = "*";
+		params = mode = g_strdup(data); /* cmd_param_error() wants to free params.. */
+	} else {
+		params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &mode);
+	}
+
 	if (strcmp(target, "*") == 0) {
 		if (!irc_item_channel(item))
-			cmd_return_error(CMDERR_NOT_JOINED);
+			cmd_param_error(CMDERR_NOT_JOINED);
 
 		target = item->name;
 	}
