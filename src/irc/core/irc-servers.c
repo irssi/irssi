@@ -485,8 +485,8 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	const char *mode;
 	char *newmode, *args;
 
-	if (g_slist_find(servers, server) == NULL)
-		return 0; /* got disconnected */
+	if (!IS_IRC_SERVER(server) || g_slist_find(servers, server) == NULL)
+		return 0; /* not an irc server or got disconnected */
 
 	mode = server->connrec->usermode;
 	newmode = server->usermode == NULL ? NULL :
