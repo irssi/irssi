@@ -1102,9 +1102,9 @@ static void change_theme(const char *name, int verbose)
 	if (rec != NULL) {
 		current_theme = rec;
 		if (verbose) {
-			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-					   TXT_THEME_CHANGED,
-					   rec->name, rec->path);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				    TXT_THEME_CHANGED,
+				    rec->name, rec->path);
 		}
 	} else if (verbose) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
