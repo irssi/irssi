@@ -49,6 +49,12 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 	    !masks_match(SERVER(dcc->server), masks, dcc->nick, nickaddr))
 		return;
 
+	/* don't autoget files beginning with a dot, if download dir is
+	   our home dir (stupid kludge for stupid people) */
+	if (*dcc->file == '.' &&
+	    strcmp(settings_get_str("dcc_download_path"), "~") == 0)
+		return;
+
 	/* check file size limit, NOTE: it's still possible to send a
 	   bogus file size and then just send what ever sized file.. */
         max_size = settings_get_int("dcc_autoget_max_size");
