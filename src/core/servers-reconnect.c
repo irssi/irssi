@@ -357,11 +357,9 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 		/* reconnect back to same server */
 		conn = server_connect_copy_skeleton(server->connrec, TRUE);
 
-		if (server->connected) {
+		if (server->connected)
 			reconnect_save_status(conn, server);
-			signal_emit("command disconnect", 2,
-				    "* Reconnecting", server);
-		}
+		signal_emit("command disconnect", 2, "* Reconnecting", server);
 
 		conn->reconnection = TRUE;
 		CHAT_PROTOCOL(conn)->server_connect(conn);
