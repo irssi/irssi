@@ -321,6 +321,8 @@ static int irc_receive_line(SERVER_REC *server, char **str, int read_socket)
 
 static char *irc_parse_prefix(char *line, char **nick, char **address)
 {
+	char *p;
+
 	*nick = *address = NULL;
 
 	/* :<nick> [["!" <user>] "@" <host>] SPACE */
@@ -328,16 +330,22 @@ static char *irc_parse_prefix(char *line, char **nick, char **address)
 	if (*line != ':')
 		return line;
 
-	*nick = ++line;
+	*nick = ++line; p = NULL;
 	while (*line != '\0' && *line != ' ') {
 		if (*line == '!' || *line == '@') {
-			*line++ = '\0';
-			*address = line;
-			while (*line != '\0' && *line != ' ')
-                                line++;
-                        break;
+			p = line;
+			if (*line == '!')
+				break;
 		}
 		line++;
+	}
+
+	if (p != NULL) {
+		line = p;
+		*line++ = '\0';
+		*address = line;
+		while (*line != '\0' && *line != ' ')
+			line++;
 	}
 
 	if (*line == ' ') {
