@@ -307,8 +307,10 @@ char *stristr(const char *data, const char *key)
 	keylen = strlen(key);
 	datalen = strlen(data);
 
-	if (keylen > datalen || keylen == 0)
+	if (keylen > datalen)
 		return NULL;
+	if (keylen == 0)
+		return (char *) data;
 
 	max = data+datalen-keylen;
 	pos = 0;
@@ -339,8 +341,10 @@ char *stristr_full(const char *data, const char *key)
 	keylen = strlen(key);
 	datalen = strlen(data);
 
-	if (keylen > datalen || keylen == 0)
+	if (keylen > datalen)
 		return NULL;
+	if (keylen == 0)
+		return (char *) data;
 
 	max = data+datalen-keylen;
 	start = data; pos = 0;
