@@ -573,7 +573,7 @@ void irssi_perl_init(void)
 	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_flush);
 	signal_grabbed = siglast_grabbed = FALSE;
 
-        PL_perl_destruct_level = 1;
+        perl_destruct_level = 1;
 	irssi_perl_start();
 	irssi_perl_autorun();
 }
