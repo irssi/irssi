@@ -297,7 +297,7 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const c
 
 	nicklist = g_strsplit(nicks, " ", -1);
 	for (nick = nicklist; *nick != NULL; nick++) {
-		if (*nick == '\0')
+		if (**nick == '\0')
 			continue;
 
 		if (num == 0)
