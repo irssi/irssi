@@ -954,8 +954,8 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	}
 
 	/* the nick is quoted in case it contains '-' character. also
-	   spaces should work too now :) Unquoter function also allows
-	   '"' characters as long as the next character isn't space. */
+	   spaces should work too now :) The nick is also escaped in case
+	   it contains '\' characters */
 	target = escape_string(window_item_get_target(item));
 	str = g_strdup_printf(IS_CHANNEL(item) ? "-channel \"%s\" %s" :
 			      IS_QUERY(item) ? "-nick \"%s\" %s" : "%s %s",
