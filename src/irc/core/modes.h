@@ -4,8 +4,8 @@
 /* modes that have argument always */
 #define HAS_MODE_ARG_ALWAYS(mode) \
 	((mode) == 'b' || (mode) == 'e' || (mode) == 'I' || (mode) == 'q' || \
-        (mode) == 'o' || (mode) == 'h' || (mode) == 'v' || (mode) == 'O' || \
-	(mode) == 'k')
+        (mode) == 'd' || (mode) == 'o' || (mode) == 'h' || (mode) == 'v' || \
+        (mode) == 'O' || (mode) == 'k')
 
 /* modes that have argument when being set (+) */
 #define HAS_MODE_ARG_SET(mode) \
