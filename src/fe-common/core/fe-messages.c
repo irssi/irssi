@@ -236,6 +236,9 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	char *print_channel;
 	int once, count;
 
+	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
+		return;
+
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
 
@@ -253,24 +256,35 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		    active_win->active == (WI_ITEM_REC *) rec)
 			print_channel = rec->name;
 
-		if (!once) {
+		if (once)
+			g_string_sprintfa(chans, "%s,", rec->name);
+		else {
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
 				printformat(server, rec->name, MSGLEVEL_QUITS,
 					    IRCTXT_QUIT, nick, address, reason);
 			}
-		} else {
-			g_string_sprintfa(chans, "%s,", rec->name);
-			count++;
 		}
+		count++;
 	}
 	g_slist_free(windows);
 
-	if (once && count > 0) {
-		g_string_truncate(chans, chans->len-1);
+	if (!once) {
+		/* check if you had query with the nick and
+		   display the quit there too */
+		QUERY_REC *query = query_find(server, nick);
+		if (query != NULL) {
+			printformat(server, nick, MSGLEVEL_QUITS,
+				    IRCTXT_QUIT, nick, address, reason);
+		}
+	}
+
+	if (once || count == 0) {
+		if (chans->len > 0)
+			g_string_truncate(chans, chans->len-1);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
-			    count == 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
+			    count <= 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
 			    nick, address, reason, chans->str);
 	}
 	if (chans != NULL)
