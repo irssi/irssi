@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "misc.h"
 #include "levels.h"
+#include "lib-config/iconfig.h"
 #include "settings.h"
 
 #include "chatnets.h"
@@ -520,6 +521,36 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	return list;
 }
 
+GList *completion_get_aliases(const char *word)
+{
+	CONFIG_NODE *node;
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	/* get the list of all aliases */
+	node = iconfig_node_traverse("aliases", FALSE);
+	tmp = node == NULL ? NULL : config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
+		node = tmp->data;
+
+		if (node->type != NODE_TYPE_KEY)
+			continue;
+
+		if (len != 0 && g_strncasecmp(node->key, word, len) != 0)
+			continue;
+
+		list = g_list_append(list, g_strdup(node->key));
+	}
+	
+	return list;
+}
+
 static void complete_window_nicks(GList **list, WINDOW_REC *window,
                                   const char *word, const char *linestart)
 {
@@ -777,6 +808,38 @@ static void sig_complete_away(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void sig_complete_unalias(GList **list, WINDOW_REC *window,
+				const char *word, const char *line,
+				int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	*list = completion_get_aliases(word);
+	if (*list != NULL) signal_stop();
+}
+
+static void sig_complete_alias(GList **list, WINDOW_REC *window,
+				const char *word, const char *line,
+				int *want_space)
+{
+	const char *definition;
+	
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line != '\0') {
+		if ((definition = alias_find(line)) != NULL) {
+			*list = g_list_append(NULL, g_strdup(definition));
+			signal_stop();
+		}
+	} else {	
+		*list = completion_get_aliases(word);
+		if (*list != NULL) signal_stop();
+	}
+}
+
 
 static void sig_complete_channel(GList **list, WINDOW_REC *window,
 				 const char *word, const char *line,
@@ -954,6 +1017,8 @@ void chat_completion_init(void)
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_add("complete command away", (SIGNAL_FUNC) sig_complete_away);
+	signal_add("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
+	signal_add("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
 	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
@@ -984,6 +1049,8 @@ void chat_completion_deinit(void)
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_remove("complete command away", (SIGNAL_FUNC) sig_complete_away);
+	signal_remove("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
+	signal_remove("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
 	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
