@@ -19,9 +19,9 @@ irssi_LDADD = \
 
 irssi_SOURCES = \
         gui-entry.c \
+	gui-expandos.c \
         gui-printtext.c \
         gui-readline.c \
-	gui-special-vars.c \
         gui-textwidget.c \
         gui-windows.c \
         mainwindows.c \
@@ -36,8 +36,6 @@ noinst_HEADERS = \
         gui-entry.h \
         gui-printtext.h \
         gui-readline.h \
-	gui-special-vars.h \
-        gui-textwidget.h \
         gui-windows.h \
         mainwindows.h \
         statusbar.h \

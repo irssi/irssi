@@ -1,5 +1,5 @@
 /*
- gui-special-vars.c : irssi
+ gui-expandos.c : irssi
 
     Copyright (C) 2000 Timo Sirainen
 
@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "special-vars.h"
+#include "expandos.h"
 
 #include "gui-entry.h"
 #include "gui-readline.h"
@@ -40,20 +40,20 @@ static char *expando_inputline(SERVER_REC *server, void *item, int *free_ret)
 	return gui_entry_get_text();
 }
 
-/* FIXME: value of cutbuffer */
+/* value of cutbuffer */
 static char *expando_cutbuffer(SERVER_REC *server, void *item, int *free_ret)
 {
 	return cutbuffer;
 }
 
-void gui_special_vars_init(void)
+void gui_expandos_init(void)
 {
-	expando_create("E", expando_idletime);
-	expando_create("L", expando_inputline);
-	expando_create("U", expando_cutbuffer);
+	expando_create("E", expando_idletime, NULL);
+	expando_create("L", expando_inputline, NULL);
+	expando_create("U", expando_cutbuffer, NULL);
 }
 
-void gui_special_vars_deinit(void)
+void gui_expandos_deinit(void)
 {
 	expando_destroy("E", expando_idletime);
 	expando_destroy("L", expando_inputline);

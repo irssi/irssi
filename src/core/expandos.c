@@ -1,0 +1,491 @@
+/*
+ expandos.c : irssi
+
+    Copyright (C) 2000 Timo Sirainen
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#include "module.h"
+#include "signals.h"
+#include "expandos.h"
+#include "settings.h"
+#include "commands.h"
+#include "misc.h"
+#include "irssi-version.h"
+
+#include "channels.h"
+#include "queries.h"
+#include "window-item-def.h"
+
+#ifdef HAVE_SYS_UTSNAME_H
+#  include <sys/utsname.h>
+#endif
+
+typedef struct {
+	EXPANDO_FUNC func;
+        GPtrArray *signals, *signal_args;
+} EXPANDO_REC;
+
+static EXPANDO_REC *char_expandos[127];
+static GHashTable *expandos;
+static time_t client_start_time;
+static char *last_sent_msg, *last_sent_msg_body;
+static char *last_privmsg_from, *last_public_from;
+
+/* Create expando - overrides any existing ones. */
+void expando_create(const char *key, EXPANDO_FUNC func, ...)
+{
+        EXPANDO_REC *rec;
+        const char *signal;
+	va_list va;
+
+	g_return_if_fail(key != NULL || *key == '\0');
+	g_return_if_fail(func != NULL);
+
+	if (key[1] != '\0')
+		rec = g_hash_table_lookup(expandos, key);
+	else {
+		/* single character expando */
+		rec = char_expandos[(int) *key];
+	}
+
+	if (rec == NULL) {
+		rec = g_new0(EXPANDO_REC, 1);
+                if (key[1] != '\0')
+			g_hash_table_insert(expandos, g_strdup(key), rec);
+		else
+			char_expandos[(int) *key] = rec;
+	} else if (rec->signals != NULL) {
+		g_ptr_array_free(rec->signals, TRUE);
+                rec->signals = NULL;
+	}
+
+	rec->func = func;
+
+	va_start(va, func);
+	while ((signal = (const char *) va_arg(va, const char *)) != NULL)
+               expando_add_signal(key, signal, (int) va_arg(va, int));
+        va_end(va);
+}
+
+/* Add new signal to expando */
+void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
+{
+        EXPANDO_REC *rec;
+
+	g_return_if_fail(key != NULL);
+	g_return_if_fail(signal != NULL);
+
+	if (key[1] != '\0')
+		rec = g_hash_table_lookup(expandos, key);
+	else {
+		/* single character expando */
+		rec = char_expandos[(int) *key];
+	}
+        g_return_if_fail(rec != NULL);
+
+	if (rec->signals == NULL) {
+		rec->signals = g_ptr_array_new();
+		rec->signal_args = g_ptr_array_new();
+	}
+
+	g_ptr_array_add(rec->signals,
+			GINT_TO_POINTER(signal_get_uniq_id(signal)));
+	g_ptr_array_add(rec->signal_args,
+			GINT_TO_POINTER(arg));
+}
+
+static void expando_destroy_rec(EXPANDO_REC *rec)
+{
+	g_return_if_fail(rec != NULL);
+
+	if (rec->signals != NULL) {
+		g_ptr_array_free(rec->signals, TRUE);
+		g_ptr_array_free(rec->signal_args, TRUE);
+	}
+        g_free(rec);
+}
+
+/* Destroy expando */
+void expando_destroy(const char *key, EXPANDO_FUNC func)
+{
+	gpointer origkey;
+        EXPANDO_REC *rec;
+
+	g_return_if_fail(key != NULL || *key == '\0');
+	g_return_if_fail(func != NULL);
+
+	if (key[1] == '\0') {
+		/* single character expando */
+		rec = char_expandos[(int) *key];
+		if (rec != NULL && rec->func == func) {
+			char_expandos[(int) *key] = NULL;
+			expando_destroy_rec(rec);
+		}
+	} else if (g_hash_table_lookup_extended(expandos, key, &origkey,
+						(gpointer *) &rec)) {
+		if (rec->func == func) {
+			g_free(origkey);
+			g_hash_table_remove(expandos, key);
+			expando_destroy_rec(rec);
+		}
+	}
+}
+
+EXPANDO_FUNC expando_find_char(char chr)
+{
+	g_return_val_if_fail(chr < sizeof(char_expandos) /
+			     sizeof(char_expandos[0]), NULL);
+
+	return char_expandos[(int) chr] == NULL ? NULL :
+		char_expandos[(int) chr]->func;
+}
+
+EXPANDO_FUNC expando_find_long(const char *key)
+{
+	EXPANDO_REC *rec = g_hash_table_lookup(expandos, key);
+	return rec == NULL ? NULL : rec->func;
+}
+
+/* last person who sent you a MSG */
+static char *expando_lastmsg(SERVER_REC *server, void *item, int *free_ret)
+{
+	return last_privmsg_from;
+}
+
+/* last person to whom you sent a MSG */
+static char *expando_lastmymsg(SERVER_REC *server, void *item, int *free_ret)
+{
+	return last_sent_msg;
+}
+
+/* last person to send a public message to a channel you are on */
+static char *expando_lastpublic(SERVER_REC *server, void *item, int *free_ret)
+{
+	return last_public_from;
+}
+
+/* text of your AWAY message, if any */
+static char *expando_awaymsg(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->away_reason;
+}
+
+/* body of last MSG you sent */
+static char *expando_lastmymsg_body(SERVER_REC *server, void *item, int *free_ret)
+{
+	return last_sent_msg_body;
+}
+
+/* current channel */
+static char *expando_channel(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->name;
+}
+
+/* time client was started, $time() format */
+static char *expando_clientstarted(SERVER_REC *server, void *item, int *free_ret)
+{
+        *free_ret = TRUE;
+	return g_strdup_printf("%ld", (long) client_start_time);
+}
+
+/* channel you were last INVITEd to */
+static char *expando_last_invite(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->last_invite;
+}
+
+/* client version text string */
+static char *expando_version(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IRSSI_VERSION;
+}
+
+/* current value of CMDCHARS */
+static char *expando_cmdchars(SERVER_REC *server, void *item, int *free_ret)
+{
+	return (char *) settings_get_str("cmdchars");
+}
+
+/* modes of current channel, if any */
+static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->mode;
+}
+
+/* current nickname */
+static char *expando_nick(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->nick;
+}
+
+/* value of STATUS_OPER if you are an irc operator */
+static char *expando_statusoper(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL || !server->server_operator ? "" :
+		(char *) settings_get_str("STATUS_OPER");
+}
+
+/* if you are a channel operator in $C, expands to a '@' */
+static char *expando_chanop(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IS_CHANNEL(item) && CHANNEL(item)->chanop ? "@" : "";
+}
+
+/* nickname of whomever you are QUERYing */
+static char *expando_query(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_QUERY(item) ? "" : QUERY(item)->name;
+}
+
+/* version of current server */
+static char *expando_serverversion(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->version;
+}
+
+/* target of current input (channel or QUERY nickname) */
+static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
+{
+	return ((WI_ITEM_REC *) item)->name;
+}
+
+/* client release date (numeric version string) */
+static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IRSSI_VERSION_DATE;
+}
+
+/* current working directory */
+static char *expando_workdir(SERVER_REC *server, void *item, int *free_ret)
+{
+	*free_ret = TRUE;
+	return g_get_current_dir();
+}
+
+/* value of REALNAME */
+static char *expando_realname(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->connrec->realname;
+}
+
+/* time of day (hh:mm) */
+static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
+{
+	time_t now = time(NULL);
+	struct tm *tm;
+
+	tm = localtime(&now);
+	*free_ret = TRUE;
+	return g_strdup_printf("%02d:%02d", tm->tm_hour, tm->tm_min);
+}
+
+/* a literal '$' */
+static char *expando_dollar(SERVER_REC *server, void *item, int *free_ret)
+{
+	return "$";
+}
+
+/* system name */
+static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
+{
+#ifdef HAVE_SYS_UTSNAME_H
+	struct utsname un;
+
+	if (uname(&un) == -1)
+		return NULL;
+
+	*free_ret = TRUE;
+	return g_strdup(un.sysname);
+#else
+	return NULL;
+#endif
+}
+
+/* system release */
+static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
+{
+#ifdef HAVE_SYS_UTSNAME_H
+	struct utsname un;
+
+	if (uname(&un) == -1)
+		return NULL;
+
+	*free_ret = TRUE;
+	return g_strdup(un.release);
+#else
+	return NULL;
+#endif
+}
+
+/* Server tag */
+static char *expando_servertag(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->tag;
+}
+
+/* Server chatnet */
+static char *expando_chatnet(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->connrec->chatnet;
+}
+
+static void sig_message_private(SERVER_REC *server, const char *msg,
+				const char *nick, const char *address)
+{
+	g_free_not_null(last_privmsg_from);
+	last_privmsg_from = g_strdup(nick);
+}
+
+static void sig_message_public(SERVER_REC *server, const char *msg,
+			       const char *nick, const char *address,
+			       const char *target)
+{
+	g_free_not_null(last_public_from);
+	last_public_from = g_strdup(nick);
+}
+
+static void cmd_msg(const char *data, SERVER_REC *server)
+{
+	GHashTable *optlist;
+	char *target, *msg;
+        void *free_arg;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "msg", &optlist, &target, &msg))
+		return;
+
+	if (*target != '\0' && *msg != '\0' &&
+	    !server->ischannel(*target) && isalpha(*target)) {
+		g_free_not_null(last_sent_msg);
+		g_free_not_null(last_sent_msg_body);
+		last_sent_msg = g_strdup(target);
+		last_sent_msg_body = g_strdup(msg);
+	}
+
+	cmd_params_free(free_arg);
+}
+
+void expandos_init(void)
+{
+	settings_add_str("misc", "STATUS_OPER", "*");
+
+	client_start_time = time(NULL);
+	last_sent_msg = NULL; last_sent_msg_body = NULL;
+	last_privmsg_from = NULL; last_public_from = NULL;
+
+	memset(char_expandos, 0, sizeof(char_expandos));
+	expandos = g_hash_table_new((GHashFunc) g_str_hash,
+				    (GCompareFunc) g_str_equal);
+
+	expando_create(",", expando_lastmsg,
+		       "message private", EXPANDO_ARG_SERVER, NULL);
+	expando_create(".", expando_lastmymsg,
+		       "command msg", EXPANDO_ARG_NONE, NULL);
+	expando_create(";", expando_lastpublic,
+		       "message public", EXPANDO_ARG_SERVER, NULL);
+	expando_create("A", expando_awaymsg,
+		       "away mode changed", EXPANDO_ARG_NONE, NULL);
+	expando_create("B", expando_lastmymsg_body,
+		       "command msg", EXPANDO_ARG_NONE, NULL);
+	expando_create("C", expando_channel,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("F", expando_clientstarted,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("I", expando_last_invite, NULL);
+	expando_create("J", expando_version,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("K", expando_cmdchars,
+		       "setup changed", EXPANDO_ARG_NONE, NULL);
+	expando_create("M", expando_chanmode,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "channel mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
+	expando_create("N", expando_nick,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW,
+                       "server nick changed", EXPANDO_ARG_SERVER, NULL);
+	expando_create("O", expando_statusoper,
+		       "setup changed", EXPANDO_ARG_NONE,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW,
+		       "user mode changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("P", expando_chanop,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
+	expando_create("Q", expando_query,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("R", expando_serverversion,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("T", expando_target,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("V", expando_releasedate,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("W", expando_workdir, NULL);
+	expando_create("Y", expando_realname,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("Z", expando_time, NULL);
+	expando_create("$", expando_dollar,
+		       "", EXPANDO_NEVER, NULL);
+
+	expando_create("sysname", expando_sysname,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("sysrelease", expando_sysrelease,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("tag", expando_servertag,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("chatnet", expando_chatnet,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+
+	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
+	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+}
+
+void expandos_deinit(void)
+{
+	int n;
+
+	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++) {
+                if (char_expandos[n] != NULL)
+			expando_destroy_rec(char_expandos[n]);
+	}
+	expando_destroy("sysname", expando_sysname);
+	expando_destroy("sysrelease", expando_sysrelease);
+	expando_destroy("tag", expando_servertag);
+	expando_destroy("chatnet", expando_chatnet);
+
+        g_hash_table_destroy(expandos);
+
+	g_free_not_null(last_sent_msg); g_free_not_null(last_sent_msg_body);
+	g_free_not_null(last_privmsg_from); g_free_not_null(last_public_from);
+
+	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
+}

@@ -35,9 +35,7 @@
 #include "mainwindows.h"
 #include "gui-printtext.h"
 #include "gui-readline.h"
-#include "gui-special-vars.h"
 #include "statusbar.h"
-#include "gui-textwidget.h"
 #include "gui-windows.h"
 
 #include <signal.h>
@@ -49,6 +47,12 @@ void perl_deinit(void);
 
 void irc_init(void);
 void irc_deinit(void);
+
+void gui_expandos_init(void);
+void gui_expandos_deinit(void);
+
+void gui_textwidget_init(void);
+void gui_textwidget_deinit(void);
 
 void mainwindow_activity_init(void);
 void mainwindow_activity_deinit(void);
@@ -111,9 +115,9 @@ static void textui_finish_init(void)
 
 	screen_refresh_freeze();
 	gui_entry_init();
+	gui_expandos_init();
 	gui_printtext_init();
 	gui_readline_init();
-	gui_special_vars_init();
 	gui_textwidget_init();
 	mainwindows_init();
 	mainwindow_activity_init();
@@ -146,13 +150,13 @@ static void textui_deinit(void)
 
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 	gui_textwidget_deinit();
-	gui_special_vars_deinit();
 	statusbar_deinit();
 	gui_printtext_deinit();
 	gui_readline_deinit();
 	gui_windows_deinit();
 	mainwindow_activity_deinit();
 	mainwindows_deinit();
+	gui_expandos_deinit();
 	gui_entry_deinit();
 	deinit_screen();
 

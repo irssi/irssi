@@ -3,8 +3,6 @@
 
 #include "servers.h"
 
-typedef char* (*EXPANDO_FUNC)
-	(SERVER_REC *server, void *item, int *free_ret);
 typedef char* (*SPECIAL_HISTORY_FUNC)
 	(const char *text, void *item, int *free_ret);
 
@@ -21,14 +19,6 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 void eval_special_string(const char *cmd, const char *data,
 			 SERVER_REC *server, void *item);
 
-/* Create expando - overrides any existing ones. */
-void expando_create(const char *key, EXPANDO_FUNC func);
-/* Destroy expando */
-void expando_destroy(const char *key, EXPANDO_FUNC func);
-
 void special_history_func_set(SPECIAL_HISTORY_FUNC func);
-
-void special_vars_init(void);
-void special_vars_deinit(void);
 
 #endif

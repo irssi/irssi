@@ -120,7 +120,7 @@ irc-servers.c:
 
 irc.c:
 
- "server event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+ "server event", SERVER_REC, char *data, char *sender_nick, char *sender_address
  "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
  "default event", char *data, SERVER_REC, char *sender_nick, char *sender_address
 

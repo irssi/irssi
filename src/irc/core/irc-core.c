@@ -36,8 +36,8 @@ void irc_commands_deinit(void);
 void irc_rawlog_init(void);
 void irc_rawlog_deinit(void);
 
-void irc_special_vars_init(void);
-void irc_special_vars_deinit(void);
+void irc_expandos_init(void);
+void irc_expandos_deinit(void);
 
 void irc_log_init(void);
 void irc_log_deinit(void);
@@ -67,14 +67,14 @@ void irc_core_init(void)
 	lag_init();
 	netsplit_init();
 	irc_rawlog_init();
-	irc_special_vars_init();
+	irc_expandos_init();
 	irc_log_init();
 }
 
 void irc_core_deinit(void)
 {
         irc_log_deinit();
-	irc_special_vars_deinit();
+	irc_expandos_deinit();
 	irc_rawlog_deinit();
 	netsplit_deinit();
 	lag_deinit();

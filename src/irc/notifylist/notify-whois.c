@@ -20,7 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
-#include "special-vars.h"
+#include "expandos.h"
 
 #include "irc.h"
 #include "irc-servers.h"
@@ -168,7 +168,8 @@ void notifylist_whois_init(void)
 	signal_add("notifylist event whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("notifylist event whois idle", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("notifylist event whois end", (SIGNAL_FUNC) event_whois_end);
-	expando_create("D", expando_lastnotify);
+	expando_create("D", expando_lastnotify,
+		       "notifylist event whois", EXPANDO_ARG_SERVER2, NULL);
 }
 
 void notifylist_whois_deinit(void)

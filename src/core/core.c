@@ -31,10 +31,10 @@
 #include "servers.h"
 #include "chatnets.h"
 #include "commands.h"
+#include "expandos.h"
 #include "log.h"
 #include "rawlog.h"
 #include "ignore.h"
-#include "special-vars.h"
 
 #include "channels.h"
 #include "queries.h"
@@ -60,11 +60,11 @@ void core_init(void)
 
 	chat_protocols_init();
 	chatnets_init();
+        expandos_init();
 	ignore_init();
 	servers_init();
 	log_init();
 	rawlog_init();
-	special_vars_init();
 
 	channels_init();
 	queries_init();
@@ -81,11 +81,11 @@ void core_deinit(void)
 	queries_deinit();
 	channels_deinit();
 
-	special_vars_deinit();
 	rawlog_deinit();
 	log_deinit();
 	servers_deinit();
 	ignore_deinit();
+        expandos_deinit();
 	chatnets_deinit();
 	chat_protocols_deinit();
 

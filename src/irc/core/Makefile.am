@@ -17,6 +17,7 @@ libirc_core_a_SOURCES = \
         irc-channels-setup.c \
 	irc-chatnets.c \
         irc-commands.c \
+        irc-expandos.c \
         irc-log.c \
         irc-masks.c \
         irc-nicklist.c \
@@ -25,7 +26,6 @@ libirc_core_a_SOURCES = \
         irc-servers.c \
         irc-servers-reconnect.c \
         irc-servers-setup.c \
-        irc-special-vars.c \
         lag.c \
         massjoin.c \
         modes.c \

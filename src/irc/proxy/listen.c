@@ -321,7 +321,7 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 	g_string_sprintf(next_line, "%s\n", line);
 }
 
-static void sig_server_event(const char *line, IRC_SERVER_REC *server,
+static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			     const char *nick, const char *address)
 {
 	GSList *list;

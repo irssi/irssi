@@ -21,25 +21,14 @@
 #include "module.h"
 #include "signals.h"
 #include "special-vars.h"
+#include "expandos.h"
 #include "settings.h"
 #include "misc.h"
-#include "irssi-version.h"
-
-#include "channels.h"
-#include "queries.h"
-#include "window-item-def.h"
-
-#ifdef HAVE_SYS_UTSNAME_H
-#  include <sys/utsname.h>
-#endif
 
 #define ALIGN_RIGHT 0x01
 #define ALIGN_CUT   0x02
 
-static EXPANDO_FUNC char_expandos[256];
-static GHashTable *expandos;
-static time_t client_start_time;
-static SPECIAL_HISTORY_FUNC history_func;
+static SPECIAL_HISTORY_FUNC history_func = NULL;
 
 static char *get_argument(char **cmd, char **arglist)
 {
@@ -115,7 +104,7 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 	*free_ret = FALSE;
 
 	/* expando? */
-	func = (EXPANDO_FUNC) g_hash_table_lookup(expandos, key);
+        func = expando_find_long(key);
 	if (func != NULL)
 		return func(server, item, free_ret);
 
@@ -151,6 +140,8 @@ static char *get_long_variable(char **cmd, SERVER_REC *server,
 static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 			  char **arglist, int *free_ret, int *arg_used)
 {
+	EXPANDO_FUNC func;
+
 	if (isdigit(**cmd) || **cmd == '*' || **cmd == '-' || **cmd == '~') {
                 /* argument */
 		*free_ret = TRUE;
@@ -165,8 +156,8 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 
 	/* single character variable. */
 	*free_ret = FALSE;
-	return char_expandos[(int) **cmd] == NULL ? NULL :
-		char_expandos[(int) **cmd](server, item, free_ret);
+	func = expando_find_char(**cmd);
+	return func == NULL ? NULL : func(server, item, free_ret);
 }
 
 static char *get_history(char **cmd, void *item, int *free_ret)
@@ -527,250 +518,7 @@ void eval_special_string(const char *cmd, const char *data,
 	g_free(orig);
 }
 
-/* Create expando - overrides any existing ones. */
-void expando_create(const char *key, EXPANDO_FUNC func)
-{
-	gpointer origkey, origvalue;
-
-	g_return_if_fail(key != NULL || *key == '\0');
-	g_return_if_fail(func != NULL);
-
-	if (key[1] == '\0') {
-		/* single character expando */
-		char_expandos[(int) *key] = func;
-		return;
-	}
-
-	if (g_hash_table_lookup_extended(expandos, key, &origkey,
-					 &origvalue)) {
-                g_free(origkey);
-		g_hash_table_remove(expandos, key);
-	}
-	g_hash_table_insert(expandos, g_strdup(key), (void *) func);
-}
-
-/* Destroy expando */
-void expando_destroy(const char *key, EXPANDO_FUNC func)
-{
-	gpointer origkey, origvalue;
-
-	g_return_if_fail(key != NULL || *key == '\0');
-	g_return_if_fail(func != NULL);
-
-	if (key[1] == '\0') {
-		/* single character expando */
-		if (char_expandos[(int) *key] == func)
-                        char_expandos[(int) *key] = NULL;
-		return;
-	}
-
-	if (g_hash_table_lookup_extended(expandos, key, &origkey,
-					 &origvalue)) {
-                g_free(origkey);
-		g_hash_table_remove(expandos, key);
-	}
-}
-
 void special_history_func_set(SPECIAL_HISTORY_FUNC func)
 {
 	history_func = func;
-}
-
-/* text of your AWAY message, if any */
-static char *expando_awaymsg(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->away_reason;
-}
-
-/* current channel */
-static char *expando_channel(SERVER_REC *server, void *item, int *free_ret)
-{
-	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->name;
-}
-
-/* time client was started, $time() format */
-static char *expando_clientstarted(SERVER_REC *server, void *item, int *free_ret)
-{
-        *free_ret = TRUE;
-	return g_strdup_printf("%ld", (long) client_start_time);
-}
-
-/* client version text string */
-static char *expando_version(SERVER_REC *server, void *item, int *free_ret)
-{
-	return IRSSI_VERSION;
-}
-
-/* current value of CMDCHARS */
-static char *expando_cmdchars(SERVER_REC *server, void *item, int *free_ret)
-{
-	return (char *) settings_get_str("cmdchars");
-}
-
-/* modes of current channel, if any */
-static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
-{
-	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->mode;
-}
-
-/* current nickname */
-static char *expando_nick(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->nick;
-}
-
-/* value of STATUS_OPER if you are an irc operator */
-static char *expando_statusoper(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL || !server->server_operator ? "" :
-		(char *) settings_get_str("STATUS_OPER");
-}
-
-/* if you are a channel operator in $C, expands to a '@' */
-static char *expando_chanop(SERVER_REC *server, void *item, int *free_ret)
-{
-	return IS_CHANNEL(item) && CHANNEL(item)->chanop ? "@" : "";
-}
-
-/* nickname of whomever you are QUERYing */
-static char *expando_query(SERVER_REC *server, void *item, int *free_ret)
-{
-	return !IS_QUERY(item) ? "" : QUERY(item)->name;
-}
-
-/* version of current server */
-static char *expando_serverversion(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->version;
-}
-
-/* target of current input (channel or QUERY nickname) */
-static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
-{
-	return ((WI_ITEM_REC *) item)->name;
-}
-
-/* client release date (numeric version string) */
-static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
-{
-	return IRSSI_VERSION_DATE;
-}
-
-/* current working directory */
-static char *expando_workdir(SERVER_REC *server, void *item, int *free_ret)
-{
-	*free_ret = TRUE;
-	return g_get_current_dir();
-}
-
-/* value of REALNAME */
-static char *expando_realname(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->connrec->realname;
-}
-
-/* time of day (hh:mm) */
-static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
-{
-	time_t now = time(NULL);
-	struct tm *tm;
-
-	tm = localtime(&now);
-	*free_ret = TRUE;
-	return g_strdup_printf("%02d:%02d", tm->tm_hour, tm->tm_min);
-}
-
-/* a literal '$' */
-static char *expando_dollar(SERVER_REC *server, void *item, int *free_ret)
-{
-	return "$";
-}
-
-/* system name */
-static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
-{
-#ifdef HAVE_SYS_UTSNAME_H
-	struct utsname un;
-
-	if (uname(&un) == -1)
-		return NULL;
-
-	*free_ret = TRUE;
-	return g_strdup(un.sysname);
-#else
-	return NULL;
-#endif
-}
-
-/* system release */
-static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
-{
-#ifdef HAVE_SYS_UTSNAME_H
-	struct utsname un;
-
-	if (uname(&un) == -1)
-		return NULL;
-
-	*free_ret = TRUE;
-	return g_strdup(un.release);
-#else
-	return NULL;
-#endif
-}
-
-/* Server tag */
-static char *expando_servertag(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->tag;
-}
-
-/* Server chatnet */
-static char *expando_chatnet(SERVER_REC *server, void *item, int *free_ret)
-{
-	return server == NULL ? "" : server->connrec->chatnet;
-}
-
-void special_vars_init(void)
-{
-	settings_add_str("misc", "STATUS_OPER", "*");
-
-	client_start_time = time(NULL);
-
-	memset(char_expandos, 0, sizeof(char_expandos));
-	expandos = g_hash_table_new((GHashFunc) g_str_hash,
-				    (GCompareFunc) g_str_equal);
-	history_func = NULL;
-
-	char_expandos['A'] = expando_awaymsg;
-	char_expandos['C'] = expando_channel;
-	char_expandos['F'] = expando_clientstarted;
-	char_expandos['J'] = expando_version;
-	char_expandos['K'] = expando_cmdchars;
-	char_expandos['M'] = expando_chanmode;
-	char_expandos['N'] = expando_nick;
-	char_expandos['O'] = expando_statusoper;
-	char_expandos['P'] = expando_chanop;
-	char_expandos['Q'] = expando_query;
-	char_expandos['R'] = expando_serverversion;
-	char_expandos['T'] = expando_target;
-	char_expandos['V'] = expando_releasedate;
-	char_expandos['W'] = expando_workdir;
-	char_expandos['Y'] = expando_realname;
-	char_expandos['Z'] = expando_time;
-	char_expandos['$'] = expando_dollar;
-
-	expando_create("sysname", expando_sysname);
-	expando_create("sysrelease", expando_sysrelease);
-	expando_create("tag", expando_servertag);
-	expando_create("chatnet", expando_chatnet);
-}
-
-void special_vars_deinit(void)
-{
-	expando_destroy("sysname", expando_sysname);
-	expando_destroy("sysrelease", expando_sysrelease);
-	expando_destroy("tag", expando_servertag);
-	expando_destroy("chatnet", expando_chatnet);
-
-        g_hash_table_destroy(expandos);
 }

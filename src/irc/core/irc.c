@@ -237,7 +237,7 @@ char *event_get_params(const char *data, int count, ...)
 	return duprec;
 }
 
-static void irc_server_event(const char *line, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void irc_server_event(IRC_SERVER_REC *server, const char *line, const char *nick, const char *address)
 {
 	char *event, *args, *callcmd;
 	GSList *list;
@@ -329,7 +329,7 @@ static void irc_parse_incoming_line(IRC_SERVER_REC *server, char *line)
 
 	line = irc_parse_prefix(line, &nick, &address);
 	if (*line != '\0')
-		signal_emit_id(signal_server_event, 4, line, server, nick, address);
+		signal_emit_id(signal_server_event, 4, server, line, nick, address);
 }
 
 /* input function: handle incoming server messages */
