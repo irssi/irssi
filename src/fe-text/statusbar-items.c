@@ -225,7 +225,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
         mode = NULL;
 	mode_size = 0;
 
-	size_needed = 3 + strlen(winnum) + (server == NULL ? 0 : strlen(server->tag));
+	size_needed = 3 + strlen(winnum) + (server == NULL ? 0 : (17+strlen(server->tag)));
     }
     else
     {
@@ -264,6 +264,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     {
 	/* server tag */
 	set_color((1 << 4)+7); addstr(server->tag);
+        addstr(" (change with ^X)");
     }
     else if (channame[0] != '\0')
     {
