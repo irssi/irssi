@@ -527,7 +527,7 @@ static void event_chanserv_url(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &url);
-	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_URL, url);
+	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_URL, channel, url);
 	g_free(params);
 }
 
