@@ -16,6 +16,8 @@
                 or one of the few most common ones (hup, term, kill, ...)
 
      -in: Send text to standard input of the specified process
+     -interactive: Creates a query-like window item. Text written to it is
+                   sent to executed process, like /EXEC -in.
 
 Execute specified command in background. Output of process is printed
 to active window by default, but can be also sent as messages or
