@@ -103,8 +103,6 @@ void fe_common_irc_init(void)
 	cmdline_hostname = NULL;
 	args_register(options);
 
-	settings_add_str("lookandfeel", "beep_on_msg", "");
-	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
