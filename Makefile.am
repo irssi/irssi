@@ -23,6 +23,9 @@ if HAVE_GNOME
 desktopdir = $(datadir)/gnome/apps/Internet
 desktop_DATA = irssi.desktop
 
+pixmapsdir=$(datadir)/pixmaps
+pixmaps_DATA=irssi-icon.png
+
 corbadir = $(sysconfdir)/CORBA/servers
 corba_DATA = irssi.gnorba
 endif
@@ -37,8 +40,9 @@ EXTRA_DIST = \
 	file2header.sh \
 	irssi.spec \
 	$(conf_DATA) \
-	irssi.gnorba \
-	irssi.desktop
+	$(pixmaps_DATA) \
+	$(corba_DATA) \
+	$(desktop_DATA)
 
 ## make rpms
 rpm: Makefile
