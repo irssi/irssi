@@ -77,7 +77,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 	char *fname;
 	int i, ret, files, flags, queue, start_new_transfer;
 
-	globbuf.gl_offs = 0;
+	memset(&globbuf, 0, sizeof(globbuf));
         flags = GLOB_NOCHECK | GLOB_TILDE;
 
 	/* this loop parses all <file> parameters and adds them to glubbuf */
