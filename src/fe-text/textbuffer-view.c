@@ -355,11 +355,14 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			}
 			term_set_color(view->window, color);
 
-			/* get the beginning of the next subline */
-			text_newline = subline == cache->count-1 ? NULL :
-                                cache->lines[subline].start;
-
-                        need_move = !cache->lines[subline].continues;
+			if (subline == cache->count-1) {
+				text_newline = NULL;
+				need_move = FALSE;
+			} else {
+				/* get the beginning of the next subline */
+				text_newline = cache->lines[subline].start;
+				need_move = !cache->lines[subline].continues;
+			}
                         drawcount++;
 			subline++;
 		}
