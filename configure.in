@@ -242,11 +242,6 @@ if test "x$enable_ssl" = xyes; then
 		OPENSSL_LIBS=
 		OPENSSL_CFLAGS=
 	fi
-
-	AC_SUBST(OPENSSL_CFLAGS)
-	AC_SUBST(OPENSSL_LIBS)
-	LIBS="$LIBS $OPENSSL_LIBS"
-	CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
 else
 	enable_openssl="no"
 fi
@@ -446,6 +441,19 @@ if test -z "$GLIB_DIR"; then
 fi
 
 LIBS="$LIBS $GLIB_LIBS"
+
+dnl * make sure glib2 + ssl isn't tried to be used, it won't work
+if test "x$enable_openssl" != "xno"; then
+  if test "x`echo $GLIB_LIBS|grep glib-2.0`" != "x"; then
+    ssl_error="GLIB2 and OpenSSL don't work together currently, SSL is disabled"
+    enable_openssl=no
+    OPENSSL_LIBS=
+    OPENSSL_CFLAGS=
+  fi
+
+  LIBS="$LIBS $OPENSSL_LIBS"
+  CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+fi
 
 dnl **
 dnl ** check if we can link dynamic libraries to modules
@@ -940,6 +948,9 @@ echo
 
 echo "Building with IPv6 support . : $want_ipv6"
 echo "Building with SSL support .. : ${enable_openssl}"
+if test "x$enable_openssl" = "xno" -a "x$ssl_error" != "x"; then
+  echo "  - $ssl_error"
+fi
 
 echo
 echo "If there was any problems, read the INSTALL file."
