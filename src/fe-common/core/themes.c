@@ -37,6 +37,8 @@ GSList *themes;
 THEME_REC *current_theme;
 GHashTable *default_formats;
 
+static char *init_errors;
+
 static void theme_read(THEME_REC *theme, const char *path, const char *data);
 
 THEME_REC *theme_create(const char *path, const char *name)
@@ -532,22 +534,23 @@ static void theme_init_module(THEME_REC *theme, const char *module,
 	}
 }
 
+static void sig_print_errors(void)
+{
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
+
+	if (init_errors != NULL) {
+		signal_emit("gui dialog", 2, "error", init_errors);
+                g_free(init_errors);
+	}
+}
+
 static void theme_read_module(THEME_REC *theme, const char *module)
 {
 	CONFIG_REC *config;
-	char *msg;
 
 	config = config_open(theme->path, -1);
-	if (config != NULL) {
+	if (config != NULL)
 		config_parse(config);
-
-		if (config_last_error(mainconfig) != NULL) {
-			msg = g_strdup_printf(_("Ignored errors in theme:\n%s"),
-					      config_last_error(mainconfig));
-			signal_emit("gui dialog", 2, "error", msg);
-			g_free(msg);
-		}
-	}
 
 	theme_init_module(theme, module, config);
 
@@ -671,6 +674,14 @@ static void theme_read(THEME_REC *theme, const char *path, const char *data)
 		config = config_open(NULL, -1);
 		config_parse_data(config, data, "internal");
 	}
+
+	if (config_last_error(config) != NULL) {
+		signal_add("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
+		init_errors =
+			g_strdup_printf(_("Ignored errors in theme:\n%s"),
+					config_last_error(config));
+	}
+
 	theme->default_color = config_get_int(config, NULL, "default_color", 15);
         theme_read_replaces(config, theme);
 	theme_read_abstracts(config, theme);
@@ -1017,6 +1028,8 @@ void themes_init(void)
 	default_formats = g_hash_table_new((GHashFunc) g_str_hash,
 					   (GCompareFunc) g_str_equal);
 
+        init_errors = NULL;
+
 	themes = NULL;
 	themes_read();
 
@@ -1024,7 +1037,7 @@ void themes_init(void)
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 	signal_add("complete command format", (SIGNAL_FUNC) sig_complete_format);
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-        signal_add("setup reread", (SIGNAL_FUNC) themes_read);
+	signal_add("setup reread", (SIGNAL_FUNC) themes_read);
 
 	command_set_options("format", "delete reset");
 }
