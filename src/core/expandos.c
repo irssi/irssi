@@ -436,9 +436,14 @@ static char *expando_topic(SERVER_REC *server, void *item, int *free_ret)
 	if (IS_QUERY(item)) {
 		QUERY_REC *query = QUERY(item);
 
+		if (query->server_tag == NULL)
+			return "";
+
                 *free_ret = TRUE;
-		return g_strdup_printf("%s (%s)", query->address,
-				       query->server_tag);
+		return query->address == NULL ?
+			g_strdup_printf("(%s)", query->server_tag) :
+			g_strdup_printf("%s (%s)", query->address,
+					query->server_tag);
 	}
         return "";
 }
