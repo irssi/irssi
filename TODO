@@ -1,53 +1,53 @@
-- teemat
- - /rehash
- - teeman vaihto
- - teemoihin tee jotain pient‰ selityst‰ edes!
- - irssi can't find new themes in ~/.irssi/ while running - scan for new
-   themes when opening themes dialog? irssi-text also needs to be restarted
-   to use new themes..
- - use different themes in different channels/queries?
- - logi voisi k‰ytt‰‰ omaa teemaa
 
-- /IRCNET ADD/REMOVE
-- mites se awaylogi? se /cattaamaan myˆs se /away:n j‰lkeen
-- poista se common-setup.h
+*** MUST be done before 0.7.90
 
-[21:48] < santo> [20:51] §§§ #twiggy,#tanum,#d2mac,#linux.nu,#sweden2k
-Cannot join channel (illegal name)
-.. /mode #a,#b voi sanoa myˆs jossain serverill‰ jotain outoa.. irc.carnet.hr
+ - runtime loadable modules aren't working
+ - DCC CHAT isn't working properly
+ - /IRCNET ADD/REMOVE
 
-.. logit rehashissa sammuu, /window logit katoaa kokonaan? kai /window logit
-   pelaa oikein jos ikkunan refnum vaihtuu?
-.. joosella oli joku bufferibugi. bufferi pieneksi, pguppia, paljon teksti‰
-lis‰‰, alas, --more-- j‰‰
-.. /sb bugaa! /SB GOTO 23:59 tms. ei pelaa
+*** others
 
-- rikki:
-   - dcc
-   - gnome versio..
-   - pluginit
+ - "#x,#y,#z Cannot join channel (illegal name)" .. what server/ircnet does
+   this happen?
+ - some problems with finding curses? in openbsd it should be -lcurses,
+   not -lncurses..
+ - line-split.c: check that 64k limit is working and not crashing irssi!
+ - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
+   idling" was print to screen with some NULL arguments in text..
+ - /SB GOTO, /SB HOME and /SB END don't set gui->ypos right.
+ - When doing a /REHASH, logs are closed?, window logs are entirely removed?
+   (also, check that window logs work right if window's refnum changes)
+ - theme problems:
+    - you can't change theme
+    - some small help about what each format does
+    - /rehash could re-read them
+    - don't keep all themes in memory, just the one in use.
+    - use different themes in different channels/queries?
+    - logging messages could be printed with a different theme
+ - Make /SET HOLD_MODE
+ - /CAT should pause on every screenful of text, this should be some kind of
+   printtext_multiline_paused() function which would use some callback to
+   ask for new text.
+ - /msg =dcc_chatti,#kanava doesn't work - fix it somehow that also different
+   chat plugins could use the same /msg command. /CTCP too.
 
-- /set hold_mode, ja /CAT toimimaan sen kanssa jotenkin nerokkaasti..
-- curses sijainti jotain rikkoo, ja openbsd:ss‰ on -lcurses, ei -lncurses
-
- - /msg =dcc_chatti,#kanava .. ei pelaa tollanen. voisi laittaa coreen tuon
-   ja jotain hookkeja et eri chattiprotoille voisi vaikka menn‰ se teksti..
-   ctcp:lle sama?
- - who ja listiin ne eri vipuset
-- /ON
-
- - line-split.c: varmista ett‰ se 64k limitti toimii eik‰ esim. kaada!
-- /exec
+ - Better support for copy+pasting text to irssi:
+     - if some unknown /command had another / in it, like /usr/bin, send it
+       as normal message. good for copypasting paths :)
+     - detection: first line isn't a /command. next line is followed quickly
+       after it, 0.2 sec or something. after pasting is detected, all unknown
+       /commands are sent as normal messages.
+     - fix copypasting from netscape, strip all spaces at the start and end
+       of the line, join multiple lines to one.
+ - /NOTIFY -once - notify only once when the user comes to IRC, forget this
+   after it.
+ - "Should we check people in notify list when you're away" option
+ - Implement /EXEC and /ON commands
+ - All those options to /WHO and /LIST commands
  - autorun.ircnet
 
 *** Bugs
 
- - %| doesn't work with irssi text widget
- - some problems when using multiple windows with focus being all the time in
-   one of the windows and it can't be changed to different window?! Probably
-   has something to do with click to focus.
- - split windows are buggy, destroying them doesn't really work well..
- - mirc ctcp togglemenuitem isn't updated right
  - multiple dcc connections from different irc networks from same nick
    doesn't work. Maybe create "server nick" and "refer nick" variables to
    DCC_REC?
@@ -59,6 +59,15 @@ lis‰‰, alas, --more-- j‰‰
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
      - "you have new mail"
+
+*** GTK UI
+
+ - %| doesn't work with irssi text widget
+ - some problems when using multiple windows with focus being all the time in
+   one of the windows and it can't be changed to different window?! Probably
+   has something to do with click to focus.
+ - split windows are buggy, destroying them doesn't really work well..
+ - mirc ctcp togglemenuitem isn't updated right
 
 *** Big things
 
@@ -120,7 +129,6 @@ lis‰‰, alas, --more-- j‰‰
  - multi-DCC - open multiple sockets to transfer the file
  - autoaway when idling
  - nickserv support (automatic /msg nickserv identify password)
- - /exec
  - itext:
      - save/find text
      - text selection draws the entire selection every time you move the
