@@ -1,4 +1,5 @@
 EXTRA_DIST = \
+	autoop.pl \
 	autorejoin.pl \
 	hello.pl \
 	privmsg.pl \
