@@ -100,6 +100,8 @@ static void sig_print_starting(void)
 		print_mode(modes->data);
                 mode_destroy(modes->data);
 	}
+
+	signal_remove("print starting", sig_print_starting);
 }
 
 static int sig_check_modes(void)
