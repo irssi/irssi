@@ -638,7 +638,7 @@ static void read_settings(void)
 	use_colors = settings_get_bool("colors") && has_colors();
 	if (settings_get_bool("topicbar"))
 		topicbar_create();
-	else if (!settings_get_bool("topicbar"))
+	else
 		topicbar_destroy();
 
 	lag_min_show = settings_get_int("lag_min_show")*10;
