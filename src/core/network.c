@@ -362,7 +362,7 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 /* Read data from socket, return number of bytes read, -1 = error */
 int net_receive(GIOChannel *handle, char *buf, int len)
 {
-        unsigned int ret;
+        unsigned long ret;
 	int err;
 
 	g_return_val_if_fail(handle != NULL, -1);
@@ -381,7 +381,7 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit(GIOChannel *handle, const char *data, int len)
 {
-        unsigned int ret;
+        unsigned long ret;
 	int err;
 
 	g_return_val_if_fail(handle != NULL, -1);
