@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002120801';
+$VERSION = '2002120901';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -1085,8 +1085,10 @@ Irssi::signal_add_first('complete word', \&sig_complete);
 Irssi::signal_add_first('command script load', \&sig_command_script_load);
 Irssi::signal_add_first('command script unload', \&sig_command_script_load);
 
-Irssi::signal_register({ 'script error' => [ 'Irssi::Script', 'string' ] });
-Irssi::signal_add_last('script error', \&sig_script_error);
+if (defined &Irssi::signal_register) {
+    Irssi::signal_register({ 'script error' => [ 'Irssi::Script', 'string' ] });
+    Irssi::signal_add_last('script error', \&sig_script_error);
+}
 
 Irssi::command_bind('scriptassist', 'cmd_scripassist');
 
