@@ -234,6 +234,8 @@ AC_DEFUN(AC_SEARCH_NCURSES, [
     AC_NCURSES(/usr/include, ncurses.h, -lncurses,, "ncurses on /usr/include")
     AC_NCURSES(/usr/include/ncurses, ncurses.h, -lncurses, -I/usr/include/ncurses, "ncurses on /usr/include/ncurses")
     AC_NCURSES(/usr/local/include, ncurses.h, -L/usr/local/lib -lncurses, -I/usr/local/include, "ncurses on /usr/local")
+    AC_NCURSES(/usr/pkg/include, ncurses.h, -L/usr/pkg/lib -lncurses, -I/usr/pkg/include, "ncurses on /usr/pkg")
+    AC_NCURSES(/usr/contrib/include, ncurses.h, -L/usr/contrib/lib -lncurses, -I/usr/contrib/include, "ncurses on /usr/contrib")
     AC_NCURSES(/usr/local/include/ncurses, ncurses.h, -L/usr/local/lib -L/usr/local/lib/ncurses -lncurses, -I/usr/local/include/ncurses, "ncurses on /usr/local/include/ncurses")
 
     AC_NCURSES(/usr/local/include/ncurses, curses.h, -L/usr/local/lib -lncurses, -I/usr/local/include/ncurses -DRENAMED_NCURSES, "renamed ncurses on /usr/local/.../ncurses")
