@@ -619,17 +619,10 @@ static void cmd_window_move_next(void)
         window_refnums_move_right(active_win);
 }
 
-/* SYNTAX: WINDOW MOVE <number>|<direction> */
-static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+static void active_window_move_to(int new_refnum)
 {
-	int new_refnum, refnum;
+	int refnum;
 
-	if (!is_numeric(data, 0)) {
-		command_runsub("window move", data, server, item);
-                return;
-	}
-
-	new_refnum = atoi(data);
 	if (new_refnum > active_win->refnum) {
 		for (;;) {
 			refnum = window_refnum_next(active_win->refnum, FALSE);
@@ -647,6 +640,29 @@ static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *i
 			window_set_refnum(active_win, refnum);
 		}
 	}
+}
+
+/* SYNTAX: WINDOW MOVE FIRST */
+static void cmd_window_move_first(void)
+{
+	active_window_move_to(1);
+}
+
+/* SYNTAX: WINDOW MOVE LAST */
+static void cmd_window_move_last(void)
+{
+	active_window_move_to(windows_refnum_last());
+}
+
+/* SYNTAX: WINDOW MOVE <number>|<direction> */
+static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	if (!is_numeric(data, 0)) {
+		command_runsub("window move", data, server, item);
+                return;
+	}
+
+	active_window_move_to(atoi(data));
 }
 
 /* SYNTAX: WINDOW LIST */
@@ -769,6 +785,8 @@ void window_commands_init(void)
 	command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
 	command_bind("window move prev", NULL, (SIGNAL_FUNC) cmd_window_move_prev);
 	command_bind("window move next", NULL, (SIGNAL_FUNC) cmd_window_move_next);
+	command_bind("window move first", NULL, (SIGNAL_FUNC) cmd_window_move_first);
+	command_bind("window move last", NULL, (SIGNAL_FUNC) cmd_window_move_last);
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
 	command_bind("layout", NULL, (SIGNAL_FUNC) cmd_layout);
@@ -808,6 +826,8 @@ void window_commands_deinit(void)
 	command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
 	command_unbind("window move prev", (SIGNAL_FUNC) cmd_window_move_prev);
 	command_unbind("window move next", (SIGNAL_FUNC) cmd_window_move_next);
+	command_unbind("window move first", (SIGNAL_FUNC) cmd_window_move_first);
+	command_unbind("window move last", (SIGNAL_FUNC) cmd_window_move_last);
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
 	command_unbind("layout", (SIGNAL_FUNC) cmd_layout);
