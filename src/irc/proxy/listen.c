@@ -104,9 +104,12 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 		g_free_not_null(client->nick);
 		client->nick = g_strdup(args);
 	} else if (strcmp(cmd, "USER") == 0) {
-		if (client->nick == NULL ||
-		    (*password != '\0' && !client->pass_sent)) {
-			/* stupid client didn't send us NICK/PASS, kill it */
+		client->user_sent = TRUE;
+	}
+
+	if (client->nick != NULL && client->user_sent) {
+		if (*password != '\0' && !client->pass_sent) {
+			/* client didn't send us PASS, kill it */
 			remove_client(client);
 		} else {
 			client->connected = TRUE;
