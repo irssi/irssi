@@ -114,8 +114,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Themes", 0 },
 
-	{ "theme_saved", "Theme saved to %_$0%_", 1, { 0 } },
-	{ "theme_save_failed", "Error saving theme to %_$0%_", 1, { 0 } },
+	{ "theme_saved", "Theme saved to $0", 1, { 0 } },
+	{ "theme_save_failed", "Error saving theme to $0", 1, { 0 } },
 	{ "theme_not_found", "Theme %_$0%_ not found", 1, { 0 } },
 	{ "window_theme_changed", "Using theme %_$0%_ in this window", 1, { 0 } },
 	{ "format_title", "%:%K[%W$0%K] - [%W$1%K]%:%:", 2, { 0, 0 } },
