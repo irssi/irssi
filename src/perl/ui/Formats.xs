@@ -26,9 +26,15 @@ format_real_length(str, len)
 	char *str
 	int len
 
-char *
+void
 strip_codes(input)
 	char *input
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = strip_codes(input);
+	xPUSHs(sv_2mortal(new_pv(ret)));
+	g_free(ret);
 
 void
 format_get_text(window, module, server, target, formatnum, ...)

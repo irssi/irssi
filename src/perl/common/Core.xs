@@ -445,9 +445,15 @@ int
 level2bits(str)
 	char *str
 
-char *
+void
 bits2level(bits)
 	int bits
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = bits2level(bits);
+	xPUSHs(sv_2mortal(new_pv(ret)));
+	g_free(ret);
 
 int
 combine_level(level, str)
@@ -513,7 +519,7 @@ void
 pidwait_remove(pid)
 	int pid
 
-char *
+void
 parse_special(cmd, data="", flags=0)
 	char *cmd
 	char *data

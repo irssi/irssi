@@ -58,9 +58,15 @@ dcc_ctcp_message(server, target, chat, notice, msg)
 	int notice
 	char *msg
 
-char *
+void
 dcc_get_download_path(fname)
 	char *fname
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = dcc_get_download_path(fname);
+	xPUSHs(sv_2mortal(new_pv(ret)));
+	g_free(ret);
 
 #*******************************
 MODULE = Irssi::Irc::Dcc  PACKAGE = Irssi::Irc::Dcc  PREFIX = dcc_
