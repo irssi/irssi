@@ -114,7 +114,7 @@ static void update_cmd_color(unsigned char cmd, int *color)
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= (cmd & 0x0f) << 4;
 			else {
-				*color |= ATTR_RESETBG;
+				*color = (*color & FGATTR) | ATTR_RESETBG;
                                 if (cmd & LINE_COLOR_BLINK)
 					*color |= ATTR_BLINK;
 			}
@@ -124,7 +124,7 @@ static void update_cmd_color(unsigned char cmd, int *color)
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= cmd & 0x0f;
 			else {
-				*color |= ATTR_RESETFG;
+				*color = (*color & BGATTR) | ATTR_RESETFG;
                                 if (cmd & LINE_COLOR_BOLD)
 					*color |= ATTR_BOLD;
 			}

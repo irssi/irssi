@@ -244,8 +244,8 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	if (window == NULL) {
                 g_return_if_fail(next_xpos != -1);
 
-		attr |= fg > 0 ? fg : ATTR_RESETFG;
-		attr |= bg > 0 ? (bg << 4) : ATTR_RESETBG;
+		attr |= fg >= 0 ? fg : ATTR_RESETFG;
+		attr |= bg >= 0 ? (bg << 4) : ATTR_RESETBG;
 		term_set_color(root_window, attr);
 
 		term_move(root_window, next_xpos, next_ypos);
