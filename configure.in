@@ -305,12 +305,14 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
       if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
 	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
         AC_DEFINE(HAVE_GMODULE)
+	have_gmodule=yes
       fi
     else
       GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
       if test -f $full_glib_dir/gmodule/libgmodule.a; then
 	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
         AC_DEFINE(HAVE_GMODULE)
+	have_gmodule=yes
       fi
     fi
     AC_SUBST(GLIB_CFLAGS)
@@ -330,6 +332,7 @@ if test -z "$GLIB_DIR"; then
     AM_PATH_GLIB(1.2.0)
   else
     AC_DEFINE(HAVE_GMODULE)
+    have_gmodule=yes
   fi
 
   if test -z "$GLIB_LIBS"; then
@@ -843,6 +846,13 @@ fi
 echo "Building irssi bot ......... : $want_irssibot"
 echo "Building irssi proxy ....... : $want_irssiproxy"
 echo "Building with IPv6 support . : $want_ipv6"
+if test "x$have_gmodule" = "xyes"; then
+	echo "Building with module support : yes"
+else
+	echo "Building with module support : NO!! /LOAD will not work!"
+	echo " - You're missing gmodule (comes with glib) for some reason,"
+	echo "   or it doesn't work in your system."
+fi
 
 if test "x$want_perl" = "xstatic"; then
 	echo "Building with Perl support . : static (in irssi binary)"
@@ -878,5 +888,6 @@ if test "x$want_perl" != "xno"; then
 		echo "  Anyway, installing perl to this directory should work just as well."
 	fi
 fi
+
 echo "Install prefix ............. : $prefix"
 
