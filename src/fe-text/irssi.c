@@ -171,9 +171,9 @@ static void textui_finish_init(void)
 	fe_perl_init();
 #endif
 
-	fe_common_core_finish_init();
-
 	dirty_check();
+
+	fe_common_core_finish_init();
 	signal_emit("irssi init finished", 0);
 
 	if (display_firsttimer) {
