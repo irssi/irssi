@@ -53,13 +53,6 @@
           numerot
  - when using -w password command line parameter, hide the password so it
    won't show with ps.
-17:26 < elho> cras: and with dancer-ircd like here in OPN, mode +f (channel 
-              forward) has the channel as argument, ie. HAS_MODE_ARG_SET() 
-              should include f
-17:29 < elho> and joining such a channel gives event 379 which irssi handles as 
-              whois_modes, it needs to distinguish between this 379 channel 
-              redirect and the whois_modes 379 it handles currently (whatever 
-              that is ;))
 07.06.2002 08:37 #irssi: <@Qrczak> cras: A bug. After /upgrade when being away 
                                    the awaylog is not being written to.
 21:37 < life> Then you connect. The problem is that irssi connects to the proxy 
@@ -253,7 +246,6 @@
       maybe some multipeople query support? :) /query nick1,nick2 and sending
       text there would send it to both. Seems to work already but receiving
       messages from either nick1 or nick2 don't go to that window..
-    - /WHOIS -servertag
     - /BAN: setting of what netmask to use for banning with IPv6 addresses
 
  - Netsplits
@@ -306,8 +298,6 @@
     - /set irssi_proxy_ips <allow connections only from specified IPs>
 
  - Misc IRC related things:
-    - better support for !channels (don't log the ID, show nicer in whois,
-      layout save doesn't work, /win item move !channel)
     - support for mode +q in dancer - also same as +b %xxx modes..
     - properly support RFC-1459 charset (ircnet specific option), eg.
       /QUERY p[ and msgs from p{ aren't placed there.
