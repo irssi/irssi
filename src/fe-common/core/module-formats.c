@@ -34,10 +34,14 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "daychange", "Day changed to $[-2.0]{0} $3 $2", 4, { 1, 1, 1, 0 } },
 	{ "talking_with", "You are now talking with {nick $0}", 1, { 0 } },
 	{ "refnum_too_low", "Window number must be greater than 1", 0 },
+	{ "error_server_sticky", "Window's server is sticky and it cannot be changed without -unsticky option", 0 },
+	{ "set_server_sticky", "Window's server set sticky", 1, { 0 } },
+	{ "unset_server_sticky", "Window's server isn't sticky anymore", 1, { 0 } },
 	{ "window_level", "Window level is now $0", 1, { 0 } },
 	{ "windowlist_header", "Ref Name                 Active item     Server          Level", 0 },
 	{ "windowlist_line", "$[3]0 %|$[20]1 $[15]2 $[15]3 $4", 5, { 1, 0, 0, 0, 0 } },
 	{ "windowlist_footer", "", 0 },
+	{ "windows_saved", "State of windows saved (/SAVE is still needed to update configuration file)", 0 },
 
 	/* ---- */
 	{ NULL, "Server", 0 },

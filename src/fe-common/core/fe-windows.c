@@ -124,6 +124,7 @@ void window_destroy(WINDOW_REC *window)
 	g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL);
 	g_slist_free(window->waiting_channels);
 
+	g_free_not_null(window->servertag);
 	g_free_not_null(window->theme_name);
 	g_free_not_null(window->name);
 	g_free(window);
@@ -396,8 +397,10 @@ static void sig_server_looking(SERVER_REC *server)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->active_server == NULL ||
-		    (rec == active_win && rec->items == NULL))
+		if ((rec->servertag == NULL ||
+		     g_strcasecmp(rec->servertag, server->tag) == 0) &&
+		    (rec->active_server == NULL ||
+		     (rec == active_win && rec->items == NULL)))
 			window_change_server(rec, server);
 	}
 }
@@ -413,8 +416,10 @@ static void sig_server_disconnected(SERVER_REC *server)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->active_server == server)
-			window_change_server(rec, new_server);
+		if (rec->active_server == server) {
+			window_change_server(rec, rec->servertag != NULL ?
+					     NULL : new_server);
+		}
 	}
 }
 

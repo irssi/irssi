@@ -178,25 +178,58 @@ static void cmd_window_level(const char *data)
 	g_free(level);
 }
 
-/* SYNTAX: WINDOW SERVER <tag> */
+/* SYNTAX: WINDOW SERVER [-sticky | -unsticky] <tag> */
 static void cmd_window_server(const char *data)
 {
+	GHashTable *optlist;
 	SERVER_REC *server;
+        char *tag;
+	void *free_arg;
 
-	g_return_if_fail(data != NULL);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "window server", &optlist, &tag))
+		return;
 
-	server = server_find_tag(data);
-	if (server == NULL) {
+	if (*tag == '\0' &&
+	    (g_hash_table_lookup(optlist, "sticky") != NULL ||
+	     g_hash_table_lookup(optlist, "unsticky") != NULL)) {
+		tag = active_win->active_server->tag;
+	}
+
+	if (*tag == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	server = server_find_tag(tag);
+
+	if (g_hash_table_lookup(optlist, "unsticky") != NULL &&
+	    active_win->servertag != NULL) {
+		g_free_and_null(active_win->servertag);
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_UNKNOWN_SERVER_TAG, data);
+				   TXT_UNSET_SERVER_STICKY, server->tag);
+	}
+
+	if (active_win->servertag != NULL &&
+	    g_hash_table_lookup(optlist, "sticky") == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+				   TXT_ERROR_SERVER_STICKY);
+	} else if (server == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_UNKNOWN_SERVER_TAG, tag);
 	} else if (active_win->active == NULL) {
 		window_change_server(active_win, server);
+		if (g_hash_table_lookup(optlist, "sticky") != NULL) {
+                        g_free_not_null(active_win->servertag);
+			active_win->servertag = g_strdup(server->tag);
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_SET_SERVER_STICKY, server->tag);
+		}
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_SERVER_CHANGED,
 				   server->tag, server->connrec->address,
 				   server->connrec->chatnet == NULL ? "" :
 				   server->connrec->chatnet);
 	}
+
+	cmd_params_free(free_arg);
 }
 
 static void cmd_window_item(const char *data, void *server, WI_ITEM_REC *item)
@@ -446,6 +479,7 @@ void window_commands_init(void)
 	command_bind("savewindows", NULL, (SIGNAL_FUNC) cmd_savewindows);
 
 	command_set_options("window number", "sticky");
+	command_set_options("window server", "sticky unsticky");
 }
 
 void window_commands_deinit(void)

@@ -29,6 +29,8 @@
 #include "servers.h"
 #include "queries.h"
 
+#include "module-formats.h"
+#include "printtext.h"
 #include "themes.h"
 #include "fe-windows.h"
 #include "window-items.h"
@@ -93,6 +95,7 @@ void windows_restore(void)
                 window_set_name(window, config_node_get_str(node, "name", NULL));
 		window_set_level(window, level2bits(config_node_get_str(node, "level", "")));
 
+		window->servertag = g_strdup(config_node_get_str(node, "servertag", NULL));
 		window->theme_name = g_strdup(config_node_get_str(node, "theme", NULL));
 		if (window->theme_name != NULL)
 			window->theme = theme_load(window->theme_name);
@@ -143,6 +146,8 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 
 	if (window->name != NULL)
 		iconfig_node_set_str(node, "name", window->name);
+	if (window->servertag != NULL)
+		iconfig_node_set_str(node, "servertag", window->servertag);
 	if (window->level != 0) {
                 char *level = bits2level(window->level);
 		iconfig_node_set_str(node, "level", level);
@@ -166,6 +171,8 @@ void windows_save(void)
 
 	g_slist_foreach(windows, (GFunc) window_save, node);
 	signal_emit("windows saved", 0);
+
+        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWS_SAVED);
 }
 
 void window_save_init(void)
