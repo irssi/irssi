@@ -485,6 +485,7 @@ Server->{}
   usermode_away - Are we marked as away? 1|0
   away_reason - Away reason message
   banned - Were we banned from this server? 1|0
+  lag - Current lag to server in milliseconds
 
 Server
 Connect::connect()
@@ -601,8 +602,8 @@ Windowitem->{}
   name - Name of the item
 
   createtime - Time the window item was created
-  new_data - 0=no new data, 1=text, 2=msg, 3=highlighted text
-  last_color - Color of the last highlighted text
+  data_level - 0=no new data, 1=text, 2=msg, 3=highlighted text
+  hilight_color - Color of the last highlighted text
 
 
  *** Channels
@@ -613,7 +614,9 @@ Channel->{}
 
   (..contains all the same data as Windowitem above..)
 
-  topic - Chanenl topic
+  topic - Channel topic
+  topic_by - Nick who set the topic
+  topic_time - Timestamp when the topic was set
 
   no_modes - Channel is modeless
   mode - Channel mode
@@ -747,12 +750,19 @@ Server::masks_match(masks, nick, address)
 
  *** Rawlog
 
+Rawlog->{}
+  logging - The rawlog is being written to file currently
+  nlines - Number of lines in rawlog
+
 Rawlog
 rawlog_create()
   Create a new rawlog.
 
 Rawlog::destroy()
   Destroy the rawlog.
+
+Rawlog::get_lines()
+  Returns all lines in rawlog.
 
 rawlog_set_size(lines)
   Set the default rawlog size for new rawlogs.
@@ -780,6 +790,7 @@ Rawlog::redirect(str)
 
 Log->{}
   fname - Log file name
+  real_fname - The actual opened log file (after %d.%m.Y etc. are expanded)
   opened - Log file is open
   level - Log only these levels
   last - Timestamp when last message was written
@@ -833,8 +844,8 @@ Ignore->{}
   pattern - Ignore text pattern
 
   level - Ignore level
-  except_level - Ignore exception levels
 
+  exception - This is an exception ignore
   regexp - Regexp pattern matching
   fullword - Pattern matches only full words
 

@@ -294,7 +294,7 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	chat_type = (char *) chat_protocol_find_id(nick->chat_type)->name;
 
 	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
+	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
 	hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
 	hv_store(hv, "host", 4, new_pv(nick->host), 0);
@@ -304,10 +304,12 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	hv_store(hv, "gone", 4, newSViv(nick->gone), 0);
 	hv_store(hv, "serverop", 8, newSViv(nick->serverop), 0);
 
-	hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);
 	hv_store(hv, "op", 2, newSViv(nick->op), 0);
 	hv_store(hv, "halfop", 6, newSViv(nick->halfop), 0);
 	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
+
+	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
+	hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);
 }
 
 static void perl_command_fill_hash(HV *hv, COMMAND_REC *cmd)
@@ -367,17 +369,8 @@ static void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
 
 static void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 {
-	AV *av;
-	GSList *tmp;
-
 	hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
 	hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
-
-	av = newAV();
-	for (tmp = rawlog->lines; tmp != NULL; tmp = tmp->next) {
-		av_push(av, new_pv(tmp->data));
-	}
-	hv_store(hv, "lines", 5, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
