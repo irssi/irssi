@@ -397,7 +397,7 @@ static void log_single_line(WINDOW_REC *window, void *server,
 	ltoa(windownum, window->refnum);
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
 			     windownum, NULL, NULL);
-	if (log != NULL) log_write_rec(log, text);
+	if (log != NULL) log_write_rec(log, text, level);
 
 	if (target == NULL)
 		log_file_write(server, NULL, level, text, FALSE);

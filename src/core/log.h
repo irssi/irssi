@@ -45,7 +45,7 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 
 void log_file_write(SERVER_REC *server, const char *item, int level,
 		    const char *str, int no_fallbacks);
-void log_write_rec(LOG_REC *log, const char *str);
+void log_write_rec(LOG_REC *log, const char *str, int level);
 
 int log_start_logging(LOG_REC *log);
 void log_stop_logging(LOG_REC *log);

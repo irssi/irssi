@@ -62,7 +62,7 @@ static int log_item_str2type(const char *type)
 }
 
 static void log_write_timestamp(int handle, const char *format,
-				const char *suffix, time_t stamp)
+				const char *text, time_t stamp)
 {
 	struct tm *tm;
 	char str[256];
@@ -71,10 +71,9 @@ static void log_write_timestamp(int handle, const char *format,
 	if (*format == '\0') return;
 
 	tm = localtime(&stamp);
-	if (strftime(str, sizeof(str), format, tm) > 0) {
+	if (strftime(str, sizeof(str), format, tm) > 0)
 		write_buffer(handle, str, strlen(str));
-		if (suffix != NULL) write_buffer(handle, suffix, strlen(suffix));
-	}
+	if (text != NULL) write_buffer(handle, text, strlen(text));
 }
 
 static char *log_filename(LOG_REC *log)
@@ -182,7 +181,7 @@ static void log_rotate_check(LOG_REC *log)
 	g_free(new_fname);
 }
 
-void log_write_rec(LOG_REC *log, const char *str)
+void log_write_rec(LOG_REC *log, const char *str, int level)
 {
 	struct tm *tm;
 	time_t now;
@@ -215,7 +214,10 @@ void log_write_rec(LOG_REC *log, const char *str)
 
 	log->last = now;
 
-	log_write_timestamp(log->handle, log_timestamp, str, now);
+        if ((level & MSGLEVEL_LASTLOG) == 0)
+		log_write_timestamp(log->handle, log_timestamp, str, now);
+	else
+		write_buffer(log->handle, str, strlen(str));
 	write_buffer(log->handle, "\n", 1);
 
 	signal_emit("log written", 2, log, str);
@@ -268,18 +270,19 @@ void log_file_write(SERVER_REC *server, const char *item, int level,
 			fallbacks = g_slist_append(fallbacks, rec);
 		else if (item != NULL && log_item_find(rec, LOG_ITEM_TARGET,
 						       item, server) != NULL)
-			log_write_rec(rec, str);
+			log_write_rec(rec, str, level);
 	}
 
 	if (!found && !no_fallbacks && fallbacks != NULL) {
 		/* not found from any items, so write it to all main logs */
-		tmpstr = NULL;
-		if (level & MSGLEVEL_PUBLIC)
-			tmpstr = g_strconcat(item, ": ", str, NULL);
+		tmpstr = (level & MSGLEVEL_PUBLIC) ?
+			g_strconcat(item, ": ", str, NULL) :
+			g_strdup(str);
 
-		g_slist_foreach(fallbacks, (GFunc) log_write_rec,
-				tmpstr ? tmpstr : (char *)str);
-		g_free_not_null(tmpstr);
+		for (tmp = fallbacks; tmp != NULL; tmp = tmp->next)
+                        log_write_rec(tmp->data, tmpstr, level);
+
+		g_free(tmpstr);
 	}
         g_slist_free(fallbacks);
 }
