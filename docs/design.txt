@@ -35,6 +35,45 @@
  about the chat protocols. This should allow implementing modules to
  whatever chat protocols and with whatever frontends easily.
 
+ ** Signals
+
+ Communication between different modules are done with "signals". They are
+ not related to UNIX signals in any way, you could more like think of them
+ as "events" - which might be a better name for them, but I don't really
+ want to change it anymore :)
+
+ So, you send signal with signal_emit() and it's sent to all modules that
+ have grabbed it by calling signal_add() in their init function. For
+ example:
+
+   signal_emit("mysignal", 1, "hello");
+
+ Sends a "mysignal" function with one argument "hello" - before that, you
+ should have grabbed the signal somewhere else with:
+
+   static void sig_mysignal(const char *arg1)
+   {
+     /* arg1 contains "hello" */
+   }
+
+   signal_add("mysignal", (SIGNAL_FUNC) sig_mysignal);
+
+ There are three different signal_add() functions which you can use to
+ specify if you want to grab the signal first, "normally" or last. You can
+ also stop the signal from going any further.
+
+ Emitting signal with it's name creates a small overhead since it has to
+ look up the signal's numeric ID first, after which it looks up the signal
+ structure. This is done because if you call a signal _really_ often,
+ it's faster to find it with it's numeric ID instead of the string. You
+ can use signal_get_uniq_id() macro to convert the signal name into ID -
+ you'll have to do this only once! - and use signal_emit_id() to emit the
+ signal. Don't bother to do this unless your signal is sent (or could be
+ sent) several times in a second.
+
+ See src/core/signals.h for defination of the signal function, and
+ signals.txt for a list of signals.
+
 
  ** lib-popt
 

@@ -6,6 +6,10 @@ typedef void (*SIGNAL_FUNC) (gconstpointer, gconstpointer, gconstpointer, gconst
 void signals_init(void);
 void signals_deinit(void);
 
+/* use this macro to convert the signal name to ID */
+#define signal_get_uniq_id(signal) \
+        module_get_uniq_id_str("signals", signal)
+
 /* bind a signal */
 void signal_add_to(const char *module, int pos, const char *signal, SIGNAL_FUNC func);
 #define signal_add(a, b) signal_add_to(MODULE_NAME, 1, a, b)

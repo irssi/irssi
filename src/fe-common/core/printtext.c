@@ -900,10 +900,10 @@ void printtext_init(void)
 {
 	settings_add_int("misc", "timestamp_timeout", 0);
 
-	signal_gui_print_text = module_get_uniq_id_str("signals", "gui print text");
-	signal_print_text_stripped = module_get_uniq_id_str("signals", "print text stripped");
-	signal_print_text = module_get_uniq_id_str("signals", "print text");
-	signal_print_text_finished = module_get_uniq_id_str("signals", "print text finished");
+	signal_gui_print_text = signal_get_uniq_id("gui print text");
+	signal_print_text_stripped = signal_get_uniq_id("print text stripped");
+	signal_print_text = signal_get_uniq_id("print text");
+	signal_print_text_finished = signal_get_uniq_id("print text finished");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);

@@ -63,7 +63,7 @@ void pidwait_init(void)
 	pids = NULL;
 	childcheck_tag = g_timeout_add(1000, (GSourceFunc) child_check, NULL);
 
-	signal_pidwait = module_get_uniq_id_str("signals", "pidwait");
+	signal_pidwait = signal_get_uniq_id("pidwait");
 }
 
 void pidwait_deinit(void)

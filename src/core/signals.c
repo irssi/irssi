@@ -52,7 +52,7 @@ void signal_add_to(const char *module, int pos, const char *signal, SIGNAL_FUNC 
 	g_return_if_fail(func != NULL);
 	g_return_if_fail(pos >= 0 && pos < SIGNAL_LISTS);
 
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL) {
@@ -146,7 +146,7 @@ void signal_remove(const char *signal, SIGNAL_FUNC func)
 	g_return_if_fail(signal != NULL);
 	g_return_if_fail(func != NULL);
 
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	found = rec == NULL ? 0 : signal_remove_from_lists(rec, signal_id, func);
@@ -251,7 +251,7 @@ int signal_emit(const char *signal, int params, ...)
 	int signal_id, ret;
 
 	/* get arguments */
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
 
 	va_start(va, params);
 	ret = signal_emitv_id(signal_id, params, va);
@@ -291,7 +291,7 @@ void signal_stop_by_name(const char *signal)
 	SIGNAL_REC *rec;
 	int signal_id;
 
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL)
 		g_warning("signal_stop_by_name() : unknown signal \"%s\"", signal);

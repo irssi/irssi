@@ -423,10 +423,10 @@ void irc_irc_init(void)
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	current_server_event = NULL;
-	signal_send_command = module_get_uniq_id_str("signals", "send command");
-	signal_default_event = module_get_uniq_id_str("signals", "default event");
-	signal_server_event = module_get_uniq_id_str("signals", "server event");
-	signal_server_incoming = module_get_uniq_id_str("signals", "server incoming");
+	signal_send_command = signal_get_uniq_id("send command");
+	signal_default_event = signal_get_uniq_id("default event");
+	signal_server_event = signal_get_uniq_id("server event");
+	signal_server_incoming = signal_get_uniq_id("server incoming");
 }
 
 void irc_irc_deinit(void)

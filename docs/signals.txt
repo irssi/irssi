@@ -1,10 +1,13 @@
+List of signals irssi emits - see design.txt for more information about
+signals.
+
 IRC base
 --------
 
 * Requires to work properly:
 
  "gui exit"
-"send command", char *command, SERVER_REC, WI_ITEM_REC
+ "send command", char *command, SERVER_REC, WI_ITEM_REC
 
 * Provides signals:
 

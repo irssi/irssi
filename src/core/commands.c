@@ -554,7 +554,7 @@ void commands_init(void)
 	cmdget_funcs = NULL;
 	current_command = NULL;
 
-	signal_default_command = module_get_uniq_id_str("signals", "default command");
+	signal_default_command = signal_get_uniq_id("default command");
 
 	settings_add_str("misc", "cmdchars", "/");
 	signal_add("send command", (SIGNAL_FUNC) event_command);

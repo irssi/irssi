@@ -247,7 +247,7 @@ static int perl_signal_find(const char *signal, const char *func, int last)
 
 	table = last ? last_signals : first_signals;
 
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
         siglist = g_hash_table_lookup(table, GINT_TO_POINTER(signal_id));
 
 	while (siglist != NULL) {
@@ -272,7 +272,7 @@ static void perl_signal_to(const char *signal, const char *func, int last)
 		return;
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
-	rec->signal_id = module_get_uniq_id_str("signals", signal);
+	rec->signal_id = signal_get_uniq_id(signal);
 	rec->signal = g_strdup(signal);
 	rec->func = g_strdup(func);
 	rec->last = last;
@@ -324,7 +324,7 @@ void perl_signal_remove(const char *signal, const char *func)
 	GSList *list;
 	int signal_id;
 
-	signal_id = module_get_uniq_id_str("signals", signal);
+	signal_id = signal_get_uniq_id(signal);
 
 	list = g_hash_table_lookup(first_signals, GINT_TO_POINTER(signal_id));
 	if (list != NULL)

@@ -154,7 +154,7 @@ static void read_settings(void)
 
 void rawlog_init(void)
 {
-	signal_rawlog = module_get_uniq_id_str("signals", "rawlog");
+	signal_rawlog = signal_get_uniq_id("rawlog");
 
 	settings_add_int("history", "rawlog_lines", 200);
 	read_settings();
