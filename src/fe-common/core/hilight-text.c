@@ -31,6 +31,7 @@
 
 #include "hilight-text.h"
 #include "printtext.h"
+#include "formats.h"
 
 #define DEFAULT_HILIGHT_LEVEL \
 	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | \
@@ -135,7 +136,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer level, const char *str)
+static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
 {
 	if (hilight_next) {
 		hilight_next = FALSE;
@@ -243,38 +244,38 @@ char *hilight_match(const char *channel, const char *nickmask, int level, const 
 	return g_strconcat(isdigit(*color) ? "\003" : "", color, NULL);
 }
 
-static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer plevel, const char *str)
+static void sig_print_text_stripped(TEXT_DEST_REC *dest, const char *str)
 {
 	char *newstr, *color;
-	int level, oldlevel;
+	int oldlevel;
 
 	g_return_if_fail(str != NULL);
 
-	level = GPOINTER_TO_INT(plevel);
-	if (level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT)) return;
+	if (dest->level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT))
+		return;
 
-	color = hilight_match(channel, NULL, level, str);
+	color = hilight_match(dest->target, NULL, dest->level, str);
 	if (color == NULL) return;
 
 	if (*color == 3) {
 		/* colorify */
-                window->last_color = atoi(color+1);
+                dest->window->last_color = atoi(color+1);
 	}
 
-	if (window != active_win) {
-		oldlevel = window->new_data;
-		window->new_data = NEWDATA_HILIGHT;
-		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
-		signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
+	if (dest->window != active_win) {
+		oldlevel = dest->window->new_data;
+		dest->window->new_data = NEWDATA_HILIGHT;
+		signal_emit("window hilight", 2, dest->window, GINT_TO_POINTER(oldlevel));
+		signal_emit("window activity", 2, dest->window, GINT_TO_POINTER(oldlevel));
 	}
 
 	hilight_next = FALSE;
 
-	signal_emit("print text stripped", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), str);
-	signal_stop();
+	/* update the level, but let the signal pass through.. */
+	dest->level |= MSGLEVEL_HILIGHT;
 
 	newstr = g_strconcat(color, str, NULL);
-	signal_emit("print text", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
+	signal_emit("print text", 2, dest, newstr);
 	g_free(newstr);
 
 	hilight_next = TRUE;

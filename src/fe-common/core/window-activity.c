@@ -29,39 +29,38 @@
 #include "window-items.h"
 #include "nicklist.h"
 #include "hilight-text.h"
+#include "formats.h"
 
 static const char *noact_channels;
 static int hilight_level, activity_level;
 
-static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server,
-			     const char *channel, void *levelptr,
-			     const char *msg)
+static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
-	int level, oldlevel, new_data;
+	int oldlevel, new_data;
 
-	level = GPOINTER_TO_INT(levelptr);
-	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
+	if (dest->window == active_win ||
+	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
 	/* hilights and private messages get HILIGHT status,
 	   public messages get MSGS status and rest get TEXT */
-	new_data = (level & (MSGLEVEL_HILIGHT|hilight_level)) ?
+	new_data = (dest->level & (MSGLEVEL_HILIGHT|hilight_level)) ?
 		NEWDATA_HILIGHT :
-		((level & activity_level) ? NEWDATA_MSG : NEWDATA_TEXT);
+		((dest->level & activity_level) ? NEWDATA_MSG : NEWDATA_TEXT);
 
         /* check that channel isn't in "don't show activity" list */
 	if (new_data < NEWDATA_HILIGHT &&
-	    channel != NULL && find_substr(noact_channels, channel))
+	    dest->target != NULL && find_substr(noact_channels, dest->target))
 		return;
 
-	oldlevel = window->new_data;
-	if (window->new_data < new_data) {
-		window->new_data = new_data;
-		window->last_color = hilight_last_nick_color();;
-		signal_emit("window hilight", 1, window);
+	oldlevel = dest->window->new_data;
+	if (dest->window->new_data < new_data) {
+		dest->window->new_data = new_data;
+		dest->window->last_color = hilight_last_nick_color();;
+		signal_emit("window hilight", 1, dest->window);
 	}
 
-	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
+	signal_emit("window activity", 2, dest->window, GINT_TO_POINTER(oldlevel));
 }
 
 static void sig_dehilight(WINDOW_REC *window, WI_ITEM_REC *item)

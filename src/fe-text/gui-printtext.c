@@ -23,8 +23,9 @@
 #include "commands.h"
 #include "settings.h"
 
-#include "printtext.h"
 #include "windows.h"
+#include "formats.h"
+#include "printtext.h"
 #include "themes.h"
 
 #include "screen.h"
@@ -34,6 +35,9 @@
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
 static int scrollback_lines, scrollback_hours;
+
+static int scrollback_save_formats;
+static GString *format;
 
 #define mark_temp_eol(text) \
 	memcpy((text)->buffer + (text)->pos, "\0\200", 2);
@@ -256,7 +260,8 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 	gui->last_color = fg | (bg << 4);
 }
 
-static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor, gpointer pflags, char *str, gpointer level)
+static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
+			  void *pflags, char *str, void *level)
 {
 	GUI_WINDOW_REC *gui;
 	LINE_REC *line;
@@ -275,9 +280,8 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 	if (gui->cur_text == NULL)
 		create_text_chunk(gui);
 
-	/* \n can be only at the start of the line.. */
-	if (*str == '\n') {
-		str++;
+	/* newline can be only at the start of the line.. */
+	if (flags & PRINTFLAG_NEWLINE) {
 		linebuf_add(gui, "\0\200", 2); /* mark EOL */
 
 		line = create_line(gui, 0);
@@ -368,6 +372,15 @@ static void sig_printtext_finished(WINDOW_REC *window)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(window);
+
+	if (format->len > 0) {
+                /* save format of the line */
+		linebuf_add(gui, format->str, format->len);
+		mark_temp_eol(gui->cur_text);
+
+		g_string_truncate(format, 0);
+	}
+
 	if (is_window_visible(window)) {
 #ifdef USE_CURSES_WINDOWS
 		screen_refresh(gui->parent->curses_win);
@@ -377,19 +390,57 @@ static void sig_printtext_finished(WINDOW_REC *window)
 	}
 }
 
+static void sig_print_format(THEME_REC *theme, const char *module,
+			     TEXT_DEST_REC *dest, void *formatnump,
+			     char **args)
+{
+	FORMAT_REC *formats;
+	int formatnum, n;
+
+	if (!scrollback_save_formats)
+		return;
+
+	formatnum = GPOINTER_TO_INT(formatnump);
+	formats = g_hash_table_lookup(default_formats, module);
+
+	/* <module><format_name><arg...> */
+	g_string_truncate(format, 0);
+
+	g_string_append_c(format, '\0');
+	g_string_append_c(format, (char)LINE_CMD_FORMAT);
+
+        g_string_append(format, module);
+	g_string_append_c(format, '\0');
+
+	g_string_append_c(format, (char)LINE_CMD_FORMAT);
+	g_string_append(format, formats[formatnum].tag);
+
+	for (n = 0; n < formats[formatnum].params; n++) {
+		g_string_append_c(format, '\0');
+		g_string_append_c(format, (char)LINE_CMD_FORMAT);
+
+		g_string_append(format, args[n]);
+	}
+}
+
 static void read_settings(void)
 {
 	scrollback_lines = settings_get_int("scrollback_lines");
 	scrollback_hours = settings_get_int("scrollback_hours");
+        scrollback_save_formats = settings_get_bool("scrollback_save_formats");
 }
 
 void gui_printtext_init(void)
 {
+	format = g_string_new(NULL);
+
 	settings_add_int("history", "scrollback_lines", 500);
 	settings_add_int("history", "scrollback_hours", 24);
+	settings_add_bool("history", "scrollback_save_formats", FALSE);
 
 	signal_add("gui print text", (SIGNAL_FUNC) gui_printtext);
 	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 
@@ -398,8 +449,11 @@ void gui_printtext_init(void)
 
 void gui_printtext_deinit(void)
 {
+	g_string_free(format, TRUE);
+
 	signal_remove("gui print text", (SIGNAL_FUNC) gui_printtext);
 	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
 }

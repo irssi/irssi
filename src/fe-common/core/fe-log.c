@@ -429,21 +429,19 @@ static void log_line(WINDOW_REC *window, void *server,
 	g_strfreev(lines);
 }
 
-static void sig_printtext_stripped(WINDOW_REC *window, void *server,
-				   const char *target, gpointer levelp,
-				   const char *text)
+static void sig_printtext_stripped(TEXT_DEST_REC *dest, const char *text)
 {
 	if (skip_next_printtext) {
 		skip_next_printtext = FALSE;
 		return;
 	}
 
-	log_line(window, server, target, GPOINTER_TO_INT(levelp), text);
+	log_line(dest->window, dest->server, dest->target,
+		 dest->level, text);
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module,
-			     TEXT_DEST_REC *dest, void *formatnum,
-			     va_list va)
+			     TEXT_DEST_REC *dest, void *formatnum, char **args)
 {
 	char *str, *stripped, *linestart, *tmp;
 
@@ -457,8 +455,8 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 	if (theme == log_theme)
 		return;
 
-	str = format_get_text_theme_args(log_theme, module, dest,
-					 GPOINTER_TO_INT(formatnum), va);
+	str = format_get_text_theme_charargs(log_theme, module, dest,
+					     GPOINTER_TO_INT(formatnum), args);
 	skip_next_printtext = TRUE;
 
 	if (*str != '\0') {

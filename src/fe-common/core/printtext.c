@@ -28,13 +28,12 @@
 #include "levels.h"
 #include "servers.h"
 
-#include "translation.h"
 #include "themes.h"
 #include "windows.h"
 #include "printtext.h"
 
 static int beep_msg_level, beep_when_away;
-static int timestamps, msgs_timestamps, hide_text_style;
+static int timestamps, msgs_timestamps;
 static int timestamp_timeout;
 
 static int signal_gui_print_text;
@@ -51,176 +50,39 @@ void printbeep(void)
 		       GINT_TO_POINTER(PRINTFLAG_BEEP), "", MSGLEVEL_NEVER);
 }
 
-static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
+static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
+				    int formatnum, va_list va)
 {
-	int fg, bg;
+	char *arglist[MAX_FORMAT_PARAMS];
+	char buffer[DEFAULT_FORMAT_ARGLIST_SIZE];
+	FORMAT_REC *formats;
+	THEME_REC *theme;
+	char *str;
 
-	fg = fg_ret == NULL ? -1 : *fg_ret;
-	bg = bg_ret == NULL ? -1 : *bg_ret;
+	theme = dest->window->theme == NULL ? current_theme :
+		dest->window->theme;
 
-	if (!isdigit((int) **str) && **str != ',') {
-		fg = -1;
-		bg = -1;
-	} else {
-		/* foreground color */
-		if (**str != ',') {
-			fg = **str-'0';
-                        (*str)++;
-			if (isdigit((int) **str)) {
-				fg = fg*10 + (**str-'0');
-				(*str)++;
-			}
-		}
-		if (**str == ',') {
-			/* background color */
-			(*str)++;
-			if (!isdigit((int) **str))
-				bg = -1;
-			else {
-				bg = **str-'0';
-				(*str)++;
-				if (isdigit((int) **str)) {
-					bg = bg*10 + (**str-'0');
-					(*str)++;
-				}
-			}
-		}
-	}
+	formats = g_hash_table_lookup(default_formats, module);
+	format_read_arglist(va, &formats[formatnum],
+			    arglist, sizeof(arglist)/sizeof(char *),
+			    buffer, sizeof(buffer));
 
-	if (fg_ret) *fg_ret = fg;
-	if (bg_ret) *bg_ret = bg;
-}
+	signal_emit_id(signal_print_format, 5, theme, module,
+		       dest, GINT_TO_POINTER(formatnum), arglist);
 
-#define IS_COLOR_CODE(c) \
-	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
-	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 31)
-
-char *strip_codes(const char *input)
-{
-	const char *p;
-	char *str, *out;
-
-	out = str = g_strdup(input);
-	for (p = input; *p != '\0'; p++) {
-		if (*p == 3) {
-			p++;
-
-			/* mirc color */
-			get_mirc_color(&p, NULL, NULL);
-			p--;
-			continue;
-		}
-
-		if (*p == 4 && p[1] != '\0') {
-			if (p[1] >= FORMAT_STYLE_SPECIAL) {
-				p++;
-				continue;
-			}
-
-			/* irssi color */
-			if (p[2] != '\0') {
-				p += 2;
-				continue;
-			}
-		}
-
-		if (!IS_COLOR_CODE(*p))
-			*out++ = *p;
-	}
-
-	*out = '\0';
-	return str;
-}
-
-/* parse ANSI color string */
-static char *get_ansi_color(THEME_REC *theme, char *str,
-			    int *fg_ret, int *bg_ret, int *flags_ret)
-{
-	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
-	char *start;
-	int fg, bg, flags, num;
-
-	if (*str != '[')
-		return str;
-	start = str++;
-
-	fg = fg_ret == NULL || *fg_ret < 0 ? theme->default_color : *fg_ret;
-	bg = bg_ret == NULL || *bg_ret < 0 ? -1 : *bg_ret;
-	flags = flags_ret == NULL ? 0 : *flags_ret;
-
-	num = 0;
-	for (;; str++) {
-		if (*str == '\0') return start;
-
-		if (isdigit((int) *str)) {
-			num = num*10 + (*str-'0');
-			continue;
-		}
-
-		if (*str != ';' && *str != 'm')
-			return start;
-
-		switch (num) {
-		case 0:
-			/* reset colors back to default */
-			fg = theme->default_color;
-			bg = -1;
-			flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
-			break;
-		case 1:
-			/* hilight */
-			flags |= PRINTFLAG_BOLD;
-			break;
-		case 5:
-			/* blink */
-			flags |= PRINTFLAG_BLINK;
-			break;
-		case 7:
-			/* reverse */
-			flags |= PRINTFLAG_REVERSE;
-			break;
-		default:
-			if (num >= 30 && num <= 37)
-				fg = (fg & 0xf8) + ansitab[num-30];
-			if (num >= 40 && num <= 47) {
-				if (bg == -1) bg = 0;
-				bg = (bg & 0xf8) + ansitab[num-40];
-			}
-			break;
-		}
-		num = 0;
-
-		if (*str == 'm') {
-			if (fg_ret != NULL) *fg_ret = fg;
-			if (bg_ret != NULL) *bg_ret = bg;
-			if (flags_ret != NULL) *flags_ret = flags;
-
-			str++;
-			break;
-		}
-	}
-
-	return str;
+        str = format_get_text_theme_args(theme, module, dest, formatnum, va);
+	if (*str != '\0') print_line(dest, str);
+	g_free(str);
 }
 
 void printformat_module_args(const char *module, void *server,
 			     const char *target, int level,
 			     int formatnum, va_list va)
 {
-	THEME_REC *theme;
 	TEXT_DEST_REC dest;
-	char *str;
 
 	format_create_dest(&dest, server, target, level, NULL);
-	theme = dest.window->theme == NULL ? current_theme :
-		dest.window->theme;
-
-	signal_emit_id(signal_print_format, 5, theme, module,
-		       &dest, GINT_TO_POINTER(formatnum), va);
-
-        str = format_get_text_theme_args(theme, module, &dest, formatnum, va);
-	if (*str != '\0') print_line(&dest, str);
-	g_free(str);
+	printformat_module_dest(module, &dest, formatnum, va);
 }
 
 void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...)
@@ -235,20 +97,10 @@ void printformat_module(const char *module, void *server, const char *target, in
 void printformat_module_window_args(const char *module, WINDOW_REC *window,
 				    int level, int formatnum, va_list va)
 {
-	THEME_REC *theme;
 	TEXT_DEST_REC dest;
-	char *str;
 
 	format_create_dest(&dest, NULL, NULL, level, window);
-	theme = window->theme == NULL ? current_theme :
-		window->theme;
-
-	signal_emit_id(signal_print_format, 5, theme, module,
-		       &dest, GINT_TO_POINTER(formatnum), va);
-
-        str = format_get_text_theme_args(theme, module, &dest, formatnum, va);
-	if (*str != '\0') print_line(&dest, str);
-	g_free(str);
+	printformat_module_dest(module, &dest, formatnum, va);
 }
 
 void printformat_module_window(const char *module, WINDOW_REC *window,
@@ -263,7 +115,6 @@ void printformat_module_window(const char *module, WINDOW_REC *window,
 
 static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
-	void *levelp;
 	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
@@ -273,14 +124,12 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
-	levelp = GINT_TO_POINTER(dest->level);
-
 	/* send the plain text version for logging etc.. */
 	tmp = strip_codes(str);
-	signal_emit_id(signal_print_text_stripped, 5, dest->window, dest->server, dest->target, levelp, tmp);
+	signal_emit_id(signal_print_text_stripped, 2, dest, tmp);
 	g_free(tmp);
 
-	signal_emit_id(signal_print_text, 5, dest->window, dest->server, dest->target, levelp, str);
+	signal_emit_id(signal_print_text, 2, dest, str);
 	g_free(str);
 }
 
@@ -401,16 +250,6 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 	g_free(str);
 }
 
-static void newline(WINDOW_REC *window)
-{
-	window->lines++;
-	if (window->lines != 1) {
-		signal_emit_id(signal_gui_print_text, 6, window,
-			       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
-			       GINT_TO_POINTER(0), "\n", GINT_TO_POINTER(-1));
-	}
-}
-
 #define show_timestamp(level) \
 	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
 	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
@@ -484,141 +323,23 @@ static char *fix_line_start(TEXT_DEST_REC *dest, const char *text)
 	return str;
 }
 
-static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
-			   const char *target, gpointer level,
-			   const char *text)
+static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 {
-	TEXT_DEST_REC dest;
-	char *dup, *ptr, type, *str;
-	int fgcolor, bgcolor;
-	int flags;
+	char *str;
 
+	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
-	g_return_if_fail(window != NULL);
 
-	format_create_dest(&dest, server, target,
-			   GPOINTER_TO_INT(level), window);
-	msg_beep_check(server, dest.level);
+	msg_beep_check(dest->server, dest->level);
 
-	window->last_line = time(NULL);
-	newline(window);
+	dest->window->last_line = time(NULL);
+	format_newline(dest->window);
 
-	dup = str = fix_line_start(&dest, text);
-	flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
-	while (*str != '\0') {
-		for (ptr = str; *ptr != '\0'; ptr++) {
-			if (IS_COLOR_CODE(*ptr)) {
-				type = *ptr;
-				*ptr++ = '\0';
-				break;
-			}
+	str = fix_line_start(dest, text);
+	format_send_to_gui(dest, str);
+	g_free(str);
 
-			*ptr = (char) translation_in[(int) (unsigned char) *ptr];
-		}
-
-		if (type == 7) {
-			/* bell */
-			if (settings_get_bool("bell_beeps"))
-				flags |= PRINTFLAG_BEEP;
-		}
-		if (*str != '\0' || flags & PRINTFLAG_BEEP) {
-                        /* send the text to gui handler */
-			signal_emit_id(signal_gui_print_text, 6, window,
-				       GINT_TO_POINTER(fgcolor),
-				       GINT_TO_POINTER(bgcolor),
-				       GINT_TO_POINTER(flags), str, level);
-			flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
-		}
-
-		if (*ptr == '\0')
-			break;
-
-		switch (type)
-		{
-		case 2:
-			/* bold */
-			if (!hide_text_style)
-				flags ^= PRINTFLAG_BOLD;
-			break;
-		case 6:
-			/* blink */
-			if (!hide_text_style)
-				flags ^= PRINTFLAG_BLINK;
-			break;
-		case 15:
-			/* remove all styling */
-			flags &= PRINTFLAG_BEEP;
-			fgcolor = bgcolor = -1;
-			break;
-		case 22:
-			/* reverse */
-			if (!hide_text_style)
-				flags ^= PRINTFLAG_REVERSE;
-			break;
-		case 31:
-			/* underline */
-			if (!hide_text_style)
-				flags ^= PRINTFLAG_UNDERLINE;
-		case 27:
-			/* ansi color code */
-			ptr = get_ansi_color(window->theme == NULL ?
-					     current_theme : window->theme,
-					     ptr,
-					     hide_text_style ? NULL : &fgcolor,
-					     hide_text_style ? NULL : &bgcolor,
-					     hide_text_style ? NULL : &flags);
-			break;
-		case 4:
-			/* user specific colors */
-			flags &= ~PRINTFLAG_MIRC_COLOR;
-			switch (*ptr) {
-			case FORMAT_STYLE_UNDERLINE:
-				flags ^= PRINTFLAG_UNDERLINE;
-				break;
-			case FORMAT_STYLE_BOLD:
-				flags ^= PRINTFLAG_BOLD;
-				break;
-			case FORMAT_STYLE_REVERSE:
-				flags ^= PRINTFLAG_REVERSE;
-				break;
-			case FORMAT_STYLE_INDENT:
-				flags |= PRINTFLAG_INDENT;
-				break;
-			case FORMAT_STYLE_DEFAULTS:
-				fgcolor = bgcolor = -1;
-				flags &= PRINTFLAG_INDENT;
-				break;
-			default:
-				if (*ptr != FORMAT_COLOR_NOCHANGE) {
-					fgcolor = (unsigned char) *ptr-'0';
-					if (fgcolor <= 7)
-						flags &= ~PRINTFLAG_BOLD;
-					else {
-						/* bold */
-						if (fgcolor != 8) fgcolor -= 8;
-						flags |= PRINTFLAG_BOLD;
-					}
-				}
-				ptr++;
-				if (*ptr != FORMAT_COLOR_NOCHANGE)
-					bgcolor = *ptr-'0';
-			}
-			ptr++;
-			break;
-		case 3:
-			/* MIRC color */
-			get_mirc_color((const char **) &ptr,
-				       hide_text_style ? NULL : &fgcolor,
-				       hide_text_style ? NULL : &bgcolor);
-			if (!hide_text_style)
-				flags |= PRINTFLAG_MIRC_COLOR;
-			break;
-		}
-
-		str = ptr;
-	}
-	g_free(dup);
-	signal_emit_id(signal_print_text_finished, 1, window);
+	signal_emit_id(signal_print_text_finished, 1, dest->window);
 }
 
 void printtext_multiline(void *server, const char *target, int level,
@@ -654,7 +375,6 @@ static void read_settings(void)
 	timestamps = settings_get_bool("timestamps");
 	timestamp_timeout = settings_get_int("timestamp_timeout");
 	msgs_timestamps = settings_get_bool("msgs_timestamps");
-	hide_text_style = settings_get_bool("hide_text_style");
 	beep_msg_level = level2bits(settings_get_str("beep_on_msg"));
 	beep_when_away = settings_get_bool("beep_when_away");
 }

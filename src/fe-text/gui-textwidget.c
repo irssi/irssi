@@ -63,6 +63,7 @@ static gchar *gui_window_line2text(LINE_REC *line)
 	else switch ((guchar) *ptr)
 	{
 	    case LINE_CMD_EOL:
+	    case LINE_CMD_FORMAT:
 		ret = str->str;
 		g_string_free(str, FALSE);
 		return ret;

@@ -416,7 +416,8 @@ static void sig_print_text(void)
 	/* day changed, print notice about it to every window */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		printformat_window(tmp->data, MSGLEVEL_NEVER, IRCTXT_DAYCHANGE,
-				   tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year, month);
+				   tm->tm_mday, tm->tm_mon+1,
+				   1900+tm->tm_year, month);
 	}
 }
 

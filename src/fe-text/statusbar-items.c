@@ -32,9 +32,10 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
+#include "formats.h"
 
 #include "screen.h"
-#include "printtext.h"
 #include "statusbar.h"
 #include "gui-windows.h"
 #include "gui-printtext.h"

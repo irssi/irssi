@@ -19,8 +19,12 @@ enum {
 	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
 	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
-	LINE_CMD_INDENT,       	/* if line is split, indent it at this position */
-	LINE_CMD_BLINK		/* blinking background */
+	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
+	LINE_CMD_BLINK,		/* blinking background */
+	LINE_CMD_FORMAT		/* end of line, but next will come the format that was used to create the
+				   text in format <module><format_name><arg><arg2...> - fields are separated
+				   with \0<format> and last argument ends with \0<eol>. \0<continue> is allowed
+				   anywhere */
 };
 
 typedef struct {

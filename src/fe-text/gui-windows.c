@@ -277,7 +277,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 		if (*ptr == '\0') {
 			/* command */
 			ptr++;
-			if (*ptr == LINE_CMD_EOL)
+			if (*ptr == LINE_CMD_EOL || *ptr == LINE_CMD_FORMAT)
 				break;
 
 			if (*ptr == LINE_CMD_CONTINUE) {
@@ -445,6 +445,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 			case LINE_CMD_OVERFLOW:
 				g_error("buffer overflow! (draw)");
 			case LINE_CMD_EOL:
+			case LINE_CMD_FORMAT:
 				return;
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
@@ -780,7 +781,8 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 		    memcpy(&tmp, ptr+1, sizeof(gchar *));
 		    ptr = tmp-1;
 		}
-                else if ((guchar) *ptr == LINE_CMD_EOL)
+		else if ((guchar) *ptr == LINE_CMD_EOL ||
+			 (guchar) *ptr == LINE_CMD_FORMAT)
 		    break;
 		else if ((guchar) *ptr == LINE_CMD_OVERFLOW)
 			g_error("buffer overflow! (find)");
