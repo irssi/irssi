@@ -84,7 +84,10 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 		conn->family = AF_INET;
 
 	if (g_hash_table_lookup(optlist, "!") != NULL)
-                conn->no_autojoin_channels = TRUE;
+		conn->no_autojoin_channels = TRUE;
+
+	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
+                g_free_and_null(conn->proxy);
 
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
@@ -397,7 +400,7 @@ void chat_commands_init(void)
 
         signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 
-	command_set_options("connect", "4 6 !! +host");
+	command_set_options("connect", "4 6 !! +host noproxy");
 	command_set_options("join", "invite");
 }
 
