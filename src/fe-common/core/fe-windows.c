@@ -238,24 +238,26 @@ char *window_get_active_name(WINDOW_REC *window)
 	return window->name;
 }
 
+#define WINDOW_LEVEL_MATCH(window, server, level) \
+	(((window)->level & level) && \
+	 (server == NULL || (window)->active_server == server))
+
 WINDOW_REC *window_find_level(void *server, int level)
 {
-	WINDOW_REC *match;
 	GSList *tmp;
 
-	match = NULL;
+        /* prefer active window if possible */
+	if (WINDOW_LEVEL_MATCH(active_win, server, level))
+                return active_win;
+
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if ((server == NULL || rec->active_server == server) &&
-		    (rec->level & level)) {
-			if (server == NULL || rec->active_server == server)
-				return rec;
-			match = rec;
-		}
+		if (WINDOW_LEVEL_MATCH(rec, server, level))
+                        return rec;
 	}
 
-	return match;
+	return NULL;
 }
 
 WINDOW_REC *window_find_closest(void *server, const char *name, int level)
