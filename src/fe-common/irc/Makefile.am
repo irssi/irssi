@@ -11,7 +11,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_common_irc_a_SOURCES = \
+real_sources = \
 	fe-irc-channels.c \
 	fe-irc-commands.c \
 	fe-irc-messages.c \
@@ -25,12 +25,17 @@ libfe_common_irc_a_SOURCES = \
 	fe-netjoin.c \
 	fe-netsplit.c \
 	fe-common-irc.c \
-        irc-modules.c \
 	module-formats.c 
+
+libfe_common_irc_a_SOURCES = \
+	$(real_sources) \
+        irc-modules.c
 
 noinst_HEADERS = \
 	module.h \
 	module-formats.h
+
+DISTFILES = $(DIST_COMMON) $(real_sources) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 distclean-generic:
 	rm -f irc-modules.c
