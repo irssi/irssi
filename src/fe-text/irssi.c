@@ -42,8 +42,6 @@
 
 void irc_init(void);
 void irc_deinit(void);
-void silc_init(void);
-void silc_deinit(void);
 
 #ifdef HAVE_PERL
 void irssi_perl_init(void);
