@@ -26,6 +26,7 @@ struct _WINDOW_REC {
 	GSList *items;
 	WI_ITEM_REC *active;
 	SERVER_REC *active_server;
+	SERVER_REC *connect_server;
         char *servertag; /* active_server must be either NULL or have this tag (unless there's items in this window) */
 
 	int level; /* message level */

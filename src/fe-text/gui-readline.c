@@ -483,43 +483,98 @@ static void key_active_window(void)
 	signal_emit("command window goto", 3, "active", active_win->active_server, active_win->active);
 }
 
+static SERVER_REC *get_prev_server(SERVER_REC *current)
+{
+	int pos;
+
+	if (current == NULL) {
+		return servers != NULL ? g_slist_last(servers)->data :
+			lookup_servers != NULL ?
+			g_slist_last(lookup_servers)->data : NULL;
+	}
+
+	/* connect2 -> connect1 -> server2 -> server1 -> connect2 -> .. */
+
+	pos = g_slist_index(servers, current);
+	if (pos != -1) {
+		if (pos > 0)
+			return g_slist_nth(servers, pos-1)->data;
+		if (lookup_servers != NULL)
+			return g_slist_last(lookup_servers)->data;
+		return g_slist_last(servers)->data;
+	}
+
+	pos = g_slist_index(lookup_servers, current);
+	g_assert(pos >= 0);
+
+	if (pos > 0)
+		return g_slist_nth(lookup_servers, pos-1)->data;
+	if (servers != NULL)
+		return g_slist_last(servers)->data;
+	return g_slist_last(lookup_servers)->data;
+}
+
+static SERVER_REC *get_next_server(SERVER_REC *current)
+{
+	GSList *pos;
+
+	if (current == NULL) {
+		return servers != NULL ? servers->data :
+			lookup_servers != NULL ? lookup_servers->data : NULL;
+	}
+
+	/* server1 -> server2 -> connect1 -> connect2 -> server1 -> .. */
+
+	pos = g_slist_find(servers, current);
+	if (pos != NULL) {
+		if (pos->next != NULL)
+			return pos->next->data;
+		if (lookup_servers != NULL)
+			return lookup_servers->data;
+		return servers->data;
+	}
+
+	pos = g_slist_find(lookup_servers, current);
+	g_assert(pos != NULL);
+
+	if (pos->next != NULL)
+		return pos->next->data;
+	if (servers != NULL)
+		return servers->data;
+	return lookup_servers->data;
+}
+
 static void key_previous_window_item(void)
 {
 	SERVER_REC *server;
-	GSList *pos;
 
-	if (active_win->items != NULL)
-		signal_emit("command window item prev", 3, "", active_win->active_server, active_win->active);
-	else if (servers != NULL) {
+	if (active_win->items != NULL) {
+		signal_emit("command window item prev", 3, "",
+			    active_win->active_server, active_win->active);
+	} else if (servers != NULL || lookup_servers != NULL) {
 		/* change server */
-		if (active_win->active_server == NULL)
-			server = servers->data;
-		else {
-			pos = g_slist_find(servers, active_win->active_server);
-			server = pos->next != NULL ? pos->next->data : servers->data;
-		}
-		signal_emit("command window server", 3, server->tag, active_win->active_server, active_win->active);
+		server = active_win->active_server;
+		if (server == NULL)
+			server = active_win->connect_server;
+		server = get_prev_server(server);
+		signal_emit("command window server", 3, server->tag,
+			    active_win->active_server, active_win->active);
 	}
 }
 
 static void key_next_window_item(void)
 {
 	SERVER_REC *server;
-	int index;
 
 	if (active_win->items != NULL) {
 		signal_emit("command window item next", 3, "",
 			    active_win->active_server, active_win->active);
-	}
-	else if (servers != NULL) {
+	} else if (servers != NULL || lookup_servers != NULL) {
 		/* change server */
-		if (active_win->active_server == NULL)
-			server = servers->data;
-		else {
-			index = g_slist_index(servers, active_win->active_server);
-			server = index > 0 ? g_slist_nth(servers, index-1)->data :
-				g_slist_last(servers)->data;
-		}
+		server = active_win->active_server;
+		if (server == NULL)
+			server = active_win->connect_server;
+		server = get_next_server(server);
 		signal_emit("command window server", 3, server->tag,
 			    active_win->active_server, active_win->active);
 	}

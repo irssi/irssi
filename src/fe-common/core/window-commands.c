@@ -393,6 +393,8 @@ static void cmd_window_server(const char *data)
 	if (*tag == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	server = server_find_tag(tag);
+	if (server == NULL)
+		server = server_find_lookup_tag(tag);
 
 	if (g_hash_table_lookup(optlist, "unsticky") != NULL &&
 	    active_win->servertag != NULL) {

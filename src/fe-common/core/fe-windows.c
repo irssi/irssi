@@ -161,11 +161,30 @@ void window_set_active(WINDOW_REC *window)
 
 void window_change_server(WINDOW_REC *window, void *server)
 {
+	SERVER_REC *active, *connect;
+
 	if (server != NULL && SERVER(server)->disconnected)
 		return;
 
-	window->active_server = server;
-	signal_emit("window server changed", 2, window, server);
+	if (server == NULL) {
+		active = connect = NULL;
+	} else if (SERVER(server)->connected) {
+		active = server;
+		connect = NULL;
+	} else {
+		active = NULL;
+		connect = server;
+	}
+
+	if (window->connect_server != connect) {
+		window->connect_server = connect;
+		signal_emit("window connect changed", 2, window, connect);
+	}
+
+	if (window->active_server != active) {
+		window->active_server = active;
+		signal_emit("window server changed", 2, window, active);
+	} 
 }
 
 void window_set_refnum(WINDOW_REC *window, int refnum)
@@ -519,7 +538,8 @@ static void sig_server_disconnected(SERVER_REC *server)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->active_server == server) {
+		if (rec->active_server == server ||
+		    rec->connect_server == server) {
 			window_change_server(rec, rec->servertag != NULL ?
 					     NULL : new_server);
 		}
@@ -609,6 +629,7 @@ void windows_init(void)
 	settings_add_str("lookandfeel", "window_default_level", "NONE");
 
 	read_settings();
+	signal_add("server looking", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
@@ -620,6 +641,7 @@ void windows_deinit(void)
 	if (daytag != -1) g_source_remove(daytag);
 	if (daycheck == 1) signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
+	signal_remove("server looking", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
