@@ -98,6 +98,11 @@ server.c:
  "server disconnected", SERVER_REC
  "event connected", SERVER_REC
 
+server-reconnect.c:
+
+ "server reconnect removed", RECONNECT_REC
+ "server reconnect not found", char *tag
+
 signal.c:
 
  "signal", char *name, ...
