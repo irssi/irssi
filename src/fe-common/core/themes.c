@@ -221,7 +221,7 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 	}
 
 	index = (flags & EXPAND_FLAG_IGNORE_REPLACES) ? -1 :
-		theme->replace_keys[(int) chr];
+		theme->replace_keys[(int) (unsigned char) chr];
 	if (index == -1)
 		g_string_append_c(str, chr);
 	else {
@@ -542,7 +542,7 @@ static void theme_read_replaces(CONFIG_REC *config, THEME_REC *theme)
 
 		if (node->key != NULL && node->value != NULL) {
 			for (p = node->key; *p != '\0'; p++)
-                                theme->replace_keys[(int) *p] = index;
+                                theme->replace_keys[(int) (unsigned char) *p] = index;
 
 			theme->replace_values =
 				g_slist_append(theme->replace_values,
