@@ -139,9 +139,10 @@ all-local:
 	for dir in $(perl_dirs); do \
 	  cd $$dir && \
 	  if [ ! -f Makefile ]; then \
-            $(perlpath) Makefile.PL $(PERL_MM_PARAMS); \
+	    $(perlpath) Makefile.PL $(PERL_MM_PARAMS); \
 	  fi && \
-	  ($(MAKE) CC="$(CC)" CCFLAGS="$(PERL_CFLAGS) $(CFLAGS)" || $(MAKE) CC="$(CC)" CCFLAGS="$(PERL_CFLAGS) $(CFLAGS)") && \
+	  ($(MAKE) CC="$(CC)" CCFLAGS="$(PERL_CFLAGS) $(CFLAGS)" $(PERL_EXTRA_OPTS) || \
+	   $(MAKE) CC="$(CC)" CCFLAGS="$(PERL_CFLAGS) $(CFLAGS)" $(PERL_EXTRA_OPTS)) && \
 	  cd ..; \
 	done
 
