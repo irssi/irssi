@@ -446,14 +446,14 @@ void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
 
 	if (ip4 != NULL && ip4->family != 0) {
 		/* IPv4 address was found */
-		if (conn->own_ip4 != NULL)
+		if (conn->own_ip4 == NULL)
 			conn->own_ip4 = g_new0(IPADDR, 1);
 		memcpy(conn->own_ip4, ip4, sizeof(IPADDR));
 	}
 
 	if (ip6 != NULL && ip6->family != 0) {
 		/* IPv6 address was found */
-		if (conn->own_ip6 != NULL)
+		if (conn->own_ip6 == NULL)
 			conn->own_ip6 = g_new0(IPADDR, 1);
 		memcpy(conn->own_ip6, ip6, sizeof(IPADDR));
 	}
