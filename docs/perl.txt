@@ -83,8 +83,8 @@ Here's all the levels that irssi supports currently:
 
 And a few special ones that could be included with the levels above:
 
-  HILIGHT - message is highlighted
-  NOHILIGHT - don't check highlighting from message
+  HILIGHT - text is highlighted
+  NOHILIGHT - don't check highlighting for this message
   NO_ACT - don't trigger channel activity when printing this message
   NEVER - never ignore or log this message (not a good idea usually)
 
