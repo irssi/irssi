@@ -6,7 +6,6 @@
 package Irssi::Core;
 
 use Symbol qw(delete_package);
-use strict;
 
 sub destroy {
   my $package = "Irssi::Script::".$_[0];
@@ -40,5 +39,5 @@ sub eval_file {
   close FH;
   $/ = '\n';
 
-  eval_data($data, id);
+  eval_data($data, $id);
 }
