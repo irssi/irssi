@@ -445,6 +445,9 @@
 
 	/SERVER -add -port 6668 irc.server.org 6667
 
+	If you want to remove some settings from existing server, for
+	example hostname, just give -host "" parameters to it.
+
 	After connected to server, Irssi can automatically change your user
 	mode. You can set it with /SET usermode <mode>, default is +i.
 
@@ -607,7 +610,7 @@
 	IRC networks. It can also automatically send the password when
 	manually joining to channel without specifying the password.
 
-	/CHANNEL ADD [-auto] [-bots <botmasks>] [-botcmd <command>]
+	/CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
 	         <channel> <ircnet> [<password>]
 
 	With -bots and -botcmd arguments you can automatically send
@@ -619,6 +622,10 @@
 
 	You can also use the -botcmd without -bots argument. The command is
 	then sent whenever you join the channel.
+
+	If you want to remove some settings from existing channel record,
+	for example bots, just give the -bots "" parameters to it. Password
+	can be removed by setting it to - (or actually, "" works too).
 
 	You can remove the channels with
 	/CHANNEL REMOVE <channel> <ircnet>
@@ -863,12 +870,16 @@
 
 	Irssi's ignoring options should be enough for everyone :)
 
-	/IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
+	/IGNORE [-regexp | -word] [-pattern <pattern>] [-replies] [-except]
 	        [-channels <channel>] <mask> <levels> <^levels>
 
 	    -regexp: <pattern> is a regular expression
 	    -word: <pattern> must match to full words
 	    -pattern: <pattern> must match to the message's text
+	    -replies: Ignore replies to nick in channels. For example
+	              "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
+		      from Finland, but also anyone sending message
+		      "tofinnishnick: blahblah".
 	    -except: *DON'T* ignore
 	    -channels: Ignore only in channels
 	    <mask>: Either a nick mask or list of channels

@@ -163,7 +163,7 @@ static void cmd_channel_list(void)
 		if (rec->autosendcmd != NULL && *rec->autosendcmd != '\0')
 			g_string_sprintfa(str, "botcmd: %s ", rec->autosendcmd);
 
-		g_string_truncate(str, str->len-1);
+		if (str->len > 0) g_string_truncate(str, str->len-1);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_LINE,
 			    rec->name, rec->ircnet == NULL ? "" : rec->ircnet,
 			    rec->password == NULL ? "" : rec->password, str->str);
@@ -199,14 +199,15 @@ static void cmd_channel_add(const char *data)
 		rec->name = g_strdup(channel);
 		rec->ircnet = g_strdup(ircnet);
 	} else {
-		g_free_not_null(rec->botmasks);
-		g_free_not_null(rec->autosendcmd);
-		g_free_not_null(rec->password);
+		if (stristr(args, "-bots")) g_free_and_null(rec->botmasks);
+		if (stristr(args, "-botcmd")) g_free_and_null(rec->autosendcmd);
+		if (*password != '\0') g_free_and_null(rec->password);
 	}
-	rec->autojoin = stristr(args, "-auto") != NULL;
-	rec->botmasks = *botarg == '\0' ? NULL : g_strdup(botarg);
-	rec->autosendcmd = *botcmdarg == '\0' ? NULL : g_strdup(botcmdarg);
-	rec->password = *password == '\0' ? NULL : g_strdup(password);
+	if (stristr(args, "-auto")) rec->autojoin = TRUE;
+	if (stristr(args, "-noauto")) rec->autojoin = FALSE;
+	if (*botarg != '\0') rec->botmasks = g_strdup(botarg);
+	if (*botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
+	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	channels_setup_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_ADDED, channel, ircnet);
 
