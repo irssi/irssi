@@ -102,7 +102,7 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 	channel_destroy(CHANNEL(chanrec));
 }
 
-static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
+static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;

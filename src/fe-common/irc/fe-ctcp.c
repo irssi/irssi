@@ -34,7 +34,9 @@
 #include "window-items.h"
 #include "printtext.h"
 
-static void ctcp_print(const char *pre, const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_print(const char *pre, const char *data,
+		       IRC_SERVER_REC *server, const char *nick,
+		       const char *addr, const char *target)
 {
 	char *str;
 
@@ -46,27 +48,27 @@ static void ctcp_print(const char *pre, const char *data, IRC_SERVER_REC *server
 	g_free(str);
 }
 
-static void ctcp_default_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_default_msg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr, const char *target)
 {
 	ctcp_print("unknown CTCP", data, server, nick, addr, target);
 }
 
-static void ctcp_ping_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_ping_msg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr, const char *target)
 {
 	ctcp_print("CTCP PING", data, server, nick, addr, target);
 }
 
-static void ctcp_version_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_version_msg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr, const char *target)
 {
 	ctcp_print("CTCP VERSION", data, server, nick, addr, target);
 }
 
-static void ctcp_time_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_time_msg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr, const char *target)
 {
 	ctcp_print("CTCP TIME", data, server, nick, addr, target);
 }
 
-static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server,
+static void ctcp_default_reply(IRC_SERVER_REC *server, const char *data,
 			       const char *nick, const char *addr,
 			       const char *target)
 {
@@ -89,7 +91,7 @@ static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server,
 	g_free(ctcp);
 }
 
-static void ctcp_ping_reply(const char *data, IRC_SERVER_REC *server,
+static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 			    const char *nick, const char *addr,
 			    const char *target)
 {
@@ -100,7 +102,7 @@ static void ctcp_ping_reply(const char *data, IRC_SERVER_REC *server,
 
 	if (sscanf(data, "%ld %ld", &tv2.tv_sec, &tv2.tv_usec) != 2) {
                 char *tmp = g_strconcat("PING ", data, NULL);
-		ctcp_default_reply(tmp, server, nick, addr, target);
+		ctcp_default_reply(server, tmp, nick, addr, target);
 		g_free(tmp);
 		return;
 	}

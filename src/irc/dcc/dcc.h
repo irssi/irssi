@@ -80,12 +80,14 @@ const char *dcc_type2str(int type);
 int dcc_str2type(const char *type);
 void dcc_make_address(IPADDR *ip, char *host);
 
-DCC_REC *dcc_create(int type, GIOChannel *handle, const char *nick, const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
+DCC_REC *dcc_create(int type, GIOChannel *handle, const char *nick,
+		    const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
 void dcc_destroy(DCC_REC *dcc);
 
 /* Send a CTCP message/notify to target. Send the CTCP via DCC chat if
    `chat' is specified. */
-void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat, int notice, const char *msg);
+void dcc_ctcp_message(IRC_SERVER_REC *server, const char *target,
+		      DCC_REC *chat, int notice, const char *msg);
 
 /* Send `data' to dcc chat. */
 void dcc_chat_send(DCC_REC *dcc, const char *data);

@@ -265,8 +265,8 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line, const cha
 
 	current_server_event = event+6;
 	g_strdown(callcmd);
-	if (!signal_emit(callcmd, 4, args, server, nick, address))
-		signal_emit_id(signal_default_event, 4, line, server, nick, address);
+	if (!signal_emit(callcmd, 4, server, args, nick, address))
+		signal_emit_id(signal_default_event, 4, server, line, nick, address);
 	current_server_event = NULL;
 
 	g_free(callcmd);

@@ -472,7 +472,7 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	cmd_params_free(free_arg);
 }
 
-static void sig_nickchange_over(const char *data, IRC_SERVER_REC *server,
+static void sig_nickchange_over(IRC_SERVER_REC *server, const char *data,
 				const char *nick, const char *addr)
 {
 	char *signal;
@@ -481,7 +481,7 @@ static void sig_nickchange_over(const char *data, IRC_SERVER_REC *server,
 
 	signal = g_strconcat("event ", current_server_event, NULL);
 	g_strdown(signal+6);
-	signal_emit(signal, 4, data, server, nick, addr);
+	signal_emit(signal, 4, server, data, nick, addr);
 	g_free(signal);
 }
 
@@ -558,11 +558,11 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-static void event_whois(const char *data, IRC_SERVER_REC *server,
+static void event_whois(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *addr)
 {
 	server->whois_found = TRUE;
-	signal_emit("event 311", 4, data, server, nick, addr);
+	signal_emit("event 311", 4, server, data, nick, addr);
 }
 
 static void sig_whois_not_found(const char *data, IRC_SERVER_REC *server)
@@ -582,10 +582,10 @@ static void sig_whois_not_found(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whowas(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_whowas(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
 {
 	server->whowas_found = TRUE;
-	signal_emit("event 314", 4, data, server, nick, addr);
+	signal_emit("event 314", 4, server, data, nick, addr);
 }
 
 /* SYNTAX: WHOWAS [<nicks> [<count>]] */

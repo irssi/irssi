@@ -56,7 +56,7 @@ static void sig_query_create(QUERY_REC **query,
 	signal_stop();
 }
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_privmsg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
 {
 	char *params, *target, *msg;
 	QUERY_REC *query;
@@ -79,7 +79,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	g_free(params);
 }
 
-static void event_nick(const char *data, IRC_SERVER_REC *server, const char *orignick)
+static void event_nick(IRC_SERVER_REC *server, const char *data, const char *orignick)
 {
 	char *params, *nick;
 	GSList *tmp;

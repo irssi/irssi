@@ -352,7 +352,7 @@ static void parse_user_mode(IRC_SERVER_REC *server, const char *modestr)
 	g_free_not_null(oldmode);
 }
 
-static void event_user_mode(const char *data, IRC_SERVER_REC *server)
+static void event_user_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *mode;
 
@@ -364,7 +364,7 @@ static void event_user_mode(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server,
+static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick)
 {
 	IRC_CHANNEL_REC *chanrec;
@@ -388,7 +388,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_away(const char *data, IRC_SERVER_REC *server)
+static void event_away(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
 
@@ -396,7 +396,7 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 	signal_emit("away mode changed", 1, server);
 }
 
-static void event_unaway(const char *data, IRC_SERVER_REC *server)
+static void event_unaway(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
 

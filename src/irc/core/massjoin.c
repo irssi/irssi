@@ -33,7 +33,7 @@ static int massjoin_max_joins;
 /* Massjoin support - really useful when trying to do things (like op/deop)
    to people after netjoins. It sends
    "massjoin #channel nick!user@host nick2!user@host ..." signals */
-static void event_join(const char *data, IRC_SERVER_REC *server,
+static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
 	char *params, *channel, *ptr;
@@ -87,7 +87,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server,
 	chanrec->massjoins++;
 }
 
-static void event_part(const char *data, IRC_SERVER_REC *server,
+static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	char *params, *channel, *reason;
@@ -123,7 +123,7 @@ static void event_part(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server,
+static void event_quit(IRC_SERVER_REC *server, const char *data,
 		       const char *nick)
 {
         IRC_CHANNEL_REC *channel;
@@ -153,7 +153,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server,
 	g_slist_free(nicks);
 }
 
-static void event_kick(const char *data, IRC_SERVER_REC *server)
+static void event_kick(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *nick, *reason;
 	IRC_CHANNEL_REC *chanrec;

@@ -63,7 +63,7 @@ void ctcp_send_reply(IRC_SERVER_REC *server, const char *data)
 }
 
 /* CTCP ping */
-static void ctcp_ping(const char *data, IRC_SERVER_REC *server,
+static void ctcp_ping(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
 	char *str;
@@ -78,7 +78,7 @@ static void ctcp_ping(const char *data, IRC_SERVER_REC *server,
 }
 
 /* CTCP version */
-static void ctcp_version(const char *data, IRC_SERVER_REC *server,
+static void ctcp_version(IRC_SERVER_REC *server, const char *data,
 			 const char *nick)
 {
 	char *str, *reply;
@@ -95,7 +95,8 @@ static void ctcp_version(const char *data, IRC_SERVER_REC *server,
 }
 
 /* CTCP version */
-static void ctcp_time(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void ctcp_time(IRC_SERVER_REC *server, const char *data,
+		      const char *nick)
 {
 	char *str, *reply;
 	struct tm *tm;
@@ -115,7 +116,7 @@ static void ctcp_time(const char *data, IRC_SERVER_REC *server, const char *nick
 	g_free(reply);
 }
 
-static void ctcp_msg(const char *data, IRC_SERVER_REC *server,
+static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
 		     const char *nick, const char *addr, const char *target)
 {
 	char *args, *str;
@@ -128,14 +129,14 @@ static void ctcp_msg(const char *data, IRC_SERVER_REC *server,
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	g_strdown(str+9);
-	if (!signal_emit(str, 5, args, server, nick, addr, target)) {
+	if (!signal_emit(str, 5, server, args, nick, addr, target)) {
 		signal_emit("default ctcp msg", 5,
-			    data, server, nick, addr, target);
+			    server, data, nick, addr, target);
 	}
 	g_free(str);
 }
 
-static void ctcp_reply(const char *data, IRC_SERVER_REC *server,
+static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr, const char *target)
 {
 	char *args, *str;
@@ -148,14 +149,14 @@ static void ctcp_reply(const char *data, IRC_SERVER_REC *server,
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	g_strdown(str+11);
-	if (!signal_emit(str, 5, args, server, nick, addr, target)) {
+	if (!signal_emit(str, 5, server, args, nick, addr, target)) {
 		signal_emit("default ctcp reply", 5,
-			    data, server, nick, addr, target);
+			    server, data, nick, addr, target);
 	}
 	g_free(str);
 }
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server,
+static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
 	char *params, *target, *msg, *ptr;
@@ -170,14 +171,14 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server,
 		ptr = strrchr(++msg, 1);
 		if (ptr != NULL) *ptr = '\0';
 
-		signal_emit("ctcp msg", 5, msg, server, nick, addr, target);
+		signal_emit("ctcp msg", 5, server, msg, nick, addr, target);
 		signal_stop();
 	}
 
 	g_free(params);
 }
 
-static void event_notice(const char *data, IRC_SERVER_REC *server,
+static void event_notice(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
 	char *params, *target, *ptr, *msg;
@@ -191,7 +192,7 @@ static void event_notice(const char *data, IRC_SERVER_REC *server,
 		ptr = strrchr(++msg, 1);
 		if (ptr != NULL) *ptr = '\0';
 
-		signal_emit("ctcp reply", 5, msg, server, nick, addr, target);
+		signal_emit("ctcp reply", 5, server, msg, nick, addr, target);
 		signal_stop();
 	}
 

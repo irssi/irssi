@@ -197,7 +197,8 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick, co
 	flood->items = g_slist_append(flood->items, rec);
 }
 
-static void flood_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void flood_privmsg(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *addr)
 {
 	char *params, *target, *text;
 	int level;
@@ -217,7 +218,8 @@ static void flood_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	g_free(params);
 }
 
-static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void flood_notice(IRC_SERVER_REC *server, const char *data,
+			 const char *nick, const char *addr)
 {
 	char *params, *target, *text;
 
@@ -234,7 +236,8 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 	g_free(params);
 }
 
-static void flood_ctcp(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void flood_ctcp(IRC_SERVER_REC *server, const char *data,
+		       const char *nick, const char *addr, const char *target)
 {
 	int level;
 

@@ -32,12 +32,12 @@
 
 #include "printtext.h"
 
-static void event_received(const char *data, IRC_SERVER_REC *server);
+static void event_received(IRC_SERVER_REC *server, const char *data);
 
 static char *last_away_nick = NULL;
 static char *last_away_msg = NULL;
 
-static void event_user_mode(const char *data, IRC_SERVER_REC *server)
+static void event_user_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *mode;
 
@@ -50,7 +50,7 @@ static void event_user_mode(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_ison(const char *data, IRC_SERVER_REC *server)
+static void event_ison(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *online;
 
@@ -62,7 +62,7 @@ static void event_ison(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_names_list(const char *data, IRC_SERVER_REC *server)
+static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *names;
 
@@ -162,7 +162,7 @@ static void display_nicks(CHANNEL_REC *channel)
 		channel->name, nicks, ops, voices, normal);
 }
 
-static void event_end_of_names(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;
@@ -179,7 +179,7 @@ static void event_end_of_names(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_who(const char *data, IRC_SERVER_REC *server)
+static void event_who(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
 
@@ -199,7 +199,7 @@ static void event_who(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -210,7 +210,7 @@ static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_ban_list(const char *data, IRC_SERVER_REC *server)
+static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *ban, *setby, *tims;
 	long secs;
@@ -228,7 +228,7 @@ static void event_ban_list(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_eban_list(const char *data, IRC_SERVER_REC *server)
+static void event_eban_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *ban, *setby, *tims;
 	long secs;
@@ -246,7 +246,7 @@ static void event_eban_list(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_silence_list(const char *data, IRC_SERVER_REC *server)
+static void event_silence_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *mask;
 
@@ -258,7 +258,7 @@ static void event_silence_list(const char *data, IRC_SERVER_REC *server)
 }
 
 
-static void event_invite_list(const char *data, IRC_SERVER_REC *server)
+static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *invite;
 
@@ -269,7 +269,7 @@ static void event_invite_list(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_nick_in_use(const char *data, IRC_SERVER_REC *server)
+static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -282,7 +282,7 @@ static void event_nick_in_use(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_topic_get(const char *data, IRC_SERVER_REC *server)
+static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topic;
 
@@ -293,29 +293,31 @@ static void event_topic_get(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_topic_info(gchar *data, IRC_SERVER_REC *server)
+static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
-    gchar *params, *timestr, *channel, *topicby, *topictime;
-    glong ltime;
-    time_t t;
-    struct tm *tim;
+	char *params, *timestr, *channel, *topicby, *topictime;
+	struct tm *tm;
+	time_t t;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 4, NULL, &channel, &topicby, &topictime);
+	params = event_get_params(data, 4, NULL, &channel,
+				  &topicby, &topictime);
 
-    if (sscanf(topictime, "%lu", &ltime) != 1) ltime = 0; /* topic set date */
-    t = (time_t) ltime;
-    tim = localtime(&t);
-    timestr = g_strdup(asctime(tim));
-    if (timestr[strlen(timestr)-1] == '\n') timestr[strlen(timestr)-1] = '\0';
+	t = (time_t) atol(topictime);
+	tm = localtime(&t);
 
-    printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_TOPIC_INFO, topicby, timestr);
-    g_free(timestr);
-    g_free(params);
+	timestr = g_strdup(asctime(tm));
+	if (timestr[strlen(timestr)-1] == '\n')
+		timestr[strlen(timestr)-1] = '\0';
+
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_TOPIC_INFO, topicby, timestr);
+	g_free(timestr);
+	g_free(params);
 }
 
-static void event_channel_mode(const char *data, IRC_SERVER_REC *server)
+static void event_channel_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *mode;
 
@@ -327,39 +329,40 @@ static void event_channel_mode(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_channel_created(gchar *data, IRC_SERVER_REC *server)
+static void event_channel_created(IRC_SERVER_REC *server, const char *data)
 {
-    gchar *params, *channel, *times, *timestr;
-    glong timeval;
-    time_t t;
-    struct tm *tim;
+	char *params, *channel, *createtime, *timestr;
+	time_t t;
+	struct tm *tm;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 3, NULL, &channel, &times);
+	params = event_get_params(data, 3, NULL, &channel, &createtime);
 
-    if (sscanf(times, "%ld", &timeval) != 1) timeval = 0;
-    t = (time_t) timeval;
-    tim = localtime(&t);
-    timestr = g_strdup(asctime(tim));
-    if (timestr[strlen(timestr)-1] == '\n') timestr[strlen(timestr)-1] = '\0';
+	t = (time_t) atol(createtime);
+	tm = localtime(&t);
 
-    printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_CREATED, channel, timestr);
-    g_free(timestr);
-    g_free(params);
+	timestr = g_strdup(asctime(tm));
+	if (timestr[strlen(timestr)-1] == '\n')
+		timestr[strlen(timestr)-1] = '\0';
+
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_CHANNEL_CREATED, channel, timestr);
+	g_free(timestr);
+	g_free(params);
 }
 
-static void event_away(const char *data, IRC_SERVER_REC *server)
+static void event_away(IRC_SERVER_REC *server, const char *data)
 {
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_AWAY);
 }
 
-static void event_unaway(const char *data, IRC_SERVER_REC *server)
+static void event_unaway(IRC_SERVER_REC *server, const char *data)
 {
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_UNAWAY);
 }
 
-static void event_userhost(const char *data, IRC_SERVER_REC *server)
+static void event_userhost(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *hosts;
 
@@ -370,7 +373,7 @@ static void event_userhost(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_sent_invite(const char *data, IRC_SERVER_REC *server)
+static void event_sent_invite(IRC_SERVER_REC *server, const char *data)
 {
         char *params, *nick, *channel;
 
@@ -381,7 +384,7 @@ static void event_sent_invite(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois(const char *data, IRC_SERVER_REC *server)
+static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *user, *host, *realname;
 
@@ -392,7 +395,7 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
+static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *secstr, *signonstr, *rest;
 	long days, hours, mins, secs;
@@ -430,7 +433,7 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_server(const char *data, IRC_SERVER_REC *server)
+static void event_whois_server(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *whoserver, *desc;
 
@@ -441,7 +444,7 @@ static void event_whois_server(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_oper(const char *data, IRC_SERVER_REC *server)
+static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -452,7 +455,7 @@ static void event_whois_oper(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_registered(const char *data, IRC_SERVER_REC *server)
+static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -463,7 +466,7 @@ static void event_whois_registered(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whowas(const char *data, IRC_SERVER_REC *server)
+static void event_whowas(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *user, *host, *realname;
 
@@ -474,7 +477,7 @@ static void event_whowas(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_channels(const char *data, IRC_SERVER_REC *server)
+static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *chans;
 
@@ -493,7 +496,7 @@ static void event_whois_channels(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_away(const char *data, IRC_SERVER_REC *server)
+static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *awaymsg;
 
@@ -515,7 +518,7 @@ static void event_whois_away(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_whois(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -526,7 +529,7 @@ static void event_end_of_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_chanserv_url(const char *data, IRC_SERVER_REC *server)
+static void event_chanserv_url(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *url;
 
@@ -537,7 +540,7 @@ static void event_chanserv_url(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_whowas(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -548,7 +551,7 @@ static void event_end_of_whowas(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
+static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;
@@ -564,7 +567,7 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL && chanrec->joined) {
 			/* dalnet - can't change nick while being banned */
-			event_received(data, server);
+			event_received(server, data);
 		} else {
 			/* channel is unavailable. */
 			printformat(server, NULL, MSGLEVEL_CRAP,
@@ -575,7 +578,7 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_no_such_nick(const char *data, IRC_SERVER_REC *server)
+static void event_no_such_nick(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -586,7 +589,7 @@ static void event_no_such_nick(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_no_such_channel(const char *data, IRC_SERVER_REC *server)
+static void event_no_such_channel(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -597,7 +600,7 @@ static void event_no_such_channel(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void cannot_join(const char *data, IRC_SERVER_REC *server, int format)
+static void cannot_join(IRC_SERVER_REC *server, const char *data, int format)
 {
 	char *params, *channel;
 
@@ -608,12 +611,12 @@ static void cannot_join(const char *data, IRC_SERVER_REC *server, int format)
 	g_free(params);
 }
 
-static void event_too_many_channels(const char *data, IRC_SERVER_REC *server)
+static void event_too_many_channels(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_TOOMANY);
+	cannot_join(server, data, IRCTXT_JOINERROR_TOOMANY);
 }
 
-static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
+static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *p;
 
@@ -633,32 +636,32 @@ static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_channel_is_full(const char *data, IRC_SERVER_REC *server)
+static void event_channel_is_full(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_FULL);
+	cannot_join(server, data, IRCTXT_JOINERROR_FULL);
 }
 
-static void event_invite_only(const char *data, IRC_SERVER_REC *server)
+static void event_invite_only(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_INVITE);
+	cannot_join(server, data, IRCTXT_JOINERROR_INVITE);
 }
 
-static void event_banned(const char *data, IRC_SERVER_REC *server)
+static void event_banned(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_BANNED);
+	cannot_join(server, data, IRCTXT_JOINERROR_BANNED);
 }
 
-static void event_bad_channel_key(const char *data, IRC_SERVER_REC *server)
+static void event_bad_channel_key(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_BAD_KEY);
+	cannot_join(server, data, IRCTXT_JOINERROR_BAD_KEY);
 }
 
-static void event_bad_channel_mask(const char *data, IRC_SERVER_REC *server)
+static void event_bad_channel_mask(IRC_SERVER_REC *server, const char *data)
 {
-	cannot_join(data, server, IRCTXT_JOINERROR_BAD_MASK);
+	cannot_join(server, data, IRCTXT_JOINERROR_BAD_MASK);
 }
 
-static void event_unknown_mode(const char *data, IRC_SERVER_REC *server)
+static void event_unknown_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *mode;
 
@@ -669,7 +672,7 @@ static void event_unknown_mode(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_not_chanop(const char *data, IRC_SERVER_REC *server)
+static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -680,7 +683,7 @@ static void event_not_chanop(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_received(const char *data, IRC_SERVER_REC *server)
+static void event_received(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *args, *ptr;
 
@@ -693,7 +696,7 @@ static void event_received(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_motd(const char *data, IRC_SERVER_REC *server)
+static void event_motd(IRC_SERVER_REC *server, const char *data)
 {
 	/* numeric event. */
 	char *params, *args, *ptr;

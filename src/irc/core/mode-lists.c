@@ -169,7 +169,7 @@ static void channel_destroyed(IRC_CHANNEL_REC *channel)
 	invitelist_free(channel);
 }
 
-static void event_banlist(const char *data, IRC_SERVER_REC *server)
+static void event_banlist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *ban, *setby, *tims;
@@ -186,7 +186,7 @@ static void event_banlist(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_ebanlist(const char *data, IRC_SERVER_REC *server)
+static void event_ebanlist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *ban, *setby, *tims;
@@ -203,7 +203,7 @@ static void event_ebanlist(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_invite_list(const char *data, IRC_SERVER_REC *server)
+static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *invite;

@@ -298,7 +298,7 @@ static void ison_check_parts(IRC_SERVER_REC *server)
 	}
 }
 
-static void event_ison(const char *data, IRC_SERVER_REC *server)
+static void event_ison(IRC_SERVER_REC *server, const char *data)
 {
 	MODULE_SERVER_REC *mserver;
 	char *params, *online;

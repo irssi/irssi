@@ -433,7 +433,7 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 	}
 }
 
-static void event_nick(const char *data, IRC_SERVER_REC *server,
+static void event_nick(IRC_SERVER_REC *server, const char *data,
 		       const char *orignick)
 {
 	GSList *tmp;

@@ -253,7 +253,7 @@ static void dcc_resume_send(DCC_REC *dcc, int port)
 
 	str = g_strdup_printf("DCC ACCEPT %s %d %lu",
 			      dcc->arg, port, dcc->transfd);
-	dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
+	dcc_ctcp_message(dcc->server, dcc->nick, dcc->chat, FALSE, str);
 	g_free(str);
 }
 
@@ -270,7 +270,7 @@ static void dcc_resume_send(DCC_REC *dcc, int port)
 	((dcc)->type == DCC_TYPE_GET && \
 	(dcc)->get_type == DCC_GET_RESUME && (dcc)->handle == NULL))
 
-static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
+static void dcc_ctcp_msg(IRC_SERVER_REC *server, const char *data,
 			 const char *sender, const char *sendaddr,
 			 const char *target, DCC_REC *chat)
 {
@@ -335,7 +335,7 @@ static void dcc_resume_rec(DCC_REC *dcc)
 
 	str = g_strdup_printf("DCC RESUME %s %d %lu",
 			      dcc->arg, dcc->port, dcc->transfd);
-	dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
+	dcc_ctcp_message(dcc->server, dcc->nick, dcc->chat, FALSE, str);
 	g_free(str);
 }
 
@@ -582,7 +582,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 	dcc_make_address(&own_ip, host);
 	str = g_strdup_printf("DCC SEND %s %s %d %lu",
 			      fname, host, port, fsize);
-	dcc_ctcp_message(target, server, chat, FALSE, str);
+	dcc_ctcp_message(server, target, chat, FALSE, str);
 	g_free(str);
 
 	g_free(fname);

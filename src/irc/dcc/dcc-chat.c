@@ -93,7 +93,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 	if (dcc == NULL) return;
 
 	str = g_strdup_printf("ACTION %s", data);
-	dcc_ctcp_message(dcc->nick, NULL, dcc, FALSE, str);
+	dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 	g_free(str);
 
 	signal_stop();
@@ -119,7 +119,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
 	if (dcc != NULL) {
 		str = g_strdup_printf("ACTION %s", text);
-		dcc_ctcp_message(dcc->nick, NULL, dcc, FALSE, str);
+		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
 
@@ -151,7 +151,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 		g_strup(ctcpcmd);
 
 		str = g_strdup_printf("%s %s", ctcpcmd, ctcpdata);
-		dcc_ctcp_message(dcc->nick, NULL, dcc, FALSE, str);
+		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
 
@@ -375,7 +375,7 @@ static void dcc_ctcp_redirect(gchar *msg, DCC_REC *dcc)
 	g_return_if_fail(msg != NULL);
 	g_return_if_fail(dcc != NULL);
 
-	signal_emit("ctcp msg dcc", 6, msg, dcc->server, dcc->nick, "dcc", dcc->mynick, dcc);
+	signal_emit("ctcp msg dcc", 6, dcc->server, msg, dcc->nick, "dcc", dcc->mynick, dcc);
 }
 
 void dcc_chat_init(void)

@@ -7,7 +7,6 @@
 typedef enum {
         EXPANDO_ARG_NONE,
         EXPANDO_ARG_SERVER,
-        EXPANDO_ARG_SERVER2, /* second argument.. */
         EXPANDO_ARG_WINDOW,
 	EXPANDO_ARG_WINDOW_ITEM,
 

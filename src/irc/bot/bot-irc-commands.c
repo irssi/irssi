@@ -31,7 +31,7 @@
 #include "bot-users.h"
 #include "botnet-users.h"
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server,
+static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *address)
 {
 	char *params, *target, *msg, *args, *str;
@@ -50,7 +50,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server,
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	g_strdown(str);
-	if (signal_emit(str, 4, args, server, nick, address)) {
+	if (signal_emit(str, 4, server, args, nick, address)) {
 		/* msg was a command - the msg event. */
 		signal_stop();
 	}
@@ -58,7 +58,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void botcmd_op(const char *data, IRC_SERVER_REC *server,
+static void botcmd_op(IRC_SERVER_REC *server, const char *data,
 		      const char *nick, const char *address)
 {
 	CHANNEL_REC *channel;
@@ -90,7 +90,7 @@ static void botcmd_op(const char *data, IRC_SERVER_REC *server,
 	}
 }
 
-static void botcmd_ident(const char *data, IRC_SERVER_REC *server,
+static void botcmd_ident(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *address)
 {
 	USER_REC *user;
@@ -118,7 +118,7 @@ static void botcmd_ident(const char *data, IRC_SERVER_REC *server,
 	g_free(mask);
 }
 
-static void botcmd_pass(const char *data, IRC_SERVER_REC *server,
+static void botcmd_pass(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *address)
 {
 	USER_REC *user;

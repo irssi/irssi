@@ -40,7 +40,7 @@
 
 #include "completion.h"
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server,
+static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
 	char *params, *target, *msg;
@@ -60,7 +60,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server,
 
 /* we use "ctcp msg" here because "ctcp msg action" can be ignored with
    /IGNORE * CTCPS, and we don't want that.. */
-static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
+static void ctcp_msg_check_action(IRC_SERVER_REC *server, const char *data,
 				  const char *nick, const char *addr,
 				  const char *target)
 {
@@ -100,7 +100,7 @@ static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 	}
 }
 
-static void event_notice(const char *data, IRC_SERVER_REC *server,
+static void event_notice(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
 	char *params, *target, *msg;
@@ -142,7 +142,7 @@ static void event_notice(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server,
+static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	char *params, *channel, *tmp;
@@ -157,7 +157,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_part(const char *data, IRC_SERVER_REC *server,
+static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	char *params, *channel, *reason;
@@ -170,7 +170,7 @@ static void event_part(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server,
+static void event_quit(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	g_return_if_fail(data != NULL);
@@ -179,7 +179,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server,
 	signal_emit("message quit", 4, server, nick, addr, data);
 }
 
-static void event_kick(const char *data, IRC_SERVER_REC *server,
+static void event_kick(IRC_SERVER_REC *server, const char *data,
 		       const char *kicker, const char *addr)
 {
 	char *params, *channel, *nick, *reason;
@@ -193,7 +193,7 @@ static void event_kick(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_kill(const char *data, IRC_SERVER_REC *server,
+static void event_kill(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	char *params, *path, *reason;
@@ -225,7 +225,7 @@ static void event_kill(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_nick(const char *data, IRC_SERVER_REC *server,
+static void event_nick(IRC_SERVER_REC *server, const char *data,
 		       const char *sender, const char *addr)
 {
 	char *params, *newnick;
@@ -241,7 +241,7 @@ static void event_nick(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server,
+static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	char *params, *channel, *mode;
@@ -256,7 +256,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_pong(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_pong(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	char *params, *host, *reply;
 
@@ -268,7 +268,7 @@ static void event_pong(const char *data, IRC_SERVER_REC *server, const char *nic
 	g_free(params);
 }
 
-static void event_invite(const char *data, IRC_SERVER_REC *server,
+static void event_invite(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
 	char *params, *channel;
@@ -280,7 +280,7 @@ static void event_invite(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_topic(const char *data, IRC_SERVER_REC *server,
+static void event_topic(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *addr)
 {
 	char *params, *channel, *topic;
@@ -293,7 +293,7 @@ static void event_topic(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_error(const char *data, IRC_SERVER_REC *server)
+static void event_error(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(data != NULL);
 
@@ -301,7 +301,7 @@ static void event_error(const char *data, IRC_SERVER_REC *server)
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_ERROR, data);
 }
 
-static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_wallops(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
 {
 	g_return_if_fail(data != NULL);
 
@@ -324,7 +324,7 @@ static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *
 	}
 }
 
-static void event_silence(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_silence(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
 {
 	g_return_if_fail(data != NULL);
 
@@ -365,7 +365,7 @@ static void event_connected(IRC_SERVER_REC *server)
 
 }
 
-static void event_nickfind_whois(const char *data, IRC_SERVER_REC *server)
+static void event_nickfind_whois(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *user, *host, *realname;
 
@@ -410,7 +410,7 @@ static void event_ban_type_changed(const char *bantype)
 	}
 }
 
-static void sig_whois_event_no_server(const char *data, IRC_SERVER_REC *server)
+static void sig_whois_event_no_server(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -421,7 +421,7 @@ static void sig_whois_event_no_server(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server,
+static void sig_whowas_event_end(IRC_SERVER_REC *server, const char *data,
 				 const char *sender, const char *addr)
 {
 	char *params, *nick;
@@ -429,7 +429,7 @@ static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server,
 	g_return_if_fail(data != NULL);
 
 	if (server->whowas_found) {
-		signal_emit("event 369", 4, data, server, sender, addr);
+		signal_emit("event 369", 4, server, data, sender, addr);
 		return;
 	}
 
@@ -438,7 +438,8 @@ static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_received(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_received(IRC_SERVER_REC *server, const char *data,
+			   const char *nick, const char *addr)
 {
 	char *params, *cmd, *args, *ptr;
 

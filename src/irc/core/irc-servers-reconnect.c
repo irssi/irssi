@@ -101,7 +101,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 	}
 }
 
-static void event_kill(const char *data, IRC_SERVER_REC *server,
+static void event_kill(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
 	time_t new_connect;

@@ -261,7 +261,7 @@ static void split_set_timeout(void *key, NETSPLIT_REC *rec, NETSPLIT_REC *orig)
 		rec->destroy = time(NULL)+60;
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server,
+static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
 	NETSPLIT_REC *rec;
@@ -283,7 +283,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server,
 
 /* remove the nick from netsplit, but do it last so that other "event join"
    signal handlers can check if the join was a netjoin */
-static void event_join_last(const char *data, IRC_SERVER_REC *server,
+static void event_join_last(IRC_SERVER_REC *server, const char *data,
 			    const char *nick, const char *address)
 {
 	NETSPLIT_REC *rec;
@@ -295,7 +295,7 @@ static void event_join_last(const char *data, IRC_SERVER_REC *server,
 	}
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server,
+static void event_quit(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
 	g_return_if_fail(data != NULL);

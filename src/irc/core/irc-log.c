@@ -37,7 +37,7 @@ static void sig_log_written(LOG_REC *log)
         away_msgs++;
 }
 
-static void event_away(const char *data, IRC_SERVER_REC *server)
+static void event_away(IRC_SERVER_REC *server, const char *data)
 {
 	const char *fname, *levelstr;
 	LOG_REC *log;
@@ -71,7 +71,7 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 	away_msgs = 0;
 }
 
-static void event_unaway(const char *data, IRC_SERVER_REC *server)
+static void event_unaway(IRC_SERVER_REC *server, const char *data)
 {
 	const char *fname;
 	LOG_REC *log;

@@ -81,7 +81,9 @@ static void lag_get(IRC_SERVER_REC *server)
 
 /* we use "ctcp reply" signal here, because "ctcp reply irssilag" can be
    ignored with /IGNORE * CTCPS */
-static void sig_irssilag(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void sig_irssilag(IRC_SERVER_REC *server, const char *data,
+			 const char *nick, const char *addr,
+			 const char *target)
 {
 	GTimeVal now, sent;
 	LAG_REC *lag;

@@ -30,7 +30,7 @@
 
 static char *last_notify_nick;
 
-static void event_whois(const char *data, IRC_SERVER_REC *server)
+static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
         char *params, *nick, *user, *host, *realname;
 	NOTIFY_NICK_REC *nickrec;
@@ -68,7 +68,7 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
+static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 {
 	NOTIFY_NICK_REC *nickrec;
 	NOTIFYLIST_REC *notify;
@@ -92,7 +92,7 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_away(const char *data, IRC_SERVER_REC *server)
+static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
 	NOTIFY_NICK_REC *nickrec;
 	char *params, *nick, *awaymsg;
@@ -111,7 +111,7 @@ static void event_whois_away(const char *data, IRC_SERVER_REC *server)
 }
 
 /* All WHOIS replies got, now announce all the changes at once. */
-static void event_whois_end(const char *data, IRC_SERVER_REC *server)
+static void event_whois_end(IRC_SERVER_REC *server, const char *data)
 {
 	MODULE_SERVER_REC *mserver;
 	NOTIFYLIST_REC *notify;
@@ -169,7 +169,7 @@ void notifylist_whois_init(void)
 	signal_add("notifylist event whois idle", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("notifylist event whois end", (SIGNAL_FUNC) event_whois_end);
 	expando_create("D", expando_lastnotify,
-		       "notifylist event whois", EXPANDO_ARG_SERVER2, NULL);
+		       "notifylist event whois", EXPANDO_ARG_SERVER, NULL);
 }
 
 void notifylist_whois_deinit(void)

@@ -53,7 +53,7 @@ char *irc_nick_strip(const char *nick)
 	return stripped;
 }
 
-static void event_names_list(const char *data, SERVER_REC *server)
+static void event_names_list(SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
 	char *params, *type, *channel, *names, *ptr;
@@ -95,7 +95,7 @@ static void event_names_list(const char *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_names(const char *data, SERVER_REC *server)
+static void event_end_of_names(SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;
@@ -113,7 +113,7 @@ static void event_end_of_names(const char *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_who(const char *data, SERVER_REC *server)
+static void event_who(SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
 	CHANNEL_REC *chanrec;
@@ -149,7 +149,7 @@ static void event_who(const char *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois(const char *data, IRC_SERVER_REC *server)
+static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *realname;
 	GSList *nicks, *tmp;
@@ -179,7 +179,7 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_away(const char *data, SERVER_REC *server)
+static void event_whois_away(SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *awaymsg;
 
@@ -191,7 +191,7 @@ static void event_whois_away(const char *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_ircop(const char *data, SERVER_REC *server)
+static void event_whois_ircop(SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *awaymsg;
 
@@ -203,12 +203,12 @@ static void event_whois_ircop(const char *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_whois(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
 {
 	server->whois_coming = FALSE;
 }
 
-static void event_nick_in_use(const char *data, IRC_SERVER_REC *server)
+static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 {
 	char *str;
 	int n;
@@ -251,7 +251,7 @@ static void event_nick_in_use(const char *data, IRC_SERVER_REC *server)
 	irc_send_cmdv(server, "NICK %s", server->nick);
 }
 
-static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
+static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -260,13 +260,13 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 2, NULL, &channel);
 	if (!ischannel(*channel)) {
 		/* nick is unavailable. */
-		event_nick_in_use(data, server);
+		event_nick_in_use(server, data);
 	}
 
 	g_free(params);
 }
 
-static void event_nick(const char *data, SERVER_REC *server,
+static void event_nick(SERVER_REC *server, const char *data,
 		       const char *orignick)
 {
 	IRC_CHANNEL_REC *channel;
@@ -308,7 +308,7 @@ static void event_nick(const char *data, SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_userhost(const char *data, SERVER_REC *server)
+static void event_userhost(SERVER_REC *server, const char *data)
 {
 	char *params, *hosts, **phosts, **pos, *ptr;
 

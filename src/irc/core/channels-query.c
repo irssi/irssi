@@ -396,7 +396,8 @@ static void channel_got_query(IRC_SERVER_REC *server, IRC_CHANNEL_REC *chanrec,
 		channels_query_check(server);
 }
 
-static void event_channel_mode(char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
+			       const char *nick)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *mode;
@@ -420,7 +421,7 @@ static void multi_query_remove(IRC_SERVER_REC *server, const char *event, const 
 		server_redirect_remove_next((SERVER_REC *) server, event, queue);
 }
 
-static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nick;
@@ -474,7 +475,7 @@ static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
 	}
 }
 
-static void event_end_of_banlist(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_banlist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel;
@@ -489,7 +490,7 @@ static void event_end_of_banlist(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_ebanlist(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_ebanlist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel;
@@ -504,7 +505,7 @@ static void event_end_of_ebanlist(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_end_of_invitelist(const char *data, IRC_SERVER_REC *server)
+static void event_end_of_invitelist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel;
@@ -557,7 +558,7 @@ static void multi_command_error(IRC_SERVER_REC *server, const char *data,
 	channels_query_check(server);
 }
 
-static void event_mode_abort(const char *data, IRC_SERVER_REC *server)
+static void event_mode_abort(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -576,7 +577,7 @@ static void event_mode_abort(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_who_abort(const char *data, IRC_SERVER_REC *server)
+static void event_who_abort(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 

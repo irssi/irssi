@@ -25,7 +25,7 @@
 #include "irc.h"
 #include "irc-channels.h"
 
-static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
+static void event_cannot_join(IRC_SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
 	char *params, *channel;
@@ -54,7 +54,7 @@ static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
+static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
 	char *params, *channel, *p;
@@ -78,7 +78,7 @@ static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
+static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 
@@ -87,7 +87,7 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 2, NULL, &channel);
 	if (ischannel(*channel)) {
 		/* channel is unavailable - try to join again a bit later */
-		event_cannot_join(data, server);
+		event_cannot_join(server, data);
 	}
 
 	g_free(params);
@@ -115,7 +115,7 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 	signal_emit("channel topic changed", 1, chanrec);
 }
 
-static void event_topic_get(const char *data, IRC_SERVER_REC *server)
+static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topic;
 
@@ -126,7 +126,7 @@ static void event_topic_get(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_topic(const char *data, IRC_SERVER_REC *server,
+static void event_topic(IRC_SERVER_REC *server, const char *data,
 			const char *nick)
 {
 	char *params, *channel, *topic;
@@ -138,7 +138,7 @@ static void event_topic(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_topic_info(const char *data, IRC_SERVER_REC *server)
+static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topicby, *topictime;
 	time_t t;
@@ -176,7 +176,7 @@ static IRC_CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server,
 	return NULL;
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_join(IRC_SERVER_REC *server, const char *data, const char *nick, const char *address)
 {
 	char *params, *channel, *tmp;
 	IRC_CHANNEL_REC *chanrec;
@@ -233,7 +233,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	g_free(params);
 }
 
-static void event_part(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_part(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	char *params, *channel, *reason;
 	CHANNEL_REC *chanrec;
@@ -256,7 +256,7 @@ static void event_part(const char *data, IRC_SERVER_REC *server, const char *nic
 	g_free(params);
 }
 
-static void event_kick(const char *data, IRC_SERVER_REC *server)
+static void event_kick(IRC_SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
 	char *params, *channel, *nick, *reason;
@@ -280,7 +280,7 @@ static void event_kick(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_invite(const char *data, IRC_SERVER_REC *server)
+static void event_invite(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
 

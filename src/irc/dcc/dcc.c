@@ -197,7 +197,8 @@ int dcc_str2type(const char *type)
 	return 0;
 }
 
-void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat, int notice, const char *msg)
+void dcc_ctcp_message(IRC_SERVER_REC *server, const char *target,
+		      DCC_REC *chat, int notice, const char *msg)
 {
 	char *str;
 
@@ -279,7 +280,9 @@ static void dcc_get_address(const char *str, IPADDR *ip)
 }
 
 /* Handle incoming DCC CTCP messages */
-static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr, char *target, DCC_REC *chat)
+static void dcc_ctcp_msg(IRC_SERVER_REC *server, char *data,
+			 char *sender, char *sendaddr,
+			 char *target, DCC_REC *chat)
 {
     char *type, *arg, *addrstr, *portstr, *sizestr, *str;
     void *free_arg;
@@ -379,7 +382,8 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
 }
 
 /* Handle incoming DCC CTCP replies */
-static void dcc_ctcp_reply(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr)
+static void dcc_ctcp_reply(IRC_SERVER_REC *server, char *data,
+			   char *sender, char *sendaddr)
 {
     char *cmd, *subcmd, *args;
     void *free_arg;
@@ -433,7 +437,7 @@ static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: DCC CLOSE <type> <nick> [<file>] */
-static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
+static void cmd_dcc_close(IRC_SERVER_REC *server, char *data)
 {
     DCC_REC *dcc;
     GSList *tmp, *next;
@@ -502,7 +506,7 @@ static int dcc_timeout_func(void)
     return 1;
 }
 
-static void event_no_such_nick(char *data, IRC_SERVER_REC *server)
+static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 {
     char *params, *nick;
     GSList *tmp, *next;

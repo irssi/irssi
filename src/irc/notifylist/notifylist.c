@@ -253,7 +253,8 @@ static void notifylist_idle_reset(IRC_SERVER_REC *server, const char *nick)
 	}
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_quit(IRC_SERVER_REC *server, const char *data,
+		       const char *nick)
 {
 	NOTIFY_NICK_REC *rec;
 
@@ -309,7 +310,8 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	g_free(user);
 }
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_privmsg(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *address)
 {
 	if (nick != NULL) {
 		notifylist_check_join(server, nick, address, "", -1);
@@ -317,7 +319,8 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	}
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_join(IRC_SERVER_REC *server, const char *data,
+		       const char *nick, const char *address)
 {
 	notifylist_check_join(server, nick, address, "", -1);
 }

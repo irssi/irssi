@@ -167,7 +167,7 @@ static void parse_channel_mode(IRC_CHANNEL_REC *channel, const char *mode,
 	g_string_free(str, TRUE);
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server,
+static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
 	IRC_CHANNEL_REC *chanrec;

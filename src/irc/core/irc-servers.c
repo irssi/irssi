@@ -352,7 +352,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	return 0;
 }
 
-static void event_connected(const char *data, IRC_SERVER_REC *server, const char *from)
+static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
 	const char *mode;
@@ -389,7 +389,7 @@ static void event_connected(const char *data, IRC_SERVER_REC *server, const char
 	g_free(params);
 }
 
-static void event_server_info(const char *data, IRC_SERVER_REC *server)
+static void event_server_info(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *ircd_version, *usermodes, *chanmodes;
 
@@ -408,14 +408,14 @@ static void event_server_info(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_server_banned(const char *data, IRC_SERVER_REC *server)
+static void event_server_banned(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
 
         server->banned = TRUE;
 }
 
-static void event_error(const char *data, IRC_SERVER_REC *server)
+static void event_error(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
 
@@ -424,7 +424,7 @@ static void event_error(const char *data, IRC_SERVER_REC *server)
 		server->banned = TRUE;
 }
 
-static void event_ping(const char *data, IRC_SERVER_REC *server)
+static void event_ping(IRC_SERVER_REC *server, const char *data)
 {
 	char *str;
 

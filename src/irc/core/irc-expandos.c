@@ -75,7 +75,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 	return g_strconcat(username, "@", hostname, NULL);;
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server,
+static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
 	g_return_if_fail(nick != NULL);
@@ -91,7 +91,7 @@ void irc_expandos_init(void)
 	last_join = NULL;
 
 	expando_create(":", expando_lastjoin,
-		       "event join", EXPANDO_ARG_SERVER2, NULL);
+		       "event join", EXPANDO_ARG_SERVER, NULL);
 	expando_create("H", expando_server_numeric,
 		       "server event", EXPANDO_ARG_SERVER, NULL);
 	expando_create("S", expando_servername,
@@ -101,7 +101,7 @@ void irc_expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 
-        expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER2);
+        expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
 
 	signal_add("event join", (SIGNAL_FUNC) event_join);
 }
