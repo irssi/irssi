@@ -533,7 +533,7 @@ static void read_settings(void)
 
 	while (remove_listens != NULL) {
                 remove_listen(remove_listens->data);
-		g_slist_remove(remove_listens, remove_listens->data);
+		remove_listens = g_slist_remove(remove_listens, remove_listens->data);
 	}
 }
 
