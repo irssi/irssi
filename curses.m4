@@ -211,6 +211,7 @@ AC_DEFUN(AC_NCURSES, [
 
 	    CURSES_LIBS="$3"
 	    AC_CHECK_LIB(ncurses, initscr, [
+	        true;
 	    ], [
                 CHECKLIBS=`echo "$3"|sed 's/-lncurses/-lcurses/g'`
 		AC_CHECK_LIB(curses, initscr, [
