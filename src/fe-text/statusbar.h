@@ -50,7 +50,7 @@ typedef struct {
 	char *color; /* background color */
 	int real_ypos; /* real Y-position in screen at the moment */
 
-	int dirty:1;
+	unsigned int dirty:1;
         int dirty_xpos; /* -1 = only redraw some items, >= 0 = redraw all items after from xpos */
 } STATUSBAR_REC;
 
@@ -74,7 +74,7 @@ struct SBAR_ITEM_REC {
 	int xpos, size;
 
         int current_size; /* item size currently in screen */
-	int dirty:1;
+	unsigned int dirty:1;
 };
 
 extern GSList *statusbar_groups;
