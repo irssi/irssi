@@ -97,11 +97,14 @@ XS(boot_Irssi_Core)
         irssi_boot(Irc);
         irssi_boot(UI);
         irssi_boot(TextUI);
+	XSRETURN_YES;
 }
 #endif
 
 static void xs_init(void)
 {
+	dXSUB_SYS;
+
 #if PERL_STATIC_LIBS == 1
 	newXS("Irssi::Core::boot_Irssi_Core", boot_Irssi_Core, __FILE__);
 #endif
