@@ -747,17 +747,6 @@ static void event_unknown_mode(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
-{
-	char *params, *channel;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 2, NULL, &channel);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_NOT_CHANOP, channel);
-	g_free(params);
-}
-
 static void event_numeric(IRC_SERVER_REC *server, const char *data,
 			  const char *nick)
 {
@@ -898,7 +887,6 @@ void fe_events_numeric_init(void)
 	signal_add("event 474", (SIGNAL_FUNC) event_banned);
 	signal_add("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_add("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
-	signal_add("event 482", (SIGNAL_FUNC) event_not_chanop);
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
 	signal_add("event 376", (SIGNAL_FUNC) event_motd);
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
@@ -916,6 +904,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 436", (SIGNAL_FUNC) event_received);
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
+	signal_add("event 482", (SIGNAL_FUNC) event_received);
 
 	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
 	signal_add("event 347", (SIGNAL_FUNC) event_target_received);
@@ -981,7 +970,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 474", (SIGNAL_FUNC) event_banned);
 	signal_remove("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_remove("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
-	signal_remove("event 482", (SIGNAL_FUNC) event_not_chanop);
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 376", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
@@ -999,6 +987,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 436", (SIGNAL_FUNC) event_received);
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
+	signal_remove("event 482", (SIGNAL_FUNC) event_received);
 
 	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);

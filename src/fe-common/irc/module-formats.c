@@ -110,7 +110,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
 	{ "end_of_whowas", "End of WHOWAS", 1, { 0 } },
 	{ "whois_not_found", "There is no such nick $0", 1, { 0 } },
-        { "who", "{channelhilight $[-10]0} %|{nick $[!9]1} $[!3]2 $[!2]3 $4@$5 {comment {hilight $6}}", 8, { 0, 0, 0, 0, 0, 0, 0, 0 } },
+        { "who", "%#{channelhilight $[-10]0} %|{nick $[!9]1} $[!3]2 $[!2]3 $4@$5 {comment {hilight $6}}", 8, { 0, 0, 0, 0, 0, 0, 0, 0 } },
 	{ "end_of_who", "End of /WHO list", 1, { 0 } },
 
 	/* ---- */
@@ -152,7 +152,6 @@ FORMAT_REC fecommon_irc_formats[] = {
         { "kill_server", "You were {error killed} by {server $0} {reason $1} {comment Path: $2}", 3, { 0, 0, 0 } },
 	{ "error", "{error ERROR} $0", 1, { 0 } },
 	{ "unknown_mode", "Unknown mode character $0", 1, { 0 } },
-	{ "not_chanop", "You're not channel operator in {channel $0}", 1, { 0 } },
 	{ "default_event", "[$0] $1", 2, { 0, 0 } },
 
 	/* ---- */
