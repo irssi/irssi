@@ -8,10 +8,12 @@
 #
 # This path has to be changed. It should point to your irssi/src directory
 # Remember to include the asterisk ('*').
-$SRC_PATH='src/*';
+$SRC_PATH='src';
 
 # This is quick and dirty, but works for sure :)
-$FOO = `grep -r -e '/* SYNTAX:' $SRC_PATH | sed 's/.*SYNTAX: //' > irssi_syntax`;
+#$FOO = `grep -r -e '/* SYNTAX:' $SRC_PATH | sed 's/.*SYNTAX: //' > irssi_syntax`;
+$FOO = `find $SRC_PATH -name '*.c' -print0 | xargs -l30 -0 grep -e '/* SYNTAX:' | sed 's/.*SYNTAX: //'  > irssi_syntax`;
+
 while (<docs/help/in/*.in>) {
    open (FILE, "$_");
    @data = <FILE>;
