@@ -155,7 +155,8 @@ void key_unbind(const char *id, SIGNAL_FUNC func)
 }
 
 /* Configure new key */
-void key_configure_add(const char *id, const char *key, const char *data)
+static void key_configure_create(const char *id, const char *key,
+				 const char *data)
 {
 	KEYINFO_REC *info;
 	KEY_REC *rec;
@@ -175,8 +176,16 @@ void key_configure_add(const char *id, const char *key, const char *data)
 	rec->data = g_strdup(data);
 	info->keys = g_slist_append(info->keys, rec);
 	g_hash_table_insert(keys, rec->key, rec);
+}
 
-        keyconfig_save(id, key, data);
+/* Configure new key */
+void key_configure_add(const char *id, const char *key, const char *data)
+{
+	g_return_if_fail(id != NULL);
+	g_return_if_fail(key != NULL && *key != '\0');
+
+	key_configure_create(id, key, data);
+	keyconfig_save(id, key, data);
 }
 
 static void key_configure_destroy(KEY_REC *rec)
@@ -245,7 +254,7 @@ void read_keyinfo(KEYINFO_REC *info, CONFIG_NODE *node)
 		node = tmp->data;
 
 		if (node->key != NULL)
-			key_configure_add(info->id, node->key, node->value);
+			key_configure_create(info->id, node->key, node->value);
 	}
 }
 
