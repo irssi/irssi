@@ -1157,6 +1157,8 @@ static void sig_complete_format(GList **list, WINDOW_REC *window,
 
 	words = 0;
 	do {
+                ptr++;
+
 		words++;
                 ptr = strchr(ptr, ' ');
 	} while (ptr != NULL);
