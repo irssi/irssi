@@ -195,7 +195,7 @@ void window_set_refnum(WINDOW_REC *window, int refnum)
 void window_set_name(WINDOW_REC *window, const char *name)
 {
 	g_free_not_null(window->name);
-	window->name = g_strdup(name);
+	window->name = name == NULL || *name == '\0' ? NULL : g_strdup(name);
 
 	signal_emit("window name changed", 1, window);
 }
