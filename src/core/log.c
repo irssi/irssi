@@ -243,6 +243,9 @@ void log_file_write(SERVER_REC *server, const char *item, int level,
 
 	g_return_if_fail(str != NULL);
 
+	if (logs == NULL)
+		return;
+
 	fallbacks = NULL; found = FALSE;
 
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {

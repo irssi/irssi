@@ -339,7 +339,7 @@ static void autologs_close_all(void)
 	}
 }
 
-static void autolog_log(void *server, const char *target)
+static void autolog_open(void *server, const char *target)
 {
 	LOG_REC *log;
 	char *fname, *dir, *str;
@@ -369,35 +369,34 @@ static void autolog_log(void *server, const char *target)
 	g_free(fname);
 }
 
-static void log_line(WINDOW_REC *window, void *server, const char *target,
-		     int level, const char *text)
+static void autolog_open_check(void *server, const char *target, int level)
+{
+	char **targets, **tmp;
+
+	if ((autolog_level & level) == 0 || target == NULL || *target == '\0')
+		return;
+
+	/* there can be multiple targets separated with comma */
+	targets = g_strsplit(target, ",", -1);
+	for (tmp = targets; *tmp != NULL; tmp++)
+		autolog_open(server, *tmp);
+	g_strfreev(targets);
+}
+
+static void log_single_line(WINDOW_REC *window, void *server,
+			    const char *target, int level, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
 	char **targets, **tmp;
 	LOG_REC *log;
 
-	if (level == MSGLEVEL_NEVER) return;
-
-	/* let autolog create the log records */
-	if ((autolog_level & level) && target != NULL && *target != '\0') {
-                /* there can be multiple targets separated with comma */
-		targets = g_strsplit(target, ",", -1);
-		for (tmp = targets; *tmp != NULL; tmp++) {
-			autolog_log(server, *tmp);
-		}
-		g_strfreev(targets);
-	}
-
-        /* save to log created with /WINDOW LOG */
+	/* save to log created with /WINDOW LOG */
 	ltoa(windownum, window->refnum);
-	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, windownum, NULL, NULL);
+	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
+			     windownum, NULL, NULL);
 	if (log != NULL) log_write_rec(log, text);
 
-	/* save line to log files */
-	if (logs == NULL)
-		return;
-
-        if (target == NULL)
+	if (target == NULL)
 		log_file_write(server, NULL, level, text, FALSE);
 	else {
 		/* there can be multiple items separated with comma */
@@ -406,6 +405,28 @@ static void log_line(WINDOW_REC *window, void *server, const char *target,
 			log_file_write(server, *tmp, level, text, FALSE);
 		g_strfreev(targets);
 	}
+}
+
+static void log_line(WINDOW_REC *window, void *server,
+		     const char *target, int level, const char *text)
+{
+	char **lines, **tmp;
+
+	if (level == MSGLEVEL_NEVER)
+		return;
+
+	/* let autolog open the log records */
+	autolog_open_check(server, target, level);
+
+	if (logs == NULL)
+		return;
+
+	/* text may contain one or more lines, log wants to eat them one
+	   line at a time */
+	lines = g_strsplit(text, "\n", -1);
+	for (tmp = lines; *tmp != NULL; tmp++)
+		log_single_line(window, server, target, level, *tmp);
+	g_strfreev(lines);
 }
 
 static void sig_printtext_stripped(WINDOW_REC *window, void *server,
@@ -534,7 +555,6 @@ static void sig_theme_destroyed(THEME_REC *theme)
 
 static void read_settings(void)
 {
-	const char *old_log_theme = log_theme_name;
 	int old_autolog = autolog_level;
 
 	autolog_path = settings_get_str("autolog_path");
@@ -545,16 +565,15 @@ static void read_settings(void)
 		autologs_close_all();
 
 	/* write to log files with different theme? */
-	log_theme_name = settings_get_str("log_theme");
-	if (*old_log_theme == '\0' && *log_theme_name != '\0') {
-                /* theme set */
-		signal_add("print format", (SIGNAL_FUNC) sig_print_format);
-	} else if (*old_log_theme != '\0' && *log_theme_name == '\0') {
-		/* theme unset */
+	if (log_theme_name != NULL)
 		signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
-	}
+	log_theme_name = settings_get_str("log_theme");
+	if (*log_theme_name == '\0')
+		log_theme_name = NULL;
+	else
+		signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 
-	log_theme = *log_theme_name == '\0' ? NULL :
+	log_theme = log_theme_name == NULL ? NULL :
 		theme_load(log_theme_name);
 }
 
@@ -569,7 +588,7 @@ void fe_log_init(void)
         settings_add_str("log", "log_theme", "");
 
 	autolog_level = 0;
-	log_theme_name = "";
+	log_theme_name = NULL;
 	read_settings();
 
 	command_bind("log", NULL, (SIGNAL_FUNC) cmd_log);
@@ -594,7 +613,7 @@ void fe_log_init(void)
 void fe_log_deinit(void)
 {
 	g_source_remove(autoremove_tag);
-	if (*log_theme_name != '\0')
+	if (log_theme_name != NULL)
                 signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 
 	command_unbind("log", (SIGNAL_FUNC) cmd_log);
