@@ -124,8 +124,8 @@ static void hilight_init_rec(HILIGHT_REC *rec)
 void hilight_create(HILIGHT_REC *rec)
 {
 	if (g_slist_find(hilights, rec) != NULL) {
-		hilights = g_slist_remove(hilights, rec);
 		hilight_remove_config(rec);
+		hilights = g_slist_remove(hilights, rec);
 	}
 
 	hilights = g_slist_append(hilights, rec);
