@@ -319,7 +319,7 @@ static GList *completion_msg(SERVER_REC *win_server,
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *rec = tmp->data;
 
-		if (rec == win_server)
+		if (servers->next == NULL && rec == win_server)
 			newprefix = g_strdup(prefix);
 		else {
 			newprefix = prefix == NULL ?
