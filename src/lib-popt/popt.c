@@ -23,18 +23,6 @@
 #include "popt.h"
 #include "poptint.h"
 
-#ifndef HAVE_STRERROR
-static char * strerror(int errno) {
-    extern int sys_nerr;
-    extern char * sys_errlist[];
-
-    if ((0 <= errno) && (errno < sys_nerr))
-	return sys_errlist[errno];
-    else
-	return POPT_("unknown errno");
-}
-#endif
-
 void poptSetExecPath(poptContext con, const char * path, int allowAbsolute) {
     if (con->execPath) free(con->execPath);
     con->execPath = strdup(path);
