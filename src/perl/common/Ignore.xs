@@ -1,4 +1,4 @@
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc
+MODULE = Irssi  PACKAGE = Irssi
 
 void
 ignores()
@@ -6,7 +6,7 @@ PREINIT:
 	GSList *tmp;
 	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Irc::Ignore", 0);
+	stash = gv_stashpv("Irssi::Ignore", 0);
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
 	}
@@ -24,12 +24,12 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Server
+MODULE = Irssi  PACKAGE = Irssi::Server
 #*******************************
 
 int
 ignore_check(server, nick, host, channel, text, level)
-	Irssi::Irc::Server server
+	Irssi::Server server
 	char *nick
 	char *host
 	char *channel
@@ -37,12 +37,12 @@ ignore_check(server, nick, host, channel, text, level)
 	int level
 
 #*******************************
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Ignore  PREFIX = ignore_
+MODULE = Irssi  PACKAGE = Irssi::Ignore  PREFIX = ignore_
 #*******************************
 
 void
 values(ignore)
-	Irssi::Irc::Ignore ignore
+	Irssi::Ignore ignore
 PREINIT:
         HV *hv;
 	AV *av;
@@ -67,8 +67,8 @@ PPCODE:
 
 void
 ignore_add_rec(rec)
-	Irssi::Irc::Ignore rec
+	Irssi::Ignore rec
 
 void
 ignore_update_rec(rec)
-	Irssi::Irc::Ignore rec
+	Irssi::Ignore rec

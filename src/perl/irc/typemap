@@ -9,6 +9,5 @@ Irssi::Irc::Netsplit		T_PTROBJ
 Irssi::Irc::Netsplitserver	T_PTROBJ
 Irssi::Irc::Autoignore		T_PTROBJ
 Irssi::Irc::Notifylist		T_PTROBJ
-Irssi::Irc::Ignore		T_PTROBJ
 
 Irssi::Nick			T_PTROBJ

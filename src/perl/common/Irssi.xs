@@ -7,6 +7,7 @@ PROTOTYPES: ENABLE
 
 INCLUDE: Channel.xs
 INCLUDE: Core.xs
+INCLUDE: Ignore.xs
 INCLUDE: Log.xs
 INCLUDE: Masks.xs
 INCLUDE: Query.xs

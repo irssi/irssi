@@ -8,6 +8,7 @@
 #include "commands.h"
 #include "log.h"
 #include "rawlog.h"
+#include "ignore.h"
 #include "settings.h"
 #include "masks.h"
 
@@ -25,6 +26,7 @@
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;
 typedef RAWLOG_REC *Irssi__Rawlog;
+typedef IGNORE_REC *Irssi__Ignore;
 
 typedef SERVER_REC *Irssi__Server;
 typedef SERVER_CONNECT_REC *Irssi__Connect;

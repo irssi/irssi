@@ -8,7 +8,6 @@
 #include "modes.h"
 #include "mode-lists.h"
 #include "netsplit.h"
-#include "ignore.h"
 
 #include "dcc/dcc.h"
 #include "flood/autoignore.h"
@@ -25,4 +24,3 @@ typedef NETSPLIT_REC *Irssi__Irc__Netsplit;
 typedef NETSPLIT_SERVER_REC *Irssi__Irc__Netsplitserver;
 typedef AUTOIGNORE_REC *Irssi__Irc__Autoignore;
 typedef NOTIFYLIST_REC *Irssi__Irc__Notifylist;
-typedef IGNORE_REC *Irssi__Irc__Ignore;

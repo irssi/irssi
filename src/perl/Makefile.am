@@ -42,26 +42,26 @@ perl-signals.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals.h
 
 CORE_SOURCES = \
-	core/Channel.xs \
-	core/Core.xs \
-	core/Log.xs \
-	core/Masks.xs \
-	core/Query.xs \
-	core/Rawlog.xs \
-	core/Server.xs \
-	core/Settings.xs \
-	core/Window.xs \
-	core/Irssi.xs \
-	core/Irssi.pm \
-	core/Makefile.PL.in \
-	core/typemap \
-	core/module.h
+	common/Channel.xs \
+	common/Core.xs \
+	common/Ignore.xs \
+	common/Log.xs \
+	common/Masks.xs \
+	common/Query.xs \
+	common/Rawlog.xs \
+	common/Server.xs \
+	common/Settings.xs \
+	common/Window.xs \
+	common/Irssi.xs \
+	common/Irssi.pm \
+	common/Makefile.PL.in \
+	common/typemap \
+	common/module.h
 
 IRC_SOURCES = \
 	irc/Bans.xs \
 	irc/Dcc.xs \
 	irc/Flood.xs \
-	irc/Ignore.xs \
 	irc/IrcChannel.xs \
 	irc/IrcQuery.xs \
 	irc/IrcServer.xs \

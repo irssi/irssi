@@ -1,6 +1,8 @@
 #ifndef __IGNORE_H
 #define __IGNORE_H
 
+#include "servers.h"
+
 typedef struct {
 	char *mask; /* nick mask */
         char *servertag; /* this is for autoignoring */

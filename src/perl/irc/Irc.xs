@@ -5,7 +5,6 @@ MODULE = Irssi::Irc  PACKAGE = Irssi::Irc
 PROTOTYPES: ENABLE
 
 INCLUDE: Bans.xs
-INCLUDE: Ignore.xs
 INCLUDE: IrcServer.xs
 INCLUDE: IrcChannel.xs
 INCLUDE: IrcQuery.xs
