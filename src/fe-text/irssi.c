@@ -123,6 +123,9 @@ static void textui_deinit(void)
 	quitting = TRUE;
 	signal(SIGINT, SIG_DFL);
 
+	while (modules != NULL)
+		module_unload(modules->data);
+
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 	gui_textwidget_deinit();
 	gui_special_vars_deinit();

@@ -298,13 +298,13 @@ window_item_is_active(item)
 
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Channel
+MODULE = Irssi	PACKAGE = Irssi::Windowitem
 #*******************************
 
 void
-print(channel, str, level=MSGLEVEL_CLIENTNOTICE)
-	Irssi::Channel channel
+print(item, str, level=MSGLEVEL_CLIENTNOTICE)
+	Irssi::Windowitem item
 	int level
 	char *str
 CODE:
-	printtext(channel->server, channel->name, level, str);
+	printtext(item->server, item->name, level, str);

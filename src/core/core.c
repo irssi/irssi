@@ -75,9 +75,6 @@ void core_init(void)
 
 void core_deinit(void)
 {
-	while (modules != NULL)
-		module_unload(modules->data);
-
 	chat_commands_deinit();
 
 	nicklist_deinit();

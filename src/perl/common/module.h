@@ -3,7 +3,9 @@
 #include <XSUB.h>
 
 #undef _
+#undef VERSION
 #include "../module.h"
+
 #include "network.h"
 #include "commands.h"
 #include "log.h"
@@ -15,17 +17,20 @@
 #include "chatnets.h"
 #include "servers.h"
 #include "servers-reconnect.h"
+#include "servers-redirect.h"
 #include "servers-setup.h"
 #include "channels.h"
 #include "queries.h"
 #include "nicklist.h"
 
-#include "perl/perl-common.h"
-
 #include "fe-common/core/fe-windows.h"
+#include "fe-common/core/formats.h"
+#include "fe-common/core/printtext.h"
 #include "fe-common/core/window-items.h"
 #include "fe-common/core/themes.h"
 #include "fe-common/core/keyboard.h"
+
+#include "perl/perl-common.h"
 
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;

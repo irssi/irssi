@@ -14,4 +14,5 @@ INCLUDE: Query.xs
 INCLUDE: Rawlog.xs
 INCLUDE: Server.xs
 INCLUDE: Settings.xs
+INCLUDE: Themes.xs
 INCLUDE: Window.xs

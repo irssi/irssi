@@ -9,6 +9,9 @@
 
 extern GHashTable *perl_stashes;
 
+/* returns the package who called us */
+char *perl_get_package(void);
+
 HV *irssi_get_stash_item(int type, int chat_type);
 
 #define irssi_get_stash(item) \

@@ -35,6 +35,9 @@
 #include "perl-common.h"
 #include "servers.h"
 
+#include "fe-common/core/themes.h"
+#include "fe-common/core/formats.h"
+
 /* For compatibility with perl 5.004 and older */
 #ifndef ERRSV
 #  define ERRSV GvSV(errgv)
@@ -199,23 +202,41 @@ static int signal_destroy_hash(void *key, GSList **list, const char *package)
 	return TRUE;
 }
 
+static void perl_unregister_theme(const char *package)
+{
+	FORMAT_REC *formats;
+	int n;
+
+	formats = g_hash_table_lookup(default_formats, package);
+	if (formats == NULL) return;
+
+	for (n = 0; formats[n].def != NULL; n++) {
+		g_free(formats[n].tag);
+		g_free(formats[n].def);
+	}
+	g_free(formats);
+	theme_unregister_module(package);
+}
+
 static int perl_script_destroy(const char *name)
 {
-	GSList *tmp, *next;
+	GSList *tmp, *next, *item;
 	char *package;
 	int package_len;
 
-	if (gslist_find_string(perl_scripts, name) == NULL)
-		return FALSE;
+	item = gslist_find_string(perl_scripts, name);
+	if (item == NULL) return FALSE;
 
-	package = g_strdup_printf("Irssi::Script::%s::", name);
+	package = g_strdup_printf("Irssi::Script::%s", name);
 	package_len = strlen(package);
 
+	/* signals */
 	g_hash_table_foreach_remove(first_signals,
 				    (GHRFunc) signal_destroy_hash, package);
 	g_hash_table_foreach_remove(last_signals,
 				    (GHRFunc) signal_destroy_hash, package);
 
+	/* timeouts and input waits */
 	for (tmp = perl_sources; tmp != NULL; tmp = next) {
 		PERL_SOURCE_REC *rec = tmp->data;
 
@@ -224,12 +245,21 @@ static int perl_script_destroy(const char *name)
 			perl_source_destroy(rec);
 	}
 
+	/* theme */
+	perl_unregister_theme(package);
+
 	g_free(package);
+	g_free(item->data);
+	perl_scripts = g_slist_remove(perl_scripts, item->data);
 	return TRUE;
 }
 
 static void irssi_perl_stop(void)
 {
+	GSList *tmp;
+	char *package;
+
+	/* signals */
 	g_hash_table_foreach(first_signals,
 			     (GHFunc) signal_destroy_hash, NULL);
 	g_hash_table_destroy(first_signals);
@@ -248,13 +278,24 @@ static void irssi_perl_stop(void)
 		signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
 	}
 
+	/* timeouts and input waits */
 	while (perl_sources != NULL)
 		perl_source_destroy(perl_sources->data);
 
+	/* themes */
+	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
+		package = g_strdup_printf("Irssi::Script::%s",
+					  (char *) tmp->data);
+		perl_unregister_theme(package);
+		g_free(package);
+	}
+
+	/* scripts list */
 	g_slist_foreach(perl_scripts, (GFunc) g_free, NULL);
 	g_slist_free(perl_scripts);
 	perl_scripts = NULL;
 
+	/* perl interpreter */
 	perl_destruct(irssi_perl_interp);
 	perl_free(irssi_perl_interp);
 	irssi_perl_interp = NULL;
@@ -348,15 +389,6 @@ static void cmd_perlflush(const char *data)
 {
 	irssi_perl_stop();
 	irssi_perl_start();
-}
-
-/* returns the package who called us */
-static char *perl_get_package(void)
-{
-	STRLEN n_a;
-
-	perl_eval_pv("($package) = caller;", TRUE);
-	return SvPV(perl_get_sv("package", FALSE), n_a);
 }
 
 static void perl_signal_to(const char *signal, const char *func, int last)

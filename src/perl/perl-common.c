@@ -39,7 +39,19 @@
 
 #include "perl-common.h"
 
+#include "fe-common/core/formats.h"
+#include "fe-common/core/printtext.h"
+
 GHashTable *perl_stashes;
+
+/* returns the package who called us */
+char *perl_get_package(void)
+{
+	STRLEN n_a;
+
+	perl_eval_pv("($package) = caller;", TRUE);
+	return SvPV(perl_get_sv("package", FALSE), n_a);
+}
 
 HV *irssi_get_stash_item(int type, int chat_type)
 {
@@ -155,6 +167,26 @@ void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 	hv_store(hv, "address", 7, new_pv(query->address), 0);
 	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
 	hv_store(hv, "unwanted", 8, newSViv(query->unwanted), 0);
+}
+
+void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
+{
+	THEME_REC *theme;
+	char *module, *str;
+	int formatnum;
+
+	module = g_strdup(perl_get_package());
+	theme = dest->window->theme == NULL ? current_theme :
+		dest->window->theme;
+
+	formatnum = format_find_tag(module, format);
+	signal_emit("print format", 5, theme, module,
+		    &dest, GINT_TO_POINTER(formatnum), arglist);
+
+        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
+	if (*str != '\0') printtext_window(dest->window, dest->level, "%s", str);
+	g_free(str);
+	g_free(module);
 }
 
 static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)

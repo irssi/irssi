@@ -584,7 +584,10 @@ void theme_register_module(const char *module, FORMAT_REC *formats)
 
 void theme_unregister_module(const char *module)
 {
-        gpointer key, value;
+	gpointer key, value;
+
+	if (default_formats == NULL)
+		return; /* already uninitialized */
 
 	if (!g_hash_table_lookup_extended(default_formats, module, &key, &value))
 		return;
@@ -1004,6 +1007,7 @@ void themes_deinit(void)
 		theme_destroy(themes->data);
 
 	g_hash_table_destroy(default_formats);
+	default_formats = NULL;
 
 	command_unbind("format", (SIGNAL_FUNC) cmd_format);
 	command_unbind("save", (SIGNAL_FUNC) cmd_save);
