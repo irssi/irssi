@@ -337,6 +337,39 @@ int regexp_match(const char *str, const char *regexp)
 	return ret == 0;
 }
 
+/* Create the directory and all it's parent directories */
+int mkpath(const char *path, int mode)
+{
+	struct stat statbuf;
+        const char *p;
+	char *dir;
+
+	g_return_val_if_fail(path != NULL, -1);
+
+	p = g_path_skip_root((char *) path);
+	for (;;) {
+		if (*p != G_DIR_SEPARATOR && *p != '\0') {
+			p++;
+			continue;
+		}
+
+		dir = g_strndup(path, (int) (p-path));
+		if (stat(dir, &statbuf) != 0) {
+			if (mkdir(dir, mode) == -1) {
+				g_free(dir);
+				return -1;
+			}
+		}
+		g_free(dir);
+
+		if (*p++ == '\0')
+			break;
+	}
+
+	return 0;
+}
+
+/* convert ~/ to $HOME */
 char *convert_home(const char *path)
 {
 	return *path == '~' && (*(path+1) == '/' || *(path+1) == '\0') ?

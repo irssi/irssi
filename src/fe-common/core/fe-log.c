@@ -306,7 +306,7 @@ static void autolog_log(void *server, const char *target)
 		dir = g_dirname(str);
 		g_free(str);
 
-		mkdir(dir, LOG_DIR_CREATE_MODE);
+		mkpath(dir, LOG_DIR_CREATE_MODE);
 		g_free(dir);
 
 		log = log_create_rec(fname, autolog_level, target);
