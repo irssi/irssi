@@ -40,10 +40,6 @@ server_find_chatnet(chatnet)
 MODULE = Irssi	PACKAGE = Irssi::Server  PREFIX = server_
 #*******************************
 
-Irssi::Server
-server_connect(conn)
-	Irssi::Connect conn
-
 void
 server_disconnect(server)
 	Irssi::Server server
@@ -123,10 +119,3 @@ send_message(server, target, msg)
 CODE:
 	server->send_message(server, target, msg);
 
-#*******************************
-MODULE = Irssi	PACKAGE = Irssi::Connect  PREFIX = server_
-#*******************************
-
-Irssi::Server
-server_connect(conn)
-	Irssi::Connect conn
