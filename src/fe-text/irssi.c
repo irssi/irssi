@@ -136,6 +136,15 @@ static void dirty_check(void)
 
 static void textui_init(void)
 {
+#ifdef SIGTRAP
+	struct sigaction act;
+
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	act.sa_handler = SIG_IGN;
+	sigaction(SIGTRAP, &act, NULL);
+#endif
+
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
 	irc_init();
