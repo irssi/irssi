@@ -34,6 +34,7 @@
 
 #include "window-item-def.h"
 #include "chat-protocols.h"
+#include "chatnets.h"
 #include "servers.h"
 #include "channels.h"
 #include "queries.h"
@@ -200,6 +201,29 @@ void irssi_callXS(void (*subaddr)(CV* cv), CV *cv, SV **mark)
 	(*subaddr)(cv);
 
 	PUTBACK;
+}
+
+void perl_chatnet_fill_hash(HV *hv, CHATNET_REC *chatnet)
+{
+	char *type, *chat_type;
+
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(chatnet != NULL);
+
+	type = "CHATNET";
+	chat_type = (char *) chat_protocol_find_id(chatnet->chat_type)->name;
+
+	hv_store(hv, "type", 4, new_pv(type), 0);
+	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
+
+	hv_store(hv, "name", 4, new_pv(chatnet->name), 0);
+
+	hv_store(hv, "nick", 4, new_pv(chatnet->nick), 0);
+	hv_store(hv, "username", 8, new_pv(chatnet->username), 0);
+	hv_store(hv, "realname", 8, new_pv(chatnet->realname), 0);
+
+	hv_store(hv, "own_host", 8, new_pv(chatnet->own_host), 0);
+	hv_store(hv, "autosendcmd", 11, new_pv(chatnet->autosendcmd), 0);
 }
 
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
@@ -480,6 +504,12 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Nick", name);
 	irssi_add_object(type, chat_type, stash,
 			 (PERL_OBJECT_FUNC) perl_nick_fill_hash);
+
+        /* chatnets */
+	type = module_get_uniq_id("CHATNET", 0);
+	g_snprintf(stash, sizeof(stash), "Irssi::%s::Chatnet", name);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_chatnet_fill_hash);
 
 	/* server specific */
 	type = module_get_uniq_id("SERVER", 0);
