@@ -269,6 +269,27 @@ static GList *completion_get_settings(const char *key)
 	return complist;
 }
 
+static GList *completion_get_bool_settings(const char *key)
+{
+	GList *complist;
+	GSList *tmp, *sets;
+	int len;
+
+	sets = settings_get_sorted();
+
+	len = strlen(key);
+	complist = NULL;
+	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
+		SETTINGS_REC *rec = tmp->data;
+
+		if (rec->type == SETTING_TYPE_BOOLEAN &&
+		    g_strncasecmp(rec->key, key, len) == 0)
+			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
+	}
+	g_slist_free(sets);
+	return complist;
+}
+
 static GList *completion_get_commands(const char *cmd, char cmdchar)
 {
 	GList *complist;
@@ -378,14 +399,6 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 	}
 
-	/* /SET variable name completion */
-	if (g_strcasecmp(linestart, "/SET") == 0) {
-		*list = completion_get_settings(word);
-
-		if (*list != NULL) signal_stop();
-		return;
-	}
-
 	/* command completion? */
 	cmdchars = settings_get_str("cmdchars");
 	if (strchr(cmdchars, *word) && *linestart == '\0') {
@@ -423,6 +436,38 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void sig_complete_set(GList **list, WINDOW_REC *window,
+			     const char *word, const char *line, int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line != '\0') return;
+
+	*list = completion_get_settings(word);
+	if (*list != NULL) {
+		*want_space = FALSE;
+		signal_stop();
+	}
+}
+
+static void sig_complete_toggle(GList **list, WINDOW_REC *window,
+				const char *word, const char *line, int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line != '\0') return;
+
+	*list = completion_get_bool_settings(word);
+	if (*list != NULL) {
+		*want_space = FALSE;
+		signal_stop();
+	}
+}
+
 /* first argument of command is file name - complete it */
 static void sig_complete_filename(GList **list, WINDOW_REC *window,
 				  const char *word, const char *line, int *want_space)
@@ -446,6 +491,8 @@ void completion_init(void)
 	last_linestart = NULL;
 
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
+	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command save", (SIGNAL_FUNC) sig_complete_filename);
@@ -459,6 +506,8 @@ void completion_deinit(void)
         free_completions();
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_remove("complete command set", (SIGNAL_FUNC) sig_complete_set);
+	signal_remove("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command save", (SIGNAL_FUNC) sig_complete_filename);
