@@ -233,7 +233,7 @@ if test "x$want_textui" = "xyes"; then
 		AC_CHECK_LIB(ncurses, wresize, [
 			AC_DEFINE(HAVE_CURSES_WRESIZE)
 		],, $CURSES_LIBS)
-	else
+	elif test "x$has_curses" = "xtrue"; then
 		AC_CHECK_LIB(curses, idcok, [
 			AC_DEFINE(HAVE_CURSES_IDCOK)
 		],, $CURSES_LIBS)
@@ -243,9 +243,7 @@ if test "x$want_textui" = "xyes"; then
 		AC_CHECK_LIB(curses, wresize, [
 			AC_DEFINE(HAVE_CURSES_WRESIZE)
 		],, $CURSES_LIBS)
-	fi
-
-	if test "$has_curses" != "true"; then
+	else
 		want_textui=no
 		curses_error=yes
         fi

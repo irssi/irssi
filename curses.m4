@@ -139,8 +139,6 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	then
 		AC_SEARCH_NCURSES()
 	fi
-
-
 ])
 
 
@@ -277,6 +275,19 @@ USE_NCURSES
 	then
 	    AC_USE_SUNOS_CURSES
         fi
+    fi
+
+    dnl use whatever curses there happens to be
+    if $search_ncurses
+    then
+	if test -f /usr/include/curses.h
+	then
+	  CURSES_LIBS="-lcurses"
+	  AC_DEFINE(HAS_CURSES)
+	  has_curses=true
+	  search_ncurses=false
+	  screen_manager="curses"
+	fi
     fi
 ])
 
