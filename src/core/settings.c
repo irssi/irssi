@@ -165,7 +165,7 @@ int settings_get_size(const char *key)
 
 static void settings_add(const char *module, const char *section,
 			 const char *key, SettingType type,
-			 SettingValue *default_value)
+			 const SettingValue *default_value)
 {
 	SETTINGS_REC *rec;
 
@@ -188,12 +188,6 @@ static void settings_add(const char *module, const char *section,
                 rec->type = type;
 
 		rec->default_value = *default_value;
-		if (type != SETTING_TYPE_INT &&
-		    type != SETTING_TYPE_BOOLEAN) {
-			rec->default_value.v_string =
-				g_strdup(default_value->v_string);
-		}
-
 		g_hash_table_insert(settings, rec->key, rec);
 	}
 
@@ -205,7 +199,8 @@ void settings_add_str_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
-	default_value.v_string = (char *) def;
+	memset(&default_value, 0, sizeof(default_value));
+	default_value.v_string = g_strdup(def);
 	settings_add(module, section, key, SETTING_TYPE_STRING, &default_value);
 }
 
@@ -214,6 +209,7 @@ void settings_add_int_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
+	memset(&default_value, 0, sizeof(default_value));
         default_value.v_int = def;
 	settings_add(module, section, key, SETTING_TYPE_INT, &default_value);
 }
@@ -223,6 +219,7 @@ void settings_add_bool_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
+	memset(&default_value, 0, sizeof(default_value));
         default_value.v_bool = def;
 	settings_add(module, section, key, SETTING_TYPE_BOOLEAN,
 		     &default_value);
@@ -233,7 +230,8 @@ void settings_add_time_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
-	default_value.v_string = (char *) def;
+	memset(&default_value, 0, sizeof(default_value));
+	default_value.v_string = g_strdup(def);
 	settings_add(module, section, key, SETTING_TYPE_TIME, &default_value);
 }
 
@@ -242,7 +240,8 @@ void settings_add_level_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
-	default_value.v_string = (char *) def;
+	memset(&default_value, 0, sizeof(default_value));
+	default_value.v_string = g_strdup(def);
 	settings_add(module, section, key, SETTING_TYPE_LEVEL, &default_value);
 }
 
@@ -251,13 +250,15 @@ void settings_add_size_module(const char *module, const char *section,
 {
 	SettingValue default_value;
 
-	default_value.v_string = (char *) def;
+	memset(&default_value, 0, sizeof(default_value));
+	default_value.v_string = g_strdup(def);
 	settings_add(module, section, key, SETTING_TYPE_SIZE, &default_value);
 }
 
 static void settings_destroy(SETTINGS_REC *rec)
 {
-	if (rec->type == SETTING_TYPE_STRING)
+	if (rec->type != SETTING_TYPE_INT &&
+	    rec->type != SETTING_TYPE_BOOLEAN)
 		g_free(rec->default_value.v_string);
         g_free(rec->module);
         g_free(rec->section);

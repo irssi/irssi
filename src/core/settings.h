@@ -10,7 +10,7 @@ typedef enum {
 	SETTING_TYPE_SIZE
 } SettingType;
 
-typedef union {
+typedef struct {
 	char *v_string;
 	int v_int;
 	unsigned int v_bool:1;
