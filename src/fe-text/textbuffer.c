@@ -43,6 +43,8 @@ TEXT_BUFFER_REC *textbuffer_create(void)
 
 void textbuffer_destroy(TEXT_BUFFER_REC *buffer)
 {
+	g_return_if_fail(buffer != NULL);
+
 	textbuffer_remove_all_lines(buffer);
         g_mem_chunk_free(buffer_chunk, buffer);
 }
@@ -73,8 +75,6 @@ static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 	TEXT_CHUNK_REC *rec;
 	char *buf, *ptr, **pptr;
 
-	g_return_val_if_fail(buffer != NULL, NULL);
-
 	rec = g_mem_chunk_alloc(text_chunk);
 	rec->pos = 0;
 	rec->refcount = 0;
@@ -103,9 +103,6 @@ static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 
 static void text_chunk_destroy(TEXT_BUFFER_REC *buffer, TEXT_CHUNK_REC *chunk)
 {
-	g_return_if_fail(buffer != NULL);
-	g_return_if_fail(chunk != NULL);
-
 	buffer->text_chunks = g_slist_remove(buffer->text_chunks, chunk);
 	g_mem_chunk_free(text_chunk, chunk);
 }
@@ -205,12 +202,17 @@ static LINE_REC *textbuffer_line_insert(TEXT_BUFFER_REC *buffer,
 
 void textbuffer_line_ref(LINE_REC *line)
 {
+	g_return_if_fail(line != NULL);
+
 	if (++line->refcount == 255)
                 g_error("line reference counter wrapped - shouldn't happen");
 }
 
 void textbuffer_line_unref(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 {
+	g_return_if_fail(buffer != NULL);
+	g_return_if_fail(line != NULL);
+
 	if (--line->refcount == 0) {
 		text_chunk_line_free(buffer, line);
 		g_mem_chunk_free(line_chunk, line);
@@ -219,6 +221,8 @@ void textbuffer_line_unref(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list)
 {
+	g_return_if_fail(buffer != NULL);
+
 	while (list != NULL) {
                 textbuffer_line_unref(buffer, list->data);
                 list = list->next;
@@ -238,6 +242,9 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 {
 	LINE_REC *line;
 
+	g_return_val_if_fail(buffer != NULL, NULL);
+	g_return_val_if_fail(data != NULL, NULL);
+
 	line = !buffer->last_eol ? insert_after :
 		textbuffer_line_insert(buffer, insert_after);
 
@@ -254,6 +261,9 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 
 void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 {
+	g_return_if_fail(buffer != NULL);
+	g_return_if_fail(line != NULL);
+
 	buffer->lines = g_list_remove(buffer->lines, line);
 
 	if (buffer->cur_line == line) {
@@ -269,6 +279,8 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 {
 	GSList *tmp;
+
+	g_return_if_fail(buffer != NULL);
 
 	for (tmp = buffer->text_chunks; tmp != NULL; tmp = tmp->next)
                 g_mem_chunk_free(text_chunk, tmp->data);
