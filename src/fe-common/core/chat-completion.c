@@ -759,6 +759,25 @@ static void sig_complete_topic(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void sig_complete_away(GList **list, WINDOW_REC *window,
+			       const char *word, const char *line,
+			       int *want_space)
+{
+	const char *reason;
+
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	if (*word == '\0' && window->active_server != NULL) {
+		reason = SERVER(window->active_server)->away_reason;
+		if (reason != NULL) {
+			*list = g_list_append(NULL, g_strdup(reason));
+			signal_stop();
+		}
+	}
+}
+
+
 static void sig_complete_channel(GList **list, WINDOW_REC *window,
 				 const char *word, const char *line,
 				 int *want_space)
@@ -934,6 +953,7 @@ void chat_completion_init(void)
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
+	signal_add("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
@@ -963,6 +983,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
+	signal_remove("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
