@@ -362,6 +362,8 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	int brackets, nest_free;
 
 	*free_ret = FALSE;
+	if (**cmd == '\0')
+		return NULL;
 
 	command = **cmd; (*cmd)++;
 	switch (command) {

@@ -146,7 +146,9 @@ static void theme_format_append_variable(GString *str, const char **format)
 	value = parse_special((char **) format, NULL, NULL,
 			      args, &free_ret, NULL, PARSE_FLAG_ONLY_ARGS);
 	if (free_ret) g_free(value);
-	(*format)++;
+
+	if (**format != '\0')
+		(*format)++;
 
 	/* append the variable name */
 	value = g_strndup(orig, (int) (*format-orig));
