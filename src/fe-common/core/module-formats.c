@@ -122,7 +122,6 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "chansetup_header", "Channel         Network    Password   Settings", 0 },
 	{ "chansetup_line", "{channel $[15]0} %|$[10]1 $[10]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "chansetup_footer", "", 0 },
-	{ "channel_move_notify", "{channel $0} is already joined in window $1, use \"/WINDOW ITEM MOVE $0\" to move it to this window", 2, { 0, 1 } },
 
 	/* ---- */
 	{ NULL, "Messages", 0 },
