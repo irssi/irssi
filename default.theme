@@ -7,80 +7,143 @@ replaces = { "[]<>=" = "%K$0-%n"; };
 # "requested" text would be green
 
 abstracts = {
-  # generic
+  ##
+  ## generic
+  ##
+
+  # text to insert at the beginning of each non-message line
   line_start = "%B-%W!%B-%n ";
+
+  # timestamp styling, nothing by default
   timestamp = "$0-";
+
+  # any kind of text that needs hilighting, default is to bold
   hilight = "%_$0-%_";
+
+  # any kind of error message, default is bright red
   error = "%R$0-%n";
-  
+
+  # channel name is printed
   channel = "%_$0-%_";
+
+  # nick is printed
   nick = "%_$0-%_";
+
+  # nick host is printed
   nickhost = "[$0-]";
+
+  # server name is printed
   server = "%_$0-%_";
+
+  # some kind of comment is printed
   comment = "[$0-]";
+
+  # reason for something is printed (part, quit, kick, ..)
   reason = "{comment $0-}";
+
+  # mode change is printed ([+o nick])
   mode = "{comment $0-}";
-  
-  # channel specific messages
+
+  ##
+  ## channel specific messages
+  ##
+
+  # highlighted nick/host is printed (joins)
   channick_hilight = "%C$0-%n";
   chanhost_hilight = "{nickhost %c$0-%n}";
+
+  # nick/host is printed (parts, quits, etc.)
   channick = "%c$0-%n";
   chanhost = "{nickhost $0-}";
+
+  # highlighted channel name is printed
   channelhilight = "%c$0-%n";
+
+  # ban/ban exception/invite list mask is printed
   ban = "%c$0-%n";
-  
-  # messages
+
+  ##
+  ## messages
+  ##
+
+  # the basic styling of how to print message
   msgnick = "<$0-> %|";
+
+  # message from you is printed. "msgownnick" specifies the styling of the
+  # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
+  # whole line. For example if you want the message text to be in different
+  # color, green for example, add %g after ownmsgnick (if it were in
+  # msgownnick, you'd get green '>' char after nick too)
   ownmsgnick = "{msgnick $0-}";
-  pubmsgnick = "{msgnick $0-}";
-  pubmsgmenick = "{msgnick $0-}";
-  pubmsghinick = "{msgnick $1$0$2-}";
   msgownnick = "%W$0-%n";
-  msgchannel = "%K:%c$0-%n";
+
+  # public message in channel
+  pubmsgnick = "{msgnick $0-}";
+
+  # public message in channel meant for me
+  pubmsgmenick = "{msgnick $0-}";
   msgme = "%Y$0-%n";
+
+  # public highlighted message in channel
+  # $0 = highlight color, $1 = nick mode (@, +), $2 = nick
+  pubmsghinick = "{msgnick $1$0$2-}";
+
+  # channel name is printed with message
+  msgchannel = "%K:%c$0-%n";
+
+  # private message, $0 = nick, $1 = host
   privmsg = "[%R$0%K(%r$1-%K)%n] ";
-  privmsgnick = "{msgnick %R$0-%n}";
+
+  # private message from you, $0 = "msg", $1 = target nick
   ownprivmsg = "[%r$0%K(%R$1-%K)%n] ";
-  
+
+  # private message in query
+  privmsgnick = "{msgnick %R$0-%n}";
+
+  ##
+  ## other IRC events
+  ##
+
   # actions
   action = "%W * $0-%n ";
   ownaction = "{action $0-}";
   pvtaction = "%W (*) $0-%n ";
   pvtaction_query = "{action $0-}";
   pubaction = "{action $0-}";
-  
+
   # notices
   ownnotice = "[%r$0%K(%R$1-%K)]%n ";
   notice = "%K-%M$0-%K-%n ";
   pubnotice_channel = "%K:%m$0-";
   pvtnotice_host = "%K(%m$0-%K)";
   servernotice = "%g!$0-%n ";
-  
-  # ctcp
+
+  # CTCPs
   ownctcp = "[%r$0%K(%R$1-%K)] ";
   ctcp = "%g$0-%n";
-  
+
   # wall
   ownwall = "[%W$0%K/%c$1-] ";
-  
+
   # wallops
   wallop = "%W$0-%n: ";
   wallop_nick = "%n$0-";
   wallop_action = "%W * $0-%n ";
-  
+
   # netsplits
   netsplit = "%R$0-%n";
   netjoin = "%C$0-%n";
-  
+
   # /names list
   names_nick = "[%_$0%_$1-] ";
   names_users = "[%g$0-%n]";
   names_channel = "%G$0-%n";
-  
-  # dcc
+
+  # DCC
   dcc = "%g$0-%n";
   dccfile = "%_$0-%_";
-  
+
+  # DCC chat
   dccownmsg = "[%r$0%K(%R$1-%K)%n] ";
   dccownaction = "{action $0-}";
   dccmsg = "[%G$1-%K(%g$0%K)%n] ";
