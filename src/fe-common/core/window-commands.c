@@ -131,6 +131,12 @@ static void cmd_window_next(void)
 	window_set_active(window_find_refnum(num));
 }
 
+static void cmd_window_last(void)
+{
+	if (windows->next != NULL)
+		window_set_active(windows->next->data);
+}
+
 static void cmd_window_prev(void)
 {
 	int num;
@@ -340,6 +346,7 @@ void window_commands_init(void)
 	command_bind("window goto", NULL, (SIGNAL_FUNC) cmd_window_goto);
 	command_bind("window prev", NULL, (SIGNAL_FUNC) cmd_window_prev);
 	command_bind("window next", NULL, (SIGNAL_FUNC) cmd_window_next);
+	command_bind("window last", NULL, (SIGNAL_FUNC) cmd_window_last);
 	command_bind("window level", NULL, (SIGNAL_FUNC) cmd_window_level);
 	command_bind("window item prev", NULL, (SIGNAL_FUNC) cmd_window_item_prev);
 	command_bind("window item next", NULL, (SIGNAL_FUNC) cmd_window_item_next);
@@ -362,6 +369,7 @@ void window_commands_deinit(void)
 	command_unbind("window goto", (SIGNAL_FUNC) cmd_window_goto);
 	command_unbind("window prev", (SIGNAL_FUNC) cmd_window_prev);
 	command_unbind("window next", (SIGNAL_FUNC) cmd_window_next);
+	command_unbind("window last", (SIGNAL_FUNC) cmd_window_last);
 	command_unbind("window level", (SIGNAL_FUNC) cmd_window_level);
 	command_unbind("window item prev", (SIGNAL_FUNC) cmd_window_item_prev);
 	command_unbind("window item next", (SIGNAL_FUNC) cmd_window_item_next);
