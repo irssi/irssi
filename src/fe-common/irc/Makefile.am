@@ -25,6 +25,7 @@ real_sources = \
 	fe-netjoin.c \
 	fe-netsplit.c \
 	fe-common-irc.c \
+	irc-completion.c \
 	module-formats.c 
 
 libfe_common_irc_a_SOURCES = \

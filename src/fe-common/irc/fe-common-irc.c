@@ -68,6 +68,9 @@ void fe_netsplit_deinit(void);
 void fe_netjoin_init(void);
 void fe_netjoin_deinit(void);
 
+void irc_completion_init(void);
+void irc_completion_deinit(void);
+
 void fe_common_irc_init(void)
 {
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
@@ -86,6 +89,7 @@ void fe_common_irc_init(void)
 	fe_modes_init();
 	fe_netsplit_init();
 	fe_netjoin_init();
+        irc_completion_init();
 
 	settings_check();
 	module_register("core", "fe-irc");
@@ -109,6 +113,7 @@ void fe_common_irc_deinit(void)
 	fe_modes_deinit();
 	fe_netsplit_deinit();
 	fe_netjoin_deinit();
+        irc_completion_deinit();
 
 	theme_unregister();
 }

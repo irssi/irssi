@@ -35,6 +35,7 @@
 #include "nicklist.h"
 
 #include "completion.h"
+#include "chat-completion.h"
 #include "window-items.h"
 
 static int keep_privates_count, keep_publics_count;
@@ -485,6 +486,32 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 	return list1;
 }
 
+GList *completion_get_servertags(const char *word)
+{
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		SERVER_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->tag, word, len) == 0) {
+			if (rec == active_win->active_server)
+				list = g_list_prepend(list, g_strdup(rec->tag));
+			else
+				list = g_list_append(list, g_strdup(rec->tag));
+		}
+
+	}
+
+	return list;
+}
+
 GList *completion_get_channels(SERVER_REC *server, const char *word)
 {
 	GList *list;
@@ -492,7 +519,6 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	int len;
 
 	g_return_val_if_fail(word != NULL, NULL);
-	g_return_val_if_fail(*word != '\0', NULL);
 
 	len = strlen(word);
 	list = NULL;
@@ -772,6 +798,17 @@ static void sig_complete_connect(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
+static void sig_complete_tag(GList **list, WINDOW_REC *window,
+			     const char *word, const char *line,
+			     int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	*list = completion_get_servertags(word);
+	if (*list != NULL) signal_stop();
+}
+
 static void sig_complete_topic(GList **list, WINDOW_REC *window,
 			       const char *word, const char *line,
 			       int *want_space)
@@ -851,6 +888,17 @@ static void sig_complete_channel(GList **list, WINDOW_REC *window,
 	g_return_if_fail(word != NULL);
 
 	*list = completion_get_channels(NULL, word);
+	if (*list != NULL) signal_stop();
+}
+
+static void sig_complete_server(GList **list, WINDOW_REC *window,
+				const char *word, const char *line,
+				int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	*list = completion_get_servers(word);
 	if (*list != NULL) signal_stop();
 }
 
@@ -1031,11 +1079,14 @@ void chat_completion_init(void)
 	signal_add("complete erase command action", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
+	signal_add("complete command disconnect", (SIGNAL_FUNC) sig_complete_tag);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_add("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_add("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
 	signal_add("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
 	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
+	signal_add("complete command server add", (SIGNAL_FUNC) sig_complete_server);
+	signal_add("complete command server remove", (SIGNAL_FUNC) sig_complete_server);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
@@ -1063,11 +1114,14 @@ void chat_completion_deinit(void)
 	signal_remove("complete erase command action", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
+	signal_remove("complete command disconnect", (SIGNAL_FUNC) sig_complete_tag);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_remove("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_remove("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
 	signal_remove("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
 	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
+	signal_remove("complete command server add", (SIGNAL_FUNC) sig_complete_server);
+	signal_remove("complete command server remove", (SIGNAL_FUNC) sig_complete_server);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
