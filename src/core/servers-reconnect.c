@@ -48,7 +48,7 @@ static void server_reconnect_add(SERVER_CONNECT_REC *conn,
 	reconnects = g_slist_append(reconnects, rec);
 }
 
-static void server_reconnect_destroy(RECONNECT_REC *rec, int free_conn)
+void server_reconnect_destroy(RECONNECT_REC *rec, int free_conn)
 {
 	g_return_if_fail(rec != NULL);
 
@@ -93,7 +93,7 @@ static int server_reconnect_timeout(void)
 static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 {
 	conn->address = g_strdup(rec->address);
-	conn->port = rec->port;
+	if (conn->port == 0) conn->port = rec->port;
 
 	server_setup_fill_reconn(conn, rec);
 	if (rec->last_connect > time(NULL)-reconnect_time) {
@@ -209,6 +209,8 @@ static void sig_reconnect(SERVER_REC *server)
 		if (rec->chatnet != NULL && g_strcasecmp(conn->chatnet, rec->chatnet) == 0 &&
 		    !rec->banned && (!rec->last_connect || !rec->last_failed ||
 				     rec->last_connect < now-FAILED_RECONNECT_WAIT)) {
+			if (rec == sserver)
+                                conn->port = server->connrec->port;
 			sserver_connect(rec, conn);
 			return;
 		}
@@ -224,6 +226,8 @@ static void sig_reconnect(SERVER_REC *server)
 			found = TRUE;
 		else if (found && !rec->banned && rec->chatnet != NULL &&
 			 g_strcasecmp(conn->chatnet, rec->chatnet) == 0) {
+			if (rec == sserver)
+                                conn->port = server->connrec->port;
 			sserver_connect(rec, conn);
 			break;
 		}

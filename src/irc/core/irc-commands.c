@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "window-item-def.h"
 
+#include "servers-reconnect.h"
 #include "servers-redirect.h"
 #include "servers-setup.h"
 #include "nicklist.h"
@@ -102,38 +103,87 @@ static void cmd_connect(const char *data)
 	irc_connect_server(data);
 }
 
+static RECONNECT_REC *find_reconnect_server(const char *addr, int port)
+{
+	RECONNECT_REC *match;
+	GSList *tmp;
+
+	g_return_val_if_fail(addr != NULL, NULL);
+
+	if (g_slist_length(reconnects) == 1) {
+		/* only one reconnection, we probably want to use it */
+		match = reconnects->data;
+		return IS_IRC_SERVER_CONNECT(match->conn) ? match : NULL;
+	}
+
+	/* check if there's a reconnection to the same host and maybe even
+	   the same port */
+        match = NULL;
+	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
+		RECONNECT_REC *rec = tmp->data;
+
+		if (IS_IRC_SERVER_CONNECT(rec->conn) &&
+		    g_strcasecmp(rec->conn->address, addr) == 0) {
+			if (rec->conn->port == port)
+				return rec;
+			match = rec;
+		}
+	}
+
+	return match;
+}
+
 /* SYNTAX: SERVER [-ircnet <ircnet>] [-host <hostname>]
                   [+]<address>|<ircnet> [<port> [<password> [<nick>]]] */
 static void cmd_server(const char *data, IRC_SERVER_REC *server,
 		       void *item)
 {
 	GHashTable *optlist;
-	char *addr, *channels, *away_reason, *usermode, *ircnet;
+	IRC_SERVER_CONNECT_REC *conn;
+	char *addr, *port, *channels, *away_reason, *usermode, *ircnet;
 	void *free_arg;
 	int no_old_server;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
-			    "connect", &optlist, &addr))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS,
+			    "connect", &optlist, &addr, &port))
 		return;
 
 	if (*addr == '\0' || strcmp(addr, "+") == 0)
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
+	conn = server == NULL ? NULL : server->connrec;
+	if (*addr != '+' && conn == NULL) {
+		/* check if there's a server waiting for removal in
+		   reconnection queue.. */
+		RECONNECT_REC *rec;
+
+		rec = find_reconnect_server(addr, atoi(port));
+		if (rec != NULL) {
+			/* remove the reconnection.. */
+                        conn = (IRC_SERVER_CONNECT_REC *) rec->conn;
+			server_reconnect_destroy(rec, FALSE);
+		}
+	}
+
 	no_old_server = server == NULL;
-	if (*addr == '+' || server == NULL) {
-		channels = away_reason = usermode = ircnet = NULL;
-	} else {
-		ircnet = g_strdup(server->connrec->chatnet);
+	ircnet = conn == NULL ? NULL : g_strdup(conn->chatnet);
+	if (*addr == '+' || conn == NULL) {
+		channels = away_reason = usermode = NULL;
+	} else if (server != NULL) {
 		channels = irc_server_get_channels((IRC_SERVER_REC *) server);
 		if (*channels == '\0')
 			g_free_and_null(channels);
-		usermode = g_strdup(server->usermode);
 		away_reason = !server->usermode_away ? NULL :
 			g_strdup(server->away_reason);
+		usermode = g_strdup(server->usermode);
 		signal_emit("command disconnect", 3,
 			    "* Changing server", server, item);
+	} else {
+		channels = g_strdup(conn->channels);
+		away_reason = g_strdup(conn->away_reason);
+		usermode = g_strdup(conn->usermode);
 	}
 
 	server = IRC_SERVER(irc_connect_server(data));
@@ -143,11 +193,13 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server,
 		g_free_not_null(channels);
 		g_free_not_null(usermode);
 		g_free_not_null(away_reason);
-	} else if (server != NULL && !no_old_server) {
+	} else if (server != NULL && conn != NULL) {
 		server->connrec->reconnection = TRUE;
 		server->connrec->channels = channels;
 		server->connrec->usermode = usermode;
 		server->connrec->away_reason = away_reason;
+		if (no_old_server)
+			server_connect_free(SERVER_CONNECT(conn));
 	}
 	g_free_not_null(ircnet);
 	cmd_params_free(free_arg);
