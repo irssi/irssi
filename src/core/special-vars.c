@@ -23,6 +23,7 @@
 #include "special-vars.h"
 #include "expandos.h"
 #include "settings.h"
+#include "servers.h"
 #include "misc.h"
 
 #define ALIGN_RIGHT 0x01
