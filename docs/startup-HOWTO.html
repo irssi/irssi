@@ -67,41 +67,41 @@ weird non-VT compatible terminal (you most probably aren't), just
 say:</p>
 
 <pre>
-     /SET term_force_colors ON
+/SET term_force_colors ON
 </pre>
 
 <p>I don't like automatic query windows, I don't like status window, I do
 like msgs window where all messages go:</p>
 
 <pre>
-     /SET autocreate_own_query OFF
-     /SET autocreate_query_level DCCMSGS
-     /SET use_status_window OFF
-     /SET use_msgs_window ON
+/SET autocreate_own_query OFF
+/SET autocreate_query_level DCCMSGS
+/SET use_status_window OFF
+/SET use_msgs_window ON
 </pre>
 
 <p>Disable automatic window closing when <code>/PART</code>ing channel or
 <code>/UNQUERY</code>ing query:</p>
 
 <pre>
-     /SET autoclose_windows OFF
-     /SET reuse_unused_windows ON
+/SET autoclose_windows OFF
+/SET reuse_unused_windows ON
 </pre>
 
 <p>Here's the settings that make irssi work exactly like ircII in window
 management (send me a note if you can think of more):</p>
 
 <pre>
-     /SET autocreate_own_query OFF
-     /SET autocreate_query_level NONE
-     /SET use_status_window OFF
-     /SET use_msgs_window OFF
-     /SET reuse_unused_windows ON
-     /SET windows_auto_renumber OFF
+/SET autocreate_own_query OFF
+/SET autocreate_query_level NONE
+/SET use_status_window OFF
+/SET use_msgs_window OFF
+/SET reuse_unused_windows ON
+/SET windows_auto_renumber OFF
 
-     /SET autostick_split_windows OFF
-     /SET autoclose_windows OFF
-     /SET print_active_channel ON
+/SET autostick_split_windows OFF
+/SET autoclose_windows OFF
+/SET print_active_channel ON
 </pre>
 
 <p>And example how to add servers:</p>
@@ -110,7 +110,7 @@ management (send me a note if you can think of more):</p>
 joining channels)</p>
 
 <pre>
-     /IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
 </pre>
 
 <p>Then add some servers to different networks (ircnet is already set up 
@@ -118,24 +118,23 @@ for them), irc.kpnqwest.fi is used by default for IRCNet but if it fails,
 irc.funet.fi is tried next:</p>
 
 <pre>
-     /SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
-     /SERVER ADD -ircnet ircnet irc.funet.fi 6667
-     /SERVER ADD -auto -ircnet efnet efnet.cs.hut.fi 6667
+/SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
+/SERVER ADD -ircnet ircnet irc.funet.fi 6667
+/SERVER ADD -auto -ircnet efnet efnet.cs.hut.fi 6667
 </pre>
 
 <p>Automatically join to channels after connected to server, send op request
 to bot after joined to efnet/#irssi:</p>
 
 <pre>
-     /CHANNEL ADD -auto #irssi ircnet
-     /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass"
-		  #irssi efnet
+/CHANNEL ADD -auto #irssi ircnet
+/CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
 </pre>
 
 If you want lines containing your nick to hilight:
 
 <pre>
-     /HILIGHT nick
+/HILIGHT nick
 </pre>
 
 <h3><a id="c2">2. Basic user interface usage</a></h3>
@@ -149,10 +148,10 @@ created every time you <code>/JOIN</code> a channel or <code>/QUERY</code>
 someone. There's several ways you can change between these windows:</p>
 
 <pre>
-     Meta-1, Meta-2, .. Meta-0 - Jump directly between windows 1-10
-     Meta-q .. Meta-o          - Jump directly between windows 11-19
-     /WINDOW &lt;number&gt;          - Jump to any window with specified number
-     Ctrl-P, Ctrl-N            - Jump to previous / next window
+Meta-1, Meta-2, .. Meta-0 - Jump directly between windows 1-10
+Meta-q .. Meta-o          - Jump directly between windows 11-19
+/WINDOW &lt;number&gt;          - Jump to any window with specified number
+Ctrl-P, Ctrl-N            - Jump to previous / next window
 </pre>
 
 <p>Clearly the easiest way is to use Meta-number keys. And what is the Meta
@@ -161,21 +160,21 @@ it's probably the left Windows key. If they don't work directly, you'll need
 to set a few X resources (NOTE: these work with both xterm and rxvt):</p>   
 
 <pre>
-     XTerm*eightBitInput:   false
-     XTerm*metaSendsEscape: true
+XTerm*eightBitInput:   false
+XTerm*metaSendsEscape: true
 </pre>
 
 <p>With rxvt, you can also specify which key acts as Meta key. So if you
 want to use ALT instead of Windows key for it, use:</p>
 
 <pre>
-     rxvt*modifier: alt
+rxvt*modifier: alt
 </pre>
 
 <p>You could do this by changing the X key mappings:</p>
 
 <pre>
-    xmodmap -e "keysym Alt_L = Meta_L Alt_L"
+xmodmap -e "keysym Alt_L = Meta_L Alt_L"
 </pre>
 
 <p>And how exactly do you set these X resources? For Debian, there's
@@ -196,16 +195,16 @@ but I think they should work pretty well now :) Here's some commands
 related to them:</p>
 
 <pre>
-     /WINDOW NEW                    - Create new split window
-     /WINDOW NEW HIDE               - Create new hidden window
-     /WINDOW CLOSE                  - Close split or hidden window
+/WINDOW NEW                    - Create new split window
+/WINDOW NEW HIDE               - Create new hidden window
+/WINDOW CLOSE                  - Close split or hidden window
 
-     /WINDOW HIDE [&lt;number&gt;|&lt;name&gt;] - Make the split window hidden window
-     /WINDOW SHOW &lt;number&gt;|&lt;name&gt;   - Make the hidden window a split window
+/WINDOW HIDE [&lt;number&gt;|&lt;name&gt;] - Make the split window hidden window
+/WINDOW SHOW &lt;number&gt;|&lt;name&gt;   - Make the hidden window a split window
 
-     /WINDOW SHRINK [&lt;lines&gt;]       - Shrink the split window
-     /WINDOW GROW [&lt;lines&gt;]         - Grow the split window
-     /WINDOW BALANCE                - Balance the sizes of all split windows
+/WINDOW SHRINK [&lt;lines&gt;]       - Shrink the split window
+/WINDOW GROW [&lt;lines&gt;]         - Grow the split window
+/WINDOW BALANCE                - Balance the sizes of all split windows
 </pre>
 
 <p>By default, irssi uses "sticky windowing" for split windows. This means
@@ -214,9 +213,9 @@ split window without some effort. For example you could have following
 window layout:</p>
 
 <pre>
-     Split window 1: win#1 - Status window, win#2 - Messages window
-     Split window 2: win#3 - ircnet/#channel1, win#4 - ircnet/#channel2
-     Split window 3: win#5 - efnet/#channel1, win#6 - efnet/#channel2
+Split window 1: win#1 - Status window, win#2 - Messages window
+Split window 2: win#3 - ircnet/#channel1, win#4 - ircnet/#channel2
+Split window 3: win#5 - efnet/#channel1, win#6 - efnet/#channel2
 </pre>
 
 <p>When you are in win#1 and press ALT-6, irssi jumps to split window
@@ -229,7 +228,7 @@ split window irssi just changes to that split window. This it the way
 windows work with ircii, if you prefer it you can set it with</p>
 
 <pre>
-     /SET autostick_split_windows OFF
+/SET autostick_split_windows OFF
 </pre>
 
 <p>Each window can have multiple channels, queries and other "window
@@ -237,22 +236,22 @@ items" inside them. If you don't like windows at all, you disable
 automatic creating of them with</p>
 
 <pre>
-     /SET autocreate_windows OFF
+/SET autocreate_windows OFF
 </pre>
 
 <p>And if you keep all channels in one window, you most probably want
 the channel name printed in each line:</p>
 
 <pre>
-     /SET print_active_channel ON
+/SET print_active_channel ON
 </pre>
 
 <p>If you want to group only some channels or queries in one window,
 use</p>
 
 <pre>
-     /JOIN -window #channel
-     /QUERY -window nick
+/JOIN -window #channel
+/QUERY -window nick
 </pre>
 
 <h3><a id="c3">3. Server and channel automation</a></h3>
@@ -271,15 +270,15 @@ you're connected to some network, use <code>-autosendcmd</code> option.
 Here's some examples:</p>
 
 <pre>
-     /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
-     /IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
+/IRCNET ADD -autosendcmd '^msg bot invite' ircnet
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
 </pre>
 
 <p>After that you need to add your servers. For example:</p>
 
 <pre>
-     /SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
-     /SERVER ADD -auto -ircnet worknet irc.mycompany.com 6667 password
+/SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
+/SERVER ADD -auto -ircnet worknet irc.mycompany.com 6667 password
 </pre>
 
 <p>The <code>-auto</code> option specifies that this server is
@@ -291,9 +290,8 @@ fails.</p>
 <p>And finally channels:</p>
 
 <pre>
-     /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass"
-		  #irssi efnet
-     /CHANNEL ADD -auto #secret ircnet password
+/CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
+/CHANNEL ADD -auto #secret ircnet password
 </pre>
 
 <p><code>-bots</code> and <code>-botcmd</code> should be the only ones
@@ -313,8 +311,8 @@ queries you want. If you want to move the windows or channels around
 use commands:</p>
 
 <pre>
-     /WINDOW MOVE LEFT/RIGHT/number    - move window elsewhere
-     /WINDOW ITEM MOVE &lt;number&gt;|&lt;name&gt; - move channel/query to another window
+/WINDOW MOVE LEFT/RIGHT/number    - move window elsewhere
+/WINDOW ITEM MOVE &lt;number&gt;|&lt;name&gt; - move channel/query to another window
 </pre>
 
 <p>When everything looks the way you like, use <code>/LAYOUT SAVE</code>
@@ -338,7 +336,7 @@ pretty much all messages that don't clearly belong to some channel or
 query. Some people like it, some don't. If you want to remove it, use</p>
 
 <pre>
-     /SET use_status_window OFF
+/SET use_status_window OFF
 </pre>
 
 <p>This doesn't have any effect until you restart irssi. If you want to
@@ -349,19 +347,19 @@ messages go. By default it's disabled and query windows are created
 instead. To make all private messages go to msgs window, say:</p>
 
 <pre>
-     /SET use_msgs_window ON
-     /SET autocreate_query_level DCCMSGS  (or if you don't want queries to
-					   dcc chats either, say NONE)
+/SET use_msgs_window ON
+/SET autocreate_query_level DCCMSGS  (or if you don't want queries to
+				      dcc chats either, say NONE)
 </pre>
 
 <p>use_msgs_window either doesn't have any effect until restarting
 irssi. To create it immediately say:</p>
 
 <pre>
-     /WINDOW NEW HIDE     - create the window
-     /WINDOW NAME (msgs)  - name it to "(msgs)"
-     /WINDOW LEVEL MSGS   - make all private messages go to this window
-     /WINDOW MOVE 1       - move it to first window
+/WINDOW NEW HIDE     - create the window
+/WINDOW NAME (msgs)  - name it to "(msgs)"
+/WINDOW LEVEL MSGS   - make all private messages go to this window
+/WINDOW MOVE 1       - move it to first window
 </pre>
 
 <p>Note that neither use_msgs_window nor use_status_window have any
@@ -374,7 +372,7 @@ all sorts of messages with no real classification. You can get a whole
 list of levels with</p>
 
 <pre>
-     /HELP levels
+/HELP levels
 </pre>
 
 <p>Status window has message level <code>ALL -MSGS</code>, meaning that all
@@ -393,7 +391,7 @@ them to one sigle window if you really want to. That being said, here's
 how you do connect to new server without closing the old connection:</p>
 
 <pre>
-     /CONNECT irc.server.org
+/CONNECT irc.server.org
 </pre>
 
 <p>Instead of the <code>/SERVER</code> which disconnects the existing
@@ -401,9 +399,9 @@ connection. To see list of all active connections, use <code>/SERVER</code>
 without any parameters. You should see a list of something like:</p>
 
 <pre>
-     -!- IRCNet: irc.song.fi:6667 (IRCNet)
-     -!- OPN: tolkien.openprojects.net:6667 (OPN)
-     -!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
+-!- IRCNet: irc.song.fi:6667 (IRCNet)
+-!- OPN: tolkien.openprojects.net:6667 (OPN)
+-!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
 </pre>
 
 <p>Here you see that we're connected to IRCNet and OPN networks. The
@@ -423,13 +421,13 @@ successful and irssi will try to connect it again in 3 minutes.</p>
 reconnecting, use</p>
 
 <pre>
-     /DISCONNECT ircnet   - disconnect server with tag "ircnet"
-     /DISCONNECT recon-1  - stop trying to reconnect to RECON-1 server
-     /RMRECONNS           - stop all server reconnections
+/DISCONNECT ircnet   - disconnect server with tag "ircnet"
+/DISCONNECT recon-1  - stop trying to reconnect to RECON-1 server
+/RMRECONNS           - stop all server reconnections
 
-     /RECONNECT recon-1   - immediately try reconnecting back to RECON-1
-     /RECONNECT ALL       - immediately try reconnecting back to all
-			    servers in reconnection queue
+/RECONNECT recon-1   - immediately try reconnecting back to RECON-1
+/RECONNECT ALL       - immediately try reconnecting back to all
+		       servers in reconnection queue
 </pre>
 
 <p>Now that you're connected to all your servers, you'll have to know how
@@ -438,8 +436,8 @@ empty window, like status or msgs window. In it, you can specify which
 server to set active with</p>
 
 <pre>
-     /WINDOW SERVER tag    - set server "tag" active
-     Ctrl-X                - set the next server in list active
+/WINDOW SERVER tag    - set server "tag" active
+Ctrl-X                - set the next server in list active
 </pre>
 
 <p>When the server is active, you can use it normally. When there's
@@ -451,9 +449,9 @@ from.</p>
 which server it should use:</p>
 
 <pre>
-     /MSG -tag nick message
-     /JOIN -tag #channel
-     /QUERY -tag nick
+/MSG -tag nick message
+/JOIN -tag #channel
+/QUERY -tag nick
 </pre>
 
 <p><code>/MSG</code> tab completion also automatically adds the
@@ -466,22 +464,22 @@ it is automatically set active in the window. To set the window's server
 sticky use</p>
 
 <pre>
-     /WINDOW SERVER -sticky tag
+/WINDOW SERVER -sticky tag
 </pre>
 
 <p>This is useful if you wish to have multiple status or msgs windows, one
 for each server. Here's how to do them (repeat for each server)</p>
 
 <pre>
-     /WINDOW NEW HIDE
-     /WINDOW NAME (status)
-     /WINDOW LEVEL ALL -MSGS
-     /WINDOW SERVER -sticky ircnet
+/WINDOW NEW HIDE
+/WINDOW NAME (status)
+/WINDOW LEVEL ALL -MSGS
+/WINDOW SERVER -sticky ircnet
 
-     /WINDOW NEW HIDE
-     /WINDOW NAME (msgs)
-     /WINDOW LEVEL MSGS
-     /WINDOW SERVER -sticky ircnet
+/WINDOW NEW HIDE
+/WINDOW NAME (msgs)
+/WINDOW LEVEL MSGS
+/WINDOW SERVER -sticky ircnet
 </pre>
 
 <h3><a id="c7">7. /LASTLOG and jumping around in scrollback</a></h3>
@@ -490,9 +488,9 @@ for each server. Here's how to do them (repeat for each server)</p>
 scrollback buffer. Simplest usages are</p>
 
 <pre>
-     /LASTLOG word     - print all lines with "word" in them
-     /LASTLOG word 10  - print last 10 occurances of "word"
-     /LASTLOG -topics  - print all topic changes
+/LASTLOG word     - print all lines with "word" in them
+/LASTLOG word 10  - print last 10 occurances of "word"
+/LASTLOG -topics  - print all topic changes
 </pre>
 
 <p>If there's more than 1000 lines to be printed, irssi thinks that you
@@ -500,7 +498,7 @@ probably made some mistake and won't print them without <code>-force</code>
 option. If you want to save the full lastlog to file, use</p>
 
 <pre>
-     /LASTLOG -file ~/irc.log
+/LASTLOG -file ~/irc.log
 </pre>
 
 <p>With <code>-file</code> option you don't need <code>-force</code> even
@@ -524,8 +522,8 @@ END</code> command.</p>
 You can configure it with:</p>
 
 <pre>
-     /SET awaylog_level MSGS HILIGHT     - Specifies what messages to log
-     /SET awaylog_file ~/.irssi/away.log - Specifies the file to use
+/SET awaylog_level MSGS HILIGHT     - Specifies what messages to log
+/SET awaylog_file ~/.irssi/away.log - Specifies the file to use
 </pre>
 
 <p>Easiest way to start logging with Irssi is to use autologging. With it
@@ -533,7 +531,7 @@ Irssi logs all channels and private messages to specified directory.
 You can turn it on with</p>
 
 <pre>
-     /SET autolog ON
+/SET autolog ON
 </pre>
 
 <p>By default it logs pretty much everything execept CTCPS or CRAP
@@ -541,14 +539,14 @@ You can turn it on with</p>
 yourself with</p>
 
 <pre>
-     /SET autolog_level ALL -CRAP -CLIENTCRAP -CTCPS (this is the default)
+/SET autolog_level ALL -CRAP -CLIENTCRAP -CTCPS (this is the default)
 </pre>
 
 <p>By default irssi logs to ~/irclogs/&lt;servertag&gt;/&lt;target&gt;.log.
 You can change this with</p>
 
 <pre>
-     /SET autolog_path ~/irclogs/$tag/$0.log (this is the default)
+/SET autolog_path ~/irclogs/$tag/$0.log (this is the default)
 </pre>
 
 <p>The path is automatically created if it doesn't exist. $0 specifies
@@ -557,7 +555,7 @@ logs by adding date/time formats to the file name. The formats are in
 "man strftime" format. For example</p>
 
 <pre>
-     /SET autolog_path ~/irclogs/%Y/$tag/$0.%m-%d.log
+/SET autolog_path ~/irclogs/%Y/$tag/$0.%m-%d.log
 </pre>
 
 <p>For logging only some specific channels or nicks, see <code>/HELP
@@ -579,18 +577,18 @@ that would be to see what it prints in <code>cat</code>. Here's an example
 for pressing F1 key:</p>
 
 <pre>
-     [cras@hurina] ~% cat
-     ^[OP
+[cras@hurina] ~% cat
+^[OP
 </pre>
 
-<p>So in irssi you would use <code>/BIND ^[OP /ECHO F1</code> pressed. If
+<p>So in irssi you would use <code>/BIND ^[OP /ECHO F1 pressed</code>. If
 you use multiple terminals which have different bindings for the key, it
 would be better to use eg.:</p>
 
 <pre>
-     /BIND ^[OP key F1
-     /BIND ^[11~ key F1
-     /BIND F1 /ECHO F1 pressed.
+/BIND ^[OP key F1
+/BIND ^[11~ key F1
+/BIND F1 /ECHO F1 pressed.
 </pre>
 
 <h3><a id="c10">10. Proxies and IRC bouncers</a></h3>
@@ -606,13 +604,13 @@ to servers irc.dalnet and irc.efnet.org. First you'd need to setup the
 bouncer:</p>
 
 <pre>
-     /SET use_proxy ON
-     /SET proxy_address irc.bouncer.org
-     /SET proxy_port 5000
+/SET use_proxy ON
+/SET proxy_address irc.bouncer.org
+/SET proxy_port 5000
 
-     /SET proxy_password YOUR_BNC_PASSWORD_HERE
-     /SET -clear proxy_string
-     /SET proxy_string_after conn %s %d
+/SET proxy_password YOUR_BNC_PASSWORD_HERE
+/SET -clear proxy_string
+/SET proxy_string_after conn %s %d
 </pre>
 
 <p>Then you'll need to add the server connections. These are done
@@ -620,8 +618,8 @@ exactly as if you'd want to connect directly to them. Nothing special
 about them:</p>
 
 <pre>
-     /SERVER ADD -auto -ircnet dalnet irc.dal.net
-     /SERVER ADD -auto -ircnet efnet irc.efnet.org
+/SERVER ADD -auto -ircnet dalnet irc.dal.net
+/SERVER ADD -auto -ircnet efnet irc.efnet.org
 </pre>
 
 <p>With the proxy <code>/SET</code>s however, irssi now connects to those
@@ -637,9 +635,9 @@ you can just forget that your bouncer even exists.</p>
 <p>All proxies have these settings in common:</p>
 
 <pre>
-     /SET use_proxy ON
-     /SET proxy_address &lt;Proxy host address&gt;
-     /SET proxy_port &lt;Proxy port&gt;
+/SET use_proxy ON
+/SET proxy_address &lt;Proxy host address&gt;
+/SET proxy_port &lt;Proxy port&gt;
 </pre>
 
 <p><strong>HTTP proxy</strong></p>
@@ -647,16 +645,16 @@ you can just forget that your bouncer even exists.</p>
 <p>Use these settings with HTTP proxies:</p>
 
 <pre>
-     /SET -clear proxy_password
-     /EVAL SET proxy_string CONNECT %s:%d\n\n
+/SET -clear proxy_password
+/EVAL SET proxy_string CONNECT %s:%d\n\n
 </pre>
 
 <p><strong>BNC</strong></p>
 
 <pre>
-     /SET proxy_password your_pass
-     /SET -clear proxy_string
-     /SET proxy_string_after conn %s %d
+/SET proxy_password your_pass
+/SET -clear proxy_string
+/SET proxy_string_after conn %s %d
 </pre>
 
 <p><strong>dircproxy</strong></p>
@@ -667,11 +665,11 @@ openprojects connection with opnpass, you would do something like
 this:</p>
 
 <pre>
-     /SET -clear proxy_password
-     /SET -clear proxy_string
+/SET -clear proxy_password
+/SET -clear proxy_string
 
-     /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-     /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+/SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
+/SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
 </pre>
 
 <p>The server name and port you give isn't used anywhere, so you can
@@ -685,13 +683,13 @@ connecting to different servers. You can manage this in a bit same way
 as with dircproxy, by creating fake connections:</p>
 
 <pre>
-    /SET -clear proxy_password
-    /SET -clear proxy_string
+/SET -clear proxy_password
+/SET -clear proxy_string
 
-    /IRCNET ADD -user ircnetuser ircnet
-    /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-    /IRCNET ADD -user opnuser opn
-    /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+/IRCNET ADD -user ircnetuser ircnet
+/SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
+/IRCNET ADD -user opnuser opn
+/SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
 </pre>
 
 <p>So, you'll specify the usernames with <code>/IRCNET ADD</code> command,
@@ -717,9 +715,9 @@ ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
 <p>Usage in proxy side:</p>
 
 <pre>
-     /LOAD proxy
-     /SET irssiproxy_password &lt;password&gt;
-     /SET irssiproxy_ports &lt;ircnet&gt;=&lt;port&gt; ... (eg. ircnet=2777 efnet=2778)
+/LOAD proxy
+/SET irssiproxy_password &lt;password&gt;
+/SET irssiproxy_ports &lt;ircnet&gt;=&lt;port&gt; ... (eg. ircnet=2777 efnet=2778)
 </pre>
 
 <p><strong>NOTE</strong>: you <strong>MUST</strong> add all the servers you
@@ -728,7 +726,7 @@ are using to server and ircnet lists with <code>/SERVER ADD</code> and
 reason, and you only use one server connection, you may simply set:</p>
 
 <pre>
-     /SET irssiproxy_ports *=2777
+/SET irssiproxy_ports *=2777
 </pre>
 
 <p>Usage in client side:</p>
@@ -737,8 +735,8 @@ reason, and you only use one server connection, you may simply set:</p>
 specified in <code>/SET irssiproxy_password</code>. For example:</p>
 
 <pre>
-     /SERVER ADD -ircnet ircnet my.irssi-proxy.org 2777 secret
-     /SERVER ADD -ircnet efnet my.irssi-proxy.org 2778 secret
+/SERVER ADD -ircnet ircnet my.irssi-proxy.org 2777 secret
+/SERVER ADD -ircnet efnet my.irssi-proxy.org 2778 secret
 </pre>
 
 <p>Irssi proxy works fine with other IRC clients as well.</p>
@@ -755,14 +753,14 @@ proxy</code> settings don't have anything to do with socks however.
 give it with:</p>
 
 <pre>
-     /SET proxy_password &lt;password&gt;
+/SET proxy_password &lt;password&gt;
 </pre>
 
 <p>Irssi's defaults for connect strings are</p>
 
 <pre>
-     /SET proxy_string CONNECT %s %d
-     /SET proxy_string_after
+/SET proxy_string CONNECT %s %d
+/SET proxy_string_after
 </pre>
 
 <p>The proxy_string is sent before NICK/USER commands, the
@@ -933,11 +931,11 @@ of them you might want to change (the default value is shown):</p>
 <p><code>/STATUSBAR</code> displays a list of statusbars:</p>
 
 <pre>
-     Name                           Type   Placement Position Visible
-     window                         window bottom    0        always
-     window_inact                   window bottom    1        inactive
-     prompt                         root   bottom    100      always
-     topic                          root   top       1        always
+Name                           Type   Placement Position Visible
+window                         window bottom    0        always
+window_inact                   window bottom    1        inactive
+prompt                         root   bottom    100      always
+topic                          root   top       1        always
 </pre>
 
 <p><code>/STATUSBAR &lt;name&gt;</code> prints the statusbar settings and
@@ -954,18 +952,18 @@ useful only with split windows, one split window is active and the rest
 are inactive. These settings can be changed with:</p>
 
 <pre>
-     STATUSBAR &lt;name&gt; TYPE window|root
-     STATUSBAR &lt;name&gt; PLACEMENT top|bottom
-     STATUSBAR &lt;name&gt; POSITION &lt;num&gt;
-     STATUSBAR &lt;name&gt; VISIBLE always|active|inactive
+/STATUSBAR &lt;name&gt; TYPE window|root
+/STATUSBAR &lt;name&gt; PLACEMENT top|bottom
+/STATUSBAR &lt;name&gt; POSITION &lt;num&gt;
+/STATUSBAR &lt;name&gt; VISIBLE always|active|inactive
 </pre>
 
 <p>When loading a new statusbar scripts, you'll need to also specify
 where you want to show it. Statusbar items can be modified with:</p>
 
 <pre>
-     STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;
-     STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;
+/STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;
+/STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;
 </pre>
 
 <p>The item name with statusbar scripts is usually same as the script's
