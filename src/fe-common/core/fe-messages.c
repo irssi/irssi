@@ -37,17 +37,20 @@
 
 static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
 {
-	NICK_REC *nickrec;
+        NICK_REC *nickrec;
+        char *emptystr;
 
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	if (!settings_get_bool("show_nickmode"))
                 return "";
 
+        emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
+
 	nickrec = channel == NULL ? NULL :
 		nicklist_find(channel, nick);
-	return nickrec == NULL ? " " :
-		(nickrec->op ? "@" : (nickrec->voice ? "+" : " "));
+	return nickrec == NULL ? emptystr :
+		(nickrec->op ? "@" : (nickrec->voice ? "+" : emptystr));
 }
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
@@ -380,6 +383,7 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 void fe_messages_init(void)
 {
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
+	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 
