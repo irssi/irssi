@@ -36,8 +36,7 @@ typedef struct {
 	char *target;
 	int level;
 
-	int msgcount;
-	time_t first;
+	GSList *msgtimes;
 } FLOOD_ITEM_REC;
 
 typedef struct {
@@ -51,7 +50,7 @@ static int flood_max_msgs, flood_timecheck;
 static int flood_hash_check_remove(const char *key, FLOOD_REC *flood,
 				   time_t *now)
 {
-	GSList *tmp, *next;
+	GSList *tmp, *next, *times, *tnext;
 
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(flood != NULL, FALSE);
@@ -60,7 +59,16 @@ static int flood_hash_check_remove(const char *key, FLOOD_REC *flood,
 		FLOOD_ITEM_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (*now-rec->first >= flood_timecheck) {
+		/* remove old time entries for current rec item */
+		for (times = rec->msgtimes; times != NULL; times = tnext) {
+			tnext = times->next;
+			if (*now-*((time_t *) times->data) >= flood_timecheck) {
+				rec->msgtimes = g_slist_remove(rec->msgtimes, times->data);
+				g_free(times->data);
+			}
+		}
+		/* if no more time entries remove rec item */
+		if (rec->msgtimes == NULL) {
 			flood->items = g_slist_remove(flood->items, rec);
 			g_free(rec->target);
 			g_free(rec);
@@ -79,7 +87,7 @@ static int flood_timeout(void)
 {
 	MODULE_SERVER_REC *mserver;
 	GSList *tmp;
-        time_t now;
+	time_t now;
 
 	/* remove the old people from flood lists */
 	now = time(NULL);
@@ -119,6 +127,8 @@ static void flood_hash_destroy(const char *key, FLOOD_REC *flood)
 	while (flood->items != NULL) {
 		FLOOD_ITEM_REC *rec = flood->items->data;
 
+		g_slist_foreach(rec->msgtimes, (GFunc) g_free, NULL);
+		g_slist_free(rec->msgtimes);
 		g_free(rec->target);
 		g_free(rec);
 
@@ -173,6 +183,7 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
 	MODULE_SERVER_REC *mserver;
 	FLOOD_REC *flood;
 	FLOOD_ITEM_REC *rec;
+	time_t *ttime;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
@@ -182,9 +193,11 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
 
 	rec = flood == NULL ? NULL : flood_find(flood, level, target);
 	if (rec != NULL) {
-		if (++rec->msgcount > flood_max_msgs) {
+		ttime = g_new(time_t, 1);
+		*ttime = time(NULL);
+		rec->msgtimes = g_slist_append(rec->msgtimes, ttime);
+		if (g_slist_length(rec->msgtimes) > flood_max_msgs) {
 			/* flooding! */
-                        rec->first = 0;
 			signal_emit("flood", 5, server, nick, host,
 				    GINT_TO_POINTER(rec->level), target);
 		}
@@ -199,8 +212,10 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
 
 	rec = g_new0(FLOOD_ITEM_REC, 1);
 	rec->level = level;
-	rec->first = time(NULL);
-	rec->msgcount = 1;
+	rec->msgtimes = NULL;
+	ttime = g_new(time_t, 1);
+	*ttime = time(NULL);
+	rec->msgtimes = g_slist_append(rec->msgtimes, ttime);
 	rec->target = g_strdup(target);
 
 	flood->items = g_slist_append(flood->items, rec);
