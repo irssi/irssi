@@ -192,13 +192,13 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 			schannel = channels_setup_find(channel, server->connrec->ircnet);
 
                         g_string_sprintfa(outchans, "%s,", channel);
-			if (schannel == NULL || schannel->password == NULL) {
-				key = *tmpkey == NULL || **tmpkey == '\0' ? NULL : *tmpkey;
-			} else {
+                        if (*tmpkey != NULL && **tmpkey != '\0')
+                        	key = *tmpkey;
+                        else if (schannel != NULL && schannel->password != NULL) {
 				/* get password from setup record */
                                 use_keys = TRUE;
 				key = schannel->password;
-			}
+			} else key = NULL;
 
 			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
 			chanrec = channel_create(server, channel + (channel[0] == '!' && channel[1] == '!'), automatic);
