@@ -482,9 +482,8 @@ if test "x$want_textui" = "xyes"; then
 		  LIBS="$LIBS -ltermcap"
 		  want_termcap=yes
 		], [
-		  AC_MSG_WARN(Terminfo/termcap not found)
+		  AC_ERROR(Terminfo/termcap not found - install ncurses-devel package)
 		  want_textui=no
-		  curses_error=yes
 		])))
         fi
        	if test "x$want_termcap" = "xyes"; then
@@ -836,23 +835,16 @@ fi
 
 echo
 
-if test "x$curses_error" != "xyes"; then
-	if test "x$want_textui" = "xno"; then
-		text=no
-	elif test "x$want_termcap" = "xyes"; then
-		text="yes, using termcap"
-	elif test "x$want_terminfo" = "xyes"; then
-		text="yes, using terminfo"
-	else
-		text="yes, using curses"
-	fi
-	echo "Building text frontend ..... : $text"
+if test "x$want_textui" = "xno"; then
+	text=no
+elif test "x$want_termcap" = "xyes"; then
+	text="yes, using termcap"
+elif test "x$want_terminfo" = "xyes"; then
+	text="yes, using terminfo"
 else
-	echo "Building text frontend ..... : NO!!"
-	echo " - Because curses was not found, specify the path to it with"
-	echo "   --with-curses=/dir and make sure you have the curses headers"
-	echo "   installed (usually in ncurses-devel package)"
+	text="yes, using curses"
 fi
+echo "Building text frontend ..... : $text"
 echo "Building irssi bot ......... : $want_irssibot"
 echo "Building irssi proxy ....... : $want_irssiproxy"
 echo "Building with IPv6 support . : $want_ipv6"
