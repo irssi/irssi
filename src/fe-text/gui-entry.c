@@ -76,6 +76,9 @@ static int _fix_big5_pos(unichar *p, int pos, int direct)
 {
 	int newpos;
 
+	if (term_type != TERM_TYPE_BIG5)
+		return pos;
+
 	for (newpos = 0; newpos < pos && p[newpos] != 0; ) {
 		if (is_big5(p[newpos], p[newpos+1]))
 			newpos += 2;

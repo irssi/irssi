@@ -200,7 +200,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 		if (!view->utf8) {
 			/* MH */
-			if (ptr[1] == '\0' || !is_big5(ptr[0], ptr[1]))
+			if (term_type != TERM_TYPE_BIG5 ||
+			    ptr[1] == '\0' || !is_big5(ptr[0], ptr[1]))
 				char_len = 1;
 			else
 				char_len = 2;

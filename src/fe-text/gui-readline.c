@@ -50,10 +50,6 @@ static KEYBOARD_REC *keyboard;
 static ENTRY_REDIRECT_REC *redir;
 static int escape_next_key;
 
-static int big5high = FALSE;
-static unichar prekey = '\0';
-
-
 static int readtag;
 static time_t idle_time;
 
@@ -152,20 +148,6 @@ static void sig_gui_key_pressed(gpointer keyp)
 
 	idle_time = time(NULL);
 
-	if (big5high || is_big5_hi(key)) {
-		if (big5high) {
-			big5high = FALSE;
-			str[0] = prekey;
-			str[1] = key;
-			str[2] = '\0';
-			gui_entry_insert_text(active_entry, str);
-		} else {
-			big5high = TRUE;
-			prekey = key;
-		}
-		return;
-	}
-
 	if (key < 32) {
 		/* control key */
                 str[0] = '^';
@@ -176,8 +158,14 @@ static void sig_gui_key_pressed(gpointer keyp)
 		str[1] = '?';
                 str[2] = '\0';
 	} else if (!active_entry->utf8) {
-		str[0] = (char)key;
-		str[1] = '\0';
+		if (key <= 0xff) {
+			str[0] = (char)key;
+			str[1] = '\0';
+		} else {
+			str[0] = (char) (key >> 8);
+			str[1] = (char) (key & 0xff);
+			str[2] = '\0';
+		}
 	} else {
                 /* need to convert to utf8 */
 		str[utf16_char_to_utf8(key, str)] = '\0';
