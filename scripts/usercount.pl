@@ -1,15 +1,18 @@
 use Irssi 20020101.0250 ();
-$VERSION = "1.14";
+$VERSION = "1.16";
 %IRSSI = (
     authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas',
     contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de',
     name        => 'usercount',
-    description => 'Adds a usercount for a channel as a status bar item',
+    description => 'Adds a usercount for a channel as a statusbar item',
     license     => 'GNU GPLv2 or later',
     url         => 'http://irssi.dgl.yi.org/',
 );
 
-# Add usercount = { }; to your statusbar config
+# Once you have loaded this script run the following command:
+# /statusbar window add usercount
+# You can also add -alignment left|right option
+
 # /set usercount_show_zero on or off to show users when 0 users of that type
 # /set usercount_show_ircops (default off)
 # /set usercount_show_halfops (default on)
@@ -35,7 +38,8 @@ sub usercount {
   my ($item, $get_size_only) = @_;
   my $wi = !Irssi::active_win() ? undef : Irssi::active_win()->{active};
 
-  if(!$wi || $wi->{type} ne "CHANNEL") { # only works on channels
+  if(!ref $wi || $wi->{type} ne "CHANNEL") { # only works on channels
+    return unless ref $item;
     $item->{min_size} = $item->{max_size} = 0;
     return;
   }
@@ -49,12 +53,18 @@ sub usercount {
   my $format = $theme->format_expand("{sb_usercount}");
   if ($format) {
     # use theme-specific look
-    my $ircopstr = $theme->format_expand("{sb_uc_ircops $ircops}", Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-    my $opstr = $theme->format_expand("{sb_uc_ops $ops}", Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-    my $halfopstr = $theme->format_expand("{sb_uc_halfops $halfops}", Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-    my $voicestr = $theme->format_expand("{sb_uc_voices $voices}", Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-    my $normalstr = $theme->format_expand("{sb_uc_normal $normal}", Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-	my $space = $theme->format_expand('{sb_uc_space}', Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    my $ircopstr = $theme->format_expand("{sb_uc_ircops $ircops}",
+          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    my $opstr = $theme->format_expand("{sb_uc_ops $ops}",
+          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    my $halfopstr = $theme->format_expand("{sb_uc_halfops $halfops}",
+          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    my $voicestr = $theme->format_expand("{sb_uc_voices $voices}", 
+          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    my $normalstr = $theme->format_expand("{sb_uc_normal $normal}",
+          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+	my $space = $theme->format_expand('{sb_uc_space}',
+         Irssi::EXPAND_FLAG_IGNORE_EMPTY);
 	$space = " " unless $space;
 
     my $str = "";
@@ -125,7 +135,9 @@ sub refresh {
 
 sub refresh_check {
    my $channel = shift;
-   my $wi = Irssi::active_win()->{active};
+   my $wi = ref Irssi::active_win() ? Irssi::active_win()->{active} : 0;
+
+   return unless ref $wi && ref $channel;
    return if $wi->{name} ne $channel->{name};
    return if $wi->{server}->{tag} ne $channel->{server}->{tag};
 
@@ -144,9 +156,9 @@ sub refresh_recalc {
 $recalc = 1;
 $timeout_tag = 0;
 
-Irssi::settings_add_bool('misc', 'usercount_show_zero', 1);
-Irssi::settings_add_bool('misc', 'usercount_show_ircops', 0);
-Irssi::settings_add_bool('misc', 'usercount_show_halfops', 1);
+Irssi::settings_add_bool('usercount', 'usercount_show_zero', 1);
+Irssi::settings_add_bool('usercount', 'usercount_show_ircops', 0);
+Irssi::settings_add_bool('usercount', 'usercount_show_halfops', 1);
 
 Irssi::statusbar_item_register('usercount', undef, 'usercount');
 Irssi::statusbars_recreate_items();
