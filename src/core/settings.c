@@ -556,9 +556,9 @@ int settings_reread(const char *fname)
 	CONFIG_REC *tempconfig;
 	char *str;
 
-        str = convert_home(fname);
+	str = fname == NULL ? NULL : convert_home(fname);
 	tempconfig = parse_configfile(str);
-        g_free(str);
+        g_free_not_null(str);
 
 	if (tempconfig == NULL) {
 		signal_emit("gui dialog", 2, "error", g_strerror(errno));

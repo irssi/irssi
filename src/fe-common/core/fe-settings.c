@@ -245,14 +245,14 @@ static void cmd_unalias(const char *data)
 /* SYNTAX: RELOAD [<file>] */
 static void cmd_reload(const char *data)
 {
-	char *fname;
+	const char *fname;
 
-	fname = *data == '\0' ? NULL : g_strdup(data);
+	fname = *data == '\0' ? get_irssi_config() : data;
+
 	if (settings_reread(fname)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CONFIG_RELOADED, fname);
 	}
-	g_free_not_null(fname);
 }
 
 static void settings_save_fe(const char *fname)
