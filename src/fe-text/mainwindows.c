@@ -550,7 +550,7 @@ void mainwindow_set_size(MAIN_WINDOW_REC *window, int size)
 {
         size -= window->height;
 	if (size < 0)
-		mainwindow_shrink(window, size);
+		mainwindow_shrink(window, -size);
 	else
 		mainwindow_grow(window, size);
 }
