@@ -507,7 +507,8 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 			if (strncmp(event, "event ", 6) == 0 &&
 			    isdigit(event[6])) {
 				signal = (*redirect)->default_signal;
-                                *match = MATCH_START;
+                                if (*match == MATCH_NONE)
+					*match = MATCH_START;
 			} else {
 				/* not a numeric, so we've lost the
 				   stop event.. */
