@@ -145,29 +145,29 @@ void handle_key(int key)
 
 static void key_send_line(void)
 {
-	int add_history;
-        char *str;
+        char *str, *add_history;
 
 	str = gui_entry_get_text(active_entry);
 	if (*str == '\0') return;
 
+	/* we can't use gui_entry_get_text() later, since the entry might
+	   have been destroyed after we get back */
+	add_history = g_strdup(str);
 	translate_output(str);
 
-	add_history = TRUE;
 	if (redir == NULL) {
 		signal_emit("send command", 3, str,
 			    active_win->active_server,
 			    active_win->active);
 	} else {
 		if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-			add_history = FALSE;
+			g_free_and_null(add_history);
 		handle_entry_redirect(str);
 	}
 
-	if (add_history) {
-		command_history_add(active_win, gui_entry_get_text(active_entry),
-				    FALSE);
-	}
+	if (add_history != NULL)
+		command_history_add(active_win, add_history, FALSE);
+
 	gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
 }

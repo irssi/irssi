@@ -290,7 +290,10 @@ static void sig_statusbar_item_destroyed(SBAR_ITEM_REC *item)
 		GUI_ENTRY_REC *rec;
 
 		rec = g_hash_table_lookup(input_entries, item);
-                if (rec != NULL) gui_entry_destroy(rec);
+		if (rec != NULL) {
+			gui_entry_destroy(rec);
+                        g_hash_table_remove(input_entries, item);
+		}
 	}
 }
 

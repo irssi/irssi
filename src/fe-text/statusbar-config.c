@@ -260,4 +260,5 @@ void statusbar_config_init(void)
 
 void statusbar_config_deinit(void)
 {
+	signal_remove("setup reread", (SIGNAL_FUNC) read_statusbar_config);
 }

@@ -921,6 +921,13 @@ static void statusbar_item_signal_destroy(void *key, GSList *value)
         g_slist_free(value);
 }
 
+static void sig_setup_reload(void)
+{
+	/* statusbar-config.c recreates root statusbars,
+	   we need to create window-statusbars */
+        g_slist_foreach(mainwindows, (GFunc) statusbars_add_visible, NULL);
+}
+
 void statusbar_init(void)
 {
 	statusbar_groups = NULL;
@@ -942,6 +949,7 @@ void statusbar_init(void)
 	signal_add("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
+	signal_add_last("setup reread", (SIGNAL_FUNC) sig_setup_reload);
 }
 
 void statusbar_deinit(void)
@@ -968,6 +976,7 @@ void statusbar_deinit(void)
 	signal_remove("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_remove("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
+	signal_remove("setup reread", (SIGNAL_FUNC) sig_setup_reload);
 
 	statusbar_items_deinit();
 	statusbar_config_deinit();
