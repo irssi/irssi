@@ -77,10 +77,10 @@ static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		type = config_node_get_str(node->value, "type", NULL);
+		type = config_node_get_str(node, "type", NULL);
 		if (type != NULL) {
 			signal_emit("window restore item", 3,
-				    window, type, node->value);
+				    window, type, node);
 		}
 	}
 }
