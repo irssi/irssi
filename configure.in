@@ -333,7 +333,7 @@ dnl **
 dnl ** internationalization support
 dnl **
 
-ALL_LINGUAS="pl fi pt_BR fr de"
+ALL_LINGUAS="pl fi pt_BR fr de sv"
 AM_GNU_GETTEXT
 
 if test "x$MSGFMT" = "xno"; then
