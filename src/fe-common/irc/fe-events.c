@@ -65,7 +65,7 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 
 	chanrec = channel_find(server, target);
 	for_me = irc_nick_match(server->nick, msg);
-	color = irc_hilight_find_nick(target, nick, addr, MSGLEVEL_PUBLIC, msg);
+	color = for_me ? NULL : irc_hilight_find_nick(target, nick, addr, MSGLEVEL_PUBLIC, msg);
 
 	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
 	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :

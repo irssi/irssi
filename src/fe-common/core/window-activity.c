@@ -109,7 +109,7 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 	}
 
 	oldlevel = window->new_data;
-	if (level == MSGLEVEL_HILIGHT)
+	if (level == NEWDATA_HILIGHT)
 		window->last_color = color;
 	if (window->new_data < level || level == 0) {
 		window->new_data = level;
