@@ -246,7 +246,8 @@ static GModule *module_open(const char *name)
 	GModule *module;
 	char *path, *str;
 
-	if (g_path_is_absolute(name))
+	if (g_path_is_absolute(name) ||
+	    (*name == '.' && name[1] == G_DIR_SEPARATOR))
 		path = g_strdup(name);
 	else {
 		/* first try from home dir */
