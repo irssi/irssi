@@ -79,6 +79,9 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
         PERL_OBJECT_REC *rec;
 	HV *stash, *hv;
 
+	g_return_val_if_fail((type & ~0xffff) == 0, NULL);
+	g_return_val_if_fail((chat_type & ~0xffff) == 0, NULL);
+
 	rec = g_hash_table_lookup(iobject_stashes,
 				  GINT_TO_POINTER(type | (chat_type << 16)));
 	if (rec == NULL) {
@@ -143,6 +146,9 @@ void irssi_add_object(int type, int chat_type, const char *stash,
 {
 	PERL_OBJECT_REC *rec;
         void *hash;
+
+	g_return_if_fail((type & ~0xffff) == 0);
+	g_return_if_fail((chat_type & ~0xffff) == 0);
 
         hash = GINT_TO_POINTER(type | (chat_type << 16));
 	rec = g_hash_table_lookup(iobject_stashes, hash);
