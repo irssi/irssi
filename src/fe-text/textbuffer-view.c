@@ -321,7 +321,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
    original if possible */
 static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 {
-	GList *tmp;
+        LINE_REC *line;
         int linecount, total;
 
 	if (view->empty_linecount == 0) {
@@ -331,12 +331,10 @@ static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 	}
 
 	total = 0;
-	tmp = g_list_last(view->buffer->lines);
-	for (; tmp != NULL; tmp = tmp->prev) {
-		LINE_REC *line = tmp->data;
-
+        line = textbuffer_line_last(view->buffer);
+	for (; line != NULL; line = line->prev) {
 		linecount = view_get_linecount(view, line);
-		if (tmp == view->bottom_startline) {
+		if (line == view->bottom_startline) {
 			/* keep the old one, make sure that subline is ok */
 			if (view->bottom_subline > linecount)
 				view->bottom_subline = linecount;
@@ -347,7 +345,7 @@ static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 
                 total += linecount;
 		if (total >= view->height) {
-			view->bottom_startline = tmp;
+			view->bottom_startline = line;
 			view->bottom_subline = total - view->height;
                         view->empty_linecount = 0;
                         return;
@@ -355,20 +353,20 @@ static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 	}
 
         /* not enough lines so we must be at the beginning of the buffer */
-	view->bottom_startline = view->buffer->lines;
+	view->bottom_startline = view->buffer->first_line;
 	view->bottom_subline = 0;
 	view->empty_linecount = view->height - total;
 }
 
 static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
 {
-	GList *tmp;
+        LINE_REC *line;
 
 	g_return_if_fail(view != NULL);
 
 	view->ypos = -view->subline-1;
-	for (tmp = view->startline; tmp != NULL; tmp = tmp->next)
-		view->ypos += view_get_linecount(view, tmp->data);
+	for (line = view->startline; line != NULL; line = line->next)
+		view->ypos += view_get_linecount(view, line);
 }
 
 /* Create new view. */
@@ -445,28 +443,26 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
         view->longword_noindent = longword_noindent;
 }
 
-static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, GList *lines)
+static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
 	int linecount;
 
         linecount = 0;
-	while (lines != NULL) {
-		linecount += view_get_linecount(view, lines->data);
-                lines = lines->next;
+	while (line != NULL) {
+		linecount += view_get_linecount(view, line);
+                line = line->next;
 	}
 
         return linecount;
 }
 
-static void view_draw(TEXT_BUFFER_VIEW_REC *view, GList *line,
+static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		      int subline, int ypos, int lines)
 {
 	int linecount;
 
 	while (line != NULL && lines > 0) {
-		LINE_REC *rec = line->data;
-
-                linecount = view_line_draw(view, rec, subline, ypos, lines);
+                linecount = view_line_draw(view, line, subline, ypos, lines);
 		ypos += linecount; lines -= linecount;
 
 		subline = 0;
@@ -486,13 +482,13 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, GList *line,
 
 static void view_draw_bottom(TEXT_BUFFER_VIEW_REC *view, int lines)
 {
-	GList *line;
+	LINE_REC *line;
 	int ypos, maxline, subline, linecount;
 
 	maxline = view->height-lines;
 	line = view->startline; ypos = -view->subline; subline = 0;
 	while (line != NULL && ypos < maxline) {
-                linecount = view_get_linecount(view, line->data);
+                linecount = view_get_linecount(view, line);
 		ypos += linecount;
 		if (ypos > maxline) {
 			subline = maxline-(ypos-linecount);
@@ -505,8 +501,8 @@ static void view_draw_bottom(TEXT_BUFFER_VIEW_REC *view, int lines)
 }
 
 /* Returns number of lines actually scrolled */
-static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
-		       int scrollcount, int draw_nonclean)
+static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
+		       int *subline, int scrollcount, int draw_nonclean)
 {
 	int linecount, realcount, scroll_visible;
 
@@ -520,7 +516,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
 	scrollcount += *subline;
         *subline = 0;
 	while (scrollcount > 0) {
-		linecount = view_get_linecount(view, (*lines)->data);
+		linecount = view_get_linecount(view, *lines);
 
 		if ((scroll_visible && *lines == view->bottom_startline) &&
 		    (scrollcount >= view->bottom_subline)) {
@@ -545,7 +541,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
         /* scroll up */
 	while (scrollcount < 0 && (*lines)->prev != NULL) {
 		*lines = (*lines)->prev;
-		linecount = view_get_linecount(view, (*lines)->data);
+		linecount = view_get_linecount(view, *lines);
 
                 realcount -= linecount;
 		scrollcount += linecount;
@@ -595,7 +591,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 	view->width = width;
 	view->height = height;
 
-	if (view->buffer->lines == NULL) {
+	if (view->buffer->first_line == NULL) {
                 view->empty_linecount = height;
 		return;
 	}
@@ -603,8 +599,8 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 	textbuffer_view_init_bottom(view);
 
 	/* check that we didn't scroll lower than bottom startline.. */
-	if (g_list_find(view->bottom_startline->next,
-			view->startline->data) != NULL) {
+	if (textbuffer_line_exists_after(view->bottom_startline->next,
+					 view->startline)) {
 		view->startline = view->bottom_startline;
                 view->subline = view->bottom_subline;
 	} else if (view->startline == view->bottom_startline &&
@@ -612,7 +608,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
                 view->subline = view->bottom_subline;
 	} else {
 		/* make sure the subline is still in allowed range */
-		linecount = view_get_linecount(view, view->startline->data);
+		linecount = view_get_linecount(view, view->startline);
 		if (view->subline > linecount)
                         view->subline = linecount;
 	}
@@ -649,7 +645,7 @@ void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 
 	view->ypos = -1;
 	view->bottom_startline = view->startline =
-		g_list_last(view->buffer->lines);
+		textbuffer_line_last(view->buffer);
 	view->bottom_subline = view->subline =
 		view->buffer->cur_line == NULL ? 0 :
 		view_get_linecount(view, view->buffer->cur_line);
@@ -678,23 +674,14 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 /* Scroll to specified line */
 void textbuffer_view_scroll_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
-	GList *tmp;
-
         g_return_if_fail(view != NULL);
 
-	if (g_list_find(view->bottom_startline->next, line) != NULL) {
+	if (textbuffer_line_exists_after(view->bottom_startline->next, line)) {
 		view->startline = view->bottom_startline;
 		view->subline = view->bottom_subline;
 	} else {
-		for (tmp = view->buffer->lines; tmp != NULL; tmp = tmp->next) {
-			LINE_REC *rec = tmp->data;
-
-			if (rec == line) {
-				view->startline = tmp;
-				view->subline = 0;
-				break;
-			}
-		}
+		view->startline = line;
+                view->subline = 0;
 	}
 
 	textbuffer_view_init_ypos(view);
@@ -752,11 +739,11 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	if (view->bottom_startline == NULL) {
 		view->startline = view->bottom_startline =
-			view->buffer->lines;
+			view->buffer->first_line;
 	}
 
 	if (view->buffer->cur_line != line &&
-	    g_list_find(view->bottom_startline, line) == NULL)
+	    !textbuffer_line_exists_after(view->bottom_startline, line))
 		return;
 
 	linecount = view->cache->last_linecount;
@@ -850,11 +837,8 @@ static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			     (GHFunc) bookmark_check_remove, &rec);
 
 	if (rec.remove_list != NULL) {
-		GList *pos = g_list_find(view->buffer->lines, line);
-
-		new_line = pos == NULL || pos->prev == NULL ? NULL :
-			(pos->next == NULL ? pos->prev->data :
-			 pos->next->data);
+		new_line = line->prev == NULL ? NULL :
+			(line->next == NULL ? line->prev : line->next);
 		for (tmp = rec.remove_list; tmp != NULL; tmp = tmp->next) {
 			g_hash_table_remove(view->bookmarks, tmp->data);
 			if (new_line != NULL) {
@@ -869,20 +853,18 @@ static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 /* Return number of real lines `lines' list takes -
    stops counting when the height reaches the view height */
 static int view_get_lines_height(TEXT_BUFFER_VIEW_REC *view,
-				 GList *lines, int subline,
+				 LINE_REC *line, int subline,
 				 LINE_REC *skip_line)
 {
 	int height, linecount;
 
         height = -subline;
-	while (lines != NULL && height < view->height) {
-		LINE_REC *line = lines->data;
-
+	while (line != NULL && height < view->height) {
 		if (line != skip_line) {
                         linecount = view_get_linecount(view, line);
 			height += linecount;
 		}
-                lines = lines->next;
+                line = line->next;
 	}
 
 	return height < view->height ? height : view->height;
@@ -899,22 +881,22 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                 /* the last line is being removed */
 		LINE_REC *prevline;
 
-		prevline = view->buffer->lines->data == line ? NULL :
-			g_list_last(view->bottom_startline)->data;
+		prevline = view->buffer->first_line == line ? NULL :
+			textbuffer_line_last(view->buffer);
 		view->cache->last_linecount = prevline == NULL ? 0 :
 			view_get_linecount(view, prevline);
 	}
 
-	if (line == view->buffer->lines->data) {
+	if (line == view->buffer->first_line) {
 		/* first line in the buffer - this is the most commonly
 		   removed line.. */
-		if (view->bottom_startline->data == line) {
+		if (view->bottom_startline == line) {
 			/* very small scrollback.. */
                         view->bottom_startline = view->bottom_startline->next;
 			view->bottom_subline = 0;
 		}
 
-		if (view->startline->data == line) {
+		if (view->startline == line) {
                         /* removing the first line in screen */
 			realcount = view_scroll(view, &view->startline,
 						&view->subline,
@@ -922,7 +904,8 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			view->ypos -= realcount;
 			view->empty_linecount += linecount-realcount;
 		}
-	} else if (g_list_find(view->bottom_startline, line) != NULL) {
+	} else if (textbuffer_line_exists_after(view->bottom_startline,
+						line)) {
 		realcount = view_scroll(view, &view->bottom_startline,
 					&view->bottom_subline,
 					-linecount, FALSE);
@@ -933,7 +916,7 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				    &view->subline, -linecount, TRUE);
 			view->ypos -= linecount-realcount;
 		} else {
-			if (view->startline->data == line) {
+			if (view->startline == line) {
 				view->startline =
 					view->startline->next != NULL ?
 					view->startline->next :
@@ -1037,7 +1020,7 @@ void textbuffer_view_set_bookmark_bottom(TEXT_BUFFER_VIEW_REC *view,
 	g_return_if_fail(name != NULL);
 
 	if (view->bottom_startline != NULL) {
-                line = g_list_last(view->bottom_startline)->data;
+                line = textbuffer_line_last(view->buffer);
 		textbuffer_view_set_bookmark(view, name, line);
 	}
 }

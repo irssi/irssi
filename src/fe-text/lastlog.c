@@ -35,17 +35,19 @@
 
 static void window_lastlog_clear(WINDOW_REC *window)
 {
-        TEXT_BUFFER_VIEW_REC *view;
-	GList *tmp, *next;
+	TEXT_BUFFER_VIEW_REC *view;
+        LINE_REC *line, *next;
 
         screen_refresh_freeze();
 	view = WINDOW_GUI(window)->view;
-	for (tmp = textbuffer_view_get_lines(view); tmp != NULL; tmp = next) {
-		LINE_REC *line = tmp->data;
+	line = textbuffer_view_get_lines(view);
 
-                next = tmp->next;
-                if (line->info.level & MSGLEVEL_LASTLOG)
+	while (line != NULL) {
+                next = line->next;
+
+		if (line->info.level & MSGLEVEL_LASTLOG)
 			textbuffer_view_remove_line(view, line);
+                line = next;
 	}
         textbuffer_view_redraw(view);
         screen_refresh_thaw();
@@ -131,10 +133,8 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	else
 		startline = NULL;
 
-	if (startline == NULL) {
-                list = textbuffer_view_get_lines(WINDOW_GUI(window)->view);
-		startline = list == NULL ? NULL : list->data;
-	}
+	if (startline == NULL)
+                startline = textbuffer_view_get_lines(WINDOW_GUI(window)->view);
 
 	list = textbuffer_find_text(WINDOW_GUI(window)->view->buffer, startline,
 				    level, MSGLEVEL_LASTLOG,

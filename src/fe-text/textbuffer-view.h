@@ -50,11 +50,11 @@ typedef struct {
 	TEXT_BUFFER_CACHE_REC *cache;
 	int ypos; /* cursor position - visible area is 0..height-1 */
 
-	GList *startline; /* line at the top of the screen */
+	LINE_REC *startline; /* line at the top of the screen */
 	int subline; /* number of "real lines" to skip from `startline' */
 
         /* marks the bottom of the text buffer */
-	GList *bottom_startline;
+	LINE_REC *bottom_startline;
 	int bottom_subline;
 
 	/* how many empty lines are in screen. a screenful when started
@@ -86,7 +86,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height);
 void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view);
 
 #define textbuffer_view_get_lines(view) \
-        ((view)->buffer->lines)
+        ((view)->buffer->first_line)
 
 /* Scroll the view up/down */
 void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines);

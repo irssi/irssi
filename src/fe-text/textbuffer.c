@@ -187,14 +187,23 @@ static LINE_REC *textbuffer_line_insert(TEXT_BUFFER_REC *buffer,
 {
 	LINE_REC *line;
 
-        line = textbuffer_line_create(buffer);
-	if (prev == buffer->cur_line) {
-		buffer->cur_line = line;
-		buffer->lines = g_list_append(buffer->lines, buffer->cur_line);
+	line = textbuffer_line_create(buffer);
+	line->prev = prev;
+	if (prev == NULL) {
+		line->next = buffer->first_line;
+                if (buffer->first_line != NULL)
+			buffer->first_line->prev = line;
+		buffer->first_line = line;
 	} else {
-		buffer->lines = g_list_insert(buffer->lines, line,
-					      g_list_index(buffer->lines, prev)+1);
+                line->prev = prev;
+		line->next = prev->next;
+                if (line->next != NULL)
+			line->next->prev = line;
+		prev->next = line;
 	}
+
+	if (prev == buffer->cur_line)
+		buffer->cur_line = line;
         buffer->lines_count++;
 
         return line;
@@ -227,6 +236,28 @@ void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list)
                 textbuffer_line_unref(buffer, list->data);
                 list = list->next;
 	}
+}
+
+LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer)
+{
+	LINE_REC *line;
+
+	line = buffer->cur_line;
+	if (line != NULL) {
+		while (line->next != NULL)
+			line = line->next;
+	}
+        return line;
+}
+
+int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search)
+{
+	while (line != NULL) {
+		if (line == search)
+			return TRUE;
+                line = line->next;
+	}
+        return FALSE;
 }
 
 LINE_REC *textbuffer_append(TEXT_BUFFER_REC *buffer,
@@ -264,11 +295,16 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 	g_return_if_fail(buffer != NULL);
 	g_return_if_fail(line != NULL);
 
-	buffer->lines = g_list_remove(buffer->lines, line);
+	if (buffer->first_line == line)
+		buffer->first_line = line->next;
+	if (line->prev != NULL)
+		line->prev->next = line->next;
+	if (line->next != NULL)
+		line->next->prev = line->prev;
 
 	if (buffer->cur_line == line) {
-		buffer->cur_line = buffer->lines == NULL ? NULL :
-			g_list_last(buffer->lines)->data;
+		buffer->cur_line = line->next != NULL ?
+			line->next : line->prev;
 	}
 
 	buffer->lines_count--;
@@ -279,6 +315,7 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 {
 	GSList *tmp;
+        LINE_REC *line;
 
 	g_return_if_fail(buffer != NULL);
 
@@ -287,8 +324,11 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 	g_slist_free(buffer->text_chunks);
         buffer->text_chunks = NULL;
 
-	g_list_free(buffer->lines);
-        buffer->lines = NULL;
+	while (buffer->first_line != NULL) {
+		line = buffer->first_line->next;
+		g_mem_chunk_free(line_chunk, buffer->first_line);
+                buffer->first_line = line;
+	}
 
         buffer->cur_line = NULL;
 	buffer->lines_count = 0;
@@ -365,7 +405,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 #ifdef HAVE_REGEX_H
 	regex_t preg;
 #endif
-	GList *line, *tmp;
+        LINE_REC *line;
 	GList *matches;
         GString *str;
 
@@ -386,25 +426,21 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	matches = NULL;
         str = g_string_new(NULL);
 
-        line = g_list_find(buffer->lines, startline);
-	if (line == NULL)
-		line = buffer->lines;
+	line = startline != NULL ? startline : buffer->first_line;
 
-	for (tmp = line; tmp != NULL; tmp = tmp->next) {
-		LINE_REC *rec = tmp->data;
-
-		if ((rec->info.level & level) == 0 ||
-		    (rec->info.level & nolevel) != 0)
+	for (; line != NULL; line = line->next) {
+		if ((line->info.level & level) == 0 ||
+		    (line->info.level & nolevel) != 0)
                         continue;
 
 		if (*text == '\0') {
                         /* no search word, everything matches */
-                        textbuffer_line_ref(rec);
-			matches = g_list_append(matches, rec);
+                        textbuffer_line_ref(line);
+			matches = g_list_append(matches, line);
 			continue;
 		}
 
-                textbuffer_line2text(rec, FALSE, str);
+                textbuffer_line2text(line, FALSE, str);
 
                 if (
 #ifdef HAVE_REGEX_H
@@ -415,8 +451,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 		    case_sensitive ? strstr(str->str, text) != NULL :
 				     stristr(str->str, text) != NULL) {
 			/* matched */
-                        textbuffer_line_ref(rec);
-			matches = g_list_append(matches, rec);
+                        textbuffer_line_ref(line);
+			matches = g_list_append(matches, line);
 		}
 	}
 #ifdef HAVE_REGEX_H

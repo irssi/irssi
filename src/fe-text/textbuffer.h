@@ -1,10 +1,6 @@
 #ifndef __TEXTBUFFER_H
 #define __TEXTBUFFER_H
 
-/* FIXME: Textbuffer code gets a lot faster in some points when I get rid of
-   GList and make prev/next pointers directly in LINE_REC. However, this
-   can still wait for a while until I get rid of GList entirely everywhere. */
-
 #define LINE_TEXT_CHUNK_SIZE 16384
 
 enum {
@@ -27,13 +23,15 @@ typedef struct {
 	time_t time;
 } LINE_INFO_REC;
 
-typedef struct {
+typedef struct _LINE_REC {
 	/* text in the line. \0 means that the next char will be a
 	   color or command. <= 127 = color or if 8. bit is set, the
 	   first 7 bits are the command. See LINE_CMD_xxxx.
 
 	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
 	   LINE_CMD_COLOR0 instead. */
+	struct _LINE_REC *prev, *next;
+
 	unsigned char *text;
         unsigned char refcount;
         LINE_INFO_REC info;
@@ -47,7 +45,7 @@ typedef struct {
 
 typedef struct {
 	GSList *text_chunks;
-	GList *lines;
+        LINE_REC *first_line;
         int lines_count;
 
 	LINE_REC *cur_line;
@@ -64,6 +62,9 @@ void textbuffer_destroy(TEXT_BUFFER_REC *buffer);
 void textbuffer_line_ref(LINE_REC *line);
 void textbuffer_line_unref(TEXT_BUFFER_REC *buffer, LINE_REC *line);
 void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list);
+
+LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer);
+int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search);
 
 /* Append text to buffer. When \0<EOL> is found at the END OF DATA, a new
    line is created. You must send the EOL command before you can do anything

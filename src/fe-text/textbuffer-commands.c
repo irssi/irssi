@@ -74,13 +74,13 @@ static void scrollback_goto_line(int linenum)
 	if (view->buffer->lines_count == 0)
 		return;
 
-	textbuffer_view_scroll_line(view, view->buffer->lines->data);
+	textbuffer_view_scroll_line(view, view->buffer->first_line);
 	gui_window_scroll(active_win, linenum);
 }
 
 static void scrollback_goto_time(const char *datearg, const char *timearg)
 {
-        GList *tmp;
+        LINE_REC *line;
 	struct tm tm;
 	time_t now, stamp;
 	int day, month;
@@ -145,12 +145,10 @@ static void scrollback_goto_time(const char *datearg, const char *timearg)
 	}
 
 	/* scroll to first line after timestamp */
-        tmp = textbuffer_view_get_lines(WINDOW_GUI(active_win)->view);
-	for (; tmp != NULL; tmp = tmp->next) {
-		LINE_REC *rec = tmp->data;
-
-		if (rec->info.time >= stamp) {
-			gui_window_scroll_line(active_win, rec);
+	line = textbuffer_view_get_lines(WINDOW_GUI(active_win)->view);
+	for (; line != NULL; line = line->next) {
+		if (line->info.time >= stamp) {
+			gui_window_scroll_line(active_win, line);
 			break;
 		}
 	}
@@ -188,7 +186,7 @@ static void cmd_scrollback_home(const char *data)
 
 	buffer = WINDOW_GUI(active_win)->view->buffer;
 	if (buffer->lines_count > 0)
-		gui_window_scroll_line(active_win, buffer->lines->data);
+		gui_window_scroll_line(active_win, buffer->first_line);
 }
 
 /* SYNTAX: SCROLLBACK END */
@@ -200,7 +198,7 @@ static void cmd_scrollback_end(const char *data)
 	if (view->bottom_startline == NULL)
 		return;
 
-	textbuffer_view_scroll_line(view, view->bottom_startline->data);
+	textbuffer_view_scroll_line(view, view->bottom_startline);
 	gui_window_scroll(active_win, view->bottom_subline);
 }
 

@@ -57,7 +57,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	    scrollback_lines+scrollback_burst_remove) {
                 /* remove lines by line count */
 		while (view->buffer->lines_count > scrollback_lines) {
-			line = view->buffer->lines->data;
+			line = view->buffer->first_line;
 			if (line->info.time >= old_time ||
 			    scrollback_lines == 0) {
 				/* too new line, don't remove yet - also
