@@ -34,6 +34,7 @@ CONFIG_REC *mainconfig;
 static GString *last_errors;
 static char *last_config_error_msg;
 static int fe_initialized;
+static int config_changed; /* FIXME: remove after .98 (unless needed again) */
 
 static GHashTable *settings;
 static int timeout_tag;
@@ -276,6 +277,12 @@ static void sig_init_finished(void)
 		signal_emit("gui dialog", 2, "error", last_config_error_msg);
 		g_free_and_null(last_config_error_msg);
 	}
+
+	if (config_changed) {
+		/* some backwards compatibility changes were made to
+		   config file, reload it */
+		signal_emit("setup changed", 0);
+	}
 }
 
 /* FIXME: remove after 0.7.98 - only for backward compatibility */
@@ -288,6 +295,8 @@ static void settings_move(SETTINGS_REC *rec, char *value)
 
 	iconfig_node_set_str(node, rec->key, value);
 	iconfig_node_set_str(setnode, rec->key, NULL);
+
+        config_changed = TRUE;
 }
 
 /* verify that all settings in config file for `module' are actually found
@@ -580,6 +589,7 @@ void settings_init(void)
 	last_errors = NULL;
         last_config_error_msg = NULL;
 	fe_initialized = FALSE;
+        config_changed = FALSE;
 
 	config_last_mtime = 0;
 	config_last_modifycounter = 0;
