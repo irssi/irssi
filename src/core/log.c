@@ -25,6 +25,7 @@
 #include "misc.h"
 #include "servers.h"
 #include "log.h"
+#include "write-buffer.h"
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -71,8 +72,8 @@ static void log_write_timestamp(int handle, const char *format,
 
 	tm = localtime(&stamp);
 	if (strftime(str, sizeof(str), format, tm) > 0) {
-		write(handle, str, strlen(str));
-		if (suffix != NULL) write(handle, suffix, strlen(suffix));
+		write_buffer(handle, str, strlen(str));
+		if (suffix != NULL) write_buffer(handle, suffix, strlen(suffix));
 	}
 }
 
@@ -158,6 +159,7 @@ void log_stop_logging(LOG_REC *log)
 	fcntl(log->handle, F_SETLK, &lock);
 #endif
 
+	write_buffer_flush();
 	close(log->handle);
 	log->handle = -1;
 }
@@ -214,7 +216,7 @@ void log_write_rec(LOG_REC *log, const char *str)
 	log->last = now;
 
 	log_write_timestamp(log->handle, log_timestamp, str, now);
-	write(log->handle, "\n", 1);
+	write_buffer(log->handle, "\n", 1);
 
 	signal_emit("log written", 2, log, str);
 }

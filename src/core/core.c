@@ -32,6 +32,7 @@
 #include "chatnets.h"
 #include "commands.h"
 #include "expandos.h"
+#include "write-buffer.h"
 #include "log.h"
 #include "rawlog.h"
 #include "ignore.h"
@@ -65,6 +66,7 @@ void core_init(void)
         expandos_init();
 	ignore_init();
 	servers_init();
+        write_buffer_init();
 	log_init();
 	rawlog_init();
 
@@ -86,6 +88,7 @@ void core_deinit(void)
 
 	rawlog_deinit();
 	log_deinit();
+        write_buffer_deinit();
 	servers_deinit();
 	ignore_deinit();
         expandos_deinit();

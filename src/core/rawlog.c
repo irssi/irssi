@@ -23,7 +23,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "misc.h"
-
+#include "write-buffer.h"
 #include "settings.h"
 
 static int rawlog_lines;
@@ -45,7 +45,10 @@ void rawlog_destroy(RAWLOG_REC *rawlog)
 	g_slist_foreach(rawlog->lines, (GFunc) g_free, NULL);
 	g_slist_free(rawlog->lines);
 
-	if (rawlog->logging) close(rawlog->handle);
+	if (rawlog->logging) {
+		write_buffer_flush();
+		close(rawlog->handle);
+	}
 	g_free(rawlog);
 }
 
@@ -61,8 +64,8 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 	}
 
 	if (rawlog->logging) {
-		write(rawlog->handle, str, strlen(str));
-		write(rawlog->handle, "\n", 1);
+		write_buffer(rawlog->handle, str, strlen(str));
+		write_buffer(rawlog->handle, "\n", 1);
 	}
 
 	rawlog->lines = g_slist_append(rawlog->lines, str);
@@ -125,6 +128,7 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 void rawlog_close(RAWLOG_REC *rawlog)
 {
 	if (rawlog->logging) {
+		write_buffer_flush();
 		close(rawlog->handle);
 		rawlog->logging = 0;
 	}

@@ -46,7 +46,8 @@ libcore_a_SOURCES = \
 	servers-setup.c \
 	settings.c \
 	signals.c \
-	special-vars.c
+	special-vars.c \
+	write-buffer.c
 
 structure_headers = \
 	chatnet-rec.h \
@@ -94,6 +95,7 @@ noinst_HEADERS = \
 	signals.h \
 	special-vars.h \
 	window-item-def.h \
+	write-buffer.h \
 	$(structure_headers)
 
 EXTRA_DIST = \
