@@ -33,7 +33,11 @@ while (<docs/help/in/*.in>) {
 	  $SYNTAX =~ s/%\|$//;
           $DATARIVI = $SYNTAX;
       } elsif ($DATARIVI =~ /^\S+/) {
-          chomp $DATARIVI if ($data[$count+1] =~ /^\S+/);
+	if ($data[$count+1] =~ /^\S+/) {
+	  chomp $DATARIVI;
+	  $DATARIVI =~ s/ *$//g;
+	  $DATARIVI .= " ";
+	}
       } else {
 	  $DATARIVI =~ s/^\t/         / while ($DATARIVI =~ /^\t/);
       }
