@@ -366,9 +366,3 @@ plugins/external/Makefile
 plugins/bot/Makefile
 stamp.h
 irssi.spec)
-
-dnl **
-dnl ** internationalization support
-dnl **
-
-dnl stamp.h],[sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
