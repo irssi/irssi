@@ -29,26 +29,27 @@
 
                foreground (fg)     background (bg)
    -------------------------------------------------------
-    0          white               black 	with 0 as fg
-				   light gray 	with fg > 0
-    1          ligh gray           black
+    0          white               light gray   + blinking fg
+    1          black               black
     2          blue                blue
     3          green               green
-    4          light red           red		+ blinking fg
-    5          orange              orange
+    4          light red           red          + blinking fg
+    5          red                 red
     6          magenta (purple)    magenta
-    7          red                 red
-    8          yellow              orange	+ blinking fg
-    9          light green         light green	+ blinking fg
-    10         cyan                cyan		
-    11         light cyan          cyan		+ blinking fg
-    12         light blue          blue		+ blinking fg
-    13         light magenta       magenta	+ blinking fg
-    14         gray                black	+ blinking fg 
-    15         light gray          black on black
-                                   gray  on light gray (with bold)
+    7          orange              orange
+    8          yellow              orange       + blinking fg
+    9          light green         green        + blinking fg
+    10         cyan                cyan         
+    11         light cyan          cyan         + blinking fg
+    12         light blue          blue         + blinking fg
+    13         light magenta       magenta      + blinking fg
+    14         gray                black        + blinking fg 
+    15         light gray          light gray
 
- These colors may differ depending on your terminal.
+ These colors may differ depending on your terminal. In particular
+ the meaning for background may be the same as for the foreground
+ (bright colors, no blinking), and orange often looks like brown or
+ dark yellow.
 
  How to use these colors ('#' means a number as MIRC color code):
  
