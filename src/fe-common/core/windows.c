@@ -136,8 +136,10 @@ void window_set_active(WINDOW_REC *window)
 
 	old_window = active_win;
 	active_win = window;
-        windows = g_slist_remove(windows, active_win);
-	windows = g_slist_prepend(windows, active_win);
+	if (active_win != NULL) {
+		windows = g_slist_remove(windows, active_win);
+		windows = g_slist_prepend(windows, active_win);
+	}
 
 	signal_emit("window changed", 2, active_win, old_window);
 }
