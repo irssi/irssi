@@ -307,6 +307,8 @@ static void cmd_unban(const char *data, IRC_SERVER_REC *server, void *item)
 	command_set_ban(ban ? ban : data, server, item, FALSE, 0);
 	
 	g_free(ban);
+
+	cmd_params_free(free_arg);
 }
 
 static void read_settings(void)
