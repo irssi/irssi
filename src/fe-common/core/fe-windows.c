@@ -144,7 +144,8 @@ void window_set_active(WINDOW_REC *window)
 		windows = g_slist_prepend(windows, active_win);
 	}
 
-	signal_emit("window changed", 2, active_win, old_window);
+        if (active_win != NULL)
+		signal_emit("window changed", 2, active_win, old_window);
 }
 
 void window_change_server(WINDOW_REC *window, void *server)
