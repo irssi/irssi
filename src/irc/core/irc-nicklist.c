@@ -404,15 +404,11 @@ static void sig_usermode(SERVER_REC *server)
 static const char *get_nick_flags(SERVER_REC *server)
 {
 	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
-	static char *std = "@%+";
-	char *prefix = g_hash_table_lookup(irc_server->isupport, "prefix");
+	const char *prefix =
+		g_hash_table_lookup(irc_server->isupport, "PREFIX");
 
-	if (prefix == NULL)
-		return std;
 	prefix = strchr(prefix, ')');
-	if (prefix != NULL || *++prefix == '\0') /* FIXME: ugly to modify it */
-		return std;
-	return prefix;
+	return prefix == NULL ? "" : prefix+1;
 }
 
 static void sig_connected(IRC_SERVER_REC *server)

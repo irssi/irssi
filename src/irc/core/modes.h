@@ -30,6 +30,11 @@ struct modes_type {
 	((type) == '+' ? HAS_MODE_ARG_SET(server,mode) : \
 	  HAS_MODE_ARG_UNSET(server, mode))
 
+#define GET_MODE_PREFIX(server, c) \
+	((server)->modes[(int)(unsigned char)c].prefix)
+#define GET_PREFIX_MODE(server, c) \
+	((server)->prefix[(int)(unsigned char)c])
+
 void modes_init(void);
 void modes_deinit(void);
 void modes_server_init(IRC_SERVER_REC *);

@@ -187,15 +187,15 @@ static void mode_set(IRC_SERVER_REC *server, GString *str,
 }
 
 static void mode_set_arg(IRC_SERVER_REC *server, GString *str,
-			 char type, char mode, const char *arg)
+			 char type, char mode, const char *arg, int user)
 {
 	g_return_if_fail(str != NULL);
 	g_return_if_fail(type == '-' || arg != NULL);
 
 	if (type == '-')
-		mode_remove(server, str, mode, TRUE);
+		mode_remove(server, str, mode, user);
         else
-		mode_add_sorted(server, str, mode, arg, TRUE);
+		mode_add_sorted(server, str, mode, arg, user);
 }
 
 /* Mode that needs a parameter of a mask for both setting and removing (eg: bans) */
@@ -213,12 +213,12 @@ void modes_type_a(IRC_CHANNEL_REC *channel, const char *setby, char type,
 
 /* Mode that needs parameter for both setting and removing (eg: +k) */
 void modes_type_b(IRC_CHANNEL_REC *channel, const char *setby, char type,
-	char mode, char *arg, GString *newmode)
+		  char mode, char *arg, GString *newmode)
 {
 	if (mode == 'k') {
 		if (*arg == '\0' && type == '+')
 			arg = channel->key != NULL ? channel->key : "???";
-		mode_set_arg(channel->server, newmode, type, 'k', arg);
+		mode_set_arg(channel->server, newmode, type, 'k', arg, FALSE);
 
 		if (arg != channel->key) {
 			g_free_and_null(channel->key);
@@ -233,7 +233,7 @@ void modes_type_c(IRC_CHANNEL_REC *channel, const char *setby,
 		  char type, char mode, char *arg, GString *newmode)
 {
 	if (mode == 'l') {
-		mode_set_arg(channel->server, newmode, type, 'l', arg);
+		mode_set_arg(channel->server, newmode, type, 'l', arg, FALSE);
 		channel->limit = type == '-' ? 0 : atoi(arg);
 	}
 }
@@ -355,7 +355,7 @@ char *modes_join(IRC_SERVER_REC *server, const char *old,
 			mode_set(server, newmode, type, *curmode, !channel);
 		else {
 			mode_set_arg(server, newmode, type, *curmode,
-				     cmd_get_param(&modestr));
+				     cmd_get_param(&modestr), !channel);
 		}
 
 		curmode++;

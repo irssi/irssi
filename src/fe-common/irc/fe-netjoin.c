@@ -321,10 +321,11 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 	signal_stop();
 }
 
-static int netjoin_set_nickmode(NETJOIN_REC *rec, const char *channel,
-				char mode)
+static int netjoin_set_nickmode(IRC_SERVER_REC *server, NETJOIN_REC *rec,
+				const char *channel, char prefix)
 {
 	GSList *pos;
+	const char *flags;
 	char *found_chan = NULL;
 
 	for (pos = rec->now_channels; pos != NULL; pos = pos->next) {
@@ -338,26 +339,25 @@ static int netjoin_set_nickmode(NETJOIN_REC *rec, const char *channel,
 	if (found_chan == NULL)
 		return FALSE;
 
-	if (found_chan[0] == '@')
-		return TRUE;
-	if (found_chan[0] == '%' && mode == '+')
-		return TRUE;
-
-        found_chan[0] = mode;
+	flags = server->get_nick_flags(SERVER(server));
+	while (*flags != '\0') {
+		if (found_chan[0] == *flags)
+			break;
+		if (prefix == *flags) {
+			found_chan[0] = prefix;
+			break;
+		}
+		flags++;
+	}
 	return TRUE;
 }
-
-#define isnickmode(c) \
-	((c) == 'o' || (c) == 'v' || (c) == 'h')
-#define nickmodechar(c) \
-	((c) == 'o' ? '@' : ((c) == 'v' ? '+' : ((c) == 'h' ? '%' : '\0')))
 
 static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 		     const char *sender, const char *addr, const char *data)
 {
 	NETJOIN_REC *rec;
 	char *params, *mode, *nicks;
-	char **nicklist, **nick, type, modechr;
+	char **nicklist, **nick, type, prefix;
 	int show;
 
 	g_return_if_fail(data != NULL);
@@ -378,12 +378,12 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 			continue;
 		}
 
-		if (*nick != NULL && isnickmode(*mode)) {
+		if (*nick != NULL && GET_MODE_PREFIX(server, *mode)) {
                         /* give/remove ops */
 			rec = netjoin_find(server, *nick);
-                        modechr = nickmodechar(*mode);
-			if (rec == NULL || type != '+' || modechr == '\0' ||
-			    !netjoin_set_nickmode(rec, channel, modechr))
+			prefix = GET_MODE_PREFIX(server, *mode);
+			if (rec == NULL || type != '+' || prefix == '\0' ||
+			    !netjoin_set_nickmode(server, rec, channel, prefix))
 				show = TRUE;
                         nick++;
 		} else {

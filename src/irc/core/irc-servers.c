@@ -162,7 +162,11 @@ static void server_init(IRC_SERVER_REC *server)
 	}
 
 	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-					  (GCompareFunc) g_istr_equal);
+					    (GCompareFunc) g_istr_equal);
+
+	/* set the standards */
+	g_hash_table_insert(server->isupport, "CHANMODES", "b,k,l,imnpst");
+	g_hash_table_insert(server->isupport, "PREFIX", "(ohv)@%+");
 
 	server->cmdcount = 0;
 }
@@ -309,7 +313,11 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_free(server->cmdqueue);
         server->cmdqueue = NULL;
 
-	g_hash_table_foreach(server->isupport, (GHFunc) isupport_destroy_hash, server);
+	if (server->isupport_sent) {
+		/* these are dynamically allocated only if isupport was sent */
+		g_hash_table_foreach(server->isupport,
+				     (GHFunc) isupport_destroy_hash, server);
+	}
 	g_hash_table_destroy(server->isupport);
 	server->isupport = NULL;
 
@@ -588,6 +596,11 @@ static void parse_prefix(IRC_SERVER_REC *server, const char *sptr)
 	}
 }
 
+static gboolean hash_clear(gpointer key, gpointer value, gpointer user_data)
+{
+	return TRUE;
+}
+
 static void event_isupport(IRC_SERVER_REC *server, const char *data)
 {
 	char **item, *sptr, *eptr;
@@ -601,6 +614,9 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 	if (sptr == NULL)
 		return;
 	sptr++;
+
+	/* remove defaults */
+	g_hash_table_foreach_remove(server->isupport, hash_clear, NULL);
 
 	isupport = g_strsplit(sptr, " ", -1);
 
@@ -639,12 +655,19 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 	}
 	g_strfreev(isupport);
 
+	/* chanmodes/prefix will fully override defaults */
+	memset(server->modes, 0, sizeof(server->modes));
+	memset(server->prefix, 0, sizeof(server->prefix));
+
 	if ((sptr = g_hash_table_lookup(server->isupport, "CHANMODES")))
 		parse_chanmodes(server, sptr);
 
 	/* This is after chanmode because some servers define modes in both */
-	if ((sptr = g_hash_table_lookup(server->isupport, "PREFIX")))
-		parse_prefix(server, sptr);
+	if ((sptr = g_hash_table_lookup(server->isupport, "PREFIX")) == NULL) {
+		sptr = g_strdup("(ohv)@%+");
+		g_hash_table_insert(server->isupport, g_strdup("PREFIX"), sptr);
+	}
+	parse_prefix(server, sptr);
 
 	if ((sptr = g_hash_table_lookup(server->isupport, "MODES"))) {
 		server->max_modes_in_cmd = atoi(sptr);
