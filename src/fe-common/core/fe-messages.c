@@ -245,7 +245,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	once = settings_get_bool("show_quit_once");
 
 	count = 0; windows = NULL;
-	chans = !once ? NULL : g_string_new(NULL);
+	chans = g_string_new(NULL);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
@@ -289,8 +289,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			    count <= 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
 			    nick, address, reason, chans->str);
 	}
-	if (chans != NULL)
-		g_string_free(chans, TRUE);
+	g_string_free(chans, TRUE);
 }
 
 static void sig_message_kick(SERVER_REC *server, const char *channel,
