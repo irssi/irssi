@@ -27,7 +27,7 @@
 #include "irc-channels.h"
 #include "channel-rejoin.h"
 
-#define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
+#define REJOIN_TIMEOUT (1000*60/**5*/) /* try to rejoin every 5 minutes */
 
 static int rejoin_tag;
 
@@ -75,6 +75,7 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 	g_return_if_fail(channel != NULL);
 
 	chanrec = irc_channel_find(server, channel);
+	if (chanrec == NULL || chanrec->joined) return;
 
 	rec = rejoin_find(server, channel);
 	if (rec != NULL) {
