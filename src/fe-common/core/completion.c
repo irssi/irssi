@@ -592,6 +592,16 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 	}
 
+	if (*linestart != '\0' && (*word == '/' || *word == '~')) {
+		/* quite likely filename completion */
+		*list = g_list_concat(*list, filename_complete(word, NULL));
+		if (*list != NULL) {
+			*want_space = FALSE;
+			signal_stop();
+			return;
+		}
+	}
+
 	/* command completion? */
 	cmdchars = settings_get_str("cmdchars");
 	if (*word != '\0' && *linestart == '\0' && strchr(cmdchars, *word)) {
