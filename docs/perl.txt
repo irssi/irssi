@@ -1,6 +1,8 @@
  Running Perl scripts
  --------------------
 
+FIXME: part of this file is out of date..
+
 Place new scripts to ~/.irssi/scripts/, or /usr/lib/irssi/scripts/
 directory and run then with /RUN script. Or you could also run the
 script from another place by specifying the whole path to it. Scripts
@@ -92,15 +94,14 @@ Commands that don't have the Xxxx prefix are called as Irssi::command();
 
  *** General
 
-Channel cur_channel() - return current channel
-Server cur_server() - return current server
+Window active_win() - return current window
+Server active_server() - return current server
 
 channels() - return list of all channels
 servers() - return list of all servers
 commands() - return list of all commands
 dccs() - return list of all dcc connections
 logs() - return list of all log files
-plugins() - return list of all plugins
 
 print(str)
   Print `str' to current window as "Irssi notice".
@@ -228,8 +229,8 @@ Server::values()
 	"connection_lost" - Did we lose the connection (1) or was
 	                    the connection meant to be disconnected (0)
   Example:
-	%server_info = %{Irssi::cur_server->values()};
-	Irssi::print("Current server = ".$server_info{'address'});
+	$server_info = Irssi::active_server->values();
+	Irssi::print("Current server = ".$server_info->{'address'});
 
 Server Connect::connect()
   Connect to server.

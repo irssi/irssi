@@ -428,8 +428,8 @@
 	            [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
 	            <address> [<port> [<password>]]
 
-	    -auto: Automatically connect to server at startup (default)
-	    -noauto: Don't connect to server at startup
+	    -auto: Automatically connect to server at startup
+	    -noauto: Don't connect to server at startup (default)
 	    -ircnet: Specify what IRC network this server belongs to
 	    -host: Specify what host name to use, if you have multiple
 	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
