@@ -408,6 +408,9 @@ static int sig_autoremove(void)
 
 		/* Close only logs with private messages */
 		logitem = log->items->data;
+		if (logitem->servertag == NULL)
+			continue;
+
 		server = server_find_tag(logitem->servertag);
 		if (logitem->type == LOG_ITEM_TARGET &&
 		    server != NULL && !server->ischannel(*logitem->name))
