@@ -735,9 +735,9 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
                                 g_free_not_null(theme->formats[n]);
                                 g_free_not_null(theme->expanded_formats[n]);
 
-				theme->formats[n] = reset ? NULL : g_strdup(value);
-				theme->expanded_formats[n] = reset ? NULL : theme_format_expand(current_theme, value);
 				text = reset ? formats[n].def : value;
+				theme->formats[n] = reset ? NULL : g_strdup(value);
+				theme->expanded_formats[n] = theme_format_expand(current_theme, text);
 			}
 			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_ITEM, formats[n].tag, text);
 			last_title = NULL;
