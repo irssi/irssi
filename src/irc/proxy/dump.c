@@ -235,7 +235,7 @@ void proxy_dump_data(CLIENT_REC *client)
 	else
 		proxy_outdata(client, ":%s 004 %s %s %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
 
-	if (client->server->isupport_sent) {
+	if (client->server != NULL && client->server->isupport_sent) {
 		isupport_out = g_string_new(NULL);
 		g_string_sprintf(isupport_out, ":%s 005 %s ", client->proxy_address, client->nick);
 		/* FIXME: should be limited to 15 params */
