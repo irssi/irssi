@@ -38,6 +38,9 @@ void channels_query_deinit(void);
 void channel_events_init(void);
 void channel_events_deinit(void);
 
+void irc_channels_setup_init(void);
+void irc_channels_setup_deinit(void);
+
 void massjoin_init(void);
 void massjoin_deinit(void);
 
@@ -202,7 +205,7 @@ void irc_channels_init(void)
 	channel_events_init();
 	channel_rejoin_init(); /* after channel_events_init() */
         channels_query_init();
-	channels_setup_init();
+	irc_channels_setup_init();
 
 	bans_init();
         modes_init();
@@ -220,7 +223,7 @@ void irc_channels_deinit(void)
 	channel_events_deinit();
 	channel_rejoin_deinit();
         channels_query_deinit();
-        channels_setup_deinit();
+        irc_channels_setup_deinit();
 
 	bans_deinit();
         modes_deinit();

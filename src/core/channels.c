@@ -155,7 +155,7 @@ static void event_connected(SERVER_REC *server)
 
 static int match_nick_flags(SERVER_REC *server, NICK_REC *nick, char flag)
 {
-	char *flags = server->get_nick_flags();
+	const char *flags = server->get_nick_flags();
 
 	return (flag == flags[0] && nick->op) ||
 		(flag == flags[1] && (nick->voice || nick->halfop ||
@@ -203,11 +203,15 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 
 void channels_init(void)
 {
+	channels_setup_init();
+
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 }
 
 void channels_deinit(void)
 {
+	channels_setup_deinit();
+
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	module_uniq_destroy("CHANNEL");
 }

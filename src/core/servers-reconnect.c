@@ -115,6 +115,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src)
 	g_return_val_if_fail(dest != NULL, NULL);
 
 	dest->type = module_get_uniq_id("SERVER CONNECT", 0);
+	dest->reconnection = src->reconnection;
 	dest->proxy = g_strdup(src->proxy);
         dest->proxy_port = src->proxy_port;
 	dest->proxy_string = g_strdup(src->proxy_string);
