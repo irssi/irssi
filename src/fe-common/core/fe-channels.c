@@ -339,7 +339,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
         char *format, *stripped;
 	char *linebuf, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
-        int item_extra;
+        int item_extra, linebuf_size;
 
 	window = window_find_closest(channel->server, channel->name,
 				     MSGLEVEL_CLIENTCRAP);
@@ -381,7 +381,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
                 last_col_rows = rows;
 
 	str = g_string_new(NULL);
-	linebuf = g_malloc(max_width+1);
+	linebuf_size = max_width+1; linebuf = g_malloc(linebuf_size);
 
         col = 0; row = 0;
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
@@ -389,6 +389,10 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 
 		nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
 
+		if (linebuf_size < columns[col]-item_extra+1) {
+			linebuf_size = (columns[col]-item_extra+1)*2;
+                        linebuf = g_realloc(linebuf, linebuf_size);
+		}
 		memset(linebuf, ' ', columns[col]-item_extra);
 		linebuf[columns[col]-item_extra] = '\0';
 		memcpy(linebuf, rec->nick, strlen(rec->nick));
