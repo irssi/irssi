@@ -147,7 +147,12 @@ static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
 			       conn->own_ip != NULL ? conn->own_ip : NULL);
 	if (server->handle == -1) {
 		/* failed */
-		server->connection_lost = TRUE;
+		if (iprec.error != -1) {
+			/* reconnect only if connect() was the one that
+			   failed, if host lookup failed we most probably
+			   don't want to try reconnecting back. */
+			server->connection_lost = TRUE;
+		}
 		server_cant_connect(server,
 				    iprec.error != -1 ? g_strerror(errno) : /* connect() failed */
 				    (iprec.errorstr != NULL ? iprec.errorstr : "Host lookup failed")); /* gethostbyname() failed */
