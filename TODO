@@ -1,6 +1,18 @@
+ - /STATUSBAR xx ENABLE|DISABLE recreates all statusbars which is a bit
+   annoying because some scripts want to do it and input line is cleared
+   because of this..
+ - move /SET hilight_*color to theme
+ - /SET disconnect_timeout - default 2min, 0 = immediately
+ - reconnecting messages are a bit confusing. it prints "removed reconnection"
+   to the server which it's connecting to next.. maybe the whole reconnecting
+   thing should work so that the record stays there until it's connected
+   successfully.
+ - /ignore, /hilight and /lastlog could complain immediately if used
+   regexp is broken. /hilight list could show also if it's broken like
+   /ignore does.
+
  - /UPGRADE:
     - support DCCs
-    - topic time/nick isn't transferred
     - rewrite to work by fork()ing a new process and transfer file handles
       with unix sockets. this would allow the scrollback buffers to be
       transferred with them as well.
@@ -53,6 +65,9 @@
       the query window with the dcc chat window.
     - closed DCC chats should add temporary window bind to the dcc chat so
       future chats for same nick would use the same window
+    - /JOIN #foo could *optionally* move the channel to active window
+      (default off, it confuses people)
+    - /JOIN -ircnet #foo doesn't jump to #foo like /JOIN #foo does.
 
  - DCC
     - /DCC SEND wildcard support
@@ -225,6 +240,7 @@
       not hide the text.
     - The nick cache stuff just made it slower. Remove it or figure out how
       it could be faster.
+    - combined ignore/hilight thingy, see hilights
 
  - Hilights:
     - /HILIGHT list doesn't print several options. Maybe some generic
@@ -247,6 +263,8 @@
     - automatic nick hilighting at beginning of line should be optional,
       like some people would want -word hilighting in it..
     - exceptions
+    - Merged ignores/hilights thingy and maybe even something others ..
+      some first-match-wins table where you could easily add/move stuff.
 
  - Scrollback:
     - Optionally show a "bookmark" (line mark actually, a line full of '-'
@@ -295,8 +313,9 @@
     - Fix the flood protection to be aware of max. input buffer, which is
       1024 bytes by default (/STATS d, CF). Now irssi may excess flood when
       sending lots of lines longer than ~200 chars.
-    - Flood protection doesn't count the extra penalty for MODEs and KICKs
-      in ircnet.
+    - IRCNET: Flood protection doesn't count the extra penalty for MODEs
+      and KICKs, also extra penalty should be given in messages (all
+      commands?) for each 100 chars.
 
  - Text buffer:
     - support for printing ALL characters in text buffer, including ^B, ^C,
@@ -335,6 +354,7 @@
     - /STATUSBAR prompt DISABLE hangs irssi because there's no input line.
       Add some check to not allow this.
     - /STATUSBAR could list also disabled bars
+    - command to list all available statusbar items
 
  - Server connecting:
     - More verbose connecting
@@ -374,12 +394,13 @@
     - bash-style (or whatever it should be called) tab-completion
     - key for reverse completion
     - /MSG <tab> completion shouldn't include queried nick there (optional)
-    - nick completion shouldn't try completing nicks everywhere,
-      like /SET <tab>
     - File completion could guess when it's wanted, word beginning with /
       (not at start of line of course, unless / isn't in cmdchars)
       or ~/ or ./
     - filename completion doesn't work properly if path has spaces
+    - /FORMAT xx <tab>
+    - don't add useless completions to list. eg /RUN nick<tab> shouldn't 
+      work
 
  - Modules:
     - Figure out module vs. plugin wording, what is what ;)
@@ -438,7 +459,8 @@
       /window name foo level msgs.
     - Channel syncing is evil. Make it optional, and use /USERHOST when
       needed if host isn't known. /BAN at least should do this, and while
-      at it, we could make /IGNORE as well to ignore based on mask.
+      at it, we could make /IGNORE as well to ignore based on mask. Also,
+      if /USERHOST doesn't find anything, use /WHOWAS info.
     - Irssi saves some setting strings to static const char * variables in
       several places.. this works pretty well usually, except when /RELOADing
       config and some "setup changed" signal handler goes and calls some
@@ -447,14 +469,19 @@
       them everywhere or figure out something better..
     - Better priority specifying for signals, probably should add
       int priority without limited range.
+    - fix server redirections to handle remote events correctly: very unlikely,
+      but its possible that replies to two remote whoises are received exactly
+      at the same time overlapping each others
 
+ - settings_add_int("x") + settings_get_str("x") -> segfault
  - extra spaces after commands don't always work, eg /wii  nick, /help  xx
  - hide channel key in statusbar. This would require a $cmode_nokey or
    something..
  - fe-none doesn't compile with --with-perl-staticlib because it doesn't find
    the ui/textui stuff..
  - we should probably print timestamp even if level contains MSGLEVEL_NEVER,
-   as long as it's not the only level..
+   as long as it's not the only level.. Except when /CATing awaylog we don't
+   want to do that.
  - If /SET print_active_channel is ON, actions still don't show the channel
  - nick's user/host can't be printed for public messages
  - /HELP <alias> should work
@@ -498,8 +525,6 @@
    for example could hide/show them. add mouse support for it.
 
  - try profiling the code with /cat filewith10000lines
- - /JOIN #foo could *optionally* move the channel to active window
-   (default off, it confuses people)
  - /SERVER ADD -ircnet foonet bar 6000 pass1,
    /SERVER ADD -ircnet barnet bar 6000 pass2
    dircproxy identifies ircnets based on password
