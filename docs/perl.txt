@@ -1,33 +1,9 @@
  Installation problems
  ---------------------
 
-You'll need to have perl support compiled with irssi. make install is
-also required to make them work. There's quite a many things that may
-go wrong with perl:
-
- - 5.004 doesn't work by default, you'll need to edit
-   src/perl/irssi-core.pl and remove all lines with "delete_package"
-   in them
- - Compiling fails if you compile irssi with GCC in a system that has
-   perl compiled with some other C compiler. Very common problem with
-   non-Linux/BSD systems. You'll need to edit src/perl/*/Makefile files
-   and remove the parameters that gcc doesn't like. Mostly you'll just
-   need to keep the -I and -D parameters and add -fPIC.
- - If there's any weird crashing at startup, you might have older irssi's
-   perl libraries installed somewhere, and you should remove those.
- - Dynamic libraries don't want to work with some systems, so if your
-   system complains about some missing symbol in Irssi.so file, configure
-   irssi with --with-perl-staticlib option (NOT same as --with-perl=static).
- - If configure complains that it doesn't find some perl stuff, you're
-   probably missing libperl.so or libperl.a. In debian, you'll need to do
-   apt-get install libperl-dev
-
-You can verify that the perl module is loaded and working with "/LOAD"
-command. It should print something like:
-
-Module               Type    Submodules
-...
-perl                 static  core fe
+You'll need to have perl support compiled with irssi. If "/LOAD"
+doesn't show perl in list of loaded modules, you have a problem. See
+INSTALL file for information about perl problems.
 
 
  Running scripts

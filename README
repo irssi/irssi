@@ -3,11 +3,16 @@
 irssi, http://irssi.org
 
 
+ * INSTALLATION
+
+See INSTALL file.
+
+
  * FILES
 
  - docs/ directory contains several documents:
     - startup-HOWTO.txt - new users should read this
-    - manual.txt - manual I started writing but didn't get it finished :)
+    - manual.txt - manual I started writing but didn't get it very far :)
     - perl.txt - Perl scripting help
     - formats.txt - How to use colors, etc. with irssi
     - faq.txt - Frequently Asked Questions
@@ -107,5 +112,5 @@ See TODO file if it is already listed in there - if not send me email..
 
  - Timo Sirainen
  - tss@iki.fi
- - cras@ircnet/efnet/opn/silc
- - #irssi@ircnet/opn
+ - cras at ircnet/opn/silc
+ - #irssi at ircnet/opn, #irssi.fi at ircnet

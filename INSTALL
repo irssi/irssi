@@ -1,0 +1,65 @@
+
+ Irssi installation instructions
+ -------------------------------
+
+First of all, you need GLib to compile irssi. If you don't have it
+already, you can either install it or let irssi download & compile it.
+The automatic downloading works only if you have wget or ncftpget
+installed, you can do it manually by unpacking glib sources to irssi's
+root dir.
+
+For most people, this should work just fine:
+
+ ./configure
+ make
+ su
+ make install     (not _really_ required except for perl support)
+
+You may want to give some parameters to configure, here's the most
+commonly used ones:
+
+  --prefix        - Specifies the path where irssi will be installed.
+                    YES, you can install irssi WITHOUT ROOT permissions
+		    by using --prefix=/home/dir
+  --with-proxy    - Build the irssi proxy (see startup-HOWTO).
+  --enable-ipv6   - Enable IPv6 support.
+
+If GLib or ncurses is installed installed in a non-standard path you can
+specify it with --with-glib=/path and --with-ncurses=/path.
+
+Irssi doesn't really need curses anymore, by default it uses
+terminfo/termcap directly. The functions for using terminfo/termcap
+however are usually only in curses library, some systems use libtermcap
+as well. If you want to use only curses calls for some reason, use
+--without-terminfo.
+
+
+ Perl problems
+ -------------
+
+Perl support generates most of the problems. There's quite a many
+things that can go wrong:
+
+ - Perl 5.004 doesn't work by default, you'll need to edit
+   src/perl/irssi-core.pl and remove all lines with "delete_package"
+   in them.
+ - Compiling fails if you compile irssi with GCC in a system that has
+   perl compiled with some other C compiler. Very common problem with
+   non-Linux/BSD systems. You'll need to edit src/perl/*/Makefile files
+   and remove the parameters that gcc doesn't like. Mostly you'll just
+   need to keep the -I and -D parameters and add -fPIC.
+ - If there's any weird crashing at startup, you might have older irssi's
+   perl libraries installed somewhere, and you should remove those.
+ - Dynamic libraries don't want to work with some systems, so if your
+   system complains about some missing symbol in Irssi.so file, configure
+   irssi with --with-perl-staticlib option (NOT same as --with-perl=static).
+ - If configure complains that it doesn't find some perl stuff, you're
+   probably missing libperl.so or libperl.a. In debian, you'll need to do
+   apt-get install libperl-dev
+
+You can verify that the perl module is loaded and working with "/LOAD"
+command. It should print something like:
+
+Module               Type    Submodules
+...
+perl                 static  core fe
