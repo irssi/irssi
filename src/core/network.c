@@ -411,15 +411,16 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 		}
 	}
 	freeaddrinfo(ailist);
+	return count > 0 ? 0 : 1;
 #else
 	hp = gethostbyname(addr);
 	if (hp == NULL) return h_errno;
 
 	ip4->family = AF_INET;
 	memcpy(&ip4->ip, hp->h_addr, 4);
-#endif
 
-	return count > 0 ? 0 : 1;
+	return 0;
+#endif
 }
 
 /* Get name for host, *name should be g_free()'d unless it's NULL.
