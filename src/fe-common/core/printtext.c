@@ -77,7 +77,7 @@ static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       dest, GINT_TO_POINTER(formatnum), arglist);
 
-        str = format_get_text_theme_args(theme, module, dest, formatnum, va);
+        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
 	if (*str != '\0') print_line(dest, str);
 	g_free(str);
 }
