@@ -127,13 +127,16 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 	rec->error = -1;
 	rec->errorstr = NULL;
 
-	/* get ip+error - try for max. 1-2 seconds */
 #ifndef WIN32
 	fcntl(g_io_channel_unix_get_fd(pipe), F_SETFL, O_NONBLOCK);
 #endif
 
-	if (g_io_channel_read_block(pipe, rec, sizeof(*rec)) == -1)
-                return -1;
+	/* get ip+error */
+	if (g_io_channel_read_block(pipe, rec, sizeof(*rec)) == -1) {
+		rec->errorstr = g_strdup_printf("Host name lookup: %s",
+						g_strerror(errno));
+		return -1;
+	}
 
 	if (rec->error) {
 		/* read error string, if we can't read everything for some
