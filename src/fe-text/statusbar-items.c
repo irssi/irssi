@@ -604,6 +604,9 @@ static void sig_mainwindow_created(MAIN_WINDOW_REC *window)
 static void sig_mainwindow_destroyed(MAIN_WINDOW_REC *window)
 {
 	if (window == mainbar_window) {
+		statusbar_destroy(mainbar);
+                window->statusbar = NULL;
+
 		mainbar = NULL;
 		mainbar_window = NULL;
 	}

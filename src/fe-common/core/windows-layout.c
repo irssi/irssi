@@ -94,6 +94,11 @@ static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 
 void windows_layout_restore(void)
 {
+	signal_emit("windows restored", 0);
+}
+
+static void sig_windows_restored(void)
+{
 	WINDOW_REC *window;
 	CONFIG_NODE *node;
 	GSList *tmp;
@@ -104,7 +109,10 @@ void windows_layout_restore(void)
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		window = window_create(NULL, TRUE);
+		window = window_find_refnum(atoi(node->key));
+		if (window == NULL)
+			window = window_create(NULL, TRUE);
+
 		window_set_refnum(window, atoi(node->key));
                 window->sticky_refnum = config_node_get_bool(node, "sticky_refnum", FALSE);
 		window_set_name(window, config_node_get_str(node, "name", NULL));
@@ -118,8 +126,6 @@ void windows_layout_restore(void)
 		window_add_items(window, config_node_section(node, "items", -1));
 		signal_emit("window restore", 2, window, node);
 	}
-
-	signal_emit("windows restored", 0);
 }
 
 static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
@@ -204,9 +210,11 @@ void windows_layout_reset(void)
 void windows_layout_init(void)
 {
 	signal_add("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
+	signal_add("windows restored", (SIGNAL_FUNC) sig_windows_restored);
 }
 
 void windows_layout_deinit(void)
 {
 	signal_remove("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
+	signal_remove("windows restored", (SIGNAL_FUNC) sig_windows_restored);
 }

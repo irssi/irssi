@@ -61,33 +61,33 @@ static void sig_window_create_override(gpointer tab)
 	window_create_override = GPOINTER_TO_INT(tab);
 }
 
-static void gui_window_created(WINDOW_REC *window)
+static void gui_window_created(WINDOW_REC *window, void *automatic)
 {
 	MAIN_WINDOW_REC *parent;
+        int empty_window;
 
 	g_return_if_fail(window != NULL);
 
 	parent = window_create_override != 0 &&
 		active_win != NULL && WINDOW_GUI(active_win) != NULL ?
-		WINDOW_GUI(active_win)->parent : mainwindow_create();
+		WINDOW_MAIN(active_win) : mainwindow_create();
 	if (parent == NULL) {
 		/* not enough space for new window, but we really can't
 		   abort creation of the window anymore, so create hidden
 		   window instead. */
-		parent = WINDOW_GUI(active_win)->parent;
+		parent = WINDOW_MAIN(active_win);
 	}
 	window_create_override = -1;
 
-	if (settings_get_bool("autostick_split_windows") &&
-	    (parent->sticky_windows != NULL ||
-	     (mainwindows->next != NULL && parent->active == NULL))) {
-                /* set the window sticky */
-		parent->sticky_windows =
-			g_slist_append(parent->sticky_windows, window);
-	}
+        empty_window = parent->active == NULL;
 
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
+
+	if (settings_get_bool("autostick_split_windows") &&
+	    automatic == NULL && (parent->sticky_windows || empty_window))
+		gui_window_set_sticky(window);
+
 	signal_emit("gui window created", 1, window);
 }
 
@@ -101,10 +101,9 @@ static void gui_window_destroyed(WINDOW_REC *window)
 	gui = WINDOW_GUI(window);
 	parent = gui->parent;
 
-	signal_emit("gui window destroyed", 1, window);
+	gui_window_set_unsticky(window);
 
-	parent->sticky_windows =
-		g_slist_remove(parent->sticky_windows, window);
+	signal_emit("gui window destroyed", 1, window);
 
 	gui_window_deinit(gui);
 	window->gui_data = NULL;
@@ -139,6 +138,26 @@ void gui_window_scroll_line(WINDOW_REC *window, LINE_REC *line)
 
         textbuffer_view_scroll_line(WINDOW_GUI(window)->view, line);
 	signal_emit("gui page scrolled", 1, window);
+}
+
+void gui_window_set_sticky(WINDOW_REC *window)
+{
+	GUI_WINDOW_REC *gui = WINDOW_GUI(window);
+
+	if (!gui->sticky) {
+		gui->sticky = TRUE;
+		gui->parent->sticky_windows++;
+	}
+}
+
+void gui_window_set_unsticky(WINDOW_REC *window)
+{
+	GUI_WINDOW_REC *gui = WINDOW_GUI(window);
+
+	if (gui->sticky) {
+		gui->sticky = FALSE;
+		gui->parent->sticky_windows--;
+	}
 }
 
 void window_update_prompt(void)
@@ -193,13 +212,17 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 {
 	MAIN_WINDOW_REC *oldparent;
 
-	oldparent = WINDOW_GUI(window)->parent;
+	oldparent = WINDOW_MAIN(window);
 	if (oldparent == parent)
 		return;
 
+        gui_window_set_unsticky(window);
 	textbuffer_view_set_window(WINDOW_GUI(window)->view, NULL);
 
-	WINDOW_GUI(window)->parent = parent;
+	WINDOW_MAIN(window) = parent;
+        if (parent->sticky_windows)
+		gui_window_set_sticky(window);
+
 	if (parent->height != oldparent->height ||
 	    parent->width != oldparent->width)
 		gui_window_resize(window, parent->width, parent->height);
@@ -212,7 +235,7 @@ static MAIN_WINDOW_REC *mainwindow_find_unsticky(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		if (rec->sticky_windows == NULL)
+		if (!rec->sticky_windows)
                         return rec;
 	}
 
@@ -229,20 +252,20 @@ static void signal_window_changed(WINDOW_REC *window)
 
         if (quitting) return;
 
-        parent = WINDOW_GUI(window)->parent;
+        parent = WINDOW_MAIN(window);
 	if (is_window_visible(window)) {
 		/* already visible */
 		active_mainwin = parent;
 	} else if (active_mainwin == NULL) {
                 /* no main window set yet */
 		active_mainwin = parent;
-	} else if (g_slist_find(parent->sticky_windows, window) != NULL) {
+	} else if (WINDOW_GUI(window)->sticky) {
                 /* window is sticky, switch to correct main window */
 		if (parent != active_mainwin)
                         active_mainwin = parent;
 	} else {
 		/* move window to active main window */
-                if (active_mainwin->sticky_windows != NULL) {
+                if (active_mainwin->sticky_windows) {
 			/* active mainwindow is sticky, we'll need to
 			   set the window active somewhere else */
                         active_mainwin = mainwindow_find_unsticky();

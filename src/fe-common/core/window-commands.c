@@ -458,70 +458,85 @@ static void cmd_window_name(const char *data)
 
 /* we're moving the first window to last - move the first contiguous block
    of refnums to left. Like if there's windows 1..5 and 7..10, move 1 to
-   11, 2..5 to 1..4 and leave 7..10 alone  */
-static void windows_move_left(WINDOW_REC *move_window)
+   11, 2..5 to 1..4 and leave 7..10 alone */
+static void window_refnums_move_left(WINDOW_REC *move_window)
 {
 	WINDOW_REC *window;
-	int refnum;
+	int refnum, new_refnum;
 
-	window_set_refnum(move_window, windows_refnum_last()+1);
-	for (refnum = 2;; refnum++) {
+        new_refnum = windows_refnum_last();
+	for (refnum = move_window->refnum+1; refnum <= new_refnum; refnum++) {
 		window = window_find_refnum(refnum);
-		if (window == NULL) break;
+		if (window == NULL) {
+                        new_refnum++;
+			break;
+		}
 
 		window_set_refnum(window, refnum-1);
 	}
+
+	window_set_refnum(move_window, new_refnum);
 }
 
 /* we're moving the last window to first - make some space so we can use the
    refnum 1 */
-static void windows_move_right(WINDOW_REC *move_window)
+static void window_refnums_move_right(WINDOW_REC *move_window)
 {
 	WINDOW_REC *window;
-	int refnum;
+	int refnum, new_refnum;
+
+        new_refnum = 1;
+	if (window_find_refnum(new_refnum) == NULL) {
+		window_set_refnum(move_window, new_refnum);
+                return;
+	}
 
 	/* find the first unused refnum, like if there's windows
 	   1..5 and 7..10, we only need to move 1..5 to 2..6 */
-	refnum = 1;
-	while (window_find_refnum(refnum) != NULL) refnum++;
-
+	refnum = new_refnum;
+	while (move_window->refnum == refnum ||
+	       window_find_refnum(refnum) != NULL) refnum++;
 	refnum--;
-	while (refnum > 0) {
+
+	while (refnum >= new_refnum) {
 		window = window_find_refnum(refnum);
-		g_return_if_fail(window != NULL);
-		window_set_refnum(window, window == move_window ? 1 : refnum+1);
+		window_set_refnum(window, refnum+1);
 
 		refnum--;
 	}
+
+	window_set_refnum(move_window, new_refnum);
 }
 
-static void cmd_window_move_left(void)
+/* SYNTAX: WINDOW MOVE PREV */
+static void cmd_window_move_prev(void)
 {
 	int refnum;
 
-	refnum = window_refnum_prev(active_win->refnum, TRUE);
+	refnum = window_refnum_prev(active_win->refnum, FALSE);
 	if (refnum != -1) {
 		window_set_refnum(active_win, refnum);
 		return;
 	}
 
-	windows_move_left(active_win);
+	window_refnums_move_left(active_win);
 }
 
-static void cmd_window_move_right(void)
+/* SYNTAX: WINDOW MOVE NEXT */
+static void cmd_window_move_next(void)
 {
 	int refnum;
 
-	refnum = window_refnum_next(active_win->refnum, TRUE);
+	refnum = window_refnum_next(active_win->refnum, FALSE);
 	if (refnum != -1) {
 		window_set_refnum(active_win, refnum);
 		return;
 	}
 
-        windows_move_right(active_win);
+        window_refnums_move_right(active_win);
 }
 
-/* SYNTAX: WINDOW MOVE <number>|left|right */
+/* SYNTAX: WINDOW MOVE <number>|<direction> */
 static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	int new_refnum, refnum;
@@ -666,8 +681,8 @@ void window_commands_init(void)
 	command_bind("window number", NULL, (SIGNAL_FUNC) cmd_window_number);
 	command_bind("window name", NULL, (SIGNAL_FUNC) cmd_window_name);
 	command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
-	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
-	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
+	command_bind("window move prev", NULL, (SIGNAL_FUNC) cmd_window_move_prev);
+	command_bind("window move next", NULL, (SIGNAL_FUNC) cmd_window_move_next);
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
 	command_bind("layout", NULL, (SIGNAL_FUNC) cmd_layout);
@@ -703,8 +718,8 @@ void window_commands_deinit(void)
 	command_unbind("window number", (SIGNAL_FUNC) cmd_window_number);
 	command_unbind("window name", (SIGNAL_FUNC) cmd_window_name);
 	command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
-	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
-	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
+	command_unbind("window move prev", (SIGNAL_FUNC) cmd_window_move_prev);
+	command_unbind("window move next", (SIGNAL_FUNC) cmd_window_move_next);
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
 	command_unbind("layout", (SIGNAL_FUNC) cmd_layout);

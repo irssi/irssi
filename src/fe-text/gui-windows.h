@@ -5,6 +5,7 @@
 #include "textbuffer-view.h"
 
 #define WINDOW_GUI(a) ((GUI_WINDOW_REC *) ((a)->gui_data))
+#define WINDOW_MAIN(a) (WINDOW_GUI(a)->parent)
 
 #define is_window_visible(win) \
     (WINDOW_GUI(win)->parent->active == (win))
@@ -13,6 +14,7 @@ typedef struct {
 	MAIN_WINDOW_REC *parent;
 	TEXT_BUFFER_VIEW_REC *view;
 
+	unsigned int sticky:1;
 	unsigned int use_insert_after:1;
         LINE_REC *insert_after;
 } GUI_WINDOW_REC;
@@ -30,6 +32,9 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent);
 
 void gui_window_scroll(WINDOW_REC *window, int lines);
 void gui_window_scroll_line(WINDOW_REC *window, LINE_REC *line);
+
+void gui_window_set_sticky(WINDOW_REC *window);
+void gui_window_set_unsticky(WINDOW_REC *window);
 
 void window_update_prompt(void);
 

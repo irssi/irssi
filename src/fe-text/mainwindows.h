@@ -8,11 +8,12 @@
 
 typedef struct {
 	WINDOW_REC *active;
-        GSList *sticky_windows; /* list of windows allowed to show only in this mainwindow */
 
 	SCREEN_WINDOW *screen_win;
+        int sticky_windows; /* number of sticky windows */
 
 	int first_line, last_line, width, height;
+
 	int statusbar_lines;
 	void *statusbar;
 	void *statusbar_window_item;

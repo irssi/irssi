@@ -32,7 +32,7 @@ irssi_SOURCES = \
 	lastlog.c \
         mainwindows.c \
         mainwindow-activity.c \
-        mainwindows-save.c \
+        mainwindows-layout.c \
         screen.c \
         statusbar.c \
         statusbar-items.c \

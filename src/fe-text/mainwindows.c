@@ -88,25 +88,41 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 	signal_emit("mainwindow resized", 1, window);
 }
 
+static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
+{
+	GSList *tmp, *list;
+
+        list = NULL;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (WINDOW_GUI(rec)->sticky && WINDOW_MAIN(rec) == mainwin) {
+			list = g_slist_insert_sorted(list, rec, (GCompareFunc)
+						     window_refnum_cmp);
+		}
+	}
+
+        return list;
+}
+
 void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 			      WINDOW_REC *skip_window)
 {
-	MAIN_WINDOW_REC *parent;
 	GSList *tmp;
 
         mainwin->active = NULL;
-	if (mainwin->sticky_windows != NULL) {
+	if (mainwin->sticky_windows) {
 		/* sticky window */
-		window_set_active(mainwin->sticky_windows->data);
+                tmp = get_sticky_windows_sorted(mainwin);
+		window_set_active(tmp->data);
+                g_slist_free(tmp);
                 return;
 	}
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-                parent = WINDOW_GUI(rec)->parent;
-		if (rec != skip_window &&
-		    g_slist_find(parent->sticky_windows, rec) == NULL) {
+		if (rec != skip_window && WINDOW_MAIN(rec) == mainwin) {
                         window_set_active(rec);
                         return;
 		}
@@ -146,7 +162,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 			reserved_down-rec->statusbar_lines;
 		rec->height = rec->last_line-rec->first_line+1;
 	} else {
-		parent = WINDOW_GUI(active_win)->parent;
+		parent = WINDOW_MAIN(active_win);
 		if (parent->height < WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
 			parent = find_window_with_room();
 		if (parent == NULL)
@@ -237,7 +253,7 @@ static void gui_windows_remove_parent(MAIN_WINDOW_REC *window)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->gui_data != NULL && WINDOW_GUI(rec)->parent == window)
+		if (rec->gui_data != NULL && WINDOW_MAIN(rec) == window)
                         gui_window_reparent(rec, new_parent);
 	}
 }
@@ -546,7 +562,7 @@ static void cmd_window_grow(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	window = WINDOW_GUI(active_win)->parent;
+	window = WINDOW_MAIN(active_win);
 
 	if (!mainwindow_grow(window, count)) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
@@ -557,13 +573,10 @@ static void cmd_window_grow(const char *data)
 /* SYNTAX: WINDOW SHRINK [<lines>] */
 static void cmd_window_shrink(const char *data)
 {
-	MAIN_WINDOW_REC *window;
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	window = WINDOW_GUI(active_win)->parent;
-
-	if (!mainwindow_shrink(window, count)) {
+	if (!mainwindow_shrink(WINDOW_MAIN(active_win), count)) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_WINDOW_TOO_SMALL);
 	}
@@ -578,7 +591,7 @@ static void cmd_window_size(const char *data)
 	if (!is_numeric(data, 0)) return;
 	size = atoi(data);
 
-	size -= WINDOW_GUI(active_win)->parent->height;
+	size -= WINDOW_MAIN(active_win)->height;
 	if (size == 0) return;
 
 	ltoa(sizestr, size < 0 ? -size : size);
@@ -653,16 +666,16 @@ static void cmd_window_hide(const char *data)
 	if (window == NULL || !is_window_visible(window))
 		return;
 
-	if (WINDOW_GUI(window)->parent->sticky_windows != NULL) {
+	if (WINDOW_MAIN(window)->sticky_windows) {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 				   TXT_CANT_HIDE_STICKY_WINDOWS);
                 return;
 	}
 
-	mainwindow_destroy(WINDOW_GUI(window)->parent);
+	mainwindow_destroy(WINDOW_MAIN(window));
 
 	if (active_mainwin == NULL) {
-		active_mainwin = WINDOW_GUI(active_win)->parent;
+		active_mainwin = WINDOW_MAIN(active_win);
                 window_set_active(active_mainwin->active);
 	}
 }
@@ -688,19 +701,18 @@ static void cmd_window_show(const char *data)
 	if (window == NULL || is_window_visible(window))
 		return;
 
-	if (WINDOW_GUI(window)->parent->sticky_windows != NULL) {
+	if (WINDOW_MAIN(window)->sticky_windows) {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 				   TXT_CANT_SHOW_STICKY_WINDOWS);
                 return;
 	}
 
 	parent = mainwindow_create();
-	if (settings_get_bool("autostick_split_windows")) {
-		parent->sticky_windows =
-			g_slist_append(parent->sticky_windows, window);
-	}
-        parent->active = window;
+	parent->active = window;
         gui_window_reparent(window, parent);
+
+	if (settings_get_bool("autostick_split_windows"))
+                gui_window_set_sticky(window);
 
 	active_mainwin = NULL;
 	window_set_active(window);
@@ -726,73 +738,88 @@ static void cmd_window_down(void)
 		window_set_active(rec->active);
 }
 
+#define WINDOW_STICKY_MATCH(window, sticky_parent) \
+	((!WINDOW_GUI(window)->sticky && (sticky_parent) == NULL) || \
+	 (WINDOW_GUI(window)->sticky && \
+	  WINDOW_MAIN(window) == (sticky_parent)))
+
+static int window_refnum_left(int refnum, int wrap)
+{
+        MAIN_WINDOW_REC *find_sticky;
+	WINDOW_REC *window;
+
+	window = window_find_refnum(refnum);
+	g_return_val_if_fail(window != NULL, -1);
+
+	find_sticky = WINDOW_MAIN(window)->sticky_windows ?
+		WINDOW_MAIN(window) : NULL;
+
+	do {
+		refnum = window_refnum_prev(refnum, wrap);
+		if (refnum < 0)
+			break;
+
+		window = window_find_refnum(refnum);
+	} while (!WINDOW_STICKY_MATCH(window, find_sticky));
+
+        return refnum;
+}
+
+static int window_refnum_right(int refnum, int wrap)
+{
+        MAIN_WINDOW_REC *find_sticky;
+	WINDOW_REC *window;
+
+	window = window_find_refnum(refnum);
+	g_return_val_if_fail(window != NULL, -1);
+
+	find_sticky = WINDOW_MAIN(window)->sticky_windows ?
+		WINDOW_MAIN(window) : NULL;
+
+	do {
+		refnum = window_refnum_next(refnum, wrap);
+		if (refnum < 0)
+			break;
+
+		window = window_find_refnum(refnum);
+	} while (!WINDOW_STICKY_MATCH(window, find_sticky));
+
+        return refnum;
+}
+
 /* SYNTAX: WINDOW LEFT */
 static void cmd_window_left(const char *data, SERVER_REC *server, void *item)
 {
-        MAIN_WINDOW_REC *parent;
-        WINDOW_REC *window;
-	int pos, num;
+	int refnum;
 
-        window = NULL;
-	if (active_mainwin->sticky_windows == NULL) {
-		/* no sticky windows, go to previous non-sticky window */
-                num = active_win->refnum;
-		do {
-			num = window_refnum_prev(num, TRUE);
-			if (num < 0) {
-                                window = NULL;
-				break;
-			}
-                        window = window_find_refnum(num);
-			parent = WINDOW_GUI(window)->parent;
-		} while (g_slist_find(parent->sticky_windows, window) != NULL);
-	} else {
-		pos = g_slist_index(active_mainwin->sticky_windows,
-				    active_win);
-		if (pos > 0) {
-			window = g_slist_nth_data(
-					active_mainwin->sticky_windows, pos-1);
-		} else {
-			window = g_slist_last(
-					active_mainwin->sticky_windows)->data;
-		}
-	}
-
-        if (window != NULL)
-		window_set_active(window);
+	refnum = window_refnum_left(active_win->refnum, TRUE);
+	if (refnum != -1)
+		window_set_active(window_find_refnum(refnum));
 }
 
 /* SYNTAX: WINDOW RIGHT */
 static void cmd_window_right(void)
 {
-        MAIN_WINDOW_REC *parent;
-	WINDOW_REC *window;
-        GSList *tmp;
-	int num;
+	int refnum;
 
-        window = NULL;
-	if (active_mainwin->sticky_windows == NULL) {
-		/* no sticky windows, go to next non-sticky window */
-                num = active_win->refnum;
-		do {
-			num = window_refnum_next(num, TRUE);
-			if (num < 0) {
-                                window = NULL;
-				break;
-			}
-                        window = window_find_refnum(num);
-			parent = WINDOW_GUI(window)->parent;
-		} while (g_slist_find(parent->sticky_windows, window) != NULL);
-	} else {
-		tmp = g_slist_find(active_mainwin->sticky_windows, active_win);
-		if (tmp != NULL) {
-			window = tmp->next != NULL ? tmp->next->data :
-				active_mainwin->sticky_windows->data;
-		}
+	refnum = window_refnum_right(active_win->refnum, TRUE);
+	if (refnum != -1)
+		window_set_active(window_find_refnum(refnum));
+}
+
+static void window_reparent(WINDOW_REC *win, MAIN_WINDOW_REC *mainwin)
+{
+	MAIN_WINDOW_REC *old_mainwin;
+
+	old_mainwin = WINDOW_MAIN(win);
+
+	if (old_mainwin != mainwin) {
+		gui_window_reparent(win, mainwin);
+		window_set_active(win);
+
+		if (old_mainwin->active == win)
+			mainwindow_change_active(old_mainwin, win);
 	}
-
-        if (window != NULL)
-		window_set_active(window);
 }
 
 /* SYNTAX: WINDOW STICK [<ref#>] [ON|OFF] */
@@ -819,62 +846,79 @@ static void cmd_window_stick(const char *data)
 
 	if (g_strncasecmp(data, "OF", 2) == 0 || toupper(*data) == 'N') {
 		/* unset sticky */
-		if (g_slist_find(mainwin->sticky_windows, win) == NULL) {
+		if (!WINDOW_GUI(win)->sticky) {
 			printformat_window(win, MSGLEVEL_CLIENTERROR,
 					   TXT_WINDOW_NOT_STICKY);
 		} else {
-			mainwin->sticky_windows =
-				g_slist_remove(mainwin->sticky_windows, win);
+                        gui_window_set_unsticky(win);
 			printformat_window(win, MSGLEVEL_CLIENTNOTICE,
 					   TXT_WINDOW_UNSET_STICKY);
 		}
 	} else {
 		/* set sticky */
-		MAIN_WINDOW_REC *old_mainwin;
-
-                old_mainwin = WINDOW_GUI(win)->parent;
-		old_mainwin->sticky_windows =
-			g_slist_remove(old_mainwin->sticky_windows, win);
-
-		if (g_slist_find(mainwin->sticky_windows, win) == NULL) {
-			mainwin->sticky_windows =
-				g_slist_append(mainwin->sticky_windows, win);
-		}
-		if (old_mainwin != mainwin) {
-                        if (old_mainwin->active == win)
-				mainwindow_change_active(old_mainwin, win);
-			gui_window_reparent(win, mainwin);
-                        window_set_active(win);
-		}
+		window_reparent(win, mainwin);
+                gui_window_set_sticky(win);
 
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_WINDOW_SET_STICKY);
 	}
 }
 
+/* SYNTAX: WINDOW MOVE LEFT */
+static void cmd_window_move_left(void)
+{
+	int refnum;
+
+	refnum = window_refnum_left(active_win->refnum, TRUE);
+	if (refnum != -1)
+		window_set_refnum(active_win, refnum);
+}
+
+/* SYNTAX: WINDOW MOVE RIGHT */
+static void cmd_window_move_right(void)
+{
+	int refnum;
+
+	refnum = window_refnum_right(active_win->refnum, TRUE);
+	if (refnum != -1)
+		window_set_refnum(active_win, refnum);
+}
+
+/* SYNTAX: WINDOW MOVE UP */
+static void cmd_window_move_up(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_upper(active_mainwin->first_line);
+	if (rec != NULL)
+		window_reparent(active_win, rec);
+}
+
+/* SYNTAX: WINDOW MOVE DOWN */
+static void cmd_window_move_down(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_lower(active_mainwin->last_line);
+	if (rec != NULL)
+		window_reparent(active_win, rec);
+}
+
 static void windows_print_sticky(MAIN_WINDOW_REC *win)
 {
-        GSList *tmp, *sorted;
+        GSList *tmp, *list;
 	GString *str;
 
-        /* sort the sticky windows */
-        sorted = NULL;
-	for (tmp = win->sticky_windows; tmp != NULL; tmp = tmp->next) {
+        /* convert to string */
+	str = g_string_new(NULL);
+	list = get_sticky_windows_sorted(win);
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		sorted = g_slist_insert_sorted(sorted, rec, (GCompareFunc)
-					       window_refnum_cmp);
-	}
-
-        /* convert to string */
-        str = g_string_new(NULL);
-	while (sorted != NULL) {
-		WINDOW_REC *rec = sorted->data;
-
 		g_string_sprintfa(str, "#%d, ", rec->refnum);
-                sorted = g_slist_remove(sorted, rec);
 	}
         g_string_truncate(str, str->len-2);
+        g_slist_free(list);
 
 	printformat_window(win->active, MSGLEVEL_CLIENTCRAP,
 			   TXT_WINDOW_INFO_STICKY, str->str);
@@ -883,11 +927,8 @@ static void windows_print_sticky(MAIN_WINDOW_REC *win)
 
 static void sig_window_print_info(WINDOW_REC *win)
 {
-	MAIN_WINDOW_REC *mainwin;
-
-	mainwin = WINDOW_GUI(win)->parent;
-	if (mainwin->sticky_windows != NULL)
-                windows_print_sticky(mainwin);
+	if (WINDOW_MAIN(win)->sticky_windows)
+                windows_print_sticky(WINDOW_MAIN(win));
 }
 
 void mainwindows_init(void)
@@ -913,6 +954,10 @@ void mainwindows_init(void)
 	command_bind("window left", NULL, (SIGNAL_FUNC) cmd_window_left);
 	command_bind("window right", NULL, (SIGNAL_FUNC) cmd_window_right);
 	command_bind("window stick", NULL, (SIGNAL_FUNC) cmd_window_stick);
+	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
+	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
+	command_bind("window move up", NULL, (SIGNAL_FUNC) cmd_window_move_up);
+	command_bind("window move down", NULL, (SIGNAL_FUNC) cmd_window_move_down);
         signal_add("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
 
@@ -932,5 +977,9 @@ void mainwindows_deinit(void)
 	command_unbind("window left", (SIGNAL_FUNC) cmd_window_left);
 	command_unbind("window right", (SIGNAL_FUNC) cmd_window_right);
 	command_unbind("window stick", (SIGNAL_FUNC) cmd_window_stick);
+	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
+	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
+	command_unbind("window move up", (SIGNAL_FUNC) cmd_window_move_up);
+	command_unbind("window move down", (SIGNAL_FUNC) cmd_window_move_down);
         signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
