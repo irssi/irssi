@@ -9,11 +9,8 @@ default-theme.h: $(srcdir)/default.theme
 if BUILD_PLUGINS
 PLUGINS=plugins
 endif
-if BUILD_SERVERTEST
-SERVERTEST=servertest
-endif
 
-SUBDIRS = src $(SERVERTEST) docs scripts
+SUBDIRS = src docs scripts
 
 confdir = $(sysconfdir)
 conf_DATA = irssi.conf

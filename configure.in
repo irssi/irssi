@@ -183,14 +183,6 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
-AC_ARG_WITH(tests,
-[  --with-tests           Run all the tests],
-	if test x$withval != xno; then
-		TEST_DIR=test
-	fi,
-	TEST_DIR=)
-AC_SUBST(TEST_DIR)
-
 AC_ARG_ENABLE(ipv6,
 [  --enable-ipv6           Enable IPv6 support],
 	if test x$enableval = xyes; then
@@ -660,7 +652,6 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
-AM_CONDITIONAL(BUILD_SERVERTEST, test -n "$TEST_DIR")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
@@ -797,7 +788,6 @@ src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL
 src/perl/ui/Makefile.PL
 src/perl/textui/Makefile.PL
-servertest/Makefile
 scripts/Makefile
 scripts/examples/Makefile
 docs/Makefile
