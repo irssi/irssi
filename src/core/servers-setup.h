@@ -3,12 +3,11 @@
 
 #include "servers.h"
 
-#define IS_SERVER_SETUP(server) \
-	((server) != NULL && \
-	 module_find_id("SERVER SETUP", (server)->type) != -1)
-
 #define SERVER_SETUP(server) \
-	(IS_SERVER_SETUP(server) ? (SERVER_SETUP_REC *) (server) : NULL)
+	MODULE_CHECK_CAST(server, SERVER_SETUP_REC, type, "SERVER SETUP")
+
+#define IS_SERVER_SETUP(server) \
+	(SERVER_SETUP(server) ? TRUE : FALSE)
 
 /* servers */
 typedef struct {

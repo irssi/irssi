@@ -1,13 +1,13 @@
 #ifndef __IRC_SERVERS_SETUP_H
 #define __IRC_SERVERS_SETUP_H
 
-#define IS_IRC_SERVER_SETUP(server) \
-	((server) != NULL && \
-	 module_find_id("IRC SERVER SETUP", (server)->chat_type) != -1)
 
 #define IRC_SERVER_SETUP(server) \
-	(IS_IRC_SERVER_SETUP(server) ? \
-	 (IRC_SERVER_SETUP_REC *) (server) : NULL)
+	MODULE_CHECK_CAST(server, IRC_SERVER_SETUP_REC, \
+			 chat_type, "IRC SERVER SETUP")
+
+#define IS_IRC_SERVER_SETUP(server) \
+	(IRC_SERVER_SETUP(server) ? TRUE : FALSE)
 
 typedef struct {
 #include "server-setup-rec.h"

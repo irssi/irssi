@@ -4,14 +4,12 @@
 #include "queries.h"
 #include "irc-servers.h"
 
-#define IS_IRC_QUERY(query) \
-	((query) != NULL && \
-	 module_find_id("IRC QUERY", \
-	                ((QUERY_REC *) (query))->chat_type) != -1)
-
 /* Returns IRC_QUERY_REC if it's IRC query, NULL if it isn't. */
 #define IRC_QUERY(query) \
-	(IS_IRC_QUERY(query) ? (QUERY_REC *) (query) : NULL)
+	MODULE_CHECK_CAST(query, QUERY_REC, chat_type, "IRC QUERY")
+
+#define IS_IRC_QUERY(query) \
+	(IRC_QUERY(query) ? TRUE : FALSE)
 
 void irc_queries_init(void);
 void irc_queries_deinit(void);

@@ -1,13 +1,14 @@
 #ifndef __IRC_CHATNETS_H
 #define __IRC_CHATNETS_H
 
-#define IS_IRC_CHATNET(chatnet) \
-	((chatnet) != NULL && \
-	 module_find_id("IRC CHATNET", (chatnet)->chat_type) != -1)
+#include "modules.h"
 
 /* returns IRC_CHATNET_REC if it's IRC network, NULL if it isn't */
 #define IRC_CHATNET(chatnet) \
-	(IS_IRC_CHATNET(chatnet) ? (IRC_CHATNET_REC *) (chatnet) : NULL)
+	MODULE_CHECK_CAST(chatnet, IRC_CHATNET_REC, chat_type, "IRC CHATNET")
+
+#define IS_IRC_CHATNET(chatnet) \
+	(IRC_CHATNET(chatnet) ? TRUE : FALSE)
 
 #define IS_IRCNET(ircnet) IS_IRC_CHATNET(ircnet)
 #define IRCNET(ircnet) IRC_CHATNET(ircnet)

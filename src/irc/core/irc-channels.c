@@ -181,6 +181,7 @@ static void sig_connected(SERVER_REC *server)
 void irc_channels_init(void)
 {
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_init();
 	channel_rejoin_init();
@@ -197,6 +198,7 @@ void irc_channels_init(void)
 void irc_channels_deinit(void)
 {
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_deinit();
 	channel_rejoin_deinit();

@@ -4,14 +4,12 @@
 #include "channels.h"
 #include "irc-servers.h"
 
-#define IS_IRC_CHANNEL(channel) \
-	((channel) != NULL && \
-	 module_find_id("IRC CHANNEL", \
-	                ((IRC_CHANNEL_REC *) (channel))->chat_type) != -1)
-
 /* Returns IRC_CHANNEL_REC if it's IRC channel, NULL if it isn't. */
 #define IRC_CHANNEL(channel) \
-	(IS_IRC_CHANNEL(channel) ? (IRC_CHANNEL_REC *) (channel) : NULL)
+	MODULE_CHECK_CAST(channel, IRC_CHANNEL_REC, chat_type, "IRC CHANNEL")
+
+#define IS_IRC_CHANNEL(channel) \
+	(IRC_CHANNEL(channel) ? TRUE : FALSE)
 
 #define STRUCT_SERVER_REC IRC_SERVER_REC
 typedef struct {

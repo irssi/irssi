@@ -3,13 +3,12 @@
 
 #include "servers.h"
 
-#define IS_CHANNEL(channel) \
-	((channel) != NULL && \
-	 module_find_id("CHANNEL", ((CHANNEL_REC *) (channel))->type) != -1)
-
 /* Returns CHANNEL_REC if it's channel, NULL if it isn't. */
 #define CHANNEL(channel) \
-	(IS_CHANNEL(channel) ? (CHANNEL_REC *) (channel) : NULL)
+	MODULE_CHECK_CAST(channel, CHANNEL_REC, type, "CHANNEL")
+
+#define IS_CHANNEL(channel) \
+	(CHANNEL(channel) ? TRUE : FALSE)
 
 #define STRUCT_SERVER_REC SERVER_REC
 typedef struct {

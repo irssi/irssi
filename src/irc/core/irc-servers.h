@@ -3,21 +3,19 @@
 
 #include "servers.h"
 
-#define IS_IRC_SERVER(server) \
-	((server) != NULL && \
-	 module_find_id("IRC SERVER", (server)->chat_type) != -1)
-
-#define IS_IRC_SERVER_CONNECT(conn) \
-	((conn) != NULL && \
-	 module_find_id("IRC SERVER CONNECT", (conn)->chat_type) != -1)
-
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
-	(IS_IRC_SERVER(server) ? (IRC_SERVER_REC *) (server) : NULL)
+	MODULE_CHECK_CAST(server, IRC_SERVER_REC, chat_type, "IRC SERVER")
 
 #define IRC_SERVER_CONNECT(conn) \
-	(IS_IRC_SERVER_CONNECT(conn) ? \
-	 (IRC_SERVER_CONNECT_REC *) (conn) : NULL)
+	MODULE_CHECK_CAST(conn, IRC_SERVER_CONNECT_REC, \
+			 chat_type, "IRC SERVER CONNECT")
+
+#define IS_IRC_SERVER(server) \
+	(IRC_SERVER(server) ? TRUE : FALSE)
+
+#define IS_IRC_SERVER_CONNECT(conn) \
+	(IRC_SERVER_CONNECT(conn) ? TRUE : FALSE)
 
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */

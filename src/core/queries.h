@@ -3,13 +3,12 @@
 
 #include "servers.h"
 
-#define IS_QUERY(query) \
-	((query) != NULL && \
-	 module_find_id("QUERY", ((QUERY_REC *) (query))->type) != -1)
-
 /* Returns QUERY_REC if it's query, NULL if it isn't. */
 #define QUERY(query) \
-	(IS_QUERY(query) ? (QUERY_REC *) (query) : NULL)
+	MODULE_CHECK_CAST(query, QUERY_REC, type, "QUERY")
+
+#define IS_QUERY(query) \
+	(QUERY(query) ? TRUE : FALSE)
 
 #define STRUCT_SERVER_REC SERVER_REC
 typedef struct {

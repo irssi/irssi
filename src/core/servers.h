@@ -7,20 +7,19 @@
 typedef struct _ipaddr IPADDR;
 #endif
 
-#define IS_SERVER(server) \
-	((server) != NULL && module_find_id("SERVER", (server)->type) != -1)
-
-#define IS_SERVER_CONNECT(conn) \
-	((conn) != NULL && \
-	 module_find_id("SERVER CONNECT", (conn)->type) != -1)
-
 /* Returns SERVER_REC if it's server, NULL if it isn't. */
 #define SERVER(server) \
-	(IS_SERVER(server) ? (SERVER_REC *) (server) : NULL)
+	MODULE_CHECK_CAST(server, SERVER_REC, type, "SERVER")
 
 /* Returns SERVER_CONNECT_REC if it's server connection, NULL if it isn't. */
 #define SERVER_CONNECT(conn) \
-	(IS_SERVER_CONNECT(conn) ? (SERVER_CONNECT_REC *) (conn) : NULL)
+	MODULE_CHECK_CAST(conn, SERVER_CONNECT_REC, type, "SERVER CONNECT")
+
+#define IS_SERVER(server) \
+	(SERVER(server) ? TRUE : FALSE)
+
+#define IS_SERVER_CONNECT(conn) \
+	(SERVER_CONNECT(conn) ? TRUE : FALSE)
 
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */

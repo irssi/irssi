@@ -9,6 +9,7 @@
 #endif
 
 #include <stdio.h>
+#include <stddef.h>
 #include <stdarg.h>
 #include <ctype.h>
 #  ifdef HAVE_STRING_H

@@ -86,7 +86,7 @@ IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
 	return (IRC_SERVER_REC *) server;
 }
 
-static SERVER_REC *connect_server(const char *data)
+static SERVER_REC *irc_connect_server(const char *data)
 {
 	SERVER_CONNECT_REC *conn;
 	SERVER_REC *server;
@@ -137,7 +137,7 @@ static SERVER_REC *connect_server(const char *data)
 static void cmd_connect(const char *data)
 {
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
-	connect_server(data);
+	irc_connect_server(data);
 }
 
 
@@ -202,7 +202,7 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 		cmd_disconnect("* Changing server", server);
 	}
 
-	server = IRC_SERVER(connect_server(data));
+	server = IRC_SERVER(irc_connect_server(data));
 	if (*addr == '+' || server == NULL ||
 	    (ircnet != NULL && server->connrec->chatnet != NULL &&
 	     g_strcasecmp(ircnet, server->connrec->chatnet) != 0)) {

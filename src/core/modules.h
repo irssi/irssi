@@ -1,6 +1,18 @@
 #ifndef __MODULES_H
 #define __MODULES_H
 
+#define MODULE_DATA_INIT(rec) \
+        (rec)->module_data = g_hash_table_new(g_str_hash, g_str_equal)
+
+#define MODULE_DATA_DEINIT(rec) \
+        g_hash_table_destroy((rec)->module_data)
+
+#define MODULE_DATA_SET(rec, data) \
+	g_hash_table_insert((rec)->module_data, MODULE_NAME, data)
+
+#define MODULE_DATA(rec) \
+	g_hash_table_lookup((rec)->module_data, MODULE_NAME)
+
 enum {
 	MODULE_ERROR_ALREADY_LOADED,
 	MODULE_ERROR_LOAD,
@@ -19,17 +31,9 @@ MODULE_REC *module_find(const char *name);
 int module_load(const char *path);
 void module_unload(MODULE_REC *module);
 
-#define MODULE_DATA_INIT(rec) \
-        (rec)->module_data = g_hash_table_new(g_str_hash, g_str_equal)
-
-#define MODULE_DATA_DEINIT(rec) \
-        g_hash_table_destroy((rec)->module_data)
-
-#define MODULE_DATA_SET(rec, data) \
-	g_hash_table_insert((rec)->module_data, MODULE_NAME, data)
-
-#define MODULE_DATA(rec) \
-	g_hash_table_lookup((rec)->module_data, MODULE_NAME)
+#define MODULE_CHECK_CAST(object, cast, type_field, id) \
+	((cast *) module_check_cast(object, offsetof(cast, type_field), id))
+void *module_check_cast(void *object, int type_pos, const char *id);
 
 /* return unique number across all modules for `id' */
 int module_get_uniq_id(const char *module, int id);

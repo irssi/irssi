@@ -3,13 +3,12 @@
 
 #include "modules.h"
 
-#define IS_CHATNET(chatnet) \
-	((chatnet) != NULL && \
-	 module_find_id("CHATNET", (chatnet)->type) != -1)
-
 /* Returns CHATNET_REC if it's chatnet, NULL if it isn't. */
 #define CHATNET(chatnet) \
-	(IS_CHATNET(chatnet) ? (CHATNET_REC *) (chatnet) : NULL)
+	MODULE_CHECK_CAST(chatnet, CHATNET_REC, type, "CHATNET")
+
+#define IS_CHATNET(chatnet) \
+	(CHATNET(chatnet) ? TRUE : FALSE)
 
 typedef struct {
 #include "chatnet-rec.h"
