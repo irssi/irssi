@@ -138,25 +138,42 @@ void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...)
 	va_end(args);
 }
 
+static void create_names_start(GString *str, IRC_CHANNEL_REC *channel,
+			       CLIENT_REC *client)
+{
+	g_string_sprintf(str, ":proxy 353 %s %c %s :", client->nick,
+		      channel_mode_is_set(channel, 'p') ? '*' :
+		      channel_mode_is_set(channel, 's') ? '@' : '=',
+		      channel->name);
+}
+
 static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 {
 	GSList *tmp, *nicks;
 	GString *str;
+	int first;
 
 	proxy_outserver(client, "JOIN %s", channel->name);
-	proxy_outdata(client, ":proxy 353 %s %c %s :", client->nick,
-		      channel_mode_is_set(channel, 'p') ? '*' :
-		      channel_mode_is_set(channel, 's') ? '@' : '=',
-		      channel->name);
 
 	str = g_string_new(NULL);
+	create_names_start(str, channel, client);
 
+	first = TRUE;
 	nicks = nicklist_getnicks(CHANNEL(channel));
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *nick = tmp->data;
 
-		if (tmp != nicks)
-                        g_string_append_c(str, ' ');
+		if (str->len >= 500) {
+			g_string_append_c(str, '\n');
+			proxy_outdata(client, str->str);
+			create_names_start(str, channel, client);
+			first = TRUE;
+		}
+
+		if (first) {
+			g_string_append_c(str, ' ');
+			first = FALSE;
+		}
 
 		if (nick->op)
                         g_string_append_c(str, '@');
