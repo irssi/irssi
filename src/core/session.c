@@ -39,6 +39,7 @@ void session_set_binary(const char *path)
         irssi_binary = path;
 }
 
+/* SYNTAX: UPGRADE [<irssi binary path>] */
 static void cmd_upgrade(const char *data)
 {
 	CONFIG_REC *session;
