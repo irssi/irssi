@@ -777,16 +777,27 @@ static void cmd_completion(const char *data)
 		return;
 	}
 
-	if (*key != '\0' && *value != '\0') {
+	if (g_hash_table_lookup(optlist, "delete") != NULL && *key != '\0') {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_COMPLETION_REMOVED, key);
+
+		iconfig_set_str("completions", key, NULL);
+		signal_emit("completion removed", 1, key);
+	} else if (*key != '\0' && *value != '\0') {
 		int automatic = g_hash_table_lookup(optlist, "auto") != NULL;
 
 		node = config_node_section(node, key, NODE_TYPE_BLOCK);
 		iconfig_node_set_str(node, "value", value);
-		iconfig_node_set_bool(node, "auto", automatic);
+		if (automatic)
+			iconfig_node_set_bool(node, "auto", TRUE);
+		else
+			iconfig_node_set_str(node, "auto", NULL);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 			    TXT_COMPLETION_LINE,
 			    key, value, automatic ? "yes" : "no");
+
+		signal_emit("completion added", 1, key);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 			    TXT_COMPLETION_HEADER);
@@ -832,7 +843,7 @@ void completion_init(void)
 	signal_add("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command help", (SIGNAL_FUNC) sig_complete_command);
 
-	command_set_options("completion", "auto");
+	command_set_options("completion", "auto delete");
 }
 
 void completion_deinit(void)

@@ -264,8 +264,9 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "translation_not_found", "Error opening translation table file $0: $1", 2, { 0, 0 } },
 	{ "translation_file_error", "Error parsing translation table file $0", 1, { 0 } },
 	{ "no_completions", "There's no completions", 0 },
-	{ "completion_header", "Key        Value                                    Auto", 0 },
-	{ "completion_line", "$[10]0 $[!40]1 $2", 3, { 0, 0, 0 } },
+	{ "completion_removed", "Removed completion $0", 1, { 0 } },
+	{ "completion_header", "%#Key        Value                                    Auto", 0 },
+	{ "completion_line", "%#$[10]0 $[!40]1 $2", 3, { 0, 0, 0 } },
 	{ "completion_footer", "", 0 },
 
 	{ NULL, NULL, 0 }
