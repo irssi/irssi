@@ -424,7 +424,7 @@ static void sig_autorun()
 void perl_core_init(void)
 {
         print_script_errors = 1;
-	settings_add_str("per", "perl_use_lib", PERL_USE_LIB);
+	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
 	PL_perl_destruct_level = 1;
 	perl_signals_init();
