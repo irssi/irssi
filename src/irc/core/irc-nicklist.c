@@ -312,7 +312,8 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 
 	if (g_strcasecmp(orignick, server->nick) == 0) {
 		/* You changed your nick */
-		if (g_strcasecmp(server->last_nick, nick) == 0) {
+		if (server->last_nick != NULL &&
+		    g_strcasecmp(server->last_nick, nick) == 0) {
                         /* changed with /NICK - keep it as wanted nick */
 			g_free(server->connrec->nick);
 			server->connrec->nick = g_strdup(nick);
