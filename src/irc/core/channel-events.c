@@ -227,7 +227,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
-	if (*channel != '!')
+	if (*channel != '!' || strlen(channel) < 7)
 		shortchan = NULL;
 	else {
 		/* !channels have 5 chars long identification string before
