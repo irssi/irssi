@@ -192,7 +192,9 @@
     - /BIND -delete doesn't print that it did the deleting
     - /BIND -deletes should be saved in config
     - ^W (and some others) don't update cut buffer.
-    - default binds: M-d, M-t, M-y
+    - default binds: M-d, M-y
+    - capitalize-word (meta-c), downcase-word (meta-l),
+      transpose-words (meta-t), upcase-word (meta-u)                          
     - UTF-8 support
     - /PASSWORD command that asks you to type the password to entry line and
       would hide it with asterisks, good if people spy on you :)
@@ -327,6 +329,13 @@
     - finish the support for multiple input lines and a way to switch
       between them, so eg. each split window could have it's own input line.
     - padding char so instead of just spaces you could have ------
+    - hide the whole statusbar if none of it's items use any space
+      (visible = "auto")
+    - /SBAR # PLACEMENT top|bottom sometimes messes up the screen a bit,
+      ^L helps though
+    - /STATUSBAR prompt DISABLE hangs irssi because there's no input line.
+      Add some check to not allow this.
+    - /STATUSBAR could list also disabled bars
 
  - Server connecting:
     - More verbose connecting
@@ -371,6 +380,7 @@
     - File completion could guess when it's wanted, word beginning with /
       (not at start of line of course, unless / isn't in cmdchars)
       or ~/ or ./
+    - filename completion doesn't work properly if path has spaces
 
  - Modules:
     - Figure out module vs. plugin wording, what is what ;)
