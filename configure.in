@@ -307,7 +307,7 @@ dnl **
 
 AM_PATH_GLIB(1.2.0,,, gmodule)
 
-PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.a"
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.la"
 AC_SUBST(PROG_LIBS)
 
 dnl **
