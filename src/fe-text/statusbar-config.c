@@ -251,18 +251,21 @@ static void read_statusbar_config(void)
         statusbars_create_window_bars();
 }
 
+/* SYNTAX: STATUSBAR <name> ENABLE */
 static void cmd_statusbar_enable(const char *data, void *server,
 				 void *item, CONFIG_NODE *node)
 {
         iconfig_node_set_str(node, "disabled", NULL);
 }
 
+/* SYNTAX: STATUSBAR <name> DISABLE */
 static void cmd_statusbar_disable(const char *data, void *server,
 				  void *item, CONFIG_NODE *node)
 {
         iconfig_node_set_bool(node, "disabled", TRUE);
 }
 
+/* SYNTAX: STATUSBAR <name> TYPE window|root */
 static void cmd_statusbar_type(const char *data, void *server,
 			       void *item, CONFIG_NODE *node)
 {
@@ -276,6 +279,7 @@ static void cmd_statusbar_type(const char *data, void *server,
 	}
 }
 
+/* SYNTAX: STATUSBAR <name> PLACEMENT top|bottom */
 static void cmd_statusbar_placement(const char *data, void *server,
 				    void *item, CONFIG_NODE *node)
 {
@@ -289,12 +293,14 @@ static void cmd_statusbar_placement(const char *data, void *server,
 	}
 }
 
+/* SYNTAX: STATUSBAR <name> POSITION <num> */
 static void cmd_statusbar_position(const char *data, void *server,
                                    void *item, CONFIG_NODE *node)
 {
 	iconfig_node_set_int(node, "position", atoi(data));
 }
 
+/* SYNTAX: STATUSBAR <name> VISIBLE always|active|inactive */
 static void cmd_statusbar_visible(CONFIG_NODE *node, void *server,
 				  void *item, const char *data)
 {
@@ -345,6 +351,8 @@ static CONFIG_NODE *statusbar_items_section(CONFIG_NODE *parent)
         return parent;
 }
 
+/* SYNTAX: STATUSBAR <name> ADD [-before | -after <item>]
+           [-priority #] [-alignment left|right] <item> */
 static void cmd_statusbar_add(const char *data, void *server,
 			      void *item, CONFIG_NODE *node)
 {
@@ -385,6 +393,7 @@ static void cmd_statusbar_add(const char *data, void *server,
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: STATUSBAR <name> REMOVE <item> */
 static void cmd_statusbar_remove(const char *data, void *server,
 				 void *item, CONFIG_NODE *node)
 {
@@ -400,7 +409,6 @@ static void cmd_statusbar_remove(const char *data, void *server,
 	}
 }
 
-/* SYNTAX: STATUSBAR <name> [enable | disable] | [add|remove <item>] */
 static void cmd_statusbar(const char *data)
 {
         CONFIG_NODE *node;
