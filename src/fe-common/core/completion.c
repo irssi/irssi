@@ -598,7 +598,7 @@ void completion_init(void)
 	complist = NULL;
 	last_line = NULL; last_line_pos = -1;
 
-	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_add_first("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
