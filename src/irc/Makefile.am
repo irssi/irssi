@@ -2,7 +2,11 @@ if BUILD_IRSSIBOT
 BOT=bot
 endif
 
-SUBDIRS = core $(BOT) dcc flood notifylist
+if BUILD_IRSSIPROXY
+PROXY=proxy
+endif
+
+SUBDIRS = core $(BOT) dcc flood notifylist $(PROXY)
 
 noinst_LIBRARIES = libirc.a
 

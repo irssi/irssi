@@ -53,6 +53,20 @@ AC_ARG_WITH(bot,
 	fi,
 	want_irssibot=no)
 
+AC_ARG_WITH(proxy,
+[  --with-proxy            Build irssi-proxy],
+	if test x$withval = xyes; then
+    		want_irssiproxy=yes
+	else
+		if test "x$withval" = xno; then
+			want_irssiproxy=no
+		else
+        		want_irssiproxy=yes
+		fi
+	fi,
+	want_irssiproxy=no)
+
+
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
 	build_modules="$withval")
@@ -279,6 +293,7 @@ fi
 dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
+AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
 AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" = "yes")
@@ -301,11 +316,6 @@ AC_SUBST(CHAT_MODULES)
 AC_SUBST(irc_MODULES)
 
 CORE_LIBS="../core/libcore.a ../lib-config/libirssi_config.a ../lib-popt/libpopt.a"
-if test "$want_perl" = "yes"; then
-	PERL_LIBS="../perl/libperl.a"
-else
-	PERL_LIBS=""
-fi
 FE_COMMON_LIBS=""
 
 CHAT_LIBS=""
@@ -365,7 +375,7 @@ if test "x$MSGFMT" = "xno"; then
 fi
 
 dnl ** common libraries needed by frontends
-COMMON_NOUI_LIBS="$PERL_LIBS $CHAT_LIBS $CORE_LIBS $INTLLIBS"
+COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
 COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
 AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
@@ -398,6 +408,7 @@ src/irc/core/Makefile
 src/irc/bot/Makefile
 src/irc/dcc/Makefile
 src/irc/notifylist/Makefile
+src/irc/proxy/Makefile
 src/irc/flood/Makefile
 src/fe-common/Makefile
 src/fe-common/core/Makefile
@@ -410,7 +421,8 @@ src/fe-text/Makefile
 src/lib-config/Makefile
 src/lib-popt/Makefile
 src/perl/Makefile
-src/perl/xs/Makefile.PL
+src/perl/core/Makefile.PL
+src/perl/irc/Makefile.PL
 servertest/Makefile
 scripts/Makefile
 docs/Makefile
@@ -426,7 +438,7 @@ if test "x$want_perl" = "xyes"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
 	if test "x$old_dir" != "x$whole_dir"; then
-		for file in $whole_dir/src/perl/xs/typemap $whole_dir/src/perl/xs/module.h $whole_dir/src/perl/xs/*.xs; do
+		for file in $whole_dir/src/perl/core/typemap $whole_dir/src/perl/core/module.h $whole_dir/src/perl/core/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
 			ln -sf $file `echo $file|sed "s?$whole_dir/??"`
 		done
 	fi
@@ -449,6 +461,7 @@ else
 	echo "   installed (usually in ncurses-devel package)"
 fi
 echo "Building irssi bot ......... : $want_irssibot"
+echo "Building irssi proxy ....... : $want_irssiproxy"
 echo "Building with IPv6 support . : $want_ipv6"
 echo "Building with Perl support . : $want_perl"
 if test "x$want_perl" = "xyes"; then
