@@ -205,7 +205,7 @@ static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 	char command, *value, *p;
 	int len;
 
-	if ((flags & PARSE_FLAG_ONLY_PARAMS) && !isarg(**cmd)) {
+	if ((flags & PARSE_FLAG_ONLY_ARGS) && !isarg(**cmd)) {
 		*free_ret = TRUE;
 		return g_strdup_printf("$%c", **cmd);
 	}
