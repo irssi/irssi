@@ -500,6 +500,8 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 		g_strjoinv(",", rec->channels);
 	levelstr = rec->level == 0 ? NULL :
 		bits2level(rec->level);
+	if (levelstr != NULL)
+		levelstr = g_strconcat(levelstr, " ", NULL);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		    TXT_HILIGHT_LINE, index, rec->text,
 		    chans != NULL ? chans : "",

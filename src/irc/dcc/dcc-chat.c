@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
+#include "recode.h"
 #include "network.h"
 #include "net-nonblock.h"
 #include "net-sendbuffer.h"
@@ -147,18 +148,22 @@ void dcc_ctcp_message(IRC_SERVER_REC *server, const char *target,
 		      CHAT_DCC_REC *chat, int notice, const char *msg)
 {
 	char *str;
+	char *recoded;
 
 	if (chat != NULL && chat->sendbuf != NULL) {
 		/* send it via open DCC chat */
+		recoded = recode_out(SERVER(server), msg, chat->nick);
 		str = g_strdup_printf("%s\001%s\001", chat->mirc_ctcp ? "" :
 				      notice ? "CTCP_REPLY " :
-				      "CTCP_MESSAGE ", msg);
+				      "CTCP_MESSAGE ", recoded);
                 dcc_chat_send(chat, str);
 		g_free(str);
 	} else {
+		recoded = recode_out(SERVER(server), msg, target);
 		irc_send_cmdv(server, "%s %s :\001%s\001",
-			      notice ? "NOTICE" : "PRIVMSG", target, msg);
+			      notice ? "NOTICE" : "PRIVMSG", target, recoded);
 	}
+	g_free(recoded);
 }
 
 /* If `item' is a query of a =nick, return DCC chat record of nick */
@@ -196,8 +201,13 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	else
 		dcc = NULL;
 
-	if (dcc != NULL && dcc->sendbuf != NULL)
-		dcc_chat_send(dcc, text);
+	if (dcc != NULL && dcc->sendbuf != NULL) {
+		char *recoded;
+
+		recoded = recode_out(server, text, dcc->nick);
+		dcc_chat_send(dcc, recoded);
+		g_free(recoded);
+	}
 
 	if (dcc != NULL || *target == '=')
 		signal_stop();
@@ -305,8 +315,13 @@ void dcc_chat_input(CHAT_DCC_REC *dcc)
 		}
 
 		if (ret > 0) {
+			char *recoded;
+
 			dcc->transfd += ret;
-			signal_emit("dcc chat message", 2, dcc, str);
+
+			recoded = recode_in(SERVER(dcc->server), str, dcc->nick);
+			signal_emit("dcc chat message", 2, dcc, recoded);
+			g_free(recoded);
 		}
 	} while (ret > 0);
 }
