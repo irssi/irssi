@@ -196,8 +196,6 @@ static void notifylist_init_server(IRC_SERVER_REC *server)
 
 	rec = g_new0(MODULE_SERVER_REC,1 );
 	MODULE_DATA_SET(server, rec);
-
-	server_redirect_init((SERVER_REC *) server, "command ison", 1, ISON_EVENT, NULL);
 }
 
 static void notifylist_deinit_server(IRC_SERVER_REC *server)

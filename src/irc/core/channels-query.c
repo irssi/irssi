@@ -209,11 +209,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 4,
-					      "event 403", "chanquery mode abort", 1,
-					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
-					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-					      "event 324", "chanquery mode", 1, NULL);
+			server_redirect_event(server, "mode channel", chanstr, -1,
+					      "chanquery mode abort",
+					      "event 324", "chanquery mode",
+                                              "", "chanquery mode abort", NULL);
 		}
 		break;
 
@@ -223,11 +222,11 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 3,
-					      "event 401", "chanquery who abort", 1,
-					      "event 403", "chanquery who abort", 1,
-					      "event 315", "chanquery who end", 1,
-					      "event 352", "silent event who", 1, NULL);
+			server_redirect_event(server, "who", chanstr, -1,
+                                              "chanquery who abort",
+					      "event 315", "chanquery who end",
+					      "event 352", "silent event who",
+                                              "", "chanquery who abort", NULL);
 		}
 		break;
 
@@ -240,12 +239,11 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 			   mode requests - if channels are joined manually
 			   irssi could ask modes separately but afterwards
 			   join the two b/e/I modes together */
-			server_redirect_event((SERVER_REC *) server, chanstr, 4,
-					      "event 403", "chanquery mode abort", 1,
-					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
-					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-					      "event 368", "chanquery ban end", 1,
-					      "event 367", "chanquery ban", 1, NULL);
+			server_redirect_event(server, "mode b", chanstr, -1,
+					      "chanquery mode abort",
+					      "event 367", "chanquery ban",
+					      "event 368", "chanquery ban end",
+                                              "", "chanquery mode abort", NULL);
 		}
 		break;
 
@@ -254,12 +252,11 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 4,
-					      "event 403", "chanquery mode abort", 1,
-					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
-					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-					      "event 349", "chanquery eban end", 1,
-					      "event 348", "chanquery eban", 1, NULL);
+			server_redirect_event(server, "mode e", chanstr, -1,
+					      "chanquery mode abort",
+					      "event 348", "chanquery eban",
+					      "event 349", "chanquery eban end",
+                                              "", "chanquery mode abort", NULL);
 		}
 		break;
 
@@ -268,12 +265,11 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 4,
-					      "event 403", "chanquery mode abort", 1,
-					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
-					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-					      "event 347", "chanquery ilist end", 1,
-					      "event 346", "chanquery ilist", 1, NULL);
+			server_redirect_event(server, "mode I", chanstr, -1,
+					      "chanquery mode abort",
+					      "event 346", "chanquery ilist",
+					      "event 347", "chanquery ilist end",
+                                              "", "chanquery mode abort", NULL);
 		}
 		break;
 
@@ -423,14 +419,6 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
-static void multi_query_remove(IRC_SERVER_REC *server, const char *event, const char *data)
-{
-	GSList *queue;
-
-	while ((queue = server_redirect_getqueue((SERVER_REC *) server, event, data)) != NULL)
-		server_redirect_remove_next((SERVER_REC *) server, event, queue);
-}
-
 static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
@@ -447,7 +435,6 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		/* instead of multiple End of WHO replies we get
 		   only this one... */
 		server->one_endofwho = TRUE;
-		multi_query_remove(server, "event 315", data);
 
 		/* check that the WHO actually did return something
 		   (that it understood #chan1,#chan2,..) */
@@ -548,8 +535,6 @@ static void multi_command_error(IRC_SERVER_REC *server, const char *data,
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, **chans;
 	int n;
-
-	multi_query_remove(server, event, data);
 
 	params = event_get_params(data, 2, NULL, &channel);
 

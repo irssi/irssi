@@ -31,7 +31,6 @@
 #include "chat-protocols.h"
 #include "servers.h"
 #include "servers-reconnect.h"
-#include "servers-redirect.h"
 #include "servers-setup.h"
 #include "channels.h"
 #include "queries.h"
@@ -135,10 +134,6 @@ void server_connect_finished(SERVER_REC *server)
 {
 	server->connect_time = time(NULL);
 	server->rawlog = rawlog_create();
-
-	server->eventtable = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
-	server->eventgrouptable = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
-	server->cmdtable = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
 
 	servers = g_slist_append(servers, server);
 	signal_emit("server connected", 1, server);
@@ -553,7 +548,6 @@ void servers_init(void)
 	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 
 	servers_reconnect_init();
-	servers_redirect_init();
 	servers_setup_init();
 }
 
@@ -562,7 +556,6 @@ void servers_deinit(void)
 	signal_remove("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 
 	servers_setup_deinit();
-	servers_redirect_deinit();
 	servers_reconnect_deinit();
 
 	module_uniq_destroy("SERVER");

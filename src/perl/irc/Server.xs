@@ -35,6 +35,44 @@ ctcp_send_reply(server, data)
 	Irssi::Irc::Server server
 	char *data
 
+MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server  PREFIX = server_
+
+void
+server_redirect_register(command, remote, timeout, ...)
+	char *command
+	int remote
+	int timeout
+PREINIT:
+        STRLEN n_a;
+	GSList *start, *stop, **list;
+	int n;
+CODE:
+	start = stop = NULL; list = &start;
+	for (n = 3; n < items; n++) {
+		if (ST(n) == &PL_sv_undef) list = &stop;
+		if (SvPOK(ST(n)))
+			*list = g_slist_append(*list, SvPV(ST(n), n_a));
+	}
+	server_redirect_register_list(command, remote, timeout, start, stop);
+
+void
+server_redirect_event(server, command, arg, remote, failure_signal, ...)
+	Irssi::Irc::Server server
+	char *command
+	char *arg
+	int remote
+	char *failure_signal
+PREINIT:
+        STRLEN n_a;
+	GSList *list;
+	int n;
+CODE:
+	list = NULL;
+	for (n = 5; n < items; n++) {
+		list = g_slist_append(list, SvPV(ST(n), n_a));
+	}
+	server_redirect_event_list(server, command, arg, remote, failure_signal, list);
+
 MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Connect  PREFIX = irc_server_
 
 Irssi::Irc::Server

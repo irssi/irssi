@@ -3,8 +3,6 @@
 
 #define MODULE_NAME "irc/notifylist"
 
-#define ISON_EVENT "event 303"
-
 typedef struct {
 	char *nick;
 	char *user, *host, *realname, *awaymsg;
@@ -22,6 +20,8 @@ typedef struct {
 } NOTIFY_NICK_REC;
 
 typedef struct {
+	int ison_count; /* number of ISON requests sent */
+
 	GSList *notify_users; /* NOTIFY_NICK_REC's of notifylist people who are in IRC */
 	GSList *ison_tempusers; /* Temporary list for saving /ISON events.. */
 } MODULE_SERVER_REC;

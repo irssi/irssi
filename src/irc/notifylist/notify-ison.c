@@ -81,28 +81,19 @@ NOTIFY_NICK_REC *notify_nick_find(IRC_SERVER_REC *server, const char *nick)
 	return NULL;
 }
 
-static int is_ison_queue_empty(IRC_SERVER_REC *server)
-{
-	GSList *tmp;
-
-	tmp = server_redirect_getqueue((SERVER_REC *) server, ISON_EVENT, NULL);
-	for (; tmp != NULL; tmp = tmp->next) {
-		REDIRECT_REC *rec = tmp->data;
-
-		if (strcmp(rec->name, "notifylist event") == 0)
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
 static void ison_send(IRC_SERVER_REC *server, GString *cmd)
 {
+	MODULE_SERVER_REC *mserver;
+
+	mserver = MODULE_DATA(server);
+	mserver->ison_count++;
+
 	g_string_truncate(cmd, cmd->len-1);
 	g_string_prepend(cmd, "ISON :");
 
+	server_redirect_event(server, "ison", NULL, -1, NULL,
+			      "event 303", "notifylist event", NULL);
 	irc_send_cmd(server, cmd->str);
-	server_redirect_event((SERVER_REC *) server, NULL, 1, ISON_EVENT, "notifylist event", -1, NULL);
 
 	g_string_truncate(cmd, 0);
 }
@@ -111,6 +102,7 @@ static void ison_send(IRC_SERVER_REC *server, GString *cmd)
    notify list is in IRC */
 static void notifylist_timeout_server(IRC_SERVER_REC *server)
 {
+	MODULE_SERVER_REC *mserver;
 	GSList *tmp;
 	GString *cmd;
 	char *nick, *ptr;
@@ -121,7 +113,8 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	if (!is_ison_queue_empty(server)) {
+	mserver = MODULE_DATA(server);
+	if (mserver->ison_count > 0) {
 		/* still not received all replies to previous /ISON commands.. */
 		return;
 	}
@@ -184,16 +177,13 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 	for (p = str+strlen(nicks)+1; *p != '\0'; p++)
 		if (*p == ',') *p = ' ';
 
-	server_redirect_event((SERVER_REC *) server, str, 2,
-			      "event 318", "notifylist event whois end", 1,
-			      "event 402", "event empty", 1,
-			      "event 401", "event empty", 1,
-			      "event 311", "notifylist event whois", 1,
-			      "event 301", "notifylist event whois away", 1,
-			      "event 312", "event empty", 1,
-			      "event 313", "event empty", 1,
-			      "event 317", "notifylist event whois idle", 1,
-			      "event 319", "event empty", 1, NULL);
+	server_redirect_event(server, "whois", str, FALSE,
+                              "notifylist event whois end",
+			      "event 318", "notifylist event whois end",
+			      "event 311", "notifylist event whois",
+			      "event 301", "notifylist event whois away",
+			      "event 317", "notifylist event whois idle",
+			      "", "event empty", NULL);
         g_free(str);
 }
 
@@ -311,7 +301,7 @@ static void event_ison(IRC_SERVER_REC *server, const char *data)
 	mserver = MODULE_DATA(server);
 	ison_save_users(mserver, online);
 
-	if (!is_ison_queue_empty(server)) {
+	if (--mserver->ison_count > 0) {
 		/* wait for the rest of the /ISON replies */
 		g_free(params);
                 return;

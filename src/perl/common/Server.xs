@@ -46,47 +46,6 @@ void
 server_disconnect(server)
 	Irssi::Server server
 
-void
-server_redirect_init(server, command, last, ...)
-	Irssi::Server server
-	char *command
-	int last
-PREINIT:
-        STRLEN n_a;
-	GSList *list;
-	int n;
-CODE:
-	list = NULL;
-	for (n = 3; n < items; n++) {
-		list = g_slist_append(list, SvPV(ST(n), n_a));
-	}
-	server_redirect_initv(server, command, last, list);
-
-int
-server_redirect_single_event(server, arg, last, group, event, signal, argpos)
-	Irssi::Server server
-	char *arg
-	int last
-	int group
-	char *event
-	char *signal
-	int argpos
-
-void
-server_redirect_event(server, arg, last, ...)
-	Irssi::Server server
-	char *arg
-	int last
-PREINIT:
-        STRLEN n_a;
-	int n, group;
-CODE:
-	group = 0;
-	for (n = 3; n+3 <= items; n += 3, last--) {
-		group = server_redirect_single_event(server, arg, last > 0, group,
-			(char *) SvPV(ST(n), n_a), (char *) SvPV(ST(n+1), n_a), (int) SvIV(ST(n+2)));
-	}
-
 int
 isnickflag(server, flag)
 	Irssi::Server server

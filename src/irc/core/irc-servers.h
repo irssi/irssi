@@ -37,12 +37,16 @@ struct _IRC_SERVER_CONNECT_REC {
 struct _IRC_SERVER_REC {
 #include "server-rec.h"
 
+	/* For deciding if event should be redirected */
+        GSList *redirects;
+	void *redirect_next;
+	void *redirect_continue;
+
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
 	int channels_formed; /* channels formed in irc network */
 
-	unsigned int nick_changing:1; /* We've sent nick change command to server */
 	unsigned int whois_coming:1; /* Mostly just to display away message right.. */
 	unsigned int whois_found:1; /* Did WHOIS return any entries? */
 	unsigned int whowas_found:1; /* Did WHOWAS return any entries? */

@@ -21,11 +21,6 @@ GIOChannel *connect_pipe[2];
 int connect_tag;
 int connect_pid;
 
-/* For deciding if event should be handled internally */
-GHashTable *eventtable; /* "event xxx" : GSList* of REDIRECT_RECs */
-GHashTable *eventgrouptable; /* event group : GSList* of REDIRECT_RECs */
-GHashTable *cmdtable; /* "command xxx" : REDIRECT_CMD_REC* */
-
 RAWLOG_REC *rawlog;
 LINEBUF_REC *buffer; /* receive buffer */
 GHashTable *module_data;

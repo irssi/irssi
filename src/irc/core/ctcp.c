@@ -26,7 +26,7 @@
 #include "settings.h"
 
 #include "irc-servers.h"
-#include "server-idle.h"
+#include "servers-idle.h"
 #include "ignore.h"
 
 static void ctcp_queue_clean(IRC_SERVER_REC *server)
@@ -57,7 +57,7 @@ void ctcp_send_reply(IRC_SERVER_REC *server, const char *data)
 		return;
 
 	/* Add to first in idle queue */
-	tag = server_idle_add(server, data, NULL, 0, NULL);
+	tag = server_idle_add(server, data);
 	server->ctcpqueue =
 		g_slist_append(server->ctcpqueue, GINT_TO_POINTER(tag));
 }

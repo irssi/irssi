@@ -26,7 +26,6 @@
 #include "window-item-def.h"
 
 #include "servers.h"
-#include "servers-redirect.h"
 #include "channels.h"
 
 #include "lib-config/iconfig.h"
@@ -853,10 +852,8 @@ static void parse_command(const char *command, int expand_aliases,
 	}
 
 	cmd = g_strconcat("command ", newcmd, NULL);
-	if (server != NULL)
-		server_redirect_default(SERVER(server), cmd);
-
 	g_strdown(cmd);
+
 	oldcmd = current_command;
 	current_command = cmd+8;
 	if (!signal_emit(cmd, 3, args, server, item)) {

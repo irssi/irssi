@@ -244,9 +244,6 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server,
 
 	irc_send_cmdv(server, "LIST %s", str);
 	cmd_params_free(free_arg);
-
-	/* add default redirection */
-	server_redirect_default((SERVER_REC *) server, "bogus command list");
 }
 
 /* SYNTAX: WHO [<nicks> | <channels> | **] */
@@ -275,9 +272,6 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 	irc_send_cmdv(server, *rest == '\0' ? "WHO %s" : "WHO %s %s",
 		      channel, rest);
 	cmd_params_free(free_arg);
-
-	/* add default redirection */
-	server_redirect_default((SERVER_REC *) server, "bogus command who");
 }
 
 static void cmd_names(const char *data, IRC_SERVER_REC *server,
@@ -323,41 +317,8 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (!cmd_get_params(data, &free_arg, 1, &nick))
 		return;
 
-	if (strcmp(nick, server->nick) == 0) {
-		/* don't bother trying to change the nick to the one you
-		   already have */
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	server->nick_changing = TRUE;
 	irc_send_cmdv(server, "NICK %s", nick);
-
-	nick = g_strdup_printf("%s :%s", nick, nick);
-	server_redirect_event(SERVER(server), nick, 5,
-			      "event nick", "nickchange over", -1,
-			      "event 433", "nickchange over", 1,
-			      /* 437: ircnet = target unavailable,
-				      dalnet = banned in channel,
-				               can't change nick */
-			      "event 437", "nickchange over", -1,
-			      "event 432", "nickchange over", 1,
-			      "event 438", "nickchange over", 1, NULL);
-        g_free(nick);
 	cmd_params_free(free_arg);
-}
-
-static void sig_nickchange_over(IRC_SERVER_REC *server, const char *data,
-				const char *nick, const char *addr)
-{
-	char *signal;
-
-	server->nick_changing = FALSE;
-
-	signal = g_strconcat("event ", current_server_event, NULL);
-	g_strdown(signal+6);
-	signal_emit(signal, 4, server, data, nick, addr);
-	g_free(signal);
 }
 
 static char *get_redirect_nicklist(const char *nicks, int *free)
@@ -419,19 +380,20 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 			event_402 = "whois event noserver";
 	}
 
-	server->whois_found = FALSE;
-	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
-
 	/* do automatic /WHOWAS if any of the nicks wasn't found */
 	query = get_redirect_nicklist(query, &free_nick);
 
         str = g_strconcat(qserver, " ", query, NULL);
-	server_redirect_event(SERVER(server), str, 2,
-			      "event 318", "event 318", 1,
-			      "event 402", event_402, 1,
-			      "event 401", "whois not found", 1,
-			      "event 311", "whois event", 1, NULL);
+	server_redirect_event(server, "whois", str, *qserver != '\0',
+                              NULL,
+			      "event 318", "event 318",
+			      "event 402", event_402,
+			      "event 401", "whois not found",
+			      "event 311", "whois event", NULL);
         g_free(str);
+
+	server->whois_found = FALSE;
+	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
 
 	if (free_nick) g_free(query);
 	cmd_params_free(free_arg);
@@ -451,13 +413,14 @@ static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	irc_send_cmdv(server, "WHOWAS %s 1", nick);
 
 	server->whowas_found = FALSE;
-	server_redirect_event(SERVER(server), nick, 1,
-			      "event 369", "whowas event end", 1,
-			      "event 314", "whowas event", 1,
-			      "event 406", "event empty", 1, NULL);
+	server_redirect_event(server, "whowas", nick, -1, NULL,
+			      "event 314", "whowas event",
+			      "event 369", "whowas event end",
+			      "", "event empty", NULL);
+	irc_send_cmdv(server, "WHOWAS %s 1", nick);
+
 	g_free(params);
 }
 
@@ -470,7 +433,7 @@ static void event_whowas(IRC_SERVER_REC *server, const char *data, const char *n
 /* SYNTAX: WHOWAS [<nicks> [<count>]] */
 static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 {
-	char *nicks, *count;
+	char *nicks, *count, *nicks_redir;
 	void *free_arg;
 	int free_nick;
 
@@ -480,15 +443,15 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 		return;
 	if (*nicks == '\0') nicks = server->nick;
 
+	nicks_redir = get_redirect_nicklist(nicks, &free_nick);
+	server_redirect_event(server, "whowas", nicks_redir, -1, NULL,
+			      "event 314", "whowas event", NULL);
+	if (free_nick) g_free(nicks_redir);
+
 	server->whowas_found = FALSE;
 	irc_send_cmdv(server, *count == '\0' ? "WHOWAS %s" :
 		      "WHOWAS %s %s", nicks, count);
 
-	nicks = get_redirect_nicklist(nicks, &free_nick);
-	server_redirect_event(SERVER(server), nicks, 1,
-			      "event 369", "event 369", 1,
-			      "event 314", "whowas event", 1, NULL);
-	if (free_nick) g_free(nicks);
 	cmd_params_free(free_arg);
 }
 
@@ -914,48 +877,6 @@ static void command_2self(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void sig_connected(IRC_SERVER_REC *server)
-{
-	g_return_if_fail(server != NULL);
-
-	/* FIXME: these two aren't probably needed? this whole redirection
-	   thing might need some rethinking :) */
-	/* WHOIS */
-	/*server_redirect_init(SERVER(server), "", 2,
-			     "event 318", "event 402", "event 401",
-			     "event 301", "event 311", "event 312", "event 313",
-			     "event 317", "event 319", NULL);*/
-
-	/* NICK */
-	/*server_redirect_init(SERVER(server), "", 5,
-			     "event nick", "event 433", "event 437",
-			     "event 432", "event 438", NULL);*/
-
-	/* problem (doesn't really apply currently since there's no GUI):
-
-	   second argument of server_redirect_init() is the command that
-	   generates the redirection automatically when it's called, but the
-	   command handler doesn't really know about the redirection itself.
-
-	   every time the command is called, this redirection is generated.
-	   this is a problem if the redirection is wanted sometimes but not
-	   always. for example /WHO #channel could create a window with a
-	   list of people in channel redirecting WHO's events to it's own use,
-	   but /WHO -nogui #channel would use the default WHO handler which
-	   doesn't know anything about redirection. with GUI /WHO the
-	   redirection would be done twice then..
-
-	   so the kludgy workaround currently is this: make the default
-	   handler handle the redirection always.. when default WHO/LIST
-	   handler is called, they call
-	   server_redirect_default("bogus command who") or ..list..
-
-	   this is really a problem if some script/plugin wants to override
-           some default command to use redirections.. */
-	server_redirect_init(SERVER(server), "bogus command who", 2, "event 401", "event 315", "event 352", NULL);
-	server_redirect_init(SERVER(server), "bogus command list", 1, "event 321", "event 322", "event 323", NULL);
-}
-
 void irc_commands_init(void)
 {
 	tmpstr = g_string_new(NULL);
@@ -1048,11 +969,9 @@ void irc_commands_init(void)
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
-	signal_add("nickchange over", (SIGNAL_FUNC) sig_nickchange_over);
 	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
-	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 
 	command_set_options("connect", "+ircnet");
 	command_set_options("topic", "delete");
@@ -1119,11 +1038,9 @@ void irc_commands_deinit(void)
 
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
-	signal_remove("nickchange over", (SIGNAL_FUNC) sig_nickchange_over);
 	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
 	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);
-	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 
 	g_string_free(tmpstr, TRUE);
 }

@@ -144,8 +144,10 @@ static void event_whois_end(IRC_SERVER_REC *server, const char *data)
 
 		if (event != NULL) {
 			signal_emit(event, 6, server, rec->nick,
-				    rec->user, rec->host,
-				    rec->realname, rec->awaymsg);
+				    rec->user != NULL ? rec->user : "??",
+				    rec->host != NULL ? rec->host : "??",
+				    rec->realname != NULL ? rec->realname : "??",
+				    rec->awaymsg);
 		}
 		rec->idle_ok = notify->idle_check_time <= 0 ||
 			rec->idle_time <= notify->idle_check_time;

@@ -18,7 +18,6 @@
 #include "chatnets.h"
 #include "servers.h"
 #include "servers-reconnect.h"
-#include "servers-redirect.h"
 #include "servers-setup.h"
 #include "channels.h"
 #include "queries.h"

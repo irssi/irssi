@@ -309,17 +309,10 @@ static void event_connected(IRC_SERVER_REC *server)
 		return;
 
 	/* someone has our nick, find out who. */
+	server_redirect_event(server, "whois", nick, FALSE, NULL,
+			      "event 311", "nickfind event whois",
+			      "", "event empty", NULL);
 	irc_send_cmdv(server, "WHOIS %s", nick);
-	server_redirect_event((SERVER_REC *) server, nick, 1,
-			      "event 318", "event empty", 1,
-			      "event 401", "event empty", 1,
-			      "event 311", "nickfind event whois", 1,
-			      "event 301", "event empty", 1,
-			      "event 312", "event empty", 1,
-			      "event 313", "event empty", 1,
-			      "event 317", "event empty", 1,
-			      "event 319", "event empty", 1, NULL);
-
 }
 
 static void event_nickfind_whois(IRC_SERVER_REC *server, const char *data)

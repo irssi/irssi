@@ -62,8 +62,10 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
                 cmd = str;
 	}
 
-	if (send_now)
+	if (send_now) {
 		rawlog_output(server->rawlog, cmd);
+		server_redirect_command(server, cmd);
+	}
 
 	if (!raw) {
                 /* Add CR+LF to command */
@@ -253,39 +255,34 @@ char *event_get_params(const char *data, int count, ...)
 	return duprec;
 }
 
-static void irc_server_event(IRC_SERVER_REC *server, const char *line, const char *nick, const char *address)
+static void irc_server_event(IRC_SERVER_REC *server, const char *line,
+			     const char *nick, const char *address)
 {
-	char *event, *args, *callcmd;
-	GSList *list;
+        const char *signal;
+	char *event, *args;
 
 	g_return_if_fail(line != NULL);
 
-	/* get command.. */
+	/* split event / args */
 	event = g_strconcat("event ", line, NULL);
 	args = strchr(event+6, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
+        g_strdown(event);
 
-	list = server_redirect_getqueue((SERVER_REC *) server, event, args);
-	if (list == NULL)
-		callcmd = g_strdup(event);
-	else {
-		/* event is redirected somewhere else.. */
-		REDIRECT_REC *rec;
+        /* check if event needs to be redirected */
+	signal = server_redirect_get_signal(server, event, args);
+	if (signal == NULL)
+		signal = event;
+        else
+		rawlog_redirect(server->rawlog, signal);
 
-		rec = list->data;
-		callcmd = g_strdup(rec->name);
-		rawlog_redirect(server->rawlog, callcmd);
-		server_redirect_remove_next((SERVER_REC *) server, event, list);
-	}
-
+        /* emit it */
 	current_server_event = event+6;
-	g_strdown(callcmd);
-	if (!signal_emit(callcmd, 4, server, args, nick, address))
+	if (!signal_emit(signal, 4, server, args, nick, address))
 		signal_emit_id(signal_default_event, 4, server, line, nick, address);
 	current_server_event = NULL;
 
-	g_free(callcmd);
 	g_free(event);
 }
 

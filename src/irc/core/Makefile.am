@@ -30,7 +30,8 @@ libirc_core_a_SOURCES = \
         modes.c \
         mode-lists.c \
         netsplit.c \
-        server-idle.c
+        servers-idle.c \
+        servers-redirect.c
 
 noinst_HEADERS = \
 	bans.h \
@@ -49,4 +50,5 @@ noinst_HEADERS = \
         mode-lists.h \
 	module.h \
         netsplit.h \
-        server-idle.h
+        servers-idle.h \
+        servers-redirect.h

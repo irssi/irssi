@@ -24,6 +24,7 @@
 #include "settings.h"
 
 #include "irc-servers.h"
+#include "servers-redirect.h"
 
 typedef struct {
 	IRC_SERVER_REC *server;
@@ -53,6 +54,20 @@ static void lag_free(LAG_REC *rec)
 	g_free(rec);
 }
 
+static void lag_send(LAG_REC *lag)
+{
+	IRC_SERVER_REC *server;
+
+	g_get_current_time(&lag->time);
+
+        server = lag->server;
+	server->lag_sent = server->lag_last_check = time(NULL);
+	server_redirect_event(server, "ping", NULL, FALSE,
+			      "lag ping error",
+                              "event pong", "lag pong", NULL);
+	irc_send_cmdv(server, "PING %s", server->real_address);
+}
+
 static void lag_get(IRC_SERVER_REC *server)
 {
 	LAG_REC *lag;
@@ -61,37 +76,30 @@ static void lag_get(IRC_SERVER_REC *server)
 
 	/* nick changes may fail this check, so we should never do this
 	   while there's nick change request waiting for reply in server.. */
-	if (server->nick_changing)
-		return;
-
 	lag = g_new0(LAG_REC, 1);
 	lags = g_slist_append(lags, lag);
 	lag->server = server;
 
-	g_get_current_time(&lag->time);
-
-	if (server->lag_sent == 0)
-		server->lag_sent = time(NULL);
-	server->lag_last_check = time(NULL);
-
-	irc_send_cmdv(server, "NOTICE %s :\001IRSSILAG %ld %ld\001",
-		      server->nick, lag->time.tv_sec, lag->time.tv_usec);
+        lag_send(lag);
 }
 
-/* we use "ctcp reply" signal here, because "ctcp reply irssilag" can be
-   ignored with /IGNORE * CTCPS */
-static void sig_irssilag(IRC_SERVER_REC *server, const char *data,
-			 const char *nick, const char *addr,
-			 const char *target)
+/* we didn't receive PONG for some reason .. try again */
+static void lag_ping_error(IRC_SERVER_REC *server)
 {
-	GTimeVal now, sent;
+	LAG_REC *lag;
+
+	lag = lag_find(server);
+        if (lag != NULL)
+		lag_send(lag);
+}
+
+static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
+			   const char *nick, const char *addr)
+{
+	GTimeVal now;
 	LAG_REC *lag;
 
 	g_return_if_fail(data != NULL);
-
-	if (strncmp(data, "IRSSILAG ", 9) != 0)
-		return;
-	data += 9;
 
 	lag = lag_find(server);
 	if (lag == NULL) {
@@ -99,19 +107,11 @@ static void sig_irssilag(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	if (g_strcasecmp(nick, server->nick) != 0) {
-		/* we didn't sent this - not a lag notice */
-		return;
-	}
-
-	/* OK, it is a lag notice. */
 	server->lag_sent = 0;
 
-	if (sscanf(data, "%ld %ld", &sent.tv_sec, &sent.tv_usec) == 2) {
-		g_get_current_time(&now);
-		server->lag = (int) get_timeval_diff(&now, &sent);
-		signal_emit("server lag", 1, server);
-	}
+	g_get_current_time(&now);
+	server->lag = (int) get_timeval_diff(&now, &lag->time);
+	signal_emit("server lag", 1, server);
 
 	lag_free(lag);
 }
@@ -154,11 +154,6 @@ static int sig_check_lag(void)
 	return 1;
 }
 
-static void sig_empty(void)
-{
-	/* don't print the "CTCP IRSSILAG reply .." text */
-}
-
 void lag_init(void)
 {
 	settings_add_int("misc", "lag_check_time", 30);
@@ -166,8 +161,8 @@ void lag_init(void)
 
 	lags = NULL;
 	timeout_tag = g_timeout_add(1000, (GSourceFunc) sig_check_lag, NULL);
-	signal_add("ctcp reply", (SIGNAL_FUNC) sig_irssilag);
-	signal_add("ctcp reply irssilag", (SIGNAL_FUNC) sig_empty);
+	signal_add_first("lag pong", (SIGNAL_FUNC) lag_event_pong);
+        signal_add("lag ping error", (SIGNAL_FUNC) lag_ping_error);
 }
 
 void lag_deinit(void)
@@ -175,6 +170,6 @@ void lag_deinit(void)
 	g_source_remove(timeout_tag);
 	while (lags != NULL)
 		lag_free(lags->data);
-	signal_remove("ctcp reply", (SIGNAL_FUNC) sig_irssilag);
-	signal_remove("ctcp reply irssilag", (SIGNAL_FUNC) sig_empty);
+	signal_remove("lag pong", (SIGNAL_FUNC) lag_event_pong);
+        signal_remove("lag ping error", (SIGNAL_FUNC) lag_ping_error);
 }

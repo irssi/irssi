@@ -10,6 +10,7 @@
 #include "modes.h"
 #include "mode-lists.h"
 #include "netsplit.h"
+#include "servers-redirect.h"
 
 #include "dcc/dcc.h"
 #include "dcc/dcc-file.h"

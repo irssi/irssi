@@ -22,49 +22,54 @@
 #include "signals.h"
 
 #include "irc-servers.h"
-#include "server-idle.h"
+#include "servers-idle.h"
 #include "servers-redirect.h"
-
-typedef struct {
-	char *event;
-	char *signal;
-	int argpos;
-} REDIRECT_IDLE_REC;
 
 typedef struct {
 	char *cmd;
 	char *arg;
 	int tag;
 
-	int last;
+        char *redirect_cmd;
+	int remote;
+	char *failure_signal;
 	GSList *redirects;
 } SERVER_IDLE_REC;
 
 static int idle_tag, idlepos;
 
 /* Add new idle command to queue */
-static SERVER_IDLE_REC *server_idle_create(const char *cmd, const char *arg, int last, va_list args)
+static SERVER_IDLE_REC *
+server_idle_create(const char *cmd, const char *redirect_cmd, const char *arg,
+		   int remote, const char *failure_signal, va_list va)
 {
-	REDIRECT_IDLE_REC *rrec;
 	SERVER_IDLE_REC *rec;
-	char *event;
+	const char *event, *signal;
 
 	g_return_val_if_fail(cmd != NULL, FALSE);
 
 	rec = g_new0(SERVER_IDLE_REC, 1);
-
-	rec->tag = ++idlepos;
-	rec->arg = arg == NULL ? NULL : g_strdup(arg);
 	rec->cmd = g_strdup(cmd);
-	rec->last = last;
+	rec->arg = g_strdup(arg);
+	rec->tag = ++idlepos;
 
-	while ((event = va_arg(args, char *)) != NULL) {
-		rrec = g_new(REDIRECT_IDLE_REC, 1);
-		rec->redirects = g_slist_append(rec->redirects, rrec);
+        rec->redirect_cmd = g_strdup(redirect_cmd);
+	rec->remote = remote;
+        rec->failure_signal = g_strdup(failure_signal);
 
-		rrec->event = g_strdup(event);
-		rrec->signal = g_strdup(va_arg(args, char *));
-		rrec->argpos = va_arg(args, int);
+	while ((event = va_arg(va, const char *)) != NULL) {
+		signal = va_arg(va, const char *);
+		if (signal == NULL) {
+			g_warning("server_idle_create(%s): "
+				  "signal not specified for event",
+				  redirect_cmd);
+			break;
+		}
+
+		rec->redirects =
+			g_slist_append(rec->redirects, g_strdup(event));
+		rec->redirects =
+			g_slist_append(rec->redirects, g_strdup(signal));
 	}
 
 	return rec;
@@ -87,78 +92,82 @@ static SERVER_IDLE_REC *server_idle_find_rec(IRC_SERVER_REC *server, int tag)
 }
 
 /* Add new idle command to queue */
-int server_idle_add(IRC_SERVER_REC *server, const char *cmd, const char *arg, int last, ...)
+int server_idle_add_redir(IRC_SERVER_REC *server, const char *cmd,
+			  const char *redirect_cmd, const char *arg,
+			  int remote, const char *failure_signal, ...)
 {
-	va_list args;
+	va_list va;
 	SERVER_IDLE_REC *rec;
 
 	g_return_val_if_fail(server != NULL, -1);
 
-	va_start(args, last);
-	rec = server_idle_create(cmd, arg, last, args);
+	va_start(va, failure_signal);
+	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+				 failure_signal, va);
 	server->idles = g_slist_append(server->idles, rec);
-	va_end(args);
+	va_end(va);
 
 	return rec->tag;
 }
 
 /* Add new idle command to first of queue */
-int server_idle_add_first(IRC_SERVER_REC *server, const char *cmd, const char *arg, int last, ...)
+int server_idle_add_first_redir(IRC_SERVER_REC *server, const char *cmd,
+				const char *redirect_cmd, const char *arg,
+				int remote, const char *failure_signal, ...)
 {
-	va_list args;
+	va_list va;
 	SERVER_IDLE_REC *rec;
 
 	g_return_val_if_fail(server != NULL, -1);
 
-	va_start(args, last);
-	rec = server_idle_create(cmd, arg, last, args);
+	va_start(va, failure_signal);
+	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+				 failure_signal, va);
 	server->idles = g_slist_prepend(server->idles, rec);
-	va_end(args);
+	va_end(va);
 
 	return rec->tag;
 }
 
 /* Add new idle command to specified position of queue */
-int server_idle_insert(IRC_SERVER_REC *server, const char *cmd, const char *arg, int tag, int last, ...)
+int server_idle_insert_redir(IRC_SERVER_REC *server, const char *cmd, int tag,
+			     const char *redirect_cmd, const char *arg,
+			     int remote, const char *failure_signal, ...)
 {
-	va_list args;
+	va_list va;
 	SERVER_IDLE_REC *rec;
 	int pos;
 
 	g_return_val_if_fail(server != NULL, -1);
 
-	va_start(args, last);
+	va_start(va, failure_signal);
 
 	/* find the position of tag in idle list */
 	rec = server_idle_find_rec(server, tag);
 	pos = g_slist_index(server->idles, rec);
 
-	rec = server_idle_create(cmd, arg, last, args);
+	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+				 failure_signal, va);
         server->idles = pos < 0 ?
 		g_slist_append(server->idles, rec) :
 		g_slist_insert(server->idles, rec, pos);
-	va_end(args);
+	va_end(va);
+
 	return rec->tag;
 }
 
 static void server_idle_destroy(IRC_SERVER_REC *server, SERVER_IDLE_REC *rec)
 {
-	GSList *tmp;
-
 	g_return_if_fail(server != NULL);
 
 	server->idles = g_slist_remove(server->idles, rec);
 
-	for (tmp = rec->redirects; tmp != NULL; tmp = tmp->next) {
-		REDIRECT_IDLE_REC *rec = tmp->data;
-
-		g_free(rec->event);
-		g_free(rec->signal);
-		g_free(rec);
-	}
+        g_slist_foreach(rec->redirects, (GFunc) g_free, NULL);
 	g_slist_free(rec->redirects);
 
 	g_free_not_null(rec->arg);
+        g_free_not_null(rec->redirect_cmd);
+        g_free_not_null(rec->failure_signal);
 	g_free(rec->cmd);
 	g_free(rec);
 }
@@ -188,26 +197,20 @@ int server_idle_remove(IRC_SERVER_REC *server, int tag)
 static void server_idle_next(IRC_SERVER_REC *server)
 {
 	SERVER_IDLE_REC *rec;
-	GSList *tmp;
-	int group;
 
 	g_return_if_fail(server != NULL);
 
-	if (server->idles == NULL) return;
+	if (server->idles == NULL)
+		return;
 	rec = server->idles->data;
 
 	/* Send command */
-	irc_send_cmd(server, rec->cmd);
-
-	/* Add server redirections */
-	group = 0;
-	for (tmp = rec->redirects; tmp != NULL; tmp = tmp->next) {
-		REDIRECT_IDLE_REC *rrec = tmp->data;
-
-		group = server_redirect_single_event((SERVER_REC *) server, rec->arg, rec->last > 0,
-						     group, rrec->event, rrec->signal, rrec->argpos);
-		if (rec->last > 0) rec->last--;
+	if (rec->redirect_cmd != NULL) {
+		server_redirect_event_list(server, rec->redirect_cmd, rec->arg,
+					   rec->remote, rec->failure_signal,
+					   rec->redirects);
 	}
+	irc_send_cmd(server, rec->cmd);
 
 	server_idle_destroy(server, rec);
 }

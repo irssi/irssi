@@ -44,7 +44,6 @@ libcore_a_SOURCES = \
 	rawlog.c \
 	servers.c \
 	servers-reconnect.c \
-	servers-redirect.c \
 	servers-setup.c \
 	settings.c \
 	signals.c \
@@ -92,7 +91,6 @@ noinst_HEADERS = \
 	rawlog.h \
 	servers.h \
 	servers-reconnect.h \
-	servers-redirect.h \
 	servers-setup.h \
 	settings.h \
 	signals.h \

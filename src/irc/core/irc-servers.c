@@ -33,8 +33,9 @@
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
 #include "channel-rejoin.h"
-#include "server-idle.h"
+#include "servers-idle.h"
 #include "servers-reconnect.h"
+#include "servers-redirect.h"
 #include "modes.h"
 
 #include "settings.h"
@@ -304,6 +305,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	/* add to rawlog without CR+LF */
 	cmd[len-2] = '\0';
 	rawlog_output(server->rawlog, cmd);
+	server_redirect_command(server, cmd);
 
 	/* remove from queue */
 	g_free(cmd);
@@ -506,6 +508,7 @@ void irc_servers_init(void)
 
 	irc_servers_setup_init();
 	irc_servers_reconnect_init();
+	servers_redirect_init();
 	servers_idle_init();
 }
 
@@ -527,5 +530,6 @@ void irc_servers_deinit(void)
 
 	irc_servers_setup_deinit();
 	irc_servers_reconnect_deinit();
+	servers_redirect_deinit();
 	servers_idle_deinit();
 }
