@@ -63,6 +63,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "names_nick", "%K[%n%_$0%_$1%K] ", 2, { 0, 0 } },
 	{ "endofnames", "%g%_$0%_%K:%n Total of %_$1%_ nicks %K[%n%_$2%_ ops, %_$3%_ voices, %_$4%_ normal%K]", 5, { 0, 1, 1, 1, 1 } },
 	{ "channel_created", "Channel %_$0%_ created $1", 2, { 0, 0 } },
+	{ "url", "Home page for %c$0%K:%n $1", 2, { 0, 0 } },
 	{ "topic", "Topic for %c$0%K:%n $1", 2, { 0, 0 } },
 	{ "no_topic", "No topic set for %c$0", 1, { 0 } },
 	{ "topic_info", "Topic set by %_$0%_ %K[%n$1%K]", 2, { 0, 0 } },
