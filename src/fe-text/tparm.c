@@ -112,7 +112,7 @@ static int popnum(int *num)
 	return 1;
 }
 
-static int cvtchar(char *sp, char *c)
+static int cvtchar(const char *sp, char *c)
 {
 	switch(*sp) {
 	case '\\':
