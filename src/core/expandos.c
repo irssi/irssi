@@ -481,7 +481,7 @@ static int sig_timer(void)
         /* check if $Z has changed */
 	now = time(NULL);
 	if (last_timestamp != now) {
-		if (!timestamp_seconds) {
+		if (!timestamp_seconds && last_timestamp != 0) {
                         /* assume it changes every minute */
 			tm = localtime(&last_timestamp);
 			last_min = tm->tm_min;
