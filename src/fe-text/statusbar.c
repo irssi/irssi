@@ -235,7 +235,7 @@ static void statusbar_resize_items(STATUSBAR_REC *bar, int max_width)
 static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 {
         WINDOW_REC *old_active_win;
-	GSList *tmp;
+	GSList *tmp, *right_items;
 	int xpos, rxpos;
 
 	old_active_win = active_win;
@@ -266,26 +266,33 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 		}
 	}
 
-        /* right-aligned items */
-	rxpos = term_width;
+	/* right-aligned items - first copy them to a new list backwards,
+	   easier to draw them in right order */
+        right_items = NULL;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (rec->config->right_alignment && rec->size > 0) {
-			if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, xpos)) {
-				rec->dirty = TRUE;
-				if (bar->dirty_xpos == -1 ||
-				    xpos < bar->dirty_xpos) {
-                                        irssi_set_dirty();
-					bar->dirty = TRUE;
-					bar->dirty_xpos = xpos;
-				}
-				rec->xpos = rxpos;
-			}
+		if (rec->config->right_alignment && rec->size > 0)
+			right_items = g_slist_prepend(right_items, rec);
+	}
 
-			rxpos -= rec->size;
+	rxpos = term_width;
+	for (tmp = right_items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_REC *rec = tmp->data;
+
+		rxpos -= rec->size;
+		if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, rxpos)) {
+			rec->dirty = TRUE;
+			if (bar->dirty_xpos == -1 ||
+			    rxpos < bar->dirty_xpos) {
+				irssi_set_dirty();
+				bar->dirty = TRUE;
+				bar->dirty_xpos = rxpos;
+			}
+			rec->xpos = rxpos;
 		}
 	}
+        g_slist_free(right_items);
 
 	active_win = old_active_win;
 }
