@@ -34,6 +34,7 @@ void statusbar_items_deinit(void);
 
 static GSList *statusbars;
 static int sbar_uppest, sbar_lowest, sbars_up, sbars_down;
+static int item_max_size;
 
 static void statusbar_item_destroy(SBAR_ITEM_REC *rec)
 {
@@ -66,6 +67,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 			if (rec->shrinked)
                                 rec->size = COLS-1-xpos;
 
+                        item_max_size = COLS-1-xpos;
 			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);
 
@@ -81,6 +83,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 		if (rec->right_justify && rxpos-rec->size > xpos) {
 			rec->xpos = rxpos-rec->size;
 
+                        item_max_size = rxpos-xpos;
 			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);
 
@@ -232,8 +235,10 @@ void statusbar_item_resize(SBAR_ITEM_REC *item, int size)
 {
 	g_return_if_fail(item != NULL);
 
-	item->size = size;
-	statusbar_redraw_all();
+	if (size <= item_max_size) {
+		item->size = size;
+		statusbar_redraw_all();
+	}
 }
 
 void statusbar_item_remove(SBAR_ITEM_REC *item)
