@@ -549,11 +549,11 @@ static int call_perl(const char *func, int signal, va_list va)
 		XPUSHs(sv_2mortal(newSViv(GPOINTER_TO_INT(arg))));
 	    else if (strcmp(rec->args[n], "ulongptr") == 0)
 		XPUSHs(sv_2mortal(newSViv(*(gulong *) arg)));
-	    else if (strncmp(rec->args[n], "glist_", 6) == 0)
+	    else if (strncmp(rec->args[n], "gslist_", 7) == 0)
 	    {
 		GSList *tmp;
 
-		stash = gv_stashpv(rec->args[n]+6, 0);
+		stash = gv_stashpv(rec->args[n]+7, 0);
 		for (tmp = arg; tmp != NULL; tmp = tmp->next)
 		    XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
 	    }
