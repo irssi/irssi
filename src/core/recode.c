@@ -147,9 +147,9 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 				    g_strdup_printf("%s/%s", server->tag, target);
 		if (tagtarget != NULL)
 			to = iconfig_get_str("conversions", tagtarget, NULL);
-		else
-			to = iconfig_get_str("conversions", target, NULL);
 		g_free(tagtarget);
+		if (to == NULL || *to == '\0')
+			to = iconfig_get_str("conversions", target, NULL);
 		if (to == NULL || *to == '\0')
 			/* default outgoing charset if set */
 			to = settings_get_str("recode_out_default_charset");
