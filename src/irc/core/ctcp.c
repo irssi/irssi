@@ -23,7 +23,6 @@
 #include "levels.h"
 #include "special-vars.h"
 #include "settings.h"
-#include "irssi-version.h"
 
 #include "irc.h"
 #include "irc-server.h"

@@ -353,7 +353,7 @@ static void event_sent_invite(const char *data, IRC_SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick, &channel);
+	params = event_get_params(data, 3, NULL, &nick, &channel);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_INVITING, nick, channel);
 	g_free(params);
 }

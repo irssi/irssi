@@ -331,7 +331,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(channel != NULL);
-	g_return_if_fail(modestr != NULL);
+	g_return_if_fail(mode != NULL);
 
 	tmode = g_string_new(NULL);
 	targs = g_string_new(NULL);

@@ -169,7 +169,7 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+	params = cmd_get_params(data, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
 				item, &channel, &nicks);
 	if (!ischannel(*channel)) cmd_param_error(CMDERR_NOT_JOINED);
 	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
