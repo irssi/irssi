@@ -361,7 +361,7 @@ if test ! -s .libs/libconftest.a; then
 fi
 
 dnl ** check if dynamic linking worked
-libfile=`grep ^library_names libconftest.la|$sedpath "s/library_names='\(.*\)'.*/\1/"|$sedpath 's/.* \([[^ ]]*\)$/\1/'`
+libfile=`grep '^library_names' libconftest.la|$sedpath "s/library_names='\(.*\)'.*/\1/"|$sedpath 's/.* \([[^ ]]*\)$/\1/'`
 if test ! -s .libs/$libfile; then
   AC_MSG_RESULT([no, error linking test module])
 else
