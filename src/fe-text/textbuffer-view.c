@@ -905,17 +905,19 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	if (line == view->buffer->lines->data) {
 		/* first line in the buffer - this is the most commonly
 		   removed line.. */
-		if (line == view->bottom_startline->data) {
+		if (view->bottom_startline->data == line) {
 			/* very small scrollback.. */
                         view->bottom_startline = view->bottom_startline->next;
 			view->bottom_subline = 0;
+		}
 
-			if (view->startline->data == line) {
-				view->startline = view->startline->next;
-				view->subline = 0;
-				view->empty_linecount += linecount;
-                                view->ypos -= linecount;
-			}
+		if (view->startline->data == line) {
+                        /* removing the first line in screen */
+			realcount = view_scroll(view, &view->startline,
+						&view->subline,
+						linecount, TRUE);
+			view->ypos -= realcount;
+			view->empty_linecount += linecount-realcount;
 		}
 	} else if (g_list_find(view->bottom_startline, line) != NULL) {
 		realcount = view_scroll(view, &view->bottom_startline,
