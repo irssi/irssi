@@ -91,7 +91,7 @@ void dcc_list_print_file(FILE_DCC_REC *dcc)
 	printformat(NULL, NULL, MSGLEVEL_DCC,
 		    IRCTXT_DCC_LIST_LINE_FILE,
 		    dcc->nick, dcc_type2str(dcc->type),
-		    dcc->transfd/1024, dcc->size/1024,
+		    (dcc->transfd+1023)/1024, (dcc->size+1023)/1024,
 		    dcc->size == 0 ? 0 : (int)((double)dcc->transfd/(double)dcc->size*100.0),
 		    (double) (dcc->transfd-dcc->skipped)/going/1024, dcc->arg);
 }

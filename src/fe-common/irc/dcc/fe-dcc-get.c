@@ -67,7 +67,8 @@ static void dcc_closed(GET_DCC_REC *dcc)
 	} else {
 		printformat(dcc->server, NULL, MSGLEVEL_DCC,
 			    IRCTXT_DCC_GET_COMPLETE, dcc->arg,
-			    dcc->transfd/1024, dcc->nick, (long) secs, kbs);
+			    (dcc->transfd+1023)/1024,
+			    dcc->nick, (long) secs, kbs);
 	}
 }
 
