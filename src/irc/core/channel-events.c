@@ -67,8 +67,9 @@ static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 	p = strchr(channel, ' ');
 	if (p != NULL) *p = '\0';
 
-	if (channel[0] == '!' && channel[1] == '!') {
-		chanrec = channel_find(SERVER(server), channel+1);
+	if (channel[0] == '!') {
+		chanrec = channel_find(SERVER(server),
+				       channel+(channel[1] == '!'));
 		if (chanrec != NULL && !chanrec->names_got) {
 			chanrec->left = TRUE;
 			channel_destroy(chanrec);
