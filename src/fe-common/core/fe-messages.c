@@ -39,7 +39,7 @@
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
 
-static GHashTable *printnicks;
+GHashTable *printnicks;
 
 /* convert _underlined_ and *bold* words (and phrases) to use real
    underlining or bolding */
