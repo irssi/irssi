@@ -1,5 +1,5 @@
 {
-  default_color = 7;
+  default_color = 0;
   colors = {red_100 = 65535;green_100 = 65535;blue_100 = 65535;};
   formats = {
     line_start = "-!- ";
@@ -7,8 +7,15 @@
     connecting = "Connecting to %_$1%_ [$2] port %_$3%_";
     disconnected = "Disconnected from %_$1%_ [$2]";
     join = "%_$1%_ [$2] has joined %_$3";
-    cannot_join = "Cannot join to channel %_$1%_ [$2]";
     part = "%_$1%_ [$2] has left %_$3%_ [$4]";
+    joinerror_toomany = "Cannot join to channel %_$1%_ (You have joined to too many channels)";
+    joinerror_duplicate = "Cannot join to channel %_$1%_ (Duplicate channel)";
+    joinerror_full = "Cannot join to channel %_$1%_ (Channel is full)";
+    joinerror_invite = "Cannot join to channel %_$1%_ (You must be invited)";
+    joinerror_banned = "Cannot join to channel %_$1%_ (You are banned)";
+    joinerror_bad_key = "Cannot join to channel %_$1%_ (Bad channel key)";
+    joinerror_bad_mask = "Cannot join to channel %_$1%_ (Bad channel mask)";
+    joinerror_unavail = "Cannot join to channel %_$1%_ (Channel is temporarily unavailable)";
     kick = "%_$1%_ was kicked from $2 by %_$3%_ [$4]";
     quit = "%_$1%_ [$2] has quit IRC [$3]";
     names = "[%_Users%_($1)] $2";
