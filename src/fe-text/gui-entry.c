@@ -37,7 +37,7 @@ static void entry_screenpos(void)
 		scrstart = 0;
 		scrpos = pos;
 	} else {
-		scrpos = COLS-1-promptlen;
+		scrpos = COLS/3*2-promptlen;
 		scrstart = pos-scrpos;
 	}
 }
