@@ -2,7 +2,7 @@
 @SYNTAX:ignore@
 
     -regexp: <pattern> is a regular expression
-    -word: <pattern> must match to full words
+    -full: <pattern> must match to full words
     -pattern: <pattern> must match to the message's text
     -replies: Ignore replies to nick in channels. For example
              "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
