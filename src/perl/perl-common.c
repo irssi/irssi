@@ -159,8 +159,13 @@ void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 
 static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 {
-	char *name, stash[100];
-	int type, chat_type;
+	static char *items[] = {
+		"Chatnet",
+		"Server", "ServerConnect", "ServerSetup",
+		"Channel", "Query"
+	};
+	char *name, stash[100], code[100];
+	int type, chat_type, n;
 
 	chat_type = chat_protocol_lookup(rec->name);
 	g_return_if_fail(chat_type >= 0);
@@ -186,6 +191,13 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Connect", name);
 	irssi_add_stash(type, chat_type, stash);
 
+	/* register ISAs */
+	for (n = 0; n < sizeof(items)/sizeof(items[0]); n++) {
+		g_snprintf(code, sizeof(code),
+			   "@Irssi::%s::%s::ISA = qw(Irssi::%s);",
+			   name, items[n], items[n]);
+		perl_eval_pv(code, TRUE);
+	}
 	g_free(name);
 }
 

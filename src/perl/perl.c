@@ -154,7 +154,7 @@ static void irssi_perl_start(void)
 		"\n"
 		"  eval {$package->handler;};\n"
 		"  die $@ if $@;\n"
-		"}";
+		"}\n";
 
 	first_signals = g_hash_table_new((GHashFunc) g_direct_hash,
 					 (GCompareFunc) g_direct_equal);
@@ -663,8 +663,6 @@ static void irssi_perl_autorun(void)
 
 void perl_init(void)
 {
-	perl_common_init();
-
 	perl_scripts = NULL;
 	command_bind("run", NULL, (SIGNAL_FUNC) cmd_run);
 	command_bind_first("unload", NULL, (SIGNAL_FUNC) cmd_unload);
@@ -673,6 +671,8 @@ void perl_init(void)
 
         PL_perl_destruct_level = 1;
 	irssi_perl_start();
+
+	perl_common_init();
 	irssi_perl_autorun();
 }
 
