@@ -48,6 +48,7 @@ void channel_init(CHANNEL_REC *channel, int automatic)
 
         MODULE_DATA_INIT(channel);
 	channel->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
+        channel->destroy = (void (*) (WI_ITEM_REC *)) channel_destroy;
         channel->mode = g_strdup("");
 	channel->createtime = time(NULL);
         channel->get_join_data = get_join_data;

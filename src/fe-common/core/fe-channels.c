@@ -74,16 +74,6 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 		window_auto_destroy(window);
 }
 
-static void signal_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
-{
-	CHANNEL_REC *channel;
-
-	g_return_if_fail(window != NULL);
-
-	channel = CHANNEL(item);
-        if (channel != NULL) channel_destroy(channel);
-}
-
 static void sig_disconnected(SERVER_REC *server)
 {
 	WINDOW_REC *window;
@@ -576,7 +566,6 @@ void fe_channels_init(void)
 
 	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
-	signal_add_last("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
@@ -599,7 +588,6 @@ void fe_channels_deinit(void)
 {
 	signal_remove("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
-	signal_remove("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 

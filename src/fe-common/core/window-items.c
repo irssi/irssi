@@ -66,7 +66,7 @@ void window_item_remove(WI_ITEM_REC *item)
 
 	window = window_item_window(item);
 
-	if (g_slist_find(window->items, item) == NULL)
+	if (window == NULL)
 		return;
 
         item->window = NULL;
@@ -86,8 +86,7 @@ void window_item_destroy(WI_ITEM_REC *item)
 
 	window = window_item_window(item);
         window_item_remove(item);
-
-	signal_emit("window item destroy", 2, window, item);
+        item->destroy(item);
 }
 
 void window_item_change_server(WI_ITEM_REC *item, void *server)

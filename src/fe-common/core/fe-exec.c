@@ -38,28 +38,6 @@
 static GSList *processes;
 static int signal_exec_input;
 
-static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
-{
-	EXEC_WI_REC *item;
-
-        g_return_val_if_fail(window != NULL, NULL);
-        g_return_val_if_fail(rec != NULL, NULL);
-
-	item = g_new0(EXEC_WI_REC, 1);
-	item->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC");
-	item->name = rec->name != NULL ?
-		g_strdup_printf("%%%s", rec->name) :
-		g_strdup_printf("%%%d", rec->id);
-
-	item->window = window;
-	item->createtime = time(NULL);
-        item->process = rec;
-
-	MODULE_DATA_INIT(item);
-	window_item_add(window, (WI_ITEM_REC *) item, FALSE);
-        return item;
-}
-
 static void exec_wi_destroy(EXEC_WI_REC *rec)
 {
         g_return_if_fail(rec != NULL);
@@ -73,6 +51,29 @@ static void exec_wi_destroy(EXEC_WI_REC *rec)
 	MODULE_DATA_DEINIT(rec);
 	g_free(rec->name);
         g_free(rec);
+}
+
+static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
+{
+	EXEC_WI_REC *item;
+
+        g_return_val_if_fail(window != NULL, NULL);
+        g_return_val_if_fail(rec != NULL, NULL);
+
+	item = g_new0(EXEC_WI_REC, 1);
+	item->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC");
+        item->destroy = (void (*) (WI_ITEM_REC *)) exec_wi_destroy;
+	item->name = rec->name != NULL ?
+		g_strdup_printf("%%%s", rec->name) :
+		g_strdup_printf("%%%d", rec->id);
+
+	item->window = window;
+	item->createtime = time(NULL);
+        item->process = rec;
+
+	MODULE_DATA_INIT(item);
+	window_item_add(window, (WI_ITEM_REC *) item, FALSE);
+        return item;
 }
 
 static int process_get_new_id(void)
@@ -590,14 +591,6 @@ static void sig_window_destroyed(WINDOW_REC *window)
 	}
 }
 
-static void sig_window_item_destroyed(WINDOW_REC *window, EXEC_WI_REC *item)
-{
-	if (IS_EXEC_WI(item)) {
-                item->process->target_item = NULL;
-		exec_wi_destroy(item);
-	}
-}
-
 static void event_text(const char *data, SERVER_REC *server, EXEC_WI_REC *item)
 {
 	if (!IS_EXEC_WI(item)) return;
@@ -616,7 +609,6 @@ void fe_exec_init(void)
         signal_add("pidwait", (SIGNAL_FUNC) sig_pidwait);
         signal_add("exec input", (SIGNAL_FUNC) sig_exec_input);
         signal_add("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
-	signal_add("window item destroy", (SIGNAL_FUNC) sig_window_item_destroyed);
 	signal_add_first("send text", (SIGNAL_FUNC) event_text);
 }
 
@@ -636,6 +628,5 @@ void fe_exec_deinit(void)
         signal_remove("pidwait", (SIGNAL_FUNC) sig_pidwait);
         signal_remove("exec input", (SIGNAL_FUNC) sig_exec_input);
         signal_remove("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
-	signal_remove("window item destroy", (SIGNAL_FUNC) sig_window_item_destroyed);
 	signal_remove("send text", (SIGNAL_FUNC) event_text);
 }

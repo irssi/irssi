@@ -120,16 +120,6 @@ static void signal_window_item_server_changed(WINDOW_REC *window,
 	}
 }
 
-static void signal_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
-{
-	QUERY_REC *query;
-
-	g_return_if_fail(window != NULL);
-
-	query = QUERY(item);
-	if (query != NULL) query_destroy(query);
-}
-
 static void sig_server_connected(SERVER_REC *server)
 {
 	GSList *tmp;
@@ -349,7 +339,6 @@ void fe_queries_init(void)
 	signal_add("query server changed", (SIGNAL_FUNC) signal_query_server_changed);
 	signal_add("query nick changed", (SIGNAL_FUNC) signal_query_nick_changed);
         signal_add("window item server changed", (SIGNAL_FUNC) signal_window_item_server_changed);
-	signal_add_last("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add_first("message private", (SIGNAL_FUNC) sig_message_private);
@@ -371,7 +360,6 @@ void fe_queries_deinit(void)
 	signal_remove("query server changed", (SIGNAL_FUNC) signal_query_server_changed);
 	signal_remove("query nick changed", (SIGNAL_FUNC) signal_query_nick_changed);
         signal_remove("window item server changed", (SIGNAL_FUNC) signal_window_item_server_changed);
-	signal_remove("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);

@@ -12,4 +12,6 @@ time_t createtime;
 int data_level;
 char *hilight_color;
 
+void (*destroy)(WI_ITEM_REC *item);
+
 #undef STRUCT_SERVER_REC
