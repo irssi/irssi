@@ -64,7 +64,7 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	if (rec->fullword) g_string_append(options, "-full ");
 	if (rec->replies) g_string_append(options, "-replies ");
 	if (rec->servertag != NULL) 
-		g_string_sprintfa(options, "-ircnet %s ", rec->servertag);
+		g_string_sprintfa(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_sprintfa(options, "-pattern %s ", rec->pattern);
 
@@ -107,9 +107,10 @@ static void cmd_ignore_show(void)
 }
 
 /* SYNTAX: IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-                  [-ircnet <ircnet>] [-channels <channel>] [-time <secs>] <mask> [<levels>]
+                  [-network <network>] [-channels <channel>] [-time <secs>] <mask> [<levels>]
            IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-	          [-ircnet <ircnet>] [-time <secs>] <channels> [<levels>] */
+	          [-network <network>] [-time <secs>] <channels> [<levels>] */
+/* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_ignore(const char *data)
 {
 	GHashTable *optlist;
@@ -130,7 +131,10 @@ static void cmd_ignore(const char *data)
 
 	patternarg = g_hash_table_lookup(optlist, "pattern");
         chanarg = g_hash_table_lookup(optlist, "channels");
-	servertag = g_hash_table_lookup(optlist, "ircnet");
+	servertag = g_hash_table_lookup(optlist, "network");
+	/* Allow -ircnet for backwards compatibility */
+	if (!servertag)
+		servertag = g_hash_table_lookup(optlist, "ircnet");
 	
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
         if (*levels == '\0') levels = "ALL";
@@ -258,7 +262,7 @@ void fe_ignore_init(void)
 	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
 	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
-	command_set_options("ignore", "regexp full except replies -ircnet -time -pattern -channels");
+	command_set_options("ignore", "regexp full except replies -network -ircnet -time -pattern -channels");
 }
 
 void fe_ignore_deinit(void)

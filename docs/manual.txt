@@ -343,7 +343,7 @@
 
 	Servers are referenced by a "server tag". If the server is known
 	to belong to some IRC network, the tag is the IRC network's name,
-	like "ircnet". If the IRC network is unknown, the tag is created
+	like "IRCnet". If the IRC network is unknown, the tag is created
 	from the server's name, like irc.funet.fi -> funet. If the tag
 	already exists, a number is added to the end of it and raised until
 	unused tag is found.
@@ -384,17 +384,17 @@
 	    -autosendcmd: Command to send after connecting to a server
 
 	With -autosendcmd argument you can automatically run any commands
-	after connecting to ircnet. This is useful for automatically 
+	after connecting to the network. This is useful for automatically 
 	identifying yourself to NickServ, for example
 
-	/IRCNET ADD -autosendcmd "/msg NickServ identify secret" freenode
+	/NETWORK ADD -autosendcmd "/msg NickServ identify secret" freenode
 
-	/IRCNET REMOVE <name>
+	/NETWORK REMOVE <name>
 
  5.3 Manually connecting and disconnecting
 
 	To connect to a new server, use:
-	/CONNECT [-ircnet <ircnet>] [-host <hostname>] <address>|<ircnet>
+	/CONNECT [-network <network>] [-host <hostname>] <address>|<network>
 	         [<port> [<password> [<nick>]]]
 
 	If there's no password, set it to -. You can directly connect to
@@ -432,13 +432,14 @@
 
  5.4 Server settings
 
-	/SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+	/SERVER ADD [-auto | -noauto] [-network <network>] [-host <hostname>]
 	            [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
 	            <address> [<port> [<password>]]
 
 	    -auto: Automatically connect to server at startup
 	    -noauto: Don't connect to server at startup (default)
-	    -ircnet: Specify what IRC network this server belongs to
+	    -network: Specify what IRC network this server belongs to
+	    -ircnet: Same as -network. Deprecated. Do not use.
 	    -host: Specify what host name to use, if you have multiple
 	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
 	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
@@ -634,7 +635,7 @@
 	manually joining to channel without specifying the password.
 
 	/CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-	         <channel> <ircnet> [<password>]
+	         <channel> <network> [<password>]
 
 	With -bots and -botcmd arguments you can automatically send
 	commands to someone in channel. This is useful for automatically
@@ -651,7 +652,7 @@
 	can be removed by setting it to - (or actually, "" works too).
 
 	You can remove the channels with
-	/CHANNEL REMOVE <channel> <ircnet>
+	/CHANNEL REMOVE <channel> <network>
 
 	/CHANNEL LIST displays list of channels with settings.
 	/CHANNEL without any arguments displays list of channels you have
@@ -844,7 +845,7 @@
 	are in IRC all the time. So I made a bit more featureful notify
 	list:
 
-	/NOTIFY [-list] [-away] [-idle [minutes]] <mask> [ircnet [ircnet...]]
+	/NOTIFY [-list] [-away] [-idle [minutes]] <mask> [network [network...]]
 
 	    -away: Notifies about away-status changes
 	    -idle: Notifies if idle time is first larger than <minutes>

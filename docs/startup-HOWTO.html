@@ -111,24 +111,24 @@ management (send me a note if you can think of more):</p>
 joining channels)</p>
 
 <pre>
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
 </pre>
 
-<p>Then add some servers to different networks (ircnet is already set up 
+<p>Then add some servers to different networks (network is already set up 
 for them), irc.kpnqwest.fi is used by default for IRCNet but if it fails,
 irc.funet.fi is tried next:</p>
 
 <pre>
-/SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
-/SERVER ADD -ircnet ircnet irc.funet.fi 6667
-/SERVER ADD -auto -ircnet efnet efnet.cs.hut.fi 6667
+/SERVER ADD -auto -network IRCnet irc.kpnqwest.fi 6667
+/SERVER ADD -network IRCnet irc.funet.fi 6667
+/SERVER ADD -auto -network efnet efnet.cs.hut.fi 6667
 </pre>
 
 <p>Automatically join to channels after connected to server, send op request
 to bot after joined to efnet/#irssi:</p>
 
 <pre>
-/CHANNEL ADD -auto #irssi ircnet
+/CHANNEL ADD -auto #irssi IRCnet
 /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
 </pre>
 
@@ -216,7 +216,7 @@ window layout:</p>
 
 <pre>
 Split window 1: win#1 - Status window, win#2 - Messages window
-Split window 2: win#3 - ircnet/#channel1, win#4 - ircnet/#channel2
+Split window 2: win#3 - IRCnet/#channel1, win#4 - IRCnet/#channel2
 Split window 3: win#5 - efnet/#channel1, win#6 - efnet/#channel2
 </pre>
 
@@ -265,22 +265,22 @@ helps with reconnecting if your primary server breaks and is probably
 useful in some other ways too :) For information how to actually use
 irssi correctly with multiple servers see the chapter 6.</p>
 
-<p>First you need to have your IRC network set, use <code>/IRCNET</code>
-command to see if it's already there. If it isn't, use <code>/IRCNET ADD
-yourircnet</code>. If you want to execute some commands automatically when
+<p>First you need to have your IRC network set, use <code>/NETWORK</code>
+command to see if it's already there. If it isn't, use <code>/NETWORK ADD
+yournetwork</code>. If you want to execute some commands automatically when
 you're connected to some network, use <code>-autosendcmd</code> option.
 Here's some examples:</p>
 
 <pre>
-/IRCNET ADD -autosendcmd '^msg bot invite' ircnet
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/NETWORK ADD -autosendcmd '^msg bot invite' IRCnet
+/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
 </pre>
 
 <p>After that you need to add your servers. For example:</p>
 
 <pre>
-/SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
-/SERVER ADD -auto -ircnet worknet irc.mycompany.com 6667 password
+/SERVER ADD -auto -network IRCnet irc.kpnqwest.fi 6667
+/SERVER ADD -auto -network worknet irc.mycompany.com 6667 password
 </pre>
 
 <p>The <code>-auto</code> option specifies that this server is
@@ -293,7 +293,7 @@ fails.</p>
 
 <pre>
 /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
-/CHANNEL ADD -auto #secret ircnet password
+/CHANNEL ADD -auto #secret IRCnet password
 </pre>
 
 <p><code>-bots</code> and <code>-botcmd</code> should be the only ones
@@ -412,7 +412,7 @@ The IRCNet at the beginning is called the "server tag" while the
 tag to refer to the server, usually it's the same as the IRC network.
 When the IRC network isn't known it's some part of the server name.
 When there's multiple connections to same IRC network or server, irssi
-adds a number after the tag so there could be ircnet, ircnet2, ircnet3
+adds a number after the tag so there could be network, network2, network3
 etc.</p>
 
 <p>Server tags beginning with <code>RECON-</code> mean server
@@ -423,7 +423,7 @@ successful and irssi will try to connect it again in 3 minutes.</p>
 reconnecting, use</p>
 
 <pre>
-/DISCONNECT ircnet   - disconnect server with tag "ircnet"
+/DISCONNECT network   - disconnect server with tag "network"
 /DISCONNECT recon-1  - stop trying to reconnect to RECON-1 server
 /RMRECONNS           - stop all server reconnections
 
@@ -476,12 +476,12 @@ for each server. Here's how to do them (repeat for each server)</p>
 /WINDOW NEW HIDE
 /WINDOW NAME (status)
 /WINDOW LEVEL ALL -MSGS
-/WINDOW SERVER -sticky ircnet
+/WINDOW SERVER -sticky network
 
 /WINDOW NEW HIDE
 /WINDOW NAME (msgs)
 /WINDOW LEVEL MSGS
-/WINDOW SERVER -sticky ircnet
+/WINDOW SERVER -sticky network
 </pre>
 
 <h3><a id="c7">7. /LASTLOG and jumping around in scrollback</a></h3>
@@ -620,8 +620,8 @@ exactly as if you'd want to connect directly to them. Nothing special
 about them:</p>
 
 <pre>
-/SERVER ADD -auto -ircnet dalnet irc.dal.net
-/SERVER ADD -auto -ircnet efnet irc.efnet.org
+/SERVER ADD -auto -network dalnet irc.dal.net
+/SERVER ADD -auto -network efnet irc.efnet.org
 </pre>
 
 <p>With the proxy <code>/SET</code>s however, irssi now connects to those
@@ -662,7 +662,7 @@ you can just forget that your bouncer even exists.</p>
 <p><strong>dircproxy</strong></p>
 
 <p>dircproxy separates the server connections by passwords. So, if you
-for example have ircnet connection with password ircpass and
+for example have network connection with password ircpass and
 freenode connection with freenodepass, you would do something like
 this:</p>
 
@@ -670,8 +670,8 @@ this:</p>
 /SET -clear proxy_password
 /SET -clear proxy_string
 
-/SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
+/SERVER ADD -auto -network IRCnet fake.network 6667 ircpass
+/SERVER ADD -auto -network freenode fake.freenode 6667 freenodepass
 </pre>
 
 <p>The server name and port you give isn't used anywhere, so you can
@@ -688,13 +688,13 @@ as with dircproxy, by creating fake connections:</p>
 /SET -clear proxy_password
 /SET -clear proxy_string
 
-/IRCNET ADD -user ircnetuser ircnet
-/SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/IRCNET ADD -user freenodeuser freenode
-/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
+/NETWORK ADD -user networkuser IRCnet
+/SERVER ADD -auto -network IRCnet fake.network 6667 ircpass
+/NETWORK ADD -user freenodeuser freenode
+/SERVER ADD -auto -network freenode fake.freenode 6667 freenodepass
 </pre>
 
-<p>So, you'll specify the usernames with <code>/IRCNET ADD</code> command,
+<p>So, you'll specify the usernames with <code>/NETWORK ADD</code> command,
 and the user's password with <code>/SERVER ADD</code>.</p>
 
 <p><strong>Irssi proxy</strong></p>
@@ -712,19 +712,19 @@ anyone figure out even more easier ways to say this, so I wouldn't need to
 try to explain this thing for minutes every time? :)</p>
 
 <p>Irssi proxy supports sharing multiple server connections in different
-ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
+ports, like you can share network in port 2777 and efnet in port 2778.</p>
 
 <p>Usage in proxy side:</p>
 
 <pre>
 /LOAD proxy
 /SET irssiproxy_password &lt;password&gt;
-/SET irssiproxy_ports &lt;ircnet&gt;=&lt;port&gt; ... (eg. ircnet=2777 efnet=2778)
+/SET irssiproxy_ports &lt;network&gt;=&lt;port&gt; ... (eg. IRCnet=2777 efnet=2778)
 </pre>
 
 <p><strong>NOTE</strong>: you <strong>MUST</strong> add all the servers you
-are using to server and ircnet lists with <code>/SERVER ADD</code> and 
-<code>/IRCNET ADD</code>. ..Except if you really don't want to for some
+are using to server and network lists with <code>/SERVER ADD</code> and 
+<code>/NETWORK ADD</code>. ..Except if you really don't want to for some
 reason, and you only use one server connection, you may simply set:</p>
 
 <pre>
@@ -737,8 +737,8 @@ reason, and you only use one server connection, you may simply set:</p>
 specified in <code>/SET irssiproxy_password</code>. For example:</p>
 
 <pre>
-/SERVER ADD -ircnet ircnet my.irssi-proxy.org 2777 secret
-/SERVER ADD -ircnet efnet my.irssi-proxy.org 2778 secret
+/SERVER ADD -network IRCnet my.irssi-proxy.org 2777 secret
+/SERVER ADD -network efnet my.irssi-proxy.org 2778 secret
 </pre>
 
 <p>Irssi proxy works fine with other IRC clients as well.</p>

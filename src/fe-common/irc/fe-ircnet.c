@@ -36,7 +36,7 @@ static void cmd_ircnet_list(void)
 	GSList *tmp;
 
 	str = g_string_new(NULL);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IRCNET_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETWORK_HEADER);
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
 		IRC_CHATNET_REC *rec = tmp->data;
 
@@ -75,13 +75,13 @@ static void cmd_ircnet_list(void)
 
 		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-			    IRCTXT_IRCNET_LINE, rec->name, str->str);
+			    IRCTXT_NETWORK_LINE, rec->name, str->str);
 	}
 	g_string_free(str, TRUE);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IRCNET_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETWORK_FOOTER);
 }
 
-/* SYNTAX: IRCNET ADD [-nick <nick>] [-user <user>] [-realname <name>]
+/* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
                       [-host <host>] [-autosendcmd <cmd>]
 		      [-querychans <count>] [-whois <count>] [-msgs <count>]
 		      [-kicks <count>] [-modes <count>]
@@ -94,7 +94,7 @@ static void cmd_ircnet_add(const char *data)
 	IRC_CHATNET_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
-			    "ircnet add", &optlist, &name))
+			    "network add", &optlist, &name))
 		return;
 	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -149,12 +149,12 @@ static void cmd_ircnet_add(const char *data)
 	if (value != NULL && *value != '\0') rec->autosendcmd = g_strdup(value);
 
 	ircnet_create(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_ADDED, name);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_ADDED, name);
 
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: IRCNET REMOVE <ircnet> */
+/* SYNTAX: NETWORK REMOVE <network> */
 static void cmd_ircnet_remove(const char *data)
 {
 	IRC_CHATNET_REC *rec;
@@ -163,9 +163,9 @@ static void cmd_ircnet_remove(const char *data)
 
 	rec = ircnet_find(data);
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_NOT_FOUND, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_NOT_FOUND, data);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_REMOVED, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_REMOVED, data);
 		chatnet_remove(CHATNET(rec));
 	}
 }
@@ -180,18 +180,18 @@ static void cmd_ircnet(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 void fe_ircnet_init(void)
 {
-	command_bind("ircnet", NULL, (SIGNAL_FUNC) cmd_ircnet);
-	command_bind("ircnet list", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
-	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
-	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
+	command_bind("network", NULL, (SIGNAL_FUNC) cmd_ircnet);
+	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
+	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
+	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
 
-	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode");
+	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode");
 }
 
 void fe_ircnet_deinit(void)
 {
-	command_unbind("ircnet", (SIGNAL_FUNC) cmd_ircnet);
-	command_unbind("ircnet list", (SIGNAL_FUNC) cmd_ircnet_list);
-	command_unbind("ircnet add", (SIGNAL_FUNC) cmd_ircnet_add);
-	command_unbind("ircnet remove", (SIGNAL_FUNC) cmd_ircnet_remove);
+	command_unbind("network", (SIGNAL_FUNC) cmd_ircnet);
+	command_unbind("network list", (SIGNAL_FUNC) cmd_ircnet_list);
+	command_unbind("network add", (SIGNAL_FUNC) cmd_ircnet_add);
+	command_unbind("network remove", (SIGNAL_FUNC) cmd_ircnet_remove);
 }

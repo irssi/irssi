@@ -246,7 +246,7 @@ static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 }
 
 /* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-                       <channel> <chatnet> [<password>] */
+                       <channel> <network> [<password>] */
 static void cmd_channel_add(const char *data)
 {
 	GHashTable *optlist;
@@ -298,7 +298,7 @@ static void cmd_channel_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: CHANNEL REMOVE <channel> <chatnet> */
+/* SYNTAX: CHANNEL REMOVE <channel> <network> */
 static void cmd_channel_remove(const char *data)
 {
 	CHANNEL_SETUP_REC *rec;

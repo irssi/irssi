@@ -8,7 +8,8 @@
      -ssl_verify: Verify servers SSL certificate
      -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
      -ssl_capath: Directory with CA certificates (implies -ssl_verify)
-     -ircnet: the IRCNet
+     -network: the network this connection belongs to
+     -ircnet: Same as -network. Deprecated. Do not use.
      -host: the host
      -!: don't autojoin channels
      -rawlog: immediately open rawlog after connected

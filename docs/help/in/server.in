@@ -10,7 +10,8 @@
      -ssl_capath: Directory with CA certificates (implies -ssl_verify)
      -auto: Automatically connect to server at startup (default)
      -noauto: Don't connect to server at startup
-     -ircnet: Specify what IRC network this server belongs to
+     -network: Specify what IRC network this server belongs to
+     -ircnet: Same as -network. Deprecated. Do not use
      -host: Specify what host name to use, if you have multiple
      -!: don't autojoin channels
      -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1

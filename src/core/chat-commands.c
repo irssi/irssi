@@ -67,6 +67,10 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	/* connect to server */
 	chatnet = proto == NULL ? NULL :
 		g_hash_table_lookup(optlist, proto->chatnet);
+
+	if (chatnet == NULL)
+		chatnet = g_hash_table_lookup(optlist, "network");
+	
 	conn = server_create_conn(proto != NULL ? proto->id : -1, addr,
 				  atoi(portstr), chatnet, password, nick);
 	if (proto == NULL)
@@ -129,9 +133,10 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 
 /* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
                    [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-		   [-noproxy] [-ircnet <ircnet>] [-host <hostname>]
+		   [-noproxy] [-network <network>] [-host <hostname>]
 		   [-rawlog <file>]
 		   <address>|<chatnet> [<port> [<password> [<nick>]]] */
+/* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_connect(const char *data)
 {
 	SERVER_CONNECT_REC *conn;
@@ -233,9 +238,10 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
 
 /* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
                   [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-		  [-noproxy] [-ircnet <ircnet>] [-host <hostname>]
+		  [-noproxy] [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
                   [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
+/* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;

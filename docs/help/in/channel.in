@@ -6,7 +6,7 @@ IRC networks. It can also automatically send the password when
 manually joining to channel without specifying the password.
 
 /CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-             <channel> <ircnet> [<password>]
+             <channel> <network> [<password>]
 
 With -bots and -botcmd arguments you can automatically send
 commands to someone in channel. This is useful for automatically
@@ -23,7 +23,7 @@ for example bots, just give the -bots "" parameters to it. Password
 can be removed by setting it to - (or actually, "" works too).
 
 You can remove the channels with
-/CHANNEL REMOVE <channel> <ircnet>
+/CHANNEL REMOVE <channel> <network>
 
 /CHANNEL LIST displays list of channels with settings.
 

@@ -52,16 +52,22 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 }
 /* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
                       [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-                      [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+                      [-auto | -noauto] [-network <network>] [-host <hostname>]
                       [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
                       <address> [<port> [<password>]] */
+/* NOTE: -network replaces the old -ircnet flag. */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
         IRC_CHATNET_REC *ircnet;
 	char *value;
 
-	value = g_hash_table_lookup(optlist, "ircnet");
+	value = g_hash_table_lookup(optlist, "network");
+	/* For backwards compatibility, also allow the old name 'ircnet'. 
+	   But of course only if -network was not given. */
+	if (!value)
+		value = g_hash_table_lookup(optlist, "ircnet");
+
 	if (value != NULL) {
 		g_free_and_null(rec->chatnet);
 		if (*value != '\0') {
@@ -139,7 +145,7 @@ void fe_irc_server_init(void)
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
-	command_set_options("server add", "-ircnet -cmdspeed -cmdmax -querychans");
+	command_set_options("server add", "-ircnet -network -cmdspeed -cmdmax -querychans");
 }
 
 void fe_irc_server_deinit(void)

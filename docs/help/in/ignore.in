@@ -9,7 +9,8 @@
               from Finland, but also anyone sending message
               "tofinnishnick: blahblah".
     -except: *DON'T* ignore - overrides an existing ignore.
-    -ircnet: Ignore only on this ircnet.
+    -network: Ignore only on this network.
+    -ircnet: Same as -network. Deprecated. Do not use.
     -channels: Ignore only in channels
     <mask>: Either a nick mask or list of channels
     <levels>: List of levels to ignore. You can use -<level> to remove levels
