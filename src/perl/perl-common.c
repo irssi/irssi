@@ -80,7 +80,7 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
 	HV *stash, *hv;
 
 	rec = g_hash_table_lookup(iobject_stashes,
-				  GINT_TO_POINTER(type | (chat_type << 24)));
+				  GINT_TO_POINTER(type | (chat_type << 16)));
 	if (rec == NULL) {
                 /* unknown iobject */
 		return newSViv(GPOINTER_TO_INT(object));
@@ -144,7 +144,7 @@ void irssi_add_object(int type, int chat_type, const char *stash,
 	PERL_OBJECT_REC *rec;
         void *hash;
 
-        hash = GINT_TO_POINTER(type | (chat_type << 24));
+        hash = GINT_TO_POINTER(type | (chat_type << 16));
 	rec = g_hash_table_lookup(iobject_stashes, hash);
 	if (rec == NULL) {
 		rec = g_new(PERL_OBJECT_REC, 1);
@@ -550,7 +550,7 @@ static void free_iobject_hash(void *key, PERL_OBJECT_REC *rec)
 
 static int free_iobject_proto(void *key, void *value, void *chat_type)
 {
-	if ((GPOINTER_TO_INT(key) >> 24) == GPOINTER_TO_INT(chat_type)) {
+	if ((GPOINTER_TO_INT(key) >> 16) == GPOINTER_TO_INT(chat_type)) {
                 free_iobject_hash(key, value);
                 return TRUE;
 	}
