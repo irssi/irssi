@@ -10,7 +10,7 @@ if test ! -f $srcdir/irssi.cvs -a -f $srcdir/configure; then
   echo
   echo "Use ./configure instead"
   echo
-  echo "This script should only be run if you got sources from CVS."
+  echo "This script should only be run if you got sources from SVN."
   echo "If you really want to do this, say:"
   echo "  touch irssi.cvs"
   exit 0
@@ -33,24 +33,24 @@ perl syntax.pl
 # the TZ hack is needed.
 # otherwise the log will have local timezone
 SVN=svn
-if [ -e $srcdir/ChangeLog ]; then
-	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| tail -n 1 | sed -r 's/^r([0-9]+).*/\1/;t;d'`
+if test -f $srcdir/ChangeLog; then
+	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| tail -1 | sed 's/^r\([0-9]*\).*/\1/'`
 fi
-if [ -z $CHANGELOG_VERSION ]; then
+if test -z $CHANGELOG_VERSION; then
 	echo "Getting ChangeLog from svn..."
 	TZ=UTC $SVN log -v > $srcdir/ChangeLog
 else
 	SVN_VERSION=`$SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
-	if [ -z SVN_VERSION ]; then
+	if test -z SVN_VERSION; then
 		echo "**Error**: Couldn't get svn revision number. svn or .svn dirs missing?"
 		exit 1
 	fi
-	if [ $SVN_VERSION -eq $CHANGELOG_VERSION ]; then
+	if test $SVN_VERSION -eq $CHANGELOG_VERSION; then
 		echo ChangeLog is already up-to-date.
 	else
 		echo "Updating ChangeLog from version $CHANGELOG_VERSION to $SVN_VERSION..."
 		mv $srcdir/ChangeLog $srcdir/ChangeLog.prev
-		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:$((CHANGELOG_VERSION+1)) > $srcdir/ChangeLog
+		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:$[CHANGELOG_VERSION+1] > $srcdir/ChangeLog
 		cat $srcdir/ChangeLog.prev >> $srcdir/ChangeLog
 	fi
 fi
@@ -115,7 +115,7 @@ fi
 if test -z "$*"; then
   echo "**Warning**: I am going to run \`configure' with no arguments."
   echo "If you wish to pass any to it, please specify them on the"
-  echo \`$0\'" command line."
+  echo "\`$0\' command line."
   echo
 fi
 
@@ -166,9 +166,9 @@ conf_flags="--enable-maintainer-mode --enable-compile-warnings" #--enable-iso-c
 if test x$NOCONFIGURE = x; then
   echo Running $srcdir/configure $conf_flags "$@" ...
   $srcdir/configure $conf_flags "$@" \
-  && echo Now type \`make\' to compile $PKG_NAME || exit 1
+  && echo "Now type \`make\' to compile $PKG_NAME" || exit 1
 else
-  echo Skipping configure process.
+  echo "Skipping configure process."
 fi
 
 # make sure perl hashes have correct length
