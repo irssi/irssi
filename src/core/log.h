@@ -6,6 +6,8 @@ enum {
 	LOG_ITEM_WINDOW_REFNUM
 };
 
+typedef char *(*COLORIZE_FUNC)(const char *str);
+
 typedef struct {
 	int type;
         char *name;
@@ -22,6 +24,7 @@ typedef struct {
 	GSList *items; /* log only on these items */
 
 	time_t last; /* when last message was written */
+        COLORIZE_FUNC colorizer;
 
 	unsigned int autoopen:1; /* automatically start logging at startup */
 	unsigned int failed:1; /* opening log failed last time */

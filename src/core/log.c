@@ -184,6 +184,7 @@ static void log_rotate_check(LOG_REC *log)
 
 void log_write_rec(LOG_REC *log, const char *str, int level)
 {
+        char *colorstr;
 	struct tm *tm;
 	time_t now;
 	int hour, day;
@@ -215,6 +216,11 @@ void log_write_rec(LOG_REC *log, const char *str, int level)
 
 	log->last = now;
 
+	if (log->colorizer == NULL)
+		colorstr = NULL;
+        else
+                str = colorstr = log->colorizer(str);
+
         if ((level & MSGLEVEL_LASTLOG) == 0)
 		log_write_timestamp(log->handle, log_timestamp, str, now);
 	else
@@ -222,6 +228,8 @@ void log_write_rec(LOG_REC *log, const char *str, int level)
 	write_buffer(log->handle, "\n", 1);
 
 	signal_emit("log written", 2, log, str);
+
+        g_free_not_null(colorstr);
 }
 
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
@@ -344,6 +352,8 @@ static void log_update_config(LOG_REC *log)
 
 	if (log->items != NULL)
 		log_items_update_config(log, node);
+
+	signal_emit("log config save", 2, log, node);
 }
 
 static void log_remove_config(LOG_REC *log)
@@ -515,6 +525,8 @@ static void log_read_config(void)
 		log->autoopen = config_node_get_bool(node, "auto_open", FALSE);
 		log->level = level2bits(config_node_get_str(node, "level", 0));
 
+		signal_emit("log config read", 2, log, node);
+
 		node = config_node_section(node, "items", -1);
 		if (node != NULL)
 			log_items_read_config(node, log);
@@ -549,9 +561,9 @@ void log_init(void)
 			 "--- Day changed %a %b %d %Y");
 
 	read_settings();
-	log_read_config();
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);
         signal_add("setup reread", (SIGNAL_FUNC) log_read_config);
+        signal_add("irssi init finished", (SIGNAL_FUNC) log_read_config);
 }
 
 void log_deinit(void)
@@ -563,4 +575,5 @@ void log_deinit(void)
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
         signal_remove("setup reread", (SIGNAL_FUNC) log_read_config);
+        signal_remove("irssi init finished", (SIGNAL_FUNC) log_read_config);
 }

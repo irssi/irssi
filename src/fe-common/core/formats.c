@@ -653,11 +653,11 @@ void format_newline(WINDOW_REC *window)
 }
 
 /* parse ANSI color string */
-static char *get_ansi_color(THEME_REC *theme, char *str,
-			    int *fg_ret, int *bg_ret, int *flags_ret)
+static const char *get_ansi_color(THEME_REC *theme, const char *str,
+				  int *fg_ret, int *bg_ret, int *flags_ret)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
-	char *start;
+	const char *start;
 	int fg, bg, flags, num;
 
 	if (*str != '[')
@@ -844,7 +844,10 @@ char *strip_codes(const char *input)
                                 p += 2;
                                 continue;
                         }
-                }
+		}
+
+		if (*p == 27 && p[1] != '\0')
+			p = get_ansi_color(current_theme, p, NULL, NULL, NULL);
 
                 if (!IS_COLOR_CODE(*p))
                         *out++ = *p;   
@@ -975,12 +978,13 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			break;
 		case 27:
 			/* ansi color code */
-			ptr = get_ansi_color(dest->window == NULL || dest->window->theme == NULL ?
-					     current_theme : dest->window->theme,
-					     ptr,
-					     hide_text_style ? NULL : &fgcolor,
-					     hide_text_style ? NULL : &bgcolor,
-					     hide_text_style ? NULL : &flags);
+			ptr = (char *)
+				get_ansi_color(dest->window == NULL || dest->window->theme == NULL ?
+					       current_theme : dest->window->theme,
+					       ptr,
+					       hide_text_style ? NULL : &fgcolor,
+					       hide_text_style ? NULL : &bgcolor,
+					       hide_text_style ? NULL : &flags);
 			break;
 		}
 

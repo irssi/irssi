@@ -28,6 +28,7 @@
 #include "log.h"
 #include "special-vars.h"
 #include "settings.h"
+#include "lib-config/iconfig.h"
 
 #include "fe-windows.h"
 #include "window-items.h"
@@ -48,6 +49,11 @@ static THEME_REC *log_theme;
 static int skip_next_printtext;
 static const char *log_theme_name;
 
+static char *log_colorizer_strip(const char *str)
+{
+        return strip_codes(str);
+}
+
 static void log_add_targets(LOG_REC *log, const char *targets, const char *tag)
 {
 	char **tmp, **items;
@@ -64,7 +70,8 @@ static void log_add_targets(LOG_REC *log, const char *targets, const char *tag)
 }
 
 /* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-window] [-<server tag>]
-                    [-targets <targets>] <fname> [<levels>] */
+                    [-targets <targets>] [-mirccolors | -ansicolors]
+		    <fname> [<levels>] */
 static void cmd_log_open(const char *data)
 {
         SERVER_REC *server;
@@ -101,6 +108,9 @@ static void cmd_log_open(const char *data)
 
 	if (g_hash_table_lookup(optlist, "autoopen"))
 		log->autoopen = TRUE;
+
+	if (g_hash_table_lookup(optlist, "colors") == NULL)
+		log->colorizer = log_colorizer_strip;
 
 	log_update(log);
 
@@ -448,7 +458,9 @@ static void log_single_line(WINDOW_REC *window, void *server,
 	ltoa(windownum, window->refnum);
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
 			     windownum, NULL, NULL);
-	if (log != NULL) log_write_rec(log, text, level);
+	if (log != NULL) {
+		log_write_rec(log, text, level);
+	}
 
 	if (target == NULL)
 		log_file_write(server, NULL, level, text, FALSE);
@@ -492,13 +504,13 @@ static void sig_printtext(TEXT_DEST_REC *dest, const char *text,
 	}
 
 	log_line(dest->window, dest->server, dest->target,
-		 dest->level, stripped);
+		 dest->level, text);
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module,
 			     TEXT_DEST_REC *dest, void *formatnum, char **args)
 {
-	char *str, *stripped, *linestart, *tmp;
+	char *str, *linestart, *tmp;
 
 	if (log_theme == NULL) {
 		/* theme isn't loaded for some reason (/reload destroys it),
@@ -523,10 +535,8 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 		g_free(tmp);
 
 		/* strip colors from text, log it. */
-		stripped = strip_codes(str);
 		log_line(dest->window, dest->server, dest->target,
-			 dest->level, stripped);
-		g_free(stripped);
+			 dest->level, str);
 	}
 	g_free(str);
 
@@ -584,6 +594,27 @@ static void sig_log_create_failed(LOG_REC *log)
 		    TXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
 }
 
+static void sig_log_new(LOG_REC *log)
+{
+	if (!settings_get_bool("awaylog_colors") &&
+	    strcmp(log->fname, settings_get_str("awaylog_file")) == 0)
+                log->colorizer = log_colorizer_strip;
+}
+
+static void sig_log_config_read(LOG_REC *log, CONFIG_NODE *node)
+{
+        if (!config_node_get_bool(node, "colors", FALSE))
+		log->colorizer = log_colorizer_strip;
+}
+
+static void sig_log_config_save(LOG_REC *log, CONFIG_NODE *node)
+{
+        if (log->colorizer == NULL)
+		iconfig_node_set_bool(node, "colors", TRUE);
+        else
+		iconfig_node_set_str(node, "colors", NULL);
+}
+
 static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
 {
 	char *str;
@@ -638,6 +669,7 @@ void fe_log_init(void)
 	autoremove_tag = g_timeout_add(60000, (GSourceFunc) sig_autoremove, NULL);
 	skip_next_printtext = FALSE;
 
+	settings_add_bool("log", "awaylog_colors", TRUE);
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_str("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_bool("log", "autolog", FALSE);
@@ -660,11 +692,14 @@ void fe_log_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
+	signal_add("log new", (SIGNAL_FUNC) sig_log_new);
+	signal_add("log config read", (SIGNAL_FUNC) sig_log_config_read);
+	signal_add("log config save", (SIGNAL_FUNC) sig_log_config_save);
 	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_add("theme destroyed", (SIGNAL_FUNC) sig_theme_destroyed);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
-	command_set_options("log open", "noopen autoopen -targets window");
+	command_set_options("log open", "noopen autoopen -targets window colors");
 }
 
 void fe_log_deinit(void)
@@ -686,6 +721,9 @@ void fe_log_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_remove("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
+	signal_remove("log new", (SIGNAL_FUNC) sig_log_new);
+	signal_remove("log config read", (SIGNAL_FUNC) sig_log_config_read);
+	signal_remove("log config save", (SIGNAL_FUNC) sig_log_config_save);
 	signal_remove("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_remove("theme destroyed", (SIGNAL_FUNC) sig_theme_destroyed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
