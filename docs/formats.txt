@@ -23,23 +23,24 @@
  MIRC colors that you can use when writing text to channel and with
  hilighting text:
 
-               foreground          background
+               foreground (fg)     background (bg)
    -------------------------------------------------------
-    0          white               black
-    1          ligh gray           ---
+    0          white               black 	with 0 as fg
+				   light gray 	with fg > 0
+    1          ligh gray           black
     2          blue                blue
     3          green               green
-    4          light red           ---
+    4          light red           red		+ blinking fg
     5          orange              orange
     6          magenta (purple)    magenta
     7          red                 red
-    8          yellow              ---
-    9          light green         ---
-    10         cyan                cyan
-    11         light cyan          ---
-    12         light blue          ---
-    13         light magenta       ---
-    14         gray                black on black 
+    8          yellow              orange	+ blinking fg
+    9          light green         light green	+ blinking fg
+    10         cyan                cyan		
+    11         light cyan          cyan		+ blinking fg
+    12         light blue          blue		+ blinking fg
+    13         light magenta       magenta	+ blinking fg
+    14         gray                black	+ blinking fg 
     15         light gray          black on black
                                    gray  on light gray (with bold)
 
@@ -55,6 +56,5 @@
  <Ctrl>-7        same as <Ctrl>-_
  
  To reset a mode set it again, f.e.
-   <Ctrl>-c3<Ctrl>-vFOO<Ctrl>-vBAR
+   <Ctrl-C>3<Ctrl-V>FOO<Ctrl-V>BAR
  creates black on green FOO followed by a green on black BAR
-   
