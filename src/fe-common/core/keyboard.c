@@ -235,7 +235,16 @@ int key_pressed(const char *key, void *data)
 
 static void sig_command(const char *data)
 {
-	signal_emit("send command", 3, data, active_win->active_server, active_win->active);
+	const char *cmdchars;
+	char *str;
+
+	cmdchars = settings_get_str("cmdchars");
+	str = strchr(cmdchars, *data) != NULL ? g_strdup(data) :
+		g_strdup_printf("%c%s", *cmdchars, data);
+
+	signal_emit("send command", 3, str, active_win->active_server, active_win->active);
+
+	g_free(str);
 }
 
 void read_keyinfo(KEYINFO_REC *info, CONFIG_NODE *node)
