@@ -91,7 +91,10 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 		if (create) new_type = is_list ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
 
 		node = config_node_section(node, *tmp + is_list, new_type);
-		if (node == NULL) return NULL;
+		if (node == NULL) {
+			g_strfreev(list);
+			return NULL;
+		}
 	}
 	g_strfreev(list);
 
