@@ -586,7 +586,7 @@ void fe_log_init(void)
 	skip_next_printtext = FALSE;
 
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
-	settings_add_str("log", "autolog_level", "all -crap -clientcrap");
+	settings_add_str("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_bool("log", "autolog", FALSE);
         settings_add_str("log", "log_theme", "");
 
