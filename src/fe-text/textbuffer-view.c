@@ -320,7 +320,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		subline == 0 ? line->text : cache->lines[subline-1].start;
 	for (;;) {
 		if (text == text_newline) {
-			if (need_clrtoeol && need_move) {
+			if (need_clrtoeol && xpos < term_width) {
 				term_set_color(view->window, ATTR_RESET);
 				term_clrtoeol(view->window);
 			}
@@ -334,25 +334,27 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			}
 
 			if (subline > 0) {
-                                indent_func = cache->lines[subline-1].indent_func;
+                                /* continuing previous line - indent it */
+				indent_func = cache->lines[subline-1].indent_func;
 				xpos = indent_func != NULL ?
 					indent_func(view, line, ypos) :
 					cache->lines[subline-1].indent;
                                 color = cache->lines[subline-1].color;
 			}
 
-			if (need_move || xpos > 0) {
-				/* first clear the line */
-				if (xpos == 0)
-                                        need_clrtoeol = TRUE;
-				else {
-					term_set_color(view->window, ATTR_RESET);
-					term_move(view->window, 0, ypos);
-					term_clrtoeol(view->window);
-				}
-
-				term_move(view->window, xpos, ypos);
+			if (xpos == 0)
+                                need_clrtoeol = TRUE;
+			else {
+				/* line was indented - need to clear the
+                                   indented area first */
+				term_set_color(view->window, ATTR_RESET);
+				term_move(view->window, 0, ypos);
+				term_clrtoeol(view->window);
 			}
+
+			if (need_move || xpos > 0)
+				term_move(view->window, xpos, ypos);
+
 			term_set_color(view->window, color);
 
 			if (subline == cache->count-1) {
@@ -397,9 +399,10 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			term_set_color(view->window, color);
 		}
 		text++;
+                xpos++;
 	}
 
-	if (need_clrtoeol) {
+	if (need_clrtoeol && xpos < term_width) {
 		term_set_color(view->window, ATTR_RESET);
 		term_clrtoeol(view->window);
 	}
