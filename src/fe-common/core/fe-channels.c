@@ -349,7 +349,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	g_free(format);
 
 	if (settings_get_int("names_max_width") > 0 &&
-	    max_width > settings_get_int("names_max_width"))
+	    settings_get_int("names_max_width") < max_width)
 		max_width = settings_get_int("names_max_width");
 
         /* remove width of the timestamp from max_width */
@@ -371,6 +371,12 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		stripped = strip_codes(prefix_format);
 		max_width -= strlen(stripped);
 		g_free(stripped);
+	}
+
+	if (max_width <= 0) {
+		/* we should always have at least some space .. if we
+		   really don't, it won't show properly anyway. */
+		max_width = 10;
 	}
 
 	/* calculate columns */
