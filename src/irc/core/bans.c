@@ -34,6 +34,8 @@
 #define BAN_TYPE_USER (IRC_MASK_USER)
 #define BAN_TYPE_HOST (IRC_MASK_HOST | IRC_MASK_DOMAIN)
 #define BAN_TYPE_DOMAIN (IRC_MASK_DOMAIN)
+#define BAN_FIRST "1"
+#define BAN_LAST "-1"
 
 static char *default_ban_type_str;
 static int default_ban_type;
@@ -120,6 +122,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 {
 	GString *str;
 	GSList *tmp;
+	BAN_REC *rec;
 	char **ban, **banlist;
         int found;
 
@@ -130,7 +133,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 	for (ban = banlist; *ban != NULL; ban++) {
                 found = FALSE;
 		for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
-			BAN_REC *rec = tmp->data;
+			rec = tmp->data;
 
 			if (match_wildcards(*ban, rec->ban)) {
 				g_string_sprintfa(str, "%s ", rec->ban);
@@ -138,10 +141,18 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 			}
 		}
 
-		if (!found && is_numeric(*ban, '\0')) {
-			/* unbanning with ban# */
-			BAN_REC *rec = g_slist_nth_data(channel->banlist,
+		if (!found) {
+			rec = NULL;
+			if (!g_strcasecmp(*ban, BAN_LAST)) {
+				/* unnbanning last set ban */
+				rec = g_slist_nth_data(channel->banlist,
+							g_slist_length(channel->banlist) - 1);
+			}
+			else if (is_numeric(*ban, '\0')) {
+				/* unbanning with ban# */
+				rec = g_slist_nth_data(channel->banlist,
 							atoi(*ban)-1);
+			}
 			if (rec != NULL)
 				g_string_sprintfa(str, "%s ", rec->ban);
 		}
@@ -268,10 +279,27 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, void *item)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: UNBAN <masks> */
+/* SYNTAX: UNBAN -first | -last | <id> | <masks> */
 static void cmd_unban(const char *data, IRC_SERVER_REC *server, void *item)
 {
-	command_set_ban(data, server, item, FALSE, 0);
+	GHashTable *optlist;
+	char *ban;
+	void *free_arg;
+		
+	if (!cmd_get_params(data, &free_arg, 1 |
+			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+			    "unban", &optlist, &ban))
+		return;
+	
+	ban = NULL;
+	if (g_hash_table_lookup(optlist, "first") != NULL)
+		ban = g_strdup(BAN_FIRST);
+	else if (g_hash_table_lookup(optlist, "last") != NULL)
+		ban = g_strdup(BAN_LAST);
+
+	command_set_ban(ban ? ban : data, server, item, FALSE, 0);
+	
+	g_free(ban);
 }
 
 static void read_settings(void)
@@ -301,6 +329,7 @@ void bans_init(void)
 	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind("unban", NULL, (SIGNAL_FUNC) cmd_unban);
 	command_set_options("ban", "normal user host domain +custom");
+	command_set_options("unban", "first last");
 
         read_settings();
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);

@@ -6,6 +6,8 @@ Removes the specified ban(s) from the channel.
 Examples:
    /UNBAN *!*@*.fi
    /UNBAN larry!*@* *!me@*.mydomain.net
-
+   /UNBAN 3                             - removes 3rd ban in list
+   /UNBAN -first                        - removes 1st ban (equal to /UNBAN 1)
+   /UNBAN -last                         - removes last ban in list
 See also: BAN, KNOCKOUT
 
