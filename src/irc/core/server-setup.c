@@ -124,7 +124,7 @@ create_addr_conn(const char *address, int port, const char *password,
 	ircnet = sserver->ircnet == NULL ? NULL : ircnet_find(sserver->ircnet);
 	if (ircnet == NULL) return conn;
 
-	if (ircnet->nick && !nick) {
+	if (ircnet->nick && !(nick && *nick)) {
                 g_free(conn->nick);
 		conn->nick = g_strdup(ircnet->nick);;
 	}
