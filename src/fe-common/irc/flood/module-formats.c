@@ -23,11 +23,11 @@
 
 FORMAT_REC fecommon_irc_flood_formats[] =
 {
-    { MODULE_NAME, N_("Flood"), 0 },
+    { MODULE_NAME, "Flood", 0 },
 
     /* ---- */
-    { NULL, N_("Autoignore"), 0 },
+    { NULL, "Autoignore", 0 },
 
-    { "autoignore", N_("Flood detected from %_$0%_, autoignoring for %_$1%_ minutes"), 2, { 0, 1 } },
-    { "autounignore", N_("Unignoring %_$0"), 1, { 0 } }
+    { "autoignore", "Flood detected from %_$0%_, autoignoring for %_$1%_ minutes", 2, { 0, 1 } },
+    { "autounignore", "Unignoring %_$0", 1, { 0 } }
 };

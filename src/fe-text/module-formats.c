@@ -23,8 +23,8 @@
 
 FORMAT_REC gui_text_formats[] =
 {
-    { MODULE_NAME, N_("Text user interface"), 0 },
+    { MODULE_NAME, "Text user interface", 0 },
 
-    { "lastlog_start", N_("%_Lastlog:"), 0 },
-    { "lastlog_end", N_("%_End of Lastlog"), 0 },
+    { "lastlog_start", "%_Lastlog:", 0 },
+    { "lastlog_end", "%_End of Lastlog", 0 },
 };
