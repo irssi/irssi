@@ -275,10 +275,6 @@ int quitmsg_is_split(const char *msg)
 	if (!host2_dot || prev == '.')
                 return FALSE;
 
-	if (len == (int) (host2-host1)-1 &&
-	    g_strncasecmp(host1, host2, len) == 0)
-		return FALSE; /* hosts can't be the same */
-
         /* top-domain1 must be 2+ chars long and contain only alphabets */
 	p = host2-1;
 	while (p[-1] != '.') {
