@@ -6,10 +6,6 @@
 
 #include "common.h"
 
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #include "popt.h"
 #include "poptint.h"
 
@@ -66,7 +62,7 @@ static void singleOptionHelp(FILE * f, int maxLeftCol,
     int helpLength;
     const char * ch;
     char format[10];
-    char * left = alloca(maxLeftCol + 1);
+    char * left = malloc(maxLeftCol + 1);
     const char * argDescrip = getArgDescrip(opt, translation_domain);
 
     *left = '\0';
@@ -76,7 +72,10 @@ static void singleOptionHelp(FILE * f, int maxLeftCol,
 	sprintf(left, "-%c", opt->shortName);
     else if (opt->longName)
 	sprintf(left, "--%s", opt->longName);
-    if (!*left) return ;
+    if (!*left) {
+        free(left);
+        return;
+    }
     if (argDescrip) {
 	strcat(left, "=");
 	strcat(left, argDescrip);
@@ -86,8 +85,11 @@ static void singleOptionHelp(FILE * f, int maxLeftCol,
 	fprintf(f,"  %-*s   ", maxLeftCol, left);
     else {
 	fprintf(f,"  %s\n", left); 
+        free(left);
 	return;
     }
+
+    free(left);
 
     helpLength = strlen(help);
     while (helpLength > lineLength) {

@@ -10,10 +10,6 @@
 #include <libc.h>
 #endif
 
-#if HAVE_ALLOCA_H
-# include <alloca.h>
-#endif
-
 #include "findme.h"
 
 char * findProgramPath(char * argv0) {
@@ -29,9 +25,8 @@ char * findProgramPath(char * argv0) {
 
     if (!path) return NULL;
 
-    start = pathbuf = alloca(strlen(path) + 1);
-    buf = malloc(strlen(path) + strlen(argv0) + 2);
-    strcpy(pathbuf, path);
+    start = pathbuf = g_strdup(path);
+    buf = g_malloc(strlen(path) + strlen(argv0) + 2);
 
     chptr = NULL;
     do {
@@ -40,8 +35,10 @@ char * findProgramPath(char * argv0) {
 	sprintf(buf, "%s/%s", start, argv0);
 
 #ifndef WIN32
-	if (!access(buf, X_OK))
+        if (!access(buf, X_OK)) {
+            g_free(pathbuf);
 	    return buf;
+        }
 #endif
 
 	if (chptr) 
@@ -50,6 +47,7 @@ char * findProgramPath(char * argv0) {
 	    start = NULL;
     } while (start && *start);
 
+    g_free(pathbuf);
     free(buf);
 
     return NULL;
