@@ -33,7 +33,7 @@ void statusbar_destroy(STATUSBAR_REC *bar);
 STATUSBAR_REC *statusbar_find(int pos, int line);
 
 SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, gboolean right_justify, STATUSBAR_FUNC func);
-void statusbar_item_resize(SBAR_ITEM_REC *item, int size);
+int statusbar_item_resize(SBAR_ITEM_REC *item, int size);
 void statusbar_item_remove(SBAR_ITEM_REC *item);
 
 /* redraw statusbar, NULL = all */

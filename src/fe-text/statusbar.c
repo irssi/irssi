@@ -231,14 +231,19 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, int right_jus
 	return rec;
 }
 
-void statusbar_item_resize(SBAR_ITEM_REC *item, int size)
+int statusbar_item_resize(SBAR_ITEM_REC *item, int size)
 {
-	g_return_if_fail(item != NULL);
+	g_return_val_if_fail(item != NULL, FALSE);
 
-	if (size <= item_max_size) {
-		item->size = size;
-		statusbar_redraw_all();
-	}
+	if (item->size >= item_max_size)
+		return FALSE;
+
+	if (size > item_max_size)
+                size = item_max_size;
+
+	item->size = size;
+	statusbar_redraw_all();
+	return TRUE;
 }
 
 void statusbar_item_remove(SBAR_ITEM_REC *item)

@@ -403,8 +403,8 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
     if (!item->shrinked && item->size != size_needed)
     {
         /* we need more (or less..) space! */
-        statusbar_item_resize(item, size_needed);
-        return;
+        if (statusbar_item_resize(item, size_needed))
+	    return;
     }
 
     if (item->size <= 7)
@@ -412,9 +412,9 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
 
     move(ypos, item->xpos);
     set_color(stdscr, sbar_color_dim); addch('[');
-    if (act) draw_activity("Act: ", TRUE, !det, item->size-1);
+    if (act) draw_activity("Act: ", TRUE, !det, item->size-7);
     if (act && det) addch(' ');
-    if (det) draw_activity("Det: ", FALSE, TRUE, item->size-1);
+    if (det) draw_activity("Det: ", FALSE, TRUE, item->size-7);
     set_color(stdscr, sbar_color_dim); addch(']');
 
     screen_refresh(NULL);
