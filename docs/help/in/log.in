@@ -5,7 +5,8 @@
      -autoopen: Automatically open this log file at startup
      -<server tag>: Targets are logged only in this server
      -targets: Log only in specified channels/nicks (space separated list)
-     -window: Log the active window
+     -window: Log output in the window. Active window is used by default, or
+              you can give the window's refnum in -targets.
      <filename>: File name where to log, it is parsed with
                  strftime(), so %%d=day, etc. see "man strftime" for
                  more info.

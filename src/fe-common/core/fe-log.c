@@ -96,8 +96,12 @@ static void cmd_log_open(const char *data)
 
 	if (g_hash_table_lookup(optlist, "window")) {
 		/* log by window ref# */
-		ltoa(window, active_win->refnum);
-		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window,
+		targetarg = g_hash_table_lookup(optlist, "targets");
+		if (targetarg == NULL || !is_numeric(targetarg, '\0')) {
+			ltoa(window, active_win->refnum);
+			targetarg = window;
+		}
+		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, targetarg,
 			     servertag);
 	} else {
 		targetarg = g_hash_table_lookup(optlist, "targets");
