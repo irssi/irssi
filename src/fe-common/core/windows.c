@@ -374,7 +374,7 @@ static void sig_server_looking(SERVER_REC *server)
 
 		if (rec->active_server == NULL ||
 		    (rec == active_win && rec->items == NULL))
-			window_change_server(active_win, server);
+			window_change_server(rec, server);
 	}
 }
 
