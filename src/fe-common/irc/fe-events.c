@@ -275,13 +275,14 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	}
 	g_slist_free(windows);
 
-	if (once) {
+	if (once && count > 0) {
 		g_string_truncate(chans, chans->len-1);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
-			    count <= 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
+			    count == 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
 			    nick, addr, data, chans->str);
-		g_string_free(chans, TRUE);
 	}
+	if (chans != NULL)
+		g_string_free(chans, TRUE);
 }
 
 static void event_kick(const char *data, IRC_SERVER_REC *server, const char *kicker, const char *addr)
