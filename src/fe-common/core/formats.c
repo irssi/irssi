@@ -227,10 +227,8 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 		switch (format->paramtypes[num]) {
 		case FORMAT_STRING:
 			arglist[num] = (char *) va_arg(va, char *);
-			if (arglist[num] == NULL) {
-				g_warning("format_read_arglist(%s) : parameter %d is NULL", format->tag, num);
+			if (arglist[num] == NULL)
 				arglist[num] = "";
-			}
 			break;
 		case FORMAT_INT: {
 			int d = (int) va_arg(va, int);
