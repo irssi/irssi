@@ -11,22 +11,15 @@ TMP=`pwd`/debian/irssi-text
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	if grep -q in6_addr /usr/include/netinet/in.h ; then \
 	./configure --prefix=/usr --exec-prefix=/usr --sysconf=/etc \
 	--without-servertest --enable-ipv6 --with-bot --with-proxy \
-	--enable-perl=yes ; else \
-	./configure --prefix=/usr --exec-prefix=/usr --sysconf=/etc \
-	--without-servertest --disable-ipv6 --with-bot --with-proxy \
-	--enable-perl=yes ; fi
+	--enable-perl=yes --with-perl-lib=vendor
 	touch configure-stamp
 
 build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
-	if test -z "`perl -v|grep '5\.0'`"; then \
-	PERL_MM_OPT=INSTALLDIRS=vendor \
-	    $(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR= ; else \
-	$(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR= ; fi
+	$(MAKE) CFLAGS="-O2 -g -Wall"
 	touch build-stamp
 
 clean:
