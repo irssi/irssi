@@ -595,6 +595,7 @@ void servers_redirect_init(void)
                                  "event 346", 1,
 				 NULL,
 				 "event 347", 1, /* End of invite list */
+				 "event 482", 1, /* not channel operator - OPN's ircd doesn't want non-ops to see ban exceptions */
 				 "event 403", 1, /* no such channel */
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
