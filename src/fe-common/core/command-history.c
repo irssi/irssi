@@ -32,7 +32,7 @@ static GList *cmdhist, *histpos;
 static int histlines;
 static int window_history;
 
-void command_history_add(WINDOW_REC *window, const char *text, int prepend)
+void command_history_add(WINDOW_REC *window, const char *text)
 {
 	GList **pcmdhist, *link;
 	int *phistlines;
@@ -58,10 +58,7 @@ void command_history_add(WINDOW_REC *window, const char *text, int prepend)
 		g_list_free_1(link);
 	}
 
-	if (prepend)
-		*pcmdhist = g_list_prepend(*pcmdhist, g_strdup(text));
-	else
-		*pcmdhist = g_list_append(*pcmdhist, g_strdup(text));
+	*pcmdhist = g_list_append(*pcmdhist, g_strdup(text));
 }
 
 const char *command_history_prev(WINDOW_REC *window, const char *text)
@@ -79,7 +76,7 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 	if (*text != '\0' &&
 	    (pos == NULL || strcmp(pos->data, text) != 0)) {
 		/* save the old entry to history */
-		command_history_add(window, text, FALSE);
+		command_history_add(window, text);
 	}
 
 	return *phistpos == NULL ? "" : (*phistpos)->data;
@@ -92,15 +89,14 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 	phistpos = window_history ? &window->histpos : &histpos;
 
 	pos = *phistpos;
-	if (*phistpos == NULL)
-		return "";
 
-	*phistpos = (*phistpos)->next;
+	if (pos != NULL)
+		*phistpos = (*phistpos)->next;
 
 	if (*text != '\0' &&
 	    (pos == NULL || strcmp(pos->data, text) != 0)) {
 		/* save the old entry to history */
-		command_history_add(window, text, TRUE);
+		command_history_add(window, text);
 	}
 	return *phistpos == NULL ? "" : (*phistpos)->data;
 }
