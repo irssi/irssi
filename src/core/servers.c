@@ -101,7 +101,8 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 
         g_return_val_if_fail(IS_SERVER_CONNECT(conn), NULL);
 
-	tag = conn->chatnet != NULL ? g_strdup(conn->chatnet) :
+	tag = conn->chatnet != NULL && *conn->chatnet != '\0' ?
+		g_strdup(conn->chatnet) :
 		server_create_address_tag(conn->address);
 
 	/* then just append numbers after tag until unused is found.. */
