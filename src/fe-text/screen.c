@@ -90,12 +90,14 @@ static void read_signals(void)
 	const char *ignores;
 
 	ignores = settings_get_str("ignore_signals");
+#ifndef WIN32
 	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
 	signal(SIGQUIT, find_substr(ignores, "quit") ? SIG_IGN : SIG_DFL);
 	signal(SIGTERM, find_substr(ignores, "term") ? SIG_IGN : SIG_DFL);
 	signal(SIGALRM, find_substr(ignores, "alrm") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR1, find_substr(ignores, "usr1") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR2, find_substr(ignores, "usr2") ? SIG_IGN : SIG_DFL);
+#endif
 }
 
 static void read_settings(void)
@@ -111,7 +113,9 @@ static int init_curses(void)
 {
 	char ansi_tab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	int num;
+#ifndef WIN32
 	struct sigaction act;
+#endif
 
 	if (!initscr())
 		return FALSE;
@@ -119,10 +123,12 @@ static int init_curses(void)
 	if (COLS < MIN_SCREEN_WIDTH)
 		COLS = MIN_SCREEN_WIDTH;
 
+#ifndef WIN32
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
 	act.sa_handler = sigint_handler;
 	sigaction(SIGINT, &act, NULL);
+#endif
 #ifdef SIGWINCH
 	act.sa_handler = sig_winch;
 	sigaction(SIGWINCH, &act, NULL);

@@ -33,7 +33,9 @@
 #include "gui-entry.h"
 #include "gui-windows.h"
 
-#include <regex.h>
+#ifdef HAVE_REGEX_H
+#  include <regex.h>
+#endif
 
 /* how often to scan line cache for lines not accessed for a while (ms) */
 #define LINE_CACHE_CHECK_TIME (5*60*1000)
@@ -740,7 +742,9 @@ static void signal_window_item_update(WINDOW_REC *window)
 
 GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, int regexp, int fullword)
 {
+#ifdef HAVE_REGEX_H
     regex_t preg;
+#endif
     GList *tmp;
     GList *matches;
     gchar *str, *ptr;
@@ -751,8 +755,10 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 
     matches = NULL; size = 1024; str = g_malloc(1024);
 
+#ifdef HAVE_REGEX_H
     if (regcomp(&preg, text, REG_ICASE|REG_EXTENDED|REG_NOSUB) != 0)
 	    return 0;
+#endif
 
     if (startline == NULL) startline = WINDOW_GUI(window)->lines;
     for (tmp = startline; tmp != NULL; tmp = tmp->next)
@@ -790,15 +796,19 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 	}
         str[n] = '\0';
 
-	if (regexp ? regexec(&preg, str, 0, NULL, 0) == 0 :
+	if (
+#ifdef HAVE_REGEX_H
+		regexp ? regexec(&preg, str, 0, NULL, 0) == 0 :
+#endif
 	    fullword ? stristr_full(str, text) != NULL :
 	    stristr(str, text) != NULL) {
                 /* matched */
 		matches = g_list_append(matches, rec);
 	}
     }
+#ifdef HAVE_REGEX_H
     regfree(&preg);
-
+#endif
     if (str != NULL) g_free(str);
     return matches;
 }

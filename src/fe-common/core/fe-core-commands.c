@@ -185,7 +185,8 @@ static void show_help(const char *data)
 	if (last != NULL && g_strcasecmp(rec->cmd, last->cmd) == 0)
 	    continue; /* don't display same command twice */
 
-	if (strlen(rec->cmd) >= findlen && g_strncasecmp(rec->cmd, data, findlen) == 0)
+	if ((int)strlen(rec->cmd) >= findlen && 
+		g_strncasecmp(rec->cmd, data, findlen) == 0)
 	{
 	    if (rec->cmd[findlen] == '\0')
 	    {
@@ -306,8 +307,8 @@ static void cmd_cat(const char *data)
 /* SYNTAX: EXEC <cmd line> */
 static void cmd_exec(const char *cmdline)
 {
-        int buflen = 512;
-	char tmpbuf[buflen];
+#ifndef WIN32
+	char tmpbuf[512];
 	char *foo;
 	FILE *stream;
 
@@ -320,7 +321,7 @@ static void cmd_exec(const char *cmdline)
 		return;
 	}
 
-	while (fgets(tmpbuf, buflen, stream)) {
+	while (fgets(tmpbuf, sizeof(tmpbuf), stream)) {
 		/*  strip \n characters appended from fgets
 		    This is safer than using gets, though it is more work tbd
 		*/
@@ -337,8 +338,8 @@ static void cmd_exec(const char *cmdline)
 	}
 	
 	pclose(stream);
+#endif
 }
-
 
 /* SYNTAX: BEEP */
 static void cmd_beep(void)
