@@ -111,6 +111,7 @@ static void module_prefixes_free(char **list)
 /* SYNTAX: LOAD <module> */
 static void cmd_load(const char *data)
 {
+#ifdef HAVE_GMODULE
 	char **module_prefixes;
 
 	g_return_if_fail(data != NULL);
@@ -121,6 +122,10 @@ static void cmd_load(const char *data)
 		module_load(data, module_prefixes);
                 module_prefixes_free(module_prefixes);
 	}
+#else
+	printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+		  "Dynamic modules loading not supported");
+#endif
 }
 
 /* SYNTAX: UNLOAD <module> */
