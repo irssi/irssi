@@ -44,11 +44,11 @@ while (<STDIN>) {
 	s/NOTIFYLIST_REC[^,]*/Irssi::Irc::Notifylist/g;
 
 	# fe-common
-	s/THEME_REC[^,]*/Irssi::Theme/g;
-	s/KEYINFO_REC[^,]*/Irssi::Keyinfo/g;
-	s/PROCESS_REC[^,]*/Irssi::Process/g;
-	s/TEXT_DEST_REC[^,]*/Irssi::TextDest/g;
-	s/WINDOW_REC[^,]*/Irssi::Window/g;
+	s/THEME_REC[^,]*/Irssi::UI::Theme/g;
+	s/KEYINFO_REC[^,]*/Irssi::UI::Keyinfo/g;
+	s/PROCESS_REC[^,]*/Irssi::UI::Process/g;
+	s/TEXT_DEST_REC[^,]*/Irssi::UI::TextDest/g;
+	s/WINDOW_REC[^,]*/Irssi::UI::Window/g;
 	s/WI_ITEM_REC[^,]*/iobject/g;
 
 	s/([\w\*:]+)(,|$)/"\1"\2/g;
