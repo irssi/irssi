@@ -289,19 +289,39 @@ static void sig_netsplit_servers(void)
 	}
 }
 
-static void split_print(const char *nick, NETSPLIT_REC *rec)
+static int split_equal(NETSPLIT_REC *n1, NETSPLIT_REC *n2)
+{
+        return g_strcasecmp(n1->nick, n2->nick);
+}
+
+static void split_get(void *key, NETSPLIT_REC *rec, GSList **list)
+{
+	*list = g_slist_insert_sorted(*list, rec,
+				      (GCompareFunc) split_equal);
+}
+
+static void split_print(NETSPLIT_REC *rec)
 {
 	NETSPLIT_CHAN_REC *chan;
+        char *chanstr;
 
 	chan = rec->channels->data;
+	chanstr = chan == NULL ? "" :
+		g_strconcat(chan->nick.op ? "@" :
+			    (chan->nick.voice ? "+" : ""), chan->name, NULL);
+
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_LINE,
-		    rec->nick, chan == NULL ? "" : chan->name,
-		    rec->server->server, rec->server->destserver);
+		    rec->nick, chanstr, rec->server->server,
+		    rec->server->destserver);
+
+	g_free(chanstr);
 }
 
 /* SYNTAX: NETSPLIT */
 static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 {
+	GSList *list;
+
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
@@ -312,7 +332,12 @@ static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 	}
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_HEADER);
-        g_hash_table_foreach(server->splits, (GHFunc) split_print, NULL);
+
+        list = NULL;
+	g_hash_table_foreach(server->splits, (GHFunc) split_get, &list);
+	g_slist_foreach(list, (GFunc) split_print, NULL);
+        g_slist_free(list);
+
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_FOOTER);
 }
 

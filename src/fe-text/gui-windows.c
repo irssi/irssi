@@ -977,11 +977,10 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 	}
 }
 
-static int window_remove_linecache(void *key, LINE_CACHE_REC *cache, gpointer nowp)
+static int window_remove_linecache(void *key, LINE_CACHE_REC *cache,
+				   time_t *now)
 {
-	time_t now = (time_t) GPOINTER_TO_INT(nowp);
-
-	if (cache->last_access+LINE_CACHE_KEEP_TIME > now)
+	if (cache->last_access+LINE_CACHE_KEEP_TIME > *now)
 		return FALSE;
 
 	line_cache_destroy(NULL, cache);
@@ -991,12 +990,15 @@ static int window_remove_linecache(void *key, LINE_CACHE_REC *cache, gpointer no
 static int sig_check_linecache(void)
 {
 	GSList *tmp;
+        time_t now;
 
+        now = time(NULL);
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		g_hash_table_foreach_remove(WINDOW_GUI(rec)->line_cache, (GHRFunc) window_remove_linecache,
-					    GINT_TO_POINTER((int) time(NULL)));
+		g_hash_table_foreach_remove(WINDOW_GUI(rec)->line_cache,
+					    (GHRFunc) window_remove_linecache,
+					    &now);
 	}
 	return 1;
 }
