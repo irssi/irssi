@@ -139,6 +139,11 @@ static void cmd_server_add(const char *data)
 		}
 	}
 
+	if (g_hash_table_lookup(optlist, "6"))
+		rec->family = AF_INET6;
+        else if (g_hash_table_lookup(optlist, "4"))
+		rec->family = AF_INET;
+
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
 
@@ -321,7 +326,7 @@ void fe_server_init(void)
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
-	command_set_options("server add", "auto noauto -host -port");
+	command_set_options("server add", "4 6 auto noauto -host -port");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

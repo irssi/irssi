@@ -171,6 +171,9 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	server->connect_pipe[0] = NULL;
 	server->connect_pipe[1] = NULL;
 
+        if (iprec.error == 0)
+		signal_emit("server connecting", 2, server, &iprec.ip);
+
 	conn = server->connrec;
 	handle = iprec.error != 0 ? NULL :
 		net_connect_ip(&iprec.ip, conn->proxy != NULL ?
@@ -205,7 +208,6 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 		g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_init,
 			    server);
-	signal_emit("server connecting", 2, server, &iprec.ip);
 }
 
 /* initializes server record but doesn't start connecting */

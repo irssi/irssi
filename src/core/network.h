@@ -51,9 +51,12 @@ int net_receive(GIOChannel *handle, char *buf, int len);
 int net_transmit(GIOChannel *handle, const char *data, int len);
 
 /* Get IP address for host. family specifies if we should prefer to
-   IPv4 or IPv6 address (0 = don't care, AF_INET or AF_INET6).
+   IPv4 or IPv6 address (0 = default, AF_INET or AF_INET6).
    returns 0 = ok, others = error code for net_gethosterror() */
 int net_gethostbyname(const char *addr, IPADDR *ip, int family);
+/* Set the default address family to use with host resolving
+   (AF_INET or AF_INET6) */
+void net_host_resolver_set_default_family(unsigned short family);
 /* Get name for host, *name should be g_free()'d unless it's NULL.
    Return values are the same as with net_gethostbyname() */
 int net_gethostbyaddr(IPADDR *ip, char **name);

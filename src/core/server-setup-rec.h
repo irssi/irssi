@@ -3,6 +3,7 @@ int chat_type; /* chat_protocol_lookup(xx) */
 
 char *chatnet;
 
+unsigned short family; /* 0 = default, AF_INET or AF_INET6 */
 char *address;
 int port;
 char *password;

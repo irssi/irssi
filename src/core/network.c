@@ -47,6 +47,8 @@ union sockaddr_union {
 #  define g_io_channel_new(handle) g_io_channel_unix_new(handle)
 #endif
 
+static unsigned short default_family = 0;
+
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
 
@@ -332,8 +334,9 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 	return 0;
 }
 
-/* Get IP address for host, returns 0 = ok,
-   others = error code for net_gethosterror() */
+/* Get IP address for host. family specifies if we should prefer to
+   IPv4 or IPv6 address (0 = default, AF_INET or AF_INET6).
+   returns 0 = ok, others = error code for net_gethosterror() */
 int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 {
 #ifdef HAVE_IPV6
@@ -352,7 +355,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
-        hints.ai_family = family;
+	hints.ai_family = family != 0 ? family : default_family;
 
 	/* save error to host_error for later use */
 	host_error = getaddrinfo(addr, NULL, &hints, &ai);
@@ -375,6 +378,13 @@ int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 #endif
 
 	return 0;
+}
+
+/* Set the default address family to use with host resolving
+   (AF_INET or AF_INET6) */
+void net_host_resolver_set_default_family(unsigned short family)
+{
+	default_family = family;
 }
 
 /* Get name for host, *name should be g_free()'d unless it's NULL.

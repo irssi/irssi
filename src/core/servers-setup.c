@@ -1,7 +1,7 @@
 /*
  servers-setup.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 
 GSList *setupservers;
 
+char *old_source_host;
 int source_host_ok; /* Use source_host_ip .. */
 IPADDR *source_host_ip; /* Resolved address */
 
@@ -133,6 +134,8 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 
 	sserver->last_connect = time(NULL);
 
+	if (sserver->family != 0 && conn->family == 0)
+                conn->family = sserver->family;
 	if (sserver->port > 0 && conn->port <= 0)
 		conn->port = sserver->port;
 	server_setup_fill_reconn(conn, sserver);
@@ -307,7 +310,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 {
 	SERVER_SETUP_REC *rec;
         CHATNET_REC *chatnetrec;
-	char *server, *chatnet;
+	char *server, *chatnet, *family;
 	int port;
 
 	g_return_val_if_fail(node != NULL, NULL);
@@ -343,10 +346,14 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		chatnet_create(chatnetrec);
 	}
 
+        family = config_node_get_str(node, "family", "");
+
 	rec = CHAT_PROTOCOL(chatnetrec)->create_server_setup();
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
-        rec->chat_type = chatnetrec->chat_type;
-	rec->chatnet = g_strdup(chatnetrec->name);
+        rec->chat_type = CHAT_PROTOCOL(chatnetrec)->id;
+	rec->chatnet = chatnetrec == NULL ? NULL : g_strdup(chatnetrec->name);
+	rec->family = g_strcasecmp(family, "inet6") == 0 ? AF_INET6 :
+		(g_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->port = port;
@@ -378,6 +385,10 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	iconfig_node_set_int(node, "port", rec->port);
 	iconfig_node_set_str(node, "password", rec->password);
 	iconfig_node_set_str(node, "own_host", rec->own_host);
+
+	iconfig_node_set_str(node, "family",
+			     rec->family == AF_INET6 ? "inet6" :
+			     rec->family == AF_INET ? "inet" : NULL);
 
 	if (rec->autoconnect)
 		iconfig_node_set_bool(node, "autoconnect", TRUE);
@@ -442,15 +453,26 @@ static void read_servers(void)
 
 static void read_settings(void)
 {
-	g_free_and_null(source_host_ip);
+	unsigned short family;
 
-	source_host_ok = FALSE;
-        get_source_host_ip();
+	family = settings_get_bool("resolve_prefer_ipv6") ? AF_INET6 : AF_INET;
+	net_host_resolver_set_default_family(family);
+
+	if (old_source_host == NULL ||
+	    strcmp(old_source_host, settings_get_str("hostname")) != 0) {
+                g_free_not_null(old_source_host);
+		old_source_host = g_strdup(settings_get_str("hostname"));
+
+		g_free_and_null(source_host_ip);
+		source_host_ok = FALSE;
+		get_source_host_ip();
+	}
 }
 
 void servers_setup_init(void)
 {
 	settings_add_str("server", "hostname", "");
+	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
 
 	settings_add_str("server", "nick", NULL);
 	settings_add_str("server", "user_name", NULL);
@@ -463,6 +485,7 @@ void servers_setup_init(void)
 
         setupservers = NULL;
 	source_host_ip = NULL;
+        old_source_host = NULL;
 	read_settings();
 
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
@@ -473,6 +496,7 @@ void servers_setup_init(void)
 void servers_setup_deinit(void)
 {
 	g_free_not_null(source_host_ip);
+	g_free_not_null(old_source_host);
 
 	while (setupservers != NULL)
 		server_setup_destroy(setupservers->data);
