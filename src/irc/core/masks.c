@@ -88,22 +88,29 @@ int irc_mask_match_address(const char *mask, const char *nick,
 int irc_masks_match(const char *masks, const char *nick, const char *address)
 {
 	char **list, **tmp, *mask;
+	int found;
 
 	g_return_val_if_fail(masks != NULL, FALSE);
 
+	found = FALSE;
 	mask = g_strdup_printf("%s!%s", nick, address);
 	list = g_strsplit(masks, " ", -1);
 	for (tmp = list; *tmp != NULL; tmp++) {
-		if (strchr(*tmp, '!') == NULL && g_strcasecmp(*tmp, nick) == 0)
+		if (strchr(*tmp, '!') == NULL &&
+		    g_strcasecmp(*tmp, nick) == 0) {
+			found = TRUE;
 			break;
+		}
 
-		if (match_wildcards(*tmp, mask))
+		if (match_wildcards(*tmp, mask)) {
+			found = TRUE;
 			break;
+		}
 	}
 	g_strfreev(list);
 	g_free(mask);
 
-	return *tmp != NULL;
+	return found;
 }
 
 static char *get_domain_mask(char *host)
