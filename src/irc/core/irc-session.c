@@ -67,10 +67,6 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->usermode = g_strdup(config_node_get_str(node, "usermode", NULL));
 	server->usermode_away = config_node_get_bool(node, "usermode_away", FALSE);
 	server->away_reason = g_strdup(config_node_get_str(node, "away_reason", NULL));
-
-	/* FIXME: remove before .99 */
-	g_free_not_null(server->connrec->channels);
-	server->connrec->channels = g_strdup(config_node_get_str(node, "channels", NULL));
 }
 
 static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
@@ -100,33 +96,32 @@ static void session_restore_channel(IRC_CHANNEL_REC *channel)
 	signal_emit("event join", 4, channel->server, channel->name,
 		    channel->server->nick, channel->server->userhost);
 
-	if (nicklist_find(CHANNEL(channel), channel->server->nick) == NULL) {
-		/* FIXME: remove before .99 */
-                irc_send_cmdv(channel->server, "NAMES %s", channel->name);
-	} else {
-		data = g_strconcat(channel->server->nick, " ", channel->name, NULL);
-		signal_emit("event 366", 2, channel->server, data);
-		g_free(data);
-	}
+	data = g_strconcat(channel->server->nick, " ", channel->name, NULL);
+	signal_emit("event 366", 2, channel->server, data);
+	g_free(data);
 }
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
-        char *str;
+        char *str, *addr;
 
 	if (!IS_IRC_SERVER(server) || !server->session_reconnect)
 		return;
 
 	str = g_strdup_printf("%s :Restoring connection to %s",
 			      server->nick, server->connrec->address);
-	signal_emit("event 001", 3, server, str, server->real_address);
+	/* addr needs to be strdup'd because the event_connected() handler
+	   free()'s the server->real_address and then tries to strdup() the
+	   given origin again */
+	addr = g_strdup(server->real_address);
+	signal_emit("event 001", 3, server, str, addr);
+        g_free(addr);
         g_free(str);
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		IRC_CHANNEL_REC *rec = tmp->data;
 
-		rec->session_rejoin = TRUE; /* FIXME: remove after .99 */
 		if (rec->session_rejoin)
                         session_restore_channel(rec);
 	}
