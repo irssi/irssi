@@ -74,7 +74,6 @@ static void perl_call_signal(const char *func, int signal_id,
 			     gconstpointer *args)
 {
 	dSP;
-	int retcount;
 
 	PERL_SIGNAL_ARGS_REC *rec;
 	SV *sv, *perlarg, *saved_args[SIGNAL_MAX_ARGUMENTS];
@@ -152,7 +151,7 @@ static void perl_call_signal(const char *func, int signal_id,
 	}
 
 	PUTBACK;
-	retcount = perl_call_pv((char *) func, G_EVAL|G_DISCARD);
+	perl_call_pv((char *) func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {

@@ -62,7 +62,6 @@ static void perl_source_destroy(PERL_SOURCE_REC *rec)
 static int perl_source_event(PERL_SOURCE_REC *rec)
 {
 	dSP;
-	int retcount;
 
 	ENTER;
 	SAVETMPS;
@@ -72,7 +71,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	PUTBACK;
 
         perl_source_ref(rec);
-	retcount = perl_call_pv(rec->func, G_EVAL|G_DISCARD);
+	perl_call_pv(rec->func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
