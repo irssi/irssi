@@ -84,21 +84,13 @@ UI_SOURCES = \
 	ui/typemap \
 	ui/module.h
 
-TEXTUI_SOURCES = \
-	ui/TextUI.xs \
-	ui/TextUI.pm \
-	ui/Makefile.PL.in \
-	ui/typemap \
-	ui/module.h
-
 EXTRA_DIST = \
 	libperl_dynaloader.la \
 	libperl_orig.la \
 	get-signals.pl \
 	$(CORE_SOURCES) \
 	$(IRC_SOURCES) \
-	$(UI_SOURCES) \
-	$(TEXTUI_SOURCES)
+	$(UI_SOURCES)
 
 noinst_HEADERS = \
 	module.h \
@@ -106,20 +98,19 @@ noinst_HEADERS = \
 	perl-signals.h
 
 all-local:
-	for dir in common irc ui textui; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
+	for dir in common irc ui; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
 
 # FIXME: remove after .99: the libfe_perl must not be used anymore
 install-exec-local:
 	-(rm -f $(moduledir)/libfe_perl.*)
-	for dir in common irc ui textui; do cd $$dir && $(MAKE) install && cd ..; done
+	for dir in common irc ui; do cd $$dir && $(MAKE) install && cd ..; done
 
 clean-generic:
-	rm -f common/Irssi.c irc/Irc.c ui/UI.c textui/TextUI.c
+	rm -f common/Irssi.c irc/Irc.c ui/UI.c
 
 distclean: distclean-am
 	-(cd common && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd irc && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd ui && $(MAKE) realclean && rm -f Makefile.PL)
-	-(cd textui && $(MAKE) realclean && rm -f Makefile.PL)
 
 libperl_core_la_LIBADD = $(PERL_LDFLAGS)
