@@ -311,7 +311,7 @@ if test "$want_perl" != "no"; then
 			dnl * In perl 5.6, libperl.a seems to be in /usr/lib ..
 			dnl * I can't really figure out any good way to check this
 			dnl * but hopefully this works well enough :)
-			if test "x$LIBPERL_A" = "x" -a /usr/lib/libperl.a; then
+			if test "x$LIBPERL_A" = "x" -a -e /usr/lib/libperl.a; then
        				LIBPERL_A="/usr/lib/perl.a"
 			fi
 		fi
