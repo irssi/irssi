@@ -3,7 +3,9 @@
 
 Place new scripts to ~/.irssi/scripts/, or /usr/lib/irssi/scripts/
 directory and run then with /RUN script. Or you could also run the
-script from another place by specifying the whole path to it.
+script from another place by specifying the whole path to it. Scripts
+in ~/.irssi/scripts/autorun/ directory are automatically run at
+startup.
 
 Using /PERLFLUSH closes and reopens the perl interpreter removing all
 Perl scripts from memory. There's currently no way to unload a single Perl
