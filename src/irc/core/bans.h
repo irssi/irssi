@@ -11,6 +11,6 @@ char *ban_get_masks(IRC_CHANNEL_REC *channel, const char *nicks);
 
 void ban_set_type(const char *type);
 void ban_set(IRC_CHANNEL_REC *channel, const char *bans);
-void ban_remove(IRC_CHANNEL_REC *channel, const char *ban);
+void ban_remove(IRC_CHANNEL_REC *channel, const char *bans);
 
 #endif
