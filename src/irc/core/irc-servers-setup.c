@@ -50,7 +50,8 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 	if (!IS_IRC_SERVER_CONNECT(conn))
 		return;
 
-	conn->alternate_nick = g_strdup(settings_get_str("alternate_nick"));
+	conn->alternate_nick = *settings_get_str("alternate_nick") != '\0' ?
+		g_strdup(settings_get_str("alternate_nick")) : NULL;
         conn->usermode = g_strdup(settings_get_str("usermode"));
 }
 
