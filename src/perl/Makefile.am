@@ -141,7 +141,7 @@ all-local:
 	  if [ ! -f Makefile ]; then \
             $(perlpath) Makefile.PL $(PERL_MM_PARAMS); \
 	  fi && \
-	  ($(MAKE) || $(MAKE)) && \
+	  ($(MAKE) CC=$(CC) || $(MAKE) CC=$(CC)) && \
 	  cd ..; \
 	done
 
