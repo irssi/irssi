@@ -112,6 +112,8 @@ static void channel_query_add(IRC_CHANNEL_REC *channel, int query)
 	rec->queries[query] = g_slist_append(rec->queries[query], channel);
 }
 
+static void channels_query_check(IRC_SERVER_REC *server);
+
 static void channel_query_remove_all(IRC_CHANNEL_REC *channel)
 {
 	SERVER_QUERY_REC *rec;
@@ -123,7 +125,8 @@ static void channel_query_remove_all(IRC_CHANNEL_REC *channel)
 	/* remove channel from query lists */
 	for (n = 0; n < CHANNEL_QUERIES; n++)
 		rec->queries[n] = g_slist_remove(rec->queries[n], channel);
-}
+
+	channels_query_check(channel->server);}
 
 
 static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
