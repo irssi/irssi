@@ -431,8 +431,16 @@ static char *expando_sysarch(SERVER_REC *server, void *item, int *free_ret)
 /* Topic of active channel (or address of queried nick) */
 static char *expando_topic(SERVER_REC *server, void *item, int *free_ret)
 {
-	return IS_CHANNEL(item) ? CHANNEL(item)->topic :
-		IS_QUERY(item) ? QUERY(item)->address : "";
+	if (IS_CHANNEL(item))
+		return CHANNEL(item)->topic;
+	if (IS_QUERY(item)) {
+		QUERY_REC *query = QUERY(item);
+
+                *free_ret = TRUE;
+		return g_strdup_printf("%s (%s)", query->address,
+				       query->server_tag);
+	}
+        return "";
 }
 
 /* Server tag */
