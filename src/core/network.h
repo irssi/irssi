@@ -7,6 +7,14 @@
 #  include <netinet/in.h>
 #endif
 
+#ifndef AF_INET6
+#  ifdef PF_INET6
+#    define AF_INET6 PF_INET6
+#  else
+#    define PF_INET6 10
+#  endif
+#endif
+
 struct _IPADDR {
 	unsigned short family;
 	union {
