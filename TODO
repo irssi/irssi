@@ -1,3 +1,18 @@
+ - Irssi saves some setting strings to static const char * variables in
+   several places.. this works pretty well usually, except when /RELOADing
+   config and some "setup changed" signal handler goes and calls some
+   function that still uses the old saved string which points to free'd
+   memory.. this should somehow be fixed failsafe. maybe just g_strdup()
+   them everywhere or figure out something better..
+ - move /FORMATs to default.theme and remove /FORMAT command? or include
+   "default.formats" in default.theme would be better.. this way it could
+   have comments and /FORMATs shouldn't really be changed anyway anymore.
+ - netjoin doesn't always show @ before nick even if it should be there?..
+ - if there's two channels in one window and same nick netsplits out, 
+   should it print the split message twice?
+ - when someone in notify list joins, should it be placed to start of
+   /MSG completion list?
+ 
  - windows:
      - /WINDOW SIZE -sticky, so f.e. /WINDOW BALANCE wouldn't affect it.
      - /LAYOUT save|reset doesn't affect anything immediately, only after
