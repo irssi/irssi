@@ -174,8 +174,6 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 
 	dest->chatnet = g_strdup(src->chatnet);
 	dest->nick = g_strdup(src->nick);
-	dest->username = g_strdup(src->username);
-	dest->realname = g_strdup(src->realname);
 
 	if (src->own_ip4 != NULL) {
 		dest->own_ip4 = g_new(IPADDR, 1);
