@@ -114,16 +114,46 @@ CHANNEL_REC *channel_find(SERVER_REC *server, const char *name)
 				   (void *) name);
 }
 
+static CHANNEL_REC *channel_find_servers(GSList *servers, const char *name)
+{
+	return gslist_foreach_find(servers,
+				   (FOREACH_FIND_FUNC) channel_find_server,
+				   (void *) name);
+}
+
+static GSList *servers_find_chatnet_except(SERVER_REC *server)
+{
+	GSList *tmp, *list;
+
+        list = NULL;
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		SERVER_REC *rec = tmp->data;
+
+		if (server != rec && rec->connrec->chatnet != NULL &&
+		    strcmp(server->connrec->chatnet,
+			   rec->connrec->chatnet) == 0) {
+			/* chatnets match */
+			list = g_slist_append(list, rec);
+		}
+	}
+
+        return list;
+}
+
 /* connected to server, autojoin to channels. */
 static void event_connected(SERVER_REC *server)
 {
 	GString *chans;
-	GSList *tmp;
+	GSList *tmp, *chatnet_servers;
 
 	g_return_if_fail(SERVER(server));
 
 	if (server->connrec->reconnection)
 		return;
+
+	/* get list of servers in same chat network */
+	chatnet_servers = server->connrec->chatnet == NULL ? NULL:
+		servers_find_chatnet_except(server);
 
 	/* join to the channels marked with autojoin in setup */
 	chans = g_string_new(NULL);
@@ -135,7 +165,10 @@ static void event_connected(SERVER_REC *server)
 					   server->connrec->chatnet))
 			continue;
 
-		g_string_sprintfa(chans, "%s,", rec->name);
+		/* check that we haven't already joined this channel in
+		   same chat network connection.. */
+                if (channel_find_servers(servers, rec->name) == NULL)
+			g_string_sprintfa(chans, "%s,", rec->name);
 	}
 
 	if (chans->len > 0) {
