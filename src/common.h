@@ -26,6 +26,14 @@
 #include <sys/wait.h>
 #include <sys/utsname.h>
 
+#ifdef HAVE_POPT_H
+#include <popt.h>
+#else
+#  ifdef HAVE_POPT_GNOME_H
+#    include <popt-gnome.h>
+#  endif
+#endif
+
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
@@ -60,6 +68,7 @@ typedef struct
 }
 IPADDR;
 
+#include "irc-base/memdebug.h"
 #include "lib-config/irssi-config.h"
 #include "common-setup.h"
 
@@ -81,34 +90,5 @@ void gui_input_remove(gint tag);
 
 guint gui_timeout_add(guint32 interval, GUITimeoutFunction function, gpointer data);
 void gui_timeout_remove(gint tag);
-
-#ifdef MEM_DEBUG
-
-void ig_mem_profile(void);
-
-void ig_set_data(gchar *data);
-
-gpointer ig_malloc(gint size, gchar *file, gint line);
-gpointer ig_malloc0(gint size, gchar *file, gint line);
-gpointer ig_realloc(gpointer mem, gulong size, gchar *file, gint line);
-gchar *ig_strdup(const char *str, gchar *file, gint line);
-gchar *ig_strconcat(const char *str, ...);
-gchar *ig_strdup_printf(const gchar *format, ...) G_GNUC_PRINTF (1, 2);
-void ig_free(gpointer p);
-GString *ig_string_new(gchar *str);
-void ig_string_free(GString *str, gboolean freeit);
-
-#define g_malloc(a) ig_malloc(a, __FILE__, __LINE__)
-#define g_malloc0(a) ig_malloc0(a, __FILE__, __LINE__)
-#define g_realloc(a,b) ig_realloc(a, b, __FILE__, __LINE__)
-#define g_strdup(a) ig_strdup(a, __FILE__, __LINE__)
-#define g_strconcat ig_strconcat
-#define g_strdup_printf ig_strdup_printf
-#define g_strdup_vprintf ig_strdup_vprintf
-#define g_free ig_free
-#define g_string_new ig_string_new
-#define g_string_free ig_string_free
-
-#endif
 
 #endif

@@ -183,6 +183,38 @@ AC_DEFINE_UNQUOTED(SYSCONFDIR, "$prefix/etc")
 AC_DEFINE_UNQUOTED(PLUGINSDIR, "$prefix/lib/irssi/plugins")
 
 dnl **
+dnl ** check for popt.h
+dnl **
+if test "x$popt_dir" = "x"; then
+	AC_CHECK_HEADER(popt.h, [
+		AC_DEFINE(HAVE_POPT_H)
+		LIBS="-lpopt"
+	])
+else
+	poptlib=-L$popt_dir/lib
+	CFLAGS="$CFLAGS -I$popt_dir/include"
+	LIBS="$LIBS $poptlib -lpopt"
+	if test -f $popt_dir/include/popt.h; then
+		AC_DEFINE(HAVE_POPT_H)
+        else
+		if test -f $popt_dir/include/popt-gnome.h; then
+			AC_DEFINE(HAVE_POPT_GNOME_H)
+		fi
+	fi
+fi
+
+AC_CHECK_LIB(popt, poptGetContext, [
+	POPT_LIBS="$poptlib -lpopt"
+], [
+	AC_CHECK_LIB(gnomesupport, poptGetContext, [
+		POPT_LIBS="$poptlib $GNOME_LIBDIR -lgnomesupport"
+	], [
+		AC_ERROR(["libpropt or libgnomesupport not found"])
+	], $LIBS $poptlib $GNOME_LIBDIR -lgnomesupport)
+], $LIBS $poptlib -lpopt)
+
+
+dnl **
 dnl ** check for libPropList
 dnl **
 
@@ -237,8 +269,11 @@ if test "x$want_gnome" = "xyes"; then
 	AC_DEFINE(HAVE_GTK)
 	AC_DEFINE(HAVE_GNOME)
 	AC_DEFINE(HAVE_IMLIB)
+        AC_DEFINE(HAVE_POPT_GNOME_H)
 	GNOME_SUPPORT_CHECKS
-	GUI_CFLAGS="$GNOME_INCLUDEDIR"
+
+	dnl ** needed for including popt-gnome.h
+	CFLAGS="$CFLAGS $GNOME_INCLUDEDIR"
 
 	dnl **
 	dnl ** check for gnome panel applet library
@@ -260,12 +295,8 @@ else
         want_gnome_panel="no"
 	AC_DEFINE(HAVE_GTK)
 	AM_PATH_GTK(1.2.0)
-	GUI_CFLAGS="$GTK_CFLAGS"
+	GUI_CFLAGS="$GTK_CFLAGS $POPT_LIBS"
 	GUI_LIBS="$GTK_LIBS"
-
-        if test "x$gtk_config_minor_version" = "x0"; then
-		AC_DEFINE(GTK_10)
-	fi
 
 	if test "x$want_imlib" = "xyes"; then
 		AM_PATH_GDK_IMLIB(, [define_imlib=true])
@@ -281,6 +312,7 @@ if test "x$GUI_LIBS" != "x"; then
 	GUI_LIBS="$GUI_LIBS $HEBREW_LIBS"
 fi
 
+AC_SUBST(POPT_LIBS)
 AC_SUBST(GUI_LIBS)
 AC_SUBST(GUI_CFLAGS)
 AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
