@@ -68,6 +68,8 @@ int window_refnum_prev(int refnum, int wrap);
 int window_refnum_next(int refnum, int wrap);
 int windows_refnum_last(void);
 
+GSList *windows_get_sorted(void);
+
 void windows_init(void);
 void windows_deinit(void);
 

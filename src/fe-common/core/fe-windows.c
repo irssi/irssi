@@ -363,6 +363,26 @@ int windows_refnum_last(void)
 	return max;
 }
 
+static int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
+{
+	return w1->refnum < w2->refnum ? -1 : 1;
+}
+
+GSList *windows_get_sorted(void)
+{
+	GSList *tmp, *sorted;
+
+        sorted = NULL;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		sorted = g_slist_insert_sorted(sorted, rec, (GCompareFunc)
+					       window_refnum_cmp);
+	}
+
+        return sorted;
+}
+
 static void sig_server_looking(SERVER_REC *server)
 {
 	GSList *tmp;

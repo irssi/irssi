@@ -238,7 +238,7 @@ static int waiting_channels_get(WINDOW_REC *window, const char *tag)
 void window_item_create(WI_ITEM_REC *item, int automatic)
 {
 	WINDOW_REC *window;
-	GSList *tmp;
+	GSList *tmp, *sorted;
 	char *str;
 	int clear_waiting, reuse_unused_windows;
 
@@ -253,7 +253,8 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 
 	clear_waiting = TRUE;
 	window = NULL;
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+        sorted = windows_get_sorted();
+	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
 		if (reuse_unused_windows &&
@@ -274,6 +275,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 			}
 		}
 	}
+        g_slist_free(sorted);
         g_free_not_null(str);
 
         if (window == NULL && !settings_get_bool("autocreate_windows")) {

@@ -353,23 +353,6 @@ static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *i
 	}
 }
 
-static int windows_compare(WINDOW_REC *w1, WINDOW_REC *w2)
-{
-	return w1->refnum < w2->refnum ? -1 : 1;
-}
-
-static GSList *windows_get_sorted(void)
-{
-	GSList *tmp, *list;
-
-	list = NULL;
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		list = g_slist_insert_sorted(list, tmp->data, (GCompareFunc) windows_compare);
-	}
-
-	return list;
-}
-
 /* SYNTAX: WINDOW LIST */
 static void cmd_window_list(void)
 {
