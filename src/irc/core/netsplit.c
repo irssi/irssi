@@ -237,19 +237,7 @@ int quitmsg_is_split(const char *msg)
 	host1 = g_strndup(msg, (int) (p-msg));
 	host2 = p;
 
-	ok = FALSE;
-	if (g_strcasecmp(host1, host2) != 0) { /* hosts can't be same.. */
-		/* check that domain length is 2 or 3 */
-		p = strrchr(host1, '.');
-		if (p != NULL && (strlen(p+1) == 2 || strlen(p+1) == 3)) {
-			p = strrchr(host2, '.');
-			if (p != NULL && (strlen(p+1) == 2 ||
-					  strlen(p+1) == 3)) {
-				/* it looks just like a netsplit to me. */
-				ok = TRUE;
-			}
-		}
-	}
+	ok = g_strcasecmp(host1, host2) != 0; /* hosts can't be same.. */
 	g_free(host1);
 
 	return ok;
