@@ -612,6 +612,7 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 			 int max_width, int item_extra, int item_min_size,
 			 int **save_column_widths, int *rows)
 {
+        GSList *tmp;
 	int **columns, *columns_width, *columns_rows;
 	int item_pos, items_count;
 	int ret, len, n, col, max_columns;
@@ -625,15 +626,15 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 
 	for (n = 1; n < max_columns; n++) {
 		columns[n] = g_new0(int, n+1);
-		columns_rows[n] = items_count < n+1 ? 1 :
+		columns_rows[n] = items_count <= n+1 ? 1 :
                         (items_count+n)/(n+1);
 	}
 
 	/* for each possible column count, save the column widths and
 	   find the biggest column count that fits to screen. */
         item_pos = 0;
-	while (items != NULL) {
-                len = item_extra+len_func(items->data);
+	for (tmp = items; tmp != NULL; tmp = tmp->next) {
+                len = item_extra+len_func(tmp->data);
 		for (n = 1; n < max_columns; n++) {
 			if (columns_width[n] > max_width)
 				continue; /* too wide */
@@ -645,19 +646,24 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 			}
 		}
 
-		items = items->next;
                 item_pos++;
 	}
 
-	for (n = max_columns-1; n >= 0; n--) {
-		if (columns_width[n] <= max_width && columns[n][n] > 0)
+	for (n = max_columns-1; n > 0; n--) {
+		if (columns_width[n] <= max_width &&
+		    columns[n][n] > 0)
                         break;
 	}
         ret = n+1;
 
 	*save_column_widths = g_new(int, ret);
-	memcpy(*save_column_widths, columns[ret-1], sizeof(int)*ret);
-        *rows = columns_rows[ret-1];
+	if (ret == 1) {
+                **save_column_widths = item_extra+len_func(items->data);
+                *rows = 1;
+	} else {
+		memcpy(*save_column_widths, columns[ret-1], sizeof(int)*ret);
+		*rows = columns_rows[ret-1];
+	}
 
 	for (n = 1; n < max_columns; n++)
                 g_free(columns[n]);
