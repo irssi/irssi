@@ -59,12 +59,46 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 	window_change_server(window, server);
 }
 
-/* SYNTAX: WINDOW CLOSE */
+/* SYNTAX: WINDOW CLOSE [<first> [<last>] */
 static void cmd_window_close(const char *data)
 {
-	/* destroy window unless it's the last one */
-	if (windows->next != NULL)
-		window_destroy(active_win);
+        GSList *tmp, *destroys;
+	char *first, *last;
+        int first_num, last_num;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 2, &first, &last))
+		return;
+
+	if ((*first != '\0' && !is_numeric(first, '\0')) ||
+	    ((*last != '\0') && !is_numeric(last, '\0'))) {
+		cmd_params_free(free_arg);
+                return;
+	}
+
+	first_num = *first == '\0' ? active_win->refnum : atoi(first);
+	last_num = *last == '\0' ? active_win->refnum : atoi(last);
+
+        /* get list of windows to destroy */
+        destroys = NULL;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum >= first_num && rec->refnum <= last_num)
+			destroys = g_slist_append(destroys, rec);
+	}
+
+        /* really destroy the windows */
+	while (destroys != NULL) {
+		WINDOW_REC *rec = destroys->data;
+
+		if (windows->next != NULL)
+			window_destroy(rec);
+
+                destroys = g_slist_remove(destroys, rec);
+	}
+
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: WINDOW REFNUM <number> */
