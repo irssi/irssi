@@ -7,6 +7,12 @@ package Irssi;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
+sub VERSION {
+  my $version = $_[1];
+  die "This script requires irssi version $version or later"
+    if ($version > version());
+}
+
 $VERSION = "0.9";
 
 require Exporter;
