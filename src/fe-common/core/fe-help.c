@@ -117,16 +117,27 @@ static void help_category(GSList *cmdlist, int items)
 static int show_help_file(const char *file)
 {
         const char *helppath;
-	char tmpbuf[1024], *str, *path;
+	char tmpbuf[1024], *str, *path, **paths, **tmp;
 	LINEBUF_REC *buffer = NULL;
 	int f, ret, recvlen;
 
         helppath = settings_get_str("help_path");
 
-	/* helpdir/command or helpdir/category/command */
-	path = g_strdup_printf("%s/%s", helppath, file);
-	f = open(path, O_RDONLY);
-	g_free(path);
+	paths = g_strsplit(helppath, ":", -1);
+
+	f = -1;
+	for (tmp = paths; *tmp != NULL; tmp++) {
+		/* helpdir/command or helpdir/category/command */
+		path = g_strdup_printf("%s/%s", *tmp, file);
+		f = open(path, O_RDONLY);
+		g_free(path);
+
+		if (f != -1)
+			break;
+
+	}
+
+	g_strfreev(paths);
 
 	if (f == -1)
 		return FALSE;
