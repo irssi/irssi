@@ -119,8 +119,12 @@ static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 
 	format_create_dest_tag(&dest, query->server, query->server_tag,
 			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
-	printformat_dest(&dest,  TXT_NICK_CHANGED, oldnick,
-			 query->name, query->name);
+
+	/* don't print the nick change message if only the case was changed */
+	if (g_strcasecmp(query->name, oldnick) != 0) {
+		printformat_dest(&dest,  TXT_NICK_CHANGED, oldnick,
+				 query->name, query->name);
+	}
 
 	signal_emit("window item changed", 2,
 		    window_item_window((WI_ITEM_REC *) query), query);
