@@ -6,7 +6,7 @@ int chat_type; /* chat_protocol_lookup(xx) */
 /* if we're connecting via proxy, or just NULLs */
 char *proxy;
 int proxy_port;
-char *proxy_string;
+char *proxy_string, *proxy_password;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
 char *address;

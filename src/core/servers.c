@@ -408,6 +408,7 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
 	signal_emit("server connect free", 1, conn);
         g_free_not_null(conn->proxy);
 	g_free_not_null(conn->proxy_string);
+	g_free_not_null(conn->proxy_password);
 
 	g_free_not_null(conn->address);
 	g_free_not_null(conn->chatnet);
