@@ -252,8 +252,8 @@ SIG_FUNC_DECL(2, last);
 #define perl_signal_get_func(rec) \
 	(priority_get_func((rec)->priority))
 
-void perl_signal_add_to_int(const char *signal, const char *func,
-			    int priority, int add_signal)
+static void perl_signal_add_to_int(const char *signal, const char *func,
+				   int priority, int command)
 {
 	PERL_SIGNAL_REC *rec;
 	GHashTable *table;
@@ -263,6 +263,13 @@ void perl_signal_add_to_int(const char *signal, const char *func,
         g_return_if_fail(signal != NULL);
         g_return_if_fail(func != NULL);
         g_return_if_fail(priority >= 0 && priority <= 2);
+
+	if (!command && strncmp(signal, "command ", 8) == 0) {
+		/* we used Irssi::signal_add() instead of
+		   Irssi::command_bind() - oh well, allow this.. */
+		command_bind(signal+8, NULL, priority_get_func(priority));
+                command = TRUE;
+	}
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
 	rec->signal_id = signal_get_uniq_id(signal);
@@ -278,7 +285,7 @@ void perl_signal_add_to_int(const char *signal, const char *func,
 		siglist = g_new0(GSList *, 1);
 		g_hash_table_insert(table, signal_idp, siglist);
 
-		if (add_signal) {
+		if (!command) {
 			signal_add_to_id(MODULE_NAME, priority, rec->signal_id,
 					 perl_signal_get_func(rec));
 		}
@@ -289,7 +296,7 @@ void perl_signal_add_to_int(const char *signal, const char *func,
 
 void perl_signal_add_to(const char *signal, const char *func, int priority)
 {
-        perl_signal_add_to_int(signal, func, priority, TRUE);
+        perl_signal_add_to_int(signal, func, priority, FALSE);
 }
 
 static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
@@ -362,7 +369,7 @@ void perl_command_bind_to(const char *cmd, const char *category,
 	command_bind(cmd, category, priority_get_func(priority));
 
 	signal = g_strconcat("command ", cmd, NULL);
-	perl_signal_add_to_int(signal, func, priority, FALSE);
+	perl_signal_add_to_int(signal, func, priority, TRUE);
 	g_free(signal);
 }
 
