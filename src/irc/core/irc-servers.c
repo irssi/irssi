@@ -265,11 +265,12 @@ static void sig_disconnected(IRC_SERVER_REC *server)
                         server_redirect_destroy(tmp->next->data);
 	}
 	g_slist_free(server->cmdqueue);
+        server->cmdqueue = NULL;
 
-	g_free_not_null(server->real_address);
-	g_free_not_null(server->usermode);
-	g_free_not_null(server->userhost);
-	g_free_not_null(server->last_invite);
+	g_free_and_null(server->real_address);
+	g_free_and_null(server->usermode);
+	g_free_and_null(server->userhost);
+	g_free_and_null(server->last_invite);
 }
 
 static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)

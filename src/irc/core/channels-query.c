@@ -97,6 +97,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 		g_slist_free(rec->queries[n]);
         g_slist_free(rec->current_queries);
 	g_free(rec);
+
+        server->chanqueries = NULL;
 }
 
 /* Add channel to query list */

@@ -357,6 +357,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_hash_table_foreach(server->splits,
 			     (GHFunc) netsplit_destroy_hash, server);
 	g_hash_table_destroy(server->splits);
+        server->splits = NULL;
 }
 
 static int split_server_check(void *key, NETSPLIT_REC *rec,

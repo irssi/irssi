@@ -522,9 +522,12 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_foreach(server->redirects,
 			(GFunc) server_redirect_destroy, NULL);
 	g_slist_free(server->redirects);
+        server->redirects = NULL;
 
-	if (server->redirect_next != NULL)
-                server_redirect_destroy(server->redirect_next);
+	if (server->redirect_next != NULL) {
+		server_redirect_destroy(server->redirect_next);
+                server->redirect_next = NULL;
+	}
 }
 
 static void cmd_redirect_destroy(char *key, REDIRECT_CMD_REC *cmd)

@@ -216,6 +216,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 		return;
 
 	g_slist_free(server->ctcpqueue);
+        server->ctcpqueue = NULL;
 }
 
 void ctcp_init(void)
