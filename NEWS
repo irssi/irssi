@@ -1,3 +1,11 @@
+v0.8.6 2002-11-17  Timo Sirainen <tss@iki.fi>
+
+	* Tons of changes, here's only the largest that come to my mind now:
+
+	+ SSL support by vjt@users.sf.net
+	+ DCC send queues by Heikki Orsila
+	+ Better support for !channels
+
 v0.8.4 2002-03-13  Timo Sirainen <tss@iki.fi>
 
 	* Continuing to fix my stupid mistakes...

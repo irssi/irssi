@@ -7,7 +7,7 @@ if test -n "`grep '^#undef VERSION' config.h.in`"; then
 fi
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.8.5.CVS)
+AM_INIT_AUTOMAKE(irssi, 0.8.6)
 
 AM_MAINTAINER_MODE
 
