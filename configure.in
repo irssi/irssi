@@ -261,8 +261,7 @@ else
 	AC_DEFINE(HAVE_GTK)
 	AM_PATH_GTK(1.2.0)
 	GUI_CFLAGS="$GTK_CFLAGS"
-	GUI_LIBS="$GTK_LIBS"
-	PROG_LIBS="$PROG_LIBS ../lib-popt/libpopt.a"
+	GUI_LIBS="$GTK_LIBS ../lib-popt/libpopt.a"
 
 	if test "x$want_imlib" = "xyes"; then
 		AM_PATH_GDK_IMLIB(, [define_imlib=true])
@@ -334,7 +333,7 @@ if test "x$want_ipv6" = "xyes"; then
 	AC_DEFINE(HAVE_IPV6)
 fi
 
-PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.a"
 AC_SUBST(PROG_LIBS)
 
 
