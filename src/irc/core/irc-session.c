@@ -65,6 +65,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "away_reason", server->away_reason);
 	config_node_set_bool(config, node, "emode_known", server->emode_known);
 
+	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
         isupport = config_node_section(node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
         isupport_data.node = isupport;
@@ -87,6 +88,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->usermode_away = config_node_get_bool(node, "usermode_away", FALSE);
 	server->away_reason = g_strdup(config_node_get_str(node, "away_reason", NULL));
 	server->emode_known = config_node_get_bool(node, "emode_known", FALSE);
+	server->isupport_sent = config_node_get_bool(node, "isupport_sent", FALSE);
 
 	if (server->isupport == NULL) {
 		server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
@@ -95,8 +97,6 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 
 	node = config_node_section(node, "isupport", -1);
 	tmp = node == NULL ? NULL : config_node_first(node->value);
-	if(tmp != NULL)
-		server->isupport_sent = TRUE;
 
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
