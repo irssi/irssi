@@ -242,8 +242,11 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 	if (error != NULL) {
 		if (*error == '\0')
 			error = NULL;
-		else
+		else {
+                        error = g_strdup(error);
 			signal_emit("script error", 2, script, error);
+                        g_free(error);
+		}
 	}
 
 	PUTBACK;

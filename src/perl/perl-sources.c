@@ -77,8 +77,9 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		signal_emit("script error", 2, rec->script,
-			    SvPV(ERRSV, PL_na));
+                char *error = g_strdup(SvPV(ERRSV, PL_na));
+		signal_emit("script error", 2, rec->script, error);
+                g_free(error);
 	}
         perl_source_unref(rec);
 
