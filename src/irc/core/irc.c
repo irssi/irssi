@@ -82,13 +82,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	}
 
 	if (send_now) {
-		if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
-			/* something bad happened */
-			server->connection_lost = TRUE;
-			return;
-		}
-
-		g_get_current_time(&server->last_cmd);
+                irc_server_send_data(server, cmd, len);
 		return;
 	}
 

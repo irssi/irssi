@@ -297,6 +297,28 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	g_free(str);
 }
 
+void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
+{
+	if (net_sendbuffer_send(server->handle, data, len) == -1) {
+		/* something bad happened */
+		server->connection_lost = TRUE;
+		return;
+	}
+
+	g_get_current_time(&server->last_cmd);
+
+	/* A bit kludgy way to do the flood protection. In ircnet, there
+	   actually is 1sec / 100 bytes penalty, but we rather want to deal
+	   with the max. 1000 bytes input buffer problem. If we send more
+	   than that with the burst, we'll get excess flooded. */
+	if (len < 100)
+		server->wait_cmd.tv_sec = 0;
+	else {
+		memcpy(&server->wait_cmd, &server->last_cmd, sizeof(GTimeVal));
+		server->wait_cmd.tv_sec += 2 + len/100;
+	}
+}
+
 static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
 	REDIRECT_REC *redirect;
@@ -321,20 +343,13 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	server->cmdcount--;
 	if (server->cmdqueue == NULL) return;
 
-	/* send command */
+        /* get command */
 	cmd = server->cmdqueue->data;
         redirect = server->cmdqueue->next->data;
+
+	/* send command */
 	len = strlen(cmd);
-
-	if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
-		/* something bad happened */
-		g_warning("net_sendbuffer_send() failed: %s",
-			  g_strerror(errno));
-		return;
-	}
-
-	server->wait_cmd.tv_sec = 0;
-	memcpy(&server->last_cmd, now, sizeof(GTimeVal));
+	irc_server_send_data(server, cmd, len);
 
 	/* add to rawlog without [CR+]LF (/RAWQUOTE might not have
 	   added the CR) */

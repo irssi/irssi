@@ -106,6 +106,9 @@ void irc_server_purge_output(IRC_SERVER_REC *server, const char *target);
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
 char *irc_server_get_channels(IRC_SERVER_REC *server);
 
+/* INTERNAL: */
+void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
+
 void irc_servers_init(void);
 void irc_servers_deinit(void);
 
