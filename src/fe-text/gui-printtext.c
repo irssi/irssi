@@ -82,6 +82,9 @@ static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
 
 		ptr = rec->buffer;
 		memcpy(buffer, &ptr, sizeof(char *));
+	} else {
+		/* just to be safe */
+		mark_temp_eol(rec);
 	}
 
 	gui->cur_text = rec;

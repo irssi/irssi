@@ -36,6 +36,8 @@
 
 #define DEFAULT_INDENT_POS 10
 
+#define DEBUG_TEXTBUFFER
+
 static int window_create_override;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
@@ -178,34 +180,58 @@ static int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 	return last_linecount;
 }
 
+#define is_window_bottom(gui) \
+	((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line)
+/*FIXME: remove ((gui)->startline == (gui)->bottom_startline && \
+	(gui)->subline >= (gui)->bottom_subline)*/
+
 void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 {
+	/* FIXME: I'm pretty sure this could be done cleaner :) */
 	int lines;
 
 	g_return_if_fail(gui != NULL);
 
 	gui->xpos = 0;
 
-	if (gui->empty_linecount > 0) {
-		/* window buffer height isn't even the size of the screen yet */
-		gui->empty_linecount--;
-		gui->ypos++;
-		return;
+	lines = gui_window_get_linecount(gui, gui->bottom_startline->data);
+	if (gui->bottom_subline >= lines) {
+		/* after screen gets full after /CLEAR we end up here.. */
+		gui->bottom_startline = gui->bottom_startline->next;
+		gui->bottom_subline = 0;
 	}
 
-	lines = gui_window_update_bottom(gui, 1);
-
-	if (!gui->bottom) {
-		gui->ypos++;
-		return;
-	}
-
+	lines = gui_window_get_linecount(gui, gui->startline->data);
 	if (gui->subline >= lines) {
 		/* after screen gets full after /CLEAR we end up here.. */
 		gui->startline = gui->startline->next;
 		gui->subline = 0;
+	}
 
+	if (gui->empty_linecount > 0) {
+		/* window buffer height isn't even the size of the screen yet */
+		gui->empty_linecount--;
+		if (!gui->bottom) {
+			gui->ypos++;
+			return;
+		}
+	}
+
+	if ((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line-1) {
+		gui->ypos++;
+		return;
+	}
+
+	if (!gui->bottom || ((gui)->startline == (gui)->bottom_startline && \
+			     (gui)->subline >= (gui)->bottom_subline)) {
 		lines = gui_window_update_bottom(gui, 1);
+
+		if (!gui->bottom) {
+			gui->ypos++;
+			return;
+		}
+	} else {
+		lines = gui_window_get_linecount(gui, gui->startline->data);
 	}
 
 	if (lines > 1+gui->subline)
@@ -219,6 +245,13 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 		scroll_up(gui->parent->first_line, gui->parent->last_line);
 		move(gui->parent->last_line, 0); clrtoeol();
 	}
+
+#ifdef DEBUG_TEXTBUFFER
+	if (gui->startline != gui->bottom_startline &&
+	    g_list_find(gui->bottom_startline, gui->startline) != NULL) {
+		g_warning("startline > bottom_startline! SHOULDN'T HAPPEN!");
+	}
+#endif
 }
 
 static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line)
@@ -257,7 +290,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 				color = (color & ATTR_UNDERLINE) | *ptr;
 			} else switch (*ptr) {
 			case LINE_CMD_OVERFLOW:
-				g_error("buffer overflow!");
+				g_error("buffer overflow! (cache)");
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
@@ -380,7 +413,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 				continue;
 			} else switch ((unsigned char) *text) {
 			case LINE_CMD_OVERFLOW:
-				g_error("buffer overflow!");
+				g_error("buffer overflow! (draw)");
 			case LINE_CMD_EOL:
 				return;
 			case LINE_CMD_UNDERLINE:
@@ -474,10 +507,6 @@ void gui_window_redraw(WINDOW_REC *window)
 	screen_refresh();
 }
 
-#define is_window_bottom(gui) \
-	((gui)->startline == (gui)->bottom_startline && \
-	(gui)->subline >= (gui)->bottom_subline)
-
 static void gui_window_scroll_up(GUI_WINDOW_REC *gui, int lines)
 {
 	LINE_REC *line;
@@ -511,7 +540,8 @@ static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 	LINE_REC *line;
 	int count, linecount;
 
-	if (is_window_bottom(gui))
+	if (((gui)->startline == (gui)->bottom_startline && \
+	     (gui)->subline >= (gui)->bottom_subline))
 		return;
 
 	count = lines+gui->subline; gui->ypos += gui->subline;
@@ -534,6 +564,10 @@ static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 		}
 
 		if (count == 0) {
+			if (gui->startline->next == NULL) {
+				gui->subline = linecount;
+				break;
+			}
 			gui->startline = gui->startline->next;
 			break;
 		}
@@ -544,10 +578,6 @@ static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 			break;
 		}
 
-		if (gui->startline->next == NULL) {
-			gui->subline = linecount;
-			break;
-		}
 		gui->startline = gui->startline->next;
 	}
 
@@ -683,7 +713,7 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
                 else if ((guchar) *ptr == LINE_CMD_EOL)
 		    break;
 		else if ((guchar) *ptr == LINE_CMD_OVERFLOW)
-			g_error("buffer overflow!");
+			g_error("buffer overflow! (find)");
 	    }
 	}
         str[n] = '\0';
@@ -726,11 +756,8 @@ static void gui_window_horiz_resize(WINDOW_REC *window)
 	gui->bottom_startline = gui->startline;
 	gui->bottom_subline = gui->subline;
 
-	/* remove the empty lines from the end */
-	if (gui->bottom && gui->startline == gui->lines)
-		gui->empty_linecount = (gui->parent->last_line-gui->parent->first_line);
-	else
-		gui->empty_linecount = 0;
+	gui->bottom = TRUE;
+	gui->empty_linecount = (gui->parent->last_line-gui->parent->first_line)-gui->ypos;
 }
 
 void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
