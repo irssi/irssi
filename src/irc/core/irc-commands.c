@@ -67,10 +67,13 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN, item, &target, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
+			    &target, &msg))
 		return;
-	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (strcmp(target, "*") == 0)
+		target = item == NULL ? NULL : item->name;
+	if (*target == '\0' || *msg == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	g_string_sprintf(tmpstr, "NOTICE %s :%s", target, msg);
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
@@ -87,11 +90,13 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN, item,
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (strcmp(target, "*") == 0)
+		target = item == NULL ? NULL : item->name;
+	if (*target == '\0' || *ctcpcmd == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	g_strup(ctcpcmd);
 	if (*ctcpdata == '\0')
@@ -113,10 +118,12 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
         CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-			    PARAM_FLAG_OPTCHAN, item,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (strcmp(target, "*") == 0)
+		target = item == NULL ? NULL : item->name;
+	if (*target == '\0' || *ctcpcmd == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	g_strup(ctcpcmd);
 	g_string_sprintf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, ctcpdata);
