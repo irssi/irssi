@@ -64,7 +64,7 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 	}
 
 	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-		    TXT_QUERY_START, query->name, query->server->tag);
+		    TXT_QUERY_START, query->name, query->server_tag);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)
