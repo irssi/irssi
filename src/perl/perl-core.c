@@ -160,7 +160,12 @@ void perl_scripts_deinit(void)
 
 	/* Unload all perl libraries loaded with dynaloader */
 	perl_eval_pv("foreach my $lib (@DynaLoader::dl_modules) { if ($lib =~ /^Irssi\\b/) { $lib .= '::deinit();'; eval $lib; } }", TRUE);
-	perl_eval_pv("eval { foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); } }", TRUE);
+
+	/* We could unload all libraries .. but this crashes with some
+	   libraries, probably because we don't call some deinit function..
+	   Anyway, this would free some memory with /SCRIPT RESET, but it
+	   leaks memory anyway. */
+	/*perl_eval_pv("eval { foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); } }", TRUE);*/
 
 	/* perl interpreter */
 	perl_destruct(my_perl);
