@@ -462,17 +462,24 @@ static void cmd_window_item_goto(const char *data, SERVER_REC *server)
 {
 	WI_ITEM_REC *item;
 	GSList *tmp;
+	void *free_arg;
+	char *target;
+	
+	if (!cmd_get_params(data, &free_arg, 1, &target))
+		return;
 
-	if (is_numeric(data, '\0')) {
+	if (is_numeric(target, '\0')) {
 		/* change to specified number */
-		tmp = g_slist_nth(active_win->items, atoi(data)-1);
+		tmp = g_slist_nth(active_win->items, atoi(target)-1);
 		item = tmp == NULL ? NULL : tmp->data;
 	} else {
-		item = window_item_find_window(active_win, server, data);
+		item = window_item_find_window(active_win, server, target);
 	}
 
         if (item != NULL)
                 window_item_set_active(active_win, item);
+
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: WINDOW ITEM MOVE <number>|<name> */
