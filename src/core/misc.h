@@ -8,7 +8,7 @@
 typedef void* (*FOREACH_FIND_FUNC) (void *item, void *data);
 typedef int (*COLUMN_LEN_FUNC)(void *data);
 
-static inline int nearest_power(int num)
+extern inline int nearest_power(int num)
 {
 	int n = 1;
 
