@@ -1,5 +1,6 @@
 #include "module.h"
 #include "irssi-version.h"
+#include "core.h"
 
 #define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
 
@@ -555,6 +556,54 @@ CODE:
 	RETVAL = version;
 OUTPUT:
         RETVAL
+
+int get_gui()
+CODE:
+	RETVAL = irssi_gui;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_NONE()
+CODE:
+	RETVAL = IRSSI_GUI_NONE;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_TEXT()
+CODE:
+	RETVAL = IRSSI_GUI_TEXT;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_GTK()
+CODE:
+	RETVAL = IRSSI_GUI_GTK;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_GNOME()
+CODE:
+	RETVAL = IRSSI_GUI_GNOME;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_QT()
+CODE:
+	RETVAL = IRSSI_GUI_QT;
+OUTPUT:
+	RETVAL
+
+int
+IRSSI_GUI_KDE()
+CODE:
+	RETVAL = IRSSI_GUI_KDE;
+OUTPUT:
+	RETVAL
 
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
