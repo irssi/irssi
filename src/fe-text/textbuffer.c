@@ -277,6 +277,9 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(data != NULL, NULL);
 
+	if (len == 0)
+                return insert_after;
+
 	line = !buffer->last_eol ? insert_after :
 		textbuffer_line_insert(buffer, insert_after);
 
