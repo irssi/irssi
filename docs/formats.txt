@@ -12,7 +12,7 @@
    %p      %P              magenta (think: purple)
    %c      %C      %6      cyan            bold cyan       cyan
    %w      %W      %7      white           bold white      white
-   %n                      All colors turned off
+   %n                      Turn off all colors and other formatting
    %U                      Underline on/off
    %8                      Reverse on/off
    %9      %_              Bold on/off

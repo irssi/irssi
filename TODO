@@ -1,6 +1,23 @@
 
 *** New stuff in TODO, try to get rid of these :)
 
+ - /ignore -activity .. would ignore it just in window activity list,
+   not hide the text.
+ - autoignoring:
+     - it shouldn't save them to config file
+     - it could be merged with /ignore -time
+ - fix the proxy plugin to work again..
+ - /server <number> would connect to n'th server in list. show the numbers
+   with /server list
+ - when dcc chat is accepted and query exists from the same nick, replace
+   the query window with the dcc chat window.
+ - autoload specified modules. /load xx could also try to load fe-common/xx
+   and fe-text/xx modules automatically.
+ - all options that want time as argument, allow to use s|m|h|d, default to
+   seconds. when sending reply to user, use the time formatting too, not
+   just x seconds or minutes ..
+ - /savewindows: save split windows, save window logs. window log names
+   should be moved to WINDOW_REC...
  - automatically add queried nicks to notify list temporarily .. display
    the notifys for the nick in the query window
  - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
@@ -13,12 +30,10 @@
      /bind meta2-C key left, /bind meta-left echo meta-left pressed
  - automatically switch to status window when using commands that always
    print their output to status window, like /whois.
- - with autolog, /msg nick1,nick2 logs the message to file nick1,nick2..
  - automatic whowas if whois wasn't found should be moved to fe-common.
    it could also print something like "nick $0 not in IRC, but this user
    WAS in IRC:"
  - Add command for changing automatic replaces (/replace)
- - /ignore -time xx - temprary ignore
  - bash-style (or whatever it shoulda be called) tab-completion
  - /last 05032 ... didn't really do what I wanted :) maybe I should change
    the syntax to have -max parameter instead?
@@ -33,12 +48,8 @@
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
      - add user counts (ops/voices/normal/total)
- - theme problems:
-    - you can't change theme
-    - some small help about what each format does
-    - /reload could re-read them
-    - don't keep all themes in memory, just the one in use.
-    - use different themes in different channels/queries?
+ - themes:
+    - document the different formats briefly :)
     - logging messages could be printed with a different theme
  - Make /SET HOLD_MODE
  - /CAT should pause on every screenful of text, this should be some kind of
@@ -61,6 +72,8 @@
 
 *** Bugs
 
+ - netsplits don't work right if quits/joins happen fast multiple times..
+   maybe some other bugs too
  - still some problems in detecting floods right? not sure, couldn't
    reproduce the problem again..
  - match_wildcards(), mask="*a?c*", data="abdabc"
@@ -79,10 +92,6 @@
 
 *** Big things
 
- - session saving thing.. specify what channels/queries/dcc chats to open in
-   which window (real/tabbed/in same window with some other), what irc net
-   channels goes to where, what channels/queries to open at startup, etc.
-   use dialog with gtktree widget to change it.
  - some sort of address book? our own irssi ctcp to ask for other irssi users
    for their information (of course not without asking (except optionally))..
    could be nice also to automatically update it, keep track of all seen
@@ -132,8 +141,6 @@
 
 *** Stuff to do
 
- - /savewindows - save the current channel/query positions to file and
-   load them at startup.
  - you could configure which events (whois, notify, etc.) to show in what
    windows (all, current, status, msgs)
  - autoaway when idling

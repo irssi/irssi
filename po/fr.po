@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi-0.7.23\n"
-"POT-Creation-Date: 2000-07-26 21:13+0300\n"
+"POT-Creation-Date: 2000-08-13 03:27+0300\n"
 "PO-Revision-Date: 2000-01-26 16:33+0100\n"
 "Last-Translator: Julien Boulnois <jboulnois@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,15 +81,15 @@ msgstr ""
 "Impossible de crÅÈer le fichier:\n"
 "%s"
 
-#: src/fe-common/core/printtext.c:894
+#: src/fe-common/core/printtext.c:944
 msgid "%_Warning:%_ %s"
 msgstr "%_Attention:%_ %s"
 
-#: src/fe-common/core/printtext.c:896
+#: src/fe-common/core/printtext.c:946
 msgid "%_Error:%_ %s"
 msgstr "%_Erreur:%_ %s"
 
-#: src/fe-common/core/themes.c:144
+#: src/fe-common/core/themes.c:147
 #, c-format
 msgid ""
 "Ignored errors in theme:\n"
@@ -129,7 +129,7 @@ msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 msgid "Specify host name to use"
 msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 
-#: src/fe-text/irssi.c:153
+#: src/fe-text/irssi.c:158
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi 0.7.23\n"
-"POT-Creation-Date: 2000-07-26 21:13+0300\n"
+"POT-Creation-Date: 2000-08-13 03:27+0300\n"
 "PO-Revision-Date: 2000-02-10 09:50-0200\n"
 "Last-Translator: Frédéric L. W. Meunier <fredlwm@olympiquedemarseille.org>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -82,15 +82,15 @@ msgstr ""
 "Não consigo criar arquivo:\n"
 "%s"
 
-#: src/fe-common/core/printtext.c:894
+#: src/fe-common/core/printtext.c:944
 msgid "%_Warning:%_ %s"
 msgstr "%_Atenção:%_ %s"
 
-#: src/fe-common/core/printtext.c:896
+#: src/fe-common/core/printtext.c:946
 msgid "%_Error:%_ %s"
 msgstr "%_Erro:%_ %s"
 
-#: src/fe-common/core/themes.c:144
+#: src/fe-common/core/themes.c:147
 #, c-format
 msgid ""
 "Ignored errors in theme:\n"
@@ -130,7 +130,7 @@ msgstr "Espeficar nick para usar"
 msgid "Specify host name to use"
 msgstr "Espeficar nick para usar"
 
-#: src/fe-text/irssi.c:153
+#: src/fe-text/irssi.c:158
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

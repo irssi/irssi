@@ -1,3 +1,42 @@
+v0.7.95 2000-08-13  Timo Sirainen <tss@iki.fi>
+
+	* Changes:
+	    - /LOG: Removed the -rotate option, it was pretty useless since
+	      adding the % formats to file name already tells that the log
+	      should be rotated.
+	    - WJOIN -> /JOIN -window and WQUERY -> /QUERY -window. Added
+	      WJOIN and WQUERY aliases for them in default config..
+	+ /SAVEWINDOWS saves the current layout of windows. It's
+	  automatically reloaded at startup.
+	+ Theme fixes: /RELOAD reloads them, /SET theme changes the default
+	  theme, you can have window specific themes with /WINDOW THEME.
+	+ Irssi uses now real curses windows, irssi should work now better
+	  with non-ncurseses.
+	+ Autologging supports log rotating now too, just add the wanted %
+	  formats to /SET autolog_path
+	+ /MSG nick completion now gives the nicks in right time order when
+	  using multiple irc networks.
+	+ /SET beep_on_msg now works with all message levels, including
+	  HILIGHT.
+	+ You can change the default line indentation with /SET indent
+	+ /channel add -bots: You can now use @ or + before the nick mask to
+	  indicate that bot should have either ops or voices/ops.
+	+ Perl scripting:
+	    - Added namespaces, you don't have to worry about if someone
+	      else also happens to be using event_privmsg function..
+	    - You can unload scripts with /UNLOAD <name>.
+	    - Running scripts that are already loaded, destroys the old
+	      script from memory.
+	    - Added Irssi::print_window() function to print text to current
+	      window.
+	- Don't autoclose window after part/unquery if there was still some
+	  channels/queries left in window.
+	- Autologging fixes: Don't log WHOIS replies by default
+	  (autolog_level = all -crap). And with /msg nick1,nick2 don't log
+	  to file nick1,nick2.log but nick1.log and nick2.log separately.
+	  It also failed if you hadn't created the base path for the logs,
+	  now irssi creates the whole directory path.
+
 v0.7.94 2000-07-24  Timo Sirainen <tss@iki.fi>
 
 	* Help files! Use /HELP <command> to see them.
