@@ -33,7 +33,6 @@
 GSList *proxy_listens;
 GSList *proxy_clients;
 
-static CLIENT_REC *ctcp_client;
 static GString *next_line;
 static int ignore_next;
 
@@ -43,9 +42,6 @@ static void remove_client(CLIENT_REC *rec)
 
 	proxy_clients = g_slist_remove(proxy_clients, rec);
 	rec->listen->clients = g_slist_remove(rec->listen->clients, rec);
-
-	if (ctcp_client == rec)
-                ctcp_client = NULL;
 
 	signal_emit("proxy client disconnected", 1, rec);
 	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -139,6 +135,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			      const char *data)
 {
+	GSList *tmp;
 	if (!client->connected) {
 		handle_client_connect_cmd(client, cmd, args);
 		return;
@@ -170,14 +167,25 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	if (strcmp(cmd, "PROXY") == 0) {
 		if (g_strcasecmp(args, "CTCP ON") == 0) {
                         /* client wants all ctcps */
-			ctcp_client = client;
-			proxy_outdata(client, ":%s NOTICE %s :You're now receiving all CTCPs sent to proxy\n",
-				      client->proxy_address, client->nick);
+			client->want_ctcp = 1;
+	                for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+				CLIENT_REC *rec = tmp->data;
+				if ((g_strcasecmp(client->server->connrec->chatnet,rec->server->connrec->chatnet) == 0) &&
+					(client->tag != rec->tag)) {
+						if (rec->want_ctcp == 1)
+							proxy_outdata(rec, ":%s NOTICE %s :Another client is now receiving CTCPs sent to %s\n",
+			                                      rec->proxy_address, rec->nick,rec->server->connrec->chatnet);
+						rec->want_ctcp=0;
+		                }
+						                                      
+			}
+			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\n",
+				      client->proxy_address, client->nick,client->server->connrec->chatnet);
 		} else if (g_strcasecmp(args, "CTCP OFF") == 0) {
                         /* client wants proxy to handle all ctcps */
-			ctcp_client = NULL;
-			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself all CTCPs\n",
-				      client->proxy_address, client->nick);
+			client->want_ctcp = 0;
+			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\n",
+				      client->proxy_address, client->nick,client->server->connrec->chatnet);
 		}
 		return;
 	}
@@ -357,6 +365,7 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			     const char *nick, const char *address)
 {
+	GSList *tmp;
         void *client;
         const char *signal;
 	char *event, *args;
@@ -398,11 +407,18 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	    strstr(args, " :\001") != NULL &&
 	    strstr(args, " :\001ACTION") == NULL) {
 		/* CTCP - either answer ourself or forward it to one client */
-		if (ctcp_client != NULL) {
-                        /* one of the clients answers */
-			net_transmit(ctcp_client->handle,
-				     next_line->str, next_line->len);
-			signal_stop();
+		for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+	        	CLIENT_REC *rec = tmp->data;
+		                        
+			if (rec->want_ctcp == 1) {
+                        	/* one of the clients answers */ 
+                        	/* patched, so only CTCP for the chatnet where client is connected to will be forwarded */
+                        	if (strstr(rec->proxy_address,server->connrec->chatnet) != NULL) {
+					net_transmit(rec->handle,
+						     next_line->str, next_line->len);
+					signal_stop();
+				}
+			}
 		}
 		g_free(event);
 		return;
@@ -441,6 +457,7 @@ static void event_connected(IRC_SERVER_REC *server)
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
+			rec->want_ctcp = 0;
 			proxy_client_reset_nick(rec);
 		}
 	}
