@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "args.h"
 #include "net-sendbuffer.h"
+#include "pidwait.h"
 #include "lib-config/iconfig.h"
 
 #include "chat-protocols.h"
@@ -102,8 +103,7 @@ static void cmd_upgrade(const char *data)
         config_write(session, NULL, -1);
         config_close(session);
 
-	/* irssi -! --session ~/.irssi/session
-	   data may contain some other program as well, like
+	/* data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
 	str = g_strdup_printf("%s --noconnect --session=%s --home=%s --config=%s",
 			      data, session_file, get_irssi_dir(), get_irssi_config());
@@ -224,22 +224,40 @@ static void session_restore_server(CONFIG_NODE *node)
 static void sig_session_save(CONFIG_REC *config)
 {
 	CONFIG_NODE *node;
+	GSList *tmp;
+        GString *str;
 
+        /* save servers */
 	node = config_node_traverse(config, "(servers", TRUE);
 	while (servers != NULL)
 		session_save_server(servers->data, config, node);
+
+	/* save pids */
+        str = g_string_new(NULL);
+	for (tmp = pidwait_get_pids(); tmp != NULL; tmp = tmp->next)
+                g_string_sprintfa(str, "%d ", GPOINTER_TO_INT(tmp->data));
+        config_node_set_str(config, config->mainnode, "pids", str->str);
+        g_string_free(str, TRUE);
 }
 
 static void sig_session_restore(CONFIG_REC *config)
 {
 	CONFIG_NODE *node;
         GSList *tmp;
+        char **pids, **pid;
 
+        /* restore servers */
 	node = config_node_traverse(config, "(servers", FALSE);
 	if (node != NULL) {
 		for (tmp = node->value; tmp != NULL; tmp = config_node_next(tmp))
 			session_restore_server(tmp->data);
 	}
+
+	/* restore pids (so we don't leave zombies) */
+	pids = g_strsplit(config_node_get_str(config->mainnode, "pids", ""), " ", -1);
+	for (pid = pids; *pid != NULL; pid++)
+                pidwait_add(atoi(*pid));
+        g_strfreev(pids);
 }
 
 static void sig_init_finished(void)
