@@ -48,7 +48,7 @@ static void cmd_notify(gchar *data)
 		idle_check_time = settings_get_time("notify_idle_time");
 	else {
 		if (!parse_time_interval(idletime, &idle_check_time))
-			cmd_return_error(CMDERR_INVALID_TIME);
+			cmd_param_error(CMDERR_INVALID_TIME);
 	}
 
 	away_check = g_hash_table_lookup(optlist, "away") != NULL;

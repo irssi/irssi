@@ -103,7 +103,7 @@ static void fe_recode_add_cmd (const char *data, SERVER_REC *server, WI_ITEM_REC
 		return;
 
 	if (! *first)
-		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*second) {
 		target = first;

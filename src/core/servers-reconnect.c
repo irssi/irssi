@@ -413,7 +413,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	if (*data == '\0') {
 		/* reconnect to first server in reconnection list */
 		if (reconnects == NULL)
-			cmd_return_error(CMDERR_NOT_CONNECTED);
+			cmd_param_error(CMDERR_NOT_CONNECTED);
                 rec = reconnects->data;
 	} else {
 		if (g_strncasecmp(data, "RECON-", 6) == 0)

@@ -143,7 +143,7 @@ static void cmd_ignore(const char *data)
 	timestr = g_hash_table_lookup(optlist, "time");
 	if (timestr != NULL) {
 		if (!parse_time_interval(timestr, &msecs))
-			cmd_return_error(CMDERR_INVALID_TIME);
+			cmd_param_error(CMDERR_INVALID_TIME);
 	}
 
 	if (active_win->active_server != NULL &&
@@ -211,7 +211,7 @@ static void cmd_unignore(const char *data)
 		return;
 
 	if (*mask == '\0')
-                cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+                cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (is_numeric(mask, ' ')) {
 		/* with index number */
