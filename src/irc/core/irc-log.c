@@ -26,6 +26,17 @@
 
 #include "irc-server.h"
 
+static LOG_REC *awaylog;
+static int away_filepos;
+static int away_msgs;
+
+static void sig_log_written(LOG_REC *log)
+{
+	if (log != awaylog) return;
+
+        away_msgs++;
+}
+
 static void event_away(const char *data, IRC_SERVER_REC *server)
 {
 	const char *fname, *levelstr;
@@ -49,7 +60,12 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 	if (!log_start_logging(log)) {
 		/* creating log file failed? close it. */
 		log_close(log);
+		return;
 	}
+
+	awaylog = log;
+	away_filepos = lseek(log->handle, 0, SEEK_CUR);
+	away_msgs = 0;
 }
 
 static void event_unaway(const char *data, IRC_SERVER_REC *server)
@@ -66,20 +82,30 @@ static void event_unaway(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
+	if (awaylog == log) awaylog = NULL;
+
+	signal_emit("awaylog show", 3, log, GINT_TO_POINTER(away_msgs),
+		    GINT_TO_POINTER(away_filepos));
 	log_close(log);
 }
 
 void irc_log_init(void)
 {
+	awaylog = NULL;
+	away_filepos = 0;
+	away_msgs = 0;
+
 	settings_add_str("log", "awaylog_file", "~/.irssi/away.log");
 	settings_add_str("log", "awaylog_level", "msgs hilight");
 
+	signal_add("log written", (SIGNAL_FUNC) sig_log_written);
 	signal_add("event 306", (SIGNAL_FUNC) event_away);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
 }
 
 void irc_log_deinit(void)
 {
+	signal_remove("log written", (SIGNAL_FUNC) sig_log_written);
 	signal_remove("event 306", (SIGNAL_FUNC) event_away);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
 }

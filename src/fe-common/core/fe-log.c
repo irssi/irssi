@@ -375,6 +375,25 @@ static void sig_log_create_failed(LOG_REC *log)
 		    IRCTXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
 }
 
+static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
+{
+	char *str;
+	int msgs, filepos;
+
+	msgs = GPOINTER_TO_INT(pmsgs);
+	filepos = GPOINTER_TO_INT(pfilepos);
+
+	if (msgs == 0)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_NO_AWAY_MSGS, log->fname);
+	else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_AWAY_MSGS, log->fname, msgs);
+
+                str = g_strdup_printf("\"%s\" %d", log->fname, filepos);
+		signal_emit("command cat", 1, str);
+		g_free(str);
+	}
+}
+
 static void read_settings(void)
 {
 	int old_autolog = autolog_level;
@@ -411,6 +430,7 @@ void fe_log_init(void)
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
+	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -431,5 +451,6 @@ void fe_log_deinit(void)
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_remove("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
+	signal_remove("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

@@ -83,6 +83,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "log_list_footer", "", 0 },
 	{ "windowlog_file", "Window LOGFILE set to $0", 1, { 0 } },
 	{ "windowlog_file_logging", "Can't change window's logfile while log is on", 0 },
+	{ "no_away_msgs", "No new messages in awaylog", 1, { 0 } },
+	{ "away_msgs", "$1 new messages in awaylog:", 2, { 0, 1 } },
 
 	/* ---- */
 	{ NULL, "Misc", 0 },
