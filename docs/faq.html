@@ -1,0 +1,92 @@
+<h3>Q: Why doesn't irssi display colors even when ircii etc. displays them?</h3>
+
+<p>A: They force ANSI colors even if terminal doesn't support them. By
+default, irssi uses colors only if terminfo/termcap so says. The correct way
+to fix this would be to change your TERM environment to a value where colors
+work, like xterm-color or color_xterm. If this doesn't help, then use the
+evil way of <code>/SET term_force_colors ON</code>.</p>
+
+
+<h3>Q: How do I easily write text to channel that starts with '/' character?</h3>
+
+<p>A: <code>/ /text</code></p>
+
+
+<h3>Q: Why doesn't irssi update my realname (or whatever) after I change it
+with <code>/SET realname</code> and reconnect with <code>/RECONNECT</code>
+or <code>/SERVER</code>?</h3>
+
+<p>A: Irssi is trying to be too smart. This will be fixed in future, but for
+now you should use <code>/DISCONNECT</code> and <code>/CONNECT</code>.</p>
+
+
+<h3>Q: I connected to some server which isn't responding but now irssi tries
+to connect back to it all the time! How can I stop it?</h3>
+
+<p>A: Two ways. The "good way" to do it is with <code>/DISCONNECT</code>.
+Check the server tags first with <code>/SERVER</code> without giving it any
+parameters, reconnections are those that have tag starting with "recon"
+text. So most probably you're going to do <code>/DISCONNECT recon-1</code>.
+The other way is to remove all the reconnections with
+<code>/RMRECONNS</code>, easier but may remove some connections you actually
+wanted to reconnect (if you used multiple servers..).</p>
+
+
+<h3>Q: How do I add seconds to timestamp?</h3>
+
+<p>A: <code>/FORMAT timestamp {timestamp %%H:%%M:%%S}</code> - and remember
+to add the trailing space :)</p>
+
+
+<h3>Q: Why does irssi say "Irssi: Channel not fully synchronized yet, try
+again after a while" when I try to use /BAN etc?</h3>
+ 
+<p>A: Possibly a bug in irssi, or ircd you're using does something that
+irssi didn't really notice. The new code should make this happen far less
+often than before, but one known reason for this is when irssi doesn't
+notice that you were unable to join some channel. Currently however I don't
+know of any such events irssi doesn't know about.</p>
+
+<p>Anyway, if this does happen, do <code>/RAWLOG SAVE ~/rawlog</code> soon
+after joining to channel, and either try to figure out yourself why irssi
+didn't get reply to WHO request, or send the whole log to tss@iki.fi. Note
+that the rawlog is by default only 200 lines and it may not be enough to
+show all needed information, so you might want to do <code>/SET rawlog_lines
+1000</code> or so.</p>
+
+<p><code>MODE +b</code> still works fine though.</p>
+
+
+<h3>Q: Where's the GUI version?</h3>
+
+<p>A: Read
+<a href="http://irssi.org/?page=about">http://irssi.org/?page=about</a></p>
+
+
+<h3>Q: How do I autorejoin channels after being kicked?</h3>
+
+<p>A: That's evil and you shouldn't do it. If you get kicked, you should stay
+out, at least until the channel forgot you existed :) Most channels I've
+joined just ban you if you autorejoin after kick. If you're joined to
+channels who kick people for fun, try changing channels or something.</p>
+
+<p>Anyway, if you REALLY want to do that, and you understand that you're doing
+evilness, you can use the autorejoin.pl script that comes with irssi. You'll
+still need to specify the channels you wish to rejoin with <code>/SET
+autorejoin_channels #chan1 #chan2 ...</code></p>
+
+
+<h3>Q: How do I announce that I'm away/back in all channels I've joined? Or
+how do I change my nick when setting myself away/back?</h3>
+
+<p>A: That's even worse than autorejoin. Who could possibly care every time 
+you come and go? Many channels will kick you for using this, and I for example
+have added several ignores so I'd never need to see these messages. Learn to
+use <code>/AWAY</code> command properly and tell it's existence to people
+who don't know about it. <code>/WII yournick</code> shows your away reason
+much better for people who actually want to know if you're there or not.</p>
+
+<p>You can script these behaviours if you really wish to of course. But
+currently there's no public scripts for either of these, and the only way
+I'm going to add such to irssi.org is if the script contains a setting to
+specify which specific channels the announcement is sent.</p>
