@@ -752,31 +752,22 @@ static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
 
 static void event_received(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *args, *ptr;
+	char *args, *ptr;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
+        /* skip first param, it's always our nick */
+	ptr = strchr(data, ' ');
+	if (ptr == NULL)
+		return;
+
+	/* param1 param2 ... :last parameter */
+        args = g_strdup(ptr);
 	ptr = strstr(args, " :");
 	if (ptr != NULL)
                 g_memmove(ptr+1, ptr+2, strlen(ptr+1));
 	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
-	g_free(params);
-}
-
-static void event_target_received(IRC_SERVER_REC *server, const char *data)
-{
-	char *params, *target, *args, *ptr;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
-				  NULL, &target, &args);
-	ptr = strstr(args, " :");
-	if (ptr != NULL)
-                g_memmove(ptr+1, ptr+2, strlen(ptr+1));
-	printtext(server, target, MSGLEVEL_CRAP, "%s %s", target, args);
-	g_free(params);
+	g_free(args);
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data)
@@ -869,10 +860,10 @@ void fe_events_numeric_init(void)
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 
-	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 347", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 349", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 442", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 368", (SIGNAL_FUNC) event_received);
+	signal_add("event 347", (SIGNAL_FUNC) event_received);
+	signal_add("event 349", (SIGNAL_FUNC) event_received);
+	signal_add("event 442", (SIGNAL_FUNC) event_received);
 }
 
 void fe_events_numeric_deinit(void)
@@ -950,8 +941,8 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 
-	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 442", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 368", (SIGNAL_FUNC) event_received);
+	signal_remove("event 347", (SIGNAL_FUNC) event_received);
+	signal_remove("event 349", (SIGNAL_FUNC) event_received);
+	signal_remove("event 442", (SIGNAL_FUNC) event_received);
 }
