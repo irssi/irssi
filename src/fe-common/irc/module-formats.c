@@ -125,8 +125,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 
 	{ "whois", "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3", 4, { 0, 0, 0, 0 } },
 	{ "whowas", "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3", 4, { 0, 0, 0, 0 } },
-	{ "whois_idle", " idle     : $1 hours $2 mins $3 secs", 4, { 0, 1, 1, 1 } },
-	{ "whois_idle_signon", " idle     : $1 hours $2 mins $3 secs %K[%nsignon: $4%K]", 5, { 0, 1, 1, 1, 0 } },
+	{ "whois_idle", " idle     : $1 days $2 hours $3 mins $4 secs", 5, { 0, 1, 1, 1, 1 } },
+	{ "whois_idle_signon", " idle     : $1 days $2 hours $3 mins $4 secs %K[%nsignon: $5%K]", 6, { 0, 1, 1, 1, 1, 0 } },
 	{ "whois_server", " server   : $1 %K[%n$2%K]", 3, { 0, 0, 0 } },
 	{ "whois_oper", "          : %_IRC operator%_", 1, { 0 } },
 	{ "whois_channels", " channels : $1", 2, { 0, 0 } },

@@ -369,37 +369,42 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_whois_idle(gchar *data, IRC_SERVER_REC *server)
+static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 {
-    gchar *params, *nick, *secstr, *signon, *rest;
-    glong secs, lsignon;
-    gint h, m, s;
+	char *params, *nick, *secstr, *signonstr, *rest;
+	long days, hours, mins, secs;
+	time_t signon;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 5 | PARAM_FLAG_GETREST, NULL, &nick, &secstr, &signon, &rest);
-    if (sscanf(secstr, "%ld", &secs) == 0) secs = 0;
-    lsignon = 0;
-    if (strstr(rest, ", signon time") != NULL)
-        sscanf(signon, "%ld", &lsignon);
+	params = event_get_params(data, 5 | PARAM_FLAG_GETREST, NULL,
+				  &nick, &secstr, &signonstr, &rest);
 
-    h = secs/3600; m = (secs%3600)/60; s = secs%60;
-    if (lsignon == 0)
-        printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE, nick, h, m, s);
-    else
-    {
-        gchar *timestr;
-	struct tm *tim;
-	time_t t;
+	secs = atol(secstr);
+	signon = strstr(rest, "signon time") == NULL ? 0 :
+		(time_t) atol(signonstr);
 
-	t = (time_t) lsignon;
-        tim = localtime(&t);
-        timestr = g_strdup(asctime(tim));
-        if (timestr[strlen(timestr)-1] == '\n') timestr[strlen(timestr)-1] = '\0';
-        printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE_SIGNON, nick, h, m, s, timestr);
-        g_free(timestr);
-    }
-    g_free(params);
+	days = secs/3600/24;
+	hours = (secs%(3600*24))/3600;
+	mins = (secs%3600)/60;
+	secs %= 60;
+
+	if (signonstr == 0)
+		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE,
+			    nick, days, hours, mins, secs);
+	else {
+		char *timestr;
+		struct tm *tim;
+
+		tim = localtime(&signon);
+		timestr = g_strdup(asctime(tim));
+		if (timestr[strlen(timestr)-1] == '\n')
+			timestr[strlen(timestr)-1] = '\0';
+		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE_SIGNON,
+			    nick, days, hours, mins, secs, timestr);
+		g_free(timestr);
+	}
+	g_free(params);
 }
 
 static void event_whois_server(const char *data, IRC_SERVER_REC *server)
