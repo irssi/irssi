@@ -1,3 +1,59 @@
+v0.7.98.2 2001-03-04  Timo Sirainen <tss@iki.fi>
+
+	+ /LASTLOG: added -case option for case-sensitive matching.
+	  -force option is now required to print lastlogs longer than
+	  1000 lines.
+	+ /BANTYPE -> /SET ban_type. /BAN: -type option added to override
+	  default ban type.
+	+ /NAMES: -ops -halfops -voices -normal options added.
+	  /NAMES without parameters now prints nicklist in active channel,
+	  /NAMES ** shows all nicks in all channels.
+	+ delete_next_word key implemented, patch by Tinuk
+	+ /SET beep_when_window_active - works with /SET beep_msg_level,
+	  should we beep when the msg is printed to active window. If msg
+	  is printed to some other window it always beeps.
+	+ /JOIN #channel and /QUERY nick won't anymore automatically move
+	  channel/query to active window but send a notice to user how to
+	  move it. This was confusing people who did it accidentally.
+	+ /SET autostick_split_windows (default ON) - should we do
+	  /WINDOW STICK ON to all new split windows and hidden windows that
+	  are created inside it. This hopefully makes it easier to use split
+	  windows.
+	- All IPv6 problems are hopefully fixed. Everything now keeps both
+	  v4 and v6 addresses in memory and at connect() time it's decided
+	  which one should be used.
+	- /IGNORE * level printed GLib error. /RELOADing printed some
+	  unignore texts. Autoignores had some problems.
+	- Using /LAYOUT SAVE with split windows crashed irssi at startup
+	  when it tried to restore them..
+	- /WINDOW SHOW command didn't work properly
+	- /LAST -clear crashed if window contained only lastlog lines.
+	  Beeping after /LAST -clear also could have crashed.
+	- HILIGHT level didn't work with logs.
+	- /SET prompt - if $T (target) had %c or something in it, it
+	  shouldn't be treated as color code. So color codes can now be
+	  used in /SET prompt string itself, but in none of the $variables
+	  it uses.
+	- Generated help files had joined lines in chapter together but
+	  didn't add spaces between lines.
+	- Statusbar could have gotten to endless loop when trying to give
+	  more space to some item when there was no more available space.
+	- When /SET autoclose_windows is ON, don't destroy windows if they
+	  have some level set (like /join -w + /part in status window)
+	- If GLIB was unpacked to irssi directory, make install tried to
+	  install it also.
+	- Always save theme to ~/.irssi/ no matter where it was read from.
+	- If /SET names_max_width was too low, irssi crashed
+	- /CONNECT -ircnet "" - even if someone does this don't make the
+	  server tag empty :)
+	- /QUERYing #channel that was already /JOINed crashed irssi after
+	  a while
+	- /SET -clear printed GLib error when done to boolean settings
+
+v0.7.98.1 2001-02-22  Timo Sirainen <tss@iki.fi>
+
+	- fixed stupid remote crash with nick_match_msg()
+
 v0.7.98 2001-02-22  Timo Sirainen <tss@iki.fi>
 
 	* Theme files aren't fully compatible with old ones, there's a few

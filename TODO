@@ -193,12 +193,13 @@
       actually free the memory with munmap() sometimes..
 
  - /SET -reset?
- - /ignore -patterneja ei voi olla useita samalla nickillä
+ - /SET awaylog_auto_clear (after setting yourself unaway)
+ - can't have multiple ignore -patterns with same nick
  - /ignore -strip -pattern away * actions ..
  - module_uniq_destroy() - those calls are probably wrong .. for CHANNEL and
    QUERY at least?
- - /ban -time .. ja /knockout alias /kick & /ban -time
- - /bantype -> /set bantype, /ban -type xxx, /ban -ip ?
+ - /ban -time <opt numeric>, /ban -ip? 
+   /alias knockout kick $0 $1-;ban -time $0
  - /HILIGHT: list doesn't print several options. Maybe some generic function
    which could be used for printing those options for all these /ircnet,
    /server add, etc. commands. /IGNORE -pattern isn't printed.
@@ -242,9 +243,6 @@
 
  - /ignore -activity .. would ignore it just in window activity list,
    not hide the text.
- - autoignoring:
-     - it shouldn't save them to config file
-     - it could be merged with /ignore -time
  - when dcc chat is accepted and query exists from the same nick, replace
    the query window with the dcc chat window.
 
@@ -338,7 +336,6 @@
 
  - you could configure which events (whois, notify, etc.) to show in what
    windows (all, current, status, msgs)
- - autoaway when idling
  - implement requesting files with DCC GET from remote client for dcc file
    servers. good for people behind firewalls.
  - /CLONES command (with script)
