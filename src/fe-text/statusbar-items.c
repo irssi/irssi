@@ -475,6 +475,10 @@ static int get_mail_count(void)
 	}
 
 	fclose(f);
+
+	if (mail_last_count != count)
+		signal_emit("mail counter", 0);
+
 	mail_last_count = count;
 	return count;
 }

@@ -291,3 +291,6 @@ Text FE
 
 gui-printtext.c:
  "beep"
+
+statusbar-items.c:
+ "mail counter"
