@@ -99,12 +99,8 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
         PERL_OBJECT_REC *rec;
 	HV *stash, *hv;
 
+	g_return_val_if_fail((type & ~0xffff) == 0, NULL);
 	g_return_val_if_fail((chat_type & ~0xffff) == 0, NULL);
-	if ((type & ~0xffff) != 0) {
-		g_warning("BUG - id = %d, uniq. ID counter going in %d",
-			  type, module_get_uniq_id("bug", 0));
-                return NULL;
-	}
 
 	rec = g_hash_table_lookup(iobject_stashes,
 				  GINT_TO_POINTER(type | (chat_type << 16)));
