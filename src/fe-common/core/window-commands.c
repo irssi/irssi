@@ -143,11 +143,15 @@ static void cmd_window_prev(void)
 
 static void cmd_window_level(const char *data)
 {
+	char *level;
+
 	g_return_if_fail(data != NULL);
 
 	window_set_level(active_win, combine_level(active_win->level, data));
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Window level is now %s",
-		  bits2level(active_win->level));
+
+	level = bits2level(active_win->level);
+	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Window level is now %s", level);
+	g_free(level);
 }
 
 static void cmd_window_server(const char *data)

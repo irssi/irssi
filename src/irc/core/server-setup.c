@@ -43,7 +43,8 @@ static void get_source_host_ip(void)
 		source_host_ok = *settings_get_str("hostname") != '\0' &&
 			net_gethostbyname(settings_get_str("hostname"), &ip) == 0;
 		if (source_host_ok) {
-			source_host_ip = g_new(IPADDR, 1);
+			if (source_host_ip == NULL)
+				source_host_ip = g_new(IPADDR, 1);
                         memcpy(source_host_ip, &ip, sizeof(IPADDR));
 		}
 	}
