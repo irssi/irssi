@@ -352,6 +352,8 @@ static void cmd_foreach_query(const char *data)
 
 void chat_commands_init(void)
 {
+	settings_add_str("misc", "quit_message", "leaving");
+
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
 	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);

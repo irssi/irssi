@@ -970,7 +970,6 @@ void irc_commands_init(void)
 {
 	tmpstr = g_string_new(NULL);
 
-	settings_add_str("misc", "quit_message", "leaving");
 	settings_add_str("misc", "part_message", "");
 	settings_add_int("misc", "knockout_time", 300);
 	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
