@@ -329,10 +329,6 @@ static void sig_printtext_stripped(WINDOW_REC *window, void *server, const char 
 	ltoa(windownum, window->refnum);
 	log = log_find_item(windownum);
 	if (log != NULL) log_write_rec(log, text);
-
-	/* save line to logs */
-	if (logs != NULL)
-		log_write(target, level, text);
 }
 
 static int sig_autoremove(void)
