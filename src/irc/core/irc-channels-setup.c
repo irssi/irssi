@@ -38,9 +38,7 @@ static void event_connected(IRC_SERVER_REC *server)
 	GString *chans;
 	GSList *tmp;
 
-	g_return_if_fail(server != NULL);
-
-	if (server->connrec->reconnection)
+	if (!IS_IRC_SERVER(server) || server->connrec->reconnection)
 		return;
 
 	/* join to the channels marked with autojoin in setup */
@@ -71,7 +69,7 @@ static void channel_wholist(CHANNEL_REC *channel)
 	NICK_REC *nick;
 	char **bots, **bot;
 
-	g_return_if_fail(channel != NULL);
+	g_return_if_fail(IS_CHANNEL(channel));
 
 	rec = channels_setup_find(channel->name, channel->server->connrec->chatnet);
 	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)

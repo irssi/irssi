@@ -44,6 +44,9 @@ void irc_log_deinit(void);
 void lag_init(void);
 void lag_deinit(void);
 
+void irc_channels_setup_init(void);
+void irc_channels_setup_deinit(void);
+
 void irc_core_init(void)
 {
 	irc_servers_init();
@@ -51,6 +54,7 @@ void irc_core_init(void)
 	irc_queries_init();
 
 	ctcp_init();
+	irc_channels_setup_init();
 	irc_commands_init();
 	irc_irc_init();
 	lag_init();
@@ -70,6 +74,7 @@ void irc_core_deinit(void)
 	netsplit_deinit();
 	lag_deinit();
 	irc_commands_deinit();
+	irc_channels_setup_deinit();
 	ctcp_deinit();
 
 	irc_queries_deinit();
