@@ -47,6 +47,9 @@ Irssi::signal_add("event privmsg", "event_privmsg")
 This will hide all public or private messages that match the regexp
 "free.*porn" or the sender's nick contain the word "idiot".
 
+You can also use signal_add_last() if you wish to let the Irssi's internal
+functions be run before yours.
+
 A list of signals that irssi send can be found from SIGNALS file.
 
 
@@ -140,6 +143,9 @@ signal_emit(signal, ...)
 
 signal_add(signal, func)
   Bind `signal' to function `func'
+
+signal_add_last(signal, func)
+  Bind `signal' to function `func'. Call `func' as late as possible.
 
 signal_remove(signal, func)
   Unbind `signal' from function `func'
@@ -315,9 +321,21 @@ irc_get_mask(nick, host, flags)
 Channel::values()
   Get some information about channel. This function returns a reference to
   hash table. Hash table has keys:
-	"name" - channel name
-	"type" - channel type ("channel", "query", "dcc chat", "empty")
-	"password" - channel password
+	"server" - Server of the channel
+	"name" - Channel name
+	"type" - Channel type ("channel", "query", "dcc chat", "empty")
+	"topic" - Channel topic
+	"key" - Channel key (password)
+	"limit" - Max. users in channel (+l mode)
+	"level" - Channel's level number.
+	"new_data" - 0=no new data, 1=text, 2=msg, 3=msg for you
+	"synced" - Channel is synchronized
+	"wholist" - Channel has received /WHO list
+	"names_got" - Channel has received /NAMES list
+	"chanop" - You are channel operator
+	"left" - You just left the channel (for "channel destroyed" event)
+	"kicked" - You was just kicked out of the channel (for
+	           "channel destroyed" event)
 
 Channel Server::channel_create(channel, type, automatic)
   Create new channel with name `channel'. `type' is one of:
