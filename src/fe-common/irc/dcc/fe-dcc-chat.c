@@ -235,8 +235,8 @@ static void cmd_msg(const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "msg",
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_UNKNOWN_OPTIONS |
+			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST, "msg",
 			    &optlist, &target, &text))
 		return;
 
