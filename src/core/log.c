@@ -165,7 +165,7 @@ void log_stop_logging(LOG_REC *log)
 
 static void log_rotate_check(LOG_REC *log)
 {
-	char *new_fname;
+	char *new_fname, *dir;
 
 	g_return_if_fail(log != NULL);
 
@@ -177,6 +177,11 @@ static void log_rotate_check(LOG_REC *log)
 		/* rotate log */
 		log_stop_logging(log);
 		signal_emit("log rotated", 1, log);
+
+		dir = g_dirname(new_fname);
+		mkpath(dir, LOG_DIR_CREATE_MODE);
+		g_free(dir);
+
 		log_start_logging(log);
 	}
 	g_free(new_fname);

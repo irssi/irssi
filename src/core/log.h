@@ -1,6 +1,8 @@
 #ifndef __LOG_H
 #define __LOG_H
 
+#define LOG_DIR_CREATE_MODE 0770
+
 enum {
 	LOG_ITEM_TARGET, /* channel, query, .. */
 	LOG_ITEM_WINDOW_REFNUM

@@ -40,8 +40,6 @@
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
 
-#define LOG_DIR_CREATE_MODE 0770
-
 static int autolog_level;
 static int autoremove_tag;
 static const char *autolog_path;
