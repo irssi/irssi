@@ -268,9 +268,6 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 static void event_nick(SERVER_REC *server, const char *data,
 		       const char *orignick)
 {
-	IRC_CHANNEL_REC *channel;
-	NICK_REC *nickrec;
-	GSList *nicks, *tmp;
 	char *params, *nick;
 
 	g_return_if_fail(data != NULL);
@@ -286,24 +283,7 @@ static void event_nick(SERVER_REC *server, const char *data,
 		signal_emit("server nick changed", 1, server);
 	}
 
-	nicks = nicklist_get_same(server, orignick);
-	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
-		channel = tmp->data;
-		nickrec = tmp->next->data;
-
-		/* remove old nick from hash table */
-		g_hash_table_remove(channel->nicks, nickrec->nick);
-
-		g_free(nickrec->nick);
-		nickrec->nick = g_strdup(nick);
-
-		/* add new nick to hash table */
-		g_hash_table_insert(channel->nicks, nickrec->nick, nickrec);
-
-		signal_emit("nicklist changed", 3, channel, nickrec, orignick);
-	}
-	g_slist_free(nicks);
-
+        nicklist_rename(server, orignick, nick);
 	g_free(params);
 }
 

@@ -71,4 +71,7 @@ int dec2octal(int decimal);
 /* convert all low-ascii (<32) to ^<A..> combinations */
 char *show_lowascii(const char *channel);
 
+/* Get time in human readable form with localtime() + asctime() */
+char *my_asctime(time_t t);
+
 #endif

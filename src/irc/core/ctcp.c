@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "levels.h"
+#include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
 
@@ -99,17 +100,11 @@ static void ctcp_time(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
 	char *str, *reply;
-	struct tm *tm;
-	time_t t;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
 
-        t = time(NULL);
-	tm = localtime(&t);
-	reply = g_strdup(asctime(tm));
-	if (reply[strlen(reply)-1] == '\n') reply[strlen(reply)-1] = '\0';
-
+        reply = my_asctime(time(NULL));
 	str = g_strdup_printf("NOTICE %s :\001TIME %s\001", nick, reply);
 	ctcp_send_reply(server, str);
 	g_free(str);

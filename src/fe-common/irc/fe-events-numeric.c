@@ -296,20 +296,13 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *timestr, *channel, *topicby, *topictime;
-	struct tm *tm;
-	time_t t;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, &channel,
 				  &topicby, &topictime);
 
-	t = (time_t) atol(topictime);
-	tm = localtime(&t);
-
-	timestr = g_strdup(asctime(tm));
-	if (timestr[strlen(timestr)-1] == '\n')
-		timestr[strlen(timestr)-1] = '\0';
+        timestr = my_asctime((time_t) atol(topictime));
 
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    IRCTXT_TOPIC_INFO, topicby, timestr);
@@ -332,20 +325,12 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data)
 static void event_channel_created(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *createtime, *timestr;
-	time_t t;
-	struct tm *tm;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &createtime);
 
-	t = (time_t) atol(createtime);
-	tm = localtime(&t);
-
-	timestr = g_strdup(asctime(tm));
-	if (timestr[strlen(timestr)-1] == '\n')
-		timestr[strlen(timestr)-1] = '\0';
-
+        timestr = my_asctime((time_t) atol(createtime));
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    IRCTXT_CHANNEL_CREATED, channel, timestr);
 	g_free(timestr);
@@ -397,7 +382,7 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *secstr, *signonstr, *rest;
+	char *params, *nick, *secstr, *signonstr, *rest, *timestr;
 	long days, hours, mins, secs;
 	time_t signon;
 
@@ -419,13 +404,7 @@ static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE,
 			    nick, days, hours, mins, secs);
 	else {
-		char *timestr;
-		struct tm *tim;
-
-		tim = localtime(&signon);
-		timestr = g_strdup(asctime(tim));
-		if (timestr[strlen(timestr)-1] == '\n')
-			timestr[strlen(timestr)-1] = '\0';
+		timestr = my_asctime(signon);
 		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE_SIGNON,
 			    nick, days, hours, mins, secs, timestr);
 		g_free(timestr);

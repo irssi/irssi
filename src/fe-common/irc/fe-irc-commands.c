@@ -22,6 +22,7 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
 
@@ -332,8 +333,7 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	CHANNEL_REC *channel;
 	char *timestr;
-	struct tm *tm;
-	
+
 	g_return_if_fail(data != NULL);
 
 	channel = *data != '\0' ? channel_find(server, data) : CHANNEL(item);
@@ -344,11 +344,7 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		    channel->name, channel->topic);
 
 	if (channel->topic_time > 0) {
-		tm = localtime(&channel->topic_time);
-		timestr = g_strdup(asctime(tm));
-		if (timestr[strlen(timestr)-1] == '\n')
-			timestr[strlen(timestr)-1] = '\0';
-
+		timestr = my_asctime(channel->topic_time);
 		printformat(server, channel->name, MSGLEVEL_CRAP,
 			    IRCTXT_TOPIC_INFO, channel->topic_by, timestr);
 		g_free(timestr);
