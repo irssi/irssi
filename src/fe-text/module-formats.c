@@ -28,8 +28,14 @@ FORMAT_REC gui_text_formats[] =
 	{ "lastlog_start", "{hilight Lastlog}:", 0 },
 	{ "lastlog_end", "{hilight End of Lastlog}", 0 },
 
+	{ "refnum_not_found", "Window number $0 not found", 1, { 0 } },
 	{ "window_too_small", "Not enough room to resize this window", 0 },
 	{ "cant_hide_last", "You can't hide the last window", 0 },
+	{ "cant_hide_sticky_windows", "You can't hide sticky windows (use /WINDOW STICKY OFF)", 0 },
+	{ "cant_show_sticky_windows", "You can't show sticky windows (use /WINDOW STICKY OFF)", 0 },
+	{ "window_not_sticky", "Window is not sticky", 0 },
+	{ "window_set_sticky", "Window set sticky", 0 },
+	{ "window_unset_sticky", "Window is not sticky anymore", 0 },
 
 	{ NULL, NULL, 0 }
 };

@@ -6,6 +6,7 @@
 
 typedef struct {
 	WINDOW_REC *active;
+        GSList *sticky_windows; /* list of windows allowed to show only in this mainwindow */
 
 #ifdef USE_CURSES_WINDOWS
 	WINDOW *curses_win;

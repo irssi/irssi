@@ -480,6 +480,16 @@ static void key_next_window(void)
 	signal_emit("command window next", 3, "", active_win->active_server, active_win->active);
 }
 
+static void key_left_window(void)
+{
+	signal_emit("command window left", 3, "", active_win->active_server, active_win->active);
+}
+
+static void key_right_window(void)
+{
+	signal_emit("command window right", 3, "", active_win->active_server, active_win->active);
+}
+
 static void key_upper_window(void)
 {
 	signal_emit("command window up", 3, "", active_win->active_server, active_win->active);
@@ -602,9 +612,9 @@ void gui_readline_init(void)
 	key_bind("check_replaces", NULL, "Return", NULL, (SIGNAL_FUNC) key_check_replaces);
 
 	key_bind("previous_window", "Previous window", "CTRL-P", NULL, (SIGNAL_FUNC) key_previous_window);
-	key_bind("previous_window", NULL, "ALT-Left", NULL, (SIGNAL_FUNC) key_previous_window);
+	key_bind("left_window", NULL, "ALT-Left", NULL, (SIGNAL_FUNC) key_left_window);
 	key_bind("next_window", "Next window", "CTRL-N", NULL, (SIGNAL_FUNC) key_next_window);
-	key_bind("next_window", NULL, "ALT-Right", NULL, (SIGNAL_FUNC) key_next_window);
+	key_bind("right_window", NULL, "ALT-Right", NULL, (SIGNAL_FUNC) key_right_window);
 	key_bind("upper_window", "Upper window", "ALT-Up", NULL, (SIGNAL_FUNC) key_upper_window);
 	key_bind("lower_window", "Lower window", "ALT-Down", NULL, (SIGNAL_FUNC) key_lower_window);
 	key_bind("active_window", "Go to next window with the highest activity", "ALT-A", NULL, (SIGNAL_FUNC) key_active_window);

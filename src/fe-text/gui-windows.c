@@ -729,29 +729,59 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 	int ychange;
 
 	oldparent = WINDOW_GUI(window)->parent;
-	ychange = parent->lines - oldparent->lines;
+	if (oldparent == parent)
+		return;
 
 	WINDOW_GUI(window)->parent = parent;
+
+	ychange = parent->lines - oldparent->lines;
 	if (ychange != 0) gui_window_resize(window, ychange, FALSE);
+}
+
+static MAIN_WINDOW_REC *mainwindow_find_unsticky(void)
+{
+	GSList *tmp;
+
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		if (rec->sticky_windows == NULL)
+                        return rec;
+	}
+
+        /* all windows are sticky, fallback to active window */
+        return active_mainwin;
 }
 
 static void signal_window_changed(WINDOW_REC *window)
 {
+	MAIN_WINDOW_REC *parent;
+
 	g_return_if_fail(window != NULL);
 
         if (quitting) return;
 
+        parent = WINDOW_GUI(window)->parent;
 	if (is_window_visible(window)) {
-		/* already visible, great! */
-		active_mainwin = WINDOW_GUI(window)->parent;
+		/* already visible */
+		active_mainwin = parent;
+	} else if (active_mainwin == NULL) {
+                /* no main window set yet */
+		active_mainwin = parent;
+	} else if (g_slist_find(parent->sticky_windows, window) != NULL) {
+                /* window is sticky, switch to correct main window */
+		if (parent != active_mainwin)
+                        active_mainwin = parent;
 	} else {
-		/* move it to active main window */
-		if (active_mainwin == NULL)
-			active_mainwin = WINDOW_GUI(window)->parent;
-		else
-			gui_window_reparent(window, active_mainwin);
-		active_mainwin->active = window;
+		/* move window to active main window */
+                if (active_mainwin->sticky_windows != NULL) {
+			/* active mainwindow is sticky, we'll need to
+			   set the window active somewhere else */
+                        active_mainwin = mainwindow_find_unsticky();
+		}
+		gui_window_reparent(window, active_mainwin);
 	}
+	active_mainwin->active = window;
 
 	screen_refresh_freeze();
 	window_update_prompt();
