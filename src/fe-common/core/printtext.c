@@ -645,6 +645,7 @@ static void newline(WINDOW_REC *window)
 static char *get_timestamp(TEXT_DEST_REC *dest)
 {
 	struct tm *tm;
+	char month[10];
 	time_t t;
 	int diff;
 
@@ -661,18 +662,23 @@ static char *get_timestamp(TEXT_DEST_REC *dest)
 	}
 
 	tm = localtime(&t);
+	strftime(month, sizeof(month)-1, "%b", tm);
 	return output_format_text(dest, IRCTXT_TIMESTAMP,
 				  tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-				  tm->tm_hour, tm->tm_min, tm->tm_sec);
+				  tm->tm_hour, tm->tm_min, tm->tm_sec, month);
 }
 
-static char *get_server_tag(WINDOW_REC *window, SERVER_REC *server)
+static char *get_server_tag(TEXT_DEST_REC *dest)
 {
+	SERVER_REC *server;
+
+	server = dest->server;
+
 	if (server == NULL || servers == NULL || servers->next == NULL ||
-	    (window->active != NULL && window->active->server == server))
+	    (dest->window->active != NULL && dest->window->active->server == server))
 		return NULL;
 
-	return g_strdup_printf("[%s] ", server->tag);
+	return output_format_text(dest, IRCTXT_SERVERTAG, server->tag);
 }
 
 static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *target, gpointer level, const char *text)
@@ -695,7 +701,7 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *t
     newline(window);
 
     timestamp = get_timestamp(&dest);
-    servertag = get_server_tag(window, server);
+    servertag = get_server_tag(&dest);
     str = g_strconcat(timestamp != NULL ? timestamp : "",
 		      servertag != NULL ? servertag : "",
 		      text, NULL);
