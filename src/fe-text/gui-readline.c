@@ -20,7 +20,6 @@
 
 #include "module.h"
 #include "signals.h"
-#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 
@@ -28,7 +27,6 @@
 #include "command-history.h"
 #include "keyboard.h"
 #include "translation.h"
-#include "fe-windows.h"
 
 #include "screen.h"
 #include "gui-entry.h"

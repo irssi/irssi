@@ -20,12 +20,9 @@
 
 #include "module.h"
 #include "signals.h"
-#include "servers.h"
 
-#include "fe-windows.h"
 #include "themes.h"
 
-#include "screen.h"
 #include "statusbar.h"
 #include "gui-windows.h"
 

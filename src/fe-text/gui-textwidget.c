@@ -23,9 +23,7 @@
 #include "commands.h"
 #include "levels.h"
 
-#include "servers.h"
 #include "printtext.h"
-
 #include "gui-windows.h"
 
 static void cmd_scrollback(gchar *data, SERVER_REC *server, WI_ITEM_REC *item)

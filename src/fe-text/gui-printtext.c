@@ -23,10 +23,8 @@
 #include "commands.h"
 #include "settings.h"
 
-#include "fe-windows.h"
 #include "formats.h"
 #include "printtext.h"
-#include "themes.h"
 
 #include "screen.h"
 #include "gui-windows.h"

@@ -21,7 +21,6 @@
 #include "module.h"
 #include "signals.h"
 
-#include "fe-windows.h"
 #include "gui-windows.h"
 
 /* Don't send window activity if window is already visible in

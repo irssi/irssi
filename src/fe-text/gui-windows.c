@@ -20,14 +20,10 @@
 
 #include "module.h"
 #include "signals.h"
-#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 #include "special-vars.h"
 
-#include "irc.h"
-#include "channels.h"
-#include "fe-windows.h"
 #include "formats.h"
 
 #include "screen.h"
