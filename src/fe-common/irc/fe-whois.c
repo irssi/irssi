@@ -367,6 +367,7 @@ void fe_whois_init(void)
 	settings_add_bool("lookandfeel", "whois_hide_safe_channel_id", TRUE);
 
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
+	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_add("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("whowas away", (SIGNAL_FUNC) event_whois_away);
@@ -379,6 +380,7 @@ void fe_whois_init(void)
 void fe_whois_deinit(void)
 {
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
+	signal_remove("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("whowas away", (SIGNAL_FUNC) event_whois_away);
