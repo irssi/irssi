@@ -278,7 +278,7 @@ static int redirect_args_match(const char *event_args,
 	start = event_args;
 	while (*arg != '\0') {
 		while (*arg != '\0' && *arg != ' ' && *event_args != '\0') {
-			if (*arg != *event_args)
+			if (toupper(*arg) != toupper(*event_args))
 				break;
 			arg++; event_args++;
 		}
