@@ -193,7 +193,7 @@ void dcc_str2ip(const char *str, IPADDR *ip)
 GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 {
         GIOChannel *handle;
-        const char *dcc_port;
+        const char *dcc_port, *p;
 	int first, last;
 
 	if (net_getsockname(iface, ip, NULL) == -1)
@@ -209,8 +209,10 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	}
 
         /* get last port */
-	dcc_port = strchr(dcc_port, ' ');
-	if (dcc_port == NULL) dcc_port = strchr(dcc_port, '-');
+	p = strchr(dcc_port, ' ');
+	if (p == NULL) p = strchr(dcc_port, '-');
+
+	dcc_port = p;
 	if (dcc_port == NULL)
 		last = first;
 	else {
