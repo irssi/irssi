@@ -829,14 +829,14 @@ topic                          root   top       1        always
 settings and it's items. <strong>/STATUSBAR &lt;name&gt;
 ENABLE|DISABLE</strong> enables/disables the statusbar.
 <strong>/STATUSBAR &lt;name&gt; RESET</strong> resets the statusbar to
-it's default settings. If the statusbar was created by you, it will be
+it's default settings, or if the statusbar was created by you, it will be
 removed.</p>
 
 <p>Type can be window or root, meaning if the statusbar should be
 created for each split window, or just once. Placement can be top or
-bottom. Position is a number, the lower the value the higher in screen
+bottom. Position is a number, the higher the value the lower in screen
 it is. Visible can be always, active or inactive. Active/inactive is
-meant to be used with split windows, one split window is active and rest
+useful only with split windows, one split window is active and the rest
 are inactive. These settings can be changed with:</p>
 
 <ul>
@@ -846,7 +846,7 @@ are inactive. These settings can be changed with:</p>
 <li>STATUSBAR &lt;name&gt; VISIBLE always|active|inactive</li>
 </ul>
 
-<p>When loading new statusbar scripts, you'll need to also specify
+<p>When loading a new statusbar scripts, you'll need to also specify
 where you want to show it. Statusbar items can be modified with:</p>
 
 <ul>
