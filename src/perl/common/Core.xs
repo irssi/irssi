@@ -438,17 +438,17 @@ PPCODE:
 void
 command_bind_first(...)
 CODE:
-	handle_command_bind(0, items, ST(0), ST(1), ST(2));
+	handle_command_bind(SIGNAL_PRIORITY_HIGH, items, ST(0), ST(1), ST(2));
 
 void
 command_bind(...)
 CODE:
-	handle_command_bind(1, items, ST(0), ST(1), ST(2));
+	handle_command_bind(SIGNAL_PRIORITY_DEFAULT, items, ST(0), ST(1), ST(2));
 
 void
 command_bind_last(...)
 CODE:
-	handle_command_bind(2, items, ST(0), ST(1), ST(2));
+	handle_command_bind(SIGNAL_PRIORITY_LOW, items, ST(0), ST(1), ST(2));
 
 void
 command_runsub(cmd, data, server, item)
