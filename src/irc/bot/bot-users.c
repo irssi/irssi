@@ -27,7 +27,9 @@
 #include "misc.h"
 #include "lib-config/iconfig.h"
 
-#include "channels.h"
+#include "irc.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
 #include "irc-nicklist.h"
 #include "masks.h"
 

@@ -4,6 +4,7 @@
 
 #include "network.h"
 #include "line-split.h"
+#include "irc.h"
 #include "irc-servers.h"
 
 typedef struct {

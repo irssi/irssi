@@ -24,7 +24,7 @@
 
 #include "irc.h"
 #include "irc-servers.h"
-#include "channels.h"
+#include "irc-channels.h"
 #include "nicklist.h"
 #include "modes.h"
 #include "netsplit.h"
