@@ -81,7 +81,6 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 
 		signal_emit("script error", 2, rec->script,
 			    SvPV(ERRSV, n_a));
-                g_free(package);
 	}
         perl_source_unref(rec);
 
