@@ -330,6 +330,11 @@ void readline(void)
         unsigned char buffer[128];
 	int ret, i;
 
+	if (!active_entry) {
+                /* no active entry yet - wait until we have it */
+		return;
+	}
+
 	ret = term_gets(buffer, sizeof(buffer));
 	if (ret == -1) {
 		/* lost terminal */
