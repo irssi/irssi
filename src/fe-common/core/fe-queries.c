@@ -262,6 +262,13 @@ static int sig_query_autoclose(void)
         return 1;
 }
 
+static void sig_message_private(SERVER_REC *server, const char *msg,
+				const char *nick, const char *address)
+{
+	/* create query window if needed */
+	privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
+}
+
 static void read_settings(void)
 {
 	querycreate_level = level2bits(settings_get_str("autocreate_query_level"));
@@ -288,6 +295,7 @@ void fe_queries_init(void)
 	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
+	signal_add_first("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_bind("query", NULL, (SIGNAL_FUNC) cmd_query);
@@ -306,6 +314,7 @@ void fe_queries_deinit(void)
 	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
+	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_unbind("query", (SIGNAL_FUNC) cmd_query);

@@ -32,7 +32,9 @@
 
 static const char *noact_channels;
 
-static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer levelptr, const char *msg)
+static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server,
+			     const char *channel, void *levelptr,
+			     const char *msg)
 {
 	int level, oldlevel, new_data;
 
@@ -40,10 +42,13 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char 
 	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
+	/* hilights and private messages get HILIGHT status,
+	   public messages get MSGS status and rest get TEXT */
 	new_data = (level & (MSGLEVEL_HILIGHT|MSGLEVEL_MSGS)) ?
 		NEWDATA_HILIGHT :
 		((level & MSGLEVEL_PUBLIC) ? NEWDATA_MSG : NEWDATA_TEXT);
 
+        /* check that channel isn't in "don't show activity" list */
 	if (new_data < NEWDATA_HILIGHT &&
 	    channel != NULL && find_substr(noact_channels, channel))
 		return;
@@ -51,7 +56,7 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char 
 	oldlevel = window->new_data;
 	if (window->new_data < new_data) {
 		window->new_data = new_data;
-		window->last_color = 0;
+		window->last_color = hilight_last_nick_color();;
 		signal_emit("window hilight", 1, window);
 	}
 
@@ -188,8 +193,8 @@ void window_activity_init(void)
 	signal_add("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
-	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 

@@ -93,9 +93,9 @@ void fe_common_core_init(void)
         theme_register(fecommon_core_formats);
 
 	autorun_init();
-	hilight_text_init();
 	command_history_init();
 	completion_init();
+	hilight_text_init();
 	keyboard_init();
 	printtext_init();
         fe_channels_init();

@@ -63,9 +63,8 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
 		print_channel = TRUE;
 
-	level = MSGLEVEL_PUBLIC |
-		(color != NULL ? MSGLEVEL_HILIGHT :
-		 (for_me ? MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT));
+	level = MSGLEVEL_PUBLIC | (for_me || color != NULL ?
+				   MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT);
 
 	nickmode = get_nickmode(chanrec, nick);
 	if (!print_channel) {
@@ -103,7 +102,7 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 {
 	QUERY_REC *query;
 
-	query = privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
+	query = query_find(server, nick);
 	printformat(server, nick, MSGLEVEL_MSGS,
 		    query == NULL ? IRCTXT_MSG_PRIVATE :
 		    IRCTXT_MSG_PRIVATE_QUERY, nick, address, msg);
@@ -209,8 +208,8 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 
-	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
 	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 }
 
