@@ -28,7 +28,7 @@ static char *prompt;
 
 static void entry_screenpos(void)
 {
-	if (pos-scrstart < COLS-1-promptlen && pos-scrstart > 0) {
+	if (pos-scrstart < COLS-2-promptlen && pos-scrstart > 0) {
 		scrpos = pos-scrstart;
 		return;
 	}
@@ -47,8 +47,8 @@ static void entry_update(void)
 	char *p;
 	int n, len;
 
-	len = entry->len-scrstart > COLS-promptlen ?
-		COLS-promptlen : entry->len-scrstart;
+	len = entry->len-scrstart > COLS-1-promptlen ?
+		COLS-1-promptlen : entry->len-scrstart;
 
 	set_color(stdscr, 0);
 	move(LINES-1, promptlen);
