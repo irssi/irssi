@@ -285,6 +285,20 @@ static void cmd_save(const char *data)
 				0, g_strdup(data));
 }
 
+static void settings_clean_confirm(const char *line)
+{
+	if (g_strncasecmp(line, _("Y"), 1) == 0)
+                settings_clean_invalid();
+}
+
+static void sig_settings_errors(const char *msg)
+{
+        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", msg);
+	keyboard_entry_redirect((SIGNAL_FUNC) settings_clean_confirm,
+				_("Remove unknown settings from config file (Y/n)?"),
+				0, NULL);
+}
+
 void fe_settings_init(void)
 {
 	command_bind("set", NULL, (SIGNAL_FUNC) cmd_set);
@@ -293,8 +307,9 @@ void fe_settings_init(void)
 	command_bind("unalias", NULL, (SIGNAL_FUNC) cmd_unalias);
 	command_bind("reload", NULL, (SIGNAL_FUNC) cmd_reload);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
-
 	command_set_options("set", "clear");
+
+        signal_add("settings errors", (SIGNAL_FUNC) sig_settings_errors);
 }
 
 void fe_settings_deinit(void)
@@ -305,4 +320,6 @@ void fe_settings_deinit(void)
 	command_unbind("unalias", (SIGNAL_FUNC) cmd_unalias);
 	command_unbind("reload", (SIGNAL_FUNC) cmd_reload);
 	command_unbind("save", (SIGNAL_FUNC) cmd_save);
+
+	signal_remove("settings errors", (SIGNAL_FUNC) sig_settings_errors);
 }

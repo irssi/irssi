@@ -74,6 +74,10 @@ SETTINGS_REC *settings_get_record(const char *key);
 void settings_check_module(const char *module);
 #define settings_check() settings_check_module(MODULE_NAME)
 
+/* remove all invalid settings from config file. works only with the
+   modules that have already called settings_check() */
+void settings_clean_invalid(void);
+
 /* if `fname' is NULL, the default is used */
 int settings_reread(const char *fname);
 int settings_save(const char *fname);

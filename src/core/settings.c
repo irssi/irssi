@@ -33,6 +33,7 @@ CONFIG_REC *mainconfig;
 
 static GString *last_errors;
 static char *last_config_error_msg;
+static GSList *last_invalid_modules;
 static int fe_initialized;
 static int config_changed; /* FIXME: remove after .98 (unless needed again) */
 
@@ -269,7 +270,7 @@ static void sig_init_finished(void)
 {
 	fe_initialized = TRUE;
 	if (last_errors != NULL) {
-		signal_emit("gui dialog", 2, "error", last_errors->str);
+		signal_emit("settings errors", 1, last_errors->str);
 		g_string_free(last_errors, TRUE);
 	}
 
@@ -299,6 +300,43 @@ static void settings_move(SETTINGS_REC *rec, char *value)
         config_changed = TRUE;
 }
 
+static void settings_clean_invalid_module(const char *module)
+{
+        CONFIG_NODE *node;
+        SETTINGS_REC *set;
+	GSList *tmp, *next;
+
+	node = iconfig_node_traverse("settings", FALSE);
+	if (node == NULL) return;
+
+	node = config_node_section(node, module, -1);
+	if (node == NULL) return;
+
+	for (tmp = node->value; tmp != NULL; tmp = next) {
+		CONFIG_NODE *subnode = tmp->data;
+                next = tmp->next;
+
+		set = g_hash_table_lookup(settings, subnode->key);
+		if (set == NULL || strcmp(set->module, module) != 0)
+                        iconfig_node_remove(node, subnode);
+	}
+}
+
+/* remove all invalid settings from config file. works only with the
+   modules that have already called settings_check() */
+void settings_clean_invalid(void)
+{
+	while (last_invalid_modules != NULL) {
+		char *module = last_invalid_modules->data;
+
+                settings_clean_invalid_module(module);
+
+                g_free(module);
+		last_invalid_modules =
+			g_slist_remove(last_invalid_modules, module);
+	}
+}
+
 /* verify that all settings in config file for `module' are actually found
    from /SET list */
 void settings_check_module(const char *module)
@@ -311,7 +349,7 @@ void settings_check_module(const char *module)
 
         g_return_if_fail(module != NULL);
 
-	node = iconfig_node_traverse("settings", TRUE);
+	node = iconfig_node_traverse("settings", FALSE);
 	if (node != NULL) {
 		/* FIXME: remove after 0.7.98 */
 		for (tmp = node->value; tmp != NULL; tmp = next) {
@@ -329,8 +367,8 @@ void settings_check_module(const char *module)
 	if (node == NULL) return;
 
         errors = g_string_new(NULL);
-	g_string_sprintf(errors, "Unknown settings in configuration "
-			 "file for module %s:", module);
+	g_string_sprintf(errors, _("Unknown settings in configuration "
+				   "file for module %s:"), module);
 
         count = 0;
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
@@ -343,8 +381,15 @@ void settings_check_module(const char *module)
 		}
 	}
 	if (count > 0) {
+		if (gslist_find_icase_string(last_invalid_modules,
+					     module) == NULL) {
+                        /* mark this module having invalid settings */
+			last_invalid_modules =
+				g_slist_append(last_invalid_modules,
+					       g_strdup(module));
+		}
 		if (fe_initialized)
-			signal_emit("gui dialog", 2, "error", errors->str);
+                        signal_emit("settings errors", 1, errors->str);
 		else {
 			if (last_errors == NULL)
 				last_errors = g_string_new(NULL);
@@ -466,7 +511,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	config = config_open(path, -1);
 	if (config == NULL) {
 		last_config_error_msg =
-			g_strdup_printf("Error opening configuration file %s: %s",
+			g_strdup_printf(_("Error opening configuration file %s: %s"),
 					path, g_strerror(errno));
 		config = config_open(NULL, -1);
 	}
@@ -602,7 +647,8 @@ void settings_init(void)
 				    (GCompareFunc) g_str_equal);
 
 	last_errors = NULL;
-        last_config_error_msg = NULL;
+	last_config_error_msg = NULL;
+        last_invalid_modules = NULL;
 	fe_initialized = FALSE;
         config_changed = FALSE;
 
@@ -626,6 +672,9 @@ void settings_deinit(void)
         g_source_remove(timeout_tag);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_autosave);
+
+	g_slist_foreach(last_invalid_modules, (GFunc) g_free, NULL);
+	g_slist_free(last_invalid_modules);
 
 	g_hash_table_foreach(settings, (GHFunc) settings_hash_free, NULL);
 	g_hash_table_destroy(settings);
