@@ -17,7 +17,8 @@
         XPUSHs(sv_2mortal(new_bless(obj, stash)))
 
 #define irssi_bless(object) \
-	irssi_bless_object((object)->type, (object)->chat_type, object)
+	((object) == NULL ? &PL_sv_undef : \
+	irssi_bless_object((object)->type, (object)->chat_type, object))
 
 /* returns the package who called us */
 char *perl_get_package(void);
