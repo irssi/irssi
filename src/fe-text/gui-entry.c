@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "misc.h"
 #include "utf8.h"
 #include "formats.h"
 
@@ -26,7 +27,18 @@
 #include "gui-printtext.h"
 #include "term.h"
 
+const unichar empty_str[] = { 0 };
+
 GUI_ENTRY_REC *active_entry;
+
+static void entry_text_grow(GUI_ENTRY_REC *entry, int grow_size)
+{
+	if (entry->text_len+grow_size < entry->text_alloc)
+		return;
+
+	entry->text_alloc = nearest_power(entry->text_alloc+grow_size);
+	entry->text = g_realloc(entry->text, entry->text_alloc);
+}
 
 GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
 {
@@ -36,7 +48,9 @@ GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
 	rec->xpos = xpos;
 	rec->ypos = ypos;
         rec->width = width;
-	rec->text = g_string_new(NULL);
+        rec->text_alloc = 1024;
+	rec->text = g_new(unichar, rec->text_alloc);
+        rec->text[0] = '\0';
         rec->utf8 = utf8;
 	return rec;
 }
@@ -48,8 +62,8 @@ void gui_entry_destroy(GUI_ENTRY_REC *entry)
 	if (active_entry == entry)
 		gui_entry_set_active(NULL);
 
-	g_free_not_null(entry->prompt);
-	g_string_free(entry->text, TRUE);
+        g_free(entry->text);
+	g_free(entry->prompt);
         g_free(entry);
 }
 
@@ -76,13 +90,8 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 {
-	const unsigned char *p, *end;
+	const unichar *p;
 	int xpos, end_xpos;
-
-	if (entry->utf8) {
-		/* FIXME: a stupid kludge to make the chars output correctly */
-		pos = 0;
-	}
 
         xpos = entry->xpos + entry->promptlen + pos;
         end_xpos = entry->xpos + entry->width;
@@ -92,20 +101,14 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	term_set_color(root_window, ATTR_RESET);
 	term_move(root_window, xpos, entry->ypos);
 
-	p = (unsigned char *) (entry->scrstart + pos >= entry->text->len ? "" :
-			       entry->text->str + entry->scrstart + pos);
+	p = entry->scrstart + pos < entry->text_len ?
+		entry->text + entry->scrstart + pos : empty_str;
 	for (; *p != '\0' && xpos < end_xpos; p++, xpos++) {
-                end = p;
-		if (entry->utf8)
-			get_utf8_char(&end);
-
 		if (entry->hidden)
                         term_addch(root_window, ' ');
-		else if (*p >= 32 && (end != p || (*p & 127) >= 32)) {
-                        for (; p < end; p++)
-				term_addch(root_window, *p);
-			term_addch(root_window, *p);
-		} else {
+		else if (*p >= 32 && (entry->utf8 || (*p & 127) >= 32))
+			term_add_unichar(root_window, *p);
+		else {
 			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
 			term_addch(root_window, *p+'A'-1);
 			term_set_color(root_window, ATTR_RESET);
@@ -230,38 +233,67 @@ void gui_entry_set_utf8(GUI_ENTRY_REC *entry, int utf8)
 
 void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str)
 {
-        g_return_if_fail(entry != NULL);
+	g_return_if_fail(entry != NULL);
 	g_return_if_fail(str != NULL);
 
-	g_string_assign(entry->text, str);
-	entry->pos = entry->text->len;
+	entry->text_len = 0;
+	entry->pos = 0;
+	entry->text[0] = '\0';
 
-        gui_entry_redraw_from(entry, 0);
-	gui_entry_fix_cursor(entry);
-	gui_entry_draw(entry);
+	gui_entry_insert_text(entry, str);
 }
 
 char *gui_entry_get_text(GUI_ENTRY_REC *entry)
 {
+	char *buf;
+        int i;
+
 	g_return_val_if_fail(entry != NULL, NULL);
 
-	return entry->text->str;
+	buf = g_malloc(entry->text_len*6 + 1);
+	if (entry->utf8)
+		utf16_to_utf8(entry->text, buf);
+	else {
+		for (i = 0; i <= entry->text_len; i++)
+			buf[i] = entry->text[i];
+	}
+	return buf;
 }
 
 void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 {
+        unichar chr;
+	int i, len;
+
         g_return_if_fail(entry != NULL);
 	g_return_if_fail(str != NULL);
 
         gui_entry_redraw_from(entry, entry->pos);
-	g_string_insert(entry->text, entry->pos, str);
-	entry->pos += strlen(str);
+
+	len = !entry->utf8 ? strlen(str) : strlen_utf8(str);
+        entry_text_grow(entry, len);
+
+        /* make space for the string */
+	g_memmove(entry->text + entry->pos + len, entry->text + entry->pos,
+		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
+
+	if (!entry->utf8) {
+		for (i = 0; i < len; i++)
+                        entry->text[entry->pos+i] = str[i];
+	} else {
+                chr = entry->text[entry->pos+len];
+		utf8_to_utf16(str, entry->text+entry->pos);
+                entry->text[entry->pos+len] = chr;
+	}
+
+	entry->text_len += len;
+        entry->pos += len;
 
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
 
-void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr)
+void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 {
         g_return_if_fail(entry != NULL);
 
@@ -269,11 +301,36 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr)
 		return; /* never insert NUL, CR or LF characters */
 
         gui_entry_redraw_from(entry, entry->pos);
-	g_string_insert_c(entry->text, entry->pos, chr);
-	entry->pos++;
+
+	entry_text_grow(entry, 1);
+
+	/* make space for the string */
+	g_memmove(entry->text + entry->pos + 1, entry->text + entry->pos,
+		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
+
+	entry->text[entry->pos] = chr;
+	entry->text_len++;
+        entry->pos++;
 
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
+}
+
+char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
+{
+	char *buf;
+        int i;
+
+	g_return_val_if_fail(entry != NULL, NULL);
+
+	buf = g_malloc(entry->cutbuffer_len*6 + 1);
+	if (entry->utf8)
+		utf16_to_utf8(entry->cutbuffer, buf);
+	else {
+		for (i = 0; i <= entry->cutbuffer_len; i++)
+			buf[i] = entry->cutbuffer[i];
+	}
+	return buf;
 }
 
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
@@ -283,14 +340,22 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
 	if (entry->pos < size)
 		return;
 
-#ifdef WANT_BIG5
-	if (is_big5(entry->text->str[entry->pos-2],
-		    entry->text->str[entry->pos-1]))
-		size++;
-#endif
+        /* put erased text to cutbuffer */
+	if (entry->cutbuffer_len < size) {
+		g_free(entry->cutbuffer);
+		entry->cutbuffer = g_new(unichar, size+1);
+	}
+
+	entry->cutbuffer_len = size;
+        entry->cutbuffer[size] = '\0';
+	memcpy(entry->cutbuffer, entry->text + entry->pos - size,
+	       size * sizeof(unichar));
+
+	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
+		  (entry->text_len-entry->pos+1) * sizeof(unichar));
 
 	entry->pos -= size;
-	g_string_erase(entry->text, entry->pos, size);
+        entry->text_len -= size;
 
 	gui_entry_redraw_from(entry, entry->pos);
 	gui_entry_fix_cursor(entry);
@@ -308,52 +373,45 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 	to = entry->pos - 1;
 
 	if (to_space) {
-		while (entry->text->str[to] == ' ' && to > 0)
+		while (entry->text[to] == ' ' && to > 0)
 			to--;
-		while (entry->text->str[to] != ' ' && to > 0)
+		while (entry->text[to] != ' ' && to > 0)
 			to--;
 	} else {
-		while (!i_isalnum(entry->text->str[to]) && to > 0)
+		while (!i_isalnum(entry->text[to]) && to > 0)
 			to--;
-		while (i_isalnum(entry->text->str[to]) && to > 0)
+		while (i_isalnum(entry->text[to]) && to > 0)
 			to--;
 	}
 	if (to > 0) to++;
 
-	g_string_erase(entry->text, to, entry->pos - to);
-	entry->pos = to;
-
-        gui_entry_redraw_from(entry, entry->pos);
-	gui_entry_fix_cursor(entry);
-	gui_entry_draw(entry);
+        gui_entry_erase(entry, entry->pos-to);
 }
 
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
 {
-	int to;
+	int to, size;
 
         g_return_if_fail(entry != NULL);
-	if (entry->pos == entry->text->len)
+	if (entry->pos == entry->text_len)
 		return;
 
         to = entry->pos;
 	if (to_space) {
-		while (entry->text->str[to] == ' ' && to < entry->text->len)
+		while (entry->text[to] == ' ' && to < entry->text_len)
 			to++;
-		while (entry->text->str[to] != ' ' && to < entry->text->len)
+		while (entry->text[to] != ' ' && to < entry->text_len)
 			to++;
 	} else {
-		while (!i_isalnum(entry->text->str[to]) && to < entry->text->len)
+		while (!i_isalnum(entry->text[to]) && to < entry->text_len)
 			to++;
-		while (i_isalnum(entry->text->str[to]) && to < entry->text->len)
+		while (i_isalnum(entry->text[to]) && to < entry->text_len)
 			to++;
 	}
 
-	g_string_erase(entry->text, entry->pos, to - entry->pos);
-
-        gui_entry_redraw_from(entry, entry->pos);
-	gui_entry_fix_cursor(entry);
-	gui_entry_draw(entry);
+        size = to-entry->pos;
+	entry->pos = to;
+        gui_entry_erase(entry, size);
 }
 
 int gui_entry_get_pos(GUI_ENTRY_REC *entry)
@@ -367,7 +425,7 @@ void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos)
 {
         g_return_if_fail(entry != NULL);
 
-	if (pos >= 0 && pos <= entry->text->len)
+	if (pos >= 0 && pos <= entry->text_len)
 		entry->pos = pos;
 
 	gui_entry_fix_cursor(entry);
@@ -378,16 +436,7 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 {
         g_return_if_fail(entry != NULL);
 
-#ifdef WANT_BIG5
-	if (pos > 0 && is_big5(entry->text->str[entry->pos],
-			       entry->text->str[entry->pos+1]))
-		pos++;
-	else if (pos < 0 && is_big5(entry->text->str[entry->pos-1],
-				    entry->text->str[entry->pos]))
-		pos--;
-#endif
-
-	if (entry->pos+pos >= 0 && entry->pos+pos <= entry->text->len)
+	if (entry->pos+pos >= 0 && entry->pos+pos <= entry->text_len)
 		entry->pos += pos;
 
 	gui_entry_fix_cursor(entry);
@@ -401,14 +450,14 @@ static void gui_entry_move_words_left(GUI_ENTRY_REC *entry, int count, int to_sp
 	pos = entry->pos;
 	while (count > 0 && pos > 0) {
 		if (to_space) {
-			while (pos > 0 && entry->text->str[pos-1] == ' ')
+			while (pos > 0 && entry->text[pos-1] == ' ')
 				pos--;
-			while (pos > 0 && entry->text->str[pos-1] != ' ')
+			while (pos > 0 && entry->text[pos-1] != ' ')
 				pos--;
 		} else {
-			while (pos > 0 && !i_isalnum(entry->text->str[pos-1]))
+			while (pos > 0 && !i_isalnum(entry->text[pos-1]))
 				pos--;
-			while (pos > 0 &&  i_isalnum(entry->text->str[pos-1]))
+			while (pos > 0 &&  i_isalnum(entry->text[pos-1]))
 				pos--;
 		}
 		count--;
@@ -422,16 +471,16 @@ static void gui_entry_move_words_right(GUI_ENTRY_REC *entry, int count, int to_s
 	int pos;
 
 	pos = entry->pos;
-	while (count > 0 && pos < entry->text->len) {
+	while (count > 0 && pos < entry->text_len) {
 		if (to_space) {
-			while (pos < entry->text->len && entry->text->str[pos] == ' ')
+			while (pos < entry->text_len && entry->text[pos] == ' ')
 				pos++;
-			while (pos < entry->text->len && entry->text->str[pos] != ' ')
+			while (pos < entry->text_len && entry->text[pos] != ' ')
 				pos++;
 		} else {
-			while (pos < entry->text->len && !i_isalnum(entry->text->str[pos]))
+			while (pos < entry->text_len && !i_isalnum(entry->text[pos]))
 				pos++;
-			while (pos < entry->text->len &&  i_isalnum(entry->text->str[pos]))
+			while (pos < entry->text_len &&  i_isalnum(entry->text[pos]))
 				pos++;
 		}
 		count--;

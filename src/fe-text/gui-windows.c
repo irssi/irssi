@@ -44,7 +44,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 	gui->view = textbuffer_view_create(textbuffer_create(),
 					   window->width, window->height,
 					   settings_get_bool("scroll"),
-					   settings_get_bool("term_utf8"));
+					   term_type == TERM_TYPE_UTF8);
 	textbuffer_view_set_default_indent(gui->view,
 					   settings_get_int("indent"),
 					   !settings_get_bool("indent_always"),

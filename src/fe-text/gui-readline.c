@@ -33,6 +33,7 @@
 #include "term.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
+#include "utf8.h"
 
 #include <signal.h>
 
@@ -48,7 +49,6 @@ typedef struct {
 static KEYBOARD_REC *keyboard;
 static ENTRY_REDIRECT_REC *redir;
 
-char *cutbuffer;
 static int readtag;
 static time_t idle_time;
 
@@ -133,9 +133,9 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
-void handle_key(int key)
+void handle_key(unichar key)
 {
-	char str[3];
+	char str[20];
 
 	idle_time = time(NULL);
 
@@ -147,20 +147,23 @@ void handle_key(int key)
 	if (key >= 0 && key < 32) {
 		/* control key */
                 str[0] = '^';
-		str[1] = key+'@';
+		str[1] = (char)key+'@';
                 str[2] = '\0';
 	} else if (key == 127) {
                 str[0] = '^';
 		str[1] = '?';
                 str[2] = '\0';
-	} else {
-		str[0] = key;
+	} else if (!active_entry->utf8) {
+		str[0] = (char)key;
 		str[1] = '\0';
+	} else {
+                /* need to convert to utf8 */
+		str[utf16_char_to_utf8(key, str)] = '\0';
 	}
 
 	if (!key_pressed(keyboard, str)) {
                 /* key wasn't used for anything, print it */
-		gui_entry_insert_char(active_entry, (char) key);
+		gui_entry_insert_char(active_entry, key);
 	}
 }
 
@@ -170,7 +173,10 @@ static void key_send_line(void)
         char *str, *add_history;
 
 	str = gui_entry_get_text(active_entry);
-	if (*str == '\0') return;
+	if (*str == '\0') {
+                g_free(str);
+		return;
+	}
 
 	/* we can't use gui_entry_get_text() later, since the entry might
 	   have been destroyed after we get back */
@@ -199,6 +205,8 @@ static void key_send_line(void)
 	if (active_entry != NULL)
 		gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
+
+        g_free(str);
 }
 
 static void key_combo(void)
@@ -208,17 +216,23 @@ static void key_combo(void)
 static void key_backward_history(void)
 {
 	const char *text;
+        char *line;
 
-	text = command_history_prev(active_win, gui_entry_get_text(active_entry));
+	line = gui_entry_get_text(active_entry);
+	text = command_history_prev(active_win, line);
 	gui_entry_set_text(active_entry, text);
+        g_free(line);
 }
 
 static void key_forward_history(void)
 {
 	const char *text;
+	char *line;
 
-	text = command_history_next(active_win, gui_entry_get_text(active_entry));
+	line = gui_entry_get_text(active_entry);
+	text = command_history_next(active_win, line);
 	gui_entry_set_text(active_entry, text);
+        g_free(line);
 }
 
 static void key_beginning_of_line(void)
@@ -228,7 +242,7 @@ static void key_beginning_of_line(void)
 
 static void key_end_of_line(void)
 {
-	gui_entry_set_pos(active_entry, strlen(gui_entry_get_text(active_entry)));
+	gui_entry_set_pos(active_entry, active_entry->text_len);
 }
 
 static void key_backward_character(void)
@@ -263,10 +277,8 @@ static void key_forward_to_space(void)
 
 static void key_erase_line(void)
 {
-	g_free_not_null(cutbuffer);
-	cutbuffer = g_strdup(gui_entry_get_text(active_entry));
-
-	gui_entry_set_text(active_entry, "");
+	gui_entry_set_pos(active_entry, active_entry->text_len);
+	gui_entry_erase(active_entry, active_entry->text_len);
 }
 
 static void key_erase_to_beg_of_line(void)
@@ -274,9 +286,6 @@ static void key_erase_to_beg_of_line(void)
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
-	g_free_not_null(cutbuffer);
-	cutbuffer = g_strndup(gui_entry_get_text(active_entry), pos);
-
 	gui_entry_erase(active_entry, pos);
 }
 
@@ -285,21 +294,22 @@ static void key_erase_to_end_of_line(void)
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
-	g_free_not_null(cutbuffer);
-	cutbuffer = g_strdup(gui_entry_get_text(active_entry)+pos);
-
-	gui_entry_set_pos(active_entry, strlen(gui_entry_get_text(active_entry)));
-	gui_entry_erase(active_entry, strlen(gui_entry_get_text(active_entry)) - pos);
+	gui_entry_set_pos(active_entry, active_entry->text_len);
+	gui_entry_erase(active_entry, active_entry->text_len - pos);
 }
 
 static void key_yank_from_cutbuffer(void)
 {
+	char *cutbuffer;
+
+        cutbuffer = gui_entry_get_cutbuffer(active_entry);
 	if (cutbuffer != NULL)
 		gui_entry_insert_text(active_entry, cutbuffer);
 }
 
 static void key_transpose_characters(void)
 {
+#if 0 /* FIXME: !!! */
 	char *line, c;
 	int pos;
 
@@ -316,11 +326,12 @@ static void key_transpose_characters(void)
 	gui_entry_insert_char(active_entry, c);
         gui_entry_set_pos(active_entry, pos);
 	gui_entry_move_pos(active_entry, 1);
+#endif
 }
 
 static void key_delete_character(void)
 {
-	if (gui_entry_get_pos(active_entry) < (int)strlen(gui_entry_get_text(active_entry))) {
+	if (gui_entry_get_pos(active_entry) < active_entry->text_len) {
 		gui_entry_move_pos(active_entry, 1);
 		gui_entry_erase(active_entry, 1);
 	}
@@ -353,7 +364,7 @@ static void key_delete_to_next_space(void)
 
 static void sig_input(void)
 {
-        unsigned char buffer[128];
+        unichar buffer[128];
 	int ret, i;
 
 	if (!active_entry) {
@@ -361,7 +372,7 @@ static void sig_input(void)
 		return;
 	}
 
-	ret = term_gets(buffer, sizeof(buffer));
+	ret = term_gets(buffer, sizeof(buffer)/sizeof(buffer[0]));
 	if (ret == -1) {
 		/* lost terminal */
 		if (!term_detached)
@@ -404,13 +415,15 @@ static void key_change_window(const char *data)
 
 static void key_completion(int erase)
 {
-	char *line;
+	char *text, *line;
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
 
-	line = word_complete(active_win, gui_entry_get_text(active_entry),
-			     &pos, erase);
+        text = gui_entry_get_text(active_entry);
+	line = word_complete(active_win, text, &pos, erase);
+	g_free(text);
+
 	if (line != NULL) {
 		gui_entry_set_text(active_entry, line);
 		gui_entry_set_pos(active_entry, pos);
@@ -430,12 +443,15 @@ static void key_erase_completion(void)
 
 static void key_check_replaces(void)
 {
-	char *line;
+	char *text, *line;
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
 
-	line = auto_word_complete(gui_entry_get_text(active_entry), &pos);
+        text = gui_entry_get_text(active_entry);
+	line = auto_word_complete(text, &pos);
+	g_free(text);
+
 	if (line != NULL) {
 		gui_entry_set_text(active_entry, line);
 		gui_entry_set_pos(active_entry, pos);
@@ -537,11 +553,15 @@ static void key_sig_stop(void)
 
 static void sig_window_auto_changed(void)
 {
+	char *text;
+
 	if (active_entry == NULL)
 		return;
 
-	command_history_next(active_win, gui_entry_get_text(active_entry));
+        text = gui_entry_get_text(active_entry);
+	command_history_next(active_win, text);
 	gui_entry_set_text(active_entry, "");
+        g_free(text);
 }
 
 static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
@@ -563,7 +583,6 @@ void gui_readline_init(void)
 	char *key, data[MAX_INT_STRLEN];
 	int n;
 
-	cutbuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
         input_listen_init(STDIN_FILENO);
@@ -693,7 +712,6 @@ void gui_readline_init(void)
 
 void gui_readline_deinit(void)
 {
-	g_free_not_null(cutbuffer);
         input_listen_deinit();
 
         key_configure_freeze();

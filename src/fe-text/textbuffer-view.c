@@ -231,7 +231,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 
 		if (view->utf8)
-			get_utf8_char(&ptr);
+			get_utf8_char(&ptr, 6);
 
 		xpos++;
 		if (*ptr++ == ' ') {
@@ -398,7 +398,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		if (xpos < term_width) {
 			const unsigned char *end = text;
 			if (view->utf8)
-				get_utf8_char(&end);
+				get_utf8_char(&end, 6);
 
 			if (*text >= 32 &&
 			    (end != text || (*text & 127) >= 32)) {

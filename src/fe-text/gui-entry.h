@@ -2,7 +2,13 @@
 #define __GUI_ENTRY_H
 
 typedef struct {
-	GString *text;
+	int text_len, text_alloc; /* as shorts, not chars */
+	unichar *text;
+
+        int cutbuffer_len;
+	unichar *cutbuffer;
+
+        /* all as shorts, not chars */
 	int xpos, ypos, width; /* entry position in screen */
 	int pos, scrstart, scrpos; /* cursor position */
         int hidden; /* print the chars as spaces in input line (useful for passwords) */
@@ -30,8 +36,9 @@ void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str);
 char *gui_entry_get_text(GUI_ENTRY_REC *entry);
 
 void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str);
-void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr);
+void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr);
 
+char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry);
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size);
 void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space);
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space);

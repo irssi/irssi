@@ -3,6 +3,7 @@
 
 typedef struct _TERM_WINDOW TERM_WINDOW;
 
+/* text attributes */
 #define ATTR_RESETFG	0x0100
 #define ATTR_RESETBG	0x0200
 #define ATTR_BOLD	0x0400
@@ -14,16 +15,16 @@ typedef struct _TERM_WINDOW TERM_WINDOW;
 
 #define ATTR_NOCOLORS (ATTR_UNDERLINE|ATTR_REVERSE)
 
-#ifdef WANT_BIG5
-/* XXX I didn't check the encoding range of big5+. This is standard big5. */
-#  define is_big5_los(lo) (((char)0x40<=lo)&&(lo<=(char)0x7E))	/* standard */
-#  define is_big5_lox(lo) (((char)0x80<=lo)&&(lo<=(char)0xFE))	/* extended */
-#  define is_big5_hi(hi)  (((char)0x81<=hi)&&(hi<=(char)0xFE))
-#  define is_big5(hi,lo) is_big5_hi(hi) && (is_big5_los(lo) || is_big5_lox(lo))
-#endif
+/* terminal types */
+#define TERM_TYPE_8BIT		0 /* normal 8bit text */
+#define TERM_TYPE_UTF8		1
+#define TERM_TYPE_BIG5		2
+
+typedef guint32 unichar;
 
 extern TERM_WINDOW *root_window;
-extern int term_width, term_height, term_use_colors, term_detached;
+extern int term_width, term_height;
+extern int term_use_colors, term_type, term_detached;
 
 /* Initialize / deinitialize terminal */
 int term_init(void);
@@ -63,6 +64,7 @@ void term_set_color(TERM_WINDOW *window, int col);
 
 void term_move(TERM_WINDOW *window, int x, int y);
 void term_addch(TERM_WINDOW *window, int chr);
+void term_add_unichar(TERM_WINDOW *window, unichar chr);
 void term_addstr(TERM_WINDOW *window, const char *str);
 void term_clrtoeol(TERM_WINDOW *window);
 
@@ -78,7 +80,10 @@ void term_detach(void);
 void term_attach(FILE *in, FILE *out);
 
 void term_stop(void);
-int term_gets(unsigned char *buffer, int size);
+
+/* keyboard input handling */
+void term_set_input_type(int type);
+int term_gets(unichar *buffer, int size);
 
 /* internal */
 void term_common_init(void);

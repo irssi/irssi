@@ -35,6 +35,7 @@
 #define MIN_SCREEN_WIDTH 20
 
 int term_use_colors;
+int term_type;
 
 static int force_colors;
 static int resize_dirty;
@@ -91,10 +92,25 @@ static void cmd_resize(void)
 
 static void read_settings(void)
 {
+        const char *str;
 	int old_colors = term_use_colors;
+        int old_type = term_type;
 
         term_auto_detach(settings_get_bool("term_auto_detach"));
 
+        /* set terminal type */
+	str = settings_get_str("term_type");
+	if (g_strcasecmp(str, "utf8") == 0)
+		term_type = TERM_TYPE_UTF8;
+	else if (g_strcasecmp(str, "big5") == 0)
+		term_type = TERM_TYPE_BIG5;
+	else
+		term_type = TERM_TYPE_8BIT;
+
+	if (old_type != term_type)
+                term_set_input_type(term_type);
+
+        /* change color stuff */
 	if (force_colors != settings_get_bool("term_force_colors")) {
 		force_colors = settings_get_bool("term_force_colors");
 		term_force_colors(force_colors);
@@ -115,7 +131,7 @@ void term_common_init(void)
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
         settings_add_bool("lookandfeel", "term_auto_detach", FALSE);
-        settings_add_bool("lookandfeel", "term_utf8", FALSE);
+        settings_add_str("lookandfeel", "term_type", "8bit");
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");

@@ -347,8 +347,7 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	rec = g_hash_table_lookup(input_entries, item->bar);
 	if (rec == NULL) {
 		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
-				       item->size,
-				       settings_get_bool("term_utf8"));
+				       item->size, term_type == TERM_TYPE_UTF8);
 		gui_entry_set_active(rec);
 		g_hash_table_insert(input_entries, item->bar, rec);
 	}
@@ -377,10 +376,8 @@ static void sig_statusbar_destroyed(STATUSBAR_REC *bar)
 
 static void read_settings(void)
 {
-	if (active_entry != NULL) {
-		gui_entry_set_utf8(active_entry,
-				   settings_get_bool("term_utf8"));
-	}
+	if (active_entry != NULL)
+		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 }
 
 void statusbar_items_init(void)

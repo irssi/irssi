@@ -43,7 +43,8 @@ static char *expando_inputline(SERVER_REC *server, void *item, int *free_ret)
 /* value of cutbuffer */
 static char *expando_cutbuffer(SERVER_REC *server, void *item, int *free_ret)
 {
-	return cutbuffer;
+	*free_ret = TRUE;
+	return gui_entry_get_cutbuffer(active_entry);
 }
 
 void gui_expandos_init(void)

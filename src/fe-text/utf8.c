@@ -1,3 +1,29 @@
+/* utf8.c - Operations on UTF-8 strings.
+ *
+ * Copyright (C) 2002 Timo Sirainen
+ *
+ * Based on GLib code by
+ *
+ * Copyright (C) 1999 Tom Tromey
+ * Copyright (C) 2000 Red Hat, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include "module.h"
 
 #define UTF8_COMPUTE(Char, Mask, Len)					      \
   if (Char < 128)							      \
@@ -46,19 +72,106 @@
       (Result) |= ((Chars)[(Count)] & 0x3f);				      \
     }
 
-void get_utf8_char(const unsigned char **ptr)
+unichar get_utf8_char(const unsigned char **ptr, int len)
 {
-	int i, mask = 0, len;
-	unsigned int result;
-	unsigned char c = (unsigned char) **ptr;
+	int i, result, mask, chrlen;
 
-	UTF8_COMPUTE(c, mask, len);
+        mask = 0;
+	UTF8_COMPUTE(**ptr, mask, chrlen);
 	if (len == -1)
-		return;
+		return (unichar) -2;
+
+	if (chrlen > len)
+                return (unichar) -1;
 
 	UTF8_GET(result, *ptr, i, mask, len);
 	if (result == -1)
-                return;
+                return (unichar) -2;
 
-        *ptr += len-1;
+	*ptr += len-1;
+        return result;
+}
+
+int strlen_utf8(const char *str)
+{
+	const unsigned char *p = (const unsigned char *) str;
+        int len;
+
+	len = 0;
+	while (*p != '\0' && get_utf8_char(&p, 6) > 0) {
+		len++;
+                p++;
+	}
+        return len;
+}
+
+int utf16_char_to_utf8(unichar c, unsigned char *outbuf)
+{
+	int len, i, first;
+
+        len = 0;
+	if (c < 0x80) {
+		first = 0;
+		len = 1;
+	} else if (c < 0x800) {
+		first = 0xc0;
+		len = 2;
+	} else if (c < 0x10000) {
+		first = 0xe0;
+		len = 3;
+	} else if (c < 0x200000) {
+		first = 0xf0;
+		len = 4;
+	} else if (c < 0x4000000) {
+		first = 0xf8;
+		len = 5;
+	} else {
+		first = 0xfc;
+		len = 6;
+	}
+
+	if (outbuf) {
+		for (i = len - 1; i > 0; --i) {
+			outbuf[i] = (c & 0x3f) | 0x80;
+			c >>= 6;
+		}
+		outbuf[0] = c | first;
+	}
+
+	return len;
+}
+
+void utf8_to_utf16(const char *str, unichar *out)
+{
+	const unsigned char *p = (const unsigned char *) str;
+        int i, result, mask, len;
+
+	while (*p != '\0') {
+                mask = 0;
+		UTF8_COMPUTE(*p, mask, len);
+		if (len == -1)
+                        break;
+
+		UTF8_GET(result, p, i, mask, len);
+		if (result == -1)
+                        break;
+
+                p += len;
+                *out++ = result;
+	}
+
+	*out = '\0';
+}
+
+void utf16_to_utf8(const unichar *str, char *out)
+{
+	int len;
+
+	while (*str != '\0') {
+		len = utf16_char_to_utf8(*str, out);
+                out += len;
+
+		str++;
+	}
+	*out = '\0';
 }

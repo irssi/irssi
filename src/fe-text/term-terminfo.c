@@ -22,8 +22,15 @@
 #include "signals.h"
 #include "term.h"
 #include "terminfo-core.h"
+#include "utf8.h"
 
 #include <signal.h>
+
+/* returns number of characters in the beginning of the buffer being a
+   a single character, or -1 if more input is needed. The character will be
+   saved in result */
+typedef int (*TERM_INPUT_FUNC)(const unsigned char *buffer, int size,
+			       unichar *result);
 
 struct _TERM_WINDOW {
         /* Terminal to use for window */
@@ -47,6 +54,10 @@ static int last_fg, last_bg, last_attrs;
 
 static int redraw_needed, redraw_tag;
 static int freeze_counter;
+
+static TERM_INPUT_FUNC input_func;
+static unsigned char term_inbuf[256];
+static int term_inbuf_pos;
 
 /* SIGCONT handler */
 static void sig_cont(int p)
@@ -94,6 +105,7 @@ int term_init(void)
 
         term_lines_empty = g_new0(char, term_height);
 
+        term_set_input_type(TERM_TYPE_8BIT);
 	term_common_init();
         g_atexit(term_deinit);
         return TRUE;
@@ -373,6 +385,39 @@ void term_addch(TERM_WINDOW *window, int chr)
 		putc(chr, window->term->out);
 }
 
+static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
+{
+	unsigned char buf[10];
+	int i, len;
+
+	len = utf16_char_to_utf8(chr, buf);
+	for (i = 0;  i < len; i++)
+                putc(buf[i], window->term->out);
+}
+
+void term_add_unichar(TERM_WINDOW *window, unichar chr)
+{
+	if (term_detached) return;
+
+	if (vcmove) term_move_real();
+        term_printed_text(1);
+	if (vcy == term_height && vcx == 0)
+		return; /* last char in screen */
+
+	switch (term_type) {
+	case TERM_TYPE_UTF8:
+                term_addch_utf8(window, chr);
+		break;
+	case TERM_TYPE_BIG5:
+		putc((chr >> 8) & 0xff, window->term->out);
+		putc((chr & 0xff), window->term->out);
+                break;
+	default:
+		putc(chr, window->term->out);
+                break;
+	}
+}
+
 void term_addstr(TERM_WINDOW *window, const char *str)
 {
 	int len;
@@ -487,15 +532,80 @@ void term_stop(void)
 	}
 }
 
-int term_gets(unsigned char *buffer, int size)
+static int input_utf8(const unsigned char *buffer, int size, unichar *result)
 {
-	int ret;
+        const unsigned char *end = buffer;
+
+        *result = get_utf8_char(&end, size);
+	switch (*result) {
+	case (unichar) -2:
+		/* not UTF8 - fallback to 8bit ascii */
+		*result = *buffer;
+		return 1;
+	case (unichar) -1:
+                /* need more data */
+		return -1;
+	default:
+		return (int) (end-buffer)+1;
+	}
+}
+
+/* XXX I didn't check the encoding range of big5+. This is standard big5. */
+#define is_big5_los(lo) (0x40 <= (lo) && (lo) <= 0x7E) /* standard */
+#define is_big5_lox(lo) (0x80 <= (lo) && (lo) <= 0xFE) /* extended */
+#define is_big5_hi(hi)  (0x81 <= (hi) && (hi) <= 0xFE)
+#define is_big5(hi,lo) (is_big5_hi(hi) && (is_big5_los(lo) || is_big5_lox(lo)))
+
+static int input_big5(const unsigned char *buffer, int size, unichar *result)
+{
+	if (is_big5_hi(*buffer)) {
+		/* could be */
+		if (size == 1)
+			return -1;
+
+		if (is_big5_los(buffer[1]) || is_big5_lox(buffer[1])) {
+                        *result = buffer[1] + ((int) *buffer << 8);
+			return 2;
+		}
+	}
+
+        *result = *buffer;
+	return 1;
+}
+
+static int input_8bit(const unsigned char *buffer, int size, unichar *result)
+{
+        *result = *buffer;
+        return 1;
+}
+
+void term_set_input_type(int type)
+{
+	switch (type) {
+	case TERM_TYPE_UTF8:
+                input_func = input_utf8;
+                break;
+	case TERM_TYPE_BIG5:
+                input_func = input_big5;
+		break;
+	default:
+                input_func = input_8bit;
+	}
+}
+
+int term_gets(unichar *buffer, int size)
+{
+	int ret, i, char_len;
 
 	if (term_detached)
 		return 0;
 
         /* fread() doesn't work */
-        ret = read(fileno(current_term->in), buffer, size);
+	if (size > sizeof(term_inbuf)-term_inbuf_pos)
+		size = sizeof(term_inbuf)-term_inbuf_pos;
+
+	ret = read(fileno(current_term->in),
+		   term_inbuf + term_inbuf_pos, size);
 	if (ret == 0) {
 		/* EOF - terminal got lost */
 		if (auto_detach)
@@ -503,6 +613,29 @@ int term_gets(unsigned char *buffer, int size)
 		ret = -1;
 	} else if (ret == -1 && (errno == EINTR || errno == EAGAIN))
 		ret = 0;
+
+	if (ret > 0) {
+                /* convert input to unichars. */
+		term_inbuf_pos += ret;
+                ret = 0;
+		for (i = 0; i < term_inbuf_pos; ) {
+			char_len = input_func(term_inbuf+i, term_inbuf_pos-i,
+					      buffer);
+			if (char_len < 0)
+				break;
+
+			i += char_len;
+                        buffer++;
+                        ret++;
+		}
+
+		if (i >= term_inbuf_pos)
+			term_inbuf_pos = 0;
+		else {
+			memmove(term_inbuf+i, term_inbuf, term_inbuf_pos-i);
+                        term_inbuf_pos = i;
+		}
+	}
 
 	return ret;
 }
