@@ -1,6 +1,7 @@
 #ifndef __COMMON_SETUP_H
 #define __COMMON_SETUP_H
 
+#include "irc-base/network.h"
 #include "settings/settings-public.h"
 
 #define LOG_FILE_CREATE_MODE 0644
@@ -69,5 +70,7 @@ SETUP_CHANNEL_REC;
 extern GList *setupchannels;
 
 extern gboolean readonly;
+extern IPADDR source_host_ip; /* Resolved address */
+extern gboolean source_host_ok; /* Use source_host_ip .. */
 
 #endif
