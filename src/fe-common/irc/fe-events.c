@@ -34,6 +34,7 @@
 #include "nicklist.h"
 #include "ignore.h"
 #include "netsplit.h"
+#include "fe-netjoin.h"
 
 #include "fe-query.h"
 #include "irc-hilight-text.h"
@@ -75,20 +76,20 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 		/* message to active channel in window */
 		if (color != NULL) {
 			/* highlighted nick */
-			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
 				    IRCTXT_PUBMSG_HILIGHT, color, nick, msg, nickmode);
 		} else {
-			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_NOHILIGHT : 0),
+			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_HILIGHT : 0),
 				    for_me ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG, nick, msg, nickmode);
 		}
 	} else {
 		/* message to not existing/active channel */
 		if (color != NULL) {
 			/* highlighted nick */
-			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
 				    IRCTXT_PUBMSG_HILIGHT_CHANNEL, color, nick, target, msg, nickmode);
 		} else {
-			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_NOHILIGHT : 0),
+			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_HILIGHT : 0),
 				    for_me ? IRCTXT_PUBMSG_ME_CHANNEL : IRCTXT_PUBMSG_CHANNEL,
 				    nick, target, msg, nickmode);
 		}
