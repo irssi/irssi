@@ -169,7 +169,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0) {
                 /* , and . are handled specially */
 		newtarget = parse_special(&target, server, item,
-					  NULL, &free_ret, NULL);
+					  NULL, &free_ret, NULL, 0);
 		if (newtarget == NULL) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				    *target == ',' ? IRCTXT_NO_MSGS_GOT :

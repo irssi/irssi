@@ -87,7 +87,7 @@ static void ctcp_version(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(nick != NULL);
 
 	reply = parse_special_string(settings_get_str("ctcp_version_reply"),
-				     SERVER(server), NULL, "", NULL);
+				     SERVER(server), NULL, "", NULL, 0);
 	str = g_strdup_printf("NOTICE %s :\001VERSION %s\001", nick, reply);
 	ctcp_send_reply(server, str);
 	g_free(str);

@@ -772,7 +772,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 	args = g_strconcat(chanrec->name, " ", msg, NULL);
 	msg = parse_special_string(settings_get_str("wall_format"),
-				   SERVER(server), item, args, NULL);
+				   SERVER(server), item, args, NULL, 0);
 	g_free(args);
 
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {

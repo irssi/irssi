@@ -23,6 +23,7 @@ void signal_add_to_id(const char *module, int pos,
 
 /* unbind signal */
 void signal_remove(const char *signal, SIGNAL_FUNC func);
+void signal_remove_id(int signal_id, SIGNAL_FUNC func);
 
 /* emit signal */
 int signal_emit(const char *signal, int params, ...);

@@ -29,13 +29,23 @@ static char *expando_winref(SERVER_REC *server, void *item, int *free_ret)
 	return g_strdup_printf("%d", active_win->refnum);
 }
 
+/* Window name */
+static char *expando_winname(SERVER_REC *server, void *item, int *free_ret)
+{
+	return active_win->name;
+}
+
 void fe_expandos_init(void)
 {
 	expando_create("winref", expando_winref,
-		       "window changed", EXPANDO_ARG_NONE, NULL);
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window refnum changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("winname", expando_winname,
+		       "window name changed", EXPANDO_ARG_WINDOW, NULL);
 }
 
 void fe_expandos_deinit(void)
 {
 	expando_destroy("winref", expando_winref);
+	expando_destroy("winname", expando_winname);
 }

@@ -125,7 +125,7 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 }
 
 static char *get_long_variable(char **cmd, SERVER_REC *server,
-			       void *item, int *free_ret)
+			       void *item, int *free_ret, int getname)
 {
 	char *start, *var, *ret;
 
@@ -134,30 +134,41 @@ static char *get_long_variable(char **cmd, SERVER_REC *server,
 	while (isvarchar((*cmd)[1])) (*cmd)++;
 
 	var = g_strndup(start, (int) (*cmd-start)+1);
+	if (getname) {
+		*free_ret = TRUE;
+                return var;
+	}
 	ret = get_long_variable_value(var, server, item, free_ret);
 	g_free(var);
 	return ret;
 }
 
-/* return the value of the variable found from `cmd' */
+/* return the value of the variable found from `cmd'.
+   if 'getname' is TRUE, return the name of the variable instead it's value */
 static char *get_variable(char **cmd, SERVER_REC *server, void *item,
-			  char **arglist, int *free_ret, int *arg_used)
+			  char **arglist, int *free_ret, int *arg_used,
+			  int getname)
 {
 	EXPANDO_FUNC func;
 
 	if (isdigit(**cmd) || **cmd == '*' || **cmd == '-' || **cmd == '~') {
-                /* argument */
+		/* argument */
 		*free_ret = TRUE;
 		if (arg_used != NULL) *arg_used = TRUE;
-		return get_argument(cmd, arglist);
+		return getname ? g_strdup_printf("%c", **cmd) :
+			get_argument(cmd, arglist);
 	}
 
 	if (isalpha(**cmd) && isvarchar((*cmd)[1])) {
 		/* long variable name.. */
-		return get_long_variable(cmd, server, item, free_ret);
+		return get_long_variable(cmd, server, item, free_ret, getname);
 	}
 
 	/* single character variable. */
+	if (getname) {
+		*free_ret = TRUE;
+                return g_strdup_printf("%c", **cmd);
+	}
 	*free_ret = FALSE;
 	func = expando_find_char(**cmd);
 	return func == NULL ? NULL : func(server, item, free_ret);
@@ -184,13 +195,17 @@ static char *get_history(char **cmd, void *item, int *free_ret)
 }
 
 static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
-			       char **arglist, int *free_ret, int *arg_used)
+			       char **arglist, int *free_ret, int *arg_used,
+			       int flags)
 {
 	char command, *value, *p;
 	int len;
 
 	if (**cmd == '!') {
 		/* find text from command history */
+		if (flags & PARSE_FLAG_GETNAME)
+			return "!";
+
 		return get_history(cmd, item, free_ret);
 	}
 
@@ -203,12 +218,19 @@ static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 			/* default to $* */
 			char *temp_cmd = "*";
 
+			if (flags & PARSE_FLAG_GETNAME)
+                                return "*";
+
 			*free_ret = TRUE;
 			return get_argument(&temp_cmd, arglist);
 		}
 	}
 
-	value = get_variable(cmd, server, item, arglist, free_ret, arg_used);
+	value = get_variable(cmd, server, item, arglist, free_ret,
+			     arg_used, flags & PARSE_FLAG_GETNAME);
+
+	if (flags & PARSE_FLAG_GETNAME)
+		return value;
 
 	if (command == '#') {
 		/* number of words */
@@ -314,7 +336,7 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 /* Parse and expand text after '$' character. return value has to be
    g_free()'d if `free_ret' is TRUE. */
 char *parse_special(char **cmd, SERVER_REC *server, void *item,
-		    char **arglist, int *free_ret, int *arg_used)
+		    char **arglist, int *free_ret, int *arg_used, int flags)
 {
 	static char **nested_orig_cmd = NULL; /* FIXME: KLUDGE! */
 	char command, *value;
@@ -355,7 +377,8 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 		} else {
 			(*cmd)++;
 			nest_value = parse_special(cmd, server, item, arglist,
-						   &nest_free, arg_used);
+						   &nest_free, arg_used,
+						   flags);
 		}
 
 		while ((*nested_orig_cmd)[1] != '\0') {
@@ -377,9 +400,12 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	}
 
 	value = get_special_value(cmd, server, item, arglist,
-				  free_ret, arg_used);
+				  free_ret, arg_used, flags);
 	if (**cmd == '\0')
 		g_error("parse_special() : buffer overflow!");
+
+	if (value != NULL && *value != '\0' && (flags & PARSE_FLAG_ISSET_ANY))
+		*arg_used = TRUE;
 
 	if (brackets) {
 		while (**cmd != '}' && (*cmd)[1] != '\0')
@@ -388,7 +414,7 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 
 	if (nest_free) g_free(nest_value);
 
-	if (command == '[') {
+	if (command == '[' && (flags & PARSE_FLAG_GETNAME) == 0) {
 		/* alignment */
 		char *p;
 
@@ -406,7 +432,7 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 
 /* parse the whole string. $ and \ chars are replaced */
 char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
-			   const char *data, int *arg_used)
+			   const char *data, int *arg_used, int flags)
 {
 	char code, **arglist, *ret;
 	GString *str;
@@ -438,7 +464,8 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 			char *ret;
 
 			ret = parse_special((char **) &cmd, server, item,
-					    arglist, &need_free, arg_used);
+					    arglist, &need_free, arg_used,
+					    flags);
 			if (ret != NULL) {
 				g_string_append(str, ret);
 				if (need_free) g_free(ret);
@@ -488,7 +515,7 @@ void eval_special_string(const char *cmd, const char *data,
 		}
 
 		ret = parse_special_string(start, server, item,
-					   data, &arg_used);
+					   data, &arg_used, 0);
 		if (arg_used) arg_used_ever = TRUE;
 
 		if (strchr(cmdchars, *ret) == NULL) {
@@ -524,4 +551,43 @@ void eval_special_string(const char *cmd, const char *data,
 void special_history_func_set(SPECIAL_HISTORY_FUNC func)
 {
 	history_func = func;
+}
+
+static void special_vars_signals_do(const char *text, int funccount,
+				    SIGNAL_FUNC *funcs, int bind)
+{
+	char *ret;
+        int need_free;
+
+	while (*text != '\0') {
+		if (*text == '\\' && text[1] != '\0') {
+			text += 2;
+		} else if (*text == '$' && text[1] != '\0') {
+			text++;
+			ret = parse_special((char **) &text, NULL, NULL,
+					    NULL, &need_free, NULL,
+					    PARSE_FLAG_GETNAME);
+			if (ret != NULL) {
+                                if (bind)
+					expando_bind(ret, funccount, funcs);
+                                else
+					expando_unbind(ret, funccount, funcs);
+				if (need_free) g_free(ret);
+			}
+
+		}
+                else text++;
+	}
+}
+
+void special_vars_add_signals(const char *text,
+			      int funccount, SIGNAL_FUNC *funcs)
+{
+        special_vars_signals_do(text, funccount, funcs, TRUE);
+}
+
+void special_vars_remove_signals(const char *text,
+				 int funccount, SIGNAL_FUNC *funcs)
+{
+        special_vars_signals_do(text, funccount, funcs, FALSE);
 }

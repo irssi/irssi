@@ -146,25 +146,24 @@ static int signal_remove_from_lists(SIGNAL_REC *rec, int signal_id,
         return 0;
 }
 
+void signal_remove_id(int signal_id, SIGNAL_FUNC func)
+{
+	SIGNAL_REC *rec;
+
+	g_return_if_fail(signal_id >= 0);
+	g_return_if_fail(func != NULL);
+
+	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
+        if (rec != NULL)
+		signal_remove_from_lists(rec, signal_id, func);
+}
+
 /* unbind signal */
 void signal_remove(const char *signal, SIGNAL_FUNC func)
 {
-	SIGNAL_REC *rec;
-	int signal_id, found;
-
 	g_return_if_fail(signal != NULL);
-	g_return_if_fail(func != NULL);
 
-	signal_id = signal_get_uniq_id(signal);
-
-	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
-	found = rec == NULL ? 0 :
-		signal_remove_from_lists(rec, signal_id, func);
-
-	if (!found) {
-		g_warning("signal_remove() : signal \"%s\" isn't "
-			  "grabbed for %p", signal, func);
-	}
+	signal_remove_id(signal_get_uniq_id(signal), func);
 }
 
 /* Remove all NULL functions from signal list */

@@ -81,7 +81,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	free_ret = FALSE;
 	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0) {
 		target = parse_special(&target, server, item,
-				       NULL, &free_ret, NULL);
+				       NULL, &free_ret, NULL, 0);
 	} else if (strcmp(target, "*") == 0 && item != NULL)
 		target = item->name;
 

@@ -44,6 +44,8 @@ typedef struct {
         int signal_args[MAX_EXPANDO_SIGNALS];
 } EXPANDO_REC;
 
+static int timer_tag;
+
 static EXPANDO_REC *char_expandos[127];
 static GHashTable *expandos;
 static time_t client_start_time;
@@ -86,6 +88,14 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
         va_end(va);
 }
 
+static EXPANDO_REC *expando_find(const char *key)
+{
+	if (key[1] != '\0')
+		return g_hash_table_lookup(expandos, key);
+        else
+		return char_expandos[(int) *key];
+}
+
 /* Add new signal to expando */
 void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
 {
@@ -94,15 +104,15 @@ void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
 	g_return_if_fail(key != NULL);
 	g_return_if_fail(signal != NULL);
 
-	if (key[1] != '\0')
-		rec = g_hash_table_lookup(expandos, key);
-	else {
-		/* single character expando */
-		rec = char_expandos[(int) *key];
-	}
+        rec = expando_find(key);
         g_return_if_fail(rec != NULL);
 
-	if (rec->signals < MAX_EXPANDO_SIGNALS) {
+	if (arg == EXPANDO_NEVER) {
+                /* expando changes never */
+		rec->signals = -1;
+	} else if (rec->signals < MAX_EXPANDO_SIGNALS) {
+		g_return_if_fail(rec->signals != -1);
+
 		rec->signal_ids[rec->signals] = signal_get_uniq_id(signal);
 		rec->signal_args[rec->signals] = arg;
                 rec->signals++;
@@ -132,6 +142,64 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 			g_hash_table_remove(expandos, key);
 			g_free(rec);
 		}
+	}
+}
+
+void expando_bind(const char *key, int funccount, SIGNAL_FUNC *funcs)
+{
+	SIGNAL_FUNC func;
+	EXPANDO_REC *rec;
+        int n, arg;
+
+	g_return_if_fail(key != NULL);
+	g_return_if_fail(funccount >= 1);
+	g_return_if_fail(funcs != NULL);
+	g_return_if_fail(funcs[0] != NULL);
+
+        rec = expando_find(key);
+	g_return_if_fail(rec != NULL);
+
+	if (rec->signals == 0) {
+		/* it's unknown when this expando changes..
+		   check it once in a second */
+                signal_add("expando timer", funcs[EXPANDO_ARG_NONE]);
+	}
+
+	for (n = 0; n < rec->signals; n++) {
+		arg = rec->signal_args[n];
+		func = arg < funccount ? funcs[arg] : NULL;
+		if (func == NULL) func = funcs[EXPANDO_ARG_NONE];
+
+		signal_add_to_id(MODULE_NAME, 1, rec->signal_ids[n], func);
+	}
+}
+
+void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs)
+{
+	SIGNAL_FUNC func;
+	EXPANDO_REC *rec;
+        int n, arg;
+
+	g_return_if_fail(key != NULL);
+	g_return_if_fail(funccount >= 1);
+	g_return_if_fail(funcs != NULL);
+	g_return_if_fail(funcs[0] != NULL);
+
+        rec = expando_find(key);
+	g_return_if_fail(rec != NULL);
+
+	if (rec->signals == 0) {
+		/* it's unknown when this expando changes..
+		   check it once in a second */
+                signal_remove("expando timer", funcs[EXPANDO_ARG_NONE]);
+	}
+
+	for (n = 0; n < rec->signals; n++) {
+		arg = rec->signal_args[n];
+		func = arg < funccount ? funcs[arg] : NULL;
+		if (func == NULL) func = funcs[EXPANDO_ARG_NONE];
+
+		signal_remove_id(rec->signal_ids[n], func);
 	}
 }
 
@@ -360,6 +428,12 @@ static void cmd_msg(const char *data, SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+static int sig_timer(void)
+{
+        signal_emit("expando timer", 0);
+        return 1;
+}
+
 void expandos_init(void)
 {
 #ifdef HAVE_SYS_UTSNAME_H
@@ -455,6 +529,7 @@ void expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 
+        timer_tag = g_timeout_add(1000, (GSourceFunc) sig_timer, NULL);
 	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
@@ -479,6 +554,7 @@ void expandos_deinit(void)
 	g_free_not_null(last_privmsg_from); g_free_not_null(last_public_from);
 	g_free_not_null(sysname); g_free_not_null(sysrelease);
 
+        g_source_remove(timer_tag);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);

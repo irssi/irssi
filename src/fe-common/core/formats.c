@@ -237,8 +237,10 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 			/* argument */
 			char *ret;
 
-			ret = parse_special((char **) &text, active_win->active_server,
-					    active_win->active, arglist, &need_free, NULL);
+			ret = parse_special((char **) &text,
+					    active_win->active_server,
+					    active_win->active, arglist,
+					    &need_free, NULL, 0);
 
 			if (ret != NULL) {
 				/* string shouldn't end with \003 or it could

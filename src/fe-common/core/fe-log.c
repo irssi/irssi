@@ -350,7 +350,8 @@ static void autolog_open(void *server, const char *target)
 		return;
 	}
 
-	fname = parse_special_string(autolog_path, server, NULL, target, NULL);
+	fname = parse_special_string(autolog_path, server, NULL,
+				     target, NULL, 0);
 	if (log_find(fname) == NULL) {
 		log = log_create_rec(fname, autolog_level);
 		log_item_add(log, LOG_ITEM_TARGET, target, server);

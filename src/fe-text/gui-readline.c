@@ -67,7 +67,7 @@ static void handle_key_redirect(int key)
 		func(key, data, active_win->active_server, active_win->active);
 
 	gui_entry_remove_perm_prompt();
-	window_update_prompt(active_win);
+	window_update_prompt();
 }
 
 static void handle_entry_redirect(const char *line)
@@ -83,7 +83,7 @@ static void handle_entry_redirect(const char *line)
 		func(line, data, active_win->active_server, active_win->active);
 
 	gui_entry_remove_perm_prompt();
-	window_update_prompt(active_win);
+	window_update_prompt();
 }
 
 static int get_scroll_count(void)

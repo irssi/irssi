@@ -1,6 +1,7 @@
 #ifndef __EXPANDOS_H
 #define __EXPANDOS_H
 
+#include "signals.h"
 #include "servers.h"
 
 /* first argument of signal must match to active .. */
@@ -24,6 +25,9 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...);
 void expando_add_signal(const char *key, const char *signal, ExpandoArg arg);
 /* Destroy expando */
 void expando_destroy(const char *key, EXPANDO_FUNC func);
+
+void expando_bind(const char *key, int funccount, SIGNAL_FUNC *funcs);
+void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs);
 
 /* internal: */
 EXPANDO_FUNC expando_find_char(char chr);

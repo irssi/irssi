@@ -23,6 +23,7 @@
 #include "servers.h"
 #include "misc.h"
 #include "settings.h"
+#include "special-vars.h"
 
 #include "irc.h"
 #include "channels.h"
@@ -46,6 +47,8 @@
 static int linecache_tag;
 static int window_create_override;
 static int default_indent_pos;
+
+static char *prompt, *prompt_window;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 {
@@ -670,30 +673,51 @@ void gui_window_update_ypos(GUI_WINDOW_REC *gui)
 		gui->ypos += gui_window_get_linecount(gui, tmp->data);
 }
 
-void window_update_prompt(WINDOW_REC *window)
+void window_update_prompt(void)
 {
-	WI_ITEM_REC *item;
-	char *text, *str;
+        const char *special;
+	char *prompt, *text;
+        int var_used;
 
-	if (window != active_win) return;
-
-	item = window->active;
-	if (item != NULL)
-		text = item->name;
-	else if (window->name != NULL)
-		text = window->name;
-	else {
+	special = settings_get_str(active_win->active != NULL ?
+				   "prompt" : "prompt_window");
+	if (*special == '\0') {
 		gui_entry_set_prompt("");
 		return;
 	}
 
+	prompt = parse_special_string(special, active_win->active_server,
+				      active_win->active, "", &var_used,
+				      PARSE_FLAG_ISSET_ANY);
+	if (!var_used && strchr(special, '$') != NULL) {
+                /* none of the $vars had non-empty values, use empty prompt */
+		*prompt = '\0';
+	}
+
 	/* set prompt */
-	text = show_lowascii(text);
-	str = g_strdup_printf("[%1.17s] ", text);
+	text = show_lowascii(prompt);
+	gui_entry_set_prompt(text);
 	g_free(text);
 
-	gui_entry_set_prompt(str);
-	if (*str != '\0') g_free(str);
+	g_free(prompt);
+}
+
+static void window_update_prompt_server(SERVER_REC *server)
+{
+	if (server == active_win->active_server)
+                window_update_prompt();
+}
+
+static void window_update_prompt_window(WINDOW_REC *window)
+{
+	if (window == active_win)
+                window_update_prompt();
+}
+
+static void window_update_prompt_window_item(WI_ITEM_REC *item)
+{
+	if (item == active_win->active)
+                window_update_prompt();
 }
 
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
@@ -727,7 +751,7 @@ static void signal_window_changed(WINDOW_REC *window)
 	}
 
 	screen_refresh_freeze();
-	window_update_prompt(window);
+	window_update_prompt();
 	gui_window_redraw(window);
 	screen_refresh_thaw();
 }
@@ -1060,15 +1084,45 @@ void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
 	g_string_free(raw, TRUE);
 }
 
+static void sig_check_window_update(WINDOW_REC *window)
+{
+	if (window == active_win)
+                window_update_prompt();
+}
+
 static void read_settings(void)
 {
+	SIGNAL_FUNC funcs[] = {
+                (SIGNAL_FUNC) window_update_prompt,
+                (SIGNAL_FUNC) window_update_prompt_server,
+                (SIGNAL_FUNC) window_update_prompt_window,
+                (SIGNAL_FUNC) window_update_prompt_window_item
+	};
+
         default_indent_pos = settings_get_int("indent");
+
+	if (prompt != NULL) {
+		special_vars_remove_signals(prompt, 4, funcs);
+		special_vars_remove_signals(prompt_window, 4, funcs);
+		g_free(prompt);
+                g_free(prompt_window);
+	}
+	prompt = g_strdup(settings_get_str("prompt"));
+	prompt_window = g_strdup(settings_get_str("prompt_window"));
+
+	special_vars_add_signals(prompt, 4, funcs);
+	special_vars_add_signals(prompt_window, 4, funcs);
+
+	if (active_win != NULL) window_update_prompt();
 }
 
 void gui_windows_init(void)
 {
 	settings_add_int("lookandfeel", "indent", 10);
+	settings_add_str("lookandfeel", "prompt", "[$T] ");
+	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
 
+        prompt = NULL; prompt_window = NULL;
 	window_create_override = -1;
 	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
 
@@ -1077,15 +1131,15 @@ void gui_windows_init(void)
 	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_add_first("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_add("window item changed", (SIGNAL_FUNC) window_update_prompt);
-	signal_add("window name changed", (SIGNAL_FUNC) window_update_prompt);
-	signal_add("window item remove", (SIGNAL_FUNC) window_update_prompt);
+	signal_add("window item remove", (SIGNAL_FUNC) sig_check_window_update);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void gui_windows_deinit(void)
 {
 	g_source_remove(linecache_tag);
+        g_free_not_null(prompt);
+        g_free_not_null(prompt_window);
 
 	while (windows != NULL)
 		window_destroy(windows->data);
@@ -1094,8 +1148,6 @@ void gui_windows_deinit(void)
 	signal_remove("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_remove("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_remove("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_remove("window item changed", (SIGNAL_FUNC) window_update_prompt);
-	signal_remove("window name changed", (SIGNAL_FUNC) window_update_prompt);
-	signal_remove("window item remove", (SIGNAL_FUNC) window_update_prompt);
+	signal_remove("window item remove", (SIGNAL_FUNC) sig_check_window_update);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
