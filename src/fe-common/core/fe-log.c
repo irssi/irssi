@@ -511,7 +511,8 @@ static void sig_window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 	LOG_REC *log;
 
 	log = logs_find_item(LOG_ITEM_TARGET, item->name, item->server, NULL);
-        if (log != NULL) log_close(log);
+	if (log != NULL && log->temp)
+		log_close(log);
 }
 
 static void sig_log_locked(LOG_REC *log)
