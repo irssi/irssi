@@ -43,12 +43,6 @@
 #include "perl-core.h"
 #include "perl-common.h"
 
-#ifdef HAVE_GC_H
-#  include <gc.h>
-#elif defined (HAVE_GC_GC_H)
-#  include <gc/gc.h>
-#endif
-
 typedef struct {
 	char *stash;
         PERL_OBJECT_FUNC fill_func;
@@ -60,7 +54,6 @@ STRLEN PL_na;
 
 static GHashTable *iobject_stashes, *plain_stashes;
 static GSList *use_protocols;
-static int perl_memory_check_level;
 
 /* returns the package who called us */
 const char *perl_get_package(void)
@@ -102,6 +95,31 @@ SV *perl_func_sv_inc(SV *func, const char *package)
         return func;
 }
 
+static int magic_free_object(pTHX_ SV *sv, MAGIC *mg)
+{
+	sv_setiv(sv, 0);
+	return 0;
+}
+
+static MGVTBL vtbl_free_object =
+{
+    NULL, NULL, NULL, NULL, magic_free_object
+};
+
+static SV *create_sv_ptr(void *object)
+{
+	SV *sv;
+
+	sv = newSViv((IV)object);
+
+	sv_magic(sv, NULL, '~', NULL, 0);
+
+	SvMAGIC(sv)->mg_private = 0x1551; /* HF */
+	SvMAGIC(sv)->mg_virtual = &vtbl_free_object;
+
+	return sv;
+}
+
 SV *irssi_bless_iobject(int type, int chat_type, void *object)
 {
         PERL_OBJECT_REC *rec;
@@ -114,13 +132,13 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
 				  GINT_TO_POINTER(type | (chat_type << 16)));
 	if (rec == NULL) {
                 /* unknown iobject */
-		return newSViv((IV)object);
+		return create_sv_ptr(object);
 	}
 
 	stash = gv_stashpv(rec->stash, 1);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, newSViv((IV)object), 0);
+	hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
         rec->fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), stash);
 }
@@ -133,7 +151,7 @@ SV *irssi_bless_plain(const char *stash, void *object)
 	fill_func = g_hash_table_lookup(plain_stashes, stash);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, newSViv((IV)object), 0);
+	hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
 	if (fill_func != NULL)
 		fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv((char *)stash, 1));
@@ -168,14 +186,6 @@ void *irssi_ref_object(SV *o)
 	if (sv == NULL)
 		croak("variable is damaged");
 	p = GINT_TO_POINTER(SvIV(*sv));
-#ifdef HAVE_GC
-	if (perl_memory_check_level > 0) {
-		if (perl_memory_check_level > 1)
-			GC_gcollect();
-		if (GC_base(p) == NULL)
-			croak("variable is already free'd");
-	}
-#endif
 	return p;
 }
 
@@ -644,11 +654,6 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 				    GINT_TO_POINTER(rec->id));
 }
 
-static void read_settings(void)
-{
-        perl_memory_check_level = settings_get_int("perl_memory_check_level");
-}
-
 void perl_common_start(void)
 {
 	static PLAIN_OBJECT_INIT_REC core_plains[] = {
@@ -663,9 +668,6 @@ void perl_common_start(void)
 		{ NULL, NULL }
 	};
 
-	settings_add_int("perl", "perl_memory_check_level", 1);
-	read_settings();
-
 	iobject_stashes = g_hash_table_new((GHashFunc) g_direct_hash,
 					(GCompareFunc) g_direct_equal);
 	plain_stashes = g_hash_table_new((GHashFunc) g_str_hash,
@@ -677,7 +679,6 @@ void perl_common_start(void)
 
 	signal_add("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
 	signal_add("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void perl_common_stop(void)
@@ -696,5 +697,4 @@ void perl_common_stop(void)
 
 	signal_remove("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
 	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

@@ -6,6 +6,7 @@ static int magic_free_text_dest(pTHX_ SV *sv, MAGIC *mg)
 	g_free((char *) dest->target);
 	g_free(dest);
 	mg->mg_ptr = NULL;
+	sv_setiv(sv, 0);
 	return 0;
 }
 
