@@ -326,6 +326,15 @@ CODE:
 	perl_command_bind(cmd, category, func);
 
 void
+command_runsub(cmd, data, server, item)
+	char *cmd
+	char *data
+	Irssi::Server server
+	Irssi::Windowitem item
+CODE:
+	perl_command_runsub(cmd, data, server, item);
+
+void
 command_unbind(cmd, func)
 	char *cmd
 	char *func

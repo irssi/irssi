@@ -273,6 +273,12 @@ void perl_command_bind(const char *cmd, const char *category, const char *func)
 	g_free(signal);
 }
 
+void perl_command_runsub(const char *cmd, const char *data, 
+			 SERVER_REC *server, WI_ITEM_REC *item)
+{
+	command_runsub(cmd, data, server, item);
+}
+
 void perl_command_unbind(const char *cmd, const char *func)
 {
 	char *signal;
