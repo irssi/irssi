@@ -198,11 +198,11 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	handle = NULL;
 	if (ip != NULL) {
-		/* allow "server connecting" signal to create the
-		   connection handle */
-		signal_emit("server connecting", 3, server, ip, &handle);
-                if (handle == NULL)
+		signal_emit("server connecting", 2, server, ip);
+                if (server->handle == NULL)
 			handle = net_connect_ip(ip, port, own_ip);
+		else
+                        handle = net_sendbuffer_handle(server->handle);
 	}
 
 	if (handle == NULL) {
@@ -227,7 +227,8 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 		return;
 	}
 
-	server->handle = net_sendbuffer_create(handle, 0);
+        if (server->handle == NULL)
+		server->handle = net_sendbuffer_create(handle, 0);
 	server->connect_tag =
 		g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_init,

@@ -32,8 +32,6 @@
 static char *session_file;
 static char *irssi_binary;
 
-static GIOChannel *next_handle;
-
 void session_set_binary(const char *path)
 {
 	char **paths, **tmp;
@@ -73,21 +71,18 @@ static void cmd_upgrade(const char *data)
 {
 	CONFIG_REC *session;
         GSList *file_handles;
-	const char *args[10];
-	char *session_file;
-        int n;
+	char *session_file, *str, **args;
+        int i;
 
 	if (*data == '\0')
 		data = irssi_binary;
-
-        /* make sure we can execute it */
-	if (data == NULL || access(data, X_OK) != 0)
-		cmd_return_error(CMDERR_ERRNO);
+	if (data == NULL)
+                cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	/* save the session */
         session_file = g_strdup_printf("%s/session.%d", get_irssi_dir(), getpid());
-        unlink(session_file);
 	session = config_open(session_file, 0600);
+        unlink(session_file);
 
         file_handles = NULL;
 	signal_emit("session save", 2, session, &file_handles);
@@ -98,18 +93,19 @@ static void cmd_upgrade(const char *data)
 	signal_emit("session clean", 0);
 
         /* close the file handles we don't want to transfer to new client */
-	for (n = 3; n < 256; n++) {
-		if (g_slist_find(file_handles, GINT_TO_POINTER(n)) == NULL)
-			close(n);
+	for (i = 3; i < 256; i++) {
+		if (g_slist_find(file_handles, GINT_TO_POINTER(i)) == NULL)
+			close(i);
 	}
 	g_slist_free(file_handles),
 
-        /* irssi --session ~/.irssi/session.<pid> -! */
-	args[0] = data;
-	args[1] = "--session";
-	args[2] = session_file;
-	args[3] = "-!";
-	args[4] = NULL;
+	/* irssi -! --session ~/.irssi/session.<pid>
+	   data may contain some other program as well, like
+	   /UPGRADE /usr/bin/screen irssi */
+	str = g_strdup_printf("%s -! --session %s", data, session_file);
+        args = g_strsplit(str, " ", -1);
+        g_free(str);
+
 	execvp(args[0], (char **) args);
 
 	fprintf(stderr, "exec: %s: %s\n", args[0], g_strerror(errno));
@@ -165,10 +161,10 @@ static void session_restore_server(CONFIG_NODE *node)
 	conn = server_create_conn(proto->id, address, port,
 				  chatnet, password, nick);
 	if (conn != NULL) {
-		next_handle = g_io_channel_unix_new(handle);
 		conn->reconnection = TRUE;
 
 		server = proto->server_connect(conn);
+                server->handle = net_sendbuffer_create(g_io_channel_unix_new(handle), 0);
 		server->session_reconnect = TRUE;
 
 		signal_emit("session restore server", 2, server, node);
@@ -216,12 +212,6 @@ static void sig_init_finished(void)
 	session_file = NULL;
 }
 
-static void sig_connecting(SERVER_REC *server, IPADDR *ip, GIOChannel **handle)
-{
-        *handle = next_handle;
-	next_handle = NULL;
-}
-
 void session_init(void)
 {
 	static struct poptOption options[] = {
@@ -237,8 +227,6 @@ void session_init(void)
 	signal_add("session save", (SIGNAL_FUNC) sig_session_save);
 	signal_add("session restore", (SIGNAL_FUNC) sig_session_restore);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
-
-	signal_add("server connecting", (SIGNAL_FUNC) sig_connecting);
 }
 
 void session_deinit(void)
@@ -250,6 +238,4 @@ void session_deinit(void)
 	signal_remove("session save", (SIGNAL_FUNC) sig_session_save);
 	signal_remove("session restore", (SIGNAL_FUNC) sig_session_restore);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
-
-	signal_remove("server connecting", (SIGNAL_FUNC) sig_connecting);
 }
