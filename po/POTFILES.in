@@ -64,7 +64,6 @@ src/gui-gnome/setup-txt.c
 src/gui-gnome/setup.c
 src/gui-gnome/snapshot.c
 src/gui-gnome/wordclick.c
-src/gui-text/channels-newdata.c
 src/gui-text/gui-channels.c
 src/gui-text/gui-entry.c
 src/gui-text/gui-mainwindows.c

@@ -1,3 +1,86 @@
+v0.7.19 1999-11-20  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	* Text formats changed - they should be compatible with epic/bx now.
+          See docs/FORMATS for more information
+
+	+ Internationalization support - finally. No languages yet though..
+
+	+ /window new split creates a new splitted window
+	+ Automatic text replaces, useful for things like :9 -> :) .. This
+	  is actually almost same as completions, except they are activated
+	  with different keys..
+	+ Nicklist popup menu is configurable
+	+ ~/.irssi/startup - add all commands here you want to run at startup
+	+ Much more levels for ignoring/logging/etc. See docs/COMMANDS for a
+	  list
+	+ Ignoring joins, parts, etc. work, ignoring channels work
+	+ Automatically loading plugins at startup works in irssi-text and
+	  irssibot too
+	+ Autoaccept dcc get/chat from given nick/address
+	+ /help
+	+ Server/Links dialog, displays list of servers in tree view.
+	  Doubleclicking a hub asks the servers behind the hub (doesn't seem
+	  to work in efnet)
+	+ /server +irc.server.net does the same as /connect irc.server.net
+	+ Nicklist is resizeable
+	+ Buttons for closing and moving window left/right
+	+ Query windows display nick's address in topic widget and the
+	  address isn't displayed in every msg in query windows.
+	+ It's possible to add bold/colors/etc to default quit message
+	+ MIRC colors are finally displayed with right colors
+	+ You can run multiple command in alias, separate them with &&.
+	  You can create a & character with \&
+	+ Hilighting changes: Your own /msgs won't trigger channel activity,
+	  received private messages get the "new text" color
+	+ /MODE accepts multiple modes at once and they're split automatically
+	  to 3 modes/command, like /MODE #chan +oooooo nick1,nick2,.. is
+	  split to two commands which are sent to server.
+	+ /KICK, /MSG, /NOTICE, /CTCP and /NCTCP are also automatically split
+	  into multiple real commands. /KICK can kick max. 4 nicks per
+	  command, privmsg/notice can send max. 3 nicks per command.
+	+ Option: Show timestamps in msgs.
+	- Joining to channel from channels dialog that had password set
+	  didn't work.
+	- When scrolling, Irssi text widget sometimes left black spots in
+	  text area if some other window was overlaping it.
+	- DCC resumes still didn't work
+	- Fixed some memory leaks
+
+v0.7.18.1 1999-11-04  Timo Sirainen <cras@irccrew.org> [stable]
+
+	- Window didn't scroll if you were using GtkText
+	- Resuming DCC transfers could mess up the existing transfers with
+	  the same nick..
+	- Some PONGs were displayed on screen if you were enough lagged..
+	- --help works now without gnome (gtk/text versions)
+	- Sending data to irc server/dcc chats/proxy's clients/etc. won't
+	  block forever anymore - I once got it to happen with proxy..
+	- Some fixes for channel limit/key widgets above nicklist
+	- Speech plugin works now right with timestamps enabled
+	- irssibot (gui-none) doesn't crash at startup anymore and it doesn't
+	  link with ui-common anymore. Also added a --load / -l command line
+	  option to specify what plugin to load at startup. Default = bot
+
+v0.7.18 1999-10-18  Timo Sirainen <cras@irccrew.org> [stable]
+
+	* Finally a version I dare to call stable :) Just a bugfix release
+	  for 0.7.17 but it had only a few problems..
+
+	* Status window is now off by default
+
+	- Sound and speech plugins weren't working.
+	- Proxy plugin shouldn't crash now while not connected to server
+	- Using some menuitems crashed when using the popup menus instead of
+	  menubar.
+	- Removed a Gdk-Critical warning when opening themes dialog without
+	  GNOME
+	- When resuming DCC transfers the average transfer rate was incorrect
+	- If you tried to connect to server while themes dialog was open,
+	  it crashed.
+	- Several problems fixed with changing background pixmaps
+	- Fixes for building from different directory
+	- Trying to save theme crashed..
+
 v0.7.17 1999-10-16  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Irssi text widget! (replaces zvt)

@@ -11,6 +11,7 @@ BOTUI=gui-none
 endif
 
 noinst_HEADERS = \
+	nls.h \
 	common.h \
 	common-setup.h \
 	irssi-plugin.h \

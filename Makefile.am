@@ -30,10 +30,9 @@ endif
 confdir = $(sysconfdir)/irssi
 conf_DATA = config colorless.theme
 
-EXTRA_DIST = window-views-patch.diff \
+EXTRA_DIST = \
 	autogen.sh \
 	README-HEBREW \
-	COMMANDS \
 	file2header.sh \
 	irssi.spec \
 	$(conf_DATA) \

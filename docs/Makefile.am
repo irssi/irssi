@@ -1,5 +1,7 @@
 EXTRA_DIST = \
 	FAQ \
+	COMMANDS \
+	README \
 	FORMATS
 
 SUBDIRS = help

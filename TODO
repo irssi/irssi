@@ -1,4 +1,4 @@
- 
+
 *** Bugs
 
  - irssi can't find new themes in ~/.irssi/ while running - scan for new
@@ -13,6 +13,7 @@
 
 *** text UI
 
+ - split windows
  - statusbar:
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
@@ -25,12 +26,17 @@
 
 *** Big things
 
- - keyboard configuration
+ - Complete modularisation of everything, split irc-extra, ui-common and
+   gui-* (gui especially) into separate logical components. The modules would
+   have init(), deinit(), save_state() and restore_state() - save/restore
+   should save as much as possible so that it would be possible to restart the
+   whole base system. Like when upgrading to newer version you wouldn't need
+   to quit irc at all :)
+
  - session saving thing.. specify what channels/queries/dcc chats to open in
    which window (real/tabbed/in same window with some other), what irc net
    channels goes to where, what channels/queries to open at startup, etc.
    use dialog with gtktree widget to change it.
- - split windows with gtkpaned (check window-views-patch.diff)
  - some sort of address book? our own irssi ctcp to ask for other irssi users
    for their information (of course not without asking (except optionally))..
    could be nice also to automatically update it, keep track of all seen
@@ -51,8 +57,7 @@
  - plugins:
      - perl plugin .. implementation problems, C's structures need to be
        handled some way .. like for server structure get_address(),
-       get_port(), set_address(), set_port() etc..
-     - other scripting plugins would be easier? scheme, tcl, pythong?
+       get_port(), set_address(), set_port() etc..             - other scripting plugins would be easier? scheme, tcl, pythong?
        sula premirex uses scheme, it would probably be pretty easy to learn
        from it how to do it to irssi :)
      - IRC bot, eggdrop is too old, needs a replacement ;) (started)
@@ -80,12 +85,25 @@
 
  * Notify list, join the two different dialogs, ability to track changes in
    gone flag
+ - _one_ popup dialog could open which lists all nicks in notifylist, maybe
+   sorted by arrival time, display the dates, latest joined could be with
+   different color? etc.
  - nick-specific options: 
     - check for gone-flag changes (use userhosts instead of isons)
-    - create popup dialog
+    - pop up the dialog
     - run some command (like /exec as soon as I get that done :)
  - dialog: keep track of hosts/realnames so after closing and opening the
    dialog again they would show up.. 
+
+ * common api for statusbar handling
+ - it should work just as well in text mode and gui, colors could be done
+   with the normal % formats. GUI just ignores the colors..
+ - display number of ops, voices, normals and ircops in statusbar
+
+ * API for creating/modifying menus and toolbar, especially from plugins
+ - at least one configurable menu ("usermenu"), or maybe make the whole
+   menubar user configurable
+
 
 *** Little things
 
@@ -93,12 +111,21 @@
      - save/find text
      - text selection draws the entire selection every time you move the
        mouse...
- - improve msgslevels and ignoring .. Like ignoring "chan" doesn't work now.
-   It could be changed to joins, parts, quits, topics, nicks, .. just rip all
-   the msglevels from bitchx and use them :)
- - use different themes in different channels/queries?
+     - if some other window has got much text, switching to it first time
+       takes some time..?
  - possibility to display different colors in nicks from different people..
    and different colors for word hilighting too
+ - exceptions for ignoring
+ - editor in setup for ~/.irssi/startup
+ - gui help
+ - change signal handling in gui-gnome so that the actual drawing and
+   functionality are in different signals, so that plugin could change the
+   whole look and feel of irssi.
+ - currently irssi sends USERHOST commands every now and then to find out
+   who are away and who are not.. optionally it could instead just watch if
+   someone hasn't written anything to channel in n minutes and mark it "away"
+   to nicklist.
+ - use different themes in different channels/queries?
  - /connect ircnet could connect to ircnet
  - change some GLists to GHashTables, aliases at least
  - check new irssi versions with http rather than with irssibot..
@@ -110,14 +137,14 @@
     - clock?
     - dcc transfer meter (gtk progressbar)
  - you could configure which events (whois, notify, etc.) to show in what
-   windows (all, current, status)
+   windows (all, current, status, msgs)
  - gui for configuring plugin specific theme format texts
  - dcc send: allow selection of multiple files to send (also for dnd from
    gmc!) Allow dropping files to anywhere in irssi.
  - /timer, /clones
  - display net splits?
- - run multiple commands with one alias (what was this needed for? can't
-   remember..)
  - regexp for hilighting words?
  - subcommands (dcc, window, ..) could use common function instead of copy and
    pasting the same function all the time and modifying just two words...
+ - {}|~ are same as []\^ (not in all irc networks) - does this really affect
+   irssi at all..?

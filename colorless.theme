@@ -43,6 +43,7 @@
     own_msg = "<$1> $2";
     own_msg_channel = "<$1:$2> $3";
     own_msg_private = "[msg($1)] $2";
+    own_msg_private_query = "<$1> $2";
     own_notice = "[notice($1)] $2";
     own_me = " * $1 $2";
     own_ctcp = "[ctcp($1)] $2 $3";
@@ -52,12 +53,14 @@
     pubmsg = "<$1> $2";
     pubmsg_channel = "<$1:$2> $3";
     msg_private = "[$1($2)] $3";
+    msg_private_query = "<$1> $2";
     dcc_msg = "[$1(dcc)] $2";
     notice_server = "!$1 $2";
     notice_public = "-$1:$2- $3";
     notice_private = "-$1($2)- $3";
     action_dcc = " (*dcc*) $1 $2";
     action_private = " (*) $1 $2";
+    action_private_query = " (*) $1 $2";
     action_public = " * $1 $2";
     action_public_channel = " * $1:$2 $3";
     ctcp_reply = "CTCP %_$1%_ reply from %_$2%_: $3";
