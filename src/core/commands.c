@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "misc.h"
 #include "special-vars.h"
+#include "window-item-def.h"
 
 #include "servers.h"
 #include "servers-redirect.h"
@@ -619,12 +620,12 @@ typedef struct {
         GHashTable *options;
 } CMD_TEMP_REC;
 
-static char *get_optional_channel(CHANNEL_REC *active_channel, char **data)
+static char *get_optional_channel(WI_ITEM_REC *active_item, char **data)
 {
         CHANNEL_REC *chanrec;
 	char *tmp, *origtmp, *channel, *ret;
 
-	if (active_channel == NULL) {
+	if (active_item == NULL) {
                 /* no active channel in window, channel required */
 		return cmd_get_param(data);
 	}
@@ -633,14 +634,15 @@ static char *get_optional_channel(CHANNEL_REC *active_channel, char **data)
 	channel = cmd_get_param(&tmp);
 
 	if (strcmp(channel, "*") == 0 ||
-	    !active_channel->server->ischannel(channel))
-		ret = active_channel->name;
+	    !active_item->server->ischannel(channel))
+		ret = active_item->name;
 	else {
 		/* Find the channel first and use it's name if found.
 		   This allows automatic !channel -> !XXXXXchannel replaces. */
-		chanrec = channel_find(active_channel->server, channel);
+                channel = cmd_get_param(data);
+
+		chanrec = channel_find(active_item->server, channel);
 		ret = chanrec == NULL ? channel : chanrec->name;
-                cmd_get_param(data);
 	}
 
 	g_free(origtmp);
@@ -649,7 +651,7 @@ static char *get_optional_channel(CHANNEL_REC *active_channel, char **data)
 
 int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 {
-        CHANNEL_REC *chanrec;
+        WI_ITEM_REC *item;
 	CMD_TEMP_REC *rec;
 	GHashTable **opthash;
 	char **str, *arg, *datad;
@@ -667,8 +669,8 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
         datad = rec->data;
 	error = FALSE;
 
-	chanrec = (count & PARAM_FLAG_OPTCHAN) == 0 ? NULL:
-		(CHANNEL_REC *) va_arg(args, CHANNEL_REC *);
+	item = (count & PARAM_FLAG_OPTCHAN) == 0 ? NULL:
+		(WI_ITEM_REC *) va_arg(args, WI_ITEM_REC *);
 
 	if (count & PARAM_FLAG_OPTIONS) {
 		arg = (char *) va_arg(args, char *);
@@ -688,7 +690,7 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 		cnt = PARAM_WITHOUT_FLAGS(count);
 		if (count & PARAM_FLAG_OPTCHAN) {
 			/* optional channel as first parameter */
-			arg = get_optional_channel(chanrec, &datad);
+			arg = get_optional_channel(item, &datad);
 
 			str = (char **) va_arg(args, char **);
 			if (str != NULL) *str = arg;
