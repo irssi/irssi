@@ -638,7 +638,7 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
 	if (!IS_IRC_CHANNEL(channel))
 		return;
 
-	nicks = get_nicks(channel, data, 0, 1);
+	nicks = get_nicks(channel, data, -1, 1);
 	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(channel, nicks, "-v");
 	g_free_not_null(nicks);
