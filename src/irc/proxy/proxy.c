@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "signals.h"
 #include "settings.h"
 #include "levels.h"
 

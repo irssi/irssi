@@ -21,6 +21,7 @@
 #include "module.h"
 #include "network.h"
 #include "settings.h"
+#include "irssi-version.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -214,12 +215,12 @@ void plugin_proxy_dump_data(CLIENT_REC *client)
 
 	/* welcome info */
 	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
-	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, VERSION);
+	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, IRSSI_VERSION);
 	proxy_outdata(client, ":%s 003 %s :This server was created ...\n", client->nick);
 	if (client->server == NULL || !client->server->emode_known)
-		proxy_outdata(client, ":%s 004 %s proxy %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, VERSION);
+		proxy_outdata(client, ":%s 004 %s proxy %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, IRSSI_VERSION);
 	else
-		proxy_outdata(client, ":%s 004 %s proxy %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, VERSION);
+		proxy_outdata(client, ":%s 004 %s proxy %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, IRSSI_VERSION);
 	proxy_outdata(client, ":%s 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 255 %s :I have 0 clients, 0 services and 0 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 422 %s :MOTD File is missing\n", client->proxy_address, client->nick);
