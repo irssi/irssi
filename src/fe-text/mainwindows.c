@@ -42,7 +42,7 @@ static int old_screen_width, old_screen_height;
 	term_window_create(0, \
 			   (window)->first_line + (window)->statusbar_lines_top, \
 			   (window)->width, \
-			   (window)->height + (window)->statusbar_lines)
+			   (window)->height - (window)->statusbar_lines)
 
 #define mainwindow_set_screen_size(window) \
 	term_window_move((window)->screen_win, 0, \
@@ -75,11 +75,11 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
 
+	mainwindow_set_screen_size(window);
 	if (window->active->width == window->width &&
 	    window->active->height == MAIN_WINDOW_TEXT_HEIGHT(window))
                 return;
 
-	mainwindow_set_screen_size(window);
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
