@@ -35,6 +35,11 @@
 
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 {
+	if (is_numeric(data, 0)) {
+                signal_emit("command window refnum", 3, data, server, item);
+		return;
+	}
+
 	command_runsub("window", data, server, item);
 }
 
