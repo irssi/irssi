@@ -2,7 +2,7 @@
 #define __FORMATS_H
 
 #include "themes.h"
-#include "windows.h"
+#include "fe-windows.h"
 
 #define PRINTFLAG_BOLD          0x01
 #define PRINTFLAG_REVERSE       0x02

@@ -29,7 +29,7 @@
 #include "special-vars.h"
 #include "settings.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "formats.h"
 #include "themes.h"

@@ -33,7 +33,7 @@
 
 #include "completion.h"
 #include "themes.h"
-#include "windows.h"
+#include "fe-windows.h"
 
 #include "module-formats.h"
 #include "printtext.h"

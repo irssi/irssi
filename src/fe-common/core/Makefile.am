@@ -33,7 +33,7 @@ libfe_common_core_a_SOURCES = \
 	window-commands.c \
 	window-items.c \
 	window-save.c \
-	windows.c
+	fe-windows.c
 
 noinst_HEADERS = \
 	command-history.h \
@@ -50,4 +50,4 @@ noinst_HEADERS = \
 	translation.h \
 	window-items.h \
 	window-save.h \
-	windows.h
+	fe-windows.h

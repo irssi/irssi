@@ -32,7 +32,7 @@
 #include "formats.h"
 #include "themes.h"
 #include "translation.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "window-save.h"
 

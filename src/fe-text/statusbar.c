@@ -23,7 +23,7 @@
 #include "servers.h"
 #include "settings.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 
 #include "screen.h"
 #include "statusbar.h"

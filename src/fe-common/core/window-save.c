@@ -30,7 +30,7 @@
 #include "queries.h"
 
 #include "themes.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 
 static void sig_window_restore_item(WINDOW_REC *window, const char *type,

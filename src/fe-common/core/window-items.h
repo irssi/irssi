@@ -1,7 +1,7 @@
 #ifndef __WINDOW_ITEMS_H
 #define __WINDOW_ITEMS_H
 
-#include "windows.h"
+#include "fe-windows.h"
 
 /* Add/remove window item from `window' */
 void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);

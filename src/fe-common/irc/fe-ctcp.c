@@ -30,7 +30,7 @@
 #include "queries.h"
 #include "ignore.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "printtext.h"
 

@@ -1,7 +1,7 @@
 #ifndef __PRINTTEXT_H
 #define __PRINTTEXT_H
 
-#include "windows.h"
+#include "fe-windows.h"
 
 void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...);
 void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...);

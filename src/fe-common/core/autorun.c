@@ -23,7 +23,7 @@
 #include "line-split.h"
 #include "special-vars.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 
 static void sig_autorun(void)
 {

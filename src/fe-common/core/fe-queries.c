@@ -28,7 +28,7 @@
 #include "levels.h"
 #include "queries.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "printtext.h"
 

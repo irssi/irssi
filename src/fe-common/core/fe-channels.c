@@ -30,7 +30,7 @@
 #include "channels-setup.h"
 #include "nicklist.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "printtext.h"
 

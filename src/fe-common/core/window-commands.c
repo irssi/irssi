@@ -28,7 +28,7 @@
 #include "levels.h"
 
 #include "themes.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "window-save.h"
 #include "printtext.h"

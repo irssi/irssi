@@ -24,7 +24,7 @@
 #include "special-vars.h"
 #include "settings.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 
 /* command history */

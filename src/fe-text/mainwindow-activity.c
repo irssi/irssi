@@ -21,7 +21,7 @@
 #include "module.h"
 #include "signals.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "gui-windows.h"
 
 static void sig_activity(WINDOW_REC *window)

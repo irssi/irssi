@@ -27,7 +27,7 @@
 #include "settings.h"
 
 #include "irc-servers.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "printtext.h"
 
 #include "screen.h"

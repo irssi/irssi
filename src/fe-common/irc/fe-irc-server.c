@@ -31,7 +31,7 @@
 #include "servers-reconnect.h"
 #include "irc-servers-setup.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "printtext.h"
 
 static void sig_server_add_create(IRC_SERVER_SETUP_REC **rec,

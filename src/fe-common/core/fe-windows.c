@@ -30,7 +30,7 @@
 #include "levels.h"
 
 #include "printtext.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 
 GSList *windows; /* first in the list is the active window,

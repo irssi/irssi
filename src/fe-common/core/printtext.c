@@ -29,7 +29,7 @@
 #include "servers.h"
 
 #include "themes.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "printtext.h"
 
 static int beep_msg_level, beep_when_away;

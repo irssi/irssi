@@ -28,7 +28,7 @@
 #include "settings.h"
 
 #include "keyboard.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "printtext.h"
 
 GSList *keyinfos;

@@ -27,7 +27,7 @@
 
 #include "irc.h"
 #include "channels.h"
-#include "windows.h"
+#include "fe-windows.h"
 
 #include "screen.h"
 #include "gui-entry.h"

@@ -27,7 +27,7 @@
 #include "command-history.h"
 #include "keyboard.h"
 #include "translation.h"
-#include "windows.h"
+#include "fe-windows.h"
 
 #include "screen.h"
 #include "gui-entry.h"

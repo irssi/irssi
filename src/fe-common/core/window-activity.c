@@ -25,7 +25,7 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "window-items.h"
 #include "nicklist.h"
 #include "hilight-text.h"

@@ -1,7 +1,7 @@
 #ifndef __MAINWINDOWS_H
 #define __MAINWINDOWS_H
 
-#include "windows.h"
+#include "fe-windows.h"
 #include "screen.h"
 
 typedef struct {

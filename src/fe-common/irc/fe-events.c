@@ -35,7 +35,7 @@
 #include "fe-queries.h"
 #include "irc-channels.h"
 #include "irc-nicklist.h"
-#include "windows.h"
+#include "fe-windows.h"
 #include "printtext.h"
 
 #include "completion.h"
