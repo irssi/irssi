@@ -40,7 +40,9 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 
 	rec = g_new0(IRC_SERVER_CONNECT_REC, 1);
 	rec->chat_type = IRC_PROTOCOL;
+	rec->max_cmds_at_once = src->max_cmds_at_once;
 	rec->cmd_queue_speed = src->cmd_queue_speed;
+        rec->max_query_chans = src->max_query_chans;
 	rec->max_kicks = src->max_kicks;
 	rec->max_modes = src->max_modes;
 	rec->max_msgs = src->max_msgs;
