@@ -115,12 +115,13 @@ server_redirect_init(server, command, last, ...)
 	char *command
 	int last
 PREINIT:
+        STRLEN n_a;
 	GSList *list;
 	int n;
 CODE:
 	list = NULL;
 	for (n = 3; n < items; n++) {
-		list = g_slist_append(list, SvPV(ST(n), PL_na));
+		list = g_slist_append(list, SvPV(ST(n), n_a));
 	}
 	server_redirect_initv(server, command, last, list);
 
@@ -140,12 +141,13 @@ server_redirect_event(server, arg, last, ...)
 	char *arg
 	int last
 PREINIT:
+        STRLEN n_a;
 	int n, group;
 CODE:
 	group = 0;
 	for (n = 3; n+3 <= items; n += 3, last--) {
 		group = server_redirect_single_event(server, arg, last > 0, group,
-			(char *) SvPV(ST(n), PL_na), (char *) SvPV(ST(n+1), PL_na), (int) SvIV(ST(n+2)));
+			(char *) SvPV(ST(n), n_a), (char *) SvPV(ST(n+1), n_a), (int) SvIV(ST(n+2)));
 	}
 
 #*******************************
