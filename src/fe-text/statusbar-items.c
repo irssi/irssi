@@ -31,7 +31,7 @@
 #define LAG_REFRESH_TIME 10
 
 static GList *activity_list;
-static int more_visible;
+static GSList *more_visible; /* list of MAIN_WINDOW_RECs which have --more-- */
 static GHashTable *input_entries;
 static int last_lag, last_lag_unknown, lag_timeout_tag;
 
@@ -218,19 +218,28 @@ static void sig_statusbar_activity_updated(void)
 
 static void item_more(SBAR_ITEM_REC *item, int get_size_only)
 {
-	more_visible = WINDOW_GUI(active_win)->view->more_text;
-	if (!more_visible) {
+        MAIN_WINDOW_REC *mainwin;
+	int visible;
+
+	mainwin = WINDOW_MAIN(active_win);
+	visible = WINDOW_GUI(active_win)->view->more_text;
+	if (!visible) {
+                more_visible = g_slist_remove(more_visible, mainwin);
 		if (get_size_only)
 			item->min_size = item->max_size = 0;
 		return;
 	}
 
+	more_visible = g_slist_prepend(more_visible, mainwin);
 	statusbar_item_default_handler(item, get_size_only, NULL, "", FALSE);
 }
 
 static void sig_statusbar_more_updated(void)
 {
-	if (WINDOW_GUI(active_win)->view->more_text != more_visible)
+	int visible;
+
+        visible = g_slist_find(more_visible, WINDOW_MAIN(active_win)) != NULL;
+	if (WINDOW_GUI(active_win)->view->more_text != visible)
                 statusbar_items_redraw("more");
 }
 
@@ -378,7 +387,7 @@ void statusbar_items_init(void)
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
         /* more */
-        more_visible = FALSE;
+        more_visible = NULL;
 	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_add_last("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_updated);
@@ -408,6 +417,7 @@ void statusbar_items_deinit(void)
         activity_list = NULL;
 
         /* more */
+        g_slist_free(more_visible);
 	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_updated);
