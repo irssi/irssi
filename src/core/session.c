@@ -30,13 +30,42 @@
 #include "servers-setup.h"
 
 static char *session_file;
-static const char *irssi_binary; /* from argv[0] */
+static char *irssi_binary;
 
 static GIOChannel *next_handle;
 
 void session_set_binary(const char *path)
 {
-        irssi_binary = path;
+	char **paths, **tmp;
+        char *str;
+
+	g_free_and_null(irssi_binary);
+
+	if (g_path_is_absolute(path)) {
+                /* full path - easy */
+		irssi_binary = g_strdup(path);
+                return;
+	}
+
+	if (strchr(path, G_DIR_SEPARATOR) != NULL) {
+		/* relative path */
+                str = g_get_current_dir();
+		irssi_binary = g_strconcat(str, G_DIR_SEPARATOR_S, path, NULL);
+		g_free(str);
+                return;
+	}
+
+	/* we'll need to find it from path. */
+	paths = g_strsplit(g_getenv("PATH"), ":", -1);
+	for (tmp = paths; *tmp != NULL; tmp++) {
+                str = g_strconcat(*tmp, G_DIR_SEPARATOR_S, path, NULL);
+		if (access(str, X_OK) == 0) {
+			irssi_binary = str;
+                        break;
+		}
+                g_free(str);
+	}
+	g_strfreev(paths);
 }
 
 /* SYNTAX: UPGRADE [<irssi binary path>] */
@@ -52,7 +81,7 @@ static void cmd_upgrade(const char *data)
 		data = irssi_binary;
 
         /* make sure we can execute it */
-	if (access(data, X_OK) != 0)
+	if (data == NULL || access(data, X_OK) != 0)
 		cmd_return_error(CMDERR_ERRNO);
 
 	/* save the session */
@@ -214,6 +243,8 @@ void session_init(void)
 
 void session_deinit(void)
 {
+	g_free_not_null(irssi_binary);
+
         command_unbind("upgrade", (SIGNAL_FUNC) cmd_upgrade);
 
 	signal_remove("session save", (SIGNAL_FUNC) sig_session_save);
