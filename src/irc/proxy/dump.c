@@ -215,9 +215,9 @@ void proxy_client_reset_nick(CLIENT_REC *client)
 	client->nick = g_strdup(client->server->nick);
 }
 
-static void proxy_dump_data_005(char *key, char *value, GString *output)
+static void proxy_dump_data_005(gpointer key, gpointer value, gpointer context)
 {
-	g_string_sprintfa(output, "%s=%s ", key, value);
+	g_string_sprintfa(context, "%s=%s ", (char *)key, (char *)value);
 }
 
 void proxy_dump_data(CLIENT_REC *client)
