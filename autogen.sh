@@ -33,6 +33,10 @@ cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr
 files=`echo $files|sed 's/\.in//g'`
 cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '\!?' '\t\n' > docs/help/Makefile.am
 
+# .html -> .txt with lynx
+echo "Documentation: html -> txt..."
+lynx -dump -nolist docs/startup-HOWTO.html > docs/startup-HOWTO.txt
+
 echo "Checking auto* tools..."
 
 # *********** a bit modified GNOME's macros/autogen.sh **********
