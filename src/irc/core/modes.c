@@ -264,7 +264,6 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			break;
 		case 'e':
 		case 'I':
-		case 'O':
 		case 'q':
 			/* Don't set it as channel mode */
 			break;
