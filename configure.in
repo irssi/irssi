@@ -270,6 +270,55 @@ fi
 PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
 
 dnl **
+dnl ** check if we can link dynamic libraries to modules
+dnl **
+
+AC_MSG_CHECKING([if we can link dynamic libraries with modules])
+DYNLIB_MODULES=no
+
+cat > conftest.c <<EOF
+#include <math.h>
+int modfunc(void){return (int)floor(1.2);}
+EOF
+./libtool --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
+if test ! -s conftest.lo; then
+  AC_MSG_RESULT([no, error compiling test module])
+else
+  ./libtool --mode=link $CC $CFLAGS $LDFLAGS -module -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
+  if test ! -s .libs/libconftest.so -a -s .libs/libconftest.so.0.0; then
+    mv .libs/libconftest.so.0.0 .libs/libconftest.so
+  fi
+  if test ! -s .libs/libconftest.so; then
+    AC_MSG_RESULT([no, error linking test module])
+  else
+    cat > conftest.c <<EOF
+#include <gmodule.h>
+main() {
+  GModule *m; int (*modfunc)(void);
+  m = g_module_open(".libs/libconftest.so", 0);
+  if (!m) g_print("error loading: %s", g_module_error());
+  else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
+    g_print("modfunc() symbol not found from module");
+  else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
+  return 0; }
+EOF
+    $CC $CFLAGS conftest.c -o conftest `$GLIB_CONFIG --cflags --libs gmodule` 2> /dev/null > /dev/null
+    if test ! -s conftest; then
+      AC_MSG_RESULT([no, error compiling test program])
+    else
+      status="`./conftest`"
+      if test "x$status" = "xok"; then
+        DYNLIB_MODULES=yes
+        AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no, error running: $status])
+      fi
+    fi
+  fi
+  rm -rf conftest.* libconftest.la .libs
+fi
+
+dnl **
 dnl ** curses checks
 dnl **
 
@@ -307,6 +356,10 @@ else
 	has_curses=false
 fi
 
+dnl **
+dnl ** perl checks
+dnl **
+
 if test "$want_perl" != "no"; then
 	AC_PATH_PROG(perlpath, perl)
 	AC_MSG_CHECKING(for Perl compile flags)
@@ -316,12 +369,7 @@ if test "$want_perl" != "no"; then
 		AC_MSG_RESULT([not found, building without Perl.])
 		want_perl=no
 	else
-		PERL_LDFLAGS="`$perlpath -MExtUtils::Embed -e ldopts` 2>/dev/null"
-
-		if test "$want_perl" != "static"; then
-			dnl * find libperl.a so we could
-			LIBPERL_A=`echo "$PERL_LDFLAGS -L/usr/lib"|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/ && -f $1."/libperl.a") { print $1."/libperl.a" } };'`
-		fi
+		PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
 
 		dnl * Perl 5.004 and older use perl_xxx variables while
 		dnl * later use PL_perl_xxx variables ..
@@ -330,29 +378,46 @@ if test "$want_perl" != "no"; then
 			AC_DEFINE(HAVE_PL_PERL)
 		fi
 
-		dnl * don't check dynaloader if libperl.a wasn't found..
-		if test "x$LIBPERL_A" != "x"; then
+		if test "x$DYNLIB_MODULES" = "xno" -a "$want_perl" != "static"; then
+			dnl * wanted perl as module, won't get it.
+			want_perl=static
+			perl_mod_error="Dynamic library dependencies don't work with modules"
+		fi
+
+		if test "$want_perl" != "static"; then
 			dnl * dynaloader.a -> libperl_dynaloader.la
 			DYNALOADER_A=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*\([[^ ]]*DynaLoader\.a\).*/\2/'`
 		fi
 
+		dnl * don't check libperl.a if dynaloader.a wasn't found..
+		if test "x$DYNALOADER_A" != "x"; then
+			dnl * find either libperl.a or libperl.so
+			LIBPERL_A=`echo "$PERL_LDFLAGS -L/usr/lib"|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/) { my $dir=$1; if (\`ls $dir/libperl.so* 2>/dev/null\`) { print "-lperl"; last; }; if (-e "$dir/libperl.a") { print "$dir/libperl.a"; last } } };'`
+			if test "x$LIBPERL_A" = "x"; then
+				perl_mod_error="Didn't find location of -lperl"
+				DYNALOADER_A=
+			elif test "$LIBPERL_A" = "-lperl"; then
+				LIBPERL_A=
+			fi
+		fi
+
 		dnl * remove all database stuffs
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldb //'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldbm //'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lndbm //'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lgdbm //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldb\( \|$\)//'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldbm\( \|$\)//'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lndbm\( \|$\)//'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lgdbm\( \|$\)//'`
 		dnl * nsl is already in ldflags
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lnsl //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lnsl\( \|$\)//'`
 
 		dnl * linux specific ..
 		if echo $host_os | grep linux > /dev/null; then
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lposix //'`
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lposix\( \|$\)//'`
 		fi
 
 		dnl * libc is of course in list already
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lc //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lc\( \|$\)//'`
 		dnl * must not be in LIBADD line
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-rdynamic //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-rdynamic\( \|$\)//'`
 
 		if test "x$want_perl" = "xstatic"; then
 			AC_MSG_RESULT(ok)
@@ -362,7 +427,9 @@ if test "$want_perl" != "no"; then
 		else
 			AC_MSG_RESULT(ok)
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
+			if test "x$LIBPERL_A" != "x"; then
+				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
+			fi
 			AC_SUBST(LIBPERL_A)
 			AC_SUBST(DYNALOADER_A)
 		fi
@@ -575,6 +642,12 @@ elif test "x$want_perl" = "xyes"; then
 	echo "Building with Perl support . : module"
 else
 	echo "Building with Perl support . : no"
+fi
+
+if test "x$perl_mod_error" != "x"; then
+	echo " - NOTE: Perl support will be compiled statically to irssi, not as"
+	echo "   a module as requested. Reason:"
+	echo "   $perl_mod_error"
 fi
 
 if test "x$want_perl" = "xyes"; then
