@@ -13,7 +13,6 @@ Irssi::Irc::Dcc::Send  		T_DccObj
 Irssi::Irc::Netsplit		T_PlainObj
 Irssi::Irc::Netsplitserver	T_PlainObj
 Irssi::Irc::Netsplitchannel	T_PlainObj
-Irssi::Irc::Autoignore		T_PlainObj
 Irssi::Irc::Notifylist		T_PlainObj
 
 Irssi::Windowitem	T_IrssiObj

@@ -36,5 +36,4 @@ typedef SEND_DCC_REC *Irssi__Irc__Dcc__Send;
 typedef NETSPLIT_REC *Irssi__Irc__Netsplit;
 typedef NETSPLIT_SERVER_REC *Irssi__Irc__Netsplitserver;
 typedef NETSPLIT_CHAN_REC *Irssi__Irc__Netsplitchannel;
-typedef AUTOIGNORE_REC *Irssi__Irc__Autoignore;
 typedef NOTIFYLIST_REC *Irssi__Irc__Notifylist;

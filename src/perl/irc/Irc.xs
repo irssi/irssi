@@ -108,13 +108,6 @@ static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHAN_REC *rec)
 	hv_store(hv, "nick", 4, irssi_bless(&rec->nick), 0);
 }
 
-static void perl_autoignore_fill_hash(HV *hv, AUTOIGNORE_REC *ai)
-{
-	hv_store(hv, "nick", 4, new_pv(ai->nick), 0);
-	hv_store(hv, "timeleft", 8, newSViv(ai->timeleft), 0);
-	hv_store(hv, "level", 5, newSViv(ai->level), 0);
-}
-
 static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)
 {
 	AV *av;
@@ -137,7 +130,6 @@ static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ "Irssi::Irc::Netsplit", (PERL_OBJECT_FUNC) perl_netsplit_fill_hash },
 	{ "Irssi::Irc::Netsplitserver", (PERL_OBJECT_FUNC) perl_netsplit_server_fill_hash },
 	{ "Irssi::Irc::Netsplitchannel", (PERL_OBJECT_FUNC) perl_netsplit_channel_fill_hash },
-	{ "Irssi::Irc::Autoignore", (PERL_OBJECT_FUNC) perl_autoignore_fill_hash },
 	{ "Irssi::Irc::Notifylist", (PERL_OBJECT_FUNC) perl_notifylist_fill_hash },
 
 	{ NULL, NULL }
