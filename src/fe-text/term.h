@@ -63,7 +63,7 @@ void term_set_color(TERM_WINDOW *window, int col);
 
 void term_move(TERM_WINDOW *window, int x, int y);
 void term_addch(TERM_WINDOW *window, int chr);
-void term_addstr(TERM_WINDOW *window, char *str);
+void term_addstr(TERM_WINDOW *window, const char *str);
 void term_clrtoeol(TERM_WINDOW *window);
 
 void term_move_cursor(int x, int y);

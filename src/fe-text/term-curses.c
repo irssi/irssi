@@ -314,9 +314,9 @@ void term_addch(TERM_WINDOW *window, int chr)
         waddch(window->win, chr);
 }
 
-void term_addstr(TERM_WINDOW *window, char *str)
+void term_addstr(TERM_WINDOW *window, const char *str)
 {
-        waddstr(window->win, str);
+        waddstr(window->win, (const char *) str);
 }
 
 void term_clrtoeol(TERM_WINDOW *window)

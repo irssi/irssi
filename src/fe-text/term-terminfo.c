@@ -344,15 +344,23 @@ static void term_printed_text(int count)
 void term_addch(TERM_WINDOW *window, int chr)
 {
 	if (vcmove) term_move_real();
-	putc(chr, window->term->out);
         term_printed_text(1);
+	if (vcy != term_height || vcx != 0)
+		putc(chr, window->term->out);
 }
 
-void term_addstr(TERM_WINDOW *window, char *str)
+void term_addstr(TERM_WINDOW *window, const char *str)
 {
+	int len;
+
 	if (vcmove) term_move_real();
-	fputs(str, window->term->out);
-        term_printed_text(strlen(str));
+	len = strlen(str);
+        term_printed_text(len);
+
+	if (vcy != term_height || vcx != 0)
+		fputs(str, window->term->out);
+	else
+		fwrite(str, 1, len-1, window->term->out);
 }
 
 void term_clrtoeol(TERM_WINDOW *window)
