@@ -186,7 +186,7 @@ void fe_common_irc_finish_init(void)
 
 		if (rec->autoconnect && (rec->ircnet == NULL || *rec->ircnet == '\0' ||
 					 gslist_find_icase_string(ircnets, rec->ircnet) == NULL)) {
-			if (*rec->ircnet != '\0')
+			if (rec->ircnet != NULL && *rec->ircnet != '\0')
 				ircnets = g_slist_append(ircnets, rec->ircnet);
 
 			str = g_strdup_printf("%s %d", rec->address, rec->port);
