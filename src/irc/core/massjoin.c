@@ -59,7 +59,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	/* add user to nicklist */
 	nickrec = nicklist_insert(CHANNEL(chanrec), nick, FALSE, FALSE, TRUE);
-	nickrec->host = g_strdup(address);
+        nicklist_set_host(CHANNEL(chanrec), nickrec, address);
 
 	if (chanrec->massjoins == 0) {
 		/* no nicks waiting in massjoin queue */

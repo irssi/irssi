@@ -134,8 +134,11 @@ static void event_who(SERVER_REC *server, const char *data)
 	nickrec = chanrec == NULL ? NULL :
 		nicklist_find(chanrec, nick);
 	if (nickrec != NULL) {
-		if (nickrec->host == NULL)
-			nickrec->host = g_strdup_printf("%s@%s", user, host);
+		if (nickrec->host == NULL) {
+                        char *str = g_strdup_printf("%s@%s", user, host);
+			nicklist_set_host(chanrec, nickrec, str);
+                        g_free(str);
+		}
 		if (nickrec->realname == NULL)
 			nickrec->realname = g_strdup(realname);
 		sscanf(hops, "%d", &nickrec->hops);

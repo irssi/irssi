@@ -57,6 +57,19 @@ NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
 	return rec;
 }
 
+/* Set host address for nick */
+void nicklist_set_host(CHANNEL_REC *channel, NICK_REC *nick, const char *host)
+{
+        g_return_if_fail(channel != NULL);
+        g_return_if_fail(nick != NULL);
+	g_return_if_fail(host != NULL);
+
+        g_free_not_null(nick->host);
+	nick->host = g_strdup(host);
+
+        signal_emit("nicklist host changed", 2, channel, nick);
+}
+
 static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	signal_emit("nicklist remove", 2, channel, nick);
@@ -257,12 +270,12 @@ void nicklist_update_flags(SERVER_REC *server, const char *nick,
 
 		if (gone != -1 && (int)rec->gone != gone) {
 			rec->gone = gone;
-			signal_emit("nick gone changed", 2, channel, rec);
+			signal_emit("nicklist gone changed", 2, channel, rec);
 		}
 
 		if (serverop != -1 && (int)rec->serverop != serverop) {
 			rec->serverop = serverop;
-			signal_emit("nick serverop changed", 2, channel, rec);
+			signal_emit("nicklist serverop changed", 2, channel, rec);
 		}
 	}
 	g_slist_free(nicks);
