@@ -30,3 +30,4 @@ COPYING
 irssi.spec
 default-config.h
 irssi-version.h
+irssi-config
