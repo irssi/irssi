@@ -210,7 +210,14 @@ AC_DEFUN(AC_NCURSES, [
         if test -f $1/$2
 	then
 	    AC_MSG_RESULT(Found ncurses on $1/$2)
- 	    CURSES_LIBS="$3"
+
+	    CURSES_LIBS="$3"
+	    AC_CHECK_LIB(ncurses, initscr,, [
+                CHECKLIBS=`echo "$3"|sed 's/-lncurses/-lcurses/g'`
+		AC_CHECK_LIB(curses, initscr, [
+			CURSES_LIBS="$CHECKLIBS"
+		],, $CHECKLIBS)
+	    ], $CURSES_LIBS)
 	    CURSES_INCLUDEDIR="$4"
 	    search_ncurses=false
 	    screen_manager=$5
