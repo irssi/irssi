@@ -115,9 +115,11 @@ AC_ARG_WITH(perl-lib,
 		want_perl=no
 	elif test "x$withval" = xsite; then
 		want_perl=yes
+		perl_prefix_note=no
 		PERL_MM_PARAMS=""
 	elif test "x$withval" = xvendor; then
 		want_perl=yes
+		perl_prefix_note=no
 		if test -z "`$perlpath -v|grep '5\.0'`"; then
 			PERL_MM_PARAMS="INSTALLDIRS=vendor"
 		else
@@ -126,6 +128,7 @@ AC_ARG_WITH(perl-lib,
 		perl_library_dir="(vendor default - `$perlpath -e 'use Config; print $Config{archlib}'`)"
 	else
 		want_perl=yes
+		perl_prefix_note=no
 		PERL_MM_PARAMS="INSTALLDIRS=perl LIB=$withval"
 		PERL_USE_LIB="$withval"
 	fi,
