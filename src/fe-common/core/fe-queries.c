@@ -58,9 +58,6 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
 	g_return_if_fail(IS_QUERY(query));
 
-	if (window_item_find(query->server, query->name) != NULL)
-		return;
-
 	window_item_create((WI_ITEM_REC *) query, GPOINTER_TO_INT(automatic));
 	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
 		    TXT_QUERY_STARTED, query->name);
