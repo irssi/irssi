@@ -30,6 +30,8 @@
 
 #include "windows.h"
 
+#define PASTE_CHECK_SPEED 200 /* 0.2 sec */
+
 static int ret_texts[] = {
 	IRCTXT_OPTION_UNKNOWN,
 	IRCTXT_OPTION_AMBIGUOUS,
@@ -50,6 +52,9 @@ static int ret_texts[] = {
    the line had one or two command chars, and which one.. */
 static const char *current_cmdline;
 static int hide_output;
+
+static GTimeVal time_command_last, time_command_now;
+static int last_command_cmd, command_cmd;
 
 static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 {
@@ -284,11 +289,19 @@ static void event_command(const char *data)
 {
 	const char *cmdchar;
 
+	/* save current command line */
 	current_cmdline = data;
 
+        /* for detecting if we're pasting text */
+	time_command_last = time_command_now;
+	last_command_cmd = command_cmd;
+
+	g_get_current_time(&time_command_now);
+	command_cmd = strchr(settings_get_str("cmdchars"), *data) != NULL;
+
+	/* /^command hides the output of the command */
 	cmdchar = strchr(settings_get_str("cmdchars"), *data);
 	if (cmdchar != NULL && (data[1] == '^' || (data[1] == *cmdchar && data[2] == '^'))) {
-		/* /^command hides the output of the command */
                 hide_output = TRUE;
 		signal_add_first("print text stripped", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
@@ -306,12 +319,15 @@ static void event_command_last(const char *data)
 
 static void event_default_command(const char *data, void *server, WI_ITEM_REC *item)
 {
-	const char *ptr;
+	const char *cmdchars, *ptr;
 	char *cmd, *p;
+	long diff;
+
+	cmdchars = settings_get_str("cmdchars");
 
 	ptr = data;
 	while (*ptr != '\0' && *ptr != ' ') {
-		if (strchr(settings_get_str("cmdchars"), *ptr)) {
+		if (strchr(cmdchars, *ptr)) {
 			/* command character inside command .. we probably
 			   want to send this text to channel. for example
 			   when pasting a path /usr/bin/xxx. */
@@ -321,6 +337,16 @@ static void event_default_command(const char *data, void *server, WI_ITEM_REC *i
 		ptr++;
 	}
 
+	/* maybe we're copy+pasting text? check how long it was since the
+	   last line */
+	diff = get_timeval_diff(&time_command_now, &time_command_last);
+	if (item != NULL && !last_command_cmd && diff < PASTE_CHECK_SPEED) {
+		signal_emit("send text", 3, current_cmdline, active_win->active_server, active_win->active);
+		command_cmd = FALSE;
+		return;
+	}
+
+	/* get the command part of the line, send "error command" signal */
 	cmd = g_strdup(data);
 	p = strchr(cmd, ' ');
 	if (p != NULL) *p = '\0';
@@ -347,6 +373,9 @@ static void event_cmderror(gpointer errorp, const char *arg)
 void fe_core_commands_init(void)
 {
 	hide_output = FALSE;
+
+	command_cmd = FALSE;
+	memset(&time_command_now, 0, sizeof(GTimeVal));
 
 	command_bind("help", NULL, (SIGNAL_FUNC) cmd_help);
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);

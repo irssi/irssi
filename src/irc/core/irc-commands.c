@@ -996,6 +996,7 @@ void irc_commands_init(void)
 	command_bind("lusers", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("map", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("motd", NULL, (SIGNAL_FUNC) command_self);
+	command_bind("rehash", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("stats", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("time", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("trace", NULL, (SIGNAL_FUNC) command_self);
@@ -1069,6 +1070,7 @@ void irc_commands_deinit(void)
 	command_unbind("lusers", (SIGNAL_FUNC) command_self);
 	command_unbind("map", (SIGNAL_FUNC) command_self);
 	command_unbind("motd", (SIGNAL_FUNC) command_self);
+	command_unbind("rehash", (SIGNAL_FUNC) command_self);
 	command_unbind("stats", (SIGNAL_FUNC) command_self);
 	command_unbind("time", (SIGNAL_FUNC) command_self);
 	command_unbind("trace", (SIGNAL_FUNC) command_self);
