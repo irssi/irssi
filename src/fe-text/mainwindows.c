@@ -95,7 +95,6 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	signal_emit("mainwindow resized", 1, window);
 }
 
-#ifdef USE_CURSES_WINDOWS
 void mainwindows_recreate(void)
 {
 	GSList *tmp;
@@ -103,11 +102,12 @@ void mainwindows_recreate(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
+#ifdef USE_CURSES_WINDOWS
 		create_curses_window(rec);
+#endif
 		gui_window_redraw(rec->active);
 	}
 }
-#endif
 
 MAIN_WINDOW_REC *mainwindow_create(void)
 {

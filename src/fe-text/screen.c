@@ -42,13 +42,17 @@ static int scrx, scry;
 static int use_colors;
 static int freeze_refresh;
 
+static int init_screen_int(void);
+static void deinit_screen_int(void);
+
 #ifdef SIGWINCH
 
 static void sig_winch(int p)
 {
-#ifdef TIOCGWINSZ
-	struct winsize ws;
 	int ychange, xchange;
+
+#if defined (TIOCGWINSZ) && defined (HAVE_CURSES_RESIZETERM)
+	struct winsize ws;
 
 	/* Get new window size */
 	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
@@ -65,16 +69,22 @@ static void sig_winch(int p)
 	/* Resize curses terminal */
 	ychange = ws.ws_row-LINES;
 	xchange = ws.ws_col-COLS;
-#ifdef HAVE_CURSES_RESIZETERM
 	resizeterm(ws.ws_row, ws.ws_col);
 #else
-	deinit_screen();
-	init_screen();
+	int old_lines, old_cols;
+
+	old_lines = LINES;
+	old_cols = COLS;
+
+	deinit_screen_int();
+	init_screen_int();
 	mainwindows_recreate();
+
+        ychange = LINES-old_lines;
+        xchange = COLS-old_cols;
 #endif
 
 	mainwindows_resize(ychange, xchange != 0);
-#endif
 }
 #endif
 
@@ -164,30 +174,37 @@ static int init_curses(void)
 	return TRUE;
 }
 
-/* Initialize screen, detect screen length */
-int init_screen(void)
+static int init_screen_int(void)
 {
-	settings_add_bool("lookandfeel", "colors", TRUE);
-	settings_add_str("misc", "ignore_signals", "");
-
 	use_colors = settings_get_bool("colors");
 	read_signals();
 
 	scrx = scry = 0;
 	freeze_refresh = 0;
 
-	if (!init_curses())
-		return FALSE;
+	return init_curses();
+}
 
+static void deinit_screen_int(void)
+{
+	endwin();
+}
+
+/* Initialize screen, detect screen length */
+int init_screen(void)
+{
+	settings_add_bool("lookandfeel", "colors", TRUE);
+	settings_add_str("misc", "ignore_signals", "");
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	return 1;
+
+	return init_screen_int();
 }
 
 /* Deinitialize screen */
 void deinit_screen(void)
 {
+        deinit_screen_int();
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-	endwin();
 }
 
 void set_color(WINDOW *window, int col)
