@@ -348,7 +348,6 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format, co
 
 	/* read all optional arguments to arglist[] list
 	   so they can be used in any order.. */
-        memset(arglist, 0, sizeof(arglist)); /*REMOVE!!!!!!!*/
 	read_arglist(args, format,
 		     arglist, sizeof(arglist)/sizeof(void*),
 		     buffer, sizeof(buffer));
