@@ -459,7 +459,8 @@ static void event_whois_help(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
+static void event_whois_modes(IRC_SERVER_REC *server, const char *data,
+			      const char *orignick)
 {
 	char *params, *nick, *modes;
 
@@ -468,8 +469,13 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 6, NULL, &nick,
 				  NULL, NULL, NULL, &modes);
 
-	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_MODES, nick, modes);
+	if (!ischannel(*nick)) {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_MODES, nick, modes);
+	} else {
+		/* OPN's dancer uses for channel forwarding */
+		print_event_received(server, data, orignick, FALSE);
+	}
 	g_free(params);
 }
 
