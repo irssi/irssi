@@ -1,7 +1,3 @@
- - @ in netjoins doent show up
- - change paste detection not to get on without linefeed
- - escape_char broken?
-
  - /whowas server nick doesn't work
 01:18 <@darix> cras: /foreach server /disconnect $tag n8 <-- doesnt work
  - /hilight -priority is broken
@@ -318,8 +314,6 @@
     - /BAN -ip, -time [<time>] (/ALIAS knockout?)
     - /KICKBAN to support same options than /BAN (would /ALIAS kickban work?)
     - ban list prints "x seconds ago" .. should be x days, mins, hours, ..
-    - /WALL could maybe check if server supports /WALLCHOPS or @#channel?
-      maybe too much trouble figuring out if it can or not.
 
  - Windows:
      - /WINDOW SIZE -sticky, so f.e. /WINDOW BALANCE wouldn't affect it.

@@ -1,3 +1,29 @@
+v0.8.10 2004-03-xx  Timo Sirainen <tss@iki.fi>
+
+	+ /SET paste_join_multiline ON - When paste detection is enabled and
+	  you paste lines which look like they're being copy&pasted from irssi
+	  itself, it attempts to merge lines said originally in a single line.
+
+	  How this really works is that all indented lines must have the same
+	  amount of indentation. Indented lines are merged to last
+	  unindented line. If line gets longer than 400 characters, it's split.
+	+ Initial support for isupport (005 numeric), patch by David Leadbeater
+	+ Passive DCC support, patch by Francesco Fracassi
+	+ /SET whois_hide_safe_channel_id ON - Hides the channel ID prefix
+	  of !channels in WHOIS replies
+	+ When reconnecting to server, say that it can be aborted with
+	  /RMRECONNS
+	+ /WHOIS -<server tag> is supported now
+	+ /SET whois_hide_safe_channel_id - removes the ugly IDs for !channels
+	  in /WHOIS (default)
+	+ If we can't connect to server using given own IP, show the IP to
+	  user in the error message. Should help figuring out wrong
+	  /SET hostname or /SERVER -host settings.
+	+ If channel has more nicks than /SET channel_max_who_sync, don't ask
+	  /WHO list to avoid getting kicked out of server (Max SendQ exceeded).
+	- Pasted lines weren't added to command history. Some other paste
+	  detection fixes
+
 v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 
 	* Fixes a remote crash with:
