@@ -1,7 +1,3 @@
- - /part #blah vaihtaa eka ikkunaan vaikkei oltu #blahlla..
- - /join vaihtaa myös ikkunaan mihin se joinas?
- - näytä @ tai + nikin edessä
- - topic baari?
 
 *** Bugs
 
@@ -20,8 +16,6 @@
  - statusbar:
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
-     - activity: hilight number if window has message for you or hilighted
-       text
      - "you have new mail"
      - active server tag somewhere in window
  - word wrapping doesn't work perfectly, if colors/bolds/etc are used, they're
@@ -76,7 +70,8 @@
  * Logging, check how ircii logging works and try to do everything that it
    can do ;) currently logging is done by directly writing to disk things
    that are displayed in screen, it could instead (optionally) print things
-   simply as "JOIN #blah nick (a@b.c)"
+   simply as "JOIN #blah nick (a@b.c)".
+    ... just make a different theme for logging to use? ..
  - log option: add the open/close time to log
  - log directory, automatically log all channels and queries there
      - overwrite/append
@@ -109,6 +104,8 @@
 
 *** Little things
 
+ - multi-DCC - open multiple sockets to transfer the file
+ - re-set away message when reconnecting to server
  - autoaway when idling
  - nickserv support (automatic /msg nickserv identify password)
  - /exec
