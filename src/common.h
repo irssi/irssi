@@ -50,17 +50,14 @@
 #define g_free_and_null(a) \
 	if (a) { g_free(a); (a) = NULL; }
 
-typedef enum {
-	G_INPUT_READ       = 1 << 0,
-	G_INPUT_WRITE      = 1 << 1
-} GInputCondition;
+#define G_INPUT_READ	(1 << 0)
+#define G_INPUT_WRITE	(1 << 1)
 
-typedef void (*GInputFunction) (void *data, int source,
-				GInputCondition condition);
+typedef void (*GInputFunction) (void *data, int source, int condition);
 
-int g_input_add(int source, GInputCondition condition,
+int g_input_add(int source, int condition,
 		GInputFunction function, void *data);
-int g_input_add_full(int source, int priority, GInputCondition condition,
+int g_input_add_full(int source, int priority, int condition,
 		     GInputFunction function, void *data);
 
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)

@@ -28,7 +28,7 @@
 #endif
 
 typedef struct {
-	GInputCondition condition;
+	int condition;
 	GInputFunction function;
         void *data;
 } IRSSI_INPUT_REC;
@@ -37,7 +37,7 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 			   void *data)
 {
 	IRSSI_INPUT_REC *rec = data;
-	GInputCondition icond = (GInputCondition)0;
+	int icond = 0;
 
 	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
 		/* error, we have to call the function.. */
@@ -60,7 +60,7 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	return TRUE;
 }
 
-int g_input_add_full(int source, int priority, GInputCondition condition,
+int g_input_add_full(int source, int priority, int condition,
 		     GInputFunction function, void *data)
 {
         IRSSI_INPUT_REC *rec;
@@ -87,7 +87,7 @@ int g_input_add_full(int source, int priority, GInputCondition condition,
 	return result;
 }
 
-int g_input_add(int source, GInputCondition condition,
+int g_input_add(int source, int condition,
 		GInputFunction function, void *data)
 {
 	return g_input_add_full(source, G_PRIORITY_DEFAULT, condition,

@@ -252,7 +252,7 @@ static void dcc_chat_connect(DCC_REC *dcc)
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1) {
 		dcc->tagconn = g_input_add(dcc->handle,
-					   (GInputCondition) (G_INPUT_WRITE|G_INPUT_READ),
+					   G_INPUT_WRITE | G_INPUT_READ,
 					   (GInputFunction) sig_chat_connected, dcc);
 	} else {
 		/* error connecting */
