@@ -308,8 +308,11 @@ WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 			/* match, but if multiple windows have the same level
 			   we could be choosing a bad one here, eg.
 			   name=nick1 would get nick2's query instead of
-			   generic msgs window. */
-			if (g_strcasecmp(name, item->visible_name) == 0)
+			   generic msgs window.
+
+	                   And check for prefixed !channel name --Borys  */
+			if (g_strcasecmp(name, item->visible_name) == 0 ||
+			    g_strcasecmp(name, (char *) window_item_get_target((WI_ITEM_REC *) item)) == 0)
 				return namewindow;
 		}
 	}
