@@ -585,7 +585,11 @@ static void cmd_cycle(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	joindata = chanrec->get_join_data(chanrec);
 	window_bind_add(window_item_window(chanrec),
 			chanrec->server->tag, chanrec->name);
-        channel_destroy(chanrec);
+
+	/* FIXME: kludgy kludgy... and it relies on channel not
+	   being destroyed immediately.. */
+	signal_emit("command part", 3, data, server, item);
+	channel_destroy(chanrec);
 
 	server->channels_join(server, joindata, FALSE);
 	g_free(joindata);
