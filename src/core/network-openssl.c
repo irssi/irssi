@@ -29,23 +29,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-/* ssl read */
-GIOError irssi_ssl_read(GIOChannel *, gchar *, guint, guint *);
-/* ssl write */
-GIOError irssi_ssl_write(GIOChannel *, gchar *, guint, guint*);
-/* ssl seek */
-GIOError irssi_ssl_seek(GIOChannel *, gint, GSeekType);
-/* ssl close */
-void irssi_ssl_close(GIOChannel *);
-#if GLIB_MAJOR_VERSION < 2
-/* ssl create watch */
-guint irssi_ssl_create_watch(GIOChannel *, gint, GIOCondition, GIOFunc, gpointer, GDestroyNotify);
-#else
-GSource *irssi_ssl_create_watch(GIOChannel *, GIOCondition);
-#endif
-/* ssl free */
-void irssi_ssl_free(GIOChannel *);
-
 /* ssl i/o channel object */
 typedef struct
 {
@@ -56,23 +39,20 @@ typedef struct
 	X509 *cert;
 } GIOSSLChannel;
 	
-/* ssl function pointers */
-GIOFuncs irssi_ssl_channel_funcs =
+static void irssi_ssl_free(GIOChannel *handle)
 {
-	irssi_ssl_read,
-	irssi_ssl_write,
-	irssi_ssl_seek,
-	irssi_ssl_close,
-	irssi_ssl_create_watch,
-	irssi_ssl_free
-};
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	g_io_channel_unref(chan->giochan);
+	SSL_free(chan->ssl);
+	g_free(chan);
+}
 
-SSL_CTX *ssl_ctx = NULL;
+#if GLIB_MAJOR_VERSION < 2
 
 #ifdef G_CAN_INLINE
 G_INLINE_FUNC
 #endif
-gint ssl_errno(gint e)
+static GIOError ssl_errno(gint e)
 {
 	switch(e)
 	{
@@ -85,10 +65,10 @@ gint ssl_errno(gint e)
 			return G_IO_ERROR_INVAL;
 	}
 	/*UNREACH*/
-	return -1;
+	return G_IO_ERROR_INVAL;
 }
 
-gboolean irssi_ssl_cert_step(GIOSSLChannel *chan)
+static GIOError irssi_ssl_cert_step(GIOSSLChannel *chan)
 {
 	gint err;
 	switch(err = SSL_do_handshake(chan->ssl))
@@ -106,10 +86,10 @@ gboolean irssi_ssl_cert_step(GIOSSLChannel *chan)
 			return ssl_errno(errno);
 	}
 	/*UNREACH*/
-	return -1;
+	return G_IO_ERROR_INVAL;
 }
 
-GIOError irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret)
+static GIOError irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
@@ -138,7 +118,7 @@ GIOError irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret)
 	return -1;
 }
 
-GIOError irssi_ssl_write(GIOChannel *handle, gchar *buf, guint len, guint *ret)
+static GIOError irssi_ssl_write(GIOChannel *handle, const gchar *buf, guint len, guint *ret)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
@@ -165,10 +145,10 @@ GIOError irssi_ssl_write(GIOChannel *handle, gchar *buf, guint len, guint *ret)
 		return G_IO_ERROR_NONE;
 	}
 	/*UNREACH*/
-	return -1;
+	return G_IO_ERROR_INVAL;
 }
 
-GIOError irssi_ssl_seek(GIOChannel *handle, gint offset, GSeekType type)
+static GIOError irssi_ssl_seek(GIOChannel *handle, gint offset, GSeekType type)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	GIOError e;
@@ -176,38 +156,186 @@ GIOError irssi_ssl_seek(GIOChannel *handle, gint offset, GSeekType type)
 	return (e == G_IO_ERROR_NONE) ? G_IO_ERROR_NONE : G_IO_ERROR_INVAL;
 }
 
-void irssi_ssl_close(GIOChannel *handle)
+static void irssi_ssl_close(GIOChannel *handle)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	g_io_channel_close(chan->giochan);
 }
 
-#if GLIB_MAJOR_VERSION < 2
-guint irssi_ssl_create_watch(GIOChannel *handle, gint priority, GIOCondition cond,
+static guint irssi_ssl_create_watch(GIOChannel *handle, gint priority, GIOCondition cond,
 			     GIOFunc func, gpointer data, GDestroyNotify notify)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 
 	return chan->giochan->funcs->io_add_watch(handle, priority, cond, func, data, notify);
 }
+
+/* ssl function pointers */
+static GIOFuncs irssi_ssl_channel_funcs =
+{
+	irssi_ssl_read,
+	irssi_ssl_write,
+	irssi_ssl_seek,
+	irssi_ssl_close,
+	irssi_ssl_create_watch,
+	irssi_ssl_free
+};
+
+#else /* GLIB_MAJOR_VERSION < 2 */
+
+#ifdef G_CAN_INLINE
+G_INLINE_FUNC
 #else
-GSource *irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
+static
+#endif
+GIOStatus ssl_errno(gint e)
+{
+	switch(e)
+	{
+		case EINVAL:
+			return G_IO_STATUS_ERROR;
+		case EINTR:
+		case EAGAIN:
+			return G_IO_STATUS_AGAIN;
+		default:
+			return G_IO_STATUS_ERROR;
+	}
+	/*UNREACH*/
+	return G_IO_STATUS_ERROR;
+}
+
+static GIOStatus irssi_ssl_cert_step(GIOSSLChannel *chan)
+{
+	gint err;
+	switch(err = SSL_do_handshake(chan->ssl))
+	{
+		case 1:
+			if(!(chan->cert = SSL_get_peer_certificate(chan->ssl)))
+			{
+				g_warning("SSL server supplied no certificate");
+				return G_IO_STATUS_ERROR;
+			}
+			return G_IO_STATUS_NORMAL;
+		default:
+			if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
+				return G_IO_STATUS_AGAIN;
+			return ssl_errno(errno);
+	}
+	/*UNREACH*/
+	return G_IO_STATUS_ERROR;
+}
+
+static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret, GError **gerr)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	gint err;
+	
+	if(chan->cert == NULL)
+	{
+		gint cert_err = irssi_ssl_cert_step(chan);
+		if(cert_err != G_IO_STATUS_NORMAL)
+			return cert_err;
+	}
+	
+	err = SSL_read(chan->ssl, buf, len);
+	if(err < 0)
+	{
+		*ret = 0;
+		if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
+			return G_IO_STATUS_AGAIN;
+		return ssl_errno(errno);
+	}
+	else
+	{
+		*ret = err;
+		return G_IO_STATUS_NORMAL;
+	}
+	/*UNREACH*/
+	return G_IO_STATUS_ERROR;
+}
+
+static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len, gsize *ret, GError **gerr)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	gint err;
+
+	if(chan->cert == NULL)
+	{
+		gint cert_err = irssi_ssl_cert_step(chan);
+		if(cert_err != G_IO_STATUS_NORMAL)
+			return cert_err;
+	}
+
+	err = SSL_write(chan->ssl, (const char *)buf, len);
+	if(err < 0)
+	{
+		*ret = 0;
+		if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
+			return G_IO_STATUS_AGAIN;
+		return ssl_errno(errno);
+	}
+	else
+	{
+		*ret = err;
+		return G_IO_STATUS_NORMAL;
+	}
+	/*UNREACH*/
+	return G_IO_STATUS_ERROR;
+}
+
+static GIOStatus irssi_ssl_seek(GIOChannel *handle, gint64 offset, GSeekType type, GError **gerr)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	GIOError e;
+	e = g_io_channel_seek(chan->giochan, offset, type);
+	return (e == G_IO_ERROR_NONE) ? G_IO_STATUS_NORMAL : G_IO_STATUS_ERROR;
+}
+
+static GIOStatus irssi_ssl_close(GIOChannel *handle, GError **gerr)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	g_io_channel_close(chan->giochan);
+
+	return G_IO_STATUS_NORMAL;
+}
+
+static GSource *irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 
 	return chan->giochan->funcs->io_create_watch(handle, cond);
 }
-#endif
 
-void irssi_ssl_free(GIOChannel *handle)
+static GIOStatus irssi_ssl_set_flags(GIOChannel *handle, GIOFlags flags, GError **gerr)
 {
-	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
-	g_io_channel_unref(chan->giochan);
-	SSL_free(chan->ssl);
-	g_free(chan);
+    GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+
+    return chan->giochan->funcs->io_set_flags(handle, flags, gerr);
 }
 
-gboolean irssi_ssl_init(void)
+static GIOFlags irssi_ssl_get_flags(GIOChannel *handle)
+{
+    GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+
+    return chan->giochan->funcs->io_get_flags(handle);
+}
+
+static GIOFuncs irssi_ssl_channel_funcs = {
+    irssi_ssl_read,
+    irssi_ssl_write,
+    irssi_ssl_seek,
+    irssi_ssl_close,
+    irssi_ssl_create_watch,
+    irssi_ssl_free,
+    irssi_ssl_set_flags,
+    irssi_ssl_get_flags
+};
+
+#endif
+
+static SSL_CTX *ssl_ctx = NULL;
+
+static gboolean irssi_ssl_init(void)
 {
 	SSL_library_init();
 	SSL_load_error_strings();
@@ -223,7 +351,7 @@ gboolean irssi_ssl_init(void)
 
 }
 
-GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle)
+static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle)
 {
 	GIOSSLChannel *chan;
 	GIOChannel *gchan;

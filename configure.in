@@ -428,11 +428,6 @@ if test "x$enable_ssl" = xyes; then
 	])
 	CFLAGS=$save_CFLAGS
 
-	if test "x`echo $GLIB_LIBS|grep glib-2.0`" != "x"; then
-		ssl_error="GLIB2 and OpenSSL don't work together currently, SSL is disabled"
-		enable_openssl=no
-	fi
-
 	if test "x$enable_openssl" = xyes; then
 		AC_DEFINE(HAVE_OPENSSL)
 
