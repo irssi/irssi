@@ -36,6 +36,7 @@ libirc_core_a_SOURCES = \
 noinst_HEADERS = \
 	bans.h \
         ctcp.h \
+        channel-rejoin.h \
         irc.h \
         irc-channels.h \
 	irc-chatnets.h \
