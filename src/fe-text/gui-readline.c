@@ -165,6 +165,7 @@ void handle_key(int key)
 		gui_entry_set_pos(0);
 		break;
 	case KEY_END:
+	case KEY_LL:
 		/* end */
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
 		break;
