@@ -386,7 +386,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
         str = g_strconcat(qserver, " ", query, NULL);
 	server_redirect_event(server, "whois", 1, str, TRUE,
                               NULL,
-			      "event 318", "event 318",
+			      "event 318", "whois end",
 			      "event 402", event_402,
 			      "event 401", "whois not found",
 			      "event 311", "whois event", NULL);
@@ -424,7 +424,15 @@ static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whowas(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
+static void event_end_of_whois(IRC_SERVER_REC *server, const char *data,
+			       const char *nick, const char *addr)
+{
+	signal_emit("event 318", 4, server, data, nick, addr);
+	server->whois_found = FALSE;
+}
+
+static void event_whowas(IRC_SERVER_REC *server, const char *data,
+			 const char *nick, const char *addr)
 {
 	server->whowas_found = TRUE;
 	signal_emit("event 314", 4, server, data, nick, addr);
@@ -977,6 +985,7 @@ void irc_commands_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
+	signal_add("whois end", (SIGNAL_FUNC) event_end_of_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
 
 	command_set_options("connect", "+ircnet");
@@ -1046,6 +1055,7 @@ void irc_commands_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
+	signal_remove("whois end", (SIGNAL_FUNC) event_end_of_whois);
 	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);
 
 	g_string_free(tmpstr, TRUE);
