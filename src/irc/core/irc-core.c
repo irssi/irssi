@@ -22,6 +22,7 @@
 
 #include "irc-server.h"
 #include "channels.h"
+#include "query.h"
 
 #include "ctcp.h"
 #include "irc-commands.h"
@@ -36,6 +37,7 @@ void irc_core_init(void)
 {
 	irc_servers_init();
 	channels_init();
+	query_init();
 
 	ctcp_init();
 	irc_commands_init();
@@ -58,6 +60,7 @@ void irc_core_deinit(void)
 	irc_commands_deinit();
 	ctcp_deinit();
 
+	query_deinit();
 	channels_deinit();
 	irc_servers_deinit();
 }

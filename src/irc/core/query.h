@@ -27,4 +27,7 @@ QUERY_REC *query_find(IRC_SERVER_REC *server, const char *nick);
 
 void query_change_server(QUERY_REC *query, IRC_SERVER_REC *server);
 
+void query_init(void);
+void query_deinit(void);
+
 #endif
