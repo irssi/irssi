@@ -26,8 +26,20 @@
 
 static void sig_activity(WINDOW_REC *window)
 {
-	if (is_window_visible(window))
-                signal_stop();
+	GSList *tmp;
+
+	if (!is_window_visible(window) || window->new_data == 0)
+		return;
+
+	window->new_data = 0;
+
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+		WI_ITEM_REC *item = tmp->data;
+
+		item->new_data = 0;
+		item->last_color = 0;
+	}
+	signal_stop();
 }
 
 void mainwindow_activity_init(void)
