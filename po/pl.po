@@ -53,23 +53,23 @@ msgstr ""
 
 #: src/ui-common/ui-common.c:36 src/ui-common/ui-common.c:37
 msgid "SERVER"
-msgstr ""
+msgstr "SERWER"
 
 #: src/ui-common/ui-common.c:37
 msgid "Autoconnect password"
-msgstr ""
+msgstr "Has³o autopo³±czenia"
 
 #: src/ui-common/ui-common.c:38
 msgid "Autoconnect port"
-msgstr ""
+msgstr "Port autopo³±czenia"
 
 #: src/ui-common/ui-common.c:38
 msgid "PORT"
-msgstr ""
+msgstr "PORT"
 
 #: src/ui-common/ui-common.c:39
 msgid "Disable autoconnecting"
-msgstr ""
+msgstr "Wy³±czenie autopo³±czenia"
 
 #: src/ui-common/ui-common.c:40
 msgid "Specify nick to use"
@@ -82,25 +82,25 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:33
 msgid "%B-%W!%B-%n "
-msgstr ""
+msgstr "%B-%W!%B-%n"
 
 #: src/ui-common/ui-formats.c:34
 msgid "%B-%W!%B- %WIrssi:%n "
-msgstr ""
+msgstr "%B-%W!%B- %WIrssi:%n"
 
 #: src/ui-common/ui-formats.c:35
 msgid "[$[2.0]4:$[2.0]5] "
-msgstr ""
+msgstr "[$[2.0]4:$[2.0]5] "
 
 #: src/ui-common/ui-formats.c:36
 msgid "Day changed to $[2.0]2-$[2.0]1 $3"
-msgstr ""
+msgstr "Zmiana daty na $3.$[2.0]2.$[2.0]1"
 
 #. ----
 #: src/gui-gnome/dialog-links.c:350 src/gui-gnome/setup-servers.c:257
 #: src/gui-gnome/setup-servers.c:472 src/ui-common/ui-formats.c:39
 msgid "Server"
-msgstr ""
+msgstr "Serwer"
 
 #: src/ui-common/ui-formats.c:41
 msgid "Looking up %_$1%_"
@@ -112,7 +112,7 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:43
 msgid "Connection to %_$1%_ established"
-msgstr ""
+msgstr "Po³±czenie z %_$1% nawi±zane"
 
 #: src/ui-common/ui-formats.c:44
 msgid "Unable to connect server %_$1%_ port %_$2%_ %K[%n$3%K]"
@@ -143,19 +143,19 @@ msgstr ""
 #: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lists.c:431
 #: src/gui-gnome/setup-lookandfeel.c:95 src/ui-common/ui-formats.c:52
 msgid "Channels"
-msgstr ""
+msgstr "Kana³y"
 
 #: src/ui-common/ui-formats.c:54
 msgid "%c%_$1%_ %K[%c$2%K]%n has joined %_$3"
-msgstr ""
+msgstr "%c%_$1%_ %K[%c$2%K]%n przy³±czy³ siê do %_$3"
 
 #: src/ui-common/ui-formats.c:55
 msgid "%c$1 %K[%n$2%K]%n has left %_$3%_ %K[%n$4%K]"
-msgstr ""
+msgstr "%c$1 %K[%n$2%K]%n opu¶ci³ %_$3%_ %K[%n$4%K]"
 
 #: src/ui-common/ui-formats.c:56
 msgid "You are now talking to channel %_$1%_"
-msgstr ""
+msgstr "Teraz rozmawiasz na kanale %_$1%_"
 
 #: src/ui-common/ui-formats.c:57
 msgid ""
@@ -164,19 +164,19 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:58
 msgid "Cannot join to channel %_$1%_ %K(%nChannel is full%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nKana³ jest pe³ny%K)"
 
 #: src/ui-common/ui-formats.c:59
 msgid "Cannot join to channel %_$1%_ %K(%nYou must be invited%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%Wymagane jest zaproszenie%K)"
 
 #: src/ui-common/ui-formats.c:60
 msgid "Cannot join to channel %_$1%_ %K(%nYou are banned%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nMasz zakaz wej¶cia na kana³ (ban)%K)"
 
 #: src/ui-common/ui-formats.c:61
 msgid "Cannot join to channel %_$1%_ %K(%nBad channel key%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nZ³y klucz do kana³u%K)"
 
 #: src/ui-common/ui-formats.c:62
 msgid "Cannot join to channel %_$1%_ %K(%nBad channel mask%K)"
@@ -185,19 +185,19 @@ msgstr ""
 #: src/ui-common/ui-formats.c:63
 msgid ""
 "Cannot join to channel %_$1%_ %K(%nChannel is temporarily unavailable%K)"
-msgstr ""
+msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nKana³ chwilowo niedostêpny%K)"
 
 #: src/ui-common/ui-formats.c:64
 msgid "%c%_$1%_%n was kicked from $2 by %_$3%_ %K[%n$4%K]"
-msgstr ""
+msgstr "%c%_$1%_%n zosta³ wykopany z $2 przez %_$3%_ %K[%n$4%K]"
 
 #: src/ui-common/ui-formats.c:65
 msgid "%c%_$1%_ %K[%n$2%K]%n has quit IRC %K[%n$3%K]"
-msgstr ""
+msgstr "%c%_$1%_ %K[%n$2%K]%n opu¶ci³ IRC %K[%n$3%K]"
 
 #: src/ui-common/ui-formats.c:66
 msgid "%_$1%_ invites you to %_$2"
-msgstr ""
+msgstr "%_$1%_ zaprasza ciê na %_$2"
 
 #: src/ui-common/ui-formats.c:67
 msgid "%K[%g%_Users%_%K(%g$1%K)]%n $2"
@@ -268,7 +268,7 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:83
 msgid "$1: No such channel"
-msgstr ""
+msgstr "$1: Kana³ nieznaleziony"
 
 #: src/ui-common/ui-formats.c:84
 msgid "Join to %_$1%_ was synced in %_$2%_ secs"
@@ -279,7 +279,7 @@ msgstr ""
 #: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/setup-servers.c:537
 #: src/ui-common/ui-formats.c:87
 msgid "Nick"
-msgstr ""
+msgstr "Nick"
 
 #: src/ui-common/ui-formats.c:89
 msgid "Mode change %K[%n%_$1%_%K]%n for user %c$2"
@@ -291,40 +291,40 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:91
 msgid "You have been marked as being away"
-msgstr ""
+msgstr "Jeste¶ zaznaczony jako nieobecny"
 
 #: src/ui-common/ui-formats.c:92
 msgid "You are no longer marked as being away"
-msgstr ""
+msgstr "Nie jeste¶ ju¿ zaznaczony jako nieobecny"
 
 #: src/ui-common/ui-formats.c:93
 msgid "$1 is away: $2"
-msgstr ""
+msgstr "$1 jest nieobecny: $2"
 
 #: src/ui-common/ui-formats.c:94
 msgid "$1: No such nick/channel"
-msgstr ""
+msgstr "$1: Nie znaleleziony nick/kana³"
 
 #: src/ui-common/ui-formats.c:95
 #, c-format
 msgid "You're now known as %c$1"
-msgstr ""
+msgstr "Jeste¶ znany jako %c$1"
 
 #: src/ui-common/ui-formats.c:96
 msgid "%_$1%_ is now known as %c$2"
-msgstr ""
+msgstr "%_$1%_ jest teraz znany jako %c$2"
 
 #: src/ui-common/ui-formats.c:97
 msgid "Nick %_$1%_ is already in use"
-msgstr ""
+msgstr "Nick %_$1%_ jest ju¿ u¿ywany"
 
 #: src/ui-common/ui-formats.c:98
 msgid "Nick %_$1%_ is temporarily unavailable"
-msgstr ""
+msgstr "Nick %_$1%_ jest chwilowo niedostêpny"
 
 #: src/ui-common/ui-formats.c:99
 msgid "Your nick is owned by %_$4%_ %K[%n$2@$3%K]"
-msgstr ""
+msgstr "Twój nick jest u¿ywany przez %_$4%_ %K[%n$2@$3%K]"
 
 #. ----
 #: src/ui-common/ui-formats.c:102
@@ -337,31 +337,31 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:105
 msgid " idle     : $2 hours $3 mins $4 secs"
-msgstr ""
+msgstr " bezczynny : $2 godzin $3 minut $4 sekund"
 
 #: src/ui-common/ui-formats.c:106
 msgid " idle     : $2 hours $3 mins $4 secs %K[%nsignon: $5]"
-msgstr ""
+msgstr " bezczynny : $2 godzin $3 minut $4 sekund %K[%nsignon: $5]"
 
 #: src/ui-common/ui-formats.c:107
 msgid " server   : $2 ($3)"
-msgstr ""
+msgstr " serwer    : $2 ($3)"
 
 #: src/ui-common/ui-formats.c:108
 msgid "          : %_IRC operator%_"
-msgstr ""
+msgstr "           : %_operator IRC%_"
 
 #: src/ui-common/ui-formats.c:109
 msgid " channels : $2"
-msgstr ""
+msgstr " kana³y    : $2"
 
 #: src/ui-common/ui-formats.c:110
 msgid " away     : $2"
-msgstr ""
+msgstr " nieobeczy  : $2"
 
 #: src/ui-common/ui-formats.c:111
 msgid "End of WHOIS"
-msgstr ""
+msgstr "Koniec WHOIS"
 
 #: src/ui-common/ui-formats.c:112
 msgid "$[10]1 %_$[!9]2%_ $[!3]3 $[!2]4 $5@$6 %K(%W$7%K)"
@@ -374,7 +374,7 @@ msgstr "Koniec listy /WHO"
 #. ----
 #: src/ui-common/ui-formats.c:116
 msgid "Your messages"
-msgstr ""
+msgstr "Twoje wiadomo¶ci"
 
 #: src/ui-common/ui-formats.c:118
 msgid "%K<%W$1%K>%n $2"
@@ -411,7 +411,7 @@ msgstr ""
 #. ----
 #: src/ui-common/ui-formats.c:128
 msgid "Received messages"
-msgstr ""
+msgstr "Otrzymane wiadomo¶ci"
 
 #: src/ui-common/ui-formats.c:130
 msgid "%K<%Y$1%K>%n $2"
@@ -477,11 +477,11 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:149
 msgid "CTCP %_$1%_ reply from %_$2%_%K:%n $3"
-msgstr ""
+msgstr "Odpowied¼ CTCP %_$1%_ od %_$2%_%K:%n $3"
 
 #: src/ui-common/ui-formats.c:150
 msgid "CTCP %_PING%_ reply from %_$1%_: $2.$3 seconds"
-msgstr ""
+msgstr "Odpowied¼ CTCP %_PING%_ od %_$1%_: $2.$3 sekund"
 
 #: src/ui-common/ui-formats.c:151
 msgid "%g>>> %_$1%_ %K[%g$2%K] %grequested %_$3%_ from %_$4"
@@ -489,33 +489,33 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:152
 msgid "%g>>> DCC CTCP received from %_$1%_%K: %g$2"
-msgstr ""
+msgstr "%g>>> DCC CTCP otrzymane od %_$1%_%K: %g$2"
 
 #. ----
 #: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:155
 msgid "DCC"
-msgstr ""
+msgstr "DCC"
 
 #: src/ui-common/ui-formats.c:157
 msgid "%gDCC CHAT from %_$1%_ %K[%g$2 port $3%K]"
-msgstr ""
+msgstr "%gDCC CHAT od %_$1%_ %K[%g$2 port $3%K]"
 
 #: src/ui-common/ui-formats.c:158
 msgid "%gNo DCC CHAT connection open to %_$1"
-msgstr ""
+msgstr "%gBrak otwartego po³±czenia DCC CHAT do %_$1"
 
 #: src/ui-common/ui-formats.c:159
 msgid ""
 "%gDCC %_CHAT%_ connection with %_$1%_ %K%K[%g$2 port $3%K]%g established"
-msgstr ""
+msgstr "%gUstanowione po³±czenie DCC %_CHAT%_ z %_$1%_ %K%K[%g$2 port $3%K]%g"
 
 #: src/ui-common/ui-formats.c:160
 msgid "%gDCC lost chat to %_$1"
-msgstr ""
+msgstr "%gStracone po³±czenie DCC CHAT do %_$1"
 
 #: src/ui-common/ui-formats.c:161
 msgid "%gDCC SEND from %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bytes%K]"
-msgstr ""
+msgstr "%gDCC SEND od %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bajtów%K]"
 
 #: src/ui-common/ui-formats.c:162
 msgid "%gDCC already sending file %G$1%g for %_$2%_"
@@ -542,55 +542,56 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:167
 msgid "%gDCC aborted sending file $1 for %_$2%_"
-msgstr ""
+msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
 
 #: src/ui-common/ui-formats.c:168
 msgid "%gDCC no file offered by %_$1"
-msgstr ""
+msgstr "%gDCC %_$1 nie oferuje ci plików"
 
 #: src/ui-common/ui-formats.c:169
 msgid "%gDCC receiving file %G$1%g from %_$2%_ %K[%g$3 port $4%K]"
-msgstr ""
+msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
 
 #: src/ui-common/ui-formats.c:170
 msgid ""
 "%gDCC received file %G$1%g %K[%g$2kb%K]%g from %_$3%_ in %_$4%_ secs "
 "%K[%g$5kb/s%K]"
-msgstr ""
+msgstr "DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
+"%K[%g$5kb/s%K"
 
 #: src/ui-common/ui-formats.c:171
 msgid "%gDCC aborted receiving file $1 from %_$2%_"
-msgstr ""
+msgstr "%gDCC przerwane otrzymywanie pliku $1 od %_$2%_"
 
 #: src/ui-common/ui-formats.c:172
 msgid "%gDCC unknown ctcp %G$1%g from %_$2%_ %K[%g$3%K]"
-msgstr ""
+msgstr "%gDCC nieznane ctcp %G$1%g od %_$2%_ %K[%g$3%K]"
 
 #: src/ui-common/ui-formats.c:173
 msgid "%gDCC unknown reply %G$1%g from %_$2%_ %K[%g$3%K]"
-msgstr ""
+msgstr "%gDCC nieznana odpowied¼ %G$1%g od %_$2%_ %K[%g$3%K]"
 
 #: src/ui-common/ui-formats.c:174
 #, c-format
 msgid "%gDCC unknown command: $1"
-msgstr ""
+msgstr "%gNieznana komenda DCC: $1"
 
 #: src/ui-common/ui-formats.c:175
 msgid "%gDCC unknown type %_$1"
-msgstr ""
+msgstr "%gNieznay typ DCC %_$1"
 
 #: src/ui-common/ui-formats.c:176
 msgid "%gDCC can't connect to %_$1%_ port %_$2"
-msgstr ""
+msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
 
 #: src/ui-common/ui-formats.c:177
 #, c-format
 msgid "%gDCC can't create file %G$1%g"
-msgstr ""
+msgstr "%gDCC nie mo¿na utworzyæ pliku %G$1%g"
 
 #: src/ui-common/ui-formats.c:178
 msgid "%gDCC %G$1%g was rejected by %_$2%_ %K[%G$3%K]"
-msgstr ""
+msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
 
 #: src/ui-common/ui-formats.c:179
 msgid "%gDCC %G$1%g close for %_$2%_ %K[%G$3%K]"
@@ -603,15 +604,15 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:184
 msgid "Users online: %_$1"
-msgstr ""
+msgstr "U¿ytkowników online: %_$1"
 
 #: src/ui-common/ui-formats.c:185
 msgid "PONG received from $1: $2"
-msgstr ""
+msgstr "Otrzymany PONG od $1: $2"
 
 #: src/ui-common/ui-formats.c:186
 msgid "$1: $2"
-msgstr ""
+msgstr "$1: $2"
 
 #: src/ui-common/ui-formats.c:187
 msgid "%_ERROR%_ $1"
@@ -623,12 +624,12 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:189
 msgid "You're not channel operator in $1"
-msgstr ""
+msgstr "Nie jeste¶ operatorem kana³u na $1"
 
 #. ----
 #: src/ui-common/ui-formats.c:192
 msgid "Logging"
-msgstr ""
+msgstr "Logowanie"
 
 #: src/ui-common/ui-formats.c:194
 msgid "Log file %W$1%n opened"
@@ -658,19 +659,19 @@ msgstr ""
 #: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:152
 #: src/ui-common/ui-formats.c:202
 msgid "Misc"
-msgstr ""
+msgstr "Ró¿ne"
 
 #: src/ui-common/ui-formats.c:204
 msgid "You must specify one of the following levels: $1"
-msgstr ""
+msgstr "Nale¿y wybraæ jeden z nastêpuj±cych poziomów: $1"
 
 #: src/ui-common/ui-formats.c:205
 msgid "Ignoring %_$1%_ from %_$2%_"
-msgstr ""
+msgstr "Ignorowanie %_$1%_ od %_$2%_"
 
 #: src/ui-common/ui-formats.c:206
 msgid "Unignored %_$1%_ from %_$2%_"
-msgstr ""
+msgstr "Nieignorowanie %_$1%_ od %_$2%_"
 
 #: src/ui-common/ui-formats.c:207
 msgid "%_$1%_ is not being ignored"
@@ -718,27 +719,27 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:218
 msgid "Plugin %_$1%_ is not irssi plugin"
-msgstr ""
+msgstr "Wtyczka %_$1%_ nie jest wtyczk± irssi"
 
 #: src/ui-common/ui-formats.c:219
 msgid "Plugin %_$1%_ isn't compatible with this irssi version"
-msgstr ""
+msgstr "Wtyczka %_$1%_ nie pasuje do tej wersji irssi"
 
 #: src/ui-common/ui-formats.c:220
 msgid "Plugin %_$1%_ is already loaded"
-msgstr ""
+msgstr "Wtyczka %_$1%_ jest ju¿ za³adowana"
 
 #: src/ui-common/ui-formats.c:221
 msgid "Plugin %_$1%_ not loaded"
-msgstr ""
+msgstr "Wtyczka %_$1%_ nie jest za³adowana"
 
 #: src/ui-common/ui-printtext.c:836
 msgid "%_Warning:%_ %s"
-msgstr ""
+msgstr "%_Ostrze¿enie:%_ %s"
 
 #: src/ui-common/ui-printtext.c:838
 msgid "%_Error:%_ %s"
-msgstr ""
+msgstr "%_B³±d:%_ %s"
 
 #: src/gui-gnome/dialog-about.c:33
 msgid "IRC client, "
@@ -746,7 +747,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-channels.c:125 src/gui-gnome/setup-bg.c:123
 msgid "Select new default font"
-msgstr ""
+msgstr "Wybierz now± domy¶ln± czcionkê"
 
 #. autojoin toggle
 #: src/gui-gnome/dialog-channels.c:167
@@ -764,12 +765,12 @@ msgstr "Kana³"
 #: src/gui-gnome/dialog-channels.c:184 src/gui-gnome/dialog-connect.c:129
 #: src/gui-gnome/dialog-disconnect.c:126 src/gui-gnome/dialog-join.c:128
 msgid "IRC Network"
-msgstr ""
+msgstr "Sieæ IRC"
 
 #. bot masks, bot command
 #: src/gui-gnome/dialog-channels.c:200 src/gui-gnome/setup-servers.c:267
 msgid "Password"
-msgstr "HAs³o"
+msgstr "Has³o"
 
 #: src/gui-gnome/dialog-channels.c:202
 msgid "Bot masks"
@@ -782,15 +783,15 @@ msgstr ""
 #: src/gui-gnome/dialog-channels.c:206 src/gui-gnome/setup-bg.c:233
 #: src/gui-gnome/setup-bg.c:237
 msgid "Background pixmap"
-msgstr ""
+msgstr "T³o"
 
 #: src/gui-gnome/dialog-channels.c:209 src/gui-gnome/setup-bg.c:260
 msgid "Font"
-msgstr ""
+msgstr "Czcionka"
 
 #: src/gui-gnome/dialog-channels.c:220 src/gui-gnome/setup-bg.c:268
 msgid "Change..."
-msgstr ""
+msgstr "Zmieñ..."
 
 #: src/gui-gnome/dialog-channels.c:253 src/gui-gnome/dialog-channels.c:254
 #: src/gui-gnome/dialog-log.c:223 src/gui-gnome/dialog-log.c:230
@@ -817,20 +818,20 @@ msgstr ""
 #: src/gui-gnome/dialog-channels.c:447 src/gui-gnome/setup-ircnets.c:140
 #: src/gui-gnome/setup-ircnets.c:191
 msgid "IRC network"
-msgstr ""
+msgstr "Sieæ IRC"
 
 #: src/gui-gnome/dialog-channels.c:449 src/gui-gnome/dialog-join.c:131
 #: src/gui-gnome/gui-event-invite.c:54
 msgid "Join"
-msgstr ""
+msgstr "Do³±cz"
 
 #: src/gui-gnome/dialog-channels.c:449
 msgid "Part"
-msgstr ""
+msgstr "Opu¶æ"
 
 #: src/gui-gnome/dialog-channels.c:489 src/gui-gnome/setup-themes.c:279
 msgid "Add..."
-msgstr ""
+msgstr "Dodaj..."
 
 #: src/gui-gnome/dialog-channels.c:494
 msgid "Edit..."
@@ -839,26 +840,26 @@ msgstr ""
 #: src/gui-gnome/dialog-channels.c:499 src/gui-gnome/dialog-log.c:598
 #: src/gui-gnome/setup-lists.c:354 src/gui-gnome/setup-themes.c:284
 msgid "Delete"
-msgstr ""
+msgstr "Skasuj"
 
 #: src/gui-gnome/dialog-channels.c:507
 msgid "Quick join..."
-msgstr ""
+msgstr "Szybkie do³±czenie..."
 
 #: src/gui-gnome/dialog-connect.c:129 src/gui-gnome/dialog-disconnect.c:127
 #: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:61
 msgid "Address"
-msgstr ""
+msgstr "Adres"
 
 #: src/gui-gnome/dialog-connect.c:130 src/gui-gnome/dialog-disconnect.c:127
 #: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:66
 #: src/gui-gnome/setup-servers.c:262
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/gui-gnome/dialog-connect.c:132 src/gui-gnome/gui-menu-commands.c:260
 msgid "Connect"
-msgstr ""
+msgstr "Po³±cz"
 
 #: src/gui-gnome/dialog-dcc.c:169
 msgid "Type"
@@ -866,20 +867,20 @@ msgstr "Typ"
 
 #: src/gui-gnome/dialog-dcc.c:169
 msgid "File Size"
-msgstr ""
+msgstr "Rozmiar pliku"
 
 #: src/gui-gnome/dialog-dcc.c:170
 msgid "Transferred"
-msgstr ""
+msgstr "Przes³ane"
 
 #: src/gui-gnome/dialog-dcc.c:170
 #, c-format
 msgid "% done"
-msgstr ""
+msgstr "% zrobione"
 
 #: src/gui-gnome/dialog-dcc.c:171
 msgid "kB/sec"
-msgstr ""
+msgstr "kB/s"
 
 #: src/gui-gnome/dialog-dcc.c:171
 msgid "File name"
@@ -907,11 +908,11 @@ msgstr ""
 
 #: src/gui-gnome/dialog-irssibot.c:80
 msgid "Notify about new irssi releases"
-msgstr ""
+msgstr "Informacja o nowej wersji irssi"
 
 #: src/gui-gnome/dialog-irssibot.c:83
 msgid "Notify also about new development releases"
-msgstr ""
+msgstr "Informacja o nowej rozwojowej wersji"
 
 #: src/gui-gnome/dialog-irssibot.c:146
 #, c-format
@@ -951,11 +952,11 @@ msgstr ""
 
 #: src/gui-gnome/dialog-join.c:56
 msgid "No server selected"
-msgstr ""
+msgstr "Nie zosta³ wybrany serwer"
 
 #: src/gui-gnome/dialog-join.c:63
 msgid "No channel specified"
-msgstr ""
+msgstr "Nie zosta³ wybrany kana³"
 
 #: src/gui-gnome/dialog-links.c:84
 msgid "Links"
@@ -967,7 +968,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-links.c:351 src/gui-gnome/dialog-plugins.c:233
 msgid "Description"
-msgstr ""
+msgstr "Opis"
 
 #: src/gui-gnome/dialog-log.c:25
 msgid "Crap"
@@ -975,11 +976,11 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:26
 msgid "Private messages"
-msgstr ""
+msgstr "Prywatne wiadomo¶ci"
 
 #: src/gui-gnome/dialog-log.c:27
 msgid "Public messages"
-msgstr ""
+msgstr "Publiczne wiadomo¶ci"
 
 #: src/gui-gnome/dialog-log.c:28
 msgid "Notices"
@@ -991,27 +992,27 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:30
 msgid "CTCP messages"
-msgstr ""
+msgstr "Komunikaty CTCP"
 
 #: src/gui-gnome/dialog-log.c:31
 msgid "Actions (/me)"
-msgstr ""
+msgstr "Akcje (/me)"
 
 #: src/gui-gnome/dialog-log.c:32
 msgid "Joins"
-msgstr ""
+msgstr "Przy³±czenia"
 
 #: src/gui-gnome/dialog-log.c:33
 msgid "Parts"
-msgstr ""
+msgstr "Opuszczenia"
 
 #: src/gui-gnome/dialog-log.c:34
 msgid "Quits"
-msgstr "Koniec"
+msgstr "Zakoñczenia"
 
 #: src/gui-gnome/dialog-log.c:35
 msgid "Kicks"
-msgstr ""
+msgstr "Wykopania"
 
 #. modes
 #: src/gui-gnome/dialog-log.c:36 src/gui-gnome/dialog-modes.c:498
@@ -1032,23 +1033,23 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:40
 msgid "Invites"
-msgstr ""
+msgstr "Zaproszenia"
 
 #: src/gui-gnome/dialog-log.c:41
 msgid "Nick changes"
-msgstr ""
+msgstr "Zmiany nicka"
 
 #: src/gui-gnome/dialog-log.c:42
 msgid "Pongs"
-msgstr ""
+msgstr "Pongi"
 
 #: src/gui-gnome/dialog-log.c:43
 msgid "DCC messages"
-msgstr ""
+msgstr "Komunikaty DCC"
 
 #: src/gui-gnome/dialog-log.c:44
 msgid "Hilighted messages"
-msgstr ""
+msgstr "Pod¶wietlone wiadomo¶ci"
 
 #: src/gui-gnome/dialog-log.c:45
 msgid "Client notices"
@@ -1060,11 +1061,11 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:47
 msgid "Client errors"
-msgstr ""
+msgstr "B³êdy klienta"
 
 #: src/gui-gnome/dialog-log.c:311
 msgid "<new log file>"
-msgstr ""
+msgstr "<nowy plik logów>"
 
 #: src/gui-gnome/dialog-log.c:325
 msgid "<new item>"
@@ -1072,54 +1073,54 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:542
 msgid "Open"
-msgstr ""
+msgstr "Otwórz"
 
 #: src/gui-gnome/dialog-log.c:542 src/gui-gnome/dialog-plugins.c:233
 #: src/gui-gnome/dialog-window.c:168
 msgid "Name"
-msgstr ""
+msgstr "Nazwa"
 
 #: src/gui-gnome/dialog-log.c:542
 msgid "Level"
-msgstr ""
+msgstr "Poziom"
 
 #: src/gui-gnome/dialog-log.c:587
 msgid "New log file"
-msgstr ""
+msgstr "Nowy plik logów"
 
 #: src/gui-gnome/dialog-log.c:592
 msgid "New log entry"
-msgstr ""
+msgstr "Nowy element logów"
 
 #: src/gui-gnome/dialog-log.c:608
 msgid "Start logging"
-msgstr ""
+msgstr "Pocz±tek logowania"
 
 #: src/gui-gnome/dialog-log.c:614
 msgid "Stop logging"
-msgstr ""
+msgstr "Zakoñczenie logowania"
 
 #: src/gui-gnome/dialog-log.c:638
 msgid "Clear all"
-msgstr ""
+msgstr "Wyczy¶æ wszystko"
 
 #: src/gui-gnome/dialog-log.c:642
 msgid "Select all"
-msgstr ""
+msgstr "Wybierz wszystko"
 
 #. auto-open log button
 #: src/gui-gnome/dialog-log.c:648
 msgid "Open log at startup"
-msgstr ""
+msgstr "Otwórz logi przy starcie"
 
 #. entry widgets for log file name and subitems name
 #: src/gui-gnome/dialog-log.c:654
 msgid "Log file name:"
-msgstr ""
+msgstr "Nazwa pliku logów:"
 
 #: src/gui-gnome/dialog-log.c:657
 msgid "Channel/nick:"
-msgstr ""
+msgstr "Kana³/nick:"
 
 #: src/gui-gnome/dialog-modes.c:474
 msgid "Channel modes"
@@ -1132,19 +1133,19 @@ msgstr ""
 
 #: src/gui-gnome/dialog-modes.c:505
 msgid "Invite"
-msgstr ""
+msgstr "Zaproszenie"
 
 #: src/gui-gnome/dialog-modes.c:506 src/gui-gnome/gui-windows.c:36
 msgid "Secret"
-msgstr ""
+msgstr "Tajny"
 
 #: src/gui-gnome/dialog-modes.c:507 src/gui-gnome/gui-windows.c:37
 msgid "Private"
-msgstr ""
+msgstr "Prywatny"
 
 #: src/gui-gnome/dialog-modes.c:508 src/gui-gnome/gui-windows.c:38
 msgid "Moderated"
-msgstr ""
+msgstr "Moderowany"
 
 #: src/gui-gnome/dialog-modes.c:509
 msgid "No external msgs"
@@ -1160,7 +1161,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-modes.c:524
 msgid "Channel key: "
-msgstr ""
+msgstr "Klucz kana³u:"
 
 #: src/gui-gnome/dialog-modes.c:533
 msgid "Banlist"
@@ -1178,7 +1179,7 @@ msgstr ""
 #: src/gui-gnome/setup-ircnets.c:277 src/gui-gnome/setup-servers.c:500
 #: src/gui-gnome/setup-session.c:139
 msgid "Remove"
-msgstr ""
+msgstr "Usuñ"
 
 #: src/gui-gnome/dialog-modes.c:583
 msgid "Invite list"
@@ -1195,7 +1196,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-notifylist.c:243
 msgid "IRC net"
-msgstr ""
+msgstr "Sieæ IRC"
 
 #: src/gui-gnome/dialog-notifylist.c:244 src/gui-gnome/gui-event-who.c:256
 msgid "Host"
@@ -1203,7 +1204,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-notifylist.c:244
 msgid "Real Name"
-msgstr ""
+msgstr "Prawdziwe nazwisko"
 
 #: src/gui-gnome/dialog-notifylist.c:246 src/gui-gnome/gui-menu-commands.c:246
 msgid "Query"
@@ -1216,17 +1217,17 @@ msgstr ""
 #: src/gui-gnome/dialog-plugins.c:68
 #, c-format
 msgid "Can't load plugin: %s"
-msgstr ""
+msgstr "Nie mo¿na za³edowaæ wtyczki: %s"
 
 #: src/gui-gnome/dialog-plugins.c:85
 #, c-format
 msgid "Plugin not loaded: %s"
-msgstr ""
+msgstr "Wtyczka nie za³adowana: %s"
 
 #: src/gui-gnome/dialog-plugins.c:160
 #, c-format
 msgid "Plugin %s properties:"
-msgstr ""
+msgstr "W³a¶ciwo¶ci wtyczki %s:"
 
 #: src/gui-gnome/dialog-plugins.c:164
 msgid "Automatically start plugin at startup"
@@ -1234,15 +1235,15 @@ msgstr ""
 
 #: src/gui-gnome/dialog-plugins.c:171
 msgid "Arguments for plugin:"
-msgstr ""
+msgstr "Argumenty dla wtyczki:"
 
 #: src/gui-gnome/dialog-plugins.c:219
 msgid "Load"
-msgstr ""
+msgstr "£aduj"
 
 #: src/gui-gnome/dialog-plugins.c:219
 msgid "Settings..."
-msgstr ""
+msgstr "Ustawienia..."
 
 #: src/gui-gnome/dialog-plugins.c:233
 msgid "Running"
@@ -1254,12 +1255,12 @@ msgstr ""
 
 #: src/gui-gnome/dialog-plugins.c:310
 msgid "Plugins/"
-msgstr ""
+msgstr "Wtyczki/"
 
 #. First plugin, create plugins menu.
 #: src/gui-gnome/dialog-plugins.c:314 src/gui-gnome/dialog-plugins.c:339
 msgid "Plugins"
-msgstr ""
+msgstr "Wtyczki"
 
 #: src/gui-gnome/dialog-plugins.c:322
 #, c-format
@@ -1284,18 +1285,18 @@ msgstr ""
 
 #: src/gui-gnome/dialog-rawlog.c:105
 msgid "Save"
-msgstr ""
+msgstr "Zapisz"
 
 #: src/gui-gnome/dialog-rawlog.c:130 src/gui-gnome/gui-menu-commands.c:394
 #: src/gui-gnome/gui-menu-commands.c:413 src/gui-gnome/gui-menu-commands.c:495
 #: src/gui-gnome/gui-menu-commands.c:503
 msgid "Not connected to server"
-msgstr ""
+msgstr "Nie pod³±czony do serwera"
 
 #. Save rawlog button
 #: src/gui-gnome/dialog-rawlog.c:167
 msgid "Save to file..."
-msgstr ""
+msgstr "Zapisz do pliku..."
 
 #: src/gui-gnome/dialog-status.c:90
 msgid "Queries"
@@ -1307,11 +1308,11 @@ msgstr ""
 
 #: src/gui-gnome/dialog-status.c:262
 msgid "Display servers"
-msgstr ""
+msgstr "Wy¶wietl serwery"
 
 #: src/gui-gnome/dialog-status.c:267
 msgid "Display channels"
-msgstr ""
+msgstr "Wy¶wietl kana³y"
 
 #: src/gui-gnome/dialog-status.c:272
 msgid "Display queries"
@@ -1327,15 +1328,15 @@ msgstr ""
 
 #: src/gui-gnome/dialog-textwidget.c:149
 msgid "Find previous"
-msgstr ""
+msgstr "Znajd¼ poprzedni"
 
 #: src/gui-gnome/dialog-textwidget.c:149
 msgid "Find next"
-msgstr ""
+msgstr "Znajd¼ nastêpny"
 
 #: src/gui-gnome/dialog-textwidget.c:160
 msgid "Find text: "
-msgstr ""
+msgstr "Znajd¼ tekst: "
 
 #: src/gui-gnome/dialog-textwidget.c:186
 #, c-format
@@ -1354,7 +1355,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-textwidget.c:258
 msgid "Save only selected text"
-msgstr ""
+msgstr "Zapisz tylko zaznaczony tekst"
 
 #: src/gui-gnome/dialog-textwidget.c:269
 msgid "Save window buffer to: "
@@ -1366,48 +1367,48 @@ msgstr ""
 
 #: src/gui-gnome/dialog-window.c:107
 msgid "Save size"
-msgstr ""
+msgstr "Zapisz rozmiar"
 
 #: src/gui-gnome/dialog-window.c:115
 msgid "Width"
-msgstr ""
+msgstr "Szeroko¶æ"
 
 #: src/gui-gnome/dialog-window.c:121
 msgid "Height"
-msgstr ""
+msgstr "Wysoko¶æ"
 
 #: src/gui-gnome/dialog-window.c:136
 msgid "Save position"
-msgstr ""
+msgstr "Zapisz pozycje"
 
 #: src/gui-gnome/dialog-window.c:144
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: src/gui-gnome/dialog-window.c:150
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 #: src/gui-gnome/dialog-window.c:164
 msgid "Default window"
-msgstr ""
+msgstr "Domy¶lne okno"
 
 #: src/gui-gnome/gtk-specific.c:58 src/gui-gnome/setup-colors.c:188
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: src/gui-gnome/gtk-specific.c:63
 msgid "Apply"
-msgstr ""
+msgstr "Zastosuj"
 
 #: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:451
 #: src/gui-gnome/setup-colors.c:195
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: src/gui-gnome/gtk-specific.c:486
 msgid "Browse"
-msgstr ""
+msgstr "Przegl±daj"
 
 #: src/gui-gnome/gui-dcc.c:132
 msgid "transfer complete - all"
@@ -1449,31 +1450,31 @@ msgstr ""
 
 #: src/gui-gnome/gui-dcc.c:258
 msgid "Nick: "
-msgstr ""
+msgstr "Nick: "
 
 #: src/gui-gnome/gui-dcc.c:263
 msgid "File to send: "
-msgstr ""
+msgstr "Plik do wys³ania: "
 
 #: src/gui-gnome/gui-dcc.c:266
 msgid "Select file to send"
-msgstr ""
+msgstr "Wybierz plik do wys³ania"
 
 #: src/gui-gnome/gui-dcc.c:382
 msgid "Rename file to"
-msgstr ""
+msgstr "Zmieñ nazwe pliku na"
 
 #: src/gui-gnome/gui-dcc.c:429 src/gui-gnome/gui-dcc.c:435
 msgid "Overwrite"
-msgstr ""
+msgstr "Nadpisz"
 
 #: src/gui-gnome/gui-dcc.c:429 src/gui-gnome/gui-dcc.c:435
 msgid "Rename"
-msgstr ""
+msgstr "Zmieñ nazwê"
 
 #: src/gui-gnome/gui-dcc.c:429
 msgid "Resume"
-msgstr ""
+msgstr "Wznów"
 
 #: src/gui-gnome/gui-dcc.c:459
 #, c-format
@@ -1486,11 +1487,13 @@ msgid ""
 "File name: %s\n"
 "File size: %ld\n"
 msgstr ""
+"Nazwa   pliku: %s\n"
+"Rozmiar pliku: %ld\n"
 
 #: src/gui-gnome/gui-event-invite.c:67
 #, c-format
 msgid "%s invites you to %s"
-msgstr ""
+msgstr "%s zaprasza ciê na %s"
 
 #: src/gui-gnome/gui-event-list.c:45
 #, c-format
