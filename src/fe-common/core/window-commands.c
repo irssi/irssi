@@ -346,14 +346,17 @@ static void cmd_window_immortal(const char *data)
 {
 	int set;
 
-	if (g_strcasecmp(data, "ON") == 0)
+	if (*data == '\0')
+		set = active_win->immortal;
+	else if (g_strcasecmp(data, "ON") == 0)
                 set = TRUE;
 	else if (g_strcasecmp(data, "OFF") == 0)
                 set = FALSE;
 	else if (g_strcasecmp(data, "TOGGLE") == 0)
                 set = !active_win->immortal;
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
+		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+				   TXT_NOT_TOGGLE);
 		return;
 	}
 
