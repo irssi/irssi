@@ -1,21 +1,79 @@
- - reconnectit BUGAA VIELƒKIN. ne +k kanavat ei rejoinaudu ja ties mit‰
-   asetuksia hukkuu matkalla.
- - fix somehow the ^X + /disconnect problem when trying to disconnect
-   non-connected servers
+ - the non-fallbacking bind() in connect() breaks /set dcc_own_ip when used
+   with non-local ip.
+ - /whowas server nick doesn't work
+01:18 <@darix> cras: /foreach server /disconnect $tag n8 <-- doesnt work
+ - /hilight -priority is broken
+19:36 [IRCNet] [muzzy(muzzy@wc.pp.htv.fi)] lis‰‰ bugeja irssiss‰, ilmeisesti 
+          uusin versio:  foo splittaa ulos, bar joinaa sis‰‰n, bar vaihtaa 
+          nicknamen fooksi, foo splittaa uudestaan ulos -> tulee Glib warning 
+          "is already in split list (how?)" .. :)
+
+04:35 [OPN] [slug(slug@defender.home.warp13.co.uk)] was just wondering if you 
+          had Irssi::keyboard_entry_redirect() on your TODO somewhere near the 
+          top, I'd love the feature
+04:35 [OPN] [slug(slug@defender.home.warp13.co.uk)] or someway to clear the 
+          command buffer, either way is acceptable, just my connection is a 
+          little less than reliable, so I've built myself a script that stores 
+          blowfish passes, all encrypted by one value
+04:36 [OPN] [slug(slug@defender.home.warp13.co.uk)] then I set a single 
+          decryption key, and it keeps it for the irssi session (lost on 
+          /upgrade though), unfortunatly it stays in the command buffer 8]
+
+ - scrollback_time is broken
+ - ^I in topicbar breaks things
+14:17 <@darix> cras: this doesnt work: /exec  - -o uname -a
+
+ - time (secs):
+    - core: server_reconnect_time, server_connect_timeout
+    - fe-common/core: timestamp_timeout, autoclose_query
+    - irc/core: knockout_time, lag_check_time, lag_max_before_disconnect
+    - irc/notifylist: notify_check_time, notify_whois_time
+    - irc/dcc: dcc_timeout
+    - irc/flood: autoignore_time
+ - time (msec): lag_min_show (fe-text), cmd_queue_speed (irc/core)
+ - time (min): notify_idle_time (irc/notify)
+ - write_buffer_mins -> write_buffer_timeout (core)
+ - scrollback_hours -> scrollback_time (fe-text)
+ - size (kB): write_buffer_size (core), dcc_autoget_max_size (irc/dcc)
+
+05.12.2002 17:56 [Cvbge(piotr@info.ii.uj.edu.pl)] the bug - irssi (cvs too) 
+          coredumps when file name in /dcc send is null (try "/dcc send nick 
+          ''")
+01:30 <@decadix> cras, you broke dcc chat today: my nick is empty there
+22:43 [IRCNet] [Mutru(mutru@49.CLVI.adsl.multi.fi)] Vahvistamattoman huhun 
+          mukaan irssi kaatuu, kun completion__keep_privates on asetettu 
+          nollaksi ja saat /msg:n.
+ - "setup changed", or "setup reread" seems to cause crashes.. (with darix)
+05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] before 0.8.6 mail.pl 
+          should work again :)
+05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] it prints an empty 
+          space for me 
+05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] when mail arrives :)
+02:46 <@fuchs> cras, /server foonet.foo.xy and (recognizing it doesn't connect 
+               fast enough), and so doing /server barnet.foo.xy (both in the 
+               same chatnet) makes irssi joining the net but not rejoining the 
+               channels
+
+
+14:59 <@c0ffee> cras, bug report, mode change compression appears not to work: 
+                13:58 -!- mode/#*cut* [-b+ *cut*] by *cut* (i think it was -b+b)
+21:55 <@L> 17:04.11 <L> /eval /last quit;/clear;/sb goto 10:00;/last -clear;/sb end
+21:55 <@L> 17:04.27 <L> wait after it scrolls and press page up :)
+21:55 <@L> 17:04.48 <L> oh, you can make Irssi behave correctly with /clear
+           again
+
+ - /msg nick@server or nick%host is fully treated as nickname (log, query)
+ - max_whois won't stay with reconnects?
  - support passive DCC
  - separate format for privmsg/notice massmessages (anything non-yournick)
- - irssi dumps core when layout saving with non-channel/query window
 20:45 < Juerd> 19:44 -!- Irssi: critical file channels.c: line 122 
                (channel_find): assertion
 20:45 < Juerd>           `name != NULL' failed.
-20:45 < juuso> ~30'C is way too hot for me. 20-25 is quite ok.
 20:45 < Juerd> this happens three times
 20:46 < Juerd> and it happens in a _query_
 20:47 <@Juerd> cras: for some reason irssi doesn't know this happens in a 
                query, and displays "< Juerd:> foo" in the status window
  - set TOS field for all connections (DCC especially)
-16:45 <@darix> cras: hmm it seems irssi proxy cant accept connects on ipv6 
-               anymore. related to BC-bd's patch?
  - /PROXY CTCP ON doesn't work well with multiple servers
 22:51 [IRCNet] [zhafte(~zhafte@zhafte.peelo.com)] irssi muuten taitaa bugaa jos 
           pist‰‰ ACT oikeaan reunaan, vai onkohan se vain mun terminaali?
@@ -23,8 +81,6 @@
           numerot
  - when using -w password command line parameter, hide the password so it
    won't show with ps.
- - ne typer‰t reconnectiobugit jatkuu .. away viesti ei s‰ily, +k kanavat
-   unohtuu jnejne.
 17:26 < elho> cras: and with dancer-ircd like here in OPN, mode +f (channel 
               forward) has the channel as argument, ie. HAS_MODE_ARG_SET() 
               should include f
@@ -32,11 +88,6 @@
               whois_modes, it needs to distinguish between this 379 channel 
               redirect and the whois_modes 379 it handles currently (whatever 
               that is ;))
-13:24 <@Garion> cras: when I type /ignore -regexp -pattern "FUCK YOU" * MSGS, 
-                irssi says "-!- Irssi: Ignoring MSGS from *". This is scary, 
-                cause it suggests I'm ignoring all messages from now on. Could 
-                you add the properties of the messages that I'm ignoring? 
-                "Ignoring MSGS that match with <regexp> from *" or something?
 07.06.2002 08:37 #irssi: <@Qrczak> cras: A bug. After /upgrade when being away 
                                    the awaylog is not being written to.
 21:37 < life> Then you connect. The problem is that irssi connects to the proxy 
@@ -49,10 +100,6 @@
                                    window with that line in it, thus keeping 1 
                                    line from the old window in the current 
                                    window. Very confusing
-01.06.2002 19:25 #irssi: < ugly_> cras: irssi not resetting the away msg on 
-                                  reconnect to servers in latest cvs
-00:58 <@dg> server notices to @#channel is something that doesn't work
-01:00 <@dg> cras, they go to status (or if you /query @#chan there..)
 21:43 [IRCNet] [HiroP-(~HiroP@p508035EC.dip.t-dialin.net)] Hi there. I just 
           wanted to tell you that there seems to be a problem when joining 
           large channels (500+ people) while a regexp ignore is active. I had 
@@ -66,14 +113,12 @@
           several minutes). 
 
  - %n%_ ei n‰y lastlogissa
- - dcc download mask on v‰‰rin?
  - darixin se pingiredirectijuttu
 21:28 < Samus_Aran> cras: /log also shows #Linuux ... which I typod a couple
                     days ago
 21:30 < Samus_Aran> it doesnt show any of the queries which i closed, though,
                     jush #channels
 
- - 16.5 14:22
  - "show statusbar in empty windows" flag?
  - statusbar_item_redraw() should just set the size as dirty and calculate
    it only when really needed.
@@ -82,15 +127,6 @@
  - use_status_window, use_msgs_window sais toimia heti
  - /msg @#chan<tab>
 
-16:17 < simon-> I'm on a keyed channel on undernet, on a rather unstable 
-                server, and whenever it dies, I find myself not on that channel 
-                (and on another server) the next morning)
-16:17 < simon-> s/.$//
-16:18 < simon-> well, it only happens when the server times out
-16:18 < simon-> and irssi finds an alternative server
-
-14:50 <@Qrczak> cras: $1 in autolog_path sometimes expands to @#channel instead 
-          of #channel. server messages about the channel go there.
  - hilight -priority
  - tab completio jos lis‰‰ utf8 juttuja niin ei oikein toimi?
 16:39 <@Qrczak> cras: I'm not sure how exactly to reproduce it but it happens 
@@ -106,15 +142,13 @@
 /WHOssa.. kts. qrczak logi
  - /set show_server_tags tjsp ett‰ n‰ytt‰is aina (yhdist‰ hide_server_tagsin 
    kanssa?)
- - "script destroyed"i‰ pit‰is p‰‰st‰ skriptit kattomaan..
 17:35 <@peder> cras: why isnt 'topic = " {sb_topic $topic}"' in the default 
- - /SET dcc_create_mode 755 ei toimi vaan laittaa 600?
  - /SBAR topic placement bottom ei toimi??
  - /SB GOTO -<days> <ts>
  - /query -immortal so autoclose_queries wouldn't touch them
  - /SET hiascii_control_chars if 128..128+32 should be treated as control chars
 
-.... pre-0.9 ...
+...
 
  - /exec -out kanavalla ei pelaa silciss‰
  - write about %[-s] etc. to default.theme
@@ -139,11 +173,8 @@
  - /window server -sticky:tetyt ikkunat ei aina meinaa tajuta kun serveri
    yhdistyy?
  - utf8-tekstitykset bugailee statusbarissa (promptissa)
- - refcounterit settings_add_xx()‰‰n ett‰ vois definett‰‰ useampia kertoja?
  - jos /set reuse_unused_windows off, ja ikkuna n‰ytt‰is t‰ysin tyhj‰lle
    ja niit‰ olis vaan 1, niin sen vois kyll‰ k‰ytt‰‰ silti (?)
-03:37 <@darix>  /away msg -> /upgrade -> im still away but on /away it doesnt 
-               show the awaylog msgs 
  - /set beep_msg_level hilight ei toimi jos on /hilight -word
 
  - /STATUSBAR xx ENABLE|DISABLE recreates all statusbars which is a bit
@@ -179,7 +210,7 @@
 	- but DCC chats shouldn't be closed until the chat itself is closed
 	   - which we can't know really currently, since they don't need
 	     to be in queries
-	- channels should be closed when they're left
+	- channels should be closed when they're left (they are now, but)
 	   - /WINDOW CLOSE shouldn't close it immediately, since we'll still
 	     receive at least the PART message
     - so, log items should know more about what they are exactly, and when
@@ -366,6 +397,7 @@
     - ^R-like history search
     - Key to execute the command, but not place it in history
     - Key to remove active entry from command history
+    - Optionally save command history between restarts
 
  - Notify list:
     - showing who's online and who's offline doesn't work properly.
@@ -585,8 +617,6 @@
       irssi .. at least remove the crashing!
     - Irssi::signal_remove() could accept hashes
     - /command parameter parser so it'd be easier to handle -options etc.
-    - when reloading scripts, Irssi::settings_add_int() prints glib errors,
-      while settings_add_str() doesn't
     - Try to get the Makefiles generated so that compiling with GCC would
       always work even if the perl wasn't compiled with GCC..
     - Irssi::Timeout_add() and input_add()'s data option could be optional
@@ -627,19 +657,16 @@
       at the same time overlapping each others
 
  - Commands:
-    - Would this work..? : command_bind() could specify the parameters
-      it uses, then some generic command parser could parse the commands
-      and options and if all is ok, send the parsed parameters directly with
-      signal_emit() .. I'm just thinking some type checking problems but
-      if all commands would be in format SERVER_REC, WI_ITEM_REC,
-      GHashTable *options, char ** (NULL terminated parameters list) .. ?
+    - try to get the 0.9 command parser to work..
+    - user definable parameter definitions and how they're handled, like
+      cmsg <target> <colorized-msg> - then there'd be some function called to
+      colorize the third parameter. same for tab completion.
     - support for multiple subcommands in the command parser, like
       /window name foo level msgs.
     - A way to disable some command entirely? eg. not show in completion
       list or /HELP or anywhere..
 
  - Read server capabilities from 005 numeric
- - settings_add_int("x") + settings_get_str("x") -> segfault
  - extra spaces after commands don't always work, eg /wii  nick, /help  xx
  - hide channel key in statusbar. This would require a $cmode_nokey or
    something..
