@@ -389,6 +389,8 @@ void statusbar_items_init(void)
 	statusbar_item_register("window_empty", NULL, item_window_empty);
 	statusbar_item_register("prompt", NULL, item_window_active);
 	statusbar_item_register("prompt_empty", NULL, item_window_empty);
+	statusbar_item_register("topic", NULL, item_window_active);
+	statusbar_item_register("topic_empty", NULL, item_window_empty);
 	statusbar_item_register("lag", NULL, item_lag);
 	statusbar_item_register("act", NULL, item_act);
 	statusbar_item_register("more", NULL, item_more);
