@@ -27,18 +27,6 @@ log_write(item, level, str)
 	int level
 	char *str
 
-char *
-log_rotate2str(rotate)
-	int rotate
-CODE:
-	RETVAL = (char *) log_rotate2str(rotate);
-OUTPUT:
-	RETVAL
-
-int
-log_str2rotate(str)
-	char *str
-
 #*******************************
 MODULE = Irssi  PACKAGE = Irssi::Log  PREFIX = log_
 #*******************************
@@ -56,7 +44,6 @@ PPCODE:
 	hv_store(hv, "opened", 6, newSViv(log->opened), 0);
 	hv_store(hv, "level", 5, newSViv(log->level), 0);
 	hv_store(hv, "last", 4, newSViv(log->last), 0);
-	hv_store(hv, "rotate", 6, new_pv((char *) log_rotate2str(log->rotate)), 0);
 	hv_store(hv, "autoopen", 8, newSViv(log->autoopen), 0);
 	hv_store(hv, "temp", 4, newSViv(log->temp), 0);
 
