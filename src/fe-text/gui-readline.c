@@ -665,11 +665,11 @@ void gui_readline_init(void)
 
         /* window managing */
 	key_bind("previous_window", "Previous window", "^P", NULL, (SIGNAL_FUNC) key_previous_window);
-	key_bind("left_window", "Window in left", "meta-left", NULL, (SIGNAL_FUNC) key_left_window);
 	key_bind("next_window", "Next window", "^N", NULL, (SIGNAL_FUNC) key_next_window);
-	key_bind("right_window", "Window in right", "meta-right", NULL, (SIGNAL_FUNC) key_right_window);
 	key_bind("upper_window", "Upper window", "meta-up", NULL, (SIGNAL_FUNC) key_upper_window);
 	key_bind("lower_window", "Lower window", "meta-down", NULL, (SIGNAL_FUNC) key_lower_window);
+	key_bind("left_window", "Window in left", "meta-left", NULL, (SIGNAL_FUNC) key_left_window);
+	key_bind("right_window", "Window in right", "meta-right", NULL, (SIGNAL_FUNC) key_right_window);
 	key_bind("active_window", "Go to next window with the highest activity", "meta-a", NULL, (SIGNAL_FUNC) key_active_window);
 	key_bind("next_window_item", "Next channel/query", "^X", NULL, (SIGNAL_FUNC) key_next_window_item);
 	key_bind("previous_window_item", "Previous channel/query", NULL, NULL, (SIGNAL_FUNC) key_previous_window_item);
@@ -737,13 +737,17 @@ void gui_readline_deinit(void)
 	key_unbind("yank_from_cutbuffer", (SIGNAL_FUNC) key_yank_from_cutbuffer);
 	key_unbind("transpose_characters", (SIGNAL_FUNC) key_transpose_characters);
 
+	key_unbind("send_line", (SIGNAL_FUNC) key_send_line);
 	key_unbind("word_completion", (SIGNAL_FUNC) key_word_completion);
+	key_unbind("erase_completion", (SIGNAL_FUNC) key_erase_completion);
 	key_unbind("check_replaces", (SIGNAL_FUNC) key_check_replaces);
 
 	key_unbind("previous_window", (SIGNAL_FUNC) key_previous_window);
 	key_unbind("next_window", (SIGNAL_FUNC) key_next_window);
 	key_unbind("upper_window", (SIGNAL_FUNC) key_upper_window);
 	key_unbind("lower_window", (SIGNAL_FUNC) key_lower_window);
+	key_unbind("left_window", (SIGNAL_FUNC) key_left_window);
+	key_unbind("right_window", (SIGNAL_FUNC) key_right_window);
 	key_unbind("active_window", (SIGNAL_FUNC) key_active_window);
 	key_unbind("next_window_item", (SIGNAL_FUNC) key_next_window_item);
 	key_unbind("previous_window_item", (SIGNAL_FUNC) key_previous_window_item);

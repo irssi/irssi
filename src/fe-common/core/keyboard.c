@@ -842,6 +842,11 @@ void keyboard_init(void)
 
 void keyboard_deinit(void)
 {
+	key_unbind("command", (SIGNAL_FUNC) sig_command);
+	key_unbind("key", (SIGNAL_FUNC) sig_key);
+	key_unbind("multi", (SIGNAL_FUNC) sig_multi);
+	key_unbind("nothing", (SIGNAL_FUNC) sig_nothing);
+
 	while (keyinfos != NULL)
 		keyinfo_remove(keyinfos->data);
 	g_hash_table_destroy(keys);

@@ -240,7 +240,7 @@ void fe_common_core_deinit(void)
         fe_queries_deinit();
 
 	fe_messages_deinit();
-	fe_ignore_messages_init();
+	fe_ignore_messages_deinit();
 
         theme_unregister();
 	themes_deinit();

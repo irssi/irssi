@@ -429,4 +429,8 @@ void fe_netjoin_deinit(void)
 	}
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
+	signal_remove("message quit", (SIGNAL_FUNC) msg_quit);
+	signal_remove("message join", (SIGNAL_FUNC) msg_join);
+	signal_remove("message mode", (SIGNAL_FUNC) msg_mode);
 }

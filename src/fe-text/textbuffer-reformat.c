@@ -275,6 +275,6 @@ void textbuffer_reformat_deinit(void)
 	g_string_free(format, TRUE);
 
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
-	signal_remove("print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
+	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
