@@ -189,7 +189,7 @@ static char *get_history(char **cmd, void *item, int *free_ret)
 	if (history_func == NULL)
 		ret = NULL;
 	else {
-		text = g_strndup(start, (int) (*cmd-start)+1);
+		text = g_strndup(start, (int) (*cmd-start));
 		ret = history_func(text, item, free_ret);
 		g_free(text);
 	}
