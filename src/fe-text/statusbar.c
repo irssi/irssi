@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "server.h"
+#include "settings.h"
 
 #include "windows.h"
 
@@ -118,7 +119,7 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 		return;
 	}
 
-	set_bg((1<<4)+15);
+	set_bg(settings_get_int("statusbar_background") << 4);
 	move(bar->ypos, 0); clrtoeol();
 	set_bg(0);
 
@@ -159,7 +160,7 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 		rec->line -= sbar_lowest;
 	}
 
-	set_bg((1<<4)+15);
+	set_bg(settings_get_int("statusbar_background") << 4);
 	move(rec->ypos, 0); clrtoeol();
 	set_bg(0);
 
