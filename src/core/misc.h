@@ -38,8 +38,13 @@ GSList *hashtable_get_keys(GHashTable *hash);
 
 /* strstr() with case-ignoring */
 char *stristr(const char *data, const char *key);
-/* stristr(), but matches only for full words */
+
+/* like strstr(), but matches only for full words.
+   `icase' specifies if match is case sensitive */
+char *strstr_full_case(const char *data, const char *key, int icase);
+char *strstr_full(const char *data, const char *key);
 char *stristr_full(const char *data, const char *key);
+
 /* easy way to check if regexp matches */
 int regexp_match(const char *str, const char *regexp);
 

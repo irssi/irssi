@@ -339,10 +339,10 @@ char *stristr(const char *data, const char *key)
 	((unsigned char) (c) < 128 && \
 	(isspace((int) (c)) || ispunct((int) (c))))
 
-char *stristr_full(const char *data, const char *key)
+char *strstr_full_case(const char *data, const char *key, int icase)
 {
 	const char *start, *max;
-	int keylen, datalen, pos;
+	int keylen, datalen, pos, match;
 
 	keylen = strlen(key);
 	datalen = strlen(data);
@@ -364,8 +364,10 @@ char *stristr_full(const char *data, const char *key)
 			return (char *) data;
 		}
 
-		if (toupper(data[pos]) == toupper(key[pos]) &&
-		    (pos != 0 || data == start || isbound(data[-1])))
+		match = icase ? (toupper(data[pos]) == toupper(key[pos])) :
+				 data[pos] == key[pos];
+
+		if (match && (pos != 0 || data == start || isbound(data[-1])))
 			pos++;
 		else {
 			data++;
@@ -374,6 +376,16 @@ char *stristr_full(const char *data, const char *key)
 	}
 
 	return NULL;
+}
+
+char *strstr_full(const char *data, const char *key)
+{
+        return strstr_full_case(data, key, FALSE);
+}
+
+char *stristr_full(const char *data, const char *key)
+{
+        return strstr_full_case(data, key, TRUE);
 }
 
 int regexp_match(const char *str, const char *regexp)
