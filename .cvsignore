@@ -29,3 +29,4 @@ ABOUT-NLS
 COPYING
 irssi.spec
 default-config.h
+irssi-version.h
