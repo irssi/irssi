@@ -1,7 +1,7 @@
 /*
  fe-irc-commands.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,10 +83,10 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	signal_emit("message irc own_action", 3, server, text, target);
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
 
 	target = skip_target(target);
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
+	signal_emit("message irc own_action", 3, server, text, target);
 	cmd_params_free(free_arg);
 }
 
@@ -182,6 +182,24 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server,
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	signal_emit("message irc own_wall", 3, server, msg, chanrec->name);
+
+	cmd_params_free(free_arg);
+}
+
+static void cmd_wallchops(const char *data, IRC_SERVER_REC *server,
+			  WI_ITEM_REC *item)
+{
+	char *channame, *msg;
+	void *free_arg;
+
+        CMD_IRC_SERVER(server);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
+			    PARAM_FLAG_GETREST, item, &channame, &msg))
+		return;
+	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	signal_emit("message irc own_wall", 3, server, msg, channame);
 
 	cmd_params_free(free_arg);
 }
@@ -444,6 +462,7 @@ void fe_irc_commands_init(void)
 	command_bind_irc("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind_irc("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
 	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
+	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) cmd_wallchops);
 	command_bind_irc("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind_irc("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
 	command_bind_irc("ver", NULL, (SIGNAL_FUNC) cmd_ver);
@@ -461,6 +480,7 @@ void fe_irc_commands_deinit(void)
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
+	command_unbind("wallchops", (SIGNAL_FUNC) cmd_wallchops);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);

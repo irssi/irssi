@@ -94,7 +94,14 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 			server->real_address;
 	}
 
-	signal_emit("message irc notice", 5, server, msg, nick, addr, target);
+	if (*target == '@' && ischannel(target[1])) {
+		/* /WALLCHOPS received */
+		signal_emit("message irc op_public", 5,
+			    server, msg, nick, addr, target+1);
+	} else {
+		signal_emit("message irc notice", 5,
+			    server, msg, nick, addr, target);
+	}
 	g_free(params);
 }
 

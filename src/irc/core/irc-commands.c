@@ -631,6 +631,24 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: WALLCHOPS <channel> <message> */
+static void cmd_wallchops(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+{
+	char *channame, *msg;
+	void *free_arg;
+
+        CMD_IRC_SERVER(server);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
+			    PARAM_FLAG_GETREST, item, &channame, &msg))
+		return;
+	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	irc_send_cmdv(server, "WALLCHOPS %s :%s", channame, msg);
+
+	cmd_params_free(free_arg);
+}
+
 /* SYNTAX: KICKBAN [<channel>] <nicks> <reason> */
 static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 			WI_ITEM_REC *item)
@@ -975,11 +993,10 @@ void irc_commands_init(void)
 	command_bind_irc("quote", NULL, (SIGNAL_FUNC) cmd_quote);
 	command_bind_irc("rawquote", NULL, (SIGNAL_FUNC) cmd_rawquote);
 	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
+	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) cmd_wallchops);
 	command_bind_irc("wait", NULL, (SIGNAL_FUNC) cmd_wait);
 	/* SYNTAX: WALLOPS <message> */
 	command_bind_irc("wallops", NULL, (SIGNAL_FUNC) command_1self);
-	/* SYNTAX: WALLCHOPS <channel> <message> */
-	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind_irc("kickban", NULL, (SIGNAL_FUNC) cmd_kickban);
 	command_bind_irc("knockout", NULL, (SIGNAL_FUNC) cmd_knockout);
 	command_bind_irc("server purge", NULL, (SIGNAL_FUNC) cmd_server_purge);
@@ -1047,9 +1064,9 @@ void irc_commands_deinit(void)
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
 	command_unbind("rawquote", (SIGNAL_FUNC) cmd_rawquote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
+	command_unbind("wallchops", (SIGNAL_FUNC) cmd_wallchops);
 	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
-	command_unbind("wallchops", (SIGNAL_FUNC) command_2self);
 	command_unbind("kickban", (SIGNAL_FUNC) cmd_kickban);
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
 	command_unbind("server purge", (SIGNAL_FUNC) cmd_server_purge);
