@@ -544,7 +544,7 @@ void expandos_init(void)
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add_first("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void expandos_deinit(void)
