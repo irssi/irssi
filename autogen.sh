@@ -29,11 +29,31 @@ version_date=`date +%Y%m%d`
 echo "Creating help files..."
 perl syntax.pl
 
-SVN=svn
+# create changelog
 # the TZ hack is needed.
 # otherwise the log will have local timezone
-TZ=UTC $SVN log -v > ChangeLog
-TZ=UTC $SVN log -v --xml > ChangeLog.xml
+SVN=svn
+if [ -e $srcdir/ChangeLog ]; then
+	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| tail -n 1 | sed -r 's/^r([0-9]+).*/\1/;t;d'`
+fi
+if [ -z $CHANGELOG_VERSION ]; then
+	echo "Getting ChangeLog from svn..."
+	TZ=UTC $SVN log -v > $srcdir/ChangeLog
+else
+	SVN_VERSION=`$SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
+	if [ -z SVN_VERSION ]; then
+		echo "**Error**: Couldn't get svn revision number. svn or .svn dirs missing?"
+		exit 1
+	fi
+	if [ $SVN_VERSION -eq $CHANGELOG_VERSION ]; then
+		echo ChangeLog is already up-to-date.
+	else
+		echo "Updating ChangeLog from version $CHANGELOG_VERSION to $SVN_VERSION..."
+		mv $srcdir/ChangeLog $srcdir/ChangeLog.prev
+		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:$((CHANGELOG_VERSION+1)) > $srcdir/ChangeLog
+		cat $srcdir/ChangeLog.prev >> $srcdir/ChangeLog
+	fi
+fi
 
 files=`echo docs/help/in/*.in|sed -e 's,docs/help/in/Makefile.in ,,' -e 's,docs/help/in/,!,g' -e 's/\.in /.in ?/g'`
 cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/in/Makefile.am
