@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-06-20 12:42+0200\n"
+"POT-Creation-Date: 2000-07-09 17:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,11 +75,11 @@ msgstr ""
 msgid "Couldn't save configuration file: %s"
 msgstr ""
 
-#: src/fe-common/core/printtext.c:882
+#: src/fe-common/core/printtext.c:886
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/fe-common/core/printtext.c:884
+#: src/fe-common/core/printtext.c:888
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
@@ -90,35 +90,35 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:83
+#: src/fe-common/irc/fe-common-irc.c:89
 msgid "Automatically connect to server/ircnet"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:83 src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:89 src/fe-common/irc/fe-common-irc.c:90
 msgid "SERVER"
 msgstr "SERWER"
 
-#: src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:90
 msgid "Autoconnect password"
 msgstr "Has³o autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:91
 msgid "Autoconnect port"
 msgstr "Port autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:91
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:86
+#: src/fe-common/irc/fe-common-irc.c:92
 msgid "Disable autoconnecting"
 msgstr "Wy³±czenie autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:87
+#: src/fe-common/irc/fe-common-irc.c:93
 msgid "Specify nick to use"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:88
+#: src/fe-common/irc/fe-common-irc.c:94
 msgid "Specify host name to use"
 msgstr ""
 

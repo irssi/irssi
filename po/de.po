@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Irssi 0.7.23\n"
-"POT-Creation-Date: 2000-06-14 23:12+0300\n"
+"POT-Creation-Date: 2000-07-09 17:27+0300\n"
 "PO-Revision-Date: 1999-12-01 10:35-0200\n"
 "Last-Translator: Thomas Heinen <cochi@uni-paderborn.de>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -81,11 +81,11 @@ msgstr ""
 "Datei kann nicht erzeugt werden:\n"
 "%s"
 
-#: src/fe-common/core/printtext.c:880
+#: src/fe-common/core/printtext.c:886
 msgid "%_Warning:%_ %s"
 msgstr "%_Warnung:%_ %s"
 
-#: src/fe-common/core/printtext.c:882
+#: src/fe-common/core/printtext.c:888
 msgid "%_Error:%_ %s"
 msgstr "%_Fehler:%_ %s"
 
@@ -96,35 +96,35 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:80
+#: src/fe-common/irc/fe-common-irc.c:89
 msgid "Automatically connect to server/ircnet"
 msgstr "Automatisch verbinden mit Server/IRCNet"
 
-#: src/fe-common/irc/fe-common-irc.c:80 src/fe-common/irc/fe-common-irc.c:81
+#: src/fe-common/irc/fe-common-irc.c:89 src/fe-common/irc/fe-common-irc.c:90
 msgid "SERVER"
 msgstr "SERVER"
 
-#: src/fe-common/irc/fe-common-irc.c:81
+#: src/fe-common/irc/fe-common-irc.c:90
 msgid "Autoconnect password"
 msgstr "Autoconnect Passwort"
 
-#: src/fe-common/irc/fe-common-irc.c:82
+#: src/fe-common/irc/fe-common-irc.c:91
 msgid "Autoconnect port"
 msgstr "Autoconnect Port"
 
-#: src/fe-common/irc/fe-common-irc.c:82
+#: src/fe-common/irc/fe-common-irc.c:91
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:83
+#: src/fe-common/irc/fe-common-irc.c:92
 msgid "Disable autoconnecting"
 msgstr "Autoconnect deaktivieren"
 
-#: src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:93
 msgid "Specify nick to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:94
 #, fuzzy
 msgid "Specify host name to use"
 msgstr "Bitte Nickname angeben"

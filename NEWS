@@ -1,3 +1,32 @@
+v0.7.93 2000-07-09  Timo Sirainen <tss@iki.fi>
+
+	+ Implemented /BIND [<key> [<action> [<data>]]] command.
+	  <key> can be CTRL-x, ALT-X or ALT-SHIFT-X
+	  The most useful action is "command", give the command in <data>.
+	  You can see the rest of the actions with typing /BIND without
+	  any parameters. Some actions might have more than one word,
+	  to use them type the action in "quotation marks".
+	+ When netsplit is over, irssi prints "Netsplit over, joins: (nicks)"
+	  and hides all the real JOIN messages.
+	+ /^COMMAND hides the output of the command, it's not written to
+	  log either. Good for sending passwords for example.
+	+ If you're pasting text to channel and some of it starts with /,
+	  Irssi will send the "/command" to channel if it doesn't exist
+	  (instead of just printing "unknown command").
+	+ --enable-perl[=libdir] to configure - you can specify what
+	  directory to install the perl libraries.
+	+ Implemented runtime loadable modules. /LOAD loads a module,
+	  /UNLOAD unloads it.
+	+ You can change statusbar colors with /SET statusbar_xxx.
+	+ Added -clear option to /SET.
+	+ Tab-completion for /FORMAT.
+	+ Ctrl-Y undeletes the last line deleted with Ctrl-U.
+	- Reconnecting to server had a few bugs
+	- /RELOADing configuration produced a few bugs
+	- Highlighting had several bugs
+	- Automatic command and option completions had some bugs
+	- -option tab-completion didn't work
+
 v0.7.92 2000-06-30  Timo Sirainen <tss@iki.fi>
 
 	* Some changes:
