@@ -199,7 +199,6 @@ static void _scroll_region_1(TERM_REC *term, int y1, int y2, int count)
 		term->move(term, 0, y1);
 		for (i = count; i < 0; i++)
 			tput(tparm(term->TI_ri));
-		tput(tparm(term->TI_rin, -count, -count));
 	}
 
         /* reset the scrolling region to full screen */
