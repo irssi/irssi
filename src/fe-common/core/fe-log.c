@@ -41,31 +41,24 @@ static int autolog_level;
 static int autoremove_tag;
 static const char *autolog_path;
 
-/* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
-                    [-rotate hourly|daily|weekly|monthly] <fname> [<levels>] */
+/* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-targets <targets>]
+                    [-window] <fname> [<levels>] */
 static void cmd_log_open(const char *data)
 {
         GHashTable *optlist;
-	char *targetarg, *rotatearg, *fname, *levels;
+	char *targetarg, *fname, *levels;
 	void *free_arg;
 	char window[MAX_INT_STRLEN];
 	LOG_REC *log;
-	int level, rotate;
+	int level;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
 			    "log open", &optlist, &fname, &levels))
 		return;
 
 	targetarg = g_hash_table_lookup(optlist, "targets");
-	rotatearg = g_hash_table_lookup(optlist, "rotate");
 
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	rotate = LOG_ROTATE_NEVER;
-	if (rotatearg != NULL) {
-		rotate = log_str2rotate(rotatearg);
-		if (rotate < 0) rotate = LOG_ROTATE_NEVER;
-	}
 
 	level = level2bits(levels);
 	if (level == 0) level = MSGLEVEL_ALL;
@@ -80,7 +73,6 @@ static void cmd_log_open(const char *data)
 	if (log != NULL) {
 		if (g_hash_table_lookup(optlist, "autoopen"))
 			log->autoopen = TRUE;
-                log->rotate = rotate;
 		log_update(log);
 
 		if (log->handle == -1 && g_hash_table_lookup(optlist, "noopen") == NULL) {
@@ -153,7 +145,7 @@ static void cmd_log_stop(const char *data)
 static void cmd_log_list(void)
 {
 	GSList *tmp;
-	char *levelstr, *items, *rotate;
+	char *levelstr, *items;
 	int index;
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST_HEADER);
@@ -163,15 +155,11 @@ static void cmd_log_list(void)
 		levelstr = bits2level(rec->level);
 		items = rec->items == NULL ? NULL :
 			g_strjoinv(",", rec->items);
-		rotate = rec->rotate == 0 ? NULL :
-			g_strdup_printf(" -rotate %s", log_rotate2str(rec->rotate));
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST,
 			    index, rec->fname, items != NULL ? items : "",
-			    levelstr, rotate != NULL ? rotate : "",
-			    rec->autoopen ? " -autoopen" : "");
+			    levelstr, rec->autoopen ? " -autoopen" : "");
 
-		g_free_not_null(rotate);
 		g_free_not_null(items);
 		g_free(levelstr);
 	}
@@ -468,7 +456,7 @@ void fe_log_init(void)
 	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
-	command_set_options("log open", "noopen autoopen -targets window -rotate");
+	command_set_options("log open", "noopen autoopen -targets window");
 }
 
 void fe_log_deinit(void)

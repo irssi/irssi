@@ -34,14 +34,6 @@
 static struct flock lock;
 #endif
 
-const char *rotate_strings[] = {
-	"never",
-	"hourly",
-	"daily",
-	"weekly",
-	"monthly"
-};
-
 GSList *logs;
 
 const char *log_timestamp;
@@ -66,27 +58,34 @@ static void log_write_timestamp(int handle, const char *format,
 	if (suffix != NULL) write(handle, suffix, strlen(suffix));
 }
 
-int log_start_logging(LOG_REC *log)
+static char *log_filename(LOG_REC *log)
 {
 	char *str, fname[1024];
 	struct tm *tm;
 	time_t now;
 
+	now = time(NULL);
+	tm = localtime(&now);
+
+	str = convert_home(log->fname);
+	strftime(fname, sizeof(fname), str, tm);
+	g_free(str);
+
+	return g_strdup(fname);
+}
+
+int log_start_logging(LOG_REC *log)
+{
 	g_return_val_if_fail(log != NULL, FALSE);
 
 	if (log->handle != -1)
 		return TRUE;
 
-	now = time(NULL);
-	tm = localtime(&now);
-
 	/* Append/create log file */
-	str = convert_home(log->fname);
-	strftime(fname, sizeof(fname), str, tm);
-	log->handle = open(fname, O_WRONLY | O_APPEND | O_CREAT,
+	g_free_not_null(log->real_fname);
+	log->real_fname = log_filename(log);
+	log->handle = open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
 			   log_file_create_mode);
-	g_free(str);
-
 	if (log->handle == -1) {
 		signal_emit("log create failed", 1, log);
 		return FALSE;
@@ -135,11 +134,29 @@ void log_stop_logging(LOG_REC *log)
 	log->handle = -1;
 }
 
+static void log_rotate_check(LOG_REC *log)
+{
+	char *new_fname;
+
+	g_return_if_fail(log != NULL);
+
+	if (log->handle == -1 || log->real_fname == NULL)
+		return;
+
+	new_fname = log_filename(log);
+	if (strcmp(new_fname, log->real_fname) != 0) {
+		/* rotate log */
+		log_stop_logging(log);
+		log_start_logging(log);
+	}
+	g_free(new_fname);
+}
+
 void log_write_rec(LOG_REC *log, const char *str)
 {
 	struct tm *tm;
 	time_t now;
-	int day;
+	int hour, day;
 
 	g_return_if_fail(log != NULL);
 	g_return_if_fail(str != NULL);
@@ -149,9 +166,15 @@ void log_write_rec(LOG_REC *log, const char *str)
 
 	now = time(NULL);
 	tm = localtime(&now);
+	hour = tm->tm_hour;
 	day = tm->tm_mday;
 
 	tm = localtime(&log->last);
+	if (tm->tm_hour != hour) {
+		/* hour changed, check if we need to rotate log file */
+                log_rotate_check(log);
+	}
+
 	if (tm->tm_mday != day) {
 		/* day changed */
 		log_write_timestamp(log->handle,
@@ -224,33 +247,6 @@ LOG_REC *log_find(const char *fname)
 	return NULL;
 }
 
-const char *log_rotate2str(int rotate)
-{
-	g_return_val_if_fail(rotate >= 0 && rotate <= LOG_ROTATE_MONTHLY, NULL);
-
-	return rotate_strings[rotate];
-}
-
-int log_str2rotate(const char *str)
-{
-	if (str == NULL)
-		return -1;
-
-	if (g_strncasecmp(str, "hour", 4) == 0)
-		return LOG_ROTATE_HOURLY;
-	if (g_strncasecmp(str, "day", 3) == 0 ||
-	    g_strncasecmp(str, "daily", 5) == 0)
-		return LOG_ROTATE_DAILY;
-	if (g_strncasecmp(str, "week", 4) == 0)
-		return LOG_ROTATE_WEEKLY;
-	if (g_strncasecmp(str, "month", 5) == 0)
-		return LOG_ROTATE_MONTHLY;
-	if (g_strncasecmp(str, "never", 5) == 0)
-		return LOG_ROTATE_NEVER;
-
-	return -1;
-}
-
 static void log_set_config(LOG_REC *log)
 {
 	CONFIG_NODE *node;
@@ -266,8 +262,6 @@ static void log_set_config(LOG_REC *log)
 		config_node_set_bool(node, "auto_open", TRUE);
 	else
 		iconfig_node_set_str(node, "auto_open", NULL);
-
-	iconfig_node_set_str(node, "rotate", log_rotate2str(log->rotate));
 
 	levelstr = bits2level(log->level);
 	iconfig_node_set_str(node, "level", levelstr);
@@ -332,6 +326,7 @@ static void log_destroy(LOG_REC *log)
 
 	if (log->items != NULL) g_strfreev(log->items);
 	g_free(log->fname);
+	g_free_not_null(log->real_fname);
 	g_free(log);
 }
 
@@ -370,38 +365,16 @@ static void sig_printtext_stripped(void *window, void *server,
 static int sig_rotate_check(void)
 {
 	static int last_hour = -1;
-	struct tm tm_now, *tm;
-	GSList *tmp;
+	struct tm tm;
 	time_t now;
 
 	/* don't do anything until hour is changed */
 	now = time(NULL);
-	memcpy(&tm_now, localtime(&now), sizeof(tm_now));
-	if (tm_now.tm_hour == last_hour) return 1;
-	last_hour = tm_now.tm_hour;
-
-	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
-		LOG_REC *rec = tmp->data;
-
-		if (rec->handle == -1 || rec->rotate == LOG_ROTATE_NEVER)
-			continue;
-
-		tm = localtime(&rec->opened);
-		if (rec->rotate == LOG_ROTATE_MONTHLY) {
-			if (tm->tm_mon == tm_now.tm_mon)
-				continue;
-		} else if (rec->rotate == LOG_ROTATE_WEEKLY) {
-			if (tm->tm_wday != 1 || tm->tm_mday == tm_now.tm_mday)
-				continue;
-		} else if (rec->rotate == LOG_ROTATE_DAILY) {
-			if (tm->tm_mday == tm_now.tm_mday)
-				continue;
-		}
-
-                log_stop_logging(rec);
-                log_start_logging(rec);
+	memcpy(&tm, localtime(&now), sizeof(tm));
+	if (tm.tm_hour != last_hour) {
+		last_hour = tm.tm_hour;
+		g_slist_foreach(logs, (GFunc) log_rotate_check, NULL);
 	}
-
 	return 1;
 }
 
@@ -441,9 +414,6 @@ static void log_read_config(void)
 		log->fname = g_strdup(node->key);
 		log->autoopen = config_node_get_bool(node, "auto_open", FALSE);
 		log->level = level2bits(config_node_get_str(node, "level", 0));
-		log->rotate = log_str2rotate(config_node_get_str(
-						node, "rotate", NULL));
-                if (log->rotate < 0) log->rotate = LOG_ROTATE_NEVER;
 
 		node = config_node_section(node, "items", -1);
 		if (node != NULL) log->items = config_node_get_list(node);

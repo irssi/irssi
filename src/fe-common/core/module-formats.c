@@ -80,7 +80,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "log_started", "Started logging to file %_$0", 1, { 0 } },
 	{ "log_stopped", "Stopped logging to file %_$0", 1, { 0 } },
 	{ "log_list_header", "Logs:", 0 },
-	{ "log_list", "$0 $1: $2 $3$4$5", 6, { 1, 0, 0, 0, 0, 0 } },
+	{ "log_list", "$0 $1: $2 $3$4", 5, { 1, 0, 0, 0, 0, 0 } },
 	{ "log_list_footer", "", 0 },
 	{ "windowlog_file", "Window LOGFILE set to $0", 1, { 0 } },
 	{ "windowlog_file_logging", "Can't change window's logfile while log is on", 0 },
