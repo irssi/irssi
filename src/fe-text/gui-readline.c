@@ -183,7 +183,7 @@ static void key_send_line(void)
 			    active_win->active);
 	} else {
 		if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-			history_window = NULL;
+                        g_free_and_null(add_history);
 		handle_entry_redirect(str);
 	}
 
