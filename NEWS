@@ -1,9 +1,7 @@
-v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
-
-	* This is a development version - not the final one!
+v0.7.16 1999-09-11  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Started bot plugin, it has simple user management functions and
-	  auto-opping/voicing done
+	  auto-opping/voicing done (but it does it well :)
 	+ "channel synced" text doesn't trigger channel activity anymore
 	+ Rawlog displays where event was redirected
 	+ /wjoin - you can join multiple channels in same window
@@ -19,7 +17,8 @@ v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
 	+ /list and /who dialogs displays total number of items and the list
 	  is searchable
 	+ Autojoining to channels work with irssi-text too
-	- Restoring saved window size didn't work very accurately
+	- Restoring saved window size didn't work very accurately, restoring
+	  position also had some problems..
 	- Rawlog doesn't crash anymore if not connected to server
 	- Notifylist and checking of who uses your nick uses WHOIS again,
 	  WHO didn't display user info unless s/he was -i or in same
