@@ -428,6 +428,9 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 		signal_emit(rec->last_signal, 1, server);
 	}
 
+	if (server->redirect_continue == rec)
+		server->redirect_continue = NULL;
+
 	server_redirect_destroy(rec);
 }
 
