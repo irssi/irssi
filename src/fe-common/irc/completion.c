@@ -269,7 +269,7 @@ static GList *completion_getmsglist(IRC_SERVER_REC *server, gchar *nick)
     return list;
 }
 
-static void event_command(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
     CHANNEL_REC *channel;
     GList *comp;
@@ -279,14 +279,6 @@ static void event_command(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
     if (!irc_item_check(item))
 	    return;
-
-    if (strchr(settings_get_str("cmdchars"), *line) != NULL) {
-	    if (line[1] != ' ')
-		    return;
-
-	    /* "/ text" = same as sending "text" to active channel. */
-	    line += 2;
-    }
 
     line = g_strdup(line);
 
@@ -584,7 +576,7 @@ void completion_init(void)
 	settings_add_int("completion", "completion_keep_privates", 10);
 
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_add("send command", (SIGNAL_FUNC) event_command);
+	signal_add("send text", (SIGNAL_FUNC) event_text);
 	signal_add("server disconnected", (SIGNAL_FUNC) completion_deinit_server);
 	signal_add("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
@@ -601,7 +593,7 @@ void completion_deinit(void)
 	g_source_remove(comptag);
 
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_remove("send command", (SIGNAL_FUNC) event_command);
+	signal_remove("send text", (SIGNAL_FUNC) event_text);
 	signal_remove("server disconnected", (SIGNAL_FUNC) completion_deinit_server);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);

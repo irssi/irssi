@@ -419,41 +419,17 @@ void cmd_get_remove_func(CMD_GET_FUNC func)
         cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
-static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
+static void parse_command(const char *command, int expand_aliases, SERVER_REC *server, void *item)
 {
 	const char *alias;
-	char *cmd, *str, *args, *oldcmd, *cmdchar;
-	int use_alias = TRUE;
+	char *cmd, *str, *args, *oldcmd;
 
-	g_return_if_fail(line != NULL);
-
-	if (*line == '\0') {
-		/* empty line, forget it. */
-                signal_stop();
-		return;
-	}
-
-	cmdchar = strchr(settings_get_str("cmdchars"), *line);
-        if (cmdchar == NULL)
-		return; /* handle only /commands here */
-	line++;
-	if (*line == ' ') {
-		/* "/ text" = same as sending "text" to active channel. */
-		return;
-	}
-
-	/* same cmdchar twice ignores aliases ignores aliases */
-	if (*line == *cmdchar) {
-		line++;
-		use_alias = FALSE;
-	}
-
-	cmd = str = g_strconcat("command ", line, NULL);
+	cmd = str = g_strconcat("command ", command, NULL);
 	args = strchr(cmd+8, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	/* check if there's an alias for command */
-	alias = use_alias ? alias_find(cmd+8) : NULL;
+	alias = expand_aliases ? alias_find(cmd+8) : NULL;
 	if (alias != NULL)
 		eval_special_string(alias, args, server, item);
 	else {
@@ -464,11 +440,46 @@ static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
 		oldcmd = current_command;
 		current_command = cmd+8;
 		if (!signal_emit(cmd, 3, args, server, item))
-			signal_emit_id(signal_default_command, 3, line, server, item);
+			signal_emit_id(signal_default_command, 3, command, server, item);
                 current_command = oldcmd;
 	}
 
 	g_free(str);
+}
+
+static void event_command(const char *line, SERVER_REC *server, void *item)
+{
+	char *cmdchar;
+	int expand_aliases = TRUE;
+
+	g_return_if_fail(line != NULL);
+
+	if (*line == '\0') {
+		/* empty line, forget it. */
+                signal_stop();
+		return;
+	}
+
+	cmdchar = strchr(settings_get_str("cmdchars"), *line);
+	if (cmdchar != NULL && line[1] == ' ') {
+		/* "/ text" = same as sending "text" to active channel. */
+		line += 2;
+		cmdchar = NULL;
+	}
+	if (cmdchar == NULL) {
+		/* non-command - let someone else handle this */
+		signal_emit("send text", 3, line, server, item);
+		return;
+	}
+
+	/* same cmdchar twice ignores aliases ignores aliases */
+	line++;
+	if (*line == *cmdchar) {
+		line++;
+		expand_aliases = FALSE;
+	}
+
+	parse_command(line, expand_aliases, server, item);
 }
 
 static void cmd_eval(const char *data, SERVER_REC *server, void *item)
@@ -514,7 +525,7 @@ void commands_init(void)
 	signal_default_command = module_get_uniq_id_str("signals", "default command");
 
 	settings_add_str("misc", "cmdchars", "/");
-	signal_add("send command", (SIGNAL_FUNC) parse_outgoing);
+	signal_add("send command", (SIGNAL_FUNC) event_command);
 
 	command_bind("eval", NULL, (SIGNAL_FUNC) cmd_eval);
 	command_bind("cd", NULL, (SIGNAL_FUNC) cmd_cd);
@@ -527,7 +538,7 @@ void commands_deinit(void)
 	g_free_not_null(current_command);
 	g_slist_free(cmdget_funcs);
 
-	signal_remove("send command", (SIGNAL_FUNC) parse_outgoing);
+	signal_remove("send command", (SIGNAL_FUNC) event_command);
 
 	command_unbind("eval", (SIGNAL_FUNC) cmd_eval);
 	command_unbind("cd", (SIGNAL_FUNC) cmd_cd);
