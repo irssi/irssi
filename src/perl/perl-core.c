@@ -84,7 +84,7 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
         g_free(script);
 }
 
-extern void boot_DynaLoader(CV* cv);
+extern void boot_DynaLoader(pTHX_ CV* cv);
 
 #if PERL_STATIC_LIBS == 1
 extern void boot_Irssi(CV *cv);
@@ -101,7 +101,7 @@ XS(boot_Irssi_Core)
 }
 #endif
 
-static void xs_init(void)
+static void xs_init(pTHX)
 {
 	dXSUB_SYS;
 

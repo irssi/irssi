@@ -219,12 +219,12 @@ char *perl_get_use_list(void)
         return ret;
 }
 
-void irssi_callXS(void (*subaddr)(CV* cv), CV *cv, SV **mark)
+void irssi_callXS(void (*subaddr)(pTHX_ CV* cv), CV *cv, SV **mark)
 {
 	dSP;
 
 	PUSHMARK(mark);
-	(*subaddr)(cv);
+	(*subaddr)(aTHX_ cv);
 
 	PUTBACK;
 }
