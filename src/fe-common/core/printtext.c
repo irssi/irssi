@@ -273,6 +273,64 @@ static void msg_beep_check(SERVER_REC *server, int level)
 	}
 }
 
+/* convert _underlined_ and *bold* words (and phrases) to use 
+ * mIRC(?)-style emphasis
+ */
+static char *expand_emphasis(TEXT_DEST_REC *dest, const char *text)
+{
+	GString *str;
+	char *ret;
+	int pos;
+
+	if ((dest->level & (MSGLEVEL_PUBLIC|MSGLEVEL_MSGS|MSGLEVEL_DCCMSGS)) == 0)
+	    	return g_strdup(text);
+
+	str = g_string_new(text);
+
+	for (pos = 0; str->str[pos] != '\0'; pos++) {
+		char type, *bgn, *end;
+		
+		bgn = str->str + pos;
+
+		if (*bgn == '*') 
+			type = 2; /* bold */
+		else if (*bgn == '_') 
+			type = 31; /* underlined */
+		else 
+			continue;
+
+		/* check that the beginning marker starts a word, and
+		 * that the matching end marker ends a word */
+		if (pos > 0 && isalnum(bgn[-1]))
+			continue;
+		if ((end = strchr(bgn+1, *bgn)) == NULL) 
+			continue;
+		if (isalnum(*(end + 1)) || *(end + 1) == type) 
+			continue;
+
+		/* allow only *word* emphasis, not *multiple words* */
+		if (!settings_get_bool("emphasis_multiword")) {
+			char *c;
+			for (c = bgn+1; c != end; c++) {
+				if (! isalnum(*c)) 
+					break;
+			}
+			if (c != end) continue;
+		}
+		
+		if (settings_get_bool("emphasis_replace")) {
+			*bgn = *end = type;
+		} else {
+			g_string_insert_c(str, pos++, type);
+			g_string_insert_c(str, pos + (end - bgn) + 1, type);
+		}
+	}
+
+	ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 {
 	char *str, *tmp;
@@ -291,6 +349,11 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
+	if (settings_get_bool("emphasis")) {
+		char *tmp = str;
+		str = expand_emphasis(dest, tmp);
+		g_free(tmp);
+	}
 	format_send_to_gui(dest, str);
 	g_free(str);
 
@@ -334,6 +397,9 @@ static void read_settings(void)
 void printtext_init(void)
 {
 	settings_add_int("misc", "timestamp_timeout", 0);
+	settings_add_bool("lookandfeel", "emphasis", TRUE);
+	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
+	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);
 
 	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
