@@ -623,6 +623,26 @@ this:</p>
 <p>The server name and port you give isn't used anywhere, so you can
 put anything you want in there.</p>
 
+<p><strong>psyBNC</strong></p>
+
+<p>psyBNC has internal support for multiple servers. However, it could
+be a bit annoying to use, and some people just use different users for
+connecting to different servers. You can manage this in a bit same way
+as with dircproxy, by creating fake connections:</p>
+
+<pre>
+    /SET -clear proxy_password
+    /SET -clear proxy_string
+
+    /IRCNET ADD -user ircnetuser ircnet
+    /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
+    /IRCNET ADD -user opnuser opn
+    /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+</pre>
+
+<p>So, you'll specify the usernames with /IRCNET ADD command, and the
+user's password with /SERVER ADD.</p>
+
 <p><strong>Irssi proxy</strong></p>
 
 <p>Irssi contains it's own proxy which you can build giving
