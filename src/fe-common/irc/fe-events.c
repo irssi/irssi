@@ -273,7 +273,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	GString *chans;
 	GSList *tmp;
 	char *print_channel;
-	int once;
+	int once, count;
 
 	g_return_if_fail(data != NULL);
 
@@ -286,6 +286,8 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
+
+	count = 0;
 	chans = !once ? NULL : g_string_new(NULL);
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
@@ -295,17 +297,19 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 			if (print_channel == NULL || active_win->active == (WI_ITEM_REC *) rec)
 				print_channel = rec->name;
 
-			if (once)
-				g_string_sprintfa(chans, "%s,", rec->name);
-			else
+			if (!once)
 				printformat(server, rec->name, MSGLEVEL_QUITS, IRCTXT_QUIT, nick, addr, data);
+			else {
+				g_string_sprintfa(chans, "%s,", rec->name);
+				count++;
+			}
 		}
 	}
 
 	if (once) {
 		g_string_truncate(chans, chans->len-1);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
-			    chans->len == 0 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
+			    count <= 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
 			    nick, addr, data, chans->str);
 		g_string_free(chans, TRUE);
 	}
