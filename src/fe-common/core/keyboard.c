@@ -567,7 +567,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 #  define GSearchFunc GCompareFunc
 #endif
 	rec = g_tree_search(key_states,
-			    (GCompareFunc) key_states_search,
+			    (GSearchFunc) key_states_search,
 			    combo);
 	if (rec == NULL) {
 		/* unknown key combo, eat the invalid key
