@@ -1,4 +1,4 @@
-# $Revision: 1.8 $, $Date: 2000/04/14 11:27:02 $
+# $Revision: 1.9 $, $Date: 2000/04/17 09:37:05 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
@@ -101,6 +101,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/CORBA/servers/irssi.gnorba
 %{_datadir}/gnome/apps/Network/irssi.desktop
 %{_datadir}/gnome/help/irssi
+%{_datadir}/pixmaps/*
 
 %define date    %(echo `LC_ALL="C" date +"%a %b %d %Y"`)
 %changelog
@@ -108,6 +109,9 @@ rm -rf $RPM_BUILD_ROOT
 All below listed persons can be reached on <cvs_login>@pld.org.pl
 
 $Log: irssi.spec.in,v $
+Revision 1.9  2000/04/17 09:37:05  kloczek
+- added pixmaps to %files (irssi have now own icon).
+
 Revision 1.8  2000/04/14 11:27:02  cras
 Sorry for a big update - I still don't have internet connection at home
 and this is what I've been doing a few weeks now.. :) You really shouldn't
