@@ -400,7 +400,10 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			term_set_color(view->window, color);
 		}
 		text++;
-                xpos++;
+		xpos++;
+
+		if (xpos == term_width)
+                        text = text_newline;
 	}
 
 	if (need_clrtoeol && xpos < term_width) {
