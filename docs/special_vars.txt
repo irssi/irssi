@@ -62,6 +62,7 @@ $A .. $Z is important.
    $I         channel you were last INVITEd to
    $J         client version text string
    $K         current value of CMDCHARS
+   $k         first character in CMDCHARS
    $L         current contents of the input line
    $M         modes of current channel, if any
    $N         current nickname

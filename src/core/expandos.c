@@ -318,6 +318,17 @@ static char *expando_cmdchars(SERVER_REC *server, void *item, int *free_ret)
 	return (char *) settings_get_str("cmdchars");
 }
 
+/* first CMDCHAR */
+static char *expando_cmdchar(SERVER_REC *server, void *item, int *free_ret)
+{
+	char str[2] = { 0, 0 };
+
+	str[0] = *settings_get_str("cmdchar");
+
+	*free_ret = TRUE;
+	return g_strdup(str);
+}
+
 /* modes of current channel, if any */
 static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -584,6 +595,8 @@ void expandos_init(void)
 	expando_create("J", expando_version,
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("K", expando_cmdchars,
+		       "setup changed", EXPANDO_ARG_NONE, NULL);
+	expando_create("k", expando_cmdchar,
 		       "setup changed", EXPANDO_ARG_NONE, NULL);
 	expando_create("M", expando_chanmode,
 		       "window changed", EXPANDO_ARG_NONE,
