@@ -104,6 +104,9 @@
 
 *** Little things
 
+ - reload configuration file on the fly
+ - /savewindows - save the current channel/query positions to file and
+   load them at startup.
  - multi-DCC - open multiple sockets to transfer the file
  - re-set away message when reconnecting to server
  - autoaway when idling

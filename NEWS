@@ -1,3 +1,17 @@
+v0.7.25 2000-02-19  Timo Sirainen <tss@iki.fi> [stable]
+
+	+ /WQUERY - create query to current window
+	+ Irssi doesn't close the window anymore when using /PART
+	+ irssi-text also displays user's address in topic bar in queries.
+	+ /NAMES list is now displayed sorted
+	+ irssi-text: /WINDOW MOVE PREV|NEXT
+	- Topic bar sometimes displayed some other channel's topic if the
+	  channel didn't have a topic.
+	- Irssi automatically changed to auto-created query windows..
+	- When using /WINDOW CLOSE it didn't change to different window
+	- Made fontset_load() optional - it broke some fonts..
+	- Using Ctrl-B (bold) didn't move the cursor
+
 v0.7.24 2000-02-19  Timo Sirainen <tss@iki.fi> [stable]
 
 	+ French translation
