@@ -168,7 +168,7 @@ void window_change_server(WINDOW_REC *window, void *server)
 
 	if (server == NULL) {
 		active = connect = NULL;
-	} else if (SERVER(server)->connected) {
+	} else if (g_slist_find(servers, server) != NULL) {
 		active = server;
 		connect = NULL;
 	} else {
