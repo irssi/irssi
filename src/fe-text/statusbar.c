@@ -515,6 +515,7 @@ STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
 		if (*value == '\0') {
 			/* fallback to default statusbar background
 			   (also provides backwards compatibility..) */
+                        g_free(value);
 			value = theme_format_expand(theme, "{sb_background}");
 		}
 	}

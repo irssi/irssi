@@ -483,6 +483,8 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		   send them again separately */
                 query_current_error(server);
 	}
+
+        g_free(params);
 }
 
 static void event_end_of_banlist(IRC_SERVER_REC *server, const char *data)
