@@ -226,6 +226,8 @@ static unsigned int file_checksum(const char *fname)
 	unsigned int checksum = 0;
 
 	f = fopen(fname, "rb");
+	if (f == NULL) return 0;
+
 	while (!feof(f))
 		checksum += fgetc(f) << ((n++ & 3)*8);
 	fclose(f);
