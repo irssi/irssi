@@ -272,7 +272,7 @@ static int window_refnum_prev(int refnum)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->refnum < refnum && (max == -1 || rec->refnum > max))
+		if (rec->refnum < refnum && (prev == -1 || rec->refnum > prev))
 			prev = rec->refnum;
 		if (max == -1 || rec->refnum > max)
 			max = rec->refnum;
