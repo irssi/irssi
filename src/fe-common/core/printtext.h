@@ -26,6 +26,10 @@ typedef struct {
 #define PRINTFLAG_MIRC_COLOR    0x20
 #define PRINTFLAG_INDENT        0x40
 
+char *output_format_get_text(const char *module, WINDOW_REC *window,
+			     void *server, const char *channel,
+			     int formatnum, ...);
+
 void printformat_module(const char *module, void *server, const char *channel, int level, int formatnum, ...);
 void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...);
 

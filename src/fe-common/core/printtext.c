@@ -349,7 +349,7 @@ static void create_dest_rec(TEXT_DEST_REC *dest,
 }
 
 static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
-				     const char *text, va_list args)
+				     const char *text, va_list va)
 {
 	GString *out;
 	char *arglist[10];
@@ -363,7 +363,7 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 
 	/* read all optional arguments to arglist[] list
 	   so they can be used in any order.. */
-	read_arglist(args, format,
+	read_arglist(va, format,
 		     arglist, sizeof(arglist)/sizeof(void*),
 		     buffer, sizeof(buffer));
 
@@ -405,22 +405,49 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 	return ret;
 }
 
+char *output_format_get_text(const char *module, WINDOW_REC *window,
+			     void *server, const char *channel,
+			     int formatnum, ...)
+{
+	TEXT_DEST_REC dest;
+	THEME_REC *theme;
+	MODULE_THEME_REC *module_theme;
+	FORMAT_REC *formats;
+	va_list va;
+	char *ret;
+
+	create_dest_rec(&dest, server, channel, 0, window);
+	theme = dest.window->theme == NULL ? current_theme :
+		dest.window->theme;
+
+	module_theme = g_hash_table_lookup(theme->modules, module);
+	formats = g_hash_table_lookup(default_formats, module);
+
+	va_start(va, formatnum);
+	ret = output_format_text_args(&dest, &formats[formatnum],
+				      module_theme == NULL ? NULL :
+				      module_theme->formats[formatnum], va);
+	va_end(va);
+
+	return ret;
+}
+
 static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 {
 	THEME_REC *theme;
 	MODULE_THEME_REC *module_theme;
-	va_list args;
+	va_list va;
 	char *ret;
 
 	theme = dest->window->theme == NULL ? current_theme :
 		dest->window->theme;
 	module_theme = g_hash_table_lookup(theme->modules, MODULE_NAME);
 
-	va_start(args, formatnum);
+	va_start(va, formatnum);
 	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
 				      module_theme == NULL ? NULL :
-				      module_theme->formats[formatnum], args);
-	va_end(args);
+				      module_theme->formats[formatnum], va);
+	va_end(va);
 
 	return ret;
 }
