@@ -118,6 +118,9 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	if (!IS_IRC_SERVER(server))
+		return;
+
 	if (!is_ison_queue_empty(server)) {
 		/* still not received all replies to previous /ISON commands.. */
 		return;
