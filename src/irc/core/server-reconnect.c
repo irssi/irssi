@@ -31,7 +31,6 @@
 #include "server-reconnect.h"
 
 #include "settings.h"
-#include "common-setup.h"
 
 GSList *reconnects;
 static int last_reconnect_tag;

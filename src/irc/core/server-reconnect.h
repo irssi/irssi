@@ -1,6 +1,10 @@
 #ifndef __SERVER_RECONNECT_H
 #define __SERVER_RECONNECT_H
 
+/* wait for half an hour before trying to reconnect to host where last
+   connection failed */
+#define FAILED_RECONNECT_WAIT (60*30)
+
 typedef struct {
 	int tag;
 	time_t next_connect;

@@ -22,10 +22,12 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
-#include "common-setup.h"
 
 #include "irc-server.h"
 #include "netsplit.h"
+
+/* How long to keep netsplits in memory (seconds) */
+#define NETSPLIT_MAX_REMEMBER (60*30)
 
 static int split_tag;
 

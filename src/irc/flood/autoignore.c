@@ -25,12 +25,14 @@
 #include "levels.h"
 #include "misc.h"
 #include "settings.h"
-#include "common-setup.h"
 
 #include "irc-server.h"
 #include "ignore.h"
 
 #include "autoignore.h"
+
+/* How often to check if there's anyone to be unignored in autoignore list */
+#define AUTOIGNORE_TIMECHECK 10000
 
 static int ignore_tag;
 

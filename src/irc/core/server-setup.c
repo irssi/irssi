@@ -23,10 +23,10 @@
 #include "network.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
-#include "common-setup.h"
 
 #include "irc-server.h"
 #include "server-setup.h"
+#include "server-reconnect.h"
 #include "ircnet-setup.h"
 
 GSList *setupservers; /* list of irc servers */

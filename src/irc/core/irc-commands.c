@@ -24,7 +24,6 @@
 #include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
-#include "common-setup.h"
 
 #include "bans.h"
 #include "channels.h"
@@ -33,6 +32,9 @@
 #include "nicklist.h"
 #include "server-redirect.h"
 #include "server-setup.h"
+
+/* How often to check if there's anyone to be unbanned in knockout list */
+#define KNOCKOUT_TIMECHECK 10000
 
 typedef struct {
 	CHANNEL_REC *channel;
