@@ -45,7 +45,7 @@ static void cmd_upgrade(const char *data)
         GSList *file_handles;
 	const char *args[10];
 	char *session_file;
-        int pid, n;
+        int n;
 
 	if (*data == '\0')
 		data = irssi_binary;
@@ -64,36 +64,26 @@ static void cmd_upgrade(const char *data)
         config_write(session, NULL, -1);
         config_close(session);
 
-        /* start it .. */
-	pid = fork();
-	if (pid == -1)
-		cmd_return_error(CMDERR_ERRNO);
+        /* Cleanup the terminal etc. */
+	signal_emit("session clean", 0);
 
-	if (pid == 0) {
-		/* we're the child - we want to send the server connections
-		   to the new binary here */
-		g_free(session_file);
-                exit(0);
-	} else {
-		/* we're the old process - exec() the new binary here so
-		   the TTY won't get lost */
-                signal_emit("session clean", 0);
-		for (n = 3; n < 256; n++) {
-                        if (g_slist_find(file_handles, GINT_TO_POINTER(n)) == NULL)
-				close(n);
-		}
-                g_slist_free(file_handles),
-
-		args[0] = data;
-                args[1] = "--session";
-		args[2] = session_file;
-		args[3] = "-!";
-                args[4] = NULL;
-                execvp(args[0], (char **) args);
-
-		fprintf(stderr, "exec: %s: %s\n", args[0], g_strerror(errno));
-		_exit(-1);
+        /* close the file handles we don't want to transfer to new client */
+	for (n = 3; n < 256; n++) {
+		if (g_slist_find(file_handles, GINT_TO_POINTER(n)) == NULL)
+			close(n);
 	}
+	g_slist_free(file_handles),
+
+        /* irssi --session ~/.irssi/session.<pid> -! */
+	args[0] = data;
+	args[1] = "--session";
+	args[2] = session_file;
+	args[3] = "-!";
+	args[4] = NULL;
+	execvp(args[0], (char **) args);
+
+	fprintf(stderr, "exec: %s: %s\n", args[0], g_strerror(errno));
+	_exit(-1);
 }
 
 static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
