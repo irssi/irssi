@@ -61,7 +61,10 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
 
 	rec = g_hash_table_lookup(iobject_stashes,
 				  GINT_TO_POINTER(type | (chat_type << 24)));
-	g_return_val_if_fail(rec != NULL, newSViv(GPOINTER_TO_INT(object)));
+	if (rec == NULL) {
+                /* unknown iobject */
+		return newSViv(GPOINTER_TO_INT(object));
+	}
 
 	stash = gv_stashpv(rec->stash, 1);
 
