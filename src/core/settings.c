@@ -426,9 +426,9 @@ void settings_clean_invalid(void)
 
                 settings_clean_invalid_module(module);
 
-                g_free(module);
 		last_invalid_modules =
 			g_slist_remove(last_invalid_modules, module);
+                g_free(module);
 	}
 }
 
