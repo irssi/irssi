@@ -615,7 +615,7 @@ void fe_channels_init(void)
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
+	signal_add_last("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 
 	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_wjoin_pre);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
