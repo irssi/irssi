@@ -51,6 +51,7 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 		return;
 
 	conn->alternate_nick = g_strdup(settings_get_str("alternate_nick"));
+        conn->usermode = g_strdup(settings_get_str("usermode"));
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -60,7 +61,11 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 		return;
 	g_return_if_fail(IS_IRCNET(ircnet));
 
-	if (ircnet->nick) g_free_and_null(conn->alternate_nick);
+	if (ircnet->nick != NULL) g_free_and_null(conn->alternate_nick);
+	if (ircnet->usermode != NULL) {
+		g_free_and_null(conn->usermode);
+		conn->usermode = g_strdup(ircnet->usermode);
+	}
 
 	if (ircnet->max_kicks > 0) conn->max_kicks = ircnet->max_kicks;
 	if (ircnet->max_msgs > 0) conn->max_msgs = ircnet->max_msgs;

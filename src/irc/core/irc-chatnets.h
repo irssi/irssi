@@ -16,6 +16,9 @@
 
 struct _IRC_CHATNET_REC {
 #include "chatnet-rec.h"
+
+        char *usermode;
+
 	int max_cmds_at_once;
 	int cmd_queue_speed;
 	int max_query_chans; /* when syncing, max. number of channels to

@@ -54,6 +54,8 @@ static void cmd_ircnet_list(void)
 			g_string_sprintfa(str, "host: %s, ", rec->own_host);
 		if (rec->autosendcmd != NULL)
 			g_string_sprintfa(str, "autosendcmd: %s, ", rec->autosendcmd);
+		if (rec->usermode != NULL)
+			g_string_sprintfa(str, "usermode: %s, ", rec->usermode);
 
 		if (rec->cmd_queue_speed > 0)
 			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
@@ -108,6 +110,7 @@ static void cmd_ircnet_add(const char *data)
 			g_free_and_null(rec->own_host);
                         rec->own_ip4 = rec->own_ip6 = NULL;
 		}
+		if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
 		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
 	}
 
@@ -140,6 +143,8 @@ static void cmd_ircnet_add(const char *data)
 		rec->own_ip4 = rec->own_ip6 = NULL;
 	}
 
+	value = g_hash_table_lookup(optlist, "usermode");
+	if (value != NULL && *value != '\0') rec->usermode = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "autosendcmd");
 	if (value != NULL && *value != '\0') rec->autosendcmd = g_strdup(value);
 
@@ -180,7 +185,7 @@ void fe_ircnet_init(void)
 	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
 	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
 
-	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans");
+	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode");
 }
 
 void fe_ircnet_deinit(void)

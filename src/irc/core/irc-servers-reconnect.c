@@ -62,34 +62,6 @@ static void sig_server_reconnect_save_status(IRC_SERVER_CONNECT_REC *conn,
 	conn->usermode = g_strdup(server->wanted_usermode);
 }
 
-static int sig_set_user_mode(IRC_SERVER_REC *server)
-{
-	const char *mode;
-	char *newmode, *args;
-
-	if (g_slist_find(servers, server) == NULL)
-		return 0; /* got disconnected */
-
-	mode = server->connrec->usermode;
-	if (mode == NULL) return 0;
-
-	newmode = server->usermode == NULL ? NULL :
-		modes_join(server->usermode, mode, FALSE);
-
-	if (server->usermode == NULL) {
-		/* server didn't set user mode, just set the new one */
-		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
-	} else if (strcmp(newmode, server->usermode) != 0) {
-		args = g_strdup_printf("%s -%s+%s", server->nick,
-				       server->usermode, mode);
-		signal_emit("command mode", 3, server, args, NULL);
-                g_free(args);
-	}
-
-	g_free_not_null(newmode);
-	return 0;
-}
-
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	if (!IS_IRC_SERVER(server) || !server->connrec->reconnection)
@@ -97,10 +69,6 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 	if (server->connrec->away_reason != NULL)
 		signal_emit("command away", 2, server->connrec->away_reason, server, NULL);
-	if (server->connrec->usermode != NULL) {
-		/* wait a second and then send the user mode */
-		g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
-	}
 }
 
 static void event_nick_collision(IRC_SERVER_REC *server, const char *data)

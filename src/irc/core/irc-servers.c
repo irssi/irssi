@@ -407,16 +407,32 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 static int sig_set_user_mode(IRC_SERVER_REC *server)
 {
 	const char *mode;
-	char *newmode;
+	char *newmode, *args;
 
 	if (g_slist_find(servers, server) == NULL)
 		return 0; /* got disconnected */
 
-	mode = settings_get_str("usermode");
+	mode = server->connrec->usermode;
 	newmode = server->usermode == NULL ? NULL :
 		modes_join(server->usermode, mode, FALSE);
-	if (server->usermode == NULL || strcmp(newmode, server->usermode) != 0)
+
+	if (server->usermode == NULL) {
+		/* server didn't set user mode, just set the new one */
 		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
+	} else if (strcmp(newmode, server->usermode) != 0) {
+		if (server->connrec->reconnection) {
+			/* when reconnecting, we want to set exactly the
+			   same mode we had before reconnect */
+			args = g_strdup_printf("%s -%s+%s", server->nick,
+					       server->usermode, mode);
+		} else {
+                        /* allow using modes the server gave us */
+			args = g_strdup_printf("%s -%s", server->nick, mode);
+		}
+		signal_emit("command mode", 3, server, args, NULL);
+                g_free(args);
+	}
+
 	g_free_not_null(newmode);
 	return 0;
 }
@@ -424,7 +440,6 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
-	const char *mode;
 
 	g_return_if_fail(server != NULL);
 
@@ -447,11 +462,9 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	server->connected = 1;
 	server->real_connect_time = time(NULL);
 
-	if (!server->connrec->reconnection) {
+	if (server->connrec->usermode != NULL) {
 		/* wait a second and then send the user mode */
-		mode = settings_get_str("usermode");
-		if (*mode != '\0')
-			g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
+		g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
 	}
 
 	signal_emit("event connected", 1, server);

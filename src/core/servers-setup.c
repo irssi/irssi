@@ -143,6 +143,8 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 		conn->own_ip6 = g_new(IPADDR, 1);
 		memcpy(conn->own_ip6, source_host_ip6, sizeof(IPADDR));
 	}
+
+	signal_emit("server setup fill connect", 1, conn);
 }
 
 static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
@@ -242,7 +244,6 @@ create_addr_conn(int chat_type, const char *address, int port,
 		conn->nick = g_strdup(nick);
 	}
 
-	signal_emit("server setup fill connect", 1, conn);
 	return conn;
 }
 
