@@ -213,6 +213,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	RESOLVED_IP_REC iprec;
         IPADDR *ip;
 	const char *errormsg;
+	char *servername = NULL;
 
 	g_source_remove(server->connect_tag);
 	server->connect_tag = -1;
@@ -234,20 +235,31 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	} else if (server->connrec->family == AF_INET) {
 		/* force IPv4 connection */
 		ip = iprec.ip4.family == 0 ? NULL : &iprec.ip4;
+		servername = iprec.host4;
 	} else if (server->connrec->family == AF_INET6) {
 		/* force IPv6 connection */
 		ip = iprec.ip6.family == 0 ? NULL : &iprec.ip6;
+		servername = iprec.host6;
 	} else {
 		/* pick the one that was found, or if both do it like
 		   /SET resolve_prefer_ipv6 says. */
-		ip = iprec.ip4.family == 0 ||
-			(iprec.ip6.family != 0 &&
-			 settings_get_bool("resolve_prefer_ipv6")) ?
-			&iprec.ip6 : &iprec.ip4;
+		if (iprec.ip4.family == 0 ||
+		    (iprec.ip6.family != 0 &&
+		     settings_get_bool("resolve_prefer_ipv6"))) {
+			ip = &iprec.ip6;
+			servername = iprec.host6;
+		} else {
+			ip = &iprec.ip4;
+			servername = iprec.host4;
+		}
 	}
 
 	if (ip != NULL) {
 		/* host lookup ok */
+		if (servername) {
+			g_free(server->connrec->address);
+			server->connrec->address = g_strdup(servername);
+		}
 		server_real_connect(server, ip, NULL);
 		errormsg = NULL;
 	} else {
@@ -273,6 +285,8 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	}
 
 	g_free(iprec.errorstr);
+	g_free(iprec.host4);
+	g_free(iprec.host6);
 }
 
 SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
@@ -356,7 +370,8 @@ int server_start_connect(SERVER_REC *server)
 			server->connrec->proxy : server->connrec->address;
 		server->connect_pid =
 			net_gethostbyname_nonblock(connect_address,
-						   server->connect_pipe[1]);
+						   server->connect_pipe[1],
+						   settings_get_bool("resolve_reverse_lookup"));
 		server->connect_tag =
 			g_input_add(server->connect_pipe[0], G_INPUT_READ,
 				    (GInputFunction)
@@ -666,6 +681,7 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 void servers_init(void)
 {
 	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
+	settings_add_bool("server", "resolve_reverse_lookup", FALSE);
 	lookup_servers = servers = NULL;
 
 	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);

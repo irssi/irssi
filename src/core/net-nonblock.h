@@ -9,6 +9,7 @@ typedef struct {
 	int errlen; /* error text length */
 	char *errorstr; /* error string - dynamically allocated, you'll
 	                   need to free() it yourself unless it's NULL */
+	char *host4, *host6; /* dito */
 } RESOLVED_IP_REC;
 
 typedef struct {
@@ -24,7 +25,8 @@ typedef void (*NET_CALLBACK) (GIOChannel *, void *);
 typedef void (*NET_HOST_CALLBACK) (RESOLVED_NAME_REC *, void *);
 
 /* nonblocking gethostbyname(), PID of the resolver child is returned. */
-int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe);
+int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
+			       int reverse_lookup);
 /* Get host's name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data);
 /* get the resolved IP address. returns -1 if some error occured with read() */
