@@ -83,7 +83,7 @@ static void statusbar_shrink_forced(GSList *items, int size, int max_width)
 
 		if (size-rec->size > max_width) {
 			/* remove the whole item */
-                        size -= rec->size-1; /* -1 == the marginal */
+                        size -= rec->size+1; /* +1 == the marginal */
 			rec->size = 0;
 		} else {
 			/* shrink the item */
