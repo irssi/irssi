@@ -93,7 +93,7 @@ SV *irssi_bless_plain(const char *stash, void *object)
 	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
 	if (fill_func != NULL)
 		fill_func(hv, object);
-	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv(stash, 1));
+	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv((char *)stash, 1));
 }
 
 void *irssi_ref_object(SV *o)
