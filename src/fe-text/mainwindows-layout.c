@@ -29,8 +29,14 @@
 
 static void sig_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {
-	if (WINDOW_GUI(window)->sticky)
+	WINDOW_REC *active;
+
+	if (WINDOW_GUI(window)->sticky) {
 		iconfig_node_set_bool(node, "sticky", TRUE);
+		active = WINDOW_MAIN(window)->active;
+		if (window != active)
+			iconfig_node_set_int(node, "parent", active->refnum);
+	}
 }
 
 static void sig_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
