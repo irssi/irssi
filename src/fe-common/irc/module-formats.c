@@ -27,8 +27,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 	/* ---- */
 	{ NULL, "Server", 0 },
 
-	{ "netsplit", "{netsplit Netsplit} {server $0} {server $1} quits: $2", 3, { 0, 0, 0 } },
-	{ "netsplit_more", "{netsplit Netsplit} {server $0} {server $1} quits: $2 (+$3 more, use /NETSPLIT to show all of them)", 4, { 0, 0, 0, 1 } },
+	{ "netsplit", "{netsplit Netsplit} {server $0} <-> {server $1} quits: $2", 3, { 0, 0, 0 } },
+	{ "netsplit_more", "{netsplit Netsplit} {server $0} <-> {server $1} quits: $2 (+$3 more, use /NETSPLIT to show all of them)", 4, { 0, 0, 0, 1 } },
 	{ "netsplit_join", "{netjoin Netsplit} over, joins: $0", 1, { 0 } },
 	{ "netsplit_join_more", "{netjoin Netsplit} over, joins: $0 (+$1 more)", 2, { 0, 1 } },
 	{ "no_netsplits", "There are no net splits", 0 },
