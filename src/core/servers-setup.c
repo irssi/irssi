@@ -42,7 +42,7 @@ static void get_source_host_ip(void)
 
 	/* FIXME: This will block! */
 	source_host_ok = *settings_get_str("hostname") != '\0' &&
-		net_gethostbyname(settings_get_str("hostname"), &ip) == 0;
+		net_gethostbyname(settings_get_str("hostname"), &ip, 0) == 0;
 	if (source_host_ok) {
 		if (source_host_ip == NULL)
 			source_host_ip = g_new(IPADDR, 1);
@@ -65,7 +65,7 @@ static void conn_set_ip(SERVER_CONNECT_REC *conn,
 
 
 	/* resolve the IP and use it */
-	if (net_gethostbyname(own_host, &ip) == 0) {
+	if (net_gethostbyname(own_host, &ip, conn->family) == 0) {
 		if (conn->own_ip == NULL)
 			conn->own_ip = g_new(IPADDR, 1);
 		memcpy(conn->own_ip, &ip, sizeof(IPADDR));

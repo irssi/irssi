@@ -137,10 +137,12 @@ int sin_get_port(union sockaddr_union *so)
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
 	IPADDR ip;
+        int family;
 
 	g_return_val_if_fail(addr != NULL, NULL);
 
-	if (net_gethostbyname(addr, &ip) == -1)
+        family = my_ip == NULL ? 0 : my_ip->family;
+	if (net_gethostbyname(addr, &ip, family) == -1)
 		return NULL;
 
 	return net_connect_ip(&ip, port, my_ip);
@@ -332,11 +334,11 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 
 /* Get IP address for host, returns 0 = ok,
    others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip)
+int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 {
 #ifdef HAVE_IPV6
 	union sockaddr_union *so;
-	struct addrinfo req, *ai;
+	struct addrinfo hints, *ai;
 	char hbuf[NI_MAXHOST];
 	int host_error;
 #else
@@ -347,11 +349,13 @@ int net_gethostbyname(const char *addr, IPADDR *ip)
 
 #ifdef HAVE_IPV6
 	memset(ip, 0, sizeof(IPADDR));
-	memset(&req, 0, sizeof(struct addrinfo));
-	req.ai_socktype = SOCK_STREAM;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_socktype = SOCK_STREAM;
+        hints.ai_family = family;
 
 	/* save error to host_error for later use */
-	host_error = getaddrinfo(addr, NULL, &req, &ai);
+	host_error = getaddrinfo(addr, NULL, &hints, &ai);
 	if (host_error != 0)
 		return host_error;
 

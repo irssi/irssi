@@ -64,7 +64,8 @@ static SERVER_REC *irc_connect_server(const char *data)
 	g_return_val_if_fail(data != NULL, NULL);
 
 	if (!cmd_get_params(data, &free_arg, 4 | PARAM_FLAG_OPTIONS,
-			    "connect", &optlist, &addr, &portstr, &password, &nick))
+			    "connect", &optlist, &addr, &portstr,
+			    &password, &nick))
 		return NULL;
 	if (*addr == '+') addr++;
 	if (*addr == '\0') {
@@ -78,6 +79,11 @@ static SERVER_REC *irc_connect_server(const char *data)
 
 	/* connect to server */
 	conn = server_create_conn(addr, atoi(portstr), password, nick);
+	if (g_hash_table_lookup(optlist, "6") != NULL)
+		conn->family = AF_INET6;
+	else if (g_hash_table_lookup(optlist, "4") != NULL)
+		conn->family = AF_INET;
+
         ircnet = g_hash_table_lookup(optlist, "ircnet");
 	if (ircnet != NULL && *ircnet != '\0') {
 		g_free_not_null(conn->chatnet);
@@ -87,7 +93,7 @@ static SERVER_REC *irc_connect_server(const char *data)
 	if (host != NULL && *host != '\0') {
 		IPADDR ip;
 
-		if (net_gethostbyname(host, &ip) == 0) {
+		if (net_gethostbyname(host, &ip, conn->family) == 0) {
 			if (conn->own_ip == NULL)
 				conn->own_ip = g_new(IPADDR, 1);
 			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
@@ -99,7 +105,7 @@ static SERVER_REC *irc_connect_server(const char *data)
 	return server;
 }
 
-/* SYNTAX: CONNECT [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: CONNECT [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
                    <address>|<ircnet> [<port> [<password> [<nick>]]] */
 static void cmd_connect(const char *data)
 {
@@ -137,7 +143,7 @@ static RECONNECT_REC *find_reconnect_server(const char *addr, int port)
 	return match;
 }
 
-/* SYNTAX: SERVER [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: SERVER [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
                   [+]<address>|<ircnet> [<port> [<password> [<nick>]]] */
 static void cmd_server(const char *data, IRC_SERVER_REC *server,
 		       void *item)
@@ -1212,7 +1218,7 @@ void irc_commands_init(void)
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
 
-	command_set_options("connect", "+ircnet +host");
+	command_set_options("connect", "4 6 +ircnet +host");
 	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");

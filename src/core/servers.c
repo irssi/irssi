@@ -256,13 +256,17 @@ int server_start_connect(SERVER_REC *server)
 	}
 
         server->connect_pipe[0] = g_io_channel_unix_new(fd[0]);
-        server->connect_pipe[1] = g_io_channel_unix_new(fd[1]);
+	server->connect_pipe[1] = g_io_channel_unix_new(fd[1]);
+
+	if (server->connrec->family == 0 && server->connrec->own_ip != NULL)
+                server->connrec->family = server->connrec->own_ip->family;
 
 	connect_address = server->connrec->proxy != NULL ?
 		server->connrec->proxy : server->connrec->address;
 	server->connect_pid =
 		net_gethostbyname_nonblock(connect_address,
-					   server->connect_pipe[1]);
+					   server->connect_pipe[1],
+					   server->connrec->family);
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_readpipe,
