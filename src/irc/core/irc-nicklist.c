@@ -277,6 +277,30 @@ static void event_whois_away(SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_own_away(SERVER_REC *server, const char *data)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	/* set user's gone flag.. */
+	params = event_get_params(data, 2, &nick, NULL);
+	nicklist_update_flags(server, nick, TRUE, -1);
+	g_free(params);
+}
+
+static void event_own_unaway(SERVER_REC *server, const char *data)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	/* set user's gone flag.. */
+	params = event_get_params(data, 2, &nick, NULL);
+	nicklist_update_flags(server, nick, FALSE, -1);
+	g_free(params);
+}
+
 static void event_whois_ircop(SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *awaymsg;
@@ -428,6 +452,8 @@ void irc_nicklist_init(void)
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add_first("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_add_first("whois oper", (SIGNAL_FUNC) event_whois_ircop);
+	signal_add_first("event 306", (SIGNAL_FUNC) event_own_away);
+	signal_add_first("event 305", (SIGNAL_FUNC) event_own_unaway);
 	signal_add_first("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_add_first("event 432", (SIGNAL_FUNC) event_nick_in_use);
@@ -448,6 +474,8 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_ircop);
+	signal_remove("event 306", (SIGNAL_FUNC) event_own_away);
+	signal_remove("event 305", (SIGNAL_FUNC) event_own_unaway);
 	signal_remove("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_remove("event 432", (SIGNAL_FUNC) event_nick_in_use);
