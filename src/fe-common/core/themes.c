@@ -98,10 +98,12 @@ void theme_destroy(THEME_REC *rec)
 	g_free(rec);
 }
 
+#define EXPAND_FLAG_ROOT		0x01
+#define EXPAND_FLAG_LASTCOLOR_ARG	0x02
 static char *theme_format_expand_data(THEME_REC *theme,
 				      const char **format,
 				      char default_color,
-				      char *before_arg_color, int root);
+				      char *save_color, int flags);
 
 static int theme_replace_find(THEME_REC *theme, char chr)
 {
@@ -118,7 +120,8 @@ static int theme_replace_find(THEME_REC *theme, char chr)
 }
 
 static char *theme_replace_expand(THEME_REC *theme, int index,
-				  char default_color, char chr)
+				  char default_color, char *last_color,
+				  char chr)
 {
 	GSList *rec;
 	char *ret, *abstract, data[2];
@@ -130,7 +133,7 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 
 	abstract = rec->data;
 	abstract = theme_format_expand_data(theme, (const char **) &abstract,
-					    default_color, NULL, FALSE);
+					    default_color, last_color, 0);
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL);
 	g_free(abstract);
 	return ret;
@@ -139,7 +142,28 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 static const char *colorformats = "n01234567krgybmpcwKRGYBMPCW";
 
 #define IS_COLOR_FORMAT(c) \
-        (strchr(colorformats, c) != NULL)
+        ((c) != '\0' && strchr(colorformats, c) != NULL)
+
+/* append "variable" part in $variable, ie. not the contents of the variable */
+static void theme_format_append_variable(GString *str, const char **format)
+{
+	const char *orig;
+	char *value, *args[1] = { NULL };
+	int free_ret;
+
+	orig = *format;
+	(*format)++;
+
+	value = parse_special((char **) format, NULL, NULL,
+			      args, &free_ret, NULL );
+	if (free_ret) g_free(value);
+	(*format)++;
+
+	/* append the variable name */
+	value = g_strndup(orig, (int) (*format-orig));
+	g_string_append(str, value);
+	g_free(value);
+}
 
 /* append next "item", either a character, $variable or %format */
 static void theme_format_append_next(THEME_REC *theme, GString *str,
@@ -147,7 +171,7 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 				     char default_color, char *last_color)
 {
 	int index;
-	char *value, chr;
+	char chr;
 
 	chr = **format;
 	if ((chr == '$' || chr == '%') &&
@@ -161,22 +185,7 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 	if (chr == '$') {
 		/* $variable .. we'll always need to skip this, since it
 		   may contain characters that are in replace chars. */
-                const char *orig;
-		char *args[1] = { NULL };
-		int free_ret;
-
-                orig = *format;
-		(*format)++;
-
-		value = parse_special((char **) format, NULL, NULL,
-				      args, &free_ret, NULL );
-		if (free_ret) g_free(value);
-		(*format)++;
-
-		/* append the variable name */
-		value = g_strndup(orig, (int) (*format-orig));
-                g_string_append(str, value);
-                g_free(value);
+		theme_format_append_variable(str, format);
 		return;
 	}
 
@@ -188,10 +197,13 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 			if (**format == 'n')
                                 chr = default_color;
 
-			if (IS_COLOR_FORMAT(chr))
-				*last_color = chr;
-			g_string_append_c(str, '%');
-			g_string_append_c(str, chr);
+			if (chr != *last_color) {
+				if (IS_COLOR_FORMAT(chr))
+					*last_color = chr;
+
+				g_string_append_c(str, '%');
+				g_string_append_c(str, chr);
+			}
 			(*format)++;
 			return;
 		}
@@ -204,7 +216,10 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 	if (index == -1)
 		g_string_append_c(str, chr);
 	else {
-		value = theme_replace_expand(theme, index, default_color, chr);
+		char *value;
+
+		value = theme_replace_expand(theme, index, default_color,
+					     last_color, chr);
 		g_string_append(str, value);
 		g_free(value);
 	}
@@ -249,13 +264,14 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	/* abstract may itself contain abstracts or replaces :) */
 	p = data = abstract;
 	abstract = theme_format_expand_data(theme, &p, default_color,
-					    &default_color, FALSE);
+					    &default_color,
+					    EXPAND_FLAG_LASTCOLOR_ARG);
 	g_free(data);
 
 	/* now we'll need to get the data part. it may contain
 	   more abstracts, they are automatically expanded. */
 	data = theme_format_expand_data(theme, formatp, default_color,
-					NULL, FALSE);
+					NULL, 0);
 
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL);
 	g_free(abstract);
@@ -263,12 +279,12 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	return ret;
 }
 
-/* expand the data part in {abstract data}. If root is TRUE, we're actually
-   expanding the original format string so we ignore all extra } chars. */
+/* expand the data part in {abstract data} */
 static char *theme_format_expand_data(THEME_REC *theme,
 				      const char **format,
 				      char default_color,
-				      char *before_arg_color, int root)
+				      char *save_last_color,
+				      int flags)
 {
 	GString *str;
 	char *ret, *abstract;
@@ -277,18 +293,20 @@ static char *theme_format_expand_data(THEME_REC *theme,
 	str = g_string_new(NULL);
 
 	while (**format != '\0') {
-		if (!root && **format == '}') {
+		if ((flags & EXPAND_FLAG_ROOT) == 0 && **format == '}') {
+			/* ignore } if we're expanding original string */
 			(*format)++;
 			break;
 		}
 
 		if (**format != '{') {
-			if (before_arg_color != NULL &&
+			if (save_last_color != NULL &&
+			    (flags & EXPAND_FLAG_LASTCOLOR_ARG) &&
 			    **format == '$' && (*format)[1] == '0') {
 				/* save the color before $0 ..
 				   this is for the %n replacing */
-				*before_arg_color = last_color;
-				before_arg_color = NULL;
+				*save_last_color = last_color;
+				save_last_color = NULL;
 			}
 
 			theme_format_append_next(theme, str, format,
@@ -309,6 +327,53 @@ static char *theme_format_expand_data(THEME_REC *theme,
 		}
 	}
 
+	if (save_last_color != NULL &&
+	    (flags & EXPAND_FLAG_LASTCOLOR_ARG) == 0) {
+		/* save the last color */
+		*save_last_color = last_color;
+	}
+
+	ret = str->str;
+        g_string_free(str, FALSE);
+        return ret;
+}
+
+static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
+{
+	GString *str;
+	char *ret, last_color = 'n';
+
+	str = g_string_new(NULL);
+
+	while (*format != '\0') {
+		if (*format == '$') {
+                        /* $variable, skrip it entirely */
+			theme_format_append_variable(str, &format);
+		} else if (*format != '%') {
+			/* a normal character */
+			g_string_append_c(str, *format);
+			format++;
+		} else {
+			/* %format */
+			format++;
+			if (*format == last_color) {
+				/* active color set again */
+			} else if (IS_COLOR_FORMAT(*format) &&
+				   format[1] == '%' &&
+				   IS_COLOR_FORMAT(format[2])) {
+				/* two colors in a row */
+			} else {
+				/* some format, add it */
+				g_string_append_c(str, '%');
+				g_string_append_c(str, *format);
+
+				if (IS_COLOR_FORMAT(*format))
+					last_color = *format;
+			}
+			format++;
+		}
+	}
+
 	ret = str->str;
         g_string_free(str, FALSE);
         return ret;
@@ -316,10 +381,16 @@ static char *theme_format_expand_data(THEME_REC *theme,
 
 static char *theme_format_expand(THEME_REC *theme, const char *format)
 {
+	char *data, *ret;
+
 	g_return_val_if_fail(theme != NULL, NULL);
 	g_return_val_if_fail(format != NULL, NULL);
 
-	return theme_format_expand_data(theme, &format, 'n', NULL, TRUE);
+	data = theme_format_expand_data(theme, &format, 'n', NULL,
+					EXPAND_FLAG_ROOT);
+        ret = theme_format_compress_colors(theme, data);
+        g_free(data);
+	return ret;
 }
 
 static MODULE_THEME_REC *theme_module_create(THEME_REC *theme, const char *module)
