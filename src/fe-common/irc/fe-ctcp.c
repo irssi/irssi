@@ -60,6 +60,11 @@ static void ctcp_version_msg(const char *data, IRC_SERVER_REC *server, const cha
 	ctcp_print("CTCP VERSION", data, server, nick, addr, target);
 }
 
+static void ctcp_time_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+{
+	ctcp_print("CTCP TIME", data, server, nick, addr, target);
+}
+
 static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
 	char *ptr, *str;
@@ -96,6 +101,7 @@ void fe_ctcp_init(void)
 	signal_add("default ctcp msg", (SIGNAL_FUNC) ctcp_default_msg);
 	signal_add("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping_msg);
 	signal_add("ctcp msg version", (SIGNAL_FUNC) ctcp_version_msg);
+	signal_add("ctcp msg time", (SIGNAL_FUNC) ctcp_time_msg);
 	signal_add("default ctcp reply", (SIGNAL_FUNC) ctcp_default_reply);
 	signal_add("ctcp reply ping", (SIGNAL_FUNC) ctcp_ping_reply);
 }
@@ -105,6 +111,7 @@ void fe_ctcp_deinit(void)
 	signal_remove("default ctcp msg", (SIGNAL_FUNC) ctcp_default_msg);
 	signal_remove("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping_msg);
 	signal_remove("ctcp msg version", (SIGNAL_FUNC) ctcp_version_msg);
+	signal_remove("ctcp msg time", (SIGNAL_FUNC) ctcp_time_msg);
 	signal_remove("default ctcp reply", (SIGNAL_FUNC) ctcp_default_reply);
 	signal_remove("ctcp reply ping", (SIGNAL_FUNC) ctcp_ping_reply);
 }
