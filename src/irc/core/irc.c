@@ -315,8 +315,11 @@ static char *irc_parse_prefix(char *line, char **nick, char **address)
 	*nick = ++line;
 	while (*line != '\0' && *line != ' ') {
 		if (*line == '!') {
-			*line = '\0';
-			*address = line+1;
+			*line++ = '\0';
+			*address = line;
+			while (*line != '\0' && *line != ' ')
+                                line++;
+                        break;
 		}
 		line++;
 	}
