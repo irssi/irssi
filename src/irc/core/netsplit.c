@@ -103,7 +103,10 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 	g_return_val_if_fail(nick != NULL, NULL);
 	g_return_val_if_fail(address != NULL, NULL);
 
-	g_return_val_if_fail(g_hash_table_lookup(server->splits, nick) == NULL, NULL);
+	if (g_hash_table_lookup(server->splits, nick) != NULL) {
+		g_warning("%s is already in split list (how?)", nick);
+                return NULL;
+	}
 
 	/* get splitted servers */
 	dupservers = g_strdup(servers);
