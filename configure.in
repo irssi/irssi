@@ -542,32 +542,24 @@ if test "$want_perl" != "no"; then
 			dnl * all PERL_LDFLAGS linking is done in fe-text
 			PERL_LDFLAGS="../perl/libperl_static.la $PERL_LDFLAGS"
 			PERL_LINK_LIBS="$PERL_LDFLAGS"
-			PERL_FE_LINK_LIBS="../perl/libfe_perl_static.la"
 			PERL_LDFLAGS=
 			AC_DEFINE(HAVE_STATIC_PERL)
 
 			dnl * build only static library of perl module
 			perl_module_lib=
-			perl_module_fe_lib=
 			perl_static_lib=libperl_static.la
-			perl_static_fe_lib=libfe_perl_static.la
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		else
 			dnl * build dynamic library of perl module
 			perl_module_lib=libperl_core.la
-			perl_module_fe_lib=libfe_perl.la
 			perl_static_lib=
-			perl_static_fe_lib=
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		fi
 		AC_SUBST(perl_module_lib)
 		AC_SUBST(perl_static_lib)
-		AC_SUBST(perl_module_fe_lib)
-		AC_SUBST(perl_static_fe_lib)
 		AC_SUBST(PERL_LIBTOOL)
 
 		AC_SUBST(PERL_LINK_LIBS)
-		AC_SUBST(PERL_FE_LINK_LIBS)
 
 		AC_SUBST(PERL_LDFLAGS)
 		AC_SUBST(PERL_CFLAGS)
