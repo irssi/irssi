@@ -22,8 +22,6 @@
 #include "signals.h"
 #include "modules.h"
 
-#define SIGNAL_LISTS 3
-
 typedef struct _SignalHook {
 	struct _SignalHook *next;
 
@@ -44,9 +42,6 @@ typedef struct {
 
         SignalHook *hooks;
 } Signal;
-
-#define signal_is_emitlist_empty(a) \
-	(!(a)->siglist[0] && !(a)->siglist[1] && !(a)->siglist[2])
 
 void *signal_user_data;
 
