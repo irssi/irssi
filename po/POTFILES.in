@@ -29,6 +29,7 @@ src/core/chat-protocols.c
 src/core/chat-commands.c
 src/core/nicklist.c
 src/core/masks.c
+src/core/expandos.c
 src/irc/bot/bot-events.c
 src/irc/bot/bot-irc-commands.c
 src/irc/bot/bot-users.c
@@ -46,7 +47,6 @@ src/irc/core/ctcp.c
 src/irc/core/irc-core.c
 src/irc/core/irc-log.c
 src/irc/core/irc-rawlog.c
-src/irc/core/irc-special-vars.c
 src/irc/core/irc.c
 src/irc/core/irc-chatnets.c
 src/irc/core/lag.c
@@ -59,6 +59,7 @@ src/irc/core/server-idle.c
 src/irc/core/irc-servers-reconnect.c
 src/irc/core/irc-channels.c
 src/irc/core/irc-servers-setup.c
+src/irc/core/irc-expandos.c
 src/irc/core/irc-commands.c
 src/irc/core/irc-servers.c
 src/irc/core/irc-queries.c
@@ -118,18 +119,19 @@ src/fe-common/irc/flood/module-formats.c
 src/fe-common/irc/notifylist/fe-notifylist.c
 src/fe-common/irc/notifylist/module-formats.c
 src/fe-common/irc/irc-modules.c
+src/fe-common/irc/fe-modes.c
 src/fe-common/irc/fe-irc-channels.c
 src/fe-common/irc/fe-netjoin.c
 src/fe-common/irc/fe-events-numeric.c
 src/fe-none/irssi.c
 src/fe-text/gui-entry.c
 src/fe-text/gui-printtext.c
-src/fe-text/gui-special-vars.c
 src/fe-text/gui-windows.c
 src/fe-text/irssi.c
 src/fe-text/module-formats.c
 src/fe-text/screen.c
 src/fe-text/statusbar.c
+src/fe-text/gui-expandos.c
 src/fe-text/gui-readline.c
 src/fe-text/mainwindow-activity.c
 src/fe-text/mainwindows.c
