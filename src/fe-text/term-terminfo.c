@@ -36,8 +36,10 @@ struct _TERM_WINDOW {
 
 TERM_WINDOW *root_window;
 int term_width, term_height;
+char *term_lines_empty; /* 1 if line is entirely empty */
 
-static int vcx, vcy, curs_visible;
+static int vcmove, vcx, vcy, curs_visible;
+static int crealx, crealy, cforcemove;
 static int curs_x, curs_y;
 static int last_fg, last_bg, last_attrs;
 static int redraw_needed, redraw_tag;
@@ -66,7 +68,8 @@ int term_init(void)
 
 	last_fg = last_bg = -1;
 	last_attrs = 0;
-	vcx = vcy = -1;
+	vcx = vcy = 0; crealx = crealy = -1;
+	vcmove = FALSE; cforcemove = TRUE;
         curs_visible = TRUE;
 
 	current_term = terminfo_core_init(stdin, stdout);
@@ -85,6 +88,8 @@ int term_init(void)
 	term_height = current_term->height;
 	root_window = term_window_create(0, 0, term_width, term_height);
 
+        term_lines_empty = g_new0(char, term_height);
+
 	term_common_init();
         return TRUE;
 }
@@ -95,6 +100,36 @@ void term_deinit(void)
 
 	term_common_deinit();
         terminfo_core_deinit(current_term);
+}
+
+static void term_move_real(void)
+{
+	if (vcx != crealx || vcy != crealy || cforcemove) {
+		if (curs_visible) {
+			terminfo_set_cursor_visible(FALSE);
+			curs_visible = FALSE;
+		}
+
+		if (cforcemove) {
+			crealx = crealy = -1;
+			cforcemove = FALSE;
+		}
+		terminfo_move_relative(crealx, crealy, vcx, vcy);
+                crealx = vcx; crealy = vcy;
+	}
+
+        vcmove = FALSE;
+}
+
+/* Cursor position is unknown - move it immediately to known position */
+static void term_move_reset(int x, int y)
+{
+	if (x >= term_width) x = term_width-1;
+	if (y >= term_height) y = term_height-1;
+
+	vcx = x; vcy = y;
+        cforcemove = TRUE;
+        term_move_real();
 }
 
 /* Resize terminal - if width or height is negative,
@@ -110,10 +145,13 @@ void term_resize(int width, int height)
 	if (term_width != width || term_height != height) {
 		term_width = current_term->width = width;
 		term_height = current_term->height = height;
-                term_window_move(root_window, 0, 0, term_width, term_height);
+		term_window_move(root_window, 0, 0, term_width, term_height);
+
+                g_free(term_lines_empty);
+		term_lines_empty = g_new0(char, term_height);
 	}
 
-	vcx = vcy = -1;
+        term_move_reset(0, 0);
 }
 
 void term_resize_final(int width, int height)
@@ -135,9 +173,11 @@ void term_force_colors(int set)
 /* Clear screen */
 void term_clear(void)
 {
-        vcx = vcy = -1;
         term_set_color(root_window, 0);
-        terminfo_clear();
+	terminfo_clear();
+        term_move_reset(0, 0);
+
+	memset(term_lines_empty, 1, term_height);
 }
 
 /* Beep */
@@ -193,8 +233,24 @@ void term_window_clear(TERM_WINDOW *window)
 /* Scroll window up/down */
 void term_window_scroll(TERM_WINDOW *window, int count)
 {
-        vcx = vcy = -1;
-        terminfo_scroll(window->y, window->y+window->height-1, count);
+	int y, idx;
+
+	terminfo_scroll(window->y, window->y+window->height-1, count);
+
+        /* set the newly scrolled lines dirty */
+	if (count < 0) {
+		/* scrolling down - dirty the top */
+		idx = window->y;
+                count = -count;
+	} else {
+		/* scrolling up - dirty the bottom */
+		idx = window->y+window->height-count;
+	}
+
+	for (y = 0; y < count; y++)
+		term_lines_empty[idx+y] = FALSE;
+
+        term_move_reset(vcx, vcy);
 }
 
 /* Change active color */
@@ -265,43 +321,63 @@ void term_set_color(TERM_WINDOW *window, int col)
 
 void term_move(TERM_WINDOW *window, int x, int y)
 {
-	int newx, newy;
+	vcmove = TRUE;
+	vcx = x+window->x;
+        vcy = y+window->y;
 
-	if (curs_visible) {
-		terminfo_set_cursor_visible(FALSE);
-                curs_visible = FALSE;
-	}
+	if (vcx >= term_width)
+		vcx = term_width-1;
+	if (vcy >= term_height)
+                vcy = term_height-1;
+}
 
-	newx = x+window->x;
-        newy = y+window->y;
-	if (vcx != newx || vcy != newy) {
-		terminfo_move_relative(vcx, vcy, newx, newy);
-		vcx = newx; vcy = newy;
+static void term_printed_text(int count)
+{
+	term_lines_empty[vcy] = FALSE;
+
+	/* if we continued writing past the line, wrap to next line.
+	   However, next term_move() really shouldn't try to cache
+	   the move, otherwise terminals would try to combine the
+	   last word in upper line with first word in lower line. */
+        cforcemove = TRUE;
+	vcx += count;
+	while (vcx >= term_width) {
+		vcx -= term_width;
+		if (vcy < term_height) vcy++;
+		if (vcx > 0) term_lines_empty[vcy] = FALSE;
 	}
 }
 
 void term_addch(TERM_WINDOW *window, int chr)
 {
+	if (vcmove) term_move_real();
 	putc(chr, window->term->out);
-	vcx++; /* ignore if cursor gets past the screen */
+        term_printed_text(1);
 }
 
 void term_addstr(TERM_WINDOW *window, char *str)
 {
+	if (vcmove) term_move_real();
 	fputs(str, window->term->out);
-	vcx += strlen(str); /* ignore if cursor gets past the screen */
+        term_printed_text(strlen(str));
 }
 
 void term_clrtoeol(TERM_WINDOW *window)
 {
+	/* clrtoeol() doesn't necessarily understand colors */
 	if (last_fg == -1 && last_bg == -1 &&
 	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE)) == 0) {
-	    	/* clrtoeol() doesn't necessarily understand colors */
-		terminfo_clrtoeol();
+		if (!term_lines_empty[vcy]) {
+			if (vcmove) term_move_real();
+			terminfo_clrtoeol();
+			if (vcx == 0) term_lines_empty[vcy] = TRUE;
+		}
 	} else if (vcx < term_width) {
 		/* we'll need to fill the line ourself. */
+		if (vcmove) term_move_real();
 		terminfo_repeat(' ', term_width-vcx);
 		terminfo_move(vcx, vcy);
+                term_lines_empty[vcy] = FALSE;
 	}
 }
 
@@ -316,8 +392,9 @@ void term_refresh(TERM_WINDOW *window)
 	if (freeze_counter > 0)
 		return;
 
-	if (vcx != curs_x || vcy != curs_y)
-		term_move(root_window, curs_x, curs_y);
+	term_move(root_window, curs_x, curs_y);
+	term_move_real();
+
 	if (!curs_visible) {
 		terminfo_set_cursor_visible(TRUE);
                 curs_visible = TRUE;
