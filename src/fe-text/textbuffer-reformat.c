@@ -228,7 +228,8 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 		g_string_append_c(format, '\0');
 		g_string_append_c(format, (char)LINE_CMD_FORMAT);
 
-		g_string_append(format, args[n]);
+		if (args[n] != NULL)
+			g_string_append(format, args[n]);
 	}
 }
 
