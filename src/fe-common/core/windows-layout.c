@@ -61,12 +61,25 @@ static void sig_layout_restore_item(WINDOW_REC *window, const char *type,
 		WINDOW_BIND_REC *rec = window_bind_add(window, tag, name);
                 rec->sticky = TRUE;
 	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
+		CHAT_PROTOCOL_REC *protocol;
 		/* create query immediately */
 		signal_add("query created",
 			   (SIGNAL_FUNC) signal_query_created_curwin);
 
                 restore_win = window;
-		chat_protocol_find(chat_type)->query_create(tag, name, TRUE);
+		
+		protocol = chat_protocol_find(chat_type);
+		if (protocol->query_create != NULL)
+			protocol->query_create(tag, name, TRUE);
+		else {
+			QUERY_REC *query;
+
+			query = g_new0(QUERY_REC, 1);
+			query->chat_type = chat_protocol_lookup(chat_type);
+			query->name = g_strdup(name);
+			query->server_tag = g_strdup(tag);
+			query_init(query, TRUE);
+		}
 
 		signal_remove("query created",
 			      (SIGNAL_FUNC) signal_query_created_curwin);
