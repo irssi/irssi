@@ -57,7 +57,7 @@ typedef struct {
 	int connected:1; /* connected to server */
 	int connection_lost:1; /* Connection lost unintentionally */
 
-	int handle; /* socket handle */
+        void *handle; /* NET_SENDBUF_REC socket */
 	int readtag; /* input tag */
 
 	/* for net_connect_nonblock() */
