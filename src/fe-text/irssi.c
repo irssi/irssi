@@ -127,6 +127,7 @@ static void textui_finish_init(void)
 	mainwindows_save_init();
 	gui_windows_init();
 	statusbar_init();
+	screen_refresh_thaw();
 
 	settings_check();
 
@@ -142,8 +143,6 @@ static void textui_finish_init(void)
 		printtext_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				 "%s", firsttimer_text);
 	}
-
-	screen_refresh_thaw();
 }
 
 static void textui_deinit(void)
