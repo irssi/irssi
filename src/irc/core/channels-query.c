@@ -207,8 +207,9 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 2,
+			server_redirect_event((SERVER_REC *) server, chanstr, 3,
 					      "event 401", "chanquery who abort", 1,
+					      "event 403", "chanquery who abort", 1,
 					      "event 315", "chanquery who end", 1,
 					      "event 352", "silent event who", 1, NULL);
 		}
