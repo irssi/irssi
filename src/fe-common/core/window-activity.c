@@ -31,6 +31,7 @@
 #include "hilight-text.h"
 
 static const char *noact_channels;
+static int hilight_level, activity_level;
 
 static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server,
 			     const char *channel, void *levelptr,
@@ -44,9 +45,9 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server,
 
 	/* hilights and private messages get HILIGHT status,
 	   public messages get MSGS status and rest get TEXT */
-	new_data = (level & (MSGLEVEL_HILIGHT|MSGLEVEL_MSGS)) ?
+	new_data = (level & (MSGLEVEL_HILIGHT|hilight_level)) ?
 		NEWDATA_HILIGHT :
-		((level & MSGLEVEL_PUBLIC) ? NEWDATA_MSG : NEWDATA_TEXT);
+		((level & activity_level) ? NEWDATA_MSG : NEWDATA_TEXT);
 
         /* check that channel isn't in "don't show activity" list */
 	if (new_data < NEWDATA_HILIGHT &&
@@ -145,7 +146,7 @@ static void sig_message(SERVER_REC *server, const char *msg,
 	/* hilight */
 	if (item != NULL) item->last_color = hilight_last_nick_color();
 	level = (item != NULL && item->last_color > 0) ||
-		(level & MSGLEVEL_MSGS) ||
+		(level & hilight_level) ||
 		nick_match_msg(SERVER(server), msg, server->nick) ?
 		NEWDATA_HILIGHT : NEWDATA_MSG;
 	if (item != NULL && item->new_data < level) {
@@ -181,11 +182,15 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 static void read_settings(void)
 {
 	noact_channels = settings_get_str("noact_channels");
+	activity_level = level2bits(settings_get_str("activity_levels"));
+	hilight_level = level2bits(settings_get_str("hilight_levels"));
 }
 
 void window_activity_init(void)
 {
 	settings_add_str("lookandfeel", "noact_channels", "");
+	settings_add_str("lookandfeel", "activity_levels", "PUBLIC");
+	settings_add_str("lookandfeel", "hilight_levels", "MSGS DCCMSGS");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);
