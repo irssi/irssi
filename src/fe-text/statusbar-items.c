@@ -375,7 +375,7 @@ static void read_settings(void)
 
 void statusbar_items_init(void)
 {
-	settings_add_time("misc", "lag_min_show", "100msec");
+	settings_add_time("misc", "lag_min_show", "1sec");
 	settings_add_bool("lookandfeel", "actlist_moves", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);
