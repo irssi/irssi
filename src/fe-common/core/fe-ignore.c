@@ -63,6 +63,8 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	}
 	if (rec->fullword) g_string_append(options, "-full ");
 	if (rec->replies) g_string_append(options, "-replies ");
+	if (rec->servertag != NULL) 
+		g_string_sprintfa(options, "-ircnet %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_sprintfa(options, "-pattern %s ", rec->pattern);
 
@@ -105,14 +107,14 @@ static void cmd_ignore_show(void)
 }
 
 /* SYNTAX: IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-                  [-channels <channel>] [-time <secs>] <mask> [<levels>]
+                  [-ircnet <ircnet>] [-channels <channel>] [-time <secs>] <mask> [<levels>]
            IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-	          [-time <secs>] <channels> [<levels>] */
+	          [-ircnet <ircnet>] [-time <secs>] <channels> [<levels>] */
 static void cmd_ignore(const char *data)
 {
 	GHashTable *optlist;
 	IGNORE_REC *rec;
-	char *patternarg, *chanarg, *mask, *levels, *timestr;
+	char *patternarg, *chanarg, *mask, *levels, *timestr, *servertag;
 	char **channels;
 	void *free_arg;
 	int new_ignore, msecs;
@@ -128,7 +130,8 @@ static void cmd_ignore(const char *data)
 
 	patternarg = g_hash_table_lookup(optlist, "pattern");
         chanarg = g_hash_table_lookup(optlist, "channels");
-
+	servertag = g_hash_table_lookup(optlist, "ircnet");
+	
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
         if (*levels == '\0') levels = "ALL";
 
@@ -173,7 +176,8 @@ static void cmd_ignore(const char *data)
 		cmd_params_free(free_arg);
                 return;
 	}
-
+	rec->servertag = (servertag == NULL || *servertag == '\0') ?
+		NULL : g_strdup(servertag);
 	rec->pattern = (patternarg == NULL || *patternarg == '\0') ?
 		NULL : g_strdup(patternarg);
 	rec->exception = g_hash_table_lookup(optlist, "except") != NULL;
@@ -254,7 +258,7 @@ void fe_ignore_init(void)
 	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
 	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
-	command_set_options("ignore", "regexp full except replies -time -pattern -channels");
+	command_set_options("ignore", "regexp full except replies -ircnet -time -pattern -channels");
 }
 
 void fe_ignore_deinit(void)
