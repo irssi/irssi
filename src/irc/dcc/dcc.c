@@ -406,7 +406,7 @@ void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 	if (dcc->server != NULL)
 		server = dcc->server;
 
-	if (server != NULL && dcc_is_connected(dcc)) {
+	if (server != NULL && !dcc_is_connected(dcc)) {
 		irc_send_cmdv(server, "NOTICE %s :\001DCC REJECT %s %s\001",
 			      dcc->nick, dcc_type2str(dcc->orig_type),
 			      dcc->arg);
