@@ -145,8 +145,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 
 	{ "online", "Users online: {hilight $0}", 1, { 0 } },
 	{ "pong", "PONG received from $0: $1", 2, { 0, 0 } },
-	{ "wallops", "{wallop WALLOP{wallop_nick $0}$1", 2, { 0, 0 } },
-	{ "action_wallops", "{wallop WALLOP{wallop_action $0}}$1", 2, { 0, 0 } },
+	{ "wallops", "{wallop WALLOP {wallop_nick $0}} $1", 2, { 0, 0 } },
+	{ "action_wallops", "{wallop WALLOP {wallop_action $0}} $1", 2, { 0, 0 } },
 	{ "error", "{hilight ERROR} $0", 1, { 0 } },
 	{ "unknown_mode", "Unknown mode character $0", 1, { 0 } },
 	{ "not_chanop", "You're not channel operator in {channel $0}", 1, { 0 } },
