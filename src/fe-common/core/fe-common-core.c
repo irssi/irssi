@@ -154,7 +154,7 @@ void fe_common_core_init(void)
 
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_level("lookandfeel", "timestamp_level", "ALL");
-	settings_add_time("lookandfeel", "timestamp_timeout", 0);
+	settings_add_time("lookandfeel", "timestamp_timeout", "0");
 
 	settings_add_bool("lookandfeel", "bell_beeps", FALSE);
 	settings_add_level("lookandfeel", "beep_msg_level", "");
