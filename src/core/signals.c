@@ -25,6 +25,8 @@
 #define SIGNAL_LISTS 3
 
 typedef struct {
+	int id; /* signal id */
+
 	int emitting; /* signal is being emitted */
 	int altered; /* some signal functions are marked as NULL */
 	int stop_emit; /* this signal was stopped */
@@ -39,8 +41,6 @@ typedef struct {
 
 static GMemChunk *signals_chunk;
 static GHashTable *signals;
-static int first_signal_id, last_signal_id;
-static SIGNAL_REC *first_signal_rec, *last_signal_rec; /* "signal" and "last signal" */
 static SIGNAL_REC *current_emitted_signal;
 
 void signal_add_to(const char *module, int pos,
@@ -64,13 +64,9 @@ void signal_add_to_id(const char *module, int pos,
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL) {
 		rec = g_mem_chunk_alloc0(signals_chunk);
+                rec->id = signal_id;
 		g_hash_table_insert(signals, GINT_TO_POINTER(signal_id), rec);
 	}
-
-	if (signal_id == first_signal_id)
-		first_signal_rec = rec;
-	else if (signal_id == last_signal_id)
-		last_signal_rec = rec;
 
 	if (rec->siglist[pos] == NULL) {
 		rec->siglist[pos] = g_ptr_array_new();
@@ -92,11 +88,6 @@ static void signal_destroy(int signal_id)
 		g_hash_table_remove(signals, GINT_TO_POINTER(signal_id));
 		g_free(rec);
 	}
-
-	if (first_signal_rec == rec)
-                first_signal_rec = NULL;
-	else if (last_signal_rec == rec)
-                last_signal_rec = NULL;
 }
 
 static int signal_list_find(GPtrArray *array, void *data)
@@ -207,7 +198,10 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 			if (func != NULL) {
                                 prev_emitted_signal = current_emitted_signal;
 				current_emitted_signal = rec;
-				func(arglist[0], arglist[1], arglist[2], arglist[3], arglist[4], arglist[5], arglist[6]);
+#if SIGNAL_MAX_ARGUMENTS != 6
+#  error SIGNAL_MAX_ARGS changed - update code
+#endif
+				func(arglist[0], arglist[1], arglist[2], arglist[3], arglist[4], arglist[5]);
 				current_emitted_signal = prev_emitted_signal;
 			}
 
@@ -237,32 +231,19 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 
 static int signal_emitv_id(int signal_id, int params, va_list va)
 {
-	gconstpointer arglist[8];
+	gconstpointer arglist[SIGNAL_MAX_ARGUMENTS];
 	SIGNAL_REC *rec;
 	int n;
 
 	g_return_val_if_fail(signal_id >= 0, FALSE);
-	g_return_val_if_fail(params >= 0 && params <= sizeof(arglist)/sizeof(arglist[0]), FALSE);
+	g_return_val_if_fail(params >= 0 && params <= SIGNAL_MAX_ARGUMENTS, FALSE);
 
-	arglist[0] = GINT_TO_POINTER(signal_id);
-	for (n = 1; n < 8; n++)
+	for (n = 0; n < SIGNAL_MAX_ARGUMENTS; n++)
 		arglist[n] = n > params ? NULL : va_arg(va, gconstpointer);
 
-	/* send "signal" */
-	if (first_signal_rec != NULL) {
-		if (signal_emit_real(first_signal_rec, arglist))
-			return TRUE;
-	}
-
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
-	if (rec != NULL && signal_emit_real(rec, arglist+1))
+	if (rec != NULL && signal_emit_real(rec, arglist))
 		return TRUE;
-
-	/* send "last signal" */
-	if (last_signal_rec != NULL) {
-		if (signal_emit_real(last_signal_rec, arglist))
-			return TRUE;
-	}
 
 	return rec != NULL;
 }
@@ -323,7 +304,24 @@ void signal_stop_by_name(const char *signal)
 		rec->stop_emit++;
 }
 
-static void signal_remove_module(void *signal, SIGNAL_REC *rec, const char *module)
+/* return the name of the signal that is currently being emitted */
+const char *signal_get_emitted(void)
+{
+	return signal_get_id_str(signal_get_emitted_id());
+}
+
+/* return the ID of the signal that is currently being emitted */
+int signal_get_emitted_id(void)
+{
+	SIGNAL_REC *rec;
+
+	rec = current_emitted_signal;
+        g_return_val_if_fail(rec != NULL, -1);
+	return rec->id;
+}
+
+static void signal_remove_module(void *signal, SIGNAL_REC *rec,
+				 const char *module)
 {
 	unsigned int index;
 	int signal_id, list;
@@ -354,11 +352,6 @@ void signals_init(void)
 	signals_chunk = g_mem_chunk_new("signals", sizeof(SIGNAL_REC),
 					sizeof(SIGNAL_REC)*200, G_ALLOC_AND_FREE);
 	signals = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
-
-	first_signal_rec = NULL;
-	last_signal_rec = NULL;
-        first_signal_id = signal_get_uniq_id("signal");
-        last_signal_id = signal_get_uniq_id("last signal");
 }
 
 static void signal_free(void *key, SIGNAL_REC *rec)

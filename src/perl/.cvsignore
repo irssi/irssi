@@ -6,4 +6,4 @@
 Makefile
 Makefile.in
 so_locations
-perl-signals.h
+perl-signals-list.h

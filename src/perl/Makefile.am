@@ -8,7 +8,7 @@ EXTRA_LTLIBRARIES = libperl.la libperl_static.la
 
 libperl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
 
-perl.c: perl-signals.h
+perl.c: perl-signals-list.h
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
@@ -19,6 +19,7 @@ INCLUDES = $(GLIB_CFLAGS) \
 perl_sources = \
 	perl.c \
 	perl-common.c \
+	perl-signals.c \
 	xsinit.c
 
 libperl_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
@@ -38,8 +39,8 @@ libperl_la_SOURCES = \
 libperl_static_la_SOURCES = \
 	$(perl_sources)
 
-perl-signals.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
-	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals.h
+perl-signals-list.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
+	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals-list.h
 
 CORE_SOURCES = \
 	common/Channel.xs \
@@ -84,7 +85,8 @@ EXTRA_DIST = \
 
 noinst_HEADERS = \
 	module.h \
-	perl-common.h
+	perl-common.h \
+	perl-signals.h
 
 all-local:
 	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && if ! $(MAKE); then $(MAKE); fi && cd ..; done

@@ -28,6 +28,13 @@ CODE:
 	perl_signal_add(signal, func);
 
 void
+signal_add_first(signal, func)
+	char *signal
+	char *func
+CODE:
+	perl_signal_add_first(signal, func);
+
+void
 signal_add_last(signal, func)
 	char *signal
 	char *func

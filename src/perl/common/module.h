@@ -32,6 +32,7 @@
 #include "fe-common/core/keyboard.h"
 
 #include "perl/perl-common.h"
+#include "perl/perl-signals.h"
 
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;

@@ -18,15 +18,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <EXTERN.h>
-#ifndef _SEM_SEMUN_UNDEFINED
-#define HAS_UNION_SEMUN
-#endif
-#include <perl.h>
-
-#undef _
-#undef PACKAGE
-
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
