@@ -502,7 +502,7 @@ static void event_end_of_whowas(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_END_OF_WHOWAS, nick);
+	if (server->whowas_found) printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_END_OF_WHOWAS, nick);
 	g_free(params);
 }
 

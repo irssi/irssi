@@ -452,10 +452,29 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 		irc_send_cmdv(server, "NAMES %s", data);
 }
 
+static char *get_redirect_nicklist(const char *nicks, int *free)
+{
+	char *str, *ret;
+
+	if (strchr(nicks, ',') == NULL) {
+		*free = FALSE;
+		return (char *) nicks;
+	}
+
+	*free = TRUE;
+
+	str = g_strdup(nicks);
+	g_strdelimit(str, ",", ' ');
+	ret = g_strconcat(str, " ", nicks, NULL);
+	g_free(str);
+
+	return ret;
+}
+
 static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *qserver, *query, *nicks;
-	int one_nick;
+	char *params, *qserver, *query;
+	int free_nick;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
@@ -467,31 +486,25 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 		params = cmd_get_params(data, 1, &query);
 		qserver = "";
 	}
-
         if (*query == '\0') query = server->nick;
 
 	if (*qserver == '\0')
 		g_string_sprintf(tmpstr, "WHOIS %s", query);
 	else
 		g_string_sprintf(tmpstr, "WHOIS %s %s", qserver, query);
+
+	server->whois_found = FALSE;
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
 
 	/* do automatic /WHOWAS if any of the nicks wasn't found */
-	one_nick = strchr(query, ',') == NULL;
-	if (!one_nick) {
-		nicks = g_strdup(query);
-		g_strdelimit(query, ",", ' ');
-		query = g_strconcat(nicks, " ", query, NULL);
-		g_free(nicks);
-	}
+	query = get_redirect_nicklist(query, &free_nick);
 
-	server->whois_found = FALSE;
 	server_redirect_event((SERVER_REC *) server, query, 2,
 			      "event 318", "event 318", 1,
 			      "event 402", "event 402", -1,
 			      "event 311", "whois event", 1,
 			      "event 401", "whois not found", 1, NULL);
-	if (!one_nick) g_free(query);
+	if (free_nick) g_free(query);
 	g_free(params);
 }
 
@@ -526,15 +539,26 @@ static void event_whowas(const char *data, IRC_SERVER_REC *server, const char *n
 
 static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 {
+	char *params, *nicks, *count;
+	int free_nick;
+
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	while (*data == ' ') data++;
-	if (*data == '\0') data = server->nick;
+	params = cmd_get_params(data, 2, &nicks, &count);
+	if (*nicks == '\0') nicks = server->nick;
 
-	irc_send_cmdv(server, "WHOWAS %s", data);
 	server->whowas_found = FALSE;
+	irc_send_cmdv(server, *count == '\0' ? "WHOWAS %s" :
+		      "WHOWAS %s %s", nicks, count);
+
+	nicks = get_redirect_nicklist(nicks, &free_nick);
+	server_redirect_event((SERVER_REC *) server, nicks, 1,
+			      "event 369", "event 369", 1,
+			      "event 314", "whowas event", 1, NULL);
+	if (free_nick) g_free(nicks);
+	g_free(params);
 }
 
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
