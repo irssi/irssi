@@ -189,7 +189,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 		else {
 			printformat(server, channel, MSGLEVEL_MODES,
 				    IRCTXT_CHANMODE_CHANGE,
-				    channel, mode, nick);
+				    channel, mode, nick, addr);
 		}
 	}
 }

@@ -63,7 +63,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "topic", "Topic for {channelhilight $0}: $1", 2, { 0, 0 } },
 	{ "no_topic", "No topic set for {channelhilight $0}", 1, { 0 } },
         { "topic_info", "Topic set by {nick $0} {comment $1}", 2, { 0, 0 } },
-        { "chanmode_change", "mode/{channelhilight $0} {mode $1} by {nick $2}", 3, { 0, 0, 0 } },
+        { "chanmode_change", "mode/{channelhilight $0} {mode $1} by {nick $2}", 4, { 0, 0, 0, 0 } },
         { "server_chanmode_change", "{netsplit ServerMode}/{channelhilight $0} {mode $1} by {nick $2}", 3, { 0, 0, 0 } },
         { "channel_mode", "mode/{channelhilight $0} {mode $1}", 2, { 0, 0 } },
 	{ "bantype", "Ban type changed to {channel $0}", 1, { 0 } },
