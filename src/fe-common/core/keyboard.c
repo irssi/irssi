@@ -263,7 +263,8 @@ static int expand_key(const char *key, GSList **out)
         start = NULL; last_hyphen = TRUE;
 	for (; *key != '\0'; key++) {
 		if (start != NULL) {
-			if (isalnum(*key) || *key == '_') {
+			if (!isdigit(*start) &&
+			    (isalnum(*key) || *key == '_')) {
                                 /* key combo continues */
 				continue;
 			}
