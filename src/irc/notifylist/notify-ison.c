@@ -176,7 +176,7 @@ static void whois_send(IRC_SERVER_REC *server, const char *nicks,
 	for (p = str+strlen(nicks)+1; *p != '\0'; p++)
 		if (*p == ',') *p = ' ';
 
-	server_redirect_event(server, "whois", 1, str, FALSE,
+	server_redirect_event(server, "whois", 1, str, TRUE,
                               "notifylist event whois end",
 			      "event 318", "notifylist event whois end",
 			      "event 311", "notifylist event whois",
@@ -285,7 +285,6 @@ static void ison_check_parts(IRC_SERVER_REC *server)
 			continue;
 
                 notifylist_left(server, rec);
-		notify_nick_destroy(rec);
 	}
 }
 

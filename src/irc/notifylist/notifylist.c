@@ -232,6 +232,8 @@ void notifylist_left(IRC_SERVER_REC *server, NOTIFY_NICK_REC *rec)
 			    rec->user, rec->host,
 			    rec->realname, rec->awaymsg);
 	}
+
+	notify_nick_destroy(rec);
 }
 
 static void notifylist_idle_reset(IRC_SERVER_REC *server, const char *nick)
@@ -297,7 +299,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	g_free_not_null(rec->realname);
 	rec->user = g_strdup(user);
 	rec->host = g_strdup(host);
-	rec->realname = *realname == '\0' ? NULL : g_strdup(realname);
+	rec->realname = realname == NULL || *realname == '\0' ? NULL : g_strdup(realname);
 
 	if (away != -1) rec->away = away;
 	rec->host_ok = TRUE;
