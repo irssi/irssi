@@ -112,7 +112,7 @@ static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (sscanf(data, "%ld %ld", &tv2.tv_sec, &tv2.tv_usec) != 2) {
+	if (sscanf(data, "%ld %ld", &tv2.tv_sec, &tv2.tv_usec) < 1) {
                 char *tmp = g_strconcat("PING ", data, NULL);
 		ctcp_default_reply(server, tmp, nick, addr, target);
 		g_free(tmp);
