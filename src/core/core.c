@@ -129,6 +129,7 @@ void core_init_paths(int argc, char *argv[])
 		{ "home", 0, POPT_ARG_STRING, NULL, 0, "Irssi home dir location (~/.irssi)", "PATH" },
 		{ NULL, '\0', 0, NULL }
 	};
+	char *str;
 	int n, len;
 
 	for (n = 1; n < argc; n++) {
@@ -145,6 +146,20 @@ void core_init_paths(int argc, char *argv[])
 			irssi_config_file = convert_home(argv[n]+9);
                         break;
 		}
+	}
+
+	if (irssi_dir != NULL && !g_path_is_absolute(irssi_dir)) {
+		str = irssi_dir;
+		irssi_dir = g_strdup_printf("%s/%s", g_get_current_dir(), str);
+		g_free(str);
+	}
+
+	if (irssi_config_file != NULL &&
+	    !g_path_is_absolute(irssi_config_file)) {
+		str = irssi_config_file;
+		irssi_config_file =
+			g_strdup_printf("%s/%s", g_get_current_dir(), str);
+		g_free(str);
 	}
 
 	args_register(options);
