@@ -99,8 +99,12 @@ void gui_window_redraw(WINDOW_REC *window);
 void gui_window_resize(WINDOW_REC *window, int ychange, int xchange);
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent);
 
+#define is_window_bottom(gui) \
+	((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line)
+
 void window_update_prompt(WINDOW_REC *window);
 void gui_window_newline(GUI_WINDOW_REC *gui, int visible);
 void gui_window_scroll(WINDOW_REC *window, int lines);
+void gui_window_update_ypos(GUI_WINDOW_REC *gui);
 
 #endif

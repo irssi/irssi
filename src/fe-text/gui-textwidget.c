@@ -245,33 +245,31 @@ static void cmd_scrollback_clear(gchar *data)
 
 static void scrollback_goto_pos(WINDOW_REC *window, GList *pos)
 {
-    GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
 
-    g_return_if_fail(window != NULL);
-    g_return_if_fail(pos != NULL);
+	g_return_if_fail(window != NULL);
+	g_return_if_fail(pos != NULL);
 
-    gui = WINDOW_GUI(window);
+	gui = WINDOW_GUI(window);
 
-    if (g_list_find(gui->bottom_startline, pos->data) == NULL)
-    {
-	gui->startline = pos;
-	gui->subline = 0;
-	gui->bottom = FALSE;
-    }
-    else
-    {
-	/* reached the last line */
-	if (gui->bottom) return;
+	if (g_list_find(gui->bottom_startline, pos->data) == NULL) {
+		gui->startline = pos;
+		gui->subline = 0;
+		gui_window_update_ypos(gui);
+		gui->bottom = is_window_bottom(gui);
+	} else {
+		/* reached the last line */
+		if (gui->bottom) return;
 
-	gui->bottom = TRUE;
-	gui->startline = gui->bottom_startline;
-	gui->subline = gui->bottom_subline;
-	gui->ypos = gui->parent->last_line-gui->parent->first_line-1;
-    }
+		gui->startline = gui->bottom_startline;
+		gui->subline = gui->bottom_subline;
+		gui->ypos = gui->parent->last_line-gui->parent->first_line;
+		gui->bottom = TRUE;
+	}
 
-    if (is_window_visible(window))
-	gui_window_redraw(window);
-    signal_emit("gui page scrolled", 1, window);
+	if (is_window_visible(window))
+		gui_window_redraw(window);
+	signal_emit("gui page scrolled", 1, window);
 }
 
 static void cmd_scrollback_goto(gchar *data)
@@ -366,38 +364,39 @@ static void cmd_scrollback_goto(gchar *data)
     cmd_params_free(free_arg);
 }
 
-static void cmd_scrollback_home(gchar *data)
+static void cmd_scrollback_home(const char *data)
 {
-    GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
 
-    gui = WINDOW_GUI(active_win);
+	gui = WINDOW_GUI(active_win);
 
-    if (gui->bottom_startline == gui->startline)
-	return;
+	if (gui->startline == gui->lines)
+		return;
 
-    gui->bottom = FALSE;
-    gui->startline = gui->lines;
-    gui->subline = 0;
+	gui->startline = gui->lines;
+	gui->subline = 0;
+	gui_window_update_ypos(gui);
+	gui->bottom = is_window_bottom(gui);
 
-    if (is_window_visible(active_win))
-	gui_window_redraw(active_win);
-    signal_emit("gui page scrolled", 1, active_win);
+	if (is_window_visible(active_win))
+		gui_window_redraw(active_win);
+	signal_emit("gui page scrolled", 1, active_win);
 }
 
-static void cmd_scrollback_end(gchar *data)
+static void cmd_scrollback_end(const char *data)
 {
-    GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
 
-    gui = WINDOW_GUI(active_win);
+	gui = WINDOW_GUI(active_win);
 
-    gui->bottom = TRUE;
-    gui->startline = gui->bottom_startline;
-    gui->subline = gui->bottom_subline;
-    gui->ypos = gui->parent->last_line-gui->parent->first_line-1;
+	gui->startline = gui->bottom_startline;
+	gui->subline = gui->bottom_subline;
+	gui->ypos = gui->parent->last_line-gui->parent->first_line;
+	gui->bottom = TRUE;
 
-    if (is_window_visible(active_win))
-	gui_window_redraw(active_win);
-    signal_emit("gui page scrolled", 1, active_win);
+	if (is_window_visible(active_win))
+		gui_window_redraw(active_win);
+	signal_emit("gui page scrolled", 1, active_win);
 }
 
 static void sig_away_changed(IRC_SERVER_REC *server)

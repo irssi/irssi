@@ -184,9 +184,6 @@ static int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 	return last_linecount;
 }
 
-#define is_window_bottom(gui) \
-	((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line)
-
 void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 {
 	/* FIXME: I'm pretty sure this could be done cleaner :) */
@@ -599,6 +596,17 @@ void gui_window_scroll(WINDOW_REC *window, int lines)
 	if (is_window_visible(window))
 		gui_window_redraw(window);
 	signal_emit("gui page scrolled", 1, window);
+}
+
+void gui_window_update_ypos(GUI_WINDOW_REC *gui)
+{
+	GList *tmp;
+
+	g_return_if_fail(gui != NULL);
+
+	gui->ypos = -gui->subline-1;
+	for (tmp = gui->startline; tmp != NULL; tmp = tmp->next)
+		gui->ypos += gui_window_get_linecount(gui, tmp->data);
 }
 
 void window_update_prompt(WINDOW_REC *window)
