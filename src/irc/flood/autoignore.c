@@ -60,11 +60,10 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 	GString *mask;
 	IGNORE_REC *rec;
 
-
 	g_return_if_fail(IS_IRC_SERVER(server));
 
 	level = GPOINTER_TO_INT(levelp);
-	check_level = level2bits(settings_get_str("autoignore_levels"));
+	check_level = level2bits(settings_get_str("autoignore_level"));
 
 	mask = g_string_new(nick);
 	mask = g_string_append_c(mask, '!');
@@ -76,12 +75,13 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 		else
 			autoignore_update(rec, level);
 	}
+        g_string_free(mask, TRUE);
 }
 
 void autoignore_init(void)
 {
 	settings_add_int("flood", "autoignore_time", 300);
-	settings_add_str("flood", "autoignore_levels", "");
+	settings_add_str("flood", "autoignore_level", "");
 
   	signal_add("flood", (SIGNAL_FUNC) sig_flood);
 }
