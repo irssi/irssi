@@ -38,7 +38,7 @@ static const char *format_fores = "kbgcrmyw";
 static const char *format_boldfores = "KBGCRMYW";
 
 static int signal_gui_print_text;
-static int hide_text_style, hide_server_tags, hide_mirc_colors;
+static int hide_text_style, hide_server_tags, hide_colors;
 
 static int timestamp_level;
 static int timestamp_timeout;
@@ -978,9 +978,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 3:
 			/* MIRC color */
 			get_mirc_color((const char **) &ptr,
-					hide_mirc_colors || hide_text_style ? NULL : &fgcolor,
-					hide_mirc_colors || hide_text_style ? NULL : &bgcolor);
-			if (!hide_mirc_colors && !hide_text_style)
+					hide_colors ? NULL : &fgcolor,
+					hide_colors ? NULL : &bgcolor);
+			if (!hide_colors)
 				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
 		case 4:
@@ -1077,9 +1077,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			/* ansi color code */
 			ptr = (char *)
 				get_ansi_color(theme, ptr,
-					       hide_text_style ? NULL : &fgcolor,
-					       hide_text_style ? NULL : &bgcolor,
-					       hide_text_style ? NULL : &flags);
+					       hide_colors ? NULL : &fgcolor,
+					       hide_colors ? NULL : &bgcolor,
+					       hide_colors ? NULL : &flags);
 			break;
 		}
 
@@ -1100,7 +1100,7 @@ static void read_settings(void)
 
 	hide_server_tags = settings_get_bool("hide_server_tags");
 	hide_text_style = settings_get_bool("hide_text_style");
-	hide_mirc_colors = settings_get_bool("hide_mirc_colors");
+	hide_colors = hide_text_style || settings_get_bool("hide_colors");
 }
 
 void formats_init(void)

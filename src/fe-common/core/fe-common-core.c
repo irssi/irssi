@@ -161,7 +161,7 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
 
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
-	settings_add_bool("lookandfeel", "hide_mirc_colors", FALSE);
+	settings_add_bool("lookandfeel", "hide_colors", FALSE);
 	settings_add_bool("lookandfeel", "hide_server_tags", FALSE);
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
