@@ -52,7 +52,8 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 static void sig_server_reconnect_save_status(IRC_SERVER_CONNECT_REC *conn,
 					     IRC_SERVER_REC *server)
 {
-	if (!IS_IRC_SERVER_CONNECT(conn) || !IS_IRC_SERVER(server))
+	if (!IS_IRC_SERVER_CONNECT(conn) || !IS_IRC_SERVER(server) ||
+	    !server->connected)
 		return;
 
 	g_free_not_null(conn->channels);
