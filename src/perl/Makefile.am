@@ -94,4 +94,7 @@ all-local:
 install-exec-local:
 	for dir in common irc; do cd $$dir && make install && cd ..; done
 
+clean-generic:
+	rm -f common/Irssi.c irc/Irc.c
+
 libperl_la_LIBADD = $(PERL_LDFLAGS)

@@ -10,7 +10,7 @@ config.sub
 configure
 configure.scan
 libtool
-libtool-static
+libtool-shared
 ltconfig
 ltmain.sh
 stamp-h
