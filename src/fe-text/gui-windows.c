@@ -645,7 +645,7 @@ void gui_window_scroll(WINDOW_REC *window, int lines)
 	gui = WINDOW_GUI(window);
 
 	if (lines < 0) {
-		if (gui->startline == NULL)
+		if (gui->startline == NULL || gui->startline->prev == NULL)
 			return;
 		gui_window_scroll_up(gui, -lines);
 	} else {
