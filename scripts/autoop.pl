@@ -1,8 +1,6 @@
 # /AUTOOP <*|#channel> [<nickmasks>]
-# For Irssi 0.7.96 and above
 
 use Irssi;
-use Irssi::Irc;
 
 my %opnicks, %temp_opped;
 
@@ -48,10 +46,10 @@ sub autoop {
 	my ($channel, $masks, @nicks) = @_;
 	my $server, $nickrec;
 
-	$server = $channel->values()->{'server'};
+	$server = $channel->{server};
 	foreach $nickrec (@nicks) {
-		$nick = $nickrec->values()->{'nick'};
-		$host = $nickrec->values()->{'host'};
+		$nick = $nickrec->{nick};
+		$host = $nickrec->{host};
 
                 if (!$temp_opped{$nick} &&
 		    $server->masks_match($masks, $nick, $host)) {
@@ -65,12 +63,12 @@ sub event_massjoin {
 	my ($channel, $nicks_list) = @_;
 	my @nicks = @{$nicks_list};
 
-	return if (!$channel->values()->{'chanop'});
+	return if (!$channel->{chanop});
 
 	undef %temp_opped;
 
 	# channel specific
-	my $masks = $opnicks{$channel->values()->{'name'}};
+	my $masks = $opnicks{$channel->{name}};
 	autoop($channel, $masks, @nicks) if ($masks);
 
 	# for all channels

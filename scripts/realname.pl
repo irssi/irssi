@@ -24,7 +24,7 @@ sub cmd_realname {
 }
 
 sub event_rn_whois {
-	my ($num, $nick, $user, $host, $empty, $realname) = split(/ +/, $_[0], 6);
+	my ($num, $nick, $user, $host, $empty, $realname) = split(/ +/, $_[1], 6);
 	$realname =~ s/^://;
 
 	Irssi::print("%_$nick%_ is $realname");

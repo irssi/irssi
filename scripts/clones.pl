@@ -1,16 +1,15 @@
 # /CLONES - display real name of nick
 
 use Irssi;
-use Irssi::Irc;
 
 sub cmd_clones {
 	my ($data, $server, $channel) = @_;
 	my %hostnames, $host, @nicks, $nick;
 
-	@nicks = $channel->nicklist_getnicks();
+	@nicks = $channel->nicks();
 
 	foreach $nick (@nicks) {
-		$hostnames{$nick->values()->{'host'}}++;
+		$hostnames{$nick->{host}}++;
 	}
 
 	$channel->print("Clones:");

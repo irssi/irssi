@@ -1,7 +1,6 @@
 # "Hello, world!" script :) /hello <nick> sends "Hello, world!" to <nick>
 
 use Irssi;
-use Irssi::Irc;
 
 sub cmd_hello {
 	my ($data, $server, $channel) = @_;

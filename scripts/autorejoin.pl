@@ -8,15 +8,17 @@ use Irssi;
 use Irssi::Irc;
 
 sub event_rejoin_kick {
-	my ($data, $server) = @_;
+	my ($server, $data) = @_;
 	my ($channel, $nick) = split(/ +/, $data);
 
-	return if ($server->values()->{'nick'} ne $nick);
+	return if ($server->{nick} ne $nick);
 
 	# check if channel has password
 	$chanrec = $server->channel_find($channel);
-	$password = $chanrec->values()->{'key'} if ($chanrec);
+	$password = $chanrec->{key} if ($chanrec);
 
+	# We have to use send_raw() because the channel record still
+	# exists and irssi won't even try to join to it with command()
 	$server->send_raw("JOIN $channel $password");
 }
 

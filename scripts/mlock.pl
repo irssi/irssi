@@ -1,4 +1,4 @@
-# /MLOCK <channel> <mode> - for Irssi 0.7.96 and above
+# /MLOCK <channel> <mode>
 #
 # Locks the channel mode to <mode>, if someone else tries to change the mode
 # Irssi will automatically change it back. +k and +l are a bit special since
@@ -21,16 +21,16 @@ sub mlock_check_mode {
         my ($server, $channame) = @_;
 
 	$channel = $server->channel_find($channame);
-	return if (!channel || !$channel->values()->{'chanop'});
+	return if (!channel || !$channel->{chanop});
 
         $keep_mode = $keep_channels{$channame};
 	return if (!$keep_mode);
 
 	# old channel mode
-	$oldmode = $channel->values()->{'mode'};
+	$oldmode = $channel->{mode};
         $oldmode =~ s/^([^ ]*).*/\1/;
-	$oldkey = $channel->values()->{'key'};
-	$oldlimit = $channel->values()->{'limit'};
+	$oldkey = $channel->{key};
+	$oldlimit = $channel->{limit};
 
 	# get the new channel key/limit
 	@newmodes = split(/ /, $keep_mode); $keep_mode = $newmodes[0];
@@ -93,12 +93,12 @@ sub mlock_check_mode {
 	}
 
 	if ($modecmd ne "") {
-		$channel->values()->{'server'}->command("/mode $channame $modecmd$extracmd");
+		$channel->{server}->command("/mode $channame $modecmd$extracmd");
 	}
 }
 
 sub mlock_mode_changed {
-	my ($data, $server) = @_;
+	my ($server, $data) = @_;
 	my ($channel, $mode) = split(/ /, $data, 2);
 
 	mlock_check_mode($server, $channel);
@@ -107,7 +107,7 @@ sub mlock_mode_changed {
 sub mlock_synced {
 	my $channel = $_[0];
 
-	mlock_check_mode($channel->values()->{'server'}, $channel->values()->{'name'});
+	mlock_check_mode($channel->{server}, $channel->{name});
 }
 
 Irssi::command_bind('mlock', '', 'cmd_mlock');
