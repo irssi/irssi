@@ -407,12 +407,14 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	while (ai != NULL && count < 2) {
 		so = (union sockaddr_union *) ai->ai_addr;
 
-		if (ai->ai_family == AF_INET6 && ip6->family == 0) {
-			sin_get_ip(so, ip6);
-                        count++;
-		} else if (ai->ai_family == AF_INET && ip4->family == 0) {
-			sin_get_ip(so, ip4);
-                        count++;
+		if (so != NULL) {
+			if (ai->ai_family == AF_INET6 && ip6->family == 0) {
+				sin_get_ip(so, ip6);
+	                        count++;
+			} else if (ai->ai_family == AF_INET && ip4->family == 0) {
+				sin_get_ip(so, ip4);
+	                        count++;
+			}
 		}
                 ai = ai->ai_next;
 	}
