@@ -17,6 +17,7 @@ AM_PROG_LIBTOOL
 AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h)
 
 GNOME_INIT
+GNOME_SUPPORT_CHECKS
 
 AC_ARG_WITH(proplist,
 [  --with-proplist         Specify libPropList location],	
@@ -258,7 +259,6 @@ if test "x$want_gnome" = "xyes"; then
 	AC_DEFINE(HAVE_GTK)
 	AC_DEFINE(HAVE_GNOME)
 	AC_DEFINE(HAVE_IMLIB)
-	GNOME_SUPPORT_CHECKS
 
 	GUI_CFLAGS="$GNOME_INCLUDEDIR"
 
