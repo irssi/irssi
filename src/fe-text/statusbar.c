@@ -46,12 +46,14 @@ STATUSBAR_GROUP_REC *active_statusbar_group;
 static GHashTable *sbar_item_defs, *sbar_item_funcs;
 static GHashTable *sbar_signal_items, *sbar_item_signals;
 static GHashTable *named_sbar_items;
+static int statusbar_need_recreate_items;
 
 void statusbar_item_register(const char *name, const char *value,
 			     STATUSBAR_FUNC func)
 {
 	gpointer hkey, hvalue;
 
+	statusbar_need_recreate_items = TRUE;
 	if (value != NULL) {
 		if (g_hash_table_lookup_extended(sbar_item_defs,
 						 name, &hkey, &hvalue)) {
@@ -75,6 +77,7 @@ void statusbar_item_unregister(const char *name)
 {
 	gpointer key, value;
 
+	statusbar_need_recreate_items = TRUE;
 	if (g_hash_table_lookup_extended(sbar_item_defs,
 					 name, &key, &value)) {
 		g_hash_table_remove(sbar_item_defs, key);
@@ -300,6 +303,9 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 
 void statusbar_redraw(STATUSBAR_REC *bar, int force)
 {
+	if (statusbar_need_recreate_items)
+		return; /* don't bother yet */
+
 	if (bar != NULL) {
 		if (force) {
 			irssi_set_dirty();
@@ -949,6 +955,11 @@ void statusbar_redraw_dirty(void)
 {
 	GSList *tmp;
 
+	if (statusbar_recreate_items) {
+		statusbar_need_recreate_items = FALSE;
+		statusbars_recreate_items();
+	}
+
 	for (tmp = active_statusbar_group->bars; tmp != NULL; tmp = tmp->next) {
 		STATUSBAR_REC *rec = tmp->data;
 
@@ -1051,6 +1062,7 @@ static void sig_setup_reload(void)
 
 void statusbar_init(void)
 {
+        statusbar_need_recreate_items = FALSE;
 	statusbar_groups = NULL;
 	active_statusbar_group = NULL;
 	sbar_item_defs = g_hash_table_new((GHashFunc) g_str_hash,
