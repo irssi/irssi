@@ -252,9 +252,32 @@ static void cmd_help(const char *data)
 /* SYNTAX: ECHO [<text>] */
 static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 {
+        WINDOW_REC *window;
+	GHashTable *optlist;
+	char *msg, *levelstr, *winname;
+	void *free_arg;
+	int level;
+
 	g_return_if_fail(data != NULL);
 
-	printtext_window(active_win, MSGLEVEL_CRAP, "%s", data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "echo", &optlist, &msg))
+		return;
+
+        levelstr = g_hash_table_lookup(optlist, "level");
+	level = levelstr == NULL ? 0 :
+		level2bits(g_hash_table_lookup(optlist, "level"));
+	if (level == 0) level = MSGLEVEL_CRAP;
+
+	winname = g_hash_table_lookup(optlist, "window");
+	window = winname == NULL ? NULL :
+		is_numeric(winname, '\0') ?
+		window_find_refnum(atoi(winname)) :
+		window_find_item(NULL, winname);
+	if (window == NULL) window = active_win;
+
+	printtext_window(window, level, "%s", msg);
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: VERSION */
@@ -455,6 +478,8 @@ void fe_core_commands_init(void)
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
 	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
+
+	command_set_options("echo", "current +level +window");
 }
 
 void fe_core_commands_deinit(void)
