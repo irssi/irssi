@@ -91,11 +91,16 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint it
 
 	if (--skip == 0)
 	{
+      	    char *ret, nickmode[2] = { 0, 0 };
 	    skip = lines;
 	    memset(linebuf, ' ', max);
-	    linebuf[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
-	    memcpy(linebuf+1, rec->nick, strlen(rec->nick));
-	    g_string_sprintfa(str, "%%K[%%n%%_%c%%_%s%%K] ", linebuf[0], linebuf+1);
+	    nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
+	    memcpy(linebuf, rec->nick, strlen(rec->nick));
+	    ret = output_format_get_text(MODULE_NAME, NULL,
+					 channel->server, channel->name,
+					 IRCTXT_NAMES_NICK, nickmode, linebuf);
+            g_string_append(str, ret);
+	    g_free(ret);
 	    cols++;
 	}
 
