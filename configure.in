@@ -437,11 +437,14 @@ if test -z "$GLIB_DIR"; then
     glib_file=glib-1.2.10.tar.gz
 
     dlcmd=
-    if test -n "`ncftpget 2>/dev/null|grep -i ncftp`"; then
-      dlcmd="ncftpget ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
-    fi
-    if test -n "`wget 2>/dev/null|grep -i wget`"; then
-      dlcmd="wget http://irssi.org/files/$glib_file"
+    if test -n "`wget --version 2>/dev/null|grep -i wget`"; then
+      dlcmd="wget -c ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+    elif test -n "`ncftpget --version 2>/dev/null|grep -i ncftp`"; then
+      dlcmd="ncftpget -z ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+    elif test -n "`lynx --version 2>/dev/null|grep -i lynx`"; then
+      dlcmd="lynx --source ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file > $glib_file"
+    elif test -n "`curl --version 2>/dev/null|grep -i curl`"; then
+      dlcmd="curl -C - ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
     fi
     if test -n "$dlcmd"; then
       echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
