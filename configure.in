@@ -262,7 +262,7 @@ if test "$want_perl" != "no"; then
 
 		if test "$want_perl" != "static"; then
 			dnl * find libperl.a so we could
-			libperl_a=`echo $PERL_LDFLAGS|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/ && -f $1."/libperl.a") { print $1."/libperl.a" } };'`
+			LIBPERL_A=`echo $PERL_LDFLAGS|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/ && -f $1."/libperl.a") { print $1."/libperl.a" } };'`
 		fi
 
 		dnl * Perl 5.004 and older use perl_xxx variables while
@@ -273,9 +273,9 @@ if test "$want_perl" != "no"; then
 		fi
 
 		dnl * don't check dynaloader if libperl.a wasn't found..
-		if test "x$libperl_a" != "x"; then
+		if test "x$LIBPERL_A" != "x"; then
 			dnl * dynaloader.a -> libperl_dynaloader.la
-			dynaloader=`echo $PERL_LDFLAGS | $sedpath 's/.* \([[^ ]]*\.a\).*/\1/'`
+			DYNALOADER_A=`echo $PERL_LDFLAGS | $sedpath 's/.* \([[^ ]]*\.a\).*/\1/'`
 		fi
 
 		dnl * remove all database stuffs
@@ -298,21 +298,31 @@ if test "$want_perl" != "no"; then
 
 		if test "x$want_perl" = "xstatic"; then
 			AC_MSG_RESULT(ok)
-		elif test "x$dynaloader" = "x"; then
+		elif test "x$DYNALOADER_A" = "x"; then
 			AC_MSG_RESULT([error parsing ldopts, building Perl into irssi binary instead of as module])
 			want_perl=static
 		else
 			AC_MSG_RESULT(ok)
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ [[^ ]]*\.a/ libperl_dynaloader.la/'`
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
+			AC_SUBST(LIBPERL_A)
+			AC_SUBST(DYNALOADER_A)
 		fi
 
 		if test "x$want_perl" = "xstatic"; then
-			PERL_LDFLAGS="../perl/.libs/libperl.a $PERL_LDFLAGS"
+			PERL_LDFLAGS="../perl/libperl_static.la $PERL_LDFLAGS"
 			PROG_LIBS="$PROG_LIBS $PERL_LDFLAGS"
 			PERL_LDFLAGS=
 			AC_DEFINE(HAVE_STATIC_PERL)
+			module_lib=
+			static_lib=libperl_static.la
+		else
+			module_lib=libperl.la
+			static_lib=
 		fi
+		AC_SUBST(module_lib)
+		AC_SUBST(static_lib)
+
 		AC_SUBST(PERL_LDFLAGS)
 		AC_SUBST(PERL_CFLAGS)
 		AC_SUBST(PERL_LIB_DIR)
@@ -326,6 +336,7 @@ AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
 AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
+AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 
 AC_SUBST(PROG_LIBS)
 
@@ -464,7 +475,7 @@ irssi.spec
 irssi-version.h
 irssi-config)
 
-dnl ** for building from objdir + linking perl libraries so libtool finds them
+dnl ** for building from objdir
 if test "x$want_perl" != "xno"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
@@ -472,15 +483,6 @@ if test "x$want_perl" != "xno"; then
 		for file in $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
 			ln -sf $file `echo $file|sed "s?$whole_dir/??"`
 		done
-	fi
-
-	dnl * building as module
-	if test "x$want_perl" = "xyes"; then
-		if test ! -d src/perl/.libs; then
-			mkdir -p src/perl/.libs
-		fi
-       		ln -sf $dynaloader src/perl/.libs/DynaLoader.a
-       		ln -sf $libperl_a src/perl/.libs/libperl_orig.a
 	fi
 fi
 

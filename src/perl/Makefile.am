@@ -1,7 +1,10 @@
 moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libperl.la
 
-libperl_la_LDFLAGS = -avoid-version
+module_LTLIBRARIES = $(module_lib)
+noinst_LTLIBRARIES = $(static_lib)
+EXTRA_LTLIBRARIES = libperl.la libperl_static.la
+
+libperl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
 
 perl.c: perl-signals.h
 
@@ -11,10 +14,23 @@ INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core
 
-libperl_la_SOURCES = \
+perl_sources = \
 	perl.c \
 	perl-common.c \
 	xsinit.c
+
+libperl_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
+
+.libs/libperl_orig.a:
+	ln -sf $(LIBPERL_A) .libs/libperl_orig.a
+.libs/DynaLoader.a:
+	ln -sf $(DYNALOADER_A) .libs/DynaLoader.a
+
+libperl_la_SOURCES = \
+	$(perl_sources)
+
+libperl_static_la_SOURCES = \
+	$(perl_sources)
 
 perl-signals.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals.h
