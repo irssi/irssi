@@ -1,3 +1,16 @@
+v0.7.20.1 1999-11-28  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	* I just started #irssi in irc.openprojects.net too.. It's still in
+	  IRCNet too, don't know yet if I'll keep both or drop the other one..
+
+	+ You can use %n as current nick with aliases
+	- Closing a window with split windows open crashed
+	- Channel widgets weren't being updated when joined to channel in
+	  empty window
+	- configure didn't check if we wanted to build MySQL plugin or not,
+	  now it's built only if you give --with-mysql to configure
+	- Using the whois, ping, etc. buttons in queries crashed
+
 v0.7.20 1999-11-27  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Polish and finnish translations started
