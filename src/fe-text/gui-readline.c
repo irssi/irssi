@@ -454,7 +454,7 @@ void gui_readline_init(void)
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("ALT-%c", changekeys[n]);
 		ltoa(data, n+1);
-		key_bind("change window", "Change window", key, data, (SIGNAL_FUNC) sig_change_window);
+		key_bind("window change", "Change window", key, data, (SIGNAL_FUNC) sig_change_window);
 		g_free(key);
 	}
 
@@ -479,7 +479,7 @@ void gui_readline_deinit(void)
 	key_unbind("next page", (SIGNAL_FUNC) sig_next_page);
 
 	key_unbind("special char", (SIGNAL_FUNC) sig_addchar);
-	key_unbind("change window", (SIGNAL_FUNC) sig_change_window);
+	key_unbind("window change", (SIGNAL_FUNC) sig_change_window);
 
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);

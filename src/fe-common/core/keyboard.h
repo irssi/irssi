@@ -14,7 +14,7 @@ typedef struct {
 	KEYINFO_REC *info;
 
 	char *key;
-	void *data;
+	char *data;
 } KEY_REC;
 
 extern GSList *keyinfos;

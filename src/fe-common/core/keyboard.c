@@ -19,8 +19,10 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
@@ -55,7 +57,7 @@ static void keyconfig_clear(const char *id, const char *key)
 	if (key == NULL)
 		iconfig_node_set_str(node, id, NULL);
 	else {
-		node = config_node_section(node, id, 0);
+		node = config_node_section(node, id, -1);
 		if (node != NULL) iconfig_node_set_str(node, key, NULL);
 	}
 }
@@ -261,6 +263,51 @@ static void read_keyboard_config(void)
 	}
 }
 
+static void cmd_show_keys(const char *searchkey)
+{
+	GSList *info, *key;
+        int len;
+
+	len = searchkey == NULL ? 0 : strlen(searchkey);
+	for (info = keyinfos; info != NULL; info = info->next) {
+		KEYINFO_REC *rec = info->data;
+
+		for (key = rec->keys; key != NULL; key = key->next) {
+			KEY_REC *rec = key->data;
+
+			if (len == 0 || strncmp(rec->key, searchkey, len) == 0) {
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_BIND_KEY,
+					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
+			}
+		}
+	}
+}
+
+static void cmd_bind(const char *data)
+{
+	GHashTable *optlist;
+	char *key, *id, *keydata;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "bind", &optlist, &key, &id, &keydata))
+		return;
+
+	if (*key != '\0' && g_hash_table_lookup(optlist, "delete")) {
+                key_configure_remove(key);
+	} else if (*id == '\0') {
+		/* show some/all keys */
+                cmd_show_keys(key);
+	} else if (key_info_find(id) == NULL)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_BIND_UNKNOWN_ID, id);
+	else {
+		key_configure_add(id, key, keydata);
+		cmd_show_keys(key);
+	}
+
+        cmd_params_free(free_arg);
+}
+
 void keyboard_init(void)
 {
 	keys = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
@@ -270,6 +317,9 @@ void keyboard_init(void)
 
 	read_keyboard_config();
 	signal_add("setup reread", (SIGNAL_FUNC) read_keyboard_config);
+
+	command_bind("bind", NULL, (SIGNAL_FUNC) cmd_bind);
+	command_set_options("bind", "delete");
 }
 
 void keyboard_deinit(void)
@@ -279,4 +329,5 @@ void keyboard_deinit(void)
 	g_hash_table_destroy(keys);
 
         signal_remove("setup reread", (SIGNAL_FUNC) read_keyboard_config);
+	command_unbind("bind", (SIGNAL_FUNC) cmd_bind);
 }
