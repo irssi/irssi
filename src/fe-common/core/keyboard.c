@@ -581,7 +581,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 		/* unknown key combo, eat the invalid key
 		   unless it was the first key pressed */
                 g_free(combo);
-		return first_key ? 0 : -1;
+		return first_key ? -1 : 1;
 	}
 
 	if (g_tree_lookup(key_states, combo) != rec) {
