@@ -216,7 +216,7 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
 /* check if quit message is a netsplit message */
 int quitmsg_is_split(const char *msg)
 {
-	const char *host1, *host2;
+	const char *host1, *host2, *p;
         int prev, len, host1_dot, host2_dot;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
@@ -224,15 +224,12 @@ int quitmsg_is_split(const char *msg)
 	/* NOTE: there used to be some paranoia checks (some older IRC
 	   clients have even more), but they're pretty useless nowadays,
 	   since IRC server prefixes the quit message with a space if it
-	   looks like a quit message.
-
-	   There also used to be a check that root domain was 2-3 characters
-	   long. This doesn't work since undernet uses now "*.net *.split"
-	   quit message for all netsplits, and then there's the new top level
-	   domains which breaks that code too.
+	   looks like a netsplit message.
 
 	   So, the check is currently just:
              - host1.domain1 host2.domain2
+             - top-level domains have to be 2+ characters long,
+	       containing only alphabets
 	     - only 1 space
 	     - no double-dots (".." - probably useless check)
 	     - hosts/domains can't start or end with a dot
@@ -274,7 +271,25 @@ int quitmsg_is_split(const char *msg)
 
 	if (len == (int) (host2-host1)-1 &&
 	    g_strncasecmp(host1, host2, len) == 0)
-                return FALSE; /* hosts can't be the same */
+		return FALSE; /* hosts can't be the same */
+
+        /* top-domain1 must be 2+ chars long and contain only alphabets */
+	p = host2-1;
+	while (p[-1] != '.') {
+		if (!isalpha(p[-1]))
+                        return FALSE;
+		p--;
+	}
+	if (host2-p-1 < 2) return FALSE;
+
+        /* top-domain2 must be 2+ chars long and contain only alphabets */
+	p = host2+strlen(host2);
+	while (p[-1] != '.') {
+		if (!isalpha(p[-1]))
+                        return FALSE;
+		p--;
+	}
+	if (strlen(p) < 2) return FALSE;
 
         return TRUE;
 }
