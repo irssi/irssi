@@ -136,9 +136,11 @@ extern gint proxy_port;
 extern gchar *proxy_string;
 
 /* appearance */
-extern gboolean toggle_use_zvt;
-extern gboolean toggle_use_transparency;
-extern gboolean toggle_shaded_transparency;
+extern gboolean toggle_use_itext;
+extern gboolean toggle_background_transparency;
+extern gboolean toggle_background_shaded;
+extern gboolean toggle_background_scaled;
+extern gboolean toggle_background_scrollable;
 extern gint panel_max_channels;
 
 #endif
