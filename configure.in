@@ -280,7 +280,6 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
 	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
       fi
     fi
-    AC_SUBST(GLIB_DIR)
     AC_SUBST(GLIB_CFLAGS)
     AC_SUBST(GLIB_LIBS)
   else
