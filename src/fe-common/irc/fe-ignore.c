@@ -186,9 +186,10 @@ static void cmd_ignore(const char *data)
 	rec->fullword = stristr(args, "-word") != NULL;
 	rec->regexp = stristr(args, "-regexp") != NULL;
 
-        if (rec->level == 0 && rec->except_level == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED, rec->mask);
-	else {
+	if (rec->level == 0 && rec->except_level == 0) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED,
+			    rec->mask == NULL ? "" : rec->mask);
+	} else {
 		key = ignore_get_key(rec);
 		levels = ignore_get_levels(rec->level, rec->except_level);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IGNORED, key, levels);
