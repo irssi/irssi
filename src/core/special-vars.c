@@ -119,10 +119,8 @@ static char *get_long_variable_value(const char *key, void *server, void *item, 
 
 	/* environment variable? */
 	ret = g_getenv(key);
-	if (ret != NULL) {
-                *free_ret = TRUE;
+	if (ret != NULL)
 		return ret;
-	}
 
 	return NULL;
 }
