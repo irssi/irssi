@@ -135,7 +135,7 @@ static void cmd_channel_list_joined(void)
 			g_string_sprintfa(nicks, "%s ", rec->nick);
 		}
 
-		g_string_truncate(nicks, nicks->len-1);
+		if (nicks->len > 1) g_string_truncate(nicks, nicks->len-1);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANLIST_LINE,
 			    channel->name, mode, channel->server->tag, nicks->str);
 
