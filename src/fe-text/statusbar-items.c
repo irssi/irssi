@@ -464,13 +464,11 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 
 static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 {
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    if (g_list_find(activity_list, window) != NULL)
-    {
-        activity_list = g_list_remove(activity_list, window);
-        statusbar_item_redraw(activity_item);
-    }
+	if (g_list_find(activity_list, window) != NULL)
+		activity_list = g_list_remove(activity_list, window);
+	statusbar_item_redraw(activity_item);
 }
 
 /* redraw -- more -- */

@@ -101,8 +101,6 @@ static void windows_pack(int removed_refnum)
 
 void window_destroy(WINDOW_REC *window)
 {
-	int refnum;
-
 	g_return_if_fail(window != NULL);
 
 	if (window->destroying) return;
@@ -117,17 +115,16 @@ void window_destroy(WINDOW_REC *window)
 	while (window->items != NULL)
 		window_remove_item(window, window->items->data);
 
+	windows_pack(window->refnum);
+
 	signal_emit("window destroyed", 1, window);
 
 	g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL);
 	g_slist_free(window->waiting_channels);
 
-	refnum = window->refnum;
 	g_free_not_null(window->theme_name);
 	g_free_not_null(window->name);
 	g_free(window);
-
-	windows_pack(refnum);
 }
 
 void window_set_active(WINDOW_REC *window)
