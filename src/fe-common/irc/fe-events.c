@@ -301,8 +301,8 @@ static void event_connected(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	nick = settings_get_str("nick");
-	if (*nick == '\0' || g_strcasecmp(server->nick, nick) == 0)
+        nick = server->connrec->nick;
+	if (g_strcasecmp(server->nick, nick) == 0)
 		return;
 
 	/* someone has our nick, find out who. */
