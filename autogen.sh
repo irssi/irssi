@@ -28,10 +28,10 @@ echo "Creating help files..."
 perl syntax.pl
 
 files=`echo docs/help/in/*.in|sed -e 's,docs/help/in/Makefile.in ,,' -e 's,docs/help/in/,!,g' -e 's/\.in /.in ?/g'`
-cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '\!?' '\t\n' > docs/help/in/Makefile.am
+cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/in/Makefile.am
 
 files=`echo $files|sed 's/\.in//g'`
-cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '\!?' '\t\n' > docs/help/Makefile.am
+cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/Makefile.am
 
 # .html -> .txt with lynx
 echo "Documentation: html -> txt..."
