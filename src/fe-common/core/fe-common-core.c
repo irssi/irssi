@@ -32,6 +32,7 @@
 #include "translation.h"
 #include "windows.h"
 #include "window-items.h"
+#include "window-save.h"
 
 #include <sys/signal.h>
 
@@ -131,6 +132,10 @@ void fe_common_core_finish_init(void)
 	WINDOW_REC *window;
 
 	signal(SIGPIPE, SIG_IGN);
+
+	windows_restore();
+	if (windows != NULL)
+		return;
 
 	if (settings_get_bool("use_status_window")) {
 		window = window_create(NULL, TRUE);

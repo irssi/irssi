@@ -25,6 +25,7 @@ libfe_common_core_la_SOURCES = \
 	window-activity.c \
 	window-commands.c \
 	window-items.c \
+	window-save.c \
 	windows.c
 
 noinst_HEADERS = \
@@ -39,4 +40,5 @@ noinst_HEADERS = \
 	themes.h \
 	translation.h \
 	window-items.h \
+	window-save.h \
 	windows.h

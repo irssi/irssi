@@ -30,6 +30,7 @@
 #include "themes.h"
 #include "windows.h"
 #include "window-items.h"
+#include "window-save.h"
 
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 {
@@ -359,6 +360,9 @@ static void cmd_window_list(void)
 /* SYNTAX: WINDOW THEME <name> */
 static void cmd_window_theme(const char *data)
 {
+	g_free_not_null(active_win->theme_name);
+	active_win->theme_name = g_strdup(data);
+
 	active_win->theme = theme_load(data);
 	if (active_win->theme != NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -367,6 +371,12 @@ static void cmd_window_theme(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_THEME_NOT_FOUND, data);
 	}
+}
+
+/* SYNTAX: SAVEWINDOWS */
+static void cmd_savewindows(void)
+{
+	windows_save();
 }
 
 void window_commands_init(void)
@@ -392,6 +402,7 @@ void window_commands_init(void)
 	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
+	command_bind("savewindows", NULL, (SIGNAL_FUNC) cmd_savewindows);
 }
 
 void window_commands_deinit(void)
@@ -417,4 +428,5 @@ void window_commands_deinit(void)
 	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
+	command_unbind("savewindows", (SIGNAL_FUNC) cmd_savewindows);
 }

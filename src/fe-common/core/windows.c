@@ -118,6 +118,7 @@ void window_destroy(WINDOW_REC *window)
 	g_slist_free(window->waiting_channels);
 
 	refnum = window->refnum;
+	g_free_not_null(window->theme_name);
 	g_free_not_null(window->name);
 	g_free(window);
 

@@ -60,7 +60,6 @@ extern WINDOW_REC *active_win;
 WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic);
 void window_destroy(WINDOW_REC *window);
 
-void window_set_active_num(int number);
 void window_set_active(WINDOW_REC *window);
 void window_change_server(WINDOW_REC *window, void *server);
 
