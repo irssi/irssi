@@ -20,6 +20,10 @@ if test "x$lt_target" = "x"; then
 		lt_target="$target"
 	fi
 fi
+dnl * --disable-static isn't a good idea, complain if it's used
+if test "x$enable_static" = "xno"; then
+	AC_ERROR([Don't give --disable-static option to configure])
+fi
 
 ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
 $libtool_flags --disable-static --output=libtool-static --no-verify $ac_aux_dir/ltmain.sh $lt_target \
