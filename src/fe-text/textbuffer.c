@@ -518,7 +518,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
                         textbuffer_line_ref(line);
 			matches = g_list_append(matches, line);
 
-			if (!line_matched && --match_after == 0)
+			if ((!line_matched && --match_after == 0) ||
+			    (line_matched && match_after == 0 && before > 0))
 				matches = g_list_append(matches, NULL);
 		}
 	}
