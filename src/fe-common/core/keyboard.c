@@ -261,7 +261,19 @@ static int expand_key(const char *key, GSList **out)
 
 	/* meta-^W^Gf -> ^[-^W-^G-f */
         start = NULL; last_hyphen = TRUE;
-        for (; *key != '\0'; key++) {
+	for (; *key != '\0'; key++) {
+		if (start != NULL) {
+			if (isalnum(*key) || *key == '_') {
+                                /* key combo continues */
+				continue;
+			}
+
+			if (!expand_combo(start, key-1, out))
+                                return FALSE;
+			expand_out_char(*out, '-');
+                        start = NULL;
+		}
+
 		if (*key == '-') {
 			if (last_hyphen) {
                                 expand_out_char(*out, '-');
@@ -279,17 +291,9 @@ static int expand_key(const char *key, GSList **out)
                         last_hyphen = TRUE;
 		} else {
                         /* key / combo */
-			if (start == NULL)
-				start = key;
+			start = key;
                         last_hyphen = FALSE;
                         continue;
-		}
-
-		if (start != NULL) {
-			if (!expand_combo(start, key-1, out))
-                                return FALSE;
-			expand_out_char(*out, '-');
-                        start = NULL;
 		}
 	}
 
