@@ -497,7 +497,8 @@ char *cmd_get_quoted_param(char **data)
 	quote = **data; (*data)++;
 
 	pos = *data;
-	while (**data != '\0' && (**data != quote || (*data)[1] != ' ')) {
+	while (**data != '\0' && (**data != quote ||
+				  ((*data)[1] != ' ' && (*data)[1] != '\0'))) {
 		if (**data == '\\' && (*data)[1] != '\0')
                         g_memmove(*data, (*data)+1, strlen(*data));
 		(*data)++;
