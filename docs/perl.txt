@@ -238,12 +238,12 @@ settings_get_level(key)
 settings_get_size(key)
   Return value for setting.
 
-settings_set_str(key)
-settings_set_int(key)
-settings_set_bool(key)
-settings_set_time(key)
-settings_set_level(key)
-settings_set_size(key)
+settings_set_str(key, value)
+settings_set_int(key, value)
+settings_set_bool(key, value)
+settings_set_time(key, value)
+settings_set_level(key, value)
+settings_set_size(key, value)
   Set value for setting.
 
 settings_add_str(section, key, def)
