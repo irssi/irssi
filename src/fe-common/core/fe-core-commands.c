@@ -141,7 +141,7 @@ static void cmd_cat(const char *data)
 /* SYNTAX: BEEP */
 static void cmd_beep(void)
 {
-	printbeep();
+        signal_emit("beep", 0);
 }
 
 static void sig_stop(void)

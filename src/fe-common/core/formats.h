@@ -7,11 +7,10 @@
 #define PRINTFLAG_BOLD          0x01
 #define PRINTFLAG_REVERSE       0x02
 #define PRINTFLAG_UNDERLINE     0x04
-#define PRINTFLAG_BEEP          0x08
-#define PRINTFLAG_BLINK         0x10
-#define PRINTFLAG_MIRC_COLOR    0x20
-#define PRINTFLAG_INDENT        0x40
-#define PRINTFLAG_NEWLINE       0x80
+#define PRINTFLAG_BLINK         0x08
+#define PRINTFLAG_MIRC_COLOR    0x10
+#define PRINTFLAG_INDENT        0x20
+#define PRINTFLAG_NEWLINE       0x40
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200

@@ -270,7 +270,8 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 	LINE_CACHE_REC *rec;
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
-	unsigned char *ptr, *last_space_ptr;
+        unsigned char cmd;
+	char *ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
@@ -282,25 +283,28 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
 
 	rec->count = 1; lines = NULL;
-	for (ptr = (unsigned char *) line->text;;) {
+	for (ptr = line->text;;) {
 		if (*ptr == '\0') {
 			/* command */
 			ptr++;
-			if (*ptr == LINE_CMD_EOL || *ptr == LINE_CMD_FORMAT)
+			cmd = *ptr;
+                        ptr++;
+
+			if (cmd == LINE_CMD_EOL || cmd == LINE_CMD_FORMAT)
 				break;
 
-			if (*ptr == LINE_CMD_CONTINUE) {
-				unsigned char *tmp;
+			if (cmd == LINE_CMD_CONTINUE) {
+				char *tmp;
 
-				memcpy(&tmp, ptr+1, sizeof(char *));
+				memcpy(&tmp, ptr, sizeof(char *));
 				ptr = tmp;
 				continue;
 			}
 
-			if ((*ptr & 0x80) == 0) {
+			if ((cmd & 0x80) == 0) {
 				/* set color */
-				color = (color & ATTR_UNDERLINE) | *ptr;
-			} else switch (*ptr) {
+				color = (color & ATTR_UNDERLINE) | cmd;
+			} else switch (cmd) {
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
@@ -320,8 +324,6 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 				if (xpos < COLS-5) indent_pos = xpos;
 				break;
 			}
-
-			ptr++;
 			continue;
 		}
 
@@ -347,7 +349,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 				sub->continues = TRUE;
 			}
 
-			sub->start = (char *) ptr;
+			sub->start = ptr;
 			sub->indent = xpos;
 			sub->color = color;
 

@@ -540,7 +540,7 @@ static char *get_ansi_color(THEME_REC *theme, char *str,
 			/* reset colors back to default */
 			fg = theme->default_color;
 			bg = -1;
-			flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
+			flags &= ~PRINTFLAG_INDENT;
 			break;
 		case 1:
 			/* hilight */
@@ -734,17 +734,17 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		if (type == 7) {
 			/* bell */
 			if (settings_get_bool("bell_beeps"))
-				flags |= PRINTFLAG_BEEP;
+                                signal_emit("beep", 0);
 		}
 
-		if (*str != '\0' || (flags & PRINTFLAG_BEEP)) {
+		if (*str != '\0') {
                         /* send the text to gui handler */
 			signal_emit_id(signal_gui_print_text, 6, dest->window,
 				       GINT_TO_POINTER(fgcolor),
 				       GINT_TO_POINTER(bgcolor),
 				       GINT_TO_POINTER(flags), str,
 				       dest->level);
-			flags &= ~(PRINTFLAG_BEEP | PRINTFLAG_INDENT);
+			flags &= ~PRINTFLAG_INDENT;
 		}
 
 		if (type == '\n')
@@ -812,7 +812,6 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			break;
 		case 15:
 			/* remove all styling */
-			flags &= PRINTFLAG_BEEP;
 			fgcolor = bgcolor = -1;
 			break;
 		case 22:

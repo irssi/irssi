@@ -184,6 +184,12 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line, int redraw)
 
 	gui = WINDOW_GUI(window);
 
+	if (gui->lines->next == NULL) {
+                /* last line in window */
+		gui_window_clear(window);
+                return;
+	}
+
         screenchange = g_list_find(gui->startline, line) != NULL;
         if (screenchange) gui->ypos -= gui_window_get_linecount(gui, line);
 
@@ -363,8 +369,6 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 		buffer[pos++] = 0;
 		buffer[pos++] = LINE_CMD_INDENT;
 	}
-	if (flags & PRINTFLAG_BEEP)
-		signal_emit("beep", 0);
 
 	linebuf_add(gui, (char *) buffer, pos);
 

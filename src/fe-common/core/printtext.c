@@ -45,12 +45,6 @@ static int sending_print_starting;
 
 static void print_line(TEXT_DEST_REC *dest, const char *text);
 
-void printbeep(void)
-{
-	signal_emit_id(signal_gui_print_text, 6, active_win, NULL, NULL,
-		       GINT_TO_POINTER(PRINTFLAG_BEEP), "", MSGLEVEL_NEVER);
-}
-
 static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 				    int formatnum, va_list va)
 {
@@ -367,7 +361,7 @@ static void msg_beep_check(SERVER_REC *server, int level)
 	if (level != 0 && (level & MSGLEVEL_NOHILIGHT) == 0 &&
 	    (beep_msg_level & level) &&
 	    (beep_when_away || (server != NULL && !server->usermode_away))) {
-		printbeep();
+                signal_emit("beep", 0);
 	}
 }
 

@@ -13,7 +13,6 @@ void printtext(void *server, const char *target, int level, const char *text, ..
 void printtext_string(void *server, const char *target, int level, const char *text);
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...);
 void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text);
-void printbeep(void);
 
 /* only GUI should call these - used for printing text to somewhere else
    than windows */
