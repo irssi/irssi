@@ -79,7 +79,6 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: NOTICE [<target>] <message> */
 static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *msg;
