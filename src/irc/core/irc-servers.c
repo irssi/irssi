@@ -145,6 +145,11 @@ static void server_init(IRC_SERVER_REC *server)
                 address = ptr+1;
 	}
 
+	/* Replace ':' with '_' in our own hostname (the same IPv6 problem) */
+	for (ptr = hostname; *ptr != '\0'; ptr++) {
+		if (*ptr == ':') *ptr = '_';
+	}
+
 	username = g_strdup(conn->username);
 	ptr = strchr(username, ' ');
 	if (ptr != NULL) *ptr = '\0';
