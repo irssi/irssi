@@ -11,7 +11,8 @@ rawlog_create()
 MODULE = Irssi  PACKAGE = Irssi::Rawlog  PREFIX = rawlog_
 #*******************************
 
-void rawlog_get_lines(rawlog)
+void
+rawlog_get_lines(rawlog)
 	Irssi::Rawlog rawlog
 PREINIT:
 	GSList *tmp;
