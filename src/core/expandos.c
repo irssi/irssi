@@ -333,8 +333,23 @@ static char *expando_cmdchar(SERVER_REC *server, void *item, int *free_ret)
 
 /* modes of current channel, if any */
 static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
-{
-	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->mode;
+{ 
+	char *cmode;
+
+	*free_ret = FALSE;
+
+	if (!IS_CHANNEL(item))
+		return NULL;
+
+        if (settings_get_bool("chanmode_verbose"))
+		return CHANNEL(item)->mode;
+
+	*free_ret = TRUE;
+	cmode = g_strdup(CHANNEL(item)->mode);
+	if (strchr(cmode, ' ') != NULL)
+		*(strchr(cmode, ' ')) = 0;
+
+	return cmode;
 }
 
 /* current nickname */
@@ -559,6 +574,7 @@ void expandos_init(void)
 #endif
 	settings_add_str("misc", "STATUS_OPER", "*");
 	settings_add_str("lookandfeel", "timestamp_format", "%H:%M");
+	settings_add_bool("lookandfeel", "chanmode_verbose", TRUE);
 
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
