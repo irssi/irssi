@@ -148,10 +148,12 @@ static void textui_deinit(void)
 	quitting = TRUE;
 	signal(SIGINT, SIG_DFL);
 
+        screen_refresh_freeze();
 	while (modules != NULL)
 		module_unload(modules->data);
 
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
+
 	gui_textwidget_deinit();
 	statusbar_deinit();
 	gui_printtext_deinit();
@@ -161,6 +163,8 @@ static void textui_deinit(void)
 	mainwindows_deinit();
 	gui_expandos_deinit();
 	gui_entry_deinit();
+
+        screen_refresh_thaw();
 	deinit_screen();
 
 #ifdef HAVE_STATIC_PERL
