@@ -36,7 +36,6 @@ libcore_a_SOURCES = \
 	net-sendbuffer.c \
 	network.c \
 	nicklist.c \
-	nickmatch-cache.c \
 	pidwait.c \
 	queries.c \
 	rawlog.c \
@@ -82,7 +81,6 @@ noinst_HEADERS = \
 	network.h \
 	nick-rec.h \
 	nicklist.h \
-	nickmatch-cache.h \
 	pidwait.h \
 	queries.h \
 	rawlog.h \
