@@ -207,6 +207,8 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	int lines;
 
 	g_return_if_fail(gui != NULL);
+	g_return_if_fail(gui->bottom_startline != NULL);
+	g_return_if_fail(gui->startline != NULL);
 
 	gui->xpos = 0;
 
@@ -220,7 +222,10 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	lines = gui_window_get_linecount(gui, gui->startline->data);
 	if (gui->subline >= lines) {
 		/* after screen gets full after /CLEAR we end up here.. */
-		gui->startline = gui->startline->next;
+		if (gui->startline->next == NULL)
+			g_warning("gui_window_newline(): bug #1");
+                else
+			gui->startline = gui->startline->next;
 		gui->subline = 0;
 	}
 
@@ -253,7 +258,10 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	if (lines > 1+gui->subline)
 		gui->subline++;
 	else {
-		gui->startline = gui->startline->next;
+		if (gui->startline->next == NULL)
+			g_warning("gui_window_newline(): bug #2");
+                else
+			gui->startline = gui->startline->next;
 		gui->subline = 0;
 	}
 
@@ -646,6 +654,10 @@ static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 			break;
 		}
 
+		if (gui->startline->next == NULL) {
+			g_warning("gui_window_scroll_down(): bug");
+                        break;
+		}
 		gui->startline = gui->startline->next;
 	}
 
