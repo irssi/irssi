@@ -33,6 +33,7 @@
 #include "irc.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
+#include "channel-rejoin.h"
 #include "server-idle.h"
 #include "servers-reconnect.h"
 #include "modes.h"
@@ -286,15 +287,27 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 
 	chans = g_string_new(NULL);
 	keys = g_string_new(NULL);
-
 	use_keys = FALSE;
+
+	/* get currently joined channels */
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 
 		g_string_sprintfa(chans, "%s,", channel->name);
-		g_string_sprintfa(keys, "%s,", channel->key == NULL ? "x" : channel->key);
+		g_string_sprintfa(keys, "%s,", channel->key == NULL ? "x" :
+				  channel->key);
 		if (channel->key != NULL)
 			use_keys = TRUE;
+	}
+
+	/* get also the channels that are in rejoin list */
+	for (tmp = server->rejoin_channels; tmp != NULL; tmp = tmp->next) {
+		REJOIN_REC *rec = tmp->data;
+
+		g_string_sprintfa(chans, "%s,", rec->channel);
+		g_string_sprintfa(keys, "%s,", rec->key == NULL ? "x" :
+				  rec->key);
+		if (rec->key != NULL) use_keys = TRUE;
 	}
 
 	if (chans->len > 0) {
