@@ -348,7 +348,7 @@ static void reconnect_all(void)
 	}
 }
 
-/* SYNTAX: RECONNECT <tag> */
+/* SYNTAX: RECONNECT <tag> [<quit message>] */
 static void cmd_reconnect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
