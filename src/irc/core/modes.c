@@ -716,6 +716,7 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
 static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 		     IRC_CHANNEL_REC *channel)
 {
+	IRC_CHANNEL_REC *chanrec;
 	char *target, *mode;
 	void *free_arg;
 
@@ -738,9 +739,13 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 	}
 	if (*target == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*mode == '\0')
+	if (*mode == '\0') {
+		chanrec = irc_channel_find(server, target);
+		if (chanrec != NULL)
+			target = chanrec->name;
+
 		irc_send_cmdv(server, "MODE %s", target);
-	else if (ischannel(*target))
+	} else if (ischannel(*target))
 		channel_set_mode(server, target, mode);
 	else {
 		if (g_strcasecmp(target, server->nick) == 0) {
