@@ -311,26 +311,22 @@ fi
 
 dnl ** link to library
 ./libtool --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
-if test -s .libs/libconftest.a; then
-  LIBDIR=.libs/
-elif test -s libconftest.a; then
-  LIBDIR=
-else
+if test ! -s .libs/libconftest.a; then
   AC_ERROR([error, can't even find .a library])
 fi
 
 dnl ** check if dynamic linking worked
-if test ! -s ${LIBDIR}libconftest.so -a -s ${LIBDIR}libconftest.so.0.0; then
-  mv ${LIBDIR}libconftest.so.0.0 ${LIBDIR}libconftest.so
+if test ! -s .libs/libconftest.so -a -s .libs/libconftest.so.0.0; then
+  mv .libs/libconftest.so.0.0 .libs/libconftest.so
 fi
-if test ! -s ${LIBDIR}libconftest.so; then
+if test ! -s .libs/libconftest.so; then
   AC_MSG_RESULT([no, error linking test module])
 else
   cat > conftest.c <<EOF
 #include <gmodule.h>
 main() {
 GModule *m; int (*modfunc)(void);
-m = g_module_open("${LIBDIR}libconftest.so", 0);
+m = g_module_open(".libs/libconftest.so", 0);
 if (!m) g_print("error loading: %s", g_module_error());
 else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
   g_print("modfunc() symbol not found from module");
@@ -546,11 +542,11 @@ for c in $CHAT_MODULES; do
 		FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/libfe_common_$c.a "
 	fi
 	for s in `eval echo \\$${c}_MODULES`; do
-		CHAT_LIBS="$CHAT_LIBS ../$c/$s/${LIBDIR}lib${c}_$s.a"
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -d $srcdir/src/fe-common/$c/$s; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/${LIBDIR}libfe_${c}_$s.a "
+			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/.libs/libfe_${c}_$s.a "
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi
