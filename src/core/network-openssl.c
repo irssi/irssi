@@ -37,8 +37,12 @@ GIOError irssi_ssl_write(GIOChannel *, gchar *, guint, guint*);
 GIOError irssi_ssl_seek(GIOChannel *, gint, GSeekType);
 /* ssl close */
 void irssi_ssl_close(GIOChannel *);
+#if GLIB_MAJOR_VERSION < 2
 /* ssl create watch */
 guint irssi_ssl_create_watch(GIOChannel *, gint, GIOCondition, GIOFunc, gpointer, GDestroyNotify);
+#else
+guint irssi_ssl_create_watch(GIOChannel *, GIOCondition);
+#endif
 /* ssl free */
 void irssi_ssl_free(GIOChannel *);
 
@@ -178,12 +182,22 @@ void irssi_ssl_close(GIOChannel *handle)
 	g_io_channel_close(chan->giochan);
 }
 
+#if GLIB_MAJOR_VERSION < 2
 guint irssi_ssl_create_watch(GIOChannel *handle, gint priority, GIOCondition cond,
-		GIOFunc func, gpointer data, GDestroyNotify notify)
+			     GIOFunc func, gpointer data, GDestroyNotify notify)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+
 	return chan->giochan->funcs->io_add_watch(handle, priority, cond, func, data, notify);
 }
+#else
+guint irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+
+	return chan->giochan->funcs->io_create_watch(handle, cond);
+}
+#endif
 
 void irssi_ssl_free(GIOChannel *handle)
 {
