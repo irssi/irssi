@@ -356,6 +356,27 @@ static const char *redirect_match(REDIRECT_REC *redirect, const char *event,
 	return signal != NULL ? signal : redirect->default_signal;
 }
 
+static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
+{
+	char *str;
+
+	server->redirects =
+		g_slist_remove(server->redirects, rec);
+
+	if (!rec->destroyed) {
+		/* emit the failure signal */
+		str = g_strdup_printf(rec->failure_signal != NULL ?
+				      "FAILED %s: %s" : "FAILED %s",
+				      rec->cmd->name, rec->failure_signal);
+		rawlog_redirect(server->rawlog, str);
+		g_free(str);
+
+		if (rec->failure_signal != NULL)
+			signal_emit(rec->failure_signal, 1, server);
+	}
+	server_redirect_destroy(rec);
+}
+
 static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 				   const char *args, const char **signal,
 				   int *match_stop)
@@ -363,7 +384,6 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
         REDIRECT_REC *redirect;
 	GSList *tmp, *next;
 	time_t now;
-        char *str;
 
 	/* find the redirection */
 	*signal = NULL; redirect = NULL;
@@ -391,20 +411,8 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
                 next = tmp->next;
 		if (rec->destroyed ||
 		    (rec->remote && (now-rec->created) > rec->cmd->timeout) ||
-		    (!rec->remote && redirect != NULL)) {
-			server->redirects =
-				g_slist_remove(server->redirects, rec);
-			if (!rec->destroyed && rec->failure_signal != NULL) {
-				/* emit the failure signal */
-				str = g_strdup_printf("FAILED %s: %s",
-						      rec->cmd->name,
-						      rec->failure_signal);
-				rawlog_redirect(server->rawlog, str);
-                                g_free(str);
-				signal_emit(rec->failure_signal, 1, server);
-			}
-			server_redirect_destroy(rec);
-		}
+		    (!rec->remote && redirect != NULL))
+			redirect_abort(server, rec);
 	}
 
         return redirect;
