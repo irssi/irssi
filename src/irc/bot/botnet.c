@@ -84,7 +84,6 @@ void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
 {
 	GSList *tmp;
 
-	g_return_if_fail(botnet != NULL);
 	g_return_if_fail(data != NULL);
 
 	if (botnet != NULL) {
@@ -104,10 +103,17 @@ void botnet_send_cmd(BOTNET_REC *botnet, const char *source,
 		     const char *target, const char *data)
 {
 	GNode *node;
-        char *str;
+	char *str;
+
+	g_return_if_fail(botnet != NULL);
+	g_return_if_fail(target != NULL);
+	g_return_if_fail(data != NULL);
 
 	node = bot_find_path(botnet, target);
-	g_return_if_fail(node != NULL);
+	if (node == NULL) {
+		g_warning("Can't find route for target %s", target);
+		return;
+	}
 
 	str = g_strdup_printf("%s %s %s", source != NULL ? source :
 			      botnet->nick, target, data);

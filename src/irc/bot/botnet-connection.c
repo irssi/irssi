@@ -248,6 +248,11 @@ void botnet_connect(BOTNET_REC *botnet)
 		botnet_listen(botnet);
 	}
 
+	if (botnet->uplinks == NULL) {
+		/* we have no uplinks */
+		return;
+	}
+
 	/* find some bot where we can try to connect to */
 	now = time(NULL);
 	uplink = best = NULL;
@@ -270,6 +275,7 @@ void botnet_connect(BOTNET_REC *botnet)
 	if (best == NULL) {
 		/* reconnect later */
 		botnet->reconnect = TRUE;
+		return;
 	}
 
 	/* connect to uplink */
@@ -368,6 +374,8 @@ static void botnet_event(BOT_REC *bot, const char *data)
 
 	if (bot->connected)
 		return;
+
+	signal_stop_by_name("botnet event");
 
 	if (bot->uplink) {
 		botnet_connect_event_uplink(bot, data);

@@ -197,10 +197,10 @@ void bot_commands_init(void)
 
 void bot_commands_deinit(void)
 {
-	signal_remove("botnet event user_remove", (SIGNAL_FUNC) botnet_event_user_add);
+	signal_remove("botnet event user_add", (SIGNAL_FUNC) botnet_event_user_add);
 	signal_remove("botnet event user_flags", (SIGNAL_FUNC) botnet_event_user_flags);
 	signal_remove("botnet event user_chan_flags", (SIGNAL_FUNC) botnet_event_user_chan_flags);
-	signal_remove("botnet event user_remove_mask", (SIGNAL_FUNC) botnet_event_user_add_mask);
+	signal_remove("botnet event user_add_mask", (SIGNAL_FUNC) botnet_event_user_add_mask);
 	signal_remove("botnet event user_mask_notflags", (SIGNAL_FUNC) botnet_event_user_mask_notflags);
 	signal_remove("botnet event user_pass", (SIGNAL_FUNC) botnet_event_user_pass);
 }
