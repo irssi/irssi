@@ -53,7 +53,7 @@ DIE=0
 }
 
 grep "^AM_GNU_GETTEXT" $srcdir/configure.in >/dev/null && {
-  (gettext --version) < /dev/null > /dev/null 2>&1 || {
+  (gettextize --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
     echo "Get ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz"
