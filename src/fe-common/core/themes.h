@@ -23,7 +23,7 @@ typedef struct {
 				   wanted. default is 7 (white). */
 	GHashTable *modules;
 
-	GSList *replace_keys;
+        int replace_keys[256]; /* index to replace_values for each char */
 	GSList *replace_values;
 	GHashTable *abstracts;
 
@@ -45,6 +45,19 @@ THEME_REC *theme_load(const char *name);
 #define theme_unregister() theme_unregister_module(MODULE_NAME)
 void theme_register_module(const char *module, FORMAT_REC *formats);
 void theme_unregister_module(const char *module);
+
+#define EXPAND_FLAG_IGNORE_REPLACES     0x01 /* don't use the character replaces when expanding */
+#define EXPAND_FLAG_IGNORE_EMPTY        0x02 /* if abstract's argument is empty, don't try to expand it (ie. {xx }, but not {xx}) */
+#define EXPAND_FLAG_RECURSIVE_MASK      0x0f
+/* private */
+#define EXPAND_FLAG_ROOT		0x10
+#define EXPAND_FLAG_LASTCOLOR_ARG	0x20
+
+char *theme_format_expand(THEME_REC *theme, const char *format);
+char *theme_format_expand_data(THEME_REC *theme, const char **format,
+			       char default_fg, char default_bg,
+			       char *save_last_fg, char *save_last_bg,
+			       int flags);
 
 void themes_init(void);
 void themes_deinit(void);

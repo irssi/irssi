@@ -116,7 +116,11 @@ static void read_settings(void)
 
 	use_colors = settings_get_bool("colors");
 	read_signals();
-	if (use_colors != old_colors) irssi_redraw();
+	if (use_colors && !has_colors())
+		use_colors = FALSE;
+
+	if (use_colors != old_colors)
+		irssi_redraw();
 }
 
 static int init_curses(void)
@@ -151,8 +155,8 @@ static int init_curses(void)
 
 	if (has_colors())
 		start_color();
-	else
-		use_colors = FALSE;
+	else if (use_colors)
+                use_colors = FALSE;
 
 #ifdef HAVE_NCURSES_USE_DEFAULT_COLORS
 	/* this lets us to use the "default" background color for colors <= 7 so

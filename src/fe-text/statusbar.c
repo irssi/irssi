@@ -21,13 +21,15 @@
 #include "module.h"
 #include "signals.h"
 #include "servers.h"
-#include "settings.h"
 
 #include "fe-windows.h"
+#include "themes.h"
 
 #include "screen.h"
 #include "statusbar.h"
 #include "gui-windows.h"
+
+static int backs[] = { 0, 4, 2, 6, 1, 5, 3, 7 }; /* FIXME: should be in some more generic place.. */
 
 void statusbar_items_init(void);
 void statusbar_items_deinit(void);
@@ -190,7 +192,7 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 		return;
 	}
 
-	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
+	set_bg(stdscr, backs[bar->color] << 4);
 	move(bar->ypos, 0); clrtoeol();
 	set_bg(stdscr, 0);
 
@@ -212,10 +214,27 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 	}
 }
 
+static int get_last_bg(const char *str)
+{
+	int last = -1;
+
+	while (*str != '\0') {
+		if (*str == '%' && str[1] != '\0') {
+                        str++;
+			if (*str >= '0' && *str <= '7')
+				last = *str-'0';
+		}
+                str++;
+	}
+
+        return last;
+}
+
 /* ypos is used only when pos == STATUSBAR_POS_MIDDLE */
 STATUSBAR_REC *statusbar_create(int pos, int ypos)
 {
 	STATUSBAR_REC *rec;
+        char *str;
 
 	rec = g_new0(STATUSBAR_REC, 1);
 	statusbars = g_slist_append(statusbars, rec);
@@ -225,6 +244,15 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 		mainwindows_reserve_lines(1, pos == STATUSBAR_POS_UP);
 	rec->ypos = pos == STATUSBAR_POS_MIDDLE ? ypos :
 		pos == STATUSBAR_POS_UP ? rec->line : LINES-1-rec->line;
+
+        /* get background color from sb_background abstract */
+	str = theme_format_expand(current_theme, "{sb_background}");
+	if (str == NULL) str = g_strdup("%n%8");
+	rec->color_string = g_strconcat("%n", str, NULL);
+        g_free(str);
+
+	rec->color = get_last_bg(rec->color_string);
+        if (rec->color < 0) rec->color = current_theme->default_real_color;
 
 	if (pos == STATUSBAR_POS_UP) {
                 if (sbars_up == 0) sbar_uppest = rec->line;
@@ -236,7 +264,7 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 		rec->line -= sbar_lowest;
 	}
 
-	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
+	set_bg(stdscr, backs[rec->color] << 4);
 	move(rec->ypos, 0); clrtoeol();
 	set_bg(stdscr, 0);
 
@@ -273,6 +301,7 @@ void statusbar_destroy(STATUSBAR_REC *bar)
 
 	if (bar->pos != STATUSBAR_POS_MIDDLE)
 		statusbars_pack(bar->pos, bar->pos);
+        g_free(bar->color_string);
 	g_free(bar);
 
 	if (!quitting) statusbar_redraw_all();

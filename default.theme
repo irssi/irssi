@@ -229,4 +229,26 @@ abstracts = {
   dccmsg = "[%G$1-%K(%g$0%K)%n] ";
   dccquerynick = "%G$0-%n";
   dccaction = "%W (*dcc*) $0-%n %|";
+
+  ##
+  ## statusbar
+  ##
+
+  # background of statusbar
+  sb_background = "%4";
+
+  # default statusbar item style
+  sb = "%c[%n$0-%c]%n";
+
+  sbmode = "(%c+%n$0-)";
+  sbaway = " (%GzZzZ%n)";
+  sbservertag = ":$0 (change with ^X)";
+  sbmore = "%_-- more --%_";
+  sblag = "{sb Lag: $0-}";
+  sbmail = "{sb Mail: $0-}";
+
+  # activity. Det is used for hilights when display doesn't support colors
+  sbact = "{sb {sbact_act $0}{sbact_det $1}}";
+  sbact_act = "Act: $0-";
+  sbact_det = " Det: $0-";
 };

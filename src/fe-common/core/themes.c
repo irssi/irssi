@@ -94,8 +94,6 @@ void theme_destroy(THEME_REC *rec)
 	g_hash_table_foreach(rec->modules, (GHFunc) theme_module_destroy, NULL);
 	g_hash_table_destroy(rec->modules);
 
-	g_slist_foreach(rec->replace_keys, (GFunc) g_free, NULL);
-	g_slist_free(rec->replace_keys);
 	g_slist_foreach(rec->replace_values, (GFunc) g_free, NULL);
 	g_slist_free(rec->replace_values);
 
@@ -104,30 +102,10 @@ void theme_destroy(THEME_REC *rec)
 	g_free(rec);
 }
 
-#define EXPAND_FLAG_ROOT		0x01
-#define EXPAND_FLAG_LASTCOLOR_ARG	0x02
-static char *theme_format_expand_data(THEME_REC *theme,
-				      const char **format,
-				      char default_color,
-				      char *save_color, int flags);
-
-static int theme_replace_find(THEME_REC *theme, char chr)
-{
-	GSList *tmp;
-	int index = 0;
-
-	for (tmp = theme->replace_keys; tmp != NULL; tmp = tmp->next) {
-		if (strchr(tmp->data, chr) != NULL)
-			return index;
-		index++;
-	}
-
-	return -1;
-}
-
 static char *theme_replace_expand(THEME_REC *theme, int index,
-				  char default_color, char *last_color,
-				  char chr)
+				  char default_fg, char default_bg,
+				  char *last_fg, char *last_bg,
+				  char chr, int flags)
 {
 	GSList *rec;
 	char *ret, *abstract, data[2];
@@ -139,16 +117,20 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 
 	abstract = rec->data;
 	abstract = theme_format_expand_data(theme, (const char **) &abstract,
-					    default_color, last_color, 0);
+					    default_fg, default_bg,
+					    last_fg, last_bg, flags);
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL, 0);
 	g_free(abstract);
 	return ret;
 }
 
-static const char *colorformats = "n01234567krgybmpcwKRGYBMPCW";
+static const char *fgcolorformats = "nkrgybmpcwKRGYBMPCW";
+static const char *bgcolorformats = "n01234567";
 
-#define IS_COLOR_FORMAT(c) \
-        ((c) != '\0' && strchr(colorformats, c) != NULL)
+#define IS_FGCOLOR_FORMAT(c) \
+        ((c) != '\0' && strchr(fgcolorformats, c) != NULL)
+#define IS_BGCOLOR_FORMAT(c) \
+        ((c) != '\0' && strchr(bgcolorformats, c) != NULL)
 
 /* append "variable" part in $variable, ie. not the contents of the variable */
 static void theme_format_append_variable(GString *str, const char **format)
@@ -174,7 +156,9 @@ static void theme_format_append_variable(GString *str, const char **format)
 /* append next "item", either a character, $variable or %format */
 static void theme_format_append_next(THEME_REC *theme, GString *str,
 				     const char **format,
-				     char default_color, char *last_color)
+				     char default_fg, char default_bg,
+				     char *last_fg, char *last_bg,
+				     int flags)
 {
 	int index;
 	char chr;
@@ -200,14 +184,32 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 		(*format)++;
 		if (**format != '{' && **format != '}') {
                         chr = **format;
-			if (**format == 'n')
-                                chr = default_color;
+			if (**format == 'n') {
+				/* %n = change to default color */
+				if (default_fg == 'n' || default_bg == 'n') {
+					if (*last_fg != 'n')
+						g_string_append(str, "%n");
+					*last_bg = *last_fg = 'n';
+				}
+				if (default_bg != *last_bg) {
+					g_string_append_c(str, '%');
+					g_string_append_c(str, default_bg);
+				}
+				if (default_fg != *last_fg) {
+					g_string_append_c(str, '%');
+					g_string_append_c(str, default_fg);
+				}
 
-			if (IS_COLOR_FORMAT(chr))
-				*last_color = chr;
-
-			g_string_append_c(str, '%');
-			g_string_append_c(str, chr);
+				*last_fg = default_fg;
+				*last_bg = default_bg;
+			} else {
+				if (IS_FGCOLOR_FORMAT(chr))
+					*last_fg = chr;
+				if (IS_BGCOLOR_FORMAT(chr))
+					*last_bg = chr;
+				g_string_append_c(str, '%');
+				g_string_append_c(str, chr);
+			}
 			(*format)++;
 			return;
 		}
@@ -216,14 +218,16 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 		chr = **format;
 	}
 
-	index = theme_replace_find(theme, chr);
+	index = (flags & EXPAND_FLAG_IGNORE_REPLACES) ? -1 :
+		theme->replace_keys[(int) chr];
 	if (index == -1)
 		g_string_append_c(str, chr);
 	else {
 		char *value;
 
-		value = theme_replace_expand(theme, index, default_color,
-					     last_color, chr);
+		value = theme_replace_expand(theme, index,
+					     default_fg, default_bg,
+					     last_fg, last_bg, chr, flags);
 		g_string_append(str, value);
 		g_free(value);
 	}
@@ -234,7 +238,8 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 /* expand a single {abstract ...data... } */
 static char *theme_format_expand_abstract(THEME_REC *theme,
 					  const char **formatp,
-					  char default_color)
+					  char default_fg, char default_bg,
+					  int flags)
 {
 	const char *p, *format;
 	char *abstract, *data, *ret;
@@ -252,9 +257,23 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	len = (int) (p-format);
 	abstract = g_strndup(format, len);
 
-	/* skip the following space */
-	if (*p == ' ') len++;
-	*formatp = format + len;
+	/* skip the following space, if there's any more spaces they're
+	   treated as arguments */
+	if (*p == ' ') {
+		len++;
+		if ((flags & EXPAND_FLAG_IGNORE_EMPTY)) {
+                        /* if the data is empty, ignore the abstract */
+			p = format+len;
+			while (*p == ' ') p++;
+			if (*p == '}') {
+                                *formatp = p+1;
+				g_free(abstract);
+				return NULL;
+			}
+		}
+
+	}
+	*formatp = format+len;
 
 	/* get the abstract data */
 	data = g_hash_table_lookup(theme->abstracts, abstract);
@@ -265,19 +284,12 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	}
 	abstract = g_strdup(data);
 
-	/* abstract may itself contain abstracts or replaces :) */
-	p = data = abstract;
-	abstract = theme_format_expand_data(theme, &p, default_color,
-					    &default_color,
-					    EXPAND_FLAG_LASTCOLOR_ARG);
-	g_free(data);
-
-	/* now we'll need to get the data part. it may contain
+	/* we'll need to get the data part. it may contain
 	   more abstracts, they are automatically expanded. */
-	data = theme_format_expand_data(theme, formatp, default_color,
-					NULL, 0);
-
+	data = theme_format_expand_data(theme, formatp, default_fg, default_bg,
+					NULL, NULL, flags);
 	len = strlen(data);
+
 	if (len > 1 && isdigit(data[len-1]) && data[len-2] == '$') {
 		/* ends with $<digit> .. this breaks things if next
 		   character is digit or '-' */
@@ -293,23 +305,34 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL, 0);
 	g_free(abstract);
-	g_free(data);
+        g_free(data);
+	abstract = ret;
+
+	/* abstract may itself contain abstracts or replaces */
+	p = abstract;
+	ret = theme_format_expand_data(theme, &p, default_fg, default_bg,
+				       &default_fg, &default_bg,
+				       flags | EXPAND_FLAG_LASTCOLOR_ARG);
+	g_free(abstract);
 	return ret;
 }
 
 /* expand the data part in {abstract data} */
-static char *theme_format_expand_data(THEME_REC *theme,
-				      const char **format,
-				      char default_color,
-				      char *save_last_color,
-				      int flags)
+char *theme_format_expand_data(THEME_REC *theme, const char **format,
+			       char default_fg, char default_bg,
+			       char *save_last_fg, char *save_last_bg,
+			       int flags)
 {
 	GString *str;
 	char *ret, *abstract;
-	char last_color = default_color;
+	char last_fg, last_bg;
+        int recurse_flags;
+
+	last_fg = default_fg;
+	last_bg = default_bg;
+        recurse_flags = flags & EXPAND_FLAG_RECURSIVE_MASK;
 
 	str = g_string_new(NULL);
-
 	while (**format != '\0') {
 		if ((flags & EXPAND_FLAG_ROOT) == 0 && **format == '}') {
 			/* ignore } if we're expanding original string */
@@ -318,17 +341,24 @@ static char *theme_format_expand_data(THEME_REC *theme,
 		}
 
 		if (**format != '{') {
-			if (save_last_color != NULL &&
-			    (flags & EXPAND_FLAG_LASTCOLOR_ARG) &&
+			if ((flags & EXPAND_FLAG_LASTCOLOR_ARG) &&
 			    **format == '$' && (*format)[1] == '0') {
 				/* save the color before $0 ..
 				   this is for the %n replacing */
-				*save_last_color = last_color;
-				save_last_color = NULL;
+				if (save_last_fg != NULL) {
+					*save_last_fg = last_fg;
+					save_last_fg = NULL;
+				}
+				if (save_last_bg != NULL) {
+					*save_last_bg = last_bg;
+					save_last_bg = NULL;
+				}
 			}
 
 			theme_format_append_next(theme, str, format,
-						 default_color, &last_color);
+						 default_fg, default_bg,
+						 &last_fg, &last_bg,
+						 recurse_flags);
 			continue;
 		}
 
@@ -338,17 +368,20 @@ static char *theme_format_expand_data(THEME_REC *theme,
 
 		/* get a single {...} */
 		abstract = theme_format_expand_abstract(theme, format,
-							last_color);
+							last_fg, last_bg,
+							recurse_flags);
 		if (abstract != NULL) {
 			g_string_append(str, abstract);
 			g_free(abstract);
 		}
 	}
 
-	if (save_last_color != NULL &&
-	    (flags & EXPAND_FLAG_LASTCOLOR_ARG) == 0) {
+	if ((flags & EXPAND_FLAG_LASTCOLOR_ARG) == 0) {
 		/* save the last color */
-		*save_last_color = last_color;
+		if (save_last_fg != NULL)
+			*save_last_fg = last_fg;
+		if (save_last_bg != NULL)
+			*save_last_bg = last_bg;
 	}
 
 	ret = str->str;
@@ -356,18 +389,23 @@ static char *theme_format_expand_data(THEME_REC *theme,
         return ret;
 }
 
+#define IS_OLD_FORMAT(code, last_fg, last_bg) \
+	(((code) == 'n' && (last_fg) == 'n' && (last_bg) == 'n') || \
+	((code) != 'n' && ((code) == (last_fg) || (code) == (last_bg))))
+
 static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 {
 	GString *str;
-	char *ret, last_color = 'n';
+	char *ret, last_fg, last_bg;
 
 	str = g_string_new(NULL);
 
+	last_fg = last_bg = 'n';
 	while (*format != '\0') {
 		if (*format == '$') {
                         /* $variable, skrip it entirely */
 			theme_format_append_variable(str, &format);
-                        last_color = '\0';
+                        last_fg = last_bg = '\0';
 		} else if (*format != '%') {
 			/* a normal character */
 			g_string_append_c(str, *format);
@@ -375,19 +413,24 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 		} else {
 			/* %format */
 			format++;
-			if (*format == last_color) {
+			if (IS_OLD_FORMAT(*format, last_fg, last_bg)) {
 				/* active color set again */
-			} else if (IS_COLOR_FORMAT(*format) &&
+			} else if (IS_FGCOLOR_FORMAT(*format) &&
+				   (*format != 'n' || format[2] == 'n') &&
 				   format[1] == '%' &&
-				   IS_COLOR_FORMAT(format[2])) {
-				/* two colors in a row */
+				   IS_FGCOLOR_FORMAT(format[2])) {
+				/* two fg colors in a row. bg colors are
+				   so rare that we don't bother checking
+				   them */
 			} else {
 				/* some format, add it */
 				g_string_append_c(str, '%');
 				g_string_append_c(str, *format);
 
-				if (IS_COLOR_FORMAT(*format))
-					last_color = *format;
+				if (IS_FGCOLOR_FORMAT(*format))
+					last_fg = *format;
+				if (IS_BGCOLOR_FORMAT(*format))
+					last_bg = *format;
 			}
 			format++;
 		}
@@ -398,16 +441,16 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
         return ret;
 }
 
-static char *theme_format_expand(THEME_REC *theme, const char *format)
+char *theme_format_expand(THEME_REC *theme, const char *format)
 {
 	char *data, *ret;
 
 	g_return_val_if_fail(theme != NULL, NULL);
 	g_return_val_if_fail(format != NULL, NULL);
 
-	data = theme_format_expand_data(theme, &format, 'n', NULL,
+	data = theme_format_expand_data(theme, &format, 'n', 'n', NULL, NULL,
 					EXPAND_FLAG_ROOT);
-        ret = theme_format_compress_colors(theme, data);
+	ret = theme_format_compress_colors(theme, data);
         g_free(data);
 	return ret;
 }
@@ -438,20 +481,28 @@ static void theme_read_replaces(CONFIG_REC *config, THEME_REC *theme)
 {
 	GSList *tmp;
 	CONFIG_NODE *node;
+	const char *p;
+        int index;
 
 	node = config_node_traverse(config, "replaces", FALSE);
 	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
+
+        /* reset replace keys */
+	for (index = 0; index < 256; index++)
+                theme->replace_keys[index] = -1;
+	index = 0;
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
 
 		if (node->key != NULL && node->value != NULL) {
-			theme->replace_keys =
-				g_slist_append(theme->replace_keys,
-					       g_strdup(node->key));
+			for (p = node->key; *p != '\0'; p++)
+                                theme->replace_keys[(int) *p] = index;
+
 			theme->replace_values =
 				g_slist_append(theme->replace_values,
 					       g_strdup(node->value));
+                        index++;
 		}
 	}
 }
@@ -460,6 +511,7 @@ static void theme_read_abstracts(CONFIG_REC *config, THEME_REC *theme)
 {
 	GSList *tmp;
 	CONFIG_NODE *node;
+        gpointer oldkey, oldvalue;
 
 	node = config_node_traverse(config, "abstracts", FALSE);
 	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
@@ -467,12 +519,19 @@ static void theme_read_abstracts(CONFIG_REC *config, THEME_REC *theme)
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
 
-		if (node->key != NULL && node->value != NULL &&
-		    g_hash_table_lookup(theme->abstracts, node->key) == NULL) {
-			g_hash_table_insert(theme->abstracts,
-					    g_strdup(node->key),
-					    g_strdup(node->value));
+		if (node->key == NULL || node->value == NULL)
+			continue;
+
+		if (g_hash_table_lookup_extended(theme->abstracts, node->key,
+						 &oldkey, &oldvalue)) {
+                        /* new values override old ones */
+                        g_hash_table_remove(theme->abstracts, oldkey);
+			g_free(oldkey);
+			g_free(oldvalue);
 		}
+
+		g_hash_table_insert(theme->abstracts, g_strdup(node->key),
+				    g_strdup(node->value));
 	}
 }
 
@@ -742,7 +801,17 @@ static int theme_read(THEME_REC *theme, const char *path, const char *data)
 		config_get_int(config, NULL, "default_color", 0);
 	theme->default_real_color =
 		config_get_int(config, NULL, "default_real_color", 7);
-        theme_read_replaces(config, theme);
+	theme_read_replaces(config, theme);
+
+	if (data == NULL) {
+		/* get the default abstracts from default theme. */
+		CONFIG_REC *default_config;
+
+		default_config = config_open(NULL, -1);
+		config_parse_data(default_config, default_theme, "internal");
+		theme_read_abstracts(default_config, theme);
+		config_close(default_config);
+	}
 	theme_read_abstracts(config, theme);
 
 	rec.theme = theme;

@@ -16,7 +16,7 @@ typedef struct {
 	int first_line, last_line, lines;
 	int statusbar_lines;
 	void *statusbar;
-	void *statusbar_channel_item;
+	void *statusbar_window_item;
 } MAIN_WINDOW_REC;
 
 extern GSList *mainwindows;

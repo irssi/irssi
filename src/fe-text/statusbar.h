@@ -18,6 +18,9 @@ typedef struct {
 	int pos;
 	int line;
 
+        char *color_string;
+        int color;
+
 	int ypos; /* real position in screen at the moment */
 	GSList *items;
 } STATUSBAR_REC;
