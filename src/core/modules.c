@@ -238,22 +238,26 @@ char *module_get_name(const char *path)
 
 GModule *module_open(const char *name)
 {
+	struct stat statbuf;
 	GModule *module;
 	char *path, *str;
 
 	if (g_path_is_absolute(name))
 		path = g_strdup(name);
 	else {
-		path = g_module_build_path(MODULEDIR, name);
-		module = g_module_open(path, 0);
-		g_free(path);
-		if (module != NULL) return module;
-
-		/* module not found from global module dir,
-		   check from home dir */
+		/* first try from home dir */
 		str = g_strdup_printf("%s/.irssi/modules", g_get_home_dir());
 		path = g_module_build_path(str, name);
 		g_free(str);
+
+		if (stat(path, &statbuf) == 0) {
+			module = g_module_open(path, 0);
+			g_free(path);
+			return module;
+		}
+
+		/* module not found from home dir, try global module dir */
+		path = g_module_build_path(MODULEDIR, name);
 	}
 
 	module = g_module_open(path, 0);

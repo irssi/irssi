@@ -130,7 +130,7 @@ static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 		subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
 		iconfig_node_set_str(subnode, "type", type);
-		type = chat_protocol_get_rec(rec->chat_type)->name;
+		type = chat_protocol_find_id(rec->chat_type)->name;
 		iconfig_node_set_str(subnode, "chat_type", type);
 		iconfig_node_set_str(subnode, "name", rec->name);
 
