@@ -83,7 +83,8 @@ void gui_set_default_indent(const char *name)
 
 	list = name == NULL ? NULL :
 		g_hash_table_lookup(indent_functions, name);
-	default_indent_func = list == NULL ? NULL : list->data;
+	default_indent_func = list == NULL ? NULL :
+		(INDENT_FUNC) list->data;
         gui_windows_reset_settings();
 }
 
