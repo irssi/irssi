@@ -212,7 +212,8 @@ AC_DEFUN(AC_NCURSES, [
 	    AC_MSG_RESULT(Found ncurses on $1/$2)
 
 	    CURSES_LIBS="$3"
-	    AC_CHECK_LIB(ncurses, initscr,, [
+	    AC_CHECK_LIB(ncurses, initscr, [
+	    ], [
                 CHECKLIBS=`echo "$3"|sed 's/-lncurses/-lcurses/g'`
 		AC_CHECK_LIB(curses, initscr, [
 			CURSES_LIBS="$CHECKLIBS"
