@@ -558,7 +558,7 @@ void gui_readline_init(void)
 	key_bind("scroll_forward", "Next page", "Next", NULL, (SIGNAL_FUNC) key_scroll_forward);
 	key_bind("scroll_forward", NULL, "ALT-N", NULL, (SIGNAL_FUNC) key_scroll_forward);
 	key_bind("scroll_start", "Beginning of the window", "", NULL, (SIGNAL_FUNC) key_scroll_start);
-	key_bind("scroll_end", "", "End of the window", NULL, (SIGNAL_FUNC) key_scroll_end);
+	key_bind("scroll_end", "End of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
 
 	key_bind("special_char", "Insert special character", "CTRL-B", "\002", (SIGNAL_FUNC) key_addchar);
 	key_bind("special_char", NULL, "CTRL--", "\037", (SIGNAL_FUNC) key_addchar);
