@@ -66,7 +66,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 
 	/* haven't received userhost reply yet. guess something */
 	*free_ret = TRUE;
-	if (server == NULL)
+	if (ircserver == NULL)
 		username = settings_get_str("user_name");
 	else
 		username = ircserver->connrec->username;
