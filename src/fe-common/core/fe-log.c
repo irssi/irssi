@@ -347,6 +347,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 
 		logitem = log->items->data;
 		if (logitem->type == LOG_ITEM_TARGET &&
+		    logitem->servertag != NULL &&
 		    g_strcasecmp(logitem->servertag, server->tag) == 0)
 			log_close(log);
 	}
