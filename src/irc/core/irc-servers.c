@@ -106,10 +106,11 @@ static void server_init(IRC_SERVER_REC *server)
 
 	conn = server->connrec;
 
-	if (conn->proxy_password != NULL && *conn->proxy_password != '\0')
+	if (conn->proxy != NULL && conn->proxy_password != NULL &&
+	    *conn->proxy_password != '\0')
 		irc_send_cmdv(server, "PASS %s", conn->proxy_password);
 
-	if (conn->proxy_string != NULL)
+	if (conn->proxy != NULL && conn->proxy_string != NULL)
 		irc_send_cmdv(server, conn->proxy_string, conn->address, conn->port);
 
 	if (conn->password != NULL && *conn->password != '\0') {
@@ -151,7 +152,7 @@ static void server_init(IRC_SERVER_REC *server)
 
 	server->cmdcount = 0;
 
-	if (conn->proxy_string_after != NULL) {
+	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
 		irc_send_cmdv(server, conn->proxy_string_after,
 			      conn->address, conn->port);
 	}
