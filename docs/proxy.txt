@@ -1,0 +1,26 @@
+Irssi proxy usage:
+
+First you'll need to have the proxy module installed, either configure
+irssi with --with-proxy and do make install, or manually:
+
+  cd src/irc/proxy
+  make
+  mkdir ~/.irssi/modules
+  cp .libs/libproxy.so ~/.irssi/modules/
+
+In irssi, say:
+
+  /LOAD proxy
+
+You really should set some password for the proxy with:
+
+  /SET irssiproxy_password secret
+
+Then you'll need to configure the ports/ircnets the proxy listens in,
+something like:
+
+  /SET irssiproxy_ports 2777=ircnet 2778=efnet 2779=opn
+
+There we have 3 different irc networks answering in 3 ports. Note that
+you'll have to make the correct /IRCNET ADD and /SERVER ADD commands to
+make it work properly.
