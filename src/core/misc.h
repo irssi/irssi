@@ -21,8 +21,6 @@ int strarray_length(char **array);
 /* return index of `item' in `array' or -1 if not found */
 int strarray_find(char **array, const char *item);
 
-int execute(const char *cmd); /* returns pid or -1 = error */
-
 GSList *gslist_find_string(GSList *list, const char *key);
 GSList *gslist_find_icase_string(GSList *list, const char *key);
 GList *glist_find_string(GList *list, const char *key);

@@ -173,37 +173,6 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
-int execute(const char *cmd)
-{
-	char **args;
-#ifndef WIN32
-	int pid;
-#endif
-
-	g_return_val_if_fail(cmd != NULL, -1);
-
-#ifndef WIN32
-	pid = fork();
-	if (pid == -1) return FALSE;
-	if (pid != 0) {
-		pidwait_add(pid);
-		return pid;
-	}
-
-	args = g_strsplit(cmd, " ", -1);
-	execvp(args[0], args);
-	g_strfreev(args);
-
-	_exit(99);
-	return -1;
-#else
-	args = g_strsplit(cmd, " ", -1);
-	_spawnvp(_P_DETACH, args[0], args);
-	g_strfreev(args);
-	return 0;
-#endif
-}
-
 GSList *gslist_find_string(GSList *list, const char *key)
 {
 	for (list = list; list != NULL; list = list->next)
