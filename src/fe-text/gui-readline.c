@@ -501,6 +501,9 @@ static void key_sig_stop(void)
 
 static void sig_window_auto_changed(void)
 {
+	if (active_entry == NULL)
+		return;
+
 	command_history_next(active_win, gui_entry_get_text(active_entry));
 	gui_entry_set_text(active_entry, "");
 }
