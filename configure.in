@@ -448,7 +448,6 @@ src/gui-gnome/help/Makefile
 src/gui-gnome/help/C/Makefile
 src/gui-gnome/pixmaps/Makefile
 src/lib-config/Makefile
-src/lib-nongui/Makefile
 src/lib-popt/Makefile
 src/settings/Makefile
 servertest/Makefile
