@@ -347,6 +347,7 @@ void server_disconnect(SERVER_REC *server)
 
 	servers = g_slist_remove(servers, server);
 
+	server->disconnected = TRUE;
 	signal_emit("server disconnected", 1, server);
 
 	/* close all channels */
@@ -370,7 +371,6 @@ void server_disconnect(SERVER_REC *server)
 		server->readtag = -1;
 	}
 
-	server->disconnected = TRUE;
 	server_unref(server);
 }
 
@@ -381,17 +381,17 @@ void server_ref(SERVER_REC *server)
 	server->refcount++;
 }
 
-void server_unref(SERVER_REC *server)
+int server_unref(SERVER_REC *server)
 {
-	g_return_if_fail(IS_SERVER(server));
+	g_return_val_if_fail(IS_SERVER(server), FALSE);
 
 	if (--server->refcount > 0)
-		return;
+		return TRUE;
 
 	if (g_slist_find(servers, server) != NULL) {
 		g_warning("Non-referenced server wasn't disconnected");
 		server_disconnect(server);
-		return;
+		return TRUE;
 	}
 
         MODULE_DATA_DEINIT(server);
@@ -403,6 +403,7 @@ void server_unref(SERVER_REC *server)
 	g_free(server->nick);
 	g_free(server->tag);
 	g_free(server);
+        return FALSE;
 }
 
 SERVER_REC *server_find_tag(const char *tag)
