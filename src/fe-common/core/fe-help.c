@@ -258,6 +258,7 @@ static void cmd_help(const char *data)
 	ptr = cmd+strlen(cmd);
 	while (ptr[-1] == ' ') ptr--; *ptr = '\0';
 
+	g_strdown(cmd);
 	show_help(cmd);
         g_free(cmd);
 }
