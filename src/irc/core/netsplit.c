@@ -191,7 +191,6 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const 
 int quitmsg_is_split(const char *msg)
 {
 	char *host1, *host2, *p;
-	void *free_arg;
 	int ok;
 
 	g_return_val_if_fail(msg != NULL, FALSE);

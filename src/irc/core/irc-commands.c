@@ -390,7 +390,7 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTCHAN |
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
 			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
 			    item, "topic", &optlist, &channame, &topic))
 		return;
