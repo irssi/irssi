@@ -44,7 +44,7 @@ static char used_keys[256];
 static GTree *key_states;
 static int key_config_frozen;
 
-struct KEYBOARD_REC {
+struct _KEYBOARD_REC {
 	char *key_state; /* the ongoing key combo */
         void *gui_data; /* GUI specific data sent in "key pressed" signal */
 };

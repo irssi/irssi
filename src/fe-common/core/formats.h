@@ -42,7 +42,7 @@ struct _FORMAT_REC {
 #define PRINT_FLAG_SET_SERVERTAG	0x0010
 #define PRINT_FLAG_UNSET_SERVERTAG	0x0020
 
-typedef struct {
+typedef struct _TEXT_DEST_REC {
 	WINDOW_REC *window;
 	SERVER_REC *server;
         const char *server_tag; /* if server is non-NULL, must be server->tag */

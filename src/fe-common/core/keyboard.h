@@ -3,7 +3,7 @@
 
 #include "signals.h"
 
-typedef struct KEYBOARD_REC KEYBOARD_REC;
+typedef struct _KEYBOARD_REC KEYBOARD_REC;
 
 typedef struct {
 	char *id;
