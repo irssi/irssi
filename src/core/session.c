@@ -184,7 +184,7 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	signal_emit("session save server", 3, server, config, node);
 
 	/* fake the server disconnection */
-        g_io_channel_unref(net_sendbuffer_handle(server->handle));
+	g_io_channel_unref(net_sendbuffer_handle(server->handle));
 	net_sendbuffer_destroy(server->handle, FALSE);
 	server->handle = NULL;
 
@@ -257,8 +257,10 @@ static void session_restore_server(CONFIG_NODE *node)
 		return;
 
 	proto = chat_protocol_find(chat_type);
-	if (proto == NULL || proto->not_initialized)
+	if (proto == NULL || proto->not_initialized) {
+		if (handle < 0) close(handle);
 		return;
+	}
 
 	conn = server_create_conn(proto->id, address, port,
 				  chatnet, password, nick);
