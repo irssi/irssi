@@ -188,7 +188,7 @@ static void cmd_window_close(const char *data)
 	}
 
 	first_num = *first == '\0' ? active_win->refnum : atoi(first);
-	last_num = *last == '\0' ? active_win->refnum : atoi(last);
+	last_num = *last == '\0' ? first_num : atoi(last);
 
         /* get list of windows to destroy */
         destroys = NULL;
