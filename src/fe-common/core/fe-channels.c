@@ -496,7 +496,7 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	g_slist_free(sorted);
 
 	printformat(channel->server, channel->name,
-		    MSGLEVEL_CLIENTCRAP, TXT_ENDOFNAMES,
+		    MSGLEVEL_CLIENTNOTICE, TXT_ENDOFNAMES,
 		    channel->name, nicks, ops, halfops, voices, normal);
 }
 

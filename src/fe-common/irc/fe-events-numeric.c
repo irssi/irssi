@@ -74,7 +74,9 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 	if (irc_channel_find(server, channel) == NULL) {
 		printformat_module("fe-common/core", server, channel,
 				   MSGLEVEL_CRAP, TXT_NAMES,
-				   channel, names);
+				   channel, 0, 0, 0, 0, 0);
+                printtext(server, channel, MSGLEVEL_CRAP, "%s", names);
+
 	}
 	g_free(params);
 }
