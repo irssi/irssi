@@ -465,7 +465,7 @@ void statusbar_config_deinit(void)
         command_unbind("statusbar", (SIGNAL_FUNC) cmd_statusbar);
         command_unbind("statusbar enable", (SIGNAL_FUNC) cmd_statusbar_enable);
         command_unbind("statusbar disable", (SIGNAL_FUNC) cmd_statusbar_disable);
-        command_unbind("statusbar add", (SIGNAL_FUNC) cmd_statusbar_remove);
+        command_unbind("statusbar add", (SIGNAL_FUNC) cmd_statusbar_add);
         command_unbind("statusbar remove", (SIGNAL_FUNC) cmd_statusbar_remove);
         command_unbind("statusbar type", (SIGNAL_FUNC) cmd_statusbar_type);
         command_unbind("statusbar placement", (SIGNAL_FUNC) cmd_statusbar_placement);
