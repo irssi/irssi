@@ -116,7 +116,8 @@ void window_destroy(WINDOW_REC *window)
 	while (window->items != NULL)
 		window_item_destroy(window, window->items->data);
 
-	windows_pack(window->refnum);
+        if (settings_get_bool("windows_auto_renumber"))
+		windows_pack(window->refnum);
 
 	signal_emit("window destroyed", 1, window);
 
@@ -484,6 +485,7 @@ void windows_init(void)
 	active_win = NULL;
 	daycheck = 0; daytag = -1;
 	settings_add_bool("lookandfeel", "window_auto_change", FALSE);
+	settings_add_bool("lookandfeel", "windows_auto_renumber", TRUE);
 
 	read_settings();
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
