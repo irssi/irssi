@@ -750,10 +750,8 @@ static void read_keyboard_config(void)
 	}
 
 	/* FIXME: backward "compatibility" - remove after irssi .99 */
-	tmp = node->value;
-	if (tmp != NULL &&
-	    config_node_get_str(tmp->data, "key", NULL) == NULL) {
-                iconfig_node_clear(node);
+	if (node->type != NODE_TYPE_LIST) {
+                iconfig_node_remove(NULL, node);
 		key_configure_thaw();
 		return;
 	}
