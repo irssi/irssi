@@ -1,3 +1,31 @@
+v0.7.20 1999-11-27  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	+ Polish and finnish translations started
+
+	+ SQL plugin which doesn't do much, currently supports MySQL only.
+	  Meant to be used by other plugins.
+
+	+ Botnet to bot plugin - it should already be possible to create a
+	  big bot network with this (each bot having multiple clients +
+	  uplink). The functionality is limited only to BCAST message for
+	  now which sends a message to all bots. Read docs/botnet.txt for my
+	  plans for it :)
+
+	- If plugins failed in initialization (plugin_init()), irssi could
+	  crash.
+	- Server settings (nick, realname, etc.) were saved to different
+	  place in configuration file than where they were read from..
+	  So, saving them didn't really work.
+	- Plugin autoloading didn't work
+	- When trying to show channel's window from panel and you weren't
+	  using helvetica font (itext's internal default), irssi crashed..
+	- Irssi crashed if you didn't have menubar enabled and didn't
+	  compile with gnome.
+	- When invalid theme was found from global directory, irssi
+	  complained about it every time. Now the fixed theme is saved to
+	  ~/.irssi/ directory and used thereafter.
+	- Deleting ircnets didn't work right
+
 v0.7.19 1999-11-20  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	* Text formats changed - they should be compatible with epic/bx now.

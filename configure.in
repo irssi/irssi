@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.19)
+AM_INIT_AUTOMAKE(irssi, 0.7.20)
 
 AM_MAINTAINER_MODE
 
@@ -335,7 +335,7 @@ dnl **
 dnl ** internationalization support
 dnl **
 
-ALL_LINGUAS="pl"
+ALL_LINGUAS="pl fi"
 AM_GNU_GETTEXT
 
 AC_OUTPUT(
@@ -367,5 +367,6 @@ plugins/sound/Makefile
 plugins/proxy/Makefile
 plugins/external/Makefile
 plugins/bot/Makefile
+plugins/sql/Makefile
 stamp.h
 irssi.spec)
