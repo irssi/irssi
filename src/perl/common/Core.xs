@@ -402,28 +402,32 @@ OUTPUT:
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
 #*******************************
 
-char *
+void
 parse_special(server, cmd, data="", flags=0)
 	Irssi::Server server
 	char *cmd
 	char *data
 	int flags
-CODE:
-	RETVAL = parse_special_string(cmd, server, NULL, data, NULL, flags);
-OUTPUT:
-	RETVAL
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = parse_special_string(cmd, server, NULL, data, NULL, flags);
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free_not_null(ret);
 
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Windowitem
 #*******************************
 
-char *
+void
 parse_special(item, cmd, data="", flags=0)
 	Irssi::Windowitem item
 	char *cmd
 	char *data
 	int flags
-CODE:
-	RETVAL = parse_special_string(cmd, item->server, item, data, NULL, flags);
-OUTPUT:
-	RETVAL
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = parse_special_string(cmd, item->server, item, data, NULL, flags);
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free_not_null(ret);
