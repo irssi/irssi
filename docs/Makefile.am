@@ -1,5 +1,8 @@
 docdir = $(datadir)/doc/irssi
 
+man_MANS = \
+	irssi.1
+
 doc_DATA = \
 	botnet.txt \
 	design.txt \
