@@ -721,12 +721,13 @@ static void cmd_window_balance(void)
 		old_size = rec->height;
 		rec->first_line = last_line;
 		rec->last_line = rec->first_line + unit_size-1;
-		rec->height = rec->last_line-rec->first_line+1;
 
 		if (bigger_units > 0) {
 			rec->last_line++;
                         bigger_units--;
 		}
+
+		rec->height = rec->last_line-rec->first_line+1;
 		last_line = rec->last_line+1;
 
 		mainwindow_resize(rec, 0, rec->height-old_size);
