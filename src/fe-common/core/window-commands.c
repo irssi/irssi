@@ -30,7 +30,7 @@
 #include "themes.h"
 #include "fe-windows.h"
 #include "window-items.h"
-#include "window-save.h"
+#include "windows-layout.h"
 #include "printtext.h"
 
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
@@ -448,10 +448,9 @@ static void cmd_window_theme(const char *data)
 	}
 }
 
-/* SYNTAX: SAVEWINDOWS */
-static void cmd_savewindows(void)
+static void cmd_layout(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-	windows_save();
+	command_runsub("layout", data, server, item);
 }
 
 /* SYNTAX: FOREACH WINDOW <command> */
@@ -496,7 +495,11 @@ void window_commands_init(void)
 	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
-	command_bind("savewindows", NULL, (SIGNAL_FUNC) cmd_savewindows);
+	command_bind("layout", NULL, (SIGNAL_FUNC) cmd_layout);
+	/* SYNTAX: LAYOUT SAVE */
+	command_bind("layout save", NULL, (SIGNAL_FUNC) windows_layout_save);
+	/* SYNTAX: LAYOUT RESET */
+	command_bind("layout reset", NULL, (SIGNAL_FUNC) windows_layout_reset);
 	command_bind("foreach window", NULL, (SIGNAL_FUNC) cmd_foreach_window);
 
 	command_set_options("window number", "sticky");
@@ -528,6 +531,8 @@ void window_commands_deinit(void)
 	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
-	command_unbind("savewindows", (SIGNAL_FUNC) cmd_savewindows);
+	command_unbind("layout", (SIGNAL_FUNC) cmd_layout);
+	command_unbind("layout save", (SIGNAL_FUNC) windows_layout_save);
+	command_unbind("layout reset", (SIGNAL_FUNC) windows_layout_reset);
 	command_unbind("foreach window", (SIGNAL_FUNC) cmd_foreach_window);
 }

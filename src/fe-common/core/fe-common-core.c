@@ -40,7 +40,7 @@
 #include "fe-channels.h"
 #include "fe-windows.h"
 #include "window-items.h"
-#include "window-save.h"
+#include "windows-layout.h"
 
 #include <signal.h>
 
@@ -170,7 +170,7 @@ void fe_common_core_init(void)
 	window_activity_init();
 	window_commands_init();
 	window_items_init();
-	window_save_init();
+	windows_layout_init();
 	fe_core_commands_init();
 
         fe_channels_init();
@@ -211,7 +211,7 @@ void fe_common_core_deinit(void)
 	window_activity_deinit();
 	window_commands_deinit();
 	window_items_deinit();
-	window_save_deinit();
+	windows_layout_deinit();
 	fe_core_commands_deinit();
 
         fe_channels_deinit();
@@ -258,7 +258,7 @@ static void create_windows(void)
 {
 	WINDOW_REC *window;
 
-	windows_restore();
+	windows_layout_restore();
 	if (windows != NULL)
 		return;
 
@@ -323,11 +323,6 @@ static void autoconnect_servers(void)
 
 void fe_common_core_finish_init(void)
 {
-	g_log_set_handler(G_LOG_DOMAIN,
-			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
-					    G_LOG_LEVEL_WARNING),
-			  (GLogFunc) glog_func, NULL);
-
 	signal_emit("irssi init read settings", 0);
 
 #ifdef SIGPIPE
@@ -345,5 +340,12 @@ void fe_common_core_finish_init(void)
 	}
 
 	create_windows();
-        autoconnect_servers();
+
+        /* _after_ windows are created.. */
+	g_log_set_handler(G_LOG_DOMAIN,
+			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
+					    G_LOG_LEVEL_WARNING),
+			  (GLogFunc) glog_func, NULL);
+
+	autoconnect_servers();
 }

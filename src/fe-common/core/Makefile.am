@@ -35,7 +35,7 @@ libfe_common_core_a_SOURCES = \
 	window-activity.c \
 	window-commands.c \
 	window-items.c \
-	window-save.c \
+	windows-layout.c \
 	fe-windows.c
 
 noinst_HEADERS = \
@@ -56,5 +56,5 @@ noinst_HEADERS = \
 	themes.h \
 	translation.h \
 	window-items.h \
-	window-save.h \
+	windows-layout.h \
 	fe-windows.h

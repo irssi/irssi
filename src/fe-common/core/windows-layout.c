@@ -1,7 +1,7 @@
 /*
- window-save.c : irssi
+ windows-layout.c : irssi
 
-    Copyright (C) 2000 Timo Sirainen
+    Copyright (C) 2000-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 	}
 }
 
-void windows_restore(void)
+void windows_layout_restore(void)
 {
 	WINDOW_REC *window;
 	CONFIG_NODE *node;
@@ -164,7 +164,7 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	signal_emit("window save", 2, window, node);
 }
 
-void windows_save(void)
+void windows_layout_save(void)
 {
 	CONFIG_NODE *node;
 
@@ -174,15 +174,23 @@ void windows_save(void)
 	g_slist_foreach(windows, (GFunc) window_save, node);
 	signal_emit("windows saved", 0);
 
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWS_SAVED);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_WINDOWS_LAYOUT_SAVED);
 }
 
-void window_save_init(void)
+void windows_layout_reset(void)
+{
+	iconfig_set_str(NULL, "windows", NULL);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_WINDOWS_LAYOUT_RESET);
+}
+
+void windows_layout_init(void)
 {
 	signal_add("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
 }
 
-void window_save_deinit(void)
+void windows_layout_deinit(void)
 {
 	signal_remove("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
 }
