@@ -19,6 +19,7 @@ typedef struct {
         STATUSBAR_REC *bar;
 
 	int xpos, size;
+        int shrinked; /* couldn't give the requested size */
 	int right_justify, max_size;
 	void *func;
 } SBAR_ITEM_REC;

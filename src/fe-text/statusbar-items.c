@@ -314,7 +314,7 @@ static void sig_statusbar_channel_redraw_window_item(WI_ITEM_REC *item)
 		statusbar_item_redraw(channel_item);
 }
 
-static void draw_activity(gchar *title, gboolean act, gboolean det)
+static void draw_activity(gchar *title, gboolean act, gboolean det, int size)
 {
     WINDOW_REC *window;
     GList *tmp;
@@ -324,7 +324,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
     set_color(stdscr, sbar_color_normal); addstr(title);
 
     first = TRUE;
-    for (tmp = activity_list; tmp != NULL; tmp = tmp->next)
+    for (tmp = activity_list; tmp != NULL && size > 0; tmp = tmp->next)
     {
 	window = tmp->data;
 
@@ -338,6 +338,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 	{
 	    set_color(stdscr, sbar_color_dim);
 	    addch(',');
+            size--;
 	}
 
 	ltoa(str, window->refnum);
@@ -358,11 +359,17 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 			set_color(stdscr, sbar_color_act_highlight);
 		break;
 	}
+	if (strlen(str) > size)
+                break;
+
+	size -= strlen(str);
 	addstr(str);
     }
 }
 
-/* redraw activity */
+/* redraw activity, FIXME: if we didn't get enough size, this gets buggy.
+   At least "Det:" isn't printed properly. also we should rearrange the
+   act list so that the highest priority items comes first. */
 static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
 {
     WINDOW_REC *window;
@@ -388,21 +395,21 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
     if (det) size_needed += 6; /* [Det: ], -1 */
     if (act && det) size_needed--;
 
-    if (item->size != size_needed)
+    if (!item->shrinked && item->size != size_needed)
     {
         /* we need more (or less..) space! */
         statusbar_item_resize(item, size_needed);
         return;
     }
 
-    if (item->size == 0)
+    if (item->size <= 7)
         return;
 
     move(ypos, item->xpos);
     set_color(stdscr, sbar_color_dim); addch('[');
-    if (act) draw_activity("Act: ", TRUE, !det);
+    if (act) draw_activity("Act: ", TRUE, !det, item->size-1);
     if (act && det) addch(' ');
-    if (det) draw_activity("Det: ", FALSE, TRUE);
+    if (det) draw_activity("Det: ", FALSE, TRUE, item->size-1);
     set_color(stdscr, sbar_color_dim); addch(']');
 
     screen_refresh(NULL);

@@ -57,10 +57,14 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 		SBAR_ITEM_REC *rec = tmp->data;
 
 		if (!rec->right_justify &&
-		    (rec->max_size || xpos+rec->size < COLS)) {
+		    (rec->max_size || xpos < COLS)) {
 			rec->xpos = xpos;
 			if (rec->max_size)
 				rec->size = COLS-1-xpos;
+
+			rec->shrinked = xpos+rec->size >= COLS;
+			if (rec->shrinked)
+                                rec->size = COLS-1-xpos;
 
 			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);
