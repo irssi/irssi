@@ -20,7 +20,8 @@ files.
     - Sends a DCC SEND request to remote client. Remote end has to accept
       the request before the transmission can be started. Giving multiple files
       queues them. File names may contain shell expansion characters: * ? [] ~
-      (~ expansion may not be supported on all platforms)
+      (~ expansion may not be supported on all platforms). Files with spaces
+      in their names need to be quoted (eg. "file name").
 /DCC CLOSE <type> <nick> [<file>]
     - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
 

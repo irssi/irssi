@@ -112,7 +112,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         return conn;
 }
 
-/* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: CONNECT [-4 | -6] [-ssl] [-noproxy] [-ircnet <ircnet>]
+                   [-host <hostname>] [-rawlog <file>]
                    <address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_connect(const char *data)
 {
@@ -213,7 +214,8 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
         signal_emit("command server connect", 3, data, server, item);
 }
 
-/* SYNTAX: SERVER [-4 | -6] [-ssl] [-ircnet <ircnet>] [-host <hostname>]
+/* SYNTAX: SERVER [-4 | -6] [-ssl] [-noproxy] [-ircnet <ircnet>]
+                  [-host <hostname>] [-rawlog <file>]
                   [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
