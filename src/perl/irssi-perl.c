@@ -31,6 +31,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
+#include "misc.h"
 
 extern void xs_init(void);
 
@@ -58,6 +59,7 @@ typedef struct {
 
 static GHashTable *first_signals, *last_signals;
 static GSList *perl_timeouts;
+static GSList *perl_scripts;
 static PerlInterpreter *irssi_perl_interp;
 static int signal_grabbed, siglast_grabbed;
 
@@ -67,7 +69,7 @@ static void sig_lastsignal(void *signal, ...);
 static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 {
 	GHashTable *table;
-	GSList *siglist;
+	GSList **siglist;
 	void *signal_idp;
 
 	g_return_if_fail(rec != NULL);
@@ -78,9 +80,11 @@ static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 	siglist = g_hash_table_lookup(table, signal_idp);
 	if (siglist == NULL) return;
 
-	siglist = g_slist_remove(siglist, rec);
-	g_hash_table_remove(table, signal_idp);
-	if (siglist != NULL) g_hash_table_insert(table, signal_idp, siglist);
+	*siglist = g_slist_remove(*siglist, rec);
+	if (*siglist == NULL) {
+		g_free(siglist);
+		g_hash_table_remove(table, signal_idp);
+	}
 
 	if (!rec->last && signal_grabbed && g_hash_table_size(first_signals) == 0) {
 		signal_grabbed = FALSE;
@@ -112,53 +116,113 @@ static void perl_timeout_destroy(PERL_TIMEOUT_REC *rec)
 
 static void irssi_perl_start(void)
 {
-	/* stolen from xchat, thanks :) */
 	char *args[] = {"", "-e", "0"};
-	char load_file[] =
-		"sub load_file()\n"
-		"{\n"
-		"  (my $file_name) = @_;\n"
-		"  open FH, $file_name or return \"File not found: $file_name\";\n"
+	char eval_file_code[] =
+		"package Irssi::Load;\n"
+		"\n"
+		"use Symbol qw(delete_package);\n"
+		"\n"
+		"sub eval_file {\n"
+		"  my ($filename, $id) = @_;\n"
+		"  my $package = \"Irssi::Script::$id\";\n"
+		"  delete_package($package);\n"
+		"\n"
+		"  local *FH;\n"
+		"  open FH, $filename or die \"File not found: $filename\";\n"
 		"  local($/) = undef;\n"
-		"  $file = <FH>;\n"
+		"  my $sub = <FH>;\n"
 		"  close FH;\n"
-		"  eval $file;\n"
-		"  eval $file if $@;\n"
-		"  return $@ if $@;\n"
+		"\n"
+		"  my $eval = qq{package $package; sub handler { $sub; }};\n"
+		"  {\n"
+		"      # hide our variables within this block\n"
+		"      my ($filename, $package, $sub);\n"
+		"      eval $eval;\n"
+		"  }\n"
+		"  die $@ if $@;\n"
+		"\n"
+		"  eval {$package->handler;};\n"
+		"  die $@ if $@;\n"
 		"}";
 
-	first_signals = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
-	last_signals = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
+	first_signals = g_hash_table_new((GHashFunc) g_direct_hash,
+					 (GCompareFunc) g_direct_equal);
+	last_signals = g_hash_table_new((GHashFunc) g_direct_hash,
+					(GCompareFunc) g_direct_equal);
 	perl_timeouts = NULL;
 
 	irssi_perl_interp = perl_alloc();
 	perl_construct(irssi_perl_interp);
 
 	perl_parse(irssi_perl_interp, xs_init, 3, args, NULL);
-	perl_eval_pv(load_file, TRUE);
+	perl_eval_pv(eval_file_code, TRUE);
 }
 
-static void signal_destroy_hash(void *key, GSList *list)
+static int signal_destroy_hash(void *key, GSList **list, const char *package)
 {
-	while (list != NULL) {
-		PERL_SIGNAL_REC *rec = list->data;
+	GSList *tmp, *next;
+	int len;
+
+	len = package == NULL ? 0 : strlen(package);
+	for (tmp = *list; tmp != NULL; tmp = next) {
+		PERL_SIGNAL_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (package != NULL && strncmp(rec->func, package, len) != 0)
+                        continue;
 
 		if (strncmp(rec->signal, "command ", 8) == 0)
 			command_unbind(rec->signal+8, NULL);
 
-		list = g_slist_remove(list, rec);
+		*list = g_slist_remove(*list, rec);
 
 		g_free(rec->signal);
 		g_free(rec->func);
 		g_free(rec);
 	}
+
+	if (*list != NULL)
+		return FALSE;
+
+	g_free(list);
+	return TRUE;
+}
+
+static int perl_script_destroy(const char *name)
+{
+	GSList *tmp;
+	char *package;
+	int package_len;
+
+	if (gslist_find_string(perl_scripts, name) == NULL)
+		return FALSE;
+
+	package = g_strdup_printf("Irssi::Script::%s::", name);
+	package_len = strlen(package);
+
+	g_hash_table_foreach_remove(first_signals,
+				    (GHRFunc) signal_destroy_hash, package);
+	g_hash_table_foreach_remove(last_signals,
+				    (GHRFunc) signal_destroy_hash, package);
+
+	for (tmp = perl_timeouts; tmp != NULL; tmp = tmp->next) {
+		PERL_TIMEOUT_REC *rec = tmp->data;
+
+		if (strncmp(rec->func, package, package_len) == 0)
+			perl_timeout_destroy(rec);
+	}
+
+	g_free(package);
+	return TRUE;
 }
 
 static void irssi_perl_stop(void)
 {
-	g_hash_table_foreach(first_signals, (GHFunc) signal_destroy_hash, NULL);
+	g_hash_table_foreach(first_signals,
+			     (GHFunc) signal_destroy_hash, NULL);
 	g_hash_table_destroy(first_signals);
-	g_hash_table_foreach(last_signals, (GHFunc) signal_destroy_hash, NULL);
+	g_hash_table_foreach(last_signals,
+			     (GHFunc) signal_destroy_hash, NULL);
 	g_hash_table_destroy(last_signals);
 	first_signals = last_signals = NULL;
 
@@ -175,44 +239,58 @@ static void irssi_perl_stop(void)
 	while (perl_timeouts != NULL)
 		perl_timeout_destroy(perl_timeouts->data);
 
+	g_slist_foreach(perl_scripts, (GFunc) g_free, NULL);
+	g_slist_free(perl_scripts);
+	perl_scripts = NULL;
+
 	perl_destruct(irssi_perl_interp);
 	perl_free(irssi_perl_interp);
 	irssi_perl_interp = NULL;
 }
 
-static void cmd_run(char *data)
+static void cmd_run(const char *data)
 {
 	dSP;
 	struct stat statbuf;
-	char *fname;
+	char *fname, *name, *p;
 	int retcount;
-
-	/* add .pl suffix if it's missing */
-	data = (strlen(data) <= 3 || strcmp(data+strlen(data)-3, ".pl") == 0) ?
-		g_strdup(data) : g_strdup_printf("%s.pl", data);
 
 	if (g_path_is_absolute(data)) {
 		/* whole path specified */
 		fname = g_strdup(data);
 	} else {
+		/* add .pl suffix if it's missing */
+		name = (strlen(data) <= 3 || strcmp(data+strlen(data)-3, ".pl") == 0) ?
+			g_strdup(data) : g_strdup_printf("%s.pl", data);
+
 		/* check from ~/.irssi/scripts/ */
-		fname = g_strdup_printf("%s/.irssi/scripts/%s", g_get_home_dir(), data);
+		fname = g_strdup_printf("%s/.irssi/scripts/%s", g_get_home_dir(), name);
 		if (stat(fname, &statbuf) != 0) {
 			/* check from SCRIPTDIR */
 			g_free(fname),
-			fname = g_strdup_printf(SCRIPTDIR"/%s", data);
+			fname = g_strdup_printf(SCRIPTDIR"/%s", name);
 		}
+		g_free(name);
 	}
-	g_free(data);
+
+	/* get script name */
+	name = g_strdup(g_basename(fname));
+	p = strrchr(name, '.');
+	if (p != NULL) *p = '\0';
+
+	perl_script_destroy(name);
+	perl_scripts = g_slist_append(perl_scripts, g_strdup(name));
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
 	XPUSHs(sv_2mortal(newSVpv(fname, strlen(fname)))); g_free(fname);
+	XPUSHs(sv_2mortal(newSVpv(name, strlen(name)))); g_free(name);
 	PUTBACK;
 
-	retcount = perl_call_pv("load_file", G_EVAL|G_SCALAR);
+	retcount = perl_call_pv("Irssi::Load::eval_file",
+				G_EVAL|G_SCALAR);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
@@ -233,12 +311,19 @@ static void cmd_run(char *data)
 	LEAVE;
 }
 
-static void cmd_flush(const char *data)
+static void cmd_unload(const char *data)
+{
+	if (perl_script_destroy(data))
+                signal_stop();
+}
+
+static void cmd_perlflush(const char *data)
 {
 	irssi_perl_stop();
 	irssi_perl_start();
 }
 
+#if 0
 static int perl_signal_find(const char *signal, const char *func, int last)
 {
 	GHashTable *table;
@@ -260,31 +345,43 @@ static int perl_signal_find(const char *signal, const char *func, int last)
 
 	return FALSE;
 }
+#endif
+
+/* returns the package who called us */
+static char *perl_get_package(void)
+{
+	STRLEN n_a;
+
+	perl_eval_pv("($package) = caller;", TRUE);
+	return SvPV(perl_get_sv("package", FALSE), n_a);
+}
 
 static void perl_signal_to(const char *signal, const char *func, int last)
 {
 	PERL_SIGNAL_REC *rec;
 	GHashTable *table;
-	GSList *siglist;
+	GSList **siglist;
 	void *signal_idp;
 
-	if (perl_signal_find(signal, func, last))
-		return;
+	/*if (perl_signal_find(signal, func, last))
+		return;*/
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
 	rec->signal_id = signal_get_uniq_id(signal);
 	rec->signal = g_strdup(signal);
-	rec->func = g_strdup(func);
+	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->last = last;
 
 	table = last ? last_signals : first_signals;
 	signal_idp = GINT_TO_POINTER(rec->signal_id);
 
 	siglist = g_hash_table_lookup(table, signal_idp);
-	if (siglist != NULL) g_hash_table_remove(table, signal_idp);
+	if (siglist == NULL) {
+		siglist = g_new0(GSList *, 1);
+		g_hash_table_insert(table, signal_idp, siglist);
+	}
 
-	siglist = g_slist_append(siglist, rec);
-	g_hash_table_insert(table, signal_idp, siglist);
+	*siglist = g_slist_append(*siglist, rec);
 
 	if (!last && !signal_grabbed) {
 		signal_grabbed = TRUE;
@@ -305,27 +402,31 @@ void perl_signal_add_last(const char *signal, const char *func)
 	perl_signal_to(signal, func, TRUE);
 }
 
-static void perl_signal_remove_list(GSList *list, const char *func)
+static void perl_signal_remove_list(GSList **list, const char *func)
 {
-	while (list != NULL) {
-		PERL_SIGNAL_REC *rec = list->data;
+	GSList *tmp;
+
+	g_return_if_fail(list != NULL);
+
+	for (tmp = *list; tmp != NULL; tmp = tmp->next) {
+		PERL_SIGNAL_REC *rec = tmp->data;
 
 		if (strcmp(func, rec->func) == 0) {
 			perl_signal_destroy(rec);
 			break;
 		}
-
-		list = list->next;
 	}
 }
 
 void perl_signal_remove(const char *signal, const char *func)
 {
-	GSList *list;
+	GSList **list;
+	char *fullfunc;
 	int signal_id;
 
 	signal_id = signal_get_uniq_id(signal);
 
+	fullfunc = g_strdup_printf("%s::%s", perl_get_package(), func);
 	list = g_hash_table_lookup(first_signals, GINT_TO_POINTER(signal_id));
 	if (list != NULL)
 		perl_signal_remove_list(list, func);
@@ -333,6 +434,7 @@ void perl_signal_remove(const char *signal, const char *func)
 		list = g_hash_table_lookup(last_signals, GINT_TO_POINTER(signal_id));
 		if (list != NULL) perl_signal_remove_list(list, func);
 	}
+	g_free(fullfunc);
 }
 
 static int perl_timeout(PERL_TIMEOUT_REC *rec)
@@ -370,7 +472,7 @@ int perl_timeout_add(int msecs, const char *func, const char *data)
 	PERL_TIMEOUT_REC *rec;
 
 	rec = g_new(PERL_TIMEOUT_REC, 1);
-	rec->func = g_strdup(func);
+	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
 	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_timeout, rec);
 
@@ -503,20 +605,19 @@ static int call_perl(const char *func, int signal, va_list va)
 
 static void sig_signal(void *signal, ...)
 {
-	GSList *list;
+	GSList **list, *tmp;
 	va_list va;
 
 	va_start(va, signal);
 
 	list = g_hash_table_lookup(first_signals, signal);
-	while (list != NULL) {
-		PERL_SIGNAL_REC *rec = list->data;
+	for (tmp = list == NULL ? NULL : *list; tmp != NULL; tmp = tmp->next) {
+		PERL_SIGNAL_REC *rec = tmp->data;
 
 		if (call_perl(rec->func, GPOINTER_TO_INT(signal), va)) {
 			signal_stop();
-			return;
+			break;
 		}
-		list = list->next;
 	}
 
 	va_end(va);
@@ -524,20 +625,19 @@ static void sig_signal(void *signal, ...)
 
 static void sig_lastsignal(void *signal, ...)
 {
-	GSList *list;
+	GSList **list, *tmp;
 	va_list va;
 
 	va_start(va, signal);
 
 	list = g_hash_table_lookup(last_signals, signal);
-	while (list != NULL) {
-		PERL_SIGNAL_REC *rec = list->data;
+	for (tmp = list == NULL ? NULL : *list; tmp != NULL; tmp = tmp->next) {
+		PERL_SIGNAL_REC *rec = tmp->data;
 
 		if (call_perl(rec->func, GPOINTER_TO_INT(signal), va)) {
 			signal_stop();
-			return;
+			break;
 		}
-		list = list->next;
 	}
 
 	va_end(va);
@@ -569,8 +669,11 @@ static void irssi_perl_autorun(void)
 
 void irssi_perl_init(void)
 {
+	perl_scripts = NULL;
+
 	command_bind("run", NULL, (SIGNAL_FUNC) cmd_run);
-	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_flush);
+	command_bind_first("unload", NULL, (SIGNAL_FUNC) cmd_unload);
+	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_perlflush);
 	signal_grabbed = siglast_grabbed = FALSE;
 
         perl_destruct_level = 1;
@@ -585,5 +688,6 @@ void irssi_perl_deinit(void)
 	if (signal_grabbed) signal_remove("signal", (SIGNAL_FUNC) sig_signal);
 	if (siglast_grabbed) signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
 	command_unbind("run", (SIGNAL_FUNC) cmd_run);
-	command_unbind("perlflush", (SIGNAL_FUNC) cmd_flush);
+	command_unbind("unload", (SIGNAL_FUNC) cmd_unload);
+	command_unbind("perlflush", (SIGNAL_FUNC) cmd_perlflush);
 }
