@@ -141,8 +141,8 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server,
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | 
-			    PARAM_FLAG_GETREST, item, &channame, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTCHAN, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
