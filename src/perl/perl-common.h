@@ -27,6 +27,11 @@ typedef struct {
 /* returns the package who called us */
 char *perl_get_package(void);
 
+/* For compatibility with perl 5.004 and older */
+#ifndef HAVE_PL_PERL
+#  define PL_sv_undef sv_undef
+#endif
+
 #define irssi_bless(object) \
 	((object) == NULL ? &PL_sv_undef : \
 	irssi_bless_iobject((object)->type, (object)->chat_type, object))
