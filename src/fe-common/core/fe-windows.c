@@ -268,46 +268,66 @@ const char *window_get_active_name(WINDOW_REC *window)
 WINDOW_REC *window_find_level(void *server, int level)
 {
 	GSList *tmp;
+	WINDOW_REC *match;
 
-        /* prefer active window if possible */
-	if (active_win != NULL &&
-	    WINDOW_LEVEL_MATCH(active_win, server, level))
-                return active_win;
-
+	match = NULL;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (WINDOW_LEVEL_MATCH(rec, server, level))
-                        return rec;
+		if (WINDOW_LEVEL_MATCH(rec, server, level)) {
+			/* prefer windows without any items */
+			if (rec->items == NULL)
+				return rec;
+
+			if (match == NULL)
+				match = rec;
+			else if (active_win == rec) {
+				/* prefer active window over others */
+				match = rec;
+			}
+		}
 	}
 
-	return NULL;
+	return match;
 }
 
 WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 {
 	WINDOW_REC *window,*namewindow=NULL;
 	WI_ITEM_REC *item;
+	int i;
 
 	/* match by name */
 	item = name == NULL ? NULL :
 		window_item_find(server, name);
 	if (item != NULL) {
 		namewindow = window_item_window(item);
-		if (namewindow != NULL && ((namewindow->level & level) != 0 ||
-		    !settings_get_bool("window_check_level_first")))
-		  return namewindow;
+		if (namewindow != NULL &&
+		    ((namewindow->level & level) != 0 ||
+		     !settings_get_bool("window_check_level_first"))) {
+			/* match, but if multiple windows have the same level
+			   we could be choosing a bad one here, eg.
+			   name=nick1 would get nick2's query instead of
+			   generic msgs window. */
+			if (g_strcasecmp(name, item->visible_name) == 0)
+				return namewindow;
+		}
 	}
 
-	/* match by level */
-	if (level != MSGLEVEL_HILIGHT)
-		level &= ~(MSGLEVEL_HILIGHT | MSGLEVEL_NOHILIGHT);
-	window = window_find_level(server, level);
-	if (window != NULL) return window;
+	/* prefer windows without items */
+	for (i = 0; i < 2; i++) {
+		/* match by level */
+		if (level != MSGLEVEL_HILIGHT)
+			level &= ~(MSGLEVEL_HILIGHT | MSGLEVEL_NOHILIGHT);
+		window = window_find_level(server, level);
+		if (window != NULL && (i == 1 || window->items == NULL))
+			return window;
 
-	/* match by level - ignore server */
-	window = window_find_level(NULL, level);
-	if (window != NULL) return window;
+		/* match by level - ignore server */
+		window = window_find_level(NULL, level);
+		if (window != NULL && (i == 1 || window->items == NULL))
+			return window;
+	}
 
 	/* still return item's window if we didnt find anything */
 	if (namewindow != NULL) return namewindow;
