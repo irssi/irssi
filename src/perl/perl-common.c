@@ -250,6 +250,8 @@ void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) channel);
 
 	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
+	hv_store(hv, "topic_by", 8, new_pv(channel->topic_by), 0);
+	hv_store(hv, "topic_time", 10, newSViv(channel->topic_time), 0);
 
 	hv_store(hv, "no_modes", 8, newSViv(channel->no_modes), 0);
 	hv_store(hv, "mode", 4, new_pv(channel->mode), 0);
