@@ -141,6 +141,8 @@ void gui_entry_insert_text(const char *str)
 
 void gui_entry_insert_char(char chr)
 {
+	if (chr == 0) return; /* never insert NUL characters */
+
 	g_string_insert_c(entry, pos, chr);
 	pos++;
 
