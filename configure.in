@@ -345,7 +345,7 @@ if test "$want_perl" != "no"; then
 		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lnsl //'`
 
 		dnl * linux specific ..
-		if echo $host_os | grep -q linux; then
+		if echo $host_os | grep linux > /dev/null; then
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lposix //'`
 		fi
 
