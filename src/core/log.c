@@ -70,26 +70,30 @@ static void log_write_timestamp(int handle, const char *format,
 	if (*format == '\0') return;
 
 	tm = localtime(&stamp);
-
-	str[sizeof(str)-1] = '\0';
-	strftime(str, sizeof(str)-1, format, tm);
-
-	write(handle, str, strlen(str));
-	if (suffix != NULL) write(handle, suffix, strlen(suffix));
+	if (strftime(str, sizeof(str), format, tm) > 0) {
+		write(handle, str, strlen(str));
+		if (suffix != NULL) write(handle, suffix, strlen(suffix));
+	}
 }
 
 static char *log_filename(LOG_REC *log)
 {
 	char *str, fname[1024];
 	struct tm *tm;
+        size_t ret;
 	time_t now;
 
 	now = time(NULL);
 	tm = localtime(&now);
 
 	str = convert_home(log->fname);
-	strftime(fname, sizeof(fname), str, tm);
+	ret = strftime(fname, sizeof(fname), str, tm);
 	g_free(str);
+
+	if (ret <= 0) {
+		g_warning("log_filename() : strftime() failed");
+                return NULL;
+	}
 
 	return g_strdup(fname);
 }
@@ -104,8 +108,9 @@ int log_start_logging(LOG_REC *log)
 	/* Append/create log file */
 	g_free_not_null(log->real_fname);
 	log->real_fname = log_filename(log);
-	log->handle = open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
-			   log_file_create_mode);
+	log->handle = log->real_fname == NULL ? -1 :
+		open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
+		     log_file_create_mode);
 	if (log->handle == -1) {
 		signal_emit("log create failed", 1, log);
 		log->failed = TRUE;

@@ -421,13 +421,14 @@ static void sig_server_disconnected(SERVER_REC *server)
 static void sig_print_text(void)
 {
 	GSList *tmp;
-	char month[10];
+	char month[100];
 	time_t t;
 	struct tm *tm;
 
 	t = time(NULL);
 	tm = localtime(&t);
-	strftime(month, sizeof(month)-1, "%b", tm);
+	if (strftime(month, sizeof(month), "%b", tm) <= 0)
+		month[0] = '\0';
 
 	if (tm->tm_hour != 0 || tm->tm_min != 0)
 		return;
