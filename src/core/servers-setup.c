@@ -288,14 +288,20 @@ server_create_conn(int chat_type, const char *dest, int port,
 		   const char *nick)
 {
 	SERVER_CONNECT_REC *rec;
+        CHATNET_REC *chatrec;
 
 	g_return_val_if_fail(dest != NULL, NULL);
 
-	if (chatnet_find(dest) != NULL) {
-		rec = create_chatnet_conn(dest, port, password, nick);
+        chatrec = chatnet_find(dest);
+	if (chatrec != NULL) {
+		rec = create_chatnet_conn(chatrec->name, port, password, nick);
 		if (rec != NULL)
 			return rec;
 	}
+
+	chatrec = chatnet_find(chatnet);
+	if (chatrec != NULL)
+		chatnet = chatrec->name;
 
 	return create_addr_conn(chat_type, dest, port,
 				chatnet, password, nick);
