@@ -224,19 +224,26 @@ static void cmd_version(char *data)
 
 static void cmd_cat(const char *data)
 {
-	char tmpbuf[1024], *str, *fname;
+	char *params, *fname, *fposstr;
+	char tmpbuf[1024], *str;
 	LINEBUF_REC *buffer = NULL;
-	int f, ret, recvlen;
+	int f, ret, recvlen, fpos;
 
-	fname = convert_home(data);
+	params = cmd_get_params(data, 2, &fname, &fposstr);
+	fname = convert_home(fname);
+	fpos = atoi(fposstr);
+	g_free(params);
+
 	f = open(fname, O_RDONLY);
 	g_free(fname);
+
 	if (f == -1) {
 		/* file not found */
                 printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", g_strerror(errno));
 		return;
 	}
 
+        lseek(f, fpos, SEEK_SET);
 	do {
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
