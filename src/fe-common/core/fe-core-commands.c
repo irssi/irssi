@@ -30,14 +30,19 @@
 
 #include "windows.h"
 
-static const char *ret_texts[] = {
-	NULL,
-	"Not enough parameters given",
-	"Not connected to IRC server yet",
-	"Not joined to any channels yet",
-	"Not joined to such channel",
-	"Channel not fully synchronized yet, try again after a while",
-	"Doing this is not a good idea. Add -YES if you really mean it",
+static int ret_texts[] = {
+	IRCTXT_OPTION_UNKNOWN,
+	IRCTXT_OPTION_AMBIGUOUS,
+	IRCTXT_OPTION_MISSING_ARG,
+	IRCTXT_COMMAND_UNKNOWN,
+	IRCTXT_COMMAND_AMBIGUOUS,
+        -1,
+	IRCTXT_NOT_ENOUGH_PARAMS,
+	IRCTXT_NOT_CONNECTED,
+	IRCTXT_NOT_JOINED,
+	IRCTXT_CHAN_NOT_FOUND,
+	IRCTXT_CHAN_NOT_SYNCED,
+	IRCTXT_NOT_GOOD_IDEA
 };
 
 /* keep the whole command line here temporarily. we need it in
@@ -269,17 +274,6 @@ static void cmd_beep(void)
 	printbeep();
 }
 
-static void cmd_unknown(const char *data, void *server, WI_ITEM_REC *item)
-{
-	char *cmd;
-
-	cmd = g_strdup(data); g_strup(cmd);
-	printtext(server, item == NULL ? NULL : item->name, MSGLEVEL_CRAP, "Unknown command: %s", cmd);
-	g_free(cmd);
-
-	signal_stop();
-}
-
 static void event_command(const char *data)
 {
         current_cmdline = data;
@@ -287,21 +281,28 @@ static void event_command(const char *data)
 
 static void event_default_command(const char *data, void *server, WI_ITEM_REC *item)
 {
-	const char *cmd;
+	const char *ptr;
+	char *cmd, *p;
 
-	cmd = data;
-	while (*cmd != '\0' && *cmd != ' ') {
-		if (strchr(settings_get_str("cmdchars"), *cmd)) {
+	ptr = data;
+	while (*ptr != '\0' && *ptr != ' ') {
+		if (strchr(settings_get_str("cmdchars"), *ptr)) {
 			/* command character inside command .. we probably
 			   want to send this text to channel. for example
 			   when pasting a path /usr/bin/xxx. */
 			signal_emit("send text", 3, current_cmdline, server, item);
 			return;
 		}
-		cmd++;
+		ptr++;
 	}
 
-	cmd_unknown(data, server, item);
+	cmd = g_strdup(data);
+	p = strchr(cmd, ' ');
+	if (p != NULL) *p = '\0';
+
+	signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_UNKNOWN), cmd);
+
+	g_free(cmd);
 }
 
 static void event_cmderror(gpointer errorp, const char *arg)
@@ -309,21 +310,12 @@ static void event_cmderror(gpointer errorp, const char *arg)
 	int error;
 
 	error = GPOINTER_TO_INT(errorp);
-	switch (error) {
-	case CMDERR_ERRNO:
+	if (error == CMDERR_ERRNO) {
+                /* errno is special */
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, g_strerror(errno));
-		break;
-	case CMDERR_OPTION_UNKNOWN:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_UNKNOWN, arg);
-		break;
-	case CMDERR_OPTION_AMBIGUOUS:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_AMBIGUOUS, arg);
-		break;
-	case CMDERR_OPTION_ARG_MISSING:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_MISSING_ARG, arg);
-		break;
-	default:
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error]);
+	} else {
+                /* others */
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error + -CMDERR_OPTION_UNKNOWN], arg);
 	}
 }
 
@@ -335,7 +327,6 @@ void fe_core_commands_init(void)
 	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 
-	signal_add("unknown command", (SIGNAL_FUNC) cmd_unknown);
 	signal_add("send command", (SIGNAL_FUNC) event_command);
 	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
@@ -349,7 +340,6 @@ void fe_core_commands_deinit(void)
 	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 
-	signal_remove("unknown command", (SIGNAL_FUNC) cmd_unknown);
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
 	signal_remove("default command", (SIGNAL_FUNC) event_default_command);
 	signal_remove("error command", (SIGNAL_FUNC) event_cmderror);

@@ -90,16 +90,8 @@ CODE:
 	char *signal;
         GSList *tmp;
 
-        /* Don't add the command twice */
 	if (*category == '\0') category = "Perl scripts' commands";
-	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		COMMAND_REC *rec = tmp->data;
-
-		if (g_strcasecmp(rec->cmd, cmd) == 0 &&
-		    g_strcasecmp(rec->category, category) == 0)
-			break;
-	}
-	if (tmp == NULL) command_bind(cmd, category, NULL);
+	command_bind(cmd, category, NULL);
 	signal = g_strconcat("command ", cmd, NULL);
 	perl_signal_add(signal, func);
 	g_free(signal);

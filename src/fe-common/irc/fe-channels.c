@@ -182,12 +182,12 @@ static void cmd_channel_list(void)
 
 static void cmd_channel(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	if (ischannel(*data)) {
+	if (*data == '\0')
+		cmd_channel_list_joined();
+	else if (ischannel(*data))
 		signal_emit("command join", 2, data, server);
-                return;
-	}
-
-        command_runsub("channel", data, server, item);
+	else
+		command_runsub("channel", data, server, item);
 }
 
 static void cmd_channel_add(const char *data)
@@ -260,7 +260,6 @@ void fe_channels_init(void)
 
 	command_bind("wjoin", NULL, (SIGNAL_FUNC) cmd_wjoin);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
-	command_bind("channel ", NULL, (SIGNAL_FUNC) cmd_channel_list_joined);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
@@ -278,7 +277,6 @@ void fe_channels_deinit(void)
 
 	command_unbind("wjoin", (SIGNAL_FUNC) cmd_wjoin);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
-	command_unbind("channel ", (SIGNAL_FUNC) cmd_channel_list_joined);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);

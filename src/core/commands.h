@@ -4,6 +4,7 @@
 #include "signals.h"
 
 typedef struct {
+        int count;
 	char *category;
 	char *cmd;
 	char **options;
@@ -13,6 +14,9 @@ enum {
 	CMDERR_OPTION_UNKNOWN = -3, /* unknown -option */
 	CMDERR_OPTION_AMBIGUOUS = -2, /* ambiguous -option */
 	CMDERR_OPTION_ARG_MISSING = -1, /* argument missing for -option */
+
+	CMDERR_UNKNOWN, /* unknown command */
+	CMDERR_AMBIGUOUS, /* ambiguous command */
 
         CMDERR_ERRNO, /* get the error from errno */
 	CMDERR_NOT_ENOUGH_PARAMS, /* not enough parameters given */

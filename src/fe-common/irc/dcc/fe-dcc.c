@@ -416,6 +416,14 @@ static void cmd_dcc_list(const char *data)
 	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_FOOTER);
 }
 
+static void cmd_dcc(const char *data)
+{
+	if (*data == '\0') {
+		cmd_dcc_list(data);
+		signal_stop();
+	}
+}
+
 static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 				  const char *word, const char *line, int *want_space)
 {
@@ -459,7 +467,7 @@ void fe_irc_dcc_init(void)
     command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
     command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
     command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
-    command_bind("dcc ", NULL, (SIGNAL_FUNC) cmd_dcc_list);
+    command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
     command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
 
     theme_register(fecommon_irc_dcc_formats);
@@ -492,6 +500,6 @@ void fe_irc_dcc_deinit(void)
     command_unbind("me", (SIGNAL_FUNC) cmd_me);
     command_unbind("action", (SIGNAL_FUNC) cmd_action);
     command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
-    command_unbind("dcc ", (SIGNAL_FUNC) cmd_dcc_list);
+    command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
     command_unbind("dcc list", (SIGNAL_FUNC) cmd_dcc_list);
 }

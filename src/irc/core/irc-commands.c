@@ -463,7 +463,7 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 	if (strcmp(channel, "*") == 0 || *channel == '\0') {
 		if (!irc_item_channel(item))
-                        cmd_return_error(CMDERR_NOT_JOINED);
+                        cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = item->name;
 	}

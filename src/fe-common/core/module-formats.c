@@ -94,6 +94,14 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "option_unknown", "Unknown option: $0", 1, { 0 } },
 	{ "option_ambiguous", "Ambiguous option: $0", 1, { 0 } },
 	{ "option_missing_arg", "Missing required argument for: $0", 1, { 0 } },
+	{ "command_unknown", "Unknown command: $0", 1, { 0 } },
+	{ "command_ambiguous", "Ambiguous command: $0", 1, { 0 } },
+	{ "not_enough_params", "Not enough parameters given", 0 },
+	{ "not_connected", "Not connected to IRC server yet", 0 },
+	{ "not_joined", "Not joined to any channels yet", 0 },
+	{ "chan_not_found", "Not joined to such channel", 0 },
+	{ "chan_not_synced", "Channel not fully synchronized yet, try again after a while", 0 },
+	{ "not_good_idea", "Doing this is not a good idea. Add -YES if you really mean it", 0 },
 
 	{ NULL, NULL, 0 }
 };

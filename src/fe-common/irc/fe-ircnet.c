@@ -28,11 +28,6 @@
 #include "irc-server.h"
 #include "ircnet-setup.h"
 
-static void cmd_ircnet(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-        command_runsub("ircnet", data, server, item);
-}
-
 static void cmd_ircnet_list(void)
 {
 	GString *str;
@@ -155,10 +150,17 @@ static void cmd_ircnet_remove(const char *data)
 	}
 }
 
+static void cmd_ircnet(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+{
+	if (*data == '\0')
+		cmd_ircnet_list();
+	else
+		command_runsub("ircnet", data, server, item);
+}
+
 void fe_ircnet_init(void)
 {
 	command_bind("ircnet", NULL, (SIGNAL_FUNC) cmd_ircnet);
-	command_bind("ircnet ", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
 	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
 	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
 
@@ -168,7 +170,6 @@ void fe_ircnet_init(void)
 void fe_ircnet_deinit(void)
 {
 	command_unbind("ircnet", (SIGNAL_FUNC) cmd_ircnet);
-	command_unbind("ircnet ", (SIGNAL_FUNC) cmd_ircnet_list);
 	command_unbind("ircnet add", (SIGNAL_FUNC) cmd_ircnet_add);
 	command_unbind("ircnet remove", (SIGNAL_FUNC) cmd_ircnet_remove);
 }

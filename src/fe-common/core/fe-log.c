@@ -176,7 +176,10 @@ static void cmd_log_list(void)
 
 static void cmd_log(const char *data, SERVER_REC *server, void *item)
 {
-	command_runsub("log", data, server, item);
+	if (*data == '\0')
+		cmd_log_list();
+	else
+		command_runsub("log", data, server, item);
 }
 
 static LOG_REC *log_find_item(const char *item)
@@ -438,7 +441,6 @@ void fe_log_init(void)
 	command_bind("log close", NULL, (SIGNAL_FUNC) cmd_log_close);
 	command_bind("log start", NULL, (SIGNAL_FUNC) cmd_log_start);
 	command_bind("log stop", NULL, (SIGNAL_FUNC) cmd_log_stop);
-	command_bind("log ", NULL, (SIGNAL_FUNC) cmd_log_list);
 	command_bind("window log", NULL, (SIGNAL_FUNC) cmd_window_log);
 	command_bind("window logfile", NULL, (SIGNAL_FUNC) cmd_window_logfile);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
@@ -461,7 +463,6 @@ void fe_log_deinit(void)
 	command_unbind("log close", (SIGNAL_FUNC) cmd_log_close);
 	command_unbind("log start", (SIGNAL_FUNC) cmd_log_start);
 	command_unbind("log stop", (SIGNAL_FUNC) cmd_log_stop);
-	command_unbind("log ", (SIGNAL_FUNC) cmd_log_list);
 	command_unbind("window log", (SIGNAL_FUNC) cmd_window_log);
 	command_unbind("window logfile", (SIGNAL_FUNC) cmd_window_logfile);
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);

@@ -36,6 +36,22 @@ char *current_command;
 static GSList *cmdget_funcs;
 static int signal_default_command;
 
+COMMAND_REC *command_find(const char *cmd)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(cmd != NULL, NULL);
+
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->cmd, cmd) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
 void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
@@ -43,10 +59,14 @@ void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC
 
 	g_return_if_fail(cmd != NULL);
 
-	rec = g_new0(COMMAND_REC, 1);
-	rec->cmd = g_strdup(cmd);
-	rec->category = category == NULL ? NULL : g_strdup(category);
-	commands = g_slist_append(commands, rec);
+	rec = command_find(cmd);
+	if (rec == NULL) {
+		rec = g_new0(COMMAND_REC, 1);
+		rec->cmd = g_strdup(cmd);
+		rec->category = category == NULL ? NULL : g_strdup(category);
+		commands = g_slist_append(commands, rec);
+	}
+	rec->count++;
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
@@ -70,19 +90,14 @@ void command_free(COMMAND_REC *rec)
 
 void command_unbind(const char *cmd, SIGNAL_FUNC func)
 {
-	GSList *tmp;
+	COMMAND_REC *rec;
 	char *str;
 
 	g_return_if_fail(cmd != NULL);
 
-	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		COMMAND_REC *rec = tmp->data;
-
-		if (g_strcasecmp(rec->cmd, cmd) == 0) {
-			command_free(rec);
-			break;
-		}
-	}
+	rec = command_find(cmd);
+	if (rec != NULL && --rec->count == 0)
+		command_free(rec);
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
@@ -91,42 +106,81 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func)
 	}
 }
 
+/* Expand `cmd' - returns `cmd' if not found, NULL if more than one
+   match is found */
+static const char *command_expand(char *cmd)
+{
+	GSList *tmp;
+	const char *match;
+	int len;
+
+	g_return_val_if_fail(cmd != NULL, NULL);
+
+	match = NULL;
+	len = strlen(cmd);
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->cmd, cmd, len) == 0 &&
+		    strchr(rec->cmd+len, ' ') == NULL) {
+			if (match != NULL) {
+                                /* multiple matches */
+				signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_AMBIGUOUS), cmd);
+				return NULL;
+			}
+
+			if (rec->cmd[len] == '\0') {
+				/* full match */
+				return rec->cmd;
+			}
+
+			/* check that this is the only match */
+			match = rec->cmd;
+		}
+	}
+
+	return match != NULL ? match : cmd;
+}
+
 void command_runsub(const char *cmd, const char *data, void *server, void *item)
 {
-	char *subcmd, *defcmd, *args;
+	const char *newcmd;
+	char *orig, *subcmd, *defcmd, *args;
 
 	g_return_if_fail(data != NULL);
 
+	if (*data == '\0') {
+                /* no subcommand given - unknown command? */
+		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_UNKNOWN), cmd);
+		return;
+	}
+
 	/* get command.. */
-	subcmd = g_strdup_printf("command %s %s", cmd, data);
-	args = strchr(subcmd+9 + strlen(cmd), ' ');
+	orig = subcmd = g_strdup_printf("command %s %s", cmd, data);
+	args = strchr(subcmd+8 + strlen(cmd)+1, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
+
+	/* check if this command can be expanded */
+	newcmd = command_expand(subcmd+8);
+	if (newcmd == NULL) {
+                /* ambiguous command */
+		g_free(orig);
+		return;
+	}
+
+	subcmd = g_strconcat("command ", newcmd, NULL);
 
 	g_strdown(subcmd);
 	if (!signal_emit(subcmd, 3, args, server, item)) {
 		defcmd = g_strdup_printf("default command %s", cmd);
 		if (!signal_emit(defcmd, 3, data, server, item))
-			signal_emit("unknown command", 3, strchr(subcmd, ' ')+1, server, item);
+			signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_UNKNOWN), subcmd+8);
                 g_free(defcmd);
 	}
+
 	g_free(subcmd);
-}
-
-COMMAND_REC *command_find(const char *cmd)
-{
-	GSList *tmp;
-
-	g_return_val_if_fail(cmd != NULL, NULL);
-
-	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		COMMAND_REC *rec = tmp->data;
-
-		if (g_strcasecmp(rec->cmd, cmd) == 0)
-			return rec;
-	}
-
-	return NULL;
+	g_free(orig);
 }
 
 static GSList *optlist_find(GSList *optlist, const char *option)
@@ -475,30 +529,42 @@ void cmd_get_remove_func(CMD_GET_FUNC func)
 
 static void parse_command(const char *command, int expand_aliases, SERVER_REC *server, void *item)
 {
-	const char *alias;
-	char *cmd, *str, *args, *oldcmd;
+	const char *alias, *newcmd;
+	char *cmd, *orig, *args, *oldcmd;
 
-	cmd = str = g_strconcat("command ", command, NULL);
+	cmd = orig = g_strconcat("command ", command, NULL);
 	args = strchr(cmd+8, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	/* check if there's an alias for command */
 	alias = expand_aliases ? alias_find(cmd+8) : NULL;
-	if (alias != NULL)
+	if (alias != NULL) {
 		eval_special_string(alias, args, server, item);
-	else {
-		if (server != NULL)
-			server_redirect_default((SERVER_REC *) server, cmd);
-
-		g_strdown(cmd);
-		oldcmd = current_command;
-		current_command = cmd+8;
-		if (!signal_emit(cmd, 3, args, server, item))
-			signal_emit_id(signal_default_command, 3, command, server, item);
-                current_command = oldcmd;
+		g_free(orig);
+		return;
 	}
 
-	g_free(str);
+	/* check if this command can be expanded */
+	newcmd = command_expand(cmd+8);
+	if (newcmd == NULL) {
+                /* ambiguous command */
+		g_free(orig);
+		return;
+	}
+
+	cmd = g_strconcat("command ", newcmd, NULL);
+	if (server != NULL)
+		server_redirect_default((SERVER_REC *) server, cmd);
+
+	g_strdown(cmd);
+	oldcmd = current_command;
+	current_command = cmd+8;
+	if (!signal_emit(cmd, 3, args, server, item))
+		signal_emit_id(signal_default_command, 3, command, server, item);
+	current_command = oldcmd;
+
+	g_free(cmd);
+	g_free(orig);
 }
 
 static void event_command(const char *line, SERVER_REC *server, void *item)
