@@ -374,6 +374,53 @@ static GList *completion_joinlist(GList *list1, GList *list2)
     return list1;
 }
 
+static GList *free_list_if_old(GList *list, const char *word)
+{
+    int len;
+
+    len = strlen(word);
+    if (list != NULL && (strlen(list->data) != len || g_strncasecmp(word, list->data, len) != 0)) {
+	list = g_list_first(list);
+	g_list_foreach(list, (GFunc) g_free, NULL);
+	g_list_free(list);
+	list = NULL;
+    }
+    return list;
+}
+
+static GList *completion_commands(GList *list, const char *word)
+{
+    GSList *tmp;
+
+    for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+	COMMAND_REC *rec = tmp->data;
+	if (rec == NULL) continue;
+
+	if (g_strncasecmp(rec->cmd, word, strlen(word)) == 0) {
+	    list = g_list_append(list, g_strdup(rec->cmd));
+	}
+    }
+    return list;
+}
+
+static GList *completion_variables(GList *list, const char *word)
+{
+    GSList *sets, *tmp;
+
+    sets = settings_get_sorted();
+
+    for (tmp = sets; tmp != NULL; tmp = tmp->next) {
+	SETTINGS_REC *rec = tmp->data;
+	if (rec == NULL) continue;
+
+	if (g_strncasecmp(rec->key, word, strlen(word)) == 0) {
+	    list = g_list_append(list, g_strdup(rec->key));
+	}
+    }
+    g_slist_free(sets);
+    return list;
+}
+
 char *auto_completion(const char *line, int *pos)
 {
     const char *replace;
@@ -461,6 +508,51 @@ char *completion_line(WINDOW_REC *window, const char *line, int *pos)
         if (n < spos) wordpos++;
     }
 
+    completion = NULL;
+
+    if (wordpos == 0 && line[0] == '/') {
+	/* we are completing a command, skip the slash */
+	spos++;
+
+	complist = free_list_if_old(complist, word+1);
+	if (complist == NULL) {
+	    complist = completion_commands(complist, word+1);
+	} else {
+	    complist = complist->next == NULL ? g_list_first(complist) : complist->next;
+	}
+
+	g_free(word);
+	if (complist == NULL) return NULL;
+
+	completion = complist->data;
+    }
+
+    if (wordpos == 1 && g_strncasecmp(line, "/set ", 5) == 0) {
+	/* we are completing a variable */
+	complist = free_list_if_old(complist, word);
+	if (complist == NULL) {
+	    complist = completion_variables(complist, word);
+	} else {
+	    complist = complist->next == NULL ? g_list_first(complist) : complist->next;
+	}
+
+	g_free(word);
+	if (complist == NULL) return NULL;
+
+	completion = complist->data;
+    }
+
+    if (completion != NULL) {
+	result = g_string_new(line);
+	g_string_erase(result, spos, epos-spos);
+
+	*pos = spos+strlen(completion);
+	g_string_insert(result, spos, completion);
+	ret = result->str;
+	g_string_free(result, FALSE);
+	return ret;
+    }
+
     server = window->active == NULL ? window->active_server : window->active->server;
     msgcompletion = server != NULL &&
         (*line == '\0' || ((wordpos == 0 || wordpos == 1) && g_strncasecmp(line, "/msg ", 5) == 0));
@@ -476,6 +568,7 @@ char *completion_line(WINDOW_REC *window, const char *line, int *pos)
     len = strlen(word)-(msgcomp == FALSE && word[strlen(word)-1] == *settings_get_str("completion_char"));
     if (complist != NULL && (strlen(complist->data) != len || g_strncasecmp(complist->data, word, len) != 0))
     {
+	complist = g_list_first(complist);
         g_list_foreach(complist, (GFunc) g_free, NULL);
         g_list_free(complist);
 
@@ -624,6 +717,7 @@ void completion_init(void)
 
 void completion_deinit(void)
 {
+	complist = g_list_first(complist);
 	g_list_foreach(complist, (GFunc) g_free, NULL);
 	g_list_free(complist);
 
