@@ -33,7 +33,7 @@ unsigned int usermode_away:1;
 unsigned int banned:1; /* not allowed to connect to this server */
 unsigned int dns_error:1; /* DNS said the host doesn't exist */
 
-time_t lag_sent; /* 0 or time when last lag query was sent to server */
+GTimeVal lag_sent; /* 0 or time when last lag query was sent to server */
 time_t lag_last_check; /* last time we checked lag */
 int lag; /* server lag in milliseconds */
 

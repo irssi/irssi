@@ -26,94 +26,42 @@
 #include "irc-servers.h"
 #include "servers-redirect.h"
 
-typedef struct {
-	IRC_SERVER_REC *server;
-	GTimeVal time;
-} LAG_REC;
+static int timeout_tag;
 
-static gint timeout_tag;
-static GSList *lags;
-
-static LAG_REC *lag_find(IRC_SERVER_REC *server)
+static void lag_get(IRC_SERVER_REC *server)
 {
-	GSList *tmp;
+	g_get_current_time(&server->lag_sent);
+	server->lag_last_check = time(NULL);
 
-	for (tmp = lags; tmp != NULL; tmp = tmp->next) {
-		LAG_REC *lag = tmp->data;
-
-		if (lag->server == server)
-			return lag;
-	}
-
-	return NULL;
-}
-
-static void lag_free(LAG_REC *rec)
-{
-	lags = g_slist_remove(lags, rec);
-	g_free(rec);
-}
-
-static void lag_send(LAG_REC *lag)
-{
-	IRC_SERVER_REC *server;
-
-	g_get_current_time(&lag->time);
-
-        server = lag->server;
-	server->lag_sent = server->lag_last_check = time(NULL);
 	server_redirect_event(server, "ping", 1, NULL, FALSE,
 			      "lag ping error",
                               "event pong", "lag pong", NULL);
 	irc_send_cmdv(server, "PING %s", server->real_address);
 }
 
-static void lag_get(IRC_SERVER_REC *server)
-{
-	LAG_REC *lag;
-
-	g_return_if_fail(server != NULL);
-
-	/* nick changes may fail this check, so we should never do this
-	   while there's nick change request waiting for reply in server.. */
-	lag = g_new0(LAG_REC, 1);
-	lags = g_slist_append(lags, lag);
-	lag->server = server;
-
-        lag_send(lag);
-}
-
 /* we didn't receive PONG for some reason .. try again */
 static void lag_ping_error(IRC_SERVER_REC *server)
 {
-	LAG_REC *lag;
-
-	lag = lag_find(server);
-        if (lag != NULL)
-		lag_send(lag);
+	lag_get(server);
 }
 
 static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
 			   const char *nick, const char *addr)
 {
 	GTimeVal now;
-	LAG_REC *lag;
 
 	g_return_if_fail(data != NULL);
 
-	lag = lag_find(server);
-	if (lag == NULL) {
+	if (server->lag_sent.tv_sec == 0) {
 		/* not expecting lag reply.. */
 		return;
 	}
 
-	server->lag_sent = 0;
-
 	g_get_current_time(&now);
-	server->lag = (int) get_timeval_diff(&now, &lag->time);
-	signal_emit("server lag", 1, server);
+	server->lag = (int) get_timeval_diff(&now, &server->lag_sent);
+	memset(&server->lag_sent, 0, sizeof(server->lag_sent));
 
-	lag_free(lag);
+	signal_emit("server lag", 1, server);
 }
 
 static int sig_check_lag(void)
@@ -136,9 +84,9 @@ static int sig_check_lag(void)
 		if (!IS_IRC_SERVER(rec))
 			continue;
 
-		if (rec->lag_sent != 0) {
+		if (rec->lag_sent.tv_sec != 0) {
 			/* waiting for lag reply */
-			if (max_lag > 1 && now-rec->lag_sent > max_lag) {
+			if (max_lag > 1 && now-rec->lag_sent.tv_sec > max_lag) {
 				/* too much lag, disconnect */
 				signal_emit("server lag disconnect", 1, rec);
 				rec->connection_lost = TRUE;
@@ -159,7 +107,6 @@ void lag_init(void)
 	settings_add_int("misc", "lag_check_time", 30);
 	settings_add_int("misc", "lag_max_before_disconnect", 300);
 
-	lags = NULL;
 	timeout_tag = g_timeout_add(1000, (GSourceFunc) sig_check_lag, NULL);
 	signal_add_first("lag pong", (SIGNAL_FUNC) lag_event_pong);
         signal_add("lag ping error", (SIGNAL_FUNC) lag_ping_error);
@@ -168,8 +115,6 @@ void lag_init(void)
 void lag_deinit(void)
 {
 	g_source_remove(timeout_tag);
-	while (lags != NULL)
-		lag_free(lags->data);
 	signal_remove("lag pong", (SIGNAL_FUNC) lag_event_pong);
         signal_remove("lag ping error", (SIGNAL_FUNC) lag_ping_error);
 }

@@ -89,7 +89,7 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	str = g_string_new(NULL);
 
 	/* FIXME: ugly ugly.. */
-	if (server->lag_sent == 0 || now-server->lag_sent < 5) {
+	if (server->lag_sent.tv_sec == 0 || now-server->lag_sent.tv_sec < 5) {
 		lag_unknown = now-server->lag_last_check >
 			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
                 lag_min_show = settings_get_int("lag_min_show")*10;
@@ -105,7 +105,7 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	} else {
 		/* big lag, still waiting .. */
 		g_string_sprintfa(str, "%ld (?""?)",
-				  (long) (now-server->lag_sent));
+				  (long) (now-server->lag_sent.tv_sec));
 	}
 
 	if (str->len != 0) {
