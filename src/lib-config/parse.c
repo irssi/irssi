@@ -151,12 +151,7 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 	    (rec->scanner->token == G_TOKEN_STRING)) {
 		key = g_strdup(rec->scanner->value.v_string);
 
-		config_parse_get_token(rec->scanner, node);
-		if (rec->scanner->token != '=') {
-                        g_free(key);
-			return (GTokenType) '=';
-		}
-
+                config_parse_warn_missing(rec, node, '=', TRUE);
 		config_parse_get_token(rec->scanner, node);
 	}
 
