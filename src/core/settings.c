@@ -33,6 +33,7 @@ CONFIG_REC *mainconfig;
 
 static GHashTable *settings;
 static char *last_error_msg;
+static int timeout_tag;
 
 static const char *settings_get_default_str(const char *key)
 {
@@ -334,12 +335,22 @@ int settings_save(const char *fname)
         return FALSE;
 }
 
+static void sig_autosave(void)
+{
+	if (settings_get_bool("settings_autosave"))
+                settings_save(NULL);
+}
+
 void settings_init(void)
 {
 	settings = g_hash_table_new((GHashFunc) g_str_hash,
 				    (GCompareFunc) g_str_equal);
 
 	init_configfile();
+
+	settings_add_bool("misc", "settings_autosave", TRUE);
+	timeout_tag = g_timeout_add(1000*60*60, (GSourceFunc) sig_autosave, NULL);
+	signal_add("gui exit", (SIGNAL_FUNC) sig_autosave);
 }
 
 static void settings_hash_free(const char *key, SETTINGS_REC *rec)
@@ -349,6 +360,9 @@ static void settings_hash_free(const char *key, SETTINGS_REC *rec)
 
 void settings_deinit(void)
 {
+        g_source_remove(timeout_tag);
+	signal_remove("gui exit", (SIGNAL_FUNC) sig_autosave);
+
         g_free_not_null(last_error_msg);
 	g_hash_table_foreach(settings, (GHFunc) settings_hash_free, NULL);
 	g_hash_table_destroy(settings);
