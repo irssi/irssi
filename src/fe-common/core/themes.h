@@ -13,6 +13,7 @@ typedef struct {
 typedef struct {
 	char *path;
 	char *name;
+        time_t last_modify;
 
 	int default_color, default_bold_color;
 	GHashTable *modules;

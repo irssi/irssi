@@ -617,11 +617,24 @@ static THEME_REC *theme_find(const char *name)
 	return NULL;
 }
 
+static void window_themes_update(void)
+{
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->theme_name != NULL)
+                        rec->theme = theme_load(rec->theme_name);
+	}
+}
+
 THEME_REC *theme_load(const char *setname)
 {
 	THEME_REC *theme;
 	struct stat statbuf;
 	char *fname, *name, *p;
+        int modified;
 
         name = g_strdup(setname);
 	p = strrchr(name, '.');
@@ -631,10 +644,6 @@ THEME_REC *theme_load(const char *setname)
 	}
 
 	theme = theme_find(name);
-	if (theme != NULL) {
-                g_free(name);
-		return theme;
-	}
 
 	/* check home dir */
 	fname = g_strdup_printf("%s/.irssi/%s.theme", g_get_home_dir(), name);
@@ -646,12 +655,30 @@ THEME_REC *theme_load(const char *setname)
 			/* theme not found */
 			g_free(fname);
 			g_free(name);
-			return NULL;
+			return theme; /* use the one in memory if possible */
 		}
 	}
 
+        modified = theme != NULL;
+	if (theme != NULL) {
+		if (theme->last_modify == statbuf.st_mtime) {
+                        /* theme not modified, use the one already in memory */
+			g_free(fname);
+			g_free(name);
+			return theme;
+		}
+
+                theme_destroy(theme);
+	}
+
 	theme = theme_create(fname, name);
+	theme->last_modify = statbuf.st_mtime;
 	theme_read(theme, theme->path, NULL);
+
+	if (modified) {
+		/* make sure no windows use the theme we just destroyed */
+		window_themes_update();
+	}
 
 	g_free(fname);
 	g_free(name);
@@ -1007,26 +1034,35 @@ static void sig_complete_format(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
-static void read_settings(void)
+static void change_theme(const char *name, int verbose)
 {
 	THEME_REC *rec;
+
+	rec = theme_load(name);
+	if (rec != NULL) {
+		current_theme = rec;
+		if (verbose) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_THEME_CHANGED,
+					   rec->name, rec->path);
+		}
+	} else if (verbose) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_THEME_NOT_FOUND, name);
+	}
+}
+
+static void read_settings(void)
+{
 	const char *theme;
 
 	theme = settings_get_str("theme");
-	if (strcmp(current_theme->name, theme) != 0) {
-		rec = theme_load(theme);
-		if (rec != NULL)
-			current_theme = rec;
-		else {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-				    TXT_THEME_NOT_FOUND, theme);
-		}
-	}
+	if (strcmp(current_theme->name, theme) != 0)
+		change_theme(theme, TRUE);
 }
 
 static void themes_read(void)
 {
-	GSList *tmp;
 	char *fname;
 
 	while (themes != NULL)
@@ -1044,15 +1080,8 @@ static void themes_read(void)
 		g_free(fname);
 	}
 
-	/* update window theme structures */
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		WINDOW_REC *rec = tmp->data;
-
-		if (rec->theme_name != NULL)
-                        rec->theme = theme_load(rec->theme_name);
-	}
-
-	read_settings();
+        window_themes_update();
+        change_theme(settings_get_str("theme"), FALSE);
 }
 
 void themes_init(void)

@@ -432,13 +432,16 @@ static void cmd_window_list(void)
 /* SYNTAX: WINDOW THEME <name> */
 static void cmd_window_theme(const char *data)
 {
+	THEME_REC *theme;
+
 	g_free_not_null(active_win->theme_name);
 	active_win->theme_name = g_strdup(data);
 
-	active_win->theme = theme_load(data);
-	if (active_win->theme != NULL) {
+	active_win->theme = theme = theme_load(data);
+	if (theme != NULL) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_THEME_CHANGED, data);
+				   TXT_WINDOW_THEME_CHANGED,
+				   theme->name, theme->path);
 	} else {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_THEME_NOT_FOUND, data);
