@@ -36,13 +36,10 @@ Irssi knows these channel modes:
 	 nick might be in the channel and try to kick it. If nick was in
 	 channel, everyone will see the nick that was kicked.
 
-     r - Re-op - If a channel becomes opless for longer than LDCTL (5400, by default)
-	 seconds, op a random person on the channel (or everyone if channel has
-	 less than 6 members). This works only on !channels. This mode can only
-	 be set and unset by channel creator.
-     r - Re-op - If channel becomes opless for longer than 45 (?) minutes,
-	 op everyone in the channel. This works only in !channels. This
-	 mode can only be set, not unset by channel creator.
+     r - Re-op - If a channel becomes opless for longer than LDCTL (5400,
+         by default) seconds, op a random person on the channel (or everyone
+	 if channel has less than 6 members). This works only on !channels.
+	 This mode can only be set and unset by channel creator.
 
      b - Set/remove ban. For example MODE #channel +b *!*@*.org bans
 	 everyone from .org domain.
