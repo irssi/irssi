@@ -27,6 +27,7 @@
 #include "servers-setup.h"
 
 #include "levels.h"
+#include "irc-chatnets.h"
 #include "irc-servers.h"
 #include "servers-reconnect.h"
 #include "irc-servers-setup.h"
@@ -40,12 +41,17 @@
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
+        IRC_CHATNET_REC *ircnet;
 	char *value;
 
 	value = g_hash_table_lookup(optlist, "ircnet");
 	if (value != NULL) {
 		g_free_and_null(rec->chatnet);
-		if (*value != '\0') rec->chatnet = g_strdup(value);
+		if (*value != '\0') {
+			ircnet = ircnet_find(value);
+			rec->chatnet = ircnet != NULL ? ircnet->name :
+				g_strdup(value);
+		}
 	}
 
 	value = g_hash_table_lookup(optlist, "cmdspeed");
