@@ -175,8 +175,8 @@ static void log_rotate_check(LOG_REC *log)
 	new_fname = log_filename(log);
 	if (strcmp(new_fname, log->real_fname) != 0) {
 		/* rotate log */
-		signal_emit("log rotate", 1, log);
 		log_stop_logging(log);
+		signal_emit("log rotate", 1, log);
 		log_start_logging(log);
 	}
 	g_free(new_fname);
