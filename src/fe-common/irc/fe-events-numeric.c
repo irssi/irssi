@@ -360,14 +360,18 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &type);
+	/* type = "is an IRC Operator" */
 	if (strlen(type) > 5) {
 		type += 5;
 		if (*type == ' ') type++;
 	}
+	if (*type == '\0') {
+		/* shouldn't happen */
+		type = "IRC Operator";
+	}
 
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    *type == '\0' ? IRCTXT_WHOIS_OPER :
-		    IRCTXT_WHOIS_OPER_TYPE, nick, type);
+		    IRCTXT_WHOIS_OPER, nick, type);
 	g_free(params);
 }
 
