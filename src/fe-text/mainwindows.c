@@ -61,7 +61,6 @@ static void create_curses_window(MAIN_WINDOW_REC *window)
 {
 	window->curses_win =
 		subwin(stdscr, window->lines, COLS, window->first_line, 0);
-	scrollok(window->curses_win, TRUE);
 }
 
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)

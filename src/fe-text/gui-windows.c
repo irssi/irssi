@@ -55,7 +55,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *pare
         gui->line_cache = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 	gui->line_chunk = g_mem_chunk_new("line chunk", sizeof(LINE_REC),
 					  sizeof(LINE_REC)*100, G_ALLOC_AND_FREE);
-	gui->empty_linecount = parent->last_line-parent->first_line;
+	gui->empty_linecount = parent->lines-1;
 
 	return gui;
 }
@@ -216,13 +216,13 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 		}
 	}
 
-	if ((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line-1) {
+	if (gui->ypos >= -1 && gui->ypos < gui->parent->lines-1) {
 		gui->ypos++;
 		return;
 	}
 
-	if (!gui->bottom || ((gui)->startline == (gui)->bottom_startline && \
-			     (gui)->subline >= (gui)->bottom_subline)) {
+	if (!gui->bottom || (gui->startline == gui->bottom_startline &&
+			     gui->subline >= gui->bottom_subline)) {
 		lines = gui_window_update_bottom(gui, 1);
 
 		if (!gui->bottom) {
@@ -241,7 +241,10 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	}
 
 	if (visible) {
+		scrollok(gui->parent->curses_win, TRUE);
 		wscrl(gui->parent->curses_win, 1);
+		scrollok(gui->parent->curses_win, FALSE);
+
 		wmove(gui->parent->curses_win, gui->parent->lines, 0);
 		wclrtoeol(gui->parent->curses_win);
 	}
@@ -505,7 +508,7 @@ void gui_window_redraw(WINDOW_REC *window)
 	for (line = gui->startline; line != NULL; line = line->next) {
 		LINE_REC *rec = line->data;
 
-		max = gui->parent->last_line - ypos+1;
+		max = gui->parent->lines-1 - ypos+1;
 		if (max < 0) break;
 
 		lines = gui_window_line_draw(gui, rec, ypos, skip, max);
@@ -544,13 +547,16 @@ static void gui_window_scroll_up(GUI_WINDOW_REC *gui, int lines)
 	gui->bottom = is_window_bottom(gui);
 }
 
+#define is_scrolled_bottom(gui) \
+	((gui)->startline == (gui)->bottom_startline && \
+	(gui)->subline >= (gui)->bottom_subline)
+
 static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 {
 	LINE_REC *line;
 	int count, linecount;
 
-	if (((gui)->startline == (gui)->bottom_startline && \
-	     (gui)->subline >= (gui)->bottom_subline))
+	if (is_scrolled_bottom(gui))
 		return;
 
 	count = lines+gui->subline; gui->ypos += gui->subline;
@@ -601,10 +607,15 @@ void gui_window_scroll(WINDOW_REC *window, int lines)
 
 	gui = WINDOW_GUI(window);
 
-	if (lines < 0)
+	if (lines < 0) {
+		if (gui->startline == NULL)
+			return;
 		gui_window_scroll_up(gui, -lines);
-	else
+	} else {
+		if (is_scrolled_bottom(gui))
+			return;
 		gui_window_scroll_down(gui, lines);
+	}
 
 	if (is_window_visible(window))
 		gui_window_redraw(window);
@@ -654,8 +665,7 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 	int ychange;
 
 	oldparent = WINDOW_GUI(window)->parent;
-	ychange = (parent->last_line - parent->first_line) -
-		(oldparent->last_line - oldparent->first_line);
+	ychange = parent->lines - oldparent->lines;
 
 	WINDOW_GUI(window)->parent = parent;
 	if (ychange != 0) gui_window_resize(window, ychange, FALSE);
@@ -770,7 +780,7 @@ static void gui_window_horiz_resize(WINDOW_REC *window)
 	/* fake a /CLEAR and scroll window up one page */
 	gui->ypos = -1;
 	gui->bottom = TRUE;
-	gui->empty_linecount = gui->parent->last_line-gui->parent->first_line;
+	gui->empty_linecount = gui->parent->lines-1;
 
 	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
 	gui->bottom_subline = gui->subline = gui->last_subline+1;
@@ -780,7 +790,7 @@ static void gui_window_horiz_resize(WINDOW_REC *window)
 	gui->bottom_subline = gui->subline;
 
 	gui->bottom = TRUE;
-	gui->empty_linecount = (gui->parent->last_line-gui->parent->first_line)-gui->ypos;
+	gui->empty_linecount = gui->parent->lines-1-gui->ypos;
 }
 
 void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)

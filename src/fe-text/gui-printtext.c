@@ -346,7 +346,7 @@ static void cmd_clear(void)
 	gui->ypos = -1;
 	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
 	gui->bottom_subline = gui->subline = gui->last_subline+1;
-	gui->empty_linecount = gui->parent->last_line-gui->parent->first_line+1;
+	gui->empty_linecount = gui->parent->lines;
 	gui->bottom = TRUE;
 }
 
