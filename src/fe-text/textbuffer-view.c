@@ -586,9 +586,6 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
         g_return_if_fail(view != NULL);
         g_return_if_fail(width > 0);
 
-	if (view->buffer->lines == NULL)
-                return;
-
 	if (view->width != width) {
                 /* line cache needs to be recreated */
 		textbuffer_cache_unref(view->cache);
@@ -597,6 +594,11 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 
 	view->width = width;
 	view->height = height;
+
+	if (view->buffer->lines == NULL) {
+                view->empty_linecount = height;
+		return;
+	}
 
 	textbuffer_view_init_bottom(view);
 
