@@ -321,6 +321,25 @@ static void key_yank_from_cutbuffer(void)
 		gui_entry_insert_text(cutbuffer);
 }
 
+static void key_transpose_characters(void)
+{
+	char *line, c;
+	int pos;
+
+	pos = gui_entry_get_pos();
+	line = gui_entry_get_text();
+	if (pos == 0 || strlen(line) < 2)
+		return;
+
+	if (line[pos] != '\0')
+		gui_entry_move_pos(1);
+	c = line[gui_entry_get_pos()-1];
+        gui_entry_erase(1);
+	gui_entry_move_pos(-1);
+	gui_entry_insert_char(c);
+        gui_entry_set_pos(pos);
+}
+
 static void key_delete_character(void)
 {
 	if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
@@ -539,7 +558,8 @@ void gui_readline_init(void)
 	key_bind("erase_to_beg_of_line", "", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_bind("erase_to_end_of_line", "", "Ctrl-K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_bind("yank_from_cutbuffer", "", "Ctrl-Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
-
+	key_bind("transpose_characters", "", "Ctrl-T", NULL, (SIGNAL_FUNC) key_transpose_characters);
+        
 	key_bind("word_completion", "", "Tab", NULL, (SIGNAL_FUNC) key_word_completion);
 	key_bind("check_replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) key_check_replaces);
 	key_bind("check_replaces", NULL, "Return", NULL, (SIGNAL_FUNC) key_check_replaces);
@@ -604,6 +624,7 @@ void gui_readline_deinit(void)
 	key_unbind("erase_to_beg_of_line", (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_unbind("erase_to_end_of_line", (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_unbind("yank_from_cutbuffer", (SIGNAL_FUNC) key_yank_from_cutbuffer);
+	key_unbind("transpose_characters", (SIGNAL_FUNC) key_transpose_characters);
 
 	key_unbind("word_completion", (SIGNAL_FUNC) key_word_completion);
 	key_unbind("check_replaces", (SIGNAL_FUNC) key_check_replaces);
