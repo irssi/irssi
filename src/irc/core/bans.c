@@ -45,6 +45,7 @@ char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick, int ban_type)
 {
 	NICK_REC *rec;
 	char *str, *user, *host;
+        int size;
 
 	g_return_val_if_fail(IS_IRC_CHANNEL(channel), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
@@ -59,17 +60,18 @@ char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick, int ban_type)
 
 	/* there's a limit of 10 characters in user mask. so, banning
 	   someone with user mask of 10 characters gives us "*1234567890",
-	   which is one too much.. so, replace the 10th character with '*' */
+	   which is one too much.. so, remove the first character after "*"
+           so we'll get "*234567890" */
 	user = strchr(str, '!');
 	if (user == NULL) return str;
 
 	host = strchr(++user, '@');
 	if (host == NULL) return str;
 
-	if ((int) (host-user) >= 10) {
+        size = (int) (host-user);
+	if (size >= 10) {
 		/* too long user mask */
-		user[9] = '*';
-		g_memmove(user+10, host, strlen(host)+1);
+		g_memmove(user+1, user+(size-9), strlen(user+(size-9))+1);
 	}
 	return str;
 }
