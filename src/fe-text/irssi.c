@@ -110,10 +110,11 @@ static void textui_finish_init(void)
 	fe_common_core_finish_init();
 	fe_common_irc_finish_init();
 
-	signal_emit("irssi init finished", 0);
 #ifdef HAVE_PERL
 	irssi_perl_init();
 #endif
+	signal_emit("irssi init finished", 0);
+
 	screen_refresh_thaw();
 }
 
