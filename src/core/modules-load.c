@@ -212,14 +212,18 @@ static int module_load_prefixes(const char *path, const char *module,
 				int start, int end, char **prefixes)
 {
         GString *realpath;
-        int status;
+        int status, ok;
 
         /* load module_core */
 	realpath = g_string_new(path);
 	g_string_insert(realpath, end, "_core");
 
-	status = module_load_name(realpath->str, module, "core", FALSE);
-	if (status > 0 && prefixes != NULL) {
+	/* Don't print the error message the first time, since the module
+	   may not have the core part at all. */
+	status = module_load_name(realpath->str, module, "core", TRUE);
+        ok = status > 0;
+
+	if (prefixes != NULL) {
 		/* load all the "prefix modules", like the fe-common, irc,
 		   etc. part of the module */
 		while (*prefixes != NULL) {
@@ -227,15 +231,24 @@ static int module_load_prefixes(const char *path, const char *module,
 			g_string_insert_c(realpath, start, '_');
 			g_string_insert(realpath, start, *prefixes);
 
-			module_load_name(realpath->str, module,
-					 *prefixes, TRUE);
+			status = module_load_name(realpath->str, module,
+						  *prefixes, TRUE);
+			if (status > 0)
+				ok = TRUE;
 
                         prefixes++;
 		}
 	}
 
+	if (!ok) {
+                /* error loading module, print the error message */
+		g_string_assign(realpath, path);
+		g_string_insert(realpath, end, "_core");
+		module_load_name(realpath->str, module, "core", FALSE);
+	}
+
 	g_string_free(realpath, TRUE);
-        return status;
+        return ok;
 }
 
 static int module_load_full(const char *path, const char *rootmodule,
