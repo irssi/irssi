@@ -471,6 +471,11 @@ static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 	statusbar_item_redraw(activity_item);
 }
 
+static void sig_statusbar_activity_updated(void)
+{
+	statusbar_item_redraw(activity_item);
+}
+
 /* redraw -- more -- */
 static void statusbar_more(SBAR_ITEM_REC *item, int ypos)
 {
@@ -886,6 +891,7 @@ void statusbar_items_init(void)
 	activity_list = NULL;
 	signal_add("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
+	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
 	/* more */
 	more_item = NULL;
@@ -947,6 +953,7 @@ void statusbar_items_deinit(void)
 	/* activity */
 	signal_remove("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
+	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 	g_list_free(activity_list);
 
 	/* more */
