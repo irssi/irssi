@@ -86,7 +86,7 @@ noinst_HEADERS = \
 	perl-common.h
 
 all-local:
-	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && $(MAKE) && cd ..; done
+	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && if ! $(MAKE); then $(MAKE); fi && cd ..; done
 
 install-exec-local:
 	for dir in common irc; do cd $$dir && make install && cd ..; done
