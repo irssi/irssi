@@ -506,11 +506,35 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 	g_free(orig);
 }
 
+static void get_wildcard_nicks(GString *output, const char *mask,
+			       IRC_CHANNEL_REC *channel, int op, int voice)
+{
+	GSList *nicks, *tmp;
+
+	g_return_if_fail(output != NULL);
+	g_return_if_fail(mask != NULL);
+	g_return_if_fail(IS_IRC_CHANNEL(channel));
+
+	nicks = nicklist_find_multiple(CHANNEL(channel), mask);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+		NICK_REC *rec = tmp->data;
+
+		if ((op == 1 && !rec->op) || (op == 0 && rec->op) ||
+		    (voice == 1 && !rec->voice) || (voice == 0 && rec->voice))
+			continue;
+
+		if (g_strcasecmp(rec->nick, channel->server->nick) == 0)
+			continue;
+
+		g_string_sprintfa(output, "%s ", rec->nick);
+	}
+	g_slist_free(nicks);
+}
+
 static char *get_nicks(IRC_CHANNEL_REC *channel,
 		       const char *data, int op, int voice)
 {
         GString *str;
-	GSList *nicks, *tmp;
 	char **matches, **match, *ret;
 
 	g_return_val_if_fail(channel != NULL, NULL);
@@ -520,27 +544,13 @@ static char *get_nicks(IRC_CHANNEL_REC *channel,
 	str = g_string_new(NULL);
 	matches = g_strsplit(data, " ", -1);
 	for (match = matches; *match != NULL; match++) {
-		if (strchr(*match, '*') == NULL && strchr(*match, '?') == NULL) {
+		if (strchr(*match, '*') == NULL &&
+		    strchr(*match, '?') == NULL) {
 			/* no wildcards */
                         g_string_sprintfa(str, "%s ", *match);
-			continue;
+		} else {
+                        get_wildcard_nicks(str, *match, channel, op, voice);
 		}
-
-		/* wildcards */
-		nicks = nicklist_find_multiple(CHANNEL(channel), data);
-		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
-			NICK_REC *rec = tmp->data;
-
-			if ((op == 1 && !rec->op) || (op == 0 && rec->op) ||
-			    (voice == 1 && !rec->voice) || (voice == 0 && rec->voice))
-				continue;
-
-			if (g_strcasecmp(rec->nick, channel->server->nick) == 0)
-				continue;
-
-			g_string_sprintfa(str, "%s ", rec->nick);
-		}
-		g_slist_free(nicks);
 	}
 
         if (str->len > 0) g_string_truncate(str, str->len-1);
