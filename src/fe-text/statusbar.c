@@ -249,7 +249,8 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (!rec->config->right_alignment && rec->size > 0) {
+		if (!rec->config->right_alignment &&
+		    (rec->size > 0 || rec->current_size > 0)) {
 			if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, xpos)) {
                                 /* redraw the item */
 				rec->dirty = TRUE;
