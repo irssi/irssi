@@ -59,14 +59,20 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 	g_return_if_fail(channel != NULL);
 
 	window = window_item_window((WI_ITEM_REC *) channel);
-	if (window != NULL) {
-		window_item_destroy((WI_ITEM_REC *) channel);
+	if (window == NULL)
+		return;
 
-		if (window->items == NULL && windows->next != NULL &&
-		    (!channel->joined || channel->left) &&
-		    settings_get_bool("autoclose_windows")) {
-			window_destroy(window);
-		}
+	window_item_destroy((WI_ITEM_REC *) channel);
+
+	if (channel->joined && !channel->left &&
+	    channel->server != NULL) {
+		/* kicked out from channel */
+		window_bind_add(window, channel->server->tag,
+				channel->name);
+	} else if (settings_get_bool("autoclose_windows") &&
+		   (!channel->joined || channel->left) &&
+		   window->items == NULL && windows->next != NULL) {
+		window_destroy(window);
 	}
 }
 

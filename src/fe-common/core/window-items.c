@@ -224,6 +224,20 @@ WI_ITEM_REC *window_item_find(void *server, const char *name)
 	return NULL;
 }
 
+static int window_bind_has_sticky(WINDOW_REC *window)
+{
+	GSList *tmp;
+
+	for (tmp = window->bound_items; tmp != NULL; tmp = tmp->next) {
+		WINDOW_BIND_REC *rec = tmp->data;
+
+		if (rec->sticky)
+                        return TRUE;
+	}
+
+        return FALSE;
+}
+
 void window_item_create(WI_ITEM_REC *item, int automatic)
 {
 	WINDOW_REC *window;
@@ -242,15 +256,6 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (reuse_unused_windows &&
-		    rec->items == NULL && rec->level == 0 &&
-		    (window == NULL || rec == active_win ||
-		     window->bound_items != NULL)) {
-			/* no items in this window,
-			   we should probably use it.. */
-			window = rec;
-		}
-
                 /* is item bound to this window? */
 		if (item->server != NULL &&
 		    window_bind_find(rec, item->server->tag, item->name)) {
@@ -258,6 +263,23 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 			clear_waiting = FALSE;
 			break;
 		}
+
+		/* use this window IF:
+		     - reuse_unused_windows is ON
+		     - window has no existing items
+		     - window has no level
+		     - window has no sticky binds (/LAYOUT SAVEd)
+		     - we already haven't found "good enough" window,
+		       except if
+                         - this is the active window
+                         - old window had some temporary bounds and this
+			   one doesn't
+		     */
+		if (reuse_unused_windows && rec->items == NULL &&
+		    rec->level == 0 && !window_bind_has_sticky(rec) &&
+		    (window == NULL || rec == active_win ||
+		     window->bound_items != NULL))
+			window = rec;
 	}
         g_slist_free(sorted);
 
