@@ -264,8 +264,10 @@ static int data_is_empty(const char **data)
 
 	/* variable - check if it's empty */
         p++;
-	ret = parse_special((char **) &p, active_win->active_server,
-			    active_win->active, arglist, &free_ret, NULL, 0);
+	ret = parse_special((char **) &p,
+			    active_win == NULL ? NULL : active_win->active_server,
+			    active_win == NULL ? NULL : active_win->active,
+			    arglist, &free_ret, NULL, 0);
         p++;
 
 	while (*p == ' ') p++;
