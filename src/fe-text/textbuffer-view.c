@@ -152,8 +152,10 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
         unsigned char cmd;
-	const unsigned char *ptr, *last_space_ptr;
+	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
+	int char_len;
+	unichar chr;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
 
@@ -196,7 +198,24 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			continue;
 		}
 
-		if (xpos == view->width && sub != NULL &&
+		if (!view->utf8) {
+			next_ptr = ptr+1;
+			char_len = 1;
+		} else {
+			char_len = 1;
+			while (ptr[char_len] != '\0' && char_len < 6)
+				char_len++;
+
+			next_ptr = ptr;
+			chr = get_utf8_char(&next_ptr, char_len);
+			if (chr < 0)
+				char_len = 1;
+			else
+				char_len = utf8_width(chr);
+			next_ptr++;
+		}
+
+		if (xpos + char_len > view->width && sub != NULL &&
 		    (last_space <= indent_pos || last_space <= 10) &&
 		    view->longword_noindent) {
                         /* long word, remove the indentation from this line */
@@ -204,7 +223,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                         sub->indent = 0;
 		}
 
-		if (xpos == view->width) {
+		if (xpos + char_len > view->width) {
 			xpos = indent_func == NULL ? indent_pos :
 				indent_func(view, line, -1);
 
@@ -232,15 +251,14 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			continue;
 		}
 
-		if (view->utf8)
-			get_utf8_char(&ptr, 6);
-
-		xpos++;
-		if (*ptr++ == ' ') {
-			last_space = xpos-1;
+		if (*ptr == ' ') {
+			last_space = xpos;
 			last_space_ptr = ptr;
 			last_color = color;
 		}
+
+		xpos += char_len;
+		ptr = next_ptr;
 	}
 
 	rec = g_malloc(sizeof(LINE_CACHE_REC)-sizeof(LINE_CACHE_SUB_REC) +
@@ -309,9 +327,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 {
         INDENT_FUNC indent_func;
 	LINE_CACHE_REC *cache;
-        const unsigned char *text, *text_newline;
+        const unsigned char *text, *end, *text_newline;
 	unsigned char *tmp;
-	int xpos, color, drawcount, first, need_move, need_clrtoeol;
+	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
                 return 0;
@@ -401,11 +419,16 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			continue;
 		}
 
-		if (xpos < term_width) {
-			const unsigned char *end = text;
-			if (view->utf8)
-				get_utf8_char(&end, 6);
+		end = text;
+		if (view->utf8) {
+			unichar chr = get_utf8_char(&end, 6);
+			char_width = utf8_width(chr);
+		} else {
+			char_width = 1;
+		}
 
+		xpos += char_width;
+		if (xpos <= term_width) {
 			if (*text >= 32 &&
 			    (end != text || (*text & 127) >= 32)) {
 				for (; text < end; text++)
@@ -419,7 +442,6 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			}
 		}
 		text++;
-		xpos++;
 	}
 
 	if (need_clrtoeol && xpos < term_width) {

@@ -18,4 +18,7 @@ int utf16_char_to_utf8(unichar c, char *outbuf);
    Make sure out is at least 6 x length of str. */
 void utf16_to_utf8(const unichar *str, char *out);
 
+/* Returns width for character (0-2). */
+int utf8_width(unichar c);
+
 #endif

@@ -104,7 +104,11 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 
 	p = entry->scrstart + pos < entry->text_len ?
 		entry->text + entry->scrstart + pos : empty_str;
-	for (; *p != '\0' && xpos < end_xpos; p++, xpos++) {
+	for (; *p != '\0'; p++) {
+		xpos += utf8_width(*p);
+		if (xpos > end_xpos)
+			break;
+
 		if (entry->hidden)
                         term_addch(root_window, ' ');
 		else if (*p >= 32 && (entry->utf8 || (*p & 127) >= 32))
