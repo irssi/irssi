@@ -24,6 +24,7 @@
 #include "pidwait.h"
 
 #include "net-disconnect.h"
+#include "net-sendbuffer.h"
 #include "signals.h"
 #include "settings.h"
 
@@ -41,6 +42,7 @@ void core_init(void)
 	pidwait_init();
 
 	net_disconnect_init();
+	net_sendbuffer_init();
 	signals_init();
 	settings_init();
 	commands_init();
@@ -61,6 +63,7 @@ void core_deinit(void)
 	commands_deinit();
 	settings_deinit();
 	signals_deinit();
+	net_sendbuffer_deinit();
 	net_disconnect_deinit();
 
 	pidwait_deinit();

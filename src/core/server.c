@@ -24,6 +24,7 @@
 #include "signals.h"
 #include "line-split.h"
 #include "net-nonblock.h"
+#include "net-sendbuffer.h"
 #include "rawlog.h"
 #include "misc.h"
 #include "server.h"
@@ -124,15 +125,16 @@ static void server_connect_callback_init(SERVER_REC *server, int handle)
 	signal_emit("server connected", 1, server);
 }
 
-static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
+static void server_connect_callback_readpipe(SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	RESOLVED_IP_REC iprec;
+	int handle;
 
 	g_source_remove(server->connect_tag);
 	server->connect_tag = -1;
 
-	net_gethostbyname_return(handle, &iprec);
+	net_gethostbyname_return(server->connect_pipe[0], &iprec);
 
 	close(server->connect_pipe[0]);
 	close(server->connect_pipe[1]);
@@ -141,11 +143,11 @@ static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
 	server->connect_pipe[1] = -1;
 
 	conn = server->connrec;
-	server->handle = iprec.error != 0 ? -1 :
+	handle = iprec.error != 0 ? -1 :
 		net_connect_ip(&iprec.ip, conn->proxy != NULL ?
 			       conn->proxy_port : conn->port,
 			       conn->own_ip != NULL ? conn->own_ip : NULL);
-	if (server->handle == -1) {
+	if (handle == -1) {
 		/* failed */
 		if (iprec.error == 0 || !net_hosterror_notfound(iprec.error)) {
 			/* reconnect back only if either
@@ -162,7 +164,8 @@ static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
 		return;
 	}
 
-	server->connect_tag = g_input_add(server->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
+	server->handle = net_sendbuffer_create(handle, 0);
+	server->connect_tag = g_input_add(handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 					  (GInputFunction) server_connect_callback_init, server);
 	signal_emit("server connecting", 2, server, &iprec.ip);
 }
@@ -179,13 +182,10 @@ int server_connect(SERVER_REC *server)
 	}
 
 	server->tag = server_create_tag(server->connrec);
-	server->handle = -1;
-
 	server->connect_pid =
 		net_gethostbyname_nonblock(server->connrec->proxy != NULL ?
 					   server->connrec->proxy : server->connrec->address,
 					   server->connect_pipe[1]);
-
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_readpipe, server);
@@ -212,8 +212,8 @@ void server_disconnect(SERVER_REC *server)
 
 	signal_emit("server disconnected", 1, server);
 
-	if (server->handle != -1)
-		net_disconnect(server->handle);
+	if (server->handle != NULL)
+		net_sendbuffer_destroy(server->handle, TRUE);
 
         MODULE_DATA_DEINIT(server);
 	rawlog_destroy(server->rawlog);

@@ -21,6 +21,7 @@
 #include "module.h"
 #include "modules.h"
 #include "network.h"
+#include "net-sendbuffer.h"
 #include "line-split.h"
 #include "rawlog.h"
 
@@ -38,7 +39,7 @@ static int signal_server_incoming;
 static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int immediate)
 {
 	char str[513], *ptr;
-	int len, ret;
+	int len;
 
 	server->cmdcount++;
 
@@ -53,25 +54,22 @@ static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int 
 
 	ptr = str;
 	if (send_now) {
-		ret = net_transmit(server->handle, str, len);
-		if (ret == len) {
-			g_get_current_time(&server->last_cmd);
-			return;
+		if (net_sendbuffer_send(server->handle, str, len) == -1) {
+			/* something bad happened */
+			g_warning("net_sendbuffer_send() failed: %s",
+				  g_strerror(errno));
 		}
 
-		/* we didn't transmit all data, try again a bit later.. */
-		ptr += ret;
-		server->cmd_last_split = TRUE;
+		g_get_current_time(&server->last_cmd);
+		return;
 	}
 
 	/* add to queue */
         ptr = g_strdup(ptr);
 	if (!immediate)
 		server->cmdqueue = g_slist_append(server->cmdqueue, ptr);
-	else if (send_now)
-		server->cmdqueue = g_slist_prepend(server->cmdqueue, ptr);
 	else
-		server->cmdqueue = g_slist_insert(server->cmdqueue, ptr, 1);
+		server->cmdqueue = g_slist_prepend(server->cmdqueue, ptr);
 }
 
 /* Send command to IRC server */
@@ -280,7 +278,8 @@ static int irc_receive_line(SERVER_REC *server, char **str)
 	g_return_val_if_fail(server != NULL, -1);
 	g_return_val_if_fail(str != NULL, -1);
 
-	recvlen = net_receive(server->handle, tmpbuf, sizeof(tmpbuf));
+	recvlen = net_receive(net_sendbuffer_handle(server->handle),
+			      tmpbuf, sizeof(tmpbuf));
 
 	ret = line_split(tmpbuf, recvlen, str, (LINEBUF_REC **) &server->buffer);
 	if (ret == -1) {
@@ -346,7 +345,8 @@ static void irc_init_server(IRC_SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	server->readtag =
-		g_input_add(server->handle, G_INPUT_READ,
+		g_input_add(net_sendbuffer_handle(server->handle),
+			    G_INPUT_READ,
 			    (GInputFunction) irc_parse_incoming, server);
 }
 

@@ -21,6 +21,7 @@
 #include "module.h"
 
 #include "net-nonblock.h"
+#include "net-sendbuffer.h"
 #include "line-split.h"
 #include "signals.h"
 #include "modules.h"
@@ -208,16 +209,17 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_foreach(server->cmdqueue, (GFunc) g_free, NULL);
 	g_slist_free(server->cmdqueue);
 
-	if (server->handle != -1) {
+	if (server->handle != NULL) {
 		if (!chans || server->connection_lost)
-			net_disconnect(server->handle);
+			net_sendbuffer_destroy(server->handle, TRUE);
 		else {
 			/* we were on some channels, try to let the server
 			   disconnect so that our quit message is guaranteed
 			   to get displayed */
-			net_disconnect_later(server->handle);
+			net_disconnect_later(net_sendbuffer_handle(server->handle));
+			net_sendbuffer_destroy(server->handle, FALSE);
 		}
-		server->handle = -1;
+		server->handle = NULL;
 	}
 
 	irc_server_connect_free(server->connrec);
@@ -239,7 +241,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
 	long usecs;
 	char *cmd;
-	int len, ret, add_rawlog;
+	int len, add_rawlog;
 
 	if (!irc_server_check(server))
 		return;
@@ -262,21 +264,15 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 
 	add_rawlog = !server->cmd_last_split;
 
-        ret = net_transmit(server->handle, cmd, len);
-	if (ret != len) {
-		/* we didn't transmit all data, try again a bit later.. */
-		if (ret > 0) {
-			cmd = g_strdup((char *) (server->cmdqueue->data) + ret);
-			g_free(server->cmdqueue->data);
-			server->cmdqueue->data = cmd;
-		}
-		server->cmd_last_split = TRUE;
-		server->cmdcount++;
-	} else {
-		memcpy(&server->last_cmd, now, sizeof(GTimeVal));
-		if (server->cmd_last_split)
-			server->cmd_last_split = FALSE;
+	if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
+		/* something bad happened */
+		g_warning("net_sendbuffer_send() failed: %s", g_strerror(errno));
+		return;
 	}
+
+	memcpy(&server->last_cmd, now, sizeof(GTimeVal));
+	if (server->cmd_last_split)
+		server->cmd_last_split = FALSE;
 
 	if (add_rawlog) {
 		/* add to rawlog without CR+LF */
@@ -288,11 +284,9 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 		cmd[slen-2] = '\r';
 	}
 
-	if (ret == len) {
-		/* remove from queue */
-		g_free(cmd);
-		server->cmdqueue = g_slist_remove(server->cmdqueue, cmd);
-	}
+	/* remove from queue */
+	g_free(cmd);
+	server->cmdqueue = g_slist_remove(server->cmdqueue, cmd);
 }
 
 /* check every now and then if there's data to be sent in command buffer */

@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
+#include "net-sendbuffer.h"
 #include "line-split.h"
 #include "misc.h"
 #include "settings.h"
@@ -541,7 +542,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 	lseek(hfile, 0, SEEK_SET);
 
 	/* get the IP address we use with IRC server */
-	if (net_getsockname(chat != NULL ? chat->handle : server->handle, &own_ip, NULL) == -1) {
+	if (net_getsockname(chat != NULL ? chat->handle : net_sendbuffer_handle(server->handle), &own_ip, NULL) == -1) {
 		close(hfile);
 		cmd_param_error(CMDERR_ERRNO);
 	}

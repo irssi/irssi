@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "network.h"
 #include "net-nonblock.h"
+#include "net-sendbuffer.h"
 #include "line-split.h"
 #include "settings.h"
 
@@ -281,7 +282,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	if (net_getsockname(server->handle, &own_ip, NULL) == -1)
+	if (net_getsockname(net_sendbuffer_handle(server->handle), &own_ip, NULL) == -1)
 		cmd_param_error(CMDERR_ERRNO);
 
 	port = settings_get_int("dcc_port");
