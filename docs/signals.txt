@@ -324,6 +324,3 @@ gui-readline.c:
 
 gui-printtext.c:
  "beep"
-
-statusbar-items.c:
- "mail counter"
