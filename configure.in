@@ -547,7 +547,7 @@ if test "$want_perl" != "no"; then
 		PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
 	fi
 
-	if test "x$ac_cv_prog_gcc" = "xyes" -a ! `echo $host_os|grep -q 'bsd\|linux'`; then
+	if test "x$ac_cv_prog_gcc" = "xyes" -a -z "`echo $host_os|grep 'bsd\|linux'`"; then
 		dnl * several systems have Perl compiled with native compiler
 		dnl * but irssi is being compiled with GCC. Here we try to
 		dnl * fix those command line options a bit so GCC won't
