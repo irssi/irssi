@@ -5,7 +5,7 @@
 #define IRSSI_WEBSITE "http://irssi.org"
 
 #ifdef HAVE_CONFIG_H
-#include "../config.h"
+#include "config.h"
 #endif
 
 #include <stdio.h>
