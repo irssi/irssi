@@ -1,6 +1,5 @@
  - /UPGRADE:
     - support DCCs
-    - write /HELP
     - topic time/nick isn't transferred
     - rewrite to work by fork()ing a new process and transfer file handles
       with unix sockets. this would allow the scrollback buffers to be
