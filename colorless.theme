@@ -26,6 +26,7 @@
     ebanlist_long = "%_$1%_: ban exception $2 [by %_$3%_, $4 secs ago]";
     invitelist = "%_$1%_: invite $2";
     usermode_change = "Mode change [%_$1%_] for user $2";
+    user_mode = "Your user mode is [%_$1%_]";
     your_nick_changed = "You're now known as $1";
     nick_changed = "%_$1%_ is now known as $2";
     your_nick_owned = "Your nick is owned by %_$4%_ [$2@$3]";
@@ -84,8 +85,6 @@
     log_listentry = "$1: $2";
     log_sublistentry = "     + $1: $2";
     ircjoin = "%_$1%_ [$2@$3] [%_$4%_] has joined to IRC";
-    plugin_cant_load = "Can't load plugin %_$1%_";
-    plugin_not_loaded = "Plugin %_$1%_ not loaded";
   };
 
   plugins = {
