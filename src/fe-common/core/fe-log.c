@@ -71,7 +71,7 @@ static void log_add_targets(LOG_REC *log, const char *targets, const char *tag)
 }
 
 /* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-window] [-<server tag>]
-                    [-targets <targets>] [-mirccolors | -ansicolors]
+                    [-targets <targets>] [-colors]
 		    <fname> [<levels>] */
 static void cmd_log_open(const char *data)
 {
