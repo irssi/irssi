@@ -1,6 +1,8 @@
 moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libirssi_perl.la
 
+libirssi_perl_la_LDFLAGS = -avoid-version
+
 irssi-perl.c: perl-signals.h
 
 INCLUDES = $(GLIB_CFLAGS) \

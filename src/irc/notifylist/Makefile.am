@@ -1,6 +1,8 @@
 moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libirc_notifylist.la
 
+libirc_notifylist_la_LDFLAGS = -avoid-version
+
 INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/
 

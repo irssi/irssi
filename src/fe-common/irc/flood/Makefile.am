@@ -1,6 +1,8 @@
 moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libfe_common_irc_flood.la
 
+libfe_common_irc_flood_la_LDFLAGS = -avoid-version
+
 INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
