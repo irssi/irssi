@@ -20,3 +20,6 @@ libirc_proxy_la_SOURCES = \
 
 noinst_HEADERS = \
 	module.h
+
+clean-generic:
+	rm -f libirc_proxy.a
