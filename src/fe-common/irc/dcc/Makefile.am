@@ -22,4 +22,5 @@ libfe_common_irc_dcc_la_SOURCES = \
 
 noinst_HEADERS = \
 	module.h \
-	module-formats.h
+	module-formats.h \
+	fe-dcc.h
