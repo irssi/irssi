@@ -33,4 +33,24 @@
     {alias = IG;command = "/ignore &1";},
     {alias = UNIG;command = "/unignore &1";}
   );
+  popups = (
+    {label = "<MULTICOMMA>Whois";command = "/whois %s";},
+    {label = "DCC Send File";command = "/dcc send %s";},
+    {label = "Open DCC Chat";command = "/dcc chat %s";},
+    {label = Query;command = "/query %s";},
+    {label = "<MENU><OP>";command = "Op";},
+    {label = "<MULTI>Op";command = "/op %s";},
+    {label = "<MULTI>Deop";command = "/deop %s";},
+    {label = "<MULTI>Voice";command = "/voice %s";},
+    {label = "<MULTI>Devoice";command = "/devoice %s";},
+    {label = "<KICK>Kick";command = "/kick %s %s";},
+    {label = "<MULTI>Ban";command = "/ban %s";},
+    {label = "<KICK>Kick+ban";command = "/kickban %s %s";},
+    {label = "<KICK>Knockout";command = "/knockout %s %s";},
+    {label = "</MENU>";command = "";},
+    {label = "<MENU>";command = "CTCP";},
+    {label = Ping;command = "/ping %s";},
+    {label = Version;command = "/ver %s";},
+    {label = "</MENU>";command = "";}
+  );
 }
