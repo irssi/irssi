@@ -1,6 +1,6 @@
 {
   default_color = 7;
-  colors = {};
+  colors = {red_100 = 65535;green_100 = 65535;blue_100 = 65535;};
   formats = {
     line_start = "-!- ";
     line_start_irssi = "-!- Irssi: ";
