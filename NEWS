@@ -1,3 +1,30 @@
+v0.7.24 2000-02-19  Timo Sirainen <tss@iki.fi> [stable]
+
+	+ French translation
+	+ Updated Brazilian Portuguese translation translation, now with
+	  the right pot file name :)
+	+ Using fontset_load() instead of font_load(), helps with using
+	  some fonts (by hashao@telebot.com)
+	+ /TS - display topics of all channels you're joined
+	+ Automatically change to the created window
+	+ Option: Show op/voice status in channel messages before nick.
+	+ irssi-text: Displays topic bar op the top of the screen -
+	  /set toggle_show_topicbar = yes|no
+	+ Recognize +a (anonymous) and +r (reop when opless) modes
+	- Irc network list was still corrupted in channel dialog.
+	- /LIST dialog - users column is now sorted numerically
+	  (10 shows after 9, not after 1)..
+	- Log setup dialog: Clear all button was over Client errors
+	  toggle button.
+	- /LAST's output displayed some crap in log file.
+	- irssi-text should work better with other curses libraries than
+	  ncurses
+	- irssi-text should work better with non-black backgounds
+	- Fixed tab completion when completion char was comma
+	- Couple of configure bugs fixed
+	- Specifying source host (vhosts) didn't work.
+	- DCC resume had been broken quite a while
+
 v0.7.23 2000-01-23  Timo Sirainen <cras@irccrew.org> [stable]
 
 	+ channel's key (+k key) is displayed in irssi-text's statusbar if it
