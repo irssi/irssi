@@ -13,6 +13,8 @@ irssi_DEPENDENCIES = \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@
 
+irssi_LDFLAGS = -export-dynamic
+
 irssi_LDADD = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
