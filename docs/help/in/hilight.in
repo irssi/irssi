@@ -7,7 +7,7 @@
    -nick: Hilight only the nick, not the whole line (default)
    -word: Hilight only the word (default with non-public messages)
    -line: Hilight the whole line with the hilight color.
-   -color: Print the message with <color>. color is in %code format
+   -color: Print the message with <color>. color is in %%code format
            (see docs/formats.txt)
    -level: Match only for <level> messages, default is
            publics,msgs,notices,actions
@@ -19,7 +19,7 @@ Hilight lines that have "mynick" word:
   /HILIGHT mynick
 
 Hilight lines that were written by nicks from *.fi with bold green
-  /HILIGHT -color %G -mask *!*@*.fi
+  /HILIGHT -color %%G -mask *!*@*.fi
 
 For regular expressions, see `man 7 regex`.
 
