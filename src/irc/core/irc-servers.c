@@ -109,7 +109,7 @@ static void sig_server_looking(IRC_SERVER_REC *server)
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	char hostname[100], *address, *ptr;
+	char hostname[100], *address, *ptr, *username;
 
 	g_return_if_fail(server != NULL);
 
@@ -144,8 +144,14 @@ static void server_init(IRC_SERVER_REC *server)
 		   the last : char */
                 address = ptr+1;
 	}
-	irc_send_cmdv(server, "USER %s %s %s :%s", conn->username, hostname,
+
+	username = g_strdup(conn->username);
+	ptr = strchr(username, ' ');
+	if (ptr != NULL) *ptr = '\0';
+	
+	irc_send_cmdv(server, "USER %s %s %s :%s", username, hostname,
 		      address, conn->realname);
+	g_free(username);
 
 	server->cmdcount = 0;
 }
