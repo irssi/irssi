@@ -94,10 +94,11 @@ OUTPUT:
 	RETVAL
 
 void
-send_message(server, target, msg, int target_type)
+send_message(server, target, msg, target_type)
 	Irssi::Server server
 	char *target
 	char *msg
+	int target_type
 CODE:
 	server->send_message(server, target, msg, target_type);
 
