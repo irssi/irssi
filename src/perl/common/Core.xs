@@ -57,7 +57,39 @@ void
 timeout_remove(tag)
 	int tag
 CODE:
-	perl_timeout_remove(tag);
+	perl_source_remove(tag);
+
+
+int
+INPUT_READ()
+CODE:
+	RETVAL = G_INPUT_READ;
+OUTPUT:
+	RETVAL
+
+int
+INPUT_WRITE()
+CODE:
+	RETVAL = G_INPUT_WRITE;
+OUTPUT:
+	RETVAL
+
+int
+input_add(source, condition, func, data)
+	int source
+	int condition
+	char *func
+	char *data
+CODE:
+	RETVAL = perl_input_add(source, condition, func, data);
+OUTPUT:
+	RETVAL
+
+void
+input_remove(tag)
+	int tag
+CODE:
+	perl_source_remove(tag);
 
 int
 level2bits(str)

@@ -13,20 +13,10 @@ require Exporter;
 require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
-@EXPORT = qw();
+@EXPORT = qw(INPUT_READ INPUT_WRITE);
 @EXPORT_OK = qw();
 
 bootstrap Irssi $VERSION;
-
-@Irssi::Ircnet::ISA = qw(Irssi::Chatnet);
-@Irssi::IrcServer::ISA = qw(Irssi::Server);
-@Irssi::IrcServerConnect::ISA = qw(Irssi::ServerConnect);
-@Irssi::IrcServerSetup::ISA = qw(Irssi::ServerSetup);
-
-@Irssi::Channel::ISA = qw(Irssi::WindowItem);
-@Irssi::Query::ISA = qw(Irssi::WindowItem);
-@Irssi::IrcChannel::ISA = qw(Irssi::Channel);
-@Irssi::IrcQuery::ISA = qw(Irssi::Query);
 
 1;
 

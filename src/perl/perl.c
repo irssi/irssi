@@ -64,12 +64,12 @@ typedef struct {
 	int tag;
 	char *func;
 	char *data;
-} PERL_TIMEOUT_REC;
+} PERL_SOURCE_REC;
 
 #include "perl-signals.h"
 
 static GHashTable *first_signals, *last_signals;
-static GSList *perl_timeouts;
+static GSList *perl_sources;
 static GSList *perl_scripts;
 static PerlInterpreter *irssi_perl_interp;
 static int signal_grabbed, siglast_grabbed;
@@ -115,9 +115,9 @@ static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 	g_free(rec);
 }
 
-static void perl_timeout_destroy(PERL_TIMEOUT_REC *rec)
+static void perl_source_destroy(PERL_SOURCE_REC *rec)
 {
-	perl_timeouts = g_slist_remove(perl_timeouts, rec);
+	perl_sources = g_slist_remove(perl_sources, rec);
 
 	g_source_remove(rec->tag);
 	g_free(rec->func);
@@ -160,7 +160,7 @@ static void irssi_perl_start(void)
 					 (GCompareFunc) g_direct_equal);
 	last_signals = g_hash_table_new((GHashFunc) g_direct_hash,
 					(GCompareFunc) g_direct_equal);
-	perl_timeouts = NULL;
+	perl_sources = NULL;
 
 	irssi_perl_interp = perl_alloc();
 	perl_construct(irssi_perl_interp);
@@ -216,12 +216,12 @@ static int perl_script_destroy(const char *name)
 	g_hash_table_foreach_remove(last_signals,
 				    (GHRFunc) signal_destroy_hash, package);
 
-	for (tmp = perl_timeouts; tmp != NULL; tmp = next) {
-		PERL_TIMEOUT_REC *rec = tmp->data;
+	for (tmp = perl_sources; tmp != NULL; tmp = next) {
+		PERL_SOURCE_REC *rec = tmp->data;
 
 		next = tmp->next;
 		if (strncmp(rec->func, package, package_len) == 0)
-			perl_timeout_destroy(rec);
+			perl_source_destroy(rec);
 	}
 
 	g_free(package);
@@ -248,8 +248,8 @@ static void irssi_perl_stop(void)
 		signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
 	}
 
-	while (perl_timeouts != NULL)
-		perl_timeout_destroy(perl_timeouts->data);
+	while (perl_sources != NULL)
+		perl_source_destroy(perl_sources->data);
 
 	g_slist_foreach(perl_scripts, (GFunc) g_free, NULL);
 	g_slist_free(perl_scripts);
@@ -437,7 +437,7 @@ void perl_signal_remove(const char *signal, const char *func)
 	g_free(fullfunc);
 }
 
-static int perl_timeout(PERL_TIMEOUT_REC *rec)
+static int perl_source_event(PERL_SOURCE_REC *rec)
 {
 	dSP;
 	int retcount;
@@ -469,26 +469,41 @@ static int perl_timeout(PERL_TIMEOUT_REC *rec)
 
 int perl_timeout_add(int msecs, const char *func, const char *data)
 {
-	PERL_TIMEOUT_REC *rec;
+	PERL_SOURCE_REC *rec;
 
-	rec = g_new(PERL_TIMEOUT_REC, 1);
+	rec = g_new(PERL_SOURCE_REC, 1);
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
-	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_timeout, rec);
+	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_source_event, rec);
 
-	perl_timeouts = g_slist_append(perl_timeouts, rec);
+	perl_sources = g_slist_append(perl_sources, rec);
 	return rec->tag;
 }
 
-void perl_timeout_remove(int tag)
+int perl_input_add(int source, int condition,
+		   const char *func, const char *data)
+{
+	PERL_SOURCE_REC *rec;
+
+	rec = g_new(PERL_SOURCE_REC, 1);
+	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
+	rec->data = g_strdup(data);
+	rec->tag = g_input_add(source, condition,
+			       (GInputFunction) perl_source_event, rec);
+
+	perl_sources = g_slist_append(perl_sources, rec);
+	return rec->tag;
+}
+
+void perl_source_remove(int tag)
 {
 	GSList *tmp;
 
-	for (tmp = perl_timeouts; tmp != NULL; tmp = tmp->next) {
-		PERL_TIMEOUT_REC *rec = tmp->data;
+	for (tmp = perl_sources; tmp != NULL; tmp = tmp->next) {
+		PERL_SOURCE_REC *rec = tmp->data;
 
 		if (rec->tag == tag) {
-			perl_timeout_destroy(rec);
+			perl_source_destroy(rec);
 			break;
 		}
 	}
