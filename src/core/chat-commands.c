@@ -149,8 +149,6 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 	SERVER_CONNECT_REC *oldconn;
 	RECONNECT_REC *recon;
 
-	conn->reconnection = TRUE;
-
 	if (server != NULL) {
 		oldconn = server->connrec;
                 reconnect_save_status(conn, server);
@@ -167,6 +165,8 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 		conn->away_reason = g_strdup(oldconn->away_reason);
 		conn->channels = g_strdup(oldconn->channels);
 	}
+
+	conn->reconnection = TRUE;
 
 	if (conn->chatnet == NULL && oldconn->chatnet != NULL)
 		conn->chatnet = g_strdup(oldconn->chatnet);
