@@ -398,10 +398,10 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	params = cmd_get_params(data, 3 | PARAM_FLAG_OPTARGS | PARAM_FLAG_GETREST, &args, &channel, &rest);
 
 	if (strcmp(channel, "*") == 0 || *channel == '\0') {
-		if (!irc_item_check(item))
+		if (!irc_item_channel(item))
                         cmd_return_error(CMDERR_NOT_JOINED);
 
-		data = item->name;
+		channel = item->name;
 	}
 	if (strcmp(channel, "**") == 0) {
 		/* ** displays all nicks.. */
