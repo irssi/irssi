@@ -75,6 +75,12 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
 
+	if (window->resize_freeze_counter > 0) {
+		window->resize_needed = TRUE;
+		return;
+	}
+
+	mainwindow_set_screen_size(window);
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
@@ -84,6 +90,8 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 					  MAIN_WINDOW_TEXT_HEIGHT(window));
 		}
 	}
+
+	signal_emit("mainwindow resized", 1, window);
 }
 
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
@@ -93,12 +101,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 
         window->width += xdiff;
 	window->height = window->last_line-window->first_line+1;
-	mainwindow_set_screen_size(window);
         mainwindow_resize_windows(window);
-
-	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
-				   window->screen_win);
-	signal_emit("mainwindow resized", 1, window);
 }
 
 static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
@@ -517,12 +520,24 @@ int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
                 window->statusbar_lines += bottom;
 	}
 
-	if (top+bottom != 0) {
-		mainwindow_set_screen_size(window);
+	if (top+bottom != 0)
 		mainwindow_resize_windows(window);
-	}
 
         return ret;
+}
+
+void mainwindow_resize_freeze(MAIN_WINDOW_REC *window)
+{
+        window->resize_freeze_counter++;
+}
+
+void mainwindow_resize_thaw(MAIN_WINDOW_REC *window)
+{
+	if (--window->resize_freeze_counter == 0 &&
+	    window->resize_needed) {
+                window->resize_needed = FALSE;
+		mainwindow_resize_windows(window);
+	}
 }
 
 static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,

@@ -21,7 +21,10 @@ typedef struct {
 	GSList *statusbars;
 	int statusbar_lines_top;
 	int statusbar_lines_bottom;
-        int statusbar_lines; /* top+bottom */
+	int statusbar_lines; /* top+bottom */
+
+        int resize_freeze_counter;
+	unsigned int resize_needed:1; /* We'll need to resize the window, but haven't got around doing it just yet. */
 } MAIN_WINDOW_REC;
 
 extern GSList *mainwindows;
@@ -50,6 +53,8 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 int mainwindows_reserve_lines(int top, int bottom);
 int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
 				   int top, int bottom);
+void mainwindow_resize_freeze(MAIN_WINDOW_REC *window);
+void mainwindow_resize_thaw(MAIN_WINDOW_REC *window);
 
 GSList *mainwindows_get_sorted(int reverse);
 
