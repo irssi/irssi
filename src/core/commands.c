@@ -537,37 +537,36 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 	rec->data = old;
 	*free_me = rec;
 
-	/* and now handle the string */
 	error = FALSE;
-	cnt = PARAM_WITHOUT_FLAGS(count);
-	while (cnt-- > 0) {
-		if (count & PARAM_FLAG_OPTIONS) {
-			arg = (char *) va_arg(args, char *);
-			opthash = (GHashTable **) va_arg(args, GHashTable **);
+	if (count & PARAM_FLAG_OPTIONS) {
+		arg = (char *) va_arg(args, char *);
+		opthash = (GHashTable **) va_arg(args, GHashTable **);
 
-			rec->options = *opthash =
-				g_hash_table_new((GHashFunc) g_istr_hash,
-						 (GCompareFunc) g_istr_equal);
+		rec->options = *opthash =
+			g_hash_table_new((GHashFunc) g_istr_hash,
+					 (GCompareFunc) g_istr_equal);
 
-			ignore_unknown = count & PARAM_FLAG_UNKNOWN_OPTIONS;
-			error = get_cmd_options(&datad, ignore_unknown,
-						arg, *opthash);
-			if (error) break;
+		ignore_unknown = count & PARAM_FLAG_UNKNOWN_OPTIONS;
+		error = get_cmd_options(&datad, ignore_unknown,
+					arg, *opthash);
+	}
 
-			count &= ~PARAM_FLAG_OPTIONS;
-			cnt++;
-			continue;
-		} else if (cnt == 0 && count & PARAM_FLAG_GETREST) {
-			/* get rest */
-			arg = datad;
-		} else {
-			arg = (count & PARAM_FLAG_NOQUOTES) ?
-				cmd_get_param(&datad) :
-				cmd_get_quoted_param(&datad);
+	if (!error) {
+		/* and now handle the string */
+		cnt = PARAM_WITHOUT_FLAGS(count);
+		while (cnt-- > 0) {
+			if (cnt == 0 && count & PARAM_FLAG_GETREST) {
+				/* get rest */
+				arg = datad;
+			} else {
+				arg = (count & PARAM_FLAG_NOQUOTES) ?
+					cmd_get_param(&datad) :
+					cmd_get_quoted_param(&datad);
+			}
+
+			str = (char **) va_arg(args, char **);
+			if (str != NULL) *str = arg;
 		}
-
-		str = (char **) va_arg(args, char **);
-		if (str != NULL) *str = arg;
 	}
 	va_end(args);
 
