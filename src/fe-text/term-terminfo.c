@@ -224,9 +224,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 	/* set foreground color */
 	if ((col & 0x0f) != last_fg &&
 	    ((col & 0x0f) != 0 || (col & ATTR_RESETFG) == 0)) {
-		last_fg = col & 0x0f;
-                if (term_use_colors)
+                if (term_use_colors) {
+			last_fg = col & 0x0f;
 			terminfo_set_fg(last_fg);
+		}
 	}
 
 	/* set background color */
@@ -237,9 +238,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 
 	if ((col & 0xf0) >> 4 != last_bg &&
 	    ((col & 0xf0) != 0 || (col & ATTR_RESETBG) == 0)) {
-		last_bg = (col & 0xf0) >> 4;
-                if (term_use_colors)
+                if (term_use_colors) {
 			terminfo_set_bg(last_bg);
+			last_bg = (col & 0xf0) >> 4;
+		}
 	}
 
 	/* bold */
