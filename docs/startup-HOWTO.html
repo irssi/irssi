@@ -9,10 +9,12 @@
 
 <ol>
 <li><a href="#c1">For all the lazy people</a></li>
+    <ul>
+    <li>This window management is just weird, I want it exactly like ircII</li>
+    </ul>
 <li><a href="#c2">Basic user interface usage</a>
     <ul>
     <li>Split windows work in weird way</li>
-    <li>I don't want any windows, I want it just like in ircII!</li>
     </ul></li>
 <li><a href="#c3">Server and channel automation</a>
     <ul>
@@ -78,6 +80,22 @@ query:</p>
 <pre>
      /SET autoclose_windows OFF
      /SET reuse_unused_windows ON
+</pre>
+
+<p>Here's the settings that make irssi work exactly like ircII in window
+management (send me a note if you can think of more):</p>
+
+<pre>
+     /SET autocreate_own_query OFF
+     /SET autocreate_query_level NONE
+     /SET use_status_window OFF
+     /SET use_msgs_window OFF
+     /SET reuse_unused_windows ON
+     /SET windows_auto_renumber OFF
+
+     /SET autostick_split_windows OFF
+     /SET autoclose_windows OFF
+     /SET print_active_channel ON
 </pre>
 
 <p>And example how to add servers:</p>
