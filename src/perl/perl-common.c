@@ -453,6 +453,9 @@ void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
         const char *cmdchars;
 	char *sendcmd = (char *) cmd;
 
+	if (*cmd == '\0')
+                return;
+
         cmdchars = settings_get_str("cmdchars");
 	if (strchr(cmdchars, *cmd) == NULL) {
 		/* no command char - let's put it there.. */
