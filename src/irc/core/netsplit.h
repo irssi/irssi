@@ -34,6 +34,7 @@ void netsplit_deinit(void);
 NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick, const char *address);
 NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const char *address, const char *channel);
 
+/* check if quit message is a netsplit message */
 int quitmsg_is_split(const char *msg);
 
 #endif

@@ -213,34 +213,63 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
 	return NULL;
 }
 
-/* check if quit message is a netsplit message - there's some paranoia
-   checks which are probably a bit useless since nowadays IRC servers
-   add space after quit message if it looks like a netsplit message. */
+/* check if quit message is a netsplit message */
 int quitmsg_is_split(const char *msg)
 {
-	char *host1, *host2, *p;
-	int ok;
+	const char *host1, *host2;
+        int prev, len;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
 
-	/* must have only two words */
-	p = strchr(msg, ' ');
-	if (p == NULL || p == msg || strchr(p+1, ' ') != NULL)
-		return FALSE;
+	/* NOTE: there used to be some paranoia checks (some older IRC
+	   clients have even more), but they're pretty useless nowadays,
+	   since IRC server prefixes the quit message with a space if it
+	   looks like a quit message.
 
-	/* check that it looks ok.. */
-	if (!match_wildcards("*.* *.*", msg) ||
-	    strstr(msg, "..") != NULL || strstr(msg, "))") != NULL)
-		return FALSE;
+	   There also used to be a check that root domain was 2-3 characters
+	   long. This doesn't work since undernet uses now "*.net *.split"
+	   quit message for all netsplits, and then there's the new top level
+	   domains which breaks that code too.
 
-	/* get the two hosts */
-	host1 = g_strndup(msg, (int) (p-msg));
-	host2 = p;
+	   So, the check is currently just:
+             - host1[.domain1] host2[.domain2]
+	     - only 1 space
+	     - no double-dots (".." - probably useless check)
+	     - hosts/domains can't start or end with a dot
+             - the two hosts can't be identical (probably useless check)
+	   */
+        host1 = msg;
+        host2 = NULL; prev = '\0'; len = 0;
+	while (*msg != '\0') {
+		if (*msg == ' ') {
+			if (prev == '.' || prev == '\0') {
+				/* domains can't end with '.', space can't
+				   be the first character in msg. */
+				return FALSE;
+			}
+			if (host2 != NULL)
+				return FALSE; /* only one space allowed */
+                        host2 = msg+1; len = -1;
+		} else if (*msg == '.') {
+			if (prev == '\0' || prev == ' ' || prev == '.') {
+				/* domains can't start with '.'
+				   and can't have ".." */
+				return FALSE;
+			}
+		}
 
-	ok = g_strcasecmp(host1, host2) != 0; /* hosts can't be same.. */
-	g_free(host1);
+		prev = *msg;
+                msg++; len++;
+	}
 
-	return ok;
+	if (host2 == NULL || prev == '.')
+                return FALSE;
+
+	if (len == (int) (host2-host1)-1 &&
+	    g_strncasecmp(host1, host2, len) == 0)
+                return FALSE; /* hosts can't be the same */
+
+        return TRUE;
 }
 
 static void split_set_timeout(void *key, NETSPLIT_REC *rec, NETSPLIT_REC *orig)
