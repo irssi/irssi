@@ -110,7 +110,7 @@ static void sig_channel_joined(CHANNEL_REC *channel)
 		fe_channels_nicklist(channel, CHANNEL_NICKLIST_FLAG_ALL);
 }
 
-static void cmd_wjoin_pre(const char *data)
+static void cmd_wjoin_pre(const char *data, SERVER_REC *server)
 {
 	GHashTable *optlist;
 	char *nick;
@@ -121,6 +121,12 @@ static void cmd_wjoin_pre(const char *data)
 			    "join", &optlist, &nick))
                 return;
 
+	/* kludge for /join -invite -window if there is no invite */
+	if (g_hash_table_lookup(optlist, "invite") &&
+            server != NULL && server->last_invite == NULL) {
+            	cmd_params_free(free_arg);
+           	return;
+        }                    
 	if (g_hash_table_lookup(optlist, "window") != NULL) {
 		signal_add("channel created",
 			   (SIGNAL_FUNC) signal_channel_created_curwin);
