@@ -184,6 +184,7 @@ CODE:
 
 BOOT:
 	irssi_boot(Irc__Channel);
+	irssi_boot(Irc__Ctcp);
 	irssi_boot(Irc__Dcc);
 	irssi_boot(Irc__Modes);
 	irssi_boot(Irc__Netsplit);

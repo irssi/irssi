@@ -29,6 +29,59 @@
 #include "servers-idle.h"
 #include "ignore.h"
 
+typedef struct {
+	char *name;
+        int refcount;
+} CTCP_CMD_REC;
+
+static GSList *ctcp_cmds;
+
+static CTCP_CMD_REC *ctcp_cmd_find(const char *name)
+{
+	GSList *tmp;
+
+	for (tmp = ctcp_cmds; tmp != NULL; tmp = tmp->next) {
+		CTCP_CMD_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, name) == 0)
+                        return rec;
+	}
+
+        return NULL;
+}
+
+void ctcp_register(const char *name)
+{
+	CTCP_CMD_REC *rec;
+
+	rec = ctcp_cmd_find(name);
+	if (rec == NULL) {
+		rec = g_new0(CTCP_CMD_REC, 1);
+		rec->name = g_strdup(name);
+		g_strup(rec->name);
+
+		ctcp_cmds = g_slist_append(ctcp_cmds, rec);
+	}
+
+	rec->refcount++;
+}
+
+static void ctcp_cmd_destroy(CTCP_CMD_REC *rec)
+{
+	ctcp_cmds = g_slist_remove(ctcp_cmds, rec);
+	g_free(rec->name);
+	g_free(rec);
+}
+
+void ctcp_unregister(const char *name)
+{
+	CTCP_CMD_REC *rec;
+
+	rec = ctcp_cmd_find(name);
+	if (rec != NULL && --rec->refcount == 0)
+                ctcp_cmd_destroy(rec);
+}
+
 static void ctcp_queue_clean(IRC_SERVER_REC *server)
 {
 	GSList *tmp, *next;
@@ -92,24 +145,33 @@ static void ctcp_ping(IRC_SERVER_REC *server, const char *data,
 	g_free(str);
 }
 
-/* CTCP version */
-static void ctcp_version(IRC_SERVER_REC *server, const char *data,
-			 const char *nick)
+static void ctcp_send_parsed_reply(IRC_SERVER_REC *server, const char *nick,
+				   const char *cmd, const char *args)
 {
-	char *str, *reply;
+	char *str, *pstr;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
 
-	reply = parse_special_string(settings_get_str("ctcp_version_reply"),
-				     SERVER(server), NULL, "", NULL, 0);
-	str = g_strdup_printf("NOTICE %s :\001VERSION %s\001", nick, reply);
+	if (*args == '\0')
+                return;
+
+	pstr = parse_special_string(args, SERVER(server), NULL, "", NULL, 0);
+	str = g_strdup_printf("NOTICE %s :\001%s %s\001", nick, cmd, pstr);
 	ctcp_send_reply(server, str);
 	g_free(str);
-	g_free(reply);
+	g_free(pstr);
 }
 
 /* CTCP version */
+static void ctcp_version(IRC_SERVER_REC *server, const char *data,
+			 const char *nick)
+{
+	ctcp_send_parsed_reply(server, nick, "VERSION",
+			       settings_get_str("ctcp_version_reply"));
+}
+
+/* CTCP time */
 static void ctcp_time(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
@@ -123,6 +185,38 @@ static void ctcp_time(IRC_SERVER_REC *server, const char *data,
 	ctcp_send_reply(server, str);
 	g_free(str);
 	g_free(reply);
+}
+
+/* CTCP userinfo */
+static void ctcp_userinfo(IRC_SERVER_REC *server, const char *data,
+			  const char *nick)
+{
+	ctcp_send_parsed_reply(server, nick, "USERINFO",
+			       settings_get_str("ctcp_userinfo_reply"));
+}
+
+/* CTCP clientinfo */
+static void ctcp_clientinfo(IRC_SERVER_REC *server, const char *data,
+			    const char *nick)
+{
+	GString *str;
+        GSList *tmp;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(nick != NULL);
+
+	str = g_string_new(NULL);
+        g_string_sprintf(str, "NOTICE %s :\001CLIENTINFO", nick);
+	for (tmp = ctcp_cmds; tmp != NULL; tmp = tmp->next) {
+		CTCP_CMD_REC *rec = tmp->data;
+
+                g_string_append_c(str, ' ');
+                g_string_append(str, rec->name);
+	}
+	g_string_append_c(str, '\001');
+
+	ctcp_send_reply(server, str->str);
+	g_string_free(str, TRUE);
 }
 
 static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
@@ -221,8 +315,11 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 
 void ctcp_init(void)
 {
+	ctcp_cmds = NULL;
+
 	settings_add_str("misc", "ctcp_version_reply",
 			 PACKAGE" v$J - running on $sysname $sysarch");
+	settings_add_str("misc", "ctcp_userinfo_reply", "$Y");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
@@ -233,10 +330,21 @@ void ctcp_init(void)
 	signal_add("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping);
 	signal_add("ctcp msg version", (SIGNAL_FUNC) ctcp_version);
 	signal_add("ctcp msg time", (SIGNAL_FUNC) ctcp_time);
+	signal_add("ctcp msg userinfo", (SIGNAL_FUNC) ctcp_userinfo);
+	signal_add("ctcp msg clientinfo", (SIGNAL_FUNC) ctcp_clientinfo);
+
+        ctcp_register("ping");
+        ctcp_register("version");
+        ctcp_register("time");
+        ctcp_register("userinfo");
+        ctcp_register("clientinfo");
 }
 
 void ctcp_deinit(void)
 {
+	while (ctcp_cmds != NULL)
+		ctcp_cmd_destroy(ctcp_cmds->data);
+
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("event notice", (SIGNAL_FUNC) event_notice);
@@ -245,4 +353,6 @@ void ctcp_deinit(void)
 	signal_remove("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping);
 	signal_remove("ctcp msg version", (SIGNAL_FUNC) ctcp_version);
 	signal_remove("ctcp msg time", (SIGNAL_FUNC) ctcp_time);
+	signal_remove("ctcp msg userinfo", (SIGNAL_FUNC) ctcp_userinfo);
+	signal_remove("ctcp msg clientinfo", (SIGNAL_FUNC) ctcp_clientinfo);
 }

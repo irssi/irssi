@@ -92,6 +92,7 @@ irc_sources = \
 	irc/Irc.pm \
 	irc/Dcc.xs \
 	irc/Channel.xs \
+	irc/Ctcp.xs \
 	irc/Query.xs \
 	irc/Server.xs \
 	irc/Modes.xs \

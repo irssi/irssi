@@ -73,11 +73,6 @@ send_raw_split(server, cmd, nickarg, max_nicks)
 CODE:
 	irc_send_cmd_split(server, cmd, nickarg, max_nicks);
 
-void
-ctcp_send_reply(server, data)
-	Irssi::Irc::Server server
-	char *data
-
 MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server  PREFIX = server_
 
 void
