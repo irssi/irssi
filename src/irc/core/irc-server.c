@@ -346,7 +346,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 		modes_join(server->usermode, mode);
 	if (server->usermode == NULL || strcmp(newmode, server->usermode) != 0)
 		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
-	g_free(newmode);
+	g_free_not_null(newmode);
 	return 0;
 }
 
