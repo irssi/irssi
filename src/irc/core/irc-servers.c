@@ -325,8 +325,12 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	server->wait_cmd.tv_sec = 0;
 	memcpy(&server->last_cmd, now, sizeof(GTimeVal));
 
-	/* add to rawlog without CR+LF */
-	cmd[len-2] = '\0';
+	/* add to rawlog without [CR+]LF (/RAWQUOTE might not have
+	   added the CR) */
+        if (len > 2 && cmd[len-2] == '\r')
+		cmd[len-2] = '\0';
+        else if (cmd[len-1] == '\n')
+		cmd[len-1] = '\0';
 	rawlog_output(server->rawlog, cmd);
 	server_redirect_command(server, cmd, redirect);
 
