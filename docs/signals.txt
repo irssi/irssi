@@ -54,8 +54,9 @@ nicklist.c:
  "nicklist new", CHANNEL_REC, NICK_REC
  "nicklist remove", CHANNEL_REC, NICK_REC
  "nicklist changed", CHANNEL_REC, NICK_REC, char *orignick
- "nick gone changed", CHANNEL_REC, NICK_REC
- "nick serverop changed", CHANNEL_REC, NICK_REC
+ "nicklist host changed", CHANNEL_REC, NICK_REC
+ "nicklist gone changed", CHANNEL_REC, NICK_REC
+ "nicklist serverop changed", CHANNEL_REC, NICK_REC
 
 pidwait.c:
  "pidwait", int pid, int status
