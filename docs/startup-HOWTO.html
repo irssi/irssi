@@ -2,18 +2,21 @@
 
  <h3>To new Irssi users (not to new IRC users ..)</h3>
 
- <p>Copyright (c) 2000-2001 by Timo Sirainen</p>
+ <p>Copyright (c) 2000-2002 by Timo Sirainen</p>
 
 
 <p>Index with some FAQ questions that are answered in the chapter:</p>
 
 <ol>
 <li><a href="#c1">For all the lazy people</a></li>
-<li><a href="#c2">Basic user interface usage</a></li>
+<li><a href="#c2">Basic user interface usage</a>
+    <ul>
+    <li>Split windows work in weird way</li>
+    </ul></li>
 <li><a href="#c3">Server and channel automation</a>
     <ul>
-    <li>how do I automatically connect to servers at startup?</li>
-    <li>how do I automatically join to channels at startup?</li>
+    <li>How do I automatically connect to servers at startup?</li>
+    <li>How do I automatically join to channels at startup?</li>
     </ul></li>
 <li><a href="#c4">Setting up windows and automatically restoring them
     at startup</a></li>
@@ -346,7 +349,7 @@ see list of all active connections, use /SERVER without any parameters.
 You should see a list of something like:</p>
 
 <pre>
-     -!- IRCNet: irc.telia.fi:6667 (IRCNet)
+     -!- IRCNet: irc.song.fi:6667 (IRCNet)
      -!- OPN: tolkien.openprojects.net:6667 (OPN)
      -!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
 </pre>
@@ -508,7 +511,7 @@ logs by adding date/time formats to the file name. The formats are in
 <h3><a id="c9">9. Changing keyboard bindings</a></h3>
 
 <p>You can change any keyboard binding that terminal lets irssi know
-about. It doesn't let it know everything, so for example
+about. It doesn't let irssi know everything, so for example
 shift-backspace can't be bound unless you modify xterm resources
 somehow.</p>
 
@@ -524,7 +527,15 @@ an example for pressing F1 key:</p>
 ^[OP
 </pre>
 
-<p>So with irssi you would use /BIND ^[OP /ECHO F1 pressed.</p>
+<p>So in irssi you would use /BIND ^[OP /ECHO F1 pressed. If you use
+multiple terminals which have different bindings for the key, it would
+be better to use eg.:</p>
+
+<pre>
+/BIND ^[OP key F1
+/BIND ^[11~ key F1
+/BIND F1 /ECHO F1 pressed.
+</pre>
 
 <h3><a id="c10">10. Proxies and IRC bouncers</a></h3>
 
@@ -770,9 +781,6 @@ of them you might want to change (the default value is shown):</p>
   <dd>Show quit message only once in some of the channel windows the
   nick was in instead of in all windows.</dd>
 
-<dt>/SET topicbar ON</dt>
-  <dd>Show the channel's topic in top of screen.</dd>
-
 <dt>/SET lag_min_show 100</dt>
   <dd>Show the server lag in status bar if it's bigger than this, the
   unit is 1/100 of seconds (ie. the default value of 100 = 1 second).</dd>
@@ -788,12 +796,6 @@ of them you might want to change (the default value is shown):</p>
   or queries, list them here. For example "#boringchannel =bot1 =bot2".
   If any highlighted text or message for you appears in that window, this
   setting is ignored and the activity is shown.</dd>
-
-<dt>/SET mail_counter ON</dt>
-  <dd>Show the number of mails in your mbox in status
-  bar. The mbox file is taken from $MAIL environment setting. Only mbox
-  format works for now.</dd>
-</dl>
 
 <p><strong>Nick completion</strong></p>
 

@@ -8,6 +8,11 @@ A: They force ANSI colors even if terminal doesn't support them. By default,
 Q: How do I easily write text to channel that starts with '/' character?
 A: / /text
 
+Q: Why doesn't irssi update my realname (or whatever) after I change it
+   with /SET realname and reconnect with /RECONNECT or /SERVER?
+A: Irssi is trying to be too smart. This will be fixed in future, but for
+   now you should use /DISCONNECT + /CONNECT.
+
 Q: I connected to some server which isn't responding but now irssi tries
    to connect back to it all the time! How can I stop it?
 A: Two ways. The "good way" to do it is with /DISCONNECT. Check the server
