@@ -118,6 +118,9 @@ char *bits2level(int bits)
 	char *ret;
 	int n;
 
+	if (bits == 0)
+		return g_strdup("");
+
 	if (bits == MSGLEVEL_ALL)
 		return g_strdup("ALL");
 
