@@ -45,12 +45,14 @@ typedef struct {
 struct _REDIRECT_REC {
 	REDIRECT_CMD_REC *cmd;
 	time_t created;
-        int failures;
-	int destroyed;
+	int failures;
+
+	unsigned int destroyed:1;
+	unsigned int aborted:1;
+	unsigned int remote:1;
 
 	char *arg;
         int count;
-        int remote;
 	char *failure_signal, *default_signal;
 	GSList *signals; /* event, signal, ... */
 };
@@ -388,7 +390,7 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 	server->redirects =
 		g_slist_remove(server->redirects, rec);
 
-	if (!rec->destroyed) {
+	if (rec->aborted || !rec->destroyed) {
 		/* emit the failure signal */
 		str = g_strdup_printf(rec->failure_signal != NULL ?
 				      "FAILED %s: %s" : "FAILED %s",
@@ -435,7 +437,8 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 		if (rec->destroyed ||
 		    (rec->remote && (now-rec->created) > rec->cmd->timeout) ||
 		    (!rec->remote && redirect != NULL)) {
-			if (rec->remote || ++rec->failures >= MAX_FAILURE_COUNT)
+			if (rec->aborted || rec->remote ||
+			    ++rec->failures >= MAX_FAILURE_COUNT)
 				redirect_abort(server, rec);
 		}
 	}
@@ -465,13 +468,16 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 		*redirect = server->redirect_continue;
 		signal = redirect_match(*redirect, event, NULL, match_stop);
 		if (signal == NULL) {
-			/* unknown event - redirect to the default signal.
-			   FIXME: if stop event isn't properly got, this
-			   could break everything. Add some checks that if
-			   we get eg. 10 different unknown events after this,
-			   or if one of them matches to another redirection,
-			   abort this. */
-			signal = (*redirect)->default_signal;
+			/* unknown event - redirect to the default signal. */
+			if (strncmp(event, "event ", 6) == 0 &&
+			    isdigit(event[6])) {
+				signal = (*redirect)->default_signal;
+			} else {
+				/* not a numeric, so we've lost the
+				   stop event.. */
+                                (*redirect)->destroyed = TRUE;
+                                (*redirect)->aborted = TRUE;
+			}
 		}
 	}
 
