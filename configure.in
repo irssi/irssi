@@ -775,6 +775,7 @@ src/perl/ui/Makefile.PL
 src/perl/textui/Makefile.PL
 servertest/Makefile
 scripts/Makefile
+scripts/examples/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
