@@ -325,14 +325,26 @@ UI::Window->{}
   refnum - Reference number
   name - Name
 
+  width - Width
+  height - Height
+
   active - Active window item
   active_server - Active server
 
+  servertag - active_server must be either undef or have this same tag
+              (unless there's items in this window). This is used by
+	      /WINDOW SERVER -sticky
   level - Current window level
+
+  sticky_refnum - 1 if reference number is sticky
+
   data_level - Current data level
   hilight_color - Current activity hilight color
+
   last_timestamp - Last time timestamp was written in window
   last_line - Last time text was written in window
+
+  theme_name - Active theme in window, undef = default
 
 UI::TextDest->{}
   window - Window where the text will be written
