@@ -99,8 +99,8 @@ AC_ARG_WITH(modules,
 
 if test "x$prefix" != "xNONE"; then
         prefix=`eval echo $prefix`
-	PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=$prefix"
-	PERL_USE_LIB="$prefix`$perlpath -e 'use Config; $dir = $Config{archlibexp}; $prefix = $Config{prefixexp}; $dir =~ s/^$prefix//; print $dir;'`"
+	PERL_MM_PARAMS="PREFIX=$prefix"
+	PERL_USE_LIB="$prefix`$perlpath -e 'use Config; $dir = $Config{sitearchexp}; $prefix = $Config{siteprefixexp}; $dir =~ s/^$prefix//; print $dir;'`"
 
 	perl_library_dir="$PERL_USE_LIB"
 	perl_prefix_note=yes
