@@ -199,7 +199,8 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 		}
 
 		count = 0;
-		g_string_truncate(nickstr, nickstr->len-1);
+		if (nickstr->len > 0)
+			g_string_truncate(nickstr, nickstr->len-1);
 		irc_send_cmdv(server, post == NULL ? "%s %s" : "%s %s %s",
 			      pre, nickstr->str, post);
 		g_string_truncate(nickstr, 0);
