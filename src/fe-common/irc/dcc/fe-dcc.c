@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
+#include "settings.h"
 
 #include "levels.h"
 #include "irc.h"
@@ -37,6 +38,8 @@
 #include "module-formats.h"
 #include "printtext.h"
 
+static int autocreate_dccquery;
+
 static void dcc_connected(DCC_REC *dcc)
 {
 	char *sender;
@@ -48,7 +51,7 @@ static void dcc_connected(DCC_REC *dcc)
 		sender = g_strconcat("=", dcc->nick, NULL);
 		printformat(dcc->server, sender, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
 			    dcc->nick, dcc->addrstr, dcc->port);
-		if (query_find(NULL, sender) == NULL)
+		if (autocreate_dccquery && query_find(NULL, sender) == NULL)
 			irc_query_create(dcc->server, sender, TRUE);
 		g_free(sender);
 		break;
@@ -444,64 +447,75 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void read_settings(void)
+{
+	int level;
+
+	level = level2bits(settings_get_str("autocreate_query_level"));
+	autocreate_dccquery = (level & MSGLEVEL_DCCMSGS) != 0;
+}
+
 void fe_irc_dcc_init(void)
 {
-    signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
-    signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
-    signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
-    signal_add("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
-    signal_add("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
-    signal_add("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
-    signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
-    signal_add("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
-    signal_add("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
-    signal_add("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
-    signal_add("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
-    signal_add("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
-    signal_add("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
-    signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
-    signal_add("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
-    signal_add("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
-    signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
-    signal_add("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
-    signal_add("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
-    command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
-    command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
-    command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
-    command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
-    command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
-    command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
+	signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
+	signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
+	signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
+	signal_add("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
+	signal_add("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
+	signal_add("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
+	signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
+	signal_add("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
+	signal_add("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
+	signal_add("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
+	signal_add("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
+	signal_add("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
+	signal_add("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
+	signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
+	signal_add("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
+	signal_add("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
+	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+	signal_add("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+	signal_add("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
+	command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
+	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
+	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
+	command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
+	command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
 
-    theme_register(fecommon_irc_dcc_formats);
+	theme_register(fecommon_irc_dcc_formats);
+	read_settings();
 }
 
 void fe_irc_dcc_deinit(void)
 {
-    theme_unregister();
+	theme_unregister();
 
-    signal_remove("dcc connected", (SIGNAL_FUNC) dcc_connected);
-    signal_remove("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
-    signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);
-    signal_remove("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
-    signal_remove("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
-    signal_remove("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
-    signal_remove("dcc request", (SIGNAL_FUNC) dcc_request);
-    signal_remove("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
-    signal_remove("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
-    signal_remove("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
-    signal_remove("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
-    signal_remove("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
-    signal_remove("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
-    signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
-    signal_remove("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
-    signal_remove("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
-    signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
-    signal_remove("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
-    signal_remove("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
-    command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
-    command_unbind("me", (SIGNAL_FUNC) cmd_me);
-    command_unbind("action", (SIGNAL_FUNC) cmd_action);
-    command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
-    command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
-    command_unbind("dcc list", (SIGNAL_FUNC) cmd_dcc_list);
+	signal_remove("dcc connected", (SIGNAL_FUNC) dcc_connected);
+	signal_remove("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
+	signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);
+	signal_remove("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
+	signal_remove("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
+	signal_remove("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
+	signal_remove("dcc request", (SIGNAL_FUNC) dcc_request);
+	signal_remove("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
+	signal_remove("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
+	signal_remove("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
+	signal_remove("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
+	signal_remove("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
+	signal_remove("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
+	signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
+	signal_remove("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
+	signal_remove("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
+	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+	signal_remove("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+	signal_remove("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
+	command_unbind("me", (SIGNAL_FUNC) cmd_me);
+	command_unbind("action", (SIGNAL_FUNC) cmd_action);
+	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
+	command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
+	command_unbind("dcc list", (SIGNAL_FUNC) cmd_dcc_list);
 }
