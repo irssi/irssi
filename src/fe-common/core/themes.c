@@ -238,6 +238,12 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 /* returns TRUE if data is empty, or the data is a $variable which is empty */
 static int data_is_empty(const char **data)
 {
+	/* since we don't know the real argument list, assume there's always
+	   an argument in them */
+	char *arglist[] = {
+		"x", "x", "x", "x", "x", "x","x", "x", "x", "x",
+		NULL
+	};
 	const char *p;
 	char *ret;
         int free_ret, empty;
@@ -259,7 +265,7 @@ static int data_is_empty(const char **data)
 	/* variable - check if it's empty */
         p++;
 	ret = parse_special((char **) &p, active_win->active_server,
-			    active_win->active, NULL, &free_ret, NULL, 0);
+			    active_win->active, arglist, &free_ret, NULL, 0);
         p++;
 
 	while (*p == ' ') p++;
