@@ -29,7 +29,7 @@
 #define is_big5_lox(lo) (((char)0x80<=lo)&&(lo<=(char)0xFE))	/* extended */
 #define is_big5_hi(hi)  (((char)0x81<=hi)&&(hi<=(char)0xFE))
 #define is_big5(hi,lo) is_big5_hi(hi) && (is_big5_los(lo) || is_big5_lox(lo))
-#endif WANT_BIG5
+#endif
 
 int init_screen(void); /* Initialize screen, detect screen length */
 void deinit_screen(void); /* Deinitialize screen */
