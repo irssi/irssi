@@ -39,6 +39,9 @@ static int signal_print_text_stripped;
 static int signal_print_text;
 static int signal_print_text_finished;
 static int signal_print_format;
+static int signal_print_starting;
+
+static int sending_print_starting;
 
 static void print_line(TEXT_DEST_REC *dest, const char *text);
 
@@ -64,6 +67,12 @@ static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 	format_read_arglist(va, &formats[formatnum],
 			    arglist, sizeof(arglist)/sizeof(char *),
 			    buffer, sizeof(buffer));
+
+	if (!sending_print_starting) {
+		sending_print_starting = TRUE;
+		signal_emit_id(signal_print_starting, 1, dest);
+                sending_print_starting = FALSE;
+	}
 
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       dest, GINT_TO_POINTER(formatnum), arglist);
@@ -210,11 +219,25 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 	return ret;
 }
 
+void printtext_dest(TEXT_DEST_REC *dest, const char *text, va_list va)
+{
+	char *str;
+
+	if (!sending_print_starting) {
+		sending_print_starting = TRUE;
+		signal_emit_id(signal_print_starting, 1, dest);
+                sending_print_starting = FALSE;
+	}
+
+	str = printtext_get_args(dest, text, va);
+	print_line(dest, str);
+	g_free(str);
+}
+
 /* Write text to target - convert color codes */
 void printtext(void *server, const char *target, int level, const char *text, ...)
 {
 	TEXT_DEST_REC dest;
-	char *str;
 	va_list va;
 
 	g_return_if_fail(text != NULL);
@@ -222,17 +245,13 @@ void printtext(void *server, const char *target, int level, const char *text, ..
         format_create_dest(&dest, server, target, level, NULL);
 
 	va_start(va, text);
-	str = printtext_get_args(&dest, text, va);
+	printtext_dest(&dest, text, va);
 	va_end(va);
-
-	print_line(&dest, str);
-	g_free(str);
 }
 
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 {
 	TEXT_DEST_REC dest;
-	char *str;
 	va_list va;
 
 	g_return_if_fail(text != NULL);
@@ -241,11 +260,8 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 			   window != NULL ? window : active_win);
 
 	va_start(va, text);
-	str = printtext_get_args(&dest, text, va);
+	printtext_dest(&dest, text, va);
 	va_end(va);
-
-	print_line(&dest, str);
-	g_free(str);
 }
 
 static void msg_beep_check(SERVER_REC *server, int level)
@@ -319,11 +335,13 @@ void printtext_init(void)
 {
 	settings_add_int("misc", "timestamp_timeout", 0);
 
+	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
 	signal_print_text_stripped = signal_get_uniq_id("print text stripped");
 	signal_print_text = signal_get_uniq_id("print text");
 	signal_print_text_finished = signal_get_uniq_id("print text finished");
 	signal_print_format = signal_get_uniq_id("print format");
+	signal_print_starting = signal_get_uniq_id("print starting");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);
