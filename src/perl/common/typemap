@@ -28,5 +28,5 @@ T_IrssiObj
 	$arg = irssi_bless((SERVER_REC *)$var);
 
 T_PlainObj
-	$arg = irssi_bless_plain(\"$type\", $var);
+	$arg = plain_bless($var, \"$type\");
 
