@@ -867,8 +867,7 @@ static void event_motd(IRC_SERVER_REC *server, const char *data,
 {
 	/* don't ignore motd anymore after 3 seconds of connection time -
 	   we might have called /MOTD */
-	if (settings_get_bool("skip_motd") &&
-	    time(NULL)-3 <= server->real_connect_time)
+	if (settings_get_bool("skip_motd") && !server->motd_got)
 		return;
 
         print_event_received(server, data, nick, FALSE);

@@ -528,6 +528,11 @@ static void event_motd(IRC_SERVER_REC *server, const char *data, const char *fro
 	event_connected(server, data, from);
 }
 
+static void event_end_of_motd(IRC_SERVER_REC *server, const char *data)
+{
+	server->motd_got = TRUE;
+}
+
 static void event_channels_formed(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channels;
@@ -585,6 +590,8 @@ void irc_servers_init(void)
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
+	signal_add_last("event 376", (SIGNAL_FUNC) event_end_of_motd);
+	signal_add_last("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */
 	signal_add("event 254", (SIGNAL_FUNC) event_channels_formed);
 	signal_add("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_add("event error", (SIGNAL_FUNC) event_error);
@@ -607,6 +614,8 @@ void irc_servers_deinit(void)
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
+	signal_remove("event 376", (SIGNAL_FUNC) event_end_of_motd);
+	signal_remove("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */
 	signal_remove("event 254", (SIGNAL_FUNC) event_channels_formed);
 	signal_remove("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_remove("event error", (SIGNAL_FUNC) event_error);

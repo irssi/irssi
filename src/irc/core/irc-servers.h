@@ -60,6 +60,7 @@ struct _IRC_SERVER_REC {
 	unsigned int one_endofwho:1; /* /WHO #a,#b,.. replies only with one End of WHO message */
 	unsigned int disable_lag:1; /* Disable lag detection (PING command doesn't exist) */
 	unsigned int nick_collision:1; /* We're just now being killed because of nick collision */
+	unsigned int motd_got:1; /* We've received MOTD */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
