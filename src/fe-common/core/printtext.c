@@ -874,7 +874,7 @@ static void sig_gui_dialog(const char *type, const char *text)
 static void read_settings(void)
 {
 	timestamps = settings_get_bool("timestamps");
-	timestamp_timeout = settings_get_bool("timestamp_timeout");
+	timestamp_timeout = settings_get_int("timestamp_timeout");
 	msgs_timestamps = settings_get_bool("msgs_timestamps");
 	hide_text_style = settings_get_bool("hide_text_style");
 }
