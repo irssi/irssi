@@ -1,8 +1,8 @@
 {
   setupservers = (
-    {server = irc.funet.fi;ircnet = IRCNet;port = 6667;autoconnect = No;}
-    {server = irc.efnet.net;ircnet = EFNet;port = 6667;autoconnect = No;}
-    {server = irc.undernet.net;ircnet = Undernet;port = 6667;autoconnect = No;}
+    {server = irc.funet.fi;ircnet = IRCNet;port = 6667;autoconnect = No;},
+    {server = irc.efnet.net;ircnet = EFNet;port = 6667;autoconnect = No;},
+    {server = irc.undernet.net;ircnet = Undernet;port = 6667;autoconnect = No;},
     {server = irc.openprojects.net;ircnet = OPN;port = 6667;autoconnect = No;}
   );
 
