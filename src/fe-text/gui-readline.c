@@ -575,20 +575,45 @@ void gui_readline_deinit(void)
 	g_free_not_null(cutbuffer);
 	g_source_remove(readtag);
 
-	/*key_unbind("completion", (SIGNAL_FUNC) key_completion);
-	key_unbind("check replaces", (SIGNAL_FUNC) key_replace);
-	key_unbind("window prev", (SIGNAL_FUNC) key_prev_window);
-	key_unbind("window next", (SIGNAL_FUNC) key_next_window);
-	key_unbind("window active", (SIGNAL_FUNC) key_window_goto_active);
-	key_unbind("window item next", (SIGNAL_FUNC) key_next_window_item);
-	key_unbind("window item prev", (SIGNAL_FUNC) key_prev_window_item);
+	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
+	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);
+ 	key_unbind("backward_word", (SIGNAL_FUNC) key_backward_word);
+	key_unbind("forward_word", (SIGNAL_FUNC) key_forward_word);
+	key_unbind("beginning_of_line", (SIGNAL_FUNC) key_beginning_of_line);
+	key_unbind("end_of_line", (SIGNAL_FUNC) key_end_of_line);
 
-	key_unbind("redraw", (SIGNAL_FUNC) irssi_redraw);
-	key_unbind("prev page", (SIGNAL_FUNC) key_prev_page);
-	key_unbind("next page", (SIGNAL_FUNC) key_next_page);
+	key_unbind("backward_history", (SIGNAL_FUNC) key_backward_history);
+	key_unbind("forward_history", (SIGNAL_FUNC) key_forward_history);
 
-	key_unbind("special char", (SIGNAL_FUNC) key_addchar);
-	key_unbind("window change", (SIGNAL_FUNC) key_change_window);*/
+	key_unbind("backspace", (SIGNAL_FUNC) key_backspace);
+	key_unbind("delete_character", (SIGNAL_FUNC) key_delete_character);
+	key_unbind("delete_next_word", (SIGNAL_FUNC) key_delete_next_word);
+	key_unbind("delete_previous_word", (SIGNAL_FUNC) key_delete_previous_word);
+	key_unbind("delete_to_previous_space", (SIGNAL_FUNC) key_delete_to_previous_space);
+	key_unbind("erase_line", (SIGNAL_FUNC) key_erase_line);
+	key_unbind("erase_to_beg_of_line", (SIGNAL_FUNC) key_erase_to_beg_of_line);
+	key_unbind("erase_to_end_of_line", (SIGNAL_FUNC) key_erase_to_end_of_line);
+	key_unbind("yank_from_cutbuffer", (SIGNAL_FUNC) key_yank_from_cutbuffer);
+
+	key_unbind("word_completion", (SIGNAL_FUNC) key_word_completion);
+	key_unbind("check_replaces", (SIGNAL_FUNC) key_check_replaces);
+
+	key_unbind("previous_window", (SIGNAL_FUNC) key_previous_window);
+	key_unbind("next_window", (SIGNAL_FUNC) key_next_window);
+	key_unbind("upper_window", (SIGNAL_FUNC) key_upper_window);
+	key_unbind("lower_window", (SIGNAL_FUNC) key_lower_window);
+	key_unbind("active_window", (SIGNAL_FUNC) key_active_window);
+	key_unbind("next_window_item", (SIGNAL_FUNC) key_next_window_item);
+	key_unbind("previous_window_item", (SIGNAL_FUNC) key_previous_window_item);
+
+	key_unbind("refresh_screen", (SIGNAL_FUNC) irssi_redraw);
+	key_unbind("scroll_backward", (SIGNAL_FUNC) key_scroll_backward);
+	key_unbind("scroll_forward", (SIGNAL_FUNC) key_scroll_forward);
+	key_unbind("scroll_start", (SIGNAL_FUNC) key_scroll_start);
+	key_unbind("scroll_end", (SIGNAL_FUNC) key_scroll_end);
+
+	key_unbind("special_char", (SIGNAL_FUNC) key_addchar);
+	key_unbind("change_window", (SIGNAL_FUNC) key_change_window);
 
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
