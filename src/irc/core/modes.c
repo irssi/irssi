@@ -265,6 +265,7 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 				}
 				if (*prefix == 'o')
 					break;
+				prefix++;
 			}
 		} else {
 			if (mode == 'o' || mode == 'O')
