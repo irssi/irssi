@@ -435,11 +435,31 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	return value;
 }
 
-static void gstring_append_escaped(GString *str, const char *text)
+static void gstring_append_escaped(GString *str, const char *text, int flags)
 {
+	char esc[4], *escpos;
+	
+	escpos = esc;
+	if (flags & PARSE_FLAG_ESCAPE_VARS)
+		*escpos++ = '%';
+	if (flags & PARSE_FLAG_ESCAPE_THEME) {
+		*escpos++ = '{';
+		*escpos++ = '}';
+	}
+
+	if (escpos == esc) {
+		g_string_append(str, text);
+		return;
+	}
+
+	*escpos = '\0';	
 	while (*text != '\0') {
-		if (*text == '%')
-                        g_string_append_c(str, '%');
+		for (escpos = esc; *escpos != '\0'; escpos++) {
+			if (*text == *escpos) {
+	                        g_string_append_c(str, '%');
+	                        break;
+	                }
+		}
 		g_string_append_c(str, *text);
 		text++;
 	}
@@ -482,10 +502,7 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 					    arglist, &need_free, arg_used,
 					    flags);
 			if (ret != NULL) {
-                                if ((flags & PARSE_FLAG_ESCAPE_VARS) == 0)
-					g_string_append(str, ret);
-				else
-                                        gstring_append_escaped(str, ret);
+                                gstring_append_escaped(str, ret, flags);
 				if (need_free) g_free(ret);
 			}
 			code = 0;

@@ -95,7 +95,8 @@ static void item_default(SBAR_ITEM_REC *item, int get_size_only,
 
 	/* expand $variables */
 	tmpstr = parse_special_string(str, server, wiitem, data, NULL,
-				      PARSE_FLAG_ESCAPE_VARS);
+				      PARSE_FLAG_ESCAPE_VARS |
+				      PARSE_FLAG_ESCAPE_THEME);
 
 	/* expand templates */
         str = tmpstr;
