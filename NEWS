@@ -1,3 +1,54 @@
+v0.8.2 2002-03-11  Timo Sirainen <tss@iki.fi>
+
+	* Changed the list of scripts distributed with irssi. Separated
+	  example scripts to scripts/examples/ directory.
+
+	* Hated infobar was removed, the same info is now in topicbar in
+	  empty windows. I don't think it would disturb anyone in there.
+	  If you still preferred always-empty topicbars, use
+	  /SBAR topic REMOVE topic_empty
+
+	+ Added info_eol field to theme. If true, timestamp and server tag
+	  are added to end of line, not at beginning.
+	+ If -4 or -6 option is used with /SERVER, irssi now forces the
+	  connection using the given protocol or fails.
+	+ /SET max_wildcard_modes (default 6) - if a wildcard to /OP, /DEOP,
+	  /VOICE or /DEVOICE matches more nicks than this, -yes option is
+	  required. This is trying to prevent accidental massops. Setting
+	  it to 0 disables this check.
+	+ Supports now correctly servers which use '.' char as channel owner
+	  character in /NAMES list. Also supports multiple mode chars, eg.
+	  @+nick (if some server actually used it).
+	+ Never ignore kick message if you get kicked from channel.
+	+ Sending irssi SIGHUP now does a /RELOAD - useful if you
+	  accidentally messed up something which doesn't let you do the
+	  /RELOAD inside irssi (eg. /SBAR prompt DISABLE).
+	+ irssi-proxy: PROXY CTCP ON|OFF - proxy clients can send this
+	  command to specify that they want to handle the received CTCP
+	  requests. Useful for specifying who gets to handle DCCs.
+	+ Added escape_char /BIND command. The next char after that would be
+	  added as-is to input line.
+	- Writing lines longers than 1024 chars to input buffer crashed
+	  irssi (stupid missing sizeof() bug :)
+	- Some UTF-8 fixes
+	- Better flood protection for lines with >100 chars
+	- Control characters aren't printed as-is in topicbar (or statusbars
+	  in general) anymore
+	- /OPER can be now aborted by giving empty password
+	- Netjoin messages were buggy in +channels
+	- Part message parameter for /CYCLE was never used.
+	- Don't send -autosendcmd after /UPGRADE.
+	- /SET autoclose_query - now only last received private message
+	  affects when the query is closed, ie. /WHOIS requests or nick
+	  changes don't reset the counter.
+	- Foreground ANSI colors weren't working
+	- Deleting one character replaced cutbuffer with that character.
+	  Also ^Y leaked memory.
+	- /SCRIPT LOAD looked scripts from prefix/lib dir, not prefix/share
+	  where they were actually installed.
+	- Highascii chars in replaces block in theme files could have
+	  crashed irssi.
+
 v0.8.1 2002-02-17  Timo Sirainen <tss@iki.fi>
 
 	* Expected bugfix release :) Worst thing was that I forgot always to
