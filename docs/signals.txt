@@ -13,6 +13,11 @@ core
 
 * Provides signals:
 
+chat-protocols.c:
+ "chat protocol created", CHAT_PROTOCOL_REC
+ "chat protocol updated", CHAT_PROTOCOL_REC
+ "chat protocol destroyed", CHAT_PROTOCOL_REC
+
 channels.c:
  "channel created", CHANNEL_REC, int automatic
  "channel destroyed", CHANNEL_REC
