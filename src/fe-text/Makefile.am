@@ -1,4 +1,4 @@
-bin_PROGRAMS = irssi
+bin_PROGRAMS = irssi irssi-dummy
 
 INCLUDES = \
 	-I$(top_srcdir)/src \
@@ -8,17 +8,23 @@ INCLUDES = \
 	$(CURSES_INCLUDEDIR) \
 	-DLOCALEDIR=\""$(datadir)/locale"\"
 
-irssi_DEPENDENCIES = \
+IRSSIDEPS = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@
 
-irssi_LDADD = \
+irssi_DEPENDENCIES = $(IRSSIDEPS)
+irssi_dummy_DEPENDENCIES = $(IRSSIDEPS)
+
+IRSSILINK = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@ \
 	@PERL_LINK_FLAGS@ \
 	@PROG_LIBS@
+
+irssi_LDADD = $(IRSSILINK)
+irssi_dummy_LDADD = $(IRSSILINK)
 
 tparm_sources = \
 	tparm.c
@@ -39,6 +45,9 @@ use_term_sources = $(curses_sources)
 else
 use_term_sources = $(terminfo_sources)
 endif
+
+irssi_dummy_SOURCES = \
+        irssi-dummy.c
 
 irssi_SOURCES = \
         gui-entry.c \
