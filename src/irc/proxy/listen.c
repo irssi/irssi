@@ -170,22 +170,22 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			client->want_ctcp = 1;
 	                for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 				CLIENT_REC *rec = tmp->data;
-				if ((g_strcasecmp(client->server->connrec->chatnet,rec->server->connrec->chatnet) == 0) &&
+				if ((g_strcasecmp(client->listen->ircnet,rec->listen->ircnet) == 0) &&
 					(client->tag != rec->tag)) {
 						if (rec->want_ctcp == 1)
 							proxy_outdata(rec, ":%s NOTICE %s :Another client is now receiving CTCPs sent to %s\n",
-			                                      rec->proxy_address, rec->nick,rec->server->connrec->chatnet);
-						rec->want_ctcp=0;
+			                                      rec->proxy_address, rec->nick, rec->listen->ircnet);
+						rec->want_ctcp = 0;
 		                }
 						                                      
 			}
 			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\n",
-				      client->proxy_address, client->nick,client->server->connrec->chatnet);
+				      client->proxy_address, client->nick,client->listen->ircnet);
 		} else if (g_strcasecmp(args, "CTCP OFF") == 0) {
                         /* client wants proxy to handle all ctcps */
 			client->want_ctcp = 0;
 			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\n",
-				      client->proxy_address, client->nick,client->server->connrec->chatnet);
+				      client->proxy_address, client->nick, client->listen->ircnet);
 		}
 		return;
 	}
