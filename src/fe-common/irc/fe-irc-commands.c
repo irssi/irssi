@@ -154,7 +154,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     else
     {
         /* private message */
-        item = (WI_ITEM_REC *) privmsg_get_query(server, target);
+        item = (WI_ITEM_REC *) privmsg_get_query(server, target, TRUE);
 	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
 		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }

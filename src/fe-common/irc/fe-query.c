@@ -35,12 +35,13 @@
 static int queryclose_tag, query_auto_close;
 
 /* Return query where to put the private message. */
-QUERY_REC *privmsg_get_query(IRC_SERVER_REC *server, const char *nick)
+QUERY_REC *privmsg_get_query(IRC_SERVER_REC *server, const char *nick, int own)
 {
 	QUERY_REC *query;
 
 	query = query_find(server, nick);
-        if (query == NULL && settings_get_bool("autocreate_query"))
+	if (query == NULL && settings_get_bool("autocreate_query") &&
+	    (!own || settings_get_bool("autocreate_own_query")))
 		query = query_create(server, nick, TRUE);
 
 	return query;
@@ -173,7 +174,7 @@ static int sig_query_autoclose(void)
 
 static void read_settings(void)
 {
-	query_auto_close = settings_get_int("query_auto_close");
+	query_auto_close = settings_get_int("autoclose_query");
 	if (query_auto_close > 0 && queryclose_tag == -1)
 		queryclose_tag = g_timeout_add(5000, (GSourceFunc) sig_query_autoclose, NULL);
 	else if (query_auto_close <= 0 && queryclose_tag != -1) {
@@ -184,7 +185,9 @@ static void read_settings(void)
 
 void fe_query_init(void)
 {
-	settings_add_int("lookandfeel", "query_auto_close", 0);
+	settings_add_bool("lookandfeel", "autocreate_query", TRUE);
+	settings_add_bool("lookandfeel", "autocreate_own_query", TRUE);
+	settings_add_int("lookandfeel", "autoclose_query", 0);
 
 	queryclose_tag = -1;
 	read_settings();
