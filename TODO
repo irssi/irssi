@@ -1,16 +1,25 @@
 
 *** New stuff in TODO, try to get rid of these :)
 
+ - automatically add queried nicks to notify list temporarily .. display
+   the notifys for the nick in the query window
  - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
    idling" was print to screen with some NULL arguments in text..
- - There's some problems with logging/highlighting dcc chats..
 
+ - /BIND: key definitions should be changed to be more epic-like.. :
+     /bind ^[ key meta, /bind meta-O key meta2, /bind meta-[ key meta2
+     /bind meta2-c echo Ctrl-Left pressed
+   and maybe
+     /bind meta2-C key left, /bind meta-left echo meta-left pressed
+ - automatically switch to status window when using commands that always
+   print their output to status window, like /whois.
+ - with autolog, /msg nick1,nick2 logs the message to file nick1,nick2..
  - automatic whowas if whois wasn't found should be moved to fe-common.
    it could also print something like "nick $0 not in IRC, but this user
    WAS in IRC:"
  - Add command for changing automatic replaces (/replace)
  - /ignore -time xx - temprary ignore
- - bash-style (or whatever it could be called) tab-completion
+ - bash-style (or whatever it shoulda be called) tab-completion
  - /last 05032 ... didn't really do what I wanted :) maybe I should change
    the syntax to have -max parameter instead?
  - commands to move channels and servers in the config list, to set the
@@ -23,6 +32,7 @@
        something like that :)
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
+     - add user counts (ops/voices/normal/total)
  - theme problems:
     - you can't change theme
     - some small help about what each format does

@@ -30,3 +30,4 @@ while (<docs/help/in/*.in>) {
    print NEWFILE @data;
    close (NEWFILE);
 }
+unlink "irssi_syntax";

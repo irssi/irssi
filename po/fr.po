@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi-0.7.23\n"
-"POT-Creation-Date: 2000-07-09 17:27+0300\n"
+"POT-Creation-Date: 2000-07-26 21:13+0300\n"
 "PO-Revision-Date: 2000-01-26 16:33+0100\n"
 "Last-Translator: Julien Boulnois <jboulnois@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/core/args.c:51
+#: src/core/args.c:55
 #, c-format
 msgid ""
 "Error on option %s: %s.\n"
@@ -23,50 +23,50 @@ msgstr ""
 "Erreur de l'option %s: %s.\n"
 "Utiliser '%s --help' pour voir la liste des options.\n"
 
-#. Display the text when we have already waited for a while
-#: src/core/net-disconnect.c:149
+#. Display the text when we have already waited
+#. for a while
+#: src/core/net-disconnect.c:144
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Veillez patienter, dÅÈconnexion en cours ...\n"
 
-#: src/core/network.c:472
+#: src/core/network.c:480
 msgid "Host not found"
 msgstr "HÅÙte introuvable"
 
-#: src/core/network.c:474
+#: src/core/network.c:482
 msgid "No IP address found for name"
 msgstr "Aucune adresse IP trouvÅÈe pour ce domaine"
 
-#: src/core/network.c:476
+#: src/core/network.c:484
 msgid "A non-recovable name server error occurred"
 msgstr "Erreur du serveur"
 
-#: src/core/network.c:478
+#: src/core/network.c:486
 msgid "A temporary error on an authoritative name server"
 msgstr "Erreur temporaire sur un nom de serveur autorisÅÈ"
 
-#: src/core/settings.c:262
+#: src/core/settings.c:264
 #, fuzzy, c-format
 msgid "Couldn't create %s/.irssi directory"
 msgstr ""
 "Impossible de crÅÈer le fichier:\n"
 "%s"
 
-#: src/core/settings.c:265
+#: src/core/settings.c:268
 #, c-format
 msgid ""
 "%s/.irssi is not a directory.\n"
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 
-#: src/core/settings.c:274
+#: src/core/settings.c:279
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#. error
-#: src/core/settings.c:300
+#: src/core/settings.c:306
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
@@ -74,18 +74,18 @@ msgid ""
 msgstr ""
 
 #. error
-#: src/core/settings.c:323
+#: src/core/settings.c:331
 #, fuzzy, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr ""
 "Impossible de crÅÈer le fichier:\n"
 "%s"
 
-#: src/fe-common/core/printtext.c:886
+#: src/fe-common/core/printtext.c:894
 msgid "%_Warning:%_ %s"
 msgstr "%_Attention:%_ %s"
 
-#: src/fe-common/core/printtext.c:888
+#: src/fe-common/core/printtext.c:896
 msgid "%_Error:%_ %s"
 msgstr "%_Erreur:%_ %s"
 
@@ -129,16 +129,16 @@ msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 msgid "Specify host name to use"
 msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 
-#: src/fe-text/irssi.c:152
+#: src/fe-text/irssi.c:153
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
-#: src/lib-popt/popthelp.c:35
+#: src/lib-popt/popthelp.c:28
 #, fuzzy
 msgid "Show this help message"
 msgstr "Pas de messages externes"
 
-#: src/lib-popt/popthelp.c:36
+#: src/lib-popt/popthelp.c:29
 #, fuzzy
 msgid "Display brief usage message"
 msgstr "derniers messages privÅÈs"

@@ -1,3 +1,44 @@
+v0.7.94 2000-07-24  Timo Sirainen <tss@iki.fi>
+
+	* Help files! Use /HELP <command> to see them.
+	  They're just very first beta versions so don't expect too much.
+	  They were written by Markus Vuori <mm@vuori.net> with some help
+	  from EPIC's help files :)
+
+	* Changes:
+	   - /SET completion_disable_auto -> completion_auto
+	   - Changed the names of /BIND commands to be epic-compatible.
+	     Also added several new commands.
+	   - If --prefix is used, add the default perl library directory to
+	     same prefix.
+	+ Implemented /WINDOW LAST for changing to last current window.
+	+ Added DCCMSGS message level. Actions match now either MSGS or
+	  PUBLIC level as well as the ACTIONS level always.
+	+ SET print_active_channel - if you have multiple channels in same
+	  window, should we always print the channel for each message
+	  (<nick:#channel>) or only when the channel isn't active.
+	+ Don't print nick changes and quit messages from same nick more
+	  than once in the same window (if you had joined multiple channels
+	  in same window).
+	+ /SET settings_autosave - If set ON, settings are automatically
+	  saved when quitting and once per hour.
+	+ Don't allow recursive aliases, ie. /alias echo echo hello does
+	  print hello instead of going to infinite loop.
+	+ Implemented /IGNORE -time <seconds>, patch by fuchs.
+	+ /PERLFLUSH now cleans up the Perl interpreter properly (closes
+	  all the files opened in perl scripts, etc)
+	- Awaylog didn't work right if you did /AWAY multiple times.
+	- /NOTIFY -idle sometimes printed the unidle-message even if the
+	  nick really didn't stop idling. Fixed several other notify list
+	  bugs.
+	- Tab-msgcompletion didn't work right after you had used
+	  /msg -ircnet nick
+	- Fixed the long standing text buffer bug which could sometimes
+	  crash irssi if you were unlucky.
+	- The channel key given in /JOIN should override the one given
+	  in setup.
+	- /RELOAD caused several bugs
+
 v0.7.93 2000-07-09  Timo Sirainen <tss@iki.fi>
 
 	+ Implemented /BIND [<key> [<action> [<data>]]] command.

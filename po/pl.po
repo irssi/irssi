@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-07-09 17:27+0300\n"
+"POT-Creation-Date: 2000-07-26 21:13+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,55 +14,55 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: ENCODING\n"
 
-#: src/core/args.c:51
+#: src/core/args.c:55
 #, c-format
 msgid ""
 "Error on option %s: %s.\n"
 "Run '%s --help' to see a full list of available command line options.\n"
 msgstr ""
 
-#. Display the text when we have already waited for a while
-#: src/core/net-disconnect.c:149
+#. Display the text when we have already waited
+#. for a while
+#: src/core/net-disconnect.c:144
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
 
-#: src/core/network.c:472
+#: src/core/network.c:480
 msgid "Host not found"
 msgstr ""
 
-#: src/core/network.c:474
+#: src/core/network.c:482
 msgid "No IP address found for name"
 msgstr ""
 
-#: src/core/network.c:476
+#: src/core/network.c:484
 msgid "A non-recovable name server error occurred"
 msgstr ""
 
-#: src/core/network.c:478
+#: src/core/network.c:486
 msgid "A temporary error on an authoritative name server"
 msgstr ""
 
-#: src/core/settings.c:262
+#: src/core/settings.c:264
 #, c-format
 msgid "Couldn't create %s/.irssi directory"
 msgstr "Nie mo¿na utworzyæ katalogu %s/.irssi"
 
-#: src/core/settings.c:265
+#: src/core/settings.c:268
 #, c-format
 msgid ""
 "%s/.irssi is not a directory.\n"
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 
-#: src/core/settings.c:274
+#: src/core/settings.c:279
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#. error
-#: src/core/settings.c:300
+#: src/core/settings.c:306
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
@@ -70,16 +70,16 @@ msgid ""
 msgstr ""
 
 #. error
-#: src/core/settings.c:323
+#: src/core/settings.c:331
 #, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr ""
 
-#: src/fe-common/core/printtext.c:886
+#: src/fe-common/core/printtext.c:894
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/fe-common/core/printtext.c:888
+#: src/fe-common/core/printtext.c:896
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
@@ -122,15 +122,15 @@ msgstr ""
 msgid "Specify host name to use"
 msgstr ""
 
-#: src/fe-text/irssi.c:152
+#: src/fe-text/irssi.c:153
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
-#: src/lib-popt/popthelp.c:35
+#: src/lib-popt/popthelp.c:28
 msgid "Show this help message"
 msgstr ""
 
-#: src/lib-popt/popthelp.c:36
+#: src/lib-popt/popthelp.c:29
 msgid "Display brief usage message"
 msgstr ""
 
