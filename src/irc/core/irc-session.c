@@ -94,7 +94,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	}
 
 	node = config_node_section(node, "isupport", -1);
-	tmp = config_node_first(node->value);
+	tmp = node == NULL ? NULL : config_node_first(node->value);
 	if(tmp != NULL)
 		server->isupport_sent = TRUE;
 
@@ -129,7 +129,7 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
         halfop = config_node_get_bool(node, "halfop", FALSE);
 	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE);
 	other = config_node_get_str(node, "other", FALSE);
-	nickrec->other = other[0];
+	nickrec->other = other == NULL ? '\0' : other[0];
 }
 
 static void session_restore_channel(IRC_CHANNEL_REC *channel)
