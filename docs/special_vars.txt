@@ -84,6 +84,7 @@ $A .. $Z is important.
    $sysarch     system architecture (eg. i686)
    $topic       channel topic
    $usermode    user mode
+   $cumode      own channel user mode
    $tag         server tag
    $chatnet     chat network of server
    $winref      window reference number

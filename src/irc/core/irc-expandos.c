@@ -25,6 +25,8 @@
 
 #include "irc.h"
 #include "irc-servers.h"
+#include "channels.h"
+#include "nicklist.h"
 
 static char *last_join;
 
@@ -81,6 +83,17 @@ static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
 	return IS_IRC_SERVER(server) ? IRC_SERVER(server)->usermode : "";
 }
 
+/* expands to your usermode on channel, op '@', halfop '%', "+" voice */
+static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
+{
+	if (IS_CHANNEL(item) && CHANNEL(item)->ownnick) {
+		return NICK(CHANNEL(item)->ownnick)->op ? "@" :
+		       NICK(CHANNEL(item)->ownnick)->halfop ? "%" :
+		       NICK(CHANNEL(item)->ownnick)->voice ? "+" : "";
+	}
+	return "";
+}
+
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
@@ -110,6 +123,10 @@ void irc_expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW,
 		       "user mode changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("cumode", expando_cumode,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
 
         expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
 
@@ -125,6 +142,7 @@ void irc_expandos_deinit(void)
 	expando_destroy("S", expando_servername);
 	expando_destroy("X", expando_userhost);
 	expando_destroy("usermode", expando_usermode);
+	expando_destroy("cumode", expando_cumode);
 
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 }

@@ -159,7 +159,7 @@ static int statusbar_clock_timeout(void)
 static void statusbar_nick(SBAR_ITEM_REC *item, int get_size_only)
 {
 	item_default(item, get_size_only,
-		     "{sb $P$N{sbmode $usermode}{sbaway $A}}", "");
+		     "{sb $cumode$N{sbmode $usermode}{sbaway $A}}", "");
 }
 
 static void sig_statusbar_nick_redraw(void)
