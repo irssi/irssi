@@ -428,6 +428,16 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
         g_free(conn);
 }
 
+void server_change_nick(SERVER_REC *server, const char *nick)
+{
+	g_free(server->connrec->nick);
+	g_free(server->nick);
+	server->connrec->nick = g_strdup(nick);
+	server->nick = g_strdup(nick);
+
+	signal_emit("server nick changed", 1, server);
+}
+
 /* Update own IPv4 and IPv6 records */
 void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
 				IPADDR *ip4, IPADDR *ip6)

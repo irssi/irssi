@@ -21,8 +21,9 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
 /* Change nick */
 void nicklist_rename(SERVER_REC *server, const char *old_nick,
 		     const char *new_nick);
-void nicklist_rename_unique(SERVER_REC *server, void *old_nick_id,
-			    const char *old_nick, const char *new_nick);
+void nicklist_rename_unique(SERVER_REC *server,
+			    void *old_nick_id, const char *old_nick,
+			    void *new_nick_id, const char *new_nick);
 
 /* Find nick */
 NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *nick);

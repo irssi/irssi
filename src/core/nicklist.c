@@ -34,6 +34,8 @@ static void nick_hash_add(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	NICK_REC *list;
 
+	nick->next = NULL;
+
 	list = g_hash_table_lookup(channel->nicks, nick->nick);
         if (list == NULL)
 		g_hash_table_insert(channel->nicks, nick->nick, nick);
@@ -41,7 +43,12 @@ static void nick_hash_add(CHANNEL_REC *channel, NICK_REC *nick)
                 /* multiple nicks with same name */
 		while (list->next != NULL)
 			list = list->next;
-                list->next = nick;
+		list->next = nick;
+	}
+
+	if (nick == channel->ownnick) {
+                /* move our own nick to beginning of the nick list.. */
+		nicklist_set_own(channel, nick);
 	}
 }
 
@@ -110,8 +117,9 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 	nicklist_destroy(channel, nick);
 }
 
-static void nicklist_rename_list(SERVER_REC *server, const char *old_nick,
-				 const char *new_nick, GSList *nicks)
+static void nicklist_rename_list(SERVER_REC *server, void *new_nick_id,
+				 const char *old_nick, const char *new_nick,
+				 GSList *nicks)
 {
 	CHANNEL_REC *channel;
 	NICK_REC *nickrec;
@@ -123,6 +131,9 @@ static void nicklist_rename_list(SERVER_REC *server, const char *old_nick,
 
 		/* remove old nick from hash table */
                 nick_hash_remove(channel, nickrec);
+
+		if (new_nick_id != NULL)
+			nickrec->unique_id = new_nick_id;
 
 		g_free(nickrec->nick);
 		nickrec->nick = g_strdup(new_nick);
@@ -138,14 +149,15 @@ static void nicklist_rename_list(SERVER_REC *server, const char *old_nick,
 void nicklist_rename(SERVER_REC *server, const char *old_nick,
 		     const char *new_nick)
 {
-	nicklist_rename_list(server, old_nick, new_nick,
+	nicklist_rename_list(server, NULL, old_nick, new_nick,
 			     nicklist_get_same(server, old_nick));
 }
 
-void nicklist_rename_unique(SERVER_REC *server, void *old_nick_id,
-			    const char *old_nick, const char *new_nick)
+void nicklist_rename_unique(SERVER_REC *server,
+			    void *old_nick_id, const char *old_nick,
+			    void *new_nick_id, const char *new_nick)
 {
-	nicklist_rename_list(server, old_nick, new_nick,
+	nicklist_rename_list(server, new_nick_id, old_nick, new_nick,
 			     nicklist_get_same_unique(server, old_nick_id));
 }
 
@@ -273,9 +285,13 @@ typedef struct {
 static void get_nicks_same_hash(gpointer key, NICK_REC *nick,
 				NICKLIST_GET_SAME_REC *rec)
 {
-	if (g_strcasecmp(nick->nick, rec->nick) == 0) {
-		rec->list = g_slist_append(rec->list, rec->channel);
-		rec->list = g_slist_append(rec->list, nick);
+	while (nick != NULL) {
+		if (g_strcasecmp(nick->nick, rec->nick) == 0) {
+			rec->list = g_slist_append(rec->list, rec->channel);
+			rec->list = g_slist_append(rec->list, nick);
+		}
+
+		nick = nick->next;
 	}
 }
 
@@ -305,9 +321,14 @@ typedef struct {
 static void get_nicks_same_hash_unique(gpointer key, NICK_REC *nick,
 				       NICKLIST_GET_SAME_UNIQUE_REC *rec)
 {
-	if (nick->unique_id == rec->id) {
-		rec->list = g_slist_append(rec->list, rec->channel);
-		rec->list = g_slist_append(rec->list, nick);
+	while (nick != NULL) {
+		if (nick->unique_id == rec->id) {
+			rec->list = g_slist_append(rec->list, rec->channel);
+			rec->list = g_slist_append(rec->list, nick);
+                        break;
+		}
+
+                nick = nick->next;
 	}
 }
 
@@ -404,6 +425,9 @@ void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick)
 
 	next = nick->next;
 	nick->next = first;
+
+	while (first->next != nick)
+                first = first->next;
 	first->next = next;
 
         g_hash_table_insert(channel->nicks, nick->nick, nick);

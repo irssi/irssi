@@ -501,13 +501,31 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
 			    const char *nick)
 {
+	char *printnick;
+
 	while (first != NULL) {
-		if (first != ignore && strcmp(first->nick, nick) == 0)
-			return TRUE;
-                first = first->next;
+		if (first != ignore) {
+			printnick = g_hash_table_lookup(printnicks, first);
+			if (printnick != NULL && strcmp(printnick, nick) == 0)
+				return TRUE;
+		}
+
+		first = first->next;
 	}
 
         return FALSE;
+}
+
+static NICK_REC *printnick_find_original(NICK_REC *nick)
+{
+	while (nick != NULL) {
+		if (g_hash_table_lookup(printnicks, nick) == NULL)
+                        return nick;
+
+		nick = nick->next;
+	}
+
+	return NULL;
 }
 
 static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
@@ -517,12 +535,20 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 	char *nickhost, *p;
 	int n;
 
-	if (nick->host == NULL || nick == channel->ownnick)
+	if (nick->host == NULL)
                 return;
 
 	firstnick = g_hash_table_lookup(channel->nicks, nick->nick);
 	if (firstnick->next == NULL)
 		return;
+
+	if (nick == channel->ownnick) {
+		/* own nick is being added, might be a nick change and
+		   someone else having the original nick already in use.. */
+		nick = printnick_find_original(firstnick->next);
+		if (nick == NULL)
+                        return; /* nope, we have it */
+	}
 
 	/* identical nick already exists, have to change it somehow.. */
 	p = strchr(nick->host, '@');
@@ -546,7 +572,8 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 	} while (printnick_exists(firstnick, nick, newnick->str));
 
 	g_hash_table_insert(printnicks, nick, newnick->str);
-        g_string_free(newnick, FALSE);
+	g_string_free(newnick, FALSE);
+        g_free(nickhost);
 }
 
 static void sig_nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)

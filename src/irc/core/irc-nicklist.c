@@ -300,11 +300,7 @@ static void event_nick(SERVER_REC *server, const char *data,
 
 	if (g_strcasecmp(orignick, server->nick) == 0) {
 		/* You changed your nick */
-		g_free(server->connrec->nick);
-		g_free(server->nick);
-		server->connrec->nick = g_strdup(nick);
-		server->nick = g_strdup(nick);
-		signal_emit("server nick changed", 1, server);
+                server_change_nick(server, nick);
 	}
 
         nicklist_rename(server, orignick, nick);
