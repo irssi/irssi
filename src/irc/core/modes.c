@@ -539,7 +539,7 @@ static char *get_nicks(IRC_CHANNEL_REC *channel,
 		g_slist_free(nicks);
 	}
 
-	g_string_truncate(str, str->len-1);
+        if (str->len > 0) g_string_truncate(str, str->len-1);
 	ret = str->str;
 	g_string_free(str, FALSE);
 	return ret;
