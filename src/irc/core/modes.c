@@ -218,7 +218,6 @@ void modes_type_b(IRC_CHANNEL_REC *channel, const char *setby, char type,
 	if (mode == 'k') {
 		if (*arg == '\0' && type == '+')
 			arg = channel->key != NULL ? channel->key : "???";
-		mode_set_arg(channel->server, newmode, type, 'k', arg, FALSE);
 
 		if (arg != channel->key) {
 			g_free_and_null(channel->key);
@@ -226,6 +225,8 @@ void modes_type_b(IRC_CHANNEL_REC *channel, const char *setby, char type,
 				channel->key = g_strdup(arg);
 		}
 	}
+	
+	mode_set_arg(channel->server, newmode, type, mode, arg, FALSE);
 }
 
 /* Mode that needs parameter only for adding */
@@ -233,9 +234,10 @@ void modes_type_c(IRC_CHANNEL_REC *channel, const char *setby,
 		  char type, char mode, char *arg, GString *newmode)
 {
 	if (mode == 'l') {
-		mode_set_arg(channel->server, newmode, type, 'l', arg, FALSE);
 		channel->limit = type == '-' ? 0 : atoi(arg);
 	}
+	
+	mode_set_arg(channel->server, newmode, type, mode, arg, FALSE);
 }
 
 /* Mode that takes no parameter */
