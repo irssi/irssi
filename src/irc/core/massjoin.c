@@ -265,7 +265,7 @@ void massjoin_init(void)
 	massjoin_tag = g_timeout_add(1000, (GSourceFunc) sig_massjoin_timeout, NULL);
 
 	read_settings();
-	signal_add("event join", (SIGNAL_FUNC) event_join);
+	signal_add_first("event join", (SIGNAL_FUNC) event_join);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
