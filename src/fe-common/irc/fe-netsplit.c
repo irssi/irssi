@@ -346,6 +346,8 @@ static void read_settings(void)
         netsplit_max_nicks = settings_get_int("netsplit_max_nicks");
 	netsplit_nicks_hide_threshold =
 		settings_get_int("netsplit_nicks_hide_threshold");
+	if (netsplit_nicks_hide_threshold < netsplit_max_nicks)
+		netsplit_max_nicks = netsplit_nicks_hide_threshold;
 }
 
 void fe_netsplit_init(void)
