@@ -133,6 +133,7 @@ create_addr_conn(const char *address, int port, const char *password,
 	sserver = server_setup_find(address, -1);
 	if (sserver == NULL) return conn;
 
+        if (sserver->port > 0) conn->port = sserver->port;
 	server_setup_fill_conn(conn, sserver);
 	sserver->last_connect = time(NULL);
 
