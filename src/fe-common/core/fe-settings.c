@@ -94,7 +94,7 @@ static void cmd_set(char *data)
 	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
 		SETTINGS_REC *rec = tmp->data;
 
-		if (((clear || *value != '\0') && g_strcasecmp(rec->key, key) != 0) ||
+		if (((clear || set_default || *value != '\0') && g_strcasecmp(rec->key, key) != 0) ||
 		    (*value == '\0' && *key != '\0' && stristr(rec->key, key) == NULL))
 			continue;
 
