@@ -38,6 +38,7 @@
 #include "gui-readline.h"
 #include "statusbar.h"
 #include "gui-windows.h"
+#include "textbuffer-reformat.h"
 
 #include <signal.h>
 
@@ -117,6 +118,7 @@ static void textui_finish_init(void)
         textbuffer_init();
         textbuffer_view_init();
 	textbuffer_commands_init();
+	textbuffer_reformat_init();
 	gui_entry_init();
 	gui_expandos_init();
 	gui_printtext_init();
@@ -166,6 +168,7 @@ static void textui_deinit(void)
 	mainwindows_deinit();
 	gui_expandos_deinit();
 	gui_entry_deinit();
+	textbuffer_reformat_deinit();
 	textbuffer_commands_deinit();
         textbuffer_view_deinit();
         textbuffer_deinit();
@@ -192,7 +195,7 @@ static void check_oldcrap(void)
         int found;
 
         /* check that default.theme is up-to-date */
-	path = g_strdup_printf("%s/.irssi/default.theme", g_get_home_dir());
+	path = g_strdup_printf("%s/default.theme", get_irssi_dir());
 	f = fopen(path, "r+");
 	if (f == NULL) {
 		g_free(path);
@@ -208,7 +211,7 @@ static void check_oldcrap(void)
 		return;
 	}
 
-	printf("\nYou seem to have old default.theme in ~/.irssi/ directory.\n");
+	printf("\nYou seem to have old default.theme in "IRSSI_DIR_SHORT"/ directory.\n");
         printf("Themeing system has changed a bit since last irssi release,\n");
         printf("you should either delete your old default.theme or manually\n");
         printf("merge it with the new default.theme.\n\n");
@@ -224,16 +227,13 @@ static void check_oldcrap(void)
 static void check_files(void)
 {
 	struct stat statbuf;
-        char *path;
 
-        path = g_strdup_printf("%s/.irssi", g_get_home_dir());
-	if (stat(path, &statbuf) != 0) {
+	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi doesn't exist, first time running irssi */
 		display_firsttimer = TRUE;
 	} else {
                 check_oldcrap();
 	}
-        g_free(path);
 }
 
 #ifdef WIN32
@@ -253,6 +253,8 @@ static void winsock_init(void)
 
 int main(int argc, char **argv)
 {
+	core_init_paths(argc, argv);
+
 	check_files();
 #ifdef WIN32
         winsock_init();

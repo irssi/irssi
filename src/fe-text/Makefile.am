@@ -33,6 +33,7 @@ irssi_SOURCES = \
         statusbar-items.c \
         textbuffer.c \
         textbuffer-commands.c \
+        textbuffer-reformat.c \
         textbuffer-view.c \
         irssi.c \
 	module-formats.c

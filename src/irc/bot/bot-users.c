@@ -531,7 +531,7 @@ static void botuser_config_read(void)
 	char *fname;
 
 	/* Read users from ~/.irssi/users */
-	fname = g_strdup_printf("%s/.irssi/users", g_get_home_dir());
+	fname = g_strdup_printf("%s/users", get_irssi_dir());
 	userconfig = config_open(fname, 0600);
 	g_free(fname);
 

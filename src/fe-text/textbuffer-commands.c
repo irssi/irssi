@@ -26,6 +26,7 @@
 
 #include "printtext.h"
 #include "gui-windows.h"
+#include "textbuffer-reformat.h"
 
 /* SYNTAX: CLEAR */
 static void cmd_clear(const char *data)
@@ -205,21 +206,21 @@ static void cmd_scrollback_end(const char *data)
 /* SYNTAX: SCROLLBACK REDRAW */
 static void cmd_scrollback_redraw(void)
 {
-#if 0
 	GUI_WINDOW_REC *gui;
-	GList *tmp, *next;
+	LINE_REC *line, *next;
 
 	gui = WINDOW_GUI(active_win);
 
 	screen_refresh_freeze();
-	for (tmp = gui->lines; tmp != NULL; tmp = next) {
-		next = tmp->next;
-		gui_window_reformat_line(active_win, tmp->data);
+	line = textbuffer_view_get_lines(gui->view);
+	while (line != NULL) {
+		next = line->next;
+		textbuffer_reformat_line(active_win, line);
+                line = next;
 	}
 
 	gui_window_redraw(active_win);
 	screen_refresh_thaw();
-#endif
 }
 
 static void cmd_scrollback_status(void)

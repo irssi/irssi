@@ -483,14 +483,13 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	CONFIG_REC *config;
 	struct stat statbuf;
         const char *path;
-	char *real_fname, *str;
+	char *str;
 
-	real_fname = fname != NULL ? g_strdup(fname) :
-		g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi"
-				G_DIR_SEPARATOR_S"config", g_get_home_dir());
+	if (fname == NULL)
+		fname = get_irssi_config();
 
-	if (stat(real_fname, &statbuf) == 0)
-		path = real_fname;
+	if (stat(fname, &statbuf) == 0)
+		path = fname;
 	else {
 		/* user configuration file not found, use the default one
 		   from sysconfdir */
@@ -517,9 +516,8 @@ static CONFIG_REC *parse_configfile(const char *fname)
         else
 		config_parse_data(config, default_config, "internal");
 
-	config_change_file_name(config, real_fname, 0660);
-        irssi_config_save_state(real_fname);
-	g_free(real_fname);
+	config_change_file_name(config, fname, 0660);
+        irssi_config_save_state(fname);
 	return config;
 }
 
@@ -528,17 +526,16 @@ static void init_configfile(void)
 	struct stat statbuf;
 	char *str;
 
-	str = g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi", g_get_home_dir());
-	if (stat(str, &statbuf) != 0) {
+	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
-		if (mkpath(str, 0700) != 0) {
-			g_error("Couldn't create %s directory", str);
+		if (mkpath(get_irssi_dir(), 0700) != 0) {
+			g_error("Couldn't create %s directory", get_irssi_dir());
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {
 		g_error("%s is not a directory.\n"
-			"You should remove it with command: rm ~/.irssi", str);
+			"You should remove it with command: rm %s",
+			get_irssi_dir(), get_irssi_dir());
 	}
-	g_free(str);
 
 	mainconfig = parse_configfile(NULL);
 	config_last_modifycounter = mainconfig->modifycounter;
@@ -559,11 +556,9 @@ int settings_reread(const char *fname)
 	CONFIG_REC *tempconfig;
 	char *str;
 
-	if (fname == NULL) fname = "~/.irssi/config";
-
-	str = convert_home(fname);
+        str = convert_home(fname);
 	tempconfig = parse_configfile(str);
-	g_free(str);
+        g_free(str);
 
 	if (tempconfig == NULL) {
 		signal_emit("gui dialog", 2, "error", g_strerror(errno));

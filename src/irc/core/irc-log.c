@@ -98,7 +98,7 @@ void irc_log_init(void)
 	away_filepos = 0;
 	away_msgs = 0;
 
-	settings_add_str("log", "awaylog_file", "~/.irssi/away.log");
+	settings_add_str("log", "awaylog_file", IRSSI_DIR_SHORT"/away.log");
 	settings_add_str("log", "awaylog_level", "msgs hilight");
 
 	signal_add("log written", (SIGNAL_FUNC) sig_log_written);

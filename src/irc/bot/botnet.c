@@ -636,7 +636,7 @@ static void botnet_event_file(BOT_REC *bot, const char *data, const char *sender
 	bot = node->data;
 	if (bot->file_handle <= 0) {
 		/* first line - data contains file name */
-		str = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(), data);
+		str = g_strdup_printf("%s/%s", get_irssi_dir(), data);
 		bot->file_handle = open(str, O_CREAT|O_TRUNC|O_WRONLY, 0600);
                 g_free(str);
 	} else if (*data == '\0') {
@@ -755,7 +755,7 @@ static void botnet_config_read(void)
 	char *fname;
 
 	/* Read botnets from ~/.irssi/botnets */
-	fname = g_strdup_printf("%s/.irssi/botnets", g_get_home_dir());
+	fname = g_strdup_printf("%s/botnets", get_irssi_dir());
 	config = config_open(fname, -1);
 	g_free(fname);
 

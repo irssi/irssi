@@ -32,7 +32,7 @@ static void sig_autorun(void)
 	int f, ret, recvlen;
 
 	/* open ~/.irssi/startup and run all commands in it */
-	path = g_strdup_printf("%s/.irssi/startup", g_get_home_dir());
+	path = g_strdup_printf("%s/startup", get_irssi_dir());
 	f = open(path, O_RDONLY);
 	g_free(path);
 	if (f == -1) {

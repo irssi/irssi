@@ -247,13 +247,12 @@ static void cmd_reload(const char *data)
 {
 	char *fname;
 
-	fname = *data != '\0' ? g_strdup(data) :
-		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
+	fname = *data == '\0' ? NULL : g_strdup(data);
 	if (settings_reread(fname)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CONFIG_RELOADED, fname);
 	}
-	g_free(fname);
+	g_free_not_null(fname);
 }
 
 static void settings_save_fe(const char *fname)

@@ -11,6 +11,8 @@
 
 extern int irssi_gui;
 
+void core_init_paths(int argc, char *argv[]);
+
 void core_init(void);
 void core_deinit(void);
 

@@ -21,6 +21,7 @@
 #include "module.h"
 #include <signal.h>
 
+#include "args.h"
 #include "pidwait.h"
 #include "misc.h"
 
@@ -49,7 +50,19 @@ void chat_commands_deinit(void);
 
 int irssi_gui;
 
+static char *irssi_dir, *irssi_config_file;
 static GSList *dialog_type_queue, *dialog_text_queue;
+
+const char *get_irssi_dir(void)
+{
+        return irssi_dir;
+}
+
+/* return full path for ~/.irssi/config */
+const char *get_irssi_config(void)
+{
+        return irssi_config_file;
+}
 
 static void read_signals(void)
 {
@@ -106,7 +119,40 @@ static void sig_init_finished(void)
         g_slist_free(dialog_text_queue);
 }
 
-void core_init(void)
+void core_init_paths(int argc, char *argv[])
+{
+	static struct poptOption options[] = {
+		{ "config", 0, POPT_ARG_STRING, NULL, 0, "Configuration file location (~/.irssi/config)", "PATH" },
+		{ "home", 0, POPT_ARG_STRING, NULL, 0, "Irssi home dir location (~/.irssi)", "PATH" },
+		{ NULL, '\0', 0, NULL }
+	};
+	int n, len;
+
+	for (n = 1; n < argc; n++) {
+		if (strncmp(argv[n], "--home=", 7) == 0) {
+                        g_free_not_null(irssi_dir);
+                        irssi_dir = convert_home(argv[n]+7);
+                        len = strlen(irssi_dir);
+			if (irssi_dir[len-1] == G_DIR_SEPARATOR)
+				irssi_dir[len-1] = '\0';
+                        break;
+		}
+		if (strncmp(argv[n], "--config=", 9) == 0) {
+                        g_free_not_null(irssi_config_file);
+			irssi_config_file = convert_home(argv[n]+9);
+                        break;
+		}
+	}
+
+	args_register(options);
+
+        if (irssi_dir == NULL)
+		irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, g_get_home_dir());
+	if (irssi_config_file == NULL)
+                irssi_config_file = g_strdup_printf("%s/config", irssi_dir);
+}
+
+void core_init(int argc, char *argv[])
 {
 	dialog_type_queue = NULL;
 	dialog_text_queue = NULL;
@@ -179,4 +225,7 @@ void core_deinit(void)
 	pidwait_deinit();
 #endif
 	modules_deinit();
+
+	g_free(irssi_dir);
+        g_free(irssi_config_file);
 }

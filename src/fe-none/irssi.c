@@ -85,6 +85,8 @@ void noui_deinit(void)
 
 int main(int argc, char **argv)
 {
+	core_init_paths(argc, argv);
+
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif

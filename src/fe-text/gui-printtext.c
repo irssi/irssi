@@ -31,9 +31,6 @@
 int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7 };
 static int scrollback_lines, scrollback_hours, scrollback_burst_remove;
 
-static int scrollback_save_formats;
-static GString *format;
-
 static int last_color, last_flags;
 static int next_xpos, next_ypos;
 
@@ -137,7 +134,8 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = LINE_CMD_INDENT;
 	}
 
-	*line = textbuffer_insert(buffer, *line, data, pos, NULL);
+        if (pos > 0)
+		*line = textbuffer_insert(buffer, *line, data, pos, NULL);
 
 	last_flags = flags;
 	last_color = fg | (bg << 4);
@@ -155,6 +153,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 			       void *bgcolor, void *pflags,
 			       char *str, void *level)
 {
+        GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
         LINE_INFO_REC lineinfo;
@@ -178,15 +177,18 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	lineinfo.level = GPOINTER_TO_INT(level);
         lineinfo.time = time(NULL);
 
-	view = WINDOW_GUI(window)->view;
-	insert_after = WINDOW_GUI(window)->use_insert_after ?
-		WINDOW_GUI(window)->insert_after : view->buffer->cur_line;
+        gui = WINDOW_GUI(window);
+	view = gui->view;
+	insert_after = gui->use_insert_after ?
+		gui->insert_after : view->buffer->cur_line;
 
 	if (flags & GUI_PRINT_FLAG_NEWLINE)
                 view_add_eol(view, &insert_after);
 	line_add_colors(view->buffer, &insert_after, fg, bg, flags);
-	textbuffer_insert(view->buffer, insert_after,
-			  str, strlen(str), &lineinfo);
+	insert_after = textbuffer_insert(view->buffer, insert_after,
+					 str, strlen(str), &lineinfo);
+	if (gui->use_insert_after)
+                gui->insert_after = insert_after;
 }
 
 static void sig_gui_printtext_finished(WINDOW_REC *window)
@@ -205,61 +207,23 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	remove_old_lines(view);
 }
 
-static void sig_print_format(THEME_REC *theme, const char *module,
-			     TEXT_DEST_REC *dest, void *formatnump,
-			     char **args)
-{
-	FORMAT_REC *formats;
-	int formatnum, n;
-
-	if (!scrollback_save_formats)
-		return;
-
-	formatnum = GPOINTER_TO_INT(formatnump);
-	formats = g_hash_table_lookup(default_formats, module);
-
-	/* <module><format_name><arg...> */
-	g_string_truncate(format, 0);
-
-	g_string_append_c(format, '\0');
-	g_string_append_c(format, (char)LINE_CMD_FORMAT);
-
-        g_string_append(format, module);
-
-	g_string_append_c(format, '\0');
-	g_string_append_c(format, (char)LINE_CMD_FORMAT);
-
-	g_string_append(format, formats[formatnum].tag);
-
-	for (n = 0; n < formats[formatnum].params; n++) {
-		g_string_append_c(format, '\0');
-		g_string_append_c(format, (char)LINE_CMD_FORMAT);
-
-		g_string_append(format, args[n]);
-	}
-}
-
 static void read_settings(void)
 {
 	scrollback_lines = settings_get_int("scrollback_lines");
 	scrollback_hours = settings_get_int("scrollback_hours");
         scrollback_burst_remove = settings_get_int("scrollback_burst_remove");
-        scrollback_save_formats = settings_get_bool("scrollback_save_formats");
 }
 
 void gui_printtext_init(void)
 {
 	next_xpos = next_ypos = -1;
-	format = g_string_new(NULL);
 
 	settings_add_int("history", "scrollback_lines", 500);
 	settings_add_int("history", "scrollback_hours", 24);
 	settings_add_int("history", "scrollback_burst_remove", 10);
-	settings_add_bool("history", "scrollback_save_formats", FALSE);
 
 	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
 	signal_add("gui print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
-	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	read_settings();
@@ -267,10 +231,7 @@ void gui_printtext_init(void)
 
 void gui_printtext_deinit(void)
 {
-	g_string_free(format, TRUE);
-
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
 	signal_remove("print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
-	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

@@ -4,6 +4,9 @@
 #define IRSSI_AUTHOR "Timo Sirainen <tss@iki.fi>"
 #define IRSSI_WEBSITE "http://irssi.org/"
 
+#define IRSSI_DIR_SHORT "~/.irssi"
+#define IRSSI_DIR_FULL "%s/.irssi" /* %s == g_get_home_dir() */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -45,16 +48,7 @@
 
 #include "core/memdebug.h"
 
-#define g_free_not_null(a) \
-	G_STMT_START { \
-	  if (a) g_free(a); \
-	} G_STMT_END
-
-#define g_free_and_null(a) \
-	G_STMT_START { \
-	  if (a) { g_free(a); (a) = NULL; } \
-	} G_STMT_END
-
+/* input functions */
 #define G_INPUT_READ	(1 << 0)
 #define G_INPUT_WRITE	(1 << 1)
 
@@ -65,7 +59,23 @@ int g_input_add(GIOChannel *source, int condition,
 int g_input_add_full(GIOChannel *source, int priority, int condition,
 		     GInputFunction function, void *data);
 
+/* return full path for ~/.irssi */
+const char *get_irssi_dir(void);
+/* return full path for ~/.irssi/config */
+const char *get_irssi_config(void);
+
+/* max. size for %d */
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)
+
+#define g_free_not_null(a) \
+	G_STMT_START { \
+	  if (a) g_free(a); \
+	} G_STMT_END
+
+#define g_free_and_null(a) \
+	G_STMT_START { \
+	  if (a) { g_free(a); (a) = NULL; } \
+	} G_STMT_END
 
 typedef struct _IPADDR IPADDR;
 typedef struct _CONFIG_REC CONFIG_REC;

@@ -184,7 +184,7 @@ static void cmd_run(const char *data)
 			g_strdup(data) : g_strdup_printf("%s.pl", data);
 
 		/* check from ~/.irssi/scripts/ */
-		fname = g_strdup_printf("%s/.irssi/scripts/%s", g_get_home_dir(), name);
+		fname = g_strdup_printf("%s/scripts/%s", get_irssi_dir(), name);
 		if (stat(fname, &statbuf) != 0) {
 			/* check from SCRIPTDIR */
 			g_free(fname),
@@ -368,7 +368,7 @@ static void irssi_perl_autorun(void)
 	struct stat statbuf;
 	char *path, *fname;
 
-	path = g_strdup_printf("%s/.irssi/scripts/autorun", g_get_home_dir());
+	path = g_strdup_printf("%s/scripts/autorun", get_irssi_dir());
 	dirp = opendir(path);
 	if (dirp == NULL) {
 		g_free(path);

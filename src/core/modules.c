@@ -255,7 +255,7 @@ static GModule *module_open(const char *name)
 		path = g_strdup(name);
 	else {
 		/* first try from home dir */
-		str = g_strdup_printf("%s/.irssi/modules", g_get_home_dir());
+		str = g_strdup_printf("%s/modules", get_irssi_dir());
 		path = g_module_build_path(str, name);
 		g_free(str);
 

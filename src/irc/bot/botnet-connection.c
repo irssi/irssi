@@ -426,7 +426,7 @@ static void botnet_event(BOT_REC *bot, const char *data)
 		bot_send_cmdv(bot, "%s - MASTER %s", bot->botnet->nick, bot->botnet->master->nick);
 
 		/* send our current user configuration */
-		fname = g_strdup_printf("%s/.irssi/users.temp", g_get_home_dir());
+		fname = g_strdup_printf("%s/users.temp", get_irssi_dir());
 		botuser_save(fname);
 		botnet_send_file(bot->botnet, bot->nick, fname);
 		g_free(fname);
