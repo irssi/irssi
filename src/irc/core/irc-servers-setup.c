@@ -151,7 +151,7 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 void irc_servers_setup_init(void)
 {
 	settings_add_bool("server", "skip_motd", FALSE);
-	settings_add_str("server", "alternate_nick", NULL);
+	settings_add_str("server", "alternate_nick", "");
 
 	init_userinfo();
 	signal_add("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
