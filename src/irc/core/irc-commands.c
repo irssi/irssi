@@ -699,11 +699,11 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
         g_free(spacenicks);
 
         if (settings_get_bool("kick_first_on_kickban")) {
-		signal_emit("command kick", 3, kickcmd, server, channel);
-		signal_emit("command ban", 3, bancmd, server, channel);
+		signal_emit("command kick", 3, kickcmd, server, chanrec);
+		signal_emit("command ban", 3, bancmd, server, chanrec);
 	} else {
-		signal_emit("command ban", 3, bancmd, server, channel);
-		signal_emit("command kick", 3, kickcmd, server, channel);
+		signal_emit("command ban", 3, bancmd, server, chanrec);
+		signal_emit("command kick", 3, kickcmd, server, chanrec);
 	}
 	g_free(kickcmd);
 	g_free(bancmd);
