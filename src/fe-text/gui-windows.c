@@ -217,9 +217,10 @@ static MAIN_WINDOW_REC *mainwindow_find_unsticky(void)
         return active_mainwin;
 }
 
-static void signal_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
+static void signal_window_changed(WINDOW_REC *window)
 {
 	MAIN_WINDOW_REC *parent;
+        WINDOW_REC *old_window;
 
 	g_return_if_fail(window != NULL);
 
@@ -245,10 +246,12 @@ static void signal_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
 		}
 		gui_window_reparent(window, active_mainwin);
 	}
-	active_mainwin->active = window;
 
-	if (old_window != NULL && !is_window_visible(old_window))
+        old_window = active_mainwin->active;
+	if (old_window != NULL)
                 textbuffer_view_set_window(WINDOW_GUI(old_window)->view, NULL);
+
+	active_mainwin->active = window;
 
 	textbuffer_view_set_window(WINDOW_GUI(window)->view,
 				   parent->curses_win);
