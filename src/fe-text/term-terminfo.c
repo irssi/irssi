@@ -372,13 +372,16 @@ static void term_printed_text(int count)
 	   However, next term_move() really shouldn't try to cache
 	   the move, otherwise terminals would try to combine the
 	   last word in upper line with first word in lower line. */
-        cforcemove = TRUE;
 	vcx += count;
 	while (vcx >= term_width) {
 		vcx -= term_width;
 		if (vcy < term_height-1) vcy++;
 		if (vcx > 0) term_lines_empty[vcy] = FALSE;
 	}
+
+	crealx += count;
+	if (crealx >= term_width)
+		cforcemove = TRUE;
 }
 
 void term_addch(TERM_WINDOW *window, int chr)
@@ -488,6 +491,7 @@ void term_refresh(TERM_WINDOW *window)
 		terminfo_set_cursor_visible(TRUE);
                 curs_visible = TRUE;
 	}
+
 	term_set_color(window, ATTR_RESET);
 	fflush(window != NULL ? window->term->out : current_term->out);
 }
@@ -495,11 +499,6 @@ void term_refresh(TERM_WINDOW *window)
 void term_refresh_freeze(void)
 {
         freeze_counter++;
-
-	if (!term_detached && curs_visible) {
-		terminfo_set_cursor_visible(FALSE);
-                curs_visible = FALSE;
-	}
 }
 
 void term_refresh_thaw(void)
