@@ -697,7 +697,7 @@ static void newline(WINDOW_REC *window)
 }
 
 #define show_timestamp(level) \
-	((level) != MSGLEVEL_NEVER && \
+	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
 	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
 
 static char *get_timestamp(TEXT_DEST_REC *dest)
