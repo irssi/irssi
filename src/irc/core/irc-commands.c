@@ -336,7 +336,6 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: PART [<channels>] [<message>] */
 static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	IRC_CHANNEL_REC *chanrec;
 	char *channame, *msg;
 	void *free_arg;
 
@@ -347,9 +346,6 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	chanrec = irc_channel_find(server, channame);
-	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
 		      channame, msg);
