@@ -329,7 +329,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 
 	hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
-	hv_store(hv, "data_level", 8, newSViv(item->data_level), 0);
+	hv_store(hv, "data_level", 10, newSViv(item->data_level), 0);
 	hv_store(hv, "hilight_color", 10, new_pv(item->hilight_color), 0);
 }
 
