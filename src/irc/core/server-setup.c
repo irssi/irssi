@@ -311,7 +311,7 @@ static void setupserver_destroy(SETUP_SERVER_REC *rec)
 
 	g_free_not_null(rec->own_host);
 	g_free_not_null(rec->own_ip);
-	g_free(rec->ircnet);
+	g_free_not_null(rec->ircnet);
 	g_free(rec->address);
 	g_free_not_null(rec->password);
 	g_free(rec);
