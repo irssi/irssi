@@ -32,7 +32,6 @@
 CONFIG_REC *mainconfig;
 
 static GString *last_errors;
-static char *last_config_error_msg;
 static GSList *last_invalid_modules;
 static int fe_initialized;
 static int config_changed; /* FIXME: remove after .98 (unless needed again) */
@@ -274,11 +273,6 @@ static void sig_init_finished(void)
 		g_string_free(last_errors, TRUE);
 	}
 
-	if (last_config_error_msg != NULL) {
-		signal_emit("gui dialog", 2, "error", last_config_error_msg);
-		g_free_and_null(last_config_error_msg);
-	}
-
 	if (config_changed) {
 		/* some backwards compatibility changes were made to
 		   config file, reload it */
@@ -489,7 +483,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	CONFIG_REC *config;
 	struct stat statbuf;
         const char *path;
-	char *real_fname;
+	char *real_fname, *str;
 
 	real_fname = fname != NULL ? g_strdup(fname) :
 		g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi"
@@ -510,9 +504,11 @@ static CONFIG_REC *parse_configfile(const char *fname)
 
 	config = config_open(path, -1);
 	if (config == NULL) {
-		last_config_error_msg =
-			g_strdup_printf("Error opening configuration file %s: %s",
-					path, g_strerror(errno));
+		str = g_strdup_printf("Error opening configuration file %s: %s",
+				      path, g_strerror(errno));
+		signal_emit("gui dialog", 2, "error", str);
+                g_free(str);
+
 		config = config_open(NULL, -1);
 	}
 
@@ -549,10 +545,10 @@ static void init_configfile(void)
 
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
-		last_config_error_msg =
-			g_strdup_printf("Ignored errors in configuration "
-					"file:\n%s",
-					config_last_error(mainconfig));
+		str = g_strdup_printf("Ignored errors in configuration file:\n%s",
+				      config_last_error(mainconfig));
+		signal_emit("gui dialog", 2, "error", str);
+                g_free(str);
 	}
 
 	signal(SIGTERM, sig_term);
@@ -644,7 +640,6 @@ void settings_init(void)
 				    (GCompareFunc) g_str_equal);
 
 	last_errors = NULL;
-	last_config_error_msg = NULL;
         last_invalid_modules = NULL;
 	fe_initialized = FALSE;
         config_changed = FALSE;

@@ -49,6 +49,8 @@ void chat_commands_deinit(void);
 
 int irssi_gui;
 
+static GSList *dialog_type_queue, *dialog_text_queue;
+
 static void read_signals(void)
 {
 #ifndef WIN32
@@ -78,8 +80,37 @@ static void read_signals(void)
 #endif
 }
 
+static void sig_gui_dialog(const char *type, const char *text)
+{
+	dialog_type_queue = g_slist_append(dialog_type_queue, g_strdup(type));
+	dialog_text_queue = g_slist_append(dialog_text_queue, g_strdup(text));
+}
+
+static void sig_init_finished(void)
+{
+	GSList *type, *text;
+
+        signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+
+	/* send the dialog texts that were in queue before irssi
+	   was initialized */
+	type = dialog_type_queue;
+        text = dialog_text_queue;
+	for (; text != NULL; text = text->next, type = type->next) {
+		signal_emit("gui dialog", 2, type->data, text->data);
+		g_free(type->data);
+                g_free(text->data);
+	}
+        g_slist_free(dialog_type_queue);
+        g_slist_free(dialog_text_queue);
+}
+
 void core_init(void)
 {
+	dialog_type_queue = NULL;
+	dialog_text_queue = NULL;
+
 	modules_init();
 #ifndef WIN32
 	pidwait_init();
@@ -88,6 +119,10 @@ void core_init(void)
 	net_disconnect_init();
 	net_sendbuffer_init();
 	signals_init();
+
+	signal_add_first("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
+	signal_add_first("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+
 	settings_init();
 	commands_init();
         nickmatch_cache_init();
