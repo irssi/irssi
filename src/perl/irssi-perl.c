@@ -175,7 +175,6 @@ static void irssi_perl_stop(void)
 	while (perl_timeouts != NULL)
 		perl_timeout_destroy(perl_timeouts->data);
 
-        PL_perl_destruct_level = 1;
 	perl_destruct(irssi_perl_interp);
 	perl_free(irssi_perl_interp);
 	irssi_perl_interp = NULL;
@@ -574,6 +573,7 @@ void irssi_perl_init(void)
 	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_flush);
 	signal_grabbed = siglast_grabbed = FALSE;
 
+        PL_perl_destruct_level = 1;
 	irssi_perl_start();
 	irssi_perl_autorun();
 }
