@@ -188,7 +188,8 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 	/* replace the word in line - we need to return
 	   a full new line */
 	result = g_string_new(line);
-	g_string_erase(result, startpos, wordlen);
+        if (wordlen > 0)
+		g_string_erase(result, startpos, wordlen);
 	g_string_insert(result, startpos, complist->data);
 
 	if (want_space) {
