@@ -457,7 +457,6 @@ static void event_connected(IRC_SERVER_REC *server)
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
-			rec->want_ctcp = 0;
 			proxy_client_reset_nick(rec);
 		}
 	}
