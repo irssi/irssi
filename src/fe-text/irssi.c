@@ -142,11 +142,12 @@ static void textui_finish_init(void)
 
 	fe_common_core_finish_init();
 
+	signal_emit("irssi init finished", 0);
+
 #ifdef HAVE_STATIC_PERL
 	perl_core_init();
         fe_perl_init();
 #endif
-	signal_emit("irssi init finished", 0);
 
 	if (display_firsttimer) {
 		printtext_window(active_win, MSGLEVEL_CLIENTNOTICE,
