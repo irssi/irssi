@@ -36,6 +36,10 @@ extern STRLEN PL_na;
 #  define pTHX_
 #endif
 
+#ifndef aTHX_
+#  define aTHX_
+#endif
+
 #define iobject_bless(object) \
 	((object) == NULL ? &PL_sv_undef : \
 	irssi_bless_iobject((object)->type, (object)->chat_type, object))
