@@ -387,6 +387,10 @@ static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
 	if (strchr(cmdchars, *line) == NULL)
 		return; /* handle only /commands here */
 	line++;
+	if (*line == ' ') {
+		/* "/ text" = same as sending "text" to active channel. */
+		return;
+	}
 
 	/* //command ignores aliases */
 	if (strchr(cmdchars, *line) != NULL) {

@@ -305,8 +305,13 @@ static void event_command(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
     if (!irc_item_check(item))
 	    return;
 
-    if (strchr(settings_get_str("cmdchars"), *line) != NULL)
-	    return;
+    if (strchr(settings_get_str("cmdchars"), *line) != NULL) {
+	    if (line[1] != ' ')
+		    return;
+
+	    /* "/ text" = same as sending "text" to active channel. */
+	    line += 2;
+    }
 
     line = g_strdup(line);
 
