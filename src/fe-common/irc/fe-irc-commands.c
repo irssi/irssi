@@ -159,12 +159,12 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 
 	if (!print_channel)
 	{
-	    printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 			IRCTXT_OWN_MSG, server->nick, msg, nickmode);
 	}
 	else
 	{
-	    printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+	    printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 			IRCTXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
     }
@@ -172,7 +172,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     {
         /* private message */
         item = (WI_ITEM_REC *) privmsg_get_query(server, target, TRUE);
-	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
+	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }
     g_free_not_null(freestr);
@@ -191,7 +191,7 @@ static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	printformat(server, item->name, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT |
+	printformat(server, item->name, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*item->name) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    IRCTXT_OWN_ME, server->nick, data);
 
@@ -213,7 +213,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	printformat(server, target, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT |
+	printformat(server, target, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    IRCTXT_OWN_ME, server->nick, text);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
@@ -236,7 +236,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	if (*target == '@' && ischannel(target[1]))
 		target++; /* Hybrid 6 feature, send notice to all ops in channel */
 
-	printformat(server, target, MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT,
+	printformat(server, target, MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_NOTICE, target, msg);
 
 	cmd_params_free(free_arg);
