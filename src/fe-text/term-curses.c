@@ -83,7 +83,7 @@ static int init_curses(void)
 #ifdef VSUSP
 		tio.c_cc[VSUSP] = _POSIX_VDISABLE;
 #endif
-		tcsetattr(0, 0, &tio);
+		tcsetattr(0, TCSADRAIN, &tio);
 	}
 
 	if (has_colors())
@@ -131,7 +131,7 @@ static int term_init_int(void)
 
 static void term_deinit_int(void)
 {
-        tcsetattr(0, 0, &old_tio);
+        tcsetattr(0, TCSADRAIN, &old_tio);
 
 	endwin();
 	g_free_and_null(root_window);

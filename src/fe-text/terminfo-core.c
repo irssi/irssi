@@ -364,7 +364,7 @@ static void terminfo_colors_deinit(TERM_REC *term)
 {
 	int i;
 
-	if (terminfo_has_colors(term)) {
+	if (terminfo_is_colors_set(term)) {
 		for (i = 0; i < 16; i++) {
 			g_free(term->TI_fg[i]);
 			g_free(term->TI_bg[i]);
@@ -383,7 +383,8 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	const char *bold, *blink;
 	int i;
 
-        terminfo_colors_deinit(term);
+	terminfo_colors_deinit(term);
+        term->has_colors = term->TI_setf || term->TI_setaf;
 
 	if (term->TI_setf) {
 		for (i = 0; i < 8; i++)
@@ -444,13 +445,13 @@ static void terminfo_input_init(TERM_REC *term)
 	term->tio.c_cc[VSUSP] = _POSIX_VDISABLE;
 #endif
 
-        tcsetattr(fileno(term->in), 0, &term->tio);
+        tcsetattr(fileno(term->in), TCSADRAIN, &term->tio);
 
 }
 
 static void terminfo_input_deinit(TERM_REC *term)
 {
-        tcsetattr(fileno(term->in), 0, &term->old_tio);
+        tcsetattr(fileno(term->in), TCSADRAIN, &term->old_tio);
 }
 
 void terminfo_cont(TERM_REC *term)
