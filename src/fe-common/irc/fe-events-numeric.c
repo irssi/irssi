@@ -436,7 +436,7 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *txt_real, *txt_hostname, *hostname, *from;
+	char *params, *nick, *txt_real, *txt_hostname, *hostname, *text;
 
 	g_return_if_fail(data != NULL);
 
@@ -449,12 +449,19 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
                 g_free(params);
 		params = event_get_params(data, 3, NULL, &nick, &hostname);
 
-		from = strstr(hostname, "from ");
-                if (from != NULL) hostname = from+5;
+		hostname = strstr(hostname, "from ");
+                if (hostname != NULL) hostname += 5;
 	}
 
-	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_REALHOST, nick, hostname);
+	if (hostname != NULL) {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_REALHOST, nick, hostname);
+	} else {
+		/* OPN's dancer uses for end of /MAP */
+                g_free(params);
+		params = event_get_params(data, 2, NULL, &text);
+                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
+	}
 	g_free(params);
 }
 
@@ -472,7 +479,8 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_USERMODE, nick, usermode);
 	} else {
-                /* some servers use this as motd too.. */
+		/* some servers use this as motd too..
+		   and OPN's dancer for /MAP */
                 g_free(params);
 		params = event_get_params(data, 2, NULL, &text);
                 printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
