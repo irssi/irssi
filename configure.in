@@ -705,7 +705,7 @@ src/lib-popt/Makefile
 src/perl/Makefile
 src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL
-src/perl/fe/Makefile.PL
+src/perl/ui/Makefile.PL
 servertest/Makefile
 scripts/Makefile
 docs/Makefile
