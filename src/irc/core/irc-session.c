@@ -72,6 +72,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
+                rec->session_rejoin = TRUE;
 		signal_emit("event join", 4, server, rec->name,
 			    server->nick, server->userhost);
                 irc_send_cmdv(server, "TOPIC %s", rec->name);

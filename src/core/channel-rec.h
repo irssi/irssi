@@ -22,6 +22,7 @@ unsigned int synced:1; /* Channel synced - all queries done */
 unsigned int joined:1; /* Have we even received JOIN event for this channel? */
 unsigned int left:1; /* You just left the channel */
 unsigned int kicked:1; /* You just got kicked */
+unsigned int session_rejoin:1; /* This channel was joined with /UPGRADE */
 unsigned int destroying:1;
 
 /* Return the information needed to call SERVER_REC->channels_join() for
