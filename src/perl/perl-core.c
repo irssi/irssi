@@ -144,9 +144,9 @@ void perl_scripts_deinit(void)
 	if (my_perl == NULL)
 		return;
 
-	/* destroy all scripts */
+	/* unload all scripts */
         while (perl_scripts != NULL)
-		perl_script_destroy(perl_scripts->data);
+		perl_script_unload(perl_scripts->data);
 
         signal_emit("perl scripts deinit", 0);
 
@@ -162,15 +162,6 @@ void perl_scripts_deinit(void)
 	perl_destruct(my_perl);
 	perl_free(my_perl);
 	my_perl = NULL;
-}
-
-/* Unload perl script */
-void perl_script_unload(PERL_SCRIPT_REC *script)
-{
-        g_return_if_fail(script != NULL);
-
-	perl_script_destroy_package(script);
-        perl_script_destroy(script);
 }
 
 static char *script_file_get_name(const char *path)
@@ -300,6 +291,15 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 	return script_load(name, NULL, data);
 }
 
+/* Unload perl script */
+void perl_script_unload(PERL_SCRIPT_REC *script)
+{
+        g_return_if_fail(script != NULL);
+
+	perl_script_destroy_package(script);
+        perl_script_destroy(script);
+}
+
 /* Find loaded script by name */
 PERL_SCRIPT_REC *perl_script_find(const char *name)
 {
@@ -415,7 +415,7 @@ static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 	}
 
 	if (script != NULL) {
-		perl_script_destroy(script);
+		perl_script_unload(script);
                 signal_stop();
 	}
 }

@@ -13,13 +13,12 @@ sub is_static {
 }
 
 sub destroy {
-  my $package = "Irssi::Script::".$_[0];
-  delete_package($package);
+  delete_package($_[0]);
 }
 
 sub eval_data {
   my ($data, $id) = @_;
-  destroy($id);
+  destroy("Irssi::Script::$id");
 
   my $package = "Irssi::Script::$id";
   my $eval = qq{package $package; %s sub handler { $data; }};
