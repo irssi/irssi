@@ -25,6 +25,7 @@
 
 #include "irc-servers.h"
 #include "irc-channels.h"
+#include "irc-nicklist.h"
 
 static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 				    CONFIG_NODE *node)
@@ -72,11 +73,36 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->connrec->channels = g_strdup(config_node_get_str(node, "channels", NULL));
 }
 
+static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
+				     CONFIG_NODE *node)
+{
+	const char *nick;
+        int op, voice;
+        NICK_REC *nickrec;
+
+	if (!IS_IRC_CHANNEL(channel))
+		return;
+
+	nick = config_node_get_str(node, "nick", NULL);
+	if (nick == NULL)
+                return;
+
+	op = config_node_get_bool(node, "op", FALSE);
+        voice = config_node_get_bool(node, "voice", FALSE);
+	nickrec = irc_nicklist_insert(channel, nick, op, voice, FALSE);
+        nickrec->halfop = config_node_get_bool(node, "halfop", FALSE);
+}
+
 static void session_restore_channel(IRC_CHANNEL_REC *channel)
 {
+	char *data;
+
 	signal_emit("event join", 4, channel->server, channel->name,
 		    channel->server->nick, channel->server->userhost);
-	irc_send_cmdv(channel->server, "NAMES %s", channel->name);
+
+        data = g_strconcat(channel->server->nick, " ", channel->name, NULL);
+	signal_emit("event 366", 2, channel->server, data);
+        g_free(data);
 }
 
 static void sig_connected(IRC_SERVER_REC *server)
@@ -105,6 +131,7 @@ void irc_session_init(void)
 {
 	signal_add("session save server", (SIGNAL_FUNC) sig_session_save_server);
 	signal_add("session restore server", (SIGNAL_FUNC) sig_session_restore_server);
+	signal_add("session restore nick", (SIGNAL_FUNC) sig_session_restore_nick);
 
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 }
@@ -113,6 +140,7 @@ void irc_session_deinit(void)
 {
 	signal_remove("session save server", (SIGNAL_FUNC) sig_session_save_server);
 	signal_remove("session restore server", (SIGNAL_FUNC) sig_session_restore_server);
+	signal_remove("session restore nick", (SIGNAL_FUNC) sig_session_restore_nick);
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 }

@@ -30,6 +30,7 @@
 #include "servers.h"
 #include "servers-setup.h"
 #include "channels.h"
+#include "nicklist.h"
 
 static char *session_file;
 static char *irssi_binary;
@@ -113,6 +114,31 @@ static void cmd_upgrade(const char *data)
 	signal_emit("gui exit", 0);
 }
 
+static void session_save_nick(CHANNEL_REC *channel, NICK_REC *nick,
+			      CONFIG_REC *config, CONFIG_NODE *node)
+{
+	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+
+	config_node_set_str(config, node, "nick", nick->nick);
+	config_node_set_bool(config, node, "op", nick->op);
+	config_node_set_bool(config, node, "halfop", nick->halfop);
+	config_node_set_bool(config, node, "voice", nick->voice);
+
+	signal_emit("session save nick", 4, channel, nick, config, node);
+}
+
+static void session_save_channel_nicks(CHANNEL_REC *channel, CONFIG_REC *config,
+				       CONFIG_NODE *node)
+{
+	GSList *tmp, *nicks;
+
+	node = config_node_section(node, "nicks", NODE_TYPE_LIST);
+        nicks = nicklist_getnicks(channel);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next)
+		session_save_nick(channel, tmp->data, config, node);
+        g_slist_free(nicks);
+}
+
 static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
 				 CONFIG_NODE *node)
 {
@@ -123,6 +149,62 @@ static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
 	config_node_set_str(config, node, "key", channel->key);
 
 	signal_emit("session save channel", 3, channel, config, node);
+}
+
+static void session_save_server_channels(SERVER_REC *server,
+					 CONFIG_REC *config,
+					 CONFIG_NODE *node)
+{
+	GSList *tmp;
+
+	/* save channels */
+        node = config_node_section(node, "channels", NODE_TYPE_LIST);
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
+		session_save_channel(tmp->data, config, node);
+}
+
+static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
+				CONFIG_NODE *node)
+{
+	int handle;
+
+	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+
+	config_node_set_str(config, node, "chat_type",
+			    chat_protocol_find_id(server->chat_type)->name);
+	config_node_set_str(config, node, "address", server->connrec->address);
+	config_node_set_int(config, node, "port", server->connrec->port);
+	config_node_set_str(config, node, "chatnet", server->connrec->chatnet);
+	config_node_set_str(config, node, "password", server->connrec->password);
+	config_node_set_str(config, node, "nick", server->nick);
+
+	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
+	config_node_set_int(config, node, "handle", handle);
+
+	signal_emit("session save server", 3, server, config, node);
+
+	/* fake the server disconnection */
+        g_io_channel_unref(net_sendbuffer_handle(server->handle));
+	net_sendbuffer_destroy(server->handle, FALSE);
+	server->handle = NULL;
+
+	server->connection_lost = TRUE;
+        server_disconnect(server);
+}
+
+static void session_restore_channel_nicks(CHANNEL_REC *channel,
+					  CONFIG_NODE *node)
+{
+	GSList *tmp;
+
+	/* restore nicks */
+	node = config_node_section(node, "nicks", -1);
+	if (node != NULL && node->type == NODE_TYPE_LIST) {
+		for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+			signal_emit("session restore nick", 2,
+				    channel, tmp->data);
+		}
+	}
 }
 
 static void session_restore_channel(SERVER_REC *server, CONFIG_NODE *node)
@@ -142,39 +224,17 @@ static void session_restore_channel(SERVER_REC *server, CONFIG_NODE *node)
 	signal_emit("session restore channel", 2, channel, node);
 }
 
-static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
-				CONFIG_NODE *node)
+static void session_restore_server_channels(SERVER_REC *server,
+					    CONFIG_NODE *node)
 {
-        GSList *tmp;
-	int handle;
+	GSList *tmp;
 
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
-
-	config_node_set_str(config, node, "chat_type",
-			    chat_protocol_find_id(server->chat_type)->name);
-	config_node_set_str(config, node, "address", server->connrec->address);
-	config_node_set_int(config, node, "port", server->connrec->port);
-	config_node_set_str(config, node, "chatnet", server->connrec->chatnet);
-	config_node_set_str(config, node, "password", server->connrec->password);
-	config_node_set_str(config, node, "nick", server->nick);
-
-	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
-	config_node_set_int(config, node, "handle", handle);
-
-	signal_emit("session save server", 3, server, config, node);
-
-        /* save channels */
-        node = config_node_section(node, "channels", NODE_TYPE_LIST);
-	for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
-		session_save_channel(tmp->data, config, node);
-
-	/* fake the server disconnection */
-        g_io_channel_unref(net_sendbuffer_handle(server->handle));
-	net_sendbuffer_destroy(server->handle, FALSE);
-	server->handle = NULL;
-
-	server->connection_lost = TRUE;
-        server_disconnect(server);
+	/* restore channels */
+	node = config_node_section(node, "channels", -1);
+	if (node != NULL && node->type == NODE_TYPE_LIST) {
+		for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+			session_restore_channel(server, tmp->data);
+	}
 }
 
 static void session_restore_server(CONFIG_NODE *node)
@@ -182,7 +242,6 @@ static void session_restore_server(CONFIG_NODE *node)
 	CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	SERVER_REC *server;
-        GSList *tmp;
 	const char *chat_type, *address, *chatnet, *password, *nick;
         int port, handle;
 
@@ -211,13 +270,6 @@ static void session_restore_server(CONFIG_NODE *node)
 		server->session_reconnect = TRUE;
 
 		signal_emit("session restore server", 2, server, node);
-
-                /* restore channels */
-		node = config_node_section(node, "channels", -1);
-		if (node != NULL && node->type == NODE_TYPE_LIST) {
-			for (tmp = node->value; tmp != NULL; tmp = tmp->next)
-				session_restore_channel(server, tmp->data);
-		}
 	}
 }
 
@@ -293,6 +345,10 @@ void session_init(void)
 
 	signal_add("session save", (SIGNAL_FUNC) sig_session_save);
 	signal_add("session restore", (SIGNAL_FUNC) sig_session_restore);
+	signal_add("session save server", (SIGNAL_FUNC) session_save_server_channels);
+	signal_add("session restore server", (SIGNAL_FUNC) session_restore_server_channels);
+	signal_add("session save channel", (SIGNAL_FUNC) session_save_channel_nicks);
+	signal_add("session restore channel", (SIGNAL_FUNC) session_restore_channel_nicks);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 }
 
@@ -304,5 +360,9 @@ void session_deinit(void)
 
 	signal_remove("session save", (SIGNAL_FUNC) sig_session_save);
 	signal_remove("session restore", (SIGNAL_FUNC) sig_session_restore);
+	signal_remove("session save server", (SIGNAL_FUNC) session_save_server_channels);
+	signal_remove("session restore server", (SIGNAL_FUNC) session_restore_server_channels);
+	signal_remove("session save channel", (SIGNAL_FUNC) session_save_channel_nicks);
+	signal_remove("session restore channel", (SIGNAL_FUNC) session_restore_channel_nicks);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 }
