@@ -64,17 +64,36 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	if (ychange == 0 && !xchange) return;
 
 	window->lines = window->last_line-window->first_line+1;
+#ifdef HAVE_CURSES_WRESIZE
 	wresize(window->curses_win, window->lines, COLS);
 	mvwin(window->curses_win, window->first_line, 0);
+#else
+	delwin(window->curses_win);
+	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
+#endif
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->gui_data != NULL && WINDOW_GUI(rec)->parent == window)
+		if (rec->gui_data != NULL &&
+		    WINDOW_GUI(rec)->parent == window)
 			gui_window_resize(rec, ychange, xchange);
 	}
 
+	gui_window_redraw(window->active);
 	signal_emit("mainwindow resized", 1, window);
+}
+
+void mainwindows_recreate(void)
+{
+	GSList *tmp;
+
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		rec->curses_win = newwin(rec->lines, COLS, rec->first_line, 0);
+		gui_window_redraw(rec->active);
+	}
 }
 
 MAIN_WINDOW_REC *mainwindow_create(void)

@@ -24,6 +24,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window);
 
 void mainwindows_redraw(void);
 void mainwindows_resize(int ychange, int xchange);
+void mainwindows_recreate(void);
 
 int mainwindows_reserve_lines(int count, int up);
 
