@@ -92,7 +92,8 @@ void windows_restore(void)
 
 		window = window_create(NULL, TRUE);
 		window_set_refnum(window, atoi(node->key));
-                window_set_name(window, config_node_get_str(node, "name", NULL));
+                window->sticky_refnum = config_node_get_bool(node, "sticky_refnum", FALSE);
+		window_set_name(window, config_node_get_str(node, "name", NULL));
 		window_set_level(window, level2bits(config_node_get_str(node, "level", "")));
 
 		window->servertag = g_strdup(config_node_get_str(node, "servertag", NULL));
@@ -143,6 +144,9 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 
         ltoa(refnum, window->refnum);
 	node = config_node_section(node, refnum, NODE_TYPE_BLOCK);
+
+	if (window->sticky_refnum)
+		iconfig_node_set_bool(node, "sticky_refnum", TRUE);
 
 	if (window->name != NULL)
 		iconfig_node_set_str(node, "name", window->name);
