@@ -96,6 +96,7 @@ void irc_chatnets_deinit(void)
 	for (tmp = chatnets; tmp != NULL; tmp = next) {
 		CHATNET_REC *rec = tmp->data;
 
+		next = tmp->next;
 		if (IS_IRC_CHATNET(rec))
                         chatnet_destroy(rec);
 	}
