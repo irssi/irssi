@@ -336,6 +336,9 @@ static const char *redirect_match(REDIRECT_REC *redirect, const char *event,
         const char *signal;
         int stop_signal;
 
+	if (redirect->aborted)
+                return NULL;
+
 	/* get the signal for redirection event - if it's not found we'll
 	   use the default signal */
         signal = NULL;
@@ -475,8 +478,11 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 			} else {
 				/* not a numeric, so we've lost the
 				   stop event.. */
-                                (*redirect)->destroyed = TRUE;
                                 (*redirect)->aborted = TRUE;
+				redirect_abort(server, *redirect);
+
+                                *redirect = NULL;
+				signal = NULL;
 			}
 		}
 	}
