@@ -393,7 +393,11 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 			tnick = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
 				g_strdown(tnick);
-			list = g_list_append(list, tnick);
+
+			if (glist_find_icase_string(list, tnick) == NULL)
+				list = g_list_append(list, tnick);
+			else
+                                g_free(tnick);
 		}
 
 	}
@@ -429,11 +433,14 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 		NICK_REC *rec = tmp->data;
 
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
-		    glist_find_icase_string(list, rec->nick) == NULL &&
 		    rec != channel->ownnick) {
 			str = g_strconcat(rec->nick, suffix, NULL);
-			if (completion_lowercase) g_strdown(str);
-			list = g_list_append(list, str);
+			if (completion_lowercase)
+				g_strdown(str);
+                        if (glist_find_icase_string(list, str) == NULL)
+				list = g_list_append(list, str);
+			else
+                                g_free(str);
 		}
 	}
 	g_slist_free(nicks);
