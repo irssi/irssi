@@ -101,7 +101,7 @@ command(server, cmd)
 	Irssi::Server server
 	char *cmd
 CODE:
-	perl_command(cmd, server, active_win->active);
+	perl_command(cmd, server, NULL);
 
 void
 print(server, channel, str, level)
