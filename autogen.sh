@@ -142,7 +142,7 @@ for i in $files; do
   file=`echo "$i"|sed 's@^src/@@'`
   file=`echo "$file"|sed 's@/module-formats\.c$@@'`
   echo "  \"$file\" = {" >> colorless.theme
-  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value =~ s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
+  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value =~ s/\$([0-9])(\%.-)/\$\{\1\}\2/g; $value =~ s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
   echo "  };" >> colorless.theme
 done
 
