@@ -31,7 +31,6 @@
 
 static int bantype;
 
-/* Get ban mask */
 char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick)
 {
 	NICK_REC *rec;
@@ -60,6 +59,37 @@ char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick)
 		g_memmove(user+10, host, strlen(host)+1);
 	}
 	return str;
+}
+
+char *ban_get_masks(IRC_CHANNEL_REC *channel, const char *nicks)
+{
+	GString *str;
+	char **ban, **banlist, *realban, *ret;
+
+	str = g_string_new(NULL);
+	banlist = g_strsplit(nicks, " ", -1);
+	for (ban = banlist; *ban != NULL; ban++) {
+		if (strchr(*ban, '!') != NULL) {
+			/* explicit ban */
+			g_string_sprintfa(str, "%s ", *ban);
+			continue;
+		}
+
+		/* ban nick */
+		realban = ban_get_mask(channel, *ban);
+		if (realban != NULL) {
+			g_string_sprintfa(str, "%s ", realban);
+			g_free(realban);
+		}
+	}
+	g_strfreev(banlist);
+
+	if (str->len > 0)
+		g_string_truncate(str, str->len-1);
+
+	ret = str->str;
+	g_string_free(str, FALSE);
+        return ret;
 }
 
 void ban_set_type(const char *type)
@@ -110,35 +140,14 @@ void ban_set_type(const char *type)
 
 void ban_set(IRC_CHANNEL_REC *channel, const char *bans)
 {
-	GString *str;
-	char **ban, **banlist, *realban;
+	char *masks;
 
 	g_return_if_fail(bans != NULL);
 
-	str = g_string_new(NULL);
-	banlist = g_strsplit(bans, " ", -1);
-	for (ban = banlist; *ban != NULL; ban++) {
-		if (strchr(*ban, '!') != NULL) {
-			/* explicit ban */
-			g_string_sprintfa(str, "%s ", *ban);
-			continue;
-		}
-
-		/* ban nick */
-		realban = ban_get_mask(channel, *ban);
-		if (realban != NULL) {
-			g_string_sprintfa(str, "%s ", realban);
-			g_free(realban);
-		}
-	}
-	g_strfreev(banlist);
-
-	if (str->len > 0) {
-		g_string_truncate(str, str->len-1);
-		channel_set_singlemode(channel->server, channel->name,
-				       str->str, "+b");
-	}
-	g_string_free(str, TRUE);
+	masks = ban_get_masks(channel, bans);
+	channel_set_singlemode(channel->server, channel->name,
+			       masks, "+b");
+        g_free(masks);
 }
 
 void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)

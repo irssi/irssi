@@ -7,6 +7,7 @@ void bans_init(void);
 void bans_deinit(void);
 
 char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick);
+char *ban_get_masks(IRC_CHANNEL_REC *channel, const char *nicks);
 
 void ban_set_type(const char *type);
 void ban_set(IRC_CHANNEL_REC *channel, const char *bans);

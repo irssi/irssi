@@ -813,20 +813,45 @@ static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: KICKBAN [<channel>] <nick> <reason> */
-static void cmd_kickban(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+/* SYNTAX: KICKBAN [<channel>] <nicks> <reason> */
+static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
+			WI_ITEM_REC *item)
 {
-	char *nick;
+        IRC_CHANNEL_REC *chanrec;
+	char *channel, *nicks, *reason, *str;
+        char **nicklist, *spacenicks;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 1, &nick))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+			    item, &channel, &nicks, &reason))
 		return;
-	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	signal_emit("command ban", 3, nick, server, item);
-	signal_emit("command kick", 3, data, server, item);
+	if (*channel == '\0' || *nicks == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec == NULL)
+		cmd_param_error(CMDERR_CHAN_NOT_FOUND);
+	if (!chanrec->wholist)
+		cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
+
+	nicklist = g_strsplit(nicks, ",", -1);
+        spacenicks = g_strjoinv(" ", nicklist);
+	g_strfreev(nicklist);
+
+	str = g_strdup_printf("%s %s", chanrec->name, spacenicks);
+	signal_emit("command ban", 3, str, server, channel);
+	g_free(str);
+
+	str = g_strdup_printf("%s %s %s", chanrec->name, nicks, reason);
+	signal_emit("command kick", 3, str, server, channel);
+	g_free(str);
+
+        g_free(spacenicks);
 	cmd_params_free(free_arg);
 }
 
@@ -872,48 +897,66 @@ static int knockout_timeout(void)
 	return 1;
 }
 
-/* SYNTAX: KNOCKOUT [<seconds>] <nick> <reason> */
+/* SYNTAX: KNOCKOUT [<seconds>] <nicks> <reason> */
 static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 			 IRC_CHANNEL_REC *channel)
 {
 	KNOCKOUT_REC *rec;
-	char *nick, *reason, *timeoutstr, *str;
+	char *nicks, *reason, *timeoutstr, *str;
+        char **nicklist, *spacenicks, *banmasks;
 	void *free_arg;
 	int timeleft;
 
 	g_return_if_fail(data != NULL);
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
 	if (!IS_IRC_CHANNEL(channel))
 		cmd_return_error(CMDERR_NOT_JOINED);
+	if (!channel->wholist)
+		cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (is_numeric(data, ' ')) {
 		/* first argument is the timeout */
-		if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &timeoutstr, &nick, &reason))
+		if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+				    &timeoutstr, &nicks, &reason))
                         return;
 		timeleft = atoi(timeoutstr);
 	} else {
-                timeleft = 0;
-		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &nick, &reason))
+		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
+				    &nicks, &reason))
 			return;
+                timeleft = 0;
 	}
 
 	if (timeleft == 0) timeleft = settings_get_int("knockout_time");
-	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	signal_emit("command ban", 3, nick, server, channel);
+	nicklist = g_strsplit(nicks, ",", -1);
+        spacenicks = g_strjoinv(" ", nicklist);
+	g_strfreev(nicklist);
 
-	str = g_strdup_printf("%s %s", nick, reason);
+	banmasks = ban_get_masks(channel, spacenicks);
+	g_free(spacenicks);
+
+	if (*banmasks != '\0') {
+		str = g_strdup_printf("%s %s", channel->name, banmasks);
+		signal_emit("command ban", 3, str, server, channel);
+		g_free(str);
+	}
+
+	str = g_strdup_printf("%s %s %s", channel->name, nicks, reason);
 	signal_emit("command kick", 3, str, server, channel);
 	g_free(str);
 
-	/* create knockout record */
-	rec = g_new(KNOCKOUT_REC, 1);
-	rec->timeleft = timeleft;
-	rec->channel = channel;
-	rec->ban = ban_get_mask(channel, nick);
+	if (*banmasks == '\0')
+		g_free(banmasks);
+	else {
+		/* create knockout record */
+		rec = g_new(KNOCKOUT_REC, 1);
+		rec->timeleft = timeleft;
+		rec->channel = channel;
+		rec->ban = banmasks;
 
-	server->knockoutlist = g_slist_append(server->knockoutlist, rec);
+		server->knockoutlist = g_slist_append(server->knockoutlist, rec);
+	}
 
 	cmd_params_free(free_arg);
 }
