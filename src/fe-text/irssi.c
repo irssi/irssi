@@ -140,7 +140,7 @@ static void textui_init(void)
 	fe_common_irc_init();
 
 	theme_register(gui_text_formats);
-	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
+	signal_add_last("gui exit", (SIGNAL_FUNC) sig_exit);
 }
 
 static void textui_finish_init(void)
