@@ -469,7 +469,7 @@ void expandos_deinit(void)
 
 	expando_destroy("sysname", expando_sysname);
 	expando_destroy("sysrelease", expando_sysrelease);
-	expando_destroy("topic", expando_servertag);
+	expando_destroy("topic", expando_topic);
 	expando_destroy("tag", expando_servertag);
 	expando_destroy("chatnet", expando_chatnet);
 
