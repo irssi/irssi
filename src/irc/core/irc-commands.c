@@ -386,7 +386,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 		return;
 
 	/* -<server tag> */
-	server = IRC_SERVER(cmd_options_get_server(NULL, optlist,
+	server = IRC_SERVER(cmd_options_get_server("whois", optlist,
 						   SERVER(server)));
 	if (server == NULL) {
 		cmd_params_free(free_arg);
