@@ -301,8 +301,8 @@ static void cmd_statusbar_position(const char *data, void *server,
 }
 
 /* SYNTAX: STATUSBAR <name> VISIBLE always|active|inactive */
-static void cmd_statusbar_visible(CONFIG_NODE *node, void *server,
-				  void *item, const char *data)
+static void cmd_statusbar_visible(const char *data, void *server,
+				  void *item, CONFIG_NODE *node)
 {
 	if (g_strcasecmp(data, "always") == 0)
 		iconfig_node_set_str(node, "visible", "always");
