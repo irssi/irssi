@@ -1,0 +1,19 @@
+
+@SYNTAX:script@
+
+Irssi has very powerful support for scripts written in Perl - they can extend functionality of Irssi in almost unlimited way, and they still keep the client's core unbloated, light and fast. You can control loading and execution of such scripts by this command.
+
+Without any parameters, /SCRIPT acts in same way as if you would call /SCRIPT LIST.
+
+/SCRIPT LIST displays list of all currently loaded scripts, together with full path to their source files.
+
+/SCRIPT EXEC executes the <commands> as a little perl script. It doesn't preserve it loaded in memory, unless -permanent is specified.
+
+/SCRIPT LOAD loads the <script> in memory and executes it.
+
+/SCRIPT UNLOAD unloads the <script> from memory.
+
+/SCRIPT RESET unloads all loaded scripts and resets the perl interpreter.
+
+See also: LOAD, UNLOAD
+
