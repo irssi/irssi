@@ -227,14 +227,14 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
 	unsigned char *ptr, *last_space_ptr;
-	int xpos, pos, indent_pos, last_space, color;
+	int xpos, pos, indent_pos, last_space, last_color, color;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
 
 	rec = g_new(LINE_CACHE_REC, 1);
 
 	xpos = 0; color = 0; indent_pos = DEFAULT_INDENT_POS;
-	last_space = 0; last_space_ptr = NULL;
+	last_space = last_color = 0; last_space_ptr = NULL;
 
 	rec->count = 1; lines = NULL;
 	for (ptr = (unsigned char *) line->text;;) {
@@ -281,6 +281,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 
 			if (last_space > indent_pos && last_space > 10) {
                                 /* go back to last space */
+                                color = last_color;
 				ptr = last_space_ptr;
 				while (*ptr == ' ') ptr++;
 			}
@@ -301,6 +302,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 		if (*ptr++ == ' ') {
 			last_space = xpos-1;
 			last_space_ptr = ptr;
+			last_color = color;
 		}
 	}
 
