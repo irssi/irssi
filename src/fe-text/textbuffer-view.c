@@ -314,8 +314,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	if (subline >= cache->count)
                 return 0;
 
+        color = ATTR_RESET;
         need_move = TRUE; need_clrtoeol = FALSE;
-	xpos = color = drawcount = 0; first = TRUE;
+	xpos = drawcount = 0; first = TRUE;
 	text_newline = text =
 		subline == 0 ? line->text : cache->lines[subline-1].start;
 	for (;;) {
