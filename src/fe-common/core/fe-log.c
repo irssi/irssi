@@ -342,7 +342,7 @@ static void autologs_close_all(void)
 static void autolog_open(void *server, const char *target)
 {
 	LOG_REC *log;
-	char *fname, *dir;
+	char *fname, *dir, *fixed_target;
 
 	log = logs_find_item(LOG_ITEM_TARGET, target, server, NULL);
 	if (log != NULL && !log->failed) {
@@ -350,8 +350,14 @@ static void autolog_open(void *server, const char *target)
 		return;
 	}
 
+	/* '/' -> '_' - don't even accidentally try to log to
+	   #../../../file if you happen to join to such channel.. */
+	fixed_target = g_strdup(target);
+        replace_chars(fixed_target, '/', '_');
 	fname = parse_special_string(autolog_path, server, NULL,
-				     target, NULL, 0);
+				     fixed_target, NULL, 0);
+	g_free(fixed_target);
+
 	if (log_find(fname) == NULL) {
 		log = log_create_rec(fname, autolog_level);
 		log_item_add(log, LOG_ITEM_TARGET, target, server);
