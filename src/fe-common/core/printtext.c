@@ -690,7 +690,8 @@ static char *get_server_tag(TEXT_DEST_REC *dest)
 
 static void msg_beep_check(SERVER_REC *server, int level)
 {
-	if (level != 0 && (beep_msg_level & level) &&
+	if (level != 0 && (level & MSGLEVEL_NOHILIGHT) == 0 &&
+	    (beep_msg_level & level) &&
 	    (beep_when_away || (server != NULL && !server->usermode_away))) {
 		printbeep();
 	}
