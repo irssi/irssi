@@ -239,7 +239,8 @@ static void dcc_chat_connect(DCC_REC *dcc)
 {
 	g_return_if_fail(dcc != NULL);
 
-	if (dcc->addrstr[0] == '\0' || dcc->starttime != 0) {
+	if (dcc->addrstr[0] == '\0' ||
+	    dcc->starttime != 0 || dcc->handle != -1) {
 		/* already sent a chat request / already chatting */
 		return;
 	}

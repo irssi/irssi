@@ -256,13 +256,17 @@ static void dcc_resume_send(DCC_REC *dcc, int port)
 }
 
 #define is_resume_type(type) \
-	(g_strcasecmp(type, "RESUME") == 0 || g_strcasecmp(type, "ACCEPT") == 0)
+	(g_strcasecmp(type, "RESUME") == 0 || \
+	g_strcasecmp(type, "ACCEPT") == 0)
 
 #define is_resume_ok(type, dcc) \
-        (g_strcasecmp(type, "RESUME") != 0 || ((dcc)->type == DCC_TYPE_SEND && (dcc)->transfd == 0))
+	(g_strcasecmp(type, "RESUME") != 0 || \
+	((dcc)->type == DCC_TYPE_SEND && (dcc)->transfd == 0))
 
 #define is_accept_ok(type, dcc) \
-        (g_strcasecmp(type, "ACCEPT") != 0 || ((dcc)->type == DCC_TYPE_GET && (dcc)->get_type == DCC_GET_RESUME))
+	(g_strcasecmp(type, "ACCEPT") != 0 || \
+	((dcc)->type == DCC_TYPE_GET && \
+	(dcc)->get_type == DCC_GET_RESUME && (dcc)->handle == -1))
 
 static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 			 const char *sender, const char *sendaddr,
