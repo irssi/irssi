@@ -54,6 +54,30 @@ static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
+{
+	CHANNEL_REC *chanrec;
+	char *params, *channel, *p;
+
+	g_return_if_fail(data != NULL);
+
+	/* this new addition to ircd breaks completely with older
+	   "standards", "nick Duplicate ::!!channel ...." */
+	params = event_get_params(data, 3, NULL, NULL, &channel);
+	p = strchr(channel, ' ');
+	if (p != NULL) *p = '\0';
+
+	if (channel[0] == '!' && channel[1] == '!') {
+		chanrec = channel_find(SERVER(server), channel+1);
+		if (chanrec != NULL && !chanrec->names_got) {
+			chanrec->left = TRUE;
+			channel_destroy(chanrec);
+		}
+	}
+
+	g_free(params);
+}
+
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel;
@@ -246,7 +270,7 @@ void channel_events_init(void)
 {
 	signal_add_first("event 403", (SIGNAL_FUNC) event_cannot_join); /* no such channel */
 	signal_add_first("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
-	signal_add_first("event 407", (SIGNAL_FUNC) event_cannot_join); /* duplicate channel */
+	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_add_first("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
 	signal_add_first("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
 	signal_add_first("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
@@ -266,7 +290,7 @@ void channel_events_deinit(void)
 {
 	signal_remove("event 403", (SIGNAL_FUNC) event_cannot_join); /* no such channel */
 	signal_remove("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
-	signal_remove("event 407", (SIGNAL_FUNC) event_cannot_join); /* duplicate channel */
+	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_remove("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
 	signal_remove("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
 	signal_remove("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */

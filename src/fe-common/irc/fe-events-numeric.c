@@ -587,6 +587,26 @@ static void event_too_many_channels(const char *data, IRC_SERVER_REC *server)
 	cannot_join(data, server, IRCTXT_JOINERROR_TOOMANY);
 }
 
+static void event_duplicate_channel(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *channel, *p;
+
+	g_return_if_fail(data != NULL);
+
+	/* this new addition to ircd breaks completely with older
+	   "standards", "nick Duplicate ::!!channel ...." */
+	params = event_get_params(data, 3, NULL, NULL, &channel);
+	p = strchr(channel, ' ');
+	if (p != NULL) *p = '\0';
+
+	if (channel[0] == '!' && channel[1] == '!') {
+		printformat(server, NULL, MSGLEVEL_CRAP,
+			    IRCTXT_JOINERROR_DUPLICATE, channel+1);
+	}
+
+	g_free(params);
+}
+
 static void event_channel_is_full(const char *data, IRC_SERVER_REC *server)
 {
 	cannot_join(data, server, IRCTXT_JOINERROR_FULL);
@@ -710,6 +730,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 401", (SIGNAL_FUNC) event_no_such_nick);
 	signal_add("event 403", (SIGNAL_FUNC) event_no_such_channel);
 	signal_add("event 405", (SIGNAL_FUNC) event_too_many_channels);
+	signal_add("event 407", (SIGNAL_FUNC) event_duplicate_channel);
 	signal_add("event 471", (SIGNAL_FUNC) event_channel_is_full);
 	signal_add("event 472", (SIGNAL_FUNC) event_unknown_mode);
 	signal_add("event 473", (SIGNAL_FUNC) event_invite_only);
@@ -768,6 +789,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 401", (SIGNAL_FUNC) event_no_such_nick);
 	signal_remove("event 403", (SIGNAL_FUNC) event_no_such_channel);
 	signal_remove("event 405", (SIGNAL_FUNC) event_too_many_channels);
+	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel);
 	signal_remove("event 471", (SIGNAL_FUNC) event_channel_is_full);
 	signal_remove("event 472", (SIGNAL_FUNC) event_unknown_mode);
 	signal_remove("event 473", (SIGNAL_FUNC) event_invite_only);
