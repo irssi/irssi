@@ -7,7 +7,7 @@ INCLUDES = $(GLIB_CFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/src/core/ \
 libproxy_la_SOURCES = \
 	proxy.c \
 	dump.c \
-	listen.c \
+	listen.c
 
 noinst_HEADERS = \
 	proxy.h \
