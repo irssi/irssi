@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002101901';
+$VERSION = '2002101904';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -45,6 +45,8 @@ sub show_help() {
     Retrieve the average ratings of the the scripts
 /scriptassist top <num>
     Retrieve the first <num> top rated scripts
+/scriptassist new <num>
+    Display the newest <num> scripts
 /scriptassist rate <script> <stars>
     Rate the script with a number of stars ranging from 0-5
 /scriptassist contact <script>
@@ -158,6 +160,9 @@ sub bg_do ($) {
                     $result{data}{rating}{$_}{rating} = $ratings{$_}->[0];
                     $result{data}{rating}{$_}{votes} = $ratings{$_}->[1];
                 }
+	    } elsif ($items[0] eq 'new') {
+		my $new = get_new($items[1]);
+		$result{data}{new} = $new;
 	    }
 	    my $dumper = Data::Dumper->new([\%result]);
 	    $dumper->Purity(1)->Deepcopy(1)->Indent(0);
@@ -246,6 +251,18 @@ sub get_ratings ($$) {
     return \%result;
 }
 
+sub get_new ($) {
+    my ($num) = @_;
+    my $result;
+    my $xml = get_scripts();
+    foreach (sort {$xml->{$b}{last_modified} cmp $xml->{$a}{last_modified}} keys %$xml) {
+	my %entry = %{ $xml->{$_} };
+	$result->{$_} = \%entry;
+	$num--;
+	last unless $num;
+    }
+    return $result;
+}
 sub module_exist ($) {
     my ($module) = @_;
     $module =~ s/::/\//g;
@@ -361,8 +378,8 @@ sub pipe_input {
     }
     my %result = %{ $incoming->{data} };
     @complist = ();
-    if (defined $incoming->{new} && scalar keys %{$incoming->{new}} > 0) {
-	print_new($incoming->{new});
+    if (defined $result{new}) {
+	print_new($result{new});
 	push @complist, $_ foreach keys %{ $result{new} };
     }
     if (defined $result{check}) {
@@ -517,11 +534,20 @@ sub print_ratings (%) {
 
 sub print_new ($) {
     my ($list) = @_;
-    my $line;
-    foreach (sort keys %{ $list }) {
-	$line .= "%co%n %9".$_."%9 released\n";
+    my @table;
+    foreach (sort {$list->{$b}{last_modified} cmp $list->{$a}{last_modified}} keys %$list) {
+	my @line;
+	my ($name) = /^(.*?)\.pl$/;
+        if (get_local_version($name)) {
+            push @line, "%go%n";
+        } else {
+            push @line, "%yo%n";
+        }
+	push @line, "%9".$name."%9";
+	push @line, $list->{$_}{last_modified};
+	push @table, \@line;
     }
-    print CLIENTCRAP draw_box('ScriptAssist', $line, 'new scripts', 1) ;
+    print CLIENTCRAP draw_box('ScriptAssist', array2table(@table), 'new scripts', 1) ;
 }
 
 sub print_debug (%) {
@@ -724,7 +750,7 @@ sub get_scripts {
 	    $type = $2;
 	}
 	push @sources, $src;
-	my @header = ('name', 'contact', 'authors', 'description', 'version', 'modules');
+	#my @header = ('name', 'contact', 'authors', 'description', 'version', 'modules', 'last_modified');
 	if ($type eq 'dmp') {
 	    no strict 'vars';
 	    my $new_db = eval "$data";
@@ -734,7 +760,8 @@ sub get_scripts {
 		    my $new = $new_db->{$_}{version};
 		    next if (compare_versions($old, $new) eq 'newer');
 		}
-		foreach my $key (@header) {
+		#foreach my $key (@header) {
+		foreach my $key (keys %{ $new_db->{$_} }) {
 		    next unless defined $new_db->{$_}{$key};
 		    $sites_db{$_}{$key} = $new_db->{$_}{$key};
 		}
@@ -994,6 +1021,9 @@ sub cmd_scripassist ($$$) {
 	call_openurl('http://search.cpan.org/search?mode=module&query='.$args[1]);
     } elsif ($args[0] eq 'autorun' && defined $args[1]) {
 	toggle_autorun($args[1]);
+    } elsif ($args[0] eq 'new') {
+	my $number = defined $args[1] ? $args[1] : 5;
+	bg_do("new ".$number);
     }
 }
 
@@ -1048,7 +1078,7 @@ Irssi::signal_add_last('gui print text', \&sig_gui_print_text);
 Irssi::command_bind('scriptassist', 'cmd_scripassist');
 
 
-foreach my $cmd ( ( 'check', 'install', 'update', 'contact', 'search', '-h', 'help', 'ratings', 'rate', 'info', 'echo', 'top', 'cpan', 'autorun') ) {
+foreach my $cmd ( ( 'check', 'install', 'update', 'contact', 'search', '-h', 'help', 'ratings', 'rate', 'info', 'echo', 'top', 'cpan', 'autorun', 'new') ) {
     Irssi::command_bind('scriptassist '.$cmd => sub {
 			cmd_scripassist("$cmd ".$_[0], $_[1], $_[2]); });
     if (Irssi::settings_get_bool('scriptassist_integrate')) {
