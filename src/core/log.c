@@ -209,14 +209,14 @@ LOG_REC *log_find(const char *fname)
 const char *log_rotate2str(int rotate)
 {
 	switch (rotate) {
-	case LOG_ROTATE_HOUR:
-		return "hour";
-	case LOG_ROTATE_DAY:
-		return "day";
-	case LOG_ROTATE_WEEK:
-		return "week";
-	case LOG_ROTATE_MONTH:
-		return "month";
+	case LOG_ROTATE_HOURLY:
+		return "hourly";
+	case LOG_ROTATE_DAILY:
+		return "daily";
+	case LOG_ROTATE_WEEKLY:
+		return "weekly";
+	case LOG_ROTATE_MONTHLY:
+		return "monthly";
 	}
 
 	return NULL;
@@ -228,13 +228,14 @@ int log_str2rotate(const char *str)
 		return -1;
 
 	if (g_strncasecmp(str, "hour", 4) == 0)
-		return LOG_ROTATE_HOUR;
-	if (g_strncasecmp(str, "day", 3) == 0)
-		return LOG_ROTATE_DAY;
+		return LOG_ROTATE_HOURLY;
+	if (g_strncasecmp(str, "day", 3) == 0 ||
+	    g_strncasecmp(str, "daily", 5) == 0)
+		return LOG_ROTATE_DAILY;
 	if (g_strncasecmp(str, "week", 4) == 0)
-		return LOG_ROTATE_WEEK;
+		return LOG_ROTATE_WEEKLY;
 	if (g_strncasecmp(str, "month", 5) == 0)
-		return LOG_ROTATE_MONTH;
+		return LOG_ROTATE_MONTHLY;
 	if (g_strncasecmp(str, "never", 5) == 0)
 		return LOG_ROTATE_NEVER;
 
@@ -354,13 +355,13 @@ static int sig_rotate_check(void)
 			continue;
 
 		tm = localtime(&rec->opened);
-		if (rec->rotate == LOG_ROTATE_MONTH) {
+		if (rec->rotate == LOG_ROTATE_MONTHLY) {
 			if (tm->tm_mon == tm_now.tm_mon)
 				continue;
-		} else if (rec->rotate == LOG_ROTATE_WEEK) {
+		} else if (rec->rotate == LOG_ROTATE_WEEKLY) {
 			if (tm->tm_wday != 1 || tm->tm_mday == tm_now.tm_mday)
 				continue;
-		} else if (rec->rotate == LOG_ROTATE_DAY) {
+		} else if (rec->rotate == LOG_ROTATE_DAILY) {
 			if (tm->tm_mday == tm_now.tm_mday)
 				continue;
 		}
