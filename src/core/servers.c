@@ -171,7 +171,10 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 				const char *unix_socket)
 {
 	GIOChannel *handle;
-        IPADDR *own_ip;
+	IPADDR *own_ip = NULL;
+	const char *errmsg;
+	char *errmsg2;
+	char ipaddr[MAX_IP_LEN];
         int port;
 
 	g_return_if_fail(ip != NULL || unix_socket != NULL);
@@ -197,12 +200,22 @@ server->connrec->ssl_cafile, server->connrec->ssl_capath, server->connrec->ssl_v
 
 	if (handle == NULL) {
 		/* failed */
-		if (errno == EADDRNOTAVAIL ||
-		    (server->connrec->use_ssl && errno == ENOSYS))
+		errmsg = g_strerror(errno);
+		errmsg2 = NULL;
+		if (errno == EADDRNOTAVAIL) {
+			if (own_ip != NULL) {
+				/* show the IP which is causing the error */
+				net_ip2host(own_ip, ipaddr);
+				errmsg2 = g_strconcat(errmsg, ": ", ipaddr, NULL);
+			}
+			server->no_reconnect = TRUE;
+		}
+		if (server->connrec->use_ssl && errno == ENOSYS)
 			server->no_reconnect = TRUE;
 
 		server->connection_lost = TRUE;
-		server_connect_failed(server, g_strerror(errno));
+		server_connect_failed(server, errmsg2 ? errmsg2 : errmsg);
+		g_free(errmsg2);
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
 		server->connect_tag =
