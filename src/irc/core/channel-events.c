@@ -48,7 +48,7 @@ static void event_cannot_join(IRC_SERVER_REC *server, const char *data)
 		g_free(channel);
 	}
 
-	if (chanrec != NULL && !chanrec->names_got) {
+	if (chanrec != NULL && !chanrec->joined) {
 		chanrec->left = TRUE;
 		channel_destroy(chanrec);
 	}
