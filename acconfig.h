@@ -10,6 +10,7 @@
 #undef HAVE_PL_PERL
 #undef HAVE_STATIC_PERL
 #undef HAVE_GMODULE
+#undef HAVE_GC
 #undef WANT_BIG5
 
 /* macros/curses checks */
