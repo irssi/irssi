@@ -12,10 +12,7 @@ sub event_rejoin_kick {
 
 	# check if channel has password
 	$chanrec = $server->channel_find($channel);
-	if ($chanrec) {
-		%cvals = %{$chanrec->values()};
-		$password = $cvals{'key'};
-	}
+	$password = $chanrec->values()->{'key'} if ($chanrec);
 
 	$server->send_raw("JOIN $channel $password");
 }

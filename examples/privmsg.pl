@@ -8,9 +8,7 @@ sub event_privmsg {
 
 	return if (!Irssi::is_channel($target));
 
-	%sinfo = %{$server->values()};
-	$mynick = $sinfo{'nick'};
-
+	$mynick = $server->values()->{'nick'};
 	return if ($text !~ /\b$mynick\b/);
 
 	$server->command("/notice $mynick In channel $target, $nick!$address said: $text");

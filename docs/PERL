@@ -151,8 +151,7 @@ timeout_remove(tag)
 
 Command::values()
   Get some information about command. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"cmd" - Command
 	"category" - Category
 
@@ -176,8 +175,7 @@ Server::command_split(cmd, arg, max_nicks)
 
 Server::values()
   Get some information about server. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"address" - Address where we connected (irc.blah.org)
 	"real_address" - Who the server thinks it is (irc1.blah.org)
 	"port" - Port where we connected
@@ -311,8 +309,7 @@ irc_get_mask(nick, host, flags)
 
 Channel::values()
   Get some information about channel. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"name" - channel name
 	"type" - channel type ("channel", "query", "dcc chat", "empty")
 	"password" - channel password
@@ -351,8 +348,7 @@ Channel channel_find_level(level)
 
 Ban::values()
   Get some information about ban. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"ban" - The ban
 	"setby" - Nick of who set the ban
 	"time" - Timestamp when ban was set
@@ -390,8 +386,7 @@ Channel::modes_set(data, mode)
 
 Nick::values()
   Get some information about nick. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"nick" - Plain nick
 	"host" - Host (blah@there.org)
 	"name" - Real name
@@ -434,8 +429,7 @@ Dcc dcc_find_by_port(nick, port)
 
 Netsplit::values()
   Get some information about netsplit. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"nick" - Nick
 	"address" - Nick's host
 	"server" - The server nick was in
@@ -480,8 +474,7 @@ Server::rawlog_redirect(str)
 
 Autoignore::values()
   Get some information about autoignore. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"nick" - Ignored nick
 	"timeleft" - Seconds left to ignore
 	"level" - Ignoring level number
@@ -506,8 +499,7 @@ Server::autoignore_remove(mask, level)
 
 Log::values()
   Get some information about log. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"fname" - Log file name
 	"autoopen_log" - Automatically open log at startup
 	"last" - Timestamp when last write occured.
@@ -516,8 +508,7 @@ Log::values()
 
 Logitem::values()
   Get some information about logitem. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"name" - Log item name.
 	"level" - Logging level number.
 
@@ -550,8 +541,7 @@ Log::remove_item(log, name)
 
 Plugin::values()
   Get some information about plugin. This function returns a reference to
-  hash table (FIXME: can't it return the hash table itself?!). Hash table
-  has keys:
+  hash table. Hash table has keys:
 	"name" - Plugin name
 	"description" - Plugin description
 

@@ -24,8 +24,7 @@ sub cmd_quit {
 
 	@servers = Irssi::servers;
 	foreach $server (@servers) {
-		%svals = %{$server->values()};
-		$server->command("/disconnect ".$svals{'tag'}." $quitmsg");
+		$server->command("/disconnect ".$server->values()->{'tag'}." $quitmsg");
 	}
 }
 
