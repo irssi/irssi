@@ -113,6 +113,14 @@ static void gui_window_created(WINDOW_REC *window)
 	}
 	window_create_override = -1;
 
+	if (settings_get_bool("autostick_split_windows") &&
+	    (parent->sticky_windows != NULL ||
+	     (mainwindows->next != NULL && parent->active == NULL))) {
+                /* set the window sticky */
+		parent->sticky_windows =
+			g_slist_append(parent->sticky_windows, window);
+	}
+
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
 	signal_emit("gui window created", 1, window);
@@ -1265,6 +1273,7 @@ static void read_settings(void)
 
 void gui_windows_init(void)
 {
+        settings_add_bool("lookandfeel", "autostick_split_windows", TRUE);
 	settings_add_int("lookandfeel", "indent", 10);
 	settings_add_str("lookandfeel", "prompt", "[$[.15]T] ");
 	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
