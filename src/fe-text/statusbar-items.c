@@ -286,8 +286,7 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	if (rec == NULL) {
 		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
 				       item->size);
-                if (active_entry == NULL)
-			gui_entry_set_active(rec);
+		gui_entry_set_active(rec);
 		g_hash_table_insert(input_entries, item, rec);
 	} else {
 		gui_entry_move(rec, item->xpos, item->bar->real_ypos,
