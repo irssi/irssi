@@ -240,10 +240,17 @@ static void cmd_alias(const char *data)
 /* SYNTAX: UNALIAS <alias> */
 static void cmd_unalias(const char *data)
 {
-	g_return_if_fail(data != NULL);
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+	char *alias;
+	void *free_arg;
 
-	alias_remove(data);
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 1, &alias))
+		return;
+	if (*alias == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	alias_remove(alias);
+        cmd_params_free(free_arg);
 }
 
 /* SYNTAX: RELOAD [<file>] */
