@@ -102,13 +102,6 @@ void irssi_redraw(void)
 
 static void textui_init(void)
 {
-	static struct poptOption options[] = {
-		POPT_AUTOHELP
-		{ NULL, '\0', 0, NULL }
-	};
-
-	args_register(options);
-
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
 	irc_init();

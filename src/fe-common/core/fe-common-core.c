@@ -24,6 +24,7 @@
 #include "misc.h"
 #include "levels.h"
 #include "settings.h"
+#include "irssi-version.h"
 
 #include "channels.h"
 #include "servers-setup.h"
@@ -96,6 +97,12 @@ void window_commands_deinit(void);
 void fe_core_commands_init(void);
 void fe_core_commands_deinit(void);
 
+static void print_version(void)
+{
+	printf(PACKAGE" " IRSSI_VERSION"\n");
+        exit(0);
+}
+
 static void sig_connected(SERVER_REC *server)
 {
 	MODULE_DATA_SET(server, g_new0(MODULE_SERVER_REC, 1));
@@ -118,7 +125,15 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 
 void fe_common_core_init(void)
 {
+	static struct poptOption version_options[] = {
+		{ NULL, '\0', POPT_ARG_CALLBACK, (void *)&print_version, '\0', NULL },
+		{ "version", 'v', POPT_ARG_NONE, NULL, 0, "Display irssi version" },
+		{ NULL, '\0', 0, NULL }
+	};
+
 	static struct poptOption options[] = {
+		{ NULL, '\0', POPT_ARG_INCLUDE_TABLE, version_options, 0, NULL, NULL },
+		POPT_AUTOHELP
 		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, "Automatically connect to server/ircnet", "SERVER" },
 		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, "Autoconnect password", "SERVER" },
 		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, "Autoconnect port", "PORT" },
