@@ -372,28 +372,28 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		}
 	}
 
-	if (target == NULL)
-		target = origtarget;
+	if (target != NULL) {
+		if (strcmp(target, "*") == 0) {
+                        /* send to active channel/query */
+			if (item == NULL)
+				cmd_param_error(CMDERR_NOT_JOINED);
 
-	if (strcmp(target, "*") == 0) {
-                /* send to active channel/query */
-		if (item == NULL)
-			cmd_param_error(CMDERR_NOT_JOINED);
-
-		target_type = IS_CHANNEL(item) ?
-			SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
-		target = (char *) window_item_get_target(item);
-	} else if (g_hash_table_lookup(optlist, "channel") != NULL)
-                target_type = SEND_TARGET_CHANNEL;
-	else if (g_hash_table_lookup(optlist, "nick") != NULL)
-		target_type = SEND_TARGET_NICK;
-	else {
-		/* Need to rely on server_ischannel(). If the protocol
-		   doesn't really know if it's channel or nick based on the
-		   name, it should just assume it's nick, because when typing
-		   text to channels it's always sent with /MSG -channel. */
-		target_type = server_ischannel(server, target) ?
-			SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
+			target_type = IS_CHANNEL(item) ?
+				SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
+			target = (char *) window_item_get_target(item);
+		} else if (g_hash_table_lookup(optlist, "channel") != NULL)
+                        target_type = SEND_TARGET_CHANNEL;
+		else if (g_hash_table_lookup(optlist, "nick") != NULL)
+			target_type = SEND_TARGET_NICK;
+		else {
+			/* Need to rely on server_ischannel(). If the protocol
+			   doesn't really know if it's channel or nick based on
+			   the name, it should just assume it's nick, because 
+			   when typing text to channels it's always sent with
+			   /MSG -channel. */
+			target_type = server_ischannel(server, target) ?
+				SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
+		}
 	}
 
 	if (target != NULL)
