@@ -111,6 +111,7 @@ static void sig_connected(SERVER_REC *server)
 static void sig_disconnected(SERVER_REC *server)
 {
 	g_free(MODULE_DATA(server));
+	MODULE_DATA_UNSET(server);
 }
 
 static void sig_channel_created(CHANNEL_REC *channel)
@@ -121,6 +122,7 @@ static void sig_channel_created(CHANNEL_REC *channel)
 static void sig_channel_destroyed(CHANNEL_REC *channel)
 {
 	g_free(MODULE_DATA(channel));
+	MODULE_DATA_UNSET(channel);
 }
 
 void fe_common_core_init(void)

@@ -160,6 +160,7 @@ static void flood_deinit_server(IRC_SERVER_REC *server)
 		g_hash_table_destroy(mserver->floodlist);
 	}
 	g_free(mserver);
+	MODULE_DATA_UNSET(server);
 }
 
 static FLOOD_ITEM_REC *flood_find(FLOOD_REC *flood, int level,

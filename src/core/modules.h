@@ -10,6 +10,9 @@
 #define MODULE_DATA_SET(rec, data) \
 	g_hash_table_insert((rec)->module_data, MODULE_NAME, data)
 
+#define MODULE_DATA_UNSET(rec) \
+	g_hash_table_remove((rec)->module_data, MODULE_NAME)
+
 #define MODULE_DATA(rec) \
 	g_hash_table_lookup((rec)->module_data, MODULE_NAME)
 

@@ -218,6 +218,7 @@ static void notifylist_deinit_server(IRC_SERVER_REC *server)
 		notify_nick_destroy(rec);
 	}
 	g_free(mserver);
+	MODULE_DATA_UNSET(server);
 }
 
 void notifylist_left(IRC_SERVER_REC *server, NOTIFY_NICK_REC *rec)
