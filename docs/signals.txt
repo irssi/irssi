@@ -1,0 +1,222 @@
+IRC base
+--------
+
+* Requires to work properly:
+
+ "gui exit"
+ "gui channel open", CHANNEL_REC
+ "send command", char *command, SERVER_REC, CHANNEL_REC
+
+* Provides signals:
+
+irc.c:
+
+ "send command", char *args, SERVER_REC
+ "command "<cmd>, char *args, SERVER_REC, CHANNEL_REC
+ "default command", char *args, SERVER_REC, CHANNEL_REC
+
+ "server event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+ "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
+ "default event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+
+ "server incoming", SERVER_REC, char *data
+
+(for perl parser..)
+ "redir "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
+
+bans.c:
+
+ "ban new", BAN_REC
+ "ban remove", BAN_REC
+ "ban exception new", BAN_REC
+ "ban exception remove", BAN_REC
+ "ban type changed", char *bantype
+
+commands.c:
+ "commandlist new", COMMAND_REC
+ "commandlist remove", COMMAND_REC
+
+channels.c:
+
+ "channel created", CHANNEL_REC
+ "channel destroyed", CHANNEL_REC
+ "channel name changed", CHANNEL_REC
+ "channel topic changed", CHANNEL_REC
+ "channel server changed", CHANNEL_REC, SERVER_REC *oldserver
+
+ "channel query", CHANNEL_REC
+ "channel wholist", CHANNEL_REC
+ "channel sync", CHANNEL_REC
+
+ctcp.c:
+
+ "ctcp msg "<cmd>, char *args, SERVER_REC, char *nick, char *addr, char *target
+ "default ctcp msg", char *args, SERVER_REC, char *nick, char *addr, char *target
+ "ctcp reply "<cmd>, char *args, SERVER_REC, char *nick, char *addr, char *target
+ "default ctcp reply", char *args, SERVER_REC, char *nick, char *addr, char *target
+
+lag.c:
+
+ "server lag", SERVER_REC
+ "server lag disconnect", SERVER_REC
+ "lag", char *server, int lag
+
+modes.c:
+
+ "invitelist new", CHANNEL_REC, char *mask
+ "invitelist remove", CHANNEL_REC, char *mask
+
+ "channel mode changed", CHANNEL_REC
+ "user mode changed", SERVER_REC
+ "nick mode changed", CHANNEL_REC, NICK_REC
+
+netsplit.c:
+
+ "netsplit add", NETSPLIT_REC
+ "netsplit remove", NETSPLIT_REC
+
+nicklist.c:
+
+ "nicklist new", CHANNEL_REC, NICK_REC
+ "nicklist remove", CHANNEL_REC, NICK_REC
+ "nicklist changed", CHANNEL_REC, NICK_REC, char *oldnick
+ "nick gone changed", CHANNEL_REC, NICK_REC
+ "nick ircop changed", CHANNEL_REC, NICK_REC
+ "server nick changed", SERVER_REC
+ "massjoin", CHANNEL_REC, GSList of NICK_RECs
+
+rawlog.c:
+
+ "rawlog", SERVER_REC, char *data
+
+server.c:
+
+ "server connect failed", SERVER_REC
+ "server connected", SERVER_REC
+ "server connecting", SERVER_REC, ulong *ip
+ "server looking", SERVER_REC
+ "server disconnected", SERVER_REC
+ "event connected", SERVER_REC
+
+server-reconnect.c:
+
+ "server reconnect new", RECONNECT_REC
+ "server reconnect remove", RECONNECT_REC
+ "server reconnect not found", char *tag
+
+signal.c:
+
+ "signal", char *name, ...
+ "last signal", char *name, ...
+
+IRC extra
+---------
+
+* Requires to work properly:
+
+ "print text stripped", SERVER_REC, char *channel, int level, char *text
+ "plugin add menu", char *menuitem, void (*func) (gpointer, PLUGIN_REC), PLUGIN_REC
+
+* Provides signals:
+
+dcc.c:
+
+ "dcc ctcp "<cmd>, char *args, DCC_REC
+ "default dcc ctcp", char *args, DCC_REC
+ "dcc unknown ctcp", char *args, char *sender, char *sendaddr
+
+ "dcc reply "<cmd>, char *args, DCC_REC
+ "default dcc reply", char *args, DCC_REC
+ "dcc unknown reply", char *args, char *sender, char *sendaddr
+
+ "dcc chat message", DCC_REC, char *msg
+
+ "dcc created", DCC_REC
+ "dcc destroyed", DCC_REC
+ "dcc connected", DCC_REC
+ "dcc rejecting", DCC_REC
+ "dcc closed", DCC_REC
+ "dcc chat message", DCC_REC, char *msg
+ "dcc transfer update", DCC_REC
+ "dcc request", DCC_REC
+ "dcc get receive", DCC_REC
+ "dcc error connect", DCC_REC
+ "dcc error file create", DCC_REC, char *filename
+ "dcc error file not found", char *nick, char *filename
+ "dcc error get not found", char *nick
+ "dcc error send exists", char *nick, char *filename
+ "dcc error unknown type", char *type
+ "dcc error close not found", char *type, char *nick, char *filename
+
+flood.c:
+
+ "flood", SERVER_REC, char *nick, char *host, char *level, char *target
+
+ignore.c:
+
+ "autoignore new", SERVER_REC, AUTOIGNORE_REC
+ "autoignore remove", SERVER_REC, AUTOIGNORE_REC
+
+log.c:
+
+ "log new", LOG_REC
+ "log remove", LOG_REC
+ "log locked", LOG_REC
+ "log started", LOG_REC
+ "log stopped", LOG_REC
+ "log written", LOG_REC, char *line
+
+notifylist.c:
+
+ "notifylist new", NOTIFYLIST_REC
+ "notifylist remove", NOTIFYLIST_REC
+ "notifylist joined", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
+ "notifylist away changed", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
+ "notifylist unidle", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
+ "notifylist left", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
+
+plugins.c:
+
+ "plugin created", PLUGIN_REC
+ "plugin loaded", PLUGIN_REC
+ "plugin destroyed", PLUGIN_REC
+
+ "plugin error already loaded", char *plugin
+ "plugin error invalid", char *plugin
+ "plugin error load", char *plugin, char *error
+ "plugin error not loaded", char *plugin
+ "plugin error version", char *plugin
+
+UI common
+---------
+
+* Requires to work properly:
+
+ "gui print text", CHANNEL_REC, int fg, int bg, int flags, char *text
+ "gui window goto", int number
+
+* Can be used to determine when all "gui print text"s are sent (not required)
+
+ "print text finished", CHANNEL_REC
+
+* Provides signals:
+
+ui-keyboard.c:
+
+ "keyinfo created", KEYINFO_REC
+ "keyinfo destroyed", KEYINFO_REC
+
+ui-printtext.c:
+
+ "print text", SERVER_REC, char *channel, int level, char *text
+ "print text stripped", SERVER_REC, char *channel, int level, char *text
+
+ui-themes.c:
+
+ "theme created", THEME_REC
+ "theme destroyed", THEME_REC
+
+ui-windows.c:
+
+ "window created", WINDOW_REC
+ "window destroyed", WINDOW_REC

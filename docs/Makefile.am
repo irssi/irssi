@@ -1,9 +1,10 @@
 EXTRA_DIST = \
 	FAQ \
-	COMMANDS \
-	FORMATS \
-	PERL \
-	SIGNALS \
-	botnet.txt
+	botnet.txt \
+	commands.txt \
+	formats.txt \
+	perl.txt \
+	signals.txt \
+	special_vars.txt
 
 SUBDIRS = help
