@@ -703,7 +703,7 @@ void format_newline(WINDOW_REC *window)
 	signal_emit_id(signal_gui_print_text, 6, window,
 		       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
 		       GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE),
-		       "", GINT_TO_POINTER(-1));
+		       "", NULL);
 }
 
 /* parse ANSI color string */
@@ -956,7 +956,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				       GINT_TO_POINTER(fgcolor),
 				       GINT_TO_POINTER(bgcolor),
 				       GINT_TO_POINTER(flags), str,
-				       dest->level);
+				       dest);
 			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
 		}
 
@@ -1009,7 +1009,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				signal_emit_id(signal_gui_print_text, 6,
 					       dest->window, NULL, NULL,
 					       GINT_TO_POINTER(GUI_PRINT_FLAG_INDENT_FUNC),
-					       str, start, dest->level);
+					       str, start, dest);
 				break;
 			}
 			case FORMAT_STYLE_DEFAULTS:

@@ -70,6 +70,7 @@ queries.c:
  "query created", QUERY_REC, int automatic
  "query destroyed", QUERY_REC
  "query nick changed", QUERY_REC, char *orignick
+ "window item name changed", WI_ITEM_REC
  "query address changed", QUERY_REC
  "query server changed", QUERY_REC, SERVER_REC
 
@@ -225,7 +226,7 @@ FE common
 
 * Requires to work properly:
 
- "gui print text", WINDOW_REC, int fg, int bg, int flags, char *text, int level
+ "gui print text", WINDOW_REC, int fg, int bg, int flags, char *text, TEXT_DEST_REC
 
 (Can be used to determine when all "gui print text"s are sent (not required))
  "gui print text finished", WINDOW_REC

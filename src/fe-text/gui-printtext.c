@@ -231,7 +231,7 @@ static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
 
 static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 			       void *bgcolor, void *pflags,
-			       char *str, void *level)
+			       char *str, TEXT_DEST_REC *dest)
 {
         GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
@@ -259,7 +259,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
                 return;
 	}
 
-	lineinfo.level = GPOINTER_TO_INT(level);
+	lineinfo.level = GPOINTER_TO_INT(dest->level);
         lineinfo.time = time(NULL);
 
         gui = WINDOW_GUI(window);
