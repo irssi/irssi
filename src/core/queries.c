@@ -124,6 +124,7 @@ void query_change_nick(QUERY_REC *query, const char *nick)
         oldnick = query->name;
 	query->name = g_strdup(nick);
 	signal_emit("query nick changed", 2, query, oldnick);
+	signal_emit("window item name changed", 1, query);
         g_free(oldnick);
 }
 
