@@ -97,7 +97,7 @@ static void parse_channel_mode(CHANNEL_REC *channel, const char *mode,
 
 	g_return_if_fail(channel != NULL);
 	g_return_if_fail(nick != NULL);
-	g_return_if_fail(modestr != NULL);
+	g_return_if_fail(mode != NULL);
 
 	user = botuser_find(nick, address);
 	flags = user == NULL ? 0 : get_flags(user, channel);
