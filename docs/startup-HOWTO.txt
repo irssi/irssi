@@ -3,6 +3,7 @@
 
  Copyright (c) 2000 by Timo Sirainen
 
+
 I've explained all this to different people too many times, so finally
 I bothered to write this small HOWTO :) For more details about some
 things (still not all) see manual.txt.
@@ -125,12 +126,12 @@ seconds.
  --- Windows ---
 
 /SET use_msgs_window OFF - Create messages window at startup. All
-private messages go to this window. This only makes sense if you're
+private messages go to this window. This only makes sense if you've
 disabled automatic query windows. Message window can also be created
 manually with /WINDOW LEVEL MSGS, /WINDOW NAME (msgs).
 
 /SET use_status_window ON - Create status window at startup. All
-messages that don't really have better place goes here, like all /WHOIS
+messages that don't really have better place go here, like all /WHOIS
 replies etc. Status window can also be created manually with /WINDOW
 LEVEL ALL -MSGS, /WINDOW NAME (status).
 
@@ -213,8 +214,8 @@ shown.
 bar. The mbox file is taken from $MAIL environment setting. Only mbox
 format works for now.
 
-/SET statusbar_xxx - Change these to change the color of the statusbar.
-Type "/SET statusbar" to see all the settings.
+/SET statusbar_xxx - Change these to change the colors of the
+statusbar. Type "/SET statusbar" to see all the different settings.
 
 
  --- Nick completion ---
