@@ -757,6 +757,17 @@ static void sig_complete_topic(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void sig_complete_channel(GList **list, WINDOW_REC *window,
+				 const char *word, const char *line,
+				 int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	*list = completion_get_channels(NULL, word);
+	if (*list != NULL) signal_stop();
+}
+
 /* expand \n, \t and \\ */
 static char *expand_escapes(const char *line, SERVER_REC *server,
 			    WI_ITEM_REC *item)
@@ -921,6 +932,7 @@ void chat_completion_init(void)
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
+	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
@@ -949,6 +961,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
+	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);

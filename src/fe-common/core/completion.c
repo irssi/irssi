@@ -745,6 +745,7 @@ void completion_init(void)
 	signal_add_first("complete erase", (SIGNAL_FUNC) sig_complete_erase);
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
+	signal_add("complete command load", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
@@ -763,6 +764,7 @@ void completion_deinit(void)
 	signal_remove("complete erase", (SIGNAL_FUNC) sig_complete_erase);
 	signal_remove("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_remove("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
+	signal_remove("complete command load", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
