@@ -153,6 +153,7 @@ static void sig_reconnect(SERVER_REC *server)
 		return;
 
 	conn = server_connect_copy_skeleton(server->connrec);
+        g_return_if_fail(conn != NULL);
 
 	/* save the server status */
 	if (server->connected) {

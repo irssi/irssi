@@ -38,7 +38,7 @@
 GSList *servers, *lookup_servers;
 
 /* connection to server failed */
-static void server_cant_connect(SERVER_REC *server, const char *msg)
+void server_connect_failed(SERVER_REC *server, const char *msg)
 {
 	g_return_if_fail(IS_SERVER(server));
 
@@ -114,23 +114,9 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 	return tag;
 }
 
-static void server_connect_callback_init(SERVER_REC *server, int handle)
+/* Connection to server finished, fill the rest of the fields */
+void server_connect_finished(SERVER_REC *server)
 {
-	int error;
-
-	g_return_if_fail(IS_SERVER(server));
-
-	error = net_geterror(handle);
-	if (error != 0) {
-		server->connection_lost = TRUE;
-		server_cant_connect(server, g_strerror(error));
-		return;
-	}
-
-	lookup_servers = g_slist_remove(lookup_servers, server);
-
-	g_source_remove(server->connect_tag);
-	server->connect_tag = -1;
 	server->connect_time = time(NULL);
 	server->rawlog = rawlog_create();
 
@@ -140,6 +126,26 @@ static void server_connect_callback_init(SERVER_REC *server, int handle)
 
 	servers = g_slist_append(servers, server);
 	signal_emit("server connected", 1, server);
+}
+
+static void server_connect_callback_init(SERVER_REC *server, int handle)
+{
+	int error;
+
+	g_return_if_fail(IS_SERVER(server));
+
+	error = net_geterror(handle);
+	if (error != 0) {
+		server->connection_lost = TRUE;
+		server_connect_failed(server, g_strerror(error));
+		return;
+	}
+
+	lookup_servers = g_slist_remove(lookup_servers, server);
+	g_source_remove(server->connect_tag);
+	server->connect_tag = -1;
+
+	server_connect_finished(server);
 }
 
 static void server_connect_callback_readpipe(SERVER_REC *server)
@@ -186,7 +192,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
 				"Host lookup failed";
 		}
-		server_cant_connect(server, errormsg);
+		server_connect_failed(server, errormsg);
 		g_free_not_null(iprec.errorstr);
 		return;
 	}
@@ -199,12 +205,10 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	signal_emit("server connecting", 2, server, &iprec.ip);
 }
 
-int server_start_connect(SERVER_REC *server)
+/* initializes server record but doesn't start connecting */
+void server_connect_init(SERVER_REC *server)
 {
-	const char *connect_address;
-
-	g_return_val_if_fail(server != NULL, FALSE);
-	if (server->connrec->port <= 0) return FALSE;
+	g_return_if_fail(server != NULL);
 
 	MODULE_DATA_INIT(server);
 	server->type = module_get_uniq_id("SERVER", 0);
@@ -225,12 +229,24 @@ int server_start_connect(SERVER_REC *server)
 		server->connrec->realname = g_strdup(server->connrec->realname);
 	}
 
+	server->tag = server_create_tag(server->connrec);
+}
+
+/* starts connecting to server */
+int server_start_connect(SERVER_REC *server)
+{
+	const char *connect_address;
+
+	g_return_val_if_fail(server != NULL, FALSE);
+	if (server->connrec->port <= 0) return FALSE;
+
+	server_connect_init(server);
+
 	if (pipe(server->connect_pipe) != 0) {
 		g_warning("server_connect(): pipe() failed.");
+                g_free(server->tag);
 		return FALSE;
 	}
-
-	server->tag = server_create_tag(server->connrec);
 
 	connect_address = server->connrec->proxy != NULL ?
 		server->connrec->proxy : server->connrec->address;
@@ -295,7 +311,7 @@ void server_disconnect(SERVER_REC *server)
 		/* still connecting to server.. */
 		if (server->connect_pid != -1)
 			net_disconnect_nonblock(server->connect_pid);
-		server_cant_connect(server, NULL);
+		server_connect_failed(server, NULL);
 		return;
 	}
 
@@ -437,6 +453,52 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 	return server;
 }
 
+/* SYNTAX: DISCONNECT *|<tag> [<message>] */
+static void cmd_disconnect(const char *data, SERVER_REC *server)
+{
+	char *tag, *msg;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
+		return;
+
+	if (*tag != '\0' && strcmp(tag, "*") != 0)
+		server = server_find_tag(tag);
+	if (server == NULL) cmd_param_error(CMDERR_NOT_CONNECTED);
+
+	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
+	signal_emit("server quit", 2, server, msg);
+
+	cmd_params_free(free_arg);
+	server_disconnect(server);
+}
+
+/* SYNTAX: QUIT [<message>] */
+static void cmd_quit(const char *data)
+{
+	GSList *tmp, *next;
+	const char *quitmsg;
+	char *str;
+
+	g_return_if_fail(data != NULL);
+
+	quitmsg = *data != '\0' ? data :
+		settings_get_str("quit_message");
+
+	/* disconnect from every server */
+	for (tmp = servers; tmp != NULL; tmp = next) {
+		next = tmp->next;
+
+		str = g_strdup_printf("* %s", quitmsg);
+		cmd_disconnect(str, tmp->data);
+		g_free(str);
+	}
+
+	signal_emit("gui exit", 0);
+}
+
 void servers_init(void)
 {
 	lookup_servers = servers = NULL;
@@ -444,14 +506,20 @@ void servers_init(void)
 	servers_reconnect_init();
 	servers_redirect_init();
 	servers_setup_init();
+
+	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
+	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
 }
 
 void servers_deinit(void)
 {
+	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
+	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
+
 	while (servers != NULL)
 		server_disconnect(servers->data);
 	while (lookup_servers != NULL)
-		server_cant_connect(lookup_servers->data, NULL);
+		server_connect_failed(lookup_servers->data, NULL);
 
 	servers_setup_deinit();
 	servers_redirect_deinit();

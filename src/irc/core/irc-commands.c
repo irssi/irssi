@@ -102,39 +102,10 @@ static void cmd_connect(const char *data)
 	irc_connect_server(data);
 }
 
-
-/* SYNTAX: DISCONNECT *|<tag> [<message>] */
-static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
-{
-	char *tag, *msg, *str;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
-		return;
-
-	if (*tag != '\0' && strcmp(tag, "*") != 0)
-		server = (IRC_SERVER_REC *) server_find_tag(tag);
-	if (server == NULL || !IS_IRC_SERVER(server))
-		cmd_param_error(CMDERR_NOT_CONNECTED);
-
-	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
-	signal_emit("server quit", 2, server, msg);
-
-	if (server->handle != NULL && server->buffer != NULL) {
-		str = g_strdup_printf("QUIT :%s", msg);
-		irc_send_cmd_now(server, str);
-                g_free(str);
-	}
-	cmd_params_free(free_arg);
-
-	server_disconnect((SERVER_REC *) server);
-}
-
 /* SYNTAX: SERVER [-ircnet <ircnet>] [-host <hostname>]
                   [+]<address>|<ircnet> [<port> [<password> [<nick>]]] */
-static void cmd_server(const char *data, IRC_SERVER_REC *server)
+static void cmd_server(const char *data, IRC_SERVER_REC *server,
+		       void *item)
 {
 	GHashTable *optlist;
 	char *addr, *channels, *away_reason, *usermode, *ircnet;
@@ -161,7 +132,8 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 		usermode = g_strdup(server->usermode);
 		away_reason = !server->usermode_away ? NULL :
 			g_strdup(server->away_reason);
-		cmd_disconnect("* Changing server", server);
+		signal_emit("command disconnect", 3,
+			    "* Changing server", server, item);
 	}
 
 	server = IRC_SERVER(irc_connect_server(data));
@@ -179,30 +151,6 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 	}
 	g_free_not_null(ircnet);
 	cmd_params_free(free_arg);
-}
-
-/* SYNTAX: QUIT [<message>] */
-static void cmd_quit(const char *data)
-{
-	GSList *tmp, *next;
-	const char *quitmsg;
-	char *str;
-
-	g_return_if_fail(data != NULL);
-
-	quitmsg = *data != '\0' ? data :
-		settings_get_str("quit_message");
-
-	/* disconnect from every server */
-	for (tmp = servers; tmp != NULL; tmp = next) {
-		next = tmp->next;
-
-		str = g_strdup_printf("* %s", quitmsg);
-		cmd_disconnect(str, tmp->data);
-		g_free(str);
-	}
-
-	signal_emit("gui exit", 0);
 }
 
 /* SYNTAX: MSG [-<server tag>] <targets> <message> */
@@ -995,12 +943,10 @@ void irc_commands_init(void)
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
-	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
-	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("part", NULL, (SIGNAL_FUNC) cmd_part);
 	command_bind("kick", NULL, (SIGNAL_FUNC) cmd_kick);
@@ -1097,12 +1043,10 @@ void irc_commands_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
 	command_unbind("connect", (SIGNAL_FUNC) cmd_connect);
-	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
-	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("part", (SIGNAL_FUNC) cmd_part);
 	command_unbind("kick", (SIGNAL_FUNC) cmd_kick);

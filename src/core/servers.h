@@ -45,8 +45,16 @@ void server_disconnect(SERVER_REC *server);
 SERVER_REC *server_find_tag(const char *tag);
 SERVER_REC *server_find_chatnet(const char *chatnet);
 
+/* starts connecting to server */
 int server_start_connect(SERVER_REC *server);
 void server_connect_free(SERVER_CONNECT_REC *conn);
+
+/* initializes server record but doesn't start connecting */
+void server_connect_init(SERVER_REC *server);
+/* Connection to server finished, fill the rest of the fields */
+void server_connect_finished(SERVER_REC *server);
+/* connection to server failed */
+void server_connect_failed(SERVER_REC *server, const char *msg);
 
 /* `optlist' should contain only one key - the server tag.
    returns NULL if there was unknown -option */

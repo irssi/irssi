@@ -172,6 +172,19 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_free_not_null(server->last_invite);
 }
 
+static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
+{
+	char *str;
+
+	if (!IS_IRC_SERVER(server) || server->handle == NULL ||
+	    server->buffer == NULL)
+		return;
+
+	str = g_strdup_printf("QUIT :%s", msg);
+	irc_send_cmd_now(server, str);
+	g_free(str);
+}
+
 static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
 	long usecs;
@@ -387,6 +400,7 @@ void irc_servers_init(void)
 	signal_add("server connect", (SIGNAL_FUNC) sig_server_connect);
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_add("event 465", (SIGNAL_FUNC) event_server_banned);
@@ -412,6 +426,7 @@ void irc_servers_deinit(void)
 	signal_remove("server connect", (SIGNAL_FUNC) sig_server_connect);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+        signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_remove("event 465", (SIGNAL_FUNC) event_server_banned);
