@@ -132,24 +132,17 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		remove_client(client);
 		return;
 	} if (strcmp(cmd, "PING") == 0) {
-		/* Reply to PING, if the server parameter is either
+		/* Reply to PING, if the target parameter is either
 		   proxy_adress, our own nick or empty. */
-		char *params, *server1, *server2, *server;
+		char *params, *origin, *target;
 
-		params = event_get_params(args, 2, &server1, &server2);
-		server = *server2 != '\0' ? server2 : server1;
-		if (*server == '\0' ||
-		    g_strncasecmp(server, client->proxy_address,
-				  strlen(client->proxy_address)) == 0 ||
-		    g_strncasecmp(server, client->nick,
-				  strlen(client->nick)) == 0) {
-			if (*server == '\0')
-				args = client->nick;
-			else if (server == server2) {
-                                /* <data> <server> - reply only with <data> */
-				args = server1;
-			}
-			proxy_outdata(client, ":%s PONG %s :%s\n", client->proxy_address, client->proxy_address, args);
+		params = event_get_params(args, 2, &origin, &target);
+		if (*target == '\0' ||
+		    g_strcasecmp(target, client->proxy_address) == 0 ||
+		    g_strcasecmp(target, client->nick) == 0) {
+			proxy_outdata(client, ":%s PONG %s :%s\n",
+				      client->proxy_address,
+                                      client->proxy_address, origin);
 			g_free(params);
 			return;
 		}
