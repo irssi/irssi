@@ -19,7 +19,6 @@
 			   ie. hello = "%Rhello%n" and "%G{hello} world"
 			   would print hello in red, and %n would turn back
 			   into %G making world green.
-                           The resulting color is
    %F                      Blinking on/off (think: flash)
    %U                      Underline on/off
    %8                      Reverse on/off
