@@ -158,7 +158,7 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 void dcc_ip2str(IPADDR *ip, char *host)
 {
 	IPADDR temp_ip;
-	unsigned long addr;
+	guint32 addr;
 
 	if (*settings_get_str("dcc_own_ip") != '\0') {
                 /* overridden IP address */
@@ -178,13 +178,13 @@ void dcc_ip2str(IPADDR *ip, char *host)
 
 void dcc_str2ip(const char *str, IPADDR *ip)
 {
-	unsigned long addr;
+	guint32 addr;
 
 	if (strchr(str, ':') == NULL) {
 		/* normal IPv4 address in 32bit number form */
                 addr = strtoul(str, NULL, 10);
 		ip->family = AF_INET;
-		addr = (unsigned long) ntohl(addr);
+		addr = (guint32) ntohl(addr);
 		memcpy(&ip->ip, &addr, 4);
 	} else {
 		/* IPv6 - in standard form */
