@@ -319,6 +319,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		if (chatnet != NULL) {
                         iconfig_node_set_str(node, "chatnet", chatnet);
                         iconfig_node_set_str(node, "ircnet", NULL);
+			chatnet = config_node_get_str(node, "chatnet", NULL);
 		}
 	}
 	signal_emit("server setup read", 3, &rec, node,
