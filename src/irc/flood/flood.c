@@ -129,12 +129,12 @@ static void flood_hash_destroy(const char *key, FLOOD_REC *flood)
 	while (flood->items != NULL) {
 		FLOOD_ITEM_REC *rec = flood->items->data;
 
+		flood->items = g_slist_remove(flood->items, rec);
+
 		g_slist_foreach(rec->msgtimes, (GFunc) g_free, NULL);
 		g_slist_free(rec->msgtimes);
 		g_free(rec->target);
 		g_free(rec);
-
-		flood->items = g_slist_remove(flood->items, rec);
 	}
 
 	g_free(flood->nick);

@@ -268,11 +268,13 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	if (rec->count > 1) {
 		for (pos = 0; lines != NULL; pos++) {
-			memcpy(&rec->lines[pos], lines->data,
+			void *data = lines->data;
+
+			memcpy(&rec->lines[pos], data,
 			       sizeof(LINE_CACHE_SUB_REC));
 
-			g_free(lines->data);
-			lines = g_slist_remove(lines, lines->data);
+			lines = g_slist_remove(lines, data);
+			g_free(data);
 		}
 	}
 

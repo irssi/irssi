@@ -31,11 +31,11 @@ static void ban_free(GSList **list, BAN_REC *rec)
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(rec != NULL);
 
+	*list = g_slist_remove(*list, rec);
+
 	g_free(rec->ban);
 	g_free_not_null(rec->setby);
 	g_free(rec);
-
-	*list = g_slist_remove(*list, rec);
 }
 
 void banlist_free(GSList *banlist)

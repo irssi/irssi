@@ -209,15 +209,15 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 			old = gslist_find_icase_string(rec->old_channels,
 						       realchannel);
 			if (old != NULL) {
-				g_free(old->data);
+				void *data = old->data;
 				rec->old_channels =
-					g_slist_remove(rec->old_channels,
-						       old->data);
+					g_slist_remove(rec->old_channels, data);
+				g_free(data);
 			}
 
-			g_free(channel);
 			rec->now_channels =
 				g_slist_remove(rec->now_channels, channel);
+			g_free(channel);
 		}
 
 		if (rec->old_channels == NULL)

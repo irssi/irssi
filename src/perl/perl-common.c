@@ -613,13 +613,14 @@ static int free_iobject_proto(void *key, void *value, void *chat_type)
 
 static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 {
-        GSList *item;
+	GSList *item;
+	void *data;
 
 	item = gslist_find_icase_string(use_protocols, rec->name);
 	if (item != NULL) {
-		g_free(item->data);
-		use_protocols =
-			g_slist_remove(use_protocols, item->data);
+		data = item->data;
+		use_protocols = g_slist_remove(use_protocols, data);
+		g_free(data);
 	}
 	g_hash_table_foreach_remove(iobject_stashes,
 				    (GHRFunc) free_iobject_proto,
