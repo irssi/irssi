@@ -1,3 +1,13 @@
+v0.8.1 2002-02-17  Timo Sirainen <tss@iki.fi>
+
+	* Expected bugfix release :) Worst thing was that I forgot always to
+	  debug why /cat /dev/urandom crashed irssi. Well, found two ways
+	  that could make it happen.
+
+	- Irssi was linked with -lcurses AND -lncurses
+	- Logging could have produced GLib errors with certain conditions
+	- A few compiler warnings fixes
+
 v0.8.0 2002-02-17  Timo Sirainen <tss@iki.fi>
 
 	* I really should make releases more often. Once in every two weeks
