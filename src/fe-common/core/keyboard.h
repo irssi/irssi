@@ -3,36 +3,31 @@
 
 #include "signals.h"
 
-typedef struct
-{
+typedef struct {
 	char *id;
 	char *description;
 
 	GSList *keys;
-}
-KEYINFO_REC;
+} KEYINFO_REC;
 
-typedef struct
-{
+typedef struct {
 	KEYINFO_REC *info;
 
 	char *key;
 	void *data;
-}
-KEY_REC;
+} KEY_REC;
 
 extern GSList *keyinfos;
 
-void key_bind(gchar *id, gchar *data, gchar *description, gchar *key_default, SIGNAL_FUNC func);
-void key_unbind(gchar *id, SIGNAL_FUNC func);
+void key_bind(const char *id, const char *description,
+	      const char *key_default, const char *data, SIGNAL_FUNC func);
+void key_unbind(const char *id, SIGNAL_FUNC func);
 
-void key_configure_add(gchar *id, gchar *data, gchar *key);
-void key_configure_remove(gchar *key);
+void key_configure_add(const char *id, const char *key, const char *data);
+void key_configure_remove(const char *key);
 
-KEYINFO_REC *key_info_find(gchar *id);
-gboolean key_pressed(gchar *key, gpointer data);
-
-void keyboard_save(void);
+KEYINFO_REC *key_info_find(const char *id);
+int key_pressed(const char *key, void *data);
 
 void keyboard_init(void);
 void keyboard_deinit(void);

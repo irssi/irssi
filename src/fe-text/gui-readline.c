@@ -427,34 +427,34 @@ void gui_readline_init(void)
 	idle_time = time(NULL);
 	readtag = g_input_add(0, G_INPUT_READ, (GInputFunction) readline, NULL);
 
-	key_bind("completion", NULL, "Nick completion", "Tab", (SIGNAL_FUNC) sig_completion);
-	key_bind("check replaces", NULL, "Check word replaces", " ", (SIGNAL_FUNC) sig_replace);
-	key_bind("check replaces", NULL, NULL, "Return", (SIGNAL_FUNC) sig_replace);
-	key_bind("window prev", NULL, "Previous window", "CTRL-P", (SIGNAL_FUNC) sig_prev_window);
-	key_bind("window prev", NULL, NULL, "ALT-Left", (SIGNAL_FUNC) sig_prev_window);
-	key_bind("window next", NULL, "Next window", "CTRL-N", (SIGNAL_FUNC) sig_next_window);
-	key_bind("window next", NULL, NULL, "ALT-Right", (SIGNAL_FUNC) sig_next_window);
-	key_bind("window up", NULL, "Upper window", "ALT-Up", (SIGNAL_FUNC) sig_up_window);
-	key_bind("window down", NULL, "Lower window", "ALT-Down", (SIGNAL_FUNC) sig_down_window);
-	key_bind("window active", NULL, "Go to next window with the highest activity", "ALT-A", (SIGNAL_FUNC) sig_window_goto_active);
-	key_bind("window item next", NULL, "Next channel", "CTRL-X", (SIGNAL_FUNC) sig_next_window_item);
-	key_bind("window item prev", NULL, "Next channel", NULL, (SIGNAL_FUNC) sig_prev_window_item);
+	key_bind("completion", "Nick completion", "Tab", NULL, (SIGNAL_FUNC) sig_completion);
+	key_bind("check replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) sig_replace);
+	key_bind("check replaces", NULL, "Return", NULL, (SIGNAL_FUNC) sig_replace);
+	key_bind("window prev", "Previous window", "CTRL-P", NULL, (SIGNAL_FUNC) sig_prev_window);
+	key_bind("window prev", NULL, "ALT-Left", NULL, (SIGNAL_FUNC) sig_prev_window);
+	key_bind("window next", "Next window", "CTRL-N", NULL, (SIGNAL_FUNC) sig_next_window);
+	key_bind("window next", NULL, "ALT-Right", NULL, (SIGNAL_FUNC) sig_next_window);
+	key_bind("window up", "Upper window", "ALT-Up", NULL, (SIGNAL_FUNC) sig_up_window);
+	key_bind("window down", "Lower window", "ALT-Down", NULL, (SIGNAL_FUNC) sig_down_window);
+	key_bind("window active", "Go to next window with the highest activity", "ALT-A", NULL, (SIGNAL_FUNC) sig_window_goto_active);
+	key_bind("window item next", "Next channel", "CTRL-X", NULL, (SIGNAL_FUNC) sig_next_window_item);
+	key_bind("window item prev", "Previous channel", NULL, NULL, (SIGNAL_FUNC) sig_prev_window_item);
 
-	key_bind("redraw", NULL, "Redraw window", "CTRL-L", (SIGNAL_FUNC) irssi_redraw);
-	key_bind("prev page", NULL, "Previous page", "ALT-P", (SIGNAL_FUNC) sig_prev_page);
-	key_bind("next page", NULL, "Next page", "ALT-N", (SIGNAL_FUNC) sig_next_page);
+	key_bind("redraw", "Redraw window", "CTRL-L", NULL, (SIGNAL_FUNC) irssi_redraw);
+	key_bind("prev page", "Previous page", "ALT-P", NULL, (SIGNAL_FUNC) sig_prev_page);
+	key_bind("next page", "Next page", "ALT-N", NULL, (SIGNAL_FUNC) sig_next_page);
 
-	key_bind("special char", "\x02", "Insert special character", "CTRL-B", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", "\x1f", NULL, "CTRL--", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", "\x03", NULL, "CTRL-C", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", "\x16", NULL, "CTRL-V", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", "\x07", NULL, "CTRL-G", (SIGNAL_FUNC) sig_addchar);
-	key_bind("special char", "\x0f", NULL, "CTRL-O", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", "Insert special character", "CTRL-B", "\x02", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL--", "\x1f", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-C", "\x03", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-V", "\x16", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-G", "\x07", (SIGNAL_FUNC) sig_addchar);
+	key_bind("special char", NULL, "CTRL-O", "\x0f", (SIGNAL_FUNC) sig_addchar);
 
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("ALT-%c", changekeys[n]);
 		ltoa(data, n+1);
-		key_bind("change window", data, "Change window", key, (SIGNAL_FUNC) sig_change_window);
+		key_bind("change window", "Change window", key, data, (SIGNAL_FUNC) sig_change_window);
 		g_free(key);
 	}
 
