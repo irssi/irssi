@@ -5,9 +5,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: irssi 0.7.97\n"
+"Project-Id-Version: irssi 0.7.97.1\n"
 "POT-Creation-Date: 2000-12-03 09:24+0200\n"
-"PO-Revision-Date: 2000-02-10 09:50-0200\n"
+"PO-Revision-Date: 2000-12-05 06:55-0200\n"
 "Last-Translator: Frédéric L. W. Meunier <0@pervalidus.net>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
 "MIME-Version: 1.0\n"
@@ -58,7 +58,7 @@ msgid ""
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 "%s/.irssi não é um diretório.\n"
-"Você deve removê-lo com o comando rm ~/.irssi"
+"Você deve removê-lo com o comando: rm ~/.irssi"
 
 #: src/core/settings.c:333
 #, c-format
@@ -127,11 +127,11 @@ msgstr "SERVIDOR"
 
 #: src/fe-common/irc/fe-common-irc.c:77
 msgid "Autoconnect password"
-msgstr "Senha para autoconecção"
+msgstr "Senha para autoconexão"
 
 #: src/fe-common/irc/fe-common-irc.c:78
 msgid "Autoconnect port"
-msgstr "Porta para autoconecção"
+msgstr "Porta para autoconexão"
 
 #: src/fe-common/irc/fe-common-irc.c:78
 msgid "PORT"
@@ -139,7 +139,7 @@ msgstr "PORTA"
 
 #: src/fe-common/irc/fe-common-irc.c:79
 msgid "Disable autoconnecting"
-msgstr "Disabilitar autoconecção"
+msgstr "Disabilitar autoconexão"
 
 #: src/fe-common/irc/fe-common-irc.c:80
 msgid "Specify nick to use"
