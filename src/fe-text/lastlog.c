@@ -154,6 +154,13 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		len = g_list_length(tmp);
 	}
 
+      if(g_hash_table_lookup(optlist, "count") != NULL) {
+         printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+                       TXT_LASTLOG_COUNT, len);
+              g_list_free(list);
+              return;
+      }
+
 	if (len > MAX_LINES_WITHOUT_FORCE && fhandle == -1 &&
 	    g_hash_table_lookup(optlist, "force") == NULL) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
@@ -206,7 +213,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 }
 
 /* SYNTAX: LASTLOG [-] [-file <filename>] [-clear] [-<level> -<level...>]
-		   [-new | -away] [-regexp | -word] [-case]
+		   [-count] [-new | -away] [-regexp | -word] [-case]
 		   [-window <ref#|name>] [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
 {
@@ -256,7 +263,7 @@ void lastlog_init(void)
 {
 	command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
 
-	command_set_options("lastlog", "!- force clear -file -window new away word regexp case");
+	command_set_options("lastlog", "!- force clear -file -window new away word regexp case count");
 }
 
 void lastlog_deinit(void)
