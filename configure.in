@@ -99,10 +99,10 @@ AC_ARG_WITH(modules,
 
 if test "x$prefix" != "xNONE"; then
         prefix=`eval echo $prefix`
-	PERL_MM_PARAMS="PREFIX=$prefix"
-	PERL_USE_LIB="$prefix`$perlpath -e 'use Config; $dir = $Config{sitearchexp}; $prefix = $Config{siteprefixexp}; $dir =~ s/^$prefix//; print $dir;'`"
+	PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=$prefix"
+	perl_library_dir="PERL_USE_LIB"
+	perl_set_use_lib=yes
 
-	perl_library_dir="$PERL_USE_LIB"
 	perl_prefix_note=yes
 fi
 
@@ -130,7 +130,8 @@ AC_ARG_WITH(perl-lib,
 		want_perl=yes
 		perl_prefix_note=no
 		PERL_MM_PARAMS="INSTALLDIRS=perl LIB=$withval"
-		PERL_USE_LIB="$withval"
+		perl_library_dir="PERL_USE_LIB"
+		perl_set_use_lib=yes
 	fi,
 	want_perl=yes)
 
@@ -580,6 +581,16 @@ if test "$want_perl" != "no"; then
 			perl_static_fe_lib=
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		fi
+
+		# figure out the correct @INC path - we'll need to do this
+		# through MakeMaker since it's difficult to get it right
+		# otherwise.
+		if test "x$perl_set_use_lib" = "xyes"; then
+			perl -e 'use ExtUtils::MakeMaker; WriteMakefile("NAME" => "test", "MAKEFILE" => "Makefile.test");' $PERL_MM_PARAMS >/dev/null
+			PERL_USE_LIB=`perl -e 'open(F, "Makefile.test"); while (<F>) { chomp; if (/^(\w+) = (.*$)/) { $keys{$1} = $2; } }; $key = $keys{INSTALLARCHLIB}; while ($key =~ /\\$\((\w+)\)/) { $value = $keys{$1}; $key =~ s/\\$\($1\)/$value/; }; print $key;'`
+			rm -f Makefile.test
+		fi
+
 		AC_SUBST(perl_module_lib)
 		AC_SUBST(perl_static_lib)
 		AC_SUBST(perl_module_fe_lib)
@@ -762,7 +773,7 @@ if test "x$old_dir" != "x$whole_dir"; then
 	if test "x$want_perl" != "xno"; then
 		subdirfiles=""
 		for i in $whole_dir/src/perl/common $whole_dir/src/perl/irc $whole_dir/src/perl/ui $whole_dir/src/perl/textui; do
-			subdirfiles=`echo $subdirfiles $i/typemap $i/module.h $i/*.xs`
+			subdirfiles=`echo $subdirfiles $i/typemap $i/module.h $i/*.pm $i/*.xs`
 		done
 		for file in $whole_dir/src/perl/*.[[ch]] $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $subdirfiles; do
 			link=`echo $file|$sedpath "s?$whole_dir/??"`
@@ -806,6 +817,9 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 fi
 
 if test "x$want_perl" != "xno"; then
+	if test "$perl_library_dir" = "PERL_USE_LIB"; then
+		perl_library_dir=$PERL_USE_LIB
+	fi
 	if test -z "$perl_library_dir"; then
 		perl_library_dir="(site default - `$perlpath -e 'use Config; print $Config{sitearch}'`)"
 	fi
