@@ -55,6 +55,7 @@ struct _IRC_SERVER_REC {
 	unsigned int no_multi_mode:1; /* Server doesn't understand MODE #chan1,#chan2,... */
 	unsigned int no_multi_who:1; /* Server doesn't understand WHO #chan1,#chan2,... */
 	unsigned int one_endofwho:1; /* /WHO #a,#b,.. replies only with one End of WHO message */
+	unsigned int disable_lag:1; /* Disable lag detection (PING command doesn't exist) */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */

@@ -64,6 +64,24 @@ static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
 	signal_emit("server lag", 1, server);
 }
 
+static void sig_unknown_command(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *cmd;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &cmd);
+	if (g_strcasecmp(cmd, "PING") == 0) {
+		/* some servers have disabled PING command, don't bother
+		   trying alternative methods to detect lag with these
+		   servers. */
+		server->disable_lag = TRUE;
+		server->lag_sent.tv_sec = 0;
+                server->lag = 0;
+	}
+	g_free(params);
+}
+
 static int sig_check_lag(void)
 {
 	GSList *tmp, *next;
@@ -81,7 +99,7 @@ static int sig_check_lag(void)
 		IRC_SERVER_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (!IS_IRC_SERVER(rec))
+		if (!IS_IRC_SERVER(rec) || rec->disable_lag)
 			continue;
 
 		if (rec->lag_sent.tv_sec != 0) {
@@ -110,6 +128,7 @@ void lag_init(void)
 	timeout_tag = g_timeout_add(1000, (GSourceFunc) sig_check_lag, NULL);
 	signal_add_first("lag pong", (SIGNAL_FUNC) lag_event_pong);
         signal_add("lag ping error", (SIGNAL_FUNC) lag_ping_error);
+        signal_add("event 421", (SIGNAL_FUNC) sig_unknown_command);
 }
 
 void lag_deinit(void)
@@ -117,4 +136,5 @@ void lag_deinit(void)
 	g_source_remove(timeout_tag);
 	signal_remove("lag pong", (SIGNAL_FUNC) lag_event_pong);
         signal_remove("lag ping error", (SIGNAL_FUNC) lag_ping_error);
+        signal_remove("event 421", (SIGNAL_FUNC) sig_unknown_command);
 }
