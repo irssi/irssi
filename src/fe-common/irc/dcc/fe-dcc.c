@@ -42,6 +42,15 @@ void fe_dcc_get_deinit(void);
 void fe_dcc_send_init(void);
 void fe_dcc_send_deinit(void);
 
+char *dcc_get_size_str(uoff_t size)
+{
+	if (size < 1024)
+		return g_strdup_printf("%"PRIuUOFF_T"B", size);
+	if (size < 1024*1024)
+		return g_strdup_printf("%"PRIuUOFF_T"kB", (size+1023) / 1024);
+	return g_strdup_printf("%"PRIuUOFF_T"MB", size / (1024*1024));
+}
+
 static void dcc_request(DCC_REC *dcc)
 {
 	char *service;
@@ -91,17 +100,34 @@ static void dcc_error_unknown_type(const char *type)
 
 void dcc_list_print_file(FILE_DCC_REC *dcc)
 {
-	time_t going;
+	time_t going, eta;
+	char *transfd_str, *size_str, etastr[20];
+	uoff_t bps;
 
 	going = time(NULL) - dcc->starttime;
-	if (going == 0) going = 1; /* no division by zeros :) */
+	if (going <= 0) going = 1;
+
+	transfd_str = dcc_get_size_str(dcc->transfd);
+	size_str = dcc_get_size_str(dcc->size);
+
+	bps = (dcc->transfd-dcc->skipped) / going;
+	if (bps == 0) {
+		strcpy(etastr, "(stalled)");
+	} else {
+		eta = (dcc->size - dcc->transfd) / bps;
+		g_snprintf(etastr, sizeof(etastr), "%02d:%02d:%02d",
+			   (int)(eta/3600), (int)((eta/60)%60), (int)(eta%60));
+	}
 
 	printformat(NULL, NULL, MSGLEVEL_DCC,
 		    IRCTXT_DCC_LIST_LINE_FILE,
 		    dcc->nick, dcc_type2str(dcc->type),
-		    (dcc->transfd+1023)/1024, (dcc->size+1023)/1024,
+		    transfd_str, size_str,
 		    dcc->size == 0 ? 0 : (int)((double)dcc->transfd/(double)dcc->size*100.0),
-		    (double) (dcc->transfd-dcc->skipped)/going/1024, dcc->arg);
+		    (double)bps/1024.0, dcc->arg, etastr);
+
+	g_free(transfd_str);
+	g_free(size_str);
 }
 
 static void cmd_dcc_list(const char *data)

@@ -45,6 +45,7 @@ static void dcc_connected(SEND_DCC_REC *dcc)
 
 static void dcc_closed(SEND_DCC_REC *dcc)
 {
+	char *sizestr, timestr[20];
 	double kbs;
 	time_t secs;
 
@@ -60,10 +61,16 @@ static void dcc_closed(SEND_DCC_REC *dcc)
 			    IRCTXT_DCC_SEND_ABORTED,
 			    dcc->arg, dcc->nick);
 	} else {
+		sizestr = dcc_get_size_str(dcc->transfd);
+		g_snprintf(timestr, sizeof(timestr), "%02d:%02d:%02d",
+			   (int)(secs/3600), (int)((secs/60)%60),
+			   (int)(secs%60));
+
 		printformat(dcc->server, NULL, MSGLEVEL_DCC,
 			    IRCTXT_DCC_SEND_COMPLETE,
-			    dcc->arg, (dcc->transfd+1023)/1024,
-			    dcc->nick, (long) secs, kbs);
+			    dcc->arg, sizestr, dcc->nick, timestr, kbs);
+
+		g_free(sizestr);
 	}
 }
 

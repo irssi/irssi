@@ -33,12 +33,18 @@
 
 static void dcc_request(GET_DCC_REC *dcc)
 {
+	char *sizestr;
+
         if (!IS_DCC_GET(dcc)) return;
+
+	sizestr = dcc_get_size_str(dcc->size);
 
 	printformat(dcc->server, NULL, MSGLEVEL_DCC,
 		    ischannel(*dcc->target) ? IRCTXT_DCC_SEND_CHANNEL :
 		    IRCTXT_DCC_SEND, dcc->nick, dcc->addrstr,
-		    dcc->port, dcc->arg, dcc->size, dcc->target);
+		    dcc->port, dcc->arg, sizestr, dcc->target);
+
+	g_free(sizestr);
 }
 
 static void dcc_connected(GET_DCC_REC *dcc)
@@ -51,6 +57,7 @@ static void dcc_connected(GET_DCC_REC *dcc)
 
 static void dcc_closed(GET_DCC_REC *dcc)
 {
+	char *sizestr, timestr[20];
 	double kbs;
 	time_t secs;
 
@@ -60,16 +67,21 @@ static void dcc_closed(GET_DCC_REC *dcc)
 	kbs = (double) (dcc->transfd-dcc->skipped) /
 		(secs == 0 ? 1 : secs) / 1024.0;
 
+	sizestr = dcc_get_size_str(dcc->transfd);
+	g_snprintf(timestr, sizeof(timestr), "%02d:%02d:%02d",
+		   (int)(secs/3600), (int)((secs/60)%60), (int)(secs%60));
+
 	if (secs == -1) {
 		/* aborted */
 		printformat(dcc->server, NULL, MSGLEVEL_DCC,
 			    IRCTXT_DCC_GET_ABORTED, dcc->arg, dcc->nick);
 	} else {
 		printformat(dcc->server, NULL, MSGLEVEL_DCC,
-			    IRCTXT_DCC_GET_COMPLETE, dcc->arg,
-			    (dcc->transfd+1023)/1024,
-			    dcc->nick, (long) secs, kbs);
+			    IRCTXT_DCC_GET_COMPLETE, dcc->arg, sizestr,
+			    dcc->nick, timestr, kbs);
 	}
+
+	g_free(sizestr);
 }
 
 static void dcc_error_file_create(GET_DCC_REC *dcc, const char *fname,
