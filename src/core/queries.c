@@ -37,6 +37,7 @@ void query_init(QUERY_REC *query, int automatic)
         MODULE_DATA_INIT(query);
 	query->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
         query->destroy = (void (*) (WI_ITEM_REC *)) query_destroy;
+	query->createtime = time(NULL);
 	query->last_unread_msg = time(NULL);
 
 	if (query->server_tag != NULL) {
