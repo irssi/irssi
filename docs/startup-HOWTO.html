@@ -34,7 +34,8 @@
     <li>How can I save all texts in a window to file?</li>
     </ul></li>
 <li><a href="#c8">Logging</a></li>
-<li><a href="#c9">Irssi's settings</a></li>
+<li><a href="#c9">Proxies and IRC bouncers</a></li>
+<li><a href="#c10">Irssi's settings</a></li>
 </ol>
 
 <h3><a id="c1">1. For all the lazy people</a></h3>
@@ -136,7 +137,7 @@ want to use ALT instead of Windows key for it, use:</p>
 <p>And how exactly do you set these X resources? For Debian, there's
 /etc/X11/Xresources/xterm file where you can put them and it's read 
 automatically when X starts. ~/.Xresources and ~/.Xdefaults files might also
-work. If you can't get anything else to work, just copy&paste those lines to
+work. If you can't get anything else to work, just copy&amp;paste those lines to
 ~/.Xresources and directly call "xrdb -merge ~/.Xresources" in some xterm.  
 The resources affect only the new xterms you start, not existing ones.</p>  
 
@@ -500,7 +501,93 @@ logs by adding date/time formats to the file name. The formats are in
 <p>For logging only some specific channels or nicks, see /HELP log</p>
 
 
-<h3><a id="c9">9. Irssi's settings</a></h3>
+<h3><a id="c9">9. Proxies and IRC bouncers</a></h3>
+
+<p>Irssi supports connecting to IRC servers via a proxy. All proxies have
+these settings in common:</p>
+
+<pre>
+     /SET use_proxy ON
+     /SET proxy_address &lt;Proxy host address&gt;
+     /SET proxy_port &lt;Proxy port&gt;
+</pre>
+
+<p><strong>HTTP proxy</strong></p>
+
+<p>Use these settings with HTTP proxies:</p>
+
+<pre>
+     /SET -clear proxy_password
+     /EVAL SET proxy_string CONNECT %s:%d\n\n
+</pre>
+
+<p><strong>Irssi proxy</strong></p>
+
+<p>Irssi contains it's own proxy which you can build giving
+<strong>--with-proxy</strong> option to configure. You'll still need to run
+irssi in a screen to use it though.</p>
+
+<p>Irssi proxy is a bit different than most proxies, normally proxies create
+a new connection to IRC server when you connect to it, but with irssi proxy
+all the clients use the same IRC server connection (a bit like how screen -x
+works).</p>
+
+<p>Irssi proxy supports sharing multiple server connections in different
+ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
+
+<p>Usage in proxy side:</p>
+
+<pre>
+     /LOAD irc_proxy (/LOAD proxy in irssi 0.7.98.3 and older)
+     /SET irssiproxy_password &lt;password&gt;
+     /SET irssiproxy_ports &lt;ircnet&gt;=&lt;port&gt; ... (eg. ircnet=2777 efnet=2778)
+</pre>
+
+<p><strong>NOTE</strong>: you <strong>MUST</strong> add all the servers you
+are using to server and ircnet lists with /SERVER ADD and /IRCNET ADD.
+..Except if you really don't want to for some reason, and you only use
+one server connection, you may simply set:</p>
+
+<pre>
+     /SET irssiproxy_ports *=2777 (irssi 0.7.99 and later only)
+</pre>
+
+<p>Usage in client side:</p>
+
+<p>Just connect to the irssi proxy like it is a normal server with password
+specified in /SET irssiproxy_password. For example:</p>
+
+<pre>
+     /SERVER ADD -ircnet ircnet my.irssi-proxy.org 2777 secret
+     /SERVER ADD -ircnet efnet my.irssi-proxy.org 2778 secret
+</pre>
+
+<p>Irssi proxy works fine with other IRC clients as well.</p>
+
+<p><strong>SOCKS</strong></p>
+
+Irssi can be compiled with socks support (<strong>--with-socks</strong>
+option to configure), but I don't really know how it works, if at all. /SET
+proxy settings don't have anything to do with socks however.
+
+<p><strong>Others</strong></p>
+
+<p>IRC bouncers usually work like IRC servers, and want a password. You can
+give it with:</p>
+
+<pre>
+     /SET proxy_password &lt;password&gt;
+</pre>
+
+<p>Irssi's default for connect string is</p>
+
+<pre>
+     /SET proxy_string CONNECT %s %d
+</pre>
+
+<p>which you can modify according to your bouncer's needs.</p>
+
+<h3><a id="c10">10. Irssi's settings</a></h3>
 
 <p>You probably don't like Irssi's default settings. I don't like them.
 But I'm still convinced that they're pretty good defaults. Here's some
@@ -652,7 +739,7 @@ of them you might want to change (the default value is shown):</p>
   <dd>Show the number of mails in your mbox in status
   bar. The mbox file is taken from $MAIL environment setting. Only mbox
   format works for now.</dd>
-
+</dl>
 
 <p><strong>Nick completion</strong></p>
 
