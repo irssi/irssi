@@ -160,6 +160,9 @@ void window_set_active(WINDOW_REC *window)
 
 void window_change_server(WINDOW_REC *window, void *server)
 {
+	if (server != NULL && SERVER(server)->disconnected)
+		return;
+
 	window->active_server = server;
 	signal_emit("window server changed", 2, window, server);
 }
