@@ -228,7 +228,7 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 		case FORMAT_STRING:
 			arglist[num] = (char *) va_arg(va, char *);
 			if (arglist[num] == NULL) {
-				g_warning("format_read_arglist() : parameter %d is NULL", num);
+				g_warning("format_read_arglist(%s) : parameter %d is NULL", format->tag, num);
 				arglist[num] = "";
 			}
 			break;
