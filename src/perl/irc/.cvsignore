@@ -1,0 +1,7 @@
+Makefile
+Makefile.PL
+Irc.c
+Irc.bs
+*.o
+pm_to_blib
+blib

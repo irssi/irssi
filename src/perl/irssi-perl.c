@@ -32,6 +32,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
+#include "perl-common.h"
 
 /* For compatibility with perl 5.004 and older */
 #ifndef ERRSV
@@ -667,8 +668,9 @@ static void irssi_perl_autorun(void)
 
 void irssi_perl_init(void)
 {
-	perl_scripts = NULL;
+	perl_common_init();
 
+	perl_scripts = NULL;
 	command_bind("run", NULL, (SIGNAL_FUNC) cmd_run);
 	command_bind_first("unload", NULL, (SIGNAL_FUNC) cmd_unload);
 	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_perlflush);
@@ -682,6 +684,7 @@ void irssi_perl_init(void)
 void irssi_perl_deinit(void)
 {
 	irssi_perl_stop();
+	perl_common_deinit();
 
 	if (signal_grabbed) signal_remove("signal", (SIGNAL_FUNC) sig_signal);
 	if (siglast_grabbed) signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);

@@ -1,0 +1,14 @@
+TYPEMAP
+Irssi::Irc::Server		T_PTROBJ
+Irssi::Irc::Connect		T_PTROBJ
+Irssi::Irc::Channel		T_PTROBJ
+Irssi::Irc::Query		T_PTROBJ
+Irssi::Irc::Ban			T_PTROBJ
+Irssi::Irc::Dcc			T_PTROBJ
+Irssi::Irc::Netsplit		T_PTROBJ
+Irssi::Irc::Netsplitserver	T_PTROBJ
+Irssi::Irc::Autoignore		T_PTROBJ
+Irssi::Irc::Notifylist		T_PTROBJ
+Irssi::Irc::Ignore		T_PTROBJ
+
+Irssi::Nick			T_PTROBJ
