@@ -1,15 +1,8 @@
+*** New stuff in TODO, try to get rid of these :)
 
- - BUG: when dcc sending and other side aborts, irssi sometimes eats 100%
-   of cpu until the send is cancelled? (I couldn't reprodure this..)
-
- - /msg tab completion could work better with multiple servers .. it could
-   go through all the nicks who sent you message in all servers. the server
-   tag would go after nick, like nick/tag. would need to fix /msg to work
-   with that too.
- - /last -away could check lastlog of the messages that came after we set
-   ourself away last time. /last -new could also work better .. by marking
-   the line where the last /last occured, not by going through the whole
-   text buffer
+ - bash-style (or whatever it could be called) tab-completion
+ - /last 05032 ... didn't really do what I wanted :) maybe I should change
+   the syntax to have -max parameter instead?
  - /^command would hide the output of the command. Maybe also some
    /password command so that it would ask you to type the password to
    entry line and would hide it with asterisks, good if people spy on you :)
@@ -17,10 +10,6 @@
    join/connect order of them.
  - nick/channel lists at right side of the text version of irssi. Ctrl-N
    for example could hide/show them. add mouse support for it.
- - make nick/text completion more modular so that for example you could add
-   a check in fe-dcc.c to complete with file names if the line begins with
-   /dcc send. also command completion would be nice. automatic command
-   completion would be nice too (/win clo = /window close).
  - statusbar:
      - you can't configure it in any way!
      - move it to fe-common, make some "statusbar" signal .. maybe
@@ -33,19 +22,20 @@
  - "Netjoins: nick1, nick2, nick3 .." - just as the "Netsplit quits" text
    except prints when people join back.
  - there's something wrong with netsplits. it sometimes forgets to print
-   some of the nicks.
+   some of the nicks (at least if after netjoin comes netsplit again
+   immediately).
  - some problems with finding curses? in openbsd it should be -lcurses,
    not -lncurses..
  - line-split.c: check that 64k limit is working and not crashing irssi!
  - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
    idling" was print to screen with some NULL arguments in text..
- - /SB GOTO, /SB HOME and /SB END don't set gui->ypos right.
- - When doing a /REHASH, logs are closed?, window logs are entirely removed?
+ - When doing a /RELOAD, logs are closed?, window logs are entirely removed?
    (also, check that window logs work right if window's refnum changes)
+ - Implement /bind for making keyboard shortcuts.
  - theme problems:
     - you can't change theme
     - some small help about what each format does
-    - /rehash could re-read them
+    - /reload could re-read them
     - don't keep all themes in memory, just the one in use.
     - use different themes in different channels/queries?
     - logging messages could be printed with a different theme
@@ -61,18 +51,20 @@
        after it, 0.2 sec or something. after pasting is detected, all unknown
        /commands are sent as normal messages.
      - fix copypasting from netscape, strip all spaces at the start and end
-       of the line, join multiple lines to one.
+       of the line, join multiple lines to one (how about when pasting code?)
  - /NOTIFY -once - notify only once when the user comes to IRC, forget this
    after it.
  - /NOTIFY -comment xxx - add a comment to notify. print the comment when
    user comes to irc.
  - "Should we check people in notify list when you're away" option
- - Implement /EXEC and /ON commands
- - All those options to /WHO and /LIST commands
- - autorun.ircnet
+ - Implement /EXEC, /ON and /TIMER commands
+ - All those options to /WHO and /LIST commands that EPIC has
 
 *** Bugs
 
+ - still some problems in detecting floods right? not sure, couldn't
+   reproduce the problem again..
+ - match_wildcards(), mask="*a?c*", data="abdabc"
  - multiple dcc connections from different irc networks from same nick
    doesn't work. Maybe create "server nick" and "refer nick" variables to
    DCC_REC?
@@ -103,7 +95,7 @@
 
    .. but what database would be best for this?
 
- - GTK version: icons to toolbars, accelerators to menus
+ - GTK (non-GNOME) version: icons to toolbars, accelerators to menus
  - Windows style MDI windows are possible with GtkFixed .. Some people would
    like this.. too much job for me, it would need building the MDI windows
    ourself (title bar, borders, resizing, etc.)
@@ -139,13 +131,21 @@
    menubar user configurable
 
 
-*** Little things
+*** Stuff to do
 
  - /savewindows - save the current channel/query positions to file and
    load them at startup.
- - multi-DCC - open multiple sockets to transfer the file
+ - you could configure which events (whois, notify, etc.) to show in what
+   windows (all, current, status, msgs)
  - autoaway when idling
- - nickserv support (automatic /msg nickserv identify password)
+ - implement requesting files with DCC GET from remote client for dcc file
+   servers. good for people behind firewalls.
+ - /CLONES command (with script)
+ - {}|~ are same as []\^ (not in all irc networks) - does this really affect
+   irssi at all..?
+
+*** ..in GTK UI
+
  - itext:
      - save/find text
      - text selection draws the entire selection every time you move the
@@ -162,15 +162,8 @@
    someone hasn't written anything to channel in n minutes and mark it "away"
    to nicklist.
  - check new irssi versions with http rather than with irssibot..
- - implement requesting files with DCC GET from remote client for dcc file
-   servers. good for people behind firewalls.
  - gnome statubar:
     - clock?
     - dcc transfer meter (gtk progressbar)
- - you could configure which events (whois, notify, etc.) to show in what
-   windows (all, current, status, msgs)
  - dcc send: allow selection of multiple files to send (also for dnd from
    gmc!) Allow dropping files to anywhere in irssi.
- - /timer, /clones
- - {}|~ are same as []\^ (not in all irc networks) - does this really affect
-   irssi at all..?

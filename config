@@ -61,7 +61,7 @@ aliases = {
   SB = "scrollback";
   UMODE = "mode $N";
   WC = "window close";
-  WN = "window new";
+  WN = "window new hide";
 };
 
 popups = (

@@ -1,3 +1,57 @@
+v0.7.92 2000-06-30  Timo Sirainen <tss@iki.fi>
+
+	* Some changes:
+	    /REHASH -> /RELOAD
+	    /SERVER -add, -remove, -list -> /SERVER ADD, REMOVE, LIST
+	    /SET window_close_on_part -> /SET autoclose_windows
+	    /HILIGHT -nick -> /HILIGHT -mask (see below)
+	+ Automatic completion of /commands. Automatic completion of
+	  command -options. Complains about unknown -options.
+	+ /MSG [-<server tag>] <nick> <msg> - you can specify what server
+	  to send the message to.
+	+ Rewrote tab-completion to be modular, it's REALLY easy to add
+	  completion to whatever you want. It now handles:
+	    - Command completion works better, subcommand completion works
+	    - Command -option completion
+	    - /MSG completion completes from all IRC servers, so if you had
+	      message from ircnet and efnet, irssi will complete with
+	      /MSG -ircnet nick1 -> /MSG -efnet nick2
+	    - #channel completion works - it completes only channels you
+	      have joined or have in setup
+	    - File name completion with /DCC SEND (and other commands)
+	    - /TOGGLE settings completion
+	    - Completion for command parameters or subcommands work right
+	      even if the command was typed as alias.
+	+ /HILIGHT updates:
+	     - -nick highlights only the nick, not the whole line. Works
+	       only with public messages.
+	     - -mask option matches the text for nick mask (it didn't even
+	       work before).
+	     - Window numbers in activity list are colored with hilight
+	       color.
+	     - You can give real color names with -color option. All the
+	       "normal" colors can be given, if you want bold colors, use
+	       b+color name, like bgreen.
+	     - /SET hilight_color specifies the default highlight color
+	     - /SET hilight_only_nick specifies if we should highlight the
+	       nick or the whole line if -nick or -nonick wasn't specified
+	       with /HILIGHT.
+	+ /LAST -away checks only lines that came after last time you
+	  went away.
+	+ You can specify command(s) to be sent automatically to server
+	  after connected with /IRCNET -autosendcmd. Useful for sending
+	  your password to NickServ.
+	+ Added /SET reuse_unused_windows setting, default is OFF. Works
+	  only when /SET autoclose_windows is ON. This specifies if new
+	  windows should be joined to new window, or if existing empty
+	  windows should be used.
+	+ /SET lag_min_show -1 disables displaying lag entirely.
+	- /SCROLLBACK HOME, END and GOTO commands weren't working right.
+	- Closing active window that had channels/queries could crash
+	- Using \n with /SET expand_escapes ON didn't work right.
+	- Logging HILIGHT messages didn't work
+	- The "max. count" parameter in /LAST didn't work right.
+
 v0.7.91 2000-06-14  Timo Sirainen <tss@iki.fi>
 
 	+ Ctrl-X changes IRC server in stats/msgs/empty windows.
