@@ -33,6 +33,9 @@ void mainwindows_recreate(void);
 void mainwindow_set_size(MAIN_WINDOW_REC *window, int size);
 void mainwindows_resize(int width, int height);
 
+void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
+			      WINDOW_REC *skip_window);
+
 int mainwindows_reserve_lines(int count, int up);
 GSList *mainwindows_get_sorted(int reverse);
 

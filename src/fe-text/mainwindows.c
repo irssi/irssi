@@ -88,6 +88,34 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 	signal_emit("mainwindow resized", 1, window);
 }
 
+void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
+			      WINDOW_REC *skip_window)
+{
+	MAIN_WINDOW_REC *parent;
+	GSList *tmp;
+
+        mainwin->active = NULL;
+	if (mainwin->sticky_windows != NULL) {
+		/* sticky window */
+		window_set_active(mainwin->sticky_windows->data);
+                return;
+	}
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+                parent = WINDOW_GUI(rec)->parent;
+		if (rec != skip_window &&
+		    g_slist_find(parent->sticky_windows, rec) == NULL) {
+                        window_set_active(rec);
+                        return;
+		}
+	}
+
+        /* no more non-sticky windows, remove main window */
+        mainwindow_destroy(mainwin);
+}
+
 void mainwindows_recreate(void)
 {
 	GSList *tmp;
@@ -767,80 +795,56 @@ static void cmd_window_right(void)
 		window_set_active(window);
 }
 
-static void mainwindow_change_window(MAIN_WINDOW_REC *mainwin,
-				     WINDOW_REC *window)
-{
-	MAIN_WINDOW_REC *parent;
-	GSList *tmp;
-
-	if (mainwin->sticky_windows != NULL) {
-		/* sticky window */
-		window_set_active(mainwin->sticky_windows->data);
-                return;
-	}
-
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		WINDOW_REC *rec = tmp->data;
-
-                parent = WINDOW_GUI(rec)->parent;
-		if (rec != window &&
-		    g_slist_find(parent->sticky_windows, rec) == NULL) {
-                        window_set_active(rec);
-                        return;
-		}
-	}
-
-        /* no more non-sticky windows, remove main window */
-        mainwindow_destroy(mainwin);
-}
-
-/* SYNTAX: WINDOW STICK [ON|OFF|<ref#>] */
+/* SYNTAX: WINDOW STICK [<ref#>] [ON|OFF] */
 static void cmd_window_stick(const char *data)
 {
-	MAIN_WINDOW_REC *window = active_mainwin;
+        MAIN_WINDOW_REC *mainwin;
+        WINDOW_REC *win;
+
+        mainwin = active_mainwin;
+        win = active_mainwin->active;
 
 	if (is_numeric(data, '\0')) {
-		WINDOW_REC *win = window_find_refnum(atoi(data));
+		/* ref# specified */
+		win = window_find_refnum(atoi(data));
 		if (win == NULL) {
 			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 					   TXT_REFNUM_NOT_FOUND, data);
 			return;
 		}
-                window = WINDOW_GUI(win)->parent;
+
+		while (*data != ' ' && *data != '\0') data++;
+		while (*data == ' ') data++;
 	}
 
 	if (g_strncasecmp(data, "OF", 2) == 0 || toupper(*data) == 'N') {
 		/* unset sticky */
-		if (g_slist_find(window->sticky_windows, active_win) == NULL) {
-			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+		if (g_slist_find(mainwin->sticky_windows, win) == NULL) {
+			printformat_window(win, MSGLEVEL_CLIENTERROR,
 					   TXT_WINDOW_NOT_STICKY);
 		} else {
-			window->sticky_windows =
-				g_slist_remove(window->sticky_windows,
-					       active_win);
-			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+			mainwin->sticky_windows =
+				g_slist_remove(mainwin->sticky_windows, win);
+			printformat_window(win, MSGLEVEL_CLIENTNOTICE,
 					   TXT_WINDOW_UNSET_STICKY);
 		}
 	} else {
-                /* set sticky */
-		active_mainwin->sticky_windows =
-			g_slist_remove(active_mainwin->sticky_windows,
-				       active_win);
+		/* set sticky */
+		MAIN_WINDOW_REC *old_mainwin;
 
-		if (g_slist_find(window->sticky_windows, active_win) == NULL) {
-			window->sticky_windows =
-				g_slist_append(window->sticky_windows,
-					       active_win);
+                old_mainwin = WINDOW_GUI(win)->parent;
+		old_mainwin->sticky_windows =
+			g_slist_remove(old_mainwin->sticky_windows, win);
+
+		if (g_slist_find(mainwin->sticky_windows, win) == NULL) {
+			mainwin->sticky_windows =
+				g_slist_append(mainwin->sticky_windows, win);
 		}
-		if (window != active_mainwin) {
-                        WINDOW_REC *movewin;
-
-                        movewin = active_win;
-			gui_window_reparent(movewin, window);
-                        mainwindow_change_window(active_mainwin, movewin);
-
-			active_mainwin = window;
-                        window_set_active(movewin);
+		if (old_mainwin != mainwin) {
+                        if (old_mainwin->active == win)
+				mainwindow_change_active(old_mainwin, win);
+			gui_window_reparent(win, mainwin);
+                        window_set_active(win);
 		}
 
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,

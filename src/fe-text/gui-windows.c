@@ -103,11 +103,14 @@ static void gui_window_destroyed(WINDOW_REC *window)
 
 	signal_emit("gui window destroyed", 1, window);
 
+	parent->sticky_windows =
+		g_slist_remove(parent->sticky_windows, window);
+
 	gui_window_deinit(gui);
 	window->gui_data = NULL;
 
-	if (parent->active == window && mainwindows->next != NULL)
-		mainwindow_destroy(parent);
+	if (parent->active == window)
+		mainwindow_change_active(parent, window);
 }
 
 void gui_window_resize(WINDOW_REC *window, int width, int height)
