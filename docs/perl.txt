@@ -299,7 +299,7 @@ combine_level(level, str)
 
  *** Commands
 
-Command->{}:
+Command->{}
   cmd - Command name
   category - Category
 
@@ -320,6 +320,29 @@ command_unbind(cmd, func)
 
 
  *** Windows
+
+UI::Window->{}
+  refnum - Reference number
+  name - Name
+
+  active - Active window item
+  active_server - Active server
+
+  level - Current window level
+  data_level - Current data level
+  hilight_color - Current activity hilight color
+  last_timestamp - Last time timestamp was written in window
+  last_line - Last time text was written in window
+
+UI::TextDest->{}
+  window - Window where the text will be written
+  server - Target server
+  target - Target channel/query/etc name
+  level - Text level
+
+  hilight_priority - Priority for the hilighted text
+  hilight_color - Color for the hilighted text
+
 
 Window::items()
   Return a list of items in window.
@@ -911,26 +934,50 @@ modes_join(old, mode, channel)
 
 Dcc->{}
   type - Type of the DCC: chat, send, get
+  orig_type - Original DCC type that was sent to us - same as type except
+              GET and SEND are swapped
   created - Time stamp when the DCC record was created
 
-  server - Server where the DCC was initiated.
+  server - Server record where the DCC was initiated.
+  servertag - Tag of the server where the DCC was initiated.
+  mynick - Our nick to use in DCC chat.
   nick - Other side's nick name.
 
   chat - Dcc chat record if the request came through DCC chat
-
-  ircnet - IRC network where the DCC was initiated.
-  mynick - Our nick to use in DCC chat.
-
+  target - Who the request was sent to - your nick, channel or empty
+           if you sent the request
   arg - Given argument .. file name usually
-  file - The real file name which we use.
 
   addr - Other side's IP address.
   port - Port we're connecting in.
 
-  size - File size
-  transfd - Bytes transferred
-  skipped - Bytes skipped from start (resuming file)
   starttime - Unix time stamp when the DCC transfer was started
+  transfd - Bytes transferred
+
+Dcc::Chat->{}
+  id - Unique identifier - usually same as nick
+  mirc_ctcp - Send CTCPs without the CTCP_MESSAGE prefix
+  connection_lost - Other side closed connection
+
+Dcc::Get->{}
+  (..contains all the same data as core Dcc object..)
+  size - File size
+  skipped - Bytes skipped from start (resuming file)
+
+  get_type - What to do if file exists? 0=default, 1=rename, 2=overwrite,
+             3=resume
+  file - The real file name which we use.
+  file_quoted - 1 if file name was received quoted ("file name")
+
+Dcc::Send->{}
+  (..contains all the same data as core Dcc object..)
+  size - File size
+  skipped - Bytes skipped from start (resuming file)
+
+  file_quoted - 1 if file name was received quoted ("file name")
+  waitforend - File is sent, just wait for the replies from the other side
+  gotalldata - Got all acks from the other end
+
 
 dccs() - return list of all dcc connections
 
@@ -1017,17 +1064,3 @@ Server::notifylist_ison_server(nick)
 
 Notifylist::ircnets_match(ircnet)
   Returns 1 if notify is checked in `ircnet'.
-
-
- *** Autoignoring
-
-Autoignore->{}
-  nick - Ignored nick
-  timeleft - Seconds left to ignore
-  level - Ignoring level number
-
-Server::autoignore_add(nick, level)
-  Add new autoignore.
-
-Server::autoignore_remove(mask, level)
-  Remove autoignore.
