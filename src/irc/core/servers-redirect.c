@@ -548,15 +548,15 @@ void servers_redirect_init(void)
         /* ISON */
 	server_redirect_register("ison", FALSE, 0,
 				 NULL,
-				 "event 303", 1, /* ISON */
+				 "event 303", -1, /* ISON */
 				 NULL);
 
         /* USERHOST */
 	server_redirect_register("userhost", FALSE, 0,
 				 "event 401", 1, /* no such nick */
 				 NULL,
-				 "event 302", 1, /* Userhost */
-				 "event 461", 1, /* Not enough parameters */
+				 "event 302", -1, /* Userhost */
+				 "event 461", -1, /* Not enough parameters */
 				 NULL);
 
 	/* MODE #channel */
