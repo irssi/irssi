@@ -145,8 +145,7 @@ static void sig_message(SERVER_REC *server, const char *msg,
 	/* hilight */
 	if (item != NULL) item->last_color = hilight_last_nick_color();
 	level = (item != NULL && item->last_color > 0) ||
-		(level & hilight_level) ||
-		nick_match_msg(SERVER(server), msg, server->nick) ?
+		(level & hilight_level) ?
 		NEWDATA_HILIGHT : NEWDATA_MSG;
 	if (item != NULL && item->new_data < level) {
 		item->new_data = level;
@@ -169,7 +168,12 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *addr,
 			       const char *target)
 {
-	sig_message(server, msg, nick, addr, target, MSGLEVEL_PUBLIC);
+	int level = MSGLEVEL_PUBLIC;
+
+	if (nick_match_msg(channel_find(server, target), msg, server->nick))
+                level |= MSGLEVEL_HILIGHT;
+
+	sig_message(server, msg, nick, addr, target, level);
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,

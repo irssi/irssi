@@ -262,46 +262,93 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 	g_hash_table_destroy(channel->nicks);
 }
 
-/* Check is `msg' is meant for `nick'. */
-int nick_match_msg(SERVER_REC *server, const char *msg, const char *nick)
+static NICK_REC *nick_nfind(CHANNEL_REC *channel, const char *nick, int len)
 {
-	int len;
+        NICK_REC *rec;
+	char *tmpnick;
+
+	tmpnick = g_strndup(nick, len);
+	rec = g_hash_table_lookup(channel->nicks, tmpnick);
+        g_free(tmpnick);
+	return rec;
+}
+
+/* Check is `msg' is meant for `nick'. */
+int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
+{
+	const char *msgstart, *orignick;
+	int len, fullmatch;
 
 	g_return_val_if_fail(nick != NULL, FALSE);
 	g_return_val_if_fail(msg != NULL, FALSE);
 
-	if (server != NULL && server->nick_match_msg != NULL)
-		return server->nick_match_msg(msg, nick);
+	if (channel != NULL && channel->server->nick_match_msg != NULL)
+		return channel->server->nick_match_msg(msg, nick);
 
 	/* first check for identical match */
 	len = strlen(nick);
 	if (g_strncasecmp(msg, nick, len) == 0 && !isalnumhigh((int) msg[len]))
 		return TRUE;
 
-	/* check if it matches for alphanumeric parts of nick */
-	while (*nick != '\0' && *msg != '\0') {
-		if (*nick == *msg) {
-			/* total match */
-			msg++;
-		} else if (isalnum(*msg) && !isalnum(*nick)) {
-			/* some strange char in your nick, pass it */
-		} else
+	orignick = nick;
+	for (;;) {
+		nick = orignick;
+		msgstart = msg;
+                fullmatch = TRUE;
+
+		/* check if it matches for alphanumeric parts of nick */
+		while (*nick != '\0' && *msg != '\0') {
+			if (*nick == *msg) {
+				/* total match */
+				msg++;
+			} else if (isalnum(*msg) && !isalnum(*nick)) {
+				/* some strange char in your nick, pass it */
+                                fullmatch = FALSE;
+			} else
+				break;
+
+			nick++;
+		}
+
+		if (msg != msgstart && !isalnumhigh(*msg)) {
+			/* at least some of the chars in line matched the
+			   nick, and msg continue with non-alphanum character,
+			   this might be for us.. */
+			if (*nick != '\0') {
+				/* remove the rest of the non-alphanum chars
+				   from nick and check if it then matches. */
+                                fullmatch = FALSE;
+				while (*nick != '\0' && !isalnum(*nick))
+					nick++;
+			}
+
+			if (*nick == '\0') {
+				/* yes, match! */
+                                break;
+			}
+		}
+
+		/* no match. check if this is a message to multiple people
+		   (like nick1,nick2: text) */
+		while (*msg != '\0' && *msg != ' ' && *msg != ',') msg++;
+
+		if (*msg != ',') {
+                        nick = orignick;
 			break;
+		}
 
-		nick++;
+                msg++;
 	}
 
-	if (isalnumhigh(*msg)) {
-		/* message continues with another alphanumeric character,
-		   it isn't for us. */
-		return FALSE;
-	}
+	if (*nick != '\0')
+		return FALSE; /* didn't match */
 
-	/* remove all the non-alphanumeric characters at the end of
-	   the nick and check if message matched that far. */
-	while (*nick != '\0' && !isalnum(*nick)) nick++;
+	if (fullmatch)
+		return TRUE; /* matched without fuzzyness */
 
-	return *nick == '\0';
+	/* matched with some fuzzyness .. check if there's an exact match
+	   for some other nick in the same channel. */
+        return nick_nfind(channel, msgstart, (int) (msg-msgstart)) == NULL;
 }
 
 void nicklist_init(void)

@@ -63,7 +63,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	char *color;
 
 	chanrec = channel_find(server, target);
-	for_me = nick_match_msg(server, msg, server->nick);
+	g_return_if_fail(chanrec != NULL);
+
+	for_me = nick_match_msg(chanrec, msg, server->nick);
 	color = for_me ? NULL :
 		hilight_find_nick(target, nick, address, MSGLEVEL_PUBLIC, msg);
 

@@ -46,7 +46,7 @@ static int ignore_check_replies(IGNORE_REC *rec, CHANNEL_REC *channel,
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *nick = tmp->data;
 
-		if (nick_match_msg(channel->server, text, nick->nick))
+		if (nick_match_msg(channel, text, nick->nick))
 			return TRUE;
 	}
 	g_slist_free(nicks);

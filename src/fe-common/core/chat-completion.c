@@ -148,7 +148,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 
 	channel = channel_find(server, target);
 	if (channel != NULL) {
-		list = nick_match_msg(server, msg, server->nick) ?
+		list = nick_match_msg(channel, msg, server->nick) ?
 			&channel->lastownmsgs :
 			&channel->lastmsgs;
                 last_msg_add(list, nick);
