@@ -185,7 +185,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 
 		chans = rec->queries[query];
 
-		if (g_slist_length(rec->queries[query]) > server->max_query_chans) {
+		if ((int)g_slist_length(rec->queries[query]) > server->max_query_chans) {
 			GSList *lastchan;
 
 			lastchan = g_slist_nth(rec->queries[query], server->max_query_chans-1);

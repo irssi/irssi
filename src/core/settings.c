@@ -442,7 +442,8 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	char *real_fname;
 
 	real_fname = fname != NULL ? g_strdup(fname) :
-		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
+		g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi"
+				G_DIR_SEPARATOR_S"config", g_get_home_dir());
 	config = config_open(real_fname, -1);
 
 	if (config != NULL)
@@ -473,17 +474,16 @@ static void init_configfile(void)
 	struct stat statbuf;
 	char *str;
 
-	str = g_strdup_printf("%s/.irssi", g_get_home_dir());
+	str = g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi", g_get_home_dir());
 	if (stat(str, &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
 		if (mkpath(str, 0700) != 0) {
-			g_error(_("Couldn't create %s/.irssi directory"),
-				g_get_home_dir());
+			g_error(_("Couldn't create %s directory"), str);
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {
-		g_error(_("%s/.irssi is not a directory.\n"
+		g_error(_("%s is not a directory.\n"
 			  "You should remove it with command: rm ~/.irssi"),
-			g_get_home_dir());
+			  str);
 	}
 	g_free(str);
 

@@ -228,12 +228,12 @@ void nicklist_update_flags(SERVER_REC *server, const char *nick,
 
 		rec->last_check = time(NULL);
 
-		if (gone != -1 && rec->gone != gone) {
+		if (gone != -1 && (int)rec->gone != gone) {
 			rec->gone = gone;
 			signal_emit("nick gone changed", 2, channel, rec);
 		}
 
-		if (serverop != -1 && rec->serverop != serverop) {
+		if (serverop != -1 && (int)rec->serverop != serverop) {
 			rec->serverop = serverop;
 			signal_emit("nick serverop changed", 2, channel, rec);
 		}

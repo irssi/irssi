@@ -372,7 +372,7 @@ static void key_transpose_characters(void)
 
 static void key_delete_character(void)
 {
-	if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
+	if (gui_entry_get_pos() < (int)strlen(gui_entry_get_text())) {
 		gui_entry_move_pos(1);
 		gui_entry_erase(1);
 	}
