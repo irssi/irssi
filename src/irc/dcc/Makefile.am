@@ -1,12 +1,9 @@
-moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libirc_dcc.la
-
-libirc_dcc_la_LDFLAGS = -avoid-version
+noinst_LIBRARIES = libirc_dcc.a
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/
 
-libirc_dcc_la_SOURCES = \
+libirc_dcc_a_SOURCES = \
 	dcc.c \
 	dcc-chat.c \
 	dcc-get.c \

@@ -1,7 +1,4 @@
-moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libfe_irc_dcc.la
-
-libfe_irc_dcc_la_LDFLAGS = -avoid-version
+noinst_LIBRARIES = libfe_irc_dcc.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -13,7 +10,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_irc_dcc_la_SOURCES = \
+libfe_irc_dcc_a_SOURCES = \
 	fe-dcc.c \
 	fe-dcc-chat.c \
 	fe-dcc-get.c \

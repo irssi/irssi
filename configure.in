@@ -617,11 +617,11 @@ for c in $CHAT_MODULES; do
 		FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/libfe_common_$c.a "
 	fi
 	for s in `eval echo \\$${c}_MODULES`; do
-		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/lib${c}_$s.a"
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -f $srcdir/src/fe-common/$c/$s/module.h; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/.libs/libfe_${c}_$s.a "
+			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/libfe_${c}_$s.a "
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi

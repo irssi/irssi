@@ -1,7 +1,4 @@
-moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libfe_irc_notifylist.la
-
-libfe_irc_notifylist_la_LDFLAGS = -avoid-version
+noinst_LIBRARIES = libfe_irc_notifylist.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -12,7 +9,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_irc_notifylist_la_SOURCES = \
+libfe_irc_notifylist_a_SOURCES = \
 	fe-notifylist.c \
 	module-formats.c
 
