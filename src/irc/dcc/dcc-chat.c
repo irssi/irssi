@@ -46,7 +46,7 @@ void dcc_chat_send(DCC_REC *dcc, const char *data)
 }
 
 /* If `item' is a query of a =nick, return DCC chat record of nick */
-DCC_REC *item_get_dcc(void *item)
+DCC_REC *item_get_dcc(WI_ITEM_REC *item)
 {
 	QUERY_REC *query;
 
@@ -89,7 +89,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 
 	g_return_if_fail(data != NULL);
 
-	dcc = item_get_dcc(item);
+	dcc = item_get_dcc((WI_ITEM_REC *) item);
 	if (dcc == NULL) return;
 
 	str = g_strdup_printf("ACTION %s", data);
@@ -314,13 +314,14 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: MIRCDCC ON|OFF */
-static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
+static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server,
+			QUERY_REC *item)
 {
 	DCC_REC *dcc;
 
 	g_return_if_fail(data != NULL);
 
-	dcc = item_get_dcc(item);
+	dcc = item_get_dcc((WI_ITEM_REC *) item);
 	if (dcc == NULL) return;
 
 	dcc->mirc_ctcp = toupper(*data) != 'N' &&

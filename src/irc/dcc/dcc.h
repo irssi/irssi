@@ -92,7 +92,7 @@ void dcc_ctcp_message(IRC_SERVER_REC *server, const char *target,
 /* Send `data' to dcc chat. */
 void dcc_chat_send(DCC_REC *dcc, const char *data);
 /* If `item' is a query of a =nick, return DCC chat record of nick */
-DCC_REC *item_get_dcc(void *item);
+DCC_REC *item_get_dcc(WI_ITEM_REC *item);
 
 /* reject DCC request */
 void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server);

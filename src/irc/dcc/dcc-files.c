@@ -508,7 +508,8 @@ static void dcc_send_init(DCC_REC *dcc)
 }
 
 /* SYNTAX: DCC SEND <nick> <file> */
-static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
+static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
+			 WI_ITEM_REC *item)
 {
 	char *target, *fname, *str, *ptr;
 	void *free_arg;
