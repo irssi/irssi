@@ -31,6 +31,9 @@ PERL_SCRIPT_REC *perl_script_find_package(const char *package);
 
 /* Returns full path for the script */
 char *perl_script_get_path(const char *name);
+/* Modify the script name so that all non-alphanumeric characters are
+   translated to '_' */
+void script_fix_name(char *name);
 
 /* If core should handle printing script errors */
 void perl_core_print_script_error(int print);

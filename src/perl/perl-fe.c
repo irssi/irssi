@@ -104,10 +104,11 @@ static void cmd_script_unload(const char *data)
         if (*name == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
+        script_fix_name(name);
 	script = perl_script_find(name);
 	if (script == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-                            TXT_SCRIPT_NOT_LOADED, data);
+                            TXT_SCRIPT_NOT_LOADED, name);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    TXT_SCRIPT_UNLOADED, script->name);

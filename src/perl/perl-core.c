@@ -165,11 +165,11 @@ void perl_scripts_deinit(void)
 	my_perl = NULL;
 }
 
-static char *script_file_get_name(const char *path)
+/* Modify the script name so that all non-alphanumeric characters are
+   translated to '_' */
+void script_fix_name(char *name)
 {
-	char *name, *ret, *p;
-
-        ret = name = g_strdup(g_basename(path));
+	char *ret, *p;
 
 	p = strrchr(name, '.');
 	if (p != NULL) *p = '\0';
@@ -179,8 +179,15 @@ static char *script_file_get_name(const char *path)
 			*name = '_';
 		name++;
 	}
+}
 
-        return ret;
+static char *script_file_get_name(const char *path)
+{
+	char *name;
+
+        name = g_strdup(g_basename(path));
+	script_fix_name(name);
+        return name;
 }
 
 static char *script_data_get_name(void)
