@@ -17,6 +17,8 @@ typedef struct {
 	int refnum;
 	char *name;
 
+        int width, height;
+
 	GSList *items;
 	WI_ITEM_REC *active;
 	SERVER_REC *active_server;

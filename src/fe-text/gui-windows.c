@@ -54,6 +54,9 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *pare
 {
 	GUI_WINDOW_REC *gui;
 
+	window->width = COLS;
+        window->height = parent->lines;
+
 	gui = g_new0(GUI_WINDOW_REC, 1);
 	gui->parent = parent;
 
@@ -909,6 +912,9 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(window);
+
+        window->width = COLS;
+        window->height = gui->parent->lines;
 
 	if (xchange) {
 		/* window width changed, we'll need to recalculate a
