@@ -808,8 +808,8 @@ void modes_server_init(IRC_SERVER_REC *server)
 	server->prefix['@'] = 'o';
 	server->prefix['+'] = 'v';
 
-	server->modes['l'].func = modes_type_b;
-	server->modes['k'].func = modes_type_c;
+	server->modes['k'].func = modes_type_b;
+	server->modes['l'].func = modes_type_c;
 }
 
 void modes_init(void)
