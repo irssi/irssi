@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-04-17 11:53+0200\n"
+"POT-Creation-Date: 2000-04-17 12:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,12 +86,12 @@ msgstr "%B-%W!%B- %WIrssi:%n"
 #: src/ui-common/ui-formats.c:35
 #, fuzzy
 msgid "[$[-2.0]3:$[-2.0]4] "
-msgstr "[$[2.0]4:$[2.0]5] "
+msgstr "[$[-2.0]3:$[-2.0]4] "
 
 #: src/ui-common/ui-formats.c:36
 #, fuzzy
 msgid "Day changed to $[-2.0]1-$[-2.0]0 $2"
-msgstr "Zmiana daty na $3.$[2.0]2.$[2.0]1"
+msgstr "Zmiana daty na $[-2.0]1-$[-2.0]0 $2"
 
 #. ----
 #: src/gui-gnome/dialog-links.c:351 src/gui-gnome/setup-servers.c:266
@@ -102,32 +102,32 @@ msgstr "Serwer"
 #: src/ui-common/ui-formats.c:41
 #, fuzzy
 msgid "Looking up %_$0%_"
-msgstr "Szukam serwera %s"
+msgstr "Szukam serwera %_$0%_"
 
 #: src/ui-common/ui-formats.c:42
 #, fuzzy
 msgid "Connecting to %_$0%_ %K[%n$1%K]%n port %_$2%_"
-msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
+msgstr "£±czenie do %_$0%_ %K[%n$1%K]%n port %_$2%_"
 
 #: src/ui-common/ui-formats.c:43
 #, fuzzy
 msgid "Connection to %_$0%_ established"
-msgstr "Po³±czenie z %_$1% nawi±zane"
+msgstr "Po³±czenie z %_$0%_ nawi±zane"
 
 #: src/ui-common/ui-formats.c:44
 #, fuzzy
 msgid "Unable to connect server %_$0%_ port %_$1%_ %K[%n$2%K]"
-msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
+msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_ %K[%n$2%K]"
 
 #: src/ui-common/ui-formats.c:45
 #, fuzzy
 msgid "Connection lost to %_$0%_"
-msgstr "Stracone po³±czenie do %_$1%_"
+msgstr "Stracone po³±czenie do %_$0%_"
 
 #: src/ui-common/ui-formats.c:46
 #, fuzzy
 msgid "No PONG reply from server %_$0%_ in $1 seconds, disconnecting"
-msgstr "Brak odpowiedzi PONG z serwera %_$1%_ przez $2 sekund, roz³±czenie"
+msgstr "Brak odpowiedzi PONG z serwera %_$0%_ przez $1 sekund, roz³±czenie"
 
 #: src/ui-common/ui-formats.c:47
 #, fuzzy
@@ -145,11 +145,11 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:50
 msgid "%_$0%_: $1:$2 ($3)"
-msgstr ""
+msgstr "%_$0%_: $1:$2 ($3)"
 
 #: src/ui-common/ui-formats.c:51
 msgid "%_$0%_: $1:$2 ($3) (connecting...)"
-msgstr ""
+msgstr "%_$0%_: $1:$2 ($3) (³±cze w trakcie...)"
 
 #: src/ui-common/ui-formats.c:52
 msgid "%_$0%_: $1:$2 ($3) ($5 left before reconnecting)"
@@ -158,7 +158,7 @@ msgstr ""
 #: src/ui-common/ui-formats.c:53
 #, fuzzy
 msgid "Removed reconnection to server %_$0%_ port %_$1%_"
-msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
+msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_"
 
 #: src/ui-common/ui-formats.c:54
 #, fuzzy
@@ -175,36 +175,36 @@ msgstr "Kana³y"
 #: src/ui-common/ui-formats.c:59
 #, fuzzy
 msgid "%c%_$0%_ %K[%c$1%K]%n has joined %_$2"
-msgstr "%c%_$1%_ %K[%c$2%K]%n przy³±czy³ siê do %_$3"
+msgstr "%c%_$0%_ %K[%c$2%K]%n przy³±czy³ siê do %_$2"
 
 #: src/ui-common/ui-formats.c:60
 #, fuzzy
 msgid "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%K]"
-msgstr "%c$1 %K[%n$2%K]%n opu¶ci³ %_$3%_ %K[%n$4%K]"
+msgstr "%c$0 %K[%n$1%K]%n opu¶ci³ %_$2%_ %K[%n$3%K]"
 
 #: src/ui-common/ui-formats.c:61
 #, fuzzy
 msgid "You are now talking to channel %_$0%_"
-msgstr "Teraz rozmawiasz na kanale %_$1%_"
+msgstr "Teraz rozmawiasz na kanale %_$0%_"
 
 #: src/ui-common/ui-formats.c:62
 #, fuzzy
 msgid ""
 "Cannot join to channel %_$0%_ %K(%nYou have joined to too many channels%K)"
 msgstr ""
-"Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nJeste¶ na zbyt du¿ej liczbie "
+"Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nJeste¶ na zbyt du¿ej liczbie "
 "kana³ów%K)"
 
 #: src/ui-common/ui-formats.c:63
 #, fuzzy
 msgid "Cannot join to channel %_$0%_ %K(%nChannel is full%K)"
-msgstr "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nKana³ jest pe³ny%K)"
+msgstr "Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nKana³ jest pe³ny%K)"
 
 #: src/ui-common/ui-formats.c:64
 #, fuzzy
 msgid "Cannot join to channel %_$0%_ %K(%nYou must be invited%K)"
 msgstr ""
-"Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%Wymagane jest zaproszenie%K)"
+"Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%Wymagane jest zaproszenie%K)"
 
 #: src/ui-common/ui-formats.c:65
 #, fuzzy
@@ -221,34 +221,34 @@ msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nZ³y klucz do kana³u%K)"
 #: src/ui-common/ui-formats.c:67
 #, fuzzy
 msgid "Cannot join to channel %_$0%_ %K(%nBad channel mask%K)"
-msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nZ³y klucz do kana³u%K)"
+msgstr "Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nnipoprawna maska kana³u%K)"
 
 #: src/ui-common/ui-formats.c:68
 #, fuzzy
 msgid ""
 "Cannot join to channel %_$0%_ %K(%nChannel is temporarily unavailable%K)"
 msgstr ""
-"Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nKana³ chwilowo niedostêpny%K)"
+"Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nKana³ chwilowo niedostêpny%K)"
 
 #: src/ui-common/ui-formats.c:69
 #, fuzzy
 msgid "%c$0%n was kicked from %_$1%_ by %_$2%_ %K[%n$3%K]"
-msgstr "%c%_$1%_%n zosta³ wykopany z $2 przez %_$3%_ %K[%n$4%K]"
+msgstr "%c%_$0%_%n zosta³ wykopany z %_$1%_ przez %_$2%_ %K[%n$3%K]"
 
 #: src/ui-common/ui-formats.c:70
 #, fuzzy
 msgid "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]"
-msgstr "%c%_$1%_ %K[%n$2%K]%n opu¶ci³ IRC %K[%n$3%K]"
+msgstr "%c%_$0%_ %K[%n$1%K]%n opu¶ci³ IRC %K[%n$3%K]"
 
 #: src/ui-common/ui-formats.c:71
 #, fuzzy
 msgid "%_$0%_ invites you to %_$1"
-msgstr "%_$1%_ zaprasza ciê na %_$2"
+msgstr "%_$0%_ zaprasza ciê na %_$1"
 
 #: src/ui-common/ui-formats.c:72
 #, fuzzy
 msgid "%K[%g%_Users%_%K(%g$0%K)]%n $1"
-msgstr "%K[%rmsg%K(%R$1%K)]%n $2"
+msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
 
 #: src/ui-common/ui-formats.c:73
 msgid ""
@@ -262,7 +262,7 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:75
 msgid "Topic for %c$0%K:%n $1"
-msgstr ""
+msgstr "Tytu³ dla %c$0%K:%n $1"
 
 #: src/ui-common/ui-formats.c:76
 #, c-format
@@ -364,27 +364,27 @@ msgstr "$1: Nie znaleleziony nick/kana³"
 #: src/ui-common/ui-formats.c:101
 #, fuzzy, c-format
 msgid "You're now known as %c$0"
-msgstr "Jeste¶ znany jako %c$1"
+msgstr "Jeste¶ znany jako %c$0"
 
 #: src/ui-common/ui-formats.c:102
 #, fuzzy
 msgid "%_$0%_ is now known as %c$1"
-msgstr "%_$1%_ jest teraz znany jako %c$2"
+msgstr "%_$0%_ jest teraz znany jako %c$1"
 
 #: src/ui-common/ui-formats.c:103
 #, fuzzy
 msgid "Nick %_$0%_ is already in use"
-msgstr "Nick %_$1%_ jest ju¿ u¿ywany"
+msgstr "Nick %_$0%_ jest ju¿ u¿ywany"
 
 #: src/ui-common/ui-formats.c:104
 #, fuzzy
 msgid "Nick %_$0%_ is temporarily unavailable"
-msgstr "Nick %_$1%_ jest chwilowo niedostêpny"
+msgstr "Nick %_$0%_ jest chwilowo niedostêpny"
 
 #: src/ui-common/ui-formats.c:105
 #, fuzzy
 msgid "Your nick is owned by %_$3%_ %K[%n$1@$2%K]"
-msgstr "Twój nick jest u¿ywany przez %_$4%_ %K[%n$2@$3%K]"
+msgstr "Twój nick jest u¿ywany przez %_$3%_ %K[%n$1@$2%K]"
 
 #. ----
 #: src/ui-common/ui-formats.c:108
@@ -394,22 +394,22 @@ msgstr ""
 #: src/ui-common/ui-formats.c:110
 #, fuzzy
 msgid "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3"
-msgstr "%c%_$1%_ %K[%c$2%K]%n przy³±czy³ siê do %_$3"
+msgstr "%c%_$0%_ %K[%n$1@$2%K]%n% przy³±czy³ siê do %_$3"
 
 #: src/ui-common/ui-formats.c:111
 #, fuzzy
 msgid " idle     : $1 hours $2 mins $3 secs"
-msgstr " bezczynny : $2 godzin $3 minut $4 sekund"
+msgstr " bezczynny : $1 godzin $2 minut $3 sekund"
 
 #: src/ui-common/ui-formats.c:112
 #, fuzzy
 msgid " idle     : $1 hours $2 mins $3 secs %K[%nsignon: $4%K]"
-msgstr " bezczynny : $2 godzin $3 minut $4 sekund %K[%nsignon: $5]"
+msgstr " bezczynny : $1 godzin $2 minut $3 sekund %K[%nsignon: $4%K]"
 
 #: src/ui-common/ui-formats.c:113
 #, fuzzy
 msgid " server   : $1 %K[%n$2%K]"
-msgstr " serwer    : $2 ($3)"
+msgstr " serwer    : $1 %K[%n$2%K]"
 
 #: src/ui-common/ui-formats.c:114
 msgid "          : %_IRC operator%_"
@@ -418,12 +418,12 @@ msgstr "           : %_operator IRC%_"
 #: src/ui-common/ui-formats.c:115
 #, fuzzy
 msgid " channels : $1"
-msgstr " kana³y    : $2"
+msgstr " kana³y    : $1"
 
 #: src/ui-common/ui-formats.c:116
 #, fuzzy
 msgid " away     : $1"
-msgstr " nieobeczy  : $2"
+msgstr " nieobeczy  : $1"
 
 #: src/ui-common/ui-formats.c:117
 msgid "End of WHOIS"
@@ -445,22 +445,22 @@ msgstr "Twoje wiadomo¶ci"
 #: src/ui-common/ui-formats.c:124
 #, fuzzy
 msgid "%K<%n$2%W$0%K>%n %|$1"
-msgstr "%K<%n$1%K>%n $2"
+msgstr "%K<%n$2%W$0%K>%n %|$1"
 
 #: src/ui-common/ui-formats.c:125
 #, fuzzy
 msgid "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
-msgstr "%K<%n$1%K>%n $2"
+msgstr "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
 
 #: src/ui-common/ui-formats.c:126
 #, fuzzy
 msgid "%K[%rmsg%K(%R$0%K)]%n $1"
-msgstr "%K[%rmsg%K(%R$1%K)]%n $2"
+msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
 
 #: src/ui-common/ui-formats.c:127
 #, fuzzy
 msgid "%K<%W$2%K>%n %|$1"
-msgstr "%K<%W$3%K>%n $2"
+msgstr "%K<%W$2%K>%n %|$1"
 
 #: src/ui-common/ui-formats.c:128
 #, fuzzy
