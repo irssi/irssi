@@ -1,0 +1,38 @@
+noinst_LTLIBRARIES = libfe_common_core.la
+
+INCLUDES = \
+	$(GLIB_CFLAGS) \
+	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ \
+	-DHELPDIR=\""$(datadir)/irssi/help"\" \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"
+
+libfe_common_core_la_SOURCES = \
+	autorun.c \
+	command-history.c \
+	fe-common-core.c \
+	fe-core-commands.c \
+	fe-log.c \
+	fe-server.c \
+	fe-settings.c \
+	hilight-text.c \
+	keyboard.c \
+	module-formats.c \
+	nick-hilight.c \
+	printtext.c \
+	themes.c \
+	translation.c \
+	window-items.c \
+	windows.c
+
+noinst_HEADERS = \
+	command-history.h \
+	fe-common-core.h \
+	hilight-text.h \
+	keyboard.h \
+	module-formats.h \
+	module.h \
+	printtext.h \
+	themes.h \
+	translation.h \
+	window-items.h \
+	windows.h

@@ -1,0 +1,156 @@
+/*
+ irssi.c : irssi
+
+    Copyright (C) 1999-2000 Timo Sirainen
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#include "module.h"
+#include "args.h"
+#include "signals.h"
+#include "core.h"
+
+#include "irc-core.h"
+#include "fe-common-core.h"
+#include "fe-common-irc.h"
+
+#include "screen.h"
+#include "gui-entry.h"
+#include "gui-mainwindows.h"
+#include "gui-printtext.h"
+#include "gui-readline.h"
+#include "gui-special-vars.h"
+#include "gui-statusbar.h"
+#include "gui-statusbar-items.h"
+#include "gui-textwidget.h"
+#include "gui-windows.h"
+
+#include <signal.h>
+
+void irc_init(void);
+void irc_deinit(void);
+
+static GMainLoop *main_loop;
+int quitting;
+
+static void sig_exit(void)
+{
+	g_main_quit(main_loop);
+}
+
+/* redraw irssi's screen.. */
+void irssi_redraw(void)
+{
+    clear();
+
+    /* current window */
+    gui_window_redraw(active_win);
+    /* statusbar */
+    gui_statusbar_redraw(-1);
+    /* entry line */
+    gui_entry_redraw();
+}
+
+static void textui_init(void)
+{
+    static struct poptOption options[] = {
+	POPT_AUTOHELP
+        { NULL, '\0', 0, NULL }
+    };
+
+    args_register(options);
+
+    irssi_gui = IRSSI_GUI_TEXT;
+    core_init();
+    irc_init();
+    fe_common_core_init();
+    fe_common_irc_init();
+    signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
+}
+
+static void textui_finish_init(void)
+{
+    quitting = FALSE;
+
+    screen_refresh_freeze();
+    gui_entry_init();
+    gui_mainwindows_init();
+    gui_printtext_init();
+    gui_readline_init();
+    gui_special_vars_init();
+    gui_textwidget_init();
+    gui_windows_init();
+
+    fe_common_core_finish_init();
+    fe_common_irc_finish_init();
+
+    gui_statusbar_init();
+    gui_statusbar_items_init();
+
+    signal_emit("irssi init finished", 0);
+    screen_refresh_thaw();
+}
+
+static void textui_deinit(void)
+{
+    quitting = TRUE;
+    signal(SIGINT, SIG_DFL);
+
+    signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
+    gui_textwidget_deinit();
+    gui_special_vars_deinit();
+    gui_statusbar_items_deinit();
+    gui_statusbar_deinit();
+    gui_printtext_deinit();
+    gui_readline_deinit();
+    gui_mainwindows_deinit();
+    gui_windows_deinit();
+    gui_entry_deinit();
+    deinit_screen();
+
+    fe_common_irc_deinit();
+    fe_common_core_deinit();
+    irc_deinit();
+    core_deinit();
+}
+
+int main(int argc, char **argv)
+{
+#ifdef HAVE_SOCKS
+    SOCKSinit(argv[0]);
+#endif
+
+    textui_init();
+    args_execute(argc, argv);
+
+    if (!init_screen())
+    {
+        printf("Can't initialize screen handling, quitting.\n");
+        return 1;
+    }
+
+    textui_finish_init();
+    main_loop = g_main_new(TRUE);
+    g_main_run(main_loop);
+    g_main_destroy(main_loop);
+    textui_deinit();
+
+#ifdef MEM_DEBUG
+    ig_mem_profile();
+#endif
+
+    return 0;
+}

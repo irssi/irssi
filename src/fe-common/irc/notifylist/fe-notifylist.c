@@ -1,0 +1,241 @@
+/*
+ fe-notifylist.c : irssi
+
+    Copyright (C) 1999-2000 Timo Sirainen
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#include "module.h"
+#include "module-formats.h"
+#include "signals.h"
+#include "commands.h"
+#include "misc.h"
+#include "lib-config/iconfig.h"
+#include "settings.h"
+
+#include "levels.h"
+#include "irc-server.h"
+#include "ircnet-setup.h"
+#include "irc/notifylist/notifylist.h"
+
+/* add the nick of a hostmask to list if it isn't there already */
+static GSList *mask_add_once(GSList *list, const char *mask)
+{
+	char *str, *ptr;
+
+	g_return_val_if_fail(mask != NULL, NULL);
+
+	ptr = strchr(mask, '!');
+	str = ptr == NULL ? g_strdup(mask) :
+		g_strndup(mask, (int) (ptr-mask)+1);
+
+	if (gslist_find_icase_string(list, str) == NULL)
+		return g_slist_append(list, str);
+
+	g_free(str);
+	return list;
+}
+
+/* search for online people, print them and update offline list */
+static void print_notify_onserver(IRC_SERVER_REC *server, GSList *nicks,
+				  GSList **offline, const char *desc)
+{
+	GSList *tmp;
+	GString *str;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(offline != NULL);
+	g_return_if_fail(desc != NULL);
+
+	str = g_string_new(NULL);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+		char *nick = tmp->data;
+
+		if (!notifylist_ison_server(server, nick))
+			continue;
+
+		g_string_sprintfa(str, "%s, ", nick);
+		*offline = g_slist_remove(*offline, nick);
+	}
+
+	if (str->len > 0) {
+		g_string_truncate(str, str->len-2);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_ONLINE, desc, str->str);
+	}
+
+	g_string_free(str, TRUE);
+}
+
+/* show the notify list, displaying who is on which net */
+static void cmd_notify_show(void)
+{
+	GSList *nicks, *offline, *tmp;
+	IRC_SERVER_REC *server;
+
+	if (notifies == NULL)
+		return;
+
+	/* build a list containing only the nicks */
+	nicks = NULL;
+	for (tmp = notifies; tmp != NULL; tmp = tmp->next) {
+		NOTIFYLIST_REC *rec = tmp->data;
+
+		nicks = mask_add_once(nicks, rec->mask);
+	}
+	offline = g_slist_copy(nicks);
+
+        /* print the notifies on specific ircnets */
+	for (tmp = ircnets; tmp != NULL; tmp = tmp->next) {
+                IRCNET_REC *rec = tmp->data;
+
+		server = (IRC_SERVER_REC *) server_find_ircnet(rec->name);
+		if (server == NULL) continue;
+
+		print_notify_onserver(server, nicks, &offline, rec->name);
+	}
+
+	/* print the notifies on servers without a specified ircnet */
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		server = tmp->data;
+
+		if (server->connrec->ircnet != NULL)
+			continue;
+		print_notify_onserver(server, nicks, &offline, server->tag);
+	}
+
+	/* print offline people */
+	if (offline != NULL) {
+		GString *str;
+
+		str = g_string_new(NULL);
+		for (tmp = offline; tmp != NULL; tmp = tmp->next)
+			g_string_sprintfa(str, "%s, ", (char *) tmp->data);
+
+		g_string_truncate(str, str->len-2);
+		printformat(NULL,NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_OFFLINE, str->str);
+		g_string_free(str, TRUE);
+
+		g_slist_free(offline);
+	}
+
+	g_slist_foreach(nicks, (GFunc) g_free, NULL);
+	g_slist_free(nicks);
+}
+
+static void notifylist_print(NOTIFYLIST_REC *rec)
+{
+	char idle[MAX_INT_STRLEN], *ircnets;
+
+	if (rec->idle_check_time <= 0)
+		idle[0] = '\0';
+	else
+		g_snprintf(idle, sizeof(idle), "%d", rec->idle_check_time);
+
+	ircnets = rec->ircnets == NULL ? NULL :
+		g_strjoinv(",", rec->ircnets);
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOTIFY_LIST,
+		    rec->mask, ircnets != NULL ? ircnets : "",
+		    rec->away_check ? "-away" : "", idle);
+
+	g_free_not_null(ircnets);
+}
+
+static void cmd_notifylist_show(void)
+{
+	g_slist_foreach(notifies, (GFunc) notifylist_print, NULL);
+}
+
+static void cmd_notify(const char *data)
+{
+	if (*data == '\0') {
+		cmd_notify_show();
+		signal_stop();
+	}
+
+	if (g_strcasecmp(data, "-list") == 0) {
+		cmd_notifylist_show();
+		signal_stop();
+	}
+}
+
+static void notifylist_joined(IRC_SERVER_REC *server, const char *nick,
+			      const char *username, const char *host,
+			      const char *realname, const char *awaymsg)
+{
+	g_return_if_fail(nick != NULL);
+
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_JOIN,
+		    nick, username, host, realname,
+		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+}
+
+static void notifylist_left(IRC_SERVER_REC *server, const char *nick,
+			    const char *username, const char *host,
+			    const char *realname, const char *awaymsg)
+{
+	g_return_if_fail(nick != NULL);
+
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_PART,
+		    nick, username, host, realname,
+		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+}
+
+static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
+			    const char *username, const char *host,
+			    const char *realname, const char *awaymsg)
+{
+	g_return_if_fail(nick != NULL);
+
+	if (awaymsg != NULL) {
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_AWAY,
+			    nick, username, host, realname, awaymsg,
+			    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+	} else {
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_UNAWAY,
+			    nick, username, host, realname,
+			    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+	}
+}
+
+static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
+			      const char *username, const char *host,
+			      const char *realname, const char *awaymsg)
+{
+	g_return_if_fail(nick != NULL);
+
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_UNIDLE,
+		    nick, username, host, realname, awaymsg != NULL ? awaymsg : "",
+		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+}
+
+void fe_notifylist_init(void)
+{
+	command_bind("notify", NULL, (SIGNAL_FUNC) cmd_notify);
+	signal_add("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
+	signal_add("notifylist left", (SIGNAL_FUNC) notifylist_left);
+	signal_add("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
+	signal_add("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
+}
+
+void fe_notifylist_deinit(void)
+{
+	command_unbind("notify", (SIGNAL_FUNC) cmd_notify);
+	signal_remove("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
+	signal_remove("notifylist left", (SIGNAL_FUNC) notifylist_left);
+	signal_remove("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
+	signal_remove("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
+}
