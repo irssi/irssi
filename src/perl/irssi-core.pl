@@ -30,8 +30,10 @@ sub eval_data {
   }
   die $@ if $@;
 
-  eval {$package->handler;};
+  my $ret;
+  eval { $ret = $package->handler; };
   die $@ if $@;
+  return $ret;
 }
 
 sub eval_file {
