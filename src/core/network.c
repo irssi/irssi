@@ -57,10 +57,10 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
 
 #ifdef HAVE_IPV6
 	if (ip1->family == AF_INET6)
-		return memcmp(&ip1->addr, &ip2->addr, sizeof(ip1->addr)) == 0;
+		return memcmp(&ip1->ip, &ip2->ip, sizeof(ip1->ip)) == 0;
 #endif
 
-	return memcmp(&ip1->addr, &ip2->addr, 4) == 0;
+	return memcmp(&ip1->ip, &ip2->ip, 4) == 0;
 }
 
 
@@ -86,10 +86,10 @@ void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 	so->sin.sin_family = ip->family;
 #ifdef HAVE_IPV6
 	if (ip->family == AF_INET6)
-		memcpy(&so->sin6.sin6_addr, &ip->addr, sizeof(ip->addr.ip6));
+		memcpy(&so->sin6.sin6_addr, &ip->ip, sizeof(ip->ip));
 	else
 #endif
-		memcpy(&so->sin.sin_addr, &ip->addr, 4);
+		memcpy(&so->sin.sin_addr, &ip->ip, 4);
 }
 
 void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
@@ -98,10 +98,10 @@ void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
 
 #ifdef HAVE_IPV6
 	if (ip->family == AF_INET6)
-		memcpy(&ip->addr, &so->sin6.sin6_addr, sizeof(ip->addr.ip6));
+		memcpy(&ip->ip, &so->sin6.sin6_addr, sizeof(ip->ip));
 	else
 #endif
-		memcpy(&ip->addr, &so->sin.sin_addr, 4);
+		memcpy(&ip->ip, &so->sin.sin_addr, 4);
 }
 
 #ifdef G_CAN_INLINE
@@ -409,7 +409,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	if (hp == NULL) return h_errno;
 
 	ip4->family = AF_INET;
-	memcpy(&ip4->addr, hp->h_addr, 4);
+	memcpy(&ip4->ip, hp->h_addr, 4);
 #endif
 
 	return 0;
@@ -458,12 +458,12 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 int net_ip2host(IPADDR *ip, char *host)
 {
 #ifdef HAVE_IPV6
-	if (!inet_ntop(ip->family, &ip->addr, host, MAX_IP_LEN))
+	if (!inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN))
 		return -1;
 #else
 	unsigned long ip4;
 
-	ip4 = ntohl(ip->addr.ip.s_addr);
+	ip4 = ntohl(ip->ip.s_addr);
 	g_snprintf(host, MAX_IP_LEN, "%lu.%lu.%lu.%lu",
 		   (ip4 & 0xff000000UL) >> 24,
 		   (ip4 & 0x00ff0000) >> 16,
@@ -481,7 +481,7 @@ int net_host2ip(const char *host, IPADDR *ip)
 	if (strchr(host, ':') != NULL) {
 		/* IPv6 */
 		ip->family = AF_INET6;
-		if (inet_pton(AF_INET6, host, &ip->addr) == 0)
+		if (inet_pton(AF_INET6, host, &ip->ip) == 0)
 			return -1;
 	} else
 #endif
@@ -489,14 +489,14 @@ int net_host2ip(const char *host, IPADDR *ip)
 		/* IPv4 */
 		ip->family = AF_INET;
 #ifdef HAVE_INET_ATON
-		if (inet_aton(host, &ip->addr.ip.s_addr) == 0)
+		if (inet_aton(host, &ip->ip.s_addr) == 0)
 			return -1;
 #else
 		addr = inet_addr(host);
 		if (addr == INADDR_NONE)
 			return -1;
 
-		memcpy(&ip->addr, &addr, 4);
+		memcpy(&ip->ip, &addr, 4);
 #endif
 	}
 

@@ -17,13 +17,11 @@
 
 struct _IPADDR {
 	unsigned short family;
-	union {
 #ifdef HAVE_IPV6
-		struct in6_addr ip6;
+	struct in6_addr ip;
 #else
-		struct in_addr ip;
+	struct in_addr ip;
 #endif
-	} addr;
 };
 
 /* maxmimum string length of IP address */

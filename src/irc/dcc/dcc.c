@@ -158,7 +158,7 @@ void dcc_ip2str(IPADDR *ip, char *host)
 		/* IPv6 */
 		net_ip2host(ip, host);
 	} else {
-		memcpy(&addr, &ip->addr, 4);
+		memcpy(&addr, &ip->ip, 4);
 		g_snprintf(host, MAX_IP_LEN, "%lu",
 			   (unsigned long) htonl(addr));
 	}
@@ -173,7 +173,7 @@ void dcc_str2ip(const char *str, IPADDR *ip)
                 addr = strtoul(str, NULL, 10);
 		ip->family = AF_INET;
 		addr = (unsigned long) ntohl(addr);
-		memcpy(&ip->addr, &addr, 4);
+		memcpy(&ip->ip, &addr, 4);
 	} else {
 		/* IPv6 - in standard form */
 		net_host2ip(str, ip);
