@@ -28,6 +28,7 @@ EXTRA_DIST = \
 	autogen.sh \
 	curses.m4 \
 	README \
+	README.cygwin \
 	file2header.sh \
 	irssi.spec \
 	irssi.spec.in \
