@@ -3,6 +3,19 @@
 MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::Window
 PROTOTYPES: ENABLE
 
+int
+format_get_length(str)
+	char *str
+
+int
+format_real_length(str, len)
+	char *str
+	int len
+
+char *
+strip_codes(input)
+	char *input
+
 void
 format_get_text(window, module, server, target, formatnum, ...)
 	Irssi::UI::Window window
