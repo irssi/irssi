@@ -9,5 +9,5 @@
 This command makes irssi to connect to specified server.
 Current connections are kept and a new one is created.
 
-See also: SERVER
+See also: SERVER, DISCONNECT, RMRECONNS
 
