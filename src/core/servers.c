@@ -206,6 +206,23 @@ int server_start_connect(SERVER_REC *server)
 	MODULE_DATA_INIT(server);
 	server->type = module_get_uniq_id("SERVER", 0);
 
+	server->nick = g_strdup(server->connrec->nick);
+	if (server->connrec->port <= 0) server->connrec->port = 6667;
+	if (server->connrec->username == NULL || *server->connrec->username == '\0') {
+		g_free_not_null(server->connrec->username);
+
+		server->connrec->username = g_get_user_name();
+		if (*server->connrec->username == '\0') server->connrec->username = "-";
+		server->connrec->username = g_strdup(server->connrec->username);
+	}
+	if (server->connrec->realname == NULL || *server->connrec->realname == '\0') {
+		g_free_not_null(server->connrec->realname);
+
+		server->connrec->realname = g_get_real_name();
+		if (*server->connrec->realname == '\0') server->connrec->realname = "-";
+		server->connrec->realname = g_strdup(server->connrec->realname);
+	}
+
 	if (pipe(server->connect_pipe) != 0) {
 		g_warning("server_connect(): pipe() failed.");
 		return FALSE;

@@ -61,7 +61,7 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 	return rec;
 }
 
-void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
+static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	if (!IS_IRC_CHANNEL(channel))
                 return;

@@ -113,25 +113,8 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 
 	server = g_new0(IRC_SERVER_REC, 1);
 	server->chat_type = module_get_uniq_id("IRC SERVER", 0);
-
 	server->connrec = conn;
-	if (conn->port <= 0) conn->port = 6667;
-	if (conn->username == NULL || *conn->username == '\0') {
-		g_free_not_null(conn->username);
-
-		conn->username = g_get_user_name();
-		if (*conn->username == '\0') conn->username = "-";
-		conn->username = g_strdup(conn->username);
-	}
-	if (conn->realname == NULL || *conn->realname == '\0') {
-		g_free_not_null(conn->realname);
-
-		conn->realname = g_get_real_name();
-		if (*conn->realname == '\0') conn->realname = "-";
-		conn->realname = g_strdup(conn->realname);
-	}
-
-	server->nick = g_strdup(conn->nick);
+	if (server->connrec->port <= 0) server->connrec->port = 6667;
 
 	server->cmd_queue_speed = conn->cmd_queue_speed > 0 ?
 		conn->cmd_queue_speed : settings_get_int("cmd_queue_speed");

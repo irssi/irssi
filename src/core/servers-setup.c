@@ -173,7 +173,7 @@ create_addr_conn(const char *address, int port,
 	g_return_val_if_fail(address != NULL, NULL);
 
 	sserver = server_setup_find(address, port);
-	chatnet = sserver->chatnet == NULL ? NULL :
+	chatnet = sserver == NULL || sserver->chatnet == NULL ? NULL :
 		chatnet_find(sserver->chatnet);
         conn = NULL;
 	signal_emit("server setup connect", 2, &conn, chatnet);

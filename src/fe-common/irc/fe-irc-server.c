@@ -38,7 +38,7 @@ static void print_servers(void)
 	GSList *tmp;
 
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
+		SERVER_REC *rec = tmp->data;
 
 		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,
@@ -50,7 +50,7 @@ static void print_lookup_servers(void)
 {
 	GSList *tmp;
 	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
+		SERVER_REC *rec = tmp->data;
 
 		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LOOKUP_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,

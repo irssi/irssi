@@ -86,10 +86,10 @@ IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
 	return (IRC_SERVER_REC *) server;
 }
 
-static IRC_SERVER_REC *connect_server(const char *data)
+static SERVER_REC *connect_server(const char *data)
 {
 	SERVER_CONNECT_REC *conn;
-	IRC_SERVER_REC *server;
+	SERVER_REC *server;
 	GHashTable *optlist;
 	char *addr, *portstr, *password, *nick, *ircnet, *host;
 	void *free_arg;
@@ -126,7 +126,7 @@ static IRC_SERVER_REC *connect_server(const char *data)
 			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
 		}
 	}
-	server = irc_server_connect(IRC_SERVER_CONNECT(conn));
+	server = server_connect(conn);
 
 	cmd_params_free(free_arg);
 	return server;
@@ -202,7 +202,7 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 		cmd_disconnect("* Changing server", server);
 	}
 
-	server = connect_server(data);
+	server = IRC_SERVER(connect_server(data));
 	if (*addr == '+' || server == NULL ||
 	    (ircnet != NULL && server->connrec->chatnet != NULL &&
 	     g_strcasecmp(ircnet, server->connrec->chatnet) != 0)) {
