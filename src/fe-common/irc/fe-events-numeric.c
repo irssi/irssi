@@ -389,7 +389,7 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	mins = (secs%3600)/60;
 	secs %= 60;
 
-	if (signonstr == 0)
+	if (signon == 0)
 		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE,
 			    nick, days, hours, mins, secs);
 	else {
