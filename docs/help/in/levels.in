@@ -30,6 +30,6 @@ levels above:
     HILIGHT         - Text is highlighted
     NOHILIGHT       - Don't check highlighting for this message
     NO_ACT          - Don't trigger channel activity when printing
-		      this message
+                      this message
     NEVER           - Never ignore or log this message
 
