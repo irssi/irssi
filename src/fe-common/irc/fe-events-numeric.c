@@ -80,7 +80,8 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint it
     str = g_string_new(NULL);
 
     cols = max > 65 ? 1 : (65 / (max+3)); /* "[] " */
-    lines = items <= cols ? 1 : (items-(cols-1)) / cols;
+    lines = items <= cols ? 1 : items/cols + 1;
+    if (lines > items) lines = items;
 
     last = NULL; linebuf = g_malloc(max+1); linebuf[max] = '\0';
     for (line = 0, col = 0, skip = 1, tmp = nicklist; line < lines; last = rec, tmp = tmp->next)
