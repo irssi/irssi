@@ -297,9 +297,9 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 
 	nick_match = hilight->nick && (dest->level & (MSGLEVEL_PUBLIC|MSGLEVEL_ACTIONS)) == MSGLEVEL_PUBLIC;
 
+	old_level = dest->level;
 	if (!nick_match || (dest->level & MSGLEVEL_HILIGHT)) {
 		/* update the level / hilight info */
-	        old_level = dest->level;
 		hilight_update_text_dest(dest, hilight);
 	}
 
