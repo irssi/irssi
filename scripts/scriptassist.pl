@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2003022201';
+$VERSION = '2003020803';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -15,7 +15,8 @@ $VERSION = '2003022201';
     license     => 'GPLv2',
     url         => 'http://irssi.org/scripts/',
     changed     => $VERSION,
-    modules     => 'Data::Dumper LWP::UserAgent (GnuPG)'
+    modules     => 'Data::Dumper LWP::UserAgent (GnuPG)',
+    commands	=> "scriptassist"
 );
 
 use vars qw($forked %remote_db $have_gpg);
@@ -159,7 +160,6 @@ sub bg_do ($) {
 		#$result{data}{rate}{-foo} = 1;
 		$result{data}{rate}{$items[1]} = rate_script($items[1], $items[2]);
 	    } elsif ($items[0] eq 'info') {
-		#$result{data}{info}{-foo} = 1;
 		shift(@items);
 		$result{data}{info} = script_info(\@items);
 	    } elsif ($items[0] eq 'echo') {
@@ -173,6 +173,9 @@ sub bg_do ($) {
 	    } elsif ($items[0] eq 'new') {
 		my $new = get_new($items[1]);
 		$result{data}{new} = $new;
+	    } elsif ($items[0] eq 'unknown') {
+		my $cmd = $items[1];
+		$result{data}{unknown}{$cmd} = get_unknown($cmd, $xml);
 	    }
 	    my $dumper = Data::Dumper->new([\%result]);
 	    $dumper->Purity(1)->Deepcopy(1)->Indent(0);
@@ -182,6 +185,17 @@ sub bg_do ($) {
 	close($wh);
 	POSIX::_exit(1);
     }
+}
+
+sub get_unknown ($$) {
+    my ($cmd, $db) = @_;
+    foreach (keys %$db) {
+	next unless defined $db->{$_}{commands};
+	foreach my $item (split / /, $db->{$_}{commands}) {
+	    return { $_ => $db->{$_} } if ($item =~ /^$cmd$/i);
+	}
+    }
+    return undef;
 }
 
 sub script_info ($) {
@@ -429,6 +443,26 @@ sub pipe_input {
     }
     if (defined $result{echo}) {
 	Irssi::print "ECHO";
+    }
+    if ($result{unknown}) {
+        print_unknown($result{unknown});
+    }
+
+}
+
+sub print_unknown ($) {
+    my ($data) = @_;
+    foreach my $cmd (keys %$data) {
+	print CLIENTCRAP "%R<<%n No script provides '/$cmd'" unless $data->{$cmd};
+	foreach (keys %{ $data->{$cmd} }) {
+	    my $text .= "The command '/".$cmd."' is provided by the script '".$data->{$cmd}{$_}{name}."'.\n";
+	    $text .= "This script is currently not installed on your system.\n";
+	    $text .= "If you want to install the script, enter\n";
+	    my ($name) = /(.*?)\.pl$/;
+	    $text .= "  %U/script install ".$name."%U ";
+	    my $output = draw_box("ScriptAssist", $text, "'".$_."' missing", 1);
+	    print CLIENTCRAP $output;
+	}
     }
 }
 
@@ -1061,6 +1095,12 @@ sub sig_command_script_load ($$$) {
     }
 }
 
+sub sig_default_command ($$) {
+    my ($cmd, $server) = @_;
+    return unless Irssi::settings_get_bool("scriptassist_check_unknown_commands");
+    bg_do('unknown '.$cmd);
+}
+
 sub sig_complete ($$$$$) {
     my ($list, $window, $word, $linestart, $want_space) = @_;
     return unless $linestart =~ /^.script(assist)? (install|rate|ratings|update|check|contact|info|autorun)/;
@@ -1089,7 +1129,9 @@ Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_catch_script_errors', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_install_unsigned_scripts', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_use_gpg', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_integrate', 1);
+Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_check_unknown_commands', 1);
 
+Irssi::signal_add_first("default command", \&sig_default_command);
 Irssi::signal_add_first('complete word', \&sig_complete);
 Irssi::signal_add_first('command script load', \&sig_command_script_load);
 Irssi::signal_add_first('command script unload', \&sig_command_script_load);
@@ -1099,7 +1141,7 @@ if (defined &Irssi::signal_register) {
     Irssi::signal_add_last('script error', \&sig_script_error);
 }
 
-Irssi::command_bind('scriptassist', 'cmd_scripassist');
+Irssi::command_bind('scriptassist', \&cmd_scripassist);
 
 Irssi::theme_register(['box_header', '%R,--[%n$*%R]%n',
 'box_inside', '%R|%n $*',
