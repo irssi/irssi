@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 1999-11-22 21:07+0100\n"
+"POT-Creation-Date: 1999-11-27 23:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -140,7 +140,7 @@ msgstr ""
 
 #. ----
 #: src/gui-gnome/dialog-status.c:86 src/gui-gnome/gui-event-whois.c:41
-#: src/gui-gnome/gui-menu-commands.c:261 src/gui-gnome/setup-lists.c:431
+#: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lists.c:431
 #: src/gui-gnome/setup-lookandfeel.c:95 src/ui-common/ui-formats.c:52
 msgid "Channels"
 msgstr ""
@@ -756,7 +756,7 @@ msgstr ""
 #. channel name
 #: src/gui-gnome/dialog-channels.c:173 src/gui-gnome/dialog-channels.c:447
 #: src/gui-gnome/dialog-join.c:160 src/gui-gnome/gui-event-list.c:198
-#: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/gui-menu-commands.c:231
+#: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/gui-menu-commands.c:234
 msgid "Channel"
 msgstr "Kana³"
 
@@ -814,8 +814,8 @@ msgstr ""
 msgid "Autojoin"
 msgstr ""
 
-#: src/gui-gnome/dialog-channels.c:447 src/gui-gnome/setup-ircnets.c:137
-#: src/gui-gnome/setup-ircnets.c:188
+#: src/gui-gnome/dialog-channels.c:447 src/gui-gnome/setup-ircnets.c:140
+#: src/gui-gnome/setup-ircnets.c:191
 msgid "IRC network"
 msgstr ""
 
@@ -856,7 +856,7 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
-#: src/gui-gnome/dialog-connect.c:132 src/gui-gnome/gui-menu-commands.c:257
+#: src/gui-gnome/dialog-connect.c:132 src/gui-gnome/gui-menu-commands.c:260
 msgid "Connect"
 msgstr ""
 
@@ -893,7 +893,7 @@ msgstr ""
 msgid "Server Tag"
 msgstr ""
 
-#: src/gui-gnome/dialog-disconnect.c:129 src/gui-gnome/gui-menu-commands.c:259
+#: src/gui-gnome/dialog-disconnect.c:129 src/gui-gnome/gui-menu-commands.c:262
 msgid "Disconnect"
 msgstr "Roz³±cz"
 
@@ -1175,7 +1175,7 @@ msgid "Banlist exceptions"
 msgstr ""
 
 #: src/gui-gnome/dialog-modes.c:575 src/gui-gnome/dialog-modes.c:595
-#: src/gui-gnome/setup-ircnets.c:274 src/gui-gnome/setup-servers.c:500
+#: src/gui-gnome/setup-ircnets.c:277 src/gui-gnome/setup-servers.c:500
 #: src/gui-gnome/setup-session.c:139
 msgid "Remove"
 msgstr ""
@@ -1205,7 +1205,7 @@ msgstr ""
 msgid "Real Name"
 msgstr ""
 
-#: src/gui-gnome/dialog-notifylist.c:246 src/gui-gnome/gui-menu-commands.c:243
+#: src/gui-gnome/dialog-notifylist.c:246 src/gui-gnome/gui-menu-commands.c:246
 msgid "Query"
 msgstr ""
 
@@ -1286,9 +1286,9 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: src/gui-gnome/dialog-rawlog.c:130 src/gui-gnome/gui-menu-commands.c:391
-#: src/gui-gnome/gui-menu-commands.c:410 src/gui-gnome/gui-menu-commands.c:492
-#: src/gui-gnome/gui-menu-commands.c:500
+#: src/gui-gnome/dialog-rawlog.c:130 src/gui-gnome/gui-menu-commands.c:394
+#: src/gui-gnome/gui-menu-commands.c:413 src/gui-gnome/gui-menu-commands.c:495
+#: src/gui-gnome/gui-menu-commands.c:503
 msgid "Not connected to server"
 msgstr ""
 
@@ -1523,7 +1523,7 @@ msgstr ""
 msgid "/WHO request didn't find anything"
 msgstr ""
 
-#: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/gui-menu-commands.c:263
+#: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/gui-menu-commands.c:266
 msgid "Status"
 msgstr ""
 
@@ -1615,216 +1615,219 @@ msgstr ""
 msgid "Change window"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:80
+#: src/gui-gnome/gui-menu-commands.c:81
 msgid "_New"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:82
+#: src/gui-gnome/gui-menu-commands.c:83
 msgid "_Save Text As..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:85 src/gui-gnome/gui-menu-commands.c:179
+#: src/gui-gnome/gui-menu-commands.c:86 src/gui-gnome/gui-menu-commands.c:182
 msgid "_Close"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:87
+#: src/gui-gnome/gui-menu-commands.c:88
 msgid "_Quit"
 msgstr "_Koniec"
 
-#: src/gui-gnome/gui-menu-commands.c:93
+#: src/gui-gnome/gui-menu-commands.c:94
 msgid "_Connect..."
 msgstr "_Po³acz..."
 
-#: src/gui-gnome/gui-menu-commands.c:95
+#: src/gui-gnome/gui-menu-commands.c:96
 msgid "_Disconnect..."
 msgstr "_Roz³±cz..."
 
-#: src/gui-gnome/gui-menu-commands.c:97
+#: src/gui-gnome/gui-menu-commands.c:98
 msgid "C_hannels..."
 msgstr "_Kana³y..."
 
-#: src/gui-gnome/gui-menu-commands.c:100
+#: src/gui-gnome/gui-menu-commands.c:101
 msgid "_Status Window..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:102
+#: src/gui-gnome/gui-menu-commands.c:103
 msgid "N_otify list..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:104
+#: src/gui-gnome/gui-menu-commands.c:105
 msgid "_Raw Log..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:106
+#: src/gui-gnome/gui-menu-commands.c:107
 msgid "_Links..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:110
+#: src/gui-gnome/gui-menu-commands.c:111
 msgid "_Away..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:113
+#: src/gui-gnome/gui-menu-commands.c:114
 msgid "_Invisible"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:115
+#: src/gui-gnome/gui-menu-commands.c:116
 msgid "Receive _Wallops"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:117
+#: src/gui-gnome/gui-menu-commands.c:118
 msgid "Receive Server _Notices"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:123
+#: src/gui-gnome/gui-menu-commands.c:124
 msgid "C_ut"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:125
+#: src/gui-gnome/gui-menu-commands.c:126
 msgid "_Copy"
 msgstr "_Kopiuj"
 
-#: src/gui-gnome/gui-menu-commands.c:127
+#: src/gui-gnome/gui-menu-commands.c:128
 msgid "_Paste"
 msgstr "_Wklej"
 
-#: src/gui-gnome/gui-menu-commands.c:130
+#: src/gui-gnome/gui-menu-commands.c:131
 msgid "_Find..."
 msgstr "_Znajd¼..."
 
-#: src/gui-gnome/gui-menu-commands.c:136
+#: src/gui-gnome/gui-menu-commands.c:137
 msgid "C_onnections..."
 msgstr "_Po³±czenia..."
 
-#: src/gui-gnome/gui-menu-commands.c:139
+#: src/gui-gnome/gui-menu-commands.c:140
 msgid "_Send File..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:141
+#: src/gui-gnome/gui-menu-commands.c:142
 msgid "_Chat..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:147
+#: src/gui-gnome/gui-menu-commands.c:148
 msgid "_Server List..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:149
+#: src/gui-gnome/gui-menu-commands.c:150
 msgid "_Themes..."
 msgstr "_Temat..."
 
-#: src/gui-gnome/gui-menu-commands.c:151
+#: src/gui-gnome/gui-menu-commands.c:152
 msgid "_Automation..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:153
+#: src/gui-gnome/gui-menu-commands.c:154
 msgid "_Logging..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:155
+#: src/gui-gnome/gui-menu-commands.c:156
 msgid "Plu_gins..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:157
+#: src/gui-gnome/gui-menu-commands.c:158
 msgid "_Keyboard..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:160
+#: src/gui-gnome/gui-menu-commands.c:161
 msgid "_Preferences..."
 msgstr "_Preferencje..."
 
-#: src/gui-gnome/gui-menu-commands.c:168
+#: src/gui-gnome/gui-menu-commands.c:169
 msgid "New _Window"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:170
+#: src/gui-gnome/gui-menu-commands.c:171
 msgid "_New Tab"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:174
+#: src/gui-gnome/gui-menu-commands.c:173
+msgid "New _Split Window"
+msgstr ""
+
+#: src/gui-gnome/gui-menu-commands.c:177
 msgid "Automatically _Raise"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:176
+#: src/gui-gnome/gui-menu-commands.c:179
 msgid "_Save Size and Position..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:189
+#: src/gui-gnome/gui-menu-commands.c:192
 msgid "Irssi _Website"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:195
+#: src/gui-gnome/gui-menu-commands.c:198
 msgid "_About..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:202
+#: src/gui-gnome/gui-menu-commands.c:205
 msgid "_File"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:204
+#: src/gui-gnome/gui-menu-commands.c:207
 msgid "_Edit"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:206
+#: src/gui-gnome/gui-menu-commands.c:209
 msgid "_DCC"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:208
+#: src/gui-gnome/gui-menu-commands.c:211
 msgid "_Server"
 msgstr "_Serwer"
 
-#: src/gui-gnome/gui-menu-commands.c:210
+#: src/gui-gnome/gui-menu-commands.c:213
 msgid "Se_ttings"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:212
+#: src/gui-gnome/gui-menu-commands.c:215
 msgid "_Windows"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:214
+#: src/gui-gnome/gui-menu-commands.c:217
 msgid "_Help"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:221
+#: src/gui-gnome/gui-menu-commands.c:224
 msgid "_Leave channel"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:223
+#: src/gui-gnome/gui-menu-commands.c:226
 msgid "Channel _Modes..."
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:225
+#: src/gui-gnome/gui-menu-commands.c:228
 msgid "Show _Nick List"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:237
+#: src/gui-gnome/gui-menu-commands.c:240
 msgid "Close _Query"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:249
+#: src/gui-gnome/gui-menu-commands.c:252
 msgid "_Close DCC chat"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:251
+#: src/gui-gnome/gui-menu-commands.c:254
 msgid "_Mirc CTCPs"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:266
+#: src/gui-gnome/gui-menu-commands.c:269
 msgid "Find"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:268 src/gui-gnome/setup-lists.c:349
+#: src/gui-gnome/gui-menu-commands.c:271 src/gui-gnome/setup-lists.c:349
 msgid "New"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:270
+#: src/gui-gnome/gui-menu-commands.c:273
 msgid "Close"
 msgstr "Zamknij"
 
-#: src/gui-gnome/gui-menu-commands.c:423
+#: src/gui-gnome/gui-menu-commands.c:426
 msgid "Away reason:"
 msgstr ""
 
-#: src/gui-gnome/gui-menu-commands.c:509 src/gui-gnome/gui-menu-commands.c:515
-#: src/gui-gnome/gui-menu-commands.c:521 src/gui-gnome/gui-windows.c:711
+#: src/gui-gnome/gui-menu-commands.c:511 src/gui-gnome/gui-windows.c:711
 msgid "(empty)"
 msgstr ""
 
@@ -1907,7 +1910,7 @@ msgstr ""
 msgid "Move window tab to right"
 msgstr ""
 
-#: src/gui-gnome/irssi.c:130
+#: src/gui-gnome/irssi.c:128
 msgid "Don't run as applet"
 msgstr ""
 
@@ -2270,21 +2273,21 @@ msgstr ""
 msgid "Rawlog buffer length"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:190
+#: src/gui-gnome/setup-ircnets.c:193
 msgid ""
 "Change ircnet in server and channel lists also\n"
 "WARNING: changing channel list can't be undone!"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:264 src/gui-gnome/setup-servers.c:492
+#: src/gui-gnome/setup-ircnets.c:267 src/gui-gnome/setup-servers.c:492
 msgid "Add"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:269 src/gui-gnome/setup-servers.c:496
+#: src/gui-gnome/setup-ircnets.c:272 src/gui-gnome/setup-servers.c:496
 msgid "Edit"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:282
+#: src/gui-gnome/setup-ircnets.c:285
 msgid "IRC networks"
 msgstr ""
 
