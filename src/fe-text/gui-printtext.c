@@ -259,7 +259,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
                 return;
 	}
 
-	lineinfo.level = GPOINTER_TO_INT(dest->level);
+	lineinfo.level = dest == NULL ? 0 : GPOINTER_TO_INT(dest->level);
         lineinfo.time = time(NULL);
 
         gui = WINDOW_GUI(window);
