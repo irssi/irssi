@@ -59,6 +59,16 @@ void
 signal_stop_by_name(signal)
 	char *signal
 
+char *
+signal_get_emitted()
+CODE:
+	RETVAL = (char *) signal_get_emitted();
+OUTPUT:
+	RETVAL
+
+int
+signal_get_emitted_id()
+
 int
 timeout_add(msecs, func, data)
 	int msecs
