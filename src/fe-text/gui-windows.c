@@ -34,10 +34,14 @@
 
 #include <regex.h>
 
+/* how often to scan line cache for lines not accessed for a while (ms) */
+#define LINE_CACHE_CHECK_TIME (5*60*1000)
+/* how long to keep line cache in memory (seconds) */
+#define LINE_CACHE_KEEP_TIME (10*60)
+
 #define DEFAULT_INDENT_POS 10
 
-#define DEBUG_TEXTBUFFER
-
+static int linecache_tag;
 static int window_create_override;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
@@ -182,8 +186,6 @@ static int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 
 #define is_window_bottom(gui) \
 	((gui)->ypos >= -1 && (gui)->ypos <= (gui)->parent->last_line-(gui)->parent->first_line)
-/*FIXME: remove ((gui)->startline == (gui)->bottom_startline && \
-	(gui)->subline >= (gui)->bottom_subline)*/
 
 void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 {
@@ -245,13 +247,6 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 		scroll_up(gui->parent->first_line, gui->parent->last_line);
 		move(gui->parent->last_line, 0); clrtoeol();
 	}
-
-#ifdef DEBUG_TEXTBUFFER
-	if (gui->startline != gui->bottom_startline &&
-	    g_list_find(gui->bottom_startline, gui->startline) != NULL) {
-		g_warning("startline > bottom_startline! SHOULDN'T HAPPEN!");
-	}
-#endif
 }
 
 static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line)
@@ -265,6 +260,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 	g_return_val_if_fail(line->text != NULL, NULL);
 
 	rec = g_new(LINE_CACHE_REC, 1);
+        rec->last_access = time(NULL);
 
 	xpos = 0; color = 0; indent_pos = DEFAULT_INDENT_POS;
 	last_space = last_color = 0; last_space_ptr = NULL;
@@ -365,8 +361,7 @@ void gui_window_cache_remove(GUI_WINDOW_REC *gui, LINE_REC *line)
 	cache = g_hash_table_lookup(gui->line_cache, line);
 	if (cache != NULL) {
 		g_hash_table_remove(gui->line_cache, line);
-		g_free_not_null(cache->lines);
-		g_free(cache);
+		line_cache_destroy(NULL, cache);
 	}
 }
 
@@ -380,6 +375,8 @@ int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
 	cache = g_hash_table_lookup(gui->line_cache, line);
 	if (cache == NULL)
 		cache = gui_window_line_cache(gui, line);
+        else
+		cache->last_access = time(NULL);
 
         return cache->count;
 }
@@ -460,6 +457,8 @@ int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip
 	cache = g_hash_table_lookup(gui->line_cache, line);
 	if (cache == NULL)
 		cache = gui_window_line_cache(gui, line);
+	else
+		cache->last_access = time(NULL);
 
 	if (max < 0) max = cache->count;
 
@@ -793,9 +792,34 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 	}
 }
 
+static int window_remove_linecache(void *key, LINE_CACHE_REC *cache, gpointer nowp)
+{
+	time_t now = (time_t) GPOINTER_TO_INT(nowp);
+
+	if (cache->last_access+LINE_CACHE_KEEP_TIME > now)
+		return FALSE;
+
+	line_cache_destroy(NULL, cache);
+	return TRUE;
+}
+
+static int sig_check_linecache(void)
+{
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		g_hash_table_foreach_remove(WINDOW_GUI(rec)->line_cache, (GHRFunc) window_remove_linecache,
+					    GINT_TO_POINTER((int) time(NULL)));
+	}
+	return 1;
+}
+
 void gui_windows_init(void)
 {
 	window_create_override = -1;
+	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
 
 	signal_add("gui window create override", (SIGNAL_FUNC) sig_window_create_override);
 	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
@@ -808,6 +832,8 @@ void gui_windows_init(void)
 
 void gui_windows_deinit(void)
 {
+	g_source_remove(linecache_tag);
+
 	while (windows != NULL)
 		window_destroy(windows->data);
 

@@ -28,6 +28,8 @@ typedef struct {
 } LINE_CACHE_SUB_REC;
 
 typedef struct {
+	time_t last_access;
+
 	int count; /* number of real lines */
         LINE_CACHE_SUB_REC *lines;
 } LINE_CACHE_REC;
