@@ -873,7 +873,8 @@
 	    -regexp: <text> is a regular expression
 	    -word: <text> must match to full words
 	    -nick: Hilight only the nick, not the whole line
-	    -color: Print the reply with <color> - see below
+	    -color: Print the reply with <color>. color is in %code format
+	            (see docs/formats.txt)
 	    -level: Match only for <level> messages, default is
 	            publics,msgs,notices,actions
 	    -channels: Match only in <channels>
@@ -882,8 +883,7 @@
 
 	/HILIGHT without any arguments displays list of the hilights.
 
-	By default the highlighted line will be printed with white color.
-	You can change this with the -color argument. If <color> is a
+If <color> is a
 	number, Irssi will treat it as a MIRC color code. You can also use
 	bolds (^B), underlines (^_) etc. as <color> if you like.
 
