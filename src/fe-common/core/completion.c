@@ -19,19 +19,16 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
 #include "completion.h"
-
-#define wordreplace_find(word) \
-	iconfig_list_find("replaces", "text", word, "replace")
-
-#define completion_find(completion) \
-	iconfig_list_find("completions", "short", completion, "long")
+#include "printtext.h"
 
 static GList *complist; /* list of commands we're currently completing */
 static char *last_line;
@@ -45,6 +42,24 @@ static int last_want_space, last_line_pos;
 
 void chat_completion_init(void);
 void chat_completion_deinit(void);
+
+static const char *completion_find(const char *key, int automatic)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("completions", FALSE);
+	if (node == NULL || node->type != NODE_TYPE_BLOCK)
+		return NULL;
+
+	node = config_node_section(node, key, -1);
+	if (node == NULL)
+		return NULL;
+
+	if (automatic && !config_node_get_bool(node, "auto", FALSE))
+		return NULL;
+
+	return config_node_get_str(node, "value", NULL);
+}
 
 /* Return whole word at specified position in string */
 char *get_word_at(const char *str, int pos, char **startpos)
@@ -85,7 +100,7 @@ char *auto_word_complete(const char *line, int *pos)
 	g_string_erase(result, startpos, strlen(word));
 
 	/* check for words in autocompletion list */
-	replace = wordreplace_find(word);
+	replace = completion_find(word, TRUE);
 	if (replace == NULL) {
 		ret = NULL;
 		g_string_free(result, TRUE);
@@ -569,7 +584,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	g_return_if_fail(linestart != NULL);
 
 	/* check against "completion words" list */
-	newword = completion_find(word);
+	newword = completion_find(word, FALSE);
 	if (newword != NULL) {
 		*list = g_list_append(*list, g_strdup(newword));
 
@@ -734,12 +749,76 @@ static void sig_complete_command(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
+static void cmd_completion(const char *data)
+{
+	GHashTable *optlist;
+	CONFIG_NODE *node;
+	GSList *tmp;
+	char *key, *value;
+	void *free_arg;
+	int len;
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST,
+			    "completion", &optlist, &key, &value))
+		return;
+
+	node = iconfig_node_traverse("completions", *value != '\0');
+	if (node != NULL && node->type != NODE_TYPE_BLOCK) {
+		/* FIXME: remove after 0.8.5 */
+		iconfig_node_remove(mainconfig->mainnode, node);
+		node = iconfig_node_traverse("completions", *value != '\0');
+	}
+
+	if (node == NULL || (node->value == NULL && *value == '\0')) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_NO_COMPLETIONS);
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	if (*key != '\0' && *value != '\0') {
+		int automatic = g_hash_table_lookup(optlist, "auto") != NULL;
+
+		node = config_node_section(node, key, NODE_TYPE_BLOCK);
+		iconfig_node_set_str(node, "value", value);
+		iconfig_node_set_bool(node, "auto", automatic);
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_COMPLETION_LINE,
+			    key, value, automatic ? "yes" : "no");
+	} else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_COMPLETION_HEADER);
+
+		len = strlen(key);
+		for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+			node = tmp->data;
+
+			if (len == 0 ||
+			    g_strncasecmp(node->key, key, len) == 0) {
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+					    TXT_COMPLETION_LINE, node->key,
+					    config_node_get_str(node, "value", ""),
+					    config_node_get_bool(node, "auto", FALSE) ? "yes" : "no");
+			}
+		}
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_COMPLETION_FOOTER);
+	}
+
+	cmd_params_free(free_arg);
+}
+
 void completion_init(void)
 {
 	complist = NULL;
 	last_line = NULL; last_line_pos = -1;
 
 	chat_completion_init();
+
+	command_bind("completion", NULL, (SIGNAL_FUNC) cmd_completion);
 
 	signal_add_first("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add_first("complete erase", (SIGNAL_FUNC) sig_complete_erase);
@@ -752,6 +831,8 @@ void completion_init(void)
 	signal_add("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command help", (SIGNAL_FUNC) sig_complete_command);
+
+	command_set_options("completion", "auto");
 }
 
 void completion_deinit(void)
@@ -759,6 +840,8 @@ void completion_deinit(void)
         free_completions();
 
 	chat_completion_deinit();
+
+	command_unbind("completion", (SIGNAL_FUNC) cmd_completion);
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete erase", (SIGNAL_FUNC) sig_complete_erase);
@@ -772,5 +855,3 @@ void completion_deinit(void)
 	signal_remove("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command help", (SIGNAL_FUNC) sig_complete_command);
 }
-
-
