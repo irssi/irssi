@@ -24,22 +24,25 @@
 #include "fe-windows.h"
 #include "gui-windows.h"
 
+/* Don't send window activity if window is already visible in
+   another mainwindow */
 static void sig_activity(WINDOW_REC *window)
 {
-	/*GSList *tmp;
+	GSList *tmp;
 
 	if (!is_window_visible(window) || window->data_level == 0)
 		return;
 
-	window->new_data = 0;
+	window->data_level = 0;
+        window->hilight_color = 0;
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		WI_ITEM_REC *item = tmp->data;
 
-		item->new_data = 0;
-		item->last_color = 0;
+		item->data_level = 0;
+		item->hilight_color = 0;
 	}
-	signal_stop();*/
+	signal_stop();
 }
 
 void mainwindow_activity_init(void)
