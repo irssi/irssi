@@ -96,7 +96,7 @@ static QUERY_REC *query_find_server(SERVER_REC *server, const char *nick)
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *rec = tmp->data;
 
-		if (g_strcasecmp(nick, rec->name) == 0)
+		if (g_strcasecmp(rec->name, nick) == 0)
 			return rec;
 	}
 
@@ -105,16 +105,22 @@ static QUERY_REC *query_find_server(SERVER_REC *server, const char *nick)
 
 QUERY_REC *query_find(SERVER_REC *server, const char *nick)
 {
+	GSList *tmp;
+
 	g_return_val_if_fail(server == NULL || IS_SERVER(server), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	if (server != NULL)
 		return query_find_server(server, nick);
 
-	/* find from any server */
-	return gslist_foreach_find(servers,
-				   (FOREACH_FIND_FUNC) query_find_server,
-				   (void *) nick);
+	for (tmp = queries; tmp != NULL; tmp = tmp->next) {
+		QUERY_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, nick) == 0)
+			return rec;
+	}
+
+        return NULL;
 }
 
 void query_change_nick(QUERY_REC *query, const char *nick)

@@ -216,7 +216,8 @@ abstracts = {
   dccfile = "%_$0-%_";
 
   # DCC chat, own msg/action
-  dccownmsg = "[%r$0%K(%R$1-%K)%n] ";
+  dccownmsg = "[%r$0%K($1-%K)%n] ";
+  dccownnick = "%R$0-%n";
   dccownaction = "{action $0-}";
 
   # DCC chat, others
