@@ -198,8 +198,9 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	} else {
 		/* pick the one that was found, or if both do it like
 		   /SET resolve_prefer_ipv6 says. */
-		ip = iprec.ip6.family != 0 &&
-			settings_get_bool("resolve_prefer_ipv6") ?
+		ip = iprec.ip4.family == 0 ||
+			(iprec.ip6.family != 0 &&
+			 settings_get_bool("resolve_prefer_ipv6")) ?
 			&iprec.ip6 : &iprec.ip4;
 	}
 
