@@ -74,6 +74,7 @@ IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
 		signal_emit("error command", 2,
 			    GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN),
 			    server == NULL ? list->data : list->next->data);
+		signal_stop();
 
 		server = NULL;
 	}

@@ -244,6 +244,9 @@ int command_have_option(const char *cmd, const char *option)
         rec = command_find(cmd);
 	g_return_val_if_fail(rec != NULL, FALSE);
 
+	if (rec->options == NULL)
+		return FALSE;
+
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
 		char *name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
 
