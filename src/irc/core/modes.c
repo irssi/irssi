@@ -232,7 +232,6 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			else
 				banlist_remove(channel, arg);
 			break;
-
 		case 'o':
 		case 'O': /* channel owner in !channels */
 			if (g_strcasecmp(channel->server->nick, arg) == 0)
@@ -262,6 +261,12 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 				if (type == '+')
 					channel->key = g_strdup(arg);
 			}
+			break;
+		case 'e':
+		case 'I':
+		case 'O':
+		case 'q':
+			/* Don't set it as channel mode */
 			break;
 
 		default:
