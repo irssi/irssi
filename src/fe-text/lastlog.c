@@ -47,8 +47,8 @@ static void window_lastlog_clear(WINDOW_REC *window)
                 if (line->info.level & MSGLEVEL_LASTLOG)
 			textbuffer_view_remove_line(view, line);
 	}
+        textbuffer_view_redraw(view);
         screen_refresh_thaw();
-	//gui_window_redraw(window);
 }
 
 /* Only unknown keys in `optlist' should be levels.

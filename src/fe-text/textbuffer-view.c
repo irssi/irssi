@@ -848,8 +848,10 @@ static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	if (rec.remove_list != NULL) {
 		GList *pos = g_list_find(view->buffer->lines, line);
+
 		newline = pos == NULL || pos->prev == NULL ? NULL :
-			pos->next->data;
+			(pos->next == NULL ? pos->prev->data :
+			 pos->next->data);
 		for (tmp = rec.remove_list; tmp != NULL; tmp = tmp->next) {
 			g_hash_table_remove(view->bookmarks, tmp->data);
 			if (newline != NULL) {
@@ -924,7 +926,7 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			   from bottom_startline */
 			view_scroll(view, &view->startline,
 				    &view->subline, -linecount, TRUE);
-			view->ypos -= realcount;
+			view->ypos -= linecount-realcount;
 		} else {
 			if (view->startline->data == line) {
 				view->startline =
