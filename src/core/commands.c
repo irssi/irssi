@@ -912,13 +912,8 @@ static void event_command(const char *line, SERVER_REC *server, void *item)
 
 	g_return_if_fail(line != NULL);
 
-	if (*line == '\0') {
-		/* empty line, forget it. */
-                signal_stop();
-		return;
-	}
-
-	cmdchar = strchr(settings_get_str("cmdchars"), *line);
+	cmdchar = *line == '\0' ? NULL :
+		strchr(settings_get_str("cmdchars"), *line);
 	if (cmdchar != NULL && line[1] == ' ') {
 		/* "/ text" = same as sending "text" to active channel. */
 		line += 2;

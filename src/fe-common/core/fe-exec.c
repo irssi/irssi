@@ -618,7 +618,8 @@ static void sig_window_destroyed(WINDOW_REC *window)
 
 static void event_text(const char *data, SERVER_REC *server, EXEC_WI_REC *item)
 {
-	if (!IS_EXEC_WI(item)) return;
+	if (!IS_EXEC_WI(item))
+		return;
 
 	net_sendbuffer_send(item->process->out, data, strlen(data));
 	net_sendbuffer_send(item->process->out, "\n", 1);

@@ -199,12 +199,6 @@ static void event_command(const char *data)
 {
 	const char *cmdchar;
 
-	if (*data == '\0') {
-		/* empty line, forget it. */
-                signal_stop();
-		return;
-	}
-
 	/* save current command line */
 	current_cmdline = data;
 
@@ -213,10 +207,12 @@ static void event_command(const char *data)
 	last_command_cmd = command_cmd;
 
 	g_get_current_time(&time_command_now);
-	command_cmd = strchr(settings_get_str("cmdchars"), *data) != NULL;
+	command_cmd = *data != '\0' &&
+		strchr(settings_get_str("cmdchars"), *data) != NULL;
 
 	/* /^command hides the output of the command */
-	cmdchar = strchr(settings_get_str("cmdchars"), *data);
+	cmdchar = *data == '\0' ? NULL :
+		strchr(settings_get_str("cmdchars"), *data);
 	if (cmdchar != NULL && (data[1] == '^' ||
 				(data[1] == *cmdchar && data[2] == '^'))) {
                 command_hide_output = TRUE;

@@ -931,7 +931,15 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	char *line, *str;
 
 	g_return_if_fail(data != NULL);
-	if (item == NULL) return;
+
+	if (item == NULL)
+		return;
+
+	if (*data == '\0') {
+		/* empty line, forget it. */
+                signal_stop();
+		return;
+	}
 
 	line = settings_get_bool("expand_escapes") ?
 		expand_escapes(data, server, item) : g_strdup(data);
@@ -1003,9 +1011,10 @@ void chat_completion_init(void)
 	settings_add_bool("completion", "completion_auto", FALSE);
 	settings_add_int("completion", "completion_keep_publics", 50);
 	settings_add_int("completion", "completion_keep_privates", 10);
-	settings_add_bool("completion", "expand_escapes", FALSE);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 	settings_add_bool("completion", "completion_strict", FALSE);
+
+	settings_add_bool("lookandfeel", "expand_escapes", FALSE);
 
 	read_settings();
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);

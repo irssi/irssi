@@ -181,14 +181,10 @@ static void key_send_line(void)
         char *str, *add_history;
 
 	str = gui_entry_get_text(active_entry);
-	if (str == NULL || (*str == '\0' && redir == NULL)) {
-                g_free(str);
-		return;
-	}
 
 	/* we can't use gui_entry_get_text() later, since the entry might
 	   have been destroyed after we get back */
-	add_history = g_strdup(str);
+	add_history = *str == '\0' ? NULL : g_strdup(str);
 	history = command_history_current(active_win);
 
 	translate_output(str);
