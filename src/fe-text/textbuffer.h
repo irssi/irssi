@@ -32,7 +32,7 @@ typedef struct _LINE_REC {
 	/* Text in the line. \0 means that the next char will be a
 	   color or command.
 
-	   If the 8th bit is set, the first 7 bits are the command
+	   If the 7th bit is set, the lowest 7 bits are the command
 	   (see LINE_CMD_xxxx). Otherwise they specify a color change:
 
 	   Bit:
