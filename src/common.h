@@ -31,6 +31,8 @@
 #else
 #  ifdef HAVE_POPT_GNOME_H
 #    include <popt-gnome.h>
+#  else
+#    include <lib-popt/popt.h>
 #  endif
 #endif
 

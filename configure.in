@@ -203,16 +203,9 @@ else
 	fi
 fi
 
-AC_CHECK_LIB(popt, poptGetContext, [
-	POPT_LIBS="$poptlib -lpopt"
-], [
-	AC_CHECK_LIB(gnomesupport, poptGetContext, [
-		POPT_LIBS="$poptlib $GNOME_LIBDIR -lgnomesupport"
-	], [
-		AC_ERROR(["libpropt or libgnomesupport not found"])
-	], $PROG_LIBS $poptlib $GNOME_LIBDIR -lgnomesupport)
-], $PROG_LIBS $poptlib -lpopt)
-
+if test "x$POPT_LIBS" = "x"; then
+	POPT_LIBS="../lib-popt/libpopt.a"
+fi
 
 dnl **
 dnl ** check for libPropList
@@ -290,7 +283,6 @@ if test "x$want_gnome" = "xyes"; then
         else
 		GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS"
         fi
-
 else
         want_gnome_panel="no"
 	AC_DEFINE(HAVE_GTK)
@@ -398,6 +390,7 @@ src/gui-gnome/help/C/Makefile
 src/gui-gnome/pixmaps/Makefile
 src/lib-config/Makefile
 src/lib-nongui/Makefile
+src/lib-popt/Makefile
 src/settings/Makefile
 servertest/Makefile
 plugins/Makefile
