@@ -375,6 +375,22 @@ int get_file_params_count(char **params, int paramcount)
         return best;
 }
 
+char *get_file_name(char **params, int fileparams)
+{
+	GString *out = g_string_new(params[0]);
+	char *ret;
+	int pos;
+
+	for (pos = 1; pos < fileparams; pos++) {
+		out = g_string_append(out, " ");
+		out = g_string_append(out, params[pos]);
+	}
+
+	ret = out->str;
+	g_string_free(out, FALSE);
+	return ret;
+}
+
 /* CTCP: DCC SEND */
 static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 			      const char *nick, const char *addr,
@@ -405,7 +421,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	fileparams = get_file_params_count(params, paramcount);
 
-	address = params[fileparams];
+	address = g_strdup(params[fileparams]);
 	dcc_str2ip(address, &ip);
 	port = atoi(params[fileparams+1]);
 	size = str_to_uofft(params[fileparams+2]);
@@ -416,8 +432,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		passive = TRUE;
 	}
 
-	params[fileparams] = NULL;
-        fname = g_strjoinv(" ", params);
+	fname = get_file_name(params, fileparams);
 	g_strfreev(params);
 
         len = strlen(fname);
@@ -452,12 +467,14 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 			/* This new signal is added to let us invoke
 			   dcc_send_connect() which is found in dcc-send.c */
 			signal_emit("dcc reply send pasv", 1, temp_dcc);
+			g_free(address);
 			g_free(fname);
 			return;
 		} else if (temp_dcc != NULL && p_id != temp_dcc->pasv_id) {
 			/* IDs don't match... remove the old DCC SEND and
 			   return */
 			dcc_destroy(DCC(temp_dcc));
+			g_free(address);
 			g_free(fname);
 			return;
 		}
@@ -486,6 +503,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	signal_emit("dcc request", 2, dcc, addr);
 
+	g_free(address);
 	g_free(fname);
 }
 
