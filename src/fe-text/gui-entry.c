@@ -37,7 +37,8 @@ static void entry_text_grow(GUI_ENTRY_REC *entry, int grow_size)
 		return;
 
 	entry->text_alloc = nearest_power(entry->text_alloc+grow_size);
-	entry->text = g_realloc(entry->text, entry->text_alloc);
+	entry->text = g_realloc(entry->text,
+				sizeof(unichar) * entry->text_alloc);
 }
 
 GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
