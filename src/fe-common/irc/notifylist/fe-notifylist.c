@@ -233,6 +233,8 @@ void fe_irc_notifylist_init(void)
 	signal_add("notifylist left", (SIGNAL_FUNC) notifylist_left);
 	signal_add("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
 	signal_add("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
+
+	command_set_options("notify", "list");
 }
 
 void fe_irc_notifylist_deinit(void)
