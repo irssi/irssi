@@ -271,7 +271,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 				break;
 
 			if (*ptr == LINE_CMD_CONTINUE) {
-				char *tmp;
+				unsigned char *tmp;
 
 				memcpy(&tmp, ptr+1, sizeof(char *));
 				ptr = tmp;
@@ -313,7 +313,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 			}
 
 			sub = g_new(LINE_CACHE_SUB_REC, 1);
-			sub->start = ptr;
+			sub->start = (char *) ptr;
 			sub->indent = indent_pos;
 			sub->color = color;
 

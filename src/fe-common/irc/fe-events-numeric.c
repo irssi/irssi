@@ -21,6 +21,7 @@
 #include "module.h"
 #include "module-formats.h"
 #include "signals.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "irc.h"
@@ -437,7 +438,6 @@ static void event_whowas(const char *data, IRC_SERVER_REC *server)
 static void event_whois_channels(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *nick, *chans;
-	GString *str;
 
 	g_return_if_fail(data != NULL);
 

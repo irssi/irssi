@@ -251,7 +251,7 @@ static void read_settings(void)
 		flood_tag = -1;
 	}
 
-	if (time > 0 && flood_max_msgs > 0) {
+	if (flood_timecheck > 0 && flood_max_msgs > 0) {
 		flood_tag = g_timeout_add(500, (GSourceFunc) flood_timeout, NULL);
 		signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_add("event notice", (SIGNAL_FUNC) flood_notice);

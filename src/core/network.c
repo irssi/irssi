@@ -380,7 +380,7 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, 0))
 		return 1;
 
-	/*FIXME: how does this work? *name = g_strdup(ai->???);*/
+	/*FIXME: how does this work? *name = g_strdup(ai->?);*/
 	freeaddrinfo(ai);
 	return 1;
 #else
