@@ -320,6 +320,13 @@ for c in $CHAT_MODULES; do
         echo "void fe_${c}_modules_deinit(void) { $fe_module_deinits }" >> $file
 done
 
+dnl **
+dnl ** internationalization support
+dnl **
+
+ALL_LINGUAS="pl fi pt_BR fr de"
+AM_GNU_GETTEXT
+
 dnl ** common libraries needed by frontends
 COMMON_NOUI_LIBS="$PERL_LIBS $CHAT_LIBS $CORE_LIBS $INTLLIBS"
 COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
@@ -342,13 +349,6 @@ dnl **
 if test "x$want_ipv6" = "xyes"; then
 	AC_DEFINE(HAVE_IPV6)
 fi
-
-dnl **
-dnl ** internationalization support
-dnl **
-
-ALL_LINGUAS="pl fi pt_BR fr de"
-AM_GNU_GETTEXT
 
 AC_OUTPUT(
 Makefile
