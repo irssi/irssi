@@ -39,6 +39,7 @@ libfe_common_core_a_SOURCES = \
 
 noinst_HEADERS = \
 	command-history.h \
+	chat-completion.h \
 	completion.h \
 	fe-channels.h \
 	fe-common-core.h \

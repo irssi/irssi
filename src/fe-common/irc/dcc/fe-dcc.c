@@ -32,6 +32,7 @@
 #include "irc/dcc/dcc-chat.h"
 
 #include "completion.h"
+#include "chat-completion.h"
 #include "themes.h"
 #include "fe-windows.h"
 
@@ -53,9 +54,14 @@ static void dcc_connected(DCC_REC *dcc)
 		printformat(dcc->server, NULL, MSGLEVEL_DCC,
 			    IRCTXT_DCC_CHAT_CONNECTED,
 			    dcc->chat_id, dcc->addrstr, dcc->port);
-		if (autocreate_dccquery && query_find(NULL, sender) == NULL)
-			irc_query_create(dcc->server == NULL ? NULL :
-					 dcc->server->tag, sender, TRUE);
+		if (query_find(NULL, sender) == NULL) {
+			if (!autocreate_dccquery)
+				completion_last_message_add(sender);
+                        else
+				irc_query_create(dcc->server == NULL ? NULL :
+						 dcc->server->tag,
+						 sender, TRUE);
+		}
 		g_free(sender);
 		break;
 	case DCC_TYPE_SEND:
@@ -135,6 +141,8 @@ static void dcc_chat_action(const char *msg, DCC_REC *dcc)
 	g_return_if_fail(msg != NULL);
 
 	sender = g_strconcat("=", dcc->chat_id, NULL);
+	if (query_find(NULL, sender) == NULL)
+		completion_last_message_add(sender);
 	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
 		    IRCTXT_ACTION_DCC, dcc->chat_id, msg);
 	g_free(sender);
@@ -169,10 +177,13 @@ static void dcc_chat_msg(DCC_REC *dcc, const char *msg)
         else
 		freemsg = NULL;
 
+	if (query_find(NULL, sender) == NULL)
+		completion_last_message_add(sender);
 	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
 		    query != NULL ? IRCTXT_DCC_MSG_QUERY :
 		    IRCTXT_DCC_MSG, dcc->chat_id, msg);
-        g_free_not_null(freemsg);
+
+	g_free_not_null(freemsg);
 	g_free(sender);
 }
 
@@ -327,14 +338,19 @@ static void sig_dcc_destroyed(DCC_REC *dcc)
 		return;
 
         nick = g_strconcat("=", dcc->chat_id, NULL);
-	query = query_find(NULL, nick);
-	g_free(nick);
 
+	query = query_find(NULL, nick);
 	if (query != NULL) {
 		/* DCC chat closed, close the query with it. */
 		if (dcc->connection_lost) query->unwanted = TRUE;
 		query_destroy(query);
+	} else {
+		/* remove nick from msg completion
+		   since it won't work anymore */
+		completion_last_message_remove(nick);
 	}
+
+	g_free(nick);
 }
 
 static void sig_query_destroyed(QUERY_REC *query)
@@ -354,6 +370,7 @@ static void sig_query_destroyed(QUERY_REC *query)
 
 static void cmd_msg(const char *data)
 {
+        QUERY_REC *query;
 	DCC_REC *dcc;
 	char *text, *target;
 	void *free_arg;
@@ -374,9 +391,13 @@ static void cmd_msg(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
+		query = query_find(NULL, target);
+
 		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-			    query_find(NULL, target) ? IRCTXT_OWN_DCC_QUERY :
+			    query != NULL ? IRCTXT_OWN_DCC_QUERY :
 			    IRCTXT_OWN_DCC, dcc->mynick, target+1, text);
+		if (query == NULL)
+			completion_last_message_add(target);
 	}
 
 	cmd_params_free(free_arg);
@@ -392,11 +413,12 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (dcc == NULL) return;
 
         printformat(NULL, item->name, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-                    IRCTXT_OWN_DCC_ACTION, dcc->mynick, data);
+                    IRCTXT_OWN_DCC_ACTION_QUERY, dcc->mynick, item->name, data);
 }
 
 static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
+        QUERY_REC *query;
 	DCC_REC *dcc;
 	char *target, *text;
 	void *free_arg;
@@ -419,8 +441,13 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
+		query = query_find(NULL, target);
+
 		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-			    IRCTXT_OWN_DCC_ACTION, dcc->mynick, text);
+			    query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
+			    IRCTXT_OWN_DCC_ACTION, dcc->mynick, target, text);
+		if (query == NULL)
+			completion_last_message_add(target);
 	}
 	cmd_params_free(free_arg);
 }

@@ -28,7 +28,8 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ NULL, "DCC", 0 },
 
 	{ "own_dcc", "{dccownmsg dcc {dccownnick $1}}$2", 3, { 0, 0, 0 } },
-	{ "own_dcc_action", "{dccownaction $0}$1", 2, { 0, 0 } },
+	{ "own_dcc_action", "{dccownaction_target $0 $1}$2", 3, { 0, 0, 0 } },
+	{ "own_dcc_action_query", "{dccownaction $0}$2", 3, { 0, 0, 0 } },
 	{ "own_dcc_ctcp", "{ownctcp ctcp $0}$1 $2", 3, { 0, 0, 0 } },
 	{ "dcc_msg", "{dccmsg dcc $0}$1", 2, { 0, 0 } },
 	{ "action_dcc", "{dccaction $0}$1", 2, { 0, 0 } },

@@ -37,6 +37,7 @@
 static int keep_privates_count, keep_publics_count;
 static int completion_lowercase;
 static const char *completion_char, *cmdchars;
+static GSList *global_lastmsgs;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
 	last_msg_add(&((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs, \
@@ -109,6 +110,37 @@ static void last_msg_destroy(GSList **list, LAST_MSG_REC *rec)
 	g_free(rec);
 }
 
+void completion_last_message_add(const char *nick)
+{
+	g_return_if_fail(nick != NULL);
+
+	last_msg_add(&global_lastmsgs, nick, TRUE, keep_privates_count);
+}
+
+void completion_last_message_remove(const char *nick)
+{
+	LAST_MSG_REC *rec;
+
+	g_return_if_fail(nick != NULL);
+
+	rec = last_msg_find(global_lastmsgs, nick);
+        if (rec != NULL) last_msg_destroy(&global_lastmsgs, rec);
+}
+
+void completion_last_message_rename(const char *oldnick, const char *newnick)
+{
+	LAST_MSG_REC *rec;
+
+	g_return_if_fail(oldnick != NULL);
+	g_return_if_fail(newnick != NULL);
+
+	rec = last_msg_find(global_lastmsgs, oldnick);
+	if (rec != NULL) {
+		g_free(rec->nick);
+                rec->nick = g_strdup(newnick);
+	}
+}
+
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
 			       const char *target)
@@ -126,6 +158,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(nick != NULL);
+
 	SERVER_LAST_MSG_ADD(server, nick);
 }
 
@@ -166,7 +201,7 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				    const char *target, const char *origtarget)
 {
 	g_return_if_fail(server != NULL);
-	g_return_if_fail(msg != NULL);
+	g_return_if_fail(target != NULL);
 
 	if (target != NULL && query_find(server, target) == NULL)
 		SERVER_LAST_MSG_ADD(server, target);
@@ -201,11 +236,11 @@ static int last_msg_cmp(LAST_MSG_REC *m1, LAST_MSG_REC *m2)
 	return m1->time < m2->time ? 1 : -1;
 }
 
-/* Complete /MSG from specified server */
+/* Complete /MSG from specified server, or from
+   global_lastmsgs if server is NULL */
 static void completion_msg_server(GSList **list, SERVER_REC *server,
 				  const char *nick, const char *prefix)
 {
-        MODULE_SERVER_REC *mserver;
 	LAST_MSG_REC *msg;
 	GSList *tmp;
 	int len;
@@ -213,8 +248,9 @@ static void completion_msg_server(GSList **list, SERVER_REC *server,
 	g_return_if_fail(nick != NULL);
 
 	len = strlen(nick);
-        mserver = MODULE_DATA(server);
-	for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
+	tmp = server == NULL ? global_lastmsgs :
+		((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs;
+	for (; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
 		if (len != 0 && g_strncasecmp(rec->nick, nick, len) != 0)
@@ -264,6 +300,7 @@ static GList *completion_msg(SERVER_REC *win_server,
 		return convert_msglist(list);
 	}
 
+	completion_msg_server(&list, NULL, nick, prefix);
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *rec = tmp->data;
 
@@ -739,6 +776,9 @@ void chat_completion_init(void)
 
 void chat_completion_deinit(void)
 {
+	while (global_lastmsgs != NULL)
+		last_msg_destroy(&global_lastmsgs, global_lastmsgs->data);
+
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);

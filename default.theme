@@ -223,6 +223,7 @@ abstracts = {
   dccownmsg = "[%r$0%K($1-%K)%n] ";
   dccownnick = "%R$0-%n";
   dccownaction = "{action $0-}";
+  dccownaction_target = "{action_core $0}%K:%c$1%n ";
 
   # DCC chat, others
   dccmsg = "[%G$1-%K(%g$0%K)%n] ";
