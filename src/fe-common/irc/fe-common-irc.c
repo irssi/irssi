@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "module-formats.h"
 #include "signals.h"
 #include "misc.h"
