@@ -935,6 +935,13 @@ Server::ctcp_send_reply(data)
   is the full raw command to be sent to server, like
     "NOTICE nick :\001VERSION irssi\001"
 
+Server::isupport(name)
+  Returns the value of the named item in the ISUPPORT (005) numeric to the
+  script. If the item is not present returns undef, if the item has no value
+  then "" is returned use defined $server->isupport("name") if you need to
+  check whether a property is present.
+  See http://www.ietf.org/internet-drafts/draft-brocklesby-irc-isupport-01.txt
+  for more information on the ISUPPORT numeric.
 
  *** IRC channels
 

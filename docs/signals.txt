@@ -84,6 +84,7 @@ server.c:
  "server connect failed", SERVER_REC
  "server disconnected", SERVER_REC
  "server quit", SERVER_REC, char *msg
+ "server sendmsg", SERVER_REC, char *target, char *msg, int target_type
 
 settings.c:
  "setup changed"

@@ -396,14 +396,23 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		}
 	}
 
-	if (target != NULL)
-		server->send_message(server, target, msg, target_type);
+	if (target != NULL) {
+		signal_emit("server sendmsg", 4, server, target, msg,
+			    GINT_TO_POINTER(target_type));
+	}
 	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
 		    "message own_public" : "message own_private", 4,
 		    server, msg, target, origtarget);
 
 	if (free_ret && target != NULL) g_free(target);
 	cmd_params_free(free_arg);
+}
+
+static void sig_server_sendmsg(SERVER_REC *server, const char *target,
+			       const char *msg, void *target_type_p)
+{
+	server->send_message(server, target, msg,
+			     GPOINTER_TO_INT(target_type_p));
 }
 
 static void cmd_foreach(const char *data, SERVER_REC *server,
@@ -468,7 +477,8 @@ void chat_commands_init(void)
 	command_bind("foreach channel", NULL, (SIGNAL_FUNC) cmd_foreach_channel);
 	command_bind("foreach query", NULL, (SIGNAL_FUNC) cmd_foreach_query);
 
-        signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
+	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
+	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
 	command_set_options("connect", "4 6 !! ssl +ssl_cert +ssl_pkey ssl_verify +ssl_cafile +ssl_capath +host noproxy -rawlog");
 	command_set_options("join", "invite");
@@ -490,4 +500,5 @@ void chat_commands_deinit(void)
 	command_unbind("foreach query", (SIGNAL_FUNC) cmd_foreach_query);
 
         signal_remove("default command server", (SIGNAL_FUNC) sig_default_command_server);
+	signal_remove("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 }
