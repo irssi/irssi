@@ -136,6 +136,31 @@ CODE:
 
         printformat_perl(&dest, format, arglist);
 
+void
+abstracts_register(SV *abstracts)
+PREINIT:
+	AV *av;
+	char *key, *value;
+	int i, len;
+CODE:
+        if (!SvROK(abstracts))
+        	croak("abstracts is not a reference to list");
+	av = (AV *) SvRV(abstracts);
+	len = av_len(av)+1;
+	if (len == 0 || (len & 1) != 0)
+        	croak("abstracts list is invalid - not divisible by 2 (%d)", len);
+
+        for (i = 0; i < len; i++) {
+		key = SvPV(*av_fetch(av, i, 0), PL_na); i++;
+		value = SvPV(*av_fetch(av, i, 0), PL_na);
+
+		theme_set_default_abstract(key, value);
+	}
+	themes_reload();
+
+void
+themes_reload()
+
 #*******************************
 MODULE = Irssi::UI::Themes  PACKAGE = Irssi::Server
 #*******************************

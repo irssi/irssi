@@ -48,6 +48,8 @@ THEME_REC *theme_load(const char *name);
 void theme_register_module(const char *module, FORMAT_REC *formats);
 void theme_unregister_module(const char *module);
 
+void theme_set_default_abstract(const char *key, const char *value);
+
 #define EXPAND_FLAG_IGNORE_REPLACES     0x01 /* don't use the character replaces when expanding */
 #define EXPAND_FLAG_IGNORE_EMPTY        0x02 /* if abstract's argument is empty, or the argument is a $variable that is empty, don't try to expand it (ie. {xx }, but not {xx}) */
 #define EXPAND_FLAG_RECURSIVE_MASK      0x0f
@@ -60,6 +62,8 @@ char *theme_format_expand_data(THEME_REC *theme, const char **format,
 			       char default_fg, char default_bg,
 			       char *save_last_fg, char *save_last_bg,
 			       int flags);
+
+void themes_reload(void);
 
 void themes_init(void);
 void themes_deinit(void);
