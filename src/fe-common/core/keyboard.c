@@ -565,9 +565,9 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 			    (GSearchFunc) key_states_search,
 			    combo);
 	if (rec == NULL) {
-		/* unknown key combo */
+		/* unknown key combo, eat the invalid key */
                 g_free(combo);
-		return FALSE;
+		return TRUE;
 	}
 
 	if (g_tree_lookup(key_states, combo) != rec) {
@@ -800,10 +800,6 @@ static void read_keyboard_config(void)
 
 void keyboard_init(void)
 {
-	GSList *l;
-
-        l = NULL;
-        expand_key("^[[5D", &l);
 	keys = g_hash_table_new((GHashFunc) g_str_hash,
 				(GCompareFunc) g_str_equal);
 	default_keys = g_hash_table_new((GHashFunc) g_str_hash,
