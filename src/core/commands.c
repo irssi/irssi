@@ -160,20 +160,29 @@ static char *get_opt_args(char **data)
 {
 	/* -cmd1 -cmd2 -cmd3 ... */
 	char *p, *ret;
+	int stopnext;
 
 	g_return_val_if_fail(data != NULL, NULL);
 	g_return_val_if_fail(*data != NULL, NULL);
 
+        stopnext = FALSE;
 	ret = NULL;
 	for (p = *data;;) {
-		if (*p != '-') {
+		if (*p != '-' || stopnext) {
 			if (p == *data) return "";
 
-			while (isspace(p[-1]) && p > *data) p--;
-			if (*p != '\0') *p++ = '\0';
 			ret = *data;
 			*data = p;
+
+			while (isspace(p[-1]) && p > ret) p--;
+			if (*p != '\0') *p = '\0';
 			return ret;
+		}
+
+		if (p[1] == '-') {
+			/* -- argument means end of arguments even if
+			   next word starts with - */
+			stopnext = TRUE;
 		}
 
 		while (!isspace(*p) && *p != '\0') p++;
@@ -224,7 +233,7 @@ int arg_find(char **array, const char *item)
 	return -1;
 }
 
-static int get_multi_args(char **data, va_list va)
+static int get_multi_args(char **data, int checkonly, va_list va)
 {
 	/* -cmd1 arg1 -cmd2 "argument two" -cmd3 */
         GString *returnargs;
@@ -256,7 +265,16 @@ static int get_multi_args(char **data, va_list va)
 	nextarg = NULL;
 	for (;;) {
 		if (**data == '-') {
-			(*data)++; arg = cmd_get_param(data);
+			(*data)++;
+			if (**data == '-') {
+				/* -- argument means end of arguments even
+				   if next word starts with - */
+				(*data)++;
+				while (isspace(**data)) (*data)++;
+				break;
+			}
+
+			arg = cmd_get_param(data);
 			g_string_sprintfa(returnargs, "-%s ", arg);
 
 			/* check if this argument can have parameter */
@@ -280,19 +298,22 @@ static int get_multi_args(char **data, va_list va)
 		while (isspace(**data)) (*data)++;
 	}
 
-	/* ok, this is a bit stupid. this will pack the arguments in `data'
-	   like "-arg1 subarg -arg2 sub2\0" -> "-arg1 -arg2\0subarg\0sub2\0"
-	   this is because it's easier to free only _one_ string instead of
-	   two (`args') when using PARAM_FLAG_MULTIARGS. */
-	if (origdata == *data)
-		*args = "";
-	else {
-		cmd_params_pack(subargs, **data == '\0' ? *data : (*data)-1,
-				origdata, origdata+returnargs->len);
+	if (!checkonly) {
+		/* ok, this is a bit stupid. this will pack the arguments in
+		   `data' like "-arg1 subarg -arg2 sub2\0" ->
+		   "-arg1 -arg2\0subarg\0sub2\0" this is because it's easier
+		   to free only _one_ string instead of two (`args') when
+		   using PARAM_FLAG_MULTIARGS. */
+		if (returnargs->len == 0)
+			*args = "";
+		else {
+			cmd_params_pack(subargs, **data == '\0' ? *data : (*data)-1,
+					origdata, origdata+returnargs->len);
 
-		g_string_truncate(returnargs, returnargs->len-1);
-		strcpy(origdata, returnargs->str);
-		*args = origdata;
+			g_string_truncate(returnargs, returnargs->len-1);
+			strcpy(origdata, returnargs->str);
+			*args = origdata;
+		}
 	}
 
 	g_string_free(returnargs, TRUE);
@@ -322,28 +343,51 @@ char *cmd_get_callfuncs(const char *data, int *count, va_list *args)
 
 char *cmd_get_params(const char *data, int count, ...)
 {
-	char **str, *arg, *ret, *datad;
+	char **str, *arg, *datad, *old;
 	va_list args;
-	int cnt, eat;
+	int cnt, eat, len;
 
 	g_return_val_if_fail(data != NULL, NULL);
 
 	va_start(args, count);
-	ret = datad = cmd_get_callfuncs(data, &count, &args);
 
+	/* get the length of the arguments in string */
+	old = datad = g_strdup(data);
+	if (count & PARAM_FLAG_MULTIARGS)
+		get_multi_args(&datad, TRUE, args);
+	else if (count & PARAM_FLAG_OPTARGS)
+		get_opt_args(&datad);
+	len = (int) (datad-old);
+	g_free(old);
+
+	/* send the text to custom functions to handle - skip arguments */
+	old = datad = cmd_get_callfuncs(data+len, &count, &args);
+
+	if (len > 0) {
+		/* put the arguments + the new data to one string */
+		datad = g_malloc(len+1 + strlen(old)+1);
+		memcpy(datad, data, len);
+		datad[len] = ' ';
+		memcpy(datad+len+1, old, strlen(old)+1);
+		g_free(old);
+
+		old = datad;
+	}
+
+	/* and now handle the string */
 	cnt = PARAM_WITHOUT_FLAGS(count);
 	while (cnt-- > 0) {
-		if (count & PARAM_FLAG_OPTARGS) {
-			arg = get_opt_args(&datad);
-			count &= ~PARAM_FLAG_OPTARGS;
-		} else if (count & PARAM_FLAG_MULTIARGS) {
-			eat = get_multi_args(&datad, args)+1;
+		if (count & PARAM_FLAG_MULTIARGS) {
+			eat = get_multi_args(&datad, FALSE, args)+1;
 			count &= ~PARAM_FLAG_MULTIARGS;
 
 			cnt -= eat-1;
 			while (eat-- > 0)
 				str = (char **) va_arg(args, char **);
 			continue;
+		} else if (count & PARAM_FLAG_OPTARGS) {
+			arg = get_opt_args(&datad);
+			count &= ~PARAM_FLAG_OPTARGS;
 		} else if (cnt == 0 && count & PARAM_FLAG_GETREST) {
 			/* get rest */
 			arg = datad;
@@ -356,7 +400,7 @@ char *cmd_get_params(const char *data, int count, ...)
 	}
 	va_end(args);
 
-	return ret;
+	return old;
 }
 
 void cmd_get_add_func(CMD_GET_FUNC func)
