@@ -586,11 +586,13 @@ static void cmd_cycle(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	window_bind_add(window_item_window(chanrec),
 			chanrec->server->tag, chanrec->name);
 
-	/* FIXME: kludgy kludgy... and it relies on channel not
-	   being destroyed immediately.. */
+	/* FIXME: kludgy kludgy... */
 	signal_emit("command part", 3, data, server, item);
-        chanrec->left = TRUE;
-	channel_destroy(chanrec);
+
+	if (g_slist_find(channels, chanrec) != NULL) {
+		chanrec->left = TRUE;
+		channel_destroy(chanrec);
+	}
 
 	server->channels_join(server, joindata, FALSE);
 	g_free(joindata);
