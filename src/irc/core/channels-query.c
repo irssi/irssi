@@ -54,8 +54,6 @@ enum {
 	CHANNEL_QUERY_MODE,
 	CHANNEL_QUERY_WHO,
 	CHANNEL_QUERY_BMODE,
-	CHANNEL_QUERY_EMODE,
-	CHANNEL_QUERY_IMODE,
 
 	CHANNEL_QUERIES
 };
@@ -367,13 +365,8 @@ static void sig_channel_joined(IRC_CHANNEL_REC *channel)
 	if (!channel->no_modes)
 		query_add_channel(channel, CHANNEL_QUERY_MODE);
 	query_add_channel(channel, CHANNEL_QUERY_WHO);
-	if (!channel->no_modes) {
+	if (!channel->no_modes)
 		query_add_channel(channel, CHANNEL_QUERY_BMODE);
-		if (channel->server->emode_known) {
-			query_add_channel(channel, CHANNEL_QUERY_EMODE);
-			query_add_channel(channel, CHANNEL_QUERY_IMODE);
-		}
-	}
 
 	query_check(channel->server);
 }
