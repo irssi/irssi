@@ -220,13 +220,13 @@ static void ignore_set_config(IGNORE_REC *rec)
 		g_free(levelstr);
 	}
 	iconfig_node_set_str(node, "pattern", rec->pattern);
-	if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
-	if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
-	if (rec->replies) config_node_set_bool(node, "replies", TRUE);
+	if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
+	if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
+	if (rec->replies) iconfig_node_set_bool(node, "replies", TRUE);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = config_node_section(node, "channels", NODE_TYPE_LIST);
-		config_node_add_list(node, rec->channels);
+		iconfig_node_add_list(node, rec->channels);
 	}
 }
 

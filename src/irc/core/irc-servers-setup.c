@@ -166,9 +166,9 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		return;
 
 	if (rec->max_cmds_at_once > 0)
-		config_node_set_int(node, "cmds_max_at_once", rec->max_cmds_at_once);
+		iconfig_node_set_int(node, "cmds_max_at_once", rec->max_cmds_at_once);
 	if (rec->cmd_queue_speed > 0)
-		config_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
+		iconfig_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
 }
 
 void irc_servers_setup_init(void)

@@ -59,18 +59,18 @@ static void ircnet_save(IRC_CHATNET_REC *rec)
 	node = chatnet_save((CHATNET_REC *) rec, node);
 
 	if (rec->max_cmds_at_once > 0)
-		config_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
+		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
 	if (rec->cmd_queue_speed > 0)
-		config_node_set_int(node, "cmdspeed", rec->cmd_queue_speed);
+		iconfig_node_set_int(node, "cmdspeed", rec->cmd_queue_speed);
 
 	if (rec->max_kicks > 0)
-		config_node_set_int(node, "max_kicks", rec->max_kicks);
+		iconfig_node_set_int(node, "max_kicks", rec->max_kicks);
 	if (rec->max_msgs > 0)
-		config_node_set_int(node, "max_msgs", rec->max_msgs);
+		iconfig_node_set_int(node, "max_msgs", rec->max_msgs);
 	if (rec->max_modes > 0)
-		config_node_set_int(node, "max_modes", rec->max_modes);
+		iconfig_node_set_int(node, "max_modes", rec->max_modes);
 	if (rec->max_whois > 0)
-		config_node_set_int(node, "max_whois", rec->max_whois);
+		iconfig_node_set_int(node, "max_whois", rec->max_whois);
 }
 
 static void ircnet_remove(IRC_CHATNET_REC *rec)

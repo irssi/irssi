@@ -122,15 +122,15 @@ int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *val
 /* Return all values from from the list `node' in a g_strsplit() array */
 char **config_node_get_list(CONFIG_NODE *node);
 /* Add all values in `array' to `node' */
-void config_node_add_list(CONFIG_NODE *node, char **array);
+void config_node_add_list(CONFIG_REC *rec, CONFIG_NODE *node, char **array);
 
 char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def);
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def);
 int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
 
 void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
-void config_node_set_int(CONFIG_NODE *parent, const char *key, int value);
-void config_node_set_bool(CONFIG_NODE *parent, const char *key, int value);
+void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
+void config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
 
 /* Remove one node from block/list.
    ..set_str() with value = NULL does the same. */

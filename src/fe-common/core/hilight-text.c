@@ -50,16 +50,16 @@ static void hilight_add_config(HILIGHT_REC *rec)
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_set_str(node, "text", rec->text);
-        if (rec->level > 0) config_node_set_int(node, "level", rec->level);
+        if (rec->level > 0) iconfig_node_set_int(node, "level", rec->level);
         if (rec->color) iconfig_node_set_str(node, "color", rec->color);
-        if (rec->nick) config_node_set_bool(node, "nick", TRUE);
-        if (rec->nickmask) config_node_set_bool(node, "mask", TRUE);
-        if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
-        if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
+        if (rec->nick) iconfig_node_set_bool(node, "nick", TRUE);
+        if (rec->nickmask) iconfig_node_set_bool(node, "mask", TRUE);
+        if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
+        if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = config_node_section(node, "channels", NODE_TYPE_LIST);
-		config_node_add_list(node, rec->channels);
+		iconfig_node_add_list(node, rec->channels);
 	}
 }
 

@@ -351,12 +351,12 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	iconfig_node_set_str(node, "address", rec->address);
 	iconfig_node_set_str(node, "chatnet", rec->chatnet);
 
-	config_node_set_int(node, "port", rec->port);
+	iconfig_node_set_int(node, "port", rec->port);
 	iconfig_node_set_str(node, "password", rec->password);
 	iconfig_node_set_str(node, "own_host", rec->own_host);
 
 	if (rec->autoconnect)
-		config_node_set_bool(node, "autoconnect", TRUE);
+		iconfig_node_set_bool(node, "autoconnect", TRUE);
 
 	signal_emit("server setup saved", 2, rec, node);
 }

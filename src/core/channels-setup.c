@@ -77,7 +77,7 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 	iconfig_node_set_str(node, "name", channel->name);
 	iconfig_node_set_str(node, "chatnet", channel->chatnet);
 	if (channel->autojoin)
-		config_node_set_bool(node, "autojoin", TRUE);
+		iconfig_node_set_bool(node, "autojoin", TRUE);
 	iconfig_node_set_str(node, "password", channel->password);
 	iconfig_node_set_str(node, "botmasks", channel->botmasks);
 	iconfig_node_set_str(node, "autosendcmd", channel->autosendcmd);

@@ -33,19 +33,19 @@ void notifylist_add_config(NOTIFYLIST_REC *rec)
 	node = config_node_section(node, rec->mask, NODE_TYPE_BLOCK);
 
 	if (rec->away_check)
-		config_node_set_bool(node, "away_check", TRUE);
+		iconfig_node_set_bool(node, "away_check", TRUE);
 	else
 		iconfig_node_set_str(node, "away_check", NULL);
 
 	if (rec->idle_check_time > 0)
-		config_node_set_int(node, "idle_check_time", rec->idle_check_time/60);
+		iconfig_node_set_int(node, "idle_check_time", rec->idle_check_time/60);
 	else
 		iconfig_node_set_str(node, "idle_check_time", NULL);
 
 	iconfig_node_set_str(node, "ircnets", NULL);
 	if (rec->ircnets != NULL && *rec->ircnets != NULL) {
 		node = config_node_section(node, "ircnets", NODE_TYPE_LIST);
-		config_node_add_list(node, rec->ircnets);
+		iconfig_node_add_list(node, rec->ircnets);
 	}
 }
 

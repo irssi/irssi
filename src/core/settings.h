@@ -30,9 +30,12 @@ typedef struct {
 
 #define iconfig_node_traverse(a, b) config_node_traverse(mainconfig, a, b)
 #define iconfig_node_set_str(a, b, c) config_node_set_str(mainconfig, a, b, c)
+#define iconfig_node_set_int(a, b, c) config_node_set_int(mainconfig, a, b, c)
+#define iconfig_node_set_bool(a, b, c) config_node_set_bool(mainconfig, a, b, c)
 #define iconfig_node_list_remove(a, b) config_node_list_remove(mainconfig, a, b)
 #define iconfig_node_remove(a, b) config_node_remove(mainconfig, a, b)
 #define iconfig_node_clear(a) config_node_clear(mainconfig, a)
+#define iconfig_node_add_list(a, b) config_node_add_list(mainconfig, a, b)
 
 extern CONFIG_REC *mainconfig;
 

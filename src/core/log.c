@@ -319,7 +319,7 @@ static void log_update_config(LOG_REC *log)
 	node = config_node_section(node, log->fname, NODE_TYPE_BLOCK);
 
 	if (log->autoopen)
-		config_node_set_bool(node, "auto_open", TRUE);
+		iconfig_node_set_bool(node, "auto_open", TRUE);
 	else
 		iconfig_node_set_str(node, "auto_open", NULL);
 
