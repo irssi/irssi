@@ -47,8 +47,9 @@ static void exec_wi_destroy(EXEC_WI_REC *rec)
         g_return_if_fail(rec != NULL);
 
 	if (rec->destroying) return;
-        rec->destroying = TRUE;
+	rec->destroying = TRUE;
 
+	rec->process->target_item = NULL;
 	if (window_item_window((WI_ITEM_REC *) rec) != NULL)
 		window_item_destroy((WI_ITEM_REC *) rec);
 
@@ -464,10 +465,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
 			g_free_and_null(rec->target);
 			rec->target_win = active_win;
 
-			if (rec->target_item != NULL) {
+			if (rec->target_item != NULL)
 				exec_wi_destroy(rec->target_item);
-                                rec->target_item = NULL;
-			}
 
 			if (interactive) {
 				rec->target_item =
