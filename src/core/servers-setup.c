@@ -329,7 +329,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
-	rec->own_host = g_strdup(config_node_get_str(node, "own_host", 0));
+	rec->own_host = g_strdup(config_node_get_str(node, "own_host", NULL));
 
 	setupservers = g_slist_append(setupservers, rec);
 	return rec;
