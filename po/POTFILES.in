@@ -25,6 +25,7 @@ src/core/servers-reconnect.c
 src/core/channels.c
 src/core/servers.c
 src/core/chat-protocols.c
+src/core/chat-commands.c
 src/core/nicklist.c
 src/core/masks.c
 src/irc/bot/bot-events.c
@@ -54,9 +55,9 @@ src/irc/core/mode-lists.c
 src/irc/core/modes.c
 src/irc/core/netsplit.c
 src/irc/core/irc-masks.c
-src/irc/core/irc-channels.c
 src/irc/core/server-idle.c
 src/irc/core/irc-servers-reconnect.c
+src/irc/core/irc-channels.c
 src/irc/core/irc-servers-setup.c
 src/irc/core/irc-commands.c
 src/irc/core/irc-servers.c
@@ -72,6 +73,9 @@ src/irc/notifylist/notify-setup.c
 src/irc/notifylist/notify-whois.c
 src/irc/notifylist/notifylist.c
 src/irc/irc.c
+src/irc/proxy/dump.c
+src/irc/proxy/listen.c
+src/irc/proxy/proxy.c
 src/fe-common/core/autorun.c
 src/fe-common/core/command-history.c
 src/fe-common/core/completion.c
@@ -91,6 +95,7 @@ src/fe-common/core/window-items.c
 src/fe-common/core/windows.c
 src/fe-common/core/fe-channels.c
 src/fe-common/core/fe-queries.c
+src/fe-common/core/fe-messages.c
 src/fe-common/core/fe-modules.c
 src/fe-common/core/hilight-text.c
 src/fe-common/core/window-save.c
@@ -104,8 +109,6 @@ src/fe-common/irc/fe-irc-commands.c
 src/fe-common/irc/fe-irc-server.c
 src/fe-common/irc/fe-ircnet.c
 src/fe-common/irc/fe-netsplit.c
-src/fe-common/irc/irc-hilight-text.c
-src/fe-common/irc/irc-window-activity.c
 src/fe-common/irc/module-formats.c
 src/fe-common/irc/flood/fe-flood.c
 src/fe-common/irc/flood/module-formats.c
@@ -125,11 +128,11 @@ src/fe-text/gui-windows.c
 src/fe-text/irssi.c
 src/fe-text/module-formats.c
 src/fe-text/screen.c
-src/fe-text/statusbar-items.c
 src/fe-text/statusbar.c
 src/fe-text/gui-readline.c
 src/fe-text/mainwindow-activity.c
 src/fe-text/mainwindows.c
+src/fe-text/statusbar-items.c
 src/lib-config/get.c
 src/lib-config/parse.c
 src/lib-config/set.c
