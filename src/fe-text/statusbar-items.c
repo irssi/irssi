@@ -402,11 +402,11 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int get_size_only)
 			g_string_sprintfa(str, "%d.%02d", server->lag/1000,
 					  (server->lag % 1000)/10);
 			if (lag_unknown)
-				g_string_append(str, " (??)");
+				g_string_append(str, " (?""?)");
 		}
 	} else {
 		/* big lag, still waiting .. */
-		g_string_sprintfa(str, "%ld (??)",
+		g_string_sprintfa(str, "%ld (?""?)",
 				  (long) (now-server->lag_sent));
 	}
 
