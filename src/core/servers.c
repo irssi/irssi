@@ -101,11 +101,22 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 	char *tag;
 	int num;
 
-        g_return_val_if_fail(IS_SERVER_CONNECT(conn), NULL);
+	g_return_val_if_fail(IS_SERVER_CONNECT(conn), NULL);
 
 	tag = conn->chatnet != NULL && *conn->chatnet != '\0' ?
 		g_strdup(conn->chatnet) :
 		server_create_address_tag(conn->address);
+
+	if (conn->tag != NULL && server_find_tag(conn->tag) == NULL &&
+	    strncmp(conn->tag, tag, strlen(tag)) == 0) {
+		/* use the existing tag if it begins with the same ID -
+		   this is useful when you have several connections to
+		   same server and you want to keep the same tags with
+		   the servers (or it would cause problems when rejoining
+		   /LAYOUT SAVEd channels). */
+		return g_strdup(conn->tag);
+	}
+
 
 	/* then just append numbers after tag until unused is found.. */
 	str = g_string_new(tag);
@@ -410,6 +421,7 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->proxy_string);
 	g_free_not_null(conn->proxy_password);
 
+	g_free_not_null(conn->tag);
 	g_free_not_null(conn->address);
 	g_free_not_null(conn->chatnet);
 

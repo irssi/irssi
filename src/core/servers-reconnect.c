@@ -37,6 +37,9 @@ static int reconnect_time;
 
 void reconnect_save_status(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 {
+        g_free_not_null(conn->tag);
+	conn->tag = g_strdup(server->tag);
+
 	g_free_not_null(conn->away_reason);
 	conn->away_reason = !server->usermode_away ? NULL :
 		g_strdup(server->away_reason);
@@ -133,6 +136,8 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->proxy_string = g_strdup(src->proxy_string);
 	dest->proxy_password = g_strdup(src->proxy_password);
 
+	dest->tag = g_strdup(src->tag);
+
 	if (connect_info) {
                 dest->family = src->family;
 		dest->address = g_strdup(src->address);
@@ -224,7 +229,7 @@ static void sig_reconnect(SERVER_REC *server)
 	}
 
 	/* always try to first connect to the first on the list where we
-	   haven't got unsuccessful connection attempts for the last half
+	   haven't got unsuccessful connection attempts for the past half
 	   an hour. */
 
 	now = time(NULL);
@@ -385,13 +390,11 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 static void cmd_disconnect(const char *data, SERVER_REC *server)
 {
 	RECONNECT_REC *rec;
-	int tag;
 
 	if (g_strncasecmp(data, "RECON-", 6) != 0)
 		return; /* handle only reconnection removing */
 
-	rec = sscanf(data+6, "%d", &tag) == 1 && tag > 0 ?
-		reconnect_find_tag(tag) : NULL;
+	rec = reconnect_find_tag(atoi(data+6));
 
 	if (rec == NULL)
 		signal_emit("server reconnect not found", 1, data);

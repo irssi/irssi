@@ -9,6 +9,7 @@ int proxy_port;
 char *proxy_string, *proxy_password;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
+char *tag; /* try to keep this tag when connected to server */
 char *address;
 int port;
 char *chatnet;

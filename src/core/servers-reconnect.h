@@ -6,7 +6,7 @@
 #define FAILED_RECONNECT_WAIT (60*30)
 
 typedef struct {
-	int tag;
+        int tag;
 	time_t next_connect;
 
 	SERVER_CONNECT_REC *conn;
