@@ -391,7 +391,7 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	}
 
 	nest_free = FALSE; nest_value = NULL;
-	if (**cmd == '(') {
+	if (**cmd == '(' && (*cmd)[1] != '\0') {
 		/* subvariable */
 		int toplevel = nested_orig_cmd == NULL;
 
@@ -407,6 +407,9 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 						   flags);
 		}
 
+		if (nest_value == NULL || *nest_value == '\0')
+			return NULL;
+
 		while ((*nested_orig_cmd)[1] != '\0') {
 			(*nested_orig_cmd)++;
 			if (**nested_orig_cmd == ')')
@@ -421,6 +424,8 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 		brackets = FALSE;
 	else {
 		/* special value is inside {...} (foo${test}bar -> fooXXXbar) */
+		if ((*cmd)[1] == '\0')
+			return NULL;
 		(*cmd)++;
 		brackets = TRUE;
 	}
