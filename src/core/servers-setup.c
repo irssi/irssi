@@ -43,7 +43,7 @@ static void save_ips(IPADDR *ip4, IPADDR *ip6,
 	else {
                 if (*save_ip4 == NULL)
 			*save_ip4 = g_new(IPADDR, 1);
-		memcpy(*save_ip4, &ip4, sizeof(IPADDR));
+		memcpy(*save_ip4, ip4, sizeof(IPADDR));
 	}
 
 	if (ip6->family == 0)
@@ -51,7 +51,7 @@ static void save_ips(IPADDR *ip4, IPADDR *ip6,
 	else {
                 if (*save_ip6 == NULL)
 			*save_ip6 = g_new(IPADDR, 1);
-		memcpy(*save_ip6, &ip6, sizeof(IPADDR));
+		memcpy(*save_ip6, ip6, sizeof(IPADDR));
 	}
 }
 
