@@ -39,6 +39,8 @@ void irssi_add_object(int type, int chat_type, const char *stash,
 void irssi_add_plain(const char *stash, PERL_OBJECT_FUNC func);
 void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects);
 
+char *perl_get_use_list(void);
+
 void perl_common_init(void);
 void perl_common_deinit(void);
 

@@ -30,6 +30,7 @@
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "commands.h"
@@ -55,6 +56,7 @@ typedef struct {
 } PERL_OBJECT_REC;
 
 static GHashTable *iobject_stashes, *plain_stashes;
+static GSList *use_protocols;
 
 /* returns the package who called us */
 char *perl_get_package(void)
@@ -137,6 +139,22 @@ void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects)
                 irssi_add_plain(objects->name, objects->fill_func);
                 objects++;
 	}
+}
+
+char *perl_get_use_list(void)
+{
+	GString *str;
+	GSList *tmp;
+        char *ret;
+
+	str = g_string_new(NULL);
+
+	for (tmp = use_protocols; tmp != NULL; tmp = tmp->next)
+		g_string_sprintfa(str, "use Irssi::%s;", (char *) tmp->data);
+
+	ret = str->str;
+        g_string_free(str, FALSE);
+        return ret;
 }
 
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
@@ -425,8 +443,16 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 		"Channel", "Query",
 		"Nick"
 	};
-	char *name, stash[100], code[100];
+	static char *find_use_code =
+		"my $pkg = Irssi::%s; $pkg =~ s/::/\\//;\n"
+		"foreach my $i (@INC) {\n"
+		"  return 1 if (-f \"$i/$pkg.pm\");\n"
+		"}\n"
+		"return 0;\n";
+
+	char *name, stash[100], code[100], *pcode;
 	int type, chat_type, n;
+        SV *sv;
 
 	chat_type = chat_protocol_lookup(rec->name);
 	g_return_if_fail(chat_type >= 0);
@@ -469,6 +495,16 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 			   name, items[n], items[n]);
 		perl_eval_pv(code, TRUE);
 	}
+
+	pcode = g_strdup_printf(find_use_code, name);
+	sv = perl_eval_pv(pcode, TRUE);
+	g_free(pcode);
+
+	if (SvIV(sv)) {
+		use_protocols =
+			g_slist_append(use_protocols, g_strdup(name));
+	}
+
 	g_free(name);
 }
 
@@ -478,7 +514,7 @@ static void free_iobject_hash(void *key, PERL_OBJECT_REC *rec)
 	g_free(rec);
 }
 
-static int perl_free_protocol(void *key, void *value, void *chat_type)
+static int free_iobject_proto(void *key, void *value, void *chat_type)
 {
 	if ((GPOINTER_TO_INT(key) >> 24) == GPOINTER_TO_INT(chat_type)) {
                 free_iobject_hash(key, value);
@@ -490,7 +526,16 @@ static int perl_free_protocol(void *key, void *value, void *chat_type)
 
 static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 {
-	g_hash_table_foreach_remove(iobject_stashes, (GHRFunc) perl_free_protocol,
+        GSList *item;
+
+	item = gslist_find_icase_string(use_protocols, rec->name);
+	if (item != NULL) {
+		g_free(item->data);
+		use_protocols =
+			g_slist_remove(use_protocols, item->data);
+	}
+	g_hash_table_foreach_remove(iobject_stashes,
+				    (GHRFunc) free_iobject_proto,
 				    GINT_TO_POINTER(rec->id));
 }
 
@@ -536,6 +581,9 @@ void perl_common_deinit(void)
 
 	g_hash_table_foreach(plain_stashes, (GHFunc) g_free, NULL);
 	g_hash_table_destroy(plain_stashes);
+
+	g_slist_foreach(use_protocols, (GFunc) g_free, NULL);
+        g_slist_free(use_protocols);
 
 	signal_remove("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
 	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) sig_protocol_destroyed);

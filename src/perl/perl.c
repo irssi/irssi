@@ -381,16 +381,24 @@ static void cmd_run(const char *data)
 static void cmd_perl(const char *data)
 {
 	dSP;
-        GString *code;
+	GString *code;
+	char *uses;
+        SV *sv;
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
 
-	code = g_string_new("use Irssi;\n");
-        g_string_append(code, data);
-	perl_eval_pv(code->str, G_NOARGS|G_EVAL|G_DISCARD);
+	code = g_string_new(NULL);
+
+	uses = perl_get_use_list();
+	g_string_sprintf(code, "sub { use Irssi;%s\n%s }", uses, data);
+
+	sv = perl_eval_pv(code->str, TRUE);
+	perl_call_sv(sv, G_VOID|G_NOARGS|G_EVAL|G_DISCARD);
+
+        g_free(uses);
 	g_string_free(code, TRUE);
 
 	SPAGAIN;
