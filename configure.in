@@ -510,7 +510,7 @@ dnl **
 if test "x$want_textui" = "xyes"; then
 	AC_CHECK_CURSES
 
-	LIBS="$LIBS $CURSES_LIBS"
+	TEXTUI_LIBS="$CURSES_LIBS"
 	if test "x$has_curses" = "xtrue"; then
        		AC_CHECK_FUNC(use_default_colors, AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS))
        		AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
@@ -521,19 +521,21 @@ if test "x$want_textui" = "xyes"; then
 		])
 	else
 		AC_CHECK_LIB(tinfo, setupterm, [
-		  LIBS="$LIBS -ltinfo"
+		  TEXTUI_LIBS="-ltinfo"
 		  want_terminfo=yes
 		], AC_CHECK_LIB(termlib, tgetent, [
-		  LIBS="$LIBS -ltermlib"
+		  TEXTUI_LIBS="-ltermlib"
 		  want_termcap=yes
 		], AC_CHECK_LIB(termcap, tgetent, [
-		  LIBS="$LIBS -ltermcap"
+		  TEXTUI_LIBS="-ltermcap"
 		  want_termcap=yes
 		], [
 		  AC_ERROR(Terminfo/termcap not found - install ncurses-devel package)
 		  want_textui=no
 		])))
         fi
+	AC_SUBST(TEXTUI_LIBS)
+
        	if test "x$want_termcap" = "xyes"; then
        		AC_CHECK_FUNC(tparm,, need_tparm=yes)
 	else

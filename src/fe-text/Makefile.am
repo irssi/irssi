@@ -20,7 +20,8 @@ irssi_LDADD = \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@ \
 	@PERL_LINK_FLAGS@ \
-	@PROG_LIBS@
+	@PROG_LIBS@ \
+	@TEXTUI_LIBS@
 
 tparm_sources = \
 	tparm.c
