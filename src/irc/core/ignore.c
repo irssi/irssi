@@ -106,7 +106,7 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 				irc_mask_match_address(rec->mask, nick, host);
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
-				if (!rec->replies || channel == NULL ||
+				if (!rec->replies || channel == NULL || text == NULL ||
 				    !ignore_check_replies(rec, server, channel, text))
 					continue;
 			}
