@@ -28,7 +28,6 @@
      - active server tag somewhere in window
  - word wrapping doesn't work perfectly, if colors/bolds/etc are used, they're
    treated as spaces. So things like (<newline>blah blah) can happen (/who)
- - autojoining to channels, make the code common in gui-gnome and gui-text
 
 *** Big things
 
@@ -104,6 +103,7 @@
     - when clicking an empty spot on screen it sometimes tells that there's
       some weird crap in there..
     - word wrapping
+     - make window/save buffer and find work
  - notify list:
      - dialog: keep track of hosts/realnames so after closing and opening the
        dialog again they would show up.. 
@@ -119,7 +119,6 @@
    windows (all, current, status)
  - gui for configuring plugin specific theme format texts
  - awaylog (/log create ~/away.log -all +msgs or something), autoaway
- - make window/save buffer and find work with zvt
  - dcc send: allow selection of multiple files to send (also for dnd from
    gmc!) Allow dropping files to anywhere in irssi.
  - logging: longer format dd.mm.yy hh:mm:ss (configurable?)

@@ -100,7 +100,6 @@ typedef struct
 }
 SETUP_SERVER_REC;
 
-/* servers */
 extern GList *setupservers; /* list of local servers */
 extern GList *ircnets; /* list of available ircnets */
 extern gint server_reconnect_time; /* reconnect to server no sooner than n seconds */
@@ -109,6 +108,24 @@ extern gboolean source_host_ok; /* Use source_host_ip .. */
 extern IPADDR source_host_ip; /* Resolved address */
 extern gchar *default_nick, *alternate_nick, *user_name, *real_name;
 extern gboolean toggle_skip_motd;
+
+/* channels */
+typedef struct
+{
+    gboolean autojoin;
+    gchar *name;
+    gchar *ircnet;
+    gchar *password;
+
+    gchar *botmasks;
+    gchar *autosendcmd;
+
+    gchar *background;
+    gchar *font;
+}
+SETUP_CHANNEL_REC;
+
+extern GList *setupchannels;
 
 /* IRC proxy */
 extern gboolean toggle_use_ircproxy;
