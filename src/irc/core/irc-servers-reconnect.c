@@ -86,12 +86,16 @@ static void event_nick_collision(IRC_SERVER_REC *server, const char *data)
 		settings_get_int("server_reconnect_time");
 	if (server->connect_time > new_connect)
 		server->connect_time = new_connect;
+
+        server->nick_collision = TRUE;
 }
 
 static void event_kill(IRC_SERVER_REC *server, const char *data)
 {
-	/* don't reconnect if we were killed */
-        server->no_reconnect = TRUE;
+	if (!server->nick_collision) {
+		/* don't reconnect if we were killed */
+		server->no_reconnect = TRUE;
+	}
 }
 
 void irc_servers_reconnect_init(void)
