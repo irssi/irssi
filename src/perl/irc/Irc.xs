@@ -13,6 +13,15 @@ static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
        	hv_store(hv, "real_address", 12, new_pv(server->real_address), 0);
        	hv_store(hv, "usermode", 8, new_pv(server->usermode), 0);
        	hv_store(hv, "userhost", 8, new_pv(server->userhost), 0);
+
+	hv_store(hv, "max_cmds_at_once", 17, newSViv(server->max_cmds_at_once), 0);
+	hv_store(hv, "cmd_queue_speed", 16, newSViv(server->cmd_queue_speed), 0);
+	hv_store(hv, "max_query_chans", 16, newSViv(server->max_query_chans), 0);
+
+	hv_store(hv, "max_kicks_in_cmd", 16, newSViv(server->max_kicks_in_cmd), 0);
+	hv_store(hv, "max_msgs_in_cmd", 15, newSViv(server->max_msgs_in_cmd), 0);
+	hv_store(hv, "max_modes_in_cmd", 16, newSViv(server->max_modes_in_cmd), 0);
+	hv_store(hv, "max_whois_in_cmd", 16, newSViv(server->max_whois_in_cmd), 0);
 }
 
 static void perl_ban_fill_hash(HV *hv, BAN_REC *ban)
