@@ -19,6 +19,9 @@ echo "/* automatically created by autogen.sh */" > irssi-version.h.in
 echo "#define IRSSI_VERSION \"@VERSION@\"" >> irssi-version.h.in
 echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h.in
 
+# create POTFILES.in
+find src -name '*.c'|grep -v 'src/perl/.*/' > po/POTFILES.in
+
 # create help files
 perl syntax.pl
 files=`echo docs/help/in/*.in|sed -e 's/docs\/help\/in\///g' -e 's/Makefile.in //'`
