@@ -3,6 +3,8 @@
 #include "window-item-rec.h"
 
 char *topic;
+char *topic_by;
+time_t topic_time;
 GHashTable *nicks; /* list of nicks */
 
 int no_modes:1; /* channel doesn't support modes */

@@ -322,6 +322,34 @@ static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	g_free(str);
 }
 
+static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	CHANNEL_REC *channel;
+	char *timestr;
+	struct tm *tm;
+	
+	g_return_if_fail(data != NULL);
+
+	channel = *data != '\0' ? channel_find(server, data) : CHANNEL(item);
+	if (channel == NULL) return;
+	
+	printformat(server, channel->name, MSGLEVEL_CRAP,
+		    channel->topic == NULL ? IRCTXT_NO_TOPIC : IRCTXT_TOPIC,
+		    channel->name, channel->topic);
+
+	if (channel->topic_time > 0) {
+		tm = localtime(&channel->topic_time);
+		timestr = g_strdup(asctime(tm));
+		if (timestr[strlen(timestr)-1] == '\n')
+			timestr[strlen(timestr)-1] = '\0';
+
+		printformat(server, channel->name, MSGLEVEL_CRAP,
+			    IRCTXT_TOPIC_INFO, channel->topic_by, timestr);
+		g_free(timestr);
+	}
+	signal_stop();
+}
+
 /* SYNTAX: TS */
 static void cmd_ts(const char *data)
 {
@@ -350,6 +378,7 @@ void fe_irc_commands_init(void)
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("nick", NULL, (SIGNAL_FUNC) cmd_nick);
 	command_bind("ver", NULL, (SIGNAL_FUNC) cmd_ver);
+	command_bind("topic", NULL, (SIGNAL_FUNC) cmd_topic);
 	command_bind("ts", NULL, (SIGNAL_FUNC) cmd_ts);
 }
 
@@ -366,5 +395,6 @@ void fe_irc_commands_deinit(void)
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
+	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);
 }

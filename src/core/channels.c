@@ -78,6 +78,7 @@ void channel_destroy(CHANNEL_REC *channel)
 
         MODULE_DATA_DEINIT(channel);
 	g_free_not_null(channel->topic);
+	g_free_not_null(channel->topic_by);
 	g_free_not_null(channel->key);
 	g_free(channel->mode);
 	g_free(channel->name);

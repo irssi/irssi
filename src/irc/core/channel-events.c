@@ -93,18 +93,28 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void channel_change_topic(IRC_SERVER_REC *server, const char *channel, const char *topic)
+static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
+				 const char *topic, const char *setby,
+				 time_t settime)
 {
 	CHANNEL_REC *chanrec;
 
 	chanrec = channel_find(SERVER(server), channel);
-	if (chanrec != NULL) {
+	if (chanrec == NULL) return;
+
+	if (topic != NULL) {
 		g_free_not_null(chanrec->topic);
 		chanrec->topic = *topic == '\0' ? NULL : g_strdup(topic);
-
-		signal_emit("channel topic changed", 1, chanrec);
 	}
+	
+	g_free_not_null(chanrec->topic_by);
+	chanrec->topic_by = g_strdup(setby);
+	
+	chanrec->topic_time = settime;
+
+	signal_emit("channel topic changed", 1, chanrec);
 }
+
 static void event_topic_get(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel, *topic;
@@ -112,18 +122,34 @@ static void event_topic_get(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &topic);
-	channel_change_topic(server, channel, topic);
+	channel_change_topic(server, channel, topic, NULL, 0);
 	g_free(params);
 }
 
-static void event_topic(const char *data, IRC_SERVER_REC *server)
+static void event_topic(const char *data, IRC_SERVER_REC *server,
+			const char *nick)
 {
 	char *params, *channel, *topic;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, &channel, &topic);
-	channel_change_topic(server, channel, topic);
+	channel_change_topic(server, channel, topic, nick, time(NULL));
+	g_free(params);
+}
+
+static void event_topic_info(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *channel, *topicby, *topictime;
+	time_t t;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 4, NULL, &channel,
+				  &topicby, &topictime);
+
+	t = (time_t) atol(topictime);
+	channel_change_topic(server, channel, NULL, topicby, t);
 	g_free(params);
 }
 
@@ -283,6 +309,7 @@ void channel_events_init(void)
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event invite", (SIGNAL_FUNC) event_invite);
 	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
+	signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable); /* channel/nick unavailable */
 }
 
@@ -303,5 +330,6 @@ void channel_events_deinit(void)
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);
 	signal_remove("event invite", (SIGNAL_FUNC) event_invite);
 	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
+	signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable); /* channel/nick unavailable */
 }
