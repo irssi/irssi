@@ -377,7 +377,7 @@ static char *expand_escapes(const char *line, IRC_SERVER_REC *server, WI_IRC_REC
 			case 'n':
 				/* newline .. we need to send another "send text" event to handle it (or actually the text before the newline..) */
 				*ptr = '\0';
-                                signal_emit("send text", 3, line, server, item);
+                                signal_emit("send text", 3, ret, server, item);
 				ptr = ret;
 				break;
 			case 't':
