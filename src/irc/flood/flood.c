@@ -211,7 +211,7 @@ static void flood_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	params = event_get_params(data, 2, &target, &text);
 
 	level = ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
-	if (addr != NULL && !ignore_check(server, nick, addr, target, text, level))
+	if (addr != NULL && !ignore_check(SERVER(server), nick, addr, target, text, level))
 		flood_newmsg(server, level, nick, addr, target);
 
 	g_free(params);
@@ -228,7 +228,7 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 		return;
 
 	params = event_get_params(data, 2, &target, &text);
-	if (!ignore_check(server, nick, addr, target, text, MSGLEVEL_NOTICES))
+	if (!ignore_check(SERVER(server), nick, addr, target, text, MSGLEVEL_NOTICES))
 		flood_newmsg(server, MSGLEVEL_NOTICES, nick, addr, target);
 
 	g_free(params);
@@ -246,7 +246,7 @@ static void flood_ctcp(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	level = g_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :
 		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
-	if (!ignore_check(server, nick, addr, target, data, level))
+	if (!ignore_check(SERVER(server), nick, addr, target, data, level))
 		flood_newmsg(server, level, nick, addr, target);
 }
 

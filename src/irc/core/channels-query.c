@@ -128,7 +128,8 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-	if (channel->server != NULL && !channel->synced)
+	if (IS_IRC_CHANNEL(channel) && channel->server != NULL &&
+	    !channel->synced)
 		channel_query_remove_all(channel);
 }
 

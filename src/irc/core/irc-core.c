@@ -27,7 +27,6 @@
 #include "irc-queries.h"
 
 #include "ctcp.h"
-#include "ignore.h"
 #include "irc.h"
 #include "netsplit.h"
 
@@ -71,7 +70,6 @@ void irc_core_init(void)
 	irc_irc_init();
 	lag_init();
 	netsplit_init();
-	ignore_init();
 	irc_rawlog_init();
 	irc_special_vars_init();
 	irc_log_init();
@@ -82,7 +80,6 @@ void irc_core_deinit(void)
         irc_log_deinit();
 	irc_special_vars_deinit();
 	irc_rawlog_deinit();
-	ignore_deinit();
 	netsplit_deinit();
 	lag_deinit();
 	irc_commands_deinit();

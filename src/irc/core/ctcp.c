@@ -120,7 +120,7 @@ static void ctcp_msg(const char *data, IRC_SERVER_REC *server,
 {
 	char *args, *str;
 
-	if (ignore_check(server, nick, addr, target, data, MSGLEVEL_CTCPS))
+	if (ignore_check(SERVER(server), nick, addr, target, data, MSGLEVEL_CTCPS))
 		return;
 
 	str = g_strconcat("ctcp msg ", data, NULL);
@@ -140,7 +140,7 @@ static void ctcp_reply(const char *data, IRC_SERVER_REC *server,
 {
 	char *args, *str;
 
-	if (ignore_check(server, nick, addr, target, data, MSGLEVEL_CTCPS))
+	if (ignore_check(SERVER(server), nick, addr, target, data, MSGLEVEL_CTCPS))
 		return;
 
 	str = g_strconcat("ctcp reply ", data, NULL);

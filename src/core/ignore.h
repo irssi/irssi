@@ -20,7 +20,7 @@ typedef struct {
 
 extern GSList *ignores;
 
-int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
+int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);

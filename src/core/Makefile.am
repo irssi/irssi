@@ -22,6 +22,7 @@ libcore_a_SOURCES = \
 	chat-protocols.c \
 	chatnets.c \
 	core.c \
+        ignore.c \
         levels.c \
 	line-split.c \
 	log.c \
@@ -62,6 +63,7 @@ noinst_HEADERS = \
 	chat-protocols.h \
 	chatnets.h \
 	core.h \
+        ignore.h \
         levels.h \
 	line-split.h \
 	log.h \

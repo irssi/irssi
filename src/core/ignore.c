@@ -25,21 +25,20 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "irc.h"
-#include "irc-masks.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-nicklist.h"
+#include "masks.h"
+#include "servers.h"
+#include "channels.h"
+#include "nicklist.h"
 
 #include "ignore.h"
 
 GSList *ignores;
 
 /* check if `text' contains ignored nick at the start of the line. */
-static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
+static int ignore_check_replies(IGNORE_REC *rec, SERVER_REC *server,
 				const char *channel, const char *text)
 {
-	IRC_CHANNEL_REC *chanrec;
+	CHANNEL_REC *chanrec;
 	GSList *nicks, *tmp;
 
 	g_return_val_if_fail(rec != NULL, FALSE);
@@ -47,16 +46,16 @@ static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 	g_return_val_if_fail(channel != NULL, FALSE);
 	g_return_val_if_fail(text != NULL, FALSE);
 
-	chanrec = irc_channel_find(server, channel);
+	chanrec = channel_find(server, channel);
 	if (chanrec == NULL) return FALSE;
 
-	nicks = nicklist_find_multiple(CHANNEL(chanrec), rec->mask);
+	nicks = nicklist_find_multiple(chanrec, rec->mask);
 	if (nicks == NULL) return FALSE;
 
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *nick = tmp->data;
 
-		if (nick_match_msg(SERVER(server), text, nick->nick))
+		if (nick_match_msg(server, text, nick->nick))
 			return TRUE;
 	}
 	g_slist_free(nicks);
@@ -64,7 +63,7 @@ static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 	return FALSE;
 }
 
-int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
+int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
 {
 	GSList *tmp;
@@ -86,7 +85,7 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 
 		/* channel list */
 		if (rec->channels != NULL) {
-			if (channel == NULL || !ischannel(*channel))
+			if (channel == NULL || !server->ischannel(*channel))
 				continue;
 			if (strarray_find(rec->channels, channel) == -1)
 				continue;
@@ -103,7 +102,7 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 
 			ok = ((host == NULL || *host == '\0')) ?
 				match_wildcards(rec->mask, nick) :
-				mask_match_address(SERVER(server), rec->mask, nick, host);
+				mask_match_address(server, rec->mask, nick, host);
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
 				if (!rec->replies || channel == NULL || text == NULL ||
@@ -114,7 +113,10 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 
 		/* pattern */
 		patt_len = 0;
-		if (rec->pattern != NULL && text != NULL) {
+		if (rec->pattern != NULL) {
+			if (text == NULL)
+				continue;
+
 			if (!mask_len && !best_mask) {
 				patt_len = strlen(rec->pattern);
 				if (patt_len <= best_patt) continue;

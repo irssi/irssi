@@ -33,6 +33,7 @@
 #include "commands.h"
 #include "log.h"
 #include "rawlog.h"
+#include "ignore.h"
 #include "special-vars.h"
 
 #include "channels.h"
@@ -57,6 +58,7 @@ void core_init(void)
 
 	chat_protocols_init();
 	chatnets_init();
+	ignore_init();
 	servers_init();
 	log_init();
 	rawlog_init();
@@ -84,6 +86,7 @@ void core_deinit(void)
 	rawlog_deinit();
 	log_deinit();
 	servers_deinit();
+	ignore_deinit();
 	chatnets_deinit();
 	chat_protocols_deinit();
 

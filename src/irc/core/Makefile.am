@@ -11,7 +11,6 @@ libirc_core_a_SOURCES = \
         channels-query.c \
         channel-events.c \
         channel-rejoin.c \
-        ignore.c \
         irc.c \
         irc-core.c \
         irc-channels.c \
@@ -37,7 +36,6 @@ libirc_core_a_SOURCES = \
 noinst_HEADERS = \
 	bans.h \
         ctcp.h \
-        ignore.h \
         irc.h \
         irc-channels.h \
 	irc-chatnets.h \
