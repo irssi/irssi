@@ -427,7 +427,12 @@ static void cmd_window_server(const char *data)
 
 static void cmd_window_item(const char *data, void *server, WI_ITEM_REC *item)
 {
-	command_runsub("window item", data, server, item);
+        while (*data == ' ') data++;
+
+	if (is_numeric(data, '\0'))
+		signal_emit("command window item goto", 3, data, server, item);
+	else
+		command_runsub("window item", data, server, item);
 }
 
 /* SYNTAX: WINDOW ITEM PREV */
@@ -442,12 +447,20 @@ static void cmd_window_item_next(void)
 	window_item_next(active_win);
 }
 
-/* SYNTAX: WINDOW ITEM GOTO <name> */
+/* SYNTAX: WINDOW ITEM GOTO <number>|<name> */
 static void cmd_window_item_goto(const char *data, SERVER_REC *server)
 {
-        WI_ITEM_REC *item;
+	WI_ITEM_REC *item;
+	GSList *tmp;
 
-        item = window_item_find_window(active_win, server, data);
+	if (is_numeric(data, '\0')) {
+		/* change to specified number */
+		tmp = g_slist_nth(active_win->items, atoi(data)-1);
+		item = tmp == NULL ? NULL : tmp->data;
+	} else {
+		item = window_item_find_window(active_win, server, data);
+	}
+
         if (item != NULL)
                 window_item_set_active(active_win, item);
 }
