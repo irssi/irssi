@@ -18,6 +18,17 @@ typedef struct {
 	char *ircnet;
 
 	IPADDR *own_ip;
+
+	char *password;
+	char *nick;
+	char *username;
+	char *realname;
+
+	/* when reconnecting, the old server status */
+	int reconnection:1; /* we're trying to reconnect */
+	char *channels;
+	char *away_reason;
+	char *usermode;
 } SERVER_CONNECT_REC;
 
 typedef struct {
@@ -25,6 +36,7 @@ typedef struct {
 
 	SERVER_CONNECT_REC *connrec;
 	time_t connect_time; /* connection time */
+	time_t real_connect_time; /* time when server replied that we really are connected */
 
 	char *tag; /* tag name for addressing server */
 	char *nick; /* current nick */
@@ -48,6 +60,11 @@ typedef struct {
 	void *rawlog;
 	void *buffer; /* receive buffer */
 	GHashTable *module_data;
+
+	char *version; /* server version */
+	char *away_reason;
+	int usermode_away:1;
+	int banned:1; /* not allowed to connect to this server */
 } SERVER_REC;
 
 extern GSList *servers, *lookup_servers;

@@ -27,21 +27,23 @@ typedef struct {
 
 	IPADDR *own_ip;
 
-        /* -- IRC specific - change if you wish -- */
 	char *password;
-	char *nick, *alternate_nick;
+	char *nick;
 	char *username;
 	char *realname;
-
-	int max_cmds_at_once;
-	int cmd_queue_speed;
-	int max_kicks, max_msgs, max_modes, max_whois;
 
 	/* when reconnecting, the old server status */
 	int reconnection:1; /* we're trying to reconnect */
 	char *channels;
 	char *away_reason;
 	char *usermode;
+
+	/* -- IRC specific - change if you wish -- */
+	char *alternate_nick;
+
+	int max_cmds_at_once;
+	int cmd_queue_speed;
+	int max_kicks, max_msgs, max_modes, max_whois;
 } IRC_SERVER_CONNECT_REC;
 
 typedef struct {
@@ -50,6 +52,7 @@ typedef struct {
 
 	IRC_SERVER_CONNECT_REC *connrec;
 	time_t connect_time; /* connection time */
+	time_t real_connect_time; /* time when server replied that we really are connected */
 
 	char *tag; /* tag name for addressing server */
 	char *nick; /* current nick */
@@ -74,18 +77,17 @@ typedef struct {
 	void *buffer; /* receive buffer */
 	GHashTable *module_data;
 
-        /* -- IRC specific - change if you wish -- */
-	time_t real_connect_time; /* time when we received 001-event. */
+	char *version; /* server version - taken from 004 event */
+	char *away_reason;
+	int usermode_away:1;
+	int banned:1; /* not allowed to connect to this server */
 
+	/* -- IRC specific - change if you wish -- */
 	char *real_address; /* address the irc server gives */
-        char *version; /* server version - taken from 004 event */
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
         char *last_invite; /* channel where you were last invited */
-	char *away_reason;
-	int usermode_away:1;
 	int server_operator:1;
-	int banned:1; /* not allowed to connect to this server */
 
 	int whois_coming:1; /* Mostly just to display away message right.. */
 	int whois_found:1; /* Did WHOIS return any entries? */
