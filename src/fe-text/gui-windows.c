@@ -194,6 +194,8 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 	if (oldparent == parent)
 		return;
 
+	textbuffer_view_set_window(WINDOW_GUI(window)->view, NULL);
+
 	WINDOW_GUI(window)->parent = parent;
 	if (parent->height != oldparent->height ||
 	    parent->width != oldparent->width)
