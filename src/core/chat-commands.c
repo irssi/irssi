@@ -29,6 +29,8 @@
 #include "servers.h"
 #include "servers-setup.h"
 #include "servers-reconnect.h"
+#include "channels.h"
+#include "queries.h"
 #include "window-item-def.h"
 
 static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
@@ -316,6 +318,45 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	cmd_params_free(free_arg);
 }
 
+static void cmd_foreach(const char *data, SERVER_REC *server,
+			WI_ITEM_REC *item)
+{
+	command_runsub("foreach", data, server, item);
+}
+
+/* SYNTAX: FOREACH SERVER <command> */
+static void cmd_foreach_server(const char *data, SERVER_REC *server)
+{
+	GSList *tmp;
+
+	for (tmp = servers; tmp != NULL; tmp = tmp->next)
+		signal_emit("send command", 3, data, tmp->data, NULL);
+}
+
+/* SYNTAX: FOREACH CHANNEL <command> */
+static void cmd_foreach_channel(const char *data)
+{
+	GSList *tmp;
+
+	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *rec = tmp->data;
+
+		signal_emit("send command", 3, data, rec->server, rec);
+	}
+}
+
+/* SYNTAX: FOREACH QUERY <command> */
+static void cmd_foreach_query(const char *data)
+{
+	GSList *tmp;
+
+	for (tmp = queries; tmp != NULL; tmp = tmp->next) {
+		QUERY_REC *rec = tmp->data;
+
+		signal_emit("send command", 3, data, rec->server, rec);
+	}
+}
+
 void chat_commands_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
@@ -324,6 +365,10 @@ void chat_commands_init(void)
 	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
+	command_bind("foreach", NULL, (SIGNAL_FUNC) cmd_foreach);
+	command_bind("foreach server", NULL, (SIGNAL_FUNC) cmd_foreach_server);
+	command_bind("foreach channel", NULL, (SIGNAL_FUNC) cmd_foreach_channel);
+	command_bind("foreach query", NULL, (SIGNAL_FUNC) cmd_foreach_query);
 
 	command_set_options("connect", "4 6 +host");
 	command_set_options("join", "invite");
@@ -337,4 +382,8 @@ void chat_commands_deinit(void)
 	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
+	command_unbind("foreach", (SIGNAL_FUNC) cmd_foreach);
+	command_unbind("foreach server", (SIGNAL_FUNC) cmd_foreach_server);
+	command_unbind("foreach channel", (SIGNAL_FUNC) cmd_foreach_channel);
+	command_unbind("foreach query", (SIGNAL_FUNC) cmd_foreach_query);
 }

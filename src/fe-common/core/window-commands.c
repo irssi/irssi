@@ -454,6 +454,23 @@ static void cmd_savewindows(void)
 	windows_save();
 }
 
+/* SYNTAX: FOREACH WINDOW <command> */
+static void cmd_foreach_window(const char *data)
+{
+        WINDOW_REC *old;
+	GSList *tmp;
+
+        old = active_win;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+                active_win = rec;
+		signal_emit("send command", 3, data, rec->active_server,
+			    rec->active);
+	}
+        active_win = old;
+}
+
 void window_commands_init(void)
 {
 	command_bind("window", NULL, (SIGNAL_FUNC) cmd_window);
@@ -480,6 +497,7 @@ void window_commands_init(void)
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
 	command_bind("savewindows", NULL, (SIGNAL_FUNC) cmd_savewindows);
+	command_bind("foreach window", NULL, (SIGNAL_FUNC) cmd_foreach_window);
 
 	command_set_options("window number", "sticky");
 	command_set_options("window server", "sticky unsticky");
@@ -511,4 +529,5 @@ void window_commands_deinit(void)
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
 	command_unbind("savewindows", (SIGNAL_FUNC) cmd_savewindows);
+	command_unbind("foreach window", (SIGNAL_FUNC) cmd_foreach_window);
 }
