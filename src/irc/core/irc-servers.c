@@ -614,6 +614,9 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 	for(item = isupport; *item != NULL; item++) {
 		int removed = FALSE;
 
+		if (**item == '\0')
+			continue;
+
 		if (**item == ':')
 			break;
 
@@ -634,9 +637,8 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 						  &key, &value) && removed)
 			continue;
 
-		if (removed)
-			g_hash_table_remove(server->isupport, eptr);
-		else {
+		g_hash_table_remove(server->isupport, eptr);
+		if (!removed) {
 			g_hash_table_insert(server->isupport, g_strdup(eptr),
 					    g_strdup(sptr != NULL ? sptr : ""));
 		}
