@@ -9,6 +9,7 @@ INCLUDES = \
 libfe_common_core_la_SOURCES = \
 	autorun.c \
 	command-history.c \
+	completion.c \
 	fe-common-core.c \
 	fe-core-commands.c \
 	fe-log.c \
@@ -27,6 +28,7 @@ libfe_common_core_la_SOURCES = \
 
 noinst_HEADERS = \
 	command-history.h \
+	completion.h \
 	fe-common-core.h \
 	hilight-text.h \
 	keyboard.h \

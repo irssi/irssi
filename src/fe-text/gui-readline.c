@@ -317,7 +317,7 @@ static void sig_completion(void)
 
 	pos = gui_entry_get_pos();
 
-	line = completion_line(active_win, gui_entry_get_text(), &pos);
+	line = word_complete(active_win, gui_entry_get_text(), &pos);
 	if (line != NULL) {
 		gui_entry_set_text(line);
 		gui_entry_set_pos(pos);
@@ -332,7 +332,7 @@ static void sig_replace(void)
 
 	pos = gui_entry_get_pos();
 
-	line = auto_completion(gui_entry_get_text(), &pos);
+	line = auto_word_complete(gui_entry_get_text(), &pos);
 	if (line != NULL) {
 		gui_entry_set_text(line);
 		gui_entry_set_pos(pos);

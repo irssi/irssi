@@ -24,6 +24,7 @@
 
 #include "hilight-text.h"
 #include "command-history.h"
+#include "completion.h"
 #include "keyboard.h"
 #include "printtext.h"
 #include "themes.h"
@@ -82,6 +83,7 @@ void fe_common_core_init(void)
 	autorun_init();
 	hilight_text_init();
 	command_history_init();
+	completion_init();
 	keyboard_init();
 	printtext_init();
 	fe_log_init();
@@ -100,6 +102,7 @@ void fe_common_core_deinit(void)
 	autorun_deinit();
 	hilight_text_deinit();
 	command_history_deinit();
+	completion_deinit();
 	keyboard_deinit();
 	printtext_deinit();
 	fe_log_deinit();

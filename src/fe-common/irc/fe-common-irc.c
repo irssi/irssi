@@ -64,6 +64,9 @@ void fe_query_deinit(void);
 void irc_window_activity_init(void);
 void irc_window_activity_deinit(void);
 
+void irc_completion_init(void);
+void irc_completion_deinit(void);
+
 void fe_netsplit_init(void);
 void fe_netsplit_deinit(void);
 
@@ -111,7 +114,7 @@ void fe_common_irc_init(void)
 	fe_ignore_init();
 	fe_netsplit_init();
 	fe_query_init();
-	completion_init();
+	irc_completion_init();
 	irc_window_activity_init();
 
 	fe_irc_modules_init();
@@ -131,7 +134,7 @@ void fe_common_irc_deinit(void)
 	fe_ignore_deinit();
 	fe_netsplit_deinit();
 	fe_query_deinit();
-	completion_deinit();
+	irc_completion_deinit();
 	irc_window_activity_deinit();
 
 	theme_unregister();
