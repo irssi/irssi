@@ -870,10 +870,36 @@ static int view_get_lines_height(TEXT_BUFFER_VIEW_REC *view,
 	return height < view->height ? height : view->height;
 }
 
+static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
+					      LINE_REC *line, int linecount)
+{
+	int scroll;
+
+	if (view->startline == line) {
+		view->startline = view->startline->prev != NULL ?
+			view->startline->prev : view->startline->next;
+		view->subline = 0;
+	} else {
+		scroll = view->height -
+			view_get_lines_height(view, view->startline,
+					      view->subline, line);
+		if (scroll > 0) {
+			view_scroll(view, &view->startline,
+				    &view->subline, -scroll, FALSE);
+		}
+	}
+
+	/* FIXME: this is slow and unnecessary, but it's easy and
+	   really works :) */
+	textbuffer_view_init_ypos(view);
+	if (textbuffer_line_exists_after(view->startline, line))
+		view->ypos -= linecount;
+}
+
 static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			     int linecount)
 {
-	int realcount, scroll;
+	int realcount;
 
 	view_bookmarks_check(view, line);
 
@@ -887,7 +913,7 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			view_get_linecount(view, prevline);
 	}
 
-	if (line == view->buffer->first_line) {
+	if (view->buffer->first_line == line) {
 		/* first line in the buffer - this is the most commonly
 		   removed line.. */
 		if (view->bottom_startline == line) {
@@ -900,39 +926,24 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                         /* removing the first line in screen */
 			realcount = view_scroll(view, &view->startline,
 						&view->subline,
-						linecount, TRUE);
+						linecount, FALSE);
 			view->ypos -= realcount;
 			view->empty_linecount += linecount-realcount;
 		}
-	} else if (textbuffer_line_exists_after(view->bottom_startline,
-						line)) {
-		realcount = view_scroll(view, &view->bottom_startline,
-					&view->bottom_subline,
-					-linecount, FALSE);
-		if (view->bottom) {
-			/* we're at the bottom, remove the same amount as
-			   from bottom_startline */
-			view_scroll(view, &view->startline,
-				    &view->subline, -linecount, TRUE);
-			view->ypos -= linecount-realcount;
-		} else {
-			if (view->startline == line) {
-				view->startline =
-					view->startline->next != NULL ?
-					view->startline->next :
-					view->startline->prev;
-                                view->subline = 0;
-			}
-			scroll = view->height -
-				view_get_lines_height(view, view->startline,
-                                                      view->subline, line);
-			if (scroll > 0) {
-				view_scroll(view, &view->startline,
-					    &view->subline, -scroll, TRUE);
-                                view->ypos -= scroll;
-			}
+	} else {
+		if (textbuffer_line_exists_after(view->bottom_startline,
+						 line)) {
+			realcount = view_scroll(view, &view->bottom_startline,
+						&view->bottom_subline,
+						-linecount, FALSE);
+			view->empty_linecount += linecount-realcount;
 		}
-		view->empty_linecount += linecount-realcount;
+
+		if (textbuffer_line_exists_after(view->startline,
+						 line)) {
+			view_remove_line_update_startline(view, line,
+							  linecount);
+		}
 	}
 
 	view->bottom = view_is_bottom(view);

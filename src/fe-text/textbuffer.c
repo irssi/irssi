@@ -308,6 +308,8 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 			line->next : line->prev;
 	}
 
+        line->prev = line->next = NULL;
+
 	buffer->lines_count--;
         textbuffer_line_unref(buffer, line);
 }
