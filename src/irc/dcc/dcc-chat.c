@@ -92,8 +92,7 @@ static void sig_dcc_destroyed(CHAT_DCC_REC *dcc)
 	dcc_remove_chat_refs(dcc);
 
 	if (dcc->sendbuf != NULL) net_sendbuffer_destroy(dcc->sendbuf, FALSE);
-	line_split_free((LINEBUF_REC *) dcc->databuf);
-        dcc->databuf = NULL;
+	line_split_free(dcc->readbuf);
 	g_free(dcc->id);
 }
 
@@ -293,7 +292,7 @@ static void dcc_chat_input(CHAT_DCC_REC *dcc)
 	do {
 		recvlen = net_receive(dcc->handle, tmpbuf, sizeof(tmpbuf));
 
-		ret = line_split(tmpbuf, recvlen, &str, (LINEBUF_REC **) &dcc->databuf);
+		ret = line_split(tmpbuf, recvlen, &str, &dcc->readbuf);
 		if (ret == -1) {
 			/* connection lost */
                         dcc->connection_lost = TRUE;

@@ -139,10 +139,11 @@ static void sig_dccget_send(GET_DCC_REC *dcc)
 /* input function: DCC GET received data */
 static void sig_dccget_receive(GET_DCC_REC *dcc)
 {
+        char buffer[512];
 	int ret;
 
 	for (;;) {
-		ret = net_receive(dcc->handle, dcc->databuf, dcc->databufsize);
+		ret = net_receive(dcc->handle, buffer, sizeof(buffer));
 		if (ret == 0) break;
 
 		if (ret < 0) {
@@ -152,7 +153,7 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
 			return;
 		}
 
-		write(dcc->fhandle, dcc->databuf, ret);
+		write(dcc->fhandle, buffer, ret);
 		dcc->transfd += ret;
 	}
 
@@ -202,10 +203,6 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 			return;
 		}
 	}
-
-	dcc->databufsize = settings_get_int("dcc_block_size");
-        if (dcc->databufsize <= 0) dcc->databufsize = 2048;
-	dcc->databuf = g_malloc(dcc->databufsize);
 
 	dcc->starttime = time(NULL);
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,

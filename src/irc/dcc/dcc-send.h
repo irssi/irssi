@@ -15,7 +15,6 @@ typedef struct {
 	unsigned int file_quoted:1; /* file name was received quoted ("file name") */
 
 	/* fastsending: */
-	unsigned int fastsend:1;
 	unsigned int waitforend:1; /* file is sent, just wait for the replies from the other side */
 	unsigned int gotalldata:1; /* got all acks from the other end (needed to make sure the end of transfer works right) */
 } SEND_DCC_REC;

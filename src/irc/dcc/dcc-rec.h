@@ -22,7 +22,4 @@ unsigned long transfd; /* bytes transferred */
 
 unsigned int destroyed:1; /* We're about to destroy this DCC recond */
 
-char *databuf; /* buffer for receiving/transmitting data */
-int databufsize;
-
 GHashTable *module_data;

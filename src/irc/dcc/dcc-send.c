@@ -54,29 +54,20 @@ static void sig_dcc_destroyed(SEND_DCC_REC *dcc)
 /* input function: DCC SEND - we're ready to send more data */
 static void dcc_send_data(SEND_DCC_REC *dcc)
 {
+        char buffer[512];
 	int ret;
 
-	if (!dcc->fastsend && !dcc->gotalldata) {
-		/* haven't received everything we've send there yet.. */
-		return;
-	}
-
-	ret = read(dcc->fhandle, dcc->databuf, dcc->databufsize);
+	ret = read(dcc->fhandle, buffer, sizeof(buffer));
 	if (ret <= 0) {
-		/* end of file .. or some error .. */
-		if (!dcc->fastsend)
-			dcc_close(DCC(dcc));
-		else {
-			/* no need to call this function anymore..
-			   in fact it just eats all the cpu.. */
-			dcc->waitforend = TRUE;
-			g_source_remove(dcc->tagwrite);
-			dcc->tagwrite = -1;
-		}
+		/* no need to call this function anymore..
+		   in fact it just eats all the cpu.. */
+		dcc->waitforend = TRUE;
+		g_source_remove(dcc->tagwrite);
+		dcc->tagwrite = -1;
 		return;
 	}
 
-	ret = net_transmit(dcc->handle, dcc->databuf, ret);
+	ret = net_transmit(dcc->handle, buffer, ret);
 	if (ret > 0) dcc->transfd += ret;
 	dcc->gotalldata = FALSE;
 
@@ -113,11 +104,6 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	dcc->gotalldata = (long) bytes == dcc->transfd;
 	dcc->count_pos = 0;
 
-	if (!dcc->fastsend) {
-		/* send more data.. */
-		dcc_send_data(dcc);
-	}
-
 	if (dcc->waitforend && dcc->gotalldata) {
 		/* file is sent */
 		dcc_close(DCC(dcc));
@@ -144,29 +130,17 @@ static void dcc_send_connected(SEND_DCC_REC *dcc)
 	net_disconnect(dcc->handle);
 
 	dcc->starttime = time(NULL);
-	dcc->fastsend = settings_get_bool("dcc_fast_send");
 	dcc->handle = handle;
 	memcpy(&dcc->addr, &addr, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
 
-	dcc->databufsize = settings_get_int("dcc_block_size");
-        if (dcc->databufsize <= 0) dcc->databufsize = 2048;
-	dcc->databuf = g_malloc(dcc->databufsize);
-
 	dcc->tagread = g_input_add(handle, G_INPUT_READ,
 				   (GInputFunction) dcc_send_read_size, dcc);
-	dcc->tagwrite = !dcc->fastsend ? -1 :
-		g_input_add(handle, G_INPUT_WRITE,
-			    (GInputFunction) dcc_send_data, dcc);
+	dcc->tagwrite = g_input_add(handle, G_INPUT_WRITE,
+				    (GInputFunction) dcc_send_data, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
-
-	if (!dcc->fastsend) {
-		/* send first block */
-		dcc->gotalldata = TRUE;
-		dcc_send_data(dcc);
-	}
 }
 
 static char *dcc_send_get_file(const char *fname)
@@ -271,7 +245,6 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 void dcc_send_init(void)
 {
         dcc_register_type("SEND");
-	settings_add_bool("dcc", "dcc_fast_send", TRUE);
 	settings_add_str("dcc", "dcc_upload_path", "~");
 
 	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);

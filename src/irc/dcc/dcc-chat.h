@@ -13,6 +13,7 @@ struct CHAT_DCC_REC {
 #include "dcc-rec.h"
 
 	char *id; /* unique identifier - usually same as nick. */
+        LINEBUF_REC *readbuf;
 	NET_SENDBUF_REC *sendbuf;
 
 	unsigned int mirc_ctcp:1; /* Send CTCPs without the CTCP_MESSAGE prefix */

@@ -110,7 +110,6 @@ void dcc_destroy(DCC_REC *dcc)
 
 	g_free_not_null(dcc->servertag);
 	g_free_not_null(dcc->target);
-	g_free_not_null(dcc->databuf);
 	g_free(dcc->mynick);
 	g_free(dcc->nick);
 	g_free(dcc->arg);
@@ -421,7 +420,6 @@ void irc_dcc_init(void)
 
 	settings_add_int("dcc", "dcc_port", 0);
 	settings_add_int("dcc", "dcc_timeout", 300);
-	settings_add_int("dcc", "dcc_block_size", 2048);
 
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
