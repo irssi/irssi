@@ -1,4 +1,4 @@
-/*
+i/*
  fe-queries.c : irssi
 
     Copyright (C) 1999-2000 Timo Sirainen
@@ -64,7 +64,7 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 	}
 
 	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-		    TXT_QUERY_START, query->name);
+		    TXT_QUERY_START, query->name, query->server->tag);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)

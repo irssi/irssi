@@ -133,7 +133,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Queries", 0 },
 
-	{ "query_start", "Starting query with {nick $0}", 1, { 0 } },
+	{ "query_start", "Starting query in {server $1} with {nick $0}", 2, { 0, 0 } },
 	{ "query_stop", "Closing query with {nick $0}", 1, { 0 } },
 	{ "no_query", "No query with {nick $0}", 1, { 0 } },
 	{ "query_server_changed", "Query with {nick $0} changed to server {server $1}", 2, { 0, 0 } },
