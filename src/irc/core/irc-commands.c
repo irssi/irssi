@@ -312,7 +312,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 			    PARAM_FLAG_GETREST, "join", &optlist, &channels))
 		return;
 
-	if (g_hash_table_lookup(optlist, "-invite")) {
+	if (g_hash_table_lookup(optlist, "invite")) {
 		if (server->last_invite != NULL)
 			channels_join(server, server->last_invite, FALSE);
 	} else {
@@ -395,7 +395,7 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 			    item, "topic", &optlist, &channame, &topic))
 		return;
 
-	irc_send_cmdv(server, *topic == '\0' && g_hash_table_lookup(optlist, "-d") == NULL ?
+	irc_send_cmdv(server, *topic == '\0' && g_hash_table_lookup(optlist, "d") == NULL ?
 		      "TOPIC %s" : "TOPIC %s :%s", channame, topic);
 
 	cmd_params_free(free_arg);
@@ -436,10 +436,10 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, &optlist, &str))
+			    PARAM_FLAG_GETREST, "list", &optlist, &str))
 		return;
 
-	if (*str == '\0' && g_hash_table_lookup(optlist, "-yes") == NULL)
+	if (*str == '\0' && g_hash_table_lookup(optlist, "yes") == NULL)
 		cmd_param_error(CMDERR_NOT_GOOD_IDEA);
 
 	irc_send_cmdv(server, "LIST %s", str);
@@ -659,7 +659,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_GETREST, "away", &optlist, &reason)) return;
 
-	if (g_hash_table_lookup(optlist, "-one") != NULL)
+	if (g_hash_table_lookup(optlist, "one") != NULL)
 		server_send_away(server, reason);
 	else
 		g_slist_foreach(servers, (GFunc) server_send_away, reason);
