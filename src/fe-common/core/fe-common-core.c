@@ -110,7 +110,6 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
 	settings_add_bool("lookandfeel", "bell_beeps", FALSE);
-	settings_add_str("lookandfeel", "beep_on_msg", "");
 	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
