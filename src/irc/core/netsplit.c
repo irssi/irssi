@@ -238,6 +238,7 @@ int quitmsg_is_split(const char *msg)
 	     - no double-dots (".." - probably useless check)
 	     - hosts/domains can't start or end with a dot
              - the two hosts can't be identical (probably useless check)
+	     - can't contain ':' or '/' chars (some servers allow URLs)
 	   */
 	host1 = msg; host2 = NULL;
 	prev = '\0'; len = 0; host1_dot = host2_dot = 0;
@@ -264,7 +265,8 @@ int quitmsg_is_split(const char *msg)
 				host2_dot = TRUE;
 			else
                                 host1_dot = TRUE;
-		}
+		} else if (*msg == ':' || *msg == '/')
+			return FALSE;
 
 		prev = *msg;
                 msg++; len++;
