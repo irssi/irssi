@@ -98,8 +98,15 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 
 	/* add all globbed files to a proper queue */
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-		if (stat(globbuf.gl_pathv[i], &st) == 0 &&
-		    S_ISREG(st.st_mode) && st.st_size > 0) {
+		const char *fname = globbuf.gl_pathv[i];
+
+		if (stat(fname, &st) != 0) {
+			signal_emit("dcc error file open", 3,
+				    nick, fname, errno);
+			continue;
+		}
+
+		if (S_ISREG(st.st_mode) && st.st_size > 0) {
 			if (queue < 0) {
 				/* in append and prepend mode try to find an
 				   old queue. if an old queue is not found
@@ -115,7 +122,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 			}
 
 			dcc_queue_add(queue, add_mode, nick,
-				      globbuf.gl_pathv[i], servertag, chat);
+				      fname, servertag, chat);
 			files++;
 		}
 	}
