@@ -29,8 +29,9 @@ extern GSList *keyinfos;
 KEYBOARD_REC *keyboard_create(void *gui_data);
 /* Destroys a keyboard */
 void keyboard_destroy(KEYBOARD_REC *keyboard);
-/* Returns TRUE if key press was consumed. Control characters should be sent
-   as "^@" .. "^_" instead of #0..#31 chars, #127 should be sent as ^? */
+/* Returns 1 if key press was consumed, -1 if not, 0 if it's beginning of a
+   key combo. Control characters should be sent as "^@" .. "^_" instead of
+   #0..#31 chars, #127 should be sent as ^? */
 int key_pressed(KEYBOARD_REC *keyboard, const char *key);
 
 void key_bind(const char *id, const char *description,

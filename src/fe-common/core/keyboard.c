@@ -551,8 +551,6 @@ static int key_states_search(const unsigned char *combo,
         return 0;
 }
 
-/* Returns TRUE if key press was consumed. Control characters should be sent
-   as "^@" .. "^_" instead of #0..#31 chars, #127 should be sent as ^? */
 int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 {
 	KEY_REC *rec;
@@ -565,7 +563,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 	if (keyboard->key_state == NULL && key[1] == '\0' &&
 	    !used_keys[(int) (unsigned char) key[0]]) {
 		/* fast check - key not used */
-		return FALSE;
+		return -1;
 	}
 
         first_key = keyboard->key_state == NULL;
@@ -583,13 +581,13 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 		/* unknown key combo, eat the invalid key
 		   unless it was the first key pressed */
                 g_free(combo);
-		return !first_key;
+		return first_key ? 0 : -1;
 	}
 
 	if (g_tree_lookup(key_states, combo) != rec) {
 		/* key combo continues.. */
 		keyboard->key_state = combo;
-                return TRUE;
+                return 0;
 	}
 
         /* finished key combo, execute */
@@ -597,7 +595,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 	consumed = key_emit_signal(keyboard, rec);
 
 	/* never consume non-control characters */
-	return consumed;
+	return consumed ? 1 : -1;
 }
 
 void keyboard_entry_redirect(SIGNAL_FUNC func, const char *entry,

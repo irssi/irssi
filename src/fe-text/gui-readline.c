@@ -343,7 +343,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 	GTimeVal now;
         unichar key;
 	char str[20];
-	int diff;
+	int ret, diff;
 
 	key = GPOINTER_TO_INT(keyp);
 
@@ -355,10 +355,11 @@ static void sig_gui_key_pressed(gpointer keyp)
         g_get_current_time(&now);
 	diff = (now.tv_sec - last_keypress.tv_sec) * 1000 +
 		(now.tv_usec - last_keypress.tv_usec)/1000;
-	last_keypress = now;
 
-	if (check_pasting(key, diff))
+	if (check_pasting(key, diff)) {
+		last_keypress = now;
 		return;
+	}
 
 	if (key < 32) {
 		/* control key */
@@ -394,10 +395,19 @@ static void sig_gui_key_pressed(gpointer keyp)
 	prev_entry_pos = gui_entry_get_pos(active_entry);
 	prev_key = key;
 
-	if (escape_next_key || !key_pressed(keyboard, str)) {
+	ret = key_pressed(keyboard, str);
+	if (escape_next_key || ret < 0) {
 		/* key wasn't used for anything, print it */
                 escape_next_key = FALSE;
 		gui_entry_insert_char(active_entry, key);
+	}
+
+	if (ret != 0) {
+		/* some key create multiple characters - we're in the middle
+		   of one. try to detect the keycombo as a single keypress
+		   rather than multiple small onces to avoid incorrect
+		   paste detection. */
+		last_keypress = now;
 	}
 }
 
@@ -892,7 +902,7 @@ void gui_readline_init(void)
 	settings_add_time("misc", "paste_detect_time", "10msecs");
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
-	settings_add_int("misc", "paste_detect_keycount", 9);
+	settings_add_int("misc", "paste_detect_keycount", 6);
 	settings_add_int("misc", "paste_verify_line_count", 5);
         setup_changed();
 
