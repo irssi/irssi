@@ -111,24 +111,6 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 	return ret;
 }
 
-char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
-{
-        NICK_REC *nickrec;
-        char *emptystr;
-
-	g_return_val_if_fail(nick != NULL, NULL);
-
-	if (!settings_get_bool("show_nickmode"))
-                return "";
-
-        emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
-
-	nickrec = channel == NULL ? NULL :
-		nicklist_find(channel, nick);
-	return nickrec == NULL ? emptystr :
-		(nickrec->op ? "@" : (nickrec->voice ? "+" : emptystr));
-}
-
 static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 {
         char *emptystr;
@@ -139,7 +121,18 @@ static char *channel_get_nickmode_rec(NICK_REC *nickrec)
         emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
 
 	return nickrec == NULL ? emptystr :
-		(nickrec->op ? "@" : (nickrec->voice ? "+" : emptystr));
+		nickrec->op ? "@" :
+		nickrec->halfop ? "%" :
+		nickrec->voice ? "+" :
+		emptystr;
+}
+
+char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
+{
+	g_return_val_if_fail(nick != NULL, NULL);
+
+        return channel_get_nickmode_rec(channel == NULL ? NULL :
+					nicklist_find(channel, nick));
 }
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
