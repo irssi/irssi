@@ -921,7 +921,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	if (!IS_IRC_CHANNEL(channel))
 		cmd_return_error(CMDERR_NOT_JOINED);
 	if (!channel->wholist)
-		cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
+		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (is_numeric(data, ' ')) {
 		/* first argument is the timeout */
