@@ -155,7 +155,8 @@ static char *dcc_send_get_file(const char *fname)
 		g_free(str);
 
 		path = convert_home(settings_get_str("dcc_upload_path"));
-		str = g_strconcat(path, G_DIR_SEPARATOR_S, fname, NULL);
+		str = *path == '\0' ? g_strdup(fname) :
+			g_strconcat(path, G_DIR_SEPARATOR_S, fname, NULL);
 		g_free(path);
 	}
 

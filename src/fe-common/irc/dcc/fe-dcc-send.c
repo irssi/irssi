@@ -113,9 +113,13 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 		return;
 
 	/* completing filename parameter for /DCC SEND */
-        path = convert_home(settings_get_str("dcc_upload_path"));
+	path = convert_home(settings_get_str("dcc_upload_path"));
+	if (*path == '\0') {
+                /* use the default path */
+		g_free_and_null(path);
+	}
+
 	*list = filename_complete(word, path);
-	g_free(path);
 
 	if (*list != NULL) {
 		*want_space = FALSE;
