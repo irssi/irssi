@@ -5,7 +5,7 @@ This command sends a message to all operators in a channel. This is internal
 irssi command which sends a message separately to each opearator, so this
 may not be very good idea to use in channel with lots of operators.
 
-Some IRC servers support also /MSG @#channel which you should use if
-possible.
+Some IRC servers support also /MSG @#channel or /WALLCHOPS which you should
+use if possible.
 
-See also: 
+See also: WALLCHOPS
