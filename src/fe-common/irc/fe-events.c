@@ -101,8 +101,7 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	const char *channel;
-	char *params, *tmp;
+	char *params, *channel, *tmp;
 
 	g_return_if_fail(data != NULL);
 
@@ -110,10 +109,8 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
-	if (g_strcasecmp(server->nick, nick) != 0)
-                channel = get_visible_target(server, channel);
-
-	signal_emit("message join", 4, server, channel, nick, addr);
+	signal_emit("message join", 4, server,
+		    get_visible_target(server, channel), nick, addr);
 	g_free(params);
 }
 
