@@ -6,5 +6,5 @@
 
 /SQUERY sends a query to the specified service.
 
-See also: SERVLIST
+See also: SERVLIST, NOTE, LIST
 

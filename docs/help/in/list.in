@@ -3,7 +3,14 @@
 
 Lists the channel names. Trying to list all the channel 
 names usually causes you to be disconnected from the 
-server with the reason "Excessive flood".
+server with the reason "Excess flood", as usually all
+40000 channels form together and server naively attempts
+to send you them.
 
-See also:
+Thus, on IRCNet, you should rather use service ALIS
+(Advanced Listing Service), which will allow you to query
+for channel with specific name, topic, mode or usercount.
+Type /SQUERY ALIS HELP to get more info about it.
+
+See also: SQUERY
 

@@ -24,5 +24,9 @@ To send a note to Joebob (whose account is jbriggs@drivein.com):
 To spy on anyone from blah.com for the next 30 days: 
 /NOTE SPY +30 *!*@*.blah.com A blah.com user is active 
  
-This command is Not available in the IRCNet. 
+This command is not available in the IRCNet. However, you've service NoteServ
+available there, which allows you to do similiar things like with /NOTE command
+on other IRC networks. Type /SQUERY NoteServ HELP to get more info about it.
+
+See also: NOTIFY, SQUERY
 
