@@ -444,7 +444,7 @@ void perl_core_init(void)
         print_script_errors = 1;
 	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
-	PL_perl_destruct_level = 1;
+	/*PL_perl_destruct_level = 1; - this crashes with some people.. */
 	perl_signals_init();
         signal_add_last("script error", (SIGNAL_FUNC) sig_script_error);
 
