@@ -115,7 +115,8 @@ void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 
 	if (window->active != item) {
 		window->active = item;
-		if (item != NULL) window_change_server(window, window->active_server);
+		if (item != NULL && window->active_server != item->server)
+			window_change_server(window, item->server);
 		signal_emit("window item changed", 2, window, item);
 	}
 }
