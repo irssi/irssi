@@ -26,28 +26,23 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 {
 	HV *stash;
 
-	hv_store(hv, "type", 4, new_pv((char *) dcc_type2str(dcc->type)), 0);
 	hv_store(hv, "created", 7, newSViv(dcc->created), 0);
 
 	hv_store(hv, "server", 6, irssi_bless(dcc->server), 0);
+	hv_store(hv, "servertag", 9, new_pv(dcc->servertag), 0);
+	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
 	hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
 
 	stash = gv_stashpv("Irssi::Irc::Dcc", 0);
 	hv_store(hv, "chat", 4, new_bless(dcc->chat, stash), 0);
-
-	hv_store(hv, "ircnet", 6, new_pv(dcc->ircnet), 0);
-	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
-
+	hv_store(hv, "target", 6, new_pv(dcc->target), 0);
 	hv_store(hv, "arg", 3, new_pv(dcc->arg), 0);
-	hv_store(hv, "file", 4, new_pv(dcc->file), 0);
 
 	hv_store(hv, "addr", 4, new_pv(dcc->addrstr), 0);
 	hv_store(hv, "port", 4, newSViv(dcc->port), 0);
 
-	hv_store(hv, "size", 4, newSViv(dcc->size), 0);
-	hv_store(hv, "transfd", 7, newSViv(dcc->transfd), 0);
-	hv_store(hv, "skipped", 7, newSViv(dcc->skipped), 0);
 	hv_store(hv, "starttime", 9, newSViv(dcc->starttime), 0);
+	hv_store(hv, "transfd", 7, newSViv(dcc->transfd), 0);
 }
 
 static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
