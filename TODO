@@ -1,175 +1,267 @@
- *** sorry for the finnish items, they're just too many to translate and 
- *** I've kept writing them in finnish usually... They also don't always
- *** tell very well about the problem, just some note to myself that I'd
- *** remember myself..
+ - windows:
+     - /WINDOW SIZE -sticky, so f.e. /WINDOW BALANCE wouldn't affect it.
+     - /LAYOUT save|reset doesn't affect anything immediately, only after
+       restart
+     - Check that /LAYOUT SAVE works properly with all the different /SETs,
+       like reuse_unsued_windows, windows_auto_renumber and autoclose_windows.
+       What should it do if some channel is /PARTed with autoclose_windows 
+       set?..
+     - /WINDOW scrollback_lines /WINDOW scrollback_hours
+     - Optionally always start the lines from bottom of the screen when 
+       screen is empty (how would scrolling work?)
+     - /WINDOW SCROLL OFF - window wouldn't scroll down automatically
+     - Vertically split windows
 
- - /sb redraw doesn't do anything to non-format lines (should redraw 
-   timestamp, etc.)
- - autorename query when msg is received from another nick in same host
- - /formatabstract & /formatreplace to update abstracts & replaces in themes
- - queries don't work properly in waiting channels .. because the server tag
-   verifying fails, we should just create the query and give the server tag
-   to it without checking if the server tag is really found at that time.
- - autologissa tulee ongelmia jos printataan targettiin ilman serveri‰ ..
-   tapahtuu esim. "starting query with xxx" kun restoretaan ikkunoita
-   jos query oli savetettu. sitten huono kun se ei katoa koskaan itsekseen..
- - perl:
-   - joku tapa ett‰ perlill‰kin voisi muuttaa kokonaan inputtirivi‰
-   - perliin: CHATNET_REC, MODULE_REC, THEME_REC, KEYINFO_REC,
-     "complete word" signaali, haluaa GSList **:n .. tuon muuttaminen,
-     listan alkuun tai loppuun kaman lis‰ys..
+ - Keyboard handling:
+    - /BIND: key definitions should be changed to be more epic-like.. :
+        /bind ^[ key meta, /bind meta-O key meta2, /bind meta-[ key meta2
+        /bind meta2-c echo Ctrl-Left pressed
+      and maybe
+        /bind meta2-C key left, /bind meta-left echo meta-left pressed
+    - Some kind of state support for it, so it would be possible to make
+      support for vi keys easily.
+    - Editor-like (or bash-like) line editor - it would wrap to next line
+      instead of scrolling.
+    - When pasting text, irssi could notice it and ask "pasting 30 lines
+      of text, ok?" .. Could send some signal that sends the pasted lines
+      in GList which signal handlers could modify. Also the first pasted
+      line could be somehow buffered so that it isn't sent immediately
+      so these paste handlers could modify it too.
+        - Already existing / at start of line handler should use this
+        - Automatically remove empty space at the start/end of lines,
+	  from start of line it would work so that if each line begins with
+	  4 spaces but some more, it would only remove those 4 spaces from
+	  each so pasting code wouldn't mess up indents etc.
+	- Skip all autoreplaces and completions, so that f.e. tabs are
+	  printed as-is
+	- Should empty lines be pasted too? Maybe optionally
 
- - joku printnickmsg() jolla voisi printata nuo nickin vaihdot ja quitit
-   ..ja killit skriptiss‰..
- - /bind -delete?
- - <tommik> hmm, I just did /notify nick, /unnotify nick, /notify nick OPN...
-   and now /notify shows the nick in all networks I'm connected to -
-   /notify -idle and you make /whois nick nick ei toimi
- - redirectiot sotkee jotenkin jos on notify idless‰ xmunkki ja tekee
-   /wii xmunkki .. kun se laittaa "event empty"yn channelit ja muut, ei
-   realname/endofwhoisi‰
- - jos serveri ei lˆyd‰ mun dns:‰‰ niin voi tulla i-linen puute.. irssi ei
-   saisi lopettaa tossa kohtaa serveriin yhdist‰mist‰... voisi jotenkin
-   s‰‰t‰‰ ett‰ bannin tullessa jos on ircnet asetettu niin ei lopettaisi
-   koskaan..
- - serveri jos asettaa +r:n niin siit‰ ei sen j‰lkeen p‰‰se eroon mill‰‰n
-   muulla kuin /disconnectilla.. voisi pit‰‰ muistissa vaan itse annettuja
-   modeja eik‰ niit‰ mit‰ serverill‰ oli disconnectin aikana.
- - se komentojuttu.. vois tehd‰ command_bind()iin suoraan parametrit ja optiot
-   optioistakin vois pit‰‰ sen historyn jos core ja fe-common tms. on eri
-   niin sitten fe-comon unloadattaessa tulis se coren takaisin voimaan.
-   mutta kuitenkin se merge juttu olis kokoajan ett‰ olis nopea..
- - <fuchs> when i am called _` or just ] or { or something like that
-   every incomming msg is hilighted :/
- - proxyyn tuki sille ett‰ kirjoittaa proxyss‰ msg:n niin clientitkin saa sen
- - moduuleilta vois ottaa automaagisesti pois unloadissa niiden settingsit 
-   myˆs. ja otetaanko niilt‰ commandeja/signeeleja edes viel‰?
- - valita jos yritet‰‰n k‰ytt‰‰ disable-staticcia configuressa.
+ - Notify list:
+    - It's buggy. too buggy. -idle seems to work fine but other than that
+      it seems to have several problems, sometimes not saying if user has
+      quit.
+    - <tommik> hmm, I just did /notify nick, /unnotify nick, /notify nick OPN
+      and now /notify shows the nick in all networks I'm connected to
+    - /NOTIFY -away and -idle: support for wildcards in nicks (requires of
+      course that we're in same channel as nick)
+    - Automatically add queried nicks to notify list temporarily .. display
+      the notifys for the nick in the query window
+    - /NOTIFY -once - notify only once when the user comes to IRC, forget
+      this after it.
+    - /NOTIFY -comment xxx - add a comment to notify. print the comment when
+      user comes to irc.
+    - "Should we check people in notify list when you're away" option
 
- - /mark .. ja automarkki ett‰ n‰kyy joku ------------ uuden tekstin kohdassa.
- - /server -ircnet EFNet -next to cycle to the next server (or /reconnect
-   ircnet actually..).
- - laita se splittaamaan automaagisesti msg:t ja noticet
- - kommentit configgifiless‰ blockeissa bugaa. tee kunnon tarkistukset
-   kaikkialle noita ja virheellisi‰ juttuja varten.
-   is_node_list() uppercaseksi ja tee IS_NODE_BLOCK
- - silc k‰skyt gruuppiin
+ Scrollback:
+    - Optionally show a "bookmark" (line mark actually, a line full of '-'
+      chars) in a window. It would be displayed at the position where you
+      were when the window was active last time. /MARK command to force
+      updating it to bottom of screen in active window.
+    - --more-- should be displayed *only* when there's new text at the
+      bottom of the screen, not when you scroll up a bit and go visit another
+      window for a while..
+    - /SCROLLBACK REDRAW doesn't do anything to non-format lines (should
+      redraw timestamp, etc.)
+    - /last 05032 ... didn't really do what I wanted :) maybe I should change
+      the syntax to have -max parameter instead? Or /LAST -public 1000 would
+      be ok, but /LAST 1000 would treat 1000 as word.. hmm..
+    - /LAST -since <timestamp>
 
- - irc-nicklist.c: move nick change to core.
- - irc-queries.c:  - '' -
+ - Formats / themes:
+    - Possibility to modify abstracts and replaces in themes from irssi.
+    - Document the different formats briefly :)
+    - /FORMATs don't have styling anymore, so translation to different
+      languages should be possible with still the ability to use different
+      themes easily. /SET formats <filename> could change the file where
+      to read all /FORMATs, but formats in theme file would override them.
 
- - logausta vois tutkia v‰h‰n.. manuaalisesti ei voi nyt esim. logittaa
-   joko efnetin tai ircnetin #irssi‰.
+ - Logging:
+    - Autologging has some problems if we're printing to some target without
+      server. Happens at least with "starting query with xxx" when restoring
+      queries at startup (saved with /LAYOUT SAVE). Also those logs will
+      never be automatically closed..
 
- - --more-- tulee jotenkin splitikkunoihin vaikkei pit‰isi.
-   window show, window hiden j‰lkeen ehk‰ ..eivaan ton j‰lkeen rivit ei
-   vaihdu en‰‰ vaan pit‰‰ itse pgdownia painaa ja shown j‰lkeen tuli
-   joku outo tyhji‰ rivej‰ vaan jotain corruptiota.. 2 ikkunaa oli vaan.
+ - Server commands:
+    - Optionally wait for a while (0.5-1sec) before sending the message to
+      server, if arrow up key is pressed abort it. Also remove the line from
+      screen and put some notice about it being not sent.
+    - /FLUSHSERVER or something that would remove commands from transmit
+      queue. Maybe with optional parameter what kind of commands to remove
+      (/FLUSHSERVER mode would remove all modes). Useful for example if you
+      want to abort /OP *.
+    - If we receive "cannot send to channel" from server or "you're not 
+      chanop" events, remove the privmsgs/notices or modes/kicks/etc. from
+      send queue automatically. Useful for aborting things when you get
+      kicked after pasting lots of text or deopped after doing /OP * or
+      something ;)
+    - Split PRIVMSGs and NOTICEs automatically to multiple commands if
+      their length exceeds the 512 bytes (or it should be shorter actually
+      so server won't split it when it adds your nick+host mask)
 
- - hilightit + window activityt koodi on ihan sekasotkua. privamsg hilightit
-   vois tehd‰ pubmsg hilightien tyyliin
- - /notify -away ja -idless‰ olis kiva jos nickiss‰ voisi olla wildcardeja
- - completio vois hyppi‰ niiden -optioiden ohi. vois myˆs t‰ydennell‰
-   erikseen option parametrej‰? ja se conffattava completio.. alias completio
- - ignore -pattern:n arvo pit‰isi n‰ytt‰‰
- - n‰yt‰ /hilight:n ulostuksessa v‰rit
- - autoignore korjaa.
- - /save -all, tallentais kaikki configin asetukset ja teeman koko teeman
- - haluis et teksti alkais ruudun alhaalta eik‰ ylh‰‰lt‰
- - autoresume dcc autogetiss‰
+ - server connecting:
+     - Don't try to restore user modes set by server automatically when
+       reconnecting to another server. Like when server sets +r mode to you
+       you won't get rid of it until you /disconnect.
+     - DNS problems may cause removal of i-line, irssi shouldn't stop
+       trying to reconnect the server if it happens.. Maybe it never should
+       stop reconnecting to servers that are in config.
+     - /RECONNECT <servertag> - If <servertag> belongs to some IRC network,
+       reconnect to next server in that ircnet, otherwise just reconnect
+       to the server.
+     - /SERVER <number> would connect to n'th server in list. Show the
+       numbers with /SERVER LIST
+     - /CONNECT <ircnet> could remove existing ircnet connection from
+       reconnect queue if it exists (only if there's only one?). Also if
+       we're already connected to the ircnet it could complain about it
+       and -yes would force it.
+
+ - Tab completion:
+    - Complete aliases
+    - Command completion doesn't work properly when -options are used.
+    - Possibility to complete -option parameters? Like -ircnet <tab>, also
+      /MSG -servertag<tab> and /LAST -level<tab> should work. All of these
+      require some command definition changes..
+    - bash-style (or whatever it shoulda be called) tab-completion
+    - key for reverse completion
+
+ - Statusbar:
+    - It now sometimes wraps to next line messing up screen
+    - Should be configurable. See http://irssi.org/files/statusbar.txt
+      for what it probably should look like.
+    - When starting to run out of space some items could be made smaller,
+      activity for example .. make some generic flag for items to use.
+    - Add user counts (ops/voices/normal/total)
+
+ - Modules:
+    - Figure out module vs. plugin wording, what is what ;)
+    - API for plugins which would be guaranteed not to change
+      (at least too much/too often :)
+    - "chat protocol modules" - they could be loaded at startup so they'd be
+      equal to IRC protocol (autoconnecting servers would work etc.)
+    - on-demand autoload modules (f.e. by /command or maybe some signal)
+    - Try to make them create only .so files instead of .a and all..
+
+ - perl scripting:
+     - /SCRIPT for listing scripts, /SCRIPT REMOVE <name>|ALL, 
+       /SCRIPT PERL RELOAD == ex. /PERLFLUSH
+     - /PERL command - how does signal_add() work with it? probably not well.
+       How to remove those scripts? etc. /SCRIPT could show them as some
+       anonymous scripts, maybe list the whole script in the line..
+     - Possibility to modify entry line somehow
+     - Possibility to use "complete word" signal, needs GSList** handling
+     - Add structures: CHATNET_REC, MODULE_REC, THEME_REC, KEYINFO_REC, 
+       CHAT_PROTOCOL_REC
+     - signal_emit() - if emitting unknown signal, it could automatically
+       save the types of sent parameters so another perl script could
+       signal_add() it.
+     - Perl module and the Irssi and Irssi::Irc libraries could have some
+       version checks so that if they don't match it would complain.
+     - Dependencies don't work with .xs files..
+
+ - Bigger code changes:
+    - Restructure code tree so that non-IRC chat protocols would be in
+      same places than IRC protocol. Something like:
+        - src/irc (like now)
+	- src/irc/fe-common, src/irc/fe-text
+      SILC could then make symlinks to src/silc to whereever the SILC
+      module was unpacked. Make it possible to build SILC support built-in.
+    - /SETs have now boolean/number/string types. Add more:
+        - Time: Allow to use s|m|h|d to specify the time, default to
+          seconds. When sending reply to user, use the time formatting too,
+          not just x seconds or minutes. "10d 5s" should also work.
+	- Level: Like "all -msgs -public". Complain about unknown strings.
+    - Reading configuration file should be changed somehow .. at least add
+      some helper functions for reading lists since comments inside them
+      now crash irssi. Also if setting wasn't expected type can cause
+      crashes so add proper error checkings everywhere. And is_node_list()
+      etc. should be in uppercase..
+    - Would this work..? : command_bind() could specify the parameters
+      it uses, then some generic command parser could parse the commands
+      and options and if all is ok, send the parsed parameters directly with
+      signal_emit() .. I'm just thinking some type checking problems but
+      if all commands would be in format SERVER_REC, WI_ITEM_REC,
+      GHashTable *options, char ** (NULL terminated parameters list) .. ?
+    - GLib's g_mem_chunks does some weird things which seem pretty useless
+      (keeping memory blocks in a tree), replace them with our own memory
+      block allocator. GLists and GSLists waste some memory, would be better
+      if I just made prev/next pointers to structures and used some #defines
+      to traverse back and forth.
+    - All there dynamic memory allocations are making lots of memory 
+      fragmentation. Maybe creating our own memory manager would be good
+      idea? :) Separate allocator for temporary and non-temporary memory
+      allocations could help some. Use mmap() if possible so we could
+      actually free the memory with munmap() sometimes..
+
+ - /SET -reset?
+ - /ignore -patterneja ei voi olla useita samalla nickill‰
+ - /ignore -strip -pattern away * actions ..
+ - module_uniq_destroy() - those calls are probably wrong .. for CHANNEL and
+   QUERY at least?
+ - /ban -time .. ja /knockout alias /kick & /ban -time
+ - /bantype -> /set bantype, /ban -type xxx, /ban -ip ?
+ - /HILIGHT: list doesn't print several options. Maybe some generic function
+   which could be used for printing those options for all these /ircnet,
+   /server add, etc. commands. /IGNORE -pattern isn't printed.
+ - /HILIGHT -mask <mask> <word>: not possible use both. Case sensitive
+   hilight checking.
+ - possibility to use $[123]0 in themes files. Like with $[9]0 in msgnick.
+ - hide_mirc_colors doesn't work properly, it hides also colors irssi tries
+   to print itself, like with /HILIGHT. They should be removed somewhere
+   earlier.. but where? Those should be removed from messages, quit/kick/etc.
+   reasons but not from at least usernames, bans and channels (maybe they
+   should be changed to actually print <invert>C</invert>number instead of
+   coloring it)
+ - -f configfile command line option. /SAVE should use that file too.
+ - nick completion shouldn't try completing nicks everywhere, like /SET <tab>
+ - File completion could guess when it's wanted, word beginning with / (not
+   at start of line of course, unless / isn't in cmdchars) or ~/ or ./ and
+ - utf8 support
+ - /connect -! : don't autojoin to channels
+ - /names without parameters should probably default to /names *, and add
+   the possibility to show all names with /names ** (just like /who works)
+
+ - printnickmsg() which would print nick changes and quit messages. And
+   export that function to perl so kills.pl could print kills with it too.
+ - /MSG a,b,#c,#d - it should print the message to #c and #d channel windows
+   and show only "a,b" as target when printing it to msg window.. Or if
+   autoquery is set, it should print them to those windows. Hmm. maybe some
+   multipeople query support? :) /query nick1,nick2 and sending text there
+   would send it to both. Seems to work already but receiving messages from
+   either nick1 or nick2 don't go to that window..
+ - /MSG =dcc_chat,#channel doesn't work, same for /CTCP.
+ - regexp host masks
+ - irssi proxy: when writing msg in proxy, send them to clients.
+ - /SAVE -all: save all /SETs and /FORMATs.
  - dcc time left
- - dcc chatissa ei vaihdu nickki vaikka muualla vaihtuu.. oma ja toisen.
- - dcc filet v‰lilyˆnneill‰ vois pelata
- - plugin.h API
- - fserver
- - settingssit moduuleittain omiin blokkeihin niin sitten vois valittaa
-   tuntemattomista jos on typoja ja sellasta
- - pit‰is pakottaa ircnet asettamaan setupserveriss‰ .. ja jos poistaa
-   ircnetin? "chat network xxx not found, assuming standard IRC network"..
- - editorimainen rivin editointimahdollisuus pitkille riveille :)
- - /window scroll off
- - vertically split windows
- - /set prompt $N etc.
- - try profiling the code with /cat filewith10000lines
- - when pasting text, irssi could notice it and ask 
-   "pasting 30 lines of text, ok?"
- - wait 1 sec before sending the text, if arrow up key is pressed abort
-   sending the text. also really remove the line from screen and maybe
-   put some notice?
-
- - ircnetin nimen voisi napata sielt‰ /ircnet:st‰ .. ett‰ se case menee
-   oikein. /server, /server list, /channel list, status ikkuna, [ircnet] ..
- - optio k‰ytt‰‰ sit‰ VALKOISTA tai m‰‰r‰tty‰ v‰ri‰ eik‰ "default" v‰ri‰
-
- - skriptej‰:
-   - nappula status window/takaisin hyppimiseen
-   - xtermin titlen asettelija
-
+ - ban list prints "x seconds ago" .. should be x days, mins, hours, ..
+ - some script to handle ctcp floods, like doing /IGNORE * CTCPS when it 
+   happens.
+ - netsplit quit isn't printed if quit -> join -> quit -> join happens fast
 
 *** New stuff in TODO, try to get rid of these :)
 
-( - translate all those TODO items I have in finnish to english ;) )
  - /ignore -activity .. would ignore it just in window activity list,
    not hide the text.
  - autoignoring:
      - it shouldn't save them to config file
      - it could be merged with /ignore -time
- - /server <number> would connect to n'th server in list. show the numbers
-   with /server list
  - when dcc chat is accepted and query exists from the same nick, replace
    the query window with the dcc chat window.
- - autoload specified modules. /load xx could also try to load fe-common/xx
-   and fe-text/xx modules automatically.
- - all options that want time as argument, allow to use s|m|h|d, default to
-   seconds. when sending reply to user, use the time formatting too, not
-   just x seconds or minutes ..
- - /savewindows: save split windows, save window logs. window log names
-   should be moved to WINDOW_REC...
- - automatically add queried nicks to notify list temporarily .. display
-   the notifys for the nick in the query window
- - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
-   idling" was print to screen with some NULL arguments in text..
 
- - /BIND: key definitions should be changed to be more epic-like.. :
-     /bind ^[ key meta, /bind meta-O key meta2, /bind meta-[ key meta2
-     /bind meta2-c echo Ctrl-Left pressed
-   and maybe
-     /bind meta2-C key left, /bind meta-left echo meta-left pressed
+ - try profiling the code with /cat filewith10000lines
  - automatically switch to status window when using commands that always
    print their output to status window, like /whois.
  - automatic whowas if whois wasn't found should be moved to fe-common.
    it could also print something like "nick $0 not in IRC, but this user
    WAS in IRC:"
  - Add command for changing automatic replaces (/replace)
- - bash-style (or whatever it shoulda be called) tab-completion
- - /last 05032 ... didn't really do what I wanted :) maybe I should change
-   the syntax to have -max parameter instead?
  - commands to move channels and servers in the config list, to set the
    join/connect order of them.
- - statusbar:
-     - you can't configure it in any way!
-     - move it to fe-common, make some "statusbar" signal .. maybe
-       statusbar items could be printed with printformat() and statusbar
-       would be just another small window? .. or maybe not exactly, but
-       something like that :)
-     - when starting to run out of space some items could be made smaller,
-       activity for example .. make some generic flag for items to use.
-     - add user counts (ops/voices/normal/total)
- - themes:
-    - document the different formats briefly :)
  - Make /SET HOLD_MODE
  - /CAT should pause on every screenful of text, this should be some kind of
    printtext_multiline_paused() function which would use some callback to
    ask for new text.
- - /msg =dcc_chatti,#kanava doesn't work - fix it somehow that also different
-   chat plugins could use the same /msg command. /CTCP too.
- - /NOTIFY -once - notify only once when the user comes to IRC, forget this
-   after it.
- - /NOTIFY -comment xxx - add a comment to notify. print the comment when
-   user comes to irc.
- - "Should we check people in notify list when you're away" option
- - Implement /EXEC (steal all options from epic, make shell window somehow
-   with query), /ON and /TIMER commands
+ - /ON and /TIMER commands
  - All those options to /WHO and /LIST commands that EPIC has
  - /SCROLLBACK FIND ?
  - nick/channel lists at right side of the text version of irssi. Ctrl-N
@@ -180,14 +272,9 @@
 
 *** Bugs
 
- - netsplits don't work right if quits/joins happen fast multiple times..
-   maybe some other bugs too
  - still some problems in detecting floods right? not sure, couldn't
    reproduce the problem again..
  - match_wildcards(), mask="*a?c*", data="abdabc"
- - multiple dcc connections from different irc networks from same nick
-   doesn't work. Maybe create "server nick" and "refer nick" variables to
-   DCC_REC?
 
 *** GTK UI
 
@@ -220,8 +307,8 @@
  - plugins:
      - scheme, tcl, python scripting? eggdrop/epic compatible scripting?
      - IRC bot, eggdrop is too old, needs a replacement ;) (started)
-     - DCC file server, I'm not too excited about this, maybe someone else
-       wants to do it..
+     - DCC file server (xdcc, fserver), I'm not too excited about these,
+       maybe someone else wants to do it..
      - Multiplayer games! :) Chess, tic-tac-toe, othello, battleship, tetris,
        etc. Existing games should probably be used .. though there doesn't
        seem to be any of these (except tetris) for gnome right now..
@@ -258,7 +345,7 @@
  - {}|~ are same as []\^ (not in all irc networks) - does this really affect
    irssi at all..?
 
-*** ..in GTK UI
+*** ..in GTK UI .. just some things to remember if i'll rewrite it again.
 
  - itext:
      - save/find text

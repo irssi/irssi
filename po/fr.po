@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi 0.7.97.1\n"
-"POT-Creation-Date: 2000-12-03 09:24+0200\n"
+"POT-Creation-Date: 2001-02-22 10:49+0200\n"
 "PO-Revision-Date: 2000-12-05 09:21-0200\n"
 "Last-Translator: Frédéric L. W. Meunier <0@pervalidus.net>\n"
 "Language-Team: French <LL@li.org>\n"
@@ -26,42 +26,42 @@ msgstr ""
 
 #. Display the text when we have already waited
 #. for a while
-#: src/core/net-disconnect.c:145
+#: src/core/net-disconnect.c:150
 msgid "Please wait, waiting for servers to close connections..\n"
-msgstr "Attendez s'il vous plaît, en attendant serveurs pour fermer "
-"connexions..\n"
+msgstr ""
+"Attendez s'il vous plaît, en attendant serveurs pour fermer connexions..\n"
 
-#: src/core/network.c:499
+#: src/core/network.c:507
 msgid "Host not found"
 msgstr "Host non trouvé"
 
-#: src/core/network.c:501
+#: src/core/network.c:509
 msgid "No IP address found for name"
 msgstr "Aucunne adresse IP trouvée pour nom"
 
-#: src/core/network.c:503
+#: src/core/network.c:511
 msgid "A non-recovable name server error occurred"
 msgstr "Une erreur non réparable de serveur de noms s'est produite"
 
-#: src/core/network.c:505
+#: src/core/network.c:513
 msgid "A temporary error on an authoritative name server"
 msgstr "Une erreur provisoire sur un serveur de noms bien fondé"
 
-#: src/core/settings.c:317
-#, c-format
-msgid "Couldn't create %s/.irssi directory"
+#: src/core/settings.c:494
+#, fuzzy, c-format
+msgid "Couldn't create %s directory"
 msgstr "Je n'ai pas pu créer le répertoire %s/.irssi"
 
-#: src/core/settings.c:321
-#, c-format
+#: src/core/settings.c:497
+#, fuzzy, c-format
 msgid ""
-"%s/.irssi is not a directory.\n"
+"%s is not a directory.\n"
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 "%s/.irssi n'est pas un répertoire.\n"
 "Vous devez le retirer avec la commande: rm ~/.irssi"
 
-#: src/core/settings.c:333
+#: src/core/settings.c:509
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Erreurs ignorées dans le fichier de configuration:\n"
 "%s"
 
-#: src/core/settings.c:360
+#: src/core/settings.c:534
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
@@ -79,78 +79,84 @@ msgstr ""
 "Erreurs dans le fichier de configuration:\n"
 "%s"
 
-#: src/core/settings.c:390
+#: src/core/settings.c:564
 #, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr "Je n'ai pas pu sauvegarder le fichier de configuration: %s"
 
-#: src/core/settings.c:411
-#, c-format
+#: src/core/settings.c:585
+#, fuzzy, c-format
 msgid ""
 "Configuration file was modified while irssi was running. Saving "
-"configuration to file '%s' instead"
+"configuration to file '%s' instead. Use /SAVE or /RELOAD to get rid of this "
+"message."
 msgstr ""
-"Le fichier de configuration a été modifié tandis que irssi "
-"fonctionnait. Sauvegarde de la configuration dans le fichier '%s'"
+"Le fichier de configuration a été modifié tandis que irssi fonctionnait. "
+"Sauvegarde de la configuration dans le fichier '%s'"
 
-#: src/fe-common/core/printtext.c:382
+#: src/fe-common/core/fe-common-core.c:122
+msgid "Automatically connect to server/ircnet"
+msgstr "Automatiquement connecter au serveur/ircnet"
+
+#: src/fe-common/core/fe-common-core.c:122
+#: src/fe-common/core/fe-common-core.c:123
+msgid "SERVER"
+msgstr "SERVEUR"
+
+#: src/fe-common/core/fe-common-core.c:123
+msgid "Autoconnect password"
+msgstr "Mot de passe pour autoconnexion"
+
+#: src/fe-common/core/fe-common-core.c:124
+msgid "Autoconnect port"
+msgstr "Porte pour autoconnexion"
+
+#: src/fe-common/core/fe-common-core.c:124
+msgid "PORT"
+msgstr "PORTE"
+
+#: src/fe-common/core/fe-common-core.c:125
+msgid "Disable autoconnecting"
+msgstr "Invalider autoconnexion"
+
+#: src/fe-common/core/fe-common-core.c:126
+msgid "Specify nick to use"
+msgstr "Spécifier nick à utiliser"
+
+#: src/fe-common/core/fe-common-core.c:127
+msgid "Specify host name to use"
+msgstr "Spécifier nom de host à utiliser"
+
+#: src/fe-common/core/printtext.c:417
 msgid "%_Warning:%_ %s"
 msgstr "%_Attention:%_ %s"
 
-#: src/fe-common/core/printtext.c:384
+#: src/fe-common/core/printtext.c:419
 msgid "%_Error:%_ %s"
 msgstr "%_Erreur:%_ %s"
 
-#: src/fe-common/core/themes.c:545
-#, c-format
+#: src/fe-common/core/themes.c:735
+#, fuzzy, c-format
 msgid ""
-"Ignored errors in theme:\n"
+"Ignored errors in theme %s:\n"
 "%s"
 msgstr ""
 "Erreurs ignorées dans le thème:\n"
 "%s"
 
-#: src/fe-common/core/fe-settings.c:259
+#: src/fe-common/core/fe-settings.c:262
 msgid "Y"
 msgstr ""
 
-#: src/fe-common/core/fe-settings.c:279
+#: src/fe-common/core/fe-settings.c:281
 msgid "Overwrite config (y/N)?"
 msgstr "Recouvrer config (y/N)?"
 
-#: src/fe-common/irc/fe-common-irc.c:76
-msgid "Automatically connect to server/ircnet"
-msgstr "Automatiquement connecter au serveur/ircnet"
+#: src/fe-common/irc/fe-irc-commands.c:418
+msgid "Operator password:"
+msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:76 src/fe-common/irc/fe-common-irc.c:77
-msgid "SERVER"
-msgstr "SERVEUR"
-
-#: src/fe-common/irc/fe-common-irc.c:77
-msgid "Autoconnect password"
-msgstr "Mot de passe pour autoconnexion"
-
-#: src/fe-common/irc/fe-common-irc.c:78
-msgid "Autoconnect port"
-msgstr "Porte pour autoconnexion"
-
-#: src/fe-common/irc/fe-common-irc.c:78
-msgid "PORT"
-msgstr "PORTE"
-
-#: src/fe-common/irc/fe-common-irc.c:79
-msgid "Disable autoconnecting"
-msgstr "Invalider autoconnexion"
-
-#: src/fe-common/irc/fe-common-irc.c:80
-msgid "Specify nick to use"
-msgstr "Spécifier nick à utiliser"
-
-#: src/fe-common/irc/fe-common-irc.c:81
-msgid "Specify host name to use"
-msgstr "Spécifier nom de host à utiliser"
-
-#: src/fe-text/irssi.c:239
+#: src/fe-text/irssi.c:281
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr "Je ne peut pas initialiser la manipulation d'écran, quitter.\n"
 

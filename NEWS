@@ -1,3 +1,119 @@
+v0.7.98 2001-02-22  Timo Sirainen <tss@iki.fi>
+
+	* Theme files aren't fully compatible with old ones, there's a few
+	  naming changes and some new items. Added lots of comments and help
+	  to default.theme, so creating themes should be a bit easier now :)
+
+	* Perl scripts aren't compatible with old ones anymore. Biggest
+	  change is that $object->values()->{xxx} calls are now just
+	  $object->{xxx}, but there's a lot of other changes as well.
+	  docs/perl.txt is now up to date so you may want to read it.
+
+	* Several settings have changed their names:
+	    /SET beep_on_msg -> beep_msg_level
+	    /SET activity_levels -> activity_msg_level
+	    /SET hilight_levels -> activity_hilight_level
+	    /SET noact_channels -> activity_hide_targets
+
+	+ /SET prompt, /SET prompt_window - Specifies the text in prompt.
+	  'prompt' is used when channel or query is active in window and
+	  'prompt_window' is used with empty windows. You can also use
+	  % color codes in prompt.
+	+ /EXEC - rewrote it, has now all the same features as EPIC and a
+	  few more, like "interactive shell in window" support. See
+	  /HELP exec for information.
+	+ /SAVEWINDOWS renamed to /LAYOUT SAVE. Added /LAYOUT RESET.
+	  /LAYOUT SAVE now saves split windows and queries properly.
+	  Windows that contain saved channels are never used for anything
+	  else (ie. if the saved channel isn't joined, no other channels
+	  can be joined to the window)
+	+ /WINDOW SERVER: added -sticky and -unsticky options. If window
+	  server is sticky, it will never be automatically changed, and it
+	  cannot be changed to anything else without -unsticky option.
+	  Should be useful for people who want status or msgs windows for
+	  each server.
+	+ /WINDOW STICK [ON|OFF|<ref#>] - stick window to specified split
+	  window. After setting window to sticky non-sticky windows can't
+	  replace the active sticky one. Each split window can have it's own
+	  sticky window group.
+	+ /WINDOW LEFT, /WINDOW RIGHT - Go to previous/next window in the
+	  current sticky window group, or if there's no sticky windows go to
+	  previous/next non-sticky window. Alt-Left/Right keys default to
+	  these commands now.
+	+ /WINDOW NUMBER: -sticky option added. Closing windows before a
+	  sticky window won't change refnum of the sticky window and windows
+	  after it.
+	+ /SET windows_auto_renumber - should window refnums be packed when
+	  some window is destroyed in the middle
+	+ /SET scroll_page_count - how many lines to scroll with pgup/pgdn.
+	  either an absolute value, or if the count starts with '/', it's
+	  calculated as lines_in_screen/count. The default is /2.
+	+ /SET timestamp_format specifies the format to use with timestamps
+	  in "man strftime" format.
+	+ Emphasis (*word*, _word_) replacing works better now. It doesn't
+	  try to change nicks or any non-words. This time people might want
+	  to actually use it :)
+	+ Nick completion logic changes, should work better now. Changed
+	  meaning of /SET completion_keep_publics to be number of publics
+	  to keep instead of time to keep them.
+	+ /HILIGHT: Added -priority option (deciding which color should stay
+	  in activity list), /SET hilight_level to specify the default level
+	  for /HILIGHTs. -word option renamed to -full. Added new -word
+	  option meaning to highlight only the found word in line. Removed
+	  -nonick option but added -line which means pretty much the same.
+	  -actcolor specifies what color to show in activity list, default
+	  is the same as -color or if there's no -color it defaults to
+	  /SET hilight_act_color. Colors can have background color set with
+	  fg,bg. Works with activity list too, useful for example blinking.
+	+ DCC rewrite. File names with spaces work properly, you can have
+	  multiple dcc chats with same people (or more useful, same nick in
+	  different ircnets), /DCC CHAT|GET|RESUME with no arguments accepts
+	  the last request, notifies if dcc request was sent to channel,
+	  warns about connecting to lowports, /SET dcc_autoget_lowports
+	  specifies if autogetting should work with lowports, complains of
+	  invalid DCC CTCPs instead of ignoring, /SET dcc_autoresume is like
+	  dcc_autoget except resumes the files if possible.
+	+ /NAMES can print columns with different widths now. You can change
+	  the max. width with /SET names_max_width and /SET names_max_columns
+	  settings. Default is max. 6 columns.
+	+ /LASTLOG: Added options -file <filename> for writing lastlog to
+	  file, -window <ref#|name> for specifying which window's lastlog to
+	  print (output is always to active window) and -clear option to
+	  remove all lastlog lines from window.
+	+ /OPER [<nick> [<password>]] - syntax changed. If password isn't
+	  given, it's asked.
+	+ /FOREACH server|channel|query|window <command>
+	+ /UNBAN <ref#> works. /BAN list shows reference numbers.
+	+ /PERL <code> - runs perl code (like /PERL Irssi::print "hello")
+	+ /CLEAR -all - clear all windows
+	+ /KICKBAN and /KNOCKOUT accepts multiple nicks separated with commas
+	+ /SET theme - says what theme was changed to, and complains if
+	  theme wasn't found. Setting theme's name to "xxx.theme" now works,
+	  too many people tried it with the .theme suffix :)
+	+ /WHOIS without parameters in query does now same as
+	  /WII <queried nick>
+	+ IPv6 updates: /CONNECT, /SERVER, /SERVER ADD: added -4 and -6
+	  options for specifying if we should connect to IPv4 or IPv6 address
+	  of the server. If -host or /SET hostname is set, irssi determines
+	  from it if it should use IPv4 or v6. If irssi still isn't sure of
+	  it, it fallbacks to /SET resolve_prefer_ipv6
+	+ Logs and rawlogs write to files through special "write buffer". By
+	  default everything gets written immediately, but you can make it
+	  wait until there's specified amount of data in buffer or write once
+	  in a hour or so. Useful for people who want to keep hard disk at
+	  sleep at nights but still want to log. /SET write_buffer_mins and
+	  /SET write_buffer_kb specifies when to flush the buffer.
+	  /FLUSHBUFFER flushes it immediately.
+	+ LOTS of other smaller things that should make your life easier :)
+	- /SET dcc_autorename OFF didn't work before.
+	- Irssi compiled with IPv6 support didn't work properly with some
+	  operating systems.
+	- Theme saving to home dir didn't work correctly if globaldir
+	  already had the same theme.
+	- If log file locking failed, irssi always assumed it was locked
+	  while it could have been because filesystem didn't support locking
+	  or some other problem..
+
 v0.7.97 2000-12-03  Timo Sirainen <tss@iki.fi>
 
 	* Added templates for themes - this allowed separation of the
