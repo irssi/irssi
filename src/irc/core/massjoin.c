@@ -218,6 +218,18 @@ static void server_check_massjoins(IRC_SERVER_REC *server, time_t max)
 {
 	GSList *tmp;
 
+	/*
+	   1) First time always save massjoin count to last_massjoins
+	   2) Next time check if there's been less than massjoin_max_joins
+	      (yes, the name is misleading..) joins since previous check.
+	        yes) send a massjoin signal and reset last_massjoin count
+	        no) unless we've waited for massjoin_max_wait seconds already,
+		    goto 2.
+
+	   So, with single joins the massjoin signal is sent 1-2 seconds after
+	   the join.
+	*/
+
 	/* Scan all channels through for massjoins */
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		IRC_CHANNEL_REC *rec = tmp->data;
@@ -226,7 +238,8 @@ static void server_check_massjoins(IRC_SERVER_REC *server, time_t max)
 			continue;
 
 		if (rec->massjoin_start < max || /* We've waited long enough */
-		    rec->massjoins-massjoin_max_joins < rec->last_massjoins) { /* Less than x joins since last check */
+		    (rec->last_massjoins > 0 &&
+		     rec->massjoins-massjoin_max_joins < rec->last_massjoins)) { /* Less than x joins since last check */
 			/* send them */
 			massjoin_send(rec);
 		} else {
