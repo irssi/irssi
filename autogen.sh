@@ -4,10 +4,6 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-# I'm too lazy to update version number into several places.. :)
-version=`cat configure.in|grep AM_INIT_AUTOMAKE|perl -pe 's/^[^,]*,[ ]*([^\)]*).*/$1/'`
-cat irssi.spec.in |sed s/^Version:/Version:\ $version/ > irssi.spec
-
 PKG_NAME="Irssi"
 
 (test -f $srcdir/configure.in \
