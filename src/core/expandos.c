@@ -133,7 +133,7 @@ void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
 /* Destroy expando */
 void expando_destroy(const char *key, EXPANDO_FUNC func)
 {
-	gpointer origkey;
+	gpointer origkey, value;
         EXPANDO_REC *rec;
 
 	g_return_if_fail(key != NULL || *key == '\0');
@@ -146,8 +146,9 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 			char_expandos[(int) (unsigned char) *key] = NULL;
 			g_free(rec);
 		}
-	} else if (g_hash_table_lookup_extended(expandos, key, &origkey,
-						(gpointer *) &rec)) {
+	} else if (g_hash_table_lookup_extended(expandos, key,
+						&origkey, &value)) {
+		rec = value;
 		if (rec->func == func) {
 			g_hash_table_remove(expandos, key);
 			g_free(origkey);

@@ -163,6 +163,7 @@ static int module_load_name(const char *path, const char *rootmodule,
 	GModule *gmodule;
         MODULE_REC *module;
 	MODULE_FILE_REC *rec;
+	gpointer value1, value2;
 	char *initfunc, *deinitfunc;
         int found;
 
@@ -178,10 +179,13 @@ static int module_load_name(const char *path, const char *rootmodule,
 	/* get the module's init() and deinit() functions */
 	initfunc = module_get_func(rootmodule, submodule, "init");
 	deinitfunc = module_get_func(rootmodule, submodule, "deinit");
-	found = g_module_symbol(gmodule, initfunc, (gpointer *) &module_init) &&
-		g_module_symbol(gmodule, deinitfunc, (gpointer *) &module_deinit);
+	found = g_module_symbol(gmodule, initfunc, &value1) &&
+		g_module_symbol(gmodule, deinitfunc, &value2);
 	g_free(initfunc);
 	g_free(deinitfunc);
+
+	module_init = value1;
+	module_deinit = value2;
 
 	if (!found) {
 		module_error(MODULE_ERROR_INVALID, NULL,

@@ -177,10 +177,11 @@ static void uniq_destroy_str(gpointer key, gpointer value)
 void module_uniq_destroy(const char *module)
 {
 	GHashTable *idlist;
-	gpointer key;
+	gpointer key, value;
 
-	if (g_hash_table_lookup_extended(idlookup, module, &key,
-					 (gpointer *) &idlist)) {
+	if (g_hash_table_lookup_extended(idlookup, module, &key, &value)) {
+		idlist = value;
+
 		g_hash_table_remove(idlookup, key);
 		g_free(key);
 
@@ -188,8 +189,9 @@ void module_uniq_destroy(const char *module)
 		g_hash_table_destroy(idlist);
 	}
 
-	if (g_hash_table_lookup_extended(stridlookup, module, &key,
-					 (gpointer *) &idlist)) {
+	if (g_hash_table_lookup_extended(stridlookup, module, &key, &value)) {
+		idlist = value;
+
 		g_hash_table_remove(stridlookup, key);
 		g_free(key);
 
