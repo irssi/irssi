@@ -165,9 +165,9 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	if (window == NULL) {
                 g_return_if_fail(next_xpos != -1);
 
-		wmove(stdscr, next_ypos, next_xpos);
-		set_color(stdscr, fg | (bg << 4));
-                addstr(str);
+		screen_move(screen_root, next_xpos, next_ypos);
+		screen_set_color(screen_root, fg | (bg << 4));
+                screen_addstr(screen_root, str);
 		next_xpos += strlen(str);
                 return;
 	}
@@ -258,7 +258,6 @@ void gui_printtext_init(void)
 	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_add("beep", (SIGNAL_FUNC) beep);
 
 	read_settings();
 }
@@ -271,5 +270,4 @@ void gui_printtext_deinit(void)
 	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_remove("beep", (SIGNAL_FUNC) beep);
 }

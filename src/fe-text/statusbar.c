@@ -141,7 +141,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
         if (bar->window != NULL)
 		active_win = bar->window->active;
 
-	statusbar_get_sizes(bar, COLS-2);
+	statusbar_get_sizes(bar, screen_width-2);
 
 	xpos = 1;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
@@ -154,7 +154,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 		}
 	}
 
-	rxpos = COLS-1;
+	rxpos = screen_width-1;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
@@ -196,9 +196,10 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 		return;
 	}
 
-	set_bg(stdscr, backs[bar->color] << 4);
-	move(bar->ypos, 0); clrtoeol();
-	set_bg(stdscr, 0);
+	screen_set_bg(screen_root, backs[bar->color] << 4);
+	screen_move(screen_root, 0, bar->ypos);
+	screen_clrtoeol(screen_root);
+	screen_set_bg(screen_root, 0);
 
 	statusbar_redraw_line(bar);
 
@@ -247,7 +248,8 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 	rec->line = pos == STATUSBAR_POS_MIDDLE ? ypos :
 		mainwindows_reserve_lines(1, pos == STATUSBAR_POS_UP);
 	rec->ypos = pos == STATUSBAR_POS_MIDDLE ? ypos :
-		pos == STATUSBAR_POS_UP ? rec->line : LINES-1-rec->line;
+		pos == STATUSBAR_POS_UP ? rec->line :
+		screen_height-1-rec->line;
 
         /* get background color from sb_background abstract */
 	str = theme_format_expand(current_theme, "{sb_background}");
@@ -268,9 +270,10 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 		rec->line -= sbar_lowest;
 	}
 
-	set_bg(stdscr, backs[rec->color] << 4);
-	move(rec->ypos, 0); clrtoeol();
-	set_bg(stdscr, 0);
+	screen_set_bg(screen_root, backs[rec->color] << 4);
+	screen_move(screen_root, 0, rec->ypos);
+	screen_clrtoeol(screen_root);
+	screen_set_bg(screen_root, 0);
 
 	return rec;
 }

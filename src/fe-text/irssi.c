@@ -89,8 +89,8 @@ static void sig_exit(void)
 /* redraw irssi's screen.. */
 void irssi_redraw(void)
 {
-	clear();
-	refresh();
+	screen_clear();
+	screen_refresh(NULL);
 
 	/* windows */
         mainwindows_redraw();

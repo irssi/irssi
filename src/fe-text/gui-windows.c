@@ -254,7 +254,7 @@ static void signal_window_changed(WINDOW_REC *window)
 	active_mainwin->active = window;
 
 	textbuffer_view_set_window(WINDOW_GUI(window)->view,
-				   parent->curses_win);
+				   parent->screen_win);
 
 	window_update_prompt();
 }

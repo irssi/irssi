@@ -254,12 +254,12 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                                 color = cache->lines[subline-1].color;
 			}
 
-			set_color(view->window, 0);
-			wmove(view->window, ypos, 0);
-			wclrtoeol(view->window);
+			screen_set_color(view->window, 0);
+			screen_move(view->window, 0, ypos);
+			screen_clrtoeol(view->window);
 
-			wmove(view->window, ypos, xpos);
-			set_color(view->window, color);
+			screen_move(view->window, xpos, ypos);
+			screen_set_color(view->window, color);
 
 			/* get the beginning of the next subline */
 			text_newline = subline == cache->count-1 ? NULL :
@@ -298,18 +298,18 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				color |= 0x80;
                                 break;
 			}
-			set_color(view->window, color);
+			screen_set_color(view->window, color);
 			text++;
 			continue;
 		}
 
 		if ((*text & 127) >= 32)
-			waddch(view->window, *text);
+			screen_addch(view->window, *text);
 		else {
 			/* low-ascii */
-			set_color(view->window, ATTR_REVERSE);
-			waddch(view->window, (*text & 127)+'A'-1);
-			set_color(view->window, color);
+			screen_set_color(view->window, ATTR_REVERSE);
+			screen_addch(view->window, (*text & 127)+'A'-1);
+			screen_set_color(view->window, color);
 		}
 		text++;
 	}
@@ -475,8 +475,8 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, GList *line,
 
         /* clear the rest of the view */
 	while (lines > 0) {
-		wmove(view->window, ypos, 0);
-		wclrtoeol(view->window);
+		screen_move(view->window, ypos, 0);
+		screen_clrtoeol(view->window);
 		ypos++; lines--;
 	}
 }
@@ -562,9 +562,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
 			   whole view */
                         textbuffer_view_redraw(view);
 		} else {
-			scrollok(view->window, TRUE);
-			wscrl(view->window, realcount);
-			scrollok(view->window, FALSE);
+			screen_window_scroll(view->window, realcount);
 
 			if (draw_nonclean) {
 				if (realcount < 0)
@@ -1054,7 +1052,8 @@ LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 
 /* Specify window where the changes in view should be drawn,
    NULL disables it. */
-void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view, WINDOW *window)
+void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
+				SCREEN_WINDOW *window)
 {
 	g_return_if_fail(view != NULL);
 
@@ -1071,7 +1070,7 @@ void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 	g_return_if_fail(view != NULL);
 
 	if (view->window != NULL) {
-                werase(view->window);
+                screen_window_clear(view->window);
 		view_draw_top(view, view->height);
 		screen_refresh(view->window);
 	}

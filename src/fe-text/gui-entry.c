@@ -31,16 +31,16 @@ static char *prompt;
 
 static void entry_screenpos(void)
 {
-	if (pos-scrstart < COLS-2-promptlen && pos-scrstart > 0) {
+	if (pos-scrstart < screen_width-2-promptlen && pos-scrstart > 0) {
 		scrpos = pos-scrstart;
 		return;
 	}
 
-	if (pos < COLS-1-promptlen) {
+	if (pos < screen_width-1-promptlen) {
 		scrstart = 0;
 		scrpos = pos;
 	} else {
-		scrpos = (COLS-promptlen)*2/3;
+		scrpos = (screen_width-promptlen)*2/3;
 		scrstart = pos-scrpos;
 	}
 }
@@ -50,26 +50,26 @@ static void entry_update(void)
 	char *p;
 	int n, len;
 
-	len = entry->len-scrstart > COLS-1-promptlen ?
-		COLS-1-promptlen : entry->len-scrstart;
+	len = entry->len-scrstart > screen_width-1-promptlen ?
+		screen_width-1-promptlen : entry->len-scrstart;
 
-	set_color(stdscr, 0);
-	move(LINES-1, promptlen);
+	screen_set_color(screen_root, 0);
+	screen_move(screen_root, promptlen, screen_height-1);
 
 	for (p = entry->str+scrstart, n = 0; n < len; n++, p++) {
 		if (prompt_hidden)
-                        addch(' ');
+                        screen_addch(screen_root, ' ');
 		else if ((unsigned char) *p >= 32)
-			addch((unsigned char) *p);
+			screen_addch(screen_root, (unsigned char) *p);
 		else {
-			set_color(stdscr, ATTR_REVERSE);
-			addch(*p+'A'-1);
-			set_color(stdscr, 0);
+			screen_set_color(screen_root, ATTR_REVERSE);
+			screen_addch(screen_root, *p+'A'-1);
+			screen_set_color(screen_root, 0);
 		}
 	}
-	clrtoeol();
+	screen_clrtoeol(screen_root);
 
-	move_cursor(LINES-1, scrpos+promptlen);
+	screen_move_cursor(scrpos+promptlen, screen_height-1);
 	screen_refresh(NULL);
 }
 
@@ -84,7 +84,7 @@ void gui_entry_set_prompt(const char *str)
 	}
 
         if (prompt != NULL)
-		gui_printtext(0, LINES-1, prompt);
+		gui_printtext(0, screen_height-1, prompt);
 
 	entry_screenpos();
 	entry_update();

@@ -313,12 +313,9 @@ void readline(void)
 	int key;
 
 	for (;;) {
-		key = getch();
-		if (key == ERR
-#ifdef KEY_RESIZE
-		    || key == KEY_RESIZE
-#endif
-		   ) break;
+		key = screen_getch();
+		if (key == -1)
+                        break;
 
 		handle_key(key);
 	}

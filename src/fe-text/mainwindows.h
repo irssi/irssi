@@ -10,11 +10,8 @@ typedef struct {
 	WINDOW_REC *active;
         GSList *sticky_windows; /* list of windows allowed to show only in this mainwindow */
 
-#ifdef USE_CURSES_WINDOWS
-	WINDOW *curses_win;
-#else
-#error disable-curses-windows is currently broken /* FIXME */
-#endif
+	SCREEN_WINDOW *screen_win;
+
 	int first_line, last_line, width, height;
 	int statusbar_lines;
 	void *statusbar;

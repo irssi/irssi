@@ -632,7 +632,7 @@ static void sig_main_statusbar_changed(WINDOW_REC *window)
 
 static void read_settings(void)
 {
-	use_colors = settings_get_bool("colors") && has_colors();
+	use_colors = settings_get_bool("colors") && screen_has_colors();
 	if (settings_get_bool("topicbar"))
 		topicbar_create();
 	else

@@ -41,7 +41,7 @@ typedef struct {
 	TEXT_BUFFER_REC *buffer;
 	GSList *siblings; /* other views that use the same buffer */
 
-        WINDOW *window;
+        SCREEN_WINDOW *window;
 	int width, height;
 
 	int default_indent;
@@ -121,7 +121,8 @@ LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 
 /* Specify window where the changes in view should be drawn,
    NULL disables it. */
-void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view, WINDOW *window);
+void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
+				SCREEN_WINDOW *window);
 /* Redraw the view */
 void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view);
 

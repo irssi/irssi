@@ -37,7 +37,11 @@ GSList *mainwindows;
 MAIN_WINDOW_REC *active_mainwin;
 
 static int reserved_up, reserved_down;
-static int screen_width, screen_height;
+static int old_screen_width, old_screen_height;
+
+#define mainwindow_create_screen(window) \
+	screen_window_create(0, (window)->first_line, \
+			     (window)->width, (window)->height)
 
 static MAIN_WINDOW_REC *find_window_with_room(void)
 {
@@ -59,15 +63,6 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
-#ifdef USE_CURSES_WINDOWS
-static void create_curses_window(MAIN_WINDOW_REC *window)
-{
-	window->curses_win = newwin(window->height, window->width,
-				    window->first_line, 0);
-        idlok(window->curses_win, 1);
-}
-#endif
-
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 {
 	GSList *tmp;
@@ -77,18 +72,8 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 
         window->width += xdiff;
 	window->height = window->last_line-window->first_line+1;
-#ifdef USE_CURSES_WINDOWS
-#ifdef HAVE_CURSES_WRESIZE
-	wresize(window->curses_win, window->height, window->width);
-	mvwin(window->curses_win, window->first_line, 0);
-#else
-	delwin(window->curses_win);
-	create_curses_window(window);
-
-	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
-				   window->curses_win);
-#endif
-#endif
+	screen_window_move(window->screen_win, 0, window->first_line,
+			   window->width, window->height);
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
@@ -99,7 +84,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 	}
 
 	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
-				   window->curses_win);
+				   window->screen_win);
 	signal_emit("mainwindow resized", 1, window);
 }
 
@@ -110,11 +95,9 @@ void mainwindows_recreate(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-#ifdef USE_CURSES_WINDOWS
-		create_curses_window(rec);
-#endif
+		rec->screen_win = mainwindow_create_screen(rec);
 		textbuffer_view_set_window(WINDOW_GUI(rec->active)->view,
-					   rec->curses_win);
+					   rec->screen_win);
 	}
 }
 
@@ -151,10 +134,8 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		mainwindow_resize(parent, 0, -space-1);
 	}
 
-#ifdef USE_CURSES_WINDOWS
-	rec->curses_win = newwin(rec->height, rec->width, rec->first_line, 0);
-	refresh();
-#endif
+	rec->screen_win = mainwindow_create_screen(rec);
+	screen_refresh(NULL);
 
 	mainwindows = g_slist_append(mainwindows, rec);
 	signal_emit("mainwindow created", 1, rec);
@@ -240,9 +221,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 	mainwindows = g_slist_remove(mainwindows, window);
 	signal_emit("mainwindow destroyed", 1, window);
 
-#ifdef USE_CURSES_WINDOWS
-	delwin(window->curses_win);
-#endif
+        screen_window_destroy(window->screen_win);
 
 	if (!quitting && mainwindows != NULL) {
 		gui_windows_remove_parent(window);
@@ -419,10 +398,10 @@ void mainwindows_resize(int width, int height)
 {
 	int xdiff, ydiff;
 
-	xdiff = width-screen_width;
-	ydiff = height-screen_height;
-        screen_width = width;
-        screen_height = height;
+	xdiff = width-old_screen_width;
+	ydiff = height-old_screen_height;
+        old_screen_width = width;
+        old_screen_height = height;
 
 	screen_refresh_freeze();
 	if (ydiff < 0)
@@ -431,9 +410,9 @@ void mainwindows_resize(int width, int height)
 		mainwindows_resize_bigger(xdiff, ydiff);
         else if (xdiff != 0)
 		mainwindows_resize_horiz(xdiff);
+	screen_refresh_thaw();
 
 	irssi_redraw();
-	screen_refresh_thaw();
 }
 
 int mainwindows_reserve_lines(int count, int up)
@@ -871,8 +850,8 @@ static void cmd_window_stick(const char *data)
 
 void mainwindows_init(void)
 {
-	screen_width = COLS;
-	screen_height = LINES;
+	old_screen_width = screen_width;
+	old_screen_height = screen_height;
 
 	mainwindows = NULL;
 	active_mainwin = NULL;

@@ -32,11 +32,24 @@
 #endif
 #include <signal.h>
 
+#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
+#  include <ncurses.h>
+#else
+#  include <curses.h>
+#endif
+
 #ifndef COLOR_PAIRS
 #define COLOR_PAIRS 64
 #endif
 
 #define MIN_SCREEN_WIDTH 20
+
+struct _SCREEN_WINDOW {
+        WINDOW *win;
+};
+
+SCREEN_WINDOW *screen_root;
+int screen_width, screen_height;
 
 static int scrx, scry;
 static int use_colors;
@@ -66,6 +79,9 @@ static void sig_winch(int p)
 
 	/* Resize curses terminal */
 	resizeterm(ws.ws_row, ws.ws_col);
+
+	screen_width = COLS;
+	screen_height = LINES;
 #else
 	deinit_screen_int();
 	init_screen_int();
@@ -141,36 +157,103 @@ static int init_curses(void)
 
 static int init_screen_int(void)
 {
+	int ret;
+
+	ret = init_curses();
+	if (!ret) return 0;
+
 	use_colors = settings_get_bool("colors");
 
 	scrx = scry = 0;
 	freeze_refresh = 0;
 
-	return init_curses();
+	screen_root = g_new0(SCREEN_WINDOW, 1);
+        screen_root->win = stdscr;
+
+	screen_width = COLS;
+	screen_height = LINES;
+        return ret;
 }
 
 static void deinit_screen_int(void)
 {
 	endwin();
+	g_free_and_null(screen_root);
 }
 
 /* Initialize screen, detect screen length */
 int init_screen(void)
 {
 	settings_add_bool("lookandfeel", "colors", TRUE);
+
+	signal_add("beep", (SIGNAL_FUNC) beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
-	return init_screen_int();
+        return init_screen_int();
 }
 
 /* Deinitialize screen */
 void deinit_screen(void)
 {
-        deinit_screen_int();
+	deinit_screen_int();
+
+	signal_remove("beep", (SIGNAL_FUNC) beep);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
-void set_color(WINDOW *window, int col)
+int screen_has_colors(void)
+{
+        return has_colors();
+}
+
+void screen_clear(void)
+{
+        clear();
+}
+
+SCREEN_WINDOW *screen_window_create(int x, int y, int width, int height)
+{
+        SCREEN_WINDOW *scrwin;
+
+	scrwin = g_new0(SCREEN_WINDOW, 1);
+	scrwin->win = newwin(height, width, y, x);
+	idlok(scrwin->win, 1);
+
+        return scrwin;
+}
+
+void screen_window_destroy(SCREEN_WINDOW *window)
+{
+	delwin(window->win);
+        g_free(window);
+}
+
+void screen_window_clear(SCREEN_WINDOW *window)
+{
+        werase(window->win);
+}
+
+void screen_window_move(SCREEN_WINDOW *window, int x, int y,
+			int width, int height)
+{
+#ifdef HAVE_CURSES_WRESIZE
+	wresize(window->win, height, width);
+	mvwin(window->win, y, x);
+#else
+	delwin(window->win);
+	window->win = newwin(height, width, y, x);
+	idlok(window->win, 1);
+#endif
+}
+
+void screen_window_scroll(SCREEN_WINDOW *window, int count)
+{
+	scrollok(window->win, TRUE);
+	wscrl(window->win, count);
+	scrollok(window->win, FALSE);
+}
+
+void screen_set_color(SCREEN_WINDOW *window, int col)
 {
 	int attr;
 
@@ -189,10 +272,10 @@ void set_color(WINDOW *window, int col)
 	if (col & ATTR_UNDERLINE) attr |= A_UNDERLINE;
 	if (col & ATTR_REVERSE) attr |= A_REVERSE;
 
-	wattrset(window, attr);
+	wattrset(window->win, attr);
 }
 
-void set_bg(WINDOW *window, int col)
+void screen_set_bg(SCREEN_WINDOW *window, int col)
 {
 	int attr;
 
@@ -207,10 +290,30 @@ void set_bg(WINDOW *window, int col)
 	if (col & 0x08) attr |= A_BOLD;
 	if (col & 0x80) attr |= A_BLINK;
 
-	wbkgdset(window, ' ' | attr);
+	wbkgdset(window->win, ' ' | attr);
 }
 
-void move_cursor(int y, int x)
+void screen_move(SCREEN_WINDOW *window, int x, int y)
+{
+        wmove(window->win, y, x);
+}
+
+void screen_addch(SCREEN_WINDOW *window, int chr)
+{
+        waddch(window->win, chr);
+}
+
+void screen_addstr(SCREEN_WINDOW *window, char *str)
+{
+        waddstr(window->win, str);
+}
+
+void screen_clrtoeol(SCREEN_WINDOW *window)
+{
+        wclrtoeol(window->win);
+}
+
+void screen_move_cursor(int x, int y)
 {
 	scry = y;
 	scrx = x;
@@ -229,13 +332,30 @@ void screen_refresh_thaw(void)
 	}
 }
 
-void screen_refresh(WINDOW *window)
+void screen_refresh(SCREEN_WINDOW *window)
 {
 	if (window != NULL)
-		wnoutrefresh(window);
+		wnoutrefresh(window->win);
+
 	if (freeze_refresh == 0) {
 		move(scry, scrx);
 		wnoutrefresh(stdscr);
 		doupdate();
 	}
+}
+
+int screen_getch(void)
+{
+	int key;
+
+	key = getch();
+	if (key == ERR)
+		return -1;
+
+#ifdef KEY_RESIZE
+	if (key == KEY_RESIZE)
+                return -1;
+#endif
+
+	return key;
 }
