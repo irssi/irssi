@@ -196,8 +196,6 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	server->whois_coming = TRUE;
-
 	/* first remove the gone-flag, if user is gone
 	   it will be set later.. */
 	params = event_get_params(data, 6, NULL, &nick, NULL,
@@ -240,11 +238,6 @@ static void event_whois_ircop(SERVER_REC *server, const char *data)
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
 	nicklist_update_flags(server, nick, -1, TRUE);
 	g_free(params);
-}
-
-static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
-{
-	server->whois_coming = FALSE;
 }
 
 static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
@@ -373,7 +366,6 @@ void irc_nicklist_init(void)
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add_first("event 301", (SIGNAL_FUNC) event_whois_away);
 	signal_add_first("event 313", (SIGNAL_FUNC) event_whois_ircop);
-	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
 	signal_add("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_add("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
@@ -393,7 +385,6 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("event 301", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("event 313", (SIGNAL_FUNC) event_whois_ircop);
-	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);
 	signal_remove("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);

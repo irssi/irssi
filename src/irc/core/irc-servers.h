@@ -48,7 +48,6 @@ struct _IRC_SERVER_REC {
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
 	int channels_formed; /* channels formed in irc network */
 
-	unsigned int whois_coming:1; /* Mostly just to display away message right.. */
 	unsigned int whois_found:1; /* Did WHOIS return any entries? */
 	unsigned int whowas_found:1; /* Did WHOWAS return any entries? */
 

@@ -388,6 +388,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
                               NULL,
 			      "event 318", "whois end",
 			      "event 402", event_402,
+			      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
 			      "event 401", "whois not found",
 			      "event 311", "whois event", NULL);
         g_free(str);
@@ -453,6 +454,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 
 	nicks_redir = get_redirect_nicklist(nicks, &free_nick);
 	server_redirect_event(server, "whowas", 1, nicks_redir, -1, NULL,
+			      "event 301", "whowas away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
 			      "event 314", "whowas event", NULL);
 	if (free_nick) g_free(nicks_redir);
 

@@ -261,7 +261,7 @@ static void event_channel_created(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_away(IRC_SERVER_REC *server, const char *data)
+static void event_nowaway(IRC_SERVER_REC *server, const char *data)
 {
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_AWAY);
 }
@@ -269,6 +269,29 @@ static void event_away(IRC_SERVER_REC *server, const char *data)
 static void event_unaway(IRC_SERVER_REC *server, const char *data)
 {
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_UNAWAY);
+}
+
+static void event_away(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *awaymsg;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	if (!settings_get_bool("show_away_once") ||
+	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
+	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {
+		/* don't show the same away message
+		   from the same nick all the time */
+		g_free_not_null(last_away_nick);
+		g_free_not_null(last_away_msg);
+		last_away_nick = g_strdup(nick);
+		last_away_msg = g_strdup(awaymsg);
+
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_NICK_AWAY, nick, awaymsg);
+	}
+	g_free(params);
 }
 
 static void event_userhost(IRC_SERVER_REC *server, const char *data)
@@ -479,20 +502,8 @@ static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
-	if (server->whois_coming || !settings_get_bool("show_away_once") ||
-	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
-	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {
-		/* don't show the same away message
-		   from the same nick all the time */
-		g_free_not_null(last_away_nick);
-		g_free_not_null(last_away_msg);
-		last_away_nick = g_strdup(nick);
-		last_away_msg = g_strdup(awaymsg);
-
-		printformat(server, nick, MSGLEVEL_CRAP,
-			    server->whois_coming ? IRCTXT_WHOIS_AWAY :
-			    IRCTXT_NICK_AWAY, nick, awaymsg);
-	}
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_AWAY, nick, awaymsg);
 	g_free(params);
 }
 
@@ -734,10 +745,12 @@ void fe_events_numeric_init(void)
 	signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
 	signal_add("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_add("event 329", (SIGNAL_FUNC) event_channel_created);
-	signal_add("event 306", (SIGNAL_FUNC) event_away);
+	signal_add("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
+	signal_add("event 301", (SIGNAL_FUNC) event_away);
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
-	signal_add("event 301", (SIGNAL_FUNC) event_whois_away);
+	signal_add("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_add("whowas away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_add("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("event 307", (SIGNAL_FUNC) event_whois_registered);
@@ -807,10 +820,12 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
 	signal_remove("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_remove("event 329", (SIGNAL_FUNC) event_channel_created);
-	signal_remove("event 306", (SIGNAL_FUNC) event_away);
+	signal_remove("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
+	signal_remove("event 301", (SIGNAL_FUNC) event_away);
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
-	signal_remove("event 301", (SIGNAL_FUNC) event_whois_away);
+	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_remove("whowas away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("event 312", (SIGNAL_FUNC) event_whois_server);
 	signal_remove("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("event 307", (SIGNAL_FUNC) event_whois_registered);
