@@ -584,10 +584,11 @@ void eval_special_string(const char *cmd, const char *data,
 			g_free(old);
 		}
 
-                server_ref(server);
+                if (server != NULL)
+			server_ref(server);
 		signal_emit("send command", 3, ret, server, item);
 
-		if (!server_unref(server)) {
+		if (server != NULL && !server_unref(server)) {
                         /* the server was destroyed */
 			server = NULL;
                         item = NULL;
