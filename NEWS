@@ -1,4 +1,4 @@
-v0.7.16 1999-09-11  Timo Sirainen <cras@irccrew.org> [unstable]
+v0.7.16 1999-09-13  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Started bot plugin, it has simple user management functions and
 	  auto-opping/voicing done (but it does it well :)
