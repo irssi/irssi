@@ -219,6 +219,32 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 	return ret;
 }
 
+static char *printtext_expand_formats(TEXT_DEST_REC *dest, const char *str)
+{
+	GString *out;
+	char *ret;
+
+	out = g_string_new(NULL);
+	for (; *str != '\0'; str++) {
+		if (*str != '%') {
+			g_string_append_c(out, *str);
+			continue;
+		}
+
+		if (*++str == '\0')
+			break;
+
+		if (!format_expand_styles(out, *str, dest)) {
+			g_string_append_c(out, '%');
+			g_string_append_c(out, *str);
+		}
+	}
+
+	ret = out->str;
+	g_string_free(out, FALSE);
+	return ret;
+}
+
 void printtext_dest(TEXT_DEST_REC *dest, const char *text, va_list va)
 {
 	char *str;
@@ -253,6 +279,7 @@ void printtext(void *server, const char *target, int level, const char *text, ..
 void printtext_string(void *server, const char *target, int level, const char *text)
 {
 	TEXT_DEST_REC dest;
+        char *str;
 
 	g_return_if_fail(text != NULL);
 
@@ -264,7 +291,9 @@ void printtext_string(void *server, const char *target, int level, const char *t
                 sending_print_starting = FALSE;
 	}
 
-	print_line(&dest, text);
+        str = printtext_expand_formats(&dest, text);
+	print_line(&dest, str);
+        g_free(str);
 }
 
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
