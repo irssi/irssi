@@ -14,11 +14,11 @@ numerous variable modifiers available.
    $[num]variable    Expands to the variables value, with 'num' width.  If
                      | the number is negative, the value is right-aligned.
                      | The value is padded to meet the width with the
-		     | character given after number (default is space).
-		     | The value is truncated to specified width unless
-		     | '!' character precedes the number. If '.' character
-		     | precedes the number the value isn't padded, just
-		     | truncated.
+                     | character given after number (default is space).
+                     | The value is truncated to specified width unless
+                     | '!' character precedes the number. If '.' character
+                     | precedes the number the value isn't padded, just
+                     | truncated.
    $#variable        Expands to the number of words in $variable. If $variable
                      | is omitted, it assumes $*
    $@variable        Expands to the number of characters in $variable. if
@@ -36,7 +36,7 @@ to it.  If none of these expandos are used in the alias, or the $() form
 shown above, any arguments passed will automatically be appended to the last
 command in the alias.
 
-   Expando   Description                                                    
+   Expando   Description
    $*        expands to all arguments passed to an alias
    $n        expands to argument 'n' passed to an alias (counting from zero)
    $n-m      expands to arguments 'n' through 'm' passed to an alias
@@ -47,7 +47,7 @@ command in the alias.
 These variables are set and updated dynamically by the client.  The case of
 $A .. $Z is important.
 
-   Variable   Description                                                   
+   Variable   Description
    $,         last person who sent you a MSG
    $.         last person to whom you sent a MSG
    $:         last person to join a channel you are on
@@ -70,14 +70,23 @@ $A .. $Z is important.
    $Q         nickname of whomever you are QUERYing
    $R         version of current server
    $S         current server name
-   $T         target of current input (channel or QUERY nickname)
-!  $U         value of cutbuffer (*DOES NOT WORK* - there is no cut buffer..)
-   $V         client release date (numeric version string)
+   $T         target of current input (channel or nick of query)
+   $U         value of cutbuffer
+   $V         client release date (format YYYYMMDD)
    $W         current working directory
    $X         your /userhost $N address (user@host)
    $Y         value of REALNAME
    $Z         time of day (hh:mm)
    $$         a literal '$'
+
+   $sysname     system name (eg. Linux)
+   $sysrelease  system release (eg. 2.2.18)
+   $topic       channel topic
+   $usermode    user mode
+   $tag         server tag
+   $chatnet     chat network of server
+   $winref      window reference number
+   $winname     window name
 
 For example, assume you have the following alias:
 
