@@ -184,6 +184,9 @@ static void notifylist_init_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	if (!IS_IRC_SERVER(server))
+		return;
+
 	rec = g_new0(MODULE_SERVER_REC,1 );
 	MODULE_DATA_SET(server, rec);
 
@@ -196,6 +199,9 @@ static void notifylist_deinit_server(IRC_SERVER_REC *server)
 	NOTIFY_NICK_REC *rec;
 
 	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+		return;
 
 	mserver = MODULE_DATA(server);
 	while (mserver->notify_users != NULL) {
