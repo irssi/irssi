@@ -2,6 +2,7 @@
 #define __MAINWINDOWS_H
 
 #include "windows.h"
+#include "screen.h"
 
 typedef struct {
 	WINDOW_REC *active;

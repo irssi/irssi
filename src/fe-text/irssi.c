@@ -43,6 +43,9 @@
 void irc_init(void);
 void irc_deinit(void);
 
+void mainwindow_activity_init(void);
+void mainwindow_activity_deinit(void);
+
 #ifdef HAVE_PERL
 void irssi_perl_init(void);
 void irssi_perl_deinit(void);
@@ -82,7 +85,6 @@ static void textui_init(void)
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
 	irc_init();
-	//silc_init();
 	fe_common_core_init();
 	fe_common_irc_init();
 
@@ -101,6 +103,7 @@ static void textui_finish_init(void)
 	gui_special_vars_init();
 	gui_textwidget_init();
 	mainwindows_init();
+	mainwindow_activity_init();
 	gui_windows_init();
 	statusbar_init();
 
@@ -129,6 +132,7 @@ static void textui_deinit(void)
 	gui_printtext_deinit();
 	gui_readline_deinit();
 	gui_windows_deinit();
+	mainwindow_activity_deinit();
 	mainwindows_deinit();
 	gui_entry_deinit();
 	deinit_screen();
