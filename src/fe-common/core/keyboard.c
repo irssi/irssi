@@ -651,6 +651,8 @@ static void cmd_show_keys(const char *searchkey, int full)
 	GSList *info, *key;
         int len;
 
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_HEADER);
+
 	len = searchkey == NULL ? 0 : strlen(searchkey);
 	for (info = keyinfos; info != NULL; info = info->next) {
 		KEYINFO_REC *rec = info->data;
@@ -660,11 +662,13 @@ static void cmd_show_keys(const char *searchkey, int full)
 
 			if ((len == 0 || g_strncasecmp(rec->key, searchkey, len) == 0) &&
 			    (!full || rec->key[len] == '\0')) {
-				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_KEY,
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_LIST,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
 			}
 		}
 	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_FOOTER);
 }
 
 /* SYNTAX: BIND [-delete] [<key> [<command> [<data>]]] */
