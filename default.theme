@@ -72,37 +72,40 @@ abstracts = {
   ## messages
   ##
 
-  # the basic styling of how to print message
-  msgnick = "<$0-> %|";
+  # the basic styling of how to print message, $0 = nick mode, $1 = nick
+  msgnick = "<$0$1-> %|";
 
   # message from you is printed. "msgownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
   # whole line.
 
   # Example1: You want the message text to be green:
-  #  ownmsgnick = "{msgnick $0-}%g";
-  # Example2.1: You want < and > chars also be white:
-  #  ownmsgnick = "%W{msgnick $0-}%n";
-  #  ownnick = "$0-";
+  #  ownmsgnick = "{msgnick $0 $1-}%g";
+  # Example2.1: You want < and > chars to be yellow:
+  #  ownmsgnick = "%Y{msgnick $0 $1-%Y}%n";
   #  (you'll also have to remove <> from replaces list above)
   # Example2.2: But you still want to keep <> grey for other messages:
-  #  pubmsgnick = "%K{msgnick $0-%K}%n";
-  #  pubmsgmenick = "%K{msgnick $0-%K}%n";
-  #  pubmsghinick = "%K{msgnick $1$0$2-%K}%n";
-  ownmsgnick = "{msgnick $0-}";
+  #  pubmsgnick = "%K{msgnick $0 $1-%K}%n";
+  #  pubmsgmenick = "%K{msgnick $0 $1-%K}%n";
+  #  pubmsghinick = "%K{msgnick $1 $0$2-%K}%n";
+  #  ownprivmsgnick = "%K{msgnick  $0-%K}%n";
+  #  privmsgnick = "%K{msgnick  %R$0-%K}%n";
+
+  # $0 = nick mode, $1 = nick
+  ownmsgnick = "{msgnick $0 $1-}";
   ownnick = "%W$0-%n";
 
-  # public message in channel
-  pubmsgnick = "{msgnick $0-}";
+  # public message in channel, $0 = nick mode, $1 = nick
+  pubmsgnick = "{msgnick $0 $1-}";
   pubnick = "%w$0-%n";
 
-  # public message in channel meant for me
-  pubmsgmenick = "{msgnick $0-}";
+  # public message in channel meant for me, $0 = nick mode, $1 = nick
+  pubmsgmenick = "{msgnick $0 $1-}";
   menick = "%Y$0-%n";
 
   # public highlighted message in channel
-  # $0 = highlight color, $1 = nick mode (@, +), $2 = nick
-  pubmsghinick = "{msgnick $1$0$2-}";
+  # $0 = highlight color, $1 = nick mode, $2 = nick
+  pubmsghinick = "{msgnick $1 $0$2-}";
 
   # channel name is printed with message
   msgchannel = "%K:%c$0-%n";
@@ -114,11 +117,11 @@ abstracts = {
   ownprivmsg = "[%r$0%K(%R$1-%K)%n] ";
 
   # own private message in query
-  ownprivmsgnick = "{msgnick $0-}";
+  ownprivmsgnick = "{msgnick  $0-}";
   ownprivnick = "%W$0-%n";
 
   # private message in query
-  privmsgnick = "{msgnick %R$0-%n}";
+  privmsgnick = "{msgnick  %R$0-%n}";
 
   ##
   ## other IRC events

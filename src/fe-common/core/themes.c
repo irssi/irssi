@@ -366,6 +366,7 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 		if (*format == '$') {
                         /* $variable, skrip it entirely */
 			theme_format_append_variable(str, &format);
+                        last_color = '\0';
 		} else if (*format != '%') {
 			/* a normal character */
 			g_string_append_c(str, *format);
