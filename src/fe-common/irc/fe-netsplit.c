@@ -89,6 +89,8 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 			chanrec = g_new0(TEMP_SPLIT_CHAN_REC, 1);
 			chanrec->name = splitchan->name;
 			chanrec->nicks = g_string_new(NULL);
+
+			rec->channels = g_slist_append(rec->channels, chanrec);
 		}
 
 		chanrec->nick_count++;
@@ -160,7 +162,7 @@ static int sig_check_splits(void)
 		IRC_SERVER_REC *rec = tmp->data;
 
 		if (rec->split_servers != NULL) {
-			if (check_server_splits(rec))
+			if (!check_server_splits(rec))
 				stop = FALSE;
 		}
 	}
@@ -177,7 +179,7 @@ static void sig_netsplit_servers(IRC_SERVER_REC *server, NETSPLIT_SERVER_REC *re
 	if (!settings_get_bool("hide_netsplit_quits"))
 		return;
 
-	if (split_tag != -1)
+	if (split_tag == -1)
 		split_tag = g_timeout_add(1000, (GSourceFunc) sig_check_splits, NULL);
 }
 
