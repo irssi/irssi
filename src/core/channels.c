@@ -237,7 +237,8 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 
 	g_return_if_fail(IS_CHANNEL(channel));
 
-	if (channel->session_rejoin)
+	if (channel->session_rejoin ||
+	    channel->server->connrec->no_autojoin_channels)
                 return;
 
 	rec = channel_setup_find(channel->name, channel->server->connrec->chatnet);
