@@ -34,7 +34,7 @@ perl syntax.pl
 # otherwise the log will have local timezone
 SVN=svn
 if test -f $srcdir/ChangeLog; then
-	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| tail -1 | sed 's/^r\([0-9]*\).*/\1/'`
+	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| grep '^r' | sed 's/^r\([0-9]*\).*/\1/'`
 fi
 if test -z $CHANGELOG_VERSION; then
 	echo "Getting ChangeLog from svn..."
