@@ -37,6 +37,7 @@ GSList *themes;
 THEME_REC *current_theme;
 GHashTable *default_formats;
 
+static int init_finished;
 static char *init_errors;
 
 static void theme_read(THEME_REC *theme, const char *path, const char *data);
@@ -535,7 +536,7 @@ static void theme_init_module(THEME_REC *theme, const char *module,
 
 static void sig_print_errors(void)
 {
-	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
+	init_finished = TRUE;
 
 	if (init_errors != NULL) {
 		signal_emit("gui dialog", 2, "error", init_errors);
@@ -675,10 +676,22 @@ static void theme_read(THEME_REC *theme, const char *path, const char *data)
 	}
 
 	if (config_last_error(config) != NULL) {
-		signal_add("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
-		init_errors =
-			g_strdup_printf(_("Ignored errors in theme:\n%s"),
-					config_last_error(config));
+		char *str;
+
+		str = g_strdup_printf(_("Ignored errors in theme %s:\n%s"),
+				      theme->name, config_last_error(config));
+		if (!init_finished) {
+			if (init_errors == NULL)
+				init_errors = str;
+			else {
+				init_errors = g_strconcat(init_errors, "\n",
+							  str, NULL);
+                                g_free(str);
+			}
+		} else {
+			signal_emit("gui dialog", 2, "error", str);
+			g_free(str);
+		}
 	}
 
 	theme->default_color = config_get_int(config, NULL, "default_color", 15);
@@ -1027,6 +1040,7 @@ void themes_init(void)
 	default_formats = g_hash_table_new((GHashFunc) g_str_hash,
 					   (GCompareFunc) g_str_equal);
 
+        init_finished = FALSE;
         init_errors = NULL;
 
 	themes = NULL;
@@ -1035,6 +1049,7 @@ void themes_init(void)
 	command_bind("format", NULL, (SIGNAL_FUNC) cmd_format);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 	signal_add("complete command format", (SIGNAL_FUNC) sig_complete_format);
+	signal_add("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_add("setup reread", (SIGNAL_FUNC) themes_read);
 
@@ -1052,6 +1067,7 @@ void themes_deinit(void)
 	command_unbind("format", (SIGNAL_FUNC) cmd_format);
 	command_unbind("save", (SIGNAL_FUNC) cmd_save);
 	signal_remove("complete command format", (SIGNAL_FUNC) sig_complete_format);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_print_errors);
         signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
         signal_remove("setup reread", (SIGNAL_FUNC) themes_read);
 }
