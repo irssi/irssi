@@ -27,13 +27,13 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	/* ---- */
 	{ NULL, "DCC", 0 },
 
-	{ "own_dcc", "{dccownmsg dcc{dccownnick $1}}$2", 3, { 0, 0, 0 } },
+	{ "own_dcc", "{dccownmsg dcc {dccownnick $1}}$2", 3, { 0, 0, 0 } },
 	{ "own_dcc_action", "{dccownaction $0}$1", 2, { 0, 0 } },
-	{ "own_dcc_ctcp", "{ownctcp ctcp{ownctcp_target $0}}$1 $2", 3, { 0, 0, 0 } },
-	{ "dcc_msg", "{dccmsg $0{dccmsghost dcc}}$1", 2, { 0, 0 } },
+	{ "own_dcc_ctcp", "{ownctcp ctcp $0}$1 $2", 3, { 0, 0, 0 } },
+	{ "dcc_msg", "{dccmsg dcc $0}$1", 2, { 0, 0 } },
 	{ "action_dcc", "{dccaction $0}$1", 2, { 0, 0 } },
-	{ "own_dcc_query", "{msgnick {msgownnick $0}}$2", 3, { 0, 0, 0 } },
-	{ "dcc_msg_query", "{msgnick {dccquerynick $0}}$1", 2, { 0, 0 } },
+	{ "own_dcc_query", "{ownmsgnick {msgownnick $0}}$2", 3, { 0, 0, 0 } },
+	{ "dcc_msg_query", "{privmsgnick $0}$1", 2, { 0, 0 } },
 	{ "dcc_ctcp", "{dcc >>> DCC CTCP received from {hilight $0}: $1}", 2, { 0, 0 } },
 	{ "dcc_chat", "{dcc DCC CHAT from {nick $0} [$1 port $2]}", 3, { 0, 0, 1 } },
 	{ "dcc_chat_not_found", "{dcc No DCC CHAT connection open to {nick $0}}", 1, { 0 } },

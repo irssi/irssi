@@ -310,7 +310,8 @@ static void cmd_msg(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
+        target++;
+	dcc = dcc_find_item(DCC_TYPE_CHAT, target, NULL);
 	if (dcc == NULL || dcc->sendbuf == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
