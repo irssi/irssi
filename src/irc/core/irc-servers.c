@@ -74,13 +74,21 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 static void send_message(SERVER_REC *server, const char *target,
 			 const char *msg, int target_type)
 {
-        IRC_SERVER_REC *ircserver;
+	IRC_SERVER_REC *ircserver;
+	CHANNEL_REC *channel;
 	char *str;
 
         ircserver = IRC_SERVER(server);
 	g_return_if_fail(ircserver != NULL);
 	g_return_if_fail(target != NULL);
 	g_return_if_fail(msg != NULL);
+
+	if (*target == '!') {
+		/* !chan -> !12345chan */
+		channel = channel_find(server, target);
+		if (channel != NULL && g_strcasecmp(channel->name, target) != 0)
+			target = channel->name;
+	}
 
 	str = g_strdup_printf("PRIVMSG %s :%s", target, msg);
 	irc_send_cmd_split(ircserver, str, 2, ircserver->max_msgs_in_cmd);
