@@ -156,7 +156,6 @@ void fe_common_core_init(void)
 	autorun_init();
 	command_history_init();
 	completion_init();
-	hilight_text_init();
 	keyboard_init();
 	printtext_init();
 	formats_init();
@@ -182,6 +181,7 @@ void fe_common_core_init(void)
         fe_queries_init();
 
 	fe_messages_init();
+	hilight_text_init();
 	fe_ignore_messages_init();
 
 	settings_check();
