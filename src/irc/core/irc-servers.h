@@ -39,6 +39,7 @@ typedef struct {
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
+	int channels_formed; /* channels formed in irc network */
 
 	unsigned int nick_changing:1; /* We've sent nick change command to server */
 	unsigned int whois_coming:1; /* Mostly just to display away message right.. */

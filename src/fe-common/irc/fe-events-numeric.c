@@ -691,27 +691,21 @@ static void event_received(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
 	ptr = strstr(args, " :");
-	if (ptr != NULL) *(ptr+1) = ' ';
+	if (ptr != NULL)
+                memmove(ptr+1, ptr+2, strlen(ptr+1));
 	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
 	g_free(params);
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data)
 {
-	/* numeric event. */
-	char *params, *args, *ptr;
-
 	/* don't ignore motd anymore after 3 seconds of connection time -
 	   we might have called /MOTD */
 	if (settings_get_bool("skip_motd") &&
 	    time(NULL)-3 <= server->real_connect_time)
 		return;
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
-	ptr = strstr(args, " :");
-	if (ptr != NULL) *(ptr+1) = ' ';
-	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
-	g_free(params);
+        event_received(server, data);
 }
 
 static void sig_empty(void)
@@ -773,6 +767,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 
 	signal_add("event 004", (SIGNAL_FUNC) event_received);
+	signal_add("event 254", (SIGNAL_FUNC) event_received);
 	signal_add("event 364", (SIGNAL_FUNC) event_received);
 	signal_add("event 365", (SIGNAL_FUNC) event_received);
 	signal_add("event 432", (SIGNAL_FUNC) event_received);
@@ -835,6 +830,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 
 	signal_remove("event 004", (SIGNAL_FUNC) event_received);
+	signal_remove("event 254", (SIGNAL_FUNC) event_received);
 	signal_remove("event 364", (SIGNAL_FUNC) event_received);
 	signal_remove("event 365", (SIGNAL_FUNC) event_received);
 	signal_remove("event 432", (SIGNAL_FUNC) event_received);

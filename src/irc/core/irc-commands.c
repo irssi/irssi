@@ -40,6 +40,10 @@
 /* How often to check if there's anyone to be unbanned in knockout list */
 #define KNOCKOUT_TIMECHECK 10000
 
+/* /LIST: Max. number of channels in IRC network before -yes option
+   is required */
+#define LIST_MAX_CHANNELS_PASS 1000
+
 typedef struct {
 	IRC_CHANNEL_REC *channel;
 	char *ban;
@@ -363,7 +367,8 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 }
 
 /* SYNTAX: LIST [-yes] [<channel>] */
-static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_list(const char *data, IRC_SERVER_REC *server,
+		     WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *str;
@@ -377,7 +382,9 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 			    PARAM_FLAG_GETREST, "list", &optlist, &str))
 		return;
 
-	if (*str == '\0' && g_hash_table_lookup(optlist, "yes") == NULL)
+	if (*str == '\0' && g_hash_table_lookup(optlist, "yes") == NULL &&
+	    (server->channels_formed <= 0 ||
+	     server->channels_formed > LIST_MAX_CHANNELS_PASS))
 		cmd_param_error(CMDERR_NOT_GOOD_IDEA);
 
 	irc_send_cmdv(server, "LIST %s", str);

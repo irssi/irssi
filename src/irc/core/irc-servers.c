@@ -401,6 +401,17 @@ static void event_server_info(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_channels_formed(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *channels;
+
+	g_return_if_fail(server != NULL);
+
+	params = event_get_params(data, 2, NULL, &channels);
+        server->channels_formed = atoi(channels);
+	g_free(params);
+}
+
 static void event_server_banned(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
@@ -448,6 +459,7 @@ void irc_servers_init(void)
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_add("event 254", (SIGNAL_FUNC) event_channels_formed);
 	signal_add("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_add("event error", (SIGNAL_FUNC) event_error);
 	signal_add("event ping", (SIGNAL_FUNC) event_ping);
@@ -475,6 +487,7 @@ void irc_servers_deinit(void)
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_remove("event 254", (SIGNAL_FUNC) event_channels_formed);
 	signal_remove("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_remove("event error", (SIGNAL_FUNC) event_error);
 	signal_remove("event ping", (SIGNAL_FUNC) event_ping);
