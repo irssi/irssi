@@ -1,10 +1,20 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+PKG_NAME="Irssi"
+
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="Irssi"
+if test ! -f $srcdir/irssi.cvs -a -f $srcdir/configure; then
+  echo
+  echo "Use ./configure instead"
+  echo
+  echo "This script should only be run if you got sources from CVS."
+  echo "If you really want to do this, say:"
+  echo "  touch irssi.cvs"
+  exit 0
+fi
 
 if test ! -f $srcdir/configure.in; then
     echo -n "**Error**: Directory \`$srcdir\' does not look like the"
