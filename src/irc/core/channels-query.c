@@ -41,6 +41,7 @@ loop:
 #include "module.h"
 #include "misc.h"
 #include "signals.h"
+#include "settings.h"
 
 #include "channels.h"
 #include "irc.h"
@@ -334,6 +335,9 @@ static void sig_channel_joined(IRC_CHANNEL_REC *channel)
 	if (!IS_IRC_CHANNEL(channel))
 		return;
 
+	if (!settings_get_bool("channel_sync"))
+		return;
+
 	/* Add channel to query lists */
 	if (!channel->no_modes)
 		channel_query_add(channel, CHANNEL_QUERY_MODE);
@@ -592,6 +596,8 @@ static void event_who_abort(IRC_SERVER_REC *server, const char *data)
 
 void channels_query_init(void)
 {
+	settings_add_bool("misc", "channel_sync", TRUE);
+
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
