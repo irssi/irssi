@@ -26,8 +26,7 @@ perl_sources = \
 	perl-core.c \
 	perl-common.c \
 	perl-signals.c \
-	perl-sources.c \
-	xsinit.c
+	perl-sources.c
 
 perl_fe_sources = \
 	module-formats.c \

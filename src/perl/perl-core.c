@@ -39,8 +39,6 @@
 #  define PL_perl_destruct_level perl_destruct_level
 #endif
 
-extern void xs_init(void);
-
 GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
@@ -85,6 +83,8 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
         g_free(script);
 }
 
+extern void boot_DynaLoader(CV* cv);
+
 #if PERL_STATIC_LIBS == 1
 extern void boot_Irssi(CV *cv);
 
@@ -97,13 +97,18 @@ XS(boot_Irssi_Core)
         irssi_boot(UI);
         irssi_boot(TextUI);
 }
-
-static void static_xs_init(void)
-{
-	newXS("Irssi::Core::boot_Irssi_Core", boot_Irssi_Core, __FILE__);
-}
-
 #endif
+
+static void xs_init(void)
+{
+#if PERL_STATIC_LIBS == 1
+	newXS("Irssi::Core::boot_Irssi_Core", boot_Irssi_Core, __FILE__);
+#endif
+
+	/* boot the dynaloader too, if we want to use some
+	   other dynamic modules.. */
+	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, __FILE__);
+}
 
 /* Initialize perl interpreter */
 void perl_scripts_init(void)
@@ -118,11 +123,9 @@ void perl_scripts_init(void)
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
-#if PERL_STATIC_LIBS == 1
-	perl_parse(my_perl, static_xs_init, 3, args, NULL);
-	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
-#else
 	perl_parse(my_perl, xs_init, 3, args, NULL);
+#if PERL_STATIC_LIBS == 1
+	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
 #endif
 
         perl_common_start();
