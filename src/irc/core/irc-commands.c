@@ -316,6 +316,13 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (!cmd_get_params(data, &free_arg, 1, &nick))
 		return;
 
+	if (strcmp(nick, server->nick) == 0) {
+		/* don't bother trying to change the nick to the one you
+		   already have */
+		cmd_params_free(free_arg);
+		return;
+	}
+
 	server->nick_changing = TRUE;
 	irc_send_cmdv(server, "NICK %s", nick);
 
