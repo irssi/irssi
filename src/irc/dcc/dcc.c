@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
+#include "net-sendbuffer.h"
 #include "line-split.h"
 #include "settings.h"
 
@@ -113,6 +114,7 @@ void dcc_destroy(DCC_REC *dcc)
 	if (dcc->tagconn != -1) g_source_remove(dcc->tagconn);
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
+	if (dcc->sendbuf != NULL) net_sendbuffer_destroy(dcc->sendbuf, FALSE);
 
 	if (dcc->type == DCC_TYPE_CHAT)
 		line_split_free((LINEBUF_REC *) dcc->databuf);

@@ -41,6 +41,7 @@ typedef struct DCC_REC {
 
 	long size, transfd, skipped; /* file size / bytes transferred / skipped at start */
 	int handle; /* socket handle */
+	void *sendbuf;
 	int tagconn, tagread, tagwrite;
 	int fhandle; /* file handle */
 	time_t starttime; /* transfer start time */

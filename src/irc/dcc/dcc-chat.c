@@ -40,9 +40,8 @@ void dcc_chat_send(DCC_REC *dcc, const char *data)
         g_return_if_fail(dcc != NULL);
 	g_return_if_fail(data != NULL);
 
-	/* FIXME: we need output queue! */
-	net_transmit(dcc->handle, data, strlen(data));
-	net_transmit(dcc->handle, "\n", 1);
+	net_sendbuffer_send(dcc->sendbuf, data, strlen(data));
+	net_sendbuffer_send(dcc->sendbuf, "\n", 1);
 }
 
 /* If `item' is a query of a =nick, return DCC chat record of nick */
@@ -204,6 +203,7 @@ static void dcc_chat_listen(DCC_REC *dcc)
 
 	dcc->starttime = time(NULL);
 	dcc->handle = handle;
+	dcc->sendbuf = net_sendbuffer_create(handle, 0);
 	memcpy(&dcc->addr, &ip, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
@@ -228,6 +228,7 @@ static void sig_chat_connected(DCC_REC *dcc)
 	/* connect ok. */
 	g_source_remove(dcc->tagconn);
 	dcc->starttime = time(NULL);
+	dcc->sendbuf = net_sendbuffer_create(dcc->handle, 0);
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) dcc_chat_input, dcc);
 
