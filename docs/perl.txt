@@ -360,15 +360,9 @@ Channel::values()
 	"kicked" - You was just kicked out of the channel (for
 	           "channel destroyed" event)
 
-Channel Server::channel_create(channel, type, automatic)
-  Create new channel with name `channel'. `type' is one of:
-  (FIXME: export these to perl somehow)
-    CHANNEL_TYPE_CHANNEL   0
-    CHANNEL_TYPE_QUERY	   1
-    CHANNEL_TYPE_DCC_CHAT  2
-    CHANNEL_TYPE_EMPTY	   3
-  `automatic' means that channel is created "automatically" and
-  Irssi will NOT change the active window to it.
+Channel Server::channel_create(type, automatic)
+  Create new channel with name `channel'. `automatic' means that channel is
+  created "automatically", Irssi won't change the active window to it.
 
 Channel::destroy()
   Destroy channel.
@@ -456,14 +450,31 @@ Channel::nicklist_getnicks(channel)
 
  *** DCC
 
-Dcc:destroy()
+Dcc::values()
+  Get some information about nick. This function returns a reference to
+  hash table. Hash table has keys:
+	"type" - Type of the DCC: chat, send, get
+	"created" - Unix time stamp when the DCC record was created
+
+	"server" - Server where the DCC was initiated.
+	"chat" - DCC chat record if the request came through DCC chat
+	"ircnet" - IRC network where the DCC was initiated.
+	"mynick" - Our nick to use in DCC chat.
+
+	"nick" - Other side's nick name.
+	"addr" - Other side's IP address.
+	"port" - Port we're connecting in.
+
+	"arg" - Given argument .. file name usually
+	"file" - The real file name which we use.
+
+	"size" - File size
+	"transfd" - Bytes transferred
+	"skipped" - Bytes skipped from start (resuming file)
+	"starttime" - Unix time stamp when the DCC transfer was started
+
+Dcc::destroy()
   Destroy DCC connection. (!!)
-
-dcc_type2str(type)
-  DCC type number to string
-
-dcc_str2type(type)
-  DCC type string to number
 
 Dcc dcc_find_item(type, nick, arg)
   Find DCC connection.
@@ -471,6 +482,16 @@ Dcc dcc_find_item(type, nick, arg)
 Dcc dcc_find_by_port(nick, port)
   Find DCC connection by port.
 
+dcc_ctcp_message(target, server, chat, notice, msg)
+  Send a CTCP message/notify to target. Send the CTCP via DCC chat if
+  `chat' is specified.
+
+Dcc::dcc_chat_send(data)
+  Send `data' to dcc chat.
+
+Dcc item_get_dcc(item)
+  If window item `item' is a query of a =nick, return DCC chat record
+  of nick.
 
  *** Reconnects
 

@@ -81,6 +81,8 @@ void dcc_make_address(IPADDR *ip, char *host);
 DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
 void dcc_destroy(DCC_REC *dcc);
 
+/* Send a CTCP message/notify to target. Send the CTCP via DCC chat if
+   `chat' is specified. */
 void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat, int notice, const char *msg);
 
 /* Send `data' to dcc chat. */
