@@ -140,9 +140,12 @@ static PROCESS_REC *process_find(const char *name, int verbose)
 	return NULL;
 }
 
-static void process_destroy(PROCESS_REC *rec)
+static void process_destroy(PROCESS_REC *rec, int status)
 {
 	processes = g_slist_remove(processes, rec);
+
+	signal_emit("exec remove", 4, GINT_TO_POINTER(rec->id), rec->name,
+		    GINT_TO_POINTER(rec->pid), GINT_TO_POINTER(status));
 
 	if (rec->read_tag != -1)
 		g_source_remove(rec->read_tag);
@@ -400,7 +403,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	}
 	if (g_hash_table_lookup(optlist, "close") != NULL) {
 		/* forcibly close the process */
-                process_destroy(rec);
+                process_destroy(rec, -1);
                 return;
 	}
 
@@ -458,8 +461,10 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	rec->read_tag = g_input_add(rec->in, G_INPUT_READ,
 				    (GInputFunction) sig_exec_input_reader,
 				    rec);
-
 	processes = g_slist_append(processes, rec);
+
+	signal_emit("exec new", 4, GINT_TO_POINTER(rec->id), rec->name,
+		    GINT_TO_POINTER(rec->pid), rec->args);
 }
 
 /* SYNTAX: EXEC [-] [-nosh] [-out | -msg <target> | -notice <target>]
@@ -494,19 +499,19 @@ static void sig_pidwait(void *pid, void *statusp)
 	/* process exited */
 	if (!rec->silent) {
 		if (WIFSIGNALED(status)) {
+			status = WTERMSIG(status);
 			printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				  "process %d (%s) terminated with signal %d (%s)",
 				  rec->id, rec->args,
-				  WTERMSIG(status),
-				  g_strsignal(WTERMSIG(status)));
+				  status, g_strsignal(status));
 		} else {
+                        status = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 			printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				  "process %d (%s) terminated with return code %d",
-				  rec->id, rec->args,
-				  WIFEXITED(status) ? WEXITSTATUS(status) : -1);
+				  rec->id, rec->args, status);
 		}
 	}
-	process_destroy(rec);
+	process_destroy(rec, status);
 }
 
 static void sig_exec_input(PROCESS_REC *rec, const char *text)
@@ -566,7 +571,7 @@ void fe_exec_deinit(void)
 		processes_killall(SIGKILL);
 
 		while (processes != NULL)
-			process_destroy(processes->data);
+			process_destroy(processes->data, -1);
 	}
 
 	command_unbind("exec", (SIGNAL_FUNC) cmd_exec);

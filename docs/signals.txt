@@ -224,6 +224,10 @@ FE common
 fe-common-core.c:
  "irssi init read settings"
 
+fe-exec.c:
+ "exec new", int id, char *name, int pid, char *args
+ "exec remove", int id, char *name, int pid, int status
+
 fe-messages.c:
  "message public", SERVER_REC, char *msg, char *nick, char *address, char *target
  "message private", SERVER_REC, char *msg, char *nick, char *address
