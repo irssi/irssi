@@ -53,6 +53,11 @@ modes.c:
  "user mode changed", SERVER_REC
  "nick mode changed", CHANNEL_REC, NICK_REC
 
+netsplit.c:
+
+ "netsplit add", NETSPLIT_REC
+ "netsplit remove", NETSPLIT_REC
+
 nicklist.c:
 
  "nicklist new" CHANNEL_REC, NICK_REC
