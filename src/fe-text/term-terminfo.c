@@ -183,7 +183,7 @@ void term_clear(void)
 {
 	if (term_detached) return;
 
-        term_set_color(root_window, 0);
+        term_set_color(root_window, ATTR_RESET);
 	terminfo_clear();
         term_move_reset(0, 0);
 
