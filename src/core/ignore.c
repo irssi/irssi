@@ -317,13 +317,18 @@ static void ignore_remove_config(IGNORE_REC *rec)
 	if (node != NULL) iconfig_node_list_remove(node, ignore_index(rec));
 }
 
-void ignore_add_rec(IGNORE_REC *rec)
+static void ignore_init_rec(IGNORE_REC *rec)
 {
 #ifdef HAVE_REGEX_H
 	rec->regexp_compiled = !rec->regexp || rec->pattern == NULL ? FALSE :
 		regcomp(&rec->preg, rec->pattern,
 			REG_EXTENDED|REG_ICASE|REG_NOSUB) == 0;
 #endif
+}
+
+void ignore_add_rec(IGNORE_REC *rec)
+{
+	ignore_init_rec(rec);
 
 	ignores = g_slist_append(ignores, rec);
 	ignore_set_config(rec);
@@ -432,6 +437,8 @@ static void read_ignores(void)
 
 		node = config_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
+
+		ignore_init_rec(rec);
 	}
 
 	nickmatch_rebuild(nickmatch);
