@@ -39,6 +39,7 @@ libfe_common_core_a_SOURCES = \
 	fe-windows.c
 
 noinst_HEADERS = \
+	autorun.h \
 	command-history.h \
 	chat-completion.h \
 	completion.h \

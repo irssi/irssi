@@ -29,6 +29,7 @@
 #include "channels.h"
 #include "servers-setup.h"
 
+#include "autorun.h"
 #include "fe-queries.h"
 #include "hilight-text.h"
 #include "command-history.h"
@@ -51,9 +52,6 @@ static int autocon_port;
 static int no_autoconnect;
 static char *cmdline_nick;
 static char *cmdline_hostname;
-
-void autorun_init(void);
-void autorun_deinit(void);
 
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
@@ -171,7 +169,6 @@ void fe_common_core_init(void)
 	themes_init();
         theme_register(fecommon_core_formats);
 
-	autorun_init();
 	command_history_init();
 	completion_init();
 	keyboard_init();
@@ -214,7 +211,6 @@ void fe_common_core_init(void)
 
 void fe_common_core_deinit(void)
 {
-	autorun_deinit();
 	hilight_text_deinit();
 	command_history_deinit();
 	completion_deinit();
@@ -380,5 +376,6 @@ void fe_common_core_finish_init(void)
 	if (setup_changed)
                 signal_emit("setup changed", 0);
 
+        autorun_startup();
 	autoconnect_servers();
 }

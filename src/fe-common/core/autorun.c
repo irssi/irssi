@@ -1,7 +1,7 @@
 /*
  autorun.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 
 #include "fe-windows.h"
 
-static void sig_autorun(void)
+void autorun_startup(void)
 {
 	char tmpbuf[1024], *str, *path;
 	LINEBUF_REC *buffer = NULL;
@@ -44,19 +44,13 @@ static void sig_autorun(void)
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0) eval_special_string(str, "", active_win->active_server, active_win->active);
+		if (ret > 0) {
+			eval_special_string(str, "",
+					    active_win->active_server,
+					    active_win->active);
+		}
 	} while (ret > 0);
 	line_split_free(buffer);
 
 	close(f);
-}
-
-void autorun_init(void)
-{
-	signal_add_last("irssi init finished", (SIGNAL_FUNC) sig_autorun);
-}
-
-void autorun_deinit(void)
-{
-	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_autorun);
 }
