@@ -42,3 +42,29 @@ A: Possibly a bug in irssi, or ircd you're using does something that irssi
 
 Q: Where's the GUI version?
 A: Read http://irssi.org/?page=about
+
+Q: How do I autorejoin channels after being kicked?
+A: That's evil and you shouldn't do it. If you get kicked, you should
+   stay out, at least until the channel forgot you existed :) Most channels
+   I've joined just ban you if you autorejoin after kick. If you're joined
+   to channels who kick people for fun, try changing channels or something.
+
+   Anyway, if you REALLY want to do that, and you understand that you're
+   doing evilness, you can use the autorejoin.pl script that comes with
+   irssi. You'll still need to specify the channels you wish to rejoin with
+   /SET autorejoin_channels #chan1 #chan2 ...
+
+Q: How do I announce that I'm away/back in all channels I've joined?
+   Or how do I change my nick when setting myself away/back?
+A: That's even worse than autorejoin. Who could possibly care every time you
+   come and go? Many channels will kick you for using this, and I for example
+   have added several ignores so I'd never need to see these messages. Learn
+   to use /AWAY command properly and tell it's existence to people who don't
+   know about it. /WII yournick shows your away reason much better for people
+   who actually want to know if you're there or not.
+
+   You can script these behaviours if you really wish to of course. But
+   currently there's no public scripts for either of these, and the only way
+   I'm going to add such to irssi.org is if the script contains a setting to
+   specify which specific channels the announcement is sent.
+
