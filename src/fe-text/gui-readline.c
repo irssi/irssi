@@ -152,7 +152,7 @@ static void paste_send(void)
 {
 	unichar *arr;
 	GString *str;
-	char out[10];
+	char out[10], *text;
 	unsigned int i;
 	int lf;
 
@@ -175,8 +175,10 @@ static void paste_send(void)
 		return;
 	}
 
-	signal_emit("send text", 3, gui_entry_get_text(active_entry),
+        text = gui_entry_get_text(active_entry);
+	signal_emit("send text", 3, text,
 		    active_win->active_server, active_win->active);
+	g_free(text);
 
 	/* rest of the lines */
 	str = g_string_new(NULL);
@@ -877,10 +879,11 @@ void gui_readline_init(void)
 
         escape_next_key = FALSE;
 	redir = NULL;
+	prev_entry = NULL;
 	paste_state = 0;
 	paste_entry = NULL;
 	paste_entry_pos = 0;
-        paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
+	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
 	g_get_current_time(&last_keypress);
         input_listen_init(STDIN_FILENO);
 
