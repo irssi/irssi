@@ -568,16 +568,6 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 				    GINT_TO_POINTER(rec->id));
 }
 
-static void sig_protocol_created(CHAT_PROTOCOL_REC *rec)
-{
-        perl_register_protocol(rec);
-}
-
-static void sig_protocol_destroyed(CHAT_PROTOCOL_REC *rec)
-{
-        perl_unregister_protocol(rec);
-}
-
 void perl_common_init(void)
 {
 	static PLAIN_OBJECT_INIT_REC core_plains[] = {
@@ -602,8 +592,8 @@ void perl_common_init(void)
         use_protocols = NULL;
 	g_slist_foreach(chat_protocols, (GFunc) perl_register_protocol, NULL);
 
-	signal_add("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
-	signal_add("chat protocol destroyed", (SIGNAL_FUNC) sig_protocol_destroyed);
+	signal_add("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
+	signal_add("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
 }
 
 void perl_common_deinit(void)
@@ -617,6 +607,6 @@ void perl_common_deinit(void)
 	g_slist_foreach(use_protocols, (GFunc) g_free, NULL);
         g_slist_free(use_protocols);
 
-	signal_remove("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
-	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) sig_protocol_destroyed);
+	signal_remove("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
+	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
 }

@@ -42,8 +42,11 @@
 #include <signal.h>
 
 #ifdef HAVE_STATIC_PERL
-void perl_init(void);
-void perl_deinit(void);
+void perl_core_init(void);
+void perl_core_deinit(void);
+
+void fe_perl_init(void);
+void fe_perl_deinit(void);
 #endif
 
 void irc_init(void);
@@ -135,7 +138,8 @@ static void textui_finish_init(void)
 	fe_common_irc_finish_init();
 
 #ifdef HAVE_STATIC_PERL
-        perl_init();
+	perl_core_init();
+        fe_perl_init();
 #endif
 	signal_emit("irssi init finished", 0);
 
@@ -173,7 +177,8 @@ static void textui_deinit(void)
 	deinit_screen();
 
 #ifdef HAVE_STATIC_PERL
-        perl_deinit();
+        fe_perl_deinit();
+        perl_core_deinit();
 #endif
 
 	theme_unregister();

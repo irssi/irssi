@@ -24,6 +24,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
+#include "chat-protocols.h"
 
 #include "printtext.h"
 
@@ -72,14 +73,54 @@ static void cmd_load_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_FOOTER);
 }
 
+static char **module_prefixes_get(void)
+{
+        GSList *tmp;
+        char **list, *name;
+        int count;
+
+	list = g_new(char *, 2 + 2*g_slist_length(chat_protocols));
+	list[0] = "fe";
+
+	count = 1;
+	for (tmp = chat_protocols; tmp != NULL; tmp = tmp->next) {
+		CHAT_PROTOCOL_REC *rec = tmp->data;
+
+		name = g_strdup(rec->name);
+                g_strdown(name);
+
+		list[count++] = name;
+                list[count++] = g_strconcat("fe_", name, NULL);
+	}
+	list[count] = NULL;
+
+        return list;
+}
+
+static void module_prefixes_free(char **list)
+{
+	char **pos = list+1;
+
+	while (*pos != NULL) {
+                g_free(*pos);
+                pos++;
+	}
+        g_free(list);
+}
+
 /* SYNTAX: LOAD <module> */
 static void cmd_load(const char *data)
 {
+	char **module_prefixes;
+
 	g_return_if_fail(data != NULL);
 	if (*data == '\0')
 		cmd_load_list();
-        else
-		module_load(data);
+	else {
+		module_prefixes = module_prefixes_get();
+		module_load(data, module_prefixes);
+                module_prefixes_free(module_prefixes);
+	}
 }
 
 /* SYNTAX: UNLOAD <module> */

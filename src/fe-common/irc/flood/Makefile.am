@@ -1,7 +1,7 @@
 moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libfe_common_irc_flood.la
+module_LTLIBRARIES = libfe_irc_flood.la
 
-libfe_common_irc_flood_la_LDFLAGS = -avoid-version
+libfe_irc_flood_la_LDFLAGS = -avoid-version
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -12,7 +12,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_common_irc_flood_la_SOURCES = \
+libfe_irc_flood_la_SOURCES = \
 	fe-flood.c \
 	module-formats.c
 

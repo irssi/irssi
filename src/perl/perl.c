@@ -1,7 +1,7 @@
 /*
  perl.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,9 +23,6 @@
 #include "commands.h"
 #include "misc.h"
 
-#include "fe-common/core/themes.h"
-#include "fe-common/core/formats.h"
-
 #include "perl-common.h"
 #include "perl-signals.h"
 
@@ -43,7 +40,7 @@ typedef struct {
 } PERL_SOURCE_REC;
 
 static GSList *perl_sources;
-static GSList *perl_scripts;
+GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
 static void perl_source_destroy(PERL_SOURCE_REC *rec)
@@ -99,22 +96,6 @@ static void irssi_perl_start(void)
         perl_common_init();
 }
 
-static void perl_unregister_theme(const char *package)
-{
-	FORMAT_REC *formats;
-	int n;
-
-	formats = g_hash_table_lookup(default_formats, package);
-	if (formats == NULL) return;
-
-	for (n = 0; formats[n].def != NULL; n++) {
-		g_free(formats[n].tag);
-		g_free(formats[n].def);
-	}
-	g_free(formats);
-	theme_unregister_module(package);
-}
-
 static int perl_script_destroy(const char *name)
 {
 	GSList *tmp, *next, *item;
@@ -122,10 +103,13 @@ static int perl_script_destroy(const char *name)
 	int package_len;
 
 	item = gslist_find_string(perl_scripts, name);
-	if (item == NULL) return FALSE;
+	if (item == NULL)
+		return FALSE;
 
 	package = g_strdup_printf("Irssi::Script::%s", name);
 	package_len = strlen(package);
+
+        signal_emit("script destroy", 3, "PERL", name, package);
 
         perl_signals_package_destroy(package);
 
@@ -138,9 +122,6 @@ static int perl_script_destroy(const char *name)
 			perl_source_destroy(rec);
 	}
 
-	/* theme */
-	perl_unregister_theme(package);
-
 	g_free(package);
 	g_free(item->data);
 	perl_scripts = g_slist_remove(perl_scripts, item->data);
@@ -149,22 +130,14 @@ static int perl_script_destroy(const char *name)
 
 static void irssi_perl_stop(void)
 {
-	GSList *tmp;
 	char *package;
 
+        signal_emit("perl stop", 0);
         perl_signals_stop();
 
 	/* timeouts and input waits */
 	while (perl_sources != NULL)
 		perl_source_destroy(perl_sources->data);
-
-	/* themes */
-	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
-		package = g_strdup_printf("Irssi::Script::%s",
-					  (char *) tmp->data);
-		perl_unregister_theme(package);
-		g_free(package);
-	}
 
 	/* scripts list */
 	g_slist_foreach(perl_scripts, (GFunc) g_free, NULL);
@@ -221,14 +194,13 @@ static void cmd_run(const char *data)
 
 	script_fix_name(name);
 	perl_script_destroy(name);
-	perl_scripts = g_slist_append(perl_scripts, g_strdup(name));
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
 	XPUSHs(sv_2mortal(new_pv(fname))); g_free(fname);
-	XPUSHs(sv_2mortal(new_pv(name))); g_free(name);
+	XPUSHs(sv_2mortal(new_pv(name)));
 	PUTBACK;
 
 	retcount = perl_call_pv("Irssi::Load::eval_file",
@@ -250,6 +222,10 @@ static void cmd_run(const char *data)
 	PUTBACK;
 	FREETMPS;
 	LEAVE;
+
+	perl_scripts = g_slist_append(perl_scripts, g_strdup(name));
+	signal_emit("script new", 2, "PERL", name);
+        g_free(name);
 }
 
 static void cmd_perl(const char *data)
@@ -403,7 +379,7 @@ static void irssi_perl_autorun(void)
 	g_free(path);
 }
 
-void perl_init(void)
+void perl_core_init(void)
 {
 	perl_scripts = NULL;
 	command_bind("run", NULL, (SIGNAL_FUNC) cmd_run);
@@ -417,7 +393,7 @@ void perl_init(void)
 	irssi_perl_autorun();
 }
 
-void perl_deinit(void)
+void perl_core_deinit(void)
 {
 	perl_signals_deinit();
 	irssi_perl_stop();

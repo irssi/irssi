@@ -215,7 +215,7 @@ MODULE_REC *module_find(const char *name)
 	return NULL;
 }
 
-char *module_get_name(const char *path)
+static char *module_get_name(const char *path, int *start, int *end)
 {
 	const char *name;
 	char *module_name, *ptr;
@@ -233,8 +233,12 @@ char *module_get_name(const char *path)
 		name += 3;
 
 	module_name = g_strdup(name);
-	ptr = strstr(module_name, ".so");
+	ptr = strchr(module_name, '.');
 	if (ptr != NULL) *ptr = '\0';
+
+	*start = (int) (name-path);
+	*end = *start + (ptr == NULL ? strlen(name) :
+			 (int) (module_name-ptr));
 
 	return module_name;
 }
@@ -262,6 +266,7 @@ static GModule *module_open(const char *name)
 		}
 
 		/* module not found from home dir, try global module dir */
+		g_free(path);
 		path = g_module_build_path(MODULEDIR, name);
 	}
 
@@ -273,28 +278,27 @@ static GModule *module_open(const char *name)
 #define module_error(error, module, text) \
 	signal_emit("module error", 3, GINT_TO_POINTER(error), module, text)
 
-static int module_load_name(const char *path, const char *name)
+static int module_load_name(const char *path, const char *name, int silent)
 {
 	void (*module_init) (void);
 	GModule *gmodule;
 	MODULE_REC *rec;
 	char *initfunc;
 
-	if (module_find(name)) {
-		module_error(MODULE_ERROR_ALREADY_LOADED, name, NULL);
-		return FALSE;
-	}
-
 	gmodule = module_open(path);
 	if (gmodule == NULL) {
-		module_error(MODULE_ERROR_LOAD, name, g_module_error());
+		if (!silent) {
+			module_error(MODULE_ERROR_LOAD, name,
+				     g_module_error());
+		}
 		return FALSE;
 	}
 
 	/* get the module's init() function */
 	initfunc = g_strconcat(name, "_init", NULL);
 	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
-                module_error(MODULE_ERROR_INVALID, name, NULL);
+		if (!silent)
+			module_error(MODULE_ERROR_INVALID, name, NULL);
 		g_module_close(gmodule);
 		g_free(initfunc);
 		return FALSE;
@@ -314,21 +318,55 @@ static int module_load_name(const char *path, const char *name)
 }
 #endif
 
-int module_load(const char *path)
+/* Load module - automatically tries to load also the related non-core
+   modules given in `prefixes' (like irc, fe, fe_text, ..) */
+int module_load(const char *path, char **prefixes)
 {
 #ifdef HAVE_GMODULE
-	char *name;
-	int ret;
+        GString *realpath;
+	char *name, *pname;
+	int ret, start, end;
 
 	g_return_val_if_fail(path != NULL, FALSE);
 
 	if (!g_module_supported())
 		return FALSE;
 
-	name = module_get_name(path);
-	ret = module_load_name(path, name);
-	g_free(name);
+	name = module_get_name(path, &start, &end);
+	if (module_find(name)) {
+		module_error(MODULE_ERROR_ALREADY_LOADED, name, NULL);
+		return FALSE;
+	}
 
+        /* load "module_core" instead of "module" if it exists */
+	realpath = g_string_new(path);
+	g_string_insert(realpath, end, "_core");
+
+        pname = g_strconcat(name, "_core", NULL);
+	ret = module_load_name(realpath->str, pname, TRUE);
+	g_free(pname);
+
+	if (!ret) {
+                /* load "module" - complain if it's not found */
+		ret = module_load_name(path, name, FALSE);
+	} else if (prefixes != NULL) {
+		/* load all the "prefix modules", like the fe-common, irc,
+		   etc. part of the module */
+		while (*prefixes != NULL) {
+                        g_string_assign(realpath, path);
+			g_string_insert(realpath, start, "_");
+			g_string_insert(realpath, start, *prefixes);
+
+                        pname = g_strconcat(*prefixes, "_", name, NULL);
+			module_load_name(realpath->str, pname, TRUE);
+			g_free(pname);
+
+                        prefixes++;
+		}
+	}
+
+        g_string_free(realpath, TRUE);
+	g_free(name);
 	return ret;
 #else
         return FALSE;

@@ -2,11 +2,14 @@ LIBTOOL = $(PERL_LIBTOOL)
 
 moduledir = $(libdir)/irssi/modules
 
-module_LTLIBRARIES = $(module_lib)
-noinst_LTLIBRARIES = $(static_lib)
-EXTRA_LTLIBRARIES = libperl.la libperl_static.la
+module_LTLIBRARIES = $(perl_module_lib) $(perl_module_fe_lib)
+noinst_LTLIBRARIES = $(perl_static_lib) $(perl_static_fe_lib)
+EXTRA_LTLIBRARIES = \
+	libperl_core.la libfe_perl.la \
+	libperl_static.la libfe_perl_static.la
 
-libperl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
+libperl_core_la_LDFLAGS = -avoid-version -rpath $(moduledir)
+libfe_perl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
 
 perl.c: perl-signals-list.h
 
@@ -22,7 +25,9 @@ perl_sources = \
 	perl-signals.c \
 	xsinit.c
 
-libperl_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
+perl_fe_sources = perl-fe.c
+
+libperl_core_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
 
 .libs/libperl_orig.a:
 	if [ ! -d .libs ]; then mkdir .libs; fi
@@ -33,11 +38,17 @@ libperl_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
 	rm -f .libs/DynaLoader.a
 	$(LN_S) $(DYNALOADER_A) .libs/DynaLoader.a
 
-libperl_la_SOURCES = \
+libperl_core_la_SOURCES = \
 	$(perl_sources)
 
 libperl_static_la_SOURCES = \
 	$(perl_sources)
+
+libfe_perl_la_SOURCES = \
+	$(perl_fe_sources)
+
+libfe_perl_static_la_SOURCES = \
+	$(perl_fe_sources)
 
 perl-signals-list.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals-list.h
@@ -96,4 +107,4 @@ install-exec-local:
 clean-generic:
 	rm -f common/Irssi.c irc/Irc.c
 
-libperl_la_LIBADD = $(PERL_LDFLAGS)
+libperl_core_la_LIBADD = $(PERL_LDFLAGS)

@@ -30,7 +30,9 @@ extern GSList *modules;
 
 MODULE_REC *module_find(const char *name);
 
-int module_load(const char *path);
+/* Load module - automatically tries to load also the related non-core
+   modules given in `prefixes' (like irc, fe, fe_text, ..) */
+int module_load(const char *path, char **prefixes);
 void module_unload(MODULE_REC *module);
 
 #define MODULE_CHECK_CAST(object, cast, type_field, id) \

@@ -477,19 +477,25 @@ if test "$want_perl" != "no"; then
 			AC_DEFINE(HAVE_STATIC_PERL)
 
 			dnl * build only static library of perl module
-			module_lib=
-			static_lib=libperl_static.la
+			perl_module_lib=
+			perl_module_fe_lib=
+			perl_static_lib=libperl_static.la
+			perl_static_fe_lib=libfe_perl_static.la
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		else
 			dnl * build dynamic library of perl module,
 			dnl * use libtool-shared to prevent creating of
 			dnl * libperl.a
-			module_lib=libperl.la
-			static_lib=
+			perl_module_lib=libperl_core.la
+			perl_module_fe_lib=libfe_perl.la
+			perl_static_lib=
+			perl_static_fe_lib=
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool-shared'
 		fi
-		AC_SUBST(module_lib)
-		AC_SUBST(static_lib)
+		AC_SUBST(perl_module_lib)
+		AC_SUBST(perl_static_lib)
+		AC_SUBST(perl_module_fe_lib)
+		AC_SUBST(perl_static_fe_lib)
 		AC_SUBST(PERL_LIBTOOL)
 
 		AC_SUBST(PERL_LDFLAGS)
@@ -544,7 +550,7 @@ for c in $CHAT_MODULES; do
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -d $srcdir/src/fe-common/$c/$s; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/${LIBDIR}libfe_common_${c}_$s.a "
+			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/${LIBDIR}libfe_${c}_$s.a "
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi

@@ -15,3 +15,6 @@
 #include "common.h"
 
 #define MODULE_NAME "irssi-perl"
+
+extern GSList *perl_scripts;
+extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implementations won't work */
