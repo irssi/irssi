@@ -189,6 +189,7 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	server->handle = NULL;
 
 	server->connection_lost = TRUE;
+        server->session_reconnect = TRUE;
         server_disconnect(server);
 }
 

@@ -172,8 +172,9 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 }
 
 #define server_should_reconnect(server) \
-	((server)->connection_lost && ((server)->connrec->chatnet != NULL || \
-				(!(server)->banned && !(server)->dns_error)))
+	((server)->connection_lost && !(server)->session_reconnect && \
+	((server)->connrec->chatnet != NULL || \
+		(!(server)->banned && !(server)->dns_error)))
 
 #define sserver_connect_ok(rec, net) \
 	(!(rec)->banned && !(rec)->dns_error && (rec)->chatnet != NULL && \
