@@ -72,6 +72,9 @@ static gchar *gui_window_line2text(LINE_REC *line)
 	    case LINE_CMD_UNDERLINE:
 		g_string_append_c(str, 31);
 		break;
+	    case LINE_CMD_COLOR0:
+		g_string_sprintfa(str, "\003%c%c", 1, ((color & 0xf0) >> 4)+1);
+		break;
 	    case LINE_CMD_COLOR8:
 		g_string_sprintfa(str, "\003%c%c", 9, ((color & 0xf0) >> 4)+1);
 		color &= 0xfff0;
