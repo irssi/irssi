@@ -430,10 +430,11 @@ int mkpath(const char *path, int mode)
 		dir = g_strndup(path, (int) (p-path));
 		if (stat(dir, &statbuf) != 0) {
 #ifndef WIN32
-			if (mkdir(dir, mode) == -1) {
+			if (mkdir(dir, mode) == -1)
 #else
-			if (_mkdir(dir) == -1) {
+			if (_mkdir(dir) == -1)
 #endif
+			{
 				g_free(dir);
 				return -1;
 			}
