@@ -404,8 +404,10 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 	server->nick_changing = TRUE;
 	irc_send_cmdv(server, "NICK %s", nick);
+
+	nick = g_strdup_printf("%s :%s", nick, nick);
 	server_redirect_event(SERVER(server), nick, 5,
-			      "event nick", "nickchange over", 1,
+			      "event nick", "nickchange over", 0,
 			      "event 433", "nickchange over", 1,
 			      /* 437: ircnet = target unavailable,
 				      dalnet = banned in channel,
@@ -413,6 +415,7 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 			      "event 437", "nickchange over", -1,
 			      "event 432", "nickchange over", 1,
 			      "event 438", "nickchange over", 1, NULL);
+        g_free(nick);
 	cmd_params_free(free_arg);
 }
 
@@ -424,6 +427,7 @@ static void sig_nickchange_over(const char *data, IRC_SERVER_REC *server,
 	server->nick_changing = FALSE;
 
 	signal = g_strconcat("event ", current_server_event, NULL);
+	g_strdown(signal+6);
 	signal_emit(signal, 4, data, server, nick, addr);
 	g_free(signal);
 }
