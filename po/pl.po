@@ -1281,7 +1281,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-rawlog.c:102
 msgid "Save rawlog to: "
-msgstr ""
+msgstr "Zachowaj surowy log do: "
 
 #: src/gui-gnome/dialog-rawlog.c:105
 msgid "Save"
@@ -1359,11 +1359,11 @@ msgstr "Zapisz tylko zaznaczony tekst"
 
 #: src/gui-gnome/dialog-textwidget.c:269
 msgid "Save window buffer to: "
-msgstr ""
+msgstr "Zapisz bufor okna do: "
 
 #: src/gui-gnome/dialog-textwidget.c:272
 msgid "Save window buffer"
-msgstr ""
+msgstr "Zapisz bufor okna"
 
 #: src/gui-gnome/dialog-window.c:107
 msgid "Save size"
@@ -1624,11 +1624,11 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:83
 msgid "_Save Text As..."
-msgstr ""
+msgstr "Z_apisz tekst jako..."
 
 #: src/gui-gnome/gui-menu-commands.c:86 src/gui-gnome/gui-menu-commands.c:182
 msgid "_Close"
-msgstr ""
+msgstr "_Zamknij"
 
 #: src/gui-gnome/gui-menu-commands.c:88
 msgid "_Quit"
@@ -1636,7 +1636,7 @@ msgstr "_Koniec"
 
 #: src/gui-gnome/gui-menu-commands.c:94
 msgid "_Connect..."
-msgstr "_Po³acz..."
+msgstr "_Po³±cz..."
 
 #: src/gui-gnome/gui-menu-commands.c:96
 msgid "_Disconnect..."
@@ -1648,7 +1648,7 @@ msgstr "_Kana³y..."
 
 #: src/gui-gnome/gui-menu-commands.c:101
 msgid "_Status Window..."
-msgstr ""
+msgstr "Okno _stausu..."
 
 #: src/gui-gnome/gui-menu-commands.c:103
 msgid "N_otify list..."
@@ -1660,7 +1660,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:107
 msgid "_Links..."
-msgstr ""
+msgstr "_Po³±czenia"
 
 #: src/gui-gnome/gui-menu-commands.c:111
 msgid "_Away..."
@@ -1668,7 +1668,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:114
 msgid "_Invisible"
-msgstr ""
+msgstr "_Niwwidoczny"
 
 #: src/gui-gnome/gui-menu-commands.c:116
 msgid "Receive _Wallops"
@@ -1680,7 +1680,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:124
 msgid "C_ut"
-msgstr ""
+msgstr "_Wytnij"
 
 #: src/gui-gnome/gui-menu-commands.c:126
 msgid "_Copy"
@@ -1700,7 +1700,7 @@ msgstr "_Po³±czenia..."
 
 #: src/gui-gnome/gui-menu-commands.c:140
 msgid "_Send File..."
-msgstr ""
+msgstr "_Przeka¿ plik"
 
 #: src/gui-gnome/gui-menu-commands.c:142
 msgid "_Chat..."
@@ -1728,7 +1728,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:158
 msgid "_Keyboard..."
-msgstr ""
+msgstr "_Klawiatura..."
 
 #: src/gui-gnome/gui-menu-commands.c:161
 msgid "_Preferences..."
@@ -1736,7 +1736,7 @@ msgstr "_Preferencje..."
 
 #: src/gui-gnome/gui-menu-commands.c:169
 msgid "New _Window"
-msgstr ""
+msgstr "Nowe _okno"
 
 #: src/gui-gnome/gui-menu-commands.c:171
 msgid "_New Tab"
@@ -1752,23 +1752,23 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:179
 msgid "_Save Size and Position..."
-msgstr ""
+msgstr "_Zachowaj rozmiar i pozycjê..."
 
 #: src/gui-gnome/gui-menu-commands.c:192
 msgid "Irssi _Website"
-msgstr ""
+msgstr "Strona domowa _Irssi"
 
 #: src/gui-gnome/gui-menu-commands.c:198
 msgid "_About..."
-msgstr ""
+msgstr "_O programie"
 
 #: src/gui-gnome/gui-menu-commands.c:205
 msgid "_File"
-msgstr ""
+msgstr "_Plik"
 
 #: src/gui-gnome/gui-menu-commands.c:207
 msgid "_Edit"
-msgstr ""
+msgstr "_Edycja"
 
 #: src/gui-gnome/gui-menu-commands.c:209
 msgid "_DCC"
@@ -1780,15 +1780,15 @@ msgstr "_Serwer"
 
 #: src/gui-gnome/gui-menu-commands.c:213
 msgid "Se_ttings"
-msgstr ""
+msgstr "_Ustawienia"
 
 #: src/gui-gnome/gui-menu-commands.c:215
 msgid "_Windows"
-msgstr ""
+msgstr "_Okna"
 
 #: src/gui-gnome/gui-menu-commands.c:217
 msgid "_Help"
-msgstr ""
+msgstr "_Pomoc"
 
 #: src/gui-gnome/gui-menu-commands.c:224
 msgid "_Leave channel"
@@ -1816,11 +1816,11 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:269
 msgid "Find"
-msgstr ""
+msgstr "Szukaj"
 
 #: src/gui-gnome/gui-menu-commands.c:271 src/gui-gnome/setup-lists.c:349
 msgid "New"
-msgstr ""
+msgstr "Nowy"
 
 #: src/gui-gnome/gui-menu-commands.c:273
 msgid "Close"
@@ -1832,7 +1832,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:511 src/gui-gnome/gui-windows.c:711
 msgid "(empty)"
-msgstr ""
+msgstr "(pusty)"
 
 #: src/gui-gnome/gui-nicklist-popup.c:71
 msgid "Kick reason:"
@@ -1974,16 +1974,16 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:29
 msgid "Black"
-msgstr ""
+msgstr "Czarny"
 
 #: src/gui-gnome/setup-colors.c:30 src/gui-gnome/setup-colors.c:336
 msgid "Blue"
-msgstr ""
+msgstr "Niebieski"
 
 #: src/gui-gnome/setup-colors.c:31 src/gui-gnome/setup-colors.c:335
 #: src/gui-gnome/setup-colors.c:339
 msgid "Green"
-msgstr ""
+msgstr "Zielony"
 
 #: src/gui-gnome/setup-colors.c:32
 msgid "Cyan"
@@ -1991,7 +1991,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:33 src/gui-gnome/setup-colors.c:335
 msgid "Red"
-msgstr ""
+msgstr "Czerwony"
 
 #: src/gui-gnome/setup-colors.c:34
 msgid "Magenta"
@@ -2031,15 +2031,15 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:43
 msgid "Yellow"
-msgstr ""
+msgstr "¯ó³ty"
 
 #: src/gui-gnome/setup-colors.c:44
 msgid "White"
-msgstr ""
+msgstr "Bia³y"
 
 #: src/gui-gnome/setup-colors.c:45
 msgid "Orange"
-msgstr ""
+msgstr "Pomarañczowy"
 
 #: src/gui-gnome/setup-colors.c:47
 msgid "Background color"
@@ -2071,11 +2071,11 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:99
 msgid "sample"
-msgstr ""
+msgstr "przyk³ad"
 
 #: src/gui-gnome/setup-colors.c:335
 msgid "Color"
-msgstr "kolor"
+msgstr "Kolor"
 
 #: src/gui-gnome/setup-colors.c:336 src/gui-gnome/setup-colors.c:339
 msgid "Sample text"
@@ -2087,11 +2087,11 @@ msgstr "Kolor"
 
 #: src/gui-gnome/setup-colors.c:339
 msgid "Red  "
-msgstr ""
+msgstr "Czerwony "
 
 #: src/gui-gnome/setup-colors.c:339
 msgid "Blue "
-msgstr ""
+msgstr "Niebieski"
 
 #: src/gui-gnome/setup-colors.c:382
 msgid ""
@@ -2105,7 +2105,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:414
 msgid "Colors"
-msgstr ""
+msgstr "Kolory"
 
 #: src/gui-gnome/setup-completion.c:63 src/gui-gnome/setup-completion.c:92
 msgid "Nick Completion"
@@ -2284,19 +2284,19 @@ msgstr ""
 
 #: src/gui-gnome/setup-ircnets.c:267 src/gui-gnome/setup-servers.c:492
 msgid "Add"
-msgstr ""
+msgstr "Dodaj"
 
 #: src/gui-gnome/setup-ircnets.c:272 src/gui-gnome/setup-servers.c:496
 msgid "Edit"
-msgstr ""
+msgstr "Edycja"
 
 #: src/gui-gnome/setup-ircnets.c:285
 msgid "IRC networks"
-msgstr ""
+msgstr "Sieci IRC"
 
 #: src/gui-gnome/setup-ircproxy.c:55
 msgid "Use IRC proxy"
-msgstr ""
+msgstr "U¿yj IRC proxy"
 
 #: src/gui-gnome/setup-ircproxy.c:81
 msgid "Send to proxy after connect"
@@ -2304,7 +2304,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-ircproxy.c:89
 msgid "IRC proxy"
-msgstr ""
+msgstr "IRC proxy"
 
 #: src/gui-gnome/setup-lists.c:406
 msgid "Alias"
@@ -2316,15 +2316,15 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:410
 msgid "Aliases"
-msgstr ""
+msgstr "Aliasy"
 
 #: src/gui-gnome/setup-lists.c:412 src/gui-gnome/setup-lists.c:424
 msgid "Mask"
-msgstr ""
+msgstr "Maska"
 
 #: src/gui-gnome/setup-lists.c:413
 msgid "What to ignore"
-msgstr ""
+msgstr "Co ignorowaæ"
 
 #: src/gui-gnome/setup-lists.c:416
 msgid "Ignores"
@@ -2332,7 +2332,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:418
 msgid "Tag"
-msgstr ""
+msgstr "Znacznik"
 
 #: src/gui-gnome/setup-lists.c:419
 msgid "Completed text"
@@ -2352,7 +2352,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:430 src/gui-gnome/setup-lists.c:436
 msgid "Text"
-msgstr ""
+msgstr "Tekst"
 
 #: src/gui-gnome/setup-lists.c:434
 msgid "Hilight Texts"
@@ -2368,7 +2368,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:442
 msgid "Label"
-msgstr ""
+msgstr "Etykieta"
 
 #: src/gui-gnome/setup-lists.c:446
 msgid "Popup Menu"
@@ -2381,15 +2381,15 @@ msgstr ""
 
 #: src/gui-gnome/setup-lookandfeel.c:74
 msgid "Show menubar"
-msgstr ""
+msgstr "Poka¿ menu"
 
 #: src/gui-gnome/setup-lookandfeel.c:78
 msgid "Show toolbar"
-msgstr ""
+msgstr "Poka¿ pasek narzêdzi"
 
 #: src/gui-gnome/setup-lookandfeel.c:82
 msgid "Show status bar"
-msgstr ""
+msgstr "Poka¿ pasek stausu"
 
 #: src/gui-gnome/setup-lookandfeel.c:86
 msgid "Notifylist popup dialogs"
@@ -2453,19 +2453,19 @@ msgstr ""
 
 #: src/gui-gnome/setup-lookandfeel.c:183
 msgid "Left"
-msgstr ""
+msgstr "Z lewej"
 
 #: src/gui-gnome/setup-lookandfeel.c:188
 msgid "Right"
-msgstr ""
+msgstr "Z prawej"
 
 #: src/gui-gnome/setup-lookandfeel.c:193
 msgid "Top"
-msgstr ""
+msgstr "U góry"
 
 #: src/gui-gnome/setup-lookandfeel.c:198
 msgid "Bottom"
-msgstr ""
+msgstr "Na dole"
 
 #: src/gui-gnome/setup-lookandfeel.c:209
 msgid "Look & Feel"
@@ -2474,7 +2474,7 @@ msgstr ""
 #. ---
 #: src/gui-gnome/setup-misc.c:66
 msgid "Programs"
-msgstr ""
+msgstr "Programy"
 
 #: src/gui-gnome/setup-misc.c:74
 msgid "Web browser"
@@ -2482,7 +2482,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-misc.c:77
 msgid "FTP client"
-msgstr ""
+msgstr "Klient FTP"
 
 #: src/gui-gnome/setup-misc.c:80
 msgid "E-Mail client"
@@ -2535,7 +2535,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-servers.c:252 src/gui-gnome/setup-servers.c:472
 msgid "IRC Net"
-msgstr ""
+msgstr "Sieæ IRC"
 
 #: src/gui-gnome/setup-servers.c:272
 msgid "Timeout between sending commands to server (0 = default)"
@@ -2543,7 +2543,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-servers.c:302
 msgid "Autoconnect at startup"
-msgstr ""
+msgstr "Automatycznie ³±cz przy starcie"
 
 #: src/gui-gnome/setup-servers.c:360
 msgid ""
@@ -2568,7 +2568,7 @@ msgstr ""
 #. skip motd
 #: src/gui-gnome/setup-servers.c:508
 msgid "Skip MOTD"
-msgstr ""
+msgstr "Pomiñ powitanie"
 
 #: src/gui-gnome/setup-servers.c:516
 msgid "Seconds to wait before reconnecting (-1 = never)"
@@ -2588,11 +2588,11 @@ msgstr ""
 
 #: src/gui-gnome/setup-servers.c:558
 msgid "Servers"
-msgstr ""
+msgstr "Serwery"
 
 #: src/gui-gnome/setup-session.c:124
 msgid "New Window..."
-msgstr ""
+msgstr "Nowe okno..."
 
 #: src/gui-gnome/setup-session.c:129
 msgid "New Tab..."
@@ -2604,11 +2604,11 @@ msgstr ""
 
 #: src/gui-gnome/setup-session.c:145
 msgid "Session"
-msgstr ""
+msgstr "Sesja"
 
 #: src/gui-gnome/setup-themes.c:208
 msgid "Add new theme"
-msgstr ""
+msgstr "Dodaj nowy temat"
 
 #: src/gui-gnome/setup-themes.c:240
 #, c-format
@@ -2617,7 +2617,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-themes.c:259
 msgid "Theme selector"
-msgstr ""
+msgstr "Wybór tematów"
 
 #: src/gui-gnome/setup-txt.c:282
 msgid "<formats>"
