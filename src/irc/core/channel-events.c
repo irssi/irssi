@@ -56,6 +56,32 @@ static void event_cannot_join(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_no_such_channel(IRC_SERVER_REC *server, const char *data)
+{
+	CHANNEL_REC *chanrec;
+	CHANNEL_SETUP_REC *setup;
+	char *params, *channel;
+
+	params = event_get_params(data, 2, NULL, &channel);
+	chanrec = *channel == '!' && channel[1] != '\0' ?
+		channel_find(SERVER(server), channel) : NULL;
+	g_free(params);
+
+	if (chanrec != NULL) {
+                /* !channel didn't exist, so join failed */
+		setup = channel_setup_find(chanrec->name,
+					   chanrec->server->connrec->chatnet);
+		if (setup != NULL && setup->autojoin) {
+			/* it's autojoin channel though,
+			   so create it */
+			irc_send_cmdv(server, "JOIN !%s", chanrec->name);
+                        return;
+		}
+	}
+
+        event_cannot_join(server, data);
+}
+
 static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
@@ -310,7 +336,7 @@ void channel_events_init(void)
 {
 	settings_add_bool("misc", "join_auto_chans_on_invite", TRUE);
 
-	signal_add_first("event 403", (SIGNAL_FUNC) event_cannot_join); /* no such channel */
+	signal_add_first("event 403", (SIGNAL_FUNC) event_no_such_channel); /* no such channel */
 	signal_add_first("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_add_first("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
@@ -334,7 +360,7 @@ void channel_events_init(void)
 
 void channel_events_deinit(void)
 {
-	signal_remove("event 403", (SIGNAL_FUNC) event_cannot_join); /* no such channel */
+	signal_remove("event 403", (SIGNAL_FUNC) event_no_such_channel); /* no such channel */
 	signal_remove("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_remove("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
