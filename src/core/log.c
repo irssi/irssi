@@ -100,6 +100,8 @@ static char *log_filename(LOG_REC *log)
 
 int log_start_logging(LOG_REC *log)
 {
+	char *dir;
+
 	g_return_val_if_fail(log != NULL, FALSE);
 
 	if (log->handle != -1)
@@ -108,6 +110,16 @@ int log_start_logging(LOG_REC *log)
 	/* Append/create log file */
 	g_free_not_null(log->real_fname);
 	log->real_fname = log_filename(log);
+
+	if (log->real_fname != NULL &&
+	    strcmp(log->real_fname, log->fname) != 0) {
+		/* path may contain variables (%time, $vars),
+		   make sure the directory is created */
+		dir = g_dirname(log->real_fname);
+		mkpath(dir, LOG_DIR_CREATE_MODE);
+		g_free(dir);
+	}
+
 	log->handle = log->real_fname == NULL ? -1 :
 		open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
 		     log_file_create_mode);
@@ -165,7 +177,7 @@ void log_stop_logging(LOG_REC *log)
 
 static void log_rotate_check(LOG_REC *log)
 {
-	char *new_fname, *dir;
+	char *new_fname;
 
 	g_return_if_fail(log != NULL);
 
@@ -177,10 +189,6 @@ static void log_rotate_check(LOG_REC *log)
 		/* rotate log */
 		log_stop_logging(log);
 		signal_emit("log rotated", 1, log);
-
-		dir = g_dirname(new_fname);
-		mkpath(dir, LOG_DIR_CREATE_MODE);
-		g_free(dir);
 
 		log_start_logging(log);
 	}
