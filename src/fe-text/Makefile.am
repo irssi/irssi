@@ -35,6 +35,7 @@ irssi_SOURCES = \
         mainwindows-layout.c \
         screen.c \
         statusbar.c \
+        statusbar-config.c \
         statusbar-items.c \
         textbuffer.c \
         textbuffer-commands.c \
@@ -49,8 +50,10 @@ noinst_HEADERS = \
         gui-readline.h \
         gui-windows.h \
         mainwindows.h \
-        statusbar.h \
         screen.h \
+        statusbar.h \
+        statusbar-config.h \
+        statusbar-items.h \
         textbuffer.h \
         textbuffer-view.h \
         textbuffer-reformat.h \

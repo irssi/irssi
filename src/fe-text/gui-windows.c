@@ -31,15 +31,13 @@
 
 static int window_create_override;
 
-static char *prompt, *prompt_window;
-
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 				       MAIN_WINDOW_REC *parent)
 {
 	GUI_WINDOW_REC *gui;
 
 	window->width = parent->width;
-        window->height = parent->height;
+        window->height = MAIN_WINDOW_TEXT_HEIGHT(parent);
 
 	gui = g_new0(GUI_WINDOW_REC, 1);
 	gui->parent = parent;
@@ -161,54 +159,6 @@ void gui_window_set_unsticky(WINDOW_REC *window)
 	}
 }
 
-void window_update_prompt(void)
-{
-        const char *special;
-	char *prompt, *text;
-        int var_used;
-
-	special = settings_get_str(active_win->active != NULL ?
-				   "prompt" : "prompt_window");
-	if (*special == '\0') {
-		gui_entry_set_prompt("");
-		return;
-	}
-
-	prompt = parse_special_string(special, active_win->active_server,
-				      active_win->active, "", &var_used,
-				      PARSE_FLAG_ISSET_ANY |
-				      PARSE_FLAG_ESCAPE_VARS);
-	if (!var_used && strchr(special, '$') != NULL) {
-                /* none of the $vars had non-empty values, use empty prompt */
-		*prompt = '\0';
-	}
-
-	/* set prompt */
-	text = show_lowascii(prompt);
-	gui_entry_set_prompt(text);
-	g_free(text);
-
-	g_free(prompt);
-}
-
-static void window_update_prompt_server(SERVER_REC *server)
-{
-	if (server == active_win->active_server)
-                window_update_prompt();
-}
-
-static void window_update_prompt_window(WINDOW_REC *window)
-{
-	if (window == active_win)
-                window_update_prompt();
-}
-
-static void window_update_prompt_window_item(WI_ITEM_REC *item)
-{
-	if (item == active_win->active)
-                window_update_prompt();
-}
-
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 {
 	MAIN_WINDOW_REC *oldparent;
@@ -224,9 +174,12 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
         if (parent->sticky_windows)
 		gui_window_set_sticky(window);
 
-	if (parent->height != oldparent->height ||
-	    parent->width != oldparent->width)
-		gui_window_resize(window, parent->width, parent->height);
+	if (MAIN_WINDOW_TEXT_HEIGHT(parent) !=
+	    MAIN_WINDOW_TEXT_HEIGHT(oldparent) ||
+	    parent->width != oldparent->width) {
+		gui_window_resize(window, parent->width,
+				  MAIN_WINDOW_TEXT_HEIGHT(parent));
+	}
 }
 
 static MAIN_WINDOW_REC *mainwindow_find_unsticky(void)
@@ -282,35 +235,11 @@ static void signal_window_changed(WINDOW_REC *window)
 
 	textbuffer_view_set_window(WINDOW_GUI(window)->view,
 				   parent->screen_win);
-
-	window_update_prompt();
-}
-
-static void sig_check_window_update(WINDOW_REC *window)
-{
-	if (window == active_win)
-                window_update_prompt();
 }
 
 static void read_settings(void)
 {
 	GSList *tmp;
-
-	SIGNAL_FUNC funcs[] = {
-                (SIGNAL_FUNC) window_update_prompt,
-                (SIGNAL_FUNC) window_update_prompt_server,
-                (SIGNAL_FUNC) window_update_prompt_window,
-                (SIGNAL_FUNC) window_update_prompt_window_item
-	};
-
-	if (prompt != NULL) {
-		special_vars_remove_signals(prompt, 4, funcs);
-		special_vars_remove_signals(prompt_window, 4, funcs);
-		g_free(prompt);
-                g_free(prompt_window);
-	}
-	prompt = g_strdup(settings_get_str("prompt"));
-	prompt_window = g_strdup(settings_get_str("prompt_window"));
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
@@ -324,11 +253,6 @@ static void read_settings(void)
 					   gui->use_scroll ? gui->scroll :
 					   settings_get_bool("scroll"));
 	}
-
-	special_vars_add_signals(prompt, 4, funcs);
-	special_vars_add_signals(prompt_window, 4, funcs);
-
-	if (active_win != NULL) window_update_prompt();
 }
 
 void gui_windows_init(void)
@@ -336,11 +260,8 @@ void gui_windows_init(void)
         settings_add_bool("lookandfeel", "autostick_split_windows", TRUE);
 	settings_add_int("lookandfeel", "indent", 10);
 	settings_add_bool("lookandfeel", "indent_always", FALSE);
-	settings_add_str("lookandfeel", "prompt", "[$[.15]T] ");
-	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
 	settings_add_bool("lookandfeel", "scroll", TRUE);
 
-        prompt = NULL; prompt_window = NULL;
 	window_create_override = -1;
 
 	read_settings();
@@ -348,15 +269,11 @@ void gui_windows_init(void)
 	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_add_first("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_add("window item remove", (SIGNAL_FUNC) sig_check_window_update);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void gui_windows_deinit(void)
 {
-        g_free_not_null(prompt);
-        g_free_not_null(prompt_window);
-
 	while (windows != NULL)
 		window_destroy(windows->data);
 
@@ -364,6 +281,5 @@ void gui_windows_deinit(void)
 	signal_remove("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_remove("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_remove("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_remove("window item remove", (SIGNAL_FUNC) sig_check_window_update);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

@@ -52,7 +52,9 @@
 #define MIN_SCREEN_WIDTH 20
 
 struct _SCREEN_WINDOW {
-        WINDOW *win;
+	int x, y;
+        int width, height;
+	WINDOW *win;
 };
 
 SCREEN_WINDOW *screen_root;
@@ -255,13 +257,15 @@ void screen_clear(void)
 
 SCREEN_WINDOW *screen_window_create(int x, int y, int width, int height)
 {
-        SCREEN_WINDOW *scrwin;
+        SCREEN_WINDOW *window;
 
-	scrwin = g_new0(SCREEN_WINDOW, 1);
-	scrwin->win = newwin(height, width, y, x);
-	idlok(scrwin->win, 1);
+	window = g_new0(SCREEN_WINDOW, 1);
+	window->x = x; window->y = y;
+        window->width = width; window->height = height;
+	window->win = newwin(height, width, y, x);
+	idlok(window->win, 1);
 
-        return scrwin;
+        return window;
 }
 
 void screen_window_destroy(SCREEN_WINDOW *window)
@@ -279,13 +283,20 @@ void screen_window_move(SCREEN_WINDOW *window, int x, int y,
 			int width, int height)
 {
 #ifdef HAVE_CURSES_WRESIZE
-	wresize(window->win, height, width);
-	mvwin(window->win, y, x);
+        if (window->width != width || window->height != height)
+		wresize(window->win, height, width);
+        if (window->x != x || window->y != y)
+		mvwin(window->win, y, x);
 #else
-	delwin(window->win);
-	window->win = newwin(height, width, y, x);
-	idlok(window->win, 1);
+	if (window->width != width || window->height != height ||
+	    window->x != x || window->y != y) {
+		delwin(window->win);
+		window->win = newwin(height, width, y, x);
+		idlok(window->win, 1);
+	}
 #endif
+        window->x = x; window->y = y;
+        window->width = width; window->height = height;
 }
 
 void screen_window_scroll(SCREEN_WINDOW *window, int count)
@@ -295,44 +306,35 @@ void screen_window_scroll(SCREEN_WINDOW *window, int count)
 	scrollok(window->win, FALSE);
 }
 
-void screen_set_color(SCREEN_WINDOW *window, int col)
+static int get_attr(int color)
 {
 	int attr;
 
 	if (!use_colors)
-		attr = (col & 0x70) ? A_REVERSE : 0;
-	else if (col & ATTR_COLOR8)
+		attr = (color & 0x70) ? A_REVERSE : 0;
+	else if (color & ATTR_COLOR8)
                 attr = (A_DIM | COLOR_PAIR(63));
-	else if ((col & 0x77) == 0)
+	else if ((color & 0x77) == 0)
 		attr = A_NORMAL;
 	else
-		attr = (COLOR_PAIR((col&7) + (col&0x70)/2));
+		attr = (COLOR_PAIR((color&7) + (color&0x70)/2));
 
-	if (col & 0x08) attr |= A_BOLD;
-	if (col & 0x80) attr |= A_BLINK;
+	if (color & 0x08) attr |= A_BOLD;
+	if (color & 0x80) attr |= A_BLINK;
 
-	if (col & ATTR_UNDERLINE) attr |= A_UNDERLINE;
-	if (col & ATTR_REVERSE) attr |= A_REVERSE;
-
-	wattrset(window->win, attr);
+	if (color & ATTR_UNDERLINE) attr |= A_UNDERLINE;
+	if (color & ATTR_REVERSE) attr |= A_REVERSE;
+        return attr;
 }
 
-void screen_set_bg(SCREEN_WINDOW *window, int col)
+void screen_set_color(SCREEN_WINDOW *window, int color)
 {
-	int attr;
+	wattrset(window->win, get_attr(color));
+}
 
-	if (!use_colors)
-		attr = (col & 0x70) ? A_REVERSE : 0;
-	else {
-		attr = (col == 8) ?
-			(A_DIM | COLOR_PAIR(63)) :
-			(COLOR_PAIR((col&7) + (col&0x70)/2));
-	}
-
-	if (col & 0x08) attr |= A_BOLD;
-	if (col & 0x80) attr |= A_BLINK;
-
-	wbkgdset(window->win, ' ' | attr);
+void screen_set_bg(SCREEN_WINDOW *window, int color)
+{
+	wbkgdset(window->win, ' ' | get_attr(color));
 }
 
 void screen_move(SCREEN_WINDOW *window, int x, int y)

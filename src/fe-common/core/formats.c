@@ -144,6 +144,11 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_DEFAULTS);
 		break;
+	case '>':
+                /* clear to end of line */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_CLRTOEOL);
+		break;
 	case '[':
 		/* code */
                 format_expand_code(format, flags);
@@ -882,16 +887,19 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			/* bell */
 			if (settings_get_bool("bell_beeps"))
                                 signal_emit("beep", 0);
+		} else if (type == 4 && *ptr == FORMAT_STYLE_CLRTOEOL) {
+                        /* clear to end of line */
+			flags |= GUI_PRINT_FLAG_CLRTOEOL;
 		}
 
-		if (*str != '\0') {
+		if (*str != '\0' || (flags & GUI_PRINT_FLAG_CLRTOEOL)) {
                         /* send the text to gui handler */
 			signal_emit_id(signal_gui_print_text, 6, dest->window,
 				       GINT_TO_POINTER(fgcolor),
 				       GINT_TO_POINTER(bgcolor),
 				       GINT_TO_POINTER(flags), str,
 				       dest->level);
-			flags &= ~GUI_PRINT_FLAG_INDENT;
+			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
 		}
 
 		if (type == '\n')
@@ -938,6 +946,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				fgcolor = bgcolor = -1;
 				flags &= GUI_PRINT_FLAG_INDENT;
 				break;
+			case FORMAT_STYLE_CLRTOEOL:
+                                break;
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					fgcolor = (unsigned char) *ptr-'0';

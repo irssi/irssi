@@ -3,59 +3,105 @@
 
 #include "mainwindows.h"
 
-#define SBAR_PRIORITY_HIGH	100
-#define SBAR_PRIORITY_NORMAL	0
-#define SBAR_PRIORITY_LOW	-100
-
-enum {
-	STATUSBAR_POS_UP,
-	STATUSBAR_POS_MIDDLE,
-	STATUSBAR_POS_DOWN
-};
+#define STATUSBAR_PRIORITY_HIGH		100
+#define STATUSBAR_PRIORITY_NORMAL	0
+#define STATUSBAR_PRIORITY_LOW		-100
 
 typedef struct SBAR_ITEM_REC SBAR_ITEM_REC;
 typedef void (*STATUSBAR_FUNC) (SBAR_ITEM_REC *item, int get_size_only);
 
+/* type */
+#define STATUSBAR_TYPE_ROOT	1
+#define STATUSBAR_TYPE_WINDOW	2
+
+/* placement */
+#define STATUSBAR_TOP		1
+#define STATUSBAR_BOTTOM	2
+
+/* visible */
+#define STATUSBAR_VISIBLE_ALWAYS        1
+#define STATUSBAR_VISIBLE_ACTIVE        2
+#define STATUSBAR_VISIBLE_INACTIVE      3
+
 typedef struct {
-	MAIN_WINDOW_REC *window;
+	char *name;
+        GSList *config_bars;
+	GSList *bars;
+} STATUSBAR_GROUP_REC;
 
-	int pos;
-	int line;
+typedef struct {
+	char *name;
 
-        char *color_string;
-        int color;
+	int type; /* root/window */
+	int placement; /* top/bottom */
+	int position; /* the higher the number, the lower it is in screen */
+	int visible; /* active/inactive/always */
 
-	int ypos; /* real position in screen at the moment */
 	GSList *items;
+} STATUSBAR_CONFIG_REC;
+
+typedef struct {
+	STATUSBAR_GROUP_REC *group;
+	STATUSBAR_CONFIG_REC *config;
+
+	MAIN_WINDOW_REC *parent_window; /* if config->type == STATUSBAR_TYPE_WINDOW */
+        GSList *items;
+
+	char *color; /* background color */
+	int real_ypos; /* real Y-position in screen at the moment */
 } STATUSBAR_REC;
+
+typedef struct {
+	char *name;
+	char *value; /* if non-NULL, overrides the default */
+
+	int priority;
+	unsigned int right_alignment:1;
+} SBAR_ITEM_CONFIG_REC;
 
 struct SBAR_ITEM_REC {
 	STATUSBAR_REC *bar;
-	STATUSBAR_FUNC func;
+	SBAR_ITEM_CONFIG_REC *config;
+        STATUSBAR_FUNC func;
 
 	/* what item wants */
-        int priority;
 	int min_size, max_size;
-	unsigned int right_justify:1;
 
 	/* what item gets */
-        int xpos, size;
+	int xpos, size;
 };
 
-/* ypos is used only when pos == STATUSBAR_POS_MIDDLE */
-STATUSBAR_REC *statusbar_create(int pos, int ypos);
-void statusbar_destroy(STATUSBAR_REC *bar);
+extern GSList *statusbar_groups;
+extern STATUSBAR_GROUP_REC *active_statusbar_group;
 
-STATUSBAR_REC *statusbar_find(int pos, int line);
+void statusbar_item_register(const char *name, const char *value,
+			     STATUSBAR_FUNC func);
+void statusbar_item_unregister(const char *name);
+
+STATUSBAR_GROUP_REC *statusbar_group_create(const char *name);
+void statusbar_group_destroy(STATUSBAR_GROUP_REC *rec);
+STATUSBAR_GROUP_REC *statusbar_group_find(const char *name);
+
+STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
+                                STATUSBAR_CONFIG_REC *config,
+                                MAIN_WINDOW_REC *parent_window);
+void statusbar_destroy(STATUSBAR_REC *bar);
+STATUSBAR_REC *statusbar_find(STATUSBAR_GROUP_REC *group, const char *name,
+			      MAIN_WINDOW_REC *window);
 
 SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
-				     int priority, int right_justify,
-				     STATUSBAR_FUNC func);
-void statusbar_item_remove(SBAR_ITEM_REC *item);
+				     SBAR_ITEM_CONFIG_REC *config);
+void statusbar_item_destroy(SBAR_ITEM_REC *item);
+
+void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
+				    const char *str, const char *data,
+				    int escape_vars);
 
 /* redraw statusbar, NULL = all */
 void statusbar_redraw(STATUSBAR_REC *bar);
 void statusbar_item_redraw(SBAR_ITEM_REC *item);
+#define statusbar_items_redraw(list) \
+        g_slist_foreach(list, (GFunc) statusbar_item_redraw, NULL);
 
 void statusbar_init(void);
 void statusbar_deinit(void);

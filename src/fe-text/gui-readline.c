@@ -63,8 +63,7 @@ static void handle_key_redirect(int key)
 	if (func != NULL)
 		func(key, data, active_win->active_server, active_win->active);
 
-	gui_entry_remove_perm_prompt();
-	window_update_prompt();
+	gui_entry_set_prompt(active_entry, "");
 }
 
 static void handle_entry_redirect(const char *line)
@@ -72,7 +71,7 @@ static void handle_entry_redirect(const char *line)
 	ENTRY_REDIRECT_ENTRY_FUNC func;
 	void *data;
 
-        gui_entry_set_hidden(FALSE);
+        gui_entry_set_hidden(active_entry, FALSE);
 
 	func = (ENTRY_REDIRECT_ENTRY_FUNC) redir->func;
 	data = redir->data;
@@ -83,8 +82,7 @@ static void handle_entry_redirect(const char *line)
 		     active_win->active);
 	}
 
-	gui_entry_remove_perm_prompt();
-	window_update_prompt();
+	gui_entry_set_prompt(active_entry, "");
 }
 
 static int get_scroll_count(void)
@@ -141,7 +139,7 @@ void handle_key(int key)
 
 	if (!key_pressed(keyboard, str)) {
                 /* key wasn't used for anything, print it */
-		gui_entry_insert_char((char) key);
+		gui_entry_insert_char(active_entry, (char) key);
 	}
 }
 
@@ -150,7 +148,7 @@ static void key_send_line(void)
 	int add_history;
         char *str;
 
-	str = gui_entry_get_text();
+	str = gui_entry_get_text(active_entry);
 	if (*str == '\0') return;
 
 	translate_output(str);
@@ -167,10 +165,10 @@ static void key_send_line(void)
 	}
 
 	if (add_history) {
-		command_history_add(active_win, gui_entry_get_text(),
+		command_history_add(active_win, gui_entry_get_text(active_entry),
 				    FALSE);
 	}
-	gui_entry_set_text("");
+	gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
 }
 
@@ -182,83 +180,83 @@ static void key_backward_history(void)
 {
 	const char *text;
 
-	text = command_history_prev(active_win, gui_entry_get_text());
-	gui_entry_set_text(text);
+	text = command_history_prev(active_win, gui_entry_get_text(active_entry));
+	gui_entry_set_text(active_entry, text);
 }
 
 static void key_forward_history(void)
 {
 	const char *text;
 
-	text = command_history_next(active_win, gui_entry_get_text());
-	gui_entry_set_text(text);
+	text = command_history_next(active_win, gui_entry_get_text(active_entry));
+	gui_entry_set_text(active_entry, text);
 }
 
 static void key_beginning_of_line(void)
 {
-        gui_entry_set_pos(0);
+        gui_entry_set_pos(active_entry, 0);
 }
 
 static void key_end_of_line(void)
 {
-	gui_entry_set_pos(strlen(gui_entry_get_text()));
+	gui_entry_set_pos(active_entry, strlen(gui_entry_get_text(active_entry)));
 }
 
 static void key_backward_character(void)
 {
-	gui_entry_move_pos(-1);
+	gui_entry_move_pos(active_entry, -1);
 }
 
 static void key_forward_character(void)
 {
-	gui_entry_move_pos(1);
+	gui_entry_move_pos(active_entry, 1);
 }
 
 static void key_backward_word(void)
 {
-	gui_entry_move_words(-1);
+	gui_entry_move_words(active_entry, -1);
 }
 
 static void key_forward_word(void)
 {
-	gui_entry_move_words(1);
+	gui_entry_move_words(active_entry, 1);
 }
 
 static void key_erase_line(void)
 {
 	g_free_not_null(cutbuffer);
-	cutbuffer = g_strdup(gui_entry_get_text());
+	cutbuffer = g_strdup(gui_entry_get_text(active_entry));
 
-	gui_entry_set_text("");
+	gui_entry_set_text(active_entry, "");
 }
 
 static void key_erase_to_beg_of_line(void)
 {
 	int pos;
 
-	pos = gui_entry_get_pos();
+	pos = gui_entry_get_pos(active_entry);
 	g_free_not_null(cutbuffer);
-	cutbuffer = g_strndup(gui_entry_get_text(), pos);
+	cutbuffer = g_strndup(gui_entry_get_text(active_entry), pos);
 
-	gui_entry_erase(pos);
+	gui_entry_erase(active_entry, pos);
 }
 
 static void key_erase_to_end_of_line(void)
 {
 	int pos;
 
-	pos = gui_entry_get_pos();
+	pos = gui_entry_get_pos(active_entry);
 	g_free_not_null(cutbuffer);
-	cutbuffer = g_strdup(gui_entry_get_text()+pos);
+	cutbuffer = g_strdup(gui_entry_get_text(active_entry)+pos);
 
-	gui_entry_set_pos(strlen(gui_entry_get_text()));
-	gui_entry_erase(strlen(gui_entry_get_text()) - pos);
+	gui_entry_set_pos(active_entry, strlen(gui_entry_get_text(active_entry)));
+	gui_entry_erase(active_entry, strlen(gui_entry_get_text(active_entry)) - pos);
 }
 
 static void key_yank_from_cutbuffer(void)
 {
 	if (cutbuffer != NULL)
-		gui_entry_insert_text(cutbuffer);
+		gui_entry_insert_text(active_entry, cutbuffer);
 }
 
 static void key_transpose_characters(void)
@@ -266,46 +264,46 @@ static void key_transpose_characters(void)
 	char *line, c;
 	int pos;
 
-	pos = gui_entry_get_pos();
-	line = gui_entry_get_text();
+	pos = gui_entry_get_pos(active_entry);
+	line = gui_entry_get_text(active_entry);
 	if (pos == 0 || strlen(line) < 2)
 		return;
 
 	if (line[pos] != '\0')
-		gui_entry_move_pos(1);
-	c = line[gui_entry_get_pos()-1];
-        gui_entry_erase(1);
-	gui_entry_move_pos(-1);
-	gui_entry_insert_char(c);
-        gui_entry_set_pos(pos);
+		gui_entry_move_pos(active_entry, 1);
+	c = line[gui_entry_get_pos(active_entry)-1];
+        gui_entry_erase(active_entry, 1);
+	gui_entry_move_pos(active_entry, -1);
+	gui_entry_insert_char(active_entry, c);
+        gui_entry_set_pos(active_entry, pos);
 }
 
 static void key_delete_character(void)
 {
-	if (gui_entry_get_pos() < (int)strlen(gui_entry_get_text())) {
-		gui_entry_move_pos(1);
-		gui_entry_erase(1);
+	if (gui_entry_get_pos(active_entry) < (int)strlen(gui_entry_get_text(active_entry))) {
+		gui_entry_move_pos(active_entry, 1);
+		gui_entry_erase(active_entry, 1);
 	}
 }
 
 static void key_backspace(void)
 {
-	gui_entry_erase(1);
+	gui_entry_erase(active_entry, 1);
 }
 
 static void key_delete_previous_word(void)
 {
-  gui_entry_erase_word();
+	gui_entry_erase_word(active_entry);
 }
 
 static void key_delete_next_word(void)
 {
-	gui_entry_erase_next_word();
+	gui_entry_erase_next_word(active_entry);
 }
 
 static void key_delete_to_previous_space(void)
 {
-	gui_entry_erase_word();
+	gui_entry_erase_word(active_entry);
 }
 
 void readline(void)
@@ -356,12 +354,12 @@ static void key_word_completion(void)
 	char *line;
 	int pos;
 
-	pos = gui_entry_get_pos();
+	pos = gui_entry_get_pos(active_entry);
 
-	line = word_complete(active_win, gui_entry_get_text(), &pos);
+	line = word_complete(active_win, gui_entry_get_text(active_entry), &pos);
 	if (line != NULL) {
-		gui_entry_set_text(line);
-		gui_entry_set_pos(pos);
+		gui_entry_set_text(active_entry, line);
+		gui_entry_set_pos(active_entry, pos);
 		g_free(line);
 	}
 }
@@ -371,12 +369,12 @@ static void key_check_replaces(void)
 	char *line;
 	int pos;
 
-	pos = gui_entry_get_pos();
+	pos = gui_entry_get_pos(active_entry);
 
-	line = auto_word_complete(gui_entry_get_text(), &pos);
+	line = auto_word_complete(gui_entry_get_text(active_entry), &pos);
 	if (line != NULL) {
-		gui_entry_set_text(line);
-		gui_entry_set_pos(pos);
+		gui_entry_set_text(active_entry, line);
+		gui_entry_set_pos(active_entry, pos);
 		g_free(line);
 	}
 }
@@ -464,14 +462,14 @@ static void key_insert_text(const char *data)
 
 	str = parse_special_string(data, active_win->active_server,
 				   active_win->active, "", NULL, 0);
-	gui_entry_insert_text(str);
+	gui_entry_insert_text(active_entry, str);
         g_free(str);
 }
 
 static void sig_window_auto_changed(void)
 {
-	command_history_next(active_win, gui_entry_get_text());
-	gui_entry_set_text("");
+	command_history_next(active_win, gui_entry_get_text(active_entry));
+	gui_entry_set_text(active_entry, "");
 }
 
 static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
@@ -483,8 +481,8 @@ static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
 	redir->data = data;
 
 	if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-		gui_entry_set_hidden(TRUE);
-	gui_entry_set_perm_prompt(entry);
+		gui_entry_set_hidden(active_entry, TRUE);
+	gui_entry_set_prompt(active_entry, entry);
 }
 
 void gui_readline_init(void)

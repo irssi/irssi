@@ -1,31 +1,42 @@
 #ifndef __GUI_ENTRY_H
 #define __GUI_ENTRY_H
 
-void gui_entry_set_prompt(const char *str);
+typedef struct {
+	GString *text;
+	int xpos, ypos, width; /* entry position in screen */
+	int pos, scrstart, scrpos; /* cursor position */
+        int hidden; /* print the chars as spaces in input line (useful for passwords) */
 
-/* permanent prompt can't be overwritten with gui_entry_set_prompt() */
-void gui_entry_set_perm_prompt(const char *str);
-void gui_entry_remove_perm_prompt(void);
-void gui_entry_set_hidden(int hidden);
+	int promptlen;
+        char *prompt;
+} GUI_ENTRY_REC;
 
-void gui_entry_set_text(const char *str);
-char *gui_entry_get_text(void);
+extern GUI_ENTRY_REC *active_entry;
 
-void gui_entry_insert_text(const char *str);
-void gui_entry_insert_char(char chr);
+GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width);
+void gui_entry_destroy(GUI_ENTRY_REC *entry);
+void gui_entry_move(GUI_ENTRY_REC *entry, int xpos, int ypos, int width);
 
-void gui_entry_erase(int size);
-void gui_entry_erase_word(void);
-void gui_entry_erase_next_word(void);
+void gui_entry_set_active(GUI_ENTRY_REC *entry);
 
-int gui_entry_get_pos(void);
-void gui_entry_set_pos(int pos);
-void gui_entry_move_pos(int pos);
-void gui_entry_move_words(int count);
+void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str);
+void gui_entry_set_hidden(GUI_ENTRY_REC *entry, int hidden);
 
-void gui_entry_redraw(void);
+void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str);
+char *gui_entry_get_text(GUI_ENTRY_REC *entry);
 
-void gui_entry_init(void);
-void gui_entry_deinit(void);
+void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str);
+void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr);
+
+void gui_entry_erase(GUI_ENTRY_REC *entry, int size);
+void gui_entry_erase_word(GUI_ENTRY_REC *entry);
+void gui_entry_erase_next_word(GUI_ENTRY_REC *entry);
+
+int gui_entry_get_pos(GUI_ENTRY_REC *entry);
+void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos);
+void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos);
+void gui_entry_move_words(GUI_ENTRY_REC *entry, int count);
+
+void gui_entry_redraw(GUI_ENTRY_REC *entry);
 
 #endif

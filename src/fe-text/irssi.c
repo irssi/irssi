@@ -98,8 +98,6 @@ void irssi_redraw(void)
         mainwindows_redraw();
 	/* statusbar */
 	statusbar_redraw(NULL);
-	/* entry line */
-	gui_entry_redraw();
 }
 
 static void textui_init(void)
@@ -123,7 +121,6 @@ static void textui_finish_init(void)
         textbuffer_view_init();
 	textbuffer_commands_init();
 	textbuffer_reformat_init();
-	gui_entry_init();
 	gui_expandos_init();
 	gui_printtext_init();
 	gui_readline_init();
@@ -173,7 +170,6 @@ static void textui_deinit(void)
 	mainwindow_activity_deinit();
 	mainwindows_deinit();
 	gui_expandos_deinit();
-	gui_entry_deinit();
 	textbuffer_reformat_deinit();
 	textbuffer_commands_deinit();
         textbuffer_view_deinit();

@@ -11,6 +11,7 @@
 #define GUI_PRINT_FLAG_MIRC_COLOR    0x10
 #define GUI_PRINT_FLAG_INDENT        0x20
 #define GUI_PRINT_FLAG_NEWLINE       0x40
+#define GUI_PRINT_FLAG_CLRTOEOL      0x80
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200
@@ -121,6 +122,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_REVERSE	(0x04 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_INDENT	(0x05 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_DEFAULTS	(0x06 + FORMAT_STYLE_SPECIAL)
+#define FORMAT_STYLE_CLRTOEOL	(0x07 + FORMAT_STYLE_SPECIAL)
 int format_expand_styles(GString *out, const char **format, int *flags);
 
 void formats_init(void);

@@ -20,183 +20,103 @@
 
 #include "module.h"
 #include "signals.h"
-#include "misc.h"
 #include "settings.h"
-#include "special-vars.h"
-
-#include "window-items.h"
-#include "formats.h"
 
 #include "statusbar.h"
-#include "gui-printtext.h"
+#include "gui-entry.h"
 
 /* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10
-
-/* how often to check for new mail (seconds) */
-#define MAIL_REFRESH_TIME 60
 
 /* If we haven't been able to check lag for this long, "(??)" is added after
    the lag */
 #define MAX_LAG_UNKNOWN_TIME 30
 
-static STATUSBAR_REC *mainbar;
-static MAIN_WINDOW_REC *mainbar_window;
-static int use_colors;
-
-/* clock */
-static SBAR_ITEM_REC *clock_item;
-static int clock_timetag;
-static time_t clock_last;
-
-/* nick */
-static SBAR_ITEM_REC *nick_item;
-
-/* channel */
-static SBAR_ITEM_REC *window_item;
-
 /* activity */
-static SBAR_ITEM_REC *activity_item;
+static GSList *activity_items;
 static GList *activity_list;
 
-/* more */
-static SBAR_ITEM_REC *more_item;
+static GHashTable *input_entries;
 
-/* lag */
-static SBAR_ITEM_REC *lag_item;
-static int lag_timetag, lag_min_show;
-static time_t lag_last_draw;
-
-/* mbox counter */
-static SBAR_ITEM_REC *mail_item;
-static int mail_timetag, mail_last_count;
-static time_t mail_last_mtime = -1;
-static off_t mail_last_size = -1;
-
-/* topic */
-static SBAR_ITEM_REC *topic_item;
-static STATUSBAR_REC *topic_bar;
-
-static void item_default(SBAR_ITEM_REC *item, int get_size_only,
-			 const char *str, const char *data)
-{
-	SERVER_REC *server;
-	WI_ITEM_REC *wiitem;
-        char *tmpstr, *tmpstr2;
-	int len;
-
-	if (active_win == NULL) {
-		server = NULL;
-                wiitem = NULL;
-	} else {
-		server = active_win->active_server;
-                wiitem = active_win->active;
-	}
-
-	/* expand $variables */
-	tmpstr = parse_special_string(str, server, wiitem, data, NULL,
-				      PARSE_FLAG_ESCAPE_VARS |
-				      PARSE_FLAG_ESCAPE_THEME);
-
-	/* expand templates */
-        str = tmpstr;
-	tmpstr2 = theme_format_expand_data(current_theme, &str,
-					   'n', '0' + item->bar->color,
-					   NULL, NULL,
-					   EXPAND_FLAG_ROOT |
-					   EXPAND_FLAG_IGNORE_REPLACES |
-					   EXPAND_FLAG_IGNORE_EMPTY);
-	g_free(tmpstr);
-
-	/* remove color codes */
-	tmpstr = strip_codes(tmpstr2);
-        g_free(tmpstr2);
-
-	if (get_size_only) {
-		item->min_size = item->max_size = format_get_length(tmpstr);
-	} else {
-		if (item->size < item->min_size) {
-                        /* they're forcing us smaller than minimum size.. */
-			len = format_real_length(tmpstr, item->size);
-                        tmpstr[len] = '\0';
-		}
-
-		tmpstr2 = g_strconcat(item->bar->color_string, tmpstr, NULL);
-		gui_printtext(item->xpos, item->bar->ypos, tmpstr2);
-                g_free(tmpstr2);
-	}
-	g_free(tmpstr);
-}
-
-/* redraw clock */
-static void statusbar_clock(SBAR_ITEM_REC *item, int get_size_only)
-{
-	item_default(item, get_size_only, "{sb $Z}", "");
-}
-
-/* check if we need to redraw clock.. */
-static int statusbar_clock_timeout(void)
-{
-	struct tm *tm;
-	time_t t;
-	int min;
-
-	tm = localtime(&clock_last);
-	min = tm->tm_min;
-
-	t = time(NULL);
-	tm = localtime(&t);
-
-	if (tm->tm_min != min) {
-		/* minute changed, redraw! */
-                clock_last = t;
-		statusbar_item_redraw(clock_item);
-	}
-	return 1;
-}
-
-/* redraw nick */
-static void statusbar_nick(SBAR_ITEM_REC *item, int get_size_only)
-{
-	item_default(item, get_size_only,
-		     "{sb $cumode$N{sbmode $usermode}{sbaway $A}}", "");
-}
-
-static void sig_statusbar_nick_redraw(void)
-{
-	statusbar_item_redraw(nick_item);
-}
-
-/* redraw window */
-static void statusbar_window(SBAR_ITEM_REC *item, int get_size_only)
-{
-	if (active_win->active != NULL) {
-		item_default(item, get_size_only,
-			     "{sb $winref:$T{sbmode $M}}", "");
-	} else {
-		item_default(item, get_size_only,
-			     "{sb $winref{sbservertag $tag}}", "");
-	}
-}
-
-static void sig_statusbar_window_redraw(void)
-{
-	statusbar_item_redraw(window_item);
-}
-
-static void sig_statusbar_window_redraw_window(WINDOW_REC *window)
-{
-	if (is_window_visible(window))
-		statusbar_item_redraw(window_item);
-}
-
-static void sig_statusbar_window_redraw_window_item(WI_ITEM_REC *item)
+static void item_window_active(SBAR_ITEM_REC *item, int get_size_only)
 {
 	WINDOW_REC *window;
 
-        window = window_item_window(item);
-	if (window->active == item && is_window_visible(window))
-		statusbar_item_redraw(window_item);
+        window = active_win;
+	if (item->bar->parent_window != NULL)
+		window = item->bar->parent_window->active;
+
+	if (window != NULL && window->active != NULL) {
+		statusbar_item_default_handler(item, get_size_only,
+					       NULL, "", TRUE);
+	} else if (get_size_only) {
+                item->min_size = item->max_size = 0;
+	}
+}
+
+static void item_window_empty(SBAR_ITEM_REC *item, int get_size_only)
+{
+	WINDOW_REC *window;
+
+        window = active_win;
+	if (item->bar->parent_window != NULL)
+		window = item->bar->parent_window->active;
+
+	if (window != NULL && window->active == NULL) {
+		statusbar_item_default_handler(item, get_size_only,
+					       NULL, "", TRUE);
+	} else if (get_size_only) {
+                item->min_size = item->max_size = 0;
+	}
+}
+
+static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
+{
+	SERVER_REC *server;
+	GString *str;
+	int lag_unknown, lag_min_show;
+	time_t now;
+
+	server = active_win == NULL ? NULL : active_win->active_server;
+	if (server == NULL || server->lag_last_check == 0) {
+                /* No lag information */
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
+		return;
+	}
+
+	now = time(NULL);
+	str = g_string_new(NULL);
+
+	/* FIXME: ugly ugly.. */
+	if (server->lag_sent == 0 || now-server->lag_sent < 5) {
+		lag_unknown = now-server->lag_last_check >
+			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
+                lag_min_show = settings_get_int("lag_min_show");
+
+		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown)) {
+                        /* small lag, don't display */
+		} else {
+			g_string_sprintfa(str, "%d.%02d", server->lag/1000,
+					  (server->lag % 1000)/10);
+			if (lag_unknown)
+				g_string_append(str, " (?""?)");
+		}
+	} else {
+		/* big lag, still waiting .. */
+		g_string_sprintfa(str, "%ld (?""?)",
+				  (long) (now-server->lag_sent));
+	}
+
+	if (str->len != 0) {
+		statusbar_item_default_handler(item, get_size_only,
+					       NULL, str->str, TRUE);
+	} else {
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
+	}
+
+	g_string_free(str, TRUE);
 }
 
 static char *get_activity_list(int normal, int hilight)
@@ -245,31 +165,21 @@ static char *get_activity_list(int normal, int hilight)
 /* redraw activity, FIXME: if we didn't get enough size, this gets buggy.
    At least "Det:" isn't printed properly. also we should rearrange the
    act list so that the highest priority items comes first. */
-static void statusbar_activity(SBAR_ITEM_REC *item, int get_size_only)
+static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 {
-	char *actlist, *detlist, *data;
+	char *actlist;
 
-	if (use_colors) {
-		actlist = get_activity_list(TRUE, TRUE);
-                detlist = NULL;
-	} else {
-                actlist = get_activity_list(TRUE, FALSE);
-                detlist = get_activity_list(FALSE, TRUE);
-	}
-
-	if (actlist == NULL && detlist == NULL) {
+	actlist = get_activity_list(TRUE, TRUE);
+	if (actlist == NULL) {
 		if (get_size_only)
 			item->min_size = item->max_size = 0;
 		return;
 	}
 
-	data = g_strconcat("{sbact ", actlist != NULL ? actlist : "",
-			   " ", detlist != NULL ? detlist : "", "}", NULL);
-	item_default(item, get_size_only, data, "");
-        g_free(data);
+	statusbar_item_default_handler(item, get_size_only,
+				       NULL, actlist, FALSE);
 
 	g_free_not_null(actlist);
-        g_free_not_null(detlist);
 }
 
 static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel)
@@ -285,7 +195,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 			activity_list = g_list_remove(activity_list, window);
 		if (window->data_level != 0)
 			activity_list = g_list_prepend(activity_list, window);
-		statusbar_item_redraw(activity_item);
+		statusbar_items_redraw(activity_items);
 		return;
 	}
 
@@ -294,12 +204,12 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 		if (window->data_level == 0) {
 			/* remove from activity list */
 			activity_list = g_list_remove(activity_list, window);
-			statusbar_item_redraw(activity_item);
+			statusbar_items_redraw(activity_items);
 		} else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
 			 window->hilight_color != 0) {
 			/* different level as last time (or maybe different
 			   hilight color?), just redraw it. */
-			statusbar_item_redraw(activity_item);
+			statusbar_items_redraw(activity_items);
 		}
 		return;
 	}
@@ -321,7 +231,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 	if (tmp == NULL)
 		activity_list = g_list_append(activity_list, window);
 
-	statusbar_item_redraw(activity_item);
+	statusbar_items_redraw(activity_items);
 }
 
 static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
@@ -330,444 +240,97 @@ static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 
 	if (g_list_find(activity_list, window) != NULL)
 		activity_list = g_list_remove(activity_list, window);
-	statusbar_item_redraw(activity_item);
+	statusbar_items_redraw(activity_items);
 }
 
 static void sig_statusbar_activity_updated(void)
 {
-	statusbar_item_redraw(activity_item);
+	statusbar_items_redraw(activity_items);
 }
 
-/* redraw -- more -- */
-static void statusbar_more(SBAR_ITEM_REC *item, int get_size_only)
+static void item_more(SBAR_ITEM_REC *item, int get_size_only)
 {
-	item_default(item, get_size_only, "{sbmore}", "");
 }
 
-static void sig_statusbar_more_check_remove(WINDOW_REC *window)
+static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 {
-	g_return_if_fail(window != NULL);
+	GUI_ENTRY_REC *rec;
 
-	if (!is_window_visible(window))
-		return;
-
-	if (more_item != NULL && WINDOW_GUI(window)->view->bottom) {
-		statusbar_item_remove(more_item);
-		more_item = NULL;
-	}
-}
-
-static void sig_statusbar_more_check(WINDOW_REC *window)
-{
-	if (window == NULL || !is_window_visible(window))
-		return;
-
-	if (!WINDOW_GUI(window)->view->bottom) {
-		if (more_item == NULL) {
-			more_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_more);
-			statusbar_redraw(mainbar);
-		}
-	} else if (more_item != NULL) {
-		statusbar_item_remove(more_item);
-		more_item = NULL;
-	}
-}
-
-static void statusbar_lag(SBAR_ITEM_REC *item, int get_size_only)
-{
-	SERVER_REC *server;
-	GString *str;
-	int lag_unknown;
-	time_t now;
-
-	server = active_win == NULL ? NULL : active_win->active_server;
-	if (server == NULL || server->lag_last_check == 0) {
-                /* No lag information */
-		if (get_size_only)
-			item->min_size = item->max_size = 0;
-		return;
+	if (get_size_only) {
+		item->min_size = 2+screen_width/10;
+                item->max_size = screen_width;
+                return;
 	}
 
-	now = time(NULL);
-	str = g_string_new(NULL);
-
-	/* FIXME: ugly ugly.. */
-	if (server->lag_sent == 0 || now-server->lag_sent < 5) {
-		lag_unknown = now-server->lag_last_check >
-			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
-
-		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown)) {
-                        /* small lag, don't display */
-		} else {
-			g_string_sprintfa(str, "%d.%02d", server->lag/1000,
-					  (server->lag % 1000)/10);
-			if (lag_unknown)
-				g_string_append(str, " (?""?)");
-		}
+	rec = g_hash_table_lookup(input_entries, item);
+	if (rec == NULL) {
+		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
+				       item->size);
+                if (active_entry == NULL)
+			gui_entry_set_active(rec);
+		g_hash_table_insert(input_entries, item, rec);
 	} else {
-		/* big lag, still waiting .. */
-		g_string_sprintfa(str, "%ld (?""?)",
-				  (long) (now-server->lag_sent));
-	}
-
-	item_default(item, get_size_only, "{sblag $0-}", str->str);
-
-	g_string_free(str, TRUE);
-}
-
-static void sig_statusbar_lag_redraw(void)
-{
-	statusbar_item_redraw(lag_item);
-}
-
-static int statusbar_lag_timeout(void)
-{
-	/* refresh statusbar every 10 seconds */
-	if (time(NULL)-lag_last_draw < LAG_REFRESH_TIME)
-		return 1;
-
-	statusbar_item_redraw(lag_item);
-	return 1;
-}
-
-/* FIXME: this isn't very good.. it handles only mbox mailboxes.
-   this whole mail feature should really be in it's own module with lots
-   of other mail formats supported and people who don't want to use it
-   wouldn't need to.. */
-static int get_mail_count(void)
-{
-	struct stat statbuf;
-	FILE *f;
-	char str[512], *fname;
-	int count;
-
-	fname = g_getenv("MAIL");
-	if (fname == NULL) return 0;
-
-	if (stat(fname, &statbuf) != 0) {
-		mail_last_mtime = -1;
-		mail_last_size = -1;
-                mail_last_count = 0;
-		return 0;
-	}
-
-	if (statbuf.st_mtime == mail_last_mtime &&
-	    statbuf.st_size == mail_last_size)
-		return mail_last_count;
-	mail_last_mtime = statbuf.st_mtime;
-	mail_last_size = statbuf.st_size;
-
-	f = fopen(fname, "r");
-	if (f == NULL) {
-                mail_last_count = 0;
-		return 0;
-	}
-
-	count = 0;
-	while (fgets(str, sizeof(str), f) != NULL) {
-		if (strncmp(str, "From ", 5) == 0)
-			count++;
-		if (strncmp(str, "Subject: ", 9) == 0 &&
-		    strstr(str, "FOLDER INTERNAL DATA")) {
-			/* don't count these. */
-			count--;
-		}
-	}
-
-	fclose(f);
-
-	if (mail_last_count != count)
-		signal_emit("mail counter", 0);
-
-	mail_last_count = count;
-	return count;
-}
-
-static void statusbar_mail(SBAR_ITEM_REC *item, int get_size_only)
-{
-	char countstr[MAX_INT_STRLEN];
-	int mail_count;
-
-	mail_count = settings_get_bool("mail_counter") ? get_mail_count() : 0;
-
-	if (mail_count <= 0) {
-		if (get_size_only)
-			item->min_size = item->max_size = 0;
-		return;
-	}
-
-	ltoa(countstr, mail_count);
-	item_default(item, get_size_only, "{sbmail $0-}", countstr);
-}
-
-static int statusbar_mail_timeout(void)
-{
-	statusbar_item_redraw(mail_item);
-	return 1;
-}
-
-static void statusbar_topic(SBAR_ITEM_REC *item, int get_size_only)
-{
-        item_default(item, get_size_only, "$topic", "");
-}
-
-static void sig_statusbar_topic_redraw(void)
-{
-	if (topic_item != NULL) statusbar_item_redraw(topic_item);
-}
-
-static void sig_sidebars_redraw(void)
-{
-	GSList *tmp;
-
-	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
-
-		if (rec->statusbar_window_item != NULL)
-                        statusbar_item_redraw(rec->statusbar_window_item);
+		gui_entry_move(rec, item->xpos, item->bar->real_ypos,
+			       item->size);
+		gui_entry_redraw(rec); /* FIXME: this is only necessary with ^L.. */
 	}
 }
 
-static void topicbar_create(void)
+static void sig_statusbar_item_created(SBAR_ITEM_REC *item)
 {
-	if (topic_bar != NULL)
-		return;
-
-	topic_bar = statusbar_create(STATUSBAR_POS_UP, 0);
-	topic_item = statusbar_item_create(topic_bar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_topic);
-	topic_item->max_size = TRUE;
-	statusbar_redraw(topic_bar);
-
-	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_add("channel topic changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_add("query address changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
+	if (item->func == item_act)
+		activity_items = g_slist_prepend(activity_items, item);
 }
 
-static void topicbar_destroy(void)
+static void sig_statusbar_item_destroyed(SBAR_ITEM_REC *item)
 {
-	if (topic_bar == NULL)
-		return;
+	if (item->func == item_act)
+		activity_items = g_slist_remove(activity_items, item);
+	else {
+		GUI_ENTRY_REC *rec;
 
-	statusbar_destroy(topic_bar);
-	topic_item = NULL;
-	topic_bar = NULL;
-
-	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_remove("channel topic changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-	signal_remove("query address changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
-}
-
-static void mainbar_remove_items(void)
-{
-        statusbar_item_remove(clock_item);
-        statusbar_item_remove(nick_item);
-        statusbar_item_remove(window_item);
-	statusbar_item_remove(mail_item);
-	statusbar_item_remove(lag_item);
-        statusbar_item_remove(activity_item);
-}
-
-static void mainbar_add_items(MAIN_WINDOW_REC *window)
-{
-	mainbar = window->statusbar;
-	mainbar_window = window;
-
-	clock_item = statusbar_item_create(mainbar, SBAR_PRIORITY_HIGH, FALSE, statusbar_clock);
-	nick_item = statusbar_item_create(mainbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_nick);
-	window_item = statusbar_item_create(mainbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_window);
-	mail_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_mail);
-	lag_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_lag);
-	activity_item = statusbar_item_create(mainbar, SBAR_PRIORITY_HIGH, FALSE, statusbar_activity);
-}
-
-static void sidebar_add_items(MAIN_WINDOW_REC *window)
-{
-	window->statusbar_window_item =
-		statusbar_item_create(window->statusbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_window);
-}
-
-static void sidebar_remove_items(MAIN_WINDOW_REC *window)
-{
-	if (window->statusbar_window_item != NULL) {
-		statusbar_item_remove(window->statusbar_window_item);
-		window->statusbar_window_item = NULL;
+		rec = g_hash_table_lookup(input_entries, item);
+                if (rec != NULL) gui_entry_destroy(rec);
 	}
-}
-
-static void sig_mainwindow_created(MAIN_WINDOW_REC *window)
-{
-	window->statusbar =
-		statusbar_create(STATUSBAR_POS_MIDDLE,
-				 window->first_line+window->height);
-        ((STATUSBAR_REC *) window->statusbar)->window = window;
-	sidebar_add_items(window);
-}
-
-static void sig_mainwindow_destroyed(MAIN_WINDOW_REC *window)
-{
-	if (window == mainbar_window) {
-		statusbar_destroy(mainbar);
-                window->statusbar = NULL;
-
-		mainbar = NULL;
-		mainbar_window = NULL;
-	}
-
-	if (window->statusbar != NULL)
-		statusbar_destroy(window->statusbar);
-}
-
-static void sig_main_statusbar_changed(WINDOW_REC *window)
-{
-	MAIN_WINDOW_REC *parent;
-
-	if (window == NULL)
-		return;
-
-	parent = WINDOW_GUI(window)->parent;
-	if (mainbar == parent->statusbar)
-		return;
-
-	if (mainbar != NULL) {
-		mainbar_remove_items();
-		sidebar_add_items(mainbar_window);
-	}
-	sidebar_remove_items(parent);
-        mainbar_add_items(parent);
-}
-
-static void read_settings(void)
-{
-	use_colors = settings_get_bool("colors") && screen_has_colors();
-	if (settings_get_bool("topicbar"))
-		topicbar_create();
-	else
-		topicbar_destroy();
-
-	lag_min_show = settings_get_int("lag_min_show")*10;
-	statusbar_redraw(NULL);
 }
 
 void statusbar_items_init(void)
 {
-	GSList *tmp;
-
 	settings_add_int("misc", "lag_min_show", 100);
-	settings_add_bool("lookandfeel", "topicbar", TRUE);
 	settings_add_bool("lookandfeel", "actlist_moves", FALSE);
-	settings_add_bool("misc", "mail_counter", TRUE);
 
-	/* clock */
-	clock_timetag = g_timeout_add(1000, (GSourceFunc) statusbar_clock_timeout, NULL);
+	statusbar_item_register("window", NULL, item_window_active);
+	statusbar_item_register("window_empty", NULL, item_window_empty);
+	statusbar_item_register("prompt", NULL, item_window_active);
+	statusbar_item_register("prompt_empty", NULL, item_window_empty);
+	statusbar_item_register("lag", NULL, item_lag);
+	statusbar_item_register("act", NULL, item_act);
+	statusbar_item_register("more", NULL, item_more);
+	statusbar_item_register("input", NULL, item_input);
 
-	/* nick */
-	signal_add("server connected", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("channel wholist", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("nick mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("user mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("server nick changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("window server changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_add("away mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
+	input_entries = g_hash_table_new((GHashFunc) g_direct_hash,
+					 (GCompareFunc) g_direct_equal);
 
-	/* channel */
-	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_window_redraw);
-	signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-	signal_add("channel mode changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window_item);
-	signal_add("window server changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-
-	/* activity */
 	activity_list = NULL;
 	signal_add("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
-	/* more */
-	more_item = NULL;
-	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
-	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
-	signal_add_last("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_check);
-
-	/* lag */
-	lag_timetag = g_timeout_add(1000*LAG_REFRESH_TIME, (GSourceFunc) statusbar_lag_timeout, NULL);
-	signal_add("server lag", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
-	signal_add("window server changed", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
-
-	/* mail */
-	mail_timetag = g_timeout_add(1000*MAIL_REFRESH_TIME, (GSourceFunc) statusbar_mail_timeout, NULL);
-
-	/* topic */
-	topic_item = NULL; topic_bar = NULL;
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-
-	read_settings();
-	statusbar_redraw(NULL);
-
-	/* middle bars */
-        signal_add("mainwindow created", (SIGNAL_FUNC) sig_mainwindow_created);
-        signal_add("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
-	signal_add("window changed", (SIGNAL_FUNC) sig_main_statusbar_changed);
-	signal_add("window refnum changed", (SIGNAL_FUNC) sig_sidebars_redraw);
-
-	/* add statusbars to existing windows */
-	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next)
-		sig_mainwindow_created(tmp->data);
-	sig_main_statusbar_changed(active_win);
+	signal_add("statusbar item created", (SIGNAL_FUNC) sig_statusbar_item_created);
+	signal_add("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }
 
 void statusbar_items_deinit(void)
 {
-	/* clock */
-	g_source_remove(clock_timetag);
+        g_hash_table_destroy(input_entries);
 
-	/* nick */
-	signal_remove("server connected", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("channel wholist", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("nick mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("user mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("server nick changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("window server changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-	signal_remove("away mode changed", (SIGNAL_FUNC) sig_statusbar_nick_redraw);
-
-	/* channel */
-	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_window_redraw);
-	signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-	signal_remove("channel mode changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window_item);
-	signal_remove("window server changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_statusbar_window_redraw_window);
-
-	/* activity */
 	signal_remove("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
+
 	g_list_free(activity_list);
+        activity_list = NULL;
 
-	/* more */
-	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
-	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
-	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_check);
-
-	/* lag */
-	g_source_remove(lag_timetag);
-	signal_remove("server lag", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
-	signal_remove("window server changed", (SIGNAL_FUNC) sig_statusbar_lag_redraw);
-
-	/* mail */
-	g_source_remove(mail_timetag);
-
-	/* topic */
-	topicbar_destroy();
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-
-	/* middle bars */
-        signal_remove("mainwindow created", (SIGNAL_FUNC) sig_mainwindow_created);
-        signal_remove("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
-	signal_remove("window changed", (SIGNAL_FUNC) sig_main_statusbar_changed);
-	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_sidebars_redraw);
+	signal_remove("statusbar item created", (SIGNAL_FUNC) sig_statusbar_item_created);
+	signal_remove("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }

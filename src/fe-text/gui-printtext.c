@@ -97,11 +97,8 @@ static void get_colors(int flags, int *fg, int *bg)
 			current_theme->default_real_color;
 	}
 
-	if (flags & GUI_PRINT_FLAG_REVERSE) {
-		int tmp;
-
-		tmp = *fg; *fg = *bg; *bg = tmp;
-	}
+	if (flags & GUI_PRINT_FLAG_REVERSE)
+                *fg |= ATTR_REVERSE;
 
 	if (*fg == 8) *fg |= ATTR_COLOR8;
 	if (flags & GUI_PRINT_FLAG_BOLD) {
@@ -180,8 +177,13 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
                 g_return_if_fail(next_xpos != -1);
 
 		screen_move(screen_root, next_xpos, next_ypos);
+		if (flags & GUI_PRINT_FLAG_CLRTOEOL) {
+			screen_set_bg(screen_root, fg | (bg << 4));
+			screen_clrtoeol(screen_root);
+			screen_set_bg(screen_root, 0);
+		}
 		screen_set_color(screen_root, fg | (bg << 4));
-                screen_addstr(screen_root, str);
+		screen_addstr(screen_root, str);
 		next_xpos += strlen(str);
                 return;
 	}

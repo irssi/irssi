@@ -6,18 +6,22 @@
 
 #define WINDOW_MIN_SIZE 2
 
+#define MAIN_WINDOW_TEXT_HEIGHT(window) \
+        ((window)->height-(window)->statusbar_lines)
+
 typedef struct {
 	WINDOW_REC *active;
 
 	SCREEN_WINDOW *screen_win;
         int sticky_windows; /* number of sticky windows */
 
-	int first_line, last_line; /* first/last line used by this window (0..x), not including statusbar */
-	int width, height; /* width/height of the window, not including statusbar */
+	int first_line, last_line; /* first/last line used by this window (0..x) (includes statusbars) */
+	int width, height; /* width/height of the window (includes statusbars) */
 
-	int statusbar_lines; /* number of lines the statusbar takes below the window */
-	void *statusbar;
-	void *statusbar_window_item;
+	GSList *statusbars;
+	int statusbar_lines_top;
+	int statusbar_lines_bottom;
+        int statusbar_lines; /* top+bottom */
 } MAIN_WINDOW_REC;
 
 extern GSList *mainwindows;
@@ -38,7 +42,10 @@ void mainwindows_resize(int width, int height);
 void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 			      WINDOW_REC *skip_window);
 
-int mainwindows_reserve_lines(int count, int up);
+int mainwindows_reserve_lines(int top, int bottom);
+int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
+				   int top, int bottom);
+
 GSList *mainwindows_get_sorted(int reverse);
 
 #endif
