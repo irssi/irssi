@@ -56,6 +56,14 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 	if (chanrec == NULL) return;
 
+	/* check that the nick isn't already in nicklist. seems to happen
+	   sometimes (server desyncs or something?) */
+	nickrec = nicklist_find(CHANNEL(chanrec), nick);
+	if (nickrec != NULL) {
+		/* destroy the old record */
+		nicklist_remove(CHANNEL(chanrec), nickrec);
+	}
+
 	/* add user to nicklist */
 	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, TRUE);
         nicklist_set_host(CHANNEL(chanrec), nickrec, address);
