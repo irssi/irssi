@@ -1,4 +1,4 @@
-# $Revision: 1.10 $, $Date: 2000/06/02 01:55:01 $
+# $Revision: 1.11 $, $Date: 2001/03/29 14:38:28 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
@@ -8,7 +8,7 @@ Summary(pl):	Irssi - klient IRC
 Copyright: 	GPL
 Group: 		Applications/Communications
 Group(pl):      Aplikacje/Komunikacja
-URL: 		http://irssi.org
+URL: 		http://irssi.org/
 Source0: 	http://irssi.org/irssi/files/%{name}-%{version}.tar.gz
 BuildRequires:	glib-devel
 BuildRequires:	ncurses-devel
@@ -24,13 +24,13 @@ BuildRoot: 	/tmp/%{name}-%{version}-root
 %description
 Irssi is a textUI IRC client with IPv6 support 
 by Timo Sirainen <tss@iki.fi>.
-More information can be found at http://irssi.org.
+More information can be found at http://irssi.org/.
 
 %description -l pl
 Irssi jest tekstowym klientem IRC ze wsparciem dla IPv6.
 Napisany zosta³ przez Timo Strainen <tss@iki.fi>
 Wiêcej informacji mo¿na znale¶æ pod adresem
-http://irssi.org
+http://irssi.org/
 
 %package GNOME
 Summary: 	GNOME version of irssi IRC client
@@ -42,13 +42,13 @@ Requires:	%{name} = %{version}
 %description GNOME
 Irssi is a GTK based (with GNOME) GUI IRC client with IPv6 support
 by Timo Sirainen <tss@iki.fi>.
-More information can be found at http://irssi.org.
+More information can be found at http://irssi.org/.
 
 %description GNOME -l pl
 Irssi jest graficznym klientem IRC ze wsparciem dla IPv6 pracuj±cym
 w ¶rodowisku GNOME. Napisany zosta³ przez Timo Sirainen <tss@iki.fi>.
 Wiêcej informacji mo¿na znale¶æ pod adresem
-http://irssi.org
+http://irssi.org/
 
 %prep
 %setup -q
@@ -109,8 +109,11 @@ rm -rf $RPM_BUILD_ROOT
 All below listed persons can be reached on <cvs_login>@pld.org.pl
 
 $Log: irssi.spec.in,v $
+Revision 1.11  2001/03/29 14:38:28  cras
+http://irssi.org -> http://irssi.org/
+
 Revision 1.10  2000/06/02 01:55:01  cras
-Changed irssi's url to http://irssi.org
+Changed irssi's url to http://irssi.org/
 
 Revision 1.9  2000/04/17 09:37:05  kloczek
 - added pixmaps to %files (irssi have now own icon).

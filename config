@@ -59,6 +59,6 @@ aliases = {
   UMODE = "mode $N";
   WC = "window close";
   WN = "window new hide";
-  SV = "say Irssi $J - http://irssi.org";
+  SV = "say Irssi $J - http://irssi.org/";
   GOTO = "sb goto";
 };
