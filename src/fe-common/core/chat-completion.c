@@ -150,7 +150,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	if (p != NULL && p != msg) {
 		msgnick = g_strndup(msg, (int) (p-msg));
 		nick = nicklist_find(channel, msgnick);
-		if (nick == NULL) {
+		if (nick == NULL && msgnick[1] != '\0') {
 			/* probably ':' or ',' or some other
 			   char after nick, try without it */
 			msgnick[strlen(msgnick)-1] = '\0';
