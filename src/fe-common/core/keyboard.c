@@ -546,7 +546,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 {
 	KEY_REC *rec;
         char *combo;
-        int consumed;
+        int first_key, consumed;
 
 	g_return_val_if_fail(keyboard != NULL, FALSE);
 	g_return_val_if_fail(key != NULL && *key != '\0', FALSE);
@@ -557,6 +557,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 		return FALSE;
 	}
 
+        first_key = keyboard->key_state == NULL;
 	combo = keyboard->key_state == NULL ? g_strdup(key) :
                 g_strconcat(keyboard->key_state, "-", key, NULL);
 	g_free_and_null(keyboard->key_state);
@@ -565,9 +566,10 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 			    (GSearchFunc) key_states_search,
 			    combo);
 	if (rec == NULL) {
-		/* unknown key combo, eat the invalid key */
+		/* unknown key combo, eat the invalid key
+		   unless it was the first key pressed */
                 g_free(combo);
-		return TRUE;
+		return !first_key;
 	}
 
 	if (g_tree_lookup(key_states, combo) != rec) {
