@@ -150,8 +150,75 @@ static void textui_deinit(void)
 	core_deinit();
 }
 
+static void irssi_firsttimer(void)
+{
+	char str[2];
+
+	printf("\nLooks like this is the first time you run irssi.\n");
+        printf("This is just a reminder that you really should go read\n");
+        printf("startup-HOWTO if you haven't already. Irssi's default\n");
+        printf("settings aren't probably what you've used to, and you\n");
+	printf("shouldn't judge the whole client as crap based on them.\n\n");
+	printf("You can find startup-HOWTO and more irssi beginner info at\n");
+	printf("http://irssi.org/beginner/\n");
+	fgets(str, sizeof(str), stdin);
+}
+
+static void check_oldcrap(void)
+{
+        FILE *f;
+	char *path, str[256];
+        int found;
+
+        /* check that default.theme is up-to-date */
+	path = g_strdup_printf("%s/.irssi/default.theme", g_get_home_dir());
+	f = fopen(path, "r+");
+	if (f == NULL) {
+		g_free(path);
+                return;
+	}
+        found = FALSE;
+	while (!found && fgets(str, sizeof(str), f) != NULL)
+                found = strstr(str, "abstracts = ") != NULL;
+	fclose(f);
+
+	if (found) {
+		g_free(path);
+		return;
+	}
+
+	printf("\nYou seem to have old default.theme in ~/.irssi/ directory.\n");
+        printf("Themeing system has changed a bit since last irssi release,\n");
+        printf("you should either delete your old default.theme or manually\n");
+        printf("merge it with the new default.theme.\n\n");
+	printf("Do you want to delete the old theme now? (Y/n)\n");
+
+	str[0] = '\0';
+	fgets(str, sizeof(str), stdin);
+	if (toupper(str[0]) == 'Y' || str[0] == '\n' || str[0] == '\0')
+                remove(path);
+	g_free(path);
+}
+
+static void check_files(void)
+{
+	struct stat statbuf;
+        char *path;
+
+        path = g_strdup_printf("%s/.irssi", g_get_home_dir());
+	if (stat(path, &statbuf) != 0) {
+		/* ~/.irssi doesn't exist, first time running irssi */
+		irssi_firsttimer();
+	} else {
+                check_oldcrap();
+	}
+        g_free(path);
+}
+
 int main(int argc, char **argv)
 {
+	check_files();
+
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif
