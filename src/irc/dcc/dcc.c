@@ -34,6 +34,7 @@
 #include "dcc-chat.h"
 #include "dcc-get.h"
 #include "dcc-send.h"
+#include "dcc-server.h"
 
 void dcc_resume_init(void);
 void dcc_resume_deinit(void);
@@ -431,11 +432,13 @@ static int dcc_timeout_func(void)
 		DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (dcc->tagread == -1 && now > dcc->created) {
+		if (dcc->tagread == -1 && now > dcc->created && !IS_DCC_SERVER(dcc)) {
 			/* Timed out - don't send DCC REJECT CTCP so CTCP
 			   flooders won't affect us and it really doesn't
 			   matter that much anyway if the other side doen't
-			   get it.. */
+			   get it.. 
+			   
+			   We don't want dcc servers to time out. */
 			dcc_close(dcc);
 		}
 	}
@@ -540,6 +543,7 @@ void irc_dcc_init(void)
 	dcc_send_init();
 	dcc_resume_init();
 	dcc_autoget_init();
+	dcc_server_init();
 
 	module_register("dcc", "irc");
 }
@@ -554,6 +558,7 @@ void irc_dcc_deinit(void)
 	dcc_send_deinit();
 	dcc_resume_deinit();
 	dcc_autoget_deinit();
+	dcc_server_deinit();
 
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
@@ -569,3 +574,4 @@ void irc_dcc_deinit(void)
 
 	g_source_remove(dcc_timeouttag);
 }
+

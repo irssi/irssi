@@ -31,7 +31,7 @@
 
 static int dcc_file_create_mode;
 
-static GET_DCC_REC *dcc_get_create(IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
+GET_DCC_REC *dcc_get_create(IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 				   const char *nick, const char *arg)
 {
 	GET_DCC_REC *dcc;
@@ -172,21 +172,23 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
 }
 
 /* callback: net_connect() finished for DCC GET */
-static void sig_dccget_connected(GET_DCC_REC *dcc)
+void sig_dccget_connected(GET_DCC_REC *dcc)
 {
 	struct stat statbuf;
-	char *fname, *tempfname;
+	char *fname, *tempfname, *str;
         int ret, ret_errno, temphandle, old_umask;
 
-	if (net_geterror(dcc->handle) != 0) {
-		/* error connecting */
-		signal_emit("dcc error connect", 1, dcc);
-		dcc_destroy(DCC(dcc));
-		return;
-	}
+	if (!dcc->from_dccserver) {
+		if (net_geterror(dcc->handle) != 0) {
+			/* error connecting */
+			signal_emit("dcc error connect", 1, dcc);
+			dcc_destroy(DCC(dcc));
+			return;
+		}
 
-	g_source_remove(dcc->tagconn);
-        dcc->tagconn = -1;
+		g_source_remove(dcc->tagconn);
+		dcc->tagconn = -1;
+	}
 
 	g_free_not_null(dcc->file);
 	dcc->file = dcc_get_download_path(dcc->arg);
@@ -253,6 +255,12 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) sig_dccget_receive, dcc);
 	signal_emit("dcc connected", 1, dcc);
+
+	if (dcc->from_dccserver) {
+		str = g_strdup_printf("121 %s %d\n",
+				      dcc->server ? dcc->server->nick : "??", 0);
+		net_transmit(dcc->handle, str, strlen(str));
+	}
 }
 
 void dcc_get_connect(GET_DCC_REC *dcc)
@@ -262,7 +270,13 @@ void dcc_get_connect(GET_DCC_REC *dcc)
 			DCC_GET_RENAME : DCC_GET_OVERWRITE;
 	}
 
+	if (dcc->from_dccserver) {
+		sig_dccget_connected(dcc);
+		return;
+	}
+
 	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
+
 	if (dcc->handle != NULL) {
 		dcc->tagconn =
 			g_input_add(dcc->handle,
@@ -408,8 +422,8 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
 		GET_DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (IS_DCC_GET(dcc) && dcc_is_waiting_user(dcc) &&
-		    g_strcasecmp(dcc->nick, nick) == 0 &&
+		if (IS_DCC_GET(dcc) && g_strcasecmp(dcc->nick, nick) == 0 &&
+		    (dcc_is_waiting_user(dcc) || dcc->from_dccserver) &&
 		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
 			found = TRUE;
 			accept_func(dcc);

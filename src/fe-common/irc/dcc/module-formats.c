@@ -71,6 +71,9 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_list_line_file", "{dcc  $0 $1: %|$2 of $3 ($4%%) - $5kB/s - ETA $7 - $6}", 8, { 0, 0, 0, 0, 1, 3, 0, 0 } },
 	{ "dcc_list_line_queued_send", "{dcc   - $0 $2 (queued)}", 3, { 0, 0, 0 } },
 	{ "dcc_list_footer", "", 0 },
+	{ "dcc_list_line_server", "{dcc  $0: Port($1) - Send($2) - Chat($3) - Fserve($4)}", 5, { 0, 1, 0, 0, 0 } },
+	{ "dcc_server_started", "{dcc  DCC SERVER started on port {hilight $0}}", 1, { 1 } },
+	{ "dcc_server_closed", "{dcc  DCC SERVER on port {hilight $0} closed}", 1, { 1 } },
 
 	{ NULL, NULL, 0 }
 };

@@ -13,7 +13,8 @@ libirc_dcc_a_SOURCES = \
 	dcc-send.c \
 	dcc-resume.c \
 	dcc-autoget.c \
-	dcc-queue.c
+	dcc-queue.c \
+	dcc-server.c
 
 noinst_HEADERS = \
 	dcc-rec.h \
@@ -24,4 +25,5 @@ noinst_HEADERS = \
 	dcc-get.h \
 	dcc-send.h \
 	dcc-queue.h \
-	module.h
+	module.h \
+	dcc-server.h

@@ -22,6 +22,10 @@ files.
       queues them. File names may contain shell expansion characters: * ? [] ~
       (~ expansion may not be supported on all platforms). Files with spaces
       in their names need to be quoted (eg. "file name").
+/DCC SERVER [<+|-scf> <port>]
+    - Starts a DCC SERVER on the specified port. The remote can connect to this
+      server and initiate chat, send and fserve requests. You can specify + or -
+      using any combination of the flags 's' (Send), 'c' (Chat), or 'f' (Fserver).
 /DCC CLOSE <type> <nick> [<file>]
     - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
 

@@ -42,6 +42,9 @@ void fe_dcc_get_deinit(void);
 void fe_dcc_send_init(void);
 void fe_dcc_send_deinit(void);
 
+void fe_dcc_server_init(void);
+void fe_dcc_server_deinit(void);
+
 char *dcc_get_size_str(uoff_t size)
 {
 	if (size < 1024)
@@ -155,6 +158,7 @@ void fe_irc_dcc_init(void)
 	fe_dcc_chat_init();
 	fe_dcc_get_init();
 	fe_dcc_send_init();
+	fe_dcc_server_init();
 
 	signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
 	signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
@@ -173,6 +177,7 @@ void fe_irc_dcc_deinit(void)
 	fe_dcc_chat_deinit();
 	fe_dcc_get_deinit();
 	fe_dcc_send_deinit();
+	fe_dcc_server_deinit();
 
 	theme_unregister();
 

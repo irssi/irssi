@@ -16,7 +16,8 @@ libfe_irc_dcc_a_SOURCES = \
 	fe-dcc-chat-messages.c \
 	fe-dcc-get.c \
 	fe-dcc-send.c \
-	module-formats.c
+	module-formats.c \
+	fe-dcc-server.c
 
 noinst_HEADERS = \
 	module.h \

@@ -55,7 +55,7 @@ static char *dcc_chat_get_new_id(const char *nick)
 	}
 }
 
-static CHAT_DCC_REC *dcc_chat_create(IRC_SERVER_REC *server,
+CHAT_DCC_REC *dcc_chat_create(IRC_SERVER_REC *server,
 				     CHAT_DCC_REC *chat,
 				     const char *nick, const char *arg)
 {
@@ -285,7 +285,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 }
 
 /* input function: DCC CHAT received some data.. */
-static void dcc_chat_input(CHAT_DCC_REC *dcc)
+void dcc_chat_input(CHAT_DCC_REC *dcc)
 {
         char tmpbuf[512], *str;
 	int recvlen, ret;
