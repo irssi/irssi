@@ -1,3 +1,9 @@
+src/irc-base/network.c
+src/irc-base/args.c
+src/irc-extra/plugins.c
+src/ui-common/ui-common.c
+src/ui-common/ui-formats.c
+src/ui-common/ui-printtext.c
 src/gui-gnome/channels-newdata.c
 src/gui-gnome/dialog-about.c
 src/gui-gnome/dialog-channels.c

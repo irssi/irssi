@@ -80,15 +80,15 @@ msgstr "Kyllä"
 msgid "No"
 msgstr "Ei"
 
-#: src/gui-gnome/dialog-channels.c:429 src/gui-gnome/dialog-notifylist.c:231
+#: src/gui-gnome/dialog-channels.c:427 src/gui-gnome/dialog-notifylist.c:231
 msgid "Joined"
 msgstr "Liittynyt"
 
-#: src/gui-gnome/dialog-channels.c:429
+#: src/gui-gnome/dialog-channels.c:427
 msgid "Autojoin"
-msgstr "Liity automaattisesti"
+msgstr "Liity autom."
 
-#: src/gui-gnome/dialog-channels.c:429 src/gui-gnome/setup-ircnets.c:137
+#: src/gui-gnome/dialog-channels.c:427 src/gui-gnome/setup-ircnets.c:137
 #: src/gui-gnome/setup-ircnets.c:188
 msgid "IRC network"
 msgstr "IRC verkko"
