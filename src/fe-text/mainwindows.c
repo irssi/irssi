@@ -301,11 +301,13 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 
         term_window_destroy(window->screen_win);
 
-	if (!quitting && mainwindows != NULL) {
+	if (mainwindows != NULL) {
 		gui_windows_remove_parent(window);
-		mainwindows_add_space(window->first_line, window->last_line);
-
-		mainwindows_redraw();
+		if (!quitting) {
+			mainwindows_add_space(window->first_line,
+					      window->last_line);
+			mainwindows_redraw();
+		}
 	}
 
 	g_free(window);
