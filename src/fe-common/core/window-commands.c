@@ -33,14 +33,126 @@
 #include "windows-layout.h"
 #include "printtext.h"
 
-static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
+static void window_print_binds(WINDOW_REC *win)
 {
-	if (is_numeric(data, 0)) {
-                signal_emit("command window refnum", 3, data, server, item);
-		return;
+	GSList *tmp;
+
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_BOUND_ITEMS_HEADER);
+	for (tmp = win->bound_items; tmp != NULL; tmp = tmp->next) {
+		WINDOW_BIND_REC *bind = tmp->data;
+
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_BOUND_ITEM,
+				   bind->name, bind->servertag,
+				   bind->sticky ? "sticky" : "");
+	}
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_BOUND_ITEMS_FOOTER);
+}
+
+static void window_print_items(WINDOW_REC *win)
+{
+	GSList *tmp;
+        const char *type;
+
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_ITEMS_HEADER);
+	for (tmp = win->items; tmp != NULL; tmp = tmp->next) {
+		WI_ITEM_REC *item = tmp->data;
+
+		type = module_find_id_str("WINDOW ITEM TYPE", item->type);
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_ITEM,
+				   type == NULL ? "??" : type, item->name,
+				   item->server == NULL ? "" :
+				   item->server->tag);
+	}
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_ITEMS_FOOTER);
+}
+
+static void cmd_window_info(void)
+{
+	WINDOW_REC *win;
+        char *levelstr;
+
+	win = active_win;
+
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_HEADER);
+
+        /* Window reference number + sticky status */
+	if (!win->sticky_refnum) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_REFNUM, win->refnum);
+	} else {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_REFNUM_STICKY, win->refnum);
 	}
 
-	command_runsub("window", data, server, item);
+        /* Window name */
+	if (win->name != NULL) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_NAME, win->name);
+	}
+
+        /* Window width / height */
+	printformat_window(win, MSGLEVEL_CLIENTCRAP, TXT_WINDOW_INFO_SIZE,
+			   win->width, win->height);
+
+        /* Window level */
+	levelstr = win->level == 0 ?
+		g_strdup("NONE") : bits2level(win->level);
+	printformat_window(win, MSGLEVEL_CLIENTCRAP, TXT_WINDOW_INFO_LEVEL,
+			   levelstr);
+	g_free(levelstr);
+
+        /* Active window server + sticky status */
+	if (win->servertag == NULL) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_SERVER,
+				   win->active_server != NULL ?
+				   win->active_server->tag : "NONE");
+	} else {
+		if (win->active_server != NULL &&
+		    strcmp(win->active_server->tag, win->servertag) != 0)
+                        g_warning("Active server isn't the sticky server!");
+
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_SERVER_STICKY,
+				   win->servertag);
+	}
+
+        /* Window theme + error status */
+	if (win->theme_name != NULL) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_THEME, win->theme_name,
+				   win->theme != NULL ? "" : "(not loaded)");
+	}
+
+        /* Bound items in window */
+	if (win->bound_items != NULL)
+                window_print_binds(win);
+
+        /* Item */
+	if (win->items != NULL)
+                window_print_items(win);
+
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_FOOTER);
+}
+
+static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
+{
+        while (*data == ' ') data++;
+
+	if (*data == '\0')
+                cmd_window_info();
+	else if (is_numeric(data, 0))
+                signal_emit("command window refnum", 3, data, server, item);
+        else
+		command_runsub("window", data, server, item);
 }
 
 /* SYNTAX: WINDOW NEW [hide] */
