@@ -38,74 +38,6 @@
 #include "windows.h"
 #include "window-items.h"
 
-/* SYNTAX: UNQUERY [<nick>] */
-static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
-{
-	QUERY_REC *query;
-
-	g_return_if_fail(data != NULL);
-
-	if (*data == '\0') {
-		/* remove current query */
-		query = irc_item_query(item);
-		if (query == NULL) return;
-	} else {
-		query = query_find(server, data);
-		if (query == NULL) {
-			printformat(server, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_NO_QUERY, data);
-			return;
-		}
-	}
-
-	query_destroy(query);
-}
-
-/* SYNTAX: QUERY <nick> */
-static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
-{
-	GHashTable *optlist;
-	WINDOW_REC *window;
-	QUERY_REC *query;
-	char *nick;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-
-	if (*data == '\0') {
-		/* remove current query */
-		cmd_unquery("", server, item);
-		return;
-	}
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "query", &optlist, &nick))
-		return;
-	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	server = irccmd_options_get_server("query", optlist, server);
-	if (server == NULL) {
-		cmd_params_free(free_arg);
-                return;
-	}
-
-	if (*nick != '=' && (server == NULL || !server->connected))
-		cmd_param_error(CMDERR_NOT_CONNECTED);
-
-	query = query_find(server, nick);
-	if (query == NULL)
-		query_create(server, nick, FALSE);
-	else {
-		/* query already existed - change to query window */
-		window = window_item_window((WI_ITEM_REC *) query);
-		g_return_if_fail(window != NULL);
-
-		window_set_active(window);
-		window_item_set_active(window, (WI_ITEM_REC *) query);
-	}
-
-	cmd_params_free(free_arg);
-}
-
 static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
     GHashTable *optlist;
@@ -494,8 +426,6 @@ static void cmd_ts(const char *data)
 
 void fe_irc_commands_init(void)
 {
-	command_bind("query", NULL, (SIGNAL_FUNC) cmd_query);
-	command_bind("unquery", NULL, (SIGNAL_FUNC) cmd_unquery);
 	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
 	command_bind_last("action", NULL, (SIGNAL_FUNC) cmd_action);
@@ -513,8 +443,6 @@ void fe_irc_commands_init(void)
 
 void fe_irc_commands_deinit(void)
 {
-	command_unbind("query", (SIGNAL_FUNC) cmd_query);
-	command_unbind("unquery", (SIGNAL_FUNC) cmd_unquery);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 	command_unbind("me", (SIGNAL_FUNC) cmd_me);
 	command_unbind("action", (SIGNAL_FUNC) cmd_action);

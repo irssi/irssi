@@ -31,16 +31,23 @@
 #include "windows.h"
 #include "window-items.h"
 
+static void sig_window_restore_item(WINDOW_REC *window, const char *item)
+{
+	window->waiting_channels =
+		g_slist_append(window->waiting_channels, g_strdup(item));
+}
+
 static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	GSList *tmp;
 
+	if (node == NULL)
+		return;
+
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		window->waiting_channels =
-			g_slist_append(window->waiting_channels,
-				       g_strdup(node->value));
+		signal_emit("window restore item", 2, window, node->value);
 	}
 }
 
@@ -65,29 +72,19 @@ void windows_restore(void)
 		if (window->theme_name != NULL)
 			window->theme = theme_load(window->theme_name);
 
-                window_add_items(window, config_node_section(node, "items", -1));
+		window_add_items(window, config_node_section(node, "items", -1));
+		signal_emit("window restore", 2, window, node);
 	}
+
+	signal_emit("windows restored", 0);
 }
 
-static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
+static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	GSList *tmp;
-	char refnum[MAX_INT_STRLEN], *str;
+	char *str;
 
-        ltoa(refnum, window->refnum);
-	node = config_node_section(node, refnum, NODE_TYPE_BLOCK);
-
-	if (window->name != NULL)
-		iconfig_node_set_str(node, "name", window->name);
-	if (window->level != 0) {
-                char *level = bits2level(window->level);
-		iconfig_node_set_str(node, "level", level);
-		g_free(level);
-	}
-	if (window->theme_name != NULL)
-		iconfig_node_set_str(node, "theme", window->theme_name);
-
-        node = config_node_section(node, "items", NODE_TYPE_LIST);
+	node = config_node_section(node, "items", NODE_TYPE_LIST);
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		WI_ITEM_REC *rec = tmp->data;
 		SERVER_REC *server = rec->server;
@@ -102,6 +99,29 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	}
 }
 
+static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
+{
+	char refnum[MAX_INT_STRLEN];
+
+        ltoa(refnum, window->refnum);
+	node = config_node_section(node, refnum, NODE_TYPE_BLOCK);
+
+	if (window->name != NULL)
+		iconfig_node_set_str(node, "name", window->name);
+	if (window->level != 0) {
+                char *level = bits2level(window->level);
+		iconfig_node_set_str(node, "level", level);
+		g_free(level);
+	}
+	if (window->theme_name != NULL)
+		iconfig_node_set_str(node, "theme", window->theme_name);
+
+	if (window->items != NULL)
+		window_save_items(window, node);
+
+	signal_emit("window save", 2, window, node);
+}
+
 void windows_save(void)
 {
 	CONFIG_NODE *node;
@@ -110,5 +130,15 @@ void windows_save(void)
 	node = iconfig_node_traverse("windows", TRUE);
 
 	g_slist_foreach(windows, (GFunc) window_save, node);
+	signal_emit("windows saved", 0);
 }
 
+void window_save_init(void)
+{
+	signal_add("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
+}
+
+void window_save_deinit(void)
+{
+	signal_remove("window restore item", (SIGNAL_FUNC) sig_window_restore_item);
+}

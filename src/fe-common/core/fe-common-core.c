@@ -101,6 +101,7 @@ void fe_common_core_init(void)
 	window_activity_init();
 	window_commands_init();
 	window_items_init();
+	window_save_init();
 	fe_core_commands_init();
 }
 
@@ -121,6 +122,7 @@ void fe_common_core_deinit(void)
 	window_activity_deinit();
 	window_commands_deinit();
 	window_items_deinit();
+	window_save_deinit();
 	fe_core_commands_deinit();
 
         theme_unregister();
