@@ -512,7 +512,8 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 	if (server == NULL || server->lag_last_check == 0)
 		size_needed = 0;
 	else if (server->lag_sent == 0 || now-server->lag_sent < 5) {
-                lag_unknown = now-server->lag_last_check > MAX_LAG_UNKNOWN_TIME;
+		lag_unknown = now-server->lag_last_check >
+			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
 
 		if (server->lag < lag_min_show && !lag_unknown)
 			size_needed = 0; /* small lag, don't display */
