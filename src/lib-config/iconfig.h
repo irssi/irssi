@@ -93,10 +93,6 @@ char *config_get_str(CONFIG_REC *rec, const char *section, const char *key, cons
 int config_get_int(CONFIG_REC *rec, const char *section, const char *key, int def);
 int config_get_bool(CONFIG_REC *rec, const char *section, const char *key, int def);
 
-/* Return value of key `value_key' from list item where `key' is `value' */
-const char *config_list_find(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
-/* Like config_list_find(), but return node instead of it's value */
-CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
 /* Returns n'th node from list. */
 CONFIG_NODE *config_node_nth(CONFIG_NODE *node, int index);
 /* Returns index for given key */

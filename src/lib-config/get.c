@@ -171,46 +171,6 @@ int config_get_bool(CONFIG_REC *rec, const char *section, const char *key, int d
         return i_toupper(*str) == 'T' || i_toupper(*str) == 'Y';
 }
 
-/* Return value of key `value_key' from list item where `key' is `value' */
-const char *config_list_find(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key)
-{
-	CONFIG_NODE *node;
-
-	node = config_list_find_node(rec, section, key, value, value_key);
-	return node != NULL && node->type == NODE_TYPE_KEY ?
-		node->value : NULL;
-}
-
-/* Like config_list_find(), but return node instead of it's value */
-CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key)
-{
-	CONFIG_NODE *node, *keynode;
-	GSList *tmp;
-
-	g_return_val_if_fail(rec != NULL, NULL);
-	g_return_val_if_fail(key != NULL, NULL);
-	g_return_val_if_fail(value_key != NULL, NULL);
-
-	node = config_node_traverse(rec, section, FALSE);
-	if (node == NULL || !is_node_list(node)) return NULL;
-
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
-		node = tmp->data;
-
-		if (node->type != NODE_TYPE_BLOCK)
-			continue;
-
-		/* key matches value? */
-		keynode = config_node_find(node, key);
-		if (keynode == NULL || keynode->type != NODE_TYPE_KEY ||
-		    g_strcasecmp(keynode->value, value) != 0) continue;
-
-		return config_node_find(node, value_key);
-	}
-
-	return NULL;
-}
-
 char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
 {
 	CONFIG_NODE *node;
