@@ -15,7 +15,6 @@
 #include "dcc/dcc-chat.h"
 #include "dcc/dcc-get.h"
 #include "dcc/dcc-send.h"
-#include "flood/autoignore.h"
 #include "notifylist/notifylist.h"
 
 #define dcc_bless(dcc) \

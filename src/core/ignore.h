@@ -12,10 +12,8 @@ typedef struct {
 	char **channels; /* ignore only in these channels */
 	char *pattern; /* text body must match this pattern */
 
-	int time; /* time in sec for temp ignores */
-	int time_tag;
+        time_t unignore_time; /* time in sec for temp ignores */
 
-	unsigned int autoignore:1;
 	unsigned int exception:1; /* *don't* ignore */
 	unsigned int regexp:1;
 	unsigned int fullword:1;

@@ -11,6 +11,4 @@ libirc_flood_la_SOURCES = \
 	flood.c
 
 noinst_HEADERS = \
-	autoignore.h \
-	flood.h \
 	module.h

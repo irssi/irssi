@@ -1,7 +1,7 @@
 /*
  autoignore.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,12 +29,10 @@
 #include "irc-servers.h"
 #include "ignore.h"
 
-#include "autoignore.h"
-
 void autoignore_update(IGNORE_REC *rec, int level)
 {
 	rec->level |= level;
-	rec->time = settings_get_int("autoignore_time");
+	rec->unignore_time = time(NULL)+settings_get_int("autoignore_time");
 
 	ignore_update_rec(rec);
 }
@@ -44,38 +42,35 @@ void autoignore_add(IRC_SERVER_REC *server, char *mask, int level)
 	IGNORE_REC *rec;
 
 	rec = g_new0(IGNORE_REC, 1);
-	
-	rec->mask = mask;
+
+	rec->mask = g_strdup(mask);
 	rec->servertag = g_strdup(server->tag);
 	rec->level = level;
-	rec->time = settings_get_int("autoignore_time");
-	rec->autoignore = 1;
-	
+	rec->unignore_time = time(NULL)+settings_get_int("autoignore_time");
+
 	ignore_add_rec(rec);
 }
 
 static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host, gpointer levelp)
 {
-	int level, check_level;
-	GString *mask;
 	IGNORE_REC *rec;
+	char *mask;
+	int level, check_level;
 
 	g_return_if_fail(IS_IRC_SERVER(server));
 
 	level = GPOINTER_TO_INT(levelp);
 	check_level = level2bits(settings_get_str("autoignore_level"));
 
-	mask = g_string_new(nick);
-	mask = g_string_append_c(mask, '!');
-	mask = g_string_append(mask, host);
+        mask = g_strdup_printf("%s!%s", nick, host);
 	if (level & check_level) {
-		rec = ignore_find(server->tag, mask->str, NULL);
+		rec = ignore_find(server->tag, mask, NULL);
 		if (rec == NULL)
-			autoignore_add(server, mask->str, level);
+			autoignore_add(server, mask, level);
 		else
 			autoignore_update(rec, level);
 	}
-        g_string_free(mask, TRUE);
+        g_free(mask);
 }
 
 void autoignore_init(void)

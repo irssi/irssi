@@ -179,5 +179,4 @@ INCLUDE: Modes.xs
 INCLUDE: Netsplit.xs
 
 INCLUDE: Dcc.xs
-INCLUDE: Flood.xs
 INCLUDE: Notifylist.xs

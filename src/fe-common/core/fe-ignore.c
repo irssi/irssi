@@ -140,7 +140,8 @@ static void cmd_ignore(const char *data)
 	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
 	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
 	timestr = g_hash_table_lookup(optlist, "time");
-	rec->time = timestr == NULL ? 0 : atoi(timestr);
+        if (timestr != NULL)
+		rec->unignore_time = time(NULL)+atoi(timestr);
 
 	if (rec->level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED,

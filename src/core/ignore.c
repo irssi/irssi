@@ -36,8 +36,7 @@
 GSList *ignores;
 
 static NICKMATCH_REC *nickmatch;
-
-static int unignore_timeout(IGNORE_REC *rec);
+static int time_tag;
 
 /* check if `text' contains ignored nick at the start of the line. */
 static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
@@ -265,7 +264,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	CONFIG_NODE *node;
 	char *levelstr;
 
-	if (rec->level == 0 || rec->time > 0)
+	if (rec->level == 0 || rec->unignore_time > 0)
 		return;
 
 	node = iconfig_node_traverse("(ignores", TRUE);
@@ -324,32 +323,22 @@ void ignore_add_rec(IGNORE_REC *rec)
 		regcomp(&rec->preg, rec->pattern,
 			REG_EXTENDED|REG_ICASE|REG_NOSUB) == 0;
 #endif
-	if (rec->time > 0)
-		rec->time_tag = g_timeout_add(rec->time*1000, (GSourceFunc) unignore_timeout, rec);
 
 	ignores = g_slist_append(ignores, rec);
 	ignore_set_config(rec);
 
-	if (!rec->autoignore)
-		signal_emit("ignore created", 1, rec);
-	else
-		signal_emit("autoignore new", 1, rec);
+	signal_emit("ignore created", 1, rec);
 }
 
 static void ignore_destroy(IGNORE_REC *rec, int send_signal)
 {
 	ignores = g_slist_remove(ignores, rec);
-	if (send_signal) {
-		if (!rec->autoignore)
-			signal_emit("ignore destroyed", 1, rec);
-		else
-			signal_emit("autoignore destroyed", 1, rec);
-	}
+	if (send_signal)
+		signal_emit("ignore destroyed", 1, rec);
 
 #ifdef HAVE_REGEX_H
 	if (rec->regexp_compiled) regfree(&rec->preg);
 #endif
-	if (rec->time_tag > 0) g_source_remove(rec->time_tag);
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->mask);
 	g_free_not_null(rec->servertag);
@@ -378,11 +367,23 @@ void ignore_update_rec(IGNORE_REC *rec)
 	}
 }
 
-static int unignore_timeout(IGNORE_REC *rec)
+static int unignore_timeout(void)
 {
-	rec->level = 0;
-	ignore_update_rec(rec);
-	return FALSE;
+	GSList *tmp, *next;
+        time_t now;
+
+        now = time(NULL);
+	for (tmp = ignores; tmp != NULL; tmp = next) {
+		IGNORE_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (now >= rec->unignore_time) {
+			rec->level = 0;
+			ignore_update_rec(rec);
+		}
+	}
+
+	return TRUE;
 }
 
 static void read_ignores(void)
@@ -465,6 +466,7 @@ void ignore_init(void)
 {
 	ignores = NULL;
 	nickmatch = nickmatch_init(ignore_nick_cache);
+	time_tag = g_timeout_add(1000, (GSourceFunc) unignore_timeout, NULL);
 
         read_ignores();
         signal_add("setup reread", (SIGNAL_FUNC) read_ignores);
@@ -472,6 +474,7 @@ void ignore_init(void)
 
 void ignore_deinit(void)
 {
+	g_source_remove(time_tag);
 	while (ignores != NULL)
                 ignore_destroy(ignores->data, TRUE);
         nickmatch_deinit(nickmatch);

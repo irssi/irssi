@@ -1,4 +1,4 @@
-SUBDIRS = dcc flood notifylist
+SUBDIRS = dcc notifylist
 
 noinst_LIBRARIES = libfe_common_irc.a
 

@@ -27,8 +27,10 @@
 
 #include "irc.h"
 #include "irc-servers.h"
-#include "autoignore.h"
 #include "ignore.h"
+
+void autoignore_init(void);
+void autoignore_deinit(void);
 
 typedef struct {
 	char *target;

@@ -713,7 +713,6 @@ src/fe-common/Makefile
 src/fe-common/core/Makefile
 src/fe-common/irc/Makefile
 src/fe-common/irc/dcc/Makefile
-src/fe-common/irc/flood/Makefile
 src/fe-common/irc/notifylist/Makefile
 src/fe-none/Makefile
 src/fe-text/Makefile
