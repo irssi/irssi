@@ -314,7 +314,11 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 			braces++;
 		else if (**format == '}')
 			braces--;
-		else {
+		else if ((braces > 1) && (**format == ' ')) {
+			g_string_append(str, "\\x20");
+			(*format)++;
+			continue;
+		} else {
 			theme_format_append_next(theme, str, format,
 						 'n', 'n',
 						 &dummy, &dummy, 0);
@@ -341,6 +345,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 					  char default_fg, char default_bg,
 					  int flags)
 {
+	GString *str;
 	const char *p, *format;
 	char *abstract, *data, *ret;
 	int len;
@@ -400,7 +405,21 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 				   PARSE_FLAG_ONLY_ARGS);
 	g_free(abstract);
         g_free(data);
-	abstract = ret;
+	str = g_string_new(NULL);
+	p = ret;
+	while (*p != '\0') {
+		if (*p == '\\') {
+			int chr;
+			p++;
+			chr = expand_escape(&p);
+			g_string_append_c(str, chr != -1 ? chr : *p);
+		} else
+			g_string_append_c(str, *p);
+		p++;
+	}
+	g_free(ret);
+	abstract = str->str;
+	g_string_free(str, FALSE);
 
 	/* abstract may itself contain abstracts or replaces */
 	p = abstract;
