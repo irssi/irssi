@@ -184,7 +184,6 @@ static char *log_items_get_list(LOG_REC *log)
 	return ret;
 }
 
-/* SYNTAX: LOG LIST */
 static void cmd_log_list(void)
 {
 	GSList *tmp;
