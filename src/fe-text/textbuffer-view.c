@@ -391,19 +391,18 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			continue;
 		}
 
-		if ((*text & 127) >= 32)
-			term_addch(view->window, *text);
-		else {
-			/* low-ascii */
-			term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
-			term_addch(view->window, (*text & 127)+'A'-1);
-			term_set_color(view->window, color);
+		if (xpos < term_width) {
+			if ((*text & 127) >= 32)
+				term_addch(view->window, *text);
+			else {
+				/* low-ascii */
+				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
+				term_addch(view->window, (*text & 127)+'A'-1);
+				term_set_color(view->window, color);
+			}
 		}
 		text++;
 		xpos++;
-
-		if (xpos == term_width)
-                        text = text_newline;
 	}
 
 	if (need_clrtoeol && xpos < term_width) {
