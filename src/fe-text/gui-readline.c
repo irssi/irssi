@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
+#include "special-vars.h"
 
 #include "completion.h"
 #include "command-history.h"
@@ -447,8 +448,10 @@ static void key_next_window_item(void)
 	SERVER_REC *server;
 	int index;
 
-	if (active_win->items != NULL)
-		signal_emit("command window item next", 3, "", active_win->active_server, active_win->active);
+	if (active_win->items != NULL) {
+		signal_emit("command window item next", 3, "",
+			    active_win->active_server, active_win->active);
+	}
 	else if (servers != NULL) {
 		/* change server */
 		if (active_win->active_server == NULL)
@@ -458,13 +461,19 @@ static void key_next_window_item(void)
 			server = index > 0 ? g_slist_nth(servers, index-1)->data :
 				g_slist_last(servers)->data;
 		}
-		signal_emit("command window server", 3, server->tag, active_win->active_server, active_win->active);
+		signal_emit("command window server", 3, server->tag,
+			    active_win->active_server, active_win->active);
 	}
 }
 
-static void key_addchar(const char *data)
+static void key_insert_text(const char *data)
 {
-	gui_entry_insert_char(*data);
+	char *str;
+
+	str = parse_special_string(data, active_win->active_server,
+				   active_win->active, "", NULL, 0);
+	gui_entry_insert_text(str);
+        g_free(str);
 }
 
 static void sig_window_auto_changed(void)
@@ -589,12 +598,7 @@ void gui_readline_init(void)
 	key_bind("scroll_end", "End of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
 
         /* inserting special input characters to line.. */
-	key_bind("special_char", "Insert special character", "^B", "\002", (SIGNAL_FUNC) key_addchar);
-	key_bind("special_char", NULL, "^-", "\037", NULL);
-	key_bind("special_char", NULL, "^C", "\003", NULL);
-	key_bind("special_char", NULL, "^V", "\026", NULL);
-	key_bind("special_char", NULL, "^G", "\007", NULL);
-	key_bind("special_char", NULL, "^O", "\017", NULL);
+	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
 
 	key_bind("multi", NULL, "return", "check_replaces;send_line", NULL);
 
@@ -656,7 +660,7 @@ void gui_readline_deinit(void)
 	key_unbind("scroll_start", (SIGNAL_FUNC) key_scroll_start);
 	key_unbind("scroll_end", (SIGNAL_FUNC) key_scroll_end);
 
-	key_unbind("special_char", (SIGNAL_FUNC) key_addchar);
+	key_unbind("insert_text", (SIGNAL_FUNC) key_insert_text);
 	key_unbind("change_window", (SIGNAL_FUNC) key_change_window);
         keyboard_destroy(keyboard);
 

@@ -1,28 +1,43 @@
 
 @SYNTAX:bind@
 
-Bind some action to specified keystroke.
+Bind some action to specified keystroke. Remember that all characters
+in keystrokes are case-sensitive! Uppercase letter usually means that
+you need to keep SHIFT pressed to get the key to work.
 
-Keystroke can have modifiers:
+Most most commonly used keystrokes are:
 
-  ctrl-x
-  alt-x
-  alt-shift-x
+ ^X - Ctrl-X
+ meta-x - Meta-x (Meta is quite often Alt-key in PCs, ESC-x works too)
 
-Where x being either a single character, or one of the special keys:
+Irssi has by default also defined several other keys which you can use:
 
-  Backspace Delete
-  Home End Prior Next
-  Up Down Left Right
-  Insert Return Tab
+ return                  - The return/enter key
+ up, down, left, right   - Arrow keys
+ home, end, prior, next  - prior = Page Up, next = Page Down
+ insert, delete
 
-(these key specifications will some day change to be more epic-like
-when I have time to implement it)
+The keystroke can contain as many key presses as you want, and you can
+define names for different key sequences to use them more easily (the
+keys above are done like that). For example, you may want to manage
+windows with ^W key, so that ^W^C creates new window, ^W^K kills the
+active window, etc. you may do it like:
+
+ /BIND ^W^C /WINDOW NEW HIDE
+ /BIND ^W^K /WINDOW KILL
+
+But maybe you wish to give these binds to other people who want to use
+some other key than ^W, then it would be better done as:
+
+ /BIND ^W key window
+ /BIND window-^C /WINDOW NEW HIDE
+ /BIND window-^K /WINDOW KILL
+
 
 Command can be one of:
 
-  command - Run any IRC command (you could use /command directly without
-                                 specifying this)
+  command - Run any /COMMAND (you could use /COMMAND directly without
+                              specifying this)
 
 (Cursor movement)
   backward_character
@@ -73,14 +88,13 @@ Command can be one of:
   refresh_screen
   yank_from_cutbuffer - "Undelete" line
   transpose_characters - Swap current and previous character
-  special_char - Insert special character, data specifies the character.
-                 This is used mostly for setting bold, underline, color, etc.
+  insert_text - Insert data to entry line, data may contain $variables.
 
 Examples:
 
 Clear screen:
-  /BIND Alt-C /CLEAR
+  /BIND meta-c /CLEAR
 
-People with qwertz layout probably want to swap Alt-Y and Alt-Z:
-  /BIND Alt-Z change_window 16
-  /BIND -delete Alt-Y
+People with qwertz layout probably want to swap meta-y and meta-z:
+  /BIND meta-z change_window 16
+  /BIND -delete meta-y
