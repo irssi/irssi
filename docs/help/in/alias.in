@@ -1,13 +1,19 @@
 
 @SYNTAX:alias@
 
-Creates a new alias or shows matching defined aliases.
-Without parameters shows all defined aliases.
+Creates a new alias or shows matching defined aliases. Without
+parameters shows all defined aliases. Multiple commands can be run if
+separated with ';' character. Parameters given to alias are in $0..$9
+variables, if you don't use them in your alias, all parameters are
+automatically appended after it.
 
 Examples:
 
 /ALIAS w
    - shows all defined aliases starting with letter w.
+
+/ALIAS send echo Sending file $1 to $0;dcc send $0-
+   - creates alias 'send'.
 
 /ALIAS -send
    - removes alias 'send'.
