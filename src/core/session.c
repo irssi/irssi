@@ -213,7 +213,7 @@ static void session_restore_server(CONFIG_NODE *node)
 
                 /* restore channels */
 		node = config_node_section(node, "channels", -1);
-		if (node != NULL || node->type != NODE_TYPE_LIST) {
+		if (node != NULL && node->type == NODE_TYPE_LIST) {
 			for (tmp = node->value; tmp != NULL; tmp = tmp->next)
 				session_restore_channel(server, tmp->data);
 		}
