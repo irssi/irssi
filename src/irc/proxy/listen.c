@@ -65,7 +65,7 @@ static void proxy_redirect_event(CLIENT_REC *client,
 	group = 0;
 	while ((event = va_arg(vargs, char *)) != NULL) {
 		argpos = va_arg(vargs, int);
-		g_string_sprintf(str, "proxy %p", client->handle);
+		g_string_sprintf(str, "proxy %p", client);
 		group = server_redirect_single_event(SERVER(client->server), args, last > 0,
 						     group, event, str->str, argpos);
 		last--;
@@ -305,7 +305,10 @@ static void sig_listen(LISTEN_REC *listen)
 	rec->listen = listen;
 	rec->handle = handle;
 	rec->proxy_address = g_strdup(listen->ircnet);
-	rec->server = IRC_SERVER(server_find_chatnet(listen->ircnet));
+	rec->server = servers == NULL ? NULL :
+		strcmp(listen->ircnet, "*") == 0 ?
+		IRC_SERVER(servers->data) :
+		IRC_SERVER(server_find_chatnet(listen->ircnet));
 	rec->tag = g_input_add(handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen_client, rec);
 
@@ -343,7 +346,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	if (list != NULL) {
 		/* we want to send this to one client (or proxy itself) only */
 		REDIRECT_REC *rec;
-		void *handle;
+		void *client;
 
 		rec = list->data;
 		if (g_strncasecmp(rec->name, "proxy ", 6) != 0) {
@@ -352,10 +355,11 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			return;
 		}
 
-		if (sscanf(rec->name+6, "%p", &handle) == 1) {
+		if (sscanf(rec->name+6, "%p", &client) == 1) {
 			/* send it to specific client only */
 			server_redirect_remove_next(SERVER(server), event, list);
-			net_transmit(handle, next_line->str, next_line->len);
+			if (g_slist_find(proxy_clients, client) != NULL)
+				net_transmit(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
 			g_free(event);
                         signal_stop();
 			return;
@@ -391,7 +395,8 @@ static void event_connected(IRC_SERVER_REC *server)
 		CLIENT_REC *rec = tmp->data;
 
 		if (rec->connected && rec->server == NULL &&
-		    g_strcasecmp(server->connrec->chatnet, rec->listen->ircnet) == 0) {
+		    (g_strcasecmp(server->connrec->chatnet, rec->listen->ircnet) == 0 ||
+		     strcmp(rec->listen->ircnet, "*") == 0)) {
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
@@ -483,6 +488,8 @@ static void add_listen(const char *ircnet, int port)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "Proxy: Listen in port %d failed: %s",
 			  rec->port, g_strerror(errno));
+		g_free(rec->ircnet);
+                g_free(rec);
 		return;
 	}
 
