@@ -140,7 +140,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 	}
 }
 
-static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
+static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 {
 	GString *destservers;
 	char *sourceserver;
@@ -191,17 +191,10 @@ static void temp_split_chan_free(TEMP_SPLIT_CHAN_REC *rec)
 	g_free(rec);
 }
 
-static int check_server_splits(IRC_SERVER_REC *server)
+static void print_splits(IRC_SERVER_REC *server)
 {
 	TEMP_SPLIT_REC temp;
 	GSList *servers;
-	time_t last;
-
-	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
-
-	last = get_last_split(server);
-	if (time(NULL)-last < SPLIT_WAIT_TIME)
-		return FALSE;
 
 	servers = g_slist_copy(server->split_servers);
 	while (servers != NULL) {
@@ -215,15 +208,41 @@ static int check_server_splits(IRC_SERVER_REC *server)
 
 		g_hash_table_foreach(server->splits,
 				     (GHFunc) get_server_splits, &temp);
-		print_splits(server, &temp);
+		print_server_splits(server, &temp);
 
 		g_slist_foreach(temp.channels,
 				(GFunc) temp_split_chan_free, NULL);
 		g_slist_free(temp.servers);
 		g_slist_free(temp.channels);
 	}
+}
 
+static int check_server_splits(IRC_SERVER_REC *server)
+{
+	time_t last;
+
+	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
+
+	last = get_last_split(server);
+	if (time(NULL)-last < SPLIT_WAIT_TIME)
+		return FALSE;
+
+	print_splits(server);
         return TRUE;
+}
+
+/* something is going to be printed to screen, print our current netsplit
+   message before it. */
+static void sig_print_starting(void)
+{
+	GSList *tmp;
+
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *rec = tmp->data;
+
+		if (IS_IRC_SERVER(rec) && rec->split_servers != NULL)
+			print_splits(rec);
+	}
 }
 
 static int sig_check_splits(void)
@@ -246,6 +265,7 @@ static int sig_check_splits(void)
 
 	if (stop) {
 		g_source_remove(split_tag);
+		signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
                 split_tag = -1;
 	}
 	return 1;
@@ -257,6 +277,7 @@ static void sig_netsplit_servers(void)
 		split_tag = g_timeout_add(1000,
 					  (GSourceFunc) sig_check_splits,
 					  NULL);
+		signal_add("print starting", (SIGNAL_FUNC) sig_print_starting);
 	}
 }
 
@@ -308,7 +329,10 @@ void fe_netsplit_init(void)
 
 void fe_netsplit_deinit(void)
 {
-	if (split_tag != -1) g_source_remove(split_tag);
+	if (split_tag != -1) {
+		g_source_remove(split_tag);
+		signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
+	}
 
 	signal_remove("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

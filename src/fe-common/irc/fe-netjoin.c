@@ -228,6 +228,20 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
                 netjoin_server_remove(server);
 }
 
+/* something is going to be printed to screen, print our current netsplit
+   message before it. */
+static void sig_print_starting(void)
+{
+	GSList *tmp;
+
+	for (tmp = joinservers; tmp != NULL; tmp = tmp->next) {
+		NETJOIN_SERVER_REC *server = tmp->data;
+
+		if (server->netjoins != NULL)
+			print_netjoins(server);
+	}
+}
+
 static int sig_check_netjoins(void)
 {
 	GSList *tmp, *next;
@@ -253,6 +267,7 @@ static int sig_check_netjoins(void)
 
 	if (joinservers == NULL) {
 		g_source_remove(join_tag);
+		signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
                 join_tag = -1;
 	}
 	return 1;
@@ -286,6 +301,7 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 	if (join_tag == -1) {
 		join_tag = g_timeout_add(1000, (GSourceFunc)
 					 sig_check_netjoins, NULL);
+		signal_add("print starting", (SIGNAL_FUNC) sig_print_starting);
 	}
 
 	if (netjoin == NULL)
@@ -390,7 +406,10 @@ void fe_netjoin_deinit(void)
 {
 	while (joinservers != NULL)
 		netjoin_server_remove(joinservers->data);
-	if (join_tag != -1) g_source_remove(join_tag);
+	if (join_tag != -1) {
+		g_source_remove(join_tag);
+		signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
+	}
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
