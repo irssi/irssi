@@ -333,6 +333,7 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 
         buffer->cur_line = NULL;
 	buffer->lines_count = 0;
+	buffer->last_eol = TRUE;
 }
 
 void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)

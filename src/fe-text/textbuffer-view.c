@@ -966,6 +966,12 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	textbuffer_remove(view->buffer, line);
 }
 
+static int g_free_true(void *data)
+{
+	g_free(data);
+        return TRUE;
+}
+
 /* Remove all lines from buffer. */
 void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 {
@@ -974,6 +980,9 @@ void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 	g_return_if_fail(view != NULL);
 
 	textbuffer_remove_all_lines(view->buffer);
+
+	g_hash_table_foreach_remove(view->bookmarks,
+				    (GHRFunc) g_free_true, NULL);
 
 	/* destroy line caches - note that you can't do simultaneously
 	   unrefs + cache_get()s or it will keep using the old caches */
