@@ -314,7 +314,7 @@ static void event_whowas(IRC_SERVER_REC *server, const char *data)
 				  &host, NULL, &realname);
 	recoded = recode_in(realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOWAS, nick, user, host, realname);
+		    IRCTXT_WHOWAS, nick, user, host, recoded);
 	g_free(params);
 	g_free(recoded);
 }
