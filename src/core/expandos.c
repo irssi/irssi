@@ -53,7 +53,7 @@ static GHashTable *expandos;
 static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
-static char *sysname, *sysrelease;
+static char *sysname, *sysrelease, *sysarch;
 static const char *timestamp_format;
 
 #define CHAR_EXPANDOS_COUNT \
@@ -381,6 +381,12 @@ static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
         return sysrelease;
 }
 
+/* system architecture */
+static char *expando_sysarch(SERVER_REC *server, void *item, int *free_ret)
+{
+        return sysarch;
+}
+
 /* Topic of active channel (or address of queried nick) */
 static char *expando_topic(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -454,11 +460,12 @@ void expandos_init(void)
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
 	last_privmsg_from = NULL; last_public_from = NULL;
 
-        sysname = sysrelease = NULL;
+        sysname = sysrelease = sysarch = NULL;
 #ifdef HAVE_SYS_UTSNAME_H
 	if (uname(&un) == 0) {
 		sysname = g_strdup(un.sysname);
 		sysrelease = g_strdup(un.release);
+		sysarch = g_strdup(un.machine);
 	}
 #endif
 
@@ -526,6 +533,8 @@ void expandos_init(void)
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("sysrelease", expando_sysrelease,
 		       "", EXPANDO_NEVER, NULL);
+	expando_create("sysarch", expando_sysarch,
+		       "", EXPANDO_NEVER, NULL);
 	expando_create("topic", expando_topic,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW,
@@ -556,6 +565,7 @@ void expandos_deinit(void)
 
 	expando_destroy("sysname", expando_sysname);
 	expando_destroy("sysrelease", expando_sysrelease);
+	expando_destroy("sysarch", expando_sysarch);
 	expando_destroy("topic", expando_topic);
 	expando_destroy("tag", expando_servertag);
 	expando_destroy("chatnet", expando_chatnet);
@@ -565,6 +575,7 @@ void expandos_deinit(void)
 	g_free_not_null(last_sent_msg); g_free_not_null(last_sent_msg_body);
 	g_free_not_null(last_privmsg_from); g_free_not_null(last_public_from);
 	g_free_not_null(sysname); g_free_not_null(sysrelease);
+        g_free_not_null(sysarch);
 
         g_source_remove(timer_tag);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);

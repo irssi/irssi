@@ -81,6 +81,7 @@ $A .. $Z is important.
 
    $sysname     system name (eg. Linux)
    $sysrelease  system release (eg. 2.2.18)
+   $sysarch     system architecture (eg. i686)
    $topic       channel topic
    $usermode    user mode
    $tag         server tag
