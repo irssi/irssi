@@ -227,6 +227,9 @@ FE common
 
 * Provides signals:
 
+completion.c:
+ "complete word", GList * of char*, WINDOW_REC, char *word, char *linestart, int *want_space
+
 fe-common-core.c:
  "irssi init read settings"
 

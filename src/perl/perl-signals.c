@@ -55,7 +55,8 @@ static void perl_call_signal(const char *func, int signal_id,
 	int retcount;
 
 	PERL_SIGNAL_ARGS_REC *rec;
-	SV *perlarg;
+	SV *sv, *perlarg, *saved_args[SIGNAL_MAX_ARGUMENTS];
+	AV *av;
         void *arg;
 	int n;
 
@@ -68,6 +69,7 @@ static void perl_call_signal(const char *func, int signal_id,
 	/* push signal argument to perl stack */
 	rec = perl_signal_args_find(signal_id);
 
+        memset(saved_args, 0, sizeof(saved_args));
 	for (n = 0; n < SIGNAL_MAX_ARGUMENTS &&
 		    rec != NULL && rec->args[n] != NULL; n++) {
 		arg = (void *) args[n];
@@ -78,17 +80,35 @@ static void perl_call_signal(const char *func, int signal_id,
 			perlarg = newSViv(GPOINTER_TO_INT(arg));
 		else if (strcmp(rec->args[n], "ulongptr") == 0)
 			perlarg = newSViv(*(unsigned long *) arg);
-		else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+		else if (strcmp(rec->args[n], "intptr") == 0)
+			saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
+		else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+			/* pointer to linked list - push as AV */
+			GList *tmp, **ptr;
+                        int is_iobject, is_str;
+
+                        is_iobject = strcmp(rec->args[n]+9, "iobject") == 0;
+                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+			av = newAV();
+
+			ptr = arg;
+			for (tmp = *ptr; tmp != NULL; tmp = tmp->next) {
+				sv = is_iobject ? irssi_bless((SERVER_REC *) tmp->data) :
+					is_str ? new_pv(tmp->data) :
+					irssi_bless_plain(rec->args[n]+9, tmp->data);
+				av_push(av, sv);
+			}
+
+			saved_args[n] = perlarg = newRV_noinc((SV *) av);
+		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			/* linked list - push as AV */
 			GSList *tmp;
-                        SV *sv;
-			AV *av;
-                        int iobject;
+			int is_iobject;
 
-                        iobject = strcmp(rec->args[n]+7, "iobject") == 0;
+                        is_iobject = strcmp(rec->args[n]+7, "iobject") == 0;
 			av = newAV();
 			for (tmp = arg; tmp != NULL; tmp = tmp->next) {
-				sv = iobject ? irssi_bless((SERVER_REC *) tmp->data) :
+				sv = is_iobject ? irssi_bless((SERVER_REC *) tmp->data) :
 					irssi_bless_plain(rec->args[n]+7, tmp->data);
 				av_push(av, sv);
 			}
@@ -117,6 +137,43 @@ static void perl_call_signal(const char *func, int signal_id,
 		STRLEN n_a;
 
 		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
+	}
+
+        /* restore arguments the perl script modified */
+	for (n = 0; n < SIGNAL_MAX_ARGUMENTS &&
+		    rec != NULL && rec->args[n] != NULL; n++) {
+		arg = (void *) args[n];
+
+		if (saved_args[n] == NULL)
+                        continue;
+
+		if (strcmp(rec->args[n], "intptr") == 0) {
+			int *val = arg;
+			*val = SvIV(SvRV(saved_args[n]));
+		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+                        GList **ret = arg;
+			GList *out = NULL;
+                        void *val;
+			STRLEN len;
+                        int count;
+
+			av = (AV *) SvRV(saved_args[n]);
+                        count = av_len(av);
+			while (count-- >= 0) {
+				sv = av_shift(av);
+				if (SvPOKp(sv))
+					val = g_strdup(SvPV(sv, len));
+				else
+                                        val = GINT_TO_POINTER(SvIV(sv));
+
+				out = g_list_append(out, val);
+			}
+
+			if (strcmp(rec->args[n]+9, "char*") == 0)
+                                g_list_foreach(*ret, (GFunc) g_free, NULL);
+			g_list_free(*ret);
+                        *ret = out;
+		}
 	}
 
 	PUTBACK;

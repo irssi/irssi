@@ -12,10 +12,13 @@ while (<STDIN>) {
 	$signal = $1;
 	$_ = $3;
 
+	s/GList \* of ([^,]*)/glistptr_\1/g;
+	s/GSList of (\w+)s/gslist_\1/g;
+
 	s/char \*[^,]*/string/g;
 	s/ulong \*[^,]*/ulongptr/g;
-	s/int[^,]*/int/g;
-	s/GSList of (\w+)s/gslist_\1/g;
+	s/int \*[^,]*/intptr/g;
+	s/int [^,]*/int/g;
 
 	# core
         s/CHATNET_REC[^,]*/iobject/g;
@@ -48,7 +51,7 @@ while (<STDIN>) {
 	s/WINDOW_REC[^,]*/Irssi::Window/g;
 	s/WI_ITEM_REC[^,]*/iobject/g;
 
-	s/([\w:]+)(,|$)/"\1"\2/g;
+	s/([\w\*:]+)(,|$)/"\1"\2/g;
 	print "    { \"$signal\", { $_, NULL } },\n";
 }
 
