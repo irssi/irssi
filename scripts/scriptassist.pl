@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002111001';
+$VERSION = '2002111301';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -294,8 +294,9 @@ sub install_scripts ($$) {
     my ($scripts, $xml) = @_;
     my %success;
     #$success{-foo} = 1;
+    my $dir = Irssi::get_irssi_dir()."/scripts/";
     foreach (@{$scripts}) {
-	if (get_local_version($_)) {
+	if (get_local_version($_) && (-e $dir.$_.".pl")) {
 	    $success{$_}{installed} = -2;
 	} else {
 	    $success{$_} = download_script($_, $xml);
