@@ -1007,7 +1007,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-log.c:34
 msgid "Quits"
-msgstr ""
+msgstr "Koniec"
 
 #: src/gui-gnome/dialog-log.c:35
 msgid "Kicks"
@@ -1629,19 +1629,19 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:87
 msgid "_Quit"
-msgstr ""
+msgstr "_Koniec"
 
 #: src/gui-gnome/gui-menu-commands.c:93
 msgid "_Connect..."
-msgstr ""
+msgstr "_Po³acz..."
 
 #: src/gui-gnome/gui-menu-commands.c:95
 msgid "_Disconnect..."
-msgstr ""
+msgstr "_Roz³±cz..."
 
 #: src/gui-gnome/gui-menu-commands.c:97
 msgid "C_hannels..."
-msgstr ""
+msgstr "_Kana³y..."
 
 #: src/gui-gnome/gui-menu-commands.c:100
 msgid "_Status Window..."
@@ -1681,19 +1681,19 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:125
 msgid "_Copy"
-msgstr ""
+msgstr "_Kopiuj"
 
 #: src/gui-gnome/gui-menu-commands.c:127
 msgid "_Paste"
-msgstr ""
+msgstr "_Wklej"
 
 #: src/gui-gnome/gui-menu-commands.c:130
 msgid "_Find..."
-msgstr ""
+msgstr "_Znajd¼..."
 
 #: src/gui-gnome/gui-menu-commands.c:136
 msgid "C_onnections..."
-msgstr ""
+msgstr "_Po³±czenia..."
 
 #: src/gui-gnome/gui-menu-commands.c:139
 msgid "_Send File..."
@@ -1709,7 +1709,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:149
 msgid "_Themes..."
-msgstr ""
+msgstr "_Temat..."
 
 #: src/gui-gnome/gui-menu-commands.c:151
 msgid "_Automation..."
@@ -1729,7 +1729,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:160
 msgid "_Preferences..."
-msgstr ""
+msgstr "_Preferencje..."
 
 #: src/gui-gnome/gui-menu-commands.c:168
 msgid "New _Window"
@@ -1769,7 +1769,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:208
 msgid "_Server"
-msgstr ""
+msgstr "_Serwer"
 
 #: src/gui-gnome/gui-menu-commands.c:210
 msgid "Se_ttings"
@@ -1817,7 +1817,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-menu-commands.c:270
 msgid "Close"
-msgstr ""
+msgstr "Zamknij"
 
 #: src/gui-gnome/gui-menu-commands.c:423
 msgid "Away reason:"
@@ -2069,7 +2069,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:335
 msgid "Color"
-msgstr ""
+msgstr "kolor"
 
 #: src/gui-gnome/setup-colors.c:336 src/gui-gnome/setup-colors.c:339
 msgid "Sample text"
@@ -2077,7 +2077,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:338
 msgid "Color                                       "
-msgstr ""
+msgstr "Kolor"
 
 #: src/gui-gnome/setup-colors.c:339
 msgid "Red  "
