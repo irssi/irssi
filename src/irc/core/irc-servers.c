@@ -87,16 +87,6 @@ static void send_message(SERVER_REC *server, const char *target,
 	g_free(str);
 }
 
-static void sig_server_looking(IRC_SERVER_REC *server)
-{
-	if (!IS_IRC_SERVER(server))
-		return;
-
-	server->isnickflag = isnickflag_func;
-	server->ischannel = ischannel_func;
-	server->send_message = send_message;
-}
-
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -256,7 +246,12 @@ static void sig_connected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->splits = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	server->isnickflag = isnickflag_func;
+	server->ischannel = ischannel_func;
+	server->send_message = send_message;
+
+	server->splits = g_hash_table_new((GHashFunc) g_istr_hash,
+					  (GCompareFunc) g_istr_equal);
 
         if (!server->session_reconnect)
 		server_init(server);
@@ -575,7 +570,6 @@ void irc_servers_init(void)
 
 	cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
 
-	signal_add_first("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
@@ -598,7 +592,6 @@ void irc_servers_deinit(void)
 {
 	g_source_remove(cmd_tag);
 
-	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);

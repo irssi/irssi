@@ -610,6 +610,7 @@ void windows_init(void)
 
 	read_settings();
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
+	signal_add("server connected", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
@@ -621,6 +622,7 @@ void windows_deinit(void)
 	if (daycheck == 1) signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
+	signal_remove("server connected", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

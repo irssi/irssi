@@ -69,7 +69,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		g_hash_table_lookup(optlist, proto->chatnet);
 	conn = server_create_conn(proto != NULL ? proto->id : -1, addr,
 				  atoi(portstr), chatnet, password, nick);
-        if (proto == NULL)
+	if (proto == NULL)
 		proto = chat_protocol_find_id(conn->chat_type);
 
 	if (proto->not_initialized) {
@@ -79,6 +79,9 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
                 cmd_params_free(free_arg);
 		return NULL;
 	}
+
+	if (strchr(addr, '/') != NULL)
+		conn->unix_socket = TRUE;
 
 	if (g_hash_table_lookup(optlist, "6") != NULL)
 		conn->family = AF_INET6;

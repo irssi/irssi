@@ -21,6 +21,8 @@
 #include "module.h"
 #include "network.h"
 
+#include <sys/un.h>
+
 #ifndef INADDR_NONE
 #  define INADDR_NONE INADDR_BROADCAST
 #endif
@@ -133,7 +135,7 @@ int sin_get_port(union sockaddr_union *so)
 }
 
 /* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip, int *error)
 {
 	IPADDR ip4, ip6, *ip;
         int family;
@@ -141,8 +143,11 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 	g_return_val_if_fail(addr != NULL, NULL);
 
         family = my_ip == NULL ? 0 : my_ip->family;
-	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
+	if (net_gethostbyname(addr, &ip4, &ip6) == -1) {
+		if (error != NULL)
+			*error = errno;
 		return NULL;
+	}
 
 	if (my_ip == NULL) {
                 /* prefer IPv4 addresses */
@@ -165,11 +170,11 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 		}
 	}
 
-	return net_connect_ip(ip, port, my_ip);
+	return net_connect_ip(ip, port, my_ip, error);
 }
 
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -184,8 +189,11 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
         so.sin.sin_family = ip->family;
 	handle = socket(ip->family, SOCK_STREAM, 0);
 
-	if (handle == -1)
+	if (handle == -1) {
+		if (error != NULL)
+			*error = errno;
 		return NULL;
+	}
 
 	/* set socket options */
 #ifndef WIN32
@@ -217,6 +225,44 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	if (ret < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
 #endif
 	{
+		if (error != NULL)
+			*error = errno;
+		close(handle);
+		return NULL;
+	}
+
+	return g_io_channel_new(handle);
+}
+
+/* Connect to named UNIX socket */
+GIOChannel *net_connect_unix(const char *path, int *error)
+{
+	struct sockaddr_un sa;
+	int handle, ret;
+
+	/* create the socket */
+	handle = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (handle == -1) {
+		if (error != NULL)
+			*error = errno;
+		return NULL;
+	}
+
+	/* set socket options */
+#ifndef WIN32
+	fcntl(handle, F_SETFL, O_NONBLOCK);
+#endif
+
+	/* connect */
+	memset(&sa, 0, sizeof(sa));
+	sa.sun_family = AF_UNIX;
+	strncpy(sa.sun_path, path, sizeof(sa.sun_path)-1);
+	sa.sun_path[sizeof(sa.sun_path)-1] = '\0';
+
+	ret = connect(handle, (struct sockaddr *) &sa, sizeof(sa));
+	if (ret < 0 && errno != EINPROGRESS) {
+		if (error != NULL)
+			*error = errno;
 		close(handle);
 		return NULL;
 	}

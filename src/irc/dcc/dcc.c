@@ -247,7 +247,7 @@ GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
                 own_ip = &temp_ip;
 	}
 
-	return net_connect_ip(ip, port, own_ip);
+	return net_connect_ip(ip, port, own_ip, NULL);
 }
 
 /* Server connected - update server for DCC records that have

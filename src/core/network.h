@@ -43,9 +43,11 @@ struct _IPADDR {
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 
 /* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip, int *error);
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip, int *error);
+/* Connect to named UNIX socket */
+GIOChannel *net_connect_unix(const char *path, int *error);
 /* Disconnect socket */
 void net_disconnect(GIOChannel *handle);
 /* Try to let the other side close the connection, if it still isn't

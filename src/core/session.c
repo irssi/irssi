@@ -276,11 +276,10 @@ static void session_restore_server(CONFIG_NODE *node)
 				  chatnet, password, nick);
 	if (conn != NULL) {
 		conn->reconnection = TRUE;
+		conn->connect_handle = g_io_channel_unix_new(handle);
+		conn->session_reconnect = TRUE;
 
 		server = proto->server_connect(conn);
-                server->handle = net_sendbuffer_create(g_io_channel_unix_new(handle), 0);
-		server->session_reconnect = TRUE;
-
 		signal_emit("session restore server", 2, server, node);
 	}
 }
