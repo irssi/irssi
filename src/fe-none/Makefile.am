@@ -12,8 +12,7 @@ botti_DEPENDENCIES = @COMMON_NOUI_LIBS@
 
 botti_LDADD = \
 	@COMMON_NOUI_LIBS@ \
-	$(PROG_LIBS) \
-	$(PERL_LDFLAGS)
+	$(PROG_LIBS)
 
 botti_SOURCES = \
         irssi.c

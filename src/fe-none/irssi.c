@@ -23,6 +23,11 @@
 #include "signals.h"
 #include "core.h"
 
+#ifdef HAVE_STATIC_PERL
+void perl_init(void);
+void perl_deinit(void);
+#endif
+
 void irc_init(void);
 void irc_deinit(void);
 
@@ -57,11 +62,19 @@ void noui_init(void)
 
 	signal_add("reload", (SIGNAL_FUNC) sig_reload);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
+
+#ifdef HAVE_STATIC_PERL
+        perl_init();
+#endif
 	signal_emit("irssi init finished", 0);
 }
 
 void noui_deinit(void)
 {
+#ifdef HAVE_STATIC_PERL
+        perl_deinit();
+#endif
+
 	signal_remove("reload", (SIGNAL_FUNC) sig_reload);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 	irc_deinit();
