@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002112301';
+$VERSION = '2002112501';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -867,14 +867,14 @@ sub check_scripts {
 sub download_script ($$) {
     my ($script, $xml) = @_;
     my %result;
-    my $site = $xml->{$_.".pl"}{source};
+    $script =~ s/_/-/;
+    my $site = $xml->{$script.".pl"}{source};
     $result{installed} = 0;
     $result{signed} = 0;
     my $dir = Irssi::get_irssi_dir();
     my $ua = LWP::UserAgent->new(env_proxy => 1,keep_alive => 1,timeout => 30);
     $ua->agent('ScriptAssist/'.$VERSION);
     my $request = HTTP::Request->new('GET', $site.'/scripts/'.$script.'.pl');
-    
     my $response = $ua->request($request);
     if ($response->is_success()) {
 	my $file = $response->content();
