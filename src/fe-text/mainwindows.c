@@ -616,13 +616,13 @@ static void cmd_window_balance(void)
 	bigger_units = avail_size%windows;
 
 	sorted = mainwindows_get_sorted(FALSE);
-        last_line = 0;
+        last_line = reserved_up;
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
 		old_size = rec->height;
-		rec->first_line = last_line+1;
-		rec->last_line = rec->first_line-1 + unit_size -
+		rec->first_line = last_line;
+		rec->last_line = rec->first_line + unit_size-1 -
 			rec->statusbar_lines;
 		rec->height = rec->last_line-rec->first_line+1;
 
@@ -630,7 +630,7 @@ static void cmd_window_balance(void)
 			rec->last_line++;
                         bigger_units--;
 		}
-		last_line = rec->last_line + rec->statusbar_lines;
+		last_line = rec->last_line+1 + rec->statusbar_lines;
 
 		mainwindow_resize(rec, 0, rec->height-old_size);
 	}

@@ -12,9 +12,10 @@ typedef struct {
 	SCREEN_WINDOW *screen_win;
         int sticky_windows; /* number of sticky windows */
 
-	int first_line, last_line, width, height;
+	int first_line, last_line; /* first/last line used by this window (0..x), not including statusbar */
+	int width, height; /* width/height of the window, not including statusbar */
 
-	int statusbar_lines;
+	int statusbar_lines; /* number of lines the statusbar takes below the window */
 	void *statusbar;
 	void *statusbar_window_item;
 } MAIN_WINDOW_REC;
