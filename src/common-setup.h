@@ -86,6 +86,7 @@ extern gchar *dcc_upload_path;
 
 extern gboolean toggle_dcc_mirc_ctcp;
 extern gint dcc_block_size;
+extern gint dcc_port;
 extern gint dcc_timeout;
 
 /* servers */
