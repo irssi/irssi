@@ -106,7 +106,7 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data,
 static void event_who(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
-	char *serv;
+	char *serv, *recoded;
 
 	g_return_if_fail(data != NULL);
 
@@ -118,11 +118,13 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	while (*realname != '\0' && *realname != ' ') realname++;
 	while (*realname == ' ') realname++;
 	if (realname > hops) realname[-1] = '\0';
-
+	
+	recoded = recode_in(realname, nick);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
-		    channel, nick, stat, hops, user, host, realname, serv);
+		    channel, nick, stat, hops, user, host, recoded, serv);
 
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_end_of_who(IRC_SERVER_REC *server, const char *data)

@@ -6,6 +6,7 @@
 #include "levels.h"
 #include "misc.h"
 #include "settings.h"
+#include "recode.h"
 
 #include "irc-servers.h"
 
@@ -13,15 +14,17 @@
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname;
+	char *params, *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 6, NULL, &nick, &user,
 				  &host, NULL, &realname);
+	recoded = recode_in(realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS, nick, user, host, realname);
+		    IRCTXT_WHOIS, nick, user, host, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_whois_special(IRC_SERVER_REC *server, const char *data)
@@ -299,15 +302,17 @@ static void event_whois_auth(IRC_SERVER_REC *server, const char *data)
 
 static void event_whowas(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname;
+	char *params, *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 6, NULL, &nick, &user,
 				  &host, NULL, &realname);
+	recoded = recode_in(realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOWAS, nick, user, host, realname);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)
