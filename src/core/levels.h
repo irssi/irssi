@@ -37,6 +37,7 @@
 #define MSGLEVEL_NEVER        0x4000000 /* never ignore / never log */
 #define MSGLEVEL_LASTLOG      0x8000000 /* never ignore / never log */
 
+int level_get(const char *level);
 int level2bits(const char *level);
 char *bits2level(int bits);
 int combine_level(int dest, const char *src);
