@@ -86,11 +86,8 @@ static void sserver_connect(SETUP_SERVER_REC *rec, IRC_SERVER_CONNECT_REC *conn)
 {
 	conn->address = g_strdup(rec->address);
 	conn->port = rec->port;
-	conn->password = rec->password == NULL ? NULL :
-		g_strdup(rec->password);
-	if (rec->cmd_queue_speed > 0)
-                conn->cmd_queue_speed = rec->cmd_queue_speed;
 
+	server_setup_fill_conn(conn, rec);
 	if (rec->last_connect > time(NULL)-reconnect_time) {
 		/* can't reconnect this fast, wait.. */
 		server_reconnect_add(conn, rec->last_connect+reconnect_time);
@@ -102,20 +99,14 @@ static void sserver_connect(SETUP_SERVER_REC *rec, IRC_SERVER_CONNECT_REC *conn)
 
 static void server_connect_copy_skeleton(IRC_SERVER_CONNECT_REC *dest, IRC_SERVER_CONNECT_REC *src)
 {
-	dest->proxy = src->proxy == NULL ? NULL :
-		g_strdup(src->proxy);
+	dest->proxy = g_strdup(src->proxy);
         dest->proxy_port = src->proxy_port;
-	dest->proxy_string = src->proxy_string == NULL ? NULL :
-		g_strdup(src->proxy_string);
+	dest->proxy_string = g_strdup(src->proxy_string);
 
-	dest->ircnet = src->ircnet == NULL ? NULL :
-		g_strdup(src->ircnet);
-	dest->nick = src->nick == NULL ? NULL :
-		g_strdup(src->nick);
-	dest->username = src->username == NULL ? NULL :
-		g_strdup(src->username);
-	dest->realname = src->realname == NULL ? NULL :
-		g_strdup(src->realname);
+	dest->ircnet = g_strdup(src->ircnet);
+	dest->nick = g_strdup(src->nick);
+	dest->username = g_strdup(src->username);
+	dest->realname = g_strdup(src->realname);
 
 	if (src->own_ip != NULL) {
 		dest->own_ip = g_new(IPADDR, 1);

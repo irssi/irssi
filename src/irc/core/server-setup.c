@@ -74,6 +74,24 @@ static void conn_set_ip(IRC_SERVER_CONNECT_REC *conn, IPADDR **own_ip, const cha
 	}
 }
 
+/* Fill information to connection from server setup record */
+void server_setup_fill_conn(IRC_SERVER_CONNECT_REC *conn, SETUP_SERVER_REC *sserver)
+{
+	if (sserver->own_host != NULL)
+		conn_set_ip(conn, &sserver->own_ip, sserver->own_host);
+	sserver->last_connect = time(NULL);
+
+	if (sserver->ircnet != NULL && conn->ircnet == NULL)
+		conn->ircnet = g_strdup(sserver->ircnet);
+
+	if (sserver->password != NULL && conn->password == NULL)
+		conn->password = g_strdup(sserver->password);
+	if (sserver->cmd_queue_speed > 0)
+		conn->cmd_queue_speed = sserver->cmd_queue_speed;
+	if (sserver->max_cmds_at_once > 0)
+		conn->max_cmds_at_once = sserver->max_cmds_at_once;
+}
+
 /* Create server connection record. `address' is required, rest can be NULL */
 static IRC_SERVER_CONNECT_REC *
 create_addr_conn(const char *address, int port, const char *password,
@@ -116,17 +134,7 @@ create_addr_conn(const char *address, int port, const char *password,
 	sserver = server_setup_find(address, -1);
 	if (sserver == NULL) return conn;
 
-	if (sserver->own_host != NULL)
-		conn_set_ip(conn, &sserver->own_ip, sserver->own_host);
-	sserver->last_connect = time(NULL);
-
-	if (sserver->ircnet) conn->ircnet = g_strdup(sserver->ircnet);
-	if (sserver->password && !conn->password)
-		conn->password = g_strdup(sserver->password);
-	if (sserver->cmd_queue_speed > 0)
-		conn->cmd_queue_speed = sserver->cmd_queue_speed;
-	if (sserver->max_cmds_at_once > 0)
-		conn->max_cmds_at_once = sserver->max_cmds_at_once;
+	server_setup_fill_conn(conn, sserver);
 
 	/* fill the rest from IRC network settings */
 	ircnet = sserver->ircnet == NULL ? NULL : ircnet_find(sserver->ircnet);

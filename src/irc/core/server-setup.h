@@ -32,6 +32,9 @@ extern gboolean source_host_ok; /* Use source_host_ip .. */
 IRC_SERVER_CONNECT_REC *
 irc_server_create_conn(const char *dest, int port, const char *password, const char *nick);
 
+/* Fill information to connection from server setup record */
+void server_setup_fill_conn(IRC_SERVER_CONNECT_REC *conn, SETUP_SERVER_REC *sserver);
+
 void server_setup_add(SETUP_SERVER_REC *rec);
 void server_setup_remove(SETUP_SERVER_REC *rec);
 
