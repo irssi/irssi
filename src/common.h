@@ -1,7 +1,7 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 
-#define IRSSI_AUTHOR "Timo Sirainen <tss@iki.fi>"
+#define IRSSI_AUTHOR "Timo Sirainen <cras@irssi.org>"
 #define IRSSI_WEBSITE "http://irssi.org/"
 
 #define IRSSI_DIR_SHORT "~/.irssi"

@@ -1,7 +1,7 @@
 
  Irssi 0.8 documentation - http://irssi.org/
 
- Copyright(c) 2000 Timo Sirainen <tss@iki.fi>
+ Copyright(c) 2000 Timo Sirainen <cras@irssi.org>
 
 
  Index

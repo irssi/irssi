@@ -1,8 +1,8 @@
-# $Revision: 1.12 $, $Date: 2001/09/21 14:57:29 $
+# $Revision: 1.13 $, $Date: 2002/05/01 22:52:51 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
-Vendor: 	Timo Sirainen <tss@iki.fi>
+Vendor: 	Timo Sirainen <cras@irssi.org>
 Summary:  	Irssi is a IRC client
 Copyright: 	GPL
 Group: 		Applications/Communications

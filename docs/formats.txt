@@ -19,6 +19,7 @@
    %9      %_              Bold on/off
    %:                      Insert newline
    %|                      Marks the indentation position
+   %#                      Monospace font on/off (useful with lists and GUI)
    %%                      A single %
 
  In .theme files %n works a bit differently. See default.theme
