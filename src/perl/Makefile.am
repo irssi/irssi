@@ -3,7 +3,6 @@ noinst_LTLIBRARIES = libperl.la
 irssi-perl.c: perl-signals.h
 
 INCLUDES = $(GLIB_CFLAGS) \
-	-DPLUGINSDIR=\""$(libdir)/irssi/plugins"\" \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
 	$(PERL_CFLAGS) \
 	-I$(top_srcdir)/src \

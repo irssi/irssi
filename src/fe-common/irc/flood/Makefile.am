@@ -1,5 +1,5 @@
-plugindir = $(libdir)/irssi/plugins
-plugin_LTLIBRARIES = libfe_common_irc_flood.la
+moduledir = $(libdir)/irssi/modules
+module_LTLIBRARIES = libfe_common_irc_flood.la
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \

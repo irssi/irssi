@@ -1,5 +1,5 @@
-plugindir = $(libdir)/irssi/plugins
-plugin_LTLIBRARIES = libirc_dcc.la
+moduledir = $(libdir)/irssi/modules
+module_LTLIBRARIES = libirc_dcc.la
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/
