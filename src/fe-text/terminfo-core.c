@@ -83,6 +83,9 @@ static TERMINFO_REC tcaps[] = {
         /* Clearing to end of line */
 	{ "el",     	"ce",	CAP_TYPE_STR,	&temp_term.TI_el },
 
+        /* Repeating character */
+	{ "rep",     	"rp",	CAP_TYPE_STR,	&temp_term.TI_rep },
+
 	/* Colors */
 	{ "sgr0",     	"me",	CAP_TYPE_STR,	&temp_term.TI_sgr0 },
 	{ "smul",     	"us",	CAP_TYPE_STR,	&temp_term.TI_smul },
