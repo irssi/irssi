@@ -313,7 +313,10 @@ char *hilight_get_color(HILIGHT_REC *rec, int activity)
 		color = number;
 	}
 
-	return g_strconcat(isdigit(*color) ? "\003" : "", color, NULL);
+	if (is_numeric(color, 0))
+                return g_strdup_printf("\003%02d", atoi(color));
+
+	return g_strdup(color);
 }
 
 static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
