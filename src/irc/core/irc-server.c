@@ -231,15 +231,16 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 
 	irc_server_connect_free(server->connrec);
 	g_free_not_null(server->real_address);
-	g_free_not_null(server->version);
 	g_free_not_null(server->usermode);
 	g_free_not_null(server->userhost);
 	g_free_not_null(server->last_invite);
-	g_free_not_null(server->away_reason);
 }
 
 static void sig_connect_failed(IRC_SERVER_REC *server)
 {
+	if (!irc_server_check(server))
+		return;
+
 	server_remove_channels(server);
         irc_server_connect_free(server->connrec);
 }

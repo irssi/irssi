@@ -43,6 +43,8 @@ static void server_cant_connect(SERVER_REC *server, const char *msg)
 	signal_emit("server connect failed", 2, server, msg);
 	if (server->connect_tag != -1)
 		g_source_remove(server->connect_tag);
+	if (server->handle != NULL)
+		net_sendbuffer_destroy(server->handle, TRUE);
 
 	if (server->connect_pipe[0] != -1) {
 		close(server->connect_pipe[0]);
@@ -50,8 +52,8 @@ static void server_cant_connect(SERVER_REC *server, const char *msg)
 	}
 
 	MODULE_DATA_DEINIT(server);
+	g_free_not_null(server->nick);
 	g_free(server->tag);
-	g_free(server->nick);
 	g_free(server);
 }
 
@@ -235,8 +237,10 @@ void server_disconnect(SERVER_REC *server)
         MODULE_DATA_DEINIT(server);
 	rawlog_destroy(server->rawlog);
 	line_split_free(server->buffer);
-	g_free(server->tag);
+	g_free_not_null(server->version);
+	g_free_not_null(server->away_reason);
 	g_free(server->nick);
+	g_free(server->tag);
 	g_free(server);
 }
 
