@@ -888,7 +888,7 @@ void gui_readline_init(void)
 	settings_add_time("misc", "paste_detect_time", "10msecs");
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
-	settings_add_int("misc", "paste_detect_keycount", 6);
+	settings_add_int("misc", "paste_detect_keycount", 9);
 	settings_add_int("misc", "paste_verify_line_count", 5);
         setup_changed();
 
