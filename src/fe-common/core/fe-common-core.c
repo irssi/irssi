@@ -36,7 +36,7 @@
 #include "window-items.h"
 #include "window-save.h"
 
-#include <sys/signal.h>
+#include <signal.h>
 
 void autorun_init(void);
 void autorun_deinit(void);
