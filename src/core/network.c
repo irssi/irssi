@@ -196,10 +196,14 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
 		   (char *) &opt, sizeof(opt));
 
-	/* set our own address, ignore if bind() fails */
+	/* set our own address */
 	if (my_ip != NULL) {
 		sin_set_ip(&so, my_ip);
-		bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
+		if (bind(handle, &so.sa, SIZEOF_SOCKADDR(so)) == -1) {
+			/* failed, set it back to INADDR_ANY */
+			sin_set_ip(&so, NULL);
+			bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
+		}
 	}
 
 	/* connect */
