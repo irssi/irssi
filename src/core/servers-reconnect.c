@@ -115,13 +115,7 @@ static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 	if (conn->port == 0) conn->port = rec->port;
 
 	server_setup_fill_reconn(conn, rec);
-	if (rec->last_connect > time(NULL)-reconnect_time) {
-		/* can't reconnect this fast, wait.. */
-		server_reconnect_add(conn, rec->last_connect+reconnect_time);
-	} else {
-		/* connect to server.. */
-		CHAT_PROTOCOL(conn)->server_connect(conn);
-	}
+	server_reconnect_add(conn, rec->last_connect+reconnect_time);
 	server_connect_unref(conn);
 }
 
@@ -224,16 +218,8 @@ static void sig_reconnect(SERVER_REC *server)
 		conn->port = server->connrec->port;
 		conn->password = g_strdup(server->connrec->password);
 
-		if (server->connect_time != 0 &&
-		    time(NULL)-server->connect_time > reconnect_time) {
-			/* there's been enough time since last connection,
-			   reconnect back immediately */
-			CHAT_PROTOCOL(conn)->server_connect(conn);
-		} else {
-			/* reconnect later.. */
-			server_reconnect_add(conn, (server->connect_time == 0 ? time(NULL) :
-						    server->connect_time) + reconnect_time);
-		}
+		server_reconnect_add(conn, (server->connect_time == 0 ? time(NULL) :
+					    server->connect_time) + reconnect_time);
 		server_connect_unref(conn);
 		return;
 	}
