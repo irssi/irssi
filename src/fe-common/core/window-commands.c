@@ -94,6 +94,12 @@ static void cmd_window_info(WINDOW_REC *win)
 				   TXT_WINDOW_INFO_NAME, win->name);
 	}
 
+	/* Window history name */
+	if (win->history_name != NULL) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_HISTORY, win->history_name);
+	}
+
         /* Window width / height */
 	printformat_window(win, MSGLEVEL_CLIENTCRAP, TXT_WINDOW_INFO_SIZE,
 			   win->width, win->height);
@@ -468,6 +474,12 @@ static void cmd_window_name(const char *data)
 	}
 }
 
+/* SYNTAX: WINDOW HISTORY <name> */
+void cmd_window_history(const char *data)
+{
+	window_set_history(active_win, data);
+}
+
 /* we're moving the first window to last - move the first contiguous block
    of refnums to left. Like if there's windows 1..5 and 7..10, move 1 to
    11, 2..5 to 1..4 and leave 7..10 alone */
@@ -692,6 +704,7 @@ void window_commands_init(void)
 	command_bind("window item move", NULL, (SIGNAL_FUNC) cmd_window_item_move);
 	command_bind("window number", NULL, (SIGNAL_FUNC) cmd_window_number);
 	command_bind("window name", NULL, (SIGNAL_FUNC) cmd_window_name);
+	command_bind("window history", NULL, (SIGNAL_FUNC) cmd_window_history);
 	command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
 	command_bind("window move prev", NULL, (SIGNAL_FUNC) cmd_window_move_prev);
 	command_bind("window move next", NULL, (SIGNAL_FUNC) cmd_window_move_next);
@@ -729,6 +742,7 @@ void window_commands_deinit(void)
 	command_unbind("window item move", (SIGNAL_FUNC) cmd_window_item_move);
 	command_unbind("window number", (SIGNAL_FUNC) cmd_window_number);
 	command_unbind("window name", (SIGNAL_FUNC) cmd_window_name);
+	command_unbind("window history", (SIGNAL_FUNC) cmd_window_history);
 	command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
 	command_unbind("window move prev", (SIGNAL_FUNC) cmd_window_move_prev);
 	command_unbind("window move next", (SIGNAL_FUNC) cmd_window_move_next);

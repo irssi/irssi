@@ -116,6 +116,7 @@ static void sig_layout_restore(void)
 		window_set_refnum(window, atoi(node->key));
                 window->sticky_refnum = config_node_get_bool(node, "sticky_refnum", FALSE);
 		window_set_name(window, config_node_get_str(node, "name", NULL));
+		window_set_history(window, config_node_get_str(node, "history_name", NULL));
 		window_set_level(window, level2bits(config_node_get_str(node, "level", "")));
 
 		window->servertag = g_strdup(config_node_get_str(node, "servertag", NULL));
@@ -170,6 +171,10 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 
 	if (window->name != NULL)
 		iconfig_node_set_str(node, "name", window->name);
+
+	if (window->history_name != NULL)
+		iconfig_node_set_str(node, "history_name", window->history_name);
+
 	if (window->servertag != NULL)
 		iconfig_node_set_str(node, "servertag", window->servertag);
 	if (window->level != 0) {

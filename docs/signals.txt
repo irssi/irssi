@@ -283,6 +283,7 @@ windows.c:
  "window server changed", WINDOW_REC, SERVER_REC
  "window refnum changed", WINDOW_REC, int old
  "window name changed", WINDOW_REC
+ "window history changed", WINDOW_REC, char *oldname
  "window level changed", WINDOW_REC
 
 FE IRC

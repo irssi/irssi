@@ -49,6 +49,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "window_info_refnum", "Window  : {hilight #$0}", 1, { 1 } },
 	{ "window_info_refnum_sticky", "Window  : {hilight #$0 (sticky)}", 1, { 1 } },
 	{ "window_info_name", "Name    : $0", 1, { 0 } },
+	{ "window_info_history", "History : $0", 1, { 0 } },
 	{ "window_info_size", "Size    : $0x$1", 2, { 1, 1 } },
 	{ "window_info_level", "Level   : $0", 1, { 0 } },
 	{ "window_info_server", "Server  : $0", 1, { 0 } },

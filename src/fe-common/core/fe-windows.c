@@ -195,6 +195,21 @@ void window_set_name(WINDOW_REC *window, const char *name)
 	signal_emit("window name changed", 1, window);
 }
 
+void window_set_history(WINDOW_REC *window, const char *name)
+{
+	char *oldname;
+	oldname = window->history_name;
+
+	if (*name == '\0')
+		window->history_name = NULL;
+	else
+		window->history_name = g_strdup(name);
+
+	signal_emit("window history changed", 1, window, oldname);
+
+	g_free_not_null(oldname);
+}
+
 void window_set_level(WINDOW_REC *window, int level)
 {
 	g_return_if_fail(window != NULL);

@@ -336,6 +336,8 @@ UI::Window->{}
   width - Width
   height - Height
 
+  history_name - Name of named historylist for this window
+
   active - Active window item
   active_server - Active server
 
@@ -427,8 +429,9 @@ Window::set_active()
 Window::change_server(server)
 Window::set_refnum(refnum)
 Window::set_name(name)
+Window::set_history(name)
 Window::set_level(level)
-  Change server/refnum/name/level in window.
+  Change server/refnum/name/history/level in window.
 
 Windowitem::set_active()
   Change window item active in parent window.

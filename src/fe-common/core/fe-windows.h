@@ -2,6 +2,7 @@
 #define __WINDOWS_H
 
 #include "window-item-def.h"
+#include "command-history.h"
 
 enum {
         DATA_LEVEL_NONE = 0,
@@ -34,8 +35,8 @@ struct _WINDOW_REC {
 	unsigned int destroying:1;
 
 	/* window-specific command line history */
-	GList *history, *history_pos;
-	int history_lines, history_over_counter;
+	HISTORY_REC *history;
+	char *history_name;
 
 	int data_level; /* current data level */
 	char *hilight_color; /* current hilight color in %format */
@@ -62,6 +63,7 @@ void window_change_server(WINDOW_REC *window, void *server);
 
 void window_set_refnum(WINDOW_REC *window, int refnum);
 void window_set_name(WINDOW_REC *window, const char *name);
+void window_set_history(WINDOW_REC *window, const char *name);
 void window_set_level(WINDOW_REC *window, int level);
 
 /* return active item's name, or if none is active, window's name */

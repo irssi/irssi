@@ -23,6 +23,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 {
 	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
 	hv_store(hv, "name", 4, new_pv(window->name), 0);
+	hv_store(hv, "history_name", 12, new_pv(window->history_name), 0);
 
 	hv_store(hv, "width", 5, newSViv(window->width), 0);
 	hv_store(hv, "height", 6, newSViv(window->height), 0);

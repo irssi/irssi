@@ -206,6 +206,11 @@ window_set_name(window, name)
 	char *name
 
 void
+window_set_history(window, name)
+	Irssi::UI::Window window
+	char *name
+
+void
 window_set_level(window, level)
 	Irssi::UI::Window window
 	int level
