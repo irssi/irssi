@@ -39,6 +39,8 @@ struct _IPADDR {
 
 #define IPADDR_IS_V6(ip) ((ip)->family != AF_INET)
 
+extern IPADDR ip4_any;
+
 /* returns 1 if IPADDRs are the same */
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 

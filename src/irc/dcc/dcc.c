@@ -208,7 +208,10 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	if (first == 0) {
                 /* random port */
 		*port = 0;
-		return net_listen(NULL, port);
+		if (IPADDR_IS_V6(ip))
+			return net_listen(NULL, port);
+		else
+			return net_listen(&ip4_any, port);
 	}
 
         /* get last port */
@@ -226,7 +229,10 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 
         /* use the first available port */
 	for (*port = first; *port <= last; (*port)++) {
-		handle = net_listen(NULL, port);
+		if (IPADDR_IS_V6(ip))
+			handle = net_listen(NULL, port);
+		else
+			handle = net_listen(&ip4_any, port);
 		if (handle != NULL)
                         return handle;
 	}

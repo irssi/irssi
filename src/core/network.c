@@ -51,6 +51,11 @@ union sockaddr_union {
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
 
+IPADDR ip4_any = {
+	AF_INET,
+	{ INADDR_ANY }
+};
+
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
 {
 	if (ip1->family != ip2->family)
@@ -114,7 +119,7 @@ void sin_set_port(union sockaddr_union *so, int port)
 {
 #ifdef HAVE_IPV6
 	if (so->sin.sin_family == AF_INET6)
-                so->sin6.sin6_port = htons(port);
+                so->sin6.sin6_port = htons((unsigned short)port);
 	else
 #endif
 		so->sin.sin_port = htons((unsigned short)port);
@@ -283,8 +288,8 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 	g_return_val_if_fail(port != NULL, NULL);
 
 	memset(&so, 0, sizeof(so));
-	sin_set_port(&so, *port);
 	sin_set_ip(&so, my_ip);
+	sin_set_port(&so, *port);
 
 	/* create the socket */
 	handle = socket(so.sin.sin_family, SOCK_STREAM, 0);
