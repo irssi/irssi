@@ -197,6 +197,7 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
     (a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
     (a) == '|' || (a) == '\\' || (a) == '^')
 
+/* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
 char *nick_strip(const char *nick)
 {
 	char *stripped, *spos;
@@ -212,6 +213,31 @@ char *nick_strip(const char *nick)
 		*spos++ = *nick; /* just add it so that nicks won't match.. */
 	*spos = '\0';
 	return stripped;
+}
+
+/* Check is `msg' is meant for `nick'. */
+int irc_nick_match(const char *nick, const char *msg)
+{
+	char *stripnick, *stripmsg;
+	int ret, len;
+
+	g_return_val_if_fail(nick != NULL, FALSE);
+	g_return_val_if_fail(msg != NULL, FALSE);
+
+	if (g_strncasecmp(msg, nick, strlen(nick)) == 0 &&
+	    !isalnum((int) msg[strlen(nick)])) return TRUE;
+
+	stripnick = nick_strip(nick);
+	stripmsg = nick_strip(msg);
+
+	len = strlen(stripnick);
+	ret = len > 0 && g_strncasecmp(stripmsg, stripnick, len) == 0 &&
+		!isalnum((int) stripmsg[len]) &&
+		(unsigned char) stripmsg[len] < 128;
+
+	g_free(stripnick);
+	g_free(stripmsg);
+	return ret;
 }
 
 static void event_names_list(const char *data, IRC_SERVER_REC *server)

@@ -28,10 +28,36 @@
 #include "irc.h"
 #include "masks.h"
 #include "irc-server.h"
+#include "channels.h"
+#include "nicklist.h"
 
 #include "ignore.h"
 
 GSList *ignores;
+
+/* check if `text' contains ignored nick at the start of the line. */
+static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
+				const char *channel, const char *text)
+{
+	CHANNEL_REC *chanrec;
+	GSList *nicks, *tmp;
+
+	chanrec = channel_find(server, channel);
+	if (chanrec == NULL) return FALSE;
+
+	nicks = nicklist_find_multiple(chanrec, rec->mask);
+	if (nicks == NULL) return FALSE;
+
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+		NICK_REC *nick = tmp->data;
+
+		if (irc_nick_match(nick->nick, text))
+			return TRUE;
+	}
+	g_slist_free(nicks);
+
+	return FALSE;
+}
 
 int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
@@ -53,6 +79,14 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 		if (rec->servertag != NULL && g_strcasecmp(server->tag, rec->servertag) != 0)
 			continue;
 
+		/* channel list */
+		if (rec->channels != NULL) {
+			if (channel == NULL || !ischannel(*channel))
+				continue;
+			if (strarray_find(rec->channels, channel) == -1)
+				continue;
+		}
+
 		/* nick mask */
 		mask_len = 0;
 		if (rec->mask != NULL) {
@@ -65,15 +99,11 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 			ok = ((host == NULL || *host == '\0')) ?
 				match_wildcards(rec->mask, nick) :
 				irc_mask_match_address(rec->mask, nick, host);
-			if (!ok) continue;
-		}
-
-		/* channel list */
-		if (rec->channels != NULL) {
-			if (channel == NULL || !ischannel(*channel))
-				continue;
-			if (strarray_find(rec->channels, channel) == -1)
-				continue;
+			if (!ok) {
+                                /* nick didn't match, but maybe this is a reply to nick? */
+				if (!rec->replies || !ignore_check_replies(rec, server, channel, text))
+					continue;
+			}
 		}
 
 		/* pattern */
@@ -178,6 +208,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	iconfig_node_set_str(node, "pattern", rec->pattern);
 	if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
 	if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
+	if (rec->replies) config_node_set_bool(node, "replies", TRUE);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = config_node_section(node, "channels", NODE_TYPE_LIST);
@@ -273,6 +304,7 @@ static void read_ignores(void)
 		rec->except_level = level2bits(config_node_get_str(node, "except_level", ""));
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
+		rec->replies = config_node_get_bool(node, "replies", FALSE);
 
 		node = config_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);

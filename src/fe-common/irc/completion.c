@@ -177,7 +177,7 @@ static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick)
             return;
         }
 
-        list = completion_msgtoyou((SERVER_REC *) server, msg) ?
+        list = irc_nick_match(server->nick, msg) ?
             &channel->lastownmsgs :
             &channel->lastmsgs;
         nick_completion_create(list, time(NULL), nick);
@@ -205,31 +205,6 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server)
     }
 
     g_free(params);
-}
-
-int completion_msgtoyou(SERVER_REC *server, const char *msg)
-{
-    gchar *stripped, *nick;
-    gboolean ret;
-    gint len;
-
-    g_return_val_if_fail(msg != NULL, FALSE);
-
-    if (g_strncasecmp(msg, server->nick, strlen(server->nick)) == 0 &&
-        !isalnum((gint) msg[strlen(server->nick)])) return TRUE;
-
-    stripped = nick_strip(server->nick);
-    nick = nick_strip(msg);
-
-    len = strlen(stripped);
-    ret = *stripped != '\0' &&
-        g_strncasecmp(nick, stripped, len) == 0 &&
-	!isalnum((gint) nick[len]) &&
-	(guchar) nick[len] < 128;
-
-    g_free(nick);
-    g_free(stripped);
-    return ret;
 }
 
 static void complete_list(GList **outlist, GSList *list, gchar *nick)

@@ -12,6 +12,7 @@ typedef struct {
 
 	int regexp:1;
 	int fullword:1;
+	int replies:1; /* ignore replies to nick in channel */
 } IGNORE_REC;
 
 extern GSList *ignores;

@@ -80,7 +80,7 @@ static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gcha
 	gchar *color;
 
 	chanrec = channel_find(server, target);
-	toyou = completion_msgtoyou((SERVER_REC *) server, msg);
+	toyou = irc_nick_match(server->nick, msg);
 	color = irc_hilight_find_nick(target, nick, addr);
 
 	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);

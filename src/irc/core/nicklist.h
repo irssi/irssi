@@ -33,10 +33,13 @@ GSList *nicklist_getnicks(CHANNEL_REC *channel);
 /* Get all the nick records of `nick'. Returns channel, nick, channel, ... */
 GSList *nicklist_get_same(IRC_SERVER_REC *server, const char *nick);
 
-/* nick record comparision for sort functions */
+/* Nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2);
 
+/* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
 char *nick_strip(const char *nick);
+/* Check is `msg' is meant for `nick'. */
+int irc_nick_match(const char *nick, const char *msg);
 
 void nicklist_init(void);
 void nicklist_deinit(void);

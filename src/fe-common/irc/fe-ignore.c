@@ -112,8 +112,9 @@ static void ignore_print(int index, IGNORE_REC *rec)
 		    IRCTXT_IGNORE_LINE, index,
 		    key != NULL ? key : "",
 		    levels != NULL ? levels : "",
+		    rec->regexp ? " -regexp" : "",
 		    rec->fullword ? " -word" : "",
-		    rec->regexp ? " -regexp" : "");
+		    rec->replies ? " -replies" : "");
         g_free(key);
 	g_free(levels);
 }
@@ -183,8 +184,9 @@ static void cmd_ignore(const char *data)
 	}
 
 	rec->pattern = *patternarg == '\0' ? NULL : g_strdup(patternarg);
-	rec->fullword = stristr(args, "-word") != NULL;
 	rec->regexp = stristr(args, "-regexp") != NULL;
+	rec->fullword = stristr(args, "-word") != NULL;
+	rec->replies = stristr(args, "-replies") != NULL;
 
 	if (rec->level == 0 && rec->except_level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED,

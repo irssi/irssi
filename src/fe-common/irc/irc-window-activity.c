@@ -25,6 +25,7 @@
 #include "irc.h"
 #include "ignore.h"
 #include "irc-server.h"
+#include "nicklist.h"
 
 #include "completion.h"
 #include "windows.h"
@@ -59,7 +60,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
         if (window != active_win && !ignore_check(server, nick, addr, target, msg, level)) {
                 /* hilight */
 		level = !ischannel(*target) ||
-			completion_msgtoyou((SERVER_REC *) server, msg) ?
+			irc_nick_match(server->nick, msg) ?
 			NEWDATA_MSG_FORYOU : NEWDATA_MSG;
 		if (item != NULL && item->new_data < level) {
 			item->new_data = level;
