@@ -265,7 +265,8 @@ static void perl_signal_add_to_int(const char *signal, SV *func,
 	if (!command && strncmp(signal, "command ", 8) == 0) {
 		/* we used Irssi::signal_add() instead of
 		   Irssi::command_bind() - oh well, allow this.. */
-		command_bind(signal+8, NULL, priority_get_func(priority));
+		command_bind_to(MODULE_NAME, priority, signal+8, -1,
+				NULL, priority_get_func(priority));
                 command = TRUE;
 	}
 
@@ -301,7 +302,7 @@ void perl_signal_add_to(const char *signal, SV *func, int priority)
 static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 {
 	if (strncmp(rec->signal, "command ", 8) == 0)
-		command_unbind(rec->signal+8, sig_func_default);
+		command_unbind(rec->signal+8, perl_signal_get_func(rec));
 
         SvREFCNT_dec(rec->func);
 	g_free(rec->signal);
@@ -368,7 +369,8 @@ void perl_command_bind_to(const char *cmd, const char *category,
 {
 	char *signal;
 
-	command_bind(cmd, category, priority_get_func(priority));
+	command_bind_to(MODULE_NAME, priority, cmd, -1,
+			category, priority_get_func(priority));
 
 	signal = g_strconcat("command ", cmd, NULL);
 	perl_signal_add_to_int(signal, func, priority, TRUE);
