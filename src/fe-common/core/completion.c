@@ -386,8 +386,10 @@ GList *completion_get_options(const char *cmd, const char *option)
 	list = NULL;
 	len = strlen(option);
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
-		if (len == 0 || g_strncasecmp(*tmp, option, len) == 0)
-                        list = g_list_append(list, g_strconcat("-", *tmp + iscmdtype(**tmp), NULL));
+		const char *optname = *tmp + iscmdtype(**tmp);
+
+		if (len == 0 || g_strncasecmp(optname, option, len) == 0)
+                        list = g_list_append(list, g_strconcat("-", optname, NULL));
 	}
 
 	return list;
