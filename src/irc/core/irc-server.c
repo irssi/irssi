@@ -336,8 +336,9 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 		return 0; /* got disconnected */
 
 	mode = settings_get_str("default_user_mode");
-	newmode = modes_join(server->usermode, mode);
-	if (strcmp(newmode, server->usermode) != 0)
+	newmode = server->usermode == NULL ? NULL :
+		modes_join(server->usermode, mode);
+	if (server->usermode == NULL || strcmp(newmode, server->usermode) != 0)
 		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
 	g_free(newmode);
 	return 0;
