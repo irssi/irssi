@@ -184,6 +184,7 @@ dcc*.c:
  "dcc rejecting", DCC_REC
  "dcc closed", DCC_REC
  "dcc request", DCC_REC, char *sendaddr
+ "dcc request send", DCC_REC
  "dcc chat message", DCC_REC, char *msg
  "dcc transfer update", DCC_REC
  "dcc get receive", DCC_REC

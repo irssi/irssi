@@ -439,6 +439,8 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 				   (GInputFunction) dcc_chat_listen, dcc);
 
 	/* send the chat request */
+	signal_emit("dcc request send", 1, dcc);
+
 	dcc_ip2str(&own_ip, host);
 	irc_send_cmdv(server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
 		      nick, host, port);

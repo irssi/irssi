@@ -232,6 +232,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 				   (GInputFunction) dcc_send_connected, dcc);
 
 	/* send DCC request */
+	signal_emit("dcc request send", 1, dcc);
+
 	dcc_ip2str(&own_ip, host);
 	str = g_strdup_printf(dcc->file_quoted ?
 			      "DCC SEND \"%s\" %s %d %lu" :

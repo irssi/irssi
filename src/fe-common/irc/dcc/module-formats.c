@@ -60,6 +60,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_connect_error", "{dcc DCC can't connect to {hilight $0} port {hilight $1}}", 2, { 0, 1 } },
 	{ "dcc_cant_create", "{dcc DCC can't create file {dccfile $0}}", 1, { 0 } },
 	{ "dcc_rejected", "{dcc DCC $0 was rejected by {nick $1} [{hilight $2}]}", 3, { 0, 0, 0 } },
+	{ "dcc_request_send", "{dcc DCC $0 request sent to {nick $1}: $2", 3, { 0, 0, 0 } },
 	{ "dcc_close", "{dcc DCC $0 close for {nick $1} [{hilight $2}]}", 3, { 0, 0, 0 } },
 	{ "dcc_lowport", "{dcc Warning: Port sent with DCC request is a lowport ({hilight $0, $1}) - this isn't normal. It is possible the address/port is faked (or maybe someone is just trying to bypass firewall)}", 2, { 1, 0 } },
 	{ "dcc_list_header", "{dcc DCC connections}", 0 },

@@ -66,6 +66,14 @@ static void dcc_rejected(DCC_REC *dcc)
 		    dcc_type2str(dcc->type), dcc->nick, dcc->arg);
 }
 
+static void dcc_request_send(DCC_REC *dcc)
+{
+	g_return_if_fail(dcc != NULL);
+
+	printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_REQUEST_SEND,
+		    dcc_type2str(dcc->type), dcc->nick, dcc->arg);
+}
+
 static void dcc_error_connect(DCC_REC *dcc)
 {
 	g_return_if_fail(dcc != NULL);
@@ -124,6 +132,7 @@ void fe_irc_dcc_init(void)
 
 	signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
 	signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
+	signal_add("dcc request send", (SIGNAL_FUNC) dcc_request_send);
 	signal_add("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
 	signal_add("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
 	command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
@@ -142,6 +151,7 @@ void fe_irc_dcc_deinit(void)
 
 	signal_remove("dcc request", (SIGNAL_FUNC) dcc_request);
 	signal_remove("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
+	signal_remove("dcc request send", (SIGNAL_FUNC) dcc_request_send);
 	signal_remove("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
 	signal_remove("dcc error unknown type", (SIGNAL_FUNC) dcc_error_unknown_type);
 	command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
