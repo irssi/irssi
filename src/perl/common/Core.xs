@@ -136,7 +136,12 @@ timeout_add(msecs, func, data)
 	SV *func
 	SV *data
 CODE:
-	RETVAL = perl_timeout_add(msecs, func, data);
+	if (msecs < 10) {
+		croak("Irssi::timeout() : msecs must be >= 10");
+		RETVAL = -1;
+	} else {
+		RETVAL = perl_timeout_add(msecs, func, data);
+	}
 OUTPUT:
 	RETVAL
 
