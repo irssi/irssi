@@ -239,7 +239,7 @@ static char *module_get_name(const char *path, int *start, int *end)
 
 	*start = (int) (name-path);
 	*end = *start + (ptr == NULL ? strlen(name) :
-			 (int) (module_name-ptr));
+			 (int) (ptr-module_name));
 
 	return module_name;
 }
