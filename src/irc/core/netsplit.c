@@ -137,7 +137,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 	}
 
 	if (rec->channels == NULL)
-		g_warning("netsplit_add(): nick not in any channels");
+		g_warning("netsplit_add(): nick '%s' not in any channels", nick);
 
 	g_hash_table_insert(server->splits, rec->nick, rec);
 
