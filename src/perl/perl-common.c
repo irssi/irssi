@@ -43,6 +43,10 @@
 #include "perl-core.h"
 #include "perl-common.h"
 
+#ifdef HAVE_GC
+#  include <gc/gc.h>
+#endif
+
 typedef struct {
 	char *stash;
         PERL_OBJECT_FUNC fill_func;
@@ -151,6 +155,7 @@ void *irssi_ref_object(SV *o)
 {
         SV **sv;
 	HV *hv;
+	void *p;
 
         hv = hvref(o);
 	if (hv == NULL)
@@ -158,8 +163,13 @@ void *irssi_ref_object(SV *o)
 
 	sv = hv_fetch(hv, "_irssi", 6, 0);
 	if (sv == NULL)
-                croak("variable is damaged");
-	return GINT_TO_POINTER(SvIV(*sv));
+		croak("variable is damaged");
+	p = GINT_TO_POINTER(SvIV(*sv));
+#ifdef HAVE_GC
+	if (GC_base(p) == NULL)
+		croak("variable is already free'd");
+#endif
+	return p;
 }
 
 void irssi_add_object(int type, int chat_type, const char *stash,

@@ -309,12 +309,27 @@ static void winsock_init(void)
 }
 #endif
 
+#ifdef HAVE_GC
+#include <gc/gc.h>
+GMemVTable gc_mem_table = {
+	GC_malloc,
+	GC_realloc,
+	GC_free,
+
+	NULL, NULL, NULL
+};
+#endif
+
 int main(int argc, char **argv)
 {
 	static struct poptOption options[] = {
 		{ "dummy", 'd', POPT_ARG_NONE, &dummy, 0, "Use the dummy terminal mode", NULL },
 		{ NULL, '\0', 0, NULL }
 	};
+
+#ifdef HAVE_GC
+	g_mem_set_vtable(&gc_mem_table);
+#endif
 
 	dummy = FALSE;
 	quitting = FALSE;
