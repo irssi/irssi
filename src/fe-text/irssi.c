@@ -72,7 +72,10 @@ void mainwindow_activity_deinit(void);
 void mainwindows_layout_init(void);
 void mainwindows_layout_deinit(void);
 
-static int dirty, full_redraw;
+void term_dummy_init(void);
+void term_dummy_deinit(void);
+
+static int dirty, full_redraw, dummy;
 
 static GMainLoop *main_loop;
 int quitting;
@@ -107,7 +110,7 @@ void irssi_set_dirty(void)
 
 static void dirty_check(void)
 {
-	if (!dirty)
+	if (!dirty || dummy)
 		return;
 
         term_resize_dirty();
@@ -147,21 +150,25 @@ static void textui_finish_init(void)
 {
 	quitting = FALSE;
 
-	term_refresh_freeze();
-        textbuffer_init();
-        textbuffer_view_init();
-	textbuffer_commands_init();
-	textbuffer_reformat_init();
-	gui_expandos_init();
-	gui_printtext_init();
-	gui_readline_init();
-        lastlog_init();
-	mainwindows_init();
-	mainwindow_activity_init();
-	mainwindows_layout_init();
-	gui_windows_init();
-	statusbar_init();
-	term_refresh_thaw();
+	if (dummy)
+		term_dummy_init();
+	else {
+		term_refresh_freeze();
+	        textbuffer_init();
+	        textbuffer_view_init();
+		textbuffer_commands_init();
+		textbuffer_reformat_init();
+		gui_expandos_init();
+		gui_printtext_init();
+		gui_readline_init();
+	        lastlog_init();
+		mainwindows_init();
+		mainwindow_activity_init();
+		mainwindows_layout_init();
+		gui_windows_init();
+		statusbar_init();
+		term_refresh_thaw();
+	}
 
 	settings_check();
 	module_register("core", "fe-text");
@@ -198,22 +205,26 @@ static void textui_deinit(void)
         dirty_check(); /* one last time to print any quit messages */
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
-        lastlog_deinit();
-	statusbar_deinit();
-	gui_printtext_deinit();
-	gui_readline_deinit();
-	gui_windows_deinit();
-	mainwindows_layout_deinit();
-	mainwindow_activity_deinit();
-	mainwindows_deinit();
-	gui_expandos_deinit();
-	textbuffer_reformat_deinit();
-	textbuffer_commands_deinit();
-        textbuffer_view_deinit();
-        textbuffer_deinit();
+	if (dummy)
+		term_dummy_deinit();
+	else {
+	        lastlog_deinit();
+		statusbar_deinit();
+		gui_printtext_deinit();
+		gui_readline_deinit();
+		gui_windows_deinit();
+		mainwindows_layout_deinit();
+		mainwindow_activity_deinit();
+		mainwindows_deinit();
+		gui_expandos_deinit();
+		textbuffer_reformat_deinit();
+		textbuffer_commands_deinit();
+	        textbuffer_view_deinit();
+	        textbuffer_deinit();
 
-        term_refresh_thaw();
-        term_deinit();
+	        term_refresh_thaw();
+	        term_deinit();
+	}
 
 	theme_unregister();
 
@@ -288,6 +299,12 @@ static void winsock_init(void)
 
 int main(int argc, char **argv)
 {
+	static struct poptOption options[] = {
+		{ "dummy", 'd', POPT_ARG_NONE, &dummy, 0, "Use the dummy terminal mode", NULL },
+		{ NULL, '\0', 0, NULL }
+	};
+
+	dummy = FALSE;
 	quitting = FALSE;
 	core_init_paths(argc, argv);
 
@@ -305,10 +322,14 @@ int main(int argc, char **argv)
 #endif
 
 	textui_init();
+	args_register(options);
 	args_execute(argc, argv);
 
-	if (!term_init())
-		g_error("Can't initialize screen handling, quitting.\n");
+	if (!dummy && !term_init()) {
+		fprintf(stderr, "Can't initialize screen handling, quitting.\n");
+		fprintf(stderr, "You can still use the dummy mode with -d parameter\n");
+		return 1;
+	}
 
 	textui_finish_init();
 	main_loop = g_main_new(TRUE);

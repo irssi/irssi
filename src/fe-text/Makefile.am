@@ -8,23 +8,17 @@ INCLUDES = \
 	$(CURSES_INCLUDEDIR) \
 	-DLOCALEDIR=\""$(datadir)/locale"\"
 
-IRSSIDEPS = \
+irssi_DEPENDENCIES = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@
 
-irssi_DEPENDENCIES = $(IRSSIDEPS)
-irssi_dummy_DEPENDENCIES = $(IRSSIDEPS)
-
-IRSSILINK = \
+irssi_LDADD = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@ \
 	@PERL_LINK_FLAGS@ \
 	@PROG_LIBS@
-
-irssi_LDADD = $(IRSSILINK)
-irssi_dummy_LDADD = $(IRSSILINK)
 
 tparm_sources = \
 	tparm.c
@@ -46,9 +40,6 @@ else
 use_term_sources = $(terminfo_sources)
 endif
 
-irssi_dummy_SOURCES = \
-        irssi-dummy.c
-
 irssi_SOURCES = \
         gui-entry.c \
 	gui-expandos.c \
@@ -63,6 +54,7 @@ irssi_SOURCES = \
         statusbar-config.c \
         statusbar-items.c \
         term.c \
+	term-dummy.c \
 	$(use_tparm_sources) \
 	$(use_term_sources) \
         textbuffer.c \
