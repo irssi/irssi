@@ -103,11 +103,11 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe)
 		errorstr = NULL;
 	} else {
 		errorstr = net_gethosterror(rec.error);
-		rec.errlen = strlen(errorstr)+1;
+		rec.errlen = errorstr == NULL ? 0 : strlen(errorstr)+1;
 	}
 
         g_io_channel_write_block(pipe, &rec, sizeof(rec));
-	if (rec.error != 0)
+	if (rec.errlen != 0)
 		g_io_channel_write_block(pipe, (void *) errorstr, rec.errlen);
 
 #ifndef WIN32
