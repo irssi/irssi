@@ -295,6 +295,10 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 
 	if (window == NULL) {
 		/* create new window to use */
+		if (settings_get_bool("autocreate_split_windows")) {
+			signal_emit("gui window create override", 1,
+				    GINT_TO_POINTER(0));
+		}
 		window = window_create(item, automatic);
 	} else {
 		/* use existing window */
@@ -321,6 +325,7 @@ void window_items_init(void)
 {
 	settings_add_bool("lookandfeel", "reuse_unused_windows", FALSE);
 	settings_add_bool("lookandfeel", "autocreate_windows", TRUE);
+	settings_add_bool("lookandfeel", "autocreate_split_windows", FALSE);
 	settings_add_bool("lookandfeel", "autofocus_new_items", TRUE);
 
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
