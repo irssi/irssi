@@ -34,9 +34,6 @@
 	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
 	(a) == '|' || (a) == '\\' || (a) == '^')
 
-#define isalnumhigh(a) \
-        (isalnum(a) || (unsigned char) (a) >= 128)
-
 /* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
 char *irc_nick_strip(const char *nick)
 {
@@ -54,45 +51,6 @@ char *irc_nick_strip(const char *nick)
 		*spos++ = *nick; /* just add it so that nicks won't match.. */
 	*spos = '\0';
 	return stripped;
-}
-
-/* Check is `msg' is meant for `nick'. */
-int irc_nick_match(const char *nick, const char *msg)
-{
-	int len;
-
-	g_return_val_if_fail(nick != NULL, FALSE);
-	g_return_val_if_fail(msg != NULL, FALSE);
-
-	/* first check for identical match */
-	len = strlen(nick);
-	if (g_strncasecmp(msg, nick, len) == 0 && !isalnumhigh((int) msg[len]))
-		return TRUE;
-
-	/* check if it matches for alphanumeric parts of nick */
-	while (*nick != '\0' && *msg != '\0') {
-		if (*nick == *msg) {
-			/* total match */
-			msg++;
-		} else if (isalnum(*msg) && !isalnum(*nick)) {
-			/* some strange char in your nick, pass it */
-		} else
-			break;
-
-		nick++;
-	}
-
-	if (isalnumhigh(*msg)) {
-		/* message continues with another alphanumeric character,
-		   it isn't for us. */
-		return FALSE;
-	}
-
-	/* remove all the non-alphanumeric characters at the end of
-	   the nick and check if message matched that far. */
-	while (*nick != '\0' && !isalnum(*nick)) nick++;
-
-	return *nick == '\0';
 }
 
 static void event_names_list(const char *data, SERVER_REC *server)
@@ -378,6 +336,17 @@ static void sig_usermode(SERVER_REC *server)
 	nicklist_update_flags(server, server->nick, server->usermode_away, -1);
 }
 
+static const char *get_nick_flags(void)
+{
+        return "@+%";
+}
+
+static void sig_connected(IRC_SERVER_REC *server)
+{
+	if (IS_IRC_SERVER(server))
+		server->get_nick_flags = (void *) get_nick_flags;
+}
+
 void irc_nicklist_init(void)
 {
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
@@ -395,6 +364,7 @@ void irc_nicklist_init(void)
 	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_add("userhost event", (SIGNAL_FUNC) event_userhost);
 	signal_add("user mode changed", (SIGNAL_FUNC) sig_usermode);
+	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 }
 
 void irc_nicklist_deinit(void)
@@ -414,4 +384,5 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_remove("userhost event", (SIGNAL_FUNC) event_userhost);
 	signal_remove("user mode changed", (SIGNAL_FUNC) sig_usermode);
+	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 }

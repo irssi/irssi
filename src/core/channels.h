@@ -29,6 +29,9 @@ void channel_destroy(CHANNEL_REC *channel);
 /* find channel by name, if `server' is NULL, search from all servers */
 CHANNEL_REC *channel_find(SERVER_REC *server, const char *name);
 
+/* Send the auto send command to channel */
+void channel_send_autocommands(CHANNEL_REC *channel);
+
 void channels_init(void);
 void channels_deinit(void);
 

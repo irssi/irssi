@@ -67,12 +67,6 @@ void fe_netsplit_deinit(void);
 void fe_netjoin_init(void);
 void fe_netjoin_deinit(void);
 
-void irc_hilight_text_init(void);
-void irc_hilight_text_deinit(void);
-
-void irc_window_activity_init(void);
-void irc_window_activity_deinit(void);
-
 static char *autocon_server;
 static char *autocon_password;
 static int autocon_port;
@@ -102,7 +96,6 @@ void fe_common_irc_init(void)
 
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
-	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 
 	theme_register(fecommon_irc_formats);
 
@@ -117,8 +110,6 @@ void fe_common_irc_init(void)
 	fe_netsplit_init();
 	fe_netjoin_init();
 	irc_completion_init();
-	irc_hilight_text_init();
-	irc_window_activity_init();
 
 	fe_irc_modules_init();
 }
@@ -138,8 +129,6 @@ void fe_common_irc_deinit(void)
 	fe_netsplit_deinit();
 	fe_netjoin_deinit();
 	irc_completion_deinit();
-	irc_hilight_text_deinit();
-	irc_window_activity_deinit();
 
 	theme_unregister();
 }

@@ -27,6 +27,8 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "nicklist.h"
+#include "hilight-text.h"
 
 static const char *noact_channels;
 
@@ -119,6 +121,58 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
 }
 
+static void sig_message(SERVER_REC *server, const char *msg,
+			const char *nick, const char *addr,
+			const char *target, int level)
+{
+	WINDOW_REC *window;
+	WI_ITEM_REC *item;
+
+	/* get window and window item */
+	item = window_item_find(server, target);
+	window = item == NULL ?
+		window_find_closest(server, target, level) :
+		window_item_window(item);
+
+	if (window == active_win)
+		return;
+
+	/* hilight */
+	if (item != NULL) item->last_color = hilight_last_nick_color();
+	level = (item != NULL && item->last_color > 0) ||
+		(level & MSGLEVEL_MSGS) ||
+		nick_match_msg(SERVER(server), msg, server->nick) ?
+		NEWDATA_HILIGHT : NEWDATA_MSG;
+	if (item != NULL && item->new_data < level) {
+		item->new_data = level;
+		signal_emit("window item hilight", 1, item);
+	} else {
+		int oldlevel = window->new_data;
+
+		if (window->new_data < level) {
+			window->new_data = level;
+			window->last_color = hilight_last_nick_color();
+			signal_emit("window hilight", 2, window,
+				    GINT_TO_POINTER(oldlevel));
+		}
+		signal_emit("window activity", 2, window,
+			    GINT_TO_POINTER(oldlevel));
+	}
+}
+
+static void sig_message_public(SERVER_REC *server, const char *msg,
+			       const char *nick, const char *addr,
+			       const char *target)
+{
+	sig_message(server, msg, nick, addr, target, MSGLEVEL_PUBLIC);
+}
+
+static void sig_message_private(SERVER_REC *server, const char *msg,
+				const char *nick, const char *addr)
+{
+	sig_message(server, msg, nick, addr, nick, MSGLEVEL_MSGS);
+}
+
 static void read_settings(void)
 {
 	noact_channels = settings_get_str("noact_channels");
@@ -134,6 +188,8 @@ void window_activity_init(void)
 	signal_add("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
+	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -144,5 +200,7 @@ void window_activity_deinit(void)
 	signal_remove("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_remove("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_remove("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
+	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

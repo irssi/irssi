@@ -92,7 +92,8 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))
 
-void irc_channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
+static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
+			      int automatic)
 {
 	CHANNEL_SETUP_REC *schannel;
 	IRC_CHANNEL_REC *chanrec;
@@ -191,6 +192,7 @@ static void sig_connected(SERVER_REC *server)
 		return;
 
 	server->channel_find_func = (void *) irc_channel_find_server;
+	server->channels_join = (void *) irc_channels_join;
 }
 
 void irc_channels_init(void)

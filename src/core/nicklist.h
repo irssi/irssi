@@ -44,6 +44,9 @@ void nicklist_update_flags(SERVER_REC *server, const char *nick,
 /* Nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2);
 
+/* Check is `msg' is meant for `nick'. */
+int nick_match_msg(SERVER_REC *server, const char *msg, const char *nick);
+
 void nicklist_init(void);
 void nicklist_deinit(void);
 

@@ -61,6 +61,30 @@ static void sig_server_connect_free(IRC_SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->alternate_nick);
 }
 
+static int isnickflag_func(char flag)
+{
+	return isnickflag(flag);
+}
+
+static int ischannel_func(char flag)
+{
+	return ischannel(flag);
+}
+
+static void send_message(IRC_SERVER_REC *server, const char *target,
+			 const char *msg)
+{
+	char *str;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(target != NULL);
+	g_return_if_fail(msg != NULL);
+
+	str = g_strdup_printf("PRIVMSG %s :%s", target, msg);
+	irc_send_cmd_split(server, str, 2, server->max_msgs_in_cmd);
+	g_free(str);
+}
+
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -100,6 +124,9 @@ static void server_init(IRC_SERVER_REC *server)
 		      address, conn->realname);
 
 	server->cmdcount = 0;
+	server->isnickflag = isnickflag_func;
+	server->ischannel = ischannel_func;
+	server->send_message = (void *) send_message;
 }
 
 IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)

@@ -35,7 +35,6 @@
 #include "fe-queries.h"
 #include "irc-channels.h"
 #include "irc-nicklist.h"
-#include "irc-hilight-text.h"
 #include "windows.h"
 
 #include "completion.h"
@@ -43,62 +42,8 @@
 #define target_level(target) \
 	(ischannel((target)[0]) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS)
 
-static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
-			      const char *nick, const char *addr,
-			      const char *target)
-{
-	IRC_CHANNEL_REC *chanrec;
-	NICK_REC *nickrec;
-	const char *nickmode;
-	int for_me, print_channel, level;
-	char *color;
-
-	chanrec = irc_channel_find(server, target);
-	for_me = irc_nick_match(server->nick, msg);
-	color = for_me ? NULL : irc_hilight_find_nick(target, nick, addr, MSGLEVEL_PUBLIC, msg);
-
-	nickrec = chanrec == NULL ? NULL :
-		nicklist_find(CHANNEL(chanrec), nick);
-	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :
-		(nickrec->op ? "@" : nickrec->voice ? "+" : " ");
-
-	print_channel = !window_item_is_active((WI_ITEM_REC *) chanrec);
-	if (!print_channel && settings_get_bool("print_active_channel") &&
-	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
-		print_channel = TRUE;
-
-	level = MSGLEVEL_PUBLIC |
-		(color != NULL ? MSGLEVEL_HILIGHT :
-		 (for_me ? MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT));
-	if (!print_channel) {
-		/* message to active channel in window */
-		if (color != NULL) {
-			/* highlighted nick */
-			printformat(server, target, level, IRCTXT_PUBMSG_HILIGHT,
-				    color, nick, msg, nickmode);
-		} else {
-			printformat(server, target, level,
-				    for_me ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG, nick, msg, nickmode);
-		}
-	} else {
-		/* message to not existing/active channel */
-		if (color != NULL) {
-			/* highlighted nick */
-			printformat(server, target, level, IRCTXT_PUBMSG_HILIGHT_CHANNEL,
-				    color, nick, target, msg, nickmode);
-		} else {
-			printformat(server, target, level,
-				    for_me ? IRCTXT_PUBMSG_ME_CHANNEL : IRCTXT_PUBMSG_CHANNEL,
-				    nick, target, msg, nickmode);
-		}
-	}
-
-	g_free_not_null(color);
-}
-
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-	QUERY_REC *query;
 	char *params, *target, *msg;
 
 	g_return_if_fail(data != NULL);
@@ -108,15 +53,9 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	if (addr == NULL) addr = "";
 
 	if (!ignore_check(server, nick, addr, target, msg, target_level(target))) {
-		if (ischannel(*target)) {
-                        /* message to channel */
-			print_channel_msg(server, msg, nick, addr, target);
-		} else {
-			/* private message */
-			query = privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_MSGS);
-			printformat(server, nick, MSGLEVEL_MSGS,
-				    query == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
-		}
+		signal_emit(ischannel(*target) ?
+			    "message public" : "message private", 5,
+			    server, msg, nick, addr, target);
 	}
 
 	g_free(params);

@@ -18,6 +18,7 @@ libcore_a_SOURCES = \
 	channels.c \
 	channels-setup.c \
 	commands.c \
+	chat-commands.c \
 	chat-protocols.c \
 	chatnets.c \
 	core.c \

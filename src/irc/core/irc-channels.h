@@ -35,8 +35,4 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 #define irc_channel_find(server, name) \
 	IRC_CHANNEL(channel_find(SERVER(server), name))
 
-/* Join to channels. `data' contains channels and channel keys */
-void irc_channels_join(IRC_SERVER_REC *server,
-		       const char *data, int automatic);
-
 #endif

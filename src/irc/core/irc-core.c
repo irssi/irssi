@@ -51,7 +51,14 @@ void irc_channels_setup_deinit(void);
 
 void irc_core_init(void)
 {
-	chat_protocol_register("IRC", "Internet Relay Chat", "ircnet");
+	CHAT_PROTOCOL_REC *rec;
+
+	rec = g_new0(CHAT_PROTOCOL_REC, 1);
+	rec->name = "IRC";
+	rec->fullname = "Internet Relay Chat";
+	rec->chatnet = "ircnet";
+
+	chat_protocol_register(rec);
 
 	irc_chatnets_init();
 	irc_servers_init();

@@ -28,6 +28,7 @@
 #include "rawlog.h"
 #include "settings.h"
 
+#include "chat-protocols.h"
 #include "servers.h"
 #include "servers-reconnect.h"
 #include "servers-redirect.h"

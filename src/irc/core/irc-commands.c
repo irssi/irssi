@@ -153,42 +153,6 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: MSG [-<server tag>] <targets> <message> */
-static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-	GHashTable *optlist;
-	char *target, *msg;
-	void *free_arg;
-	int free_ret;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "msg", &optlist, &target, &msg))
-		return;
-	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	server = IRC_SERVER(cmd_options_get_server("msg", optlist, SERVER(server)));
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_param_error(CMDERR_NOT_CONNECTED);
-
-	free_ret = FALSE;
-	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0)
-		target = parse_special(&target, SERVER(server), item, NULL, &free_ret, NULL);
-	else if (strcmp(target, "*") == 0 &&
-		 (IS_IRC_CHANNEL(item) || IS_IRC_QUERY(item)))
-		target = item->name;
-	if (target != NULL) {
-		g_string_sprintf(tmpstr, "PRIVMSG %s :%s", target, msg);
-		irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
-	}
-
-	if (free_ret && target != NULL) g_free(target);
-
-	cmd_params_free(free_arg);
-}
-
 /* SYNTAX: NOTICE <targets> <message> */
 static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 {
@@ -250,33 +214,6 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	g_strup(ctcpcmd);
 	g_string_sprintf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, ctcpdata);
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
-
-	cmd_params_free(free_arg);
-}
-
-/* SYNTAX: JOIN [-invite] [-<server tag>] <channels> [<keys>] */
-static void cmd_join(const char *data, IRC_SERVER_REC *server)
-{
-	GHashTable *optlist;
-	char *channels;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS |
-			    PARAM_FLAG_GETREST, "join", &optlist, &channels))
-		return;
-
-	if (g_hash_table_lookup(optlist, "invite")) {
-		if (server->last_invite != NULL)
-			irc_channels_join(server, server->last_invite, FALSE);
-	} else {
-		/* -<server tag> */
-		server = IRC_SERVER(cmd_options_get_server("join", optlist, SERVER(server)));
-		if (server != NULL) irc_channels_join(server, channels, FALSE);
-	}
 
 	cmd_params_free(free_arg);
 }
@@ -946,11 +883,9 @@ void irc_commands_init(void)
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
-	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
-	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("part", NULL, (SIGNAL_FUNC) cmd_part);
 	command_bind("kick", NULL, (SIGNAL_FUNC) cmd_kick);
 	command_bind("topic", NULL, (SIGNAL_FUNC) cmd_topic);
@@ -1036,7 +971,6 @@ void irc_commands_init(void)
 	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");
-	command_set_options("join", "invite");
 }
 
 void irc_commands_deinit(void)
@@ -1046,11 +980,9 @@ void irc_commands_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
 	command_unbind("connect", (SIGNAL_FUNC) cmd_connect);
-	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
-	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("part", (SIGNAL_FUNC) cmd_part);
 	command_unbind("kick", (SIGNAL_FUNC) cmd_kick);
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);

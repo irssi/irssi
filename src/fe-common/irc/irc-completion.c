@@ -235,7 +235,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 		}
 
 		mchannel = MODULE_DATA(channel);
-		list = irc_nick_match(server->nick, msg) ?
+		list = nick_match_msg(SERVER(server), msg, server->nick) ?
 			&mchannel->lastownmsgs :
 			&mchannel->lastmsgs;
 		nick_completion_create(list, time(NULL), nick);

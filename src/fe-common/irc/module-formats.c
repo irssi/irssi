@@ -122,10 +122,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 	/* ---- */
 	{ NULL, "Your messages", 0 },
 
-	{ "own_msg", "%K<%n$2%W$0%K>%n %|$1", 3, { 0, 0, 0 } },
-	{ "own_msg_channel", "%K<%n$3%W$0%K:%c$1%K>%n %|$2", 4, { 0, 0, 0, 0 } },
-	{ "own_msg_private", "%K[%rmsg%K(%R$0%K)]%n $1", 2, { 0, 0 } },
-	{ "own_msg_private_query", "%K<%W$2%K>%n %|$1", 3, { 0, 0, 0 } },
 	{ "own_notice", "%K[%rnotice%K(%R$0%K)]%n $1", 2, { 0, 0 } },
 	{ "own_action", "%W * $0%n $1", 2, { 0, 0 } },
 	{ "own_ctcp", "%K[%rctcp%K(%R$0%K)]%n $1 $2", 3, { 0, 0, 0 } },
@@ -134,14 +130,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 	/* ---- */
 	{ NULL, "Received messages", 0 },
 
-	{ "pubmsg_me", "%K<%n$2%Y$0%K>%n %|$1", 3, { 0, 0, 0 } },
-	{ "pubmsg_me_channel", "%K<%n$3%Y$0%K:%c$1%K>%n %|$2", 4, { 0, 0, 0, 0 } },
-	{ "pubmsg_hilight", "%K<%n$3$0$1%K>%n %|$2", 4, { 0, 0, 0, 0 } },
-	{ "pubmsg_hilight_channel", "%K<%n$4$0$1%K:%c$2%K>%n %|$3", 5, { 0, 0, 0, 0, 0 } },
-	{ "pubmsg", "%K<%n$2$0%K>%n %|$1", 3, { 0, 0, 0 } },
-	{ "pubmsg_channel", "%K<%n$3$0%K:%c$1%K>%n %|$2", 4, { 0, 0, 0, 0 } },
-	{ "msg_private", "%K[%R$0%K(%r$1%K)]%n $2", 3, { 0, 0, 0 } },
-	{ "msg_private_query", "%K<%R$0%K>%n %|$2", 3, { 0, 0, 0 } },
 	{ "notice_server", "%g!$0%n $1", 2, { 0, 0 } },
 	{ "notice_public", "%K-%M$0%K:%m$1%K-%n $2", 3, { 0, 0, 0 } },
 	{ "notice_public_ops", "%K-%M$0%K:%m@$1%K-%n $2", 3, { 0, 0, 0 } },
@@ -180,8 +168,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "ignore_header", "Ignorance List:", 0 },
 	{ "ignore_line", "$[-4]0 $1: $2 $3 $4", 4, { 1, 0, 0, 0 } },
 	{ "ignore_footer", "", 0 },
-	{ "no_msgs_got", "You have not received a message from anyone yet", 0 },
-	{ "no_msgs_sent", "You have not sent a message to anyone yet", 0 },
 
 	{ NULL, NULL, 0 }
 };

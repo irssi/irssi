@@ -26,8 +26,6 @@
 
 GSList *queries;
 
-typedef QUERY_REC *(*QUERY_FIND_FUNC)(SERVER_REC *, const char *);
-
 /* Create a new query */
 QUERY_REC *query_create(int chat_type, SERVER_REC *server,
 			const char *nick, int automatic)
@@ -91,9 +89,7 @@ static QUERY_REC *query_find_server(SERVER_REC *server, const char *nick)
 
 	if (server->query_find_func != NULL) {
 		/* use the server specific query find function */
-		QUERY_FIND_FUNC query_find_func;
-		query_find_func = (QUERY_FIND_FUNC) server->query_find_func;
-		return query_find_func(server, nick);
+		return server->query_find_func(server, nick);
 	}
 
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {

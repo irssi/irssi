@@ -37,7 +37,6 @@ typedef struct {
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
-        char *last_invite; /* channel where you were last invited */
 
 	int whois_coming:1; /* Mostly just to display away message right.. */
 	int whois_found:1; /* Did WHOIS return any entries? */

@@ -75,7 +75,7 @@ static void server_rejoin_channels(IRC_SERVER_REC *server)
 	while (server->rejoin_channels != NULL) {
 		char *channel = server->rejoin_channels->data;
 
-                irc_channels_join(server, channel, TRUE);
+                server->channels_join(server, channel, TRUE);
 		server->rejoin_channels =
 			g_slist_remove(server->rejoin_channels, channel);
 	}

@@ -39,6 +39,9 @@
 #include "queries.h"
 #include "nicklist.h"
 
+void chat_commands_init(void);
+void chat_commands_deinit(void);
+
 int irssi_gui;
 
 void core_init(void)
@@ -62,12 +65,16 @@ void core_init(void)
 	channels_init();
 	queries_init();
 	nicklist_init();
+
+	chat_commands_init();
 }
 
 void core_deinit(void)
 {
 	while (modules != NULL)
 		module_unload(modules->data);
+
+	chat_commands_deinit();
 
 	nicklist_deinit();
 	queries_deinit();

@@ -37,96 +37,6 @@
 #include "windows.h"
 #include "window-items.h"
 
-static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-    GHashTable *optlist;
-    WINDOW_REC *window;
-    IRC_CHANNEL_REC *channel;
-    NICK_REC *nickrec;
-    const char *nickmode;
-    char *target, *msg, *freestr, *newtarget;
-    void *free_arg;
-    int free_ret, print_channel;
-
-    g_return_if_fail(data != NULL);
-
-    if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			"msg", &optlist, &target, &msg))
-	    return;
-    if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-    server = IRC_SERVER(cmd_options_get_server("msg", optlist, SERVER(server)));
-
-    if (*target == '=')
-    {
-        /* dcc msg - handled in fe-dcc.c */
-	cmd_params_free(free_arg);
-        return;
-    }
-
-    free_ret = FALSE;
-    if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0)
-	    newtarget = parse_special(&target, SERVER(server), item, NULL, &free_ret, NULL);
-    else if (strcmp(target, "*") == 0 &&
-	     (IS_IRC_CHANNEL(item) || IS_IRC_QUERY(item)))
-	    newtarget = item->name;
-    else newtarget = target;
-
-    if (newtarget == NULL) {
-	    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, *target == ',' ?
-			IRCTXT_NO_MSGS_GOT : IRCTXT_NO_MSGS_SENT);
-	    cmd_params_free(free_arg);
-	    signal_stop();
-	    return;
-    }
-    target = newtarget;
-
-    if (server == NULL || !server->connected) cmd_param_error(CMDERR_NOT_CONNECTED);
-    channel = irc_channel_find(server, target);
-
-    freestr = !free_ret ? NULL : target;
-    if (*target == '@' && ischannel(target[1]))
-	target++; /* Hybrid 6 feature, send msg to all ops in channel */
-
-    if (ischannel(*target))
-    {
-	/* msg to channel */
-	    nickrec = channel == NULL ? NULL :
-		    nicklist_find(CHANNEL(channel), server->nick);
-	nickmode = !settings_get_bool("show_nickmode") || nickrec == NULL ? "" :
-	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
-
-	window = channel == NULL ? NULL : window_item_window((WI_ITEM_REC *) channel);
-
-	print_channel = window == NULL ||
-		window->active != (WI_ITEM_REC *) channel;
-	if (!print_channel && settings_get_bool("print_active_channel") &&
-	    window != NULL && g_slist_length(window->items) > 1)
-		print_channel = TRUE;
-
-	if (!print_channel)
-	{
-		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			IRCTXT_OWN_MSG, server->nick, msg, nickmode);
-	}
-	else
-	{
-	    printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			IRCTXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
-	}
-    }
-    else
-    {
-        /* private message */
-        item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), target, TRUE, MSGLEVEL_MSGS);
-	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
-    }
-    g_free_not_null(freestr);
-
-    cmd_params_free(free_arg);
-}
-
 /* SYNTAX: ME <message> */
 static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -428,7 +338,6 @@ static void cmd_ts(const char *data)
 
 void fe_irc_commands_init(void)
 {
-	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
 	command_bind_last("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
@@ -445,7 +354,6 @@ void fe_irc_commands_init(void)
 
 void fe_irc_commands_deinit(void)
 {
-	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 	command_unbind("me", (SIGNAL_FUNC) cmd_me);
 	command_unbind("action", (SIGNAL_FUNC) cmd_action);
 	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);

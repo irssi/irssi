@@ -56,7 +56,7 @@ static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *nick = tmp->data;
 
-		if (irc_nick_match(nick->nick, text))
+		if (nick_match_msg(SERVER(server), text, nick->nick))
 			return TRUE;
 	}
 	g_slist_free(nicks);
@@ -114,7 +114,7 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 
 		/* pattern */
 		patt_len = 0;
-		if (rec->pattern != NULL) {
+		if (rec->pattern != NULL && text != NULL) {
 			if (!mask_len && !best_mask) {
 				patt_len = strlen(rec->pattern);
 				if (patt_len <= best_patt) continue;

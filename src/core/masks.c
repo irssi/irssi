@@ -24,8 +24,6 @@
 
 #include "servers.h"
 
-typedef int (*MASK_MATCH_FUNC) (const char *, const char *);
-
 /* Returns TRUE if mask contains '!' ie. address should be checked too.
    Also checks if mask contained any wildcards. */
 static int check_address(const char *mask, int *wildcards)
@@ -52,12 +50,9 @@ static int check_address(const char *mask, int *wildcards)
 static int check_mask(SERVER_REC *server, const char *mask,
 		      const char *str, int wildcards)
 {
-	MASK_MATCH_FUNC mask_match_func;
-
 	if (server != NULL && server->mask_match_func != NULL) {
 		/* use server specified mask match function */
-		mask_match_func = (MASK_MATCH_FUNC)server->mask_match_func;
-		return mask_match_func(mask, str);
+		return server->mask_match_func(mask, str);
 	}
 
 	return wildcards ? match_wildcards(mask, str) :
@@ -103,7 +98,7 @@ int mask_match_address(SERVER_REC *server, const char *mask,
 int masks_match(SERVER_REC *server, const char *masks,
 		const char *nick, const char *address)
 {
-	MASK_MATCH_FUNC mask_match_func;
+	int (*mask_match_func)(const char *, const char *);
 	char **list, **tmp, *mask;
 	int found;
 
@@ -112,8 +107,7 @@ int masks_match(SERVER_REC *server, const char *masks,
 			     nick != NULL && address != NULL, FALSE);
 
 	mask_match_func = server != NULL && server->mask_match_func != NULL ?
-		(MASK_MATCH_FUNC) server->mask_match_func :
-		(MASK_MATCH_FUNC) match_wildcards;
+		server->mask_match_func : match_wildcards;
 
 	found = FALSE;
 	mask = g_strdup_printf("%s!%s", nick, address);

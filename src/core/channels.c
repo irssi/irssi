@@ -21,10 +21,12 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
+#include "special-vars.h"
 
+#include "servers.h"
 #include "channels.h"
-
-typedef CHANNEL_REC *(*CHANNEL_FIND_FUNC)(SERVER_REC *, const char *);
+#include "channels-setup.h"
+#include "nicklist.h"
 
 GSList *channels; /* List of all channels */
 
@@ -91,10 +93,7 @@ static CHANNEL_REC *channel_find_server(SERVER_REC *server,
 
 	if (server->channel_find_func != NULL) {
 		/* use the server specific channel find function */
-		CHANNEL_FIND_FUNC channel_find_func;
-		channel_find_func =
-			(CHANNEL_FIND_FUNC) server->channel_find_func;
-		return channel_find_func(server, name);
+		return server->channel_find_func(server, name);
 	}
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
@@ -122,11 +121,93 @@ CHANNEL_REC *channel_find(SERVER_REC *server, const char *name)
 				   (void *) name);
 }
 
+/* connected to server, autojoin to channels. */
+static void event_connected(SERVER_REC *server)
+{
+	GString *chans;
+	GSList *tmp;
+
+	g_return_if_fail(SERVER(server));
+
+	if (server->connrec->reconnection)
+		return;
+
+	/* join to the channels marked with autojoin in setup */
+	chans = g_string_new(NULL);
+	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_SETUP_REC *rec = tmp->data;
+
+		if (!rec->autojoin ||
+		    !channel_chatnet_match(rec->chatnet,
+					   server->connrec->chatnet))
+			continue;
+
+		g_string_sprintfa(chans, "%s,", rec->name);
+	}
+
+	if (chans->len > 0) {
+		g_string_truncate(chans, chans->len-1);
+		server->channels_join(server, chans->str, TRUE);
+	}
+
+	g_string_free(chans, TRUE);
+}
+
+static int match_nick_flags(SERVER_REC *server, NICK_REC *nick, char flag)
+{
+	char *flags = server->get_nick_flags();
+
+	return (flag == flags[0] && nick->op) ||
+		(flag == flags[1] && (nick->voice || nick->halfop ||
+				      nick->op)) ||
+		(flag == flags[2] && (nick->halfop || nick->op));
+}
+
+/* Send the auto send command to channel */
+void channel_send_autocommands(CHANNEL_REC *channel)
+{
+	CHANNEL_SETUP_REC *rec;
+	NICK_REC *nick;
+	char **bots, **bot;
+
+	g_return_if_fail(IS_CHANNEL(channel));
+
+	rec = channels_setup_find(channel->name, channel->server->connrec->chatnet);
+	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
+		return;
+
+	if (rec->botmasks == NULL || !*rec->botmasks) {
+		/* just send the command. */
+		eval_special_string(rec->autosendcmd, "", channel->server, channel);
+		return;
+	}
+
+	/* find first available bot.. */
+	bots = g_strsplit(rec->botmasks, " ", -1);
+	for (bot = bots; *bot != NULL; bot++) {
+		const char *botnick = *bot;
+
+		nick = nicklist_find(channel,
+				     channel->server->isnickflag(*botnick) ?
+				     botnick+1 : botnick);
+		if (nick == NULL ||
+		    !match_nick_flags(channel->server, nick, *botnick))
+			continue;
+
+		/* got one! */
+		eval_special_string(rec->autosendcmd, nick->nick, channel->server, channel);
+		break;
+	}
+	g_strfreev(bots);
+}
+
 void channels_init(void)
 {
+	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 }
 
 void channels_deinit(void)
 {
+	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	module_uniq_destroy("CHANNEL");
 }

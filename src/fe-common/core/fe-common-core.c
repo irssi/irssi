@@ -49,6 +49,9 @@ void fe_core_log_deinit(void);
 void fe_log_init(void);
 void fe_log_deinit(void);
 
+void fe_messages_init(void);
+void fe_messages_deinit(void);
+
 void fe_modules_init(void);
 void fe_modules_deinit(void);
 
@@ -76,7 +79,6 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
-	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "bell_beeps", FALSE);
 	settings_add_str("lookandfeel", "beep_on_msg", "");
 	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
@@ -99,6 +101,7 @@ void fe_common_core_init(void)
         fe_channels_init();
         fe_queries_init();
 	fe_log_init();
+	fe_messages_init();
 	fe_modules_init();
 	fe_server_init();
 	fe_settings_init();
@@ -121,6 +124,7 @@ void fe_common_core_deinit(void)
 	printtext_deinit();
         fe_channels_deinit();
         fe_queries_deinit();
+	fe_messages_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
 	fe_server_deinit();

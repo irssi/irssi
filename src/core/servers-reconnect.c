@@ -244,6 +244,16 @@ static void sig_reconnect(SERVER_REC *server)
 	}
 }
 
+static void sig_connected(SERVER_REC *server)
+{
+	g_return_if_fail(IS_SERVER(server));
+	if (!server->connrec->reconnection)
+		return;
+
+	if (server->connrec->channels != NULL)
+		server->channels_join(server, server->connrec->channels, TRUE);
+}
+
 /* Remove all servers from reconnect list */
 /* SYNTAX: RMRECONNS */
 static void cmd_rmreconns(void)
@@ -336,10 +346,11 @@ void servers_reconnect_init(void)
 
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_reconnect);
+	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("rmreconns", NULL, (SIGNAL_FUNC) cmd_rmreconns);
 	command_bind("reconnect", NULL, (SIGNAL_FUNC) cmd_reconnect);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void servers_reconnect_deinit(void)
@@ -351,8 +362,9 @@ void servers_reconnect_deinit(void)
 
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_reconnect);
+	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("rmreconns", (SIGNAL_FUNC) cmd_rmreconns);
 	command_unbind("reconnect", (SIGNAL_FUNC) cmd_reconnect);
 	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

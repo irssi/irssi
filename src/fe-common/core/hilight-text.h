@@ -17,7 +17,12 @@ typedef struct {
 
 extern GSList *hilights;
 
-char *hilight_match(const char *channel, const char *nickmask, int level, const char *str);
+char *hilight_match(const char *channel, const char *nickmask,
+		    int level, const char *str);
+
+char *hilight_find_nick(const char *channel, const char *nick,
+			const char *address, int level, const char *msg);
+int hilight_last_nick_color(void);
 
 void hilight_text_init(void);
 void hilight_text_deinit(void);

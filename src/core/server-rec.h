@@ -32,6 +32,7 @@ GHashTable *module_data;
 
 char *version; /* server version */
 char *away_reason;
+char *last_invite; /* channel where you were last invited */
 int server_operator:1;
 int usermode_away:1;
 int banned:1; /* not allowed to connect to this server */
@@ -43,9 +44,28 @@ int lag; /* server lag in milliseconds */
 GSList *channels;
 GSList *queries;
 
-/* support for multiple server types */
-void *channel_find_func;
-void *query_find_func;
-void *mask_match_func;
+/* -- support for multiple server types -- */
+
+/* -- must not be NULL: -- */
+/* join to a number of channels, channels are specified in `data' separated
+   with commas. there can exist other information after first space like
+   channel keys etc. */
+void (*channels_join)(void *server, const char *data, int automatic);
+/* returns true if `flag' indicates a nick flag (op/voice/halfop) */
+int (*isnickflag)(char flag);
+/* returns true if `flag' indicates a channel */
+int (*ischannel)(char flag);
+/* returns all nick flag characters in order op, voice, halfop. If some
+   of them aren't supported '\0' can be used. */
+const char *(*get_nick_flags)(void);
+/* send public or private message to server */
+void (*send_message)(void *server, const char *target, const char *msg);
+
+/* -- Default implementations are used if NULL -- */
+void *(*channel_find_func)(void *server, const char *name);
+void *(*query_find_func)(void *server, const char *nick);
+int (*mask_match_func)(const char *mask, const char *data);
+/* returns true if `msg' was meant for `nick' */
+int (*nick_match_msg)(const char *nick, const char *msg);
 
 #undef STRUCT_SERVER_CONNECT_REC

@@ -25,6 +25,9 @@
 #include "nicklist.h"
 #include "masks.h"
 
+#define isalnumhigh(a) \
+        (isalnum(a) || (unsigned char) (a) >= 128)
+
 /* Add new nick to list */
 NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
 			  int op, int voice, int send_massjoin)
@@ -253,6 +256,48 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 	g_hash_table_foreach(channel->nicks,
 			     (GHFunc) nicklist_remove_hash, channel);
 	g_hash_table_destroy(channel->nicks);
+}
+
+/* Check is `msg' is meant for `nick'. */
+int nick_match_msg(SERVER_REC *server, const char *msg, const char *nick)
+{
+	int len;
+
+	g_return_val_if_fail(nick != NULL, FALSE);
+	g_return_val_if_fail(msg != NULL, FALSE);
+
+	if (server != NULL && server->nick_match_msg != NULL)
+		return server->nick_match_msg(msg, nick);
+
+	/* first check for identical match */
+	len = strlen(nick);
+	if (g_strncasecmp(msg, nick, len) == 0 && !isalnumhigh((int) msg[len]))
+		return TRUE;
+
+	/* check if it matches for alphanumeric parts of nick */
+	while (*nick != '\0' && *msg != '\0') {
+		if (*nick == *msg) {
+			/* total match */
+			msg++;
+		} else if (isalnum(*msg) && !isalnum(*nick)) {
+			/* some strange char in your nick, pass it */
+		} else
+			break;
+
+		nick++;
+	}
+
+	if (isalnumhigh(*msg)) {
+		/* message continues with another alphanumeric character,
+		   it isn't for us. */
+		return FALSE;
+	}
+
+	/* remove all the non-alphanumeric characters at the end of
+	   the nick and check if message matched that far. */
+	while (*nick != '\0' && !isalnum(*nick)) nick++;
+
+	return *nick == '\0';
 }
 
 void nicklist_init(void)

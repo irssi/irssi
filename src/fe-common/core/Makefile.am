@@ -14,6 +14,7 @@ libfe_common_core_a_SOURCES = \
 	fe-common-core.c \
 	fe-core-commands.c \
 	fe-log.c \
+	fe-messages.c \
 	fe-modules.c \
 	fe-queries.c \
 	fe-server.c \

@@ -102,7 +102,7 @@ static void cmd_server_add(const char *data)
 		signal_emit("server add create", 2, &rec, optlist);
 		if (rec == NULL) {
 			/* no chatnet option specified, use the first. */
-			g_hash_table_insert(optlist, (char *) chat_protocol_get_chatnet(1), "");
+			g_hash_table_insert(optlist, (char *) chat_protocol_get_rec(1)->name, "");
 			signal_emit("server add create", 2, &rec, optlist);
 			if (rec == NULL) {
                                 /* bug? */

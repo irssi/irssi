@@ -35,7 +35,7 @@
 	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | \
 	MSGLEVEL_ACTIONS | MSGLEVEL_DCCMSGS)
 
-static int hilight_next;
+static int hilight_next, last_nick_color;
 GSList *hilights;
 
 static void hilight_add_config(HILIGHT_REC *rec)
@@ -281,6 +281,30 @@ static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, cons
 	g_free_not_null(color);
 }
 
+char *hilight_find_nick(const char *channel, const char *nick,
+			const char *address, int level, const char *msg)
+{
+	char *color, *mask;
+
+        mask = g_strdup_printf("%s!%s", nick, address);
+	color = hilight_match(channel, mask, level, msg);
+	g_free(mask);
+
+	last_nick_color = (color != NULL && *color == 3) ?
+		atoi(color+1) : 0;
+	return color;
+}
+
+int hilight_last_nick_color(void)
+{
+	return last_nick_color;
+}
+
+static void sig_message(void)
+{
+	last_nick_color = 0;
+}
+
 static void read_hilight_config(void)
 {
 	CONFIG_NODE *node;
@@ -448,6 +472,7 @@ static void cmd_dehilight(const char *data)
 void hilight_text_init(void)
 {
 	hilight_next = FALSE;
+	last_nick_color = 0;
 
 	read_hilight_config();
 	settings_add_str("misc", "hilight_color", "8");
@@ -456,6 +481,8 @@ void hilight_text_init(void)
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
         signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
+	signal_add_last("message public", (SIGNAL_FUNC) sig_message);
+	signal_add_last("message private", (SIGNAL_FUNC) sig_message);
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
 
@@ -469,6 +496,8 @@ void hilight_text_deinit(void)
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
         signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
+        signal_remove("message public", (SIGNAL_FUNC) sig_message);
+        signal_remove("message private", (SIGNAL_FUNC) sig_message);
 	command_unbind("hilight", (SIGNAL_FUNC) cmd_hilight);
 	command_unbind("dehilight", (SIGNAL_FUNC) cmd_dehilight);
 }

@@ -90,11 +90,9 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
-	if (!server->connrec->reconnection)
+	if (!IS_IRC_SERVER(server) || !server->connrec->reconnection)
 		return;
 
-	if (server->connrec->channels != NULL)
-		irc_channels_join(server, server->connrec->channels, TRUE);
 	if (server->connrec->away_reason != NULL)
 		signal_emit("command away", 2, server->connrec->away_reason, server, NULL);
 	if (server->connrec->usermode != NULL) {

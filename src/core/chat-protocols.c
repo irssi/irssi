@@ -23,9 +23,7 @@
 
 typedef struct {
 	int id;
-	char *name;
-	char *fullname;
-	char *chatnet;
+	CHAT_PROTOCOL_REC *rec;
 } PROTOCOL_REC;
 
 static int id_counter;
@@ -47,7 +45,7 @@ static PROTOCOL_REC *chat_protocol_find(const char *name)
 	for (tmp = protocols; tmp != NULL; tmp = tmp->next) {
 		PROTOCOL_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0)
+		if (g_strcasecmp(rec->rec->name, name) == 0)
 			return rec;
 	}
 
@@ -71,25 +69,19 @@ static PROTOCOL_REC *chat_protocol_find_id(int id)
 }
 
 /* Register new chat protocol. */
-void chat_protocol_register(const char *name,
-			    const char *fullname,
-			    const char *chatnet)
+void chat_protocol_register(CHAT_PROTOCOL_REC *rec)
 {
-	PROTOCOL_REC *rec;
+	PROTOCOL_REC *proto;
 
-	g_return_if_fail(name != NULL);
-	g_return_if_fail(fullname != NULL);
-	g_return_if_fail(chatnet != NULL);
+	g_return_if_fail(rec != NULL);
 
-	if (chat_protocol_find(name) != NULL)
+	if (chat_protocol_find(rec->name) != NULL)
 		return;
 
-	rec = g_new0(PROTOCOL_REC, 1);
-	rec->id = ++id_counter;
-	rec->name = g_strdup(name);
-	rec->fullname = g_strdup(fullname);
-	rec->chatnet = g_strdup(chatnet);
-	protocols = g_slist_append(protocols, rec);
+	proto = g_new0(PROTOCOL_REC, 1);
+	proto->id = ++id_counter;
+	proto->rec = rec;
+	protocols = g_slist_append(protocols, proto);
 }
 
 static void chat_protocol_destroy(PROTOCOL_REC *rec)
@@ -97,10 +89,7 @@ static void chat_protocol_destroy(PROTOCOL_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	protocols = g_slist_remove(protocols, rec);
-
-	g_free(rec->name);
-	g_free(rec->fullname);
-	g_free(rec->chatnet);
+	g_free(rec->rec);
 	g_free(rec);
 }
 
@@ -126,37 +115,15 @@ int chat_protocol_lookup(const char *name)
 	return rec == NULL ? -1 : rec->id;
 }
 
-/* Return the name for the specified chat protocol ID. */
-const char *chat_protocol_get_name(int id)
+/* Return the record for the specified chat protocol ID. */
+CHAT_PROTOCOL_REC *chat_protocol_get_rec(int id)
 {
 	PROTOCOL_REC *rec;
 
 	g_return_val_if_fail(id > 0, NULL);
 
         rec = chat_protocol_find_id(id);
-	return rec == NULL ? NULL : rec->name;
-}
-
-/* Return the full name for the specified chat protocol ID. */
-const char *chat_protocol_get_fullname(int id)
-{
-	PROTOCOL_REC *rec;
-
-	g_return_val_if_fail(id > 0, NULL);
-
-        rec = chat_protocol_find_id(id);
-	return rec == NULL ? NULL : rec->fullname;
-}
-
-/* Return the chatnet identifier name for the specified chat protocol ID. */
-const char *chat_protocol_get_chatnet(int id)
-{
-	PROTOCOL_REC *rec;
-
-	g_return_val_if_fail(id > 0, NULL);
-
-        rec = chat_protocol_find_id(id);
-	return rec == NULL ? NULL : rec->chatnet;
+	return rec == NULL ? NULL : rec->rec;
 }
 
 void chat_protocols_init(void)
