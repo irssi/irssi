@@ -175,7 +175,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ NULL, "Themes", 0 },
 
 	{ "theme_saved", "Theme saved to $0", 1, { 0 } },
-	{ "theme_save_failed", "Error saving theme to $0", 1, { 0 } },
+	{ "theme_save_failed", "Error saving theme to $0: $1", 2, { 0, 0 } },
 	{ "theme_not_found", "Theme {hilight $0} not found", 1, { 0 } },
 	{ "window_theme_changed", "Using theme {hilight $0} in this window", 1, { 0 } },
 	{ "format_title", "%:[{hilight $0}] - [{hilight $1}]%:", 2, { 0, 0 } },
