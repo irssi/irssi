@@ -1,7 +1,7 @@
 /*
  dump.c : proxy plugin - output all information about irc session
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,15 +200,9 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	}
 }
 
-void plugin_proxy_dump_data(CLIENT_REC *client)
+void proxy_dump_data(CLIENT_REC *client)
 {
-	if (client->server != NULL &&
-	    strcmp(client->server->nick, client->nick) != 0) {
-		/* change nick first so that clients won't try to eg. set
-		   their own user mode with wrong nick.. hopefully works
-		   with all clients. */
-		proxy_outdata(client, ":%s!proxy NICK :%s\n",
-			client->nick, client->server->nick);
+	if (client->server != NULL) {
 		g_free(client->nick);
 		client->nick = g_strdup(client->server->nick);
 	}
@@ -216,11 +210,11 @@ void plugin_proxy_dump_data(CLIENT_REC *client)
 	/* welcome info */
 	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, IRSSI_VERSION);
-	proxy_outdata(client, ":%s 003 %s :This server was created ...\n", client->nick);
+	proxy_outdata(client, ":%s 003 %s :This server was created ...\n", client->proxy_address, client->nick);
 	if (client->server == NULL || !client->server->emode_known)
-		proxy_outdata(client, ":%s 004 %s proxy %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, IRSSI_VERSION);
+		proxy_outdata(client, ":%s 004 %s %s %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
 	else
-		proxy_outdata(client, ":%s 004 %s proxy %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, IRSSI_VERSION);
+		proxy_outdata(client, ":%s 004 %s %s %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
 	proxy_outdata(client, ":%s 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 255 %s :I have 0 clients, 0 services and 0 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 422 %s :MOTD File is missing\n", client->proxy_address, client->nick);

@@ -1,7 +1,7 @@
 /*
- sample.c : sample plugin for irssi
+ proxy.c : irc proxy
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,11 +42,11 @@ void irc_proxy_init(void)
 			    "... to set them.");
 	}
 
-	plugin_proxy_listen_init();
+	proxy_listen_init();
         module_register("proxy", "irc");
 }
 
 void irc_proxy_deinit(void)
 {
-	plugin_proxy_listen_deinit();
+	proxy_listen_deinit();
 }

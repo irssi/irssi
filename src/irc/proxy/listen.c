@@ -1,7 +1,7 @@
 /*
- listen.c : sample plugin for irssi
+ listen.c : irc proxy
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 		else {
 			/* wrong password! */
 			remove_client(client);
+                        return;
 		}
 	} else if (strcmp(cmd, "NICK") == 0) {
 		g_free_not_null(client->nick);
@@ -113,7 +114,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			remove_client(client);
 		} else {
 			client->connected = TRUE;
-			plugin_proxy_dump_data(client);
+			proxy_dump_data(client);
 		}
 	}
 }
@@ -130,24 +131,32 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		remove_client(client);
 		return;
 	} if (strcmp(cmd, "PING") == 0) {
-		/* Reply to PING, if the parameter is either proxy_adress,
-		   our own nick or empty. */
-		char *server = args;
-		if (*server == ':') server++;
+		/* Reply to PING, if the server parameter is either
+		   proxy_adress, our own nick or empty. */
+		char *params, *server1, *server2, *server;
 
+		params = event_get_params(args, 2, &server1, &server2);
+		server = *server2 != '\0' ? server2 : server1;
 		if (*server == '\0' ||
 		    g_strncasecmp(server, client->proxy_address,
 				  strlen(client->proxy_address)) == 0 ||
 		    g_strncasecmp(server, client->nick,
 				  strlen(client->nick)) == 0) {
-			if (*server == '\0') args = client->nick;
-			proxy_outdata(client, ":%s PONG %s\n", client->proxy_address, args);
+			if (*server == '\0')
+				args = client->nick;
+			else if (server == server2) {
+                                /* <data> <server> - reply only with <data> */
+				args = server1;
+			}
+			proxy_outdata(client, ":%s PONG %s :%s\n", client->proxy_address, client->proxy_address, args);
+			g_free(params);
 			return;
 		}
+		g_free(params);
 	}
 
 	if (client->server == NULL || !client->server->connected) {
-		proxy_outdata(client, ":%s NOTICE %s :Not connected to server",
+		proxy_outdata(client, ":%s NOTICE %s :Not connected to server\n",
 			      client->proxy_address, client->nick);
                 return;
 	}
@@ -214,7 +223,6 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			    client->nick, client->proxy_address, target);
 		g_free(params);
 	} else if (strcmp(cmd, "PING") == 0) {
-		/* send all PINGs to server. */
 		proxy_redirect_event(client, "ping", 1, NULL, TRUE);
 	}
 
@@ -271,11 +279,14 @@ static void sig_listen(LISTEN_REC *listen)
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
 	rec->handle = handle;
-	rec->proxy_address = g_strdup(listen->ircnet);
-	rec->server = servers == NULL ? NULL :
-		strcmp(listen->ircnet, "*") == 0 ?
-		IRC_SERVER(servers->data) :
-		IRC_SERVER(server_find_chatnet(listen->ircnet));
+	if (strcmp(listen->ircnet, "*") == 0) {
+		rec->proxy_address = g_strdup("irc.proxy");
+		rec->server = servers == NULL ? NULL : IRC_SERVER(servers->data);
+	} else {
+		rec->proxy_address = g_strdup_printf("%s.proxy", listen->ircnet);
+		rec->server = servers == NULL ? NULL :
+			IRC_SERVER(server_find_chatnet(listen->ircnet));
+	}
 	rec->tag = g_input_add(handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen_client, rec);
 
@@ -347,6 +358,18 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(event);
 }
 
+static void proxy_client_reset_nick(CLIENT_REC *client)
+{
+	if (strcmp(client->nick, client->server->nick) == 0)
+		return;
+
+	proxy_outdata(client, ":%s!proxy NICK :%s\n",
+		      client->nick, client->server->nick);
+
+	g_free(client->nick);
+	client->nick = g_strdup(client->server->nick);
+}
+
 static void event_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
@@ -360,9 +383,10 @@ static void event_connected(IRC_SERVER_REC *server)
 		if (rec->connected && rec->server == NULL &&
 		    (g_strcasecmp(server->connrec->chatnet, rec->listen->ircnet) == 0 ||
 		     strcmp(rec->listen->ircnet, "*") == 0)) {
-			proxy_outdata(rec, ":%s NOTICE %s :Connected to server",
+			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
+			proxy_client_reset_nick(rec);
 		}
 	}
 }
@@ -519,7 +543,7 @@ static void read_settings(void)
 	}
 }
 
-void plugin_proxy_listen_init(void)
+void proxy_listen_init(void)
 {
 	next_line = g_string_new(NULL);
 
@@ -536,7 +560,7 @@ void plugin_proxy_listen_init(void)
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
-void plugin_proxy_listen_deinit(void)
+void proxy_listen_deinit(void)
 {
 	while (proxy_clients != NULL)
 		remove_client(proxy_clients->data);
