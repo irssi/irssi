@@ -9,7 +9,7 @@ my $quitfile = glob "~/.irssi/irssi.quit";
 
 sub cmd_quit {
 	my ($data, $server, $channel) = @_;
-	return if ($data eq "");
+	return if ($data ne "");
 
 	open (f, $quitfile) || return;
 	my $lines = 0; while(<f>) { $lines++; };
