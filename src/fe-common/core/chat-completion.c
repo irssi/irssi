@@ -156,6 +156,16 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	}
 }
 
+static void sig_message_join(SERVER_REC *server, const char *channel,
+			     const char *nick, const char *address)
+{
+	CHANNEL_REC *chanrec;
+
+	chanrec = channel_find(server, channel);
+	if (channel != NULL)
+		CHANNEL_LAST_MSG_ADD(chanrec, nick, FALSE);
+}
+
 static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
@@ -829,6 +839,7 @@ void chat_completion_init(void)
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
@@ -850,6 +861,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
