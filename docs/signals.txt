@@ -152,7 +152,7 @@ mode-lists.c:
 
 modes.c:
  "channel mode changed", CHANNEL_REC
- "nick mode changed", NICK_REC
+ "nick mode changed", CHANNEL_REC, NICK_REC
  "user mode changed", SERVER_REC, char *old
  "away mode changed", SERVER_REC
 
