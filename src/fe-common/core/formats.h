@@ -38,6 +38,8 @@ typedef struct {
 	int level;
 } TEXT_DEST_REC;
 
+int format_find_tag(const char *module, const char *tag);
+
 char *format_get_text(const char *module, WINDOW_REC *window,
 		      void *server, const char *target,
 		      int formatnum, ...);
@@ -60,6 +62,9 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 char *format_add_linestart(const char *text, const char *linestart);
 
 /* return the "-!- " text at the start of the line */
+char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest);
+
+/* return timestamp + server tag */
 char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest);
 
 

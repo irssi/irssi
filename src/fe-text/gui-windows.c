@@ -20,7 +20,6 @@
 
 #include "module.h"
 #include "signals.h"
-#include "commands.h"
 #include "servers.h"
 #include "misc.h"
 #include "settings.h"
@@ -28,10 +27,12 @@
 #include "irc.h"
 #include "channels.h"
 #include "fe-windows.h"
+#include "formats.h"
 
 #include "screen.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
+#include "gui-printtext.h"
 
 #ifdef HAVE_REGEX_H
 #  include <regex.h>
@@ -294,8 +295,6 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
 				/* set color */
 				color = (color & ATTR_UNDERLINE) | *ptr;
 			} else switch (*ptr) {
-			case LINE_CMD_OVERFLOW:
-				g_error("buffer overflow! (cache)");
 			case LINE_CMD_UNDERLINE:
 				color ^= ATTR_UNDERLINE;
 				break;
@@ -444,8 +443,6 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 				text = tmp;
 				continue;
 			} else switch ((unsigned char) *text) {
-			case LINE_CMD_OVERFLOW:
-				g_error("buffer overflow! (draw)");
 			case LINE_CMD_EOL:
 			case LINE_CMD_FORMAT:
 				return;
@@ -790,8 +787,6 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 		else if ((guchar) *ptr == LINE_CMD_EOL ||
 			 (guchar) *ptr == LINE_CMD_FORMAT)
 		    break;
-		else if ((guchar) *ptr == LINE_CMD_OVERFLOW)
-			g_error("buffer overflow! (find)");
 	    }
 	}
         str[n] = '\0';
@@ -897,6 +892,175 @@ static int sig_check_linecache(void)
 					    GINT_TO_POINTER((int) time(NULL)));
 	}
 	return 1;
+}
+
+static char *line_read_format(unsigned const char **text)
+{
+	GString *str;
+	char *ret;
+
+	str = g_string_new(NULL);
+	for (;;) {
+		if (**text == '\0') {
+			if ((*text)[1] == LINE_CMD_EOL) {
+				/* leave text at \0<eof> */
+				break;
+			}
+			if ((*text)[1] == LINE_CMD_FORMAT_CONT) {
+				/* leave text at \0<format_cont> */
+				break;
+			}
+			(*text)++;
+
+			if (**text == LINE_CMD_FORMAT) {
+				/* move text to start after \0<format> */
+				(*text)++;
+				break;
+			}
+
+			if (**text == LINE_CMD_CONTINUE) {
+				unsigned char *tmp;
+
+				memcpy(&tmp, (*text)+1, sizeof(char *));
+				*text = tmp;
+				continue;
+			} else if (**text & 0x80)
+				(*text)++;
+		}
+
+		g_string_append_c(str, (char) **text);
+		(*text)++;
+	}
+
+	ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
+static char *gui_window_line_get_format(WINDOW_REC *window, LINE_REC *line,
+					GString *raw)
+{
+	const unsigned char *text;
+	char *module, *format_name, *args[MAX_FORMAT_PARAMS], *ret;
+	TEXT_DEST_REC dest;
+	int formatnum, argcount;
+
+	text = line->text;
+
+	/* skip the beginning of the line until we find the format */
+	g_free(line_read_format(&text));
+	if (text[1] == LINE_CMD_FORMAT_CONT) {
+		g_string_append_c(raw, '\0');
+		g_string_append_c(raw, (char)LINE_CMD_FORMAT_CONT);
+		return NULL;
+	}
+
+	/* read format information */
+        module = line_read_format(&text);
+	format_name = line_read_format(&text);
+
+	if (raw != NULL) {
+		g_string_append_c(raw, '\0');
+		g_string_append_c(raw, (char)LINE_CMD_FORMAT);
+
+		g_string_append(raw, module);
+
+		g_string_append_c(raw, '\0');
+		g_string_append_c(raw, (char)LINE_CMD_FORMAT);
+
+		g_string_append(raw, format_name);
+	}
+
+	formatnum = format_find_tag(module, format_name);
+	if (formatnum == -1)
+		ret = NULL;
+	else {
+		THEME_REC *theme;
+
+		theme = window->theme == NULL ? current_theme :
+			window->theme;
+
+		argcount = 0;
+		while (*text != '\0' || text[1] != LINE_CMD_EOL) {
+			args[argcount] = line_read_format(&text);
+			if (raw != NULL) {
+				g_string_append_c(raw, '\0');
+				g_string_append_c(raw,
+						  (char)LINE_CMD_FORMAT);
+
+				g_string_append(raw, args[argcount]);
+			}
+			argcount++;
+		}
+
+		/* get the format text */
+		format_create_dest(&dest, NULL, NULL, line->level, window);
+		ret = format_get_text_theme_charargs(current_theme,
+						     module, &dest,
+						     formatnum, args);
+		while (argcount > 0)
+			g_free(args[--argcount]);
+	}
+
+	g_free(module);
+	g_free(format_name);
+
+	return ret;
+}
+
+void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
+{
+	GUI_WINDOW_REC *gui;
+	TEXT_DEST_REC dest;
+	GString *raw;
+	char *str, *tmp, *prestr, *linestart, *leveltag;
+
+	gui = WINDOW_GUI(window);
+
+	raw = g_string_new(NULL);
+	str = gui_window_line_get_format(window, line, raw);
+
+	if (str == NULL) {
+		if (raw->len == 2 &&
+		    raw->str[1] == (char)LINE_CMD_FORMAT_CONT) {
+			/* multiline format, format explained in one the
+			   following lines. remove this line. */
+			gui_window_line_remove(window, line);
+		}
+	} else {
+		/* FIXME: ugly ugly .. at least timestamps should be
+		   printed by GUI itself.. server tags are also a bit
+		   problematic.. */
+		g_string_append_c(raw, '\0');
+		g_string_append_c(raw, (char)LINE_CMD_EOL);
+
+		gui->temp_line = line;
+		gui->temp_line->text = gui->cur_text->buffer+gui->cur_text->pos;
+		gui->eol_marked = FALSE;
+
+		format_create_dest(&dest, NULL, NULL, line->level, window);
+
+		linestart = format_get_line_start(current_theme, &dest);
+		leveltag = format_get_level_tag(current_theme, &dest);
+
+		prestr = g_strconcat(linestart == NULL ? "" : linestart,
+				     leveltag, NULL);
+		g_free_not_null(linestart);
+		g_free_not_null(leveltag);
+
+		tmp = format_add_linestart(str, prestr);
+		g_free(str);
+		g_free(prestr);
+
+		format_send_to_gui(&dest, tmp);
+		g_free(tmp);
+
+		gui_window_line_append(gui, raw->str, raw->len);
+
+		gui->eol_marked = TRUE;
+		gui->temp_line = NULL;
+	}
+	g_string_free(raw, TRUE);
 }
 
 static void read_settings(void)

@@ -162,7 +162,9 @@ void fe_common_core_finish_init(void)
 
 	signal_emit("irssi init read settings", 0);
 
+#ifdef SIGPIPE
 	signal(SIGPIPE, SIG_IGN);
+#endif
 
 	windows_restore();
 	if (windows != NULL)

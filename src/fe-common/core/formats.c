@@ -34,6 +34,27 @@
 static int signal_gui_print_text;
 static int hide_text_style;
 
+static int timestamps, msgs_timestamps;
+static int timestamp_timeout;
+
+int format_find_tag(const char *module, const char *tag)
+{
+	FORMAT_REC *formats;
+	int n;
+
+	formats = g_hash_table_lookup(default_formats, module);
+	if (formats == NULL)
+		return -1;
+
+	for (n = 0; formats[n].def != NULL; n++) {
+		if (formats[n].tag != NULL &&
+		    g_strcasecmp(formats[n].tag, tag) == 0)
+			return n;
+	}
+
+	return -1;
+}
+
 int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 {
 	static const char *backs = "04261537";
@@ -286,11 +307,11 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 				     char **args)
 {
 	MODULE_THEME_REC *module_theme;
-	FORMAT_REC *formats;
 	char *text;
 
 	module_theme = g_hash_table_lookup(theme->modules, module);
-	formats = g_hash_table_lookup(default_formats, module);
+	if (module_theme == NULL)
+		return NULL;
 
         text = module_theme->expanded_formats[formatnum];
 	return format_get_text_args(dest, text, args);
@@ -351,7 +372,7 @@ char *format_add_linestart(const char *text, const char *linestart)
 	MSGLEVEL_ACTIONS | MSGLEVEL_NOTICES | MSGLEVEL_SNOTES | MSGLEVEL_CTCPS)
 
 /* return the "-!- " text at the start of the line */
-char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest)
+char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 {
 	int format;
 
@@ -363,6 +384,81 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest)
 		return NULL;
 
 	return format_get_text_theme(theme, MODULE_NAME, dest, format);
+}
+
+#define show_timestamp(level) \
+	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
+	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
+
+static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest)
+{
+	struct tm *tm;
+	time_t t;
+	int diff;
+
+	if (!show_timestamp(dest->level))
+		return NULL;
+
+	t = time(NULL);
+
+	if (timestamp_timeout > 0) {
+		diff = t - dest->window->last_timestamp;
+		dest->window->last_timestamp = t;
+		if (diff < timestamp_timeout)
+			return NULL;
+	}
+
+	tm = localtime(&t);
+	return format_get_text_theme(theme, MODULE_NAME, dest, IRCTXT_TIMESTAMP,
+				     tm->tm_year+1900,
+				     tm->tm_mon+1, tm->tm_mday,
+				     tm->tm_hour, tm->tm_min, tm->tm_sec);
+}
+
+static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
+{
+	SERVER_REC *server;
+	int count = 0;
+
+	server = dest->server;
+
+	if (server == NULL || (dest->window->active != NULL &&
+			       dest->window->active->server == server))
+		return NULL;
+
+	if (servers != NULL) {
+		count++;
+		if (servers->next != NULL)
+			count++;
+	}
+	if (count == 2 || lookup_servers != NULL) {
+                count++;
+		if (lookup_servers->next != NULL)
+			count++;
+	}
+
+	return count < 2 ? NULL :
+		format_get_text_theme(theme, MODULE_NAME, dest,
+				      IRCTXT_SERVERTAG, server->tag);
+}
+
+char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest)
+{
+	char *timestamp, *servertag;
+	char *linestart;
+
+	timestamp = get_timestamp(theme, dest);
+	servertag = get_server_tag(theme, dest);
+
+	if (timestamp == NULL && servertag == NULL)
+		return NULL;
+
+	linestart = g_strconcat(timestamp != NULL ? timestamp : "",
+				servertag, NULL);
+
+	g_free_not_null(timestamp);
+	g_free_not_null(servertag);
+	return linestart;
 }
 
 void format_newline(WINDOW_REC *window)
@@ -665,6 +761,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 static void read_settings(void)
 {
 	hide_text_style = settings_get_bool("hide_text_style");
+	timestamps = settings_get_bool("timestamps");
+	timestamp_timeout = settings_get_int("timestamp_timeout");
+	msgs_timestamps = settings_get_bool("msgs_timestamps");
 }
 
 void formats_init(void)

@@ -459,25 +459,20 @@ static void theme_read_abstracts(CONFIG_REC *config, THEME_REC *theme)
 }
 
 static void theme_set_format(THEME_REC *theme, MODULE_THEME_REC *rec,
-			     FORMAT_REC *formats,
+			     const char *module,
 			     const char *key, const char *value)
 {
-	int n;
+	int num;
 
-	for (n = 0; formats[n].def != NULL; n++) {
-		if (formats[n].tag != NULL &&
-		    g_strcasecmp(formats[n].tag, key) == 0) {
-			rec->formats[n] = g_strdup(value);
-			rec->expanded_formats[n] =
-				theme_format_expand(theme, value);
-			break;
-		}
+        num = format_find_tag(module, key);
+	if (num != -1) {
+		rec->formats[num] = g_strdup(value);
+		rec->expanded_formats[num] = theme_format_expand(theme, value);
 	}
 }
 
 static void theme_read_formats(THEME_REC *theme, const char *module,
-			       CONFIG_REC *config, FORMAT_REC *formats,
-			       MODULE_THEME_REC *rec)
+			       CONFIG_REC *config, MODULE_THEME_REC *rec)
 {
 	CONFIG_NODE *node;
 	GSList *tmp;
@@ -491,7 +486,7 @@ static void theme_read_formats(THEME_REC *theme, const char *module,
 		node = tmp->data;
 
 		if (node->key != NULL && node->value != NULL) {
-			theme_set_format(theme, rec, formats,
+			theme_set_format(theme, rec, module,
 					 node->key, node->value);
 		}
 	}
@@ -510,7 +505,7 @@ static void theme_init_module(THEME_REC *theme, const char *module,
 	rec = theme_module_create(theme, module);
 
 	if (config != NULL)
-		theme_read_formats(theme, module, config, formats, rec);
+		theme_read_formats(theme, module, config, rec);
 
 	/* expand the remaining formats */
 	for (n = 0; n < rec->count; n++) {

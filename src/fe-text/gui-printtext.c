@@ -44,26 +44,35 @@ static GString *format;
 
 static LINE_REC *create_line(GUI_WINDOW_REC *gui, int level)
 {
+	LINE_REC *rec;
+
 	g_return_val_if_fail(gui != NULL, NULL);
 	g_return_val_if_fail(gui->cur_text != NULL, NULL);
 
-	gui->cur_line = g_mem_chunk_alloc(gui->line_chunk);
-	gui->cur_line->text = gui->cur_text->buffer+gui->cur_text->pos;
-	gui->cur_line->level = GPOINTER_TO_INT(level);
-	gui->cur_line->time = time(NULL);
+	rec = g_mem_chunk_alloc(gui->line_chunk);
+	rec->text = gui->cur_text->buffer+gui->cur_text->pos;
+	rec->level = GPOINTER_TO_INT(level);
+	rec->time = time(NULL);
 
 	mark_temp_eol(gui->cur_text);
 
 	gui->last_color = -1;
 	gui->last_flags = 0;
 
-	gui->lines = g_list_append(gui->lines, gui->cur_line);
-	if (gui->startline == NULL) {
-                /* first line */
-		gui->startline = gui->lines;
-		gui->bottom_startline = gui->lines;
+	if (gui->temp_line != NULL) {
+		int pos = g_list_index(gui->lines, gui->temp_line);
+		gui->lines = g_list_insert(gui->lines, rec, pos+1);
+		gui->temp_line = rec;
+	} else {
+		gui->cur_line = rec;
+		gui->lines = g_list_append(gui->lines, rec);
+		if (gui->startline == NULL) {
+			/* first line */
+			gui->startline = gui->lines;
+			gui->bottom_startline = gui->lines;
+		}
 	}
-	return gui->cur_line;
+	return rec;
 }
 
 static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
@@ -74,8 +83,6 @@ static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
 	g_return_val_if_fail(gui != NULL, NULL);
 
 	rec = g_new(TEXT_CHUNK_REC, 1);
-	rec->overflow[0] = 0;
-	rec->overflow[1] = (char) LINE_CMD_OVERFLOW;
 	rec->pos = 0;
 	rec->lines = 0;
 
@@ -105,24 +112,73 @@ static void text_chunk_free(GUI_WINDOW_REC *gui, TEXT_CHUNK_REC *chunk)
 	g_free(chunk);
 }
 
-static void remove_first_line(WINDOW_REC *window)
+static TEXT_CHUNK_REC *text_chunk_find(GUI_WINDOW_REC *gui, const char *data)
+{
+	GSList *tmp;
+
+	for (tmp = gui->text_chunks; tmp != NULL; tmp = tmp->next) {
+		TEXT_CHUNK_REC *rec = tmp->data;
+
+		if (data >= rec->buffer &&
+		    data < rec->buffer+sizeof(rec->buffer))
+                        return rec;
+	}
+
+	return NULL;
+}
+
+void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
+{
+	TEXT_CHUNK_REC *chunk;
+        const unsigned char *text;
+
+	text = line->text;
+	for (;;) {
+		if (*text == '\0') {
+                        text++;
+			if (*text == LINE_CMD_EOL)
+				break;
+
+			if (*text == LINE_CMD_CONTINUE) {
+				unsigned char *tmp;
+
+				memcpy(&tmp, text+1, sizeof(char *));
+
+				/* free the previous block */
+				chunk = text_chunk_find(gui, text);
+				if (--chunk->lines == 0)
+					text_chunk_free(gui, chunk);
+
+				text = tmp;
+				continue;
+			}
+			if (*text & 0x80)
+				text++;
+		}
+
+		text++;
+	}
+
+	/* free the last block */
+	chunk = text_chunk_find(gui, text);
+	if (--chunk->lines == 0)
+		text_chunk_free(gui, chunk);
+}
+
+void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
 {
 	GUI_WINDOW_REC *gui;
-	TEXT_CHUNK_REC *chunk;
 
 	g_return_if_fail(window != NULL);
 
 	gui = WINDOW_GUI(window);
-	chunk = gui->text_chunks->data;
 
-	if (--chunk->lines == 0)
-		text_chunk_free(gui, chunk);
-
+	gui_window_line_text_free(gui, line);
 	if (gui->lastlog_last_check != NULL &&
-	    gui->lastlog_last_check->data == window)
+	    gui->lastlog_last_check->data == line)
 		gui->lastlog_last_check = NULL;
 	if (gui->lastlog_last_away != NULL &&
-	    gui->lastlog_last_away->data == window)
+	    gui->lastlog_last_away->data == line)
 		gui->lastlog_last_away = NULL;
 
 	if (gui->startline->prev == NULL) {
@@ -138,8 +194,8 @@ static void remove_first_line(WINDOW_REC *window)
 	}
 
 	window->lines--;
-	g_mem_chunk_free(gui->line_chunk, gui->lines->data);
-	gui->lines = g_list_remove(gui->lines, gui->lines->data);
+	g_mem_chunk_free(gui->line_chunk, line);
+	gui->lines = g_list_remove(gui->lines, line);
 
 	if (gui->startline->prev == NULL && is_window_visible(window))
 		gui_window_redraw(window);
@@ -162,7 +218,7 @@ static void remove_old_lines(WINDOW_REC *window)
 				/* too new line, don't remove yet */
 				break;
 			}
-			remove_first_line(window);
+			gui_window_line_remove(window, line);
 		}
 	}
 }
@@ -212,11 +268,18 @@ static void linebuf_add(GUI_WINDOW_REC *gui, const char *str, int len)
 		gui->cur_text->pos += left;
 
 		create_text_chunk(gui);
+		gui->cur_text->lines++;
 		len -= left; str += left;
 	}
 
 	memcpy(gui->cur_text->buffer + gui->cur_text->pos, str, len);
 	gui->cur_text->pos += len;
+}
+
+void gui_window_line_append(GUI_WINDOW_REC *gui, const char *str, int len)
+{
+	linebuf_add(gui, str, len);
+	mark_temp_eol(gui->cur_text);
 }
 
 static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
@@ -282,15 +345,26 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 
 	/* newline can be only at the start of the line.. */
 	if (flags & PRINTFLAG_NEWLINE) {
-		linebuf_add(gui, "\0\200", 2); /* mark EOL */
+		if (!gui->eol_marked) {
+			if (format->len > 0 || gui->temp_line != NULL) {
+				/* mark format continuing to next line */
+				char tmp[2] = { 0, (char)LINE_CMD_FORMAT_CONT };
+				linebuf_add(gui, tmp, 2);
+			}
+			linebuf_add(gui, "\0\200", 2); /* mark EOL */
+		}
+		gui->eol_marked = FALSE;
 
 		line = create_line(gui, 0);
-		gui_window_newline(gui, visible);
+		gui_window_newline(gui, visible && gui->temp_line == NULL);
 
 		gui->cur_text->lines++;
 		gui->last_subline = 0;
 	} else {
-		line = gui->cur_line != NULL ? gui->cur_line :
+		if (gui->eol_marked)
+			g_warning("gui_printtext(): eol_marked");
+		line = gui->temp_line != NULL ? gui->temp_line :
+			gui->cur_line != NULL ? gui->cur_line :
 			create_line(gui, 0);
 		if (line->level == 0) line->level = GPOINTER_TO_INT(level);
 	}
@@ -301,6 +375,13 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 	mark_temp_eol(gui->cur_text);
 
 	gui_window_cache_remove(gui, line);
+
+	if (gui->temp_line != NULL) {
+		/* updating existing line - don't even
+		   try to print it to screen */
+		return;
+	}
+
 	new_lines = gui_window_get_linecount(gui, line)-1 - gui->last_subline;
 
 	for (n = 0; n < new_lines; n++)
@@ -376,10 +457,12 @@ static void sig_printtext_finished(WINDOW_REC *window)
 	if (format->len > 0) {
                 /* save format of the line */
 		linebuf_add(gui, format->str, format->len);
-		mark_temp_eol(gui->cur_text);
 
 		g_string_truncate(format, 0);
 	}
+
+	linebuf_add(gui, "\0\200", 2); /* mark EOL */
+	gui->eol_marked = TRUE;
 
 	if (is_window_visible(window)) {
 #ifdef USE_CURSES_WINDOWS
@@ -410,9 +493,10 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 	g_string_append_c(format, (char)LINE_CMD_FORMAT);
 
         g_string_append(format, module);
-	g_string_append_c(format, '\0');
 
+	g_string_append_c(format, '\0');
 	g_string_append_c(format, (char)LINE_CMD_FORMAT);
+
 	g_string_append(format, formats[formatnum].tag);
 
 	for (n = 0; n < formats[formatnum].params; n++) {

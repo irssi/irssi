@@ -461,7 +461,7 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 
 	if (*str != '\0') {
                 /* add the line start format */
-		linestart = format_get_line_start(log_theme, dest);
+		linestart = format_get_level_tag(log_theme, dest);
                 tmp = str;
 		str = format_add_linestart(tmp, linestart);
 		g_free_not_null(linestart);

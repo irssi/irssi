@@ -33,8 +33,6 @@
 #include "printtext.h"
 
 static int beep_msg_level, beep_when_away;
-static int timestamps, msgs_timestamps;
-static int timestamp_timeout;
 
 static int signal_gui_print_text;
 static int signal_print_text_stripped;
@@ -120,7 +118,7 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
 
-	tmp = format_get_line_start(current_theme, dest);
+	tmp = format_get_level_tag(current_theme, dest);
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
@@ -250,49 +248,6 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 	g_free(str);
 }
 
-#define show_timestamp(level) \
-	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
-	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
-
-static char *get_timestamp(TEXT_DEST_REC *dest)
-{
-	struct tm *tm;
-	time_t t;
-	int diff;
-
-	if (!show_timestamp(dest->level))
-		return NULL;
-
-	t = time(NULL);
-
-	if (timestamp_timeout > 0) {
-		diff = t - dest->window->last_timestamp;
-		dest->window->last_timestamp = t;
-		if (diff < timestamp_timeout)
-			return NULL;
-	}
-
-	tm = localtime(&t);
-	return format_get_text_theme(NULL, MODULE_NAME, dest, IRCTXT_TIMESTAMP,
-				     tm->tm_year+1900,
-				     tm->tm_mon+1, tm->tm_mday,
-				     tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
-
-static char *get_server_tag(TEXT_DEST_REC *dest)
-{
-	SERVER_REC *server;
-
-	server = dest->server;
-
-	if (server == NULL || servers == NULL || servers->next == NULL ||
-	    (dest->window->active != NULL && dest->window->active->server == server))
-		return NULL;
-
-	return format_get_text_theme(NULL, MODULE_NAME, dest,
-				     IRCTXT_SERVERTAG, server->tag);
-}
-
 static void msg_beep_check(SERVER_REC *server, int level)
 {
 	if (level != 0 && (level & MSGLEVEL_NOHILIGHT) == 0 &&
@@ -302,30 +257,9 @@ static void msg_beep_check(SERVER_REC *server, int level)
 	}
 }
 
-static char *fix_line_start(TEXT_DEST_REC *dest, const char *text)
-{
-	char *timestamp, *servertag;
-	char *linestart, *str;
-
-	timestamp = get_timestamp(dest);
-	servertag = get_server_tag(dest);
-
-	if (timestamp == NULL && servertag == NULL)
-		return g_strdup(text);
-
-	linestart = g_strconcat(timestamp != NULL ? timestamp : "",
-				servertag, NULL);
-	str = format_add_linestart(text, linestart);
-	g_free(linestart);
-
-	g_free_not_null(timestamp);
-	g_free_not_null(servertag);
-	return str;
-}
-
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 {
-	char *str;
+	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
@@ -335,7 +269,12 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	dest->window->last_line = time(NULL);
 	format_newline(dest->window);
 
-	str = fix_line_start(dest, text);
+	/* add timestamp/server tag here - if it's done in print_line()
+	   it would be written to log files too */
+	tmp = format_get_line_start(current_theme, dest);
+	str = format_add_linestart(text, tmp);
+	g_free(tmp);
+
 	format_send_to_gui(dest, str);
 	g_free(str);
 
@@ -372,9 +311,6 @@ static void sig_gui_dialog(const char *type, const char *text)
 
 static void read_settings(void)
 {
-	timestamps = settings_get_bool("timestamps");
-	timestamp_timeout = settings_get_int("timestamp_timeout");
-	msgs_timestamps = settings_get_bool("msgs_timestamps");
 	beep_msg_level = level2bits(settings_get_str("beep_on_msg"));
 	beep_when_away = settings_get_bool("beep_when_away");
 }

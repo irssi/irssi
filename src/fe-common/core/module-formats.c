@@ -27,8 +27,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Windows", 0 },
 
-	{ "line_start", "{line_start} ", 0 },
-	{ "line_start_irssi", "{line_start} {hilight Irssi:} ", 0 },
+	{ "line_start", "{line_start}", 0 },
+	{ "line_start_irssi", "{line_start}{hilight Irssi:} ", 0 },
 	{ "timestamp", "$[-2.0]3:$[-2.0]4 ", 6, { 1, 1, 1, 1, 1, 1 } },
 	{ "servertag", "[$0] ", 1, { 0 } },
 	{ "daychange", "Day changed to $[-2.0]{0} $3 $2", 4, { 1, 1, 1, 0 } },

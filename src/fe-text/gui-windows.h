@@ -15,16 +15,16 @@
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here. */
 	LINE_CMD_CONTINUE,	/* line continues in next block */
-	LINE_CMD_OVERFLOW,	/* buffer overflow! */
 	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
 	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
 	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
 	LINE_CMD_BLINK,		/* blinking background */
-	LINE_CMD_FORMAT		/* end of line, but next will come the format that was used to create the
+	LINE_CMD_FORMAT,	/* end of line, but next will come the format that was used to create the
 				   text in format <module><format_name><arg><arg2...> - fields are separated
 				   with \0<format> and last argument ends with \0<eol>. \0<continue> is allowed
 				   anywhere */
+	LINE_CMD_FORMAT_CONT    /* multiline format, continues to next line */
 };
 
 typedef struct {
@@ -56,7 +56,6 @@ typedef struct {
 
 typedef struct {
 	char buffer[LINE_TEXT_CHUNK_SIZE];
-	char overflow[2];
 	int pos;
 	int lines;
 } TEXT_CHUNK_REC;
@@ -69,7 +68,7 @@ typedef struct {
 	GList *lines;
 	GHashTable *line_cache;
 
-	LINE_REC *cur_line;
+	LINE_REC *cur_line, *temp_line;
 	TEXT_CHUNK_REC *cur_text;
 
 	int xpos, ypos; /* cursor position in screen */
@@ -80,7 +79,8 @@ typedef struct {
 	int bottom_subline;
 	int empty_linecount; /* how many empty lines are in screen.
 	                        a screenful when started or used /CLEAR */
-	int bottom; /* window is at the bottom of the text buffer */
+	int bottom:1; /* window is at the bottom of the text buffer */
+	int eol_marked:1; /* last line marked for eol */
 
 	/* For /LAST -new and -away */
 	GList *lastlog_last_check;
@@ -106,6 +106,7 @@ int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip
 
 void gui_window_clear(WINDOW_REC *window);
 void gui_window_redraw(WINDOW_REC *window);
+void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line);
 void gui_window_resize(WINDOW_REC *window, int ychange, int xchange);
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent);
 
