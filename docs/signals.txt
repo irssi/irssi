@@ -286,6 +286,19 @@ windows.c:
  "window name changed", WINDOW_REC
  "window level changed", WINDOW_REC
 
+FE IRC
+------
+
+fe-irc-messages.c:
+ "message irc op_public", SERVER_REC, char *msg, char *nick, char *address, char *target
+ "message irc own_wall", SERVER_REC, char *msg, char *target
+ "message irc own_action", SERVER_REC, char *msg, char *target
+ "message irc action", SERVER_REC, char *msg, char *nick, char *address, char *target
+ "message irc own_notice", SERVER_REC, char *msg, char *target
+ "message irc notice", SERVER_REC, char *msg, char *nick, char *address, char *target
+ "message irc own_ctcp", SERVER_REC, char *cmd, char *data, char *target
+ "message irc ctcp", SERVER_REC, char *msg, char *nick, char *address, char *target
+
 Text FE
 -------
 
