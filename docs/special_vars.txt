@@ -81,17 +81,19 @@ $A .. $Z is important.
    $$         a literal '$'
 
    $versiontim          prints time of the irssi version in HHMM format
-   $sysname		system name (eg. Linux)
-   $sysrelease		system release (eg. 2.2.18)
-   $sysarch		system architecture (eg. i686)
-   $topic		channel topic
-   $usermode		user mode
-   $cumode		own channel user mode
-   $cumode_space	like $cumode, but gives space if there's no mode.
-   $tag			server tag
-   $chatnet		chat network of server
-   $winref		window reference number
-   $winname		window name
+   $sysname             system name (eg. Linux)
+   $sysrelease          system release (eg. 2.2.18)
+   $sysarch             system architecture (eg. i686)
+   $topic               channel topic
+   $usermode            user mode
+   $cumode              own channel user mode
+   $cumode_space        like $cumode, but gives space if there's no mode.
+   $tag                 server tag
+   $chatnet             chat network of server
+   $winref              window reference number
+   $winname             window name
+   $itemname            like $T, but use item's visible_name which may be
+                        different (eg. $T = !12345chan, $itemname = !chan)
 
 For example, assume you have the following alias:
 
