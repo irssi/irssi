@@ -29,7 +29,7 @@
 #include "gui-printtext.h"
 #include "gui-windows.h"
 
-int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7 };
+int mirc_colors[] = { 15, 0, 1, 2, 4, 6, 5, 12, 14, 10, 3, 11, 9, 13, 8, 7 };
 static int scrollback_lines, scrollback_hours, scrollback_burst_remove;
 
 static int last_fg, last_bg, last_flags;
