@@ -43,7 +43,7 @@ static const char *levels[] = {
 	"CLIENTNOTICES",
 	"CLIENTCRAP",
 	"CLIENTERRORS",
-	"HILIGHT",
+	"HILIGHTS",
 
 	"NOHILIGHT",
 	NULL
