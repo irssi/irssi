@@ -346,7 +346,7 @@ void perl_signal_remove(const char *signal, const char *func)
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
 		list = g_hash_table_lookup(signals[n], signal_idp);
 		if (list != NULL)
-			perl_signal_remove_list(list, func);
+			perl_signal_remove_list(list, fullfunc);
 	}
 	g_free(fullfunc);
 }
