@@ -475,12 +475,13 @@ static void log_single_line(WINDOW_REC *window, const char *server_tag,
 	char **targets, **tmp;
 	LOG_REC *log;
 
-	/* save to log created with /WINDOW LOG */
-	ltoa(windownum, window->refnum);
-	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
-			     windownum, NULL, NULL);
-	if (log != NULL) {
-		log_write_rec(log, text, level);
+	if (window != NULL) {
+		/* save to log created with /WINDOW LOG */
+		ltoa(windownum, window->refnum);
+		log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
+				     windownum, NULL, NULL);
+		if (log != NULL)
+			log_write_rec(log, text, level);
 	}
 
 	if (target == NULL)
