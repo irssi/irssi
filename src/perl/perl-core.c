@@ -25,6 +25,7 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
+#include "lib-config/iconfig.h" /* FIXME: remove before .99 */
 
 #include "perl-core.h"
 #include "perl-common.h"
@@ -429,6 +430,19 @@ static void sig_autorun(void)
 
 void perl_core_init(void)
 {
+	/* FIXME: remove before .99 - backwards compatibility
+	   fix between CVS versions */
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("settings", FALSE);
+	if (node != NULL)
+                node = config_node_section(node, "perl/core", -1);
+	if (node != NULL) {
+                g_free(node->key);
+		node->key = g_strdup("perl/core/scripts");
+	}
+        /* ----- */
+
         print_script_errors = 1;
 	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
@@ -438,10 +452,12 @@ void perl_core_init(void)
 
 	perl_scripts_init();
 
-        if (irssi_init_finished)
+	if (irssi_init_finished)
 		perl_scripts_autorun();
-	else
-                signal_add("irssi init finished", (SIGNAL_FUNC) sig_autorun);
+	else {
+		signal_add("irssi init finished", (SIGNAL_FUNC) sig_autorun);
+		settings_check();
+	}
 
 	module_register("perl", "core");
 }

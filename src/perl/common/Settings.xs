@@ -91,7 +91,7 @@ settings_add_str(section, key, def)
 	char *def
 CODE:
         perl_settings_add(key);
-	settings_add_str(section, key, def);
+	settings_add_str_module(MODULE_NAME"/scripts", section, key, def);
 
 void
 settings_add_int(section, key, def)
@@ -100,7 +100,7 @@ settings_add_int(section, key, def)
 	int def
 CODE:
         perl_settings_add(key);
-	settings_add_int(section, key, def);
+	settings_add_int_module(MODULE_NAME"/scripts", section, key, def);
 
 void
 settings_add_bool(section, key, def)
@@ -109,7 +109,7 @@ settings_add_bool(section, key, def)
 	int def
 CODE:
         perl_settings_add(key);
-	settings_add_bool(section, key, def);
+	settings_add_bool_module(MODULE_NAME"/scripts", section, key, def);
 
 void
 settings_remove(key)
