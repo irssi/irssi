@@ -42,12 +42,6 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 
-	if (*msg == 1) {
-		/* don't hilight CTCPs */
-		g_free(params);
-		return;
-	}
-
 	/* get window and window item */
 	level = ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
 	item = window_item_find(server, ischannel(*target) ? target : nick);

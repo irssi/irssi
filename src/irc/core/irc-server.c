@@ -367,7 +367,9 @@ static void event_connected(const char *data, IRC_SERVER_REC *server, const char
 
 	if (server->real_address == NULL) {
 		/* set the server address */
-		server->real_address = g_strdup(from);
+		server->real_address = from == NULL ?
+			g_strdup(server->connrec->address) : /* shouldn't happen.. */
+			g_strdup(from);
 	}
 
 	/* last welcome message found - commands can be sent to server now. */

@@ -112,6 +112,22 @@ void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 }
 
+/* Return TRUE if `item' is the active window item in the window.
+   `item' can be NULL. */
+int window_item_is_active(WI_ITEM_REC *item)
+{
+	WINDOW_REC *window;
+
+	if (item == NULL)
+		return FALSE;
+
+	window = window_item_window(item);
+	if (window == NULL)
+		return FALSE;
+
+	return window->active == item;
+}
+
 void window_item_prev(WINDOW_REC *window)
 {
 	WI_ITEM_REC *last;

@@ -34,6 +34,18 @@
 
 static int queryclose_tag, query_auto_close;
 
+/* Return query where to put the private message. */
+QUERY_REC *privmsg_get_query(IRC_SERVER_REC *server, const char *nick)
+{
+	QUERY_REC *query;
+
+	query = query_find(server, nick);
+        if (query == NULL && settings_get_bool("autocreate_query"))
+		query = query_create(server, nick, TRUE);
+
+	return query;
+}
+
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
 	window_item_create((WI_ITEM_REC *) query, GPOINTER_TO_INT(automatic));

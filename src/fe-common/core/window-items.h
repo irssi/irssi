@@ -13,6 +13,10 @@ WINDOW_REC *window_item_window(WI_ITEM_REC *item);
 void window_item_change_server(WI_ITEM_REC *item, void *server);
 
 void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item);
+/* Return TRUE if `item' is the active window item in the window.
+   `item' can be NULL. */
+int window_item_is_active(WI_ITEM_REC *item);
+
 void window_item_prev(WINDOW_REC *window);
 void window_item_next(WINDOW_REC *window);
 

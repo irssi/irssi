@@ -158,13 +158,6 @@ static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick)
 
     params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 
-    if (*msg == 1)
-    {
-        /* ignore ctcp messages */
-        g_free(params);
-        return;
-    }
-
     if (ischannel(*target))
     {
         /* channel message */

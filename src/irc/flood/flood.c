@@ -195,7 +195,7 @@ static void flood_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (nick == NULL) {
+	if (nick == NULL || addr == NULL) {
 		/* don't try to ignore server messages.. */
 		return;
 	}
@@ -223,16 +223,30 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (nick == NULL) {
+	if (nick == NULL || addr == NULL) {
 		/* don't try to ignore server messages.. */
 		return;
 	}
 
 	params = event_get_params(data, 2, &target, &text);
-	if (addr != NULL && !ignore_check(server, nick, addr, target, text, MSGLEVEL_NOTICES))
-		flood_newmsg(server, MSGLEVEL_NOTICES | ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS, nick, addr, target);
+	if (!ignore_check(server, nick, addr, target, text, MSGLEVEL_NOTICES))
+		flood_newmsg(server, MSGLEVEL_NOTICES, nick, addr, target);
 
 	g_free(params);
+}
+
+static void flood_ctcp(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+{
+	g_return_if_fail(data != NULL);
+	g_return_if_fail(server != NULL);
+
+	if (nick == NULL || addr == NULL) {
+		/* don't try to ignore server messages.. */
+		return;
+	}
+
+	if (!ignore_check(server, nick, addr, target, data, MSGLEVEL_CTCPS))
+		flood_newmsg(server, MSGLEVEL_CTCPS, nick, addr, target);
 }
 
 static void read_settings(void)
@@ -255,6 +269,8 @@ static void read_settings(void)
 		flood_tag = g_timeout_add(time, (GSourceFunc) flood_timeout, NULL);
 		signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_add("event notice", (SIGNAL_FUNC) flood_notice);
+		signal_add("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
+		signal_add("ctcp reply", (SIGNAL_FUNC) flood_ctcp);
 	}
 }
 
@@ -280,6 +296,8 @@ void irc_flood_deinit(void)
 		g_source_remove(flood_tag);
 		signal_remove("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_remove("event notice", (SIGNAL_FUNC) flood_notice);
+		signal_remove("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
+		signal_remove("ctcp reply", (SIGNAL_FUNC) flood_ctcp);
 	}
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

@@ -223,14 +223,12 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 
-	if (*msg != 1) {
-		if (!ischannel(*target)) {
-			g_free_not_null(last_privmsg_from);
-			last_privmsg_from = g_strdup(nick);
-		} else {
-			g_free_not_null(last_public_from);
-			last_public_from = g_strdup(nick);
-		}
+	if (!ischannel(*target)) {
+		g_free_not_null(last_privmsg_from);
+		last_privmsg_from = g_strdup(nick);
+	} else {
+		g_free_not_null(last_public_from);
+		last_public_from = g_strdup(nick);
 	}
 
 	g_free(params);

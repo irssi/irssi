@@ -125,7 +125,7 @@ static void cmd_window_next(void)
 {
 	int num;
 
-	num = window_refnum_next(active_win->refnum);
+	num = window_refnum_next(active_win->refnum, TRUE);
 	if (num < 1) num = windows_refnum_last();
 
 	window_set_active(window_find_refnum(num));
@@ -135,8 +135,8 @@ static void cmd_window_prev(void)
 {
 	int num;
 
-	num = window_refnum_prev(active_win->refnum);
-	if (num < 1) num = window_refnum_next(0);
+	num = window_refnum_prev(active_win->refnum, TRUE);
+	if (num < 1) num = window_refnum_next(0, TRUE);
 
 	window_set_active(window_find_refnum(num));
 }
@@ -239,9 +239,9 @@ static void cmd_window_move_left(void)
 {
 	int refnum;
 
-	refnum = window_refnum_prev(active_win->refnum);
+	refnum = window_refnum_prev(active_win->refnum, TRUE);
 	if (refnum != -1) {
-		window_set_refnum(active_win, active_win->refnum-1);
+		window_set_refnum(active_win, refnum);
 		return;
 	}
 
@@ -252,9 +252,9 @@ static void cmd_window_move_right(void)
 {
 	int refnum;
 
-	refnum = window_refnum_next(active_win->refnum);
+	refnum = window_refnum_next(active_win->refnum, TRUE);
 	if (refnum != -1) {
-		window_set_refnum(active_win, active_win->refnum+1);
+		window_set_refnum(active_win, refnum);
 		return;
 	}
 
@@ -273,7 +273,7 @@ static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *i
 	new_refnum = atoi(data);
 	if (new_refnum > active_win->refnum) {
 		for (;;) {
-			refnum = window_refnum_next(active_win->refnum);
+			refnum = window_refnum_next(active_win->refnum, FALSE);
 			if (refnum == -1 || refnum > new_refnum)
 				break;
 
@@ -281,7 +281,7 @@ static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *i
 		}
 	} else {
 		for (;;) {
-			refnum = window_refnum_prev(active_win->refnum);
+			refnum = window_refnum_prev(active_win->refnum, FALSE);
 			if (refnum == -1 || refnum < new_refnum)
 				break;
 

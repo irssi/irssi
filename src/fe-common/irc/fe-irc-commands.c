@@ -33,6 +33,7 @@
 #include "channels.h"
 #include "query.h"
 
+#include "fe-query.h"
 #include "windows.h"
 #include "window-items.h"
 
@@ -153,11 +154,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     else
     {
         /* private message */
-        if (settings_get_bool("autocreate_query") && query_find(server, target) == NULL)
-	    item = (WI_ITEM_REC *) query_create(server, target, FALSE);
-	else
-	    item = (WI_ITEM_REC *) query_find(server, target);
-
+        item = (WI_ITEM_REC *) privmsg_get_query(server, target);
 	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
 		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }

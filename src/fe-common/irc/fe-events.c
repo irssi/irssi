@@ -34,10 +34,14 @@
 #include "ignore.h"
 #include "netsplit.h"
 
+#include "fe-query.h"
 #include "irc-hilight-text.h"
 #include "windows.h"
 
 #include "completion.h"
+
+#define target_level(target) \
+	(ischannel((target)[0]) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS)
 
 static int beep_msg_level, beep_when_away;
 
@@ -49,195 +53,150 @@ static void msg_beep_check(IRC_SERVER_REC *server, int level)
 	}
 }
 
-static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void print_channel_msg(IRC_SERVER_REC *server, const char *msg, const char *nick, const char *addr, const char *target)
 {
-    CHANNEL_REC *chanrec;
-    WI_ITEM_REC *item;
-    gchar *params, *target, *msg, *nickmode;
-    int level;
-
-    g_return_if_fail(data != NULL);
-
-    params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-    if (nick == NULL) nick = server->real_address;
-
-    level = 0;
-    if (*msg == 1)
-    {
-        /* ctcp message, handled in fe-ctcp.c */
-    }
-    else if (ignore_check(server, nick, addr, target, msg,
-			  ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS))
-    {
-	/* ignored */
-    }
-    else if (ischannel(*target))
-    {
-	/* message to some channel */
-        WINDOW_REC *window;
+	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
-	gboolean toyou;
-	gchar *color;
+	int for_me;
+	char *color, *nickmode;
 
 	chanrec = channel_find(server, target);
-	toyou = irc_nick_match(server->nick, msg);
+	for_me = irc_nick_match(server->nick, msg);
 	color = irc_hilight_find_nick(target, nick, addr);
 
 	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
-	nickmode = !settings_get_bool("show_nickmode") || nickrec == NULL ? "" :
-	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
+	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :
+		(nickrec->op ? "@" : nickrec->voice ? "+" : " ");
 
-	window = chanrec == NULL ? NULL : window_item_window((WI_ITEM_REC *) chanrec);
-        if (window != NULL && window->active == (WI_ITEM_REC *) chanrec)
-	{
-            /* message to active channel in window */
-	    if (color != NULL)
-	    {
-		/* highlighted nick */
-		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
-			    IRCTXT_PUBMSG_HILIGHT, color, nick, msg, nickmode);
-	    }
-	    else
-	    {
-		printformat(server, target, MSGLEVEL_PUBLIC | (toyou ? MSGLEVEL_NOHILIGHT : 0),
-			    toyou ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG, nick, msg, nickmode);
-	    }
-        }
-        else
-        {
-            /* message to not existing/active channel */
-	    if (color != NULL)
-	    {
-		/* highlighted nick */
-		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
-			    IRCTXT_PUBMSG_HILIGHT_CHANNEL, color, nick, target, msg, nickmode);
-	    }
-	    else
-	    {
-		printformat(server, target, MSGLEVEL_PUBLIC | (toyou ? MSGLEVEL_NOHILIGHT : 0),
-			    toyou ? IRCTXT_PUBMSG_ME_CHANNEL : IRCTXT_PUBMSG_CHANNEL,
-			    nick, target, msg, nickmode);
-	    }
+	if (window_item_is_active((WI_ITEM_REC *) chanrec)) {
+		/* message to active channel in window */
+		if (color != NULL) {
+			/* highlighted nick */
+			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+				    IRCTXT_PUBMSG_HILIGHT, color, nick, msg, nickmode);
+		} else {
+			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_NOHILIGHT : 0),
+				    for_me ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG, nick, msg, nickmode);
+		}
+	} else {
+		/* message to not existing/active channel */
+		if (color != NULL) {
+			/* highlighted nick */
+			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
+				    IRCTXT_PUBMSG_HILIGHT_CHANNEL, color, nick, target, msg, nickmode);
+		} else {
+			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_NOHILIGHT : 0),
+				    for_me ? IRCTXT_PUBMSG_ME_CHANNEL : IRCTXT_PUBMSG_CHANNEL,
+				    nick, target, msg, nickmode);
+		}
 	}
 
 	g_free_not_null(color);
-	level = MSGLEVEL_PUBLIC;
-    }
-    else
-    {
-        /* private message */
-        if (settings_get_bool("autocreate_query") && query_find(server, nick) == NULL)
-	    item = (WI_ITEM_REC *) query_create(server, nick, TRUE);
-	else
-	    item = (WI_ITEM_REC *) query_find(server, nick);
+}
 
-	printformat(server, nick, MSGLEVEL_MSGS,
-		    item == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr == NULL ? "" : addr, msg);
-        level = MSGLEVEL_MSGS;
-    }
+static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+{
+	WI_ITEM_REC *item;
+	char *params, *target, *msg;
 
-    msg_beep_check(server, level);
+	g_return_if_fail(data != NULL);
 
-    g_free(params);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	if (nick == NULL) nick = server->real_address;
+	if (addr == NULL) addr = "";
+
+	if (!ignore_check(server, nick, addr, target, msg, target_level(target))) {
+		if (ischannel(*target)) {
+                        /* message to channel */
+			print_channel_msg(server, nick, addr, target, msg);
+		} else {
+			/* private message */
+			item = (WI_ITEM_REC *) privmsg_get_query(server, nick);
+			printformat(server, nick, MSGLEVEL_MSGS,
+				    item == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
+		}
+		msg_beep_check(server, target_level(target));
+	}
+
+	g_free(params);
 }
 
 /* we use "ctcp msg" here because "ctcp msg action" can be ignored with
-   /IGNORE * CTCPS */
-static void ctcp_action_msg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr, gchar *target)
+   /IGNORE * CTCPS, and we don't want that.. */
+static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr, gchar *target)
 {
-    WINDOW_REC *window;
-    CHANNEL_REC *channel;
-    WI_ITEM_REC *item;
-    int level;
+	WI_ITEM_REC *item;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    if (g_strncasecmp(data, "ACTION ", 7) != 0)
-	    return;
-    data += 7;
+	if (g_strncasecmp(data, "ACTION ", 7) != 0)
+		return;
+	data += 7;
 
-    level = 0;
-    if (ignore_check(server, nick, addr, target, data, MSGLEVEL_ACTIONS))
-    {
-	/* ignored */
-    }
-    else if (ischannel(*target))
-    {
-        /* channel action */
-        channel = channel_find(server, target);
+	if (ignore_check(server, nick, addr, target, data, MSGLEVEL_ACTIONS))
+		return;
 
-	window = channel == NULL ? NULL : window_item_window((WI_ITEM_REC *) channel);
-        if (window != NULL && window->active == (WI_ITEM_REC *) channel)
-        {
-            /* message to active channel in window */
-            printformat(server, target, MSGLEVEL_ACTIONS,
-                        IRCTXT_ACTION_PUBLIC, nick, data);
-        }
-        else
-        {
-            /* message to not existing/active channel */
-            printformat(server, target, MSGLEVEL_ACTIONS,
-                        IRCTXT_ACTION_PUBLIC_CHANNEL, nick, target, data);
+	if (ischannel(*target)) {
+		/* channel action */
+		item = (WI_ITEM_REC *) channel_find(server, target);
+
+		if (window_item_is_active(item)) {
+			/* message to active channel in window */
+			printformat(server, target, MSGLEVEL_ACTIONS,
+				    IRCTXT_ACTION_PUBLIC, nick, data);
+		} else {
+			/* message to not existing/active channel */
+			printformat(server, target, MSGLEVEL_ACTIONS,
+				    IRCTXT_ACTION_PUBLIC_CHANNEL, nick, target, data);
+		}
+	} else {
+		/* private action */
+		item = (WI_ITEM_REC *) privmsg_get_query(server, nick);
+		printformat(server, nick, MSGLEVEL_ACTIONS,
+			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
+			    nick, addr == NULL ? "" : addr, data);
 	}
-	level = MSGLEVEL_PUBLIC;
-    }
-    else
-    {
-        /* private action */
-        if (settings_get_bool("autocreate_query") && query_find(server, nick) == NULL)
-	    item = (WI_ITEM_REC *) query_create(server, nick, TRUE);
-	else
-	    item = (WI_ITEM_REC *) channel_find(server, nick);
 
-	printformat(server, nick, MSGLEVEL_ACTIONS,
-		    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY, nick, addr == NULL ? "" : addr, data);
-        level = MSGLEVEL_MSGS;
-    }
-
-    msg_beep_check(server, level);
+	msg_beep_check(server, target_level(target));
 }
 
-static void event_notice(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_notice(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    char *params, *target, *msg;
-    int level;
+	char *params, *target, *msg;
+	int op_notice;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-    if (nick == NULL) nick = server->real_address;
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	if (nick == NULL) {
+		nick = server->real_address == NULL ?
+			server->connrec->address :
+			server->real_address;
+	}
 
-    level = 0;
-    if (*msg == 1)
-    {
-        /* ctcp reply */
-    }
-    else if (addr == NULL)
-    {
-        /* notice from server */
-        if (nick == NULL || !ignore_check(server, nick, "", target, msg, MSGLEVEL_SNOTES))
-	    printformat(server, target, MSGLEVEL_SNOTES, IRCTXT_NOTICE_SERVER, nick == NULL ? "" : nick, msg);
-    }
-    else if (ischannel(*target) || (*target == '@' && ischannel(target[1])))
-    {
-        /* notice in some channel */
-	if (!ignore_check(server, nick, addr, target, msg, MSGLEVEL_NOTICES))
-	    printformat(server, target, MSGLEVEL_NOTICES,
-			*target == '@' ? IRCTXT_NOTICE_PUBLIC_OPS : IRCTXT_NOTICE_PUBLIC,
-			nick, *target == '@' ? target+1 : target, msg);
-        level = MSGLEVEL_NOTICES;
-    }
-    else
-    {
-        /* private notice */
-        if (!ignore_check(server, nick, addr, NULL, msg, MSGLEVEL_NOTICES))
-	    printformat(server, nick, MSGLEVEL_NOTICES, IRCTXT_NOTICE_PRIVATE, nick, addr, msg);
-        level = MSGLEVEL_NOTICES;
-    }
+	if (addr == NULL) {
+		/* notice from server */
+		if (*msg != 1 && !ignore_check(server, nick, "", target, msg, MSGLEVEL_SNOTES))
+			printformat(server, target, MSGLEVEL_SNOTES, IRCTXT_NOTICE_SERVER, nick, msg);
+	} else {
+		op_notice = *target == '@' && ischannel(target[1]);
+		if (op_notice) target++;
 
-    msg_beep_check(server, level);
+		if (ischannel(*target)) {
+			/* notice in some channel */
+			if (!ignore_check(server, nick, addr, target, msg, MSGLEVEL_NOTICES))
+				printformat(server, target, MSGLEVEL_NOTICES,
+					    op_notice ? IRCTXT_NOTICE_PUBLIC_OPS : IRCTXT_NOTICE_PUBLIC,
+					    nick, target, msg);
+		} else {
+			/* private notice */
+			if (!ignore_check(server, nick, addr, NULL, msg, MSGLEVEL_NOTICES))
+				printformat(server, nick, MSGLEVEL_NOTICES, IRCTXT_NOTICE_PRIVATE, nick, addr, msg);
+		}
+	}
 
-    g_free(params);
+	msg_beep_check(server, addr == NULL ? MSGLEVEL_SNOTES : MSGLEVEL_NOTICES);
+	g_free(params);
 }
 
 static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
@@ -468,12 +427,13 @@ static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *
 	else {
 		/* Action in WALLOP */
 		int len;
+		char *tmp;
 
-		data = g_strdup(data);
-		len = strlen(data);
-		if (data[len-1] == 1) data[len-1] = '\0';
-		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, data);
-		g_free(data);
+		tmp = g_strdup(data);
+		len = strlen(tmp);
+		if (tmp[len-1] == 1) tmp[len-1] = '\0';
+		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, tmp);
+		g_free(tmp);
 	}
 	msg_beep_check(server, MSGLEVEL_WALLOPS);
 }
@@ -488,7 +448,7 @@ static void channel_sync(CHANNEL_REC *channel)
 
 static void event_connected(IRC_SERVER_REC *server)
 {
-	char *nick;
+	const char *nick;
 
 	g_return_if_fail(server != NULL);
 
@@ -632,7 +592,7 @@ void fe_events_init(void)
 
 	read_settings();
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_action_msg);
+	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg_check_action);
 	signal_add("ctcp msg action", (SIGNAL_FUNC) sig_empty);
 	signal_add("event notice", (SIGNAL_FUNC) event_notice);
 	signal_add("event join", (SIGNAL_FUNC) event_join);
@@ -665,7 +625,7 @@ void fe_events_init(void)
 void fe_events_deinit(void)
 {
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_action_msg);
+	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_msg_check_action);
 	signal_remove("ctcp msg action", (SIGNAL_FUNC) sig_empty);
 	signal_remove("event notice", (SIGNAL_FUNC) event_notice);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);

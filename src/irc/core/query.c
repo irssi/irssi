@@ -113,7 +113,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 
-	if (addr != NULL && *msg != 1 && !ischannel(*target)) {
+	if (addr != NULL && !ischannel(*target)) {
 		/* save nick's address to query */
 		query = query_find(server, nick);
 		if (query != NULL && (query->address == NULL || strcmp(query->address, addr) != 0)) {

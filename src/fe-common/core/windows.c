@@ -306,7 +306,7 @@ WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
 	return MODULE_DATA(item);
 }
 
-int window_refnum_prev(int refnum)
+int window_refnum_prev(int refnum, int wrap)
 {
 	GSList *tmp;
 	int prev, max;
@@ -317,14 +317,14 @@ int window_refnum_prev(int refnum)
 
 		if (rec->refnum < refnum && (prev == -1 || rec->refnum > prev))
 			prev = rec->refnum;
-		if (max == -1 || rec->refnum > max)
+		if (wrap && (max == -1 || rec->refnum > max))
 			max = rec->refnum;
 	}
 
 	return prev != -1 ? prev : max;
 }
 
-int window_refnum_next(int refnum)
+int window_refnum_next(int refnum, int wrap)
 {
 	GSList *tmp;
 	int min, next;
@@ -335,7 +335,7 @@ int window_refnum_next(int refnum)
 
 		if (rec->refnum > refnum && (next == -1 || rec->refnum < next))
 			next = rec->refnum;
-		if (min == -1 || rec->refnum < min)
+		if (wrap && (min == -1 || rec->refnum < min))
 			min = rec->refnum;
 	}
 

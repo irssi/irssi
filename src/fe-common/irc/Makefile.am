@@ -32,6 +32,7 @@ libfe_common_irc_la_SOURCES = \
 noinst_HEADERS = \
 	completion.h \
 	fe-common-irc.h \
+	fe-query.h \
 	irc-hilight-text.h \
 	module.h \
 	module-formats.h

@@ -156,6 +156,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 		if (ptr != NULL) *ptr = '\0';
 
 		signal_emit("ctcp msg", 5, msg, server, nick, addr, target);
+		signal_stop();
 	}
 
 	g_free(params);
@@ -167,7 +168,7 @@ static void event_notice(const char *data, IRC_SERVER_REC *server, const char *n
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, &target, &msg); /* Channel or nick name */
+	params = event_get_params(data, 2, &target, &msg);
 
 	/* handle only ctcp replies */
 	if (*msg == 1) {
@@ -175,6 +176,7 @@ static void event_notice(const char *data, IRC_SERVER_REC *server, const char *n
 		if (ptr != NULL) *ptr = '\0';
 
 		signal_emit("ctcp reply", 5, msg, server, nick, addr, target);
+		signal_stop();
 	}
 
 	g_free(params);
@@ -193,8 +195,8 @@ void ctcp_init(void)
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) ctcp_deinit_server);
-	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_add("event notice", (SIGNAL_FUNC) event_notice);
+	signal_add_first("event privmsg", (SIGNAL_FUNC) event_privmsg);
+	signal_add_first("event notice", (SIGNAL_FUNC) event_notice);
 	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
 	signal_add("ctcp reply", (SIGNAL_FUNC) ctcp_reply);
 	signal_add("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping);
