@@ -85,10 +85,8 @@ static void textui_init(void)
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
 	irc_init();
-	silc_core_init();
 	fe_common_core_init();
 	fe_common_irc_init();
-	fe_common_silc_init();
 
 	theme_register(gui_text_formats);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
