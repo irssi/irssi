@@ -223,15 +223,6 @@ AC_ARG_ENABLE(ssl,
 	    [  --disable-ssl           Disable Secure Sockets Layer support],,
 	    enable_ssl=yes)
 
-AC_ARG_WITH(openssl-includes,
-	    [  --with-openssl-includes Specify location of OpenSSL header files],
-	    [openssl_inc_prefix=-I$withval])
-
-AC_ARG_WITH(openssl-libs,
-	    [  --with-openssl-libs     Specify location of OpenSSL libs],
-	    [openssl_prefix=$withval], 
-	    [openssl_prefix=/usr/lib])
-
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -475,33 +466,24 @@ fi
 
 LIBS="$LIBS $GLIB_LIBS"
 
-if test "x$enable_ssl" = xyes; then
-	###
-	### Check for OpenSSL
-	###
-	save_CFLAGS=$CFLAGS;
-	CFLAGS="-lcrypto";
-
-	enable_openssl="no"; 
-	OPENSSL_LDFLAGS="";
-	AC_CHECK_LIB(ssl, SSL_read, [
-	  AC_CHECK_LIB(crypto, X509_new, [
-	    AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
-	      enable_openssl="yes";
-	      OPENSSL_LDFLAGS="-lssl -lcrypto"
-	    ])
-	  ])
-	])
-	CFLAGS=$save_CFLAGS
-
-	if test "x$enable_openssl" = xyes; then
-		AC_DEFINE(HAVE_OPENSSL)
-
-		LIBS="$LIBS -L$openssl_prefix $OPENSSL_LDFLAGS"
-		CFLAGS="$CFLAGS $openssl_inc_prefix"
-	fi
-else
-	enable_openssl="no"
+if test "$enable_ssl" = "yes"; then
+  if pkg-config --exists openssl; then
+    PKG_CHECK_MODULES(SSL, openssl)
+    CFLAGS="$CFLAGS $SSL_CFLAGS"
+    enable_openssl=yes
+  else
+    AC_CHECK_LIB(ssl, SSL_read, [
+      AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
+        SSL_LIBS="-lssl -lcrypto"
+        AC_SUBST(SSL_LIBS)
+	enable_openssl=yes
+      ])
+    ],, -lcrypto)
+  fi
+  if test "$have_openssl" = "yes"; then
+    AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
+    enable_openssl="yes"
+  fi
 fi
 
 dnl **

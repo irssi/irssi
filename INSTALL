@@ -28,7 +28,11 @@ commonly used ones:
 		    this with /SERVER -4 or -6 options.
 
 If GLib or ncurses is installed installed in a non-standard path you can
-specify it with --with-glib=/path and --with-ncurses=/path.
+specify it with --with-glib=/path and --with-ncurses=/path. If anything else
+is in non-standard path, you can just give the paths in CPPFLAGS and LIBS
+environment variable, eg.:
+
+  CPPFLAGS=-I/opt/openssl/include LDFLAGS=-L/opt/openssl/lib ./configure
 
 Irssi doesn't really need curses anymore, by default it uses
 terminfo/termcap directly. The functions for using terminfo/termcap
