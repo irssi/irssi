@@ -241,18 +241,28 @@ static void event_nick(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_mode(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *addr)
 {
 	char *params, *channel, *mode;
 
 	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+				  &channel, &mode);
+        signal_emit("message mode", 5, server, channel, nick, addr, mode);
+	g_free(params);
+}
+
+/* FIXME: should be moved to fe-common/core/fe-messages.c.. */
+static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
+			     const char *nick, const char *addr,
+			     const char *mode)
+{
 	if (nick == NULL) nick = server->real_address;
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &mode);
-	if (ignore_check(SERVER(server), nick, addr, channel, mode, MSGLEVEL_MODES)) {
-		g_free(params);
+	if (!ignore_check(SERVER(server), nick, addr, channel, mode, MSGLEVEL_MODES))
 		return;
-	}
 
 	if (!ischannel(*channel)) {
 		/* user mode change */
@@ -266,8 +276,6 @@ static void event_mode(const char *data, IRC_SERVER_REC *server, const char *nic
 		printformat(server, channel, MSGLEVEL_MODES,
 			    IRCTXT_CHANMODE_CHANGE, channel, mode, nick);
 	}
-
-	g_free(params);
 }
 
 static void event_pong(const char *data, IRC_SERVER_REC *server, const char *nick)
@@ -488,6 +496,7 @@ void fe_events_init(void)
 	signal_add("event kill", (SIGNAL_FUNC) event_kill);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("event mode", (SIGNAL_FUNC) event_mode);
+	signal_add("message mode", (SIGNAL_FUNC) sig_message_mode);
 	signal_add("event pong", (SIGNAL_FUNC) event_pong);
 	signal_add("event invite", (SIGNAL_FUNC) event_invite);
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
@@ -518,6 +527,7 @@ void fe_events_deinit(void)
 	signal_remove("event kill", (SIGNAL_FUNC) event_kill);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("event mode", (SIGNAL_FUNC) event_mode);
+	signal_remove("message mode", (SIGNAL_FUNC) sig_message_mode);
 	signal_remove("event pong", (SIGNAL_FUNC) event_pong);
 	signal_remove("event invite", (SIGNAL_FUNC) event_invite);
 	signal_remove("event topic", (SIGNAL_FUNC) event_topic);

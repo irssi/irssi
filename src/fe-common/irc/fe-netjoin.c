@@ -54,33 +54,9 @@ typedef struct {
         GString *nicks;
 } TEMP_PRINT_REC;
 
-static int join_tag, output_hidden;
+static int join_tag;
 static int netjoin_max_nicks, hide_netsplit_quits;
 static GSList *joinservers;
-
-static void sig_stop(void)
-{
-	signal_stop();
-}
-
-static void remove_hide_output(void)
-{
-	if (output_hidden) {
-		output_hidden = FALSE;
-		signal_remove("print text stripped", (SIGNAL_FUNC) sig_stop);
-		signal_remove("print text", (SIGNAL_FUNC) sig_stop);
-	}
-}
-
-static void hide_output(void)
-{
-	if (!output_hidden) {
-		output_hidden = TRUE;
-		signal_add_first("print text stripped",
-				 (SIGNAL_FUNC) sig_stop);
-		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
-	}
-}
 
 static NETJOIN_SERVER_REC *netjoin_find_server(IRC_SERVER_REC *server)
 {
@@ -257,9 +233,6 @@ static int sig_check_netjoins(void)
 	GSList *tmp, *next;
 	int diff;
 
-	/* just to make sure that text hiding wasn't left on accidentally */
-	remove_hide_output();
-
 	for (tmp = joinservers; tmp != NULL; tmp = next) {
 		NETJOIN_SERVER_REC *server = tmp->data;
 
@@ -285,48 +258,42 @@ static int sig_check_netjoins(void)
 	return 1;
 }
 
-static void event_quit(const char *data)
+static void msg_quit(IRC_SERVER_REC *server, const char *nick,
+		     const char *address, const char *reason)
 {
-	if (quitmsg_is_split(data))
-		hide_output();
+	if (IS_IRC_SERVER(server) && quitmsg_is_split(reason))
+		signal_stop();
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server,
-		       const char *nick, const char *address)
+static void msg_join(IRC_SERVER_REC *server, const char *channel,
+		     const char *nick, const char *address)
 {
 	NETSPLIT_REC *split;
 	NETJOIN_REC *netjoin;
-	char *params, *channel, *tmp;
 
-	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server))
+		return;
 
-	/* just to make sure that text hiding wasn't left on accidentally */
-	remove_hide_output();
+	if (ignore_check(SERVER(server), nick, address,
+			 channel, NULL, MSGLEVEL_JOINS))
+		return;
 
 	split = netsplit_find(server, nick, address);
 	netjoin = netjoin_find(server, nick);
 	if (split == NULL && netjoin == NULL)
                 return;
 
-	params = event_get_params(data, 1, &channel);
-	tmp = strchr(channel, 7); /* ^G does something weird.. */
-	if (tmp != NULL) *tmp = '\0';
-
-	if (!ignore_check(SERVER(server), nick, address,
-			  channel, NULL, MSGLEVEL_JOINS)) {
-		if (join_tag == -1) {
-			join_tag = g_timeout_add(1000, (GSourceFunc)
-						 sig_check_netjoins, NULL);
-		}
-
-		if (netjoin == NULL)
-			netjoin = netjoin_add(server, nick, split->channels);
-
-		netjoin->now_channels = g_slist_append(netjoin->now_channels,
-						       g_strdup(channel));
-		hide_output();
+	if (join_tag == -1) {
+		join_tag = g_timeout_add(1000, (GSourceFunc)
+					 sig_check_netjoins, NULL);
 	}
-	g_free(params);
+
+	if (netjoin == NULL)
+		netjoin = netjoin_add(server, nick, split->channels);
+
+	netjoin->now_channels = g_slist_append(netjoin->now_channels,
+					       g_strdup(channel));
+	signal_stop();
 }
 
 static int netjoin_set_operator(NETJOIN_REC *rec, const char *channel, int on)
@@ -343,23 +310,20 @@ static int netjoin_set_operator(NETJOIN_REC *rec, const char *channel, int on)
 	return TRUE;
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server,
-		       const char *sender, const char *addr)
+static void msg_mode(IRC_SERVER_REC *server, const char *channel,
+		     const char *sender, const char *addr, const char *data)
 {
 	NETJOIN_REC *rec;
-	char *params, *channel, *mode, *nicks;
+	char *params, *mode, *nicks;
 	char **nicklist, **nick, type;
 	int show;
 
 	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
-				  &channel, &mode, &nicks);
-
-	if (!ischannel(*channel) || addr != NULL) {
-		g_free(params);
+	if (!ischannel(*channel) || addr != NULL)
 		return;
-	}
+
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+				  &mode, &nicks);
 
 	/* parse server mode changes - hide operator status changes and
 	   show them in the netjoin message instead as @ before the nick */
@@ -386,7 +350,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 		}
 	}
 
-	if (!show) hide_output();
+	if (!show) signal_stop();
 
 	g_strfreev(nicklist);
 	g_free(params);
@@ -401,19 +365,13 @@ static void read_settings(void)
 	netjoin_max_nicks = settings_get_int("netjoin_max_nicks");
 
 	if (old_hide && !hide_netsplit_quits) {
-		signal_remove("event quit", (SIGNAL_FUNC) event_quit);
-		signal_remove("event join", (SIGNAL_FUNC) event_join);
-		signal_remove("event mode", (SIGNAL_FUNC) event_mode);
-		signal_remove("event quit", (SIGNAL_FUNC) remove_hide_output);
-		signal_remove("event join", (SIGNAL_FUNC) remove_hide_output);
-		signal_remove("event mode", (SIGNAL_FUNC) remove_hide_output);
+		signal_remove("message quit", (SIGNAL_FUNC) msg_quit);
+		signal_remove("message join", (SIGNAL_FUNC) msg_join);
+		signal_remove("message mode", (SIGNAL_FUNC) msg_mode);
 	} else if (!old_hide && hide_netsplit_quits) {
-		signal_add("event quit", (SIGNAL_FUNC) event_quit);
-		signal_add("event join", (SIGNAL_FUNC) event_join);
-		signal_add("event mode", (SIGNAL_FUNC) event_mode);
-		signal_add_last("event quit", (SIGNAL_FUNC) remove_hide_output);
-		signal_add_last("event join", (SIGNAL_FUNC) remove_hide_output);
-		signal_add_last("event mode", (SIGNAL_FUNC) remove_hide_output);
+		signal_add("message quit", (SIGNAL_FUNC) msg_quit);
+		signal_add("message join", (SIGNAL_FUNC) msg_join);
+		signal_add("message mode", (SIGNAL_FUNC) msg_mode);
 	}
 }
 
@@ -423,7 +381,6 @@ void fe_netjoin_init(void)
 	settings_add_int("misc", "netjoin_max_nicks", 10);
 
 	join_tag = -1;
-	output_hidden = FALSE;
 
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
