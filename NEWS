@@ -1,3 +1,45 @@
+v0.8.7 2003-11-17  Timo Sirainen <tss@iki.fi>
+
+	* Settings changes - we have now "time", "size" and "level" setting
+	  types.
+	    - Level settings should work the same as before.
+	    - Time settings can have units: days, hours, mins, secs,
+	      milliseconds (or msecs). The units can be combined and written
+	      in shorter form as well, for example "5d 30m 10ms"
+	    - Size settings can have units: gbytes, mbytes, kbytes, bytes.
+	      They can be written in shorter form as well, eg. "gb" or "g".
+
+	  Your existing settings should be converted automatically.
+
+	+ Pasting detection. All keys except CR and LF are pasted as-is into
+	  prompt in pasting mode.
+	
+	  /SET paste_detect_time controls how closely each others characters
+	  must occur for it to be considered pasting. Pasting mode goes on
+	  after /SET paste_detect_keycount characters have been received and
+	  detected as pasting.
+
+	  The first paste_detect_keycount characters may also contain some
+	  command characters. They are executed, but their action in entry
+	  line is reverted once pasting is detected. Of course, if any such
+	  character was followed by CR/LF, it was already sent to
+	  channel/query and is unreversable.
+
+	  What this means in practise is that even if you have TABs (assuming
+	  TAB is completion key) in the first few pasted characters, they get
+	  pasted as TABs as long as they weren't immediately followed by
+	  CR/LF.
+	+ Support for sending SSL certificate to server and optionally verify
+	  server's certificate. See the -ssl_* options for /SERVER and
+	  /SERVER ADD. Patch by Joel Eriksson.
+	+ DCC SERVER support by Mark Trumbull
+	+ Support for DCC sending larger files than 2GB if supported by
+	  operating system (ie. 64bit file support). Receiving has always
+	  been possible, but the statistics were wrong with >4GB files
+	  if 64bit support isn't enabled.
+	+ Better displaying of DCC file transfer statistics.
+	- Several other minor fixes and enhancements, see ChangeLog
+
 v0.8.6 2002-11-17  Timo Sirainen <tss@iki.fi>
 
 	* Tons of changes, here's only the largest that come to my mind now:

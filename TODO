@@ -1,54 +1,26 @@
- - the non-fallbacking bind() in connect() breaks /set dcc_own_ip when used
-   with non-local ip.
  - /whowas server nick doesn't work
 01:18 <@darix> cras: /foreach server /disconnect $tag n8 <-- doesnt work
  - /hilight -priority is broken
-19:36 [IRCNet] [muzzy(muzzy@wc.pp.htv.fi)] lis‰‰ bugeja irssiss‰, ilmeisesti 
+19:36 [IRCNet] [muzzy] lis‰‰ bugeja irssiss‰, ilmeisesti 
           uusin versio:  foo splittaa ulos, bar joinaa sis‰‰n, bar vaihtaa 
           nicknamen fooksi, foo splittaa uudestaan ulos -> tulee Glib warning 
           "is already in split list (how?)" .. :)
 
-04:35 [OPN] [slug(slug@defender.home.warp13.co.uk)] was just wondering if you 
+04:35 [OPN] [slug] was just wondering if you 
           had Irssi::keyboard_entry_redirect() on your TODO somewhere near the 
           top, I'd love the feature
-04:35 [OPN] [slug(slug@defender.home.warp13.co.uk)] or someway to clear the 
+04:35 [OPN] [slug] or someway to clear the 
           command buffer, either way is acceptable, just my connection is a 
           little less than reliable, so I've built myself a script that stores 
           blowfish passes, all encrypted by one value
-04:36 [OPN] [slug(slug@defender.home.warp13.co.uk)] then I set a single 
+04:36 [OPN] [slug] then I set a single 
           decryption key, and it keeps it for the irssi session (lost on 
           /upgrade though), unfortunatly it stays in the command buffer 8]
 
- - scrollback_time is broken
  - ^I in topicbar breaks things
 14:17 <@darix> cras: this doesnt work: /exec  - -o uname -a
 
- - time (secs):
-    - core: server_reconnect_time, server_connect_timeout
-    - fe-common/core: timestamp_timeout, autoclose_query
-    - irc/core: knockout_time, lag_check_time, lag_max_before_disconnect
-    - irc/notifylist: notify_check_time, notify_whois_time
-    - irc/dcc: dcc_timeout
-    - irc/flood: autoignore_time
- - time (msec): lag_min_show (fe-text), cmd_queue_speed (irc/core)
- - time (min): notify_idle_time (irc/notify)
- - write_buffer_mins -> write_buffer_timeout (core)
- - scrollback_hours -> scrollback_time (fe-text)
- - size (kB): write_buffer_size (core), dcc_autoget_max_size (irc/dcc)
-
-05.12.2002 17:56 [Cvbge(piotr@info.ii.uj.edu.pl)] the bug - irssi (cvs too) 
-          coredumps when file name in /dcc send is null (try "/dcc send nick 
-          ''")
-01:30 <@decadix> cras, you broke dcc chat today: my nick is empty there
-22:43 [IRCNet] [Mutru(mutru@49.CLVI.adsl.multi.fi)] Vahvistamattoman huhun 
-          mukaan irssi kaatuu, kun completion__keep_privates on asetettu 
-          nollaksi ja saat /msg:n.
  - "setup changed", or "setup reread" seems to cause crashes.. (with darix)
-05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] before 0.8.6 mail.pl 
-          should work again :)
-05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] it prints an empty 
-          space for me 
-05:36 [IRCNet] [darix(darix@wh5035.stw.uni-rostock.de)] when mail arrives :)
 02:46 <@fuchs> cras, /server foonet.foo.xy and (recognizing it doesn't connect 
                fast enough), and so doing /server barnet.foo.xy (both in the 
                same chatnet) makes irssi joining the net but not rejoining the 
@@ -75,9 +47,9 @@
                query, and displays "< Juerd:> foo" in the status window
  - set TOS field for all connections (DCC especially)
  - /PROXY CTCP ON doesn't work well with multiple servers
-22:51 [IRCNet] [zhafte(~zhafte@zhafte.peelo.com)] irssi muuten taitaa bugaa jos 
+22:51 [IRCNet] [zhafte] irssi muuten taitaa bugaa jos 
           pist‰‰ ACT oikeaan reunaan, vai onkohan se vain mun terminaali?
-22:52 [IRCNet] [zhafte(~zhafte@zhafte.peelo.com)] menev‰t v‰lill‰ p‰‰llekk‰in 
+22:52 [IRCNet] [zhafte] menev‰t v‰lill‰ p‰‰llekk‰in 
           numerot
  - when using -w password command line parameter, hide the password so it
    won't show with ps.
