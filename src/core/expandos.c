@@ -34,9 +34,14 @@
 #  include <sys/utsname.h>
 #endif
 
+#define MAX_EXPANDO_SIGNALS 10
+
 typedef struct {
 	EXPANDO_FUNC func;
-        GPtrArray *signals, *signal_args;
+
+        int signals;
+	int signal_ids[MAX_EXPANDO_SIGNALS];
+        int signal_args[MAX_EXPANDO_SIGNALS];
 } EXPANDO_REC;
 
 static EXPANDO_REC *char_expandos[127];
@@ -44,6 +49,7 @@ static GHashTable *expandos;
 static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
+static char *sysname, *sysrelease;
 
 /* Create expando - overrides any existing ones. */
 void expando_create(const char *key, EXPANDO_FUNC func, ...)
@@ -62,15 +68,14 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
 		rec = char_expandos[(int) *key];
 	}
 
-	if (rec == NULL) {
+	if (rec != NULL)
+		rec->signals = 0;
+	else {
 		rec = g_new0(EXPANDO_REC, 1);
                 if (key[1] != '\0')
 			g_hash_table_insert(expandos, g_strdup(key), rec);
 		else
 			char_expandos[(int) *key] = rec;
-	} else if (rec->signals != NULL) {
-		g_ptr_array_free(rec->signals, TRUE);
-                rec->signals = NULL;
 	}
 
 	rec->func = func;
@@ -84,7 +89,7 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
 /* Add new signal to expando */
 void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
 {
-        EXPANDO_REC *rec;
+	EXPANDO_REC *rec;
 
 	g_return_if_fail(key != NULL);
 	g_return_if_fail(signal != NULL);
@@ -97,26 +102,11 @@ void expando_add_signal(const char *key, const char *signal, ExpandoArg arg)
 	}
         g_return_if_fail(rec != NULL);
 
-	if (rec->signals == NULL) {
-		rec->signals = g_ptr_array_new();
-		rec->signal_args = g_ptr_array_new();
+	if (rec->signals < MAX_EXPANDO_SIGNALS) {
+		rec->signal_ids[rec->signals] = signal_get_uniq_id(signal);
+		rec->signal_args[rec->signals] = arg;
+                rec->signals++;
 	}
-
-	g_ptr_array_add(rec->signals,
-			GINT_TO_POINTER(signal_get_uniq_id(signal)));
-	g_ptr_array_add(rec->signal_args,
-			GINT_TO_POINTER(arg));
-}
-
-static void expando_destroy_rec(EXPANDO_REC *rec)
-{
-	g_return_if_fail(rec != NULL);
-
-	if (rec->signals != NULL) {
-		g_ptr_array_free(rec->signals, TRUE);
-		g_ptr_array_free(rec->signal_args, TRUE);
-	}
-        g_free(rec);
 }
 
 /* Destroy expando */
@@ -133,14 +123,14 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 		rec = char_expandos[(int) *key];
 		if (rec != NULL && rec->func == func) {
 			char_expandos[(int) *key] = NULL;
-			expando_destroy_rec(rec);
+			g_free(rec);
 		}
 	} else if (g_hash_table_lookup_extended(expandos, key, &origkey,
 						(gpointer *) &rec)) {
 		if (rec->func == func) {
 			g_free(origkey);
 			g_hash_table_remove(expandos, key);
-			expando_destroy_rec(rec);
+			g_free(rec);
 		}
 	}
 }
@@ -303,33 +293,13 @@ static char *expando_dollar(SERVER_REC *server, void *item, int *free_ret)
 /* system name */
 static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
 {
-#ifdef HAVE_SYS_UTSNAME_H
-	struct utsname un;
-
-	if (uname(&un) == -1)
-		return NULL;
-
-	*free_ret = TRUE;
-	return g_strdup(un.sysname);
-#else
-	return NULL;
-#endif
+	return sysname;
 }
 
 /* system release */
 static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
 {
-#ifdef HAVE_SYS_UTSNAME_H
-	struct utsname un;
-
-	if (uname(&un) == -1)
-		return NULL;
-
-	*free_ret = TRUE;
-	return g_strdup(un.release);
-#else
-	return NULL;
-#endif
+        return sysrelease;
 }
 
 /* Server tag */
@@ -385,11 +355,22 @@ static void cmd_msg(const char *data, SERVER_REC *server)
 
 void expandos_init(void)
 {
+#ifdef HAVE_SYS_UTSNAME_H
+	struct utsname un;
+#endif
 	settings_add_str("misc", "STATUS_OPER", "*");
 
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
 	last_privmsg_from = NULL; last_public_from = NULL;
+
+        sysname = sysrelease = NULL;
+#ifdef HAVE_SYS_UTSNAME_H
+	if (uname(&un) == 0) {
+		sysname = g_strdup(un.sysname);
+		sysrelease = g_strdup(un.release);
+	}
+#endif
 
 	memset(char_expandos, 0, sizeof(char_expandos));
 	expandos = g_hash_table_new((GHashFunc) g_str_hash,
@@ -471,10 +452,9 @@ void expandos_deinit(void)
 {
 	int n;
 
-	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++) {
-                if (char_expandos[n] != NULL)
-			expando_destroy_rec(char_expandos[n]);
-	}
+	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++)
+		g_free_not_null(char_expandos[n]);
+
 	expando_destroy("sysname", expando_sysname);
 	expando_destroy("sysrelease", expando_sysrelease);
 	expando_destroy("tag", expando_servertag);
@@ -484,6 +464,7 @@ void expandos_deinit(void)
 
 	g_free_not_null(last_sent_msg); g_free_not_null(last_sent_msg_body);
 	g_free_not_null(last_privmsg_from); g_free_not_null(last_public_from);
+	g_free_not_null(sysname); g_free_not_null(sysrelease);
 
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
