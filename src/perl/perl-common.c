@@ -106,13 +106,13 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
 				  GINT_TO_POINTER(type | (chat_type << 16)));
 	if (rec == NULL) {
                 /* unknown iobject */
-		return newSViv(GPOINTER_TO_INT(object));
+		return newSViv((IV)object);
 	}
 
 	stash = gv_stashpv(rec->stash, 1);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
+	hv_store(hv, "_irssi", 6, newSViv((IV)object), 0);
         rec->fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), stash);
 }
@@ -125,7 +125,7 @@ SV *irssi_bless_plain(const char *stash, void *object)
 	fill_func = g_hash_table_lookup(plain_stashes, stash);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
+	hv_store(hv, "_irssi", 6, newSViv((IV)object), 0);
 	if (fill_func != NULL)
 		fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv((char *)stash, 1));
@@ -298,7 +298,7 @@ void perl_server_fill_hash(HV *hv, SERVER_REC *server)
 	hv_store(hv, "connection_lost", 15, newSViv(server->connection_lost), 0);
 
 	stash = gv_stashpv("Irssi::Rawlog", 0);
-	hv_store(hv, "rawlog", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(server->rawlog))), stash), 0);
+	hv_store(hv, "rawlog", 6, sv_bless(newRV_noinc(newSViv((IV)server->rawlog)), stash), 0);
 
 	hv_store(hv, "version", 7, new_pv(server->version), 0);
 	hv_store(hv, "away_reason", 11, new_pv(server->away_reason), 0);

@@ -97,7 +97,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 		if (strcmp(rec->args[n], "string") == 0)
 			perlarg = new_pv(arg);
 		else if (strcmp(rec->args[n], "int") == 0)
-			perlarg = newSViv(GPOINTER_TO_INT(arg));
+			perlarg = newSViv((IV)arg);
 		else if (strcmp(rec->args[n], "ulongptr") == 0)
 			perlarg = newSViv(*(unsigned long *) arg);
 		else if (strcmp(rec->args[n], "intptr") == 0)
