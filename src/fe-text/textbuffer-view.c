@@ -1201,8 +1201,7 @@ void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 
 	if (view->window != NULL) {
 		view->dirty = FALSE;
-                term_window_clear(view->window);
-		view_draw_top(view, view->height, FALSE);
+		view_draw_top(view, view->height, TRUE);
 		term_refresh(view->window);
 	}
 }
