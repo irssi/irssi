@@ -110,8 +110,10 @@ channels, nicklist:
 
 ctcp.c:
 
+ "ctcp msg", SERVER_REC, char *args, char *nick, char *addr, char *target
  "ctcp msg "<cmd>, SERVER_REC, char *args, char *nick, char *addr, char *target
  "default ctcp msg", SERVER_REC, char *args, char *nick, char *addr, char *target
+ "ctcp reply", SERVER_REC, char *args, char *nick, char *addr, char *target
  "ctcp reply "<cmd>, SERVER_REC, char *args, char *nick, char *addr, char *target
  "default ctcp reply", SERVER_REC, char *args, char *nick, char *addr, char *target
 
