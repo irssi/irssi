@@ -593,6 +593,9 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 static void server_send_away(IRC_SERVER_REC *server, const char *reason)
 {
+	if (!IS_IRC_SERVER(server))
+		return;
+
 	g_free_not_null(server->away_reason);
 	server->away_reason = g_strdup(reason);
 
