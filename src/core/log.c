@@ -246,18 +246,34 @@ void log_write_rec(LOG_REC *log, const char *str, int level)
         g_free_not_null(colorstr);
 }
 
+static int itemcmp(const char *patt, const char *item)
+{
+	/* returns 0 on match, nonzero otherwise */
+
+	if (item == NULL)
+		return g_strcasecmp(patt, "*") != 0;
+
+	for (;*patt != '\0'; patt++, item++)
+	{
+		if (*patt == '*')
+			return 0;
+		if (*patt != *item)
+			return 1;
+	}
+	return 0;
+}
+
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 			    const char *servertag)
 {
 	GSList *tmp;
 
 	g_return_val_if_fail(log != NULL, NULL);
-	g_return_val_if_fail(item != NULL, NULL);
 
 	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
 		LOG_ITEM_REC *rec = tmp->data;
 
-		if (rec->type == type && g_strcasecmp(rec->name, item) == 0 &&
+		if (rec->type == type && itemcmp(rec->name, item) == 0 &&
 		    (rec->servertag == NULL || (servertag != NULL &&
 		    	g_strcasecmp(rec->servertag, servertag) == 0)))
 			return rec;
