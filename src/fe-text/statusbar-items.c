@@ -421,7 +421,7 @@ void statusbar_items_init(void)
 	signal_add("statusbar destroyed", (SIGNAL_FUNC) sig_statusbar_destroyed);
 
 	read_settings();
-        signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+        signal_add_last("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void statusbar_items_deinit(void)
