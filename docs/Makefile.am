@@ -10,8 +10,7 @@ doc_DATA = \
 	perl.txt \
 	signals.txt \
 	special_vars.txt \
-	startup-HOWTO.html \
-	startup-HOWTO.txt
+	startup-HOWTO.html
 
 EXTRA_DIST = $(doc_DATA)
 

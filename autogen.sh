@@ -37,7 +37,6 @@ cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!
 
 # .html -> .txt with lynx
 echo "Documentation: html -> txt..."
-lynx -dump -nolist docs/startup-HOWTO.html > docs/startup-HOWTO.txt
 lynx -dump -nolist docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
 
 echo "Checking auto* tools..."
