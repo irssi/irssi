@@ -1,51 +1,97 @@
 
 @SYNTAX:mode@
 
-Both channels and users have modes associated with them. For channels, 
-they determine who is a channel operator, the number of people who may
-join the channel, who may not enter the channel, and myriad other things. 
-For users, they determine whether the user is an IRC operator, whether 
-the user will receive special server notices, etc. 
+Irssi knows these channel modes:
 
-Modes are enabled when prepended with a "+", and disabled when with a "-". 
+     i - Invite only - People can't join to channel without being
+	 /INVITEd, or being in invite list (+I, see below).
+     m - Moderated - People who don't have voices (+v) can't send
+	 messages to channel
+     p - Private - People who aren't joined to channel can't see it
+	 for example with /WHOISing people who are in channel.
+     s - Secret - Like private, but the channel isn't displayed in
+	 /LIST's output.
+     n - No external msgs - Without this mode, anyone can send messages
+	 to channel without even being joined.
+     t - Topic can be changed only by channel operators.
 
-Standard User Modes: 
-     i    When enabled, you are "invisible" to NAMES and WHO queries from 
-          anyone not on a channel common to you. Additionally, you are also 
-          hidden from WHOIS unless you exact nickname is specified. 
-     o    When enabled, this gives you IRC operator status.
-     s    When enabled, you will receive special server notices.
-     w    When enabled, you will receive IRC operator WALLOPS, as well as 
-          notices of any remote CONNECTs or SQUITs. 
+     k <key> - Channel password (aka. key) - The channel can't be joined
+	       without specifying the channel key (see section 6.2).
 
-Standard Channel Modes: 
-     b    When enabled, this prevents the specified nick!user@host mask from 
-          entering the channel. 
-     i    When enabled, users may only join the channel if INVITEd. 
-     k    When enabled, users may only join the channel if they specify the 
-          proper "key".
-     l    When enabled, only the specified number of users may enter the channel. 
-     m    When enabled, only users with +o or +v may speak on the channel. 
-     n    When enabled, public messages from outside the channel are not allowed. 
-     o    When enabled, grants the specified nickname channel operator status. 
-     p    When enabled, the channel is made private. The channel name will not show 
-          up in WHO, WHOIS, NAMES, or LIST replies.
-     s    When enabled, makes the channel secret. This is the same as +p, except 
-          the channel will not show up in any WHO/WHOIS /etc. queries from a 
-          person not on the channel. Anyone who is on a +s channel is effectively 
-          invisible, as per user mode +i. 
-     t    When enabled, only channnel operators may set a topic. 
-     v    When enabled, grants the specified nickname voice status. 
+     l <count> - User limit - No more than <count> people can join to
+		 channel. This can be overridden with /INVITE with some
+		 servers.
 
-Examples: 
-   /MODE your_nick +sw    - Receive operator WALLOPS and server notices 
-   /MODE your_nick +s+w     (both examples are equivalent). 
-   /MODE #channel +l 35   - Set a channel limit
-   /MODE #channel +o theirnick 
-                          - Make theirnick a channel operator.
-   /MODE #channel +bk-o *!*some@*.ban.com Secret_Key foobar 
-                          - Set a ban, a key, and remove chanop status 
-                            from 'foobar'. 
+		 This is usually used for protecting channel from join
+		 flooding, like some bot allows max. 5 users to join in
+		 one minute or so.
 
-See also: BAN, VOICE, OP, DEOP, INVITE
+     a - Anonymous - No-one's nick name, host or anything else can be
+	 seen. All messages, joins, parts, modes, etc. are seen as coming
+	 from nick "anonymous", this could be pretty confusing but nice
+	 feature if you want total anonymity. This mode can only be set,
+	 never unset. This mode isn't supported by all servers.
+
+	 NOTE: there is/was one bug :) Channel operators can guess if some
+	 nick might be in the channel and try to kick it. If nick was in
+	 channel, everyone will see the nick that was kicked.
+
+     r - Re-op - If channel becomes opless for longer than 45 (?) minutes,
+	 op everyone in the channel. This works only in !channels. This
+	 mode can only be set, not unset by channel creator.
+
+     b - Set/remove ban. For example MODE #channel +b *!*@*.org bans
+	 everyone from .org domain.
+
+	 If someone from .org domain was already in channel before the
+	 ban was set, he/she couldn't be able to write any messages to
+	 channel (doesn't work with all servers).
+
+	 Ban can also be overridden with /INVITE, although many stupid
+	 IRC clients automatically kick the user out because they see
+	 the ban and think that because of it the user shouldn't be in
+	 the channel (doesn't work with all servers).
+
+     e - Ban exceptions. You could for example ban everyone from
+	 *!*@*.org but set ban exception to *!*@*.host.org - works only
+	 in IRCnet/EFnet servers.
+
+     I - Invite list. If channel is invite only (+i), people in this
+	 list can join it without being /INVITEd - works only in
+	 IRCnet/EFnet servers.
+
+	 This is excellent for in-country channels that don't want
+	 foreigners (spammers!) to join the channel, for example setting
+	 channel's mode to +i and +I *!*@*.fi allows only finnish people
+	 to join the channel. In addition to this, there's usually a bot
+	 in the channels and sending /MSG bot invite command to it
+	 /INVITEs you to the channel.
+
+	 The ':' feature in channel modes is quite similiar, see section
+	 6.2.
+
+     O - Channel owner, the nick who creates a !channel receives this
+	 mode. It isn't displayed anywhere, you can't pass it to anyone
+	 else and you can't regain it again. This is needed for setting
+	 +r mode in channel when it's first created.
+
+     o <nick> - Grant or revoke channel operator status from nick
+     v <nick> - Grant or revoke voice status from nick, only people with
+		+v (or +o) can talk to channel when it's moderated (+m).
+
+You can send multiple mode changes with one mode command:
+
+/MODE #channel +nto-o+v nick1,nick2,nick3
+
+This would set channel's mode to +nt, give ops to nick1, take ops
+from nick2 and give voices to nick3.
+
+You can set only limited number of modes that requires argument in
+one command. In IRCnet it's 3, in EFnet it's 4 and in many others
+it's 6. If it's not known, Irssi defaults to 3. Irssi will also
+automatically split them, so you can use /MODE +oooooo n1,n2,..
+command to op 6 people and Irssi will split it to two commands in
+IRCnet/EFnet.
+
+See also: OP, DEOP, VOICE, DEVOICE, BAN, UNBAN
 
