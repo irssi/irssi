@@ -387,7 +387,7 @@ void term_addch(TERM_WINDOW *window, int chr)
 
 	if (vcmove) term_move_real();
 
-	if (vcy != term_height || vcx != 0) {
+	if (vcy < term_height-1 || vcx < term_width-1) {
 		/* With UTF-8, move cursor only if this char is either
 		   single-byte (8. bit off) or beginning of multibyte
 		   (7. bit off) */
@@ -415,10 +415,10 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 	if (term_detached) return;
 
 	if (vcmove) term_move_real();
-        term_printed_text(1);
-	if (vcy == term_height && vcx == 0)
+	if (vcy == term_height-1 && vcx == term_width-1)
 		return; /* last char in screen */
 
+        term_printed_text(1);
 	switch (term_type) {
 	case TERM_TYPE_UTF8:
                 term_addch_utf8(window, chr);
