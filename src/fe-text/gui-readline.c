@@ -148,17 +148,39 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
-static void paste_send(const char *utf8_start, GArray *buf)
+static void paste_send(void)
 {
 	unichar *arr;
 	GString *str;
 	char out[10];
 	unsigned int i;
+	int lf;
 
-	str = g_string_new(utf8_start);
+	arr = (unichar *) paste_buffer->data;
+	lf = FALSE;
 
-	arr = (unichar *) buf->data;
-	for (i = 0; i < buf->len; i++) {
+	/* first line has to be kludged kind of to get pasting in the
+	   middle of line right.. */
+	for (i = 0; i < paste_buffer->len; i++) {
+		if (arr[i] == '\r' || arr[i] == '\n') {
+			i++; lf = TRUE;
+			break;
+		}
+
+		gui_entry_insert_char(active_entry, arr[i]);
+	}
+
+	if (!lf) {
+		/* not a multiline paste */
+		return;
+	}
+
+	signal_emit("send text", 3, gui_entry_get_text(active_entry),
+		    active_win->active_server, active_win->active);
+
+	/* rest of the lines */
+	str = g_string_new(NULL);
+	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
 			signal_emit("send text", 3, str->str,
 				    active_win->active_server,
@@ -177,7 +199,7 @@ static void paste_send(const char *utf8_start, GArray *buf)
 static void paste_flush(int send)
 {
 	if (send)
-		paste_send(paste_entry, paste_buffer);
+		paste_send();
 	else {
 		/* revert back to pre-paste state */
 		gui_entry_set_text(active_entry, paste_entry);
@@ -201,7 +223,7 @@ static gboolean paste_timeout(gpointer data)
 	GTimeVal now;
 	int diff;
 
-	if (paste_line_count == 0) {
+	if (paste_state == 0) {
 		/* gone already */
 		return FALSE;
 	}
@@ -256,6 +278,8 @@ static int check_pasting(unichar key, int diff)
 	} else if (paste_state > 0 && diff > paste_detect_time &&
 		   paste_line_count == 0) {
 		/* reset paste state */
+		if (paste_state == paste_detect_keycount)
+			paste_flush(TRUE);
 		paste_state = 0;
 		return FALSE;
 	}
@@ -274,11 +298,7 @@ static int check_pasting(unichar key, int diff)
 				return FALSE;
 			}
 
-			if (paste_line_count++ == 0) {
-				/* end of first line - see how many lines
-				   we'll get */
-				g_timeout_add(200, paste_timeout, NULL);
-			}
+			paste_line_count++;
 		}
 		if (paste_verify_line_count > 0)
 			g_array_append_val(paste_buffer, key);
@@ -307,6 +327,8 @@ static int check_pasting(unichar key, int diff)
 					g_array_index(paste_buffer, unichar, i));
 			}
 			g_array_set_size(paste_buffer, 0);
+		} else {
+			g_timeout_add(100, paste_timeout, NULL);
 		}
 		return TRUE;
 	}
