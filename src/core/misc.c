@@ -836,7 +836,7 @@ int parse_time_interval(const char *time, int *msecs)
 			}
 			*msecs += number * 1000*3600*24;
 		} else if (g_strncasecmp(desc, "hours", len) == 0)
-			*msecs += number * 1000*60*3600;
+			*msecs += number * 1000*3600;
 		else if (g_strncasecmp(desc, "minutes", len) == 0 ||
 			 g_strncasecmp(desc, "mins", len) == 0)
 			*msecs += number * 1000*60;
