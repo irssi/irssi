@@ -27,5 +27,5 @@ where the server is connected (ie. /window new hide;
 
 /SERVER LIST
 
-See also: RMRECONNS, DISCONNECT, RECONNECT
+See also: CONNECT, DISCONNECT, RECONNECT, RMRECONNS
 
