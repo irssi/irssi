@@ -99,7 +99,7 @@ noinst_HEADERS = \
 	perl-signals.h
 
 all-local:
-	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && if $(MAKE); then echo; else $(MAKE); fi && cd ..; done
+	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
 
 install-exec-local:
 	for dir in common irc; do cd $$dir && $(MAKE) install && cd ..; done
