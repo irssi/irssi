@@ -40,7 +40,7 @@ abstracts = {
   msgme = "%Y$0-%n";
   privmsg = "[%R$0%K(%r$1-%K)%n] ";
   privmsgnick = "{msgnick %R$0-%n}";
-  ownprivmsg = "[%r$0%K(%R$1-%K)-%n] ";
+  ownprivmsg = "[%r$0%K(%R$1-%K)%n] ";
   
   # actions
   action = "%W * $0-%n ";
