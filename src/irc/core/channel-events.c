@@ -27,14 +27,10 @@
 #include "irc-servers.h"
 #include "irc-channels.h"
 
-static void event_cannot_join(IRC_SERVER_REC *server, const char *data)
+static void check_join_failure(IRC_SERVER_REC *server, const char *channel)
 {
 	CHANNEL_REC *chanrec;
-	char *params, *channel;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 2, NULL, &channel);
+	char *chan2;
 
 	if (channel[0] == '!' && channel[1] == '!')
 		channel++; /* server didn't understand !channels */
@@ -43,15 +39,28 @@ static void event_cannot_join(IRC_SERVER_REC *server, const char *data)
 	if (chanrec == NULL && channel[0] == '!') {
 		/* it probably replied with the full !channel name,
 		   find the channel with the short name.. */
-		channel = g_strdup_printf("!%s", channel+6);
-		chanrec = channel_find(SERVER(server), channel);
-		g_free(channel);
+		chan2 = g_strdup_printf("!%s", channel+6);
+		chanrec = channel_find(SERVER(server), chan2);
+		g_free(chan2);
 	}
 
 	if (chanrec != NULL && !chanrec->joined) {
 		chanrec->left = TRUE;
 		channel_destroy(chanrec);
 	}
+}
+
+static void irc_server_event(IRC_SERVER_REC *server, const char *line)
+{
+	char *params, *numeric, *channel;
+
+	/* We'll be checking "4xx <your nick> <channel>" for channels
+	   which we haven't joined yet. 4xx are error codes and should
+	   indicate that the join failed. */
+	params = event_get_params(line, 3, &numeric, NULL, &channel);
+
+	if (numeric[0] == '4')
+		check_join_failure(server, channel);
 
 	g_free(params);
 }
@@ -65,21 +74,21 @@ static void event_no_such_channel(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 2, NULL, &channel);
 	chanrec = *channel == '!' && channel[1] != '\0' ?
 		channel_find(SERVER(server), channel) : NULL;
-	g_free(params);
 
 	if (chanrec != NULL) {
                 /* !channel didn't exist, so join failed */
 		setup = channel_setup_find(chanrec->name,
 					   chanrec->server->connrec->chatnet);
 		if (setup != NULL && setup->autojoin) {
-			/* it's autojoin channel though,
-			   so create it */
+			/* it's autojoin channel though, so create it */
 			irc_send_cmdv(server, "JOIN !%s", chanrec->name);
+			g_free(params);
                         return;
 		}
 	}
 
-        event_cannot_join(server, data);
+	check_join_failure(server, channel);
+	g_free(params);
 }
 
 static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
@@ -116,7 +125,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 2, NULL, &channel);
 	if (ischannel(*channel)) {
 		/* channel is unavailable - try to join again a bit later */
-		event_cannot_join(server, data);
+		check_join_failure(server, channel);
 	}
 
 	g_free(params);
@@ -360,19 +369,9 @@ void channel_events_init(void)
 {
 	settings_add_bool("misc", "join_auto_chans_on_invite", TRUE);
 
+	signal_add_first("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_add_first("event 403", (SIGNAL_FUNC) event_no_such_channel); /* no such channel */
-	signal_add_first("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
-	signal_add_first("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
-	signal_add_first("event 477", (SIGNAL_FUNC) event_cannot_join); /* need to be identify to registered nick (dalnet) */
-	signal_add_first("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
-	signal_add_first("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
-	signal_add_first("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
-	signal_add_first("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
-	signal_add_first("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
-	signal_add_first("event 479", (SIGNAL_FUNC) event_cannot_join); /* Illegal channel name */
-	signal_add_first("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
-	signal_add_first("event 439", (SIGNAL_FUNC) event_cannot_join); /* target change too fast */
 
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
@@ -386,19 +385,9 @@ void channel_events_init(void)
 
 void channel_events_deinit(void)
 {
+	signal_remove("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_remove("event 403", (SIGNAL_FUNC) event_no_such_channel); /* no such channel */
-	signal_remove("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
-	signal_remove("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
-	signal_remove("event 477", (SIGNAL_FUNC) event_cannot_join); /* need to be identify to registered nick (dalnet) */
-	signal_remove("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
-	signal_remove("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
-	signal_remove("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
-	signal_remove("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
-	signal_remove("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
-	signal_remove("event 479", (SIGNAL_FUNC) event_cannot_join); /* Illegal channel name */
-	signal_remove("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
-	signal_remove("event 439", (SIGNAL_FUNC) event_cannot_join); /* target change too fast */
 
 	signal_remove("event topic", (SIGNAL_FUNC) event_topic);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
