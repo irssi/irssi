@@ -89,7 +89,7 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if ((dest->level & MSGLEVEL_HILIGHT) == 0) {
+	if ((dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
 		/* check for both target and tag/target */
 		if (hide_target_activity(data_level, dest->target))
 			return;
