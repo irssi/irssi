@@ -53,18 +53,6 @@ DIE=0
 }
 
 grep "^AM_GNU_GETTEXT" $srcdir/configure.in >/dev/null && {
-  grep "sed.*POTFILES" $srcdir/configure.in >/dev/null || \
-  (gettext --version) < /dev/null > /dev/null 2>&1 || {
-    echo
-    echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
-    echo "Get ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz"
-    echo "(or a newer version if it is available)"
-    DIE=1
-  }
-}
-
-grep "^AM_GNOME_GETTEXT" $srcdir/configure.in >/dev/null && {
-  grep "sed.*POTFILES" $srcdir/configure.in >/dev/null || \
   (gettext --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
@@ -110,6 +98,7 @@ xlc )
   am_opt=--include-deps;;
 esac
 
+rm -f aclocal.m4
 if grep "^AM_GNU_GETTEXT" configure.in >/dev/null; then
   echo "Creating aclocal.m4 ..."
   test -r aclocal.m4 || touch aclocal.m4
@@ -129,10 +118,10 @@ if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
   echo "Running autoheader..."
   autoheader
 fi
-echo "Running automake --gnu $am_opt ..."
-automake --add-missing --gnu $am_opt
 echo "Running autoconf ..."
 autoconf
+echo "Running automake --gnu $am_opt ..."
+automake --add-missing --gnu $am_opt
 
 conf_flags="--enable-maintainer-mode --enable-compile-warnings" #--enable-iso-c
 
