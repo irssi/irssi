@@ -54,16 +54,23 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	len = strlen(cmd);
 	server->cmdcount++;
 
+	if (!raw) {
+		/* check that we don't send any longer commands
+		   than 510 bytes (2 bytes for CR+LF) */
+		strncpy(str, cmd, 510);
+		if (len > 510) len = 510;
+		str[len] = '\0';
+                cmd = str;
+	}
+
 	if (send_now)
 		rawlog_output(server->rawlog, cmd);
 
 	if (!raw) {
-		/* check that we don't send any longer commands
-		   than 512 bytes. also add the line feed. */
-		strncpy(str, cmd, 510);
-		if (len > 510) len = 510;
-		str[len++] = 13; str[len++] = 10; str[len] = '\0';
-                cmd = str;
+                /* Add CR+LF to command */
+		str[len++] = 13;
+		str[len++] = 10;
+		str[len] = '\0';
 	}
 
 	if (send_now) {
