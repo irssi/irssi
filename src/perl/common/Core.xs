@@ -1,4 +1,5 @@
 #include "module.h"
+#include "irssi-version.h"
 
 MODULE = Irssi::Core  PACKAGE = Irssi
 PROTOTYPES: ENABLE
@@ -378,9 +379,24 @@ OUTPUT:
 
 char *
 get_irssi_dir()
+CODE:
+	RETVAL = (char *) get_irssi_dir();
+OUTPUT:
+	RETVAL
 
 char *
 get_irssi_config()
+CODE:
+	RETVAL = (char *) get_irssi_config();
+OUTPUT:
+	RETVAL
+
+char *
+version()
+CODE:
+	RETVAL = IRSSI_VERSION_DATE;
+OUTPUT:
+	RETVAL
 
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
