@@ -34,7 +34,7 @@
 
 static int dcc_file_create_mode;
 
-static char *dcc_prepare_path(const char *fname)
+static char *dcc_get_download_path(const char *fname)
 {
 	char *str, *downpath;
 
@@ -159,7 +159,8 @@ static void sig_dccget_connected(DCC_REC *dcc)
 		return;
 	}
 
-	dcc->file = dcc_prepare_path(dcc->arg);
+	g_free_not_null(dcc->file);
+	dcc->file = dcc_get_download_path(dcc->arg);
 
 	/* if some plugin wants to change the file name/path here.. */
 	signal_emit("dcc get receive", 1, dcc);
@@ -242,29 +243,12 @@ static void dcc_resume_send(DCC_REC *dcc, int port)
 	char *str;
 
 	g_return_if_fail(dcc != NULL);
-	g_return_if_fail(dcc->type != DCC_TYPE_SEND);
+	g_return_if_fail(dcc->type == DCC_TYPE_SEND);
 
 	str = g_strdup_printf("DCC ACCEPT %s %d %lu",
 			      dcc->arg, port, dcc->transfd);
 	dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
 	g_free(str);
-}
-
-static void dcc_resume_get(DCC_REC *dcc)
-{
-	g_return_if_fail(dcc != NULL);
-	g_return_if_fail(dcc->type != DCC_TYPE_GET);
-
-	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
-				     source_host_ok ? source_host_ip : NULL);
-	if (dcc->handle != -1) {
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
-					   (GInputFunction) dcc_get_connect, dcc);
-	} else {
-		/* error connecting */
-		signal_emit("dcc error connect", 1, dcc);
-		dcc_destroy(dcc);
-	}
 }
 
 #define is_resume_type(type) \
@@ -274,7 +258,7 @@ static void dcc_resume_get(DCC_REC *dcc)
         (g_strcasecmp(type, "RESUME") != 0 || ((dcc)->type == DCC_TYPE_SEND && (dcc)->transfd == 0))
 
 #define is_accept_ok(type, dcc) \
-        (g_strcasecmp(type, "ACCEPT") != 0 || ((dcc)->type == DCC_TYPE_GET && (dcc)->type == DCC_GET_RESUME))
+        (g_strcasecmp(type, "ACCEPT") != 0 || ((dcc)->type == DCC_TYPE_GET && (dcc)->get_type == DCC_GET_RESUME))
 
 static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 			 const char *sender, const char *sendaddr,
@@ -300,18 +284,18 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 		return;
 	}
 
-	if (lseek(dcc->fhandle, size, SEEK_SET) != dcc->transfd) {
+	if (lseek(dcc->fhandle, size, SEEK_SET) != size) {
 		/* error, or trying to seek after end of file */
 		signal_emit("dcc closed", 1, dcc);
 		dcc_destroy(dcc);
-		return;
-	}
-	dcc->transfd = dcc->skipped = size;
+	} else {
+		dcc->transfd = dcc->skipped = size;
 
-	if (dcc->type == DCC_TYPE_SEND)
-		dcc_resume_send(dcc, port);
-	else
-		dcc_resume_get(dcc);
+		if (dcc->type == DCC_TYPE_SEND)
+			dcc_resume_send(dcc, port);
+		else
+			dcc_get_connect(dcc);
+	}
 
 	g_free(params);
 }
@@ -323,7 +307,7 @@ static void dcc_resume_rec(DCC_REC *dcc)
 	g_return_if_fail(dcc != NULL);
 
 	dcc->get_type = DCC_GET_RESUME;
-	dcc->file = dcc_prepare_path(dcc->arg);
+	dcc->file = dcc_get_download_path(dcc->arg);
 
 	dcc->fhandle = open(dcc->file, O_WRONLY, dcc_file_create_mode);
 	if (dcc->fhandle == -1) {
