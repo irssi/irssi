@@ -75,6 +75,8 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "(pass), ");
 		if (rec->autoconnect)
 			g_string_append(str, "autoconnect, ");
+		if (rec->no_proxy)
+			g_string_append(str, "noproxy, ");
 		if (rec->max_cmds_at_once > 0)
 			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)

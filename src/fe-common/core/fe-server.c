@@ -146,6 +146,8 @@ static void cmd_server_add(const char *data)
 
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
+	if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
+	if (g_hash_table_lookup(optlist, "noproxy")) rec->no_proxy = TRUE;
 
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	value = g_hash_table_lookup(optlist, "host");
@@ -322,7 +324,7 @@ void fe_server_init(void)
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
-	command_set_options("server add", "4 6 auto noauto -host -port");
+	command_set_options("server add", "4 6 auto noauto proxy noproxy -host -port");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

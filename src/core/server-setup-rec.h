@@ -14,6 +14,7 @@ IPADDR *own_ip4, *own_ip6; /* resolved own_address if not NULL */
 time_t last_connect; /* to avoid reconnecting too fast.. */
 
 unsigned int autoconnect:1;
+unsigned int no_proxy:1;
 unsigned int last_failed:1; /* if last connection attempt failed */
 unsigned int banned:1; /* if we're banned from this server */
 unsigned int dns_error:1; /* DNS said the host doesn't exist */
