@@ -465,12 +465,6 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 			continue;
 		}
 
-		if (xpos == COLS) {
-			/* there should be only spaces left */
-			text++;
-			continue;
-		}
-
 		if ((unsigned char) *text >= 32)
 			waddch(cwin, (unsigned char) *text);
 		else {
