@@ -28,7 +28,7 @@ DIE=0
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
   echo
-  echo "**Error**: You must have \`autoconf' installed to compile Gnome."
+  echo "**Error**: You must have \`autoconf' installed to compile Irssi."
   echo "Download the appropriate package for your distribution,"
   echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
   DIE=1
@@ -37,7 +37,7 @@ DIE=0
 (grep "^AM_PROG_LIBTOOL" $srcdir/configure.in >/dev/null) && {
   (libtool --version) < /dev/null > /dev/null 2>&1 || {
     echo
-    echo "**Error**: You must have \`libtool' installed to compile Gnome."
+    echo "**Error**: You must have \`libtool' installed to compile Irssi."
     echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.2d.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
@@ -48,7 +48,7 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.in >/dev/null && {
   grep "sed.*POTFILES" $srcdir/configure.in >/dev/null || \
   (gettext --version) < /dev/null > /dev/null 2>&1 || {
     echo
-    echo "**Error**: You must have \`gettext' installed to compile Gnome."
+    echo "**Error**: You must have \`gettext' installed to compile Irssi."
     echo "Get ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
@@ -59,7 +59,7 @@ grep "^AM_GNOME_GETTEXT" $srcdir/configure.in >/dev/null && {
   grep "sed.*POTFILES" $srcdir/configure.in >/dev/null || \
   (gettext --version) < /dev/null > /dev/null 2>&1 || {
     echo
-    echo "**Error**: You must have \`gettext' installed to compile Gnome."
+    echo "**Error**: You must have \`gettext' installed to compile Irssi."
     echo "Get ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
@@ -68,7 +68,7 @@ grep "^AM_GNOME_GETTEXT" $srcdir/configure.in >/dev/null && {
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
   echo
-  echo "**Error**: You must have \`automake' installed to compile Gnome."
+  echo "**Error**: You must have \`automake' installed to compile Irssi."
   echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
   echo "(or a newer version if it is available)"
   DIE=1
