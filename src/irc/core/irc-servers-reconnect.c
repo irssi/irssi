@@ -74,7 +74,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	if (mode == NULL) return 0;
 
 	newmode = server->usermode == NULL ? NULL :
-		modes_join(server->usermode, mode);
+		modes_join(server->usermode, mode, FALSE);
 
 	if (server->usermode == NULL) {
 		/* server didn't set user mode, just set the new one */

@@ -1,9 +1,10 @@
 MODULE = Irssi::Irc	PACKAGE = Irssi::Irc
 
 char *
-modes_join(old, mode)
+modes_join(old, mode, channel)
 	char *old
 	char *mode
+        int channel
 
 #*******************************
 MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Server

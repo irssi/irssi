@@ -320,7 +320,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 
 	mode = settings_get_str("usermode");
 	newmode = server->usermode == NULL ? NULL :
-		modes_join(server->usermode, mode);
+		modes_join(server->usermode, mode, FALSE);
 	if (server->usermode == NULL || strcmp(newmode, server->usermode) != 0)
 		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
 	g_free_not_null(newmode);

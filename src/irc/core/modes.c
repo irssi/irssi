@@ -297,8 +297,10 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 	g_string_free(newmode, TRUE);
 }
 
-/* add `mode' to `old' - return newly allocated mode. */
-char *modes_join(const char *old, const char *mode)
+/* add `mode' to `old' - return newly allocated mode.
+   `channel' specifies if we're parsing channel mode and we should try
+   to join mode arguments too. */
+char *modes_join(const char *old, const char *mode, int channel)
 {
 	GString *newmode;
 	char *dup, *modestr, *curmode, type;
@@ -317,7 +319,7 @@ char *modes_join(const char *old, const char *mode)
 			continue;
 		}
 
-		if (!HAS_MODE_ARG(type, *curmode))
+		if (!channel || !HAS_MODE_ARG(type, *curmode))
 			mode_set(newmode, type, *curmode);
 		else {
 			mode_set_arg(newmode, type, *curmode,
@@ -341,7 +343,7 @@ static void parse_user_mode(IRC_SERVER_REC *server, const char *modestr)
 	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(modestr != NULL);
 
-	newmode = modes_join(server->usermode, modestr);
+	newmode = modes_join(server->usermode, modestr, FALSE);
 	oldmode = server->usermode;
 	server->usermode = newmode;
 	server->server_operator = (strchr(newmode, 'o') != NULL);

@@ -23,8 +23,10 @@
 void modes_init(void);
 void modes_deinit(void);
 
-/* add `mode' to `old' - return newly allocated mode. */
-char *modes_join(const char *old, const char *mode);
+/* add `mode' to `old' - return newly allocated mode.
+   `channel' specifies if we're parsing channel mode and we should try
+   to join mode arguments too. */
+char *modes_join(const char *old, const char *mode, int channel);
 
 int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode);
 
