@@ -53,6 +53,7 @@ FORMAT_REC fecommon_irc_formats[] =
     { "quit", N_("%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]"), 3, { 0, 0, 0 } },
     { "quit_once", N_("%_$3%_ %c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]"), 4, { 0, 0, 0, 0 } },
     { "invite", N_("%_$0%_ invites you to %_$1"), 2, { 0, 0 } },
+    { "inviting", N_("Inviting $0 to %_$1"), 2, { 0, 0 } },
     { "not_invited", N_("You have not been invited to a channel!"), 0 },
     { "names", N_("%K[%g%_Users%_%K(%g$0%K)]%n $1"), 2, { 0, 0 } },
     { "endofnames", N_("%g%_$0%_%K:%n Total of %_$1%_ nicks %K[%n%_$2%_ ops, %_$3%_ voices, %_$4%_ normal%K]"), 5, { 0, 1, 1, 1, 1 } },

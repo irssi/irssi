@@ -336,15 +336,26 @@ static void event_unaway(gchar *data, IRC_SERVER_REC *server)
     printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_UNAWAY);
 }
 
-static void event_userhost(gchar *data, IRC_SERVER_REC *server)
+static void event_userhost(const char *data, IRC_SERVER_REC *server)
 {
-    gchar *params, *hosts;
+	char *params, *hosts;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 2, NULL, &hosts);
-    printtext(server, NULL, MSGLEVEL_CRAP, "%s", hosts);
-    g_free(params);
+	params = event_get_params(data, 2, NULL, &hosts);
+	printtext(server, NULL, MSGLEVEL_CRAP, "%s", hosts);
+	g_free(params);
+}
+
+static void event_sent_invite(const char *data, IRC_SERVER_REC *server)
+{
+        char *params, *nick, *channel;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &nick, &channel);
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_INVITING, nick, channel);
+	g_free(params);
 }
 
 static void event_whois(gchar *data, IRC_SERVER_REC *server)
@@ -635,6 +646,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
 	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
+	signal_add("event 341", (SIGNAL_FUNC) event_sent_invite);
 
 	signal_add("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add("event 401", (SIGNAL_FUNC) event_no_such_nick);
@@ -685,6 +697,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);
 	signal_remove("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
+	signal_remove("event 341", (SIGNAL_FUNC) event_sent_invite);
 
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_remove("event 401", (SIGNAL_FUNC) event_no_such_nick);
