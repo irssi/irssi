@@ -165,13 +165,18 @@ void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 
 	/* free the last block */
 	chunk = text_chunk_find(gui, text);
-	if (--chunk->lines == 0)
-		text_chunk_free(gui, chunk);
+	if (--chunk->lines == 0) {
+		if (gui->cur_text == chunk)
+			chunk->pos = 0;
+                else
+			text_chunk_free(gui, chunk);
+	}
 }
 
-void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
+void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line, int redraw)
 {
-        GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
+        GList *last;
         int screenchange;
 
 	g_return_if_fail(window != NULL);
@@ -179,6 +184,10 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
 
 	gui = WINDOW_GUI(window);
 
+        screenchange = g_list_find(gui->startline, line) != NULL;
+        if (screenchange) gui->ypos -= gui_window_get_linecount(gui, line);
+
+	gui_window_cache_remove(gui, line);
 	gui_window_line_text_free(gui, line);
 	if (gui->lastlog_last_check != NULL &&
 	    gui->lastlog_last_check->data == line)
@@ -187,20 +196,12 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
 	    gui->lastlog_last_away->data == line)
 		gui->lastlog_last_away = NULL;
 
-        screenchange = g_list_find(gui->startline, line) != NULL;
-        if (screenchange) gui->ypos--;
-
-	if (gui->startline->data == line) {
-                /* first line in screen removed */
-                if (gui->startline->next != NULL) {
-                        gui->startline = gui->startline->next;
-                        gui->subline = 0;
-                } else {
-                        gui->startline = gui->startline->prev;
-                        gui->subline = gui->last_subline+1;
-                        gui->ypos = -1;
-                }
-        }
+        last = g_list_last(gui->bottom_startline);
+	if (last->data == line) {
+                /* removing last line */
+		gui->last_subline =
+			gui_window_get_linecount(gui, last->prev->data)-1;
+	}
 
         if (gui->bottom_startline->data == line) {
                 /* bottom line removed */
@@ -213,6 +214,20 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
                 }
 	}
 
+	if (gui->startline->data == line) {
+                /* first line in screen removed */
+                if (gui->startline->next != NULL) {
+                        gui->startline = gui->startline->next;
+                        gui->subline = 0;
+		} else {
+                        gui->startline = gui->startline->prev;
+			gui->subline = gui->last_subline+1;
+			gui->ypos = -1;
+			gui->empty_linecount = gui->parent->lines;
+			gui->bottom = TRUE;
+		}
+        }
+
 	window->lines--;
 	g_mem_chunk_free(gui->line_chunk, line);
 	gui->lines = g_list_remove(gui->lines, line);
@@ -220,7 +235,7 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
         if (window->lines == 0)
                 gui_window_clear(window);
 
-        if (screenchange && is_window_visible(window))
+        if (redraw && screenchange && is_window_visible(window))
                 gui_window_redraw(window);
 }
 
@@ -255,7 +270,7 @@ static void remove_old_lines(WINDOW_REC *window)
 				/* too new line, don't remove yet */
 				break;
 			}
-			gui_window_line_remove(window, line);
+			gui_window_line_remove(window, line, TRUE);
 		}
 	}
 }
@@ -404,7 +419,8 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 		gui->eol_marked = FALSE;
 
                 line = create_line(gui, 0);
-                if (gui->temp_line == NULL || g_list_find(gui->startline, gui->temp_line) != NULL)
+		if (gui->temp_line == NULL ||
+		    g_list_find(gui->startline, gui->temp_line) != NULL)
                         gui_window_newline(gui, visible);
 
 		gui->last_subline = 0;

@@ -789,7 +789,8 @@ static void signal_window_changed(WINDOW_REC *window)
 	screen_refresh_thaw();
 }
 
-GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, int regexp, int fullword)
+GList *gui_window_find_text(WINDOW_REC *window, const char *text,
+			    GList *startline, int regexp, int fullword)
 {
 #ifdef HAVE_REGEX_H
     regex_t preg;
@@ -1130,7 +1131,7 @@ void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
             raw->str[1] == (char)LINE_CMD_FORMAT_CONT) {
                 /* multiline format, format explained in one the
                    following lines. remove this line. */
-                gui_window_line_remove(window, line);
+                gui_window_line_remove(window, line, FALSE);
 	} else if (str != NULL) {
                 /* FIXME: ugly ugly .. and this can't handle
                    non-formatted lines.. */

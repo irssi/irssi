@@ -58,6 +58,9 @@ void gui_expandos_deinit(void);
 void gui_textwidget_init(void);
 void gui_textwidget_deinit(void);
 
+void lastlog_init(void);
+void lastlog_deinit(void);
+
 void mainwindow_activity_init(void);
 void mainwindow_activity_deinit(void);
 
@@ -126,6 +129,7 @@ static void textui_finish_init(void)
 	gui_printtext_init();
 	gui_readline_init();
 	gui_textwidget_init();
+        lastlog_init();
 	mainwindows_init();
 	mainwindow_activity_init();
 	mainwindows_save_init();
@@ -162,6 +166,7 @@ static void textui_deinit(void)
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
 	gui_textwidget_deinit();
+        lastlog_deinit();
 	statusbar_deinit();
 	gui_printtext_deinit();
 	gui_readline_deinit();

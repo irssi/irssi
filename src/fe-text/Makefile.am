@@ -26,6 +26,7 @@ irssi_SOURCES = \
         gui-readline.c \
         gui-textwidget.c \
         gui-windows.c \
+	lastlog.c \
         mainwindows.c \
         mainwindow-activity.c \
         mainwindows-save.c \

@@ -97,7 +97,8 @@ void gui_windows_deinit(void);
 WINDOW_REC *gui_window_create(MAIN_WINDOW_REC *parent);
 
 void gui_window_set_server(WINDOW_REC *window, SERVER_REC *server);
-GList *gui_window_find_text(WINDOW_REC *window, char *text, GList *startline, int regexp, int fullword);
+GList *gui_window_find_text(WINDOW_REC *window, const char *text,
+			    GList *startline, int regexp, int fullword);
 
 /* get number of real lines that line record takes */
 int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line);
