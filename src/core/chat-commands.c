@@ -120,9 +120,9 @@ static void cmd_connect(const char *data)
 
 		if (server != NULL && rawlog_file != NULL)
 			rawlog_open(server->rawlog, rawlog_file);
-	}
 
-	g_free(rawlog_file);
+		g_free(rawlog_file);
+	}
 }
 
 static RECONNECT_REC *find_reconnect_server(int chat_type,
@@ -226,9 +226,9 @@ static void cmd_server_connect(const char *data, SERVER_REC *server)
 
 		if (server != NULL && rawlog_file != NULL)
 			rawlog_open(server->rawlog, rawlog_file);
-	}
 
-	g_free(rawlog_file);
+		g_free(rawlog_file);
+	}
 }
 
 /* SYNTAX: DISCONNECT *|<tag> [<message>] */
