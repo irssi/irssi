@@ -1,11 +1,18 @@
 #ifndef __STATUSBAR_H
 #define __STATUSBAR_H
 
+#define SBAR_PRIORITY_HIGH	100
+#define SBAR_PRIORITY_NORMAL	0
+#define SBAR_PRIORITY_LOW	-100
+
 enum {
 	STATUSBAR_POS_UP,
 	STATUSBAR_POS_MIDDLE,
 	STATUSBAR_POS_DOWN
 };
+
+typedef struct SBAR_ITEM_REC SBAR_ITEM_REC;
+typedef void (*STATUSBAR_FUNC) (SBAR_ITEM_REC *item, int get_size_only);
 
 typedef struct {
 	int pos;
@@ -15,16 +22,18 @@ typedef struct {
 	GSList *items;
 } STATUSBAR_REC;
 
-typedef struct {
-        STATUSBAR_REC *bar;
+struct SBAR_ITEM_REC {
+	STATUSBAR_REC *bar;
+	STATUSBAR_FUNC func;
 
-	int xpos, size;
-        int shrinked; /* couldn't give the requested size */
-	int right_justify, max_size;
-	void *func;
-} SBAR_ITEM_REC;
+	/* what item wants */
+        int priority;
+	int min_size, max_size;
+	unsigned int right_justify:1;
 
-typedef void (*STATUSBAR_FUNC) (SBAR_ITEM_REC *item, int ypos);
+	/* what item gets */
+        int xpos, size;
+};
 
 /* ypos is used only when pos == STATUSBAR_POS_MIDDLE */
 STATUSBAR_REC *statusbar_create(int pos, int ypos);
@@ -32,8 +41,9 @@ void statusbar_destroy(STATUSBAR_REC *bar);
 
 STATUSBAR_REC *statusbar_find(int pos, int line);
 
-SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, gboolean right_justify, STATUSBAR_FUNC func);
-int statusbar_item_resize(SBAR_ITEM_REC *item, int size);
+SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
+				     int priority, int right_justify,
+				     STATUSBAR_FUNC func);
 void statusbar_item_remove(SBAR_ITEM_REC *item);
 
 /* redraw statusbar, NULL = all */

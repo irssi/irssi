@@ -1,7 +1,7 @@
 /*
- gui-statusbar-items.c : irssi
+ statusbar-items.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "servers.h"
 #include "misc.h"
 #include "settings.h"
+#include "special-vars.h"
 
 #include "irc.h"
 #include "channels.h"
@@ -90,23 +91,45 @@ static off_t mail_last_size = -1;
 static SBAR_ITEM_REC *topic_item;
 static STATUSBAR_REC *topic_bar;
 
-/* redraw clock */
-static void statusbar_clock(SBAR_ITEM_REC *item, int ypos)
+static void item_default(SBAR_ITEM_REC *item, int get_size_only,
+			 const char *str)
 {
-	struct tm *tm;
-	char str[6];
+	SERVER_REC *server;
+        WI_ITEM_REC *wiitem;
+	char *parsed, *printstr;
+	int len;
 
-	clock_last = time(NULL);
-	tm = localtime(&clock_last);
+	if (active_win == NULL) {
+		server = NULL;
+                wiitem = NULL;
+	} else {
+		server = active_win->active_server;
+                wiitem = active_win->active;
+	}
 
-	g_snprintf(str, sizeof(str), "%02d:%02d", tm->tm_hour, tm->tm_min);
+	parsed = parse_special_string(str, server, wiitem, "", NULL,
+				      PARSE_FLAG_ESCAPE_VARS);
 
-	move(ypos, item->xpos);
-	set_color(stdscr, sbar_color_dim); addch('[');
-	set_color(stdscr, sbar_color_bold); addstr(str);
-	set_color(stdscr, sbar_color_dim); addch(']');
+	if (get_size_only) {
+		item->min_size = item->max_size = format_get_length(parsed);
+	} else {
+		if (item->size < item->min_size) {
+                        /* they're forcing us smaller than minimum size.. */
+			len = format_real_length(parsed, item->size);
+                        parsed[len] = '\0';
+		}
 
-	screen_refresh(NULL);
+                printstr = g_strconcat("%4", parsed, NULL);
+		gui_printtext(item->xpos, item->bar->ypos, printstr);
+                g_free(printstr);
+	}
+	g_free(parsed);
+}
+
+/* redraw clock */
+static void statusbar_clock(SBAR_ITEM_REC *item, int get_size_only)
+{
+        item_default(item, get_size_only, "%c[%w$Z%c]");
 }
 
 /* check if we need to redraw clock.. */
@@ -130,67 +153,22 @@ static int statusbar_clock_timeout(void)
 }
 
 /* redraw nick */
-static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_nick(SBAR_ITEM_REC *item, int get_size_only)
 {
-	CHANNEL_REC *channel;
-	SERVER_REC *server;
-	IRC_SERVER_REC *ircserver;
-	NICK_REC *nickrec;
-	int size_needed;
-	int umode_size;
-	char nick[10];
+        IRC_SERVER_REC *server;
+	char *str, *usermode, *away;
 
-	server = active_win == NULL ? NULL : active_win->active_server;
-	ircserver = IRC_SERVER(server);
+	server = IRC_SERVER(active_win->active_server);
+	usermode = server == NULL || server->usermode == NULL ||
+		*server->usermode == '\0' ? "" :
+		g_strdup_printf("(%%c+%%w%s)", server->usermode);
+	away = server == NULL || !server->usermode_away ? "" :
+                "(%GzZzZ%w)";
 
-	umode_size = ircserver == NULL || ircserver->usermode == NULL ||
-		ircserver->usermode[0] == '\0' ? 0 :
-		strlen(ircserver->usermode)+3;
-
-	/* nick */
-	if (server == NULL || server->nick == NULL) {
-		nick[0] = '\0';
-		nickrec = NULL;
-	} else {
-		strncpy(nick, server->nick, 9);
-		nick[9] = '\0';
-
-		channel = CHANNEL(active_win->active);
-		nickrec = channel == NULL ? NULL : channel->ownnick;
-	}
-
-	size_needed = 2 + strlen(nick) + umode_size +
-		(server != NULL && server->usermode_away ? 7 : 0) +
-		(nickrec != NULL && (nickrec->op || nickrec->voice) ? 1 : 0); /* @ + */
-
-	if (item->size != size_needed) {
-		/* we need more (or less..) space! */
-		statusbar_item_resize(item, size_needed);
-		return;
-	}
-
-	/* size ok, draw the nick */
-	move(ypos, item->xpos);
-
-	set_color(stdscr, sbar_color_dim); addch('[');
-	if (nickrec != NULL && (nickrec->op || nickrec->voice)) {
-		set_color(stdscr, sbar_color_bold);
-		addch(nickrec->op ? '@' : '+');
-	}
-	set_color(stdscr, sbar_color_normal); addstr(nick);
-	if (umode_size) {
-		set_color(stdscr, sbar_color_bold); addch('(');
-		set_color(stdscr, sbar_color_dim); addch('+');
-		set_color(stdscr, sbar_color_normal); addstr(ircserver->usermode);
-		set_color(stdscr, sbar_color_bold); addch(')');
-	}
-	if (server != NULL && server->usermode_away) {
-		set_color(stdscr, sbar_color_normal); addstr(" (");
-		set_color(stdscr, sbar_color_away); addstr("zZzZ");
-		set_color(stdscr, sbar_color_normal); addch(')');
-	}
-	set_color(stdscr, sbar_color_dim); addch(']');
-	screen_refresh(NULL);
+        str = g_strconcat("%c[%w$P$N", usermode, away, "%c]", NULL);
+        item_default(item, get_size_only, str);
+	g_free(str);
+	if (*usermode != '\0') g_free(usermode);
 }
 
 static void sig_statusbar_nick_redraw(void)
@@ -198,100 +176,32 @@ static void sig_statusbar_nick_redraw(void)
 	statusbar_item_redraw(nick_item);
 }
 
-static WINDOW_REC *mainwindow_find_sbar(SBAR_ITEM_REC *item)
-{
-	GSList *tmp;
-
-	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
-
-		if (rec->statusbar_channel_item == item)
-			return rec->active;
-	}
-
-	return active_win;
-}
-
 /* redraw channel */
-static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_channel(SBAR_ITEM_REC *item, int get_size_only)
 {
-    WINDOW_REC *window;
-    WI_ITEM_REC *witem;
-    CHANNEL_REC *channel;
-    SERVER_REC *server;
-    gchar channame[21], winnum[MAX_INT_STRLEN], *tmpname;
-    int size_needed;
-    int mode_size;
+        SERVER_REC *server;
+        CHANNEL_REC *channel;
+	char *str, *tmp;
 
-    window = item->bar->pos != STATUSBAR_POS_MIDDLE ? active_win :
-            mainwindow_find_sbar(item);
-    server = window == NULL ? NULL : window->active_server;
-
-    ltoa(winnum, window == NULL ? 0 : window->refnum);
-
-    witem = window != NULL && (IS_CHANNEL(window->active) || IS_QUERY(window->active)) ?
-	    window->active : NULL;
-    if (witem == NULL)
-    {
-	/* display server tag */
-        channame[0] = '\0';
-	mode_size = 0;
-	channel = NULL;
-
-	size_needed = 3 + strlen(winnum) + (server == NULL ? 0 : (17+strlen(server->tag)));
-    }
-    else
-    {
-	/* display channel + mode */
-        tmpname = show_lowascii(witem->name);
-        strncpy(channame, tmpname, 20); channame[20] = '\0';
-        g_free(tmpname);
-
-	channel = CHANNEL(witem);
-	if (channel == NULL) {
-                mode_size = 0;
+	if (active_win->active != NULL) {
+		/* channel/query */
+                channel = CHANNEL(active_win->active);
+		tmp = channel == NULL || channel->mode == NULL ||
+			*channel->mode == '\0' ? "" :
+			g_strdup_printf("(%%c+%%w%s)", channel->mode);
+		str = g_strconcat("%c[%w$winref:$[.15]T", tmp, "%c]", NULL);
 	} else {
-		mode_size = strlen(channel->mode);
-		if (mode_size > 0) mode_size += 3; /* (+) */
+		/* empty window */
+                server = active_win->active_server;
+		tmp = server == NULL ? "" :
+			g_strdup_printf(":%s (change with ^X)", server->tag);
+		str = g_strconcat("%c[%w$winref", tmp, "%c]", NULL);
 	}
 
-	size_needed = 3 + strlen(winnum) + strlen(channame) + mode_size;
-    }
+        item_default(item, get_size_only, str);
 
-    if (item->size != size_needed)
-    {
-        /* we need more (or less..) space! */
-        statusbar_item_resize(item, size_needed);
-        return;
-    }
-
-    move(ypos, item->xpos);
-    set_color(stdscr, sbar_color_dim); addch('[');
-
-    /* window number */
-    set_color(stdscr, sbar_color_normal); addstr(winnum);
-    set_color(stdscr, sbar_color_dim); addch(':');
-
-    if (channame[0] == '\0' && server != NULL)
-    {
-	/* server tag */
-	set_color(stdscr, sbar_color_normal); addstr(server->tag);
-        addstr(" (change with ^X)");
-    }
-    else if (channame[0] != '\0')
-    {
-	/* channel + mode */
-	set_color(stdscr, sbar_color_normal); addstr(channame);
-	if (mode_size)
-	{
-	    set_color(stdscr, sbar_color_bold); addch('(');
-	    set_color(stdscr, sbar_color_dim); addch('+');
-	    set_color(stdscr, sbar_color_normal); addstr(channel->mode);
-	    set_color(stdscr, sbar_color_bold); addch(')');
-	}
-    }
-    set_color(stdscr, sbar_color_dim); addch(']');
-    screen_refresh(NULL);
+	g_free(str);
+        if (*tmp != '\0') g_free(tmp);
 }
 
 static void sig_statusbar_channel_redraw(void)
@@ -314,168 +224,146 @@ static void sig_statusbar_channel_redraw_window_item(WI_ITEM_REC *item)
 		statusbar_item_redraw(channel_item);
 }
 
-static void draw_activity(gchar *title, gboolean act, gboolean det, int size)
+static char *get_activity_list(int normal, int hilight)
 {
-    WINDOW_REC *window;
-    GList *tmp;
-    gchar str[MAX_INT_STRLEN];
-    gboolean first, is_det;
+	GString *str;
+	GList *tmp;
+        char *ret;
+        int is_det;
 
-    set_color(stdscr, sbar_color_normal); addstr(title);
+	str = g_string_new(NULL);
 
-    first = TRUE;
-    for (tmp = activity_list; tmp != NULL && size > 0; tmp = tmp->next)
-    {
-	window = tmp->data;
+	for (tmp = activity_list; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *window = tmp->data;
 
-	is_det = window->data_level >= DATA_LEVEL_HILIGHT;
-	if (is_det && !det) continue;
-	if (!is_det && !act) continue;
+		is_det = window->data_level >= DATA_LEVEL_HILIGHT;
+		if ((!is_det && !normal) || (is_det && !hilight))
+                        continue;
 
-	if (first)
-	    first = FALSE;
-	else
-	{
-	    set_color(stdscr, sbar_color_dim);
-	    addch(',');
-            size--;
+                if (str->len > 0)
+			g_string_append(str, "%c,");
+
+		switch (window->data_level) {
+		case DATA_LEVEL_NONE:
+		case DATA_LEVEL_TEXT:
+			break;
+		case DATA_LEVEL_MSG:
+                        g_string_append(str, "%W");
+			break;
+		default:
+			/*FIXME:if (window->hilight_color > 0) {
+				int bg;
+
+				bg = window->hilight_bg_color == -1 ?
+					sbar_color_background :
+					(window->hilight_bg_color << 4);
+				set_color(stdscr, bg | mirc_colors[window->hilight_color%16]);
+				g_string_append(str, "%M");
+			} else */{
+				g_string_append(str, "%M");
+			}
+			break;
+		}
+                g_string_sprintfa(str, "%d", window->refnum);
 	}
 
-	ltoa(str, window->refnum);
-	switch (window->data_level)
-	{
-	case DATA_LEVEL_NONE:
-                break;
-	case DATA_LEVEL_TEXT:
-		set_color(stdscr, sbar_color_dim);
-		break;
-	case DATA_LEVEL_MSG:
-		set_color(stdscr, sbar_color_bold);
-		break;
-	default:
-		if (window->hilight_color > 0) {
-			int bg;
-
-			bg = window->hilight_bg_color == -1 ?
-				sbar_color_background :
-                                (window->hilight_bg_color << 4);
-			set_color(stdscr, bg | mirc_colors[window->hilight_color%16]);
-		} else
-			set_color(stdscr, sbar_color_act_highlight);
-		break;
-	}
-	if (strlen(str) > size)
-                break;
-
-	size -= strlen(str);
-	addstr(str);
-    }
+	ret = str->len == 0 ? NULL : str->str;
+        g_string_free(str, ret == NULL);
+        return ret;
 }
 
 /* redraw activity, FIXME: if we didn't get enough size, this gets buggy.
    At least "Det:" isn't printed properly. also we should rearrange the
    act list so that the highest priority items comes first. */
-static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_activity(SBAR_ITEM_REC *item, int get_size_only)
 {
-    WINDOW_REC *window;
-    GList *tmp;
-    gchar str[MAX_INT_STRLEN];
-    int size_needed;
-    gboolean act, det;
+	GString *str;
+	char *actlist, *detlist;
 
-    size_needed = 0; act = det = FALSE;
-    for (tmp = activity_list; tmp != NULL; tmp = tmp->next)
-    {
-	window = tmp->data;
+	if (use_colors) {
+		actlist = get_activity_list(TRUE, TRUE);
+                detlist = NULL;
+	} else {
+                actlist = get_activity_list(TRUE, FALSE);
+                detlist = get_activity_list(FALSE, TRUE);
+	}
 
-	size_needed += 1+ltoa(str, window->refnum);
+	if (actlist == NULL && detlist == NULL) {
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
+		return;
+	}
 
-	if (!use_colors && window->data_level >= DATA_LEVEL_HILIGHT)
-	    det = TRUE;
-	else
-	    act = TRUE;
-    }
+	str = g_string_new("%c[%w");
 
-    if (act) size_needed += 6; /* [Act: ], -1 */
-    if (det) size_needed += 6; /* [Det: ], -1 */
-    if (act && det) size_needed--;
+	if (actlist != NULL) {
+		g_string_append(str, "Act: ");
+		g_string_append(str, actlist);
+                g_free(actlist);
+	}
+	if (detlist != NULL) {
+                if (actlist != NULL)
+			g_string_append(str, " ");
+		g_string_append(str, "Det: ");
+		g_string_append(str, detlist);
+                g_free(detlist);
+	}
 
-    if (!item->shrinked && item->size != size_needed)
-    {
-        /* we need more (or less..) space! */
-        if (statusbar_item_resize(item, size_needed))
-	    return;
-    }
-
-    if (item->size <= 7)
-        return;
-
-    move(ypos, item->xpos);
-    set_color(stdscr, sbar_color_dim); addch('[');
-    if (act) draw_activity("Act: ", TRUE, !det, item->size-7);
-    if (act && det) addch(' ');
-    if (det) draw_activity("Det: ", FALSE, TRUE, item->size-7);
-    set_color(stdscr, sbar_color_dim); addch(']');
-
-    screen_refresh(NULL);
+	g_string_append(str, "%c]");
+        item_default(item, get_size_only, str->str);
+        g_string_free(str, TRUE);
 }
 
 static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel)
 {
-    GList *tmp;
-    int inspos;
+	GList *tmp;
+	int inspos;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    if (settings_get_bool("actlist_moves"))
-    {
-	/* Move the window to the first in the activity list */
-	if (g_list_find(activity_list, window) != NULL)
-	    activity_list = g_list_remove(activity_list, window);
-	if (window->data_level != 0)
-	    activity_list = g_list_prepend(activity_list, window);
-	statusbar_item_redraw(activity_item);
-	return;
-    }
-
-    if (g_list_find(activity_list, window) != NULL)
-    {
-	/* already in activity list */
-	if (window->data_level == 0)
-	{
-	    /* remove from activity list */
-	    activity_list = g_list_remove(activity_list, window);
-	    statusbar_item_redraw(activity_item);
-	}
-	else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
-		 window->hilight_color != 0)
-	{
-		/* different level as last time (or maybe different
-		   hilight color?), just redraw it. */
+	if (settings_get_bool("actlist_moves")) {
+		/* Move the window to the first in the activity list */
+		if (g_list_find(activity_list, window) != NULL)
+			activity_list = g_list_remove(activity_list, window);
+		if (window->data_level != 0)
+			activity_list = g_list_prepend(activity_list, window);
 		statusbar_item_redraw(activity_item);
+		return;
 	}
-        return;
-    }
 
-    if (window->data_level == 0)
-	    return;
-
-    /* add window to activity list .. */
-    inspos = 0;
-    for (tmp = activity_list; tmp != NULL; tmp = tmp->next, inspos++)
-    {
-        WINDOW_REC *rec = tmp->data;
-
-	if (window->refnum < rec->refnum)
-	{
-	    activity_list = g_list_insert(activity_list, window, inspos);
-	    break;
+	if (g_list_find(activity_list, window) != NULL) {
+		/* already in activity list */
+		if (window->data_level == 0) {
+			/* remove from activity list */
+			activity_list = g_list_remove(activity_list, window);
+			statusbar_item_redraw(activity_item);
+		} else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
+			 window->hilight_color != 0) {
+			/* different level as last time (or maybe different
+			   hilight color?), just redraw it. */
+			statusbar_item_redraw(activity_item);
+		}
+		return;
 	}
-    }
-    if (tmp == NULL)
-	activity_list = g_list_append(activity_list, window);
 
-    statusbar_item_redraw(activity_item);
+	if (window->data_level == 0)
+		return;
+
+	/* add window to activity list .. */
+	inspos = 0;
+	for (tmp = activity_list; tmp != NULL; tmp = tmp->next, inspos++) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (window->refnum < rec->refnum) {
+			activity_list =
+				g_list_insert(activity_list, window, inspos);
+			break;
+		}
+	}
+	if (tmp == NULL)
+		activity_list = g_list_append(activity_list, window);
+
+	statusbar_item_redraw(activity_item);
 }
 
 static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
@@ -493,13 +381,9 @@ static void sig_statusbar_activity_updated(void)
 }
 
 /* redraw -- more -- */
-static void statusbar_more(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_more(SBAR_ITEM_REC *item, int get_size_only)
 {
-	if (item->size != 10) return;
-
-	move(ypos, item->xpos);
-	set_color(stdscr, sbar_color_bold); addstr("-- more --");
-	screen_refresh(NULL);
+        item_default(item, get_size_only, "%_-- more --%_");
 }
 
 static void sig_statusbar_more_check_remove(WINDOW_REC *window)
@@ -522,7 +406,7 @@ static void sig_statusbar_more_check(WINDOW_REC *window)
 
 	if (!WINDOW_GUI(window)->bottom) {
 		if (more_item == NULL) {
-			more_item = statusbar_item_create(mainbar, 10, FALSE, statusbar_more);
+			more_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_more);
 			statusbar_redraw(mainbar);
 		}
 	} else if (more_item != NULL) {
@@ -531,55 +415,49 @@ static void sig_statusbar_more_check(WINDOW_REC *window)
 	}
 }
 
-static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_lag(SBAR_ITEM_REC *item, int get_size_only)
 {
 	SERVER_REC *server;
 	GString *str;
-	int size_needed, lag_unknown;
+	int lag_unknown;
 	time_t now;
 
-	now = time(NULL);
-	str = g_string_new(NULL);
-
 	server = active_win == NULL ? NULL : active_win->active_server;
-	if (server == NULL || server->lag_last_check == 0)
-		size_needed = 0;
-	else if (server->lag_sent == 0 || now-server->lag_sent < 5) {
-		lag_unknown = now-server->lag_last_check >
-			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
-
-		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown))
-			size_needed = 0; /* small lag, don't display */
-		else {
-			g_string_sprintf(str, "%d.%02d", server->lag/1000, (server->lag % 1000)/10);
-			if (lag_unknown)
-				g_string_append(str, " (??)");
-			size_needed = str->len+7;
-		}
-	} else {
-		/* big lag, still waiting .. */
-		g_string_sprintf(str, "%ld (??)", (long) (now-server->lag_sent));
-		size_needed = str->len+7;
-	}
-
-	if (item->size != size_needed) {
-		/* we need more (or less..) space! */
-		statusbar_item_resize(item, size_needed);
-		g_string_free(str, TRUE);
+	if (server == NULL || server->lag_last_check == 0) {
+                /* No lag information */
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
 		return;
 	}
 
-	if (item->size != 0) {
-		lag_last_draw = now;
-		move(ypos, item->xpos);
-		set_color(stdscr, sbar_color_dim); addch('[');
-		set_color(stdscr, sbar_color_normal); addstr("Lag: ");
+	now = time(NULL);
+	str = g_string_new("%c[%wLag: %_");
 
-		set_color(stdscr, sbar_color_bold); addstr(str->str);
-		set_color(stdscr, sbar_color_dim); addch(']');
+	/* FIXME: ugly ugly.. */
+	if (server->lag_sent == 0 || now-server->lag_sent < 5) {
+		lag_unknown = now-server->lag_last_check >
+			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
 
-		screen_refresh(NULL);
+		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown)) {
+                        /* small, lag, don't display */
+			g_string_truncate(str, 0);
+		} else {
+			g_string_sprintfa(str, "%d.%02d", server->lag/1000,
+					  (server->lag % 1000)/10);
+			if (lag_unknown)
+				g_string_append(str, " (??)");
+		}
+	} else {
+		/* big lag, still waiting .. */
+		g_string_sprintfa(str, "%ld (??)",
+				  (long) (now-server->lag_sent));
 	}
+
+        if (str->len > 0)
+		g_string_append(str, "%c]");
+
+        item_default(item, get_size_only, str->str);
+
 	g_string_free(str, TRUE);
 }
 
@@ -647,36 +525,24 @@ static int get_mail_count(void)
 	return count;
 }
 
-static void statusbar_mail(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_mail(SBAR_ITEM_REC *item, int get_size_only)
 {
-	char str[MAX_INT_STRLEN];
-	int size_needed, mail_count;
+	char countstr[MAX_INT_STRLEN], *str;
+	int mail_count;
 
 	mail_count = settings_get_bool("mail_counter") ? get_mail_count() : 0;
 
-	ltoa(str, mail_count);
-	if (*str == '\0' || mail_count <= 0)
-		size_needed = 0;
-	else
-		size_needed = strlen(str) + 8;
-
-	if (item->size != size_needed) {
-		/* we need more (or less..) space! */
-		statusbar_item_resize(item, size_needed);
+	if (mail_count <= 0) {
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
 		return;
 	}
 
-	if (size_needed == 0)
-		return;
+	ltoa(countstr, mail_count);
+	str = g_strconcat("%c[%wMail: %_", countstr, "%_%c]", NULL);
 
-	move(ypos, item->xpos);
-	set_color(stdscr, sbar_color_dim); addch('[');
-	set_color(stdscr, sbar_color_normal); addstr("Mail: ");
-
-	set_color(stdscr, sbar_color_bold); addstr(str);
-	set_color(stdscr, sbar_color_dim); addch(']');
-
-	screen_refresh(NULL);
+	item_default(item, get_size_only, str);
+        g_free(str);
 }
 
 static int statusbar_mail_timeout(void)
@@ -685,40 +551,9 @@ static int statusbar_mail_timeout(void)
 	return 1;
 }
 
-static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
+static void statusbar_topic(SBAR_ITEM_REC *item, int get_size_only)
 {
-	CHANNEL_REC *channel;
-	QUERY_REC *query;
-	char *str, *topic;
-
-	if (item->size != COLS-2) {
-		/* get all space for topic */
-		statusbar_item_resize(item, COLS-2);
-		return;
-	}
-
-	move(ypos, item->xpos);
-	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
-	clrtoeol(); set_bg(stdscr, 0);
-
-	if (active_win == NULL)
-		return;
-
-	topic = NULL;
-	channel = CHANNEL(active_win->active);
-	query = QUERY(active_win->active);
-	if (channel != NULL && channel->topic != NULL) topic = channel->topic;
-	if (query != NULL && query->address != NULL) topic = query->address;
-
-	if (topic != NULL) {
-		topic = strip_codes(topic);
-		str = g_strdup_printf("%.*s", item->size, topic);
-		set_color(stdscr, sbar_color_normal); addstr(str);
-		g_free(str);
-		g_free(topic);
-	}
-
-	screen_refresh(NULL);
+        item_default(item, get_size_only, "$topic");
 }
 
 static void sig_statusbar_topic_redraw(void)
@@ -744,7 +579,7 @@ static void topicbar_create(void)
 		return;
 
 	topic_bar = statusbar_create(STATUSBAR_POS_UP, 0);
-	topic_item = statusbar_item_create(topic_bar, 0, FALSE, statusbar_topic);
+	topic_item = statusbar_item_create(topic_bar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_topic);
 	topic_item->max_size = TRUE;
 	statusbar_redraw(topic_bar);
 
@@ -784,18 +619,18 @@ static void mainbar_add_items(MAIN_WINDOW_REC *window)
 	mainbar = window->statusbar;
 	mainbar_window = window;
 
-	clock_item = statusbar_item_create(mainbar, 7, FALSE, statusbar_clock);
-	nick_item = statusbar_item_create(mainbar, 2, FALSE, statusbar_nick);
-	channel_item = statusbar_item_create(mainbar, 2, FALSE, statusbar_channel);
-	mail_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_mail);
-	lag_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_lag);
-	activity_item = statusbar_item_create(mainbar, 0, FALSE, statusbar_activity);
+	clock_item = statusbar_item_create(mainbar, SBAR_PRIORITY_HIGH, FALSE, statusbar_clock);
+	nick_item = statusbar_item_create(mainbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_nick);
+	channel_item = statusbar_item_create(mainbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_channel);
+	mail_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_mail);
+	lag_item = statusbar_item_create(mainbar, SBAR_PRIORITY_LOW, FALSE, statusbar_lag);
+	activity_item = statusbar_item_create(mainbar, SBAR_PRIORITY_HIGH, FALSE, statusbar_activity);
 }
 
 static void sidebar_add_items(MAIN_WINDOW_REC *window)
 {
 	window->statusbar_channel_item =
-		statusbar_item_create(window->statusbar, 3, FALSE, statusbar_channel);
+		statusbar_item_create(window->statusbar, SBAR_PRIORITY_NORMAL, FALSE, statusbar_channel);
 }
 
 static void sidebar_remove_items(MAIN_WINDOW_REC *window)

@@ -1,7 +1,7 @@
 /*
- gui-statusbar.c : irssi
+ statusbar.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ void statusbar_items_deinit(void);
 
 static GSList *statusbars;
 static int sbar_uppest, sbar_lowest, sbars_up, sbars_down;
-static int item_max_size;
 
 static void statusbar_item_destroy(SBAR_ITEM_REC *rec)
 {
@@ -42,37 +41,112 @@ static void statusbar_item_destroy(SBAR_ITEM_REC *rec)
 	g_free(rec);
 }
 
+static int sbar_item_cmp(SBAR_ITEM_REC *item1, SBAR_ITEM_REC *item2)
+{
+	return item1->priority == item2->priority ? 0 :
+		item1->priority < item2->priority ? -1 : 1;
+}
+
+static int statusbar_shrink_to_min(GSList *items, int size, int max_width)
+{
+	GSList *tmp;
+
+	for (tmp = items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_REC *rec = tmp->data;
+
+		size -= (rec->max_size-rec->min_size);
+		rec->size = rec->min_size;
+
+		if (size <= max_width) {
+			rec->size += max_width-size;
+                        break;
+		}
+
+		if (rec->size == 0) {
+			/* min_size was 0, item removed.
+			   remove the marginal too */
+                        size--;
+		}
+	}
+
+        return size;
+}
+
+static void statusbar_shrink_forced(GSList *items, int size, int max_width)
+{
+	GSList *tmp;
+
+	for (tmp = items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_REC *rec = tmp->data;
+
+		if (size-rec->size > max_width) {
+			/* remove the whole item */
+                        size -= rec->size-1; /* -1 == the marginal */
+			rec->size = 0;
+		} else {
+			/* shrink the item */
+			rec->size -= size-max_width;
+                        break;
+		}
+	}
+}
+
+static void statusbar_get_sizes(STATUSBAR_REC *bar, int max_width)
+{
+	GSList *tmp, *prior_sorted;
+        int width;
+
+        /* first give items their max. size */
+	prior_sorted = NULL;
+	width = -1; /* -1 because of the marginals */
+	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_REC *rec = tmp->data;
+
+		rec->func(rec, TRUE);
+		rec->size = rec->max_size;
+
+		if (rec->size > 0) {
+                        /* +1 == marginal between items */
+			width += rec->max_size+1;
+
+			prior_sorted = g_slist_insert_sorted(prior_sorted, rec,
+							     (GCompareFunc)
+							     sbar_item_cmp);
+		}
+	}
+
+	if (width > max_width) {
+		/* too big, start shrinking from items with lowest priority
+		   and shrink until everything fits or until we've shrinked
+		   all items. */
+		width = statusbar_shrink_to_min(prior_sorted, width,
+						max_width);
+		if (width > max_width) {
+			/* still need to shrink, remove the items with lowest
+			   priority until everything fits to screen */
+			statusbar_shrink_forced(prior_sorted, width,
+						max_width);
+		}
+	}
+
+	g_slist_free(prior_sorted);
+}
+
 static void statusbar_redraw_line(STATUSBAR_REC *bar)
 {
-	static int recurses = 0, resized = FALSE;
-	STATUSBAR_FUNC func;
 	GSList *tmp;
-	int xpos, rxpos, old_resized;
+	int xpos, rxpos;
 
-	old_resized = resized;
-	resized = FALSE;
-	recurses++;
+	statusbar_get_sizes(bar, COLS-2);
 
 	xpos = 1;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (!rec->right_justify &&
-		    (rec->max_size || xpos < COLS)) {
+		if (!rec->right_justify && rec->size > 0) {
 			rec->xpos = xpos;
-			if (rec->max_size)
-				rec->size = COLS-1-xpos;
-
-			rec->shrinked = xpos+rec->size >= COLS;
-			if (rec->shrinked)
-                                rec->size = COLS-1-xpos;
-
-                        item_max_size = COLS-1-xpos;
-			func = (STATUSBAR_FUNC) rec->func;
-			func(rec, bar->ypos);
-
-			if (resized) break;
-			if (rec->size > 0) xpos += rec->size+1;
+                        xpos += rec->size+1;
+                        rec->func(rec, FALSE);
 		}
 	}
 
@@ -80,31 +154,18 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (rec->right_justify && rxpos-rec->size > xpos) {
-			rec->xpos = rxpos-rec->size;
-
-                        item_max_size = rxpos-xpos;
-			func = (STATUSBAR_FUNC) rec->func;
-			func(rec, bar->ypos);
-
-			if (resized) break;
-			if (rec->size > 0) rxpos -= rec->size+1;
+		if (rec->right_justify && rec->size > 0) {
+                        rxpos -= rec->size+1;
+			rec->xpos = rxpos+1;
+			rec->func(rec, FALSE);
 		}
 	}
-
-	resized = old_resized;
-	if (--recurses > 0) resized = TRUE;
 }
 
 static void statusbar_redraw_all(void)
 {
-	GSList *tmp;
-
 	screen_refresh_freeze();
-
-	for (tmp = statusbars; tmp != NULL; tmp = tmp->next)
-		statusbar_redraw(tmp->data);
-
+	g_slist_foreach(statusbars, (GFunc) statusbar_redraw, NULL);
 	screen_refresh_thaw();
 }
 
@@ -134,16 +195,21 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 	set_bg(stdscr, 0);
 
 	statusbar_redraw_line(bar);
+
+        screen_refresh(NULL);
 }
 
 void statusbar_item_redraw(SBAR_ITEM_REC *item)
 {
-	STATUSBAR_FUNC func;
-
 	g_return_if_fail(item != NULL);
 
-	func = (STATUSBAR_FUNC) item->func;
-	func(item, item->bar->ypos);
+	item->func(item, TRUE);
+	if (item->max_size != item->size)
+		statusbar_redraw(item->bar);
+	else {
+		item->func(item, FALSE);
+                screen_refresh(NULL);
+	}
 }
 
 /* ypos is used only when pos == STATUSBAR_POS_MIDDLE */
@@ -186,7 +252,7 @@ static void statusbars_pack(int pos, int line)
 
 		if (rec->pos == pos && rec->line > line) {
 			rec->line--;
-			rec->ypos += pos == STATUSBAR_POS_UP ? -1 : 1;
+			rec->ypos += (pos == STATUSBAR_POS_UP ? -1 : 1);
 		}
 	}
 }
@@ -212,7 +278,9 @@ void statusbar_destroy(STATUSBAR_REC *bar)
 	if (!quitting) statusbar_redraw_all();
 }
 
-SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, int right_justify, STATUSBAR_FUNC func)
+SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
+				     int priority, int right_justify,
+				     STATUSBAR_FUNC func)
 {
 	SBAR_ITEM_REC *rec;
 
@@ -223,27 +291,11 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, int right_jus
 	rec->bar = bar;
 	bar->items = g_slist_append(bar->items, rec);
 
-	rec->xpos = -1;
-	rec->size = size;
+        rec->priority = priority;
 	rec->right_justify = right_justify;
-	rec->func = (void *) func;
+	rec->func = func;
 
 	return rec;
-}
-
-int statusbar_item_resize(SBAR_ITEM_REC *item, int size)
-{
-	g_return_val_if_fail(item != NULL, FALSE);
-
-	if (item->size >= item_max_size)
-		return FALSE;
-
-	if (size > item_max_size)
-                size = item_max_size;
-
-	item->size = size;
-	statusbar_redraw_all();
-	return TRUE;
 }
 
 void statusbar_item_remove(SBAR_ITEM_REC *item)
