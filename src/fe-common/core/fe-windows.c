@@ -130,6 +130,13 @@ void window_destroy(WINDOW_REC *window)
 	g_free(window);
 }
 
+void window_auto_destroy(WINDOW_REC *window)
+{
+	if (settings_get_bool("autoclose_windows") && windows->next != NULL &&
+	    window->items == NULL && window->level == 0)
+                window_destroy(window);
+}
+
 void window_set_active(WINDOW_REC *window)
 {
 	WINDOW_REC *old_window;

@@ -69,11 +69,8 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 		/* kicked out from channel */
 		window_bind_add(window, channel->server->tag,
 				channel->name);
-	} else if (settings_get_bool("autoclose_windows") &&
-		   (!channel->joined || channel->left) &&
-		   window->items == NULL && windows->next != NULL) {
-		window_destroy(window);
-	}
+	} else if (!channel->joined || channel->left)
+		window_auto_destroy(window);
 }
 
 static void signal_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)

@@ -83,9 +83,8 @@ static void signal_query_destroyed(QUERY_REC *query)
 	if (window != NULL) {
 		window_item_destroy((WI_ITEM_REC *) query);
 
-		if (window->items == NULL && windows->next != NULL &&
-		    !query->unwanted && settings_get_bool("autoclose_windows"))
-			window_destroy(window);
+		if (!query->unwanted)
+			window_auto_destroy(window);
 	}
 }
 
