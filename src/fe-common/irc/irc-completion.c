@@ -384,9 +384,11 @@ static GList *completion_msg(IRC_SERVER_REC *win_server,
 }
 
 static void complete_from_nicklist(GList **outlist, GSList *list,
-				   const char *nick, const char *prefix)
+				   const char *nick, const char *prefix,
+				   int lowercase)
 {
 	GSList *tmp;
+	char *str;
 	int len;
 
 	len = strlen(nick);
@@ -396,9 +398,11 @@ static void complete_from_nicklist(GList **outlist, GSList *list,
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(*outlist, rec->nick) == NULL) {
 			if (prefix == NULL || *prefix == '\0')
-				*outlist = g_list_append(*outlist, g_strdup(rec->nick));
+				str = g_strdup(rec->nick);
 			else
-				*outlist = g_list_append(*outlist, g_strconcat(rec->nick, prefix, NULL));
+				str = g_strconcat(rec->nick, prefix, NULL);
+			if (lowercase) g_strdown(str);
+			*outlist = g_list_append(*outlist, str);
 		}
 	}
 }
@@ -408,17 +412,19 @@ static GList *completion_channel_nicks(IRC_CHANNEL_REC *channel, const char *nic
 	MODULE_CHANNEL_REC *mchannel;
 	GSList *nicks, *tmp;
 	GList *list;
-	int len;
+	int lowercase, len;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 	if (*nick == '\0') return NULL;
+	
+	lowercase = settings_get_bool("completion_nicks_lowercase");
 
 	/* put first the nicks who have recently said something [to you] */
 	list = NULL;
 	mchannel = MODULE_DATA(channel);
-	complete_from_nicklist(&list, mchannel->lastownmsgs, nick, prefix);
-	complete_from_nicklist(&list, mchannel->lastmsgs, nick, prefix);
+	complete_from_nicklist(&list, mchannel->lastownmsgs, nick, prefix, lowercase);
+	complete_from_nicklist(&list, mchannel->lastmsgs, nick, prefix, lowercase);
 
 	/* and add the rest of the nicks too */
 	len = strlen(nick);
@@ -429,10 +435,13 @@ static GList *completion_channel_nicks(IRC_CHANNEL_REC *channel, const char *nic
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(list, rec->nick) == NULL &&
 		    g_strcasecmp(rec->nick, channel->server->nick) != 0) {
+		    	char *str;
 			if (prefix == NULL || *prefix == '\0')
-				list = g_list_append(list, g_strdup(rec->nick));
+				str = g_strdup(rec->nick);
 			else
-				list = g_list_append(list, g_strconcat(rec->nick, prefix, NULL));
+				str = g_strconcat(rec->nick, prefix, NULL);
+			if (lowercase) g_strdown(str);
+			list = g_list_append(list, str);
 		}
 	}
 	g_slist_free(nicks);
@@ -708,6 +717,7 @@ void irc_completion_init(void)
 	settings_add_int("completion", "completion_keep_ownpublics", 360);
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "expand_escapes", FALSE);
+	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 
 	complete_tag = g_timeout_add(1000, (GSourceFunc) nick_completion_timeout, NULL);
 
