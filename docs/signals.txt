@@ -95,6 +95,7 @@ server.c:
  "server connecting", SERVER_REC, ulong *ip
  "server looking", SERVER_REC
  "server disconnected", SERVER_REC
+ "server quit", SERVER_REC, char *msg
  "event connected", SERVER_REC
 
 server-reconnect.c:
@@ -148,7 +149,7 @@ dcc.c:
 
 flood.c:
 
- "flood", SERVER_REC, char *nick, char *host, char *level, char *target
+ "flood", SERVER_REC, char *nick, char *host, int level, char *target
 
 ignore.c:
 

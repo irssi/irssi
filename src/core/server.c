@@ -60,7 +60,9 @@ static char *server_create_address_tag(const char *address)
 	const char *start, *end;
 
 	/* try to generate a reasonable server tag */
-	if (g_strncasecmp(address, "irc", 3) == 0 ||
+	if (strchr(address, '.') == NULL) {
+		start = end = NULL;
+	} else if (g_strncasecmp(address, "irc", 3) == 0 ||
 	    g_strncasecmp(address, "chat", 4) == 0) {
 		/* irc-2.cs.hut.fi -> hut, chat.bt.net -> bt */
 		end = strrchr(address, '.');
@@ -224,14 +226,14 @@ SERVER_REC *server_find_tag(const char *tag)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *server = tmp->data;
 
-		if (strcmp(server->tag, tag) == 0)
+		if (g_strcasecmp(server->tag, tag) == 0)
 			return server;
 	}
 
 	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *server = tmp->data;
 
-		if (strcmp(server->tag, tag) == 0)
+		if (g_strcasecmp(server->tag, tag) == 0)
 			return server;
 	}
 
@@ -249,7 +251,7 @@ SERVER_REC *server_find_ircnet(const char *ircnet)
 		SERVER_REC *server = tmp->data;
 
 		if (server->connrec->ircnet != NULL &&
-		    strcmp(server->connrec->ircnet, ircnet) == 0) return server;
+		    g_strcasecmp(server->connrec->ircnet, ircnet) == 0) return server;
 	}
 
 	return NULL;

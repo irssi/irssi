@@ -104,6 +104,7 @@ static void read_ircnets(void)
 
 void ircnets_setup_init(void)
 {
+	read_ircnets();
         signal_add("setup reread", (SIGNAL_FUNC) read_ircnets);
 }
 

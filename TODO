@@ -1,7 +1,23 @@
+- /IRCNET ADD/REMOVE
+- mites se awaylogi? se /cattaamaan myˆs se /away:n j‰lkeen
+- poista se common-setup.h
+- quitissa se r‰pelt‰‰ ruutua liikaa..
+- perli kaatui v‰lill‰ ym. kivaa.
+
+[21:48] < santo> [20:51] §§§ #twiggy,#tanum,#d2mac,#linux.nu,#sweden2k
+Cannot join channel (illegal name)
+.. /mode #a,#b voi sanoa myˆs jossain serverill‰ jotain outoa.. irc.carnet.hr
+
+.. logit rehashissa sammuu, /window logit katoaa kokonaan? kai /window logit
+   pelaa oikein jos ikkunan refnum vaihtuu?
+.. joosella oli joku bufferibugi. bufferi pieneksi, pguppia, paljon teksti‰
+lis‰‰, alas, --more-- j‰‰
+.. /sb bugaa! /SB GOTO 23:59 tms. ei pelaa
+
 - rikki:
    - dcc
    - gnome versio..
-   - pluginit, perlskriptit
+   - pluginit
 
 - teemat (toimiiko ne edes?)
  - teeman vaihto tekstiversiolla, tekstien muuttaminen tekstiversiolla
@@ -12,31 +28,23 @@
  - use different themes in different channels/queries?
  - logi voisi k‰ytt‰‰ omaa teemaa
 
-- mites se awaylogi?
-- /WALL, ja sen replyt
-- /ON
-- /CAT
-- servereiden ja ircnettien asetusten k‰pistelyyn jotkut k‰skyt
-- curses sijainti jotain rikkoo
+- /set hold_mode, ja /CAT toimimaan sen kanssa jotenkin nerokkaasti..
+- curses sijainti jotain rikkoo, ja openbsd:ss‰ on -lcurses, ei -lncurses
 
  - /msg =dcc_chatti,#kanava .. ei pelaa tollanen. voisi laittaa coreen tuon
    ja jotain hookkeja et eri chattiprotoille voisi vaikka menn‰ se teksti..
    ctcp:lle sama?
  - who ja listiin ne eri vipuset
+- /ON
 
- - raiseta ikkuna jossa on teksti‰ mut ei over aktiivisen p‰‰lle
  - line-split.c: varmista ett‰ se 64k limitti toimii eik‰ esim. kaada!
-- vaihda /set nimet j‰rkevimmiksi
 - /exec
  - autorun.ircnet
- - bottipluginiin tms. .. channel not available tms. rejoini
+ - channel not available rejoini
 
 *** Bugs
 
  - %| doesn't work with irssi text widget
- - when changing server (/server), irssi will automatically join back to the
-   channels that were joined in previous server. If IRC network is different
-   than in previous server it shouldn't join the channels..
  - some problems when using multiple windows with focus being all the time in
    one of the windows and it can't be changed to different window?! Probably
    has something to do with click to focus.
@@ -48,12 +56,11 @@
 
 *** text UI
 
- - split windows
  - statusbar:
+     - you can't configure it in any way!
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
      - "you have new mail"
-     - active server tag somewhere in window
 
 *** Big things
 
@@ -90,7 +97,7 @@
 
 *** Needs rethinking ..
 
- * Notify list, join the two different dialogs
+ * Notify list GUI
  - _one_ popup dialog could open which lists all nicks in notifylist, maybe
    sorted by arrival time, display the dates, latest joined could be with
    different color? etc.
@@ -122,7 +129,6 @@
        mouse...
      - if some other window has got much text, switching to it first time
        takes some time..?
- - exceptions for ignoring
  - editor in setup for ~/.irssi/startup
  - gui help
  - change signal handling in gui-gnome so that the actual drawing and
@@ -132,8 +138,6 @@
    who are away and who are not.. optionally it could instead just watch if
    someone hasn't written anything to channel in n minutes and mark it "away"
    to nicklist.
- - /connect ircnet could connect to ircnet
- - change some GLists to GHashTables, aliases at least
  - check new irssi versions with http rather than with irssibot..
  - implement requesting files with DCC GET from remote client for dcc file
    servers. good for people behind firewalls.
@@ -145,6 +149,5 @@
  - dcc send: allow selection of multiple files to send (also for dnd from
    gmc!) Allow dropping files to anywhere in irssi.
  - /timer, /clones
- - display net splits?
  - {}|~ are same as []\^ (not in all irc networks) - does this really affect
    irssi at all..?

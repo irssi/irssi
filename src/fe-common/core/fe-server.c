@@ -77,6 +77,14 @@ static void sig_server_disconnected(SERVER_REC *server)
 		    IRCTXT_CONNECTION_LOST, server->connrec->address);
 }
 
+static void sig_server_quit(SERVER_REC *server, const char *msg)
+{
+	g_return_if_fail(server != NULL);
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_SERVER_QUIT, server->connrec->address, msg);
+}
+
 void fe_server_init(void)
 {
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
@@ -84,6 +92,7 @@ void fe_server_init(void)
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_connect_failed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_add("server quit", (SIGNAL_FUNC) sig_server_quit);
 }
 
 void fe_server_deinit(void)
@@ -93,4 +102,5 @@ void fe_server_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_connect_failed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 }

@@ -87,6 +87,22 @@ static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel, const char *mask)
 	return tmp == NULL ? NULL : nick;
 }
 
+GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask)
+{
+	GSList *nicks, *tmp, *next;
+
+	nicks = nicklist_getnicks(channel);
+	for (tmp = nicks; tmp != NULL; tmp = next) {
+		NICK_REC *nick = tmp->data;
+
+		next = tmp->next;
+		if (!irc_mask_match_address(mask, nick->nick, nick->host == NULL ? "" : nick->host))
+                        nicks = g_slist_remove(nicks, tmp->data);
+	}
+
+	return nicks;
+}
+
 /* Find nick record from list */
 NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *mask)
 {
@@ -230,7 +246,7 @@ static void event_names_list(const char *data, IRC_SERVER_REC *server)
 		while (*names != '\0' && *names != ' ') names++;
 		if (*names != '\0') *names++ = '\0';
 
-		if (*ptr == '@' && strcmp(server->nick, ptr+1) == 0)
+		if (*ptr == '@' && g_strcasecmp(server->nick, ptr+1) == 0)
 			chanrec->chanop = TRUE;
 
 		nicklist_insert(chanrec, ptr+isnickflag(*ptr), *ptr == '@', *ptr == '+', FALSE);
@@ -390,7 +406,8 @@ static void event_nick_in_use(const char *data, IRC_SERVER_REC *server)
 	}
 
 	/* nick already in use - need to change it .. */
-	if (strcmp(server->nick, server->connrec->nick) == 0) {
+	if (strcmp(server->nick, server->connrec->nick) == 0 &&
+	    server->connrec->alternate_nick != NULL) {
 		/* first try, so try the alternative nick.. */
 		g_free(server->nick);
 		server->nick = g_strdup(server->connrec->alternate_nick);

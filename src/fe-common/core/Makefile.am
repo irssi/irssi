@@ -17,7 +17,7 @@ libfe_common_core_la_SOURCES = \
 	hilight-text.c \
 	keyboard.c \
 	module-formats.c \
-	nick-hilight.c \
+	window-activity.c \
 	printtext.c \
 	themes.c \
 	translation.c \

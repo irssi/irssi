@@ -16,9 +16,6 @@
 /* How often to check for gone status of nick */
 #define MAX_GONE_REFRESH_TIME 300
 
-/* Maximum time to wait for more JOINs before sending massjoin signal */
-#define MAX_MASSJOIN_WAIT 5000
-
 /* How long to keep netsplits in memory (seconds) */
 #define NETSPLIT_MAX_REMEMBER (60*30)
 

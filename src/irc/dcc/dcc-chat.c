@@ -307,7 +307,7 @@ static void cmd_dcc_chat(gchar *data, IRC_SERVER_REC *server)
     if (server == NULL || !server->connected)
         cmd_return_error(CMDERR_NOT_CONNECTED);
 
-    if (!net_getsockname(server->handle, &addr, NULL))
+    if (net_getsockname(server->handle, &addr, NULL) == -1)
         cmd_return_error(CMDERR_GETSOCKNAME);
 
     port = settings_get_int("dcc_port");

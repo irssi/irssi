@@ -32,6 +32,7 @@
 #include "query.h"
 #include "nicklist.h"
 #include "ignore.h"
+#include "netsplit.h"
 
 #include "irc-hilight-text.h"
 #include "windows.h"
@@ -83,7 +84,7 @@ static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gcha
 	color = irc_hilight_find_nick(target, nick, addr);
 
 	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
-	nickmode = !settings_get_bool("toggle_show_nickmode") || nickrec == NULL ? "" :
+	nickmode = !settings_get_bool("show_nickmode") || nickrec == NULL ? "" :
 	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
 
 	window = chanrec == NULL ? NULL : window_item_window((WI_ITEM_REC *) chanrec);
@@ -125,7 +126,7 @@ static void event_privmsg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gcha
     else
     {
         /* private message */
-        if (settings_get_bool("toggle_autocreate_query") && query_find(server, nick) == NULL)
+        if (settings_get_bool("autocreate_query") && query_find(server, nick) == NULL)
 	    item = (WI_ITEM_REC *) query_create(server, nick, TRUE);
 	else
 	    item = (WI_ITEM_REC *) query_find(server, nick);
@@ -183,7 +184,7 @@ static void ctcp_action_msg(gchar *data, IRC_SERVER_REC *server, gchar *nick, gc
     else
     {
         /* private action */
-        if (settings_get_bool("toggle_autocreate_query") && query_find(server, nick) == NULL)
+        if (settings_get_bool("autocreate_query") && query_find(server, nick) == NULL)
 	    item = (WI_ITEM_REC *) query_create(server, nick, TRUE);
 	else
 	    item = (WI_ITEM_REC *) channel_find(server, nick);
@@ -279,6 +280,9 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	if (*data == ':') data++; /* quit message */
 	if (ignore_check(server, nick, addr, NULL, data, MSGLEVEL_QUITS))
 		return;
+
+	if (settings_get_bool("hide_netsplit_quits") && quitmsg_is_split(data))
+                return;
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
@@ -558,46 +562,46 @@ static void event_ban_type_changed(gchar *bantype)
 
 static void sig_server_lag_disconnected(IRC_SERVER_REC *server)
 {
-    g_return_if_fail(server != NULL);
+	g_return_if_fail(server != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-                IRCTXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
 }
 
 static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
 {
-    g_return_if_fail(reconnect != NULL);
+	g_return_if_fail(reconnect != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		IRCTXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
-		reconnect->conn->ircnet == NULL ? "" : reconnect->conn->ircnet);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
+		    reconnect->conn->ircnet == NULL ? "" : reconnect->conn->ircnet);
 }
 
 static void sig_server_reconnect_not_found(gchar *tag)
 {
-    g_return_if_fail(tag != NULL);
+	g_return_if_fail(tag != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-                IRCTXT_RECONNECT_NOT_FOUND, tag);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_RECONNECT_NOT_FOUND, tag);
 }
 
 static void event_received(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
 {
-    g_return_if_fail(data != NULL);
+	char *params, *cmd, *args, *ptr;
 
-    if (!isdigit((gint) *data))
-        printtext(server, NULL, MSGLEVEL_CRAP, "%s", data);
-    else
-    {
-        /* numeric event. */
-        gchar *params, *cmd, *args, *ptr;
+	g_return_if_fail(data != NULL);
 
-        params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &cmd, NULL, &args);
-        ptr = strstr(args, " :");
+	if (!isdigit((gint) *data)) {
+		printtext(server, NULL, MSGLEVEL_CRAP, "%s", data);
+		return;
+	}
+
+	/* numeric event. */
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &cmd, NULL, &args);
+	ptr = strstr(args, " :");
 	if (ptr != NULL) *(ptr+1) = ' ';
         printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
         g_free(params);
-    }
 }
 
 static void sig_empty(void)
@@ -612,6 +616,7 @@ static void read_settings(void)
 
 void fe_events_init(void)
 {
+	settings_add_bool("misc", "hide_netsplit_quits", TRUE);
 	beep_msg_level = 0;
 
 	read_settings();

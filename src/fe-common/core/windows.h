@@ -41,6 +41,7 @@ typedef struct {
 	int level;
 	int new_data;
 	time_t last_timestamp; /* When was last timestamp printed */
+	time_t last_line; /* When was last line printed */
 
 	gpointer gui_data;
 } WINDOW_REC;
@@ -55,11 +56,15 @@ void window_set_active_num(int number);
 void window_set_active(WINDOW_REC *window);
 void window_change_server(WINDOW_REC *window, void *server);
 
+void window_set_refnum(WINDOW_REC *window, int refnum);
 void window_set_name(WINDOW_REC *window, const char *name);
 
 void window_set_level(WINDOW_REC *window, int level);
 WINDOW_REC *window_find_level(void *server, int level);
 WINDOW_REC *window_find_closest(void *server, const char *name, int level);
+WINDOW_REC *window_find_refnum(int refnum);
+WINDOW_REC *window_find_name(const char *name);
+WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name);
 
 void windows_init(void);
 void windows_deinit(void);

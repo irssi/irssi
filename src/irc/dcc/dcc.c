@@ -30,6 +30,12 @@
 
 #include "dcc.h"
 
+void dcc_chat_init(void);
+void dcc_chat_deinit(void);
+
+void dcc_files_init(void);
+void dcc_files_deinit(void);
+
 #define DCC_TYPES 5
 
 static gchar *dcc_types[] =
@@ -55,7 +61,7 @@ DCC_REC *dcc_create(gint type, gint handle, gchar *nick, gchar *arg, IRC_SERVER_
 
     dcc = g_new0(DCC_REC, 1);
     dcc->type = type == DCC_TYPE_CHAT ? module_get_uniq_id("IRC", WI_IRC_DCC_CHAT) : -1;
-    dcc->mirc_ctcp = settings_get_bool("toggle_dcc_mirc_ctcp");
+    dcc->mirc_ctcp = settings_get_bool("dcc_mirc_ctcp");
     dcc->created = time(NULL);
     dcc->chat = chat;
     dcc->dcc_type = type;
@@ -307,7 +313,7 @@ static void dcc_ctcp_msg(gchar *data, IRC_SERVER_REC *server, gchar *sender, gch
 	case DCC_TYPE_GET:
 	    cstr = settings_get_str("dcc_autoget_masks");
 	    /* check that autoget masks match */
-	    if (settings_get_bool("toggle_dcc_autoget") && (*cstr == '\0' || irc_masks_match(cstr, sender, sendaddr)) &&
+	    if (settings_get_bool("dcc_autoget") && (*cstr == '\0' || irc_masks_match(cstr, sender, sendaddr)) &&
                 /* check file size limit, FIXME: it's possible to send a bogus file size and then just send what ever sized file.. */
 		(settings_get_int("dcc_max_autoget_size") <= 0 || (settings_get_int("dcc_max_autoget_size") > 0 && size <= settings_get_int("dcc_max_autoget_size")*1024)))
             {
@@ -507,19 +513,19 @@ void dcc_init(void)
     dcc_conns = NULL;
     dcc_timeouttag = g_timeout_add(1000, (GSourceFunc) dcc_timeout_func, NULL);
 
-    settings_add_bool("dcc", "toggle_dcc_autorename", FALSE);
-    settings_add_bool("dcc", "toggle_dcc_autogete", FALSE);
+    settings_add_bool("dcc", "dcc_autorename", FALSE);
+    settings_add_bool("dcc", "dcc_autoget", FALSE);
     settings_add_int("dcc", "dcc_max_autoget_size", 1000);
     settings_add_str("dcc", "dcc_download_path", "~");
     settings_add_int("dcc", "dcc_file_create_mode", 644);
     settings_add_str("dcc", "dcc_autoget_masks", "");
     settings_add_str("dcc", "dcc_autochat_masks", "");
 
-    settings_add_bool("dcc", "toggle_dcc_fast_send", TRUE);
+    settings_add_bool("dcc", "dcc_fast_send", TRUE);
     settings_add_str("dcc", "dcc_upload_path", "~");
 
-    settings_add_bool("dcc", "toggle_dcc_mirc_ctcp", FALSE);
-    settings_add_bool("dcc", "toggle_dcc_autodisplay_dialog", TRUE);
+    settings_add_bool("dcc", "dcc_mirc_ctcp", FALSE);
+    settings_add_bool("dcc", "dcc_autodisplay_dialog", TRUE);
     settings_add_int("dcc", "dcc_block_size", 2048);
     settings_add_int("dcc", "dcc_port", 0);
     settings_add_int("dcc", "dcc_timeout", 300);
@@ -531,10 +537,16 @@ void dcc_init(void)
     command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
     command_bind("dcc close", NULL, (SIGNAL_FUNC) cmd_dcc_close);
     signal_add("event 401", (SIGNAL_FUNC) event_no_such_nick);
+
+    dcc_chat_init();
+    dcc_files_init();
 }
 
 void dcc_deinit(void)
 {
+    dcc_chat_deinit();
+    dcc_files_deinit();
+
     signal_remove("server connected", (SIGNAL_FUNC) dcc_server_connected);
     signal_remove("server disconnected", (SIGNAL_FUNC) dcc_server_disconnected);
     signal_remove("ctcp reply dcc", (SIGNAL_FUNC) dcc_ctcp_reply);

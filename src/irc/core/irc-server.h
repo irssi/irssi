@@ -120,6 +120,7 @@ typedef struct {
 
 	GSList *lastmsgs; /* List of nicks who last send you msg */
 	GHashTable *splits; /* For keeping track of netsplits */
+	GSList *split_servers; /* Servers that are currently in split */
 
 	time_t lag_sent; /* 0 or time when last lag query was sent to server */
 	time_t lag_last_check; /* last time we checked lag */

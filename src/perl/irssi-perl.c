@@ -68,7 +68,9 @@ static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 {
 	GHashTable *table;
 	GSList *siglist;
-        void *signal_idp;
+	void *signal_idp;
+
+	g_return_if_fail(rec != NULL);
 
 	table = rec->last ? last_signals : first_signals;
 	signal_idp = GINT_TO_POINTER(rec->signal_id);
@@ -138,13 +140,14 @@ static void irssi_perl_start(void)
 
 static void signal_destroy_hash(void *key, GSList *list)
 {
-	GSList *next;
-
 	while (list != NULL) {
-		next = list->next;
+		PERL_SIGNAL_REC *rec = list->data;
 
-		perl_signal_destroy(list->data);
-                list = next;
+		list = g_slist_remove(list, rec);
+
+		g_free(rec->signal);
+		g_free(rec->func);
+		g_free(rec);
 	}
 }
 
@@ -154,6 +157,17 @@ static void irssi_perl_stop(void)
 	g_hash_table_destroy(first_signals);
 	g_hash_table_foreach(last_signals, (GHFunc) signal_destroy_hash, NULL);
 	g_hash_table_destroy(last_signals);
+	first_signals = last_signals = NULL;
+
+	if (signal_grabbed) {
+		signal_grabbed = FALSE;
+		signal_remove("signal", (SIGNAL_FUNC) sig_signal);
+	}
+
+	if (siglast_grabbed) {
+		siglast_grabbed = FALSE;
+		signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
+	}
 
 	while (perl_timeouts != NULL)
 		perl_timeout_destroy(perl_timeouts->data);
@@ -222,12 +236,37 @@ static void cmd_flush(const char *data)
 	irssi_perl_start();
 }
 
+static int perl_signal_find(const char *signal, const char *func, int last)
+{
+	GHashTable *table;
+        GSList *siglist;
+	int signal_id;
+
+	table = last ? last_signals : first_signals;
+
+	signal_id = module_get_uniq_id_str("signals", signal);
+        siglist = g_hash_table_lookup(table, GINT_TO_POINTER(signal_id));
+
+	while (siglist != NULL) {
+		PERL_SIGNAL_REC *rec = siglist->data;
+
+		if (strcmp(rec->func, func) == 0)
+			return TRUE;
+		siglist = siglist->next;
+	}
+
+	return FALSE;
+}
+
 static void perl_signal_to(const char *signal, const char *func, int last)
 {
 	PERL_SIGNAL_REC *rec;
 	GHashTable *table;
 	GSList *siglist;
-        void *signal_idp;
+	void *signal_idp;
+
+	if (perl_signal_find(signal, func, last))
+		return;
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
 	rec->signal_id = module_get_uniq_id_str("signals", signal);

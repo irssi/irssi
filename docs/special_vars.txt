@@ -1,5 +1,4 @@
 NOTE: This is just a slightly modified file taken from EPIC's help.
-'!' at start of the line means that the feature doesn't work yet..
 
 Special Variables and Expandos
 
@@ -70,7 +69,7 @@ $A .. $Z is important.
    $R         version of current server
    $S         current server name
    $T         target of current input (channel or QUERY nickname)
-!  $U         value of cutbuffer
+!  $U         value of cutbuffer (*DOES NOT WORK* - there is no cut buffer..)
    $V         client release date (numeric version string)
    $W         current working directory
    $X         your /userhost $N address (user@host)

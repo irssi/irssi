@@ -56,6 +56,9 @@ void printtext(void *server, const char *channel, int level, const char *str, ..
 void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text);
 void printbeep(void);
 
+/* strip all color (etc.) codes from `input'. returns newly allocated string. */
+char *strip_codes(const char *input);
+
 void printtext_init(void);
 void printtext_deinit(void);
 

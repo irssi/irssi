@@ -90,8 +90,8 @@ static void event_unaway(const char *data, IRC_SERVER_REC *server)
 
 void irc_log_init(void)
 {
-	settings_add_str("misc", "awaylog_file", "~/.irssi/away.log");
-	settings_add_str("misc", "awaylog_level", "msgs hilight");
+	settings_add_str("log", "awaylog_file", "~/.irssi/away.log");
+	settings_add_str("log", "awaylog_level", "msgs hilight");
 
 	signal_add("print text stripped", (SIGNAL_FUNC) sig_log);
 	signal_add("event 306", (SIGNAL_FUNC) event_away);

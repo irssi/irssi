@@ -1,7 +1,7 @@
 /*
  printtext.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2000 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include "themes.h"
 #include "windows.h"
 
-static gboolean toggle_show_timestamps, toggle_show_msgs_timestamps, toggle_hide_text_style;
+static gboolean timestamps, msgs_timestamps, hide_text_style;
 static gint printtag;
 static gchar ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 
@@ -108,7 +108,7 @@ static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 
         if (*str == 'm')
         {
-            if (!toggle_hide_text_style)
+            if (!hide_text_style)
             {
                 *fgcolor = fg;
                 *bgcolor = bg == -1 ? -1 : bg;
@@ -410,7 +410,7 @@ static void add_timestamp(WINDOW_REC *window, GString *out, void *server, const 
 	struct tm *tm;
 	GString *tmp;
 
-	if (!(level != MSGLEVEL_NEVER && (toggle_show_timestamps || (toggle_show_msgs_timestamps && (level & MSGLEVEL_MSGS) != 0))))
+	if (!(level != MSGLEVEL_NEVER && (timestamps || (msgs_timestamps && (level & MSGLEVEL_MSGS) != 0))))
 		return;
 
 	t = time(NULL);
@@ -574,6 +574,7 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
 
     flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
 
+    window->last_line = time(NULL);
     newline(window);
 
     out = g_string_new(text);
@@ -612,7 +613,7 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
         if (type == 7)
         {
             /* bell */
-            if (settings_get_bool("toggle_bell_beeps"))
+            if (settings_get_bool("bell_beeps"))
                 flags |= PRINTFLAG_BEEP;
         }
         if (*str != '\0' || flags & PRINTFLAG_BEEP)
@@ -628,12 +629,12 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
         {
             case 2:
                 /* bold */
-                if (!toggle_hide_text_style)
+                if (!hide_text_style)
                     flags ^= PRINTFLAG_BOLD;
                 break;
 	    case 6:
 		/* blink */
-                if (!toggle_hide_text_style)
+                if (!hide_text_style)
                     flags ^= PRINTFLAG_BLINK;
                 break;
 	    case 15:
@@ -643,12 +644,12 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
 		break;
 	    case 22:
                 /* reverse */
-                if (!toggle_hide_text_style)
+                if (!hide_text_style)
                     flags ^= PRINTFLAG_REVERSE;
                 break;
             case 31:
                 /* underline */
-                if (!toggle_hide_text_style)
+                if (!hide_text_style)
                     flags ^= PRINTFLAG_UNDERLINE;
             case 27:
                 /* ansi color code */
@@ -711,7 +712,7 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
 		}
 
                 /* MIRC color */
-                if (toggle_hide_text_style)
+                if (hide_text_style)
                 {
                     /* don't show them. */
                     if (isdigit((gint) *ptr))
@@ -776,7 +777,7 @@ static int sig_check_daychange(void)
     time_t t;
     struct tm *tm;
 
-    if (!toggle_show_timestamps)
+    if (!timestamps)
     {
         /* display day change notice only when using timestamps */
 	return TRUE;
@@ -799,6 +800,9 @@ static int sig_check_daychange(void)
     for (tmp = windows; tmp != NULL; tmp = tmp->next)
     {
 	WINDOW_REC *win = tmp->data;
+
+	if (win->active == NULL)
+		continue; /* FIXME: how to print in these windows? */
 
 	printformat(win->active->server, win->active->name, MSGLEVEL_NEVER,
 		    IRCTXT_DAYCHANGE, tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year);
@@ -833,9 +837,9 @@ static void sig_gui_dialog(const char *type, const char *text)
 
 static void read_settings(void)
 {
-    toggle_show_timestamps = settings_get_bool("toggle_show_timestamps");
-    toggle_show_msgs_timestamps = settings_get_bool("toggle_show_msgs_timestamps");
-    toggle_hide_text_style = settings_get_bool("toggle_hide_text_style");
+    timestamps = settings_get_bool("timestamps");
+    msgs_timestamps = settings_get_bool("msgs_timestamps");
+    hide_text_style = settings_get_bool("hide_text_style");
 }
 
 void printtext_init(void)
@@ -852,7 +856,6 @@ void printtext_init(void)
     signal_add("print text", (SIGNAL_FUNC) sig_print_text);
     signal_add("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
     signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-    command_bind("beep", NULL, (SIGNAL_FUNC) printbeep);
 }
 
 void printtext_deinit(void)
@@ -861,5 +864,4 @@ void printtext_deinit(void)
     signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
     signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
     signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-    command_unbind("beep", (SIGNAL_FUNC) printbeep);
 }

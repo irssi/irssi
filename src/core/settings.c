@@ -258,7 +258,11 @@ static void init_configfile(void)
 	if (stat(str, &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
 		if (mkdir(str, 0700) != 0)
-			g_error("Couldn't create %s/.irssi directory", g_get_home_dir());
+			g_error(_("Couldn't create %s/.irssi directory"), g_get_home_dir());
+	} else {
+		if (!S_ISDIR(statbuf.st_mode)) {
+			g_error(_("%s/.irssi is not a directory.\nYou should remove it with command: rm ~/.irssi"), g_get_home_dir());
+		}
 	}
 	g_free(str);
 
@@ -266,7 +270,7 @@ static void init_configfile(void)
 
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
-		last_error_msg = g_strdup_printf("Ignored errors in configuration file:\n%s",
+		last_error_msg = g_strdup_printf(_("Ignored errors in configuration file:\n%s"),
 						 config_last_error(mainconfig));
 		signal_add("irssi init finished", (SIGNAL_FUNC) sig_print_config_error);
 	}
@@ -291,7 +295,7 @@ static void cmd_rehash(const char *data)
 
 	if (config_last_error(tempconfig) != NULL) {
 		/* error */
-		str = g_strdup_printf("Errors in configuration file:\n%s",
+		str = g_strdup_printf(_("Errors in configuration file:\n%s"),
 				      config_last_error(tempconfig));
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
@@ -308,7 +312,16 @@ static void cmd_rehash(const char *data)
 
 static void cmd_save(const char *data)
 {
-	config_write(mainconfig, *data == '\0' ? NULL : data, 0660);
+	char *str;
+
+	if (config_write(mainconfig, *data == '\0' ? NULL : data, 0660) == 0)
+		return;
+
+	/* error */
+	str = g_strdup_printf(_("Couldn't save configuration file: %s"),
+			      config_last_error(mainconfig));
+	signal_emit("gui dialog", 2, "error", str);
+	g_free(str);
 }
 
 void settings_init(void)

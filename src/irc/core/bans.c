@@ -55,7 +55,7 @@ char *ban_get_mask(CHANNEL_REC *channel, const char *nick)
 	host = strchr(++user, '@');
 	if (host == NULL) return str;
 
-	if ((int) (host-user) < 10) {
+	if ((int) (host-user) > 10) {
 		/* too long user mask */
 		user[9] = '*';
 		g_memmove(user+10, host, strlen(host)+1);
@@ -112,7 +112,7 @@ void ban_set_type(const char *type)
 void ban_set(CHANNEL_REC *channel, const char *bans)
 {
 	GString *str;
-	char **ban, **banlist;
+	char **ban, **banlist, *realban;
 
 	g_return_if_fail(bans != NULL);
 
@@ -121,19 +121,20 @@ void ban_set(CHANNEL_REC *channel, const char *bans)
 	for (ban = banlist; *ban != NULL; ban++) {
 		if (strchr(*ban, '!') != NULL) {
 			/* explicit ban */
-			g_string_sprintfa(str, " %s", *ban);
+			g_string_sprintfa(str, "%s ", *ban);
 			continue;
 		}
 
 		/* ban nick */
-		*ban = ban_get_mask(channel, *ban);
-		if (*ban != NULL) {
-			g_string_sprintfa(str, " %s", *ban);
-			g_free(*ban);
+		realban = ban_get_mask(channel, *ban);
+		if (realban != NULL) {
+			g_string_sprintfa(str, "%s ", realban);
+			g_free(realban);
 		}
 	}
 	g_strfreev(banlist);
 
+	g_string_truncate(str, str->len-1);
 	channel_set_singlemode(channel->server, channel->name, str->str, "+b");
 	g_string_free(str, TRUE);
 }
@@ -169,7 +170,7 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
 				item, &channel, &nicks);
 	if (!ischannel(*channel)) cmd_param_error(CMDERR_NOT_JOINED);
 	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);

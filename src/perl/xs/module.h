@@ -44,6 +44,7 @@ typedef RECONNECT_REC *Irssi__Reconnect;
 typedef NICK_REC *Irssi__Nick;
 typedef BAN_REC *Irssi__Ban;
 typedef NETSPLIT_REC *Irssi__Netsplit;
+typedef NETSPLIT_SERVER_REC *Irssi__Netsplitserver;
 typedef IGNORE_REC *Irssi__Ignore;
 
 typedef DCC_REC *Irssi__Dcc;

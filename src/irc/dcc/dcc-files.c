@@ -432,7 +432,7 @@ static void dcc_send_init(DCC_REC *dcc)
     g_source_remove(dcc->tagread);
     close(dcc->handle);
 
-    dcc->fastsend = settings_get_bool("toggle_dcc_fast_send");
+    dcc->fastsend = settings_get_bool("dcc_fast_send");
     dcc->handle = handle;
     memcpy(&dcc->addr, &addr, sizeof(IPADDR));
     net_ip2host(&dcc->addr, dcc->addrstr);

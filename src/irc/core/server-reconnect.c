@@ -85,7 +85,7 @@ static int server_reconnect_timeout(void)
 
 static void sserver_connect(SETUP_SERVER_REC *rec, IRC_SERVER_CONNECT_REC *conn)
 {
-	conn->address = g_strdup(rec->server);
+	conn->address = g_strdup(rec->address);
 	conn->port = rec->port;
 	conn->password = rec->password == NULL ? NULL :
 		g_strdup(rec->password);
@@ -143,7 +143,6 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		return;
 
 	conn = g_new0(IRC_SERVER_CONNECT_REC, 1);
-	conn->reconnection = TRUE;
 	server_connect_copy_skeleton(conn, server->connrec);
 
 	/* save the server status */
@@ -152,6 +151,7 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		conn->away_reason = g_strdup(server->connrec->away_reason);
 		conn->usermode = g_strdup(server->connrec->usermode);
 	} else {
+		conn->reconnection = TRUE;
 		conn->channels = irc_server_get_channels(server);
 		conn->away_reason = !server->usermode_away ? NULL :
 			g_strdup(server->away_reason);
@@ -213,7 +213,7 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 	for (tmp = setupservers; tmp != NULL; ) {
 		SETUP_SERVER_REC *rec = tmp->data;
 
-		if (!found && g_strcasecmp(rec->server, server->connrec->address) == 0 &&
+		if (!found && g_strcasecmp(rec->address, server->connrec->address) == 0 &&
 		    server->connrec->port == rec->port)
 			found = TRUE;
 		else if (found && rec->ircnet != NULL && g_strcasecmp(conn->ircnet, rec->ircnet) == 0) {
@@ -286,24 +286,36 @@ static RECONNECT_REC *reconnect_find_tag(int tag)
 }
 
 /* Try to reconnect immediately */
-static void cmd_reconnect(const char *data)
+static void cmd_reconnect(const char *data, IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	RECONNECT_REC *rec;
+	char *str;
 	int tag;
+
+	if (*data == '\0') {
+		/* reconnect back to same server */
+		if (server == NULL) cmd_return_error(CMDERR_NOT_CONNECTED);
+		str = g_strdup_printf("%s %d %s %s", server->connrec->address,
+				      server->connrec->port, server->connrec->password,
+				      server->connrec->nick);
+		signal_emit("command server", 2, str, server);
+		g_free(str);
+		return;
+	}
 
 	if (g_strncasecmp(data, "RECON-", 6) == 0)
 		data += 6;
 
-	rec = sscanf(data, "%d", &tag) == 1 && tag > 0 ?
-		reconnect_find_tag(tag) : NULL;
+	tag = atoi(data);
+	rec = tag <= 0 ? NULL : reconnect_find_tag(tag);
 
 	if (rec == NULL)
 		signal_emit("server reconnect not found", 1, data);
 	else {
 		conn = rec->conn;
 		server_reconnect_destroy(rec, FALSE);
-		irc_server_connect(rec->conn);
+		irc_server_connect(conn);
 	}
 }
 

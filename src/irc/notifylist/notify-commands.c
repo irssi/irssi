@@ -42,7 +42,7 @@ static void cmd_notify(gchar *data)
 	if (stristr(args, "-idle") == NULL)
 		idle_check_time = 0;
 	else {
-		idle_check_time = is_numeric(idletime, 0) ? (atol(idletime)*60) :
+		idle_check_time = is_numeric(idletime, 0) ? (atoi(idletime)*60) :
 			(settings_get_int("notify_idle_time")*60);
 	}
 

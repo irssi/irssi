@@ -15,13 +15,15 @@ libfe_common_irc_la_SOURCES = \
 	completion.c \
 	fe-channels.c \
 	fe-irc-commands.c \
+	fe-irc-server.c \
 	fe-ctcp.c \
 	fe-events.c \
 	fe-events-numeric.c \
 	fe-ignore.c \
+	fe-netsplit.c \
 	fe-query.c \
 	fe-common-irc.c \
-	irc-nick-hilight.c \
+	irc-window-activity.c \
 	irc-hilight-text.c \
 	module-formats.c 
 

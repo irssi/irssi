@@ -29,7 +29,6 @@
 #include "windows.h"
 
 #include "screen.h"
-#include "gui-mainwindows.h"
 #include "gui-windows.h"
 
 static gchar *gui_window_line2text(LINE_REC *line)
@@ -178,7 +177,7 @@ static void cmd_lastlog(const char *data)
 		countstr = text;
 		text = "";
 	}
-	count = atol(countstr);
+	count = atoi(countstr);
 	if (count == 0) count = -1;
 
 	level = lastlog_parse_args(args, &flags);
@@ -188,7 +187,7 @@ static void cmd_lastlog(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_START);
 
 	list = gui_window_find_text(active_win, text, startline, flags & LASTLOG_FLAG_REGEXP, flags & LASTLOG_FLAG_WORD);
-	tmp = lastlog_find_startline(list, count, atol(start), level);
+	tmp = lastlog_find_startline(list, count, atoi(start), level);
 
 	for (; tmp != NULL && (count < 0 || count > 0); tmp = tmp->next, count--) {
 		LINE_REC *rec = tmp->data;
@@ -197,13 +196,13 @@ static void cmd_lastlog(const char *data)
 			continue;
 
 		text = gui_window_line2text(rec);
-		if (settings_get_bool("toggle_show_timestamps"))
-			printtext(NULL, NULL, MSGLEVEL_LASTLOG, text);
+		if (settings_get_bool("timestamps"))
+			printtext(NULL, NULL, MSGLEVEL_LASTLOG, "%s", text);
 		else {
 			tm = localtime(&rec->time);
 
 			str = g_strdup_printf("[%02d:%02d] %s", tm->tm_hour, tm->tm_min, text);
-			printtext(NULL, NULL, MSGLEVEL_LASTLOG, str);
+			printtext(NULL, NULL, MSGLEVEL_LASTLOG, "%s", str);
 			g_free(str);
 		}
 		g_free(text);
@@ -249,7 +248,7 @@ static void scrollback_goto_pos(WINDOW_REC *window, GList *pos)
 	gui->bottom = TRUE;
 	gui->startline = gui->bottom_startline;
 	gui->subline = gui->bottom_subline;
-	gui->ypos = last_text_line-first_text_line-1;
+	gui->ypos = gui->parent->last_line-gui->parent->first_line-1;
     }
 
     if (is_window_visible(window))
@@ -362,7 +361,7 @@ static void cmd_scrollback_end(gchar *data)
     gui->bottom = TRUE;
     gui->startline = gui->bottom_startline;
     gui->subline = gui->bottom_subline;
-    gui->ypos = last_text_line-first_text_line-1;
+    gui->ypos = gui->parent->last_line-gui->parent->first_line-1;
 
     if (is_window_visible(active_win))
 	gui_window_redraw(active_win);

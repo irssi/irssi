@@ -335,7 +335,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	if (g_slist_find(servers, server) == NULL)
 		return 0; /* got disconnected */
 
-	mode = settings_get_str("default_user_mode");
+	mode = settings_get_str("usermode");
 	newmode = server->usermode == NULL ? NULL :
 		modes_join(server->usermode, mode);
 	if (server->usermode == NULL || strcmp(newmode, server->usermode) != 0)
@@ -369,7 +369,7 @@ static void event_connected(const char *data, IRC_SERVER_REC *server, const char
 
 	if (!server->connrec->reconnection) {
 		/* wait a second and then send the user mode */
-		mode = settings_get_str("default_user_mode");
+		mode = settings_get_str("usermode");
 		if (*mode != '\0')
 			g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
 	}
@@ -414,7 +414,7 @@ static void event_empty(void)
 
 void irc_servers_init(void)
 {
-	settings_add_str("misc", "default_user_mode", DEFAULT_USER_MODE);
+	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_int("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 

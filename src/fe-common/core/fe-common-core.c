@@ -47,37 +47,34 @@ void fe_server_deinit(void);
 void fe_settings_init(void);
 void fe_settings_deinit(void);
 
-void nick_hilight_init(void);
-void nick_hilight_deinit(void);
+void window_activity_init(void);
+void window_activity_deinit(void);
 
 void fe_core_commands_init(void);
 void fe_core_commands_deinit(void);
 
 void fe_common_core_init(void)
 {
-	settings_add_bool("lookandfeel", "toggle_show_menubar", TRUE);
-	settings_add_bool("lookandfeel", "toggle_show_toolbar", FALSE);
-	settings_add_bool("lookandfeel", "toggle_show_statusbar", TRUE);
-	settings_add_bool("lookandfeel", "toggle_show_nicklist", TRUE);
-	settings_add_bool("lookandfeel", "toggle_show_timestamps", FALSE);
-	settings_add_bool("lookandfeel", "toggle_show_msgs_timestamps", FALSE);
-	settings_add_bool("lookandfeel", "toggle_hide_text_style", FALSE);
-	settings_add_bool("lookandfeel", "toggle_bell_beeps", FALSE);
-	settings_add_bool("lookandfeel", "toggle_actlist_moves", FALSE);
-	settings_add_bool("lookandfeel", "toggle_show_nickmode", TRUE);
-	settings_add_bool("lookandfeel", "toggle_show_topicbar", TRUE);
+	/*settings_add_bool("lookandfeel", "show_menubar", TRUE);
+	settings_add_bool("lookandfeel", "show_toolbar", FALSE);
+	settings_add_bool("lookandfeel", "show_statusbar", TRUE);
+	settings_add_bool("lookandfeel", "show_nicklist", TRUE);*/
+	settings_add_bool("lookandfeel", "timestamps", TRUE);
+	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
+	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
+	settings_add_bool("lookandfeel", "bell_beeps", FALSE);
+	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 
-	settings_add_bool("lookandfeel", "toggle_use_status_window", FALSE);
-	settings_add_bool("lookandfeel", "toggle_use_msgs_window", TRUE);
-	settings_add_bool("lookandfeel", "toggle_autoraise_msgs_window", FALSE);
-	settings_add_bool("lookandfeel", "toggle_autocreate_query", TRUE);
-	settings_add_bool("lookandfeel", "toggle_notifylist_popups", FALSE);
-	settings_add_bool("lookandfeel", "toggle_use_tabbed_windows", TRUE);
-	settings_add_int("lookandfeel", "tab_orientation", 3);
+	settings_add_bool("lookandfeel", "use_status_window", FALSE);
+	settings_add_bool("lookandfeel", "use_msgs_window", TRUE);
+	/*settings_add_bool("lookandfeel", "autoraise_msgs_window", FALSE);*/
+	settings_add_bool("lookandfeel", "autocreate_query", TRUE);
+	/*settings_add_bool("lookandfeel", "use_tabbed_windows", TRUE);
+	settings_add_int("lookandfeel", "tab_orientation", 3);*/
 	settings_add_str("lookandfeel", "current_theme", "default");
 
 	autorun_init();
-	nick_hilight_init();
+	window_activity_init();
 	hilight_text_init();
 	command_history_init();
 	keyboard_init();
@@ -95,7 +92,7 @@ void fe_common_core_init(void)
 void fe_common_core_deinit(void)
 {
 	autorun_deinit();
-	nick_hilight_deinit();
+	window_activity_deinit();
 	hilight_text_deinit();
 	command_history_deinit();
 	keyboard_deinit();
@@ -116,13 +113,15 @@ void fe_common_core_finish_init(void)
 
 	signal(SIGPIPE, SIG_IGN);
 
-	if (settings_get_bool("toggle_use_status_window")) {
+	if (settings_get_bool("use_status_window")) {
 		window = window_create(NULL, TRUE);
 		window_set_name(window, "(status)");
-		window_set_level(window, MSGLEVEL_ALL ^ (settings_get_bool("toggle_use_msgs_window") ? (MSGLEVEL_MSGS|MSGLEVEL_ACTIONS) : 0));
+		window_set_level(window, MSGLEVEL_ALL ^
+				 (settings_get_bool("use_msgs_window") ?
+				  (MSGLEVEL_MSGS|MSGLEVEL_ACTIONS) : 0));
 	}
 
-	if (settings_get_bool("toggle_use_msgs_window")) {
+	if (settings_get_bool("use_msgs_window")) {
 		window = window_create(NULL, TRUE);
 		window_set_name(window, "(msgs)");
 		window_set_level(window, MSGLEVEL_MSGS|MSGLEVEL_ACTIONS);

@@ -191,7 +191,7 @@ static void cmd_ignore(const char *data)
 	else {
 		key = ignore_get_key(rec);
 		levels = ignore_get_levels(rec->level, rec->except_level);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IGNORED, key, levels);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IGNORED, key, levels);
 		g_free(key);
 		g_free(levels);
 	}
@@ -212,7 +212,7 @@ static void cmd_unignore(const char *data)
 
 	if (is_numeric(data, ' ')) {
 		/* with index number */
-		tmp = g_slist_nth(ignores, atol(data)-1);
+		tmp = g_slist_nth(ignores, atoi(data)-1);
 		rec = tmp == NULL ? NULL : tmp->data;
 	} else {
 		/* with mask */

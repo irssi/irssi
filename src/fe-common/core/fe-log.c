@@ -43,16 +43,16 @@ static const char *autolog_path;
 
 static void cmd_log_open(const char *data)
 {
-	/* /LOG OPEN [-noopen] [-autoopen] [-channels <channels>] [-window]
+	/* /LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
 	             [-rotate hour|day|week|month] <fname> [<levels>] */
-	char *params, *args, *itemarg, *rotatearg, *fname, *levels;
+	char *params, *args, *targetarg, *rotatearg, *fname, *levels;
 	char window[MAX_INT_STRLEN];
 	LOG_REC *log;
 	int opened, level, rotate;
 
-	args = "channels rotate";
+	args = "targets rotate";
 	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
-				&args, &itemarg, &rotatearg, &fname, &levels);
+				&args, &targetarg, &rotatearg, &fname, &levels);
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	rotate = LOG_ROTATE_NEVER;
@@ -67,10 +67,10 @@ static void cmd_log_open(const char *data)
 	if (stristr(args, "-window")) {
 		/* log by window ref# */
 		ltoa(window, active_win->refnum);
-                itemarg = window;
+                targetarg = window;
 	}
 
-	log = log_create_rec(fname, level, itemarg);
+	log = log_create_rec(fname, level, targetarg);
 	if (log != NULL && log->handle == -1 && stristr(args, "-noopen") == NULL) {
 		/* start logging */
 		opened = log_start_logging(log);
@@ -193,7 +193,7 @@ static void cmd_window_log(const char *data)
                 open_log = log == NULL;
                 close_log = log != NULL;
 	} else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOT_TOGGLE);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_TOGGLE);
 		g_free(params);
 		return;
 	}
@@ -230,15 +230,32 @@ static void cmd_window_logfile(const char *data)
 	log = log_find_item(window);
 
 	if (log != NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLOG_FILE_LOGGING);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE_LOGGING);
 		return;
 	}
 
 	log = log_create_rec(data, MSGLEVEL_ALL, window);
 	if (log == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLOG_FILE, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE, data);
 	else
 		log_update(log);
+}
+
+/* window's refnum changed - update the logs to log the new window refnum */
+static void sig_window_refnum_changed(WINDOW_REC *window, gpointer old_refnum)
+{
+	char winnum[MAX_INT_STRLEN];
+	LOG_REC *log;
+
+        ltoa(winnum, GPOINTER_TO_INT(old_refnum));
+	log = log_find_item(winnum);
+
+	if (log != NULL) {
+		ltoa(winnum, window->refnum);
+
+		g_strfreev(log->items);
+		log->items = g_strsplit(winnum, " ", -1);
+	}
 }
 
 static void autologs_close_all(void)
@@ -379,6 +396,7 @@ void fe_log_init(void)
 	command_bind("window logfile", NULL, (SIGNAL_FUNC) cmd_window_logfile);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 	signal_add("window item remove", (SIGNAL_FUNC) sig_window_item_remove);
+	signal_add("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
@@ -397,6 +415,7 @@ void fe_log_deinit(void)
 	command_unbind("window logfile", (SIGNAL_FUNC) cmd_window_logfile);
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 	signal_remove("window item remove", (SIGNAL_FUNC) sig_window_item_remove);
+	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

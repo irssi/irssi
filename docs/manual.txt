@@ -1,0 +1,983 @@
+
+ Irssi 0.8 documentation
+
+ Copyright(c) 2000 Timo Sirainen
+
+
+ Index
+
+	0. Generic babbling
+	1. Installation
+	2. Message levels
+	3. Flood protection
+	4. Configuration
+	5. Servers
+	6. Channels
+	7. IRC commands and features
+	8. Notify list
+	9. Text highlighting
+	10. Ignoring
+	11. Logging
+	12. Aliases
+	13. Themes
+	14. Last log (currently text version only)
+	15. Nick and word completion
+	16. Translation tables
+	17. Windowing system (text version)
+	18. Keyboard (text version)
+	19. Perl scripting
+
+
+
+ 0. Generic babbling
+
+ 0.1 History
+
+	Hello. I'm Timo Sirainen aka. cras, and I'm IRC addict. :)
+
+	I'm actually quite new in IRC, I got my first internet connection
+	sometimes around fall 1997 and I started actively IRCing around
+	christmas. I used EPIC and BitchX mostly at the start, but soon
+	found some nice KDE IRC client which name I can't remember anymore.
+	It's author however stopped developing it after I had been using it
+	a few months. And since it had bugs and all, I wanted another nice
+	GUI IRC client. I didn't find any.
+
+	Since I've always been a coder and do-it-yourself guy (my own
+	offline reader and BBS software in the BBS ages), I started my own
+	IRC client at spring 1998. I called it yagIRC standing for "Yet
+	another GTK IRC client". GTK was in around version 1.0 back then,
+	and it had a lot of features/bugs which I found all the time as I
+	tried to do some "different" things than other people. These
+	sometimes prevented me of doing something some feature I wanted.
+
+	So, in summer 1998 I went to army and I passed development of yagIRC
+	to two guys, they did a few new features and released a version or
+	two, but finally (in summer 1999?) they put a message to web page
+	which told that they finally had stopped developing it entirely,
+	also saying that my code was a total mess :) (yes, it was a mess)
+
+	I got out of the army 1.1.1999. I promised to myself that I wouldn't
+	do another IRC client, but after trying to use BitchX a while, I
+	started dreaming about an IRC client which would have an excellent
+	look and feel. After trying various things, I only came up with the
+	GNOME panel applet which people still tell me that it's a great
+	feature. I was more like thinking some pretty little icons in
+	some corner telling me about new messages and other stuff..
+
+	I thought that I would keep Irssi a small project, just doing a few
+	little features that *I* wanted, nothing for others. But after few
+	versions and few interested people, I started coding it more and
+	more generic..
+
+	Finally, after releasing version 0.6.0 (february, 1999) I realized
+	that things were getting into a big mess again. I started a rewrite,
+	I organized the code into irc-base, irc-extra, user interface and
+	GUI directories, created the signalling system for letting them
+	communicate themselves easily and released 0.7.0. This was the base
+	for the rest of the 0.7.x releases, and it did work pretty well.
+	The signalling system was excellent, for example creating text mode
+	version was really easy and you didn't need tens of (empty) gui_xxx()
+	functions like in the yagIRC days. Maintaining the text and GTK
+	versions separately was really easy too.
+
+	About a year later after releasing Irssi 0.7.0, I started having
+	dreams about an IRC client that would be extremely modular, like you
+	could upgrade the client to newer version ON THE FLY without needing
+	to even disconnect from the servers. I started a project codenamed
+	i2k, I took the code from Irssi, split it into more directories and
+	changed quite a lot of the code to work a bit differently.
+
+	I developed i2k quite a long, until I finally gave up with it since
+	it could do only some basic things, and Irssi 0.7 really needed
+	maintaining. After a while I got an idea, maybe I could merge the
+	code from the i2k to Irssi more easily than rewriting the whole
+	client. This was more easier than I thought. It's now been two
+	months since I started it, and Irssi 0.8 is looking absolutely
+	excellent.
+
+ 0.2 Irssi 0.8
+
+	Irssi 0.8 is my fourth try to create the perfect IRC client.
+	This time I'm concentrating to the code. I try to avoid kludges, I
+	try to make as simple code as I can, and I try to provide enough
+	easy to use functions so that extending Irssi is as simple as
+	possible. I also try to keep the "bloat" features in scripts or
+	modules instead of build-in.
+
+	I think I'm succeeded with these goals pretty well, there's some
+	small problems but everything in the big picture looks great.
+
+ 0.3 Future
+
+	What about Irssi 1.0, what will it look like?
+
+	I was thinking about the Linux kernel versioning and keeping
+	Irssi 0.8 a stable version all the time while developing new
+	features only to Irssi 0.9. After 0.9 is finished, it will be
+	called 0.10 or 1.0 depending if I think it's ready to be called 1.0.
+
+	1.0's goal is that it has all the possible features anyone will
+	ever need. If not build-in, then in scripts or loadable modules.
+	Not very small goal :)
+
+ 0.4 This documentation
+
+	Strange, I just created the index list and started writing this.
+	I've never been too good at documentation and I usually don't like
+	writing it, but after coding so much recently and seeing that the
+	NEWS file was getting *SO* large, I thought that I had to put all
+	these features down somewhere so people (and me!) would find them.
+
+	Besides of just telling about Irssi's features and how to use them,
+	this file also contains some not so well known IRC features, some
+	of my own experiences, opinions, etc. So even if you're an
+	experienced IRCer, you might still want to browse through this file.
+
+	NOTE: my experiences are mostly IRCnet related, and Irssi is pretty
+	much IRCnet specific too, since it's the most commonly used IRC
+	network here in Finland. IRCnet has tens of servers here where as
+	other IRC networks have maybe one or two or mostly none.
+
+
+ 1. Installation
+
+ 1.1 Configuration
+
+	configure script accepts these parameters:
+
+	--with-servertest       Build test irc server which you can use to
+	                        try crash irc clients
+	--with-socks            Build with socks library
+	--with-mysql=dir        Build with mysql plugin
+	--without-gtk           Build without GTK frontend
+	--without-textui        Build without text frontend
+	--without-bot           Build without irssibot
+	--without-gnome         Build without GNOME libraries
+	--without-gnome-panel   Build without GNOME panel
+	--without-imlib         Build without Imlib library (you can use only
+	                        .xpm files as backgrounds)
+	--enable-memdebug       Enable memory debugging, great for finding
+	                        memory leaks
+	--enable-gtk-hebrew     Enable Hebrew support - see README-HEBREW
+	--disable-perl          Disable Perl support
+
+	In short:
+
+	./configure
+	make
+	make install
+
+ 1.2 Command line parameters
+
+	--connect -c <server>	Connect to server at startup
+	--port -p <port>	 - specify port
+	--noconnect -!		Don't autoconnect to any servers at startup
+	--nick -n		Specify what nick to use
+	--hostname -h		Specify what host name to use
+	--no-applet		Don't start GNOME panel applet
+
+
+ 2. Message levels
+
+
+	Message levels (or in short, levels) are used almost everywhere.
+	They describe what kind of messages we're dealing with. Here's a
+	list of them all:
+
+	CRAP            - Can be almost anything
+	MSGS            - Private messages
+	PUBLIC          - Public messages in channel
+	NOTICES         - Notices
+	SNOTES          - Server notices
+	CTCPS           - CTCP messages
+	ACTIONS         - Actions (/me) - both private and public
+	                  (which is a bit problematic..)
+	JOINS           - Someone joins a channel
+	PARTS           - Someone parts a channel
+	QUITS           - Someone quits IRC
+	KICKS           - Someone gets kicked from channel
+	MODES           - Channel mode is changed
+	TOPICS          - Channel topic is changed
+	WALLOPS         - Wallop is received
+	INVITES         - Invite is received
+	NICKS           - Someone changes nick
+	DCC             - DCC messages
+	CLIENTNOTICES   - Irssi's notices
+	CLIENTERRORS    - Irssi's error messages
+	CLIENTCRAP      - Some other messages from Irssi
+	HILIGHT         - Hilighted text
+	NOHILIGHT       - Don't use hilighting for this message
+
+
+ 3. Flood protection
+
+ 3.1 Command flood protection
+
+	Most (all?) IRC servers' flood protection works like this
+	(from RFC 1459):
+
+	--------
+	* check to see if client's `message timer' is less than
+	  current time (set to be equal if it is);
+
+	* read any data present from the client;
+
+	* while the timer is less than ten seconds ahead of the current
+	  time, parse any present messages and penalize the client by
+	  2 seconds for each message;
+
+	which in essence means that the client may send 1 message every 2
+	seconds without being adversely affected.
+	--------
+
+	Irssi's flood protection works the same way, except it penalizes
+	2.2 seconds by default for each message (helps with some servers).
+	You can change it with /SET cmd_queue_speed <milliseconds>. You can
+	also change the number of commands before flood protection activates
+	(ie. the burst count) with /SET cmd_max_at_once <count>.
+
+	IRC servers also have an input buffer where the client's commands
+	are saved before processed. It's size is server specific (can be as
+	low as 1k!) If it gets full, the server kicks you out (the
+	"Excess flood" quit message). Irssi's flood protecion protects this
+	pretty well with small commands, but if you send many big commands
+	(like >400 char long messages) fast, you could get easily kicked out.
+	Normally this isn't problem, but if you have scripts sending long
+	messages, you should remember this. I'm not sure how much you should
+	wait between the long messages, but 2 seconds isn't enough.
+
+	This protection is used with all commands sent to server, so you
+	don't need to worry about it with your scripts.
+
+ 3.2 CTCP flood protection
+
+	Other people can pretty easily flood you with CTCP requests, and
+	even if you wouldn't get kicked out from the server, they could
+	easily grow your command queue. So, Irssi's CTCP flood protection
+	works like this:
+
+	First it checks how big the CTCP reply queue is, if it's longer
+	than `max_ctcp_queue', the CTCP is ignored. You can change it with
+	/SET max_ctcp_queue <count> (default is 5).
+
+	After this the CTCP reply is placed to server's "idle queue", so
+	the reply is sent "when there's extra time", this means that if
+	you are busy sending other commands, it might take a while before
+	the reply is sent.
+
+ 3.3 Detecting floods
+
+	Irssi is all the time automatically checking different flooding,
+	when flood is noticed, it sends "flood" signal. This can be easily
+	used for example to create a script for kicking channel flooders.
+	Autoignore uses this also, see section 10.2.
+
+	Flood is detected when more than `flood_max_msgs' same kind of
+	messages arrives in `flood_timecheck' milliseconds to same target
+	(channel or private msg) so it isn't flooding if same user sends a
+	message to 10 different channels you are on, but it is flooding if
+	10 messages are sent to same channel by the same user.
+
+	Currently only messages, notices and ctcps are checked for
+	flooding.
+
+	/SET flood_max_msgs = <count>, default is 4
+	/SET flood_timecheck = <milliseconds>, default is 5 seconds
+	If either of these is 0, the flood checking is disabled.
+
+
+ 4. Configuration
+
+ 4.1 Configuration files
+
+	The configuration is saved to ~/.irssi/config file. You can edit
+	it with text editor if you want, you can also add comments to it
+	and they stay there even if /SAVE is used. Comments are the lines
+	starting with # character. Any errors in config file are displayed
+	at startup.
+
+	Irssi uses it's own config library for handling the config file.
+	The format is pretty much the same as in libPropList and should be
+	easily understandable.
+
+	You can reload the config file on the fly with /REHASH command, you
+	can also read a different config file with /REHASH <filename>.
+
+	If you change any settings, they aren't saved to file until you use
+	/SAVE. You can save the config file to different place with
+	/SAVE <filename>.
+
+ 4.2 Settings
+
+	You can view or change the settings with /SET command.
+
+	/SET without any arguments displays all the settings.
+	/SET <key> displays settings which key (partly) matches <key>
+	/SET <key> <value> sets <key> to <value>
+
+	Boolean settings accepts only values ON, OFF and TOGGLE. You can
+	also use /TOGGLE command to change them, so /TOGGLE <key> behaves
+	like /SET <key> TOGGLE. /TOGGLE also accepts arguments ON and OFF
+	when /TOGGLE behaves exactly like /SET.
+
+	Remember that changes are not saved until you use /SAVE!
+
+
+ 5. Servers
+
+ 5.1 Generic
+
+	Irssi is multi-server friendly. You can be connected to multiple
+	different servers, or the same server multiple times. Most of the
+	settings that let you specify the channel, let you also specify IRC
+	network.
+
+	Servers are referenced by a "server tag". If the server is known
+	to belong to some IRC network, the tag is the IRC network's name,
+	like "ircnet". If the IRC network is unknown, the tag is created
+	from the server's name, like irc.funet.fi -> funet. If the tag
+	already exists, a number is added to the end of it and raised until
+	unused tag is found.
+
+	Quit messages have a small problem if there's already a few
+	commands in server's input command queue. If the server's socket is
+	disconnected immediately after QUIT message is sent, it is possible
+	that the server didn't yet process the quit command and your quit
+	message will be "broken pipe" or something similiar. The right thing
+	to do is to let the server disconnect you, but what if the
+	connection to server is broken and the server never disconnects you?
+	I solved the problem by waiting a few seconds to see if the server
+	disconnects us. If it didn't, force the disconnect. This explains
+	the (a bit annoying) "waiting for servers to close connections"
+	message when quiting Irssi. Most IRC clients just ignore this whole
+	problem, but I hate it if my quit message isn't displayed right.
+
+ 5.2 IRC networks
+
+	Different IRC networks behave a bit differently, and to be as
+	efficient as possible, Irssi needs to know a few things about them
+	or the safe defaults will be used. The default configuration file
+	contains the settings for the biggest IRC networks.
+
+	/IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
+	            [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
+	            [-nick <nick>] [-user <user>] [-name <name>]
+	            [-host <host>] <name>
+
+	    -kicks: Maximum number of nicks in one /KICK command
+	    -msgs: Maximum number of nicks in one /MSG command
+	    -modes: Maximum number of mode changes in one /MODE command
+	    -whois: Maximum number of nicks in one /WHOIS command
+	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
+	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+	    -nick, -user, -name: Specify what nick/username/realname to use
+	    -host: Specify what host name to use, if you have multiple
+
+	/IRCNET REMOVE <name>
+
+ 5.3 Manually connecting and disconnecting
+
+	To connect to a new server, use:
+	/CONNECT [-ircnet <ircnet>] [-host <hostname>] <address>|<ircnet>
+	         [<port> [<password> [<nick>]]]
+
+	If there's no password, set it to -. You can directly connect to
+	IRC server in specified address, or you can connect to some IRC
+	network and Irssi will pick the server for you.
+
+	You don't need to specify the IRC network, password, nick, etc. if
+	you setup the server using /SERVER -add (see next section). If the
+	settings can't be found there either, Irssi will use the defaults:
+
+	/SET default_nick = <nick>, defaults to user_name
+	/SET alternate_nick = <nick>, defaults to <default_nick>_
+	/SET user_name = <user>, defaults to your login name
+	/SET real_name = <name>, taken from /etc/passwd by default
+	/SET hostname = <host>, what host name to use when connecting
+	/SET skip_motd ON|OFF|TOGGLE - Don't show server's MOTD
+
+	NOTE: /CONNECT is also a command for IRC operators to connect IRC
+	servers to other IRC servers. If you want to use it, use /SCONNECT
+	instead.
+
+	You can disconnect from the server with:
+	/DISCONNECT *|<tag> [message]
+
+	If message isn't given, Irssi will use the default quit message. You
+	can set it with /SET quit_message <message>, default is "leaving".
+
+	/SERVER disconnects the server in active window and connects to new
+	one. It will take the same arguments as /CONNECT. If you prefix the
+	address with + character, Irssi won't disconnect the active server,
+	and it will create a new window where the server is connected
+	(ie. /window new hide;/connect address)
+
+	/SERVER without any arguments displays list of connected servers.
+
+ 5.4 Server settings
+
+	/SERVER -add [-auto] [-ircnet <ircnet>] [-host <hostname>]
+	             [-cmdspeed <ms>] [-cmdmax <count>] <address>
+	             [<port> [<password> [<nick>]]]
+
+	    -auto: Automatically connect to server at startup
+	    -ircnet: Specify what IRC network this server belongs to
+	    -host: Specify what host name to use, if you have multiple
+	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
+	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+
+	/SERVER -remove <address> [<port>]
+
+	/SERVER -list
+
+	After connected to server, Irssi can automatically change your user
+	mode. You can set it with /SET usermode <mode>, default is +i.
+
+ 5.5 Automatic reconnecting
+
+	If you get disconnected from server, Irssi will try to reconnect
+	back to some of the servers in the same IRC network. To prevent
+	flooding the server that doesn't let you in (and avoiding K-lines),
+	Irssi won't try to reconnect to the same server more often than
+	once in `server_reconnect_time' seconds. You can change it with
+	/SET server_reconnect_time <seconds>, default is 5 minutes.
+
+	After reconnected to server, Irssi will re-set your user mode, away
+	message and will join you back to the same channels where you were
+	before the connection was lost.
+
+	You can see list of the reconnections with /SERVER. The servers
+	that have tag as RECON-n are the reconnections. You can remove them
+	with /DISCONNECT <tag>, and you can reconnect to them immediately
+	with /RECONNECT <n>. /RECONNECT without any arguments will
+	disconnect from the active server and reconnect back immediately.
+
+ 5.6 Command redirections
+
+	FIXME
+
+ 5.7 Server idle command queue
+
+	There's some situations when you want to ask something from the
+	server which isn't really important. For example when connected
+	to server and you didn't get your nick, Irssi asks with /WHOIS
+	who has your nick and displays it. But if you already have a lot of
+	commands in buffer, like you just autojoined to many channels,
+	you'd rather first let the JOIN commands to be sent to server
+
+	This is where server idle queue gets into picture. Commands in
+	idle queue are sent to server when there's nothing else in the
+	normal command queue.
+
+	Idle queue works with server redirections, so you can ask something
+	from server when it has time and your function is called when the
+	reply is received.
+
+ 5.8 Net splits
+
+	Irssi keeps track of people who were lost in net splits. You can
+	get a list of them with /NETSPLIT command.
+
+	Another use for this is with bots. Channel master can op anyone in
+	the channel and the bot happily accepts it. But if the opped user
+	is lost behind a net split and in netjoin the server gives ops for
+	the user, the bot should decide if the user (who isn't in bot's user
+	database) is a malicious attacker who should be deopped, or if
+	he/she/it is just some user that already had ops before the net
+	split.
+
+	/SET hide_netsplit_quits - If ON, when detected net splits, display
+	     only "Net split host1 host" message and hide all the quit
+	     messages
+
+ 5.9 Lag checking
+
+	Irssi will constantly check how big the lag to the server is. It's
+	done by sending IRSSILAG CTCP replies to ourself. Using PING command
+	for this would seem more reasonable, but there was too many problems
+	with it - some servers didn't even know the whole PING command!
+
+	If the lag is too big, Irssi will reconnect to different IRC server.
+	This is sometimes useful if the connection has been stuck for 30
+	minutes but it still hasn't been closed.
+
+	/SET lag_check_time <seconds> - Specifies how often to check the
+	     lag. If it is set to 0, the lag detection is disabled. Default
+	     is 30 seconds.
+	/SET lag_max_before_disconnect <seconds> - Specifies how big the lag
+	     can be before reconnecting to another server. Default is 5
+	     minutes.
+	/SET lag_min_show <100th seconds> - Specifies the minimum lag to
+	     display in status bar. Default is 1 second.
+
+ 5.10 Raw log
+
+	All data that is received or sent to server is kept in a raw log
+	buffer for a while. Also event redirections are kept there. This is
+	very useful for debugging purposes.
+
+	/RAWLOG SAVE <filename> - Save the current raw log buffer to file
+	/RAWLOG OPEN <filename> - Like /RAWLOG SAVE, but keep the log file
+	                          open and write all new log to it.
+	/RAWLOG CLOSE - Close the open raw log
+
+	/SET rawlog_lines <count> - Specify the number of raw log lines to
+	                            keep in memory.
+
+
+ 6. Channels
+
+ 6.1 Generic
+
+	There's several types of channels you can join, here's a list of
+	the ones that Irssi supports:
+
+	#channel - Normal channels, most commonly used
+	+channel - Modeless channels, channel has no modes, no channel
+	           operators and no topic. This way no-one is above others
+	           and there's no operator-wars etc. But on the other hand,
+	           you can't kick any troublemakers..
+	&channel - Local channels, these channels aren't distributed outside
+	           the IRC server. IRCNet has replaced server notices with
+	           several different &channels (&ERRORS, &NOTICES, etc.)
+	!channel - New channels, currently supported only by IRCNet. These
+	           channels are designed so that they can't be taken over
+	           with net splits. /JOIN !channel joins to existing
+	           !channel, /JOIN !!channel creates a new channel.
+
+ 6.2 Joining, parting
+
+	Channels can be joined with /JOIN command. You can join to multiple
+	channels with one /JOIN by giving it a comma-separated list of
+	channels, like /JOIN #channel1,#channel2. If you don't give the
+	channel mode character (#+&!) before the channel name, Irssi
+	automatically uses # channels.
+
+	Channel name may contain any characters except SPACE, BELL, NUL,
+	CR, LF or comma (','). You can also restrict the channel to only
+	certain users by adding the hostmask to the end of the channel
+	name separated with a ':' character, like #channel:*!*@*.fi lets
+	only people from .fi domain join the channel. This doesn't work with
+	all IRC servers and it's pretty difficult to use, since everyone
+	will have to always join the #channel:*!*@*.fi channel, #channel or
+	#channel:*!*@*.se channels are different channels. Ban exceptions
+	(+e) and especially invite lists (+I) replace this functionality
+	pretty well, see section 6.5.
+
+	If channel has a password (aka. key), you can join it with
+	/JOIN #channel pass, or multiple channels with passwords with
+
+	/JOIN #secret1,#public,#secret2 pass1,x,pass2
+
+	#public didn't have any password, so we used "x" as it's password.
+	It doesn't really matter what password you send with channels that
+	don't have passwords.
+
+	You can leave channels with /PART [<channels>] [<part message>].
+	For example "/PART byebye all" leaves the active channel with
+	"byebye all" message, or /PART #chan1,#chan2 leaves those channels.
+
+	NOTE: Sending JOIN 0 directly to server (/quote join 0) leaves all
+	the channels you are joined. There's been some jokes about joining
+	for example to #2000,0 where the server actually leaves you from all
+	channels. With Irssi this isn't really a problem, since irssi would
+	happily join to channels #2000 and #0.
+
+ 6.3 Automatic joining
+
+	Irssi can automatically join to specified channels in specified
+	IRC networks. It can also automatically send the password when
+	manually joining to channel without specifying the password.
+
+	/CHANNEL ADD [-auto] [-bots <botmasks>] [-botcmd <command>]
+	         <channel> <ircnet> [<password>]
+
+	With -bots and -botcmd arguments you can automatically send
+	commands to someone in channel. This is useful for automatically
+	getting ops for channels, for example
+
+	/CHANNEL ADD -auto -bots "*!bot@bothost.org bot*!*@host2.org"
+	         -botcmd "msg $0 op mypass" #channel ircnet
+
+	You can also use the -botcmd without -bots argument. The command is
+	then sent whenever you join the channel.
+
+	You can remove the channels with
+	/CHANNEL REMOVE <channel> <ircnet>
+
+	/CHANNEL LIST displays list of channels with settings.
+	/CHANNEL without any arguments displays list of channels you have
+	joined. You can also use /CHANNEL to join to channels just as with
+	/JOIN, like /CHANNEL #a.
+
+ 6.4 After-join automation
+
+	When joined to channel, Irssi asks some information about it.
+	After it has got all of it, it prints the "Channel synchronized"
+	text. The following information is asked:
+
+	- Channel mode
+	- WHO list to get nicks' hosts - useful for /BAN for example
+	- Ban list - useful for allowing /UNBAN to use wildcards
+	- Exception list, Invite list - these are asked only from servers
+	  that support +I and +e modes, mostly just IRCNet and some EFNet
+	  servers. These aren't really needed for anything currenty, except
+	  /INVITELIST and /BANS uses them to display the lists.
+
+	If you have joined many channels at once, Irssi tries to optimize
+	the commands it sends to server. Instead of sending two commands
+	to ask two channels' mode, it just sends MODE #a,#b. Same thing with
+	WHO list and ban/except/invite lists. Some servers do not support
+	this and they reply with different kinds of error messages, Irssi
+	tries to deal with them all right and resend the commands again
+	separately. However, some strange servers sometimes use some weird
+	error replies that Irssi doesn't know about, and the channel never
+	gets synchronized. If this happens with some server you know, please
+	let the Irssi's author know about it.
+
+ 6.5 Channel modes
+
+	Irssi knows these channel modes:
+
+	i - Invite only - People can't join to channel without being
+	    /INVITEd, or being in invite list (+I, see below).
+	m - Moderated - People who don't have voices (+v) can't send
+	    messages to channel
+	p - Private - People who aren't joined to channel can't see it
+	    for example with /WHOISing people who are in channel.
+	s - Secret - Like private, but the channel isn't displayed in
+	    /LIST's output.
+	n - No external msgs - Without this mode, anyone can send messages
+	    to channel without even being joined.
+	t - Topic can be changed only by channel operators.
+
+	k <key> - Channel password (aka. key) - The channel can't be joined
+	          without specifying the channel key (see section 6.2).
+
+	l <count> - User limit - No more than <count> people can join to
+	            channel. This can be overridden with /INVITE with some
+	            servers.
+
+	            This is usually used for protecting channel from join
+	            flooding, like some bot allows max. 5 users to join in
+	            one minute or so.
+
+	a - Anonymous - No-one's nick name, host or anything else can be
+	    seen. All messages, joins, parts, modes, etc. are seen as coming
+	    from nick "anonymous", this could be pretty confusing but nice
+	    feature if you want total anonymity. This mode can only be set,
+	    never unset. This mode isn't supported by all servers.
+
+	    NOTE: there is/was one bug :) Channel operators can guess if some
+	    nick might be in the channel and try to kick it. If nick was in
+	    channel, everyone will see the nick that was kicked.
+
+	r - Re-op - If channel becomes opless for longer than 45 (?) minutes,
+	    op everyone in the channel. This works only in !channels. This
+	    mode can only be set, not unset by channel creator.
+
+	b - Set/remove ban. For example MODE #channel +b *!*@*.org bans
+	    everyone from .org domain.
+
+	    If someone from .org domain was already in channel before the
+	    ban was set, he/she couldn't be able to write any messages to
+	    channel (doesn't work with all servers).
+
+	    Ban can also be overridden with /INVITE, although many stupid
+	    IRC clients automatically kick the user out because they see
+	    the ban and think that because of it the user shouldn't be in
+	    the channel (doesn't work with all servers).
+
+	e - Ban exceptions. You could for example ban everyone from
+	    *!*@*.org but set ban exception to *!*@*.host.org - works only
+	    in IRCnet/EFnet servers.
+
+	I - Invite list. If channel is invite only (+i), people in this
+	    list can join it without being /INVITEd - works only in
+	    IRCnet/EFnet servers.
+
+	    This is excellent for in-country channels that don't want
+	    foreigners (spammers!) to join the channel, for example setting
+	    channel's mode to +i and +I *!*@*.fi allows only finnish people
+	    to join the channel. In addition to this, there's usually a bot
+	    in the channels and sending /MSG bot invite command to it
+	    /INVITEs you to the channel.
+
+	    The ':' feature in channel modes is quite similiar, see section
+	    6.2.
+
+	O - Channel owner, the nick who creates a !channel receives this
+	    mode. It isn't displayed anywhere, you can't pass it to anyone
+	    else and you can't regain it again. This is needed for setting
+	    +r mode in channel when it's first created.
+
+	o <nick> - Grant or revoke channel operator status from nick
+	v <nick> - Grant or revoke voice status from nick, only people with
+	           +v (or +o) can talk to channel when it's moderated (+m).
+
+	You can send multiple mode changes with one mode command:
+
+	/MODE #channel +nto-o+v nick1,nick2,nick3
+
+	This would set channel's mode to +nt, give ops to nick1, take ops
+	from nick2 and give voices to nick3.
+
+	You can set only limited number of modes that requires argument in
+	one command. In IRCnet it's 3, in EFnet it's 4 and in many others
+	it's 6. If it's not known, Irssi defaults to 3. Irssi will also
+	automatically split them, so you can use /MODE +oooooo n1,n2,..
+	command to op 6 people and Irssi will split it to two commands in
+	IRCnet/EFnet.
+
+	Instead of manually setting o, v and b modes you probably want to
+	use /OP, /DEOP, /VOICE, /DEVOICE, /BAN and /UNBAN commands.
+
+	/OP, /DEOP, /VOICE and /DEVOICE commands allows wildcards as their
+	argument. So /OP ni* will op all non-opped people whose nick start
+	with "ni". /DEOP * will deop everyone else except you. /VOICE and
+	/DEVOICE work the same way.
+
+ 6.6 Bans
+
+	You can give /BAN a list of nicks or whole ban masks. /UNBAN
+	accepts wildcards, so if you have ban nick!user@reallylonghost.org,
+	you can simply unban it with /UNBAN *really*
+
+	Using /BAN <nicks>, Irssi will automatically create the mask. You
+	can change the way it's created with /BANTYPE command:
+
+	/BANTYPE normal|host|domain|custom
+
+	Normal - *!user@*.domain.net
+	Host   - *!*@host.domain.net
+	Domain - *!*@*.domain.net
+	Custom [nick] [user] [host] [domain]
+	       eg. /bantype custom nick domain - nick!*@*.domain.net
+	       eg. /bantype custom user host - *!user@host.domain.net
+
+	Irssi has also a couple of commands to help banning people:
+
+	/KICKBAN [<channel>] <nick> <reason> - ban and kick the nick
+	/KNOCKOUT [<seconds>] <nick> <reason> - kickban the nick, unban
+	          after waiting <seconds>, default is 5 minutes.
+
+ 6.7 Massjoins
+
+	Automatic opping the nick right after joined to channel is a pretty
+	commonly used. What mostly irritates me with this is that the nick
+	may be opped multiple times by different people, or after netsplits
+	when the people join back, the server will op them, but still the
+	bots op the people again, even if it was just done by the server.
+
+	Irssi has this feature that it sends a "massjoin" signal a while
+	after the real join. If someone has already opped the nick, you can
+	easily check it in the massjoin signal handler.
+
+	The default is to report maximum of 5 joins in one massjoin signal.
+	If the 5 joins don't come in 5 seconds, the signal is sent anyway.
+	You can change these with /SET massjoin_max_wait <milliseconds> and
+	/SET massjoin_max_joins <count>.
+
+
+ 7. IRC commands and features (FIXME)
+
+ 7.x Basic commands
+
+ 7.x IRC operator commands
+
+ 7.x Away features
+
+ 8. Notify list
+
+	Notify list is generally used for knowing when someone you know
+	comes to IRC or leaves from IRC. Traditionally notify list can
+	handle only a list of nicks, no nick masks etc. I lost interest to
+	traditional notify lists long time ago, since the people I know
+	are in IRC all the time. So I made a bit more featureful notify
+	list:
+
+	/NOTIFY [-list] [-away] [-idle [minutes]] <mask> [ircnet [ircnet...]]
+
+	    -away: Notifies about away-status changes
+	    -idle: Notifies if idle time is first larger than <minutes>
+	           (default is hour) and then it drops down.
+            -list: Lists the notify list entries with all their settings
+	    <mask>: Either a simple "nick" or "nick!*@*blah.org". The nick
+	            can't contain wildcards, but the user/host can.
+
+	/UNNOTIFY <mask>
+
+	/NOTIFY without any arguments displays if the people in notify
+	list are online or offline.
+
+
+ 9. Text highlighting
+
+	Irssi supports highlighting lines that match the specified pattern.
+	You can also change the color of the nicks that match specified nick
+	mask, so you could for example show your friends' nicks with
+	different color.
+
+	/HILIGHT [-nick | -regexp | -word] [-color <color>]
+	         [-level <level>] [-channels <channels>] <text>
+
+	    -nick: Match only for nick, <text> is a nick mask
+	    -regexp: <text> is a regular expression
+	    -word: <text> must match to full words
+	    -color: Print the reply with <color> - see below
+	    -level: Match only for <level> messages, default is
+	            publics,msgs,notices,actions
+	    -channels: Match only in <channels>
+
+	/DEHILIGHT <ref#> | <text>
+
+	/HILIGHT without any arguments displays list of the hilights.
+
+	By default the highlighted line will be printed with white color.
+	You can change this with the -color argument. If <color> is a
+	number, Irssi will treat it as a MIRC color code. You can also use
+	bolds (^B), underlines (^_) etc. as <color> if you like.
+
+
+ 10. Ignoring
+
+ 10.1 Manual ignoring
+
+	Irssi's ignoring options should be enough for everyone :)
+
+	/IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
+	        [-channels <channel>] <mask> <levels> <^levels>
+
+	    -regexp: <pattern> is a regular expression
+	    -word: <pattern> must match to full words
+	    -pattern: <pattern> must match to the message's text
+	    -except: *DON'T* ignore
+	    -channels: Ignore only in channels
+	    <mask>: Either a nick mask or list of channels
+	    <levels>: List of levels to ignore
+	    <^levels>: List of levels to NOT ignore
+	               (/ignore -except nick notices = /ignore nick ^notices)
+
+	/UNIGNORE <ref#> | <mask>
+
+	/IGNORE without any arguments displays list of ignores.
+
+	The best match always wins, so you can have:
+
+	    /IGNORE * CTCPS
+	    /IGNORE -except *!*@host.org CTCPS
+
+ 10.2 Automatic ignoring
+
+	Irssi can automatically set ignores for people who flood you.
+	Currently you can autoignore MSGS, NOTICES, CTCPS and PUBLIC.
+	Actions are placed to either MSGS or PUBLIC. See section 3.3 for
+	definition of the flood.
+
+	/SET autoignore_time <seconds> specifies how long to ignore the
+	user.
+
+	/SET autoignore_levels <levels> specifies what levels to ignore
+	automatically, default is to ignore only CTCPS.
+
+
+ 11. Logging
+
+ 11.1 Basic logging
+
+	/LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
+	          [-rotate hour|day|week|month] <filename> [<levels>]
+
+	    -noopen: Create the entry to log list, but don't start logging
+	    -autoopen: Automatically open this log file at startup
+	    -targets: Log only in specified channels/nicks
+	    -window: Log the active window
+	    -rotate: Reopen the log file every hour, day, week or month.
+	             This makes only sense if you specify date/time formats
+	             to file name.
+	    <filename>: File name where to log, it is parsed with
+	                strftime(), so %d=day, etc. see "man strftime" for
+			more info.
+	    <levels>: Defaults to ALL
+
+        /LOG CLOSE <ref#> | <fname> - Close log and remove from log list
+	/LOG START <ref#> | <fname> - Start logging to file
+	/LOG STOP <ref#> | <fname> - Stop logging to file
+	/LOG without any arguments displays the log list
+
+	/SET log_create_mode <mode> - Specifies what file mode to use with
+	     the created log files. Default is 0644.
+
+	All of these are parsed with strftime():
+	/SET log_timestamp <text> - Specifies the time stamp format.
+	     Default is "%H:%M ".
+	/SET log_open_string <text> - Text written to log when it's opened
+	/SET log_close_string <text> - Text written to log when it's closed
+	/SET log_day_changed <text> - Text written to log when day changes
+
+	NOTE: Log files are locked after opened, so two Irssis can't
+	accidentally try to write to the same log file.
+
+	Examples:
+
+	/LOG OPEN -targets cras ~/irclogs/cras.log MSGS
+	  - Logs all messages from/to nick `cras'
+
+	/LOG OPEN -rotate day -targets #linux ~/irclogs/linux/linux-%Y-%m-%d
+	  - Logs all messages in channel #linux. Log is rotated daily, so
+	    logs in 1. May 2000 goes to file "linux-2000-05-01", when the
+	    day is changed, Irssi closes the log and starts logging to
+	    "linux-2000-05-02" etc.
+
+ 11.2 Window logging
+
+	/WINDOW LOG ON|OFF|TOGGLE [<filename>]
+
+	Start/stop logging the active window. This works exactly like
+	/LOG OPEN -window.
+
+	/WINDOW LOGFILE <filename>
+
+	Sets the default log file to use in the window, it can be
+	overridden with specifying the file name in /WINDOW LOG. If no file
+	name isn't given, Irssi defaults to ~/irc.log.<windowname> or
+	~/irc.log.Window<ref#> if window doesn't have name.
+
+	Creates the entry to log list, same as /LOG OPEN -window -noopen.
+	Also, if /WINDOW LOG ON is used it starts logging to this file.
+
+ 11.3 Automatic logging
+
+	This is the logging method that I had been asked to implement for
+	ages, and it is really simple to use too. It logs only messages
+	that have "targets", ie. private messages and channel specific
+	messages (msgs, modes, topics, etc). WHOIS replies and such aren't
+	logged. If you with to log them too, use the /LOG command.
+
+	So, when for example a private messages comes to you from "guy"
+	nick, Irssi creates a log file ~/irclogs/guy.log for it. After few
+	minutes of inactivity, the log file is closed.
+
+	/SET AUTOLOG ON|OFF|TOGGLE - Enable/disable autolog.
+
+	/SET AUTOLOG_LEVEL <level> - Specifies what levels to log, default
+	is ALL.
+
+	/SET AUTOLOG_PATH <path> - expandos (see special_vars.txt) can be
+	used, $0 is the target. If you are using multiple servers, it makes
+	sense to use the server tag as part of the file name, for example
+	~/irclogs/$tag/$0.log (this is the default). The directories are
+	created automatically.
+
+ 11.4 Awaylog
+
+	Irssi logs specified messages when you're away. After you set
+	yourself unaway, Irssi will display all the messages in the awaylog.
+
+	/SET awaylog_level <level> - Default is MSGS HILIGHT
+	/SET awaylog_file <filename> - Default is ~/.irssi/away.log
+
+	You can disable this feature by setting awaylog_level to NONE.
+
+

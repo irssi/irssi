@@ -314,7 +314,7 @@ static void cmd_dehilight(const char *data)
 
 	if (is_numeric(data, ' ')) {
 		/* with index number */
-		tmp = g_slist_nth(hilights, atol(data)-1);
+		tmp = g_slist_nth(hilights, atoi(data)-1);
 		rec = tmp == NULL ? NULL : tmp->data;
 	} else {
 		/* with mask */

@@ -103,7 +103,7 @@ void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mo
 			ptr = cmd_get_param(&modestr);
 			if (*ptr == '\0') break;
 
-			if (strcmp(channel->server->nick, ptr) == 0)
+			if (g_strcasecmp(channel->server->nick, ptr) == 0)
 				channel->chanop = type == '+' ? TRUE : FALSE;
 			nick_mode_change(channel, ptr, '@', type == '+');
 			break;
@@ -297,6 +297,9 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const c
 
 	nicklist = g_strsplit(nicks, " ", -1);
 	for (nick = nicklist; *nick != NULL; nick++) {
+		if (*nick == '\0')
+			continue;
+
 		if (num == 0)
 		{
 			g_string_sprintf(str, "MODE %s %s", channel, mode);
@@ -373,28 +376,94 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 	g_free(orig);
 }
 
-static void cmd_op(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 {
-	if (!irc_item_channel(item)) return;
-	channel_set_singlemode(server, item->name, data, "+o");
+        GString *str;
+	GSList *nicks, *tmp;
+	char **matches, **match, *ret;
+
+	str = g_string_new(NULL);
+	matches = g_strsplit(data, " ", -1);
+	for (match = matches; *match != NULL; match++) {
+		if (strchr(*match, '*') == NULL && strchr(*match, '?') == NULL) {
+			/* no wildcards */
+                        g_string_sprintfa(str, "%s ", *match);
+			continue;
+		}
+
+		/* wildcards */
+		nicks = nicklist_find_multiple((CHANNEL_REC *) item, data);
+		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+			NICK_REC *rec = tmp->data;
+
+			if ((op == 1 && !rec->op) || (op == 0 && rec->op) ||
+			    (voice == 1 && !rec->voice) || (voice == 0 && rec->voice))
+				continue;
+
+			if (g_strcasecmp(rec->nick, item->server->nick) == 0)
+				continue;
+
+			g_string_sprintfa(str, "%s ", rec->nick);
+		}
+		g_slist_free(nicks);
+	}
+
+	g_string_truncate(str, str->len-1);
+	ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
+static void cmd_op(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+{
+	char *nicks;
+
+	if (!irc_item_channel(item))
+		return;
+
+	nicks = get_nicks(item, data, 0, -1);
+	if (*nicks != '\0')
+		channel_set_singlemode(server, item->name, nicks, "+o");
+	g_free(nicks);
 }
 
 static void cmd_deop(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	if (!irc_item_channel(item)) return;
-	channel_set_singlemode(server, item->name, data, "-o");
+	char *nicks;
+
+	if (!irc_item_channel(item))
+		return;
+
+	nicks = get_nicks(item, data, 1, -1);
+	if (*nicks != '\0')
+		channel_set_singlemode(server, item->name, nicks, "-o");
+	g_free(nicks);
 }
 
 static void cmd_voice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	if (!irc_item_channel(item)) return;
-	channel_set_singlemode(server, item->name, data, "+v");
+	char *nicks;
+
+	if (!irc_item_channel(item))
+		return;
+
+	nicks = get_nicks(item, data, 0, 0);
+	if (*nicks != '\0')
+		channel_set_singlemode(server, item->name, nicks, "+v");
+	g_free(nicks);
 }
 
 static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	if (!irc_item_channel(item)) return;
-	channel_set_singlemode(server, item->name, data, "-v");
+	char *nicks;
+
+	if (!irc_item_channel(item))
+		return;
+
+	nicks = get_nicks(item, data, 0, 1);
+	if (*nicks != '\0')
+		channel_set_singlemode(server, item->name, nicks, "-v");
+	g_free(nicks);
 }
 
 static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)

@@ -23,7 +23,7 @@
 #include "screen.h"
 
 static GString *entry;
-static int promptlen, pos, scrstart, scrpos;
+static int promptlen, permanent_prompt, pos, scrstart, scrpos;
 static char *prompt;
 
 static void entry_screenpos(void)
@@ -71,14 +71,11 @@ static void entry_update(void)
 void gui_entry_set_prompt(const char *str)
 {
 	if (str != NULL) {
-		if (prompt != NULL) g_free(prompt);
-		prompt = g_strdup(str);
+		if (permanent_prompt) return;
 
+		g_free_not_null(prompt);
+		prompt = g_strdup(str);
 		promptlen = strlen(prompt);
-		if (promptlen > 20) {
-			promptlen = 20;
-			prompt[20] = '\0';
-		}
 	}
 
 	set_color(0);
@@ -86,6 +83,23 @@ void gui_entry_set_prompt(const char *str)
 
 	entry_screenpos();
 	entry_update();
+}
+
+void gui_entry_set_perm_prompt(const char *str)
+{
+	g_return_if_fail(str != NULL);
+
+	g_free_not_null(prompt);
+	prompt = g_strdup(str);
+	promptlen = strlen(prompt);
+
+	permanent_prompt = TRUE;
+	gui_entry_set_prompt(NULL);
+}
+
+void gui_entry_remove_perm_prompt(void)
+{
+        permanent_prompt = FALSE;
 }
 
 void gui_entry_set_text(const char *str)
@@ -166,8 +180,10 @@ void gui_entry_redraw(void)
 void gui_entry_init(void)
 {
 	entry = g_string_new(NULL);
+
 	pos = scrpos = 0;
 	prompt = NULL; promptlen = 0;
+	permanent_prompt = FALSE;
 }
 
 void gui_entry_deinit(void)

@@ -20,12 +20,12 @@ irssi_text_LDADD = \
 
 irssi_text_SOURCES = \
         gui-entry.c \
-        gui-mainwindows.c \
+        mainwindows.c \
         gui-printtext.c \
         gui-readline.c \
 	gui-special-vars.c \
-        gui-statusbar.c \
-        gui-statusbar-items.c \
+        statusbar.c \
+        statusbar-items.c \
         gui-textwidget.c \
         gui-windows.c \
         irssi.c \
@@ -34,12 +34,11 @@ irssi_text_SOURCES = \
 
 noinst_HEADERS = \
         gui-entry.h \
-        gui-mainwindows.h \
+        mainwindows.h \
         gui-printtext.h \
         gui-readline.h \
 	gui-special-vars.h \
-        gui-statusbar.h \
-        gui-statusbar-items.h \
+        statusbar.h \
         gui-textwidget.h \
         gui-windows.h \
 	module-formats.h \

@@ -28,7 +28,6 @@
 #include "levels.h"
 #include "irc.h"
 #include "server.h"
-#include "server-reconnect.h"
 #include "mode-lists.h"
 #include "nicklist.h"
 #include "channels.h"
@@ -36,66 +35,6 @@
 
 #include "windows.h"
 #include "window-items.h"
-
-static void cmd_server(const char *data)
-{
-	if (*data == '+' && data[1] != '\0')
-                window_create(NULL, FALSE);
-}
-
-static void print_servers(void)
-{
-	GSList *tmp;
-
-	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
-
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LIST,
-			    rec->tag, rec->connrec->address, rec->connrec->port,
-			    rec->connrec->ircnet == NULL ? "" : rec->connrec->ircnet, rec->connrec->nick);
-	}
-}
-
-static void print_lookup_servers(void)
-{
-	GSList *tmp;
-	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
-
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LOOKUP_LIST,
-			    rec->tag, rec->connrec->address, rec->connrec->port,
-			    rec->connrec->ircnet == NULL ? "" : rec->connrec->ircnet, rec->connrec->nick);
-	}
-}
-
-static void print_reconnects(void)
-{
-	GSList *tmp;
-	char *tag, *next_connect;
-	int left;
-
-	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
-		RECONNECT_REC *rec = tmp->data;
-		IRC_SERVER_CONNECT_REC *conn = rec->conn;
-
-		tag = g_strdup_printf("RECON-%d", rec->tag);
-		left = rec->next_connect-time(NULL);
-		next_connect = g_strdup_printf("%02d:%02d", left/60, left%60);
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_RECONNECT_LIST,
-			    tag, conn->address, conn->port,
-			    conn->ircnet == NULL ? "" : conn->ircnet,
-			    conn->nick, next_connect);
-		g_free(next_connect);
-		g_free(tag);
-	}
-}
-
-static void cmd_servers(void)
-{
-        print_servers();
-        print_lookup_servers();
-        print_reconnects();
-}
 
 static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
@@ -196,7 +135,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     {
 	/* msg to channel */
 	nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
-	nickmode = !settings_get_bool("toggle_show_nickmode") || nickrec == NULL ? "" :
+	nickmode = !settings_get_bool("show_nickmode") || nickrec == NULL ? "" :
 	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
 
 	window = channel == NULL ? NULL : window_item_window((WI_ITEM_REC *) channel);
@@ -329,8 +268,8 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	GSList *tmp;
 
 	g_return_if_fail(data != NULL);
-	if (*data == '\0')
-	    return; /* setting ban - don't handle here */
+	if (*data != '\0')
+		return; /* setting ban - don't handle here */
 
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
@@ -415,52 +354,6 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 	}
 }
 
-static void cmd_channel(const char *data, IRC_SERVER_REC *server)
-{
-	CHANNEL_REC *channel;
-	GString *nicks;
-	GSList *nicklist, *tmp, *ntmp;
-	char *mode;
-
-	if (*data != '\0') {
-		cmd_join(data, server);
-		return;
-	}
-
-	if (channels == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_IN_CHANNELS);
-		return;
-	}
-
-	/* print active channel */
-	channel = irc_item_channel(active_win->active);
-	if (channel != NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CURRENT_CHANNEL, channel->name);
-
-	/* print list of all channels, their modes, server tags and nicks */
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANLIST_HEADER);
-	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
-		channel = tmp->data;
-
-		nicklist = nicklist_getnicks(channel);
-		mode = channel_get_mode(channel);
-		nicks = g_string_new(NULL);
-		for (ntmp = nicklist; ntmp != NULL; ntmp = ntmp->next) {
-			NICK_REC *rec = ntmp->data;
-
-			g_string_sprintfa(nicks, "%s ", rec->nick);
-		}
-
-		g_string_truncate(nicks, nicks->len-1);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANLIST_LINE,
-			    channel->name, mode, channel->server->tag, nicks->str);
-
-		g_free(mode);
-		g_slist_free(nicklist);
-		g_string_free(nicks, TRUE);
-	}
-}
-
 static void cmd_nick(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -506,8 +399,6 @@ static void cmd_ts(const char *data)
 
 void fe_irc_commands_init(void)
 {
-	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
-	command_bind("servers", NULL, (SIGNAL_FUNC) cmd_servers);
 	command_bind("query", NULL, (SIGNAL_FUNC) cmd_query);
 	command_bind("unquery", NULL, (SIGNAL_FUNC) cmd_unquery);
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
@@ -519,7 +410,6 @@ void fe_irc_commands_init(void)
 	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
-	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 	command_bind("nick", NULL, (SIGNAL_FUNC) cmd_nick);
 	command_bind("ver", NULL, (SIGNAL_FUNC) cmd_ver);
 	command_bind("ts", NULL, (SIGNAL_FUNC) cmd_ts);
@@ -527,8 +417,6 @@ void fe_irc_commands_init(void)
 
 void fe_irc_commands_deinit(void)
 {
-	command_unbind("server", (SIGNAL_FUNC) cmd_server);
-	command_unbind("servers", (SIGNAL_FUNC) cmd_servers);
 	command_unbind("query", (SIGNAL_FUNC) cmd_query);
 	command_unbind("unquery", (SIGNAL_FUNC) cmd_unquery);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
@@ -540,7 +428,6 @@ void fe_irc_commands_deinit(void)
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
-	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);

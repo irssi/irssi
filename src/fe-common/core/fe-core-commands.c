@@ -23,35 +23,35 @@
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
+#include "misc.h"
 #include "line-split.h"
 #include "irssi-version.h"
 
 #include "windows.h"
 
-static gchar *ret_texts[] =
-{
-    "Invalid parameter",
-    "Not enough parameters given",
-    "Not connected to IRC server yet",
-    "Not joined to any channels yet",
-    "Error: getsockname() failed",
-    "Error: listen() failed",
-    "Multiple matches found, be more specific",
-    "Nick not found",
-    "Not joined to such channel",
-    "Server not found",
-    "Channel not fully synchronized yet, try again after a while",
-    "Doing this is not a good idea. Add -YES if you really mean it",
+static const char *ret_texts[] = {
+	"Invalid parameter",
+	"Not enough parameters given",
+	"Not connected to IRC server yet",
+	"Not joined to any channels yet",
+	"Error: getsockname() failed",
+	"Error: listen() failed",
+	"Multiple matches found, be more specific",
+	"Nick not found",
+	"Not joined to such channel",
+	"Server not found",
+	"Channel not fully synchronized yet, try again after a while",
+	"Doing this is not a good idea. Add -YES if you really mean it",
 };
 
-static gint commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
+static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 {
-    if (rec->category == NULL && rec2->category != NULL)
-	return -1;
-    if (rec2->category == NULL && rec->category != NULL)
-	return 1;
+	if (rec->category == NULL && rec2->category != NULL)
+		return -1;
+	if (rec2->category == NULL && rec->category != NULL)
+		return 1;
 
-    return strcmp(rec->cmd, rec2->cmd);
+	return strcmp(rec->cmd, rec2->cmd);
 }
 
 static void help_category(GSList *cmdlist, gint items, gint max)
@@ -118,7 +118,7 @@ static int show_help(COMMAND_REC *cmd)
 	recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 	ret = line_split(tmpbuf, recvlen, &str, &buffer);
-        printtext(NULL, NULL, MSGLEVEL_NEVER, str);
+        if (ret > 0) printtext(NULL, NULL, MSGLEVEL_NEVER, str);
     }
     while (ret > 0);
     line_split_free(buffer);
@@ -227,6 +227,37 @@ static void cmd_version(char *data)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Client: "PACKAGE" " IRSSI_VERSION);
 }
 
+static void cmd_cat(const char *data)
+{
+	char tmpbuf[1024], *str, *fname;
+	LINEBUF_REC *buffer = NULL;
+	int f, ret, recvlen;
+
+	fname = convert_home(data);
+	f = open(fname, O_RDONLY);
+	g_free(fname);
+	if (f == -1) {
+		/* file not found */
+                printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", g_strerror(errno));
+		return;
+	}
+
+	do {
+		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
+
+		ret = line_split(tmpbuf, recvlen, &str, &buffer);
+		if (ret > 0) printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
+	} while (ret > 0);
+	line_split_free(buffer);
+
+	close(f);
+}
+
+static void cmd_beep(void)
+{
+	printbeep();
+}
+
 static void cmd_unknown(const char *data, void *server, WI_ITEM_REC *item)
 {
 	char *cmd;
@@ -248,6 +279,8 @@ void fe_core_commands_init(void)
 	command_bind("help", NULL, (SIGNAL_FUNC) cmd_help);
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
+	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
+	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 
 	signal_add("unknown command", (SIGNAL_FUNC) cmd_unknown);
 	signal_add("default command", (SIGNAL_FUNC) cmd_unknown);
@@ -259,6 +292,8 @@ void fe_core_commands_deinit(void)
 	command_unbind("help", (SIGNAL_FUNC) cmd_help);
 	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
 	command_unbind("version", (SIGNAL_FUNC) cmd_version);
+	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);
+	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 
 	signal_remove("unknown command", (SIGNAL_FUNC) cmd_unknown);
 	signal_remove("default command", (SIGNAL_FUNC) cmd_unknown);

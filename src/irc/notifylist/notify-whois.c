@@ -78,7 +78,7 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &secstr);
-	secs = atol(secstr);
+	secs = atoi(secstr);
 
 	notify = notifylist_find(nick, server->connrec->ircnet);
 	nickrec = notify_nick_find(server, nick);

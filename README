@@ -13,8 +13,10 @@ also like to see KDE version.
 
  * FEATURES
 
-See docs/COMMANDS file for list of (almost) all commands irssi knows.
-See docs/PERL for some documentation of Perl scripting.
+docs/manual.txt - new manual
+
+See docs/commands.txt file for list of (almost) all commands irssi knows.
+See docs/perl.txt for some documentation of Perl scripting.
 
 I've been asked quite a lot about why should one use irssi, what does it do
 that other IRC clients don't? Well, to tell you the truth, I have no idea :)
@@ -23,7 +25,6 @@ ever used :) Let's see.. It should be easy to use, it has most of the
 features IRC client needs and it's pretty stable. Here's a small list of what
 it does:
 
- - Nice configuration :) Especially the color settings.
  - You can connect to multiple servers. Irssi is also IRC network aware so
    you can specify some settings to work only in specified IRC networks.
  - Automatically connect to IRC server(s) at startup, automatically join to
@@ -59,42 +60,6 @@ Finished, default port to listen in is 2777 and default ip is the ip
 where your irc server is connected. Now just connect your clients to
 the proxy. There's not much features yet, if you want to use multiple
 servers you'll need to start multiple irssi-texts now..
-
- * INSTALLATION
-
-./configure
-make
-make install
-
-Configure can use these parameters (all of these defaults to yes):
-
- --with-servertest	Build test irc server which you can use to try crash
-                        irc clients
- --with-socks       	Build with socks library
- --with-mysql=dir   	Build with mysql plugin
- --without-gtk       	Build without GTK frontend
- --without-textui	Build without text frontend
- --without-bot		Build without irssibot
- --without-gnome       	Build without GNOME libraries
- --without-gnome-panel	Build without GNOME panel
- --without-imlib	Build without Imlib library (you can use only .xpm
-                        files as backgrounds)
- --enable-memdebug     	Enable memory debugging, great for finding memory
-			leaks
- --enable-gtk-hebrew    Enable Hebrew support - see README-HEBREW
- --disable-perl		Disable Perl support
-
-There's also some others, you can get a full list with ./configure --help
-
-
- * COMMAND LINE PARAMETERS
-
- --no-applet            Don't start gnome panel applet
- --connect -c <server>  Connect to server at startup
- --port -p <port>         - specify port
- --noconnect -!         Don't autoconnect to any servers at startup
- --nick -n              Specify what nick to use
- --hostname -h		Specify what host name to use
 
  * BUGS / SUGGESTIONS
 

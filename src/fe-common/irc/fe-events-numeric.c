@@ -607,7 +607,7 @@ static void event_motd(gchar *data, SERVER_REC *server, gchar *nick, gchar *addr
     /* numeric event. */
     gchar *params, *args, *ptr;
 
-    if (settings_get_bool("toggle_skip_motd"))
+    if (settings_get_bool("skip_motd"))
 	return;
 
     params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);

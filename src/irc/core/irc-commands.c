@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "network.h"
 #include "commands.h"
 #include "misc.h"
 #include "special-vars.h"
@@ -46,23 +47,35 @@ static IRC_SERVER_REC *connect_server(const char *data)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	IRC_SERVER_REC *server;
-	char *params, *addr, *portstr, *password, *nick;
-	int port;
+	char *params, *args, *ircnet, *host, *addr, *portstr, *password, *nick;
 
 	g_return_val_if_fail(data != NULL, NULL);
 
-	params = cmd_get_params(data, 4, &addr, &portstr, &password, &nick);
+	args = "ircnet host";
+	params = cmd_get_params(data, 7 | PARAM_FLAG_MULTIARGS,
+				&args, &ircnet, &host, &addr,
+				&portstr, &password, &nick);
+	if (*addr == '+') addr++;
 	if (*addr == '\0') return NULL;
 
 	if (strcmp(password, "-") == 0)
 		*password = '\0';
 
-	port = 6667;
-	if (*portstr != '\0')
-		sscanf(portstr, "%d", &port);
-
 	/* connect to server */
-        conn = irc_server_create_conn(addr, port, password, nick);
+	conn = irc_server_create_conn(addr, atoi(portstr), password, nick);
+	if (*ircnet != '\0') {
+		g_free_not_null(conn->ircnet);
+		conn->ircnet = g_strdup(ircnet);
+	}
+	if (*host != '\0') {
+		IPADDR ip;
+
+		if (net_gethostname(host, &ip) == 0) {
+			if (conn->own_ip == NULL)
+				conn->own_ip = g_new(IPADDR, 1);
+			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
+		}
+	}
 	server = irc_server_connect(conn);
 
 	g_free(params);
@@ -92,6 +105,9 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !irc_server_check(server))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
+	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
+	signal_emit("server quit", 2, server, msg);
+
 	ircserver = (IRC_SERVER_REC *) server;
 	if (ircserver->handle != -1 && ircserver->buffer != NULL) {
 		/* flush transmit queue */
@@ -100,8 +116,6 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 		ircserver->cmdqueue = NULL;
 		ircserver->cmdcount = 0;
 
-		/* then send quit message */
-		if (*msg == '\0') msg = (char *) settings_get_str("default_quit_message");
 		irc_send_cmdv(ircserver, "QUIT :%s", msg);
 	}
 	g_free(params);
@@ -111,12 +125,20 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 
 static void cmd_server(const char *data, IRC_SERVER_REC *server)
 {
+	char *params, *args, *ircnetarg, *hostarg, *addr;
 	char *channels, *away_reason, *usermode, *ircnet;
+	int no_old_server;
 
 	g_return_if_fail(data != NULL);
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*data == '+' || server == NULL) {
+	args = "ircnet host";
+	params = cmd_get_params(data, 4 | PARAM_FLAG_MULTIARGS,
+				&args, &ircnetarg, &hostarg, &addr);
+	if (*addr == '\0' || strcmp(addr, "+") == 0)
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	no_old_server = server == NULL;
+	if (*addr == '+' || server == NULL) {
 		channels = away_reason = usermode = ircnet = NULL;
 	} else {
 		ircnet = g_strdup(server->connrec->ircnet);
@@ -129,20 +151,21 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 		cmd_disconnect("* Changing server", server);
 	}
 
-	server = connect_server(data + (*data == '+' ? 1 : 0));
-	if (*data == '+' || server == NULL ||
+	server = connect_server(data);
+	if (*addr == '+' || server == NULL ||
 	    (ircnet != NULL && server->connrec->ircnet != NULL &&
 	     g_strcasecmp(ircnet, server->connrec->ircnet) != 0)) {
 		g_free_not_null(channels);
 		g_free_not_null(usermode);
 		g_free_not_null(away_reason);
-	} else if (server != NULL) {
+	} else if (server != NULL && !no_old_server) {
 		server->connrec->reconnection = TRUE;
 		server->connrec->channels = channels;
 		server->connrec->usermode = usermode;
 		server->connrec->away_reason = away_reason;
 	}
 	g_free_not_null(ircnet);
+	g_free(params);
 }
 
 static void cmd_quit(const char *data)
@@ -154,7 +177,7 @@ static void cmd_quit(const char *data)
 	g_return_if_fail(data != NULL);
 
 	quitmsg = *data != '\0' ? data :
-		settings_get_str("default_quit_message");
+		settings_get_str("quit_message");
 
 	/* disconnect from every server */
 	for (tmp = servers; tmp != NULL; tmp = next) {
@@ -646,7 +669,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 	if (is_numeric(data, ' ')) {
 		/* first argument is the timeout */
 		params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &timeoutstr, &nick, &reason);
-		timeleft = atol(timeoutstr);
+		timeleft = atoi(timeoutstr);
 	} else {
                 timeleft = 0;
 		params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &reason);
@@ -749,7 +772,7 @@ void irc_commands_init(void)
 {
 	tmpstr = g_string_new(NULL);
 
-	settings_add_str("misc", "default_quit_message", "leaving");
+	settings_add_str("misc", "quit_message", "leaving");
 	settings_add_int("misc", "knockout_time", 300);
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);

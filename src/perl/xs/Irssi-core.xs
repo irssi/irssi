@@ -88,8 +88,18 @@ command_bind(cmd, category, func)
 	char *func
 CODE:
 	char *signal;
+        GSList *tmp;
 
-	command_bind(cmd, *category ? category : "Perl scripts' commands", NULL);
+        /* Don't add the command twice */
+	if (*category == '\0') category = "Perl scripts' commands";
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->cmd, cmd) == 0 &&
+		    g_strcasecmp(rec->category, category) == 0)
+			break;
+	}
+	if (tmp == NULL) command_bind(cmd, category, NULL);
 	signal = g_strconcat("command ", cmd, NULL);
 	perl_signal_add(signal, func);
 	g_free(signal);
@@ -101,7 +111,6 @@ command_unbind(cmd, func)
 CODE:
 	char *signal;
 
-	command_unbind(cmd, NULL);
 	signal = g_strconcat("command ", cmd, NULL);
 	perl_signal_remove(signal, func);
 	g_free(signal);

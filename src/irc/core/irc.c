@@ -48,6 +48,7 @@ static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int 
 	/* just check that we don't send any longer commands than 512 bytes.. */
 	strncpy(str, cmd, 510);
 	len = strlen(cmd);
+	if (len > 510) len = 510;
 	str[len++] = 13; str[len++] = 10; str[len] = '\0';
 
 	ptr = str;

@@ -487,9 +487,9 @@ if test "x$want_perl" = "xyes"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
 	if test "x$old_dir" != "x$whole_dir"; then
-		ln -sf $whole_dir/plugins/perl/xs/typemap plugins/perl/xs/typemap
-		ln -sf $whole_dir/plugins/perl/xs/Irssi.xs plugins/perl/xs/Irssi.xs
-		ln -sf $whole_dir/plugins/perl/xs/Irssi.pm plugins/perl/xs/Irssi.pm
+		ln -sf $whole_dir/src/perl/xs/typemap src/perl/xs/typemap
+		ln -sf $whole_dir/src/perl/xs/Irssi.xs src/perl/xs/Irssi.xs
+		ln -sf $whole_dir/src/perl/xs/Irssi.pm src/perl/xs/Irssi.pm
 	fi
 fi
 

@@ -30,14 +30,13 @@
 
 #include "screen.h"
 #include "gui-entry.h"
-#include "gui-mainwindows.h"
 #include "gui-windows.h"
 
 #include <regex.h>
 
 #define DEFAULT_INDENT_POS 10
 
-int first_text_line = 0, last_text_line = 0;
+static int window_create_override;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 {
@@ -49,7 +48,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *pare
 	gui->bottom = TRUE;
 	gui->line_chunk = g_mem_chunk_new("line chunk", sizeof(LINE_REC),
 					  sizeof(LINE_REC)*100, G_ALLOC_AND_FREE);
-	gui->empty_linecount = last_text_line-first_text_line-1;
+	gui->empty_linecount = parent->last_line-parent->first_line;
 
 	return gui;
 }
@@ -65,19 +64,31 @@ static void gui_window_deinit(GUI_WINDOW_REC *gui)
 	g_free(gui);
 }
 
+static void sig_window_create_override(gpointer tab)
+{
+	window_create_override = GPOINTER_TO_INT(tab);
+}
+
 static void gui_window_created(WINDOW_REC *window)
 {
-    MAIN_WINDOW_REC *parent;
+	MAIN_WINDOW_REC *parent;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    parent = (active_win == NULL || WINDOW_GUI(active_win) == NULL) ?
-	gui_mainwindow_create() : WINDOW_GUI(active_win)->parent;
-    if (parent->children == NULL) parent->active = window;
-    parent->children = g_list_append(parent->children, window);
+	parent = window_create_override != 0 &&
+		active_win != NULL && WINDOW_GUI(active_win) != NULL ?
+		WINDOW_GUI(active_win)->parent : mainwindow_create();
+	if (parent == NULL) {
+		/* not enough space for new window, but we really can't
+		   abort creation of the window anymore, so create hidden
+		   window instead. */
+		parent = WINDOW_GUI(active_win)->parent;
+	}
+	window_create_override = -1;
 
-    window->gui_data = gui_window_init(window, parent);
-    signal_emit("gui window created", 1, window);
+	if (parent->active == NULL) parent->active = window;
+	window->gui_data = gui_window_init(window, parent);
+	signal_emit("gui window created", 1, window);
 }
 
 static void gui_window_destroyed(WINDOW_REC *window)
@@ -89,39 +100,35 @@ static void gui_window_destroyed(WINDOW_REC *window)
 
 	gui = WINDOW_GUI(window);
 	parent = gui->parent;
-	parent->children = g_list_remove(parent->children, window);
 
 	signal_emit("gui window destroyed", 1, window);
 
 	gui_window_deinit(gui);
 	window->gui_data = NULL;
 
-	if (parent->children == NULL)
-		gui_mainwindow_destroy(parent);
-
-	if (windows != NULL && active_win == window && !quitting)
-		window_set_active(windows->data);
+	if (mainwindows->next != NULL && parent->active == window)
+		mainwindow_destroy(parent);
 }
 
 void gui_window_clear(WINDOW_REC *window)
 {
-    MAIN_WINDOW_REC *parent;
+	MAIN_WINDOW_REC *parent;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    parent = WINDOW_GUI(window)->parent;
-    gui_window_deinit(WINDOW_GUI(window));
-    window->gui_data = gui_window_init(window, parent);
+	parent = WINDOW_GUI(window)->parent;
+	gui_window_deinit(WINDOW_GUI(window));
+	window->gui_data = gui_window_init(window, parent);
 
-    window->lines = 0;
+	window->lines = 0;
 
-    if (is_window_visible(window))
-	gui_window_redraw(window);
+	if (is_window_visible(window))
+		gui_window_redraw(window);
 }
 
-gint gui_window_update_bottom(GUI_WINDOW_REC *gui, gint lines)
+int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 {
-    gint linecount, last_linecount;
+    int linecount, last_linecount;
 
     if (gui->bottom_startline == NULL)
 	return -1;
@@ -173,7 +180,7 @@ void gui_window_newline(GUI_WINDOW_REC *gui, gboolean visible)
     g_return_if_fail(gui != NULL);
 
     gui->xpos = 0;
-    last_line = gui->ypos >= last_text_line-first_text_line-1;
+    last_line = gui->ypos >= gui->parent->last_line-gui->parent->first_line;
 
     if (gui->empty_linecount > 0)
     {
@@ -211,8 +218,8 @@ void gui_window_newline(GUI_WINDOW_REC *gui, gboolean visible)
 
 	if (visible)
 	{
-	    scroll_up(first_text_line, last_text_line-1);
-	    move(last_text_line-1, 0); clrtoeol();
+	    scroll_up(gui->parent->first_line, gui->parent->last_line);
+	    move(gui->parent->last_line, 0); clrtoeol();
 	}
     }
 }
@@ -240,6 +247,8 @@ gint gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
 	    ptr++;
 	    switch ((guchar) *ptr)
 	    {
+		case LINE_CMD_OVERFLOW:
+                        g_error("buffer overflow!");
 		case LINE_CMD_EOL:
                     return lines;
 		case LINE_CMD_CONTINUE:
@@ -306,6 +315,8 @@ gint gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, gint ypos, gint s
 	    }
 	    else switch ((guchar) *ptr)
 	    {
+		case LINE_CMD_OVERFLOW:
+                        g_error("buffer overflow!");
 		case LINE_CMD_EOL:
                     return lines;
 		case LINE_CMD_CONTINUE:
@@ -365,7 +376,7 @@ gint gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, gint ypos, gint s
 		else
 		{
 		    gui_window_newline(gui, TRUE);
-		    ypos = first_text_line+gui->ypos;
+		    ypos = gui->parent->first_line+gui->ypos;
 		}
 		lines++;
 	    }
@@ -409,7 +420,7 @@ void gui_window_redraw(WINDOW_REC *window)
 
     gui = WINDOW_GUI(window);
 
-    for (ypos = first_text_line; ypos < last_text_line; ypos++)
+    for (ypos = gui->parent->first_line; ypos <= gui->parent->last_line; ypos++)
     {
 	set_color(0);
         move(ypos, 0);
@@ -417,12 +428,12 @@ void gui_window_redraw(WINDOW_REC *window)
     }
 
     skip = gui->subline;
-    ypos = first_text_line;
+    ypos = gui->parent->first_line;
     for (line = gui->startline; line != NULL; line = line->next)
     {
         LINE_REC *rec = line->data;
 
-	max = last_text_line - ypos-1;
+	max = gui->parent->last_line - ypos;
 	if (max < 0) break;
 
 	lines = gui_window_line_draw(gui, rec, ypos, skip, max);
@@ -460,7 +471,7 @@ static void gui_window_scroll_up(GUI_WINDOW_REC *gui, gint lines)
 	gui->ypos -= -count;
     }
 
-    gui->bottom = (gui->ypos >= -1 && gui->ypos <= last_text_line-first_text_line-1);
+    gui->bottom = (gui->ypos >= -1 && gui->ypos <= gui->parent->last_line-gui->parent->first_line);
 }
 
 static void gui_window_scroll_down(GUI_WINDOW_REC *gui, gint lines)
@@ -507,28 +518,28 @@ static void gui_window_scroll_down(GUI_WINDOW_REC *gui, gint lines)
         gui->startline = gui->startline->next;
     }
 
-    gui->bottom = (gui->ypos >= -1 && gui->ypos <= last_text_line-first_text_line-1);
+    gui->bottom = (gui->ypos >= -1 && gui->ypos <= gui->parent->last_line-gui->parent->first_line);
 }
 
-void gui_window_scroll(WINDOW_REC *window, gint lines)
+void gui_window_scroll(WINDOW_REC *window, int lines)
 {
-    GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    gui = WINDOW_GUI(window);
+	gui = WINDOW_GUI(window);
 
-    if (lines < 0)
-	gui_window_scroll_up(gui, -lines);
-    else
-	gui_window_scroll_down(gui, lines);
+	if (lines < 0)
+		gui_window_scroll_up(gui, -lines);
+	else
+		gui_window_scroll_down(gui, lines);
 
-    if (is_window_visible(window))
-	gui_window_redraw(window);
-    signal_emit("gui page scrolled", 1, window);
+	if (is_window_visible(window))
+		gui_window_redraw(window);
+	signal_emit("gui page scrolled", 1, window);
 }
 
-static void window_update_prompt(WINDOW_REC *window)
+void window_update_prompt(WINDOW_REC *window)
 {
 	WI_ITEM_REC *item;
 	char *text, *str;
@@ -551,11 +562,34 @@ static void window_update_prompt(WINDOW_REC *window)
 	if (*str != '\0') g_free(str);
 }
 
+void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
+{
+	MAIN_WINDOW_REC *oldparent;
+	int ychange;
+
+	oldparent = WINDOW_GUI(window)->parent;
+	ychange = (parent->last_line - parent->first_line) -
+		(oldparent->last_line - oldparent->first_line);
+
+	WINDOW_GUI(window)->parent = parent;
+	if (ychange != 0) gui_window_resize(window, ychange, FALSE);
+}
+
 static void signal_window_changed(WINDOW_REC *window)
 {
 	g_return_if_fail(window != NULL);
 
-	WINDOW_GUI(window)->parent->active = window;
+	if (is_window_visible(window)) {
+		/* already visible, great! */
+		active_mainwin = WINDOW_GUI(window)->parent;
+	} else {
+		/* move it to active main window */
+		if (active_mainwin == NULL)
+			active_mainwin = WINDOW_GUI(window)->parent;
+		else
+			gui_window_reparent(window, active_mainwin);
+		active_mainwin->active = window;
+	}
 
 	screen_refresh_freeze();
 	window_update_prompt(window);
@@ -565,15 +599,6 @@ static void signal_window_changed(WINDOW_REC *window)
 
 static void signal_window_item_update(WINDOW_REC *window)
 {
-	CHANNEL_REC *channel;
-
-	channel = irc_item_channel(window->active);
-	if (channel != NULL) {
-		/* redraw channel widgets */
-		signal_emit("channel topic changed", 1, channel);
-		signal_emit("channel mode changed", 1, channel);
-	}
-
 	window_update_prompt(window);
 }
 
@@ -625,6 +650,8 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 		}
                 else if ((guchar) *ptr == LINE_CMD_EOL)
 		    break;
+		else if ((guchar) *ptr == LINE_CMD_OVERFLOW)
+			g_error("buffer overflow!");
 	    }
 	}
         str[n] = '\0';
@@ -645,138 +672,89 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 
 static void gui_window_horiz_resize(WINDOW_REC *window)
 {
-    GUI_WINDOW_REC *gui;
-    gint linecount;
+	GUI_WINDOW_REC *gui;
+	int linecount;
 
-    gui = WINDOW_GUI(window);
-    if (gui->lines == NULL) return;
+	gui = WINDOW_GUI(window);
+	if (gui->lines == NULL) return;
 
-    linecount = gui_window_get_linecount(gui, g_list_last(gui->lines)->data);
-    gui->last_subline = linecount-1;
+	linecount = gui_window_get_linecount(gui, g_list_last(gui->lines)->data);
+	gui->last_subline = linecount-1;
 
-    /* fake a /CLEAR and scroll window up one page */
-    gui->ypos = -1;
-    gui->bottom = TRUE;
-    gui->empty_linecount = last_text_line-first_text_line-1;
+	/* fake a /CLEAR and scroll window up one page */
+	gui->ypos = -1;
+	gui->bottom = TRUE;
+	gui->empty_linecount = gui->parent->last_line-gui->parent->first_line;
 
-    gui->bottom_startline = gui->startline = g_list_last(gui->lines);
-    gui->bottom_subline = gui->subline = gui->last_subline+1;
-    gui_window_scroll(window, -gui->empty_linecount-1);
+	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
+	gui->bottom_subline = gui->subline = gui->last_subline+1;
+	gui_window_scroll(window, -gui->empty_linecount-1);
 
-    gui->bottom_startline = gui->startline;
-    gui->bottom_subline = gui->subline;
+	gui->bottom_startline = gui->startline;
+	gui->bottom_subline = gui->subline;
 
-    /* remove the empty lines from the end */
-    if (gui->bottom && gui->startline == gui->lines)
-	gui->empty_linecount = (last_text_line-first_text_line-1);
-    else
-	gui->empty_linecount = 0;
+	/* remove the empty lines from the end */
+	if (gui->bottom && gui->startline == gui->lines)
+		gui->empty_linecount = (gui->parent->last_line-gui->parent->first_line);
+	else
+		gui->empty_linecount = 0;
 }
 
-void gui_windows_resize(gint ychange, gboolean xchange)
+void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 {
-    GUI_WINDOW_REC *gui;
-    WINDOW_REC *window;
-    GSList *tmp;
-
-    screen_refresh_freeze();
-    for (tmp = windows; tmp != NULL; tmp = tmp->next)
-    {
-	window = tmp->data;
+	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(window);
 
-	if (xchange)
-	{
-            /* window width changed, we'll need to recalculate a few things.. */
-	    gui_window_horiz_resize(window);
-	    continue;
+	if (xchange) {
+		/* window width changed, we'll need to recalculate a few things.. */
+		gui_window_horiz_resize(window);
+		return;
 	}
 
-	if (ychange < 0 && gui->empty_linecount > 0)
-	{
-	    /* empty space at the bottom of the screen - just eat it. */
-	    gui->empty_linecount += ychange;
-	    if (gui->empty_linecount < 0)
-		gui->empty_linecount = 0;
+	if (ychange < 0 && gui->empty_linecount > 0) {
+		/* empty space at the bottom of the screen - just eat it. */
+		gui->empty_linecount += ychange;
+		if (gui->empty_linecount >= 0)
+			ychange = 0;
+		else {
+			ychange -= gui->empty_linecount;
+			gui->empty_linecount = 0;
+		}
 	}
-        else if (gui->bottom && gui->startline == gui->lines && ychange > 0)
-	{
-	    /* less than screenful of text, add empty space */
-	    gui->empty_linecount += ychange;
+
+	if (gui->bottom && gui->startline == gui->lines && ychange > 0) {
+		/* less than screenful of text, add empty space */
+		gui->empty_linecount += ychange;
+	} else {
+		gui_window_update_bottom(WINDOW_GUI(window), -ychange);
+		gui_window_scroll(window, -ychange);
 	}
-	else
-	{
-	    gui_window_update_bottom(WINDOW_GUI(window), -ychange);
-	    gui_window_scroll(window, -ychange);
-	}
-    }
-
-    irssi_redraw();
-    screen_refresh_thaw();
-}
-
-static void cmd_window_move(gchar *data)
-{
-    GSList *w1, *w2;
-    WINDOW_REC *window;
-
-    g_return_if_fail(data != NULL);
-
-    window = active_win;
-    w1 = g_slist_find(windows, window);
-    if (g_strcasecmp(data, "LEFT") == 0 || g_strncasecmp(data, "PREV", 4) == 0)
-    {
-        w2 = g_slist_nth(windows, g_slist_index(windows, window)-1);
-	if (w2 == NULL)
-	{
-	    window = w1->data;
-	    windows = g_slist_remove(windows, window);
-	    windows = g_slist_append(windows, window);
-            w2 = g_slist_last(windows);
-	}
-    }
-    else if (g_strcasecmp(data, "RIGHT") == 0 || g_strcasecmp(data, "NEXT") == 0)
-    {
-	w2 = w1->next;
-	if (w2 == NULL)
-	{
-	    window = w1->data;
-	    windows = g_slist_remove(windows, window);
-	    windows = g_slist_prepend(windows, window);
-	}
-    }
-    else
-        return;
-
-    if (w2 != NULL)
-    {
-	window = w1->data;
-	w1->data = w2->data;
-	w2->data = window;
-    }
-
-    window_set_active(window);
 }
 
 void gui_windows_init(void)
 {
-    signal_add("window created", (SIGNAL_FUNC) gui_window_created);
-    signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
-    signal_add("window changed", (SIGNAL_FUNC) signal_window_changed);
-    signal_add("window item changed", (SIGNAL_FUNC) signal_window_item_update);
-    signal_add("window name changed", (SIGNAL_FUNC) signal_window_item_update);
-    signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_update);
-    command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
+	window_create_override = -1;
+
+	signal_add("gui window create override", (SIGNAL_FUNC) sig_window_create_override);
+	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
+	signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
+	signal_add_first("window changed", (SIGNAL_FUNC) signal_window_changed);
+	signal_add("window item changed", (SIGNAL_FUNC) signal_window_item_update);
+	signal_add("window name changed", (SIGNAL_FUNC) signal_window_item_update);
+	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_update);
 }
 
 void gui_windows_deinit(void)
 {
-    signal_remove("window created", (SIGNAL_FUNC) gui_window_created);
-    signal_remove("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
-    signal_remove("window changed", (SIGNAL_FUNC) signal_window_changed);
-    signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_update);
-    signal_remove("window name changed", (SIGNAL_FUNC) signal_window_item_update);
-    signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_update);
-    command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
+	while (windows != NULL)
+		window_destroy(windows->data);
+
+	signal_remove("gui window create override", (SIGNAL_FUNC) sig_window_create_override);
+	signal_remove("window created", (SIGNAL_FUNC) gui_window_created);
+	signal_remove("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
+	signal_remove("window changed", (SIGNAL_FUNC) signal_window_changed);
+	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_update);
+	signal_remove("window name changed", (SIGNAL_FUNC) signal_window_item_update);
+	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_update);
 }

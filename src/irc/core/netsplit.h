@@ -4,10 +4,16 @@
 #include "nicklist.h"
 
 typedef struct {
-	char *nick;
-	char *address;
 	char *server;
 	char *destserver;
+	int count;
+} NETSPLIT_SERVER_REC;
+
+typedef struct {
+	NETSPLIT_SERVER_REC *server;
+
+	char *nick;
+	char *address;
 	GSList *channels;
 
 	time_t destroy;
@@ -23,5 +29,7 @@ void netsplit_deinit(void);
 
 NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick, const char *address);
 NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const char *address, const char *channel);
+
+int quitmsg_is_split(const char *msg);
 
 #endif

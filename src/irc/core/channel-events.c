@@ -95,6 +95,27 @@ static void event_topic(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+/* Find any unjoined channel that matches `channel'. Long channel names are
+   also a bit problematic, so find a channel where start of the name matches. */
+static CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server, const char *channel)
+{
+	GSList *tmp;
+	int len;
+
+	len = strlen(channel);
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *rec = tmp->data;
+
+		if (rec->joined) continue;
+
+		if (g_strncasecmp(channel, rec->name, len) == 0 &&
+		    (len > 20 || rec->name[len] == '\0'))
+			return rec;
+	}
+
+	return NULL;
+}
+
 static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
 {
 	char *params, *channel, *tmp;
@@ -120,10 +141,8 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		   !channel here to !ABCDEchannel */
 		char *shortchan;
 
-		shortchan = g_strdup(channel);
-		sprintf(shortchan, "!%s", channel+6);
-
-		chanrec = channel_find(server, shortchan);
+		shortchan = g_strdup_printf("!%s", channel+6);
+		chanrec = channel_find_unjoined(server, shortchan);
 		if (chanrec != NULL) {
 			g_free(chanrec->name);
 			chanrec->name = g_strdup(channel);
@@ -132,10 +151,15 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		g_free(shortchan);
 	}
 
-	chanrec = channel_find(server, channel);
+	chanrec = channel_find_unjoined(server, channel);
 	if (chanrec == NULL) {
 		/* didn't get here with /join command.. */
 		chanrec = channel_create(server, channel, TRUE);
+	}
+	chanrec->joined = TRUE;
+	if (strcmp(chanrec->name, channel) != 0) {
+                g_free(chanrec->name);
+		chanrec->name = g_strdup(channel);
 	}
 
 	g_free(params);

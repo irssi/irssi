@@ -31,8 +31,13 @@ FORMAT_REC fecommon_core_formats[] =
     { "line_start", "%B-%W!%B-%n ", 0 },
     { "line_start_irssi", "%B-%W!%B- %WIrssi:%n ", 0 },
     { "timestamp", "[$[-2.0]3:$[-2.0]4] ", 6, { 1, 1, 1, 1, 1, 1 } },
-    { "daychange", "Day changed to $[-2.0]1-$[-2.0]0 $2", 3, { 1, 1, 1 } },
+    { "daychange", "Day changed to ${[-2.0]1}-$[-2.0]0 $2", 3, { 1, 1, 1 } },
     { "talking_with", "You are now talking with %_$0%_", 1, { 0 } },
+    { "refnum_too_low", "Window number must be greater than 1", 0 },
+    { "refnum_not_found", "No such window: $0", 1, { 0 } },
+    { "windowlist_header", "Ref Name                 Active item     Server          Level", 0 },
+    { "windowlist_line", "$[3]0 %|$[20]1 $[15]2 $[15]3 $4", 5, { 1, 0, 0, 0, 0 } },
+    { "windowlist_footer", "", 0 },
 
     /* ---- */
     { NULL, "Server", 0 },
@@ -42,6 +47,7 @@ FORMAT_REC fecommon_core_formats[] =
     { "connection_established", "Connection to %_$0%_ established", 1, { 0 } },
     { "cant_connect", "Unable to connect server %_$0%_ port %_$1%_ %K[%n$2%K]", 3, { 0, 1, 0 } },
     { "connection_lost", "Connection lost to %_$0%_", 1, { 0 } },
+    { "server_quit", "Disconnecting from server $0: %K[%n$1%K]", 2, { 0, 0 } },
     { "server_changed", "Changed to %_$2%_ server %_$1%_", 3, { 0, 0, 0 } },
     { "unknown_server_tag", "Unknown server tag %_$0%_", 1, { 0 } },
 

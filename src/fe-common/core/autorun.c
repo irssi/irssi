@@ -44,7 +44,7 @@ static void sig_autorun(void)
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		eval_special_string(str, "", active_win->active_server, active_win->active);
+		if (ret > 0) eval_special_string(str, "", active_win->active_server, active_win->active);
 	} while (ret > 0);
 	line_split_free(buffer);
 

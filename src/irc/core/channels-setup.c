@@ -26,6 +26,7 @@
 #include "nicklist.h"
 #include "irc-server.h"
 #include "server-setup.h"
+#include "special-vars.h"
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -33,29 +34,51 @@
 GSList *setupchannels;
 
 #define ircnet_match(a, b) \
-	((a[0]) == '\0' || (b != NULL && g_strcasecmp(a, b) == 0))
+	((a) == NULL || (a[0]) == '\0' || (b != NULL && g_strcasecmp(a, b) == 0))
 
-SETUP_CHANNEL_REC *channels_setup_find(const char *channel, IRC_SERVER_REC *server)
+static void channel_config_add(SETUP_CHANNEL_REC *channel)
 {
-	GSList *tmp;
+	CONFIG_NODE *node;
 
-	g_return_val_if_fail(channel != NULL, NULL);
-	g_return_val_if_fail(server != NULL, NULL);
+	node = iconfig_node_traverse("(channels", TRUE);
+	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
-		SETUP_CHANNEL_REC *rec = tmp->data;
+	config_node_set_str(node, "name", channel->name);
+	config_node_set_str(node, "ircnet", channel->ircnet);
+	if (channel->autojoin)
+		config_node_set_bool(node, "autojoin", TRUE);
+	config_node_set_str(node, "password", channel->password);
+	config_node_set_str(node, "botmasks", channel->botmasks);
+	config_node_set_str(node, "autosendcmd", channel->autosendcmd);
+	config_node_set_str(node, "background", channel->background);
+	config_node_set_str(node, "font", channel->font);
+}
 
-		if (g_strcasecmp(rec->name, channel) == 0 &&
-		    ircnet_match(rec->ircnet, server->connrec->ircnet))
-			return rec;
+static void channel_config_remove(SETUP_CHANNEL_REC *channel)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("channels", FALSE);
+	if (node != NULL) config_node_list_remove(node, g_slist_index(setupchannels, channel));
+}
+
+void channels_setup_create(SETUP_CHANNEL_REC *channel)
+{
+	if (g_slist_find(setupchannels, channel) != NULL) {
+		channel_config_remove(channel);
+		setupchannels = g_slist_remove(setupchannels, channel);
 	}
+	setupchannels = g_slist_append(setupchannels, channel);
 
-	return NULL;
+        channel_config_add(channel);
 }
 
 void channels_setup_destroy(SETUP_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
+
+        channel_config_remove(channel);
+	setupchannels = g_slist_remove(setupchannels, channel);
 
 	g_free(channel->name);
 	g_free(channel->ircnet);
@@ -65,16 +88,30 @@ void channels_setup_destroy(SETUP_CHANNEL_REC *channel)
 	g_free_not_null(channel->background);
 	g_free_not_null(channel->font);
 	g_free(channel);
+}
 
-	setupchannels = g_slist_remove(setupchannels, channel);
+SETUP_CHANNEL_REC *channels_setup_find(const char *channel, const char *ircnet)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(channel != NULL, NULL);
+
+	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
+		SETUP_CHANNEL_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, channel) == 0 &&
+		    ircnet_match(rec->ircnet, ircnet))
+			return rec;
+	}
+
+	return NULL;
 }
 
 /* connected to server, autojoin to channels. */
 static void event_connected(IRC_SERVER_REC *server)
 {
-	GString *chans, *keys;
+	GString *chans;
 	GSList *tmp;
-	int use_keys;
 
 	g_return_if_fail(server != NULL);
 
@@ -83,9 +120,6 @@ static void event_connected(IRC_SERVER_REC *server)
 
 	/* join to the channels marked with autojoin in setup */
 	chans = g_string_new(NULL);
-	keys = g_string_new(NULL);
-
-	use_keys = FALSE;
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
 		SETUP_CHANNEL_REC *rec = tmp->data;
 
@@ -93,21 +127,14 @@ static void event_connected(IRC_SERVER_REC *server)
 			continue;
 
 		g_string_sprintfa(chans, "%s,", rec->name);
-		g_string_sprintfa(keys, "%s,", rec->password == NULL ? "x" : rec->password);
-		if (rec->password != NULL)
-			use_keys = TRUE;
 	}
 
 	if (chans->len > 0) {
 		g_string_truncate(chans, chans->len-1);
-		g_string_truncate(keys, keys->len-1);
-		if (use_keys) g_string_sprintfa(chans, " %s", keys->str);
-
 		channels_join(server, chans->str, TRUE);
 	}
 
 	g_string_free(chans, TRUE);
-	g_string_free(keys, TRUE);
 }
 
 /* channel wholist received: send the auto send command */
@@ -115,17 +142,17 @@ static void channel_wholist(CHANNEL_REC *channel)
 {
 	SETUP_CHANNEL_REC *rec;
 	NICK_REC *nick;
-	char **bots, **bot, *str;
+	char **bots, **bot;
 
 	g_return_if_fail(channel != NULL);
 
-	rec = channels_setup_find(channel->name, channel->server);
+	rec = channels_setup_find(channel->name, channel->server->connrec->ircnet);
 	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
 		return;
 
 	if (rec->botmasks == NULL || !*rec->botmasks) {
 		/* just send the command. */
-		signal_emit("send command", 3, rec->autosendcmd, channel->server, channel);
+		eval_special_string(rec->autosendcmd, "", channel->server, channel);
 	}
 
 	/* find first available bot.. */
@@ -136,9 +163,7 @@ static void channel_wholist(CHANNEL_REC *channel)
 			continue;
 
 		/* got one! */
-		str = g_strdup_printf(rec->autosendcmd, nick->nick);
-		signal_emit("send command", 3, str, channel->server, channel);
-		g_free(str);
+		eval_special_string(rec->autosendcmd, nick->nick, channel->server, channel);
 		break;
 	}
 	g_strfreev(bots);

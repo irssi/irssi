@@ -35,6 +35,9 @@ void fe_channels_deinit(void);
 void fe_irc_commands_init(void);
 void fe_irc_commands_deinit(void);
 
+void fe_irc_server_init(void);
+void fe_irc_server_deinit(void);
+
 void fe_ctcp_init(void);
 void fe_ctcp_deinit(void);
 
@@ -53,14 +56,17 @@ void fe_ignore_deinit(void);
 void fe_query_init(void);
 void fe_query_deinit(void);
 
-void irc_nick_hilight_init(void);
-void irc_nick_hilight_deinit(void);
+void irc_window_activity_init(void);
+void irc_window_activity_deinit(void);
 
 void fe_notifylist_init(void);
 void fe_notifylist_deinit(void);
 
 void fe_flood_init(void);
 void fe_flood_deinit(void);
+
+void fe_netsplit_init(void);
+void fe_netsplit_deinit(void);
 
 static char *autocon_server;
 static char *autocon_password;
@@ -96,6 +102,7 @@ void fe_common_irc_init(void)
 
 	fe_channels_init();
 	fe_irc_commands_init();
+	fe_irc_server_init();
 	fe_ctcp_init();
 	fe_dcc_init();
 	fe_events_init();
@@ -103,15 +110,17 @@ void fe_common_irc_init(void)
 	fe_ignore_init();
 	fe_notifylist_init();
 	fe_flood_init();
+	fe_netsplit_init();
 	fe_query_init();
 	completion_init();
-	irc_nick_hilight_init();
+	irc_window_activity_init();
 }
 
 void fe_common_irc_deinit(void)
 {
 	fe_channels_deinit();
 	fe_irc_commands_deinit();
+	fe_irc_server_deinit();
 	fe_ctcp_deinit();
 	fe_dcc_deinit();
 	fe_events_deinit();
@@ -119,9 +128,10 @@ void fe_common_irc_deinit(void)
 	fe_ignore_deinit();
 	fe_notifylist_deinit();
 	fe_flood_deinit();
+	fe_netsplit_deinit();
 	fe_query_deinit();
 	completion_deinit();
-	irc_nick_hilight_deinit();
+	irc_window_activity_deinit();
 }
 
 void fe_common_irc_finish_init(void)
@@ -162,7 +172,7 @@ void fe_common_irc_finish_init(void)
 			if (*rec->ircnet != '\0')
 				ircnets = g_slist_append(ircnets, rec->ircnet);
 
-			str = g_strdup_printf("%s %d", rec->server, rec->port);
+			str = g_strdup_printf("%s %d", rec->address, rec->port);
 			signal_emit("command connect", 1, str);
 			g_free(str);
 		}

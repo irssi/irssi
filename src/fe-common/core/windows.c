@@ -24,6 +24,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "server.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "levels.h"
@@ -32,7 +33,8 @@
 #include "windows.h"
 #include "window-items.h"
 
-GSList *windows;
+GSList *windows; /* first in the list is the active window,
+                    next is the last active, etc. */
 WINDOW_REC *active_win;
 
 static int window_get_new_refnum(void)
@@ -65,7 +67,7 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 	rec = g_new0(WINDOW_REC, 1);
 	rec->refnum = window_get_new_refnum();
 
-	windows = g_slist_append(windows, rec);
+	windows = g_slist_prepend(windows, rec);
 	signal_emit("window created", 2, rec, GINT_TO_POINTER(automatic));
 
 	if (item != NULL) window_add_item(rec, item, automatic);
@@ -77,8 +79,26 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 	return rec;
 }
 
+/* removed_refnum was removed from the windows list, pack the windows so
+   there won't be any holes. If there is any holes after removed_refnum,
+   leave the windows behind it alone. */
+static void windows_pack(int removed_refnum)
+{
+	WINDOW_REC *window;
+	int refnum;
+
+	for (refnum = removed_refnum+1;; refnum++) {
+		window = window_find_refnum(refnum);
+		if (window == NULL) break;
+
+		window_set_refnum(window, refnum-1);
+	}
+}
+
 void window_destroy(WINDOW_REC *window)
 {
+	int refnum;
+
 	g_return_if_fail(window != NULL);
 
 	if (window->destroying) return;
@@ -93,29 +113,25 @@ void window_destroy(WINDOW_REC *window)
 	g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL);
 	g_slist_free(window->waiting_channels);
 
+	refnum = window->refnum;
 	g_free_not_null(window->name);
 	g_free(window);
-}
 
-void window_set_active_num(int number)
-{
-	GSList *win;
+	if (active_win == window && windows != NULL)
+		window_set_active(windows->data);
 
-	win = g_slist_nth(windows, number);
-	if (win == NULL) return;
-
-	active_win = win->data;
-	signal_emit("window changed", 1, active_win);
+	windows_pack(refnum);
 }
 
 void window_set_active(WINDOW_REC *window)
 {
-	int number;
-
-	number = g_slist_index(windows, window);
-	if (number == -1) return;
+	if (window == active_win)
+		return;
 
 	active_win = window;
+        windows = g_slist_remove(windows, active_win);
+	windows = g_slist_prepend(windows, active_win);
+
 	signal_emit("window changed", 1, active_win);
 }
 
@@ -123,6 +139,30 @@ void window_change_server(WINDOW_REC *window, void *server)
 {
 	window->active_server = server;
 	signal_emit("window server changed", 2, window, server);
+}
+
+void window_set_refnum(WINDOW_REC *window, int refnum)
+{
+	GSList *tmp;
+	int old_refnum;
+
+	g_return_if_fail(window != NULL);
+	g_return_if_fail(refnum >= 1);
+	if (window->refnum == refnum) return;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum == refnum) {
+			rec->refnum = window->refnum;
+                        signal_emit("window refnum changed", 2, rec, GINT_TO_POINTER(refnum));
+			break;
+		}
+	}
+
+	old_refnum = window->refnum;
+	window->refnum = refnum;
+	signal_emit("window refnum changed", 2, window, GINT_TO_POINTER(old_refnum));
 }
 
 void window_set_name(WINDOW_REC *window, const char *name)
@@ -182,6 +222,68 @@ WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 	return active_win;
 }
 
+WINDOW_REC *window_find_refnum(int refnum)
+{
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum == refnum)
+			return rec;
+	}
+
+	return NULL;
+}
+
+static int windows_refnum_last(void)
+{
+	GSList *tmp;
+	int max;
+
+	max = -1;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum > max)
+			max = rec->refnum;
+	}
+
+	return max;
+}
+
+static int window_refnum_prev(int refnum)
+{
+	GSList *tmp;
+	int max;
+
+	max = -1;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum < refnum && (max == -1 || rec->refnum > max))
+			max = rec->refnum;
+	}
+
+	return max;
+}
+
+static int window_refnum_next(int refnum)
+{
+	GSList *tmp;
+	int min;
+
+	min = -1;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->refnum > refnum && (min == -1 || rec->refnum < min))
+			min = rec->refnum;
+	}
+
+	return min;
+}
+
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 {
 	command_runsub("window", data, server, item);
@@ -194,7 +296,7 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 
 	g_return_if_fail(data != NULL);
 
-	type = (g_strcasecmp(data, "hide") == 0 || g_strcasecmp(data, "tab") == 0) ? 1 :
+	type = (g_strncasecmp(data, "hid", 3) == 0 || g_strcasecmp(data, "tab") == 0) ? 1 :
 		(g_strcasecmp(data, "split") == 0 ? 2 : 0);
 	signal_emit("gui window create override", 1, GINT_TO_POINTER(type));
 
@@ -210,13 +312,15 @@ static void cmd_window_close(const char *data)
 }
 
 /* return the first window number with the highest activity */
-static int window_highest_activity(WINDOW_REC *window)
+static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 {
-	WINDOW_REC *rec;
+	WINDOW_REC *rec, *max_win;
 	GSList *tmp;
-	int max_num, max_act, through;
+	int max_act, through;
 
-	max_num = 0; max_act = 0; through = FALSE;
+	g_return_val_if_fail(window != NULL, NULL);
+
+	max_win = NULL; max_act = 0; through = FALSE;
 
 	tmp = g_slist_find(windows, window);
 	for (;; tmp = tmp->next) {
@@ -232,20 +336,41 @@ static int window_highest_activity(WINDOW_REC *window)
 
 		if (rec->new_data && max_act < rec->new_data) {
 			max_act = rec->new_data;
-			max_num = g_slist_index(windows, rec)+1;
+			max_win = rec;
 		}
 	}
 
-	return max_num;
+	return max_win;
 }
 
-/* channel name - first try channel from same server */
-static int window_find_name(WINDOW_REC *window, const char *name)
+WINDOW_REC *window_find_name(const char *name)
 {
-	WI_ITEM_REC *item;
-	int num;
+	GSList *tmp;
 
-	item = window_item_find(window->active_server, name);
+	g_return_val_if_fail(name != NULL, NULL);
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->name != NULL && g_strcasecmp(rec->name, name) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
+WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
+{
+	WINDOW_REC *rec;
+	WI_ITEM_REC *item;
+
+	g_return_val_if_fail(name != NULL, NULL);
+
+	rec = window_find_name(name);
+	if (rec != NULL) return rec;
+
+	item = window == NULL ? NULL :
+		window_item_find(window->active_server, name);
 	if (item == NULL && window->active_server != NULL) {
 		/* not found from the active server - any server? */
 		item = window_item_find(NULL, name);
@@ -257,7 +382,8 @@ static int window_find_name(WINDOW_REC *window, const char *name)
 		/* still nothing? maybe user just left the # in front of
 		   channel, try again with it.. */
 		chan = g_strdup_printf("#%s", name);
-		item = window_item_find(window->active_server, chan);
+		item = window == NULL ? NULL :
+			window_item_find(window->active_server, chan);
 		if (item == NULL) item = window_item_find(NULL, chan);
 		g_free(chan);
 	}
@@ -265,48 +391,63 @@ static int window_find_name(WINDOW_REC *window, const char *name)
 	if (item == NULL)
 		return 0;
 
-	/* get the window number */
-	window = MODULE_DATA(item);
-	if (window == NULL) return 0;
+	return MODULE_DATA(item);
+}
 
-	num = g_slist_index(windows, window);
-	return num < 0 ? 0 : num+1;
+static void cmd_window_refnum(const char *data)
+{
+	WINDOW_REC *window;
+
+	if (!is_numeric(data, 0)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_NOT_FOUND, data);
+		return;
+	}
+
+	window = window_find_refnum(atoi(data));
+        if (window == NULL)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_NOT_FOUND, data);
+	else
+		window_set_active(window);
 }
 
 static void cmd_window_goto(const char *data)
 {
-	int num;
+	WINDOW_REC *window;
 
 	g_return_if_fail(data != NULL);
 
-	num = 0;
+	if (is_numeric(data, 0)) {
+		cmd_window_refnum(data);
+		return;
+	}
+
 	if (g_strcasecmp(data, "active") == 0)
-                num = window_highest_activity(active_win);
-	else if (isdigit(*data))
-		num = atol(data);
+                window = window_highest_activity(active_win);
 	else
-                num = window_find_name(active_win, data);
+                window = window_find_item(active_win, data);
 
-	if (num > 0)
-		window_set_active_num(num-1);
+	if (window != NULL)
+		window_set_active(window);
 }
 
-static void cmd_window_next(const char *data)
+static void cmd_window_next(void)
 {
 	int num;
 
-	num = g_slist_index(windows, active_win)+1;
-	if (num >= g_slist_length(windows)) num = 0;
-	window_set_active_num(num);
+	num = window_refnum_next(active_win->refnum);
+	if (num < 1) num = windows_refnum_last();
+
+	window_set_active(window_find_refnum(num));
 }
 
-static void cmd_window_prev(const char *data)
+static void cmd_window_prev(void)
 {
 	int num;
 
-	num = g_slist_index(windows, active_win)-1;
-	if (num < 0) num = g_slist_length(windows)-1;
-	window_set_active_num(num);
+	num = window_refnum_prev(active_win->refnum);
+	if (num < 1) num = window_refnum_next(0);
+
+	window_set_active(window_find_refnum(num));
 }
 
 static void cmd_window_level(const char *data)
@@ -392,9 +533,153 @@ static void cmd_window_item_next(const char *data, void *server, WI_ITEM_REC *it
                 window_item_set_active(window, next);
 }
 
+static void cmd_window_number(const char *data)
+{
+	int num;
+
+	num = atoi(data);
+	if (num < 1)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_TOO_LOW);
+	else
+		window_set_refnum(active_win, num);
+}
+
 static void cmd_window_name(const char *data)
 {
         window_set_name(active_win, data);
+}
+
+/* we're moving the first window to last - move the first contiguous block
+   of refnums to left. Like if there's windows 1..5 and 7..10, move 1 to
+   11, 2..5 to 1..4 and leave 7..10 alone  */
+static void windows_move_left(WINDOW_REC *move_window)
+{
+	WINDOW_REC *window;
+	int refnum;
+
+	window_set_refnum(move_window, windows_refnum_last()+1);
+	for (refnum = 2;; refnum++) {
+		window = window_find_refnum(refnum);
+		if (window == NULL) break;
+
+		window_set_refnum(window, refnum-1);
+	}
+}
+
+/* we're moving the last window to first - make some space so we can use the
+   refnum 1 */
+static void windows_move_right(WINDOW_REC *move_window)
+{
+	WINDOW_REC *window;
+	int refnum;
+
+	/* find the first unused refnum, like if there's windows
+	   1..5 and 7..10, we only need to move 1..5 to 2..6 */
+	refnum = 1;
+	while (window_find_refnum(refnum) != NULL) refnum++;
+
+	refnum--;
+	while (refnum > 0) {
+		window = window_find_refnum(refnum);
+		g_return_if_fail(window != NULL);
+		window_set_refnum(window, window == move_window ? 1 : refnum+1);
+
+		refnum--;
+	}
+}
+
+static void cmd_window_move_left(void)
+{
+	int refnum;
+
+	refnum = window_refnum_prev(active_win->refnum);
+	if (refnum != -1) {
+		window_set_refnum(active_win, active_win->refnum-1);
+		return;
+	}
+
+	windows_move_left(active_win);
+}
+
+static void cmd_window_move_right(void)
+{
+	int refnum;
+
+	refnum = window_refnum_next(active_win->refnum);
+	if (refnum != -1) {
+		window_set_refnum(active_win, active_win->refnum+1);
+		return;
+	}
+
+        windows_move_right(active_win);
+}
+
+static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	int new_refnum, refnum;
+
+	if (!is_numeric(data, 0)) {
+		command_runsub("window move", data, server, item);
+                return;
+	}
+
+	new_refnum = atoi(data);
+	if (new_refnum > active_win->refnum) {
+		for (;;) {
+			refnum = window_refnum_next(active_win->refnum);
+			if (refnum == -1 || refnum > new_refnum)
+				break;
+
+			window_set_refnum(active_win, refnum);
+		}
+	} else {
+		for (;;) {
+			refnum = window_refnum_prev(active_win->refnum);
+			if (refnum == -1 || refnum < new_refnum)
+				break;
+
+			window_set_refnum(active_win, refnum);
+		}
+	}
+}
+
+static int windows_compare(WINDOW_REC *w1, WINDOW_REC *w2)
+{
+	return w1->refnum < w2->refnum ? -1 : 1;
+}
+
+GSList *windows_get_sorted(void)
+{
+	GSList *tmp, *list;
+
+	list = NULL;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		list = g_slist_insert_sorted(list, tmp->data, (GCompareFunc) windows_compare);
+	}
+
+	return list;
+}
+
+static void cmd_window_list(void)
+{
+	GSList *tmp, *sorted;
+	char *levelstr;
+
+	sorted = windows_get_sorted();
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_HEADER);
+	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		levelstr = bits2level(rec->level);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_LINE,
+			    rec->refnum, rec->name == NULL ? "" : rec->name,
+			    rec->active == NULL ? "" : rec->active->name,
+			    rec->active_server == NULL ? "" : ((SERVER_REC *) rec->active_server)->tag,
+			    levelstr);
+		g_free(levelstr);
+	}
+	g_slist_free(sorted);
+        printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_FOOTER);
 }
 
 static void sig_server_looking(void *server)
@@ -434,14 +719,21 @@ void windows_init(void)
 	command_bind("window", NULL, (SIGNAL_FUNC) cmd_window);
 	command_bind("window new", NULL, (SIGNAL_FUNC) cmd_window_new);
 	command_bind("window close", NULL, (SIGNAL_FUNC) cmd_window_close);
+	command_bind("window kill", NULL, (SIGNAL_FUNC) cmd_window_close);
 	command_bind("window server", NULL, (SIGNAL_FUNC) cmd_window_server);
+	command_bind("window refnum", NULL, (SIGNAL_FUNC) cmd_window_refnum);
 	command_bind("window goto", NULL, (SIGNAL_FUNC) cmd_window_goto);
 	command_bind("window prev", NULL, (SIGNAL_FUNC) cmd_window_prev);
 	command_bind("window next", NULL, (SIGNAL_FUNC) cmd_window_next);
 	command_bind("window level", NULL, (SIGNAL_FUNC) cmd_window_level);
 	command_bind("window item prev", NULL, (SIGNAL_FUNC) cmd_window_item_prev);
 	command_bind("window item next", NULL, (SIGNAL_FUNC) cmd_window_item_next);
+	command_bind("window number", NULL, (SIGNAL_FUNC) cmd_window_number);
 	command_bind("window name", NULL, (SIGNAL_FUNC) cmd_window_name);
+	command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
+	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
+	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
+	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);
@@ -452,14 +744,21 @@ void windows_deinit(void)
 	command_unbind("window", (SIGNAL_FUNC) cmd_window);
 	command_unbind("window new", (SIGNAL_FUNC) cmd_window_new);
 	command_unbind("window close", (SIGNAL_FUNC) cmd_window_close);
+	command_unbind("window kill", (SIGNAL_FUNC) cmd_window_close);
 	command_unbind("window server", (SIGNAL_FUNC) cmd_window_server);
+	command_unbind("window refnum", (SIGNAL_FUNC) cmd_window_refnum);
 	command_unbind("window goto", (SIGNAL_FUNC) cmd_window_goto);
 	command_unbind("window prev", (SIGNAL_FUNC) cmd_window_prev);
 	command_unbind("window next", (SIGNAL_FUNC) cmd_window_next);
 	command_unbind("window level", (SIGNAL_FUNC) cmd_window_level);
 	command_unbind("window item prev", (SIGNAL_FUNC) cmd_window_item_prev);
 	command_unbind("window item next", (SIGNAL_FUNC) cmd_window_item_next);
+	command_unbind("window number", (SIGNAL_FUNC) cmd_window_number);
 	command_unbind("window name", (SIGNAL_FUNC) cmd_window_name);
+	command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
+	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
+	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
+	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_server_disconnected);

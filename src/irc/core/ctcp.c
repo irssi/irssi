@@ -52,7 +52,7 @@ void ctcp_send_reply(IRC_SERVER_REC *server, const char *data)
 
 	if (g_slist_length(server->ctcpqueue) < settings_get_int("max_ctcp_queue")) {
 		/* Add to first in idle queue */
-		tag = server_idle_add_first(server, data, NULL, 0, NULL);
+		tag = server_idle_add(server, data, NULL, 0, NULL);
 		server->ctcpqueue = g_slist_append(server->ctcpqueue, GINT_TO_POINTER(tag));
 	}
 }

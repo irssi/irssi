@@ -1,5 +1,5 @@
 /*
- nick-hilight.c : irssi
+ window-activity.c : irssi
 
     Copyright (C) 1999-2000 Timo Sirainen
 
@@ -57,6 +57,7 @@ static void sig_dehilight(WINDOW_REC *window, WI_ITEM_REC *item)
 
 static void sig_dehilight_window(WINDOW_REC *window)
 {
+        GSList *tmp;
 	int oldlevel;
 
 	g_return_if_fail(window != NULL);
@@ -71,7 +72,8 @@ static void sig_dehilight_window(WINDOW_REC *window)
 	}
 	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
 
-	g_slist_foreach(window->items, (GFunc) sig_dehilight, NULL);
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next)
+		sig_dehilight(window, tmp->data);
 }
 
 static void sig_hilight_window_item(WI_ITEM_REC *item)
@@ -96,7 +98,7 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
 }
 
-void nick_hilight_init(void)
+void window_activity_init(void)
 {
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);
 	signal_add("window item changed", (SIGNAL_FUNC) sig_dehilight);
@@ -105,7 +107,7 @@ void nick_hilight_init(void)
 	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
 }
 
-void nick_hilight_deinit(void)
+void window_activity_deinit(void)
 {
 	signal_remove("print text", (SIGNAL_FUNC) sig_hilight_text);
 	signal_remove("window item changed", (SIGNAL_FUNC) sig_dehilight);

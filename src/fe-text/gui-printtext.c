@@ -28,7 +28,6 @@
 #include "themes.h"
 
 #include "screen.h"
-#include "gui-mainwindows.h"
 #include "gui-windows.h"
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-sizeof(char*))
@@ -45,6 +44,9 @@ static LINE_REC *create_line(GUI_WINDOW_REC *gui, gint level)
     gui->cur_line->text = gui->cur_text->buffer+gui->cur_text->pos;
     gui->cur_line->level = (gint32) GPOINTER_TO_INT(level);
     gui->cur_line->time = time(NULL);
+
+    /* temporarily mark the end of line. */
+    memcpy(gui->cur_text->buffer+gui->cur_text->pos, "\0\x80", 2);
 
     gui->last_color = -1;
     gui->last_flags = 0;
@@ -67,6 +69,8 @@ static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
     g_return_val_if_fail(gui != NULL, NULL);
 
     rec = g_new(TEXT_CHUNK_REC, 1);
+    rec->overflow[0] = 0;
+    rec->overflow[1] = (char) LINE_CMD_OVERFLOW;
     rec->pos = 0;
     rec->lines = 0;
 
@@ -268,7 +272,7 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
     if (visible)
     {
 	/* draw the line to screen. */
-	lines = gui_window_line_draw(gui, line, first_text_line+gui->ypos, gui->last_subline, -1);
+	lines = gui_window_line_draw(gui, line, gui->parent->first_line+gui->ypos, gui->last_subline, -1);
     }
     else
     {
@@ -289,7 +293,7 @@ static void cmd_clear(gchar *data)
 
     if (is_window_visible(active_win))
     {
-        for (n = first_text_line; n < last_text_line; n++)
+        for (n = gui->parent->first_line; n <= gui->parent->last_line; n++)
         {
             move(n, 0);
             clrtoeol();
@@ -300,7 +304,7 @@ static void cmd_clear(gchar *data)
     gui->ypos = -1;
     gui->bottom_startline = gui->startline = g_list_last(gui->lines);
     gui->bottom_subline = gui->subline = gui->last_subline+1;
-    gui->empty_linecount = last_text_line-first_text_line;
+    gui->empty_linecount = gui->parent->last_line-gui->parent->first_line+1;
     gui->bottom = TRUE;
 }
 

@@ -23,6 +23,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "levels.h"
@@ -30,6 +31,8 @@
 
 #include "windows.h"
 #include "window-items.h"
+
+static int queryclose_tag, query_auto_close;
 
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
@@ -110,12 +113,67 @@ static void cmd_wquery(const char *data, void *server, WI_ITEM_REC *item)
 	signal_remove("query created", (SIGNAL_FUNC) signal_query_created_curwin);
 }
 
+static void sig_window_changed(WINDOW_REC *window)
+{
+	GSList *tmp;
+
+	if (query_auto_close <= 0)
+		return;
+
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+		if (irc_item_query(tmp->data))
+			break;
+	}
+	if (tmp == NULL) return; /* no queries in window */
+
+	/* reset the window's last_line timestamp so that query doesn't get
+	   closed immediately after switched to the window. */
+        window->last_line = time(NULL);
+}
+
+static int sig_query_autoclose(void)
+{
+	WINDOW_REC *window;
+	GSList *tmp, *next;
+	time_t now;
+
+	now = time(NULL);
+	for (tmp = queries; tmp != NULL; tmp = next) {
+		QUERY_REC *rec = tmp->data;
+
+		next = tmp->next;
+		window = window_item_window((WI_ITEM_REC *) rec);
+		if (window != active_win && rec->new_data == 0 &&
+		    now-window->last_line > query_auto_close)
+                        query_destroy(rec);
+	}
+        return 1;
+}
+
+static void read_settings(void)
+{
+	query_auto_close = settings_get_int("query_auto_close");
+	if (query_auto_close > 0 && queryclose_tag == -1)
+		queryclose_tag = g_timeout_add(5000, (GSourceFunc) sig_query_autoclose, NULL);
+	else if (query_auto_close <= 0 && queryclose_tag != -1) {
+		g_source_remove(queryclose_tag);
+		queryclose_tag = -1;
+	}
+}
+
 void fe_query_init(void)
 {
+	settings_add_int("lookandfeel", "query_auto_close", 0);
+
+	queryclose_tag = -1;
+	read_settings();
+
 	signal_add("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_add("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
 	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_bind("wquery", NULL, (SIGNAL_FUNC) cmd_wquery);
 	command_bind("window server", NULL, (SIGNAL_FUNC) cmd_window_server);
@@ -123,10 +181,14 @@ void fe_query_init(void)
 
 void fe_query_deinit(void)
 {
+	if (queryclose_tag != -1) g_source_remove(queryclose_tag);
+
 	signal_remove("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_remove("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
 	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_unbind("wquery", (SIGNAL_FUNC) cmd_wquery);
 	command_unbind("window server", (SIGNAL_FUNC) cmd_window_server);

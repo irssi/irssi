@@ -251,6 +251,7 @@ static void read_ignores(void)
 	IGNORE_REC *rec;
 	CONFIG_NODE *node;
 	GSList *tmp;
+	char *str;
 
 	while (ignores != NULL)
                 ignore_destroy(ignores->data);
@@ -269,8 +270,8 @@ static void read_ignores(void)
 
 		rec->mask = g_strdup(config_node_get_str(node, "mask", NULL));
 		rec->pattern = g_strdup(config_node_get_str(node, "pattern", NULL));
-		rec->level = level2bits(config_node_get_str(node, "level", 0));
-		rec->except_level = level2bits(config_node_get_str(node, "except_level", 0));
+		rec->level = level2bits(config_node_get_str(node, "level", ""));
+		rec->except_level = level2bits(config_node_get_str(node, "except_level", ""));
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 

@@ -29,12 +29,11 @@
 
 #include "screen.h"
 #include "gui-entry.h"
-#include "gui-mainwindows.h"
+#include "mainwindows.h"
 #include "gui-printtext.h"
 #include "gui-readline.h"
 #include "gui-special-vars.h"
-#include "gui-statusbar.h"
-#include "gui-statusbar-items.h"
+#include "statusbar.h"
 #include "gui-textwidget.h"
 #include "gui-windows.h"
 
@@ -59,109 +58,103 @@ static void sig_exit(void)
 /* redraw irssi's screen.. */
 void irssi_redraw(void)
 {
-    clear();
+	clear();
 
-    /* current window */
-    gui_window_redraw(active_win);
-    /* statusbar */
-    gui_statusbar_redraw(-1);
-    /* entry line */
-    gui_entry_redraw();
+	/* windows */
+        mainwindows_redraw();
+	/* statusbar */
+	statusbar_redraw(NULL);
+	/* entry line */
+	gui_entry_redraw();
 }
 
 static void textui_init(void)
 {
-    static struct poptOption options[] = {
-	POPT_AUTOHELP
-        { NULL, '\0', 0, NULL }
-    };
+	static struct poptOption options[] = {
+		POPT_AUTOHELP
+		{ NULL, '\0', 0, NULL }
+	};
 
-    args_register(options);
+	args_register(options);
 
-    irssi_gui = IRSSI_GUI_TEXT;
-    core_init();
-    irc_init();
-    fe_common_core_init();
-    fe_common_irc_init();
-    signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
+	irssi_gui = IRSSI_GUI_TEXT;
+	core_init();
+	irc_init();
+	fe_common_core_init();
+	fe_common_irc_init();
+	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
 }
 
 static void textui_finish_init(void)
 {
-    quitting = FALSE;
+	quitting = FALSE;
 
-    screen_refresh_freeze();
-    gui_entry_init();
-    gui_mainwindows_init();
-    gui_printtext_init();
-    gui_readline_init();
-    gui_special_vars_init();
-    gui_textwidget_init();
-    gui_windows_init();
+	screen_refresh_freeze();
+	gui_entry_init();
+	mainwindows_init();
+	gui_printtext_init();
+	gui_readline_init();
+	gui_special_vars_init();
+	gui_textwidget_init();
+	gui_windows_init();
+	statusbar_init();
 
-    fe_common_core_finish_init();
-    fe_common_irc_finish_init();
+	fe_common_core_finish_init();
+	fe_common_irc_finish_init();
 
-    gui_statusbar_init();
-    gui_statusbar_items_init();
-
-    signal_emit("irssi init finished", 0);
+	signal_emit("irssi init finished", 0);
 #ifdef HAVE_PERL
-    irssi_perl_init();
+	irssi_perl_init();
 #endif
-    screen_refresh_thaw();
+	screen_refresh_thaw();
 }
 
 static void textui_deinit(void)
 {
-    quitting = TRUE;
-    signal(SIGINT, SIG_DFL);
+	quitting = TRUE;
+	signal(SIGINT, SIG_DFL);
 
-    signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
+	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 #ifdef HAVE_PERL
-    irssi_perl_deinit();
+	irssi_perl_deinit();
 #endif
-    gui_textwidget_deinit();
-    gui_special_vars_deinit();
-    gui_statusbar_items_deinit();
-    gui_statusbar_deinit();
-    gui_printtext_deinit();
-    gui_readline_deinit();
-    gui_mainwindows_deinit();
-    gui_windows_deinit();
-    gui_entry_deinit();
-    deinit_screen();
+	gui_textwidget_deinit();
+	gui_special_vars_deinit();
+	statusbar_deinit();
+	gui_printtext_deinit();
+	gui_readline_deinit();
+	mainwindows_deinit();
+	gui_windows_deinit();
+	gui_entry_deinit();
+	deinit_screen();
 
-    fe_common_irc_deinit();
-    fe_common_core_deinit();
-    irc_deinit();
-    core_deinit();
+	fe_common_irc_deinit();
+	fe_common_core_deinit();
+	irc_deinit();
+	core_deinit();
 }
 
 int main(int argc, char **argv)
 {
 #ifdef HAVE_SOCKS
-    SOCKSinit(argv[0]);
+	SOCKSinit(argv[0]);
 #endif
 
-    textui_init();
-    args_execute(argc, argv);
+	textui_init();
+	args_execute(argc, argv);
 
-    if (!init_screen())
-    {
-        printf("Can't initialize screen handling, quitting.\n");
-        return 1;
-    }
+	if (!init_screen())
+		g_error(_("Can't initialize screen handling, quitting.\n"));
 
-    textui_finish_init();
-    main_loop = g_main_new(TRUE);
-    g_main_run(main_loop);
-    g_main_destroy(main_loop);
-    textui_deinit();
+	textui_finish_init();
+	main_loop = g_main_new(TRUE);
+	g_main_run(main_loop);
+	g_main_destroy(main_loop);
+	textui_deinit();
 
 #ifdef MEM_DEBUG
-    ig_mem_profile();
+	ig_mem_profile();
 #endif
 
-    return 0;
+	return 0;
 }

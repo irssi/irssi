@@ -23,6 +23,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "server.h"
+#include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
@@ -66,19 +67,17 @@ static void cmd_set(char *data)
 {
 	GSList *sets, *tmp;
 	char *params, *key, *value, *last_section;
-	int keylen, found;
+	int found;
 
 	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &key, &value);
 
-	keylen = strlen(key);
 	last_section = ""; found = 0;
-
 	sets = settings_get_sorted();
 	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
 		SETTINGS_REC *rec = tmp->data;
 
 		if ((*value != '\0' && g_strcasecmp(rec->key, key) != 0) ||
-		    (*value == '\0' && keylen != 0 && g_strncasecmp(rec->key, key, keylen) != 0))
+		    (*value == '\0' && *key != '\0' && stristr(rec->key, key) == NULL))
 			continue;
 
 		if (strcmp(last_section, rec->section) != 0) {
@@ -140,7 +139,7 @@ static void show_aliases(const char *alias)
 	GSList *tmp;
 	int aliaslen;
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIASLIST_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_HEADER);
 
 	node = iconfig_node_traverse("aliases", FALSE);
 	tmp = node == NULL ? NULL : node->value;
@@ -155,11 +154,11 @@ static void show_aliases(const char *alias)
 		if (aliaslen != 0 && g_strncasecmp(node->key, alias, aliaslen) != 0)
 			continue;
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIASLIST_LINE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_LINE,
 			    node->key, node->value);
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIASLIST_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_FOOTER);
 }
 
 static void alias_remove(const char *alias)

@@ -36,7 +36,6 @@ static char *levels[] =
 	"KICKS",
 	"MODES",
 	"TOPICS",
-	"WALLS",
 	"WALLOPS",
 	"INVITES",
 	"NICKS",

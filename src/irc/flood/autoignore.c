@@ -217,11 +217,11 @@ int autoignore_remove(IRC_SERVER_REC *server, const char *mask, int level)
 	return FALSE;
 }
 
-static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host, const char *levelstr)
+static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host, gpointer levelp)
 {
 	int level, check_level;
 
-	level = level2bits(levelstr);
+	level = GPOINTER_TO_INT(levelp);
 	check_level = level2bits(settings_get_str("autoignore_levels"));
 
 	if (level & check_level)

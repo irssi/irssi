@@ -151,7 +151,7 @@ static char *special_history_func(const char *text, void *item, int *free_ret)
 
 static void read_settings(void)
 {
-	window_history = settings_get_bool("toggle_window_history");
+	window_history = settings_get_bool("window_history");
 }
 
 void command_history_init(void)
@@ -159,7 +159,7 @@ void command_history_init(void)
 	settings_add_int("history", "max_textwidget_lines", 1000);
 	settings_add_int("history", "block_remove_lines", 20);
 	settings_add_int("history", "max_command_history", 100);
-	settings_add_bool("history", "toggle_window_history", FALSE);
+	settings_add_bool("history", "window_history", FALSE);
 
 	special_history_func_set(special_history_func);
 

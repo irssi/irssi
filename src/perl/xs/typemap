@@ -9,6 +9,7 @@ Irssi::Nick		T_PTROBJ
 Irssi::Ban		T_PTROBJ
 Irssi::Dcc		T_PTROBJ
 Irssi::Netsplit		T_PTROBJ
+Irssi::Netsplitserver   T_PTROBJ
 Irssi::Autoignore	T_PTROBJ
 Irssi::Log		T_PTROBJ
 Irssi::Rawlog		T_PTROBJ

@@ -156,10 +156,12 @@ char *channel_get_mode(CHANNEL_REC *channel)
 
 void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 {
+	SETUP_CHANNEL_REC *schannel;
 	CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
 	char *params, *channels, *keys;
 	char **chanlist, **keylist, **tmp, **tmpkey, *channel;
+	int use_keys;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
@@ -174,19 +176,24 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	outchans = g_string_new(NULL);
 	outkeys = g_string_new(NULL);
 
+	use_keys = *keys != '\0';
 	tmpkey = keylist;
 	for (tmp = chanlist; *tmp != NULL; tmp++) {
 		channel = ischannel(**tmp) ? g_strdup(*tmp) :
 			g_strdup_printf("#%s", *tmp);
 
 		chanrec = channel_find(server, channel);
-		if (chanrec != NULL) {
-			/* already joined this channel */
-			signal_emit("gui channel open", 1, chanrec);
-		} else {
+		if (chanrec == NULL) {
+			schannel = channels_setup_find(channel, server->connrec->ircnet);
+
                         g_string_sprintfa(outchans, "%s,", channel);
-			if (*keys != '\0')
+			if (schannel == NULL || schannel->password == NULL)
 				g_string_sprintfa(outkeys, "%s,", get_join_key(*tmpkey));
+			else {
+				/* get password from setup record */
+                                use_keys = TRUE;
+				g_string_sprintfa(outkeys, "%s,", schannel->password);
+			}
 
 			channel_create(server, channel + (channel[0] == '!' && channel[1] == '!'), automatic);
 		}
@@ -197,7 +204,7 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	}
 
 	if (outchans->len > 0) {
-		irc_send_cmdv(server, *keys == '\0' ? "JOIN %s" : "JOIN %s %s",
+		irc_send_cmdv(server, use_keys ? "JOIN %s %s" : "JOIN %s",
 			      outchans->str, outkeys->str);
 	}
 

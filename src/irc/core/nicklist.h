@@ -25,6 +25,8 @@ NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick, int op, int vo
 void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
 /* Find nick record from list */
 NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *mask);
+/* Get list of nicks that match the mask */
+GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask);
 /* Get list of nicks */
 GSList *nicklist_getnicks(CHANNEL_REC *channel);
 /* Get all the nick records of `nick'. Returns channel, nick, channel, ... */

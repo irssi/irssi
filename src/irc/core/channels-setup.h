@@ -20,8 +20,9 @@ extern GSList *setupchannels;
 void channels_setup_init(void);
 void channels_setup_deinit(void);
 
+void channels_setup_create(SETUP_CHANNEL_REC *channel);
 void channels_setup_destroy(SETUP_CHANNEL_REC *channel);
 
-SETUP_CHANNEL_REC *channels_setup_find(const char *channel, IRC_SERVER_REC *server);
+SETUP_CHANNEL_REC *channels_setup_find(const char *channel, const char *ircnet);
 
 #endif

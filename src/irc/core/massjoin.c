@@ -20,7 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
-#include "common-setup.h"
+#include "settings.h"
 
 #include "channels.h"
 #include "irc.h"
@@ -28,6 +28,7 @@
 #include "irc-server.h"
 
 static int massjoin_tag;
+static int massjoin_max_joins;
 
 /* Massjoin support - really useful when trying to do things (like op/deop)
    to people after netjoins. It sends
@@ -210,7 +211,7 @@ static void server_check_massjoins(IRC_SERVER_REC *server, time_t max)
 			continue;
 
 		if (rec->massjoin_start < max || /* We've waited long enough */
-		    rec->massjoins-5 < rec->last_massjoins) { /* Less than 5 joins since last check */
+		    rec->massjoins-massjoin_max_joins < rec->last_massjoins) { /* Less than x joins since last check */
 			/* send them */
 			massjoin_send(rec);
 		} else {
@@ -226,21 +227,30 @@ static int sig_massjoin_timeout(void)
 	GSList *tmp;
 	time_t max;
 
-	max = time(NULL)-MAX_MASSJOIN_WAIT;
+	max = time(NULL)-settings_get_int("massjoin_max_wait");
 	for (tmp = servers; tmp != NULL; tmp = tmp->next)
                 server_check_massjoins(tmp->data, max);
 
 	return 1;
 }
 
+static void read_settings(void)
+{
+	massjoin_max_joins = settings_get_int("massjoin_max_joins");
+}
+
 void massjoin_init(void)
 {
+        settings_add_int("misc", "massjoin_max_wait", 5000);
+        settings_add_int("misc", "massjoin_max_joins", 3);
 	massjoin_tag = g_timeout_add(1000, (GSourceFunc) sig_massjoin_timeout, NULL);
 
+	read_settings();
 	signal_add("event join", (SIGNAL_FUNC) event_join);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void massjoin_deinit(void)
@@ -251,4 +261,5 @@ void massjoin_deinit(void)
 	signal_remove("event part", (SIGNAL_FUNC) event_part);
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

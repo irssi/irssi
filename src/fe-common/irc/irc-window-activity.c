@@ -1,5 +1,5 @@
 /*
- irc-nick-hilight.c : irssi
+ irc-window-activity.c : irssi
 
     Copyright (C) 1999-2000 Timo Sirainen
 
@@ -78,12 +78,12 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	g_free(params);
 }
 
-void irc_nick_hilight_init(void)
+void irc_window_activity_init(void)
 {
 	signal_add_last("event privmsg", (SIGNAL_FUNC) event_privmsg);
 }
 
-void irc_nick_hilight_deinit(void)
+void irc_window_activity_deinit(void)
 {
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 }

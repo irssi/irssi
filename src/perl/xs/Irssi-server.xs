@@ -53,7 +53,7 @@ void
 values(server)
 	Irssi::Server server
 PREINIT:
-        HV *hv, *stash;
+        HV *hv;
 	char *type;
 PPCODE:
 	type = "IRC";

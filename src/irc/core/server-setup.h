@@ -5,7 +5,7 @@
 
 /* servers */
 typedef struct {
-	char *server;
+	char *address;
 	int port;
 
 	char *ircnet;
@@ -14,8 +14,8 @@ typedef struct {
         int max_cmds_at_once; /* override the default if > 0 */
 	int cmd_queue_speed; /* override the default if > 0 */
 
-        char *own_address; /* address to use when connecting this server */
-	IPADDR *own_ip; /* resolved own_address or full of zeros */
+        char *own_host; /* address to use when connecting this server */
+	IPADDR *own_ip; /* resolved own_address if not NULL */
 
 	time_t last_connect; /* to avoid reconnecting too fast.. */
 	int last_failed; /* if last connection attempt failed */
@@ -30,6 +30,9 @@ extern gboolean source_host_ok; /* Use source_host_ip .. */
    `dest' is either a server address or irc network */
 IRC_SERVER_CONNECT_REC *
 irc_server_create_conn(const char *dest, int port, const char *password, const char *nick);
+
+void server_setup_add(SETUP_SERVER_REC *rec);
+void server_setup_remove(SETUP_SERVER_REC *rec);
 
 /* Find matching server from setup. Set port to -1 if you don't care about it */
 SETUP_SERVER_REC *server_setup_find(const char *address, int port);

@@ -232,7 +232,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanrec->name, 4,
+			server_redirect_event((SERVER_REC *) server, chanrec->name, 2,
 					      "event 403", "chanquery mode abort", 1,
 					      "event 349", "chanquery eban end", 1,
 					      "event 348", "chanquery eban", 1, NULL);
@@ -244,7 +244,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanrec->name, 4,
+			server_redirect_event((SERVER_REC *) server, chanrec->name, 2,
 					      "event 403", "chanquery mode abort", 1,
 					      "event 347", "chanquery ilist end", 1,
 					      "event 346", "chanquery ilist", 1, NULL);

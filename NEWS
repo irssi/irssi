@@ -5,6 +5,11 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	  compatible with EPIC as much as possible (except the scripting,
 	  perl should be enough?)
 
+	* DOCUMENTATION! See docs/manual.txt
+
+	  This NEWS file contains only the biggest new features, you should
+	  browse through the documentation to find the rest.
+
 	* Irssi isn't anymore IRC specific client, you could easily take the
 	  whole IRC part away and use some other chat protocol instead, or
 	  use both at the same time. Currently however, only IRC protocol
@@ -54,6 +59,8 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	  This can be changed from settings `cmd_max_at_once' and
 	  `cmd_queue_speed'. If you want to disable this for some reason, use
 	  /SET cmd_queue_speed 0
+	+ Split windows in text version, all the normal ircII /WINDOW
+	  commands should work: new, kill, grow, shrink, balance, show, hide
 	+ /EVAL <commands> - Expand all the special variables from string and
 	  run it. Commands can be split with ; character. See
 	  docs/special_vars.txt for more info.
@@ -62,7 +69,7 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	  $1..$9, now they're in $0..$8 so it messes up existing themes..
 	+ /SET [key [value]] - no more the '=' character. Boolean values
 	  also need to be changed with ON/OFF/TOGGLE values (not yes/no).
-	+ /SAVE [<filename>] - saves the settings to disk.
+	+ /SAVE [<filename>] - saves the settings to file.
 	  /REHASH [<filename>] - re-read the configuration file on the fly
 	+ /TOGGLE <key> [ON/OFF] - same as /SET <key> TOGGLE
 	+ /ALIAS [-]<alias> [<command>], /UNALIAS <alias>
@@ -113,11 +120,11 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	  The best match always wins, so you can have:
 	    /IGNORE * CTCPS
 	    /IGNORE -except *!*@host.org CTCPS
-	+ /LOG OPEN [-noopen] [-autoopen] [-channels <channels>] [-window]
+	+ /LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
 	            [-rotate hour|day|month] <filename> [<levels>]
 	    -noopen: create the entry to log list, but don't start logging
 	    -autoopen: automatically open this log file at startup
-	    -channels: log only in specified channels/nicks
+	    -targets: log only in specified channels/nicks
 	    -window: Log this window
 	    -rotate: Reopen the log file every hour, day or month. This
 	             makes only sense if you specify date/time formats
@@ -157,6 +164,10 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	  your previous user mode and away message (and rejoin the channels,
 	  which it already did before) after reconnected. If you use /SERVER
 	  to connect to different IRC network, none of this will be done.
+	+ /CAT <filename> - prints the file to screen
+	+ /SET query_auto_close <secs> - automatically close queries after
+	  <secs> seconds. It won't close queries that have unread messages,
+	  and it won't close queries in the active window.
 
 v0.7.28 2000-03-11  Timo Sirainen <tss@iki.fi>
 
