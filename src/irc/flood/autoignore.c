@@ -40,7 +40,7 @@ GSList *server_autoignores(IRC_SERVER_REC *server)
 {
 	MODULE_SERVER_REC *rec;
 
-	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 
 	rec = MODULE_DATA(server);
 	return rec->ignorelist;
@@ -50,7 +50,7 @@ static void autoignore_remove_rec(IRC_SERVER_REC *server, AUTOIGNORE_REC *rec)
 {
 	MODULE_SERVER_REC *mserver;
 
-	g_return_if_fail(server != NULL);
+	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(rec != NULL);
 
 	signal_emit("autoignore remove", 2, server, rec);
@@ -67,7 +67,7 @@ static AUTOIGNORE_REC *autoignore_find(IRC_SERVER_REC *server, const char *mask)
 	MODULE_SERVER_REC *mserver;
 	GSList *tmp;
 
-	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(mask != NULL, NULL);
 
 	mserver = MODULE_DATA(server);
@@ -89,7 +89,6 @@ static void autoignore_timeout_server(IRC_SERVER_REC *server)
 	time_t t;
 
 	g_return_if_fail(server != NULL);
-
 	if (!IS_IRC_SERVER(server))
                 return;
 
@@ -120,8 +119,6 @@ static void autoignore_init_server(IRC_SERVER_REC *server)
 {
 	MODULE_SERVER_REC *mserver;
 
-	g_return_if_fail(server != NULL);
-
 	if (!IS_IRC_SERVER(server))
 		return;
 
@@ -133,8 +130,6 @@ static void autoignore_init_server(IRC_SERVER_REC *server)
 static void autoignore_deinit_server(IRC_SERVER_REC *server)
 {
 	MODULE_SERVER_REC *mserver;
-
-	g_return_if_fail(server != NULL);
 
 	if (!IS_IRC_SERVER(server))
                 return;
@@ -167,9 +162,8 @@ void autoignore_add(IRC_SERVER_REC *server, const char *nick, int level)
 	IGNORE_REC *irec;
 	int igtime;
 
-	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
-	if (level == 0) return;
+	if (level == 0 || !IRC_SERVER(server)) return;
 
 	igtime = settings_get_int("autoignore_time");
 	if (igtime <= 0) return;
@@ -209,8 +203,9 @@ int autoignore_remove(IRC_SERVER_REC *server, const char *mask, int level)
 	AUTOIGNORE_REC *rec;
 	IGNORE_REC *irec;
 
-	g_return_val_if_fail(server != NULL, FALSE);
 	g_return_val_if_fail(mask != NULL, FALSE);
+	if (!IS_IRC_SERVER(server))
+		return FALSE;
 
 	irec = ignore_find_server(server, mask);
 	if (irec != NULL) {
@@ -232,6 +227,8 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 {
 	int level, check_level;
 
+	g_return_if_fail(IS_IRC_SERVER(server));
+
 	level = GPOINTER_TO_INT(levelp);
 	check_level = level2bits(settings_get_str("autoignore_levels"));
 
@@ -248,6 +245,9 @@ static void autoignore_remove_level(const char *nick, int level)
 
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
+
+		if (!IS_IRC_SERVER(server))
+                        continue;
 
 		rec = autoignore_find(server, nick);
 		if (rec != NULL && (rec->level & level)) {
