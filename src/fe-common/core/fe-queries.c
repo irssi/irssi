@@ -57,6 +57,8 @@ QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick,
 
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
+        TEXT_DEST_REC dest;
+
 	g_return_if_fail(IS_QUERY(query));
 
 	if (window_item_window(query) == NULL) {
@@ -64,8 +66,10 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 				   GPOINTER_TO_INT(automatic));
 	}
 
-	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-		    TXT_QUERY_START, query->name, query->server_tag);
+	format_create_dest_tag(&dest, query->server, query->server_tag,
+			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
+	printformat_dest(&dest, TXT_QUERY_START,
+			 query->name, query->server_tag);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)
@@ -78,19 +82,22 @@ static void signal_query_created_curwin(QUERY_REC *query)
 static void signal_query_destroyed(QUERY_REC *query)
 {
 	WINDOW_REC *window;
+        TEXT_DEST_REC dest;
 
 	g_return_if_fail(IS_QUERY(query));
 
 	window = window_item_window((WI_ITEM_REC *) query);
-	if (window != NULL) {
-		printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-			    TXT_QUERY_STOP, query->name);
+	if (window == NULL)
+		return;
 
-		window_item_destroy((WI_ITEM_REC *) query);
+	format_create_dest_tag(&dest, query->server, query->server_tag,
+			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
+	printformat_dest(&dest, TXT_QUERY_STOP, query->name);
 
-		if (!query->unwanted)
-			window_auto_destroy(window);
-	}
+	window_item_destroy((WI_ITEM_REC *) query);
+
+	if (!query->unwanted)
+		window_auto_destroy(window);
 }
 
 static void signal_query_server_changed(QUERY_REC *query)
@@ -106,10 +113,14 @@ static void signal_query_server_changed(QUERY_REC *query)
 
 static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 {
+        TEXT_DEST_REC dest;
+
 	g_return_if_fail(query != NULL);
 
-	printformat(query->server, query->name, MSGLEVEL_NICKS,
-		    TXT_NICK_CHANGED, oldnick, query->name, query->name);
+	format_create_dest_tag(&dest, query->server, query->server_tag,
+			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
+	printformat_dest(&dest,  TXT_NICK_CHANGED, oldnick,
+			 query->name, query->name);
 
 	signal_emit("window item changed", 2,
 		    window_item_window((WI_ITEM_REC *) query), query);
@@ -149,6 +160,7 @@ static void cmd_window_server(const char *data)
 {
 	SERVER_REC *server;
         QUERY_REC *query;
+        TEXT_DEST_REC dest;
 
 	g_return_if_fail(data != NULL);
 
@@ -158,10 +170,12 @@ static void cmd_window_server(const char *data)
 		return;
 
 	/* /WINDOW SERVER used in a query window */
+	format_create_dest_tag(&dest, query->server, query->server_tag,
+			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
+	printformat_dest(&dest, TXT_QUERY_SERVER_CHANGED,
+			 query->name, server->tag);
+
 	query_change_server(query, server);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    TXT_QUERY_SERVER_CHANGED,
-		    query->name, server->tag);
 	signal_stop();
 }
 
