@@ -84,6 +84,18 @@ int
 settings_get_bool(key)
 	char *key
 
+int
+settings_get_time(key)
+       char *key
+
+int
+settings_get_level(key)
+       char *key
+
+int
+settings_get_size(key)
+       char *key
+
 void
 settings_set_str(key, value)
 	char *key
