@@ -101,30 +101,28 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
                 textbuffer_cache_destroy(cache);
 }
 
-#define FGATTR (ATTR_NOCOLORS | ATTR_RESETBG | ATTR_BLINK | 0xf0)
-#define BGATTR (ATTR_NOCOLORS | ATTR_RESETFG | ATTR_BOLD | 0x0f)
+#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | ATTR_BOLD | 0x0f)
+#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | ATTR_BLINK | 0xf0)
 
 static void update_cmd_color(unsigned char cmd, int *color)
 {
 	if ((cmd & 0x80) == 0) {
 		if (cmd & LINE_COLOR_BG) {
 			/* set background color */
-			*color &= BGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0) {
-                                *color &= 0x70;
+			*color &= FGATTR;
+			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= (cmd & 0x0f) << 4;
-			} else {
+			else {
 				*color |= ATTR_RESETBG;
                                 if (cmd & LINE_COLOR_BLINK)
 					*color |= ATTR_BLINK;
 			}
 		} else {
 			/* set foreground color */
-			*color &= FGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0) {
-                                *color &= 0x0f;
+			*color &= BGATTR;
+			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= cmd & 0x0f;
-			} else {
+			else {
 				*color |= ATTR_RESETFG;
                                 if (cmd & LINE_COLOR_BOLD)
 					*color |= ATTR_BOLD;
