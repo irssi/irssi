@@ -371,7 +371,7 @@ static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_releasetime(SERVER_REC *server, void *item, int *free_ret)
 {
         *free_ret = TRUE;
-	return g_strdup_printf("%d", IRSSI_VERSION_TIME);
+	return g_strdup_printf("%04d", IRSSI_VERSION_TIME);
 }
 
 /* current working directory */

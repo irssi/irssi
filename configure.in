@@ -759,7 +759,7 @@ dnl **
 dnl ** IRSSI_VERSION_DATE and IRSSI_VERSION_TIME
 dnl **
 VERSION_DATE=`head -1 $srcdir/ChangeLog|sed 's/^\(....\)-\(..\)-\(..\).*/\1\2\3/'`
-VERSION_TIME=`head -1 $srcdir/ChangeLog|sed 's/^[[^ ]]* \(..\):\(..\).*/\1\2/'`
+VERSION_TIME=`head -1 $srcdir/ChangeLog|sed -e 's/^[[^ ]]* \(..\):\(..\).*/\1\2/' -e 's/^0*//'`
 AC_SUBST(VERSION_DATE)
 AC_SUBST(VERSION_TIME)
 
