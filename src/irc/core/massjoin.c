@@ -25,7 +25,7 @@
 #include "irc.h"
 #include "irc-servers.h"
 #include "irc-channels.h"
-#include "nicklist.h"
+#include "irc-nicklist.h"
 
 static int massjoin_tag;
 static int massjoin_max_joins;
@@ -58,7 +58,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	if (chanrec == NULL) return;
 
 	/* add user to nicklist */
-	nickrec = nicklist_insert(CHANNEL(chanrec), nick, FALSE, FALSE, TRUE);
+	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, TRUE);
         nicklist_set_host(CHANNEL(chanrec), nickrec, address);
 
 	if (chanrec->massjoins == 0) {

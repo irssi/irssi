@@ -83,17 +83,12 @@ void
 channel_destroy(channel)
 	Irssi::Channel channel
 
-Irssi::Nick
-nick_insert(channel, nick, op, voice, send_massjoin)
+void
+nick_insert(channel, nick)
 	Irssi::Channel channel
-	char *nick
-	int op
-	int voice
-	int send_massjoin
+	Irssi::Nick nick
 CODE:
-	RETVAL = nicklist_insert(channel, nick, op, voice, send_massjoin);
-OUTPUT:
-	RETVAL
+	nicklist_insert(channel, nick);
 
 void
 nick_remove(channel, nick)

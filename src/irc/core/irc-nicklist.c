@@ -29,6 +29,26 @@
 #include "modes.h"
 #include "servers.h"
 
+/* Add new nick to list */
+NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
+			      int op, int voice, int send_massjoin)
+{
+	NICK_REC *rec;
+
+	g_return_val_if_fail(IS_IRC_CHANNEL(channel), NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+
+	rec = g_new0(NICK_REC, 1);
+	rec->nick = g_strdup(nick);
+
+	if (op) rec->op = TRUE;
+	if (voice) rec->voice = TRUE;
+	rec->send_massjoin = send_massjoin;
+
+	nicklist_insert(CHANNEL(channel), rec);
+	return rec;
+}
+
 #define isnickchar(a) \
 	(isalnum((int) (a)) || (a) == '`' || (a) == '-' || (a) == '_' || \
 	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
@@ -53,16 +73,16 @@ char *irc_nick_strip(const char *nick)
 	return stripped;
 }
 
-static void event_names_list(SERVER_REC *server, const char *data)
+static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *type, *channel, *names, *ptr;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, &type, &channel, &names);
 
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL || chanrec->names_got) {
 		/* unknown channel / names list already read */
 		g_free(params);
@@ -85,8 +105,8 @@ static void event_names_list(SERVER_REC *server, const char *data)
 		while (*names != '\0' && *names != ' ') names++;
 		if (*names != '\0') *names++ = '\0';
 
-		nicklist_insert(chanrec, ptr+isnickflag(*ptr),
-				*ptr == '@', *ptr == '+', FALSE);
+		irc_nicklist_insert(chanrec, ptr+isnickflag(*ptr),
+				    *ptr == '@', *ptr == '+', FALSE);
 	}
 
 	g_free(params);

@@ -31,30 +31,15 @@
         (isalnum(a) || (unsigned char) (a) >= 128)
 
 /* Add new nick to list */
-NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
-			  int op, int voice, int send_massjoin)
+void nicklist_insert(CHANNEL_REC *channel, NICK_REC *nick)
 {
-	NICK_REC *rec;
+	MODULE_DATA_INIT(nick);
 
-	g_return_val_if_fail(IS_CHANNEL(channel), NULL);
-	g_return_val_if_fail(nick != NULL, NULL);
+	nick->type = module_get_uniq_id("NICK", 0);
+        nick->chat_type = channel->chat_type;
 
-	rec = g_new0(NICK_REC, 1);
-
-	MODULE_DATA_INIT(rec);
-	rec->type = module_get_uniq_id("NICK", 0);
-        rec->chat_type = channel->chat_type;
-
-	if (op) rec->op = TRUE;
-	if (voice) rec->voice = TRUE;
-
-	rec->send_massjoin = send_massjoin;
-	rec->nick = g_strdup(nick);
-	rec->host = NULL;
-
-	g_hash_table_insert(channel->nicks, rec->nick, rec);
-	signal_emit("nicklist new", 2, channel, rec);
-	return rec;
+	g_hash_table_insert(channel->nicks, nick->nick, nick);
+	signal_emit("nicklist new", 2, channel, nick);
 }
 
 /* Set host address for nick */

@@ -4,6 +4,7 @@
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-queries.h"
+#include "irc-nicklist.h"
 
 #include "bans.h"
 #include "modes.h"
