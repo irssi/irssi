@@ -635,7 +635,9 @@ void gui_readline_init(void)
 	key_bind("backward_character", "", "left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "", "right", NULL, (SIGNAL_FUNC) key_forward_character);
  	key_bind("backward_word", "", "cleft", NULL, (SIGNAL_FUNC) key_backward_word);
+ 	key_bind("backward_word", NULL, "meta-b", NULL, (SIGNAL_FUNC) key_backward_word);
 	key_bind("forward_word", "", "cright", NULL, (SIGNAL_FUNC) key_forward_word);
+	key_bind("forward_word", NULL, "meta-f", NULL, (SIGNAL_FUNC) key_forward_word);
  	key_bind("backward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_backward_to_space);
 	key_bind("forward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_forward_to_space);
 	key_bind("beginning_of_line", "", "home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
