@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "screen.h"
@@ -85,8 +86,19 @@ void sigint_handler(int p)
 
 static void read_settings(void)
 {
+	const char *ignores;
+
 	use_colors = settings_get_bool("colors");
-	signal(SIGQUIT, settings_get_bool("ignore_sigquit") ? SIG_IGN : SIG_DFL);
+
+	ignores = settings_get_str("ignore_signals");
+	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
+	signal(SIGINT, find_substr(ignores, "int") ? SIG_IGN : SIG_DFL);
+	signal(SIGQUIT, find_substr(ignores, "quit") ? SIG_IGN : SIG_DFL);
+	signal(SIGTERM, find_substr(ignores, "term") ? SIG_IGN : SIG_DFL);
+	signal(SIGPIPE, find_substr(ignores, "pipe") ? SIG_IGN : SIG_DFL);
+	signal(SIGALRM, find_substr(ignores, "alrm") ? SIG_IGN : SIG_DFL);
+	signal(SIGUSR1, find_substr(ignores, "usr1") ? SIG_IGN : SIG_DFL);
+	signal(SIGUSR2, find_substr(ignores, "usr2") ? SIG_IGN : SIG_DFL);
 	irssi_redraw();
 }
 
@@ -109,7 +121,7 @@ int init_screen(void)
 	intrflush(stdscr, FALSE); halfdelay(1); keypad(stdscr, 1);
 
 	settings_add_bool("lookandfeel", "colors", TRUE);
-	settings_add_bool("misc", "ignore_sigquit", FALSE);
+	settings_add_str("misc", "ignore_signals", "");
 
 	use_colors = settings_get_bool("colors") && has_colors();
 	if (has_colors()) start_color();
