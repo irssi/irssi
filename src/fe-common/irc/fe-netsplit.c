@@ -132,7 +132,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 		    chanrec->nick_count <= netsplit_nicks_hide_threshold) {
 			if (splitchan->op)
 				g_string_append_c(chanrec->nicks, '@');
-			g_string_sprintfa(chanrec->nicks, "%s ", split->nick);
+			g_string_sprintfa(chanrec->nicks, "%s, ", split->nick);
 
 			if (chanrec->nick_count == netsplit_max_nicks)
                                 chanrec->maxnickpos = chanrec->nicks->len;
@@ -166,7 +166,7 @@ static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		TEMP_SPLIT_CHAN_REC *chan = tmp->data;
 
-		g_string_truncate(chan->nicks, chan->nicks->len-1);
+		g_string_truncate(chan->nicks, chan->nicks->len-2);
 
 		if (netsplit_max_nicks > 0 &&
 		    chan->nick_count > netsplit_max_nicks) {
