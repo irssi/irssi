@@ -96,6 +96,7 @@ src/fe-common/core/windows.c
 src/fe-common/core/fe-channels.c
 src/fe-common/core/fe-queries.c
 src/fe-common/core/fe-messages.c
+src/fe-common/core/fe-ignore.c
 src/fe-common/core/fe-modules.c
 src/fe-common/core/hilight-text.c
 src/fe-common/core/window-save.c
@@ -104,7 +105,6 @@ src/fe-common/irc/dcc/module-formats.c
 src/fe-common/irc/fe-common-irc.c
 src/fe-common/irc/fe-ctcp.c
 src/fe-common/irc/fe-events.c
-src/fe-common/irc/fe-ignore.c
 src/fe-common/irc/fe-irc-commands.c
 src/fe-common/irc/fe-irc-server.c
 src/fe-common/irc/fe-ircnet.c
@@ -123,7 +123,6 @@ src/fe-none/irssi.c
 src/fe-text/gui-entry.c
 src/fe-text/gui-printtext.c
 src/fe-text/gui-special-vars.c
-src/fe-text/gui-textwidget.c
 src/fe-text/gui-windows.c
 src/fe-text/irssi.c
 src/fe-text/module-formats.c
@@ -133,6 +132,7 @@ src/fe-text/gui-readline.c
 src/fe-text/mainwindow-activity.c
 src/fe-text/mainwindows.c
 src/fe-text/statusbar-items.c
+src/fe-text/gui-textwidget.c
 src/perl/perl-common.c
 src/perl/xsinit.c
 src/perl/perl.c
