@@ -1,23 +1,46 @@
- Running Perl scripts
- --------------------
+ Installation problems
+ ---------------------
 
-First you'll need to have Perl support on. By default irssi compiles
-Perl as a module, so /LOAD perl probably helps. If you want to do this
-automatically at startup put the "/LOAD perl" to ~/.irssi/startup file.
-After that you can run scripts with /RUN script (you don't need to give
-the .pl extension). If /RUN complains about "unknown command", you
-don't have Perl module loaded, or maybe Perl support wasn't compiled at
-all.
+You'll need to have perl support compiled with irssi. make install is
+also required to make them work. There's quite a many things that may
+go wrong with perl:
 
-Place new scripts to ~/.irssi/scripts/ or /usr/local/lib/irssi/scripts/
-directory. Scripts in ~/.irssi/scripts/autorun/ directory are
-automatically run at startup.
+ - 5.004 doesn't work by default, you'll need to edit
+   src/perl/irssi-core.pl and remove all lines with "delete_package"
+   in them
+ - Compiling fails if you compile irssi with GCC in a system that has
+   perl compiled with some other C compiler. Very common problem with
+   non-Linux/BSD systems. You'll need to edit src/perl/*/Makefile files
+   and remove the parameters that gcc doesn't like. Mostly you'll just
+   need to keep the -I and -D parameters and add -fPIC.
+ - If there's any weird crashing at startup, you might have older irssi's
+   perl libraries installed somewhere, and you should remove those.
+ - Dynamic libraries don't want to work with some systems, so if your
+   system complains about some missing symbol in Irssi.so file, configure
+   irssi with --with-perl-staticlib option (NOT same as --with-perl=static).
+ - If configure complains that it doesn't find some perl stuff, you're
+   probably missing libperl.so or libperl.a. In debian, you'll need to do
+   apt-get install libperl-dev
 
-Using /PERLFLUSH closes and reopens the perl interpreter removing all
-Perl scripts from memory. There's currently no way to unload a single
-Perl script (/SCRIPT REMOVE will probably work soon). You can however
-run same script multiple times, and irssi will remove the old version
-from memory before running the new version.
+You can verify that the perl module is loaded and working with "/LOAD"
+command. It should print something like:
+
+Module               Type    Submodules
+...
+perl                 static  core fe
+
+
+ Running scripts
+ ---------------
+
+Scripts are run with /SCRIPT LOAD command, or the default /RUN alias.
+"/SCRIPT" shows list of running script, and /SCRIPT UNLOAD can unload
+scripts.
+
+Scripts should be placed to ~/.irssi/scripts/ or
+/usr/local/lib/irssi/scripts/ (or depending on where irssi was
+installed) directories. After that /RUN script_name should work, you
+don't need to add the .pl prefix.
 
 
  Irssi's signals
@@ -522,8 +545,8 @@ Server::ischannel(data)
 Server::get_nick_flags()
   Returns nick flag characters in order: op, voice, halfop ("@+%" in IRC).
 
-Server::send_message(target, msg)
-  Sends a message to nick/channel.
+Server::send_message(target, msg, target_type)
+  Sends a message to nick/channel. target_type 0 = channel, 1 = nick
 
 
  *** Server reconnections
