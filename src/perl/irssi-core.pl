@@ -6,14 +6,14 @@
 # %%s : must be second - use Irssi; use Irssi::Irc; etc..
 package Irssi::Core;
 
-use Symbol qw(delete_package);
+use Symbol;
 
 sub is_static {
   return %d;
 }
 
 sub destroy {
-  delete_package($_[0]);
+  Symbol::delete_package($_[0]);
 }
 
 sub eval_data {
