@@ -23,7 +23,7 @@
 #define MAX_MASSJOIN_WAIT 5000
 
 /* lists */
-extern GList *aliases, *ignores, *completions, *notifies, *hilights, *replaces, *popups;
+extern GSList *aliases, *ignores, *completions, *notifies, *hilights, *replaces, *popups;
 
 /* servers */
 typedef struct {
@@ -53,8 +53,8 @@ typedef struct {
 	int max_kicks, max_msgs, max_modes;
 } IRCNET_REC;
 
-extern GList *setupservers; /* list of local servers */
-extern GList *ircnets; /* list of available ircnets */
+extern GSList *setupservers; /* list of local servers */
+extern GSList *ircnets; /* list of available ircnets */
 
 /* channels */
 typedef struct {
@@ -71,7 +71,7 @@ typedef struct {
     char *font;
 } SETUP_CHANNEL_REC;
 
-extern GList *setupchannels;
+extern GSList *setupchannels;
 
 extern gboolean readonly;
 extern IPADDR source_host_ip; /* Resolved address */
