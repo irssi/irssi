@@ -83,7 +83,9 @@ AC_ARG_WITH(proxy,
 
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
-	build_modules="$withval")
+	if test x$withval != xyes -a x$withval != xno; then
+		build_modules="$withval"
+	fi)
 
 if test "x$prefix" = "xNONE"; then
 	PERL_LIB_DIR=""
