@@ -18,6 +18,8 @@ typedef struct {
 #include "chatnet-rec.h"
 	int max_cmds_at_once;
 	int cmd_queue_speed;
+	int max_query_chans; /* when syncing, max. number of channels to
+				put in one MODE/WHO command */
 
 	/* max. number of kicks/msgs/mode/whois per command */
 	int max_kicks, max_msgs, max_modes, max_whois;

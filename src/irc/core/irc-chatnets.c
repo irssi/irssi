@@ -40,6 +40,7 @@ static void ircnet_read(CONFIG_NODE *node)
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
+	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
 
 	rec->max_kicks = config_node_get_int(node, "max_kicks", 0);
 	rec->max_msgs = config_node_get_int(node, "max_msgs", 0);
@@ -62,6 +63,8 @@ static void ircnet_save(IRC_CHATNET_REC *rec)
 		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
 	if (rec->cmd_queue_speed > 0)
 		iconfig_node_set_int(node, "cmdspeed", rec->cmd_queue_speed);
+	if (rec->max_query_chans > 0)
+		iconfig_node_set_int(node, "max_query_chans", rec->max_query_chans);
 
 	if (rec->max_kicks > 0)
 		iconfig_node_set_int(node, "max_kicks", rec->max_kicks);

@@ -48,6 +48,7 @@
 #define DEFAULT_USER_MODE "+i"
 #define DEFAULT_CMD_QUEUE_SPEED 2200
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
+#define DEFAULT_MAX_QUERY_CHANS 10
 
 void irc_servers_reconnect_init(void);
 void irc_servers_reconnect_deinit(void);
@@ -155,6 +156,8 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 		conn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
 	server->max_cmds_at_once = conn->max_cmds_at_once > 0 ?
 		conn->max_cmds_at_once : settings_get_int("cmds_max_at_once");
+	server->max_query_chans = conn->max_query_chans > 0 ?
+		conn->max_query_chans : DEFAULT_MAX_QUERY_CHANS;
 
 	server->max_kicks_in_cmd = conn->max_kicks > 0 ?
 		conn->max_kicks : DEFAULT_MAX_KICKS;

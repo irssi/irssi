@@ -13,8 +13,11 @@
 
 typedef struct {
 #include "server-setup-rec.h"
-	int max_cmds_at_once; /* override the default if > 0 */
-	int cmd_queue_speed; /* override the default if > 0 */
+
+        /* override the default if > 0 */
+	int max_cmds_at_once;
+	int cmd_queue_speed;
+        int max_query_chans;
 } IRC_SERVER_SETUP_REC;
 
 void irc_servers_setup_init(void);

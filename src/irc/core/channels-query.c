@@ -50,8 +50,6 @@ loop:
 #include "irc-servers.h"
 #include "servers-redirect.h"
 
-#define MAX_QUERIES_IN_LINE 10
-
 enum {
 	CHANNEL_QUERY_MODE,
 	CHANNEL_QUERY_WHO,
@@ -187,10 +185,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 
 		chans = rec->queries[query];
 
-		if (g_slist_length(rec->queries[query]) > MAX_QUERIES_IN_LINE) {
+		if (g_slist_length(rec->queries[query]) > server->max_query_chans) {
 			GSList *lastchan;
 
-			lastchan = g_slist_nth(rec->queries[query], MAX_QUERIES_IN_LINE-1);
+			lastchan = g_slist_nth(rec->queries[query], server->max_query_chans-1);
 			newchans = lastchan->next;
                         lastchan->next = NULL;
 		}
@@ -291,7 +289,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	if (!onlyone) {
 		/* all channels queried, set to newchans which contains
 		   the rest of the channels for the same query (usually NULL
-		   unless query count exceeded MAX_QUERIES_IN_LINE) */
+		   unless query count exceeded max_query_chans) */
 		g_slist_free(rec->queries[query]);
 		rec->queries[query] = newchans;
 	} else {

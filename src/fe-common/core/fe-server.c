@@ -289,7 +289,7 @@ void fe_server_init(void)
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
-	command_set_options("server add", "auto noauto -host -cmdspeed -cmdmax -port");
+	command_set_options("server add", "auto noauto -host -port");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

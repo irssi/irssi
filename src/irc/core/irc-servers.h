@@ -27,6 +27,8 @@ typedef struct {
 
 	int max_cmds_at_once;
 	int cmd_queue_speed;
+	int max_query_chans;
+
 	int max_kicks, max_msgs, max_modes, max_whois;
 } IRC_SERVER_CONNECT_REC;
 
@@ -66,6 +68,8 @@ typedef struct {
 
 	int max_cmds_at_once; /* How many messages can be sent immediately before timeouting starts */
 	int cmd_queue_speed; /* Timeout between sending commands */
+	int max_query_chans; /* when syncing, max. number of channels to
+				put in one MODE/WHO command */
 
 	GSList *idles; /* Idle queue - send these commands to server
 	                  if there's nothing else to do */

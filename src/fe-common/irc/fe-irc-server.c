@@ -63,6 +63,8 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 	if (value != NULL && *value != '\0') rec->cmd_queue_speed = atoi(value);
 	value = g_hash_table_lookup(optlist, "cmdmax");
 	if (value != NULL && *value != '\0') rec->max_cmds_at_once = atoi(value);
+	value = g_hash_table_lookup(optlist, "querychans");
+	if (value != NULL && *value != '\0') rec->max_query_chans = atoi(value);
 }
 
 /* SYNTAX: SERVER LIST */
@@ -88,6 +90,8 @@ static void cmd_server_list(const char *data)
 			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)
 			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
+		if (rec->max_query_chans > 0)
+			g_string_sprintfa(str, "querychans: %d, ", rec->max_query_chans);
 		if (rec->own_host != NULL)
 			g_string_sprintfa(str, "host: %s, ", rec->own_host);
 
@@ -107,7 +111,7 @@ void fe_irc_server_init(void)
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
-	command_set_options("server add", "-ircnet");
+	command_set_options("server add", "-ircnet -cmdspeed -cmdmax -querychans");
 }
 
 void fe_irc_server_deinit(void)

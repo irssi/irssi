@@ -41,6 +41,8 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 		conn->cmd_queue_speed = sserver->cmd_queue_speed;
 	if (sserver->max_cmds_at_once > 0)
 		conn->max_cmds_at_once = sserver->max_cmds_at_once;
+	if (sserver->max_query_chans > 0)
+		conn->max_query_chans = sserver->max_query_chans;
 }
 
 /* Create server connection record. `address' is required, rest can be NULL */
@@ -80,6 +82,8 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 		conn->max_cmds_at_once = ircnet->max_cmds_at_once;
 	if (ircnet->cmd_queue_speed > 0)
 		conn->cmd_queue_speed = ircnet->cmd_queue_speed;
+	if (ircnet->max_query_chans > 0)
+		conn->max_query_chans = ircnet->max_query_chans;
 }
 
 static void init_userinfo(void)
@@ -154,6 +158,7 @@ static void sig_server_setup_read(SERVER_SETUP_REC **setuprec,
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
+	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
 
 	*setuprec = (SERVER_SETUP_REC *) rec;
 	signal_stop();
@@ -169,6 +174,8 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		iconfig_node_set_int(node, "cmds_max_at_once", rec->max_cmds_at_once);
 	if (rec->cmd_queue_speed > 0)
 		iconfig_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
+	if (rec->max_query_chans > 0)
+		iconfig_node_set_int(node, "max_query_chans", rec->max_query_chans);
 }
 
 void irc_servers_setup_init(void)

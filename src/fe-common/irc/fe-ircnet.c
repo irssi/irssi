@@ -59,6 +59,8 @@ static void cmd_ircnet_list(void)
 			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
 		if (rec->max_cmds_at_once > 0)
 			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
+		if (rec->max_query_chans > 0)
+			g_string_sprintfa(str, "querychans: %d, ", rec->max_query_chans);
 
 		if (rec->max_kicks > 0)
 			g_string_sprintfa(str, "max_kicks: %d, ", rec->max_kicks);
@@ -79,8 +81,9 @@ static void cmd_ircnet_list(void)
 
 /* SYNTAX: IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
 	              [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
-		      [-nick <nick>] [-user <user>] [-realname <name>]
-		      [-host <host>] [-autosendcmd <cmd>] <name> */
+		      [-querychans <count>] [-nick <nick>] [-user <user>]
+		      [-realname <name>] [-host <host>] [-autosendcmd <cmd>]
+		      <name> */
 static void cmd_ircnet_add(const char *data)
 {
 	GHashTable *optlist;
@@ -121,6 +124,8 @@ static void cmd_ircnet_add(const char *data)
 	if (value != NULL) rec->cmd_queue_speed = atoi(value);
 	value = g_hash_table_lookup(optlist, "cmdmax");
 	if (value != NULL) rec->max_cmds_at_once = atoi(value);
+	value = g_hash_table_lookup(optlist, "querychans");
+	if (value != NULL) rec->max_query_chans = atoi(value);
 
 	value = g_hash_table_lookup(optlist, "nick");
 	if (value != NULL && *value != '\0') rec->nick = g_strdup(value);
@@ -174,7 +179,7 @@ void fe_ircnet_init(void)
 	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
 	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
 
-	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd");
+	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans");
 }
 
 void fe_ircnet_deinit(void)
