@@ -86,7 +86,7 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 	if (channel->server != NULL && !channel->left && !channel->kicked) {
 		/* destroying channel record without actually
 		   having left the channel yet */
-		irc_send_cmdv(channel->server, "PART %s", channel->name);
+		signal_emit("command part", 3, "", channel->server, channel);
 	}
 }
 
