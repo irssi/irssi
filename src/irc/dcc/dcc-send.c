@@ -400,7 +400,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	str = g_strdup_printf(dcc->file_quoted ?
 			      "DCC SEND \"%s\" %s %d %lu" :
 			      "DCC SEND %s %s %d %lu",
-			      fname, host, port, fsize);
+			      dcc->arg, host, port, fsize);
 	dcc_ctcp_message(server, target, chat, FALSE, str);
 	g_free(str);
 
