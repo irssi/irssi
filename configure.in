@@ -421,7 +421,7 @@ src/fe-text/Makefile
 src/lib-config/Makefile
 src/lib-popt/Makefile
 src/perl/Makefile
-src/perl/core/Makefile.PL
+src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL
 servertest/Makefile
 scripts/Makefile
@@ -438,7 +438,7 @@ if test "x$want_perl" = "xyes"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
 	if test "x$old_dir" != "x$whole_dir"; then
-		for file in $whole_dir/src/perl/core/typemap $whole_dir/src/perl/core/module.h $whole_dir/src/perl/core/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
+		for file in $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
 			ln -sf $file `echo $file|sed "s?$whole_dir/??"`
 		done
 	fi
