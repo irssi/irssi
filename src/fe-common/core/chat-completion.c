@@ -358,7 +358,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 	GSList *nicks, *tmp;
 	GList *list;
 	char *tnick, *str, *in, *out;
-	int len, str_len;
+	int len, str_len, tmplen;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 
@@ -373,9 +373,9 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-                len = strlen(rec->nick);
-		if (len > str_len) {
-                        str_len = len*2;
+                tmplen = strlen(rec->nick);
+		if (tmplen > str_len) {
+                        str_len = tmplen*2;
                         str = g_realloc(str, str_len+1);
 		}
 
@@ -397,6 +397,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 		}
 
 	}
+        g_free(str);
 	g_slist_free(nicks);
 
 	return list;
