@@ -29,6 +29,12 @@ version_date=`date +%Y%m%d`
 echo "Creating help files..."
 perl syntax.pl
 
+SVN=svn
+# the TZ hack is needed.
+# otherwise the log will have local timezone
+TZ=UTC $SVN log -v > ChangeLog
+TZ=UTC $SVN log -v --xml > ChangeLog.xml
+
 files=`echo docs/help/in/*.in|sed -e 's,docs/help/in/Makefile.in ,,' -e 's,docs/help/in/,!,g' -e 's/\.in /.in ?/g'`
 cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/in/Makefile.am
 
