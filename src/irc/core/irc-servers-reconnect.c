@@ -90,10 +90,11 @@ static void event_nick_collision(IRC_SERVER_REC *server, const char *data)
         server->nick_collision = TRUE;
 }
 
-static void event_kill(IRC_SERVER_REC *server, const char *data)
+static void event_kill(IRC_SERVER_REC *server, const char *data,
+		       const char *nick, const char *addr)
 {
-	if (!server->nick_collision) {
-		/* don't reconnect if we were killed */
+	if (addr != NULL && !server->nick_collision) {
+		/* don't reconnect if we were killed by an oper (not server) */
 		server->no_reconnect = TRUE;
 	}
 }
