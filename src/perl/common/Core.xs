@@ -436,6 +436,13 @@ CODE:
 OUTPUT:
 	RETVAL
 
+void
+require_version(date)
+	int date
+CODE:
+	if (date > atol(IRSSI_VERSION_DATE))
+		die("This script requires irssi version %d or later", date);
+
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
 #*******************************
