@@ -633,19 +633,19 @@ msgstr "Logowanie"
 
 #: src/ui-common/ui-formats.c:194
 msgid "Log file %W$1%n opened"
-msgstr ""
+msgstr "Plik logu %W$1%n otwarty"
 
 #: src/ui-common/ui-formats.c:195
 msgid "Couldn't open log file %W$1"
-msgstr ""
+msgstr "Nie mozna otworzyæ plik logu %W$1"
 
 #: src/ui-common/ui-formats.c:196
 msgid "Log file %W$1%n not open"
-msgstr ""
+msgstr "Plik logu %W$1%n nie otwarty"
 
 #: src/ui-common/ui-formats.c:197
 msgid "Closed log file %W$1"
-msgstr ""
+msgstr "Zamkniêcie pliku logu %W$1"
 
 #: src/ui-common/ui-formats.c:198
 msgid "%W$1%K:%n $2"
@@ -675,7 +675,7 @@ msgstr "Nieignorowanie %_$1%_ od %_$2%_"
 
 #: src/ui-common/ui-formats.c:207
 msgid "%_$1%_ is not being ignored"
-msgstr ""
+msgstr "%_$1%_ nie bêdzie ignorowany"
 
 #: src/ui-common/ui-formats.c:208
 msgid "Flood detected from %_$1%_, autoignoring for %_$2%_ minutes"
@@ -813,7 +813,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-channels.c:446
 msgid "Autojoin"
-msgstr ""
+msgstr "Do³acz automatycznie"
 
 #: src/gui-gnome/dialog-channels.c:447 src/gui-gnome/setup-ircnets.c:140
 #: src/gui-gnome/setup-ircnets.c:191
@@ -835,7 +835,7 @@ msgstr "Dodaj..."
 
 #: src/gui-gnome/dialog-channels.c:494
 msgid "Edit..."
-msgstr ""
+msgstr "Edytuj..."
 
 #: src/gui-gnome/dialog-channels.c:499 src/gui-gnome/dialog-log.c:598
 #: src/gui-gnome/setup-lists.c:354 src/gui-gnome/setup-themes.c:284
@@ -940,15 +940,15 @@ msgstr ""
 
 #: src/gui-gnome/dialog-irssibot.c:166
 msgid "Get stable Irssi via DCC"
-msgstr ""
+msgstr "Pobie¿ wersjê stabiln± Irssi poprzez DCC"
 
 #: src/gui-gnome/dialog-irssibot.c:175
 msgid "Get unstable Irssi via DCC"
-msgstr ""
+msgstr "Pobie¿ wersjê niestabiln± Irssi poprzez DCC"
 
 #: src/gui-gnome/dialog-irssibot.c:182
 msgid "Open Irssi's website"
-msgstr ""
+msgstr "Otwó¿ stronê domowa Irssi"
 
 #: src/gui-gnome/dialog-join.c:56
 msgid "No server selected"
@@ -960,7 +960,7 @@ msgstr "Nie zosta³ wybrany kana³"
 
 #: src/gui-gnome/dialog-links.c:84
 msgid "Links"
-msgstr ""
+msgstr "Po³±czenia"
 
 #: src/gui-gnome/dialog-links.c:289
 msgid "Get the /LINKS for hubs"
@@ -1129,7 +1129,7 @@ msgstr ""
 #. topic
 #: src/gui-gnome/dialog-modes.c:490
 msgid "Topic: "
-msgstr ""
+msgstr "Temat: "
 
 #: src/gui-gnome/dialog-modes.c:505
 msgid "Invite"
@@ -2328,7 +2328,7 @@ msgstr "Co ignorowaæ"
 
 #: src/gui-gnome/setup-lists.c:416
 msgid "Ignores"
-msgstr ""
+msgstr "Ignorowanie"
 
 #: src/gui-gnome/setup-lists.c:418
 msgid "Tag"
@@ -2344,7 +2344,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:425
 msgid "IRC network(s)"
-msgstr ""
+msgstr "Sieci IRC"
 
 #: src/gui-gnome/setup-lists.c:428
 msgid "Notify List"
@@ -2356,7 +2356,7 @@ msgstr "Tekst"
 
 #: src/gui-gnome/setup-lists.c:434
 msgid "Hilight Texts"
-msgstr ""
+msgstr "Pod¶wietl tekst"
 
 #: src/gui-gnome/setup-lists.c:437
 msgid "Replace with"
@@ -2527,7 +2527,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-servers.c:176
 msgid "y"
-msgstr ""
+msgstr "t"
 
 #: src/gui-gnome/setup-servers.c:241
 msgid "Clear"
@@ -2555,7 +2555,7 @@ msgstr ""
 #. 'IRC servers' frame
 #: src/gui-gnome/setup-servers.c:457
 msgid "IRC Servers"
-msgstr ""
+msgstr "Serwery IRC"
 
 #: src/gui-gnome/setup-servers.c:472
 msgid "AC"
@@ -2600,7 +2600,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-session.c:134
 msgid "New Channel..."
-msgstr ""
+msgstr "Nowy kana³..."
 
 #: src/gui-gnome/setup-session.c:145
 msgid "Session"
