@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
+#include "settings.h"
 #include "servers.h"
 #include "queries.h"
 #include "nicklist.h"
@@ -48,7 +49,8 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (nick == NULL || address == NULL || ischannel(*data))
+	if (nick == NULL || address == NULL || ischannel(*data) ||
+	    !settings_get_bool("query_trace_nick_changes"))
                 return;
 
 	query = query_find(server, nick);
@@ -64,6 +66,8 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 
 void fe_irc_queries_init(void)
 {
+        settings_add_bool("lookandfeel", "query_trace_nick_changes", TRUE);
+
 	signal_add_first("event privmsg", (SIGNAL_FUNC) event_privmsg);
 }
 
