@@ -55,7 +55,6 @@ static void perl_call_signal(const char *func, int signal_id,
 	int retcount;
 
 	PERL_SIGNAL_ARGS_REC *rec;
-	HV *stash;
 	SV *perlarg;
         void *arg;
 	int n;
@@ -82,13 +81,19 @@ static void perl_call_signal(const char *func, int signal_id,
 		else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			/* linked list - push as AV */
 			GSList *tmp;
+                        SV *sv;
 			AV *av;
+                        int iobject;
 
+                        iobject = strcmp(rec->args[n]+7, "iobject") == 0;
 			av = newAV();
-			stash = gv_stashpv(rec->args[n]+7, 0);
-			for (tmp = arg; tmp != NULL; tmp = tmp->next)
-				av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
-			perlarg = (SV*)av;
+			for (tmp = arg; tmp != NULL; tmp = tmp->next) {
+				sv = iobject ? irssi_bless((SERVER_REC *) tmp->data) :
+					irssi_bless_plain(rec->args[n]+7, tmp->data);
+				av_push(av, sv);
+			}
+
+			perlarg = newRV_noinc((SV *) av);
 		} else if (arg == NULL) {
 			/* don't bless NULL arguments */
 			perlarg = newSViv(0);
@@ -101,7 +106,7 @@ static void perl_call_signal(const char *func, int signal_id,
 			/* blessed object */
 			perlarg = irssi_bless_plain(rec->args[n], arg);
 		}
-                XPUSHs(sv_2mortal(perlarg));
+		XPUSHs(sv_2mortal(perlarg));
 	}
 
 	PUTBACK;

@@ -24,7 +24,7 @@ while (<STDIN>) {
 	s/CHANNEL_REC[^,]*/iobject/g;
 	s/QUERY_REC[^,]*/iobject/g;
 	s/COMMAND_REC[^,]*/Irssi::Command/g;
-	s/NICK_REC[^,]*/Irssi::Nick/g;
+	s/NICK_REC[^,]*/iobject/g;
 	s/LOG_REC[^,]*/Irssi::Log/g;
 	s/RAWLOG_REC[^,]*/Irssi::Rawlog/g;
 	s/IGNORE_REC[^,]*/Irssi::Ignore/g;
