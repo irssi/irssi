@@ -36,7 +36,8 @@ EXTRA_DIST = \
 	$(theme_DATA) \
 	irssi-config.in \
 	irssi-icon.png \
-	syntax.pl
+	syntax.pl \
+	findsyntax.pl
 
 ## make rpms
 rpm: Makefile
