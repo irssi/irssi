@@ -460,7 +460,12 @@ static void cmd_window_number(const char *data)
 /* SYNTAX: WINDOW NAME <name> */
 static void cmd_window_name(const char *data)
 {
-        window_set_name(active_win, data);
+	if (window_find_name(data) == NULL)
+		window_set_name(active_win, data);
+	else {
+		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+				   TXT_WINDOW_NAME_NOT_UNIQUE, data);
+	}
 }
 
 /* we're moving the first window to last - move the first contiguous block
