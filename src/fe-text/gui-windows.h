@@ -18,7 +18,6 @@ enum {
 	LINE_CMD_OVERFLOW,	/* buffer overflow! */
 	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
-	LINE_CMD_BEEP,		/* beep */
 	LINE_CMD_INDENT		/* if line is split, indent it at this position */
 };
 

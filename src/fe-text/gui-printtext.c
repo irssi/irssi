@@ -210,7 +210,9 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 	unsigned char buffer[12];
 	int color, pos;
 
-	color = (fg & 0x0f) | (bg << 4);
+	/* color should never have last bit on or it would be treated as a
+	   command! */
+	color = (fg & 0x0f) | ((bg & 0x0f) << 4);
 	pos = 0;
 
 	if (((fg & ATTR_COLOR8) == 0 && (fg|(bg << 4)) != gui->last_color) ||
@@ -227,14 +229,12 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 		buffer[pos++] = 0;
 		buffer[pos++] = LINE_CMD_COLOR8;
 	}
-	if (flags & PRINTFLAG_BEEP) {
-		buffer[pos++] = 0;
-		buffer[pos++] = LINE_CMD_BEEP;
-	}
 	if (flags & PRINTFLAG_INDENT) {
 		buffer[pos++] = 0;
 		buffer[pos++] = LINE_CMD_INDENT;
 	}
+	if (flags & PRINTFLAG_BEEP)
+                beep();
 
 	linebuf_add(gui, (char *) buffer, pos);
 

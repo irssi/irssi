@@ -144,14 +144,15 @@ static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 			/* reset colors back to default */
 			fg = current_theme->default_color;
 			bg = -1;
+			fl &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
 			break;
 		case 1:
 			/* hilight */
-			fg |= 8;
+			fl |= PRINTFLAG_BOLD;
 			break;
 		case 5:
 			/* blink */
-			bg = bg == -1 ? 8 : bg | 8;
+			fl |= PRINTFLAG_BLINK;
 			break;
 		case 7:
 			/* reverse */
@@ -171,7 +172,7 @@ static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 		if (*str == 'm') {
 			if (!hide_text_style) {
 				*fgcolor = fg;
-				*bgcolor = bg == -1 ? -1 : bg;
+				*bgcolor = bg;
 				*flags = fl;
 			}
 			str++;

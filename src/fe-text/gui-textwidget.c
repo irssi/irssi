@@ -76,8 +76,6 @@ static gchar *gui_window_line2text(LINE_REC *line)
 		color &= 0xfff0;
 		color |= 8|ATTR_COLOR8;
 		break;
-	    case LINE_CMD_BEEP:
-		break;
 	    case LINE_CMD_INDENT:
 		break;
 	}
