@@ -404,14 +404,50 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	return list;
 }
 
+static void complete_window_nicks(GList **list, WINDOW_REC *window,
+                                  const char *word, const char *linestart)
+{
+        CHANNEL_REC *channel;
+        GList *tmplist;
+        GSList *tmp;
+        const char *nickprefix;
+
+        nickprefix = *linestart != '\0' ? NULL :
+                settings_get_str("completion_char");
+
+        channel = CHANNEL(window->active);
+
+        /* first the active channel */
+        if (channel != NULL) {
+                tmplist = completion_channel_nicks(channel, word, nickprefix);
+                *list = completion_joinlist(*list, tmplist);
+        }
+
+        if (nickprefix != NULL) {
+                /* completing nick at the start of line - probably answering
+                   to some other nick, don't even try to complete from
+                   non-active channels */
+                return;
+        }
+
+        /* then the rest */
+        for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+                channel = CHANNEL(tmp->data);
+                if (channel != NULL && tmp->data != window->active) {
+                        tmplist = completion_channel_nicks(channel, word,
+                                                           nickprefix);
+                        *list = completion_joinlist(*list, tmplist);
+                }
+        }
+}
+
 static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart)
 {
 	SERVER_REC *server;
 	CHANNEL_REC *channel;
 	QUERY_REC *query;
-	GList *tmplist;
-	const char *cmdchars, *nickprefix;
+	const char *cmdchars;
 	char *prefix;
 
 	g_return_if_fail(list != NULL);
@@ -454,11 +490,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	} else if (channel != NULL) {
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
-		nickprefix = *linestart != '\0' ? NULL :
-			settings_get_str("completion_char");
-
-		tmplist = completion_channel_nicks(channel, word, nickprefix);
-		*list = completion_joinlist(*list, tmplist);
+                complete_window_nicks(list, window, word, linestart);
 	}
 
 	if (*list != NULL) signal_stop();
