@@ -282,9 +282,8 @@ void command_runsub(const char *cmd, const char *data,
 	g_return_if_fail(data != NULL);
 
 	if (*data == '\0') {
-                /* no subcommand given - unknown command? */
-		signal_emit("error command", 2,
-			    GINT_TO_POINTER(CMDERR_UNKNOWN), cmd);
+                /* no subcommand given - list the subcommands */
+		signal_emit("list subcommands", 2, cmd);
 		return;
 	}
 

@@ -289,8 +289,10 @@ static void cmd_version(char *data)
 {
 	g_return_if_fail(data != NULL);
 
-	if (*data == '\0')
-		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Client: "PACKAGE" " IRSSI_VERSION);
+	if (*data == '\0') {
+		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "Client: "PACKAGE" " IRSSI_VERSION);
+	}
 }
 
 /* SYNTAX: CAT <file> */
@@ -314,7 +316,8 @@ static void cmd_cat(const char *data)
 
 	if (f == -1) {
 		/* file not found */
-                printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", g_strerror(errno));
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			  "%s", g_strerror(errno));
 		return;
 	}
 
@@ -323,7 +326,8 @@ static void cmd_cat(const char *data)
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0) printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
+		if (ret > 0)
+			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
 	} while (ret > 0);
 	line_split_free(buffer);
 
@@ -357,7 +361,8 @@ static void event_command(const char *data)
 
 	/* /^command hides the output of the command */
 	cmdchar = strchr(settings_get_str("cmdchars"), *data);
-	if (cmdchar != NULL && (data[1] == '^' || (data[1] == *cmdchar && data[2] == '^'))) {
+	if (cmdchar != NULL && (data[1] == '^' ||
+				(data[1] == *cmdchar && data[2] == '^'))) {
                 hide_output = TRUE;
 		signal_add_first("print starting", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print format", (SIGNAL_FUNC) sig_stop);
@@ -377,7 +382,8 @@ static void event_command_last(const char *data)
 	}
 }
 
-static void event_default_command(const char *data, void *server, WI_ITEM_REC *item)
+static void event_default_command(const char *data, void *server,
+				  WI_ITEM_REC *item)
 {
 	const char *cmdchars, *ptr;
 	char *cmd, *p;
@@ -416,7 +422,7 @@ static void event_default_command(const char *data, void *server, WI_ITEM_REC *i
 	g_free(cmd);
 }
 
-static void event_cmderror(gpointer errorp, const char *arg)
+static void event_cmderror(void *errorp, const char *arg)
 {
 	int error;
 
@@ -428,6 +434,33 @@ static void event_cmderror(gpointer errorp, const char *arg)
                 /* others */
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error + -CMDERR_OPTION_UNKNOWN], arg);
 	}
+}
+
+static void event_list_subcommands(const char *command)
+{
+        GSList *tmp;
+        GString *str;
+	int len;
+
+	str = g_string_new(NULL);
+
+        len = strlen(command);
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		    rec->cmd[len] == ' ' &&
+		    strchr(rec->cmd+len+1, ' ') == NULL) {
+                        g_string_sprintfa(str, "%s ", rec->cmd+len+1);
+		}
+	}
+
+	if (str->len != 0) {
+		g_string_truncate(str, str->len-1);
+                printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", str->str);
+	}
+
+        g_string_free(str, TRUE);
 }
 
 void fe_core_commands_init(void)
@@ -447,6 +480,7 @@ void fe_core_commands_init(void)
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
 	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
+	signal_add("list subcommands", (SIGNAL_FUNC) event_list_subcommands);
 
 	command_set_options("echo", "current +level +window");
 }
@@ -463,4 +497,5 @@ void fe_core_commands_deinit(void)
 	signal_remove("send command", (SIGNAL_FUNC) event_command_last);
 	signal_remove("default command", (SIGNAL_FUNC) event_default_command);
 	signal_remove("error command", (SIGNAL_FUNC) event_cmderror);
+	signal_remove("list subcommands", (SIGNAL_FUNC) event_list_subcommands);
 }
