@@ -302,10 +302,10 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	last_lag_unknown = lag_unknown;
 
 	if (lag_unknown) {
-		snprintf(str, sizeof(str), "%d (?""?)", lag/100);
+		g_snprintf(str, sizeof(str), "%d (?""?)", lag/100);
 	} else {
-		snprintf(str, sizeof(str),
-			 lag%100 == 0 ? "%d" : "%d.%02d", lag/100, lag%100);
+		g_snprintf(str, sizeof(str),
+			   lag%100 == 0 ? "%d" : "%d.%02d", lag/100, lag%100);
 	}
 
 	statusbar_item_default_handler(item, get_size_only,
