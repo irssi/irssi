@@ -107,8 +107,8 @@ int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer)
 	rec = *buffer;
 
 	if (rec->remove > 0) {
-		rec->len = rec->len - rec->remove;
-		memcpy(rec->str, rec->str+rec->remove, rec->len);
+		rec->len -= rec->remove;
+		g_memmove(rec->str, rec->str+rec->remove, rec->len);
 		rec->remove = 0;
 	}
 
