@@ -44,27 +44,62 @@ static FILE_DCC_REC *dcc_resume_find(int type, const char *nick, int port)
 	return NULL;
 }
 
+#define get_params_match_resume(params, pos) \
+	(is_numeric(params[pos], '\0') && atol(params[pos]) < 65536 && \
+	is_numeric(params[(pos)+1], '\0'))
+
+/* Based on get_file_params_count() found in dcc-get.c. The main difference
+   is represented by the number of params expected after the filename (2 at
+   least). I've added this new routine to avoid possible troubles connected
+   to relaxing the old checks done on DCC GET params to suite the ACCEPT/RESUME
+   needs.
+   */
+int get_file_params_count_resume(char **params, int paramcount)
+{
+	int pos, best;
+
+	if (*params[0] == '"') {
+		/* quoted file name? */
+		for (pos = 0; pos < paramcount-2; pos++) {
+			if (params[pos][strlen(params[pos])-1] == '"' &&
+			    get_params_match_resume(params, pos+1))
+				return pos+1;
+		}
+	}
+
+	best = paramcount-2;
+	for (pos = paramcount-2; pos > 0; pos--) {
+		if (get_params_match_resume(params, pos))
+			best = pos;
+	}
+
+	return best;
+}
+
+
 static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 				 FILE_DCC_REC **dcc, uoff_t *size, int *pasv_id)
 {
 	char **params;
-	int paramcount;
-        int port;
+	int paramcount, fileparams;
+	int port;
 
 	/* RESUME|ACCEPT <file name> <port> <size> */
 	/* RESUME|ACCEPT <file name> 0 <size> <id> (passive protocol) */
 	params = g_strsplit(data, " ", -1);
 	paramcount = strarray_length(params);
 
-	if (paramcount >= 3) {
-		port = atoi(params[1]);
-		*size = str_to_uofft(params[2]);
-		*pasv_id = (port == 0) ? atoi(params[3]) : -1;
+	fileparams = get_file_params_count_resume(params, paramcount);
+    
+	if (paramcount >= fileparams + 2) {
+		port = atoi(params[fileparams]);
+		*size = str_to_uofft(params[fileparams+1]);
+		*pasv_id = ((port == 0) && (paramcount == fileparams + 3)) ? atoi(params[fileparams+2]) : -1;
 		*dcc = dcc_resume_find(type, nick, port);
 		g_strfreev(params);
 
 		/* If the ID is different then the DCC cannot be resumed */
-		return ((*dcc)->pasv_id == *pasv_id);
+		return ((*dcc != NULL) && ((*dcc)->pasv_id == *pasv_id));
 	}
 	g_strfreev(params);
 	return FALSE;
