@@ -362,6 +362,8 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 	}
 
 	move(ypos, xpos);
+	set_color(color);
+
 	while (text != text_end) {
 		if (*text == '\0') {
 			/* command */
