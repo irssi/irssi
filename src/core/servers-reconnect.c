@@ -210,8 +210,8 @@ static void sig_reconnect(SERVER_REC *server)
 		sserver->last_connect = server->connect_time == 0 ?
 			time(NULL) : server->connect_time;
 		sserver->last_failed = !server->connected;
-		if (server->banned) sserver->banned = TRUE;
-                if (server->dns_error) sserver->dns_error = TRUE;
+		sserver->banned = server->banned;
+                sserver->dns_error = server->dns_error;
 	}
 
 	if (sserver == NULL || conn->chatnet == NULL) {
