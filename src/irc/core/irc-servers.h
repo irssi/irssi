@@ -43,6 +43,8 @@ struct _IRC_SERVER_REC {
         REDIRECT_REC *redirect_next;
 	REDIRECT_REC *redirect_continue;
 
+        char *last_nick; /* last /NICK, kept even if it resulted as not valid change */
+
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
         char *wanted_usermode; /* The usermode we want to use, doesn't include the modes given us by the server (eg. +r) */

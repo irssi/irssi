@@ -490,9 +490,7 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
 void server_change_nick(SERVER_REC *server, const char *nick)
 {
-	g_free(server->connrec->nick);
 	g_free(server->nick);
-	server->connrec->nick = g_strdup(nick);
 	server->nick = g_strdup(nick);
 
 	signal_emit("server nick changed", 1, server);

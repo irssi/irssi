@@ -317,6 +317,9 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (!cmd_get_params(data, &free_arg, 1, &nick))
 		return;
 
+	g_free(server->last_nick);
+	server->last_nick = g_strdup(nick);
+
 	irc_send_cmdv(server, "NICK %s", nick);
 	cmd_params_free(free_arg);
 }

@@ -301,7 +301,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_nick(SERVER_REC *server, const char *data,
+static void event_nick(IRC_SERVER_REC *server, const char *data,
 		       const char *orignick)
 {
 	char *params, *nick;
@@ -312,10 +312,16 @@ static void event_nick(SERVER_REC *server, const char *data,
 
 	if (g_strcasecmp(orignick, server->nick) == 0) {
 		/* You changed your nick */
-                server_change_nick(server, nick);
+		if (g_strcasecmp(server->last_nick, nick) == 0) {
+                        /* changed with /NICK - keep it as wanted nick */
+			g_free(server->connrec->nick);
+			server->connrec->nick = g_strdup(nick);
+		}
+
+		server_change_nick(SERVER(server), nick);
 	}
 
-        nicklist_rename(server, orignick, nick);
+        nicklist_rename(SERVER(server), orignick, nick);
 	g_free(params);
 }
 
