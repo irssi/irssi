@@ -75,6 +75,12 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 	return g_strconcat(username, "@", hostname, NULL);;
 }
 
+/* user mode in active server */
+static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IS_IRC_SERVER(server) ? IRC_SERVER(server)->usermode : "";
+}
+
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
@@ -100,6 +106,10 @@ void irc_expandos_init(void)
 	expando_create("X", expando_userhost,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("usermode", expando_usermode,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW,
+		       "user mode changed", EXPANDO_ARG_WINDOW, NULL);
 
         expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
 
@@ -114,6 +124,7 @@ void irc_expandos_deinit(void)
 	expando_destroy("H", expando_server_numeric);
 	expando_destroy("S", expando_servername);
 	expando_destroy("X", expando_userhost);
+	expando_destroy("usermode", expando_usermode);
 
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 }
