@@ -200,7 +200,7 @@ void window_set_history(WINDOW_REC *window, const char *name)
 	char *oldname;
 	oldname = window->history_name;
 
-	if (*name == '\0')
+	if (name == NULL || *name == '\0')
 		window->history_name = NULL;
 	else
 		window->history_name = g_strdup(name);

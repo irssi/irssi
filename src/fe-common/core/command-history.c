@@ -221,9 +221,7 @@ static void sig_window_destroyed(WINDOW_REC *window)
 {
 	command_history_unlink(window->history_name);
 	command_history_destroy(window->history);
-
 	g_free_not_null(window->history_name);
-	g_free_not_null(window->history);
 }
 
 static void sig_window_history_changed(WINDOW_REC *window, const char *oldname)
