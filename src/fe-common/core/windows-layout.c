@@ -41,7 +41,7 @@ static void signal_query_created_curwin(QUERY_REC *query)
 {
 	g_return_if_fail(IS_QUERY(query));
 
-	window_item_add(restore_win, (WI_ITEM_REC *) query, FALSE);
+	window_item_add(restore_win, (WI_ITEM_REC *) query, TRUE);
 }
 
 static void sig_layout_restore_item(WINDOW_REC *window, const char *type,
