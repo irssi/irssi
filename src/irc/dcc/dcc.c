@@ -78,7 +78,6 @@ void dcc_init_rec(DCC_REC *dcc, IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 	g_return_if_fail(dcc != NULL);
 	g_return_if_fail(nick != NULL);
 	g_return_if_fail(arg != NULL);
-	g_return_if_fail(server != NULL || chat != NULL);
 
         MODULE_DATA_INIT(dcc);
 	dcc->created = time(NULL);

@@ -114,10 +114,10 @@ static void dcc_server_update_flags(SERVER_DCC_REC *dcc, const char *flags)
 }
 
 /* Initialize DCC record */
-static void dcc_init_server_rec(SERVER_DCC_REC *dcc, IRC_SERVER_REC *server)
+static void dcc_init_server_rec(SERVER_DCC_REC *dcc, IRC_SERVER_REC *server,
+				const char *mynick, const char *servertag)
 {
 	g_return_if_fail(dcc != NULL);
-	g_return_if_fail(server != NULL);
 	g_return_if_fail(IS_DCC_SERVER(dcc));
 
 	MODULE_DATA_INIT(dcc);
@@ -127,8 +127,8 @@ static void dcc_init_server_rec(SERVER_DCC_REC *dcc, IRC_SERVER_REC *server)
 	dcc->nick = NULL;
 	dcc->tagconn = dcc->tagread = dcc->tagwrite = -1;
 	dcc->server = server;
-	dcc->mynick = g_strdup(server != NULL ? server->nick : "??");
-	dcc->servertag = server != NULL ? g_strdup(server->tag) : NULL;
+	dcc->mynick = g_strdup(mynick);
+	dcc->servertag = g_strdup(servertag);
 
 	dcc_conns = g_slist_append(dcc_conns, dcc);
 	signal_emit("dcc created", 1, dcc);
@@ -142,7 +142,7 @@ static SERVER_DCC_REC *dcc_server_create(IRC_SERVER_REC *server, const char *fla
 	dcc->orig_type = dcc->type = DCC_SERVER_TYPE;
 	dcc_server_update_flags(dcc, flags);
 
-	dcc_init_server_rec(dcc, server);
+	dcc_init_server_rec(dcc, server, dcc->mynick, dcc->servertag);
 	return dcc;
 }
 
@@ -158,7 +158,7 @@ static SERVER_DCC_REC *dcc_server_clone(SERVER_DCC_REC *dcc)
 	newdcc->accept_chat = dcc->accept_chat;
 	newdcc->accept_fserve = dcc->accept_fserve;
 
-	dcc_init_server_rec(newdcc, dcc->server);
+	dcc_init_server_rec(newdcc, dcc->server, dcc->mynick, dcc->servertag);
 	return newdcc;
 }
 
