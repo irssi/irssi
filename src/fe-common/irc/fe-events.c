@@ -271,15 +271,16 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 {
 	GString *chans;
 	GSList *tmp;
+	char *print_channel;
 	int once;
 
 	g_return_if_fail(data != NULL);
 
-	if (ignore_check(server, nick, addr, NULL, NULL, MSGLEVEL_QUITS))
+	if (*data == ':') data++; /* quit message */
+	if (ignore_check(server, nick, addr, NULL, data, MSGLEVEL_QUITS))
 		return;
 
-	if (*data == ':') data++; /* quit message */
-
+	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
 	chans = !once ? NULL : g_string_new(NULL);
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
@@ -287,6 +288,9 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 
 		if (rec->server == server && nicklist_find(rec, nick) &&
 		    !ignore_check(server, nick, addr, rec->name, data, MSGLEVEL_QUITS)) {
+			if (print_channel == NULL || active_win->active == (WI_ITEM_REC *) rec)
+				print_channel = rec->name;
+
 			if (once)
 				g_string_sprintfa(chans, "%s,", rec->name);
 			else
@@ -296,7 +300,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	if (once) {
 		g_string_truncate(chans, chans->len-1);
-		printformat(server, NULL, MSGLEVEL_QUITS,
+		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    chans->len == 0 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
 			    nick, addr, data, chans->str);
 		g_string_free(chans, TRUE);
