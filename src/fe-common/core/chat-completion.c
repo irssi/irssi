@@ -81,6 +81,9 @@ static void last_msg_add(GSList **list, const char *nick, int own, int max)
 {
 	LAST_MSG_REC *rec;
 
+	if (max <= 0)
+		return;
+
 	rec = last_msg_find(*list, nick);
 	if (rec != NULL) {
 		/* msg already exists, update it */
