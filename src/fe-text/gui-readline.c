@@ -483,11 +483,16 @@ static void sig_gui_key_pressed(gpointer keyp)
 	prev_entry_pos = gui_entry_get_pos(active_entry);
 	prev_key = key;
 
-	ret = key_pressed(keyboard, str);
-	if (escape_next_key || ret < 0) {
-		/* key wasn't used for anything, print it */
-                escape_next_key = FALSE;
+	if (escape_next_key) {
+		escape_next_key = FALSE;
 		gui_entry_insert_char(active_entry, key);
+		ret = 1;
+	} else {
+		ret = key_pressed(keyboard, str);
+		if (ret < 0) {
+			/* key wasn't used for anything, print it */
+			gui_entry_insert_char(active_entry, key);
+		}
 	}
 
 	/* ret = 0 : some key create multiple characters - we're in the middle
