@@ -387,7 +387,7 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 				show = TRUE;
                         nick++;
 		} else {
-			if (HAS_MODE_ARG(type, *mode) && *nick != NULL)
+			if (HAS_MODE_ARG(server, type, *mode) && *nick != NULL)
 				nick++;
 			show = TRUE;
 		}

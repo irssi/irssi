@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 
+#include "irc-nicklist.h"
 #include "irc-servers.h"
 #include "irc-queries.h"
 
@@ -38,6 +39,20 @@ QUERY_REC *irc_query_create(const char *server_tag,
         rec->server_tag = g_strdup(server_tag);
 	query_init(rec, automatic);
 	return rec;
+}
+
+QUERY_REC *irc_query_find(IRC_SERVER_REC *server, const char *nick)
+{
+	GSList *tmp;
+
+	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
+		QUERY_REC *rec = tmp->data;
+
+		if (server->nick_comp_func(rec->name, nick) == 0)
+			return rec;
+	}
+
+	return NULL;
 }
 
 static void check_query_changes(IRC_SERVER_REC *server, const char *nick,

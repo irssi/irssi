@@ -369,7 +369,10 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 	 * returns :-)
 	 * -- yath */
 
-	if (p1->op)
+	/* Treat others as highest - should really use order in 005 numeric */
+	if (p1->other)
+		status1 = 5;
+	else if (p1->op)
 		status1 = 4;
 	else if (p1->halfop)
 		status1 = 3;
@@ -378,7 +381,9 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 	else
 		status1 = 1;
 
-	if (p2->op)
+	if (p2->other)
+		status2 = 5;
+	else if (p2->op)
 		status2 = 4;
 	else if (p2->halfop)
 		status2 = 3;

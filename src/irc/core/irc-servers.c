@@ -30,6 +30,8 @@
 #include "channels.h"
 #include "queries.h"
 
+#include "irc-nicklist.h"
+#include "irc-queries.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
 #include "channel-rejoin.h"
@@ -55,9 +57,11 @@ void irc_servers_reconnect_deinit(void);
 
 static int cmd_tag;
 
-static int isnickflag_func(char flag)
+static int isnickflag_func(SERVER_REC *server, char flag)
 {
-	return isnickflag(flag);
+	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
+
+	return isnickflag(irc_server, flag);
 }
 
 static int ischannel_func(SERVER_REC *server, const char *data)
@@ -157,6 +161,9 @@ static void server_init(IRC_SERVER_REC *server)
 			      conn->address, conn->port);
 	}
 
+	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
+					  (GCompareFunc) g_istr_equal);
+
 	server->cmdcount = 0;
 }
 
@@ -197,6 +204,8 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 	server->max_msgs_in_cmd = ircconn->max_msgs > 0 ?
 		ircconn->max_msgs : DEFAULT_MAX_MSGS;
 	server->connrec->use_ssl = conn->use_ssl;
+
+	modes_server_init(server);
 
         server_connect_init((SERVER_REC *) server);
 	return (SERVER_REC *) server;
@@ -268,12 +277,21 @@ static void sig_connected(IRC_SERVER_REC *server)
 	server->isnickflag = isnickflag_func;
 	server->ischannel = ischannel_func;
 	server->send_message = send_message;
+	server->query_find_func =
+		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
+	server->nick_comp_func = irc_nickcmp_ascii;
 
 	server->splits = g_hash_table_new((GHashFunc) g_istr_hash,
 					  (GCompareFunc) g_istr_equal);
 
         if (!server->session_reconnect)
 		server_init(server);
+}
+
+static void isupport_destroy_hash(void *key, void *value)
+{
+	g_free(key);
+	g_free(value);
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)
@@ -290,6 +308,10 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	}
 	g_slist_free(server->cmdqueue);
         server->cmdqueue = NULL;
+
+	g_hash_table_foreach(server->isupport, (GHFunc) isupport_destroy_hash, server);
+	g_hash_table_destroy(server->isupport);
+	server->isupport = NULL;
 
 	g_free_and_null(server->wanted_usermode);
 	g_free_and_null(server->real_address);
@@ -452,7 +474,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 
 	mode = server->connrec->usermode;
 	newmode = server->usermode == NULL ? NULL :
-		modes_join(server->usermode, mode, FALSE);
+		modes_join(NULL, server->usermode, mode, FALSE);
 
 	if (newmode == NULL || strcmp(newmode, server->usermode) != 0) {
 		/* change the user mode. we used to do some trickery to
@@ -519,6 +541,123 @@ static void event_server_info(IRC_SERVER_REC *server, const char *data)
 	server->version = g_strdup(ircd_version);
 
 	g_free(params);
+}
+
+static void parse_chanmodes(IRC_SERVER_REC *server, const char *sptr)
+{
+	mode_func_t *modefuncs[] = {
+		modes_type_a,
+		modes_type_b,
+		modes_type_c,
+		modes_type_d
+	};
+	char **item, **chanmodes;
+	int i;
+
+	chanmodes = g_strsplit(sptr, ",", 5); /* ignore extras */
+
+	for (i = 0, item = chanmodes; *item != NULL && i < 4; item++, i++) {
+		unsigned char *p = *item;
+		while (*p != '\0') {
+			server->modes[(int)*p].func = modefuncs[i];
+			p++;
+		}
+	}
+
+	g_strfreev(chanmodes);
+}
+
+static void parse_prefix(IRC_SERVER_REC *server, const char *sptr)
+{
+	const char *eptr;
+
+	if (*sptr++ != '(')
+		return; /* Unknown prefix format */
+
+	eptr = strchr(sptr, ')');
+	if (eptr == NULL)
+		return;
+
+	eptr++;
+	while (*sptr != '\0' && *eptr != '\0' && *sptr != ')' && *eptr != ' ') {
+		server->modes[(int)(unsigned char) *sptr].func =
+			modes_type_prefix;
+		server->modes[(int)(unsigned char) *sptr].prefix = *eptr;
+		server->prefix[(int)(unsigned char) *eptr] = *sptr;
+		sptr++; eptr++;
+	}
+}
+
+static void event_isupport(IRC_SERVER_REC *server, const char *data)
+{
+	char **item, *sptr, *eptr;
+	char **isupport;
+   
+	g_return_if_fail(server != NULL);
+
+	server->isupport_sent = TRUE;
+
+	sptr = strchr(data, ' ');
+	if (sptr == NULL)
+		return;
+	sptr++;
+
+	isupport = g_strsplit(sptr, " ", -1);
+
+	for(item = isupport; *item != NULL; item++) {
+		int removed = FALSE;
+		gpointer key = NULL, value = NULL;
+
+		if (**item == ':')
+			break;
+
+		sptr = strchr(*item, '=');
+		if (sptr != NULL) {
+			*sptr = '\0';
+			sptr++;
+		}
+
+		eptr = *item;
+		if(*eptr == '-') {
+			removed = TRUE;
+			eptr++;
+		}
+
+		if (!g_hash_table_lookup_extended(server->isupport, eptr,
+						  &key, &value) && removed)
+			continue;
+
+		if (removed)
+			g_hash_table_remove(server->isupport, eptr);
+		else {
+			g_hash_table_insert(server->isupport, g_strdup(eptr),
+					    g_strdup(sptr != NULL ? sptr : ""));
+		}
+
+		g_free(key);
+		g_free(value);
+	}
+	g_strfreev(isupport);
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "CHANMODES")))
+		parse_chanmodes(server, sptr);
+
+	/* This is after chanmode because some servers define modes in both */
+	if ((sptr = g_hash_table_lookup(server->isupport, "PREFIX")))
+		parse_prefix(server, sptr);
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "MODES"))) {
+		server->max_modes_in_cmd = atoi(sptr);
+		if (server->max_modes_in_cmd < 1)
+			server->max_modes_in_cmd = DEFAULT_MAX_MODES;
+	}
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "CASEMAPPING"))) {
+		if (strstr(sptr, "rfc1459") != NULL)
+			server->nick_comp_func = irc_nickcmp_rfc1459;
+		else
+			server->nick_comp_func = irc_nickcmp_ascii;
+	}
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data, const char *from)
@@ -599,6 +738,7 @@ void irc_servers_init(void)
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_add("event 005", (SIGNAL_FUNC) event_isupport);
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
 	signal_add_last("event 376", (SIGNAL_FUNC) event_end_of_motd);
 	signal_add_last("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */
@@ -623,6 +763,7 @@ void irc_servers_deinit(void)
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
+	signal_remove("event 005", (SIGNAL_FUNC) event_isupport);
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 376", (SIGNAL_FUNC) event_end_of_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */

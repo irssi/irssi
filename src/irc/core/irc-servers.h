@@ -3,6 +3,7 @@
 
 #include "chat-protocols.h"
 #include "servers.h"
+#include "modes.h"
 
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
@@ -61,6 +62,7 @@ struct _IRC_SERVER_REC {
 	unsigned int disable_lag:1; /* Disable lag detection (PING command doesn't exist) */
 	unsigned int nick_collision:1; /* We're just now being killed because of nick collision */
 	unsigned int motd_got:1; /* We've received MOTD */
+	unsigned int isupport_sent:1; /* Server has sent us an isupport reply */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
@@ -96,6 +98,12 @@ struct _IRC_SERVER_REC {
 	                            channels go here if they're "temporarily unavailable"
 				    because of netsplits */
 	void *chanqueries;
+
+	GHashTable *isupport;
+	struct modes_type modes[256]; /* Stores the modes sent by a server in an isupport reply */
+	char prefix[256];
+
+	int (*nick_comp_func)(const char *, const char *); /* Function for comparing nicknames on this server */
 };
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn);

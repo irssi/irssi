@@ -345,7 +345,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	GHashTable *optlist;
 	char *target, *origtarget, *msg;
 	void *free_arg;
-	int free_ret, target_type;
+	int free_ret, target_type = SEND_TARGET_NICK;
 
 	g_return_if_fail(data != NULL);
 
@@ -398,7 +398,6 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	if (target != NULL)
 		server->send_message(server, target, msg, target_type);
-
 	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
 		    "message own_public" : "message own_private", 4,
 		    server, msg, target, origtarget);

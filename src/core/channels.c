@@ -219,7 +219,7 @@ static void event_connected(SERVER_REC *server)
 
 static int match_nick_flags(SERVER_REC *server, NICK_REC *nick, char flag)
 {
-	const char *flags = server->get_nick_flags();
+	const char *flags = server->get_nick_flags(server);
 
 	return strchr(flags, flag) == NULL ||
 		(flag == flags[0] && nick->op) ||
@@ -259,7 +259,7 @@ void channel_send_autocommands(CHANNEL_REC *channel)
                         continue;
 
 		nick = nicklist_find_mask(channel,
-					  channel->server->isnickflag(*botnick) ?
+					  channel->server->isnickflag(channel->server, *botnick) ?
 					  botnick+1 : botnick);
 		if (nick != NULL &&
 		    match_nick_flags(channel->server, nick, *botnick)) {

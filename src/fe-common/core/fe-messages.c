@@ -116,11 +116,18 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 {
         char *emptystr;
+	static char nickmode[2]; /* FIXME: bad */
 
 	if (!settings_get_bool("show_nickmode"))
                 return "";
 
         emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
+
+	if (nickrec != NULL && nickrec->other) {
+		nickmode[0] = nickrec->other;
+		nickmode[1] = '\0';
+		return nickmode;
+	}
 
 	return nickrec == NULL ? emptystr :
 		nickrec->op ? "@" :

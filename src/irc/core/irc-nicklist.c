@@ -74,11 +74,32 @@ char *irc_nick_strip(const char *nick)
 	return stripped;
 }
 
+int irc_nickcmp_rfc1459(const char *m, const char *n)
+{
+	while (*m != '\0' && *n != '\0') {
+		if (to_rfc1459(*m) != to_rfc1459(*n))
+			return -1;
+		m++; n++;
+	}
+	return *m == *n ? 0 : 1;
+}
+
+int irc_nickcmp_ascii(const char *m, const char *n)
+{
+	while (*m != '\0' && *n != '\0') {
+		if (to_ascii(*m) != to_ascii(*n))
+			return -1;
+		m++; n++;
+	}
+	return *m == *n ? 0 : 1;
+}
+
 static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
+	NICK_REC *rec;
 	char *params, *type, *channel, *names, *ptr;
-        int op, halfop, voice;
+        int op, halfop, voice, other;
 
 	g_return_if_fail(data != NULL);
 
@@ -117,8 +138,8 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		   showing "@+nick" and since none of these chars are valid
 		   nick chars, just check them until a non-nickflag char is
 		   found. FIXME: we just ignore owner char now. */
-		op = halfop = voice = FALSE;
-		while (isnickflag(*ptr)) {
+		op = halfop = voice = other = FALSE;
+		while (isnickflag(server, *ptr)) {
 			switch (*ptr) {
 			case '@':
                                 op = TRUE;
@@ -129,13 +150,17 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 			case '+':
                                 voice = TRUE;
                                 break;
+			default:
+				other = *ptr;
 			}
                         ptr++;
 		}
 
 		if (nicklist_find((CHANNEL_REC *) chanrec, ptr) == NULL) {
-			irc_nicklist_insert(chanrec, ptr, op, halfop,
-					    voice, FALSE);
+			rec = irc_nicklist_insert(chanrec, ptr, op, halfop,
+						  voice, FALSE);
+			if (other)
+				rec->other = other;
 		}
 	}
 
@@ -376,17 +401,24 @@ static void sig_usermode(SERVER_REC *server)
 	nicklist_update_flags(server, server->nick, server->usermode_away, -1);
 }
 
-static const char *get_nick_flags(void)
+static const char *get_nick_flags(SERVER_REC *server)
 {
-        return "@+%";
+	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
+	static char *std = "@%+";
+	char *prefix = g_hash_table_lookup(irc_server->isupport, "prefix");
+
+	if (prefix == NULL)
+		return std;
+	prefix = strchr(prefix, ')');
+	if (prefix != NULL || *++prefix == '\0') /* FIXME: ugly to modify it */
+		return std;
+	return prefix;
 }
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
-	if (IS_IRC_SERVER(server)) {
-		server->get_nick_flags =
-			(const char *(*)(void)) get_nick_flags;
-	}
+	if (IS_IRC_SERVER(server))
+		server->get_nick_flags = get_nick_flags;
 }
 
 void irc_nicklist_init(void)

@@ -14,8 +14,7 @@
 void irc_queries_init(void);
 void irc_queries_deinit(void);
 
-#define irc_query_find(server, name) \
-	query_find(SERVER(server), name)
+QUERY_REC *irc_query_find(IRC_SERVER_REC *server, const char *nick);
 
 QUERY_REC *irc_query_create(const char *server_tag,
 			    const char *nick, int automatic);

@@ -72,7 +72,7 @@ isnickflag(server, flag)
 	Irssi::Server server
 	char flag
 CODE:
-	RETVAL = server->isnickflag(flag);
+	RETVAL = server->isnickflag(server, flag);
 OUTPUT:
 	RETVAL
 
@@ -89,7 +89,7 @@ char *
 get_nick_flags(server)
 	Irssi::Server server
 CODE:
-	RETVAL = (char *) server->get_nick_flags();
+	RETVAL = (char *) server->get_nick_flags(server);
 OUTPUT:
 	RETVAL
 

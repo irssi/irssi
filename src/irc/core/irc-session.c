@@ -22,15 +22,25 @@
 #include "signals.h"
 #include "net-sendbuffer.h"
 #include "lib-config/iconfig.h"
+#include "misc.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-nicklist.h"
 
+struct _isupport_data { CONFIG_REC *config; CONFIG_NODE *node; };
+
+static void session_isupport_foreach(char *key, char *value, struct _isupport_data *data)
+{
+        config_node_set_str(data->config, data->node, key, value);
+}
+
 static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 				    CONFIG_NODE *node)
 {
         GSList *tmp;
+	CONFIG_NODE *isupport;
+	struct _isupport_data isupport_data;
 
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -54,11 +64,19 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_bool(config, node, "usermode_away", server->usermode_away);
 	config_node_set_str(config, node, "away_reason", server->away_reason);
 	config_node_set_bool(config, node, "emode_known", server->emode_known);
+
+        isupport = config_node_section(node, "isupport", NODE_TYPE_BLOCK);
+        isupport_data.config = config;
+        isupport_data.node = isupport;
+		        
+        g_hash_table_foreach(server->isupport, (GHFunc) session_isupport_foreach, &isupport_data);
 }
 
 static void sig_session_restore_server(IRC_SERVER_REC *server,
 				       CONFIG_NODE *node)
 {
+	GSList *tmp;
+
 	if (!IS_IRC_SERVER(server))
 		return;
 
@@ -69,12 +87,33 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->usermode_away = config_node_get_bool(node, "usermode_away", FALSE);
 	server->away_reason = g_strdup(config_node_get_str(node, "away_reason", NULL));
 	server->emode_known = config_node_get_bool(node, "emode_known", FALSE);
+
+	if (server->isupport == NULL) {
+		server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
+						    (GCompareFunc) g_istr_equal);
+	}
+
+	node = config_node_section(node, "isupport", -1);
+	tmp = config_node_first(node->value);
+	if(tmp != NULL)
+		server->isupport_sent = TRUE;
+
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
+		node = tmp->data;
+		if (node == NULL)
+			break;
+
+		g_hash_table_insert(server->isupport, g_strdup(node->key),
+				    g_strdup(node->value));
+	}
+
 }
 
 static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 				     CONFIG_NODE *node)
 {
 	const char *nick;
+	char *other;
         int op, halfop, voice;
         NICK_REC *nickrec;
 
@@ -89,6 +128,8 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
         voice = config_node_get_bool(node, "voice", FALSE);
         halfop = config_node_get_bool(node, "halfop", FALSE);
 	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE);
+	other = config_node_get_str(node, "other", FALSE);
+	nickrec->other = other[0];
 }
 
 static void session_restore_channel(IRC_CHANNEL_REC *channel)

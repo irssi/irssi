@@ -129,3 +129,13 @@ CODE:
 	RETVAL = (char *) server_redirect_peek_signal(server, event, args, &redirection);
 OUTPUT:
 	RETVAL
+
+char *
+server_isupport(server, name)
+	Irssi::Irc::Server server
+	char *name
+CODE:
+	RETVAL = (char *) g_hash_table_lookup(server->isupport, name);
+OUTPUT:
+	RETVAL
+

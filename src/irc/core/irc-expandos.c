@@ -82,10 +82,19 @@ static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
 	return IS_IRC_SERVER(server) ? IRC_SERVER(server)->usermode : "";
 }
 
-/* expands to your usermode on channel, op '@', halfop '%', "+" voice */
+/* expands to your usermode on channel, op '@', halfop '%', "+" voice or other */
 static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
 {
 	if (IS_IRC_CHANNEL(item) && CHANNEL(item)->ownnick) {
+		char other = NICK(CHANNEL(item)->ownnick)->other;
+		if (other != '\0') {
+			char *cumode = g_malloc(2);
+			cumode[0] = other;
+			cumode[1] = '\0';
+			*free_ret = TRUE;
+			return cumode;
+		}
+
 		return NICK(CHANNEL(item)->ownnick)->op ? "@" :
 		       NICK(CHANNEL(item)->ownnick)->halfop ? "%" :
 		       NICK(CHANNEL(item)->ownnick)->voice ? "+" : "";

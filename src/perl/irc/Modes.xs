@@ -4,14 +4,15 @@ MODULE = Irssi::Irc::Modes	PACKAGE = Irssi::Irc
 PROTOTYPES: ENABLE
 
 void
-modes_join(old, mode, channel)
+modes_join(server, old, mode, channel)
+	Irssi::Irc::Server server
 	char *old
 	char *mode
         int channel
 PREINIT:
 	char *ret;
 PPCODE:
-	ret = modes_join(old, mode, channel);
+	ret = modes_join(server, old, mode, channel);
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 

@@ -177,7 +177,9 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 		else
 			g_string_append_c(str, ' ');
 
-		if (nick->op)
+		if (nick->other)
+                        g_string_append_c(str, nick->other);
+		else if (nick->op)
                         g_string_append_c(str, '@');
 		else if (nick->halfop)
                         g_string_append_c(str, '%');
@@ -213,8 +215,15 @@ void proxy_client_reset_nick(CLIENT_REC *client)
 	client->nick = g_strdup(client->server->nick);
 }
 
+static void proxy_dump_data_005(char *key, char *value, GString *output)
+{
+	g_string_sprintfa(output, "%s=%s ", key, value);
+}
+
 void proxy_dump_data(CLIENT_REC *client)
 {
+	GString *isupport_out;
+
         proxy_client_reset_nick(client);
 
 	/* welcome info */
@@ -225,6 +234,17 @@ void proxy_dump_data(CLIENT_REC *client)
 		proxy_outdata(client, ":%s 004 %s %s %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
 	else
 		proxy_outdata(client, ":%s 004 %s %s %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
+
+	if (client->server->isupport_sent) {
+		isupport_out = g_string_new(NULL);
+		g_string_sprintf(isupport_out, ":%s 005 %s ", client->proxy_address, client->nick);
+		/* FIXME: should be limited to 15 params */
+		g_hash_table_foreach(client->server->isupport, proxy_dump_data_005, isupport_out);
+		g_string_sprintfa(isupport_out, ":are supported by this server\n");
+		proxy_outdata(client, "%s", isupport_out->str);
+		g_string_free(isupport_out, TRUE);
+	}
+
 	proxy_outdata(client, ":%s 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 255 %s :I have 0 clients, 0 services and 0 servers\n", client->proxy_address, client->nick);
 	proxy_outdata(client, ":%s 422 %s :MOTD File is missing\n", client->proxy_address, client->nick);

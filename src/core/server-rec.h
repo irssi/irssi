@@ -53,12 +53,12 @@ GSList *queries;
    channel keys etc. */
 void (*channels_join)(SERVER_REC *server, const char *data, int automatic);
 /* returns true if `flag' indicates a nick flag (op/voice/halfop) */
-int (*isnickflag)(char flag);
+int (*isnickflag)(SERVER_REC *server, char flag);
 /* returns true if `data' indicates a channel */
 int (*ischannel)(SERVER_REC *server, const char *data);
 /* returns all nick flag characters in order op, voice, halfop. If some
    of them aren't supported '\0' can be used. */
-const char *(*get_nick_flags)(void);
+const char *(*get_nick_flags)(SERVER_REC *server);
 /* send public or private message to server */
 void (*send_message)(SERVER_REC *server, const char *target,
 		     const char *msg, int target_type);

@@ -623,28 +623,39 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
-	/* send notice to all ops */
-	nicks = NULL;
-	g_hash_table_foreach(chanrec->nicks, (GHFunc) cmd_wall_hash, &nicks);
+	/* See if the server has advertised support of wallchops */
+	if (g_hash_table_lookup(chanrec->server->isupport, "statusmsg") ||
+	    g_hash_table_lookup(chanrec->server->isupport, "wallchops"))
+		irc_send_cmdv(server, "NOTICE @%s :%s", chanrec->name, msg);
+	else {
+		/* Fall back to manually noticing each op */
+		nicks = NULL;
+		g_hash_table_foreach(chanrec->nicks,
+				     (GHFunc) cmd_wall_hash, &nicks);
 
-	args = g_strconcat(chanrec->name, " ", msg, NULL);
-	msg = parse_special_string(settings_get_str("wall_format"),
-				   SERVER(server), item, args, NULL, 0);
-	g_free(args);
+		args = g_strconcat(chanrec->name, " ", msg, NULL);
+		msg = parse_special_string(settings_get_str("wall_format"),
+					   SERVER(server), item, args, NULL, 0);
+		g_free(args);
 
-	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
-		NICK_REC *rec = tmp->data;
+		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+			NICK_REC *rec = tmp->data;
 
-		if (rec != chanrec->ownnick)
-			irc_send_cmdv(server, "NOTICE %s :%s", rec->nick, msg);
+			if (rec != chanrec->ownnick) {
+				irc_send_cmdv(server, "NOTICE %s :%s",
+					      rec->nick, msg);
+			}
+		}
+		g_free(msg);
+		g_slist_free(nicks);
 	}
-	g_free(msg);
-	g_slist_free(nicks);
 
 	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: WALLCHOPS <channel> <message> */
+/* ircu is the only major server i can see which supports this 
+   and it supports NOTICE @#channel anyway */
 static void cmd_wallchops(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *channame, *msg;

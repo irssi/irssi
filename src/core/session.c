@@ -118,12 +118,17 @@ static void cmd_upgrade(const char *data)
 static void session_save_nick(CHANNEL_REC *channel, NICK_REC *nick,
 			      CONFIG_REC *config, CONFIG_NODE *node)
 {
+	static char other[2];
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
 	config_node_set_str(config, node, "nick", nick->nick);
 	config_node_set_bool(config, node, "op", nick->op);
 	config_node_set_bool(config, node, "halfop", nick->halfop);
 	config_node_set_bool(config, node, "voice", nick->voice);
+	
+	other[0] = nick->other;
+	other[1] = '\0';
+	config_node_set_str(config, node, "other", other);
 
 	signal_emit("session save nick", 4, channel, nick, config, node);
 }
