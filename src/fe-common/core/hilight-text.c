@@ -159,7 +159,7 @@ static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, cons
 			continue;
 		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_CHECK_LEVEL)) == 0)
                         continue;
-		if (rec->channels != NULL && !strarray_find(rec->channels, channel))
+		if (rec->channels != NULL && strarray_find(rec->channels, channel) == -1)
 			continue;
 		if (rec->regexp) {
 			if (!regexp_match(str, rec->text))
