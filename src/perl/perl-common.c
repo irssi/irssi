@@ -74,6 +74,24 @@ char *perl_function_get_package(const char *function)
         return NULL;
 }
 
+SV *perl_func_sv_inc(SV *func, const char *package)
+{
+	STRLEN n_a;
+	char *name;
+
+	if (SvPOK(func)) {
+		/* prefix with package name */
+		name = g_strdup_printf("%s::%s", package,
+				       (char *) SvPV(func, n_a));
+		func = new_pv(name);
+                g_free(name);
+	} else {
+		SvREFCNT_inc(func);
+	}
+
+        return func;
+}
+
 SV *irssi_bless_iobject(int type, int chat_type, void *object)
 {
         PERL_OBJECT_REC *rec;

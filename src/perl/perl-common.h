@@ -22,6 +22,9 @@ typedef struct {
 const char *perl_get_package(void);
 /* Parses the package part from function name */
 char *perl_function_get_package(const char *function);
+/* If SV is a string, prefix it with given package.
+   Increases the reference counter for the return value. */
+SV *perl_func_sv_inc(SV *func, const char *package);
 
 /* For compatibility with perl 5.004 and older */
 #ifndef HAVE_PL_PERL

@@ -30,10 +30,11 @@
 #include "perl-signals.h"
 
 typedef struct {
+        PERL_SCRIPT_REC *script;
 	int signal_id;
 	char *signal;
 
-	char *func;
+	SV *func;
 	int priority;
 } PERL_SIGNAL_REC;
 
@@ -70,8 +71,8 @@ static PERL_SIGNAL_ARGS_REC *perl_signal_args_find(int signal_id)
 	return NULL;
 }
 
-static void perl_call_signal(const char *func, int signal_id,
-			     gconstpointer *args)
+static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
+			     int signal_id, gconstpointer *args)
 {
 	dSP;
 
@@ -155,18 +156,13 @@ static void perl_call_signal(const char *func, int signal_id,
 	}
 
 	PUTBACK;
-	perl_call_pv((char *) func, G_EVAL|G_DISCARD);
+	perl_call_sv(func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
-                char *package;
 
-                package = perl_function_get_package(func);
-		signal_emit("script error", 2,
-			    perl_script_find_package(package),
-			    SvPV(ERRSV, n_a));
-		g_free(package);
+		signal_emit("script error", 2, script, SvPV(ERRSV, n_a));
                 rec = NULL;
 	}
 
@@ -224,7 +220,7 @@ static void sig_func(int priority, gconstpointer *args)
 		PERL_SIGNAL_REC *rec = tmp->data;
 
                 next = tmp->next;
-		perl_call_signal(rec->func, signal_id, args);
+		perl_call_signal(rec->script, rec->func, signal_id, args);
 		if (signal_is_stopped(signal_id))
                         break;
 	}
@@ -252,9 +248,10 @@ SIG_FUNC_DECL(2, last);
 #define perl_signal_get_func(rec) \
 	(priority_get_func((rec)->priority))
 
-static void perl_signal_add_to_int(const char *signal, const char *func,
+static void perl_signal_add_to_int(const char *signal, SV *func,
 				   int priority, int command)
 {
+        PERL_SCRIPT_REC *script;
 	PERL_SIGNAL_REC *rec;
 	GHashTable *table;
 	GSList **siglist;
@@ -264,6 +261,9 @@ static void perl_signal_add_to_int(const char *signal, const char *func,
         g_return_if_fail(func != NULL);
         g_return_if_fail(priority >= 0 && priority <= 2);
 
+        script = perl_script_find_package(perl_get_package());
+        g_return_if_fail(script != NULL);
+
 	if (!command && strncmp(signal, "command ", 8) == 0) {
 		/* we used Irssi::signal_add() instead of
 		   Irssi::command_bind() - oh well, allow this.. */
@@ -272,9 +272,10 @@ static void perl_signal_add_to_int(const char *signal, const char *func,
 	}
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
+        rec->script = script;
 	rec->signal_id = signal_get_uniq_id(signal);
 	rec->signal = g_strdup(signal);
-	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
+	rec->func = perl_func_sv_inc(func, perl_get_package());
 	rec->priority = priority;
 
 	table = signals[priority];
@@ -294,7 +295,7 @@ static void perl_signal_add_to_int(const char *signal, const char *func,
 	*siglist = g_slist_append(*siglist, rec);
 }
 
-void perl_signal_add_to(const char *signal, const char *func, int priority)
+void perl_signal_add_to(const char *signal, SV *func, int priority)
 {
         perl_signal_add_to_int(signal, func, priority, FALSE);
 }
@@ -304,8 +305,8 @@ static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 	if (strncmp(rec->signal, "command ", 8) == 0)
 		command_unbind(rec->signal+8, sig_func_default);
 
+        SvREFCNT_dec(rec->func);
 	g_free(rec->signal);
-	g_free(rec->func);
 	g_free(rec);
 }
 
@@ -327,42 +328,46 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
         perl_signal_destroy(rec);
 }
 
-static void perl_signal_remove_list(GSList **list, const char *func)
+#define sv_func_cmp(f1, f2, len) \
+	(f1 == f2 || (SvPOK(f1) && SvPOK(f2) && \
+		strcmp((char *) SvPV(f1, len), (char *) SvPV(f2, len)) == 0))
+
+static void perl_signal_remove_list(GSList **list, SV *func)
 {
 	GSList *tmp;
+        STRLEN n_a;
 
 	g_return_if_fail(list != NULL);
 
 	for (tmp = *list; tmp != NULL; tmp = tmp->next) {
 		PERL_SIGNAL_REC *rec = tmp->data;
 
-		if (strcmp(func, rec->func) == 0) {
+		if (sv_func_cmp(rec->func, func, n_a)) {
 			perl_signal_remove_list_one(list, rec);
 			break;
 		}
 	}
 }
 
-void perl_signal_remove(const char *signal, const char *func)
+void perl_signal_remove(const char *signal, SV *func)
 {
 	GSList **list;
         void *signal_idp;
-	char *fullfunc;
 	int n;
 
 	signal_idp = GINT_TO_POINTER(signal_get_uniq_id(signal));
 
-	fullfunc = g_strdup_printf("%s::%s", perl_get_package(), func);
+        func = perl_func_sv_inc(func, perl_get_package());
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
 		list = g_hash_table_lookup(signals[n], signal_idp);
 		if (list != NULL)
-			perl_signal_remove_list(list, fullfunc);
+			perl_signal_remove_list(list, func);
 	}
-	g_free(fullfunc);
+        SvREFCNT_dec(func);
 }
 
 void perl_command_bind_to(const char *cmd, const char *category,
-			  const char *func, int priority)
+			  SV *func, int priority)
 {
 	char *signal;
 
@@ -379,7 +384,7 @@ void perl_command_runsub(const char *cmd, const char *data,
 	command_runsub(cmd, data, server, item);
 }
 
-void perl_command_unbind(const char *cmd, const char *func)
+void perl_command_unbind(const char *cmd, SV *func)
 {
 	char *signal;
 
@@ -389,25 +394,22 @@ void perl_command_unbind(const char *cmd, const char *func)
 	g_free(signal);
 }
 
-static int signal_destroy_hash(void *key, GSList **list, const char *package)
+static int signal_destroy_hash(void *key, GSList **list, PERL_SCRIPT_REC *script)
 {
 	GSList *tmp, *next;
-	int len;
 
-	len = package == NULL ? 0 : strlen(package);
 	for (tmp = *list; tmp != NULL; tmp = next) {
 		PERL_SIGNAL_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (package != NULL && strncmp(rec->func, package, len) != 0)
-                        continue;
-
-		*list = g_slist_remove(*list, rec);
-		if (*list == NULL) {
-			signal_remove_id(rec->signal_id,
-					 perl_signal_get_func(rec));
+		if (script == NULL || rec->script == script) {
+			*list = g_slist_remove(*list, rec);
+			if (*list == NULL) {
+				signal_remove_id(rec->signal_id,
+						 perl_signal_get_func(rec));
+			}
+			perl_signal_destroy(rec);
 		}
-		perl_signal_destroy(rec);
 	}
 
 	if (*list != NULL)
@@ -417,15 +419,15 @@ static int signal_destroy_hash(void *key, GSList **list, const char *package)
 	return TRUE;
 }
 
-/* destroy all signals used by package */
-void perl_signal_remove_package(const char *package)
+/* destroy all signals used by script */
+void perl_signal_remove_script(PERL_SCRIPT_REC *script)
 {
 	int n;
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
 		g_hash_table_foreach_remove(signals[n],
 					    (GHRFunc) signal_destroy_hash,
-					    (void *) package);
+					    script);
 	}
 }
 

@@ -74,8 +74,8 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
 
 	signal_emit("script destroyed", 1, script);
 
-	perl_signal_remove_package(script->package);
-	perl_source_remove_package(script->package);
+	perl_signal_remove_script(script);
+	perl_source_remove_script(script);
 
 	g_free(script->name);
 	g_free(script->package);

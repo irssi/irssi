@@ -27,28 +27,28 @@ CODE:
 void
 signal_add(signal, func)
 	char *signal
-	char *func
+	SV *func
 CODE:
 	perl_signal_add(signal, func);
 
 void
 signal_add_first(signal, func)
 	char *signal
-	char *func
+	SV *func
 CODE:
 	perl_signal_add_first(signal, func);
 
 void
 signal_add_last(signal, func)
 	char *signal
-	char *func
+	SV *func
 CODE:
 	perl_signal_add_last(signal, func);
 
 void
 signal_remove(signal, func)
 	char *signal
-	char *func
+	SV *func
 CODE:
 	perl_signal_remove(signal, func);
 
@@ -72,7 +72,7 @@ signal_get_emitted_id()
 int
 timeout_add(msecs, func, data)
 	int msecs
-	char *func
+	SV *func
 	void *data
 CODE:
 	RETVAL = perl_timeout_add(msecs, func, ST(2));
@@ -104,7 +104,7 @@ int
 input_add(source, condition, func, data)
 	int source
 	int condition
-	char *func
+	SV *func
 	void *data
 CODE:
 	RETVAL = perl_input_add(source, condition, func, ST(2));
@@ -333,7 +333,7 @@ void
 command_bind_first(cmd, func, category = "Perl scripts' commands")
 	char *cmd
 	char *category
-	char *func
+	SV *func
 CODE:
 	perl_command_bind_first(cmd, category, func);
 
@@ -341,7 +341,7 @@ void
 command_bind(cmd, func, category = "Perl scripts' commands")
 	char *cmd
 	char *category
-	char *func
+	SV *func
 CODE:
 	perl_command_bind(cmd, category, func);
 
@@ -349,7 +349,7 @@ void
 command_bind_last(cmd, func, category = "Perl scripts' commands")
 	char *cmd
 	char *category
-	char *func
+	SV *func
 CODE:
 	perl_command_bind_last(cmd, category, func);
 
@@ -365,7 +365,7 @@ CODE:
 void
 command_unbind(cmd, func)
 	char *cmd
-	char *func
+	SV *func
 CODE:
 	perl_command_unbind(cmd, func);
 

@@ -1,7 +1,7 @@
 #ifndef __PERL_SIGNALS_H
 #define __PERL_SIGNALS_H
 
-void perl_signal_add_to(const char *signal, const char *func, int priority);
+void perl_signal_add_to(const char *signal, SV *func, int priority);
 #define perl_signal_add_first(signal, func) \
         perl_signal_add_to(signal, func, 0)
 #define perl_signal_add(signal, func) \
@@ -9,12 +9,12 @@ void perl_signal_add_to(const char *signal, const char *func, int priority);
 #define perl_signal_add_last(signal, func) \
         perl_signal_add_to(signal, func, 2)
 
-void perl_signal_remove(const char *signal, const char *func);
-/* remove all signals used by package */
-void perl_signal_remove_package(const char *package);
+void perl_signal_remove(const char *signal, SV *func);
+/* remove all signals used by script */
+void perl_signal_remove_script(PERL_SCRIPT_REC *script);
 
 void perl_command_bind_to(const char *cmd, const char *category,
-			  const char *func, int priority);
+			  SV *func, int priority);
 #define perl_command_bind_first(cmd, category, func) \
         perl_command_bind_to(cmd, category, func, 0)
 #define perl_command_bind(cmd, category, func) \
@@ -22,7 +22,7 @@ void perl_command_bind_to(const char *cmd, const char *category,
 #define perl_command_bind_last(cmd, category, func) \
         perl_command_bind_to(cmd, category, func, 2)
 
-void perl_command_unbind(const char *cmd, const char *func);
+void perl_command_unbind(const char *cmd, SV *func);
 
 void perl_signals_start(void);
 void perl_signals_stop(void);
