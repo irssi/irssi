@@ -56,8 +56,11 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (!rec->right_justify && xpos+rec->size < COLS) {
+		if (!rec->right_justify &&
+		    (rec->max_size || xpos+rec->size < COLS)) {
 			rec->xpos = xpos;
+			if (rec->max_size)
+				rec->size = COLS-1-xpos;
 
 			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);

@@ -19,7 +19,7 @@ typedef struct {
         STATUSBAR_REC *bar;
 
 	int xpos, size;
-	int right_justify;
+	int right_justify, max_size;
 	void *func;
 } SBAR_ITEM_REC;
 

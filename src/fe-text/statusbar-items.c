@@ -719,6 +719,7 @@ static void topicbar_create(void)
 
 	topic_bar = statusbar_create(STATUSBAR_POS_UP, 0);
 	topic_item = statusbar_item_create(topic_bar, 0, FALSE, statusbar_topic);
+	topic_item->max_size = TRUE;
 	statusbar_redraw(topic_bar);
 
 	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);

@@ -65,7 +65,7 @@ static void sig_winch(int p)
 	/* Resize curses terminal */
 	ychange = ws.ws_row-LINES;
 	xchange = ws.ws_col-COLS;
-#ifdef xHAVE_CURSES_RESIZETERM
+#ifdef HAVE_CURSES_RESIZETERM
 	resizeterm(ws.ws_row, ws.ws_col);
 #else
 	deinit_screen();
