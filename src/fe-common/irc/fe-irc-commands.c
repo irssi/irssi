@@ -153,8 +153,13 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     else
     {
         /* private message */
+        if (settings_get_bool("autocreate_query") && query_find(server, target) == NULL)
+	    item = (WI_ITEM_REC *) query_create(server, target, FALSE);
+	else
+	    item = (WI_ITEM_REC *) query_find(server, target);
+
 	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
-		    query_find(server, target) == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		    item == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }
     g_free_not_null(freestr);
 
