@@ -22,9 +22,11 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "settings.h"
 
-#include "levels.h"
+#include "irc-server.h"
+#include "ignore.h"
 #include "netsplit.h"
 
 #define SPLIT_WAIT_TIME 2 /* how many seconds to wait for the QUIT split messages to stop */
@@ -54,6 +56,7 @@ typedef struct {
 } TEMP_SPLIT_CHAN_REC;
 
 typedef struct {
+        IRC_SERVER_REC *server_rec;
 	NETSPLIT_SERVER_REC *server;
 	GSList *channels;
 } TEMP_SPLIT_REC;
@@ -83,6 +86,10 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 	split->printed = TRUE;
 	for (tmp = split->channels; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_CHAN_REC *splitchan = tmp->data;
+
+		if (ignore_check(rec->server_rec, split->nick, split->address,
+				 splitchan->name, "", MSGLEVEL_QUITS))
+			continue;
 
 		chanrec = find_split_chan(rec, splitchan->name);
 		if (chanrec == NULL) {
@@ -139,6 +146,7 @@ static int check_server_splits(IRC_SERVER_REC *server)
 	for (tmp = server->split_servers; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_SERVER_REC *sserver = tmp->data;
 
+                rec.server_rec = server;
 		rec.server = sserver;
 		rec.channels = NULL;
 
