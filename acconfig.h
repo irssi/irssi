@@ -4,7 +4,6 @@
 #undef PLUGINSDIR
 
 /* misc.. */
-#undef MEM_DEBUG
 #undef HAVE_IPV6
 #undef HAVE_POPT_H
 #undef HAVE_SOCKS_H

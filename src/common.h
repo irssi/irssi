@@ -46,8 +46,6 @@
 #  include <gmodule.h>
 #endif
 
-#include "core/memdebug.h"
-
 /* input functions */
 #define G_INPUT_READ	(1 << 0)
 #define G_INPUT_WRITE	(1 << 1)

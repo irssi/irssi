@@ -185,19 +185,6 @@ AC_ARG_WITH(tests,
 	TEST_DIR=)
 AC_SUBST(TEST_DIR)
 
-AC_ARG_ENABLE(memdebug,
-[  --enable-memdebug       Enable memory debugging],
-	if test x$enableval = xyes; then
-    		want_memdebug=yes
-	else
-		if test "x$enableval" = xno; then
-			want_memdebug=no
-		else
-			want_memdebug=yes
-		fi
-	fi,
-	want_memdebug=no)
-
 AC_ARG_ENABLE(ipv6,
 [  --enable-ipv6           Enable IPv6 support],
 	if test x$enableval = xyes; then
@@ -728,15 +715,6 @@ COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
 COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
 AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
-
-dnl **
-dnl ** memory debugging
-dnl **
-
-if test "x$want_memdebug" = "xyes"; then
-	AC_DEFINE(MEM_DEBUG)
-fi
-AM_CONDITIONAL(BUILD_MEMDEBUG, test "x$want_memdebug" = "xyes")
 
 dnl **
 dnl ** tr-Chinese Big5 support

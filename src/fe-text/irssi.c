@@ -324,9 +324,5 @@ int main(int argc, char **argv)
 	g_main_destroy(main_loop);
 	textui_deinit();
 
-#ifdef MEM_DEBUG
-	ig_mem_profile();
-#endif
-
 	return 0;
 }

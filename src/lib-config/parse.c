@@ -82,11 +82,7 @@ static void config_parse_get_token(GScanner *scanner, CONFIG_NODE *node)
 		} else {
 			if (scanner->token == G_TOKEN_INT) {
 				scanner->token = G_TOKEN_STRING;
-#undef g_strdup_printf /* This is free'd by GLib itself */
 				scanner->value.v_string = g_strdup_printf("%lu", scanner->value.v_int);
-#ifdef MEM_DEBUG
-#define g_strdup_printf(a, b...) ig_strdup_printf(__FILE__, __LINE__, a, ##b)
-#endif
 			}
 			break;
 		}
