@@ -77,8 +77,9 @@ void channel_destroy(CHANNEL_REC *channel)
 	channel->destroying = TRUE;
 
 	channels = g_slist_remove(channels, channel);
-	if (!channel->server->disconnected)
-		channel->server->channels = g_slist_remove(channel->server->channels, channel);
+	channel->server->channels =
+		g_slist_remove(channel->server->channels, channel);
+
 	signal_emit("channel destroyed", 1, channel);
 
         MODULE_DATA_DEINIT(channel);

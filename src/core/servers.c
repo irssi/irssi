@@ -361,15 +361,16 @@ int server_start_connect(SERVER_REC *server)
 
 static int server_remove_channels(SERVER_REC *server)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 	int found;
 
 	g_return_val_if_fail(server != NULL, FALSE);
 
 	found = FALSE;
-	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+	for (tmp = server->channels; tmp != NULL; tmp = next) {
 		CHANNEL_REC *channel = tmp->data;
 
+		next = tmp->next;
 		channel_destroy(channel);
 		found = TRUE;
 	}
