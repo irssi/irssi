@@ -78,16 +78,11 @@ void signal_add_to_id(const char *module, int pos,
 }
 
 /* Destroy the whole signal */
-static void signal_destroy(int signal_id)
+static void signal_destroy(SIGNAL_REC *rec)
 {
-	SIGNAL_REC *rec;
-
-	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
-	if (rec != NULL) {
-		/* remove whole signal from memory */
-		g_hash_table_remove(signals, GINT_TO_POINTER(signal_id));
-		g_free(rec);
-	}
+	/* remove whole signal from memory */
+	g_hash_table_remove(signals, GINT_TO_POINTER(rec->id));
+	g_mem_chunk_free(signals_chunk, rec);
 }
 
 static int signal_list_find(GPtrArray *array, void *data)
@@ -102,8 +97,15 @@ static int signal_list_find(GPtrArray *array, void *data)
 	return -1;
 }
 
-static void signal_remove_from_list(SIGNAL_REC *rec, int signal_id,
-				    int list, int index)
+static void signal_list_free(SIGNAL_REC *rec, int list)
+{
+	g_ptr_array_free(rec->siglist[list], TRUE);
+	g_ptr_array_free(rec->modulelist[list], TRUE);
+	rec->siglist[list] = NULL;
+	rec->modulelist[list] = NULL;
+}
+
+static void signal_remove_from_list(SIGNAL_REC *rec, int list, int index)
 {
 	if (rec->emitting) {
 		g_ptr_array_index(rec->siglist[list], index) = NULL;
@@ -111,14 +113,17 @@ static void signal_remove_from_list(SIGNAL_REC *rec, int signal_id,
 	} else {
 		g_ptr_array_remove_index(rec->siglist[list], index);
 		g_ptr_array_remove_index(rec->modulelist[list], index);
+
+		if (rec->siglist[list]->len == 0)
+			signal_list_free(rec, list);
+
 		if (signal_is_emitlist_empty(rec))
-			signal_destroy(signal_id);
+			signal_destroy(rec);
 	}
 }
 
 /* Remove signal from emit lists */
-static int signal_remove_from_lists(SIGNAL_REC *rec, int signal_id,
-				    SIGNAL_FUNC func)
+static int signal_remove_from_lists(SIGNAL_REC *rec, SIGNAL_FUNC func)
 {
 	int n, index;
 
@@ -129,7 +134,7 @@ static int signal_remove_from_lists(SIGNAL_REC *rec, int signal_id,
 		index = signal_list_find(rec->siglist[n], (void *) func);
 		if (index != -1) {
 			/* remove the function from emit list */
-			signal_remove_from_list(rec, signal_id, n, index);
+			signal_remove_from_list(rec, n, index);
 			return 1;
 		}
 	}
@@ -146,7 +151,7 @@ void signal_remove_id(int signal_id, SIGNAL_FUNC func)
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
         if (rec != NULL)
-		signal_remove_from_lists(rec, signal_id, func);
+		signal_remove_from_lists(rec, func);
 }
 
 /* unbind signal */
@@ -172,7 +177,13 @@ static void signal_list_clean(SIGNAL_REC *rec)
 				g_ptr_array_remove_index(rec->modulelist[n], index);
 			}
 		}
+
+		if (rec->siglist[n]->len == 0)
+                        signal_list_free(rec, n);
 	}
+
+	if (signal_is_emitlist_empty(rec))
+		signal_destroy(rec);
 }
 
 static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
@@ -333,9 +344,7 @@ static void signal_remove_module(void *signal, SIGNAL_REC *rec,
 				 const char *module)
 {
 	unsigned int index;
-	int signal_id, list;
-
-	signal_id = GPOINTER_TO_INT(signal);
+	int list;
 
 	for (list = 0; list < SIGNAL_LISTS; list++) {
 		if (rec->modulelist[list] == NULL)
@@ -343,7 +352,7 @@ static void signal_remove_module(void *signal, SIGNAL_REC *rec,
 
 		for (index = 0; index < rec->modulelist[list]->len; index++) {
 			if (g_strcasecmp(g_ptr_array_index(rec->modulelist[list], index), module) == 0)
-				signal_remove_from_list(rec, signal_id, list, index);
+				signal_remove_from_list(rec, list, index);
 		}
 	}
 }
