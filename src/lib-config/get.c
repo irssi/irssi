@@ -309,10 +309,9 @@ CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index)
 	return NULL;
 }
 
-/* Returns the next non-comment node in list */
-GSList *config_node_next(GSList *list)
+/* Returns the first non-comment node in list */
+GSList *config_node_first(GSList *list)
 {
-	list = list->next;
 	while (list != NULL) {
 		CONFIG_NODE *node = list->data;
 
@@ -321,4 +320,11 @@ GSList *config_node_next(GSList *list)
 		list = list->next;
 	}
 	return list;
+}
+
+/* Returns the next non-comment node in list */
+GSList *config_node_next(GSList *list)
+{
+	list = list->next;
+        return config_node_first(list);
 }

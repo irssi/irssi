@@ -99,6 +99,9 @@ const char *config_list_find(CONFIG_REC *rec, const char *section, const char *k
 CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
 /* Returns n'th node from list. */
 CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index);
+
+/* Returns the first non-comment node in list */
+GSList *config_node_first(GSList *list);
 /* Returns the next non-comment node in list */
 GSList *config_node_next(GSList *list);
 
