@@ -263,6 +263,9 @@ void term_set_color(TERM_WINDOW *window, int col)
 		terminfo_set_normal();
 	}
 
+	if (!term_use_colors && (col & 0xf0) != 0)
+		col |= ATTR_REVERSE;
+
 	/* reversed text (use standout) */
 	if (col & ATTR_REVERSE) {
 		if ((last_attrs & ATTR_REVERSE) == 0)
