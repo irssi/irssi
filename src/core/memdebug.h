@@ -16,6 +16,7 @@ GString *ig_string_new(const char *file, int line, const char *str);
 void ig_string_free(const char *file, int line, GString *str, int freeit);
 char *ig_strjoinv(const char *file, int line, const char *sepa, char **array);
 char *ig_dirname(const char *file, int line, const char *fname);
+char *ig_module_build_path(const char *file, int line, const char *dir, const char *module);
 
 #define g_malloc(a) ig_malloc(a, __FILE__, __LINE__)
 #define g_malloc0(a) ig_malloc0(a, __FILE__, __LINE__)
