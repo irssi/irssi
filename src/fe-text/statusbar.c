@@ -653,6 +653,32 @@ const char *statusbar_item_get_value(SBAR_ITEM_REC *item)
         return value;
 }
 
+static char *reverse_controls(const char *str)
+{
+	GString *out;
+        char *ret;
+
+	out = g_string_new(NULL);
+
+	while (*str != '\0') {
+		if ((unsigned char) *str < 32 ||
+		    (term_type == TERM_TYPE_8BIT &&
+		     (unsigned char) (*str & 0x7f) < 32)) {
+			/* control char */
+			g_string_sprintfa(out, "%%8%c%%8",
+					  'A'-1 + (*str & 0x7f));
+		} else {
+			g_string_append_c(out, *str);
+		}
+
+		str++;
+	}
+
+	ret = out->str;
+        g_string_free(out, FALSE);
+	return ret;
+}
+
 void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 				    const char *str, const char *data,
 				    int escape_vars)
@@ -693,6 +719,11 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 	tmpstr = strip_codes(tmpstr2);
         g_free(tmpstr2);
 
+	/* show all control chars reversed */
+	tmpstr2 = reverse_controls(tmpstr);
+	g_free(tmpstr);
+
+	tmpstr = tmpstr2;
 	if (get_size_only) {
 		item->min_size = item->max_size = format_get_length(tmpstr);
 	} else {
