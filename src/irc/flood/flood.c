@@ -85,6 +85,9 @@ static int flood_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
+		if (!IS_IRC_SERVER(rec))
+                        continue;
+
 		mserver = MODULE_DATA(rec);
 		g_hash_table_foreach_remove(mserver->floodlist, (GHRFunc) flood_hash_check_remove, GINT_TO_POINTER((int) now));
 	}
