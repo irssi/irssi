@@ -1,4 +1,4 @@
-# $Revision: 1.5 $, $Date: 2000/01/13 02:13:20 $
+# $Revision: 1.6 $, $Date: 2000/01/27 19:03:28 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
@@ -10,7 +10,7 @@ Group: 		Applications/Communications
 Group(pl):      Aplikacje/Komunikacja
 URL: 		http://xlife.dhs.org/irssi/
 Source0: 	http://xlife.dhs.org/irssi/files/%{name}-%{version}.tar.gz
-BuildRequires:	libPropList-devel
+BuildRequires:	libPropList
 BuildRequires:	glib-devel
 BuildRequires:	ncurses-devel
 BuildRequires:	imlib-devel
@@ -82,6 +82,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr (644,root,root,755)
 %doc {AUTHORS,ChangeLog,README,TODO,NEWS}.gz
 
+%attr(755,root,root) %{_bindir}/irssi
 %attr(755,root,root) %{_bindir}/irssi-text
 %attr(755,root,root) %{_bindir}/irssi-bot
 
@@ -109,6 +110,14 @@ rm -rf $RPM_BUILD_ROOT
 All below listed persons can be reached on <cvs_login>@pld.org.pl
 
 $Log: irssi.spec.in,v $
+Revision 1.6  2000/01/27 19:03:28  cras
+fixes by vkoivula@saunalahti.fi
+
+Revision 1.6  2000/01/25 00:00:00 vkoivula@saunalahti.fi
+- requires libProbList-devel changed to libPropList (problist.h is actually in
+  this package)
+- fixed filelist
+
 Revision 1.5  2000/01/13 02:13:20  kloczek
 - irssi.desktop now this is not applet but application description file -
   place them in $(datadir)/gnome/apps/Network.
