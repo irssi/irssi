@@ -25,6 +25,7 @@
 #include "themes.h"
 #include "statusbar.h"
 #include "gui-entry.h"
+#include "gui-windows.h"
 
 /* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10
@@ -33,9 +34,8 @@
    the lag */
 #define MAX_LAG_UNKNOWN_TIME 30
 
-/* activity */
 static GList *activity_list;
-
+static int more_visible;
 static GHashTable *input_entries;
 
 static void item_window_active(SBAR_ITEM_REC *item, int get_size_only)
@@ -270,6 +270,20 @@ static void sig_statusbar_activity_updated(void)
 
 static void item_more(SBAR_ITEM_REC *item, int get_size_only)
 {
+	more_visible = WINDOW_GUI(active_win)->view->more_text;
+	if (!more_visible) {
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
+		return;
+	}
+
+	statusbar_item_default_handler(item, get_size_only, NULL, "", FALSE);
+}
+
+static void sig_statusbar_more_updated(void)
+{
+	if (WINDOW_GUI(active_win)->view->more_text != more_visible)
+                statusbar_items_redraw("more");
 }
 
 static void item_input(SBAR_ITEM_REC *item, int get_size_only)
@@ -328,6 +342,13 @@ void statusbar_items_init(void)
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
+        more_visible = FALSE;
+	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_add_last("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_add_last("command clear", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_add_last("command scrollback", (SIGNAL_FUNC) sig_statusbar_more_updated);
+
 	signal_add("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }
 
@@ -338,6 +359,12 @@ void statusbar_items_deinit(void)
 	signal_remove("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
+
+	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_remove("command clear", (SIGNAL_FUNC) sig_statusbar_more_updated);
+	signal_remove("command scrollback", (SIGNAL_FUNC) sig_statusbar_more_updated);
 
 	g_list_free(activity_list);
         activity_list = NULL;

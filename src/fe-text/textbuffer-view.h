@@ -71,6 +71,8 @@ struct _TEXT_BUFFER_VIEW_REC {
 	int empty_linecount; 
         /* window is at the bottom of the text buffer */
 	unsigned int bottom:1;
+        /* if !bottom - new text has been printed since we were at bottom */
+	unsigned int more_text:1;
         /* Window needs a redraw */
 	unsigned int dirty:1;
 

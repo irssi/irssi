@@ -795,6 +795,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 			view->subline;
                 if (view->empty_linecount < view->height-linecount)
 			view->empty_linecount = view->height-linecount;
+                view->more_text = FALSE;
 	}
 
 	view->dirty = TRUE;
@@ -813,6 +814,7 @@ void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 		view_get_linecount(view, view->buffer->cur_line);
 	view->empty_linecount = view->height;
 	view->bottom = TRUE;
+	view->more_text = FALSE;
 
         textbuffer_view_redraw(view);
 }
@@ -828,6 +830,7 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 			    lines, TRUE);
 	view->ypos += lines < 0 ? count : -count;
 	view->bottom = view_is_bottom(view);
+        if (view->bottom) view->more_text = FALSE;
 
         if (view->window != NULL)
 		term_refresh(view->window);
@@ -848,6 +851,7 @@ void textbuffer_view_scroll_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	textbuffer_view_init_ypos(view);
 	view->bottom = view_is_bottom(view);
+        if (view->bottom) view->more_text = FALSE;
 
 	textbuffer_view_redraw(view);
 }
@@ -873,6 +877,9 @@ LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
 static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
 	int linecount, ypos, subline;
+
+        if (!view->bottom)
+		view->more_text = TRUE;
 
 	if (view->bottom_startline == NULL) {
 		view->startline = view->bottom_startline =
@@ -1088,6 +1095,7 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	}
 
 	view->bottom = view_is_bottom(view);
+        if (view->bottom) view->more_text = FALSE;
         if (view->window != NULL)
 		term_refresh(view->window);
 }
