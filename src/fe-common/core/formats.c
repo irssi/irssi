@@ -579,6 +579,7 @@ char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 
 static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 {
+        char *format, str[256];
 	struct tm *tm;
 	int diff;
 
@@ -602,10 +603,12 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 	}
 
 	tm = localtime(&t);
-	return format_get_text_theme(theme, MODULE_NAME, dest, TXT_TIMESTAMP,
-				     tm->tm_year+1900,
-				     tm->tm_mon+1, tm->tm_mday,
-				     tm->tm_hour, tm->tm_min, tm->tm_sec);
+	format = format_get_text_theme(theme, MODULE_NAME, dest,
+				       TXT_TIMESTAMP);
+	if (strftime(str, sizeof(str), format, tm) <= 0)
+                str[0] = '\0';
+	g_free(format);
+	return g_strdup(str);
 }
 
 static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)

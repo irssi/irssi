@@ -500,18 +500,31 @@ static void sig_server_disconnected(SERVER_REC *server)
 	}
 }
 
+static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
+{
+        THEME_REC *theme;
+        TEXT_DEST_REC dest;
+	char *format, str[256];
+
+	theme = active_win->theme != NULL ? active_win->theme : current_theme;
+	format_create_dest(&dest, NULL, NULL, MSGLEVEL_NEVER, window);
+	format = format_get_text_theme(theme, MODULE_NAME, &dest,
+				       TXT_DAYCHANGE);
+	if (strftime(str, sizeof(str), format, tm) <= 0)
+                str[0] = '\0';
+	g_free(format);
+
+	printtext_string_window(window, MSGLEVEL_NEVER, str);
+}
+
 static void sig_print_text(void)
 {
 	GSList *tmp;
-	char month[100];
 	time_t t;
 	struct tm *tm;
 
 	t = time(NULL);
 	tm = localtime(&t);
-	if (strftime(month, sizeof(month), "%b", tm) <= 0)
-		month[0] = '\0';
-
 	if (tm->tm_hour != 0 || tm->tm_min != 0)
 		return;
 
@@ -519,11 +532,8 @@ static void sig_print_text(void)
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	/* day changed, print notice about it to every window */
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		printformat_window(tmp->data, MSGLEVEL_NEVER, TXT_DAYCHANGE,
-				   tm->tm_mday, tm->tm_mon+1,
-				   1900+tm->tm_year, month);
-	}
+	for (tmp = windows; tmp != NULL; tmp = tmp->next)
+		window_print_daychange(tmp->data, tm);
 }
 
 static int sig_check_daychange(void)
