@@ -1,0 +1,969 @@
+v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	* This is a development version - not the final one!
+
+	+ Started bot plugin, it has simple user management functions and
+	  auto-opping/voicing done
+	+ "channel synced" text doesn't trigger channel activity anymore
+	+ Rawlog displays where event was redirected
+	+ /wjoin - you can join multiple channels in same window
+	- Notifylist and checking of who uses your nick uses WHOIS again,
+	  WHO didn't display user info unless s/he was -i or in same
+	  channels..
+	- You had to run /list a couple of times until it worked..
+	- WHO was sent to people who joined channel to find out who they
+	  were, unfortunately it had a small bug and didn't work..
+	- DCC didn't work with IPv6
+
+v0.7.15-3 1999-08-31  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	* _TOO_ many bugs in .15, mostly compilation problems, I really
+	  should test things better when I release them. This will be the
+	  last time, I swear :)
+
+	+ Rawlog window, /rawlog <file name> also saves it.
+	+ --without-imlib configure switch
+	- After opened themes dialog, "(none)" window appeared, after opening
+	  it, irssi crashed.
+	- "day changed" message was displayed at startup
+	- Addresses in DCC connections were displayed wrong
+	- Didn't compile without gnome
+	- The first .15 didn't compile without IPv6 support, -2 fixed it
+
+v0.7.15 1999-08-29  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	* Only week since last version, much better :) Lots of internal
+	  changes, hope they work right. No "weird crashes" found since last
+	  version, 0.8.0 can't be too far away :)
+
+	  CVS is also working again, no anonymous but I can give access if
+	  someone wants.
+
+	+ IPv6 support - yet another thing irssi is one of the first to
+	  support ;) Give --enable-ipv6 switch to configure to compile it.
+	  Because of IPv6 addresses naming style (xxx:xxx:xxx..), /server
+	  server:port doesn't work anymore, you have to use /server
+	  server port instead.
+
+	+ Sound plugin updates, should work much better
+	+ Default config file is build into irssi, it's used if no other
+	  configuration file is found
+	+ Implemented "idle queue", list of commands which should be sent to
+	  server when there's nothing else to send.. Changed CTCPs to use
+	  this.
+	+ "massjoin" signal is sent when people join to channel, if many
+	  people join to channel quickly (netjoins), it waits for a while
+	  before everyone are joined and then sends the signal. This is used
+	  to update nicklist more quickly and some other internal stuff.
+	+ /msg <tab> completion: after you send msg to someone, the nick will
+	  go first in completion list.
+	+ Giving --with-servertest to configure now builds test irc server
+	  which you can use to try crash irc clients :)
+	+ /sv displays system name and revision and irssi's website url
+	+ You can give server password to /server as /server server port pass
+	+ /unban completion, eg. /unban *!*@*.de unbans *!*@hu232hu2.blah.de
+	+ /rmreconns removes all servers from reconnect list. I hate it when
+	  some server is down and irssi tries to reconnect it every 5 minutes
+	  and there was no way to cancel it..
+	+ Displays day change message in all windows if you're using
+	  timestamps
+	+ Realname is displayed in statusbar when mouse is moved over nick
+	  in nicklist
+	+ /last displays the last buffer only from the current window
+	+ option: beep when you receive private message
+	+ Typing /dcc without any arguments is same as /dcc list
+	+ Some code rearranging, moved more code to ui-common from gui-xxx
+	+ IPv6 for /ban, it bans all the last 64k addresses .. not sure if
+	  it's THAT good idea but did it anyway.
+	- DCC resume was broken.
+	- If someone quit from one ircnet but stayed on another, the nick was
+	  removed from both ircnets' channels.
+	- Irssi tried to find it's default config from
+	  $prefix/etc/irssi/irssi/config (one irssi too much :)
+	- You couldn't use ~/ when saving window buffer
+	- Trying to save window buffer twice crashed irssi
+	- ZVT transparency couldn't be removed on the fly
+	- Using find/new/close buttons in toolbar crashed
+	- Doesn't complain anymore about "You're not channel operator" with
+	  some irc networks that don't understand e or I modes
+	- /ban removed ident-character from username (~blah@ -> blah@) so bans
+	  didn't work..
+	- /knockout calculated the time left wrongly.
+	- irssi added -I/usr/include to compile parameters which broke
+	  compiling with several platforms..
+	- Irssibot notified about new development version when there was none
+	- Some problems/crashes fixed with plugin support
+	- --without-socks didn't do anything..
+	- Password should first be sent to server first, not after nick/user.
+	  At least MUH (irc proxy) didn't like it.
+
+v0.7.14 1999-08-22  Timo Sirainen <cras@irccrew.org> [unstable]
+
+      !!! My E-mail changed to cras@irccrew.org, don't use the old one
+      !!! anymore!
+
+	* Hm.. Again a month since last version, 3 weeks should be max :)
+          Hopefully this one will be bugfree, so I could finally release a
+	  "stable" version.. (somehow I think I'll end up with 0.7.14-2
+	  anyway.. ;)
+
+	* Irssi uses now libPropList to read and save configuration file, so
+	  you need to have libPropList installed, it's also in different
+	  format so your old config file doesn't work anymore. 
+
+	  Configuration file is located now in ~/.irssi/config file.
+	  Themes are also now stored in separate files in ~/.irssi/*.theme
+
+	+ Irssi can now notify you about new versions, you can also directly
+	  download them with DCC. (This will probably be changed to HTTP
+	  instead of using irssibot in IRC..)
+
+	+ User interface changes (settings, menus) as suggested by
+	  James M. Cape <jcape@jcinteractive.com>
+	+ You can use ctrl-b,c,g,v,- when setting realname
+	+ /version [server] - prints irssi version and irc server's version
+	+ /ver [nick/channel] - sends ctcp version to nick/channel
+	+ /sv [nick/channel] - sends irssi version text to nick/channel
+	+ Added widget depends to several places, changed several modal
+	  dialogs to use gui_widget_depends() instead
+	+ Added Socks5 initialization, maybe it works now?
+	+ You can specify what host address you want to use if you have many..
+	+ Away and kick reason dialog have history
+	+ irssi-text option: activity list can be sorted by window number
+	  You can change this with /set toggle_actlist_moves=yes/no
+	+ /msg <text><tab> completes now people in current channel too
+	+ You can set channel password in channel dialog
+	+ /SET [key [=value / [key [key..]] - /SET displays all settings,
+	  /set key key2 displays values of key and key2, /set key=value sets
+	  key to value.
+	+ DCC GET now gets all the files coming from user if file name isn't
+	  specified. DCC CLOSE also can close all dcc connections from user.
+	+ The whole usermode is now displayed in statusbar, it used to display
+	  only the modes it knew (+iwsr)
+	+ Ctrl-N and Ctrl-P go to next/previous window
+	- When using zvt and joining to new channels, window size grew bigger
+	- /msg <tab> completion was a bit buggy, if someone sent you multiple
+	  messages, you had to press tab multiple times until the nick changed
+	  to someone else..
+	- Defaut format for signon time in whois displayed nick instead of
+	  the signon time..
+	- Disconnecting server while it was still trying to connect hung irssi
+	- If old configuration file wasn't found, irssi (could have?) crashed
+	  on startup .. Could this really happen?!? Why did nobody tell me??
+	- irssi-text finally handles screen resizing right
+	- Gnome panel applet works with "old" (like non-cvs now :) panels
+	  too.
+	- If you left from channel before syncing was done, syncing stopped
+	  working after it..
+	- Removing ban exceptions didn't update irssi's internal list
+	- Rejecting dcc chat didn't work properly, when receiving reject
+	  get/send irssi didn't remove it from dcc lists
+	- Save/find dialogs weren't working after being closed.
+	- irssi-text complained about "Not enough parameters given" when
+	  pressing entry in empty line
+	- Mirc colors weren't removed properly for logs and could have
+	  crashed irssi
+	- Using /ban with mask (x!x@x) instead of nick crashed
+	- gui_widget_depends() wasn't working properly - didn't harm much :)
+
+v0.7.13-2 1999-07-22  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* Again, a small bugfix release
+
+	+ You can specify what string to send to IRC proxy after connected,
+	  this lets at least some proxies work with irssi.
+	+ Notifylist now displays which irc network nick joined/left (or if
+	  unknown, just IRC)
+	- After closing some window, the numbers in window tabs didn't get
+	  updated
+	- /window next and prev didn't work properly
+	- status/msgs windows got destroyed a while after joining to channel..
+	  or simply by doing "/mode (status)" command ..
+	- We don't try to DCC SEND file via dcc chat if the other side is
+	  using mirc ctcps.
+	- Default setting or autodetection of mirc ctcps weren't working.
+	- Actions from mirc users in dcc chat was displayed in double.
+
+v0.7.13 1999-07-21  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* %p in text formats is changed to $, looks much cleaner :) Old
+          formats in configuration files are automatically converted.
+
+	* I got some documentation done! :) I wrote a list of all commands
+	  irssi knows with (very) short descriptions, see COMMANDS file
+
+	+ Hebrew support by Ronen Tzur <rtzur@shani.net> - see README-HEBREW
+        + Users with gone-flag are displayed with different color in nicklist
+          List is updated with USERHOST commands in small pieces every now and
+          then..
+        + Statusbar with some information in it ..
+        + Away message is displayed differently in /whois and /msged people
+          who's gone
+        + /window goto <n>, /window prev, /window next
+        + /window level [+/-]pub/msgs/...
+            /window level msgs      - creates messages window
+            /window level all -msgs - creates status window
+	+ /bantype <normal/host/domain/custom>
+	    - Normal - *!user@*.domain.net
+	    - Host   - *!*@host.domain.net
+	    - Domain - *!*@*.domain.net
+	    - Custom [nick] [user] [host] [domain]
+		eg. /bantype custom nick domain - nick!*@*.domain.net
+		eg. /bantype custom user host - *!user@host.domain.net
+	+ /version - just displays version number..
+        + You can use different font in each channel
+	+ Alt-q..o changes channels to 11..19
+        + Color configuration changes..
+        + irssi-text : Reading manuals help ;) Text's backgound color isn't
+	  changed to black anymore so pixmaps etc. should show up nicely :)
+        + /notify nick!mask@* [ircnets], /unnotify
+        + When trying to connect to server, you can abort it with the
+	  cancel button in statusbar
+	+ First parameter of /disconnect is now * (current server) or
+          server tag
+	+ You can now use !channels with their short names (not always)
+        + Right clicking nick in channel pops up nicklist menu
+        + You can select multiple nicks from nicklist and execute the command
+          for all of them.
+        + Panel applet supports panel size changes
+	+ Window tabs have numbers now
+	+ Ctrl-N changes to next window, Ctrl-P changes to previous window
+	- Max. autoget size didn't work right, it got the file if the file was
+	  bigger than the max. size.. and it was compared as bytes, not kB's.
+	- Panel applet should now work right
+        - Hilight words feature was completely broken
+        - DCC Chats were displayed twice in status dialog
+        - Closing DCC chat still had a few problems
+        - After trying to join to channel where you could get in (invite only,
+          banned, etc.) the created channel window wasn't destroyed.
+        - configure didn't check -lnsl right..
+	- Channel settings weren't read in the correct order -> autojoining
+          to channels created the windows in reverse order every time.
+        - ZVT in GNOME CVS broke irssi.. Fixed.
+        - Quit message wasn't displayed if there was some commands waiting
+          for transmit - quit was added to transmit queue and connection
+          closed..
+	- Matching irc masks (nick!host@address) was case-sensitive..
+
+v0.7.12 1999-07-06  Timo Sirainen <a@sicom.fi> [unstable]
+
+        * #irssi is now started in IRCnet
+
+	* Release #2 :) The next day..
+           + configure checks for -lnsl too
+           + changed default font to fixed size so I wouldn't have to hear all
+             the time how screen is messed up with zvt :)
+           - background color couldn't be changed with zvt
+           - irssi-text sometimes crashed at startup because of uninitialized
+             variable..
+           - you had to use --without-gnome-panel even if you didn't build
+	     fwith gnome
+
+        + Colorless theme, should be easy to start a new theme with using
+          this. You need to copy the [theme:colorless] section to
+          ~/.irssi.conf (or ~/.gnome/irssi whatever you happen to use..) from
+          included irssi.conf to use this..
+        + You can DCC send and get files via DCC chat (don't need to be
+          connected to server), don't know if this works with any other client
+          or if any other client has this ability.. BitchX didn't seem to
+          have.
+        + /WALL [#channel] message - Send notice to all ops in channel
+	+ /last [-pub -msgs etc..] <text> for text mode version
+        + Text mode version statusbar: -- more --, away (zZzZ)
+        + The "-!-" and "-!- Irssi:" texts and timestamp is now configurable
+        + Channel windows aren't destroyed anymore after getting disconnected
+        + /window close
+        + Outgoing flood protection: all commands you send to server are are
+          queued and sent every 2 seconds. (if queue is empty, the command is
+          sent immediately)
+        + Notify list popup dialogs are now optional
+        + /unalias (you could already do this with /alias)
+        + You can send Mirc style CTCPs now in DCC chat (preferences/dcc),
+          also if mirc user first sends ctcp, it's automatically set to
+          default for that dcc chat session.. You can also set it with
+          /mircdcc [y|n] or select from menu.
+        + Default color number in setup, this color is used if nothing else
+          is specified.
+        + Server reconnection - you can add several irc servers to setup with
+          same ircnet and autoconnect set and irssi goes through that list
+          every time server gets disconnected unintentionally.
+        + irssi-text word splits the lines. also if it needs to split the line
+          it leaves 10 empty spaces at the start of the next line.
+        + --without-gnome-panel switch to configure
+        - http://blah@a.b opened e-mail client instead of http client
+        - I set the socket non-blocking AFTER connect(), argh! This caused
+          irssi to hang when trying to dcc get from bogus IPs or something.
+        - Background color wasn't read right
+        - Log dialog had some bugs
+	- Banning ip addresses didn't work right
+        - Some DCC problems fixed..
+	- Some irssi-text bugs fixed
+
+v0.7.11 1999-06-06  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* Because of the color system changes, remove the [colors]
+          section from irssi's configuration file or you will get some weird
+          colors..
+
+          The colors are pretty much taken from BitchX, IMO it looks nice :)
+          But somehow I think many of you don't like it, so I made theme
+          selector. Just need to make a few default themes..
+
+	+ Color system changed, the old one looked pretty ugly especially in
+          text mode version.. You can now have more than one color/line by
+          adding %fg[,bg] codes to text formats.. fg and bg are the normal
+          0-15 colors, in GUI version (without ZVT) you can use up to 99
+          user specified colors.
+        + Theme selector
+        + Text mode version: Entry line editing is working great! Command line
+          history works, scrollback buffer works, statusbar is working (again,
+          copying bitchx..), reads configuration file .. This is starting to
+          become usable :)
+        + ZVT working better: font can be changed, transparency and background
+          pixmap can be changed on the fly, the ugly block cursor isn't
+          displayed anymore and wordclicking (urls, etc.) works.
+	+ New GUI dialogs for /list, /who, /gwhois and when receiving invites
+          to channels.
+        + Channels dialog changed a bit. New "Quick join" dialog where you can
+          specify server and channel to join
+        + Mirc DCC resumes are working. By Trever Adams
+          (trever_adams@bigfoot.com)
+        + List of text strings to hilight
+        + Notify dialog is created when someone in notify list joins irc.
+        + Nick completion improvements, /msg nick<tab> works and in channels
+          you can complete nicks anywhere in the entry.
+        + Window save size/position dialog
+        + DCC send added to popup menus
+        + Removing lines from GtkText is really slow, so now they're removed
+          with several lines at a time. (default is 20)
+        + /window new [hidden] creates new window, /window server <server tag>
+          changes server in current channel, useful in text mode version..
+        + You can try to find memory leaks with giving --with-memdebug switch
+          to configure
+        - Still some bugs with DCC SEND fixed..
+        - DCC list dialog crashed if there were dcc chats open, it also caused
+          some random crashes when running..
+        - Maybe window size/position saving finally works right?
+        - g_(s)list_remove_link() didn't work as I had always thought .. It
+          moves the link into separate list and doesn't free memory used by
+          it like I thought.. So, inserted a few g_list_free_1() calls.
+	- When not using menubars, popup menu should have displayed all the
+          items in it, it got broken in .10.
+        - signal_add_after() didn't work right.. actually it had a wrong name
+          too, changed to signal_add_first() and made it to run these events
+          before the normal events. This makes ignoring work again.
+        - /notice was buggy
+        - Configuration file handling (GTK version) was still a bit buggy..
+        - Lots of small bug fixes here and there..
+
+v0.7.10 1999-05-09  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* ALL KNOWN CRASHES FIXED !! Weird, after changing the code with
+          creating channels to empty windows, GtkText widget started working
+          again, it used to crash after running the test ircserver for a
+          while.. Maybe a few more versions and I'll release a "stable"
+          labeled version again (08.0).
+
+	+ GNOME version can use ZVT widget to draw texts. This is a lot faster
+          than GtkText and with it you can use nice non-scrolling backgrounds
+          and transparency! However, you'll have to use the default colors
+          with it for now and Window/Save Buffer or Find doesn't work in it.
+          !!NOTE!! ZVT in gnome 1.0.9 is buggy, it sometimes crashes when
+          destroying zvt widget (leaving channels). It should be fixed in next
+          version (which doesn't currently exist..)
+	+ DCC transfer dialog, display list of all going dcc transfers, the
+	  old dialogs can also be created.
+        + Channel specific background pixmaps, if you don't have Imlib you can
+          use only .xpm images.
+	+ /ban and /unban changed, they accept multiple arguments and channel
+          name may be specified as the first argument
+        + dcc actions from mirc should work now
+        - Text widget size is now saved instead of the window's size, should
+          work better.
+        - Right clicking text widget created a popup menu, but select
+          selection got broken after it
+        - Some potential bugs fixed after got kicked from channel
+        - Log dialog was buggy
+        - If dcc chat was closed but the query window was still there, trying
+          to chat again with the same nick created another query window but
+          used the old one..
+        - C-C, C-B, etc. add the character at the end of the entry, not at the
+          current position
+        - Redirecting commands was a bit buggy, it always expected to receive
+          the specified events. This worked with ISON command, but I forgot
+          that WHOIS could also return "no such nick" events.. So, notifylist
+          should now work right instead of sometimes printing whois results.
+        - You couldn't use the normal control-? keys (c-left, c-right,
+          c-insert, ..)
+        - mirc colors were displayed with wrong colors
+	- Changed all isspace(), isdigit() and isalnum() calls to cast their
+          argument as (gint) to remove warnings when compiling with IRIX.
+	- Speech plugin wasn't working again..
+        - After changing text format from setup, you couldn't change any
+          other lines without closing setup dialog first
+        - Font couldn't be changed by editing the entry line
+	- /knockout format changed, it's now /knockout [timeout] nick reason
+          (so the reason can have number at the start of it..), it also used
+          to crash when unbanning
+	- DCC send fixed, fast send didn't work and without it it was eating
+          all cpu.
+        - DCC sending files with spaces in their name didn't work (they're
+          changed to _ now.)
+
+v0.7.9 1999-04-22  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ Server/status dialog, displays list of all connected servers,
+          channels, queries and dcc chats.
+        + Host resolving is now done in a child processes. Hopefully works
+          better than threads which aren't used anywhere anymore..
+        + Window/Save window size and Save window position, next time the same
+          window (status, msgs, channel, query) is opened the saved size
+          and/or position will be used.
+        + gui_widget_depends_data(), widget will be automatically destroyed
+          if the specified signal is called with the specified argument. Used
+          to destroy DCC request dialogs when they're closed manually, timed
+          out or rejected at the other end..
+        - Fixed lots of memory leaks which some might have caused crashes..
+          src/memdebug.c has the debug functions I used ..
+        - DCC CLOSE closed always the last dcc connection instead of the one
+          that matched the parameters
+        - Commented out all GUI_INPUT_EXCEPTIONs .. I don't even know when
+          exceptions are sent and why (I thought that only when some error
+          occured..), Linux doesn't seem to send them ever? IRIX however sends
+          them all the time which made irssi eating all cpu.
+        - Fixed compiling gui-text with systems that had only slang/slang.h
+        - gui_widget_depends() had some bugs
+        - adding irc networks by typing it's name when adding server didn't
+          update the GUI of ircnets list.
+	- If some plugins were already loaded, and loading new plugin failed
+          and it called plugin_deinit(), the call (might have) called some
+          other plugin's plugin_deinit() and crash.. Some updated to change
+          all global plugin functions to plugin_name_* calls so they wouldn't
+          call other modules functions..
+	- If day changed when logging, the log file contained the day change
+          lines before each line after that..
+	- Channel labels were hilighted even when the channel was selected..
+
+v0.7.8 1999-04-12  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* This version has lots of internal changes, I haven't tried them
+          much so hopefully everything works right..
+
+	+ external plugin, reads commands from named pipe and executes them
+        + sample plugin updated, creating new plugins should when based on
+          this one
+        + gui-none is built, it tries to run bot plugin which doesn't exist..
+	+ Moved the configuration code to the lowest level, made settings
+          to be common with all guis.
+        + /set command: /set [category[/key[=value]]] [all]
+        + /alias, /ignore and /unignore commands work again
+        + Nick completion finally working, and better than ever (unless it
+          has bugs of course ;). It tries to be smart when completing, first
+          it checks if someone with same letters had recently written message
+          to you, then it checks for nicks that recently wrote messages and
+          finally for the rest of the nicks in channel. Clicking tab more
+          scans the list. Clicking tab in empty line completes to /msg <nick
+          who sent you last message>. Before trying to complete nicks, tab
+          completion checks if the word is in setup's completion list.
+        + Wrote some functions to make possible handling events in different
+          places depending where the command which created the event was sent.
+          This is useful for example to notify list which needs to send ISON
+          requests but user should still be able to use /ison command
+          normally (this has always worked btw).
+        + Notify list's notify event now displays user's host and real name
+          (made with the previous functions which grabbed WHOIS). Notify list
+          GUI also updated for this
+        + You can use user/host masks with notify lists, wildcards are
+          allowed. Nick must always be specified (could be fixed but everyone
+          is invisible anyway so it would be useless). Examples:
+          friend!*friend*@*, friend_!*friend*@*,
+          another!*@*.blah.com, altnick!*@*.blah.com
+	+ "your nick is owned by blah (blah@blah.org)" when connected
+        + Text formats page uses now GtkText widget, it displays colors too.
+          It's not perfect but better than before...
+        + There's now three different colors indicating what's happened in
+          channel: red = some text was written there, bright red = public
+          message, magenta = public message to you
+        + Ignore checking is now done by stopping the entire signal so
+          plugins etc. don't have to deal with them.
+        + You can use user/host masks with ignores
+        + Autoraise (in window menu) window when new message comes to channel
+        + Channel settings: You can specify list of bots (masks) and command
+	  to send the first one found bot (nice for auto-opping ourself)
+        - Changing user modes from menus didn't work. Moved the menu under
+          server menu.
+	- Speech plugin problems fixed.. It didn't compile without gnome
+          libraries and with gnome libraries it didn't say anything because
+          for some reason one line in sources was commented out..
+        - IRC network things and server password didn't work because of stupid
+          little bug
+        - Configuration file handling was a bit broken in GTK version
+	- Rewrote menu handling in GTK version, it was crashing when trying
+          to load plugins..
+
+v0.7.7 1999-04-05  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ speech plugin :) This is currently made to work with festival
+          (http://www.cstr.ed.ac.uk/projects/festival/), it's not very usable
+          but nice to play with :)
+        + C-b (bold), C-c (color), C-g (bell), C-v (reverse), C-- (underline)
+          keys work now but they don't display anything in entry line.
+        + Beel character beeps are now optional
+        + Fixes and new features for plugins. Each plugin has now it's own
+          menu under plugin menu and "Unload" menuitem there by default.
+        - GTK version didn't build .. again..
+        - I broke DCC send in 0.7.5
+        - SIGPIPE is ignored, maybe fixes some "crashes" when server
+          connection is lost (I never got this btw.)
+        - Using irssi with click to focus sent commands to window where mouse
+          cursor was..
+        - Fixed some bugs when scrollback buffer got full (GTK's text widget
+          seems to crash sometimes with small scrollback buffer and _lots_ of
+          text!)
+        - Plugin dialog didn't show any plugins
+	- Plugins are now created with automake things to make them portable
+          for compilers/linkers that don't work with -shared switch. The
+          disadvantage is that a lot of unnecessary files are created for
+          each plugin (.a, .la, .so.0, .so.0.0, .so.0.0.0) while irssi uses
+          only libplugin.so, could be fixed somehow but too difficult for me..
+	- Joining to +k channel crashed
+
+v0.7.6 1999-03-29  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* New default colors .. I think they're better, not the best possible
+          but anyway, I'm not good with these :)
+        + Text mode version working again with colors! :)
+	+ New settings/servers dialog, changed connect and channels dialogs.
+          You can now automatically connect to multiple servers at startup.
+          All this made by Kari Lavikka (tuner@bdb.fi)
+        + Server password support
+        + IRC proxy support
+        + Right clicking the channel name in panel pops up channel menu
+        + private ctcp and notice messages now show up in query windows if
+          it exists for sender
+        - Fixed logging a bit, you can now log stuff from nicks without
+          having query window for them.
+        - If time stamps were enabled, log files had time stamps twice in each
+          line
+        - Color settings had some bugs
+	- GNOME version crashed if ~/.irssi.conf didn't exist .. because I
+          read the configuration file before gnome_init() which was necessary
+          for "create gnome panel applet" option in setup -> removed it
+
+v0.7.5 1999-03-17  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* Text mode version is broken and isn't built.
+        * Configuration file has changed quite a lot, might be better if you
+          would just erase the old one.. Server configuration is also going
+          to change soon..
+
+        + Plugins are back! But unfortunately I can't get perl plugin to work.
+          See TODO for more information.
+        + I divided setup dialogs to separate windows and grouped the options
+          to different frames so they actually make some sense now :) Also
+          some new options:
+        	- Create GNOME panel applet
+                - Lots of DCC options, the page looked so lonely that I had
+                  to put more options there :)
+                    - get: autorename file if it exists (currently this is
+                      done always..)
+                    - autoget: max. file size to get
+                    - fast send (don't wait for responses from the other
+                      side, just keep sending the data..)
+                    - upload path
+                    - block size
+                    - timeout
+	+ Checks for slang/slang.h too ..
+        + Text mode version doesn't have my name/nick hardcoded in it
+          anymore :) Uses IRCNAME and IRCNICK environment variables.
+        + Status window is now optional, when enabled it grabs all
+          "status" messages there. This needed quite a lot of inner changes,
+          hopefully works :)
+        + /nctcp - send ctcp reply
+        + Window size is now saved when quitting and it's used when creating
+          windows in next session
+        - Fixed lots of GLib-CRITICAL messages when disconnected from server
+          while it was still trying to find ip address.
+        - Window/find should now scroll to right position and it doesn't
+          corrupt the text widget with inserting new texts to found texts
+          positions.. It's also case-insensitive now.
+	- Fixed compile error when building without gnome panel..
+
+v0.7.4 1999-03-13  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ Applet for GNOME panel working again
+	+ You don't have to specify --without-gnome anymore, configure checks
+          this for you (finally)
+        + Some widget packing changes and tooltips for channel mode buttons
+          by Kari Lavikka <tuner@bdb.fi>
+        + Window/find moves the scrollbar to position where you can
+          actually see the found text (usually, find prev misses it
+          sometimes..)
+        - Disconnect button in disconnect dialog still wasn't working.
+        - Channel mode buttons didn't change if channel wasn't focused
+        - I added separators to menus in v0.7.3, but forgot to make GTK
+          version work with them
+	- Closing DCC chat crashed
+	- Destroying window with WM now really destroys the window, no hide
+          it like it used to..
+        - Several fixes with window handling..
+
+v0.7.3 1999-03-11  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* Text mode version is not called irssi-text so make install can
+          install both of them without overwriting the other..
+        + Window menu: find text, save window buffer, close window, new,
+          new tabbed .. And lots of fixing code to make empty windows
+          possible.
+        + After kicked from channel, the window isn't destroyed
+        - While connecting to server and receiving "nick is temporarily
+          unavailable" irssi didn't try different nick but got just stuck
+          there.
+
+v0.7.2 1999-03-10  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ GUI for logging, /log start, /log stop
+	+ You can drag file from GMC over to nick in nicklist to send the file
+          with DCC
+        + Nicklist changed to GtkCList, ops and voices are marked with
+          pixmaps (stolen from X-Chat, someone want to do better ones?). Had
+          to be done because adding drag'n'drop to GtkList was too slow..
+	- Pretty bad bugs with GTK version fixed, using several dialogs'
+          buttons crashed..
+        - WHOIS's idle line displayed seconds wrong. Maybe I finally got it
+          fixed right this time.. :)
+	- Unknown commands still didn't work. They were sent to server with
+          the / character at start..
+
+v0.7.1 1999-03-08  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* The 0.7.0 was actually quite stable, I thought it would crash all
+          the time by itself and do some weird things :)
+        * Hopefully now that GTK 1.2 is finished more people start using it
+          and don't ask me to continue supporting GTK 1.0. So, this version
+          requires GTK 1.1/1.2.
+
+        + Started gui-text.. Should work somehow :) Prefers SLang but should
+          work with curses also, except in X terminals I couldn't get colors
+          out of it.
+        + Logging, still lacks GUI.
+
+          Syntax:
+            /log create <filename> [<+/->level ...] [#channel/nick [
+                                   [<+/->level ...] ...]
+            /log close <filename>
+            /log list
+
+          Example: /log create mylog -all +msgs #linux +chan +public +notices
+          (or simply #linux +all logs everything that appears in #linux
+          window).
+
+          You can use these levels, ALL is set by default:
+          ALL, CRAP, PUBLIC, MSGS, NOTICES, WALLOPS, SNOTES, ACTIONS, DCC,
+          CTCP, CLIENTNOTICES, CLIENTERRORS
+	+ Automatically create query window when received msg (option)
+	+ No more "WHO: unknown commmand"s, all unknown commands are sent to
+          server just like they were written
+	+ Working again: msgs window, aliases, /kickban, /knockout
+        + Changed quite a lot of GString's to g_strdup_printf
+        + cleaned configure.in
+        - Disconnect button in disconnect dialog didn't work.
+        - Writing to DCC chat only sent the first word..
+        - setting ircnet to server record was done without strdup()ing from
+          setup server record, so after disconnecting preferences or
+          reconnecting could have crashed.
+
+v0.7.0 1999-02-25  Timo Sirainen <a@sicom.fi> [unstable]
+
+	* Lots and lots and LOTS of rewriting code. Hope you like it :) At
+          least I do, mostly. GUI still needs rewriting but.. well, it works
+          anyway now.
+
+          The [unstable] tag in this version really means that IT IS UNSTABLE.
+          See TODO for what features that 0.6.0 have are still missing.
+
+          Because of the new great signaling system :) lots of things can be
+          done easier. Now all the dialogs should be up to date, like channel
+          mode dialog. When you receive ops, widgets come sensitive, when you
+          lose your ops, the widgets become unsensitive.
+
+          irssi source is now also divided in to separate directories:
+
+          irc-base: this shouldn't change much, it has all basic functionality
+                    needed to create a working IRC client.
+
+          irc-extra: all kinds of extra functionality: dcc, flood detection,
+                     ignore lists, (logging soon), notify lists and plugins.
+
+          common-ui: here's all the functions that need to print some texts to
+                     screen.
+
+          gui-gnome: GTK/GNOME specific code
+
+          These haven't been started yet:
+          ui-none: make irssi work as a bot with plugins/scripts
+          ui-text: text mode interface
+          gui-kde, ...: I'm not going to do these, anyone?
+
+v0.6.0 1999-02-12  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ Plugins! See plugins/* and src/plugin-commands.h for more
+          information
+        + Small PERL plugin, anyone want to continue developing this?
+        + Show menubar option
+	- Some fixes and changes with clicking words.
+        - Notify list didn't work if ircnet was specified.
+        - socks5 needed -DSOCKS to work (but this is still untested..)
+
+v0.5.1 1999-02-10  Timo Sirainen <a@sicom.fi>
+
+	* A big bugfix release, hopefully no crashes anymore? :)
+	* Removed intl directory, we don't have any i18n support yet so it's
+          not needed...
+
+	+ Time stamps
+        + Use --with-pthreads=no if they don't work right
+        + socks4/5 support (untested), use --with-socks=no if you don't want
+          them.
+	- If you got kicked from channel irssi was in quite unstable state
+	- Using channel mode buttons in the upper right corner crashed
+	- Whois displayed idle time wrong
+	- Adding first item to empty list (notify, completions, aliases,
+          ignores) crashed.
+	- It didn't actually compile without pthreads lib..
+	- If any texts contained %s, %d, etc.. irssi tried to expand them
+	- Solaris (and probably some others) need -D_REENTRANT flag to make
+	  threads work corretly.
+	- gtk_container_add() should be used instead of
+          gtk_scrolled_window_add_with_viewport() when handling clists..
+
+v0.5.0 1999-02-08  Timo Sirainen <a@sicom.fi>
+
+	+ DCC CHAT, SEND, GET
+	+ pthread support, no more blocking server connections.
+	+ Notify list
+	+ Getting more paranoid :) Added a lot of g_return_if_fail()s.
+          Hopefully not in wrong places :) But these surely save some crashes
+          with buggy code..
+        + BUILD_DOCK, HAVE_GNOME, etc. defines are now placed in config.h
+          instead of being in -D arguments for gcc.
+        + Format strings are more flexible now, you can change the order of
+          the parameters and you don't need to specify if the argument is
+          supposed to be string or integer or .. Should be easy to use, %p1
+          matches the first argument, %p2 the seconds, etc.
+        + /PING
+        - Changing topic from topic entry widget didn't work.
+        - If window had only one channel, the channel widgets (topic, modes,
+          etc) didn't show up.
+	- Using popup menu from status window's channel lists crashed.
+        - Channel menu didn't work
+
+v0.4.1 1999-02-04  Timo Sirainen <a@sicom.fi>
+
+	+ Preferences: completion - if you type <tag> in entry field and
+          press tab it gets completed, like setting homepage to http://blah
+          and typing: home page is homepage<tab> -> home page is http://blah
+	+ Tab nick completion.
+        + ':' nick completion also changed a bit.. If it fits to more than
+          one nick it's completed in bash style. Like if there's mynick1 and
+          mynik2, "my:" gets completed to "myni:"
+        + glib 1.0.6 didn't have g_get_user_name(), g_get_real_name(),
+          g_get_home_dir() and g_strncasecmp(), made them..
+        - Using --no-applet crashed..
+	- Using items in user modes menu crashed
+        - Several small bugs fixed..
+
+v0.4.0 1999-02-01  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ *Lots* of internal changes with window handling, fixed some memory
+          leaks also while doing them. You can now have multiple real windows
+          with tabbed subwindows in them. It's also possible to have multiple
+          channels in one subwindow. Commands for handling these.. :
+           - /join - Works like before, creates real or subwindow depending
+             if "use tabbed windows" is set in setup.
+           - /wjoin - Joins channel to current window
+           - /hjoin - Creates new subwindow and joins there
+           - /njoin - Creates new real window and join there
+        + Changed URL max length from 20 to 200.. Didn't realize it was that
+          low :)
+        + Shows the nick who sent wallop, you need to change the second
+          line in format texts from "%s" to "%s: %s" to make this it work.
+          Need to do some kind of autoupgrading for formats that change..
+	+ Found new functions from glib :)
+            - g_getenv("HOME") -> g_get_home_dir()
+            - getpw() -> g_get_user_name() and g_get_real_name()
+            - strcasecmp() -> g_strcasecmp()
+            - strncasecmp() -> g_strncasecmp()
+        + GNOME version uses ~/.irssi.conf if it exists
+        - Opping/deopping anyone made irssi think that you were opped/deopped
+        - read_line() had some pretty bad bugs...
+
+v0.3.6 1999-01-29  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ irssi.spec to easily build .rpm
+	+ Preferences:
+           - Alternative nick which is used when default nick is in use.
+           - Create own window for msgs
+           - Tab orientation
+           - Flood settings
+           - Max lines to keep in command line history
+           - Scrollback buffer size
+           - Text formats
+        + Toolbar .. we need pixmaps .. Needs also window (channel/query)
+          specific items.
+        + Using horizontal panel works right now.
+        + Alt-1..0 changes between windows
+        - Private actions didn't show up in query windows where they should
+          have.
+        - Alias and ignores lists were mixed together and didn't work.
+        - Setting max channels to display in panel to -1 (which is default..)
+          displayed actually only one channel.. Also setting this to 0 works.
+        - Topic didn't change when changing between windows in tabbed windows
+          mode.
+	- When op received +v, @ was changed to + in nick list
+	- Connect/disconnect/channels dialogs fixed so that they won't crash
+          when clicking buttons with empty lists.
+
+v0.3.5 1999-01-26  Timo Sirainen <a@sicom.fi>
+
+	+ Finished the channels dialog, you can automatically join to
+          channels in specific irc networks.
+        + Changed the look of connect and disconnect dialogs
+	+ servertest/ directory, just a test program to try if irssi crashes
+          with _HEAVY_ network load (ie. if there's buffer overflows or some
+          other weird bugs). It doesn't :)
+        + Preferences: Maximum number of channels to display in panel
+        - When leaving from channels, panel didn't redraw it's list correctly        
+	- Leaving channels in tabbed window mode crashed
+	- Fixed crash if connection got lost
+
+v0.3.4 1999-01-24  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ Tabbed windows work a lot better
+        + User mode menu
+        + Preferences: default user mode
+        - Connecting to more than one server crashed...
+	- Nick list redrawing was broken
+	- Dock applet wrote the texts to pixmap but didn't draw the pixmap
+          into screen then properly..
+
+v0.3.3 1999-01-23  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ /ignore never - never autoignore nick
+        + You can hide/show channel nick list from Channel menu, default
+          state can be set from preferences.
+        + Preferences: Strip styles from text, misc options
+        + Launching URLs work!
+        + More str[nnn] -> GString changes, should be no more potential
+          buffer overflows
+        + Started the tabbed windows, probably quite buggy and the
+          window_create() code is getting REALLY ugly..
+        - Servers didn't display QUIT message.. Couldn't think of any better
+          way to fix this than not to disconnect the link but let the server
+          do it.
+        - ANSI colors didn't work right
+
+v0.3.2 1999-01-22  Timo Sirainen <a@sicom.fi> [unstable]
+
+	+ Dock applet, works at least with Enlightenment..
+        - GTK version tried to move temp config file to real config file
+          with rename() .. didn't work if /tmp and home were in different
+          partitions.
+	- Some servers sent a mode change before /names list, irssi didn't
+          like that and crashed..
+        - No more Gtk-Critical messages if irssi is run with --no-applet
+
+v0.3.1 1999-01-22  Timo Sirainen <a@sicom.fi>
+
+	* 4 days since last relase. too long :) I'm now starting to create
+          "unstable" versions of irssi. They have the latest and greatest
+          features while they might not build/work too well. Check
+          http://www.sicom.fi/~ikioma/irssi-download.html, new versions will
+          probably be released quite often.
+	* GNOME version now builds without GNOME panel applet library
+        * Works with GTK+ 1.0.6 now, maybe with older too.
+        + Connect / disconnect dialogs, channel dialog also started
+        + Server setup dialog changed some.
+        + Status window has a list of channels, queries and (yet not
+          implemented) DCC chats. Also the tiny panel window isn't displayed
+          unless you're running irssi in panel..
+        + Menu bar in all windows
+	+ Cleaned read_line() to use GStrings.
+        + $(sysconfdir)/irssi.conf is copied to default user file if it isn't
+          found.
+        + If you get kicked from channel the channel window won't get
+          destroyed.
+        - Query was in op submenu in nicklist's popup menu .. whops.
+        - 0.3.0 broke server tag generation so using multiple servers didn't
+          work.
+
+v0.3.0 1999-01-18  Timo Sirainen <a@sicom.fi>
+
+	* Config changes in GTK version, delete old .irssi.conf file (or
+          change all "tag = values" to "tag=values")
+        * Default set of servers and aliases can be found from irssi.conf,
+          copy that to ~/.gnome/irssi (if build with GNOME) or ~/.irssi.conf
+          (if build without GNOME).
+        + servers page added to preferences. Without connect dialog this is
+          quite useless though :) But if you set "connect to IRC server at
+          startup" on, irssi connects you to first local server.
+	+ aliases :
+	   - /ALIAS <alias> <command to execute>
+           - alias page added to preferences
+           - these codes are extracted in commands:
+               %0            : alias name
+               %1, %2, %3 .. : word %
+               &1, &2, &3 .. : word & + the rest of the text after it
+               %c            : channel name
+           - typing extra / before /command (//command) ignores any aliases
+        + ignore list :
+           - /IGNORE <mask> <ignore level>
+           - /UNIGNORE <mask> <ignore level>
+           - ignore page added to preferences
+           - ignore levels: ALL, CRAP, CHAN, PUBLIC, MSGS, NOTICES, WALLOPS,
+             SNOTES, ACTIONS, DCC, CTCP, CLIENTNOTICES, CLIENTERRORS
+        + autoignoring msg and ctcp flooders
+        + options page added to preferences
+        + invite lists (channel mode I)
+        + !channels should work now
+        + replaced quite a lot of g_new()'s with GStrings. fixed one buffer
+          overflow with this also..
+        + /AWAYALL - sends /away to all connected servers
+        + /KNOCKOUT [secs] <nick> <reason> - kick+ban+delay (5min)+unban
+        - nick completion was case-sensitive
+        - again some minor bugs fixed and features added
+
+v0.2.1 1999-01-17  Timo Sirainen <a@sicom.fi>
+
+	+ Preferences: color and font selection
+        + gnome-stuff.c has some gnome_* compatible functions to get GTK+
+          version work. They're pretty slow and dum and maybe even buggy so
+          if you want better, just compile the gnome libs :)
+        + Doubleclicking in topic sets the entry editable/uneditable
+	- nick completion was buggy
+        - some minor bugs and features fixed
+
+v0.2.0 1999-01-16  Timo Sirainen <a@sicom.fi>
+
+	+ CTCP VERSION returns system name and revisions
+        + msgs window has now autoraise set on as default
+        + status window is used only when there's no window active..
+        + Done server handing:
+           /server = /disconnect + /connect
+           /connect = connects to new server without disconnecting from
+                      any old ones
+           /disconnect = disconnect from current server
+        + msgs and status window have a server selector menu
+        + clicking a server tag in msgs window changes server
+        + channel information box
+        + --no-panel command line switch so you can build with GNOME support
+          but don't need to be running it in panel.
+	- some automake fixes
+	- If someone was kicked, the kicker was removed from nick list
+          insted of the kicked..
+        - Fixed some weird situtation where snapshot window wouldn't
+          disappear from screen..
+
+v0.1.0 1999-01-14  Timo Sirainen <a@sicom.fi>
+
+	* First release
