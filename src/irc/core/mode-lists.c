@@ -59,7 +59,7 @@ BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban,
 
 	channel->banlist = g_slist_append(channel->banlist, rec);
 
-	signal_emit("ban new", 1, rec);
+	signal_emit("ban new", 2, channel, rec);
 	return rec;
 }
 
@@ -88,7 +88,7 @@ void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban)
 
 	rec = banlist_find(channel->banlist, ban);
 	if (rec != NULL) {
-		signal_emit("ban remove", 1, rec);
+		signal_emit("ban remove", 2, channel, rec);
 		ban_free(&channel->banlist, rec);
 	}
 }
@@ -109,7 +109,7 @@ BAN_REC *banlist_exception_add(IRC_CHANNEL_REC *channel, const char *ban,
 
 	channel->ebanlist = g_slist_append(channel->ebanlist, rec);
 
-	signal_emit("ban exception new", 1, rec);
+	signal_emit("ban exception new", 2, channel, rec);
 	return rec;
 }
 
@@ -122,7 +122,7 @@ void banlist_exception_remove(IRC_CHANNEL_REC *channel, const char *ban)
 
 	rec = banlist_find(channel->ebanlist, ban);
 	if (rec != NULL) {
-		signal_emit("ban exception remove", 1, rec);
+		signal_emit("ban exception remove", 2, channel, rec);
 		ban_free(&channel->ebanlist, rec);
 	}
 }

@@ -142,10 +142,10 @@ massjoin.c:
  "massjoin", CHANNEL_REC, GSList of NICK_RECs
 
 mode-lists.c:
- "ban new", BAN_REC
- "ban remove", BAN_REC
- "ban exception new", BAN_REC
- "ban exception remove", BAN_REC
+ "ban new", CHANNEL_REC, BAN_REC
+ "ban remove", CHANNEL_REC, BAN_REC
+ "ban exception new", CHANNEL_REC, BAN_REC
+ "ban exception remove", CHANNEL_REC, BAN_REC
  "invitelist new", CHANNEL_REC, char *mask
  "invitelist remove", CHANNEL_REC, char *mask
 
