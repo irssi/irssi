@@ -164,8 +164,10 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 	move(ypos, item->xpos);
 
 	set_color((1 << 4)+3); addch('[');
-	if (nickrec != NULL && (nickrec->op || nickrec->voice))
-		set_color((1 << 4)+15); addch(nickrec->op ? '@' : '+');
+	if (nickrec != NULL && (nickrec->op || nickrec->voice)) {
+		set_color((1 << 4)+15);
+		addch(nickrec->op ? '@' : '+');
+	}
 	set_color((1 << 4)+7); addstr(nick);
 	if (umode_size) {
 		set_color((1 << 4)+15); addch('(');
