@@ -119,22 +119,9 @@ static void cmd_server_list(const char *data)
 	g_string_free(str, TRUE);
 }
 
-static void server_command(const char *data, SERVER_REC *server,
-			   WI_ITEM_REC *item)
-{
-	if (server == NULL) {
-		/* this command accepts non-connected server too */
-		server = active_win->connect_server;
-	}
-
-	signal_continue(3, data, server, item);
-}
-
 void fe_irc_server_init(void)
 {
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
-	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
-	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
 	command_set_options("server add", "-ircnet -cmdspeed -cmdmax -querychans");
@@ -143,7 +130,5 @@ void fe_irc_server_init(void)
 void fe_irc_server_deinit(void)
 {
 	signal_remove("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
-	command_unbind("server", (SIGNAL_FUNC) server_command);
-	command_unbind("disconnect", (SIGNAL_FUNC) server_command);
 	command_unbind("server list", (SIGNAL_FUNC) cmd_server_list);
 }

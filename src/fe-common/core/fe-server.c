@@ -229,6 +229,17 @@ static void cmd_server_connect(const char *data)
 	cmd_params_free(free_arg);
 }
 
+static void server_command(const char *data, SERVER_REC *server,
+			   WI_ITEM_REC *item)
+{
+	if (server == NULL) {
+		/* this command accepts non-connected server too */
+		server = active_win->connect_server;
+	}
+
+	signal_continue(3, data, server, item);
+}
+
 static void sig_server_looking(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
@@ -330,6 +341,8 @@ void fe_server_init(void)
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
+	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
+	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 	command_set_options("server add", "4 6 ssl auto noauto proxy noproxy -host -port");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
@@ -352,6 +365,8 @@ void fe_server_deinit(void)
 	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
 	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
 	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
+	command_unbind("server", (SIGNAL_FUNC) server_command);
+	command_unbind("disconnect", (SIGNAL_FUNC) server_command);
 
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connecting", (SIGNAL_FUNC) sig_server_connecting);
