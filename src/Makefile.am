@@ -18,5 +18,3 @@ noinst_HEADERS = \
 	irssi-plugin-gui.h
 
 SUBDIRS = irc-base irc-extra ui-common lib-config lib-nongui lib-popt settings $(GNOMEUI) $(TEXTUI) $(BOTUI)
-
-EXTRA_DIST = signal.doc
