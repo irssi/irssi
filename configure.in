@@ -1,0 +1,363 @@
+AC_INIT(src)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(irssi, 0.7.16)
+
+AM_MAINTAINER_MODE
+
+AM_ACLOCAL_INCLUDE(macros)
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_PROG_CPP
+AC_STDC_HEADERS
+AC_ARG_PROGRAM
+AM_PROG_LIBTOOL
+
+AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h)
+
+GNOME_INIT
+
+AC_ARG_WITH(proplist,
+[  --with-proplist         Specify libPropList location],	
+	proplist_dir=$withval)
+
+AC_ARG_WITH(socks,
+[  --with-socks            Build with socks support],
+	if test x$withval = xyes; then
+    		want_socks=yes
+	else
+    		if test "x$withval" = xno; then
+        		want_socks=no
+    		else
+        		want_socks=yes
+    		fi
+	fi,
+	want_socks=no)
+
+AC_ARG_WITH(imlib,
+[  --with-imlib            Build with imlib support],
+	if test x$withval = xyes; then
+		want_imlib=yes
+	else
+		if test "x$withval" = xno; then
+        		want_imlib=no
+		else
+        		want_imlib=yes
+		fi
+	fi,
+	want_imlib=yes)
+
+AC_ARG_WITH(gnome-panel,
+[  --with-gnome-panel      Build with gnome panel applet support],
+	if test x$withval = xyes; then
+		want_gnome_panel=yes
+	else
+		if test "x$withval" = xno; then
+        		want_gnome_panel=no
+		else
+        		want_gnome_panel=yes
+		fi
+	fi,
+	want_gnome_panel=yes)
+
+AC_ARG_WITH(textui,
+[  --with-textui           Build irssi-text],
+	if test x$withval = xyes; then
+    		want_textui=yes
+	else
+		if test "x$withval" = xno; then
+			want_textui=no
+		else
+        		want_textui=yes
+		fi
+	fi,
+	want_textui=yes)
+
+AC_ARG_WITH(plugins,
+[  --with-plugins          Build plugins],
+	if test x$withval = xyes; then
+    		want_plugins=yes
+	else
+		if test "x$withval" = xno; then
+			want_plugins=no
+		else
+        		want_plugins=yes
+		fi
+	fi,
+	want_plugins=yes)
+
+AC_ARG_WITH(servertest,
+[  --with-servertest       Build servertest],
+	if test x$withval = xyes; then
+    		want_servertest=yes
+	else
+		if test "x$withval" = xno; then
+			want_servertest=no
+		else
+        		want_servertest=yes
+		fi
+	fi,
+	want_servertest=no)
+
+AC_ARG_ENABLE(memdebug,
+[  --enable-memdebug       Enable memory debugging],
+	if test x$enableval = xyes; then
+    		want_memdebug=yes
+	else
+    		if test "x$enableval" = xno; then
+        		want_memdebug=no
+    		else
+        		want_memdebug=yes
+    		fi
+	fi,
+	want_memdebug=no)
+
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6           Enable IPv6 support],
+	if test x$enableval = xyes; then
+    		want_ipv6=yes
+	else
+    		if test "x$enableval" = xno; then
+        		want_ipv6=no
+    		else
+        		want_ipv6=yes
+    		fi
+	fi,
+	want_ip6=no)
+
+AC_ARG_ENABLE(gtk-hebrew,
+[  --enable-gtk-hebrew     Enable Hebrew support],
+	if test "x$enableval" = xno; then
+		want_gtk_hebrew=no
+		HEBREW_LIBS=""
+	else
+        	AC_DEFINE(GTK_HEBREW)
+        	AC_DEFINE_UNQUOTED(GTK_HEBREW_RC, "$enableval")
+        	HEBREW_LIBS="-lfribidi"
+		want_gtk_hebrew=yes
+	fi,
+	want_gtk_hebrew=no)
+
+dnl **
+dnl ** just some generic stuff...
+dnl **
+
+AC_CHECK_FUNCS(mkfifo)
+
+AC_CHECK_LIB(socket, socket, [
+	LIBS="$LIBS -lsocket"
+])
+
+AC_CHECK_LIB(nsl, inet_addr, [
+	LIBS="$LIBS -lnsl"
+], -lsocket)
+
+# gcc specific options
+if test "x$ac_cv_prog_gcc" = "xyes"; then
+  CFLAGS="$CFLAGS -Wall"
+fi
+
+if test "x$prefix" = "xNONE"; then
+	prefix="/usr/local"
+else
+	prefix=$prefix
+fi
+
+AM_CONDITIONAL(BUILD_PLUGINS, test "x$want_plugins" = "xyes")
+AM_CONDITIONAL(BUILD_SERVERTEST, test "x$want_servertest" = "xyes")
+AC_DEFINE_UNQUOTED(SYSCONFDIR, "$prefix/etc")
+AC_DEFINE_UNQUOTED(PLUGINSDIR, "$prefix/lib/irssi/plugins")
+
+dnl **
+dnl ** check for libPropList
+dnl **
+
+if test "x$proplist_dir" = "x"; then
+	proplib=
+else
+	proplib=-L$proplist_dir/lib
+fi
+
+AC_CHECK_LIB(PropList, PLSave, [
+	LIBS="$LIBS $proplib -lPropList"
+	if test "x$proplist_dir" != "x"; then
+		CFLAGS="$CFLAGS -I$proplist_dir/include"
+	fi
+], [
+	echo "ERROR: Irssi needs libPropList for configuration file handling."
+	echo "Go get it from http://xlife.dhs.org/irssi/download.php"
+	AC_ERROR(["libPropList not found"])
+], $LIBS $proplib -lPropList)
+
+
+dnl **
+dnl ** check for socks
+dnl **
+
+if test "x$want_socks" = "xyes"; then
+	AC_CHECK_LIB(socks, connect, [
+		LIBS="$LIBS -lsocks"
+		AC_CHECK_HEADER(socks.h, [
+			AC_DEFINE(HAVE_SOCKS_H)
+			CFLAGS="$CFLAGS -DSOCKS"
+			AC_MSG_RESULT(["socks5 library found, building with it"])
+		], [
+			AC_MSG_RESULT(["socks4 library found, building with it"])
+			CFLAGS="$CFLAGS -Dconnect=Rconnect -Dgetsockname=Rgetsockname -Dgetpeername=Rgetpeername -Dbind=Rbind -Daccept=Raccept -Dlisten=Rlisten -Dselect=Rselect"
+		])
+	])
+fi
+
+dnl **
+dnl ** check for gnome
+dnl **
+
+if test "x$want_gnome" = "xyes"; then
+	if test "x$GNOME_LIBS" = "x"; then
+        	want_gnome="no";
+        fi
+fi
+
+AM_CONDITIONAL(HAVE_GNOME, test "x$want_gnome" = "xyes")
+if test "x$want_gnome" = "xyes"; then
+	AC_DEFINE(HAVE_GTK)
+	AC_DEFINE(HAVE_GNOME)
+	GNOME_SUPPORT_CHECKS
+	GUI_CFLAGS="$GNOME_INCLUDEDIR"
+
+	dnl **
+	dnl ** check for gnome panel applet library
+	dnl **
+
+        if test "x$want_gnome_panel" = "xyes"; then
+		AC_CHECK_LIB(panel_applet, applet_widget_init, [
+			GUI_LIBS="$GNOME_LIBDIR $GNOMEGNORBA_LIBS $ZVT_LIBS -lpanel_applet"
+			AC_DEFINE(HAVE_GNOME_PANEL)
+		], [
+			GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS $ZVT_LIBS"
+                	want_gnome_panel="no"
+		], $GNOME_LIBDIR $GNOMEGNORBA_LIBS -lpanel_applet)
+        else
+		GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS $ZVT_LIBS"
+        fi
+
+else
+        want_gnome_panel="no"
+	AC_DEFINE(HAVE_GTK)
+	AM_PATH_GTK(1.2.0)
+	GUI_CFLAGS="$GTK_CFLAGS"
+	GUI_LIBS="$GTK_LIBS"
+
+        if test "x$gtk_config_minor_version" = "x0"; then
+		AC_DEFINE(GTK_10)
+	fi
+
+	if test "x$want_imlib" = "xyes"; then
+		AM_PATH_GDK_IMLIB(, [define_imlib=true])
+		if test x$define_imlib = xtrue; then
+			AC_DEFINE(HAVE_IMLIB)
+        		GUI_CFLAGS="$GUI_CFLAGS $GDK_IMLIB_CFLAGS"
+        		GUI_LIBS="$GDK_IMLIB_LIBS"
+		fi
+	fi
+fi
+
+if test "x$GUI_LIBS" != "x"; then
+	GUI_LIBS="$GUI_LIBS $HEBREW_LIBS"
+fi
+
+AC_SUBST(GUI_LIBS)
+AC_SUBST(GUI_CFLAGS)
+AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
+AM_CONDITIONAL(HAVE_GNOME_PANEL, test "x$want_gnome_panel" = "xyes")
+
+dnl **
+dnl ** gui-text checks
+dnl **
+
+AM_PATH_GLIB(1.2.0,,, gmodule)
+
+dnl **
+dnl ** curses checks
+dnl **
+
+if test "x$want_textui" = "xyes"; then
+	AC_CHECK_CURSES
+
+	if test "x$ncurses_version" != "x"; then
+		AC_CHECK_LIB(ncurses, use_default_colors, [
+			AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS)
+		],, $CURSES_LIBS)
+		AC_CHECK_LIB(ncurses, idcok, [
+			AC_DEFINE(HAVE_CURSES_IDCOK)
+		],, $CURSES_LIBS)
+	else
+		AC_CHECK_LIB(curses, idcok, [
+			AC_DEFINE(HAVE_CURSES_IDCOK)
+		],, $CURSES_LIBS)
+	fi
+else
+	has_curses=false
+fi
+AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true)
+
+dnl **
+dnl ** memory debugging
+dnl **
+
+if test "x$want_memdebug" = "xyes"; then
+	AC_DEFINE(MEM_DEBUG)
+fi
+AM_CONDITIONAL(BUILD_MEMDEBUG, test "x$want_memdebug" = "xyes")
+
+dnl **
+dnl ** IPv6 support
+dnl **
+
+if test "x$want_ipv6" = "xyes"; then
+	AC_DEFINE(HAVE_IPV6)
+fi
+
+dnl **
+dnl ** internationalization support
+dnl **
+
+dnl ALL_LINGUAS=""
+dnl AM_GNU_GETTEXT
+dnl AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
+
+AC_OUTPUT(
+Makefile
+dnl ## internationalization support
+dnl po/Makefile.in
+dnl intl/Makefile
+macros/Makefile
+src/Makefile
+src/irc-base/Makefile
+src/irc-extra/Makefile
+src/ui-common/Makefile
+src/gui-none/Makefile
+src/gui-text/Makefile
+src/gui-gnome/Makefile
+src/gui-gnome/help/Makefile
+src/gui-gnome/help/C/Makefile
+src/gui-gnome/pixmaps/Makefile
+src/lib-config/Makefile
+src/lib-nongui/Makefile
+src/settings/Makefile
+servertest/Makefile
+plugins/Makefile
+plugins/sample/Makefile
+plugins/speech/Makefile
+plugins/sound/Makefile
+plugins/proxy/Makefile
+plugins/external/Makefile
+plugins/bot/Makefile
+stamp.h)
+
+dnl **
+dnl ** internationalization support
+dnl **
+
+dnl stamp.h],[sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])

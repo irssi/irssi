@@ -1,0 +1,36 @@
+{
+  setupservers = (
+    {server = irc.funet.fi;ircnet = ircnet;port = 6667;autoconnect = No;}
+  );
+
+  ircnets = ({name = ircnet;});
+
+  channels = (
+    {
+      name = "#irssi";
+      ircnet = ircnet;
+      autojoin = No;
+    }
+  );
+  aliases = (
+    {alias = J;command = "/join &1";},
+    {alias = LEAVE;command = "/part &1";},
+    {alias = BYE;command = "/quit &1";},
+    {alias = WI;command = "/whois &1";},
+    {alias = WII;command = "/whois %1 %1";},
+    {alias = WW;command = "/whowas &1";},
+    {alias = W;command = "/who *";},
+    {alias = N;command = "/names *";},
+    {alias = M;command = "/msg &1";},
+    {alias = T;command = "/topic &1";},
+    {alias = C;command = "/clear";},
+    {alias = CL;command = "/clear";},
+    {alias = K;command = "/kick &1";},
+    {alias = KB;command = "/kickban &1";},
+    {alias = KN;command = "/knockout &1";},
+    {alias = B;command = "/ban &1";},
+    {alias = UB;command = "/unban &1";},
+    {alias = IG;command = "/ignore &1";},
+    {alias = UNIG;command = "/unignore &1";}
+  );
+}

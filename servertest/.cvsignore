@@ -1,0 +1,8 @@
+*.la
+*.lo
+.deps
+.libs
+Makefile
+Makefile.in
+so_locations
+ircserver

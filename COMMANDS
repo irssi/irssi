@@ -1,0 +1,383 @@
+
+ ** Some definations
+
+
+"Level" usually means that you can use these words there:
+
+   CRAP            - Can be almost anything
+   PUB             - Public messages in channel
+   MSGS            - Private messages
+   CHAN            - Channel messages: joins, parts, quits, etc.
+   NOTICES         - Notices
+   SNOTES          - Notices from server
+   WALLOPS         - Wallops
+   ACTIONS         - Actions (/me)
+   DCC             - DCC messages
+   CTCP            - CTCP messages
+   HILIGHT         - Hilighted text
+   CLIENTNOTICES   - Irssi's notices
+   CLIENTERRORS    - Irssi's error messages
+
+
+ ** Server handling
+
+
+CONNECT <address>[:port[:password]]
+
+	Connect to specified server
+
+DISCONNECT <* / tag> [message]
+
+	Disconnect from server
+
+SERVER <address>[:port[:password]]
+
+	Disconnect from current server and connect to new one
+
+SERVERS
+
+	Display a list of servers
+
+RMRECONNS
+
+	Remove all servers from reconnection list
+
+
+ ** Basic IRC commands
+
+
+QUIT [message]
+
+	Quit irssi
+
+JOIN <channel> [key] [, channel...]
+
+	Join to channel(s)
+
+PART [channel] [message]
+
+	Leave from channel
+
+QUERY <nick>
+
+	Create query window
+
+UNQUERY <nick>
+
+	Close query window
+
+MSG <nick/channel> <message>
+
+	Send message to nick/channel
+
+ME <message>
+
+	Send action to channel (/me thinks..)
+
+NOTICE <nick/channel> <message>
+
+	Send notice to nick/channel
+
+WHOIS [server/nick] <nick>
+
+	Send WHOIS query, you can also specify from what server to ask the
+	information. If you type the nick twice it will ask from the same
+	server what nick is using.
+
+AWAY [message]
+
+	Sets yourself away/unaway
+
+AWAYALL [message]
+
+	Sets yourself away/unaway to all connected servers
+
+WHO <nick/channel>
+
+	Show WHO list
+
+NAMES [channel]
+
+	List nicks (in channel)
+
+
+ ** Bit more advanced commands
+
+
+MODE <channel/nick> <mode>
+
+	Get/set channel/nick mode.
+
+	Get channel modes:
+		b            - Get ban list
+		e            - Get ban exception list
+		I            - Get invite list
+
+	Set channel modes (use +/- before these):
+		b *!ban@mask - Set/remove ban
+		e *!ban@mask - Set/remove ban exception
+		I *!ban@mask - Set/remove channel invite
+		o nick       - Set/remove op status
+		v nick       - Set/remove voice status
+		l limit      - Set remove max. people limit in channel
+		k key        - Set/remove channel key
+		s            - Secret
+		p            - Private
+		m            - Moderated
+		i            - Invite only
+		n            - No external messages
+		t            - Only ops can change topic
+
+	User modes:
+		i            - Invisible
+		w            - Show wallops
+		s            - Show server notices
+
+TOPIC [channel] [topic]
+
+	Get/set channel topic
+
+INVITE <nick> [channel]
+
+	Invite nick to channel
+
+CTCP <nick/channel> <command>
+
+	Send CTCP request to nick/channel (PING, VERSION, ..)
+
+NCTCP <nick/channel> <reply>
+
+	Send CTCP reply to nick/channel
+
+PING <nick>
+
+	Send CTCP PING to nick and tell how long it took to receive the reply
+
+ISON [nick [nick...]]
+
+	Ask if nicks are in IRC.
+
+WALL [channel] <message>
+
+	Send notice message to all operators in channel.
+
+OP, DEOP, VOICE, DEVOICE [channel] [nick [nick...]
+
+	Op/deop/voice/devoice nick(s) in channel
+
+KICK [channel] <nick> <reason>
+
+	Kick nick from channel
+
+KICKBAN [channel] <nick> <reason>
+
+	Kick+ban nick from channel
+
+KNOCKOUT [secs] <nick> <reason>
+
+	Kick+ban+delay (default to 5min)+unban
+
+BAN [channel] [nick [nick...]]
+
+	Ban nick(s) in channel
+
+UNBAN [channel] [mask [mask...]]
+
+	Remove ban(s) from channel
+
+BANSTAT [channel]
+
+	List bans and ban exceptions in channel
+
+BANTYPE <normal/host/domain/custom>
+
+	Set ban type:
+
+	Normal - *!user@*.domain.net
+	Host   - *!*@host.domain.net
+	Domain - *!*@*.domain.net
+	Custom [nick] [user] [host] [domain]
+		eg. /bantype custom nick domain - nick!*@*.domain.net
+		eg. /bantype custom user host - *!user@host.domain.net
+
+INVITELIST [channel]
+
+	List invites (+I) in channel
+
+VERSION [server]
+
+	Displays irssi version and asks IRC server's version
+
+VER [nick/channel]
+
+	Sends CTCP VERSION request to nick/channel
+
+SV [nick/channel]
+
+	Sends irssi version text to nick/channel
+
+KILL <nick> <message>
+
+	Kill nick from irc network. [irc ops only]
+
+WALLOPS <message>
+
+	Write wallops message. [irc ops only]
+
+QUOTE <message>
+
+	Send raw data to irc server - DON'T USE THIS unless you really know
+	what you're doing!
+
+
+ ** DCC handling
+
+
+DCC
+
+	List DCC connections (same as DCC LIST)
+
+DCC CHAT <nick>
+
+	Open DCC chat
+
+DCC SEND <nick> <filename>
+
+	Send file to nick
+
+DCC GET <nick> [filename]
+
+	Get file offered by nick
+
+DCC RESUME <nick> [filename]
+
+	(MIRC) Resume getting file offered by nick
+
+DCC CLOSE <type> <nick> [filename]
+
+	Close DCC connection
+
+DCC LIST
+
+	List DCC connections
+
+MIRCDCC [n]
+
+	Set MIRC style CTCPs on/off
+
+
+ ** User interface handling
+
+
+WINDOW <NEW/CLOSE/SERVER/PREV/NEXT/GOTO/LEVEL>
+
+	NEW [HIDDEN/TAB]
+
+		Create new window (in tab)
+
+	CLOSE
+
+		Close the current window
+
+	SERVER <tag>
+
+		Change which server to use in current window
+
+	PREV/NEXT/GOTO <N>
+
+		Go to previous/next/Nth window
+
+	LEVEL <[+/-]pub/msgs/...>
+
+		Change window level, eg.
+			/window level msgs      - creates messages window
+			/window level all -msgs - creates status window
+
+CLEAR
+
+	Clear screen
+
+ECHO <text>
+
+	Print text to screen
+
+MODES
+
+	Open channel modes dialog (GTK/GNOME version)
+
+GWHOIS <nick>
+
+	Display WHOIS information in dialog (GTK/GNOME version)
+
+LAST [-pub -msgs...] <text>
+
+	Display (only public/msgs/..) lines where <text> appears
+	(Text version only)
+
+
+ ** Configuration
+
+
+SET [key [=value / [key [key..]]
+
+	Get/set configuration
+
+ALIAS, UNALIAS <alias> [command]
+
+	Set/remove alias, /unalias is the same as /alias without command
+
+	These codes are extracted in commands:
+		%0            : name of alias
+		%1, %2, %3 .. : %th word
+		&1, &2, &3 .. : &th word + the rest of the text after it
+		%c            : channel name
+
+	Typing extra / before /command (//command) ignores any aliases
+
+IGNORE, UNIGNORE <mask> [level [level..]]
+
+	Ignore/unignore specified level(s) or everything from nick
+
+NOTIFY <mask> [ircnet [ircnet..]]
+
+	Add mask (nick) to notify list for specified ircnets..
+
+UNNOTIFY <mask>
+
+	Remove mask from notify list.
+
+LOG <CREATE/CLOSE/START/STOP/LIST>
+
+	CREATE <filename> [<+/->level ...] [#channel/nick [
+	                  [<+/->level ...] ...]
+
+		Create and start logging to file
+
+		Example: /log create mylog -all +msgs #linux +chan +public
+		(or simply #linux +all logs everything that appears in #linux
+		window).
+
+        CLOSE <filename>
+
+		Close log and remove from configuration
+
+	START <filename>
+
+		Start logging to file
+
+	STOP <filename>
+
+		Stop logging to file
+
+        LIST
+
+		List logs.
+
+LOAD <plugin> [arguments]
+
+	Load plugin
+
+UNLOAD <plugin>
+
+	Unload plugin
+

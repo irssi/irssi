@@ -1,0 +1,82 @@
+
+
+irssi
+
+
+ * ABOUT
+
+Irssi is an IRC client made with GTK+ toolkit and (optional) GNOME libraries.
+A small text mode version is also somewhat working, there's also a really
+simple daemon version which just loads "bot" plugin (which doesn't exist).
+I'd also like to see KDE version but someone else will have to do it.
+
+
+ * FEATURES
+
+See COMMANDS file for list of all commands irssi knows.
+
+I've been asked quite a lot about why should one use irssi, what does it do
+that other IRC clients don't? Well, to tell you the truth, I have no idea :)
+Still I've got a lot of mails saying it's the best GUI IRC client they've
+ever used :) Let's see.. It should be easy to use, it has most of the
+features IRC client needs and it's pretty stable. Here's a small list of what
+it does:
+
+ - Nice configuration :) Especially the color settings.
+ - You can connect to multiple servers. Irssi is also IRC network aware so
+   you can specify some settings to work only in specified IRC networks.
+ - Automatically connect to IRC server(s) at startup, automatically join to
+   channels when connected
+ - All code is nonblocking, it won't hang while connecting to server or
+   opening DCC connection. Host lookups are done in separate processes.
+ - DCC send, receive and chat with GUI
+ - GNOME panel support, channels and queries are displayed in GNOME panel
+   where you can easily see which channels have been updated (label turns to
+   red) and click in them to open the channel.
+ - Doubleclicking URL in text widget launches specified web/ftp/email client,
+   also doubleclicking channel/nick join to channel or creates query.
+ - Aliases, ignores, autoignoring when flooding, notify lists, completing
+   specified words with tab (like home&lt;tab&gt; -> http://my.home.page),
+   hilighting lines with specified texts
+ - Smart nick completion
+ - Configurable logging support
+ - You can use ZVT widget to print texts, it's really fast so you can be
+   joined to many high traffic channels and irssi won't slow up
+ - Plugins support, creating plugins is really easy.
+ - Lots of nice GUI stuff :)
+
+
+ * INSTALLATION
+
+./configure
+make
+make install
+
+Configure can use these parameters (all of these defaults to yes):
+
+ --with-proplist=dir	Specify libPropList directory
+ --with-servertest	Build test irc server which you can use to try crash
+                        irc clients
+ --without-gnome       	Build without GNOME libraries
+ --without-gnome-panel	Build without GNOME panel
+ --without-imlib	Build without Imlib library
+ --without-socks       	Build without socks library
+ --without-textui	Build without text mode version
+ --enable-memdebug     	Enable memory debugging, great for finding memory
+			leaks
+ --enable-gtk-hebrew    Enable Hebrew support - see README-HEBREW
+
+There's also some others, you can get a full list with ./configure --help
+
+If you don't want to run irssi in panel, add --no-applet to command line
+parameters.
+
+
+ * BUGS / SUGGESTIONS
+
+See TODO file if it is already listed in there - if not send me email..
+
+
+ * AUTHOR
+
+Timo Sirainen, cras@irccrew.org, cras/ircnet/#irssi, http://xlife.dhs.org/irssi/

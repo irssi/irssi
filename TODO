@@ -1,0 +1,140 @@
+ - window goto active, name
+
+*** Bugs
+
+ - If there's any empty lists in configuration file (like ircnets = ();),
+   libPropList crashes irssi at startup.. Irssi doesn't save any empty lists
+   now, but still this needs to be fixed in libPropList..
+ - after changing irssi-text's screen size to smaller it leaves some empty
+   lines to windows before printing text, redrawing screen moves the lines
+   back up.. hm..
+ - irssi can't find new themes in ~/.irssi/ while running - scan for new
+   themes when opening themes dialog? irssi-text also needs to be restarted
+   to use new themes..
+ - mirc ctcp togglemenuitem isn't updated right
+ - multiple dcc connections from different irc networks from same nick
+   doesn't work. Maybe create "server nick" and "refer nick" variables to
+   DCC_REC?
+ - gfloat doesn't work in formats .. why? In DCC messages kb and kb/s values
+   could be shown as floats..
+
+*** text GUI
+
+ - statusbar:
+     - when starting to run out of space some items could be made smaller,
+       activity for example .. make some generic flag for items to use.
+     - activity: hilight number if window has message for you or hilighted
+       text
+     - "you have new mail"
+     - active server tag somewhere in window
+ - word wrapping doesn't work perfectly, if colors/bolds/etc are used, they're
+   treated as spaces. So things like (<newline>blah blah) can happen (/who)
+ - autojoining to channels, make the code common in gui-gnome and gui-text
+
+*** Big things
+
+ - keyboard configuration
+ - session saving thing.. specify what channels/queries/dcc chats to open in
+   which window (real/tabbed/in same window with some other), what irc net
+   channels goes to where, what channels/queries to open at startup, etc.
+   use dialog with gtktree widget to change it.
+ - split windows with gtkpaned (check window-views-patch.diff)
+ - really transparently working irc proxy, saves scrollback buffers, etc.
+   Or maybe the existing ones already work?
+ - some sort of address book? our own irssi ctcp to ask for other irssi users
+   for their information (of course not without asking (except optionally))..
+   could be nice also to automatically update it, keep track of all seen
+   users gathered when joining channels, whois, who, etc. commands.
+   automatically updating information could be host masks, nicks, ips, seen in
+   channels, operator in channels, .. user specified checks like last topic or
+   mode changes or even msgs to you/some channel/with some keyword. great for
+   spying people ;) maybe even useful sometimes..
+
+   .. but what database would be best for this?
+
+ - GTK version: icons to toolbars, accelerators to menus
+ - Windows style MDI windows are possible with GtkFixed .. Some people would
+   like this.. too much job for me, it would need building the MDI windows
+   ourself (title bar, borders, resizing, etc.)
+
+ - online help, documentation, ...
+ - plugins:
+     - perl plugin .. implementation problems, C's structures need to be
+       handled some way .. like for server structure get_address(),
+       get_port(), set_address(), set_port() etc..
+     - other scripting plugins would be easier? scheme, tcl, pythong?
+       sula premirex uses scheme, it would probably be pretty easy to learn
+       from it how to do it to irssi :)
+     - IRC bot, eggdrop is too old, needs a replacement ;)
+     - DCC file server, I'm not too excited about this, maybe someone else
+       wants to do it..
+     - Multiplayer games! :) Chess, tic-tac-toe, othello, battleship, tetris,
+       etc. Existing games should probably be used .. though there doesn't
+       seem to be any of these (except tetris) for gnome right now..
+     - audio / video chat :)
+
+*** Little things
+
+ - command line parameter handling, specify what server/ircnet to autoconnect
+   or none.
+ - /list:
+     - gui optional
+     - sort it by clicking the headers
+     - change the size of columns
+     - total number of channels
+     - copy/paste things in list?
+     - search the list
+ - log option: add the open/close time to log
+ - log directory, automatically log all channels and queries there
+     - overwrite/append
+     - all windows, just queries, only the channels in channel list
+     - you can be joined to same channels in different irc networks (or even
+       the same ircnet!) - create the logs to different directiories/names
+ - use different themes in different channels/queries?
+ - improve msgslevels and ignoring .. Like ignoring "chan" doesn't work now.
+   It could be changed to joins, parts, quits, topics, nicks, .. just rip all
+   the msglevels from bitchx and use them :)
+ - use server-idle instead of channel.query thing..
+ - lag meter
+ - possibility to display different colors in nicks from different people..
+   and different colors for word hilighting too
+ - /connect ircnet could connect to ircnet
+ - change some GLists to GHashTables, aliases at least
+ - check new irssi versions with http rather than with irssibot..
+ - implement requesting files with DCC GET from remote client for dcc file
+   servers. good for people behind firewalls.
+ - support for ircii translation tables (/usr/lib/irc/translation/*)
+ - use different nicks/realnames in different irc networks
+ - zvt problems/todo:
+    - need some way to disable all the extra features, like sending 0x8e
+      messes up your fonts.
+    - the ugly cursor just keeps blinking
+    - when clicking an empty spot on screen it sometimes tells that there's
+      some weird crap in there..
+    - word wrapping
+ - notify list:
+     - dialog: keep track of hosts/realnames so after closing and opening the
+       dialog again they would show up.. 
+     - summary list (for irssi-text)
+     - nick-specific options: 
+        - check for gone-flag changes (use userhosts instead of isons)
+        - create popup dialog
+	- run some command (like /exec as soon as I get that done :)
+ - gnome statubar:
+    - clock?
+    - dcc transfer meter (gtk progressbar)
+ - you could configure which events (whois, notify, etc.) to show in what
+   windows (all, current, status)
+ - gui for configuring plugin specific theme format texts
+ - awaylog (/log create ~/away.log -all +msgs or something), autoaway
+ - make window/save buffer and find work with zvt
+ - dcc send: allow selection of multiple files to send (also for dnd from
+   gmc!) Allow dropping files to anywhere in irssi.
+ - logging: longer format dd.mm.yy hh:mm:ss (configurable?)
+ - net split/join detection ? is this even needed? more harmful than useful?
+ - /timer, /clones
+ - run multiple commands with one alias (what was this needed for? can't
+   remember..)
+ - regexp for hilighting words?
+ - subcommands (dcc, window, ..) could use common function instead of copy and
+   pasting the same function all the time and modifying just two words...
