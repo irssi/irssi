@@ -132,7 +132,9 @@ static void server_init(IRC_SERVER_REC *server)
 	if (ptr != NULL) {
 		/* IPv6 address .. doesn't work here, use the string after
 		   the last : char */
-                address = ptr+1;
+		address = ptr+1;
+		if (*address == '\0')
+			address = "x";
 	}
 
 	/* Replace ':' with '_' in our own hostname (the same IPv6 problem) */
