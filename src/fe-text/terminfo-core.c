@@ -59,10 +59,12 @@ static TERMINFO_REC tcaps[] = {
 	{ "smcup",	"ti",	CAP_TYPE_STR,	&temp_term.TI_smcup },
 	{ "rmcup",	"te",	CAP_TYPE_STR,	&temp_term.TI_rmcup },
 	{ "cup",	"cm",	CAP_TYPE_STR,	&temp_term.TI_cup },
-	{ "hpa",       	"ch",	CAP_TYPE_STR,	&temp_term.TI_hpa },
-	{ "vpa",       	"vh",	CAP_TYPE_STR,	&temp_term.TI_vpa },
-	{ "cub1",      	"le",	CAP_TYPE_STR,	&temp_term.TI_cub1 },
-	{ "cuf1",      	"nd",	CAP_TYPE_STR,	&temp_term.TI_cuf1 },
+	{ "hpa",	"ch",	CAP_TYPE_STR,	&temp_term.TI_hpa },
+	{ "vpa",	"vh",	CAP_TYPE_STR,	&temp_term.TI_vpa },
+	{ "cub1",	"le",	CAP_TYPE_STR,	&temp_term.TI_cub1 },
+	{ "cuf1",	"nd",	CAP_TYPE_STR,	&temp_term.TI_cuf1 },
+	{ "civis",	"vi",	CAP_TYPE_STR,	&temp_term.TI_civis },
+	{ "cnorm",	"ve",	CAP_TYPE_STR,	&temp_term.TI_cnorm },
 
         /* Scrolling */
 	{ "csr",      	"cs",	CAP_TYPE_STR,	&temp_term.TI_csr },
@@ -148,6 +150,12 @@ static void _move_relative(TERM_REC *term, int oldx, int oldy, int x, int y)
 		tput(tparm(term->TI_vpa, y));
         if (oldx != x)
 		tput(tparm(term->TI_hpa, x));
+}
+
+/* Set cursor visible/invisible */
+static void _set_cursor_visible(TERM_REC *term, int set)
+{
+	tput(tparm(set ? term->TI_cnorm : term->TI_civis));
 }
 
 #define scroll_region_setup(term, y1, y2) \
@@ -530,8 +538,9 @@ static int term_setup(TERM_REC *term)
                 fprintf(term->out, "Terminal doesn't support cursor movement\n");
 		return 0;
 	}
-
 	term->move_relative = _move_relative;
+	term->set_cursor_visible = term->TI_civis && term->TI_cnorm ?
+		_set_cursor_visible : _ignore_parm;
 
         /* Scrolling */
 	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn)

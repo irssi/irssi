@@ -37,10 +37,11 @@ struct _TERM_WINDOW {
 TERM_WINDOW *root_window;
 int term_width, term_height;
 
-static int vcx, vcy;
+static int vcx, vcy, curs_visible;
 static int curs_x, curs_y;
 static int last_fg, last_bg, last_attrs;
 static int redraw_needed, redraw_tag;
+static int freeze_counter;
 
 /* SIGCONT handler */
 static void sig_cont(int p)
@@ -65,7 +66,8 @@ int term_init(void)
 
 	last_fg = last_bg = -1;
 	last_attrs = 0;
-        vcx = vcy = -1;
+	vcx = vcy = -1;
+        curs_visible = TRUE;
 
 	current_term = terminfo_core_init(stdin, stdout);
 	if (current_term == NULL)
@@ -134,6 +136,7 @@ void term_force_colors(int set)
 void term_clear(void)
 {
         vcx = vcy = -1;
+        term_set_color(root_window, 0);
         terminfo_clear();
 }
 
@@ -264,6 +267,11 @@ void term_move(TERM_WINDOW *window, int x, int y)
 {
 	int newx, newy;
 
+	if (curs_visible) {
+		terminfo_set_cursor_visible(FALSE);
+                curs_visible = FALSE;
+	}
+
 	newx = x+window->x;
         newy = y+window->y;
 	if (vcx != newx || vcy != newy) {
@@ -305,17 +313,31 @@ void term_move_cursor(int x, int y)
 
 void term_refresh(TERM_WINDOW *window)
 {
+	if (freeze_counter > 0)
+		return;
+
 	if (vcx != curs_x || vcy != curs_y)
 		term_move(root_window, curs_x, curs_y);
+	if (!curs_visible) {
+		terminfo_set_cursor_visible(TRUE);
+                curs_visible = TRUE;
+	}
 	fflush(window != NULL ? window->term->out : current_term->out);
 }
 
 void term_refresh_freeze(void)
 {
+        freeze_counter++;
+	if (curs_visible) {
+		terminfo_set_cursor_visible(FALSE);
+                curs_visible = FALSE;
+	}
 }
 
 void term_refresh_thaw(void)
 {
+	if (--freeze_counter == 0)
+                term_refresh(NULL);
 }
 
 void term_stop(void)
