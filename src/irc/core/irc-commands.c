@@ -1017,6 +1017,8 @@ void irc_commands_init(void)
 	command_bind_irc("admin", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: INFO [<server>] */
 	command_bind_irc("info", NULL, (SIGNAL_FUNC) command_self);
+    /* SYNTAX: KNOCK <channel> */
+    command_bind_irc("knock", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: LINKS [[<server>] <mask>] */
 	command_bind_irc("links", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: LUSERS [<server mask> [<remote server>]] */
@@ -1108,6 +1110,7 @@ void irc_commands_deinit(void)
 	command_unbind("ison", (SIGNAL_FUNC) command_1self);
 	command_unbind("admin", (SIGNAL_FUNC) command_self);
 	command_unbind("info", (SIGNAL_FUNC) command_self);
+    command_unbind("knock", (SIGNAL_FUNC) command_self);
 	command_unbind("links", (SIGNAL_FUNC) command_self);
 	command_unbind("lusers", (SIGNAL_FUNC) command_self);
 	command_unbind("map", (SIGNAL_FUNC) command_self);

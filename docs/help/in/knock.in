@@ -1,5 +1,5 @@
 
-KNOCK %|<channel>
+@SYNTAX:knock@
 
 Works only in some IRC networks (hybrid-like ircds).
 
@@ -8,8 +8,9 @@ KNOCK is a feature that lets you request access to a channel they cannot join wi
 The following conditions must be met for KNOCK to work:
 
  - You are not banned from the channel
- - Channel is not secret (+s)
+ - Channel is not secret (+s) or private (+p)
  - You are not already on the channel
  - Channel is invite only (+i), has a key (+k) or limit is full
 
 When successful KNOCK issued, it sends a notice to channel operators. Use of KNOCK is rate limited by server.
+
