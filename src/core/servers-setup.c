@@ -299,7 +299,7 @@ server_create_conn(int chat_type, const char *dest, int port,
 			return rec;
 	}
 
-	chatrec = chatnet_find(chatnet);
+	chatrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
 	if (chatrec != NULL)
 		chatnet = chatrec->name;
 
