@@ -96,7 +96,7 @@ static void item_default(SBAR_ITEM_REC *item, int get_size_only,
 {
 	SERVER_REC *server;
         WI_ITEM_REC *wiitem;
-	char *parsed, *printstr;
+	char *stripped, *parsed, *printstr;
 	int len;
 
 	if (active_win == NULL) {
@@ -109,6 +109,8 @@ static void item_default(SBAR_ITEM_REC *item, int get_size_only,
 
 	parsed = parse_special_string(str, server, wiitem, "", NULL,
 				      PARSE_FLAG_ESCAPE_VARS);
+	stripped = strip_codes(parsed);
+        g_free(parsed); parsed = stripped;
 
 	if (get_size_only) {
 		item->min_size = item->max_size = format_get_length(parsed);
@@ -119,7 +121,7 @@ static void item_default(SBAR_ITEM_REC *item, int get_size_only,
                         parsed[len] = '\0';
 		}
 
-                printstr = g_strconcat("%4", parsed, NULL);
+                printstr = g_strconcat("%n%4", parsed, NULL);
 		gui_printtext(item->xpos, item->bar->ypos, printstr);
                 g_free(printstr);
 	}
@@ -147,6 +149,7 @@ static int statusbar_clock_timeout(void)
 
 	if (tm->tm_min != min) {
 		/* minute changed, redraw! */
+                clock_last = t;
 		statusbar_item_redraw(clock_item);
 	}
 	return 1;
@@ -240,8 +243,9 @@ static char *get_activity_list(int normal, int hilight)
 		if ((!is_det && !normal) || (is_det && !hilight))
                         continue;
 
-                if (str->len > 0)
-			g_string_append(str, "%c,");
+		g_string_append(str, "%c");
+                if (str->len > 2)
+			g_string_append_c(str, ',');
 
 		switch (window->data_level) {
 		case DATA_LEVEL_NONE:

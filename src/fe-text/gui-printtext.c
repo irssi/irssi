@@ -282,16 +282,17 @@ static void get_colors(int flags, int *fg, int *bg)
 	if (flags & PRINTFLAG_MIRC_COLOR) {
 		/* mirc colors - real range is 0..15, but after 16
 		   colors wrap to 0, 1, ... */
-		*fg = *fg < 0 ?
-			current_theme->default_color : mirc_colors[*fg % 16];
 		*bg = *bg < 0 ? 0 : mirc_colors[*bg % 16];
+		if (*fg > 0) *fg = mirc_colors[*fg % 16];
 	} else {
 		/* default colors */
-		*fg = *fg < 0 || *fg > 15 ?
-			current_theme->default_color : *fg;
 		*bg = *bg < 0 || *bg > 15 ? 0 : *bg;
+                if (*fg > 8) *fg &= ~8;
+	}
 
-		if (*fg > 8) *fg -= 8;
+	if (*fg < 0 || *fg > 15) {
+		*fg = *bg == 0 ? current_theme->default_color :
+			current_theme->default_real_color;
 	}
 
 	if (flags & PRINTFLAG_REVERSE) {
@@ -302,7 +303,7 @@ static void get_colors(int flags, int *fg, int *bg)
 
 	if (*fg == 8) *fg |= ATTR_COLOR8;
 	if (flags & PRINTFLAG_BOLD) {
-		if (*fg == 0) *fg = current_theme->default_bold_color;
+		if (*fg == 0) *fg = current_theme->default_real_color;
 		*fg |= 8;
 	}
 	if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;

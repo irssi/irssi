@@ -740,8 +740,8 @@ static int theme_read(THEME_REC *theme, const char *path, const char *data)
 
 	theme->default_color =
 		config_get_int(config, NULL, "default_color", 0);
-	theme->default_bold_color =
-		config_get_int(config, NULL, "default_bold_color", 7);
+	theme->default_real_color =
+		config_get_int(config, NULL, "default_real_color", 7);
         theme_read_replaces(config, theme);
 	theme_read_abstracts(config, theme);
 
@@ -1069,7 +1069,7 @@ static void themes_read(void)
 					g_get_home_dir());
 		current_theme = theme_create(fname, "default");
 		current_theme->default_color = 0;
-		current_theme->default_bold_color = 7;
+		current_theme->default_real_color = 7;
                 theme_read(current_theme, NULL, default_theme);
 		g_free(fname);
 	}

@@ -15,7 +15,12 @@ typedef struct {
 	char *name;
         time_t last_modify;
 
-	int default_color, default_bold_color;
+	int default_color; /* default color to use with text with default
+			      background. default is 0 which means the default
+			      color set by terminal */
+	int default_real_color; /* default color to use with background set.
+				   this shouldn't be 0, unless black is really
+				   wanted. default is 7 (white). */
 	GHashTable *modules;
 
 	GSList *replace_keys;
