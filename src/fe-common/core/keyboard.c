@@ -392,7 +392,8 @@ void keyboard_init(void)
 
 	key_bind("command", "Run any IRC command", NULL, NULL, (SIGNAL_FUNC) sig_command);
 
-	read_keyboard_config();
+	/* read the keyboard config when all key binds are known */
+	signal_add("irssi init read settings", (SIGNAL_FUNC) read_keyboard_config);
 	signal_add("setup reread", (SIGNAL_FUNC) read_keyboard_config);
 	signal_add("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 
@@ -406,6 +407,7 @@ void keyboard_deinit(void)
 		keyinfo_remove(keyinfos->data);
 	g_hash_table_destroy(keys);
 
+	signal_remove("irssi init read settings", (SIGNAL_FUNC) read_keyboard_config);
         signal_remove("setup reread", (SIGNAL_FUNC) read_keyboard_config);
 	signal_remove("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 	command_unbind("bind", (SIGNAL_FUNC) cmd_bind);
