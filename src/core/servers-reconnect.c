@@ -312,8 +312,10 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 		tag = atoi(data);
 		rec = tag <= 0 ? NULL : reconnect_find_tag(tag);
 
-		if (rec == NULL)
+		if (rec == NULL) {
 			signal_emit("server reconnect not found", 1, data);
+                        return;
+		}
 	}
 
 	conn = rec->conn;
