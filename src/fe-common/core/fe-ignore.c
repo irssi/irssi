@@ -169,24 +169,29 @@ static void cmd_unignore(const char *data)
 {
 	IGNORE_REC *rec;
 	GSList *tmp;
+        char *mask;
+	void *free_arg;
 
-	if (*data == '\0')
+	if (!cmd_get_params(data, &free_arg, 1, &mask))
+		return;
+
+	if (*mask == '\0')
                 cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (is_numeric(data, ' ')) {
+	if (is_numeric(mask, ' ')) {
 		/* with index number */
-		tmp = g_slist_nth(ignores, atoi(data)-1);
+		tmp = g_slist_nth(ignores, atoi(mask)-1);
 		rec = tmp == NULL ? NULL : tmp->data;
 	} else {
 		/* with mask */
 		const char *chans[2] = { "*", NULL };
 
 		if (active_win->active_server != NULL &&
-		    active_win->active_server->ischannel(data)) {
-			chans[0] = data;
-			data = NULL;
+		    active_win->active_server->ischannel(mask)) {
+			chans[0] = mask;
+			mask = NULL;
 		}
-		rec = ignore_find("*", data, (char **) chans);
+		rec = ignore_find("*", mask, (char **) chans);
 	}
 
 	if (rec != NULL) {
@@ -194,8 +199,9 @@ static void cmd_unignore(const char *data)
 		ignore_update_rec(rec);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_IGNORE_NOT_FOUND, data);
+			    TXT_IGNORE_NOT_FOUND, mask);
 	}
+	cmd_params_free(free_arg);
 }
 
 static void sig_ignore_created(IGNORE_REC *rec)
