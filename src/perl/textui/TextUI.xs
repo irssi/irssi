@@ -152,3 +152,9 @@ BOOT:
 	irssi_boot(TextUI__Statusbar);
 	irssi_boot(TextUI__TextBuffer);
 	irssi_boot(TextUI__TextBufferView);
+
+void
+term_refresh_freeze()
+
+void
+term_refresh_thaw()
