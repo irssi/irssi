@@ -45,8 +45,8 @@
     {alias = B;command = "/ban &1";},
     {alias = UB;command = "/unban &1";},
     {alias = IG;command = "/ignore &1";},
-    {alias = UNIG;command = "/unignore &1";}
-    {alias = SB;command = "/scrollback &1";}
+    {alias = UNIG;command = "/unignore &1";},
+    {alias = SB;command = "/scrollback &1";},
     {alias = UMODE;command = "/mode %n &1";}
   );
   popups = (
