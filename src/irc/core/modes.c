@@ -19,8 +19,9 @@
 */
 
 #include "module.h"
-#include "commands.h"
 #include "signals.h"
+#include "commands.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "modes.h"
@@ -390,6 +391,15 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
+static void event_oper(IRC_SERVER_REC *server, const char *data)
+{
+	const char *opermode;
+
+	opermode = settings_get_str("opermode");
+        if (*opermode != '\0')
+		irc_send_cmdv(server, "MODE %s %s", server->nick, opermode);
+}
+
 static void event_away(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
@@ -661,9 +671,12 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 
 void modes_init(void)
 {
+	settings_add_str("misc", "opermode", "");
+
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_add("event 306", (SIGNAL_FUNC) event_away);
+	signal_add("event 381", (SIGNAL_FUNC) event_oper);
 	signal_add("event mode", (SIGNAL_FUNC) event_mode);
 
 	command_bind("op", NULL, (SIGNAL_FUNC) cmd_op);
@@ -678,6 +691,7 @@ void modes_deinit(void)
 	signal_remove("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_remove("event 306", (SIGNAL_FUNC) event_away);
+	signal_remove("event 381", (SIGNAL_FUNC) event_oper);
 	signal_remove("event mode", (SIGNAL_FUNC) event_mode);
 
 	command_unbind("op", (SIGNAL_FUNC) cmd_op);
