@@ -1,8 +1,11 @@
 moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libirc_proxy.la
 
-INCLUDES = $(GLIB_CFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/src/core/ \
-	-I$(top_srcdir)/src/irc/core/
+INCLUDES = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core/ \
+	-I$(top_srcdir)/src/irc/core/ \
+	$(GLIB_CFLAGS)
 
 libirc_proxy.a:
 	rm -f libirc_proxy.a

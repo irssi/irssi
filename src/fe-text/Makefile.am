@@ -1,10 +1,10 @@
 bin_PROGRAMS = irssi
 
 INCLUDES = \
-	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/fe-common/core/ \
+	$(GLIB_CFLAGS) \
 	$(CURSES_INCLUDEDIR) \
 	-DLOCALEDIR=\""$(datadir)/locale"\"
 

@@ -1,8 +1,8 @@
 noinst_LIBRARIES = libpopt.a
 
 INCLUDES = \
-	$(GLIB_CFLAGS) \
-	-I$(top_srcdir)/src
+	-I$(top_srcdir)/src \
+	$(GLIB_CFLAGS)
 
 libpopt_a_SOURCES = \
 	findme.c popt.c poptconfig.c popthelp.c poptparse.c

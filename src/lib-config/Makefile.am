@@ -1,8 +1,8 @@
 noinst_LIBRARIES = libirssi_config.a
 
 INCLUDES = \
-	$(GLIB_CFLAGS) \
-	-I$(top_srcdir)/src
+	-I$(top_srcdir)/src \
+	$(GLIB_CFLAGS)
 
 libirssi_config_a_SOURCES = \
 	get.c \

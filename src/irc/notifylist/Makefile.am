@@ -1,7 +1,10 @@
 noinst_LIBRARIES = libirc_notifylist.a
 
-INCLUDES = $(GLIB_CFLAGS) \
-	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/
+INCLUDES = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core/ \
+	-I$(top_srcdir)/src/irc/core/ \
+	$(GLIB_CFLAGS)
 
 libirc_notifylist_a_SOURCES = \
 	notifylist.c \

@@ -1,8 +1,8 @@
 noinst_LIBRARIES = libfe_common_core.a
 
 INCLUDES = \
-	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ \
+	$(GLIB_CFLAGS) \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DTHEMESDIR=\""$(datadir)/irssi/themes"\"
 

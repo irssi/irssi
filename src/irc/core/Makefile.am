@@ -1,9 +1,10 @@
 noinst_LIBRARIES = libirc_core.a
 
 INCLUDES = \
-	$(GLIB_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
-	-I$(top_srcdir)/src -I$(top_srcdir)/src/core
+	$(GLIB_CFLAGS)
 
 libirc_core_a_SOURCES = \
 	bans.c \

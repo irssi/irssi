@@ -3,8 +3,11 @@ module_LTLIBRARIES = libirc_bot.la
 
 libirc_bot_la_LDFLAGS = -avoid-version
 
-INCLUDES = $(GLIB_CFLAGS) \
-	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/
+INCLUDES = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core/ \
+	-I$(top_srcdir)/src/irc/core/ \
+	$(GLIB_CFLAGS)
 
 libirc_bot_la_LIBADD = -lcrypt
 

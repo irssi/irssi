@@ -1,11 +1,11 @@
 noinst_LIBRARIES = libcore.a
 
 INCLUDES = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core \
 	$(GLIB_CFLAGS) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
-	-DMODULEDIR=\""$(libdir)/irssi/modules"\" \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core
+	-DMODULEDIR=\""$(libdir)/irssi/modules"\"
 
 if BUILD_MEMDEBUG
 memdebug_src=memdebug.c

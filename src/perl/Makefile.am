@@ -13,14 +13,15 @@ libfe_perl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
 
 perl-core.c: perl-signals-list.h irssi-core.pl.h
 
-INCLUDES = $(GLIB_CFLAGS) \
+INCLUDES = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/core \
+	-I$(top_srcdir)/src/fe-common/core \
+	$(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
 	-DPERL_USE_LIB=\""$(PERL_USE_LIB)"\" \
 	-DPERL_STATIC_LIBS=$(PERL_STATIC_LIBS) \
-	$(PERL_CFLAGS) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/fe-common/core
+	$(PERL_CFLAGS)
 
 perl_sources = \
 	perl-core.c \
