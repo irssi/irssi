@@ -509,7 +509,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
-	char *qserver, *query, *event_402;
+	char *qserver, *query, *event_402, *str;
 	void *free_arg;
 	int free_nick;
 
@@ -549,11 +549,14 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	/* do automatic /WHOWAS if any of the nicks wasn't found */
 	query = get_redirect_nicklist(query, &free_nick);
 
-	server_redirect_event(SERVER(server), query, 3,
+        str = g_strconcat(qserver, " ", query, NULL);
+	server_redirect_event(SERVER(server), str, 2,
 			      "event 318", "event 318", 1,
-			      "event 402", event_402, -1,
+			      "event 402", event_402, 1,
 			      "event 401", "whois not found", 1,
 			      "event 311", "whois event", 1, NULL);
+        g_free(str);
+
 	if (free_nick) g_free(query);
 	cmd_params_free(free_arg);
 }

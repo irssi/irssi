@@ -186,7 +186,7 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 
 	server_redirect_event((SERVER_REC *) server, str, 2,
 			      "event 318", "notifylist event whois end", 1,
-			      "event 402", "event empty", -1,
+			      "event 402", "event empty", 1,
 			      "event 401", "event empty", 1,
 			      "event 311", "notifylist event whois", 1,
 			      "event 301", "notifylist event whois away", 1,
