@@ -1,7 +1,7 @@
 /*
  fe-core-commands.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,228 +56,6 @@ static int hide_output;
 
 static GTimeVal time_command_last, time_command_now;
 static int last_command_cmd, command_cmd;
-
-static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
-{
-	if (rec->category == NULL && rec2->category != NULL)
-		return -1;
-	if (rec2->category == NULL && rec->category != NULL)
-		return 1;
-
-	return strcmp(rec->cmd, rec2->cmd);
-}
-
-static int get_cmd_length(void *data)
-{
-        return strlen(((COMMAND_REC *) data)->cmd);
-}
-
-static void help_category(GSList *cmdlist, int items)
-{
-        WINDOW_REC *window;
-	TEXT_DEST_REC dest;
-	GString *str;
-	GSList *tmp;
-	int *columns, cols, rows, col, row, last_col_rows, max_width;
-	char *linebuf, *format, *stripped;
-
-	window = window_find_closest(NULL, NULL, MSGLEVEL_CLIENTCRAP);
-        max_width = window->width;
-
-        /* remove width of timestamp from max_width */
-	format_create_dest(&dest, NULL, NULL, MSGLEVEL_CLIENTCRAP, NULL);
-	format = format_get_line_start(current_theme, &dest, time(NULL));
-	if (format != NULL) {
-		stripped = strip_codes(format);
-		max_width -= strlen(stripped);
-		g_free(stripped);
-		g_free(format);
-	}
-
-        /* calculate columns */
-	cols = get_max_column_count(cmdlist, get_cmd_length,
-				    max_width, 6, 1, 3, &columns, &rows);
-	cmdlist = columns_sort_list(cmdlist, rows);
-
-        /* rows in last column */
-	last_col_rows = rows-(cols*rows-g_slist_length(cmdlist));
-	if (last_col_rows == 0)
-                last_col_rows = rows;
-
-	str = g_string_new(NULL);
-	linebuf = g_malloc(max_width+1);
-
-        col = 0; row = 0;
-	for (tmp = cmdlist; tmp != NULL; tmp = tmp->next) {
-		COMMAND_REC *rec = tmp->data;
-
-		memset(linebuf, ' ', columns[col]);
-		linebuf[columns[col]] = '\0';
-		memcpy(linebuf, rec->cmd, strlen(rec->cmd));
-		g_string_append(str, linebuf);
-
-		if (++col == cols) {
-			printtext(NULL, NULL,
-				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
-			g_string_truncate(str, 0);
-			col = 0; row++;
-
-			if (row == last_col_rows)
-                                cols--;
-		}
-	}
-	if (str->len != 0)
-		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str->str);
-
-	g_slist_free(cmdlist);
-	g_string_free(str, TRUE);
-	g_free(columns);
-	g_free(linebuf);
-}
-
-static int show_help_rec(COMMAND_REC *cmd)
-{
-    char tmpbuf[1024], *str, *path;
-    LINEBUF_REC *buffer = NULL;
-    int f, ret, recvlen;
-
-    /* helpdir/command or helpdir/category/command */
-    if (cmd->category == NULL)
-	path = g_strdup_printf("%s/%s", HELPDIR, cmd->cmd);
-    else
-	path = g_strdup_printf("%s/%s/%s", HELPDIR, cmd->category, cmd->cmd);
-    f = open(path, O_RDONLY);
-    g_free(path);
-
-    if (f == -1)
-	return FALSE;
-
-    /* just print to screen whatever is in the file */
-    do
-    {
-	recvlen = read(f, tmpbuf, sizeof(tmpbuf));
-
-	ret = line_split(tmpbuf, recvlen, &str, &buffer);
-	if (ret > 0) {
-            str = g_strconcat("%|", str, NULL);
-	    printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str);
-            g_free(str);
-	}
-    }
-    while (ret > 0);
-    line_split_free(buffer);
-
-    close(f);
-    return TRUE;
-}
-
-static void show_help(const char *data)
-{
-    COMMAND_REC *rec, *last, *helpitem;
-    GSList *tmp, *cmdlist;
-    gint items, findlen;
-    gboolean header, found;
-
-    g_return_if_fail(data != NULL);
-
-    /* sort the commands list */
-    commands = g_slist_sort(commands, (GCompareFunc) commands_compare);
-
-    /* print command, sort by category */
-    cmdlist = NULL; last = NULL; header = FALSE; helpitem = NULL;
-    items = 0; findlen = strlen(data); found = FALSE;
-    for (tmp = commands; tmp != NULL; last = rec, tmp = tmp->next)
-    {
-	rec = tmp->data;
-
-	if (last != NULL && rec->category != NULL &&
-	    (last->category == NULL || strcmp(rec->category, last->category) != 0))
-	{
-	    /* category changed */
-	    if (items > 0)
-	    {
-		if (!header)
-		{
-		    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "Irssi commands:");
-		    header = TRUE;
-		}
-		if (last->category != NULL)
-		{
-		    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
-		    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s:", last->category);
-		}
-		help_category(cmdlist, items);
-	    }
-
-	    g_slist_free(cmdlist); cmdlist = NULL;
-	    items = 0;
-	}
-
-	if (last != NULL && g_strcasecmp(rec->cmd, last->cmd) == 0)
-	    continue; /* don't display same command twice */
-
-	if ((int)strlen(rec->cmd) >= findlen && 
-		g_strncasecmp(rec->cmd, data, findlen) == 0)
-	{
-	    if (rec->cmd[findlen] == '\0')
-	    {
-		helpitem = rec;
-                found = TRUE;
-		break;
-	    }
-	    else if (strchr(rec->cmd+findlen+1, ' ') == NULL)
-	    {
-		/* not a subcommand (and matches the query) */
-		items++;
-		cmdlist = g_slist_append(cmdlist, rec);
-		found = TRUE;
-	    }
-	}
-    }
-
-    if (!found || (helpitem != NULL && !show_help_rec(helpitem)))
-	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "No help for %s", data);
-
-    if (*data != '\0' && data[strlen(data)-1] != ' ' &&
-	command_have_sub(data)) {
-	    char *cmd;
-
-	    cmd = g_strconcat(data, " ", NULL);
-	    show_help(cmd);
-	    g_free(cmd);
-    }
-
-    if (items != 0)
-    {
-	/* display the last category */
-	if (!header)
-	{
-	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "Irssi commands:");
-	    header = TRUE;
-	}
-
-	if (last->category != NULL)
-	{
-	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
-	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s:", last->category);
-	}
-	help_category(cmdlist, items);
-	g_slist_free(cmdlist);
-    }
-}
-
-/* SYNTAX: HELP [<command>] */
-static void cmd_help(const char *data)
-{
-	char *cmd, *ptr;
-
-	cmd = g_strdup(data);
-	ptr = cmd+strlen(cmd);
-	while (ptr[-1] == ' ') ptr--; *ptr = '\0';
-
-	show_help(cmd);
-        g_free(cmd);
-}
 
 /* SYNTAX: ECHO [-current] [-window <name>] [-level <level>] <text> */
 static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
@@ -496,7 +274,6 @@ void fe_core_commands_init(void)
 	command_cmd = FALSE;
 	memset(&time_command_now, 0, sizeof(GTimeVal));
 
-	command_bind("help", NULL, (SIGNAL_FUNC) cmd_help);
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
 	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
@@ -513,7 +290,6 @@ void fe_core_commands_init(void)
 
 void fe_core_commands_deinit(void)
 {
-	command_unbind("help", (SIGNAL_FUNC) cmd_help);
 	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
 	command_unbind("version", (SIGNAL_FUNC) cmd_version);
 	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);

@@ -63,6 +63,9 @@ void fe_exec_deinit(void);
 void fe_expandos_init(void);
 void fe_expandos_deinit(void);
 
+void fe_help_init(void);
+void fe_help_deinit(void);
+
 void fe_ignore_init(void);
 void fe_ignore_deinit(void);
 
@@ -156,6 +159,7 @@ void fe_common_core_init(void)
         fe_exec_init();
 #endif
         fe_expandos_init();
+	fe_help_init();
 	fe_ignore_init();
 	fe_log_init();
 	fe_modules_init();
@@ -196,6 +200,7 @@ void fe_common_core_deinit(void)
         fe_exec_deinit();
 #endif
         fe_expandos_deinit();
+	fe_help_deinit();
 	fe_ignore_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
