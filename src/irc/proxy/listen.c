@@ -425,9 +425,13 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 	}
 }
 
-static void event_nick(const char *data, IRC_SERVER_REC *server)
+static void event_nick(const char *data, IRC_SERVER_REC *server,
+		       const char *orignick)
 {
 	GSList *tmp;
+
+	if (g_strcasecmp(orignick, server->nick) != 0)
+		return;
 
 	if (*data == ':') data++;
 	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
