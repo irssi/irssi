@@ -19,6 +19,7 @@ v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
 	+ /list and /who dialogs displays total number of items and the list
 	  is searchable
 	+ Autojoining to channels work with irssi-text too
+	- Restoring saved window size didn't work very accurately
 	- Rawlog doesn't crash anymore if not connected to server
 	- Notifylist and checking of who uses your nick uses WHOIS again,
 	  WHO didn't display user info unless s/he was -i or in same
