@@ -50,7 +50,7 @@ void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 		window_set_active(window);
 	}
 
-	window->items = g_slist_prepend(window->items, item);
+	window->items = g_slist_append(window->items, item);
 	signal_emit("window item new", 2, window, item);
 
 	if (g_slist_length(window->items) == 1 ||
@@ -112,11 +112,7 @@ void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
                 /* move item to different window */
                 window_item_remove(item);
                 window_item_add(window, item, FALSE);
-	} else if (item != NULL) {
-		/* reorder the window item stack */
-		window->items = g_slist_remove(window->items, item);
-		window->items = g_slist_prepend(window->items, item);
-	}
+        }
 
 	if (window->active != item) {
 		window->active = item;
