@@ -30,6 +30,7 @@
 #include "translation.h"
 
 #include "term.h"
+#include "detach.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
 
@@ -50,6 +51,25 @@ static ENTRY_REDIRECT_REC *redir;
 char *cutbuffer;
 static int readtag;
 static time_t idle_time;
+
+static void sig_input(void);
+
+void input_listen_init(int handle)
+{
+        GIOChannel *stdin_channel;
+
+	stdin_channel = g_io_channel_unix_new(handle);
+	readtag = g_input_add_full(stdin_channel,
+				   G_PRIORITY_HIGH, G_INPUT_READ,
+				   (GInputFunction) sig_input, NULL);
+        g_io_channel_unref(stdin_channel);
+}
+
+void input_listen_deinit(void)
+{
+	g_source_remove(readtag);
+        readtag = -1;
+}
 
 static void handle_key_redirect(int key)
 {
@@ -169,8 +189,9 @@ static void key_send_line(void)
 	}
 
 	if (add_history != NULL) {
-		if (history_window != NULL &&
-		    g_slist_find(windows, history_window) != NULL)
+		if (!settings_get_bool("window_history") ||
+		    (history_window != NULL &&
+		     g_slist_find(windows, history_window) != NULL))
 			command_history_add(history_window, add_history, FALSE);
                 g_free(add_history);
 	}
@@ -330,7 +351,7 @@ static void key_delete_to_next_space(void)
 	gui_entry_erase_next_word(active_entry, TRUE);
 }
 
-void readline(void)
+static void sig_input(void)
 {
         unsigned char buffer[128];
 	int ret, i;
@@ -343,12 +364,14 @@ void readline(void)
 	ret = term_gets(buffer, sizeof(buffer));
 	if (ret == -1) {
 		/* lost terminal */
-		signal_emit("command quit", 1, "Lost terminal");
-                return;
+		if (!term_detached)
+			signal_emit("command quit", 1, "Lost terminal");
+		else
+			irssi_detach();
+	} else {
+		for (i = 0; i < ret; i++)
+			handle_key(buffer[i]);
 	}
-
-	for (i = 0; i < ret; i++)
-		handle_key(buffer[i]);
 }
 
 time_t get_idle_time(void)
@@ -530,16 +553,11 @@ void gui_readline_init(void)
 	static char changekeys[] = "1234567890qwertyuio";
 	char *key, data[MAX_INT_STRLEN];
 	int n;
-        GIOChannel *stdin_channel;
 
 	cutbuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
-        stdin_channel = g_io_channel_unix_new(0);
-	readtag = g_input_add_full(stdin_channel,
-				   G_PRIORITY_HIGH, G_INPUT_READ,
-				   (GInputFunction) readline, NULL);
-        g_io_channel_unref(stdin_channel);
+        input_listen_init(STDIN_FILENO);
 
 	settings_add_str("history", "scroll_page_count", "/2");
 
@@ -665,7 +683,7 @@ void gui_readline_init(void)
 void gui_readline_deinit(void)
 {
 	g_free_not_null(cutbuffer);
-	g_source_remove(readtag);
+        input_listen_deinit();
 
         key_configure_freeze();
 
