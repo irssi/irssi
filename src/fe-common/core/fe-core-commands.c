@@ -324,7 +324,7 @@ void fe_core_commands_init(void)
 	command_bind_first("nick", NULL, (SIGNAL_FUNC) cmd_nick);
 	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_join);
 
-	signal_add_first("send command", (SIGNAL_FUNC) event_command);
+	signal_add("send command", (SIGNAL_FUNC) event_command);
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
 	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
