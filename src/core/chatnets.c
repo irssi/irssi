@@ -118,7 +118,8 @@ static void sig_connected(SERVER_REC *server)
 
 	g_return_if_fail(IS_SERVER(server));
 
-	if (server->connrec->chatnet == NULL || server->session_reconnect)
+	if (server->connrec->chatnet == NULL || server->session_reconnect ||
+	    server->connrec->no_autojoin_channels)
 		return;
 
 	rec = chatnet_find(server->connrec->chatnet);
