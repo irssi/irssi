@@ -82,7 +82,7 @@ static GMainLoop *main_loop;
 int quitting;
 
 static const char *firsttimer_text =
-	"Looks like this is the first time you run irssi.\n"
+	"Looks like this is the first time you've run irssi.\n"
 	"This is just a reminder that you really should go read\n"
 	"startup-HOWTO if you haven't already. Irssi's default\n"
 	"settings aren't probably what you've been used to, and you\n"
