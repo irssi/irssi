@@ -40,7 +40,7 @@ typedef struct {
 
 static int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
 {
-        unsigned long ret;
+        gsize ret;
 	int err, sent;
 
 	sent = 0;
@@ -56,7 +56,7 @@ static int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
 static int g_io_channel_read_block(GIOChannel *channel, void *data, int len)
 {
 	time_t maxwait;
-        unsigned long ret;
+        gsize ret;
 	int err, received;
 
 	maxwait = time(NULL)+2;
