@@ -108,7 +108,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	if (!ignore_check(server, nick, addr, target, msg, target_level(target))) {
 		if (ischannel(*target)) {
                         /* message to channel */
-			print_channel_msg(server, nick, addr, target, msg);
+			print_channel_msg(server, msg, nick, addr, target);
 		} else {
 			/* private message */
 			item = (WI_ITEM_REC *) privmsg_get_query(server, nick);
