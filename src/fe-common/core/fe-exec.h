@@ -32,6 +32,7 @@ struct PROCESS_REC {
 
         int level; /* what level to use when printing the text */
         char *target; /* send text with /msg <target> ... */
+	char *target_server;
 	WINDOW_REC *target_win; /* print text to this window */
         EXEC_WI_REC *target_item; /* print text to this exec window item */
 

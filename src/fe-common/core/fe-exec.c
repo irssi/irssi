@@ -28,6 +28,7 @@
 #include "misc.h"
 #include "levels.h"
 
+#include "servers.h"
 #include "channels.h"
 #include "queries.h"
 
@@ -187,6 +188,7 @@ static void process_destroy(PROCESS_REC *rec, int status)
 
 	g_free_not_null(rec->name);
 	g_free_not_null(rec->target);
+	g_free_not_null(rec->target_server);
         g_free(rec->args);
         g_free(rec);
 }
@@ -375,9 +377,10 @@ static void sig_exec_input_reader(PROCESS_REC *rec)
 }
 
 static void handle_exec(const char *args, GHashTable *optlist,
-			WI_ITEM_REC *item)
+                        SERVER_REC *server, WI_ITEM_REC *item)
 {
 	PROCESS_REC *rec;
+	SERVER_REC *target_server;
         char *target, *level;
 	int notice, signum, interactive, target_nick, target_channel;
 
@@ -394,6 +397,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	}
 
 	target = NULL;
+	target_server = NULL;
 	notice = FALSE;
 
 	if (g_hash_table_lookup(optlist, "in") != NULL) {
@@ -418,13 +422,16 @@ static void handle_exec(const char *args, GHashTable *optlist,
 		if (item == NULL)
 			cmd_return_error(CMDERR_NOT_JOINED);
 		target = (char *) window_item_get_target(item);
+		target_server = item->server;
 		target_channel = IS_CHANNEL(item);
 		target_nick = IS_QUERY(item);
 	} else if (g_hash_table_lookup(optlist, "msg") != NULL) {
                 /* redirect output to /msg <nick> */
 		target = g_hash_table_lookup(optlist, "msg");
+		target_server = server;
 	} else if (g_hash_table_lookup(optlist, "notice") != NULL) {
 		target = g_hash_table_lookup(optlist, "notice");
+		target_server = server;
                 notice = TRUE;
 	}
 
@@ -456,6 +463,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
                         /* redirect output to target */
 			g_free_and_null(rec->target);
 			rec->target = g_strdup(target);
+			rec->target_server = target_server == NULL ? NULL :
+				g_strdup(target_server->tag);
                         rec->notice = notice;
 		}
 
@@ -496,6 +505,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
 
         rec->id = process_get_new_id();
 	rec->target = g_strdup(target);
+	rec->target_server = target_server == NULL ? NULL :
+		g_strdup(target_server->tag);
 	rec->target_win = active_win;
 	rec->target_channel = target_channel;
 	rec->target_nick = target_nick;
@@ -535,7 +546,7 @@ static void cmd_exec(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			   PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			   "exec", &optlist, &args)) {
-		handle_exec(args, optlist, item);
+		handle_exec(args, optlist, server, item);
 		cmd_params_free(free_arg);
 	}
 }
@@ -584,9 +595,18 @@ static void sig_exec_input(PROCESS_REC *rec, const char *text)
 	server = NULL;
 
 	if (rec->target != NULL) {
-		item = window_item_find(NULL, rec->target);
-		server = item != NULL ? item->server :
-			active_win->active_server;
+		if (rec->target_server != NULL) {
+			server = server_find_tag(rec->target_server);
+			if (server == NULL) {
+				/* disconnected - target is lost */
+				return;
+			}
+			item = NULL;
+		} else {
+			item = window_item_find(NULL, rec->target);
+			server = item != NULL ? item->server :
+				active_win->active_server;
+		}
 
 		str = g_strconcat(rec->target_nick ? "-nick " :
 				  rec->target_channel ? "-channel " : "",
