@@ -13,7 +13,7 @@ v0.8.7 2003-11-17  Timo Sirainen <tss@iki.fi>
 
 	+ Pasting detection. All keys except CR and LF are pasted as-is into
 	  prompt in pasting mode.
-	
+
 	  /SET paste_detect_time controls how closely each others characters
 	  must occur for it to be considered pasting. Pasting mode goes on
 	  after /SET paste_detect_keycount characters have been received and
@@ -29,6 +29,14 @@ v0.8.7 2003-11-17  Timo Sirainen <tss@iki.fi>
 	  TAB is completion key) in the first few pasted characters, they get
 	  pasted as TABs as long as they weren't immediately followed by
 	  CR/LF.
+
+	  This detection isn't perfect and especially with laggy connections
+	  it could do things wrong. If you don't like it, you can disable it
+	  with /SET paste_detect_time 0
+	+ If pasting more lines than /SET paste_verify_line_count, irssi asks
+	  if you actually want to do that. This should be useful to prevent
+	  accidental copy&paste mistakes. Setting it to 0 disables this
+	  entirely.
 	+ Support for sending SSL certificate to server and optionally verify
 	  server's certificate. See the -ssl_* options for /SERVER and
 	  /SERVER ADD. Patch by Joel Eriksson.
