@@ -196,10 +196,6 @@ else
 	PROG_LIBS="$PROG_LIBS $poptlib -lpopt"
 	if test -f $popt_dir/include/popt.h; then
 		AC_DEFINE(HAVE_POPT_H)
-        else
-		if test -f $popt_dir/include/popt-gnome.h; then
-			AC_DEFINE(HAVE_POPT_GNOME_H)
-		fi
 	fi
 fi
 
@@ -262,11 +258,9 @@ if test "x$want_gnome" = "xyes"; then
 	AC_DEFINE(HAVE_GTK)
 	AC_DEFINE(HAVE_GNOME)
 	AC_DEFINE(HAVE_IMLIB)
-        AC_DEFINE(HAVE_POPT_GNOME_H)
 	GNOME_SUPPORT_CHECKS
 
-	dnl ** needed for including popt-gnome.h
-	CFLAGS="$CFLAGS $GNOME_INCLUDEDIR"
+	GUI_CFLAGS="$GNOME_INCLUDEDIR"
 
 	dnl **
 	dnl ** check for gnome panel applet library

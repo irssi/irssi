@@ -27,13 +27,9 @@
 #include <sys/utsname.h>
 
 #ifdef HAVE_POPT_H
-#include <popt.h>
+#  include <popt.h>
 #else
-#  ifdef HAVE_POPT_GNOME_H
-#    include <popt-gnome.h>
-#  else
-#    include <lib-popt/popt.h>
-#  endif
+#  include <src/lib-popt/popt.h>
 #endif
 
 #ifdef HAVE_UNISTD_H
