@@ -133,6 +133,9 @@ src/fe-text/gui-readline.c
 src/fe-text/mainwindow-activity.c
 src/fe-text/mainwindows.c
 src/fe-text/statusbar-items.c
+src/perl/perl-common.c
+src/perl/xsinit.c
+src/perl/perl.c
 src/lib-config/get.c
 src/lib-config/parse.c
 src/lib-config/set.c
@@ -142,5 +145,3 @@ src/lib-popt/popt.c
 src/lib-popt/poptconfig.c
 src/lib-popt/popthelp.c
 src/lib-popt/poptparse.c
-src/perl/irssi-perl.c
-src/perl/xsinit.c
