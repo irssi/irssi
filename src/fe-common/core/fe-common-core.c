@@ -135,7 +135,7 @@ void fe_common_core_init(void)
 		{ NULL, '\0', POPT_ARG_INCLUDE_TABLE, version_options, 0, NULL, NULL },
 		POPT_AUTOHELP
 		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, "Automatically connect to server/ircnet", "SERVER" },
-		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, "Autoconnect password", "SERVER" },
+		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, "Autoconnect password", "PASSWORD" },
 		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, "Autoconnect port", "PORT" },
 		{ "noconnect", '!', POPT_ARG_NONE, &no_autoconnect, 0, "Disable autoconnecting", NULL },
 		{ "nick", 'n', POPT_ARG_STRING, &cmdline_nick, 0, "Specify nick to use", NULL },
