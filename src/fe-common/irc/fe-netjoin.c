@@ -185,7 +185,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 		next = tmp->next;
 		while (rec->now_channels != NULL) {
 			char *channel = rec->now_channels->data;
-			char *realchannel = channel + (*channel == '@');
+			char *realchannel = channel + isnickflag(*channel);
 
 			temp = g_hash_table_lookup(channels, realchannel);
 			if (temp == NULL) {
@@ -198,8 +198,9 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 
 			temp->count++;
 			if (temp->count <= netjoin_max_nicks) {
-				if (*channel == '@')
-					g_string_append_c(temp->nicks, '@');
+				if (isnickflag(*channel))
+					g_string_append_c(temp->nicks,
+							  *channel);
 				g_string_sprintfa(temp->nicks, "%s, ",
 						  rec->nick);
 			}
@@ -321,19 +322,33 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 	signal_stop();
 }
 
-static int netjoin_set_operator(NETJOIN_REC *rec, const char *channel, int on)
+static int netjoin_set_nickmode(NETJOIN_REC *rec, const char *channel,
+				char mode)
 {
 	GSList *pos;
+        char *oldchannel;
 
 	pos = gslist_find_icase_string(rec->now_channels, channel);
 	if (pos == NULL)
 		return FALSE;
 
+        oldchannel = pos->data;
+	if (isnickflag(*oldchannel) && mode != '\0') {
+		/* already set some mode, should we use old or new one? */
+		if (mode == '+' || (mode == '%' && *oldchannel == '@'))
+                        return TRUE;
+	}
+
 	g_free(pos->data);
-	pos->data = !on ? g_strdup(channel) :
-		g_strconcat("@", channel, NULL);
+	pos->data = mode == '\0' ? g_strdup(channel) :
+		g_strdup_printf("%c%s", mode, channel);
 	return TRUE;
 }
+
+#define isnickmode(c) \
+	((c) == 'o' || (c) == 'v' || (c) == 'h')
+#define nickmodechar(c) \
+	((c) == 'o' ? '@' : ((c) == 'v' ? '+' : ((c) == 'h' ? '%' : '\0')))
 
 static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 		     const char *sender, const char *addr, const char *data)
@@ -361,11 +376,11 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 			continue;
 		}
 
-		if (*mode == 'o' && *nick != NULL) {
+		if (*nick != NULL && isnickmode(*mode)) {
                         /* give/remove ops */
 			rec = netjoin_find(server, *nick);
-			if (rec == NULL ||
-			    !netjoin_set_operator(rec, channel, type == '+'))
+			if (rec == NULL || !netjoin_set_nickmode(rec, channel,
+							 nickmodechar(type)))
 				show = TRUE;
                         nick++;
 		} else {
