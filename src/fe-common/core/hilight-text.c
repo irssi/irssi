@@ -37,7 +37,6 @@
 #include "formats.h"
 
 static NICKMATCH_REC *nickmatch;
-static HILIGHT_REC *next_nick_hilight;
 static int never_hilight_level, default_hilight_level;
 GSList *hilights;
 
@@ -281,41 +280,27 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 {
 	HILIGHT_REC *hilight;
 	char *color, *newstr;
-	int hilight_start, hilight_end, hilight_len;
+	int old_level, hilight_start, hilight_end, hilight_len;
+
+	if (dest->level & MSGLEVEL_NOHILIGHT)
+		return;
 
         hilight_start = hilight_end = 0;
-	if (next_nick_hilight != NULL) {
-		if (!next_nick_hilight->nick) {
-                        /* non-nick hilight wanted */
-			hilight = next_nick_hilight;
-			next_nick_hilight = NULL;
-			if (!hilight_match_text(hilight, stripped,
-						&hilight_start,
-						&hilight_end)) {
-                                hilight_start = 0;
-                                hilight_end = strlen(stripped);
-			}
-		} else {
-			/* nick is highlighted, just set priority */
-			hilight_update_text_dest(dest, next_nick_hilight);
-			next_nick_hilight = NULL;
-			return;
-		}
-	} else {
-		if (dest->level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT))
-			return;
-
-		hilight = hilight_match(dest->server, dest->target,
-					NULL, NULL, dest->level, stripped,
-					&hilight_start,
-					&hilight_end);
-	}
-
+	hilight = hilight_match(dest->server, dest->target,
+				NULL, NULL, dest->level, stripped,
+				&hilight_start,
+				&hilight_end);
 	if (hilight == NULL)
                 return;
 
 	/* update the level / hilight info */
+        old_level = dest->level;
 	hilight_update_text_dest(dest, hilight);
+
+	if (old_level & MSGLEVEL_HILIGHT) {
+		/* nick is highlighted, just set priority */
+		return;
+	}
 
 	color = hilight_get_color(hilight);
 	hilight_len = hilight_end-hilight_start;
@@ -387,7 +372,6 @@ char *hilight_match_nick(SERVER_REC *server, const char *channel,
 	color = rec == NULL || !rec->nick ? NULL :
 		hilight_get_color(rec);
 
-        next_nick_hilight = rec;
 	return color;
 }
 
@@ -557,16 +541,14 @@ static void cmd_hilight(const char *data)
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 
 	if (colorarg != NULL) {
+		g_free_and_null(rec->color);
 		if (*colorarg != '\0')
 			rec->color = g_strdup(colorarg);
-		else
-			g_free_and_null(rec->color);
 	}
 	if (actcolorarg != NULL) {
+		g_free_and_null(rec->act_color);
 		if (*actcolorarg != '\0')
 			rec->act_color = g_strdup(actcolorarg);
-		else
-			g_free_and_null(rec->act_color);
 	}
 
 #ifdef HAVE_REGEX_H
@@ -653,8 +635,6 @@ void hilight_text_init(void)
 	settings_add_str("lookandfeel", "hilight_color", "%Y");
 	settings_add_str("lookandfeel", "hilight_act_color", "%M");
 	settings_add_str("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
-
-	next_nick_hilight = NULL;
 
         read_settings();
 

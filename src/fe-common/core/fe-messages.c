@@ -167,8 +167,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
 		print_channel = TRUE;
 
-	level = MSGLEVEL_PUBLIC | (for_me || color != NULL ?
-				   MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT);
+	level = MSGLEVEL_PUBLIC;
+	if (for_me || color != NULL)
+		level |= MSGLEVEL_HILIGHT;
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
