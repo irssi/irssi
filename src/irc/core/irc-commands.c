@@ -565,7 +565,7 @@ static void event_whois(IRC_SERVER_REC *server, const char *data,
 	signal_emit("event 311", 4, server, data, nick, addr);
 }
 
-static void sig_whois_not_found(const char *data, IRC_SERVER_REC *server)
+static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
