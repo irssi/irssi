@@ -71,7 +71,13 @@ static int isnickflag_func(char flag)
 
 static int ischannel_func(const char *data)
 {
-	return ischannel_target(data);
+	if (*data == '@') {
+		/* @#channel, @+#channel */
+		data++;
+		if (*data == '+' && ischannel(data[1]))
+			return 1;
+	}
+	return ischannel(*data);
 }
 
 static void send_message(SERVER_REC *server, const char *target,

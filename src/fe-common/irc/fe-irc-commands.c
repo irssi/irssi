@@ -40,6 +40,19 @@
 #include "printtext.h"
 #include "keyboard.h"
 
+static char *skip_target(char *target)
+{
+	if (*target == '@') {
+		/* @#channel, @+#channel - Hybrid6 / Bahamut features */
+		if (target[1] == '+' && ischannel(target[2]))
+			target += 2;
+		else if (ischannel(target[1]))
+			target++;
+	}
+
+	return target;
+}
+
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -75,6 +88,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 
 	signal_emit("message irc own_action", 3, server, text, target);
 
+	target = skip_target(target);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
 	cmd_params_free(free_arg);
 }
@@ -94,11 +108,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '@' && ischannel(target[1])) {
-		/* Hybrid 6 feature, send notice to all ops in channel */
-		target++;
-	}
-
+	target = skip_target(target);
 	signal_emit("message irc own_notice", 3, server, msg, target);
 	cmd_params_free(free_arg);
 }
@@ -124,10 +134,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	if (*target == '@' && ischannel(target[1])) {
-                /* Hybrid 6 feature, send ctcp to all ops in channel */
-		target++;
-	}
+	target = skip_target(target);
 
 	g_strup(ctcpcmd);
 	signal_emit("message irc own_ctcp", 4,
@@ -151,11 +158,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '@' && ischannel(target[1])) {
-                /* Hybrid 6 feature, send notice to all ops in channel */
-		target++;
-	}
-
+	target = skip_target(target);
 	signal_emit("message irc own_notice", 3, server, text, target);
 	cmd_params_free(free_arg);
 }

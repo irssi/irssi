@@ -37,22 +37,38 @@
 #include "fe-queries.h"
 #include "window-items.h"
 
+static const char *skip_target(const char *target)
+{
+	if (target != NULL && *target == '@') {
+		/* @#channel, @+#channel - Hybrid6 / Bahamut features */
+		if (target[1] == '+' && ischannel(target[2]))
+			target += 2;
+		else if (ischannel(target[1]))
+			target++;
+	}
+
+	return target;
+}
+
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
 {
+	const char *oldtarget;
 	char *nickmode;
 
-	if (IS_IRC_SERVER(server) && target != NULL &&
-	    *target == '@' && ischannel(target[1])) {
-		/* Hybrid 6 feature, send msg to all ops in channel */
-		nickmode = channel_get_nickmode(channel_find(server, target+1),
+	oldtarget = target;
+	target = skip_target(target);
+	if (IS_IRC_SERVER(server) && target != oldtarget) {
+		/* Hybrid 6 / Bahamut feature, send msg to all
+		   ops / ops+voices in channel */
+		nickmode = channel_get_nickmode(channel_find(server, target),
 						server->nick);
 
-		printformat_module("fe-common/core", server, target+1,
+		printformat_module("fe-common/core", server, target,
 				   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 				   MSGLEVEL_NO_ACT,
 				   TXT_OWN_MSG_CHANNEL,
-				   server->nick, target, msg, nickmode);
+				   server->nick, oldtarget, msg, nickmode);
                 signal_stop();
 	}
 }
@@ -172,8 +188,8 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 				   const char *nick, const char *address,
 				   const char *target)
 {
-	int op_notice;
-
+	const char *oldtarget;
+	
 	if (address == NULL) {
 		/* notice from server */
 		if (!ignore_check(server, nick, "",
@@ -184,8 +200,8 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
                 return;
 	}
 
-	op_notice = *target == '@' && ischannel(target[1]);
-	if (op_notice) target++;
+	oldtarget = target;
+	target = skip_target(target);
 
 	if (ignore_check(server, nick, address,
 			 ischannel(*target) ? target : NULL,
@@ -195,8 +211,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 	if (ischannel(*target)) {
 		/* notice in some channel */
 		printformat(server, target, MSGLEVEL_NOTICES,
-			    op_notice ? IRCTXT_NOTICE_PUBLIC_OPS :
-			    IRCTXT_NOTICE_PUBLIC, nick, target, msg);
+			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
 	} else {
 		/* private notice */
 		privmsg_get_query(SERVER(server), nick, FALSE,

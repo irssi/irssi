@@ -127,7 +127,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 
 	{ "notice_server", "{servernotice $0}$1", 2, { 0, 0 } },
 	{ "notice_public", "{notice $0{pubnotice_channel $1}}$2", 3, { 0, 0, 0 } },
-	{ "notice_public_ops", "{notice $0{pubnotice_channel @$1}}$2", 3, { 0, 0, 0 } },
 	{ "notice_private", "{notice $0{pvtnotice_host $1}}$2", 3, { 0, 0, 0 } },
 	{ "action_private", "{pvtaction $0}$2", 3, { 0, 0, 0 } },
 	{ "action_private_query", "{pvtaction_query $0}$2", 3, { 0, 0, 0 } },
