@@ -52,7 +52,8 @@ void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 	window->items = g_slist_append(window->items, item);
 	signal_emit("window item new", 2, window, item);
 
-	if (!automatic || g_slist_length(window->items) == 1) {
+	if (g_slist_length(window->items) == 1 ||
+	    (!automatic && settings_get_bool("autofocus_new_items"))) {
                 window->active = NULL;
 		window_item_set_active(window, item);
 	}
@@ -313,6 +314,7 @@ void window_items_init(void)
 {
 	settings_add_bool("lookandfeel", "reuse_unused_windows", FALSE);
 	settings_add_bool("lookandfeel", "autocreate_windows", TRUE);
+	settings_add_bool("lookandfeel", "autofocus_new_items", TRUE);
 
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 }
