@@ -39,7 +39,7 @@ char *current_command;
 static GSList *cmdget_funcs;
 static int signal_default_command;
 
-void command_bind(const char *cmd, const char *category, SIGNAL_FUNC func)
+void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
 	char *str;
@@ -53,7 +53,7 @@ void command_bind(const char *cmd, const char *category, SIGNAL_FUNC func)
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
-		signal_add(str, func);
+		signal_add_to(MODULE_NAME, pos, str, func);
 		g_free(str);
 	}
 

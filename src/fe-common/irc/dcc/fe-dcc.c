@@ -27,6 +27,7 @@
 #include "levels.h"
 #include "irc.h"
 #include "channels.h"
+#include "query.h"
 
 #include "irc/dcc/dcc.h"
 
@@ -35,279 +36,294 @@
 
 static void dcc_connected(DCC_REC *dcc)
 {
-    gchar *str;
+	char *sender;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    switch (dcc->dcc_type)
-    {
-        case DCC_TYPE_CHAT:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
-                        dcc->nick, dcc->addrstr, dcc->port);
-
-            str = g_strconcat("=", dcc->nick, NULL);
-	    /*FIXME: dcc_chat_create(dcc->server, str, FALSE);*/
-            g_free(str);
-            break;
-        case DCC_TYPE_SEND:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_CONNECTED,
-                        dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
-            break;
-        case DCC_TYPE_GET:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_CONNECTED,
-                        dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
-            break;
-    }
+	switch (dcc->type) {
+	case DCC_TYPE_CHAT:
+		sender = g_strconcat("=", dcc->nick, NULL);
+		printformat(dcc->server, sender, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
+			    dcc->nick, dcc->addrstr, dcc->port);
+		if (query_find(NULL, sender) == NULL)
+			query_create(dcc->server, sender, TRUE);
+		g_free(sender);
+		break;
+	case DCC_TYPE_SEND:
+		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_CONNECTED,
+			    dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
+		break;
+	case DCC_TYPE_GET:
+		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_CONNECTED,
+			    dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
+		break;
+	}
 }
 
 static void dcc_rejected(DCC_REC *dcc)
 {
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CLOSE,
-                dcc_type2str(dcc->dcc_type), dcc->nick, dcc->arg);
+	printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CLOSE,
+		    dcc_type2str(dcc->type), dcc->nick, dcc->arg);
 }
 
 static void dcc_closed(DCC_REC *dcc)
 {
-    time_t secs;
-    gdouble kbs;
+	char *sender;
+	double kbs;
+	time_t secs;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    secs = dcc->starttime == 0 ? -1 : time(NULL)-dcc->starttime;
-    kbs = (gdouble) (dcc->transfd-dcc->skipped) / (secs == 0 ? 1 : secs) / 1024.0;
+	secs = dcc->starttime == 0 ? -1 : time(NULL)-dcc->starttime;
+	kbs = (double) (dcc->transfd-dcc->skipped) / (secs == 0 ? 1 : secs) / 1024.0;
 
-    switch (dcc->dcc_type)
-    {
-        case DCC_TYPE_CHAT:
-            {
-                /* nice kludge :) if connection was lost, close the channel.
-                   after closed channel (can be done with /unquery too)
-                   prints the disconnected-text.. */
-                CHANNEL_REC *channel;
-                gchar *str;
-
-                str = g_strdup_printf("=%s", dcc->nick);
-                printformat(dcc->server, str, MSGLEVEL_DCC,
-                            IRCTXT_DCC_CHAT_DISCONNECTED, dcc->nick);
-
-                channel = channel_find(dcc->server, str);
-                if (channel != NULL)
-                    channel_destroy(channel);
-                g_free(str);
-            }
-            break;
-        case DCC_TYPE_SEND:
-            if (secs == -1)
-            {
-                /* aborted */
-                printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_ABORTED,
-                            dcc->arg, dcc->nick);
-            }
-            else
-            {
-                printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_COMPLETE,
-                            dcc->arg, dcc->transfd/1024, dcc->nick, (glong) secs, kbs);
-            }
-            break;
-        case DCC_TYPE_GET:
-            if (secs == -1)
-            {
-                /* aborted */
-                printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_ABORTED,
-                            dcc->arg, dcc->nick);
-            }
-            else
-            {
-                printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_COMPLETE,
-                            dcc->arg, dcc->transfd/1024, dcc->nick, (glong) secs, kbs);
-            }
-            break;
-    }
+	switch (dcc->type) {
+	case DCC_TYPE_CHAT:
+		sender = g_strconcat("=", dcc->nick, NULL);
+		printformat(dcc->server, sender, MSGLEVEL_DCC,
+			    IRCTXT_DCC_CHAT_DISCONNECTED, dcc->nick);
+		g_free(sender);
+		break;
+	case DCC_TYPE_SEND:
+		if (secs == -1) {
+			/* aborted */
+			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_ABORTED,
+				    dcc->arg, dcc->nick);
+		} else {
+			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_COMPLETE,
+				    dcc->arg, dcc->transfd/1024, dcc->nick, (long) secs, kbs);
+		}
+		break;
+	case DCC_TYPE_GET:
+		if (secs == -1) {
+			/* aborted */
+			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_ABORTED,
+				    dcc->arg, dcc->nick);
+		} else {
+			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_COMPLETE,
+				    dcc->arg, dcc->transfd/1024, dcc->nick, (long) secs, kbs);
+		}
+		break;
+	}
 }
 
-static void dcc_chat_in_action(gchar *msg, DCC_REC *dcc)
+static void dcc_chat_action(const char *msg, DCC_REC *dcc)
 {
-    gchar *sender;
+	char *sender;
 
-    g_return_if_fail(dcc != NULL);
-    g_return_if_fail(msg != NULL);
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(msg != NULL);
 
-    sender = g_strconcat("=", dcc->nick, NULL);
-    printformat(NULL, sender, MSGLEVEL_DCC,
-                IRCTXT_ACTION_DCC, dcc->nick, msg);
-    g_free(sender);
+	sender = g_strconcat("=", dcc->nick, NULL);
+	printformat(NULL, sender, MSGLEVEL_DCC,
+		    IRCTXT_ACTION_DCC, dcc->nick, msg);
+	g_free(sender);
 }
 
-static void dcc_chat_ctcp(gchar *msg, DCC_REC *dcc)
+static void dcc_chat_ctcp(const char *msg, DCC_REC *dcc)
 {
-    gchar *sender;
+	char *sender;
 
-    g_return_if_fail(dcc != NULL);
-    g_return_if_fail(msg != NULL);
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(msg != NULL);
 
-    sender = g_strconcat("=", dcc->nick, NULL);
-    printformat(NULL, sender, MSGLEVEL_DCC, IRCTXT_DCC_CTCP, dcc->nick, msg);
-    g_free(sender);
+	sender = g_strconcat("=", dcc->nick, NULL);
+	printformat(NULL, sender, MSGLEVEL_DCC, IRCTXT_DCC_CTCP, dcc->nick, msg);
+	g_free(sender);
 }
 
-static void dcc_chat_msg(DCC_REC *dcc, gchar *msg)
+static void dcc_chat_msg(DCC_REC *dcc, const char *msg)
 {
-    gchar *nick;
+	char *sender;
 
-    g_return_if_fail(dcc != NULL);
-    g_return_if_fail(msg != NULL);
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(msg != NULL);
 
-    nick = g_strconcat("=", dcc->nick, NULL);
-    printformat(NULL, nick, MSGLEVEL_DCC, IRCTXT_DCC_MSG, dcc->nick, msg);
-    g_free(nick);
+	sender = g_strconcat("=", dcc->nick, NULL);
+	printformat(NULL, sender, MSGLEVEL_DCC,
+		    query_find(NULL, sender) ? IRCTXT_DCC_MSG_QUERY :
+		    IRCTXT_DCC_MSG, dcc->nick, msg);
+	g_free(sender);
 }
 
 static void dcc_request(DCC_REC *dcc)
 {
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    switch (dcc->dcc_type)
-    {
-        case DCC_TYPE_CHAT:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT,
-                        dcc->nick, dcc->addrstr, dcc->port);
-            break;
-        case DCC_TYPE_GET:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND,
-                        dcc->nick, dcc->addrstr, dcc->port, dcc->arg, dcc->size);
-            break;
-    }
+	switch (dcc->type) {
+	case DCC_TYPE_CHAT:
+		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CHAT,
+			    dcc->nick, dcc->addrstr, dcc->port);
+		break;
+	case DCC_TYPE_GET:
+		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND,
+			    dcc->nick, dcc->addrstr, dcc->port, dcc->arg, dcc->size);
+		break;
+	}
 }
 
 static void dcc_error_connect(DCC_REC *dcc)
 {
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CONNECT_ERROR, dcc->addrstr, dcc->port);
+	printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CONNECT_ERROR, dcc->addrstr, dcc->port);
 }
 
-static void dcc_error_file_create(DCC_REC *dcc, gchar *fname)
+static void dcc_error_file_create(DCC_REC *dcc, const char *fname)
 {
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CANT_CREATE, fname);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CANT_CREATE, fname);
 }
 
-static void dcc_error_file_not_found(gchar *nick, gchar *fname)
+static void dcc_error_file_not_found(const char *nick, const char *fname)
 {
-    g_return_if_fail(nick != NULL);
-    g_return_if_fail(fname != NULL);
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(fname != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_FILE_NOT_FOUND, fname);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_FILE_NOT_FOUND, fname);
 }
 
-static void dcc_error_get_not_found(gchar *nick)
+static void dcc_error_get_not_found(const char *nick)
 {
-    g_return_if_fail(nick != NULL);
+	g_return_if_fail(nick != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_NOT_FOUND, nick);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_NOT_FOUND, nick);
 }
 
-static void dcc_error_send_exists(gchar *nick, gchar *fname)
+static void dcc_error_send_exists(const char *nick, const char *fname)
 {
-    g_return_if_fail(nick != NULL);
-    g_return_if_fail(fname != NULL);
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(fname != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_EXISTS, fname, nick);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_EXISTS, fname, nick);
 }
 
-static void dcc_error_unknown_type(gchar *type)
+static void dcc_error_unknown_type(const char *type)
 {
-    g_return_if_fail(type != NULL);
+	g_return_if_fail(type != NULL);
 
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_TYPE, type);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_TYPE, type);
 }
 
-static void dcc_error_close_not_found(gchar *type, gchar *nick, gchar *fname)
+static void dcc_error_close_not_found(const char *type, const char *nick, const char *fname)
 {
-    g_return_if_fail(type != NULL);
-    g_return_if_fail(nick != NULL);
-    g_return_if_fail(fname != NULL);
+	g_return_if_fail(type != NULL);
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(fname != NULL);
 
-    if (fname == '\0') fname = "(ANY)";
-    switch (dcc_str2type(type))
-    {
-        case DCC_TYPE_CHAT:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_NOT_FOUND, nick);
-            break;
-        case DCC_TYPE_SEND:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_NOT_FOUND, nick, fname);
-            break;
-        case DCC_TYPE_GET:
-            printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_NOT_FOUND, nick, fname);
-            break;
-    }
+	if (fname == '\0') fname = "(ANY)";
+	switch (dcc_str2type(type)) {
+	case DCC_TYPE_CHAT:
+		printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_NOT_FOUND, nick);
+		break;
+	case DCC_TYPE_SEND:
+		printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_NOT_FOUND, nick, fname);
+		break;
+	case DCC_TYPE_GET:
+		printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_NOT_FOUND, nick, fname);
+		break;
+	}
 }
 
-static void dcc_unknown_ctcp(gchar *data, gchar *sender)
+static void dcc_unknown_ctcp(const char *data, const char *sender)
 {
-    gchar *params, *type, *args;
+	char *params, *type, *args;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_CTCP, type, sender, args);
-    g_free(params);
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_CTCP, type, sender, args);
+	g_free(params);
 }
 
-static void dcc_unknown_reply(gchar *data, gchar *sender)
+static void dcc_unknown_reply(const char *data, const char *sender)
 {
-    gchar *params, *type, *args;
+	char *params, *type, *args;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
-    printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_REPLY, type, sender, args);
-    g_free(params);
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_REPLY, type, sender, args);
+	g_free(params);
 }
 
-static void dcc_chat_write(gchar *data)
+static void sig_dcc_destroyed(DCC_REC *dcc)
 {
-    DCC_REC *dcc;
-    gchar *params, *text, *target;
+	QUERY_REC *query;
+	char *nick;
 
-    g_return_if_fail(data != NULL);
+	if (dcc->type != DCC_TYPE_CHAT)
+		return;
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &text);
+        nick = g_strconcat("=", dcc->nick, NULL);
+	query = query_find(NULL, nick);
+	g_free(nick);
 
-    if (*target == '=')
-    {
-        /* dcc msg */
-        dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
-        if (dcc == NULL)
-        {
-            printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-                        IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
-            return;
-        }
-
-        printformat(NULL, target, MSGLEVEL_DCC, IRCTXT_OWN_DCC, target+1, text);
-    }
-
-    g_free(params);
+	if (query != NULL) {
+		/* DCC chat closed, close the query with it. */
+		query_destroy(query);
+	}
 }
 
-static void dcc_chat_out_me(gchar *data, SERVER_REC *server, WI_IRC_REC *item)
+static void sig_query_destroyed(QUERY_REC *query)
+{
+	DCC_REC *dcc;
+
+	if (*query->nick != '=')
+		return;
+
+	dcc = dcc_find_item(DCC_TYPE_CHAT, query->nick+1, NULL);
+	if (dcc != NULL && !dcc->destroyed) {
+		/* DCC query window closed, close the dcc chat too. */
+		signal_emit("dcc closed", 1, dcc);
+		dcc_destroy(dcc);
+	}
+}
+
+static void cmd_msg(const char *data)
+{
+	DCC_REC *dcc;
+	char *params, *text, *target;
+
+	g_return_if_fail(data != NULL);
+
+	if (*data != '=') {
+		/* handle only DCC messages */
+		return;
+	}
+
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &text);
+
+	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
+	if (dcc == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
+	} else {
+		printformat(NULL, target, MSGLEVEL_DCC,
+			    query_find(NULL, target) ? IRCTXT_OWN_DCC_QUERY :
+			    IRCTXT_OWN_DCC, dcc->mynick, text);
+	}
+
+	g_free(params);
+}
+
+static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 {
 	DCC_REC *dcc;
 
 	g_return_if_fail(data != NULL);
 
-	dcc = irc_item_dcc_chat(item);
+	dcc = item_get_dcc(item);
 	if (dcc == NULL) return;
 
         printformat(NULL, item->name, MSGLEVEL_DCC,
                     IRCTXT_OWN_DCC_ME, dcc->mynick, data);
 }
 
-static void dcc_chat_out_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *params, *target, *text;
 	DCC_REC *dcc;
@@ -323,17 +339,17 @@ static void dcc_chat_out_action(const char *data, SERVER_REC *server, WI_IRC_REC
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
-	if (dcc == NULL){
+	if (dcc == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
-		printformat(NULL, item->name, MSGLEVEL_DCC,
+		printformat(NULL, target, MSGLEVEL_DCC,
 			    IRCTXT_OWN_DCC_ME, dcc->mynick, text);
 	}
 	g_free(params);
 }
 
-static void dcc_chat_out_ctcp(gchar *data, SERVER_REC *server)
+static void cmd_ctcp(const char *data, SERVER_REC *server)
 {
 	char *params, *target, *ctcpcmd, *ctcpdata;
 	DCC_REC *dcc;
@@ -363,44 +379,29 @@ static void dcc_chat_out_ctcp(gchar *data, SERVER_REC *server)
 	g_free(params);
 }
 
-static void cmd_dcc_list(gchar *data)
+static void cmd_dcc_list(const char *data)
 {
-    GSList *tmp;
-    time_t going;
+	GSList *tmp;
+	time_t going;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    printtext(NULL, NULL, MSGLEVEL_DCC, "%gDCC connections");
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        DCC_REC *dcc = tmp->data;
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_HEADER);
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		DCC_REC *dcc = tmp->data;
 
-        going = time(NULL) - dcc->starttime;
-        if (going == 0) going = 1; /* no division by zeros :) */
+		going = time(NULL) - dcc->starttime;
+		if (going == 0) going = 1; /* no division by zeros :) */
 
-        if (dcc->dcc_type == DCC_TYPE_CHAT)
-            printtext(NULL, NULL, MSGLEVEL_DCC, "%g %s %s", dcc->nick, dcc_type2str(dcc->dcc_type));
-        else
-            printtext(NULL, NULL, MSGLEVEL_DCC, "%g %s %s: %luk of %luk (%d%%) - %fkB/s - %s",
-                      dcc->nick, dcc_type2str(dcc->dcc_type), dcc->transfd/1024, dcc->size/1024,
-		      dcc->size == 0 ? 0 : (100*dcc->transfd/dcc->size),
-		      (gdouble) (dcc->transfd-dcc->skipped)/going/1024, dcc->arg);
-    }
-}
-
-static void dcc_chat_closed(WINDOW_REC *window, WI_IRC_REC *item)
-{
-	DCC_REC *dcc;
-
-	dcc = irc_item_dcc_chat(item);
-	if (dcc == NULL) return;
-
-	/* check that we haven't got here from dcc_destroy() so we won't try to
-	   close the dcc again.. */
-	if (!dcc->destroyed) {
-		/* DCC query window closed, close the dcc chat too. */
-		dcc_destroy(dcc);
+		if (dcc->type == DCC_TYPE_CHAT)
+			printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_LINE_CHAT, dcc->nick, dcc_type2str(dcc->type));
+		else
+			printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_LINE_FILE,
+				  dcc->nick, dcc_type2str(dcc->type), dcc->transfd/1024, dcc->size/1024,
+				  dcc->size == 0 ? 0 : (100*dcc->transfd/dcc->size),
+				  (double) (dcc->transfd-dcc->skipped)/going/1024, dcc->arg);
 	}
+	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_FOOTER);
 }
 
 void fe_irc_dcc_init(void)
@@ -409,7 +410,7 @@ void fe_irc_dcc_init(void)
     signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
     signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
     signal_add("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
-    signal_add("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_in_action);
+    signal_add("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
     signal_add("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
     signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
     signal_add("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
@@ -421,13 +422,14 @@ void fe_irc_dcc_init(void)
     signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
     signal_add("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
     signal_add("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
-    command_bind("msg", NULL, (SIGNAL_FUNC) dcc_chat_write);
-    command_bind("me", NULL, (SIGNAL_FUNC) dcc_chat_out_me);
-    command_bind("action", NULL, (SIGNAL_FUNC) dcc_chat_out_action);
-    command_bind("ctcp", NULL, (SIGNAL_FUNC) dcc_chat_out_ctcp);
+    signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+    signal_add("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+    command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
+    command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
+    command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
+    command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
     command_bind("dcc ", NULL, (SIGNAL_FUNC) cmd_dcc_list);
     command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
-    signal_add("window item remove", (SIGNAL_FUNC) dcc_chat_closed);
 
     theme_register(fecommon_irc_dcc_formats);
 }
@@ -440,7 +442,7 @@ void fe_irc_dcc_deinit(void)
     signal_remove("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
     signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);
     signal_remove("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
-    signal_remove("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_in_action);
+    signal_remove("dcc ctcp action", (SIGNAL_FUNC) dcc_chat_action);
     signal_remove("default dcc ctcp", (SIGNAL_FUNC) dcc_chat_ctcp);
     signal_remove("dcc request", (SIGNAL_FUNC) dcc_request);
     signal_remove("dcc error connect", (SIGNAL_FUNC) dcc_error_connect);
@@ -452,11 +454,12 @@ void fe_irc_dcc_deinit(void)
     signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
     signal_remove("dcc unknown ctcp", (SIGNAL_FUNC) dcc_unknown_ctcp);
     signal_remove("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
-    command_unbind("msg", (SIGNAL_FUNC) dcc_chat_write);
-    command_unbind("me", (SIGNAL_FUNC) dcc_chat_out_me);
-    command_unbind("action", (SIGNAL_FUNC) dcc_chat_out_action);
-    command_unbind("ctcp", (SIGNAL_FUNC) dcc_chat_out_ctcp);
+    signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+    signal_remove("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+    command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
+    command_unbind("me", (SIGNAL_FUNC) cmd_me);
+    command_unbind("action", (SIGNAL_FUNC) cmd_action);
+    command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
     command_unbind("dcc ", (SIGNAL_FUNC) cmd_dcc_list);
     command_unbind("dcc list", (SIGNAL_FUNC) cmd_dcc_list);
-    signal_remove("window item remove", (SIGNAL_FUNC) dcc_chat_closed);
 }

@@ -25,7 +25,11 @@ enum {
 extern GSList *commands;
 extern char *current_command;
 
-void command_bind(const char *cmd, const char *category, SIGNAL_FUNC func);
+void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func);
+#define command_bind(a, b, c) command_bind_to(1, a, b, c)
+#define command_bind_first(a, b, c) command_bind_to(0, a, b, c)
+#define command_bind_last(a, b, c) command_bind_to(2, a, b, c)
+
 void command_unbind(const char *cmd, SIGNAL_FUNC func);
 
 void command_runsub(const char *cmd, const char *data, void *p1, void *p2);

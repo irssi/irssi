@@ -3,72 +3,67 @@
 
 #include "network.h"
 
-enum
-{
-    DCC_TYPE_CHAT = 1,
-    DCC_TYPE_SEND,
-    DCC_TYPE_GET,
-    DCC_TYPE_RESUME,
-    DCC_TYPE_ACCEPT
+enum {
+	DCC_TYPE_CHAT = 1,
+	DCC_TYPE_SEND,
+	DCC_TYPE_GET,
+	DCC_TYPE_RESUME,
+	DCC_TYPE_ACCEPT
 };
 
-enum
-{
-    DCC_GET_DEFAULT = 0,
-    DCC_GET_OVERWRITE,
-    DCC_GET_RENAME,
-    DCC_GET_RESUME
+enum {
+	DCC_GET_RENAME = 0, /* this also acts as default */
+	DCC_GET_OVERWRITE,
+	DCC_GET_RESUME
 };
 
 #define SWAP_SENDGET(a) ((a) == DCC_TYPE_SEND ? DCC_TYPE_GET : \
                          (a) == DCC_TYPE_GET ? DCC_TYPE_SEND : (a))
 
-typedef struct DCC_REC
-{
+typedef struct DCC_REC {
 	int type;
-	GHashTable *module_data;
+	time_t created;
 
 	IRC_SERVER_REC *server;
-	gchar *nick;
+	char *nick;
 
 	struct DCC_REC *chat; /* if the request came through DCC chat */
 
-	gchar *ircnet;
-	gchar *mynick;
+	char *ircnet;
+	char *mynick;
 
-	gchar *arg;
-	gchar *file; /* file name we're really moving, arg is just the reference.. */
-
-	time_t created;
-	gint dcc_type;
+	char *arg;
+	char *file; /* file name we're really moving, arg is just the reference.. */
 
 	IPADDR addr; /* address we're connected in */
-	gchar addrstr[MAX_IP_LEN]; /* in readable form */
-	gint port; /* port we're connected in */
+	char addrstr[MAX_IP_LEN]; /* in readable form */
+	int port; /* port we're connected in */
 
-	glong size, transfd, skipped; /* file size / bytes transferred / skipped at start */
-	gint handle; /* socket handle */
-	gint tagread, tagwrite;
-	gint fhandle; /* file handle */
+	long size, transfd, skipped; /* file size / bytes transferred / skipped at start */
+	int handle; /* socket handle */
+	int tagread, tagwrite;
+	int fhandle; /* file handle */
 	time_t starttime; /* transfer start time */
-	gint trans_bytes;
+	int trans_bytes;
 
-	gboolean fastsend; /* fastsending (just in case that global fastsend toggle changes while transferring..) */
-	gboolean waitforend; /* DCC fast send: file is sent, just wait for the replies from the other side */
-	gboolean gotalldata; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
-	gint get_type; /* DCC get: what to do if file exists? */
+	int get_type; /* DCC get: what to do if file exists? */
 
-	gboolean mirc_ctcp; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
-	gboolean destroyed; /* We're about to destroy this DCC recond */
+	int fastsend:1; /* fastsending (just in case that global fastsend toggle changes while transferring..) */
+	int waitforend:1; /* DCC fast send: file is sent, just wait for the replies from the other side */
+	int gotalldata:1; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
 
-	/* read counter buffer */
-	gchar read_buf[4];
-	gint read_pos;
+	int mirc_ctcp:1; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
+	int destroyed:1; /* We're about to destroy this DCC recond */
 
-	gchar *databuf; /* buffer for receiving/transmitting data */
-	gint databufsize;
-}
-DCC_REC;
+	/* read/write counter buffer */
+	char count_buf[4];
+	int count_pos;
+
+	char *databuf; /* buffer for receiving/transmitting data */
+	int databufsize;
+
+	GHashTable *module_data;
+} DCC_REC;
 
 extern GSList *dcc_conns;
 
@@ -76,16 +71,21 @@ void dcc_init(void);
 void dcc_deinit(void);
 
 /* Find DCC record, arg can be NULL */
-DCC_REC *dcc_find_item(gint type, gchar *nick, gchar *arg);
-DCC_REC *dcc_find_by_port(gchar *nick, gint port);
+DCC_REC *dcc_find_item(int type, const char *nick, const char *arg);
+DCC_REC *dcc_find_by_port(const char *nick, int port);
 
-gchar *dcc_type2str(gint type);
-gint dcc_str2type(gchar *type);
-gchar *dcc_make_address(IPADDR *ip);
+const char *dcc_type2str(int type);
+int dcc_str2type(const char *type);
+void dcc_make_address(IPADDR *ip, char *host);
 
-DCC_REC *dcc_create(gint type, gint handle, gchar *nick, gchar *arg, IRC_SERVER_REC *server, DCC_REC *chat);
+DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
 void dcc_destroy(DCC_REC *dcc);
 
-void dcc_ctcp_message(gchar *target, IRC_SERVER_REC *server, DCC_REC *chat, gboolean notice, gchar *msg);
+void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat, int notice, const char *msg);
+
+/* Send `data' to dcc chat. */
+void dcc_chat_send(DCC_REC *dcc, const char *data);
+/* If `item' is a query of a =nick, return DCC chat record of nick */
+DCC_REC *item_get_dcc(void *item);
 
 #endif

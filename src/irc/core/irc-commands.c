@@ -203,12 +203,6 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '=') {
-		/* dcc msg - don't even try to handle here.. */
-		g_free(params);
-		return;
-	}
-
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 

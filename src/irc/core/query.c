@@ -33,18 +33,19 @@ QUERY_REC *query_create(IRC_SERVER_REC *server, const char *nick, int automatic)
 {
 	QUERY_REC *rec;
 
-	g_return_val_if_fail(server != NULL, NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_new0(QUERY_REC, 1);
 	queries = g_slist_append(queries, rec);
-	server->queries = g_slist_append(server->queries, rec);
+	if (server != NULL) server->queries = g_slist_append(server->queries, rec);
 
         MODULE_DATA_INIT(rec);
 	rec->type = module_get_uniq_id("IRC", WI_IRC_QUERY);
 	rec->nick = g_strdup(nick);
-	rec->server_tag = g_strdup(server->tag);
-	rec->server = server;
+	if (server != NULL) {
+		rec->server_tag = g_strdup(server->tag);
+		rec->server = server;
+	}
 
 	signal_emit("query created", 2, rec, GINT_TO_POINTER(automatic));
 	return rec;

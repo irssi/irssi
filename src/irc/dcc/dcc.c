@@ -1,7 +1,7 @@
 /*
  dcc.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2000 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,181 +38,178 @@ void dcc_files_deinit(void);
 
 #define DCC_TYPES 5
 
-static gchar *dcc_types[] =
-{
-    "CHAT",
-    "SEND",
-    "GET",
-    "RESUME",
-    "ACCEPT"
+static char *dcc_types[] = {
+	"CHAT",
+	"SEND",
+	"GET",
+	"RESUME",
+	"ACCEPT"
 };
 
 GSList *dcc_conns;
 
-static gint dcc_timeouttag;
+static int dcc_timeouttag;
 
 /* Create new DCC record */
-DCC_REC *dcc_create(gint type, gint handle, gchar *nick, gchar *arg, IRC_SERVER_REC *server, DCC_REC *chat)
+DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg,
+		    IRC_SERVER_REC *server, DCC_REC *chat)
 {
-    DCC_REC *dcc;
+	DCC_REC *dcc;
 
-    g_return_val_if_fail(nick != NULL, NULL);
-    g_return_val_if_fail(arg != NULL, NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+	g_return_val_if_fail(arg != NULL, NULL);
 
-    dcc = g_new0(DCC_REC, 1);
-    dcc->type = type == DCC_TYPE_CHAT ? module_get_uniq_id("IRC", WI_IRC_DCC_CHAT) : -1;
-    dcc->mirc_ctcp = settings_get_bool("dcc_mirc_ctcp");
-    dcc->created = time(NULL);
-    dcc->chat = chat;
-    dcc->dcc_type = type;
-    dcc->arg = g_strdup(arg);
-    dcc->nick = g_strdup(nick);
-    dcc->handle = handle;
-    dcc->fhandle = -1;
-    dcc->tagread = dcc->tagwrite = -1;
-    dcc->server = server;
-    dcc->mynick = g_strdup(server != NULL ? server->nick :
-        chat != NULL ? chat->nick : "??");
-    dcc->ircnet = server == NULL ?
-        chat == NULL || chat->ircnet == NULL ? NULL : g_strdup(chat->ircnet) :
-        server->connrec->ircnet == NULL ? NULL : g_strdup(server->connrec->ircnet);
-    dcc_conns = g_slist_append(dcc_conns, dcc);
+	dcc = g_new0(DCC_REC, 1);
+	dcc->mirc_ctcp = settings_get_bool("dcc_mirc_ctcp");
+	dcc->created = time(NULL);
+	dcc->chat = chat;
+	dcc->type = type;
+	dcc->arg = g_strdup(arg);
+	dcc->nick = g_strdup(nick);
+	dcc->handle = handle;
+	dcc->fhandle = -1;
+	dcc->tagread = dcc->tagwrite = -1;
+	dcc->server = server;
+	dcc->mynick = g_strdup(server != NULL ? server->nick :
+			       chat != NULL ? chat->nick : "??");
 
-    signal_emit("dcc created", 1, dcc);
-    return dcc;
+	dcc->ircnet = server == NULL ?
+		(chat == NULL || chat->ircnet == NULL ? NULL : g_strdup(chat->ircnet)) :
+		(server->connrec->ircnet == NULL ? NULL : g_strdup(server->connrec->ircnet));
+	dcc_conns = g_slist_append(dcc_conns, dcc);
+
+	signal_emit("dcc created", 1, dcc);
+	return dcc;
+}
+
+static void dcc_remove_chat_refs(DCC_REC *dcc)
+{
+	GSList *tmp;
+
+	g_return_if_fail(dcc != NULL);
+
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		DCC_REC *rec = tmp->data;
+
+		if (rec->chat == dcc)
+			rec->chat = NULL;
+	}
 }
 
 /* Destroy DCC record */
 void dcc_destroy(DCC_REC *dcc)
 {
-    GSList *tmp;
+	g_return_if_fail(dcc != NULL);
+	if (dcc->destroyed) return;
 
-    g_return_if_fail(dcc != NULL);
+	dcc_conns = g_slist_remove(dcc_conns, dcc);
+	dcc_remove_chat_refs(dcc);
 
-    dcc_conns = g_slist_remove(dcc_conns, dcc);
+	dcc->destroyed = TRUE;
+	signal_emit("dcc destroyed", 1, dcc);
 
-    /* remove dcc chat references.. */
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        DCC_REC *rec = tmp->data;
+	if (dcc->fhandle != -1) close(dcc->fhandle);
+	if (dcc->handle != -1) net_disconnect(dcc->handle);
+	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
+	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
 
-        if (rec->chat == dcc)
-            rec->chat = NULL;
-    }
+	if (dcc->type == DCC_TYPE_CHAT)
+		line_split_free((LINEBUF_REC *) dcc->databuf);
+	else if (dcc->databuf != NULL)
+		g_free(dcc->databuf);
 
-    signal_emit("dcc destroyed", 1, dcc);
-
-    if (dcc->fhandle != -1) close(dcc->fhandle);
-    if (dcc->handle != -1) net_disconnect(dcc->handle);
-    if (dcc->tagread != -1) g_source_remove(dcc->tagread);
-    if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
-
-    if (dcc->dcc_type == DCC_TYPE_CHAT)
-        line_split_free((LINEBUF_REC *) dcc->databuf);
-    else if (dcc->databuf != NULL) g_free(dcc->databuf);
-    if (dcc->file != NULL) g_free(dcc->file);
-    if (dcc->ircnet != NULL) g_free(dcc->ircnet);
-    g_free(dcc->mynick);
-    g_free(dcc->nick);
-    g_free(dcc->arg);
-    g_free(dcc);
+	g_free_not_null(dcc->file);
+	g_free_not_null(dcc->ircnet);
+	g_free(dcc->mynick);
+	g_free(dcc->nick);
+	g_free(dcc->arg);
+	g_free(dcc);
 }
 
-gchar *dcc_make_address(IPADDR *ip)
+void dcc_make_address(IPADDR *ip, char *host)
 {
-    static gchar str[MAX_IP_LEN];
-    gulong addr;
+	unsigned long addr;
 
-    if (is_ipv6_addr(ip))
-    {
-	/* IPv6 */
-	net_ip2host(ip, str);
-    }
-    else
-    {
-	memcpy(&addr, &ip->addr, 4);
-	sprintf(str, "%lu", (unsigned long) htonl(addr));
-    }
-
-    return str;
+	if (is_ipv6_addr(ip)) {
+		/* IPv6 */
+		net_ip2host(ip, host);
+	} else {
+		memcpy(&addr, &ip->addr, 4);
+		sprintf(host, "%lu", (unsigned long) htonl(addr));
+	}
 }
 
 /* Find DCC record, arg can be NULL */
-DCC_REC *dcc_find_item(gint type, gchar *nick, gchar *arg)
+DCC_REC *dcc_find_item(int type, const char *nick, const char *arg)
 {
-    DCC_REC *dcc;
-    GSList *tmp;
+	DCC_REC *dcc;
+	GSList *tmp;
 
-    g_return_val_if_fail(nick != NULL, NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
 
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        dcc = tmp->data;
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		dcc = tmp->data;
 
-        if (dcc->dcc_type == type && g_strcasecmp(dcc->nick, nick) == 0 &&
-           (arg == NULL || strcmp(dcc->arg, arg) == 0))
-            return dcc;
-    }
+		if (dcc->type == type && g_strcasecmp(dcc->nick, nick) == 0 &&
+		    (arg == NULL || strcmp(dcc->arg, arg) == 0))
+			return dcc;
+	}
 
-    return NULL;
+	return NULL;
 }
 
 /* Find DCC record by port # */
-DCC_REC *dcc_find_by_port(gchar *nick, gint port)
+DCC_REC *dcc_find_by_port(const char *nick, int port)
 {
-    DCC_REC *dcc;
-    GSList *tmp;
+	DCC_REC *dcc;
+	GSList *tmp;
 
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        dcc = tmp->data;
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		dcc = tmp->data;
 
-        if (dcc->port == port && ((dcc->dcc_type == DCC_TYPE_GET || dcc->dcc_type == DCC_TYPE_SEND) && g_strcasecmp(dcc->nick, nick) == 0))
-        {
-            /* found! */
-            return dcc;
-        }
-    }
+		if ((dcc->type == DCC_TYPE_GET || dcc->type == DCC_TYPE_SEND) &&
+		    dcc->port == port && g_strcasecmp(dcc->nick, nick) == 0)
+			return dcc;
+	}
 
-    return NULL;
+	return NULL;
 }
 
-gchar *dcc_type2str(gint type)
+const char *dcc_type2str(int type)
 {
-    g_return_val_if_fail(type >= 1 && type <= DCC_TYPES, NULL);
-    return dcc_types[type-1];
+	g_return_val_if_fail(type >= 1 && type <= DCC_TYPES, NULL);
+
+	return dcc_types[type-1];
 }
 
-gint dcc_str2type(gchar *type)
+int dcc_str2type(const char *type)
 {
-    gint num;
+	int num;
 
-    for (num = 0; num < DCC_TYPES; num++)
-        if (g_strcasecmp(dcc_types[num], type) == 0) return num+1;
+	for (num = 0; num < DCC_TYPES; num++) {
+		if (g_strcasecmp(dcc_types[num], type) == 0)
+			return num+1;
+	}
 
-    return 0;
+	return 0;
 }
 
-void dcc_ctcp_message(gchar *target, IRC_SERVER_REC *server, DCC_REC *chat, gboolean notice, gchar *msg)
+void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat, int notice, const char *msg)
 {
-    gchar *str;
+	char *str;
 
-    if (chat != NULL)
-    {
-        /* send it via open DCC chat */
-	/* FIXME: we need output queue! */
-        str = g_strdup_printf("%s\001%s\001\n", chat->mirc_ctcp ? "" :
-                              notice ? "CTCP_REPLY " : "CTCP_MESSAGE ", msg);
-        net_transmit(chat->handle, str, strlen(str));
-    }
-    else
-    {
-        str = g_strdup_printf("%s %s :\001%s\001",
-                              notice ? "NOTICE" : "PRIVMSG", target, msg);
-        irc_send_cmd(server, str);
-    }
+	if (chat != NULL) {
+		/* send it via open DCC chat */
+		str = g_strdup_printf("%s\001%s\001", chat->mirc_ctcp ? "" :
+				      notice ? "CTCP_REPLY " : "CTCP_MESSAGE ", msg);
+                dcc_chat_send(chat, str);
+	} else {
+		str = g_strdup_printf("%s %s :\001%s\001",
+				      notice ? "NOTICE" : "PRIVMSG", target, msg);
+		irc_send_cmd(server, str);
+	}
 
-    g_free(str);
+	g_free(str);
 }
 
 /* Server connected, check if there's any open dcc sessions for this ircnet.. */
@@ -240,59 +237,52 @@ static void dcc_server_connected(IRC_SERVER_REC *server)
 /* Server disconnected, remove it from all dcc records */
 static void dcc_server_disconnected(IRC_SERVER_REC *server)
 {
-    GSList *tmp;
+	GSList *tmp;
 
-    g_return_if_fail(server != NULL);
+	g_return_if_fail(server != NULL);
 
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        DCC_REC *dcc = tmp->data;
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		DCC_REC *dcc = tmp->data;
 
-        if (dcc->server == server)
-        {
-            if (dcc->ircnet == NULL)
-                dcc->server = NULL;
-            else
-            {
-                dcc->server = (IRC_SERVER_REC *) server_find_ircnet(dcc->ircnet);
-                if (dcc->server != NULL)
-                {
-                    g_free(dcc->mynick);
-                    dcc->mynick = g_strdup(dcc->server->nick);
-                }
-            }
-        }
-    }
+		if (dcc->server != server)
+			continue;
+
+		if (dcc->ircnet == NULL)
+			dcc->server = NULL;
+		else {
+			dcc->server = (IRC_SERVER_REC *) server_find_ircnet(dcc->ircnet);
+			if (dcc->server != NULL) {
+				g_free(dcc->mynick);
+				dcc->mynick = g_strdup(dcc->server->nick);
+			}
+		}
+	}
 }
 
-static void dcc_get_address(gchar *str, IPADDR *ip)
+static void dcc_get_address(const char *str, IPADDR *ip)
 {
-    gulong addr;
+	unsigned long addr;
 
-    if (strchr(str, ':') == NULL)
-    {
-	/* normal IPv4 address */
-	if (sscanf(str, "%lu", &addr)!=1)
-	    addr = 0;
-        ip->family = AF_INET;
-	addr = (gulong) ntohl(addr);
-	memcpy(&ip->addr, &addr, 4);
-    }
-    else
-    {
-	/* IPv6 */
-	net_host2ip(str, ip);
-    }
+	if (strchr(str, ':') == NULL) {
+		/* normal IPv4 address in 32bit number form */
+		addr = atol(str);
+		ip->family = AF_INET;
+		addr = (unsigned long) ntohl(addr);
+		memcpy(&ip->addr, &addr, 4);
+	} else {
+		/* IPv6 - in standard form */
+		net_host2ip(str, ip);
+	}
 }
 
 /* Handle incoming DCC CTCP messages */
-static void dcc_ctcp_msg(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar *sendaddr, gchar *target, DCC_REC *chat)
+static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr, char *target, DCC_REC *chat)
 {
-    gchar *params, *type, *arg, *addrstr, *portstr, *sizestr, *str;
+    char *params, *type, *arg, *addrstr, *portstr, *sizestr, *str;
     const char *cstr;
     DCC_REC *dcc;
     gulong size;
-    gint port;
+    int port;
 
     g_return_if_fail(data != NULL);
     g_return_if_fail(sender != NULL);
@@ -308,7 +298,7 @@ static void dcc_ctcp_msg(gchar *data, IRC_SERVER_REC *server, gchar *sender, gch
     dcc->port = port;
     dcc->size = size;
 
-    switch (dcc->dcc_type)
+    switch (dcc->type)
     {
 	case DCC_TYPE_GET:
 	    cstr = settings_get_str("dcc_autoget_masks");
@@ -362,10 +352,10 @@ static void dcc_ctcp_msg(gchar *data, IRC_SERVER_REC *server, gchar *sender, gch
 }
 
 /* Handle incoming DCC CTCP replies */
-static void dcc_ctcp_reply(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar *sendaddr)
+static void dcc_ctcp_reply(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr)
 {
-    gchar *params, *cmd, *subcmd, *args;
-    gint type;
+    char *params, *cmd, *subcmd, *args;
+    int type;
     DCC_REC *dcc;
 
     g_return_if_fail(data != NULL);
@@ -379,7 +369,6 @@ static void dcc_ctcp_reply(gchar *data, IRC_SERVER_REC *server, gchar *sender, g
         dcc = dcc_find_item(type, sender, type == DCC_TYPE_CHAT ? NULL : args);
         if (dcc != NULL)
         {
-	    dcc->destroyed = TRUE;
             signal_emit("dcc closed", 1, dcc);
             dcc_destroy(dcc);
         }
@@ -395,34 +384,33 @@ static void dcc_ctcp_reply(gchar *data, IRC_SERVER_REC *server, gchar *sender, g
 
 static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 {
-    gchar *str;
+    char *str;
 
     g_return_if_fail(dcc != NULL);
 
     if (dcc->server != NULL) server = dcc->server;
-    if (server != NULL && (dcc->dcc_type != DCC_TYPE_CHAT || dcc->starttime == 0))
+    if (server != NULL && (dcc->type != DCC_TYPE_CHAT || dcc->starttime == 0))
     {
         signal_emit("dcc rejected", 1, dcc);
         str = g_strdup_printf("NOTICE %s :\001DCC REJECT %s %s\001",
-                              dcc->nick, dcc_type2str(SWAP_SENDGET(dcc->dcc_type)), dcc->arg);
+                              dcc->nick, dcc_type2str(SWAP_SENDGET(dcc->type)), dcc->arg);
 
         irc_send_cmd(server, str);
         g_free(str);
     }
 
-    dcc->destroyed = TRUE;
     signal_emit("dcc closed", 1, dcc);
     dcc_destroy(dcc);
 }
 
 /* command: DCC CLOSE */
-static void cmd_dcc_close(gchar *data, IRC_SERVER_REC *server)
+static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 {
     DCC_REC *dcc;
     GSList *tmp, *next;
-    gchar *params, *type, *nick, *arg;
+    char *params, *type, *nick, *arg;
     gboolean found;
-    gint itype;
+    int itype;
 
     g_return_if_fail(data != NULL);
 
@@ -443,7 +431,7 @@ static void cmd_dcc_close(gchar *data, IRC_SERVER_REC *server)
 	dcc = tmp->data;
 	next = tmp->next;
 
-        if (dcc->dcc_type == itype && g_strcasecmp(nick, dcc->nick) == 0)
+        if (dcc->type == itype && g_strcasecmp(nick, dcc->nick) == 0)
         {
 	    dcc_reject(dcc, server);
 	    found = TRUE;
@@ -481,9 +469,9 @@ static int dcc_timeout_func(void)
     return 1;
 }
 
-static void event_no_such_nick(gchar *data, IRC_SERVER_REC *server)
+static void event_no_such_nick(char *data, IRC_SERVER_REC *server)
 {
-    gchar *params, *nick;
+    char *params, *nick;
     GSList *tmp, *next;
 
     g_return_if_fail(data != NULL);
@@ -499,7 +487,6 @@ static void event_no_such_nick(gchar *data, IRC_SERVER_REC *server)
         if (g_strcasecmp(rec->nick, nick) == 0 && rec->starttime == 0)
         {
             /* timed out. */
-	    rec->destroyed = TRUE;
             signal_emit("dcc closed", 1, rec);
             dcc_destroy(rec);
         }

@@ -27,11 +27,13 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	/* ---- */
 	{ NULL, "DCC", 0 },
 
-	{ "own_dcc", "%K[%rdcc%K(%R$0%K)]%n $1", 2, { 0, 0 } },
-	{ "own_dcc_me", "%W * $0%n $1", 2, { 0, 0 } },
+	{ "own_dcc", "%K[%rdcc%K(%R$0%K)]%n %|$1", 2, { 0, 0 } },
+	{ "own_dcc_me", "%W * $0%n %|$1", 2, { 0, 0 } },
 	{ "own_dcc_ctcp", "%K[%rctcp%K(%R$0%K)]%n $1 $2", 3, { 0, 0, 0 } },
-	{ "dcc_msg", "%K[%G$0%K(%gdcc%K)]%n $1", 2, { 0, 0 } },
-	{ "action_dcc", "%W (*dcc*) $0%n $1", 2, { 0, 0 } },
+	{ "dcc_msg", "%K[%G$0%K(%gdcc%K)]%n %|$1", 2, { 0, 0 } },
+	{ "action_dcc", "%W (*dcc*) $0%n %|$1", 2, { 0, 0 } },
+	{ "own_dcc_query", "%K<%W$0%K>%n %|$1", 2, { 0, 0 } },
+	{ "dcc_msg_query", "%K<%G$0%K>%n %|$1", 2, { 0, 0 } },
 	{ "dcc_ctcp", "%g>>> DCC CTCP received from %_$0%_%K: %g$1", 2, { 0, 0 } },
 	{ "dcc_chat", "%gDCC CHAT from %_$0%_ %K[%g$1 port $2%K]", 3, { 0, 0, 1 } },
 	{ "dcc_chat_not_found", "%gNo DCC CHAT connection open to %_$0", 1, { 0 } },
@@ -55,6 +57,10 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_cant_create", "%gDCC can't create file %G$0%g", 1, { 0 } },
 	{ "dcc_rejected", "%gDCC %G$0%g was rejected by %_$1%_ %K[%G$2%K]", 3, { 0, 0, 0 } },
 	{ "dcc_close", "%gDCC %G$0%g close for %_$1%_ %K[%G$2%K]", 3, { 0, 0, 0 } },
+	{ "dcc_list_header", "%gDCC connections", 0 },
+	{ "dcc_list_line_chat", "%g $0 $1", 2, { 0, 0 } },
+	{ "dcc_list_line_file", "%g $0 $1: $2k of $3k ($4%%) - $5kB/s - $6", 7, { 0, 0, 2, 2, 1, 3, 0 } },
+	{ "dcc_list_footer", "", 0 },
 
 	{ NULL, NULL, 0 }
 };

@@ -19,8 +19,7 @@
 /* values returned by module_category() */
 enum {
 	WI_IRC_CHANNEL,
-	WI_IRC_QUERY,
-	WI_IRC_DCC_CHAT
+	WI_IRC_QUERY
 };
 
 /* *MUST* have the same contents as WI_ITEM_REC in same order. */

@@ -32,255 +32,306 @@
 
 #include "dcc.h"
 
-static gint dcc_file_create_mode;
+static int dcc_file_create_mode;
 
-static gchar *dcc_prepare_path(gchar *fname)
+static char *dcc_prepare_path(const char *fname)
 {
-    gchar *str, *ptr, *downpath;
+	char *str, *downpath;
 
-    /* strip all paths from file. */
-    ptr = strrchr(fname, '/');
-    if (ptr == NULL) ptr = fname; else ptr++;
+	downpath = convert_home(settings_get_str("dcc_download_path"));
+	str = g_strconcat(downpath, G_DIR_SEPARATOR_S, g_basename(fname), NULL);
+	g_free(downpath);
 
-    downpath = convert_home(settings_get_str("dcc_download_path"));
-    str = g_strdup_printf("%s/%s", downpath, ptr);
-    g_free(downpath);
+	return str;
+}
 
-    return str;
+static void sig_dccget_send(DCC_REC *dcc);
+
+void dcc_get_send_received(DCC_REC *dcc)
+{
+	guint32 recd;
+
+	recd = (guint32) htonl(dcc->transfd);
+	memcpy(dcc->count_buf, &recd, 4);
+
+	dcc->count_pos = net_transmit(dcc->handle, dcc->count_buf+dcc->count_pos, 4-dcc->count_pos);
+	if (dcc->count_pos == 4) dcc->count_pos = 0;
+
+	/* count_pos might be -1 here. if this happens, the
+	   count_buf should be re-sent.. also, if it's 1, 2 or 3, the
+	   last 1-3 bytes should be sent later. these happen probably
+	   never, but I just want to do it right.. :) */
+	if (dcc->tagwrite != -1) {
+		dcc->tagwrite = g_input_add(dcc->handle, G_INPUT_WRITE,
+					    (GInputFunction) sig_dccget_send, dcc);
+	}
+}
+
+/* input function: DCC GET is free to send data */
+static void sig_dccget_send(DCC_REC *dcc)
+{
+	guint32 recd;
+	int ret;
+
+	if (dcc->count_pos != 0) {
+		ret = net_transmit(dcc->handle, dcc->count_buf+dcc->count_pos, 4-dcc->count_pos);
+		if (dcc->count_pos <= 0)
+			dcc->count_pos = ret;
+		else if (ret > 0)
+			dcc->count_pos += ret;
+
+		if (dcc->count_pos == 4) dcc->count_pos = 0;
+
+	}
+
+	if (dcc->count_pos == 0) {
+		g_source_remove(dcc->tagwrite);
+                dcc->tagwrite = -1;
+	}
+
+	memcpy(&recd, dcc->count_buf, 4);
+	if (recd != (guint32) htonl(dcc->transfd))
+                dcc_get_send_received(dcc);
 }
 
 /* input function: DCC GET received data */
-static void dcc_receive(DCC_REC *dcc)
+static void sig_dccget_receive(DCC_REC *dcc)
 {
-    guint32 recd;
-    gint len, ret;
+	int ret;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    for (;;)
-    {
-        len = net_receive(dcc->handle, dcc->databuf, dcc->databufsize);
-        if (len == 0) break;
-        if (len < 0)
-        {
-            /* socket closed - transmit complete (or other side died..) */
-            signal_emit("dcc closed", 1, dcc);
-            dcc_destroy(dcc);
-            return;
-        }
+	for (;;) {
+		ret = net_receive(dcc->handle, dcc->databuf, dcc->databufsize);
+		if (ret == 0) break;
 
-        write(dcc->fhandle, dcc->databuf, len);
-        dcc->transfd += len;
-    }
+		if (ret < 0) {
+			/* socket closed - transmit complete,
+			   or other side died.. */
+			signal_emit("dcc closed", 1, dcc);
+			dcc_destroy(dcc);
+			return;
+		}
 
-    /* send number of total bytes received - if for some reason we couldn't
-       send the 4 characters last time, try to somehow fix it this time by
-       sending missing amount of 0 characters.. */
-    if (dcc->trans_bytes != 0)
-    {
-	recd = (guint32) htonl(0);
-	dcc->trans_bytes += net_transmit(dcc->handle, ((gchar *) &recd)+dcc->trans_bytes, 4-dcc->trans_bytes);
-	if (dcc->trans_bytes == 4) dcc->trans_bytes = 0;
-    }
+		write(dcc->fhandle, dcc->databuf, ret);
+		dcc->transfd += ret;
+	}
 
-    if (dcc->trans_bytes == 0)
-    {
-	recd = (guint32) htonl(dcc->transfd);
-	ret = net_transmit(dcc->handle, ((gchar *) &recd), 4);
-	if (ret > 0 && ret < 4) dcc->trans_bytes = ret;
-    }
-    signal_emit("dcc transfer update", 1, dcc);
+	/* send number of total bytes received */
+	if (dcc->count_pos <= 0)
+		dcc_get_send_received(dcc);
+
+	signal_emit("dcc transfer update", 1, dcc);
+}
+
+static char *get_rename_file(const char *fname)
+{
+	GString *newname;
+	struct stat statbuf;
+	char *ret;
+	int num;
+
+	newname = g_string_new(NULL);
+	num = 1;
+	do {
+		g_string_sprintf(newname, "%s.%d", fname, num);
+		num++;
+	} while (stat(newname->str, &statbuf) == 0);
+
+	ret = newname->str;
+	g_string_free(newname, FALSE);
+	return ret;
 }
 
 /* callback: net_connect() finished for DCC GET */
-static void dcc_get_connect(DCC_REC *dcc)
+static void sig_dccget_connected(DCC_REC *dcc)
 {
-    struct stat statbuf;
+	struct stat statbuf;
+	char *fname;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    g_source_remove(dcc->tagread);
-    if (net_geterror(dcc->handle) != 0)
-    {
-        /* error connecting */
-        signal_emit("dcc error connect", 1, dcc);
-        dcc_destroy(dcc);
-        return;
-    }
-    dcc->file = dcc_prepare_path(dcc->arg);
-
-    /* if some plugin wants to change the file name/path here.. */
-    signal_emit("dcc get receive", 1, dcc);
-
-    if (stat(dcc->file, &statbuf) == 0 &&
-        (dcc->get_type == DCC_GET_RENAME || dcc->get_type == DCC_GET_DEFAULT))
-    {
-        /* file exists, rename.. */
-        GString *newname;
-        gint num;
-
-        newname = g_string_new(NULL);
-        for (num = 1; ; num++)
-        {
-            g_string_sprintf(newname, "%s.%d", dcc->file, num);
-            if (stat(newname->str, &statbuf) != 0) break;
-        }
-        g_free(dcc->file);
-        dcc->file = newname->str;
-        g_string_free(newname, FALSE);
-    }
-
-    if (dcc->get_type != DCC_GET_RESUME)
-    {
-        dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT, dcc_file_create_mode);
-        if (dcc->fhandle == -1)
-        {
-            signal_emit("dcc error file create", 2, dcc, dcc->file);
-            dcc_destroy(dcc);
-            return;
-        }
-    }
-
-    dcc->databufsize = settings_get_int("dcc_block_size") > 0 ? settings_get_int("dcc_block_size") : 2048;
-    dcc->databuf = g_malloc(dcc->databufsize);
-
-    dcc->starttime = time(NULL);
-    dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
-			       (GInputFunction) dcc_receive, dcc);
-    signal_emit("dcc connected", 1, dcc);
-}
-
-/* command: DCC GET */
-static void cmd_dcc_get(gchar *data)
-{
-    DCC_REC *dcc;
-    GSList *tmp, *next;
-    gchar *params, *nick, *fname;
-    gboolean found;
-
-    g_return_if_fail(data != NULL);
-
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
-    if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-    dcc = NULL; found = FALSE;
-    for (tmp = dcc_conns; tmp != NULL; tmp = next)
-    {
-	dcc = tmp->data;
-	next = tmp->next;
-
-        if (dcc->dcc_type == DCC_TYPE_GET && dcc->handle == -1 && g_strcasecmp(dcc->nick, nick) == 0 &&
-            (*fname == '\0' || strcmp(dcc->arg, fname) == 0))
-        {
-	    /* found! */
-	    found = TRUE;
-	    dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
-					 source_host_ok ? source_host_ip : NULL);
-	    if (dcc->handle != -1)
-	    {
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
-					   (GInputFunction) dcc_get_connect, dcc);
-	    }
-	    else
-	    {
+	g_source_remove(dcc->tagread);
+	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
 		dcc_destroy(dcc);
-	    }
+		return;
 	}
-    }
 
-    if (!found)
-        signal_emit("dcc error get not found", 1, nick);
+	dcc->file = dcc_prepare_path(dcc->arg);
 
-    g_free(params);
+	/* if some plugin wants to change the file name/path here.. */
+	signal_emit("dcc get receive", 1, dcc);
+
+	if (stat(dcc->file, &statbuf) == 0 && dcc->get_type == DCC_GET_RENAME) {
+		/* file exists, rename.. */
+		fname = get_rename_file(dcc->file);
+		g_free(dcc->file);
+		dcc->file = fname;
+	}
+
+	if (dcc->get_type != DCC_GET_RESUME) {
+		dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT, dcc_file_create_mode);
+		if (dcc->fhandle == -1) {
+			signal_emit("dcc error file create", 2, dcc, dcc->file);
+			dcc_destroy(dcc);
+			return;
+		}
+	}
+
+	dcc->databufsize = settings_get_int("dcc_block_size");
+        if (dcc->databufsize <= 0) dcc->databufsize = 2048;
+	dcc->databuf = g_malloc(dcc->databufsize);
+
+	dcc->starttime = time(NULL);
+	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
+				   (GInputFunction) sig_dccget_receive, dcc);
+	signal_emit("dcc connected", 1, dcc);
 }
 
-/* resume setup: DCC SEND - we either said resume on get, or when we sent,
-   someone chose resume */
-static void dcc_resume_setup(DCC_REC *dcc, gint port)
+static void dcc_get_connect(DCC_REC *dcc)
 {
-    gchar *str;
-
-    /* Check for DCC_SEND_RESUME */
-    if (dcc->dcc_type == DCC_TYPE_SEND)
-    {
-        if (lseek(dcc->fhandle, dcc->transfd, SEEK_SET) == -1)
-        {
-            signal_emit("dcc closed", 1, dcc);
-            dcc_destroy(dcc);
-            return;
-        }
-        else
-        {
-            str = g_strdup_printf("DCC ACCEPT %s %d %lu",
-                                  dcc->arg, port, dcc->transfd);
-            dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
-            g_free(str);
-        }
-    }
-
-    /* Check for DCC_GET_RESUME */
-    if (dcc->dcc_type == DCC_TYPE_GET && dcc->get_type == DCC_GET_RESUME)
-    {
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
-	if (dcc->handle != -1)
-	{
-	    dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
-				       (GInputFunction) dcc_get_connect, dcc);
+	if (dcc->handle != -1) {
+		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
+					   (GInputFunction) sig_dccget_connected, dcc);
+	} else {
+		/* error connecting */
+		signal_emit("dcc error connect", 1, dcc);
+		dcc_destroy(dcc);
 	}
-	else
-	{
-	    /* error connecting */
-	    signal_emit("dcc error connect", 1, dcc);
-	    dcc_destroy(dcc);
-	}
-    }
 }
 
-static void dcc_ctcp_msg(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar *sendaddr, gchar *target, DCC_REC *chat)
+#define dcc_is_unget(dcc) \
+        ((dcc)->type == DCC_TYPE_GET && (dcc)->handle == -1)
+
+static void cmd_dcc_get(const char *data)
 {
-    gchar *params, *type, *arg, *portstr, *sizestr;
-    gulong size;
-    gint port;
-    DCC_REC *dcc;
+	DCC_REC *dcc;
+	GSList *tmp, *next;
+	char *params, *nick, *fname;
+	int found;
 
-    g_return_if_fail(data != NULL);
-    g_return_if_fail(sender != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 4, &type, &arg, &portstr, &sizestr);
-    if (g_strcasecmp(type, "RESUME") == 0 || g_strcasecmp(type, "ACCEPT") == 0)
-    {
-        if (sscanf(portstr, "%d", &port) != 1) port = 0;
-        if (sscanf(sizestr, "%lu", &size) != 1) size = 0;
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
+	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	dcc = NULL; found = FALSE;
+	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
+		dcc = tmp->data;
+		next = tmp->next;
+
+		if (dcc_is_unget(dcc) && g_strcasecmp(dcc->nick, nick) == 0 &&
+		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
+			found = TRUE;
+			dcc_get_connect(dcc);
+		}
+	}
+
+	if (!found)
+		signal_emit("dcc error get not found", 1, nick);
+
+	g_free(params);
+}
+
+static void dcc_resume_send(DCC_REC *dcc, int port)
+{
+	char *str;
+
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc->type != DCC_TYPE_SEND);
+
+	str = g_strdup_printf("DCC ACCEPT %s %d %lu",
+			      dcc->arg, port, dcc->transfd);
+	dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
+	g_free(str);
+}
+
+static void dcc_resume_get(DCC_REC *dcc)
+{
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc->type != DCC_TYPE_GET);
+
+	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
+				     source_host_ok ? source_host_ip : NULL);
+	if (dcc->handle != -1) {
+		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
+					   (GInputFunction) dcc_get_connect, dcc);
+	} else {
+		/* error connecting */
+		signal_emit("dcc error connect", 1, dcc);
+		dcc_destroy(dcc);
+	}
+}
+
+#define is_resume_type(type) \
+	(g_strcasecmp(type, "RESUME") == 0 || g_strcasecmp(type, "ACCEPT") == 0)
+
+#define is_resume_ok(type, dcc) \
+        (g_strcasecmp(type, "RESUME") != 0 || ((dcc)->type == DCC_TYPE_SEND && (dcc)->transfd == 0))
+
+#define is_accept_ok(type, dcc) \
+        (g_strcasecmp(type, "ACCEPT") != 0 || ((dcc)->type == DCC_TYPE_GET && (dcc)->type == DCC_GET_RESUME))
+
+static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
+			 const char *sender, const char *sendaddr,
+			 const char *target, DCC_REC *chat)
+{
+	char *params, *type, *arg, *portstr, *sizestr;
+	unsigned long size;
+        int port;
+	DCC_REC *dcc;
+
+	g_return_if_fail(data != NULL);
+	g_return_if_fail(sender != NULL);
+
+	params = cmd_get_params(data, 4, &type, &arg, &portstr, &sizestr);
+
+	port = atoi(portstr);
+	size = atol(sizestr);
 
 	dcc = dcc_find_by_port(sender, port);
-        if (dcc != NULL && (dcc->dcc_type == DCC_TYPE_GET || dcc->transfd == 0))
-	{
-	    dcc->transfd = size;
-	    dcc->skipped = size;
-	    dcc_resume_setup(dcc, port);
+	if (dcc == NULL || !is_resume_type(type) ||
+	    !is_resume_ok(type, dcc) || !is_accept_ok(type, dcc)) {
+		g_free(params);
+		return;
 	}
-    }
 
-    g_free(params);
+	if (lseek(dcc->fhandle, size, SEEK_SET) != dcc->transfd) {
+		/* error, or trying to seek after end of file */
+		signal_emit("dcc closed", 1, dcc);
+		dcc_destroy(dcc);
+		return;
+	}
+	dcc->transfd = dcc->skipped = size;
+
+	if (dcc->type == DCC_TYPE_SEND)
+		dcc_resume_send(dcc, port);
+	else
+		dcc_resume_get(dcc);
+
+	g_free(params);
 }
 
 static void dcc_resume_rec(DCC_REC *dcc)
 {
-    gchar *str;
+	char *str;
 
-    dcc->file = dcc_prepare_path(dcc->arg);
+	g_return_if_fail(dcc != NULL);
 
-    dcc->fhandle = open(dcc->file, O_WRONLY, dcc_file_create_mode);
-    if (dcc->fhandle == -1)
-    {
-	signal_emit("dcc error file not found", 2, dcc, dcc->file);
-	dcc_destroy(dcc);
-    }
-    else
-    {
+	dcc->get_type = DCC_GET_RESUME;
+	dcc->file = dcc_prepare_path(dcc->arg);
+
+	dcc->fhandle = open(dcc->file, O_WRONLY, dcc_file_create_mode);
+	if (dcc->fhandle == -1) {
+		signal_emit("dcc error file not found", 2, dcc, dcc->file);
+		dcc_destroy(dcc);
+		return;
+	}
+
 	dcc->transfd = lseek(dcc->fhandle, 0, SEEK_END);
 	if (dcc->transfd < 0) dcc->transfd = 0;
 	dcc->skipped = dcc->transfd;
@@ -289,266 +340,247 @@ static void dcc_resume_rec(DCC_REC *dcc)
 			      dcc->arg, dcc->port, dcc->transfd);
 	dcc_ctcp_message(dcc->nick, dcc->server, dcc->chat, FALSE, str);
 	g_free(str);
-    }
 }
 
-/* command: DCC RESUME */
-static void cmd_dcc_resume(gchar *data)
+static void cmd_dcc_resume(const char *data)
 {
-    DCC_REC *dcc;
-    GSList *tmp;
-    gchar *params, *nick, *fname;
-    gboolean found;
+	DCC_REC *dcc;
+	GSList *tmp;
+	char *params, *nick, *fname;
+	int found;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
-    if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
+	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-    dcc = NULL; found = FALSE;
-    for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next)
-    {
-        dcc = tmp->data;
+	dcc = NULL; found = FALSE;
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		dcc = tmp->data;
 
-        if (dcc->dcc_type == DCC_TYPE_GET && dcc->handle == -1 && g_strcasecmp(dcc->nick, nick) == 0 &&
-            (*fname == '\0' || strcmp(dcc->arg, fname) == 0))
-        {
-	    /* found! */
-	    dcc->get_type = DCC_GET_RESUME;
-	    dcc_resume_rec(dcc);
-	    found = TRUE;
-        }
-    }
+		if (dcc_is_unget(dcc) && g_strcasecmp(dcc->nick, nick) == 0 &&
+		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
+			dcc_resume_rec(dcc);
+			found = TRUE;
+		}
+	}
 
-    if (!found)
-        signal_emit("dcc error get not found", 1, nick);
+	if (!found)
+		signal_emit("dcc error get not found", 1, nick);
 
-    g_free(params);
+	g_free(params);
 }
 
-/* input function: DCC SEND send more data */
+/* input function: DCC SEND - we're ready to send more data */
 static void dcc_send_data(DCC_REC *dcc)
 {
-    gint n;
+	int ret;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    if (!dcc->fastsend && !dcc->gotalldata)
-    {
-        /* haven't received everything we've send there yet.. */
-        return;
-    }
+	if (!dcc->fastsend && !dcc->gotalldata) {
+		/* haven't received everything we've send there yet.. */
+		return;
+	}
 
-    n = read(dcc->fhandle, dcc->databuf, dcc->databufsize);
-    if (n <= 0)
-    {
-        /* end of file .. or some error .. */
-        if (dcc->fastsend)
-        {
-            /* no need to call this function anymore.. in fact it just eats
-               all the cpu.. */
-            dcc->waitforend = TRUE;
-            g_source_remove(dcc->tagwrite);
-            dcc->tagwrite = -1;
-        }
-        else
-        {
-            signal_emit("dcc closed", 1, dcc);
-            dcc_destroy(dcc);
-        }
-        return;
-    }
+	ret = read(dcc->fhandle, dcc->databuf, dcc->databufsize);
+	if (ret <= 0) {
+		/* end of file .. or some error .. */
+		if (dcc->fastsend) {
+			/* no need to call this function anymore..
+			   in fact it just eats all the cpu.. */
+			dcc->waitforend = TRUE;
+			g_source_remove(dcc->tagwrite);
+			dcc->tagwrite = -1;
+		} else {
+			signal_emit("dcc closed", 1, dcc);
+			dcc_destroy(dcc);
+		}
+		return;
+	}
 
-    dcc->transfd += net_transmit(dcc->handle, dcc->databuf, n);
-    dcc->gotalldata = FALSE;
+	ret = net_transmit(dcc->handle, dcc->databuf, ret);
+	if (ret > 0) dcc->transfd += ret;
+	dcc->gotalldata = FALSE;
 
-    lseek(dcc->fhandle, dcc->transfd, SEEK_SET);
+	lseek(dcc->fhandle, dcc->transfd, SEEK_SET);
 
-    signal_emit("dcc transfer update", 1, dcc);
+	signal_emit("dcc transfer update", 1, dcc);
 }
 
-/* input function: DCC SEND received some data */
+/* input function: DCC SEND - received some data */
 static void dcc_send_read_size(DCC_REC *dcc)
 {
-    guint32 bytes;
-    gint ret;
+	guint32 bytes;
+	int ret;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    if (dcc->read_pos == 4)
-        return;
+	if (dcc->count_pos == 4)
+		return;
 
-    /* we need to get 4 bytes.. */
-    ret = net_receive(dcc->handle, dcc->read_buf+dcc->read_pos, 4-dcc->read_pos);
-    if (ret == -1)
-    {
-        signal_emit("dcc closed", 1, dcc);
-        dcc_destroy(dcc);
-        return;
-    }
+	/* we need to get 4 bytes.. */
+	ret = net_receive(dcc->handle, dcc->count_buf+dcc->count_pos, 4-dcc->count_pos);
+	if (ret == -1) {
+		signal_emit("dcc closed", 1, dcc);
+		dcc_destroy(dcc);
+		return;
+	}
 
-    dcc->read_pos += ret;
+	dcc->count_pos += ret;
 
-    if (dcc->read_pos == 4)
-    {
-        bytes = 0; memcpy(&bytes, dcc->read_buf, 4);
-        bytes = (guint32) ntohl(bytes);
+	if (dcc->count_pos != 4)
+		return;
 
-        dcc->gotalldata = bytes == dcc->transfd;
-        dcc->read_pos = 0;
+	memcpy(&bytes, dcc->count_buf, 4);
+	bytes = (guint32) ntohl(bytes);
 
-        if (!dcc->fastsend)
-        {
-            /* send more data.. */
-            dcc_send_data(dcc);
-        }
+	dcc->gotalldata = bytes == dcc->transfd;
+	dcc->count_pos = 0;
 
-        if (dcc->waitforend && dcc->gotalldata)
-        {
-            /* file is sent */
-            signal_emit("dcc closed", 1, dcc);
-            dcc_destroy(dcc);
-            return;
-        }
-    }
+	if (!dcc->fastsend) {
+		/* send more data.. */
+		dcc_send_data(dcc);
+	}
+
+	if (dcc->waitforend && dcc->gotalldata) {
+		/* file is sent */
+		signal_emit("dcc closed", 1, dcc);
+		dcc_destroy(dcc);
+	}
 }
 
 /* input function: DCC SEND - someone tried to connect to our socket */
 static void dcc_send_init(DCC_REC *dcc)
 {
-    gint handle, port;
-    IPADDR addr;
+	int handle, port;
+	IPADDR addr;
 
-    g_return_if_fail(dcc != NULL);
+	g_return_if_fail(dcc != NULL);
 
-    /* accept connection */
-    handle = net_accept(dcc->handle, &addr, &port);
-    if (handle == -1)
-        return;
+	/* accept connection */
+	handle = net_accept(dcc->handle, &addr, &port);
+	if (handle == -1)
+		return;
 
-    /* FIXME: add paranoia checking, check if host ip is the same as to who
-       we sent the DCC SEND request.. */
+	/* TODO: some kind of paranoia check would be nice. it would check
+	   that the host of the nick who we sent the request matches the
+	   address who connected us. */
 
-    g_source_remove(dcc->tagread);
-    close(dcc->handle);
+	g_source_remove(dcc->tagread);
+	close(dcc->handle);
 
-    dcc->fastsend = settings_get_bool("dcc_fast_send");
-    dcc->handle = handle;
-    memcpy(&dcc->addr, &addr, sizeof(IPADDR));
-    net_ip2host(&dcc->addr, dcc->addrstr);
-    dcc->port = port;
-    dcc->databufsize = settings_get_int("dcc_block_size") > 0 ? settings_get_int("dcc_block_size") : 2048;
-    dcc->databuf = g_malloc(dcc->databufsize);
-    dcc->starttime = time(NULL);
-    dcc->tagread = g_input_add(handle, G_INPUT_READ,
-			       (GInputFunction) dcc_send_read_size, dcc);
-    dcc->tagwrite = !dcc->fastsend ? -1 :
-	g_input_add(handle, G_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
+	dcc->starttime = time(NULL);
+	dcc->fastsend = settings_get_bool("dcc_fast_send");
+	dcc->handle = handle;
+	memcpy(&dcc->addr, &addr, sizeof(IPADDR));
+	net_ip2host(&dcc->addr, dcc->addrstr);
+	dcc->port = port;
 
-    signal_emit("dcc connected", 1, dcc);
+	dcc->databufsize = settings_get_int("dcc_block_size");
+        if (dcc->databufsize <= 0) dcc->databufsize = 2048;
+	dcc->databuf = g_malloc(dcc->databufsize);
 
-    if (!dcc->fastsend)
-    {
-        /* send first block */
-        dcc->gotalldata = TRUE;
-        dcc_send_data(dcc);
-    }
+	dcc->tagread = g_input_add(handle, G_INPUT_READ,
+				   (GInputFunction) dcc_send_read_size, dcc);
+	dcc->tagwrite = !dcc->fastsend ? -1 :
+		g_input_add(handle, G_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
+
+	signal_emit("dcc connected", 1, dcc);
+
+	if (!dcc->fastsend) {
+		/* send first block */
+		dcc->gotalldata = TRUE;
+		dcc_send_data(dcc);
+	}
 }
 
 /* command: DCC SEND */
-static void cmd_dcc_send(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-    gchar *params, *target, *fname, *str, *ptr;
-    gint fh, h, port;
-    glong fsize;
-    DCC_REC *dcc, *chat;
-    IPADDR addr;
+	char *params, *target, *fname, *str, *ptr;
+	char host[MAX_IP_LEN];
+	int hfile, hlisten, port;
+	long fsize;
+	DCC_REC *dcc, *chat;
+	IPADDR own_ip;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &fname);
+	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &fname);
+	if (*target == '\0' || *fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-    /* if we're in dcc chat, send the request via it. */
-    chat = irc_item_dcc_chat(item);
+	/* if we're in dcc chat, send the request via it. */
+	chat = item_get_dcc(item);
 
-    if (chat != NULL && (chat->mirc_ctcp || g_strcasecmp(target, chat->nick) != 0))
-        chat = NULL;
+	if (chat != NULL && (chat->mirc_ctcp || g_strcasecmp(target, chat->nick) != 0))
+		chat = NULL;
 
-    if ((server == NULL || !server->connected) && chat == NULL)
-        cmd_param_error(CMDERR_NOT_CONNECTED);
+	if ((server == NULL || !server->connected) && chat == NULL)
+		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-    if (*target == '\0' || *fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (dcc_find_item(DCC_TYPE_SEND, target, fname)) {
+		signal_emit("dcc error send exists", 2, target, fname);
+		g_free(params);
+		return;
+	}
 
-    if (dcc_find_item(DCC_TYPE_SEND, target, fname))
-    {
-        signal_emit("dcc error send exists", 2, target, fname);
-        g_free(params);
-        return;
-    }
+	str = convert_home(fname);
+	if (!g_path_is_absolute(str)) {
+		char *path;
 
-    str = convert_home(fname);
-    if (*str != '/')
-    {
-        gchar *path;
+		g_free(str);
+		path = convert_home(settings_get_str("dcc_upload_path"));
+		str = g_strconcat(path, G_DIR_SEPARATOR_S, fname, NULL);
+		g_free(path);
+	}
 
-        g_free(str);
-        path = convert_home(settings_get_str("dcc_upload_path"));
-        str = g_strconcat(path, "/", fname, NULL);
-        g_free(path);
-    }
+	hfile = open(str, O_RDONLY);
+	g_free(str);
 
-    fh = open(str, O_RDONLY);
-    g_free(str);
+	if (hfile == -1) {
+		signal_emit("dcc error file not found", 2, target, fname);
+		g_free(params);
+		return;
+	}
+	fsize = lseek(hfile, 0, SEEK_END);
+	lseek(hfile, 0, SEEK_SET);
 
-    if (fh == -1)
-    {
-	signal_emit("dcc error file not found", 2, target, fname);
+	/* get the IP address we use with IRC server */
+	if (net_getsockname(chat != NULL ? chat->handle : server->handle, &own_ip, NULL) == -1) {
+		close(hfile);
+		cmd_param_error(CMDERR_ERRNO);
+	}
+
+	/* start listening */
+	port = settings_get_int("dcc_port");
+	hlisten = net_listen(&own_ip, &port);
+	if (hlisten == -1) {
+		close(hfile);
+		cmd_param_error(CMDERR_ERRNO);
+	}
+
+	/* skip path, change all spaces to _ */
+	fname = g_strdup(g_basename(fname));
+	for (ptr = fname; *ptr != '\0'; ptr++)
+		if (*ptr == ' ') *ptr = '_';
+
+	dcc = dcc_create(DCC_TYPE_SEND, hlisten, target, fname, server, chat);
+	dcc->port = port;
+	dcc->size = fsize;
+	dcc->fhandle = hfile;
+	dcc->tagread = g_input_add(hlisten, G_INPUT_READ,
+				   (GInputFunction) dcc_send_init, dcc);
+
+	/* send DCC request */
+	dcc_make_address(&own_ip, host);
+	str = g_strdup_printf("DCC SEND %s %s %d %lu",
+			      fname, host, port, fsize);
+	dcc_ctcp_message(target, server, chat, FALSE, str);
+	g_free(str);
+
+	g_free(fname);
 	g_free(params);
-        return;
-    }
-    fsize = lseek(fh, 0, SEEK_END);
-    lseek(fh, 0, SEEK_SET);
-
-    /* get the IP address we use with IRC server */
-    if (net_getsockname(chat != NULL ? chat->handle : server->handle, &addr, NULL) == -1)
-    {
-        close(fh);
-        cmd_param_error(CMDERR_ERRNO);
-    }
-
-    /* start listening */
-    port = settings_get_int("dcc_port");
-    h = net_listen(&addr, &port);
-    if (h == -1)
-    {
-        close(fh);
-        cmd_param_error(CMDERR_ERRNO);
-    }
-
-    /* skip path */
-    ptr = strrchr(fname, '/');
-    if (ptr != NULL) fname = ptr+1;
-
-    /* change all spaces to _ */
-    fname = g_strdup(fname);
-    for (ptr = fname; *ptr != '\0'; ptr++)
-        if (*ptr == ' ') *ptr = '_';
-
-    dcc = dcc_create(DCC_TYPE_SEND, h, target, fname, server, chat);
-    dcc->port = port;
-    dcc->size = fsize;
-    dcc->fhandle = fh;
-    dcc->tagread = g_input_add(h, G_INPUT_READ,
-			       (GInputFunction) dcc_send_init, dcc);
-
-    /* send DCC request */
-    str = g_strdup_printf("DCC SEND %s %s %d %lu",
-			  fname, dcc_make_address(&addr), port, fsize);
-    dcc_ctcp_message(target, server, chat, FALSE, str);
-    g_free(str);
-
-    g_free(fname);
-    g_free(params);
 }
 
 static void read_settings(void)
@@ -558,20 +590,20 @@ static void read_settings(void)
 
 void dcc_files_init(void)
 {
-    signal_add("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
-    signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-    signal_add("irssi init finished", (SIGNAL_FUNC) read_settings);
-    command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
-    command_bind("dcc get", NULL, (SIGNAL_FUNC) cmd_dcc_get);
-    command_bind("dcc resume", NULL, (SIGNAL_FUNC) cmd_dcc_resume);
+	signal_add("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("irssi init finished", (SIGNAL_FUNC) read_settings);
+	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
+	command_bind("dcc get", NULL, (SIGNAL_FUNC) cmd_dcc_get);
+	command_bind("dcc resume", NULL, (SIGNAL_FUNC) cmd_dcc_resume);
 }
 
 void dcc_files_deinit(void)
 {
-    signal_remove("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
-    signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-    signal_remove("irssi init finished", (SIGNAL_FUNC) read_settings);
-    command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);
-    command_unbind("dcc get", (SIGNAL_FUNC) cmd_dcc_get);
-    command_unbind("dcc resume", (SIGNAL_FUNC) cmd_dcc_resume);
+	signal_remove("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) read_settings);
+	command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);
+	command_unbind("dcc get", (SIGNAL_FUNC) cmd_dcc_get);
+	command_unbind("dcc resume", (SIGNAL_FUNC) cmd_dcc_resume);
 }

@@ -161,6 +161,36 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     g_free(params);
 }
 
+static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+{
+	g_return_if_fail(data != NULL);
+
+	if (!irc_item_check(item))
+		return;
+
+	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	printformat(server, item->name, MSGLEVEL_ACTIONS,
+		    IRCTXT_OWN_ME, server->nick, data);
+
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", item->name, data);
+}
+
+static void cmd_action(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *target, *text;
+
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &text);
+	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	printformat(server, target, MSGLEVEL_ACTIONS, IRCTXT_OWN_ME, server->nick, text);
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
+	g_free(params);
+}
+
 static void cmd_notice(gchar *data, IRC_SERVER_REC *server)
 {
 	char *params, *target, *msg;
@@ -180,45 +210,6 @@ static void cmd_notice(gchar *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
-{
-	g_return_if_fail(data != NULL);
-
-	if (!irc_item_check(item))
-		return;
-
-	if (irc_item_dcc_chat(item)) {
-		/* DCC action - handled by fe-dcc.c */
-		return;
-	}
-
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	printformat(server, item->name, MSGLEVEL_ACTIONS,
-		    IRCTXT_OWN_ME, server->nick, data);
-
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", item->name, data);
-}
-
-static void cmd_action(const char *data, IRC_SERVER_REC *server)
-{
-	char *params, *target, *text;
-
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
-	if (*data == '=') {
-		/* DCC action - handled by fe-dcc.c */
-		return;
-	}
-
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &text);
-	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	printformat(server, target, MSGLEVEL_ACTIONS, IRCTXT_OWN_ME, server->nick, text);
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
-	g_free(params);
-}
-
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *target, *ctcpcmd, *ctcpdata;
@@ -229,11 +220,6 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata);
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '=') {
-		/* send CTCP via DCC CHAT */
-		g_free(params);
-		return;
-	}
 	if (*target == '@' && ischannel(target[1]))
 		target++; /* Hybrid 6 feature, send ctcp to all ops in channel */
 
@@ -401,10 +387,10 @@ void fe_irc_commands_init(void)
 {
 	command_bind("query", NULL, (SIGNAL_FUNC) cmd_query);
 	command_bind("unquery", NULL, (SIGNAL_FUNC) cmd_unquery);
-	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
+	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
+	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
+	command_bind_last("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
-	command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
-	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
 	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
@@ -420,9 +406,9 @@ void fe_irc_commands_deinit(void)
 	command_unbind("query", (SIGNAL_FUNC) cmd_query);
 	command_unbind("unquery", (SIGNAL_FUNC) cmd_unquery);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
-	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("me", (SIGNAL_FUNC) cmd_me);
 	command_unbind("action", (SIGNAL_FUNC) cmd_action);
+	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
