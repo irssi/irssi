@@ -171,7 +171,8 @@ static void key_send_line(void)
                 g_free(add_history);
 	}
 
-	gui_entry_set_text(active_entry, "");
+	if (active_entry != NULL)
+		gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
 }
 
