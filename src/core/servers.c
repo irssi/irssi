@@ -196,7 +196,8 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 
 	if (handle == NULL) {
 		/* failed */
-		if (server->connrec->use_ssl && errno == ENOSYS)
+		if (errno == EADDRNOTAVAIL ||
+		    (server->connrec->use_ssl && errno == ENOSYS))
 			server->no_reconnect = TRUE;
 
 		server->connection_lost = TRUE;
