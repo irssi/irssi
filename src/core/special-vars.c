@@ -74,7 +74,7 @@ static char *get_argument(char **cmd, char **arglist)
 	}
 
 	str = g_string_new(NULL);
-	while (arg < argcount && (arg <= max || max == -1)) {
+	while (arg >= 0 && arg < argcount && (arg <= max || max == -1)) {
 		g_string_append(str, arglist[arg]);
 		g_string_append_c(str, ' ');
 		arg++;
