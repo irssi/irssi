@@ -1,3 +1,14 @@
+v0.8.3 2002-03-13  Timo Sirainen <tss@iki.fi>
+
+	- Perl scripts handling channel parts/kicks/quits printed some
+	  errors.
+	- Connecting to IPv6 servers without IPv4 record didn't work
+	- When queries were auto-created by you using /MSG and you had
+	  /SET autoclose_query non-zero, the query was always destroyed
+	  almost immediately.
+	- Fix to some stupid ircds not sending us 001 numeric, but
+	  beginning from MOTD
+
 v0.8.2 2002-03-11  Timo Sirainen <tss@iki.fi>
 
 	* Changed the list of scripts distributed with irssi. Separated
