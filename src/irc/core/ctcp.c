@@ -269,7 +269,8 @@ static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
-	char *params, *target, *msg, *ptr;
+	char *params, *target, *msg;
+	int len;
 
 	g_return_if_fail(data != NULL);
 
@@ -277,9 +278,11 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 
 	/* handle only ctcp messages.. */
 	if (*msg == 1) {
-		/* remove the later \001 */
-		ptr = strrchr(++msg, 1);
-		if (ptr != NULL) *ptr = '\0';
+		/* remove the \001 at beginning and end */
+		msg++;
+		len = strlen(msg);
+		if (msg[len-1] == '\001')
+			msg[len-1] = '\0';
 
 		signal_emit("ctcp msg", 5, server, msg, nick, addr, target);
 		signal_stop();
