@@ -413,9 +413,9 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 			if (IS_OLD_FORMAT(*format, last_fg, last_bg)) {
 				/* active color set again */
 			} else if (IS_FGCOLOR_FORMAT(*format) &&
-				   (*format != 'n' || format[2] == 'n') &&
 				   format[1] == '%' &&
-				   IS_FGCOLOR_FORMAT(format[2])) {
+				   IS_FGCOLOR_FORMAT(format[2]) &&
+				   (*format != 'n' || format[2] == 'n')) {
 				/* two fg colors in a row. bg colors are
 				   so rare that we don't bother checking
 				   them */
