@@ -141,16 +141,13 @@ static void statusbar_read(STATUSBAR_GROUP_REC *group, CONFIG_NODE *node)
 {
 	STATUSBAR_CONFIG_REC *bar;
         GSList *tmp;
-	int type, placement, position, visible;
+	int visible;
         const char *visible_str;
 
 	bar = statusbar_config_find(group, node->key);
+	visible = bar == NULL ? STATUSBAR_VISIBLE_ALWAYS : bar->visible;
 
-	type = STATUSBAR_TYPE_ROOT;
-	placement = STATUSBAR_BOTTOM;
-	position = 0;
-        visible = STATUSBAR_VISIBLE_ALWAYS;
-
+        /* first make sure we want to see this statusbar */
         visible_str = config_node_get_str(node, "visible", "");
 	if (strcmp(visible_str, "active") == 0)
                 visible = STATUSBAR_VISIBLE_ACTIVE;
@@ -164,19 +161,19 @@ static void statusbar_read(STATUSBAR_GROUP_REC *group, CONFIG_NODE *node)
                 return;
 	}
 
-	if (strcmp(config_node_get_str(node, "type", ""), "window") == 0)
-                type = STATUSBAR_TYPE_WINDOW;
-	if (strcmp(config_node_get_str(node, "placement", ""), "top") == 0)
-                placement = STATUSBAR_TOP;
-	position = config_node_get_int(node, "position", 0);
-
-	if (bar == NULL)
+	if (bar == NULL) {
 		bar = statusbar_config_create(group, node->key);
-
-	bar->type = type;
-	bar->placement = placement;
-	bar->position = position;
+		bar->type = STATUSBAR_TYPE_ROOT;
+		bar->placement = STATUSBAR_BOTTOM;
+		bar->position = 0;
+	}
 	bar->visible = visible;
+
+	if (strcmp(config_node_get_str(node, "type", ""), "window") == 0)
+                bar->type = STATUSBAR_TYPE_WINDOW;
+	if (strcmp(config_node_get_str(node, "placement", ""), "top") == 0)
+                bar->placement = STATUSBAR_TOP;
+	bar->position = config_node_get_int(node, "position", 0);
 
 	node = config_node_section(node, "items", -1);
 	if (node != NULL) {
