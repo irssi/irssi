@@ -111,6 +111,7 @@ static int init_curses(void)
 {
 	char ansi_tab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	int num;
+	struct sigaction act;
 
 	if (!initscr())
 		return FALSE;
@@ -118,9 +119,13 @@ static int init_curses(void)
 	if (COLS < MIN_SCREEN_WIDTH)
 		COLS = MIN_SCREEN_WIDTH;
 
-	signal(SIGINT, sigint_handler);
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = 0;
+	act.sa_handler = sigint_handler;
+	sigaction(SIGINT, &act, NULL);
 #ifdef SIGWINCH
-	signal(SIGWINCH, sig_winch);
+	act.sa_handler = sig_winch;
+	sigaction(SIGWINCH, &act, NULL);
 #endif
 	cbreak(); noecho(); idlok(stdscr, 1);
 #ifdef HAVE_CURSES_IDCOK
