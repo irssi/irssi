@@ -30,7 +30,7 @@ sub cmd_autoop {
 	}
 
 	if ($masks eq "") {
-		$masks = "<no-one>" if (!$masks);
+		$masks = "<no-one>";
 		delete $opnicks{$channel};
 	} else {
 		$opnicks{$channel} = $masks;
