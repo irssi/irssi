@@ -348,46 +348,60 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 	gui_entry_draw(entry);
 }
 
-static void gui_entry_move_words_left(GUI_ENTRY_REC *entry, int count)
+static void gui_entry_move_words_left(GUI_ENTRY_REC *entry, int count, int to_space)
 {
 	int pos;
 
 	pos = entry->pos;
 	while (count > 0 && pos > 0) {
-		while (pos > 0 && entry->text->str[pos-1] == ' ')
-			pos--;
-		while (pos > 0 && entry->text->str[pos-1] != ' ')
-			pos--;
+		if (to_space) {
+			while (pos > 0 && entry->text->str[pos-1] == ' ')
+				pos--;
+			while (pos > 0 && entry->text->str[pos-1] != ' ')
+				pos--;
+		} else {
+			while (pos > 0 && !isalnum(entry->text->str[pos-1]))
+				pos--;
+			while (pos > 0 &&  isalnum(entry->text->str[pos-1]))
+				pos--;
+		}
 		count--;
 	}
 
         entry->pos = pos;
 }
 
-static void gui_entry_move_words_right(GUI_ENTRY_REC *entry, int count)
+static void gui_entry_move_words_right(GUI_ENTRY_REC *entry, int count, int to_space)
 {
 	int pos;
 
 	pos = entry->pos;
 	while (count > 0 && pos < entry->text->len) {
-		while (pos < entry->text->len && entry->text->str[pos] != ' ')
-			pos++;
-		while (pos < entry->text->len && entry->text->str[pos] == ' ')
-			pos++;
+		if (to_space) {
+			while (pos < entry->text->len && entry->text->str[pos] == ' ')
+				pos++;
+			while (pos < entry->text->len && entry->text->str[pos] != ' ')
+				pos++;
+		} else {
+			while (pos < entry->text->len && !isalnum(entry->text->str[pos]))
+				pos++;
+			while (pos < entry->text->len &&  isalnum(entry->text->str[pos]))
+				pos++;
+		}
 		count--;
 	}
 
         entry->pos = pos;
 }
 
-void gui_entry_move_words(GUI_ENTRY_REC *entry, int count)
+void gui_entry_move_words(GUI_ENTRY_REC *entry, int count, int to_space)
 {
         g_return_if_fail(entry != NULL);
 
 	if (count < 0)
-		gui_entry_move_words_left(entry, -count);
+		gui_entry_move_words_left(entry, -count, to_space);
 	else if (count > 0)
-		gui_entry_move_words_right(entry, count);
+		gui_entry_move_words_right(entry, count, to_space);
 
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);

@@ -216,12 +216,22 @@ static void key_forward_character(void)
 
 static void key_backward_word(void)
 {
-	gui_entry_move_words(active_entry, -1);
+	gui_entry_move_words(active_entry, -1, FALSE);
 }
 
 static void key_forward_word(void)
 {
-	gui_entry_move_words(active_entry, 1);
+	gui_entry_move_words(active_entry, 1, FALSE);
+}
+
+static void key_backward_to_space(void)
+{
+	gui_entry_move_words(active_entry, -1, TRUE);
+}
+
+static void key_forward_to_space(void)
+{
+	gui_entry_move_words(active_entry, 1, TRUE);
 }
 
 static void key_erase_line(void)
@@ -278,6 +288,7 @@ static void key_transpose_characters(void)
 	gui_entry_move_pos(active_entry, -1);
 	gui_entry_insert_char(active_entry, c);
         gui_entry_set_pos(active_entry, pos);
+	gui_entry_move_pos(active_entry, 1);
 }
 
 static void key_delete_character(void)
@@ -550,6 +561,8 @@ void gui_readline_init(void)
 	key_bind("forward_character", "", "right", NULL, (SIGNAL_FUNC) key_forward_character);
  	key_bind("backward_word", "", "meta2-d", NULL, (SIGNAL_FUNC) key_backward_word);
 	key_bind("forward_word", "", "meta2-c", NULL, (SIGNAL_FUNC) key_forward_word);
+ 	key_bind("backward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_backward_to_space);
+	key_bind("forward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_forward_to_space);
 	key_bind("beginning_of_line", "", "home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
 	key_bind("beginning_of_line", NULL, "^A", NULL, (SIGNAL_FUNC) key_beginning_of_line);
 	key_bind("end_of_line", "", "end", NULL, (SIGNAL_FUNC) key_end_of_line);
@@ -628,6 +641,8 @@ void gui_readline_deinit(void)
 	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);
  	key_unbind("backward_word", (SIGNAL_FUNC) key_backward_word);
 	key_unbind("forward_word", (SIGNAL_FUNC) key_forward_word);
+ 	key_unbind("backward_to_space", (SIGNAL_FUNC) key_backward_to_space);
+	key_unbind("forward_to_space", (SIGNAL_FUNC) key_forward_to_space);
 	key_unbind("beginning_of_line", (SIGNAL_FUNC) key_beginning_of_line);
 	key_unbind("end_of_line", (SIGNAL_FUNC) key_end_of_line);
 
@@ -638,6 +653,7 @@ void gui_readline_deinit(void)
 	key_unbind("delete_character", (SIGNAL_FUNC) key_delete_character);
 	key_unbind("delete_next_word", (SIGNAL_FUNC) key_delete_next_word);
 	key_unbind("delete_previous_word", (SIGNAL_FUNC) key_delete_previous_word);
+	key_unbind("delete_to_next_space", (SIGNAL_FUNC) key_delete_to_next_space);
 	key_unbind("delete_to_previous_space", (SIGNAL_FUNC) key_delete_to_previous_space);
 	key_unbind("erase_line", (SIGNAL_FUNC) key_erase_line);
 	key_unbind("erase_to_beg_of_line", (SIGNAL_FUNC) key_erase_to_beg_of_line);
