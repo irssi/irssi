@@ -46,12 +46,13 @@ typedef struct {
 struct _config_rec {
 	char *fname;
 	int handle;
-        int create_mode;
+	int create_mode;
+	int modifycounter; /* increase every time something is changed */
 
 	char *last_error;
 	CONFIG_NODE *mainnode;
 	GHashTable *cache; /* path -> node (for querying) */
-        GHashTable *cache_nodes; /* node -> path (for removing) */
+	GHashTable *cache_nodes; /* node -> path (for removing) */
 
 	GScanner *scanner;
 

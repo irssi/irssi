@@ -35,6 +35,7 @@ static GHashTable *settings;
 static char *last_error_msg;
 static int timeout_tag;
 
+static int config_last_modifycounter;
 static time_t config_last_mtime;
 static long config_last_size;
 static unsigned int config_last_checksum;
@@ -379,7 +380,8 @@ int settings_save(const char *fname)
 		fname = mainconfig->fname;
 
 	error = config_write(mainconfig, fname, 0660) != 0;
-        irssi_config_save_state(fname);
+	irssi_config_save_state(fname);
+	config_last_modifycounter = mainconfig->modifycounter;
 	if (error) {
 		str = g_strdup_printf(_("Couldn't save "
 					"configuration file: %s"),
@@ -394,7 +396,8 @@ static void sig_autosave(void)
 {
 	char *fname, *str;
 
-	if (!settings_get_bool("settings_autosave"))
+	if (!settings_get_bool("settings_autosave") ||
+	    config_last_modifycounter == mainconfig->modifycounter)
 		return;
 
 	if (!irssi_config_is_changed(NULL))
@@ -419,6 +422,7 @@ void settings_init(void)
 				    (GCompareFunc) g_str_equal);
 
 	config_last_mtime = 0;
+	config_last_modifycounter = 0;
 	init_configfile();
 
 	settings_add_bool("misc", "settings_autosave", TRUE);

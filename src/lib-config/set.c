@@ -37,6 +37,7 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 	g_return_if_fail(parent != NULL);
 	g_return_if_fail(node != NULL);
 
+	rec->modifycounter++;
 	cache_remove(rec, node);
 	parent->value = g_slist_remove(parent->value, node);
 
@@ -114,6 +115,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 	}
 
 	node->value = g_strdup(value);
+	rec->modifycounter++;
 }
 
 void config_node_set_int(CONFIG_NODE *parent, const char *key, int value)
