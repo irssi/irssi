@@ -39,6 +39,7 @@ void proxy_listen_deinit(void);
 void proxy_settings_init(void);
 
 void proxy_dump_data(CLIENT_REC *client);
+void proxy_client_reset_nick(CLIENT_REC *client);
 
 void proxy_outdata(CLIENT_REC *client, const char *data, ...);
 void proxy_outdata_all(IRC_SERVER_REC *server, const char *data, ...);

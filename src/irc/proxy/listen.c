@@ -358,18 +358,6 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(event);
 }
 
-static void proxy_client_reset_nick(CLIENT_REC *client)
-{
-	if (strcmp(client->nick, client->server->nick) == 0)
-		return;
-
-	proxy_outdata(client, ":%s!proxy NICK :%s\n",
-		      client->nick, client->server->nick);
-
-	g_free(client->nick);
-	client->nick = g_strdup(client->server->nick);
-}
-
 static void event_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;

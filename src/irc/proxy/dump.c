@@ -200,12 +200,22 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	}
 }
 
+void proxy_client_reset_nick(CLIENT_REC *client)
+{
+	if (client->server == NULL ||
+	    strcmp(client->nick, client->server->nick) == 0)
+		return;
+
+	proxy_outdata(client, ":%s!proxy NICK :%s\n",
+		      client->nick, client->server->nick);
+
+	g_free(client->nick);
+	client->nick = g_strdup(client->server->nick);
+}
+
 void proxy_dump_data(CLIENT_REC *client)
 {
-	if (client->server != NULL) {
-		g_free(client->nick);
-		client->nick = g_strdup(client->server->nick);
-	}
+        proxy_client_reset_nick(client);
 
 	/* welcome info */
 	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
