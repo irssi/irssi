@@ -2,5 +2,7 @@
 #include <socks.h>
 #endif
 
-#include <netdb.h>
-#include <arpa/inet.h>
+#ifndef WIN32
+#  include <netdb.h>
+#  include <arpa/inet.h>
+#endif

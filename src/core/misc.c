@@ -23,7 +23,9 @@
 #include "pidwait.h"
 
 #include <errno.h>
-#include <regex.h>
+#ifdef HAVE_REGEX_H
+#  include <regex.h>
+#endif
 
 typedef struct {
 	GInputCondition condition;
@@ -168,10 +170,13 @@ int strarray_find(char **array, const char *item)
 int execute(const char *cmd)
 {
 	char **args;
+#ifndef WIN32
 	int pid;
+#endif
 
 	g_return_val_if_fail(cmd != NULL, -1);
 
+#ifndef WIN32
 	pid = fork();
 	if (pid == -1) return FALSE;
 	if (pid != 0) {
@@ -185,6 +190,12 @@ int execute(const char *cmd)
 
 	_exit(99);
 	return -1;
+#else
+	args = g_strsplit(cmd, " ", -1);
+	_spawnvp(_P_DETACH, args[0], args);
+	g_strfreev(args);
+	return 0;
+#endif
 }
 
 GSList *gslist_find_string(GSList *list, const char *key)
@@ -337,6 +348,7 @@ char *stristr_full(const char *data, const char *key)
 
 int regexp_match(const char *str, const char *regexp)
 {
+#ifdef HAVE_REGEX_H
 	regex_t preg;
 	int ret;
 
@@ -347,13 +359,16 @@ int regexp_match(const char *str, const char *regexp)
 	regfree(&preg);
 
 	return ret == 0;
+#else
+	return FALSE;
+#endif
 }
 
 /* Create the directory and all it's parent directories */
 int mkpath(const char *path, int mode)
 {
 	struct stat statbuf;
-        const char *p;
+	const char *p;
 	char *dir;
 
 	g_return_val_if_fail(path != NULL, -1);
@@ -367,7 +382,11 @@ int mkpath(const char *path, int mode)
 
 		dir = g_strndup(path, (int) (p-path));
 		if (stat(dir, &statbuf) != 0) {
+#ifndef WIN32
 			if (mkdir(dir, mode) == -1) {
+#else
+			if (_mkdir(dir) == -1) {
+#endif
 				g_free(dir);
 				return -1;
 			}

@@ -27,6 +27,8 @@ $libtool_flags --disable-static --output=libtool-static --no-verify $ac_aux_dir/
 
 AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 
+# check posix headers..
+AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
 
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],

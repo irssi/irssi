@@ -310,7 +310,7 @@ static void init_configfile(void)
 	str = g_strdup_printf("%s/.irssi", g_get_home_dir());
 	if (stat(str, &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
-		if (mkdir(str, 0700) != 0) {
+		if (mkpath(str, 0700) != 0) {
 			g_error(_("Couldn't create %s/.irssi directory"),
 				g_get_home_dir());
 		}

@@ -2,8 +2,10 @@
 #define __NETWORK_H
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifndef WIN32
+#  include <sys/socket.h>
+#  include <netinet/in.h>
+#endif
 
 struct _ipaddr {
 	unsigned short family;

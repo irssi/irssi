@@ -22,7 +22,9 @@
 #include <time.h>
 
 #include <sys/types.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+#endif
 #include <sys/stat.h>
 
 #ifdef HAVE_UNISTD_H
@@ -32,6 +34,9 @@
 #  include <dirent.h>
 #endif
 #include <fcntl.h>
+#ifdef WIN32
+#  include <win32-compat.h>
+#endif
 
 #include <glib.h>
 #include <gmodule.h>

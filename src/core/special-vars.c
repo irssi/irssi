@@ -29,7 +29,9 @@
 #include "queries.h"
 #include "window-item-def.h"
 
-#include <sys/utsname.h>
+#ifdef HAVE_SYS_UTSNAME_H
+#  include <sys/utsname.h>
+#endif
 
 #define ALIGN_RIGHT 0x01
 #define ALIGN_CUT   0x02
@@ -673,6 +675,7 @@ static char *expando_dollar(SERVER_REC *server, void *item, int *free_ret)
 /* system name */
 static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
 {
+#ifdef HAVE_SYS_UTSNAME_H
 	struct utsname un;
 
 	if (uname(&un) == -1)
@@ -680,12 +683,15 @@ static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
 
 	*free_ret = TRUE;
 	return g_strdup(un.sysname);
-
+#else
+	return NULL;
+#endif
 }
 
 /* system release */
 static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
 {
+#ifdef HAVE_SYS_UTSNAME_H
 	struct utsname un;
 
 	if (uname(&un) == -1)
@@ -693,7 +699,9 @@ static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
 
 	*free_ret = TRUE;
 	return g_strdup(un.release);
-
+#else
+	return NULL;
+#endif
 }
 
 /* Server tag */

@@ -303,7 +303,7 @@ int net_getsockname(int handle, IPADDR *addr, int *port)
 #ifdef HAVE_IPV6
 	if (getsockname(handle, &so.sin6, &len) == -1)
 #else
-	if (getsockname(handle, &so.sin, &len) == -1)
+	if (getsockname(handle, (struct sockaddr *) &so.sin, &len) == -1)
 #endif
 		return -1;
 
