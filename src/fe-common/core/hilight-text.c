@@ -458,7 +458,10 @@ static void read_hilight_config(void)
 	hilights_destroy_all();
 
 	node = iconfig_node_traverse("hilights", FALSE);
-	if (node == NULL) return;
+	if (node == NULL) {
+                reset_cache();
+		return;
+	}
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
