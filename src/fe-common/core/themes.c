@@ -1115,9 +1115,13 @@ static void change_theme(const char *name, int verbose)
 static void read_settings(void)
 {
 	const char *theme;
+        int len;
 
 	theme = settings_get_str("theme");
-	if (strcmp(current_theme->name, theme) != 0)
+	len = strlen(current_theme->name);
+	if (strcmp(current_theme->name, theme) != 0 &&
+	    (strncmp(current_theme->name, theme, len) != 0 ||
+	     strcmp(theme+len, ".theme") != 0))
 		change_theme(theme, TRUE);
 }
 
