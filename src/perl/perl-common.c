@@ -170,7 +170,7 @@ void *irssi_ref_object(SV *o)
 	if (perl_memory_check_level > 0) {
 		if (perl_memory_check_level > 1)
 			GC_gcollect();
-		if (GC_base(p) == NULL)
+		if (GC_base(p) != p)
 			croak("variable is already free'd");
 	}
 #endif
