@@ -50,9 +50,6 @@ IRCNET_REC;
 extern GList *setupservers; /* list of local servers */
 extern GList *ircnets; /* list of available ircnets */
 
-extern IPADDR source_host_ip; /* Resolved address */
-extern gboolean source_host_ok; /* Use source_host_ip .. */
-
 /* channels */
 typedef struct
 {

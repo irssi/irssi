@@ -40,35 +40,13 @@
 #endif
 #include <fcntl.h>
 
-#ifdef HAVE_SOCKS_H
-#include <socks.h>
-#endif
-
-#include <netdb.h>
-#include <sys/socket.h>
-#include <signal.h>
-#include <sys/signal.h>
-#include <sys/param.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <glib.h>
 #include <gmodule.h>
-
-typedef struct
-{
-    gushort family;
-#ifdef HAVE_IPV6
-    struct in6_addr addr;
-#else
-    struct in_addr addr;
-#endif
-}
-IPADDR;
 
 #include "irc-base/memdebug.h"
 #include "lib-config/irssi-config.h"
 #include "common-setup.h"
+#include "nls.h"
 
 typedef enum
 {
