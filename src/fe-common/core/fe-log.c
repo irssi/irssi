@@ -302,7 +302,10 @@ static void autolog_log(void *server, const char *target)
 	char *fname, *dir, *str;
 
 	log = log_find_item(target);
-	if (log != NULL) return;
+	if (log != NULL) {
+		log_start_logging(log);
+		return;
+	}
 
 	fname = parse_special_string(autolog_path, server, NULL, target, NULL);
 	if (log_find(fname) == NULL) {
