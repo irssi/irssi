@@ -118,6 +118,7 @@ static void remove_first_line(WINDOW_REC *window)
                 /* first line in screen removed */
 		gui->startline = gui->startline->next;
 		gui->subline = 0;
+		gui->ypos--;
 	}
 	if (gui->bottom_startline->prev == NULL) {
                 /* bottom line removed (shouldn't happen?) */
