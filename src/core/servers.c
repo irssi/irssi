@@ -478,13 +478,6 @@ SERVER_REC *server_find_tag(const char *tag)
 			return server;
 	}
 
-	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
-		SERVER_REC *server = tmp->data;
-
-		if (g_strcasecmp(server->tag, tag) == 0)
-			return server;
-	}
-
 	return NULL;
 }
 
