@@ -38,44 +38,15 @@ static GHashTable *keys, *default_keys;
    If the key isn't used, used_keys[key] is zero. */
 static char used_keys[256];
 
-/* contains list of all key bindings of which command is "key" -
-   this can be used to check fast if some command queue exists or not.
-   Format is _always_ in key1-key2-key3 format (like ^W-^N,
-   not ^W^N) */
+/* Contains a list of all possible executable key bindings (not "key" keys).
+   Format is _always_ in key1-key2-key3 format and fully extracted, like
+   ^[-[-A, not meta-A */
 static GTree *key_states;
-/* List of all key combo names */
-static GSList *key_combos;
 static int key_config_frozen;
 
 struct KEYBOARD_REC {
-	/* example:
-	   /BIND ^[ key meta
-	   /BIND meta-O key meta2
-	   /BIND meta-[ key meta2
-
-	   /BIND meta2-C key right
-	   /BIND ^W-meta-right /echo ^W Meta-right key pressed
-
-	   When ^W Meta-Right is pressed, the full char combination
-	   is "^W^[^[[C".
-
-	   We'll get there with key states:
-	     ^W - key_prev_state = NULL, key_state = NULL -> ^W
-	     ^[ - key_prev_state = NULL, key_state = ^W -> meta
-	     ^[ - key_prev_state = ^W, key_state = meta -> meta
-	     [ - key_prev_state = ^W-meta, key_state = meta -> meta2
-	     C - key_prev_state = ^W-meta, key_state = meta2 -> right
-	     key_prev_state = ^W-meta, key_state = right -> ^W-meta-right
-
-	   key_state is moved to key_prev_state if there's nothing else in
-	   /BINDs matching for key_state-newkey.
-
-	   ^X^Y equals to ^X-^Y, ABC equals to A-B-C unless there's ABC
-	   named key. ^ can be used with ^^ and - with -- */
-	char *key_state, *key_prev_state;
-
-        /* GUI specific data sent in "key pressed" signal */
-        void *gui_data;
+	char *key_state; /* the ongoing key combo */
+        void *gui_data; /* GUI specific data sent in "key pressed" signal */
 };
 
 /* Creates a new "keyboard" - this is used only for keeping track of
@@ -98,7 +69,6 @@ void keyboard_destroy(KEYBOARD_REC *keyboard)
 	signal_emit("keyboard destroyed", 1, keyboard);
 
         g_free_not_null(keyboard->key_state);
-        g_free_not_null(keyboard->key_prev_state);
         g_free(keyboard);
 }
 
@@ -198,69 +168,163 @@ KEYINFO_REC *key_info_find(const char *id)
 	return NULL;
 }
 
-static KEY_REC *key_combo_find(const char *key)
+static int expand_key(const char *key, GSList **out);
+
+#define expand_out_char(out, c) \
+	{ \
+	  GSList *tmp; \
+	  for (tmp = out; tmp != NULL; tmp = tmp->next) \
+            g_string_append_c(tmp->data, c); \
+	}
+
+#define expand_out_free(out) \
+	{ \
+	  GSList *tmp; \
+	  for (tmp = out; tmp != NULL; tmp = tmp->next) \
+            g_string_free(tmp->data, TRUE); \
+	  g_slist_free(out); out = NULL; \
+	}
+
+static int expand_combo(const char *start, const char *end, GSList **out)
 {
+        KEY_REC *rec;
 	KEYINFO_REC *info;
-        GSList *tmp;
+        GSList *tmp, *tmp2, *list, *copy, *newout;
+	char *str;
+
+	if (start == end) {
+		/* single key */
+		expand_out_char(*out, *start);
+                return TRUE;
+	}
 
 	info = key_info_find("key");
 	if (info == NULL)
-		return NULL;
+		return FALSE;
 
+        /* get list of all key combos that generate the named combo.. */
+        list = NULL;
+	str = g_strndup(start, (int) (end-start)+1);
 	for (tmp = info->keys; tmp != NULL; tmp = tmp->next) {
 		KEY_REC *rec = tmp->data;
 
-		if (strcmp(rec->data, key) == 0)
-                        return rec;
+		if (strcmp(rec->data, str) == 0)
+                        list = g_slist_append(list, rec);
+	}
+	g_free(str);
+
+	if (list == NULL)
+		return FALSE;
+
+	if (list->next == NULL) {
+                /* only one way to generate the combo, good */
+                rec = list->data;
+		return expand_key(rec->key, out);
 	}
 
-        return NULL;
+	/* multiple ways to generate the combo -
+	   we'll need to include all of them in output */
+        newout = NULL;
+	for (tmp = list->next; tmp != NULL; tmp = tmp->next) {
+		KEY_REC *rec = tmp->data;
+
+		copy = NULL;
+		for (tmp2 = *out; tmp2 != NULL; tmp2 = tmp2->next) {
+			GString *str = tmp2->data;
+                        copy = g_slist_append(copy, g_string_new(str->str));
+		}
+
+		if (!expand_key(rec->key, &copy)) {
+			/* illegal key combo, remove from list */
+                        expand_out_free(copy);
+		} else {
+                        newout = g_slist_concat(newout, copy);
+		}
+	}
+
+        rec = list->data;
+	if (!expand_key(rec->key, out)) {
+		/* illegal key combo, remove from list */
+		expand_out_free(*out);
+	}
+
+	*out = g_slist_concat(*out, newout);
+        return *out != NULL;
 }
 
-static void key_states_scan_key(const char *key, KEY_REC *rec, GString *temp)
+/* Expand key code - returns TRUE if successful. */
+static int expand_key(const char *key, GSList **out)
 {
-	char **keys, **tmp, *p;
+	GSList *tmp;
+	const char *start;
+	int last_hyphen;
 
-	g_string_truncate(temp, 0);
-
-	/* meta-^W^Gfoo -> meta-^W-^G-f-o-o */
-	keys = g_strsplit(key, "-", -1);
-	for (tmp = keys; *tmp != NULL; tmp++) {
-		if (key_combo_find(*tmp)) {
-                        /* key combo */
-			g_string_append(temp, *tmp);
-                        g_string_append_c(temp, '-');
-                        continue;
-		}
-
-		if (**tmp == '\0') {
-                        /* '-' */
-			g_string_append(temp, "--");
-                        continue;
-		}
-
-		for (p = *tmp; *p != '\0'; p++) {
-			g_string_append_c(temp, *p);
-
-			if (*p == '^') {
-                                /* ctrl-code */
-				if (p[1] != '\0')
-					p++;
-				g_string_append_c(temp, *p);
+	/* meta-^W^Gf -> ^[-^W-^G-f */
+        start = NULL; last_hyphen = TRUE;
+        for (; *key != '\0'; key++) {
+		if (*key == '-') {
+			if (last_hyphen) {
+                                expand_out_char(*out, '-');
+                                expand_out_char(*out, '-');
 			}
+			last_hyphen = !last_hyphen;
+		} else if (*key == '^') {
+                        /* ctrl-code */
+			if (key[1] != '\0')
+				key++;
 
-			g_string_append_c(temp, '-');
+			expand_out_char(*out, '^');
+			expand_out_char(*out, *key);
+			expand_out_char(*out, '-');
+                        last_hyphen = TRUE;
+		} else {
+                        /* key / combo */
+			if (start == NULL)
+				start = key;
+                        last_hyphen = FALSE;
+                        continue;
+		}
+
+		if (start != NULL) {
+			if (!expand_combo(start, key-1, out))
+                                return FALSE;
+			expand_out_char(*out, '-');
+                        start = NULL;
 		}
 	}
-	g_strfreev(keys);
 
-	if (temp->len > 0) {
-		g_string_truncate(temp, temp->len-1);
+	if (start != NULL)
+		return expand_combo(start, key-1, out);
 
-		if (temp->str[1] == '-' || temp->str[1] == '\0')
-                        used_keys[(int) (unsigned char) temp->str[0]] = 1;
-		g_tree_insert(key_states, g_strdup(temp->str), rec);
+	for (tmp = *out; tmp != NULL; tmp = tmp->next) {
+		GString *str = tmp->data;
+
+		g_string_truncate(str, str->len-1);
 	}
+
+        return TRUE;
+}
+
+static void key_states_scan_key(const char *key, KEY_REC *rec)
+{
+	GSList *tmp, *out;
+
+	if (strcmp(rec->info->id, "key") == 0)
+		return;
+
+        out = g_slist_append(NULL, g_string_new(NULL));
+	if (expand_key(key, &out)) {
+		for (tmp = out; tmp != NULL; tmp = tmp->next) {
+			GString *str = tmp->data;
+
+			if (str->str[1] == '-' || str->str[1] == '\0')
+				used_keys[(int)(unsigned char)str->str[0]] = 1;
+
+			g_tree_insert(key_states, g_strdup(str->str), rec);
+		}
+	}
+
+	expand_out_free(out);
 }
 
 static int key_state_destroy(char *key)
@@ -455,7 +519,7 @@ static int key_emit_signal(KEYBOARD_REC *keyboard, KEY_REC *key)
         return consumed;
 }
 
-int key_states_search(const char *combo, const char *search)
+static int key_states_search(const char *combo, const char *search)
 {
 	while (*search != '\0') {
 		if (*combo != *search)
@@ -463,7 +527,7 @@ int key_states_search(const char *combo, const char *search)
                 search++; combo++;
 	}
 
-	return *combo == '\0' || *combo == '-' ? 0 : -1;
+        return 0;
 }
 
 /* Returns TRUE if key press was consumed. Control characters should be sent
@@ -471,96 +535,43 @@ int key_states_search(const char *combo, const char *search)
 int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 {
 	KEY_REC *rec;
-	char *str;
-        int consumed;
+        char *combo;
+        int consumed, single_key;
 
 	g_return_val_if_fail(keyboard != NULL, FALSE);
 	g_return_val_if_fail(key != NULL && *key != '\0', FALSE);
 
-	if (keyboard->key_state == NULL) {
-		if (key[1] == '\0' &&
-		    !used_keys[(int) (unsigned char) key[0]]) {
-                        /* fast check - key not used */
-			return FALSE;
-		}
-
-		rec = g_tree_search(key_states,
-				    (GSearchFunc) key_states_search,
-				    (void *) key);
-		if (rec == NULL ||
-		    (g_tree_lookup(key_states, (void *) key) != NULL &&
-		     strcmp(rec->info->id, "key") != 0)) {
-			/* a single non-combo key was pressed */
-			rec = g_hash_table_lookup(keys, key);
-			if (rec == NULL)
-				return FALSE;
-			consumed = key_emit_signal(keyboard, rec);
-
-			/* never consume non-control characters */
-			return consumed && key[1] != '\0';
-		}
+        single_key = keyboard->key_state == NULL && key[1] == '\0';
+	if (single_key && !used_keys[(int) (unsigned char) key[0]]) {
+		/* fast check - key not used */
+		return FALSE;
 	}
 
-	if (keyboard->key_state == NULL) {
-                /* first key in combo */
-		rec = g_tree_lookup(key_states, (void *) key);
-	} else {
-		/* continuing key combination */
-		str = g_strconcat(keyboard->key_state, "-", key, NULL);
-		rec = g_tree_lookup(key_states, str);
-		g_free(str);
-	}
+	combo = keyboard->key_state == NULL ? g_strdup(key) :
+                g_strconcat(keyboard->key_state, "-", key, NULL);
+	g_free_and_null(keyboard->key_state);
 
-	if (rec != NULL && strcmp(rec->info->id, "key") == 0) {
-		/* combo has a specified name, use it */
-		g_free_not_null(keyboard->key_state);
-		keyboard->key_state = g_strdup(rec->data);
-	} else {
-		/* some unnamed key - move key_state after key_prev_state
-		   and replace key_state with this new key */
-		if (keyboard->key_prev_state == NULL)
-			keyboard->key_prev_state = keyboard->key_state;
-		else {
-			str = g_strconcat(keyboard->key_prev_state, "-",
-					  keyboard->key_state, NULL);
-			g_free(keyboard->key_prev_state);
-			g_free(keyboard->key_state);
-			keyboard->key_prev_state = str;
-		}
-
-		keyboard->key_state = g_strdup(key);
-	}
-
-        /* what to do with the key combo? */
-	str = keyboard->key_prev_state == NULL ?
-		g_strdup(keyboard->key_state) :
-		g_strconcat(keyboard->key_prev_state, "-",
-			    keyboard->key_state, NULL);
-
-	rec = g_tree_lookup(key_states, str);
-	if (rec != NULL) {
-		if (strcmp(rec->info->id, "key") == 0)
-			rec = g_tree_lookup(key_states, rec->data);
-
-		if (rec != NULL) {
-			/* full key combo */
-			key_emit_signal(keyboard, rec);
-			rec = NULL;
-		}
-	} else {
-                /* check that combo is possible */
-		rec = g_tree_search(key_states,
-				    (GSearchFunc) key_states_search, str);
-	}
-
+	rec = g_tree_search(key_states,
+			    (GSearchFunc) key_states_search,
+			    combo);
 	if (rec == NULL) {
-		/* a) key combo finished, b) unknown key combo, abort */
-		g_free_and_null(keyboard->key_prev_state);
-		g_free_and_null(keyboard->key_state);
+		/* unknown key combo */
+                g_free(combo);
+		return FALSE;
 	}
 
-	g_free(str);
-        return TRUE;
+	if (g_tree_lookup(key_states, combo) != rec) {
+		/* key combo continues.. */
+		keyboard->key_state = combo;
+                return TRUE;
+	}
+
+        /* finished key combo, execute */
+        g_free(combo);
+	consumed = key_emit_signal(keyboard, rec);
+
+	/* never consume non-control characters */
+	return consumed && !single_key;
 }
 
 void keyboard_entry_redirect(SIGNAL_FUNC func, const char *entry,
@@ -785,7 +796,6 @@ void keyboard_init(void)
 					(GCompareFunc) g_str_equal);
 	keyinfos = NULL;
 	key_states = g_tree_new((GCompareFunc) strcmp);
-	key_combos = NULL;
         key_config_frozen = 0;
 	memset(used_keys, 0, sizeof(used_keys));
 
