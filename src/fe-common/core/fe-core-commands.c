@@ -25,6 +25,7 @@
 #include "levels.h"
 #include "misc.h"
 #include "line-split.h"
+#include "settings.h"
 #include "irssi-version.h"
 
 #include "windows.h"
@@ -38,6 +39,11 @@ static const char *ret_texts[] = {
 	"Channel not fully synchronized yet, try again after a while",
 	"Doing this is not a good idea. Add -YES if you really mean it",
 };
+
+/* keep the whole command line here temporarily. we need it in
+   "default command" event handler, but there we don't know if the start of
+   the line had one or two command chars, and which one.. */
+static const char *current_cmdline;
 
 static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 {
@@ -271,6 +277,30 @@ static void cmd_unknown(const char *data, void *server, WI_ITEM_REC *item)
 	signal_stop();
 }
 
+static void event_command(const char *data)
+{
+        current_cmdline = data;
+}
+
+static void event_default_command(const char *data, void *server, WI_ITEM_REC *item)
+{
+	const char *cmd;
+
+	cmd = data;
+	while (*cmd != '\0' && *cmd != ' ') {
+		if (strchr(settings_get_str("cmdchars"), *cmd)) {
+			/* command character inside command .. we probably
+			   want to send this text to channel. for example
+			   when pasting a path /usr/bin/xxx. */
+			signal_emit("send text", 3, current_cmdline, server, item);
+			return;
+		}
+		cmd++;
+	}
+
+	cmd_unknown(data, server, item);
+}
+
 static void event_cmderror(gpointer errorp)
 {
 	int error;
@@ -291,7 +321,8 @@ void fe_core_commands_init(void)
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 
 	signal_add("unknown command", (SIGNAL_FUNC) cmd_unknown);
-	signal_add("default command", (SIGNAL_FUNC) cmd_unknown);
+	signal_add("send command", (SIGNAL_FUNC) event_command);
+	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
 }
 
@@ -304,6 +335,7 @@ void fe_core_commands_deinit(void)
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 
 	signal_remove("unknown command", (SIGNAL_FUNC) cmd_unknown);
-	signal_remove("default command", (SIGNAL_FUNC) cmd_unknown);
+	signal_remove("send command", (SIGNAL_FUNC) event_command);
+	signal_remove("default command", (SIGNAL_FUNC) event_default_command);
 	signal_remove("error command", (SIGNAL_FUNC) event_cmderror);
 }
