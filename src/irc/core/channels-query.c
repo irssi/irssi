@@ -467,7 +467,7 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		}
 	}
 
-	if (failed) {
+	if (server->one_endofwho && failed) {
 		/* server didn't understand multiple WHO replies,
 		   send them again separately */
                 query_current_error(server);
