@@ -135,7 +135,7 @@ AC_ARG_WITH(gc,
 			want_gc=yes
 		fi
 	fi,
-	want_gc=no)
+	want_gc=yes)
 
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
