@@ -291,7 +291,10 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 				&hilight_start,
 				&hilight_end);
 	if (hilight == NULL)
-                return;
+		return;
+	
+	if (hilight->nick && (dest->level & (MSGLEVEL_PUBLIC|MSGLEVEL_ACTIONS)) == MSGLEVEL_PUBLIC)
+		return; /* fe-messages.c should have taken care of this */
 
 	/* update the level / hilight info */
         old_level = dest->level;
@@ -301,7 +304,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		/* nick is highlighted, just set priority */
 		return;
 	}
-
+	
 	color = hilight_get_color(hilight);
 	hilight_len = hilight_end-hilight_start;
 
