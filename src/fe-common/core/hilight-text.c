@@ -491,8 +491,6 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 #endif
 	}
 
-	if (options->len > 1) g_string_truncate(options, options->len-1);
-
 	if (rec->priority != 0)
 		g_string_sprintfa(options, "-priority %d ", rec->priority);
 	if (rec->color != NULL)
