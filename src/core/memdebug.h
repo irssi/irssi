@@ -19,15 +19,18 @@ char *ig_dirname(const char *file, int line, const char *fname);
 
 #define g_malloc(a) ig_malloc(a, __FILE__, __LINE__)
 #define g_malloc0(a) ig_malloc0(a, __FILE__, __LINE__)
+#define g_free ig_free
 #define g_realloc(a,b) ig_realloc(a, b, __FILE__, __LINE__)
 #define g_strdup(a) ig_strdup(a, __FILE__, __LINE__)
 #define g_strndup(a, b) ig_strndup(a, b, __FILE__, __LINE__)
-#define g_strconcat(a...) ig_strconcat(__FILE__, __LINE__, ##a)
-#define g_strdup_printf(a, b...) ig_strdup_printf(__FILE__, __LINE__, a, ##b)
-#define g_strdup_vprintf(a, b...) ig_strdup_vprintf(__FILE__, __LINE__, a, ##b)
-#define g_free ig_free
 #define g_string_new(a) ig_string_new(__FILE__, __LINE__, a)
 #define g_string_free(a, b) ig_string_free(__FILE__, __LINE__, a, b)
 #define g_strjoinv(a,b) ig_strjoinv(__FILE__, __LINE__, a, b)
 #define g_dirname(a) ig_dirname(__FILE__, __LINE__, a)
+
+#ifndef __STRICT_ANSI__
+#define g_strconcat(a...) ig_strconcat(__FILE__, __LINE__, ##a)
+#define g_strdup_printf(a, b...) ig_strdup_printf(__FILE__, __LINE__, a, ##b)
+#define g_strdup_vprintf(a, b...) ig_strdup_vprintf(__FILE__, __LINE__, a, ##b)
+#endif
 #endif

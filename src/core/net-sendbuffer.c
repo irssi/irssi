@@ -124,7 +124,7 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 		ret = net_transmit(rec->handle, data, size);
 		if (ret < 0) return -1;
 		size -= ret;
-		data = ((char *) data) + ret;
+		data = ((const char *) data) + ret;
 	}
 
 	if (size <= 0)

@@ -55,6 +55,9 @@ static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease;
 
+#define CHAR_EXPANDOS_COUNT \
+	((int) (sizeof(char_expandos) / sizeof(char_expandos[0])))
+
 /* Create expando - overrides any existing ones. */
 void expando_create(const char *key, EXPANDO_FUNC func, ...)
 {
@@ -207,8 +210,7 @@ void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 
 EXPANDO_FUNC expando_find_char(char chr)
 {
-	g_return_val_if_fail(chr < sizeof(char_expandos) /
-			     sizeof(char_expandos[0]), NULL);
+	g_return_val_if_fail(chr < CHAR_EXPANDOS_COUNT, NULL);
 
 	return char_expandos[(int) chr] == NULL ? NULL :
 		char_expandos[(int) chr]->func;
@@ -533,7 +535,7 @@ void expandos_deinit(void)
 {
 	int n;
 
-	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++)
+	for (n = 0; n < CHAR_EXPANDOS_COUNT; n++)
 		g_free_not_null(char_expandos[n]);
 
 	expando_destroy("sysname", expando_sysname);
