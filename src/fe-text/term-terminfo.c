@@ -42,7 +42,6 @@ struct _TERM_WINDOW {
 };
 
 TERM_WINDOW *root_window;
-int term_width, term_height, term_detached;
 
 static char *term_lines_empty; /* 1 if line is entirely empty */
 static int vcmove, vcx, vcy, curs_visible;

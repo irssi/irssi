@@ -39,6 +39,8 @@
 
 #define MIN_SCREEN_WIDTH 20
 
+int term_width, term_height, term_detached;
+
 int term_use_colors;
 int term_type;
 

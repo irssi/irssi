@@ -51,7 +51,6 @@ struct _TERM_WINDOW {
 };
 
 TERM_WINDOW *root_window;
-int term_width, term_height;
 
 static int curs_x, curs_y;
 static int freeze_refresh;
@@ -314,6 +313,11 @@ void term_addch(TERM_WINDOW *window, int chr)
         waddch(window->win, chr);
 }
 
+void term_add_unichar(TERM_WINDOW *window, unichar chr)
+{
+        waddch(window->win, chr);
+}
+
 void term_addstr(TERM_WINDOW *window, const char *str)
 {
         waddstr(window->win, (const char *) str);
@@ -363,7 +367,15 @@ void term_stop(void)
 	irssi_redraw();
 }
 
-int term_gets(unsigned char *buffer, int size)
+void term_auto_detach(int set)
+{
+}
+
+void term_set_input_type(int type)
+{
+}
+
+int term_gets(unichar *buffer, int size)
 {
 	int key, count;
 
