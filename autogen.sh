@@ -106,17 +106,25 @@ if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
 fi
 aclocalinclude="$ACLOCAL_FLAGS -I ."
 echo "Running aclocal $aclocalinclude ..."
-error=`aclocal $aclocalinclude 2>&1`
 
 # see if we don't have glib.m4 or glib-2.0.m4 there yet
-if `echo $error|grep AM_PATH_GLIB_2_0`; then
-  cp glib-2.0.m4_ glib-2.0.m4
-fi
-if `echo $error|grep AM_PATH_GLIB[^_]`; then
+error=`aclocal $aclocalinclude 2>&1`
+if test "x`echo $error|grep AM_PATH_GLIB[^_]`" != "x"; then
   cp glib.m4_ glib.m4
+  error=`aclocal $aclocalinclude 2>&1`
+fi
+if test "x`echo $error|grep AM_PATH_GLIB_2_0`" != "x"; then
+  cp glib-2.0.m4_ glib-2.0.m4
 fi
 
 aclocal $aclocalinclude
+
+# aclocal for some reason doesn't complain about glib2, so we still need
+# to check it later again..
+if ! grep "^AC_DEFUN.AM_PATH_GLIB_2_0" aclocal.m4 >/dev/null; then
+  cp glib-2.0.m4_ glib-2.0.m4
+  aclocal $aclocalinclude
+fi
 
 if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
   echo "Running autoheader..."
