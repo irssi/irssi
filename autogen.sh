@@ -50,7 +50,7 @@ else
 	else
 		echo "Updating ChangeLog from version $CHANGELOG_VERSION to $SVN_VERSION..."
 		mv $srcdir/ChangeLog $srcdir/ChangeLog.prev
-		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:$[CHANGELOG_VERSION+1] > $srcdir/ChangeLog
+		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:`expr $CHANGELOG_VERSION + 1` > $srcdir/ChangeLog
 		cat $srcdir/ChangeLog.prev >> $srcdir/ChangeLog
 	fi
 fi
