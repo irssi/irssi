@@ -97,8 +97,9 @@ static int get_scroll_count(void)
 	else if (count < 1)
                 count = 1.0/count;
 
-	if (*str == '/')
-		count = WINDOW_GUI(active_win)->parent->height/count;
+	if (*str == '/') {
+		count = (active_mainwin->height-active_mainwin->statusbar_lines)/count;
+	}
 	return (int)count;
 }
 
