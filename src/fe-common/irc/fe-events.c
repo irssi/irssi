@@ -272,14 +272,14 @@ static void event_wallops(IRC_SERVER_REC *server, const char *data, const char *
 	if (ignore_check(SERVER(server), nick, addr, NULL, data, MSGLEVEL_WALLOPS))
 		return;
 
-	if (g_strncasecmp(data, "\001ACTION", 7) != 0)
+	if (g_strncasecmp(data, "\001ACTION ", 8) != 0)
 		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_WALLOPS, nick, data);
 	else {
 		/* Action in WALLOP */
 		int len;
 		char *tmp;
 
-		tmp = g_strdup(data);
+		tmp = g_strdup(data+8);
 		len = strlen(tmp);
 		if (tmp[len-1] == 1) tmp[len-1] = '\0';
 		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, tmp);
