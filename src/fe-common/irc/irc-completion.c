@@ -28,6 +28,7 @@
 #include "irc.h"
 #include "server.h"
 #include "channels.h"
+#include "channels-setup.h"
 #include "nicklist.h"
 
 #include "completion.h"
@@ -39,6 +40,39 @@ typedef struct {
 	time_t time;
 	char *nick;
 } NICK_COMPLETION_REC;
+
+GList *completion_get_channels(IRC_SERVER_REC *server, const char *word)
+{
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+	g_return_val_if_fail(*word != '\0', NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	/* first get the joined channels */
+	tmp = server == NULL ? NULL : server->channels;
+	for (; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->name, word, len) == 0)
+			list = g_list_append(list, g_strdup(rec->name));
+	}
+
+	/* get channels from setup */
+	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
+		SETUP_CHANNEL_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->name, word, len) == 0)
+			list = g_list_append(list, g_strdup(rec->name));
+
+	}
+
+	return list;
+}
 
 static void nick_completion_destroy(GSList **list, NICK_COMPLETION_REC *rec)
 {
@@ -315,6 +349,12 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(linestart != NULL);
+
+	if (ischannel(*word)) {
+		/* probably completing a channel name */
+		*list = completion_get_channels((IRC_SERVER_REC *) window->active_server, word);
+                return;
+	}
 
 	server = window->active_server;
 	if (server == NULL || !server->connected)
