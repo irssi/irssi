@@ -100,6 +100,7 @@ deinit()
 CODE:
 	if (!initialized) return;
         perl_themes_deinit();
+	initialized = FALSE;
 
 BOOT:
 	irssi_boot(UI__Formats);

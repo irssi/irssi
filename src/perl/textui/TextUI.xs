@@ -107,6 +107,7 @@ deinit()
 CODE:
 	if (!initialized) return;
         perl_statusbar_deinit();
+	initialized = FALSE;
 
 MODULE = Irssi::TextUI PACKAGE = Irssi
 

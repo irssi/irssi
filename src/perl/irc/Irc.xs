@@ -1,5 +1,7 @@
 #include "module.h"
 
+static int initialized = FALSE;
+
 static void perl_irc_connect_fill_hash(HV *hv, IRC_SERVER_CONNECT_REC *conn)
 {
 	perl_connect_fill_hash(hv, (SERVER_CONNECT_REC *) conn);
@@ -161,7 +163,6 @@ PROTOTYPES: ENABLE
 void
 init()
 PREINIT:
-	static int initialized = FALSE;
 	int chat_type;
 CODE:
 	if (initialized) return;
@@ -198,6 +199,7 @@ CODE:
 void
 deinit()
 CODE:
+	initialized = FALSE;
 
 BOOT:
 	irssi_boot(Irc__Channel);

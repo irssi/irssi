@@ -28,6 +28,7 @@ CODE:
 	if (!initialized) return;
 	perl_expando_deinit();
         perl_settings_deinit();
+	initialized = FALSE;
 
 BOOT:
         irssi_boot(Channel);
