@@ -107,7 +107,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "chansetup_not_found", "Channel {channel $0} not found", 2, { 0, 0 } },
 	{ "chansetup_added", "Channel {channel $0} saved", 2, { 0, 0 } },
 	{ "chansetup_removed", "Channel {channel $0} removed", 2, { 0, 0 } },
-	{ "chansetup_header", "Channel         IRC net    Password   Settings", 0 },
+	{ "chansetup_header", "Channel         Network    Password   Settings", 0 },
 	{ "chansetup_line", "{channel $[15]0} %|$[10]1 $[10]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "chansetup_footer", "", 0 },
 	{ "channel_move_notify", "{channel $0} is already joined in window $1, use \"/WINDOW ITEM MOVE $0\" to move it to this window", 2, { 0, 1 } },

@@ -41,7 +41,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "ircnet_header", "Ircnets:", 0 },
 	{ "ircnet_line", "$0: $1", 2, { 0, 0 } },
 	{ "ircnet_footer", "", 0 },
-	{ "setupserver_header", "Server               Port  IRC Net    Settings", 0 },
+	{ "setupserver_header", "Server               Port  Network    Settings", 0 },
 	{ "setupserver_line", "%|$[!20]0 $[5]1 $[10]2 $3", 4, { 0, 1, 0, 0 } },
 	{ "setupserver_footer", "", 0 },
 
