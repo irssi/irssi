@@ -184,8 +184,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 		next = tmp->next;
 		while (rec->now_channels != NULL) {
 			char *channel = rec->now_channels->data;
-			char *realchannel = channel +
-				(isnickflag(*channel) && ischannel(channel[1]));
+			char *realchannel = channel + 1;
 
 			temp = g_hash_table_lookup(channels, realchannel);
 			if (temp == NULL) {
@@ -198,7 +197,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 
 			temp->count++;
 			if (temp->count <= netjoin_max_nicks) {
-				if (isnickflag(*channel))
+				if (*channel != ' ')
 					g_string_append_c(temp->nicks,
 							  *channel);
 				g_string_sprintfa(temp->nicks, "%s, ",
@@ -318,7 +317,7 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 		netjoin = netjoin_add(server, nick, split->channels);
 
 	netjoin->now_channels = g_slist_append(netjoin->now_channels,
-					       g_strdup(channel));
+					       g_strconcat(" ", channel, NULL));
 	signal_stop();
 }
 
