@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002120901';
+$VERSION = '2002121001';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -500,6 +500,7 @@ sub print_info (%) {
             $line .= "\n";
         }
 	#$line .= "  Needed Irssi scripts:\n";
+	$line .= "  Needed Irssi Scripts:\n" if $data{$script}{depends};
 	foreach (sort keys %{$data{$script}{depends}}) {
 	    if ( $data{$script}{depends}{$_}{installed} == 1 ) {
 		$line .= "  %g->%n ".$_." (loaded)";
