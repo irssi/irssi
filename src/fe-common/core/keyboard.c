@@ -317,7 +317,7 @@ static void cmd_show_keys(const char *searchkey, int full)
 	}
 }
 
-/* SYNTAX: BIND [<key> [<command> [<data>]]] */
+/* SYNTAX: BIND [-delete] [<key> [<command> [<data>]]] */
 static void cmd_bind(const char *data)
 {
 	GHashTable *optlist;

@@ -595,7 +595,7 @@ void gui_readline_init(void)
 	key_bind("erase_to_beg_of_line", "", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_bind("erase_to_end_of_line", "", "Ctrl-K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_bind("yank_from_cutbuffer", "", "Ctrl-Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
-	key_bind("transpose_characters", "", "Ctrl-T", NULL, (SIGNAL_FUNC) key_transpose_characters);
+	key_bind("transpose_characters", "Swap current and previous character", "Ctrl-T", NULL, (SIGNAL_FUNC) key_transpose_characters);
         
 	key_bind("word_completion", "", "Tab", NULL, (SIGNAL_FUNC) key_word_completion);
 	key_bind("check_replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) key_check_replaces);
