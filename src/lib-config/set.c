@@ -34,8 +34,10 @@ static void cache_remove(CONFIG_REC *rec, CONFIG_NODE *node)
 
 void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 {
-	g_return_if_fail(parent != NULL);
 	g_return_if_fail(node != NULL);
+
+	if (parent == NULL)
+                parent = rec->mainnode;
 
 	rec->modifycounter++;
 	cache_remove(rec, node);
