@@ -410,6 +410,7 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 /* SYNTAX: WHOIS [<server>] [<nicks>] */
 static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 {
+	GHashTable *optlist;
 	char *qserver, *query;
 	void *free_arg;
 	int free_nick;
@@ -418,15 +419,19 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 2, &qserver, &query))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS,
+			    "whois", &optlist, &qserver, &query))
 		return;
 
 	if (*query == '\0') {
-                cmd_params_free(free_arg);
-		if (!cmd_get_params(data, &free_arg, 1, &query)) return;
+		query = qserver;
 		qserver = "";
 	}
-        if (*query == '\0') query = server->nick;
+	if (*query == '\0') query = server->nick;
+
+	if (strcmp(query, "*") == 0 &&
+	    g_hash_table_lookup(optlist, "yes") == NULL)
+		cmd_param_error(CMDERR_NOT_GOOD_IDEA);
 
 	if (*qserver == '\0')
 		g_string_sprintf(tmpstr, "WHOIS %s", query);
@@ -985,6 +990,7 @@ void irc_commands_init(void)
 	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");
+	command_set_options("whois", "yes");
 }
 
 void irc_commands_deinit(void)
