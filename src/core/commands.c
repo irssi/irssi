@@ -36,6 +36,8 @@ char *current_command;
 static GSList *cmdget_funcs;
 static int signal_default_command;
 
+static GSList *alias_runstack;
+
 COMMAND_REC *command_find(const char *cmd)
 {
 	GSList *tmp;
@@ -572,6 +574,15 @@ void cmd_get_remove_func(CMD_GET_FUNC func)
         cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
+#define alias_runstack_push(alias) \
+	alias_runstack = g_slist_append(alias_runstack, alias)
+
+#define alias_runstack_pop(alias) \
+	alias_runstack = g_slist_remove(alias_runstack, alias)
+
+#define alias_runstack_find(alias) \
+        (gslist_find_icase_string(alias_runstack, alias) != NULL)
+
 static void parse_command(const char *command, int expand_aliases,
 			  SERVER_REC *server, void *item)
 {
@@ -582,10 +593,14 @@ static void parse_command(const char *command, int expand_aliases,
 	args = strchr(cmd+8, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
-	/* check if there's an alias for command */
-	alias = expand_aliases ? alias_find(cmd+8) : NULL;
+	/* check if there's an alias for command. Don't allow
+	   recursive aliases */
+	alias = !expand_aliases || alias_runstack_find(cmd+8) ? NULL :
+		alias_find(cmd+8);
 	if (alias != NULL) {
+                alias_runstack_push(cmd+8);
 		eval_special_string(alias, args, server, item);
+                alias_runstack_pop(cmd+8);
 		g_free(orig);
 		return;
 	}
@@ -678,6 +693,7 @@ void commands_init(void)
 	commands = NULL;
 	cmdget_funcs = NULL;
 	current_command = NULL;
+	alias_runstack = NULL;
 
 	signal_default_command = signal_get_uniq_id("default command");
 
