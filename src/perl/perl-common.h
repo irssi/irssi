@@ -32,6 +32,7 @@ char *perl_get_package(void);
 	irssi_bless_iobject((object)->type, (object)->chat_type, object))
 SV *irssi_bless_iobject(int type, int chat_type, void *object);
 SV *irssi_bless_plain(const char *stash, void *object);
+int irssi_is_ref_object(SV *o);
 void *irssi_ref_object(SV *o);
 
 void irssi_add_object(int type, int chat_type, const char *stash,

@@ -11,7 +11,12 @@ CODE:
 
 	memset(p, 0, sizeof(p));
 	for (n = 1; n < items && n < 7; n++) {
-		p[n-1] = SvPOKp(ST(n)) ? SvPV(ST(n), n_a) : (void *) SvIV((SV*)SvRV(ST(n)));
+		if (SvPOKp(ST(n)))
+			p[n-1] = SvPV(ST(n), n_a);
+		else if (irssi_is_ref_object(ST(n)))
+			p[n-1] = irssi_ref_object(ST(n));
+		else
+			p[n-1] = (void *) SvIV((SV*)SvRV(ST(n)));
 	}
 	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
 

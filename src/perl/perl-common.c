@@ -96,6 +96,21 @@ SV *irssi_bless_plain(const char *stash, void *object)
 	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv((char *)stash, 1));
 }
 
+int irssi_is_ref_object(SV *o)
+{
+        SV **sv;
+	HV *hv;
+
+        hv = hvref(o);
+	if (hv != NULL) {
+		sv = hv_fetch(hv, "_irssi", 6, 0);
+		if (sv != NULL)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 void *irssi_ref_object(SV *o)
 {
         SV **sv;
