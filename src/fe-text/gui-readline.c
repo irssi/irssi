@@ -162,6 +162,12 @@ void handle_key(unichar key)
 		str[utf16_char_to_utf8(key, str)] = '\0';
 	}
 
+	if (strcmp(str, "^") == 0) {
+		/* change it as ^^ */
+		str[1] = '^';
+		str[2] = '\0';
+	}
+
 	if (escape_next_key || !key_pressed(keyboard, str)) {
 		/* key wasn't used for anything, print it */
                 escape_next_key = FALSE;
