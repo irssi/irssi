@@ -340,6 +340,9 @@ void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
 
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) channel);
 
+        if (channel->ownnick != NULL)
+		hv_store(hv, "ownnick", 7, iobject_bless(channel->ownnick), 0);
+
 	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
 	hv_store(hv, "topic_by", 8, new_pv(channel->topic_by), 0);
 	hv_store(hv, "topic_time", 10, newSViv(channel->topic_time), 0);
