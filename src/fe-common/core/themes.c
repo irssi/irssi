@@ -212,7 +212,9 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 			return;
 		}
 
-		/* %{ or %} gives us { or } char */
+		/* %{ or %} gives us { or } char - keep the % char
+		   though to make sure {} isn't treated as abstract */
+		g_string_append_c(str, '%');
 		chr = **format;
 	}
 

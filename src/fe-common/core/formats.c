@@ -105,6 +105,12 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 
         fmt = **format;
 	switch (fmt) {
+	case '{':
+	case '}':
+	case '%':
+                /* escaped char */
+		g_string_append_c(out, fmt);
+		break;
 	case 'U':
 		/* Underline on/off */
 		g_string_append_c(out, 4);
@@ -120,9 +126,6 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		/* reverse */
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_REVERSE);
-		break;
-	case '%':
-		g_string_append_c(out, '%');
 		break;
 	case ':':
 		/* Newline */
