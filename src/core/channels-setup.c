@@ -38,7 +38,7 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 	index = g_slist_index(setupchannels, channel);
 
 	parentnode = iconfig_node_traverse("(channels", TRUE);
-	node = config_node_index(parentnode, index);
+	node = config_node_nth(parentnode, index);
 	if (node == NULL)
 		node = config_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
 

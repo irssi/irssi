@@ -410,7 +410,7 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	index = g_slist_index(setupservers, rec);
 
 	parentnode = iconfig_node_traverse("(servers", TRUE);
-	node = config_node_index(parentnode, index);
+	node = config_node_nth(parentnode, index);
 	if (node == NULL)
 		node = config_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
 

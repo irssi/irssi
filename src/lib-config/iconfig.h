@@ -98,7 +98,9 @@ const char *config_list_find(CONFIG_REC *rec, const char *section, const char *k
 /* Like config_list_find(), but return node instead of it's value */
 CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
 /* Returns n'th node from list. */
-CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index);
+CONFIG_NODE *config_node_nth(CONFIG_NODE *node, int index);
+/* Returns index for given key */
+int config_node_index(CONFIG_NODE *parent, const char *key);
 
 /* Returns the first non-comment node in list */
 GSList *config_node_first(GSList *list);
@@ -116,6 +118,8 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key);
 /* Find the section from node - if not found create it unless new_type is -1.
    You can also specify in new_type if it's NODE_TYPE_LIST or NODE_TYPE_BLOCK */
 CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type);
+CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
+				       int index, int new_type);
 /* Find the section with the whole path.
    Create the path if necessary `create' is TRUE. */
 CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int create);

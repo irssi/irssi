@@ -42,7 +42,14 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
    you can also specify in new_type if it's NODE_TYPE_LIST or NODE_TYPE_BLOCK */
 CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type)
 {
+        return config_node_section_index(parent, key, -1, new_type);
+}
+
+CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
+				       int index, int new_type)
+{
 	CONFIG_NODE *node;
+        int nindex;
 
 	g_return_val_if_fail(parent != NULL, NULL);
 	g_return_val_if_fail(is_node_list(parent), NULL);
@@ -50,14 +57,22 @@ CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_t
 	node = key == NULL ? NULL : config_node_find(parent, key);
 	if (node != NULL) {
 		g_return_val_if_fail(new_type == -1 || new_type == node->type, NULL);
-                return node;
+		nindex = g_slist_index(parent->value, node);
+		if (index >= 0 && nindex != index &&
+		    nindex <= g_slist_length(parent->value)) {
+			/* move it to wanted position */
+			parent->value = g_slist_remove(parent->value, node);
+			parent->value = g_slist_insert(parent->value, node, index);
+		}
+		return node;
 	}
 
 	if (new_type == -1)
 		return NULL;
 
 	node = g_new0(CONFIG_NODE, 1);
-	parent->value = g_slist_append(parent->value, node);
+	parent->value = index < 0 ? g_slist_append(parent->value, node) :
+		g_slist_insert(parent->value, node, index);
 
 	node->type = new_type;
 	node->key = key == NULL ? NULL : g_strdup(key);
@@ -294,7 +309,7 @@ char **config_node_get_list(CONFIG_NODE *node)
 }
 
 /* Returns n'th node from list. */
-CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index)
+CONFIG_NODE *config_node_nth(CONFIG_NODE *node, int index)
 {
 	GSList *tmp;
 
@@ -307,6 +322,21 @@ CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index)
 	}
 
 	return NULL;
+}
+
+/* Returns index for given key */
+int config_node_index(CONFIG_NODE *parent, const char *key)
+{
+	CONFIG_NODE *node;
+
+	g_return_val_if_fail(parent != NULL, -1);
+	g_return_val_if_fail(key != NULL, -1);
+
+	node = config_node_find(parent, key);
+	if (node == NULL)
+		return -1;
+
+        return g_slist_index(parent->value, node);
 }
 
 /* Returns the first non-comment node in list */

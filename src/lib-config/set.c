@@ -67,7 +67,7 @@ void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index)
 	g_return_if_fail(node != NULL);
 	g_return_if_fail(is_node_list(node));
 
-	child = config_node_index(node, index);
+	child = config_node_nth(node, index);
 	if (child != NULL) config_node_remove(rec, node, child);
 }
 
