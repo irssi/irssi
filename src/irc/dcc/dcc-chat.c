@@ -290,7 +290,7 @@ static void cmd_dcc_chat(gchar *data, IRC_SERVER_REC *server)
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1)
 	{
-	    dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE,
+	    dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 				       (GInputFunction) dcc_chat_connect, dcc);
 	}
 	else

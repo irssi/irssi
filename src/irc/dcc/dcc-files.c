@@ -178,7 +178,7 @@ static void cmd_dcc_get(gchar *data)
 					 source_host_ok ? source_host_ip : NULL);
 	    if (dcc->handle != -1)
 	    {
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE,
+		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 					   (GInputFunction) dcc_get_connect, dcc);
 	    }
 	    else
@@ -227,7 +227,7 @@ static void dcc_resume_setup(DCC_REC *dcc, gint port)
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1)
 	{
-	    dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE,
+	    dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 				       (GInputFunction) dcc_get_connect, dcc);
 	}
 	else

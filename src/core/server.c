@@ -155,7 +155,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
 		return;
 	}
 
-	server->connect_tag = g_input_add(server->handle, G_INPUT_WRITE|G_INPUT_READ,
+	server->connect_tag = g_input_add(server->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 					  (GInputFunction) server_connect_callback_init, server);
 	signal_emit("server connecting", 2, server, &iprec.ip);
 }
