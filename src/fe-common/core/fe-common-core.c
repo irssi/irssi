@@ -194,9 +194,35 @@ void fe_common_core_deinit(void)
         signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
 
+void glog_func(const char *log_domain, GLogLevelFlags log_level,
+	       const char *message)
+{
+	const char *reason;
+
+	switch (log_level) {
+	case G_LOG_LEVEL_WARNING:
+                reason = "warning";
+                break;
+	case G_LOG_LEVEL_CRITICAL:
+                reason = "critical";
+		break;
+	default:
+		reason = "error";
+                break;
+	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+		    TXT_GLIB_ERROR, reason, message);
+}
+
 void fe_common_core_finish_init(void)
 {
 	WINDOW_REC *window;
+
+	g_log_set_handler(G_LOG_DOMAIN,
+			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
+					    G_LOG_LEVEL_WARNING),
+			  (GLogFunc) glog_func, NULL);
 
 	signal_emit("irssi init read settings", 0);
 

@@ -150,6 +150,9 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Modules", 0 },
 
+	{ "module_header", "Loaded modules:", 0, },
+	{ "module_line", "  $0", 1, { 0 } },
+	{ "module_footer", "", 0, },
 	{ "module_already_loaded", "Module {hilight $0} already loaded", 1, { 0 } },
 	{ "module_load_error", "Error loading module {hilight $0}: $1", 2, { 0, 0 } },
 	{ "module_invalid", "{hilight $0} isn't Irssi module", 1, { 0 } },
@@ -203,6 +206,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "config_saved", "Saved configuration to file $0", 1, { 0 } },
 	{ "config_reloaded", "Reloaded configuration", 1, { 0 } },
 	{ "config_modified", "Configuration file was modified since irssi was last started - do you want to overwrite the possible changes?", 1, { 0 } },
+	{ "glib_error", "{error GLib $0} $1", 2, { 0, 0 } },
 
 	{ NULL, NULL, 0 }
 };

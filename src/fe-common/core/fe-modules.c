@@ -27,38 +27,59 @@
 
 #include "printtext.h"
 
-static void sig_module_error(void *number, const char *module, const char *data)
+static void sig_module_error(void *number, const char *module,
+			     const char *data)
 {
 	switch (GPOINTER_TO_INT(number)) {
 	case MODULE_ERROR_ALREADY_LOADED:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_ALREADY_LOADED, module);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_MODULE_ALREADY_LOADED, module);
 		break;
 	case MODULE_ERROR_LOAD:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_LOAD_ERROR, module, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_MODULE_LOAD_ERROR, module, data);
 		break;
 	case MODULE_ERROR_INVALID:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_INVALID, module);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_MODULE_INVALID, module);
 		break;
 	}
 }
 
 static void sig_module_loaded(MODULE_REC *rec)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_LOADED, rec->name);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_MODULE_LOADED, rec->name);
 }
 
 static void sig_module_unloaded(MODULE_REC *rec)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_UNLOADED, rec->name);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_MODULE_UNLOADED, rec->name);
+}
+
+static void cmd_load_list(void)
+{
+	GSList *tmp;
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_HEADER);
+	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
+		MODULE_REC *rec = tmp->data;
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_MODULE_LINE, rec->name);
+	}
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_FOOTER);
 }
 
 /* SYNTAX: LOAD <module> */
 static void cmd_load(const char *data)
 {
 	g_return_if_fail(data != NULL);
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	module_load(data);
+	if (*data == '\0')
+		cmd_load_list();
+        else
+		module_load(data);
 }
 
 /* SYNTAX: UNLOAD <module> */
