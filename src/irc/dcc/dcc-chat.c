@@ -520,7 +520,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 }
 
 #define DCC_AUTOACCEPT_PORT(dcc) \
-	((dcc)->port >= 1024 || settings_get_bool("dcc_autoaccept_lowport"))
+	((dcc)->port >= 1024 || settings_get_bool("dcc_autoaccept_lowports"))
 
 #define DCC_CHAT_AUTOACCEPT(dcc, server, nick, addr) \
 	(DCC_AUTOACCEPT_PORT(dcc) && \

@@ -40,7 +40,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 		return;
 
 	/* check for lowports */
-	if (dcc->port < 1024 && !settings_get_bool("dcc_autoget_lowports"))
+	if (dcc->port < 1024 && !settings_get_bool("dcc_autoaccept_lowports"))
                 return;
 
 	/* check that autoget masks match */
@@ -69,7 +69,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 void dcc_autoget_init(void)
 {
 	settings_add_bool("dcc", "dcc_autoget", FALSE);
-	settings_add_bool("dcc", "dcc_autoget_lowports", FALSE);
+	settings_add_bool("dcc", "dcc_autoaccept_lowports", FALSE);
 	settings_add_bool("dcc", "dcc_autoresume", FALSE);
 	settings_add_int("dcc", "dcc_autoget_max_size", 1000);
 	settings_add_str("dcc", "dcc_autoget_masks", "");
