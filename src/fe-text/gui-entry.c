@@ -337,11 +337,11 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
 {
         g_return_if_fail(entry != NULL);
 
-	if (entry->pos < size || size == 0)
+	if (entry->pos < size)
 		return;
 
         /* put erased text to cutbuffer */
-	if (entry->cutbuffer_len < size) {
+	if (entry->cutbuffer == NULL || entry->cutbuffer_len < size) {
 		g_free(entry->cutbuffer);
 		entry->cutbuffer = g_new(unichar, size+1);
 	}
@@ -350,6 +350,11 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
         entry->cutbuffer[size] = '\0';
 	memcpy(entry->cutbuffer, entry->text + entry->pos - size,
 	       size * sizeof(unichar));
+
+	if (size == 0) {
+                /* we just wanted to clear the cutbuffer */
+		return;
+	}
 
 	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
 		  (entry->text_len-entry->pos+1) * sizeof(unichar));
