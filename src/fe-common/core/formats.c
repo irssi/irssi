@@ -36,7 +36,7 @@ static const char *format_fores = "kbgcrmyw";
 static const char *format_boldfores = "KBGCRMYW";
 
 static int signal_gui_print_text;
-static int hide_text_style;
+static int hide_text_style, hide_server_tags;
 
 static int timestamps, msgs_timestamps;
 static int timestamp_timeout;
@@ -530,8 +530,9 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 
 	server = dest->server;
 
-	if (server == NULL || (dest->window->active != NULL &&
-			       dest->window->active->server == server))
+	if (server == NULL || hide_server_tags ||
+	    (dest->window->active != NULL &&
+	     dest->window->active->server == server))
 		return NULL;
 
 	if (servers != NULL) {
@@ -919,6 +920,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 static void read_settings(void)
 {
+	hide_server_tags = settings_get_bool("hide_server_tags");
 	hide_text_style = settings_get_bool("hide_text_style");
 	timestamps = settings_get_bool("timestamps");
 	timestamp_timeout = settings_get_int("timestamp_timeout");

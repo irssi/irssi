@@ -146,6 +146,7 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
 
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
+	settings_add_bool("lookandfeel", "hide_server_tags", FALSE);
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
