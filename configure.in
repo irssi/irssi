@@ -306,14 +306,7 @@ if test "$want_perl" != "no"; then
 
 		if test "$want_perl" != "static"; then
 			dnl * find libperl.a so we could
-			LIBPERL_A=`echo $PERL_LDFLAGS|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/ && -f $1."/libperl.a") { print $1."/libperl.a" } };'`
-
-			dnl * In perl 5.6, libperl.a seems to be in /usr/lib ..
-			dnl * I can't really figure out any good way to check this
-			dnl * but hopefully this works well enough :)
-			if test "x$LIBPERL_A" = "x" -a -e /usr/lib/libperl.a; then
-       				LIBPERL_A="/usr/lib/perl.a"
-			fi
+			LIBPERL_A=`echo "$PERL_LDFLAGS -L/usr/lib"|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/ && -f $1."/libperl.a") { print $1."/libperl.a" } };'`
 		fi
 
 		dnl * Perl 5.004 and older use perl_xxx variables while
