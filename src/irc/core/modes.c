@@ -58,7 +58,7 @@ static int mode_is_set(const char *str, char mode)
 }
 
 /* add argument to specified position */
-static void mode_add_arg(GString *str, int pos, const char *arg)
+static void mode_add_arg(GString *str, int pos, int updating, const char *arg)
 {
 	char *p;
 
@@ -71,12 +71,19 @@ static void mode_add_arg(GString *str, int pos, const char *arg)
 		pos--;
 	}
 
+	pos = (int) (p-str->str);
+	if (updating && *p != '\0') {
+		/* remove the old argument */
+                p++;
+		while (*p != '\0' && *p != ' ') p++;
+                g_string_erase(str, pos, (int) (p-str->str)-pos);
+	}
+
 	/* .. GLib shouldn't fail when inserting at the end of the string */
-	if (*p == '\0') {
+	if (pos == str->len) {
 		g_string_append_c(str, ' ');
 		g_string_append(str, arg);
 	} else {
-		pos = (int) (p-str->str);
 		g_string_insert_c(str, pos, ' ');
 		g_string_insert(str, pos+1, arg);
 	}
@@ -86,26 +93,33 @@ static void mode_add_arg(GString *str, int pos, const char *arg)
 static void mode_add_sorted(GString *str, char mode, const char *arg)
 {
 	char *p;
-	int argpos = 0;
+	int updating, argpos = 0;
 
 	/* check that mode isn't already set */
-	if (mode_is_set(str->str, mode))
+	if (!HAS_MODE_ARG_SET(mode) && mode_is_set(str->str, mode))
 		return;
 
+	updating = FALSE;
 	for (p = str->str; *p != '\0' && *p != ' '; p++) {
 		if (mode < *p)
 			break;
+		if (mode == *p) {
+                        updating = TRUE;
+			break;
+		}
 		if (HAS_MODE_ARG_SET(*p))
 			argpos++;
 	}
 
 	/* .. GLib shouldn't fail when inserting at the end of the string */
-	if (*p == '\0')
-		g_string_append_c(str, mode);
-	else
-		g_string_insert_c(str, (int) (p-str->str), mode);
+	if (!updating) {
+		if (*p == '\0')
+			g_string_append_c(str, mode);
+		else
+			g_string_insert_c(str, (int) (p-str->str), mode);
+	}
 	if (arg != NULL)
-                mode_add_arg(str, argpos+1, arg);
+                mode_add_arg(str, argpos, updating, arg);
 }
 
 /* remove the n'th argument */
