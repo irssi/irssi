@@ -98,12 +98,25 @@ noinst_HEADERS = \
 	perl-signals.h
 
 all-local:
-	for dir in common irc ui; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
+	for dir in common irc ui; do \
+	  cd $$dir && \
+	  if [ ! -f Makefile ]; then \
+	    if [ "x$(PERL_LIB_DIR)" = "x" ]; then \
+	      $(perlpath) Makefile.PL; \
+	    else \
+	      $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR) INSTALLDIRS=perl; \
+	    fi; \
+	  fi && \
+	  ($(MAKE) || $(MAKE)) && \
+	  cd ..; \
+	done
 
 # FIXME: remove after .99: the libfe_perl must not be used anymore
 install-exec-local:
 	-(rm -f $(moduledir)/libfe_perl.*)
-	for dir in common irc ui; do cd $$dir && $(MAKE) install && cd ..; done
+	for dir in common irc ui; do \
+	  cd $$dir && $(MAKE) install && cd ..; \
+	done
 
 clean-generic:
 	rm -f common/Irssi.c irc/Irc.c ui/UI.c
