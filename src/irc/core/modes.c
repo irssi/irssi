@@ -409,7 +409,8 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 	signal_emit("away mode changed", 1, server);
 }
 
-static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data)
+static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data,
+				    const char *nick, const char *addr)
 {
 	char *params, *target, *mode;
 
@@ -425,6 +426,8 @@ static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data)
 	}
 
 	g_free(params);
+
+	signal_emit("event mode", 4, server, data, nick, addr);
 }
 
 void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
