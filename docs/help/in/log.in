@@ -5,9 +5,6 @@
      -autoopen: Automatically open this log file at startup
      -targets: Log only in specified channels/nicks
      -window: Log the active window
-     -rotate: Reopen the log file every hour, day, week or month.
-              This makes only sense if you specify date/time formats
-              to file name.
      <filename>: File name where to log, it is parsed with
                  strftime(), so %d=day, etc. see "man strftime" for
                  more info.
@@ -32,7 +29,7 @@ Examples:
 /LOG OPEN -targets cras ~/irclogs/cras.log MSGS
      - Logs all messages from/to nick `cras'
 
-/LOG OPEN -rotate day -targets #linux ~/irclogs/linux/linux-%Y-%m-%d
+/LOG OPEN -targets #linux ~/irclogs/linux/linux-%Y-%m-%d
      - Logs all messages in channel #linux. Log is rotated daily, so
        logs in 1. May 2000 goes to file "linux-2000-05-01", when the
        day is changed, Irssi closes the log and starts logging to
