@@ -694,7 +694,7 @@ static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 	if (topic != NULL) {
 		topic = strip_codes(topic);
 		str = g_strdup_printf("%.*s", item->size, topic);
-		set_color(stdscr, sbar_color_bold); addstr(str);
+		set_color(stdscr, sbar_color_normal); addstr(str);
 		g_free(str);
 		g_free(topic);
 	}
