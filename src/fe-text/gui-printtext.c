@@ -39,6 +39,8 @@ static int scrollback_lines, scrollback_hours;
 static int scrollback_save_formats;
 static GString *format;
 
+static int next_xpos, next_ypos;
+
 #define mark_temp_eol(text) \
 	memcpy((text)->buffer + (text)->pos, "\0\200", 2);
 
@@ -222,6 +224,20 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
                 gui_window_redraw(window);
 }
 
+void gui_printtext(int xpos, int ypos, const char *str, ...)
+{
+	va_list va;
+
+	next_xpos = xpos;
+	next_ypos = ypos;
+
+        va_start(va, str);
+	printtext_gui_args(str, va);
+        va_end(va);
+
+	next_xpos = next_ypos = -1;
+}
+
 static void remove_old_lines(WINDOW_REC *window)
 {
 	GUI_WINDOW_REC *gui;
@@ -345,28 +361,38 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 	gui->last_color = fg | (bg << 4);
 }
 
-static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
-			  void *pflags, char *str, void *level)
+static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
+			       void *bgcolor, void *pflags,
+			       char *str, void *level)
 {
 	GUI_WINDOW_REC *gui;
 	LINE_REC *line;
 	int fg, bg, flags, new_lines, n, visible, ypos, subline;
 
-	g_return_if_fail(window != NULL);
-
-	remove_old_lines(window);
-
-	gui = WINDOW_GUI(window);
-	visible = is_window_visible(window) && gui->bottom;
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
+	get_colors(flags, &fg, &bg);
+
+	if (window == NULL && next_xpos != -1) {
+		wmove(stdscr, next_ypos, next_xpos);
+		set_color(stdscr, fg | (bg << 4));
+                addstr(str);
+		next_xpos += strlen(str);
+                return;
+	}
+
+	g_return_if_fail(window != NULL);
+
+	gui = WINDOW_GUI(window);
+	visible = is_window_visible(window) && gui->bottom;
 
 	if (gui->cur_text == NULL)
 		create_text_chunk(gui);
 
 	/* newline can be only at the start of the line.. */
 	if (flags & PRINTFLAG_NEWLINE) {
+		remove_old_lines(window);
 		if (!gui->eol_marked) {
 			if (format->len > 0 || gui->temp_line != NULL) {
 				/* mark format continuing to next line */
@@ -389,7 +415,6 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 		if (line->level == 0) line->level = GPOINTER_TO_INT(level);
 	}
 
-	get_colors(flags, &fg, &bg);
 	line_add_colors(gui, fg, bg, flags);
 	linebuf_add(gui, str, strlen(str));
 	mark_temp_eol(gui->cur_text);
@@ -554,13 +579,14 @@ static void read_settings(void)
 
 void gui_printtext_init(void)
 {
+	next_xpos = next_ypos = -1;
 	format = g_string_new(NULL);
 
 	settings_add_int("history", "scrollback_lines", 500);
 	settings_add_int("history", "scrollback_hours", 24);
 	settings_add_bool("history", "scrollback_save_formats", FALSE);
 
-	signal_add("gui print text", (SIGNAL_FUNC) gui_printtext);
+	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
 	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
@@ -574,7 +600,7 @@ void gui_printtext_deinit(void)
 {
 	g_string_free(format, TRUE);
 
-	signal_remove("gui print text", (SIGNAL_FUNC) gui_printtext);
+	signal_remove("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
 	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

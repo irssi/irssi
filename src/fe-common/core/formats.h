@@ -98,7 +98,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_REVERSE	(0x03 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_INDENT	(0x04 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_DEFAULTS	(0x05 + FORMAT_STYLE_SPECIAL)
-int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest);
+int format_expand_styles(GString *out, char format);
 
 void formats_init(void);
 void formats_deinit(void);

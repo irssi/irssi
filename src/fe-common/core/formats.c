@@ -55,7 +55,7 @@ int format_find_tag(const char *module, const char *tag)
 	return -1;
 }
 
-int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
+int format_expand_styles(GString *out, char format)
 {
 	static const char *backs = "04261537";
 	static const char *fores = "kbgcrmyw";
@@ -228,7 +228,7 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, *text, dest)) {
+			if (!format_expand_styles(out, *text)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
@@ -465,6 +465,8 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 
 void format_newline(WINDOW_REC *window)
 {
+	g_return_if_fail(window != NULL);
+
 	window->lines++;
 	if (window->lines != 1) {
 		signal_emit_id(signal_gui_print_text, 6, window,
@@ -789,7 +791,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			break;
 		case 27:
 			/* ansi color code */
-			ptr = get_ansi_color(dest->window->theme == NULL ?
+			ptr = get_ansi_color(dest->window == NULL || dest->window->theme == NULL ?
 					     current_theme : dest->window->theme,
 					     ptr,
 					     hide_text_style ? NULL : &fgcolor,

@@ -33,4 +33,6 @@ void gui_window_line_append(GUI_WINDOW_REC *gui, const char *str, int len);
 void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line);
 void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line);
 
+void gui_printtext(int xpos, int ypos, const char *str, ...);
+
 #endif

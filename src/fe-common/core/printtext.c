@@ -77,7 +77,8 @@ static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       dest, GINT_TO_POINTER(formatnum), arglist);
 
-        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
+	str = format_get_text_theme_charargs(theme, module, dest,
+					     formatnum, arglist);
 	if (*str != '\0') print_line(dest, str);
 	g_free(str);
 }
@@ -92,7 +93,8 @@ void printformat_module_args(const char *module, void *server,
 	printformat_module_dest(module, &dest, formatnum, va);
 }
 
-void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...)
+void printformat_module(const char *module, void *server, const char *target,
+			int level, int formatnum, ...)
 {
 	va_list va;
 
@@ -120,6 +122,38 @@ void printformat_module_window(const char *module, WINDOW_REC *window,
 	va_end(va);
 }
 
+void printformat_module_gui_args(const char *module, int formatnum, va_list va)
+{
+	TEXT_DEST_REC dest;
+	char *arglist[MAX_FORMAT_PARAMS];
+	char buffer[DEFAULT_FORMAT_ARGLIST_SIZE];
+	FORMAT_REC *formats;
+        char *str;
+
+	g_return_if_fail(module != NULL);
+
+        memset(&dest, 0, sizeof(dest));
+
+	formats = g_hash_table_lookup(default_formats, module);
+	format_read_arglist(va, &formats[formatnum],
+			    arglist, sizeof(arglist)/sizeof(char *),
+			    buffer, sizeof(buffer));
+
+	str = format_get_text_theme_charargs(current_theme, module, &dest,
+					     formatnum, arglist);
+	if (*str != '\0') format_send_to_gui(&dest, str);
+	g_free(str);
+}
+
+void printformat_module_gui(const char *module, int formatnum, ...)
+{
+	va_list va;
+
+	va_start(va, formatnum);
+        printformat_module_gui_args(module, formatnum, va);
+	va_end(va);
+}
+
 static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
 	char *str, *tmp;
@@ -141,7 +175,8 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 }
 
 /* append string to `out', expand newlines. */
-static void printtext_append_str(TEXT_DEST_REC *dest, GString *out, const char *str)
+static void printtext_append_str(TEXT_DEST_REC *dest, GString *out,
+				 const char *str)
 {
 	while (*str != '\0') {
 		if (*str != '\n')
@@ -154,7 +189,8 @@ static void printtext_append_str(TEXT_DEST_REC *dest, GString *out, const char *
 	}
 }
 
-static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va)
+static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
+				va_list va)
 {
 	GString *out;
 	char *ret;
@@ -187,7 +223,8 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 			break;
 		}
 		case 'u': {
-			unsigned int d = (unsigned int) va_arg(va, unsigned int);
+			unsigned int d =
+				(unsigned int) va_arg(va, unsigned int);
 			g_string_sprintfa(out, "%u", d);
 			break;
                 }
@@ -206,7 +243,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 			break;
 		}
 		default:
-			if (!format_expand_styles(out, *str, dest)) {
+			if (!format_expand_styles(out, *str)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *str);
 			}
@@ -219,7 +256,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 	return ret;
 }
 
-static char *printtext_expand_formats(TEXT_DEST_REC *dest, const char *str)
+static char *printtext_expand_formats(const char *str)
 {
 	GString *out;
 	char *ret;
@@ -234,7 +271,7 @@ static char *printtext_expand_formats(TEXT_DEST_REC *dest, const char *str)
 		if (*++str == '\0')
 			break;
 
-		if (!format_expand_styles(out, *str, dest)) {
+		if (!format_expand_styles(out, *str)) {
 			g_string_append_c(out, '%');
 			g_string_append_c(out, *str);
 		}
@@ -291,7 +328,7 @@ void printtext_string(void *server, const char *target, int level, const char *t
                 sending_print_starting = FALSE;
 	}
 
-        str = printtext_expand_formats(&dest, text);
+        str = printtext_expand_formats(text);
 	print_line(&dest, str);
         g_free(str);
 }
@@ -308,6 +345,29 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 
 	va_start(va, text);
 	printtext_dest(&dest, text, va);
+	va_end(va);
+}
+
+void printtext_gui_args(const char *text, va_list va)
+{
+	TEXT_DEST_REC dest;
+        char *str;
+
+	g_return_if_fail(text != NULL);
+
+        memset(&dest, 0, sizeof(dest));
+
+	str = printtext_get_args(&dest, text, va);
+	format_send_to_gui(&dest, str);
+	g_free(str);
+}
+
+void printtext_gui(const char *text, ...)
+{
+	va_list va;
+
+	va_start(va, text);
+        printtext_gui_args(text, va);
 	va_end(va);
 }
 
