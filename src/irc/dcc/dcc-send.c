@@ -203,7 +203,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	g_free(str);
 
 	if (hfile == -1) {
-		signal_emit("dcc error file not found", 2, target, fname);
+		signal_emit("dcc error file open", 3, target, fname,
+			    GINT_TO_POINTER(errno));
 		cmd_params_free(free_arg);
 		return;
 	}

@@ -45,7 +45,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_send_channel", "{dcc DCC SEND from {nick $0} [$1 port $2]: $3 [$4 bytes] requested in channel {channel $5}}", 6, { 0, 0, 1, 0, 2, 0 } },
 	{ "dcc_send_exists", "{dcc DCC already sending file {dccfile $0} for {nick $1}}", 2, { 0, 0 } },
 	{ "dcc_send_not_found", "{dcc DCC not sending file {dccfile $1} to {nick $0}}", 2, { 0, 0 } },
-	{ "dcc_send_file_not_found", "{dcc DCC file not found: {dccfile $0}}", 1, { 0 } },
+	{ "dcc_send_file_open_error", "{dcc DCC can't open file {dccfile $0}: $1}", 2, { 0, 0 } },
 	{ "dcc_send_connected", "{dcc DCC sending file {dccfile $0} for {nick $1} [$2 port $3]}", 4, { 0, 0, 0, 1 } },
 	{ "dcc_send_complete", "{dcc DCC sent file {dccfile $0} [{hilight $1}kB] for {nick $2} in {hilight $3} secs [{hilight $4kB/s}]}", 5, { 0, 2, 0, 2, 3 } },
 	{ "dcc_send_aborted", "{dcc DCC aborted sending file {dccfile $0} for {nick $1}}", 2, { 0, 0 } },

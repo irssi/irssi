@@ -189,7 +189,7 @@ dcc*.c:
  "dcc get receive", DCC_REC
  "dcc error connect", DCC_REC
  "dcc error file create", DCC_REC, char *filename
- "dcc error file not found", char *nick, char *filename
+ "dcc error file open", char *nick, char *filename, int errno
  "dcc error get not found", char *nick
  "dcc error send exists", char *nick, char *filename
  "dcc error unknown type", char *type

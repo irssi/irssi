@@ -64,13 +64,15 @@ static void dcc_closed(SEND_DCC_REC *dcc)
 	}
 }
 
-static void dcc_error_file_not_found(const char *nick, const char *fname)
+static void dcc_error_file_open(const char *nick, const char *fname,
+				void *error)
 {
 	g_return_if_fail(nick != NULL);
 	g_return_if_fail(fname != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_DCC,
-		    IRCTXT_DCC_SEND_FILE_NOT_FOUND, fname);
+		    IRCTXT_DCC_SEND_FILE_OPEN_ERROR, fname,
+		    g_strerror(GPOINTER_TO_INT(error)));
 }
 
 static void dcc_error_send_exists(const char *nick, const char *fname)
@@ -124,7 +126,7 @@ void fe_dcc_send_init(void)
 {
 	signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
 	signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
-	signal_add("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
+	signal_add("dcc error file open", (SIGNAL_FUNC) dcc_error_file_open);
 	signal_add("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
 	signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
 	signal_add("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
@@ -135,7 +137,7 @@ void fe_dcc_send_deinit(void)
 {
 	signal_remove("dcc connected", (SIGNAL_FUNC) dcc_connected);
 	signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);
-	signal_remove("dcc error file not found", (SIGNAL_FUNC) dcc_error_file_not_found);
+	signal_remove("dcc error file open", (SIGNAL_FUNC) dcc_error_file_open);
 	signal_remove("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
 	signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
 	signal_remove("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);

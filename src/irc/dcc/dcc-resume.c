@@ -132,7 +132,8 @@ static void dcc_send_resume(GET_DCC_REC *dcc)
 	dcc->file = dcc_get_download_path(dcc->arg);
 	dcc->fhandle = open(dcc->file, O_WRONLY);
 	if (dcc->fhandle == -1) {
-		signal_emit("dcc error file not found", 2, dcc, dcc->file);
+		signal_emit("dcc error file open", 3, dcc->nick, dcc->file,
+			    GINT_TO_POINTER(errno));
 		return;
 	}
 
