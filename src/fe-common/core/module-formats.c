@@ -114,6 +114,9 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Misc", 0 },
 
+	{ "format_title", "%:%K[%W$0%K] - [%W$1%K]%:%:", 2, { 0, 0 } },
+	{ "format_subtitle", "%K[%W$0%K]", 1, { 0 } },
+	{ "format_item", "$0 %K=%n $1", 2, { 0, 0 } },
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
 	{ "bind_key", "$[10]0 $1 $2", 3, { 0, 0, 0 } },

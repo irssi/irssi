@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
@@ -26,7 +27,6 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "printtext.h"
 #include "themes.h"
 
 GSList *themes;
@@ -328,13 +328,11 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 		else if ((value != NULL && key != NULL && g_strcasecmp(formats[n].tag, key) == 0) ||
 			 (value == NULL && (key == NULL || stristr(formats[n].tag, key) != NULL))) {
 			if (first) {
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%K[%W%s%K] - [%W%s%K]", rec->short_name, formats[0].def);
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_TITLE, rec->short_name, formats[0].def);
 				first = FALSE;
 			}
 			if (last_title != NULL)
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%K[%W%s%K]", last_title);
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_SUBTITLE, last_title);
 			if (reset || value != NULL) {
 				theme = theme_module_create(current_theme, rec->name);
                                 g_free_not_null(theme->formats[n]);
@@ -342,7 +340,7 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 				theme->formats[n] = reset ? NULL : g_strdup(value);
 				text = reset ? formats[n].def : value;
 			}
-			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s %K=%n %s", formats[n].tag, text);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_ITEM, formats[n].tag, text);
 			last_title = NULL;
 		}
 	}
