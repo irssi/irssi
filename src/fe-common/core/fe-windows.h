@@ -24,6 +24,7 @@ typedef struct {
 	GSList *waiting_channels; /* list of "<server tag> <channel>" */
 
 	int lines;
+	unsigned int sticky_refnum:1;
 	unsigned int destroying:1;
 
 	/* window-specific command line history */

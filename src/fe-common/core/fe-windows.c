@@ -93,7 +93,8 @@ static void windows_pack(int removed_refnum)
 
 	for (refnum = removed_refnum+1;; refnum++) {
 		window = window_find_refnum(refnum);
-		if (window == NULL) break;
+		if (window == NULL || window->sticky_refnum)
+			break;
 
 		window_set_refnum(window, refnum-1);
 	}

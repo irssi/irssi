@@ -240,16 +240,30 @@ static void cmd_window_item_move(const char *data, SERVER_REC *server,
                 window_item_set_active(window, item);
 }
 
-/* SYNTAX: WINDOW NUMBER <number> */
+/* SYNTAX: WINDOW NUMBER [-sticky] <number> */
 static void cmd_window_number(const char *data)
 {
-	int num;
+	GHashTable *optlist;
+        char *refnum;
+	void *free_arg;
+        int num;
 
-	num = atoi(data);
-	if (num < 1)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_TOO_LOW);
-	else
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "window number", &optlist, &refnum))
+		return;
+
+	if (*refnum == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	num = atoi(refnum);
+	if (num < 1) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_REFNUM_TOO_LOW);
+	} else {
 		window_set_refnum(active_win, num);
+		active_win->sticky_refnum =
+			g_hash_table_lookup(optlist, "sticky") != NULL;
+	}
 }
 
 /* SYNTAX: WINDOW NAME <name> */
@@ -424,6 +438,8 @@ void window_commands_init(void)
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
 	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
 	command_bind("savewindows", NULL, (SIGNAL_FUNC) cmd_savewindows);
+
+	command_set_options("window number", "sticky");
 }
 
 void window_commands_deinit(void)
