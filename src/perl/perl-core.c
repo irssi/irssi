@@ -230,10 +230,8 @@ static PERL_SCRIPT_REC *script_load(char *name, const char *path,
 	perl_scripts = g_slist_append(perl_scripts, script);
 	signal_emit("script created", 1, script);
 
-	if (!perl_script_eval(script)) {
-		perl_script_unload(script);
-                script = NULL;
-	}
+	if (!perl_script_eval(script))
+                script = NULL; /* the script is destroyed in "script error" signal */
         return script;
 }
 
