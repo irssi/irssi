@@ -310,7 +310,7 @@ if test ! -s conftest.lo; then
 fi
 
 dnl ** link to library
-./libtool --mode=link $CC $CFLAGS $LDFLAGS -module -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
+./libtool --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
 if test -s .libs/libconftest.a; then
   LIBDIR=.libs/
 elif test -s libconftest.a; then
