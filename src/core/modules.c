@@ -215,6 +215,7 @@ MODULE_REC *module_find(const char *name)
 	return NULL;
 }
 
+#ifdef HAVE_GMODULE
 static char *module_get_name(const char *path, int *start, int *end)
 {
 	const char *name;
@@ -243,7 +244,6 @@ static char *module_get_name(const char *path, int *start, int *end)
 	return module_name;
 }
 
-#ifdef HAVE_GMODULE
 static GModule *module_open(const char *name)
 {
 	struct stat statbuf;
