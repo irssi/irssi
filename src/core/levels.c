@@ -66,6 +66,10 @@ int level_get(const char *level)
 	match = 0;
 	for (n = 0; levels[n] != NULL; n++) {
 		if (strncmp(levels[n], level, len) == 0) {
+			if (strlen(levels[n]) == len) {
+				/* full match */
+				return 1L << n;
+			}
 			if (match > 0) {
 				/* ambiguous - abort */
 				return 0;
