@@ -76,25 +76,32 @@ static void sig_winch(int p)
 }
 #endif
 
-/* FIXME: SIGINT != ^C .. any better way to make this work? */
-void sigint_handler(int p)
-{
-	ungetch(3);
-	readline();
-}
-
 static void read_signals(void)
 {
+#ifndef WIN32
+	int signals[] = {
+		SIGHUP, SIGINT, SIGQUIT, SIGTERM,
+		SIGALRM, SIGUSR1, SIGUSR2
+	};
+	char *signames[] = {
+		"hup", "int", "quit", "term",
+		"alrm", "usr1", "usr2"
+	};
+
 	const char *ignores;
+	struct sigaction act;
+        int n;
 
 	ignores = settings_get_str("ignore_signals");
-#ifndef WIN32
-	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
-	signal(SIGQUIT, find_substr(ignores, "quit") ? SIG_IGN : SIG_DFL);
-	signal(SIGTERM, find_substr(ignores, "term") ? SIG_IGN : SIG_DFL);
-	signal(SIGALRM, find_substr(ignores, "alrm") ? SIG_IGN : SIG_DFL);
-	signal(SIGUSR1, find_substr(ignores, "usr1") ? SIG_IGN : SIG_DFL);
-	signal(SIGUSR2, find_substr(ignores, "usr2") ? SIG_IGN : SIG_DFL);
+
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = 0;
+
+	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
+		act.sa_handler = find_substr(ignores, signames[n]) ?
+			SIG_IGN : SIG_DFL;
+		sigaction(signals[n], &act, NULL);
+	}
 #endif
 }
 
@@ -125,13 +132,9 @@ static int init_curses(void)
 	if (COLS < MIN_SCREEN_WIDTH)
 		COLS = MIN_SCREEN_WIDTH;
 
-#ifndef WIN32
+#ifdef SIGWINCH
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
-	act.sa_handler = sigint_handler;
-	sigaction(SIGINT, &act, NULL);
-#endif
-#ifdef SIGWINCH
 	act.sa_handler = sig_winch;
 	sigaction(SIGWINCH, &act, NULL);
 #endif

@@ -35,9 +35,6 @@
 
 #include <signal.h>
 
-#undef CTRL
-#define CTRL(x) ((x) & 0x1f)	/* Ctrl+x */
-
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 
@@ -51,7 +48,7 @@ static KEYBOARD_REC *keyboard;
 static ENTRY_REDIRECT_REC *redir;
 
 char *cutbuffer;
-static int readtag, sigint_count = 0;
+static int readtag;
 static time_t idle_time;
 
 static void handle_key_redirect(int key)
@@ -120,12 +117,6 @@ static void window_next_page(void)
 void handle_key(int key)
 {
 	char str[3];
-
-	/* Quit if we get 5 CTRL-C's in a row. */
-	if (key != CTRL('c'))
-		sigint_count = 0;
-	else if (++sigint_count >= 5)
-		raise(SIGTERM);
 
 	idle_time = time(NULL);
 
