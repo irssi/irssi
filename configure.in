@@ -226,9 +226,31 @@ dnl **
 dnl ** fe-text checks
 dnl **
 
-AM_PATH_GLIB(1.2.0,,, gmodule)
-if test "x$GLIB_LIBS" = "x"; then
-	AC_ERROR([GLib is required to build irssi])
+AC_PATH_PROG(sedpath, sed)
+AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
+
+GLIB_DIR=`for d in *; do test -e $d/glib.h && echo $d; done`
+if test "x$GLIB_DIR" != "x"; then
+  dnl glib in irssi directory, use it
+  AC_MSG_RESULT([yes, using it])
+
+  full_glib_dir="`pwd`/$GLIB_DIR"
+  GLIB_CFLAGS="-I$full_glib_dir"
+  GLIB_LIBS="$full_glib_dir/.libs/libglib.a $full_glib_dir/gmodule/.libs/libgmodule.a"
+  AC_SUBST(GLIB_DIR)
+  AC_SUBST(GLIB_CFLAGS)
+  AC_SUBST(GLIB_LIBS)
+else
+  AC_MSG_RESULT([no])
+  AM_PATH_GLIB(1.2.0,,, gmodule)
+  if test "x$GLIB_LIBS" = "x"; then
+	echo
+	echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
+	echo "*** If you can't install GLIB anywhere or if you don't want to,"
+	echo "*** you can just unpack it to Irssi's source directory and"
+	echo "*** Irssi will automatically compile and use it."
+	AC_ERROR([GLIB is required to build irssi.])
+  fi
 fi
 
 PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
@@ -271,7 +293,6 @@ else
 	has_curses=false
 fi
 
-AC_PATH_PROG(sedpath, sed)
 if test "$want_perl" != "no"; then
 	AC_PATH_PROG(perlpath, perl)
 	AC_MSG_CHECKING(for Perl compile flags)
@@ -519,6 +540,15 @@ if test "x$want_perl" != "xno"; then
 			$LN_S $file $link
 		done
 	fi
+fi
+
+if test "x$GLIB_DIR" != "x"; then
+	echo
+	echo "configuring GLib ..."
+	echo
+	cd $GLIB_DIR
+	./configure
+	cd ..
 fi
 
 echo
