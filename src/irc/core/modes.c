@@ -447,7 +447,7 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 
 	if (!channel->chanop) {
                 /* not op - can we do anything? */
-		if (!channel->ownnick->halfop)
+		if (channel->ownnick == NULL || !channel->ownnick->halfop)
 			return; /* not even halfop, abort */
 
 		if (mode[0] != '\0' && mode[1] == 'o')
