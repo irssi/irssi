@@ -107,4 +107,8 @@ install-exec-local:
 clean-generic:
 	rm -f common/Irssi.c irc/Irc.c
 
+distclean: distclean-am
+	-(cd common && $(MAKE) realclean && rm -f Makefile.PL)
+	-(cd irc && $(MAKE) realclean && rm -f Makefile.PL)
+
 libperl_core_la_LIBADD = $(PERL_LDFLAGS)
