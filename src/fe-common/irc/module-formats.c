@@ -131,6 +131,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_idle_signon", " idle     : $1 days $2 hours $3 mins $4 secs %K[%nsignon: $5%K]", 6, { 0, 1, 1, 1, 1, 0 } },
 	{ "whois_server", " server   : $1 %K[%n$2%K]", 3, { 0, 0, 0 } },
 	{ "whois_oper", "          : %_IRC operator%_", 1, { 0 } },
+	{ "whois_registered", "          : has registered this nick", 1, { 0 } },
 	{ "whois_channels", " channels : $1", 2, { 0, 0 } },
 	{ "whois_away", " away     : $1", 2, { 0, 0 } },
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
