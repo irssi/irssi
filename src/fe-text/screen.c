@@ -76,41 +76,11 @@ static void sig_winch(int p)
 }
 #endif
 
-static void read_signals(void)
-{
-#ifndef WIN32
-	int signals[] = {
-		SIGHUP, SIGINT, SIGQUIT, SIGTERM,
-		SIGALRM, SIGUSR1, SIGUSR2
-	};
-	char *signames[] = {
-		"hup", "int", "quit", "term",
-		"alrm", "usr1", "usr2"
-	};
-
-	const char *ignores;
-	struct sigaction act;
-        int n;
-
-	ignores = settings_get_str("ignore_signals");
-
-	sigemptyset (&act.sa_mask);
-	act.sa_flags = 0;
-
-	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
-		act.sa_handler = find_substr(ignores, signames[n]) ?
-			SIG_IGN : SIG_DFL;
-		sigaction(signals[n], &act, NULL);
-	}
-#endif
-}
-
 static void read_settings(void)
 {
 	int old_colors = use_colors;
 
 	use_colors = settings_get_bool("colors");
-	read_signals();
 	if (use_colors && !has_colors())
 		use_colors = FALSE;
 
@@ -172,7 +142,6 @@ static int init_curses(void)
 static int init_screen_int(void)
 {
 	use_colors = settings_get_bool("colors");
-	read_signals();
 
 	scrx = scry = 0;
 	freeze_refresh = 0;
@@ -189,7 +158,6 @@ static void deinit_screen_int(void)
 int init_screen(void)
 {
 	settings_add_bool("lookandfeel", "colors", TRUE);
-	settings_add_str("misc", "ignore_signals", "");
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	return init_screen_int();

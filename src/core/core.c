@@ -19,8 +19,10 @@
 */
 
 #include "module.h"
+#include <signal.h>
 
 #include "pidwait.h"
+#include "misc.h"
 
 #include "net-disconnect.h"
 #include "net-sendbuffer.h"
@@ -46,6 +48,35 @@ void chat_commands_init(void);
 void chat_commands_deinit(void);
 
 int irssi_gui;
+
+static void read_signals(void)
+{
+#ifndef WIN32
+	int signals[] = {
+		SIGHUP, SIGINT, SIGQUIT, SIGTERM,
+		SIGALRM, SIGUSR1, SIGUSR2
+	};
+	char *signames[] = {
+		"hup", "int", "quit", "term",
+		"alrm", "usr1", "usr2"
+	};
+
+	const char *ignores;
+	struct sigaction act;
+        int n;
+
+	ignores = settings_get_str("ignore_signals");
+
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = 0;
+
+	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
+		act.sa_handler = find_substr(ignores, signames[n]) ?
+			SIG_IGN : SIG_DFL;
+		sigaction(signals[n], &act, NULL);
+	}
+#endif
+}
 
 void core_init(void)
 {
@@ -75,11 +106,18 @@ void core_init(void)
 	nicklist_init();
 
 	chat_commands_init();
+
+	settings_add_str("misc", "ignore_signals", "");
+	signal_add("setup changed", (SIGNAL_FUNC) read_signals);
+	read_signals();
+
         settings_check();
 }
 
 void core_deinit(void)
 {
+	signal_remove("setup changed", (SIGNAL_FUNC) read_signals);
+
 	chat_commands_deinit();
 
 	nicklist_deinit();
