@@ -393,21 +393,13 @@ static void sig_whowas_event_end(IRC_SERVER_REC *server, const char *data,
 static void event_received(IRC_SERVER_REC *server, const char *data,
 			   const char *nick, const char *addr)
 {
-	char *params, *cmd, *args, *ptr;
-
-	g_return_if_fail(data != NULL);
-
 	if (!i_isdigit(*data)) {
 		printtext(server, NULL, MSGLEVEL_CRAP, "%s", data);
 		return;
 	}
 
 	/* numeric event. */
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &cmd, NULL, &args);
-	ptr = strstr(args, " :");
-	if (ptr != NULL) *(ptr+1) = ' ';
-        printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
-        g_free(params);
+        signal_emit("default event numeric", 4, server, data, nick, addr);
 }
 
 void fe_events_init(void)

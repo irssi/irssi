@@ -750,6 +750,13 @@ static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_numeric(IRC_SERVER_REC *server, const char *data)
+{
+	data = strchr(data, ' ');
+	if (data != NULL)
+                event_received(server, data+1);
+}
+
 static void event_received(IRC_SERVER_REC *server, const char *data)
 {
 	char *args, *ptr;
@@ -855,6 +862,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 
+        signal_add("default event numeric", (SIGNAL_FUNC) event_numeric);
 	signal_add("event 001", (SIGNAL_FUNC) event_received);
 	signal_add("event 004", (SIGNAL_FUNC) event_received);
 	signal_add("event 254", (SIGNAL_FUNC) event_received);
@@ -936,6 +944,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 
+        signal_remove("default event numeric", (SIGNAL_FUNC) event_numeric);
 	signal_remove("event 001", (SIGNAL_FUNC) event_received);
 	signal_remove("event 004", (SIGNAL_FUNC) event_received);
 	signal_remove("event 254", (SIGNAL_FUNC) event_received);
