@@ -12,6 +12,9 @@ AC_STDC_HEADERS
 AC_ARG_PROGRAM
 AM_PROG_LIBTOOL
 
+AC_PATH_PROG(sedpath, sed)
+AC_PATH_PROG(perlpath, perl)
+
 dnl * --disable-static isn't a good idea, complain if it's used
 if test "x$enable_static" = "xno"; then
 	AC_ERROR([Don't give --disable-static option to configure])
@@ -94,24 +97,35 @@ AC_ARG_WITH(modules,
 		build_modules="$withval"
 	fi)
 
-if test "x$prefix" = "xNONE"; then
-	PERL_LIB_DIR=""
-else
-	PERL_LIB_DIR="$prefix"
+if test "x$prefix" != "xNONE"; then
+	PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=$prefix"
+	PERL_USE_LIB="$prefix`$perlpath -e 'use Config; $dir = $Config{archlibexp}; $prefix = $Config{prefixexp}; $dir =~ s/^$prefix//; print $dir;'`"
+
+	perl_library_dir="$PERL_USE_LIB"
+	perl_prefix_note=yes
 fi
 
-AC_ARG_WITH(perl-path,
-[  --with-perl-path=dir  Specify where to install the Perl libraries for irssi],
-	if test x$withval = xyes; then
+AC_ARG_WITH(perl-lib,
+[  --with-perl-lib=[site|vendor|DIR]  Specify where to install the
+                        Perl libraries for irssi, default is site],
+	if test "x$withval" = xyes; then
 		want_perl=yes
-	else
-		if test "x$withval" = xno; then
-			want_perl=no
+	elif test "x$withval" = xno; then
+		want_perl=no
+	elif test "x$withval" = xsite; then
+		want_perl=yes
+	elif test "x$withval" = xvendor; then
+		want_perl=yes
+		if test -z "`$perlpath -v|grep '5\.0'`"; then
+			PERL_MM_PARAMS="INSTALLDIRS=vendor"
 		else
-			want_perl=yes
-			PERL_LIB_DIR="$withval"
-			perl_lib_dir_given=yes
+			PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=`perl -e 'use Config; print $Config{prefix}'`"
 		fi
+		perl_library_dir="(vendor default - `$perlpath -e 'use Config; print $Config{archlib}'`)"
+	else
+		want_perl=yes
+		PERL_MM_PARAMS="INSTALLDIRS=perl LIB=$withval"
+		PERL_USE_LIB="$withval"
 	fi,
 	want_perl=yes)
 
@@ -234,8 +248,6 @@ fi
 dnl **
 dnl ** fe-text checks
 dnl **
-
-AC_PATH_PROG(sedpath, sed)
 
 AC_DEFUN(AC_CHECK_GLIBDIR,[
   AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
@@ -435,7 +447,6 @@ dnl ** perl checks
 dnl **
 
 if test "$want_perl" != "no"; then
-	AC_PATH_PROG(perlpath, perl)
 	AC_MSG_CHECKING(for working Perl support)
 
 	if test -z "$perlpath"; then
@@ -574,7 +585,9 @@ if test "$want_perl" != "no"; then
 
 		AC_SUBST(PERL_LDFLAGS)
 		AC_SUBST(PERL_CFLAGS)
-		AC_SUBST(PERL_LIB_DIR)
+
+		AC_SUBST(PERL_USE_LIB)
+		AC_SUBST(PERL_MM_PARAMS)
 	fi
 fi
 
@@ -767,17 +780,15 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 fi
 
 if test "x$want_perl" = "xyes"; then
-	if test -z "$PERL_LIB_DIR"; then
-		echo "Perl library directory ..... : (default - usually /usr/local/lib/perl_site)"
-	else
-		echo "Perl library directory ..... : $PERL_LIB_DIR"
-		if test "x$perl_lib_dir_given" != "xyes"; then
-			echo " - NOTE: This was automatically set to the same directory you gave with"
-			echo "   --prefix. If you want the perl libraries to install to their 'correct'"
-			echo "   path, you'll need to give --enable-perl-path= (nothing after '=') option"
-			echo "   to configure. Anyway, installing perl to this directory should work"
-			echo "   just as well.."
-		fi
+	if test -z "$perl_library_dir"; then
+		perl_library_dir="(site default - `$perlpath -e 'use Config; print $Config{sitearch}'`)"
+	fi
+       	echo "Perl library directory ..... : $perl_library_dir"
+	if test "x$perl_prefix_note" = "xyes"; then
+		echo "  - NOTE: This was automatically set to the same directory you gave with"
+		echo "  --prefix. If you want the perl libraries to install to their 'correct'"
+		echo "  path, you'll need to give --with-perl-lib=site option to configure."
+		echo "  Anyway, installing perl to this directory should work just as well."
 	fi
 fi
 echo "Install prefix ............. : $prefix"

@@ -15,7 +15,7 @@ perl-core.c: perl-signals-list.h irssi-core.pl.h
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
-	-DPERL_LIB_DIR=\""$(PERL_LIB_DIR)"\" \
+	-DPERL_USE_LIB=\""$(PERL_USE_LIB)"\" \
 	$(PERL_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
@@ -121,11 +121,7 @@ all-local:
 	for dir in common irc ui; do \
 	  cd $$dir && \
 	  if [ ! -f Makefile ]; then \
-	    if [ "x$(PERL_LIB_DIR)" = "x" ]; then \
-	      $(perlpath) Makefile.PL; \
-	    else \
-	      $(perlpath) Makefile.PL PREFIX=$(PERL_LIB_DIR) INSTALLDIRS=perl; \
-	    fi; \
+            $(perlpath) Makefile.PL $(PERL_MM_PARAMS); \
 	  fi && \
 	  ($(MAKE) || $(MAKE)) && \
 	  cd ..; \

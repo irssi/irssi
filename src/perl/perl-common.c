@@ -175,8 +175,8 @@ char *perl_get_use_list(void)
 
 	str = g_string_new(NULL);
 
-        if (*PERL_LIB_DIR != '\0')
-		g_string_append(str, "use lib \""PERL_LIB_DIR"\";");
+        if (*PERL_USE_LIB != '\0')
+		g_string_append(str, "use lib \""PERL_USE_LIB"\";");
 
         g_string_append(str, "use Irssi;");
 	if (irssi_gui != IRSSI_GUI_NONE)
