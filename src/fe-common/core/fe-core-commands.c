@@ -213,7 +213,8 @@ static void show_help(const char *data)
     if (!found || (helpitem != NULL && !show_help_rec(helpitem)))
 	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "No help for %s", data);
 
-    if (data[strlen(data)-1] != ' ' && command_have_sub(data)) {
+    if (*data != '\0' && data[strlen(data)-1] != ' ' &&
+	command_have_sub(data)) {
 	    char *cmd;
 
 	    cmd = g_strconcat(data, " ", NULL);
