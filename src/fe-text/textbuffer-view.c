@@ -195,7 +195,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 		if (xpos == view->width && sub != NULL &&
 		    (last_space <= indent_pos || last_space <= 10) &&
-		    !view->longword_noindent) {
+		    view->longword_noindent) {
                         /* long word, remove the indentation from this line */
 			xpos -= sub->indent;
                         sub->indent = 0;
@@ -211,7 +211,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                                 color = last_color;
 				ptr = last_space_ptr;
 				while (*ptr == ' ') ptr++;
-			} else if (!view->longword_noindent) {
+			} else if (view->longword_noindent) {
 				/* long word, no indentation in next line */
 				xpos = 0;
 				sub->continues = TRUE;
@@ -305,7 +305,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	LINE_CACHE_REC *cache;
         const unsigned char *text, *text_newline;
 	char *tmp;
-	int xpos, color, drawcount, first;
+	int xpos, color, drawcount, first, need_move, need_clrtoeol;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
                 return 0;
@@ -314,11 +314,17 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	if (subline >= cache->count)
                 return 0;
 
+        need_move = TRUE; need_clrtoeol = FALSE;
 	xpos = color = drawcount = 0; first = TRUE;
 	text_newline = text =
 		subline == 0 ? line->text : cache->lines[subline-1].start;
 	for (;;) {
 		if (text == text_newline) {
+			if (need_clrtoeol && need_move) {
+				term_set_color(view->window, ATTR_RESET);
+				term_clrtoeol(view->window);
+			}
+
 			if (first)
 				first = FALSE;
 			else {
@@ -326,11 +332,6 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                                 if (--max == 0)
 					break;
 			}
-
-                        /* first clear the line */
-			term_set_color(view->window, ATTR_RESET);
-			term_move(view->window, 0, ypos);
-			term_clrtoeol(view->window);
 
 			if (subline > 0) {
                                 indent_func = cache->lines[subline-1].indent_func;
@@ -340,13 +341,25 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                                 color = cache->lines[subline-1].color;
 			}
 
-			term_move(view->window, xpos, ypos);
+			if (need_move || xpos > 0) {
+				/* first clear the line */
+				if (xpos == 0)
+                                        need_clrtoeol = TRUE;
+				else {
+					term_set_color(view->window, ATTR_RESET);
+					term_move(view->window, 0, ypos);
+					term_clrtoeol(view->window);
+				}
+
+				term_move(view->window, xpos, ypos);
+			}
 			term_set_color(view->window, color);
 
 			/* get the beginning of the next subline */
 			text_newline = subline == cache->count-1 ? NULL :
                                 cache->lines[subline].start;
 
+                        need_move = !cache->lines[subline].continues;
                         drawcount++;
 			subline++;
 		}
@@ -509,7 +522,7 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 {
         if (default_indent != -1)
 		view->default_indent = default_indent;
-        if (view->longword_noindent != -1)
+        if (longword_noindent != -1)
 		view->longword_noindent = longword_noindent;
 
 	view->default_indent_func = indent_func;

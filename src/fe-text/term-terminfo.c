@@ -114,10 +114,14 @@ void term_resize(int width, int height)
 	vcx = vcy = -1;
 }
 
+void term_resize_final(int width, int height)
+{
+}
+
 /* Returns TRUE if terminal has colors */
 int term_has_colors(void)
 {
-        return terminfo_has_colors(current_term);
+        return current_term->has_colors;
 }
 
 /* Force the colors on any way you can */
@@ -217,7 +221,8 @@ void term_set_color(TERM_WINDOW *window, int col)
 	if ((col & 0x0f) != last_fg &&
 	    ((col & 0x0f) != 0 || (col & ATTR_RESETFG) == 0)) {
 		last_fg = col & 0x0f;
-		terminfo_set_fg(last_fg);
+                if (term_use_colors)
+			terminfo_set_fg(last_fg);
 	}
 
 	/* set background color */
@@ -229,7 +234,8 @@ void term_set_color(TERM_WINDOW *window, int col)
 	if ((col & 0xf0) >> 4 != last_bg &&
 	    ((col & 0xf0) != 0 || (col & ATTR_RESETBG) == 0)) {
 		last_bg = (col & 0xf0) >> 4;
-		terminfo_set_bg(last_bg);
+                if (term_use_colors)
+			terminfo_set_bg(last_bg);
 	}
 
 	/* bold */
@@ -263,19 +269,13 @@ void term_move(TERM_WINDOW *window, int x, int y)
 void term_addch(TERM_WINDOW *window, int chr)
 {
 	putc(chr, window->term->out);
-	if (++vcx == window->width) {
-                vcx = 0; vcy++;
-	}
+	vcx++; /* ignore if cursor gets past the screen */
 }
 
 void term_addstr(TERM_WINDOW *window, char *str)
 {
 	fputs(str, window->term->out);
-	vcx += strlen(str);
-	while (vcx > window->width) {
-		vcx -= window->width;
-                vcy++;
-	}
+	vcx += strlen(str); /* ignore if cursor gets past the screen */
 }
 
 void term_clrtoeol(TERM_WINDOW *window)

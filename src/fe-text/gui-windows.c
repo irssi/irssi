@@ -46,7 +46,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   settings_get_bool("scroll"));
 	textbuffer_view_set_default_indent(gui->view,
 					   settings_get_int("indent"),
-					   settings_get_bool("indent_always"),
+					   !settings_get_bool("indent_always"),
 					   get_default_indent_func());
 	return gui;
 }

@@ -160,15 +160,24 @@ void term_resize(int width, int height)
 #ifdef HAVE_CURSES_RESIZETERM
 	if (width < 0 || height < 0) {
 #endif
-                term_deinit_int();
-                term_init_int();
-		mainwindows_recreate();
+		term_deinit_int();
+		term_init_int();
 #ifdef HAVE_CURSES_RESIZETERM
 	} else if (term_width != width || term_height != height) {
 		term_width = width;
 		term_height = height;
                 resizeterm(term_height, term_width);
 	}
+#endif
+}
+
+void term_resize_final(int width, int height)
+{
+#ifdef HAVE_CURSES_RESIZETERM
+        if (width < 0 || height < 0)
+		mainwindows_recreate();
+#else
+	mainwindows_recreate();
 #endif
 }
 
@@ -187,6 +196,7 @@ void term_force_colors(int set)
 /* Clear screen */
 void term_clear(void)
 {
+        term_set_color(root_window, 0);
         clear();
 }
 
@@ -205,6 +215,8 @@ TERM_WINDOW *term_window_create(int x, int y, int width, int height)
 	window->x = x; window->y = y;
         window->width = width; window->height = height;
 	window->win = newwin(height, width, y, x);
+	if (window->win == NULL)
+		g_error("newwin() failed: %d,%d %d,%d", x, y, width, height);
 	idlok(window->win, 1);
 
         return window;

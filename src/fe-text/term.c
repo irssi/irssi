@@ -32,60 +32,60 @@
 #include <signal.h>
 #include <termios.h>
 
-#define RESIZE_TIMEOUT 500 /* how often to check if the terminal has been resized */
 #define MIN_SCREEN_WIDTH 20
 
 int term_use_colors;
 
-#ifdef SIGWINCH
-static int resize_timeout_tag;
-#endif
-static int resize_needed;
+static int resize_dirty;
 
-static int resize_timeout(void)
+/* Resize the terminal if needed */
+void term_resize_dirty(void)
 {
 #ifdef TIOCGWINSZ
 	struct winsize ws;
 #endif
+        int width, height;
 
-	if (!resize_needed)
-		return TRUE;
+	if (!resize_dirty)
+		return;
 
-        resize_needed = FALSE;
+        resize_dirty = FALSE;
 
 #ifdef TIOCGWINSZ
 	/* Get new window size */
 	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
-		return TRUE;
+		return;
 
 	if (ws.ws_row == term_height && ws.ws_col == term_width) {
 		/* Same size, abort. */
-		return TRUE;
+		return;
 	}
 
 	if (ws.ws_col < MIN_SCREEN_WIDTH)
 		ws.ws_col = MIN_SCREEN_WIDTH;
 
-        term_resize(ws.ws_col, ws.ws_row);
+	width = ws.ws_col;
+        height = ws.ws_row;
 #else
-        term_resize(-1, -1);
+        width = height = -1;
 #endif
+        term_resize(width, height);
 	mainwindows_resize(term_width, term_height);
-
-	return TRUE;
+        term_resize_final(width, height);
 }
 
 #ifdef SIGWINCH
 static void sig_winch(int p)
 {
-        resize_needed = TRUE;
+        irssi_set_dirty();
+        resize_dirty = TRUE;
 }
 #endif
 
 static void cmd_resize(void)
 {
-	resize_needed = TRUE;
-	resize_timeout();
+	resize_dirty = TRUE;
+        term_resize_dirty();
 }
 
 static void read_settings(void)
@@ -129,18 +129,11 @@ void term_common_init(void)
 	act.sa_flags = 0;
 	act.sa_handler = sig_winch;
 	sigaction(SIGWINCH, &act, NULL);
-
-	resize_timeout_tag = g_timeout_add(RESIZE_TIMEOUT,
-					   (GSourceFunc) resize_timeout, NULL);
 #endif
 }
 
 void term_common_deinit(void)
 {
-#ifdef SIGWINCH
-	g_source_remove(resize_timeout_tag);
-#endif
-
 	command_unbind("resize", (SIGNAL_FUNC) cmd_resize);
 	signal_remove("beep", (SIGNAL_FUNC) term_beep);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

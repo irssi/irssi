@@ -107,6 +107,8 @@ static void dirty_check(void)
 	if (!dirty)
 		return;
 
+        term_resize_dirty();
+
 	if (full_redraw) {
                 full_redraw = FALSE;
 

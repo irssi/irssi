@@ -32,6 +32,9 @@ void term_deinit(void);
 /* Resize terminal - if width or height is negative,
    the new size is unknown and should be figured out somehow */
 void term_resize(int width, int height);
+void term_resize_final(int width, int height);
+/* Resize the terminal if needed */
+void term_resize_dirty(void);
 
 /* Returns TRUE if terminal has colors */
 int term_has_colors(void);
@@ -75,7 +78,5 @@ int term_getch(void);
 /* internal */
 void term_common_init(void);
 void term_common_deinit(void);
-
-void term_force_resize(void);
 
 #endif
