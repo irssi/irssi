@@ -94,7 +94,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	}
 
         /* clear the rest of the input line */
-        if (entry->xpos + entry->width == screen_width)
+        if (end_xpos == screen_width)
 		screen_clrtoeol(screen_root);
 	else {
 		while (xpos < end_xpos) {
@@ -139,6 +139,7 @@ void gui_entry_move(GUI_ENTRY_REC *entry, int xpos, int ypos, int width)
 	} else {
 		/* input line shrinked - make sure the cursor
 		   is inside the input line */
+		entry->width = width;
 		if (entry->pos - entry->scrstart >
 		    entry->width-2 - entry->promptlen) {
 			gui_entry_fix_cursor(entry);
