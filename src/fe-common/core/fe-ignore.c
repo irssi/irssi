@@ -84,9 +84,9 @@ static void cmd_ignore_show(void)
 }
 
 /* SYNTAX: IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
-                  [-channels <channel>] [-time <secs>] <mask> <levels>
+                  [-channels <channel>] [-time <secs>] <mask> [<levels>]
            IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
-	          [-time <secs>] <channels> <levels> */
+	          [-time <secs>] <channels> [<levels>] */
 static void cmd_ignore(const char *data)
 {
 	GHashTable *optlist;
@@ -108,7 +108,8 @@ static void cmd_ignore(const char *data)
 	patternarg = g_hash_table_lookup(optlist, "pattern");
         chanarg = g_hash_table_lookup(optlist, "channels");
 
-	if (*levels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+        if (*levels == '\0') levels = "ALL";
 
 	if (active_win->active_server != NULL &&
 	    active_win->active_server->ischannel(mask)) {
