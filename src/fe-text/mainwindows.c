@@ -71,26 +71,32 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
+#define window_size_equals(window, mainwin) \
+	((window)->width == (mainwin)->width && \
+	 (window)->height == MAIN_WINDOW_TEXT_HEIGHT(mainwin))
+
 static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
+        int resized;
 
 	mainwindow_set_screen_size(window);
-	if (window->active->width == window->width &&
-	    window->active->height == MAIN_WINDOW_TEXT_HEIGHT(window))
-                return;
 
+	resized = FALSE;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec->gui_data != NULL &&
-		    WINDOW_GUI(rec)->parent == window) {
+		    WINDOW_GUI(rec)->parent == window &&
+		    !window_size_equals(rec, window)) {
+                        resized = TRUE;
 			gui_window_resize(rec, window->width,
 					  MAIN_WINDOW_TEXT_HEIGHT(window));
 		}
 	}
 
-	signal_emit("mainwindow resized", 1, window);
+        if (resized)
+		signal_emit("mainwindow resized", 1, window);
 }
 
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
@@ -147,7 +153,7 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec != skip_window && WINDOW_MAIN(rec) == mainwin) {
-                        window_set_active(rec);
+			window_set_active(rec);
                         break;
 		}
 	}
