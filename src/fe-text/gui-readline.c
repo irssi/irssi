@@ -323,7 +323,11 @@ void readline(void)
 
 	for (;;) {
 		key = getch();
-		if (key == ERR || key == KEY_RESIZE) break;
+		if (key == ERR
+#ifdef KEY_RESIZE
+		    || key == KEY_RESIZE
+#endif
+		   ) break;
 
 		handle_key(key);
 	}
