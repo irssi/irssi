@@ -10,18 +10,21 @@
    reply before aborting.
 
    ... - char *start, int argpos, char *start, int argpos, ..., NULL,
-         char *stop, int argpos, char *stop, int argpos, ..., NULL
+         char *stop, int argpos, char *stop, int argpos, ..., NULL,
+         char *optional, int argpos, ..., NULL
    List of events that start and stop this redirection.
    Start event list may be just NULL, but there must be at least one
-   stop event. `argpos' specifies the word number in event string which
-   is compared to wanted argument, -1 = don't compare, TRUE always. */
+   stop event. Optional events are checked only if they are received
+   immediately after one of the stop-events. `argpos' specifies the
+   word number in event string which is compared to wanted argument,
+   -1 = don't compare, TRUE always. */
 void server_redirect_register(const char *command,
 			      int remote, int timeout, ...);
-/* start/stop lists shouldn't be free'd after, and their strings
+/* start/stop/opt lists shouldn't be free'd after, and their strings
    should be dynamically allocated */
 void server_redirect_register_list(const char *command,
 				   int remote, int timeout,
-				   GSList *start, GSList *stop);
+				   GSList *start, GSList *stop, GSList *opt);
 
 /* Specify that the next command sent to server will be redirected.
    NOTE: This command MUST be called before irc_send_cmd().
