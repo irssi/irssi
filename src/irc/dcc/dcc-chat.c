@@ -25,6 +25,7 @@
 #include "net-nonblock.h"
 #include "net-sendbuffer.h"
 #include "line-split.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "masks.h"
@@ -33,6 +34,45 @@
 #include "irc-queries.h"
 
 #include "dcc.h"
+
+DCC_REC *dcc_chat_find_id(const char *id)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(id != NULL, NULL);
+
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		DCC_REC *dcc = tmp->data;
+
+		if (dcc->type == DCC_TYPE_CHAT && dcc->chat_id != NULL &&
+		    g_strcasecmp(dcc->chat_id, id) == 0)
+			return dcc;
+	}
+
+	return NULL;
+}
+
+static void dcc_chat_set_id(DCC_REC *dcc)
+{
+        char *id;
+	int num;
+
+	if (dcc_chat_find_id(dcc->nick) == NULL) {
+                /* same as nick, good */
+		dcc->chat_id = g_strdup(dcc->nick);
+                return;
+	}
+
+	/* keep adding numbers after nick until some of them isn't found */
+	for (num = 2;; num++) {
+                id = g_strdup_printf("%s%d", dcc->nick, num);
+		if (dcc_chat_find_id(id) == NULL) {
+			dcc->chat_id = id;
+                        break;
+		}
+                g_free(id);
+	}
+}
 
 /* Send `data' to dcc chat. */
 void dcc_chat_send(DCC_REC *dcc, const char *data)
@@ -54,7 +94,7 @@ DCC_REC *item_get_dcc(WI_ITEM_REC *item)
 	if (query == NULL || *query->name != '=')
 		return NULL;
 
-	return dcc_find_item(DCC_TYPE_CHAT, query->name+1, NULL);
+	return dcc_chat_find_id(query->name+1);
 }
 
 /* Send text to DCC chat */
@@ -74,7 +114,7 @@ static void cmd_msg(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, ++target, NULL);
+	dcc = dcc_chat_find_id(++target);
 	if (dcc != NULL && dcc->sendbuf != NULL)
 		dcc_chat_send(dcc, text);
 
@@ -92,7 +132,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 	dcc = item_get_dcc((WI_ITEM_REC *) item);
 	if (dcc == NULL) return;
 
-	str = g_strdup_printf("ACTION %s", data);
+	str = g_strconcat("ACTION ", data, NULL);
 	dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 	g_free(str);
 
@@ -116,9 +156,9 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 		return;
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
+	dcc = dcc_chat_find_id(target+1);
 	if (dcc != NULL) {
-		str = g_strdup_printf("ACTION %s", text);
+		str = g_strconcat("ACTION ", text, NULL);
 		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
@@ -146,11 +186,11 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
+	dcc = dcc_chat_find_id(target+1);
 	if (dcc != NULL) {
 		g_strup(ctcpcmd);
 
-		str = g_strdup_printf("%s %s", ctcpcmd, ctcpdata);
+		str = g_strconcat(ctcpcmd, " ", ctcpdata, NULL);
 		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
@@ -262,53 +302,64 @@ static void dcc_chat_connect(DCC_REC *dcc)
 	}
 }
 
-/* SYNTAX: DCC CHAT <nick> */
+/* SYNTAX: DCC CHAT [<nick>] */
 static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 {
 	void *free_arg;
 	DCC_REC *dcc;
 	IPADDR own_ip;
         GIOChannel *handle;
-	char *nick, *str, host[MAX_IP_LEN];
+	char *nick, host[MAX_IP_LEN];
 	int port;
 
 	g_return_if_fail(data != NULL);
 
 	if (!cmd_get_params(data, &free_arg, 1, &nick))
 		return;
-	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, nick, NULL);
-	if (dcc != NULL) {
-		/* found from dcc list - so we're the connecting side.. */
+	if (*nick == '\0') {
+		dcc = dcc_find_request_latest(DCC_TYPE_CHAT);
+		if (dcc != NULL)
+			dcc_chat_connect(dcc);
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	dcc = dcc_chat_find_id(nick);
+	if (dcc != NULL && dcc_is_waiting_user(dcc)) {
+		/* found from dcc chat requests,
+		   we're the connecting side */
 		dcc_chat_connect(dcc);
 		cmd_params_free(free_arg);
 		return;
 	}
 
-	/* send dcc chat request */
+	if (dcc != NULL && dcc_is_listening(dcc) &&
+	    dcc->server == server) {
+		/* sending request again even while old request is
+		   still waiting, remove it. */
+                dcc_destroy(dcc);
+	}
+
+	/* start listening  */
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	if (net_getsockname(net_sendbuffer_handle(server->handle),
-			    &own_ip, NULL) == -1)
-		cmd_param_error(CMDERR_ERRNO);
-
-	port = settings_get_int("dcc_port");
-	handle = net_listen(&own_ip, &port);
+	handle = dcc_listen(net_sendbuffer_handle(server->handle),
+			    &own_ip, &port);
 	if (handle == NULL)
 		cmd_param_error(CMDERR_ERRNO);
 
-	dcc = dcc_create(DCC_TYPE_CHAT, handle, nick, "chat", server, NULL);
+	dcc = dcc_create(DCC_TYPE_CHAT, nick, "chat", server, NULL);
+        dcc_chat_set_id(dcc);
+        dcc->handle = handle;
 	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) dcc_chat_listen, dcc);
 
-	/* send the request */
+	/* send the chat request */
 	dcc_make_address(&own_ip, host);
-	str = g_strdup_printf("PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
-			      nick, host, port);
-	irc_send_cmd(server, str);
-	g_free(str);
+	irc_send_cmdv(server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
+		      nick, host, port);
 
 	cmd_params_free(free_arg);
 }
@@ -326,6 +377,63 @@ static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server,
 
 	dcc->mirc_ctcp = toupper(*data) != 'N' &&
 		g_strncasecmp(data, "OF", 3) != 0;
+}
+
+#define DCC_AUTOACCEPT_PORT(dcc) \
+	((dcc)->port >= 1024 || settings_get_bool("dcc_autoaccept_lowport"))
+
+#define DCC_CHAT_AUTOACCEPT(dcc, server, nick, addr) \
+	(DCC_AUTOACCEPT_PORT(dcc) && \
+	masks_match(SERVER(server), \
+		settings_get_str("dcc_autochat_masks"), (nick), (addr)))
+
+
+/* CTCP: DCC CHAT */
+static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
+			      const char *nick, const char *addr,
+			      const char *target, DCC_REC *chat)
+{
+        DCC_REC *dcc;
+	char **params;
+	int paramcount;
+        int autoallow = FALSE;
+
+        /* CHAT <unused> <address> <port> */
+	params = g_strsplit(data, " ", -1);
+	paramcount = strarray_length(params);
+
+	if (paramcount < 3) {
+		g_strfreev(params);
+                return;
+	}
+
+	dcc = dcc_find_request(DCC_TYPE_CHAT, nick, NULL);
+	if (dcc != NULL) {
+		if (dcc_is_listening(dcc)) {
+			/* we requested dcc chat, they requested
+			   dcc chat from us .. allow it. */
+			dcc_destroy(dcc);
+			autoallow = TRUE;
+		} else {
+			/* we already have one dcc chat request
+			   from this nick, remove it. */
+                        dcc_destroy(dcc);
+		}
+	}
+
+	dcc = dcc_create(DCC_TYPE_CHAT, nick, params[0], server, chat);
+        dcc_chat_set_id(dcc);
+	dcc->target = g_strdup(target);
+	dcc->port = atoi(params[2]);
+	dcc_get_address(params[1], &dcc->addr);
+	net_ip2host(&dcc->addr, dcc->addrstr);
+
+	signal_emit("dcc request", 2, dcc, addr);
+
+	if (autoallow || DCC_CHAT_AUTOACCEPT(dcc, server, nick, addr))
+		dcc_chat_connect(dcc);
+
+	g_strfreev(params);
 }
 
 /* DCC CHAT: text received */
@@ -364,31 +472,47 @@ static void dcc_chat_msg(DCC_REC *dcc, const char *msg)
 	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
 
 	g_strdown(cmd+9);
-	if (!signal_emit(cmd, 2, ptr, dcc))
-		signal_emit(reply ? "default dcc reply" : "default dcc ctcp", 2, msg, dcc);
+	if (!signal_emit(cmd, 2, ptr, dcc)) {
+		signal_emit(reply ? "default dcc reply" :
+			    "default dcc ctcp", 2, msg, dcc);
+	}
 	g_free(cmd);
 
 	signal_stop();
 }
 
-static void dcc_ctcp_redirect(gchar *msg, DCC_REC *dcc)
+static void dcc_ctcp_redirect(const char *msg, DCC_REC *dcc)
 {
 	g_return_if_fail(msg != NULL);
 	g_return_if_fail(dcc != NULL);
 
-	signal_emit("ctcp msg dcc", 6, dcc->server, msg, dcc->nick, "dcc", dcc->mynick, dcc);
+	signal_emit("ctcp msg dcc", 6, dcc->server, msg,
+		    dcc->nick, "dcc", dcc->mynick, dcc);
+}
+
+static void dcc_ctcp_reply_redirect(const char *msg, DCC_REC *dcc)
+{
+	g_return_if_fail(msg != NULL);
+	g_return_if_fail(dcc != NULL);
+
+	signal_emit("ctcp reply dcc", 6, dcc->server, msg,
+		    dcc->nick, "dcc", dcc->mynick, dcc);
 }
 
 void dcc_chat_init(void)
 {
+	settings_add_str("dcc", "dcc_autochat_masks", "");
+
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
 	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("dcc chat", NULL, (SIGNAL_FUNC) cmd_dcc_chat);
 	command_bind("mircdcc", NULL, (SIGNAL_FUNC) cmd_mircdcc);
+	signal_add("ctcp msg dcc chat", (SIGNAL_FUNC) ctcp_msg_dcc_chat);
 	signal_add_first("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
 	signal_add("dcc ctcp dcc", (SIGNAL_FUNC) dcc_ctcp_redirect);
+	signal_add("dcc reply dcc", (SIGNAL_FUNC) dcc_ctcp_reply_redirect);
 }
 
 void dcc_chat_deinit(void)
@@ -399,6 +523,8 @@ void dcc_chat_deinit(void)
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("dcc chat", (SIGNAL_FUNC) cmd_dcc_chat);
 	command_unbind("mircdcc", (SIGNAL_FUNC) cmd_mircdcc);
+	signal_remove("ctcp msg dcc chat", (SIGNAL_FUNC) ctcp_msg_dcc_chat);
 	signal_remove("dcc chat message", (SIGNAL_FUNC) dcc_chat_msg);
 	signal_remove("dcc ctcp dcc", (SIGNAL_FUNC) dcc_ctcp_redirect);
+	signal_remove("dcc reply dcc", (SIGNAL_FUNC) dcc_ctcp_reply_redirect);
 }

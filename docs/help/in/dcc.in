@@ -7,12 +7,12 @@ files.
 
 /DCC LIST
     - Shows all the open DCC connections.
-/DCC RESUME <nick> [<file>]
+/DCC RESUME [<nick> [<file>]]
     - Resumes a DCC SEND/GET connection.
-/DCC CHAT <nick>
+/DCC CHAT [<nick>]
     - Sends a chat connection request to remote client or accepts 
       a chat connection if the remote end has already sent a request.
-/DCC GET <nick> [<file>]
+/DCC GET [<nick> [<file>]]
     - Gets the file offered by remote client. The file is downloaded and
       saved into the current working directory.
 /DCC SEND <nick> <file>

@@ -2,6 +2,7 @@
 #define __DCC_H
 
 #include "network.h"
+#include "irc-servers.h"
 
 enum {
 	DCC_TYPE_CHAT = 1,
@@ -9,12 +10,6 @@ enum {
 	DCC_TYPE_GET,
 	DCC_TYPE_RESUME,
 	DCC_TYPE_ACCEPT
-};
-
-enum {
-	DCC_GET_RENAME = 0, /* this also acts as default */
-	DCC_GET_OVERWRITE,
-	DCC_GET_RESUME
 };
 
 #define SWAP_SENDGET(a) ((a) == DCC_TYPE_SEND ? DCC_TYPE_GET : \
@@ -25,7 +20,9 @@ typedef struct DCC_REC {
 	time_t created;
 
 	IRC_SERVER_REC *server;
+	char *chat_id; /* unique identifier for dcc chat. usually same as nick. */
 	char *nick;
+	char *target; /* who the request was sent to - your nick, channel or NULL if you sent the request */
 
 	struct DCC_REC *chat; /* if the request came through DCC chat */
 
@@ -53,6 +50,7 @@ typedef struct DCC_REC {
 	unsigned int waitforend:1; /* DCC fast send: file is sent, just wait for the replies from the other side */
 	unsigned int gotalldata:1; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
 
+	unsigned int file_quoted:1; /* file name was received quoted ("file name") */
 	unsigned int mirc_ctcp:1; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
 	unsigned int connection_lost:1; /* DCC chat: other side closed connection */
 	unsigned int destroyed:1; /* We're about to destroy this DCC recond */
@@ -72,17 +70,21 @@ extern GSList *dcc_conns;
 void dcc_init(void);
 void dcc_deinit(void);
 
-/* Find DCC record, arg can be NULL */
-DCC_REC *dcc_find_item(int type, const char *nick, const char *arg);
-DCC_REC *dcc_find_by_port(const char *nick, int port);
+/* Find waiting DCC requests (non-connected) */
+DCC_REC *dcc_find_request_latest(int type);
+DCC_REC *dcc_find_request(int type, const char *nick, const char *arg);
 
 const char *dcc_type2str(int type);
 int dcc_str2type(const char *type);
 void dcc_make_address(IPADDR *ip, char *host);
 
-DCC_REC *dcc_create(int type, GIOChannel *handle, const char *nick,
-		    const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
+DCC_REC *dcc_create(int type, const char *nick, const char *arg,
+		    IRC_SERVER_REC *server, DCC_REC *chat);
 void dcc_destroy(DCC_REC *dcc);
+
+GIOChannel *dcc_listen(GIOChannel *interface, IPADDR *ip, int *port);
+
+void dcc_get_address(const char *str, IPADDR *ip);
 
 /* Send a CTCP message/notify to target. Send the CTCP via DCC chat if
    `chat' is specified. */
@@ -94,7 +96,19 @@ void dcc_chat_send(DCC_REC *dcc, const char *data);
 /* If `item' is a query of a =nick, return DCC chat record of nick */
 DCC_REC *item_get_dcc(WI_ITEM_REC *item);
 
-/* reject DCC request */
+/* Reject a DCC request */
 void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server);
+
+/* fully connected? */
+#define dcc_is_connected(dcc) \
+        ((dcc)->starttime != 0)
+
+/* not connected, we're waiting for other side to connect */
+#define dcc_is_listening(dcc) \
+        ((dcc)->handle != NULL && (dcc)->starttime == 0)
+
+/* not connected, waiting for user to accept it */
+#define dcc_is_waiting_user(dcc) \
+        ((dcc)->handle == NULL)
 
 #endif
