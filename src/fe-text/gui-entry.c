@@ -43,6 +43,9 @@ void gui_entry_destroy(GUI_ENTRY_REC *entry)
 {
         g_return_if_fail(entry != NULL);
 
+	if (active_entry == entry)
+		gui_entry_set_active(NULL);
+
 	g_free_not_null(entry->prompt);
 	g_string_free(entry->text, TRUE);
         g_free(entry);
@@ -148,9 +151,11 @@ void gui_entry_set_active(GUI_ENTRY_REC *entry)
 {
 	active_entry = entry;
 
-	screen_move_cursor(entry->xpos + entry->scrpos + entry->promptlen,
-			   entry->ypos);
-	screen_refresh(NULL);
+	if (entry != NULL) {
+		screen_move_cursor(entry->xpos + entry->scrpos +
+				   entry->promptlen, entry->ypos);
+		screen_refresh(NULL);
+	}
 }
 
 void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str)
