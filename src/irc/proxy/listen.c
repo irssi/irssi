@@ -42,6 +42,7 @@ static void remove_client(CLIENT_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	proxy_clients = g_slist_remove(proxy_clients, rec);
+	rec->listen->clients = g_slist_remove(rec->listen->clients, rec);
 
 	if (ctcp_client == rec)
                 ctcp_client = NULL;
@@ -337,7 +338,8 @@ static void sig_listen(LISTEN_REC *listen)
 	rec->tag = g_input_add(handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen_client, rec);
 
-	proxy_clients = g_slist_append(proxy_clients, rec);
+	proxy_clients = g_slist_prepend(proxy_clients, rec);
+	rec->listen->clients = g_slist_prepend(rec->listen->clients, rec);
 
         signal_emit("proxy client connected", 1, rec);
 	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -583,6 +585,9 @@ static void remove_listen(LISTEN_REC *rec)
 {
 	proxy_listens = g_slist_remove(proxy_listens, rec);
 
+	while (rec->clients != NULL)
+		remove_client(rec->clients->data);
+
 	net_disconnect(rec->handle);
 	g_source_remove(rec->tag);
 	g_free(rec->ircnet);
@@ -644,8 +649,6 @@ void proxy_listen_init(void)
 
 void proxy_listen_deinit(void)
 {
-	while (proxy_clients != NULL)
-		remove_client(proxy_clients->data);
 	while (proxy_listens != NULL)
 		remove_listen(proxy_listens->data);
 	g_string_free(next_line, TRUE);

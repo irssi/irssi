@@ -13,6 +13,8 @@ typedef struct {
 
 	int tag;
 	GIOChannel *handle;
+
+	GSList *clients;
 } LISTEN_REC;
 
 typedef struct {
