@@ -22,6 +22,10 @@
 #include "network.h"
 #include "net-internal.h"
 
+#ifndef INADDR_NONE
+#define INADDR_NONE INADDR_BROADCAST
+#endif
+
 union sockaddr_union {
 	struct sockaddr sa;
 	struct sockaddr_in sin;
