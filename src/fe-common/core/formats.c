@@ -907,9 +907,8 @@ char *strip_codes(const char *input)
 		if (*p == 27 && p[1] != '\0') {
                         p++;
 			p = get_ansi_color(current_theme, p, NULL, NULL, NULL);
-		}
-
-                if (!IS_COLOR_CODE(*p))
+			p--;
+		} else if (!IS_COLOR_CODE(*p))
                         *out++ = *p;   
         }
 
