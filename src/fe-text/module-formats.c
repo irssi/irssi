@@ -37,6 +37,7 @@ FORMAT_REC gui_text_formats[] =
 	{ "window_not_sticky", "Window is not sticky", 0 },
 	{ "window_set_sticky", "Window set sticky", 0 },
 	{ "window_unset_sticky", "Window is not sticky anymore", 0 },
+	{ "window_info_sticky", "Sticky  : $0", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };

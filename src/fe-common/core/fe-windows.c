@@ -376,7 +376,7 @@ int windows_refnum_last(void)
 	return max;
 }
 
-static int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
+int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
 {
 	return w1->refnum < w2->refnum ? -1 : 1;
 }

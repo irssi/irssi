@@ -78,6 +78,7 @@ int window_refnum_prev(int refnum, int wrap);
 int window_refnum_next(int refnum, int wrap);
 int windows_refnum_last(void);
 
+int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2);
 GSList *windows_get_sorted(void);
 
 WINDOW_BIND_REC *window_bind_add(WINDOW_REC *window, const char *servertag,

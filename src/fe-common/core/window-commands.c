@@ -136,6 +136,8 @@ static void cmd_window_info(WINDOW_REC *win)
 	if (win->items != NULL)
                 window_print_items(win);
 
+        signal_emit("window print info", 1, win);
+
 	printformat_window(win, MSGLEVEL_CLIENTCRAP,
 			   TXT_WINDOW_INFO_FOOTER);
 }

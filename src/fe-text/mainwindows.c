@@ -848,6 +848,44 @@ static void cmd_window_stick(const char *data)
 	}
 }
 
+static void windows_print_sticky(MAIN_WINDOW_REC *win)
+{
+        GSList *tmp, *sorted;
+	GString *str;
+
+        /* sort the sticky windows */
+        sorted = NULL;
+	for (tmp = win->sticky_windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		sorted = g_slist_insert_sorted(sorted, rec, (GCompareFunc)
+					       window_refnum_cmp);
+	}
+
+        /* convert to string */
+        str = g_string_new(NULL);
+	while (sorted != NULL) {
+		WINDOW_REC *rec = sorted->data;
+
+		g_string_sprintfa(str, "#%d, ", rec->refnum);
+                sorted = g_slist_remove(sorted, rec);
+	}
+        g_string_truncate(str, str->len-2);
+
+	printformat_window(win->active, MSGLEVEL_CLIENTCRAP,
+			   TXT_WINDOW_INFO_STICKY, str->str);
+        g_string_free(str, TRUE);
+}
+
+static void sig_window_print_info(WINDOW_REC *win)
+{
+	MAIN_WINDOW_REC *mainwin;
+
+	mainwin = WINDOW_GUI(win)->parent;
+	if (mainwin->sticky_windows != NULL)
+                windows_print_sticky(mainwin);
+}
+
 void mainwindows_init(void)
 {
 	old_screen_width = screen_width;
@@ -871,6 +909,7 @@ void mainwindows_init(void)
 	command_bind("window left", NULL, (SIGNAL_FUNC) cmd_window_left);
 	command_bind("window right", NULL, (SIGNAL_FUNC) cmd_window_right);
 	command_bind("window stick", NULL, (SIGNAL_FUNC) cmd_window_stick);
+        signal_add("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
 
 void mainwindows_deinit(void)
@@ -889,4 +928,5 @@ void mainwindows_deinit(void)
 	command_unbind("window left", (SIGNAL_FUNC) cmd_window_left);
 	command_unbind("window right", (SIGNAL_FUNC) cmd_window_right);
 	command_unbind("window stick", (SIGNAL_FUNC) cmd_window_stick);
+        signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
