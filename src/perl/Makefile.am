@@ -110,13 +110,13 @@ UI_SOURCES = \
 	ui/module.h
 
 TEXTUI_SOURCES = \
-	ui/TextUI.xs \
-	ui/TextUI.pm \
-	ui/TextBuffer.xs \
-	ui/TextBufferView.xs \
-	ui/Makefile.PL.in \
-	ui/typemap \
-	ui/module.h
+	textui/TextUI.xs \
+	textui/TextUI.pm \
+	textui/TextBuffer.xs \
+	textui/TextBufferView.xs \
+	textui/Makefile.PL.in \
+	textui/typemap \
+	textui/module.h
 
 EXTRA_DIST = \
 	libperl_dynaloader.la \
