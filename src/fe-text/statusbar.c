@@ -231,8 +231,7 @@ static void statusbar_resize_items(STATUSBAR_REC *bar, int max_width)
 }
 
 #define SBAR_ITEM_REDRAW_NEEDED(_bar, _item, _xpos) \
-	(((_bar)->dirty_xpos != -1 && \
-	  (_xpos) >= (_bar)->dirty_xpos) || \
+	(((_bar)->dirty_xpos != -1 && (_xpos) >= (_bar)->dirty_xpos) || \
 	 (_item)->xpos != (_xpos) || (_item)->current_size != (_item)->size)
 
 static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
@@ -279,7 +278,9 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 		if (rec->config->right_alignment) {
                         if (rec->size > 0)
 				right_items = g_slist_prepend(right_items, rec);
-			else if (rec->current_size > 0) {
+			else if (rec->current_size > 0 &&
+				 (bar->dirty_xpos == -1 ||
+				  rec->xpos < bar->dirty_xpos)) {
 				/* item was hidden - set the dirty position
 				   to begin from the item's old xpos */
 				irssi_set_dirty();
