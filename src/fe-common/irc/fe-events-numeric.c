@@ -603,19 +603,22 @@ static void event_received(gchar *data, IRC_SERVER_REC *server, gchar *nick, gch
     g_free(params);
 }
 
-static void event_motd(gchar *data, SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_motd(const char *data, IRC_SERVER_REC *server)
 {
-    /* numeric event. */
-    gchar *params, *args, *ptr;
+	/* numeric event. */
+	char *params, *args, *ptr;
 
-    if (settings_get_bool("skip_motd"))
-	return;
+	/* don't ignore motd anymore after 3 seconds of connection time -
+	   we might have called /MOTD */
+	if (settings_get_bool("skip_motd") &&
+	    time(NULL)-3 <= server->real_connect_time)
+		return;
 
-    params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
-    ptr = strstr(args, " :");
-    if (ptr != NULL) *(ptr+1) = ' ';
-    printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
-    g_free(params);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
+	ptr = strstr(args, " :");
+	if (ptr != NULL) *(ptr+1) = ' ';
+	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
+	g_free(params);
 }
 
 void fe_events_numeric_init(void)
@@ -663,6 +666,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
 	signal_add("event 376", (SIGNAL_FUNC) event_motd);
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
+	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 
 	signal_add("event 004", (SIGNAL_FUNC) event_received);
 	signal_add("event 364", (SIGNAL_FUNC) event_received);
@@ -714,6 +718,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 376", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
+	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 
 	signal_remove("event 004", (SIGNAL_FUNC) event_received);
 	signal_remove("event 364", (SIGNAL_FUNC) event_received);
