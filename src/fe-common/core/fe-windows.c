@@ -70,6 +70,7 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 
 	rec = g_new0(WINDOW_REC, 1);
 	rec->refnum = window_get_new_refnum();
+	rec->level = level2bits(settings_get_str("window_default_level"));
 
 	windows = g_slist_prepend(windows, rec);
 	signal_emit("window created", 2, rec, GINT_TO_POINTER(automatic));
@@ -259,14 +260,18 @@ WINDOW_REC *window_find_level(void *server, int level)
 
 WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 {
-	WINDOW_REC *window;
+	WINDOW_REC *window,*namewindow=NULL;
 	WI_ITEM_REC *item;
 
 	/* match by name */
 	item = name == NULL ? NULL :
 		window_item_find(server, name);
-	if (item != NULL)
-                return window_item_window(item);
+	if (item != NULL) {
+		namewindow = window_item_window(item);
+		if (namewindow != NULL && ((namewindow->level & level) != 0 ||
+		    !settings_get_bool("window_check_level_first")))
+		  return namewindow;
+	}
 
 	/* match by level */
 	if (level != MSGLEVEL_HILIGHT)
@@ -277,6 +282,9 @@ WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 	/* match by level - ignore server */
 	window = window_find_level(NULL, level);
 	if (window != NULL) return window;
+
+	/* still return item's window if we didnt find anything */
+	if (namewindow != NULL) return namewindow;
 
 	/* fallback to active */
 	return active_win;
@@ -602,6 +610,8 @@ void windows_init(void)
 	daycheck = 0; daytag = -1;
 	settings_add_bool("lookandfeel", "window_auto_change", FALSE);
 	settings_add_bool("lookandfeel", "windows_auto_renumber", TRUE);
+	settings_add_bool("lookandfeel", "window_check_level_first", FALSE);
+	settings_add_str("lookandfeel", "window_default_level", "NONE");
 
 	read_settings();
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
