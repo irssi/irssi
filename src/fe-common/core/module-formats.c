@@ -153,7 +153,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ NULL, "Highlighting", 0 },
 
 	{ "hilight_header", "%#Highlights:", 0 },
-	{ "hilight_line", "%#$[-4]0 $1 $2 $3$4$5", 7, { 1, 0, 0, 0, 0, 0, 0 } },
+	{ "hilight_line", "%#$[-4]0 $1 $2 $3$4", 5, { 1, 0, 0, 0, 0 } },
 	{ "hilight_footer", "", 0 },
 	{ "hilight_not_found", "Highlight not found: $0", 1, { 0 } },
 	{ "hilight_removed", "Highlight removed: $0", 1, { 0 } },

@@ -473,6 +473,32 @@ static void read_hilight_config(void)
 static void hilight_print(int index, HILIGHT_REC *rec)
 {
 	char *chans, *levelstr;
+	GString *options;
+
+	options = g_string_new(NULL);
+	if (!rec->nick || !rec->word) {
+		if (rec->nick) g_string_append(options, "-nick ");
+		if (rec->word) g_string_append(options, "-word ");
+	}
+
+	if (rec->nickmask) g_string_append(options, "-nickmask ");
+	if (rec->fullword) g_string_append(options, "-fullword ");
+	if (rec->regexp) {
+		g_string_append(options, "-regexp ");
+#ifdef HAVE_REGEX_H
+		if (!rec->regexp_compiled)
+			g_string_append(options, "[INVALID!] ");
+#endif
+	}
+
+	if (options->len > 1) g_string_truncate(options, options->len-1);
+
+	if (rec->priority != 0)
+		g_string_sprintfa(options, "-priority %d ", rec->priority);
+	if (rec->color != NULL)
+		g_string_sprintfa(options, "-color %s ", rec->color);
+	if (rec->act_color != NULL)
+		g_string_sprintfa(options, "-actcolor %s ", rec->act_color);
 
 	chans = rec->channels == NULL ? NULL :
 		g_strjoinv(",", rec->channels);
@@ -482,11 +508,10 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 		    TXT_HILIGHT_LINE, index, rec->text,
 		    chans != NULL ? chans : "",
 		    levelstr != NULL ? levelstr : "",
-		    rec->nickmask ? " -mask" : "",
-		    rec->fullword ? " -full" : "",
-		    rec->regexp ? " -regexp" : "");
+		    options->str);
 	g_free_not_null(chans);
 	g_free_not_null(levelstr);
+	g_string_free(options, TRUE);
 }
 
 static void cmd_hilight_show(void)

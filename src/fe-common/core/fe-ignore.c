@@ -53,16 +53,16 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	levels = bits2level(rec->level);
 
 	options = g_string_new(NULL);
-	if (rec->exception) g_string_sprintfa(options, "-except ");
+	if (rec->exception) g_string_append(options, "-except ");
 	if (rec->regexp) {
-		g_string_sprintfa(options, "-regexp ");
+		g_string_append(options, "-regexp ");
 #ifdef HAVE_REGEX_H
 		if (!rec->regexp_compiled)
-			g_string_sprintfa(options, "[INVALID!] ");
+			g_string_append(options, "[INVALID!] ");
 #endif
 	}
-	if (rec->fullword) g_string_sprintfa(options, "-full ");
-	if (rec->replies) g_string_sprintfa(options, "-replies ");
+	if (rec->fullword) g_string_append(options, "-full ");
+	if (rec->replies) g_string_append(options, "-replies ");
 	if (rec->pattern != NULL)
 		g_string_sprintfa(options, "-pattern %s ", rec->pattern);
 
