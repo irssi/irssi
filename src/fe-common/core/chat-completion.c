@@ -646,6 +646,41 @@ static void sig_complete_msg(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
+static void sig_erase_complete_msg(WINDOW_REC *window, const char *word,
+				   const char *line)
+{
+	SERVER_REC *server;
+	MODULE_SERVER_REC *mserver;
+        GSList *tmp;
+
+	server = line_get_server(line);
+	if (server == NULL){
+		server = window->active_server;
+		if (server == NULL)
+                        return;
+	}
+
+	if (*word == '\0')
+		return;
+
+        /* check from global list */
+	completion_last_message_remove(word);
+
+	/* check from server specific list */
+	if (server != NULL) {
+		mserver = MODULE_DATA(server);
+		for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
+			LAST_MSG_REC *rec = tmp->data;
+
+			if (g_strcasecmp(rec->nick, word) == 0) {
+				last_msg_destroy(&mserver->lastmsgs, rec);
+                                break;
+			}
+		}
+
+	}
+}
+
 GList *completion_get_chatnets(const char *word)
 {
 	GList *list;
@@ -874,6 +909,7 @@ void chat_completion_init(void)
 	read_settings();
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
+	signal_add("complete erase command msg", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
@@ -897,6 +933,7 @@ void chat_completion_deinit(void)
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
+	signal_remove("complete erase command msg", (SIGNAL_FUNC) sig_erase_complete_msg);
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);

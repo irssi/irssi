@@ -402,19 +402,30 @@ static void key_change_window(const char *data)
 	signal_emit("command window goto", 3, data, active_win->active_server, active_win->active);
 }
 
-static void key_word_completion(void)
+static void key_completion(int erase)
 {
 	char *line;
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
 
-	line = word_complete(active_win, gui_entry_get_text(active_entry), &pos);
+	line = word_complete(active_win, gui_entry_get_text(active_entry),
+			     &pos, erase);
 	if (line != NULL) {
 		gui_entry_set_text(active_entry, line);
 		gui_entry_set_pos(active_entry, pos);
 		g_free(line);
 	}
+}
+
+static void key_word_completion(void)
+{
+        key_completion(FALSE);
+}
+
+static void key_erase_completion(void)
+{
+        key_completion(TRUE);
 }
 
 static void key_check_replaces(void)
@@ -634,6 +645,7 @@ void gui_readline_init(void)
         /* line transmitting */
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
 	key_bind("word_completion", "", "^I", NULL, (SIGNAL_FUNC) key_word_completion);
+	key_bind("erase_completion", "", "meta-k", NULL, (SIGNAL_FUNC) key_erase_completion);
 	key_bind("check_replaces", "Check word replaces", NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
 
         /* window managing */

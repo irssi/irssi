@@ -113,27 +113,28 @@ static void free_completions(void)
 }
 
 /* manual word completion - called when TAB is pressed */
-char *word_complete(WINDOW_REC *window, const char *line, int *pos)
+char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase)
 {
 	static int startpos = 0, wordlen = 0;
+        int old_startpos, old_wordlen;
 
 	GString *result;
 	char *word, *wordstart, *linestart, *ret;
-	int want_space;
+	int continue_complete, want_space;
 
 	g_return_val_if_fail(line != NULL, NULL);
 	g_return_val_if_fail(pos != NULL, NULL);
 
-	if (complist != NULL && *pos == last_line_pos &&
-	    strcmp(line, last_line) == 0) {
-		/* complete from old list */
-		complist = complist->next != NULL ? complist->next :
-			g_list_first(complist);
-		want_space = last_want_space;
-	} else {
-		/* get new completion list */
-		free_completions();
+	continue_complete = complist != NULL && *pos == last_line_pos &&
+		strcmp(line, last_line) == 0;
 
+	old_startpos = startpos;
+	old_wordlen = wordlen;
+
+	if (!erase && continue_complete) {
+		word = NULL;
+                linestart = NULL;
+	} else {
 		/* get the word we want to complete */
 		word = get_word_at(line, *pos, &wordstart);
 		startpos = (int) (wordstart-line);
@@ -156,7 +157,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		   BUT if we start completion with "/msg "<tab>, we don't
 		   want to complete the /msg word, but instead complete empty
 		   word with /msg being in linestart. */
-		if (*pos > 0 && line[*pos-1] == ' ' &&
+		if (!erase && *pos > 0 && line[*pos-1] == ' ' &&
 		    (*linestart == '\0' || wordstart[-1] != ' ')) {
 			char *old;
 
@@ -172,13 +173,37 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 			wordlen = 0;
 		}
 
+	}
+
+	if (erase) {
+		signal_emit("complete erase", 3, window, word, linestart);
+
+		if (!continue_complete)
+                        return NULL;
+
+                /* jump to next completion */
+		word = NULL;
+		linestart = NULL;
+                startpos = old_startpos;
+		wordlen = old_wordlen;
+	}
+
+	if (continue_complete) {
+		/* complete from old list */
+		complist = complist->next != NULL ? complist->next :
+			g_list_first(complist);
+		want_space = last_want_space;
+	} else {
+		/* get new completion list */
+		free_completions();
+
 		want_space = TRUE;
 		signal_emit("complete word", 5, &complist, window, word, linestart, &want_space);
 		last_want_space = want_space;
-
-		g_free(linestart);
-		g_free(word);
 	}
+
+	g_free(linestart);
+	g_free(word);
 
 	if (complist == NULL)
 		return NULL;
@@ -532,7 +557,8 @@ static char *expand_aliases(const char *line)
 }
 
 static void sig_complete_word(GList **list, WINDOW_REC *window,
-			      const char *word, const char *linestart, int *want_space)
+			      const char *word, const char *linestart,
+			      int *want_space)
 {
 	const char *newword, *cmdchars;
 	char *signal, *cmd, *args, *line;
@@ -605,6 +631,39 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	g_free(signal);
 	g_free(cmd);
 
+	g_free(line);
+}
+
+static void sig_complete_erase(WINDOW_REC *window, const char *word,
+			       const char *linestart)
+{
+	const char *cmdchars;
+        char *line, *cmd, *args, *signal;
+
+	if (*linestart == '\0')
+		return;
+
+        /* we only want to check for commands */
+	cmdchars = settings_get_str("cmdchars");
+        cmdchars = strchr(cmdchars, *linestart);
+	if (cmdchars == NULL)
+		return;
+
+        /* check if there's aliases */
+	line = linestart[1] == *cmdchars ? g_strdup(linestart+2) :
+		expand_aliases(linestart+1);
+
+	cmd = line_get_command(line, &args, FALSE);
+	if (cmd == NULL) {
+		g_free(line);
+		return;
+	}
+
+	signal = g_strconcat("complete erase command ", cmd, NULL);
+	signal_emit(signal, 3, window, word, args);
+
+        g_free(signal);
+	g_free(cmd);
 	g_free(line);
 }
 
@@ -682,6 +741,7 @@ void completion_init(void)
 	chat_completion_init();
 
 	signal_add_first("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_add_first("complete erase", (SIGNAL_FUNC) sig_complete_erase);
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
@@ -699,6 +759,7 @@ void completion_deinit(void)
 	chat_completion_deinit();
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_remove("complete erase", (SIGNAL_FUNC) sig_complete_erase);
 	signal_remove("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_remove("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
