@@ -13,6 +13,11 @@ sub VERSION {
     if ($version > version());
 }
 
+sub EXPORT_ALL () {
+  no strict 'refs';
+  @EXPORT_OK = grep { /[a-z]/ && defined *{$_}{CODE} } keys %Irssi::;
+}
+
 $VERSION = "0.9";
 
 require Exporter;
@@ -36,6 +41,8 @@ bootstrap Irssi $VERSION if (!Irssi::Core::is_static());
 @Irssi::Query::ISA = qw(Irssi::Windowitem);
 
 Irssi::init();
+
+Irssi::EXPORT_ALL();
 
 1;
 

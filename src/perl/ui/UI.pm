@@ -20,4 +20,6 @@ bootstrap Irssi::UI $VERSION if (!Irssi::Core::is_static());
 
 Irssi::UI::init();
 
+Irssi::EXPORT_ALL();
+
 1;

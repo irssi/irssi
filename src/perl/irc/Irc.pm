@@ -20,5 +20,7 @@ bootstrap Irssi::Irc $VERSION if (!Irssi::Core::is_static());
 
 Irssi::Irc::init();
 
+Irssi::EXPORT_ALL();
+
 1;
 
