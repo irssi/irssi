@@ -30,7 +30,7 @@ void ircnet_create(IRC_CHATNET_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	rec->chat_type = IRC_PROTOCOL;
-        chatnet_create(CHATNET(rec));
+        chatnet_create((CHATNET_REC *) rec);
 }
 
 static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
