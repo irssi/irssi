@@ -301,8 +301,10 @@ char *hilight_get_color(HILIGHT_REC *rec, int activity)
 
 	color = activity && rec->act_color != NULL ?
 		rec->act_color : rec->color;
-	if (color == NULL)
-		color = settings_get_str("hilight_color");
+	if (color == NULL) {
+		color = settings_get_str(activity ? "hilight_act_color" :
+					 "hilight_color");
+	}
 
 	if (isalpha((int) *color)) {
 		/* color was specified with it's name - try to convert it */
@@ -711,6 +713,7 @@ static void read_settings(void)
 void hilight_text_init(void)
 {
 	settings_add_str("lookandfeel", "hilight_color", "8");
+	settings_add_str("lookandfeel", "hilight_act_color", "13");
 	settings_add_str("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
 
 	next_nick_hilight = NULL;
