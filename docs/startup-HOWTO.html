@@ -43,6 +43,10 @@
     </ul></li>
 <li><a href="#c10">Proxies and IRC bouncers</a></li>
 <li><a href="#c11">Irssi's settings</a></li>
+<li><a href="#c12">Statusbar</a>
+    <ul>
+    <li>I loaded a statusbar script but it's not visible anywhere!</li>
+    </ul></li>
 </ol>
 
 <h3><a id="c1">1. For all the lazy people</a></h3>
@@ -808,3 +812,50 @@ of them you might want to change (the default value is shown):</p>
 <dt>/SET completion_char :</dt>
   <dd>Completion character to use.</dd>
 </dl>
+
+<h3><a id="c12">12. Statusbar</a></h3>
+
+<p><strong>/STATUSBAR</strong> displays a list of statusbars:</p>
+
+<pre>
+Name                           Type   Placement Position Visible
+window                         window bottom    0        always
+window_inact                   window bottom    1        inactive
+prompt                         root   bottom    100      always
+topic                          root   top       1        always
+</pre>
+
+<p><strong>/STATUSBAR &lt;name&gt;</strong> prints the statusbar
+settings and it's items. <strong>/STATUSBAR &lt;name&gt;
+ENABLE|DISABLE</strong> enables/disables the statusbar.
+<strong>/STATUSBAR &lt;name&gt; RESET</strong> resets the statusbar to
+it's default settings. If the statusbar was created by you, it will be
+removed.</p>
+
+<p>Type can be window or root, meaning if the statusbar should be
+created for each split window, or just once. Placement can be top or
+bottom. Position is a number, the lower the value the higher in screen
+it is. Visible can be always, active or inactive. Active/inactive is
+meant to be used with split windows, one split window is active and rest
+are inactive. These settings can be changed with:</p>
+
+<ul>
+<li>STATUSBAR &lt;name&gt; TYPE window|root</li>
+<li>STATUSBAR &lt;name&gt; PLACEMENT top|bottom</li>
+<li>STATUSBAR &lt;name&gt; POSITION &lt;num&gt;</li>
+<li>STATUSBAR &lt;name&gt; VISIBLE always|active|inactive</li>
+</ul>
+
+<p>When loading new statusbar scripts, you'll need to also specify
+where you want to show it. Statusbar items can be modified with:</p>
+
+<ul>
+<li>10:52 STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;</li>
+<li>10:52 STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;</li>
+</ul>
+
+<p>The item name with statusbar scripts is usually same as the script's
+name. Script's documentation should tell if this isn't the case. So, to
+add mail.pl before the window activity item (see the list with
+/STATUSBAR window), use: <strong>/STATUSBAR window ADD -before act
+mail</strong>.</p>
