@@ -36,5 +36,7 @@ Some suggestions for ignoring annoying public aways:
     /IGNORE *afk* NICKS
     /IGNORE *away* NICKS
 
+For regular expressions, see `man 7 regex`.
+
 See also: UNIGNORE
 
