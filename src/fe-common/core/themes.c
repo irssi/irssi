@@ -771,11 +771,11 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 		else if ((value != NULL && key != NULL && g_strcasecmp(formats[n].tag, key) == 0) ||
 			 (value == NULL && (key == NULL || stristr(formats[n].tag, key) != NULL))) {
 			if (first) {
-				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_TITLE, rec->short_name, formats[0].def);
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_FORMAT_TITLE, rec->short_name, formats[0].def);
 				first = FALSE;
 			}
 			if (last_title != NULL)
-				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_SUBTITLE, last_title);
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_FORMAT_SUBTITLE, last_title);
 			if (reset || value != NULL) {
 				theme = theme_module_create(current_theme, rec->name);
                                 g_free_not_null(theme->formats[n]);
@@ -785,7 +785,7 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 				theme->formats[n] = reset ? NULL : g_strdup(value);
 				theme->expanded_formats[n] = theme_format_expand(current_theme, text);
 			}
-			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_ITEM, formats[n].tag, text);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_FORMAT_ITEM, formats[n].tag, text);
 			last_title = NULL;
 		}
 	}
@@ -908,7 +908,7 @@ static void theme_save(THEME_REC *theme)
 			ok = FALSE;
 	}
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    ok ? IRCTXT_THEME_SAVED : IRCTXT_THEME_SAVE_FAILED,
+		    ok ? TXT_THEME_SAVED : TXT_THEME_SAVE_FAILED,
 		    path, config_last_error(config));
 	g_free(path);
 	config_close(config);

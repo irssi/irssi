@@ -381,9 +381,9 @@ char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 	int format;
 
 	if (dest->level & LINE_START_IRSSI_LEVEL)
-		format = IRCTXT_LINE_START_IRSSI;
+		format = TXT_LINE_START_IRSSI;
 	else if ((dest->level & NOT_LINE_START_LEVEL) == 0)
-		format = IRCTXT_LINE_START;
+		format = TXT_LINE_START;
 	else
 		return NULL;
 
@@ -410,7 +410,7 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 	}
 
 	tm = localtime(&t);
-	return format_get_text_theme(theme, MODULE_NAME, dest, IRCTXT_TIMESTAMP,
+	return format_get_text_theme(theme, MODULE_NAME, dest, TXT_TIMESTAMP,
 				     tm->tm_year+1900,
 				     tm->tm_mon+1, tm->tm_mday,
 				     tm->tm_hour, tm->tm_min, tm->tm_sec);
@@ -440,7 +440,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 
 	return count < 2 ? NULL :
 		format_get_text_theme(theme, MODULE_NAME, dest,
-				      IRCTXT_SERVERTAG, server->tag);
+				      TXT_SERVERTAG, server->tag);
 }
 
 char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)

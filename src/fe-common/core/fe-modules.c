@@ -31,25 +31,25 @@ static void sig_module_error(void *number, const char *module, const char *data)
 {
 	switch (GPOINTER_TO_INT(number)) {
 	case MODULE_ERROR_ALREADY_LOADED:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_MODULE_ALREADY_LOADED, module);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_ALREADY_LOADED, module);
 		break;
 	case MODULE_ERROR_LOAD:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_MODULE_LOAD_ERROR, module, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_LOAD_ERROR, module, data);
 		break;
 	case MODULE_ERROR_INVALID:
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_MODULE_INVALID, module);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_MODULE_INVALID, module);
 		break;
 	}
 }
 
 static void sig_module_loaded(MODULE_REC *rec)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_MODULE_LOADED, rec->name);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_LOADED, rec->name);
 }
 
 static void sig_module_unloaded(MODULE_REC *rec)
 {
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_MODULE_UNLOADED, rec->name);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_MODULE_UNLOADED, rec->name);
 }
 
 /* SYNTAX: LOAD <module> */

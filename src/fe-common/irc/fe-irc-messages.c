@@ -25,9 +25,8 @@
 
 #include "irc.h"
 
-/* FIXME: hmm. there's should be some better way to use other module's
-   formats than this since now we can't use this module's formats.. */
 #include "../core/module-formats.h"
+#include "module-formats.h"
 #include "printtext.h"
 #include "fe-messages.h"
 
@@ -45,7 +44,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		printformat_module("fe-common/core", server, target+1,
 				   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 				   MSGLEVEL_NO_ACT,
-				   IRCTXT_OWN_MSG_CHANNEL,
+				   TXT_OWN_MSG_CHANNEL,
 				   server->nick, target, msg, nickmode);
                 signal_stop();
 	}
@@ -63,19 +62,29 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
         optarget = g_strconcat("@", target, NULL);
 	printformat_module("fe-common/core", server, target,
 			   MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
-			   IRCTXT_PUBMSG_ME_CHANNEL,
+			   TXT_PUBMSG_ME_CHANNEL,
 			   nick, optarget, msg, nickmode);
         g_free(optarget);
+}
+
+static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *msg,
+				 const char *nick, const char *addr,
+				 const char *target)
+{
+	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
+		    IRCTXT_CTCP_REQUESTED, nick, addr, msg, target);
 }
 
 void fe_irc_messages_init(void)
 {
         signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
         signal_add("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
+        signal_add("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
 }
 
 void fe_irc_messages_deinit(void)
 {
         signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
         signal_remove("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
+        signal_remove("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
 }

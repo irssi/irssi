@@ -62,7 +62,7 @@ static void set_boolean(const char *key, const char *value)
 	else if (g_strcasecmp(value, "TOGGLE") == 0)
 		settings_set_bool(key, !settings_get_bool(key));
 	else
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOT_TOGGLE);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_NOT_TOGGLE);
 }
 
 /* SYNTAX: SET [-clear] [<key> [<value>] */
@@ -160,7 +160,7 @@ static void show_aliases(const char *alias)
 	GSList *tmp, *list;
 	int aliaslen;
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_ALIASLIST_HEADER);
 
 	node = iconfig_node_traverse("aliases", FALSE);
 	tmp = node == NULL ? NULL : node->value;
@@ -184,20 +184,20 @@ static void show_aliases(const char *alias)
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_LINE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_ALIASLIST_LINE,
 			    node->key, node->value);
 	}
 	g_slist_free(list);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_ALIASLIST_FOOTER);
 }
 
 static void alias_remove(const char *alias)
 {
 	if (iconfig_get_str("aliases", alias, NULL) == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIAS_NOT_FOUND, alias);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_ALIAS_NOT_FOUND, alias);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIAS_REMOVED, alias);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_ALIAS_REMOVED, alias);
 		iconfig_set_str("aliases", alias, NULL);
 	}
 }
@@ -218,7 +218,7 @@ static void cmd_alias(const char *data)
 	} else if (*alias == '\0' || *value == '\0')
 		show_aliases(alias);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIAS_ADDED, alias);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_ALIAS_ADDED, alias);
 		iconfig_set_str("aliases", alias, value);
 	}
         cmd_params_free(free_arg);
@@ -242,7 +242,7 @@ static void cmd_reload(const char *data)
 		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
 	if (settings_reread(fname)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_CONFIG_RELOADED, fname);
+			    TXT_CONFIG_RELOADED, fname);
 	}
 	g_free(fname);
 }
@@ -251,7 +251,7 @@ static void settings_save_fe(const char *fname)
 {
 	if (settings_save(fname)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_CONFIG_SAVED, fname);
+			    TXT_CONFIG_SAVED, fname);
 	}
 }
 
@@ -274,7 +274,7 @@ static void cmd_save(const char *data)
 	}
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_CONFIG_MODIFIED, data);
+		    TXT_CONFIG_MODIFIED, data);
 	keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
 				_("Overwrite config (y/N)?"),
 				0, g_strdup(data));

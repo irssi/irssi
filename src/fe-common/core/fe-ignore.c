@@ -119,7 +119,7 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	if (options->len > 1) g_string_truncate(options, options->len-1);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-		    IRCTXT_IGNORE_LINE, index,
+		    TXT_IGNORE_LINE, index,
 		    key != NULL ? key : "",
 		    levels != NULL ? levels : "", options->str);
 	g_string_free(options, TRUE);
@@ -138,14 +138,14 @@ static void cmd_ignore_show(void)
 	GSList *tmp;
 	int index;
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IGNORE_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_IGNORE_HEADER);
 	index = 1;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next, index++) {
 		IGNORE_REC *rec = tmp->data;
 
 		ignore_print(index, rec);
 	}
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IGNORE_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_IGNORE_FOOTER);
 }
 
 /* SYNTAX: IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
@@ -212,12 +212,12 @@ static void cmd_ignore(const char *data)
 	rec->time = timestr == NULL ? 0 : atoi(timestr);
 
 	if (rec->level == 0 && rec->except_level == 0) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED,
 			    rec->mask == NULL ? "" : rec->mask);
 	} else {
 		key = ignore_get_key(rec);
 		levels = ignore_get_levels(rec->level, rec->except_level);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IGNORED, key, levels);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORED, key, levels);
 		g_free(key);
 		g_free(levels);
 	}
@@ -238,7 +238,7 @@ static void fe_unignore(IGNORE_REC *rec)
 	char *key;
 
 	key = ignore_get_key(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED, key);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED, key);
 	g_free(key);
 
 	rec->level = 0;
@@ -272,7 +272,7 @@ static void cmd_unignore(const char *data)
 	}
 
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IGNORE_NOT_FOUND, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORE_NOT_FOUND, data);
 	else
                 fe_unignore(rec);
 }

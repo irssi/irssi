@@ -187,10 +187,10 @@ static void cmd_window_server(const char *data)
 
 	server = server_find_tag(data);
 	if (server == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNKNOWN_SERVER_TAG, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNKNOWN_SERVER_TAG, data);
 	else if (active_win->active == NULL) {
 		window_change_server(active_win, server);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SERVER_CHANGED, server->tag, server->connrec->address,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SERVER_CHANGED, server->tag, server->connrec->address,
 			    server->connrec->chatnet == NULL ? "" : server->connrec->chatnet);
 	}
 }
@@ -258,7 +258,7 @@ static void cmd_window_number(const char *data)
 	num = atoi(refnum);
 	if (num < 1) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_REFNUM_TOO_LOW);
+			    TXT_REFNUM_TOO_LOW);
 	} else {
 		window_set_refnum(active_win, num);
 		active_win->sticky_refnum =
@@ -376,12 +376,12 @@ static void cmd_window_list(void)
 	char *levelstr;
 
 	sorted = windows_get_sorted();
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_WINDOWLIST_HEADER);
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
 		levelstr = bits2level(rec->level);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_LINE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_WINDOWLIST_LINE,
 			    rec->refnum, rec->name == NULL ? "" : rec->name,
 			    rec->active == NULL ? "" : rec->active->name,
 			    rec->active_server == NULL ? "" : ((SERVER_REC *) rec->active_server)->tag,
@@ -389,7 +389,7 @@ static void cmd_window_list(void)
 		g_free(levelstr);
 	}
 	g_slist_free(sorted);
-        printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_FOOTER);
+        printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_WINDOWLIST_FOOTER);
 }
 
 /* SYNTAX: WINDOW THEME <name> */
@@ -401,10 +401,10 @@ static void cmd_window_theme(const char *data)
 	active_win->theme = theme_load(data);
 	if (active_win->theme != NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_WINDOW_THEME_CHANGED, data);
+			    TXT_WINDOW_THEME_CHANGED, data);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_THEME_NOT_FOUND, data);
+			    TXT_THEME_NOT_FOUND, data);
 	}
 }
 

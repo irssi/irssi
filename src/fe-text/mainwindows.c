@@ -478,7 +478,7 @@ static void cmd_window_grow(const char *data)
 			window->first_line -= count;
 			shrink_win->last_line -= count;
 		} else {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOW_TOO_SMALL);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
 			return;
 		}
 	}
@@ -496,7 +496,7 @@ static void cmd_window_shrink(const char *data)
 
 	window = WINDOW_GUI(active_win)->parent;
 	if (window->lines-count < WINDOW_MIN_SIZE) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOW_TOO_SMALL);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
                 return;
 	}
 
@@ -579,7 +579,7 @@ static void cmd_window_hide(const char *data)
 	WINDOW_REC *window;
 
 	if (mainwindows->next == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CANT_HIDE_LAST);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CANT_HIDE_LAST);
 		return;
 	}
 

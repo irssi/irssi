@@ -164,11 +164,11 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 		if (color != NULL) {
 			/* highlighted nick */
 			printformat(server, target, level,
-				    IRCTXT_PUBMSG_HILIGHT,
+				    TXT_PUBMSG_HILIGHT,
 				    color, nick, msg, nickmode);
 		} else {
 			printformat(server, target, level,
-				    for_me ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG,
+				    for_me ? TXT_PUBMSG_ME : TXT_PUBMSG,
 				    nick, msg, nickmode);
 		}
 	} else {
@@ -176,12 +176,12 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 		if (color != NULL) {
 			/* highlighted nick */
 			printformat(server, target, level,
-				    IRCTXT_PUBMSG_HILIGHT_CHANNEL,
+				    TXT_PUBMSG_HILIGHT_CHANNEL,
 				    color, nick, target, msg, nickmode);
 		} else {
 			printformat(server, target, level,
-				    for_me ? IRCTXT_PUBMSG_ME_CHANNEL :
-				    IRCTXT_PUBMSG_CHANNEL,
+				    for_me ? TXT_PUBMSG_ME_CHANNEL :
+				    TXT_PUBMSG_CHANNEL,
 				    nick, target, msg, nickmode);
 		}
 	}
@@ -204,8 +204,8 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 		freemsg = NULL;
 
 	printformat(server, nick, MSGLEVEL_MSGS,
-		    query == NULL ? IRCTXT_MSG_PRIVATE :
-		    IRCTXT_MSG_PRIVATE_QUERY, nick, address, msg);
+		    query == NULL ? TXT_MSG_PRIVATE :
+		    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
 
 	g_free_not_null(freemsg);
 }
@@ -231,10 +231,10 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    IRCTXT_OWN_MSG, server->nick, msg, nickmode);
+			    TXT_OWN_MSG, server->nick, msg, nickmode);
 	} else {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    IRCTXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
+			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
 }
 
@@ -266,8 +266,8 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				 strcmp(origtarget, ".") == 0);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    *origtarget == ',' ? IRCTXT_NO_MSGS_GOT :
-			    IRCTXT_NO_MSGS_SENT);
+			    *origtarget == ',' ? TXT_NO_MSGS_GOT :
+			    TXT_NO_MSGS_SENT);
 		signal_stop();
 		return;
 	}
@@ -275,15 +275,15 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 	query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    query == NULL ? IRCTXT_OWN_MSG_PRIVATE :
-		    IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		    query == NULL ? TXT_OWN_MSG_PRIVATE :
+		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
 }
 
 static void sig_message_join(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address)
 {
 	printformat(server, channel, MSGLEVEL_JOINS,
-		    IRCTXT_JOIN, nick, address, channel);
+		    TXT_JOIN, nick, address, channel);
 }
 
 static void sig_message_part(SERVER_REC *server, const char *channel,
@@ -291,7 +291,7 @@ static void sig_message_part(SERVER_REC *server, const char *channel,
 			     const char *reason)
 {
 	printformat(server, channel, MSGLEVEL_PARTS,
-		    IRCTXT_PART, nick, address, channel, reason);
+		    TXT_PART, nick, address, channel, reason);
 }
 
 static void sig_message_quit(SERVER_REC *server, const char *nick,
@@ -334,7 +334,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
 				printformat(server, rec->name, MSGLEVEL_QUITS,
-					    IRCTXT_QUIT, nick, address, reason);
+					    TXT_QUIT, nick, address, reason);
 			}
 		}
 		count++;
@@ -347,7 +347,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
 			printformat(server, nick, MSGLEVEL_QUITS,
-				    IRCTXT_QUIT, nick, address, reason);
+				    TXT_QUIT, nick, address, reason);
 		}
 	}
 
@@ -355,7 +355,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
-			    count <= 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
+			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
 			    nick, address, reason, chans->str);
 	}
 	g_string_free(chans, TRUE);
@@ -366,7 +366,7 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *address, const char *reason)
 {
 	printformat(server, channel, MSGLEVEL_KICKS,
-		    IRCTXT_KICK, nick, channel, kicker, reason);
+		    TXT_KICK, nick, channel, kicker, reason);
 }
 
 static void print_nick_change_channel(SERVER_REC *server, const char *channel,
@@ -379,7 +379,7 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 		return;
 
 	printformat(server, channel, MSGLEVEL_NICKS,
-		    ownnick ? IRCTXT_YOUR_NICK_CHANGED : IRCTXT_NICK_CHANGED,
+		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
 		    oldnick, newnick);
 }
 
@@ -428,7 +428,7 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 
 	if (!msgprint && ownnick) {
 		printformat(server, NULL, MSGLEVEL_NICKS,
-			    IRCTXT_YOUR_NICK_CHANGED, oldnick, newnick);
+			    TXT_YOUR_NICK_CHANGED, oldnick, newnick);
 	}
 }
 
@@ -451,7 +451,7 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 
 	str = show_lowascii(channel);
 	printformat(server, NULL, MSGLEVEL_INVITES,
-		    IRCTXT_INVITE, nick, str);
+		    TXT_INVITE, nick, str);
 	g_free(str);
 }
 
@@ -460,7 +460,7 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *nick, const char *address)
 {
 	printformat(server, channel, MSGLEVEL_TOPICS,
-		    *topic != '\0' ? IRCTXT_NEW_TOPIC : IRCTXT_TOPIC_UNSET,
+		    *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET,
 		    nick, channel, topic);
 }
 

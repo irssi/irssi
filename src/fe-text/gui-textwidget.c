@@ -204,7 +204,7 @@ static void cmd_lastlog(const char *data)
 	}
 
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
-		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_START);
+		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_START);
 
 	if (flags & LASTLOG_FLAG_NEW_LAST)
 		startline = WINDOW_GUI(active_win)->lastlog_last_check;
@@ -238,7 +238,7 @@ static void cmd_lastlog(const char *data)
 	}
 
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
-		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_END);
+		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_END);
 
 	WINDOW_GUI(active_win)->lastlog_last_check =
 		g_list_last(WINDOW_GUI(active_win)->bottom_startline);

@@ -310,7 +310,7 @@ static void cmd_show_keys(const char *searchkey, int full)
 
 			if ((len == 0 || g_strncasecmp(rec->key, searchkey, len) == 0) &&
 			    (!full || rec->key[len] == '\0')) {
-				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_BIND_KEY,
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_KEY,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
 			}
 		}
@@ -351,7 +351,7 @@ static void cmd_bind(const char *data)
 	}
 
 	if (key_info_find(id) == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_BIND_UNKNOWN_ID, id);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_BIND_UNKNOWN_ID, id);
 	else {
 		key_configure_add(id, key, keydata);
 		cmd_show_keys(key, TRUE);

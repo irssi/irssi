@@ -101,7 +101,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 
 	if (g_slist_length(window->items) > 1 && IS_CHANNEL(item)) {
 		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_TALKING_IN, item->name);
+			    TXT_TALKING_IN, item->name);
                 signal_stop();
 	}
 }
@@ -161,17 +161,17 @@ static void cmd_channel_list_joined(void)
 	GSList *nicklist, *tmp, *ntmp;
 
 	if (channels == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_IN_CHANNELS);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_IN_CHANNELS);
 		return;
 	}
 
 	/* print active channel */
 	channel = CHANNEL(active_win->active);
 	if (channel != NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CURRENT_CHANNEL, channel->name);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CURRENT_CHANNEL, channel->name);
 
 	/* print list of all channels, their modes, server tags and nicks */
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANLIST_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANLIST_HEADER);
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		channel = tmp->data;
 
@@ -184,7 +184,7 @@ static void cmd_channel_list_joined(void)
 		}
 
 		if (nicks->len > 1) g_string_truncate(nicks, nicks->len-1);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANLIST_LINE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANLIST_LINE,
 			    channel->name, channel->mode, channel->server->tag, nicks->str);
 
 		g_slist_free(nicklist);
@@ -199,7 +199,7 @@ static void cmd_channel_list(void)
 	GSList *tmp;
 
 	str = g_string_new(NULL);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANSETUP_HEADER);
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_SETUP_REC *rec = tmp->data;
 
@@ -212,12 +212,12 @@ static void cmd_channel_list(void)
 			g_string_sprintfa(str, "botcmd: %s, ", rec->autosendcmd);
 
 		if (str->len > 2) g_string_truncate(str, str->len-2);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_LINE,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANSETUP_LINE,
 			    rec->name, rec->chatnet == NULL ? "" : rec->chatnet,
 			    rec->password == NULL ? "" : rec->password, str->str);
 	}
 	g_string_free(str, TRUE);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANSETUP_FOOTER);
 }
 
 static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
@@ -262,7 +262,7 @@ static void cmd_channel_add(const char *data)
 	if (botcmdarg != NULL && *botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	channels_setup_create(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_ADDED, channel, chatnet);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CHANSETUP_ADDED, channel, chatnet);
 
 	cmd_params_free(free_arg);
 }
@@ -281,9 +281,9 @@ static void cmd_channel_remove(const char *data)
 
 	rec = channels_setup_find(channel, chatnet);
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_NOT_FOUND, channel, chatnet);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CHANSETUP_NOT_FOUND, channel, chatnet);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_REMOVED, channel, chatnet);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CHANSETUP_REMOVED, channel, chatnet);
 		channels_setup_destroy(rec);
 	}
 	cmd_params_free(free_arg);

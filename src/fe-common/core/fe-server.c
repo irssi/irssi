@@ -40,7 +40,7 @@ static void print_servers(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *rec = tmp->data;
 
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LIST,
+		printformat(NULL, NULL, MSGLEVEL_CRAP, TXT_SERVER_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,
 			    rec->connrec->chatnet == NULL ? "" : rec->connrec->chatnet, rec->connrec->nick);
 	}
@@ -52,7 +52,7 @@ static void print_lookup_servers(void)
 	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *rec = tmp->data;
 
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LOOKUP_LIST,
+		printformat(NULL, NULL, MSGLEVEL_CRAP, TXT_SERVER_LOOKUP_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,
 			    rec->connrec->chatnet == NULL ? "" : rec->connrec->chatnet, rec->connrec->nick);
 	}
@@ -71,7 +71,7 @@ static void print_reconnects(void)
 		tag = g_strdup_printf("RECON-%d", rec->tag);
 		left = rec->next_connect-time(NULL);
 		next_connect = g_strdup_printf("%02d:%02d", left/60, left%60);
-		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_RECONNECT_LIST,
+		printformat(NULL, NULL, MSGLEVEL_CRAP, TXT_SERVER_RECONNECT_LIST,
 			    tag, conn->address, conn->port,
 			    conn->chatnet == NULL ? "" : conn->chatnet,
 			    conn->nick, next_connect);
@@ -137,7 +137,7 @@ static void cmd_server_add(const char *data)
 	signal_emit("server add fill", 2, rec, optlist);
 
 	server_setup_add(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_ADDED, addr, port);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_ADDED, addr, port);
 
 	cmd_params_free(free_arg);
 }
@@ -159,10 +159,10 @@ static void cmd_server_remove(const char *data)
 		rec = server_setup_find_port(addr, atoi(port));
 
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_NOT_FOUND, addr, port);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND, addr, port);
 	else {
 		server_setup_remove(rec);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_REMOVED, addr, port);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_REMOVED, addr, port);
 	}
 
 	cmd_params_free(free_arg);
@@ -207,7 +207,7 @@ static void sig_server_looking(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOOKING_UP, server->connrec->address);
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOOKING_UP, server->connrec->address);
 }
 
 static void sig_server_connecting(SERVER_REC *server, IPADDR *ip)
@@ -218,7 +218,7 @@ static void sig_server_connecting(SERVER_REC *server, IPADDR *ip)
 	g_return_if_fail(ip != NULL);
 
 	net_ip2host(ip, ipaddr);
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CONNECTING,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CONNECTING,
 		    server->connrec->address, ipaddr, server->connrec->port);
 }
 
@@ -227,7 +227,7 @@ static void sig_server_connected(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_CONNECTION_ESTABLISHED, server->connrec->address);
+		    TXT_CONNECTION_ESTABLISHED, server->connrec->address);
 }
 
 static void sig_connect_failed(SERVER_REC *server, gchar *msg)
@@ -238,10 +238,10 @@ static void sig_connect_failed(SERVER_REC *server, gchar *msg)
 		/* no message so this wasn't unexpected fail - send
 		   connection_lost message instead */
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_CONNECTION_LOST, server->connrec->address);
+			    TXT_CONNECTION_LOST, server->connrec->address);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    IRCTXT_CANT_CONNECT, server->connrec->address, server->connrec->port, msg);
+			    TXT_CANT_CONNECT, server->connrec->address, server->connrec->port, msg);
 	}
 }
 
@@ -250,7 +250,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_CONNECTION_LOST, server->connrec->address);
+		    TXT_CONNECTION_LOST, server->connrec->address);
 }
 
 static void sig_server_quit(SERVER_REC *server, const char *msg)
@@ -258,7 +258,7 @@ static void sig_server_quit(SERVER_REC *server, const char *msg)
 	g_return_if_fail(server != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_SERVER_QUIT, server->connrec->address, msg);
+		    TXT_SERVER_QUIT, server->connrec->address, msg);
 }
 
 static void sig_server_lag_disconnected(SERVER_REC *server)
@@ -266,7 +266,7 @@ static void sig_server_lag_disconnected(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
+		    TXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
 }
 
 static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
@@ -274,7 +274,7 @@ static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
 	g_return_if_fail(reconnect != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
+		    TXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
 		    reconnect->conn->chatnet == NULL ? "" : reconnect->conn->chatnet);
 }
 
@@ -283,7 +283,7 @@ static void sig_server_reconnect_not_found(const char *tag)
 	g_return_if_fail(tag != NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_RECONNECT_NOT_FOUND, tag);
+		    TXT_RECONNECT_NOT_FOUND, tag);
 }
 
 void fe_server_init(void)

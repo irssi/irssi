@@ -357,7 +357,7 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 	levelstr = rec->level == 0 ? NULL :
 		bits2level(rec->level);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-		    IRCTXT_HILIGHT_LINE, index, rec->text,
+		    TXT_HILIGHT_LINE, index, rec->text,
 		    chans != NULL ? chans : "",
 		    levelstr != NULL ? levelstr : "",
 		    rec->nickmask ? " -nick" : "",
@@ -372,14 +372,14 @@ static void cmd_hilight_show(void)
 	GSList *tmp;
 	int index;
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_HILIGHT_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_HILIGHT_HEADER);
 	index = 1;
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next, index++) {
 		HILIGHT_REC *rec = tmp->data;
 
 		hilight_print(index, rec);
 	}
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_HILIGHT_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_HILIGHT_FOOTER);
 }
 
 /* SYNTAX: HILIGHT [-nick | -nonick] [-mask | -regexp | -word]
@@ -464,9 +464,9 @@ static void cmd_dehilight(const char *data)
 	}
 
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_HILIGHT_NOT_FOUND, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_HILIGHT_NOT_FOUND, data);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_HILIGHT_REMOVED, rec->text);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_HILIGHT_REMOVED, rec->text);
 		hilight_remove(rec);
 	}
 }

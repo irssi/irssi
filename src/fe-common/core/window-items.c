@@ -313,7 +313,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 		/* default to printing "talking with ...",
 		   you can override it it you wish */
 		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_TALKING_WITH, item->name);
+			    TXT_TALKING_WITH, item->name);
 	}
 }
 

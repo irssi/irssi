@@ -101,7 +101,7 @@ static void cmd_log_open(const char *data)
 		/* start logging */
 		if (log_start_logging(log)) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-				    IRCTXT_LOG_OPENED, fname);
+				    TXT_LOG_OPENED, fname);
 		} else {
 			log_close(log);
 		}
@@ -129,10 +129,10 @@ static void cmd_log_close(const char *data)
 
 	log = log_find_from_data(data);
 	if (log == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_LOG_NOT_OPEN, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_LOG_NOT_OPEN, data);
 	else {
 		log_close(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_CLOSED, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_CLOSED, data);
 	}
 }
 
@@ -144,7 +144,7 @@ static void cmd_log_start(const char *data)
 	log = log_find_from_data(data);
 	if (log != NULL) {
 		log_start_logging(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_OPENED, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_OPENED, data);
 	}
 }
 
@@ -155,10 +155,10 @@ static void cmd_log_stop(const char *data)
 
 	log = log_find_from_data(data);
 	if (log == NULL || log->handle == -1)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_LOG_NOT_OPEN, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_LOG_NOT_OPEN, data);
 	else {
 		log_stop_logging(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_CLOSED, data);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_CLOSED, data);
 	}
 }
 
@@ -191,7 +191,7 @@ static void cmd_log_list(void)
 	char *levelstr, *items;
 	int index;
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST_HEADER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_LOG_LIST_HEADER);
 	for (tmp = logs, index = 1; tmp != NULL; tmp = tmp->next, index++) {
 		LOG_REC *rec = tmp->data;
 
@@ -199,14 +199,14 @@ static void cmd_log_list(void)
 		items = rec->items == NULL ? NULL :
                         log_items_get_list(rec);
 
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST,
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_LOG_LIST,
 			    index, rec->fname, items != NULL ? items : "",
 			    levelstr, rec->autoopen ? " -autoopen" : "");
 
 		g_free_not_null(items);
 		g_free(levelstr);
 	}
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST_FOOTER);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_LOG_LIST_FOOTER);
 }
 
 static void cmd_log(const char *data, SERVER_REC *server, void *item)
@@ -259,7 +259,7 @@ static void cmd_window_log(const char *data)
                 open_log = log == NULL;
                 close_log = log != NULL;
 	} else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_TOGGLE);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_TOGGLE);
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -278,10 +278,10 @@ static void cmd_window_log(const char *data)
 
 	if (open_log && log != NULL) {
 		log_start_logging(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_OPENED, log->fname);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_OPENED, log->fname);
 	} else if (close_log && log != NULL && log->handle != -1) {
 		log_stop_logging(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_CLOSED, log->fname);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_CLOSED, log->fname);
 	}
 
         cmd_params_free(free_arg);
@@ -298,7 +298,7 @@ static void cmd_window_logfile(const char *data)
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, window, NULL, NULL);
 
 	if (log != NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE_LOGGING);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWLOG_FILE_LOGGING);
 		return;
 	}
 
@@ -306,7 +306,7 @@ static void cmd_window_logfile(const char *data)
 	log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
 	log_update(log);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE, data);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWLOG_FILE, data);
 }
 
 /* window's refnum changed - update the logs to log the new window refnum */
@@ -522,13 +522,13 @@ static void sig_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
 static void sig_log_locked(LOG_REC *log)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_LOG_LOCKED, log->fname);
+		    TXT_LOG_LOCKED, log->fname);
 }
 
 static void sig_log_create_failed(LOG_REC *log)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
+		    TXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
 }
 
 static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
@@ -540,9 +540,9 @@ static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
 	filepos = GPOINTER_TO_INT(pfilepos);
 
 	if (msgs == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_NO_AWAY_MSGS, log->fname);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_NO_AWAY_MSGS, log->fname);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_AWAY_MSGS, log->fname, msgs);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_AWAY_MSGS, log->fname, msgs);
 
                 str = g_strdup_printf("\"%s\" %d", log->fname, filepos);
 		signal_emit("command cat", 1, str);

@@ -62,7 +62,7 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 
 	window_item_create((WI_ITEM_REC *) query, GPOINTER_TO_INT(automatic));
 	printformat(query->server, query->name, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_QUERY_STARTED, query->name);
+		    TXT_QUERY_STARTED, query->name);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)
@@ -162,7 +162,7 @@ static void cmd_window_server(const char *data)
 	/* /WINDOW SERVER used in a query window */
 	query_change_server(query, server);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_QUERY_SERVER_CHANGED,
+		    TXT_QUERY_SERVER_CHANGED,
 		    query->name, server->tag);
 	signal_stop();
 }
@@ -182,7 +182,7 @@ static void cmd_unquery(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		query = query_find(server, data);
 		if (query == NULL) {
 			printformat(server, NULL, MSGLEVEL_CLIENTERROR,
-				    IRCTXT_NO_QUERY, data);
+				    TXT_NO_QUERY, data);
 			return;
 		}
 	}
