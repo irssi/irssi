@@ -22,6 +22,9 @@ enum {
 	CMDERR_NOT_GOOD_IDEA /* not good idea to do, -yes overrides this */
 };
 
+#define alias_find(alias) \
+	iconfig_get_str("aliases", alias, NULL)
+
 #define cmd_return_error(a) { signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
 #define cmd_param_error(a) { cmd_params_free(free_arg); cmd_return_error(a); }
 

@@ -30,9 +30,6 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#define alias_find(alias) \
-	iconfig_get_str("aliases", alias, NULL)
-
 GSList *commands;
 char *current_command;
 

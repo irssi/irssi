@@ -346,12 +346,12 @@ static GList *completion_get_subcommands(const char *cmd)
 }
 
 /* split the line to command and arguments */
-static char *line_get_command(const char *line, char **args)
+static char *line_get_command(const char *line, char **args, int aliases)
 {
 	const char *ptr, *cmdargs;
 	char *cmd, *checkcmd;
 
-	cmd = checkcmd = NULL;
+	cmd = checkcmd = NULL; *args = "";
 	cmdargs = NULL; ptr = line;
 
 	do {
@@ -366,7 +366,8 @@ static char *line_get_command(const char *line, char **args)
 			cmdargs = ptr;
 		}
 
-		if (!command_find(checkcmd)) {
+		if (aliases ? !alias_find(checkcmd) :
+		    !command_find(checkcmd)) {
 			/* not found, use the previous */
 			g_free(checkcmd);
 			break;
@@ -374,17 +375,36 @@ static char *line_get_command(const char *line, char **args)
 
 		/* found, check if it has subcommands */
 		g_free_not_null(cmd);
-		cmd = checkcmd;
+		if (!aliases)
+			cmd = checkcmd;
+		else {
+                        cmd = g_strdup(alias_find(checkcmd));
+			g_free(checkcmd);
+		}
 		*args = (char *) cmdargs;
 	} while (ptr != NULL);
 
 	return cmd;
 }
 
+static char *expand_aliases(const char *line)
+{
+        char *cmd, *args, *ret;
+
+	cmd = line_get_command(line, &args, TRUE);
+	if (cmd == NULL) return g_strdup(line);
+	if (*args == '\0') return cmd;
+
+	ret = g_strconcat(cmd, " ", args, NULL);
+	g_free(cmd);
+	return ret;
+}
+
 static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart, int *want_space)
 {
 	const char *newword, *cmdchars;
+	char *signal, *cmd, *args, *line;
 
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
@@ -409,31 +429,36 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 	}
 
-	if (strchr(cmdchars, *linestart) && is_base_command(linestart+1)) {
-		/* complete /command's subcommand */
-		char *tmp;
+	/* check only for /command completions from now on */
+        cmdchars = strchr(cmdchars, *linestart);
+	if (cmdchars == NULL) return;
 
-                tmp = g_strconcat(linestart+1, " ", word, NULL);
-		*list = completion_get_subcommands(tmp);
-		g_free(tmp);
+        /* check if there's aliases */
+	line = linestart[1] == *cmdchars ? g_strdup(linestart+2) :
+		expand_aliases(linestart+1);
+
+	if (is_base_command(line)) {
+		/* complete subcommand */
+                cmd = g_strconcat(line, " ", word, NULL);
+		*list = completion_get_subcommands(cmd);
+		g_free(cmd);
 
 		if (*list != NULL) signal_stop();
+                g_free(line);
 		return;
 	}
 
-	if (strchr(cmdchars, *linestart)) {
-		/* complete /command's parameters */
-		char *signal, *cmd, *args;
+	/* complete parameters */
+	cmd = line_get_command(line, &args, FALSE);
+	if (cmd != NULL) {
+		signal = g_strconcat("complete command ", cmd, NULL);
+		signal_emit(signal, 5, list, window, word, args, want_space);
 
-		cmd = line_get_command(linestart+1, &args);
-		if (cmd != NULL) {
-			signal = g_strconcat("complete command ", cmd, NULL);
-			signal_emit(signal, 5, list, window, word, args, want_space);
-
-			g_free(signal);
-			g_free(cmd);
-		}
+		g_free(signal);
+		g_free(cmd);
 	}
+
+	g_free(line);
 }
 
 static void sig_complete_set(GList **list, WINDOW_REC *window,
