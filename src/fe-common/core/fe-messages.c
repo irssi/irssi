@@ -409,11 +409,16 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 				      const char *address,
 				      int ownnick)
 {
+	int level;
+
 	if (ignore_check(server, oldnick, address,
 			 channel, newnick, MSGLEVEL_NICKS))
 		return;
 
-	printformat(server, channel, MSGLEVEL_NICKS,
+	level = MSGLEVEL_NICKS;
+        if (ownnick) level |= MSGLEVEL_NO_ACT;
+
+	printformat(server, channel, level,
 		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
 		    oldnick, newnick, channel);
 }
@@ -629,7 +634,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
-	settings_add_bool("lookandfeel", "show_own_nickchange_once", TRUE);
+	settings_add_bool("lookandfeel", "show_own_nickchange_once", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
