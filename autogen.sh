@@ -19,20 +19,6 @@ echo "/* automatically created by autogen.sh */" > irssi-version.h.in
 echo "#define IRSSI_VERSION \"@VERSION@\"" >> irssi-version.h.in
 echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h.in
 
-# generate colorless.theme
-echo "formats = {" > colorless.theme
-
-files=`find src -name 'module-formats.c'`
-for i in $files; do
-  file=`echo "$i"|sed 's@^src/@@'`
-  file=`echo "$file"|sed 's@/module-formats\.c$@@'`
-  echo "  \"$file\" = {" >> colorless.theme
-  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value =~ s/\$([0-9])(\%.-)/\$\{\1\}\2/g; $value =~ s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
-  echo "  };" >> colorless.theme
-done
-
-echo "};" >> colorless.theme
-
 # create help files
 perl syntax.pl
 files=`echo docs/help/in/*.in|sed -e 's/docs\/help\/in\///g' -e 's/Makefile.in //'`
