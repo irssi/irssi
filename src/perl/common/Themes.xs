@@ -50,24 +50,6 @@ CODE:
 
         printformat_perl(&dest, format, arglist);
 
-void
-printformat_window(window, level, format, ...)
-	Irssi::Window window
-	int level
-	char *format
-PREINIT:
-	TEXT_DEST_REC dest;
-	char *arglist[MAX_FORMAT_PARAMS];
-	int n;
-CODE:
-	format_create_dest(&dest, NULL, NULL, level, window);
-	memset(arglist, 0, sizeof(arglist));
-	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-3] = n < items ? SvPV(ST(n), PL_na) : "";
-	}
-
-        printformat_perl(&dest, format, arglist);
-
 #*******************************
 MODULE = Irssi	PACKAGE = Irssi::Server
 #*******************************
@@ -87,6 +69,28 @@ CODE:
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 4; n < 4+MAX_FORMAT_PARAMS; n++) {
 		arglist[n-4] = n < items ? SvPV(ST(n), PL_na) : "";
+	}
+
+        printformat_perl(&dest, format, arglist);
+
+#*******************************
+MODULE = Irssi	PACKAGE = Irssi::Window
+#*******************************
+
+void
+printformat(window, level, format, ...)
+	Irssi::Window window
+	int level
+	char *format
+PREINIT:
+	TEXT_DEST_REC dest;
+	char *arglist[MAX_FORMAT_PARAMS];
+	int n;
+CODE:
+	format_create_dest(&dest, NULL, NULL, level, window);
+	memset(arglist, 0, sizeof(arglist));
+	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
+		arglist[n-3] = n < items ? SvPV(ST(n), PL_na) : "";
 	}
 
         printformat_perl(&dest, format, arglist);

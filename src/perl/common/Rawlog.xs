@@ -8,26 +8,6 @@ Irssi::Rawlog
 rawlog_create()
 
 #*******************************
-MODULE = Irssi  PACKAGE = Irssi::Server
-#*******************************
-
-void
-rawlog_input(rawlog, str)
-	Irssi::Rawlog rawlog
-	char *str
-
-void
-rawlog_output(rawlog, str)
-	Irssi::Rawlog rawlog
-	char *str
-
-void
-rawlog_redirect(rawlog, str)
-	Irssi::Rawlog rawlog
-	char *str
-
-
-#*******************************
 MODULE = Irssi  PACKAGE = Irssi::Rawlog  PREFIX = rawlog_
 #*******************************
 

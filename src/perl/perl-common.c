@@ -188,7 +188,7 @@ void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 
 void perl_server_fill_hash(HV *hv, SERVER_REC *server)
 {
-	char *type, *chat_type;
+	char *type;
 	HV *stash;
 
         g_return_if_fail(hv != NULL);
@@ -197,10 +197,7 @@ void perl_server_fill_hash(HV *hv, SERVER_REC *server)
 	perl_connect_fill_hash(hv, server->connrec);
 
 	type = "SERVER";
-	chat_type = (char *) chat_protocol_find_id(server->chat_type)->name;
-
 	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
 	hv_store(hv, "connect_time", 12, newSViv(server->connect_time), 0);
 	hv_store(hv, "real_connect_time", 17, newSViv(server->real_connect_time), 0);
@@ -350,7 +347,7 @@ void perl_log_fill_hash(HV *hv, LOG_REC *log)
 	hv_store(hv, "failed", 6, newSViv(log->failed), 0);
 	hv_store(hv, "temp", 4, newSViv(log->temp), 0);
 
-	stash = gv_stashpv("Irssi::LogItem", 0);
+	stash = gv_stashpv("Irssi::Logitem", 0);
 	av = newAV();
 	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
 		av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
@@ -382,7 +379,13 @@ void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 
 void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 {
+	char *type;
+
 	perl_connect_fill_hash(hv, reconnect->conn);
+
+	type = "RECONNECT";
+	hv_store(hv, "type", 4, new_pv(type), 0);
+
 	hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
 	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
 }
@@ -561,7 +564,7 @@ void perl_common_init(void)
 		{ "Irssi::Command", (PERL_OBJECT_FUNC) perl_command_fill_hash },
 		{ "Irssi::Ignore", (PERL_OBJECT_FUNC) perl_ignore_fill_hash },
 		{ "Irssi::Log", (PERL_OBJECT_FUNC) perl_log_fill_hash },
-		{ "Irssi::LogItem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
+		{ "Irssi::Logitem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
 		{ "Irssi::Rawlog", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
 		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
 		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },

@@ -318,12 +318,11 @@ PPCODE:
 	}
 
 void
-command_bind(cmd, category, func)
+command_bind(cmd, func, category = "Perl scripts' commands")
 	char *cmd
 	char *category
 	char *func
 CODE:
-	if (*category == '\0') category = "Perl scripts' commands";
 	perl_command_bind(cmd, category, func);
 
 void

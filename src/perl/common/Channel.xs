@@ -17,6 +17,14 @@ CODE:
 OUTPUT:
 	RETVAL
 
+Irssi::Channel
+channel_create(chat_type, name, automatic)
+	int chat_type
+	char *name
+	int automatic
+CODE:
+	channel_create(chat_type, NULL, name, automatic);
+
 #*******************************
 MODULE = Irssi  PACKAGE = Irssi::Server
 #*******************************
@@ -31,12 +39,21 @@ PPCODE:
 		XPUSHs(sv_2mortal(irssi_bless((CHANNEL_REC *) tmp->data)));
 	}
 
+void
+channels_join(server, channels, automatic)
+	Irssi::Server server
+	char *channels
+	int automatic
+CODE:
+	server->channels_join(server, channels, automatic);
+
 Irssi::Channel
-channel_create(chat_type, server, name, automatic)
-	int chat_type
+channel_create(server, name, automatic)
 	Irssi::Server server
 	char *name
 	int automatic
+CODE:
+	channel_create(server->chat_type, server, name, automatic);
 
 Irssi::Channel
 channel_find(server, name)
@@ -44,7 +61,7 @@ channel_find(server, name)
 	char *name
 
 void
-nicklist_get_same(server, nick)
+nicks_get_same(server, nick)
 	Irssi::Server server
         char *nick
 PREINIT:

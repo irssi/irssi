@@ -11,6 +11,21 @@ PPCODE:
 		XPUSHs(sv_2mortal(irssi_bless(rec)));
 	}
 
+Irssi::Query
+query_create(chat_type, server_tag, nick, automatic)
+	int chat_type
+	char *server_tag
+	char *nick
+	int automatic
+
+Irssi::Query
+query_find(nick)
+	char *nick
+CODE:
+	RETVAL = query_find(NULL, nick);
+OUTPUT:
+	RETVAL
+
 #*******************************
 MODULE = Irssi  PACKAGE = Irssi::Server
 #*******************************
@@ -26,13 +41,6 @@ PPCODE:
 
 		XPUSHs(sv_2mortal(irssi_bless(rec)));
 	}
-
-Irssi::Query
-query_create(chat_type, server_tag, nick, automatic)
-	int chat_type
-	char *server_tag
-	char *nick
-	int automatic
 
 Irssi::Query
 query_find(server, nick)

@@ -34,9 +34,9 @@ log_item_add(log, type, name, server)
 void
 log_item_destroy(log, item)
 	Irssi::Log log
-	Irssi::LogItem item
+	Irssi::Logitem item
 
-Irssi::LogItem
+Irssi::Logitem
 log_item_find(log, type, item, server)
 	Irssi::Log log
 	int type

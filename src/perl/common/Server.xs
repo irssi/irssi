@@ -88,14 +88,6 @@ CODE:
 			(char *) SvPV(ST(n), n_a), (char *) SvPV(ST(n+1), n_a), (int) SvIV(ST(n+2)));
 	}
 
-void
-channels_join(server, data, automatic)
-	Irssi::Server server
-	char *data
-	int automatic
-CODE:
-	server->channels_join(server, data, automatic);
-
 int
 isnickflag(server, flag)
 	Irssi::Server server

@@ -9,7 +9,7 @@ Irssi::Command		T_PlainObj
 Irssi::Nick		T_IrssiObj
 Irssi::Ignore		T_PlainObj
 Irssi::Log		T_PlainObj
-Irssi::LogItem       	T_PlainObj
+Irssi::Logitem       	T_PlainObj
 Irssi::Rawlog		T_PlainObj
 Irssi::Module		T_PlainObj
 Irssi::Theme		T_PlainObj

@@ -34,19 +34,10 @@ CODE:
 	printtext_string(NULL, NULL, level, str);
 
 void
-print_window(str, level=MSGLEVEL_CLIENTNOTICE)
-	char *str
-        int level;
-CODE:
-	printtext_window(active_win, level, str);
-
-void
-command(cmd, server=active_win->active_server, item=active_win->active)
+command(cmd)
 	char *cmd
-	Irssi::Server server
-	Irssi::Windowitem item
 CODE:
-	perl_command(cmd, server, item);
+	perl_command(cmd, active_win->active_server, active_win->active);
 
 Irssi::Window
 window_find_name(name)
@@ -78,11 +69,27 @@ OUTPUT:
 	RETVAL
 
 Irssi::Window
+window_find_item(name)
+	char *name
+CODE:
+	RETVAL = window_find_item(NULL, name);
+OUTPUT:
+	RETVAL
+
+Irssi::Window
 window_find_closest(name, level)
 	char *name
 	int level
 CODE:
 	RETVAL = window_find_closest(NULL, name, level);
+OUTPUT:
+	RETVAL
+
+Irssi::Windowitem
+window_item_find(name)
+	char *name
+CODE:
+	RETVAL = window_item_find(NULL, name);
 OUTPUT:
 	RETVAL
 
@@ -92,14 +99,11 @@ MODULE = Irssi	PACKAGE = Irssi::Server
 #*******************************
 
 void
-command(server, cmd, item=active_win->active)
+command(server, cmd)
 	Irssi::Server server
 	char *cmd
-	Irssi::Windowitem item
 CODE:
-	if (item != NULL && item->server != SERVER(server))
-		item = NULL;
-	perl_command(cmd, server, item);
+	perl_command(cmd, server, active_win->active);
 
 void
 print(server, channel, str, level)
@@ -107,15 +111,16 @@ print(server, channel, str, level)
 	char *channel
 	char *str
 	int level
-PREINIT:
-        char *fixed;
 CODE:
-        fixed = perl_fix_formats(str);
-	printtext(server, channel, level, fixed);
-        g_free(fixed);
+	printtext_string(server, channel, level, str);
 
 Irssi::Windowitem
 window_item_find(server, name)
+	Irssi::Server server
+	char *name
+
+Irssi::Window
+window_find_item(server, name)
 	Irssi::Server server
 	char *name
 
@@ -148,13 +153,19 @@ PPCODE:
 	}
 
 void
-command(window, cmd, server=window->active_server, item=window->active)
+print(window, str, level=MSGLEVEL_CLIENTNOTICE)
+	Irssi::Window window
+	char *str
+        int level;
+CODE:
+	printtext_window(window, level, str);
+
+void
+command(window, cmd)
 	Irssi::Window window
 	char *cmd
-	Irssi::Server server
-	Irssi::Windowitem item
 CODE:
-	perl_command(cmd, server, item);
+	perl_command(cmd, window->active_server, window->active);
 
 void
 window_item_add(window, item, automatic)
@@ -163,18 +174,11 @@ window_item_add(window, item, automatic)
 	int automatic
 
 void
-window_item_remove(window, item)
-	Irssi::Window window
+window_item_remove(item)
 	Irssi::Windowitem item
 
 void
-window_item_destroy(window, item)
-	Irssi::Window window
-	Irssi::Windowitem item
-
-void
-window_item_set_active(window, item)
-	Irssi::Window window
+window_item_destroy(item)
 	Irssi::Windowitem item
 
 void
@@ -217,11 +221,6 @@ char *
 window_get_active_name(window)
 	Irssi::Window window
 
-Irssi::Window
-window_find_item(server, name)
-	Irssi::Server server
-	char *name
-
 Irssi::Windowitem
 window_item_find(window, server, name)
 	Irssi::Window window
@@ -233,8 +232,16 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Windowitem
+MODULE = Irssi	PACKAGE = Irssi::Windowitem  PREFIX = window_item_
 #*******************************
+
+void
+print(item, str, level=MSGLEVEL_CLIENTNOTICE)
+	Irssi::Windowitem item
+	int level
+	char *str
+CODE:
+	printtext_string(item->server, item->name, level, str);
 
 void
 command(item, cmd)
@@ -245,11 +252,6 @@ CODE:
 
 Irssi::Window
 window_create(item, automatic)
-	Irssi::Windowitem item
-	int automatic
-
-void
-window_item_create(item, automatic)
 	Irssi::Windowitem item
 	int automatic
 
@@ -270,19 +272,8 @@ int
 window_item_is_active(item)
 	Irssi::Windowitem item
 
-
-#*******************************
-MODULE = Irssi	PACKAGE = Irssi::Windowitem
-#*******************************
-
 void
-print(item, str, level=MSGLEVEL_CLIENTNOTICE)
+window_item_set_active(item)
 	Irssi::Windowitem item
-	int level
-	char *str
-PREINIT:
-        char *fixed;
 CODE:
-        fixed = perl_fix_formats(str);
-	printtext(item->server, item->name, level, fixed);
-        g_free(fixed);
+	window_item_set_active(window_item_window(item), item);
