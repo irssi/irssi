@@ -73,6 +73,7 @@ void irc_server_connect_free(IRC_SERVER_CONNECT_REC *rec)
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
+	char hostname[100];
 
 	g_return_if_fail(server != NULL);
 
@@ -93,7 +94,12 @@ static void server_init(IRC_SERVER_REC *server)
 
 	/* send user/realname */
 	server->cmdcount = 0;
-	irc_send_cmdv(server, "USER %s - - :%s", conn->username, conn->realname);
+
+	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
+		strcpy(hostname, "xx");
+
+	irc_send_cmdv(server, "USER %s %s %s :%s", conn->username, hostname,
+		      server->connrec->address, conn->realname);
 
 	server->cmdcount = 0;
 }
