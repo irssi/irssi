@@ -92,7 +92,6 @@ static void read_settings(void)
 
 	ignores = settings_get_str("ignore_signals");
 	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
-	signal(SIGINT, find_substr(ignores, "int") ? SIG_IGN : SIG_DFL);
 	signal(SIGQUIT, find_substr(ignores, "quit") ? SIG_IGN : SIG_DFL);
 	signal(SIGTERM, find_substr(ignores, "term") ? SIG_IGN : SIG_DFL);
 	signal(SIGPIPE, find_substr(ignores, "pipe") ? SIG_IGN : SIG_DFL);
