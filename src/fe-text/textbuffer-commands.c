@@ -19,10 +19,12 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
 #include "levels.h"
+#include "settings.h"
 
 #include "printtext.h"
 #include "gui-windows.h"
@@ -53,6 +55,32 @@ static void cmd_clear(const char *data)
 	}
 
 	cmd_params_free(free_arg);
+}
+
+static void cmd_window_scroll(const char *data)
+{
+	GUI_WINDOW_REC *gui;
+
+	gui = WINDOW_GUI(active_win);
+	if (g_strcasecmp(data, "default") == 0) {
+                gui->use_scroll = FALSE;
+	} else if (g_strcasecmp(data, "on") == 0) {
+		gui->use_scroll = TRUE;
+		gui->scroll = TRUE;
+	} else if (g_strcasecmp(data, "off") == 0) {
+		gui->use_scroll = TRUE;
+		gui->scroll = FALSE;
+	} else if (*data != '\0') {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_WINDOW_SCROLL_UNKNOWN, data);
+                return;
+	}
+
+	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+			   TXT_WINDOW_SCROLL, !gui->use_scroll ? "DEFAULT" :
+			   gui->scroll ? "ON" : "OFF");
+	textbuffer_view_set_scroll(gui->view, gui->use_scroll ?
+				   gui->scroll : settings_get_bool("scroll"));
 }
 
 static void cmd_scrollback(const char *data, SERVER_REC *server,
@@ -268,6 +296,7 @@ static void sig_away_changed(SERVER_REC *server)
 void textbuffer_commands_init(void)
 {
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
+	command_bind("window scroll", NULL, (SIGNAL_FUNC) cmd_window_scroll);
 	command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
 	command_bind("scrollback clear", NULL, (SIGNAL_FUNC) cmd_scrollback_clear);
 	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
@@ -284,6 +313,7 @@ void textbuffer_commands_init(void)
 void textbuffer_commands_deinit(void)
 {
 	command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
+	command_unbind("window scroll", (SIGNAL_FUNC) cmd_window_scroll);
 	command_unbind("scrollback", (SIGNAL_FUNC) cmd_scrollback);
 	command_unbind("scrollback clear", (SIGNAL_FUNC) cmd_scrollback_clear);
 	command_unbind("scrollback goto", (SIGNAL_FUNC) cmd_scrollback_goto);

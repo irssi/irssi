@@ -373,7 +373,8 @@ static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
 					     int default_indent,
-					     int longword_noindent)
+					     int longword_noindent,
+					     int scroll)
 {
 	TEXT_BUFFER_VIEW_REC *view;
 
@@ -387,7 +388,8 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 	view->width = width;
         view->height = height;
 	view->default_indent = default_indent;
-        view->longword_noindent = longword_noindent;
+	view->longword_noindent = longword_noindent;
+        view->scroll = scroll;
 
 	view->cache = textbuffer_cache_get(view->siblings, width);
 	textbuffer_view_init_bottom(view);
@@ -441,6 +443,11 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 {
 	view->default_indent = default_indent;
         view->longword_noindent = longword_noindent;
+}
+
+void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll)
+{
+        view->scroll = scroll;
 }
 
 static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
@@ -764,11 +771,13 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	}
 
 	if (view->bottom) {
-		if (view->ypos >= view->height) {
+		if (view->scroll && view->ypos >= view->height) {
 			linecount = view->ypos-view->height+1;
 			view_scroll(view, &view->startline,
 				    &view->subline, linecount, FALSE);
 			view->ypos -= linecount;
+		} else {
+			view->bottom = view_is_bottom(view);
 		}
 
 		if (view->window != NULL) {
@@ -779,8 +788,10 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				subline = -ypos;
 				ypos = 0;
 			}
-			view_line_draw(view, line, subline, ypos,
-				       view->height - ypos);
+			if (ypos < view->height) {
+				view_line_draw(view, line, subline, ypos,
+					       view->height - ypos);
+			}
 		}
 	}
 

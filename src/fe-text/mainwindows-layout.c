@@ -26,22 +26,31 @@
 
 #include "mainwindows.h"
 #include "gui-windows.h"
+#include "textbuffer-view.h"
 
 static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *active;
+        GUI_WINDOW_REC *gui;
 
-	if (WINDOW_GUI(window)->sticky) {
+        gui = WINDOW_GUI(window);
+	if (gui->sticky) {
 		iconfig_node_set_bool(node, "sticky", TRUE);
-		active = WINDOW_MAIN(window)->active;
+		active = gui->parent->active;
 		if (window != active)
 			iconfig_node_set_int(node, "parent", active->refnum);
 	}
+
+	if (gui->use_scroll)
+                iconfig_node_set_bool(node, "scroll", gui->scroll);
 }
 
 static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *parent;
+        GUI_WINDOW_REC *gui;
+
+        gui = WINDOW_GUI(window);
 
 	parent = window_find_refnum(config_node_get_int(node, "parent", -1));
 	if (parent != NULL)
@@ -49,6 +58,11 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 
 	if (config_node_get_bool(node, "sticky", FALSE))
 		gui_window_set_sticky(window);
+	if (config_node_get_str(node, "scroll", NULL) != NULL) {
+		gui->use_scroll = TRUE;
+		gui->scroll = config_node_get_bool(node, "scroll", TRUE);
+                textbuffer_view_set_scroll(gui->view, gui->scroll);
+	}
 }
 
 static void main_window_save(MAIN_WINDOW_REC *window, CONFIG_NODE *node)
@@ -136,8 +150,8 @@ static void sig_layout_reset(void)
 
 void mainwindows_layout_init(void)
 {
-	signal_add("layout window save", (SIGNAL_FUNC) sig_layout_window_save);
-	signal_add("layout window restore", (SIGNAL_FUNC) sig_layout_window_restore);
+	signal_add("layout save window", (SIGNAL_FUNC) sig_layout_window_save);
+	signal_add("layout restore window", (SIGNAL_FUNC) sig_layout_window_restore);
 	signal_add("layout save", (SIGNAL_FUNC) sig_layout_save);
 	signal_add_first("layout restore", (SIGNAL_FUNC) sig_layout_restore);
 	signal_add("layout reset", (SIGNAL_FUNC) sig_layout_reset);
@@ -145,8 +159,8 @@ void mainwindows_layout_init(void)
 
 void mainwindows_layout_deinit(void)
 {
-	signal_remove("layout window save", (SIGNAL_FUNC) sig_layout_window_save);
-	signal_remove("layout window restore", (SIGNAL_FUNC) sig_layout_window_restore);
+	signal_remove("layout save window", (SIGNAL_FUNC) sig_layout_window_save);
+	signal_remove("layout restore window", (SIGNAL_FUNC) sig_layout_window_restore);
 	signal_remove("layout save", (SIGNAL_FUNC) sig_layout_save);
 	signal_remove("layout restore", (SIGNAL_FUNC) sig_layout_restore);
 	signal_remove("layout reset", (SIGNAL_FUNC) sig_layout_reset);

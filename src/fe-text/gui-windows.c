@@ -46,7 +46,8 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 	gui->view = textbuffer_view_create(textbuffer_create(),
 					   window->width, window->height,
 					   settings_get_int("indent"),
-					   settings_get_bool("indent_always"));
+					   settings_get_bool("indent_always"),
+					   settings_get_bool("scroll"));
 	return gui;
 }
 
@@ -313,10 +314,15 @@ static void read_settings(void)
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
+                GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
 
-                textbuffer_view_set_default_indent(WINDOW_GUI(rec)->view,
+                textbuffer_view_set_default_indent(gui->view,
 						   settings_get_int("indent"),
 						   settings_get_bool("indent_always"));
+
+		textbuffer_view_set_scroll(gui->view,
+					   gui->use_scroll ? gui->scroll :
+					   settings_get_bool("scroll"));
 	}
 
 	special_vars_add_signals(prompt, 4, funcs);
@@ -332,6 +338,7 @@ void gui_windows_init(void)
 	settings_add_bool("lookandfeel", "indent_always", FALSE);
 	settings_add_str("lookandfeel", "prompt", "[$[.15]T] ");
 	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
+	settings_add_bool("lookandfeel", "scroll", TRUE);
 
         prompt = NULL; prompt_window = NULL;
 	window_create_override = -1;

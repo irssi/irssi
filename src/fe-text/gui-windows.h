@@ -14,6 +14,9 @@ typedef struct {
 	MAIN_WINDOW_REC *parent;
 	TEXT_BUFFER_VIEW_REC *view;
 
+	unsigned int scroll:1;
+	unsigned int use_scroll:1;
+
 	unsigned int sticky:1;
 	unsigned int use_insert_after:1;
         LINE_REC *insert_after;

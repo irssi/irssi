@@ -45,7 +45,8 @@ typedef struct {
 	int width, height;
 
 	int default_indent;
-	int longword_noindent:1;
+	unsigned int longword_noindent:1;
+	unsigned int scroll:1; /* scroll down automatically when at bottom */
 
 	TEXT_BUFFER_CACHE_REC *cache;
 	int ypos; /* cursor position - visible area is 0..height-1 */
@@ -72,13 +73,15 @@ typedef struct {
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
 					     int default_indent,
-					     int longword_noindent);
+					     int longword_noindent,
+					     int scroll);
 /* Destroy the view. */
 void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view);
 /* Change the default indent position */
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 					int default_indent,
 					int longword_noindent);
+void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll);
 
 /* Resize the view. */
 void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height);
