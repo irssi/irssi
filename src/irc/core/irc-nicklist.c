@@ -133,7 +133,10 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
                         ptr++;
 		}
 
-		irc_nicklist_insert(chanrec, ptr, op, halfop, voice, FALSE);
+		if (nicklist_find((CHANNEL_REC *) chanrec, ptr) == NULL) {
+			irc_nicklist_insert(chanrec, ptr, op, halfop,
+					    voice, FALSE);
+		}
 	}
 
 	g_free(params);
