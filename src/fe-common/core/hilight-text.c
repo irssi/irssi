@@ -182,6 +182,9 @@ static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, cons
 	if (best_match > 0) {
 		hilight_next = FALSE;
 
+		signal_emit("print text stripped", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), str);
+		signal_stop();
+
 		if (color == NULL) color = "\00316";
 		newstr = g_strconcat(isdigit(*color) ? "\003" : "", color, str, NULL);
 		signal_emit("print text", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
