@@ -109,7 +109,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 	return ret;
 }
 
-static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
+char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
 {
         NICK_REC *nickrec;
         char *emptystr;
@@ -158,7 +158,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
         else
 		freemsg = NULL;
 
-	nickmode = get_nickmode(chanrec, nick);
+	nickmode = channel_get_nickmode(chanrec, nick);
 	if (!print_channel) {
 		/* message to active channel in window */
 		if (color != NULL) {
@@ -217,7 +217,7 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 	const char *nickmode;
 	int print_channel;
 
-	nickmode = get_nickmode(channel, server->nick);
+	nickmode = channel_get_nickmode(channel, server->nick);
 
 	window = channel == NULL ? NULL :
 		window_item_window((WI_ITEM_REC *) channel);
@@ -238,71 +238,45 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 	}
 }
 
-static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+static void sig_message_own_public(SERVER_REC *server, const char *msg,
+				   const char *target)
 {
-	GHashTable *optlist;
 	CHANNEL_REC *channel;
-	char *target, *msg, *freestr, *newtarget;
-	void *free_arg;
-	int free_ret;
 
-	g_return_if_fail(data != NULL);
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(msg != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "msg", &optlist, &target, &msg))
-		return;
-	if (*target == '\0' || *msg == '\0')
-		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	server = cmd_options_get_server("msg", optlist, server);
-
-	free_ret = FALSE;
-	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0) {
-                /* , and . are handled specially */
-		newtarget = parse_special(&target, server, item,
-					  NULL, &free_ret, NULL, 0);
-		if (newtarget == NULL) {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-				    *target == ',' ? IRCTXT_NO_MSGS_GOT :
-				    IRCTXT_NO_MSGS_SENT);
-			cmd_params_free(free_arg);
-			signal_stop();
-			return;
-		}
-		target = newtarget;
-	} else if (strcmp(target, "*") == 0 && item != NULL) {
-                /* * means active channel */
-		target = item->name;
-	}
-
-	if (server == NULL || !server->connected)
-		cmd_param_error(CMDERR_NOT_CONNECTED);
 	channel = channel_find(server, target);
+	print_own_channel_message(server, channel, target, msg);
+}
 
-	freestr = !free_ret ? NULL : target;
-	if (*target == '@' && server->ischannel(target[1])) {
-		/* Hybrid 6 feature, send msg to all ops in channel
-		   FIXME: this shouldn't really be here in core.. */
-		target++;
+static void sig_message_own_private(SERVER_REC *server, const char *msg,
+				    const char *target, const char *origtarget)
+{
+	QUERY_REC *query;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(msg != NULL);
+
+	if (target == NULL) {
+		/* this should only happen if some special target failed and
+		   we should display some error message. currently the special
+		   targets are only ',' and '.'. */
+		g_return_if_fail(strcmp(origtarget, ",") == 0 ||
+				 strcmp(origtarget, ".") == 0);
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    *origtarget == ',' ? IRCTXT_NO_MSGS_GOT :
+			    IRCTXT_NO_MSGS_SENT);
+		signal_stop();
+		return;
 	}
 
-	if (server->ischannel(*target)) {
-		/* msg to channel */
-		print_own_channel_message(server, channel, target, msg);
-	} else {
-		/* private message */
-		QUERY_REC *query;
-
-		query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
-		printformat(server, target, MSGLEVEL_MSGS |
-			    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    query == NULL ? IRCTXT_OWN_MSG_PRIVATE :
-			    IRCTXT_OWN_MSG_PRIVATE_QUERY,
-			    target, msg, server->nick);
-	}
-	g_free_not_null(freestr);
-
-	cmd_params_free(free_arg);
+	query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
+	printformat(server, target,
+		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
+		    query == NULL ? IRCTXT_OWN_MSG_PRIVATE :
+		    IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
 }
 
 static void sig_message_join(SERVER_REC *server, const char *channel,
@@ -502,6 +476,8 @@ void fe_messages_init(void)
 
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_add("message quit", (SIGNAL_FUNC) sig_message_quit);
@@ -510,13 +486,14 @@ void fe_messages_init(void)
 	signal_add("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_add("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_add("message topic", (SIGNAL_FUNC) sig_message_topic);
-	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 }
 
 void fe_messages_deinit(void)
 {
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_remove("message quit", (SIGNAL_FUNC) sig_message_quit);
@@ -525,5 +502,4 @@ void fe_messages_deinit(void)
 	signal_remove("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
-	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 }

@@ -25,6 +25,10 @@
 	(a) == '!' || /* secure */ \
 	(a) == '+') /* modeless */
 
+#define ischannel_target(a) \
+	(ischannel((a)[0]) || \
+	((a)[0] == '@' && ischannel((a)[1]))) /* hybrid6 @#channel */
+
 #define IS_IRC_ITEM(rec) (IS_IRC_CHANNEL(rec) || IS_IRC_QUERY(rec))
 
 extern char *current_server_event; /* current server event being processed */

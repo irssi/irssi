@@ -51,9 +51,15 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	if (nick == NULL) nick = server->real_address;
 	if (addr == NULL) addr = "";
 
-	signal_emit(ischannel(*target) ?
-		    "message public" : "message private", 5,
-		    server, msg, nick, addr, target);
+	if (*target == '@' && ischannel(target[1])) {
+		/* Hybrid 6 feature, send msg to all ops in channel */
+		signal_emit("message irc op_public", 5,
+			    server, msg, nick, addr, target+1);
+	} else {
+		signal_emit(ischannel(*target) ?
+			    "message public" : "message private", 5,
+			    server, msg, nick, addr, target);
+	}
 
 	g_free(params);
 }

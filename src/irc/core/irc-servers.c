@@ -68,9 +68,9 @@ static int isnickflag_func(char flag)
 	return isnickflag(flag);
 }
 
-static int ischannel_func(char flag)
+static int ischannel_func(const char *data)
 {
-	return ischannel(flag);
+	return ischannel_target(data);
 }
 
 static void send_message(SERVER_REC *server, const char *target,

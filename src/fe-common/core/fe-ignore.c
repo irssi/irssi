@@ -176,7 +176,7 @@ static void cmd_ignore(const char *data)
 	if (*levels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (active_win->active_server != NULL &&
-	    active_win->active_server->ischannel(*mask)) {
+	    active_win->active_server->ischannel(mask)) {
 		chanarg = mask;
 		mask = NULL;
 	}
@@ -264,7 +264,7 @@ static void cmd_unignore(const char *data)
 		const char *chans[2] = { "*", NULL };
 
 		if (active_win->active_server != NULL &&
-		    active_win->active_server->ischannel(*data)) {
+		    active_win->active_server->ischannel(data)) {
 			chans[0] = data;
 			data = NULL;
 		}

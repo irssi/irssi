@@ -62,7 +62,7 @@ static void cmd_join(const char *data, SERVER_REC *server)
 static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
-	char *target, *msg;
+	char *target, *origtarget, *msg;
 	void *free_arg;
 	int free_ret;
 
@@ -78,15 +78,22 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
+        origtarget = target;
 	free_ret = FALSE;
 	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0) {
 		target = parse_special(&target, server, item,
 				       NULL, &free_ret, NULL, 0);
+		if (target != NULL && *target == '\0')
+			target = NULL;
 	} else if (strcmp(target, "*") == 0 && item != NULL)
 		target = item->name;
 
 	if (target != NULL)
 		server->send_message(server, target, msg);
+
+	signal_emit(target != NULL && server->ischannel(target) ?
+		    "message own_public" : "message own_private", 4,
+		    server, msg, target, origtarget);
 
 	if (free_ret && target != NULL) g_free(target);
 	cmd_params_free(free_arg);

@@ -65,7 +65,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	g_return_val_if_fail(server != NULL, 0);
 
 	chanrec = (channel != NULL && server != NULL &&
-		   server->ischannel(*channel)) ?
+		   server->ischannel(channel)) ?
 		channel_find(server, channel) : NULL;
 
 	best_mask = 0; best_patt = 0; best_ignore = FALSE;

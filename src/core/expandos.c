@@ -391,13 +391,6 @@ static char *expando_chatnet(SERVER_REC *server, void *item, int *free_ret)
 	return server == NULL ? "" : server->connrec->chatnet;
 }
 
-static void sig_message_private(SERVER_REC *server, const char *msg,
-				const char *nick, const char *address)
-{
-	g_free_not_null(last_privmsg_from);
-	last_privmsg_from = g_strdup(nick);
-}
-
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
 			       const char *target)
@@ -406,28 +399,27 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	last_public_from = g_strdup(nick);
 }
 
-static void cmd_msg(const char *data, SERVER_REC *server)
+static void sig_message_private(SERVER_REC *server, const char *msg,
+				const char *nick, const char *address)
 {
-	GHashTable *optlist;
-	char *target, *msg;
-        void *free_arg;
+	g_free_not_null(last_privmsg_from);
+	last_privmsg_from = g_strdup(nick);
+}
 
-	g_return_if_fail(data != NULL);
+static void sig_message_own_private(SERVER_REC *server, const char *msg,
+				    const char *target, const char *origtarget)
+{
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(msg != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "msg", &optlist, &target, &msg))
-		return;
-
-	if (*target != '\0' && *msg != '\0' &&
-	    !server->ischannel(*target) && isalpha(*target)) {
-		g_free_not_null(last_sent_msg);
+	if (target != NULL) {
+		if (target != last_sent_msg) {
+			g_free_not_null(last_sent_msg);
+			last_sent_msg = g_strdup(target);
+		}
 		g_free_not_null(last_sent_msg_body);
-		last_sent_msg = g_strdup(target);
 		last_sent_msg_body = g_strdup(msg);
 	}
-
-	cmd_params_free(free_arg);
 }
 
 static int sig_timer(void)
@@ -532,9 +524,9 @@ void expandos_init(void)
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 
         timer_tag = g_timeout_add(1000, (GSourceFunc) sig_timer, NULL);
-	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 }
 
 void expandos_deinit(void)
@@ -559,5 +551,5 @@ void expandos_deinit(void)
         g_source_remove(timer_tag);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
-	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
+	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 }

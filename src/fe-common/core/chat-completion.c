@@ -127,53 +127,46 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	SERVER_LAST_MSG_ADD(server, nick);
 }
 
-static void cmd_msg(const char *data, SERVER_REC *server)
+static void sig_message_own_public(SERVER_REC *server, const char *msg,
+				   const char *target, const char *origtarget)
 {
-	GHashTable *optlist;
-        NICK_REC *nick;
-	char *target, *msg, *p;
-	void *free_arg;
+	CHANNEL_REC *channel;
+	NICK_REC *nick;
+	char *p, *msgnick;
 
-	g_return_if_fail(data != NULL);
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(msg != NULL);
+        if (target == NULL) return;
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "msg", &optlist, &target, &msg))
+        channel = channel_find(server, target);
+	if (channel == NULL)
 		return;
-	server = cmd_options_get_server("msg", optlist, server);
 
-	if (server != NULL && *target != '\0' && *msg != '\0' &&
-	    query_find(server, target) == NULL) {
-                CHANNEL_REC *channel = channel_find(server, target);
-		MODULE_CHANNEL_REC *mchannel;
-
-		mchannel = MODULE_DATA(channel);
-
-		if (channel != NULL) {
-			/* channel msg - if first word in line is nick,
-                           add it to lastmsgs */
-			p = strchr(msg, ' ');
-			if (p != NULL && p != msg) {
-				*p = '\0';
-				nick = nicklist_find(channel, msg);
-				if (nick == NULL) {
-					/* probably ':' or ',' or some other
-					   char after nick, try without it */
-					p[-1] = '\0';
-					nick = nicklist_find(channel, msg);
-				}
-				if (nick != NULL && nick != channel->ownnick) {
-					CHANNEL_LAST_MSG_ADD(channel,
-							     nick->nick, TRUE);
-				}
-			}
-		} else if (!server->ischannel(*target)) {
-                        /* private msg */
-			SERVER_LAST_MSG_ADD(server, target);
+	/* channel msg - if first word in line is nick,
+	   add it to lastmsgs */
+	p = strchr(msg, ' ');
+	if (p != NULL && p != msg) {
+		msgnick = g_strndup(msg, (int) (p-msg));
+		nick = nicklist_find(channel, msgnick);
+		if (nick == NULL) {
+			/* probably ':' or ',' or some other
+			   char after nick, try without it */
+			msgnick[strlen(msgnick)-1] = '\0';
+			nick = nicklist_find(channel, msgnick);
 		}
+		if (nick != NULL && nick != channel->ownnick)
+			CHANNEL_LAST_MSG_ADD(channel, nick->nick, TRUE);
 	}
+}
 
-	cmd_params_free(free_arg);
+static void sig_message_own_private(SERVER_REC *server, const char *msg,
+				    const char *target, const char *origtarget)
+{
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(msg != NULL);
+
+	if (target != NULL && query_find(server, target) == NULL)
+		SERVER_LAST_MSG_ADD(server, target);
 }
 
 static void sig_nick_removed(CHANNEL_REC *channel, NICK_REC *nick)
@@ -462,7 +455,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	if (server == NULL && servers != NULL)
 		server = servers->data;
 
-	if (server != NULL && server->ischannel(*word)) {
+	if (server != NULL && server->ischannel(word)) {
 		/* probably completing a channel name */
 		*list = completion_get_channels(window->active_server, word);
                 return;
@@ -731,7 +724,8 @@ void chat_completion_init(void)
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
-	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
+	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
 	signal_add("nicklist changed", (SIGNAL_FUNC) sig_nick_changed);
 	signal_add("send text", (SIGNAL_FUNC) event_text);
@@ -748,7 +742,8 @@ void chat_completion_deinit(void)
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
-	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
+	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
 	signal_remove("nicklist changed", (SIGNAL_FUNC) sig_nick_changed);
 	signal_remove("send text", (SIGNAL_FUNC) event_text);
