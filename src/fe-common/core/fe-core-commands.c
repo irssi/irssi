@@ -189,6 +189,7 @@ static void show_help(const char *data)
 	    if (rec->cmd[findlen] == '\0')
 	    {
 		helpitem = rec;
+                found = TRUE;
 		break;
 	    }
 	    else if (strchr(rec->cmd+findlen+1, ' ') == NULL)
