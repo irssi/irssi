@@ -396,6 +396,11 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		text++;
 	}
 
+	if (need_clrtoeol) {
+		term_set_color(view->window, ATTR_RESET);
+		term_clrtoeol(view->window);
+	}
+
         return drawcount;
 }
 
