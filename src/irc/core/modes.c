@@ -35,6 +35,7 @@ static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 			     const char mode, int type, const char *setby)
 {
 	NICK_REC *nickrec;
+	char modestr[2], typestr[2];
 
 	g_return_if_fail(IS_IRC_CHANNEL(channel));
 	g_return_if_fail(nick != NULL);
@@ -46,7 +47,10 @@ static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 	if (mode == '+') nickrec->voice = type == '+';
 	if (mode == '%') nickrec->halfop = type == '+';
 
-	signal_emit("nick mode changed", 3, channel, nickrec, setby);
+	modestr[0] = mode; modestr[1] = '\0';
+	typestr[0] = type; typestr[1] = '\0';
+	signal_emit("nick mode changed", 5,
+		    channel, nickrec, setby, modestr, typestr);
 }
 
 static int mode_is_set(const char *str, char mode)
