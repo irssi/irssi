@@ -589,7 +589,7 @@ redirect_register(command, remote, timeout, start, stop, opt)
 
   Example (already done by irssi):
 
-  Irssi::redirection_register('mode channel', 0, 0,
+  Irssi::redirect_register('mode channel', 0, 0,
   	undef, # no start events
 	{ # stop events
 	  "event 324" => 1, # MODE-reply
