@@ -58,7 +58,7 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
-#ifdef USE_CURSES_WINDOWS
+#ifndef USE_CURSES_WINDOWS
 static void create_curses_window(MAIN_WINDOW_REC *window)
 {
 	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
@@ -95,7 +95,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	signal_emit("mainwindow resized", 1, window);
 }
 
-#ifdef USE_CURSES_WINDOWS
+#ifndef USE_CURSES_WINDOWS
 void mainwindows_recreate(void)
 {
 	GSList *tmp;

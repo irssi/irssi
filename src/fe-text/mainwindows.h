@@ -27,7 +27,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window);
 
 void mainwindows_redraw(void);
 void mainwindows_resize(int ychange, int xchange);
-#ifdef USE_CURSES_WINDOWS
+#ifndef USE_CURSES_WINDOWS
 void mainwindows_recreate(void);
 #endif
 
