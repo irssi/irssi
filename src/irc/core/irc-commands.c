@@ -1029,7 +1029,7 @@ void irc_commands_init(void)
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
 
 	command_set_options("connect", "+ircnet +host");
-	command_set_options("topic", "d");
+	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");
 	command_set_options("join", "invite");

@@ -39,7 +39,7 @@ static void set_print(SETTINGS_REC *rec)
 		value = settings_get_bool(rec->key) ? "ON" : "OFF";
 		break;
 	case SETTING_TYPE_INT:
-                g_snprintf(value_int, sizeof(value_int), "%d", settings_get_int(rec->key));
+		ltoa(value_int, settings_get_int(rec->key));
 		value = value_int;
 		break;
 	case SETTING_TYPE_STRING:
@@ -65,20 +65,24 @@ static void set_boolean(const char *key, const char *value)
 
 static void cmd_set(char *data)
 {
+        GHashTable *optlist;
 	GSList *sets, *tmp;
 	char *key, *value, *last_section;
 	void *free_arg;
-	int found;
+	int found, clear;
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "set", &optlist, &key, &value))
 		return;
+
+	clear = g_hash_table_lookup(optlist, "clear") != NULL;
 
 	last_section = ""; found = 0;
 	sets = settings_get_sorted();
 	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
 		SETTINGS_REC *rec = tmp->data;
 
-		if ((*value != '\0' && g_strcasecmp(rec->key, key) != 0) ||
+		if (((clear || *value != '\0') && g_strcasecmp(rec->key, key) != 0) ||
 		    (*value == '\0' && *key != '\0' && stristr(rec->key, key) == NULL))
 			continue;
 
@@ -88,17 +92,17 @@ static void cmd_set(char *data)
 			last_section = rec->section;
 		}
 
-		if (*value != '\0') {
+		if (clear || *value != '\0') {
 			/* change the setting */
 			switch (rec->type) {
 			case SETTING_TYPE_BOOLEAN:
-                                set_boolean(key, value);
+				set_boolean(key, clear ? FALSE : value);
 				break;
 			case SETTING_TYPE_INT:
-				iconfig_set_int("settings", key, atoi(value));
+				iconfig_set_int("settings", key, clear ? 0 : atoi(value));
 				break;
 			case SETTING_TYPE_STRING:
-                                iconfig_set_str("settings", key, value);
+				iconfig_set_str("settings", key, clear ? "" : value);
 				break;
 			}
 			signal_emit("setup changed", 0);
@@ -106,6 +110,9 @@ static void cmd_set(char *data)
 
                 set_print(rec);
 		found = TRUE;
+
+		if (clear || *value != '\0')
+			break;
 	}
 	g_slist_free(sets);
 
@@ -225,6 +232,8 @@ void fe_settings_init(void)
 	command_bind("toggle", NULL, (SIGNAL_FUNC) cmd_toggle);
 	command_bind("alias", NULL, (SIGNAL_FUNC) cmd_alias);
 	command_bind("unalias", NULL, (SIGNAL_FUNC) cmd_unalias);
+
+	command_set_options("set", "clear");
 }
 
 void fe_settings_deinit(void)
