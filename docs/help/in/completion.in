@@ -1,0 +1,28 @@
+
+@SYNTAX:completion@
+
+Irssi can "complete" some words for you - you can write just first few letters
+of the word and press TAB (or any other key with action word_completion
+assigned). Then, irssi will choose the most probable matching word and inserts
+it to the command line. You can press TAB repetitively and irssi will replace
+the chosen word with another possible words matching to the letters you wrote.
+
+The words chosen usually depend on their context - they can be filenames or
+command names, but most frequently they are nicks of people on same channels as
+you are. However, you can have global list of own completions, which apply to
+all contexts. This command is dedicated to maintaining of such a list.
+
+Without any parameters, /COMPLETION displays list of all user completions.
+
+/COMPLETION [-auto] <prefix> <string> adds completion which gets triggered when
+you press TAB (or any other key with action word_completion assigned) after
+writing <prefix> specified and which expands to <string>. When -auto is
+specified, the completion gets triggered even when you press SPACE or ENTER (or
+any other key with action check_replaces assigned) after the <prefix>. If
+there's already some <prefix> completion in the list, it will get replaced.
+
+/COMPLETION -delete <prefix> removes completion of <prefix> from the user
+completion list.
+
+See also: BIND
+
