@@ -57,7 +57,8 @@ static void check_query_changes(IRC_SERVER_REC *server, const char *nick,
 		query_change_nick(query, nick);
 	}
 
-	if (query->address == NULL || strcmp(query->address, address) != 0) {
+	if (address != NULL && (query->address == NULL ||
+				strcmp(query->address, address) != 0)) {
                 /* host changed */
 		query_change_address(query, address);
 	}
