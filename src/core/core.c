@@ -249,6 +249,8 @@ void core_init(int argc, char *argv[])
 
 void core_deinit(void)
 {
+	module_uniq_destroy("WINDOW ITEM TYPE");
+
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 

@@ -155,5 +155,4 @@ void queries_init(void)
 
 void queries_deinit(void)
 {
-	module_uniq_destroy("QUERY");
 }

@@ -249,5 +249,4 @@ void channels_deinit(void)
 	channels_setup_deinit();
 
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
-	module_uniq_destroy("CHANNEL");
 }
