@@ -462,7 +462,12 @@ static void sig_message_nick(SERVER_REC *server, const char *newnick,
 static void sig_message_own_nick(SERVER_REC *server, const char *newnick,
 				 const char *oldnick, const char *address)
 {
-	print_nick_change(server, newnick, oldnick, address, TRUE);
+        if (!settings_get_bool("show_own_nickchange_once"))
+		print_nick_change(server, newnick, oldnick, address, TRUE);
+	else {
+		printformat(server, NULL, MSGLEVEL_NICKS,
+			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "");
+	}
 }
 
 static void sig_message_invite(SERVER_REC *server, const char *channel,
@@ -624,6 +629,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
+	settings_add_bool("lookandfeel", "show_own_nickchange_once", TRUE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
