@@ -74,7 +74,6 @@ CORE_SOURCES = \
 
 IRC_SOURCES = \
 	irc/Dcc.xs \
-	irc/Flood.xs \
 	irc/IrcChannel.xs \
 	irc/IrcQuery.xs \
 	irc/IrcServer.xs \
