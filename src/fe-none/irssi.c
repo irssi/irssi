@@ -19,9 +19,10 @@
 */
 
 #include "module.h"
+#include "modules.h"
+#include "modules-load.h"
 #include "args.h"
 #include "signals.h"
-#include "modules.h"
 #include "core.h"
 
 #ifdef HAVE_STATIC_PERL
@@ -60,6 +61,8 @@ void noui_init(void)
 	irssi_gui = IRSSI_GUI_NONE;
 	core_init();
 	irc_init();
+
+	module_register("core", "fe-none");
 
 	signal_add("reload", (SIGNAL_FUNC) sig_reload);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);

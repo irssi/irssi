@@ -23,11 +23,6 @@
 #include "settings.h"
 #include "levels.h"
 
-void irc_proxy_deinit(void)
-{
-	plugin_proxy_listen_deinit();
-}
-
 void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
@@ -48,4 +43,10 @@ void irc_proxy_init(void)
 	}
 
 	plugin_proxy_listen_init();
+        module_register("proxy", "irc");
+}
+
+void irc_proxy_deinit(void)
+{
+	plugin_proxy_listen_deinit();
 }
