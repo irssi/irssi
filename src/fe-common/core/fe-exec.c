@@ -48,9 +48,9 @@ typedef struct {
         char *target; /* send text with /msg <target> ... */
 	WINDOW_REC *target_win; /* print text to this window */
 
-	int shell:1; /* start the program via /bin/sh */
-	int notice:1; /* send text with /notice, not /msg if target is set */
-	int silent:1; /* don't print "process exited with level xx" */
+	unsigned int shell:1; /* start the program via /bin/sh */
+	unsigned int notice:1; /* send text with /notice, not /msg if target is set */
+	unsigned int silent:1; /* don't print "process exited with level xx" */
 } PROCESS_REC;
 
 static GSList *processes; /* processes, sorted by  */
