@@ -34,6 +34,10 @@
 GSList *keyinfos;
 static GHashTable *keys, *default_keys;
 
+/* A cache of some sort for key presses that generate a single char only.
+   If the key isn't used, used_keys[key] is zero. */
+static char used_keys[256];
+
 /* contains list of all key bindings of which command is "key" -
    this can be used to check fast if some command queue exists or not.
    Format is _always_ in key1-key2-key3 format (like ^W-^N,
@@ -250,10 +254,13 @@ static void key_states_scan_key(const char *key, KEY_REC *rec, GString *temp)
 	}
 	g_strfreev(keys);
 
-	if (temp->len > 0)
-                g_string_truncate(temp, temp->len-1);
+	if (temp->len > 0) {
+		g_string_truncate(temp, temp->len-1);
 
-	g_tree_insert(key_states, g_strdup(temp->str), rec);
+		if (temp->str[1] == '-' || temp->str[1] == '\0')
+                        used_keys[(int) (unsigned char) temp->str[0]] = 1;
+		g_tree_insert(key_states, g_strdup(temp->str), rec);
+	}
 }
 
 static int key_state_destroy(char *key)
@@ -268,6 +275,8 @@ static int key_state_destroy(char *key)
 static void key_states_rescan(void)
 {
 	GString *temp;
+
+	memset(used_keys, 0, sizeof(used_keys));
 
 	g_tree_traverse(key_states, (GTraverseFunc) key_state_destroy,
 			G_IN_ORDER, NULL);
@@ -469,6 +478,12 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 	g_return_val_if_fail(key != NULL && *key != '\0', FALSE);
 
 	if (keyboard->key_state == NULL) {
+		if (key[1] == '\0' &&
+		    !used_keys[(int) (unsigned char) key[0]]) {
+                        /* fast check - key not used */
+			return FALSE;
+		}
+
 		rec = g_tree_search(key_states,
 				    (GSearchFunc) key_states_search,
 				    (void *) key);
@@ -772,6 +787,7 @@ void keyboard_init(void)
 	key_states = g_tree_new((GCompareFunc) strcmp);
 	key_combos = NULL;
         key_config_frozen = 0;
+	memset(used_keys, 0, sizeof(used_keys));
 
 	key_bind("command", "Run any IRC command", NULL, NULL, (SIGNAL_FUNC) sig_command);
 	key_bind("key", "Specify name for key binding", NULL, NULL, (SIGNAL_FUNC) sig_key);
