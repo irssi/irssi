@@ -756,12 +756,6 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			*ptr++ = '\\';
 			*ptr++ = *line;
 		}
-
-		switch (*line) {
-		case 'n':
-			break;
-		default:
-		}
 	}
 
 	*ptr = '\0';
