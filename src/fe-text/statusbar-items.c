@@ -82,7 +82,8 @@ static time_t lag_last_draw;
 /* mbox counter */
 static SBAR_ITEM_REC *mail_item;
 static int mail_timetag, mail_last_count;
-static time_t mail_last_mtime;
+static time_t mail_last_mtime = -1;
+static off_t mail_last_size = -1;
 
 /* topic */
 static SBAR_ITEM_REC *topic_item;
@@ -595,9 +596,11 @@ static int get_mail_count(void)
 	if (stat(fname, &statbuf) != 0)
 		return 0;
 
-	if (statbuf.st_mtime == mail_last_mtime)
+	if (statbuf.st_mtime == mail_last_mtime ||
+	    statbuf.st_size == mail_last_size)
 		return mail_last_count;
 	mail_last_mtime = statbuf.st_mtime;
+	mail_last_size = statbuf.st_size;
 
 	f = fopen(fname, "r");
 	if (f == NULL) return 0;
