@@ -157,7 +157,8 @@ static int match_nick_flags(SERVER_REC *server, NICK_REC *nick, char flag)
 {
 	const char *flags = server->get_nick_flags();
 
-	return (flag == flags[0] && nick->op) ||
+	return strchr(flags, flag) == NULL ||
+		(flag == flags[0] && nick->op) ||
 		(flag == flags[1] && (nick->voice || nick->halfop ||
 				      nick->op)) ||
 		(flag == flags[2] && (nick->halfop || nick->op));
