@@ -252,7 +252,7 @@ static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 {
 	g_return_if_fail(data != NULL);
 
-	printtext(server, item == NULL ? NULL : item->name, MSGLEVEL_CRAP, "%s", data);
+	printtext_window(active_win, MSGLEVEL_CRAP, "%s", data);
 }
 
 /* SYNTAX: VERSION */
