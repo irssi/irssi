@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002123101';
+$VERSION = '2003022201';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
