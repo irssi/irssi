@@ -64,6 +64,7 @@ int screen_width, screen_height;
 static int scrx, scry;
 static int use_colors;
 static int freeze_refresh;
+static cc_t old_intr, old_quit;
 
 static int init_screen_int(void);
 static void deinit_screen_int(void);
@@ -166,8 +167,11 @@ static int init_curses(void)
 #endif
 	intrflush(stdscr, FALSE); nodelay(stdscr, TRUE);
 
-        /* disable ^C (INTR) and ^\ (QUIT) keys */
+	/* disable ^C (INTR) and ^\ (QUIT) keys */
 	if (tcgetattr(0, &term) == 0) {
+		old_intr = term.c_cc[VINTR];
+		old_quit = term.c_cc[VQUIT];
+
 		term.c_cc[VINTR] = '\0';
                 term.c_cc[VQUIT] = '\0';
 		tcsetattr(0, 0, &term);
@@ -220,6 +224,15 @@ static int init_screen_int(void)
 
 static void deinit_screen_int(void)
 {
+        struct termios term;
+
+	/* enable INTR and QUIT keys again */
+	if (tcgetattr(0, &term) == 0) {
+		term.c_cc[VINTR] = old_intr;
+                term.c_cc[VQUIT] = old_quit;
+		tcsetattr(0, 0, &term);
+	}
+
 	endwin();
 	g_free_and_null(screen_root);
 }
