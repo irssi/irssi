@@ -53,8 +53,7 @@ static void sig_window_restore_item(WINDOW_REC *window, const char *type,
                 rec->sticky = TRUE;
 	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
 		/* create query immediately */
-		query_create(chat_protocol_lookup(chat_type),
-			     tag, name, TRUE);
+		chat_protocol_find(chat_type)->query_create(tag, name, TRUE);
 	}
 }
 

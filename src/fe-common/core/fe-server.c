@@ -1,7 +1,7 @@
 /*
  fe-server.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "settings.h"
 
 #include "chat-protocols.h"
+#include "chatnets.h"
 #include "servers.h"
 #include "servers-setup.h"
 #include "servers-reconnect.h"
@@ -80,9 +81,29 @@ static void print_reconnects(void)
 	}
 }
 
-/* SYNTAX: SERVER ADD [-auto | -noauto] [-host <hostname>]
-                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-		      <address> [<port> [<password>]] */
+static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
+{
+	CHAT_PROTOCOL_REC *rec;
+        SERVER_SETUP_REC *server;
+        char *chatnet;
+
+	rec = chat_protocol_find_net(optlist);
+	if (rec == NULL)
+                rec = chat_protocol_get_default();
+	else {
+		chatnet = g_hash_table_lookup(optlist, rec->chatnet);
+		if (chatnet_find(chatnet) == NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				    TXT_UNKNOWN_CHATNET, chatnet);
+			return NULL;
+		}
+	}
+
+        server = rec->create_server_setup();
+        server->chat_type = rec->id;
+	return server;
+}
+
 static void cmd_server_add(const char *data)
 {
         GHashTable *optlist;
@@ -100,16 +121,10 @@ static void cmd_server_add(const char *data)
 
 	rec = server_setup_find_port(addr, port);
 	if (rec == NULL) {
-		signal_emit("server add create", 2, &rec, optlist);
+		rec = create_server_setup(optlist);
 		if (rec == NULL) {
-			/* no chatnet option specified, use the first. */
-			g_hash_table_insert(optlist, chat_protocol_find_id(1)->name, "");
-			signal_emit("server add create", 2, &rec, optlist);
-			if (rec == NULL) {
-                                /* bug? */
-				cmd_params_free(free_arg);
-				return;
-			}
+			cmd_params_free(free_arg);
+			return;
 		}
 		rec->address = g_strdup(addr);
 		rec->port = port;
@@ -137,7 +152,8 @@ static void cmd_server_add(const char *data)
 	signal_emit("server add fill", 2, rec, optlist);
 
 	server_setup_add(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_ADDED, addr, port);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_SETUPSERVER_ADDED, addr, port);
 
 	cmd_params_free(free_arg);
 }

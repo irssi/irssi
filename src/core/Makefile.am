@@ -50,8 +50,9 @@ libcore_a_SOURCES = \
 	write-buffer.c
 
 structure_headers = \
-	chatnet-rec.h \
 	channel-rec.h \
+	channel-setup-rec.h \
+	chatnet-rec.h \
 	query-rec.h \
 	server-rec.h \
 	server-setup-rec.h \

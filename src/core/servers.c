@@ -281,13 +281,9 @@ int server_start_connect(SERVER_REC *server)
 /* Connect to server */
 SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
 {
-	SERVER_REC *server;
-
 	g_return_val_if_fail(IS_SERVER_CONNECT(conn), NULL);
 
-	server = NULL;
-	signal_emit("server connect", 2, &server, conn);
-	return server;
+        return CHAT_PROTOCOL(conn)->server_connect(conn);
 }
 
 static int server_remove_channels(SERVER_REC *server)

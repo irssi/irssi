@@ -1,32 +1,27 @@
 servers = (
-  { address = "irc.funet.fi"; chatnet = IRCNet; port = 6667; },
+  { address = "irc.stealth.net"; chatnet = IRCNet; port = 6668; },
   { address = "irc.efnet.net"; chatnet = EFNet; port = 6667; },
   { address = "irc.undernet.org"; chatnet = Undernet; port = 6667; },
   { address = "irc.dal.net"; chatnet = DALNet; port = 6667; },
   { address = "irc.openprojects.net"; chatnet = OPN; port = 6667; },
   { address = "irc.ptlink.net"; chatnet = PTlink; port = 6667; }
+  { address = "silc.pspt.fi"; chatnet = SILC; port = 706; }
 );
 
-ircnets = {
-  IRCNet = { max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4; };
-  EFNet = { max_kicks = 4; max_modes = 4; max_msgs = 3; };
-  Undernet = { max_kicks = 4; max_modes = 3; max_msgs = 3; };
-  DALNet = { max_kicks = 4; max_modes = 6; max_msgs = 3; };
-  OPN = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
-  PTLink = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
+chatnets = {
+  IRCNet = { type = "IRC"; max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4; };
+  EFNet = { type = "IRC"; max_kicks = 4; max_modes = 4; max_msgs = 3; };
+  Undernet = { type = "IRC"; max_kicks = 4; max_modes = 3; max_msgs = 3; };
+  DALNet = { type = "IRC"; max_kicks = 4; max_modes = 6; max_msgs = 3; };
+  OPN = { type = "IRC"; max_kicks = 1; max_modes = 6; max_msgs = 100; };
+  PTLink = { type = "IRC"; max_kicks = 1; max_modes = 6; max_msgs = 100; };
+  SILC = { type = "SILC"; };
 };
 
 channels = (
-  {
-    name = "#irssi";
-    chatnet = ircnet;
-    autojoin = No;
-  },
-  {
-    name = "#irssi";
-    chatnet = efnet;
-    autojoin = No;
-  }
+  { name = "#irssi"; chatnet = ircnet; autojoin = No; },
+  { name = "#irssi"; chatnet = opn; autojoin = No; },
+  { name = "#silc"; chatnet = silc; autojoin = No; }
 );
 
 aliases = {
@@ -67,24 +62,3 @@ aliases = {
   SV = "say Irssi $J - http://irssi.org";
   GOTO = "sb goto";
 };
-
-popups = (
-  { label = "<MULTICOMMA>Whois"; command = "/whois %s"; },
-  { label = "DCC Send File"; command = "/dcc send %s"; },
-  { label = "Open DCC Chat"; command = "/dcc chat %s"; },
-  { label = Query; command = "/query %s"; },
-  { label = "<MENU><OP>"; command = "Op"; },
-  { label = "<MULTI>Op"; command = "/op %s"; },
-  { label = "<MULTI>Deop"; command = "/deop %s"; },
-  { label = "<MULTI>Voice"; command = "/voice %s"; },
-  { label = "<MULTI>Devoice"; command = "/devoice %s"; },
-  { label = "<KICK>Kick"; command = "/kick %s %s"; },
-  { label = "<MULTI>Ban"; command = "/ban %s"; },
-  { label = "<KICK>Kick+ban"; command = "/kickban %s %s"; },
-  { label = "<KICK>Knockout"; command = "/knockout %s %s"; },
-  { label = "</MENU>"; command = ""; },
-  { label = "<MENU>"; command = "CTCP"; },
-  { label = Ping; command = "/ping %s"; },
-  { label = Version; command = "/ver %s"; },
-  { label = "</MENU>"; command = ""; }
-);

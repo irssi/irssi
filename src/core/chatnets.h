@@ -16,10 +16,6 @@ struct _CHATNET_REC {
 
 extern GSList *chatnets; /* list of available chat networks */
 
-/* read/save to configuration file */
-void chatnet_read(CHATNET_REC *chatnet, CONFIG_NODE *node);
-CONFIG_NODE *chatnet_save(CHATNET_REC *chatnet, CONFIG_NODE *parentnode);
-
 /* add the chatnet to chat networks list */
 void chatnet_create(CHATNET_REC *chatnet);
 /* remove the chatnet from chat networks list */
@@ -27,7 +23,7 @@ void chatnet_remove(CHATNET_REC *chatnet);
 /* destroy the chatnet structure. doesn't remove from config file */
 void chatnet_destroy(CHATNET_REC *chatnet);
 
-/* Find the irc network by name */
+/* Find the chat network by name */
 CHATNET_REC *chatnet_find(const char *name);
 
 void chatnets_init(void);

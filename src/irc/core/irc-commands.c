@@ -78,7 +78,7 @@ static SERVER_REC *irc_connect_server(const char *data)
 		*password = '\0';
 
 	/* connect to server */
-	conn = server_create_conn(addr, atoi(portstr), password, nick);
+	conn = server_create_conn(-1, addr, atoi(portstr), password, nick);
 	if (g_hash_table_lookup(optlist, "6") != NULL)
 		conn->family = AF_INET6;
 	else if (g_hash_table_lookup(optlist, "4") != NULL)

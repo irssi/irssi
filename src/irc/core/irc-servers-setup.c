@@ -45,23 +45,12 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 		conn->max_query_chans = sserver->max_query_chans;
 }
 
-/* Create server connection record. `address' is required, rest can be NULL */
-static void sig_server_create_conn(SERVER_CONNECT_REC **conn,
-				   IRC_CHATNET_REC *ircnet)
+static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 {
-	IRC_SERVER_CONNECT_REC *rec;
-
-	g_return_if_fail(conn != NULL);
-
-	if (ircnet != NULL && !IS_IRCNET(ircnet))
+	if (!IS_IRC_SERVER_CONNECT(conn))
 		return;
 
-	rec = g_new0(IRC_SERVER_CONNECT_REC, 1);
-	rec->chat_type = IRC_PROTOCOL;
-	rec->alternate_nick = g_strdup(settings_get_str("alternate_nick"));
-
-	*conn = (SERVER_CONNECT_REC *) rec;
-	signal_stop();
+	conn->alternate_nick = g_strdup(settings_get_str("alternate_nick"));
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -140,27 +129,17 @@ static void init_userinfo(void)
 	}
 }
 
-static void sig_server_setup_read(SERVER_SETUP_REC **setuprec,
-				  CONFIG_NODE *node,
-				  IRC_CHATNET_REC *chatnet)
+static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 {
-	IRC_SERVER_SETUP_REC *rec;
-
-	g_return_if_fail(setuprec != NULL);
+	g_return_if_fail(rec != NULL);
 	g_return_if_fail(node != NULL);
 
-	if (chatnet != NULL && !IS_IRCNET(chatnet))
+	if (!IS_IRC_SERVER_SETUP(rec))
 		return;
-
-	rec = g_new0(IRC_SERVER_SETUP_REC, 1);
-	rec->chat_type = IRC_PROTOCOL;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
-
-	*setuprec = (SERVER_SETUP_REC *) rec;
-	signal_stop();
 }
 
 static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
@@ -184,7 +163,7 @@ void irc_servers_setup_init(void)
 
 	init_userinfo();
 	signal_add("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
-	signal_add("server setup connect", (SIGNAL_FUNC) sig_server_create_conn);
+	signal_add("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_add("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
 	signal_add("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_add("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
@@ -193,7 +172,7 @@ void irc_servers_setup_init(void)
 void irc_servers_setup_deinit(void)
 {
 	signal_remove("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
-	signal_remove("server setup connect", (SIGNAL_FUNC) sig_server_create_conn);
+	signal_remove("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_remove("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
 	signal_remove("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_remove("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);

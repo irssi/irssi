@@ -79,11 +79,11 @@ static void cmd_ircnet_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IRCNET_FOOTER);
 }
 
-/* SYNTAX: IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
-	              [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
-		      [-querychans <count>] [-nick <nick>] [-user <user>]
-		      [-realname <name>] [-host <host>] [-autosendcmd <cmd>]
-		      <name> */
+/* SYNTAX: IRCNET ADD [-nick <nick>] [-user <user>] [-realname <name>]
+                      [-host <host>] [-autosendcmd <cmd>]
+		      [-querychans <count>] [-whois <count>] [-msgs <count>]
+		      [-kicks <count>] [-modes <count>]
+		      [-cmdspeed <ms>] [-cmdmax <count>] <name> */
 static void cmd_ircnet_add(const char *data)
 {
 	GHashTable *optlist;
@@ -176,6 +176,7 @@ static void cmd_ircnet(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 void fe_ircnet_init(void)
 {
 	command_bind("ircnet", NULL, (SIGNAL_FUNC) cmd_ircnet);
+	command_bind("ircnet list", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
 	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
 	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
 
@@ -185,6 +186,7 @@ void fe_ircnet_init(void)
 void fe_ircnet_deinit(void)
 {
 	command_unbind("ircnet", (SIGNAL_FUNC) cmd_ircnet);
+	command_unbind("ircnet list", (SIGNAL_FUNC) cmd_ircnet_list);
 	command_unbind("ircnet add", (SIGNAL_FUNC) cmd_ircnet_add);
 	command_unbind("ircnet remove", (SIGNAL_FUNC) cmd_ircnet_remove);
 }

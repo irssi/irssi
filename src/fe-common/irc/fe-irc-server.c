@@ -34,20 +34,9 @@
 #include "fe-windows.h"
 #include "printtext.h"
 
-static void sig_server_add_create(IRC_SERVER_SETUP_REC **rec,
-				  GHashTable *optlist)
-{
-	char *ircnet;
-
-	ircnet = g_hash_table_lookup(optlist, "ircnet");
-	if (ircnet == NULL)
-		return;
-
-	*rec = g_new0(IRC_SERVER_SETUP_REC, 1);
-	(*rec)->chat_type = chat_protocol_lookup("IRC");
-	signal_stop();
-}
-
+/* SYNTAX: SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+		      <address> [<port> [<password>]] */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
@@ -107,7 +96,6 @@ static void cmd_server_list(const char *data)
 
 void fe_irc_server_init(void)
 {
-	signal_add("server add create", (SIGNAL_FUNC) sig_server_add_create);
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
@@ -116,7 +104,6 @@ void fe_irc_server_init(void)
 
 void fe_irc_server_deinit(void)
 {
-	signal_remove("server add create", (SIGNAL_FUNC) sig_server_add_create);
 	signal_remove("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
 	command_unbind("server list", (SIGNAL_FUNC) cmd_server_list);
 }

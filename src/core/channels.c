@@ -30,21 +30,6 @@
 
 GSList *channels; /* List of all channels */
 
-/* Create a new channel */
-CHANNEL_REC *channel_create(int chat_type, SERVER_REC *server,
-			    const char *name, int automatic)
-{
-	CHANNEL_REC *channel;
-
-	g_return_val_if_fail(server == NULL || IS_SERVER(server), NULL);
-	g_return_val_if_fail(name != NULL, NULL);
-
-	channel = NULL;
-	signal_emit("channel create", 5, &channel, GINT_TO_POINTER(chat_type),
-		    server, name, GINT_TO_POINTER(automatic));
-	return channel;
-}
-
 void channel_init(CHANNEL_REC *channel, int automatic)
 {
 	g_return_if_fail(channel != NULL);
@@ -173,7 +158,7 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 
 	g_return_if_fail(IS_CHANNEL(channel));
 
-	rec = channels_setup_find(channel->name, channel->server->connrec->chatnet);
+	rec = channel_setup_find(channel->name, channel->server->connrec->chatnet);
 	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
 		return;
 

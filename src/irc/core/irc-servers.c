@@ -177,17 +177,6 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 	return server;
 }
 
-static void sig_server_connect(IRC_SERVER_REC **server,
-			       IRC_SERVER_CONNECT_REC *conn)
-{
-	g_return_if_fail(server != NULL);
-	if (!IS_IRC_SERVER_CONNECT(conn))
-		return;
-
-	*server = irc_server_connect(conn);
-        signal_stop();
-}
-
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	if (!IS_IRC_SERVER(server))
@@ -452,7 +441,6 @@ void irc_servers_init(void)
 	cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
 
 	signal_add("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
-	signal_add("server connect", (SIGNAL_FUNC) sig_server_connect);
 	signal_add_first("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
@@ -480,7 +468,6 @@ void irc_servers_deinit(void)
 	g_source_remove(cmd_tag);
 
 	signal_remove("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
-	signal_remove("server connect", (SIGNAL_FUNC) sig_server_connect);
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);

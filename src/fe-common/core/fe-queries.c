@@ -23,9 +23,10 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "settings.h"
 
-#include "levels.h"
+#include "chat-protocols.h"
 #include "queries.h"
 
 #include "fe-windows.h"
@@ -46,8 +47,8 @@ QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick,
 	query = query_find(server, nick);
 	if (query == NULL && (querycreate_level & level) != 0 &&
 	    (!own || settings_get_bool("autocreate_own_query"))) {
-		query = query_create(server->chat_type, server->tag,
-				     nick, TRUE);
+		query = CHAT_PROTOCOL(server)->
+			query_create(server->tag, nick, TRUE);
 	}
 
 	return query;
@@ -228,7 +229,7 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	query = query_find(server, nick);
 	if (query == NULL)
-		query_create(server->chat_type, server->tag, nick, FALSE);
+		CHAT_PROTOCOL(server)->query_create(server->tag, nick, FALSE);
 	else {
                 /* query already existed - set query active / move it to this
                    window */

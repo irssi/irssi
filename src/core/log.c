@@ -224,7 +224,7 @@ void log_write_rec(LOG_REC *log, const char *str, int level)
 }
 
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
-			    SERVER_REC *server)
+			    const char *servertag)
 {
 	GSList *tmp;
 
@@ -235,8 +235,8 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 		LOG_ITEM_REC *rec = tmp->data;
 
 		if (rec->type == type && g_strcasecmp(rec->name, item) == 0 &&
-		    (rec->servertag == NULL || (server != NULL &&
-		    	g_strcasecmp(rec->servertag, server->tag) == 0)))
+		    (rec->servertag == NULL || (servertag != NULL &&
+		    	g_strcasecmp(rec->servertag, servertag) == 0)))
 			return rec;
 	}
 
@@ -268,8 +268,9 @@ void log_file_write(SERVER_REC *server, const char *item, int level,
 
 		if (rec->items == NULL)
 			fallbacks = g_slist_append(fallbacks, rec);
-		else if (item != NULL && log_item_find(rec, LOG_ITEM_TARGET,
-						       item, server) != NULL)
+		else if (item != NULL &&
+			 log_item_find(rec, LOG_ITEM_TARGET, item,
+				       server->tag) != NULL)
 			log_write_rec(rec, str, level);
 	}
 
@@ -367,20 +368,20 @@ LOG_REC *log_create_rec(const char *fname, int level)
 }
 
 void log_item_add(LOG_REC *log, int type, const char *name,
-		  SERVER_REC *server)
+		  const char *servertag)
 {
 	LOG_ITEM_REC *rec;
 
 	g_return_if_fail(log != NULL);
 	g_return_if_fail(name != NULL);
 
-	if (log_item_find(log, type, name, server))
+	if (log_item_find(log, type, name, servertag))
 		return;
 
 	rec = g_new0(LOG_ITEM_REC, 1);
 	rec->type = type;
 	rec->name = g_strdup(name);
-	rec->servertag = server == NULL ? NULL : g_strdup(server->tag);
+	rec->servertag = g_strdup(servertag);
 
 	log->items = g_slist_append(log->items, rec);
 }

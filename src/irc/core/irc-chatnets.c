@@ -20,23 +20,23 @@
 
 #include "module.h"
 #include "signals.h"
-#include "servers.h"
-#include "chatnets.h"
-#include "special-vars.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
 #include "irc-chatnets.h"
 
-static void ircnet_read(CONFIG_NODE *node)
+void ircnet_create(IRC_CHATNET_REC *rec)
 {
-	IRC_CHATNET_REC *rec;
+	g_return_if_fail(rec != NULL);
 
-	if (node == NULL || node->key == NULL)
-		return;
-
-	rec = g_new0(IRC_CHATNET_REC, 1);
 	rec->chat_type = IRC_PROTOCOL;
+        chatnet_create(CHATNET(rec));
+}
+
+static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
+{
+	if (!IS_IRC_CHATNET(rec))
+		return;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
@@ -46,18 +46,12 @@ static void ircnet_read(CONFIG_NODE *node)
 	rec->max_msgs = config_node_get_int(node, "max_msgs", 0);
 	rec->max_modes = config_node_get_int(node, "max_modes", 0);
 	rec->max_whois = config_node_get_int(node, "max_whois", 0);
-
-	chatnet_read((CHATNET_REC *) rec, node);
 }
 
-static void ircnet_save(IRC_CHATNET_REC *rec)
+static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 {
-	CONFIG_NODE *node;
-
-	g_return_if_fail(rec != NULL);
-
-	node = iconfig_node_traverse("ircnets", TRUE);
-	node = chatnet_save((CHATNET_REC *) rec, node);
+	if (!IS_IRC_CHATNET(rec))
+		return;
 
 	if (rec->max_cmds_at_once > 0)
 		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
@@ -76,63 +70,14 @@ static void ircnet_save(IRC_CHATNET_REC *rec)
 		iconfig_node_set_int(node, "max_whois", rec->max_whois);
 }
 
-static void ircnet_remove(IRC_CHATNET_REC *rec)
-{
-	CONFIG_NODE *node;
-
-	g_return_if_fail(IS_IRC_CHATNET(rec));
-
-	node = iconfig_node_traverse("ircnets", FALSE);
-	if (node != NULL) iconfig_node_set_str(node, rec->name, NULL);
-}
-
-void ircnet_create(IRC_CHATNET_REC *rec)
-{
-	g_return_if_fail(rec != NULL);
-
-	rec->chat_type = IRC_PROTOCOL;
-
-	ircnet_save(rec);
-        chatnet_create((CHATNET_REC *) rec);
-}
-
-static void read_ircnets(void)
-{
-	CONFIG_NODE *node;
-	GSList *tmp, *next;
-
-	for (tmp = chatnets; tmp != NULL; tmp = next) {
-		CHATNET_REC *rec = tmp->data;
-
-		next = tmp->next;
-		if (IS_IRCNET(rec))
-			chatnet_destroy(rec);
-	}
-
-	/* read ircnets */
-	node = iconfig_node_traverse("ircnets", FALSE);
-	if (node != NULL) {
-		for (tmp = node->value; tmp != NULL; tmp = tmp->next)
-			ircnet_read(tmp->data);
-	}
-}
-
-static void sig_chatnet_removed(IRC_CHATNET_REC *rec)
-{
-	if (IS_IRC_CHATNET(rec))
-		ircnet_remove(rec);
-}
-
 void irc_chatnets_init(void)
 {
-	read_ircnets();
-
-	signal_add("chatnet removed", (SIGNAL_FUNC) sig_chatnet_removed);
-        signal_add("setup reread", (SIGNAL_FUNC) read_ircnets);
+	signal_add("chatnet read", (SIGNAL_FUNC) sig_chatnet_read);
+	signal_add("chatnet saved", (SIGNAL_FUNC) sig_chatnet_saved);
 }
 
 void irc_chatnets_deinit(void)
 {
-	signal_remove("chatnet removed", (SIGNAL_FUNC) sig_chatnet_removed);
-        signal_remove("setup reread", (SIGNAL_FUNC) read_ircnets);
+	signal_remove("chatnet read", (SIGNAL_FUNC) sig_chatnet_read);
+	signal_remove("chatnet saved", (SIGNAL_FUNC) sig_chatnet_saved);
 }

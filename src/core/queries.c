@@ -27,20 +27,6 @@
 
 GSList *queries;
 
-/* Create a new query */
-QUERY_REC *query_create(int chat_type, const char *server_tag,
-			const char *nick, int automatic)
-{
-	QUERY_REC *query;
-
-	g_return_val_if_fail(nick != NULL, NULL);
-
-	query = NULL;
-	signal_emit("query create", 5, &query, GINT_TO_POINTER(chat_type),
-		    server_tag, nick, GINT_TO_POINTER(automatic));
-	return query;
-}
-
 void query_init(QUERY_REC *query, int automatic)
 {
 	g_return_if_fail(query != NULL);

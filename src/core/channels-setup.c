@@ -23,48 +23,12 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "channels.h"
-#include "channels-setup.h"
+#include "chat-protocols.h"
+#include "chatnets.h"
 #include "servers-setup.h"
+#include "channels-setup.h"
 
 GSList *setupchannels;
-
-static CHANNEL_SETUP_REC *channel_setup_read(CONFIG_NODE *node)
-{
-	CHANNEL_SETUP_REC *rec;
-	char *channel, *password, *botmasks, *autosendcmd;
-
-	g_return_val_if_fail(node != NULL, NULL);
-
-	channel = config_node_get_str(node, "name", NULL);
-	if (channel == NULL) {
-		/* missing information.. */
-		return NULL;
-	}
-
-	password = config_node_get_str(node, "password", NULL);
-	botmasks = config_node_get_str(node, "botmasks", NULL);
-	autosendcmd = config_node_get_str(node, "autosendcmd", NULL);
-
-	rec = g_new(CHANNEL_SETUP_REC, 1);
-	rec->autojoin = config_node_get_bool(node, "autojoin", FALSE);
-	rec->name = g_strdup(channel);
-	rec->chatnet = g_strdup(config_node_get_str(node, "chatnet", NULL));
-	if (rec->chatnet == NULL) /* FIXME: remove this after .98... */ {
-		rec->chatnet = g_strdup(config_node_get_str(node, "ircnet", NULL));
-		if (rec->chatnet != NULL) {
-                        iconfig_node_set_str(node, "chatnet", rec->chatnet);
-                        iconfig_node_set_str(node, "ircnet", NULL);
-		}
-	}
-	rec->password = (password == NULL || *password == '\0') ? NULL : g_strdup(password);
-	rec->botmasks = (botmasks == NULL || *botmasks == '\0') ? NULL : g_strdup(botmasks);
-	rec->autosendcmd = (autosendcmd == NULL || *autosendcmd == '\0') ? NULL : g_strdup(autosendcmd);
-
-	setupchannels = g_slist_append(setupchannels, rec);
-	signal_emit("channel setup created", 2, rec, node);
-	return rec;
-}
 
 static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 {
@@ -88,15 +52,7 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 	iconfig_node_set_str(node, "autosendcmd", channel->autosendcmd);
 }
 
-static void channel_config_remove(CHANNEL_SETUP_REC *channel)
-{
-	CONFIG_NODE *node;
-
-	node = iconfig_node_traverse("channels", FALSE);
-	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(setupchannels, channel));
-}
-
-void channels_setup_create(CHANNEL_SETUP_REC *channel)
+void channel_setup_create(CHANNEL_SETUP_REC *channel)
 {
 	if (g_slist_find(setupchannels, channel) == NULL)
 		setupchannels = g_slist_append(setupchannels, channel);
@@ -105,28 +61,37 @@ void channels_setup_create(CHANNEL_SETUP_REC *channel)
 	signal_emit("channel setup created", 1, channel);
 }
 
-static void channels_setup_destroy_rec(CHANNEL_SETUP_REC *channel)
+static void channel_config_remove(CHANNEL_SETUP_REC *channel)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("channels", FALSE);
+	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(setupchannels, channel));
+}
+
+static void channel_setup_destroy(CHANNEL_SETUP_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
 	setupchannels = g_slist_remove(setupchannels, channel);
 	signal_emit("channel setup destroyed", 1, channel);
 
-	g_free(channel->name);
 	g_free_not_null(channel->chatnet);
 	g_free_not_null(channel->password);
 	g_free_not_null(channel->botmasks);
 	g_free_not_null(channel->autosendcmd);
+	g_free(channel->name);
 	g_free(channel);
 }
 
-void channels_setup_destroy(CHANNEL_SETUP_REC *channel)
+void channel_setup_remove(CHANNEL_SETUP_REC *channel)
 {
         channel_config_remove(channel);
-        channels_setup_destroy_rec(channel);
+        channel_setup_destroy(channel);
 }
 
-CHANNEL_SETUP_REC *channels_setup_find(const char *channel, const char *chatnet)
+CHANNEL_SETUP_REC *channel_setup_find(const char *channel,
+				      const char *chatnet)
 {
 	GSList *tmp;
 
@@ -143,13 +108,52 @@ CHANNEL_SETUP_REC *channels_setup_find(const char *channel, const char *chatnet)
 	return NULL;
 }
 
+static CHANNEL_SETUP_REC *channel_setup_read(CONFIG_NODE *node)
+{
+	CHANNEL_SETUP_REC *rec;
+        CHATNET_REC *chatnetrec;
+	char *channel, *chatnet;
+
+	g_return_val_if_fail(node != NULL, NULL);
+
+	channel = config_node_get_str(node, "name", NULL);
+        chatnet = config_node_get_str(node, "chatnet", NULL);
+	if (chatnet == NULL) /* FIXME: remove this after .98... */ {
+		chatnet = g_strdup(config_node_get_str(node, "ircnet", NULL));
+		if (chatnet != NULL) {
+                        iconfig_node_set_str(node, "chatnet", chatnet);
+                        iconfig_node_set_str(node, "ircnet", NULL);
+		}
+	}
+
+	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
+	if (channel == NULL || chatnetrec == NULL) {
+		/* missing information.. */
+		return NULL;
+	}
+
+	rec = CHAT_PROTOCOL(chatnetrec)->create_channel_setup();
+	rec->type = module_get_uniq_id("CHANNEL SETUP", 0);
+	rec->chat_type = CHAT_PROTOCOL(chatnetrec)->id;
+	rec->autojoin = config_node_get_bool(node, "autojoin", FALSE);
+	rec->name = g_strdup(channel);
+	rec->chatnet = g_strdup(chatnetrec != NULL ? chatnetrec->name : chatnet);
+	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
+	rec->botmasks = g_strdup(config_node_get_str(node, "botmasks", NULL));
+	rec->autosendcmd = g_strdup(config_node_get_str(node, "autosendcmd", NULL));
+
+	setupchannels = g_slist_append(setupchannels, rec);
+	signal_emit("channel setup created", 2, rec, node);
+	return rec;
+}
+
 static void channels_read_config(void)
 {
 	CONFIG_NODE *node;
 	GSList *tmp;
 
 	while (setupchannels != NULL)
-		channels_setup_destroy_rec(setupchannels->data);
+		channel_setup_destroy(setupchannels->data);
 
 	/* Read channels */
 	node = iconfig_node_traverse("channels", FALSE);
@@ -161,6 +165,7 @@ static void channels_read_config(void)
 
 void channels_setup_init(void)
 {
+        setupchannels = NULL;
 	source_host_ok = FALSE;
 
         signal_add("setup reread", (SIGNAL_FUNC) channels_read_config);
@@ -170,7 +175,7 @@ void channels_setup_init(void)
 void channels_setup_deinit(void)
 {
 	while (setupchannels != NULL)
-		channels_setup_destroy(setupchannels->data);
+		channel_setup_destroy(setupchannels->data);
 
         signal_remove("setup reread", (SIGNAL_FUNC) channels_read_config);
         signal_remove("irssi init read settings", (SIGNAL_FUNC) channels_read_config);

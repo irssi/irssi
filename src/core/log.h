@@ -38,10 +38,10 @@ void log_close(LOG_REC *log);
 LOG_REC *log_find(const char *fname);
 
 void log_item_add(LOG_REC *log, int type, const char *name,
-		  SERVER_REC *server);
+		  const char *servertag);
 void log_item_destroy(LOG_REC *log, LOG_ITEM_REC *item);
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
-			    SERVER_REC *server);
+			    const char *servertag);
 
 void log_file_write(SERVER_REC *server, const char *item, int level,
 		    const char *str, int no_fallbacks);

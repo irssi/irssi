@@ -26,6 +26,9 @@
 #include "irc-channels.h"
 #include "irc-queries.h"
 
+#include "irc-servers-setup.h"
+#include "channels-setup.h"
+
 #include "ctcp.h"
 #include "irc.h"
 #include "netsplit.h"
@@ -45,6 +48,26 @@ void irc_log_deinit(void);
 void lag_init(void);
 void lag_deinit(void);
 
+static CHATNET_REC *create_chatnet(void)
+{
+        return g_malloc0(sizeof(IRC_CHATNET_REC));
+}
+
+static SERVER_SETUP_REC *create_server_setup(void)
+{
+        return g_malloc0(sizeof(IRC_SERVER_SETUP_REC));
+}
+
+static CHANNEL_SETUP_REC *create_channel_setup(void)
+{
+        return g_malloc0(sizeof(CHANNEL_SETUP_REC));
+}
+
+static SERVER_CONNECT_REC *create_server_connect(void)
+{
+        return g_malloc0(sizeof(IRC_SERVER_CONNECT_REC));
+}
+
 void irc_core_init(void)
 {
 	CHAT_PROTOCOL_REC *rec;
@@ -54,7 +77,22 @@ void irc_core_init(void)
 	rec->fullname = "Internet Relay Chat";
 	rec->chatnet = "ircnet";
 
+	rec->create_chatnet = create_chatnet;
+        rec->create_server_setup = create_server_setup;
+        rec->create_channel_setup = create_channel_setup;
+	rec->create_server_connect = create_server_connect;
+
+	rec->server_connect = (SERVER_REC *(*) (SERVER_CONNECT_REC *))
+		irc_server_connect;
+	rec->channel_create =
+		(CHANNEL_REC *(*) (SERVER_REC *, const char *, int))
+                irc_channel_create;
+	rec->query_create =
+		(QUERY_REC *(*) (const char *, const char *, int))
+                irc_query_create;
+
 	chat_protocol_register(rec);
+        g_free(rec);
 
 	irc_chatnets_init();
 	irc_servers_init();

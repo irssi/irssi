@@ -27,7 +27,7 @@ void server_setup_fill_reconn(SERVER_CONNECT_REC *conn,
 /* Create server connection record. `dest' is required, rest can be NULL.
    `dest' is either a server address or chat network */
 SERVER_CONNECT_REC *
-server_create_conn(const char *dest, int port,
+server_create_conn(int chat_type, const char *dest, int port,
 		   const char *password, const char *nick);
 
 /* Find matching server from setup. Try to find record with a same port,

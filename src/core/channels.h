@@ -18,10 +18,6 @@ struct _CHANNEL_REC {
 
 extern GSList *channels;
 
-/* Create a new channel */
-CHANNEL_REC *channel_create(int chat_type, SERVER_REC *server,
-			    const char *name, int automatic);
-
 /* Create new channel record */
 void channel_init(CHANNEL_REC *channel, int automatic);
 void channel_destroy(CHANNEL_REC *channel);

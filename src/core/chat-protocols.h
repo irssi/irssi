@@ -7,6 +7,15 @@ typedef struct {
 	char *name;
 	char *fullname;
 	char *chatnet;
+
+        CHATNET_REC *(*create_chatnet) (void);
+	SERVER_SETUP_REC *(*create_server_setup) (void);
+        CHANNEL_SETUP_REC *(*create_channel_setup) (void);
+	SERVER_CONNECT_REC *(*create_server_connect) (void);
+
+        SERVER_REC *(*server_connect) (SERVER_CONNECT_REC *);
+        CHANNEL_REC *(*channel_create) (SERVER_REC *, const char *, int);
+        QUERY_REC *(*query_create) (const char *, const char *, int);
 } CHAT_PROTOCOL_REC;
 
 extern GSList *chat_protocols;
@@ -16,8 +25,12 @@ extern GSList *chat_protocols;
 				offsetof(cast, type_field), id))
 void *chat_protocol_check_cast(void *object, int type_pos, const char *id);
 
+#define CHAT_PROTOCOL(object) \
+	((object) == NULL ? chat_protocol_get_default() : \
+	chat_protocol_find_id((object)->chat_type))
+
 /* Register new chat protocol. */
-void chat_protocol_register(CHAT_PROTOCOL_REC *rec);
+CHAT_PROTOCOL_REC *chat_protocol_register(CHAT_PROTOCOL_REC *rec);
 
 /* Unregister chat protocol. */
 void chat_protocol_unregister(const char *name);
@@ -26,6 +39,15 @@ void chat_protocol_unregister(const char *name);
 int chat_protocol_lookup(const char *name);
 CHAT_PROTOCOL_REC *chat_protocol_find(const char *name);
 CHAT_PROTOCOL_REC *chat_protocol_find_id(int id);
+CHAT_PROTOCOL_REC *chat_protocol_find_net(GHashTable *optlist);
+
+/* Default chat protocol to use */
+void chat_protocol_set_default(CHAT_PROTOCOL_REC *rec);
+CHAT_PROTOCOL_REC *chat_protocol_get_default(void);
+
+/* Return "unknown chat protocol" record. Used when protocol name is
+   specified but it isn't registered yet. */
+CHAT_PROTOCOL_REC *chat_protocol_get_unknown(const char *name);
 
 void chat_protocols_init(void);
 void chat_protocols_deinit(void);

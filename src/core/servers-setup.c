@@ -24,9 +24,10 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
+#include "chat-protocols.h"
+#include "chatnets.h"
 #include "servers.h"
 #include "servers-setup.h"
-#include "chatnets.h"
 
 GSList *setupservers;
 
@@ -164,9 +165,10 @@ static void server_setup_fill_chatnet(SERVER_CONNECT_REC *conn,
 }
 
 static SERVER_CONNECT_REC *
-create_addr_conn(const char *address, int port,
+create_addr_conn(int chat_type, const char *address, int port,
 		 const char *password, const char *nick)
 {
+        CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	SERVER_SETUP_REC *sserver;
 	CHATNET_REC *chatnet;
@@ -174,19 +176,20 @@ create_addr_conn(const char *address, int port,
 	g_return_val_if_fail(address != NULL, NULL);
 
 	sserver = server_setup_find(address, port);
-	chatnet = sserver == NULL || sserver->chatnet == NULL ? NULL :
-		chatnet_find(sserver->chatnet);
-        conn = NULL;
-	signal_emit("server setup connect", 2, &conn, chatnet);
-	if (conn == NULL) {
-		/* no chat protocol wanted this server? */
-		return NULL;
-	}
+	if (sserver != NULL) chat_type = sserver->chat_type;
+
+	proto = chat_type >= 0 ? chat_protocol_find_id(chat_type) :
+                chat_protocol_get_default();
+
+	conn = proto->create_server_connect();
+        conn->chat_type = proto->id;
 
 	/* fill in the defaults */
 	server_setup_fill(conn, address, port);
 
 	/* fill the rest from chat network settings */
+	chatnet = sserver == NULL || sserver->chatnet == NULL ? NULL :
+		chatnet_find(sserver->chatnet);
 	if (chatnet != NULL)
 		server_setup_fill_chatnet(conn, chatnet);
 
@@ -204,6 +207,7 @@ create_addr_conn(const char *address, int port,
 		conn->nick = g_strdup(nick);
 	}
 
+	signal_emit("server setup fill connect", 1, conn);
 	return conn;
 }
 
@@ -239,26 +243,27 @@ create_chatnet_conn(const char *dest, int port,
 	}
 
 	return bestrec == NULL ? NULL :
-		create_addr_conn(bestrec->address, 0, NULL, nick);
+		create_addr_conn(bestrec->chat_type,
+				 bestrec->address, 0, NULL, nick);
 }
 
 /* Create server connection record. `dest' is required, rest can be NULL.
    `dest' is either a server address or chat network */
 SERVER_CONNECT_REC *
-server_create_conn(const char *dest, int port,
+server_create_conn(int chat_type, const char *dest, int port,
 		   const char *password, const char *nick)
 {
 	SERVER_CONNECT_REC *rec;
 
 	g_return_val_if_fail(dest != NULL, NULL);
 
-	if (chatnet_find(dest)) {
+	if (chatnet_find(dest) != NULL) {
 		rec = create_chatnet_conn(dest, port, password, nick);
 		if (rec != NULL)
 			return rec;
 	}
 
-	return create_addr_conn(dest, port, password, nick);
+	return create_addr_conn(chat_type, dest, port, password, nick);
 }
 
 /* Find matching server from setup. Try to find record with a same port,
@@ -296,6 +301,7 @@ SERVER_SETUP_REC *server_setup_find_port(const char *address, int port)
 static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 {
 	SERVER_SETUP_REC *rec;
+        CHATNET_REC *chatnetrec;
 	char *server, *chatnet;
 	int port;
 
@@ -322,20 +328,27 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 			chatnet = config_node_get_str(node, "chatnet", NULL);
 		}
 	}
-	signal_emit("server setup read", 3, &rec, node,
-		    chatnet == NULL ? NULL : chatnet_find(chatnet));
-	if (rec == NULL) {
-		/* no chat protocol wanted this server? */
-		return NULL;
+
+	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
+	if (chatnetrec == NULL && chatnet != NULL) {
+                /* chat network not found, create it. */
+		chatnetrec = chat_protocol_get_default()->create_chatnet();
+		chatnetrec->chat_type = chat_protocol_get_default()->id;
+		chatnetrec->name = g_strdup(chatnet);
+		chatnet_create(chatnetrec);
 	}
 
+	rec = CHAT_PROTOCOL(chatnetrec)->create_server_setup();
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
-	rec->chatnet = g_strdup(chatnet);
+        rec->chat_type = chatnetrec->chat_type;
+	rec->chatnet = g_strdup(chatnetrec->name);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
 	rec->own_host = g_strdup(config_node_get_str(node, "own_host", NULL));
+
+	signal_emit("server setup read", 2, rec, node);
 
 	setupservers = g_slist_append(setupservers, rec);
 	return rec;
@@ -387,8 +400,8 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	g_free_not_null(rec->own_host);
 	g_free_not_null(rec->own_ip);
 	g_free_not_null(rec->chatnet);
-	g_free(rec->address);
 	g_free_not_null(rec->password);
+	g_free(rec->address);
 	g_free(rec);
 }
 
@@ -443,6 +456,7 @@ void servers_setup_init(void)
 	settings_add_int("proxy", "proxy_port", 6667);
 	settings_add_str("proxy", "proxy_string", "CONNECT %s %d");
 
+        setupservers = NULL;
 	source_host_ip = NULL;
 	read_settings();
 

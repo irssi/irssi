@@ -48,7 +48,7 @@ static THEME_REC *log_theme;
 static int skip_next_printtext;
 static const char *log_theme_name;
 
-static void log_add_targets(LOG_REC *log, const char *targets)
+static void log_add_targets(LOG_REC *log, const char *targets, const char *tag)
 {
 	char **tmp, **items;
 
@@ -58,15 +58,16 @@ static void log_add_targets(LOG_REC *log, const char *targets)
 	items = g_strsplit(targets, " ", -1);
 
 	for (tmp = items; *tmp != NULL; tmp++)
-		log_item_add(log, LOG_ITEM_TARGET, *tmp, NULL);
+		log_item_add(log, LOG_ITEM_TARGET, *tmp, tag);
 
 	g_strfreev(items);
 }
 
-/* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-targets <targets>]
-                    [-window] <fname> [<levels>] */
+/* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-window] [-<server tag>]
+                    [-targets <targets>] <fname> [<levels>] */
 static void cmd_log_open(const char *data)
 {
+        SERVER_REC *server;
         GHashTable *optlist;
 	char *targetarg, *fname, *levels;
 	void *free_arg;
@@ -74,7 +75,8 @@ static void cmd_log_open(const char *data)
 	LOG_REC *log;
 	int level;
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_OPTIONS,
 			    "log open", &optlist, &fname, &levels))
 		return;
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -82,14 +84,17 @@ static void cmd_log_open(const char *data)
 	level = level2bits(levels);
 	log = log_create_rec(fname, level != 0 ? level : MSGLEVEL_ALL);
 
+	/* -<server tag> */
+	server = cmd_options_get_server("join", optlist, NULL);
+
 	if (g_hash_table_lookup(optlist, "window")) {
 		/* log by window ref# */
 		ltoa(window, active_win->refnum);
-		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
+		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, server->tag);
 	} else {
 		targetarg = g_hash_table_lookup(optlist, "targets");
 		if (targetarg != NULL && *targetarg != '\0')
-			log_add_targets(log, targetarg);
+			log_add_targets(log, targetarg, server->tag);
 	}
 
 	if (g_hash_table_lookup(optlist, "autoopen"))
@@ -217,7 +222,7 @@ static void cmd_log(const char *data, SERVER_REC *server, void *item)
 }
 
 static LOG_REC *logs_find_item(int type, const char *item,
-			       SERVER_REC *server, LOG_ITEM_REC **ret_item)
+			       const char *servertag, LOG_ITEM_REC **ret_item)
 {
 	LOG_ITEM_REC *logitem;
 	GSList *tmp;
@@ -225,7 +230,7 @@ static LOG_REC *logs_find_item(int type, const char *item,
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
 		LOG_REC *log = tmp->data;
 
-		logitem = log_item_find(log, type, item, server);
+		logitem = log_item_find(log, type, item, servertag);
 		if (logitem != NULL) {
 			if (ret_item != NULL) *ret_item = logitem;
 			return log;
@@ -338,12 +343,13 @@ static void autologs_close_all(void)
 	}
 }
 
-static void autolog_open(void *server, const char *target)
+static void autolog_open(SERVER_REC *server, const char *target)
 {
 	LOG_REC *log;
-	char *fname, *dir, *fixed_target;
+	char *fname, *dir, *fixed_target, *tag;
 
-	log = logs_find_item(LOG_ITEM_TARGET, target, server, NULL);
+        tag = server == NULL ? NULL : server->tag;
+	log = logs_find_item(LOG_ITEM_TARGET, target, tag, NULL);
 	if (log != NULL && !log->failed) {
 		log_start_logging(log);
 		return;
@@ -359,7 +365,7 @@ static void autolog_open(void *server, const char *target)
 
 	if (log_find(fname) == NULL) {
 		log = log_create_rec(fname, autolog_level);
-		log_item_add(log, LOG_ITEM_TARGET, target, server);
+		log_item_add(log, LOG_ITEM_TARGET, target, tag);
 
 		dir = g_dirname(log->real_fname);
 		mkpath(dir, LOG_DIR_CREATE_MODE);
@@ -372,7 +378,8 @@ static void autolog_open(void *server, const char *target)
 	g_free(fname);
 }
 
-static void autolog_open_check(void *server, const char *target, int level)
+static void autolog_open_check(SERVER_REC *server, const char *target,
+			       int level)
 {
 	char **targets, **tmp;
 
@@ -410,7 +417,7 @@ static void log_single_line(WINDOW_REC *window, void *server,
 	}
 }
 
-static void log_line(WINDOW_REC *window, void *server,
+static void log_line(WINDOW_REC *window, SERVER_REC *server,
 		     const char *target, int level, const char *text)
 {
 	char **lines, **tmp;
@@ -513,7 +520,9 @@ static void sig_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
 {
 	LOG_REC *log;
 
-	log = logs_find_item(LOG_ITEM_TARGET, item->name, item->server, NULL);
+	log = logs_find_item(LOG_ITEM_TARGET, item->name,
+			     item->server == NULL ? NULL :
+			     item->server->tag, NULL);
 	if (log != NULL && log->temp)
 		log_close(log);
 }

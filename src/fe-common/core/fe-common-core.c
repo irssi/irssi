@@ -212,8 +212,12 @@ void glog_func(const char *log_domain, GLogLevelFlags log_level,
                 break;
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-		    TXT_GLIB_ERROR, reason, message);
+	if (windows == NULL)
+		fprintf(stderr, "GLib %s: %s", reason, message);
+	else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_GLIB_ERROR, reason, message);
+	}
 }
 
 void fe_common_core_finish_init(void)

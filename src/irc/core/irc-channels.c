@@ -62,22 +62,6 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 	return rec;
 }
 
-static void sig_channel_create(IRC_CHANNEL_REC **channel,
-			       void *chat_type, IRC_SERVER_REC *server,
-			       const char *name, void *automatic)
-{
-	if (chat_protocol_lookup("IRC") != GPOINTER_TO_INT(chat_type))
-		return;
-
-	g_return_if_fail(server == NULL || IS_IRC_SERVER(server));
-	g_return_if_fail(channel != NULL);
-	g_return_if_fail(name != NULL);
-
-	*channel = irc_channel_create(server, name,
-				      GPOINTER_TO_INT(automatic));
-	signal_stop();
-}
-
 static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	if (!IS_IRC_CHANNEL(channel))
@@ -93,11 +77,11 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))
 
-static void irc_channels_join(SERVER_REC *server, const char *data,
+static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			      int automatic)
 {
 	CHANNEL_SETUP_REC *schannel;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
 	char *channels, *keys, *key;
 	char **chanlist, **keylist, **tmp, **tmpkey, *channel, *channame;
@@ -124,9 +108,9 @@ static void irc_channels_join(SERVER_REC *server, const char *data,
 		channel = ischannel(**tmp) ? g_strdup(*tmp) :
 			g_strdup_printf("#%s", *tmp);
 
-		chanrec = channel_find(server, channel);
+		chanrec = irc_channel_find(server, channel);
 		if (chanrec == NULL) {
-			schannel = channels_setup_find(channel, server->connrec->chatnet);
+			schannel = channel_setup_find(channel, server->connrec->chatnet);
 
                         g_string_sprintfa(outchans, "%s,", channel);
                         if (*tmpkey != NULL && **tmpkey != '\0')
@@ -140,8 +124,8 @@ static void irc_channels_join(SERVER_REC *server, const char *data,
 			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
 			channame = channel + (channel[0] == '!' &&
 					      channel[1] == '!');
-			chanrec = channel_create(server->chat_type, server,
-						 channame, automatic);
+			chanrec = irc_channel_create(server, channame,
+						     automatic);
 			if (key != NULL) chanrec->key = g_strdup(key);
 		}
 		g_free(channel);
@@ -197,12 +181,12 @@ static void sig_server_looking(SERVER_REC *server)
 		return;
 
 	server->channel_find_func = irc_channel_find_server;
-	server->channels_join = irc_channels_join;
+	server->channels_join = (void (*) (SERVER_REC *, const char *, int))
+		irc_channels_join;
 }
 
 void irc_channels_init(void)
 {
-	signal_add("channel create", (SIGNAL_FUNC) sig_channel_create);
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
@@ -220,7 +204,6 @@ void irc_channels_init(void)
 
 void irc_channels_deinit(void)
 {
-	signal_remove("channel create", (SIGNAL_FUNC) sig_channel_create);
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 

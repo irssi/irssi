@@ -25,42 +25,36 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
+#include "chat-protocols.h"
 #include "chatnets.h"
 #include "servers.h"
 
 GSList *chatnets; /* list of available chat networks */
 
-void chatnet_read(CHATNET_REC *chatnet, CONFIG_NODE *node)
+static void chatnet_config_save(CHATNET_REC *chatnet)
 {
-	g_return_if_fail(chatnet != NULL);
-	g_return_if_fail(node != NULL);
-	g_return_if_fail(node->key != NULL);
+	CONFIG_NODE *node;
 
-	chatnet->type = module_get_uniq_id("CHATNET", 0);
-	chatnet->name = g_strdup(node->key);
-	chatnet->nick = g_strdup(config_node_get_str(node, "nick", NULL));
-	chatnet->username = g_strdup(config_node_get_str(node, "username", NULL));
-	chatnet->realname = g_strdup(config_node_get_str(node, "realname", NULL));
-	chatnet->own_host = g_strdup(config_node_get_str(node, "host", NULL));
-	chatnet->autosendcmd = g_strdup(config_node_get_str(node, "autosendcmd", NULL));
-
-	chatnets = g_slist_append(chatnets, chatnet);
-}
-
-CONFIG_NODE *chatnet_save(CHATNET_REC *chatnet, CONFIG_NODE *node)
-{
-	g_return_val_if_fail(node != NULL, NULL);
-	g_return_val_if_fail(chatnet != NULL, NULL);
-
+	node = iconfig_node_traverse("chatnets", TRUE);
 	node = config_node_section(node, chatnet->name, NODE_TYPE_BLOCK);
 	iconfig_node_clear(node);
 
+	iconfig_node_set_str(node, "type", chat_protocol_find_id(chatnet->chat_type)->name);
 	iconfig_node_set_str(node, "nick", chatnet->nick);
 	iconfig_node_set_str(node, "username", chatnet->username);
 	iconfig_node_set_str(node, "realname", chatnet->realname);
 	iconfig_node_set_str(node, "host", chatnet->own_host);
 	iconfig_node_set_str(node, "autosendcmd", chatnet->autosendcmd);
-	return node;
+
+        signal_emit("chatnet saved", 2, chatnet, node);
+}
+
+static void chatnet_config_remove(CHATNET_REC *chatnet)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("chatnets", FALSE);
+	if (node != NULL) iconfig_node_set_str(node, chatnet->name, NULL);
 }
 
 void chatnet_create(CHATNET_REC *chatnet)
@@ -71,6 +65,7 @@ void chatnet_create(CHATNET_REC *chatnet)
 	if (g_slist_find(chatnets, chatnet) == NULL)
 		chatnets = g_slist_append(chatnets, chatnet);
 
+	chatnet_config_save(chatnet);
 	signal_emit("chatnet created", 1, chatnet);
 }
 
@@ -79,6 +74,8 @@ void chatnet_remove(CHATNET_REC *chatnet)
 	g_return_if_fail(IS_CHATNET(chatnet));
 
 	signal_emit("chatnet removed", 1, chatnet);
+
+	chatnet_config_remove(chatnet);
 	chatnet_destroy(chatnet);
 }
 
@@ -89,16 +86,16 @@ void chatnet_destroy(CHATNET_REC *chatnet)
 	chatnets = g_slist_remove(chatnets, chatnet);
 	signal_emit("chatnet destroyed", 1, chatnet);
 
-	g_free(chatnet->name);
 	g_free_not_null(chatnet->nick);
 	g_free_not_null(chatnet->username);
 	g_free_not_null(chatnet->realname);
 	g_free_not_null(chatnet->own_host);
 	g_free_not_null(chatnet->autosendcmd);
+	g_free(chatnet->name);
 	g_free(chatnet);
 }
 
-/* Find the irc network by name */
+/* Find the chat network by name */
 CHATNET_REC *chatnet_find(const char *name)
 {
 	GSList *tmp;
@@ -129,17 +126,78 @@ static void sig_connected(SERVER_REC *server)
 		eval_special_string(rec->autosendcmd, "", server, NULL);
 }
 
+static void chatnet_read(CONFIG_NODE *node)
+{
+        CHAT_PROTOCOL_REC *proto;
+	CHATNET_REC *rec;
+        char *type;
+
+	if (node == NULL || node->key == NULL)
+		return;
+
+	type = config_node_get_str(node, "type", NULL);
+	proto = type == NULL ? NULL : chat_protocol_find(type);
+	if (proto == NULL) {
+		proto = type == NULL ? chat_protocol_get_default() :
+			chat_protocol_get_unknown(type);
+	}
+
+	if (type == NULL)
+		iconfig_node_set_str(node, "type", proto->name);
+
+	rec = proto->create_chatnet();
+	rec->type = module_get_uniq_id("CHATNET", 0);
+	rec->chat_type = proto->id;
+	rec->name = g_strdup(node->key);
+	rec->nick = g_strdup(config_node_get_str(node, "nick", NULL));
+	rec->username = g_strdup(config_node_get_str(node, "username", NULL));
+	rec->realname = g_strdup(config_node_get_str(node, "realname", NULL));
+	rec->own_host = g_strdup(config_node_get_str(node, "host", NULL));
+	rec->autosendcmd = g_strdup(config_node_get_str(node, "autosendcmd", NULL));
+
+	chatnets = g_slist_append(chatnets, rec);
+        signal_emit("chatnet read", 2, rec, node);
+}
+
+static void read_chatnets(void)
+{
+	CONFIG_NODE *node;
+
+	while (chatnets != NULL)
+                chatnet_destroy(chatnets->data);
+
+	node = iconfig_node_traverse("chatnets", FALSE);
+	if (node == NULL) {
+		/* FIXME: remove after .98 */
+		node = iconfig_node_traverse("ircnets", FALSE);
+		if (node != NULL) {
+			/* very dirty method - doesn't update hashtables
+			   but this will do temporarily.. */
+			g_free(node->key);
+                        node->key = g_strdup("chatnets");
+		}
+	}
+
+	if (node != NULL)
+                g_slist_foreach(node->value, (GFunc) chatnet_read, NULL);
+}
+
 void chatnets_init(void)
 {
 	chatnets = NULL;
+
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("setup reread", (SIGNAL_FUNC) read_chatnets);
+        signal_add_first("irssi init read settings", (SIGNAL_FUNC) read_chatnets);
 }
 
 void chatnets_deinit(void)
 {
 	while (chatnets != NULL)
 		chatnet_destroy(chatnets->data);
+	module_uniq_destroy("CHATNET");
 
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
-	module_uniq_destroy("CHATNET");
+	signal_remove("setup reread", (SIGNAL_FUNC) read_chatnets);
+        signal_remove("irssi init read settings", (SIGNAL_FUNC) read_chatnets);
 }
