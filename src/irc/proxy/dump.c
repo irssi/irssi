@@ -182,7 +182,8 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 
 void plugin_proxy_dump_data(CLIENT_REC *client)
 {
-	if (strcmp(client->server->nick, client->nick) != 0) {
+	if (client->server != NULL &&
+	    strcmp(client->server->nick, client->nick) != 0) {
 		/* change nick first so that clients won't try to eg. set
 		   their own user mode with wrong nick.. hopefully works
 		   with all clients. */
@@ -196,7 +197,7 @@ void plugin_proxy_dump_data(CLIENT_REC *client)
 	proxy_outdata(client, ":proxy 001 %s :Welcome to the Internet Relay Network\n", client->nick);
 	proxy_outdata(client, ":proxy 002 %s :Your host is irssi-proxy, running version %s\n", client->nick, VERSION);
 	proxy_outdata(client, ":proxy 003 %s :This server was created ...\n", client->nick);
-	if (!client->server->emode_known)
+	if (client->server == NULL || !client->server->emode_known)
 		proxy_outdata(client, ":proxy 004 %s proxy %s oirw abiklmnopqstv\n", client->nick, VERSION);
 	else
 		proxy_outdata(client, ":proxy 004 %s proxy %s oirw abeIiklmnopqstv\n", client->nick, VERSION);
@@ -204,12 +205,14 @@ void plugin_proxy_dump_data(CLIENT_REC *client)
 	proxy_outdata(client, ":proxy 255 %s :I have 0 clients, 0 services and 0 servers\n", client->nick);
 	proxy_outdata(client, ":proxy 422 %s :MOTD File is missing\n", client->nick);
 
-        /* user mode / away status */
-	proxy_outserver(client, "MODE %s :+%s", client->server->nick,
-			client->server->usermode);
-	if (client->server->usermode_away)
-		proxy_outdata(client, ":proxy 306 %s :You have been marked as being away\n", client->nick);
+	/* user mode / away status */
+	if (client->server != NULL) {
+		proxy_outserver(client, "MODE %s :+%s", client->server->nick,
+				client->server->usermode);
+		if (client->server->usermode_away)
+			proxy_outdata(client, ":proxy 306 %s :You have been marked as being away\n", client->nick);
 
-	/* Send channel joins */
-	g_slist_foreach(client->server->channels, (GFunc) dump_join, client);
+		/* Send channel joins */
+		g_slist_foreach(client->server->channels, (GFunc) dump_join, client);
+	}
 }

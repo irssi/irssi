@@ -147,6 +147,12 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		return;
 	}
 
+	if (client->server == NULL || !client->server->connected) {
+		proxy_outserver(client, "NOTICE %s :Not connected to server",
+				client->nick);
+                return;
+	}
+
 	server_handle = net_sendbuffer_handle(client->server->handle);
 	net_transmit(server_handle, cmd, strlen(cmd));
 	net_transmit(server_handle, " ", 1);
@@ -247,10 +253,8 @@ static void sig_listen_client(CLIENT_REC *client)
 			break;
 		}
 
-		if (ret == 0) break;
-
-		if (client->server == NULL)
-			continue;
+		if (ret == 0)
+			break;
 
 		cmd = g_strdup(str);
 		args = strchr(cmd, ' ');
@@ -353,7 +357,7 @@ static void sig_server_event(const char *line, IRC_SERVER_REC *server,
 	g_free(event);
 }
 
-static void sig_server_connected(IRC_SERVER_REC *server)
+static void event_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -514,7 +518,7 @@ void plugin_proxy_listen_init(void)
 
 	signal_add("server incoming", (SIGNAL_FUNC) sig_incoming);
 	signal_add("server event", (SIGNAL_FUNC) sig_server_event);
-	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
@@ -530,7 +534,7 @@ void plugin_proxy_listen_deinit(void)
 
 	signal_remove("server incoming", (SIGNAL_FUNC) sig_incoming);
 	signal_remove("server event", (SIGNAL_FUNC) sig_server_event);
-	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
