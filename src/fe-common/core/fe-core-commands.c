@@ -29,6 +29,7 @@
 #include "irssi-version.h"
 
 #include "windows.h"
+#include "printtext.h"
 
 #define PASTE_CHECK_SPEED 200 /* 0.2 sec */
 

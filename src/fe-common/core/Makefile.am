@@ -22,6 +22,7 @@ libfe_common_core_a_SOURCES = \
 	fe-queries.c \
 	fe-server.c \
 	fe-settings.c \
+	formats.c \
 	hilight-text.c \
 	keyboard.c \
 	module-formats.c \
@@ -39,6 +40,7 @@ noinst_HEADERS = \
 	completion.h \
 	fe-common-core.h \
 	fe-queries.h \
+	formats.h \
 	hilight-text.h \
 	keyboard.h \
 	module-formats.h \

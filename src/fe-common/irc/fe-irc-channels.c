@@ -28,6 +28,8 @@
 #include "irc.h"
 #include "channel-rejoin.h"
 
+#include "printtext.h"
+
 static void sig_channel_rejoin(IRC_SERVER_REC *server, REJOIN_REC *rec)
 {
 	g_return_if_fail(rec != NULL);

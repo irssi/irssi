@@ -1,4 +1,4 @@
-#include "printtext.h"
+#include "formats.h"
 
 enum {
 	IRCTXT_MODULE_NAME,

@@ -29,6 +29,7 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
 
 void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 {

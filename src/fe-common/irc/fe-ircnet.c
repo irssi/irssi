@@ -28,6 +28,7 @@
 
 #include "irc-servers.h"
 #include "irc-chatnets.h"
+#include "printtext.h"
 
 static void cmd_ircnet_list(void)
 {

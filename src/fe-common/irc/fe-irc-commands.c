@@ -36,6 +36,7 @@
 #include "fe-queries.h"
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
 
 /* SYNTAX: ME <message> */
 static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)

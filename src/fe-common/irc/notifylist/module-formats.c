@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "printtext.h"
+#include "formats.h"
 
 FORMAT_REC fecommon_irc_notifylist_formats[] =
 {

@@ -32,6 +32,7 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
 
 static void ctcp_print(const char *pre, const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {

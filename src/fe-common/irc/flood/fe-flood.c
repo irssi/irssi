@@ -27,6 +27,7 @@
 #include "irc/flood/autoignore.h"
 
 #include "themes.h"
+#include "printtext.h"
 
 static void event_autoignore_new(IRC_SERVER_REC *server, AUTOIGNORE_REC *ignore)
 {

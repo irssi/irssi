@@ -28,6 +28,7 @@
 
 #include "irc-servers.h"
 #include "windows.h"
+#include "printtext.h"
 
 #include "screen.h"
 #include "gui-windows.h"
@@ -56,8 +57,8 @@ static gchar *gui_window_line2text(LINE_REC *line)
 	{
 	    /* set color */
 	    color = *ptr;
-	    g_string_sprintfa(str, "\003%c%c", (color & 0x07)+1, ((color & 0xf0) >> 4)+1);
-	    if (color & 0x08) g_string_sprintfa(str, "\002");
+	    g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
+			      ((color & 0xf0) >> 4)+'0');
 	}
 	else switch ((guchar) *ptr)
 	{
@@ -73,16 +74,19 @@ static gchar *gui_window_line2text(LINE_REC *line)
 		g_string_append_c(str, 31);
 		break;
 	    case LINE_CMD_COLOR0:
-		g_string_sprintfa(str, "\003%c%c", 1, ((color & 0xf0) >> 4)+1);
+		g_string_sprintfa(str, "\004%c%c",
+				  '0', ((color & 0xf0) >> 4)+'0');
 		break;
 	    case LINE_CMD_COLOR8:
-		g_string_sprintfa(str, "\003%c%c", 9, ((color & 0xf0) >> 4)+1);
+		g_string_sprintfa(str, "\004%c%c",
+				  '8', ((color & 0xf0) >> 4)+'0');
 		color &= 0xfff0;
 		color |= 8|ATTR_COLOR8;
 		break;
 	    case LINE_CMD_BLINK:
 		color |= 0x80;
-		g_string_sprintfa(str, "\003%c%c", (color & 0x0f)+1, ((color & 0xf0) >> 4)+1);
+		g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
+				  ((color & 0xf0) >> 4)+'0');
 		break;
 	    case LINE_CMD_INDENT:
 		break;

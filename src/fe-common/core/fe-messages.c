@@ -33,6 +33,7 @@
 #include "nicklist.h"
 #include "hilight-text.h"
 #include "ignore.h"
+#include "printtext.h"
 
 static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
 {

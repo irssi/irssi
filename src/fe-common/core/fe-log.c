@@ -31,7 +31,9 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "formats.h"
 #include "themes.h"
+#include "printtext.h"
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
@@ -419,13 +421,10 @@ static void sig_printtext_stripped(WINDOW_REC *window, void *server,
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module,
-			     TEXT_DEST_REC *dest, gpointer formatnump,
+			     TEXT_DEST_REC *dest, void *formatnum,
 			     va_list va)
 {
-	MODULE_THEME_REC *module_theme;
-	FORMAT_REC *formats;
-	int formatnum;
-	char *str, *str2, *stripped, *tmp;
+	char *str, *stripped, *linestart, *tmp;
 
 	if (log_theme == NULL) {
 		/* theme isn't loaded for some reason (/reload destroys it),
@@ -437,31 +436,20 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 	if (theme == log_theme)
 		return;
 
-	/* log uses a different theme .. very ugly kludge follows.. : */
-	formatnum = GPOINTER_TO_INT(formatnump);
-	module_theme = g_hash_table_lookup(log_theme->modules, module);
-	formats = g_hash_table_lookup(default_formats, module);
+	str = format_get_text_theme_args(log_theme, module, dest,
+					 GPOINTER_TO_INT(formatnum), va);
+	skip_next_printtext = TRUE;
 
-	str = output_format_text_args(dest, &formats[formatnum],
-				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') {
-		/* get_line_start_text() gets the line start with
-		   current theme. */
-		THEME_REC *old_theme = current_theme;
-		current_theme = log_theme;
-		tmp = get_line_start_text(dest);
-		current_theme = old_theme;
-
-		/* line start + text */
-		str2 = tmp == NULL ? str :
-			g_strconcat(tmp, str, NULL);
-		if (str2 != str) g_free(str);
-		str = str2;
-		g_free_not_null(tmp);
+                /* add the line start format */
+		linestart = format_get_line_start(log_theme, dest);
+                tmp = str;
+		str = format_add_linestart(tmp, linestart);
+		g_free_not_null(linestart);
+		g_free(tmp);
 
 		/* strip colors from text, log it. */
 		stripped = strip_codes(str);
-		skip_next_printtext = TRUE;
 		log_line(dest->window, dest->server, dest->target,
 			 dest->level, stripped);
 		g_free(stripped);
@@ -558,10 +546,10 @@ static void read_settings(void)
 
 	/* write to log files with different theme? */
 	log_theme_name = settings_get_str("log_theme");
-	if (old_log_theme == NULL && *log_theme_name != '\0') {
+	if (*old_log_theme == '\0' && *log_theme_name != '\0') {
                 /* theme set */
 		signal_add("print format", (SIGNAL_FUNC) sig_print_format);
-	} else if (old_log_theme != NULL && *log_theme_name == '\0') {
+	} else if (*old_log_theme != '\0' && *log_theme_name == '\0') {
 		/* theme unset */
 		signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	}
@@ -581,6 +569,7 @@ void fe_log_init(void)
         settings_add_str("log", "log_theme", "");
 
 	autolog_level = 0;
+	log_theme_name = "";
 	read_settings();
 
 	command_bind("log", NULL, (SIGNAL_FUNC) cmd_log);
@@ -605,7 +594,7 @@ void fe_log_init(void)
 void fe_log_deinit(void)
 {
 	g_source_remove(autoremove_tag);
-	if (log_theme_name != NULL && *log_theme_name != '\0')
+	if (*log_theme_name != '\0')
                 signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 
 	command_unbind("log", (SIGNAL_FUNC) cmd_log);

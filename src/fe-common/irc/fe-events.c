@@ -36,6 +36,7 @@
 #include "irc-channels.h"
 #include "irc-nicklist.h"
 #include "windows.h"
+#include "printtext.h"
 
 #include "completion.h"
 

@@ -31,6 +31,8 @@
 #include "ignore.h"
 #include "netsplit.h"
 
+#include "printtext.h"
+
 #define NETJOIN_WAIT_TIME 2 /* how many seconds to wait for the netsplitted JOIN messages to stop */
 #define NETJOIN_MAX_WAIT 30 /* how many seconds to wait for nick to join to the rest of the channels she was before the netsplit */
 

@@ -29,6 +29,7 @@
 #include "settings.h"
 
 #include "themes.h"
+#include "printtext.h"
 
 GSList *themes;
 THEME_REC *current_theme;

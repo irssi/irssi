@@ -27,6 +27,7 @@
 
 #include "servers.h"
 #include "ignore.h"
+#include "printtext.h"
 
 static void fe_unignore(IGNORE_REC *rec);
 

@@ -30,6 +30,7 @@
 #include "servers.h"
 
 #include "hilight-text.h"
+#include "printtext.h"
 
 #define DEFAULT_HILIGHT_LEVEL \
 	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | \

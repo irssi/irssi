@@ -29,6 +29,7 @@
 
 #include "keyboard.h"
 #include "windows.h"
+#include "printtext.h"
 
 GSList *keyinfos;
 static GHashTable *keys;

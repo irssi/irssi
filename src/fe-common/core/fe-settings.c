@@ -28,6 +28,7 @@
 #include "settings.h"
 
 #include "levels.h"
+#include "printtext.h"
 
 static void set_print(SETTINGS_REC *rec)
 {

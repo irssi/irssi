@@ -33,6 +33,7 @@
 #include "irc/notifylist/notifylist.h"
 
 #include "themes.h"
+#include "printtext.h"
 
 /* add the nick of a hostmask to list if it isn't there already */
 static GSList *mask_add_once(GSList *list, const char *mask)

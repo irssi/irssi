@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "printtext.h"
 
 #include "screen.h"
 #include "statusbar.h"

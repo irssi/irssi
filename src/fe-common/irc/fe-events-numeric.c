@@ -30,6 +30,8 @@
 #include "irc-channels.h"
 #include "nicklist.h"
 
+#include "printtext.h"
+
 static char *last_away_nick = NULL;
 static char *last_away_msg = NULL;
 
@@ -96,10 +98,10 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint it
 	    memset(linebuf, ' ', max);
 	    nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
 	    memcpy(linebuf, rec->nick, strlen(rec->nick));
-	    ret = output_format_get_text(MODULE_NAME, NULL,
-					 channel->server, channel->name,
-					 IRCTXT_NAMES_NICK, nickmode, linebuf);
-            g_string_append(str, ret);
+	    ret = format_get_text(MODULE_NAME, NULL,
+				  channel->server, channel->name,
+				  IRCTXT_NAMES_NICK, nickmode, linebuf);
+	    g_string_append(str, ret);
 	    g_free(ret);
 	    cols++;
 	}

@@ -1,8 +1,6 @@
 #ifndef __THEMES_H
 #define __THEMES_H
 
-#include "printtext.h"
-
 typedef struct {
 	char *name;
 
@@ -25,6 +23,8 @@ typedef struct {
 
 	void *gui_data;
 } THEME_REC;
+
+typedef struct _FORMAT_REC FORMAT_REC;
 
 extern GSList *themes;
 extern THEME_REC *current_theme;

@@ -35,6 +35,7 @@
 #include "windows.h"
 
 #include "module-formats.h"
+#include "printtext.h"
 
 static void dcc_connected(DCC_REC *dcc)
 {

@@ -31,6 +31,7 @@
 #include "servers-reconnect.h"
 
 #include "module-formats.h"
+#include "printtext.h"
 
 static void print_servers(void)
 {

@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "printtext.h"
+#include "formats.h"
 
 FORMAT_REC fecommon_core_formats[] = {
 	{ MODULE_NAME, "Core", 0 },

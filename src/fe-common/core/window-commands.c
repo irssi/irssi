@@ -31,6 +31,7 @@
 #include "windows.h"
 #include "window-items.h"
 #include "window-save.h"
+#include "printtext.h"
 
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 {

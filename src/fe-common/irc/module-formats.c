@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "printtext.h"
+#include "formats.h"
 
 FORMAT_REC fecommon_irc_formats[] = {
 	{ MODULE_NAME, "IRC", 0 },

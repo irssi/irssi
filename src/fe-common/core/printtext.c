@@ -23,7 +23,6 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
-#include "special-vars.h"
 #include "settings.h"
 
 #include "levels.h"
@@ -32,6 +31,7 @@
 #include "translation.h"
 #include "themes.h"
 #include "windows.h"
+#include "printtext.h"
 
 static int beep_msg_level, beep_when_away;
 static int timestamps, msgs_timestamps, hide_text_style;
@@ -43,7 +43,7 @@ static int signal_print_text;
 static int signal_print_text_finished;
 static int signal_print_format;
 
-static void print_string(TEXT_DEST_REC *dest, const char *text);
+static void print_line(TEXT_DEST_REC *dest, const char *text);
 
 void printbeep(void)
 {
@@ -51,23 +51,47 @@ void printbeep(void)
 		       GINT_TO_POINTER(PRINTFLAG_BEEP), "", MSGLEVEL_NEVER);
 }
 
-static void skip_mirc_color(char **str)
+static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 {
-	if (!isdigit((int) **str))
-		return;
+	int fg, bg;
 
-	/* foreground */
-	(*str)++;
-	if (isdigit((int) **str)) (*str)++;
+	fg = fg_ret == NULL ? -1 : *fg_ret;
+	bg = bg_ret == NULL ? -1 : *bg_ret;
 
-	if (**str != ',' || !isdigit((int) (*str)[1])) return;
+	if (!isdigit((int) **str) && **str != ',') {
+		fg = -1;
+		bg = -1;
+	} else {
+		/* foreground color */
+		if (**str != ',') {
+			fg = **str-'0';
+                        (*str)++;
+			if (isdigit((int) **str)) {
+				fg = fg*10 + (**str-'0');
+				(*str)++;
+			}
+		}
+		if (**str == ',') {
+			/* background color */
+			(*str)++;
+			if (!isdigit((int) **str))
+				bg = -1;
+			else {
+				bg = **str-'0';
+				(*str)++;
+				if (isdigit((int) **str)) {
+					bg = bg*10 + (**str-'0');
+					(*str)++;
+				}
+			}
+		}
+	}
 
-	/* background */
-	(*str) += 2;
-	if (isdigit((int) **str)) (*str)++;
+	if (fg_ret) *fg_ret = fg;
+	if (bg_ret) *bg_ret = bg;
 }
 
-#define is_color_code(c) \
+#define IS_COLOR_CODE(c) \
 	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
 	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 31)
 
@@ -81,25 +105,26 @@ char *strip_codes(const char *input)
 		if (*p == 3) {
 			p++;
 
-			if (*p < 17 && *p > 0) {
-				/* irssi color */
-				if (p[1] < 17 && p[1] > 0) p++;
-				continue;
-			}
-
 			/* mirc color */
-			skip_mirc_color((char **) &p);
+			get_mirc_color(&p, NULL, NULL);
 			p--;
 			continue;
 		}
 
-		if (*p == 4 && p[1] != '\0' && p[2] != '\0') {
+		if (*p == 4 && p[1] != '\0') {
+			if (p[1] >= FORMAT_STYLE_SPECIAL) {
+				p++;
+				continue;
+			}
+
 			/* irssi color */
-			p += 2;
-			continue;
+			if (p[2] != '\0') {
+				p += 2;
+				continue;
+			}
 		}
 
-		if (!is_color_code(*p))
+		if (!IS_COLOR_CODE(*p))
 			*out++ = *p;
 	}
 
@@ -108,20 +133,20 @@ char *strip_codes(const char *input)
 }
 
 /* parse ANSI color string */
-static char *convert_ansi(THEME_REC *theme, char *str,
-			  int *fgcolor, int *bgcolor, int *flags)
+static char *get_ansi_color(THEME_REC *theme, char *str,
+			    int *fg_ret, int *bg_ret, int *flags_ret)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	char *start;
-	int fg, bg, fl, num;
+	int fg, bg, flags, num;
 
 	if (*str != '[')
 		return str;
 	start = str++;
 
-	fg = *fgcolor < 0 ? theme->default_color : *fgcolor;
-	bg = *bgcolor < 0 ? -1 : *bgcolor;
-	fl = *flags;
+	fg = fg_ret == NULL || *fg_ret < 0 ? theme->default_color : *fg_ret;
+	bg = bg_ret == NULL || *bg_ret < 0 ? -1 : *bg_ret;
+	flags = flags_ret == NULL ? 0 : *flags_ret;
 
 	num = 0;
 	for (;; str++) {
@@ -140,19 +165,19 @@ static char *convert_ansi(THEME_REC *theme, char *str,
 			/* reset colors back to default */
 			fg = theme->default_color;
 			bg = -1;
-			fl &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
+			flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
 			break;
 		case 1:
 			/* hilight */
-			fl |= PRINTFLAG_BOLD;
+			flags |= PRINTFLAG_BOLD;
 			break;
 		case 5:
 			/* blink */
-			fl |= PRINTFLAG_BLINK;
+			flags |= PRINTFLAG_BLINK;
 			break;
 		case 7:
 			/* reverse */
-			fl |= PRINTFLAG_REVERSE;
+			flags |= PRINTFLAG_REVERSE;
 			break;
 		default:
 			if (num >= 30 && num <= 37)
@@ -166,11 +191,10 @@ static char *convert_ansi(THEME_REC *theme, char *str,
 		num = 0;
 
 		if (*str == 'm') {
-			if (!hide_text_style) {
-				*fgcolor = fg;
-				*bgcolor = bg;
-				*flags = fl;
-			}
+			if (fg_ret != NULL) *fg_ret = fg;
+			if (bg_ret != NULL) *bg_ret = bg;
+			if (flags_ret != NULL) *flags_ret = flags;
+
 			str++;
 			break;
 		}
@@ -179,301 +203,23 @@ static char *convert_ansi(THEME_REC *theme, char *str,
 	return str;
 }
 
-static int expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
-{
-	static const char *backs = "04261537";
-	static const char *fores = "kbgcrmyw";
-	static const char *boldfores = "KBGCRMYW";
-	char *p;
-
-	switch (format) {
-	case 'U':
-		/* Underline on/off */
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -1);
-		g_string_append_c(out, 2);
-		break;
-	case '9':
-	case '_':
-		/* bold on/off */
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -1);
-		g_string_append_c(out, 1);
-		break;
-	case '8':
-		/* reverse */
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -1);
-		g_string_append_c(out, 3);
-		break;
-	case '%':
-		g_string_append_c(out, '%');
-		break;
-	case ':':
-		/* Newline */
-		print_string(dest, out->str);
-		g_string_truncate(out, 0);
-		break;
-	case '|':
-		/* Indent here */
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -1);
-		g_string_append_c(out, 4);
-		break;
-	case 'F':
-		/* flashing - ignore */
-		break;
-	case 'N':
-		/* don't put clear-color tag at the end of the output - ignore */
-		break;
-	case 'n':
-		/* default color */
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -1);
-		g_string_append_c(out, -1);
-		break;
-	default:
-		/* check if it's a background color */
-		p = strchr(backs, format);
-		if (p != NULL) {
-			g_string_append_c(out, 4);
-			g_string_append_c(out, -2);
-			g_string_append_c(out, (int) (p-backs)+1);
-			break;
-		}
-
-		/* check if it's a foreground color */
-		if (format == 'p') format = 'm';
-		p = strchr(fores, format);
-		if (p != NULL) {
-			g_string_append_c(out, 4);
-			g_string_append_c(out, (int) (p-fores)+1);
-			g_string_append_c(out, -2);
-			break;
-		}
-
-		/* check if it's a bold foreground color */
-		if (format == 'P') format = 'M';
-		p = strchr(boldfores, format);
-		if (p != NULL) {
-			g_string_append_c(out, 4);
-			g_string_append_c(out, 8+(int) (p-boldfores)+1);
-			g_string_append_c(out, -2);
-			break;
-		}
-
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-static void read_arglist(va_list va, FORMAT_REC *format,
-			 char **arglist, int arglist_size,
-			 char *buffer, int buffer_size)
-{
-	int num, len, bufpos;
-
-	bufpos = 0;
-        arglist[format->params] = NULL;
-	for (num = 0; num < format->params && num < arglist_size; num++) {
-		switch (format->paramtypes[num]) {
-		case FORMAT_STRING:
-			arglist[num] = (char *) va_arg(va, char *);
-			if (arglist[num] == NULL) {
-				g_warning("read_arglist() : parameter %d is NULL", num);
-				arglist[num] = "";
-			}
-			break;
-		case FORMAT_INT: {
-			int d = (int) va_arg(va, int);
-
-			if (bufpos >= buffer_size) {
-				arglist[num] = "";
-				break;
-			}
-
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%d", d);
-			bufpos += len+1;
-			break;
-		}
-		case FORMAT_LONG: {
-			long l = (long) va_arg(va, long);
-
-			if (bufpos >= buffer_size) {
-				arglist[num] = "";
-				break;
-			}
-
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%ld", l);
-                        bufpos += len+1;
-			break;
-		}
-		case FORMAT_FLOAT: {
-			double f = (double) va_arg(va, double);
-
-			if (bufpos >= buffer_size) {
-				arglist[num] = "";
-				break;
-			}
-
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%0.2f", f);
-			bufpos += len+1;
-			break;
-		}
-		}
-	}
-}
-
-static void create_dest_rec(TEXT_DEST_REC *dest,
-			    void *server, const char *target,
-			    int level, WINDOW_REC *window)
-{
-	dest->server = server;
-	dest->target = target;
-	dest->level = level;
-	dest->window = window != NULL ? window :
-		window_find_closest(server, target, level);
-}
-
-char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
-			      const char *text, va_list va)
-{
-	GString *out;
-	char *arglist[10];
-	char buffer[200]; /* should be enough? (won't overflow even if it isn't) */
-
-	char code, *ret;
-	int need_free;
-
-	/* read all optional arguments to arglist[] list
-	   so they can be used in any order.. */
-	read_arglist(va, format,
-		     arglist, sizeof(arglist)/sizeof(void*),
-		     buffer, sizeof(buffer));
-
-	out = g_string_new(NULL);
-
-	code = 0;
-	while (*text != '\0') {
-		if (code == '%') {
-			/* color code */
-			if (!expand_styles(out, *text, dest)) {
-				g_string_append_c(out, '%');
-				g_string_append_c(out, '%');
-				g_string_append_c(out, *text);
-			}
-			code = 0;
-		} else if (code == '$') {
-			/* argument */
-			char *ret;
-
-			ret = parse_special((char **) &text, active_win->active_server,
-					    active_win->active, arglist, &need_free, NULL);
-
-			if (ret != NULL) {
-				/* string shouldn't end with \003 or it could
-				   mess up the next one or two characters */
-                                int diff;
-				int len = strlen(ret);
-				while (len > 0 && ret[len-1] == 3) len--;
-				diff = strlen(ret)-len;
-
-				g_string_append(out, ret);
-				if (diff > 0)
-					g_string_truncate(out, out->len-diff);
-				if (need_free) g_free(ret);
-			}
-			code = 0;
-		} else {
-			if (*text == '%' || *text == '$')
-				code = *text;
-			else
-				g_string_append_c(out, *text);
-		}
-
-		text++;
-	}
-
-	ret = out->str;
-	g_string_free(out, FALSE);
-	return ret;
-}
-
-char *output_format_get_text(const char *module, WINDOW_REC *window,
-			     void *server, const char *target,
-			     int formatnum, ...)
-{
-	TEXT_DEST_REC dest;
-	THEME_REC *theme;
-	MODULE_THEME_REC *module_theme;
-	FORMAT_REC *formats;
-	va_list va;
-	char *ret;
-
-	create_dest_rec(&dest, server, target, 0, window);
-	theme = dest.window->theme == NULL ? current_theme :
-		dest.window->theme;
-
-	module_theme = g_hash_table_lookup(theme->modules, module);
-	formats = g_hash_table_lookup(default_formats, module);
-
-	va_start(va, formatnum);
-	ret = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme->expanded_formats[formatnum], va);
-	va_end(va);
-
-	return ret;
-}
-
-static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
-{
-	THEME_REC *theme;
-	MODULE_THEME_REC *module_theme;
-	va_list va;
-	char *ret;
-
-	theme = dest->window->theme == NULL ? current_theme :
-		dest->window->theme;
-	module_theme = g_hash_table_lookup(theme->modules, MODULE_NAME);
-
-	va_start(va, formatnum);
-	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
-				      module_theme->expanded_formats[formatnum], va);
-	va_end(va);
-
-	return ret;
-}
-
 void printformat_module_args(const char *module, void *server,
 			     const char *target, int level,
 			     int formatnum, va_list va)
 {
 	THEME_REC *theme;
-	MODULE_THEME_REC *module_theme;
 	TEXT_DEST_REC dest;
-	FORMAT_REC *formats;
 	char *str;
 
-	create_dest_rec(&dest, server, target, level, NULL);
+	format_create_dest(&dest, server, target, level, NULL);
 	theme = dest.window->theme == NULL ? current_theme :
 		dest.window->theme;
 
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       &dest, GINT_TO_POINTER(formatnum), va);
 
-	module_theme = g_hash_table_lookup(theme->modules, module);
-	formats = g_hash_table_lookup(default_formats, module);
-
-	str = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme->expanded_formats[formatnum], va);
-	if (*str != '\0') print_string(&dest, str);
+        str = format_get_text_theme_args(theme, module, &dest, formatnum, va);
+	if (*str != '\0') print_line(&dest, str);
 	g_free(str);
 }
 
@@ -490,24 +236,18 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window,
 				    int level, int formatnum, va_list va)
 {
 	THEME_REC *theme;
-	MODULE_THEME_REC *module_theme;
 	TEXT_DEST_REC dest;
-	FORMAT_REC *formats;
 	char *str;
 
-	create_dest_rec(&dest, NULL, NULL, level, window);
+	format_create_dest(&dest, NULL, NULL, level, window);
 	theme = window->theme == NULL ? current_theme :
 		window->theme;
 
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       &dest, GINT_TO_POINTER(formatnum), va);
 
-	module_theme = g_hash_table_lookup(theme->modules, module);
-	formats = g_hash_table_lookup(default_formats, module);
-
-	str = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme->expanded_formats[formatnum], va);
-	if (*str != '\0') print_string(&dest, str);
+        str = format_get_text_theme_args(theme, module, &dest, formatnum, va);
+	if (*str != '\0') print_line(&dest, str);
 	g_free(str);
 }
 
@@ -521,37 +261,16 @@ void printformat_module_window(const char *module, WINDOW_REC *window,
 	va_end(va);
 }
 
-#define LINE_START_IRSSI_LEVEL \
-	(MSGLEVEL_CLIENTERROR | MSGLEVEL_CLIENTNOTICE)
-
-#define NOT_LINE_START_LEVEL \
-	(MSGLEVEL_NEVER | MSGLEVEL_LASTLOG | MSGLEVEL_CLIENTCRAP | \
-	MSGLEVEL_MSGS | MSGLEVEL_PUBLIC | MSGLEVEL_DCC | MSGLEVEL_DCCMSGS | \
-	MSGLEVEL_ACTIONS | MSGLEVEL_NOTICES | MSGLEVEL_SNOTES | MSGLEVEL_CTCPS)
-
-/* return the "-!- " text at the start of the line */
-char *get_line_start_text(TEXT_DEST_REC *dest)
+static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
-	if (dest->level & LINE_START_IRSSI_LEVEL)
-		return output_format_text(dest, IRCTXT_LINE_START_IRSSI);
-
-	if ((dest->level & NOT_LINE_START_LEVEL) == 0)
-		return output_format_text(dest, IRCTXT_LINE_START);
-
-	return NULL;
-}
-
-static void print_string(TEXT_DEST_REC *dest, const char *text)
-{
-	gpointer levelp;
+	void *levelp;
 	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
 
-	tmp = get_line_start_text(dest);
-	str = tmp == NULL ? (char *) text :
-		g_strconcat(tmp, text, NULL);
+	tmp = format_get_line_start(current_theme, dest);
+	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
 	levelp = GINT_TO_POINTER(dest->level);
@@ -562,7 +281,7 @@ static void print_string(TEXT_DEST_REC *dest, const char *text)
 	g_free(tmp);
 
 	signal_emit_id(signal_print_text, 5, dest->window, dest->server, dest->target, levelp, str);
-	if (str != text) g_free(str);
+	g_free(str);
 }
 
 /* append string to `out', expand newlines. */
@@ -572,7 +291,7 @@ static void printtext_append_str(TEXT_DEST_REC *dest, GString *out, const char *
 		if (*str != '\n')
 			g_string_append_c(out, *str);
 		else {
-			print_string(dest, out->str);
+			print_line(dest, out->str);
 			g_string_truncate(out, 0);
 		}
 		str++;
@@ -631,7 +350,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 			break;
 		}
 		default:
-			if (!expand_styles(out, *str, dest)) {
+			if (!format_expand_styles(out, *str, dest)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *str);
 			}
@@ -653,13 +372,13 @@ void printtext(void *server, const char *target, int level, const char *text, ..
 
 	g_return_if_fail(text != NULL);
 
-        create_dest_rec(&dest, server, target, level, NULL);
+        format_create_dest(&dest, server, target, level, NULL);
 
 	va_start(va, text);
 	str = printtext_get_args(&dest, text, va);
 	va_end(va);
 
-	print_string(&dest, str);
+	print_line(&dest, str);
 	g_free(str);
 }
 
@@ -671,14 +390,14 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 
 	g_return_if_fail(text != NULL);
 
-	create_dest_rec(&dest, NULL, NULL, level,
-			window != NULL ? window : active_win);
+	format_create_dest(&dest, NULL, NULL, level,
+			   window != NULL ? window : active_win);
 
 	va_start(va, text);
 	str = printtext_get_args(&dest, text, va);
 	va_end(va);
 
-	print_string(&dest, str);
+	print_line(&dest, str);
 	g_free(str);
 }
 
@@ -715,9 +434,10 @@ static char *get_timestamp(TEXT_DEST_REC *dest)
 	}
 
 	tm = localtime(&t);
-	return output_format_text(dest, IRCTXT_TIMESTAMP,
-				  tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-				  tm->tm_hour, tm->tm_min, tm->tm_sec);
+	return format_get_text_theme(NULL, MODULE_NAME, dest, IRCTXT_TIMESTAMP,
+				     tm->tm_year+1900,
+				     tm->tm_mon+1, tm->tm_mday,
+				     tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 static char *get_server_tag(TEXT_DEST_REC *dest)
@@ -730,7 +450,8 @@ static char *get_server_tag(TEXT_DEST_REC *dest)
 	    (dest->window->active != NULL && dest->window->active->server == server))
 		return NULL;
 
-	return output_format_text(dest, IRCTXT_SERVERTAG, server->tag);
+	return format_get_text_theme(NULL, MODULE_NAME, dest,
+				     IRCTXT_SERVERTAG, server->tag);
 }
 
 static void msg_beep_check(SERVER_REC *server, int level)
@@ -742,197 +463,166 @@ static void msg_beep_check(SERVER_REC *server, int level)
 	}
 }
 
+static char *fix_line_start(TEXT_DEST_REC *dest, const char *text)
+{
+	char *timestamp, *servertag;
+	char *linestart, *str;
+
+	timestamp = get_timestamp(dest);
+	servertag = get_server_tag(dest);
+
+	if (timestamp == NULL && servertag == NULL)
+		return g_strdup(text);
+
+	linestart = g_strconcat(timestamp != NULL ? timestamp : "",
+				servertag, NULL);
+	str = format_add_linestart(text, linestart);
+	g_free(linestart);
+
+	g_free_not_null(timestamp);
+	g_free_not_null(servertag);
+	return str;
+}
+
 static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
 			   const char *target, gpointer level,
 			   const char *text)
 {
-    TEXT_DEST_REC dest;
-    char *dup, *ptr, type, *str, *timestamp, *servertag;
-    int fgcolor, bgcolor;
-    int flags;
+	TEXT_DEST_REC dest;
+	char *dup, *ptr, type, *str;
+	int fgcolor, bgcolor;
+	int flags;
 
-    g_return_if_fail(text != NULL);
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(text != NULL);
+	g_return_if_fail(window != NULL);
 
-    create_dest_rec(&dest, server, target, GPOINTER_TO_INT(level), window);
-    msg_beep_check(server, dest.level);
+	format_create_dest(&dest, server, target,
+			   GPOINTER_TO_INT(level), window);
+	msg_beep_check(server, dest.level);
 
-    flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
-    window->last_line = time(NULL);
-    newline(window);
+	window->last_line = time(NULL);
+	newline(window);
 
-    timestamp = get_timestamp(&dest);
-    servertag = get_server_tag(&dest);
-    str = g_strconcat(timestamp != NULL ? timestamp : "",
-		      servertag != NULL ? servertag : "",
-		      text, NULL);
-    g_free_not_null(timestamp);
-    g_free_not_null(servertag);
+	dup = str = fix_line_start(&dest, text);
+	flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
+	while (*str != '\0') {
+		for (ptr = str; *ptr != '\0'; ptr++) {
+			if (IS_COLOR_CODE(*ptr)) {
+				type = *ptr;
+				*ptr++ = '\0';
+				break;
+			}
 
-    dup = str;
-    while (*str != '\0')
-    {
-	for (ptr = str; *ptr != '\0'; ptr++)
-	{
-            if (is_color_code(*ptr))
-            {
-                type = *ptr;
-                *ptr++ = '\0';
-                break;
-	    }
+			*ptr = (char) translation_in[(int) (unsigned char) *ptr];
+		}
 
-            *ptr = (char) translation_in[(gint) (guchar) *ptr];
-	}
+		if (type == 7) {
+			/* bell */
+			if (settings_get_bool("bell_beeps"))
+				flags |= PRINTFLAG_BEEP;
+		}
+		if (*str != '\0' || flags & PRINTFLAG_BEEP) {
+                        /* send the text to gui handler */
+			signal_emit_id(signal_gui_print_text, 6, window,
+				       GINT_TO_POINTER(fgcolor),
+				       GINT_TO_POINTER(bgcolor),
+				       GINT_TO_POINTER(flags), str, level);
+			flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
+		}
 
-        if (type == 7)
-        {
-            /* bell */
-            if (settings_get_bool("bell_beeps"))
-                flags |= PRINTFLAG_BEEP;
-        }
-        if (*str != '\0' || flags & PRINTFLAG_BEEP)
-        {
-            signal_emit_id(signal_gui_print_text, 6, window,
-                        GINT_TO_POINTER(fgcolor), GINT_TO_POINTER(bgcolor),
-                        GINT_TO_POINTER(flags), str, level);
-            flags &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
-        }
-        if (*ptr == '\0') break;
+		if (*ptr == '\0')
+			break;
 
-        switch (type)
-        {
-            case 2:
-                /* bold */
-                if (!hide_text_style)
-                    flags ^= PRINTFLAG_BOLD;
-                break;
-	    case 6:
-		/* blink */
-                if (!hide_text_style)
-                    flags ^= PRINTFLAG_BLINK;
-                break;
-	    case 15:
-                /* remove all styling */
-		flags &= PRINTFLAG_BEEP;
-		fgcolor = bgcolor = -1;
-		break;
-	    case 22:
-                /* reverse */
-                if (!hide_text_style)
-                    flags ^= PRINTFLAG_REVERSE;
-                break;
-            case 31:
-                /* underline */
-                if (!hide_text_style)
-                    flags ^= PRINTFLAG_UNDERLINE;
-            case 27:
-                /* ansi color code */
-		ptr = convert_ansi(window->theme == NULL ? current_theme :
-				   window->theme, ptr, &fgcolor, &bgcolor, &flags);
-                break;
-            case 4:
-                /* user specific colors */
-		flags &= ~PRINTFLAG_MIRC_COLOR;
-                if ((signed char) *ptr == -1)
-                {
-		    ptr++;
-		    if ((signed char) *ptr == -1)
-		    {
+		switch (type)
+		{
+		case 2:
+			/* bold */
+			if (!hide_text_style)
+				flags ^= PRINTFLAG_BOLD;
+			break;
+		case 6:
+			/* blink */
+			if (!hide_text_style)
+				flags ^= PRINTFLAG_BLINK;
+			break;
+		case 15:
+			/* remove all styling */
+			flags &= PRINTFLAG_BEEP;
 			fgcolor = bgcolor = -1;
-			flags &= PRINTFLAG_INDENT;
-		    }
-                    else if (*ptr == 1)
-                        flags ^= PRINTFLAG_BOLD;
-                    else if (*ptr == 2)
-                        flags ^= PRINTFLAG_UNDERLINE;
-                    else if (*ptr == 3)
-                        flags ^= PRINTFLAG_REVERSE;
-                    else if (*ptr == 4)
-                        flags |= PRINTFLAG_INDENT;
-                }
-                else
-		{
-		    if ((signed char) *ptr != -2)
-		    {
-			fgcolor = (guchar) *ptr-1;
-			if (fgcolor <= 7)
-			    flags &= ~PRINTFLAG_BOLD;
-			else
-			{
-			    /* bold */
-			    if (fgcolor != 8) fgcolor -= 8;
-			    flags |= PRINTFLAG_BOLD;
+			break;
+		case 22:
+			/* reverse */
+			if (!hide_text_style)
+				flags ^= PRINTFLAG_REVERSE;
+			break;
+		case 31:
+			/* underline */
+			if (!hide_text_style)
+				flags ^= PRINTFLAG_UNDERLINE;
+		case 27:
+			/* ansi color code */
+			ptr = get_ansi_color(window->theme == NULL ?
+					     current_theme : window->theme,
+					     ptr,
+					     hide_text_style ? NULL : &fgcolor,
+					     hide_text_style ? NULL : &bgcolor,
+					     hide_text_style ? NULL : &flags);
+			break;
+		case 4:
+			/* user specific colors */
+			flags &= ~PRINTFLAG_MIRC_COLOR;
+			switch (*ptr) {
+			case FORMAT_STYLE_UNDERLINE:
+				flags ^= PRINTFLAG_UNDERLINE;
+				break;
+			case FORMAT_STYLE_BOLD:
+				flags ^= PRINTFLAG_BOLD;
+				break;
+			case FORMAT_STYLE_REVERSE:
+				flags ^= PRINTFLAG_REVERSE;
+				break;
+			case FORMAT_STYLE_INDENT:
+				flags |= PRINTFLAG_INDENT;
+				break;
+			case FORMAT_STYLE_DEFAULTS:
+				fgcolor = bgcolor = -1;
+				flags &= PRINTFLAG_INDENT;
+				break;
+			default:
+				if (*ptr != FORMAT_COLOR_NOCHANGE) {
+					fgcolor = (unsigned char) *ptr-'0';
+					if (fgcolor <= 7)
+						flags &= ~PRINTFLAG_BOLD;
+					else {
+						/* bold */
+						if (fgcolor != 8) fgcolor -= 8;
+						flags |= PRINTFLAG_BOLD;
+					}
+				}
+				ptr++;
+				if (*ptr != FORMAT_COLOR_NOCHANGE)
+					bgcolor = *ptr-'0';
 			}
-		    }
-                    ptr++;
-		    if ((signed char) *ptr != -2)
-			bgcolor = (signed char) *ptr == -1 ? -1 : *ptr-1;
-                }
-                ptr++;
-                break;
-	    case 3:
-                if (*ptr < 17)
-                {
-		    /* mostly just for irssi's internal use.. */
-		    fgcolor = (*ptr++)-1;
-		    if (*ptr == 0 || *ptr >= 17)
-			bgcolor = -1;
-		    else
-			bgcolor = (*ptr++)-1;
-		    if (fgcolor & 8)
-			flags |= PRINTFLAG_BOLD;
-		    else
-			flags &= ~PRINTFLAG_BOLD;
-		    break;
+			ptr++;
+			break;
+		case 3:
+			/* MIRC color */
+			get_mirc_color((const char **) &ptr,
+				       hide_text_style ? NULL : &fgcolor,
+				       hide_text_style ? NULL : &bgcolor);
+			if (!hide_text_style)
+				flags |= PRINTFLAG_MIRC_COLOR;
+			break;
 		}
 
-                /* MIRC color */
-                if (hide_text_style)
-                {
-                    /* don't show them. */
-                    skip_mirc_color(&ptr);
-                    break;
-                }
-
-		flags |= PRINTFLAG_MIRC_COLOR;
-		if (!isdigit((gint) *ptr) && *ptr != ',')
-		{
-		    fgcolor = -1;
-		    bgcolor = -1;
-		}
-		else
-		{
-		    /* foreground color */
-		    if (*ptr != ',')
-		    {
-			fgcolor = *ptr++-'0';
-			if (isdigit((gint) *ptr))
-			    fgcolor = fgcolor*10 + (*ptr++-'0');
-		    }
-		    if (*ptr == ',')
-		    {
-			/* back color */
-			bgcolor = 0;
-			if (!isdigit((gint) *++ptr))
-			    bgcolor = -1;
-			else
-			{
-			    bgcolor = *ptr++-'0';
-			    if (isdigit((gint) *ptr))
-				bgcolor = bgcolor*10 + (*ptr++-'0');
-			}
-		    }
-		}
-                break;
-        }
-
-        str = ptr;
-    }
-    g_free(dup);
-    signal_emit_id(signal_print_text_finished, 1, window);
+		str = ptr;
+	}
+	g_free(dup);
+	signal_emit_id(signal_print_text_finished, 1, window);
 }
 
-void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text)
+void printtext_multiline(void *server, const char *target, int level,
+			 const char *format, const char *text)
 {
 	char **lines, **tmp;
 

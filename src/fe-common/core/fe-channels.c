@@ -32,6 +32,7 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
 
 static void signal_channel_created(CHANNEL_REC *channel, gpointer automatic)
 {

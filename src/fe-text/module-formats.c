@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "printtext.h"
+#include "formats.h"
 
 FORMAT_REC gui_text_formats[] =
 {

@@ -30,6 +30,8 @@
 #include "ignore.h"
 #include "netsplit.h"
 
+#include "printtext.h"
+
 #define SPLIT_WAIT_TIME 2 /* how many seconds to wait for the QUIT split messages to stop */
 
 static int split_tag;

@@ -30,6 +30,7 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "printtext.h"
 
 static int queryclose_tag, query_auto_close, querycreate_level;
 

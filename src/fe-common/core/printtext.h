@@ -3,21 +3,6 @@
 
 #include "windows.h"
 
-enum {
-	FORMAT_STRING,
-	FORMAT_INT,
-	FORMAT_LONG,
-	FORMAT_FLOAT
-};
-
-typedef struct {
-	char *tag;
-	char *def;
-
-	int params;
-	int paramtypes[10];
-} FORMAT_REC;
-
 #define PRINTFLAG_BOLD          0x01
 #define PRINTFLAG_REVERSE       0x02
 #define PRINTFLAG_UNDERLINE     0x04
@@ -25,10 +10,6 @@ typedef struct {
 #define PRINTFLAG_BLINK         0x10
 #define PRINTFLAG_MIRC_COLOR    0x20
 #define PRINTFLAG_INDENT        0x40
-
-char *output_format_get_text(const char *module, WINDOW_REC *window,
-			     void *server, const char *target,
-			     int formatnum, ...);
 
 void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...);
 void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...);
@@ -67,9 +48,10 @@ void printtext_deinit(void);
 	printformat_module_window(MODULE_NAME, window, level, formatnum, __VA_ARGS__)
 #else
 /* inline/static */
-static
 #ifdef G_CAN_INLINE
-inline
+G_INLINE_FUNC
+#else
+static
 #endif
 void printformat(void *server, const char *target, int level, int formatnum, ...)
 {
@@ -80,9 +62,10 @@ void printformat(void *server, const char *target, int level, int formatnum, ...
 	va_end(va);
 }
 
-static
 #ifdef G_CAN_INLINE
-inline
+G_INLINE_FUNC
+#else
+static
 #endif
 void printformat_window(WINDOW_REC *window, int level, int formatnum, ...)
 {
@@ -93,19 +76,5 @@ void printformat_window(WINDOW_REC *window, int level, int formatnum, ...)
 	va_end(va);
 }
 #endif
-
-/* semi-private functions.. */
-typedef struct {
-	WINDOW_REC *window;
-	void *server;
-	const char *target;
-	int level;
-} TEXT_DEST_REC;
-
-char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
-			      const char *text, va_list va);
-
-/* return the "-!- " text at the start of the line */
-char *get_line_start_text(TEXT_DEST_REC *dest);
 
 #endif

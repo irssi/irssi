@@ -25,6 +25,8 @@
 #include "commands.h"
 #include "levels.h"
 
+#include "printtext.h"
+
 static void sig_module_error(void *number, const char *module, const char *data)
 {
 	switch (GPOINTER_TO_INT(number)) {
