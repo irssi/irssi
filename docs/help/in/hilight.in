@@ -9,6 +9,7 @@
    -line: Hilight the whole line with the hilight color.
    -color: Print the message with <color>. color is in %%code format
            (see docs/formats.txt)
+   -actcolor: Color to show in statusbar activity, or don't change if %%n.
    -level: Match only for <level> messages, default is
            publics,msgs,notices,actions
    -channels: Match only in <channels>
