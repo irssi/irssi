@@ -23,9 +23,6 @@
        something like that :)
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
- - some problems with finding curses? in openbsd it should be -lcurses,
-   not -lncurses..
- - Implement /bind for making keyboard shortcuts.
  - theme problems:
     - you can't change theme
     - some small help about what each format does
