@@ -105,4 +105,7 @@ GSList *columns_sort_list(GSList *list, int rows);
    one after '\'. Returns the expanded character or -1 if error. */
 int expand_escape(const char **data);
 
+/* Escape all '"', "'" and '\' chars with '\' */
+char *escape_string(const char *str);
+
 #endif
