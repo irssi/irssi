@@ -384,7 +384,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	query = get_redirect_nicklist(query, &free_nick);
 
         str = g_strconcat(qserver, " ", query, NULL);
-	server_redirect_event(server, "whois", 1, str, *qserver != '\0',
+	server_redirect_event(server, "whois", 1, str, TRUE,
                               NULL,
 			      "event 318", "event 318",
 			      "event 402", event_402,
@@ -418,7 +418,7 @@ static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
 	server_redirect_event(server, "whowas", 1, nick, -1, NULL,
 			      "event 314", "whowas event",
 			      "event 369", "whowas event end",
-			      "", "event empty", NULL);
+			      "event 406", "event empty", NULL);
 	irc_send_cmdv(server, "WHOWAS %s 1", nick);
 
 	g_free(params);
