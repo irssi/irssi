@@ -122,13 +122,13 @@ printformat(level, format, ...)
 PREINIT:
         STRLEN n_a;
 	TEXT_DEST_REC dest;
-	char *arglist[MAX_FORMAT_PARAMS];
+	char *arglist[MAX_FORMAT_PARAMS+1];
 	int n;
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 2; n < 2+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-2] = n < items ? SvPV(ST(n), n_a) : "";
+	for (n = 2; n < items && n < MAX_FORMAT_PARAMS-2; n++) {
+		arglist[n-2] = SvPV(ST(n), n_a);
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -146,13 +146,13 @@ printformat(server, target, level, format, ...)
 PREINIT:
         STRLEN n_a;
 	TEXT_DEST_REC dest;
-	char *arglist[MAX_FORMAT_PARAMS];
+	char *arglist[MAX_FORMAT_PARAMS+1];
 	int n;
 CODE:
 	format_create_dest(&dest, server, target, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 4; n < 4+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-4] = n < items ? SvPV(ST(n), n_a) : "";
+	for (n = 4; n < items && n < MAX_FORMAT_PARAMS-4; n++) {
+		arglist[n-4] = SvPV(ST(n), n_a);
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -169,13 +169,13 @@ printformat(window, level, format, ...)
 PREINIT:
         STRLEN n_a;
 	TEXT_DEST_REC dest;
-	char *arglist[MAX_FORMAT_PARAMS];
+	char *arglist[MAX_FORMAT_PARAMS+1];
 	int n;
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-3] = n < items ? SvPV(ST(n), n_a) : "";
+	for (n = 3; n < items && n < MAX_FORMAT_PARAMS-3; n++) {
+		arglist[n-3] = SvPV(ST(n), n_a);
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -192,13 +192,13 @@ printformat(item, level, format, ...)
 PREINIT:
         STRLEN n_a;
 	TEXT_DEST_REC dest;
-	char *arglist[MAX_FORMAT_PARAMS];
+	char *arglist[MAX_FORMAT_PARAMS+1];
 	int n;
 CODE:
 	format_create_dest(&dest, item->server, item->name, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 3; n < 3+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-3] = n < items ? SvPV(ST(n), n_a) : "";
+	for (n = 3; n < items && n < MAX_FORMAT_PARAMS-3; n++) {
+		arglist[n-3] = SvPV(ST(n), n_a);
 	}
 
         printformat_perl(&dest, format, arglist);
