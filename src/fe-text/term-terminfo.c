@@ -170,6 +170,13 @@ void term_force_colors(int set)
 	terminfo_setup_colors(current_term, set);
 }
 
+/* Setup scrolling - if fast is TRUE, we'll use the fastest method to
+   scroll, if it's FALSE, we'll use the one that looks cleanest. */
+void term_setup_scroll(int fast)
+{
+        terminfo_setup_scroll(current_term, fast);
+}
+
 /* Clear screen */
 void term_clear(void)
 {
