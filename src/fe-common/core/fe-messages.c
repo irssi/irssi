@@ -123,14 +123,16 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	int for_me, print_channel, level;
 	char *color, *freemsg;
 
+	/* NOTE: this may return NULL if some channel is just closed with
+	   /WINDOW CLOSE and server still sends the few last messages */
 	chanrec = channel_find(server, target);
-	g_return_if_fail(chanrec != NULL);
 
 	for_me = nick_match_msg(chanrec, msg, server->nick);
 	color = for_me ? NULL :
 		hilight_find_nick(target, nick, address, MSGLEVEL_PUBLIC, msg);
 
-	print_channel = !window_item_is_active((WI_ITEM_REC *) chanrec);
+	print_channel = chanrec == NULL ||
+		!window_item_is_active((WI_ITEM_REC *) chanrec);
 	if (!print_channel && settings_get_bool("print_active_channel") &&
 	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
 		print_channel = TRUE;
