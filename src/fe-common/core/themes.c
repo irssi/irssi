@@ -1000,8 +1000,13 @@ static void cmd_format(const char *data)
         cmd_params_free(free_arg);
 }
 
+typedef struct {
+	CONFIG_REC *config;
+        int save_all;
+} THEME_SAVE_REC;
+
 static void module_save(const char *module, MODULE_THEME_REC *rec,
-                        CONFIG_REC *config)
+                        THEME_SAVE_REC *data)
 {
 	CONFIG_NODE *fnode, *node;
 	FORMAT_REC *formats;
@@ -1010,27 +1015,33 @@ static void module_save(const char *module, MODULE_THEME_REC *rec,
         formats = g_hash_table_lookup(default_formats, rec->name);
 	if (formats == NULL) return;
 
-	fnode = config_node_traverse(config, "formats", TRUE);
+	fnode = config_node_traverse(data->config, "formats", TRUE);
 
 	node = config_node_section(fnode, rec->name, NODE_TYPE_BLOCK);
-	for (n = 0; formats[n].def != NULL; n++) {
+	for (n = 1; formats[n].def != NULL; n++) {
                 if (rec->formats[n] != NULL) {
-                        config_node_set_str(config, node, formats[n].tag,
+                        config_node_set_str(data->config, node, formats[n].tag,
                                             rec->formats[n]);
-                }
+		} else if (data->save_all && formats[n].tag != NULL) {
+                        config_node_set_str(data->config, node, formats[n].tag,
+                                            formats[n].def);
+		}
         }
 
         if (node->value == NULL) {
                 /* not modified, don't keep the empty section */
-                config_node_remove(config, fnode, node);
-                if (fnode->value == NULL)
-                        config_node_remove(config, config->mainnode, fnode);
+                config_node_remove(data->config, fnode, node);
+		if (fnode->value == NULL) {
+			config_node_remove(data->config,
+					   data->config->mainnode, fnode);
+		}
         }
 }
 
-static void theme_save(THEME_REC *theme)
+static void theme_save(THEME_REC *theme, int save_all)
 {
 	CONFIG_REC *config;
+	THEME_SAVE_REC data;
 	char *path;
 	int ok;
 
@@ -1050,7 +1061,9 @@ static void theme_save(THEME_REC *theme)
                 }
         }
 
-	g_hash_table_foreach(theme->modules, (GHFunc) module_save, config);
+	data.config = config;
+        data.save_all = save_all;
+	g_hash_table_foreach(theme->modules, (GHFunc) module_save, &data);
 
         /* always save the theme to ~/.irssi/ */
 	path = g_strdup_printf("%s/%s", get_irssi_dir(),
@@ -1065,16 +1078,27 @@ static void theme_save(THEME_REC *theme)
 	config_close(config);
 }
 
-/* save changed formats */
-static void cmd_save(void)
+/* save changed formats, -format saves all */
+static void cmd_save(const char *data)
 {
 	GSList *tmp;
+        GHashTable *optlist;
+        void *free_arg;
+	char *fname;
+	int saveall;
 
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "save", &optlist, &fname))
+		return;
+
+        saveall = g_hash_table_lookup(optlist, "formats") != NULL;
 	for (tmp = themes; tmp != NULL; tmp = tmp->next) {
 		THEME_REC *theme = tmp->data;
 
-		theme_save(theme);
+		theme_save(theme, saveall);
 	}
+
+	cmd_params_free(free_arg);
 }
 
 static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList **list)
@@ -1215,6 +1239,7 @@ void themes_init(void)
 	signal_add("setup reread", (SIGNAL_FUNC) themes_read);
 
 	command_set_options("format", "delete reset");
+	command_set_options("save", "formats");
 }
 
 void themes_deinit(void)

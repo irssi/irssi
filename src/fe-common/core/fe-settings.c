@@ -274,24 +274,32 @@ static void settings_save_confirm(const char *line, char *fname)
 /* SYNTAX: SAVE [<file>] */
 static void cmd_save(const char *data)
 {
-	char *format;
+        GHashTable *optlist;
+	char *format, *fname;
+        void *free_arg;
 
-	if (*data == '\0')
-		data = mainconfig->fname;
-
-	if (!irssi_config_is_changed(data)) {
-		settings_save_fe(data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "save", &optlist, &fname))
 		return;
+
+	if (*fname == '\0')
+		fname = mainconfig->fname;
+
+	if (!irssi_config_is_changed(fname))
+		settings_save_fe(fname);
+	else {
+                /* config file modified outside irssi */
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_CONFIG_MODIFIED, fname);
+
+		format = format_get_text(MODULE_NAME, NULL, NULL, NULL,
+					 TXT_OVERWRITE_CONFIG);
+		keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
+					format, 0, g_strdup(fname));
+		g_free(format);
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    TXT_CONFIG_MODIFIED, data);
-
-	format = format_get_text(MODULE_NAME, NULL, NULL, NULL,
-				 TXT_OVERWRITE_CONFIG);
-	keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
-				format, 0, g_strdup(data));
-        g_free(format);
+	cmd_params_free(free_arg);
 }
 
 static void settings_clean_confirm(const char *line)
