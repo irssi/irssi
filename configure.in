@@ -354,7 +354,8 @@ plugins/sound/Makefile
 plugins/proxy/Makefile
 plugins/external/Makefile
 plugins/bot/Makefile
-stamp.h)
+stamp.h
+irssi.spec)
 
 dnl **
 dnl ** internationalization support

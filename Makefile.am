@@ -39,8 +39,12 @@ EXTRA_DIST = window-views-patch.diff \
 	README-HEBREW \
 	COMMANDS \
 	file2header.sh \
-	irssi.spec.in \
 	irssi.spec \
 	$(conf_DATA) \
 	irssi.gnorba \
 	irssi.desktop
+
+## make rpms
+rpm: Makefile
+	$(MAKE) dist
+	rpm -ta --clean $(PACKAGE)-$(VERSION).tar.gz
