@@ -130,8 +130,9 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 			/* stupid server - assume we have ops
 			   if channel is empty */
 			nicks = g_hash_table_size(chanrec->nicks);
-			irc_nicklist_insert(chanrec, server->nick,
-					    nicks == 0, FALSE, FALSE);
+			ownnick = irc_nicklist_insert(chanrec, server->nick,
+						      nicks == 0, FALSE,
+						      FALSE);
 		}
 		nicklist_set_own(CHANNEL(chanrec), ownnick);
                 chanrec->chanop = chanrec->ownnick->op;
