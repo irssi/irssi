@@ -364,9 +364,16 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0) {
 		target = parse_special(&target, server, item,
 				       NULL, &free_ret, NULL, 0);
-		if (target != NULL && *target == '\0')
+		if (target != NULL && *target == '\0') {
+			if (free_ret)
+				g_free(target);
 			target = NULL;
+			free_ret = FALSE;
+		}
 	}
+
+	if (target == NULL)
+		target = origtarget;
 
 	if (strcmp(target, "*") == 0) {
                 /* send to active channel/query */
