@@ -131,7 +131,7 @@ static void config_parse_warn_missing(CONFIG_REC *rec, CONFIG_NODE *node,
 
 static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, GTokenType expect);
 
-static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
+static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 {
 	CONFIG_NODE *newnode;
 	GTokenType last_char;
@@ -143,7 +143,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 	config_parse_get_token(rec->scanner, node);
 
-	last_char = node->type == NODE_TYPE_LIST ? ',' : ';';
+	last_char = (GTokenType) (node->type == NODE_TYPE_LIST ? ',' : ';');
 
 	/* key */
 	key = NULL;
@@ -154,7 +154,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		config_parse_get_token(rec->scanner, node);
 		if (rec->scanner->token != '=') {
                         g_free(key);
-			return '=';
+			return (GTokenType) '=';
 		}
 
 		config_parse_get_token(rec->scanner, node);
@@ -188,7 +188,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 		config_parse_get_token(rec->scanner, node);
 		if (rec->scanner->token != '}')
-			return '}';
+			return (GTokenType) '}';
 
 		config_parse_warn_missing(rec, node, last_char, FALSE);
 		break;
@@ -203,7 +203,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 		config_parse_get_token(rec->scanner, node);
 		if (rec->scanner->token != ')')
-			return ')';
+			return (GTokenType) ')';
 
 		config_parse_warn_missing(rec, node, last_char, FALSE);
 		break;
