@@ -400,6 +400,7 @@ static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
 
 	params = event_get_params(data, 2, NULL, &channel);
 
+	chans = g_strsplit(channel, ",", -1);
         onewho = strchr(channel, ',') != NULL;
 	if (onewho) {
 		/* instead of multiple End of WHO replies we get
@@ -409,13 +410,12 @@ static void event_end_of_who(const char *data, IRC_SERVER_REC *server)
 
 		/* check that the WHO actually did return something
 		   (that it understood #chan1,#chan2,..) */
-		chanrec = channel_find(server, channel);
+		chanrec = channel_find(server, chans[0]);
 		nick = nicklist_find(chanrec, server->nick);
 		if (nick->host == NULL)
 			server->no_multi_who = TRUE;
 	}
 
-	chans = g_strsplit(channel, ",", -1);
 	for (n = 0; chans[n] != NULL; n++) {
 		chanrec = channel_find(server, chans[n]);
 		if (chanrec == NULL)
