@@ -31,10 +31,17 @@
 
 static int commands_equal(COMMAND_REC *rec, COMMAND_REC *rec2)
 {
+	int i;
+
 	if (rec->category == NULL && rec2->category != NULL)
 		return -1;
 	if (rec2->category == NULL && rec->category != NULL)
 		return 1;
+	if (rec->category != NULL && rec2->category != NULL) {
+		i = strcmp(rec->category, rec2->category);
+		if (i != 0)
+			return i;
+	}
 
 	return strcmp(rec->cmd, rec2->cmd);
 }
