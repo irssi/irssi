@@ -461,7 +461,8 @@ static void log_line(WINDOW_REC *window, SERVER_REC *server,
 	g_strfreev(lines);
 }
 
-static void sig_printtext_stripped(TEXT_DEST_REC *dest, const char *text)
+static void sig_printtext(TEXT_DEST_REC *dest, const char *text,
+			  const char *stripped)
 {
 	if (skip_next_printtext) {
 		skip_next_printtext = FALSE;
@@ -469,7 +470,7 @@ static void sig_printtext_stripped(TEXT_DEST_REC *dest, const char *text)
 	}
 
 	log_line(dest->window, dest->server, dest->target,
-		 dest->level, text);
+		 dest->level, stripped);
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module,
@@ -631,7 +632,7 @@ void fe_log_init(void)
 	command_bind("log stop", NULL, (SIGNAL_FUNC) cmd_log_stop);
 	command_bind("window log", NULL, (SIGNAL_FUNC) cmd_window_log);
 	command_bind("window logfile", NULL, (SIGNAL_FUNC) cmd_window_logfile);
-	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
+	signal_add_first("print text", (SIGNAL_FUNC) sig_printtext);
 	signal_add("window item destroy", (SIGNAL_FUNC) sig_window_item_destroy);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
@@ -657,7 +658,7 @@ void fe_log_deinit(void)
 	command_unbind("log stop", (SIGNAL_FUNC) cmd_log_stop);
 	command_unbind("window log", (SIGNAL_FUNC) cmd_window_log);
 	command_unbind("window logfile", (SIGNAL_FUNC) cmd_window_logfile);
-	signal_remove("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
+	signal_remove("print text", (SIGNAL_FUNC) sig_printtext);
 	signal_remove("window item destroy", (SIGNAL_FUNC) sig_window_item_destroy);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);

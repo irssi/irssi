@@ -35,7 +35,6 @@
 static int beep_msg_level, beep_when_away, beep_when_window_active;
 
 static int signal_gui_print_text;
-static int signal_print_text_stripped;
 static int signal_print_text;
 static int signal_print_text_finished;
 static int signal_print_format;
@@ -150,7 +149,7 @@ void printformat_module_gui(const char *module, int formatnum, ...)
 
 static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
-	char *str, *tmp;
+	char *str, *tmp, *stripped;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
@@ -159,13 +158,12 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
-	/* send the plain text version for logging etc.. */
-	tmp = strip_codes(str);
-	signal_emit_id(signal_print_text_stripped, 2, dest, tmp);
-	g_free(tmp);
+	/* send both the formatted + stripped (for logging etc.) */
+	stripped = strip_codes(str);
+	signal_emit_id(signal_print_text, 3, dest, str, stripped);
 
-	signal_emit_id(signal_print_text, 2, dest, str);
 	g_free(str);
+        g_free(stripped);
 }
 
 /* append string to `out', expand newlines. */
@@ -434,7 +432,6 @@ void printtext_init(void)
 {
 	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
-	signal_print_text_stripped = signal_get_uniq_id("print text stripped");
 	signal_print_text = signal_get_uniq_id("print text");
 	signal_print_text_finished = signal_get_uniq_id("print text finished");
 	signal_print_format = signal_get_uniq_id("print format");

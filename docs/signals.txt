@@ -254,8 +254,7 @@ keyboard.c:
  "keyinfo destroyed", KEYINFO_REC
 
 printtext.c:
- "print text", TEXT_DEST_REC *dest, char *text
- "print text stripped", TEXT_DEST_REC *dest, char *text
+ "print text", TEXT_DEST_REC *dest, char *text, char *stripped
 
 themes.c:
  "theme created", THEME_REC
