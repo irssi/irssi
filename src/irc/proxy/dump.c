@@ -171,10 +171,10 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 			first = TRUE;
 		}
 
-		if (first) {
-			g_string_append_c(str, ' ');
+		if (first)
 			first = FALSE;
-		}
+		else
+			g_string_append_c(str, ' ');
 
 		if (nick->op)
                         g_string_append_c(str, '@');
