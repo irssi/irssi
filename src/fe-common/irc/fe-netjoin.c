@@ -325,10 +325,26 @@ static int netjoin_set_nickmode(NETJOIN_REC *rec, const char *channel,
 				char mode)
 {
 	GSList *pos;
+	char oldmode = 0;
 
-	pos = gslist_find_icase_string(rec->now_channels, channel);
+	for (pos = rec->now_channels; pos != NULL; pos = pos->next) {
+		char *chan = pos->data;
+		char *realchannel = chan +
+			(isnickflag(*chan) && ischannel(chan[1]));
+		if (strcasecmp(realchannel, channel) == 0) {
+			if (strcasecmp(chan, channel) != 0)
+				oldmode = chan[0];
+			break;
+		}
+	}
+
 	if (pos == NULL)
 		return FALSE;
+
+	if (oldmode == '@')
+		return TRUE;
+	if (oldmode == '%' && mode == '+')
+		return TRUE;
 
 	g_free(pos->data);
 	pos->data = g_strdup_printf("%c%s", mode, channel);

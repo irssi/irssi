@@ -132,6 +132,8 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 		    chanrec->nick_count <= netsplit_nicks_hide_threshold) {
 			if (splitchan->op)
 				g_string_append_c(chanrec->nicks, '@');
+			else if (splitchan->voice)
+				g_string_append_c(chanrec->nicks, '+');
 			g_string_sprintfa(chanrec->nicks, "%s, ", split->nick);
 
 			if (chanrec->nick_count == netsplit_max_nicks)
