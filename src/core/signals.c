@@ -39,6 +39,7 @@ typedef struct {
 
 	int emitting; /* signal is being emitted */
 	int stop_emit; /* this signal was stopped */
+	int continue_emit; /* this signal emit was continued elsewhere */
         int remove_count; /* hooks were removed from signal */
 
         SignalHook *hooks;
@@ -51,6 +52,7 @@ void *signal_user_data;
 
 static GHashTable *signals;
 static Signal *current_emitted_signal;
+static SignalHook *current_emitted_hook;
 
 #define signal_ref(signal) ++(signal)->refcount
 #define signal_unref(signal) (signal_unref_full(signal, TRUE))
@@ -208,12 +210,13 @@ static void signal_hooks_clean(Signal *rec)
 	}
 }
 
-static int signal_emit_real(Signal *rec, int params, va_list va)
+static int signal_emit_real(Signal *rec, int params, va_list va,
+			    SignalHook *first_hook)
 {
 	const void *arglist[SIGNAL_MAX_ARGUMENTS];
 	Signal *prev_emitted_signal;
-        SignalHook *hook;
-	int i, stopped, stop_emit_count;
+        SignalHook *hook, *prev_emitted_hook;
+	int i, stopped, stop_emit_count, continue_emit_count;
 
 	for (i = 0; i < SIGNAL_MAX_ARGUMENTS; i++)
 		arglist[i] = i >= params ? NULL : va_arg(va, const void *);
@@ -221,18 +224,22 @@ static int signal_emit_real(Signal *rec, int params, va_list va)
 	/* signal_stop_by_name("signal"); signal_emit("signal", ...);
 	   fails if we compare rec->stop_emit against 0. */
 	stop_emit_count = rec->stop_emit;
+	continue_emit_count = rec->continue_emit;
 
         signal_ref(rec);
 
 	stopped = FALSE;
 	rec->emitting++;
 
-	for (hook = rec->hooks; hook != NULL; hook = hook->next) {
+	prev_emitted_signal = current_emitted_signal;
+	prev_emitted_hook = current_emitted_hook;
+	current_emitted_signal = rec;
+
+	for (hook = first_hook; hook != NULL; hook = hook->next) {
 		if (hook->func == NULL)
 			continue; /* removed */
 
-		prev_emitted_signal = current_emitted_signal;
-		current_emitted_signal = rec;
+		current_emitted_hook = hook;
 #if SIGNAL_MAX_ARGUMENTS != 6
 #  error SIGNAL_MAX_ARGUMENTS changed - update code
 #endif
@@ -240,7 +247,8 @@ static int signal_emit_real(Signal *rec, int params, va_list va)
 		hook->func(arglist[0], arglist[1], arglist[2], arglist[3],
 			   arglist[4], arglist[5]);
 
-		current_emitted_signal = prev_emitted_signal;
+		if (rec->continue_emit != continue_emit_count)
+			rec->continue_emit--;
 
 		if (rec->stop_emit != stop_emit_count) {
 			stopped = TRUE;
@@ -248,14 +256,16 @@ static int signal_emit_real(Signal *rec, int params, va_list va)
 			break;
 		}
 	}
+
+	current_emitted_signal = prev_emitted_signal;
+	current_emitted_hook = prev_emitted_hook;
+
 	rec->emitting--;
 	signal_user_data = NULL;
 
 	if (!rec->emitting) {
-		if (rec->stop_emit != 0) {
-			/* signal_stop() used too many times */
-                        rec->stop_emit = 0;
-		}
+		g_assert(rec->stop_emit == 0);
+		g_assert(rec->continue_emit == 0);
 
                 if (rec->remove_count > 0)
 			signal_hooks_clean(rec);
@@ -278,7 +288,7 @@ int signal_emit(const char *signal, int params, ...)
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec != NULL) {
 		va_start(va, params);
-		signal_emit_real(rec, params, va);
+		signal_emit_real(rec, params, va, rec->hooks);
 		va_end(va);
 	}
 
@@ -296,11 +306,33 @@ int signal_emit_id(int signal_id, int params, ...)
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec != NULL) {
 		va_start(va, params);
-		signal_emit_real(rec, params, va);
+		signal_emit_real(rec, params, va, rec->hooks);
 		va_end(va);
 	}
 
 	return rec != NULL;
+}
+
+void signal_continue(int params, ...)
+{
+	Signal *rec;
+	va_list va;
+
+	rec = current_emitted_signal;
+	if (rec == NULL || rec->emitting <= rec->continue_emit)
+		g_warning("signal_continue() : no signals are being emitted currently");
+	else {
+		va_start(va, params);
+
+		/* stop the signal */
+		if (rec->emitting > rec->stop_emit)
+			rec->stop_emit++;
+
+		/* re-emit */
+		rec->continue_emit++;
+		signal_emit_real(rec, params, va, current_emitted_hook->next);
+		va_end(va);
+	}
 }
 
 /* stop the current ongoing signal emission */

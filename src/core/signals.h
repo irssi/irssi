@@ -43,6 +43,9 @@ void signal_remove_id(int signal_id, SIGNAL_FUNC func, void *user_data);
 int signal_emit(const char *signal, int params, ...);
 int signal_emit_id(int signal_id, int params, ...);
 
+/* continue currently emitted signal with different parameters */
+void signal_continue(int params, ...);
+
 /* stop the current ongoing signal emission */
 void signal_stop(void);
 /* stop ongoing signal emission by signal name */

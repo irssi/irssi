@@ -77,6 +77,25 @@ CODE:
 	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5]);
 
 void
+signal_continue(...)
+CODE:
+	void *p[SIGNAL_MAX_ARGUMENTS];
+	int n;
+
+	memset(p, 0, sizeof(p));
+	for (n = 0; n < items && n < SIGNAL_MAX_ARGUMENTS; n++) {
+		if (SvPOKp(ST(n)))
+			p[n] = SvPV(ST(n), PL_na);
+		else if (irssi_is_ref_object(ST(n)))
+			p[n] = irssi_ref_object(ST(n));
+		else if (SvROK(ST(n)))
+			p[n] = (void *) SvIV((SV*)SvRV(ST(n)));
+		else
+			p[n] = NULL;
+	}
+	signal_continue(items, p[0], p[1], p[2], p[3], p[4], p[5]);
+
+void
 signal_add(...)
 CODE:
 	if (items != 1 && items != 2)
