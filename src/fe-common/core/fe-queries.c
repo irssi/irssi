@@ -275,32 +275,28 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	cmd_params_free(free_arg);
 }
 
-static int window_has_query(WINDOW_REC *window)
+static void window_reset_query_timestamps(WINDOW_REC *window)
 {
 	GSList *tmp;
 
-	g_return_val_if_fail(window != NULL, FALSE);
+	if (window == NULL)
+                return;
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		if (IS_QUERY(tmp->data))
-			return TRUE;
-	}
+		QUERY_REC *query = QUERY(tmp->data);
 
-	return FALSE;
+		if (query != NULL)
+                        query->last_unread_msg = time(NULL);
+	}
 }
 
 static void sig_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
 {
-	if (query_auto_close <= 0)
-		return;
-
-	/* reset the window's last_line timestamp so that query doesn't get
-	   closed immediately after switched to the window, or after changed
-	   to some other window from it */
-	if (window != NULL && window_has_query(window))
-		window->last_line = time(NULL);
-	if (old_window != NULL && window_has_query(old_window))
-		old_window->last_line = time(NULL);
+	/* reset the queries last_unread_msg so query doesn't get closed
+	   immediately after switched to the window, or after changed to
+	   some other window from it */
+        window_reset_query_timestamps(window);
+        window_reset_query_timestamps(old_window);
 }
 
 static int sig_query_autoclose(void)
@@ -315,8 +311,8 @@ static int sig_query_autoclose(void)
 
 		next = tmp->next;
 		window = window_item_window((WI_ITEM_REC *) rec);
-		if (window != active_win && rec->data_level == 0 &&
-		    now-window->last_line > query_auto_close)
+		if (window != active_win && rec->data_level < DATA_LEVEL_MSG &&
+		    now-rec->last_unread_msg > query_auto_close)
 			query_destroy(rec);
 	}
         return 1;
@@ -325,8 +321,13 @@ static int sig_query_autoclose(void)
 static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
+	QUERY_REC *query;
+
 	/* create query window if needed */
-	privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
+	query = privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
+
+	/* reset the query's last_unread_msg timestamp */
+        query->last_unread_msg = time(NULL);
 }
 
 static void read_settings(void)
