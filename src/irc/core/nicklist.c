@@ -502,7 +502,7 @@ static void event_userhost(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 2, NULL, &hosts);
 
 	phosts = g_strsplit(hosts, " ", -1);
-	for (pos = phosts; pos != NULL; pos++) {
+	for (pos = phosts; *pos != NULL; pos++) {
 		ptr = strchr(*pos, '=');
 		if (ptr == NULL) continue;
 		*ptr++ = '\0';

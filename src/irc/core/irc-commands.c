@@ -824,6 +824,7 @@ void irc_commands_init(void)
 	command_bind("rping", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("squit", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind("uping", NULL, (SIGNAL_FUNC) command_self);
+	command_bind("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("quote", NULL, (SIGNAL_FUNC) cmd_quote);
 	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
 	command_bind("wallops", NULL, (SIGNAL_FUNC) command_1self);
@@ -887,6 +888,7 @@ void irc_commands_deinit(void)
 	command_unbind("rping", (SIGNAL_FUNC) command_self);
 	command_unbind("squit", (SIGNAL_FUNC) command_2self);
 	command_unbind("uping", (SIGNAL_FUNC) command_self);
+	command_unbind("userhost", (SIGNAL_FUNC) command_self);
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
