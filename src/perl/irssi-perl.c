@@ -33,6 +33,15 @@
 #include "commands.h"
 #include "misc.h"
 
+/* For compatibility with perl 5.004 and older */
+#ifndef ERRSV
+#  define ERRSV GvSV(errgv)
+#endif
+
+#ifndef PL_perl_destruct_level
+#  define PL_perl_destruct_level perl_destruct_level
+#endif
+
 extern void xs_init(void);
 
 typedef struct {
@@ -664,7 +673,7 @@ void irssi_perl_init(void)
 	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_perlflush);
 	signal_grabbed = siglast_grabbed = FALSE;
 
-        perl_destruct_level = 1;
+        PL_perl_destruct_level = 1;
 	irssi_perl_start();
 	irssi_perl_autorun();
 }
