@@ -352,7 +352,8 @@ int module_load_sub(const char *path, const char *submodule, char **prefixes)
 static void module_file_deinit_gmodule(MODULE_FILE_REC *file)
 {
 	/* call the module's deinit() function */
-        file->module_deinit();
+        if (file->module_deinit != NULL)
+		file->module_deinit();
 
 	if (file->defined_module_name != NULL) {
 		settings_remove_module(file->defined_module_name);
