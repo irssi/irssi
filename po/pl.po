@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-04-17 12:01+0200\n"
+"POT-Creation-Date: 2000-05-15 17:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,2876 +14,1446 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: ENCODING\n"
 
-#: src/irc-base/network.c:417
-msgid "Host not found"
-msgstr ""
-
-#: src/irc-base/network.c:419
-msgid "No IP address found for name"
-msgstr ""
-
-#: src/irc-base/network.c:421
-msgid "A non-recovable name server error occurred"
-msgstr ""
-
-#: src/irc-base/network.c:423
-msgid "A temporary error on an authoritative name server"
-msgstr ""
-
-#: src/irc-base/args.c:51
+#: src/core/args.c:51
 #, c-format
 msgid ""
 "Error on option %s: %s.\n"
 "Run '%s --help' to see a full list of available command line options.\n"
 msgstr ""
 
-#. create unload menu item for all plugins
-#: src/gui-gnome/dialog-plugins.c:219 src/irc-extra/plugins.c:132
-msgid "Unload"
+#. Display the text when we have already waited for a while
+#: src/core/net-disconnect.c:149
+msgid "Please wait, waiting for servers to close connections..\n"
+msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
+
+#: src/core/network.c:417
+msgid "Host not found"
 msgstr ""
 
-#: src/ui-common/ui-common.c:40
-msgid "Automatically connect to server/ircnet"
+#: src/core/network.c:419
+msgid "No IP address found for name"
 msgstr ""
 
-#: src/ui-common/ui-common.c:40 src/ui-common/ui-common.c:41
-msgid "SERVER"
-msgstr "SERWER"
-
-#: src/ui-common/ui-common.c:41
-msgid "Autoconnect password"
-msgstr "Has³o autopo³±czenia"
-
-#: src/ui-common/ui-common.c:42
-msgid "Autoconnect port"
-msgstr "Port autopo³±czenia"
-
-#: src/ui-common/ui-common.c:42
-msgid "PORT"
-msgstr "PORT"
-
-#: src/ui-common/ui-common.c:43
-msgid "Disable autoconnecting"
-msgstr "Wy³±czenie autopo³±czenia"
-
-#: src/ui-common/ui-common.c:44
-msgid "Specify nick to use"
+#: src/core/network.c:421
+msgid "A non-recovable name server error occurred"
 msgstr ""
 
-#. ----
-#: src/ui-common/ui-formats.c:31
-msgid "Line beginning"
+#: src/core/network.c:423
+msgid "A temporary error on an authoritative name server"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:33
-msgid "%B-%W!%B-%n "
-msgstr "%B-%W!%B-%n"
-
-#: src/ui-common/ui-formats.c:34
-msgid "%B-%W!%B- %WIrssi:%n "
-msgstr "%B-%W!%B- %WIrssi:%n"
-
-#: src/ui-common/ui-formats.c:35
-#, fuzzy
-msgid "[$[-2.0]3:$[-2.0]4] "
-msgstr "[$[-2.0]3:$[-2.0]4] "
-
-#: src/ui-common/ui-formats.c:36
-#, fuzzy
-msgid "Day changed to $[-2.0]1-$[-2.0]0 $2"
-msgstr "Zmiana daty na $[-2.0]1-$[-2.0]0 $2"
-
-#. ----
-#: src/gui-gnome/dialog-links.c:351 src/gui-gnome/setup-servers.c:266
-#: src/gui-gnome/setup-servers.c:499 src/ui-common/ui-formats.c:39
-msgid "Server"
-msgstr "Serwer"
-
-#: src/ui-common/ui-formats.c:41
-#, fuzzy
-msgid "Looking up %_$0%_"
-msgstr "Szukam serwera %_$0%_"
-
-#: src/ui-common/ui-formats.c:42
-#, fuzzy
-msgid "Connecting to %_$0%_ %K[%n$1%K]%n port %_$2%_"
-msgstr "£±czenie do %_$0%_ %K[%n$1%K]%n port %_$2%_"
-
-#: src/ui-common/ui-formats.c:43
-#, fuzzy
-msgid "Connection to %_$0%_ established"
-msgstr "Po³±czenie z %_$0%_ nawi±zane"
-
-#: src/ui-common/ui-formats.c:44
-#, fuzzy
-msgid "Unable to connect server %_$0%_ port %_$1%_ %K[%n$2%K]"
-msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_ %K[%n$2%K]"
-
-#: src/ui-common/ui-formats.c:45
-#, fuzzy
-msgid "Connection lost to %_$0%_"
-msgstr "Stracone po³±czenie do %_$0%_"
-
-#: src/ui-common/ui-formats.c:46
-#, fuzzy
-msgid "No PONG reply from server %_$0%_ in $1 seconds, disconnecting"
-msgstr "Brak odpowiedzi PONG z serwera %_$0%_ przez $1 sekund, roz³±czenie"
-
-#: src/ui-common/ui-formats.c:47
-#, fuzzy
-msgid "Disconnected from %_$0%_ %K[%n$1%K]"
-msgstr "%c%_$1%_%n zosta³ wykopany z $2 przez %_$3%_ %K[%n$4%K]"
-
-#: src/ui-common/ui-formats.c:48
-#, fuzzy
-msgid "Changed to %_$2%_ server %_$1%_"
-msgstr "Nieignorowanie %_$1%_ od %_$2%_"
-
-#: src/ui-common/ui-formats.c:49
-msgid "Unknown server tag %_$0%_"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:50
-msgid "%_$0%_: $1:$2 ($3)"
-msgstr "%_$0%_: $1:$2 ($3)"
-
-#: src/ui-common/ui-formats.c:51
-msgid "%_$0%_: $1:$2 ($3) (connecting...)"
-msgstr "%_$0%_: $1:$2 ($3) (³±cze w trakcie...)"
-
-#: src/ui-common/ui-formats.c:52
-msgid "%_$0%_: $1:$2 ($3) ($5 left before reconnecting)"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:53
-#, fuzzy
-msgid "Removed reconnection to server %_$0%_ port %_$1%_"
-msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_"
-
-#: src/ui-common/ui-formats.c:54
-#, fuzzy
-msgid "Reconnection tag %_$0%_ not found"
-msgstr "Po³±czenie z %_$1% nawi±zane"
-
-#. ----
-#: src/gui-gnome/dialog-status.c:86 src/gui-gnome/gui-event-whois.c:42
-#: src/gui-gnome/gui-menu-commands.c:264 src/gui-gnome/setup-lookandfeel.c:95
-#: src/ui-common/ui-formats.c:57
-msgid "Channels"
-msgstr "Kana³y"
-
-#: src/ui-common/ui-formats.c:59
-#, fuzzy
-msgid "%c%_$0%_ %K[%c$1%K]%n has joined %_$2"
-msgstr "%c%_$0%_ %K[%c$2%K]%n przy³±czy³ siê do %_$2"
-
-#: src/ui-common/ui-formats.c:60
-#, fuzzy
-msgid "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%K]"
-msgstr "%c$0 %K[%n$1%K]%n opu¶ci³ %_$2%_ %K[%n$3%K]"
-
-#: src/ui-common/ui-formats.c:61
-#, fuzzy
-msgid "You are now talking to channel %_$0%_"
-msgstr "Teraz rozmawiasz na kanale %_$0%_"
-
-#: src/ui-common/ui-formats.c:62
-#, fuzzy
-msgid ""
-"Cannot join to channel %_$0%_ %K(%nYou have joined to too many channels%K)"
-msgstr ""
-"Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nJeste¶ na zbyt du¿ej liczbie "
-"kana³ów%K)"
-
-#: src/ui-common/ui-formats.c:63
-#, fuzzy
-msgid "Cannot join to channel %_$0%_ %K(%nChannel is full%K)"
-msgstr "Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nKana³ jest pe³ny%K)"
-
-#: src/ui-common/ui-formats.c:64
-#, fuzzy
-msgid "Cannot join to channel %_$0%_ %K(%nYou must be invited%K)"
-msgstr ""
-"Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%Wymagane jest zaproszenie%K)"
-
-#: src/ui-common/ui-formats.c:65
-#, fuzzy
-msgid "Cannot join to channel %_$0%_ %K(%nYou are banned%K)"
-msgstr ""
-"Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nMasz zakaz wej¶cia na kana³ "
-"(ban)%K)"
-
-#: src/ui-common/ui-formats.c:66
-#, fuzzy
-msgid "Cannot join to channel %_$0%_ %K(%nBad channel key%K)"
-msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nZ³y klucz do kana³u%K)"
-
-#: src/ui-common/ui-formats.c:67
-#, fuzzy
-msgid "Cannot join to channel %_$0%_ %K(%nBad channel mask%K)"
-msgstr "Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nnipoprawna maska kana³u%K)"
-
-#: src/ui-common/ui-formats.c:68
-#, fuzzy
-msgid ""
-"Cannot join to channel %_$0%_ %K(%nChannel is temporarily unavailable%K)"
-msgstr ""
-"Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nKana³ chwilowo niedostêpny%K)"
-
-#: src/ui-common/ui-formats.c:69
-#, fuzzy
-msgid "%c$0%n was kicked from %_$1%_ by %_$2%_ %K[%n$3%K]"
-msgstr "%c%_$0%_%n zosta³ wykopany z %_$1%_ przez %_$2%_ %K[%n$3%K]"
-
-#: src/ui-common/ui-formats.c:70
-#, fuzzy
-msgid "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]"
-msgstr "%c%_$0%_ %K[%n$1%K]%n opu¶ci³ IRC %K[%n$3%K]"
-
-#: src/ui-common/ui-formats.c:71
-#, fuzzy
-msgid "%_$0%_ invites you to %_$1"
-msgstr "%_$0%_ zaprasza ciê na %_$1"
-
-#: src/ui-common/ui-formats.c:72
-#, fuzzy
-msgid "%K[%g%_Users%_%K(%g$0%K)]%n $1"
-msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
-
-#: src/ui-common/ui-formats.c:73
-msgid ""
-"%g%_$0%_%K:%n Total of %_$1%_ nicks %K[%n%_$2%_ ops, %_$3%_ voices, %_$4%_ "
-"normal%K]"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:74
-msgid "Channel %_$0%_ created $1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:75
-msgid "Topic for %c$0%K:%n $1"
-msgstr "Tytu³ dla %c$0%K:%n $1"
-
-#: src/ui-common/ui-formats.c:76
+#: src/core/settings.c:262
 #, c-format
-msgid "No topic set for %c$0"
+msgid "Couldn't create %s/.irssi directory"
 msgstr ""
 
-#: src/ui-common/ui-formats.c:77
-msgid "%_$0%_ changed the topic of %c$1%n to%K:%n $2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:78
-msgid "Topic unset by %_$0%_ on %c$1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:79
-#, fuzzy
-msgid "Topic set by %_$0%_ %K[%n$1%K]"
-msgstr "Twój nick jest u¿ywany przez %_$4%_ %K[%n$2@$3%K]"
-
-#: src/ui-common/ui-formats.c:80
-msgid "mode/%c$0 %K[%n$1%K]%n by %_$2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:81
-msgid "%RServerMode/%c$0 %K[%n$1%K]%n by %_$2"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:82
-msgid "mode/%c$0 %K[%n$1%K]"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:83
-msgid "Ban type changed to %_$0"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:84
-msgid "%_$0%_: ban %c$1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:85
-msgid "%_$0%_: ban %c$1 %K[%nby %_$2%_, $3 secs ago%K]"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:86
-msgid "%_$0%_: ban exception %c$1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:87
-msgid "%_$0%_: ban exception %c$1 %K[%nby %_$2%_, $3 secs ago%K]"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:88
-#, fuzzy
-msgid "%_$0%_: invite %c$1"
-msgstr "%_$1%_ zaprasza ciê na %_$2"
-
-#: src/ui-common/ui-formats.c:89
-#, fuzzy
-msgid "$0: No such channel"
-msgstr "$1: Kana³ nieznaleziony"
-
-#: src/ui-common/ui-formats.c:90
-msgid "Join to %_$0%_ was synced in %_$1%_ secs"
-msgstr ""
-
-#. ----
-#: src/gui-gnome/dialog-dcc.c:169 src/gui-gnome/dialog-notifylist.c:243
-#: src/gui-gnome/gui-event-who.c:254 src/gui-gnome/setup-ircnets.c:197
-#: src/gui-gnome/setup-servers.c:564 src/ui-common/ui-formats.c:93
-msgid "Nick"
-msgstr "Nick"
-
-#: src/ui-common/ui-formats.c:95
-msgid "Mode change %K[%n%_$0%_%K]%n for user %c$1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:96
-msgid "Your user mode is %K[%n%_$0%_%K]"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:97
-msgid "You have been marked as being away"
-msgstr "Jeste¶ zaznaczony jako nieobecny"
-
-#: src/ui-common/ui-formats.c:98
-msgid "You are no longer marked as being away"
-msgstr "Nie jeste¶ ju¿ zaznaczony jako nieobecny"
-
-#: src/ui-common/ui-formats.c:99
-#, fuzzy
-msgid "$0 is away: $1"
-msgstr "$1 jest nieobecny: $2"
-
-#: src/ui-common/ui-formats.c:100
-#, fuzzy
-msgid "$0: No such nick/channel"
-msgstr "$1: Nie znaleleziony nick/kana³"
-
-#: src/ui-common/ui-formats.c:101
-#, fuzzy, c-format
-msgid "You're now known as %c$0"
-msgstr "Jeste¶ znany jako %c$0"
-
-#: src/ui-common/ui-formats.c:102
-#, fuzzy
-msgid "%_$0%_ is now known as %c$1"
-msgstr "%_$0%_ jest teraz znany jako %c$1"
-
-#: src/ui-common/ui-formats.c:103
-#, fuzzy
-msgid "Nick %_$0%_ is already in use"
-msgstr "Nick %_$0%_ jest ju¿ u¿ywany"
-
-#: src/ui-common/ui-formats.c:104
-#, fuzzy
-msgid "Nick %_$0%_ is temporarily unavailable"
-msgstr "Nick %_$0%_ jest chwilowo niedostêpny"
-
-#: src/ui-common/ui-formats.c:105
-#, fuzzy
-msgid "Your nick is owned by %_$3%_ %K[%n$1@$2%K]"
-msgstr "Twój nick jest u¿ywany przez %_$3%_ %K[%n$1@$2%K]"
-
-#. ----
-#: src/ui-common/ui-formats.c:108
-msgid "Who queries"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:110
-#, fuzzy
-msgid "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3"
-msgstr "%c%_$0%_ %K[%n$1@$2%K]%n% przy³±czy³ siê do %_$3"
-
-#: src/ui-common/ui-formats.c:111
-#, fuzzy
-msgid " idle     : $1 hours $2 mins $3 secs"
-msgstr " bezczynny : $1 godzin $2 minut $3 sekund"
-
-#: src/ui-common/ui-formats.c:112
-#, fuzzy
-msgid " idle     : $1 hours $2 mins $3 secs %K[%nsignon: $4%K]"
-msgstr " bezczynny : $1 godzin $2 minut $3 sekund %K[%nsignon: $4%K]"
-
-#: src/ui-common/ui-formats.c:113
-#, fuzzy
-msgid " server   : $1 %K[%n$2%K]"
-msgstr " serwer    : $1 %K[%n$2%K]"
-
-#: src/ui-common/ui-formats.c:114
-msgid "          : %_IRC operator%_"
-msgstr "           : %_operator IRC%_"
-
-#: src/ui-common/ui-formats.c:115
-#, fuzzy
-msgid " channels : $1"
-msgstr " kana³y    : $1"
-
-#: src/ui-common/ui-formats.c:116
-#, fuzzy
-msgid " away     : $1"
-msgstr " nieobeczy  : $1"
-
-#: src/ui-common/ui-formats.c:117
-msgid "End of WHOIS"
-msgstr "Koniec WHOIS"
-
-#: src/ui-common/ui-formats.c:118
-msgid "$[-10]0 %|%_$[!9]1%_ $[!3]2 $[!2]3 $4@$5 %K(%W$6%K)"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:119
-msgid "End of /WHO list"
-msgstr "Koniec listy /WHO"
-
-#. ----
-#: src/ui-common/ui-formats.c:122
-msgid "Your messages"
-msgstr "Twoje wiadomo¶ci"
-
-#: src/ui-common/ui-formats.c:124
-#, fuzzy
-msgid "%K<%n$2%W$0%K>%n %|$1"
-msgstr "%K<%n$2%W$0%K>%n %|$1"
-
-#: src/ui-common/ui-formats.c:125
-#, fuzzy
-msgid "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
-msgstr "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
-
-#: src/ui-common/ui-formats.c:126
-#, fuzzy
-msgid "%K[%rmsg%K(%R$0%K)]%n $1"
-msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
-
-#: src/ui-common/ui-formats.c:127
-#, fuzzy
-msgid "%K<%W$2%K>%n %|$1"
-msgstr "%K<%W$2%K>%n %|$1"
-
-#: src/ui-common/ui-formats.c:128
-#, fuzzy
-msgid "%K[%rnotice%K(%R$0%K)]%n $1"
-msgstr "%K[%rdcc%K(%R$1%K)]%n $2"
-
-#: src/ui-common/ui-formats.c:129 src/ui-common/ui-formats.c:152
-#, fuzzy
-msgid "%W * $0%n $1"
-msgstr "%W * $1%n $2"
-
-#: src/ui-common/ui-formats.c:130
-#, fuzzy
-msgid "%K[%rctcp%K(%R$0%K)]%n $1 $2"
-msgstr "%K[%rctcp%K(%R$1%K)]%n $2 $3"
-
-#: src/ui-common/ui-formats.c:131
-#, fuzzy
-msgid "%K[%rdcc%K(%R$0%K)]%n $1"
-msgstr "%K[%rdcc%K(%R$1%K)]%n $2"
-
-#. ----
-#: src/ui-common/ui-formats.c:134
-msgid "Received messages"
-msgstr "Otrzymane wiadomo¶ci"
-
-#: src/ui-common/ui-formats.c:136
-#, fuzzy
-msgid "%K<%n$2%Y$0%K>%n %|$1"
-msgstr "%K<%Y$1%K>%n $2"
-
-#: src/ui-common/ui-formats.c:137
-#, fuzzy
-msgid "%K<%n$3%Y$0%K:%c$1%K>%n %|$2"
-msgstr "%K<%Y$1%K>%n $2"
-
-#: src/ui-common/ui-formats.c:138
-#, fuzzy
-msgid "%K<%n$3$0$1%K>%n %|$2"
-msgstr "%K<%n$1%K>%n $2"
-
-#: src/ui-common/ui-formats.c:139
-#, fuzzy
-msgid "%K<%n$4$0$1%K:%c$2%K>%n %|$3"
-msgstr "%K<%n$1%K:%c$2%K>%n $3"
-
-#: src/ui-common/ui-formats.c:140
-#, fuzzy
-msgid "%K<%n$2$0%K>%n %|$1"
-msgstr "%K<%n$1%K>%n $2"
-
-#: src/ui-common/ui-formats.c:141
-#, fuzzy
-msgid "%K<%n$3$0%K:%c$1%K>%n %|$2"
-msgstr "%K<%n$1%K>%n $2"
-
-#: src/ui-common/ui-formats.c:142
-#, fuzzy
-msgid "%K[%R$0%K(%r$1%K)]%n $2"
-msgstr "%K[%R$1%K(%r$2%K)]%n $3"
-
-#: src/ui-common/ui-formats.c:143
-#, fuzzy
-msgid "%K<%R$0%K>%n %|$2"
-msgstr "%K<%W$3%K>%n $2"
-
-#: src/ui-common/ui-formats.c:144
-#, fuzzy
-msgid "%K[%G$0%K(%gdcc%K)]%n $1"
-msgstr "%K[%G$1%K(%gdcc%K)]%n $2"
-
-#: src/ui-common/ui-formats.c:145
-#, fuzzy, c-format
-msgid "%g!$0%n $1"
-msgstr "%g!$1%n $2"
-
-#: src/ui-common/ui-formats.c:146
-#, fuzzy
-msgid "%K-%M$0%K:%m$1%K-%n $2"
-msgstr "%K-%M$1%K:%m$2%K-%n $3"
-
-#: src/ui-common/ui-formats.c:147
-#, fuzzy
-msgid "%K-%M$0%K:%m@$1%K-%n $2"
-msgstr "%K-%M$1%K:%m$2%K-%n $3"
-
-#: src/ui-common/ui-formats.c:148
-#, fuzzy
-msgid "%K-%M$0%K(%m$1%K)-%n $2"
-msgstr "%K-%M$1%K(%m$2%K)-%n $3"
-
-#: src/ui-common/ui-formats.c:149
-#, fuzzy
-msgid "%W (*dcc*) $0%n $1"
-msgstr "%W (*dcc*) $1%n $2"
-
-#: src/ui-common/ui-formats.c:150
-#, fuzzy
-msgid "%W (*) $0%n $2"
-msgstr "%W (*) $1%n $3"
-
-#: src/ui-common/ui-formats.c:151
-#, fuzzy
-msgid "%W * $0%n $2"
-msgstr "%W * $1%n $2"
-
-#: src/ui-common/ui-formats.c:153
-#, fuzzy
-msgid "%W * $0%K:%c$1%n $2"
-msgstr "%W * $1%K:%c$2%n $3"
-
-#. ----
-#: src/ui-common/ui-formats.c:156
-msgid "CTCPs"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:158
-#, fuzzy
-msgid "CTCP %_$0%_ reply from %_$1%_%K:%n $2"
-msgstr "Odpowied¼ CTCP %_$1%_ od %_$2%_%K:%n $3"
-
-#: src/ui-common/ui-formats.c:159
-#, fuzzy
-msgid "CTCP %_PING%_ reply from %_$0%_: $1.$2 seconds"
-msgstr "Odpowied¼ CTCP %_PING%_ od %_$1%_: $2.$3 sekund"
-
-#: src/ui-common/ui-formats.c:160
-msgid "%g>>> %_$0%_ %K[%g$1%K] %grequested %_$2%_ from %_$3"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:161
-#, fuzzy
-msgid "%g>>> DCC CTCP received from %_$0%_%K: %g$1"
-msgstr "%g>>> DCC CTCP otrzymane od %_$1%_%K: %g$2"
-
-#. ----
-#: src/gui-gnome/setup-dcc.c:207 src/ui-common/ui-formats.c:164
-msgid "DCC"
-msgstr "DCC"
-
-#: src/ui-common/ui-formats.c:166
-#, fuzzy
-msgid "%gDCC CHAT from %_$0%_ %K[%g$1 port $2%K]"
-msgstr "%gDCC CHAT od %_$1%_ %K[%g$2 port $3%K]"
-
-#: src/ui-common/ui-formats.c:167
-#, fuzzy
-msgid "%gNo DCC CHAT connection open to %_$0"
-msgstr "%gBrak otwartego po³±czenia DCC CHAT do %_$1"
-
-#: src/ui-common/ui-formats.c:168
-#, fuzzy
-msgid ""
-"%gDCC %_CHAT%_ connection with %_$0%_ %K%K[%g$1 port $2%K]%g established"
-msgstr "%gUstanowione po³±czenie DCC %_CHAT%_ z %_$1%_ %K%K[%g$2 port $3%K]%g"
-
-#: src/ui-common/ui-formats.c:169
-#, fuzzy
-msgid "%gDCC lost chat to %_$0"
-msgstr "%gStracone po³±czenie DCC CHAT do %_$1"
-
-#: src/ui-common/ui-formats.c:170
-#, fuzzy
-msgid "%gDCC SEND from %_$0%_ %K[%g$1 port $2%K]: %g$3 %K[%g$4 bytes%K]"
-msgstr "%gDCC SEND od %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bajtów%K]"
-
-#: src/ui-common/ui-formats.c:171
-#, fuzzy
-msgid "%gDCC already sending file %G$0%g for %_$1%_"
-msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
-
-#: src/ui-common/ui-formats.c:172
-#, fuzzy
-msgid "%gDCC not sending file %G$1%g to %_$0"
-msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
-
-#: src/ui-common/ui-formats.c:173
+#: src/core/settings.c:265
 #, c-format
-msgid "%gDCC file not found: %G$0%g"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:174
-#, fuzzy
-msgid "%gDCC sending file %G$0%g for %_$1%_ %K[%g$2 port $3%K]"
-msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
-
-#: src/ui-common/ui-formats.c:175
-#, fuzzy
 msgid ""
-"%gDCC sent file $0 %K[%g%_$1%_kb%K]%g for %_$2%_ in %_$3%_ secs "
-"%K[%g%_$4kb/s%_%K]"
+"%s/.irssi is not a directory.\n"
+"You should remove it with command: rm ~/.irssi"
 msgstr ""
-"DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
-"%K[%g$5kb/s%K"
 
-#: src/ui-common/ui-formats.c:176
-#, fuzzy
-msgid "%gDCC aborted sending file $0 for %_$1%_"
-msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
-
-#: src/ui-common/ui-formats.c:177
-#, fuzzy
-msgid "%gDCC no file offered by %_$0"
-msgstr "%gDCC %_$1 nie oferuje ci plików"
-
-#: src/ui-common/ui-formats.c:178
-#, fuzzy
-msgid "%gDCC receiving file %G$0%g from %_$1%_ %K[%g$2 port $3%K]"
-msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
-
-#: src/ui-common/ui-formats.c:179
-#, fuzzy
+#: src/core/settings.c:274
+#, c-format
 msgid ""
-"%gDCC received file %G$0%g %K[%g$1kb%K]%g from %_$2%_ in %_$3%_ secs "
-"%K[%g$4kb/s%K]"
+"Ignored errors in configuration file:\n"
+"%s"
 msgstr ""
-"DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
-"%K[%g$5kb/s%K"
 
-#: src/ui-common/ui-formats.c:180
-#, fuzzy
-msgid "%gDCC aborted receiving file $0 from %_$1%_"
-msgstr "%gDCC przerwane otrzymywanie pliku $1 od %_$2%_"
+#. error
+#: src/core/settings.c:300
+#, c-format
+msgid ""
+"Errors in configuration file:\n"
+"%s"
+msgstr ""
 
-#: src/ui-common/ui-formats.c:181
-#, fuzzy
-msgid "%gDCC unknown ctcp %G$0%g from %_$1%_ %K[%g$2%K]"
-msgstr "%gDCC nieznane ctcp %G$1%g od %_$2%_ %K[%g$3%K]"
-
-#: src/ui-common/ui-formats.c:182
-#, fuzzy
-msgid "%gDCC unknown reply %G$0%g from %_$1%_ %K[%g$2%K]"
-msgstr "%gDCC nieznana odpowied¼ %G$1%g od %_$2%_ %K[%g$3%K]"
-
-#: src/ui-common/ui-formats.c:183
-#, fuzzy
-msgid "%gDCC unknown type %_$0"
-msgstr "%gNieznay typ DCC %_$1"
-
-#: src/ui-common/ui-formats.c:184
-#, fuzzy
-msgid "%gDCC can't connect to %_$0%_ port %_$1"
-msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
-
-#: src/ui-common/ui-formats.c:185
+#. error
+#: src/core/settings.c:323
 #, fuzzy, c-format
-msgid "%gDCC can't create file %G$0%g"
-msgstr "%gDCC nie mo¿na utworzyæ pliku %G$1%g"
-
-#: src/ui-common/ui-formats.c:186
-#, fuzzy
-msgid "%gDCC %G$0%g was rejected by %_$1%_ %K[%G$2%K]"
-msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
-
-#: src/ui-common/ui-formats.c:187
-#, fuzzy
-msgid "%gDCC %G$0%g close for %_$1%_ %K[%G$2%K]"
-msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
-
-#. ----
-#: src/ui-common/ui-formats.c:190
-msgid "Other server events"
-msgstr "Inne zdarzenia serwera"
-
-#: src/ui-common/ui-formats.c:192
-#, fuzzy
-msgid "Users online: %_$0"
-msgstr "U¿ytkowników online: %_$1"
-
-#: src/ui-common/ui-formats.c:193
-#, fuzzy
-msgid "PONG received from $0: $1"
-msgstr "Otrzymany PONG od $1: $2"
-
-#: src/ui-common/ui-formats.c:194
-msgid "%WWALLOP%n $0: $1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:195
-#, fuzzy
-msgid "%WWALLOP * $0%n $1"
-msgstr "%W * $1%n $2"
-
-#: src/ui-common/ui-formats.c:196
-msgid "%_ERROR%_ $0"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:197
-msgid "Unknown mode character $0"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:198
-#, fuzzy
-msgid "You're not channel operator in $0"
-msgstr "Nie jeste¶ operatorem kana³u na $1"
-
-#. ----
-#: src/ui-common/ui-formats.c:201
-msgid "Logging"
-msgstr "Logowanie"
-
-#: src/ui-common/ui-formats.c:203
-#, fuzzy
-msgid "Log file %W$0%n opened"
-msgstr "Plik logu %W$1%n otwarty"
-
-#: src/ui-common/ui-formats.c:204
-#, fuzzy
-msgid "Couldn't open log file %W$0"
+msgid "Couldn't save configuration file: %s"
 msgstr "Nie mozna otworzyæ plik logu %W$1"
 
-#: src/ui-common/ui-formats.c:205
-#, fuzzy
-msgid "Log file %W$0%n not open"
-msgstr "Plik logu %W$1%n nie otwarty"
-
-#: src/ui-common/ui-formats.c:206
-#, fuzzy
-msgid "Closed log file %W$0"
-msgstr "Zamkniêcie pliku logu %W$1"
-
-#: src/ui-common/ui-formats.c:207
-#, fuzzy
-msgid "%W$0%K:%n $1"
-msgstr "%W$1%K:%n $2"
-
-#: src/ui-common/ui-formats.c:208
-#, fuzzy
-msgid "     + %W$0%K:%n $1"
-msgstr "     + %W$1%K:%n $2"
-
-#. ----
-#: src/gui-gnome/setup-misc.c:115 src/gui-gnome/setup-misc.c:165
-#: src/ui-common/ui-formats.c:211
-msgid "Misc"
-msgstr "Ró¿ne"
-
-#: src/ui-common/ui-formats.c:213
-#, fuzzy
-msgid "You must specify one of the following levels: $0"
-msgstr "Nale¿y wybraæ jeden z nastêpuj±cych poziomów: $1"
-
-#: src/ui-common/ui-formats.c:214
-#, fuzzy
-msgid "Ignoring %_$0%_ from %_$1%_"
-msgstr "Ignorowanie %_$1%_ od %_$2%_"
-
-#: src/ui-common/ui-formats.c:215
-#, fuzzy
-msgid "Unignored %_$0%_ from %_$1%_"
-msgstr "Nieignorowanie %_$1%_ od %_$2%_"
-
-#: src/ui-common/ui-formats.c:216
-#, fuzzy
-msgid "%_$0%_ is not being ignored"
-msgstr "%_$1%_ nie bêdzie ignorowany"
-
-#: src/ui-common/ui-formats.c:217
-msgid "Flood detected from %_$0%_, autoignoring for %_$1%_ minutes"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:218
-msgid "Unignoring %_$0"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:219
-msgid "%_Lastlog:"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:220
-msgid "%_End of Lastlog"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:221
-#, fuzzy
-msgid "%_$0%_ %K[%n$1@$2%K] [%n%_$3%_%K]%n has joined to $4"
-msgstr "%c%_$1%_ %K[%c$2%K]%n przy³±czy³ siê do %_$3"
-
-#: src/ui-common/ui-formats.c:222
-msgid "%_$0%_ has left $1"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:223
-msgid "On $0: %_$1%_"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:224
-msgid "offline: $0"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:225
-msgid "No query with %_$0%_"
-msgstr ""
-
-#: src/ui-common/ui-formats.c:226
-#, fuzzy
-msgid "Error loading plugin %_$0%_: $1"
-msgstr "B³±d podczas ³±dowania wtyczki %_$1%_: $2"
-
-#: src/ui-common/ui-formats.c:227
-#, fuzzy
-msgid "Plugin %_$0%_ is not irssi plugin"
-msgstr "Wtyczka %_$1%_ nie jest wtyczk± irssi"
-
-#: src/ui-common/ui-formats.c:228
-#, fuzzy
-msgid "Plugin %_$0%_ isn't compatible with this irssi version"
-msgstr "Wtyczka %_$1%_ nie pasuje do tej wersji irssi"
-
-#: src/ui-common/ui-formats.c:229
-#, fuzzy
-msgid "Plugin %_$0%_ is already loaded"
-msgstr "Wtyczka %_$1%_ jest ju¿ za³adowana"
-
-#: src/ui-common/ui-formats.c:230
-#, fuzzy
-msgid "Plugin %_$0%_ not loaded"
-msgstr "Wtyczka %_$1%_ nie jest za³adowana"
-
-#: src/ui-common/ui-formats.c:231
-msgid "Perl error: $0"
-msgstr ""
-
-#: src/ui-common/ui-printtext.c:804
+#: src/fe-common/core/printtext.c:865
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/ui-common/ui-printtext.c:806
+#: src/fe-common/core/printtext.c:867
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
-#: src/gui-gnome/dialog-about.c:33
-msgid "IRC client, "
-msgstr "Klient IRC, "
-
-#: src/gui-gnome/dialog-channels.c:125 src/gui-gnome/setup-bg.c:123
-msgid "Select new default font"
-msgstr "Wybierz now± domy¶ln± czcionkê"
-
-#. autojoin toggle
-#: src/gui-gnome/dialog-channels.c:167
-msgid "Autojoin channel"
-msgstr ""
-
-#. channel name
-#: src/gui-gnome/dialog-channels.c:173 src/gui-gnome/dialog-channels.c:460
-#: src/gui-gnome/dialog-join.c:160 src/gui-gnome/gui-event-list.c:219
-#: src/gui-gnome/gui-event-who.c:254 src/gui-gnome/gui-menu-commands.c:234
-msgid "Channel"
-msgstr "Kana³"
-
-#. irc network
-#: src/gui-gnome/dialog-channels.c:184 src/gui-gnome/dialog-connect.c:129
-#: src/gui-gnome/dialog-disconnect.c:160 src/gui-gnome/dialog-join.c:128
-#: src/gui-gnome/setup-ircnets.c:181
-msgid "IRC Network"
-msgstr "Sieæ IRC"
-
-#. bot masks, bot command
-#: src/gui-gnome/dialog-channels.c:213 src/gui-gnome/setup-servers.c:276
-msgid "Password"
-msgstr "Has³o"
-
-#: src/gui-gnome/dialog-channels.c:215
-msgid "Bot masks"
-msgstr ""
-
-#: src/gui-gnome/dialog-channels.c:217
-msgid "Autosend cmd to bot"
-msgstr ""
-
-#: src/gui-gnome/dialog-channels.c:219 src/gui-gnome/setup-bg.c:233
-#: src/gui-gnome/setup-bg.c:237
-msgid "Background pixmap"
-msgstr "T³o"
-
-#: src/gui-gnome/dialog-channels.c:222 src/gui-gnome/setup-bg.c:260
-msgid "Font"
-msgstr "Czcionka"
-
-#: src/gui-gnome/dialog-channels.c:233 src/gui-gnome/setup-bg.c:268
-msgid "Change..."
-msgstr "Zmieñ..."
-
-#: src/gui-gnome/dialog-channels.c:266 src/gui-gnome/dialog-channels.c:267
-#: src/gui-gnome/dialog-log.c:223 src/gui-gnome/dialog-log.c:230
-#: src/gui-gnome/dialog-notifylist.c:35 src/gui-gnome/dialog-notifylist.c:175
-#: src/gui-gnome/dialog-plugins.c:33 src/gui-gnome/dialog-plugins.c:34
-msgid "Yes"
-msgstr "Tak"
-
-#: src/gui-gnome/dialog-channels.c:266 src/gui-gnome/dialog-channels.c:267
-#: src/gui-gnome/dialog-log.c:223 src/gui-gnome/dialog-log.c:726
-#: src/gui-gnome/dialog-notifylist.c:35 src/gui-gnome/dialog-notifylist.c:204
-#: src/gui-gnome/dialog-plugins.c:33 src/gui-gnome/dialog-plugins.c:34
-msgid "No"
-msgstr "Nie"
-
-#: src/gui-gnome/dialog-channels.c:459 src/gui-gnome/dialog-notifylist.c:243
-msgid "Joined"
-msgstr ""
-
-#: src/gui-gnome/dialog-channels.c:459
-msgid "Autojoin"
-msgstr "Do³±cz automatycznie"
-
-#: src/gui-gnome/dialog-channels.c:460
-msgid "IRC network"
-msgstr "Sieæ IRC"
-
-#: src/gui-gnome/dialog-channels.c:462 src/gui-gnome/dialog-join.c:131
-#: src/gui-gnome/gui-event-invite.c:54
-msgid "Join"
-msgstr "Do³±cz"
-
-#: src/gui-gnome/dialog-channels.c:462
-msgid "Part"
-msgstr "Opu¶æ"
-
-#: src/gui-gnome/dialog-channels.c:502 src/gui-gnome/setup-themes.c:281
-msgid "Add..."
-msgstr "Dodaj..."
-
-#: src/gui-gnome/dialog-channels.c:507
-msgid "Edit..."
-msgstr "Edytuj..."
-
-#: src/gui-gnome/dialog-channels.c:512 src/gui-gnome/dialog-log.c:598
-#: src/gui-gnome/setup-lists.c:354 src/gui-gnome/setup-themes.c:286
-msgid "Delete"
-msgstr "Skasuj"
-
-#: src/gui-gnome/dialog-channels.c:520
-msgid "Quick join..."
-msgstr "Szybkie do³±czenie..."
-
-#: src/gui-gnome/dialog-connect.c:129 src/gui-gnome/dialog-disconnect.c:161
-#: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:61
-msgid "Address"
-msgstr "Adres"
-
-#: src/gui-gnome/dialog-connect.c:130 src/gui-gnome/dialog-disconnect.c:161
-#: src/gui-gnome/dialog-join.c:129 src/gui-gnome/setup-ircproxy.c:66
-#: src/gui-gnome/setup-servers.c:271
-msgid "Port"
-msgstr "Port"
-
-#: src/gui-gnome/dialog-connect.c:132 src/gui-gnome/gui-menu-commands.c:260
-msgid "Connect"
-msgstr "Po³±cz"
-
-#: src/gui-gnome/dialog-dcc.c:169
-msgid "Type"
-msgstr "Typ"
-
-#: src/gui-gnome/dialog-dcc.c:169
-msgid "File Size"
-msgstr "Rozmiar pliku"
-
-#: src/gui-gnome/dialog-dcc.c:170
-msgid "Transferred"
-msgstr "Przes³ane"
-
-#: src/gui-gnome/dialog-dcc.c:170
-#, c-format
-msgid "% done"
-msgstr "% zrobione"
-
-#: src/gui-gnome/dialog-dcc.c:171
-msgid "kB/sec"
-msgstr "kB/s"
-
-#: src/gui-gnome/dialog-dcc.c:171
-msgid "File name"
-msgstr "Nazwa pliku"
-
-#: src/gui-gnome/dialog-dcc.c:173
-msgid "Create dialog"
-msgstr "Utwórz dialog"
-
-#: src/gui-gnome/dialog-disconnect.c:160 src/gui-gnome/dialog-join.c:128
-msgid "Server Tag"
-msgstr ""
-
-#: src/gui-gnome/dialog-disconnect.c:163 src/gui-gnome/gui-menu-commands.c:262
-msgid "Disconnect"
-msgstr "Roz³±cz"
-
-#: src/gui-gnome/dialog-irssibot.c:75
-msgid ""
-"Irssi can inform you when new versions are\n"
-"available for download, you just need to be\n"
-"connected to some irc network where irssibot\n"
-"is, like ircnet, efnet or gimpnet."
-msgstr ""
-
-#: src/gui-gnome/dialog-irssibot.c:82
-msgid "Notify about new irssi releases"
-msgstr "Informacja o nowej wersji irssi"
-
-#: src/gui-gnome/dialog-irssibot.c:85
-msgid "Notify also about new development releases"
-msgstr "Informacja o nowej rozwojowej wersji"
-
-#: src/gui-gnome/dialog-irssibot.c:148
+#: src/fe-common/core/themes.c:144
 #, c-format
 msgid ""
-"Both stable and unstable Irssi versions\n"
-"have been released.\n"
-"\n"
-"Stable version %s\n"
-"Unstable version %s"
-msgstr ""
-"Zosta³y og³oszone nowe\n"
-"wersje Irssi\n"
-"\n"
-"Stabilna wersja %s\n"
-"Niestabilan wrsja %s"
-
-#: src/gui-gnome/dialog-irssibot.c:150
-#, c-format
-msgid ""
-"New stable irssi version %s\n"
-"has been released."
-msgstr ""
-"Og³oszona zosta³a nowa\n"
-"stabilna wersja irssi %s."
-
-#: src/gui-gnome/dialog-irssibot.c:152
-#, c-format
-msgid ""
-"New unstable irssi version %s\n"
-"has been released."
-msgstr ""
-"Og³oszona zosta³a nowa\n"
-"niestabilna wersja irssi %s."
-
-#: src/gui-gnome/dialog-irssibot.c:168
-msgid "Get stable Irssi via DCC"
-msgstr "Pobie¿ wersjê stabiln± Irssi poprzez DCC"
-
-#: src/gui-gnome/dialog-irssibot.c:177
-msgid "Get unstable Irssi via DCC"
-msgstr "Pobie¿ wersjê niestabiln± Irssi poprzez DCC"
-
-#: src/gui-gnome/dialog-irssibot.c:184
-msgid "Open Irssi's website"
-msgstr "Otwó¿ stronê domowa Irssi"
-
-#: src/gui-gnome/dialog-join.c:56
-msgid "No server selected"
-msgstr "Nie zosta³ wybrany serwer"
-
-#: src/gui-gnome/dialog-join.c:63
-msgid "No channel specified"
-msgstr "Nie zosta³ wybrany kana³"
-
-#: src/gui-gnome/dialog-links.c:85
-msgid "Links"
-msgstr "Po³±czenia"
-
-#: src/gui-gnome/dialog-links.c:290
-msgid "Get the /LINKS for hubs"
-msgstr ""
-
-#: src/gui-gnome/dialog-links.c:352 src/gui-gnome/dialog-plugins.c:233
-msgid "Description"
-msgstr "Opis"
-
-#: src/gui-gnome/dialog-log.c:25
-msgid "Crap"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:26
-msgid "Private messages"
-msgstr "Prywatne wiadomo¶ci"
-
-#: src/gui-gnome/dialog-log.c:27
-msgid "Public messages"
-msgstr "Publiczne wiadomo¶ci"
-
-#: src/gui-gnome/dialog-log.c:28
-msgid "Notices"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:29
-msgid "Server notices"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:30
-msgid "CTCP messages"
-msgstr "Komunikaty CTCP"
-
-#: src/gui-gnome/dialog-log.c:31
-msgid "Actions (/me)"
-msgstr "Akcje (/me)"
-
-#: src/gui-gnome/dialog-log.c:32
-msgid "Joins"
-msgstr "Przy³±czenia"
-
-#: src/gui-gnome/dialog-log.c:33
-msgid "Parts"
-msgstr "Opuszczenia"
-
-#: src/gui-gnome/dialog-log.c:34
-msgid "Quits"
-msgstr "Zakoñczenia"
-
-#: src/gui-gnome/dialog-log.c:35
-msgid "Kicks"
-msgstr "Wykopania"
-
-#. modes
-#: src/gui-gnome/dialog-log.c:36 src/gui-gnome/dialog-modes.c:501
-msgid "Modes"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:37
-msgid "Server modes"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:38
-msgid "Topics"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:39
-msgid "Wallops"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:40
-msgid "Invites"
-msgstr "Zaproszenia"
-
-#: src/gui-gnome/dialog-log.c:41
-msgid "Nick changes"
-msgstr "Zmiany nicka"
-
-#: src/gui-gnome/dialog-log.c:42
-msgid "Pongs"
-msgstr "Pongi"
-
-#: src/gui-gnome/dialog-log.c:43
-msgid "DCC messages"
-msgstr "Komunikaty DCC"
-
-#: src/gui-gnome/dialog-log.c:44
-msgid "Hilighted messages"
-msgstr "Pod¶wietlone wiadomo¶ci"
-
-#: src/gui-gnome/dialog-log.c:45
-msgid "Client notices"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:46
-msgid "Client crap"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:47
-msgid "Client errors"
-msgstr "B³êdy klienta"
-
-#: src/gui-gnome/dialog-log.c:311
-msgid "<new log file>"
-msgstr "<nowy plik logów>"
-
-#: src/gui-gnome/dialog-log.c:325
-msgid "<new item>"
-msgstr ""
-
-#: src/gui-gnome/dialog-log.c:542
-msgid "Open"
-msgstr "Otwórz"
-
-#: src/gui-gnome/dialog-log.c:542 src/gui-gnome/dialog-plugins.c:233
-#: src/gui-gnome/dialog-window.c:168
-msgid "Name"
-msgstr "Nazwa"
-
-#: src/gui-gnome/dialog-log.c:542
-msgid "Level"
-msgstr "Poziom"
-
-#: src/gui-gnome/dialog-log.c:587
-msgid "New log file"
-msgstr "Nowy plik logów"
-
-#: src/gui-gnome/dialog-log.c:592
-msgid "New log entry"
-msgstr "Nowy element logów"
-
-#: src/gui-gnome/dialog-log.c:608
-msgid "Start logging"
-msgstr "Pocz±tek logowania"
-
-#: src/gui-gnome/dialog-log.c:614
-msgid "Stop logging"
-msgstr "Zakoñczenie logowania"
-
-#: src/gui-gnome/dialog-log.c:638
-msgid "Clear all"
-msgstr "Wyczy¶æ wszystko"
-
-#: src/gui-gnome/dialog-log.c:642
-msgid "Select all"
-msgstr "Wybierz wszystko"
-
-#. auto-open log button
-#: src/gui-gnome/dialog-log.c:648
-msgid "Open log at startup"
-msgstr "Otwórz logi przy starcie"
-
-#. entry widgets for log file name and subitems name
-#: src/gui-gnome/dialog-log.c:654
-msgid "Log file name:"
-msgstr "Nazwa pliku logów:"
-
-#: src/gui-gnome/dialog-log.c:657
-msgid "Channel/nick:"
-msgstr "Kana³/nick:"
-
-#: src/gui-gnome/dialog-modes.c:477
-msgid "Channel modes"
-msgstr ""
-
-#. topic
-#: src/gui-gnome/dialog-modes.c:493
-msgid "Topic: "
-msgstr "Temat: "
-
-#: src/gui-gnome/dialog-modes.c:508
-msgid "Invite"
-msgstr "Zaproszenie"
-
-#: src/gui-gnome/dialog-modes.c:509 src/gui-gnome/gui-windows.c:36
-msgid "Secret"
-msgstr "Tajny"
-
-#: src/gui-gnome/dialog-modes.c:510 src/gui-gnome/gui-windows.c:37
-msgid "Private"
-msgstr "Prywatny"
-
-#: src/gui-gnome/dialog-modes.c:511 src/gui-gnome/gui-windows.c:38
-msgid "Moderated"
-msgstr "Moderowany"
-
-#: src/gui-gnome/dialog-modes.c:512
-msgid "No external msgs"
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:513
-msgid "Only ops change topic"
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:515
-msgid "User limit: "
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:527
-msgid "Channel key: "
-msgstr "Klucz kana³u:"
-
-#: src/gui-gnome/dialog-modes.c:536
-msgid "Banlist"
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:548
-msgid "Unban"
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:566
-msgid "Banlist exceptions"
-msgstr ""
-
-#: src/gui-gnome/dialog-modes.c:578 src/gui-gnome/dialog-modes.c:598
-#: src/gui-gnome/setup-ircnets.c:410 src/gui-gnome/setup-servers.c:527
-#: src/gui-gnome/setup-session.c:139
-msgid "Remove"
-msgstr "Usuñ"
-
-#: src/gui-gnome/dialog-modes.c:586
-msgid "Invite list"
-msgstr ""
-
-#: src/gui-gnome/dialog-notifylist.c:111
-msgid "Message: "
-msgstr ""
-
-#: src/gui-gnome/dialog-notifylist.c:185
-#, c-format
-msgid "%s (%s@%s) (%s) has joined IRC"
-msgstr ""
-
-#: src/gui-gnome/dialog-notifylist.c:243
-msgid "IRC net"
-msgstr "Sieæ IRC"
-
-#: src/gui-gnome/dialog-notifylist.c:244 src/gui-gnome/gui-event-who.c:255
-msgid "Host"
-msgstr ""
-
-#: src/gui-gnome/dialog-notifylist.c:244
-msgid "Real Name"
-msgstr "Prawdziwe nazwisko"
-
-#: src/gui-gnome/dialog-notifylist.c:246 src/gui-gnome/gui-menu-commands.c:246
-msgid "Query"
-msgstr ""
-
-#: src/gui-gnome/dialog-notifylist.c:246
-msgid "Send msg"
-msgstr ""
-
-#: src/gui-gnome/dialog-plugins.c:68
-#, c-format
-msgid "Can't load plugin: %s"
-msgstr "Nie mo¿na za³edowaæ wtyczki: %s"
-
-#: src/gui-gnome/dialog-plugins.c:85
-#, c-format
-msgid "Plugin not loaded: %s"
-msgstr "Wtyczka nie za³adowana: %s"
-
-#: src/gui-gnome/dialog-plugins.c:160
-#, c-format
-msgid "Plugin %s properties:"
-msgstr "W³a¶ciwo¶ci wtyczki %s:"
-
-#: src/gui-gnome/dialog-plugins.c:164
-msgid "Automatically start plugin at startup"
-msgstr ""
-
-#: src/gui-gnome/dialog-plugins.c:171
-msgid "Arguments for plugin:"
-msgstr "Argumenty dla wtyczki:"
-
-#: src/gui-gnome/dialog-plugins.c:219
-msgid "Load"
-msgstr "£aduj"
-
-#: src/gui-gnome/dialog-plugins.c:219
-msgid "Settings..."
-msgstr "Ustawienia..."
-
-#: src/gui-gnome/dialog-plugins.c:233
-msgid "Running"
-msgstr ""
-
-#: src/gui-gnome/dialog-plugins.c:233
-msgid "Autorun"
-msgstr ""
-
-#: src/gui-gnome/dialog-plugins.c:310
-msgid "Plugins/"
-msgstr "Wtyczki/"
-
-#. First plugin, create plugins menu.
-#: src/gui-gnome/dialog-plugins.c:314 src/gui-gnome/dialog-plugins.c:339
-msgid "Plugins"
-msgstr "Wtyczki"
-
-#: src/gui-gnome/dialog-plugins.c:322
-#, c-format
-msgid "Plugins/%s/"
-msgstr ""
-
-#: src/gui-gnome/dialog-plugins.c:340
-#, c-format
-msgid "Plugins/%s"
-msgstr ""
-
-#. this server is disconnected..
-#: src/gui-gnome/dialog-rawlog.c:80
-msgid ""
-"Can't save the rawlog,\n"
-"the server has been disconnected"
-msgstr ""
-
-#: src/gui-gnome/dialog-rawlog.c:102
-msgid "Save rawlog to: "
-msgstr "Zachowaj surowy log do: "
-
-#: src/gui-gnome/dialog-rawlog.c:105
-msgid "Save"
-msgstr "Zapisz"
-
-#: src/gui-gnome/dialog-rawlog.c:130 src/gui-gnome/gui-menu-commands.c:394
-#: src/gui-gnome/gui-menu-commands.c:413 src/gui-gnome/gui-menu-commands.c:495
-#: src/gui-gnome/gui-menu-commands.c:503
-msgid "Not connected to server"
-msgstr "Nie pod³±czony do serwera"
-
-#. Save rawlog button
-#: src/gui-gnome/dialog-rawlog.c:167
-msgid "Save to file..."
-msgstr "Zapisz do pliku..."
-
-#: src/gui-gnome/dialog-status.c:90
-msgid "Queries"
-msgstr ""
-
-#: src/gui-gnome/dialog-status.c:94 src/gui-gnome/dialog-status.c:127
-msgid "DCC chats"
-msgstr ""
-
-#: src/gui-gnome/dialog-status.c:262
-msgid "Display servers"
-msgstr "Wy¶wietl serwery"
-
-#: src/gui-gnome/dialog-status.c:267
-msgid "Display channels"
-msgstr "Wy¶wietl kana³y"
-
-#: src/gui-gnome/dialog-status.c:272
-msgid "Display queries"
-msgstr ""
-
-#: src/gui-gnome/dialog-status.c:277
-msgid "Display DCC chats"
-msgstr ""
-
-#: src/gui-gnome/dialog-textwidget.c:144
-msgid "Find doesn't work with IText windows yet"
-msgstr ""
-
-#: src/gui-gnome/dialog-textwidget.c:149
-msgid "Find previous"
-msgstr "Znajd¼ poprzedni"
-
-#: src/gui-gnome/dialog-textwidget.c:149
-msgid "Find next"
-msgstr "Znajd¼ nastêpny"
-
-#: src/gui-gnome/dialog-textwidget.c:160
-msgid "Find text: "
-msgstr "Znajd¼ tekst: "
-
-#: src/gui-gnome/dialog-textwidget.c:186
-#, c-format
-msgid ""
-"Couldn't create file:\n"
+"Ignored errors in theme:\n"
 "%s"
 msgstr ""
 
-#: src/gui-gnome/dialog-textwidget.c:239
-msgid "Save doesn't work with IText windows yet"
+#: src/fe-common/irc/fe-common-irc.c:83
+msgid "Automatically connect to server/ircnet"
 msgstr ""
 
-#: src/gui-gnome/dialog-textwidget.c:245
-msgid "Window doesn't have any text"
-msgstr ""
-
-#: src/gui-gnome/dialog-textwidget.c:258
-msgid "Save only selected text"
-msgstr "Zapisz tylko zaznaczony tekst"
-
-#: src/gui-gnome/dialog-textwidget.c:269
-msgid "Save window buffer to: "
-msgstr "Zapisz bufor okna do: "
-
-#: src/gui-gnome/dialog-textwidget.c:272
-msgid "Save window buffer"
-msgstr "Zapisz bufor okna"
-
-#: src/gui-gnome/dialog-window.c:107
-msgid "Save size"
-msgstr "Zapisz rozmiar"
-
-#: src/gui-gnome/dialog-window.c:115
-msgid "Width"
-msgstr "Szeroko¶æ"
-
-#: src/gui-gnome/dialog-window.c:121
-msgid "Height"
-msgstr "Wysoko¶æ"
-
-#: src/gui-gnome/dialog-window.c:136
-msgid "Save position"
-msgstr "Zapisz pozycje"
-
-#: src/gui-gnome/dialog-window.c:144
-msgid "X"
-msgstr "X"
-
-#: src/gui-gnome/dialog-window.c:150
-msgid "Y"
-msgstr "Y"
-
-#: src/gui-gnome/dialog-window.c:164
-msgid "Default window"
-msgstr "Domy¶lne okno"
-
-#: src/gui-gnome/gtk-specific.c:58 src/gui-gnome/setup-colors.c:188
-msgid "Ok"
-msgstr "Ok"
-
-#: src/gui-gnome/gtk-specific.c:63
-msgid "Apply"
-msgstr "Zastosuj"
-
-#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:448
-#: src/gui-gnome/setup-colors.c:195
-msgid "Cancel"
-msgstr "Anuluj"
-
-#: src/gui-gnome/gtk-specific.c:486
-msgid "Browse"
-msgstr "Przegl±daj"
-
-#: src/gui-gnome/gui-dcc.c:132
-msgid "transfer complete - all"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:137
-msgid "transfer aborted -"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:142
-#, c-format
-msgid " %lu bytes %s - avg %0.2fkB/sec"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:143 src/gui-gnome/gui-dcc.c:171
-msgid "sent"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:143 src/gui-gnome/gui-dcc.c:171
-msgid "received"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:170
-#, c-format
-msgid "%lu of %lu bytes %s - avg %0.2fkB/sec"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:210
-msgid "Enter nick to chat with: "
-msgstr ""
-
-#. file not found
-#: src/gui-gnome/gui-dcc.c:229
-#, c-format
-msgid ""
-"Couldn't find file:\n"
-"%s"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:258
-msgid "Nick: "
-msgstr "Nick: "
-
-#: src/gui-gnome/gui-dcc.c:263
-msgid "File to send: "
-msgstr "Plik do wys³ania: "
-
-#: src/gui-gnome/gui-dcc.c:266
-msgid "Select file to send"
-msgstr "Wybierz plik do wys³ania"
-
-#: src/gui-gnome/gui-dcc.c:382
-msgid "Rename file to"
-msgstr "Zmieñ nazwe pliku na"
-
-#: src/gui-gnome/gui-dcc.c:429 src/gui-gnome/gui-dcc.c:435
-msgid "Overwrite"
-msgstr "Nadpisz"
-
-#: src/gui-gnome/gui-dcc.c:429 src/gui-gnome/gui-dcc.c:435
-msgid "Rename"
-msgstr "Zmieñ nazwê"
-
-#: src/gui-gnome/gui-dcc.c:429
-msgid "Resume"
-msgstr "Wznów"
-
-#: src/gui-gnome/gui-dcc.c:459
-#, c-format
-msgid "Accept DCC %s request from %s (%s)?"
-msgstr ""
-
-#: src/gui-gnome/gui-dcc.c:466
-#, c-format
-msgid ""
-"File name: %s\n"
-"File size: %ld\n"
-msgstr ""
-"Nazwa   pliku: %s\n"
-"Rozmiar pliku: %ld\n"
-
-#: src/gui-gnome/gui-event-invite.c:67
-#, c-format
-msgid "%s invites you to %s"
-msgstr "%s zaprasza ciê na %s"
-
-#: src/gui-gnome/gui-event-list.c:46
-#, c-format
-msgid "Not connected to server '%s' anymore"
-msgstr ""
-
-#: src/gui-gnome/gui-event-list.c:204
-msgid "No channels found for /LIST"
-msgstr ""
-
-#: src/gui-gnome/gui-event-list.c:219
-msgid "Users"
-msgstr ""
-
-#: src/gui-gnome/gui-event-list.c:219
-msgid "Topic"
-msgstr ""
-
-#: src/gui-gnome/gui-event-list.c:261 src/gui-gnome/gui-event-who.c:301
-msgid "Search"
-msgstr ""
-
-#. Display total number of channels
-#: src/gui-gnome/gui-event-list.c:267
-#, c-format
-msgid "Total of %d channels"
-msgstr ""
-
-#: src/gui-gnome/gui-event-who.c:239
-msgid "/WHO request didn't find anything"
-msgstr ""
-
-#: src/gui-gnome/gui-event-who.c:254 src/gui-gnome/gui-menu-commands.c:266
-msgid "Status"
-msgstr ""
-
-#: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/setup-servers.c:576
-msgid "Real name"
-msgstr ""
-
-#. Display total number of who request
-#: src/gui-gnome/gui-event-who.c:307
-#, c-format
-msgid "Found total of %d matches"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:123
-msgid "Refresh"
-msgstr ""
-
-#. Display realname
-#: src/gui-gnome/gui-event-whois.c:145
-#, c-format
-msgid "Name: %s (%s)"
-msgstr ""
-
-#. Display host
-#: src/gui-gnome/gui-event-whois.c:150
-#, c-format
-msgid "Host: %s@%s"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:181
-#, c-format
-msgid "Idling: %d hours %02d:%02d"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:194
-#, c-format
-msgid ""
-"\n"
-"Signon: %s"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:215
-#, c-format
-msgid "Server: %s (%s)"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:233
-msgid "[IRC operator]"
-msgstr ""
-
-#: src/gui-gnome/gui-event-whois.c:284
-#, c-format
-msgid "Away: %s"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:786
-msgid "Nick completion"
-msgstr "Uzupe³nianie nicków"
-
-#: src/gui-gnome/gui-mainwindows.c:787
-msgid "Check word replaces"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:789
-msgid "Previous window"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:790
-msgid "Next window"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:795
-msgid "Command history"
-msgstr "Historial poleceñ"
-
-#: src/gui-gnome/gui-mainwindows.c:797
-msgid "Previous page in window"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:798
-msgid "Next page in window"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:800
-msgid "Insert special character"
-msgstr ""
-
-#: src/gui-gnome/gui-mainwindows.c:811
-msgid "Change window"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:81
-msgid "_New"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:83
-msgid "_Save Text As..."
-msgstr "Z_apisz tekst jako..."
-
-#: src/gui-gnome/gui-menu-commands.c:86 src/gui-gnome/gui-menu-commands.c:182
-msgid "_Close"
-msgstr "_Zamknij"
-
-#: src/gui-gnome/gui-menu-commands.c:88
-msgid "_Quit"
-msgstr "_Koniec"
-
-#: src/gui-gnome/gui-menu-commands.c:94
-msgid "_Connect..."
-msgstr "_Po³±cz..."
-
-#: src/gui-gnome/gui-menu-commands.c:96
-msgid "_Disconnect..."
-msgstr "_Roz³±cz..."
-
-#: src/gui-gnome/gui-menu-commands.c:98
-msgid "C_hannels..."
-msgstr "_Kana³y..."
-
-#: src/gui-gnome/gui-menu-commands.c:101
-msgid "_Status Window..."
-msgstr "Okno _stausu..."
-
-#: src/gui-gnome/gui-menu-commands.c:103
-msgid "N_otify list..."
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:105
-msgid "_Raw Log..."
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:107
-msgid "_Links..."
-msgstr "_Po³±czenia"
-
-#: src/gui-gnome/gui-menu-commands.c:111
-msgid "_Away..."
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:114
-msgid "_Invisible"
-msgstr "_Niewidoczny"
-
-#: src/gui-gnome/gui-menu-commands.c:116
-msgid "Receive _Wallops"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:118
-msgid "Receive Server _Notices"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:124
-msgid "C_ut"
-msgstr "_Wytnij"
-
-#: src/gui-gnome/gui-menu-commands.c:126
-msgid "_Copy"
-msgstr "_Kopiuj"
-
-#: src/gui-gnome/gui-menu-commands.c:128
-msgid "_Paste"
-msgstr "_Wklej"
-
-#: src/gui-gnome/gui-menu-commands.c:131
-msgid "_Find..."
-msgstr "_Znajd¼..."
-
-#: src/gui-gnome/gui-menu-commands.c:137
-msgid "C_onnections..."
-msgstr "_Po³±czenia..."
-
-#: src/gui-gnome/gui-menu-commands.c:140
-msgid "_Send File..."
-msgstr "_Przeka¿ plik"
-
-#: src/gui-gnome/gui-menu-commands.c:142
-msgid "_Chat..."
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:148
-msgid "_Server List..."
-msgstr "_List serwerów..."
-
-#: src/gui-gnome/gui-menu-commands.c:150
-msgid "_Themes..."
-msgstr "_Temat..."
-
-#: src/gui-gnome/gui-menu-commands.c:152
-msgid "_Automation..."
-msgstr "_Automatyzacja..."
-
-#: src/gui-gnome/gui-menu-commands.c:154
-msgid "_Logging..."
-msgstr "_Logowanie"
-
-#: src/gui-gnome/gui-menu-commands.c:156
-msgid "Plu_gins..."
-msgstr "Wtyczki..."
-
-#: src/gui-gnome/gui-menu-commands.c:158
-msgid "_Keyboard..."
-msgstr "_Klawiatura..."
-
-#: src/gui-gnome/gui-menu-commands.c:161
-msgid "_Preferences..."
-msgstr "_Preferencje..."
-
-#: src/gui-gnome/gui-menu-commands.c:169
-msgid "New _Window"
-msgstr "Nowe _okno"
+#: src/fe-common/irc/fe-common-irc.c:83 src/fe-common/irc/fe-common-irc.c:84
+msgid "SERVER"
+msgstr "SERWER"
 
-#: src/gui-gnome/gui-menu-commands.c:171
-msgid "_New Tab"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:173
-msgid "New _Split Window"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:177
-msgid "Automatically _Raise"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:179
-msgid "_Save Size and Position..."
-msgstr "_Zachowaj rozmiar i pozycjê..."
-
-#: src/gui-gnome/gui-menu-commands.c:192
-msgid "Irssi _Website"
-msgstr "Strona domowa _Irssi"
-
-#: src/gui-gnome/gui-menu-commands.c:198
-msgid "_About..."
-msgstr "_O programie"
-
-#: src/gui-gnome/gui-menu-commands.c:205
-msgid "_File"
-msgstr "_Plik"
-
-#: src/gui-gnome/gui-menu-commands.c:207
-msgid "_Edit"
-msgstr "_Edycja"
-
-#: src/gui-gnome/gui-menu-commands.c:209
-msgid "_DCC"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:211
-msgid "_Server"
-msgstr "_Serwer"
-
-#: src/gui-gnome/gui-menu-commands.c:213
-msgid "Se_ttings"
-msgstr "_Ustawienia"
-
-#: src/gui-gnome/gui-menu-commands.c:215
-msgid "_Windows"
-msgstr "_Okna"
-
-#: src/gui-gnome/gui-menu-commands.c:217
-msgid "_Help"
-msgstr "_Pomoc"
-
-#: src/gui-gnome/gui-menu-commands.c:224
-msgid "_Leave channel"
-msgstr "_Opu¶c kana³"
-
-#: src/gui-gnome/gui-menu-commands.c:226
-msgid "Channel _Modes..."
-msgstr "_Ustawienia kana³u..."
-
-#: src/gui-gnome/gui-menu-commands.c:228
-msgid "Show _Nick List"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:240
-msgid "Close _Query"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:252
-msgid "_Close DCC chat"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:254
-msgid "_Mirc CTCPs"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:269
-msgid "Find"
-msgstr "Szukaj"
-
-#: src/gui-gnome/gui-menu-commands.c:271 src/gui-gnome/setup-lists.c:349
-msgid "New"
-msgstr "Nowy"
-
-#: src/gui-gnome/gui-menu-commands.c:273
-msgid "Close"
-msgstr "Zamknij"
-
-#: src/gui-gnome/gui-menu-commands.c:426
-msgid "Away reason:"
-msgstr ""
-
-#: src/gui-gnome/gui-menu-commands.c:511 src/gui-gnome/gui-windows.c:717
-msgid "(empty)"
-msgstr "(pusty)"
-
-#: src/gui-gnome/gui-nicklist-popup.c:71
-msgid "Kick reason:"
-msgstr "Powód wydalenia:"
-
-#: src/gui-gnome/gui-nicklist.c:124
-#, c-format
-msgid "%d ops, %d total"
-msgstr ""
-
-#: src/gui-gnome/gui-statusbar.c:164
-#, c-format
-msgid "[lag %d.%02d"
-msgstr "[opó¼nienie %d.%02d"
-
-#. big lag, still waiting ..
-#: src/gui-gnome/gui-statusbar.c:172
-#, c-format
-msgid "[lag %ld (??)] "
-msgstr "[opó¼nienie %ld (??)] "
-
-#: src/gui-gnome/gui-statusbar.c:224
-#, c-format
-msgid "Looking up server %s"
-msgstr "Szukam serwera %s"
-
-#: src/gui-gnome/gui-statusbar.c:237
-#, c-format
-msgid "Connecting to %s:%d"
-msgstr "Pod³±czanie do %s:%d"
-
-#: src/gui-gnome/gui-windows.c:39
-msgid "Joining needs an invitation"
-msgstr "Przy³±czenie siê wymaga zaproszenia"
-
-#: src/gui-gnome/gui-windows.c:40
-msgid "No external messages"
-msgstr ""
-
-#: src/gui-gnome/gui-windows.c:41
-msgid "Only operators can change the topic"
-msgstr "Tylko operator moze zmieniæ temat kana³u"
-
-#: src/gui-gnome/gui-windows.c:42
-msgid "Maximum number of people in channel"
-msgstr "maksymalna ilo¶æ osób na kanale"
-
-#: src/gui-gnome/gui-windows.c:43
-msgid "Channel password"
-msgstr "Has³o kana³u"
-
-#: src/gui-gnome/gui-windows.c:48
-msgid "Whois"
-msgstr ""
-
-#: src/gui-gnome/gui-windows.c:49
-msgid "Send"
-msgstr "Przeka¿"
-
-#. --- DCC CHAT ---
-#: src/gui-gnome/gui-windows.c:50 src/gui-gnome/setup-dcc.c:150
-msgid "Chat"
-msgstr ""
-
-#: src/gui-gnome/gui-windows.c:51
-msgid "Ping"
-msgstr ""
-
-#: src/gui-gnome/gui-windows.c:574 src/gui-gnome/gui-windows.c:592
-msgid "Close window"
-msgstr "Zamknij okno"
-
-#: src/gui-gnome/gui-windows.c:580 src/gui-gnome/gui-windows.c:598
-msgid "Move window tab to left"
-msgstr ""
-
-#: src/gui-gnome/gui-windows.c:586 src/gui-gnome/gui-windows.c:605
-msgid "Move window tab to right"
-msgstr ""
-
-#: src/gui-gnome/irssi.c:129
-msgid "Don't run as applet"
-msgstr ""
-
-#: src/gui-gnome/panel.c:448
-msgid "About"
-msgstr "O programie"
-
-#: src/gui-gnome/setup-appearance.c:72
-msgid ""
-"Enable buggy GTK themes workaround, if enabled\n"
-"you won't see nicks' gone-status in nicklist"
-msgstr ""
-
-#: src/gui-gnome/setup-appearance.c:76
-msgid "Use fontset loading"
-msgstr ""
-
-#. itext specific
-#: src/gui-gnome/setup-appearance.c:81
-msgid "Drawing method"
-msgstr ""
+#: src/fe-common/irc/fe-common-irc.c:84
+msgid "Autoconnect password"
+msgstr "Has³o autopo³±czenia"
 
-#: src/gui-gnome/setup-appearance.c:88
-msgid "Use Irssi text widget for drawing texts"
-msgstr ""
-
-#: src/gui-gnome/setup-appearance.c:99
-msgid "Transparent background"
-msgstr "Tapeta w tle"
-
-#: src/gui-gnome/setup-appearance.c:107
-msgid "GNOME Panel"
-msgstr "Panel GNOME"
-
-#: src/gui-gnome/setup-appearance.c:114
-msgid "Start GNOME panel applet at startup"
-msgstr ""
-
-#: src/gui-gnome/setup-appearance.c:118
-msgid "Limit the number of channels shown in panel"
-msgstr ""
-
-#: src/gui-gnome/setup-appearance.c:133
-msgid "channels"
-msgstr "kana³y"
-
-#: src/gui-gnome/setup-appearance.c:146
-msgid "Look #2"
-msgstr "Wygl±d #1"
-
-#: src/gui-gnome/setup-bg.c:241
-msgid "Scrollable pixmap"
-msgstr ""
-
-#: src/gui-gnome/setup-bg.c:245
-msgid "Scaled pixmap"
-msgstr ""
-
-#: src/gui-gnome/setup-bg.c:249
-msgid "Shade pixmap"
-msgstr ""
-
-#: src/gui-gnome/setup-bg.c:277
-msgid "Background & Fonts"
-msgstr "T³o i fonty"
-
-#: src/gui-gnome/setup-colors.c:29
-msgid "Black"
-msgstr "Czarny"
-
-#: src/gui-gnome/setup-colors.c:30 src/gui-gnome/setup-colors.c:336
-msgid "Blue"
-msgstr "Niebieski"
-
-#: src/gui-gnome/setup-colors.c:31 src/gui-gnome/setup-colors.c:335
-#: src/gui-gnome/setup-colors.c:339
-msgid "Green"
-msgstr "Zielony"
-
-#: src/gui-gnome/setup-colors.c:32
-msgid "Cyan"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:33 src/gui-gnome/setup-colors.c:335
-msgid "Red"
-msgstr "Czerwony"
-
-#: src/gui-gnome/setup-colors.c:34
-msgid "Magenta"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:35
-msgid "Brown"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:36
-msgid "Grey"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:37
-msgid "Dark Grey"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:38
-msgid "Light Blue"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:39
-msgid "Light Green"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:40
-msgid "Light Cyan"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:41
-msgid "Light Red"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:42
-msgid "Light Magenta"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:43
-msgid "Yellow"
-msgstr "¯ó³ty"
-
-#: src/gui-gnome/setup-colors.c:44
-msgid "White"
-msgstr "Bia³y"
-
-#: src/gui-gnome/setup-colors.c:45
-msgid "Orange"
-msgstr "Pomarañczowy"
-
-#: src/gui-gnome/setup-colors.c:47
-msgid "Background color"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:48
-msgid "New data in channel"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:49
-msgid "New msg in channel"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:50
-msgid "New msg for you in channel"
-msgstr "Nowy komunikat do Ciebie na kanale"
+#: src/fe-common/irc/fe-common-irc.c:85
+msgid "Autoconnect port"
+msgstr "Port autopo³±czenia"
 
-#: src/gui-gnome/setup-colors.c:51
-msgid "Default nick color in nicklist"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:52
-msgid "Gone nick in nicklist"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:53
-msgid "Nicklist background"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:99
-msgid "sample"
-msgstr "przyk³ad"
-
-#: src/gui-gnome/setup-colors.c:335
-msgid "Color"
-msgstr "Kolor"
-
-#: src/gui-gnome/setup-colors.c:336 src/gui-gnome/setup-colors.c:339
-msgid "Sample text"
-msgstr "Przyk³adowy tekst"
+#: src/fe-common/irc/fe-common-irc.c:85
+msgid "PORT"
+msgstr "PORT"
 
-#: src/gui-gnome/setup-colors.c:338
-msgid "Color                                       "
-msgstr "Kolor"
+#: src/fe-common/irc/fe-common-irc.c:86
+msgid "Disable autoconnecting"
+msgstr "Wy³±czenie autopo³±czenia"
 
-#: src/gui-gnome/setup-colors.c:339
-msgid "Red  "
-msgstr "Czerwony "
-
-#: src/gui-gnome/setup-colors.c:339
-msgid "Blue "
-msgstr "Niebieski"
-
-#: src/gui-gnome/setup-colors.c:382
-msgid ""
-"Select the color you want to change from upper list\n"
-"and change it from button in left"
-msgstr ""
-
-#: src/gui-gnome/setup-colors.c:397
-msgid "Default color number"
+#: src/fe-common/irc/fe-common-irc.c:87
+msgid "Specify nick to use"
 msgstr ""
 
-#: src/gui-gnome/setup-colors.c:414
-msgid "Colors"
-msgstr "Kolory"
-
-#: src/gui-gnome/setup-completion.c:63 src/gui-gnome/setup-completion.c:92
-msgid "Nick Completion"
-msgstr "uzupa³nianie nazw nicków"
-
-#: src/gui-gnome/setup-completion.c:70
-msgid "Disable automatic nick completion"
-msgstr "Wy³aczenie automatycznego kompletowanai nicków"
-
-#: src/gui-gnome/setup-completion.c:74
-msgid "Completion character"
-msgstr "Znak uzupe³niania"
-
-#: src/gui-gnome/setup-completion.c:81
-msgid "Remember public messages for"
+#: src/fe-common/irc/fe-common-irc.c:88
+msgid "Specify host name to use"
 msgstr ""
-
-#: src/gui-gnome/setup-completion.c:81 src/gui-gnome/setup-completion.c:84
-#: src/gui-gnome/setup-flood.c:79 src/gui-gnome/setup-flood.c:82
-msgid "seconds"
-msgstr "sekund"
 
-#: src/gui-gnome/setup-completion.c:84
-msgid "Remember public messages to you for"
+#: src/fe-text/irssi.c:153
+msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
-#: src/gui-gnome/setup-completion.c:87
-msgid "Remember the last"
-msgstr "Zapamiêtaj ostanie"
+#: src/lib-popt/popthelp.c:35
+#, fuzzy
+msgid "Show this help message"
+msgstr "Pokazuj czas"
 
-#: src/gui-gnome/setup-completion.c:87
-msgid "private messages"
+#: src/lib-popt/popthelp.c:36
+#, fuzzy
+msgid "Display brief usage message"
 msgstr "prywatne komunikaty"
 
-#. --- DCC GET ---
-#: src/gui-gnome/setup-dcc.c:82
-msgid "Receive"
-msgstr ""
+#~ msgid "%B-%W!%B-%n "
+#~ msgstr "%B-%W!%B-%n"
 
-#: src/gui-gnome/setup-dcc.c:89
-msgid "Automatically rename file if it exists"
-msgstr "Automatycznie zmieñ nazwê pliku je¿eli itnieje"
+#~ msgid "%B-%W!%B- %WIrssi:%n "
+#~ msgstr "%B-%W!%B- %WIrssi:%n"
 
-#: src/gui-gnome/setup-dcc.c:93
-msgid "Automatically get file when offered"
-msgstr "Automatycznie bi¿ plik je¿eli jest Ci oferowany"
-
-#: src/gui-gnome/setup-dcc.c:107
-msgid "Maximum file size to autoget (kB)"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:113
-msgid "Get files only from nicks (masks)"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:117
-msgid "Download path"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:123
-msgid "Create files with permission"
-msgstr "Twó¿ pliki z prawami dostêpu"
-
-#: src/gui-gnome/setup-dcc.c:134
-msgid "Transmit"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:141
-msgid "Fast send"
-msgstr "Szybki przekaz"
-
-#: src/gui-gnome/setup-dcc.c:145
-msgid "Upload path"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:157
-msgid "Use Mirc style CTCPs by default"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:161
-msgid "Autochat nick masks"
-msgstr ""
-
-#. --- common ---
-#: src/gui-gnome/setup-dcc.c:166
-msgid "Common"
-msgstr "G³ówny"
-
-#: src/gui-gnome/setup-dcc.c:173
-msgid "Automatically open transfer dialog"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:181
-msgid "Use specified port for DCC"
-msgstr "U¿yj portu do komunikacji DCC"
-
-#: src/gui-gnome/setup-dcc.c:198
-msgid "Timeout before rejecting DCC offers"
-msgstr ""
-
-#: src/gui-gnome/setup-dcc.c:202
-msgid "Transfer block size"
-msgstr ""
-
-#. ---
-#: src/gui-gnome/setup-flood.c:64
-msgid "Flood protection"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:73
-msgid "Check for flood every"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:73 src/gui-gnome/setup-flood.c:88
-msgid "milliseconds"
-msgstr "milisekund"
-
-#: src/gui-gnome/setup-flood.c:76
-msgid "Flooding declared after"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:76
-msgid "messages"
-msgstr "komunikaty"
-
-#: src/gui-gnome/setup-flood.c:79
-msgid "Autoignore flooders for"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:82
-msgid "Timeout between replying to CTCPs"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:85
-msgid "Max. CTCP requests to keep in buffer"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:88
-msgid "Timeout between sending commands to server"
-msgstr ""
-
-#: src/gui-gnome/setup-flood.c:93
-msgid "Flood"
-msgstr ""
-
-#. ---
-#: src/gui-gnome/setup-history.c:41 src/gui-gnome/setup-history.c:99
-msgid "History"
-msgstr "Historia"
-
-#: src/gui-gnome/setup-history.c:48
-msgid "Each window has it's own command history buffer"
-msgstr "ka¿de okno ma w³asna bufor historii poleceñ"
-
-#: src/gui-gnome/setup-history.c:52
-msgid "Saved lines in scrollback buffer"
-msgstr ""
-
-#: src/gui-gnome/setup-history.c:63
-msgid "Remove lines from buffer in blocks of"
-msgstr ""
-
-#: src/gui-gnome/setup-history.c:74
-msgid "Command history length"
-msgstr "D³ugo¶æ historii poleceñ"
-
-#: src/gui-gnome/setup-history.c:85
-msgid "Rawlog buffer length"
-msgstr ""
-
-#: src/gui-gnome/setup-ircnets.c:186
-msgid ""
-"Change ircnet in server and channel lists also\n"
-"WARNING: changing channel list can't be undone!"
-msgstr ""
-
-#: src/gui-gnome/setup-ircnets.c:199
-msgid "Username"
-msgstr "Nazwa u¿ytkowanika"
-
-#: src/gui-gnome/setup-ircnets.c:201
-msgid "Realname"
-msgstr "Prawdzine nazwisko"
-
-#: src/gui-gnome/setup-ircnets.c:209
-msgid "Max kicks per cmd"
-msgstr ""
-
-#: src/gui-gnome/setup-ircnets.c:213
-msgid "Max modes per cmd"
-msgstr ""
-
-#: src/gui-gnome/setup-ircnets.c:217
-msgid "Max msgs per cmd"
-msgstr ""
-
-#: src/gui-gnome/setup-ircnets.c:400 src/gui-gnome/setup-servers.c:519
-msgid "Add"
-msgstr "Dodaj"
-
-#: src/gui-gnome/setup-ircnets.c:405 src/gui-gnome/setup-servers.c:523
-msgid "Edit"
-msgstr "Edycja"
-
-#: src/gui-gnome/setup-ircnets.c:418
-msgid "IRC networks"
-msgstr "Sieci IRC"
-
-#: src/gui-gnome/setup-ircproxy.c:55
-msgid "Use IRC proxy"
-msgstr "U¿yj IRC proxy"
-
-#: src/gui-gnome/setup-ircproxy.c:81
-msgid "Send to proxy after connect"
-msgstr "Przeka¿ do serwra proxy po po³aczeniu"
-
-#: src/gui-gnome/setup-ircproxy.c:89
-msgid "IRC proxy"
-msgstr "IRC proxy"
-
-#: src/gui-gnome/setup-lists.c:406
-msgid "Alias"
-msgstr "Alias"
-
-#: src/gui-gnome/setup-lists.c:407 src/gui-gnome/setup-lists.c:443
-msgid "Command"
-msgstr "Polecenie"
-
-#: src/gui-gnome/setup-lists.c:410
-msgid "Aliases"
-msgstr "Aliasy"
-
-#: src/gui-gnome/setup-lists.c:412 src/gui-gnome/setup-lists.c:424
-msgid "Mask"
-msgstr "Maska"
-
-#: src/gui-gnome/setup-lists.c:413
-msgid "What to ignore"
-msgstr "Co ignorowaæ"
-
-#: src/gui-gnome/setup-lists.c:416
-msgid "Ignores"
-msgstr "Ignorowanie"
-
-#: src/gui-gnome/setup-lists.c:418
-msgid "Tag"
-msgstr "Znacznik"
-
-#: src/gui-gnome/setup-lists.c:419
-msgid "Completed text"
-msgstr "Uzupe³niony teks"
-
-#: src/gui-gnome/setup-lists.c:422
-msgid "Completions"
-msgstr "Uzupe³nianie"
-
-#: src/gui-gnome/setup-lists.c:425
-msgid "IRC network(s)"
-msgstr "Sieci IRC"
-
-#: src/gui-gnome/setup-lists.c:428
-msgid "Notify List"
-msgstr ""
-
-#: src/gui-gnome/setup-lists.c:430 src/gui-gnome/setup-lists.c:436
-msgid "Text"
-msgstr "Tekst"
-
-#: src/gui-gnome/setup-lists.c:431
 #, fuzzy
-msgid "Color# (optional) and Channels"
-msgstr "Kana³y"
+#~ msgid "[$[-2.0]3:$[-2.0]4] "
+#~ msgstr "[$[-2.0]3:$[-2.0]4] "
 
-#: src/gui-gnome/setup-lists.c:434
-msgid "Hilight Texts"
-msgstr "Pod¶wietl tekst"
-
-#: src/gui-gnome/setup-lists.c:437
-msgid "Replace with"
-msgstr ""
-
-#: src/gui-gnome/setup-lists.c:440
-msgid "Replaces"
-msgstr ""
-
-#: src/gui-gnome/setup-lists.c:442
-msgid "Label"
-msgstr "Etykieta"
-
-#: src/gui-gnome/setup-lists.c:446
-msgid "Popup Menu"
-msgstr "Rozwijane menu"
-
-#. ---
-#: src/gui-gnome/setup-lookandfeel.c:67
-msgid "Interface"
-msgstr "Interfejs"
-
-#: src/gui-gnome/setup-lookandfeel.c:74
-msgid "Show menubar"
-msgstr "Poka¿ menu"
-
-#: src/gui-gnome/setup-lookandfeel.c:78
-msgid "Show toolbar"
-msgstr "Poka¿ pasek narzêdzi"
-
-#: src/gui-gnome/setup-lookandfeel.c:82
-msgid "Show status bar"
-msgstr "Poka¿ pasek stausu"
-
-#: src/gui-gnome/setup-lookandfeel.c:86
-msgid "Notifylist popup dialogs"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:90
-msgid "Beep on private msgs"
-msgstr "Sygna³ przy wiadomo¶ci prywatnej"
-
-#: src/gui-gnome/setup-lookandfeel.c:102
-msgid "Show nick list"
-msgstr "Poka¿ listê ninków"
-
-#: src/gui-gnome/setup-lookandfeel.c:106
-msgid "Show time stamps"
-msgstr "Pokazuj czas"
-
-#: src/gui-gnome/setup-lookandfeel.c:110
-msgid "Show time stamps with msgs"
-msgstr "Pokazuj czas przy komunikatach"
-
-#: src/gui-gnome/setup-lookandfeel.c:114
-msgid "Do not show styling (bold, colors, etc.)"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:118
-msgid "Allow beeping"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:122
-msgid "Show op/voice in nick"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:130
-msgid "Window and Tabs"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:137
-msgid "Use a special window for status information"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:141
-msgid "Use a special window for all incoming messages"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:146
-msgid "Do not use a special window for all incoming messages"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:160
-msgid "Create a new window for each incoming query"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:164
-msgid "Automatically raise Messages Window(s)"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:168
-msgid "Use Tabs instead of new Windows"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:176
-msgid "Tab position"
-msgstr ""
-
-#: src/gui-gnome/setup-lookandfeel.c:187
-msgid "Left"
-msgstr "Z lewej"
-
-#: src/gui-gnome/setup-lookandfeel.c:192
-msgid "Right"
-msgstr "Z prawej"
-
-#: src/gui-gnome/setup-lookandfeel.c:197
-msgid "Top"
-msgstr "U góry"
-
-#: src/gui-gnome/setup-lookandfeel.c:202
-msgid "Bottom"
-msgstr "Na dole"
-
-#: src/gui-gnome/setup-lookandfeel.c:213
-msgid "Look & Feel"
-msgstr ""
-
-#. ---
-#: src/gui-gnome/setup-misc.c:66
-msgid "Programs"
-msgstr "Programy"
-
-#: src/gui-gnome/setup-misc.c:74
-msgid "Web browser"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:77
-msgid "FTP client"
-msgstr "Klient FTP"
-
-#: src/gui-gnome/setup-misc.c:80
-msgid "E-Mail client"
-msgstr "Klient poczty"
-
-#. ---
-#: src/gui-gnome/setup-misc.c:85
-msgid "Lag checking"
-msgstr "Sprawdzanie opó¼nieñ"
-
-#: src/gui-gnome/setup-misc.c:92
-msgid "How often to check for lag (secs)"
-msgstr "Jak czêsto sprawdzaæ opó¼nienia (w sekundach)"
-
-#: src/gui-gnome/setup-misc.c:103
-msgid "Maximum lag before force disconnect (secs)"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:123
-msgid "Default quit message"
-msgstr "Domy¶lny komunikat na zakoñczenie"
-
-#: src/gui-gnome/setup-misc.c:128
-msgid "Default user mode"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:131
-msgid "CTCP VERSION reply"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:134
-msgid "Translation table file (ircII style)"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:137
-msgid "Awaylog file name"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:140
-msgid "Awaylog logging level"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:151
-msgid "Knockout bans for"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:151
-msgid "seconds (requires ops)"
-msgstr ""
-
-#: src/gui-gnome/setup-misc.c:155
 #, fuzzy
-msgid "Show timestamps after"
-msgstr "Pokazuj czas"
+#~ msgid "Day changed to $[-2.0]1-$[-2.0]0 $2"
+#~ msgstr "Zmiana daty na $[-2.0]1-$[-2.0]0 $2"
 
-#: src/gui-gnome/setup-misc.c:155
-msgid "seconds idle time"
-msgstr ""
+#~ msgid "Server"
+#~ msgstr "Serwer"
 
-#: src/gui-gnome/setup-misc.c:157
-msgid "Automatically checking new Irssi versions..."
-msgstr ""
+#, fuzzy
+#~ msgid "Looking up %_$0%_"
+#~ msgstr "Szukam serwera %_$0%_"
 
-#: src/gui-gnome/setup-servers.c:185
-msgid "y"
-msgstr "t"
+#, fuzzy
+#~ msgid "Connecting to %_$0%_ %K[%n$1%K]%n port %_$2%_"
+#~ msgstr "£±czenie do %_$0%_ %K[%n$1%K]%n port %_$2%_"
 
-#: src/gui-gnome/setup-servers.c:250
-msgid "Clear"
-msgstr "Wyczysæ"
+#, fuzzy
+#~ msgid "Connection to %_$0%_ established"
+#~ msgstr "Po³±czenie z %_$0%_ nawi±zane"
 
-#: src/gui-gnome/setup-servers.c:261 src/gui-gnome/setup-servers.c:499
-msgid "IRC Net"
-msgstr "Sieæ IRC"
+#, fuzzy
+#~ msgid "Unable to connect server %_$0%_ port %_$1%_ %K[%n$2%K]"
+#~ msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_ %K[%n$2%K]"
 
-#: src/gui-gnome/setup-servers.c:281
-msgid "Timeout between sending commands to server (0 = default)"
-msgstr ""
+#, fuzzy
+#~ msgid "Connection lost to %_$0%_"
+#~ msgstr "Stracone po³±czenie do %_$0%_"
 
-#: src/gui-gnome/setup-servers.c:311
-msgid "Autoconnect at startup"
-msgstr "Automatycznie ³±cz przy starcie"
+#, fuzzy
+#~ msgid "No PONG reply from server %_$0%_ in $1 seconds, disconnecting"
+#~ msgstr "Brak odpowiedzi PONG z serwera %_$0%_ przez $1 sekund, roz³±czenie"
 
-#: src/gui-gnome/setup-servers.c:383
-msgid ""
-"You have empty entries!\n"
-"At least IRC Net, Server and Port\n"
-"must be filled."
-msgstr ""
+#, fuzzy
+#~ msgid "Disconnected from %_$0%_ %K[%n$1%K]"
+#~ msgstr "%c%_$1%_%n zosta³ wykopany z $2 przez %_$3%_ %K[%n$4%K]"
 
-#. 'IRC servers' frame
-#: src/gui-gnome/setup-servers.c:484
-msgid "IRC Servers"
-msgstr "Serwery IRC"
+#, fuzzy
+#~ msgid "Changed to %_$2%_ server %_$1%_"
+#~ msgstr "Nieignorowanie %_$1%_ od %_$2%_"
 
-#: src/gui-gnome/setup-servers.c:499
-msgid "AC"
-msgstr ""
+#~ msgid "%_$0%_: $1:$2 ($3)"
+#~ msgstr "%_$0%_: $1:$2 ($3)"
 
-#: src/gui-gnome/setup-servers.c:531
-msgid "User information"
-msgstr ""
+#~ msgid "%_$0%_: $1:$2 ($3) (connecting...)"
+#~ msgstr "%_$0%_: $1:$2 ($3) (³±cze w trakcie...)"
 
-#. skip motd
-#: src/gui-gnome/setup-servers.c:535
-msgid "Skip MOTD"
-msgstr "Pomiñ powitanie"
+#, fuzzy
+#~ msgid "Removed reconnection to server %_$0%_ port %_$1%_"
+#~ msgstr "Po³±czenie DCC niemo¿liwe z %_$0%_ port %_$1%_"
 
-#: src/gui-gnome/setup-servers.c:543
-msgid "Seconds to wait before reconnecting (-1 = never)"
-msgstr ""
+#, fuzzy
+#~ msgid "Reconnection tag %_$0%_ not found"
+#~ msgstr "Po³±czenie z %_$1% nawi±zane"
 
-#: src/gui-gnome/setup-servers.c:553
-msgid "Source host (empty=default)"
-msgstr ""
+#~ msgid "Channels"
+#~ msgstr "Kana³y"
 
-#: src/gui-gnome/setup-servers.c:568
-msgid "Alternate nick"
-msgstr ""
+#, fuzzy
+#~ msgid "%c%_$0%_ %K[%c$1%K]%n has joined %_$2"
+#~ msgstr "%c%_$0%_ %K[%c$2%K]%n przy³±czy³ siê do %_$2"
 
-#: src/gui-gnome/setup-servers.c:572
-msgid "User name"
-msgstr ""
+#, fuzzy
+#~ msgid "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%K]"
+#~ msgstr "%c$0 %K[%n$1%K]%n opu¶ci³ %_$2%_ %K[%n$3%K]"
 
-#: src/gui-gnome/setup-servers.c:585
-msgid "Servers"
-msgstr "Serwery"
+#, fuzzy
+#~ msgid "You are now talking to channel %_$0%_"
+#~ msgstr "Teraz rozmawiasz na kanale %_$0%_"
 
-#: src/gui-gnome/setup-session.c:124
-msgid "New Window..."
-msgstr "Nowe okno..."
+#, fuzzy
+#~ msgid ""
+#~ "Cannot join to channel %_$0%_ %K(%nYou have joined to too many channels%K)"
+#~ msgstr ""
+#~ "Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nJeste¶ na zbyt du¿ej liczbie "
+#~ "kana³ów%K)"
 
-#: src/gui-gnome/setup-session.c:129
-msgid "New Tab..."
-msgstr ""
+#, fuzzy
+#~ msgid "Cannot join to channel %_$0%_ %K(%nChannel is full%K)"
+#~ msgstr "Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%nKana³ jest pe³ny%K)"
 
-#: src/gui-gnome/setup-session.c:134
-msgid "New Channel..."
-msgstr "Nowy kana³..."
+#, fuzzy
+#~ msgid "Cannot join to channel %_$0%_ %K(%nYou must be invited%K)"
+#~ msgstr ""
+#~ "Niemo¿na do³±czyæ siê do kana³u %_$0%_ %K(%Wymagane jest zaproszenie%K)"
 
-#: src/gui-gnome/setup-session.c:145
-msgid "Session"
-msgstr "Sesja"
+#, fuzzy
+#~ msgid "Cannot join to channel %_$0%_ %K(%nYou are banned%K)"
+#~ msgstr ""
+#~ "Niemo¿na do³±czyæ siê do kana³u %_$1%_ %K(%nMasz zakaz wej¶cia na kana³ "
+#~ "(ban)%K)"
 
-#: src/gui-gnome/setup-themes.c:210
-msgid "Add new theme"
-msgstr "Dodaj nowy temat"
+#, fuzzy
+#~ msgid "Cannot join to channel %_$0%_ %K(%nBad channel key%K)"
+#~ msgstr "Niemo¿na do³±czyæ sie do kana³u %_$1%_ %K(%nZ³y klucz do kana³u%K)"
 
-#: src/gui-gnome/setup-themes.c:242
-#, c-format
-msgid "Really delete theme %s"
-msgstr "naprawdê skasuj temat %s"
+#, fuzzy
+#~ msgid "Cannot join to channel %_$0%_ %K(%nBad channel mask%K)"
+#~ msgstr ""
+#~ "Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nnipoprawna maska kana³u%K)"
 
-#: src/gui-gnome/setup-themes.c:261
-msgid "Theme selector"
-msgstr "Wybór tematów"
+#, fuzzy
+#~ msgid ""
+#~ "Cannot join to channel %_$0%_ %K(%nChannel is temporarily unavailable%K)"
+#~ msgstr ""
+#~ "Niemo¿na do³±czyæ sie do kana³u %_$0%_ %K(%nKana³ chwilowo niedostêpny%K)"
 
-#: src/gui-gnome/setup-txt.c:282
-msgid "<formats>"
-msgstr ""
+#, fuzzy
+#~ msgid "%c$0%n was kicked from %_$1%_ by %_$2%_ %K[%n$3%K]"
+#~ msgstr "%c%_$0%_%n zosta³ wykopany z %_$1%_ przez %_$2%_ %K[%n$3%K]"
 
-#: src/gui-gnome/setup-txt.c:327
-msgid "Text Formats"
-msgstr ""
+#, fuzzy
+#~ msgid "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]"
+#~ msgstr "%c%_$0%_ %K[%n$1%K]%n opu¶ci³ IRC %K[%n$3%K]"
 
-#: src/gui-gnome/setup.c:74
-msgid ""
-"GTK pixmap themes are a bit buggy, if you really want to\n"
-"use them, you should enable this workaround. Without it\n"
-"X server's memory usage grows all the time. If you enable\n"
-"it, you won't see the nicks' gone status in nicklist"
-msgstr ""
+#, fuzzy
+#~ msgid "%_$0%_ invites you to %_$1"
+#~ msgstr "%_$0%_ zaprasza ciê na %_$1"
 
-#: src/gui-gnome/setup.c:80
-msgid "Enable workaround"
-msgstr ""
+#, fuzzy
+#~ msgid "%K[%g%_Users%_%K(%g$0%K)]%n $1"
+#~ msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
 
-#: src/gui-gnome/wordclick.c:114
-#, c-format
-msgid "Join %s"
-msgstr "Do³±cz %s"
+#~ msgid "Topic for %c$0%K:%n $1"
+#~ msgstr "Tytu³ dla %c$0%K:%n $1"
 
-#: src/gui-gnome/wordclick.c:133
-#, c-format
-msgid "Open HTTP page %s"
-msgstr ""
+#, fuzzy
+#~ msgid "Topic set by %_$0%_ %K[%n$1%K]"
+#~ msgstr "Twój nick jest u¿ywany przez %_$4%_ %K[%n$2@$3%K]"
 
-#: src/gui-gnome/wordclick.c:144
-#, c-format
-msgid "Open FTP page %s"
-msgstr ""
+#, fuzzy
+#~ msgid "%_$0%_: invite %c$1"
+#~ msgstr "%_$1%_ zaprasza ciê na %_$2"
 
-#: src/gui-gnome/wordclick.c:155
-#, c-format
-msgid "Send email to %s"
-msgstr ""
+#, fuzzy
+#~ msgid "$0: No such channel"
+#~ msgstr "$1: Kana³ nieznaleziony"
 
-#: src/gui-gnome/wordclick.c:169
-#, c-format
-msgid "Query %s"
-msgstr ""
+#~ msgid "Nick"
+#~ msgstr "Nick"
 
-#~ msgid "Please wait, waiting for servers to close connections..\n"
-#~ msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
+#~ msgid "You have been marked as being away"
+#~ msgstr "Jeste¶ zaznaczony jako nieobecny"
+
+#~ msgid "You are no longer marked as being away"
+#~ msgstr "Nie jeste¶ ju¿ zaznaczony jako nieobecny"
+
+#, fuzzy
+#~ msgid "$0 is away: $1"
+#~ msgstr "$1 jest nieobecny: $2"
+
+#, fuzzy
+#~ msgid "$0: No such nick/channel"
+#~ msgstr "$1: Nie znaleleziony nick/kana³"
+
+#, fuzzy
+#~ msgid "You're now known as %c$0"
+#~ msgstr "Jeste¶ znany jako %c$0"
+
+#, fuzzy
+#~ msgid "%_$0%_ is now known as %c$1"
+#~ msgstr "%_$0%_ jest teraz znany jako %c$1"
+
+#, fuzzy
+#~ msgid "Nick %_$0%_ is already in use"
+#~ msgstr "Nick %_$0%_ jest ju¿ u¿ywany"
+
+#, fuzzy
+#~ msgid "Nick %_$0%_ is temporarily unavailable"
+#~ msgstr "Nick %_$0%_ jest chwilowo niedostêpny"
+
+#, fuzzy
+#~ msgid "Your nick is owned by %_$3%_ %K[%n$1@$2%K]"
+#~ msgstr "Twój nick jest u¿ywany przez %_$3%_ %K[%n$1@$2%K]"
+
+#, fuzzy
+#~ msgid "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3"
+#~ msgstr "%c%_$0%_ %K[%n$1@$2%K]%n% przy³±czy³ siê do %_$3"
+
+#, fuzzy
+#~ msgid " idle     : $1 hours $2 mins $3 secs"
+#~ msgstr " bezczynny : $1 godzin $2 minut $3 sekund"
+
+#, fuzzy
+#~ msgid " idle     : $1 hours $2 mins $3 secs %K[%nsignon: $4%K]"
+#~ msgstr " bezczynny : $1 godzin $2 minut $3 sekund %K[%nsignon: $4%K]"
+
+#, fuzzy
+#~ msgid " server   : $1 %K[%n$2%K]"
+#~ msgstr " serwer    : $1 %K[%n$2%K]"
+
+#~ msgid "          : %_IRC operator%_"
+#~ msgstr "           : %_operator IRC%_"
+
+#, fuzzy
+#~ msgid " channels : $1"
+#~ msgstr " kana³y    : $1"
+
+#, fuzzy
+#~ msgid " away     : $1"
+#~ msgstr " nieobeczy  : $1"
+
+#~ msgid "End of WHOIS"
+#~ msgstr "Koniec WHOIS"
+
+#~ msgid "End of /WHO list"
+#~ msgstr "Koniec listy /WHO"
+
+#~ msgid "Your messages"
+#~ msgstr "Twoje wiadomo¶ci"
+
+#, fuzzy
+#~ msgid "%K<%n$2%W$0%K>%n %|$1"
+#~ msgstr "%K<%n$2%W$0%K>%n %|$1"
+
+#, fuzzy
+#~ msgid "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
+#~ msgstr "%K<%n$3%W$0%K:%c$1%K>%n %|$2"
+
+#, fuzzy
+#~ msgid "%K[%rmsg%K(%R$0%K)]%n $1"
+#~ msgstr "%K[%rmsg%K(%R$0%K)]%n $1"
+
+#, fuzzy
+#~ msgid "%K<%W$2%K>%n %|$1"
+#~ msgstr "%K<%W$2%K>%n %|$1"
+
+#, fuzzy
+#~ msgid "%K[%rnotice%K(%R$0%K)]%n $1"
+#~ msgstr "%K[%rdcc%K(%R$1%K)]%n $2"
+
+#, fuzzy
+#~ msgid "%W * $0%n $1"
+#~ msgstr "%W * $1%n $2"
+
+#, fuzzy
+#~ msgid "%K[%rctcp%K(%R$0%K)]%n $1 $2"
+#~ msgstr "%K[%rctcp%K(%R$1%K)]%n $2 $3"
+
+#, fuzzy
+#~ msgid "%K[%rdcc%K(%R$0%K)]%n $1"
+#~ msgstr "%K[%rdcc%K(%R$1%K)]%n $2"
+
+#~ msgid "Received messages"
+#~ msgstr "Otrzymane wiadomo¶ci"
+
+#, fuzzy
+#~ msgid "%K<%n$2%Y$0%K>%n %|$1"
+#~ msgstr "%K<%Y$1%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K<%n$3%Y$0%K:%c$1%K>%n %|$2"
+#~ msgstr "%K<%Y$1%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K<%n$3$0$1%K>%n %|$2"
+#~ msgstr "%K<%n$1%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K<%n$4$0$1%K:%c$2%K>%n %|$3"
+#~ msgstr "%K<%n$1%K:%c$2%K>%n $3"
+
+#, fuzzy
+#~ msgid "%K<%n$2$0%K>%n %|$1"
+#~ msgstr "%K<%n$1%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K<%n$3$0%K:%c$1%K>%n %|$2"
+#~ msgstr "%K<%n$1%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K[%R$0%K(%r$1%K)]%n $2"
+#~ msgstr "%K[%R$1%K(%r$2%K)]%n $3"
+
+#, fuzzy
+#~ msgid "%K<%R$0%K>%n %|$2"
+#~ msgstr "%K<%W$3%K>%n $2"
+
+#, fuzzy
+#~ msgid "%K[%G$0%K(%gdcc%K)]%n $1"
+#~ msgstr "%K[%G$1%K(%gdcc%K)]%n $2"
+
+#, fuzzy
+#~ msgid "%g!$0%n $1"
+#~ msgstr "%g!$1%n $2"
+
+#, fuzzy
+#~ msgid "%K-%M$0%K:%m$1%K-%n $2"
+#~ msgstr "%K-%M$1%K:%m$2%K-%n $3"
+
+#, fuzzy
+#~ msgid "%K-%M$0%K:%m@$1%K-%n $2"
+#~ msgstr "%K-%M$1%K:%m$2%K-%n $3"
+
+#, fuzzy
+#~ msgid "%K-%M$0%K(%m$1%K)-%n $2"
+#~ msgstr "%K-%M$1%K(%m$2%K)-%n $3"
+
+#, fuzzy
+#~ msgid "%W (*dcc*) $0%n $1"
+#~ msgstr "%W (*dcc*) $1%n $2"
+
+#, fuzzy
+#~ msgid "%W (*) $0%n $2"
+#~ msgstr "%W (*) $1%n $3"
+
+#, fuzzy
+#~ msgid "%W * $0%n $2"
+#~ msgstr "%W * $1%n $2"
+
+#, fuzzy
+#~ msgid "%W * $0%K:%c$1%n $2"
+#~ msgstr "%W * $1%K:%c$2%n $3"
+
+#, fuzzy
+#~ msgid "CTCP %_$0%_ reply from %_$1%_%K:%n $2"
+#~ msgstr "Odpowied¼ CTCP %_$1%_ od %_$2%_%K:%n $3"
+
+#, fuzzy
+#~ msgid "CTCP %_PING%_ reply from %_$0%_: $1.$2 seconds"
+#~ msgstr "Odpowied¼ CTCP %_PING%_ od %_$1%_: $2.$3 sekund"
+
+#, fuzzy
+#~ msgid "%g>>> DCC CTCP received from %_$0%_%K: %g$1"
+#~ msgstr "%g>>> DCC CTCP otrzymane od %_$1%_%K: %g$2"
+
+#~ msgid "DCC"
+#~ msgstr "DCC"
+
+#, fuzzy
+#~ msgid "%gDCC CHAT from %_$0%_ %K[%g$1 port $2%K]"
+#~ msgstr "%gDCC CHAT od %_$1%_ %K[%g$2 port $3%K]"
+
+#, fuzzy
+#~ msgid "%gNo DCC CHAT connection open to %_$0"
+#~ msgstr "%gBrak otwartego po³±czenia DCC CHAT do %_$1"
+
+#, fuzzy
+#~ msgid ""
+#~ "%gDCC %_CHAT%_ connection with %_$0%_ %K%K[%g$1 port $2%K]%g established"
+#~ msgstr ""
+#~ "%gUstanowione po³±czenie DCC %_CHAT%_ z %_$1%_ %K%K[%g$2 port $3%K]%g"
+
+#, fuzzy
+#~ msgid "%gDCC lost chat to %_$0"
+#~ msgstr "%gStracone po³±czenie DCC CHAT do %_$1"
+
+#, fuzzy
+#~ msgid "%gDCC SEND from %_$0%_ %K[%g$1 port $2%K]: %g$3 %K[%g$4 bytes%K]"
+#~ msgstr "%gDCC SEND od %_$1%_ %K[%g$2 port $3%K]: %g$4 %K[%g$5 bajtów%K]"
+
+#, fuzzy
+#~ msgid "%gDCC already sending file %G$0%g for %_$1%_"
+#~ msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
+
+#, fuzzy
+#~ msgid "%gDCC not sending file %G$1%g to %_$0"
+#~ msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
+
+#, fuzzy
+#~ msgid "%gDCC sending file %G$0%g for %_$1%_ %K[%g$2 port $3%K]"
+#~ msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
+
+#, fuzzy
+#~ msgid ""
+#~ "%gDCC sent file $0 %K[%g%_$1%_kb%K]%g for %_$2%_ in %_$3%_ secs "
+#~ "%K[%g%_$4kb/s%_%K]"
+#~ msgstr ""
+#~ "DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
+#~ "%K[%g$5kb/s%K"
+
+#, fuzzy
+#~ msgid "%gDCC aborted sending file $0 for %_$1%_"
+#~ msgstr "%gDCC przerwane wysy³anie pliku $1 do %_$2%_"
+
+#, fuzzy
+#~ msgid "%gDCC no file offered by %_$0"
+#~ msgstr "%gDCC %_$1 nie oferuje ci plików"
+
+#, fuzzy
+#~ msgid "%gDCC receiving file %G$0%g from %_$1%_ %K[%g$2 port $3%K]"
+#~ msgstr "%gDCC pobieranie pliku %G$1%g od  %_$2%_ %K[%g$3 port $4%K]"
+
+#, fuzzy
+#~ msgid ""
+#~ "%gDCC received file %G$0%g %K[%g$1kb%K]%g from %_$2%_ in %_$3%_ secs "
+#~ "%K[%g$4kb/s%K]"
+#~ msgstr ""
+#~ "DCC otrzymany plik %G$1%g %K[%g$2kb%K]%g od %_$3%_ w %_$4%_ sekund "
+#~ "%K[%g$5kb/s%K"
+
+#, fuzzy
+#~ msgid "%gDCC aborted receiving file $0 from %_$1%_"
+#~ msgstr "%gDCC przerwane otrzymywanie pliku $1 od %_$2%_"
+
+#, fuzzy
+#~ msgid "%gDCC unknown ctcp %G$0%g from %_$1%_ %K[%g$2%K]"
+#~ msgstr "%gDCC nieznane ctcp %G$1%g od %_$2%_ %K[%g$3%K]"
+
+#, fuzzy
+#~ msgid "%gDCC unknown reply %G$0%g from %_$1%_ %K[%g$2%K]"
+#~ msgstr "%gDCC nieznana odpowied¼ %G$1%g od %_$2%_ %K[%g$3%K]"
+
+#, fuzzy
+#~ msgid "%gDCC unknown type %_$0"
+#~ msgstr "%gNieznay typ DCC %_$1"
+
+#, fuzzy
+#~ msgid "%gDCC can't connect to %_$0%_ port %_$1"
+#~ msgstr "%gPo³±czenie DCC niemo¿liwe z %_$1%_ port %_$2"
+
+#, fuzzy
+#~ msgid "%gDCC can't create file %G$0%g"
+#~ msgstr "%gDCC nie mo¿na utworzyæ pliku %G$1%g"
+
+#, fuzzy
+#~ msgid "%gDCC %G$0%g was rejected by %_$1%_ %K[%G$2%K]"
+#~ msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
+
+#, fuzzy
+#~ msgid "%gDCC %G$0%g close for %_$1%_ %K[%G$2%K]"
+#~ msgstr "%gDCC %G$1%g zosta³o odrzucone przez %_$2%_ %K[%G$3%K]"
+
+#~ msgid "Other server events"
+#~ msgstr "Inne zdarzenia serwera"
+
+#, fuzzy
+#~ msgid "Users online: %_$0"
+#~ msgstr "U¿ytkowników online: %_$1"
+
+#, fuzzy
+#~ msgid "PONG received from $0: $1"
+#~ msgstr "Otrzymany PONG od $1: $2"
+
+#, fuzzy
+#~ msgid "%WWALLOP * $0%n $1"
+#~ msgstr "%W * $1%n $2"
+
+#, fuzzy
+#~ msgid "You're not channel operator in $0"
+#~ msgstr "Nie jeste¶ operatorem kana³u na $1"
+
+#~ msgid "Logging"
+#~ msgstr "Logowanie"
+
+#, fuzzy
+#~ msgid "Log file %W$0%n opened"
+#~ msgstr "Plik logu %W$1%n otwarty"
+
+#, fuzzy
+#~ msgid "Log file %W$0%n not open"
+#~ msgstr "Plik logu %W$1%n nie otwarty"
+
+#, fuzzy
+#~ msgid "Closed log file %W$0"
+#~ msgstr "Zamkniêcie pliku logu %W$1"
+
+#, fuzzy
+#~ msgid "%W$0%K:%n $1"
+#~ msgstr "%W$1%K:%n $2"
+
+#, fuzzy
+#~ msgid "     + %W$0%K:%n $1"
+#~ msgstr "     + %W$1%K:%n $2"
+
+#~ msgid "Misc"
+#~ msgstr "Ró¿ne"
+
+#, fuzzy
+#~ msgid "You must specify one of the following levels: $0"
+#~ msgstr "Nale¿y wybraæ jeden z nastêpuj±cych poziomów: $1"
+
+#, fuzzy
+#~ msgid "Ignoring %_$0%_ from %_$1%_"
+#~ msgstr "Ignorowanie %_$1%_ od %_$2%_"
+
+#, fuzzy
+#~ msgid "Unignored %_$0%_ from %_$1%_"
+#~ msgstr "Nieignorowanie %_$1%_ od %_$2%_"
+
+#, fuzzy
+#~ msgid "%_$0%_ is not being ignored"
+#~ msgstr "%_$1%_ nie bêdzie ignorowany"
+
+#, fuzzy
+#~ msgid "%_$0%_ %K[%n$1@$2%K] [%n%_$3%_%K]%n has joined to $4"
+#~ msgstr "%c%_$1%_ %K[%c$2%K]%n przy³±czy³ siê do %_$3"
+
+#, fuzzy
+#~ msgid "Error loading plugin %_$0%_: $1"
+#~ msgstr "B³±d podczas ³±dowania wtyczki %_$1%_: $2"
+
+#, fuzzy
+#~ msgid "Plugin %_$0%_ is not irssi plugin"
+#~ msgstr "Wtyczka %_$1%_ nie jest wtyczk± irssi"
+
+#, fuzzy
+#~ msgid "Plugin %_$0%_ isn't compatible with this irssi version"
+#~ msgstr "Wtyczka %_$1%_ nie pasuje do tej wersji irssi"
+
+#, fuzzy
+#~ msgid "Plugin %_$0%_ is already loaded"
+#~ msgstr "Wtyczka %_$1%_ jest ju¿ za³adowana"
+
+#, fuzzy
+#~ msgid "Plugin %_$0%_ not loaded"
+#~ msgstr "Wtyczka %_$1%_ nie jest za³adowana"
+
+#~ msgid "IRC client, "
+#~ msgstr "Klient IRC, "
+
+#~ msgid "Select new default font"
+#~ msgstr "Wybierz now± domy¶ln± czcionkê"
+
+#~ msgid "Channel"
+#~ msgstr "Kana³"
+
+#~ msgid "IRC Network"
+#~ msgstr "Sieæ IRC"
+
+#~ msgid "Password"
+#~ msgstr "Has³o"
+
+#~ msgid "Background pixmap"
+#~ msgstr "T³o"
+
+#~ msgid "Font"
+#~ msgstr "Czcionka"
+
+#~ msgid "Change..."
+#~ msgstr "Zmieñ..."
+
+#~ msgid "Yes"
+#~ msgstr "Tak"
+
+#~ msgid "No"
+#~ msgstr "Nie"
+
+#~ msgid "Autojoin"
+#~ msgstr "Do³±cz automatycznie"
+
+#~ msgid "IRC network"
+#~ msgstr "Sieæ IRC"
+
+#~ msgid "Join"
+#~ msgstr "Do³±cz"
+
+#~ msgid "Part"
+#~ msgstr "Opu¶æ"
+
+#~ msgid "Add..."
+#~ msgstr "Dodaj..."
+
+#~ msgid "Edit..."
+#~ msgstr "Edytuj..."
+
+#~ msgid "Delete"
+#~ msgstr "Skasuj"
+
+#~ msgid "Quick join..."
+#~ msgstr "Szybkie do³±czenie..."
+
+#~ msgid "Address"
+#~ msgstr "Adres"
+
+#~ msgid "Port"
+#~ msgstr "Port"
+
+#~ msgid "Connect"
+#~ msgstr "Po³±cz"
+
+#~ msgid "Type"
+#~ msgstr "Typ"
+
+#~ msgid "File Size"
+#~ msgstr "Rozmiar pliku"
+
+#~ msgid "Transferred"
+#~ msgstr "Przes³ane"
+
+#~ msgid "% done"
+#~ msgstr "% zrobione"
+
+#~ msgid "kB/sec"
+#~ msgstr "kB/s"
+
+#~ msgid "File name"
+#~ msgstr "Nazwa pliku"
+
+#~ msgid "Create dialog"
+#~ msgstr "Utwórz dialog"
+
+#~ msgid "Disconnect"
+#~ msgstr "Roz³±cz"
+
+#~ msgid "Notify about new irssi releases"
+#~ msgstr "Informacja o nowej wersji irssi"
+
+#~ msgid "Notify also about new development releases"
+#~ msgstr "Informacja o nowej rozwojowej wersji"
+
+#~ msgid ""
+#~ "Both stable and unstable Irssi versions\n"
+#~ "have been released.\n"
+#~ "\n"
+#~ "Stable version %s\n"
+#~ "Unstable version %s"
+#~ msgstr ""
+#~ "Zosta³y og³oszone nowe\n"
+#~ "wersje Irssi\n"
+#~ "\n"
+#~ "Stabilna wersja %s\n"
+#~ "Niestabilan wrsja %s"
+
+#~ msgid ""
+#~ "New stable irssi version %s\n"
+#~ "has been released."
+#~ msgstr ""
+#~ "Og³oszona zosta³a nowa\n"
+#~ "stabilna wersja irssi %s."
+
+#~ msgid ""
+#~ "New unstable irssi version %s\n"
+#~ "has been released."
+#~ msgstr ""
+#~ "Og³oszona zosta³a nowa\n"
+#~ "niestabilna wersja irssi %s."
+
+#~ msgid "Get stable Irssi via DCC"
+#~ msgstr "Pobie¿ wersjê stabiln± Irssi poprzez DCC"
+
+#~ msgid "Get unstable Irssi via DCC"
+#~ msgstr "Pobie¿ wersjê niestabiln± Irssi poprzez DCC"
+
+#~ msgid "Open Irssi's website"
+#~ msgstr "Otwó¿ stronê domowa Irssi"
+
+#~ msgid "No server selected"
+#~ msgstr "Nie zosta³ wybrany serwer"
+
+#~ msgid "No channel specified"
+#~ msgstr "Nie zosta³ wybrany kana³"
+
+#~ msgid "Links"
+#~ msgstr "Po³±czenia"
+
+#~ msgid "Description"
+#~ msgstr "Opis"
+
+#~ msgid "Private messages"
+#~ msgstr "Prywatne wiadomo¶ci"
+
+#~ msgid "Public messages"
+#~ msgstr "Publiczne wiadomo¶ci"
+
+#~ msgid "CTCP messages"
+#~ msgstr "Komunikaty CTCP"
+
+#~ msgid "Actions (/me)"
+#~ msgstr "Akcje (/me)"
+
+#~ msgid "Joins"
+#~ msgstr "Przy³±czenia"
+
+#~ msgid "Parts"
+#~ msgstr "Opuszczenia"
+
+#~ msgid "Quits"
+#~ msgstr "Zakoñczenia"
+
+#~ msgid "Kicks"
+#~ msgstr "Wykopania"
+
+#~ msgid "Invites"
+#~ msgstr "Zaproszenia"
+
+#~ msgid "Nick changes"
+#~ msgstr "Zmiany nicka"
+
+#~ msgid "Pongs"
+#~ msgstr "Pongi"
+
+#~ msgid "DCC messages"
+#~ msgstr "Komunikaty DCC"
+
+#~ msgid "Hilighted messages"
+#~ msgstr "Pod¶wietlone wiadomo¶ci"
+
+#~ msgid "Client errors"
+#~ msgstr "B³êdy klienta"
+
+#~ msgid "<new log file>"
+#~ msgstr "<nowy plik logów>"
+
+#~ msgid "Open"
+#~ msgstr "Otwórz"
+
+#~ msgid "Name"
+#~ msgstr "Nazwa"
+
+#~ msgid "Level"
+#~ msgstr "Poziom"
+
+#~ msgid "New log file"
+#~ msgstr "Nowy plik logów"
+
+#~ msgid "New log entry"
+#~ msgstr "Nowy element logów"
+
+#~ msgid "Start logging"
+#~ msgstr "Pocz±tek logowania"
+
+#~ msgid "Stop logging"
+#~ msgstr "Zakoñczenie logowania"
+
+#~ msgid "Clear all"
+#~ msgstr "Wyczy¶æ wszystko"
+
+#~ msgid "Select all"
+#~ msgstr "Wybierz wszystko"
+
+#~ msgid "Open log at startup"
+#~ msgstr "Otwórz logi przy starcie"
+
+#~ msgid "Log file name:"
+#~ msgstr "Nazwa pliku logów:"
+
+#~ msgid "Channel/nick:"
+#~ msgstr "Kana³/nick:"
+
+#~ msgid "Topic: "
+#~ msgstr "Temat: "
+
+#~ msgid "Invite"
+#~ msgstr "Zaproszenie"
+
+#~ msgid "Secret"
+#~ msgstr "Tajny"
+
+#~ msgid "Private"
+#~ msgstr "Prywatny"
+
+#~ msgid "Moderated"
+#~ msgstr "Moderowany"
+
+#~ msgid "Channel key: "
+#~ msgstr "Klucz kana³u:"
+
+#~ msgid "Remove"
+#~ msgstr "Usuñ"
+
+#~ msgid "IRC net"
+#~ msgstr "Sieæ IRC"
+
+#~ msgid "Real Name"
+#~ msgstr "Prawdziwe nazwisko"
+
+#~ msgid "Can't load plugin: %s"
+#~ msgstr "Nie mo¿na za³edowaæ wtyczki: %s"
+
+#~ msgid "Plugin not loaded: %s"
+#~ msgstr "Wtyczka nie za³adowana: %s"
+
+#~ msgid "Plugin %s properties:"
+#~ msgstr "W³a¶ciwo¶ci wtyczki %s:"
+
+#~ msgid "Arguments for plugin:"
+#~ msgstr "Argumenty dla wtyczki:"
+
+#~ msgid "Load"
+#~ msgstr "£aduj"
+
+#~ msgid "Settings..."
+#~ msgstr "Ustawienia..."
+
+#~ msgid "Plugins/"
+#~ msgstr "Wtyczki/"
+
+#~ msgid "Plugins"
+#~ msgstr "Wtyczki"
+
+#~ msgid "Save rawlog to: "
+#~ msgstr "Zachowaj surowy log do: "
+
+#~ msgid "Save"
+#~ msgstr "Zapisz"
+
+#~ msgid "Not connected to server"
+#~ msgstr "Nie pod³±czony do serwera"
+
+#~ msgid "Save to file..."
+#~ msgstr "Zapisz do pliku..."
+
+#~ msgid "Display servers"
+#~ msgstr "Wy¶wietl serwery"
+
+#~ msgid "Display channels"
+#~ msgstr "Wy¶wietl kana³y"
+
+#~ msgid "Find previous"
+#~ msgstr "Znajd¼ poprzedni"
+
+#~ msgid "Find next"
+#~ msgstr "Znajd¼ nastêpny"
+
+#~ msgid "Find text: "
+#~ msgstr "Znajd¼ tekst: "
+
+#~ msgid "Save only selected text"
+#~ msgstr "Zapisz tylko zaznaczony tekst"
+
+#~ msgid "Save window buffer to: "
+#~ msgstr "Zapisz bufor okna do: "
+
+#~ msgid "Save window buffer"
+#~ msgstr "Zapisz bufor okna"
+
+#~ msgid "Save size"
+#~ msgstr "Zapisz rozmiar"
+
+#~ msgid "Width"
+#~ msgstr "Szeroko¶æ"
+
+#~ msgid "Height"
+#~ msgstr "Wysoko¶æ"
+
+#~ msgid "Save position"
+#~ msgstr "Zapisz pozycje"
+
+#~ msgid "X"
+#~ msgstr "X"
+
+#~ msgid "Y"
+#~ msgstr "Y"
+
+#~ msgid "Default window"
+#~ msgstr "Domy¶lne okno"
+
+#~ msgid "Ok"
+#~ msgstr "Ok"
+
+#~ msgid "Apply"
+#~ msgstr "Zastosuj"
+
+#~ msgid "Cancel"
+#~ msgstr "Anuluj"
+
+#~ msgid "Browse"
+#~ msgstr "Przegl±daj"
+
+#~ msgid "Nick: "
+#~ msgstr "Nick: "
+
+#~ msgid "File to send: "
+#~ msgstr "Plik do wys³ania: "
+
+#~ msgid "Select file to send"
+#~ msgstr "Wybierz plik do wys³ania"
+
+#~ msgid "Rename file to"
+#~ msgstr "Zmieñ nazwe pliku na"
+
+#~ msgid "Overwrite"
+#~ msgstr "Nadpisz"
+
+#~ msgid "Rename"
+#~ msgstr "Zmieñ nazwê"
+
+#~ msgid "Resume"
+#~ msgstr "Wznów"
+
+#~ msgid ""
+#~ "File name: %s\n"
+#~ "File size: %ld\n"
+#~ msgstr ""
+#~ "Nazwa   pliku: %s\n"
+#~ "Rozmiar pliku: %ld\n"
+
+#~ msgid "%s invites you to %s"
+#~ msgstr "%s zaprasza ciê na %s"
+
+#~ msgid "Nick completion"
+#~ msgstr "Uzupe³nianie nicków"
+
+#~ msgid "Command history"
+#~ msgstr "Historial poleceñ"
+
+#~ msgid "_Save Text As..."
+#~ msgstr "Z_apisz tekst jako..."
+
+#~ msgid "_Close"
+#~ msgstr "_Zamknij"
+
+#~ msgid "_Quit"
+#~ msgstr "_Koniec"
+
+#~ msgid "_Connect..."
+#~ msgstr "_Po³±cz..."
+
+#~ msgid "_Disconnect..."
+#~ msgstr "_Roz³±cz..."
+
+#~ msgid "C_hannels..."
+#~ msgstr "_Kana³y..."
+
+#~ msgid "_Status Window..."
+#~ msgstr "Okno _stausu..."
+
+#~ msgid "_Links..."
+#~ msgstr "_Po³±czenia"
+
+#~ msgid "_Invisible"
+#~ msgstr "_Niewidoczny"
+
+#~ msgid "C_ut"
+#~ msgstr "_Wytnij"
+
+#~ msgid "_Copy"
+#~ msgstr "_Kopiuj"
+
+#~ msgid "_Paste"
+#~ msgstr "_Wklej"
+
+#~ msgid "_Find..."
+#~ msgstr "_Znajd¼..."
+
+#~ msgid "C_onnections..."
+#~ msgstr "_Po³±czenia..."
+
+#~ msgid "_Send File..."
+#~ msgstr "_Przeka¿ plik"
+
+#~ msgid "_Server List..."
+#~ msgstr "_List serwerów..."
+
+#~ msgid "_Themes..."
+#~ msgstr "_Temat..."
+
+#~ msgid "_Automation..."
+#~ msgstr "_Automatyzacja..."
+
+#~ msgid "_Logging..."
+#~ msgstr "_Logowanie"
+
+#~ msgid "Plu_gins..."
+#~ msgstr "Wtyczki..."
+
+#~ msgid "_Keyboard..."
+#~ msgstr "_Klawiatura..."
+
+#~ msgid "_Preferences..."
+#~ msgstr "_Preferencje..."
+
+#~ msgid "New _Window"
+#~ msgstr "Nowe _okno"
+
+#~ msgid "_Save Size and Position..."
+#~ msgstr "_Zachowaj rozmiar i pozycjê..."
+
+#~ msgid "Irssi _Website"
+#~ msgstr "Strona domowa _Irssi"
+
+#~ msgid "_About..."
+#~ msgstr "_O programie"
+
+#~ msgid "_File"
+#~ msgstr "_Plik"
+
+#~ msgid "_Edit"
+#~ msgstr "_Edycja"
+
+#~ msgid "_Server"
+#~ msgstr "_Serwer"
+
+#~ msgid "Se_ttings"
+#~ msgstr "_Ustawienia"
+
+#~ msgid "_Windows"
+#~ msgstr "_Okna"
+
+#~ msgid "_Help"
+#~ msgstr "_Pomoc"
+
+#~ msgid "_Leave channel"
+#~ msgstr "_Opu¶c kana³"
+
+#~ msgid "Channel _Modes..."
+#~ msgstr "_Ustawienia kana³u..."
+
+#~ msgid "Find"
+#~ msgstr "Szukaj"
+
+#~ msgid "New"
+#~ msgstr "Nowy"
+
+#~ msgid "Close"
+#~ msgstr "Zamknij"
+
+#~ msgid "(empty)"
+#~ msgstr "(pusty)"
+
+#~ msgid "Kick reason:"
+#~ msgstr "Powód wydalenia:"
+
+#~ msgid "[lag %d.%02d"
+#~ msgstr "[opó¼nienie %d.%02d"
+
+#~ msgid "[lag %ld (??)] "
+#~ msgstr "[opó¼nienie %ld (??)] "
+
+#~ msgid "Looking up server %s"
+#~ msgstr "Szukam serwera %s"
+
+#~ msgid "Connecting to %s:%d"
+#~ msgstr "Pod³±czanie do %s:%d"
+
+#~ msgid "Joining needs an invitation"
+#~ msgstr "Przy³±czenie siê wymaga zaproszenia"
+
+#~ msgid "Only operators can change the topic"
+#~ msgstr "Tylko operator moze zmieniæ temat kana³u"
+
+#~ msgid "Maximum number of people in channel"
+#~ msgstr "maksymalna ilo¶æ osób na kanale"
+
+#~ msgid "Channel password"
+#~ msgstr "Has³o kana³u"
+
+#~ msgid "Send"
+#~ msgstr "Przeka¿"
+
+#~ msgid "Close window"
+#~ msgstr "Zamknij okno"
+
+#~ msgid "About"
+#~ msgstr "O programie"
+
+#~ msgid "Transparent background"
+#~ msgstr "Tapeta w tle"
+
+#~ msgid "GNOME Panel"
+#~ msgstr "Panel GNOME"
+
+#~ msgid "channels"
+#~ msgstr "kana³y"
+
+#~ msgid "Look #2"
+#~ msgstr "Wygl±d #1"
+
+#~ msgid "Background & Fonts"
+#~ msgstr "T³o i fonty"
+
+#~ msgid "Black"
+#~ msgstr "Czarny"
+
+#~ msgid "Blue"
+#~ msgstr "Niebieski"
+
+#~ msgid "Green"
+#~ msgstr "Zielony"
+
+#~ msgid "Red"
+#~ msgstr "Czerwony"
+
+#~ msgid "Yellow"
+#~ msgstr "¯ó³ty"
+
+#~ msgid "White"
+#~ msgstr "Bia³y"
+
+#~ msgid "Orange"
+#~ msgstr "Pomarañczowy"
+
+#~ msgid "New msg for you in channel"
+#~ msgstr "Nowy komunikat do Ciebie na kanale"
+
+#~ msgid "sample"
+#~ msgstr "przyk³ad"
+
+#~ msgid "Color"
+#~ msgstr "Kolor"
+
+#~ msgid "Sample text"
+#~ msgstr "Przyk³adowy tekst"
+
+#~ msgid "Color                                       "
+#~ msgstr "Kolor"
+
+#~ msgid "Red  "
+#~ msgstr "Czerwony "
+
+#~ msgid "Blue "
+#~ msgstr "Niebieski"
+
+#~ msgid "Colors"
+#~ msgstr "Kolory"
+
+#~ msgid "Nick Completion"
+#~ msgstr "uzupa³nianie nazw nicków"
+
+#~ msgid "Disable automatic nick completion"
+#~ msgstr "Wy³aczenie automatycznego kompletowanai nicków"
+
+#~ msgid "Completion character"
+#~ msgstr "Znak uzupe³niania"
+
+#~ msgid "seconds"
+#~ msgstr "sekund"
+
+#~ msgid "Remember the last"
+#~ msgstr "Zapamiêtaj ostanie"
+
+#~ msgid "Automatically rename file if it exists"
+#~ msgstr "Automatycznie zmieñ nazwê pliku je¿eli itnieje"
+
+#~ msgid "Automatically get file when offered"
+#~ msgstr "Automatycznie bi¿ plik je¿eli jest Ci oferowany"
+
+#~ msgid "Create files with permission"
+#~ msgstr "Twó¿ pliki z prawami dostêpu"
+
+#~ msgid "Fast send"
+#~ msgstr "Szybki przekaz"
+
+#~ msgid "Common"
+#~ msgstr "G³ówny"
+
+#~ msgid "Use specified port for DCC"
+#~ msgstr "U¿yj portu do komunikacji DCC"
+
+#~ msgid "milliseconds"
+#~ msgstr "milisekund"
+
+#~ msgid "messages"
+#~ msgstr "komunikaty"
+
+#~ msgid "History"
+#~ msgstr "Historia"
+
+#~ msgid "Each window has it's own command history buffer"
+#~ msgstr "ka¿de okno ma w³asna bufor historii poleceñ"
+
+#~ msgid "Command history length"
+#~ msgstr "D³ugo¶æ historii poleceñ"
+
+#~ msgid "Username"
+#~ msgstr "Nazwa u¿ytkowanika"
+
+#~ msgid "Realname"
+#~ msgstr "Prawdzine nazwisko"
+
+#~ msgid "Add"
+#~ msgstr "Dodaj"
+
+#~ msgid "Edit"
+#~ msgstr "Edycja"
+
+#~ msgid "IRC networks"
+#~ msgstr "Sieci IRC"
+
+#~ msgid "Use IRC proxy"
+#~ msgstr "U¿yj IRC proxy"
+
+#~ msgid "Send to proxy after connect"
+#~ msgstr "Przeka¿ do serwra proxy po po³aczeniu"
+
+#~ msgid "IRC proxy"
+#~ msgstr "IRC proxy"
+
+#~ msgid "Alias"
+#~ msgstr "Alias"
+
+#~ msgid "Command"
+#~ msgstr "Polecenie"
+
+#~ msgid "Aliases"
+#~ msgstr "Aliasy"
+
+#~ msgid "Mask"
+#~ msgstr "Maska"
+
+#~ msgid "What to ignore"
+#~ msgstr "Co ignorowaæ"
+
+#~ msgid "Ignores"
+#~ msgstr "Ignorowanie"
+
+#~ msgid "Tag"
+#~ msgstr "Znacznik"
+
+#~ msgid "Completed text"
+#~ msgstr "Uzupe³niony teks"
+
+#~ msgid "Completions"
+#~ msgstr "Uzupe³nianie"
+
+#~ msgid "IRC network(s)"
+#~ msgstr "Sieci IRC"
+
+#~ msgid "Text"
+#~ msgstr "Tekst"
+
+#, fuzzy
+#~ msgid "Color# (optional) and Channels"
+#~ msgstr "Kana³y"
+
+#~ msgid "Hilight Texts"
+#~ msgstr "Pod¶wietl tekst"
+
+#~ msgid "Label"
+#~ msgstr "Etykieta"
+
+#~ msgid "Popup Menu"
+#~ msgstr "Rozwijane menu"
+
+#~ msgid "Interface"
+#~ msgstr "Interfejs"
+
+#~ msgid "Show menubar"
+#~ msgstr "Poka¿ menu"
+
+#~ msgid "Show toolbar"
+#~ msgstr "Poka¿ pasek narzêdzi"
+
+#~ msgid "Show status bar"
+#~ msgstr "Poka¿ pasek stausu"
+
+#~ msgid "Beep on private msgs"
+#~ msgstr "Sygna³ przy wiadomo¶ci prywatnej"
+
+#~ msgid "Show nick list"
+#~ msgstr "Poka¿ listê ninków"
+
+#~ msgid "Show time stamps"
+#~ msgstr "Pokazuj czas"
+
+#~ msgid "Show time stamps with msgs"
+#~ msgstr "Pokazuj czas przy komunikatach"
+
+#~ msgid "Left"
+#~ msgstr "Z lewej"
+
+#~ msgid "Right"
+#~ msgstr "Z prawej"
+
+#~ msgid "Top"
+#~ msgstr "U góry"
+
+#~ msgid "Bottom"
+#~ msgstr "Na dole"
+
+#~ msgid "Programs"
+#~ msgstr "Programy"
+
+#~ msgid "FTP client"
+#~ msgstr "Klient FTP"
+
+#~ msgid "E-Mail client"
+#~ msgstr "Klient poczty"
+
+#~ msgid "Lag checking"
+#~ msgstr "Sprawdzanie opó¼nieñ"
+
+#~ msgid "How often to check for lag (secs)"
+#~ msgstr "Jak czêsto sprawdzaæ opó¼nienia (w sekundach)"
+
+#~ msgid "Default quit message"
+#~ msgstr "Domy¶lny komunikat na zakoñczenie"
+
+#~ msgid "y"
+#~ msgstr "t"
+
+#~ msgid "Clear"
+#~ msgstr "Wyczysæ"
+
+#~ msgid "IRC Net"
+#~ msgstr "Sieæ IRC"
+
+#~ msgid "Autoconnect at startup"
+#~ msgstr "Automatycznie ³±cz przy starcie"
+
+#~ msgid "IRC Servers"
+#~ msgstr "Serwery IRC"
+
+#~ msgid "Skip MOTD"
+#~ msgstr "Pomiñ powitanie"
+
+#~ msgid "Servers"
+#~ msgstr "Serwery"
+
+#~ msgid "New Window..."
+#~ msgstr "Nowe okno..."
+
+#~ msgid "New Channel..."
+#~ msgstr "Nowy kana³..."
+
+#~ msgid "Session"
+#~ msgstr "Sesja"
+
+#~ msgid "Add new theme"
+#~ msgstr "Dodaj nowy temat"
+
+#~ msgid "Really delete theme %s"
+#~ msgstr "naprawdê skasuj temat %s"
+
+#~ msgid "Theme selector"
+#~ msgstr "Wybór tematów"
+
+#~ msgid "Join %s"
+#~ msgstr "Do³±cz %s"
 
 #, fuzzy
 #~ msgid "%K<%n$4%W$1%K:%c$2%K>%n %|$3"
