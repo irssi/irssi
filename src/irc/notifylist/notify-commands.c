@@ -28,7 +28,7 @@
 
 #define DEFAULT_NOTIFY_IDLE_TIME 60
 
-/* SYNTAX: [-away] [-idle [<minutes>]] <mask> [<ircnets>] */
+/* SYNTAX: NOTIFY [-away] [-idle [<minutes>]] <mask> [<ircnets>] */
 static void cmd_notify(gchar *data)
 {
 	GHashTable *optlist;
