@@ -201,7 +201,7 @@ static GList *script_complete(const char *name)
 		PERL_SCRIPT_REC *rec = tmp->data;
 
 		if (strncmp(rec->name, name, len) == 0)
-                        list = g_list_append(list, rec->name);
+                        list = g_list_append(list, g_strdup(rec->name));
 	}
 
         return list;
