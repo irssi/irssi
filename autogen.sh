@@ -99,7 +99,7 @@ xlc )
   am_opt=--include-deps;;
 esac
 
-rm -f aclocal.m4
+rm -f aclocal.m4 glib.m4 glib-2.0.m4
 if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
   echo "Running libtoolize..."
   libtoolize --force --copy
@@ -107,6 +107,16 @@ fi
 aclocalinclude="$ACLOCAL_FLAGS -I ."
 echo "Running aclocal $aclocalinclude ..."
 aclocal $aclocalinclude
+
+# see if we don't have glib.m4 or glib-2.0.m4 there yet
+if ! grep "^AC_DEFUN(AM_PATH_GLIB," aclocal.m4 >/dev/null; then
+  cp glib.m4_ glib.m4
+fi
+if ! grep "^AC_DEFUN(AM_PATH_GLIB_2_0," aclocal.m4 >/dev/null; then
+  cp glib-2.0.m4_ glib-2.0.m4
+fi
+aclocal $aclocalinclude
+
 if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
   echo "Running autoheader..."
   autoheader
