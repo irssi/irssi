@@ -86,6 +86,15 @@ PPCODE:
 	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
 
+void
+command(window, cmd, server=window->active_server, item=window->active)
+	Irssi::Window window
+	char *cmd
+	Irssi::Server server
+	Irssi::Windowitem item
+CODE:
+	signal_emit("send command", 3, cmd, server, item);
+
 #*******************************
 MODULE = Irssi	PACKAGE = Irssi::Windowitem
 #*******************************
@@ -104,3 +113,10 @@ PPCODE:
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 	hv_store(hv, "new_data", 8, newSViv(item->new_data), 0);
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
+
+void
+command(item, cmd)
+	Irssi::Windowitem item
+	char *cmd
+CODE:
+	signal_emit("send command", 3, cmd, item->server, item);
