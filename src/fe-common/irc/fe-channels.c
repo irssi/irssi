@@ -87,7 +87,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 
 static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 {
-	g_return_if_fail(item != NULL);
+	g_return_if_fail(window != NULL);
+	if (item == NULL) return;
 
 	if (g_slist_length(window->items) > 1 && irc_item_channel(item)) {
 		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,

@@ -71,8 +71,8 @@ void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item)
 	window->items = g_slist_remove(window->items, item);
 
 	if (window->active == item) {
-		window->active = window->items == NULL ? NULL :
-			window->items->data;
+		window_item_set_active(window, window->items == NULL ? NULL :
+				       window->items->data);
 	}
 
 	signal_emit("window item remove", 2, window, item);
