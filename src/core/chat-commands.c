@@ -40,7 +40,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	GHashTable *optlist;
-	char *addr, *portstr, *password, *nick, *chatnet, *host;
+	char *addr, *portstr, *password, *nick, *chatnet, *host, *tmp;
 	void *free_arg;
 
 	g_return_val_if_fail(data != NULL, NULL);
@@ -88,7 +88,22 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	else if (g_hash_table_lookup(optlist, "4") != NULL)
 		conn->family = AF_INET;
 
-	if(g_hash_table_lookup(optlist, "ssl") != NULL)
+	if (g_hash_table_lookup(optlist, "ssl") != NULL)
+		conn->use_ssl = TRUE;
+	if ((tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
+		conn->ssl_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
+		conn->ssl_pkey = g_strdup(tmp);
+	if (g_hash_table_lookup(optlist, "ssl_verify") != NULL)
+		conn->ssl_verify = TRUE;
+	if ((tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
+		conn->ssl_cafile = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
+		conn->ssl_capath = g_strdup(tmp);
+	if ((conn->ssl_capath != NULL && conn->ssl_capath[0] != '\0')
+	||  (conn->ssl_cafile != NULL && conn->ssl_cafile[0] != '\0'))
+		conn->ssl_verify = TRUE;
+	if ((conn->ssl_cert != NULL && conn->ssl_cert[0] != '\0') || conn->ssl_verify)
 		conn->use_ssl = TRUE;
 
 	if (g_hash_table_lookup(optlist, "!") != NULL)
@@ -112,9 +127,11 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         return conn;
 }
 
-/* SYNTAX: CONNECT [-4 | -6] [-ssl] [-noproxy] [-ircnet <ircnet>]
-                   [-host <hostname>] [-rawlog <file>]
-                   <address>|<chatnet> [<port> [<password> [<nick>]]] */
+/* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
+                   [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+		   [-noproxy] [-ircnet <ircnet>] [-host <hostname>]
+		   [-rawlog <file>]
+		   <address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_connect(const char *data)
 {
 	SERVER_CONNECT_REC *conn;
@@ -214,8 +231,10 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
         signal_emit("command server connect", 3, data, server, item);
 }
 
-/* SYNTAX: SERVER [-4 | -6] [-ssl] [-noproxy] [-ircnet <ircnet>]
-                  [-host <hostname>] [-rawlog <file>]
+/* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
+                  [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+		  [-noproxy] [-ircnet <ircnet>] [-host <hostname>]
+		  [-rawlog <file>]
                   [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
@@ -445,7 +464,7 @@ void chat_commands_init(void)
 
         signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 
-	command_set_options("connect", "4 6 !! ssl +host noproxy -rawlog");
+	command_set_options("connect", "4 6 !! ssl +ssl_cert +ssl_pkey ssl_verify +ssl_cafile +ssl_capath +host noproxy -rawlog");
 	command_set_options("join", "invite");
 	command_set_options("msg", "channel nick");
 }

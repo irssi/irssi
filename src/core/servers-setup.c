@@ -163,7 +163,17 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
                 conn->family = sserver->family;
 	if (sserver->port > 0 && conn->port <= 0)
 		conn->port = sserver->port;
+
 	conn->use_ssl = sserver->use_ssl;
+	if (conn->ssl_cert == NULL && sserver->ssl_cert != NULL && sserver->ssl_cert[0] != '\0')
+		conn->ssl_cert = g_strdup(sserver->ssl_cert);
+	if (conn->ssl_pkey == NULL && sserver->ssl_pkey != NULL && sserver->ssl_pkey[0] != '\0')
+		conn->ssl_pkey = g_strdup(sserver->ssl_pkey);
+	conn->ssl_verify = sserver->ssl_verify;
+	if (conn->ssl_cafile == NULL && sserver->ssl_cafile != NULL && sserver->ssl_cafile[0] != '\0')
+		conn->ssl_cafile = g_strdup(sserver->ssl_cafile);
+	if (conn->ssl_capath == NULL && sserver->ssl_capath != NULL && sserver->ssl_capath[0] != '\0')
+		conn->ssl_capath = g_strdup(sserver->ssl_capath);
 
 	server_setup_fill_reconn(conn, sserver);
 
@@ -394,6 +404,15 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->use_ssl = config_node_get_bool(node, "use_ssl", FALSE);
+	rec->ssl_cert = g_strdup(config_node_get_str(node, "ssl_cert", NULL));
+	rec->ssl_pkey = g_strdup(config_node_get_str(node, "ssl_pkey", NULL));
+	rec->ssl_verify = config_node_get_bool(node, "ssl_verify", FALSE);
+	rec->ssl_cafile = g_strdup(config_node_get_str(node, "ssl_cafile", NULL));
+	rec->ssl_capath = g_strdup(config_node_get_str(node, "ssl_capath", NULL));
+	if (rec->ssl_cafile || rec->ssl_capath)
+		rec->ssl_verify = TRUE;
+	if (rec->ssl_cert != NULL || rec->ssl_verify)
+		rec->use_ssl = TRUE;
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
 	rec->no_proxy = config_node_get_bool(node, "no_proxy", FALSE);
@@ -424,6 +443,11 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	iconfig_node_set_int(node, "port", rec->port);
 	iconfig_node_set_str(node, "password", rec->password);
 	iconfig_node_set_bool(node, "use_ssl", rec->use_ssl);
+	iconfig_node_set_str(node, "ssl_cert", rec->ssl_cert);
+	iconfig_node_set_str(node, "ssl_pkey", rec->ssl_pkey);
+	iconfig_node_set_bool(node, "ssl_verify", rec->ssl_verify);
+	iconfig_node_set_str(node, "ssl_cafile", rec->ssl_cafile);
+	iconfig_node_set_str(node, "ssl_capath", rec->ssl_capath);
 	iconfig_node_set_str(node, "own_host", rec->own_host);
 
 	iconfig_node_set_str(node, "family",
@@ -460,6 +484,10 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	g_free_not_null(rec->own_ip6);
 	g_free_not_null(rec->chatnet);
 	g_free_not_null(rec->password);
+	g_free_not_null(rec->ssl_cert);
+	g_free_not_null(rec->ssl_pkey);
+	g_free_not_null(rec->ssl_cafile);
+	g_free_not_null(rec->ssl_capath);
 	g_free(rec->address);
 	g_free(rec);
 }
@@ -516,6 +544,13 @@ void servers_setup_init(void)
 	settings_add_str("server", "nick", NULL);
 	settings_add_str("server", "user_name", NULL);
 	settings_add_str("server", "real_name", NULL);
+
+	settings_add_bool("server", "use_ssl", FALSE);
+	settings_add_str("server", "ssl_cert", NULL);
+	settings_add_str("server", "ssl_pkey", NULL);
+	settings_add_bool("server", "ssl_verify", FALSE);
+	settings_add_str("server", "ssl_cafile", NULL);
+	settings_add_str("server", "ssl_cacert", NULL);
 
 	settings_add_bool("proxy", "use_proxy", FALSE);
 	settings_add_str("proxy", "proxy_address", "");

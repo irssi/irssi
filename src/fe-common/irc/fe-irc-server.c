@@ -50,9 +50,11 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 
 	return target;
 }
-/* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-auto | -noauto] [-ircnet <ircnet>]
-                      [-host <hostname>] [-cmdspeed <ms>] [-cmdmax <count>]
-		      [-port <port>] <address> [<port> [<password>]] */
+/* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>]
+                      [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                      [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+                      <address> [<port> [<password>]] */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
@@ -98,8 +100,21 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
-		if (rec->use_ssl)
-			g_string_append(str, "SSL, ");
+		if (rec->use_ssl) {
+			g_string_append(str, "ssl, ");
+			if (rec->ssl_cert) {
+				g_string_sprintfa(str, "ssl_cert: %s, ", rec->ssl_cert);
+				if (rec->ssl_pkey)
+					g_string_sprintfa(str, "ssl_pkey: %s, ", rec->ssl_pkey);
+			}
+			if (rec->ssl_verify)
+				g_string_append(str, "ssl_verify, ");
+			if (rec->ssl_cafile)
+				g_string_sprintfa(str, "ssl_cafile: %s, ", rec->ssl_cafile);
+			if (rec->ssl_capath)
+				g_string_sprintfa(str, "ssl_capath: %s, ", rec->ssl_capath);
+			
+		}
 		if (rec->max_cmds_at_once > 0)
 			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)
