@@ -7,6 +7,11 @@
 #  include <curses.h>
 #endif
 
+/* Some curseses include term.h, which #defines some things breaking irssi */
+#undef lines
+#undef key_backspace
+#undef tab
+
 #define ATTR_UNDERLINE 0x100
 #define ATTR_COLOR8    0x200
 #define ATTR_REVERSE   0x400
