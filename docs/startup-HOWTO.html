@@ -127,6 +127,12 @@ want to use ALT instead of Windows key for it, use:</p>
      rxvt*modifier: alt
 </pre>
 
+<p>You could do this by changing the X key mappings:</p>
+
+<pre>
+    xmodmap -e "keysym Alt_L = Meta_L Alt_L"
+</pre>
+
 <p>And how exactly do you set these X resources? For Debian, there's
 /etc/X11/Xresources/xterm file where you can put them and it's read 
 automatically when X starts. ~/.Xresources and ~/.Xdefaults files might also
