@@ -284,6 +284,9 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
+	if (!irc_server_check(server))
+		return;
+
 	g_hash_table_foreach(server->splits, (GHFunc) netsplit_destroy_hash, server);
 	g_hash_table_destroy(server->splits);
 }

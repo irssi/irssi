@@ -217,6 +217,9 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
+	if (!irc_server_check(server))
+		return;
+
 	while (server->idles != NULL)
 		server_idle_destroy(server, server->idles->data);
 }

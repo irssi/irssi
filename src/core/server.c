@@ -229,6 +229,8 @@ void server_disconnect(SERVER_REC *server)
 
 	if (server->handle != NULL)
 		net_sendbuffer_destroy(server->handle, TRUE);
+	if (server->readtag > 0)
+		g_source_remove(server->readtag);
 
         MODULE_DATA_DEINIT(server);
 	rawlog_destroy(server->rawlog);

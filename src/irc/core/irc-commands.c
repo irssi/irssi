@@ -913,6 +913,9 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
+	if (!irc_server_check(server))
+		return;
+
 	while (server->knockoutlist != NULL)
 		knockout_destroy(server, server->knockoutlist->data);
 }

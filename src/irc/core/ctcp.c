@@ -182,9 +182,12 @@ static void event_notice(const char *data, IRC_SERVER_REC *server, const char *n
 	g_free(params);
 }
 
-static void ctcp_deinit_server(IRC_SERVER_REC *server)
+static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
+
+	if (!irc_server_check(server))
+		return;
 
 	g_slist_free(server->ctcpqueue);
 }
@@ -194,7 +197,7 @@ void ctcp_init(void)
 	settings_add_str("misc", "ctcp_version_reply", PACKAGE" v$J - running on $sysname");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
-	signal_add("server disconnected", (SIGNAL_FUNC) ctcp_deinit_server);
+	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_first("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add_first("event notice", (SIGNAL_FUNC) event_notice);
 	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
@@ -206,7 +209,7 @@ void ctcp_init(void)
 
 void ctcp_deinit(void)
 {
-	signal_remove("server disconnected", (SIGNAL_FUNC) ctcp_deinit_server);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("event notice", (SIGNAL_FUNC) event_notice);
 	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_msg);

@@ -350,14 +350,6 @@ static void irc_init_server(IRC_SERVER_REC *server)
 			    (GInputFunction) irc_parse_incoming, server);
 }
 
-static void irc_deinit_server(IRC_SERVER_REC *server)
-{
-	g_return_if_fail(server != NULL);
-
-	if (server->readtag > 0)
-		g_source_remove(server->readtag);
-}
-
 #define isoptchan(a) \
 	(ischannel((a)[0]) || ((a)[0] == '*' && ((a)[1] == '\0' || (a)[1] == ' ')))
 
@@ -400,7 +392,6 @@ void irc_irc_init(void)
 
 	signal_add("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_add("server connected", (SIGNAL_FUNC) irc_init_server);
-	signal_add_first("server disconnected", (SIGNAL_FUNC) irc_deinit_server);
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	current_server_event = NULL;
@@ -414,7 +405,6 @@ void irc_irc_deinit(void)
 {
 	signal_remove("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_remove("server connected", (SIGNAL_FUNC) irc_init_server);
-	signal_remove("server disconnected", (SIGNAL_FUNC) irc_deinit_server);
 	signal_remove("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	module_uniq_destroy("IRC");

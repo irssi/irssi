@@ -59,6 +59,9 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 
 static void sig_disconnected(IRC_SERVER_REC *server)
 {
+	if (!irc_server_check(server))
+		return;
+
 	g_slist_foreach(server->rejoin_channels, (GFunc) g_free, NULL);
 	g_slist_free(server->rejoin_channels);
 }

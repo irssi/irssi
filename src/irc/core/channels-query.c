@@ -73,7 +73,8 @@ static void sig_connected(IRC_SERVER_REC *server)
 	SERVER_QUERY_REC *rec;
 
 	g_return_if_fail(server != NULL);
-	if (!irc_server_check(server)) return;
+	if (!irc_server_check(server))
+		return;
 
 	rec = g_new0(SERVER_QUERY_REC, 1);
         server->chanqueries = rec;
@@ -85,7 +86,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	int n;
 
 	g_return_if_fail(server != NULL);
-	if (!irc_server_check(server)) return;
+	if (!irc_server_check(server))
+		return;
 
 	rec = server->chanqueries;
 	g_return_if_fail(rec != NULL);
