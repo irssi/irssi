@@ -15,6 +15,6 @@ doc_DATA = \
 	special_vars.txt \
 	startup-HOWTO.html
 
-EXTRA_DIST = $(doc_DATA)
+EXTRA_DIST = $(doc_DATA) $(man_MANS)
 
 SUBDIRS = help
