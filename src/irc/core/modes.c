@@ -280,7 +280,9 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 	}
 	g_free(dup);
 
-	if (strchr(channel->mode, 'k') == NULL && channel->key != NULL) {
+	if (channel->key != NULL &&
+	    strchr(channel->mode, 'k') == NULL &&
+	    strchr(newmode->str, 'k') == NULL) {
 		/* join was used with key but there's no key set
 		   in channel modes.. */
 		g_free(channel->key);
