@@ -49,7 +49,7 @@
 
  These colors may differ depending on your terminal.
 
- How to use these colors ('#' means a number as color code):
+ How to use these colors ('#' means a number as MIRC color code):
  
  <Ctrl>-b        set bold
  <Ctrl>-c#[,#]   set foreground and optionally background color
