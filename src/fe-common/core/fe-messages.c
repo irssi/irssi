@@ -449,7 +449,8 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 
 	if (!msgprint && ownnick) {
 		printformat(server, NULL, MSGLEVEL_NICKS,
-			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "");
+			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "",
+			    address);
 	}
 }
 
@@ -466,7 +467,8 @@ static void sig_message_own_nick(SERVER_REC *server, const char *newnick,
 		print_nick_change(server, newnick, oldnick, address, TRUE);
 	else {
 		printformat(server, NULL, MSGLEVEL_NICKS,
-			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "");
+			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "",
+			    address);
 	}
 }
 

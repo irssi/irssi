@@ -123,7 +123,7 @@ static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 	/* don't print the nick change message if only the case was changed */
 	if (g_strcasecmp(query->name, oldnick) != 0) {
 		printformat_dest(&dest,  TXT_NICK_CHANGED, oldnick,
-				 query->name, query->name);
+				 query->name, query->name, query->address);
 	}
 
 	signal_emit("window item changed", 2,
