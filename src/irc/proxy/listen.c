@@ -126,6 +126,21 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	if (strcmp(cmd, "QUIT") == 0) {
 		remove_client(client);
 		return;
+	} if (strcmp(cmd, "PING") == 0) {
+		/* Reply to PING, if the parameter is either proxy_adress,
+		   our own nick or empty. */
+		char *server = args;
+		if (*server == ':') server++;
+
+		if (*server == '\0' ||
+		    g_strncasecmp(server, client->proxy_address,
+				  strlen(client->proxy_address)) == 0 ||
+		    g_strncasecmp(server, client->nick,
+				  strlen(client->nick)) == 0) {
+			if (*server == '\0') args = client->nick;
+			proxy_outdata(client, ":%s PONG %s\n", client->proxy_address, args);
+			return;
+		}
 	}
 
 	if (client->server == NULL || !client->server->connected) {
