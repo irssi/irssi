@@ -241,9 +241,17 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	}
 
 	if (visible) {
-		scrollok(gui->parent->curses_win, TRUE);
-		wscrl(gui->parent->curses_win, 1);
-		scrollok(gui->parent->curses_win, FALSE);
+		WINDOW *cwin;
+
+#ifdef USE_CURSES_WINDOWS
+		cwin = gui->parent->curses_win;
+#else
+		cwin = stdscr;
+		setscrreg(gui->parent->first_line, gui->parent->last_line);
+#endif
+		scrollok(cwin, TRUE);
+		wscrl(cwin, 1);
+		scrollok(cwin, FALSE);
 	}
 }
 
@@ -398,7 +406,12 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 		color = rec->color;
 	}
 
+#ifdef USE_CURSES_WINDOWS
 	cwin = gui->parent->curses_win;
+#else
+	cwin = stdscr;
+	ypos += gui->parent->first_line;
+#endif
 	wmove(cwin, ypos, xpos);
 	set_color(cwin, color);
 
@@ -497,11 +510,19 @@ void gui_window_redraw(WINDOW_REC *window)
 	g_return_if_fail(window != NULL);
 
 	gui = WINDOW_GUI(window);
+#ifdef USE_CURSES_WINDOWS
 	cwin = gui->parent->curses_win;
+#else
+        cwin = stdscr;
+#endif
 
 	/* clear the lines first */
 	set_color(cwin, 0);
+#ifdef USE_CURSES_WINDOWS
 	for (ypos = 0; ypos <= gui->parent->lines; ypos++) {
+#else
+	for (ypos = gui->parent->first_line; ypos <= gui->parent->last_line; ypos++) {
+#endif
 		wmove(cwin, ypos, 0);
 		wclrtoeol(cwin);
 	}

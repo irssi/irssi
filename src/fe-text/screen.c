@@ -107,30 +107,31 @@ static void read_settings(void)
 	if (use_colors != old_colors) irssi_redraw();
 }
 
-/* Initialize screen, detect screen length */
-int init_screen(void)
+static int init_curses(void)
 {
 	char ansi_tab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	int num;
 
-	if (!initscr()) return 0;
+	if (!initscr())
+		return FALSE;
 
 	if (COLS < MIN_SCREEN_WIDTH)
 		COLS = MIN_SCREEN_WIDTH;
 
 	signal(SIGINT, sigint_handler);
+#ifdef SIGWINCH
+	signal(SIGWINCH, sig_winch);
+#endif
 	cbreak(); noecho(); idlok(stdscr, 1);
 #ifdef HAVE_CURSES_IDCOK
 	idcok(stdscr, 1);
 #endif
 	intrflush(stdscr, FALSE); halfdelay(1); keypad(stdscr, 1);
 
-	settings_add_bool("lookandfeel", "colors", TRUE);
-	settings_add_str("misc", "ignore_signals", "");
-	read_signals();
-
-	use_colors = settings_get_bool("colors") && has_colors();
-	if (has_colors()) start_color();
+	if (has_colors())
+		start_color();
+	else
+		use_colors = FALSE;
 
 #ifdef HAVE_NCURSES_USE_DEFAULT_COLORS
 	/* this lets us to use the "default" background color for colors <= 7 so
@@ -148,13 +149,24 @@ int init_screen(void)
 	init_pair(63, 0, 0);
 #endif
 
-	scrx = scry = 0;
-#ifdef SIGWINCH
-	signal(SIGWINCH, sig_winch);
-#endif
-
-	freeze_refresh = 0;
 	clear();
+	return TRUE;
+}
+
+/* Initialize screen, detect screen length */
+int init_screen(void)
+{
+	settings_add_bool("lookandfeel", "colors", TRUE);
+	settings_add_str("misc", "ignore_signals", "");
+
+	use_colors = settings_get_bool("colors");
+	read_signals();
+
+	scrx = scry = 0;
+	freeze_refresh = 0;
+
+	if (!init_curses())
+		return FALSE;
 
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	return 1;

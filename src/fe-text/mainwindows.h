@@ -7,7 +7,9 @@
 typedef struct {
 	WINDOW_REC *active;
 
+#ifdef USE_CURSES_WINDOWS
 	WINDOW *curses_win;
+#endif
 	int first_line, last_line, lines;
 	int statusbar_lines;
 	void *statusbar;
@@ -25,7 +27,9 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window);
 
 void mainwindows_redraw(void);
 void mainwindows_resize(int ychange, int xchange);
+#ifdef USE_CURSES_WINDOWS
 void mainwindows_recreate(void);
+#endif
 
 int mainwindows_reserve_lines(int count, int up);
 

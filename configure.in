@@ -27,6 +27,7 @@ $libtool_flags --disable-static --output=libtool-static --no-verify $ac_aux_dir/
 
 AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 
+
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
 	if test x$withval = xyes; then
@@ -130,6 +131,13 @@ AC_ARG_WITH(servertest,
 		fi
 	fi,
 	want_servertest=no)
+
+AC_ARG_ENABLE(curses-windows,
+[  --enable-curses-windows Use curses windows],
+	if test x$enableval != xno; then
+		AC_DEFINE(USE_CURSES_WINDOWS)
+	fi,
+	AC_DEFINE(USE_CURSES_WINDOWS))
 
 AC_ARG_ENABLE(memdebug,
 [  --enable-memdebug       Enable memory debugging],

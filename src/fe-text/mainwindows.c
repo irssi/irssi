@@ -57,11 +57,13 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
+#ifdef USE_CURSES_WINDOWS
 static void create_curses_window(MAIN_WINDOW_REC *window)
 {
 	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
         idlok(window->curses_win, 1);
 }
+#endif
 
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 {
@@ -70,12 +72,14 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	if (ychange == 0 && !xchange) return;
 
 	window->lines = window->last_line-window->first_line+1;
+#ifdef USE_CURSES_WINDOWS
 #ifdef HAVE_CURSES_WRESIZE
 	wresize(window->curses_win, window->lines, COLS);
 	mvwin(window->curses_win, window->first_line, 0);
 #else
 	delwin(window->curses_win);
 	create_curses_window(window);
+#endif
 #endif
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
@@ -90,6 +94,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	signal_emit("mainwindow resized", 1, window);
 }
 
+#ifdef USE_CURSES_WINDOWS
 void mainwindows_recreate(void)
 {
 	GSList *tmp;
@@ -101,6 +106,7 @@ void mainwindows_recreate(void)
 		gui_window_redraw(rec->active);
 	}
 }
+#endif
 
 MAIN_WINDOW_REC *mainwindow_create(void)
 {
@@ -133,8 +139,10 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		mainwindow_resize(parent, -space-1, FALSE);
 	}
 
+#ifdef USE_CURSES_WINDOWS
 	rec->curses_win = newwin(rec->lines, COLS, rec->first_line, 0);
 	refresh();
+#endif
 
 	mainwindows = g_slist_append(mainwindows, rec);
 	signal_emit("mainwindow created", 1, rec);
@@ -217,7 +225,9 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 {
 	g_return_if_fail(window != NULL);
 
+#ifdef USE_CURSES_WINDOWS
 	delwin(window->curses_win);
+#endif
 
 	mainwindows = g_slist_remove(mainwindows, window);
 	signal_emit("mainwindow destroyed", 1, window);

@@ -306,9 +306,15 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 		/* draw the line to screen. */
                 ypos = gui->ypos-new_lines;
 		if (new_lines > 0) {
+#ifdef USE_CURSES_WINDOWS
 			set_color(gui->parent->curses_win, 0);
 			wmove(gui->parent->curses_win, ypos, 0);
 			wclrtoeol(gui->parent->curses_win);
+#else
+			set_color(stdscr, 0);
+			move(ypos + gui->parent->first_line, 0);
+			wclrtoeol(stdscr);
+#endif
 		}
 
 		if (ypos >= 0)
@@ -326,15 +332,18 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 
 static void window_clear(GUI_WINDOW_REC *gui)
 {
-	WINDOW *cwin;
 	int n;
 
-	cwin = gui->parent->curses_win;
-	for (n = 0; n < gui->parent->lines; n++) {
-		wmove(cwin, n, 0);
-		wclrtoeol(cwin);
+#ifdef USE_CURSES_WINDOWS
+        wclear(gui->parent->curses_win);
+	screen_refresh(gui->parent->curses_win);
+#else
+	for (n = gui->parent->first_line; n < gui->parent->last_line; n++) {
+		move(n, 0);
+		clrtoeol();
 	}
-	screen_refresh(cwin);
+	screen_refresh(NULL);
+#endif
 }
 
 /* SYNTAX: CLEAR */
@@ -359,8 +368,13 @@ static void sig_printtext_finished(WINDOW_REC *window)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(window);
-	if (is_window_visible(window))
+	if (is_window_visible(window)) {
+#ifdef USE_CURSES_WINDOWS
 		screen_refresh(gui->parent->curses_win);
+#else
+		screen_refresh(NULL);
+#endif
+	}
 }
 
 static void read_settings(void)

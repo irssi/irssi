@@ -2,9 +2,9 @@
 #define __SCREEN_H
 
 #if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-#include <ncurses.h>
+#  include <ncurses.h>
 #else
-#include <curses.h>
+#  include <curses.h>
 #endif
 
 #define ATTR_UNDERLINE 0x100
