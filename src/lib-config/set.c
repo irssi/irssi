@@ -20,11 +20,24 @@
 
 #include "module.h"
 
-void config_node_remove(CONFIG_NODE *parent, CONFIG_NODE *node)
+static void cache_remove(CONFIG_REC *rec, CONFIG_NODE *node)
+{
+	char *path;
+
+	path = g_hash_table_lookup(rec->cache_nodes, node);
+	if (path != NULL) {
+		g_hash_table_remove(rec->cache, path);
+		g_hash_table_remove(rec->cache_nodes, node);
+                g_free(path);
+	}
+}
+
+void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 {
 	g_return_if_fail(parent != NULL);
 	g_return_if_fail(node != NULL);
 
+	cache_remove(rec, node);
 	parent->value = g_slist_remove(parent->value, node);
 
 	switch (node->type) {
@@ -36,7 +49,7 @@ void config_node_remove(CONFIG_NODE *parent, CONFIG_NODE *node)
 	case NODE_TYPE_BLOCK:
 	case NODE_TYPE_LIST:
 		while (node->value != NULL)
-			config_node_remove(node, ((GSList *) node->value)->data);
+			config_node_remove(rec, node, ((GSList *) node->value)->data);
 		break;
 	}
 	g_free_not_null(node->key);
@@ -44,7 +57,7 @@ void config_node_remove(CONFIG_NODE *parent, CONFIG_NODE *node)
 }
 
 /* Remove n'th node from a list */
-void config_node_list_remove(CONFIG_NODE *node, int index)
+void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index)
 {
 	GSList *tmp;
 
@@ -53,7 +66,7 @@ void config_node_list_remove(CONFIG_NODE *node, int index)
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next, index--) {
 		if (index == 0) {
-                        config_node_remove(node, tmp->data);
+                        config_node_remove(rec, node, tmp->data);
                         break;
 		}
 	}
@@ -64,15 +77,15 @@ void config_nodes_remove_all(CONFIG_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	while (rec->mainnode->value != NULL)
-		config_node_remove(rec->mainnode, ((GSList *) rec->mainnode->value)->data);
+		config_node_remove(rec, rec->mainnode, ((GSList *) rec->mainnode->value)->data);
 }
 
-
-void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value)
+void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value)
 {
 	CONFIG_NODE *node;
 	int no_key;
 
+	g_return_if_fail(rec != NULL || value != NULL);
 	g_return_if_fail(parent != NULL);
 
 	no_key = key == NULL;
@@ -80,7 +93,7 @@ void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value
 
 	if (value == NULL) {
                 /* remove the key */
-		if (node != NULL) config_node_remove(parent, node);
+		if (node != NULL) config_node_remove(rec, parent, node);
 		return;
 	}
 
@@ -102,12 +115,12 @@ void config_node_set_int(CONFIG_NODE *parent, const char *key, int value)
 	char str[MAX_INT_STRLEN];
 
 	g_snprintf(str, sizeof(str), "%d", value);
-	config_node_set_str(parent, key, str);
+	config_node_set_str(NULL, parent, key, str);
 }
 
 void config_node_set_bool(CONFIG_NODE *parent, const char *key, int value)
 {
-	config_node_set_str(parent, key, value ? "yes" : "no");
+	config_node_set_str(NULL, parent, key, value ? "yes" : "no");
 }
 
 int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const char *value)
@@ -120,7 +133,7 @@ int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const 
 	parent = config_node_traverse(rec, section, TRUE);
 	if (parent == NULL) return -1;
 
-	config_node_set_str(parent, key, value);
+	config_node_set_str(rec, parent, key, value);
 	return 0;
 }
 
@@ -143,5 +156,5 @@ void config_node_add_list(CONFIG_NODE *node, char **array)
 	char **tmp;
 
 	for (tmp = array; *tmp != NULL; tmp++)
-                config_node_set_str(node, NULL, *tmp);
+                config_node_set_str(NULL, node, NULL, *tmp);
 }

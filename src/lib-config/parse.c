@@ -20,6 +20,29 @@
 
 #include "module.h"
 
+static int g_istr_equal(gconstpointer v, gconstpointer v2)
+{
+	return g_strcasecmp((const char *) v, (const char *) v2) == 0;
+}
+
+/* a char* hash function from ASU */
+static unsigned int g_istr_hash(gconstpointer v)
+{
+	const char *s = (char *) v;
+	unsigned int h = 0, g;
+
+	while (*s != '\0') {
+		h = (h << 4) + toupper(*s);
+		if ((g = h & 0xf0000000)) {
+			h = h ^ (g >> 24);
+			h = h ^ g;
+		}
+		s++;
+	}
+
+	return h /* % M */;
+}
+
 int config_error(CONFIG_REC *rec, const char *msg)
 {
 	g_free_and_null(rec->last_error);
@@ -138,7 +161,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
  	switch (rec->scanner->token) {
 	case G_TOKEN_STRING:
 		/* value */
-		config_node_set_str(node, key, rec->scanner->value.v_string);
+		config_node_set_str(rec, node, key, rec->scanner->value.v_string);
 		g_free_not_null(key);
 
 		print_warning = TRUE;
@@ -303,7 +326,8 @@ CONFIG_REC *config_open(const char *fname, int create_mode)
 	rec->create_mode = create_mode;
 	rec->mainnode = g_new0(CONFIG_NODE, 1);
 	rec->mainnode->type = NODE_TYPE_BLOCK;
-	rec->cache = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	rec->cache = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	rec->cache_nodes = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 
 	return rec;
 }
@@ -319,6 +343,7 @@ void config_close(CONFIG_REC *rec)
 	if (rec->handle != -1) close(rec->handle);
 	g_hash_table_foreach(rec->cache, (GHFunc) g_free, NULL);
 	g_hash_table_destroy(rec->cache);
+	g_hash_table_destroy(rec->cache_nodes);
 	g_free_not_null(rec->last_error);
 	g_free(rec->fname);
 	g_free(rec);

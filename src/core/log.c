@@ -246,15 +246,15 @@ static void log_set_config(LOG_REC *log)
 	if (log->autoopen)
 		config_node_set_bool(node, "auto_open", TRUE);
 	else
-		config_node_set_str(node, "auto_open", NULL);
+		iconfig_node_set_str(node, "auto_open", NULL);
 
-	config_node_set_str(node, "rotate", log_rotate2str(log->rotate));
+	iconfig_node_set_str(node, "rotate", log_rotate2str(log->rotate));
 
 	levelstr = bits2level(log->level);
-	config_node_set_str(node, "level", levelstr);
+	iconfig_node_set_str(node, "level", levelstr);
 	g_free(levelstr);
 
-	config_node_set_str(node, "items", NULL);
+	iconfig_node_set_str(node, "items", NULL);
 
 	if (log->items != NULL && *log->items != NULL) {
 		node = config_node_section(node, "items", NODE_TYPE_LIST);

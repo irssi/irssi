@@ -19,16 +19,19 @@ typedef struct {
 } SETTINGS_REC;
 
 /* macros for handling the default Irssi configuration */
-#define iconfig_get_str(a, b, c) config_get_str(mainconfig, a, b,c)
-#define iconfig_get_int(a, b, c) config_get_int(mainconfig, a, b,c)
-#define iconfig_get_bool(a, b, c) config_get_bool(mainconfig, a, b,c)
+#define iconfig_get_str(a, b, c) config_get_str(mainconfig, a, b, c)
+#define iconfig_get_int(a, b, c) config_get_int(mainconfig, a, b, c)
+#define iconfig_get_bool(a, b, c) config_get_bool(mainconfig, a, b, c)
 #define iconfig_list_find(a, b, c, d) config_list_find(mainconfig, a, b, c, d)
 
-#define iconfig_set_str(a, b, c) config_set_str(mainconfig, a, b,c)
-#define iconfig_set_int(a, b, c) config_set_int(mainconfig, a, b,c)
-#define iconfig_set_bool(a, b, c) config_set_bool(mainconfig, a, b,c)
+#define iconfig_set_str(a, b, c) config_set_str(mainconfig, a, b, c)
+#define iconfig_set_int(a, b, c) config_set_int(mainconfig, a, b, c)
+#define iconfig_set_bool(a, b, c) config_set_bool(mainconfig, a, b, c)
 
 #define iconfig_node_traverse(a, b) config_node_traverse(mainconfig, a, b)
+#define iconfig_node_set_str(a, b, c) config_node_set_str(mainconfig, a, b, c)
+#define iconfig_node_list_remove(a, b) config_node_list_remove(mainconfig, a, b)
+#define iconfig_node_remove(a, b) config_node_remove(mainconfig, a, b)
 
 extern CONFIG_REC *mainconfig;
 

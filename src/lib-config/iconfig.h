@@ -50,7 +50,8 @@ struct _config_rec {
 
 	char *last_error;
 	CONFIG_NODE *mainnode;
-	GHashTable *cache;
+	GHashTable *cache; /* path -> node (for querying) */
+        GHashTable *cache_nodes; /* node -> path (for removing) */
 
 	GScanner *scanner;
 
@@ -124,17 +125,15 @@ char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def);
 int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
 
-void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value);
+void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
 void config_node_set_int(CONFIG_NODE *parent, const char *key, int value);
 void config_node_set_bool(CONFIG_NODE *parent, const char *key, int value);
 
-/* Add/change the value of the `key' */
-void config_node_set_str(CONFIG_NODE *parent, const char *key, const char *value);
 /* Remove one node from block/list.
    ..set_str() with value = NULL does the same. */
-void config_node_remove(CONFIG_NODE *parent, CONFIG_NODE *node);
+void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node);
 /* Remove n'th node from a list */
-void config_node_list_remove(CONFIG_NODE *node, int index);
+void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index);
 
 /* Clear the entire configuration */
 void config_nodes_remove_all(CONFIG_REC *rec);

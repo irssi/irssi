@@ -70,7 +70,7 @@ CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_t
 CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int create)
 {
 	CONFIG_NODE *node;
-	char **list, **tmp;
+	char **list, **tmp, *str;
 	int is_list, new_type;
 
 	g_return_val_if_fail(rec != NULL, NULL);
@@ -96,7 +96,9 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 	g_strfreev(list);
 
 	/* save to cache */
-	g_hash_table_insert(rec->cache, g_strdup(section), node);
+        str = g_strdup(section);
+	g_hash_table_insert(rec->cache, str, node);
+	g_hash_table_insert(rec->cache_nodes, node, str);
 	return node;
 }
 
@@ -120,10 +122,12 @@ char *config_get_str(CONFIG_REC *rec, const char *section, const char *key, cons
 			config_node_find(parent, key);
 
 		/* save to cache */
-		if (node != NULL)
+		if (node == NULL)
+			g_free(path);
+		else {
 			g_hash_table_insert(rec->cache, path, node);
-		else
-                        g_free(path);
+			g_hash_table_insert(rec->cache_nodes, node, path);
+		}
 	}
 
 	return (node == NULL || !has_node_value(node)) ? (char *) def : node->value;

@@ -46,9 +46,9 @@ static void hilight_add_config(HILIGHT_REC *rec)
 	node = iconfig_node_traverse("(hilights", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-        config_node_set_str(node, "text", rec->text);
+        iconfig_node_set_str(node, "text", rec->text);
         if (rec->level > 0) config_node_set_int(node, "level", rec->level);
-        if (rec->color) config_node_set_str(node, "color", rec->color);
+        if (rec->color) iconfig_node_set_str(node, "color", rec->color);
         if (rec->nickmask) config_node_set_bool(node, "nickmask", TRUE);
         if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
         if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
@@ -66,7 +66,7 @@ static void hilight_remove_config(HILIGHT_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	node = iconfig_node_traverse("hilights", FALSE);
-	if (node != NULL) config_node_list_remove(node, g_slist_index(hilights, rec));
+	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(hilights, rec));
 }
 
 static void hilight_destroy(HILIGHT_REC *rec)

@@ -205,7 +205,7 @@ void keyboard_save(void)
 	GSList *tmp, *tmp2;
 
 	/* remove old keyboard settings */
-	config_node_set_str(NULL, "(keyboard", NULL);
+	iconfig_node_set_str(NULL, "(keyboard", NULL);
 	keyboard = iconfig_node_traverse("(keyboard", TRUE);
 
 	for (tmp = keyinfos; tmp != NULL; tmp = tmp->next) {
@@ -217,8 +217,8 @@ void keyboard_save(void)
 
                         listnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 			if (key->data != NULL)
-				config_node_set_str(listnode, "data", key->data);
-			config_node_set_str(listnode, "key", key->key);
+				iconfig_node_set_str(listnode, "data", key->data);
+			iconfig_node_set_str(listnode, "key", key->key);
 		}
 	}
 }

@@ -164,18 +164,18 @@ static void ignore_set_config(IGNORE_REC *rec)
 	node = iconfig_node_traverse("(ignores", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-	if (rec->mask != NULL) config_node_set_str(node, "mask", rec->mask);
+	if (rec->mask != NULL) iconfig_node_set_str(node, "mask", rec->mask);
 	if (rec->level) {
 		levelstr = bits2level(rec->level);
-		config_node_set_str(node, "level", levelstr);
+		iconfig_node_set_str(node, "level", levelstr);
 		g_free(levelstr);
 	}
 	if (rec->except_level) {
 		levelstr = bits2level(rec->except_level);
-		config_node_set_str(node, "except_level", levelstr);
+		iconfig_node_set_str(node, "except_level", levelstr);
 		g_free(levelstr);
 	}
-	config_node_set_str(node, "pattern", rec->pattern);
+	iconfig_node_set_str(node, "pattern", rec->pattern);
 	if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
 	if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
 
@@ -210,7 +210,7 @@ static void ignore_remove_config(IGNORE_REC *rec)
 	CONFIG_NODE *node;
 
 	node = iconfig_node_traverse("ignores", FALSE);
-	if (node != NULL) config_node_list_remove(node, ignore_index(rec));
+	if (node != NULL) iconfig_node_list_remove(node, ignore_index(rec));
 }
 
 void ignore_add_rec(IGNORE_REC *rec)

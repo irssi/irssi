@@ -43,15 +43,15 @@ static void channel_config_add(SETUP_CHANNEL_REC *channel)
 	node = iconfig_node_traverse("(channels", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-	config_node_set_str(node, "name", channel->name);
-	config_node_set_str(node, "ircnet", channel->ircnet);
+	iconfig_node_set_str(node, "name", channel->name);
+	iconfig_node_set_str(node, "ircnet", channel->ircnet);
 	if (channel->autojoin)
 		config_node_set_bool(node, "autojoin", TRUE);
-	config_node_set_str(node, "password", channel->password);
-	config_node_set_str(node, "botmasks", channel->botmasks);
-	config_node_set_str(node, "autosendcmd", channel->autosendcmd);
-	config_node_set_str(node, "background", channel->background);
-	config_node_set_str(node, "font", channel->font);
+	iconfig_node_set_str(node, "password", channel->password);
+	iconfig_node_set_str(node, "botmasks", channel->botmasks);
+	iconfig_node_set_str(node, "autosendcmd", channel->autosendcmd);
+	iconfig_node_set_str(node, "background", channel->background);
+	iconfig_node_set_str(node, "font", channel->font);
 }
 
 static void channel_config_remove(SETUP_CHANNEL_REC *channel)
@@ -59,7 +59,7 @@ static void channel_config_remove(SETUP_CHANNEL_REC *channel)
 	CONFIG_NODE *node;
 
 	node = iconfig_node_traverse("channels", FALSE);
-	if (node != NULL) config_node_list_remove(node, g_slist_index(setupchannels, channel));
+	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(setupchannels, channel));
 }
 
 void channels_setup_create(SETUP_CHANNEL_REC *channel)

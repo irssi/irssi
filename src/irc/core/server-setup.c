@@ -261,12 +261,12 @@ void setupserver_config_add(SETUP_SERVER_REC *rec)
 	node = iconfig_node_traverse("(servers", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-	config_node_set_str(node, "address", rec->address);
-	config_node_set_str(node, "ircnet", rec->ircnet);
+	iconfig_node_set_str(node, "address", rec->address);
+	iconfig_node_set_str(node, "ircnet", rec->ircnet);
 
 	config_node_set_int(node, "port", rec->port);
-	config_node_set_str(node, "password", rec->password);
-	config_node_set_str(node, "own_host", rec->own_host);
+	iconfig_node_set_str(node, "password", rec->password);
+	iconfig_node_set_str(node, "own_host", rec->own_host);
 
 	if (rec->autoconnect)
 		config_node_set_bool(node, "autoconnect", TRUE);
@@ -282,7 +282,7 @@ void setupserver_config_remove(SETUP_SERVER_REC *rec)
 	CONFIG_NODE *node;
 
 	node = iconfig_node_traverse("servers", FALSE);
-	if (node != NULL) config_node_list_remove(node, g_slist_index(setupservers, rec));
+	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(setupservers, rec));
 }
 
 static void setupserver_destroy(SETUP_SERVER_REC *rec)
