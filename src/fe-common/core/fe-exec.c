@@ -28,6 +28,9 @@
 #include "misc.h"
 #include "levels.h"
 
+#include "channels.h"
+#include "queries.h"
+
 #include "printtext.h"
 #include "fe-exec.h"
 #include "fe-windows.h"
@@ -370,7 +373,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 {
 	PROCESS_REC *rec;
         char *target, *level;
-	int notice, signum, interactive;
+	int notice, signum, interactive, target_nick, target_channel;
 
 	/* check that there's no unknown options. we allowed them
 	   because signals can be used as options, but there should be
@@ -403,11 +406,14 @@ static void handle_exec(const char *args, GHashTable *optlist,
 		return;
 
         /* common options */
+        target_channel = target_nick = FALSE;
 	if (g_hash_table_lookup(optlist, "out") != NULL) {
                 /* redirect output to active channel/query */
 		if (item == NULL)
 			cmd_return_error(CMDERR_NOT_JOINED);
-                target = item->name;
+		target = item->name;
+		target_channel = IS_CHANNEL(item);
+		target_nick = IS_QUERY(item);
 	} else if (g_hash_table_lookup(optlist, "msg") != NULL) {
                 /* redirect output to /msg <nick> */
 		target = g_hash_table_lookup(optlist, "msg");
@@ -487,6 +493,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
         rec->id = process_get_new_id();
 	rec->target = g_strdup(target);
 	rec->target_win = active_win;
+	rec->target_channel = target_channel;
+	rec->target_nick = target_nick;
         rec->args = g_strdup(args);
 	rec->notice = notice;
         rec->silent = g_hash_table_lookup(optlist, "-") != NULL;
@@ -572,7 +580,9 @@ static void sig_exec_input(PROCESS_REC *rec, const char *text)
 		server = item != NULL ? item->server :
 			active_win->active_server;
 
-                str = g_strconcat(rec->target, " ", text, NULL);
+		str = g_strconcat(rec->target_nick ? "-nick " :
+				  rec->target_channel ? "-channel " : "",
+				  rec->target, " ", text, NULL);
 		signal_emit(rec->notice ? "command notice" : "command msg",
 			    3, str, server, item);
                 g_free(str);

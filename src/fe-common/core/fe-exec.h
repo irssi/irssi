@@ -38,6 +38,8 @@ struct PROCESS_REC {
 	unsigned int shell:1; /* start the program via /bin/sh */
 	unsigned int notice:1; /* send text with /notice, not /msg if target is set */
 	unsigned int silent:1; /* don't print "process exited with level xx" */
+	unsigned int target_channel:1; /* target is a channel */
+	unsigned int target_nick:1; /* target is a nick */
 };
 
 extern GSList *processes;
