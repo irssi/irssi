@@ -37,6 +37,16 @@ typedef struct
 }
 SETUP_SERVER_REC;
 
+typedef struct
+{
+    gchar *name;
+    gchar *nick;
+    gchar *username;
+    gchar *realname;
+    gint max_kicks, max_msgs, max_modes; /* max. number of kicks/msgs/mode changes per command */
+}
+IRCNET_REC;
+
 extern GList *setupservers; /* list of local servers */
 extern GList *ircnets; /* list of available ircnets */
 
