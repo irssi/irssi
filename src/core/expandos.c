@@ -505,6 +505,7 @@ static void read_settings(void)
 		strstr(timestamp_format, "%r") != NULL ||
 		strstr(timestamp_format, "%s") != NULL ||
 		strstr(timestamp_format, "%S") != NULL ||
+		strstr(timestamp_format, "%X") != NULL ||
 		strstr(timestamp_format, "%T") != NULL;
 
 }
