@@ -95,8 +95,7 @@ static QUERY_REC *query_find_server(SERVER_REC *server, const char *nick)
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *rec = tmp->data;
 
-		if (rec->chat_type == server->chat_type &&
-		    g_strcasecmp(nick, rec->name) == 0)
+		if (g_strcasecmp(nick, rec->name) == 0)
 			return rec;
 	}
 
