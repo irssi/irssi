@@ -176,9 +176,11 @@ static void sig_dccget_connected(DCC_REC *dcc)
 	}
 
 	if (dcc->get_type != DCC_GET_RESUME) {
-		dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT, dcc_file_create_mode);
+		dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT,
+				    dcc_file_create_mode);
 		if (dcc->fhandle == -1) {
-			signal_emit("dcc error file create", 2, dcc, dcc->file);
+			signal_emit("dcc error file create", 2,
+				    dcc, dcc->file);
 			dcc_destroy(dcc);
 			return;
 		}
@@ -205,9 +207,11 @@ void dcc_get_connect(DCC_REC *dcc)
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != NULL) {
-		dcc->tagconn = g_input_add(dcc->handle,
-					   G_INPUT_WRITE | G_INPUT_READ,
-					   (GInputFunction) sig_dccget_connected, dcc);
+		dcc->tagconn =
+			g_input_add(dcc->handle,
+				    G_INPUT_WRITE | G_INPUT_READ,
+				    (GInputFunction) sig_dccget_connected,
+				    dcc);
 	} else {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);

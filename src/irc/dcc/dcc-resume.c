@@ -90,11 +90,10 @@ static void ctcp_msg_dcc_resume(IRC_SERVER_REC *server, const char *data,
         char *str;
         long size;
 
-	if (!dcc_ctcp_resume_parse(DCC_TYPE_RESUME, data, nick, &dcc, &size))
+	if (!dcc_ctcp_resume_parse(DCC_TYPE_RESUME, data, nick, &dcc, &size)) {
 		signal_emit("dcc error ctcp", 5, "RESUME", data,
 			    nick, addr, target);
-
-	if (dcc != NULL && dcc_resume_file_check(dcc, server, size)) {
+	} else if (dcc != NULL && dcc_resume_file_check(dcc, server, size)) {
 		str = g_strdup_printf(dcc->file_quoted ?
 				      "DCC ACCEPT \"%s\" %d %lu" :
 				      "DCC ACCEPT %s %d %lu",
@@ -114,11 +113,10 @@ static void ctcp_msg_dcc_accept(IRC_SERVER_REC *server, const char *data,
         long size;
 
 	if (!dcc_ctcp_resume_parse(DCC_TYPE_ACCEPT, data, nick, &dcc, &size) ||
-	    (dcc != NULL && dcc->get_type != DCC_GET_RESUME))
+	    (dcc != NULL && dcc->get_type != DCC_GET_RESUME)) {
 		signal_emit("dcc error ctcp", 5, "ACCEPT", data,
 			    nick, addr, target);
-
-	if (dcc != NULL && dcc_resume_file_check(dcc, server, size))
+	} else if (dcc != NULL && dcc_resume_file_check(dcc, server, size))
 		dcc_get_connect(dcc);
 }
 
@@ -145,15 +143,15 @@ static void dcc_send_resume(DCC_REC *dcc)
 		/* already received whole file */
 		dcc->starttime = time(NULL);
 		dcc_reject(dcc, NULL);
-                return;
+	} else {
+		str = g_strdup_printf(dcc->file_quoted ?
+				      "DCC RESUME \"%s\" %d %lu" :
+				      "DCC RESUME %s %d %lu",
+				      dcc->arg, dcc->port, dcc->transfd);
+		dcc_ctcp_message(dcc->server, dcc->nick,
+				 dcc->chat, FALSE, str);
+		g_free(str);
 	}
-
-	str = g_strdup_printf(dcc->file_quoted ?
-			      "DCC RESUME \"%s\" %d %lu" :
-			      "DCC RESUME %s %d %lu",
-			      dcc->arg, dcc->port, dcc->transfd);
-	dcc_ctcp_message(dcc->server, dcc->nick, dcc->chat, FALSE, str);
-	g_free(str);
 }
 
 /* SYNTAX: DCC RESUME [<nick> [<file>]] */
