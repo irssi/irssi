@@ -10,8 +10,8 @@ EXTRA_LTLIBRARIES = \
 	libperl_core.la libfe_perl.la \
 	libperl_core_static.la libfe_perl_static.la
 
-libperl_core_la_LDFLAGS = -avoid-version -rpath $(moduledir)
-libfe_perl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
+libperl_core_la_LDFLAGS = -module -avoid-version -rpath $(moduledir)
+libfe_perl_la_LDFLAGS = -module -avoid-version -rpath $(moduledir)
 
 perl-core.c: perl-signals-list.h irssi-core.pl.h
 
