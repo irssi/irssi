@@ -331,3 +331,11 @@ command_unbind(cmd, func)
 	char *func
 CODE:
 	perl_command_unbind(cmd, func);
+
+void
+pidwait_add(pid)
+	int pid
+
+void 
+pidwait_remove(pid)
+	int pid
