@@ -232,7 +232,9 @@ static void cmd_scrollback_end(const char *data)
         TEXT_BUFFER_VIEW_REC *view;
 
 	view = WINDOW_GUI(active_win)->view;
-	if (view->bottom_startline == NULL)
+	if (view->bottom_startline == NULL ||
+	    (view->bottom_startline == view->startline &&
+	     view->bottom_subline == view->subline))
 		return;
 
 	textbuffer_view_scroll_line(view, view->bottom_startline);
