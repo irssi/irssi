@@ -81,16 +81,18 @@ ctcp_send_reply(server, data)
 MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server  PREFIX = server_
 
 void
-server_redirect_register(command, remote, timeout, start, stop)
+server_redirect_register(command, remote, timeout, start, stop, opt)
 	char *command
 	int remote
 	int timeout
 	SV *start
 	SV *stop
+	SV *opt
 CODE:
 	server_redirect_register_list(command, remote, timeout, 
 				      register_hash2list(hvref(start)),
-				      register_hash2list(hvref(stop)));
+				      register_hash2list(hvref(stop)),
+				      register_hash2list(hvref(opt)));
 
 void
 server_redirect_event(server, command, count, arg, remote, failure_signal, signals)

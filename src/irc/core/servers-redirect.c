@@ -39,7 +39,7 @@ typedef struct {
 
 	int remote;
 	int timeout;
-	GSList *start, *stop; /* char *event, int argpos, ... */
+	GSList *start, *stop, *opt; /* char *event, int argpos, ... */
 } REDIRECT_CMD_REC;
 
 struct _REDIRECT_REC {
@@ -83,8 +83,11 @@ static void redirect_cmd_destroy(REDIRECT_CMD_REC *rec)
                 g_free(tmp->data);
 	for (tmp = rec->stop; tmp != NULL; tmp = tmp->next->next)
                 g_free(tmp->data);
+	for (tmp = rec->opt; tmp != NULL; tmp = tmp->next->next)
+                g_free(tmp->data);
         g_slist_free(rec->start);
         g_slist_free(rec->stop);
+        g_slist_free(rec->opt);
         g_free(rec->name);
 	g_free(rec);
 }
@@ -116,18 +119,21 @@ void server_redirect_register(const char *command,
 			      int remote, int timeout, ...)
 {
 	va_list va;
-	GSList *start, *stop, **list;
+	GSList *start, *stop, *opt, **list;
 	const char *event;
         int argpos;
 
 	va_start(va, timeout);
-	start = stop = NULL; list = &start;
+	start = stop = opt = NULL; list = &start;
 	for (;;) {
 		event = va_arg(va, const char *);
 		if (event == NULL) {
-			if (list == &stop)
-				break;
-			list = &stop;
+			if (list == &start)
+				list = &stop;
+			else if (list == &stop)
+				list = &opt;
+			else
+                                break;
                         continue;
 		}
 
@@ -138,12 +144,13 @@ void server_redirect_register(const char *command,
 
 	va_end(va);
 
-	server_redirect_register_list(command, remote, timeout, start, stop);
+	server_redirect_register_list(command, remote, timeout,
+				      start, stop, opt);
 }
 
 void server_redirect_register_list(const char *command,
 				   int remote, int timeout,
-				   GSList *start, GSList *stop)
+				   GSList *start, GSList *stop, GSList *opt)
 {
 	REDIRECT_CMD_REC *rec;
         gpointer key, value;
@@ -166,6 +173,7 @@ void server_redirect_register_list(const char *command,
 	rec->timeout = timeout > 0 ? timeout : DEFAULT_REDIRECT_TIMEOUT;
 	rec->start = start;
         rec->stop = stop;
+        rec->opt = opt;
         g_hash_table_insert(command_redirects, rec->name, rec);
 }
 
@@ -337,13 +345,24 @@ static const char *redirect_match(REDIRECT_REC *redirect, const char *event,
 	}
 
 	/* find the argument position */
-	cmdpos = redirect_cmd_list_find(redirect->cmd->start, event);
-	if (cmdpos != NULL)
-		stop_signal = FALSE;
-	else {
-		cmdpos = redirect_cmd_list_find(redirect->cmd->stop,
-						event);
-		stop_signal = cmdpos != NULL;
+	if (redirect->destroyed) {
+		/* stop event is already found for this redirection, but
+		   we'll still want to look for optional events */
+		cmdpos = redirect_cmd_list_find(redirect->cmd->opt, event);
+		if (cmdpos == NULL)
+			return NULL;
+
+		stop_signal = TRUE;
+	} else {
+                /* look from start/stop lists */
+		cmdpos = redirect_cmd_list_find(redirect->cmd->start, event);
+		if (cmdpos != NULL)
+			stop_signal = FALSE;
+		else {
+			cmdpos = redirect_cmd_list_find(redirect->cmd->stop,
+							event);
+			stop_signal = cmdpos != NULL;
+		}
 	}
 
 	if (signal == NULL && cmdpos == NULL) {
@@ -396,12 +415,10 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 	for (tmp = server->redirects; tmp != NULL; tmp = tmp->next) {
 		REDIRECT_REC *rec = tmp->data;
 
-		if (!rec->destroyed) {
-			*signal = redirect_match(rec, event, args, match_stop);
-			if (*signal != NULL) {
-				redirect = rec;
-				break;
-			}
+		*signal = redirect_match(rec, event, args, match_stop);
+		if (*signal != NULL) {
+			redirect = rec;
+			break;
 		}
 	}
 
@@ -523,10 +540,12 @@ void servers_redirect_init(void)
 	   with a default timeout */
 	server_redirect_register("whois", TRUE, 0,
 				 "event 311", 1, /* Begins the WHOIS */
-                                 "event 401", 1, /* No such nick */
 				 NULL,
+                                 "event 401", 1, /* No such nick */
 				 "event 318", 1, /* End of WHOIS */
                                  "event 402", 1, /* No such server */
+				 NULL,
+				 "event 318", 1, /* After 401, we should get 318, but in OPN we don't.. */
 				 NULL);
 
 	/* WHOWAS */
@@ -535,6 +554,7 @@ void servers_redirect_init(void)
                                  "event 406", 1, /* There was no such nick */
 				 NULL,
 				 "event 369", 1, /* End of WHOWAS */
+				 NULL,
 				 NULL);
 
 	/* WHO */
@@ -544,6 +564,7 @@ void servers_redirect_init(void)
 				 NULL,
 				 "event 315", 1, /* End of WHO */
 				 "event 403", 1, /* no such channel */
+				 NULL,
 				 NULL);
 
         /* LIST */
@@ -551,12 +572,14 @@ void servers_redirect_init(void)
 				 "event 321", 1, /* Begins the LIST */
 				 NULL,
 				 "event 323", 1, /* End of LIST */
+				 NULL,
 				 NULL);
 
         /* ISON */
 	server_redirect_register("ison", FALSE, 0,
 				 NULL,
 				 "event 303", -1, /* ISON */
+				 NULL,
 				 NULL);
 
         /* USERHOST */
@@ -565,6 +588,7 @@ void servers_redirect_init(void)
 				 NULL,
 				 "event 302", -1, /* Userhost */
 				 "event 461", -1, /* Not enough parameters */
+				 NULL,
 				 NULL);
 
 	/* MODE #channel */
@@ -574,6 +598,8 @@ void servers_redirect_init(void)
 				 "event 403", 1, /* no such channel */
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
+				 NULL,
+                                 "event 329", 1, /* Channel create time */
 				 NULL);
 
 	/* MODE #channel b */
@@ -584,6 +610,7 @@ void servers_redirect_init(void)
 				 "event 403", 1, /* no such channel */
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
+				 NULL,
 				 NULL);
 
 	/* MODE #channel e */
@@ -596,6 +623,7 @@ void servers_redirect_init(void)
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 				 "event 472", -1, /* unknown mode (you should check e-mode's existance from 004 event instead of relying on this) */
+				 NULL,
 				 NULL);
 
 	/* MODE #channel I */
@@ -608,6 +636,7 @@ void servers_redirect_init(void)
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 				 "event 472", -1, /* unknown mode (you should check I-mode's existance from 004 event instead of relying on this) */
+				 NULL,
 				 NULL);
 
         /* PING - use default timeout */
@@ -615,6 +644,7 @@ void servers_redirect_init(void)
 				 NULL,
                                  "event 402", -1, /* no such server */
 				 "event pong", -1, /* PONG */
+				 NULL,
 				 NULL);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
