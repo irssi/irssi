@@ -110,11 +110,11 @@ static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 		g_string_truncate(chan->nicks, chan->nicks->len-1);
 
 		if (netsplit_max_nicks > 0 && chan->nick_count > netsplit_max_nicks) {
-			printformat(server, chan->name, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETSPLIT_MORE,
+			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT_MORE,
 				    rec->server->server, rec->server->destserver, chan->nicks->str,
 				    chan->nick_count - netsplit_max_nicks);
 		} else {
-			printformat(server, chan->name, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETSPLIT,
+			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT,
 				    rec->server->server, rec->server->destserver, chan->nicks->str);
 		}
 	}
