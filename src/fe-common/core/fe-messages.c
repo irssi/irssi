@@ -62,13 +62,13 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			continue;
 
 		/* check that the beginning marker starts a word, and
-		 * that the matching end marker ends a word */
-		if ((pos > 0 && ishighalnum(bgn[-1])) || !ishighalnum(bgn[1]))
+		   that the matching end marker ends a word */
+		if ((pos > 0 && !isspace(bgn[-1])) || !ishighalnum(bgn[1]))
 			continue;
-		if ((end = strchr(bgn+1, *bgn)) == NULL) 
+		if ((end = strchr(bgn+1, *bgn)) == NULL)
 			continue;
-		if (!ishighalnum(end[-1]) ||
-		    ishighalnum(end[1]) || end[1] == type)
+		if (!ishighalnum(end[-1]) || ishighalnum(end[1]) ||
+		    end[1] == type || end[1] == '*' || end[1] == '_')
 			continue;
 
 		if (IS_CHANNEL(item)) {
@@ -134,7 +134,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	CHANNEL_REC *chanrec;
 	const char *nickmode;
 	int for_me, print_channel, level;
-	char *color, *freemsg;
+	char *color, *freemsg = NULL;
 
 	/* NOTE: this may return NULL if some channel is just closed with
 	   /WINDOW CLOSE and server still sends the few last messages */
@@ -155,8 +155,6 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
-        else
-		freemsg = NULL;
 
 	nickmode = channel_get_nickmode(chanrec, nick);
 	if (!print_channel) {
@@ -194,14 +192,12 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
 	QUERY_REC *query;
-        char *freemsg;
+        char *freemsg = NULL;
 
 	query = query_find(server, nick);
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
-        else
-		freemsg = NULL;
 
 	printformat(server, nick, MSGLEVEL_MSGS,
 		    query == NULL ? TXT_MSG_PRIVATE :
@@ -215,6 +211,7 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 {
 	WINDOW_REC *window;
 	const char *nickmode;
+        char *freemsg = NULL;
 	int print_channel;
 
 	nickmode = channel_get_nickmode(channel, server->nick);
@@ -229,6 +226,9 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 	    window != NULL && g_slist_length(window->items) > 1)
 		print_channel = TRUE;
 
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) channel, msg);
+
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 			    TXT_OWN_MSG, server->nick, msg, nickmode);
@@ -236,6 +236,8 @@ static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
+
+	g_free_not_null(freemsg);
 }
 
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
@@ -254,6 +256,7 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				    const char *target, const char *origtarget)
 {
 	QUERY_REC *query;
+        char *freemsg = NULL;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(msg != NULL);
@@ -273,10 +276,16 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 	}
 
 	query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
+
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    query == NULL ? TXT_OWN_MSG_PRIVATE :
 		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+
+	g_free_not_null(freemsg);
 }
 
 static void sig_message_join(SERVER_REC *server, const char *channel,
