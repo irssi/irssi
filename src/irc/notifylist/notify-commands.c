@@ -77,7 +77,7 @@ static void cmd_unnotify(const char *data)
 
 void notifylist_commands_init(void)
 {
-	settings_add_time("misc", "notify_idle_time", "hour");
+	settings_add_time("misc", "notify_idle_time", "1hour");
 	command_bind("notify", NULL, (SIGNAL_FUNC) cmd_notify);
 	command_bind("unnotify", NULL, (SIGNAL_FUNC) cmd_unnotify);
 

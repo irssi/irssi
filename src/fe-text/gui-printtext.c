@@ -314,7 +314,7 @@ void gui_printtext_init(void)
 					    (GCompareFunc) g_str_equal);
 
 	settings_add_int("history", "scrollback_lines", 500);
-	settings_add_time("history", "scrollback_time", "day");
+	settings_add_time("history", "scrollback_time", "1day");
 	settings_add_int("history", "scrollback_burst_remove", 10);
 
 	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
