@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002111301';
+$VERSION = '2002112201';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -701,7 +701,7 @@ sub print_update (%) {
 		push @table, ['', '', $_];
 	    }
 	    if (lc($_) eq lc($IRSSI{name})) {
-		push @table, ['', '', "%3Please reload manually%n"];
+		push @table, ['', '', "%R%9Please reload manually%9%n"];
 	    } else {
 		load_script($_);
 	    }
