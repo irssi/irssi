@@ -78,7 +78,6 @@ noinst_HEADERS = \
 	module.h \
 	modules.h \
 	net-disconnect.h \
-	net-internal.h \
 	net-nonblock.h \
 	net-sendbuffer.h \
 	network.h \

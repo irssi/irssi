@@ -1,10 +1,16 @@
 #ifndef __NETWORK_H
 #define __NETWORK_H
 
+#ifdef HAVE_SOCKS_H
+#include <socks.h>
+#endif
+
 #include <sys/types.h>
 #ifndef WIN32
 #  include <sys/socket.h>
 #  include <netinet/in.h>
+#  include <netdb.h>
+#  include <arpa/inet.h>
 #endif
 
 #ifndef AF_INET6
