@@ -328,6 +328,7 @@ static void window_clear(GUI_WINDOW_REC *gui)
 	screen_refresh();
 }
 
+/* SYNTAX: CLEAR */
 static void cmd_clear(void)
 {
 	GUI_WINDOW_REC *gui;

@@ -261,6 +261,7 @@ static void sig_server_looking(IRC_SERVER_REC *server)
 }
 
 /* Remove all servers from reconnect list */
+/* SYNTAX: RMRECONNS */
 static void cmd_rmreconns(void)
 {
 	while (reconnects != NULL)
@@ -282,6 +283,7 @@ static RECONNECT_REC *reconnect_find_tag(int tag)
 }
 
 /* Try to reconnect immediately */
+/* SYNTAX: RECONNECT <tag> */
 static void cmd_reconnect(const char *data, IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;

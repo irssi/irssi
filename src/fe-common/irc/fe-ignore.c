@@ -148,14 +148,12 @@ static void cmd_ignore_show(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IGNORE_FOOTER);
 }
 
+/* SYNTAX: IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
+                  [-channels <channel>] [-time <secs>] <mask> <levels>
+           IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
+	          [-time <secs>] <channels> <levels> */
 static void cmd_ignore(const char *data)
 {
-	/* /IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
-	           [-replies] [-channels <channel>] [-time <secs>] <mask> <levels>
-	   OR
-
-           /IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
-	           [-time <secs>] <channels> <levels> */
         GHashTable *optlist;
 	IGNORE_REC *rec;
 	char *patternarg, *chanarg, *mask, *levels, *key, *timestr;
@@ -247,6 +245,7 @@ static void fe_unignore(IGNORE_REC *rec)
 	ignore_update_rec(rec);
 }
 
+/* SYNTAX: UNIGNORE <id>|<mask> */
 static void cmd_unignore(const char *data)
 {
 	IGNORE_REC *rec;

@@ -196,16 +196,20 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: BANTYPE normal|host|domain|custom
+           BANTYPE custom [nick] [user] [host] [domain] */
 static void cmd_bantype(const char *data)
 {
         ban_set_type(data);
 }
 
+/* SYNTAX: BAN <nicks/masks> */
 static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	command_set_ban(data, server, item, TRUE);
 }
 
+/* SYNTAX: UNBAN <masks> */
 static void cmd_unban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	command_set_ban(data, server, item, FALSE);

@@ -35,6 +35,7 @@ static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 	command_runsub("window", data, server, item);
 }
 
+/* SYNTAX: WINDOW NEW [hide] */
 static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 {
 	WINDOW_REC *window;
@@ -50,6 +51,7 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 	window_change_server(window, server);
 }
 
+/* SYNTAX: WINDOW CLOSE */
 static void cmd_window_close(const char *data)
 {
 	/* destroy window unless it's the last one */
@@ -57,6 +59,7 @@ static void cmd_window_close(const char *data)
 		window_destroy(active_win);
 }
 
+/* SYNTAX: WINDOW REFNUM <number> */
 static void cmd_window_refnum(const char *data)
 {
 	WINDOW_REC *window;
@@ -101,6 +104,7 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 	return max_win;
 }
 
+/* SYNTAX: WINDOW GOTO active|<number>|<name> */
 static void cmd_window_goto(const char *data)
 {
 	WINDOW_REC *window;
@@ -121,6 +125,7 @@ static void cmd_window_goto(const char *data)
 		window_set_active(window);
 }
 
+/* SYNTAX: WINDOW NEXT */
 static void cmd_window_next(void)
 {
 	int num;
@@ -131,12 +136,14 @@ static void cmd_window_next(void)
 	window_set_active(window_find_refnum(num));
 }
 
+/* SYNTAX: WINDOW LAST */
 static void cmd_window_last(void)
 {
 	if (windows->next != NULL)
 		window_set_active(windows->next->data);
 }
 
+/* SYNTAX: WINDOW PREV */
 static void cmd_window_prev(void)
 {
 	int num;
@@ -147,6 +154,7 @@ static void cmd_window_prev(void)
 	window_set_active(window_find_refnum(num));
 }
 
+/* SYNTAX: WINDOW LEVEL [<level>] */
 static void cmd_window_level(const char *data)
 {
 	char *level;
@@ -160,6 +168,7 @@ static void cmd_window_level(const char *data)
 	g_free(level);
 }
 
+/* SYNTAX: WINDOW SERVER <tag> */
 static void cmd_window_server(const char *data)
 {
 	SERVER_REC *server;
@@ -176,16 +185,24 @@ static void cmd_window_server(const char *data)
 	}
 }
 
+static void cmd_window_item(const char *data, void *server, WI_ITEM_REC *item)
+{
+	command_runsub("window item", data, server, item);
+}
+
+/* SYNTAX: WINDOW ITEM PREV */
 static void cmd_window_item_prev(void)
 {
 	window_item_prev(active_win);
 }
 
+/* SYNTAX: WINDOW ITEM NEXT */
 static void cmd_window_item_next(void)
 {
 	window_item_next(active_win);
 }
 
+/* SYNTAX: WINDOW NUMBER <number> */
 static void cmd_window_number(const char *data)
 {
 	int num;
@@ -197,6 +214,7 @@ static void cmd_window_number(const char *data)
 		window_set_refnum(active_win, num);
 }
 
+/* SYNTAX: WINDOW NAME <name> */
 static void cmd_window_name(const char *data)
 {
         window_set_name(active_win, data);
@@ -267,6 +285,7 @@ static void cmd_window_move_right(void)
         windows_move_right(active_win);
 }
 
+/* SYNTAX: WINDOW MOVE <number>|left|right */
 static void cmd_window_move(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	int new_refnum, refnum;
@@ -313,6 +332,7 @@ static GSList *windows_get_sorted(void)
 	return list;
 }
 
+/* SYNTAX: WINDOW LIST */
 static void cmd_window_list(void)
 {
 	GSList *tmp, *sorted;
@@ -348,6 +368,7 @@ void window_commands_init(void)
 	command_bind("window next", NULL, (SIGNAL_FUNC) cmd_window_next);
 	command_bind("window last", NULL, (SIGNAL_FUNC) cmd_window_last);
 	command_bind("window level", NULL, (SIGNAL_FUNC) cmd_window_level);
+	command_bind("window item", NULL, (SIGNAL_FUNC) cmd_window_item);
 	command_bind("window item prev", NULL, (SIGNAL_FUNC) cmd_window_item_prev);
 	command_bind("window item next", NULL, (SIGNAL_FUNC) cmd_window_item_next);
 	command_bind("window number", NULL, (SIGNAL_FUNC) cmd_window_number);
@@ -371,6 +392,7 @@ void window_commands_deinit(void)
 	command_unbind("window next", (SIGNAL_FUNC) cmd_window_next);
 	command_unbind("window last", (SIGNAL_FUNC) cmd_window_last);
 	command_unbind("window level", (SIGNAL_FUNC) cmd_window_level);
+	command_unbind("window item", (SIGNAL_FUNC) cmd_window_item);
 	command_unbind("window item prev", (SIGNAL_FUNC) cmd_window_item_prev);
 	command_unbind("window item next", (SIGNAL_FUNC) cmd_window_item_next);
 	command_unbind("window number", (SIGNAL_FUNC) cmd_window_number);

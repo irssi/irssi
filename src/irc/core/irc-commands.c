@@ -114,12 +114,16 @@ static IRC_SERVER_REC *connect_server(const char *data)
 	return server;
 }
 
+/* SYNTAX: CONNECT [-ircnet <ircnet>] [-host <hostname>]
+                   <address>|<ircnet> [<port> [<password> [<nick>]]] */
 static void cmd_connect(const char *data)
 {
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 	connect_server(data);
 }
 
+
+/* SYNTAX: DISCONNECT *|<tag> [<message>] */
 static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 {
 	char *tag, *msg, *str;
@@ -151,6 +155,8 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 	server_disconnect((SERVER_REC *) server);
 }
 
+/* SYNTAX: SERVER [-ircnet <ircnet>] [-host <hostname>]
+                  [+]<address>|<ircnet> [<port> [<password> [<nick>]]] */
 static void cmd_server(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
@@ -198,6 +204,7 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: QUIT [<message>] */
 static void cmd_quit(const char *data)
 {
 	GSList *tmp, *next;
@@ -221,6 +228,7 @@ static void cmd_quit(const char *data)
 	signal_emit("gui exit", 0);
 }
 
+/* SYNTAX: MSG [-<server tag>] <targets> <message> */
 static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	GHashTable *optlist;
@@ -256,6 +264,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: NOTICE <targets> <message> */
 static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *msg;
@@ -275,6 +284,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: CTCP <targets> <ctcp command> [<ctcp data>] */
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *ctcpcmd, *ctcpdata;
@@ -298,6 +308,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: NCTCP <targets> <ctcp command> [<ctcp data>] */
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *ctcpcmd, *ctcpdata;
@@ -318,6 +329,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: JOIN [-invite] [-<server tag>] <channels> [<keys>] */
 static void cmd_join(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
@@ -344,6 +356,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: PART [<channels>] [<message>] */
 static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *chanrec;
@@ -367,6 +380,7 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: KICK [<channel>] <nicks> [<reason>] */
 static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *channame, *nicks, *reason;
@@ -389,6 +403,7 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: TOPIC [-delete] [<channel>] [<topic>] */
 static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	GHashTable *optlist;
@@ -404,12 +419,14 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 			    item, "topic", &optlist, &channame, &topic))
 		return;
 
-	irc_send_cmdv(server, *topic == '\0' && g_hash_table_lookup(optlist, "d") == NULL ?
+	irc_send_cmdv(server, *topic == '\0' &&
+		      g_hash_table_lookup(optlist, "delete") == NULL ?
 		      "TOPIC %s" : "TOPIC %s :%s", channame, topic);
 
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: INVITE <nick> [<channel>] */
 static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nick, *channame;
@@ -434,6 +451,7 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *ite
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: LIST [-yes] [<channel>] */
 static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	GHashTable *optlist;
@@ -458,6 +476,7 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	server_redirect_default((SERVER_REC *) server, "bogus command list");
 }
 
+/* SYNTAX: WHO <nicks>|<channels>|** */
 static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *channel, *rest;
@@ -489,6 +508,7 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	server_redirect_default((SERVER_REC *) server, "bogus command who");
 }
 
+/* SYNTAX: NAMES [-yes] [<channels>] */
 static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	g_return_if_fail(data != NULL);
@@ -529,6 +549,7 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 	return ret;
 }
 
+/* SYNTAX: WHOIS [<server>] [<nicks>] */
 static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 {
 	char *qserver, *query;
@@ -598,6 +619,7 @@ static void event_whowas(const char *data, IRC_SERVER_REC *server, const char *n
 	signal_emit("event 314", 4, data, server, nick, addr);
 }
 
+/* SYNTAX: WHOWAS [<nicks> [<count>]] */
 static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 {
 	char *nicks, *count;
@@ -624,6 +646,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: PING <nicks> */
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	GTimeVal tv;
@@ -655,6 +678,7 @@ static void server_send_away(IRC_SERVER_REC *server, const char *reason)
 	irc_send_cmdv(server, "AWAY :%s", reason);
 }
 
+/* SYNTAX: AWAY [-one | -all] [<reason>] */
 static void cmd_away(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
@@ -676,6 +700,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: DEOP <nicks> */
 static void cmd_deop(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -686,6 +711,7 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server)
 		irc_send_cmdv(server, "MODE %s -o", server->nick);
 }
 
+/* SYNTAX: SCONNECT <new server> [[<port>] <existing server>] */
 static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -696,6 +722,7 @@ static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 	irc_send_cmdv(server, "CONNECT %s", data);
 }
 
+/* SYNTAX: QUOTE <data> */
 static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -710,6 +737,7 @@ static void cmd_wall_hash(gpointer key, NICK_REC *nick, GSList **nicks)
 	if (nick->op) *nicks = g_slist_append(*nicks, nick);
 }
 
+/* SYNTAX: WALL [<channel>] <message> */
 static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *channame, *msg, *args;
@@ -749,7 +777,8 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_cycle(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+/* SYNTAX: CYCLE [<channel>] [<message>] */
+static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *chanrec;
 	char *channame, *msg;
@@ -774,6 +803,7 @@ static void cmd_cycle(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: KICKBAN [<channel>] <nick> <reason> */
 static void cmd_kickban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nick;
@@ -832,6 +862,7 @@ static int knockout_timeout(void)
 	return 1;
 }
 
+/* SYNTAX: KNOCKOUT [<seconds>] <nick> <reason> */
 static void cmd_knockout(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	KNOCKOUT_REC *rec;
@@ -979,41 +1010,70 @@ void irc_commands_init(void)
 	command_bind("list", NULL, (SIGNAL_FUNC) cmd_list);
 	command_bind("who", NULL, (SIGNAL_FUNC) cmd_who);
 	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
+	/* SYNTAX: NICK <new nick> */
 	command_bind("nick", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: NOTE <command> [&<password>] [+|-<flags>] [<arguments>] */
 	command_bind("note", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("whois", NULL, (SIGNAL_FUNC) cmd_whois);
 	command_bind("whowas", NULL, (SIGNAL_FUNC) cmd_whowas);
 	command_bind("ping", NULL, (SIGNAL_FUNC) cmd_ping);
+	/* SYNTAX: KILL <nick> <reason> */
 	command_bind("kill", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind("away", NULL, (SIGNAL_FUNC) cmd_away);
+	/* SYNTAX: ISON <nicks> */
 	command_bind("ison", NULL, (SIGNAL_FUNC) command_1self);
+	/* SYNTAX: ADMIN [<server>|<nickname>] */
 	command_bind("admin", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: INFO [<server>] */
 	command_bind("info", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: LINKS [[<server>] <mask>] */
 	command_bind("links", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: LUSERS [<server mask> [<remote server>]] */
 	command_bind("lusers", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: MAP */
 	command_bind("map", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: MOTD [<server>|<nick>] */
 	command_bind("motd", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: REHASH */
 	command_bind("rehash", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: STATS <type> [<server>] */
 	command_bind("stats", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: TIME [<server>|<nick>] */
 	command_bind("time", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: TRACE [<server>|<nick>] */
 	command_bind("trace", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: VERSION [<server>|<nick>] */
 	command_bind("version", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: SERVLIST [<server mask>] */
 	command_bind("servlist", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: SILENCE [[+|-]<nick!user@host>]
+	           SILENCE [<nick>] */
 	command_bind("silence", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("sconnect", NULL, (SIGNAL_FUNC) cmd_sconnect);
+	/* SYNTAX: SQUERY <service> [<commands>] */
 	command_bind("squery", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind("deop", NULL, (SIGNAL_FUNC) cmd_deop);
+	/* SYNTAX: DIE */
 	command_bind("die", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: HASH */
 	command_bind("hash", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: OPER [<nick> [<password>]] */
 	command_bind("oper", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: RESTART */
 	command_bind("restart", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: RPING <server> */
 	command_bind("rping", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: SQUIT <server>|<mask> <reason> */
 	command_bind("squit", NULL, (SIGNAL_FUNC) command_2self);
+	/* SYNTAX: UPING <server> */
 	command_bind("uping", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: USERHOST <nicks> */
 	command_bind("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("quote", NULL, (SIGNAL_FUNC) cmd_quote);
 	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
+	/* SYNTAX: WALLOPS <message> */
 	command_bind("wallops", NULL, (SIGNAL_FUNC) command_1self);
+	/* SYNTAX: WALLCHOPS <channel> <message> */
 	command_bind("wallchops", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 	command_bind("kickban", NULL, (SIGNAL_FUNC) cmd_kickban);

@@ -411,7 +411,7 @@ static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
     dcc_destroy(dcc);
 }
 
-/* command: DCC CLOSE */
+/* SYNTAX: DCC CLOSE <type> <nick> [<file>] */
 static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 {
     DCC_REC *dcc;

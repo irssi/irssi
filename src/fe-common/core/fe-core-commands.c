@@ -234,6 +234,7 @@ static void show_help(const char *data)
     }
 }
 
+/* SYNTAX: HELP [<command>] */
 static void cmd_help(const char *data)
 {
 	char *cmd, *ptr;
@@ -246,6 +247,7 @@ static void cmd_help(const char *data)
         g_free(cmd);
 }
 
+/* SYNTAX: ECHO [<text>] */
 static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 {
 	g_return_if_fail(data != NULL);
@@ -253,6 +255,7 @@ static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 	printtext(server, item == NULL ? NULL : item->name, MSGLEVEL_CRAP, "%s", data);
 }
 
+/* SYNTAX: VERSION */
 static void cmd_version(char *data)
 {
 	g_return_if_fail(data != NULL);
@@ -261,6 +264,7 @@ static void cmd_version(char *data)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, "Client: "PACKAGE" " IRSSI_VERSION);
 }
 
+/* SYNTAX: CAT <file> */
 static void cmd_cat(const char *data)
 {
 	LINEBUF_REC *buffer = NULL;
@@ -297,6 +301,7 @@ static void cmd_cat(const char *data)
 	close(f);
 }
 
+/* SYNTAX: BEEP */
 static void cmd_beep(void)
 {
 	printbeep();

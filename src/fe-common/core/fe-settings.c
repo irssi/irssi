@@ -63,6 +63,7 @@ static void set_boolean(const char *key, const char *value)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOT_TOGGLE);
 }
 
+/* SYNTAX: SET [-clear] [<key> [<value>] */
 static void cmd_set(char *data)
 {
         GHashTable *optlist;
@@ -123,6 +124,7 @@ static void cmd_set(char *data)
         cmd_params_free(free_arg);
 }
 
+/* SYNTAX: TOGGLE <key> [on|off|toggle] */
 static void cmd_toggle(const char *data)
 {
 	char *key, *value;
@@ -198,6 +200,7 @@ static void alias_remove(const char *alias)
 	}
 }
 
+/* SYNTAX: ALIAS [[-]<alias> [<command>]] */
 static void cmd_alias(const char *data)
 {
 	char *alias, *value;
@@ -219,6 +222,7 @@ static void cmd_alias(const char *data)
         cmd_params_free(free_arg);
 }
 
+/* SYNTAX: UNALIAS <alias> */
 static void cmd_unalias(const char *data)
 {
 	g_return_if_fail(data != NULL);
@@ -227,6 +231,7 @@ static void cmd_unalias(const char *data)
 	alias_remove(data);
 }
 
+/* SYNTAX: RELOAD [<file>] */
 static void cmd_reload(const char *data)
 {
 	char *fname;
@@ -240,6 +245,7 @@ static void cmd_reload(const char *data)
 	g_free(fname);
 }
 
+/* SYNTAX: SAVE [<file>] */
 static void cmd_save(const char *data)
 {
 	if (settings_save(*data != '\0' ? data : NULL)) {

@@ -41,10 +41,10 @@ static int autolog_level;
 static int autoremove_tag;
 static const char *autolog_path;
 
+/* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
+                    [-rotate hourly|daily|weekly|monthly] <fname> [<levels>] */
 static void cmd_log_open(const char *data)
 {
-	/* /LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
-	             [-rotate hour|day|week|month] <fname> [<levels>] */
         GHashTable *optlist;
 	char *targetarg, *rotatearg, *fname, *levels;
 	void *free_arg;
@@ -109,6 +109,7 @@ static LOG_REC *log_find_from_data(const char *data)
 	return tmp == NULL ? NULL : tmp->data;
 }
 
+/* SYNTAX: LOG CLOSE <id>|<file> */
 static void cmd_log_close(const char *data)
 {
 	LOG_REC *log;
@@ -122,6 +123,7 @@ static void cmd_log_close(const char *data)
 	}
 }
 
+/* SYNTAX: LOG START <id>|<file> */
 static void cmd_log_start(const char *data)
 {
 	LOG_REC *log;
@@ -133,6 +135,7 @@ static void cmd_log_start(const char *data)
 	}
 }
 
+/* SYNTAX: LOG STOP <id>|<file> */
 static void cmd_log_stop(const char *data)
 {
 	LOG_REC *log;
@@ -146,6 +149,7 @@ static void cmd_log_stop(const char *data)
 	}
 }
 
+/* SYNTAX: LOG LIST */
 static void cmd_log_list(void)
 {
 	GSList *tmp;
@@ -196,9 +200,9 @@ static LOG_REC *log_find_item(const char *item)
 	return NULL;
 }
 
+/* SYNTAX: WINDOW LOG on|off|toggle [<filename>] */
 static void cmd_window_log(const char *data)
 {
-	/* /WINDOW LOG ON|OFF|TOGGLE [<filename>] */
 	LOG_REC *log;
 	char *set, *fname, window[MAX_INT_STRLEN];
 	void *free_arg;
@@ -247,6 +251,7 @@ static void cmd_window_log(const char *data)
 }
 
 /* Create log file entry to window, but don't start logging */
+/* SYNTAX: WINDOW LOGFILE <file> */
 static void cmd_window_logfile(const char *data)
 {
 	LOG_REC *log;

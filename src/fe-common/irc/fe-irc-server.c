@@ -78,6 +78,9 @@ static void print_reconnects(void)
 	}
 }
 
+/* SYNTAX: SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+		      <address> [<port> [<password>]] */
 static void cmd_server_add(const char *data)
 {
         GHashTable *optlist;
@@ -132,6 +135,7 @@ static void cmd_server_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SERVER REMOVE <address> [<port>] */
 static void cmd_server_remove(const char *data)
 {
 	SETUP_SERVER_REC *rec;
@@ -142,7 +146,7 @@ static void cmd_server_remove(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2, &addr, &portstr))
 		return;
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	port = *portstr == '\0' ? 6667 : atoi(portstr);
+	port = *portstr == '\0' ? -1 : atoi(portstr);
 
 	rec = server_setup_find(addr, port);
 	if (rec == NULL)
@@ -155,6 +159,7 @@ static void cmd_server_remove(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SERVER LIST */
 static void cmd_server_list(const char *data)
 {
 	GString *str;

@@ -411,6 +411,7 @@ static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win, MAIN_WINDOW_REC *s
 	statusbar_redraw(shrink_win->statusbar);
 }
 
+/* SYNTAX: WINDOW GROW [<lines>] */
 static void cmd_window_grow(const char *data)
 {
 	MAIN_WINDOW_REC *window, *shrink_win;
@@ -439,6 +440,7 @@ static void cmd_window_grow(const char *data)
 	mainwindows_resize_two(window, shrink_win, count);
 }
 
+/* SYNTAX: WINDOW SHRINK [<lines>] */
 static void cmd_window_shrink(const char *data)
 {
 	MAIN_WINDOW_REC *window, *grow_win;
@@ -467,6 +469,7 @@ static void cmd_window_shrink(const char *data)
 	mainwindows_resize_two(grow_win, window, count);
 }
 
+/* SYNTAX: WINDOW SIZE <lines> */
 static void cmd_window_size(const char *data)
 {
         char sizestr[MAX_INT_STRLEN];
@@ -485,6 +488,7 @@ static void cmd_window_size(const char *data)
 		cmd_window_grow(sizestr);
 }
 
+/* SYNTAX: WINDOW BALANCE */
 static void cmd_window_balance(void)
 {
 	GSList *sorted, *tmp;
@@ -522,6 +526,7 @@ static void cmd_window_balance(void)
 	statusbar_redraw(NULL);
 }
 
+/* SYNTAX: WINDOW HIDE [<number>|<name>] */
 static void cmd_window_hide(const char *data)
 {
 	WINDOW_REC *window;
@@ -549,6 +554,7 @@ static void cmd_window_hide(const char *data)
 	}
 }
 
+/* SYNTAX: WINDOW SHOW <number>|<name> */
 static void cmd_window_show(const char *data)
 {
 	WINDOW_REC *window;
@@ -569,6 +575,7 @@ static void cmd_window_show(const char *data)
 	window_set_active(window);
 }
 
+/* SYNTAX: WINDOW UP */
 static void cmd_window_up(void)
 {
 	MAIN_WINDOW_REC *rec;
@@ -578,6 +585,7 @@ static void cmd_window_up(void)
 		window_set_active(rec->active);
 }
 
+/* SYNTAX: WINDOW DOWN */
 static void cmd_window_down(void)
 {
 	MAIN_WINDOW_REC *rec;

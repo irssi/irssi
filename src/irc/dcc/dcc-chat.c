@@ -257,7 +257,7 @@ static void dcc_chat_connect(DCC_REC *dcc)
 	}
 }
 
-/* command: DCC CHAT */
+/* SYNTAX: DCC CHAT <nick> */
 static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 {
 	void *free_arg;
@@ -306,7 +306,8 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_mircdcc(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+/* SYNTAX: MIRCDCC ON|OFF */
+static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	DCC_REC *dcc;
 
@@ -315,7 +316,8 @@ static void cmd_mircdcc(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	dcc = item_get_dcc(item);
 	if (dcc == NULL) return;
 
-	dcc->mirc_ctcp = toupper(*data) == 'N' ? FALSE : TRUE;
+	dcc->mirc_ctcp = toupper(*data) != 'N' &&
+		g_strncasecmp(data, "OF", 3) != 0;
 }
 
 /* DCC CHAT: text received */

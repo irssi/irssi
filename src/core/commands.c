@@ -669,6 +669,7 @@ static void event_command(const char *line, SERVER_REC *server, void *item)
 	parse_command(line, expand_aliases, server, item);
 }
 
+/* SYNTAX: EVAL <command(s)> */
 static void cmd_eval(const char *data, SERVER_REC *server, void *item)
 {
 	g_return_if_fail(data != NULL);
@@ -676,6 +677,7 @@ static void cmd_eval(const char *data, SERVER_REC *server, void *item)
 	eval_special_string(data, "", server, item);
 }
 
+/* SYNTAX: CD <directory> */
 static void cmd_cd(const char *data)
 {
 	char *str;

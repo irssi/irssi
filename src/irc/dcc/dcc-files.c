@@ -210,6 +210,7 @@ static void dcc_get_connect(DCC_REC *dcc)
 #define dcc_is_unget(dcc) \
         ((dcc)->type == DCC_TYPE_GET && (dcc)->handle == -1)
 
+/* SYNTAX: DCC GET <nick> [<file>] */
 static void cmd_dcc_get(const char *data)
 {
 	DCC_REC *dcc;
@@ -337,6 +338,7 @@ static void dcc_resume_rec(DCC_REC *dcc)
 	g_free(str);
 }
 
+/* SYNTAX: DCC RESUME <nick> [<file>] */
 static void cmd_dcc_resume(const char *data)
 {
 	DCC_REC *dcc;
@@ -492,7 +494,7 @@ static void dcc_send_init(DCC_REC *dcc)
 	}
 }
 
-/* command: DCC SEND */
+/* SYNTAX: DCC SEND <nick> <file> */
 static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *target, *fname, *str, *ptr;

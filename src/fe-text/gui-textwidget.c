@@ -161,6 +161,8 @@ static GList *lastlog_find_startline(GList *list, int count, int start, int leve
 	return list;
 }
 
+/* SYNTAX: LASTLOG [-] [-new | -away] [-regexp | -word] [-<levels>]
+	           [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
 {
 	GHashTable *optlist;
@@ -241,6 +243,7 @@ static void cmd_scrollback(gchar *data, SERVER_REC *server, WI_ITEM_REC *item)
 	command_runsub("scrollback", data, server, item);
 }
 
+/* SYNTAX: SCROLLBACK CLEAR */
 static void cmd_scrollback_clear(gchar *data)
 {
 	gui_window_clear(active_win);
@@ -275,6 +278,7 @@ static void scrollback_goto_pos(WINDOW_REC *window, GList *pos)
 	signal_emit("gui page scrolled", 1, window);
 }
 
+/* SYNTAX: SCROLLBACK GOTO <+|-linecount>|<linenum>|<timestamp> */
 static void cmd_scrollback_goto(gchar *data)
 {
     GList *pos;
@@ -367,6 +371,7 @@ static void cmd_scrollback_goto(gchar *data)
     cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SCROLLBACK HOME */
 static void cmd_scrollback_home(const char *data)
 {
 	GUI_WINDOW_REC *gui;
@@ -386,6 +391,7 @@ static void cmd_scrollback_home(const char *data)
 	signal_emit("gui page scrolled", 1, active_win);
 }
 
+/* SYNTAX: SCROLLBACK END */
 static void cmd_scrollback_end(const char *data)
 {
 	GUI_WINDOW_REC *gui;

@@ -72,6 +72,10 @@ static void cmd_ircnet_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IRCNET_FOOTER);
 }
 
+/* SYNTAX: IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
+	              [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
+		      [-nick <nick>] [-user <user>] [-realname <name>]
+		      [-host <host>] [-autosendcmd <cmd>] <name> */
 static void cmd_ircnet_add(const char *data)
 {
 	GHashTable *optlist;
@@ -135,6 +139,7 @@ static void cmd_ircnet_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: IRCNET REMOVE <ircnet> */
 static void cmd_ircnet_remove(const char *data)
 {
 	IRCNET_REC *rec;

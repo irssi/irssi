@@ -153,6 +153,7 @@ static void cmd_channel_list_joined(void)
 	}
 }
 
+/* SYNTAX: CHANNEL LIST */
 static void cmd_channel_list(void)
 {
 	GString *str;
@@ -190,6 +191,8 @@ static void cmd_channel(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *i
 		command_runsub("channel", data, server, item);
 }
 
+/* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+                       <channel> <ircnet> [<password>] */
 static void cmd_channel_add(const char *data)
 {
 	GHashTable *optlist;
@@ -227,6 +230,7 @@ static void cmd_channel_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: CHANNEL REMOVE <channel> <ircnet> */
 static void cmd_channel_remove(const char *data)
 {
 	SETUP_CHANNEL_REC *rec;

@@ -356,9 +356,11 @@ static void cmd_hilight_show(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_HILIGHT_FOOTER);
 }
 
+/* SYNTAX: HILIGHT [-nick | -nonick] [-mask | -regexp | -word]
+                   [-color <color>] [-level <level>]
+		   [-channels <channels>] <text> */
 static void cmd_hilight(const char *data)
 {
-	/* /HILIGHT [-nick | -nonick] [-mask | -regexp | -word] [-color <color>] [-level <level>] [-channels <channels>] <text> */
         GHashTable *optlist;
 	HILIGHT_REC *rec;
 	char *colorarg, *levelarg, *chanarg, *text;
@@ -419,6 +421,7 @@ static void cmd_hilight(const char *data)
         cmd_params_free(free_arg);
 }
 
+/* SYNTAX: DEHILIGHT <id>|<mask> */
 static void cmd_dehilight(const char *data)
 {
 	HILIGHT_REC *rec;

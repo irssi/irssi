@@ -34,6 +34,7 @@ static void cmd_rawlog(const char *data, SERVER_REC *server, void *item)
 	command_runsub("rawlog", data, server, item);
 }
 
+/* SYNTAX: RAWLOG SAVE <file> */
 static void cmd_rawlog_save(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -43,6 +44,7 @@ static void cmd_rawlog_save(const char *data, SERVER_REC *server)
 	rawlog_save(server->rawlog, data);
 }
 
+/* SYNTAX: RAWLOG OPEN <file> */
 static void cmd_rawlog_open(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -52,6 +54,7 @@ static void cmd_rawlog_open(const char *data, SERVER_REC *server)
 	rawlog_open(server->rawlog, data);
 }
 
+/* SYNTAX: RAWLOG CLOSE */
 static void cmd_rawlog_close(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);

@@ -50,6 +50,7 @@ static void sig_module_unloaded(MODULE_REC *rec)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_MODULE_UNLOADED, rec->name);
 }
 
+/* SYNTAX: LOAD <module> */
 static void cmd_load(const char *data)
 {
 	g_return_if_fail(data != NULL);
@@ -58,6 +59,7 @@ static void cmd_load(const char *data)
 	module_load(data);
 }
 
+/* SYNTAX: UNLOAD <module> */
 static void cmd_unload(const char *data)
 {
 	MODULE_REC *rec;

@@ -346,6 +346,7 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 	}
 }
 
+/* SYNTAX: FORMAT [-delete | -reset] [<module>] [<key> [<value>]] */
 static void cmd_format(const char *data)
 {
         GHashTable *optlist;
@@ -354,7 +355,6 @@ static void cmd_format(const char *data)
 	void *free_arg;
 	int reset;
 
-	/* /FORMAT [<module>] [<key> [<value>]] */
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 			    "format", &optlist, &module, &key, &value))
 		return;

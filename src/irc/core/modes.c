@@ -406,6 +406,7 @@ static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 	return ret;
 }
 
+/* SYNTAX: OP <nicks> */
 static void cmd_op(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nicks;
@@ -419,6 +420,7 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	g_free(nicks);
 }
 
+/* SYNTAX: DEOP <nicks> */
 static void cmd_deop(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nicks;
@@ -432,6 +434,7 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	g_free(nicks);
 }
 
+/* SYNTAX: VOICE <nicks> */
 static void cmd_voice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nicks;
@@ -445,6 +448,7 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 	g_free(nicks);
 }
 
+/* SYNTAX: DEVOICE <nicks> */
 static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *nicks;
@@ -458,6 +462,7 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 	g_free(nicks);
 }
 
+/* SYNTAX: MODE <your nick>|<channel> [<mode> [<mode parameters>]] */
 static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *target, *mode;

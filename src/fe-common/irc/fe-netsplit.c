@@ -239,6 +239,7 @@ static void split_print(const char *nick, NETSPLIT_REC *rec)
 		    rec->server->server, rec->server->destserver);
 }
 
+/* SYNTAX: NETSPLIT */
 static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 {
 	if (server == NULL || !server->connected)

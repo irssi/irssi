@@ -38,6 +38,7 @@
 #include "windows.h"
 #include "window-items.h"
 
+/* SYNTAX: UNQUERY [<nick>] */
 static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	QUERY_REC *query;
@@ -59,7 +60,8 @@ static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 	query_destroy(query);
 }
 
-static void cmd_query(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+/* SYNTAX: QUERY <nick> */
+static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	WINDOW_REC *window;
 	QUERY_REC *query;
@@ -178,6 +180,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     cmd_params_free(free_arg);
 }
 
+/* SYNTAX: ME <message> */
 static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	g_return_if_fail(data != NULL);
@@ -195,6 +198,7 @@ static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", item->name, data);
 }
 
+/* SYNTAX: ACTION [<target>] <message> */
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *text;
@@ -216,7 +220,8 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_notice(gchar *data, IRC_SERVER_REC *server)
+/* SYNTAX: NOTICE [<target>] <message> */
+static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *msg;
 	void *free_arg;
@@ -307,6 +312,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: BAN [<channel>] [<nicks>] */
 static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *cur_channel, *channel;
@@ -336,6 +342,7 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 			g_string_sprintf(str, "%s e", data);
 			signal_emit("command mode", 3, str->str, server, cur_channel);
 			g_string_free(str, TRUE);
+			signal_stop();
 			return;
 		}
 	}
@@ -369,6 +376,7 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	signal_stop();
 }
 
+/* SYNTAX: INVITELIST [<channel>] */
 static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *channel, *cur_channel;
@@ -412,6 +420,7 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server)
 	signal_stop();
 }
 
+/* SYNTAX: VER [<target>] */
 static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	char *str;
@@ -428,6 +437,7 @@ static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	g_free(str);
 }
 
+/* SYNTAX: TS */
 static void cmd_ts(const char *data)
 {
 	GSList *tmp;
