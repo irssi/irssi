@@ -163,7 +163,7 @@ static void cmd_channel_list(void)
 		if (rec->autosendcmd != NULL && *rec->autosendcmd != '\0')
 			g_string_sprintfa(str, "botcmd: %s, ", rec->autosendcmd);
 
-		if (str->len > 1) g_string_truncate(str, str->len-1);
+		if (str->len > 2) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_LINE,
 			    rec->name, rec->ircnet == NULL ? "" : rec->ircnet,
 			    rec->password == NULL ? "" : rec->password, str->str);
