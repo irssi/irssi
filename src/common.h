@@ -70,23 +70,19 @@ IPADDR;
 #include "lib-config/irssi-config.h"
 #include "common-setup.h"
 
-/* GUI library must provide these functions: */
-
 typedef enum
 {
-  GUI_INPUT_READ       = 1 << 0,
-  GUI_INPUT_WRITE      = 1 << 1,
-  GUI_INPUT_EXCEPTION  = 1 << 2
-} GUIInputCondition;
+	G_INPUT_READ       = 1 << 0,
+	G_INPUT_WRITE      = 1 << 1,
+	G_INPUT_EXCEPTION  = 1 << 2
+} GInputCondition;
 
-typedef void (*GUIInputFunction) (gpointer data, gint handle, GUIInputCondition condition);
-typedef gint (*GUITimeoutFunction) (gpointer data);
+typedef void (*GInputFunction) (gpointer data, int source,
+				GInputCondition condition);
 
-gint gui_input_add(gint handle, GUIInputCondition condition,
-                   GUIInputFunction function, gpointer data);
-void gui_input_remove(gint tag);
+int g_input_add(int source, GInputCondition condition,
+		GInputFunction function, gpointer data);
 
-guint gui_timeout_add(guint32 interval, GUITimeoutFunction function, gpointer data);
-void gui_timeout_remove(gint tag);
+#define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)
 
 #endif
