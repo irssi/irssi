@@ -245,8 +245,11 @@ static void cmd_disconnect(const char *data, SERVER_REC *server)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
 		return;
 
-	if (*tag != '\0' && strcmp(tag, "*") != 0)
+	if (*tag != '\0' && strcmp(tag, "*") != 0) {
 		server = server_find_tag(tag);
+		if (server == NULL)
+			server = server_find_lookup_tag(tag);
+	}
 	if (server == NULL) cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");

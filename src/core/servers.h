@@ -46,6 +46,7 @@ void server_ref(SERVER_REC *server);
 int server_unref(SERVER_REC *server);
 
 SERVER_REC *server_find_tag(const char *tag);
+SERVER_REC *server_find_lookup_tag(const char *tag);
 SERVER_REC *server_find_chatnet(const char *chatnet);
 
 /* starts connecting to server */
