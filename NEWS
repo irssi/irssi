@@ -7,6 +7,9 @@ v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
 	+ "channel synced" text doesn't trigger channel activity anymore
 	+ Rawlog displays where event was redirected
 	+ /wjoin - you can join multiple channels in same window
+	+ /window goto #channel - moves you to window with the
+	  channel, query or dcc chat
+	+ /window goto active - moves you to first window with activity
 	- Notifylist and checking of who uses your nick uses WHOIS again,
 	  WHO didn't display user info unless s/he was -i or in same
 	  channels..
