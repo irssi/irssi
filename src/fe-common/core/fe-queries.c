@@ -98,6 +98,10 @@ static void signal_query_destroyed(QUERY_REC *query)
 
 	if (!query->unwanted)
 		window_auto_destroy(window);
+	else {
+		/* eg. connection lost to dcc chat */
+		window_bind_add(window, query->server->tag, query->name);
+	}
 }
 
 static void signal_query_server_changed(QUERY_REC *query)
