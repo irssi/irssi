@@ -74,26 +74,32 @@ static void proxy_redirect_event(CLIENT_REC *client, const char *command,
 
 static void grab_who(CLIENT_REC *client, const char *channel)
 {
-	char *chlist, *chanevent;
+	GString *arg;
 	char **list, **tmp;
+	int count;
 
 	/* /WHO a,b,c may respond with either one "a,b,c End of WHO" message
 	   or three different "a End of WHO", "b End of WHO", .. messages */
-	chlist = g_strdup(channel);
 	list = g_strsplit(channel, ",", -1);
 
-	for (tmp = list; *tmp != NULL; tmp++) {
+	arg = g_string_new(channel);
+
+	for (tmp = list, count = 0; *tmp != NULL; tmp++, count++) {
 		if (strcmp(*tmp, "0") == 0) {
 			/* /who 0 displays everyone */
 			**tmp = '*';
 		}
 
-		chanevent = g_strdup_printf("%s %s", chlist, *tmp);
-		proxy_redirect_event(client, "who", 1, chanevent, -1);
-		g_free(chanevent);
+		g_string_append_c(arg, ' ');
+		g_string_append(arg, *tmp);
 	}
+
+	proxy_redirect_event(client, "who",
+			     client->server->one_endofwho ? 1 : count,
+			     arg->str, -1);
+
 	g_strfreev(list);
-	g_free(chlist);
+	g_string_free(arg, TRUE);
 }
 
 static void handle_client_connect_cmd(CLIENT_REC *client,
