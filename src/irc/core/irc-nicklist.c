@@ -369,11 +369,11 @@ void irc_nicklist_init(void)
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add_first("event 301", (SIGNAL_FUNC) event_whois_away);
 	signal_add_first("event 313", (SIGNAL_FUNC) event_whois_ircop);
-	signal_add("event 353", (SIGNAL_FUNC) event_names_list);
-	signal_add("event 366", (SIGNAL_FUNC) event_end_of_names);
-	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
-	signal_add("event 437", (SIGNAL_FUNC) event_target_unavailable);
-	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
+	signal_add_first("event 353", (SIGNAL_FUNC) event_names_list);
+	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
+	signal_add_first("event 433", (SIGNAL_FUNC) event_nick_in_use);
+	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
+	signal_add_first("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_add("userhost event", (SIGNAL_FUNC) event_userhost);
 	signal_add("user mode changed", (SIGNAL_FUNC) sig_usermode);
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
