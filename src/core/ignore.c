@@ -408,7 +408,8 @@ static void read_ignores(void)
 		return;
 	}
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
 		if (node->type != NODE_TYPE_BLOCK)

@@ -360,11 +360,11 @@ static GList *completion_get_aliases(const char *alias, char cmdchar)
 
 	/* get list of aliases from mainconfig */
 	node = iconfig_node_traverse("aliases", FALSE);
-	tmp = node == NULL ? NULL : node->value;
+	tmp = node == NULL ? NULL : config_node_first(node->value);
 
 	len = strlen(alias);
 	complist = NULL;
-	for (; tmp != NULL; tmp = tmp->next) {
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
 		if (node->type != NODE_TYPE_KEY)

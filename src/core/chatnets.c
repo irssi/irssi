@@ -162,6 +162,7 @@ static void chatnet_read(CONFIG_NODE *node)
 static void read_chatnets(void)
 {
 	CONFIG_NODE *node;
+        GSList *tmp;
 
 	while (chatnets != NULL)
                 chatnet_destroy(chatnets->data);
@@ -178,8 +179,11 @@ static void read_chatnets(void)
 		}
 	}
 
-	if (node != NULL)
-                g_slist_foreach(node->value, (GFunc) chatnet_read, NULL);
+	if (node != NULL) {
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp))
+                        chatnet_read(tmp->data);
+	}
 }
 
 void chatnets_init(void)

@@ -173,12 +173,12 @@ static void show_aliases(const char *alias)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_ALIASLIST_HEADER);
 
 	node = iconfig_node_traverse("aliases", FALSE);
-	tmp = node == NULL ? NULL : node->value;
+	tmp = node == NULL ? NULL : config_node_first(node->value);
 
 	/* first get the list of aliases sorted */
 	list = NULL;
 	aliaslen = strlen(alias);
-	for (; tmp != NULL; tmp = tmp->next) {
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
 		if (node->type != NODE_TYPE_KEY)

@@ -81,7 +81,8 @@ static void window_add_items(WINDOW_REC *window, CONFIG_NODE *node)
 	if (node == NULL)
 		return;
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
 		type = config_node_get_str(node, "type", NULL);
@@ -106,7 +107,8 @@ static void sig_layout_restore(void)
 	node = iconfig_node_traverse("windows", FALSE);
 	if (node == NULL) return;
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
 		window = window_find_refnum(atoi(node->key));

@@ -99,7 +99,8 @@ static GSList *get_sorted_windows_config(CONFIG_NODE *node)
 	GSList *tmp, *output;
 
         output = NULL;
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		output = g_slist_insert_sorted(output, tmp->data,
 					       (GCompareFunc) window_node_cmp);
 	}

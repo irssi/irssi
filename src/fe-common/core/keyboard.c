@@ -114,7 +114,8 @@ static CONFIG_NODE *key_config_find(const char *key)
 	/* remove old keyboard settings */
 	node = iconfig_node_traverse("(keyboard", TRUE);
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
 		if (strcmp(config_node_get_str(node, "key", ""), key) == 0)
@@ -794,7 +795,8 @@ static void read_keyboard_config(void)
 		return;
 	}
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp))
 		key_config_read(tmp->data);
 
         key_configure_thaw();

@@ -473,7 +473,8 @@ static void log_items_read_config(CONFIG_NODE *node, LOG_REC *log)
 	char *item;
 	int type;
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
 		if (node->type != NODE_TYPE_BLOCK)
@@ -516,7 +517,8 @@ static void log_read_config(void)
 	node = iconfig_node_traverse("logs", FALSE);
 	if (node == NULL) return;
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
 		if (node->type != NODE_TYPE_BLOCK)

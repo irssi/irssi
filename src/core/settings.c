@@ -280,20 +280,6 @@ static void sig_init_finished(void)
 	}
 }
 
-/* FIXME: remove after 0.7.98 - only for backward compatibility */
-static void settings_move(SETTINGS_REC *rec, char *value)
-{
-	CONFIG_NODE *setnode, *node;
-
-	setnode = iconfig_node_traverse("settings", TRUE);
-	node = config_node_section(setnode, rec->module, NODE_TYPE_BLOCK);
-
-	iconfig_node_set_str(node, rec->key, value);
-	iconfig_node_set_str(setnode, rec->key, NULL);
-
-        config_changed = TRUE;
-}
-
 static void settings_clean_invalid_module(const char *module)
 {
         CONFIG_NODE *node;
@@ -306,9 +292,9 @@ static void settings_clean_invalid_module(const char *module)
 	node = config_node_section(node, module, -1);
 	if (node == NULL) return;
 
-	for (tmp = node->value; tmp != NULL; tmp = next) {
+	for (tmp = config_node_first(node->value); tmp != NULL; tmp = next) {
 		CONFIG_NODE *subnode = tmp->data;
-                next = tmp->next;
+                next = config_node_next(tmp);
 
 		set = g_hash_table_lookup(settings, subnode->key);
 		if (set == NULL || strcmp(set->module, module) != 0)
@@ -338,25 +324,12 @@ void settings_check_module(const char *module)
         SETTINGS_REC *set;
 	CONFIG_NODE *node;
         GString *errors;
-	GSList *tmp, *next;
+	GSList *tmp;
         int count;
 
         g_return_if_fail(module != NULL);
 
 	node = iconfig_node_traverse("settings", FALSE);
-	if (node != NULL) {
-		/* FIXME: remove after 0.7.98 */
-		for (tmp = node->value; tmp != NULL; tmp = next) {
-			CONFIG_NODE *node = tmp->data;
-
-                        next = tmp->next;
-			if (node->type != NODE_TYPE_KEY)
-				continue;
-			set = g_hash_table_lookup(settings, node->key);
-                        if (set != NULL)
-				settings_move(set, node->value);
-		}
-	}
 	node = node == NULL ? NULL : config_node_section(node, module, -1);
 	if (node == NULL) return;
 
@@ -365,7 +338,8 @@ void settings_check_module(const char *module)
 			 "file for module %s:", module);
 
         count = 0;
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	tmp = config_node_first(node->value);
+	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
 		set = g_hash_table_lookup(settings, node->key);

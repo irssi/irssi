@@ -493,7 +493,8 @@ static void read_servers(void)
 	/* Read servers */
 	node = iconfig_node_traverse("servers", FALSE);
 	if (node != NULL) {
-		for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp))
 			server_setup_read(tmp->data);
 	}
 }

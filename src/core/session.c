@@ -201,7 +201,8 @@ static void session_restore_channel_nicks(CHANNEL_REC *channel,
 	/* restore nicks */
 	node = config_node_section(node, "nicks", -1);
 	if (node != NULL && node->type == NODE_TYPE_LIST) {
-		for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp)) {
 			signal_emit("session restore nick", 2,
 				    channel, tmp->data);
 		}
@@ -233,7 +234,8 @@ static void session_restore_server_channels(SERVER_REC *server,
 	/* restore channels */
 	node = config_node_section(node, "channels", -1);
 	if (node != NULL && node->type == NODE_TYPE_LIST) {
-		for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp))
 			session_restore_channel(server, tmp->data);
 	}
 }
@@ -304,7 +306,8 @@ static void sig_session_restore(CONFIG_REC *config)
         /* restore servers */
 	node = config_node_traverse(config, "(servers", FALSE);
 	if (node != NULL) {
-		for (tmp = node->value; tmp != NULL; tmp = config_node_next(tmp))
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp))
 			session_restore_server(tmp->data);
 	}
 

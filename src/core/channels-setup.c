@@ -158,7 +158,8 @@ static void channels_read_config(void)
 	/* Read channels */
 	node = iconfig_node_traverse("channels", FALSE);
 	if (node != NULL) {
-		for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+		tmp = config_node_first(node->value);
+		for (; tmp != NULL; tmp = config_node_next(tmp))
 			channel_setup_read(tmp->data);
 	}
 }
