@@ -60,11 +60,12 @@ static void nick_hash_remove(CHANNEL_REC *channel, NICK_REC *nick)
 	if (list == NULL)
 		return;
 
-	if (list->next == NULL)
+	if (list == nick || list->next == NULL) {
 		g_hash_table_remove(channel->nicks, nick->nick);
-	else if (list == nick) {
-		g_hash_table_insert(channel->nicks, nick->next->nick,
-				    nick->next);
+		if (list == nick) {
+			g_hash_table_insert(channel->nicks, nick->next->nick,
+					    nick->next);
+		}
 	} else {
 		while (list->next != nick)
 			list = list->next;
