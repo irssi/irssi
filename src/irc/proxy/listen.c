@@ -350,8 +350,11 @@ static void sig_server_event(const char *line, IRC_SERVER_REC *server,
 
 	if (g_strcasecmp(event, "event ping") == 0 ||
 	    (g_strcasecmp(event, "event privmsg") == 0 &&
-	     strstr(args, " :\001") != NULL)) {
-		/* We want to answer ourself to PINGs and CTCPs */
+	     strstr(args, " :\001") != NULL) ||
+	    (g_strcasecmp(event, "event notice") == 0 &&
+	     strstr(args, " :\001IRSSILAG") != NULL)) {
+		/* We want to answer ourself to PINGs and CTCPs,
+		   also don't let clients see replies to IRSSILAG requests */
 		g_free(event);
 		return;
 	}
