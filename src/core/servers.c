@@ -467,6 +467,7 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
 	g_free_not_null(conn->proxy);
 	g_free_not_null(conn->proxy_string);
+	g_free_not_null(conn->proxy_string_after);
 	g_free_not_null(conn->proxy_password);
 
 	g_free_not_null(conn->tag);

@@ -131,6 +131,7 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 		conn->proxy = g_strdup(settings_get_str("proxy_address"));
 		conn->proxy_port = settings_get_int("proxy_port");
 		conn->proxy_string = g_strdup(settings_get_str("proxy_string"));
+		conn->proxy_string_after = g_strdup(settings_get_str("proxy_string_after"));
 		conn->proxy_password = g_strdup(settings_get_str("proxy_password"));
 	}
 
@@ -515,6 +516,7 @@ void servers_setup_init(void)
 	settings_add_str("proxy", "proxy_address", "");
 	settings_add_int("proxy", "proxy_port", 6667);
 	settings_add_str("proxy", "proxy_string", "CONNECT %s %d");
+	settings_add_str("proxy", "proxy_string_after", "");
 	settings_add_str("proxy", "proxy_password", "");
 
         setupservers = NULL;

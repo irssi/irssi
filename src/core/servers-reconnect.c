@@ -140,6 +140,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->proxy = g_strdup(src->proxy);
         dest->proxy_port = src->proxy_port;
 	dest->proxy_string = g_strdup(src->proxy_string);
+	dest->proxy_string_after = g_strdup(src->proxy_string_after);
 	dest->proxy_password = g_strdup(src->proxy_password);
 
 	dest->tag = g_strdup(src->tag);

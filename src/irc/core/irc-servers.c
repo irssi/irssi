@@ -144,10 +144,17 @@ static void server_init(IRC_SERVER_REC *server)
 	username = g_strdup(conn->username);
 	ptr = strchr(username, ' ');
 	if (ptr != NULL) *ptr = '\0';
-	
+
 	irc_send_cmdv(server, "USER %s %s %s :%s", username, hostname,
 		      address, conn->realname);
 	g_free(username);
+
+	server->cmdcount = 0;
+
+	if (conn->proxy_string_after != NULL) {
+		irc_send_cmdv(server, conn->proxy_string_after,
+			      conn->address, conn->port);
+	}
 
 	server->cmdcount = 0;
 }
