@@ -79,7 +79,6 @@ void server_setup_fill_conn(IRC_SERVER_CONNECT_REC *conn, SETUP_SERVER_REC *sser
 {
 	if (sserver->own_host != NULL)
 		conn_set_ip(conn, &sserver->own_ip, sserver->own_host);
-	sserver->last_connect = time(NULL);
 
 	if (sserver->ircnet != NULL && conn->ircnet == NULL)
 		conn->ircnet = g_strdup(sserver->ircnet);
@@ -135,6 +134,7 @@ create_addr_conn(const char *address, int port, const char *password,
 	if (sserver == NULL) return conn;
 
 	server_setup_fill_conn(conn, sserver);
+	sserver->last_connect = time(NULL);
 
 	/* fill the rest from IRC network settings */
 	ircnet = sserver->ircnet == NULL ? NULL : ircnet_find(sserver->ircnet);
