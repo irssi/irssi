@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
+#include "commands.h"
 
 #include "screen.h"
 #include "gui-readline.h"
@@ -65,8 +66,10 @@ static int init_screen_int(void);
 static void deinit_screen_int(void);
 
 #ifdef SIGWINCH
+static int resize_timeout_tag;
+#endif
 
-static int resize_timeout_tag, resize_needed;
+static int resize_needed;
 
 static int resize_timeout(void)
 {
@@ -108,11 +111,18 @@ static int resize_timeout(void)
 	return TRUE;
 }
 
+#ifdef SIGWINCH
 static void sig_winch(int p)
 {
         resize_needed = TRUE;
 }
 #endif
+
+static void cmd_resize(void)
+{
+	resize_needed = TRUE;
+	resize_timeout();
+}
 
 static void read_settings(void)
 {
@@ -210,6 +220,7 @@ int init_screen(void)
 
 	signal_add("beep", (SIGNAL_FUNC) beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	command_bind("resize", NULL, (SIGNAL_FUNC) cmd_resize);
 
 #ifdef SIGWINCH
 	resize_timeout_tag = g_timeout_add(RESIZE_TIMEOUT,
@@ -227,6 +238,7 @@ void deinit_screen(void)
 	g_source_remove(resize_timeout_tag);
 #endif
 
+	command_unbind("resize", (SIGNAL_FUNC) cmd_resize);
 	signal_remove("beep", (SIGNAL_FUNC) beep);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
