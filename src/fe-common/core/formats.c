@@ -144,14 +144,16 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 {
 	int num, len, bufpos;
 
+        g_return_if_fail(format->params < arglist_size);
+
 	bufpos = 0;
         arglist[format->params] = NULL;
-	for (num = 0; num < format->params && num < arglist_size; num++) {
+	for (num = 0; num < format->params; num++) {
 		switch (format->paramtypes[num]) {
 		case FORMAT_STRING:
 			arglist[num] = (char *) va_arg(va, char *);
 			if (arglist[num] == NULL) {
-				g_warning("read_arglist() : parameter %d is NULL", num);
+				g_warning("format_read_arglist() : parameter %d is NULL", num);
 				arglist[num] = "";
 			}
 			break;
