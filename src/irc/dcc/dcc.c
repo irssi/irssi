@@ -426,6 +426,8 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
     if (!cmd_get_params(data, &free_arg, 3, &type, &nick, &arg))
 	    return;
 
+    if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
     g_strup(type);
     itype = dcc_str2type(type);
     if (itype == 0)
