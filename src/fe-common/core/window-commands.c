@@ -408,18 +408,25 @@ static void cmd_window_item_goto(const char *data, SERVER_REC *server)
 static void cmd_window_item_move(const char *data, SERVER_REC *server,
                                  WI_ITEM_REC *item)
 {
-        WINDOW_REC *window;
+	WINDOW_REC *window;
+	void *free_arg;
+	char *target;
 
-        if (is_numeric(data, '\0')) {
+	if (!cmd_get_params(data, &free_arg, 1, &target))
+		return;
+
+        if (is_numeric(target, '\0')) {
                 /* move current window item to specified window */
-                window = window_find_refnum(atoi(data));
+                window = window_find_refnum(atoi(target));
         } else {
                 /* move specified window item to current window */
-                item = window_item_find(server, data);
+                item = window_item_find(server, target);
                 window = active_win;
         }
         if (window != NULL && item != NULL)
-                window_item_set_active(window, item);
+		window_item_set_active(window, item);
+
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: WINDOW NUMBER [-sticky] <number> */
