@@ -579,12 +579,14 @@ static void read_settings(void)
 		signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 		signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 		signal_add("channel topic changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
+		signal_add("query address changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 	} else if (topic_tag != -1 && !settings_get_bool("toggle_show_topicbar")) {
 		gui_statusbar_delete(TRUE, 0);
 		topic_tag = -1;
 		signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 		signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 		signal_remove("channel topic changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
+		signal_remove("query address changed", (SIGNAL_FUNC) sig_statusbar_topic_redraw);
 	}
 
 	lag_min_show = settings_get_int("lag_min_show")*10;

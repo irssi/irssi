@@ -215,7 +215,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     {
         /* private message */
 	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
-		    channel == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		    query_find(server, target) == NULL ? IRCTXT_OWN_MSG_PRIVATE : IRCTXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
     }
     g_free_not_null(freestr);
 
