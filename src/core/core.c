@@ -39,6 +39,7 @@
 #include "channels.h"
 #include "queries.h"
 #include "nicklist.h"
+#include "nickmatch-cache.h"
 
 void chat_commands_init(void);
 void chat_commands_deinit(void);
@@ -69,6 +70,7 @@ void core_init(void)
 	channels_init();
 	queries_init();
 	nicklist_init();
+        nickmatch_cache_init();
 
 	chat_commands_init();
         settings_check();
@@ -78,6 +80,7 @@ void core_deinit(void)
 {
 	chat_commands_deinit();
 
+        nickmatch_cache_deinit();
 	nicklist_deinit();
 	queries_deinit();
 	channels_deinit();
