@@ -26,12 +26,6 @@
 #include <sys/wait.h>
 #include <sys/utsname.h>
 
-#ifdef HAVE_POPT_H
-#  include <popt.h>
-#else
-#  include "lib-popt/popt.h"
-#endif
-
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
