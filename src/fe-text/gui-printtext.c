@@ -186,7 +186,10 @@ static void get_colors(int flags, int *fg, int *bg)
 	}
 
 	if (*fg == 8) *fg |= ATTR_COLOR8;
-	if (flags & PRINTFLAG_BOLD) *fg |= 8;
+	if (flags & PRINTFLAG_BOLD) {
+		if (*fg == 0) *fg = current_theme->default_color;
+		*fg |= 8;
+	}
 	if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
 	if (flags & PRINTFLAG_BLINK) *bg |= 0x80;
 }
