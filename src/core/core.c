@@ -45,6 +45,11 @@
 #include "nicklist.h"
 #include "nickmatch-cache.h"
 
+#ifdef HAVE_SYS_RESOURCE_H
+#  include <sys/resource.h>
+   struct rlimit orig_core_rlimit;
+#endif
+
 void chat_commands_init(void);
 void chat_commands_deinit(void);
 
@@ -67,7 +72,7 @@ const char *get_irssi_config(void)
         return irssi_config_file;
 }
 
-static void read_signals(void)
+static void read_settings(void)
 {
 #ifndef WIN32
 	int signals[] = {
@@ -93,6 +98,19 @@ static void read_signals(void)
 			SIG_IGN : SIG_DFL;
 		sigaction(signals[n], &act, NULL);
 	}
+
+#ifdef HAVE_SYS_RESOURCE_H
+	if (!settings_get_bool("override_coredump_limit"))
+		setrlimit(RLIMIT_CORE, &orig_core_rlimit);
+	else {
+		struct rlimit rlimit;
+
+                rlimit.rlim_cur = RLIM_INFINITY;
+                rlimit.rlim_max = RLIM_INFINITY;
+		if (setrlimit(RLIMIT_CORE, &rlimit) == -1)
+                        settings_set_bool("override_coredump_limit", FALSE);
+	}
+#endif
 #endif
 }
 
@@ -208,8 +226,13 @@ void core_init(int argc, char *argv[])
 	chat_commands_init();
 
 	settings_add_str("misc", "ignore_signals", "");
-	signal_add("setup changed", (SIGNAL_FUNC) read_signals);
-	read_signals();
+	settings_add_bool("misc", "override_coredump_limit", TRUE);
+
+#ifdef HAVE_SYS_RESOURCE_H
+	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
+#endif
+	read_settings();
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	settings_check();
 
@@ -218,7 +241,7 @@ void core_init(int argc, char *argv[])
 
 void core_deinit(void)
 {
-	signal_remove("setup changed", (SIGNAL_FUNC) read_signals);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	chat_commands_deinit();
 
