@@ -15,7 +15,7 @@ void perl_signal_add_hash(int priority, SV *sv)
         hv = hvref(sv);
 	hv_iterinit(hv);
 	while ((he = hv_iternext(hv)) != NULL)
-                perl_signal_add_to(hv_iterkey(he, &len), HeVAL(he), priority);
+                perl_signal_add_full(hv_iterkey(he, &len), HeVAL(he), priority);
 }
 
 static void perl_command_bind_add_hash(int priority, SV *sv, char *category)
@@ -118,6 +118,27 @@ CODE:
 		perl_signal_add_full((char *)SvPV(ST(0),PL_na), ST(1), SvIV(ST(2)));
 	else
 		perl_signal_add_hash(SvIV(ST(0)), ST(1));
+
+int
+SIGNAL_PRIORITY_LOW()
+CODE:
+	RETVAL = SIGNAL_PRIORITY_LOW;
+OUTPUT:
+	RETVAL
+
+int
+SIGNAL_PRIORITY_DEFAULT()
+CODE:
+	RETVAL = SIGNAL_PRIORITY_DEFAULT;
+OUTPUT:
+	RETVAL
+
+int
+SIGNAL_PRIORITY_HIGH()
+CODE:
+	RETVAL = SIGNAL_PRIORITY_HIGH;
+OUTPUT:
+	RETVAL
 
 void
 signal_remove(signal, func)
