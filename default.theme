@@ -252,7 +252,7 @@ abstracts = {
   # default backround for "default" statusbar group
   #sb_default_bg = "%4";
   # background for prompt / input line
-  sb_prompt_bg = "%0";
+  sb_prompt_bg = "%n";
   # background for info statusbar
   sb_info_bg = "%8";
   # background for topicbar (same default)
