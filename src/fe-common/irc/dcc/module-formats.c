@@ -29,6 +29,8 @@ FORMAT_REC fecommon_irc_dcc_formats[] =
     { NULL, N_("DCC"), 0 },
 
     { "own_dcc", N_("%K[%rdcc%K(%R$0%K)]%n $1"), 2, { 0, 0 } },
+    { "own_dcc_me", N_("%W * $0%n $1"), 2, { 0, 0 } },
+    { "own_dcc_ctcp", N_("%K[%rctcp%K(%R$0%K)]%n $1 $2"), 3, { 0, 0, 0 } },
     { "dcc_msg", N_("%K[%G$0%K(%gdcc%K)]%n $1"), 2, { 0, 0 } },
     { "action_dcc", N_("%W (*dcc*) $0%n $1"), 2, { 0, 0 } },
     { "dcc_ctcp", N_("%g>>> DCC CTCP received from %_$0%_%K: %g$1"), 2, { 0, 0 } },

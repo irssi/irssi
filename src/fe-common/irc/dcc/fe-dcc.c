@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
+#include "./module-formats.h"
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
@@ -303,7 +303,7 @@ static void dcc_chat_out_me(gchar *data, SERVER_REC *server, WI_IRC_REC *item)
 	if (dcc == NULL) return;
 
         printformat(NULL, item->name, MSGLEVEL_DCC,
-                    IRCTXT_OWN_ME, dcc->mynick, data);
+                    IRCTXT_OWN_DCC_ME, dcc->mynick, data);
 }
 
 static void dcc_chat_out_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
@@ -327,7 +327,7 @@ static void dcc_chat_out_action(const char *data, SERVER_REC *server, WI_IRC_REC
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		printformat(NULL, item->name, MSGLEVEL_DCC,
-			    IRCTXT_OWN_ME, dcc->mynick, text);
+			    IRCTXT_OWN_DCC_ME, dcc->mynick, text);
 	}
 	g_free(params);
 }
@@ -355,7 +355,7 @@ static void dcc_chat_out_ctcp(gchar *data, SERVER_REC *server)
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		g_strup(ctcpcmd);
-		printformat(server, target, MSGLEVEL_DCC, IRCTXT_OWN_CTCP,
+		printformat(server, target, MSGLEVEL_DCC, IRCTXT_OWN_DCC_CTCP,
 			    target, ctcpcmd, ctcpdata);
 	}
 
