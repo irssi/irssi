@@ -215,7 +215,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "chan_not_found", "Not joined to such channel", 0 },
 	{ "chan_not_synced", "Channel not fully synchronized yet, try again after a while", 0 },
 	{ "illegal_proto", "Command isn't designed for the chat protocol of the active server", 0 },
-	{ "not_good_idea", "Doing this is not a good idea. Add -YES if you really mean it", 0 },
+	{ "not_good_idea", "Doing this is not a good idea. Add -YES option to command if you really mean it", 0 },
 
 	/* ---- */
 	{ NULL, "Themes", 0 },
