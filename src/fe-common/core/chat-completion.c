@@ -38,6 +38,7 @@ static int keep_privates_count, keep_publics_count;
 static int completion_lowercase;
 static const char *completion_char, *cmdchars;
 static GSList *global_lastmsgs;
+static int completion_auto, completion_strict;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
 	last_msg_add(&((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs, \
@@ -350,6 +351,57 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
         *outlist = g_list_concat(ownlist, *outlist);
 }
 
+static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
+					 const char *nick,
+					 const char *suffix)
+{
+	GSList *nicks, *tmp;
+	GList *list;
+	char *tnick, *str, *in, *out;
+	int len, str_len;
+
+	g_return_val_if_fail(channel != NULL, NULL);
+
+	list = NULL;
+
+	/* get all nicks from current channel, strip non alnum chars,
+	   compare again and add to completion list on matching */
+	len = strlen(nick);
+	nicks = nicklist_getnicks(channel);
+
+	str_len = 80; str = g_malloc(str_len+1);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
+		NICK_REC *rec = tmp->data;
+
+                len = strlen(rec->nick);
+		if (len > str_len) {
+                        str_len = len*2;
+                        str = g_realloc(str, str_len+1);
+		}
+
+		/* remove non alnum chars from nick */
+		in = rec->nick; out = str;
+		while (*in != '\0') {
+			if (isalnum(*in))
+				*out++ = *in;
+                        in++;
+		}
+                *out = '\0';
+
+		/* add to list if 'cleaned' nick matches */
+		if (g_strncasecmp(str, nick, len) == 0) {
+			tnick = g_strconcat(rec->nick, suffix, NULL);
+			if (completion_lowercase)
+				g_strdown(tnick);
+			list = g_list_append(list, tnick);
+		}
+
+	}
+	g_slist_free(nicks);
+
+	return list;
+}
+
 static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 				       const char *suffix)
 {
@@ -385,6 +437,10 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	}
 	g_slist_free(nicks);
 
+	/* remove non alphanum chars from nick and search again in case
+	   list is still NULL ("foo<tab>" would match "_foo_" f.e.) */
+	if (!completion_strict)
+		list = g_list_concat(list, completion_nicks_nonstrict(channel, nick, suffix));
 	return list;
 }
 
@@ -687,8 +743,7 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	comp = NULL;
 	channel = CHANNEL(item);
 
-	if (channel != NULL && comp_char != '\0' &&
-	    settings_get_bool("completion_auto")) {
+	if (completion_auto && channel != NULL && comp_char != '\0') {
 		ptr = strchr(line, comp_char);
 		if (ptr != NULL) {
 			*ptr++ = '\0';
@@ -746,6 +801,8 @@ static void read_settings(void)
 	completion_lowercase = settings_get_bool("completion_nicks_lowercase");
 	completion_char = settings_get_str("completion_char");
 	cmdchars = settings_get_str("cmdchars");
+	completion_auto = settings_get_bool("completion_auto");
+	completion_strict = settings_get_bool("completion_strict");
 }
 
 void chat_completion_init(void)
@@ -756,8 +813,9 @@ void chat_completion_init(void)
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "expand_escapes", FALSE);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
+	settings_add_bool("completion", "completion_strict", FALSE);
 
-        read_settings();
+	read_settings();
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);

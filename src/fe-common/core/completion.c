@@ -320,6 +320,42 @@ static GList *completion_get_bool_settings(const char *key)
 	return complist;
 }
 
+static GList *completion_get_aliases(const char *alias, char cmdchar)
+{
+	CONFIG_NODE *node;
+	GList *complist;
+	GSList *tmp;
+	char *word;
+	int len;
+
+	g_return_val_if_fail(alias != NULL, NULL);
+
+	/* get list of aliases from mainconfig */
+	node = iconfig_node_traverse("aliases", FALSE);
+	tmp = node == NULL ? NULL : node->value;
+
+	len = strlen(alias);
+	complist = NULL;
+	for (; tmp != NULL; tmp = tmp->next) {
+		CONFIG_NODE *node = tmp->data;
+
+		if (node->type != NODE_TYPE_KEY)
+			continue;
+
+		if (g_strncasecmp(node->key, alias, len) == 0) {
+			word = g_strdup_printf("%c%s", cmdchar, node->key);
+			/* add matching alias to completion list, aliases will
+			   be appended after command completions and kept in
+			   uppercase to show it's an alias */
+			if (glist_find_icase_string(complist, word) == NULL)
+				complist = g_list_insert_sorted(complist, word, (GCompareFunc) g_istr_cmp);
+			else
+				g_free(word);
+		}
+	}
+	return complist;
+}
+
 static GList *completion_get_commands(const char *cmd, char cmdchar)
 {
 	GList *complist;
@@ -490,6 +526,10 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		/* complete /command */
 		*list = completion_get_commands(word+1, *word);
 
+		/* complete aliases, too */
+		*list = g_list_concat(*list,
+				      completion_get_aliases(word+1, *word));
+
 		if (*list != NULL) signal_stop();
 		return;
 	}
@@ -637,3 +677,5 @@ void completion_deinit(void)
 	signal_remove("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command help", (SIGNAL_FUNC) sig_complete_command);
 }
+
+
