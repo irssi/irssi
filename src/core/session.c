@@ -33,6 +33,8 @@
 static char *session_file;
 static char *irssi_binary;
 
+static char **session_args;
+
 void session_set_binary(const char *path)
 {
 	char **paths, **tmp;
@@ -70,13 +72,21 @@ void session_set_binary(const char *path)
 	g_strfreev(paths);
 }
 
+void session_upgrade(void)
+{
+	if (session_args == NULL)
+                return;
+
+	execvp(session_args[0], session_args);
+	fprintf(stderr, "exec failed: %s: %s\n",
+		session_args[0], g_strerror(errno));
+}
+
 /* SYNTAX: UPGRADE [<irssi binary path>] */
 static void cmd_upgrade(const char *data)
 {
 	CONFIG_REC *session;
-        GSList *file_handles;
-	char *session_file, *str, **args;
-        int i;
+	char *session_file, *str;
 
 	if (*data == '\0')
 		data = irssi_binary;
@@ -88,32 +98,18 @@ static void cmd_upgrade(const char *data)
 	session = config_open(session_file, 0600);
         unlink(session_file);
 
-        file_handles = NULL;
-	signal_emit("session save", 2, session, &file_handles);
+	signal_emit("session save", 1, session);
         config_write(session, NULL, -1);
         config_close(session);
-
-        /* Cleanup the terminal etc. */
-	signal_emit("session clean", 0);
-
-        /* close the file handles we don't want to transfer to new client */
-	for (i = 3; i < 256; i++) {
-		if (g_slist_find(file_handles, GINT_TO_POINTER(i)) == NULL)
-			close(i);
-	}
-	g_slist_free(file_handles),
 
 	/* irssi -! --session ~/.irssi/session
 	   data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
 	str = g_strdup_printf("%s -! --session %s", data, session_file);
-        args = g_strsplit(str, " ", -1);
+        session_args = g_strsplit(str, " ", -1);
         g_free(str);
 
-	execvp(args[0], (char **) args);
-
-	fprintf(stderr, "exec: %s: %s\n", args[0], g_strerror(errno));
-	_exit(-1);
+	signal_emit("gui exit", 0);
 }
 
 static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
@@ -146,7 +142,7 @@ static void session_restore_channel(SERVER_REC *server, CONFIG_NODE *node)
 }
 
 static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
-				CONFIG_NODE *node, GSList **file_handles)
+				CONFIG_NODE *node)
 {
         GSList *tmp;
 	int handle;
@@ -162,16 +158,22 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "nick", server->nick);
 
 	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
-	*file_handles = g_slist_append(*file_handles, GINT_TO_POINTER(handle));
 	config_node_set_int(config, node, "handle", handle);
 
-	signal_emit("session save server", 4,
-		    server, config, node, file_handles);
+	signal_emit("session save server", 3, server, config, node);
 
         /* save channels */
         node = config_node_section(node, "channels", NODE_TYPE_LIST);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
-                session_save_channel(tmp->data, config, node);
+		session_save_channel(tmp->data, config, node);
+
+	/* fake the server disconnection */
+        g_io_channel_unref(net_sendbuffer_handle(server->handle));
+	net_sendbuffer_destroy(server->handle, FALSE);
+	server->handle = NULL;
+
+	server->connection_lost = TRUE;
+        server_disconnect(server);
 }
 
 static void session_restore_server(CONFIG_NODE *node)
@@ -218,14 +220,13 @@ static void session_restore_server(CONFIG_NODE *node)
 	}
 }
 
-static void sig_session_save(CONFIG_REC *config, GSList **file_handles)
+static void sig_session_save(CONFIG_REC *config)
 {
 	CONFIG_NODE *node;
-        GSList *tmp;
 
 	node = config_node_traverse(config, "(servers", TRUE);
-	for (tmp = servers; tmp != NULL; tmp = tmp->next)
-                session_save_server(tmp->data, config, node, file_handles);
+	while (servers != NULL)
+		session_save_server(servers->data, config, node);
 }
 
 static void sig_session_restore(CONFIG_REC *config)
