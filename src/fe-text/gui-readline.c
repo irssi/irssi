@@ -46,6 +46,7 @@ typedef struct {
 
 static ENTRY_REDIRECT_REC *redir;
 
+static char *savebuffer;
 static int readtag, sigint_count = 0;
 static time_t idle_time;
 
@@ -195,9 +196,15 @@ void handle_key(int key)
 
 	case 21:
 		/* Ctrl-U, clear line */
+                g_free_not_null(savebuffer);
+		savebuffer = g_strdup(gui_entry_get_text());
+
 		gui_entry_set_text("");
 		break;
-
+	case 25:
+		/* Ctrl-Y, write last ^U'd line */
+		gui_entry_insert_text(savebuffer);
+		break;
 	case 9:
 		key_pressed("Tab", NULL);
 		break;
@@ -423,6 +430,7 @@ void gui_readline_init(void)
 	char *key, data[MAX_INT_STRLEN];
 	int n;
 
+	savebuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
 	readtag = g_input_add(0, G_INPUT_READ, (GInputFunction) readline, NULL);
@@ -464,6 +472,7 @@ void gui_readline_init(void)
 
 void gui_readline_deinit(void)
 {
+	g_free_not_null(savebuffer);
 	g_source_remove(readtag);
 
 	key_unbind("completion", (SIGNAL_FUNC) sig_completion);
