@@ -334,6 +334,9 @@ void server_disconnect(SERVER_REC *server)
 
 	g_return_if_fail(IS_SERVER(server));
 
+	if (server->disconnected)
+		return;
+
 	if (server->connect_tag != -1) {
 		/* still connecting to server.. */
 		if (server->connect_pid != -1)

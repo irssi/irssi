@@ -376,8 +376,7 @@ static void irc_parse_incoming(SERVER_REC *server)
 	   letting other tasks to run. */
 	count = 0;
 	server_ref(server);
-	while (!server->disconnected &&
-	       irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
+	while (irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
 
