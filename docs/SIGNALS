@@ -83,7 +83,7 @@ nicklist.c:
  "nick gone changed", CHANNEL_REC, NICK_REC
  "nick ircop changed", CHANNEL_REC, NICK_REC
  "server nick changed", SERVER_REC
- "massjoin", CHANNEL_REC, GList of NICK_RECs
+ "massjoin", CHANNEL_REC, GSList of NICK_RECs
 
 rawlog.c:
 

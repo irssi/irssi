@@ -182,22 +182,45 @@ Server::irc_send_cmd_split(cmd, arg, max_nicks)
   "KICK #channel nick3 :byebye" to server.
 
 
+ *** Server Connects
+
+This is a record where we keep connection information. All Servers and
+Reconnects records have pointer to one of these.
+
+Connect::values()
+  Get some information about connect. This function returns a reference to
+  hash table. Hash table has keys:
+	"address" - Address where we connected (irc.blah.org)
+	"port" - Port where we connected
+	"password" - Password we used in connection.
+
+	"ircnet" - IRC network
+	"wanted_nick" - Nick which we would prefer to use
+	"alternate_nick" - Alternate nick which we would prefer to use
+	"username" - User name
+	"realname" - Real name
+
+Connect server_create_conn(address, [port=6667, [password='', [nick='', [channels='']]]])
+  Create new server connection.
+
  *** Server functions
 
 Server::values()
   Get some information about server. This function returns a reference to
   hash table. Hash table has keys:
 	"address" - Address where we connected (irc.blah.org)
-	"real_address" - Who the server thinks it is (irc1.blah.org)
 	"port" - Port where we connected
-	"tag" - Unique server tag.
-	"ircnet" - IRC network
 	"password" - Password we used in connection.
 
-	"nick" - Current nick
+	"ircnet" - IRC network
 	"wanted_nick" - Nick which we would prefer to use
+	"alternate_nick" - Alternate nick which we would prefer to use
 	"username" - User name
 	"realname" - Real name
+
+	"tag" - Unique server tag.
+	"real_address" - Who the server thinks it is (irc1.blah.org)
+	"nick" - Current nick
 	"usermode" - Current user mode
 	"usermode_away" - Are we marked as away? 1|0
 	"away_reason" - Away reason
@@ -208,8 +231,8 @@ Server::values()
 	%server_info = %{Irssi::cur_server->values()};
 	Irssi::print("Current server = ".$server_info{'address'});
 
-Server server_connect(address, [port=6667, [password='', [nick='', [channels='']]]])
-  Create new server connection.
+Server Connect::connect()
+  Connect to server.
 
 Server::disconnect()
   Disconnect from server.
@@ -454,13 +477,17 @@ Reconnect::values()
   Get some information about reconnect. This function returns a reference to
   hash table. Hash table has keys:
 	"tag" - Unique numeric tag
-	"address" - Address where we're going to connect
-	"password" - Password we use in connection
-	"port" - Port where we're going to connect
-	"ircnet" - IRC network
-	"nick" - Nick we want to use
-	"channels" - Join to these channels once connected
 	"next_connect" - Unix time stamp when the next connection occurs
+
+	"address" - Address where we connected (irc.blah.org)
+	"port" - Port where we connected
+	"password" - Password we used in connection.
+
+	"ircnet" - IRC network
+	"wanted_nick" - Nick which we would prefer to use
+	"alternate_nick" - Alternate nick which we would prefer to use
+	"username" - User name
+	"realname" - Real name
 
 
  *** Netsplits
