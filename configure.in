@@ -88,6 +88,7 @@ AC_ARG_ENABLE(perl,
 		else
         		want_perl=yes
 			PERL_LIB_DIR="$enableval"
+			perl_lib_dir_given=yes
 		fi
 	fi,
 	want_perl=yes)
@@ -198,9 +199,7 @@ dnl ** curses checks
 dnl **
 
 if test "x$want_textui" = "xyes"; then
-	saved_LIBS="$LIBS"
 	AC_CHECK_CURSES
-	LIBS="$saved_LIBS"
 
 	if test "x$has_ncurses" != "x"; then
 		AC_CHECK_LIB(ncurses, use_default_colors, [
@@ -222,7 +221,7 @@ if test "x$want_textui" = "xyes"; then
 	fi
 
 	if test "$has_curses" != "true"; then
-		want_textui=no;
+		want_textui=no
 		curses_error=yes
         fi
 else
@@ -414,10 +413,13 @@ fi
 
 echo
 
-if test "$curses_error" != "xyes"; then
+if test "x$curses_error" != "xyes"; then
 	echo "Building text frontend ..... : $want_textui"
 else
-	echo "Building text frontend ..... : NO!! (Because curses was not found, specify the path to it with --with-curses=/dir)"
+	echo "Building text frontend ..... : NO!!"
+	echo " - Because curses was not found, specify the path to it with"
+	echo "   --with-curses=/dir and make sure you have the curses headers"
+	echo "   installed (usually in ncurses-devel package)"
 fi
 echo "Building irssi-bot ......... : $want_irssibot"
 echo "Building with IPv6 support . : $want_ipv6"
@@ -427,6 +429,14 @@ if test "x$want_perl" = "xyes"; then
 		echo "Perl library directory ..... : (default - usually /usr/local/lib/perl_site)"
 	else
 		echo "Perl library directory ..... : $PERL_LIB_DIR"
+		if test "x$perl_lib_dir_given" != "xyes"; then
+			echo " - NOTE: This is automatically set to the same directory you gave with"
+			echo "   --prefix. Irssi's perl scripts do not work unless you also add"
+			echo "   this directory to @INC (or do some other magic)."
+			echo "   *OR* what you might want to do instead, is to simply give --enable-perl="
+			echo "   (nothing after '=') option to configure, and make install will install"
+			echo "   the Perl libraries to defaut directory."
+		fi
 	fi
 fi
 echo "Install prefix ............. : $prefix"
