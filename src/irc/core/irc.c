@@ -52,7 +52,9 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(cmd != NULL);
-	if (server->disconnected) return;
+
+	if (server->connection_lost)
+		return;
 
 	len = strlen(cmd);
 	server->cmdcount++;
@@ -83,7 +85,6 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
 			/* something bad happened */
 			server->connection_lost = TRUE;
-			server_disconnect(SERVER(server));
 			return;
 		}
 
@@ -376,9 +377,13 @@ static void irc_parse_incoming(SERVER_REC *server)
 	   letting other tasks to run. */
 	count = 0;
 	server_ref(server);
-	while (irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
+	while (!server->disconnected &&
+	       irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
+
+		if (server->connection_lost)
+			server_disconnect(server);
 
 		count++;
 	}
