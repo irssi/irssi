@@ -175,13 +175,13 @@ void fe_common_core_finish_init(void)
 		window_set_name(window, "(status)");
 		window_set_level(window, MSGLEVEL_ALL ^
 				 (settings_get_bool("use_msgs_window") ?
-				  (MSGLEVEL_MSGS|MSGLEVEL_ACTIONS) : 0));
+				  (MSGLEVEL_MSGS|MSGLEVEL_DCCMSGS) : 0));
 	}
 
 	if (settings_get_bool("use_msgs_window")) {
 		window = window_create(NULL, TRUE);
 		window_set_name(window, "(msgs)");
-		window_set_level(window, MSGLEVEL_MSGS|MSGLEVEL_ACTIONS);
+		window_set_level(window, MSGLEVEL_MSGS|MSGLEVEL_DCCMSGS);
 	}
 
 	if (windows == NULL) {
