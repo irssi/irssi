@@ -37,6 +37,8 @@
 
 #include <signal.h>
 
+#define PASTE_MAX_KEYCOUNT 100
+
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 
@@ -51,7 +53,12 @@ static ENTRY_REDIRECT_REC *redir;
 static int escape_next_key;
 
 static int readtag;
-static time_t idle_time;
+static GTimeVal last_keypress;
+static int paste_detect_time, paste_detect_keycount;
+static int paste_state, paste_start_key;
+static char *paste_entry, *prev_entry;
+static int paste_entry_pos, prev_entry_pos;
+static unichar prev_key, paste_keys[PASTE_MAX_KEYCOUNT];
 
 static void sig_input(void);
 
@@ -134,10 +141,68 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
+#define IS_PASTE_SKIP_KEY(c) \
+	((c) == '\r' || (c) == '\n')
+
+static int check_pasting(unichar key, int diff)
+{
+	int i;
+
+	if (paste_state == 0) {
+		/* two keys hit together quick. possibly pasting */
+		if (diff > paste_detect_time)
+			return FALSE;
+
+		g_free(paste_entry);
+		paste_entry = g_strdup(prev_entry);
+		paste_entry_pos = prev_entry_pos;
+
+		paste_state++;
+		paste_start_key = IS_PASTE_SKIP_KEY(prev_key) ? 1 : 0;
+		paste_keys[0] = prev_key;
+	} else if (paste_state > 0 && diff > paste_detect_time) {
+		/* reset paste state */
+		paste_state = 0;
+		return FALSE;
+	}
+
+	/* continuing quick hits */
+	if (paste_state == paste_detect_keycount) {
+		/* pasting.. */
+		if (IS_PASTE_SKIP_KEY(key)) {
+			/* handle CR/LF the normal way */
+			return FALSE;
+		}
+		gui_entry_insert_char(active_entry, key);
+		return TRUE;
+	}
+
+	if (IS_PASTE_SKIP_KEY(key)) {
+		/* we might be pasting, but we can't go back from executed
+		   commands.. */
+		paste_start_key = ++paste_state;
+		return FALSE;
+	}
+
+	paste_keys[paste_state++] = key;
+	if (paste_state == paste_detect_keycount) {
+		/* ok, we started pasting. */
+		gui_entry_set_text(active_entry, paste_entry);
+		gui_entry_set_pos(active_entry, paste_entry_pos);
+		for (i = paste_start_key; i < paste_detect_keycount; i++)
+			gui_entry_insert_char(active_entry, paste_keys[i]);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static void sig_gui_key_pressed(gpointer keyp)
 {
+	GTimeVal now;
         unichar key;
 	char str[20];
+	int diff;
 
 	key = GPOINTER_TO_INT(keyp);
 
@@ -146,7 +211,13 @@ static void sig_gui_key_pressed(gpointer keyp)
 		return;
 	}
 
-	idle_time = time(NULL);
+        g_get_current_time(&now);
+	diff = (now.tv_sec - last_keypress.tv_sec) * 1000 +
+		(now.tv_usec - last_keypress.tv_usec)/1000;
+	last_keypress = now;
+
+	if (check_pasting(key, diff))
+		return;
 
 	if (key < 32) {
 		/* control key */
@@ -176,6 +247,11 @@ static void sig_gui_key_pressed(gpointer keyp)
 		str[1] = '^';
 		str[2] = '\0';
 	}
+
+	g_free(prev_entry);
+	prev_entry = gui_entry_get_text(active_entry);
+	prev_entry_pos = gui_entry_get_pos(active_entry);
+	prev_key = key;
 
 	if (escape_next_key || !key_pressed(keyboard, str)) {
 		/* key wasn't used for anything, print it */
@@ -385,7 +461,7 @@ static void sig_input(void)
 
 time_t get_idle_time(void)
 {
-	return idle_time;
+	return last_keypress.tv_sec;
 }
 
 static void key_scroll_backward(void)
@@ -637,6 +713,21 @@ static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
 	gui_entry_set_prompt(active_entry, entry);
 }
 
+static void setup_changed(void)
+{
+	paste_detect_time = settings_get_time("paste_detect_time");
+	if (paste_detect_time == 0)
+		paste_state = -1;
+	else if (paste_state == -1)
+		paste_state = 0;
+
+	paste_detect_keycount = settings_get_int("paste_detect_keycount");
+	if (paste_detect_keycount < 2)
+		paste_detect_keycount = 2;
+	else if (paste_detect_keycount > PASTE_MAX_KEYCOUNT)
+		paste_detect_keycount = PASTE_MAX_KEYCOUNT;
+}
+
 void gui_readline_init(void)
 {
 	static char changekeys[] = "1234567890qwertyuio";
@@ -645,10 +736,16 @@ void gui_readline_init(void)
 
         escape_next_key = FALSE;
 	redir = NULL;
-	idle_time = time(NULL);
+	paste_state = 0;
+	paste_entry = NULL;
+	paste_entry_pos = 0;
+	g_get_current_time(&last_keypress);
         input_listen_init(STDIN_FILENO);
 
 	settings_add_str("history", "scroll_page_count", "/2");
+	settings_add_time("misc", "paste_detect_time", "10msecs");
+	settings_add_int("misc", "paste_detect_keycount", 5);
+        setup_changed();
 
 	keyboard = keyboard_create(NULL);
         key_configure_freeze();
@@ -774,6 +871,7 @@ void gui_readline_init(void)
 	signal_add("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_add("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
 	signal_add("gui key pressed", (SIGNAL_FUNC) sig_gui_key_pressed);
+	signal_add("setup changed", (SIGNAL_FUNC) setup_changed);
 }
 
 void gui_readline_deinit(void)
@@ -838,4 +936,5 @@ void gui_readline_deinit(void)
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
 	signal_remove("gui key pressed", (SIGNAL_FUNC) sig_gui_key_pressed);
+	signal_remove("setup changed", (SIGNAL_FUNC) setup_changed);
 }
