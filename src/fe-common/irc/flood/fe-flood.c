@@ -24,38 +24,38 @@
 #include "levels.h"
 
 #include "irc-servers.h"
+#include "ignore.h"
 #include "irc/flood/autoignore.h"
 
 #include "themes.h"
 #include "printtext.h"
 
-static void event_autoignore_new(IRC_SERVER_REC *server, AUTOIGNORE_REC *ignore)
+static void event_autoignore_new(IGNORE_REC *rec)
 {
-	g_return_if_fail(ignore != NULL);
+	g_return_if_fail(rec != NULL);
+ 
+	printformat(server_find_tag(rec->servertag), NULL, MSGLEVEL_CLIENTNOTICE, 
+								IRCTXT_AUTOIGNORE, rec->mask, rec->time);
+}                                                                              
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_AUTOIGNORE,
-		    ignore->nick, (ignore->timeleft+59)/60);
-}
-
-static void event_autoignore_remove(IRC_SERVER_REC *server, AUTOIGNORE_REC *ignore)
+static void event_autoignore_destroyed(IGNORE_REC *rec)
 {
-	g_return_if_fail(ignore != NULL);
-
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_AUTOUNIGNORE, ignore->nick);
-}
-
+	g_return_if_fail(rec != NULL);
+ 
+	printformat(server_find_tag(rec->servertag), NULL, MSGLEVEL_CLIENTNOTICE,
+				IRCTXT_AUTOUNIGNORE, rec->mask, rec->time);
+}                                                                                                                                          
 void fe_irc_flood_init(void)
 {
-	signal_add("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
-	signal_add("autoignore remove", (SIGNAL_FUNC) event_autoignore_remove);
+    signal_add("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
+    signal_add("autoignore destroyed", (SIGNAL_FUNC) event_autoignore_destroyed);
 
-        theme_register(fecommon_irc_flood_formats);
+	theme_register(fecommon_irc_flood_formats);
 }
 
 void fe_irc_flood_deinit(void)
 {
-	theme_unregister();
-
 	signal_remove("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
-	signal_remove("autoignore remove", (SIGNAL_FUNC) event_autoignore_remove);
+	signal_remove("autoignore destroyed", (SIGNAL_FUNC) event_autoignore_destroyed);
+	theme_unregister();
 }

@@ -63,6 +63,7 @@ static int flood_hash_check_remove(const char *key, FLOOD_REC *flood, gpointer n
 			flood->items = g_slist_remove(flood->items, rec);
 			g_free(rec->target);
 			g_free(rec);
+			rec->msgcount--;
 		}
 	}
 

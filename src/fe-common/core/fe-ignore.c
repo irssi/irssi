@@ -29,24 +29,6 @@
 #include "ignore.h"
 #include "printtext.h"
 
-static void fe_unignore(IGNORE_REC *rec);
-
-static char *ignore_get_key(IGNORE_REC *rec)
-{
-	char *chans, *ret;
-
-	if (rec->channels == NULL)
-		return g_strdup(rec->mask == NULL ? "*" : rec->mask);
-
-	chans = g_strjoinv(",", rec->channels);
-	if (rec->mask == NULL) return chans;
-
-	ret = g_strdup_printf("%s %s", rec->mask == NULL ?
-			      "*" : rec->mask, chans);
-	g_free(chans);
-	return ret;
-}
-
 static void ignore_print(int index, IGNORE_REC *rec)
 {
 	GString *options;
@@ -71,12 +53,6 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	g_free(levels);
 }
 
-static int unignore_timeout(IGNORE_REC *rec)
-{
-	fe_unignore(rec);
-	return FALSE;
-}
-
 static void cmd_ignore_show(void)
 {
 	GSList *tmp;
@@ -98,9 +74,9 @@ static void cmd_ignore_show(void)
 	          [-time <secs>] <channels> <levels> */
 static void cmd_ignore(const char *data)
 {
-        GHashTable *optlist;
+	GHashTable *optlist;
 	IGNORE_REC *rec;
-	char *patternarg, *chanarg, *mask, *levels, *key, *timestr;
+	char *patternarg, *chanarg, *mask, *levels, *timestr;
 	char **channels;
 	void *free_arg;
 	int new_ignore;
@@ -154,16 +130,7 @@ static void cmd_ignore(const char *data)
 	if (rec->level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED,
 			    rec->mask == NULL ? "*" : rec->mask);
-	} else {
-		key = ignore_get_key(rec);
-		levels = bits2level(rec->level);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORED, key, levels);
-		g_free(key);
-		g_free(levels);
 	}
-
-	if (rec->time > 0)
-		rec->time_tag = g_timeout_add(rec->time*1000, (GSourceFunc) unignore_timeout, rec);
 
 	if (new_ignore)
 		ignore_add_rec(rec);
@@ -171,18 +138,6 @@ static void cmd_ignore(const char *data)
 		ignore_update_rec(rec);
 
 	cmd_params_free(free_arg);
-}
-
-static void fe_unignore(IGNORE_REC *rec)
-{
-	char *key;
-
-	key = ignore_get_key(rec);
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED, key);
-	g_free(key);
-
-	rec->level = 0;
-	ignore_update_rec(rec);
 }
 
 /* SYNTAX: UNIGNORE <id>|<mask> */
@@ -210,16 +165,44 @@ static void cmd_unignore(const char *data)
 		rec = ignore_find("*", data, (char **) chans);
 	}
 
-	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORE_NOT_FOUND, data);
-	else
-                fe_unignore(rec);
+	if (rec != NULL) {
+		rec->level = 0;
+		ignore_update_rec(rec);
+	} else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_IGNORE_NOT_FOUND, data);
+	}
+}
+
+static void sig_ignore_created(IGNORE_REC *rec)
+{
+	char *key, *levels;
+
+	key = ignore_get_key(rec);
+        levels = bits2level(rec->level);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    TXT_IGNORED, key, levels);
+	g_free(key);
+	g_free(levels);
+}
+
+static void sig_ignore_destroyed(IGNORE_REC *rec)
+{
+	char *key;
+
+	key = ignore_get_key(rec);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED, key);
+	g_free(key);
 }
 
 void fe_ignore_init(void)
 {
 	command_bind("ignore", NULL, (SIGNAL_FUNC) cmd_ignore);
 	command_bind("unignore", NULL, (SIGNAL_FUNC) cmd_unignore);
+
+	signal_add("ignore destroyed", (SIGNAL_FUNC) sig_ignore_destroyed);
+	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
+	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
 	command_set_options("ignore", "regexp word except replies -time -pattern -channels");
 }
@@ -228,4 +211,8 @@ void fe_ignore_deinit(void)
 {
 	command_unbind("ignore", (SIGNAL_FUNC) cmd_ignore);
 	command_unbind("unignore", (SIGNAL_FUNC) cmd_unignore);
+
+	signal_remove("ignore destroyed", (SIGNAL_FUNC) sig_ignore_destroyed);
+	signal_remove("ignore created", (SIGNAL_FUNC) sig_ignore_created);
+	signal_remove("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 }

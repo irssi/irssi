@@ -37,6 +37,8 @@ GSList *ignores;
 
 static NICKMATCH_REC *nickmatch;
 
+static int unignore_timeout(IGNORE_REC *rec);
+
 /* check if `text' contains ignored nick at the start of the line. */
 static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
 				    const char *text)
@@ -258,6 +260,21 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 	return NULL;
 }
 
+char *ignore_get_key(IGNORE_REC *rec)
+{
+	char *chans, *ret;
+
+	if (rec->channels == NULL)
+		return rec->mask != NULL ? g_strdup(rec->mask) : NULL;
+
+	chans = g_strjoinv(",", rec->channels);
+	if (rec->mask == NULL) return chans;
+
+	ret = g_strdup_printf("%s %s", rec->mask, chans);
+	g_free(chans);
+	return ret;
+}
+
 static void ignore_set_config(IGNORE_REC *rec)
 {
 	CONFIG_NODE *node;
@@ -322,16 +339,25 @@ void ignore_add_rec(IGNORE_REC *rec)
 		regcomp(&rec->preg, rec->pattern,
 			REG_EXTENDED|REG_ICASE|REG_NOSUB) == 0;
 #endif
+	if (rec->time > 0)
+		rec->time_tag = g_timeout_add(rec->time*1000, (GSourceFunc) unignore_timeout, rec);
+
 	ignores = g_slist_append(ignores, rec);
 	ignore_set_config(rec);
 
-	signal_emit("ignore created", 1, rec);
+	if (!rec->autoignore)
+		signal_emit("ignore created", 1, rec);
+	else
+		signal_emit("autoignore new", 1, rec);
 }
 
 static void ignore_destroy(IGNORE_REC *rec)
 {
 	ignores = g_slist_remove(ignores, rec);
-	signal_emit("ignore destroyed", 1, rec);
+	if (!rec->autoignore)
+		signal_emit("ignore destroyed", 1, rec);
+	else
+		signal_emit("autoignore destroyed", 1, rec);
 
 #ifdef HAVE_REGEX_H
 	if (rec->regexp_compiled) regfree(&rec->preg);
@@ -363,6 +389,13 @@ void ignore_update_rec(IGNORE_REC *rec)
 		signal_emit("ignore changed", 1, rec);
 		nickmatch_rebuild(nickmatch);
 	}
+}
+
+static int unignore_timeout(IGNORE_REC *rec)
+{
+	rec->level = 0;
+	ignore_update_rec(rec);
+	return FALSE;
 }
 
 static void read_ignores(void)

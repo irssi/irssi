@@ -28,7 +28,7 @@ FORMAT_REC fecommon_irc_flood_formats[] =
 	/* ---- */
 	{ NULL, "Autoignore", 0 },
 
-	{ "autoignore", "Flood detected from {nick $0}, autoignoring for {hilight $1} minutes", 2, { 0, 1 } },
+	{ "autoignore", "Flood detected from {nick $0}, autoignoring for {hilight $1} seconds", 2, { 0, 1 } },
 	{ "autounignore", "Removed autoignore from {nick $0}", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
