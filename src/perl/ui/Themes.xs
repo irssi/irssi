@@ -61,6 +61,27 @@ CODE:
 OUTPUT:
 	RETVAL
 
+int
+EXPAND_FLAG_IGNORE_REPLACES()
+CODE:
+	RETVAL = EXPAND_FLAG_IGNORE_REPLACES;
+OUTPUT:
+	RETVAL
+
+int
+EXPAND_FLAG_IGNORE_EMPTY()
+CODE:
+	RETVAL = EXPAND_FLAG_IGNORE_EMPTY;
+OUTPUT:
+	RETVAL
+
+int
+EXPAND_FLAG_RECURSIVE_MASK()
+CODE:
+	RETVAL = EXPAND_FLAG_RECURSIVE_MASK;
+OUTPUT:
+	RETVAL
+
 void
 theme_register(formats)
 	SV *formats
@@ -187,6 +208,16 @@ MODULE = Irssi::UI::Themes  PACKAGE = Irssi::UI::Theme  PREFIX = theme_
 #*******************************
 
 char *
-theme_format_expand(theme, format)
+theme_format_expand(theme, format, flags=0)
 	Irssi::UI::Theme theme
 	char *format
+        int flags
+CODE:
+	if (flags == 0) {
+		RETVAL = theme_format_expand(theme, format);
+	} else {
+		RETVAL = theme_format_expand_data(theme, (const char **) &format, 'n', 'n',
+						  NULL, NULL, EXPAND_FLAG_ROOT | flags);
+	}
+OUTPUT:
+	RETVAL
