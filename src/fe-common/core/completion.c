@@ -483,6 +483,8 @@ static char *line_get_command(const char *line, char **args, int aliases)
 		*args = (char *) cmdargs;
 	} while (ptr != NULL);
 
+        if (cmd != NULL)
+		g_strdown(cmd);
 	return cmd;
 }
 
