@@ -1006,7 +1006,7 @@ void irc_commands_init(void)
 
 	settings_add_str("misc", "quit_message", "leaving");
 	settings_add_int("misc", "knockout_time", 300);
-	settings_add_str("misc", "wall_format", "[Wall/$0] $1");
+	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);
 
