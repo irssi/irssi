@@ -233,24 +233,14 @@ void term_window_clear(TERM_WINDOW *window)
 /* Scroll window up/down */
 void term_window_scroll(TERM_WINDOW *window, int count)
 {
-	int y, idx;
+	int y;
 
 	terminfo_scroll(window->y, window->y+window->height-1, count);
-
-        /* set the newly scrolled lines dirty */
-	if (count < 0) {
-		/* scrolling down - dirty the top */
-		idx = window->y;
-                count = -count;
-	} else {
-		/* scrolling up - dirty the bottom */
-		idx = window->y+window->height-count;
-	}
-
-	for (y = 0; y < count; y++)
-		term_lines_empty[idx+y] = FALSE;
-
         term_move_reset(vcx, vcy);
+
+        /* set the newly scrolled area dirty */
+	for (y = 0; y < window->height; y++)
+		term_lines_empty[window->y+y] = FALSE;
 }
 
 /* Change active color */
