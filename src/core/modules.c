@@ -37,9 +37,14 @@ void *module_check_cast(void *object, int type_pos, const char *id)
 void *module_check_cast_module(void *object, int type_pos,
 			       const char *module, const char *id)
 {
-	return object == NULL || strcmp(module_find_id_str(module,
-		G_STRUCT_MEMBER(int, object, type_pos)), id) == 0 ?
-		NULL : object;
+	const char *str;
+
+	if (object == NULL)
+		return NULL;
+
+	str = module_find_id_str(module,
+				 G_STRUCT_MEMBER(int, object, type_pos));
+	return str == NULL || strcmp(str, id) != 0 ? NULL : object;
 }
 
 /* return unique number across all modules for `id' */
