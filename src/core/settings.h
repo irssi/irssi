@@ -81,7 +81,7 @@ void settings_clean_invalid(void);
 
 /* if `fname' is NULL, the default is used */
 int settings_reread(const char *fname);
-int settings_save(const char *fname);
+int settings_save(const char *fname, int autosave);
 int irssi_config_is_changed(const char *fname);
 
 void settings_init(void);

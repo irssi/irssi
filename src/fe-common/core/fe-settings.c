@@ -258,7 +258,7 @@ static void cmd_reload(const char *data)
 
 static void settings_save_fe(const char *fname)
 {
-	if (settings_save(fname)) {
+	if (settings_save(fname, FALSE /* not autosaved */)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CONFIG_SAVED, fname);
 	}

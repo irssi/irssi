@@ -584,7 +584,7 @@ int settings_reread(const char *fname)
         return TRUE;
 }
 
-int settings_save(const char *fname)
+int settings_save(const char *fname, int autosave)
 {
 	char *str;
 	int error;
@@ -601,6 +601,7 @@ int settings_save(const char *fname)
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
 	}
+	signal_emit("setup saved", 2, fname, GINT_TO_POINTER(autosave);
         return !error;
 }
 
@@ -613,7 +614,7 @@ static void sig_autosave(void)
 		return;
 
 	if (!irssi_config_is_changed(NULL))
-		settings_save(NULL);
+		settings_save(NULL, TRUE);
 	else {
 		fname = g_strconcat(mainconfig->fname, ".autosave", NULL);
 		str = g_strdup_printf("Configuration file was modified "
@@ -624,7 +625,7 @@ static void sig_autosave(void)
 		signal_emit("gui dialog", 2, "warning", str);
 		g_free(str);
 
-                settings_save(fname);
+                settings_save(fname, TRUE);
 		g_free(fname);
 	}
 }
