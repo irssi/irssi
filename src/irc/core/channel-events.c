@@ -54,7 +54,7 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 
 	params = event_get_params(data, 2, NULL, &channel);
 	if (ischannel(*channel)) {
-		/* channel is unavailable. */
+		/* channel is unavailable - try to join again a bit later */
 		event_cannot_join(data, server);
 	}
 

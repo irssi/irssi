@@ -26,6 +26,8 @@
 #include "irc-server.h"
 #include "irc/flood/autoignore.h"
 
+#include "themes.h"
+
 static void event_autoignore_new(IRC_SERVER_REC *server, AUTOIGNORE_REC *ignore)
 {
 	g_return_if_fail(ignore != NULL);
@@ -45,10 +47,14 @@ void fe_flood_init(void)
 {
 	signal_add("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
 	signal_add("autoignore remove", (SIGNAL_FUNC) event_autoignore_remove);
+
+        theme_register(fecommon_irc_flood_formats);
 }
 
 void fe_flood_deinit(void)
 {
+	theme_unregister();
+
 	signal_remove("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
 	signal_remove("autoignore remove", (SIGNAL_FUNC) event_autoignore_remove);
 }

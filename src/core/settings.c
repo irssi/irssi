@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
+#include "misc.h"
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -278,15 +279,16 @@ static void init_configfile(void)
 	signal(SIGTERM, sig_term);
 }
 
-static void cmd_rehash(const char *data)
+void settings_reread(const char *fname)
 {
 	CONFIG_REC *tempconfig;
-	char *str, *fname;
+	char *str;
 
-	fname = *data != '\0' ? g_strdup(data) :
-		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
-	tempconfig = parse_configfile(fname);
-	g_free(fname);
+	if (fname == NULL) fname = "~/.irssi/config";
+
+	str = convert_home(fname);
+	tempconfig = parse_configfile(str);
+	g_free(str);
 
 	if (tempconfig == NULL) {
 		signal_emit("gui dialog", 2, "error", g_strerror(errno));
@@ -310,11 +312,11 @@ static void cmd_rehash(const char *data)
 	signal_emit("setup reread", 0);
 }
 
-static void cmd_save(const char *data)
+void settings_save(const char *fname)
 {
 	char *str;
 
-	if (config_write(mainconfig, *data == '\0' ? NULL : data, 0660) == 0)
+	if (config_write(mainconfig, fname, 0660) == 0)
 		return;
 
 	/* error */
@@ -329,8 +331,6 @@ void settings_init(void)
 	settings = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
 
 	init_configfile();
-	command_bind("rehash", NULL, (SIGNAL_FUNC) cmd_rehash);
-	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 }
 
 static void settings_hash_free(const char *key, SETTINGS_REC *rec)
@@ -340,9 +340,6 @@ static void settings_hash_free(const char *key, SETTINGS_REC *rec)
 
 void settings_deinit(void)
 {
-	command_unbind("rehash", (SIGNAL_FUNC) cmd_rehash);
-	command_unbind("save", (SIGNAL_FUNC) cmd_save);
-
         g_free_not_null(last_error_msg);
 	g_hash_table_foreach(settings, (GHFunc) settings_hash_free, NULL);
 	g_hash_table_destroy(settings);

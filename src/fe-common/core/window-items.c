@@ -27,7 +27,6 @@
 
 #include "levels.h"
 
-#include "printtext.h"
 #include "windows.h"
 #include "window-items.h"
 
@@ -86,17 +85,6 @@ WINDOW_REC *window_item_window(WI_ITEM_REC *item)
         return MODULE_DATA(item);
 }
 
-void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
-{
-	g_return_if_fail(window != NULL);
-
-	if (window->active != item) {
-		window->active = item;
-		if (item != NULL) window_change_server(window, window->active_server);
-		signal_emit("window item changed", 2, window, item);
-	}
-}
-
 void window_item_change_server(WI_ITEM_REC *item, void *server)
 {
 	WINDOW_REC *window;
@@ -108,6 +96,71 @@ void window_item_change_server(WI_ITEM_REC *item, void *server)
 
         signal_emit("window item server changed", 2, window, item);
 	if (window->active == item) window_change_server(window, item->server);
+}
+
+void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
+{
+	g_return_if_fail(window != NULL);
+
+	if (window->active != item) {
+		window->active = item;
+		if (item != NULL) window_change_server(window, window->active_server);
+		signal_emit("window item changed", 2, window, item);
+	}
+}
+
+void window_item_prev(WINDOW_REC *window)
+{
+	WI_ITEM_REC *last;
+	GSList *tmp;
+
+	g_return_if_fail(window != NULL);
+
+	last = NULL;
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+		WI_ITEM_REC *rec = tmp->data;
+
+		if (rec != window->active)
+			last = rec;
+		else {
+			/* current channel. did we find anything?
+			   if not, go to the last channel */
+			if (last != NULL) break;
+		}
+	}
+
+	if (last != NULL)
+                window_item_set_active(window, last);
+}
+
+void window_item_next(WINDOW_REC *window)
+{
+	WI_ITEM_REC *next;
+	GSList *tmp;
+	int gone;
+
+	g_return_if_fail(window != NULL);
+
+	next = NULL; gone = FALSE;
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+		WI_ITEM_REC *rec = tmp->data;
+
+		if (rec == window->active)
+			gone = TRUE;
+		else {
+			if (gone) {
+				/* found the next channel */
+				next = rec;
+				break;
+			}
+
+			if (next == NULL)
+				next = rec; /* fallback to first channel */
+		}
+	}
+
+	if (next != NULL)
+                window_item_set_active(window, next);
 }
 
 static WI_ITEM_REC *window_item_find_window(WINDOW_REC *window, void *server, const char *name)

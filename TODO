@@ -1,8 +1,16 @@
+- teemat
+ - /rehash
+ - teeman vaihto
+ - teemoihin tee jotain pient‰ selityst‰ edes!
+ - irssi can't find new themes in ~/.irssi/ while running - scan for new
+   themes when opening themes dialog? irssi-text also needs to be restarted
+   to use new themes..
+ - use different themes in different channels/queries?
+ - logi voisi k‰ytt‰‰ omaa teemaa
+
 - /IRCNET ADD/REMOVE
 - mites se awaylogi? se /cattaamaan myˆs se /away:n j‰lkeen
 - poista se common-setup.h
-- quitissa se r‰pelt‰‰ ruutua liikaa..
-- perli kaatui v‰lill‰ ym. kivaa.
 
 [21:48] < santo> [20:51] §§§ #twiggy,#tanum,#d2mac,#linux.nu,#sweden2k
 Cannot join channel (illegal name)
@@ -19,15 +27,6 @@ lis‰‰, alas, --more-- j‰‰
    - gnome versio..
    - pluginit
 
-- teemat (toimiiko ne edes?)
- - teeman vaihto tekstiversiolla, tekstien muuttaminen tekstiversiolla
- - teemoihin tee jotain pient‰ selityst‰ edes!
- - irssi can't find new themes in ~/.irssi/ while running - scan for new
-   themes when opening themes dialog? irssi-text also needs to be restarted
-   to use new themes..
- - use different themes in different channels/queries?
- - logi voisi k‰ytt‰‰ omaa teemaa
-
 - /set hold_mode, ja /CAT toimimaan sen kanssa jotenkin nerokkaasti..
 - curses sijainti jotain rikkoo, ja openbsd:ss‰ on -lcurses, ei -lncurses
 
@@ -40,7 +39,6 @@ lis‰‰, alas, --more-- j‰‰
  - line-split.c: varmista ett‰ se 64k limitti toimii eik‰ esim. kaada!
 - /exec
  - autorun.ircnet
- - channel not available rejoini
 
 *** Bugs
 

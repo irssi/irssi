@@ -69,6 +69,10 @@ WINDOW_REC *window_find_refnum(int refnum);
 WINDOW_REC *window_find_name(const char *name);
 WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name);
 
+int window_refnum_prev(int refnum);
+int window_refnum_next(int refnum);
+int windows_refnum_last(void);
+
 void windows_init(void);
 void windows_deinit(void);
 

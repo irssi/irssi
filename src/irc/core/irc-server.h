@@ -129,6 +129,9 @@ typedef struct {
 	GSList *channels;
         GSList *queries;
 
+	GSList *rejoin_channels; /* try to join to these channels after a while -
+	                            channels go here if they're "temporarily unavailable"
+				    because of netsplits */
 	gpointer chanqueries;
 } IRC_SERVER_REC;
 

@@ -31,6 +31,8 @@
 #include "ircnet-setup.h"
 #include "irc/notifylist/notifylist.h"
 
+#include "themes.h"
+
 /* add the nick of a hostmask to list if it isn't there already */
 static GSList *mask_add_once(GSList *list, const char *mask)
 {
@@ -224,6 +226,8 @@ static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
 
 void fe_notifylist_init(void)
 {
+	theme_register(fecommon_irc_notifylist_formats);
+
 	command_bind("notify", NULL, (SIGNAL_FUNC) cmd_notify);
 	signal_add("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
 	signal_add("notifylist left", (SIGNAL_FUNC) notifylist_left);
@@ -233,6 +237,8 @@ void fe_notifylist_init(void)
 
 void fe_notifylist_deinit(void)
 {
+	theme_unregister();
+
 	command_unbind("notify", (SIGNAL_FUNC) cmd_notify);
 	signal_remove("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
 	signal_remove("notifylist left", (SIGNAL_FUNC) notifylist_left);

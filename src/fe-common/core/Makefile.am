@@ -17,10 +17,11 @@ libfe_common_core_la_SOURCES = \
 	hilight-text.c \
 	keyboard.c \
 	module-formats.c \
-	window-activity.c \
 	printtext.c \
 	themes.c \
 	translation.c \
+	window-activity.c \
+	window-commands.c \
 	window-items.c \
 	windows.c
 

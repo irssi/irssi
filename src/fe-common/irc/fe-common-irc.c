@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "args.h"
 #include "misc.h"
@@ -27,6 +28,7 @@
 
 #include "server-setup.h"
 
+#include "themes.h"
 #include "completion.h"
 
 void fe_channels_init(void);
@@ -100,6 +102,8 @@ void fe_common_irc_init(void)
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 
+	theme_register(fecommon_irc_formats);
+
 	fe_channels_init();
 	fe_irc_commands_init();
 	fe_irc_server_init();
@@ -132,6 +136,8 @@ void fe_common_irc_deinit(void)
 	fe_query_deinit();
 	completion_deinit();
 	irc_window_activity_deinit();
+
+	theme_unregister();
 }
 
 void fe_common_irc_finish_init(void)

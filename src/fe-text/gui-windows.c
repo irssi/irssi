@@ -46,6 +46,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *pare
 	gui->parent = parent;
 
 	gui->bottom = TRUE;
+        gui->line_cache = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 	gui->line_chunk = g_mem_chunk_new("line chunk", sizeof(LINE_REC),
 					  sizeof(LINE_REC)*100, G_ALLOC_AND_FREE);
 	gui->empty_linecount = parent->last_line-parent->first_line;
@@ -53,8 +54,19 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *pare
 	return gui;
 }
 
+int line_cache_destroy(void *key, LINE_CACHE_REC *cache)
+{
+	g_free_not_null(cache->lines);
+	g_free(cache);
+
+	return TRUE;
+}
+
 static void gui_window_deinit(GUI_WINDOW_REC *gui)
 {
+	g_hash_table_foreach(gui->line_cache, (GHFunc) line_cache_destroy, NULL);
+	g_hash_table_destroy(gui->line_cache);
+
 	g_slist_foreach(gui->text_chunks, (GFunc) g_free, NULL);
 	g_slist_free(gui->text_chunks);
 
@@ -106,7 +118,7 @@ static void gui_window_destroyed(WINDOW_REC *window)
 	gui_window_deinit(gui);
 	window->gui_data = NULL;
 
-	if (mainwindows->next != NULL && parent->active == window)
+	if (parent->active == window && mainwindows->next != NULL)
 		mainwindow_destroy(parent);
 }
 
@@ -126,322 +138,337 @@ void gui_window_clear(WINDOW_REC *window)
 		gui_window_redraw(window);
 }
 
-int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
+/* update bottom_startline and bottom_subline of window. */
+static int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 {
-    int linecount, last_linecount;
+	int linecount, last_linecount;
 
-    if (gui->bottom_startline == NULL)
-	return -1;
-
-    while (lines < 0)
-    {
-	if (gui->bottom_subline > 0)
-	    gui->bottom_subline--;
-	else
-	{
-	    if (gui->bottom_startline->prev == NULL)
+	if (gui->bottom_startline == NULL)
 		return -1;
-	    gui->bottom_startline = gui->bottom_startline->prev;
 
-	    linecount = gui_window_get_linecount(gui, gui->bottom_startline->data);
-	    gui->bottom_subline = linecount-1;
-	}
-	lines++;
-    }
-
-    last_linecount = linecount = -1;
-    while (lines > 0)
-    {
-	if (linecount == -1)
-	    last_linecount = linecount = gui_window_get_linecount(gui, gui->bottom_startline->data);
-
-	if (linecount > gui->bottom_subline+1)
-	    gui->bottom_subline++;
-	else
-	{
-	    gui->bottom_subline = 0;
-	    linecount = -1;
-
-	    if (gui->bottom_startline->next == NULL)
-		break;
-	    gui->bottom_startline = gui->bottom_startline->next;
-	}
-	lines--;
-    }
-
-    return last_linecount;
-}
-
-void gui_window_newline(GUI_WINDOW_REC *gui, gboolean visible)
-{
-    gboolean last_line;
-    gint linecount;
-
-    g_return_if_fail(gui != NULL);
-
-    gui->xpos = 0;
-    last_line = gui->ypos >= gui->parent->last_line-gui->parent->first_line;
-
-    if (gui->empty_linecount > 0)
-    {
-	/* window buffer height isn't even the size of the screen yet */
-        gui->empty_linecount--;
-	linecount = gui_window_get_linecount(gui, gui->startline->data);
-    }
-    else
-    {
-	linecount = gui_window_update_bottom(gui, 1);
-    }
-
-    if (!last_line || !gui->bottom)
-    {
-	gui->ypos++;
-    }
-    else if (gui->bottom)
-    {
-	if (gui->subline >= linecount)
-	{
-	    /* after screen gets full after /CLEAR we end up here.. */
-	    gui->startline = gui->startline->next;
-	    gui->subline = 0;
-
-	    linecount = gui_window_update_bottom(gui, 1);
-	}
-
-	if (linecount > 1+gui->subline)
-	    gui->subline++;
-	else
-	{
-	    gui->startline = gui->startline->next;
-	    gui->subline = 0;
-	}
-
-	if (visible)
-	{
-	    scroll_up(gui->parent->first_line, gui->parent->last_line);
-	    move(gui->parent->last_line, 0); clrtoeol();
-	}
-    }
-}
-
-/* get number of real lines that line record takes - this really should share
-   at least some code with gui_window_line_draw().. */
-gint gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
-{
-    gchar *ptr, *last_space_ptr, *tmp;
-    gint lines, xpos, indent_pos, last_space;
-
-    g_return_val_if_fail(gui != NULL, -1);
-    g_return_val_if_fail(line != NULL, -1);
-
-    if (line->text == NULL)
-	return 0;
-
-    xpos = 0; lines = 1; indent_pos = DEFAULT_INDENT_POS;
-    last_space = 0; last_space_ptr = NULL;
-    for (ptr = line->text;; ptr++)
-    {
-	if (*ptr == '\0')
-	{
-	    /* command */
-	    ptr++;
-	    switch ((guchar) *ptr)
-	    {
-		case LINE_CMD_OVERFLOW:
-                        g_error("buffer overflow!");
-		case LINE_CMD_EOL:
-                    return lines;
-		case LINE_CMD_CONTINUE:
-		    memcpy(&tmp, ptr+1, sizeof(gchar *));
-                    ptr = tmp-1;
-		    break;
-		case LINE_CMD_INDENT:
-		    indent_pos = xpos;
-                    break;
-	    }
-	    continue;
-	}
-
-	if (xpos == COLS)
-	{
-	    xpos = indent_pos >= COLS-5 ? DEFAULT_INDENT_POS : indent_pos;
-
-	    if (last_space > indent_pos && last_space > 10)
-	    {
-		ptr = last_space_ptr;
-		while (*ptr == ' ') ptr++;
-	    }
-
-	    last_space = 0;
-	    lines++;
-	    ptr--;
-	    continue;
-	}
-
-	xpos++;
-	if (*ptr == ' ')
-	{
-	    last_space = xpos-1;
-	    last_space_ptr = ptr+1;
-	}
-    }
-}
-
-/* draw line - ugly code.. */
-gint gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, gint ypos, gint skip, gint max)
-{
-    gchar *ptr, *last_space_ptr, *tmp;
-    gint lines, xpos, color, indent_pos, last_space, last_space_color;
-
-    g_return_val_if_fail(gui != NULL, -1);
-    g_return_val_if_fail(line != NULL, -1);
-
-    if (line->text == NULL)
-	return 0;
-
-    move(ypos, 0);
-    xpos = 0; color = 0; lines = -1; indent_pos = DEFAULT_INDENT_POS;
-    last_space = last_space_color = 0; last_space_ptr = NULL;
-    for (ptr = line->text;; ptr++)
-    {
-	if (*ptr == '\0')
-	{
-	    /* command */
-	    ptr++;
-	    if ((*ptr & 0x80) == 0)
-	    {
-		/* set color */
-                color = (color & ATTR_UNDERLINE) | *ptr;
-	    }
-	    else switch ((guchar) *ptr)
-	    {
-		case LINE_CMD_OVERFLOW:
-                        g_error("buffer overflow!");
-		case LINE_CMD_EOL:
-                    return lines;
-		case LINE_CMD_CONTINUE:
-		    memcpy(&tmp, ptr+1, sizeof(gchar *));
-		    ptr = tmp-1;
-		    break;
-		case LINE_CMD_UNDERLINE:
-		    color ^= ATTR_UNDERLINE;
-		    break;
-		case LINE_CMD_COLOR8:
-		    color &= 0xfff0;
-		    color |= 8|ATTR_COLOR8;
-		    break;
-		case LINE_CMD_BEEP:
-		    beep();
-		    break;
-		case LINE_CMD_INDENT:
-		    indent_pos = xpos;
-                    break;
-	    }
-	    set_color(color);
-	    continue;
-	}
-
-	if (xpos == COLS)
-	{
-	    xpos = indent_pos >= COLS-5 ? DEFAULT_INDENT_POS : indent_pos;
-
-	    if (last_space > indent_pos && last_space > 10)
-	    {
-		/* remove the last word */
-		if (!skip)
-		{
-		    move(ypos, last_space);
-		    set_color(0);
-		    clrtoeol();
+	for (; lines < 0; lines++) {
+		if (gui->bottom_subline > 0) {
+			gui->bottom_subline--;
+			continue;
 		}
 
-		/* skip backwards to draw the line again. */
-		ptr = last_space_ptr;
-		color = last_space_color;
-		if (!skip) set_color(color);
-		while (*ptr == ' ') ptr++;
-	    }
-	    last_space = 0;
+		if (gui->bottom_startline->prev == NULL)
+			return -1;
+		gui->bottom_startline = gui->bottom_startline->prev;
 
-	    if (skip > 0)
-	    {
-		if (--skip == 0) set_color(color);
-	    }
-	    else
-	    {
-		if (lines == max)
-		    return lines;
-		if (max != -1)
-		    ypos++;
-		else
-		{
-		    gui_window_newline(gui, TRUE);
-		    ypos = gui->parent->first_line+gui->ypos;
+		linecount = gui_window_get_linecount(gui, gui->bottom_startline->data);
+		gui->bottom_subline = linecount-1;
+	}
+
+	last_linecount = -1;
+	for (; lines > 0; lines--) {
+		last_linecount = linecount =
+			gui_window_get_linecount(gui, gui->bottom_startline->data);
+
+		if (linecount > gui->bottom_subline+1)
+			gui->bottom_subline++;
+		else {
+			gui->bottom_subline = 0;
+			if (gui->bottom_startline->next == NULL)
+				break;
+			gui->bottom_startline = gui->bottom_startline->next;
 		}
-		lines++;
-	    }
-	    move(ypos, indent_pos);
-
-	    /* we could have \0.. */
-	    ptr--;
-	    continue;
+		lines--;
 	}
 
-	xpos++;
-	if (*ptr == ' ')
-	{
-	    last_space = xpos-1;
-	    last_space_color = color;
-	    last_space_ptr = ptr+1;
+	return last_linecount;
+}
+
+void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
+{
+	int lines;
+
+	g_return_if_fail(gui != NULL);
+
+	gui->xpos = 0;
+
+	if (gui->empty_linecount > 0) {
+		/* window buffer height isn't even the size of the screen yet */
+		gui->empty_linecount--;
+		gui->ypos++;
+		return;
 	}
 
-	if (skip) continue;
-	if (lines == -1) lines = 0;
+	lines = gui_window_update_bottom(gui, 1);
 
-	if ((guchar) *ptr >= 32)
-	    addch((guchar) *ptr);
-	else
-	{
-	    /* low-ascii */
-	    set_color(ATTR_REVERSE);
-	    addch(*ptr+'A'-1);
-	    set_color(color);
+	if (!gui->bottom) {
+		gui->ypos++;
+		return;
 	}
-    }
+
+	if (gui->subline >= lines) {
+		/* after screen gets full after /CLEAR we end up here.. */
+		gui->startline = gui->startline->next;
+		gui->subline = 0;
+
+		lines = gui_window_update_bottom(gui, 1);
+	}
+
+	if (lines > 1+gui->subline)
+		gui->subline++;
+	else {
+		gui->startline = gui->startline->next;
+		gui->subline = 0;
+	}
+
+	if (visible) {
+		scroll_up(gui->parent->first_line, gui->parent->last_line);
+		move(gui->parent->last_line, 0); clrtoeol();
+	}
+}
+
+static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line)
+{
+	LINE_CACHE_REC *rec;
+	LINE_CACHE_SUB_REC *sub;
+	GSList *lines;
+	unsigned char *ptr, *last_space_ptr;
+	int xpos, pos, indent_pos, last_space, color;
+
+	g_return_val_if_fail(line->text != NULL, NULL);
+
+	rec = g_new(LINE_CACHE_REC, 1);
+
+	xpos = 0; color = 0; indent_pos = DEFAULT_INDENT_POS;
+	last_space = 0; last_space_ptr = NULL;
+
+	rec->count = 1; lines = NULL;
+	for (ptr = (unsigned char *) line->text;;) {
+		if (*ptr == '\0') {
+			/* command */
+			ptr++;
+			if (*ptr == LINE_CMD_EOL)
+				break;
+
+			if (*ptr == LINE_CMD_CONTINUE) {
+				char *tmp;
+
+				memcpy(&tmp, ptr+1, sizeof(char *));
+				ptr = tmp;
+				continue;
+			}
+
+			if ((*ptr & 0x80) == 0) {
+				/* set color */
+				color = (color & ATTR_UNDERLINE) | *ptr;
+			} else switch (*ptr) {
+			case LINE_CMD_OVERFLOW:
+				g_error("buffer overflow!");
+			case LINE_CMD_UNDERLINE:
+				color ^= ATTR_UNDERLINE;
+				break;
+			case LINE_CMD_COLOR8:
+				color &= 0xfff0;
+				color |= 8|ATTR_COLOR8;
+				break;
+			case LINE_CMD_INDENT:
+				/* set indentation position here - don't do
+				   it if we're too close to right border */
+				if (xpos < COLS-5) indent_pos = xpos;
+				break;
+			}
+
+			ptr++;
+			continue;
+		}
+
+		if (xpos == COLS) {
+			xpos = indent_pos;
+
+			if (last_space > indent_pos && last_space > 10) {
+                                /* go back to last space */
+				ptr = last_space_ptr;
+				while (*ptr == ' ') ptr++;
+			}
+
+			sub = g_new(LINE_CACHE_SUB_REC, 1);
+			sub->start = ptr;
+			sub->indent = indent_pos;
+			sub->color = color;
+
+			lines = g_slist_append(lines, sub);
+			rec->count++;
+
+			last_space = 0;
+			continue;
+		}
+
+		xpos++;
+		if (*ptr++ == ' ') {
+			last_space = xpos-1;
+			last_space_ptr = ptr;
+		}
+	}
+
+	if (rec->count < 2)
+		rec->lines = NULL;
+	else {
+		rec->lines = g_new(LINE_CACHE_SUB_REC, rec->count-1);
+		for (pos = 0; lines != NULL; pos++) {
+			memcpy(&rec->lines[pos], lines->data, sizeof(LINE_CACHE_SUB_REC));
+
+			g_free(lines->data);
+			lines = g_slist_remove(lines, lines->data);
+		}
+	}
+
+	g_hash_table_insert(gui->line_cache, line, rec);
+	return rec;
+}
+
+void gui_window_cache_remove(GUI_WINDOW_REC *gui, LINE_REC *line)
+{
+	LINE_CACHE_REC *cache;
+
+	g_return_if_fail(gui != NULL);
+	g_return_if_fail(line != NULL);
+
+	cache = g_hash_table_lookup(gui->line_cache, line);
+	if (cache != NULL) {
+		g_hash_table_remove(gui->line_cache, line);
+		g_free_not_null(cache->lines);
+		g_free(cache);
+	}
+}
+
+int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
+{
+	LINE_CACHE_REC *cache;
+
+	g_return_val_if_fail(gui != NULL, -1);
+	g_return_val_if_fail(line != NULL, -1);
+
+	cache = g_hash_table_lookup(gui->line_cache, line);
+	if (cache == NULL)
+		cache = gui_window_line_cache(gui, line);
+
+        return cache->count;
+}
+
+static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *rec, const char *text, const char *text_end)
+{
+	char *tmp;
+	int xpos, color;
+
+	if (rec == NULL) {
+		xpos = 0; color = 0;
+	} else {
+		xpos = rec->indent;
+		color = rec->color;
+	}
+
+	move(ypos, xpos);
+	while (text != text_end) {
+		if (*text == '\0') {
+			/* command */
+			text++;
+			if ((*text & 0x80) == 0) {
+				/* set color */
+				color = (color & ATTR_UNDERLINE) | *text;
+			} else if (*text == (char) LINE_CMD_CONTINUE) {
+                                /* jump to next block */
+				memcpy(&tmp, text+1, sizeof(char *));
+				text = tmp;
+				continue;
+			} else switch ((unsigned char) *text) {
+			case LINE_CMD_OVERFLOW:
+				g_error("buffer overflow!");
+			case LINE_CMD_EOL:
+				return;
+			case LINE_CMD_UNDERLINE:
+				color ^= ATTR_UNDERLINE;
+				break;
+			case LINE_CMD_COLOR8:
+				color &= 0xfff0;
+				color |= 8|ATTR_COLOR8;
+				break;
+			}
+			set_color(color);
+			text++;
+			continue;
+		}
+
+		if (xpos == COLS) {
+			/* there should be only spaces left */
+			text++;
+			continue;
+		}
+
+		if ((unsigned char) *text >= 32)
+			addch((unsigned char) *text);
+		else {
+			/* low-ascii */
+			set_color(ATTR_REVERSE);
+			addch(*text+'A'-1);
+			set_color(color);
+		}
+		text++;
+	}
+}
+
+int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip, int max)
+{
+	LINE_CACHE_REC *cache;
+	LINE_CACHE_SUB_REC *sub;
+	char *pos, *next_pos;
+	int n;
+
+	g_return_val_if_fail(gui != NULL, -1);
+	g_return_val_if_fail(line != NULL, -1);
+
+	cache = g_hash_table_lookup(gui->line_cache, line);
+	if (cache == NULL)
+		cache = gui_window_line_cache(gui, line);
+
+	if (max < 0) max = cache->count;
+
+	for (n = skip; n < cache->count && max > 0; n++, ypos++, max--) {
+		sub = n == 0 ? NULL : &cache->lines[n-1];
+		pos = sub == NULL ? line->text : sub->start;
+		next_pos = (n+1 < cache->count) ?
+			cache->lines[n].start : NULL;
+		single_line_draw(gui, ypos, sub, pos, next_pos);
+	}
+
+	return cache->count;
 }
 
 void gui_window_redraw(WINDOW_REC *window)
 {
-    GUI_WINDOW_REC *gui;
-    GList *line;
-    gint ypos, lines, skip, max;
+	GUI_WINDOW_REC *gui;
+	GList *line;
+	int ypos, lines, skip, max;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    gui = WINDOW_GUI(window);
+	gui = WINDOW_GUI(window);
 
-    for (ypos = gui->parent->first_line; ypos <= gui->parent->last_line; ypos++)
-    {
+	/* clear the lines first */
 	set_color(0);
-        move(ypos, 0);
-        clrtoeol();
-    }
+	for (ypos = gui->parent->first_line; ypos <= gui->parent->last_line; ypos++) {
+		move(ypos, 0);
+		clrtoeol();
+	}
 
-    skip = gui->subline;
-    ypos = gui->parent->first_line;
-    for (line = gui->startline; line != NULL; line = line->next)
-    {
-        LINE_REC *rec = line->data;
+	skip = gui->subline;
+	ypos = gui->parent->first_line;
+	for (line = gui->startline; line != NULL; line = line->next) {
+		LINE_REC *rec = line->data;
 
-	max = gui->parent->last_line - ypos;
-	if (max < 0) break;
+		max = gui->parent->last_line - ypos+1;
+		if (max < 0) break;
 
-	lines = gui_window_line_draw(gui, rec, ypos, skip, max);
-	skip = 0;
+		lines = gui_window_line_draw(gui, rec, ypos, skip, max);
+		ypos += lines-skip;
+		skip = 0;
+	}
 
-	ypos += lines+1;
-    }
-    screen_refresh();
+	screen_refresh();
 }
 
 static void gui_window_scroll_up(GUI_WINDOW_REC *gui, gint lines)
@@ -579,6 +606,8 @@ static void signal_window_changed(WINDOW_REC *window)
 {
 	g_return_if_fail(window != NULL);
 
+        if (quitting) return;
+
 	if (is_window_visible(window)) {
 		/* already visible, great! */
 		active_mainwin = WINDOW_GUI(window)->parent;
@@ -674,6 +703,8 @@ static void gui_window_horiz_resize(WINDOW_REC *window)
 	gui = WINDOW_GUI(window);
 	if (gui->lines == NULL) return;
 
+	g_hash_table_foreach_remove(gui->line_cache, (GHRFunc) line_cache_destroy, NULL);
+
 	linecount = gui_window_get_linecount(gui, g_list_last(gui->lines)->data);
 	gui->last_subline = linecount-1;
 
@@ -703,7 +734,8 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 	gui = WINDOW_GUI(window);
 
 	if (xchange) {
-		/* window width changed, we'll need to recalculate a few things.. */
+		/* window width changed, we'll need to recalculate a
+		   few things.. */
 		gui_window_horiz_resize(window);
 		return;
 	}

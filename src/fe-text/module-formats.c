@@ -23,11 +23,13 @@
 
 FORMAT_REC gui_text_formats[] =
 {
-    { MODULE_NAME, "Text user interface", 0 },
+	{ MODULE_NAME, "Text user interface", 0 },
 
-    { "lastlog_start", "%_Lastlog:", 0 },
-    { "lastlog_end", "%_End of Lastlog", 0 },
+	{ "lastlog_start", "%_Lastlog:", 0 },
+	{ "lastlog_end", "%_End of Lastlog", 0 },
 
-    { "window_too_small", "Not enough room to resize this window", 0 },
-    { "cant_hide_last", "You can't hide the last window", 0 }
+	{ "window_too_small", "Not enough room to resize this window", 0 },
+	{ "cant_hide_last", "You can't hide the last window", 0 },
+
+	{ NULL, NULL, 0 }
 };

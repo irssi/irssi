@@ -143,6 +143,9 @@ static void signal_destroy_hash(void *key, GSList *list)
 	while (list != NULL) {
 		PERL_SIGNAL_REC *rec = list->data;
 
+		if (strncmp(rec->signal, "command ", 8) == 0)
+			command_unbind(rec->signal+8, NULL);
+
 		list = g_slist_remove(list, rec);
 
 		g_free(rec->signal);

@@ -30,6 +30,7 @@
 
 #include "irc/dcc/dcc.h"
 
+#include "themes.h"
 #include "windows.h"
 
 static void dcc_connected(DCC_REC *dcc)
@@ -427,10 +428,14 @@ void fe_dcc_init(void)
     command_bind("dcc ", NULL, (SIGNAL_FUNC) cmd_dcc_list);
     command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
     signal_add("window item remove", (SIGNAL_FUNC) dcc_chat_closed);
+
+    theme_register(fecommon_irc_dcc_formats);
 }
 
 void fe_dcc_deinit(void)
 {
+    theme_unregister();
+
     signal_remove("dcc connected", (SIGNAL_FUNC) dcc_connected);
     signal_remove("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
     signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);

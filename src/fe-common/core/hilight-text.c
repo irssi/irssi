@@ -132,7 +132,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-static void sig_print_text(SERVER_REC *server, const char *channel, gpointer level, const char *str)
+static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer level, const char *str)
 {
 	if (hilight_next) {
 		hilight_next = FALSE;
@@ -140,7 +140,7 @@ static void sig_print_text(SERVER_REC *server, const char *channel, gpointer lev
 	}
 }
 
-static void sig_print_text_stripped(SERVER_REC *server, const char *channel, gpointer plevel, const char *str)
+static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer plevel, const char *str)
 {
 	GSList *tmp;
         char *color, *newstr;
@@ -184,7 +184,7 @@ static void sig_print_text_stripped(SERVER_REC *server, const char *channel, gpo
 
 		if (color == NULL) color = "\00316";
 		newstr = g_strconcat(isdigit(*color) ? "\003" : "", color, str, NULL);
-		signal_emit("print text", 4, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
+		signal_emit("print text", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
 		g_free(newstr);
 
 		hilight_next = TRUE;

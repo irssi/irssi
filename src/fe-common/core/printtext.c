@@ -33,251 +33,242 @@
 #include "themes.h"
 #include "windows.h"
 
-static gboolean timestamps, msgs_timestamps, hide_text_style;
-static gint printtag;
-static gchar ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
+typedef struct {
+	WINDOW_REC *window;
+	void *server;
+	const char *channel;
+	int level;
+} TEXT_DEST_REC;
 
-static gint signal_gui_print_text;
-static gint signal_print_text_stripped;
-static gint signal_print_text;
-static gint signal_print_text_finished;
+static int timestamps, msgs_timestamps, hide_text_style;
+static int timestamp_timeout;
+
+static int signal_gui_print_text;
+static int signal_print_text_stripped;
+static int signal_print_text;
+static int signal_print_text_finished;
+
+static void print_string(TEXT_DEST_REC *dest, const char *text);
 
 void printbeep(void)
 {
-    signal_emit_id(signal_gui_print_text, 6, active_win, NULL, NULL,
-		GINT_TO_POINTER(PRINTFLAG_BEEP), "", MSGLEVEL_NEVER);
+	signal_emit_id(signal_gui_print_text, 6, active_win, NULL, NULL,
+		       GINT_TO_POINTER(PRINTFLAG_BEEP), "", MSGLEVEL_NEVER);
+}
+
+static void skip_mirc_color(char **str)
+{
+	if (!isdigit((int) **str))
+		return;
+
+	/* foreground */
+	(*str)++;
+	if (isdigit((int) **str)) (*str)++;
+
+	if (**str != ',' || !isdigit((int) (*str)[1])) return;
+
+	/* background */
+	(*str) += 2;
+	if (isdigit((int) **str)) (*str)++;
+}
+
+#define is_color_code(c) \
+	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
+	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 31)
+
+char *strip_codes(const char *input)
+{
+	const char *p;
+	char *str, *out;
+
+	out = str = g_strdup(input);
+	for (p = input; *p != '\0'; p++) {
+		if (*p == 3) {
+			p++;
+
+			if (*p < 17 && *p > 0) {
+				/* irssi color */
+				if (p[1] < 17 && p[1] > 0) p++;
+				continue;
+			}
+
+			/* mirc color */
+			skip_mirc_color((char **) &p);
+			p--;
+			continue;
+		}
+
+		if (*p == 4 && p[1] != '\0' && p[2] != '\0') {
+			/* irssi color */
+			p += 2;
+			continue;
+		}
+
+		if (!is_color_code(*p))
+			*out++ = *p;
+	}
+
+	*out = '\0';
+	return str;
 }
 
 /* parse ANSI color string */
 static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 {
-    gchar *start;
-    gint fg, bg, fl, num;
+	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
+	char *start;
+	int fg, bg, fl, num;
 
-    if (*str != '[') return str;
+	if (*str != '[')
+		return str;
+	start = str++;
 
-    start = str;
+	fg = *fgcolor < 0 ? current_theme->default_color : *fgcolor;
+	bg = *bgcolor < 0 ? -1 : *bgcolor;
+	fl = *flags;
 
-    fg = *fgcolor < 0 ? current_theme->default_color : *fgcolor;
-    bg = *bgcolor < 0 ? -1 : *bgcolor;
-    fl = *flags;
+	num = 0;
+	for (;; str++) {
+		if (*str == '\0') return start;
 
-    str++; num = 0;
-    for (;; str++)
-    {
-        if (*str == '\0') return start;
+		if (isdigit((int) *str)) {
+			num = num*10 + (*str-'0');
+			continue;
+		}
 
-        if (isdigit((gint) *str))
-        {
-            num = num*10 + (*str-'0');
-            continue;
-        }
+		if (*str != ';' && *str != 'm')
+			return start;
 
-        if (*str != ';' && *str != 'm') return start;
+		switch (num) {
+		case 0:
+			/* reset colors back to default */
+			fg = current_theme->default_color;
+			bg = -1;
+			break;
+		case 1:
+			/* hilight */
+			fg |= 8;
+			break;
+		case 5:
+			/* blink */
+			bg = bg == -1 ? 8 : bg | 8;
+			break;
+		case 7:
+			/* reverse */
+			fl |= PRINTFLAG_REVERSE;
+			break;
+		default:
+			if (num >= 30 && num <= 37)
+				fg = (fg & 0xf8) + ansitab[num-30];
+			if (num >= 40 && num <= 47) {
+				if (bg == -1) bg = 0;
+				bg = (bg & 0xf8) + ansitab[num-40];
+			}
+			break;
+		}
+		num = 0;
 
-        switch (num)
-        {
-            case 0:
-                /* reset colors back to default */
-                fg = current_theme->default_color;
-                bg = -1;
-                break;
-            case 1:
-                /* hilight */
-                fg |= 8;
-                break;
-            case 5:
-                /* blink */
-                bg = bg == -1 ? 8 : bg | 8;
-                break;
-            case 7:
-                /* reverse */
-                fl |= PRINTFLAG_REVERSE;
-                break;
-            default:
-                if (num >= 30 && num <= 37)
-                    fg = (fg & 0xf8) + ansitab[num-30];
-                if (num >= 40 && num <= 47)
-                {
-                    if (bg == -1) bg = 0;
-                    bg = (bg & 0xf8) + ansitab[num-40];
-                }
-                break;
-        }
-        num = 0;
+		if (*str == 'm') {
+			if (!hide_text_style) {
+				*fgcolor = fg;
+				*bgcolor = bg == -1 ? -1 : bg;
+				*flags = fl;
+			}
+			str++;
+			break;
+		}
+	}
 
-        if (*str == 'm')
-        {
-            if (!hide_text_style)
-            {
-                *fgcolor = fg;
-                *bgcolor = bg == -1 ? -1 : bg;
-                *flags = fl;
-            }
-            str++;
-            break;
-        }
-    }
-
-    return str;
+	return str;
 }
 
-#define IN_COLOR_CODE 2
-#define IN_SECOND_CODE 4
-char *strip_codes(const char *input)
+static int expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 {
-    const char *p;
-    gchar *str, *out;
-    gint loop_state;
+	static const char *backs = "04261537";
+	static const char *fores = "kbgcrmyw";
+	static const char *boldfores = "KBGCRMYW";
+	char *p;
 
-    loop_state = 0;
-    out = str = g_strdup(input);
-    for (p = input; *p != '\0'; p++) /* Going through the string till the end k? */
-    {
-	if (*p == '\003')
-	{
-	    if (p[1] < 17 && p[1] > 0)
-	    {
-		p++;
-		if (p[1] < 17 && p[1] > 0) p++;
-		continue;
-	    }
-	    loop_state = IN_COLOR_CODE;
-	    continue;
-	}
-
-	if (loop_state & IN_COLOR_CODE)
-	{
-	    if (isdigit( (gint) *p )) continue;
-	    if (*p != ',' || (loop_state & IN_SECOND_CODE))
-	    {
-		/* we're no longer in a color code */
-		*out++ = *p;
-		loop_state &= ~IN_COLOR_CODE|IN_SECOND_CODE;
-		continue;
-	    }
-
-	    /* we're in the second code */
-	    loop_state |= IN_SECOND_CODE;
-	    continue;
-
-	}
-
-	/* we're not in a color code that means we should add the character */
-	if (*p == 4 && p[1] != '\0' && p[2] != '\0')
-	{
-	    p += 2;
-	    continue;
-	}
-
-	if (*p == 2 || *p == 22 || *p == 27 || *p == 31 || *p == 15)
-	    continue;
-        *out++ = *p;
-    }
-
-    *out = '\0';
-    return str;
-}
-
-static gboolean expand_styles(GString *out, char format, void *server, const char *channel, int level)
-{
-    static const char *backs = "01234567";
-    static const char *fores = "krgybmcw";
-    static const char *boldfores = "KRGYBMCW";
-    gchar *p;
-
-    /* p/P -> m/M */
-    if (format == 'p')
-	format = 'm';
-    else if (format == 'P')
-	format = 'M';
-
-    switch (format)
-    {
-        case 'U':
-            /* Underline on/off */
-            g_string_append_c(out, 4);
-            g_string_append_c(out, -1);
-            g_string_append_c(out, 2);
-	    break;
+	switch (format) {
+	case 'U':
+		/* Underline on/off */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, -1);
+		g_string_append_c(out, 2);
+		break;
 	case '9':
 	case '_':
-            /* bold on/off */
-	    g_string_append_c(out, 4);
-            g_string_append_c(out, -1);
-            g_string_append_c(out, 1);
-	    break;
+		/* bold on/off */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, -1);
+		g_string_append_c(out, 1);
+		break;
 	case '8':
-	    /* reverse */
-	    g_string_append_c(out, 4);
-            g_string_append_c(out, -1);
-            g_string_append_c(out, 3);
-	    break;
+		/* reverse */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, -1);
+		g_string_append_c(out, 3);
+		break;
 	case '%':
-            g_string_append_c(out, '%');
-            break;
+		g_string_append_c(out, '%');
+		break;
 	case ':':
-            /* Newline */
-            printtext(server, channel, level, out->str);
-            g_string_truncate(out, 0);
-	    break;
-
+		/* Newline */
+		print_string(dest, out->str);
+		g_string_truncate(out, 0);
+		break;
 	case '|':
-	    /* Indent here mark */
-	    g_string_append_c(out, 4);
-            g_string_append_c(out, -1);
-            g_string_append_c(out, 4);
-	    break;
-
+		/* Indent here */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, -1);
+		g_string_append_c(out, 4);
+		break;
 	case 'F':
-            /* flashing - ignore */
-	    break;
-
+		/* flashing - ignore */
+		break;
 	case 'N':
-	    /* don't put clear-color tag at the end of the output - ignore */
-	    break;
-
+		/* don't put clear-color tag at the end of the output - ignore */
+		break;
 	case 'n':
-	    /* default color */
-            g_string_append_c(out, 4);
-            g_string_append_c(out, -1);
-            g_string_append_c(out, -1);
-	    break;
-
+		/* default color */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, -1);
+		g_string_append_c(out, -1);
+		break;
 	default:
-	    /* check if it's a background color */
-	    p = strchr(backs, format);
-	    if (p != NULL)
-	    {
-		g_string_append_c(out, 4);
-		g_string_append_c(out, -2);
-		g_string_append_c(out, ansitab[(gint) (p-backs)]+1);
-		break;
-	    }
+		/* check if it's a background color */
+		p = strchr(backs, format);
+		if (p != NULL) {
+			g_string_append_c(out, 4);
+			g_string_append_c(out, -2);
+			g_string_append_c(out, (int) (p-backs)+1);
+			break;
+		}
 
-	    /* check if it's a foreground color */
-	    p = strchr(fores, format);
-	    if (p != NULL)
-	    {
-		g_string_append_c(out, 4);
-		g_string_append_c(out, ansitab[(gint) (p-fores)]+1);
-		g_string_append_c(out, -2);
-		break;
-	    }
+		/* check if it's a foreground color */
+		if (format == 'p') format = 'm';
+		p = strchr(fores, format);
+		if (p != NULL) {
+			g_string_append_c(out, 4);
+			g_string_append_c(out, (int) (p-fores)+1);
+			g_string_append_c(out, -2);
+			break;
+		}
 
-	    /* check if it's a bold foreground color */
-	    p = strchr(boldfores, format);
-	    if (p != NULL)
-	    {
-		g_string_append_c(out, 4);
-		g_string_append_c(out, 8+ansitab[(gint) (p-boldfores)]+1);
-		g_string_append_c(out, -2);
-		break;
-	    }
-	    return FALSE;
-    }
+		/* check if it's a bold foreground color */
+		if (format == 'P') format = 'M';
+		p = strchr(boldfores, format);
+		if (p != NULL) {
+			g_string_append_c(out, 4);
+			g_string_append_c(out, 8+(int) (p-boldfores)+1);
+			g_string_append_c(out, -2);
+			break;
+		}
 
-    return TRUE;
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 static void read_arglist(va_list va, FORMAT_REC *format,
@@ -287,12 +278,13 @@ static void read_arglist(va_list va, FORMAT_REC *format,
 	int num, len, bufpos;
 
 	bufpos = 0;
+        arglist[format->params] = NULL;
 	for (num = 0; num < format->params && num < arglist_size; num++) {
 		switch (format->paramtypes[num]) {
 		case FORMAT_STRING:
 			arglist[num] = (char *) va_arg(va, char *);
 			if (arglist[num] == NULL) {
-				g_warning("output_format_text_args() : parameter %d is NULL", num);
+				g_warning("read_arglist() : parameter %d is NULL", num);
 				arglist[num] = "";
 			}
 			break;
@@ -342,28 +334,32 @@ static void read_arglist(va_list va, FORMAT_REC *format,
 	}
 }
 
-static void output_format_text_args(GString *out, void *server, const char *channel, int level, FORMAT_REC *format, const char *text, va_list args)
+static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format, const char *text, va_list args)
 {
+	GString *out;
 	char *arglist[10];
 	char buffer[200]; /* should be enough? (won't overflow even if it isn't) */
 
 	const char *str;
-	char code;
+	char code, *ret;
 	int need_free;
 
 	str = current_theme != NULL && text != NULL ? text : format->def;
 
 	/* read all optional arguments to arglist[] list
 	   so they can be used in any order.. */
+        memset(arglist, 0, sizeof(arglist)); /*REMOVE!!!!!!!*/
 	read_arglist(args, format,
 		     arglist, sizeof(arglist)/sizeof(void*),
 		     buffer, sizeof(buffer));
+
+	out = g_string_new(NULL);
 
 	code = 0;
 	while (*str != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!expand_styles(out, *str, server, channel, level)) {
+			if (!expand_styles(out, *str, dest)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *str);
@@ -373,7 +369,8 @@ static void output_format_text_args(GString *out, void *server, const char *chan
 			/* argument */
 			char *ret;
 
-			ret = parse_special((char **) &str, active_win->active_server, active_win->active, arglist, &need_free, NULL);
+			ret = parse_special((char **) &str, active_win->active_server,
+					    active_win->active, arglist, &need_free, NULL);
 			if (ret != NULL) {
 				g_string_append(out, ret);
 				if (need_free) g_free(ret);
@@ -388,165 +385,233 @@ static void output_format_text_args(GString *out, void *server, const char *chan
 
 		str++;
 	}
+
+	ret = out->str;
+	g_string_free(out, FALSE);
+	return ret;
 }
 
-static void output_format_text(GString *out, void *server, const char *channel, int level, int formatnum, ...)
+static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 {
 	MODULE_THEME_REC *theme;
 	va_list args;
+	char *ret;
 
-	theme = g_hash_table_lookup(current_theme->modules, MODULE_FORMATS->tag);
+	theme = g_hash_table_lookup(current_theme->modules, MODULE_NAME);
 
 	va_start(args, formatnum);
-	output_format_text_args(out, server, channel, level,
-				&MODULE_FORMATS[formatnum],
-				theme == NULL ? NULL : theme->format[formatnum], args);
+	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
+				      theme == NULL ? NULL : theme->formats[formatnum], args);
 	va_end(args);
+
+	return ret;
 }
 
-static void add_timestamp(WINDOW_REC *window, GString *out, void *server, const char *channel, int level)
+void printformat_module_args(const char *module, void *server, const char *channel, int level, int formatnum, va_list va)
 {
-	time_t t;
-	struct tm *tm;
-	GString *tmp;
+	MODULE_THEME_REC *theme;
+	TEXT_DEST_REC dest;
+	FORMAT_REC *formats;
+	char *str;
 
-	if (!(level != MSGLEVEL_NEVER && (timestamps || (msgs_timestamps && (level & MSGLEVEL_MSGS) != 0))))
-		return;
+	dest.window = NULL;
+	dest.server = server;
+	dest.channel = channel;
+	dest.level = level;
 
-	t = time(NULL);
+	theme = g_hash_table_lookup(current_theme->modules, module);
+	formats = g_hash_table_lookup(default_formats, module);
 
-	if ((t - window->last_timestamp) < settings_get_int("timestamp_timeout")) {
-		window->last_timestamp = t;
-		return;
+	str = output_format_text_args(&dest, &formats[formatnum],
+				theme == NULL ? NULL : theme->formats[formatnum], va);
+	if (*str != '\0') print_string(&dest, str);
+	g_free(str);
+}
+
+void printformat_module(const char *module, void *server, const char *channel, int level, int formatnum, ...)
+{
+	va_list va;
+
+	va_start(va, formatnum);
+	printformat_module_args(module, server, channel, level, formatnum, va);
+	va_end(va);
+}
+
+void printformat_module_window_args(const char *module, WINDOW_REC *window, int level, int formatnum, va_list va)
+{
+	MODULE_THEME_REC *theme;
+	TEXT_DEST_REC dest;
+	FORMAT_REC *formats;
+	char *str;
+
+	dest.window = window;
+	dest.server = NULL;
+	dest.channel = NULL;
+	dest.level = level;
+
+	theme = g_hash_table_lookup(current_theme->modules, module);
+	formats = g_hash_table_lookup(default_formats, module);
+
+	str = output_format_text_args(&dest, &formats[formatnum],
+				      theme == NULL ? NULL : theme->formats[formatnum], va);
+	if (*str != '\0') print_string(&dest, str);
+	g_free(str);
+}
+
+void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...)
+{
+	va_list va;
+
+	va_start(va, formatnum);
+	printformat_module_window_args(module, window, level, formatnum, va);
+	va_end(va);
+}
+
+/* return the "-!- " text at the start of the line */
+static char *get_line_start_text(TEXT_DEST_REC *dest)
+{
+	if ((dest->level & (MSGLEVEL_CLIENTERROR|MSGLEVEL_CLIENTNOTICE)) != 0)
+		return output_format_text(dest, IRCTXT_LINE_START_IRSSI);
+
+	if ((dest->level & (MSGLEVEL_MSGS|MSGLEVEL_PUBLIC|MSGLEVEL_NOTICES|MSGLEVEL_SNOTES|MSGLEVEL_CTCPS|MSGLEVEL_ACTIONS|MSGLEVEL_DCC|MSGLEVEL_CLIENTCRAP)) == 0 && dest->level != MSGLEVEL_NEVER)
+		return output_format_text(dest, IRCTXT_LINE_START);
+
+	return NULL;
+}
+
+static void print_string(TEXT_DEST_REC *dest, const char *text)
+{
+	gpointer levelp;
+	char *str, *tmp;
+
+	g_return_if_fail(dest != NULL);
+	g_return_if_fail(text != NULL);
+
+	if (dest->window == NULL)
+		dest->window = window_find_closest(dest->server, dest->channel, dest->level);
+
+	tmp = get_line_start_text(dest);
+	str = tmp == NULL ? (char *) text :
+		g_strconcat(tmp, text, NULL);
+	g_free_not_null(tmp);
+
+	levelp = GINT_TO_POINTER(dest->level);
+
+	/* send the plain text version for logging etc.. */
+	tmp = strip_codes(str);
+	signal_emit_id(signal_print_text_stripped, 5, dest->window, dest->server, dest->channel, levelp, tmp);
+	g_free(tmp);
+
+	signal_emit_id(signal_print_text, 5, dest->window, dest->server, dest->channel, levelp, str);
+	if (str != text) g_free(str);
+}
+
+static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va)
+{
+	GString *out;
+	char *ret;
+
+	out = g_string_new(NULL);
+	for (; *str != '\0'; str++) {
+		if (*str != '%') {
+			g_string_append_c(out, *str);
+			continue;
+		}
+
+		if (*++str == '\0')
+			break;
+
+		/* standard parameters */
+		switch (*str) {
+		case 's': {
+			char *s = (char *) va_arg(va, char *);
+			if (s && *s) g_string_append(out, s);
+			break;
+		}
+		case 'd': {
+			int d = (int) va_arg(va, int);
+			g_string_sprintfa(out, "%d", d);
+			break;
+		}
+		case 'f': {
+			double f = (double) va_arg(va, double);
+			g_string_sprintfa(out, "%0.2f", f);
+			break;
+		}
+		case 'u': {
+			unsigned int d = (unsigned int) va_arg(va, unsigned int);
+			g_string_sprintfa(out, "%u", d);
+			break;
+                }
+		case 'l': {
+			long d = (long) va_arg(va, long);
+
+			if (*++str != 'd' && *str != 'u') {
+				g_string_sprintfa(out, "%ld", d);
+				str--;
+			} else {
+				if (*str == 'd')
+					g_string_sprintfa(out, "%ld", d);
+				else
+					g_string_sprintfa(out, "%lu", d);
+			}
+			break;
+		}
+		default:
+			if (!expand_styles(out, *str, dest)) {
+				g_string_append_c(out, '%');
+				g_string_append_c(out, *str);
+			}
+			break;
+		}
 	}
-	window->last_timestamp = t;
 
-	tmp = g_string_new(NULL);
-	tm = localtime(&t);
-	output_format_text(tmp, server, channel, level, IRCTXT_TIMESTAMP,
-			   tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	/* insert the timestamp right after \n */
-	g_string_prepend(out, tmp->str);
-	g_string_free(tmp, TRUE);
-}
-
-static void new_line_stuff(GString *out, void *server, const char *channel, int level)
-{
-	if ((level & (MSGLEVEL_CLIENTERROR|MSGLEVEL_CLIENTNOTICE)) != 0)
-		output_format_text(out, server, channel, level, IRCTXT_LINE_START_IRSSI);
-	else if ((level & (MSGLEVEL_MSGS|MSGLEVEL_PUBLIC|MSGLEVEL_NOTICES|MSGLEVEL_SNOTES|MSGLEVEL_CTCPS|MSGLEVEL_ACTIONS|MSGLEVEL_DCC|MSGLEVEL_CLIENTCRAP)) == 0 && level != MSGLEVEL_NEVER)
-		output_format_text(out, server, channel, level, IRCTXT_LINE_START);
+	ret = out->str;
+	g_string_free(out, FALSE);
+	return ret;
 }
 
 /* Write text to channel - convert color codes */
-void printtext(void *server, const char *channel, int level, const char *str, ...)
+void printtext(void *server, const char *channel, int level, const char *text, ...)
 {
-    va_list args;
-    GString *out;
-    gchar *tmpstr;
-    gint pros;
+	TEXT_DEST_REC dest;
+	char *str;
+	va_list va;
 
-    g_return_if_fail(str != NULL);
+	g_return_if_fail(text != NULL);
 
-    va_start(args, str);
+	dest.window = NULL;
+	dest.server = server;
+	dest.channel = channel;
+	dest.level = level;
 
-    pros = 0;
-    out = g_string_new(NULL);
+	va_start(va, text);
+	str = printtext_get_args(&dest, text, va);
+	va_end(va);
 
-    new_line_stuff(out, server, channel, level);
-    for (; *str != '\0'; str++)
-    {
-        if (*str != '%')
-        {
-            g_string_append_c(out, *str);
-            continue;
-        }
-
-        if (*++str == '\0') break;
-        switch (*str)
-        {
-            /* standard parameters */
-            case 's':
-                {
-                    gchar *s = (gchar *) va_arg(args, gchar *);
-                    if (s && *s) g_string_append(out, s);
-                    break;
-                }
-            case 'd':
-                {
-                    gint d = (gint) va_arg(args, gint);
-                    g_string_sprintfa(out, "%d", d);
-                    break;
-                }
-            case 'f':
-                {
-                    gdouble f = (gdouble) va_arg(args, gdouble);
-                    g_string_sprintfa(out, "%0.2f", f);
-                    break;
-                }
-            case 'u':
-                {
-                    guint d = (guint) va_arg(args, guint);
-                    g_string_sprintfa(out, "%u", d);
-                    break;
-                }
-            case 'l':
-                {
-                    gulong d = (gulong) va_arg(args, gulong);
-                    if (*++str != 'd' && *str != 'u')
-                    {
-                        g_string_sprintfa(out, "%ld", d);
-                        str--;
-                    }
-                    else
-                    {
-                        if (*str == 'd')
-                            g_string_sprintfa(out, "%ld", d);
-                        else
-                            g_string_sprintfa(out, "%lu", d);
-                    }
-                    break;
-                }
-            default:
-                if (!expand_styles(out, *str, server, channel, level))
-                {
-                    g_string_append_c(out, '%');
-                    g_string_append_c(out, *str);
-                }
-                break;
-        }
-    }
-    va_end(args);
-
-    /* send the plain text version for logging.. */
-    tmpstr = strip_codes(out->str);
-    signal_emit_id(signal_print_text_stripped, 4, server, channel, GINT_TO_POINTER(level), tmpstr);
-    g_free(tmpstr);
-
-    signal_emit_id(signal_print_text, 4, server, channel, GINT_TO_POINTER(level), out->str);
-
-    g_string_free(out, TRUE);
+	print_string(&dest, str);
+	g_free(str);
 }
 
-void printformat_format(FORMAT_REC *formats, void *server, const char *channel, int level, int formatnum, ...)
+void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 {
-	MODULE_THEME_REC *theme;
-	GString *out;
-	va_list args;
+	TEXT_DEST_REC dest;
+	char *str;
+	va_list va;
 
-	va_start(args, formatnum);
-	out = g_string_new(NULL);
+	g_return_if_fail(text != NULL);
 
-	theme = g_hash_table_lookup(current_theme->modules, formats->tag);
+	dest.window = window != NULL ? window : active_win;
+	dest.server = NULL;
+	dest.channel = NULL;
+	dest.level = level;
 
-	output_format_text_args(out, server, channel, level,
-				&formats[formatnum],
-				theme == NULL ? NULL : theme->format[formatnum], args);
-	if (out->len > 0) printtext(server, channel, level, "%s", out->str);
+	va_start(va, text);
+	str = printtext_get_args(&dest, text, va);
+	va_end(va);
 
-	g_string_free(out, TRUE);
-	va_end(args);
+	print_string(&dest, str);
+	g_free(str);
 }
 
 static void newline(WINDOW_REC *window)
@@ -559,48 +624,74 @@ static void newline(WINDOW_REC *window)
 	}
 }
 
-static void sig_print_text(void *server, const char *target, gpointer level, const char *text)
+#define show_timestamp(level) \
+	((level) != MSGLEVEL_NEVER && \
+	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
+
+static char *get_timestamp(TEXT_DEST_REC *dest)
 {
-    WINDOW_REC *window;
-    GString *out;
-    gchar *dup, *ptr, type, *str;
+	struct tm *tm;
+	time_t t;
+	int diff;
+
+	if (!show_timestamp(dest->level))
+		return NULL;
+
+	t = time(NULL);
+
+	diff = t - dest->window->last_timestamp;
+	dest->window->last_timestamp = t;
+	if (diff < timestamp_timeout)
+		return NULL;
+
+	tm = localtime(&t);
+	return output_format_text(dest, IRCTXT_TIMESTAMP,
+				  tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+				  tm->tm_hour, tm->tm_min, tm->tm_sec);
+}
+
+static char *get_server_tag(WINDOW_REC *window, SERVER_REC *server)
+{
+	if (server == NULL || servers == NULL || servers->next == NULL ||
+	    (window->active != NULL && window->active->server == server))
+		return NULL;
+
+	return g_strdup_printf("[%s] ", server->tag);
+}
+
+static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *target, gpointer level, const char *text)
+{
+    TEXT_DEST_REC dest;
+    gchar *dup, *ptr, type, *str, *timestamp, *servertag;
     gint fgcolor, bgcolor;
     gint flags;
 
     g_return_if_fail(text != NULL);
-
-    window = window_find_closest(server, target, GPOINTER_TO_INT(level));
     g_return_if_fail(window != NULL);
 
-    flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
+    dest.window = window;
+    dest.server = server;
+    dest.channel = target;
+    dest.level = GPOINTER_TO_INT(level);
 
+    flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
     window->last_line = time(NULL);
     newline(window);
 
-    out = g_string_new(text);
-    if (server != NULL && servers != NULL && servers->next != NULL &&
-	(window->active == NULL || window->active->server != server))
-    {
-	/* connected to more than one server and active server isn't the
-	   same where the message came or we're in status/msgs/empty window -
-	   prefix with a [server tag] */
-	gchar *str;
+    timestamp = get_timestamp(&dest);
+    servertag = get_server_tag(window, server);
+    str = g_strconcat(timestamp != NULL ? timestamp : "",
+		      servertag != NULL ? servertag : "",
+		      text, NULL);
+    g_free_not_null(timestamp);
+    g_free_not_null(servertag);
 
-	str = g_strdup_printf("[%s] ", ((SERVER_REC *) server)->tag);
-	g_string_prepend(out, str);
-	g_free(str);
-    }
-
-    add_timestamp(window, out, server, target, GPOINTER_TO_INT(level));
-
-    dup = str = out->str;
-    g_string_free(out, FALSE);
-
+    dup = str;
     while (*str != '\0')
     {
 	for (ptr = str; *ptr != '\0'; ptr++)
 	{
-            if (*ptr == 2 || *ptr == 3 || *ptr == 4 || *ptr == 6 || *ptr == 7 || *ptr == 15 || *ptr == 22 || *ptr == 27 || *ptr == 31)
+            if (is_color_code(*ptr))
             {
                 type = *ptr;
                 *ptr++ = '\0';
@@ -715,20 +806,7 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
                 if (hide_text_style)
                 {
                     /* don't show them. */
-                    if (isdigit((gint) *ptr))
-                    {
-                        ptr++;
-                        if (isdigit((gint) *ptr)) ptr++;
-                        if (*ptr == ',')
-                        {
-                            ptr++;
-                            if (isdigit((gint) *ptr))
-                            {
-                                ptr++;
-                                if (isdigit((gint) *ptr)) ptr++;
-                            }
-                        }
-                    }
+                    skip_mirc_color(&ptr);
                     break;
                 }
 
@@ -770,47 +848,6 @@ static void sig_print_text(void *server, const char *target, gpointer level, con
     signal_emit_id(signal_print_text_finished, 1, window);
 }
 
-static int sig_check_daychange(void)
-{
-    static gint lastday = -1;
-    GSList *tmp;
-    time_t t;
-    struct tm *tm;
-
-    if (!timestamps)
-    {
-        /* display day change notice only when using timestamps */
-	return TRUE;
-    }
-
-    t = time(NULL);
-    tm = localtime(&t);
-
-    if (lastday == -1)
-    {
-	/* First check, don't display. */
-	lastday = tm->tm_mday;
-	return TRUE;
-    }
-
-    if (tm->tm_mday == lastday)
-	return TRUE;
-
-    /* day changed, print notice about it to every window */
-    for (tmp = windows; tmp != NULL; tmp = tmp->next)
-    {
-	WINDOW_REC *win = tmp->data;
-
-	if (win->active == NULL)
-		continue; /* FIXME: how to print in these windows? */
-
-	printformat(win->active->server, win->active->name, MSGLEVEL_NEVER,
-		    IRCTXT_DAYCHANGE, tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year);
-    }
-    lastday = tm->tm_mday;
-    return TRUE;
-}
-
 void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text)
 {
 	char **lines, **tmp;
@@ -837,31 +874,30 @@ static void sig_gui_dialog(const char *type, const char *text)
 
 static void read_settings(void)
 {
-    timestamps = settings_get_bool("timestamps");
-    msgs_timestamps = settings_get_bool("msgs_timestamps");
-    hide_text_style = settings_get_bool("hide_text_style");
+	timestamps = settings_get_bool("timestamps");
+	timestamp_timeout = settings_get_bool("timestamp_timeout");
+	msgs_timestamps = settings_get_bool("msgs_timestamps");
+	hide_text_style = settings_get_bool("hide_text_style");
 }
 
 void printtext_init(void)
 {
-    settings_add_int("misc", "timestamp_timeout", 0);
+	settings_add_int("misc", "timestamp_timeout", 0);
 
-    signal_gui_print_text = module_get_uniq_id_str("signals", "gui print text");
-    signal_print_text_stripped = module_get_uniq_id_str("signals", "print text stripped");
-    signal_print_text = module_get_uniq_id_str("signals", "print text");
-    signal_print_text_finished = module_get_uniq_id_str("signals", "print text finished");
+	signal_gui_print_text = module_get_uniq_id_str("signals", "gui print text");
+	signal_print_text_stripped = module_get_uniq_id_str("signals", "print text stripped");
+	signal_print_text = module_get_uniq_id_str("signals", "print text");
+	signal_print_text_finished = module_get_uniq_id_str("signals", "print text finished");
 
-    read_settings();
-    printtag = g_timeout_add(30000, (GSourceFunc) sig_check_daychange, NULL);
-    signal_add("print text", (SIGNAL_FUNC) sig_print_text);
-    signal_add("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
-    signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	read_settings();
+	signal_add("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_add("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void printtext_deinit(void)
 {
-    g_source_remove(printtag);
-    signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
-    signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
-    signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

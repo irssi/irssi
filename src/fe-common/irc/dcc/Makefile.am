@@ -14,4 +14,5 @@ libfe_common_irc_dcc_la_SOURCES = \
 	module-formats.c
 
 noinst_HEADERS = \
+	module.h \
 	module-formats.h

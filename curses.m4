@@ -131,13 +131,7 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	  if test x$withval = xno ; then
 		search_ncurses=false
 	  elif test x$withval != xyes ; then
-		CURSES_LIBS="$LIBS -L$withval/lib -lncurses"
-		CURSES_INCLUDEDIR="-I$withval/include"
-		search_ncurses=false
-		screen_manager="ncurses"
-		AC_DEFINE(USE_NCURSES)
-		AC_DEFINE(HAS_CURSES)
-		has_curses=true
+		AC_NCURSES($withval/include, ncurses.h, -L$withval/lib -lncurses, -I$withval/include, "ncurses on $withval/include")
 	  fi
 	)
 
@@ -222,6 +216,7 @@ AC_DEFUN(AC_NCURSES, [
 	    screen_manager=$5
             AC_DEFINE(HAS_CURSES)
             has_curses=true
+	    has_ncurses=true
 	    AC_DEFINE(USE_NCURSES)
 	fi
     fi
@@ -256,6 +251,7 @@ USE_NCURSES
 	CURSES_INCLUDEDIR="$CURSES_INCLUDEDIR -DRENAMED_NCURSES"
         AC_DEFINE(HAS_CURSES)
 	has_curses=true
+	has_ncurses=true
         AC_DEFINE(USE_NCURSES)
         search_ncurses=false
         screen_manager="ncurses installed as curses"

@@ -12,6 +12,7 @@ libirc_core_la_SOURCES = \
         channels-query.c \
         channels-setup.c \
         channel-events.c \
+        channel-rejoin.c \
         ignore.c \
         irc.c \
         irc-core.c \

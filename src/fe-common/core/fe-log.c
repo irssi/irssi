@@ -297,25 +297,27 @@ static void autolog_log(void *server, const char *target)
 	g_free(fname);
 }
 
-/* write to logs created with /WINDOW LOG */
-static void sig_printtext_stripped(void *server, const char *target, gpointer levelp, const char *text)
+static void sig_printtext_stripped(WINDOW_REC *window, void *server, const char *target, gpointer levelp, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
-	WINDOW_REC *window;
 	LOG_REC *log;
 	int level;
 
 	level = GPOINTER_TO_INT(levelp);
+	if (level == MSGLEVEL_NEVER) return;
+
+	/* let autolog create the log records */
 	if ((autolog_level & level) && target != NULL && *target != '\0')
                 autolog_log(server, target);
 
-	window = window_find_closest(server, target, level);
-	if (window != NULL) {
-		ltoa(windownum, window->refnum);
+        /* save to log created with /WINDOW LOG */
+	ltoa(windownum, window->refnum);
+	log = log_find_item(windownum);
+	if (log != NULL) log_write_rec(log, text);
 
-		log = log_find_item(windownum);
-		if (log != NULL) log_write_rec(log, text);
-	}
+	/* save line to logs */
+	if (logs != NULL)
+		log_write(target, level, text);
 }
 
 static int sig_autoremove(void)

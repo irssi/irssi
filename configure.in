@@ -201,7 +201,7 @@ dnl **
 if test "x$want_textui" = "xyes"; then
 	AC_CHECK_CURSES
 
-	if test "x$ncurses_version" != "x"; then
+	if test "x$has_ncurses" != "x"; then
 		AC_CHECK_LIB(ncurses, use_default_colors, [
 			AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS)
 		],, $CURSES_LIBS)

@@ -23,6 +23,17 @@ enum {
 };
 
 typedef struct {
+	char *start;
+	int indent;
+	int color;
+} LINE_CACHE_SUB_REC;
+
+typedef struct {
+	int count; /* number of real lines */
+        LINE_CACHE_SUB_REC *lines;
+} LINE_CACHE_REC;
+
+typedef struct {
 	/* text in the line. \0 means that the next char will be a
 	   color or command. <= 127 = color or if 8.bit is set, the
 	   first 7 bits are the command. See LINE_CMD_xxxx. */
@@ -45,6 +56,7 @@ typedef struct {
 	GMemChunk *line_chunk;
 	GSList *text_chunks;
 	GList *lines;
+	GHashTable *line_cache;
 
 	LINE_REC *cur_line;
 	TEXT_CHUNK_REC *cur_text;
@@ -74,6 +86,7 @@ GList *gui_window_find_text(WINDOW_REC *window, char *text, GList *startline, in
 
 /* get number of real lines that line record takes */
 int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line);
+void gui_window_cache_remove(GUI_WINDOW_REC *gui, LINE_REC *line);
 int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip, int max);
 
 void gui_window_clear(WINDOW_REC *window);
@@ -82,8 +95,7 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange);
 void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent);
 
 void window_update_prompt(WINDOW_REC *window);
-void gui_window_newline(GUI_WINDOW_REC *gui, gboolean visible);
-int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines);
+void gui_window_newline(GUI_WINDOW_REC *gui, int visible);
 void gui_window_scroll(WINDOW_REC *window, int lines);
 
 #endif

@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "args.h"
 #include "signals.h"
 #include "core.h"
@@ -26,6 +27,7 @@
 #include "irc-core.h"
 #include "fe-common-core.h"
 #include "fe-common-irc.h"
+#include "themes.h"
 
 #include "screen.h"
 #include "gui-entry.h"
@@ -82,6 +84,8 @@ static void textui_init(void)
 	irc_init();
 	fe_common_core_init();
 	fe_common_irc_init();
+
+        theme_register(gui_text_formats);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
 }
 
@@ -91,11 +95,11 @@ static void textui_finish_init(void)
 
 	screen_refresh_freeze();
 	gui_entry_init();
-	mainwindows_init();
 	gui_printtext_init();
 	gui_readline_init();
 	gui_special_vars_init();
 	gui_textwidget_init();
+	mainwindows_init();
 	gui_windows_init();
 	statusbar_init();
 
@@ -123,10 +127,12 @@ static void textui_deinit(void)
 	statusbar_deinit();
 	gui_printtext_deinit();
 	gui_readline_deinit();
-	mainwindows_deinit();
 	gui_windows_deinit();
+	mainwindows_deinit();
 	gui_entry_deinit();
 	deinit_screen();
+
+	theme_unregister();
 
 	fe_common_irc_deinit();
 	fe_common_core_deinit();

@@ -10,16 +10,11 @@ typedef struct {
 COMMAND_REC;
 
 enum {
-	CMDERR_PARAM, /* invalid parameter */
+        CMDERR_ERRNO, /* get the error from errno */
 	CMDERR_NOT_ENOUGH_PARAMS, /* not enough parameters given */
 	CMDERR_NOT_CONNECTED, /* not connected to IRC server */
 	CMDERR_NOT_JOINED, /* not joined to any channels in this window */
-	CMDERR_GETSOCKNAME, /* getsockname() failed */
-	CMDERR_LISTEN, /* listen() failed */
-	CMDERR_MULTIPLE_MATCHES, /* multiple matches found, didn't do anything */
-	CMDERR_NICK_NOT_FOUND, /* nick not found */
 	CMDERR_CHAN_NOT_FOUND, /* channel not found */
-	CMDERR_SERVER_NOT_FOUND, /* server not found */
 	CMDERR_CHAN_NOT_SYNCED, /* channel not fully synchronized yet */
 	CMDERR_NOT_GOOD_IDEA /* not good idea to do, -yes overrides this */
 };

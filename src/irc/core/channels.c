@@ -38,6 +38,9 @@ void channels_query_deinit(void);
 void channel_events_init(void);
 void channel_events_deinit(void);
 
+void channel_rejoin_init(void);
+void channel_rejoin_deinit(void);
+
 void massjoin_init(void);
 void massjoin_deinit(void);
 
@@ -159,7 +162,7 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	SETUP_CHANNEL_REC *schannel;
 	CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
-	char *params, *channels, *keys;
+	char *params, *channels, *keys, *key;
 	char **chanlist, **keylist, **tmp, **tmpkey, *channel;
 	int use_keys;
 
@@ -187,15 +190,17 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 			schannel = channels_setup_find(channel, server->connrec->ircnet);
 
                         g_string_sprintfa(outchans, "%s,", channel);
-			if (schannel == NULL || schannel->password == NULL)
-				g_string_sprintfa(outkeys, "%s,", get_join_key(*tmpkey));
-			else {
+			if (schannel == NULL || schannel->password == NULL) {
+				key = *tmpkey == NULL || **tmpkey == '\0' ? NULL : *tmpkey;
+			} else {
 				/* get password from setup record */
                                 use_keys = TRUE;
-				g_string_sprintfa(outkeys, "%s,", schannel->password);
+				key = schannel->password;
 			}
 
-			channel_create(server, channel + (channel[0] == '!' && channel[1] == '!'), automatic);
+			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
+			chanrec = channel_create(server, channel + (channel[0] == '!' && channel[1] == '!'), automatic);
+			if (key != NULL) chanrec->key = g_strdup(key);
 		}
 		g_free(channel);
 
@@ -204,6 +209,8 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	}
 
 	if (outchans->len > 0) {
+		g_string_truncate(outchans, outchans->len-1);
+		g_string_truncate(outkeys, outkeys->len-1);
 		irc_send_cmdv(server, use_keys ? "JOIN %s %s" : "JOIN %s",
 			      outchans->str, outkeys->str);
 	}
@@ -220,6 +227,7 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 void channels_init(void)
 {
 	channel_events_init();
+	channel_rejoin_init();
         channels_query_init();
 	channels_setup_init();
 
@@ -233,6 +241,7 @@ void channels_init(void)
 void channels_deinit(void)
 {
 	channel_events_deinit();
+	channel_rejoin_deinit();
         channels_query_deinit();
         channels_setup_deinit();
 

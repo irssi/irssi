@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "module.h"
+#include "module-formats.h"
 #include "levels.h"
 #include "settings.h"
 
@@ -50,6 +51,9 @@ void fe_settings_deinit(void);
 void window_activity_init(void);
 void window_activity_deinit(void);
 
+void window_commands_init(void);
+void window_commands_deinit(void);
+
 void fe_core_commands_init(void);
 void fe_core_commands_deinit(void);
 
@@ -73,8 +77,10 @@ void fe_common_core_init(void)
 	settings_add_int("lookandfeel", "tab_orientation", 3);*/
 	settings_add_str("lookandfeel", "current_theme", "default");
 
+	themes_init();
+        theme_register(fecommon_core_formats);
+
 	autorun_init();
-	window_activity_init();
 	hilight_text_init();
 	command_history_init();
 	keyboard_init();
@@ -82,9 +88,10 @@ void fe_common_core_init(void)
 	fe_log_init();
 	fe_server_init();
 	fe_settings_init();
-	themes_init();
 	translation_init();
 	windows_init();
+	window_activity_init();
+	window_commands_init();
 	window_items_init();
 	fe_core_commands_init();
 }
@@ -92,7 +99,6 @@ void fe_common_core_init(void)
 void fe_common_core_deinit(void)
 {
 	autorun_deinit();
-	window_activity_deinit();
 	hilight_text_deinit();
 	command_history_deinit();
 	keyboard_deinit();
@@ -100,11 +106,15 @@ void fe_common_core_deinit(void)
 	fe_log_deinit();
 	fe_server_deinit();
 	fe_settings_deinit();
-	themes_deinit();
 	translation_deinit();
 	windows_deinit();
+	window_activity_deinit();
+	window_commands_deinit();
 	window_items_deinit();
 	fe_core_commands_deinit();
+
+        theme_unregister();
+	themes_deinit();
 }
 
 void fe_common_core_finish_init(void)

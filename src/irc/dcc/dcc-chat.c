@@ -308,12 +308,12 @@ static void cmd_dcc_chat(gchar *data, IRC_SERVER_REC *server)
         cmd_return_error(CMDERR_NOT_CONNECTED);
 
     if (net_getsockname(server->handle, &addr, NULL) == -1)
-        cmd_return_error(CMDERR_GETSOCKNAME);
+        cmd_return_error(CMDERR_ERRNO);
 
     port = settings_get_int("dcc_port");
     handle = net_listen(&addr, &port);
     if (handle == -1)
-        cmd_return_error(CMDERR_LISTEN);
+        cmd_return_error(CMDERR_ERRNO);
 
     dcc = dcc_create(DCC_TYPE_CHAT, handle, data, "chat", server, NULL);
     dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,

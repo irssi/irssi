@@ -30,16 +30,11 @@
 #include "windows.h"
 
 static const char *ret_texts[] = {
-	"Invalid parameter",
+        NULL,
 	"Not enough parameters given",
 	"Not connected to IRC server yet",
 	"Not joined to any channels yet",
-	"Error: getsockname() failed",
-	"Error: listen() failed",
-	"Multiple matches found, be more specific",
-	"Nick not found",
 	"Not joined to such channel",
-	"Server not found",
 	"Channel not fully synchronized yet, try again after a while",
 	"Doing this is not a good idea. Add -YES if you really mean it",
 };
@@ -269,9 +264,15 @@ static void cmd_unknown(const char *data, void *server, WI_ITEM_REC *item)
 	signal_stop();
 }
 
-static void event_cmderror(gpointer error)
+static void event_cmderror(gpointer errorp)
 {
-	printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[GPOINTER_TO_INT(error)]);
+	int error;
+
+	error = GPOINTER_TO_INT(errorp);
+        if (error == CMDERR_ERRNO)
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, g_strerror(errno));
+	else
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error]);
 }
 
 void fe_core_commands_init(void)

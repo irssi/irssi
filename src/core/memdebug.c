@@ -132,35 +132,26 @@ static void *data_remove(void *p, const char *file, int line)
 
 void *ig_malloc(int size, const char *file, int line)
 {
-#if 1
 	void *p;
 
 	size += BUFFER_CHECK_SIZE*2;
 	p = g_malloc(size);
 	data_add(p, size, file, line);
 	return p+BUFFER_CHECK_SIZE;
-#else
-	return g_malloc(size);
-#endif
 }
 
 void *ig_malloc0(int size, const char *file, int line)
 {
-#if 1
 	void *p;
 
 	size += BUFFER_CHECK_SIZE*2;
 	p = g_malloc0(size);
 	data_add(p, size, file, line);
 	return p+BUFFER_CHECK_SIZE;
-#else
-	return g_malloc0(size);
-#endif
 }
 
 void *ig_realloc(void *mem, unsigned long size, const char *file, int line)
 {
-#if 1
 	void *p;
 
 	size += BUFFER_CHECK_SIZE*2;
@@ -169,9 +160,6 @@ void *ig_realloc(void *mem, unsigned long size, const char *file, int line)
 	p = g_realloc(mem, size);
 	data_add(p, size, file, line);
 	return p+BUFFER_CHECK_SIZE;
-#else
-	return g_realloc(mem, size);
-#endif
 }
 
 char *ig_strdup(const char *str, const char *file, int line)
@@ -264,12 +252,11 @@ char *ig_strdup_vprintf(const char *file, int line, const char *format, va_list 
 
 void ig_free(void *p)
 {
-#if 1
+	if (p == NULL) g_error("ig_free() : trying to free NULL");
+
 	p -= BUFFER_CHECK_SIZE;
 	p = data_remove(p, "??", 0);
-	if (p != NULL)
-#endif
-	g_free(p);
+	if (p != NULL) g_free(p);
 }
 
 GString *ig_string_new(const char *file, int line, const char *str)

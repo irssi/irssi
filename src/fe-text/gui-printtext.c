@@ -35,277 +35,272 @@
 static gint mirc_colors[] = { 15, 0, 1, 2, 4, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
 static gint max_textwidget_lines;
 
-static LINE_REC *create_line(GUI_WINDOW_REC *gui, gint level)
+#define mark_temp_eol(text) \
+	memcpy((text)->buffer + (text)->pos, "\0\x80", 2);
+
+static LINE_REC *create_line(GUI_WINDOW_REC *gui, int level)
 {
-    g_return_val_if_fail(gui != NULL, NULL);
-    g_return_val_if_fail(gui->cur_text != NULL, NULL);
+	g_return_val_if_fail(gui != NULL, NULL);
+	g_return_val_if_fail(gui->cur_text != NULL, NULL);
 
-    gui->cur_line = g_mem_chunk_alloc(gui->line_chunk);
-    gui->cur_line->text = gui->cur_text->buffer+gui->cur_text->pos;
-    gui->cur_line->level = (gint32) GPOINTER_TO_INT(level);
-    gui->cur_line->time = time(NULL);
+	gui->cur_line = g_mem_chunk_alloc(gui->line_chunk);
+	gui->cur_line->text = gui->cur_text->buffer+gui->cur_text->pos;
+	gui->cur_line->level = GPOINTER_TO_INT(level);
+	gui->cur_line->time = time(NULL);
 
-    /* temporarily mark the end of line. */
-    memcpy(gui->cur_text->buffer+gui->cur_text->pos, "\0\x80", 2);
+	mark_temp_eol(gui->cur_text);
 
-    gui->last_color = -1;
-    gui->last_flags = 0;
+	gui->last_color = -1;
+	gui->last_flags = 0;
 
-    gui->lines = g_list_append(gui->lines, gui->cur_line);
-    if (gui->startline == NULL)
-    {
-	gui->startline = gui->lines;
-	gui->bottom_startline = gui->lines;
-    }
-    return gui->cur_line;
+	gui->lines = g_list_append(gui->lines, gui->cur_line);
+	if (gui->startline == NULL) {
+                /* first line */
+		gui->startline = gui->lines;
+		gui->bottom_startline = gui->lines;
+	}
+	return gui->cur_line;
 }
 
 static TEXT_CHUNK_REC *create_text_chunk(GUI_WINDOW_REC *gui)
 {
-    TEXT_CHUNK_REC *rec;
-    guchar *buffer;
-    gchar *ptr;
+	TEXT_CHUNK_REC *rec;
+	char *buffer, *ptr;
 
-    g_return_val_if_fail(gui != NULL, NULL);
+	g_return_val_if_fail(gui != NULL, NULL);
 
-    rec = g_new(TEXT_CHUNK_REC, 1);
-    rec->overflow[0] = 0;
-    rec->overflow[1] = (char) LINE_CMD_OVERFLOW;
-    rec->pos = 0;
-    rec->lines = 0;
+	rec = g_new(TEXT_CHUNK_REC, 1);
+	rec->overflow[0] = 0;
+	rec->overflow[1] = (char) LINE_CMD_OVERFLOW;
+	rec->pos = 0;
+	rec->lines = 0;
 
-    if (gui->cur_line != NULL && gui->cur_line->text != NULL)
-    {
-	/* mark the next block text block position.. */
-	buffer = (guchar *) gui->cur_text->buffer+gui->cur_text->pos;
-	if (gui->cur_text->pos+2+sizeof(gchar *) > LINE_TEXT_CHUNK_SIZE)
-	    g_error("create_text_chunk() : buffer overflow?!");
-        *buffer++ = 0; *buffer++ = LINE_CMD_CONTINUE;
-	ptr = rec->buffer;
-        memcpy(buffer, &ptr, sizeof(gchar *));
-    }
-    gui->cur_text = rec;
-    gui->text_chunks = g_slist_append(gui->text_chunks, rec);
-    return rec;
+	if (gui->cur_line != NULL && gui->cur_line->text != NULL) {
+		/* create a link to new block from the old block */
+		buffer = gui->cur_text->buffer + gui->cur_text->pos;
+		*buffer++ = 0; *buffer++ = (char) LINE_CMD_CONTINUE;
+
+		ptr = rec->buffer;
+		memcpy(buffer, &ptr, sizeof(char *));
+	}
+
+	gui->cur_text = rec;
+	gui->text_chunks = g_slist_append(gui->text_chunks, rec);
+	return rec;
 }
 
 static void text_chunk_free(GUI_WINDOW_REC *gui, TEXT_CHUNK_REC *chunk)
 {
-    g_return_if_fail(gui != NULL);
-    g_return_if_fail(chunk != NULL);
+	g_return_if_fail(gui != NULL);
+	g_return_if_fail(chunk != NULL);
 
-    gui->text_chunks = g_slist_remove(gui->text_chunks, chunk);
-    g_free(chunk);
+	gui->text_chunks = g_slist_remove(gui->text_chunks, chunk);
+	g_free(chunk);
 }
 
 static void remove_first_line(WINDOW_REC *window)
 {
-    GUI_WINDOW_REC *gui;
-    TEXT_CHUNK_REC *chunk;
+	GUI_WINDOW_REC *gui;
+	TEXT_CHUNK_REC *chunk;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    gui = WINDOW_GUI(window);
-    chunk = gui->text_chunks->data;
+	gui = WINDOW_GUI(window);
+	chunk = gui->text_chunks->data;
 
-    if (--chunk->lines == 0)
-	text_chunk_free(gui, chunk);
+	if (--chunk->lines == 0)
+		text_chunk_free(gui, chunk);
 
-    if (gui->startline->prev == NULL)
-    {
-	gui->startline = gui->startline->next;
-	gui->subline = 0;
-    }
-    if (gui->bottom_startline->prev == NULL)
-    {
-	gui->bottom_startline = gui->bottom_startline->next;
-	gui->bottom_subline = 0;
-    }
+	if (gui->startline->prev == NULL) {
+                /* first line in screen removed */
+		gui->startline = gui->startline->next;
+		gui->subline = 0;
+	}
+	if (gui->bottom_startline->prev == NULL) {
+                /* bottom line removed (shouldn't happen?) */
+		gui->bottom_startline = gui->bottom_startline->next;
+		gui->bottom_subline = 0;
+	}
 
-    window->lines--;
-    g_mem_chunk_free(gui->line_chunk, gui->lines->data);
-    gui->lines = g_list_remove(gui->lines, gui->lines->data);
+	window->lines--;
+	g_mem_chunk_free(gui->line_chunk, gui->lines->data);
+	gui->lines = g_list_remove(gui->lines, gui->lines->data);
 
-    if (gui->startline->prev == NULL && is_window_visible(window))
-	gui_window_redraw(window);
+	if (gui->startline->prev == NULL && is_window_visible(window))
+		gui_window_redraw(window);
 }
 
-static void get_colors(gint flags, gint *fg, gint *bg)
+static void get_colors(int flags, int *fg, int *bg)
 {
-    if (flags & PRINTFLAG_MIRC_COLOR)
-    {
-	/* mirc colors */
-	*fg = *fg < 0 || *fg > 16 ?
-	    current_theme->default_color : mirc_colors[*fg];
-	*bg = *bg < 0 || *bg > 16 ? 0 : mirc_colors[*bg];
-    }
-    else
-    {
-	/* default colors */
-	*fg = *fg < 0 || *fg > 15 ?
-	    current_theme->default_color : *fg;
-	*bg = *bg < 0 || *bg > 15 ? 0 : *bg;
+	if (flags & PRINTFLAG_MIRC_COLOR) {
+		/* mirc colors */
+		*fg = *fg < 0 || *fg > 16 ?
+			current_theme->default_color : mirc_colors[*fg];
+		*bg = *bg < 0 || *bg > 16 ? 0 : mirc_colors[*bg];
+	} else {
+		/* default colors */
+		*fg = *fg < 0 || *fg > 15 ?
+			current_theme->default_color : *fg;
+		*bg = *bg < 0 || *bg > 15 ? 0 : *bg;
 
-	if (*fg > 8) *fg -= 8;
-    }
+		if (*fg > 8) *fg -= 8;
+	}
 
-    if (flags & PRINTFLAG_REVERSE)
-    {
-        gint tmp;
+	if (flags & PRINTFLAG_REVERSE) {
+		int tmp;
 
-        tmp = *fg; *fg = *bg; *bg = tmp;
-    }
+		tmp = *fg; *fg = *bg; *bg = tmp;
+	}
 
-    if (*fg == 8) *fg |= ATTR_COLOR8;
-    if (flags & PRINTFLAG_BOLD) *fg |= 8;
-    if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
-    if (flags & PRINTFLAG_BLINK) *bg |= 0x80;
+	if (*fg == 8) *fg |= ATTR_COLOR8;
+	if (flags & PRINTFLAG_BOLD) *fg |= 8;
+	if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
+	if (flags & PRINTFLAG_BLINK) *bg |= 0x80;
 }
 
-static void linebuf_add(GUI_WINDOW_REC *gui, gchar *str, gint len)
+static void linebuf_add(GUI_WINDOW_REC *gui, char *str, int len)
 {
-    gint left;
+	int left;
 
-    if (len == 0) return;
+	if (len == 0) return;
 
-    while (gui->cur_text->pos+len >= TEXT_CHUNK_USABLE_SIZE)
-    {
-	left = TEXT_CHUNK_USABLE_SIZE-gui->cur_text->pos;
-	if (str[left-1] == 0) left--; /* don't split the command! */
-	memcpy(gui->cur_text->buffer+gui->cur_text->pos, str, left);
-	gui->cur_text->pos += left;
-	create_text_chunk(gui);
-	len -= left; str += left;
-    }
+	while (gui->cur_text->pos + len >= TEXT_CHUNK_USABLE_SIZE) {
+		left = TEXT_CHUNK_USABLE_SIZE - gui->cur_text->pos;
+		if (str[left-1] == 0) left--; /* don't split the commands */
 
-    memcpy(gui->cur_text->buffer+gui->cur_text->pos, str, len);
-    gui->cur_text->pos += len;
+		memcpy(gui->cur_text->buffer + gui->cur_text->pos, str, left);
+		gui->cur_text->pos += left;
+
+		create_text_chunk(gui);
+		len -= left; str += left;
+	}
+
+	memcpy(gui->cur_text->buffer + gui->cur_text->pos, str, len);
+	gui->cur_text->pos += len;
 }
 
-static void line_add_colors(GUI_WINDOW_REC *gui, gint fg, gint bg, gint flags)
+static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 {
-    guchar buffer[12];
-    gint color, pos;
+	unsigned char buffer[12];
+	int color, pos;
 
-    color = (fg & 0x0f) | (bg << 4);
-    pos = 0;
+	color = (fg & 0x0f) | (bg << 4);
+	pos = 0;
 
-    if (((fg & ATTR_COLOR8) == 0 && (fg|(bg << 4)) != gui->last_color) ||
-	((fg & ATTR_COLOR8) && (fg & 0xf0) != (gui->last_color & 0xf0)))
-    {
-	buffer[pos++] = 0;
-	buffer[pos++] = (gchar) color;
-    }
+	if (((fg & ATTR_COLOR8) == 0 && (fg|(bg << 4)) != gui->last_color) ||
+	    ((fg & ATTR_COLOR8) && (fg & 0xf0) != (gui->last_color & 0xf0))) {
+		buffer[pos++] = 0;
+		buffer[pos++] = color;
+	}
 
-    if ((flags & PRINTFLAG_UNDERLINE) != (gui->last_flags & PRINTFLAG_UNDERLINE))
-    {
-	buffer[pos++] = 0;
-	buffer[pos++] = LINE_CMD_UNDERLINE;
-    }
-    if (fg & ATTR_COLOR8)
-    {
-	buffer[pos++] = 0;
-	buffer[pos++] = LINE_CMD_COLOR8;
-    }
-    if (flags & PRINTFLAG_BEEP)
-    {
-	buffer[pos++] = 0;
-	buffer[pos++] = LINE_CMD_BEEP;
-    }
-    if (flags & PRINTFLAG_INDENT)
-    {
-	buffer[pos++] = 0;
-	buffer[pos++] = LINE_CMD_INDENT;
-    }
+	if ((flags & PRINTFLAG_UNDERLINE) != (gui->last_flags & PRINTFLAG_UNDERLINE)) {
+		buffer[pos++] = 0;
+		buffer[pos++] = LINE_CMD_UNDERLINE;
+	}
+	if (fg & ATTR_COLOR8) {
+		buffer[pos++] = 0;
+		buffer[pos++] = LINE_CMD_COLOR8;
+	}
+	if (flags & PRINTFLAG_BEEP) {
+		buffer[pos++] = 0;
+		buffer[pos++] = LINE_CMD_BEEP;
+	}
+	if (flags & PRINTFLAG_INDENT) {
+		buffer[pos++] = 0;
+		buffer[pos++] = LINE_CMD_INDENT;
+	}
 
-    linebuf_add(gui, (gchar *) buffer, pos);
+	linebuf_add(gui, (char *) buffer, pos);
 
-    gui->last_flags = flags;
-    gui->last_color = fg | (bg << 4);
+	gui->last_flags = flags;
+	gui->last_color = fg | (bg << 4);
 }
 
-static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor, gpointer pflags, gchar *str, gpointer level)
+static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor, gpointer pflags, char *str, gpointer level)
 {
-    GUI_WINDOW_REC *gui;
-    LINE_REC *line;
-    gboolean visible;
-    gint fg, bg, flags, lines, n;
+	GUI_WINDOW_REC *gui;
+	LINE_REC *line;
+	int fg, bg, flags, new_lines, n, visible, ypos;
 
-    g_return_if_fail(window != NULL);
+	g_return_if_fail(window != NULL);
 
-    gui = WINDOW_GUI(window);
-    if (max_textwidget_lines > 0 && max_textwidget_lines <= window->lines)
-	remove_first_line(window);
+	gui = WINDOW_GUI(window);
+	if (max_textwidget_lines > 0 && max_textwidget_lines <= window->lines)
+		remove_first_line(window);
 
-    visible = is_window_visible(window) && gui->bottom;
-    flags = GPOINTER_TO_INT(pflags);
-    fg = GPOINTER_TO_INT(fgcolor);
-    bg = GPOINTER_TO_INT(bgcolor);
+	visible = is_window_visible(window) && gui->bottom;
+	flags = GPOINTER_TO_INT(pflags);
+	fg = GPOINTER_TO_INT(fgcolor);
+	bg = GPOINTER_TO_INT(bgcolor);
 
-    if (gui->cur_text == NULL)
-	create_text_chunk(gui);
+	if (gui->cur_text == NULL)
+		create_text_chunk(gui);
 
-    /* \n can be only at the start of the line.. */
-    if (*str == '\n')
-    {
-	linebuf_add(gui, "\0\x80", 2); /* mark EOL */
-	line = create_line(gui, 0);
-	gui_window_newline(gui, visible);
-	str++;
-	gui->cur_text->lines++;
-	gui->last_subline = 0;
-    }
-    else
-    {
-	line = gui->cur_line != NULL ? gui->cur_line :
-	    create_line(gui, 0);
-	if (line->level == 0) line->level = GPOINTER_TO_INT(level);
-    }
+	/* \n can be only at the start of the line.. */
+	if (*str == '\n') {
+		str++;
+		linebuf_add(gui, "\0\x80", 2); /* mark EOL */
 
-    get_colors(flags, &fg, &bg);
-    line_add_colors(gui, fg, bg, flags);
-    linebuf_add(gui, str, strlen(str));
+		line = create_line(gui, 0);
+		gui_window_newline(gui, visible);
 
-    /* temporarily mark the end of line. */
-    memcpy(gui->cur_text->buffer+gui->cur_text->pos, "\0\x80", 2);
+		gui->cur_text->lines++;
+		gui->last_subline = 0;
+	} else {
+		line = gui->cur_line != NULL ? gui->cur_line :
+			create_line(gui, 0);
+		if (line->level == 0) line->level = GPOINTER_TO_INT(level);
+	}
 
-    if (visible)
-    {
-	/* draw the line to screen. */
-	lines = gui_window_line_draw(gui, line, gui->parent->first_line+gui->ypos, gui->last_subline, -1);
-    }
-    else
-    {
-	/* we still need to update the bottom's position */
-	lines = gui_window_get_linecount(gui, line)-1-gui->last_subline;
-	for (n = 0; n < lines; n++)
-	    gui_window_newline(gui, visible);
-    }
-    if (lines > 0) gui->last_subline += lines;
+	get_colors(flags, &fg, &bg);
+	line_add_colors(gui, fg, bg, flags);
+	linebuf_add(gui, str, strlen(str));
+	mark_temp_eol(gui->cur_text);
+
+	gui_window_cache_remove(gui, line);
+	new_lines = gui_window_get_linecount(gui, line)-1 - gui->last_subline;
+
+	for (n = 0; n < new_lines; n++)
+		gui_window_newline(gui, visible);
+
+	if (visible) {
+		/* draw the line to screen. */
+                ypos = gui->parent->first_line+gui->ypos-new_lines;
+		if (new_lines > 0) {
+			set_color(0);
+			move(ypos, 0); clrtoeol();
+		}
+		gui_window_line_draw(gui, line, ypos, gui->last_subline, -1);
+	}
+
+	gui->last_subline += new_lines;
 }
 
-static void cmd_clear(gchar *data)
+static void window_clear(GUI_WINDOW_REC *gui)
 {
-    GUI_WINDOW_REC *gui;
-    gint n;
+	int n;
 
-    gui = WINDOW_GUI(active_win);
+	for (n = gui->parent->first_line; n <= gui->parent->last_line; n++) {
+		move(n, 0);
+		clrtoeol();
+	}
+	screen_refresh();
+}
 
-    if (is_window_visible(active_win))
-    {
-        for (n = gui->parent->first_line; n <= gui->parent->last_line; n++)
-        {
-            move(n, 0);
-            clrtoeol();
-        }
-        screen_refresh();
-    }
+static void cmd_clear(void)
+{
+	GUI_WINDOW_REC *gui;
 
-    gui->ypos = -1;
-    gui->bottom_startline = gui->startline = g_list_last(gui->lines);
-    gui->bottom_subline = gui->subline = gui->last_subline+1;
-    gui->empty_linecount = gui->parent->last_line-gui->parent->first_line+1;
-    gui->bottom = TRUE;
+	gui = WINDOW_GUI(active_win);
+
+	if (is_window_visible(active_win))
+		window_clear(gui);
+
+	gui->ypos = -1;
+	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
+	gui->bottom_subline = gui->subline = gui->last_subline+1;
+	gui->empty_linecount = gui->parent->last_line-gui->parent->first_line+1;
+	gui->bottom = TRUE;
 }
 
 static void sig_printtext_finished(WINDOW_REC *window)
@@ -321,18 +316,18 @@ static void read_settings(void)
 
 void gui_printtext_init(void)
 {
-    signal_add("gui print text", (SIGNAL_FUNC) gui_printtext);
-    command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
-    signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
-    signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("gui print text", (SIGNAL_FUNC) gui_printtext);
+	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 
-    read_settings();
+	read_settings();
 }
 
 void gui_printtext_deinit(void)
 {
-    signal_remove("gui print text", (SIGNAL_FUNC) gui_printtext);
-    command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
-    signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
-    signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("gui print text", (SIGNAL_FUNC) gui_printtext);
+	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
 }

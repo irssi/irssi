@@ -26,20 +26,6 @@
 
 #include "irc-server.h"
 
-static void sig_log(SERVER_REC *server, const char *channel, gpointer level, const char *str)
-{
-	int loglevel;
-
-	g_return_if_fail(str != NULL);
-
-	loglevel = GPOINTER_TO_INT(level);
-	if (loglevel == MSGLEVEL_NEVER || logs == NULL) return;
-
-	/* Check if line should be saved in logs */
-	log_write(channel, loglevel, str);
-}
-
-
 static void event_away(const char *data, IRC_SERVER_REC *server)
 {
 	const char *fname, *levelstr;
@@ -93,14 +79,12 @@ void irc_log_init(void)
 	settings_add_str("log", "awaylog_file", "~/.irssi/away.log");
 	settings_add_str("log", "awaylog_level", "msgs hilight");
 
-	signal_add("print text stripped", (SIGNAL_FUNC) sig_log);
 	signal_add("event 306", (SIGNAL_FUNC) event_away);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
 }
 
 void irc_log_deinit(void)
 {
-	signal_remove("print text stripped", (SIGNAL_FUNC) sig_log);
 	signal_remove("event 306", (SIGNAL_FUNC) event_away);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
 }

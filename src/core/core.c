@@ -43,9 +43,9 @@ void core_init(void)
 	net_disconnect_init();
 	signals_init();
 	settings_init();
+	commands_init();
 
 	servers_init();
-	commands_init();
 	log_init();
 	rawlog_init();
 	special_vars_init();
@@ -56,9 +56,9 @@ void core_deinit(void)
 	special_vars_deinit();
 	rawlog_deinit();
 	log_deinit();
-	commands_deinit();
 	servers_deinit();
 
+	commands_deinit();
 	settings_deinit();
 	signals_deinit();
 	net_disconnect_deinit();

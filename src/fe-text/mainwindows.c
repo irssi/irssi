@@ -347,6 +347,17 @@ static void mainwindows_resize_bigger(int ychange, int xchange)
 	g_slist_free(sorted);
 }
 
+void mainwindows_resize_horiz(int xchange)
+{
+	GSList *tmp;
+
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		mainwindow_resize(rec, 0, xchange);
+	}
+}
+
 void mainwindows_resize(int ychange, int xchange)
 {
 	screen_refresh_freeze();
@@ -354,6 +365,8 @@ void mainwindows_resize(int ychange, int xchange)
 		mainwindows_resize_smaller(ychange, xchange);
 	else if (ychange > 0)
 		mainwindows_resize_bigger(ychange, xchange);
+	else if (xchange != 0)
+		mainwindows_resize_horiz(xchange);
 
 	irssi_redraw();
 	screen_refresh_thaw();
@@ -595,6 +608,9 @@ void mainwindows_init(void)
 
 void mainwindows_deinit(void)
 {
+	while (mainwindows != NULL)
+		mainwindow_destroy(mainwindows->data);
+
 	command_unbind("window grow", (SIGNAL_FUNC) cmd_window_grow);
 	command_unbind("window shrink", (SIGNAL_FUNC) cmd_window_shrink);
 	command_unbind("window size", (SIGNAL_FUNC) cmd_window_size);

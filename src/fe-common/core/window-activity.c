@@ -26,13 +26,11 @@
 #include "windows.h"
 #include "window-items.h"
 
-static void sig_hilight_text(SERVER_REC *server, const char *channel, gpointer levelptr, const char *msg)
+static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer levelptr, const char *msg)
 {
-	WINDOW_REC *window;
 	int level, oldlevel;
 
 	level = GPOINTER_TO_INT(levelptr);
-	window = window_find_closest(server, channel, level);
 	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT|MSGLEVEL_MSGS)))
 		return;
 

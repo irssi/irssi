@@ -13,5 +13,6 @@ libfe_common_irc_flood_la_SOURCES = \
 	fe-flood.c \
 	module-formats.c
 
-noinst_headers = \
+noinst_HEADERS = \
+	module.h \
 	module-formats.h

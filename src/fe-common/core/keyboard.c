@@ -258,12 +258,6 @@ static void read_keyboard_config(void)
 	CONFIG_NODE *node;
 	GSList *tmp;
 
-	while (keyinfos != NULL)
-		keyinfo_remove(keyinfos->data);
-	if (keys != NULL) g_hash_table_destroy(keys);
-
-	keys = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
-
 	node = iconfig_node_traverse("keyboard", FALSE);
 	if (node == NULL) return;
 
@@ -280,7 +274,9 @@ static void read_keyboard_config(void)
 
 void keyboard_init(void)
 {
-	keyinfos = NULL; keys = NULL;
+	keys = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	keyinfos = NULL;
+
 	key_bind("command", NULL, "Run any IRC command", NULL, (SIGNAL_FUNC) sig_command);
 
 	read_keyboard_config();
