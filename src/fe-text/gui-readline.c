@@ -210,11 +210,20 @@ void handle_key(int key)
 		gui_entry_erase(1);
 		break;
 
+	case 4:
 	case KEY_DC:
 		if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
 			gui_entry_move_pos(1);
 			gui_entry_erase(1);
 		}
+		break;
+
+	case 11:
+		/* C-K - erase the rest of the line */
+		c = gui_entry_get_pos();
+		gui_entry_set_pos(strlen(gui_entry_get_text()));
+		gui_entry_erase(strlen(gui_entry_get_text()) - c);
+		gui_entry_move_pos(0);
 		break;
 
 	case 0:
