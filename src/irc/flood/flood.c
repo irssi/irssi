@@ -167,6 +167,7 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick, co
 	if (rec != NULL) {
 		if (++rec->msgcount > flood_max_msgs) {
 			/* flooding! */
+                        rec->first = 0;
 			signal_emit("flood", 5, server, nick, host, GINT_TO_POINTER(rec->level), target);
 		}
 		return;
@@ -242,14 +243,8 @@ static void flood_ctcp(const char *data, IRC_SERVER_REC *server, const char *nic
 
 static void read_settings(void)
 {
-	int time;
-
 	flood_timecheck = settings_get_int("flood_timecheck");
 	flood_max_msgs = settings_get_int("flood_max_msgs");
-
-	time = flood_timecheck > 500 ? 500 :
-		(flood_timecheck > 0 && flood_timecheck < 100) ? 100 :
-		flood_timecheck;
 
 	if (flood_tag != -1) {
 		g_source_remove(flood_tag);
@@ -257,7 +252,7 @@ static void read_settings(void)
 	}
 
 	if (time > 0 && flood_max_msgs > 0) {
-		flood_tag = g_timeout_add(time, (GSourceFunc) flood_timeout, NULL);
+		flood_tag = g_timeout_add(500, (GSourceFunc) flood_timeout, NULL);
 		signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_add("event notice", (SIGNAL_FUNC) flood_notice);
 		signal_add("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
@@ -267,8 +262,8 @@ static void read_settings(void)
 
 void irc_flood_init(void)
 {
-	settings_add_int("flood", "flood_timecheck", 8000);
-	settings_add_int("flood", "flood_max_msgs", 5);
+	settings_add_int("flood", "flood_timecheck", 8);
+	settings_add_int("flood", "flood_max_msgs", 4);
 
 	flood_tag = -1;
 	read_settings();

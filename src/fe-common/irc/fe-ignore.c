@@ -155,7 +155,7 @@ static void cmd_ignore(const char *data)
 	args = "pattern channels";
 	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
 				&args, &patternarg, &chanarg, &mask, &levels);
-	if (levels == 0) cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*levels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (ischannel(*mask)) {
 		chanarg = mask;

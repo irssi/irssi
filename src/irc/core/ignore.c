@@ -248,11 +248,14 @@ void ignore_add_rec(IGNORE_REC *rec)
 {
 	ignores = g_slist_append(ignores, rec);
 	ignore_set_config(rec);
+
+	signal_emit("ignore created", 1, rec);
 }
 
 static void ignore_destroy(IGNORE_REC *rec)
 {
 	ignores = g_slist_remove(ignores, rec);
+	signal_emit("ignore destroyed", 1, rec);
 
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->mask);
@@ -274,6 +277,8 @@ void ignore_update_rec(IGNORE_REC *rec)
 
 		ignores = g_slist_append(ignores, rec);
 		ignore_set_config(rec);
+
+		signal_emit("ignore changed", 1, rec);
 	}
 }
 

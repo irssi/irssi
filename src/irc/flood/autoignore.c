@@ -230,6 +230,32 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 		autoignore_add(server, nick, level);
 }
 
+static void autoignore_remove_level(const char *nick, int level)
+{
+	AUTOIGNORE_REC *rec;
+	GSList *tmp;
+
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *server = tmp->data;
+
+		rec = autoignore_find(server, nick);
+		if (rec != NULL && (rec->level & level)) {
+			rec->level &= ~level;
+			if (rec->level == 0) autoignore_remove_rec(server, rec);
+		}
+	}
+}
+
+static void sig_ignore_destroyed(IGNORE_REC *ignore)
+{
+        autoignore_remove_level(ignore->mask, MSGLEVEL_ALL);
+}
+
+static void sig_ignore_changed(IGNORE_REC *ignore)
+{
+        autoignore_remove_level(ignore->mask, ~ignore->level);
+}
+
 void autoignore_init(void)
 {
 	settings_add_int("flood", "autoignore_time", 300);
@@ -240,6 +266,8 @@ void autoignore_init(void)
 	signal_add("server connected", (SIGNAL_FUNC) autoignore_init_server);
 	signal_add("server disconnected", (SIGNAL_FUNC) autoignore_deinit_server);
 	signal_add("flood", (SIGNAL_FUNC) sig_flood);
+	signal_add("ignore destroyed", (SIGNAL_FUNC) sig_ignore_destroyed);
+	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_changed);
 }
 
 void autoignore_deinit(void)
@@ -249,4 +277,6 @@ void autoignore_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) autoignore_init_server);
 	signal_remove("server disconnected", (SIGNAL_FUNC) autoignore_deinit_server);
 	signal_remove("flood", (SIGNAL_FUNC) sig_flood);
+	signal_remove("ignore destroyed", (SIGNAL_FUNC) sig_ignore_destroyed);
+	signal_remove("ignore changed", (SIGNAL_FUNC) sig_ignore_changed);
 }
