@@ -106,8 +106,6 @@ void fe_common_core_init(void)
 	keyboard_init();
 	printtext_init();
 	formats_init();
-        fe_channels_init();
-        fe_queries_init();
 	fe_ignore_init();
 	fe_log_init();
 	fe_modules_init();
@@ -120,6 +118,9 @@ void fe_common_core_init(void)
 	window_items_init();
 	window_save_init();
 	fe_core_commands_init();
+
+        fe_channels_init();
+        fe_queries_init();
 
 	fe_messages_init();
 	fe_ignore_messages_init();
@@ -134,8 +135,6 @@ void fe_common_core_deinit(void)
 	keyboard_deinit();
 	printtext_deinit();
 	formats_deinit();
-        fe_channels_deinit();
-        fe_queries_deinit();
 	fe_ignore_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
@@ -148,6 +147,9 @@ void fe_common_core_deinit(void)
 	window_items_deinit();
 	window_save_deinit();
 	fe_core_commands_deinit();
+
+        fe_channels_deinit();
+        fe_queries_deinit();
 
 	fe_messages_deinit();
 	fe_ignore_messages_init();
