@@ -361,8 +361,6 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 		gui->cur_text->lines++;
 		gui->last_subline = 0;
 	} else {
-		if (gui->eol_marked)
-			g_warning("gui_printtext(): eol_marked");
 		line = gui->temp_line != NULL ? gui->temp_line :
 			gui->cur_line != NULL ? gui->cur_line :
 			create_line(gui, 0);

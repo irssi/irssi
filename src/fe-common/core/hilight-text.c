@@ -138,12 +138,6 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 
 static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
 {
-	if (hilight_next)
-		signal_stop();
-}
-
-static void sig_print_text_finished(TEXT_DEST_REC *dest, const char *str)
-{
 	if (hilight_next) {
 		hilight_next = FALSE;
 		signal_stop();
@@ -487,7 +481,6 @@ void hilight_text_init(void)
 	settings_add_bool("misc", "hilight_only_nick", TRUE);
 
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
-	signal_add_first("print text finished", (SIGNAL_FUNC) sig_print_text_finished);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
         signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message);
@@ -503,7 +496,6 @@ void hilight_text_deinit(void)
 	hilights_destroy_all();
 
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
-	signal_remove("print text finished", (SIGNAL_FUNC) sig_print_text_finished);
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
         signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
         signal_remove("message public", (SIGNAL_FUNC) sig_message);
