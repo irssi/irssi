@@ -109,7 +109,7 @@ echo "Running aclocal $aclocalinclude ..."
 
 # see if we don't have glib.m4 or glib-2.0.m4 there yet
 error=`aclocal $aclocalinclude 2>&1`
-if test "x`echo $error|grep AM_PATH_GLIB[^_]`" != "x"; then
+if test "x`echo $error|grep 'AM_PATH_GLIB[^_]'`" != "x"; then
   cp glib.m4_ glib.m4
   error=`aclocal $aclocalinclude 2>&1`
 fi
