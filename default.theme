@@ -81,7 +81,7 @@ abstracts = {
   dcc = "%g$0-%n";
   dccfile = "%_$0-%_";
   
-  dccownmsg = "[%r$0%K(%R$1-%K)%n%n] ";
+  dccownmsg = "[%r$0%K(%R$1-%K)%n] ";
   dccownaction = "{action $0-}";
   dccmsg = "[%G$1-%K(%g$0%K)%n] ";
   dccquerynick = "%G$0-%n";

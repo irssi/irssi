@@ -1,81 +1,81 @@
 abstracts = {
-# generic
+  # generic
   line_start = "-!- ";
+  timestamp = "$0-"
   hilight = "%_$0-%_";
   error = "$0-";
-
+  
   channel = "%_$0-%_";
   nick = "%_$0-%_";
   nickhost = "[$0-]";
   server = "%_$0-%_";
-  reason = "[$0-]";
-
-# channel specific messages
+  comment = "[$0-]";
+  reason = "{comment $0-}";
+  mode = "{comment $0-}";
+  
+  # channel specific messages
   channick_hilight = "$0-";
   chanhost_hilight = "{nickhost $0-}";
   channick = "$0-";
   chanhost = "{nickhost $0-}";
   channelhilight = "$0-";
   ban = "$0-";
-
-# messages
+  
+  # messages
   msgnick = "<$0-> %|";
+  ownmsgnick = "{msgnick $0-}";
+  pubmsgnick = "{msgnick $0-}";
+  pubmsgmenick = "{msgnick $0-}";
+  pubmsghinick = "{msgnick $1$0$2-}";
   msgownnick = "$0-";
   msgchannel = ":$0-";
   msgme = "%_$0-%_";
-  privmsg = "[$0-] "
-  privmsgnick = "$0-"
-  privmsghost = "($0-)";
-  ownprivmsg = "[$0-] ";
-  ownprivmsgdest = "($0-)";
-
-# actions
+  privmsg = "[$0($1-)] ";
+  privmsgnick = "{msgnick $0-}";
+  ownprivmsg = "[$0($1-)-] ";
+  
+  # actions
   action = " * $0- ";
   ownaction = "{action $0-}";
   pvtaction = " (*) $0- ";
   pvtaction_query = "{action $0-}";
   pubaction = "{action $0-}";
-
-# notices
-  ownnotice = "[$0-] ";
-  ownnotice_target = "($0-)";
+  
+  # notices
+  ownnotice = "[$0($1-)] ";
   notice = "-$0-- ";
   pubnotice_channel = ":$0-";
-  pvtnotice_nick = "($0-)";
+  pvtnotice_host = "($0-)";
   servernotice = "!$0- ";
-
-# ctcp
-  ownctcp = "[$0-] ";
-  ownctcp_target = "($0-)";
+  
+  # ctcp
+  ownctcp = "[$0($1-)] ";
   ctcp = "$0-";
-
-# wall
-  ownwall = "[$0-] ";
-  ownwall_channel = "/$0-";
-
-# wallops
+  
+  # wall
+  ownwall = "[$0/$1-] ";
+  
+  # wallops
   wallop = "$0-: ";
   wallop_nick = "$0-";
   wallop_action = " * $0- ";
-
-# netsplits
+  
+  # netsplits
   netsplit = "$0-";
   netjoin = "$0-";
-
-# /names list
-  names_nickstat = "%_$0-%_";
+  
+  # /names list
+  names_nick = "[%_$0%_$1-] ";
   names_users = "[$0-]";
   names_channel = "$0-";
-
-# dcc
+  
+  # dcc
   dcc = "$0-";
   dccfile = "%_$0-%_";
-
-  dccownmsg = "[$0-] ";
-  dccownnick = "($0)";
+  
+  dccownmsg = "[$0($1-)] ";
   dccownaction = "{action $0-}";
-  dccmsg = "[$0-] "
-  dccmsghost = "($0-)";
+  dccmsg = "[$1-($0)] ";
   dccquerynick = "$0-";
   dccaction = " (*dcc*) $0- %|";
 };
