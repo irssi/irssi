@@ -513,13 +513,14 @@ static void event_error(IRC_SERVER_REC *server, const char *data)
 
 static void event_ping(IRC_SERVER_REC *server, const char *data)
 {
-	char *str;
+	char *params, *origin, *target, *str;
 
-	g_return_if_fail(data != NULL);
-
-	str = g_strdup_printf("PONG %s", data);
+	params = event_get_params(data, 2, &origin, &target);
+	str = *target == '\0' ? g_strconcat("PONG :", origin, NULL) :
+		g_strdup_printf("PONG %s :%s", target, origin);
 	irc_send_cmd_now(server, str);
-	g_free(str);
+        g_free(str);
+	g_free(params);
 }
 
 static void event_empty(void)
