@@ -194,7 +194,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 		/* notice from server */
 		if (!ignore_check(server, nick, "",
 				  target, msg, MSGLEVEL_SNOTES)) {
-			printformat(server, target, MSGLEVEL_SNOTES,
+			printformat(server, NULL, MSGLEVEL_SNOTES,
 				    IRCTXT_NOTICE_SERVER, nick, msg);
 		}
                 return;
