@@ -150,7 +150,11 @@ install-exec-local:
 	done
 
 clean-generic:
-	for dir in $(perl_dirs); do rm -f $$dir/Makefile; done
+	for dir in $(perl_dirs); do \
+	  cd $$dir; \
+	  $(MAKE) clean; \
+	  cd ..; \
+	done
 
 distclean-generic:
 	for dir in $(perl_dirs); do \
