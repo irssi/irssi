@@ -10,6 +10,6 @@ char *name;
 
 time_t createtime;
 int data_level;
-int hilight_color;
+int hilight_color, hilight_bg_color;
 
 #undef STRUCT_SERVER_REC

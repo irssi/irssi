@@ -38,7 +38,7 @@ typedef struct {
 	int level;
 
 	int hilight_priority;
-        int hilight_color;
+	int hilight_color, hilight_bg_color;
 } TEXT_DEST_REC;
 
 int format_find_tag(const char *module, const char *tag);

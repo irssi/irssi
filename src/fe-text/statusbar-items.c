@@ -353,9 +353,14 @@ static void draw_activity(gchar *title, gboolean act, gboolean det, int size)
 		set_color(stdscr, sbar_color_bold);
 		break;
 	default:
-		if (window->hilight_color > 0)
-			set_color(stdscr, sbar_color_background | mirc_colors[window->hilight_color%16]);
-		else
+		if (window->hilight_color > 0) {
+			int bg;
+
+			bg = window->hilight_bg_color == -1 ?
+				sbar_color_background :
+                                (window->hilight_bg_color << 4);
+			set_color(stdscr, bg | mirc_colors[window->hilight_color%16]);
+		} else
 			set_color(stdscr, sbar_color_act_highlight);
 		break;
 	}

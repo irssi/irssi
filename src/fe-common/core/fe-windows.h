@@ -42,7 +42,7 @@ typedef struct {
 	int histlines;
 
 	int data_level; /* current data level */
-	int hilight_color; /* current hilight color */
+	int hilight_color, hilight_bg_color; /* current hilight color */
 
 	time_t last_timestamp; /* When was last timestamp printed */
 	time_t last_line; /* When was last line printed */

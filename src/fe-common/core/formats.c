@@ -213,6 +213,7 @@ void format_create_dest(TEXT_DEST_REC *dest,
 
 	dest->hilight_priority = 0;
         dest->hilight_color = 0;
+        dest->hilight_bg_color = 0;
 }
 
 static char *format_get_text_args(TEXT_DEST_REC *dest,

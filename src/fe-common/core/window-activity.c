@@ -35,8 +35,8 @@
 static char **hide_targets;
 static int hide_level, msg_level, hilight_level;
 
-static void window_activity(WINDOW_REC *window,
-			    int data_level, int hilight_color)
+static void window_activity(WINDOW_REC *window, int data_level,
+			    int hilight_color, int hilight_bg_color)
 {
 	int old_data_level;
 
@@ -44,6 +44,7 @@ static void window_activity(WINDOW_REC *window,
 	if (data_level == 0 || window->data_level < data_level) {
 		window->data_level = data_level;
 		window->hilight_color = hilight_color;
+		window->hilight_bg_color = hilight_bg_color;
 		signal_emit("window hilight", 1, window);
 	}
 
@@ -51,8 +52,8 @@ static void window_activity(WINDOW_REC *window,
 		    GINT_TO_POINTER(old_data_level));
 }
 
-static void window_item_activity(WI_ITEM_REC *item,
-				 int data_level, int hilight_color)
+static void window_item_activity(WI_ITEM_REC *item, int data_level,
+				 int hilight_color, int hilight_bg_color)
 {
 	int old_data_level;
 
@@ -60,6 +61,7 @@ static void window_item_activity(WI_ITEM_REC *item,
 	if (data_level == 0 || item->data_level < data_level) {
 		item->data_level = data_level;
 		item->hilight_color = hilight_color;
+		item->hilight_bg_color = hilight_bg_color;
 		signal_emit("window item hilight", 1, item);
 	}
 
@@ -94,10 +96,12 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 		item = window_item_find(dest->server, dest->target);
 		if (item != NULL) {
 			window_item_activity(item, data_level,
-					     dest->hilight_color);
+					     dest->hilight_color,
+					     dest->hilight_bg_color);
 		}
 	}
-	window_activity(dest->window, data_level, dest->hilight_color);
+	window_activity(dest->window, data_level,
+			dest->hilight_color, dest->hilight_bg_color);
 }
 
 static void sig_dehilight_window(WINDOW_REC *window)
@@ -107,9 +111,9 @@ static void sig_dehilight_window(WINDOW_REC *window)
 	g_return_if_fail(window != NULL);
 
 	if (window->data_level != 0) {
-		window_activity(window, 0, 0);
+		window_activity(window, 0, 0, 0);
 		for (tmp = window->items; tmp != NULL; tmp = tmp->next)
-			window_item_activity(tmp->data, 0, 0);
+			window_item_activity(tmp->data, 0, 0, 0);
 	}
 }
 

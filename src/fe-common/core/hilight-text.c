@@ -291,11 +291,32 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
         return NULL;
 }
 
+static int get_colors(const char *color, int *fg, int *bg)
+{
+	const char *p;
+
+	if (!is_numeric(color, ','))
+                return FALSE;
+
+	*fg = atoi(color);
+        *bg = -1;
+
+	p = strchr(color, ',');
+	if (p != NULL) {
+		p++;
+		if (!is_numeric(p, '\0'))
+                        return FALSE;
+		*bg = atoi(p);
+	}
+
+        return TRUE;
+}
+
 char *hilight_get_color(HILIGHT_REC *rec, int activity)
 {
 	const char *color;
 	char number[MAX_INT_STRLEN];
-        int colornum;
+        int colornum, fg, bg;
 
 	g_return_val_if_fail(rec != NULL, NULL);
 
@@ -315,15 +336,16 @@ char *hilight_get_color(HILIGHT_REC *rec, int activity)
 		color = number;
 	}
 
-	if (is_numeric(color, 0))
-                return g_strdup_printf("\003%02d", atoi(color));
-
+	if (get_colors(color, &fg, &bg)) {
+		return bg == -1 ? g_strdup_printf("\003%02d", fg) :
+			g_strdup_printf("\003%d,%02d", fg, bg);
+	}
 	return g_strdup(color);
 }
 
 static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 {
-	char *color;
+	char *color, *bgcolor;
 
 	dest->level |= MSGLEVEL_HILIGHT;
 
@@ -331,8 +353,14 @@ static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 		dest->hilight_priority = rec->priority;
 
 	color = hilight_get_color(rec, TRUE);
-	if (*color == 3)
+	if (*color == 3) {
 		dest->hilight_color = atoi(color+1);
+                bgcolor = color+1;
+		while (*bgcolor != ',' && *bgcolor != '\0')
+			bgcolor++;
+		dest->hilight_bg_color = *bgcolor != ',' ? -1 :
+			atoi(bgcolor+1);
+	}
 	g_free(color);
 }
 
