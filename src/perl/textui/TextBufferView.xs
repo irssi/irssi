@@ -1,12 +1,13 @@
 MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
 
 Irssi::TextUI::TextBufferView
-textbuffer_view_create(buffer, width, height, default_indent, longword_noindent)
+textbuffer_view_create(buffer, width, height, default_indent, longword_noindent, scroll)
 	Irssi::TextUI::TextBuffer buffer
 	int width
 	int height
 	int default_indent
 	int longword_noindent
+	int scroll
 
 #*******************************
 MODULE = Irssi::TextUI  PACKAGE = Irssi::TextUI::TextBufferView  PREFIX = textbuffer_view_
@@ -21,6 +22,11 @@ textbuffer_view_set_default_indent(view, default_indent, longword_noindent)
 	Irssi::TextUI::TextBufferView view
 	int default_indent
 	int longword_noindent
+
+void
+textbuffer_view_set_scroll(view, scroll)
+	Irssi::TextUI::TextBufferView view
+	int scroll
 
 void
 textbuffer_view_resize(view, width, height)
