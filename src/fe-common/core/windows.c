@@ -361,22 +361,24 @@ int windows_refnum_last(void)
 	return max;
 }
 
-static void sig_server_looking(void *server)
+static void sig_server_looking(SERVER_REC *server)
 {
 	GSList *tmp;
 
 	g_return_if_fail(server != NULL);
 
-	/* try to keep some server assigned to windows.. */
+	/* Try to keep some server assigned to windows..
+	   Also change active window's server if the window is empty */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->active_server == NULL)
-			window_change_server(rec, server);
+		if (rec->active_server == NULL ||
+		    (rec == active_win && rec->items == NULL))
+			window_change_server(active_win, server);
 	}
 }
 
-static void sig_server_disconnected(void *server)
+static void sig_server_disconnected(SERVER_REC *server)
 {
 	GSList *tmp;
         SERVER_REC *new_server;
