@@ -88,8 +88,8 @@ static void gui_window_created(WINDOW_REC *window, void *automatic)
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
 
-	if (settings_get_bool("autostick_split_windows") &&
-	    automatic == NULL && (parent->sticky_windows || empty_window))
+	if ((automatic == NULL && parent->sticky_windows) ||
+	    (empty_window && settings_get_bool("autostick_split_windows")))
 		gui_window_set_sticky(window);
 
 	signal_emit("gui window created", 1, window);
