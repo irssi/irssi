@@ -617,8 +617,7 @@ if test "$want_perl" != "no"; then
 		echo "main(){perl_alloc(); return 0;}" > conftest.c
 		$CC $CFLAGS conftest.c -c -o conftest.o 2> perl.error.tmp > /dev/null
 		if test -s conftest.o; then
-			$LD conftest.o -o conftest $LDFLAGS $PERL_LDFLAGS 2
-> perl.error.tmp > /dev/null
+			$LD conftest.o -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
 		fi
 		if test ! -s conftest; then
 			perl_check_error="Error linking with perl libraries: $PERL_LDFLAGS: `cat perl.error.tmp`"
