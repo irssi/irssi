@@ -26,46 +26,50 @@
 extern GList *aliases, *ignores, *completions, *notifies, *hilights, *replaces, *popups;
 
 /* servers */
-typedef struct
-{
-    gchar *server;
-    gchar *ircnet;
-    gchar *password;
-    gint port;
-    gboolean autoconnect;
-    gint cmd_queue_speed; /* override the default if > 0 */
-    time_t last_connect; /* to avoid reconnecting too fast.. */
-}
-SETUP_SERVER_REC;
+typedef struct {
+	char *server;
+	int port;
 
-typedef struct
-{
-    gchar *name;
-    gchar *nick;
-    gchar *username;
-    gchar *realname;
-    gint max_kicks, max_msgs, max_modes; /* max. number of kicks/msgs/mode changes per command */
-}
-IRCNET_REC;
+	char *ircnet;
+	char *password;
+	int autoconnect;
+	int cmd_queue_speed; /* override the default if > 0 */
+
+        char *own_address; /* address to use when connecting this server */
+	IPADDR own_ip; /* resolved own_address or full of zeros */
+
+	time_t last_connect; /* to avoid reconnecting too fast.. */
+	int last_failed; /* if last connection attempt failed */
+} SETUP_SERVER_REC;
+
+typedef struct {
+	char *name;
+
+	char *nick;
+	char *username;
+	char *realname;
+
+	/* max. number of kicks/msgs/mode changes per command */
+	int max_kicks, max_msgs, max_modes;
+} IRCNET_REC;
 
 extern GList *setupservers; /* list of local servers */
 extern GList *ircnets; /* list of available ircnets */
 
 /* channels */
-typedef struct
-{
-    gboolean autojoin;
-    gchar *name;
-    gchar *ircnet;
-    gchar *password;
+typedef struct {
+    int autojoin;
 
-    gchar *botmasks;
-    gchar *autosendcmd;
+    char *name;
+    char *ircnet;
+    char *password;
 
-    gchar *background;
-    gchar *font;
-}
-SETUP_CHANNEL_REC;
+    char *botmasks;
+    char *autosendcmd;
+
+    char *background;
+    char *font;
+} SETUP_CHANNEL_REC;
 
 extern GList *setupchannels;
 
