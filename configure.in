@@ -27,21 +27,6 @@ AC_ARG_WITH(socks,
 	fi,
 	want_socks=no)
 
-AC_ARG_WITH(mysql,
-[  --with-mysql            Build MySQL plugin],
-	if test x$withval = xyes; then
-    		want_mysql=yes
-		MYSQL_LIBS="-L/usr/lib/mysql -lmysqlclient"
-	else
-    		if test "x$withval" = xno; then
-        		want_mysql=no
-    		else
-        		want_mysql=yes
-			MYSQL_LIBS="-L$withval/lib/mysql -lmysqlclient"
-    		fi
-	fi,
-	want_mysql=no)
-
 AC_ARG_WITH(textui,
 [  --with-textui           Build text frontend],
 	if test x$withval = xyes; then
@@ -214,12 +199,18 @@ if test "x$want_textui" = "xyes"; then
 		AC_CHECK_LIB(ncurses, resizeterm, [
 			AC_DEFINE(HAVE_CURSES_RESIZETERM)
 		],, $CURSES_LIBS)
+		AC_CHECK_LIB(ncurses, wresize, [
+			AC_DEFINE(HAVE_CURSES_WRESIZE)
+		],, $CURSES_LIBS)
 	else
 		AC_CHECK_LIB(curses, idcok, [
 			AC_DEFINE(HAVE_CURSES_IDCOK)
 		],, $CURSES_LIBS)
 		AC_CHECK_LIB(curses, resizeterm, [
 			AC_DEFINE(HAVE_CURSES_RESIZETERM)
+		],, $CURSES_LIBS)
+		AC_CHECK_LIB(curses, wresize, [
+			AC_DEFINE(HAVE_CURSES_WRESIZE)
 		],, $CURSES_LIBS)
 	fi
 
@@ -268,10 +259,7 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
 AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
-AM_CONDITIONAL(HAVE_MYSQL, test "$want_mysql" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" = "yes")
-
-AC_SUBST(MYSQL_LIBS)
 
 dnl **
 dnl ** Keep all the libraries here so each frontend doesn't need to
