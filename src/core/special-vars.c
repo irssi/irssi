@@ -546,25 +546,28 @@ void eval_special_string(const char *cmd, const char *data,
 	/* get a list of all the commands to run */
 	orig = start = str = g_strdup(cmd);
 	do {
-		if (is_split_char(str, start))
+		if (is_split_char(str, start)) {
 			*str++ = '\0';
-		else if (*str != '\0') {
+                        while (*str == ' ') str++;
+		} else if (*str != '\0') {
 			str++;
 			continue;
 		}
 
 		ret = parse_special_string(start, server, item,
 					   data, &arg_used, 0);
-		if (arg_used) arg_used_ever = TRUE;
+		if (*ret != '\0') {
+			if (arg_used) arg_used_ever = TRUE;
 
-		if (strchr(cmdchars, *ret) == NULL) {
-                        /* no command char - let's put it there.. */
-			char *old = ret;
+			if (strchr(cmdchars, *ret) == NULL) {
+				/* no command char - let's put it there.. */
+				char *old = ret;
 
-			ret = g_strdup_printf("%c%s", *cmdchars, old);
-			g_free(old);
+				ret = g_strdup_printf("%c%s", *cmdchars, old);
+				g_free(old);
+			}
+			commands = g_slist_append(commands, ret);
 		}
-		commands = g_slist_append(commands, ret);
 		start = str;
 	} while (*start != '\0');
 
