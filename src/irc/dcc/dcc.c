@@ -265,7 +265,7 @@ static void dcc_get_address(const char *str, IPADDR *ip)
 
 	if (strchr(str, ':') == NULL) {
 		/* normal IPv4 address in 32bit number form */
-		addr = atol(str);
+                addr = strtoul(str, NULL, 10);
 		ip->family = AF_INET;
 		addr = (unsigned long) ntohl(addr);
 		memcpy(&ip->addr, &addr, 4);
