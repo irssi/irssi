@@ -137,7 +137,8 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 void
-abstracts_register(SV *abstracts)
+abstracts_register(abstracts)
+	SV *abstracts
 PREINIT:
 	AV *av;
 	char *key, *value;
