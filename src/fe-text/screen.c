@@ -135,7 +135,7 @@ static int init_curses(void)
 	act.sa_handler = sig_winch;
 	sigaction(SIGWINCH, &act, NULL);
 #endif
-	cbreak(); noecho(); idlok(stdscr, 1);
+	raw(); noecho(); idlok(stdscr, 1);
 #ifdef HAVE_CURSES_IDCOK
 	idcok(stdscr, 1);
 #endif
