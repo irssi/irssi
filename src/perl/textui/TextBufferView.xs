@@ -4,11 +4,12 @@ MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::TextUI::TextBuffer  PRE
 PROTOTYPES: ENABLE
 
 Irssi::TextUI::TextBufferView
-textbuffer_view_create(buffer, width, height, scroll)
+textbuffer_view_create(buffer, width, height, scroll, utf8)
 	Irssi::TextUI::TextBuffer buffer
 	int width
 	int height
 	int scroll
+	int utf8
 
 #*******************************
 MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::TextUI::TextBufferView  PREFIX = textbuffer_view_
