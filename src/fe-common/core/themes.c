@@ -202,13 +202,11 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 			if (**format == 'n')
                                 chr = default_color;
 
-			if (chr != *last_color) {
-				if (IS_COLOR_FORMAT(chr))
-					*last_color = chr;
+			if (IS_COLOR_FORMAT(chr))
+				*last_color = chr;
 
-				g_string_append_c(str, '%');
-				g_string_append_c(str, chr);
-			}
+			g_string_append_c(str, '%');
+			g_string_append_c(str, chr);
 			(*format)++;
 			return;
 		}
