@@ -76,9 +76,8 @@ void ircnet_create(IRCNET_REC *ircnet)
         ircnet_config_add(ircnet);
 }
 
-void ircnet_destroy(IRCNET_REC *ircnet)
+static void ircnet_destroy_rec(IRCNET_REC *ircnet)
 {
-        ircnet_config_remove(ircnet);
 	ircnets = g_slist_remove(ircnets, ircnet);
 
 	g_free(ircnet->name);
@@ -88,6 +87,12 @@ void ircnet_destroy(IRCNET_REC *ircnet)
 	g_free_not_null(ircnet->own_host);
 	g_free_not_null(ircnet->autosendcmd);
 	g_free(ircnet);
+}
+
+void ircnet_destroy(IRCNET_REC *ircnet)
+{
+	ircnet_config_remove(ircnet);
+        ircnet_destroy_rec(ircnet);
 }
 
 /* Find the irc network by name */
@@ -141,7 +146,7 @@ static void read_ircnets(void)
 	GSList *tmp;
 
 	while (ircnets != NULL)
-		ircnet_destroy(ircnets->data);
+		ircnet_destroy_rec(ircnets->data);
 
 	/* read ircnets */
 	node = iconfig_node_traverse("ircnets", FALSE);

@@ -73,11 +73,10 @@ void channels_setup_create(SETUP_CHANNEL_REC *channel)
         channel_config_add(channel);
 }
 
-void channels_setup_destroy(SETUP_CHANNEL_REC *channel)
+static void channels_setup_destroy_rec(SETUP_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-        channel_config_remove(channel);
 	setupchannels = g_slist_remove(setupchannels, channel);
 
 	g_free(channel->name);
@@ -88,6 +87,12 @@ void channels_setup_destroy(SETUP_CHANNEL_REC *channel)
 	g_free_not_null(channel->background);
 	g_free_not_null(channel->font);
 	g_free(channel);
+}
+
+void channels_setup_destroy(SETUP_CHANNEL_REC *channel)
+{
+        channel_config_remove(channel);
+        channels_setup_destroy_rec(channel);
 }
 
 SETUP_CHANNEL_REC *channels_setup_find(const char *channel, const char *ircnet)
@@ -209,7 +214,7 @@ static void channels_read_config(void)
 	GSList *tmp;
 
 	while (setupchannels != NULL)
-		channels_setup_destroy(setupchannels->data);
+		channels_setup_destroy_rec(setupchannels->data);
 
 	/* Read channels */
 	node = iconfig_node_traverse("channels", FALSE);
