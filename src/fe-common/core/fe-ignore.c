@@ -112,7 +112,7 @@ static void cmd_ignore(const char *data)
         if (*levels == '\0') levels = "ALL";
 
 	if (active_win->active_server != NULL &&
-	    active_win->active_server->ischannel(mask)) {
+	    server_ischannel(active_win->active_server, mask)) {
 		chanarg = mask;
 		mask = NULL;
 	}
@@ -187,7 +187,7 @@ static void cmd_unignore(const char *data)
 		const char *chans[2] = { "*", NULL };
 
 		if (active_win->active_server != NULL &&
-		    active_win->active_server->ischannel(mask)) {
+		    server_ischannel(active_win->active_server, mask)) {
 			chans[0] = mask;
 			mask = NULL;
 		}

@@ -17,6 +17,9 @@
 #define IS_SERVER_CONNECT(conn) \
 	(SERVER_CONNECT(conn) ? TRUE : FALSE)
 
+#define server_ischannel(server, channel) \
+        (server)->ischannel(server, channel)
+
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
 struct _SERVER_CONNECT_REC {

@@ -162,7 +162,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         if (nick == NULL) nick = "";
 
 	chanrec = (channel != NULL && server != NULL &&
-		   server->ischannel(channel)) ?
+		   server_ischannel(server, channel)) ?
 		channel_find(server, channel) : NULL;
 	if (chanrec != NULL && nick != NULL &&
 	    (nickrec = nicklist_find(chanrec, nick)) != NULL) {

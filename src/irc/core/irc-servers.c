@@ -60,7 +60,7 @@ static int isnickflag_func(char flag)
 	return isnickflag(flag);
 }
 
-static int ischannel_func(const char *data)
+static int ischannel_func(SERVER_REC *server, const char *data)
 {
 	if (*data == '@') {
 		/* @#channel, @+#channel */

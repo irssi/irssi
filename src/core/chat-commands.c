@@ -322,7 +322,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (target != NULL)
 		server->send_message(server, target, msg);
 
-	signal_emit(target != NULL && server->ischannel(target) ?
+	signal_emit(target != NULL && server_ischannel(server, target) ?
 		    "message own_public" : "message own_private", 4,
 		    server, msg, target, origtarget);
 

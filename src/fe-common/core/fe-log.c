@@ -573,7 +573,7 @@ static int sig_autoremove(void)
 
 		server = server_find_tag(logitem->servertag);
 		if (logitem->type == LOG_ITEM_TARGET &&
-		    server != NULL && !server->ischannel(logitem->name))
+		    server != NULL && !server_ischannel(server, logitem->name))
 			log_close(log);
 	}
 	return 1;

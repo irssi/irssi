@@ -101,7 +101,7 @@ ischannel(server, data)
 	Irssi::Server server
 	char *data
 CODE:
-	RETVAL = server->ischannel(data);
+	RETVAL = server->ischannel(server, data);
 OUTPUT:
 	RETVAL
 

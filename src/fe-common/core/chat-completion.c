@@ -569,7 +569,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	if (server == NULL && servers != NULL)
 		server = servers->data;
 
-	if (server != NULL && server->ischannel(word)) {
+	if (server != NULL && server_ischannel(server, word)) {
 		/* probably completing a channel name */
 		*list = completion_get_channels(window->active_server, word);
                 return;

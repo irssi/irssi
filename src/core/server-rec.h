@@ -55,7 +55,7 @@ void (*channels_join)(SERVER_REC *server, const char *data, int automatic);
 /* returns true if `flag' indicates a nick flag (op/voice/halfop) */
 int (*isnickflag)(char flag);
 /* returns true if `data' indicates a channel */
-int (*ischannel)(const char *data);
+int (*ischannel)(SERVER_REC *server, const char *data);
 /* returns all nick flag characters in order op, voice, halfop. If some
    of them aren't supported '\0' can be used. */
 const char *(*get_nick_flags)(void);

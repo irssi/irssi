@@ -636,7 +636,7 @@ static char *get_optional_channel(WI_ITEM_REC *active_item, char **data)
 	channel = cmd_get_param(&tmp);
 
 	if (strcmp(channel, "*") == 0 ||
-	    !active_item->server->ischannel(channel))
+	    !server_ischannel(active_item->server, channel))
 		ret = active_item->name;
 	else {
 		/* Find the channel first and use it's name if found.
