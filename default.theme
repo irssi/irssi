@@ -9,7 +9,7 @@ replaces = { "[]<>=" = "%K$0-%n"; };
 abstracts = {
   # generic
   line_start = "%B-%W!%B-%n ";
-  timestamp = "$0-"
+  timestamp = "$0-";
   hilight = "%_$0-%_";
   error = "%R$0-%n";
   
