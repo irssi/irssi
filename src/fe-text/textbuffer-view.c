@@ -377,6 +377,9 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 {
 	TEXT_BUFFER_VIEW_REC *view;
 
+        g_return_val_if_fail(buffer != NULL, NULL);
+        g_return_val_if_fail(width > 0, NULL);
+
 	view = g_new0(TEXT_BUFFER_VIEW_REC, 1);
 	view->buffer = buffer;
         view->siblings = textbuffer_get_views(buffer);
@@ -406,6 +409,8 @@ void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view)
 {
 	GSList *tmp;
 
+	g_return_if_fail(view != NULL);
+
 	views = g_slist_remove(views, view);
 
 	if (view->siblings == NULL) {
@@ -432,6 +437,8 @@ void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view)
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 					int default_indent)
 {
+	g_return_if_fail(view != NULL);
+
         view->default_indent = default_indent;
 }
 
@@ -572,6 +579,9 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 {
 	int linecount;
 
+        g_return_if_fail(view != NULL);
+        g_return_if_fail(width > 0);
+
 	if (view->buffer->lines == NULL)
                 return;
 
@@ -629,6 +639,8 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 /* Clear the view, don't actually remove any lines from buffer. */
 void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 {
+        g_return_if_fail(view != NULL);
+
 	view->ypos = -1;
 	view->bottom_startline = view->startline =
 		g_list_last(view->buffer->lines);
@@ -646,6 +658,8 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 {
 	int count;
 
+        g_return_if_fail(view != NULL);
+
 	count = view_scroll(view, &view->startline, &view->subline,
 			    lines, TRUE);
 	view->ypos += lines < 0 ? count : -count;
@@ -659,6 +673,8 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 void textbuffer_view_scroll_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
 	GList *tmp;
+
+        g_return_if_fail(view != NULL);
 
 	if (g_list_find(view->bottom_startline->next, line) != NULL) {
 		view->startline = view->bottom_startline;
@@ -686,6 +702,9 @@ LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
 					       LINE_REC *line)
 {
 	LINE_CACHE_REC *cache;
+
+        g_return_val_if_fail(view != NULL, NULL);
+        g_return_val_if_fail(line != NULL, NULL);
 
 	cache = g_hash_table_lookup(view->cache->line_cache, line);
 	if (cache == NULL)
@@ -782,6 +801,9 @@ void textbuffer_view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
         GSList *tmp;
 	unsigned char update_counter;
+
+	g_return_if_fail(view != NULL);
+	g_return_if_fail(line != NULL);
 
 	if (!view->buffer->last_eol)
                 return;
@@ -931,6 +953,9 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	unsigned char update_counter;
         int linecount;
 
+	g_return_if_fail(view != NULL);
+	g_return_if_fail(line != NULL);
+
         linecount = view_get_linecount(view, line);
         update_counter = view->cache->update_counter+1;
 
@@ -951,6 +976,8 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 {
 	GSList *tmp;
+
+	g_return_if_fail(view != NULL);
 
 	textbuffer_remove_all_lines(view->buffer);
 
@@ -977,6 +1004,9 @@ void textbuffer_view_set_bookmark(TEXT_BUFFER_VIEW_REC *view,
 {
 	gpointer key, value;
 
+	g_return_if_fail(view != NULL);
+	g_return_if_fail(name != NULL);
+
 	if (g_hash_table_lookup_extended(view->bookmarks, name,
 					 &key, &value)) {
 		g_hash_table_remove(view->bookmarks, key);
@@ -992,6 +1022,9 @@ void textbuffer_view_set_bookmark_bottom(TEXT_BUFFER_VIEW_REC *view,
 {
 	LINE_REC *line;
 
+	g_return_if_fail(view != NULL);
+	g_return_if_fail(name != NULL);
+
 	if (view->bottom_startline != NULL) {
                 line = g_list_last(view->bottom_startline)->data;
 		textbuffer_view_set_bookmark(view, name, line);
@@ -1002,6 +1035,9 @@ void textbuffer_view_set_bookmark_bottom(TEXT_BUFFER_VIEW_REC *view,
 LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 				       const char *name)
 {
+	g_return_val_if_fail(view != NULL, NULL);
+	g_return_val_if_fail(name != NULL, NULL);
+
         return g_hash_table_lookup(view->bookmarks, name);
 }
 
@@ -1009,6 +1045,8 @@ LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
    NULL disables it. */
 void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view, WINDOW *window)
 {
+	g_return_if_fail(view != NULL);
+
 	if (view->window != window) {
 		view->window = window;
 		if (window != NULL)
@@ -1019,6 +1057,8 @@ void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view, WINDOW *window)
 /* Redraw a view to window */
 void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 {
+	g_return_if_fail(view != NULL);
+
 	if (view->window != NULL) {
 		view_draw_top(view, view->height);
 		screen_refresh(view->window);

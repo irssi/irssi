@@ -120,6 +120,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	int space;
 
 	rec = g_new0(MAIN_WINDOW_REC, 1);
+	rec->width = screen_width;
 	rec->statusbar_lines = 1;
 
 	if (mainwindows == NULL) {
@@ -128,7 +129,6 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		rec->first_line = reserved_up;
 		rec->last_line = screen_height-1 -
 			reserved_down-rec->statusbar_lines;
-                rec->width = screen_width;
 		rec->height = rec->last_line-rec->first_line+1;
 	} else {
 		parent = WINDOW_GUI(active_win)->parent;
