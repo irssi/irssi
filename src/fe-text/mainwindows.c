@@ -154,11 +154,8 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec != skip_window) {
-			if (WINDOW_MAIN(rec) == mainwin) {
-				window_set_active(rec);
-				return;
-			}
-                        other = rec;
+			other = rec;
+			break;
 		}
 	}
 
