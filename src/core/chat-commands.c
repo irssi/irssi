@@ -335,14 +335,18 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 				       NULL, &free_ret, NULL, 0);
 		if (target != NULL && *target == '\0')
 			target = NULL;
-	} else if (strcmp(target, "*") == 0) {
+	}
+
+	if (strcmp(target, "*") == 0) {
+                /* send to active channel/query */
 		if (item == NULL)
 			cmd_param_error(CMDERR_NOT_JOINED);
 
+		target_type = IS_CHANNEL(item) ?
+			SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
 		target = item->name;
 	}
-
-	if (g_hash_table_lookup(optlist, "channel") != NULL)
+	else if (g_hash_table_lookup(optlist, "channel") != NULL)
                 target_type = SEND_TARGET_CHANNEL;
 	else if (g_hash_table_lookup(optlist, "nick") != NULL)
 		target_type = SEND_TARGET_NICK;
