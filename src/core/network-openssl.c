@@ -54,29 +54,6 @@ static void irssi_ssl_free(GIOChannel *handle)
 	g_free(chan);
 }
 
-#if GLIB_MAJOR_VERSION < 2
-
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-GIOError ssl_errno(gint e)
-{
-	switch(e)
-	{
-		case EINVAL:
-			return G_IO_ERROR_INVAL;
-		case EINTR:
-		case EAGAIN:
-			return G_IO_ERROR_AGAIN;
-		default:
-			return G_IO_ERROR_INVAL;
-	}
-	/*UNREACH*/
-	return G_IO_ERROR_INVAL;
-}
-
 static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, X509 *cert)
 {
 	if (SSL_get_verify_result(ssl) != X509_V_OK) {
@@ -115,6 +92,30 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, X509 *cert)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+
+#if GLIB_MAJOR_VERSION < 2
+
+#ifdef G_CAN_INLINE
+G_INLINE_FUNC
+#else
+static
+#endif
+GIOError ssl_errno(gint e)
+{
+	switch(e)
+	{
+		case EINVAL:
+			return G_IO_ERROR_INVAL;
+		case EINTR:
+		case EAGAIN:
+			return G_IO_ERROR_AGAIN;
+		default:
+			return G_IO_ERROR_INVAL;
+	}
+	/*UNREACH*/
+	return G_IO_ERROR_INVAL;
 }
 
 static GIOError irssi_ssl_cert_step(GIOSSLChannel *chan)
