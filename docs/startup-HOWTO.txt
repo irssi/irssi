@@ -14,8 +14,7 @@ things (still not all) see manual.txt.
 These settings should give you pretty good defaults (the ones I use):
 
 /SET autocreate_own_query OFF
-/SET -c autocreate_query_level (or /SET autocreate_query NO with 0.7.95 
-and older versions)
+/SET autocreate_query_level DCCMSGS
 /SET use_status_window OFF
 /SET use_msgs_window ON
 /SET autoclose_windows ON
@@ -23,7 +22,9 @@ and older versions)
 
 And example how to add servers:
 
-/IRCNET ADD -autosendcmd "/^msg nickserv ident password" opn
+(openprojects network, identify with nickserv and wait for 2 seconds before
+joining channels)
+/IRCNET ADD -autosendcmd "/^msg nickserv ident password;wait -opn 2000" opn
 
 /SERVER ADD -auto -ircnet ircnet irc.kpnqwest.fi 6667
 /SERVER ADD -ircnet ircnet irc.funet.fi 6667
@@ -112,10 +113,9 @@ of them you might want to change (the default value is shown):
 you send message to someone (with /msg).
 
 /SET autocreate_query_level MSGS - New query window should be created
-when receiving messages with this level. Only MSGS and NOTICES levels
-work currently. You can disable this with /SET -clear
-autocrate_query_level. 0.7.95 and older versions use
-/SET autocreate_query ON|OFF format.
+when receiving messages with this level. MSGS, DCCMSGS and NOTICES
+levels work currently. You can disable this with /SET -clear
+autocrate_query_level.
 
 /SET autoclose_query 0 - Query windows can be automatically closed
 after certain time of inactivity. Queries with unread messages aren't
@@ -134,6 +134,9 @@ manually with /WINDOW LEVEL MSGS, /WINDOW NAME (msgs).
 messages that don't really have better place go here, like all /WHOIS
 replies etc. Status window can also be created manually with /WINDOW
 LEVEL ALL -MSGS, /WINDOW NAME (status).
+
+/SET autocreate_windows - Should we create new windows for new window
+items or just place everything in one window
 
 /SET autoclose_windows OFF - Should window be automatically closed when
 the last item in them is removed (ie. /PART, /UNQUERY).
