@@ -1,3 +1,18 @@
+v0.7.23 2000-01-23  Timo Sirainen <cras@irccrew.org> [stable]
+
+	+ channel's key (+k key) is displayed in irssi-text's statusbar if it
+	  has one.
+	+ Nick hilight detector is a bit smarter now, for example if your
+	  nick happens to be "its", "it's blahblah" doesn't trigger it..
+	+ colorless irssi-text (/set colors = no): activity list is split in
+	  two, Act and Det lists. Det displays list of windows where there's
+	  new messages for you.
+	- /LAST without any parameters crashed
+	- if queried nick was changed, GUI didn't notice it.
+	- config file was invalid in .22
+	- irssi text widget didn't work in .22
+	- dcc transfers always displayed 0.00kB/s in .22
+
 v0.7.22 2000-01-16  Timo Sirainen <cras@irccrew.org> [stable]
 
 	+ configure displays a summary of things to compile
