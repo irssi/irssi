@@ -45,6 +45,7 @@ noinst_HEADERS = \
 	module.h \
 	modules.h \
 	net-disconnect.h \
+	net-internal.h \
 	net-nonblock.h \
 	network.h \
 	pidwait.h \

@@ -25,6 +25,8 @@ dcc_find_by_port(nick, port)
 char *
 dcc_type2str(type)
 	int type
+CODE:
+	RETVAL = (char *) dcc_type2str(type);
 
 int
 dcc_str2type(type)

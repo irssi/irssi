@@ -1,12 +1,7 @@
 
-*** MUST be done before 0.7.90
-
  - runtime loadable modules aren't working
- - DCC CHAT isn't working properly
- - /IRCNET ADD/REMOVE
-
-*** others
-
+ - "Netjoins: nick1, nick2, nick3 .." - just as the "Netsplit quits" text
+   except prints when people join back.
  - "#x,#y,#z Cannot join channel (illegal name)" .. what server/ircnet does
    this happen?
  - some problems with finding curses? in openbsd it should be -lcurses,
@@ -17,6 +12,9 @@
  - /SB GOTO, /SB HOME and /SB END don't set gui->ypos right.
  - When doing a /REHASH, logs are closed?, window logs are entirely removed?
    (also, check that window logs work right if window's refnum changes)
+ - When doing a /server <unknown server> - Irssi will join back to same
+   channels there was before the disconnection, but the channels could be
+   placed to different windows..
  - theme problems:
     - you can't change theme
     - some small help about what each format does

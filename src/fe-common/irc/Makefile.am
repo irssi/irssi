@@ -33,4 +33,5 @@ noinst_HEADERS = \
 	completion.h \
 	fe-common-irc.h \
 	irc-hilight-text.h \
+	module.h \
 	module-formats.h

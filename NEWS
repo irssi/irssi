@@ -1,4 +1,4 @@
-v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
+v0.7.90 2000-06-04  Timo Sirainen <tss@iki.fi>
 
 	* On the way to 0.8.0 .. Major rewriting/rearranging code. There's
 	  some changes in behaviour because I'm trying to make Irssi
@@ -8,7 +8,10 @@ v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
 	* DOCUMENTATION! See docs/manual.txt
 
 	  This NEWS file contains only the biggest new features, you should
-	  browse through the documentation to find the rest.
+	  browse through the documentation to find the rest. Some of the
+	  parameters of commands listed in this file aren't really up to
+	  date since I got a bit bored writing them here too.. They are
+	  correct in the manual.
 
 	* Irssi isn't anymore IRC specific client, you could easily take the
 	  whole IRC part away and use some other chat protocol instead, or

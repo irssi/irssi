@@ -13,4 +13,5 @@ libirc_notifylist_la_SOURCES = \
 
 noinst_HEADERS = \
 	notifylist.h \
-	notify-setup.h
+	notify-setup.h \
+	module.h

@@ -7,14 +7,14 @@ servers = (
   { address = "irc.ptlink.net"; ircnet = PTlink; port = 6667; }
 );
 
-ircnets = (
-  { name = IRCNet; max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4; },
-  { name = EFNet; max_kicks = 4; max_modes = 4; max_msgs = 3; },
-  { name = Undernet; max_kicks = 4; max_modes = 3; max_msgs = 3; },
-  { name = DALNet; max_kicks = 4; max_modes = 6; max_msgs = 3; },
-  { name = OPN; max_kicks = 1; max_modes = 6; max_msgs = 100; },
-  { name = PTlink; max_kicks = 1; max_modes = 6; max_msgs = 100; }
-);
+ircnets = {
+  IRCNet = { max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4; };
+  EFNet = { max_kicks = 4; max_modes = 4; max_msgs = 3; };
+  Undernet = { max_kicks = 4; max_modes = 3; max_msgs = 3; };
+  DALNet = { max_kicks = 4; max_modes = 6; max_msgs = 3; };
+  OPN = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
+  PTLink = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
+};
 
 channels = (
   {

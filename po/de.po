@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Irssi 0.7.23\n"
-"POT-Creation-Date: 2000-05-15 17:47+0200\n"
+"POT-Creation-Date: 2000-06-04 18:48+0300\n"
 "PO-Revision-Date: 1999-12-01 10:35-0200\n"
 "Last-Translator: Thomas Heinen <cochi@uni-paderborn.de>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -28,19 +28,19 @@ msgstr ""
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Bitte warten, schliesse Serververbindungen..\n"
 
-#: src/core/network.c:417
+#: src/core/network.c:468
 msgid "Host not found"
 msgstr "Host nicht gefunden"
 
-#: src/core/network.c:419
+#: src/core/network.c:470
 msgid "No IP address found for name"
 msgstr "Keine IP Adresse zum Namen gefunden"
 
-#: src/core/network.c:421
+#: src/core/network.c:472
 msgid "A non-recovable name server error occurred"
 msgstr "Ein nicht behebbarer Nameserverfehler ist aufgetreten"
 
-#: src/core/network.c:423
+#: src/core/network.c:474
 msgid "A temporary error on an authoritative name server"
 msgstr "Temporaerer Fehler des authoritativen Nameservers"
 
@@ -96,40 +96,40 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:83
+#: src/fe-common/irc/fe-common-irc.c:80
 msgid "Automatically connect to server/ircnet"
 msgstr "Automatisch verbinden mit Server/IRCNet"
 
-#: src/fe-common/irc/fe-common-irc.c:83 src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:80 src/fe-common/irc/fe-common-irc.c:81
 msgid "SERVER"
 msgstr "SERVER"
 
-#: src/fe-common/irc/fe-common-irc.c:84
+#: src/fe-common/irc/fe-common-irc.c:81
 msgid "Autoconnect password"
 msgstr "Autoconnect Passwort"
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:82
 msgid "Autoconnect port"
 msgstr "Autoconnect Port"
 
-#: src/fe-common/irc/fe-common-irc.c:85
+#: src/fe-common/irc/fe-common-irc.c:82
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:86
+#: src/fe-common/irc/fe-common-irc.c:83
 msgid "Disable autoconnecting"
 msgstr "Autoconnect deaktivieren"
 
-#: src/fe-common/irc/fe-common-irc.c:87
+#: src/fe-common/irc/fe-common-irc.c:84
 msgid "Specify nick to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-common/irc/fe-common-irc.c:88
+#: src/fe-common/irc/fe-common-irc.c:85
 #, fuzzy
 msgid "Specify host name to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-text/irssi.c:153
+#: src/fe-text/irssi.c:152
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

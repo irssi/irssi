@@ -19,7 +19,8 @@ noinst_HEADERS = \
 	bot.h \
 	bot-users.h \
 	botnet.h \
-	botnet-users.h
+	botnet-users.h \
+	module.h
 
 EXTRA_DIST = \
 	users.sample \

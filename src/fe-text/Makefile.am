@@ -40,5 +40,6 @@ noinst_HEADERS = \
         statusbar.h \
         gui-textwidget.h \
         gui-windows.h \
-	module-formats.h \
-        screen.h
+        screen.h \
+	module.h \
+	module-formats.h

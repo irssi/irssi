@@ -1,8 +1,9 @@
 EXTRA_DIST = \
-	FAQ \
 	botnet.txt \
 	commands.txt \
+	design.txt \
 	formats.txt \
+	manual.txt \
 	perl.txt \
 	signals.txt \
 	special_vars.txt

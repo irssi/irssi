@@ -10,4 +10,5 @@ libirc_dcc_la_SOURCES = \
 	dcc-files.c
 
 noinst_HEADERS = \
-	dcc.h
+	dcc.h \
+	module.h

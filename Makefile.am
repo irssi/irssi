@@ -24,9 +24,8 @@ EXTRA_DIST = \
 	README-HEBREW \
 	file2header.sh \
 	irssi.spec \
+	irssi.spec.in \
 	$(conf_DATA) \
-	irssi.gnorba \
-	irssi.desktop \
 	irssi-config.in
 
 ## make rpms

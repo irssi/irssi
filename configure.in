@@ -375,6 +375,7 @@ docs/Makefile
 docs/help/Makefile
 stamp.h
 irssi.spec
+irssi-version.h
 irssi-config)
 
 dnl ** for building from objdir
@@ -382,9 +383,9 @@ if test "x$want_perl" = "xyes"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
 	if test "x$old_dir" != "x$whole_dir"; then
-		ln -sf $whole_dir/src/perl/xs/typemap src/perl/xs/typemap
-		ln -sf $whole_dir/src/perl/xs/Irssi.xs src/perl/xs/Irssi.xs
-		ln -sf $whole_dir/src/perl/xs/Irssi.pm src/perl/xs/Irssi.pm
+		for file in $whole_dir/src/perl/xs/typemap $whole_dir/src/perl/xs/module.h $whole_dir/src/perl/xs/*.xs; do
+			ln -sf $file `echo $file|sed "s?$whole_dir/??"`
+		done
 	fi
 fi
 
