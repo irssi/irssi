@@ -104,14 +104,22 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel;
+	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
 	if (ischannel(*channel)) {
-		/* channel is unavailable - try to join again a bit later */
-		channel_rejoin(server, channel);
-		signal_stop();
+		chanrec = irc_channel_find(server, channel);
+		if (chanrec != NULL && chanrec->joined) {
+			/* dalnet event - can't change nick while
+			   banned in channel */
+		} else {
+			/* channel is unavailable - try to join again
+			   a bit later */
+			channel_rejoin(server, channel);
+			signal_stop();
+		}
 	}
 
 	g_free(params);

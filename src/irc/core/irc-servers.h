@@ -38,6 +38,7 @@ typedef struct {
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
 
+	int nick_changing:1; /* We've sent nick change command to server */
 	int whois_coming:1; /* Mostly just to display away message right.. */
 	int whois_found:1; /* Did WHOIS return any entries? */
 	int whowas_found:1; /* Did WHOWAS return any entries? */

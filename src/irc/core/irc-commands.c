@@ -388,6 +388,46 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 		irc_send_cmdv(server, "NAMES %s", data);
 }
 
+/* SYNTAX: NICK <new nick> */
+static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+{
+        char *nick;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 1, &nick))
+		return;
+
+	server->nick_changing = TRUE;
+	irc_send_cmdv(server, "NICK %s", nick);
+	server_redirect_event(SERVER(server), nick, 1,
+			      "event nick", "nickchange over", -1,
+			      "event 433", "nickchange over", 1,
+			      /* 437: ircnet = target unavailable,
+				      dalnet = banned in channel,
+				               can't change nick */
+			      "event 437", "nickchange over", -1,
+			      "event 432", "nickchange over", 1,
+			      "event 438", "nickchange over", 1, NULL);
+	cmd_params_free(free_arg);
+}
+
+static void sig_nickchange_over(const char *data, IRC_SERVER_REC *server,
+				const char *nick, const char *addr)
+{
+	char *signal;
+
+	server->nick_changing = FALSE;
+
+	signal = g_strconcat("event ", current_server_event, NULL);
+	signal_emit(signal, 4, data, server, nick, addr);
+	g_free(signal);
+}
+
 static char *get_redirect_nicklist(const char *nicks, int *free)
 {
 	char *str, *ret;
@@ -452,7 +492,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	/* do automatic /WHOWAS if any of the nicks wasn't found */
 	query = get_redirect_nicklist(query, &free_nick);
 
-	server_redirect_event((SERVER_REC *) server, query, 2,
+	server_redirect_event(SERVER(server), query, 2,
 			      "event 318", "event 318", 1,
 			      "event 402", event_402, -1,
 			      "event 311", "whois event", 1,
@@ -461,7 +501,8 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-static void event_whois(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_whois(const char *data, IRC_SERVER_REC *server,
+			const char *nick, const char *addr)
 {
 	server->whois_found = TRUE;
 	signal_emit("event 311", 4, data, server, nick, addr);
@@ -477,7 +518,7 @@ static void sig_whois_not_found(const char *data, IRC_SERVER_REC *server)
 	irc_send_cmdv(server, "WHOWAS %s 1", nick);
 
 	server->whowas_found = FALSE;
-	server_redirect_event((SERVER_REC *) server, nick, 1,
+	server_redirect_event(SERVER(server), nick, 1,
 			      "event 369", "whowas event end", 1,
 			      "event 314", "whowas event", 1,
 			      "event 406", "event empty", 1, NULL);
@@ -510,7 +551,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 		      "WHOWAS %s %s", nicks, count);
 
 	nicks = get_redirect_nicklist(nicks, &free_nick);
-	server_redirect_event((SERVER_REC *) server, nicks, 1,
+	server_redirect_event(SERVER(server), nicks, 1,
 			      "event 369", "event 369", 1,
 			      "event 314", "whowas event", 1, NULL);
 	if (free_nick) g_free(nicks);
@@ -892,8 +933,8 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 	/* gui-gnome can use server_redirect_event() in who/list commands so
 	   we can't use "command who" or list here.. */
-	server_redirect_init((SERVER_REC *) server, "bogus command who", 2, "event 401", "event 315", "event 352", NULL);
-	server_redirect_init((SERVER_REC *) server, "bogus command list", 1, "event 321", "event 322", "event 323", NULL);
+	server_redirect_init(SERVER(server), "bogus command who", 2, "event 401", "event 315", "event 352", NULL);
+	server_redirect_init(SERVER(server), "bogus command list", 1, "event 321", "event 322", "event 323", NULL);
 }
 
 void irc_commands_init(void)
@@ -919,8 +960,7 @@ void irc_commands_init(void)
 	command_bind("list", NULL, (SIGNAL_FUNC) cmd_list);
 	command_bind("who", NULL, (SIGNAL_FUNC) cmd_who);
 	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
-	/* SYNTAX: NICK <new nick> */
-	command_bind("nick", NULL, (SIGNAL_FUNC) command_self);
+	command_bind("nick", NULL, (SIGNAL_FUNC) cmd_nick);
 	/* SYNTAX: NOTE <command> [&<password>] [+|-<flags>] [<arguments>] */
 	command_bind("note", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("whois", NULL, (SIGNAL_FUNC) cmd_whois);
@@ -990,6 +1030,7 @@ void irc_commands_init(void)
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_add("nickchange over", (SIGNAL_FUNC) sig_nickchange_over);
 	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
@@ -1018,7 +1059,7 @@ void irc_commands_deinit(void)
 	command_unbind("list", (SIGNAL_FUNC) cmd_list);
 	command_unbind("who", (SIGNAL_FUNC) cmd_who);
 	command_unbind("names", (SIGNAL_FUNC) cmd_names);
-	command_unbind("nick", (SIGNAL_FUNC) command_self);
+	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
 	command_unbind("note", (SIGNAL_FUNC) command_self);
 	command_unbind("whois", (SIGNAL_FUNC) cmd_whois);
 	command_unbind("whowas", (SIGNAL_FUNC) cmd_whowas);
@@ -1060,6 +1101,7 @@ void irc_commands_deinit(void)
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_remove("nickchange over", (SIGNAL_FUNC) sig_nickchange_over);
 	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
 	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);

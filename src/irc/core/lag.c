@@ -60,6 +60,11 @@ static void lag_get(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	/* nick changes may fail this check, so we should never do this
+	   while there's nick change request waiting for reply in server.. */
+	if (server->nick_changing)
+		return;
+
 	lag = g_new0(LAG_REC, 1);
 	lags = g_slist_append(lags, lag);
 	lag->server = server;
@@ -70,9 +75,6 @@ static void lag_get(IRC_SERVER_REC *server)
 		server->lag_sent = time(NULL);
 	server->lag_last_check = time(NULL);
 
-	/* NOTE: this will fail if there's any nick changes in buffer -
-	   that's why this function should be called only when the buffer
-	   is empty */
 	irc_send_cmdv(server, "NOTICE %s :\001IRSSILAG %ld %ld\001",
 		      server->nick, lag->time.tv_sec, lag->time.tv_usec);
 }
@@ -141,8 +143,7 @@ static int sig_check_lag(void)
 				rec->connection_lost = TRUE;
 				server_disconnect((SERVER_REC *) rec);
 			}
-		}
-		else if (rec->lag_last_check+lag_check_time < now &&
+		} else if (rec->lag_last_check+lag_check_time < now &&
 			 rec->cmdcount == 0 && rec->connected) {
 			/* no commands in buffer - get the lag */
 			lag_get(rec);

@@ -32,6 +32,8 @@
 
 #include "printtext.h"
 
+static void event_received(const char *data, IRC_SERVER_REC *server);
+
 static char *last_away_nick = NULL;
 static char *last_away_msg = NULL;
 
@@ -547,16 +549,25 @@ static void event_end_of_whowas(const char *data, IRC_SERVER_REC *server)
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel;
+	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
 	if (!ischannel(*channel)) {
 		/* nick unavailable */
-		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_NICK_UNAVAILABLE, channel);
+		printformat(server, NULL, MSGLEVEL_CRAP,
+			    IRCTXT_NICK_UNAVAILABLE, channel);
 	} else {
-		/* channel is unavailable. */
-		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_JOINERROR_UNAVAIL, channel);
+		chanrec = irc_channel_find(server, channel);
+		if (chanrec != NULL && chanrec->joined) {
+			/* dalnet - can't change nick while being banned */
+			event_received(data, server);
+		} else {
+			/* channel is unavailable. */
+			printformat(server, NULL, MSGLEVEL_CRAP,
+				    IRCTXT_JOINERROR_UNAVAIL, channel);
+		}
 	}
 
 	g_free(params);
@@ -667,8 +678,7 @@ static void event_not_chanop(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_received(const char *data, IRC_SERVER_REC *server,
-			   const char *nick, const char *addr)
+static void event_received(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *args, *ptr;
 
@@ -760,6 +770,8 @@ void fe_events_numeric_init(void)
 	signal_add("event 004", (SIGNAL_FUNC) event_received);
 	signal_add("event 364", (SIGNAL_FUNC) event_received);
 	signal_add("event 365", (SIGNAL_FUNC) event_received);
+	signal_add("event 432", (SIGNAL_FUNC) event_received);
+	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 }
 
@@ -820,5 +832,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 004", (SIGNAL_FUNC) event_received);
 	signal_remove("event 364", (SIGNAL_FUNC) event_received);
 	signal_remove("event 365", (SIGNAL_FUNC) event_received);
+	signal_remove("event 432", (SIGNAL_FUNC) event_received);
+	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 }
