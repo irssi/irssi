@@ -114,13 +114,25 @@ static void cmd_wjoin_pre(const char *data)
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "join", &optlist, &nick))
-		return;
+                return;
 
 	if (g_hash_table_lookup(optlist, "window") != NULL) {
 		signal_add("channel created",
 			   (SIGNAL_FUNC) signal_channel_created_curwin);
-	}
+        }
 	cmd_params_free(free_arg);
+}
+
+static void cmd_join(const char *data, SERVER_REC *server)
+{
+        CHANNEL_REC *channel;
+
+        if (strchr(data, ' ') != NULL || strchr(data, ',') != NULL)
+                return;
+
+        channel = channel_find(server, data);
+        if (channel != NULL)
+                window_item_set_active(active_win, (WI_ITEM_REC *) channel);
 }
 
 static void cmd_wjoin_post(const char *data)
@@ -287,6 +299,7 @@ void fe_channels_init(void)
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
 	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_wjoin_pre);
+	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind_last("join", NULL, (SIGNAL_FUNC) cmd_wjoin_post);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
@@ -306,6 +319,7 @@ void fe_channels_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
 	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_pre);
+	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_post);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);

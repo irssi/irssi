@@ -22,6 +22,8 @@ void window_item_next(WINDOW_REC *window);
 
 /* Find wanted window item by name. `server' can be NULL. */
 WI_ITEM_REC *window_item_find(void *server, const char *name);
+WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
+                                     void *server, const char *name);
 
 void window_items_init(void);
 void window_items_deinit(void);

@@ -43,8 +43,6 @@ void window_add_item(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 		window->active_server = item->server;
 	}
 
-	signal_emit("gui window item init", 1, item);
-
 	if (!automatic || settings_get_bool("window_auto_change")) {
 		if (automatic)
 			signal_emit("window changed automatic", 1, window);
@@ -99,9 +97,33 @@ void window_item_change_server(WI_ITEM_REC *item, void *server)
 	if (window->active == item) window_change_server(window, item->server);
 }
 
+static void window_item_move(WINDOW_REC *window, WI_ITEM_REC *item)
+{
+        WINDOW_REC *oldwin;
+
+        /* remove from old window */
+        oldwin = window_item_window(item);
+        oldwin->items = g_slist_remove(oldwin->items, item);
+        window->items = g_slist_append(window->items, item);
+
+	MODULE_DATA_SET(item, window);
+
+	if (oldwin->active == item) {
+                window_item_set_active(oldwin, oldwin->items == NULL ? NULL :
+				       oldwin->items->data);
+        }
+
+        signal_emit("window item moved", 2, window, item);
+}
+
 void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 {
-	g_return_if_fail(window != NULL);
+        g_return_if_fail(window != NULL);
+
+        if (item != NULL && window_item_window(item) != window) {
+                /* move item to different window */
+                window_item_move(window, item);
+        }
 
 	if (window->active != item) {
 		window->active = item;
@@ -180,7 +202,8 @@ void window_item_next(WINDOW_REC *window)
                 window_item_set_active(window, next);
 }
 
-static WI_ITEM_REC *window_item_find_window(WINDOW_REC *window, void *server, const char *name)
+WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
+                                     void *server, const char *name)
 {
 	GSList *tmp;
 

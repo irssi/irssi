@@ -212,6 +212,34 @@ static void cmd_window_item_next(void)
 	window_item_next(active_win);
 }
 
+/* SYNTAX: WINDOW ITEM GOTO <name> */
+static void cmd_window_item_goto(const char *data, SERVER_REC *server)
+{
+        WI_ITEM_REC *item;
+
+        item = window_item_find_window(active_win, server, data);
+        if (item != NULL)
+                window_item_set_active(active_win, item);
+}
+
+/* SYNTAX: WINDOW ITEM MOVE <number>|<name> */
+static void cmd_window_item_move(const char *data, SERVER_REC *server,
+                                 WI_ITEM_REC *item)
+{
+        WINDOW_REC *window;
+
+        if (is_numeric(data, '\0')) {
+                /* move current window item to specified window */
+                window = window_find_refnum(atoi(data));
+        } else {
+                /* move specified window item to current window */
+                item = window_item_find(server, data);
+                window = active_win;
+        }
+        if (window != NULL && item != NULL)
+                window_item_set_active(window, item);
+}
+
 /* SYNTAX: WINDOW NUMBER <number> */
 static void cmd_window_number(const char *data)
 {
@@ -403,6 +431,8 @@ void window_commands_init(void)
 	command_bind("window item", NULL, (SIGNAL_FUNC) cmd_window_item);
 	command_bind("window item prev", NULL, (SIGNAL_FUNC) cmd_window_item_prev);
 	command_bind("window item next", NULL, (SIGNAL_FUNC) cmd_window_item_next);
+	command_bind("window item goto", NULL, (SIGNAL_FUNC) cmd_window_item_goto);
+	command_bind("window item move", NULL, (SIGNAL_FUNC) cmd_window_item_move);
 	command_bind("window number", NULL, (SIGNAL_FUNC) cmd_window_number);
 	command_bind("window name", NULL, (SIGNAL_FUNC) cmd_window_name);
 	command_bind("window move", NULL, (SIGNAL_FUNC) cmd_window_move);
@@ -429,6 +459,8 @@ void window_commands_deinit(void)
 	command_unbind("window item", (SIGNAL_FUNC) cmd_window_item);
 	command_unbind("window item prev", (SIGNAL_FUNC) cmd_window_item_prev);
 	command_unbind("window item next", (SIGNAL_FUNC) cmd_window_item_next);
+	command_unbind("window item goto", (SIGNAL_FUNC) cmd_window_item_goto);
+	command_unbind("window item move", (SIGNAL_FUNC) cmd_window_item_move);
 	command_unbind("window number", (SIGNAL_FUNC) cmd_window_number);
 	command_unbind("window name", (SIGNAL_FUNC) cmd_window_name);
 	command_unbind("window move", (SIGNAL_FUNC) cmd_window_move);
