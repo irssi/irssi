@@ -154,10 +154,12 @@ static int module_load_name(const char *path, const char *rootmodule,
 			    const char *submodule, int silent)
 {
 	void (*module_init) (void);
+	void (*module_deinit) (void);
 	GModule *gmodule;
         MODULE_REC *module;
 	MODULE_FILE_REC *rec;
-	char *initfunc;
+	char *initfunc, *deinitfunc;
+        int found;
 
 	gmodule = module_open(path);
 	if (gmodule == NULL) {
@@ -168,18 +170,20 @@ static int module_load_name(const char *path, const char *rootmodule,
 		return -1;
 	}
 
-	/* get the module's init() function */
+	/* get the module's init() and deinit() functions */
 	initfunc = module_get_func(rootmodule, submodule, "init");
+	deinitfunc = module_get_func(rootmodule, submodule, "deinit");
+	found = g_module_symbol(gmodule, initfunc, (gpointer *) &module_init) &&
+		g_module_symbol(gmodule, deinitfunc, (gpointer *) &module_deinit);
+	g_free(initfunc);
+	g_free(deinitfunc);
 
-	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
-		if (!silent)
-			module_error(MODULE_ERROR_INVALID, NULL,
-				     rootmodule, submodule);
+	if (!found) {
+		module_error(MODULE_ERROR_INVALID, NULL,
+			     rootmodule, submodule);
 		g_module_close(gmodule);
-		g_free(initfunc);
 		return 0;
 	}
-	g_free(initfunc);
 
 	/* Call the module's init() function - it should register itself
 	   with module_register() function, abort if it doesn't. */
@@ -200,6 +204,7 @@ static int module_load_name(const char *path, const char *rootmodule,
                 return 0;
 	}
 
+        rec->module_deinit = module_deinit;
 	rec->gmodule = gmodule;
         rec->initialized = TRUE;
 
@@ -344,16 +349,8 @@ int module_load_sub(const char *path, const char *submodule, char **prefixes)
 
 static void module_file_deinit_gmodule(MODULE_FILE_REC *file)
 {
-	void (*module_deinit) (void);
-	char *deinitfunc;
-
 	/* call the module's deinit() function */
-	deinitfunc = module_get_func(file->root->name, file->name, "deinit");
-	if (g_module_symbol(file->gmodule, deinitfunc,
-			    (gpointer *) &module_deinit))
-		module_deinit();
-
-	g_free(deinitfunc);
+        file->module_deinit();
 
 	if (file->defined_module_name != NULL) {
 		settings_remove_module(file->defined_module_name);

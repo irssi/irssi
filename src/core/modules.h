@@ -36,6 +36,7 @@ typedef struct {
 	MODULE_REC *root;
 	char *name;
         char *defined_module_name;
+	void (*module_deinit) (void);
 
 #ifdef HAVE_GMODULE
 	GModule *gmodule; /* static, if NULL */
