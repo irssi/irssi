@@ -467,13 +467,21 @@ void printformat_module_window(const char *module, WINDOW_REC *window, int level
 	va_end(va);
 }
 
+#define LINE_START_IRSSI_LEVEL \
+	(MSGLEVEL_CLIENTERROR | MSGLEVEL_CLIENTNOTICE)
+
+#define NOT_LINE_START_LEVEL \
+	(MSGLEVEL_NEVER | MSGLEVEL_DCC | MSGLEVEL_CLIENTCRAP | \
+	MSGLEVEL_MSGS | MSGLEVEL_PUBLIC | MSGLEVEL_DCCMSGS | \
+	MSGLEVEL_ACTIONS | MSGLEVEL_NOTICES | MSGLEVEL_SNOTES | MSGLEVEL_CTCPS)
+
 /* return the "-!- " text at the start of the line */
 static char *get_line_start_text(TEXT_DEST_REC *dest)
 {
-	if ((dest->level & (MSGLEVEL_CLIENTERROR|MSGLEVEL_CLIENTNOTICE)) != 0)
+	if (dest->level & LINE_START_IRSSI_LEVEL)
 		return output_format_text(dest, IRCTXT_LINE_START_IRSSI);
 
-	if ((dest->level & (MSGLEVEL_MSGS|MSGLEVEL_PUBLIC|MSGLEVEL_NOTICES|MSGLEVEL_SNOTES|MSGLEVEL_CTCPS|MSGLEVEL_ACTIONS|MSGLEVEL_DCC|MSGLEVEL_CLIENTCRAP)) == 0 && dest->level != MSGLEVEL_NEVER)
+	if ((dest->level & NOT_LINE_START_LEVEL) == 0)
 		return output_format_text(dest, IRCTXT_LINE_START);
 
 	return NULL;
