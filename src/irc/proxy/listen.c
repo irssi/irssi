@@ -280,6 +280,12 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		g_free(params);
 	} else if (strcmp(cmd, "PING") == 0) {
 		proxy_redirect_event(client, "ping", 1, NULL, TRUE);
+	} else if (strcmp(cmd, "AWAY") == 0) {
+		/* set the away reason */
+		if (args != NULL) {
+			g_free(client->server->away_reason);
+			client->server->away_reason = g_strdup(args);
+		}
 	}
 
 	irc_send_cmd(client->server, data);
