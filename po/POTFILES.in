@@ -97,6 +97,8 @@ src/fe-common/core/fe-channels.c
 src/fe-common/core/fe-queries.c
 src/fe-common/core/fe-messages.c
 src/fe-common/core/fe-ignore.c
+src/fe-common/core/chat-completion.c
+src/fe-common/core/fe-ignore-messages.c
 src/fe-common/core/fe-modules.c
 src/fe-common/core/hilight-text.c
 src/fe-common/core/window-save.c
@@ -118,7 +120,6 @@ src/fe-common/irc/irc-modules.c
 src/fe-common/irc/fe-irc-channels.c
 src/fe-common/irc/fe-netjoin.c
 src/fe-common/irc/fe-events-numeric.c
-src/fe-common/irc/irc-completion.c
 src/fe-none/irssi.c
 src/fe-text/gui-entry.c
 src/fe-text/gui-printtext.c
