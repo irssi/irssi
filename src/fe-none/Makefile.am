@@ -1,4 +1,4 @@
-bin_PROGRAMS = irssi-bot
+bin_PROGRAMS = botti
 
 INCLUDES = $(GLIB_CFLAGS)
 
@@ -8,14 +8,14 @@ INCLUDES = \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/
 
-irssi_bot_DEPENDENCIES = @COMMON_NOUI_LIBS@
+botti_DEPENDENCIES = @COMMON_NOUI_LIBS@
 
-irssi_bot_LDADD = \
+botti_LDADD = \
 	@COMMON_NOUI_LIBS@ \
 	$(PROG_LIBS) \
 	$(PERL_LDFLAGS)
 
-irssi_bot_SOURCES = \
+botti_SOURCES = \
         irssi.c
 
 noinst_HEADERS = \

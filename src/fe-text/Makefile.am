@@ -1,4 +1,4 @@
-bin_PROGRAMS = irssi-text
+bin_PROGRAMS = irssi
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -9,15 +9,15 @@ INCLUDES = \
 	-I$(top_srcdir)/src/fe-common/irc/ \
 	$(CURSES_INCLUDEDIR)
 
-irssi_text_DEPENDENCIES = @COMMON_LIBS@
+irssi_DEPENDENCIES = @COMMON_LIBS@
 
-irssi_text_LDADD = \
+irssi_LDADD = \
 	@COMMON_LIBS@ \
 	$(PROG_LIBS) \
 	$(PERL_LDFLAGS) \
         $(CURSES_LIBS)
 
-irssi_text_SOURCES = \
+irssi_SOURCES = \
         gui-entry.c \
         mainwindows.c \
         gui-printtext.c \
