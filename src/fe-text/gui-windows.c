@@ -88,8 +88,11 @@ static void gui_window_created(WINDOW_REC *window, void *automatic)
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
 
-	if ((automatic == NULL && parent->sticky_windows) ||
-	    (empty_window && settings_get_bool("autostick_split_windows")))
+	/* set only non-automatic windows sticky so that the windows
+	   irssi creates at startup wont get sticky. */
+	if (automatic == NULL &&
+	    (parent->sticky_windows ||
+	     (new_parent && settings_get_bool("autostick_split_windows"))))
 		gui_window_set_sticky(window);
 
 	signal_emit("gui window created", 1, window);
