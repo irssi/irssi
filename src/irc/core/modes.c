@@ -512,7 +512,6 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 			curmode = cmd_get_param(&modestr);
 			if (*curmode == '\0')
 				break;
-			continue;
 		}
 
 		if (*curmode == '+' || *curmode == '-') {
