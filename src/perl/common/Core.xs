@@ -32,8 +32,10 @@ CODE:
 			p[n-1] = SvPV(ST(n), PL_na);
 		else if (irssi_is_ref_object(ST(n)))
 			p[n-1] = irssi_ref_object(ST(n));
-		else
+		else if (SvROK(ST(n)))
 			p[n-1] = (void *) SvIV((SV*)SvRV(ST(n)));
+		else
+			p[n-1] = NULL;
 	}
 	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5]);
 
