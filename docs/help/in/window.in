@@ -6,7 +6,7 @@ irssi windows.
 
 /WINDOW CLOSE
    - Closes the current window.
-/WINDOW MOVE #NUMBER|PREV|NEXT
+/WINDOW MOVE #NUMBER|LEFT|RIGHT
    - Moves current window to another position in the
      window list.
 /WINDOW GOTO #NUMBER
