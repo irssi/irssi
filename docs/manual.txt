@@ -18,6 +18,8 @@
 	9. Text highlighting
 	10. Ignoring
 	11. Logging
+
+	( not written yet: )
 	12. Aliases
 	13. Themes
 	14. Last log (currently text version only)
@@ -33,7 +35,7 @@
 
  0.1 History
 
-	Hello. I'm Timo Sirainen aka. cras, and I'm IRC addict. :)
+	Hello. I'm Timo Sirainen aka. cras, and I'm an IRC addict. :)
 
 	I'm actually quite new in IRC, I got my first internet connection
 	sometimes around fall 1997 and I started actively IRCing around
@@ -1024,3 +1026,5 @@
 	You can disable this feature by setting awaylog_level to NONE.
 
 
+.. no, the docs end here, I got bored of writing these after a few days and 
+haven't touched these since then.
