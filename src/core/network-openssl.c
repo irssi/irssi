@@ -41,7 +41,7 @@ void irssi_ssl_close(GIOChannel *);
 /* ssl create watch */
 guint irssi_ssl_create_watch(GIOChannel *, gint, GIOCondition, GIOFunc, gpointer, GDestroyNotify);
 #else
-guint irssi_ssl_create_watch(GIOChannel *, GIOCondition);
+GSource *irssi_ssl_create_watch(GIOChannel *, GIOCondition);
 #endif
 /* ssl free */
 void irssi_ssl_free(GIOChannel *);
@@ -191,7 +191,7 @@ guint irssi_ssl_create_watch(GIOChannel *handle, gint priority, GIOCondition con
 	return chan->giochan->funcs->io_add_watch(handle, priority, cond, func, data, notify);
 }
 #else
-guint irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
+GSource *irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 
