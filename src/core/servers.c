@@ -110,6 +110,7 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 		server_create_address_tag(conn->address);
 
 	if (conn->tag != NULL && server_find_tag(conn->tag) == NULL &&
+            server_find_lookup_tag(conn->tag) == NULL &&
 	    strncmp(conn->tag, tag, strlen(tag)) == 0) {
 		/* use the existing tag if it begins with the same ID -
 		   this is useful when you have several connections to
@@ -123,8 +124,13 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 
 	/* then just append numbers after tag until unused is found.. */
 	str = g_string_new(tag);
-	for (num = 2; server_find_tag(str->str) != NULL; num++)
+
+	num = 2;
+	while (server_find_tag(str->str) != NULL &&
+	       server_find_lookup_tag(str->str) != NULL) {
 		g_string_sprintf(str, "%s%d", tag, num);
+		num++;
+	}
 	g_free(tag);
 
 	tag = str->str;
