@@ -653,7 +653,7 @@ void gui_readline_init(void)
 	key_bind("backspace", "", "backspace", NULL, (SIGNAL_FUNC) key_backspace);
 	key_bind("delete_character", "", "delete", NULL, (SIGNAL_FUNC) key_delete_character);
 	key_bind("delete_character", NULL, "^D", NULL, (SIGNAL_FUNC) key_delete_character);
-	key_bind("delete_next_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_next_word);
+	key_bind("delete_next_word", "meta-d", NULL, NULL, (SIGNAL_FUNC) key_delete_next_word);
 	key_bind("delete_previous_word", "meta-backspace", NULL, NULL, (SIGNAL_FUNC) key_delete_previous_word);
 	key_bind("delete_to_previous_space", "", "^W", NULL, (SIGNAL_FUNC) key_delete_to_previous_space);
 	key_bind("delete_to_next_space", "", "", NULL, (SIGNAL_FUNC) key_delete_to_next_space);
