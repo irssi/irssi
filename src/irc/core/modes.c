@@ -556,15 +556,17 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 	g_free(orig);
 }
 
-static void get_wildcard_nicks(GString *output, const char *mask,
-			       IRC_CHANNEL_REC *channel, int op, int voice)
+static int get_wildcard_nicks(GString *output, const char *mask,
+			      IRC_CHANNEL_REC *channel, int op, int voice)
 {
 	GSList *nicks, *tmp;
+        int count;
 
-	g_return_if_fail(output != NULL);
-	g_return_if_fail(mask != NULL);
-	g_return_if_fail(IS_IRC_CHANNEL(channel));
+	g_return_val_if_fail(output != NULL, 0);
+	g_return_val_if_fail(mask != NULL, 0);
+	g_return_val_if_fail(IS_IRC_CHANNEL(channel), 0);
 
+        count = 0;
 	nicks = nicklist_find_multiple(CHANNEL(channel), mask);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
@@ -577,8 +579,11 @@ static void get_wildcard_nicks(GString *output, const char *mask,
 			continue;
 
 		g_string_sprintfa(output, "%s ", rec->nick);
+                count++;
 	}
 	g_slist_free(nicks);
+
+        return count;
 }
 
 static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
@@ -587,11 +592,14 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 {
         IRC_CHANNEL_REC *channel;
         GString *str;
+        GHashTable *optlist;
 	char **matches, **match, *ret, *channame, *nicks;
-        void *free_arg;
+	void *free_arg;
+        int count;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN_NAME, item, &channame, &nicks))
+			    PARAM_FLAG_OPTIONS | PARAM_FLAG_OPTCHAN_NAME,
+			    item, "op", &optlist, &channame, &nicks))
 		return NULL;
 
 	if (*nicks == '\0')
@@ -611,7 +619,19 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 			/* no wildcards */
                         g_string_sprintfa(str, "%s ", *match);
 		} else {
-                        get_wildcard_nicks(str, *match, channel, op, voice);
+			count = get_wildcard_nicks(str, *match, channel,
+						   op, voice);
+			if (count > settings_get_int("max_wildcard_modes") &&
+			    g_hash_table_lookup(optlist, "yes") == NULL) {
+                                /* too many matches */
+				g_string_free(str, TRUE);
+				cmd_params_free(free_arg);
+
+				signal_emit("error command", 1,
+					    GINT_TO_POINTER(CMDERR_NOT_GOOD_IDEA));
+				signal_stop();
+                                return NULL;
+			}
 		}
 	}
 
@@ -730,6 +750,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 void modes_init(void)
 {
 	settings_add_str("misc", "opermode", "");
+	settings_add_int("misc", "max_wildcard_modes", 6);
 
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
@@ -743,6 +764,8 @@ void modes_init(void)
 	command_bind_irc("voice", NULL, (SIGNAL_FUNC) cmd_voice);
 	command_bind_irc("devoice", NULL, (SIGNAL_FUNC) cmd_devoice);
 	command_bind_irc("mode", NULL, (SIGNAL_FUNC) cmd_mode);
+
+	command_set_options("op", "yes");
 }
 
 void modes_deinit(void)
