@@ -265,10 +265,11 @@ static void settings_destroy(SETTINGS_REC *rec)
 	g_free(rec);
 }
 
-static void settings_unref(SETTINGS_REC *rec)
+static void settings_unref(SETTINGS_REC *rec, int remove_hash)
 {
 	if (--rec->refcount == 0) {
-		g_hash_table_remove(settings, rec->key);
+		if (remove_hash)
+			g_hash_table_remove(settings, rec->key);
 		settings_destroy(rec);
 	}
 }
@@ -281,14 +282,14 @@ void settings_remove(const char *key)
 
 	rec = g_hash_table_lookup(settings, key);
 	if (rec != NULL)
-		settings_unref(rec);
+		settings_unref(rec, TRUE);
 }
 
 static int settings_remove_hash(const char *key, SETTINGS_REC *rec,
 				const char *module)
 {
 	if (strcmp(rec->module, module) == 0) {
-		settings_unref(rec);
+		settings_unref(rec, FALSE);
                 return TRUE;
 	}
 
