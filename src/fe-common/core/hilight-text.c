@@ -33,11 +33,9 @@
 #include "printtext.h"
 #include "formats.h"
 
-#define DEFAULT_HILIGHT_LEVEL \
-	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | MSGLEVEL_DCCMSGS)
-
 static HILIGHT_REC *next_hilight;
 static int hilight_stop_next;
+static int default_hilight_level;
 GSList *hilights;
 
 static void hilight_add_config(HILIGHT_REC *rec)
@@ -194,7 +192,7 @@ HILIGHT_REC *hilight_match(const char *channel, const char *nickmask,
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_LEVEL)) == 0)
+		if ((level & (rec->level > 0 ? rec->level : default_hilight_level)) == 0)
                         continue;
 		if (!rec->nick && nickmask != NULL)
                         continue;
@@ -450,7 +448,7 @@ static void cmd_hilight(const char *data)
 		level2bits(replace_chars(levelarg, ',', ' '));
 	rec->priority = priorityarg == NULL ? 0 : atoi(priorityarg);
 	rec->nick = settings_get_bool("hilight_only_nick") &&
-		(rec->level == 0 || (rec->level & DEFAULT_HILIGHT_LEVEL) == rec->level) ?
+		(rec->level == 0 || (rec->level & default_hilight_level) == rec->level) ?
 		g_hash_table_lookup(optlist, "nonick") == NULL :
 		g_hash_table_lookup(optlist, "nick") != NULL;
 	rec->nickmask = g_hash_table_lookup(optlist, "mask") != NULL;
@@ -491,18 +489,25 @@ static void cmd_dehilight(const char *data)
 	}
 }
 
+static void read_settings(void)
+{
+	default_hilight_level = level2bits(settings_get_str("hilight_levels"));
+}
+
 void hilight_text_init(void)
 {
         next_hilight = NULL;
 	hilight_stop_next = FALSE;
 
 	read_hilight_config();
-	settings_add_str("misc", "hilight_color", "8");
-	settings_add_bool("misc", "hilight_only_nick", TRUE);
+	settings_add_str("lookandfeel", "hilight_color", "8");
+	settings_add_bool("lookandfeel", "hilight_only_nick", TRUE);
+	settings_add_str("lookandfeel", "hilight_levels", "PUBLIC MSGS DCCMSGS");
 
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
         signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
+        signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
@@ -516,6 +521,7 @@ void hilight_text_deinit(void)
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
         signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
+        signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_unbind("hilight", (SIGNAL_FUNC) cmd_hilight);
 	command_unbind("dehilight", (SIGNAL_FUNC) cmd_dehilight);

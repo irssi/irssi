@@ -32,8 +32,8 @@
 #include "hilight-text.h"
 #include "formats.h"
 
-static char **noact_channels;
-static int hilight_level, activity_level;
+static char **hide_targets;
+static int hilight_levels, msg_levels;
 
 static void window_activity(WINDOW_REC *window,
 			    int data_level, int hilight_color)
@@ -69,8 +69,7 @@ static void window_item_activity(WI_ITEM_REC *item,
 
 #define hide_target_activity(data_level, target) \
 	((data_level) < DATA_LEVEL_HILIGHT && (target) != NULL && \
-	(noact_channels) != NULL && \
-	strarray_find((noact_channels), target) != -1)
+	hide_targets != NULL && strarray_find(hide_targets, target) != -1)
 
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
@@ -81,9 +80,9 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
-	data_level = (dest->level & hilight_level) ?
+	data_level = (dest->level & hilight_levels) ?
 		DATA_LEVEL_HILIGHT+dest->hilight_priority :
-		((dest->level & activity_level) ?
+		((dest->level & msg_levels) ?
 		 DATA_LEVEL_MSG : DATA_LEVEL_TEXT);
 
 	if (hide_target_activity(data_level, dest->target))
@@ -114,25 +113,25 @@ static void sig_dehilight_window(WINDOW_REC *window)
 
 static void read_settings(void)
 {
-	const char *channels;
+	const char *targets;
 
-	if (noact_channels != NULL)
-		g_strfreev(noact_channels);
+	if (hide_targets != NULL)
+		g_strfreev(hide_targets);
 
-        channels = settings_get_str("noact_channels");
-	noact_channels = *channels == '\0' ? NULL :
-		g_strsplit(channels, " ", -1);
+        targets = settings_get_str("activity_hide_targets");
+	hide_targets = *targets == '\0' ? NULL :
+		g_strsplit(targets, " ", -1);
 
-	activity_level = level2bits(settings_get_str("activity_levels"));
-	hilight_level = MSGLEVEL_HILIGHT |
-		level2bits(settings_get_str("hilight_levels"));
+	msg_levels = level2bits(settings_get_str("activity_msg_levels"));
+	hilight_levels = MSGLEVEL_HILIGHT |
+		level2bits(settings_get_str("activity_hilight_levels"));
 }
 
 void window_activity_init(void)
 {
-	settings_add_str("lookandfeel", "noact_channels", "");
-	settings_add_str("lookandfeel", "activity_levels", "PUBLIC");
-	settings_add_str("lookandfeel", "hilight_levels", "MSGS DCCMSGS");
+	settings_add_str("lookandfeel", "activity_hide_targets", "");
+	settings_add_str("lookandfeel", "activity_msg_levels", "PUBLIC");
+	settings_add_str("lookandfeel", "activity_hilight_levels", "MSGS DCCMSGS");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);
@@ -143,8 +142,8 @@ void window_activity_init(void)
 
 void window_activity_deinit(void)
 {
-	if (noact_channels != NULL)
-		g_strfreev(noact_channels);
+	if (hide_targets != NULL)
+		g_strfreev(hide_targets);
 
 	signal_remove("print text", (SIGNAL_FUNC) sig_hilight_text);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_dehilight_window);
