@@ -531,7 +531,10 @@ static void cmd_window_number(const char *data)
 /* SYNTAX: WINDOW NAME <name> */
 static void cmd_window_name(const char *data)
 {
-	if (window_find_name(data) == NULL)
+	WINDOW_REC *win;
+
+	win = window_find_name(data);
+	if (win == NULL || win == active_win)
 		window_set_name(active_win, data);
 	else if (active_win->name == NULL ||
 		 strcmp(active_win->name, data) != 0) {
