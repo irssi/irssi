@@ -408,7 +408,8 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 }
 
 /* SYNTAX: WHOIS [<server>] [<nicks>] */
-static void cmd_whois(const char *data, IRC_SERVER_REC *server)
+static void cmd_whois(const char *data, IRC_SERVER_REC *server,
+		      WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *qserver, *query;
@@ -427,7 +428,10 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 		query = qserver;
 		qserver = "";
 	}
-	if (*query == '\0') query = server->nick;
+	if (*query == '\0') {
+		QUERY_REC *queryitem = QUERY(item);
+		query = queryitem != NULL ? queryitem->name : server->nick;
+	}
 
 	if (strcmp(query, "*") == 0 &&
 	    g_hash_table_lookup(optlist, "yes") == NULL)
