@@ -29,7 +29,7 @@ typedef struct {
 	int tag;
         int refcount;
 	char *func;
-	char *data;
+	SV *data;
 } PERL_SOURCE_REC;
 
 static GSList *perl_sources;
@@ -44,8 +44,8 @@ static void perl_source_unref(PERL_SOURCE_REC *rec)
 	if (--rec->refcount != 0)
 		return;
 
+        SvREFCNT_dec(rec->data);
 	g_free(rec->func);
-	g_free(rec->data);
 	g_free(rec);
 }
 
@@ -68,7 +68,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	XPUSHs(sv_2mortal(new_pv(rec->data)));
+	XPUSHs(sv_mortalcopy(rec->data));
 	PUTBACK;
 
         perl_source_ref(rec);
@@ -94,23 +94,24 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	return 1;
 }
 
-int perl_timeout_add(int msecs, const char *func, const char *data)
+int perl_timeout_add(int msecs, const char *func, SV *data)
 {
 	PERL_SOURCE_REC *rec;
 
 	rec = g_new(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
+        SvREFCNT_inc(data);
+	rec->data = data;
+
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
-	rec->data = g_strdup(data);
 	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_source_event, rec);
 
 	perl_sources = g_slist_append(perl_sources, rec);
 	return rec->tag;
 }
 
-int perl_input_add(int source, int condition,
-		   const char *func, const char *data)
+int perl_input_add(int source, int condition, const char *func, SV *data)
 {
 	PERL_SOURCE_REC *rec;
         GIOChannel *channel;
@@ -118,9 +119,10 @@ int perl_input_add(int source, int condition,
 	rec = g_new(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
-	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
-	rec->data = g_strdup(data);
+        SvREFCNT_inc(data);
+	rec->data = data;
 
+	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
         channel = g_io_channel_unix_new(source);
 	rec->tag = g_input_add(channel, condition,
 			       (GInputFunction) perl_source_event, rec);

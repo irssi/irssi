@@ -1,9 +1,8 @@
 #ifndef __PERL_SOURCES_H
 #define __PERL_SOURCES_H
 
-int perl_timeout_add(int msecs, const char *func, const char *data);
-int perl_input_add(int source, int condition,
-		   const char *func, const char *data);
+int perl_timeout_add(int msecs, const char *func, SV *data);
+int perl_input_add(int source, int condition, const char *func, SV *data);
 
 void perl_source_remove(int tag);
 /* remove all sources used by package */
