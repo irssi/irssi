@@ -174,7 +174,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 
 	nickmask = g_strconcat(nick, "!", host, NULL);
 
-        best_mask = best_patt = 0; best_match = FALSE;
+        best_mask = best_patt = -1; best_match = FALSE;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		rec = tmp->data;
 
