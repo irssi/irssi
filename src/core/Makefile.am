@@ -7,12 +7,6 @@ INCLUDES = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DMODULEDIR=\""$(libdir)/irssi/modules"\"
 
-if BUILD_MEMDEBUG
-memdebug_src=memdebug.c
-else
-memdebug_src=
-endif
-
 libcore_a_SOURCES = \
 	args.c \
 	channels.c \
@@ -29,7 +23,6 @@ libcore_a_SOURCES = \
 	log.c \
 	log-away.c \
 	masks.c \
-        $(memdebug_src) \
 	misc.c \
 	modules.c \
 	modules-load.c \
@@ -75,7 +68,6 @@ noinst_HEADERS = \
 	line-split.h \
 	log.h \
 	masks.h \
-        memdebug.h \
 	misc.h \
 	module.h \
 	modules.h \
@@ -100,6 +92,3 @@ noinst_HEADERS = \
 	window-item-def.h \
 	write-buffer.h \
 	$(structure_headers)
-
-EXTRA_DIST = \
-	memdebug.c
