@@ -408,5 +408,4 @@ void irc_irc_deinit(void)
 	signal_remove("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	module_uniq_destroy("IRC");
-	module_uniq_destroy("IRC SERVER");
 }

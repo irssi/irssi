@@ -69,11 +69,11 @@ void irc_core_deinit(void)
 	ignore_deinit();
 	netsplit_deinit();
 	lag_deinit();
-	irc_irc_deinit();
 	irc_commands_deinit();
 	ctcp_deinit();
 
 	query_deinit();
 	channels_deinit();
+	irc_irc_deinit();
 	irc_servers_deinit();
 }

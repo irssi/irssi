@@ -495,4 +495,6 @@ void irc_servers_deinit(void)
 	ircnets_setup_deinit();
 	servers_idle_deinit();
 	servers_reconnect_deinit();
+
+	module_uniq_destroy("IRC SERVER");
 }

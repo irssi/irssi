@@ -130,7 +130,7 @@ create_addr_conn(const char *address, int port, const
 	}
 
 	/* fill the information from setup */
-	sserver = server_setup_find(address, -1);
+	sserver = server_setup_find(conn->address, conn->port);
 	if (sserver == NULL) return conn;
 
         if (sserver->port > 0) conn->port = sserver->port;
@@ -223,21 +223,36 @@ irc_server_create_conn(const char *dest, int port,
 	return create_addr_conn(dest, port, password, nick);
 }
 
-/* Find matching server from setup. Set port to -1 if you don't care about it */
+/* Find matching server from setup. Try to find record with a same port,
+   but fallback to any server with the same address. */
 SETUP_SERVER_REC *server_setup_find(const char *address, int port)
 {
+	SETUP_SERVER_REC *server;
 	GSList *tmp;
 
 	g_return_val_if_fail(address != NULL, NULL);
 
+	server = NULL;
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SETUP_SERVER_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->address, address) == 0 &&
-		    (port == -1 || rec->port == port)) return rec;
+		if (g_strcasecmp(rec->address, address) == 0) {
+			server = rec;
+			if (rec->port == port)
+				break;
+		}
 	}
 
-	return NULL;
+	return server;
+}
+
+/* Find matching server from setup. Ports must match or NULL is returned. */
+SETUP_SERVER_REC *server_setup_find_port(const char *address, int port)
+{
+	SETUP_SERVER_REC *rec;
+
+	rec = server_setup_find(address, port);
+	return rec == NULL || rec->port != port ? NULL : rec;
 }
 
 static void init_userinfo(void)
@@ -367,7 +382,7 @@ static SETUP_SERVER_REC *setupserver_add_node(CONFIG_NODE *node)
 	if (server == NULL) return NULL;
 
 	port = config_node_get_int(node, "port", 6667);
-	if (server_setup_find(server, port) != NULL) {
+	if (server_setup_find_port(server, port) != NULL) {
 		/* already exists - don't let it get there twice or
 		   server reconnects will screw up! */
 		return NULL;

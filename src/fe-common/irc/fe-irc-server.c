@@ -96,7 +96,7 @@ static void cmd_server_add(const char *data)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? 6667 : atoi(portstr);
 
-	rec = server_setup_find(addr, port);
+	rec = server_setup_find_port(addr, port);
 	if (rec == NULL) {
 		rec = g_new0(SETUP_SERVER_REC, 1);
 		rec->address = g_strdup(addr);
@@ -148,7 +148,7 @@ static void cmd_server_remove(const char *data)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? -1 : atoi(portstr);
 
-	rec = server_setup_find(addr, port);
+	rec = server_setup_find_port(addr, port);
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_NOT_FOUND, addr, port);
 	else {

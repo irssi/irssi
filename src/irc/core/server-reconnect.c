@@ -64,14 +64,20 @@ static void server_reconnect_destroy(RECONNECT_REC *rec, int free_conn)
 static int server_reconnect_timeout(void)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	GSList *tmp, *next;
+	GSList *list, *tmp;
 	time_t now;
 
+	/* If irc_server_connect() removes the next reconnection in queue,
+	   we're screwed. I don't think this should happen anymore, but just
+	   to be sure we don't crash, do this safely. */
+	list = g_slist_copy(reconnects);
 	now = time(NULL);
-	for (tmp = reconnects; tmp != NULL; tmp = next) {
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		RECONNECT_REC *rec = tmp->data;
 
-		next = tmp->next;
+		if (g_slist_find(reconnects, rec) == NULL)
+			continue;
+
 		if (rec->next_connect <= now) {
 			conn = rec->conn;
 			server_reconnect_destroy(rec, FALSE);
@@ -79,6 +85,7 @@ static int server_reconnect_timeout(void)
 		}
 	}
 
+	g_slist_free(list);
 	return 1;
 }
 
@@ -152,11 +159,8 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 		conn->usermode = g_strdup(server->usermode);
 	}
 
-	sserver = server_setup_find(server->connrec->address, server->connrec->port);
-	if (sserver == NULL) {
-		/* port specific record not found, try without port.. */
-		sserver = server_setup_find(server->connrec->address, -1);
-	}
+	sserver = server_setup_find(server->connrec->address,
+				    server->connrec->port);
 
 	if (sserver != NULL) {
 		/* save the last connection time/status */
@@ -230,33 +234,6 @@ static void sig_reconnect(IRC_SERVER_REC *server)
 
 		tmp = setupservers;
 		found = through = TRUE;
-	}
-}
-
-static void sig_server_looking(IRC_SERVER_REC *server)
-{
-	IRC_SERVER_CONNECT_REC *conn;
-	GSList *tmp, *next;
-
-	g_return_if_fail(server != NULL);
-	if (!irc_server_check(server))
-		return;
-
-	/* trying to connect somewhere, check if there's anything in reconnect
-	   queue waiting to connect to same ircnet or same server+port.. */
-        conn = server->connrec;
-	for (tmp = reconnects; tmp != NULL; tmp = next) {
-		RECONNECT_REC *rec = tmp->data;
-
-		next = tmp->next;
-		if (g_strcasecmp(conn->address, rec->conn->address) == 0 &&
-		    conn->port == rec->conn->port) {
-			server_reconnect_destroy(rec, TRUE);
-		}
-		else if (conn->ircnet != NULL && rec->conn->ircnet != NULL &&
-			 g_strcasecmp(conn->ircnet, rec->conn->ircnet) == 0) {
-			server_reconnect_destroy(rec, TRUE);
-		}
 	}
 }
 
@@ -388,7 +365,6 @@ void servers_reconnect_init(void)
 	reconnect_timeout_tag = g_timeout_add(1000, (GSourceFunc) server_reconnect_timeout, NULL);
 	read_settings();
 
-	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_reconnect);
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
@@ -405,7 +381,6 @@ void servers_reconnect_deinit(void)
 	while (reconnects != NULL)
 		server_reconnect_destroy(reconnects->data, TRUE);
 
-	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_reconnect);
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);

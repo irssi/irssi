@@ -38,8 +38,11 @@ void server_setup_fill_conn(IRC_SERVER_CONNECT_REC *conn, SETUP_SERVER_REC *sser
 void server_setup_add(SETUP_SERVER_REC *rec);
 void server_setup_remove(SETUP_SERVER_REC *rec);
 
-/* Find matching server from setup. Set port to -1 if you don't care about it */
+/* Find matching server from setup. Try to find record with a same port,
+   but fallback to any server with the same address. */
 SETUP_SERVER_REC *server_setup_find(const char *address, int port);
+/* Find matching server from setup. Ports must match or NULL is returned. */
+SETUP_SERVER_REC *server_setup_find_port(const char *address, int port);
 
 void servers_setup_init(void);
 void servers_setup_deinit(void);
