@@ -848,6 +848,8 @@ THEME_REC *theme_load(const char *setname)
 
 	if (oldtheme != NULL && theme != NULL) {
 		theme_destroy(oldtheme);
+		if (current_theme == oldtheme)
+			current_theme = theme;
 		window_themes_update();
 	}
 
