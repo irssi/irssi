@@ -231,8 +231,8 @@ static void notifylist_idle_reset(IRC_SERVER_REC *server, const char *nick)
 	rec = notify_nick_find(server, nick);
 
 	if (notify != NULL && rec != NULL && notify->idle_check_time > 0 &&
-	    time(NULL)-rec->idle_time > notify->idle_check_time) {
-                rec->idle_time = time(NULL);
+	    rec->idle_time > notify->idle_check_time) {
+                rec->idle_time = 0;
 		signal_emit("notifylist unidle", 6,
 			    server, rec->nick,
 			    rec->user, rec->host,
@@ -289,7 +289,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	if (away != -1) rec->away = away;
 	rec->host_ok = TRUE;
 	rec->join_announced = TRUE;
-	rec->idle_time = time(NULL);
+	rec->idle_time = 0;
 
 	signal_emit("notifylist joined", 6,
 		    server, rec->nick, rec->user, rec->host, realname, NULL);

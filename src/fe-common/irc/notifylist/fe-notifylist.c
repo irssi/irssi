@@ -144,7 +144,7 @@ static void notifylist_print(NOTIFYLIST_REC *rec)
 	if (rec->idle_check_time <= 0)
 		idle[0] = '\0';
 	else
-		g_snprintf(idle, sizeof(idle), "-idle %d", rec->idle_check_time);
+		g_snprintf(idle, sizeof(idle), "-idle %d", rec->idle_check_time/60);
 
 	ircnets = rec->ircnets == NULL ? NULL :
 		g_strjoinv(",", rec->ircnets);

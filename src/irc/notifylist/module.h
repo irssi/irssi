@@ -7,7 +7,7 @@
 typedef struct {
 	char *nick;
 	char *user, *host, *realname, *awaymsg;
-	time_t idle_time;
+	int idle_time;
 
 	int host_ok:1; /* host matches the one in notifylist = this is the right person*/
 	int away_ok:1; /* not away, or we don't care about it */

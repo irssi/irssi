@@ -78,16 +78,15 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &secstr);
-	secs = atoi(secstr);
+	secs = atol(secstr);
 
 	notify = notifylist_find(nick, server->connrec->ircnet);
 	nickrec = notify_nick_find(server, nick);
 	if (notify != NULL && nickrec != NULL) {
-                time_t now = time(NULL);
-		nickrec->idle_changed = secs < now-nickrec->idle_time &&
-			now-nickrec->idle_time > notify->idle_check_time;
+		nickrec->idle_changed = secs < nickrec->idle_time &&
+			nickrec->idle_time > notify->idle_check_time;
 
-		nickrec->idle_time = now-secs;
+		nickrec->idle_time = secs;
 	}
 
 	g_free(params);
@@ -120,9 +119,7 @@ static void event_whois_end(const char *data, IRC_SERVER_REC *server)
 	GSList *tmp;
 	const char *event;
 	int away_ok;
-	time_t now;
 
-	now = time(NULL);
 	mserver = MODULE_DATA(server);
 	for (tmp = mserver->notify_users; tmp != NULL; tmp = tmp->next) {
 		rec = tmp->data;
@@ -138,7 +135,7 @@ static void event_whois_end(const char *data, IRC_SERVER_REC *server)
 		event = NULL;
 		if (!rec->join_announced) {
 			rec->join_announced = TRUE;
-			rec->idle_time = now;
+			rec->idle_time = 0;
 			if (away_ok) event = "notifylist joined";
 		} else if (notify->away_check && rec->away_ok == rec->away)
 			event = "notifylist away changed";
@@ -151,7 +148,7 @@ static void event_whois_end(const char *data, IRC_SERVER_REC *server)
 				    rec->realname, rec->awaymsg);
 		}
 		rec->idle_ok = notify->idle_check_time <= 0 ||
-			now-rec->idle_time <= notify->idle_check_time;
+			rec->idle_time <= notify->idle_check_time;
 		rec->idle_changed = FALSE;
                 rec->away_ok = away_ok;
 	}
