@@ -123,7 +123,8 @@ static void event_end_of_names(SERVER_REC *server, const char *data)
 
 	chanrec = channel_find(server, channel);
 	if (chanrec != NULL && !chanrec->names_got) {
-		chanrec->ownnick = nicklist_find(chanrec, server->nick);
+		nicklist_set_own(chanrec,
+				 nicklist_find(chanrec, server->nick));
                 chanrec->chanop = chanrec->ownnick->op;
 		chanrec->names_got = TRUE;
 		signal_emit("channel joined", 1, chanrec);

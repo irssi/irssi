@@ -37,6 +37,8 @@
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || isalnum(c))
 
+static GHashTable *printnicks;
+
 /* convert _underlined_ and *bold* words (and phrases) to use real
    underlining or bolding */
 char *expand_emphasis(WI_ITEM_REC *item, const char *text)
@@ -127,18 +129,33 @@ char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
 		(nickrec->op ? "@" : (nickrec->voice ? "+" : emptystr));
 }
 
+static char *channel_get_nickmode_rec(NICK_REC *nickrec)
+{
+        char *emptystr;
+
+	if (!settings_get_bool("show_nickmode"))
+                return "";
+
+        emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
+
+	return nickrec == NULL ? emptystr :
+		(nickrec->op ? "@" : (nickrec->voice ? "+" : emptystr));
+}
+
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
-			       const char *target)
+			       const char *target, NICK_REC *nickrec)
 {
 	CHANNEL_REC *chanrec;
-	const char *nickmode;
+	const char *nickmode, *printnick;
 	int for_me, print_channel, level;
 	char *color, *freemsg = NULL;
 
 	/* NOTE: this may return NULL if some channel is just closed with
 	   /WINDOW CLOSE and server still sends the few last messages */
 	chanrec = channel_find(server, target);
+	if (nickrec == NULL && chanrec != NULL)
+                nickrec = nicklist_find(chanrec, nick);
 
 	for_me = nick_match_msg(chanrec, msg, server->nick);
 	color = for_me ? NULL :
@@ -156,18 +173,25 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
 
-	nickmode = channel_get_nickmode(chanrec, nick);
+	/* get nick mode & nick what to print the msg with
+	   (in case there's multiple identical nicks) */
+	nickmode = channel_get_nickmode_rec(nickrec);
+	printnick = nickrec == NULL ? nick :
+		g_hash_table_lookup(printnicks, nickrec);
+	if (printnick == NULL)
+		printnick = nick;
+
 	if (!print_channel) {
 		/* message to active channel in window */
 		if (color != NULL) {
 			/* highlighted nick */
 			printformat(server, target, level,
 				    TXT_PUBMSG_HILIGHT,
-				    color, nick, msg, nickmode);
+				    color, printnick, msg, nickmode);
 		} else {
 			printformat(server, target, level,
 				    for_me ? TXT_PUBMSG_ME : TXT_PUBMSG,
-				    nick, msg, nickmode);
+				    printnick, msg, nickmode);
 		}
 	} else {
 		/* message to not existing/active channel */
@@ -175,12 +199,12 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 			/* highlighted nick */
 			printformat(server, target, level,
 				    TXT_PUBMSG_HILIGHT_CHANNEL,
-				    color, nick, target, msg, nickmode);
+				    color, printnick, target, msg, nickmode);
 		} else {
 			printformat(server, target, level,
 				    for_me ? TXT_PUBMSG_ME_CHANNEL :
 				    TXT_PUBMSG_CHANNEL,
-				    nick, target, msg, nickmode);
+				    printnick, target, msg, nickmode);
 		}
 	}
 
@@ -474,8 +498,110 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 		    nick, channel, topic);
 }
 
+static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
+			    const char *nick)
+{
+        char *str;
+
+	while (first != NULL) {
+		if (first != ignore) {
+			str = g_hash_table_lookup(printnicks, first->nick);
+			if (str != NULL && strcmp(str, nick) == 0)
+                                return TRUE;
+		}
+                first = first->next;
+	}
+
+        return FALSE;
+}
+
+static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
+{
+	NICK_REC *firstnick;
+	GString *newnick;
+	char *nickhost, *p;
+	int n;
+
+	if (nick->host == NULL || nick == channel->ownnick)
+                return;
+
+	firstnick = g_hash_table_lookup(channel->nicks, nick->nick);
+	if (firstnick->next == NULL)
+		return;
+
+	/* identical nick already exists, have to change it somehow.. */
+	p = strchr(nick->host, '@');
+	if (p == NULL) p = nick->host; else p++;
+
+	nickhost = g_strdup_printf("%s@%s", nick->nick, p);
+	p = strchr(nickhost+strlen(nick->nick), '.');
+	if (p != NULL) *p = '\0';
+
+	if (!printnick_exists(firstnick, nick, nickhost)) {
+                /* use nick@host */
+		g_hash_table_insert(printnicks, nick, nickhost);
+                return;
+	}
+
+	newnick = g_string_new(NULL);
+        n = 2;
+	do {
+		g_string_sprintf(newnick, "%s%d", nickhost, n);
+                n++;
+	} while (printnick_exists(firstnick, nick, newnick->str));
+
+	g_hash_table_insert(printnicks, nick, newnick->str);
+        g_string_free(newnick, FALSE);
+}
+
+static void sig_nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
+{
+        g_hash_table_remove(printnicks, nick);
+}
+
+static void sig_nicklist_changed(CHANNEL_REC *channel, NICK_REC *nick)
+{
+        sig_nicklist_remove(channel, nick);
+        sig_nicklist_new(channel, nick);
+}
+
+static void sig_channel_joined(CHANNEL_REC *channel)
+{
+        NICK_REC *nick;
+	char *nickname;
+
+	/* channel->ownnick is set at this point - check if our own nick
+	   has been changed, if it was set it back to the original nick and
+	   change the previous original to something else */
+
+        nickname = g_hash_table_lookup(printnicks, channel->ownnick);
+	if (nickname == NULL)
+		return;
+
+        g_free(nickname);
+	g_hash_table_remove(printnicks, channel->ownnick);
+
+        /* our own nick is guaranteed to be the first in list */
+        nick = channel->ownnick->next;
+	while (nick != NULL) {
+		if (g_hash_table_lookup(printnicks, nick) == NULL) {
+			sig_nicklist_new(channel, nick);
+                        break;
+		}
+                nick = nick->next;
+	}
+}
+
+static void g_hash_free_value(void *key, void *value)
+{
+        g_free(value);
+}
+
 void fe_messages_init(void)
 {
+	printnicks = g_hash_table_new((GHashFunc) g_direct_hash,
+				      (GCompareFunc) g_direct_equal);
+
 	settings_add_bool("lookandfeel", "emphasis", TRUE);
 	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
 	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);
@@ -496,10 +622,19 @@ void fe_messages_init(void)
 	signal_add("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_add("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_add("message topic", (SIGNAL_FUNC) sig_message_topic);
+
+	signal_add("nicklist new", (SIGNAL_FUNC) sig_nicklist_new);
+	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nicklist_remove);
+	signal_add("nicklist changed", (SIGNAL_FUNC) sig_nicklist_changed);
+	signal_add("nicklist host changed", (SIGNAL_FUNC) sig_nicklist_new);
+	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 }
 
 void fe_messages_deinit(void)
 {
+        g_hash_table_foreach(printnicks, (GHFunc) g_hash_free_value, NULL);
+	g_hash_table_destroy(printnicks);
+
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
@@ -512,4 +647,10 @@ void fe_messages_deinit(void)
 	signal_remove("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
+
+	signal_remove("nicklist new", (SIGNAL_FUNC) sig_nicklist_new);
+	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nicklist_remove);
+	signal_remove("nicklist changed", (SIGNAL_FUNC) sig_nicklist_changed);
+	signal_remove("nicklist host changed", (SIGNAL_FUNC) sig_nicklist_new);
+	signal_remove("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 }

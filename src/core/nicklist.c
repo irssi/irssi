@@ -389,6 +389,26 @@ void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 					  nicklist_get_same_unique(server, id));
 }
 
+/* Specify which nick in channel is ours */
+void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick)
+{
+	NICK_REC *first, *next;
+
+        channel->ownnick = nick;
+
+	/* move our nick in the list to first, makes some things easier
+	   (like handling multiple identical nicks in fe-messages.c) */
+	first = g_hash_table_lookup(channel->nicks, nick->nick);
+	if (first->next == NULL)
+		return;
+
+	next = nick->next;
+	nick->next = first;
+	first->next = next;
+
+        g_hash_table_insert(channel->nicks, nick->nick, nick);
+}
+
 static void sig_channel_created(CHANNEL_REC *channel)
 {
 	g_return_if_fail(IS_CHANNEL(channel));

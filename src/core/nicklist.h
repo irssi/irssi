@@ -44,6 +44,9 @@ void nicklist_update_flags(SERVER_REC *server, const char *nick,
 void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 			   int gone, int ircop);
 
+/* Specify which nick in channel is ours */
+void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick);
+
 /* Nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2);
 
