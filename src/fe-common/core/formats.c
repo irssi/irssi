@@ -37,7 +37,7 @@ static const char *format_fores = "kbgcrmyw";
 static const char *format_boldfores = "KBGCRMYW";
 
 static int signal_gui_print_text;
-static int hide_text_style, hide_server_tags;
+static int hide_text_style, hide_server_tags, hide_mirc_colors;
 
 static int timestamps, msgs_timestamps;
 static int timestamp_timeout;
@@ -940,9 +940,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 3:
 			/* MIRC color */
 			get_mirc_color((const char **) &ptr,
-				       hide_text_style ? NULL : &fgcolor,
-				       hide_text_style ? NULL : &bgcolor);
-			if (!hide_text_style)
+					hide_mirc_colors || hide_text_style ? NULL : &fgcolor,
+					hide_mirc_colors || hide_text_style ? NULL : &bgcolor);
+			if (!hide_mirc_colors || !hide_text_style)
 				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
 		case 4:
@@ -1051,6 +1051,7 @@ static void read_settings(void)
 	timestamps = settings_get_bool("timestamps");
 	timestamp_timeout = settings_get_int("timestamp_timeout");
 	msgs_timestamps = settings_get_bool("msgs_timestamps");
+	hide_mirc_colors = settings_get_bool("hide_mirc_colors");
 }
 
 void formats_init(void)
