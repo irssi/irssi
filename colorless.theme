@@ -47,15 +47,15 @@
 
 #############################################################################
 
-# default foreground color (%N) - 0 is the "default terminal color"
-default_color = 0;
-# default foreground color when "0" can't be used,
-# such as with bolds and reverses. white is default.
-default_real_color = 7;
+# default foreground color (%N) - -1 is the "default terminal color"
+default_color = "-1";
+
+# print timestamp/servertag at the end of line, not at beginning
+info_eol = "false";
 
 # these characters are automatically replaced with specified color
 # (dark grey by default)
-#replaces = { "[]<>=" = "$*"; };
+#replaces = { "[]=" = "%K$*%n"; };
 
 abstracts = {
   ##
@@ -197,7 +197,7 @@ abstracts = {
   ##
 
   # whois
-  whois = " $[8]0 : $1-";
+  whois = "%# $[8]0 : $1-";
 
   # notices
   ownnotice = "[$0($1-)] ";
@@ -220,7 +220,11 @@ abstracts = {
   netjoin = "$*";
 
   # /names list
+  names_prefix = "";
   names_nick = "[$0$1-] ";
+  names_nick_op = "{names_nick $*}";
+  names_nick_halfop = "{names_nick $*}";
+  names_nick_voice = "{names_nick $*}";
   names_users = "[$*]";
   names_channel = "$*";
 
@@ -231,6 +235,7 @@ abstracts = {
   # DCC chat, own msg/action
   dccownmsg = "[$0($1-)] ";
   dccownnick = "$*";
+  dccownquerynick = "$*";
   dccownaction = "{action $*}";
   dccownaction_target = "{action_core $0}:$1 ";
 
@@ -243,13 +248,14 @@ abstracts = {
   ## statusbar
   ##
 
-  # default background for all statusbars
+  # default background for all statusbars. You can also give
+  # the default foreground color for statusbar items.
   sb_background = "%8";
 
   # default backround for "default" statusbar group
   #sb_default_bg = "%8";
   # background for prompt / input line
-  sb_prompt_bg = "%0";
+  sb_prompt_bg = "%n";
   # background for info statusbar
   sb_info_bg = "%8";
   # background for topicbar (same default)
@@ -262,10 +268,23 @@ abstracts = {
   # used for anything.
   sbend = " ";
 
+  prompt = "[$*] ";
+
   sb = " [$*]";
   sbmode = "(+$*)";
   sbaway = " (zZzZ)";
   sbservertag = ":$0 (change with ^X)";
 
-  prompt = "[$*] ";
+  # activity in statusbar
+
+  # ',' separator
+  sb_act_sep = "$*";
+  # normal text
+  sb_act_text = "$*";
+  # public message
+  sb_act_msg = "%_$*%_";
+  # hilight
+  sb_act_hilight = "%8$*%8";
+  # hilight with specified color, $0 = color, $1 = text
+  sb_act_hilight_color = "$0$1-%n";
 };
