@@ -21,6 +21,15 @@ PPCODE:
 		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Reconnect")));
 	}
 
+void
+chatnets()
+PREINIT:
+	GSList *tmp;
+PPCODE:
+	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
+		XPUSHs(sv_2mortal(irssi_bless((CHATNET_REC *) tmp->data)));
+	}
+
 Irssi::Connect
 server_create_conn(chat_type, dest, port=6667, chatnet=NULL, password=NULL, nick=NULL)
 	int chat_type
@@ -37,6 +46,10 @@ server_find_tag(tag)
 Irssi::Server
 server_find_chatnet(chatnet)
 	char *chatnet
+
+Irssi::Chatnet
+chatnet_find(name)
+	char *name
 
 #*******************************
 MODULE = Irssi::Server	PACKAGE = Irssi::Server  PREFIX = server_
