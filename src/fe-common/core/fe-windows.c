@@ -135,7 +135,7 @@ void window_auto_destroy(WINDOW_REC *window)
 {
 	if (settings_get_bool("autoclose_windows") && windows->next != NULL &&
 	    window->items == NULL && window->bound_items == NULL &&
-	    window->level == 0)
+	    window->level == 0 && !window->immortal)
                 window_destroy(window);
 }
 
@@ -216,6 +216,14 @@ void window_set_level(WINDOW_REC *window, int level)
 
 	window->level = level;
         signal_emit("window level changed", 1, window);
+}
+
+void window_set_immortal(WINDOW_REC *window, int immortal)
+{
+	g_return_if_fail(window != NULL);
+
+	window->immortal = immortal;
+        signal_emit("window immortal changed", 1, window);
 }
 
 /* return active item's name, or if none is active, window's name */

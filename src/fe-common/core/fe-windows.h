@@ -31,6 +31,7 @@ struct _WINDOW_REC {
 	int level; /* message level */
 	GSList *bound_items; /* list of WINDOW_BIND_RECs */
 
+	unsigned int immortal:1;
 	unsigned int sticky_refnum:1;
 	unsigned int destroying:1;
 
@@ -65,6 +66,7 @@ void window_set_refnum(WINDOW_REC *window, int refnum);
 void window_set_name(WINDOW_REC *window, const char *name);
 void window_set_history(WINDOW_REC *window, const char *name);
 void window_set_level(WINDOW_REC *window, int level);
+void window_set_immortal(WINDOW_REC *window, int immortal);
 
 /* return active item's name, or if none is active, window's name */
 char *window_get_active_name(WINDOW_REC *window);

@@ -94,15 +94,21 @@ static void cmd_window_info(WINDOW_REC *win)
 				   TXT_WINDOW_INFO_NAME, win->name);
 	}
 
+        /* Window width / height */
+	printformat_window(win, MSGLEVEL_CLIENTCRAP, TXT_WINDOW_INFO_SIZE,
+			   win->width, win->height);
+
+	/* Window immortality */
+	if (win->immortal) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_IMMORTAL);
+	}
+
 	/* Window history name */
 	if (win->history_name != NULL) {
 		printformat_window(win, MSGLEVEL_CLIENTCRAP,
 				   TXT_WINDOW_INFO_HISTORY, win->history_name);
 	}
-
-        /* Window width / height */
-	printformat_window(win, MSGLEVEL_CLIENTCRAP, TXT_WINDOW_INFO_SIZE,
-			   win->width, win->height);
 
         /* Window level */
 	levelstr = win->level == 0 ?
@@ -209,8 +215,14 @@ static void cmd_window_close(const char *data)
 	while (destroys != NULL) {
 		WINDOW_REC *rec = destroys->data;
 
-		if (windows->next != NULL)
-			window_destroy(rec);
+		if (windows->next != NULL) {
+			if (!rec->immortal)
+				window_destroy(rec);
+			else {
+				printformat_window(rec, MSGLEVEL_CLIENTERROR,
+						   TXT_WINDOW_IMMORTAL_ERROR);
+			}
+		}
 
                 destroys = g_slist_remove(destroys, rec);
 	}
@@ -327,6 +339,33 @@ static void cmd_window_level(const char *data)
 	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 			   TXT_WINDOW_LEVEL, level);
 	g_free(level);
+}
+
+/* SYNTAX: WINDOW IMMORTAL on|off|toggle */
+static void cmd_window_immortal(const char *data)
+{
+	int set;
+
+	if (g_strcasecmp(data, "ON") == 0)
+                set = TRUE;
+	else if (g_strcasecmp(data, "OFF") == 0)
+                set = FALSE;
+	else if (g_strcasecmp(data, "TOGGLE") == 0)
+                set = !active_win->immortal;
+	else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
+		return;
+	}
+
+	if (set) {
+                window_set_immortal(active_win, TRUE);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_SET_IMMORTAL);
+	} else {
+                window_set_immortal(active_win, FALSE);
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_UNSET_IMMORTAL);
+	}
 }
 
 /* SYNTAX: WINDOW SERVER [-sticky | -unsticky] <tag> */
@@ -697,6 +736,7 @@ void window_commands_init(void)
 	command_bind("window next", NULL, (SIGNAL_FUNC) cmd_window_next);
 	command_bind("window last", NULL, (SIGNAL_FUNC) cmd_window_last);
 	command_bind("window level", NULL, (SIGNAL_FUNC) cmd_window_level);
+	command_bind("window immortal", NULL, (SIGNAL_FUNC) cmd_window_immortal);
 	command_bind("window item", NULL, (SIGNAL_FUNC) cmd_window_item);
 	command_bind("window item prev", NULL, (SIGNAL_FUNC) cmd_window_item_prev);
 	command_bind("window item next", NULL, (SIGNAL_FUNC) cmd_window_item_next);
@@ -735,6 +775,7 @@ void window_commands_deinit(void)
 	command_unbind("window next", (SIGNAL_FUNC) cmd_window_next);
 	command_unbind("window last", (SIGNAL_FUNC) cmd_window_last);
 	command_unbind("window level", (SIGNAL_FUNC) cmd_window_level);
+	command_unbind("window immortal", (SIGNAL_FUNC) cmd_window_immortal);
 	command_unbind("window item", (SIGNAL_FUNC) cmd_window_item);
 	command_unbind("window item prev", (SIGNAL_FUNC) cmd_window_item_prev);
 	command_unbind("window item next", (SIGNAL_FUNC) cmd_window_item_next);

@@ -36,6 +36,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	hv_store(hv, "servertag", 9, new_pv(window->servertag), 0);
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
 
+	hv_store(hv, "immortal", 8, newSViv(window->immortal), 0);
 	hv_store(hv, "sticky_refnum", 13, newSViv(window->sticky_refnum), 0);
 
 	hv_store(hv, "data_level", 10, newSViv(window->data_level), 0);
