@@ -14,6 +14,8 @@ irssi_DEPENDENCIES = @COMMON_LIBS@
 
 irssi_LDADD = \
 	@COMMON_LIBS@ \
+	@PERL_LINK_LIBS@ \
+	@PERL_FE_LINK_LIBS@ \
 	$(PROG_LIBS) \
         $(CURSES_LIBS)
 

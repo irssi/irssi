@@ -495,6 +495,9 @@ if test "$want_perl" != "no"; then
 		AC_SUBST(perl_static_fe_lib)
 		AC_SUBST(PERL_LIBTOOL)
 
+		AC_SUBST(PERL_LINK_LIBS)
+		AC_SUBST(PERL_FE_LINK_LIBS)
+
 		AC_SUBST(PERL_LDFLAGS)
 		AC_SUBST(PERL_CFLAGS)
 		AC_SUBST(PERL_LIB_DIR)
