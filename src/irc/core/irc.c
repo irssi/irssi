@@ -36,6 +36,12 @@ static int signal_default_event;
 static int signal_server_event;
 static int signal_server_incoming;
 
+#ifdef BLOCKING_SOCKETS
+#  define MAX_SOCKET_READS 1
+#else
+#  define MAX_SOCKET_READS 5
+#endif
+
 static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int immediate)
 {
 	char str[513], *ptr;
@@ -341,10 +347,10 @@ static void irc_parse_incoming(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	/* Some commands can send huge replies and irssi might handle them
-	   too slowly, so read only max. 5 times from the socket before
+	   too slowly, so read only a few times from the socket before
 	   letting other tasks to run. */
 	count = 0;
-	while (irc_receive_line(server, &str, count < 5) > 0) {
+	while (irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
 
