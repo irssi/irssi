@@ -26,14 +26,35 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "dcc.h"
+#include "dcc-send.h"
+#include "dcc-chat.h"
+
+static SEND_DCC_REC *dcc_send_create(IRC_SERVER_REC *server,
+				     CHAT_DCC_REC *chat,
+				     const char *nick, const char *arg)
+{
+	SEND_DCC_REC *dcc;
+
+	dcc = g_new0(SEND_DCC_REC, 1);
+	dcc->orig_type = module_get_uniq_id_str("DCC", "GET");
+	dcc->type = module_get_uniq_id_str("DCC", "SEND");
+	dcc->fhandle = -1;
+
+	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
+        return dcc;
+}
+
+static void sig_dcc_destroyed(SEND_DCC_REC *dcc)
+{
+	if (!IS_DCC_SEND(dcc)) return;
+
+	if (dcc->fhandle != -1) close(dcc->fhandle);
+}
 
 /* input function: DCC SEND - we're ready to send more data */
-static void dcc_send_data(DCC_REC *dcc)
+static void dcc_send_data(SEND_DCC_REC *dcc)
 {
 	int ret;
-
-	g_return_if_fail(dcc != NULL);
 
 	if (!dcc->fastsend && !dcc->gotalldata) {
 		/* haven't received everything we've send there yet.. */
@@ -43,15 +64,14 @@ static void dcc_send_data(DCC_REC *dcc)
 	ret = read(dcc->fhandle, dcc->databuf, dcc->databufsize);
 	if (ret <= 0) {
 		/* end of file .. or some error .. */
-		if (dcc->fastsend) {
+		if (!dcc->fastsend)
+			dcc_close(DCC(dcc));
+		else {
 			/* no need to call this function anymore..
 			   in fact it just eats all the cpu.. */
 			dcc->waitforend = TRUE;
 			g_source_remove(dcc->tagwrite);
 			dcc->tagwrite = -1;
-		} else {
-			signal_emit("dcc closed", 1, dcc);
-			dcc_destroy(dcc);
 		}
 		return;
 	}
@@ -66,12 +86,10 @@ static void dcc_send_data(DCC_REC *dcc)
 }
 
 /* input function: DCC SEND - received some data */
-static void dcc_send_read_size(DCC_REC *dcc)
+static void dcc_send_read_size(SEND_DCC_REC *dcc)
 {
 	guint32 bytes;
 	int ret;
-
-	g_return_if_fail(dcc != NULL);
 
 	if (dcc->count_pos == 4)
 		return;
@@ -80,8 +98,7 @@ static void dcc_send_read_size(DCC_REC *dcc)
 	ret = net_receive(dcc->handle, dcc->count_buf+dcc->count_pos,
 			  4-dcc->count_pos);
 	if (ret == -1) {
-		signal_emit("dcc closed", 1, dcc);
-		dcc_destroy(dcc);
+		dcc_close(DCC(dcc));
 		return;
 	}
 
@@ -103,19 +120,16 @@ static void dcc_send_read_size(DCC_REC *dcc)
 
 	if (dcc->waitforend && dcc->gotalldata) {
 		/* file is sent */
-		signal_emit("dcc closed", 1, dcc);
-		dcc_destroy(dcc);
+		dcc_close(DCC(dcc));
 	}
 }
 
 /* input function: DCC SEND - someone tried to connect to our socket */
-static void dcc_send_connected(DCC_REC *dcc)
+static void dcc_send_connected(SEND_DCC_REC *dcc)
 {
         GIOChannel *handle;
 	IPADDR addr;
 	int port;
-
-	g_return_if_fail(dcc != NULL);
 
 	/* accept connection */
 	handle = net_accept(dcc->handle, &addr, &port);
@@ -181,7 +195,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	char host[MAX_IP_LEN];
 	int hfile, port;
 	long fsize;
-	DCC_REC *dcc, *chat;
+        SEND_DCC_REC *dcc;
+	CHAT_DCC_REC *chat;
 	IPADDR own_ip;
         GIOChannel *handle;
 
@@ -203,7 +218,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	if ((server == NULL || !server->connected) && chat == NULL)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	if (dcc_find_request(DCC_TYPE_SEND, target, fname)) {
+	if (dcc_find_request(DCC_SEND_TYPE, target, fname)) {
 		signal_emit("dcc error send exists", 2, target, fname);
 		cmd_params_free(free_arg);
 		return;
@@ -232,7 +247,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 	fname = g_basename(fname);
 
-	dcc = dcc_create(DCC_TYPE_SEND, target, fname, server, chat);
+	dcc = dcc_send_create(server, chat, target, fname);
         dcc->handle = handle;
 	dcc->port = port;
 	dcc->size = fsize;
@@ -242,7 +257,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 				   (GInputFunction) dcc_send_connected, dcc);
 
 	/* send DCC request */
-	dcc_make_address(&own_ip, host);
+	dcc_ip2str(&own_ip, host);
 	str = g_strdup_printf(dcc->file_quoted ?
 			      "DCC SEND \"%s\" %s %d %lu" :
 			      "DCC SEND %s %s %d %lu",
@@ -255,13 +270,17 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 void dcc_send_init(void)
 {
+        dcc_register_type("SEND");
 	settings_add_bool("dcc", "dcc_fast_send", TRUE);
 	settings_add_str("dcc", "dcc_upload_path", "~");
 
+	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
 }
 
 void dcc_send_deinit(void)
 {
+        dcc_unregister_type("SEND");
+	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);
 }

@@ -22,17 +22,15 @@
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
-#include "net-sendbuffer.h"
 #include "line-split.h"
+#include "misc.h"
 #include "settings.h"
 
 #include "irc.h"
 
 #include "dcc-chat.h"
 #include "dcc-get.h"
-
-void dcc_send_init(void);
-void dcc_send_deinit(void);
+#include "dcc-send.h"
 
 void dcc_resume_init(void);
 void dcc_resume_deinit(void);
@@ -40,63 +38,58 @@ void dcc_resume_deinit(void);
 void dcc_autoget_init(void);
 void dcc_autoget_deinit(void);
 
-#define DCC_TYPES 5
-
-static const char *dcc_types[] = {
-	"CHAT",
-	"SEND",
-	"GET",
-	"RESUME",
-	"ACCEPT"
-};
-
 GSList *dcc_conns;
 
+static GSList *dcc_types;
 static int dcc_timeouttag;
 
-/* Create new DCC record */
-DCC_REC *dcc_create(int type, const char *nick, const char *arg,
-		    IRC_SERVER_REC *server, DCC_REC *chat)
+void dcc_register_type(const char *type)
 {
-	DCC_REC *dcc;
+        dcc_types = g_slist_append(dcc_types, g_strdup(type));
+}
 
-	g_return_val_if_fail(nick != NULL, NULL);
-	g_return_val_if_fail(arg != NULL, NULL);
+void dcc_unregister_type(const char *type)
+{
+	GSList *pos;
 
-	dcc = g_new0(DCC_REC, 1);
-	dcc->mirc_ctcp = settings_get_bool("dcc_mirc_ctcp");
+	pos = gslist_find_string(dcc_types, type);
+	if (pos != NULL) {
+		g_free(pos->data);
+                dcc_types = g_slist_remove(dcc_types, pos->data);
+	}
+}
+
+int dcc_str2type(const char *str)
+{
+	if (gslist_find_string(dcc_types, str) == NULL)
+		return -1;
+
+        return module_get_uniq_id_str("DCC", str);
+}
+
+/* Initialize DCC record */
+void dcc_init_rec(DCC_REC *dcc, IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
+		  const char *nick, const char *arg)
+{
+	g_return_if_fail(dcc != NULL);
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(arg != NULL);
+	g_return_if_fail(server != NULL || chat != NULL);
+
 	dcc->created = time(NULL);
 	dcc->chat = chat;
-	dcc->type = type;
 	dcc->arg = g_strdup(arg);
 	dcc->nick = g_strdup(nick);
-	dcc->fhandle = -1;
 	dcc->tagconn = dcc->tagread = dcc->tagwrite = -1;
 	dcc->server = server;
 	dcc->mynick = g_strdup(server != NULL ? server->nick :
 			       chat != NULL ? chat->nick : "??");
 
-	dcc->ircnet = server == NULL ?
-		(chat == NULL || chat->ircnet == NULL ? NULL : g_strdup(chat->ircnet)) :
-		(server->connrec->chatnet == NULL ? NULL : g_strdup(server->connrec->chatnet));
+	dcc->servertag = server != NULL ? g_strdup(server->tag) :
+		(chat == NULL ? NULL : g_strdup(chat->servertag));
+
 	dcc_conns = g_slist_append(dcc_conns, dcc);
-
 	signal_emit("dcc created", 1, dcc);
-	return dcc;
-}
-
-static void dcc_remove_chat_refs(DCC_REC *dcc)
-{
-	GSList *tmp;
-
-	g_return_if_fail(dcc != NULL);
-
-	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
-		DCC_REC *rec = tmp->data;
-
-		if (rec->chat == dcc)
-			rec->chat = NULL;
-	}
 }
 
 /* Destroy DCC record */
@@ -106,45 +99,22 @@ void dcc_destroy(DCC_REC *dcc)
 	if (dcc->destroyed) return;
 
 	dcc_conns = g_slist_remove(dcc_conns, dcc);
-	dcc_remove_chat_refs(dcc);
 
 	dcc->destroyed = TRUE;
 	signal_emit("dcc destroyed", 1, dcc);
 
-	if (dcc->fhandle != -1) close(dcc->fhandle);
 	if (dcc->handle != NULL) net_disconnect(dcc->handle);
 	if (dcc->tagconn != -1) g_source_remove(dcc->tagconn);
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
-	if (dcc->sendbuf != NULL) net_sendbuffer_destroy(dcc->sendbuf, FALSE);
 
-	if (dcc->type == DCC_TYPE_CHAT)
-		line_split_free((LINEBUF_REC *) dcc->databuf);
-	else if (dcc->databuf != NULL)
-		g_free(dcc->databuf);
-
-	g_free_not_null(dcc->file);
-	g_free_not_null(dcc->ircnet);
-	g_free_not_null(dcc->chat_id);
+	g_free_not_null(dcc->servertag);
 	g_free_not_null(dcc->target);
+	g_free_not_null(dcc->databuf);
 	g_free(dcc->mynick);
 	g_free(dcc->nick);
 	g_free(dcc->arg);
 	g_free(dcc);
-}
-
-void dcc_make_address(IPADDR *ip, char *host)
-{
-	unsigned long addr;
-
-	if (is_ipv6_addr(ip)) {
-		/* IPv6 */
-		net_ip2host(ip, host);
-	} else {
-		memcpy(&addr, &ip->addr, 4);
-		g_snprintf(host, MAX_IP_LEN, "%lu",
-			   (unsigned long) htonl(addr));
-	}
 }
 
 DCC_REC *dcc_find_request_latest(int type)
@@ -181,35 +151,21 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 	return NULL;
 }
 
-const char *dcc_type2str(int type)
+void dcc_ip2str(IPADDR *ip, char *host)
 {
-	g_return_val_if_fail(type >= 1 && type <= DCC_TYPES, NULL);
+	unsigned long addr;
 
-	return dcc_types[type-1];
-}
-
-int dcc_str2type(const char *type)
-{
-	int num;
-
-	for (num = 0; num < DCC_TYPES; num++) {
-		if (g_strcasecmp(dcc_types[num], type) == 0)
-			return num+1;
+	if (is_ipv6_addr(ip)) {
+		/* IPv6 */
+		net_ip2host(ip, host);
+	} else {
+		memcpy(&addr, &ip->addr, 4);
+		g_snprintf(host, MAX_IP_LEN, "%lu",
+			   (unsigned long) htonl(addr));
 	}
-
-	return 0;
 }
 
-GIOChannel *dcc_listen(GIOChannel *interface, IPADDR *ip, int *port)
-{
-	if (net_getsockname(interface, ip, NULL) == -1)
-                return NULL;
-
-	*port = settings_get_int("dcc_port");
-	return net_listen(ip, port);
-}
-
-void dcc_get_address(const char *str, IPADDR *ip)
+void dcc_str2ip(const char *str, IPADDR *ip)
 {
 	unsigned long addr;
 
@@ -225,39 +181,29 @@ void dcc_get_address(const char *str, IPADDR *ip)
 	}
 }
 
-void dcc_ctcp_message(IRC_SERVER_REC *server, const char *target,
-		      DCC_REC *chat, int notice, const char *msg)
+/* Start listening for incoming connections */
+GIOChannel *dcc_listen(GIOChannel *interface, IPADDR *ip, int *port)
 {
-	char *str;
+	if (net_getsockname(interface, ip, NULL) == -1)
+                return NULL;
 
-	if (chat != NULL && chat->sendbuf != NULL) {
-		/* send it via open DCC chat */
-		str = g_strdup_printf("%s\001%s\001", chat->mirc_ctcp ? "" :
-				      notice ? "CTCP_REPLY " :
-				      "CTCP_MESSAGE ", msg);
-                dcc_chat_send(chat, str);
-		g_free(str);
-	} else {
-		irc_send_cmdv(server, "%s %s :\001%s\001",
-			      notice ? "NOTICE" : "PRIVMSG", target, msg);
-	}
+	*port = settings_get_int("dcc_port");
+	return net_listen(ip, port);
 }
 
-/* Server connected, check if there's any open dcc sessions for this ircnet.. */
-static void dcc_server_connected(IRC_SERVER_REC *server)
+/* Server connected - update server for DCC records that have
+   the same server tag */
+static void sig_server_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
 	g_return_if_fail(server != NULL);
 
-	if (server->connrec->chatnet == NULL)
-		return;
-
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
 		DCC_REC *dcc = tmp->data;
 
-		if (dcc->server == NULL && dcc->ircnet != NULL &&
-		    g_strcasecmp(dcc->ircnet, server->connrec->chatnet) == 0) {
+		if (dcc->server == NULL && dcc->servertag != NULL &&
+		    g_strcasecmp(dcc->servertag, server->tag) == 0) {
 			dcc->server = server;
 			g_free(dcc->mynick);
 			dcc->mynick = g_strdup(server->nick);
@@ -265,8 +211,8 @@ static void dcc_server_connected(IRC_SERVER_REC *server)
 	}
 }
 
-/* Server disconnected, remove it from all dcc records */
-static void dcc_server_disconnected(IRC_SERVER_REC *server)
+/* Server disconnected, remove it from all DCC records */
+static void sig_server_disconnected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -275,14 +221,24 @@ static void dcc_server_disconnected(IRC_SERVER_REC *server)
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
 		DCC_REC *dcc = tmp->data;
 
-		if (dcc->server != server)
-			continue;
+		if (dcc->server == server)
+                        dcc->server = NULL;
+	}
+}
 
-		dcc->server = dcc->ircnet == NULL ? NULL :
-			IRC_SERVER(server_find_chatnet(dcc->ircnet));
-		if (dcc->server != NULL) {
+/* Your nick changed, change nick in all DCC records */
+static void sig_server_nick_changed(IRC_SERVER_REC *server)
+{
+        GSList *tmp;
+
+        if (!IS_IRC_SERVER(server)) return;
+
+	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+		DCC_REC *dcc = tmp->data;
+
+		if (dcc->server == server) {
 			g_free(dcc->mynick);
-			dcc->mynick = g_strdup(dcc->server->nick);
+			dcc->mynick = g_strdup(server->nick);
 		}
 	}
 }
@@ -331,22 +287,22 @@ static void ctcp_reply_dcc_reject(IRC_SERVER_REC *server, const char *data,
 				  DCC_REC *chat)
 {
         DCC_REC *dcc;
-	char *typestr, *args;
-        int type;
+	char *type, *args;
 
-	typestr = g_strdup(data);
-	args = strchr(typestr, ' ');
+	type = g_strdup(data);
+	args = strchr(type, ' ');
         if (args != NULL) *args++ = '\0'; else args = "";
 
-	type = dcc_str2type(typestr);
-	dcc = dcc_find_request(type, nick,
-			       type == DCC_TYPE_CHAT ? NULL : args);
-	if (dcc != NULL) {
-		signal_emit("dcc closed", 1, dcc);
-		dcc_destroy(dcc);
-	}
+	dcc = dcc_find_request(dcc_str2type(type), nick, args);
+	if (dcc != NULL) dcc_close(dcc);
 
-        g_free(typestr);
+        g_free(type);
+}
+
+void dcc_close(DCC_REC *dcc)
+{
+	signal_emit("dcc closed", 1, dcc);
+        dcc_destroy(dcc);
 }
 
 /* Reject a DCC request */
@@ -355,16 +311,14 @@ void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 	g_return_if_fail(dcc != NULL);
 
 	if (dcc->server != NULL) server = dcc->server;
-	if (server != NULL && (dcc->type != DCC_TYPE_CHAT ||
-			       dcc->starttime == 0)) {
+	if (server != NULL) {
 		signal_emit("dcc rejected", 1, dcc);
 		irc_send_cmdv(server, "NOTICE %s :\001DCC REJECT %s %s\001",
-			      dcc->nick, dcc_type2str(SWAP_SENDGET(dcc->type)),
+			      dcc->nick, dcc_type2str(dcc->orig_type),
 			      dcc->arg);
 	}
 
-	signal_emit("dcc closed", 1, dcc);
-	dcc_destroy(dcc);
+	dcc_close(dcc);
 }
 
 static int dcc_timeout_func(void)
@@ -374,14 +328,18 @@ static int dcc_timeout_func(void)
 
 	now = time(NULL)-settings_get_int("dcc_timeout");
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
-		DCC_REC *rec = tmp->data;
+		DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (rec->tagread == -1 && now > rec->created) {
-			/* timed out. */
-			dcc_reject(rec, NULL);
+		if (dcc->tagread == -1 && now > dcc->created) {
+			/* Timed out - don't send DCC REJECT CTCP so CTCP
+			   flooders won't affect us and it really doesn't
+			   matter that much anyway if the other side doen't
+			   get it.. */
+			dcc_close(dcc);
 		}
 	}
+
 	return 1;
 }
 
@@ -400,10 +358,8 @@ static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 
 		next = tmp->next;
 		if (!dcc_is_connected(dcc) && dcc->server == server &&
-		    g_strcasecmp(dcc->nick, nick) == 0) {
-			signal_emit("dcc closed", 1, dcc);
-			dcc_destroy(dcc);
-		}
+		    g_strcasecmp(dcc->nick, nick) == 0)
+			dcc_close(dcc);
 	}
 
 	g_free(params);
@@ -419,14 +375,15 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 3, &typestr, &nick, &arg))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			    &typestr, &nick, &arg))
 		return;
 
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	g_strup(typestr);
 	type = dcc_str2type(typestr);
-	if (type == 0) {
+	if (type == -1) {
 		signal_emit("dcc error unknown type", 1, typestr);
 		cmd_params_free(free_arg);
 		return;
@@ -437,9 +394,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 		DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (dcc->type == type &&
-		    g_strcasecmp(dcc->chat_id != NULL ?
-				 dcc->chat_id : dcc->nick, nick) == 0 &&
+		if (dcc->type == type && g_strcasecmp(dcc->nick, nick) == 0 &&
 		    (*arg == '\0' || strcmp(dcc->arg, arg) == 0)) {
 			dcc_reject(dcc, server);
 			found = TRUE;
@@ -464,19 +419,19 @@ void irc_dcc_init(void)
 	dcc_conns = NULL;
 	dcc_timeouttag = g_timeout_add(1000, (GSourceFunc) dcc_timeout_func, NULL);
 
-	settings_add_bool("dcc", "dcc_mirc_ctcp", FALSE);
 	settings_add_int("dcc", "dcc_port", 0);
 	settings_add_int("dcc", "dcc_timeout", 300);
 	settings_add_int("dcc", "dcc_block_size", 2048);
 
-	signal_add("server connected", (SIGNAL_FUNC) dcc_server_connected);
-	signal_add("server disconnected", (SIGNAL_FUNC) dcc_server_disconnected);
+	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_add("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
 	signal_add("ctcp msg dcc", (SIGNAL_FUNC) ctcp_msg_dcc);
 	signal_add("ctcp reply dcc", (SIGNAL_FUNC) ctcp_reply_dcc);
 	signal_add("ctcp reply dcc reject", (SIGNAL_FUNC) ctcp_reply_dcc_reject);
+	signal_add("event 401", (SIGNAL_FUNC) event_no_such_nick);
 	command_bind("dcc", NULL, (SIGNAL_FUNC) cmd_dcc);
 	command_bind("dcc close", NULL, (SIGNAL_FUNC) cmd_dcc_close);
-	signal_add("event 401", (SIGNAL_FUNC) event_no_such_nick);
 
 	dcc_chat_init();
 	dcc_get_init();
@@ -487,23 +442,24 @@ void irc_dcc_init(void)
 
 void irc_dcc_deinit(void)
 {
+	while (dcc_conns != NULL)
+		dcc_destroy(dcc_conns->data);
+
 	dcc_chat_deinit();
 	dcc_get_deinit();
 	dcc_send_deinit();
 	dcc_resume_deinit();
 	dcc_autoget_deinit();
 
-	signal_remove("server connected", (SIGNAL_FUNC) dcc_server_connected);
-	signal_remove("server disconnected", (SIGNAL_FUNC) dcc_server_disconnected);
+	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_remove("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
 	signal_remove("ctcp msg dcc", (SIGNAL_FUNC) ctcp_msg_dcc);
 	signal_remove("ctcp reply dcc", (SIGNAL_FUNC) ctcp_reply_dcc);
 	signal_remove("ctcp reply dcc reject", (SIGNAL_FUNC) ctcp_reply_dcc_reject);
+	signal_remove("event 401", (SIGNAL_FUNC) event_no_such_nick);
 	command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
 	command_unbind("dcc close", (SIGNAL_FUNC) cmd_dcc_close);
-	signal_remove("event 401", (SIGNAL_FUNC) event_no_such_nick);
 
 	g_source_remove(dcc_timeouttag);
-
-	while (dcc_conns != NULL)
-		dcc_destroy(dcc_conns->data);
 }

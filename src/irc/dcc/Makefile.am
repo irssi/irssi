@@ -15,7 +15,11 @@ libirc_dcc_la_SOURCES = \
 	dcc-autoget.c
 
 noinst_HEADERS = \
+	dcc-rec.h \
+	dcc-file-rec.h \
 	dcc.h \
+	dcc-file.h \
 	dcc-chat.h \
 	dcc-get.h \
+	dcc-send.h \
 	module.h

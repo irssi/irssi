@@ -30,6 +30,28 @@
 
 static int dcc_file_create_mode;
 
+static GET_DCC_REC *dcc_get_create(IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
+				   const char *nick, const char *arg)
+{
+	GET_DCC_REC *dcc;
+
+	dcc = g_new0(GET_DCC_REC, 1);
+	dcc->orig_type = module_get_uniq_id_str("DCC", "SEND");
+	dcc->type = module_get_uniq_id_str("DCC", "GET");
+	dcc->fhandle = -1;
+
+	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
+        return dcc;
+}
+
+static void sig_dcc_destroyed(GET_DCC_REC *dcc)
+{
+	if (!IS_DCC_GET(dcc)) return;
+
+	g_free_not_null(dcc->file);
+	if (dcc->fhandle != -1) close(dcc->fhandle);
+}
+
 char *dcc_get_download_path(const char *fname)
 {
 	char *str, *downpath;
@@ -60,9 +82,9 @@ static char *dcc_get_rename_file(const char *fname)
 	return ret;
 }
 
-static void sig_dccget_send(DCC_REC *dcc);
+static void sig_dccget_send(GET_DCC_REC *dcc);
 
-void dcc_get_send_received(DCC_REC *dcc)
+void dcc_get_send_received(GET_DCC_REC *dcc)
 {
 	guint32 recd;
 
@@ -86,7 +108,7 @@ void dcc_get_send_received(DCC_REC *dcc)
 }
 
 /* input function: DCC GET is free to send data */
-static void sig_dccget_send(DCC_REC *dcc)
+static void sig_dccget_send(GET_DCC_REC *dcc)
 {
 	guint32 recd;
 	int ret;
@@ -115,11 +137,9 @@ static void sig_dccget_send(DCC_REC *dcc)
 }
 
 /* input function: DCC GET received data */
-static void sig_dccget_receive(DCC_REC *dcc)
+static void sig_dccget_receive(GET_DCC_REC *dcc)
 {
 	int ret;
-
-	g_return_if_fail(dcc != NULL);
 
 	for (;;) {
 		ret = net_receive(dcc->handle, dcc->databuf, dcc->databufsize);
@@ -128,8 +148,7 @@ static void sig_dccget_receive(DCC_REC *dcc)
 		if (ret < 0) {
 			/* socket closed - transmit complete,
 			   or other side died.. */
-			signal_emit("dcc closed", 1, dcc);
-			dcc_destroy(dcc);
+			dcc_close(DCC(dcc));
 			return;
 		}
 
@@ -145,17 +164,15 @@ static void sig_dccget_receive(DCC_REC *dcc)
 }
 
 /* callback: net_connect() finished for DCC GET */
-static void sig_dccget_connected(DCC_REC *dcc)
+static void sig_dccget_connected(GET_DCC_REC *dcc)
 {
 	struct stat statbuf;
 	char *fname;
 
-	g_return_if_fail(dcc != NULL);
-
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
-		dcc_destroy(dcc);
+		dcc_destroy(DCC(dcc));
 		return;
 	}
 
@@ -181,7 +198,7 @@ static void sig_dccget_connected(DCC_REC *dcc)
 		if (dcc->fhandle == -1) {
 			signal_emit("dcc error file create", 2,
 				    dcc, dcc->file);
-			dcc_destroy(dcc);
+			dcc_destroy(DCC(dcc));
 			return;
 		}
 	}
@@ -196,7 +213,7 @@ static void sig_dccget_connected(DCC_REC *dcc)
 	signal_emit("dcc connected", 1, dcc);
 }
 
-void dcc_get_connect(DCC_REC *dcc)
+void dcc_get_connect(GET_DCC_REC *dcc)
 {
 	if (dcc->get_type == DCC_GET_DEFAULT) {
 		dcc->get_type = settings_get_bool("dcc_autorename") ?
@@ -215,7 +232,7 @@ void dcc_get_connect(DCC_REC *dcc)
 	} else {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
-		dcc_destroy(dcc);
+		dcc_destroy(DCC(dcc));
 	}
 }
 
@@ -258,9 +275,9 @@ int get_file_params_count(char **params, int paramcount)
 /* CTCP: DCC SEND */
 static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 			      const char *nick, const char *addr,
-			      const char *target, DCC_REC *chat)
+			      const char *target, CHAT_DCC_REC *chat)
 {
-	DCC_REC *dcc;
+	GET_DCC_REC *dcc;
         IPADDR ip;
 	char **params, *fname;
 	int paramcount, fileparams;
@@ -280,7 +297,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	fileparams = get_file_params_count(params, paramcount);
 
-	dcc_get_address(params[fileparams], &ip);
+	dcc_str2ip(params[fileparams], &ip);
 	port = atoi(params[fileparams+1]);
 	size = atol(params[fileparams+2]);
 
@@ -296,13 +313,13 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
                 quoted = TRUE;
 	}
 
-	dcc = dcc_find_request(DCC_TYPE_GET, nick, fname);
+	dcc = DCC_GET(dcc_find_request(DCC_GET_TYPE, nick, fname));
 	if (dcc != NULL) {
 		/* same DCC request offered again, remove the old one */
-		dcc_destroy(dcc);
+		dcc_destroy(DCC(dcc));
 	}
 
-	dcc = dcc_create(DCC_TYPE_GET, nick, fname, server, chat);
+	dcc = dcc_get_create(server, chat, nick, fname);
 	dcc->target = g_strdup(target);
         memcpy(&dcc->addr, &ip, sizeof(ip));
 	net_ip2host(&dcc->addr, dcc->addrstr);
@@ -316,9 +333,9 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 }
 
 /* handle receiving DCC - GET/RESUME. */
-void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept)
+void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
 {
-        DCC_REC *dcc;
+        GET_DCC_REC *dcc;
 	GSList *tmp, *next;
 	char *nick, *fname;
 	void *free_arg;
@@ -331,23 +348,23 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept)
 		return;
 
 	if (*nick == '\0') {
-		dcc = dcc_find_request_latest(DCC_TYPE_GET);
+		dcc = DCC_GET(dcc_find_request_latest(DCC_GET_TYPE));
 		if (dcc != NULL)
-			accept(dcc);
+			accept_func(dcc);
 		cmd_params_free(free_arg);
 		return;
 	}
 
 	found = FALSE;
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
-		DCC_REC *dcc = tmp->data;
+		GET_DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (dcc_is_waiting_get(dcc) &&
+		if (IS_DCC_GET(dcc) && dcc_is_waiting_user(dcc) &&
 		    g_strcasecmp(dcc->nick, nick) == 0 &&
 		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
 			found = TRUE;
-			accept(dcc);
+			accept_func(dcc);
 		}
 	}
 
@@ -371,11 +388,13 @@ static void read_settings(void)
 
 void dcc_get_init(void)
 {
+        dcc_register_type("GET");
 	settings_add_bool("dcc", "dcc_autorename", FALSE);
 	settings_add_str("dcc", "dcc_download_path", "~");
 	settings_add_int("dcc", "dcc_file_create_mode", 644);
 
         read_settings();
+	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	signal_add("ctcp msg dcc send", (SIGNAL_FUNC) ctcp_msg_dcc_send);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("dcc get", NULL, (SIGNAL_FUNC) cmd_dcc_get);
@@ -383,6 +402,8 @@ void dcc_get_init(void)
 
 void dcc_get_deinit(void)
 {
+        dcc_unregister_type("GET");
+	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	signal_remove("ctcp msg dcc send", (SIGNAL_FUNC) ctcp_msg_dcc_send);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("dcc get", (SIGNAL_FUNC) cmd_dcc_get);

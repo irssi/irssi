@@ -25,15 +25,14 @@
 
 #include "dcc-get.h"
 
-static void sig_dcc_request(DCC_REC *dcc, const char *nickaddr)
+static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 {
         struct stat statbuf;
 	const char *masks;
         char *str, *file;
         int max_size;
 
-	g_return_if_fail(dcc != NULL);
-	if (dcc->type != DCC_TYPE_GET) return;
+        if (!IS_DCC_GET(dcc)) return;
 
 	/* check if we want to autoget file offer */
 	if (!settings_get_bool("dcc_autoget") &&

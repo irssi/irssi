@@ -3,6 +3,12 @@
 
 #include "dcc.h"
 
+#define DCC_GET(dcc) \
+	MODULE_CHECK_CAST_MODULE(dcc, GET_DCC_REC, type, "DCC", "GET")
+
+#define IS_DCC_GET(dcc) \
+	(DCC_GET(dcc) ? TRUE : FALSE)
+
 enum {
 	DCC_GET_DEFAULT,
 
@@ -11,16 +17,24 @@ enum {
 	DCC_GET_RESUME
 };
 
-typedef void (*DCC_GET_FUNC) (DCC_REC *);
+typedef struct {
+#include "dcc-file-rec.h"
+
+	int get_type; /* what to do if file exists? */
+	char *file; /* file name we're really moving, arg is just the reference */
+
+	unsigned int file_quoted:1; /* file name was received quoted ("file name") */
+} GET_DCC_REC;
+
+#define DCC_GET_TYPE module_get_uniq_id_str("DCC", "GET")
+
+typedef void (*DCC_GET_FUNC) (GET_DCC_REC *);
 
 /* handle receiving DCC - GET/RESUME. */
-void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept);
+void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func);
 
-void dcc_get_connect(DCC_REC *dcc);
+void dcc_get_connect(GET_DCC_REC *dcc);
 char *dcc_get_download_path(const char *fname);
-
-#define dcc_is_waiting_get(dcc) \
-        ((dcc)->type == DCC_TYPE_GET && dcc_is_waiting_user(dcc))
 
 void dcc_get_init(void);
 void dcc_get_deinit(void);
