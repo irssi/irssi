@@ -50,6 +50,9 @@
 # default foreground color (%N) - -1 is the "default terminal color"
 default_color = "-1";
 
+# print timestamp/servertag at the end of line, not at beginning
+info_eol = "false";
+
 # these characters are automatically replaced with specified color
 # (dark grey by default)
 replaces = { "[]=" = "%K$*%n"; };

@@ -683,7 +683,7 @@ static void cmd_bind(const char *data)
 	command_id = strchr(settings_get_str("cmdchars"), *id) != NULL;
 	if (command_id) {
 		/* using shortcut to command id */
-		keydata = g_strconcat(id, " ", keydata, NULL);
+		keydata = g_strconcat(id+1, " ", keydata, NULL);
 		id = "command";
 	}
 

@@ -158,13 +158,16 @@ void printformat_module_gui(const char *module, int formatnum, ...)
 
 static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
+        THEME_REC *theme;
 	char *str, *tmp, *stripped;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
 
-	tmp = format_get_level_tag(window_get_theme(dest->window), dest);
-	str = format_add_linestart(text, tmp);
+        theme = window_get_theme(dest->window);
+	tmp = format_get_level_tag(theme, dest);
+	str = !theme->info_eol ? format_add_linestart(text, tmp) :
+		format_add_lineend(text, tmp);
 	g_free_not_null(tmp);
 
 	/* send both the formatted + stripped (for logging etc.) */
@@ -408,6 +411,7 @@ static void msg_beep_check(TEXT_DEST_REC *dest)
 
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 {
+        THEME_REC *theme;
 	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
@@ -421,9 +425,11 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 
 	/* add timestamp/server tag here - if it's done in print_line()
 	   it would be written to log files too */
-	tmp = format_get_line_start(window_get_theme(dest->window),
-				    dest, time(NULL));
-	str = format_add_linestart(text, tmp);
+        theme = window_get_theme(dest->window);
+	tmp = format_get_line_start(theme, dest, time(NULL));
+	str = !theme->info_eol ? format_add_linestart(text, tmp) :
+		format_add_lineend(text, tmp);
+
 	g_free_not_null(tmp);
 
 	format_send_to_gui(dest, str);

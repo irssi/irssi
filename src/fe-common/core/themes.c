@@ -844,6 +844,8 @@ static int theme_read(THEME_REC *theme, const char *path, const char *data)
 
 	theme->default_color =
 		config_get_int(config, NULL, "default_color", -1);
+	theme->info_eol = config_get_bool(config, NULL, "info_eol", FALSE);
+
 	/* FIXME: remove after 0.7.99 */
 	if (theme->default_color == 0 &&
 	    config_get_int(config, NULL, "default_real_color", -1) != -1)

@@ -86,9 +86,10 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 				     TEXT_DEST_REC *dest, int formatnum,
 				     char **args);
 
-/* add `linestart' to start of each line in `text'. `text' may contain
+/* add `linestart' to start/end of each line in `text'. `text' may contain
    multiple lines separated with \n. */
 char *format_add_linestart(const char *text, const char *linestart);
+char *format_add_lineend(const char *text, const char *linestart);
 
 /* return the "-!- " text at the start of the line */
 char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest);

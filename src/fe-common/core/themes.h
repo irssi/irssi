@@ -18,6 +18,9 @@ typedef struct {
 	int default_color; /* default color to use with text with default
 			      background. default is -1 which means the
 			      default color set by terminal */
+	unsigned int info_eol:1; /* show the timestamp/servertag at the
+	                            end of the line, not at beginning */
+
 	GHashTable *modules;
 
         int replace_keys[256]; /* index to replace_values for each char */
