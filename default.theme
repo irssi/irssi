@@ -249,6 +249,8 @@ abstracts = {
   sb_prompt_bg = "%0";
   # background for info statusbar
   sb_info_bg = "%8";
+  # background for topicbar (same default)
+  #sb_topic_bg = "%4";
 
   sb = " %c[%n$0-%c]%n";
   sbmode = "(%c+%n$0-)";
