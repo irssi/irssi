@@ -154,7 +154,13 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
 			return;
 		}
 
-		write(dcc->fhandle, buffer, ret);
+		if (write(dcc->fhandle, buffer, ret) != ret) {
+			/* most probably out of disk space */
+			signal_emit("dcc error write", 2,
+				    dcc, g_strerror(errno));
+			dcc_close(DCC(dcc));
+                        return;
+		}
 		dcc->transfd += ret;
 	}
 

@@ -54,6 +54,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_get_connected", "{dcc DCC receiving file {dccfile $0} from {nick $1} [$2 port $3]}", 4, { 0, 0, 0, 1 } },
 	{ "dcc_get_complete", "{dcc DCC received file {dccfile $0} [$1kB] from {nick $2} in {hilight $3} secs [$4kB/s]}", 5, { 0, 2, 0, 2, 3 } },
 	{ "dcc_get_aborted", "{dcc DCC aborted receiving file {dccfile $0} from {nick $1}}", 2, { 0, 0 } },
+	{ "dcc_get_write_error", "{dcc DCC error writing to file {dccfile $0}: {comment $1}", 2, { 0, 0 } },
 	{ "dcc_unknown_ctcp", "{dcc DCC unknown ctcp {hilight $0} from {nick $1} [$2]}", 3, { 0, 0, 0 } },
 	{ "dcc_unknown_reply", "{dcc DCC unknown reply {hilight $0} from {nick $1} [$2]}", 3, { 0, 0, 0 } },
 	{ "dcc_unknown_type", "{dcc DCC unknown type {hilight $0}}", 1, { 0 } },

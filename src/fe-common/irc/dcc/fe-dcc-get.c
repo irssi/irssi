@@ -98,6 +98,12 @@ static void dcc_error_close_not_found(const char *type, const char *nick,
 		    IRCTXT_DCC_GET_NOT_FOUND, nick, fname);
 }
 
+static void dcc_error_write(GET_DCC_REC *dcc, const char *error)
+{
+	printformat(NULL, NULL, MSGLEVEL_DCC,
+		    IRCTXT_DCC_GET_WRITE_ERROR, dcc->file, error);
+}
+
 static void sig_dcc_list_print(GET_DCC_REC *dcc)
 {
 	if (IS_DCC_GET(dcc))
@@ -112,6 +118,7 @@ void fe_dcc_get_init(void)
 	signal_add("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
 	signal_add("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
 	signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
+	signal_add("dcc error write", (SIGNAL_FUNC) dcc_error_write);
         signal_add("dcc list print", (SIGNAL_FUNC) sig_dcc_list_print);
 }
 
@@ -123,5 +130,6 @@ void fe_dcc_get_deinit(void)
 	signal_remove("dcc error file create", (SIGNAL_FUNC) dcc_error_file_create);
 	signal_remove("dcc error get not found", (SIGNAL_FUNC) dcc_error_get_not_found);
 	signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
+	signal_remove("dcc error write", (SIGNAL_FUNC) dcc_error_write);
         signal_remove("dcc list print", (SIGNAL_FUNC) sig_dcc_list_print);
 }
