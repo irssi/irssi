@@ -111,6 +111,19 @@ if test "x$prefix" != "xNONE"; then
 	perl_prefix_note=yes
 fi
 
+AC_ARG_WITH(tests,
+[  --with-glib2           Use GLIB 2.0 instead of 1.2],
+	if test x$withval = xyes; then
+		want_glib2=yes
+	else
+		if test "x$withval" = xno; then
+			want_glib2=no
+		else
+			want_glib2=yes
+		fi
+	fi,
+	want_glib2=yes)
+
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
                         statically in irssi, default is no],
@@ -312,15 +325,35 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
 AC_CHECK_GLIBDIR
 
 if test -z "$GLIB_DIR"; then
-  AM_PATH_GLIB(1.2.0,,, gmodule)
-  if test -z "$GLIB_LIBS"; then
-    echo "*** trying without -lgmodule"
-    glib_config_args=
-    AM_PATH_GLIB(1.2.0)
+  if test "x$with_glib2" = "xyes"; then
+    dnl * check only for glib2
+    checks="3 4"
   else
-    AC_DEFINE(HAVE_GMODULE)
-    have_gmodule=yes
+    dnl * check glib1 then glib2
+    checks="1 2 3 4"
   fi
+
+  for try in $checks; do
+    glib_config_args=
+    if test $try = 1 -o $try = 3; then
+      glib_modules=gmodule
+    else
+      echo "*** trying without -lgmodule"
+      glib_modules=
+    fi
+    if test $try = 1 -o $try = 2; then
+      AM_PATH_GLIB(1.2.0,,, $glib_modules)
+    else
+      AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
+    fi
+    if test "$GLIB_LIBS"; then
+      if test $glib_modules = gmodule; then
+        AC_DEFINE(HAVE_GMODULE)
+        have_gmodule=yes
+      fi
+      break
+    fi
+  done
 
   if test -z "$GLIB_LIBS"; then
     echo
