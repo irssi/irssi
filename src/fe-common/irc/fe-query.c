@@ -152,7 +152,7 @@ static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 	query_destroy(query);
 }
 
-/* SYNTAX: QUERY <nick> */
+/* SYNTAX: QUERY [-window] <nick> */
 static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	GHashTable *optlist;
