@@ -92,6 +92,8 @@ void fe_settings_deinit(void);
 void window_commands_init(void);
 void window_commands_deinit(void);
 
+static void sig_setup_changed(void);
+
 static void print_version(void)
 {
 	printf(PACKAGE" " IRSSI_VERSION" (%d %04d)\n",
@@ -246,6 +248,7 @@ void fe_common_core_deinit(void)
         theme_unregister();
 	themes_deinit();
 
+        signal_remove("setup changed", (SIGNAL_FUNC) sig_setup_changed);
         signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
         signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
         signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
@@ -282,25 +285,42 @@ void glog_func(const char *log_domain, GLogLevelFlags log_level,
 static void create_windows(void)
 {
 	WINDOW_REC *window;
+	int have_status = settings_get_bool("use_status_window");
 
-	windows_layout_restore();
-	if (windows != NULL)
-		return;
-
-	if (settings_get_bool("use_status_window")) {
-		window = window_create(NULL, TRUE);
-		window_set_name(window, "(status)");
-		window_set_level(window, MSGLEVEL_ALL ^
-				 (settings_get_bool("use_msgs_window") ?
-				  MSGS_WINDOW_LEVELS : 0));
-                window_set_immortal(window, TRUE);
+	window = window_find_name("(status)");
+	if (have_status) {
+		if (window == NULL) {
+			window = window_create(NULL, TRUE);
+			window_set_refnum(window, 1);
+			window_set_name(window, "(status)");
+			window_set_level(window, MSGLEVEL_ALL ^
+					 (settings_get_bool("use_msgs_window") ?
+					  MSGS_WINDOW_LEVELS : 0));
+			window_set_immortal(window, TRUE);
+		}
+	} else {
+		if (window != NULL) {
+			window_set_name(window, NULL);
+			window_set_level(window, 0);
+			window_set_immortal(window, FALSE);
+		}
 	}
 
+	window = window_find_name("(msgs)");
 	if (settings_get_bool("use_msgs_window")) {
-		window = window_create(NULL, TRUE);
-		window_set_name(window, "(msgs)");
-		window_set_level(window, MSGS_WINDOW_LEVELS);
-                window_set_immortal(window, TRUE);
+		if (window == NULL) {
+			window = window_create(NULL, TRUE);
+			window_set_refnum(window, have_status ? 2 : 1);
+			window_set_name(window, "(msgs)");
+			window_set_level(window, MSGS_WINDOW_LEVELS);
+			window_set_immortal(window, TRUE);
+		}
+	} else {
+		if (window != NULL) {
+			window_set_name(window, NULL);
+			window_set_level(window, 0);
+			window_set_immortal(window, FALSE);
+		}
 	}
 
 	if (windows == NULL) {
@@ -348,6 +368,34 @@ static void autoconnect_servers(void)
 	g_slist_free(chatnets);
 }
 
+static void sig_setup_changed(void)
+{
+	static int firsttime = TRUE;
+	static int status_window = FALSE, msgs_window = FALSE;
+	int changed = FALSE;
+
+	if (settings_get_bool("use_status_window") != status_window) {
+		status_window = !status_window;
+		changed = TRUE;
+	}
+	if (settings_get_bool("use_msgs_window") != msgs_window) {
+		msgs_window = !msgs_window;
+		changed = TRUE;
+	}
+
+	if (firsttime) {
+		windows_layout_restore();
+		if (windows != NULL)
+			return;
+
+		firsttime = FALSE;
+		changed = TRUE;
+	}
+
+	if (changed)
+		create_windows();
+}
+
 void fe_common_core_finish_init(void)
 {
 	int setup_changed;
@@ -371,7 +419,8 @@ void fe_common_core_finish_init(void)
 		setup_changed = TRUE;
 	}
 
-	create_windows();
+	sig_setup_changed();
+	signal_add_first("setup changed", (SIGNAL_FUNC) sig_setup_changed);
 
         /* _after_ windows are created.. */
 	g_log_set_handler(G_LOG_DOMAIN,
