@@ -38,6 +38,7 @@
 #else
 #  include <curses.h>
 #endif
+#include <termios.h>
 
 #ifndef COLOR_PAIRS
 #  define COLOR_PAIRS 64
@@ -145,6 +146,7 @@ static int init_curses(void)
 #if !defined (WIN32) && defined(SIGWINCH)
 	struct sigaction act;
 #endif
+        struct termios term;
 
 	if (!initscr())
 		return FALSE;
@@ -158,11 +160,18 @@ static int init_curses(void)
 	act.sa_handler = sig_winch;
 	sigaction(SIGWINCH, &act, NULL);
 #endif
-	raw(); noecho(); idlok(stdscr, 1);
+	cbreak(); noecho(); idlok(stdscr, 1);
 #ifdef HAVE_CURSES_IDCOK
 	/*idcok(stdscr, 1); - disabled currently, causes redrawing problems with NetBSD */
 #endif
 	intrflush(stdscr, FALSE); nodelay(stdscr, TRUE);
+
+        /* disable ^C (INTR) and ^\ (QUIT) keys */
+	if (tcgetattr(0, &term) == 0) {
+		term.c_cc[VINTR] = '\0';
+                term.c_cc[VQUIT] = '\0';
+		tcsetattr(0, 0, &term);
+	}
 
 	if (has_colors())
 		start_color();
