@@ -284,6 +284,7 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
+	if (*msg == '\0') msg = (char *) settings_get_str("part_message");
 	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
 		      channame, msg);
 
@@ -1026,6 +1027,7 @@ void irc_commands_init(void)
 	tmpstr = g_string_new(NULL);
 
 	settings_add_str("misc", "quit_message", "leaving");
+	settings_add_str("misc", "part_message", "");
 	settings_add_int("misc", "knockout_time", 300);
 	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
 
