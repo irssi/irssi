@@ -1,8 +1,10 @@
 # create default-config.h
-config.h: default-config.h
+config.h: default-config.h default-theme.h
 
 default-config.h: $(srcdir)/config
-	$(srcdir)/file2header.sh $(srcdir)/config > default-config.h
+	$(srcdir)/file2header.sh $(srcdir)/config default_config > default-config.h
+default-theme.h: $(srcdir)/default.theme
+	$(srcdir)/file2header.sh $(srcdir)/default.theme default_theme > default-theme.h
 
 if BUILD_PLUGINS
 PLUGINS=plugins

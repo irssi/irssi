@@ -31,11 +31,13 @@
 #include "themes.h"
 #include "printtext.h"
 
+#include "default-theme.h"
+
 GSList *themes;
 THEME_REC *current_theme;
 GHashTable *default_formats;
 
-static void theme_read(THEME_REC *theme, const char *path);
+static void theme_read(THEME_REC *theme, const char *path, const char *data);
 
 THEME_REC *theme_create(const char *path, const char *name)
 {
@@ -635,7 +637,7 @@ THEME_REC *theme_load(const char *name)
 	}
 
 	theme = theme_create(fname, name);
-	theme_read(theme, theme->path);
+	theme_read(theme, theme->path, NULL);
 
 	g_free(fname);
 	return theme;
@@ -652,19 +654,23 @@ static void theme_read_modules(const char *module, void *value,
 	theme_init_module(rec->theme, module, rec->config);
 }
 
-static void theme_read(THEME_REC *theme, const char *path)
+static void theme_read(THEME_REC *theme, const char *path, const char *data)
 {
 	CONFIG_REC *config;
 	THEME_READ_REC rec;
 
-	config = config_open(path, -1);
-	if (config == NULL) {
-		/* didn't exist or no access? */
-		theme->default_color = 15;
-		return;
+	if (data == NULL) {
+		config = config_open(path, -1);
+		if (config == NULL) {
+			/* didn't exist or no access? */
+			theme->default_color = 15;
+			return;
+		}
+		config_parse(config);
+	} else {
+		config = config_open(NULL, -1);
+		config_parse_data(config, data, "internal");
 	}
-
-        config_parse(config);
 	theme->default_color = config_get_int(config, NULL, "default_color", 15);
         theme_read_replaces(config, theme);
 	theme_read_abstracts(config, theme);
@@ -968,6 +974,7 @@ static void themes_read(void)
 					g_get_home_dir());
 		current_theme = theme_create(fname, "default");
 		current_theme->default_color = 15;
+                theme_read(current_theme, NULL, default_theme);
 		g_free(fname);
 	}
 
