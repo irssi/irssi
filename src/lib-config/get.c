@@ -107,11 +107,10 @@ char *config_get_str(CONFIG_REC *rec, const char *section, const char *key, cons
 	char *path;
 
 	g_return_val_if_fail(rec != NULL, (char *) def);
-	g_return_val_if_fail(section != NULL, (char *) def);
 	g_return_val_if_fail(key != NULL, (char *) def);
 
 	/* check if it already exists in cache */
-	path = g_strconcat(section, "/", key, NULL);
+	path = g_strconcat(section == NULL ? "" : section, "/", key, NULL);
 	node = g_hash_table_lookup(rec->cache, path);
 
 	if (node != NULL)
@@ -168,7 +167,6 @@ CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const c
 	GSList *tmp;
 
 	g_return_val_if_fail(rec != NULL, NULL);
-	g_return_val_if_fail(section != NULL, NULL);
 	g_return_val_if_fail(key != NULL, NULL);
 	g_return_val_if_fail(value_key != NULL, NULL);
 
