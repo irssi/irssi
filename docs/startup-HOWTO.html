@@ -521,6 +521,29 @@ these settings in common:</p>
      /EVAL SET proxy_string CONNECT %s:%d\n\n
 </pre>
 
+<p><strong>BNC</strong></p>
+
+<pre>
+     /SET proxy_password your_pass
+     /SET -clear proxy_string
+     /SET proxy_string conn %s %d
+</pre>
+
+<p><strong>dircproxy</strong></p>
+
+<p>dircproxy separates the server connections by passwords. So, if you
+for example have ircnet connection with password ircpass and
+openprojects connection with opnpass, you would do something like
+this:</p>
+
+<pre>
+     /SET -clear proxy_password
+     /SET -clear proxy_string
+
+     /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
+     /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+</pre>
+
 <p><strong>Irssi proxy</strong></p>
 
 <p>Irssi contains it's own proxy which you can build giving
