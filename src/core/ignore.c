@@ -377,7 +377,7 @@ static int unignore_timeout(void)
 		IGNORE_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (now >= rec->unignore_time) {
+		if (rec->unignore_time > 0 && now >= rec->unignore_time) {
 			rec->level = 0;
 			ignore_update_rec(rec);
 		}
