@@ -368,6 +368,17 @@ void fe_whois_init(void)
 
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
+	/* readding this events fixes the printing of /whois -yes * 
+	   Bug http://bugs.irssi.org/?do=details&id=123 */
+	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
+	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);
+	signal_add("event 313", (SIGNAL_FUNC) event_whois_oper);
+	signal_add("event 330", (SIGNAL_FUNC) event_whois_auth);
+	signal_add("event 377", (SIGNAL_FUNC) event_whois_usermode);
+	signal_add("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_add("event 379", (SIGNAL_FUNC) event_whois_modes);
+	signal_add("event 327", (SIGNAL_FUNC) event_whois_realhost327);
+	signal_add("event 326", (SIGNAL_FUNC) event_whois_usermode326);
 	signal_add("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("whowas away", (SIGNAL_FUNC) event_whois_away);
@@ -381,6 +392,15 @@ void fe_whois_deinit(void)
 {
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("event 312", (SIGNAL_FUNC) event_whois_server);
+	signal_remove("event 317", (SIGNAL_FUNC) event_whois_idle);
+	signal_remove("event 319", (SIGNAL_FUNC) event_whois_channels);
+	signal_remove("event 313", (SIGNAL_FUNC) event_whois_oper);
+	signal_remove("event 330", (SIGNAL_FUNC) event_whois_auth);
+	signal_remove("event 377", (SIGNAL_FUNC) event_whois_usermode);
+	signal_remove("event 378", (SIGNAL_FUNC) event_whois_realhost);
+	signal_remove("event 379", (SIGNAL_FUNC) event_whois_modes);
+	signal_remove("event 327", (SIGNAL_FUNC) event_whois_realhost327);
+	signal_remove("event 326", (SIGNAL_FUNC) event_whois_usermode326);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("whowas away", (SIGNAL_FUNC) event_whois_away);
