@@ -105,6 +105,11 @@ static void cmd_resize(void)
         term_resize_dirty();
 }
 
+static void cmd_redraw(void)
+{
+	irssi_redraw();
+}
+
 static void read_settings(void)
 {
         const char *str;
@@ -163,6 +168,7 @@ void term_common_init(void)
 	signal_add("beep", (SIGNAL_FUNC) term_beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("resize", NULL, (SIGNAL_FUNC) cmd_resize);
+	command_bind("redraw", NULL, (SIGNAL_FUNC) cmd_redraw);
 
 #ifdef SIGWINCH
 	sigemptyset (&act.sa_mask);
@@ -175,6 +181,7 @@ void term_common_init(void)
 void term_common_deinit(void)
 {
 	command_unbind("resize", (SIGNAL_FUNC) cmd_resize);
+	command_unbind("redraw", (SIGNAL_FUNC) cmd_redraw);
 	signal_remove("beep", (SIGNAL_FUNC) term_beep);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
