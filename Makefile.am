@@ -16,7 +16,7 @@ endif
 SUBDIRS = po intl $(GLIB_DIR) src $(SERVERTEST) docs scripts
 
 confdir = $(sysconfdir)/irssi
-conf_DATA = config colorless.theme split.theme
+conf_DATA = config default.theme colorless.theme
 
 noinst_HEADERS = irssi-version.h
 
