@@ -265,8 +265,7 @@ static int expand_key(const char *key, GSList **out)
         start = NULL; last_hyphen = TRUE;
 	for (; *key != '\0'; key++) {
 		if (start != NULL) {
-			if (!isdigit(*start) &&
-			    (isalnum(*key) || *key == '_')) {
+			if (isalnum(*key) || *key == '_') {
                                 /* key combo continues */
 				continue;
 			}
@@ -292,11 +291,14 @@ static int expand_key(const char *key, GSList **out)
 			expand_out_char(*out, *key);
 			expand_out_char(*out, '-');
                         last_hyphen = FALSE; /* optional */
-		} else {
-                        /* key / combo */
+		} else if (last_hyphen && isalnum(*key) && !isdigit(*key)) {
+                        /* possibly beginning of keycombo */
 			start = key;
                         last_hyphen = FALSE;
-                        continue;
+		} else {
+			expand_out_char(*out, *key);
+			expand_out_char(*out, '-');
+                        last_hyphen = FALSE; /* optional */
 		}
 	}
 
@@ -798,6 +800,10 @@ static void read_keyboard_config(void)
 
 void keyboard_init(void)
 {
+	GSList *l;
+
+        l = NULL;
+        expand_key("^[[5D", &l);
 	keys = g_hash_table_new((GHashFunc) g_str_hash,
 				(GCompareFunc) g_str_equal);
 	default_keys = g_hash_table_new((GHashFunc) g_str_hash,
