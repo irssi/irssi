@@ -51,7 +51,7 @@ void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mo
 
 	g_return_if_fail(channel != NULL);
 	g_return_if_fail(setby != NULL);
-	g_return_if_fail(modestr != NULL);
+	g_return_if_fail(mode != NULL);
 
 	type = '+';
 
