@@ -487,8 +487,8 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (!IS_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "names", &optlist, &channel))
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "names", &optlist, &channel))
 		return;
 
 	if (strcmp(channel, "*") == 0 || *channel == '\0') {
