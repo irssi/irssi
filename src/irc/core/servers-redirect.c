@@ -546,7 +546,7 @@ void servers_redirect_init(void)
 				 NULL);
 
 	/* MODE #channel I */
-	server_redirect_register("mode e", FALSE, 0,
+	server_redirect_register("mode I", FALSE, 0,
                                  "event 346", 1,
 				 NULL,
 				 "event 347", 1, /* End of invite list */
