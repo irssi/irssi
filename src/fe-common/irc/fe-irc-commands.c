@@ -145,7 +145,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &text))
 		return;
 	if (*target == '\0' || *text == '\0')
