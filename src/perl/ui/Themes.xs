@@ -225,29 +225,32 @@ PPCODE:
 	g_free_not_null(ret);
 
 char *
-theme_get_format(theme, module, formatnum)
+theme_get_format(theme, module, tag)
 	Irssi::UI::Theme theme
 	char *module
-	int formatnum
+	char *tag
 PREINIT:
 	MODULE_THEME_REC *modtheme;
 	FORMAT_REC *formats;
 	char *ret;
+	int i;
 CODE:
 	formats = g_hash_table_lookup(default_formats, module);
 	if (formats == NULL)
 		croak("Unknown module: %s", module);
 
-	modtheme = g_hash_table_lookup(theme->modules, module);
-	if (modtheme != NULL && formatnum >= modtheme->count) {
-		croak("Format number out of range (%s: %d < %d)",
-		      module, formatnum, modtheme->count);
+	for (i = 0; formats[i].def != NULL; i++) {
+		if (formats[i].tag != NULL &&
+		    g_strcasecmp(formats[i].tag, tag) == 0)
+			break;
 	}
 
-	RETVAL = modtheme == NULL ? NULL : modtheme->formats[formatnum];
-	if (RETVAL == NULL) {
-		formats = g_hash_table_lookup(default_formats, module);
-		RETVAL = formats == NULL ? NULL : formats[formatnum].def;
-	}
+	if (formats[i].def == NULL)
+		croak("Unknown format tag: %s", tag);
+
+	modtheme = g_hash_table_lookup(theme->modules, module);
+	RETVAL = modtheme == NULL ? NULL : modtheme->formats[i];
+	if (RETVAL == NULL)
+		RETVAL = formats[i].def;
 OUTPUT:
 	RETVAL
