@@ -344,6 +344,21 @@ void key_configure_thaw(void)
 		key_states_rescan();
 }
 
+static void key_configure_destroy(KEY_REC *rec)
+{
+	g_return_if_fail(rec != NULL);
+
+	rec->info->keys = g_slist_remove(rec->info->keys, rec);
+	g_hash_table_remove(keys, rec->key);
+
+	if (!key_config_frozen)
+                key_states_rescan();
+
+	g_free_not_null(rec->data);
+	g_free(rec->key);
+	g_free(rec);
+}
+
 /* Configure new key */
 static void key_configure_create(const char *id, const char *key,
 				 const char *data)
@@ -358,7 +373,9 @@ static void key_configure_create(const char *id, const char *key,
 	if (info == NULL)
 		return;
 
-	key_configure_remove(key);
+	rec = g_hash_table_lookup(keys, key);
+	if (rec != NULL)
+		key_configure_destroy(rec);
 
 	rec = g_new0(KEY_REC, 1);
 	rec->key = g_strdup(key);
@@ -379,21 +396,6 @@ void key_configure_add(const char *id, const char *key, const char *data)
 
 	key_configure_create(id, key, data);
 	keyconfig_save(id, key, data);
-}
-
-static void key_configure_destroy(KEY_REC *rec)
-{
-	g_return_if_fail(rec != NULL);
-
-	rec->info->keys = g_slist_remove(rec->info->keys, rec);
-	g_hash_table_remove(keys, rec->key);
-
-	if (!key_config_frozen)
-                key_states_rescan();
-
-	g_free_not_null(rec->data);
-	g_free(rec->key);
-	g_free(rec);
 }
 
 /* Remove key */
@@ -698,7 +700,7 @@ static void keyboard_reset_defaults(void)
 
 static void read_keyboard_config(void)
 {
-	CONFIG_NODE *node, *tmpnode;
+	CONFIG_NODE *node;
 	GSList *tmp;
         char *id, *data;
 
@@ -713,9 +715,9 @@ static void read_keyboard_config(void)
 	}
 
 	/* FIXME: backward "compatibility" - remove after irssi .99 */
-	tmpnode = node->value;
-	if (tmpnode != NULL &&
-	    config_node_get_str(tmpnode->value, "id", NULL) == NULL) {
+	tmp = node->value;
+	if (tmp != NULL &&
+	    config_node_get_str(tmp->data, "id", NULL) == NULL) {
                 iconfig_node_clear(node);
 		key_configure_thaw();
 		return;
@@ -727,8 +729,8 @@ static void read_keyboard_config(void)
 		if (node->key == NULL || node->value == NULL)
 			continue;
 
-                id = config_node_get_str(node->value, "id", NULL);
-                data = config_node_get_str(node->value, "data", NULL);
+                id = config_node_get_str(node, "id", NULL);
+                data = config_node_get_str(node, "data", NULL);
                 if (id != NULL)
 			key_configure_create(id, node->key, data);
 	}
