@@ -49,18 +49,18 @@ static void dcc_connected(DCC_REC *dcc)
 	switch (dcc->type) {
 	case DCC_TYPE_CHAT:
 		sender = g_strconcat("=", dcc->nick, NULL);
-		printformat(dcc->server, sender, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
 			    dcc->nick, dcc->addrstr, dcc->port);
 		if (autocreate_dccquery && query_find(NULL, sender) == NULL)
 			irc_query_create(dcc->server, sender, TRUE);
 		g_free(sender);
 		break;
 	case DCC_TYPE_SEND:
-		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_CONNECTED,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_CONNECTED,
 			    dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
 		break;
 	case DCC_TYPE_GET:
-		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_CONNECTED,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_CONNECTED,
 			    dcc->arg, dcc->nick, dcc->addrstr, dcc->port);
 		break;
 	}
@@ -70,7 +70,7 @@ static void dcc_rejected(DCC_REC *dcc)
 {
 	g_return_if_fail(dcc != NULL);
 
-	printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CLOSE,
+	printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CLOSE,
 		    dcc_type2str(dcc->type), dcc->nick, dcc->arg);
 }
 
@@ -88,27 +88,27 @@ static void dcc_closed(DCC_REC *dcc)
 	switch (dcc->type) {
 	case DCC_TYPE_CHAT:
 		sender = g_strconcat("=", dcc->nick, NULL);
-		printformat(dcc->server, sender, MSGLEVEL_DCC,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC,
 			    IRCTXT_DCC_CHAT_DISCONNECTED, dcc->nick);
 		g_free(sender);
 		break;
 	case DCC_TYPE_SEND:
 		if (secs == -1) {
 			/* aborted */
-			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_ABORTED,
+			printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_ABORTED,
 				    dcc->arg, dcc->nick);
 		} else {
-			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND_COMPLETE,
+			printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND_COMPLETE,
 				    dcc->arg, dcc->transfd/1024, dcc->nick, (long) secs, kbs);
 		}
 		break;
 	case DCC_TYPE_GET:
 		if (secs == -1) {
 			/* aborted */
-			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_ABORTED,
+			printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_ABORTED,
 				    dcc->arg, dcc->nick);
 		} else {
-			printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_GET_COMPLETE,
+			printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_GET_COMPLETE,
 				    dcc->arg, dcc->transfd/1024, dcc->nick, (long) secs, kbs);
 		}
 		break;
@@ -160,11 +160,11 @@ static void dcc_request(DCC_REC *dcc)
 
 	switch (dcc->type) {
 	case DCC_TYPE_CHAT:
-		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CHAT,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT,
 			    dcc->nick, dcc->addrstr, dcc->port);
 		break;
 	case DCC_TYPE_GET:
-		printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_SEND,
+		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_SEND,
 			    dcc->nick, dcc->addrstr, dcc->port, dcc->arg, dcc->size);
 		break;
 	}
@@ -174,7 +174,8 @@ static void dcc_error_connect(DCC_REC *dcc)
 {
 	g_return_if_fail(dcc != NULL);
 
-	printformat(dcc->server, dcc->nick, MSGLEVEL_DCC, IRCTXT_DCC_CONNECT_ERROR, dcc->addrstr, dcc->port);
+        printformat(dcc->server, NULL, MSGLEVEL_DCC,
+                    IRCTXT_DCC_CONNECT_ERROR, dcc->addrstr, dcc->port);
 }
 
 static void dcc_error_file_create(DCC_REC *dcc, const char *fname)
