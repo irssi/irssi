@@ -302,7 +302,7 @@ fe-irc-messages.c:
  "message irc own_notice", SERVER_REC, char *msg, char *target
  "message irc notice", SERVER_REC, char *msg, char *nick, char *address, char *target
  "message irc own_ctcp", SERVER_REC, char *cmd, char *data, char *target
- "message irc ctcp", SERVER_REC, char *msg, char *nick, char *address, char *target
+ "message irc ctcp", SERVER_REC, char *cmd, char *data, char *nick, char *address, char *target
 
 dcc/fe-dcc-chat-messages.c:
  "message dcc own", DCC_REC *dcc, char *msg

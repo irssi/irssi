@@ -229,12 +229,12 @@ static void sig_message_own_ctcp(IRC_SERVER_REC *server, const char *cmd,
 		    IRCTXT_OWN_CTCP, target, cmd, data);
 }
 
-static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *msg,
-				 const char *nick, const char *addr,
-				 const char *target)
+static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
+				 const char *data, const char *nick,
+				 const char *addr, const char *target)
 {
 	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
-		    IRCTXT_CTCP_REQUESTED, nick, addr, msg, target);
+		    IRCTXT_CTCP_REQUESTED, nick, addr, cmd, data, target);
 }
 
 void fe_irc_messages_init(void)

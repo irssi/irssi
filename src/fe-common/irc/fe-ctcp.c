@@ -33,44 +33,50 @@
 #include "window-items.h"
 #include "printtext.h"
 
-static void ctcp_print(IRC_SERVER_REC *server,
-		       const char *prefix, const char *data,
-		       const char *nick, const char *addr, const char *target)
-{
-	char *str;
-
-	str = *data == '\0' ? g_strdup(prefix) :
-		g_strconcat(prefix, " ", data, NULL);
-	signal_emit("message irc ctcp", 5, server, str, nick, addr, target);
-	g_free(str);
-}
-
 static void ctcp_default_msg(IRC_SERVER_REC *server, const char *data,
 			     const char *nick, const char *addr,
 			     const char *target)
 {
-	ctcp_print(server, "unknown CTCP", data, nick, addr, target);
+        const char *p;
+	char *cmd;
+
+	p = strchr(data, ' ');
+	if (p == NULL) {
+		cmd = g_strdup(data);
+                data = "";
+	} else {
+		cmd = g_strndup(data, (int) (p-data));
+                data = p+1;
+	}
+
+	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
+		    IRCTXT_CTCP_REQUESTED_UNKNOWN,
+		    nick, addr, cmd, data, target);
+        g_free(cmd);
 }
 
 static void ctcp_ping_msg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr,
 			  const char *target)
 {
-	ctcp_print(server, "CTCP PING", data, nick, addr, target);
+	signal_emit("message irc ctcp", 6, server, "PING",
+		    data, nick, addr, target);
 }
 
 static void ctcp_version_msg(IRC_SERVER_REC *server, const char *data,
 			     const char *nick, const char *addr,
 			     const char *target)
 {
-	ctcp_print(server, "CTCP VERSION", data, nick, addr, target);
+	signal_emit("message irc ctcp", 6, server, "VERSION",
+		    data, nick, addr, target);
 }
 
 static void ctcp_time_msg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr,
 			  const char *target)
 {
-	ctcp_print(server, "CTCP TIME", data, nick, addr, target);
+	signal_emit("message irc ctcp", 6, server, "TIME",
+		    data, nick, addr, target);
 }
 
 static void ctcp_default_reply(IRC_SERVER_REC *server, const char *data,
