@@ -232,11 +232,12 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
    message before it. */
 static void sig_print_starting(void)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 
-	for (tmp = joinservers; tmp != NULL; tmp = tmp->next) {
+	for (tmp = joinservers; tmp != NULL; tmp = next) {
 		NETJOIN_SERVER_REC *server = tmp->data;
 
+		next = tmp->next;
 		if (server->netjoins != NULL)
 			print_netjoins(server);
 	}
