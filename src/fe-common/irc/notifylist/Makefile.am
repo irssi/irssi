@@ -1,4 +1,5 @@
-noinst_LTLIBRARIES = libfe_common_irc_notifylist.la
+plugindir = $(libdir)/irssi/plugins
+plugin_LTLIBRARIES = libfe_common_irc_notifylist.la
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \

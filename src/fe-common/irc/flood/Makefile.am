@@ -1,4 +1,5 @@
-noinst_LTLIBRARIES = libfe_common_irc_flood.la
+plugindir = $(libdir)/irssi/plugins
+plugin_LTLIBRARIES = libfe_common_irc_flood.la
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \

@@ -23,7 +23,7 @@
 #include <string.h>
 #include <glib.h>
 
-#define ENABLE_BUFFER_CHECKS
+/*#define ENABLE_BUFFER_CHECKS*/
 #define BUFFER_CHECK_SIZE 5
 #define MIN_BUFFER_CHECK_SIZE 2
 

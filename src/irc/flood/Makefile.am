@@ -1,4 +1,5 @@
-noinst_LTLIBRARIES = libirc_flood.la
+plugindir = $(libdir)/irssi/plugins
+plugin_LTLIBRARIES = libirc_flood.la
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ -I$(top_srcdir)/src/irc/core/

@@ -68,18 +68,9 @@ AC_ARG_WITH(bot,
 	fi,
 	want_irssibot=yes)
 
-AC_ARG_WITH(plugins,
-[  --with-plugins          Build plugins],
-	if test x$withval = xyes; then
-    		want_plugins=yes
-	else
-		if test "x$withval" = xno; then
-			want_plugins=no
-		else
-        		want_plugins=yes
-		fi
-	fi,
-	want_plugins=yes)
+AC_ARG_WITH(modules,
+[  --with-modules          Specify what modules to build in binary],
+	build_modules="$withval")
 
 AC_ARG_ENABLE(perl,
 [  --enable-perl           Enable Perl scripting],
@@ -276,6 +267,9 @@ dnl ** (these could be made configurable)
 
 CHAT_MODULES="irc"
 irc_MODULES="dcc flood notifylist"
+if test "$build_modules" != ""; then
+	irc_MODULES="$irc_MODULES $build_modules"
+fi
 
 dnl ****************************************
 
@@ -295,11 +289,11 @@ for c in $CHAT_MODULES; do
 	CHAT_LIBS="$CHAT_LIBS ../$c/lib$c.la ../$c/core/lib${c}_core.la"
 	FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/libfe_common_$c.la"
 	for s in `eval echo \\$${c}_MODULES`; do
-		CHAT_LIBS="$CHAT_LIBS ../$c/$s/lib${c}_$s.la"
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -d $srcdir/src/fe-common/$c/$s; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/$s/libfe_common_${c}_$s.la"
+			FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/$s/.libs/libfe_common_${c}_$s.a"
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi
