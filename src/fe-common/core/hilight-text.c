@@ -705,7 +705,7 @@ static void read_settings(void)
 void hilight_text_init(void)
 {
 	settings_add_str("lookandfeel", "hilight_color", "8");
-	settings_add_str("lookandfeel", "hilight_levels", "PUBLIC MSGS DCCMSGS");
+	settings_add_str("lookandfeel", "hilight_levels", "PUBLIC DCCMSGS");
 
 	next_nick_hilight = NULL;
 	next_line_hilight = NULL;
