@@ -8,6 +8,7 @@ Irssi::Command		T_PTROBJ
 Irssi::Nick		T_PTROBJ
 Irssi::Ignore		T_PTROBJ
 Irssi::Log		T_PTROBJ
+Irssi::LogItem       	T_PTROBJ
 Irssi::Rawlog		T_PTROBJ
 Irssi::Window		T_PTROBJ
 Irssi::Windowitem	T_PTROBJ

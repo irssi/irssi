@@ -55,7 +55,7 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 		return; /* already open */
 
 	if (log == NULL) {
-		log = log_create_rec(fname, level, NULL);
+		log = log_create_rec(fname, level);
 		log->temp = TRUE;
 		log_update(log);
 	}

@@ -25,6 +25,7 @@
 
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;
+typedef LOG_ITEM_REC *Irssi__LogItem;
 typedef RAWLOG_REC *Irssi__Rawlog;
 typedef IGNORE_REC *Irssi__Ignore;
 

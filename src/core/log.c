@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "servers.h"
 #include "log.h"
 
 #include "lib-config/iconfig.h"
@@ -36,9 +37,28 @@ static struct flock lock;
 
 GSList *logs;
 
+static const char *log_item_types[] = {
+	"target",
+	"window",
+
+	NULL
+};
+
 const char *log_timestamp;
 static int log_file_create_mode;
 static int rotate_tag;
+
+static int log_item_str2type(const char *type)
+{
+	int n;
+
+	for (n = 0; log_item_types[n] != NULL; n++) {
+		if (g_strcasecmp(log_item_types[n], type) == 0)
+			return n;
+	}
+
+	return -1;
+}
 
 static void log_write_timestamp(int handle, const char *format,
 				const char *suffix, time_t stamp)
@@ -194,7 +214,27 @@ void log_write_rec(LOG_REC *log, const char *str)
 	signal_emit("log written", 2, log, str);
 }
 
-static void log_file_write(const char *item, int level,
+LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
+			    SERVER_REC *server)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(log != NULL, NULL);
+	g_return_val_if_fail(item != NULL, NULL);
+
+	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
+		LOG_ITEM_REC *rec = tmp->data;
+
+		if (rec->type == type && g_strcasecmp(rec->name, item) == 0 &&
+		    (rec->servertag == NULL || (server != NULL &&
+		    	g_strcasecmp(rec->servertag, server->tag) == 0)))
+			return rec;
+	}
+
+	return NULL;
+}
+
+static void log_file_write(SERVER_REC *server, const char *item, int level,
 			   const char *str, int no_fallbacks)
 {
 	GSList *tmp, *fallbacks;
@@ -216,7 +256,8 @@ static void log_file_write(const char *item, int level,
 
 		if (rec->items == NULL)
 			fallbacks = g_slist_append(fallbacks, rec);
-		else if (item != NULL && strarray_find(rec->items, item) != -1)
+		else if (item != NULL && log_item_find(rec, LOG_ITEM_TARGET,
+						       item, server) != NULL)
 			log_write_rec(rec, str);
 	}
 
@@ -233,11 +274,6 @@ static void log_file_write(const char *item, int level,
         g_slist_free(fallbacks);
 }
 
-void log_write(const char *item, int level, const char *str)
-{
-	log_file_write(item, level, str, TRUE);
-}
-
 LOG_REC *log_find(const char *fname)
 {
 	GSList *tmp;
@@ -252,7 +288,23 @@ LOG_REC *log_find(const char *fname)
 	return NULL;
 }
 
-static void log_set_config(LOG_REC *log)
+static void log_items_update_config(LOG_REC *log, CONFIG_NODE *parent)
+{
+	GSList *tmp;
+	CONFIG_NODE *node;
+
+	parent = config_node_section(parent, "items", NODE_TYPE_LIST);
+	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
+		LOG_ITEM_REC *rec = tmp->data;
+
+                node = config_node_section(parent, NULL, NODE_TYPE_BLOCK);
+		iconfig_node_set_str(node, "type", log_item_types[rec->type]);
+		iconfig_node_set_str(node, "name", rec->name);
+		iconfig_node_set_str(node, "server", rec->servertag);
+	}
+}
+
+static void log_update_config(LOG_REC *log)
 {
 	CONFIG_NODE *node;
 	char *levelstr;
@@ -274,10 +326,8 @@ static void log_set_config(LOG_REC *log)
 
 	iconfig_node_set_str(node, "items", NULL);
 
-	if (log->items != NULL && *log->items != NULL) {
-		node = config_node_section(node, "items", NODE_TYPE_LIST);
-		config_node_add_list(node, log->items);
-	}
+	if (log->items != NULL)
+		log_items_update_config(log, node);
 }
 
 static void log_remove_config(LOG_REC *log)
@@ -285,7 +335,7 @@ static void log_remove_config(LOG_REC *log)
 	iconfig_set_str("logs", log->fname, NULL);
 }
 
-LOG_REC *log_create_rec(const char *fname, int level, const char *items)
+LOG_REC *log_create_rec(const char *fname, int level)
 {
 	LOG_REC *rec;
 
@@ -296,14 +346,29 @@ LOG_REC *log_create_rec(const char *fname, int level, const char *items)
 		rec = g_new0(LOG_REC, 1);
 		rec->fname = g_strdup(fname);
 		rec->handle = -1;
-	} else {
-		g_strfreev(rec->items);
 	}
 
-	rec->items = items == NULL || *items == '\0' ? NULL :
-		g_strsplit(items, " ", -1);
 	rec->level = level;
 	return rec;
+}
+
+void log_item_add(LOG_REC *log, int type, const char *name,
+		  SERVER_REC *server)
+{
+	LOG_ITEM_REC *rec;
+
+	g_return_if_fail(log != NULL);
+	g_return_if_fail(name != NULL);
+
+	if (log_item_find(log, type, name, server))
+		return;
+
+	rec = g_new0(LOG_ITEM_REC, 1);
+	rec->type = type;
+	rec->name = g_strdup(name);
+	rec->servertag = server == NULL ? NULL : g_strdup(server->tag);
+
+	log->items = g_slist_append(log->items, rec);
 }
 
 void log_update(LOG_REC *log)
@@ -315,8 +380,17 @@ void log_update(LOG_REC *log)
 		log->handle = -1;
 	}
 
-	log_set_config(log);
+	log_update_config(log);
 	signal_emit("log new", 1, log);
+}
+
+void log_item_destroy(LOG_REC *log, LOG_ITEM_REC *item)
+{
+	log->items = g_slist_remove(log->items, item);
+
+	g_free(item->name);
+	g_free_not_null(item->servertag);
+	g_free(item);
 }
 
 static void log_destroy(LOG_REC *log)
@@ -329,7 +403,8 @@ static void log_destroy(LOG_REC *log)
 	logs = g_slist_remove(logs, log);
 	signal_emit("log remove", 1, log);
 
-	if (log->items != NULL) g_strfreev(log->items);
+	while (log->items != NULL)
+		log_item_destroy(log, log->items->data);
 	g_free(log->fname);
 	g_free_not_null(log->real_fname);
 	g_free(log);
@@ -343,7 +418,7 @@ void log_close(LOG_REC *log)
 	log_destroy(log);
 }
 
-static void sig_printtext_stripped(void *window, void *server,
+static void sig_printtext_stripped(void *window, SERVER_REC *server,
 				   const char *item, gpointer levelp,
 				   const char *str)
 {
@@ -357,12 +432,12 @@ static void sig_printtext_stripped(void *window, void *server,
 		return;
 
         if (item == NULL)
-		log_file_write(NULL, level, str, FALSE);
+		log_file_write(server, NULL, level, str, FALSE);
 	else {
 		/* there can be multiple items separated with comma */
 		items = g_strsplit(item, ",", -1);
 		for (tmp = items; *tmp != NULL; tmp++)
-			log_file_write(*tmp, level, str, FALSE);
+			log_file_write(server, *tmp, level, str, FALSE);
 		g_strfreev(items);
 	}
 }
@@ -381,6 +456,28 @@ static int sig_rotate_check(void)
 		g_slist_foreach(logs, (GFunc) log_rotate_check, NULL);
 	}
 	return 1;
+}
+
+static void log_items_read_config(CONFIG_NODE *node, LOG_REC *log)
+{
+	LOG_ITEM_REC *rec;
+	GSList *tmp;
+	char *item;
+        int type;
+
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		item = config_node_get_str(node, "name", NULL);
+		type = log_item_str2type(config_node_get_str(node, "type", NULL));
+		if (item == NULL || type == -1)
+			continue;
+
+		rec = g_new0(LOG_ITEM_REC, 1);
+		rec->type = type;
+		rec->name = g_strdup(item);
+		rec->servertag = g_strdup(config_node_get_str(node, "server", NULL));
+	}
 }
 
 static void log_read_config(void)
@@ -421,7 +518,8 @@ static void log_read_config(void)
 		log->level = level2bits(config_node_get_str(node, "level", 0));
 
 		node = config_node_section(node, "items", -1);
-		if (node != NULL) log->items = config_node_get_list(node);
+		if (node != NULL)
+			log_items_read_config(node, log);
 
 		if (log->autoopen || gslist_find_string(fnames, log->fname))
 			log_start_logging(log);

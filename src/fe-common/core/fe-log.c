@@ -41,6 +41,21 @@ static int autolog_level;
 static int autoremove_tag;
 static const char *autolog_path;
 
+static void log_add_targets(LOG_REC *log, const char *targets)
+{
+	char **tmp, **items;
+
+        g_return_if_fail(log != NULL);
+        g_return_if_fail(targets != NULL);
+
+	items = g_strsplit(targets, " ", -1);
+
+	for (tmp = items; *tmp != NULL; tmp++)
+		log_item_add(log, LOG_ITEM_TARGET, *tmp, NULL);
+
+	g_strfreev(items);
+}
+
 /* SYNTAX: LOG OPEN [-noopen] [-autoopen] [-targets <targets>]
                     [-window] <fname> [<levels>] */
 static void cmd_log_open(const char *data)
@@ -55,34 +70,33 @@ static void cmd_log_open(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
 			    "log open", &optlist, &fname, &levels))
 		return;
-
-	targetarg = g_hash_table_lookup(optlist, "targets");
-
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	level = level2bits(levels);
-	if (level == 0) level = MSGLEVEL_ALL;
+	log = log_create_rec(fname, level != 0 ? level : MSGLEVEL_ALL);
 
 	if (g_hash_table_lookup(optlist, "window")) {
 		/* log by window ref# */
 		ltoa(window, active_win->refnum);
-                targetarg = window;
+		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
+	} else {
+		targetarg = g_hash_table_lookup(optlist, "targets");
+		if (targetarg != NULL && *targetarg != '\0')
+			log_add_targets(log, targetarg);
 	}
 
-	log = log_create_rec(fname, level, targetarg);
-	if (log != NULL) {
-		if (g_hash_table_lookup(optlist, "autoopen"))
-			log->autoopen = TRUE;
-		log_update(log);
+	if (g_hash_table_lookup(optlist, "autoopen"))
+		log->autoopen = TRUE;
 
-		if (log->handle == -1 && g_hash_table_lookup(optlist, "noopen") == NULL) {
-			/* start logging */
-			if (log_start_logging(log)) {
-				printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-					    IRCTXT_LOG_OPENED, fname);
-			} else {
-				log_close(log);
-			}
+	log_update(log);
+
+	if (log->handle == -1 && g_hash_table_lookup(optlist, "noopen") == NULL) {
+		/* start logging */
+		if (log_start_logging(log)) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				    IRCTXT_LOG_OPENED, fname);
+		} else {
+			log_close(log);
 		}
 	}
 
@@ -141,6 +155,28 @@ static void cmd_log_stop(const char *data)
 	}
 }
 
+static char *log_items_get_list(LOG_REC *log)
+{
+	GSList *tmp;
+	GString *str;
+	char *ret;
+
+	g_return_val_if_fail(log != NULL, NULL);
+	g_return_val_if_fail(log->items != NULL, NULL);
+
+	str = g_string_new(NULL);
+	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
+		LOG_ITEM_REC *rec = tmp->data;
+
+                g_string_sprintfa(str, "%s, ", rec->name);
+	}
+	g_string_truncate(str, str->len-2);
+
+	ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
 /* SYNTAX: LOG LIST */
 static void cmd_log_list(void)
 {
@@ -154,7 +190,7 @@ static void cmd_log_list(void)
 
 		levelstr = bits2level(rec->level);
 		items = rec->items == NULL ? NULL :
-			g_strjoinv(",", rec->items);
+                        log_items_get_list(rec);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST,
 			    index, rec->fname, items != NULL ? items : "",
@@ -174,15 +210,20 @@ static void cmd_log(const char *data, SERVER_REC *server, void *item)
 		command_runsub("log", data, server, item);
 }
 
-static LOG_REC *log_find_item(const char *item)
+static LOG_REC *logs_find_item(int type, const char *item,
+			       SERVER_REC *server, LOG_ITEM_REC **ret_item)
 {
+	LOG_ITEM_REC *logitem;
 	GSList *tmp;
 
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
-		LOG_REC *rec = tmp->data;
+		LOG_REC *log = tmp->data;
 
-		if (rec->items != NULL && strarray_find(rec->items, item) != -1)
-			return rec;
+		logitem = log_item_find(log, type, item, server);
+		if (logitem != NULL) {
+			if (ret_item != NULL) *ret_item = logitem;
+			return log;
+		}
 	}
 
 	return NULL;
@@ -200,7 +241,7 @@ static void cmd_window_log(const char *data)
 		return;
 
         ltoa(window, active_win->refnum);
-	log = log_find_item(window);
+	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, window, NULL, NULL);
 
         open_log = close_log = FALSE;
 	if (g_strcasecmp(set, "ON") == 0)
@@ -222,8 +263,9 @@ static void cmd_window_log(const char *data)
 			g_strdup_printf("~/irc.log.%s%s",
 					active_win->name != NULL ? active_win->name : "Window",
 					active_win->name != NULL ? "" : window);
-		log = log_create_rec(fname, MSGLEVEL_ALL, window);
-                if (log != NULL) log_update(log);
+		log = log_create_rec(fname, MSGLEVEL_ALL);
+                log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
+		log_update(log);
 		g_free(fname);
 	}
 
@@ -246,18 +288,18 @@ static void cmd_window_logfile(const char *data)
 	char window[MAX_INT_STRLEN];
 
         ltoa(window, active_win->refnum);
-	log = log_find_item(window);
+	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, window, NULL, NULL);
 
 	if (log != NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE_LOGGING);
 		return;
 	}
 
-	log = log_create_rec(data, MSGLEVEL_ALL, window);
-	if (log == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE, data);
-	else
-		log_update(log);
+	log = log_create_rec(data, MSGLEVEL_ALL);
+	log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
+	log_update(log);
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_WINDOWLOG_FILE, data);
 }
 
 /* window's refnum changed - update the logs to log the new window refnum */
@@ -265,15 +307,16 @@ static void sig_window_refnum_changed(WINDOW_REC *window, gpointer old_refnum)
 {
 	char winnum[MAX_INT_STRLEN];
 	LOG_REC *log;
+	LOG_ITEM_REC *item;
 
         ltoa(winnum, GPOINTER_TO_INT(old_refnum));
-	log = log_find_item(winnum);
+	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, winnum, NULL, &item);
 
 	if (log != NULL) {
 		ltoa(winnum, window->refnum);
 
-		g_strfreev(log->items);
-		log->items = g_strsplit(winnum, " ", -1);
+		g_free(item->name);
+		item->name = g_strdup(winnum);
 	}
 }
 
@@ -294,7 +337,7 @@ static void autolog_log(void *server, const char *target)
 	LOG_REC *log;
 	char *fname, *dir, *str;
 
-	log = log_find_item(target);
+	log = logs_find_item(LOG_ITEM_TARGET, target, server, NULL);
 	if (log != NULL && !log->failed) {
 		log_start_logging(log);
 		return;
@@ -309,12 +352,12 @@ static void autolog_log(void *server, const char *target)
 		mkpath(dir, LOG_DIR_CREATE_MODE);
 		g_free(dir);
 
-		log = log_create_rec(fname, autolog_level, target);
-		if (log != NULL) {
-			log->temp = TRUE;
-			log_update(log);
-			log_start_logging(log);
-		}
+		log = log_create_rec(fname, autolog_level);
+		log_item_add(log, LOG_ITEM_TARGET, target, server);
+
+		log->temp = TRUE;
+		log_update(log);
+		log_start_logging(log);
 	}
 	g_free(fname);
 }
@@ -343,48 +386,42 @@ static void sig_printtext_stripped(WINDOW_REC *window, void *server,
 
         /* save to log created with /WINDOW LOG */
 	ltoa(windownum, window->refnum);
-	log = log_find_item(windownum);
+	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, windownum, NULL, NULL);
 	if (log != NULL) log_write_rec(log, text);
 }
 
 static int sig_autoremove(void)
 {
+	SERVER_REC *server;
+	LOG_ITEM_REC *logitem;
 	GSList *tmp, *next;
 	time_t removetime;
 
         removetime = time(NULL)-AUTOLOG_INACTIVITY_CLOSE;
 	for (tmp = logs; tmp != NULL; tmp = next) {
-		LOG_REC *rec = tmp->data;
+		LOG_REC *log = tmp->data;
 
 		next = tmp->next;
-		/* FIXME: here is a small kludge - We don't want autolog to
-		   automatically close the logs with channels, only with
-		   private messages. However, this is CORE module and we
-		   don't know how to figure out if item is a channel or not,
-		   so just assume that channels are everything that don't
-		   start with alphanumeric character. */
-		if (!rec->temp || rec->last > removetime ||
-		    rec->items == NULL || !isalnum(**rec->items))
-			continue;
 
-		log_close(rec);
+		if (!log->temp || log->last > removetime || log->items == NULL)
+                        continue;
+
+		/* Close only logs with private messages */
+		logitem = log->items->data;
+		server = server_find_tag(logitem->servertag);
+		if (logitem->type == LOG_ITEM_TARGET &&
+		    server != NULL && !server->ischannel(*logitem->name))
+			log_close(log);
 	}
 	return 1;
 }
 
 static void sig_window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 {
-	GSList *tmp;
+	LOG_REC *log;
 
-	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
-		LOG_REC *rec = tmp->data;
-
-		if (rec->temp && rec->items != NULL && 
-		    g_strcasecmp(rec->items[0], item->name) == 0) {
-                        log_close(rec);
-			break;
-		}
-	}
+	log = logs_find_item(LOG_ITEM_TARGET, item->name, item->server, NULL);
+        if (log != NULL) log_close(log);
 }
 
 static void sig_log_locked(LOG_REC *log)
@@ -435,7 +472,7 @@ void fe_log_init(void)
 	autoremove_tag = g_timeout_add(60000, (GSourceFunc) sig_autoremove, NULL);
 
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
-	settings_add_str("log", "autolog_level", "all -crap");
+	settings_add_str("log", "autolog_level", "all -crap -clientcrap");
         settings_add_bool("log", "autolog", FALSE);
 
 	autolog_level = 0;
