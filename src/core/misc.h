@@ -40,6 +40,9 @@ char *convert_home(const char *path);
 int g_istr_equal(gconstpointer v, gconstpointer v2);
 unsigned int g_istr_hash(gconstpointer v);
 
+/* Case-insensitive GCompareFunc func */
+int g_istr_cmp(gconstpointer v, gconstpointer v2);
+
 /* Find `mask' from `data', you can use * and ? wildcards. */
 int match_wildcards(const char *mask, const char *data);
 

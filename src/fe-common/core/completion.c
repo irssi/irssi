@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
+#include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
@@ -194,7 +195,7 @@ static GList *completion_get_settings(const char *key)
 		SETTINGS_REC *rec = tmp->data;
 
 		if (g_strncasecmp(rec->key, key, len) == 0)
-			complist = g_list_append(complist, g_strdup(rec->key));
+			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
 	}
 	g_slist_free(sets);
 	return complist;
@@ -218,7 +219,7 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 		if (g_strncasecmp(rec->cmd, cmd, len) == 0) {
 			word = g_strdup_printf("%c%s", cmdchar, rec->cmd);
 			if (glist_find_icase_string(complist, word) == NULL)
-				complist = g_list_append(complist, word);
+				complist = g_list_insert_sorted(complist, word, (GCompareFunc) g_istr_cmp);
 			else
 				g_free(word);
 		}
@@ -250,7 +251,7 @@ static GList *completion_get_subcommands(const char *cmd)
 			continue;
 
 		if (g_strncasecmp(rec->cmd, cmd, len) == 0)
-			complist = g_list_append(complist, g_strdup(rec->cmd+skip));
+			complist = g_list_insert_sorted(complist, g_strdup(rec->cmd+skip), (GCompareFunc) g_istr_cmp);
 	}
 	return complist;
 }

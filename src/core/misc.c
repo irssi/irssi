@@ -353,6 +353,11 @@ int g_istr_equal(gconstpointer v, gconstpointer v2)
 	return g_strcasecmp((const char *) v, (const char *) v2) == 0;
 }
 
+int g_istr_cmp(gconstpointer v, gconstpointer v2)
+{
+	return g_strcasecmp((const char *) v, (const char *) v2);
+}
+
 /* a char* hash function from ASU */
 unsigned int g_istr_hash(gconstpointer v)
 {
