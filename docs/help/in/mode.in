@@ -81,7 +81,7 @@ Irssi knows these channel modes:
 
 You can send multiple mode changes with one mode command:
 
-/MODE #channel +nto-o+v nick1,nick2,nick3
+/MODE #channel +nto-o+v nick1 nick2 nick3
 
 This would set channel's mode to +nt, give ops to nick1, take ops
 from nick2 and give voices to nick3.
