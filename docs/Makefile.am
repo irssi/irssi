@@ -1,0 +1,5 @@
+EXTRA_DIST = \
+	FAQ \
+	FORMATS
+
+SUBDIRS = help

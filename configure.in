@@ -355,6 +355,8 @@ src/lib-nongui/Makefile
 src/lib-popt/Makefile
 src/settings/Makefile
 servertest/Makefile
+docs/Makefile
+docs/help/Makefile
 plugins/Makefile
 plugins/sample/Makefile
 plugins/speech/Makefile
