@@ -4,8 +4,7 @@ setupservers = (
   {server = "irc.undernet.net"; ircnet = Undernet; port = 6667; autoconnect = No;},
   {server = "irc.dal.net"; ircnet = DALNet; port = 6667; autoconnect = No;},
   {server = "irc.openprojects.net"; ircnet = OPN; port = 6667; autoconnect = No;},
-  {server = "irc.ptlink.net"; ircnet = PTlink; port = 6667; autoconnect = No;},
-  {server = "irc.multichat.org"; ircnet = Multichat; port = 6667; autoconnect = No;}
+  {server = "irc.ptlink.net"; ircnet = PTlink; port = 6667; autoconnect = No;}
 );
 
 ircnets = (
@@ -21,6 +20,11 @@ channels = (
   {
     name = "#irssi";
     ircnet = ircnet;
+    autojoin = No;
+  },
+  {
+    name = "#irssi";
+    ircnet = efnet;
     autojoin = No;
   }
 );
@@ -47,12 +51,16 @@ aliases = {
   K = "kick";
   KB = "kickban";
   KN = "knockout";
+  BANS = "ban";
   B = "ban";
+  MUB = "unban *";
   UB = "unban";
   IG = "ignore";
   UNIG = "unignore";
   SB = "scrollback";
   UMODE = "mode $N";
+  WC = "window close";
+  WN = "window new";
 };
 popups = (
   {label = "<MULTICOMMA>Whois"; command = "/whois %s";},

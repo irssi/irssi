@@ -323,14 +323,18 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void cmd_banstat(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *cur_channel, *channel;
 	GSList *tmp;
 
 	g_return_if_fail(data != NULL);
+	if (*data == '\0')
+	    return; /* setting ban - don't handle here */
+
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
+	/* display bans */
 	cur_channel = irc_item_channel(item);
 	if (cur_channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
 
@@ -377,6 +381,8 @@ static void cmd_banstat(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 			printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_EBANLIST,
 				    channel->name, rec->ban, rec->setby, (gint) (time(NULL)-rec->time));
 	}
+
+	signal_stop();
 }
 
 static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
@@ -510,7 +516,7 @@ void fe_irc_commands_init(void)
 	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
-	command_bind("banstat", NULL, (SIGNAL_FUNC) cmd_banstat);
+	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
@@ -531,7 +537,7 @@ void fe_irc_commands_deinit(void)
 	command_unbind("action", (SIGNAL_FUNC) cmd_action);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
-	command_unbind("banstat", (SIGNAL_FUNC) cmd_banstat);
+	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
