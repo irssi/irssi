@@ -239,7 +239,7 @@ static int signal_emitv_id(int signal_id, int params, va_list va)
 	g_return_val_if_fail(params >= 0 && params <= SIGNAL_MAX_ARGUMENTS, FALSE);
 
 	for (n = 0; n < SIGNAL_MAX_ARGUMENTS; n++)
-		arglist[n] = n > params ? NULL : va_arg(va, gconstpointer);
+		arglist[n] = n >= params ? NULL : va_arg(va, gconstpointer);
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec != NULL && signal_emit_real(rec, arglist))
