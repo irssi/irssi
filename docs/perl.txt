@@ -91,11 +91,11 @@ Here's an example:
     }
 
     if ($data) {
-      $server->command("/MSG $data Hello!");
+      $server->command("MSG $data Hello!");
     } elsif ($witem && ($witem->{type} eq "CHANNEL" ||
                         $witem->{type} eq "QUERY")) {
       # there's query/channel active in window
-      $witem->command("/MSG ".$witem->{name}." Hello!");
+      $witem->command("MSG ".$witem->{name}." Hello!");
     } else {
       Irssi::print("Nick not given, and no active channel/query in window");
     }
