@@ -70,7 +70,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		      item->name, data);
 }
 
-/* SYNTAX: ACTION [<target>] <message> */
+/* SYNTAX: ACTION <target> <message> */
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	char *target, *text;
