@@ -143,8 +143,13 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		return;
 	}
 	if (strcmp(cmd, "PING") == 0) {
-		proxy_outdata(client, "PONG proxy :%s\n", args);
-		return;
+		char *server = strchr(args, ':');
+		if (server == NULL || strcmp(server, "proxy") == 0) {
+			if (server != NULL) *server = '\0';
+			if (*args == '\0') args = client->nick;
+			proxy_outdata(client, "PONG proxy :%s\n", args);
+			return;
+		}
 	}
 
 	if (client->server == NULL || !client->server->connected) {
