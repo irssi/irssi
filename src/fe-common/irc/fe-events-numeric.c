@@ -45,7 +45,8 @@ static void event_user_mode(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	params = event_get_params(data, 2, NULL, &mode);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_USER_MODE, mode);
+        printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_USER_MODE,
+                    g_strchomp(mode));
 	g_free(params);
 }
 
@@ -321,7 +322,8 @@ static void event_channel_mode(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &channel, &mode);
-	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_MODE, channel, mode);
+        printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_MODE,
+                    channel, g_strchomp(mode));
 	g_free(params);
 }
 
