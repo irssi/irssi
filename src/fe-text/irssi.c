@@ -150,6 +150,11 @@ int main(int argc, char **argv)
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif
+#ifdef ENABLE_NLS
+	/* initialize the i18n stuff */
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+#endif
 
 	textui_init();
 	args_execute(argc, argv);

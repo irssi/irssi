@@ -7,7 +7,8 @@ INCLUDES = \
 	-I$(top_srcdir)/src/irc/core/ \
 	-I$(top_srcdir)/src/fe-common/core/ \
 	-I$(top_srcdir)/src/fe-common/irc/ \
-	$(CURSES_INCLUDEDIR)
+	$(CURSES_INCLUDEDIR) \
+	-DLOCALEDIR=\""$(datadir)/locale"\"
 
 irssi_DEPENDENCIES = @COMMON_LIBS@
 
