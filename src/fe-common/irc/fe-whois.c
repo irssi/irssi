@@ -242,7 +242,7 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 
 static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *chans;
+	char *params, *nick, *chans, *recoded;
 
 	g_return_if_fail(data != NULL);
 
@@ -255,11 +255,13 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 	chans = show_lowascii(chans);
 	if (settings_get_bool("whois_hide_safe_channel_id"))
 		hide_safe_channel_id(server, chans);
+	recoded = recode_in(chans, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_CHANNELS, nick, chans);
+		    IRCTXT_WHOIS_CHANNELS, nick, recoded);
 	g_free(chans);
 
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_whois_away(IRC_SERVER_REC *server, const char *data)
