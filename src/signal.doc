@@ -17,6 +17,10 @@ bans.c:
  "ban exception remove", BAN_REC
  "ban type changed", gchar *bantype
 
+commands.c:
+ "commandlist new", COMMAND_REC
+ "commandlist remove", COMMAND_REC
+
 channels.c:
 
  "channel created", CHANNEL_REC
