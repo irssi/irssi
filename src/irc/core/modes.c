@@ -214,8 +214,10 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			   expecting argument, ignore the mode if there's
 			   no argument (shouldn't happen). */
 			arg = cmd_get_param(&modestr);
-			if (*arg == '\0')
+			if (*arg == '\0') {
+				curmode++;
 				continue;
+			}
 		} else {
 			arg = NULL;
 		}
