@@ -102,7 +102,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "not_invited", "You have not been invited to a channel!", 0 },
 	{ "new_topic", "{nick $0} changed the topic of {channel $1} to: $2", 4, { 0, 0, 0, 0 } },
 	{ "topic_unset", "Topic unset by {nick $0} on {channel $1}", 4, { 0, 0, 0, 0 } },
-	{ "your_nick_changed", "You're now known as {nick $1}", 3, { 0, 0, 0 } },
+	{ "your_nick_changed", "You're now known as {nick $1}", 4, { 0, 0, 0, 0 } },
 	{ "nick_changed", "{channick $0} is now known as {channick_hilight $1}", 4, { 0, 0, 0, 0 } },
 	{ "talking_in", "You are now talking in {channel $0}", 1, { 0 } },
 	{ "not_in_channels", "You are not on any channels", 0 },
