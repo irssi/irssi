@@ -195,9 +195,6 @@ abstracts = {
   ownctcp = "[%r$0%K(%R$1-%K)] ";
   ctcp = "%g$0-%n";
 
-  # wall
-  ownwall = "[%W$0%K/%c$1-] ";
-
   # wallops
   wallop = "%W$0-%n: ";
   wallop_nick = "%n$0-";

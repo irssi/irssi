@@ -41,7 +41,7 @@
 #include "keyboard.h"
 
 /* SYNTAX: ME <message> */
-static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	g_return_if_fail(data != NULL);
 
@@ -51,11 +51,10 @@ static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	printformat(server, item->name, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
-		    (ischannel(*item->name) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
-		    IRCTXT_OWN_ME, server->nick, data);
+	signal_emit("message irc own_action", 3, server, data, item->name);
 
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", item->name, data);
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001",
+		      item->name, data);
 }
 
 /* SYNTAX: ACTION [<target>] <message> */
@@ -68,14 +67,14 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
+			    &target, &text))
 		return;
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	printformat(server, target, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
-		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
-		    IRCTXT_OWN_ME, server->nick, text);
+	signal_emit("message irc own_action", 3, server, text, target);
+
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
 	cmd_params_free(free_arg);
 }
@@ -86,18 +85,21 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
+			    &target, &msg))
 		return;
-	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*target == '\0' || *msg == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '@' && ischannel(target[1]))
-		target++; /* Hybrid 6 feature, send notice to all ops in channel */
+	if (*target == '@' && ischannel(target[1])) {
+		/* Hybrid 6 feature, send notice to all ops in channel */
+		target++;
+	}
 
-	printformat(server, target, MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    IRCTXT_OWN_NOTICE, target, msg);
-
+	signal_emit("message irc own_notice", 3, server, msg, target);
 	cmd_params_free(free_arg);
 }
 
@@ -107,11 +109,14 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*target == '\0' || *ctcpcmd == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target == '=') {
 		/* don't handle DCC CTCPs */
@@ -119,37 +124,44 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	if (*target == '@' && ischannel(target[1]))
-		target++; /* Hybrid 6 feature, send ctcp to all ops in channel */
+	if (*target == '@' && ischannel(target[1])) {
+                /* Hybrid 6 feature, send ctcp to all ops in channel */
+		target++;
+	}
 
 	g_strup(ctcpcmd);
-	printformat(server, target, MSGLEVEL_CTCPS, IRCTXT_OWN_CTCP, target, ctcpcmd, ctcpdata);
+	signal_emit("message irc own_ctcp", 4,
+		    server, ctcpcmd, ctcpdata, target);
 
 	cmd_params_free(free_arg);
 }
 
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 {
-	char *target, *ctcpcmd, *ctcpdata;
+	char *target, *text;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			    &target, &text))
 		return;
-	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*target == '\0' || *text == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (*target == '@' && ischannel(target[1]))
-		target++; /* Hybrid 6 feature, send notice to all ops in channel */
+	if (*target == '@' && ischannel(target[1])) {
+                /* Hybrid 6 feature, send notice to all ops in channel */
+		target++;
+	}
 
-	g_strup(ctcpcmd);
-	printformat(server, target, MSGLEVEL_NOTICES, IRCTXT_OWN_NOTICE, target, ctcpcmd, ctcpdata);
-
+	signal_emit("message irc own_notice", 3, server, text, target);
 	cmd_params_free(free_arg);
 }
 
-static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_wall(const char *data, IRC_SERVER_REC *server,
+		     WI_ITEM_REC *item)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *channame, *msg;
@@ -159,14 +171,15 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
+			    PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
-	printformat(server, chanrec->name, MSGLEVEL_NOTICES, IRCTXT_OWN_WALL, chanrec->name, msg);
+	signal_emit("message irc own_wall", 3, server, msg, chanrec->name);
 
 	cmd_params_free(free_arg);
 }
@@ -338,7 +351,7 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	channel = *data != '\0' ? channel_find(server, data) : CHANNEL(item);
 	if (channel == NULL) return;
-	
+
 	printformat(server, channel->name, MSGLEVEL_CRAP,
 		    channel->topic == NULL ? IRCTXT_NO_TOPIC : IRCTXT_TOPIC,
 		    channel->name, channel->topic);

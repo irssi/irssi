@@ -70,39 +70,11 @@ static void ctcp_msg_check_action(IRC_SERVER_REC *server, const char *data,
 				  const char *nick, const char *addr,
 				  const char *target)
 {
-	void *item;
-	int level;
-
 	g_return_if_fail(data != NULL);
 
-	if (g_strncasecmp(data, "ACTION ", 7) != 0)
-		return;
-	data += 7;
-
-	level = MSGLEVEL_ACTIONS |
-		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
-	if (ignore_check(SERVER(server), nick, addr, target, data, level))
-		return;
-
-	if (ischannel(*target)) {
-		/* channel action */
-		item = irc_channel_find(server, target);
-
-		if (window_item_is_active(item)) {
-			/* message to active channel in window */
-			printformat(server, target, level,
-				    IRCTXT_ACTION_PUBLIC, nick, data);
-		} else {
-			/* message to not existing/active channel */
-			printformat(server, target, level,
-				    IRCTXT_ACTION_PUBLIC_CHANNEL, nick, target, data);
-		}
-	} else {
-		/* private action */
-		item = privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_MSGS);
-		printformat(server, nick, level,
-			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
-			    nick, addr == NULL ? "" : addr, data);
+	if (g_strncasecmp(data, "ACTION ", 7) == 0) {
+		signal_emit("message irc action", 5,
+			    server, data+7, nick, addr, target);
 	}
 }
 
@@ -110,7 +82,6 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
 	char *params, *target, *msg;
-	int op_notice;
 
 	g_return_if_fail(data != NULL);
 
@@ -121,30 +92,7 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 			server->real_address;
 	}
 
-	if (addr == NULL) {
-		/* notice from server */
-		if (*msg != 1 && !ignore_check(SERVER(server), nick, "", target, msg, MSGLEVEL_SNOTES))
-			printformat(server, target, MSGLEVEL_SNOTES, IRCTXT_NOTICE_SERVER, nick, msg);
-	} else {
-		op_notice = *target == '@' && ischannel(target[1]);
-		if (op_notice) target++;
-
-		if (ignore_check(SERVER(server), nick, addr, ischannel(*target) ?
-				 target : NULL, msg, MSGLEVEL_NOTICES))
-			return;
-
-		if (ischannel(*target)) {
-			/* notice in some channel */
-			printformat(server, target, MSGLEVEL_NOTICES,
-				    op_notice ? IRCTXT_NOTICE_PUBLIC_OPS : IRCTXT_NOTICE_PUBLIC,
-				    nick, target, msg);
-		} else {
-			/* private notice */
-			privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_NOTICES);
-			printformat(server, nick, MSGLEVEL_NOTICES, IRCTXT_NOTICE_PRIVATE, nick, addr, msg);
-		}
-	}
-
+	signal_emit("message irc notice", 5, server, msg, nick, addr, target);
 	g_free(params);
 }
 
