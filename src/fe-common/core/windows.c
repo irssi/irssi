@@ -121,8 +121,10 @@ void window_destroy(WINDOW_REC *window)
 	g_free_not_null(window->name);
 	g_free(window);
 
-	if (active_win == window && windows != NULL)
+	if (active_win == window && windows != NULL) {
+                active_win = NULL; /* it's corrupted */
 		window_set_active(windows->data);
+	}
 
 	windows_pack(refnum);
 }
