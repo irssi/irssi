@@ -123,7 +123,7 @@ void perl_scripts_deinit(void)
 
 	/* Unload all perl libraries loaded with dynaloader */
 	perl_eval_pv("foreach my $lib (@DynaLoader::dl_modules) { if ($lib =~ /^Irssi\\b/) { $lib .= '::deinit();'; eval $lib; } }", TRUE);
-	perl_eval_pv("foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); }", TRUE);
+	perl_eval_pv("eval { foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); } }", TRUE);
 
 	/* perl interpreter */
 	perl_destruct(my_perl);
