@@ -16,6 +16,7 @@ Irssi::Theme		T_PlainObj
 Irssi::Keyinfo		T_PlainObj
 Irssi::Window		T_PlainObj
 Irssi::Windowitem	T_IrssiObj
+Irssi::TextDest		T_PlainObj
 
 INPUT
 

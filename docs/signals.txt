@@ -9,7 +9,6 @@ core
  "gui exit"
  "gui dialog", char *type, char *text
  "send command", char *command, SERVER_REC, WI_ITEM_REC
- "print text stripped", WINDOW_REC, SERVER_REC, char *channel, int level, char *text
 
 * Provides signals:
 
@@ -254,8 +253,8 @@ keyboard.c:
  "keyinfo destroyed", KEYINFO_REC
 
 printtext.c:
- "print text", WINDOW_REC, SERVER_REC, char *channel, int level, char *text
- "print text stripped", WINDOW_REC, SERVER_REC, char *channel, int level, char *text
+ "print text", TEXT_DEST_REC *dest, char *text
+ "print text stripped", TEXT_DEST_REC *dest, char *text
 
 themes.c:
  "theme created", THEME_REC

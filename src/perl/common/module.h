@@ -53,3 +53,4 @@ typedef THEME_REC *Irssi__Theme;
 typedef KEYINFO_REC *Irssi__Keyinfo;
 typedef WINDOW_REC *Irssi__Window;
 typedef WI_ITEM_REC *Irssi__Windowitem;
+typedef TEXT_DEST_REC *Irssi__TextDest;

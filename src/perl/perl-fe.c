@@ -64,6 +64,20 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
 }
 
+static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
+{
+	HV *stash;
+
+	stash = gv_stashpv("Irssi::Window", 0);
+	hv_store(hv, "window", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(dest->window))), stash), 0);
+	hv_store(hv, "server", 6, irssi_bless(dest->server), 0);
+	hv_store(hv, "target", 6, new_pv(dest->target), 0);
+	hv_store(hv, "level", 5, newSViv(dest->level), 0);
+
+	hv_store(hv, "hilight_priority", 16, newSViv(dest->hilight_priority), 0);
+	hv_store(hv, "hilight_color", 13, new_pv(dest->hilight_color), 0);
+}
+
 void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 {
 	THEME_REC *theme;
@@ -126,6 +140,7 @@ void fe_perl_init(void)
 	static PLAIN_OBJECT_INIT_REC fe_plains[] = {
 		{ "Irssi::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
 		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
+		{ "Irssi::TextDest", (PERL_OBJECT_FUNC) perl_text_dest_fill_hash },
 
 		{ NULL, NULL }
 	};
