@@ -142,8 +142,11 @@ static void server_init(IRC_SERVER_REC *server)
 	}
 
 	/* Replace ':' with '_' in our own hostname (the same IPv6 problem) */
+	/* Replace '\n' and '\r' with '\0' in our own hostname to fix multiple PTR addreses */
 	for (ptr = hostname; *ptr != '\0'; ptr++) {
 		if (*ptr == ':') *ptr = '_';
+		if (*ptr == '\n') *ptr = '\0';
+		if (*ptr == '\r') *ptr = '\0';
 	}
 
 	/* don't allow hostname to begin with number or '+', '-'. those
