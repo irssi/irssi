@@ -13,6 +13,7 @@ char *nick; /* current nick */
 unsigned int connected:1; /* connected to server */
 unsigned int connection_lost:1; /* Connection lost unintentionally */
 unsigned int session_reconnect:1; /* Connected to this server with /UPGRADE */
+unsigned int no_reconnect:1; /* Don't reconnect to server */
 
 NET_SENDBUF_REC *handle;
 int readtag; /* input tag */
