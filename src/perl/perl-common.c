@@ -298,7 +298,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
 	if (item->server != NULL) {
-		hv_store(hv, "server", 6, irssi_bless(item->server), 0);
+		hv_store(hv, "server", 6, iobject_bless(item->server), 0);
 	}
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 

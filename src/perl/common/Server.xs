@@ -9,7 +9,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(irssi_bless((SERVER_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((SERVER_REC *) tmp->data)));
 	}
 
 void
@@ -27,7 +27,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(irssi_bless((CHATNET_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((CHATNET_REC *) tmp->data)));
 	}
 
 Irssi::Connect

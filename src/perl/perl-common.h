@@ -28,9 +28,13 @@ char *perl_function_get_package(const char *function);
 #  define PL_sv_undef sv_undef
 #endif
 
-#define irssi_bless(object) \
+#define iobject_bless(object) \
 	((object) == NULL ? &PL_sv_undef : \
 	irssi_bless_iobject((object)->type, (object)->chat_type, object))
+
+#define simple_iobject_bless(object) \
+	((object) == NULL ? &PL_sv_undef : \
+	irssi_bless_iobject((object)->type, 0, object))
 
 #define plain_bless(object, stash) \
 	((object) == NULL ? &PL_sv_undef : \

@@ -39,7 +39,7 @@ while (<STDIN>) {
 	s/NETSPLIT_SERVER_REC[^,]*/Irssi::Irc::Netsplitserver/g;
 
 	# irc modules
-	s/DCC_REC[^,]*/Irssi::Irc::Dcc/g;
+	s/DCC_REC[^,]*/siobject/g;
 	s/AUTOIGNORE_REC[^,]*/Irssi::Irc::Autoignore/g;
 	s/NOTIFYLIST_REC[^,]*/Irssi::Irc::Notifylist/g;
 

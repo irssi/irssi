@@ -11,7 +11,7 @@ PPCODE:
 	for (tmp = queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *rec = tmp->data;
 
-		XPUSHs(sv_2mortal(irssi_bless(rec)));
+		XPUSHs(sv_2mortal(iobject_bless(rec)));
 	}
 
 Irssi::Query
@@ -35,7 +35,7 @@ PPCODE:
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *rec = tmp->data;
 
-		XPUSHs(sv_2mortal(irssi_bless(rec)));
+		XPUSHs(sv_2mortal(iobject_bless(rec)));
 	}
 
 Irssi::Query

@@ -28,9 +28,9 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	hv_store(hv, "height", 6, newSViv(window->height), 0);
 
 	if (window->active)
-		hv_store(hv, "active", 6, irssi_bless(window->active), 0);
+		hv_store(hv, "active", 6, iobject_bless(window->active), 0);
 	if (window->active_server)
-		hv_store(hv, "active_server", 13, irssi_bless(window->active_server), 0);
+		hv_store(hv, "active_server", 13, iobject_bless(window->active_server), 0);
 
 	hv_store(hv, "servertag", 9, new_pv(window->servertag), 0);
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
@@ -50,7 +50,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
 {
 	hv_store(hv, "window", 6, plain_bless(dest->window, "Irssi::UI::Window"), 0);
-	hv_store(hv, "server", 6, irssi_bless(dest->server), 0);
+	hv_store(hv, "server", 6, iobject_bless(dest->server), 0);
 	hv_store(hv, "target", 6, new_pv(dest->target), 0);
 	hv_store(hv, "level", 5, newSViv(dest->level), 0);
 

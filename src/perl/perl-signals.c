@@ -114,7 +114,7 @@ static void perl_call_signal(const char *func, int signal_id,
 
 			ptr = arg;
 			for (tmp = *ptr; tmp != NULL; tmp = tmp->next) {
-				sv = is_iobject ? irssi_bless((SERVER_REC *) tmp->data) :
+				sv = is_iobject ? iobject_bless((SERVER_REC *) tmp->data) :
 					is_str ? new_pv(tmp->data) :
 					irssi_bless_plain(rec->args[n]+9, tmp->data);
 				av_push(av, sv);
@@ -129,7 +129,7 @@ static void perl_call_signal(const char *func, int signal_id,
                         is_iobject = strcmp(rec->args[n]+7, "iobject") == 0;
 			av = newAV();
 			for (tmp = arg; tmp != NULL; tmp = tmp->next) {
-				sv = is_iobject ? irssi_bless((SERVER_REC *) tmp->data) :
+				sv = is_iobject ? iobject_bless((SERVER_REC *) tmp->data) :
 					irssi_bless_plain(rec->args[n]+7, tmp->data);
 				av_push(av, sv);
 			}
@@ -140,9 +140,13 @@ static void perl_call_signal(const char *func, int signal_id,
 			perlarg = newSViv(0);
 		} else if (strcmp(rec->args[n], "iobject") == 0) {
 			/* "irssi object" - any struct that has
-			   "int type; int chat_type" as its first
+			   "int type; int chat_type" as it's first
 			   variables (server, channel, ..) */
-			perlarg = irssi_bless((SERVER_REC *) arg);
+			perlarg = iobject_bless((SERVER_REC *) arg);
+		} else if (strcmp(rec->args[n], "siobject") == 0) {
+			/* "simple irssi object" - any struct that has
+			   int type; as it's first variable (dcc) */
+			perlarg = simple_iobject_bless((SERVER_REC *) arg);
 		} else {
 			/* blessed object */
 			perlarg = plain_bless(arg, rec->args[n]);

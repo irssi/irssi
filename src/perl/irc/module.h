@@ -19,10 +19,6 @@
 #include "dcc/dcc-send.h"
 #include "notifylist/notifylist.h"
 
-#define dcc_bless(dcc) \
-	((dcc) == NULL ? &PL_sv_undef : \
-	irssi_bless_iobject((dcc)->type, 0, dcc))
-
 typedef IRC_SERVER_REC *Irssi__Irc__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Irc__Connect;
 typedef IRC_CHANNEL_REC *Irssi__Irc__Channel;

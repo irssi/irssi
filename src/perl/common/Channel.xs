@@ -9,7 +9,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(irssi_bless((CHANNEL_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((CHANNEL_REC *) tmp->data)));
 	}
 
 Irssi::Channel
@@ -31,7 +31,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(irssi_bless((CHANNEL_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((CHANNEL_REC *) tmp->data)));
 	}
 
 void
@@ -65,8 +65,8 @@ PPCODE:
 	list = nicklist_get_same(server, nick);
 
 	for (tmp = list; tmp != NULL; tmp = tmp->next->next) {
-		XPUSHs(sv_2mortal(irssi_bless((CHANNEL_REC *) tmp->data)));
-		XPUSHs(sv_2mortal(irssi_bless((NICK_REC *) tmp->next->data)));
+		XPUSHs(sv_2mortal(iobject_bless((CHANNEL_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((NICK_REC *) tmp->next->data)));
 	}
 	g_slist_free(list);
 
@@ -119,6 +119,6 @@ PPCODE:
 	list = nicklist_getnicks(channel);
 
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(irssi_bless((NICK_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(iobject_bless((NICK_REC *) tmp->data)));
 	}
 	g_slist_free(list);

@@ -28,12 +28,12 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 	hv_store(hv, "orig_type", 9, new_pv(dcc_type2str(dcc->orig_type)), 0);
 	hv_store(hv, "created", 7, newSViv(dcc->created), 0);
 
-	hv_store(hv, "server", 6, irssi_bless(dcc->server), 0);
+	hv_store(hv, "server", 6, iobject_bless(dcc->server), 0);
 	hv_store(hv, "servertag", 9, new_pv(dcc->servertag), 0);
 	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
 	hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
 
-	hv_store(hv, "chat", 4, dcc_bless(dcc->chat), 0);
+	hv_store(hv, "chat", 4, simple_iobject_bless(dcc->chat), 0);
 	hv_store(hv, "target", 6, new_pv(dcc->target), 0);
 	hv_store(hv, "arg", 3, new_pv(dcc->arg), 0);
 
@@ -110,7 +110,7 @@ static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)
 static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHAN_REC *rec)
 {
 	hv_store(hv, "name", 4, new_pv(rec->name), 0);
-	hv_store(hv, "nick", 4, irssi_bless(&rec->nick), 0);
+	hv_store(hv, "nick", 4, iobject_bless(&rec->nick), 0);
 }
 
 static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)

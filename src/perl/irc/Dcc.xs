@@ -9,7 +9,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) 
-		XPUSHs(sv_2mortal(dcc_bless((DCC_REC *) tmp->data)));
+		XPUSHs(sv_2mortal(simple_iobject_bless((DCC_REC *) tmp->data)));
 
 void
 dcc_register_type(type)

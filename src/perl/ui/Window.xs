@@ -150,7 +150,7 @@ PPCODE:
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
                 CHANNEL_REC *rec = tmp->data;
 
-		XPUSHs(sv_2mortal(irssi_bless(rec)));
+		XPUSHs(sv_2mortal(iobject_bless(rec)));
 	}
 
 void
