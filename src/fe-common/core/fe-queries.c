@@ -1,4 +1,4 @@
-i/*
+/*
  fe-queries.c : irssi
 
     Copyright (C) 1999-2000 Timo Sirainen
