@@ -1,4 +1,6 @@
-EXTRA_DIST = \
+scriptdir = $(datadir)/irssi/scripts
+
+script_DATA = \
 	autoop.pl \
 	autorejoin.pl \
 	clones.pl \
@@ -6,3 +8,5 @@ EXTRA_DIST = \
 	privmsg.pl \
 	realname.pl \
 	quitmsg.pl
+
+EXTRA_DIST = $(script_DATA)

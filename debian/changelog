@@ -1,0 +1,72 @@
+irssi-text (0.7.98.3-2) unstable; urgency=low
+
+  * Made perl support ready for perl 5.6.1, thanks to Branden O'Dea 
+    (closes: #95535)
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Sun, 20 May 2001 15:02:42 +0300
+
+irssi-text (0.7.98.3-1) unstable; urgency=low
+
+  * New upstream release (closes: #90139)
+  * Include the libfe_perl files (closes: #90189)
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Mon, 19 Mar 2001 17:17:25 +0200
+
+irssi-text (0.7.98.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Recompiled with perl-5.6 (closes: #86157)
+  * Added alternative for irssi(1) man-page (closes: #80845)
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Fri, 23 Feb 2001 16:48:43 +0200
+
+irssi-text (0.7.97.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Tue, 19 Dec 2000 15:22:56 +0200
+
+irssi-text (0.7.97.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Wed,  6 Dec 2000 21:40:44 +0200
+
+irssi-text (0.7.97-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Sun,  3 Dec 2000 21:35:03 +0200
+
+irssi-text (0.7.96-2) unstable; urgency=low
+
+  * Added startup-howto to /usr/share/doc
+  * Applied 0.7.96-2 bugfixes from upstream
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Mon, 30 Oct 2000 17:48:34 +0200
+
+irssi-text (0.7.96-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Thu, 19 Oct 2000 23:22:54 +0300
+
+irssi-text (0.7.95-2) unstable; urgency=medium
+
+  * Applied patch to fix remote crash
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Wed, 23 Aug 2000 10:21:36 +0300
+
+irssi-text (0.7.95-1) unstable; urgency=low
+
+  * New upstream release
+  * Fixed debian/rules clean (closes: Bug#69105)
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Sun, 13 Aug 2000 22:03:53 +0300
+
+irssi-text (0.7.94-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Pekka Aleksi Knuutila <pa@debian.org>  Wed, 26 Jul 2000 21:40:40 +0300
+

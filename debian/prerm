@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+if [ "$1" != "upgrade" ]; then
+	update-alternatives --remove irssi /usr/bin/irssi-text
+fi
+

@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+update-alternatives --install /usr/bin/irssi irssi /usr/bin/irssi-text 30 \
+                    --slave /usr/share/man/man1/irssi.1.gz irssi.1.gz \
+		    /usr/share/man/man1/irssi-text.1.gz
+

@@ -4,7 +4,7 @@ INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src -I$(top_srcdir)/src/core/ \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
-	-DSYSCONFDIR=\""$(sysconfdir)"\"
+	-DTHEMESDIR=\""$(datadir)/irssi/themes"\"
 
 libfe_common_core_a_SOURCES = \
 	autorun.c \

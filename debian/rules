@@ -1,0 +1,80 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This is the debhelper compatability version to use.
+export DH_COMPAT=2
+
+TMP=`pwd`/debian/irssi-text
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	if grep -q in6_addr /usr/include/netinet/in.h ; then \
+	./configure --prefix=/usr --exec-prefix=/usr --sysconf=/etc \
+	--without-servertest --enable-ipv6 --with-bot --with-proxy \
+	--enable-perl=yes ; else \
+	./configure --prefix=/usr --exec-prefix=/usr --sysconf=/etc \
+	--without-servertest --disable-ipv6 --with-bot --with-proxy \
+	--enable-perl=yes ; fi
+	touch configure-stamp
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	PERL_MM_OPT=INSTALLDIRS=vendor \
+	    $(MAKE) CFLAGS="-O2 -g -Wall" PERL_LIB_DIR=
+	touch build-stamp
+
+clean:
+	dh_testdir
+
+	-$(MAKE) distclean
+	-rm -f src/perl/perl-signals-list.h
+	-rm -f default-theme.h
+	#-rm -f `find . -name "*~"` debian/*debhelper debian/{files,substvars} 
+	-rm -f default-config.h libtool*
+	find -name Makefile -o -name Makefile.PL | xargs rm -f
+
+	dh_clean build-stamp configure-stamp
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	$(MAKE) install DESTDIR=$(TMP) PREFIX=$(TMP)/usr
+	mv $(TMP)/usr/bin/irssi $(TMP)/usr/bin/irssi-text
+	rm -rf $(TMP)/usr/share/doc
+	find $(TMP) -name perllocal.pod -o -name .packlist | xargs rm -f
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+
+	dh_installdocs README TODO AUTHORS docs/*.txt
+	dh_installchangelogs NEWS
+	dh_installmenu
+	dh_undocumented
+ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	dh_strip
+endif
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_installdeb
+	dh_perl
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

@@ -1,4 +1,4 @@
-docdir = $(prefix)/doc/irssi
+docdir = $(datadir)/doc/irssi
 
 doc_DATA = \
 	botnet.txt \

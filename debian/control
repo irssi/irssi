@@ -1,0 +1,25 @@
+Source: irssi-text
+Section: net
+Priority: optional
+Maintainer: Pekka Aleksi Knuutila <pa@debian.org>
+Standards-Version: 3.1.0
+Build-Depends: libglib1.2-dev, perl (&gt;= 5.6.0-16), libperl-dev, libncurses5-dev, debhelper (&gt;= 3.0.18), gettext
+
+Package: irssi-text
+Architecture: any
+Depends: ${shlibs:Depends}
+Suggests: ${perl:Depends}
+Conflicts: irssi
+Description: text-mode version of the irssi IRC client
+ Irssi is an IRC client from the author of yagirc, Timo Sirainen. It has a
+ text, GTK and GNOME interface (with integration to the GNOME panel).
+ Irssi's features include configurability, smart nick completion, DCC resuming,
+ support for plugins and perl scripting.
+ .
+ This package includes the text-mode version of the irssi client.
+ .
+ Other irssi packages are:
+ irssi-common: common files for the irssi IRC client
+ irssi-gtk: GTK version of the irssi IRC client
+ irssi-gnome: GNOME version of the irssi IRC client
+

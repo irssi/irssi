@@ -705,7 +705,7 @@ THEME_REC *theme_load(const char *setname)
 	if (stat(fname, &statbuf) != 0) {
 		/* check global config dir */
 		g_free(fname);
-		fname = g_strdup_printf(SYSCONFDIR"/irssi/%s.theme", name);
+		fname = g_strdup_printf(THEMESDIR"/%s.theme", name);
 		if (stat(fname, &statbuf) != 0) {
 			/* theme not found */
 			g_free(fname);

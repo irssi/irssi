@@ -500,7 +500,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	else {
 		/* user configuration file not found, use the default one
 		   from sysconfdir */
-                path = SYSCONFDIR"/irssi/config";
+                path = SYSCONFDIR"/irssi.conf";
 		if (stat(path, &statbuf) != 0) {
 			/* no configuration file in sysconfdir ..
 			   use the build-in configuration */
