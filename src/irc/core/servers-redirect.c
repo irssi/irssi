@@ -617,6 +617,16 @@ void servers_redirect_init(void)
 				 NULL,
 				 NULL);
 
+	/* MODE user */
+	server_redirect_register("mode user", FALSE, 0,
+				 NULL,
+				 "event mode", 0, /* MODE-reply */
+				 "event 501", -1, /* Uknown MODE flag */
+				 "event 502", -1, /* Can't change mode for other users */
+				 "event 403", 1, /* That channel doesn't exist (tried to change mode to others) */
+				 NULL,
+				 NULL);
+
 	/* MODE #channel */
 	server_redirect_register("mode channel", FALSE, 0,
 				 NULL,

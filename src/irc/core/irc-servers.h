@@ -45,7 +45,8 @@ struct _IRC_SERVER_REC {
 
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
-        char *userhost; /* /USERHOST <nick> - set when joined to first channel */
+        char *wanted_usermode; /* The usermode we want to use, doesn't include the modes given us by the server (eg. +r) */
+	char *userhost; /* /USERHOST <nick> - set when joined to first channel */
 	int channels_formed; /* channels formed in irc network */
 
 	unsigned int whois_found:1; /* Did WHOIS return any entries? */

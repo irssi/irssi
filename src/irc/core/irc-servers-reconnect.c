@@ -59,13 +59,13 @@ static void sig_server_reconnect_save_status(IRC_SERVER_CONNECT_REC *conn,
 	conn->channels = irc_server_get_channels(server);
 
 	g_free_not_null(conn->usermode);
-	conn->usermode = g_strdup(server->usermode);
+	conn->usermode = g_strdup(server->wanted_usermode);
 }
 
 static int sig_set_user_mode(IRC_SERVER_REC *server)
 {
 	const char *mode;
-	char *newmode;
+	char *newmode, *args;
 
 	if (g_slist_find(servers, server) == NULL)
 		return 0; /* got disconnected */
@@ -79,9 +79,11 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	if (server->usermode == NULL) {
 		/* server didn't set user mode, just set the new one */
 		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
-	} else {
-		if (strcmp(newmode, server->usermode) != 0)
-			irc_send_cmdv(server, "MODE %s -%s+%s", server->nick, server->usermode, mode);
+	} else if (strcmp(newmode, server->usermode) != 0) {
+		args = g_strdup_printf("%s -%s+%s", server->nick,
+				       server->usermode, mode);
+		signal_emit("command mode", 3, server, args, NULL);
+                g_free(args);
 	}
 
 	g_free_not_null(newmode);
@@ -101,16 +103,15 @@ static void sig_connected(IRC_SERVER_REC *server)
 	}
 }
 
-static void event_kill(IRC_SERVER_REC *server, const char *data,
-		       const char *nick, const char *addr)
+static void event_nick_collision(IRC_SERVER_REC *server, const char *data)
 {
 	time_t new_connect;
 
-	if (!IS_IRC_SERVER(server)/* || addr != NULL*/)
+	if (!IS_IRC_SERVER(server))
 		return;
 
-	/* after server kills we want to connect back immediately - it was
-	   probably a nick collision. but no matter how hard they kill us,
+	/* after server kills us because of nick collision, we want to
+	   connect back immediately. but no matter how hard they kill us,
 	   don't connect to the server more than once in every 10 seconds. */
 
 	new_connect = server->connect_time+10 -
@@ -119,11 +120,18 @@ static void event_kill(IRC_SERVER_REC *server, const char *data,
 		server->connect_time = new_connect;
 }
 
+static void event_kill(IRC_SERVER_REC *server, const char *data)
+{
+	/* don't reconnect if we were killed */
+        server->no_reconnect = TRUE;
+}
+
 void irc_servers_reconnect_init(void)
 {
 	signal_add("server connect copy", (SIGNAL_FUNC) sig_server_connect_copy);
 	signal_add("server reconnect save status", (SIGNAL_FUNC) sig_server_reconnect_save_status);
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("event 436", (SIGNAL_FUNC) event_nick_collision);
 	signal_add("event kill", (SIGNAL_FUNC) event_kill);
 }
 
@@ -132,5 +140,6 @@ void irc_servers_reconnect_deinit(void)
 	signal_remove("server connect copy", (SIGNAL_FUNC) sig_server_connect_copy);
 	signal_remove("server reconnect save status", (SIGNAL_FUNC) sig_server_reconnect_save_status);
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("event 436", (SIGNAL_FUNC) event_nick_collision);
 	signal_remove("event kill", (SIGNAL_FUNC) event_kill);
 }

@@ -25,6 +25,7 @@
 #include "irc-commands.h"
 #include "irc-servers.h"
 #include "irc-channels.h"
+#include "servers-redirect.h"
 #include "modes.h"
 #include "mode-lists.h"
 #include "nicklist.h"
@@ -421,6 +422,24 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 	signal_emit("away mode changed", 1, server);
 }
 
+static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *target, *mode;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+				  &target, &mode);
+	if (!ischannel(*target)) {
+                /* we requested a user mode change, save this */
+		mode = modes_join(server->wanted_usermode, mode, FALSE);
+                g_free_not_null(server->wanted_usermode);
+		server->wanted_usermode = mode;
+	}
+
+	g_free(params);
+}
+
 void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 			    const char *mode)
 {
@@ -679,8 +698,14 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 		irc_send_cmdv(server, "MODE %s", target);
 	else if (ischannel(*target))
 		channel_set_mode(server, target, mode);
-	else
+	else {
+		if (g_strcasecmp(target, server->nick) == 0) {
+			server_redirect_event(server, "mode user", 1, target, -1, NULL,
+					      "event mode", "requested usermode change", NULL);
+		}
+
 		irc_send_cmdv(server, "MODE %s %s", target, mode);
+	}
 
 	cmd_params_free(free_arg);
 }
@@ -694,6 +719,7 @@ void modes_init(void)
 	signal_add("event 306", (SIGNAL_FUNC) event_away);
 	signal_add("event 381", (SIGNAL_FUNC) event_oper);
 	signal_add("event mode", (SIGNAL_FUNC) event_mode);
+        signal_add("requested usermode change", (SIGNAL_FUNC) sig_req_usermode_change);
 
 	command_bind_irc("op", NULL, (SIGNAL_FUNC) cmd_op);
 	command_bind_irc("deop", NULL, (SIGNAL_FUNC) cmd_deop);
@@ -709,6 +735,7 @@ void modes_deinit(void)
 	signal_remove("event 306", (SIGNAL_FUNC) event_away);
 	signal_remove("event 381", (SIGNAL_FUNC) event_oper);
 	signal_remove("event mode", (SIGNAL_FUNC) event_mode);
+        signal_remove("requested usermode change", (SIGNAL_FUNC) sig_req_usermode_change);
 
 	command_unbind("op", (SIGNAL_FUNC) cmd_op);
 	command_unbind("deop", (SIGNAL_FUNC) cmd_deop);

@@ -465,6 +465,26 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *hostname, *ip, *text;
+
+	g_return_if_fail(data != NULL);
+
+	/* <yournick> <hostname> <ip> :Real hostname/IP */
+	params = event_get_params(data, 5, NULL, &nick, &hostname, &ip, &text);
+	if (*text == '\0') {
+                g_free(params);
+
+		params = event_get_params(data, 2, NULL, &text);
+                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
+	} else {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_REALHOST, nick, hostname);
+	}
+	g_free(params);
+}
+
 static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *txt_usermodes, *nick, *usermode, *text;
@@ -831,6 +851,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 381", (SIGNAL_FUNC) event_received);
 	signal_add("event 421", (SIGNAL_FUNC) event_received);
 	signal_add("event 432", (SIGNAL_FUNC) event_received);
+	signal_add("event 436", (SIGNAL_FUNC) event_received);
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 
@@ -908,6 +929,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 381", (SIGNAL_FUNC) event_received);
 	signal_remove("event 421", (SIGNAL_FUNC) event_received);
 	signal_remove("event 432", (SIGNAL_FUNC) event_received);
+	signal_remove("event 436", (SIGNAL_FUNC) event_received);
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 
