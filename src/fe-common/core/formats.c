@@ -995,6 +995,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 						flags |= GUI_PRINT_FLAG_BOLD;
 					}
 				}
+				if (ptr[1] == '\0')
+					break;
+
 				ptr++;
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					bgcolor = *ptr-'0';
