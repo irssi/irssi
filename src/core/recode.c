@@ -54,11 +54,8 @@ char *recode_in(const char *str, const char *target)
 
 	translit = settings_get_bool("recode_transliterate");
 	
-	/* check if the str is UTF-8 encoded as first */
-	if (target && !str_is_utf8)
+	if (target != NULL)
 		from = iconfig_get_str("conversions", target, NULL);
-	else if (target && str_is_utf8)
-		from = "UTF-8";
 
 	term_is_utf8 = recode_get_charset(&to);
 	
