@@ -49,30 +49,17 @@ static void remove_client(CLIENT_REC *rec)
 	g_free(rec);
 }
 
-static void proxy_redirect_event(CLIENT_REC *client,
-				 const char *args, int last, ...)
+static void proxy_redirect_event(CLIENT_REC *client, const char *command,
+				 const char *arg, int remote)
 {
-	va_list vargs;
-	GString *str;
-	char *event;
-	int argpos, group;
+	char *str;
 
 	g_return_if_fail(client != NULL);
 
-	va_start(vargs, last);
-
-	str = g_string_new(NULL);
-	group = 0;
-	while ((event = va_arg(vargs, char *)) != NULL) {
-		argpos = va_arg(vargs, int);
-		g_string_sprintf(str, "proxy %p", client);
-		group = server_redirect_single_event(SERVER(client->server), args, last > 0,
-						     group, event, str->str, argpos);
-		last--;
-	}
-	g_string_free(str, TRUE);
-
-	va_end(vargs);
+	str = g_strdup_printf("proxy %p", client);
+	server_redirect_event(client->server, command, arg, remote, NULL,
+			      "", str, NULL);
+	g_free(str);
 }
 
 static void grab_who(CLIENT_REC *client, const char *channel)
@@ -92,9 +79,7 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 		}
 
 		chanevent = g_strdup_printf("%s %s", chlist, *tmp);
-		proxy_redirect_event(client, chanevent, 2,
-				     "event 401", 1, "event 315", 1,
-				     "event 352", -1, NULL);
+		proxy_redirect_event(client, "who", chanevent, -1);
 		g_free(chanevent);
 	}
 	g_strfreev(list);
@@ -130,10 +115,9 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 	}
 }
 
-static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
+static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
+			      const char *data)
 {
-	GIOChannel *server_handle;
-
 	if (!client->connected) {
 		handle_client_connect_cmd(client, cmd, args);
 		return;
@@ -143,26 +127,6 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		remove_client(client);
 		return;
 	}
-	if (strcmp(cmd, "PING") == 0) {
-		char *server = strchr(args, ':');
-		if (server == NULL ||
-		    strcmp(server+1, client->proxy_address) == 0) {
-			if (server != NULL) {
-				if (server[-1] == ' ') server--;
-				*server = '\0';
-			}
-			if (*args == '\0') args = client->nick;
-			proxy_outdata(client, ":%s PONG proxy :%s\n", client->proxy_address, args);
-			return;
-		}
-	}
-	if (strcmp(cmd, "NOTICE") == 0) {
-		char *str = g_strdup_printf("%s :\001IRSSILAG ", client->nick);
-
-		if (strncmp(args, str, strlen(str)) == 0)
-			proxy_outserver(client, "NOTICE %s", args);
-		g_free(str);
-	}
 
 	if (client->server == NULL || !client->server->connected) {
 		proxy_outdata(client, ":%s NOTICE %s :Not connected to server",
@@ -170,31 +134,23 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
                 return;
 	}
 
-	server_handle = net_sendbuffer_handle(client->server->handle);
-	net_transmit(server_handle, cmd, strlen(cmd));
-	net_transmit(server_handle, " ", 1);
-	net_transmit(server_handle, args, strlen(args));
-	net_transmit(server_handle, "\n", 1);
-
+        /* check if the command could be redirected */
 	if (strcmp(cmd, "WHO") == 0)
 		grab_who(client, args);
 	else if (strcmp(cmd, "WHOIS") == 0) {
+		int remote;
 		char *p;
 
 		/* convert dots to spaces */
+                remote = strchr(args, ' ') != NULL;
 		for (p = args; *p != '\0'; p++)
 			if (*p == ',') *p = ' ';
 
-		proxy_redirect_event(client, args, 2,
-				     "event 318", -1, "event 402", -1,
-				     "event 401", 1, "event 311", 1,
-				     "event 301", 1, "event 312", 1,
-				     "event 313", 1, "event 317", 1,
-				     "event 319", 1, NULL);
+		proxy_redirect_event(client, "whois", args, remote);
 	} else if (strcmp(cmd, "ISON") == 0)
-		proxy_redirect_event(client, NULL, 1, "event 303", -1, NULL);
+		proxy_redirect_event(client, "ison", args, -1);
 	else if (strcmp(cmd, "USERHOST") == 0)
-		proxy_redirect_event(client, args, 1, "event 302", -1, "event 401", 1, NULL);
+		proxy_redirect_event(client, "userhost", args, -1);
 	else if (strcmp(cmd, "MODE") == 0) {
 		/* convert dots to spaces */
 		char *slist, *str, mode, *p;
@@ -217,26 +173,16 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		str = g_strdup_printf("%s %s", args, slist);
 		switch (mode) {
 		case '\0':
-			while (argc-- > 0)
-				proxy_redirect_event(client, str, 3, "event 403", 1,
-						     "event 443", 1, "event 324", 1, NULL);
+			proxy_redirect_event(client, "mode channel", str, -1);
 			break;
 		case 'b':
-			while (argc-- > 0)
-				proxy_redirect_event(client, str, 2, "event 403", 1,
-						     "event 368", 1, "event 367", 1, NULL);
+			proxy_redirect_event(client, "mode b", str, -1);
 			break;
 		case 'e':
-			while (argc-- > 0)
-				proxy_redirect_event(client, str, 4, "event 403", 1,
-						     "event 482", 1, "event 472", -1,
-						     "event 349", 1, "event 348", 1, NULL);
+			proxy_redirect_event(client, "mode e", str, -1);
 			break;
 		case 'I':
-			while (argc-- > 0)
-				proxy_redirect_event(client, str, 4, "event 403", 1,
-						     "event 482", 1, "event 472", -1,
-						     "event 347", 1, "event 346", 1, NULL);
+			proxy_redirect_event(client, "mode I", str, -1);
 			break;
 		}
 		g_free(str);
@@ -251,7 +197,12 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 		signal_emit("message public", 5, client->server, msg,
 			    client->nick, client->proxy_address, target);
 		g_free(params);
+	} else if (strcmp(cmd, "PING") == 0) {
+		/* send all PINGs to server. */
+		proxy_redirect_event(client, "ping", NULL, TRUE);
 	}
+
+	irc_send_cmd(client->server, data);
 }
 
 static void sig_listen_client(CLIENT_REC *client)
@@ -279,7 +230,7 @@ static void sig_listen_client(CLIENT_REC *client)
 		if (*args == ':') args++;
 		g_strup(cmd);
 
-		handle_client_cmd(client, cmd, args);
+		handle_client_cmd(client, cmd, args, str);
 
 		g_free(cmd);
 	}
@@ -328,7 +279,8 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			     const char *nick, const char *address)
 {
-	GSList *list;
+        void *client;
+        const char *signal;
 	char *event, *args;
 
 	g_return_if_fail(line != NULL);
@@ -340,24 +292,20 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	args = strchr(event+6, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
+        g_strdown(event);
 
-	list = server_redirect_getqueue(SERVER(server), event, args);
-
-	if (list != NULL) {
+	signal = server_redirect_peek_signal(server, event, args);
+	if (signal != NULL) {
 		/* we want to send this to one client (or proxy itself) only */
-		REDIRECT_REC *rec;
-		void *client;
-
-		rec = list->data;
-		if (g_strncasecmp(rec->name, "proxy ", 6) != 0) {
+		if (strncmp(signal, "proxy ", 6) != 0) {
 			/* proxy only */
 			g_free(event);
 			return;
 		}
 
-		if (sscanf(rec->name+6, "%p", &client) == 1) {
+                server_redirect_get_signal(server, event, args);
+		if (sscanf(signal+6, "%p", &client) == 1) {
 			/* send it to specific client only */
-			server_redirect_remove_next(SERVER(server), event, list);
 			if (g_slist_find(proxy_clients, client) != NULL)
 				net_transmit(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
 			g_free(event);
@@ -366,14 +314,13 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		}
 	}
 
-	if (g_strcasecmp(event, "event ping") == 0 ||
-	    (g_strcasecmp(event, "event privmsg") == 0 &&
+	if (strcmp(event, "event ping") == 0 ||
+	    strcmp(event, "event pong") == 0 ||
+	    (strcmp(event, "event privmsg") == 0 &&
 	     strstr(args, " :\001") != NULL &&
-	     strstr(args, " :\001ACTION") == NULL) ||
-	    (g_strcasecmp(event, "event notice") == 0 &&
-	     strstr(args, " :\001IRSSILAG") != NULL)) {
-		/* We want to answer ourself to PINGs and CTCPs,
-		   also don't let clients see replies to IRSSILAG requests */
+	     strstr(args, " :\001ACTION") == NULL)) {
+		/* We want to answer ourself to PINGs and CTCPs.
+		   Also hide PONGs from clients. */
 		g_free(event);
 		return;
 	}

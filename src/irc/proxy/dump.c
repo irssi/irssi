@@ -227,8 +227,11 @@ void plugin_proxy_dump_data(CLIENT_REC *client)
 
 	/* user mode / away status */
 	if (client->server != NULL) {
-		proxy_outserver(client, "MODE %s :+%s", client->server->nick,
-				client->server->usermode);
+		if (client->server->usermode != NULL) {
+			proxy_outserver(client, "MODE %s :+%s",
+					client->server->nick,
+					client->server->usermode);
+		}
 		if (client->server->usermode_away) {
 			proxy_outdata(client, ":%s 306 %s :You have been marked as being away\n",
 				      client->proxy_address, client->nick);
