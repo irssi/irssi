@@ -312,68 +312,93 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: BAN [<channel>] [<nicks>] */
-static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
+			     WI_IRC_REC *item)
 {
-	CHANNEL_REC *cur_channel, *channel;
+	GString *str;
+
+	str = g_string_new(NULL);
+	g_string_sprintf(str, "%s b", channel);
+	signal_emit("command mode", 3, str->str, server, item);
+	if (server->emode_known) {
+		g_string_sprintf(str, "%s e", channel);
+		signal_emit("command mode", 3, str->str, server, item);
+	}
+	g_string_free(str, TRUE);
+}
+
+static void bans_show_channel(CHANNEL_REC *channel, IRC_SERVER_REC *server)
+{
 	GSList *tmp;
 
-	g_return_if_fail(data != NULL);
-	if (*data != '\0')
-		return; /* setting ban - don't handle here */
-
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	/* display bans */
-	cur_channel = irc_item_channel(item);
-	if (cur_channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
-
-	if (strcmp(data, "*") == 0 || *data == '\0')
-		channel = cur_channel;
-	else {
-		channel = channel_find(server, data);
-		if (channel == NULL) {
-			/* not joined to such channel, but ask ban lists from server */
-			GString *str;
-
-			str = g_string_new(NULL);
-			g_string_sprintf(str, "%s b", data);
-			signal_emit("command mode", 3, str->str, server, cur_channel);
-			g_string_sprintf(str, "%s e", data);
-			signal_emit("command mode", 3, str->str, server, cur_channel);
-			g_string_free(str, TRUE);
-			signal_stop();
-			return;
-		}
+	if (channel->banlist == NULL && channel->ebanlist == NULL) {
+		printformat(server, channel->name, MSGLEVEL_CRAP,
+			    IRCTXT_NO_BANS, channel->name);
+		return;
 	}
-
-	if (channel == NULL) cmd_return_error(CMDERR_CHAN_NOT_FOUND);
 
 	/* show bans.. */
 	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
-		BAN_REC *rec;
+		BAN_REC *rec = tmp->data;
 
-		rec = (BAN_REC *) tmp->data;
-		if (*rec->setby == '\0')
-			printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_BANLIST, channel->name, rec->ban);
-		else
-			printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_BANLIST,
-				    channel->name, rec->ban, rec->setby, (gint) (time(NULL)-rec->time));
+		printformat(server, channel->name, MSGLEVEL_CRAP,
+			    *rec->setby == '\0' ? IRCTXT_BANLIST :
+			    IRCTXT_BANLIST_LONG, channel->name, rec->ban,
+			    rec->setby, (int) (time(NULL)-rec->time));
 	}
 
 	/* ..and show ban exceptions.. */
 	for (tmp = channel->ebanlist; tmp != NULL; tmp = tmp->next) {
-		BAN_REC *rec;
+		BAN_REC *rec = tmp->data;
 
-		rec = (BAN_REC *) tmp->data;
-		if (*rec->setby == '\0')
-			printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_EBANLIST, channel->name, rec->ban);
-		else
-			printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_EBANLIST,
-				    channel->name, rec->ban, rec->setby, (gint) (time(NULL)-rec->time));
+		printformat(server, channel->name, MSGLEVEL_CRAP,
+			    *rec->setby == '\0' ? IRCTXT_EBANLIST :
+			    IRCTXT_EBANLIST_LONG, channel->name, rec->ban,
+			    rec->setby, (int) (time(NULL)-rec->time));
+	}
+}
+
+/* SYNTAX: BAN [<channel>] [<nicks>] */
+static void cmd_ban(const char *data, IRC_SERVER_REC *server,
+		    WI_IRC_REC *item)
+{
+	CHANNEL_REC *chanrec;
+	char *channel, *nicks;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 2 |
+			    PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+			    item, &channel, &nicks))
+		return;
+
+	if (*nicks != '\0') {
+		/* setting ban - don't handle here */
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	/* display bans */
+	chanrec = irc_item_channel(item);
+	if (chanrec == NULL && *channel == '\0')
+		cmd_param_error(CMDERR_NOT_JOINED);
+
+	if (*channel != '\0' && strcmp(channel, "*") != 0)
+		chanrec = channel_find(server, channel);
+
+	if (chanrec == NULL) {
+		/* not joined to such channel,
+		   but ask ban lists from server */
+		bans_ask_channel(channel, server, item);
+	} else {
+		bans_show_channel(chanrec, server);
 	}
 
 	signal_stop();
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: INVITELIST [<channel>] */

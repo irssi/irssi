@@ -86,6 +86,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "server_chanmode_change", "%RServerMode/%c$0 %K[%n$1%K]%n by %_$2", 3, { 0, 0, 0 } },
 	{ "channel_mode", "mode/%c$0 %K[%n$1%K]", 2, { 0, 0 } },
 	{ "bantype", "Ban type changed to %_$0", 1, { 0 } },
+	{ "no_bans", "No bans in channel %_$0%_", 1, { 0 } },
 	{ "banlist", "%_$0%_: ban %c$1", 2, { 0, 0 } },
 	{ "banlist_long", "%_$0%_: ban %c$1 %K[%nby %_$2%_, $3 secs ago%K]", 4, { 0, 0, 0, 1 } },
 	{ "ebanlist", "%_$0%_: ban exception %c$1", 2, { 0, 0 } },
