@@ -48,7 +48,9 @@ int irssi_gui;
 void core_init(void)
 {
 	modules_init();
+#ifndef WIN32
 	pidwait_init();
+#endif
 
 	net_disconnect_init();
 	net_sendbuffer_init();
@@ -96,6 +98,8 @@ void core_deinit(void)
 	net_sendbuffer_deinit();
 	net_disconnect_deinit();
 
+#ifndef WIN32
 	pidwait_deinit();
+#endif
 	modules_deinit();
 }

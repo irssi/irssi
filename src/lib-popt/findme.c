@@ -39,8 +39,10 @@ char * findProgramPath(char * argv0) {
 	    *chptr = '\0';
 	sprintf(buf, "%s/%s", start, argv0);
 
+#ifndef WIN32
 	if (!access(buf, X_OK))
 	    return buf;
+#endif
 
 	if (chptr) 
 	    start = chptr + 1;

@@ -41,10 +41,13 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 {
 	RESOLVED_IP_REC rec;
 	const char *errorstr;
+#ifndef WIN32
 	int pid;
+#endif
 
 	g_return_val_if_fail(addr != NULL, FALSE);
 
+#ifndef WIN32
 	pid = fork();
 	if (pid > 0) {
 		/* parent */
@@ -57,6 +60,7 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 		g_warning("net_connect_thread(): fork() failed! "
 			  "Using blocking resolving");
 	}
+#endif
 
 	/* child */
         memset(&rec, 0, sizeof(rec));
@@ -72,8 +76,10 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 	if (rec.error != 0)
 		write(pipe, errorstr, rec.errlen);
 
+#ifndef WIN32
 	if (pid == 0)
 		_exit(99);
+#endif
 
 	/* we used blocking lookup */
 	return 0;
@@ -89,7 +95,9 @@ int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec)
 	rec->errorstr = NULL;
 
 	/* get ip+error - try for max. 1-2 seconds */
+#ifndef WIN32
 	fcntl(pipe, F_SETFL, O_NONBLOCK);
+#endif
 
 	maxwait = time(NULL)+2;
 	len = 0;
@@ -134,7 +142,9 @@ void net_disconnect_nonblock(int pid)
 {
 	g_return_if_fail(pid > 0);
 
+#ifndef WIN32
 	kill(pid, SIGKILL);
+#endif
 }
 
 static void simple_init(SIMPLE_THREAD_REC *rec, int handle)

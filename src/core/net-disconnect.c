@@ -111,6 +111,7 @@ void net_disconnect_init(void)
 
 void net_disconnect_deinit(void)
 {
+#ifndef WIN32
 	NET_DISCONNECT_REC *rec;
 	time_t now, max;
 	int first;
@@ -148,4 +149,5 @@ void net_disconnect_deinit(void)
 			first = 0;
 		}
 	}
+#endif
 }

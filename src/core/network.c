@@ -93,7 +93,7 @@ G_INLINE_FUNC void sin_set_port(union sockaddr_union *so, int port)
                 so->sin6.sin6_port = htons(port);
 	else
 #endif
-		so->sin.sin_port = htons(port);
+		so->sin.sin_port = htons((unsigned short)port);
 }
 
 G_INLINE_FUNC int sin_get_port(union sockaddr_union *so)
@@ -133,7 +133,9 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 		return -1;
 
 	/* set socket options */
+#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
+#endif
 	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
 		   (char *) &opt, sizeof(opt));
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
@@ -150,10 +152,12 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	sin_set_port(&so, port);
 	ret = connect(handle, &so.sa, sizeof(so));
 
+#ifndef WIN32
 	if (ret < 0 && errno != EINPROGRESS) {
 		close(handle);
 		return -1;
 	}
+#endif
 
 	return handle;
 }
@@ -186,7 +190,9 @@ int net_listen(IPADDR *my_ip, int *port)
 		return -1;
 
 	/* set socket options */
+#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
+#endif
 	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
 		   (char *) &opt, sizeof(opt));
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
@@ -235,7 +241,9 @@ int net_accept(int handle, IPADDR *addr, int *port)
 	if (addr != NULL) sin_get_ip(&so, addr);
 	if (port != NULL) *port = sin_get_port(&so);
 
+#ifndef WIN32
 	fcntl(ret, F_SETFL, O_NONBLOCK);
+#endif
 	return ret;
 }
 
@@ -450,7 +458,7 @@ int net_geterror(int handle)
 	int data;
 	socklen_t len = sizeof(data);
 
-	if (getsockopt(handle, SOL_SOCKET, SO_ERROR, &data, &len) == -1)
+	if (getsockopt(handle, SOL_SOCKET, SO_ERROR, (void *) &data, &len) == -1)
 		return -1;
 
 	return data;
