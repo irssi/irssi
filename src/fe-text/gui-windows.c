@@ -473,7 +473,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 		else {
 			/* low-ascii */
 			set_color(cwin, ATTR_REVERSE);
-			waddch(cwin, *text+'A'-1);
+			waddch(cwin, (*text & 127)+'A'-1);
 			set_color(cwin, color);
 		}
 		text++;
