@@ -35,6 +35,15 @@
 #include "fe-windows.h"
 #include "window-items.h"
 
+static WINDOW_REC *restore_win;
+
+static void signal_query_created_curwin(QUERY_REC *query)
+{
+	g_return_if_fail(IS_QUERY(query));
+
+	window_item_add(restore_win, (WI_ITEM_REC *) query, FALSE);
+}
+
 static void sig_window_restore_item(WINDOW_REC *window, const char *type,
 				    CONFIG_NODE *node)
 {
@@ -53,7 +62,14 @@ static void sig_window_restore_item(WINDOW_REC *window, const char *type,
                 rec->sticky = TRUE;
 	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
 		/* create query immediately */
+		signal_add("query created",
+			   (SIGNAL_FUNC) signal_query_created_curwin);
+
+                restore_win = window;
 		chat_protocol_find(chat_type)->query_create(tag, name, TRUE);
+
+		signal_remove("query created",
+			      (SIGNAL_FUNC) signal_query_created_curwin);
 	}
 }
 
