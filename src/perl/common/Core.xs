@@ -557,7 +557,8 @@ CODE:
 OUTPUT:
         RETVAL
 
-int get_gui()
+int
+get_gui()
 CODE:
 	RETVAL = irssi_gui;
 OUTPUT:
