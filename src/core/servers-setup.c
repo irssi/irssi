@@ -200,7 +200,7 @@ create_addr_conn(int chat_type, const char *address, int port,
 
 	g_return_val_if_fail(address != NULL, NULL);
 
-	sserver = server_setup_find(address, port);
+	sserver = server_setup_find(address, port, chatnet);
 	if (sserver != NULL) {
 		if (chat_type < 0)
 			chat_type = sserver->chat_type;
@@ -303,7 +303,8 @@ server_create_conn(int chat_type, const char *dest, int port,
 
 /* Find matching server from setup. Try to find record with a same port,
    but fallback to any server with the same address. */
-SERVER_SETUP_REC *server_setup_find(const char *address, int port)
+SERVER_SETUP_REC *server_setup_find(const char *address, int port,
+				    const char *chatnet)
 {
 	SERVER_SETUP_REC *server;
 	GSList *tmp;
@@ -314,7 +315,9 @@ SERVER_SETUP_REC *server_setup_find(const char *address, int port)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->address, address) == 0) {
+		if (g_strcasecmp(rec->address, address) == 0 &&
+		    (chatnet == NULL || rec->chatnet == NULL ||
+		     g_strcasecmp(rec->chatnet, chatnet) == 0)) {
 			server = rec;
 			if (rec->port == port)
 				break;
@@ -329,7 +332,7 @@ SERVER_SETUP_REC *server_setup_find_port(const char *address, int port)
 {
 	SERVER_SETUP_REC *rec;
 
-	rec = server_setup_find(address, port);
+	rec = server_setup_find(address, port, NULL);
 	return rec == NULL || rec->port != port ? NULL : rec;
 }
 

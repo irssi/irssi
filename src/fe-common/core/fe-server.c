@@ -175,7 +175,7 @@ static void cmd_server_remove(const char *data)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
         if (*port == '\0')
-		rec = server_setup_find(addr, -1);
+		rec = server_setup_find(addr, -1, NULL);
 	else
 		rec = server_setup_find_port(addr, atoi(port));
 

@@ -197,7 +197,8 @@ static void sig_reconnect(SERVER_REC *server)
 	}
 
 	sserver = server_setup_find(server->connrec->address,
-				    server->connrec->port);
+				    server->connrec->port,
+				    server->connrec->chatnet);
 
 	if (sserver != NULL) {
 		/* save the last connection time/status */

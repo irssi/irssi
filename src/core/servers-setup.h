@@ -33,7 +33,8 @@ server_create_conn(int chat_type, const char *dest, int port,
 
 /* Find matching server from setup. Try to find record with a same port,
    but fallback to any server with the same address. */
-SERVER_SETUP_REC *server_setup_find(const char *address, int port);
+SERVER_SETUP_REC *server_setup_find(const char *address, int port,
+				    const char *chatnet);
 /* Find matching server from setup. Ports must match or NULL is returned. */
 SERVER_SETUP_REC *server_setup_find_port(const char *address, int port);
 
