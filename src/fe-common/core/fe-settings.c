@@ -256,7 +256,7 @@ static void settings_save_fe(const char *fname)
 
 static void settings_save_confirm(const char *line, char *fname)
 {
-	if (toupper(*line) == 'Y')
+	if (toupper(*line) == nl_langinfo(YESEXPR))
 		settings_save_fe(fname);
 	g_free(fname);
 }
