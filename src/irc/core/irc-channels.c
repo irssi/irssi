@@ -187,7 +187,7 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
 	return NULL;
 }
 
-static void sig_connected(SERVER_REC *server)
+static void sig_server_looking(SERVER_REC *server)
 {
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -199,7 +199,7 @@ static void sig_connected(SERVER_REC *server)
 void irc_channels_init(void)
 {
 	signal_add("channel create", (SIGNAL_FUNC) sig_channel_create);
-	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_init();
@@ -217,7 +217,7 @@ void irc_channels_init(void)
 void irc_channels_deinit(void)
 {
 	signal_remove("channel create", (SIGNAL_FUNC) sig_channel_create);
-	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_deinit();

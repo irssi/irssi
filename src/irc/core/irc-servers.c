@@ -86,6 +86,16 @@ static void send_message(IRC_SERVER_REC *server, const char *target,
 	g_free(str);
 }
 
+static void sig_server_looking(IRC_SERVER_REC *server)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	server->isnickflag = isnickflag_func;
+	server->ischannel = ischannel_func;
+	server->send_message = (void *) send_message;
+}
+
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -125,9 +135,6 @@ static void server_init(IRC_SERVER_REC *server)
 		      address, conn->realname);
 
 	server->cmdcount = 0;
-	server->isnickflag = isnickflag_func;
-	server->ischannel = ischannel_func;
-	server->send_message = (void *) send_message;
 }
 
 IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
@@ -437,6 +444,7 @@ void irc_servers_init(void)
 
 	signal_add("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
 	signal_add("server connect", (SIGNAL_FUNC) sig_server_connect);
+	signal_add_first("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
@@ -463,6 +471,7 @@ void irc_servers_deinit(void)
 
 	signal_remove("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
 	signal_remove("server connect", (SIGNAL_FUNC) sig_server_connect);
+	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
