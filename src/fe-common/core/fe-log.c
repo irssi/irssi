@@ -71,32 +71,43 @@ static void cmd_log_open(const char *data)
 	}
 
 	log = log_create_rec(fname, level, targetarg);
-	if (log != NULL && log->handle == -1 && stristr(args, "-noopen") == NULL) {
-		/* start logging */
-		if (log_start_logging(log)) {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-				    IRCTXT_LOG_OPENED, fname);
-		} else {
-			log_close(log);
-			log = NULL;
-		}
-	}
-
 	if (log != NULL) {
 		if (stristr(args, "-autoopen"))
 			log->autoopen = TRUE;
                 log->rotate = rotate;
 		log_update(log);
+
+		if (log->handle == -1 && stristr(args, "-noopen") == NULL) {
+			/* start logging */
+			if (log_start_logging(log)) {
+				printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+					    IRCTXT_LOG_OPENED, fname);
+			} else {
+				log_close(log);
+			}
+		}
 	}
 
 	g_free(params);
+}
+
+static LOG_REC *log_find_from_data(const char *data)
+{
+	GSList *tmp;
+
+	if (!is_numeric(data, ' '))
+		return log_find(data);
+
+	/* with index number */
+	tmp = g_slist_nth(logs, atoi(data)-1);
+	return tmp == NULL ? NULL : tmp->data;
 }
 
 static void cmd_log_close(const char *data)
 {
 	LOG_REC *log;
 
-	log = log_find(data);
+	log = log_find_from_data(data);
 	if (log == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_LOG_NOT_OPEN, data);
 	else {
@@ -109,7 +120,7 @@ static void cmd_log_start(const char *data)
 {
 	LOG_REC *log;
 
-	log = log_find(data);
+	log = log_find_from_data(data);
 	if (log != NULL) {
 		log_start_logging(log);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_OPENED, data);
@@ -120,7 +131,7 @@ static void cmd_log_stop(const char *data)
 {
 	LOG_REC *log;
 
-	log = log_find(data);
+	log = log_find_from_data(data);
 	if (log == NULL || log->handle == -1)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_LOG_NOT_OPEN, data);
 	else {
@@ -133,9 +144,10 @@ static void cmd_log_list(void)
 {
 	GSList *tmp;
 	char *levelstr, *items, *rotate;
+	int index;
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST_HEADER);
-	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
+	for (tmp = logs, index = 1; tmp != NULL; tmp = tmp->next, index++) {
 		LOG_REC *rec = tmp->data;
 
 		levelstr = bits2level(rec->level);
@@ -145,7 +157,7 @@ static void cmd_log_list(void)
 			g_strdup_printf(" -rotate %s", log_rotate2str(rec->rotate));
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_LOG_LIST,
-			    rec->fname, items != NULL ? items : "",
+			    index, rec->fname, items != NULL ? items : "",
 			    levelstr, rotate != NULL ? rotate : "",
 			    rec->autoopen ? " -autoopen" : "");
 
