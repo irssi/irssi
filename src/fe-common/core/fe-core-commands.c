@@ -301,6 +301,44 @@ static void cmd_cat(const char *data)
 	close(f);
 }
 
+
+/* SYNTAX: EXEC <cmd line> */
+static void cmd_exec(const char *cmdline)
+{
+        int buflen = 512;
+	char tmpbuf[buflen];
+	char *foo;
+	FILE *stream;
+
+	stream = popen(cmdline, "r");
+
+	if (!stream) {
+		/* execution error of some kind */
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, 
+			  "Cannot open output stream.");
+		return;
+	}
+
+	while (fgets(tmpbuf, buflen, stream)) {
+		/*  strip \n characters appended from fgets
+		    This is safer than using gets, though it is more work tbd
+		*/
+		foo = tmpbuf;
+		while (*foo != '\0') {
+			if (*foo == '\n') {
+				*foo = '\0';
+				break;
+			}
+			foo++;
+		}
+		
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", tmpbuf);
+	}
+	
+	pclose(stream);
+}
+
+
 /* SYNTAX: BEEP */
 static void cmd_beep(void)
 {
@@ -408,6 +446,7 @@ void fe_core_commands_init(void)
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
 	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
+	command_bind("exec", NULL, (SIGNAL_FUNC) cmd_exec);
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 
 	signal_add("send command", (SIGNAL_FUNC) event_command);
@@ -422,6 +461,7 @@ void fe_core_commands_deinit(void)
 	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
 	command_unbind("version", (SIGNAL_FUNC) cmd_version);
 	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);
+	command_unbind("exec", (SIGNAL_FUNC) cmd_exec);
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
