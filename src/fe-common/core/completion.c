@@ -267,7 +267,8 @@ GList *filename_complete(const char *path, const char *default_path)
         GList *list;
 	DIR *dirp;
 	struct dirent *dp;
-	char *realpath, *dir, *basename, *name;
+	const char *basename;
+	char *realpath, *dir, *name;
 	int len;
 
 	g_return_val_if_fail(path != NULL, NULL);

@@ -168,7 +168,8 @@ static char *dcc_send_get_file(const char *fname)
 static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 			 WI_ITEM_REC *item)
 {
-	char *target, *fname, *str;
+	const char *fname;
+	char *target, *str;
 	void *free_arg;
 	char host[MAX_IP_LEN];
 	int hfile, port;

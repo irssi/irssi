@@ -83,8 +83,7 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 
 static void init_userinfo(void)
 {
-	const char *set, *nick, *user_name;
-	char *str;
+	const char *set, *nick, *user_name, *str;
 
 	/* check if nick/username/realname wasn't read from setup.. */
         set = settings_get_str("real_name");

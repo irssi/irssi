@@ -106,7 +106,7 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 				     void *item, int *free_ret)
 {
 	EXPANDO_FUNC func;
-	char *ret;
+	const char *ret;
 	int type;
 
 	*free_ret = FALSE;
@@ -124,7 +124,7 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 	/* environment variable? */
 	ret = g_getenv(key);
 	if (ret != NULL)
-		return ret;
+		return (char *) ret;
 
 	return NULL;
 }
