@@ -241,7 +241,7 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
   AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
 
   GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
-  if test "x$GLIB_DIR" != "x"; then
+  if -n "$GLIB_DIR"; then
     dnl * glib in irssi directory, use it
     AC_MSG_RESULT([yes, using it])
 
@@ -284,9 +284,9 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
 
 AC_CHECK_GLIBDIR
 
-if test "x$GLIB_DIR" = "x"; then
+if test -z "$GLIB_DIR"; then
   AM_PATH_GLIB(1.2.0,,, gmodule)
-  if test "x$GLIB_LIBS" = "x"; then
+  if -z "$GLIB_LIBS"; then
     echo "*** trying without -lgmodule"
     glib_config_args=
     AM_PATH_GLIB(1.2.0)
@@ -294,7 +294,7 @@ if test "x$GLIB_DIR" = "x"; then
     AC_DEFINE(HAVE_GMODULE)
   fi
 
-  if test "x$GLIB_LIBS" = "x"; then
+  if test -z "$GLIB_LIBS"; then
     echo
     echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
     echo "*** If you can't install GLIB anywhere or if you don't want to,"
@@ -309,13 +309,13 @@ if test "x$GLIB_DIR" = "x"; then
     glib_file=glib-1.2.10.tar.gz
 
     dlcmd=
-    if test "x`ncftpget 2>/dev/null|grep -i ncftp`" != "x"; then
+    if test -n "`ncftpget 2>/dev/null|grep -i ncftp`"; then
       dlcmd="ncftpget ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
     fi
-    if test "x`wget 2>/dev/null|grep -i wget`" != "x"; then
+    if test -n "`wget 2>/dev/null|grep -i wget`"; then
       dlcmd="wget http://irssi.org/files/$glib_file"
     fi
-    if test "x$dlcmd" != "x"; then
+    if test -n "$dlcmd"; then
       echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
       read answer
       eval $dlcmd
@@ -328,7 +328,7 @@ if test "x$GLIB_DIR" = "x"; then
       fi
     fi
 
-    if test "x$GLIB_LIBS" = "x"; then
+    if test -z "$GLIB_LIBS"; then
       AC_ERROR([GLIB is required to build irssi.])
     fi
   fi
@@ -399,7 +399,7 @@ dnl **
 if test "x$want_textui" = "xyes"; then
 	AC_CHECK_CURSES
 
-	if test "x$has_ncurses" != "x"; then
+	if test -n "$has_ncurses"; then
 		AC_CHECK_LIB(ncurses, use_default_colors, [
 			AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS)
 		],, $CURSES_LIBS)
@@ -438,14 +438,16 @@ if test "$want_perl" != "no"; then
 	AC_PATH_PROG(perlpath, perl)
 	AC_MSG_CHECKING(for working Perl support)
 
-	if test "x$perlpath" = "x"; then
+	if test "-z $perlpath"; then
        		perl_check_error="perl binary not found"
 	else
 		PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
 	fi
 
-	if test "x$PERL_CFLAGS" = "x"; then
-		perl_check_error="Error getting perl CFLAGS"
+	if test -z "$PERL_CFLAGS"; then
+		if test -n "$perl_check_error"; then
+			perl_check_error="Error getting perl CFLAGS"
+		fi
 		AC_MSG_RESULT([not found, building without Perl])
 		want_perl=no
 	else
@@ -470,10 +472,10 @@ if test "$want_perl" != "no"; then
 		fi
 
 		dnl * don't check libperl.a if dynaloader.a wasn't found..
-		if test "x$DYNALOADER_A" != "x"; then
+		if test -n "$DYNALOADER_A"; then
 			dnl * find either libperl.a or libperl.so
 			LIBPERL_A=`echo "$PERL_LDFLAGS -L/usr/lib"|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/) { my $dir=$1; if (\`ls $dir/libperl.so* 2>/dev/null\`) { print "-lperl"; last; }; if (-e "$dir/libperl.a") { print "$dir/libperl.a"; last } } };'`
-			if test "x$LIBPERL_A" = "x"; then
+			if test -z "$LIBPERL_A"; then
 				perl_mod_error="Didn't find location of -lperl"
 				DYNALOADER_A=
 			elif test "$LIBPERL_A" = "-lperl"; then
@@ -524,13 +526,13 @@ if test "$want_perl" != "no"; then
 	if test "x$want_perl" != "xno"; then
 		if test "x$want_perl" = "xstatic"; then
 			AC_MSG_RESULT(ok)
-		elif test "x$DYNALOADER_A" = "x"; then
+		elif test -z "$DYNALOADER_A"; then
 			AC_MSG_RESULT([error parsing ldopts, building Perl into irssi binary instead of as module])
 			want_perl=static
 		else
 			AC_MSG_RESULT(ok)
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
-			if test "x$LIBPERL_A" != "x"; then
+			if test -n "$LIBPERL_A"; then
 				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e 's/-lperl /libperl_orig.la /' -e 's/-lperl$/libperl_orig.la$/'`
 			fi
 			AC_SUBST(LIBPERL_A)
@@ -572,7 +574,7 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
-AM_CONDITIONAL(BUILD_SERVERTEST, test "x$TEST_DIR" != "x")
+AM_CONDITIONAL(BUILD_SERVERTEST, test -n "$TEST_DIR")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 
@@ -586,7 +588,7 @@ dnl ** (these could be made configurable)
 
 CHAT_MODULES="irc"
 irc_MODULES="dcc flood notifylist"
-if test "x$build_modules" != "x"; then
+if test -n "$build_modules"; then
 	irc_MODULES="$irc_MODULES $build_modules"
 fi
 
@@ -622,7 +624,7 @@ for c in $CHAT_MODULES; do
 	file="$srcdir/src/$c/$c.c"
         echo "/* this file is automatically generated by configure - don't change */" > $file
 	echo "void ${c}_core_init(void); void ${c}_core_deinit(void);" >> $file
-	if test "x$module_inits" != "x"; then
+	if test -n "$module_inits"; then
         	echo "$module_inits" | $sedpath -e 's/()/(void)/g' -e 's/ /void /g' >> $file
         	echo "$module_deinits" | $sedpath -e 's/ *$//' -e 's/()/(void)/g' -e 's/ /void /g' -e 's/^/void /' >> $file
 	fi
@@ -632,7 +634,7 @@ for c in $CHAT_MODULES; do
 	if test -f $srcdir/src/fe-common/$c/module.h; then
 	        file="$srcdir/src/fe-common/$c/${c}-modules.c"
 	        echo "/* this file is automatically generated by configure - don't change */" > $file
-                if test "x$fe_module_inits" != "x"; then
+                if test -n "$fe_module_inits"; then
 		        echo "$fe_module_inits" | $sedpath -e 's/()/(void)/g' -e 's/ /void /g' >> $file
 		        echo "$fe_module_deinits" | $sedpath -e 's/ *$//' -e 's/()/(void)/g' -e 's/ /void /g' -e 's/^/void /' >> $file
 		fi
@@ -698,6 +700,7 @@ src/perl/Makefile
 src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL
 src/perl/ui/Makefile.PL
+src/perl/textui/Makefile.PL
 servertest/Makefile
 scripts/Makefile
 docs/Makefile
@@ -740,7 +743,7 @@ if test "x$want_perl" = "xstatic"; then
 elif test "x$want_perl" = "xyes"; then
 	echo "Building with Perl support . : module"
 else
-	if test "x$perl_check_error" = "x"; then
+	if test -z "$perl_check_error"; then
 		echo "Building with Perl support . : no"
 	else
 		echo "Building with Perl support . : NO!"
@@ -755,7 +758,7 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 fi
 
 if test "x$want_perl" = "xyes"; then
-	if test "x$PERL_LIB_DIR" = "x"; then
+	if test -z "$PERL_LIB_DIR"; then
 		echo "Perl library directory ..... : (default - usually /usr/local/lib/perl_site)"
 	else
 		echo "Perl library directory ..... : $PERL_LIB_DIR"
