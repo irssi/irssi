@@ -159,6 +159,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         int len, best_mask, best_match, best_patt;
 
 	g_return_val_if_fail(server != NULL, 0);
+        if (nick == NULL) nick = "";
 
 	chanrec = (channel != NULL && server != NULL &&
 		   server->ischannel(channel)) ?
