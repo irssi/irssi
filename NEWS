@@ -17,6 +17,8 @@ v0.7.16 1999-09-11  Timo Sirainen <cras@irccrew.org> [unstable]
 	+ /list and /who dialogs displays total number of items and the list
 	  is searchable
 	+ Autojoining to channels work with irssi-text too
+	+ /gwhois dialog has now refresh button, /gwhois is used when clicking
+          whois from nicklist popup menu
 	- Restoring saved window size didn't work very accurately, restoring
 	  position also had some problems..
 	- Rawlog doesn't crash anymore if not connected to server
