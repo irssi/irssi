@@ -63,6 +63,16 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Channels", 0 },
 
+	{ "join", "%c%_$0%_ %K[%c$1%K]%n has joined %_$2", 3, { 0, 0, 0 } },
+	{ "part", "%c$0 %K[%n$1%K]%n has left %_$2%_ %K[%n$3%n%K]", 4, { 0, 0, 0, 0 } },
+	{ "kick", "%c$0%n was kicked from %_$1%_ by %_$2%_ %K[%n$3%K]", 4, { 0, 0, 0, 0 } },
+	{ "quit", "%c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%n%K]", 3, { 0, 0, 0 } },
+	{ "quit_once", "%_$3%_ %c$0 %K[%n$1%K]%n has quit IRC %K[%n$2%K]", 4, { 0, 0, 0, 0 } },
+	{ "invite", "%_$0%_ invites you to %_$1", 2, { 0, 0 } },
+	{ "new_topic", "%_$0%_ changed the topic of %c$1%n to%K:%n $2", 3, { 0, 0, 0 } },
+	{ "topic_unset", "Topic unset by %_$0%_ on %c$1", 2, { 0, 0 } },
+	{ "your_nick_changed", "You're now known as %c$1", 2, { 0, 0 } },
+	{ "nick_changed", "%_$0%_ is now known as %c$1", 2, { 0, 0 } },
 	{ "talking_in", "You are now talking in %_$0%_", 1, { 0 } },
 	{ "not_in_channels", "You are not on any channels", 0 },
 	{ "current_channel", "Current channel $0", 1, { 0 } },

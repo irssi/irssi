@@ -95,7 +95,6 @@ void fe_common_irc_init(void)
 	args_register(options);
 
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
-	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 
 	theme_register(fecommon_irc_formats);
 

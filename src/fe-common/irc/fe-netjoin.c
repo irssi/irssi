@@ -102,7 +102,6 @@ static NETJOIN_REC *netjoin_add(IRC_SERVER_REC *server, const char *nick, GSList
 
 	g_return_val_if_fail(server != NULL, NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
-	g_return_val_if_fail(channels != NULL, NULL);
 
 	rec = g_new0(NETJOIN_REC, 1);
 	rec->nick = g_strdup(nick);
@@ -297,7 +296,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server,
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
-	if (!ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS)) {
+	if (!ignore_check(SERVER(server), nick, address, channel, NULL, MSGLEVEL_JOINS)) {
                 if (join_tag == -1)
 			join_tag = g_timeout_add(1000, (GSourceFunc) sig_check_netjoins, NULL);
 

@@ -88,8 +88,9 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 	for (tmp = split->channels; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_CHAN_REC *splitchan = tmp->data;
 
-		if (ignore_check(rec->server_rec, split->nick, split->address,
-				 splitchan->name, "", MSGLEVEL_QUITS))
+		if (ignore_check(SERVER(rec->server_rec), split->nick,
+				 split->address, splitchan->name, "",
+				 MSGLEVEL_QUITS))
 			continue;
 
 		chanrec = find_split_chan(rec, splitchan->name);

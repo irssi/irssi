@@ -23,6 +23,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
+#include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
 
@@ -31,6 +32,7 @@
 #include "channels.h"
 #include "nicklist.h"
 #include "hilight-text.h"
+#include "ignore.h"
 
 static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
 {
@@ -52,6 +54,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	const char *nickmode;
 	int for_me, print_channel, level;
 	char *color;
+
+	if (ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC))
+		return;
 
 	chanrec = channel_find(server, target);
 	for_me = nick_match_msg(server, msg, server->nick);
@@ -101,6 +106,9 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
 	QUERY_REC *query;
+
+	if (ignore_check(server, nick, address, NULL, msg, MSGLEVEL_MSGS))
+		return;
 
 	query = query_find(server, nick);
 	printformat(server, nick, MSGLEVEL_MSGS,
@@ -203,13 +211,215 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	cmd_params_free(free_arg);
 }
 
+static void sig_message_join(SERVER_REC *server, const char *channel,
+			     const char *nick, const char *address)
+{
+	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS))
+		return;
+
+	printformat(server, channel, MSGLEVEL_JOINS,
+		    IRCTXT_JOIN, nick, address, channel);
+}
+
+static void sig_message_part(SERVER_REC *server, const char *channel,
+			     const char *nick, const char *address,
+			     const char *reason)
+{
+	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_PARTS))
+		return;
+
+	printformat(server, channel, MSGLEVEL_PARTS,
+		    IRCTXT_PART, nick, address, channel, reason);
+}
+
+static void sig_message_quit(SERVER_REC *server, const char *nick,
+			     const char *address, const char *reason)
+{
+	WINDOW_REC *window;
+	GString *chans;
+	GSList *tmp, *windows;
+	char *print_channel;
+	int once, count;
+
+	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
+		return;
+
+	print_channel = NULL;
+	once = settings_get_bool("show_quit_once");
+
+	count = 0; windows = NULL;
+	chans = !once ? NULL : g_string_new(NULL);
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *rec = tmp->data;
+
+		if (!nicklist_find(rec, nick) ||
+		    ignore_check(server, nick, address, rec->name,
+				 reason, MSGLEVEL_QUITS))
+			continue;
+
+		if (print_channel == NULL ||
+		    active_win->active == (WI_ITEM_REC *) rec)
+			print_channel = rec->name;
+
+		if (!once) {
+			window = window_item_window((WI_ITEM_REC *) rec);
+			if (g_slist_find(windows, window) == NULL) {
+				windows = g_slist_append(windows, window);
+				printformat(server, rec->name, MSGLEVEL_QUITS,
+					    IRCTXT_QUIT, nick, address, reason);
+			}
+		} else {
+			g_string_sprintfa(chans, "%s,", rec->name);
+			count++;
+		}
+	}
+	g_slist_free(windows);
+
+	if (once && count > 0) {
+		g_string_truncate(chans, chans->len-1);
+		printformat(server, print_channel, MSGLEVEL_QUITS,
+			    count == 1 ? IRCTXT_QUIT : IRCTXT_QUIT_ONCE,
+			    nick, address, reason, chans->str);
+	}
+	if (chans != NULL)
+		g_string_free(chans, TRUE);
+}
+
+static void sig_message_kick(SERVER_REC *server, const char *channel,
+			     const char *nick, const char *kicker,
+			     const char *address, const char *reason)
+{
+	if (ignore_check(server, kicker, address,
+			 channel, reason, MSGLEVEL_KICKS))
+		return;
+
+	printformat(server, channel, MSGLEVEL_KICKS,
+		    IRCTXT_KICK, nick, channel, kicker, reason);
+}
+
+static void print_nick_change_channel(SERVER_REC *server, const char *channel,
+				      const char *newnick, const char *oldnick,
+				      const char *address,
+				      int ownnick)
+{
+	if (ignore_check(server, oldnick, address,
+			 channel, newnick, MSGLEVEL_NICKS))
+		return;
+
+	printformat(server, channel, MSGLEVEL_NICKS,
+		    ownnick ? IRCTXT_YOUR_NICK_CHANGED : IRCTXT_NICK_CHANGED,
+		    oldnick, newnick);
+}
+
+static void print_nick_change(SERVER_REC *server, const char *newnick,
+			      const char *oldnick, const char *address,
+			      int ownnick)
+{
+	GSList *tmp, *windows;
+	int msgprint;
+
+	if (ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS))
+		return;
+
+	msgprint = FALSE;
+
+	/* Print to each channel/query where the nick is.
+	   Don't print more than once to the same window. */
+	windows = NULL;
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *channel = tmp->data;
+		WINDOW_REC *window =
+			window_item_window((WI_ITEM_REC *) channel);
+
+		if (nicklist_find(channel, oldnick) == NULL ||
+		    g_slist_find(windows, window) != NULL)
+			continue;
+
+		windows = g_slist_append(windows, window);
+		print_nick_change_channel(server, channel->name, newnick,
+					  oldnick, address, ownnick);
+		msgprint = TRUE;
+	}
+
+	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
+		QUERY_REC *query = tmp->data;
+		WINDOW_REC *window =
+			window_item_window((WI_ITEM_REC *) query);
+
+		if (g_strcasecmp(query->name, oldnick) != 0 ||
+		    g_slist_find(windows, window) != NULL)
+			continue;
+
+		windows = g_slist_append(windows, window);
+		print_nick_change_channel(server, query->name, newnick,
+					  oldnick, address, ownnick);
+		msgprint = TRUE;
+	}
+	g_slist_free(windows);
+
+	if (!msgprint && ownnick) {
+		printformat(server, NULL, MSGLEVEL_NICKS,
+			    IRCTXT_YOUR_NICK_CHANGED, oldnick, newnick);
+	}
+}
+
+static void sig_message_nick(SERVER_REC *server, const char *newnick,
+			     const char *oldnick, const char *address)
+{
+	print_nick_change(server, newnick, oldnick, address, FALSE);
+}
+
+static void sig_message_own_nick(SERVER_REC *server, const char *newnick,
+				 const char *oldnick, const char *address)
+{
+	print_nick_change(server, newnick, oldnick, address, TRUE);
+}
+
+static void sig_message_invite(SERVER_REC *server, const char *channel,
+			       const char *nick, const char *address)
+{
+	char *str;
+
+	if (*channel == '\0' ||
+	    ignore_check(server, nick, address,
+			 channel, NULL, MSGLEVEL_INVITES))
+		return;
+
+	str = show_lowascii(channel);
+	printformat(server, NULL, MSGLEVEL_INVITES,
+		    IRCTXT_INVITE, nick, str);
+	g_free(str);
+}
+
+static void sig_message_topic(SERVER_REC *server, const char *channel,
+			      const char *topic,
+			      const char *nick, const char *address)
+{
+	if (ignore_check(server, nick, address,
+			 channel, topic, MSGLEVEL_TOPICS))
+		return;
+
+	printformat(server, channel, MSGLEVEL_TOPICS,
+		    *topic != '\0' ? IRCTXT_NEW_TOPIC : IRCTXT_TOPIC_UNSET,
+		    nick, channel, topic);
+}
+
 void fe_messages_init(void)
 {
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
+	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add_last("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_add_last("message part", (SIGNAL_FUNC) sig_message_part);
+	signal_add_last("message quit", (SIGNAL_FUNC) sig_message_quit);
+	signal_add_last("message kick", (SIGNAL_FUNC) sig_message_kick);
+	signal_add_last("message nick", (SIGNAL_FUNC) sig_message_nick);
+	signal_add_last("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
+	signal_add_last("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_add_last("message topic", (SIGNAL_FUNC) sig_message_topic);
 	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 }
 
@@ -217,5 +427,13 @@ void fe_messages_deinit(void)
 {
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_remove("message part", (SIGNAL_FUNC) sig_message_part);
+	signal_remove("message quit", (SIGNAL_FUNC) sig_message_quit);
+	signal_remove("message kick", (SIGNAL_FUNC) sig_message_kick);
+	signal_remove("message nick", (SIGNAL_FUNC) sig_message_nick);
+	signal_remove("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
+	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 }
