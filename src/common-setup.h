@@ -56,6 +56,9 @@ extern gint max_textwidget_lines;
 extern gint rawlog_lines;
 extern gint block_remove_lines;
 
+extern gint min_lag_check_time;
+extern gint max_lag_before_disconnect;
+
 extern gint knockout_time; /* How many seconds to keep /knockouted ban */
 extern gboolean check_irssi_versions; /* Check if there's new irssi version available */
 

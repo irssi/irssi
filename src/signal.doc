@@ -45,6 +45,12 @@ irc.c:
  "event "<cmd>, gchar *args, SERVER_REC, gchar *sender_nick, gchar *sender_address
  "default event", gchar *args, SERVER_REC, gchar *sender_nick, gchar *sender_address
 
+lag.c:
+
+ "server lag", SERVER_REC
+ "server lag disconnect", SERVER_REC
+ "lag", gchar *server, GINT_TO_POINTER(lag)
+
 modes.c:
 
  "invitelist new", CHANNEL_REC, gchar *mask
