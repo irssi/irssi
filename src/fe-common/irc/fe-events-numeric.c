@@ -520,6 +520,17 @@ static void event_end_of_whois(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void event_chanserv_url(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *channel, *url;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &channel, &url);
+	printtext(server, channel, MSGLEVEL_CRAP, "%s", url);
+	g_free(params);
+}
+
 static void event_end_of_whowas(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *nick;
@@ -721,6 +732,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
+	signal_add("event 328", (SIGNAL_FUNC) event_chanserv_url);
 	signal_add("event 369", (SIGNAL_FUNC) event_end_of_whowas);
 	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
@@ -780,6 +792,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 314", (SIGNAL_FUNC) event_whowas);
 	signal_remove("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);
+	signal_remove("event 328", (SIGNAL_FUNC) event_chanserv_url);
 	signal_remove("event 369", (SIGNAL_FUNC) event_end_of_whowas);
 	signal_remove("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
