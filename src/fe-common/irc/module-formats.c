@@ -152,6 +152,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "error", "{error ERROR} $0", 1, { 0 } },
 	{ "unknown_mode", "Unknown mode character $0", 1, { 0 } },
 	{ "not_chanop", "You're not channel operator in {channel $0}", 1, { 0 } },
+	{ "default_event", "[$0] $1", 2, { 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Misc", 0 },

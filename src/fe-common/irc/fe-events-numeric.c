@@ -33,7 +33,8 @@
 #include "printtext.h"
 #include "fe-channels.h"
 
-static void event_received(IRC_SERVER_REC *server, const char *data);
+static void event_received(IRC_SERVER_REC *server, const char *data,
+			   const char *nick, const char *addr);
 
 static char *last_away_nick = NULL;
 static char *last_away_msg = NULL;
@@ -398,7 +399,8 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
+static void event_whois_registered(IRC_SERVER_REC *server, const char *data,
+				   const char *orignick, const char *addr)
 {
 	char *params, *nick, *txt_identified;
 
@@ -410,7 +412,7 @@ static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
 			    IRCTXT_WHOIS_REGISTERED, nick);
 	} else {
 		/* or /USERIP reply in undernet.. */
-		event_received(server, data);
+		event_received(server, data, orignick, addr);
 	}
 	g_free(params);
 }
@@ -440,7 +442,8 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
+static void event_whois_realhost(IRC_SERVER_REC *server, const char *data,
+				 const char *orignick, const char *addr)
 {
 	char *params, *nick, *txt_real, *txt_hostname, *hostname;
 
@@ -464,7 +467,7 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, "");
 	} else {
 		/* OPN's dancer uses for end of /MAP */
-		event_received(server, data);
+		event_received(server, data, orignick, addr);
 	}
 	g_free(params);
 }
@@ -482,7 +485,8 @@ static void event_whois_usermode326(IRC_SERVER_REC *server, const char *data)
         g_free(params);
 }
 
-static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
+static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data,
+				    const char *orignick, const char *addr)
 {
 	char *params, *nick, *hostname, *ip, *text;
 
@@ -494,12 +498,13 @@ static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, ip);
 	} else {
-		event_received(server, data);
+		event_received(server, data, orignick, addr);
 	}
 	g_free(params);
 }
 
-static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
+static void event_whois_usermode(IRC_SERVER_REC *server, const char *data,
+				 const char *orignick, const char *addr)
 {
 	char *params, *txt_usermodes, *nick, *usermode;
 
@@ -515,7 +520,7 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 	} else {
 		/* some servers use this as motd too..
 		   and OPN's dancer for /MAP */
-		event_received(server, data);
+		event_received(server, data, orignick, addr);
 	}
 	g_free(params);
 }
@@ -617,7 +622,8 @@ static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
+static void event_target_unavailable(IRC_SERVER_REC *server, const char *data,
+				     const char *nick, const char *addr)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *target;
@@ -633,7 +639,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 		chanrec = irc_channel_find(server, target);
 		if (chanrec != NULL && chanrec->joined) {
 			/* dalnet - can't change nick while being banned */
-			event_received(server, data);
+			event_received(server, data, nick, addr);
 		} else {
 			/* channel is unavailable. */
 			printformat(server, NULL, MSGLEVEL_CRAP,
@@ -750,14 +756,16 @@ static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_numeric(IRC_SERVER_REC *server, const char *data)
+static void event_numeric(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *addr)
 {
 	data = strchr(data, ' ');
 	if (data != NULL)
-                event_received(server, data+1);
+                event_received(server, data+1, nick, addr);
 }
 
-static void event_received(IRC_SERVER_REC *server, const char *data)
+static void event_received(IRC_SERVER_REC *server, const char *data,
+			   const char *nick, const char *addr)
 {
 	char *args, *ptr;
 
@@ -780,11 +788,18 @@ static void event_received(IRC_SERVER_REC *server, const char *data)
 			g_memmove(ptr+1, ptr+2, strlen(ptr+1));
 	}
 
-	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
+	if (nick == NULL || server->real_address == NULL ||
+	    strcmp(nick, server->real_address) == 0)
+		printtext(server, NULL, MSGLEVEL_CRAP, args);
+	else {
+		printformat(server, NULL, MSGLEVEL_CRAP,
+			    IRCTXT_DEFAULT_EVENT, nick, args);
+	}
 	g_free(args);
 }
 
-static void event_motd(IRC_SERVER_REC *server, const char *data)
+static void event_motd(IRC_SERVER_REC *server, const char *data,
+		       const char *nick, const char *addr)
 {
 	/* don't ignore motd anymore after 3 seconds of connection time -
 	   we might have called /MOTD */
@@ -792,7 +807,7 @@ static void event_motd(IRC_SERVER_REC *server, const char *data)
 	    time(NULL)-3 <= server->real_connect_time)
 		return;
 
-        event_received(server, data);
+        event_received(server, data, nick, addr);
 }
 
 static void sig_empty(void)
