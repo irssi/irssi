@@ -1,0 +1,26 @@
+
+@SYNTAX:ignore@
+
+    -regexp: <pattern> is a regular expression
+    -word: <pattern> must match to full words
+    -pattern: <pattern> must match to the message's text
+    -replies: Ignore replies to nick in channels. For example
+             "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
+             from Finland, but also anyone sending message
+             "tofinnishnick: blahblah".
+    -except: *DON'T* ignore
+    -channels: Ignore only in channels
+    <mask>: Either a nick mask or list of channels
+    <levels>: List of levels to ignore
+    <^levels>: List of levels to NOT ignore
+            (/ignore -except nick notices = /ignore nick ^notices)
+
+
+/IGNORE without any arguments displays list of ignores.
+
+The best match always wins, so you can have:
+    /IGNORE * CTCPS
+    /IGNORE -except *!*@host.org CTCPS
+
+See also: UNIGNORE
+

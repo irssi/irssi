@@ -1,0 +1,8 @@
+
+@SYNTAX:wallchops@
+
+Sends an message to all other channel operators of the 
+current channel.
+
+See also: 
+

@@ -1,0 +1,10 @@
+
+@SYNTAX:kickban@
+
+Kicks off and bans a nick from the current channel.
+A reason for the kick can be supplied.
+
+Default alias for /KICKBAN is /KB.
+
+See also: KNOCKOUT, BANTYPE
+

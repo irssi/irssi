@@ -1,0 +1,8 @@
+
+@SYNTAX:admin@
+
+Displays the administrative details about the given server. If
+no server is specified, the server you are connected to is
+used. If a nickname is supplied then it gives the administrative 
+information for that person's current server.
+

@@ -1,0 +1,33 @@
+
+@SYNTAX:server@
+
+/SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host 
+            <hostname>] [-cmdspeed <ms>] [-cmdmax <count>] 
+            [-port <port>] <address> [<port> [<password>]]
+            
+     -auto: Automatically connect to server at startup (default)
+     -noauto: Don't connect to server at startup
+     -ircnet: Specify what IRC network this server belongs to
+     -host: Specify what host name to use, if you have multiple
+     -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
+     -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+     -port: This is pretty much like the port argument later, 
+            except this can be used to modify existing server's 
+            port.
+
+/SERVER disconnects the server in active window and connects 
+to the new one. It will take the same arguments as /CONNECT. 
+If you prefix the address with the + character, Irssi won't 
+disconnect the active server, and it will create a new window 
+where the server is connected (ie. /window new hide;
+/connect address)
+
+/SERVER without any arguments displays the list of connected 
+        servers.
+
+/SERVER REMOVE <address> [<port>]
+
+/SERVER LIST
+
+See also: RMRECONNS, DISCONNECT, RECONNECT
+

@@ -1,0 +1,35 @@
+
+@SYNTAX:channel@
+
+Irssi can automatically join to specified channels in specified
+IRC networks. It can also automatically send the password when
+manually joining to channel without specifying the password.
+
+/CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+             <channel> <ircnet> [<password>]
+
+With -bots and -botcmd arguments you can automatically send
+commands to someone in channel. This is useful for automatically
+getting ops for channels, for example
+
+/CHANNEL ADD -auto -bots "*!bot@bothost.org bot*!*@host2.org"
+             -botcmd "msg $0 op mypass" #channel ircnet
+
+You can also use the -botcmd without -bots argument. The command is
+then sent whenever you join the channel.
+
+If you want to remove some settings from existing channel record,
+for example bots, just give the -bots "" parameters to it. Password
+can be removed by setting it to - (or actually, "" works too).
+
+You can remove the channels with
+/CHANNEL REMOVE <channel> <ircnet>
+
+/CHANNEL LIST displays list of channels with settings.
+
+/CHANNEL without any arguments displays list of channels you have
+joined. You can also use /CHANNEL to join to channels just as with
+/JOIN, like /CHANNEL #a.
+
+See also: TS, JOIN
+

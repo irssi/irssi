@@ -1,0 +1,21 @@
+
+@SYNTAX:ircnet@
+
+     -kicks: Maximum number of nicks in one /KICK command
+     -msgs: Maximum number of nicks in one /MSG command
+     -modes: Maximum number of mode changes in one /MODE command
+     -whois: Maximum number of nicks in one /WHOIS command
+     -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1   
+     -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+     -nick, -user, -realname: Specify what nick/user/name to use
+     -host: Specify what host name to use, if you have multiple
+     -autosendcmd: Command to send after connecting to a server   
+        
+With -autosendcmd argument you can automatically run any commands
+after connecting to ircnet. This is useful for automatically
+identifying yourself to NickServ, for example
+
+Shows and changes the settings of defined IRC networks.
+
+See also: CONNECT
+

@@ -1,0 +1,5 @@
+
+@SYNTAX:echo@
+
+Prints text into the current window. Useful for scripts.
+

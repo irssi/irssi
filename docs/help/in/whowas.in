@@ -1,0 +1,19 @@
+
+@SYNTAX:whowas@
+
+This command is similar to WHOIS, except it returns information 
+about nicknames that were recently in use. Like WHOIS, it shows 
+the nickname, address, real name, and server. It may also return 
+multiple entries if the nickname has been used recently by several 
+people. These multiples may be limited by specifying a count to show. 
+
+WHOWAS will work regardless of whether the queried nick is in use. 
+If no arguments are given, the client's current nickname is used. 
+
+Example: To show the last 5 users of the nickname JoeBob: 
+
+/whowas joebob 5 
+
+
+See also: WHOIS
+

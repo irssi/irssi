@@ -1,0 +1,16 @@
+
+@SYNTAX:hilight@
+
+   -mask: Match only for nick, <text> is a nick mask
+   -regexp: <text> is a regular expression
+   -word: <text> must match to full words
+   -nick: Hilight only the nick, not the whole line
+   -color: Print the message with <color>
+   -level: Match only for <level> messages, default is
+           publics,msgs,notices,actions
+   -channels: Match only in <channels>
+
+For regular expressions, see `man 7 regex`.
+
+See also: DEHILIGHT, SET HILIGHT
+

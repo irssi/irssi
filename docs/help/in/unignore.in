@@ -1,0 +1,7 @@
+
+@SYNTAX:unignore@
+
+Unignores the specified userhost mask.
+
+See also: IGNORE
+

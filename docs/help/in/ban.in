@@ -1,0 +1,7 @@
+
+@SYNTAX:ban@
+
+Bans the specified nick or userhost mask.
+
+See also: BANTYPE, KNOCKOUT
+

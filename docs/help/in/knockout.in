@@ -1,0 +1,11 @@
+
+@SYNTAX:knockout@
+
+Kicks user off the channel and bans him/her. Ban
+lasts the given number of seconds or 5 minutes
+by default.
+
+Default alias for /KNOCKOUT is /KN.
+
+See also: BANTYPE, BAN, KICK
+

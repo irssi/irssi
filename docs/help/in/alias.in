@@ -1,0 +1,16 @@
+
+@SYNTAX:alias@
+
+Creates a new alias or shows matching defined aliases.
+Without parameters shows all defined aliases.
+
+Examples:
+
+/ALIAS w
+   - shows all defined aliases starting with letter w.
+
+/ALIAS -send
+   - removes alias 'send'.
+
+See also: UNALIAS
+

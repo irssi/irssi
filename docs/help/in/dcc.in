@@ -1,0 +1,21 @@
+
+@SYNTAX:dcc@
+
+This is a command to handle different DCC-connections. DCC is mainly
+used for more reliable and faster chatting and for sending and receiving 
+files.
+
+/DCC CHAT nick
+    - Sends a chat connection request to remote client or accepts 
+      a chat connection, if the remote end has already sent a request.
+/DCC GET nick
+    - Gets the file offered by remote client. The file is downloaded and
+      saved into the current working directory.
+/DCC SEND nick file
+    - Sends a DCC SEND request to remote client. Remote end has to accept
+      the request before the transmission can be started.
+/DCC CLOSE type nick
+    - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
+
+See also: CD
+

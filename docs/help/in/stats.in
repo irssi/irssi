@@ -1,0 +1,20 @@
+
+@SYNTAX:stats@
+
+Shows some irc server usage statistics.
+  c - Shows C and N lines for a given server.  These are 
+      the names of the servers that are allowed to connect.
+  h - Shows H and L lines for a given server (Hubs and Leaves).
+  k - Show K lines for a server.  This shows who is not 
+      allowed to connect and possibly at what time they are
+      not allowed to connect.
+  i - Shows I lines. This is who CAN connect to a server.
+  l - Shows information about amount of information passed
+      to servers and users.
+  m - Shows a count for the number of times the various 
+      commands have been used since the server was booted.
+  o - Shows the list of authorized operators on the server.
+  u - Shows the uptime for a server
+  y - Shows Y lines, which lists the various connection 
+      classes for a given server.
+

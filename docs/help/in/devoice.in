@@ -1,0 +1,10 @@
+
+@SYNTAX:devoice@
+
+Takes off the voice from the specified nick(s). This makes them
+not to be able to send messages to the moderated (+m) channel.
+
+Wildcards in the nick are allowed.
+
+See also: VOICE, MODE
+

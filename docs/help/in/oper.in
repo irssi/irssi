@@ -1,0 +1,10 @@
+
+@SYNTAX:oper@
+
+Gives you operator priviledges if the correct nickname and
+password are given.  If password is not given, you will be
+prompted for one.  If no nickname is given, your current
+nickname will be used.
+
+See also: KILL, DIE
+

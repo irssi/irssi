@@ -1,0 +1,6 @@
+
+@SYNTAX:beep@
+
+Outputs the bell-character, usually causing
+your terminal beep.
+

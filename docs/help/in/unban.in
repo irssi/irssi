@@ -1,0 +1,7 @@
+
+@SYNTAX:unban@
+
+Removes the specified ban(s) from the channel.
+
+See also: BAN, KNOCKOUT
+

@@ -1,0 +1,16 @@
+
+@SYNTAX:bantype@
+
+This command shows or views the current ban type.
+The ban type is used by BAN and KNOCKOUT commands.
+
+Normal - *!user@*.domain.net
+Host   - *!*@host.domain.net
+Domain - *!*@*.domain.net
+Custom [nick] [user] [host] [domain]
+
+eg. /bantype custom nick domain - nick!*@*.domain.net
+eg. /bantype custom user host - *!user@host.domain.net
+
+See also: BAN, KNOCKOUT
+

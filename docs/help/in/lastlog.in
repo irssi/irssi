@@ -1,0 +1,12 @@
+
+@SYNTAX:lastlog@
+
+    -word  Shows only the lines matching the 'word'
+    -new 
+    -away
+
+Shows the given number of lines of log from the
+current window. 
+
+See also:
+

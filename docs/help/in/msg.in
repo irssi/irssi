@@ -1,0 +1,15 @@
+
+@SYNTAX:msg@
+
+Sends a message to a nick or a channel. Usually this
+is used for sending private messages to other persons.
+
+Examples:
+
+/MSG friend Hi, what's up?
+
+/MSG #irssi Hello, is the new gtk-version out already?
+(This format is rarely needed.)
+
+See also: CTCP, /
+

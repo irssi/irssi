@@ -1,0 +1,9 @@
+
+@SYNTAX:wjoin@
+
+With this you can join multiple channels in same 
+window. This command does the same as /JOIN but
+it doesn't create a new window for the channel joined.
+
+See also: JOIN, WINDOW
+

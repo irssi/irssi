@@ -1,0 +1,10 @@
+
+@SYNTAX:deop@
+
+Takes off the channel operator privileges from the
+specified nick(s). 
+
+Wildcards in the nick are allowed.
+
+See also: OP
+

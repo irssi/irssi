@@ -1,0 +1,13 @@
+
+@SYNTAX:names@
+
+Shows the names (nicks) on the specified channel.
+
+Examples:
+
+/NAMES *    - shows nicks on the current channel.
+
+/NAMES #42  - shows nicks on the channel #42.
+
+See also: WHO, CHANNEL
+

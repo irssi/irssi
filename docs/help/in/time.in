@@ -1,0 +1,11 @@
+
+@SYNTAX:time@
+
+This displays the time of day, local to the server queried (thus,
+the time returned may not be the same as the client's local time). 
+
+If the server name is omitted, the client's current server is used. 
+If a nickname is given, that client's server is queried.
+
+Same as /DATE.
+

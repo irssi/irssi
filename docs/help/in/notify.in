@@ -1,0 +1,15 @@
+
+@SYNTAX:notify@
+
+     -away: Notifies about away-status changes
+     -idle: Notifies if idle time is first larger than <minutes>
+            (default is hour) and then it drops down.
+     -list: Lists the notify list entries with all their settings   
+            <mask>: Either a simple "nick" or "nick!*@*blah.org". 
+            The nick can't contain wildcards, but the user/host can.
+        
+/NOTIFY without any arguments displays if the people in notify
+list are online or offline.
+
+See also: UNNOTIFY, SET NOTIFY
+

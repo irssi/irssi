@@ -1,0 +1,24 @@
+
+@SYNTAX:mode@
+
+Changes and/or views modes. You can either change
+your own modes or channel modes (given that you're
+a channel operator).
+
+Examples:
+
+/MODE * +s    
+   - Makes the current channel secret
+
+/MODE #irssi -o Beel0  
+   - Deops user Beel0 on channel #irssi
+
+/MODE * +b *!*@*.org
+   - Bans on the current channel all users coming 
+     from .org hosts.
+
+/MODE yournick +w
+   - Makes you to see the wallops.
+
+See also: BAN, VOICE, OP, DEOP
+

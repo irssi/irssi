@@ -1,0 +1,9 @@
+
+@SYNTAX:links@
+
+Shows the links between the IRC servers of the
+current IRC network. If a wildcard parameter is
+specified, shows only the matching entries.
+
+See also:
+

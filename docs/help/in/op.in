@@ -1,0 +1,8 @@
+
+@SYNTAX:op@
+
+Gives the channel operator privileges for the specified
+nick(s). Wildcards in the nick are allowed.
+
+See also: DEOP, MODE, VOICE, DEVOICE, KICK
+

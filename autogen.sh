@@ -6,13 +6,11 @@ test -z "$srcdir" && srcdir=.
 
 PKG_NAME="Irssi"
 
-(test -f $srcdir/configure.in \
-## put other tests here
-) || {
-    echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
+if test ! -f $srcdir/configure.in; then
+    echo -n "**Error**: Directory \`$srcdir\' does not look like the"
     echo " top-level $PKG_NAME directory"
     exit 1
-}
+fi
 
 # get versions
 version_date=`date +%Y%m%d`
@@ -20,6 +18,29 @@ version_date=`date +%Y%m%d`
 echo "/* automatically created by autogen.sh */" > irssi-version.h.in
 echo "#define IRSSI_VERSION \"@VERSION@\"" >> irssi-version.h.in
 echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h.in
+
+# generate colorless.theme
+echo "formats = {" > colorless.theme
+
+files=`find src -name 'module-formats.c'`
+for i in $files; do
+  file=`echo "$i"|sed 's@^src/@@'`
+  file=`echo "$file"|sed 's@/module-formats\.c$@@'`
+  echo "  \"$file\" = {" >> colorless.theme
+  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value =~ s/\$([0-9])(\%.-)/\$\{\1\}\2/g; $value =~ s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
+  echo "  };" >> colorless.theme
+done
+
+echo "};" >> colorless.theme
+
+# create help files
+perl syntax.pl
+files=`echo docs/help/in/*.in|sed -e 's/docs\/help\/in\///g' -e 's/Makefile.in //'`
+cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g" > docs/help/in/Makefile.am
+
+files=`echo $files|sed 's/\.in//g'`
+cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g" > docs/help/Makefile.am
+
 
 # *********** a bit modified GNOME's macros/autogen.sh **********
 DIE=0
@@ -133,17 +154,3 @@ if test x$NOCONFIGURE = x; then
 else
   echo Skipping configure process.
 fi
-
-# generate colorless.theme
-echo "formats = {" > colorless.theme
-
-files=`find src -name 'module-formats.c'`
-for i in $files; do
-  file=`echo "$i"|sed 's@^src/@@'`
-  file=`echo "$file"|sed 's@/module-formats\.c$@@'`
-  echo "  \"$file\" = {" >> colorless.theme
-  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value =~ s/\$([0-9])(\%.-)/\$\{\1\}\2/g; $value =~ s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
-  echo "  };" >> colorless.theme
-done
-
-echo "};" >> colorless.theme

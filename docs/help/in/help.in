@@ -1,5 +1,5 @@
 
-HELP [<command>]
+@SYNTAX:help@
 
 Shows help on commands. Try:
   /HELP command

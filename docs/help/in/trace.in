@@ -1,0 +1,8 @@
+
+@SYNTAX:trace@
+
+Without a specified server it shows the current connections on
+the local server.  If you specify a remote server it will show
+all servers between your current server and that remote server
+as well as the connections on that remote server.
+

@@ -1,0 +1,7 @@
+
+@SYNTAX:ctcp@
+
+Sends a CTCP-message. For example CTCP ACTION, or CTCP VERSION.
+
+See also: ME, ACTION
+

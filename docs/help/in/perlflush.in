@@ -1,0 +1,7 @@
+
+@SYNTAX:perlflush@
+
+Stops and removes all Perl-scripts which have been run.
+
+See also: RUN
+

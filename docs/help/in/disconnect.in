@@ -1,0 +1,7 @@
+
+@SYNTAX:disconnect@
+
+Disconnects from the specified IRC-server.
+
+See also: CONNECT, SERVER
+

@@ -1,0 +1,18 @@
+
+@SYNTAX:kill@
+
+IRC operator command.
+
+KILL is used to forcibly remote a client from the irc network. 
+It works similarly to KICK, except that a reason must be 
+given (even if it is meaningless or flat-out wrong). 
+
+In general, KILL is useful only as a warning tool for abusive 
+users. Modern irc clients (this one included) have automated 
+means for reconnecting to a server after a disconnection (whether 
+due to a KILL or something else), so KILL is by no means a 
+permanent solution. It is not intended as a means for personal 
+vendettas; this practice is generally frowned upon. 
+
+See also: OPER
+

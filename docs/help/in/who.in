@@ -1,0 +1,13 @@
+
+@SYNTAX:who@
+
+Without parameters, shows all users and their user infos
+on the current channel. If you specify a channel, shows
+the all users of the given channel.
+
+If a channel is secret or private and you're not on it,
+you will be shown only those channel members, who do not 
+have the invisible (+i) mode set.
+
+See also: WHOIS, CHANNEL
+

@@ -1,0 +1,10 @@
+
+@SYNTAX:ping@
+
+Sends CTCP PING to another IRC client. This is used
+to find out the speed of IRC network. When the PONG
+reply comes in, irssi shows the interval time between
+sending the request and receiving the reply.
+
+See also: CTCP
+

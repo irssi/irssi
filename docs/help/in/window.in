@@ -1,0 +1,40 @@
+
+@SYNTAX:window@
+
+This command includes various subcommands for handling
+irssi windows.
+
+/WINDOW CLOSE
+   - Closes the current window.
+/WINDOW MOVE #NUMBER|PREV|NEXT
+   - Moves current window to another position in the
+     window list.
+/WINDOW GOTO #NUMBER
+   - Moves into the specified window.
+/WINDOW GOTO ACTIVE 
+   - finds the first window with the higest
+     activity (msgs to you -> msgs -> rest). Alt-A is 
+     the default shortcut key for this
+/WINDOW GOTO #CHANNEL|NICK|=NICK 
+   - moves you to the window with the channel, query or 
+     dcc chat.
+/WINDOW LEVEL [+/-]PUB/MSGS/...
+   - /window level msgs      - creates messages window
+   - /window level all -msgs - creates status window
+/WINDOW NEW [HIDDEN|SPLIT] 
+   - creates new hidden/splitted window, 
+
+Window logging
+        
+/WINDOW LOG ON|OFF|TOGGLE [<filename>]
+   - Start/stop logging the active window. This works exactly like
+     /LOG OPEN -window.
+/WINDOW LOGFILE <filename> 
+   - Sets the default log file to use in the window, it can be
+     overridden by specifying the file name in /WINDOW LOG. 
+     If no file name isn't given, Irssi defaults to 
+     ~/irc.log.<windowname> or ~/irc.log.Window<ref#> if window 
+     doesn't have a name.
+
+See also: SET CREATE, JOIN, QUERY, LOG
+

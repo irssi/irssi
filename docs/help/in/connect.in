@@ -1,0 +1,11 @@
+
+@SYNTAX:connect@
+
+   -ircnet  the IRCNet
+   -host    the host
+
+This command makes irssi to connect to specified server.
+Current connections are kept and another one is created.
+
+See also: SERVER
+

@@ -1,0 +1,7 @@
+
+@SYNTAX:unnotify@
+
+Removes an entry from the notify list.
+
+See also: NOTIFY
+

@@ -1,0 +1,15 @@
+
+@SYNTAX:rawlog@
+
+All data that is received or sent to server is kept in a raw log
+buffer for a while. Also event redirections are kept there. This is
+very useful for debugging purposes.
+
+/RAWLOG SAVE <filename> - Save the current raw log buffer to file 
+/RAWLOG OPEN <filename> - Like /RAWLOG SAVE, but keep the log file
+                          open and write all new log to it.
+/RAWLOG CLOSE - Close the open raw log
+        
+/SET rawlog_lines <count> - Specify the number of raw log lines to
+                            keep in memory.
+

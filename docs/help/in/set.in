@@ -1,0 +1,18 @@
+
+@SYNTAX:set@
+
+You can view or change the settings with /SET command.
+
+/SET without any arguments displays all the settings.
+/SET <key> displays settings whose key (partly) matches <key>
+/SET <key> <value> sets <key> to <value>
+
+Boolean settings accept only values ON, OFF and TOGGLE. You can
+also use /TOGGLE command to change them, so /TOGGLE <key> behaves
+like /SET <key> TOGGLE. /TOGGLE also accepts arguments ON and OFF
+when /TOGGLE behaves exactly like /SET.
+
+Remember that changes are not saved until you use /SAVE!
+
+See also: TOGGLE
+

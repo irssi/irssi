@@ -1,0 +1,10 @@
+
+@SYNTAX:quit@
+
+This ends your irc session. If a quit message is supplied, it 
+will be displayed to anyone else on any channel you were on 
+before quitting. If one isn't specified, the text "Leaving" is
+used.
+
+/EXIT does the same.
+

@@ -1,0 +1,10 @@
+
+@SYNTAX:wallops@
+
+Sends a message to all operators currently on irc.  
+This command has deteriorated to the point that it 
+is no longer useful, and most OPERATORS have removed 
+it from the server all together.
+
+See also: OPER, WALLCHOPS
+

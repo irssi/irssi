@@ -1,0 +1,7 @@
+
+@SYNTAX:wquery@
+
+Creates a query to the current window.
+
+See also: QUERY, WINDOW, SET AUTOCREATE
+

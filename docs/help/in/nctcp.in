@@ -1,0 +1,7 @@
+
+@SYNTAX:nctcp@
+
+Sends a CTCP reply notice to the nick/channel.
+
+See also: CTCP, ACTION, MSG, NOTICE
+

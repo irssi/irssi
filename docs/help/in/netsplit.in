@@ -1,0 +1,6 @@
+
+@SYNTAX:netsplit@
+
+Irssi keeps track of people who were lost in net splits. With this
+command you can get a list of them.
+

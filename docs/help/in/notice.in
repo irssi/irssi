@@ -1,0 +1,10 @@
+
+@SYNTAX:notice@
+
+Sends a notice to the nick or the channel. Usually notices are 
+used in bots and scripts for different kinds of replies. The 
+IRC protocol states that notices may not generate replies to
+avoid msg loops.
+
+See also: NCTCP, MSG
+

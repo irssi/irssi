@@ -1,0 +1,11 @@
+
+@SYNTAX:toggle@
+
+/TOGGLE <key> behaves like /SET <key> TOGGLE. /TOGGLE also 
+accepts arguments ON and OFF when /TOGGLE behaves exactly 
+like /SET.
+
+Remember that changes are not saved until you use /SAVE!
+
+See also: SET
+

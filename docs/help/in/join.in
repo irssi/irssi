@@ -1,0 +1,13 @@
+
+@SYNTAX:join@
+
+Joins a specified channel. Channel names usually begin with #-sign,
+which may be omitted here.
+
+JOIN is aliased to J by default. Example: /j irssi
+(This joins to the channel #irssi)
+
+Description
+
+See also: LEAVE, WINDOW CLOSE
+

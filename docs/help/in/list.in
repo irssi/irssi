@@ -1,0 +1,9 @@
+
+@SYNTAX:list@
+
+Lists the channel names. Trying to list all the channel 
+names usually causes you to be disconnected from the 
+server with the reason "Excessive flood".
+
+See also:
+

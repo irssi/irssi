@@ -1,0 +1,11 @@
+
+@SYNTAX:mircdcc@
+
+Selects whether to send mIRC style CTCPs in DCC chat
+session.
+
+If a mIRC user sends first a CTCP, mIRC style CTCPs is
+automatically selected for that DCC Chat session.
+
+See also: SET MIRC
+

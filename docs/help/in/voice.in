@@ -1,0 +1,8 @@
+
+@SYNTAX:voice@
+
+Gives the voice (+v mode) to the nick(s) on the current channel.
+Wildcards in the nick are allowed.
+ 
+See also: DEVOICE, OP, DEOP
+

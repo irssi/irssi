@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.93)
+AM_INIT_AUTOMAKE(irssi, 0.7.94)
 
 AM_MAINTAINER_MODE
 
@@ -198,7 +198,9 @@ dnl ** curses checks
 dnl **
 
 if test "x$want_textui" = "xyes"; then
+	saved_LIBS="$LIBS"
 	AC_CHECK_CURSES
+	LIBS="$saved_LIBS"
 
 	if test "x$has_ncurses" != "x"; then
 		AC_CHECK_LIB(ncurses, use_default_colors, [
@@ -377,8 +379,6 @@ src/irc/bot/Makefile
 src/irc/dcc/Makefile
 src/irc/notifylist/Makefile
 src/irc/flood/Makefile
-src/silc/Makefile
-src/silc/core/Makefile
 src/fe-common/Makefile
 src/fe-common/core/Makefile
 src/fe-common/irc/Makefile
@@ -395,6 +395,7 @@ servertest/Makefile
 scripts/Makefile
 docs/Makefile
 docs/help/Makefile
+docs/help/in/Makefile
 stamp.h
 irssi.spec
 irssi-version.h

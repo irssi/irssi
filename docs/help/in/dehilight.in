@@ -1,0 +1,9 @@
+
+@SYNTAX:dehilight@
+
+Makes irssi not to highlight items containing the text.
+If parameter is a number, deletes the specified hilight
+entry from the list.
+
+See also: HILIGHT
+
