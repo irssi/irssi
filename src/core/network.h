@@ -73,6 +73,9 @@ int net_host2ip(const char *host, IPADDR *ip);
 /* Get socket error */
 int net_geterror(GIOChannel *handle);
 
+/* Get name of TCP service */
+char *net_getservbyport(int port);
+
 int is_ipv4_address(const char *host);
 int is_ipv6_address(const char *host);
 

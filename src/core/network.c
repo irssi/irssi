@@ -515,6 +515,15 @@ int net_hosterror_notfound(int error)
 #endif
 }
 
+/* Get name of TCP service */
+char *net_getservbyport(int port)
+{
+	struct servent *entry;
+
+	entry = getservbyport(htons((unsigned short) port), "tcp");
+	return entry == NULL ? NULL : entry->s_name;
+}
+
 int is_ipv4_address(const char *host)
 {
 	while (*host != '\0') {
