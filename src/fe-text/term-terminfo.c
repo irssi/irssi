@@ -386,7 +386,7 @@ void term_addch(TERM_WINDOW *window, int chr)
 
 static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
 {
-	unsigned char buf[10];
+	char buf[10];
 	int i, len;
 
 	len = utf16_char_to_utf8(chr, buf);
