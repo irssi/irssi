@@ -227,9 +227,11 @@ static void proxy_dump_data_005(gpointer key, gpointer value, gpointer context)
 
 void proxy_dump_data(CLIENT_REC *client)
 {
-	GString *isupport_out;
+	GString *isupport_out, *paramstr;
+	char **paramlist, **tmp;
+	int count;
 
-        proxy_client_reset_nick(client);
+	proxy_client_reset_nick(client);
 
 	/* welcome info */
 	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
@@ -242,12 +244,39 @@ void proxy_dump_data(CLIENT_REC *client)
 
 	if (client->server != NULL && client->server->isupport_sent) {
 		isupport_out = g_string_new(NULL);
-		g_string_sprintf(isupport_out, ":%s 005 %s ", client->proxy_address, client->nick);
-		/* FIXME: should be limited to 15 params */
 		g_hash_table_foreach(client->server->isupport, proxy_dump_data_005, isupport_out);
-		g_string_sprintfa(isupport_out, ":are supported by this server\n");
-		proxy_outdata(client, "%s", isupport_out->str);
+		if (isupport_out->len > 0)
+			g_string_truncate(isupport_out, isupport_out->len-1);
+
+		proxy_outdata(client, ":%s 005 %s ", client->proxy_address, client->nick);
+
+		paramstr = g_string_new(NULL);
+		paramlist = g_strsplit(isupport_out->str, " ", -1);
+		count = 0;
+		tmp = paramlist;
+
+		for (;; tmp++) {
+			if (*tmp != NULL) {
+				g_string_sprintfa(paramstr, "%s ", *tmp);
+				if (++count < 15)
+					continue;
+			}
+
+			count = 0;
+			if (paramstr->len > 0)
+				g_string_truncate(paramstr, paramstr->len-1);
+			g_string_sprintfa(paramstr, " :are supported by this server\n");
+			proxy_outdata(client, "%s", paramstr->str);
+			g_string_truncate(paramstr, 0);
+			g_string_sprintf(paramstr, ":%s 005 %s ", client->proxy_address, client->nick);
+
+			if (*tmp == NULL || tmp[1] == NULL)
+				break;
+		}
+
 		g_string_free(isupport_out, TRUE);
+		g_string_free(paramstr, TRUE);
+		g_strfreev(paramlist);
 	}
 
 	proxy_outdata(client, ":%s 251 %s :There are 0 users and 0 invisible on 1 servers\n", client->proxy_address, client->nick);
