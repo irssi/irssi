@@ -841,7 +841,7 @@ static void bookmark_check_remove(char *key, LINE_REC *line,
 static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
         BOOKMARK_FIND_REC rec;
-        LINE_REC *newline;
+        LINE_REC *new_line;
 	GSList *tmp;
 
         rec.remove_line = line;
@@ -852,14 +852,14 @@ static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	if (rec.remove_list != NULL) {
 		GList *pos = g_list_find(view->buffer->lines, line);
 
-		newline = pos == NULL || pos->prev == NULL ? NULL :
+		new_line = pos == NULL || pos->prev == NULL ? NULL :
 			(pos->next == NULL ? pos->prev->data :
 			 pos->next->data);
 		for (tmp = rec.remove_list; tmp != NULL; tmp = tmp->next) {
 			g_hash_table_remove(view->bookmarks, tmp->data);
-			if (newline != NULL) {
+			if (new_line != NULL) {
 				g_hash_table_insert(view->bookmarks,
-						    tmp->data, newline);
+						    tmp->data, new_line);
 			}
 		}
 		g_slist_free(rec.remove_list);
