@@ -215,6 +215,11 @@ notifylist.c:
  "notifylist unidle", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
  "notifylist left", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
 
+proxy/listen.c:
+
+ "proxy client connected", CLIENT_REC
+ "proxy client disconnected", CLIENT_REC
+
 FE common
 ---------
 

@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
 	LINEBUF_REC *buffer;
 
-	char *nick;
+	char *nick, *host;
 	GIOChannel *handle;
 	int tag;
 

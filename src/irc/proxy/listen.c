@@ -42,11 +42,16 @@ static void remove_client(CLIENT_REC *rec)
 
 	proxy_clients = g_slist_remove(proxy_clients, rec);
 
+        signal_emit("proxy client disconnected", 1, rec);
+	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Proxy: Client disconnected from %s", rec->host);
+
 	g_free(rec->proxy_address);
 	net_disconnect(rec->handle);
 	g_source_remove(rec->tag);
 	line_split_free(rec->buffer);
 	g_free_not_null(rec->nick);
+	g_free_not_null(rec->host);
 	g_free(rec);
 }
 
@@ -293,6 +298,7 @@ static void sig_listen(LISTEN_REC *listen)
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
 	rec->handle = handle;
+        rec->host = g_strdup(host);
 	if (strcmp(listen->ircnet, "*") == 0) {
 		rec->proxy_address = g_strdup("irc.proxy");
 		rec->server = servers == NULL ? NULL : IRC_SERVER(servers->data);
@@ -305,8 +311,10 @@ static void sig_listen(LISTEN_REC *listen)
 			       (GInputFunction) sig_listen_client, rec);
 
 	proxy_clients = g_slist_append(proxy_clients, rec);
+
+        signal_emit("proxy client connected", 1, rec);
 	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Proxy: Client connected from %s", host);
+		  "Proxy: Client connected from %s", rec->host);
 }
 
 static void sig_incoming(IRC_SERVER_REC *server, const char *line)
