@@ -1,3 +1,53 @@
+v0.7.96 2000-10-19  Timo Sirainen <tss@iki.fi>
+
+	* new configure option: --disable-curses-windows. Use this if curses
+	  always redraws the window when scrolling. This is a weird problem,
+	  I'd like to know why it happens. :)
+	* Log settings are incompatible with previous versions. You'll need
+	  to setup them again. Or the targets are actually the only ones
+	  that irssi won't read correctly.
+	* Lots of moving and cleaning and rewriting stuff from irc to core
+	  so adding other IRC-like protocols (but not IRC) would be easier.
+	  This was mostly done to make SILC plugin work.
+	* Perl was split to Irssi and Irssi::Irc packages. You'll currently
+	  need to use both of them with perl scripts ("use Irssi; 
+	  use Irssi::Irc;). This might not be needed in future :)
+	* Changes:
+	   - /SET default_nick -> /SET nick
+	   - /FORMAT own_me -> /FORMAT own_action
+	   - /FORMAT own_dcc_me -> /FORMAT own_dcc_action
+
+	+ Small tutorial to new irssi users - docs/startup-HOWTO.txt
+	+ Proxy plugin works again, thanks to fuchs for fixing it :)
+	+ You can now connect multiple times to same server and
+	  reconnections will work correctly with them.
+	+ Support for half-ops (+h)
+	+ Actions will now show up in window activity with hilight or
+	  message-color, not the text-color as before.
+	+ Added tab-completion for /BIND's commands.
+	+ Perl support is now built as runtime loadable module by default. 
+	  You can still build it statically with --enable-perl=static 
+	  configure option.
+	+ /SET completion_nicks_lowercase - when completing nicks always
+	  write the nick with lowercase (uppercase letters are ugly ;)
+	+ /BIND <key> /command works now directly instead of needing the
+	  "command" id in the middle
+	+ /connect + /server server/chatnet completion by tommik.
+	+ Keyboard should never get stuck again when receiving huge amounts
+	  of text from server that irssi doesn't handle fast enough.
+	- Hopefully fixed the problem when Irssi starts eating 100% CPU
+	- Fixes to make irssi work with other (older and newer) perl
+	  versions than 5.005
+	- /MSG -servertag crashed irssi.
+	- /BAN could crash when showing bans
+	- log_day_change was never printed in logs
+	- /mode #channel -oooo... would deop the first 3, and then op the
+	  rest.
+	- When pressing down key, the command line wasn't saved to history.
+	- Closing or moving window didn't update the window activity list.
+	- Autologging with same named channels in different networks works
+	  now correctly.
+
 v0.7.95 2000-08-13  Timo Sirainen <tss@iki.fi>
 
 	* Changes:
