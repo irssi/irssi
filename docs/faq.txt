@@ -68,3 +68,15 @@ A: That's even worse than autorejoin. Who could possibly care every time you
    I'm going to add such to irssi.org is if the script contains a setting to
    specify which specific channels the announcement is sent.
 
+Q: Why does irssi autojoin on invite by default?
+A: The setting is /SET join_auto_chans_on_invite - it's not the same as
+   regular autojoin-on-invite, which irssi doesn't even have. The only
+   channels that are joined on invite, are the ones you've added to config
+   with /CHANNEL ADD -auto. This is very useful with +i channels when you
+   need to first send an invite request to bot, or if you get accidentally
+   kicked from channel, the kicker can invite you back immediately.
+
+   I don't see any bad side effects with this feature, so it's ON by
+   default. I guess someone could start kicking/inviting you all the time
+   but server connection shouldn't drop because of that, and you shouldn't
+   join channels whose operators are that evil.
