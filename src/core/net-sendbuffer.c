@@ -40,6 +40,8 @@ NET_SENDBUF_REC *net_sendbuffer_create(int handle, int bufsize)
 {
 	NET_SENDBUF_REC *rec;
 
+	g_return_val_if_fail(handle != -1, NULL);
+
 	rec = g_new0(NET_SENDBUF_REC, 1);
 	rec->handle = handle;
 	rec->bufsize = bufsize > 0 ? bufsize : DEFAULT_BUFFER_SIZE;
