@@ -68,8 +68,8 @@ static void window_item_activity(WI_ITEM_REC *item,
 }
 
 #define hide_target_activity(data_level, target) \
-	((data_level) < DATA_LEVEL_HILIGHT && (target) != NULL && \
-	hide_targets != NULL && strarray_find(hide_targets, target) != -1)
+	((target) != NULL && hide_targets != NULL && \
+	strarray_find(hide_targets, target) != -1)
 
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
@@ -79,14 +79,15 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 	if (dest->window == active_win || (dest->level & hide_level))
 		return;
 
-	if (dest->level & hilight_level)
+	if (dest->level & hilight_level) {
 		data_level = DATA_LEVEL_HILIGHT+dest->hilight_priority;
-	else {
+	} else {
 		data_level = (dest->level & msg_level) ?
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if (hide_target_activity(data_level, dest->target))
+	if ((dest->level & MSGLEVEL_HILIGHT) == 0 &&
+	    hide_target_activity(data_level, dest->target))
 		return;
 
 	if (dest->target != NULL) {
