@@ -789,12 +789,12 @@ int nearest_power(int num)
 int parse_time_interval(const char *time, int *msecs)
 {
 	const char *desc;
-	int number, len;
+	int number, len, ret;
 
 	*msecs = 0;
 
 	/* max. return value is about 1.6 years */
-	number = 0;
+	number = 0; ret = TRUE;
 	for (;;) {
 		if (i_isdigit(*time)) {
 			number = number*10 + (*time - '0');
@@ -811,13 +811,8 @@ int parse_time_interval(const char *time, int *msecs)
 			len++;
 
 		if (len == 0) {
-			if (number == 0) {
-				/* "0" - allow it */
-				return TRUE;
-			}
-
 			*msecs += number * 1000; /* assume seconds */
-			return FALSE;
+			return TRUE;
 		}
 
 		if (g_strncasecmp(desc, "weeks", len) == 0)
@@ -835,6 +830,9 @@ int parse_time_interval(const char *time, int *msecs)
 			 g_strncasecmp(desc, "mseconds", len) == 0 ||
 			 g_strncasecmp(desc, "msecs", len) == 0)
 			*msecs += number;
+		else {
+			ret = FALSE;
+		}
 
 		/* skip punctuation */
 		while (*time != '\0' && i_ispunct(*time))
@@ -846,7 +844,7 @@ int parse_time_interval(const char *time, int *msecs)
 		number = 0;
 	}
 
-	return TRUE;
+	return ret;
 }
 
 int parse_size(const char *size, int *bytes)
