@@ -255,7 +255,8 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	}
 }
 
-static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line)
+static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui,
+					     LINE_REC *line)
 {
 	LINE_CACHE_REC *rec;
 	LINE_CACHE_SUB_REC *sub;
@@ -269,7 +270,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
         rec->last_access = time(NULL);
 
 	xpos = 0; color = 0; indent_pos = default_indent_pos;
-	last_space = last_color = 0; last_space_ptr = NULL;
+	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
 
 	rec->count = 1; lines = NULL;
 	for (ptr = (unsigned char *) line->text;;) {
@@ -315,6 +316,13 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 
 			ptr++;
 			continue;
+		}
+
+		if (xpos == COLS && sub != NULL &&
+		    (last_space <= indent_pos || last_space <= 10)) {
+                        /* long word, remove the indentation from this line */
+			xpos -= sub->indent;
+                        sub->indent = 0;
 		}
 
 		if (xpos == COLS) {
@@ -399,7 +407,7 @@ int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
 
 static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 			     LINE_CACHE_SUB_REC *rec, const char *text,
-			     const char *text_end, int continues)
+			     const char *text_end)
 {
 	WINDOW *cwin;
 	char *tmp;
@@ -418,7 +426,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
 	cwin = stdscr;
 	ypos += gui->parent->first_line;
 #endif
-	if (!continues) wmove(cwin, ypos, xpos);
+	wmove(cwin, ypos, xpos);
 	set_color(cwin, color);
 
 	while (text != text_end) {
@@ -499,8 +507,7 @@ int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip
 		next_pos = (n+1 < cache->count) ?
 			cache->lines[n].start : NULL;
 
-		single_line_draw(gui, ypos, sub, pos, next_pos,
-				 sub != NULL && sub->continues && n != skip);
+		single_line_draw(gui, ypos, sub, pos, next_pos);
 	}
 
 #ifdef USE_CURSES_WINDOWS
@@ -558,7 +565,7 @@ void gui_window_redraw(WINDOW_REC *window)
 static void gui_window_scroll_up(GUI_WINDOW_REC *gui, int lines)
 {
 	LINE_REC *line;
-	gint count, linecount;
+	int count, linecount;
 
 	if (gui->startline == NULL)
 		return;
