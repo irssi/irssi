@@ -930,7 +930,7 @@ Server::send_raw_split(cmd, nickarg, max_nicks)
   `max_nicks' number of nicks.
 
   Example:
-    $server->send_raw_split("KICK #channel nick1,nick2,nick3 :byebye", 2, 2);
+    $server->send_raw_split("KICK #channel nick1,nick2,nick3 :byebye", 3, 2);
 
   Irssi will send commands "KICK #channel nick1,nick2 :byebye" and
   "KICK #channel nick3 :byebye" to server.
