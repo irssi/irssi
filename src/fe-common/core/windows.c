@@ -395,11 +395,13 @@ static void sig_server_disconnected(void *server)
 static void sig_print_text(void)
 {
 	GSList *tmp;
+	char month[10];
 	time_t t;
 	struct tm *tm;
 
 	t = time(NULL);
 	tm = localtime(&t);
+	strftime(month, sizeof(month)-1, "%b", tm);
 
 	if (tm->tm_hour != 0 || tm->tm_min != 0)
 		return;
@@ -410,7 +412,7 @@ static void sig_print_text(void)
 	/* day changed, print notice about it to every window */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		printformat_window(tmp->data, MSGLEVEL_NEVER, IRCTXT_DAYCHANGE,
-				   tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year);
+				   tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year, month);
 	}
 }
 

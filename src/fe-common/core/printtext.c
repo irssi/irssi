@@ -645,7 +645,6 @@ static void newline(WINDOW_REC *window)
 static char *get_timestamp(TEXT_DEST_REC *dest)
 {
 	struct tm *tm;
-	char month[10];
 	time_t t;
 	int diff;
 
@@ -662,10 +661,9 @@ static char *get_timestamp(TEXT_DEST_REC *dest)
 	}
 
 	tm = localtime(&t);
-	strftime(month, sizeof(month)-1, "%b", tm);
 	return output_format_text(dest, IRCTXT_TIMESTAMP,
 				  tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-				  tm->tm_hour, tm->tm_min, tm->tm_sec, month);
+				  tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 static char *get_server_tag(TEXT_DEST_REC *dest)
