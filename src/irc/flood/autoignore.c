@@ -235,6 +235,8 @@ static void autoignore_remove_level(const char *nick, int level)
 	AUTOIGNORE_REC *rec;
 	GSList *tmp;
 
+	g_return_if_fail(nick != NULL);
+
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
 
@@ -248,18 +250,20 @@ static void autoignore_remove_level(const char *nick, int level)
 
 static void sig_ignore_destroyed(IGNORE_REC *ignore)
 {
-        autoignore_remove_level(ignore->mask, MSGLEVEL_ALL);
+	if (ignore->mask != NULL)
+		autoignore_remove_level(ignore->mask, MSGLEVEL_ALL);
 }
 
 static void sig_ignore_changed(IGNORE_REC *ignore)
 {
-        autoignore_remove_level(ignore->mask, ~ignore->level);
+	if (ignore->mask != NULL)
+		autoignore_remove_level(ignore->mask, ~ignore->level);
 }
 
 void autoignore_init(void)
 {
 	settings_add_int("flood", "autoignore_time", 300);
-	settings_add_str("flood", "autoignore_levels", "ctcps");
+	settings_add_str("flood", "autoignore_levels", "");
 
 	ignore_tag = g_timeout_add(AUTOIGNORE_TIMECHECK, (GSourceFunc) autoignore_timeout, NULL);
 

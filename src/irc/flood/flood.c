@@ -256,7 +256,6 @@ static void read_settings(void)
 		signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_add("event notice", (SIGNAL_FUNC) flood_notice);
 		signal_add("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
-		signal_add("ctcp reply", (SIGNAL_FUNC) flood_ctcp);
 	}
 }
 
@@ -283,7 +282,6 @@ void irc_flood_deinit(void)
 		signal_remove("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 		signal_remove("event notice", (SIGNAL_FUNC) flood_notice);
 		signal_remove("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
-		signal_remove("ctcp reply", (SIGNAL_FUNC) flood_ctcp);
 	}
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
