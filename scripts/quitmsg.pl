@@ -1,4 +1,5 @@
-# Quit with a random quit message read from ~/.irssi/irssi.quit
+# If quit message isn't given, quit with a random message
+# read from ~/.irssi/irssi.quit
 
 use Irssi;
 use Irssi::Irc;
@@ -8,6 +9,7 @@ my $quitfile = glob "~/.irssi/irssi.quit";
 
 sub cmd_quit {
 	my ($data, $server, $channel) = @_;
+	return if ($data eq "");
 
 	open (f, $quitfile) || return;
 	my $lines = 0; while(<f>) { $lines++; };
