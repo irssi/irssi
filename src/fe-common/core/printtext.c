@@ -40,6 +40,7 @@ typedef struct {
 	int level;
 } TEXT_DEST_REC;
 
+static int beep_msg_level, beep_when_away;
 static int timestamps, msgs_timestamps, hide_text_style;
 static int timestamp_timeout;
 
@@ -687,12 +688,22 @@ static char *get_server_tag(TEXT_DEST_REC *dest)
 	return output_format_text(dest, IRCTXT_SERVERTAG, server->tag);
 }
 
-static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *target, gpointer level, const char *text)
+static void msg_beep_check(SERVER_REC *server, int level)
+{
+	if (level != 0 && (beep_msg_level & level) &&
+	    (beep_when_away || (server != NULL && !server->usermode_away))) {
+		printbeep();
+	}
+}
+
+static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
+			   const char *target, gpointer level,
+			   const char *text)
 {
     TEXT_DEST_REC dest;
-    gchar *dup, *ptr, type, *str, *timestamp, *servertag;
-    gint fgcolor, bgcolor;
-    gint flags;
+    char *dup, *ptr, type, *str, *timestamp, *servertag;
+    int fgcolor, bgcolor;
+    int flags;
 
     g_return_if_fail(text != NULL);
     g_return_if_fail(window != NULL);
@@ -701,6 +712,8 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *t
     dest.server = server;
     dest.channel = target;
     dest.level = GPOINTER_TO_INT(level);
+
+    msg_beep_check(server, dest.level);
 
     flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
     window->last_line = time(NULL);
@@ -726,7 +739,7 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *t
                 break;
 	    }
 
-            *ptr = (gchar) translation_in[(gint) (guchar) *ptr];
+            *ptr = (char) translation_in[(gint) (guchar) *ptr];
 	}
 
         if (type == 7)
@@ -906,6 +919,8 @@ static void read_settings(void)
 	timestamp_timeout = settings_get_int("timestamp_timeout");
 	msgs_timestamps = settings_get_bool("msgs_timestamps");
 	hide_text_style = settings_get_bool("hide_text_style");
+	beep_msg_level = level2bits(settings_get_str("beep_on_msg"));
+	beep_when_away = settings_get_bool("beep_when_away");
 }
 
 void printtext_init(void)

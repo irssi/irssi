@@ -43,16 +43,6 @@
 #define target_level(target) \
 	(ischannel((target)[0]) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS)
 
-static int beep_msg_level, beep_when_away;
-
-static void msg_beep_check(IRC_SERVER_REC *server, int level)
-{
-	if (level != 0 && (beep_msg_level & level) &&
-	    (!server->usermode_away || beep_when_away)) {
-		printbeep();
-	}
-}
-
 static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 			      const char *nick, const char *addr,
 			      const char *target)
@@ -123,7 +113,6 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 			printformat(server, nick, MSGLEVEL_MSGS,
 				    item == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
 		}
-		msg_beep_check(server, target_level(target));
 	}
 
 	g_free(params);
@@ -131,7 +120,8 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 /* we use "ctcp msg" here because "ctcp msg action" can be ignored with
    /IGNORE * CTCPS, and we don't want that.. */
-static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr, gchar *target)
+static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
+				  const char *nick, const char *addr, const char *target)
 {
 	WI_ITEM_REC *item;
 	int level;
@@ -167,8 +157,6 @@ static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *ni
 			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, addr == NULL ? "" : addr, data);
 	}
-
-	msg_beep_check(server, target_level(target));
 }
 
 static void event_notice(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
@@ -206,7 +194,6 @@ static void event_notice(const char *data, IRC_SERVER_REC *server, const char *n
 		}
 	}
 
-	msg_beep_check(server, addr == NULL ? MSGLEVEL_SNOTES : MSGLEVEL_NOTICES);
 	g_free(params);
 }
 
@@ -465,7 +452,6 @@ static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *
 		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, tmp);
 		g_free(tmp);
 	}
-	msg_beep_check(server, MSGLEVEL_WALLOPS);
 }
 
 static void channel_sync(CHANNEL_REC *channel)
@@ -609,17 +595,8 @@ static void sig_empty(void)
 {
 }
 
-static void read_settings(void)
-{
-	beep_msg_level = level2bits(settings_get_str("beep_on_msg"));
-	beep_when_away = settings_get_bool("beep_when_away");
-}
-
 void fe_events_init(void)
 {
-	beep_msg_level = 0;
-
-	read_settings();
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg_check_action);
 	signal_add("ctcp msg action", (SIGNAL_FUNC) sig_empty);
@@ -647,8 +624,6 @@ void fe_events_init(void)
 	signal_add("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_add("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
 	signal_add("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
-
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void fe_events_deinit(void)
@@ -680,6 +655,4 @@ void fe_events_deinit(void)
 	signal_remove("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_remove("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
 	signal_remove("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
-
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
