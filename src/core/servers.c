@@ -45,23 +45,26 @@ void server_connect_failed(SERVER_REC *server, const char *msg)
 	lookup_servers = g_slist_remove(lookup_servers, server);
 
 	signal_emit("server connect failed", 2, server, msg);
-	if (server->connect_tag != -1)
+
+	if (server->connect_tag != -1) {
 		g_source_remove(server->connect_tag);
-	if (server->handle != NULL)
+		server->connect_tag = -1;
+	}
+	if (server->handle != NULL) {
 		net_sendbuffer_destroy(server->handle, TRUE);
+		server->handle = NULL;
+	}
 
 	if (server->connect_pipe[0] != NULL) {
 		g_io_channel_close(server->connect_pipe[0]);
 		g_io_channel_unref(server->connect_pipe[0]);
 		g_io_channel_close(server->connect_pipe[1]);
 		g_io_channel_unref(server->connect_pipe[1]);
+		server->connect_pipe[0] = NULL;
+		server->connect_pipe[1] = NULL;
 	}
 
-	MODULE_DATA_DEINIT(server);
-	server_connect_unref(server->connrec);
-	g_free_not_null(server->nick);
-	g_free(server->tag);
-	g_free(server);
+	server_unref(server);
 }
 
 /* generate tag from server's address */
@@ -242,6 +245,7 @@ void server_connect_init(SERVER_REC *server)
 
 	MODULE_DATA_INIT(server);
 	server->type = module_get_uniq_id("SERVER", 0);
+	server_ref(server);
 
 	server->nick = g_strdup(server->connrec->nick);
 	if (server->connrec->username == NULL || *server->connrec->username == '\0') {
@@ -358,15 +362,41 @@ void server_disconnect(SERVER_REC *server)
 		server->handle = NULL;
 	}
 
-	if (server->readtag > 0)
+	if (server->readtag > 0) {
 		g_source_remove(server->readtag);
+		server->readtag = -1;
+	}
+
+	server->disconnected = TRUE;
+	server_unref(server);
+}
+
+void server_ref(SERVER_REC *server)
+{
+	g_return_if_fail(IS_SERVER(server));
+
+	server->refcount++;
+}
+
+void server_unref(SERVER_REC *server)
+{
+	g_return_if_fail(IS_SERVER(server));
+
+	if (--server->refcount > 0)
+		return;
+
+	if (g_slist_find(servers, server) != NULL) {
+		g_warning("Non-referenced server wasn't disconnected");
+		server_disconnect(server);
+		return;
+	}
 
         MODULE_DATA_DEINIT(server);
 	server_connect_unref(server->connrec);
-	rawlog_destroy(server->rawlog);
-	line_split_free(server->buffer);
-	g_free_not_null(server->version);
-	g_free_not_null(server->away_reason);
+	if (server->rawlog != NULL) rawlog_destroy(server->rawlog);
+	if (server->buffer != NULL) line_split_free(server->buffer);
+	g_free(server->version);
+	g_free(server->away_reason);
 	g_free(server->nick);
 	g_free(server->tag);
 	g_free(server);

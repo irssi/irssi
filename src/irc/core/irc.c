@@ -375,14 +375,15 @@ static void irc_parse_incoming(SERVER_REC *server)
 	   too slowly, so read only a few times from the socket before
 	   letting other tasks to run. */
 	count = 0;
-	while (irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
+	server_ref(server);
+	while (!server->disconnected &&
+	       irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
 
 		count++;
-		if (g_slist_find(servers, server) == NULL)
-			break; /* disconnected */
 	}
+	server_unref(server);
 }
 
 static void irc_init_server(IRC_SERVER_REC *server)

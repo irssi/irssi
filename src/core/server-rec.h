@@ -3,6 +3,8 @@
 int type; /* module_get_uniq_id("SERVER", 0) */
 int chat_type; /* chat_protocol_lookup(xx) */
 
+int refcount;
+
 STRUCT_SERVER_CONNECT_REC *connrec;
 time_t connect_time; /* connection time */
 time_t real_connect_time; /* time when server replied that we really are connected */
@@ -10,7 +12,8 @@ time_t real_connect_time; /* time when server replied that we really are connect
 char *tag; /* tag name for addressing server */
 char *nick; /* current nick */
 
-unsigned int connected:1; /* connected to server */
+unsigned int connected:1; /* Connected to server */
+unsigned int disconnected:1; /* Disconnected, waiting for refcount to drop zero */
 unsigned int connection_lost:1; /* Connection lost unintentionally */
 unsigned int session_reconnect:1; /* Connected to this server with /UPGRADE */
 unsigned int no_reconnect:1; /* Don't reconnect to server */

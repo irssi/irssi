@@ -313,6 +313,7 @@ void command_runsub(const char *cmd, const char *data,
 	subcmd = g_strconcat("command ", newcmd, NULL);
 
 	g_strdown(subcmd);
+	if (server != NULL) server_ref(server);
 	if (!signal_emit(subcmd, 3, args, server, item)) {
 		defcmd = g_strdup_printf("default command %s", cmd);
 		if (!signal_emit(defcmd, 3, data, server, item)) {
@@ -321,6 +322,7 @@ void command_runsub(const char *cmd, const char *data,
 		}
                 g_free(defcmd);
 	}
+	if (server != NULL) server_unref(server);
 
 	g_free(subcmd);
 	g_free(orig);

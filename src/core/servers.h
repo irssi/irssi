@@ -39,6 +39,9 @@ void servers_deinit(void);
 /* Disconnect from server */
 void server_disconnect(SERVER_REC *server);
 
+void server_ref(SERVER_REC *server);
+void server_unref(SERVER_REC *server);
+
 SERVER_REC *server_find_tag(const char *tag);
 SERVER_REC *server_find_chatnet(const char *chatnet);
 

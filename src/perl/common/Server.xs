@@ -59,6 +59,14 @@ void
 server_disconnect(server)
 	Irssi::Server server
 
+void
+server_ref(server)
+	Irssi::Server server
+
+void
+server_unref(server)
+	Irssi::Server server
+
 int
 isnickflag(server, flag)
 	Irssi::Server server
