@@ -156,15 +156,13 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	if (strcmp(cmd, "WHO") == 0)
 		grab_who(client, args);
 	else if (strcmp(cmd, "WHOIS") == 0) {
-		int remote;
 		char *p;
 
 		/* convert dots to spaces */
-                remote = strchr(args, ' ') != NULL;
 		for (p = args; *p != '\0'; p++)
 			if (*p == ',') *p = ' ';
 
-		proxy_redirect_event(client, "whois", 1, args, remote);
+		proxy_redirect_event(client, "whois", 1, args, TRUE);
 	} else if (strcmp(cmd, "ISON") == 0)
 		proxy_redirect_event(client, "ison", 1, args, -1);
 	else if (strcmp(cmd, "USERHOST") == 0)
