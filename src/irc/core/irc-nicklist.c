@@ -428,6 +428,7 @@ void irc_nicklist_init(void)
 	signal_add_first("event 313", (SIGNAL_FUNC) event_whois_ircop);
 	signal_add_first("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
+	signal_add_first("event 432", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add_first("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add_first("event 302", (SIGNAL_FUNC) event_userhost);
@@ -447,6 +448,7 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 313", (SIGNAL_FUNC) event_whois_ircop);
 	signal_remove("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
+	signal_remove("event 432", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
