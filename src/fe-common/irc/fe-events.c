@@ -40,7 +40,6 @@
 #include "fe-queries.h"
 #include "fe-windows.h"
 #include "fe-irc-server.h"
-//#include "completion.h"
 
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
