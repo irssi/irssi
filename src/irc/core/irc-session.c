@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
+#include "net-sendbuffer.h"
 #include "lib-config/iconfig.h"
 
 #include "irc-servers.h"
@@ -28,18 +29,29 @@
 static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 				    CONFIG_NODE *node)
 {
-	char *chans;
+        GSList *tmp;
 
 	if (!IS_IRC_SERVER(server))
 		return;
 
+        /* send all non-redirected commands to server immediately */
+	for (tmp = server->cmdqueue; tmp != NULL; tmp = tmp->next->next) {
+		const char *cmd = tmp->data;
+                void *redirect = tmp->next->data;
+
+		if (redirect == NULL) {
+			if (net_sendbuffer_send(server->handle, cmd,
+						strlen(cmd)) == -1)
+				break;
+		}
+	}
+        net_sendbuffer_flush(server->handle);
+
 	config_node_set_str(config, node, "real_address", server->real_address);
 	config_node_set_str(config, node, "userhost", server->userhost);
 	config_node_set_str(config, node, "usermode", server->usermode);
-
-        chans = irc_server_get_channels(server);
-	config_node_set_str(config, node, "channels", chans);
-        g_free(chans);
+	config_node_set_bool(config, node, "usermode_away", server->usermode_away);
+	config_node_set_str(config, node, "away_reason", server->away_reason);
 }
 
 static void sig_session_restore_server(IRC_SERVER_REC *server,
@@ -52,9 +64,19 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 		server->real_address = g_strdup(config_node_get_str(node, "real_address", NULL));
 	server->userhost = g_strdup(config_node_get_str(node, "userhost", NULL));
 	server->usermode = g_strdup(config_node_get_str(node, "usermode", NULL));
+	server->usermode_away = config_node_get_bool(node, "usermode_away", FALSE);
+	server->away_reason = g_strdup(config_node_get_str(node, "away_reason", NULL));
 
+	/* FIXME: remove before .99 */
 	g_free_not_null(server->connrec->channels);
 	server->connrec->channels = g_strdup(config_node_get_str(node, "channels", NULL));
+}
+
+static void session_restore_channel(IRC_CHANNEL_REC *channel)
+{
+	signal_emit("event join", 4, channel->server, channel->name,
+		    channel->server->nick, channel->server->userhost);
+	irc_send_cmdv(channel->server, "NAMES %s", channel->name);
 }
 
 static void sig_connected(IRC_SERVER_REC *server)
@@ -70,15 +92,12 @@ static void sig_connected(IRC_SERVER_REC *server)
 	signal_emit("event 001", 3, server, str, server->real_address);
         g_free(str);
 
-        /* send join events for each channel and ask names list for them */
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		CHANNEL_REC *rec = tmp->data;
+		IRC_CHANNEL_REC *rec = tmp->data;
 
-                rec->session_rejoin = TRUE;
-		signal_emit("event join", 4, server, rec->name,
-			    server->nick, server->userhost);
-                irc_send_cmdv(server, "TOPIC %s", rec->name);
-                irc_send_cmdv(server, "NAMES %s", rec->name);
+		rec->session_rejoin = TRUE; /* FIXME: remove after .99 */
+		if (rec->session_rejoin)
+                        session_restore_channel(rec);
 	}
 }
 

@@ -28,6 +28,7 @@
 #include "chat-protocols.h"
 #include "servers.h"
 #include "servers-setup.h"
+#include "channels.h"
 
 static char *session_file;
 static char *irssi_binary;
@@ -83,7 +84,7 @@ static void cmd_upgrade(const char *data)
                 cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	/* save the session */
-        session_file = g_strdup_printf("%s/session.%d", get_irssi_dir(), getpid());
+        session_file = g_strdup_printf("%s/session", get_irssi_dir());
 	session = config_open(session_file, 0600);
         unlink(session_file);
 
@@ -102,7 +103,7 @@ static void cmd_upgrade(const char *data)
 	}
 	g_slist_free(file_handles),
 
-	/* irssi -! --session ~/.irssi/session.<pid>
+	/* irssi -! --session ~/.irssi/session
 	   data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
 	str = g_strdup_printf("%s -! --session %s", data, session_file);
@@ -115,9 +116,39 @@ static void cmd_upgrade(const char *data)
 	_exit(-1);
 }
 
+static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
+				 CONFIG_NODE *node)
+{
+	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+
+	config_node_set_str(config, node, "name", channel->name);
+	config_node_set_str(config, node, "topic", channel->topic);
+	config_node_set_str(config, node, "key", channel->key);
+
+	signal_emit("session save channel", 3, channel, config, node);
+}
+
+static void session_restore_channel(SERVER_REC *server, CONFIG_NODE *node)
+{
+        CHANNEL_REC *channel;
+	const char *name;
+
+	name = config_node_get_str(node, "name", NULL);
+	if (name == NULL)
+		return;
+
+	channel = CHAT_PROTOCOL(server)->channel_create(server, name, TRUE);
+	channel->topic = g_strdup(config_node_get_str(node, "topic", NULL));
+        channel->key = g_strdup(config_node_get_str(node, "key", NULL));
+        channel->session_rejoin = TRUE;
+
+	signal_emit("session restore channel", 2, channel, node);
+}
+
 static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 				CONFIG_NODE *node, GSList **file_handles)
 {
+        GSList *tmp;
 	int handle;
 
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
@@ -136,13 +167,19 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 
 	signal_emit("session save server", 4,
 		    server, config, node, file_handles);
+
+        /* save channels */
+        node = config_node_section(node, "channels", NODE_TYPE_LIST);
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
+                session_save_channel(tmp->data, config, node);
 }
 
 static void session_restore_server(CONFIG_NODE *node)
 {
 	CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
-        SERVER_REC *server;
+	SERVER_REC *server;
+        GSList *tmp;
 	const char *chat_type, *address, *chatnet, *password, *nick;
         int port, handle;
 
@@ -171,6 +208,13 @@ static void session_restore_server(CONFIG_NODE *node)
 		server->session_reconnect = TRUE;
 
 		signal_emit("session restore server", 2, server, node);
+
+                /* restore channels */
+		node = config_node_section(node, "channels", -1);
+		if (node != NULL || node->type != NODE_TYPE_LIST) {
+			for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+				session_restore_channel(server, tmp->data);
+		}
 	}
 }
 
