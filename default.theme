@@ -243,21 +243,15 @@ abstracts = {
   ## statusbar
   ##
 
-  # background of statusbar
-  sb_background = "%4";
+  # default backround for "default" statusbar group
+  sb_default_bg = "%4";
+  # background for prompt / input line
+  sb_prompt_bg = "%0";
+  # background for info statusbar
+  sb_info_bg = "%8";
 
-  # default statusbar item style
-  sb = "%c[%n$0-%c]%n";
-
+  sb = " %c[%n$0-%c]%n";
   sbmode = "(%c+%n$0-)";
   sbaway = " (%GzZzZ%n)";
-  sbservertag = "%c:%n$0 (change with ^X)";
-  sbmore = "%_-- more --%_";
-  sblag = "{sb Lag: $0-}";
-  sbmail = "{sb Mail: $0-}";
-
-  # activity. Det is used for hilights when display doesn't support colors
-  sbact = "{sb {sbact_act $0}{sbact_det $1}}";
-  sbact_act = "Act: $0-";
-  sbact_det = " Det: $0-";
+  sbservertag = ":$0 (change with ^X)";
 };
