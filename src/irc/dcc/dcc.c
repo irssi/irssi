@@ -475,7 +475,7 @@ static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 
 		next = tmp->next;
 		if (!dcc_is_connected(dcc) && dcc->server == server &&
-		    g_strcasecmp(dcc->nick, nick) == 0)
+		    dcc->nick != NULL && g_strcasecmp(dcc->nick, nick) == 0)
 			dcc_close(dcc);
 	}
 
