@@ -156,6 +156,13 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 			return;
 		}
 	}
+	if (strcmp(cmd, "NOTICE") == 0) {
+		char *str = g_strdup_printf("%s :\001IRSSILAG ", client->nick);
+
+		if (strncmp(args, str, strlen(str)) == 0)
+			proxy_outserver(client, "NOTICE %s", args);
+		g_free(str);
+	}
 
 	if (client->server == NULL || !client->server->connected) {
 		proxy_outdata(client, ":%s NOTICE %s :Not connected to server",
