@@ -93,11 +93,17 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 
 	   This is actually pretty useless to check here, but at least we
 	   get to know if the channel is +p or +s a few seconds before
-	   we receive the MODE reply... */
-	if (*type == '*')
-		parse_channel_modes(IRC_CHANNEL(chanrec), NULL, "+p");
-	else if (*type == '@')
-		parse_channel_modes(IRC_CHANNEL(chanrec), NULL, "+s");
+	   we receive the MODE reply...
+
+	   If the channel key is set, assume the channel is +k also until
+           we know better, so parse_channel_modes() won't clear the key */
+	if (*type == '*') {
+		parse_channel_modes(chanrec, NULL,
+				    chanrec->key ? "+kp" : "+p");
+	} else if (*type == '@') {
+		parse_channel_modes(chanrec, NULL,
+				    chanrec->key ? "+ks" : "+s");
+	}
 
 	while (*names != '\0') {
 		while (*names == ' ') names++;

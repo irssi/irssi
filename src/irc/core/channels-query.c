@@ -408,8 +408,14 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &channel, &mode);
 	chanrec = irc_channel_find(server, channel);
-	if (chanrec != NULL)
+	if (chanrec != NULL) {
+		if (chanrec->key != NULL && strchr(mode, 'k') == NULL) {
+			/* we joined the channel with a key,
+			   but it didn't have +k mode.. */
+                        parse_channel_modes(chanrec, NULL, "-k");
+		}
 		parse_channel_modes(chanrec, nick, mode);
+	}
 	channel_got_query(server, chanrec, channel);
 
 	g_free(params);
