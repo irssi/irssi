@@ -1,3 +1,14 @@
+v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
+
+	* Fixes a remote crash with:
+	    a) non-x86 hardware (one requiring memory alignmentation)
+	    b) script using "gui print text" signal (with x86 hardware too)
+
+	+ /SET auto_whowas OFF allows now disabling automatic /whowas when
+	  /whois doesn't find a nick (by Borys)
+	- If pasted line starts with command char, treat it as command always. 
+	  Paste detection can go on too easily with lagged connections.
+
 v0.8.8 2003-11-23  Timo Sirainen <tss@iki.fi>
 
 	- Just a few fixes to converting old settings automatically
