@@ -86,6 +86,27 @@ static void ctcp_version(const char *data, IRC_SERVER_REC *server, const char *n
 	g_free(reply);
 }
 
+/* CTCP version */
+static void ctcp_time(const char *data, IRC_SERVER_REC *server, const char *nick)
+{
+	char *str, *reply;
+	struct tm *tm;
+	time_t t;
+
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(nick != NULL);
+
+        t = time(NULL);
+	tm = localtime(&t);
+	reply = g_strdup(asctime(tm));
+	if (reply[strlen(reply)-1] == '\n') reply[strlen(reply)-1] = '\0';
+
+	str = g_strdup_printf("NOTICE %s :\001TIME %s\001", nick, reply);
+	ctcp_send_reply(server, str);
+	g_free(str);
+	g_free(reply);
+}
+
 static void ctcp_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
 	char *args, *str;
@@ -178,6 +199,7 @@ void ctcp_init(void)
 	signal_add("ctcp reply", (SIGNAL_FUNC) ctcp_reply);
 	signal_add("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping);
 	signal_add("ctcp msg version", (SIGNAL_FUNC) ctcp_version);
+	signal_add("ctcp msg time", (SIGNAL_FUNC) ctcp_time);
 }
 
 void ctcp_deinit(void)
@@ -189,4 +211,5 @@ void ctcp_deinit(void)
 	signal_remove("ctcp reply", (SIGNAL_FUNC) ctcp_reply);
 	signal_remove("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping);
 	signal_remove("ctcp msg version", (SIGNAL_FUNC) ctcp_version);
+	signal_remove("ctcp msg time", (SIGNAL_FUNC) ctcp_time);
 }
