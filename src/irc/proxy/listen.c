@@ -538,15 +538,32 @@ static LISTEN_REC *find_listen(const char *ircnet, int port)
 static void add_listen(const char *ircnet, int port)
 {
 	LISTEN_REC *rec;
+	IPADDR ip4, ip6, *my_ip;
 
-	if (port <= 0 || *ircnet == '\0') return;
+	if (port <= 0 || *ircnet == '\0')
+		return;
+
+	/* bind to specific host/ip? */
+	my_ip = NULL;
+	if (*settings_get_str("irssiproxy_bind") != '\0') {
+		if (net_gethostbyname(settings_get_str("irssiproxy_bind"),
+				      &ip4, &ip6) != 0) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				  "Proxy: can not resolve '%s' - aborting",
+				  settings_get_str("irssiproxy_bind"));
+			return;
+		}
+
+		my_ip = ip6.family == 0 ? &ip4 : ip4.family == 0 ||
+			settings_get_bool("resolve_prefer_ipv6") ? &ip6 : &ip4;
+	}
 
 	rec = g_new0(LISTEN_REC, 1);
 	rec->ircnet = g_strdup(ircnet);
 	rec->port = port;
 
-	/* start listening */
-	rec->handle = net_listen(NULL, &rec->port);
+	rec->handle = net_listen(my_ip, &rec->port);
+
 	if (rec->handle == NULL) {
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "Proxy: Listen in port %d failed: %s",

@@ -27,6 +27,7 @@ void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
 	settings_add_str("irssiproxy", "irssiproxy_password", "");
+	settings_add_str("irssiproxy", "irssiproxy_bind", "");
 
 	if (*settings_get_str("irssiproxy_password") == '\0') {
 		/* no password - bad idea! */
