@@ -180,7 +180,7 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 		if (strcmp(data, "*") != 0)
 			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
                 /* /BAN * or /UNBAN * - ban/unban everyone */
-		nicks = data;
+		nicks = (char *) data;
 	}
 
 	chanrec = channel_find(server, channel);
