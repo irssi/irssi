@@ -71,6 +71,7 @@ static void irssi_perl_start(void)
 		"  local($/) = undef;\n"
 		"  my $sub = <FH>;\n"
 		"  close FH;\n"
+		"  $/ = '\n';\n"
 		"\n"
 		"  my $eval = qq{package $package; %s sub handler { $sub; }};\n"
 		"  {\n"
@@ -137,8 +138,6 @@ static int perl_script_destroy(const char *name)
 
 static void irssi_perl_stop(void)
 {
-	char *package;
-
         signal_emit("perl stop", 0);
         perl_signals_stop();
 
