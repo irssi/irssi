@@ -58,6 +58,9 @@ void gui_textwidget_deinit(void);
 void mainwindow_activity_init(void);
 void mainwindow_activity_deinit(void);
 
+void mainwindows_save_init(void);
+void mainwindows_save_deinit(void);
+
 static GMainLoop *main_loop;
 int quitting;
 
@@ -122,6 +125,7 @@ static void textui_finish_init(void)
 	gui_textwidget_init();
 	mainwindows_init();
 	mainwindow_activity_init();
+	mainwindows_save_init();
 	gui_windows_init();
 	statusbar_init();
 
@@ -159,6 +163,7 @@ static void textui_deinit(void)
 	gui_printtext_deinit();
 	gui_readline_deinit();
 	gui_windows_deinit();
+	mainwindows_save_deinit();
 	mainwindow_activity_deinit();
 	mainwindows_deinit();
 	gui_expandos_deinit();

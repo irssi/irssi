@@ -26,6 +26,7 @@ irssi_SOURCES = \
         gui-windows.c \
         mainwindows.c \
         mainwindow-activity.c \
+        mainwindows-save.c \
         statusbar.c \
         statusbar-items.c \
         irssi.c \

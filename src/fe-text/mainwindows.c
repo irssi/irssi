@@ -30,7 +30,6 @@
 #include "statusbar.h"
 #include "gui-windows.h"
 
-#define WINDOW_MIN_SIZE 2
 #define NEW_WINDOW_SIZE (WINDOW_MIN_SIZE + 1)
 
 GSList *mainwindows;
@@ -268,7 +267,7 @@ static int mainwindows_compare_reverse(MAIN_WINDOW_REC *w1, MAIN_WINDOW_REC *w2)
 	return w1->first_line < w2->first_line ? 1 : -1;
 }
 
-static GSList *mainwindows_get_sorted(int reverse)
+GSList *mainwindows_get_sorted(int reverse)
 {
 	GSList *tmp, *list;
 
@@ -457,14 +456,9 @@ static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
 	statusbar_redraw(shrink_win->statusbar);
 }
 
-/* SYNTAX: WINDOW GROW [<lines>] */
-static void cmd_window_grow(const char *data)
+static int mainwindow_grow(MAIN_WINDOW_REC *window, int count)
 {
-	MAIN_WINDOW_REC *window, *shrink_win;
-	int count;
-
-	count = *data == '\0' ? 1 : atoi(data);
-	window = WINDOW_GUI(active_win)->parent;
+	MAIN_WINDOW_REC *shrink_win;
 
 	/* shrink lower window */
 	shrink_win = mainwindows_find_lower(window->last_line);
@@ -474,33 +468,24 @@ static void cmd_window_grow(const char *data)
 	} else {
 		/* shrink upper window */
 		shrink_win = mainwindows_find_upper(window->first_line);
-		if (shrink_win != NULL && shrink_win->lines-count >= WINDOW_MIN_SIZE) {
-			window->first_line -= count;
-			shrink_win->last_line -= count;
-		} else {
-			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-					   TXT_WINDOW_TOO_SMALL);
-			return;
-		}
+		if (shrink_win == NULL ||
+		    shrink_win->lines-count < WINDOW_MIN_SIZE)
+			return FALSE;
+
+		window->first_line -= count;
+		shrink_win->last_line -= count;
 	}
 
 	mainwindows_resize_two(window, shrink_win, count);
+        return TRUE;
 }
 
-/* SYNTAX: WINDOW SHRINK [<lines>] */
-static void cmd_window_shrink(const char *data)
+static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count)
 {
-	MAIN_WINDOW_REC *window, *grow_win;
-	int count;
+	MAIN_WINDOW_REC *grow_win;
 
-	count = *data == '\0' ? 1 : atoi(data);
-
-	window = WINDOW_GUI(active_win)->parent;
-	if (window->lines-count < WINDOW_MIN_SIZE) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-                return;
-	}
+	if (window->lines-count < WINDOW_MIN_SIZE)
+                return FALSE;
 
 	grow_win = mainwindows_find_lower(window->last_line);
 	if (grow_win != NULL) {
@@ -508,13 +493,53 @@ static void cmd_window_shrink(const char *data)
 		grow_win->first_line -= count;
 	} else {
 		grow_win = mainwindows_find_upper(window->first_line);
-		if (grow_win == NULL) return;
+		if (grow_win == NULL) return FALSE;
 
 		window->first_line += count;
 		grow_win->last_line += count;
 	}
 
 	mainwindows_resize_two(grow_win, window, count);
+        return TRUE;
+}
+
+void mainwindow_set_size(MAIN_WINDOW_REC *window, int size)
+{
+        size -= window->lines;
+	if (size < 0)
+		mainwindow_shrink(window, size);
+	else
+		mainwindow_grow(window, size);
+}
+
+/* SYNTAX: WINDOW GROW [<lines>] */
+static void cmd_window_grow(const char *data)
+{
+	MAIN_WINDOW_REC *window;
+	int count;
+
+	count = *data == '\0' ? 1 : atoi(data);
+	window = WINDOW_GUI(active_win)->parent;
+
+	if (!mainwindow_grow(window, count)) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_TOO_SMALL);
+	}
+}
+
+/* SYNTAX: WINDOW SHRINK [<lines>] */
+static void cmd_window_shrink(const char *data)
+{
+	MAIN_WINDOW_REC *window;
+	int count;
+
+	count = *data == '\0' ? 1 : atoi(data);
+	window = WINDOW_GUI(active_win)->parent;
+
+	if (!mainwindow_shrink(window, count)) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_TOO_SMALL);
+	}
 }
 
 /* SYNTAX: WINDOW SIZE <lines> */
