@@ -26,6 +26,7 @@
 
 #include "irc-server.h"
 #include "ircnet-setup.h"
+#include "special-vars.h"
 
 GSList *ircnets; /* list of available ircnets */
 
@@ -41,6 +42,7 @@ static void ircnet_config_add(IRCNET_REC *ircnet)
 	iconfig_node_set_str(node, "username", ircnet->username);
 	iconfig_node_set_str(node, "realname", ircnet->realname);
 	iconfig_node_set_str(node, "host", ircnet->own_host);
+	iconfig_node_set_str(node, "autosendcmd", ircnet->autosendcmd);
 
 	if (ircnet->max_cmds_at_once > 0)
 		config_node_set_int(node, "cmdmax", ircnet->max_cmds_at_once);
@@ -84,6 +86,7 @@ void ircnet_destroy(IRCNET_REC *ircnet)
 	g_free_not_null(ircnet->username);
 	g_free_not_null(ircnet->realname);
 	g_free_not_null(ircnet->own_host);
+	g_free_not_null(ircnet->autosendcmd);
 	g_free(ircnet);
 }
 
@@ -118,6 +121,7 @@ static IRCNET_REC *ircnet_add(CONFIG_NODE *node)
 	rec->username = g_strdup(config_node_get_str(node, "username", NULL));
 	rec->realname = g_strdup(config_node_get_str(node, "realname", NULL));
 	rec->own_host = g_strdup(config_node_get_str(node, "host", NULL));
+	rec->autosendcmd = g_strdup(config_node_get_str(node, "autosendcmd", NULL));
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
@@ -147,10 +151,22 @@ static void read_ircnets(void)
 	}
 }
 
+static void sig_connected(IRC_SERVER_REC *server)
+{
+	IRCNET_REC *ircnet;
+	
+	if (server->connrec->ircnet == NULL) return;
+
+	ircnet = ircnet_find(server->connrec->ircnet);
+	if (ircnet->autosendcmd)
+		eval_special_string(ircnet->autosendcmd, "", server, NULL);
+}
+
 void ircnets_setup_init(void)
 {
 	read_ircnets();
         signal_add("setup reread", (SIGNAL_FUNC) read_ircnets);
+	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
 }
 
 void ircnets_setup_deinit(void)
@@ -159,4 +175,5 @@ void ircnets_setup_deinit(void)
 		ircnet_destroy(ircnets->data);
 
 	signal_remove("setup reread", (SIGNAL_FUNC) read_ircnets);
+	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
 }

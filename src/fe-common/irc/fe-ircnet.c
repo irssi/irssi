@@ -52,6 +52,8 @@ static void cmd_ircnet_list(void)
 			g_string_sprintfa(str, "realname: %s, ", rec->realname);
 		if (rec->own_host != NULL)
 			g_string_sprintfa(str, "host: %s, ", rec->own_host);
+		if (rec->autosendcmd != NULL)
+			g_string_sprintfa(str, "autosendcmd: %s, ", rec->autosendcmd);
 
 		if (rec->cmd_queue_speed > 0)
 			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
@@ -78,13 +80,14 @@ static void cmd_ircnet_list(void)
 static void cmd_ircnet_add(const char *data)
 {
 	char *params, *args, *kicks, *msgs, *modes, *whois;
-	char *cmdspeed, *cmdmax, *nick, *user, *realname, *host, *name;
+	char *cmdspeed, *cmdmax, *nick, *user, *realname, *host, *autosendcmd, *name;
 	IRCNET_REC *rec;
 
-	args = "kicks msgs modes whois cmdspeed cmdmax nick user realname host";
-	params = cmd_get_params(data, 12 | PARAM_FLAG_MULTIARGS, &args,
+	args = "kicks msgs modes whois cmdspeed cmdmax nick user realname host autosendcmd";
+	params = cmd_get_params(data, 13 | PARAM_FLAG_MULTIARGS, &args,
 				&kicks, &msgs, &modes, &whois, &cmdspeed,
-				&cmdmax, &nick, &user, &realname, &host, &name);
+				&cmdmax, &nick, &user, &realname, &host, 
+				&autosendcmd, &name);
 	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	rec = ircnet_find(name);
@@ -99,6 +102,7 @@ static void cmd_ircnet_add(const char *data)
 			g_free_and_null(rec->own_host);
                         rec->own_ip = NULL;
 		}
+		if (stristr(args, "-autosendcmd")) g_free_and_null(rec->autosendcmd);
 	}
 
 	if (stristr(args, "-kicks")) rec->max_kicks = atoi(kicks);
@@ -116,6 +120,7 @@ static void cmd_ircnet_add(const char *data)
 		rec->own_host = g_strdup(host);
 		rec->own_ip = NULL;
 	}
+	if (*autosendcmd != '\0') rec->autosendcmd = g_strdup(autosendcmd);
 
 	ircnet_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_ADDED, name);

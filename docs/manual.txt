@@ -363,7 +363,7 @@
 	/IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
 	            [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
 	            [-nick <nick>] [-user <user>] [-realname <name>]
-	            [-host <host>] <name>
+	            [-host <host>] [-autosendcmd <cmd>] <name>
 
 	    -kicks: Maximum number of nicks in one /KICK command
 	    -msgs: Maximum number of nicks in one /MSG command
@@ -373,6 +373,13 @@
 	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
 	    -nick, -user, -realname: Specify what nick/user/name to use
 	    -host: Specify what host name to use, if you have multiple
+	    -autosendcmd: Command to send after connecting to a server
+
+	With -autosendcmd argument you can automatically run any commands
+	after connecting to ircnet. This is useful for automatically 
+	identifying yourself to NickServ, for example
+
+	/IRCNET ADD -autosendcmd "/msg NickServ identify secret" OPN
 
 	/IRCNET REMOVE <name>
 
