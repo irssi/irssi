@@ -131,6 +131,8 @@ static int window_has_query(WINDOW_REC *window)
 {
 	GSList *tmp;
 
+	g_return_val_if_fail(window != NULL, FALSE);
+
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		if (irc_item_query(tmp->data))
 			return TRUE;
@@ -147,9 +149,9 @@ static void sig_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
 	/* reset the window's last_line timestamp so that query doesn't get
 	   closed immediately after switched to the window, or after changed
 	   to some other window from it */
-	if (window_has_query(window))
+	if (window != NULL && window_has_query(window))
 		window->last_line = time(NULL);
-	if (window_has_query(old_window))
+	if (old_window != NULL && window_has_query(old_window))
 		old_window->last_line = time(NULL);
 }
 
