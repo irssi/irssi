@@ -288,7 +288,8 @@ WINDOW_REC *window_find_item(WINDOW_REC *window, const char *name)
 
 	item = window == NULL ? NULL :
 		window_item_find(window->active_server, name);
-	if (item == NULL && window->active_server != NULL) {
+	if (item == NULL && (window == NULL ||
+			     window->active_server != NULL)) {
 		/* not found from the active server - any server? */
 		item = window_item_find(NULL, name);
 	}
