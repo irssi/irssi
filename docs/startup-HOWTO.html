@@ -544,6 +544,9 @@ this:</p>
      /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
 </pre>
 
+<p>The server name and port you give isn't used anywhere, so you can
+put anything you want in there.</p>
+
 <p><strong>Irssi proxy</strong></p>
 
 <p>Irssi contains it's own proxy which you can build giving
@@ -602,13 +605,16 @@ give it with:</p>
      /SET proxy_password &lt;password&gt;
 </pre>
 
-<p>Irssi's default for connect string is</p>
+<p>Irssi's defaults for connect strings are</p>
 
 <pre>
      /SET proxy_string CONNECT %s %d
+     /SET proxy_string_after
 </pre>
 
-<p>which you can modify according to your bouncer's needs.</p>
+<p>The proxy_string is sent before NICK/USER commands, the
+proxy_string_after is sent after them. %s and %d can be used with both
+of them.</p>
 
 <h3><a id="c10">10. Irssi's settings</a></h3>
 
