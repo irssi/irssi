@@ -48,6 +48,8 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   settings_get_int("indent"),
 					   !settings_get_bool("indent_always"),
 					   get_default_indent_func());
+	if (parent->active == window)
+		textbuffer_view_set_window(gui->view, parent->screen_win);
 	return gui;
 }
 
@@ -65,13 +67,14 @@ static void sig_window_create_override(gpointer tab)
 static void gui_window_created(WINDOW_REC *window, void *automatic)
 {
 	MAIN_WINDOW_REC *parent;
-        int empty_window;
+        int empty_window, new_parent;
 
 	g_return_if_fail(window != NULL);
 
-	parent = window_create_override != 0 &&
-		active_win != NULL && WINDOW_GUI(active_win) != NULL ?
-		WINDOW_MAIN(active_win) : mainwindow_create();
+	new_parent = window_create_override == 0 ||
+		window_create_override == 2 ||
+		active_win == NULL || WINDOW_GUI(active_win) == NULL;
+	parent = !new_parent ? WINDOW_MAIN(active_win) : mainwindow_create();
 	if (parent == NULL) {
 		/* not enough space for new window, but we really can't
 		   abort creation of the window anymore, so create hidden

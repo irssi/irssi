@@ -1043,6 +1043,11 @@ static void sig_window_changed(void)
 	}
 }
 
+static void sig_gui_window_created(WINDOW_REC *window)
+{
+        statusbars_add_visible(WINDOW_MAIN(window));
+}
+
 static void statusbar_item_def_destroy(void *key, void *value)
 {
 	g_free(key);
@@ -1088,6 +1093,7 @@ void statusbar_init(void)
         signal_add("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_add("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_add("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
+	signal_add("gui window created", (SIGNAL_FUNC) sig_gui_window_created);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
 	signal_add_last("setup reread", (SIGNAL_FUNC) sig_setup_reload);
@@ -1119,6 +1125,7 @@ void statusbar_deinit(void)
         signal_remove("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_remove("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_remove("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
+	signal_remove("gui window created", (SIGNAL_FUNC) sig_gui_window_created);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_remove("mainwindow destroyed", (SIGNAL_FUNC) sig_mainwindow_destroyed);
 	signal_remove("setup reread", (SIGNAL_FUNC) sig_setup_reload);

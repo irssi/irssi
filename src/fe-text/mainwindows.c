@@ -176,6 +176,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	int space;
 
 	rec = g_new0(MAIN_WINDOW_REC, 1);
+	rec->dirty = TRUE;
 	rec->width = term_width;
 
 	if (mainwindows == NULL) {
