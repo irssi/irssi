@@ -11,16 +11,21 @@ format_get_text(window, module, server, target, formatnum, ...)
 	char *target
 	int formatnum
 PREINIT:
+	TEXT_DEST_REC dest;
+	THEME_REC *theme;
 	char **charargs;
 	char *ret;
 	int n;
 PPCODE:
 	charargs = g_new0(char *, items-5+1);
-	charargs[items-5] = NULL;
         for (n = 5; n < items; n++) {
 		charargs[n-5] = (char *)SvPV(ST(n), PL_na);
 	}
-	ret = format_get_text(module, window, server, target, formatnum, charargs);
+
+	format_create_dest(&dest, server, target, 0, window);
+	theme = window_get_theme(dest.window);
+
+	ret = format_get_text_theme_charargs(theme, module, &dest, formatnum, charargs);
 	g_free(charargs);
 
 	XPUSHs(sv_2mortal(new_pv(ret)));
