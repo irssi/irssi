@@ -309,24 +309,7 @@ static void key_yank_from_cutbuffer(void)
 
 static void key_transpose_characters(void)
 {
-#if 0 /* FIXME: !!! */
-	char *line, c;
-	int pos;
-
-	pos = gui_entry_get_pos(active_entry);
-	line = gui_entry_get_text(active_entry);
-	if (pos == 0 || strlen(line) < 2)
-		return;
-
-	if (line[pos] != '\0')
-		gui_entry_move_pos(active_entry, 1);
-	c = line[gui_entry_get_pos(active_entry)-1];
-        gui_entry_erase(active_entry, 1);
-	gui_entry_move_pos(active_entry, -1);
-	gui_entry_insert_char(active_entry, c);
-        gui_entry_set_pos(active_entry, pos);
-	gui_entry_move_pos(active_entry, 1);
-#endif
+	gui_entry_transpose_chars(active_entry);
 }
 
 static void key_delete_character(void)

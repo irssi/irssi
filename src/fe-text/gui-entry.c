@@ -414,6 +414,28 @@ void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
         gui_entry_erase(entry, size);
 }
 
+void gui_entry_transpose_chars(GUI_ENTRY_REC *entry)
+{
+        unichar chr;
+
+	if (entry->pos == 0 || entry->text_len < 2)
+                return;
+
+	if (entry->pos == entry->text_len)
+                entry->pos--;
+
+        /* swap chars */
+	chr = entry->text[entry->pos];
+	entry->text[entry->pos] = entry->text[entry->pos-1];
+        entry->text[entry->pos-1] = chr;
+
+        entry->pos++;
+
+	gui_entry_redraw_from(entry, entry->pos-2);
+	gui_entry_fix_cursor(entry);
+	gui_entry_draw(entry);
+}
+
 int gui_entry_get_pos(GUI_ENTRY_REC *entry)
 {
         g_return_val_if_fail(entry != NULL, 0);
