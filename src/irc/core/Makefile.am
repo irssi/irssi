@@ -34,7 +34,8 @@ libirc_core_a_SOURCES = \
         servers-idle.c \
         servers-redirect.c
 
-noinst_HEADERS = \
+pkginc_irc_coredir=$(pkgincludedir)/src/irc/core
+pkginc_irc_core_HEADERS = \
 	bans.h \
         ctcp.h \
         channel-rejoin.h \

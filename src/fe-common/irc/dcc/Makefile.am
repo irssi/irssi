@@ -19,7 +19,8 @@ libfe_irc_dcc_a_SOURCES = \
 	module-formats.c \
 	fe-dcc-server.c
 
-noinst_HEADERS = \
+pkginc_fe_common_irc_dccdir=$(pkgincludedir)/src/fe-common/irc/dcc
+pkginc_fe_common_irc_dcc_HEADERS = \
 	module.h \
 	module-formats.h \
 	fe-dcc.h

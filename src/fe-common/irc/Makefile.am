@@ -32,7 +32,8 @@ libfe_common_irc_a_SOURCES = \
 	$(real_sources) \
         irc-modules.c
 
-noinst_HEADERS = \
+pkginc_fe_common_ircdir=$(pkgincludedir)/src/fe-common/irc
+pkginc_fe_common_irc_HEADERS = \
 	fe-irc-server.h \
 	module.h \
 	module-formats.h

@@ -10,7 +10,8 @@ if HAVE_PERL
 PERLDIR=perl
 endif
 
-noinst_HEADERS = \
+pkginc_srcdir=$(pkgincludedir)/src
+pkginc_src_HEADERS = \
 	common.h
 
 SUBDIRS = lib-popt lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI)

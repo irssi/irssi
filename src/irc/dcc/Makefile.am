@@ -16,7 +16,8 @@ libirc_dcc_a_SOURCES = \
 	dcc-queue.c \
 	dcc-server.c
 
-noinst_HEADERS = \
+pkginc_irc_dccdir=$(pkgincludedir)/src/irc/dcc
+pkginc_irc_dcc_HEADERS = \
 	dcc-rec.h \
 	dcc-file-rec.h \
 	dcc.h \

@@ -7,5 +7,6 @@ INCLUDES = \
 libpopt_a_SOURCES = \
 	findme.c popt.c poptconfig.c popthelp.c poptparse.c
 
-noinst_HEADERS = \
+pkginc_libpoptdir=$(pkgincludedir)/src/lib-popt
+pkginc_libpopt_HEADERS = \
 	findme.h popt.h poptint.h

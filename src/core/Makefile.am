@@ -55,7 +55,8 @@ structure_headers = \
 	server-connect-rec.h \
 	window-item-rec.h
 
-noinst_HEADERS = \
+pkginc_coredir=$(pkgincludedir)/src/core
+pkginc_core_HEADERS = \
 	args.h \
 	channels.h \
 	channels-setup.h \

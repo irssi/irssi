@@ -10,5 +10,6 @@ libirc_flood_a_SOURCES = \
 	autoignore.c \
 	flood.c
 
-noinst_HEADERS = \
+pkginc_irc_flooddir=$(pkgincludedir)/src/irc/flood
+pkginc_irc_flood_HEADERS = \
 	module.h

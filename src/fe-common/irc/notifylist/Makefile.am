@@ -13,6 +13,7 @@ libfe_irc_notifylist_a_SOURCES = \
 	fe-notifylist.c \
 	module-formats.c
 
-noinst_HEADERS = \
+pkginc_fe_common_irc_notifylistdir=$(pkgincludedir)/src/fe-common/irc/notifylist
+pkginc_fe_common_irc_notifylist_HEADERS = \
 	module.h \
 	module-formats.h

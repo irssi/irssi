@@ -38,7 +38,8 @@ libfe_common_core_a_SOURCES = \
 	windows-layout.c \
 	fe-windows.c
 
-noinst_HEADERS = \
+pkginc_fe_common_coredir=$(pkgincludedir)/src/fe-common/core
+pkginc_fe_common_core_HEADERS = \
 	autorun.h \
 	command-history.h \
 	chat-completion.h \

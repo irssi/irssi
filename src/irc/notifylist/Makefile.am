@@ -13,7 +13,8 @@ libirc_notifylist_a_SOURCES = \
 	notify-setup.c \
 	notify-whois.c
 
-noinst_HEADERS = \
+pkginc_irc_notifylistdir=$(pkgincludedir)/src/irc/notifylist
+pkginc_irc_notifylist_HEADERS = \
 	notifylist.h \
 	notify-setup.h \
 	module.h
