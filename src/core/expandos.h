@@ -5,7 +5,7 @@
 
 /* first argument of signal must match to active .. */
 typedef enum {
-        EXPANDO_ARG_NONE,
+        EXPANDO_ARG_NONE = 1,
         EXPANDO_ARG_SERVER,
         EXPANDO_ARG_WINDOW,
 	EXPANDO_ARG_WINDOW_ITEM,
@@ -27,6 +27,9 @@ void expando_destroy(const char *key, EXPANDO_FUNC func);
 
 void expando_bind(const char *key, int funccount, SIGNAL_FUNC *funcs);
 void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs);
+
+/* Returns [<signal id>, EXPANDO_ARG_xxx, <signal id>, ..., -1] */
+int *expando_get_signals(const char *key);
 
 /* internal: */
 EXPANDO_FUNC expando_find_char(char chr);

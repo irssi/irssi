@@ -31,5 +31,7 @@ void special_vars_add_signals(const char *text,
 			      int funccount, SIGNAL_FUNC *funcs);
 void special_vars_remove_signals(const char *text,
 				 int funccount, SIGNAL_FUNC *funcs);
+/* Returns [<signal id>, EXPANDO_ARG_xxx, <signal id>, ..., -1] */
+int *special_vars_get_signals(const char *text);
 
 #endif

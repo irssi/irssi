@@ -597,41 +597,126 @@ void special_history_func_set(SPECIAL_HISTORY_FUNC func)
 	history_func = func;
 }
 
-static void special_vars_signals_do(const char *text, int funccount,
-				    SIGNAL_FUNC *funcs, int bind)
+static void update_signals_hash(GHashTable **hash, int *signals)
 {
-	char *ret;
-        int need_free;
+	void *signal_id;
+        int arg_type;
 
+	if (*hash == NULL) {
+		*hash = g_hash_table_new((GHashFunc) g_direct_hash,
+					 (GCompareFunc) g_direct_equal);
+	}
+
+	while (*signals != -1) {
+                signal_id = GINT_TO_POINTER(*signals);
+		arg_type = GPOINTER_TO_INT(g_hash_table_lookup(*hash, signal_id));
+		if (arg_type != 0 && arg_type != signals[1]) {
+			/* same signal is used for different purposes ..
+			   not sure if this should ever happen, but change
+			   the argument type to none so it will at least
+			   work. */
+			arg_type = EXPANDO_ARG_NONE;
+		}
+
+		if (arg_type == 0) arg_type = signals[1];
+		g_hash_table_insert(*hash, signal_id,
+				    GINT_TO_POINTER(arg_type));
+		signals += 2;
+	}
+}
+
+static void get_signal_hash(void *signal_id, void *arg_type, int **pos)
+{
+	(*pos)[0] = GPOINTER_TO_INT(signal_id);
+        (*pos)[1] = GPOINTER_TO_INT(arg_type);
+        (*pos) += 2;
+}
+
+static int *get_signals_list(GHashTable *hash)
+{
+	int *signals, *pos;
+
+	if (hash == NULL) {
+		/* no expandos in text - never needs updating */
+		return NULL;
+	}
+
+        pos = signals = g_new(int, g_hash_table_size(hash)*2 + 1);
+	g_hash_table_foreach(hash, (GHFunc) get_signal_hash, &pos);
+        *pos = -1;
+
+	g_hash_table_destroy(hash);
+        return signals;
+
+}
+
+#define TASK_BIND		1
+#define TASK_UNBIND		2
+#define TASK_GET_SIGNALS	3
+
+static int *special_vars_signals_task(const char *text, int funccount,
+				      SIGNAL_FUNC *funcs, int task)
+{
+        GHashTable *signals;
+	char *expando;
+	int need_free, *expando_signals;
+
+        signals = NULL;
 	while (*text != '\0') {
 		if (*text == '\\' && text[1] != '\0') {
+                        /* escape */
 			text += 2;
 		} else if (*text == '$' && text[1] != '\0') {
+                        /* expando */
 			text++;
-			ret = parse_special((char **) &text, NULL, NULL,
-					    NULL, &need_free, NULL,
-					    PARSE_FLAG_GETNAME);
-			if (ret != NULL) {
-                                if (bind)
-					expando_bind(ret, funccount, funcs);
-                                else
-					expando_unbind(ret, funccount, funcs);
-				if (need_free) g_free(ret);
-			}
+			expando = parse_special((char **) &text, NULL, NULL,
+						NULL, &need_free, NULL,
+						PARSE_FLAG_GETNAME);
+			if (expando == NULL)
+				continue;
 
+			switch (task) {
+			case TASK_BIND:
+				expando_bind(expando, funccount, funcs);
+				break;
+			case TASK_UNBIND:
+				expando_unbind(expando, funccount, funcs);
+				break;
+			case TASK_GET_SIGNALS:
+				expando_signals = expando_get_signals(expando);
+				if (expando_signals != NULL) {
+					update_signals_hash(&signals,
+							    expando_signals);
+                                        g_free(expando_signals);
+				}
+				break;
+			}
+			if (need_free) g_free(expando);
+		} else {
+                        /* just a char */
+			text++;
 		}
-                else text++;
 	}
+
+	if (task == TASK_GET_SIGNALS)
+                return get_signals_list(signals);
+
+        return NULL;
 }
 
 void special_vars_add_signals(const char *text,
 			      int funccount, SIGNAL_FUNC *funcs)
 {
-        special_vars_signals_do(text, funccount, funcs, TRUE);
+        special_vars_signals_task(text, funccount, funcs, TASK_BIND);
 }
 
 void special_vars_remove_signals(const char *text,
 				 int funccount, SIGNAL_FUNC *funcs)
 {
-        special_vars_signals_do(text, funccount, funcs, FALSE);
+        special_vars_signals_task(text, funccount, funcs, TASK_UNBIND);
+}
+
+int *special_vars_get_signals(const char *text)
+{
+	return special_vars_signals_task(text, 0, NULL, TASK_GET_SIGNALS);
 }

@@ -54,7 +54,10 @@ static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease, *sysarch;
+
 static const char *timestamp_format;
+static int timestamp_seconds;
+static time_t last_timestamp;
 
 #define CHAR_EXPANDO(chr) \
 	(char_expandos[(int) (unsigned char) chr])
@@ -207,6 +210,38 @@ void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 
 		signal_remove_id(rec->signal_ids[n], func);
 	}
+}
+
+/* Returns [<signal id>, EXPANDO_ARG_xxx, <signal id>, ..., -1] */
+int *expando_get_signals(const char *key)
+{
+	EXPANDO_REC *rec;
+	int *signals;
+        int n;
+
+	g_return_val_if_fail(key != NULL, NULL);
+
+	rec = expando_find(key);
+	if (rec == NULL || rec->signals < 0)
+                return NULL;
+
+	if (rec->signals == 0) {
+		/* it's unknown when this expando changes..
+		   check it once in a second */
+		signals = g_new(int, 3);
+		signals[0] = signal_get_uniq_id("expando timer");
+		signals[1] = EXPANDO_ARG_NONE;
+		signals[2] = -1;
+                return signals;
+	}
+
+        signals = g_new(int, rec->signals*2+1);
+	for (n = 0; n < rec->signals; n++) {
+                signals[n*2] = rec->signal_ids[n];
+                signals[n*2+1] = rec->signal_args[n];
+	}
+	signals[rec->signals*2] = -1;
+        return signals;
 }
 
 EXPANDO_FUNC expando_find_char(char chr)
@@ -437,13 +472,41 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 
 static int sig_timer(void)
 {
+	time_t now;
+	struct tm *tm;
+        int last_min;
+
         signal_emit("expando timer", 0);
+
+        /* check if $Z has changed */
+	now = time(NULL);
+	if (last_timestamp != now) {
+		if (!timestamp_seconds) {
+                        /* assume it changes every minute */
+			tm = localtime(&last_timestamp);
+			last_min = tm->tm_min;
+
+			tm = localtime(&now);
+			if (tm->tm_min == last_min)
+                                return 1;
+		}
+
+                signal_emit("time changed", 0);
+		last_timestamp = now;
+	}
+
         return 1;
 }
 
 static void read_settings(void)
 {
-        timestamp_format = settings_get_str("timestamp_format");
+	timestamp_format = settings_get_str("timestamp_format");
+	timestamp_seconds =
+		strstr(timestamp_format, "%r") != NULL ||
+		strstr(timestamp_format, "%s") != NULL ||
+		strstr(timestamp_format, "%S") != NULL ||
+		strstr(timestamp_format, "%T") != NULL;
+
 }
 
 void expandos_init(void)
@@ -457,6 +520,7 @@ void expandos_init(void)
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
 	last_privmsg_from = NULL; last_public_from = NULL;
+        last_timestamp = 0;
 
         sysname = sysrelease = sysarch = NULL;
 #ifdef HAVE_SYS_UTSNAME_H
@@ -523,7 +587,8 @@ void expandos_init(void)
 	expando_create("Y", expando_realname,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
-	expando_create("Z", expando_time, NULL);
+	expando_create("Z", expando_time,
+		       "time changed", EXPANDO_ARG_NONE, NULL);
 	expando_create("$", expando_dollar,
 		       "", EXPANDO_NEVER, NULL);
 
