@@ -47,7 +47,7 @@ abstracts = {
   ownnotice = "[%r$0-]%n ";
   ownnotice_target = "%K(%R$0-%K)";
   notice = "%K-%M$0-%K-%n ";
-  pubnotice_channel = "%K:%m$1";
+  pubnotice_channel = "%K:%m$0";
   pvtnotice_nick = "%K(%m$0-%K)";
   servernotice = "%g!$0-%n ";
 
