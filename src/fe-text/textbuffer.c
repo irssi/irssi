@@ -113,15 +113,16 @@ static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 {
 	TEXT_CHUNK_REC *chunk;
 	const unsigned char *text;
-        unsigned char *tmp = NULL;
+        unsigned char cmd, *tmp = NULL;
 
 	for (text = line->text;; text++) {
 		if (*text != '\0')
                         continue;
 
 		text++;
-		if (*text == LINE_CMD_CONTINUE || *text == LINE_CMD_EOL) {
-			if (*text == LINE_CMD_CONTINUE)
+		cmd = *text;
+		if (cmd == LINE_CMD_CONTINUE || cmd == LINE_CMD_EOL) {
+			if (cmd == LINE_CMD_CONTINUE)
 				memcpy(&tmp, text+1, sizeof(char *));
 
 			/* free the previous block */
@@ -133,11 +134,11 @@ static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 					text_chunk_destroy(buffer, chunk);
 			}
 
-			if (*text == LINE_CMD_EOL)
+			if (cmd == LINE_CMD_EOL)
 				break;
 
 			text = tmp-1;
-		} else if (*text == LINE_CMD_INDENT_FUNC) {
+		} else if (cmd == LINE_CMD_INDENT_FUNC) {
 			text += sizeof(int (*) ());
 		}
 	}
