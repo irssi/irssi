@@ -15,11 +15,14 @@
 <li><a href="#c2">Basic user interface usage</a>
     <ul>
     <li>Split windows work in weird way</li>
+    <li>How can I easily switch between windows?</li>
+    <li>But alt-1 etc. don't work!</li>
     </ul></li>
 <li><a href="#c3">Server and channel automation</a>
     <ul>
     <li>How do I automatically connect to servers at startup?</li>
     <li>How do I automatically join to channels at startup?</li>
+    <li>How do I automatically send commands to server at connect?</li>
     </ul></li>
 <li><a href="#c4">Setting up windows and automatically restoring them
     at startup</a></li>
@@ -77,8 +80,8 @@ like msgs window where all messages go:</p>
      /SET use_msgs_window ON
 </pre>
 
-<p>Disable automatic window closing when /PARTing channel or /UNQUERYing
-query:</p>
+<p>Disable automatic window closing when <code>/PART</code>ing channel or
+<code>/UNQUERY</code>ing query:</p>
 
 <pre>
      /SET autoclose_windows OFF
@@ -141,9 +144,9 @@ If you want lines containing your nick to hilight:
 work for you, use Meta-p and Meta-n keys. For jumping to beginning or end of
 the buffer, use /SB HOME and /SB END commands.</p>
 
-<p>By default, irssi uses "hidden windows" for everything. Hidden
-window is created every time you /JOIN a channel or /QUERY someone.
-There's several ways you can change between these windows:</p>
+<p>By default, irssi uses "hidden windows" for everything. Hidden window is
+created every time you <code>/JOIN</code> a channel or <code>/QUERY</code>
+someone. There's several ways you can change between these windows:</p>
 
 <pre>
      Meta-1, Meta-2, .. Meta-0 - Jump directly between windows 1-10
@@ -176,11 +179,12 @@ want to use ALT instead of Windows key for it, use:</p>
 </pre>
 
 <p>And how exactly do you set these X resources? For Debian, there's
-/etc/X11/Xresources/xterm file where you can put them and it's read 
-automatically when X starts. ~/.Xresources and ~/.Xdefaults files might also
-work. If you can't get anything else to work, just copy&amp;paste those lines to
-~/.Xresources and directly call "xrdb -merge ~/.Xresources" in some xterm.  
-The resources affect only the new xterms you start, not existing ones.</p>  
+<code>/etc/X11/Xresources/xterm</code> file where you can put them and it's
+read automatically when X starts. <code>~/.Xresources</code> and 
+<code>~/.Xdefaults</code> files might also work. If you can't get anything
+else to work, just copy and paste those lines to <code>~/.Xresources</code>
+and directly call <code>xrdb -merge ~/.Xresources</code> in some xterm. 
+The resources affect only the new xterms you start, not existing ones.</p> 
 
 <p>Many windows SSH clients also don't allow usage of ALT. One excellent
 client that does allow is putty, you can download it from
@@ -260,11 +264,16 @@ helps with reconnecting if your primary server breaks and is probably
 useful in some other ways too :) For information how to actually use
 irssi correctly with multiple servers see the chapter 6.</p>
 
-<p>First you need to have your IRC network set, use /IRCNET command to
-see if it's already there. If it isn't, use /IRCNET ADD yourircnet. To
-make Irssi work properly with different IRC networks, you might need to
-give some special settings to /IRCNET ADD, see manual.txt for more
-information about them. Irssi defaults to IRCNet's behaviour.</p>
+<p>First you need to have your IRC network set, use <code>/IRCNET</code>
+command to see if it's already there. If it isn't, use <code>/IRCNET ADD
+yourircnet</code>. If you want to execute some commands automatically when
+you're connected to some network, use -autosendcmd option. Here's some
+examples:</p>
+
+<pre>
+     /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
+     /IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
+</pre>
 
 <p>After that you need to add your servers. For example:</p>
 
@@ -295,7 +304,6 @@ first found bot in the list. If you don't need the bot masks (ie. the
 bot is always with the same nick, like chanserv) you can give only the
 -botcmd option and the command is always sent.</p>
 
-
 <h3><a id="c4">4. Setting up windows and automatically restoring them at startup</a></h3>
 
 <p>First connect to all the servers, join the channels and create the
@@ -307,17 +315,18 @@ use commands:</p>
      /WINDOW ITEM MOVE &lt;number&gt;|&lt;name&gt; - move channel/query to another window
 </pre>
 
-<p>When everything looks the way you like, use /LAYOUT SAVE command
-(and /SAVE, if you don't have autosaving enabled) and when you start
-irssi next time, irssi remembers the positions of the channels, queries
-and everything. This "remembering" doesn't mean that simply using
-/LAYOUT SAVE would automatically make irssi reconnect to all servers
-and join all channels, you'll need the /SERVER ADD -auto and /CHANNEL
-ADD -auto commands to do that.</p>
+<p>When everything looks the way you like, use <code>/LAYOUT SAVE</code>
+command (and <code>/SAVE</code>, if you don't have autosaving enabled) and
+when you start irssi next time, irssi remembers the positions of the
+channels, queries and everything. This "remembering" doesn't mean that
+simply using <code>/LAYOUT SAVE</code> would automatically make irssi
+reconnect to all servers and join all channels, you'll need the
+<code>/SERVER ADD -auto</code> and <code>/CHANNEL ADD -auto</code> commands
+to do that.</p>
 
 <p>If you want to change the layout, you just rearrange the layout like
-you want it and use /LAYOUT SAVE again. If you want to remove the
-layout for some reason, use /LAYOUT RESET.</p>
+you want it and use <code>/LAYOUT SAVE</code> again. If you want to remove
+the layout for some reason, use <code>/LAYOUT RESET.</code></p>
 
 
 <h3><a id="c5">5. Status and msgs windows &amp; message levels</a></h3>
@@ -331,7 +340,7 @@ query. Some people like it, some don't. If you want to remove it, use</p>
 </pre>
 
 <p>This doesn't have any effect until you restart irssi. If you want to
-remove it immediately, just /WINDOW CLOSE it.</p>
+remove it immediately, just <code>/WINDOW CLOSE</code> it.</p>
 
 <p>Another common window is "messages window", where all private
 messages go. By default it's disabled and query windows are created
@@ -354,7 +363,7 @@ irssi. To create it immediately say:</p>
 </pre>
 
 <p>Note that neither use_msgs_window nor use_status_window have any
-effect at all if /LAYOUT SAVE has been used.</p>
+effect at all if <code>/LAYOUT SAVE</code> has been used.</p>
 
 <p>This brings us to message levels.. What are they? All messages that
 irssi prints have one or more "message levels". Most common are PUBLIC
@@ -385,9 +394,9 @@ how you do connect to new server without closing the old connection:</p>
      /CONNECT irc.server.org
 </pre>
 
-<p>Instead of the /SERVER which disconnects the existing connection. To
-see list of all active connections, use /SERVER without any parameters.
-You should see a list of something like:</p>
+<p>Instead of the <code>/SERVER</code> which disconnects the existing
+connection. To see list of all active connections, use <code>/SERVER<(code>
+without any parameters. You should see a list of something like:</p>
 
 <pre>
      -!- IRCNet: irc.song.fi:6667 (IRCNet)
@@ -475,8 +484,8 @@ for each server. Here's how to do them (repeat for each server)</p>
 
 <h3><a id="c7">7. /LASTLOG and jumping around in scrollback</a></h3>
 
-<p>/LASTLOG command can be used for searching texts in scrollback
-buffer. Simplest usages are</p>
+<p><code>/LASTLOG</code> command can be used for searching texts in
+scrollback buffer. Simplest usages are</p>
 
 <pre>
      /LASTLOG word     - print all lines with "word" in them
@@ -493,22 +502,24 @@ If you want to save the full lastlog to file, use</p>
 </pre>
 
 <p>With -file option you don't need -force even if there's more than 1000
-lines. /LASTLOG has a lot of other options too, see /HELP lastlog for
-details.</p>
+lines. /LASTLOG has a lot of other options too, see <code>/HELP
+lastlog</code> for details.</p>
 
 <p>Once you've found the lines you were interested in, you might want
-to check the discussion around them. Irssi has /SCROLLBACK (or alias
-/SB) command for jumping around in scrollback buffer. Since /LASTLOG
-prints the timestamp when the message was originally printed, you can
-use /SB GOTO hh:mm to jump directly there. To get back to the bottom of
-scrollback, use /SB END command.</p>
+to check the discussion around them. Irssi has <code>/SCROLLBACK</code> (or
+alias <code>/SB</code>) command for jumping around in scrollback buffer.
+Since <code>/LASTLOG</code> prints the timestamp when the message was
+originally printed, you can use <code>/SB GOTO hh:mm</code> to jump
+directly there. To get back to the bottom of scrollback, use <code>/SB
+END</code> command.</p>
 
 
 <h3><a id="c8">8. Logging</a></h3>
 
 <p>Irssi can automatically log important messages when you're set away
-(/AWAY reason). When you set yourself unaway (/AWAY), the new messages
-in away log are printed to screen. You can configure it with:</p>
+(<code>/AWAY reason</code>). When you set yourself unaway
+(<code>/AWAY</code>), the new messages in away log are printed to screen.
+You can configure it with:</p>
 
 <pre>
      /SET awaylog_level MSGS HILIGHT     - Specifies what messages to log
@@ -524,7 +535,8 @@ You can turn it on with</p>
 </pre>
 
 <p>By default it logs pretty much everything execept CTCPS or CRAP
-(/WHOIS requests, etc). You can specify the logging level yourself with</p>
+(<code>/WHOIS</code> requests, etc). You can specify the logging level
+yourself with</p>
 
 <pre>
      /SET autolog_level ALL -CRAP -CLIENTCRAP -CTCPS (this is the default)
@@ -546,7 +558,8 @@ logs by adding date/time formats to the file name. The formats are in
      /SET autolog_path ~/irclogs/%Y/$tag/$0.%m-%d.log
 </pre>
 
-<p>For logging only some specific channels or nicks, see /HELP log</p>
+<p>For logging only some specific channels or nicks, see <code>/HELP
+log</code></p>
 
 
 <h3><a id="c9">9. Changing keyboard bindings</a></h3>
@@ -556,33 +569,34 @@ about. It doesn't let irssi know everything, so for example
 shift-backspace can't be bound unless you modify xterm resources
 somehow.</p>
 
-<p>/HELP bind tells pretty much everything there is to know about
-keyboard bindings. However, there's the problem of how to bind some
-non-standard keys. They might differ a bit with each terminal, so
-you'll need to find out what exactly the keypress produces. Easiest
-way to check that would be to see what it prints in "cat". Here's
-an example for pressing F1 key:</p>
+<p><code>/HELP bind</code> tells pretty much everything there is to know
+about keyboard bindings. However, there's the problem of how to bind some
+non-standard keys. They might differ a bit with each terminal, so you'll
+need to find out what exactly the keypress produces. Easiest way to check
+that would be to see what it prints in <code>cat</code>. Here's an example
+for pressing F1 key:</p>
 
 <pre>
-[cras@hurina] ~% cat
-^[OP
+     [cras@hurina] ~% cat
+     ^[OP
 </pre>
 
-<p>So in irssi you would use /BIND ^[OP /ECHO F1 pressed. If you use
-multiple terminals which have different bindings for the key, it would
-be better to use eg.:</p>
+<p>So in irssi you would use <code>/BIND ^[OP /ECHO F1</code> pressed. If
+you use multiple terminals which have different bindings for the key, it
+would be better to use eg.:</p>
 
 <pre>
-/BIND ^[OP key F1
-/BIND ^[11~ key F1
-/BIND F1 /ECHO F1 pressed.
+     /BIND ^[OP key F1
+     /BIND ^[11~ key F1
+     /BIND F1 /ECHO F1 pressed.
 </pre>
 
 <h3><a id="c10">10. Proxies and IRC bouncers</a></h3>
 
 <p>Irssi supports connecting to IRC servers via a proxy. All server
 connections are then made through it, and if you've set up everything
-properly, you don't need to do any /QUOTE SERVER commands manually.</p>
+properly, you don't need to do any <code>/QUOTE SERVER</code> commands
+manually.</p>
 
 <p>Here's an example: You have your bouncer (lets say, BNC or BNC-like)
 listening in irc.bouncer.org port 5000. You want to use it to connect
@@ -608,12 +622,13 @@ about them:</p>
      /SERVER ADD -auto -ircnet efnet irc.efnet.org
 </pre>
 
-<p>With the proxy /SETs however, irssi now connects to those servers
-through your BNC. All server connections are made through them so you
-can just forget that your bouncer even exists.</p>
+<p>With the proxy <code>/SET</code>s however, irssi now connects to those
+servers through your BNC. All server connections are made through them so
+you can just forget that your bouncer even exists.</p>
 
 <p>If you don't want to use the proxy for some reason, there's -noproxy
-option which you can give to /SERVER and /SERVER ADD commands.</p>
+option which you can give to <code>/SERVER</code> and <code>/SERVER
+ADD</code> commands.</p>
 
 <p><strong>Proxy specific settings:</strong></p>
 
@@ -677,8 +692,8 @@ as with dircproxy, by creating fake connections:</p>
     /SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
 </pre>
 
-<p>So, you'll specify the usernames with /IRCNET ADD command, and the
-user's password with /SERVER ADD.</p>
+<p>So, you'll specify the usernames with <code>/IRCNET ADD</code> command,
+and the user's password with <code>/SERVER ADD</code>.</p>
 
 <p><strong>Irssi proxy</strong></p>
 
@@ -689,7 +704,10 @@ irssi in a screen to use it though.</p>
 <p>Irssi proxy is a bit different than most proxies, normally proxies
 create a new connection to IRC server when you connect to it, but
 <strong>irssi proxy shares your existing IRC connection(s) to multiple
-clients</strong>.</p>
+clients</strong>. And even more clearly: <strong>You can use only one IRC
+server connection to IRC with as many clients as you want</strong>. Can
+anyone figure out even more easier ways to say this, so I wouldn't need to
+try to explain this thing for minutes every time? :)</p>
 
 <p>Irssi proxy supports sharing multiple server connections in different
 ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
@@ -703,9 +721,9 @@ ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
 </pre>
 
 <p><strong>NOTE</strong>: you <strong>MUST</strong> add all the servers you
-are using to server and ircnet lists with /SERVER ADD and /IRCNET ADD.
-..Except if you really don't want to for some reason, and you only use
-one server connection, you may simply set:</p>
+are using to server and ircnet lists with <code>/SERVER ADD</code> and 
+<code>/IRCNET ADD</code>. ..Except if you really don't want to for some
+reason, and you only use one server connection, you may simply set:</p>
 
 <pre>
      /SET irssiproxy_ports *=2777
@@ -714,7 +732,7 @@ one server connection, you may simply set:</p>
 <p>Usage in client side:</p>
 
 <p>Just connect to the irssi proxy like it is a normal server with password
-specified in /SET irssiproxy_password. For example:</p>
+specified in <code>/SET irssiproxy_password</code>. For example:</p>
 
 <pre>
      /SERVER ADD -ircnet ircnet my.irssi-proxy.org 2777 secret
@@ -909,22 +927,21 @@ of them you might want to change (the default value is shown):</p>
 
 <h3><a id="c12">12. Statusbar</a></h3>
 
-<p><strong>/STATUSBAR</strong> displays a list of statusbars:</p>
+<p><code>/STATUSBAR</code> displays a list of statusbars:</p>
 
 <pre>
-Name                           Type   Placement Position Visible
-window                         window bottom    0        always
-window_inact                   window bottom    1        inactive
-prompt                         root   bottom    100      always
-topic                          root   top       1        always
+     Name                           Type   Placement Position Visible
+     window                         window bottom    0        always
+     window_inact                   window bottom    1        inactive
+     prompt                         root   bottom    100      always
+     topic                          root   top       1        always
 </pre>
 
-<p><strong>/STATUSBAR &lt;name&gt;</strong> prints the statusbar
-settings and it's items. <strong>/STATUSBAR &lt;name&gt;
-ENABLE|DISABLE</strong> enables/disables the statusbar.
-<strong>/STATUSBAR &lt;name&gt; RESET</strong> resets the statusbar to
-it's default settings, or if the statusbar was created by you, it will be
-removed.</p>
+<p><code>/STATUSBAR &lt;name&gt;</code> prints the statusbar settings and
+it's items. <code>/STATUSBAR &lt;name&gt; ENABLE|DISABLE</code>
+enables/disables the statusbar. <code>/STATUSBAR &lt;name&gt; RESET</code>
+resets the statusbar to it's default settings, or if the statusbar was
+created by you, it will be removed.</p>
 
 <p>Type can be window or root, meaning if the statusbar should be
 created for each split window, or just once. Placement can be top or
@@ -951,5 +968,5 @@ where you want to show it. Statusbar items can be modified with:</p>
 <p>The item name with statusbar scripts is usually same as the script's
 name. Script's documentation should tell if this isn't the case. So, to
 add mail.pl before the window activity item (see the list with
-/STATUSBAR window), use: <strong>/STATUSBAR window ADD -before act
-mail</strong>.</p>
+<code>/STATUSBAR</code> window), use: <code>/STATUSBAR window ADD -before
+act mail</code>.</p>
