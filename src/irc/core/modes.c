@@ -198,7 +198,7 @@ int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode)
 
 /* Parse channel mode string */
 void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
-			 const char *mode)
+			 const char *mode, int update_key)
 {
         GString *newmode;
 	char *dup, *modestr, *arg, *curmode, type;
@@ -256,7 +256,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			}
 			mode_set_arg(newmode, type, 'k', arg);
 
-			if (arg != channel->key) {
+			if (arg != channel->key && update_key) {
 				g_free_and_null(channel->key);
 				if (type == '+')
 					channel->key = g_strdup(arg);
@@ -382,7 +382,7 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 		/* channel mode change */
 		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL)
-			parse_channel_modes(chanrec, nick, mode);
+			parse_channel_modes(chanrec, nick, mode, TRUE);
 	}
 
 	g_free(params);

@@ -101,10 +101,10 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
            we know better, so parse_channel_modes() won't clear the key */
 	if (*type == '*') {
 		parse_channel_modes(chanrec, NULL,
-				    chanrec->key ? "+kp" : "+p");
+				    chanrec->key ? "+kp" : "+p", FALSE);
 	} else if (*type == '@') {
 		parse_channel_modes(chanrec, NULL,
-				    chanrec->key ? "+ks" : "+s");
+				    chanrec->key ? "+ks" : "+s", FALSE);
 	}
 
 	while (*names != '\0') {

@@ -405,9 +405,9 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 		if (chanrec->key != NULL && strchr(mode, 'k') == NULL) {
 			/* we joined the channel with a key,
 			   but it didn't have +k mode.. */
-                        parse_channel_modes(chanrec, NULL, "-k");
+                        parse_channel_modes(chanrec, NULL, "-k", TRUE);
 		}
-		parse_channel_modes(chanrec, nick, mode);
+		parse_channel_modes(chanrec, nick, mode, FALSE);
 		channel_got_query(chanrec, CHANNEL_QUERY_MODE);
 	}
 
