@@ -48,6 +48,7 @@ typedef struct {
 
 static KEYBOARD_REC *keyboard;
 static ENTRY_REDIRECT_REC *redir;
+static int escape_next_key;
 
 static int readtag;
 static time_t idle_time;
@@ -161,8 +162,9 @@ void handle_key(unichar key)
 		str[utf16_char_to_utf8(key, str)] = '\0';
 	}
 
-	if (!key_pressed(keyboard, str)) {
-                /* key wasn't used for anything, print it */
+	if (escape_next_key || !key_pressed(keyboard, str)) {
+		/* key wasn't used for anything, print it */
+                escape_next_key = FALSE;
 		gui_entry_insert_char(active_entry, key);
 	}
 }
@@ -519,6 +521,11 @@ static void key_next_window_item(void)
 	}
 }
 
+static void key_escape(void)
+{
+        escape_next_key = TRUE;
+}
+
 static void key_insert_text(const char *data)
 {
 	char *str;
@@ -566,6 +573,7 @@ void gui_readline_init(void)
 	char *key, data[MAX_INT_STRLEN];
 	int n;
 
+        escape_next_key = FALSE;
 	redir = NULL;
 	idle_time = time(NULL);
         input_listen_init(STDIN_FILENO);
@@ -673,6 +681,7 @@ void gui_readline_init(void)
 	key_bind("scroll_end", "End of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
 
         /* inserting special input characters to line.. */
+	key_bind("escape_char", "Escape the next keypress", NULL, NULL, (SIGNAL_FUNC) key_escape);
 	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
 
         /* autoreplaces */
@@ -743,6 +752,7 @@ void gui_readline_deinit(void)
 	key_unbind("scroll_start", (SIGNAL_FUNC) key_scroll_start);
 	key_unbind("scroll_end", (SIGNAL_FUNC) key_scroll_end);
 
+	key_unbind("escape_char", (SIGNAL_FUNC) key_escape);
 	key_unbind("insert_text", (SIGNAL_FUNC) key_insert_text);
 	key_unbind("change_window", (SIGNAL_FUNC) key_change_window);
 	key_unbind("stop_irc", (SIGNAL_FUNC) key_sig_stop);

@@ -92,6 +92,7 @@ Command can be one of:
   refresh_screen
   yank_from_cutbuffer - "Undelete" line
   transpose_characters - Swap current and previous character
+  escape_char - Insert the next character exactly as-is to input line
   insert_text - Insert data to entry line, data may contain $variables.
   stop_irc - Send SIGSTOP to client (^Z)
 
