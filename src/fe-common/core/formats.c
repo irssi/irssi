@@ -431,7 +431,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 		if (servers->next != NULL)
 			count++;
 	}
-	if (count == 2 || lookup_servers != NULL) {
+	if (count < 2 && lookup_servers != NULL) {
                 count++;
 		if (lookup_servers->next != NULL)
 			count++;
