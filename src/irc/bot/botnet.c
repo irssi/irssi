@@ -32,7 +32,7 @@
 void botnet_connection_init(void);
 void botnet_connection_deinit(void);
 
-static GSList *botnets;
+GSList *botnets;
 
 void bot_send_cmd(BOT_REC *bot, char *data)
 {
@@ -591,7 +591,7 @@ static void autoconnect_botnets(void)
 		BOTNET_REC *rec = tmp->data;
 
 		if (rec->autoconnect)
-			botnet_connect(rec->name);
+			botnet_connect(rec);
 	}
 }
 

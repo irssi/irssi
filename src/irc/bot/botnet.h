@@ -71,6 +71,7 @@ typedef struct {
 struct _botnet_rec {
 	int connected:1;
 	int autoconnect:1;
+	int reconnect:1;
 
 	char *name; /* botnet name */
 	char *nick; /* our nick in botnet */
@@ -89,6 +90,8 @@ struct _botnet_rec {
 	BOT_REC *uplink; /* our current uplink */
 	BOT_REC *master; /* link to current master */
 };
+
+extern GSList *botnets;
 
 void bot_send_cmd(BOT_REC *bot, char *data);
 void bot_send_cmdv(BOT_REC *bot, char *format, ...);
@@ -118,7 +121,7 @@ void bot_destroy(BOT_REC *bot);
 void bot_downlink_destroy(BOT_DOWNLINK_REC *rec);
 void bot_uplink_destroy(BOT_UPLINK_REC *rec);
 
-int botnet_connect(const char *network);
+void botnet_connect(BOTNET_REC *botnet);
 void botnet_disconnect(BOTNET_REC *botnet);
 
 #endif

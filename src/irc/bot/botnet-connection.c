@@ -31,6 +31,22 @@
 
 #define BOTNET_RECONNECT_TIME (60*5)
 
+static int reconnect_tag;
+
+static int sig_reconnect(void)
+{
+	GSList *tmp;
+
+	for (tmp = botnets; tmp != NULL; tmp = tmp->next) {
+		BOTNET_REC *rec = tmp->data;
+
+		if (rec->reconnect)
+                        botnet_connect(rec);
+	}
+
+	return 1;
+}
+
 static void sig_bot_read(BOT_REC *bot)
 {
 	BOTNET_REC *botnet;
@@ -53,7 +69,7 @@ static void sig_bot_read(BOT_REC *bot)
 			if (reconnect) {
 				/* wasn't intentional disconnection from
 				   our uplink, reconnect */
-				botnet_connect(botnet->name);
+				botnet_connect(botnet);
 			}
 			break;
 		}
@@ -178,7 +194,7 @@ static void sig_botnet_connected(int handle, BOT_UPLINK_REC *uplink)
 
 	if (handle == -1) {
 		/* error, try another bot */
-		botnet_connect(botnet->name);
+		botnet_connect(botnet);
 		return;
 	}
 
@@ -199,20 +215,16 @@ static void sig_botnet_connected(int handle, BOT_UPLINK_REC *uplink)
 	bot_send_cmdv(bot, "NICK %s", botnet->nick);
 }
 
-int botnet_connect(const char *network)
+void botnet_connect(BOTNET_REC *botnet)
 {
-	BOTNET_REC *botnet;
 	BOT_REC *bot;
 	BOT_UPLINK_REC *uplink, *best;
 	GSList *tmp;
 	time_t now;
 
-	g_return_val_if_fail(network != NULL, FALSE);
+	g_return_if_fail(botnet != NULL);
 
-	/* find botnet */
-	botnet = botnet_find(network);
-	if (botnet == NULL) return FALSE;
-
+	botnet->reconnect = FALSE;
 	if (botnet->bots == NULL) {
 		/* create bot record for us */
 		bot = g_new0(BOT_REC, 1);
@@ -255,13 +267,14 @@ int botnet_connect(const char *network)
 			best = uplink;
 	}
 
-	if (best == NULL)
-		return FALSE;
+	if (best == NULL) {
+		/* reconnect later */
+		botnet->reconnect = TRUE;
+	}
 
 	/* connect to uplink */
 	best->last_connect = time(NULL);
 	net_connect_nonblock(best->host, best->port, NULL, (NET_CALLBACK) sig_botnet_connected, best);
-	return TRUE;
 }
 
 static int botnet_send_botinfo(GNode *node, BOT_REC *client)
@@ -534,6 +547,8 @@ static void cmd_bots(void)
 
 void botnet_connection_init(void)
 {
+	reconnect_tag = g_timeout_add(BOTNET_RECONNECT_TIME*1000, (GSourceFunc) sig_reconnect, NULL);
+
 	signal_add("botnet event", (SIGNAL_FUNC) botnet_event);
 	signal_add("botnet event sync", (SIGNAL_FUNC) botnet_event_sync);
 	signal_add("botnet event botinfo", (SIGNAL_FUNC) botnet_event_botinfo);
@@ -544,6 +559,8 @@ void botnet_connection_init(void)
 
 void botnet_connection_deinit(void)
 {
+	g_source_remove(reconnect_tag);
+
 	signal_remove("botnet event", (SIGNAL_FUNC) botnet_event);
 	signal_remove("botnet event sync", (SIGNAL_FUNC) botnet_event_sync);
 	signal_remove("botnet event botinfo", (SIGNAL_FUNC) botnet_event_botinfo);
