@@ -52,7 +52,7 @@
 typedef struct {
 	IRC_CHANNEL_REC *channel;
 	char *ban;
-        int timeleft;
+	time_t unban_time;
 } KNOCKOUT_REC;
 
 static GString *tmpstr;
@@ -708,24 +708,19 @@ static void knockout_destroy(IRC_SERVER_REC *server, KNOCKOUT_REC *rec)
 static void knockout_timeout_server(IRC_SERVER_REC *server)
 {
 	GSList *tmp, *next;
-	time_t t;
+	time_t now;
 
 	g_return_if_fail(server != NULL);
 
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	t = server->knockout_lastcheck == 0 ? 0 :
-		time(NULL)-server->knockout_lastcheck;
-	server->knockout_lastcheck = time(NULL);
-
+        now = time(NULL);
 	for (tmp = server->knockoutlist; tmp != NULL; tmp = next) {
 		KNOCKOUT_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (rec->timeleft > t)
-			rec->timeleft -= t;
-		else {
+		if (rec->unban_time <= now) {
 			/* timeout, unban. */
 			ban_remove(rec->channel, rec->ban);
 			knockout_destroy(server, rec);
@@ -800,7 +795,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	else {
 		/* create knockout record */
 		rec = g_new(KNOCKOUT_REC, 1);
-		rec->timeleft = timeleft;
+		rec->unban_time = time(NULL)+timeleft;
 		rec->channel = channel;
 		rec->ban = banmasks;
 

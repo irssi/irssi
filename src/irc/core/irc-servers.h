@@ -87,7 +87,6 @@ struct _IRC_SERVER_REC {
 
 	/* /knockout ban list */
 	GSList *knockoutlist;
-	time_t knockout_lastcheck;
 
 	GHashTable *splits; /* For keeping track of netsplits */
 	GSList *split_servers; /* Servers that are currently in split */
