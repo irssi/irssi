@@ -112,19 +112,6 @@ static void init_userinfo(void)
 		nick = settings_get_str("nick");
 	}
 
-	/* alternate nick */
-        set = settings_get_str("alternate_nick");
-	if (set == NULL || *set == '\0') {
-		if (strlen(nick) < 9)
-			str = g_strconcat(nick, "_", NULL);
-		else {
-			str = g_strdup(nick);
-			str[strlen(str)-1] = '_';
-		}
-		settings_set_str("alternate_nick", str);
-		g_free(str);
-	}
-
 	/* host name */
         set = settings_get_str("hostname");
 	if (set == NULL || *set == '\0') {

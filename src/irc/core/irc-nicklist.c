@@ -255,8 +255,9 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 	}
 
 	/* nick already in use - need to change it .. */
-	if (strcmp(server->nick, server->connrec->nick) == 0 &&
-	    server->connrec->alternate_nick != NULL) {
+	if (g_strcasecmp(server->nick, server->connrec->nick) == 0 &&
+	    server->connrec->alternate_nick != NULL &&
+	    g_strcasecmp(server->connrec->alternate_nick, server->nick) != 0) {
 		/* first try, so try the alternative nick.. */
 		g_free(server->nick);
 		server->nick = g_strdup(server->connrec->alternate_nick);
