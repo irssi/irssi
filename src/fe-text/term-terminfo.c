@@ -376,7 +376,7 @@ static void term_printed_text(int count)
 	vcx += count;
 	while (vcx >= term_width) {
 		vcx -= term_width;
-		if (vcy < term_height) vcy++;
+		if (vcy < term_height-1) vcy++;
 		if (vcx > 0) term_lines_empty[vcy] = FALSE;
 	}
 }
