@@ -50,7 +50,7 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	const char *nickmode;
-	int for_me, print_channel;
+	int for_me, print_channel, level;
 	char *color;
 
 	chanrec = irc_channel_find(server, target);
@@ -67,24 +67,27 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
 		print_channel = TRUE;
 
+	level = MSGLEVEL_PUBLIC |
+		(color != NULL ? MSGLEVEL_HILIGHT :
+		 (for_me ? MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT));
 	if (!print_channel) {
 		/* message to active channel in window */
 		if (color != NULL) {
 			/* highlighted nick */
-			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
-				    IRCTXT_PUBMSG_HILIGHT, color, nick, msg, nickmode);
+			printformat(server, target, level, IRCTXT_PUBMSG_HILIGHT,
+				    color, nick, msg, nickmode);
 		} else {
-			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_HILIGHT : 0),
+			printformat(server, target, level,
 				    for_me ? IRCTXT_PUBMSG_ME : IRCTXT_PUBMSG, nick, msg, nickmode);
 		}
 	} else {
 		/* message to not existing/active channel */
 		if (color != NULL) {
 			/* highlighted nick */
-			printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_HILIGHT,
-				    IRCTXT_PUBMSG_HILIGHT_CHANNEL, color, nick, target, msg, nickmode);
+			printformat(server, target, level, IRCTXT_PUBMSG_HILIGHT_CHANNEL,
+				    color, nick, target, msg, nickmode);
 		} else {
-			printformat(server, target, MSGLEVEL_PUBLIC | (for_me ? MSGLEVEL_HILIGHT : 0),
+			printformat(server, target, level,
 				    for_me ? IRCTXT_PUBMSG_ME_CHANNEL : IRCTXT_PUBMSG_CHANNEL,
 				    nick, target, msg, nickmode);
 		}

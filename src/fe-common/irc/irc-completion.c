@@ -139,7 +139,7 @@ static int nick_completion_timeout(void)
 {
 	MODULE_SERVER_REC *mserver;
 	MODULE_CHANNEL_REC *mchannel;
-	GSList *tmp, *link;
+	GSList *tmp;
 	time_t now;
 	int len;
 
@@ -153,8 +153,8 @@ static int nick_completion_timeout(void)
 		mserver = MODULE_DATA(rec);
 		len = g_slist_length(mserver->lastmsgs);
 		if (len > 0 && len >= settings_get_int("completion_keep_privates")) {
-			link = g_slist_last(mserver->lastmsgs);
-                        last_msg_free(mserver, link->data);
+                        /* remove the oldest msg nick. */
+			last_msg_free(mserver, mserver->lastmsgs->data);
 		}
 	}
 
@@ -341,10 +341,8 @@ static GList *convert_msglist(GSList *msglist)
 	while (msglist != NULL) {
 		LAST_MSG_REC *rec = msglist->data;
 
-                list = g_list_append(list, g_strdup(rec->nick));
-
+                list = g_list_append(list, rec->nick);
 		msglist = g_slist_remove(msglist, rec);
-		g_free(rec->nick);
 		g_free(rec);
 	}
 
