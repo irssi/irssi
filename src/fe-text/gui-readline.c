@@ -175,7 +175,7 @@ static void key_send_line(void)
         char *str, *add_history;
 
 	str = gui_entry_get_text(active_entry);
-	if (str == NULL || *str == '\0') {
+	if (str == NULL || (*str == '\0' && redir == NULL)) {
                 g_free(str);
 		return;
 	}
