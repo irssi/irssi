@@ -1,5 +1,5 @@
 
-@SYNTAX:ircnet@
+@SYNTAX:network@
 
      -kicks: Maximum number of nicks in one /KICK command
      -msgs: Maximum number of nicks in one /MSG command
@@ -12,7 +12,7 @@
      -autosendcmd: Command to send after connecting to a server   
         
 With -autosendcmd argument you can automatically run any commands
-after connecting to ircnet. This is useful for automatically
+after connecting to network. This is useful for automatically
 identifying yourself to NickServ, for example
 
 Shows and changes the settings of defined IRC networks.
