@@ -33,6 +33,7 @@
 /* our own curses checks */
 #undef HAVE_NCURSES_USE_DEFAULT_COLORS
 #undef HAVE_CURSES_IDCOK
+#undef HAVE_CURSES_RESIZETERM
 
 /* nls */
 #undef ENABLE_NLS
