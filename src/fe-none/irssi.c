@@ -64,10 +64,11 @@ void noui_init(void)
 	signal_add("reload", (SIGNAL_FUNC) sig_reload);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
 
+	signal_emit("irssi init finished", 0);
+
 #ifdef HAVE_STATIC_PERL
         perl_core_init();
 #endif
-	signal_emit("irssi init finished", 0);
 }
 
 void noui_deinit(void)
