@@ -264,6 +264,8 @@ static void cmd_window_number(const char *data)
 		active_win->sticky_refnum =
 			g_hash_table_lookup(optlist, "sticky") != NULL;
 	}
+
+        cmd_params_free(free_arg);
 }
 
 /* SYNTAX: WINDOW NAME <name> */
