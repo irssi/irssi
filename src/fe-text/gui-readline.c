@@ -81,10 +81,10 @@ static void handle_key_redirect(int key)
 	data = redir->data;
 	g_free_and_null(redir);
 
+	gui_entry_set_prompt(active_entry, "");
+
 	if (func != NULL)
 		func(key, data, active_win->active_server, active_win->active);
-
-	gui_entry_set_prompt(active_entry, "");
 }
 
 static void handle_entry_redirect(const char *line)
@@ -98,12 +98,12 @@ static void handle_entry_redirect(const char *line)
 	data = redir->data;
 	g_free_and_null(redir);
 
+	gui_entry_set_prompt(active_entry, "");
+
 	if (func != NULL) {
 		func(line, data, active_win->active_server,
 		     active_win->active);
 	}
-
-	gui_entry_set_prompt(active_entry, "");
 }
 
 static int get_scroll_count(void)
