@@ -6,14 +6,14 @@ signal_emit(signal, ...)
 PREINIT:
         STRLEN n_a;
 CODE:
-	void *p[6];
+	void *p[7];
 	int n;
 
 	memset(p, 0, sizeof(p));
-	for (n = 1; n < items && n < 6; n++) {
+	for (n = 1; n < items && n < 7; n++) {
 		p[n-1] = SvPOKp(ST(n)) ? SvPV(ST(n), n_a) : (void *) SvIV((SV*)SvRV(ST(n)));
 	}
-	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5]);
+	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
 
 void
 signal_add(signal, func)
