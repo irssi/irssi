@@ -492,7 +492,7 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	*name = g_strdup(hostname);
 #else
 	if (ip->family != AF_INET) return -1;
-	hp = gethostbyaddr(&ip->ip, 4, AF_INET);
+	hp = gethostbyaddr((const char *) &ip->ip, 4, AF_INET);
 	if (hp == NULL) return -1;
 
 	*name = g_strdup(hp->h_name);
