@@ -218,12 +218,14 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 	WINDOW_REC *window;
 	GSList *tmp;
 	char *str;
+	int clear_waiting;
 
 	g_return_if_fail(item != NULL);
 
 	str = item->server == NULL ? NULL :
 		g_strdup_printf("%s %s", ((SERVER_REC *) item->server)->tag, item->name);
 
+	clear_waiting = TRUE;
 	window = NULL;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
@@ -239,6 +241,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 			   some waiting list? */
 			if (waiting_channels_get(rec, str)) {
 				window = rec;
+				clear_waiting = FALSE;
 				break;
 			}
 		}
@@ -251,6 +254,13 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 	} else {
 		/* use existing window */
 		window_add_item(window, item, automatic);
+	}
+
+	if (clear_waiting) {
+		/* clear window's waiting_channels list */
+		g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL),
+		g_slist_free(window->waiting_channels);
+                window->waiting_channels = NULL;
 	}
 }
 
