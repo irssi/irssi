@@ -320,8 +320,9 @@ static void dcc_chat_listen(CHAT_DCC_REC *dcc)
 
 	/* TODO: add paranoia check - see dcc-files.c */
 
-	g_source_remove(dcc->tagconn);
 	net_disconnect(dcc->handle);
+	g_source_remove(dcc->tagconn);
+	dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
 	dcc->handle = handle;
@@ -349,6 +350,8 @@ static void sig_chat_connected(CHAT_DCC_REC *dcc)
 
 	/* connect ok. */
 	g_source_remove(dcc->tagconn);
+	dcc->tagconn = -1;
+
 	dcc->starttime = time(NULL);
 	dcc->sendbuf = net_sendbuffer_create(dcc->handle, 0);
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,

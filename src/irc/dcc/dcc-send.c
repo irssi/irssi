@@ -128,8 +128,9 @@ static void dcc_send_connected(SEND_DCC_REC *dcc)
 	   that the host of the nick who we sent the request matches the
 	   address who connected us. */
 
-	g_source_remove(dcc->tagconn);
 	net_disconnect(dcc->handle);
+	g_source_remove(dcc->tagconn);
+        dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
 	dcc->handle = handle;

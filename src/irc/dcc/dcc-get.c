@@ -180,6 +180,7 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 	}
 
 	g_source_remove(dcc->tagconn);
+        dcc->tagconn = -1;
 
 	g_free_not_null(dcc->file);
 	dcc->file = dcc_get_download_path(dcc->arg);
