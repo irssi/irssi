@@ -94,10 +94,8 @@ int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 	case 'F':
 		/* flashing - ignore */
 		break;
-	case 'N':
-		/* don't put clear-color tag at the end of the output - ignore */
-		break;
 	case 'n':
+	case 'N':
 		/* default color */
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_DEFAULTS);

@@ -12,13 +12,16 @@
    %p      %P              magenta (think: purple)
    %c      %C      %6      cyan            bold cyan       cyan
    %w      %W      %7      white           bold white      white
-   %n                      Turn off all colors and other formatting
+   %n      %N              Turn off all colors and other formatting
    %U                      Underline on/off
    %8                      Reverse on/off
    %9      %_              Bold on/off
    %:                      Insert newline
    %|                      Marks the indentation position
    %%                      A single %
+
+ In .theme files %n works a bit differently. See default.theme
+ for more information.
 
  MIRC colors that you can use when writing text to channel and with
  hilighting text:

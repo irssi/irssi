@@ -42,7 +42,8 @@
 # if there was /FORMAT test %g{foo}bar, and foo = "%Y$0%n", irssi would
 # print yellow "foo" (as set with %Y) but "bar" would be green, which was
 # set at the beginning before the {foo} template. If there wasn't the %g
-# at start, the normal behaviour of %n would occur.
+# at start, the normal behaviour of %n would occur. If you _really_ want
+# to use the terminal's default color, use %N.
 
 #############################################################################
 
@@ -135,7 +136,7 @@ abstracts = {
 
   # public message in channel, $0 = nick mode, $1 = nick
   pubmsgnick = "{msgnick $0 $1-}";
-  pubnick = "%w$0-%n";
+  pubnick = "%N$0-%n";
 
   # public message in channel meant for me, $0 = nick mode, $1 = nick
   pubmsgmenick = "{msgnick $0 $1-}";
