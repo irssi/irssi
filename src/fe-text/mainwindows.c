@@ -148,7 +148,7 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 
 		if (rec != skip_window && WINDOW_MAIN(rec) == mainwin) {
                         window_set_active(rec);
-                        return;
+                        break;
 		}
 	}
 
