@@ -362,7 +362,6 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 {
 #ifdef HAVE_IPV6
 	struct addrinfo req, *ai;
-	char hbuf[NI_MAXHOST];
 	int host_error;
 #else
 	struct hostent *hp;
@@ -378,19 +377,15 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 #ifdef HAVE_IPV6
 	memset(&req, 0, sizeof(struct addrinfo));
 	req.ai_socktype = SOCK_STREAM;
+	req.ai_flags = AI_CANONNAME;
 
 	/* save error to host_error for later use */
 	host_error = getaddrinfo(ipname, NULL, &req, &ai);
 	if (host_error != 0)
 		return host_error;
+	*name = g_strdup(ai->ai_canonname);
 
-	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf,
-			sizeof(hbuf), NULL, 0, 0))
-		return 1;
-
-	/*FIXME: how does this work? *name = g_strdup(ai->?);*/
 	freeaddrinfo(ai);
-	return 1;
 #else
 	hp = gethostbyaddr(ipname, strlen(ipname), AF_INET);
 	if (hp == NULL) return -1;
