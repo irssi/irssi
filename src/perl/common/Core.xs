@@ -316,12 +316,28 @@ PPCODE:
 	}
 
 void
+command_bind_first(cmd, func, category = "Perl scripts' commands")
+	char *cmd
+	char *category
+	char *func
+CODE:
+	perl_command_bind_first(cmd, category, func);
+
+void
 command_bind(cmd, func, category = "Perl scripts' commands")
 	char *cmd
 	char *category
 	char *func
 CODE:
 	perl_command_bind(cmd, category, func);
+
+void
+command_bind_last(cmd, func, category = "Perl scripts' commands")
+	char *cmd
+	char *category
+	char *func
+CODE:
+	perl_command_bind_last(cmd, category, func);
 
 void
 command_runsub(cmd, data, server, item)

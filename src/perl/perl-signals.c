@@ -213,9 +213,12 @@ SIG_FUNC_DECL(0, first);
 SIG_FUNC_DECL(1, default);
 SIG_FUNC_DECL(2, last);
 
+#define priority_get_func(priority) \
+	(priority == 0 ? sig_func_first : \
+	priority == 1 ? sig_func_default : sig_func_last)
+
 #define perl_signal_get_func(rec) \
-	((rec)->priority == 0 ? sig_func_first : \
-	(rec)->priority == 1 ? sig_func_default : sig_func_last)
+	(priority_get_func((rec)->priority))
 
 void perl_signal_add_to_int(const char *signal, const char *func,
 			    int priority, int add_signal)
@@ -319,14 +322,15 @@ void perl_signal_remove(const char *signal, const char *func)
 	g_free(fullfunc);
 }
 
-void perl_command_bind(const char *cmd, const char *category, const char *func)
+void perl_command_bind_to(const char *cmd, const char *category,
+			  const char *func, int priority)
 {
 	char *signal;
 
-	command_bind(cmd, category, sig_func_default);
+	command_bind(cmd, category, priority_get_func(priority));
 
 	signal = g_strconcat("command ", cmd, NULL);
-	perl_signal_add_to_int(signal, func, 1, FALSE);
+	perl_signal_add_to_int(signal, func, priority, FALSE);
 	g_free(signal);
 }
 
