@@ -509,10 +509,10 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 
 	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTARGS | PARAM_FLAG_GETREST, &args, &reason);
 
-	if (stristr(args, "-all") != NULL)
-		g_slist_foreach(servers, (GFunc) server_send_away, reason);
-	else
+	if (stristr(args, "-one"))
 		server_send_away(server, reason);
+	else
+		g_slist_foreach(servers, (GFunc) server_send_away, reason);
 
 	g_free(params);
 }
