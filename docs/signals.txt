@@ -104,10 +104,10 @@ channels, nicklist:
 
 ctcp.c:
 
- "ctcp msg "<cmd>, char *args, SERVER_REC, char *nick, char *addr, char *target
- "default ctcp msg", char *args, SERVER_REC, char *nick, char *addr, char *target
- "ctcp reply "<cmd>, char *args, SERVER_REC, char *nick, char *addr, char *target
- "default ctcp reply", char *args, SERVER_REC, char *nick, char *addr, char *target
+ "ctcp msg "<cmd>, SERVER_REC, char *args, char *nick, char *addr, char *target
+ "default ctcp msg", SERVER_REC, char *args, char *nick, char *addr, char *target
+ "ctcp reply "<cmd>, SERVER_REC, char *args, char *nick, char *addr, char *target
+ "default ctcp reply", SERVER_REC, char *args, char *nick, char *addr, char *target
 
 irc-log.c:
  "awaylog show", LOG_REC, int away_msgs, int filepos
@@ -121,13 +121,13 @@ irc-servers.c:
 irc.c:
 
  "server event", SERVER_REC, char *data, char *sender_nick, char *sender_address
- "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
- "default event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+ "event "<cmd>, SERVER_REC, char *args, char *sender_nick, char *sender_address
+ "default event", SERVER_REC, char *data, char *sender_nick, char *sender_address
 
  "server incoming", SERVER_REC, char *data
 
 (for perl parser..)
- "redir "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
+ "redir "<cmd>, SERVER_REC, char *args, char *sender_nick, char *sender_address
 
 lag.c:
  "server lag", SERVER_REC
