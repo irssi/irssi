@@ -940,7 +940,7 @@ static void cmd_window_stick(const char *data)
         mainwin = active_mainwin;
         win = active_mainwin->active;
 
-	if (is_numeric(data, '\0')) {
+	if (is_numeric(data, ' ')) {
 		/* ref# specified */
 		win = window_find_refnum(atoi(data));
 		if (win == NULL) {
