@@ -60,8 +60,6 @@ typedef struct {
 	                 there actually is, to make flood control remember
 			 how many messages can be sent before starting the
 			 flood control */
-	int cmd_last_split; /* Last command wasn't sent entirely to server.
-	                       First item in `cmdqueue' should be re-sent. */
 	GSList *cmdqueue;
 	GTimeVal wait_cmd; /* don't send anything to server before this */
 	GTimeVal last_cmd; /* last time command was sent to server */

@@ -89,10 +89,9 @@ void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 	if (server == NULL) return;
 
         g_get_current_time(&now);
-	send_now = !server->cmd_last_split &&
+	send_now = g_timeval_cmp(&now, &server->wait_cmd) >= 0 &&
 		(server->cmdcount < server->max_cmds_at_once ||
-		 server->cmd_queue_speed <= 0) &&
-		g_timeval_cmp(&now, &server->wait_cmd) >= 0;
+		 server->cmd_queue_speed <= 0);
 
         cmd_send(server, cmd, send_now, FALSE);
 }
@@ -119,7 +118,7 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd)
 	g_return_if_fail(cmd != NULL);
 	if (server == NULL) return;
 
-        cmd_send(server, cmd, !server->cmd_last_split, TRUE);
+        cmd_send(server, cmd, TRUE, TRUE);
 }
 
 static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post, int arg)

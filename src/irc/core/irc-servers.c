@@ -227,7 +227,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
 	long usecs;
 	char *cmd;
-	int len, add_rawlog;
+	int len;
 
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -235,14 +235,12 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	if (server->cmdcount == 0 && server->cmdqueue == NULL)
 		return;
 
-	if (!server->cmd_last_split) {
-		if (g_timeval_cmp(now, &server->wait_cmd) == -1)
-			return;
+	if (g_timeval_cmp(now, &server->wait_cmd) == -1)
+		return;
 
-                usecs = get_timeval_diff(now, &server->last_cmd);
-		if (usecs < server->cmd_queue_speed)
-			return;
-	}
+	usecs = get_timeval_diff(now, &server->last_cmd);
+	if (usecs < server->cmd_queue_speed)
+		return;
 
 	server->cmdcount--;
 	if (server->cmdqueue == NULL) return;
@@ -251,28 +249,19 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	cmd = server->cmdqueue->data;
 	len = strlen(cmd);
 
-	add_rawlog = !server->cmd_last_split;
-
 	if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
 		/* something bad happened */
-		g_warning("net_sendbuffer_send() failed: %s", g_strerror(errno));
+		g_warning("net_sendbuffer_send() failed: %s",
+			  g_strerror(errno));
 		return;
 	}
 
 	server->wait_cmd.tv_sec = 0;
 	memcpy(&server->last_cmd, now, sizeof(GTimeVal));
-	if (server->cmd_last_split)
-		server->cmd_last_split = FALSE;
 
-	if (add_rawlog) {
-		/* add to rawlog without CR+LF */
-		int slen;
-
-		slen = strlen(cmd);
-		cmd[slen-2] = '\0';
-		rawlog_output(server->rawlog, cmd);
-		cmd[slen-2] = '\r';
-	}
+	/* add to rawlog without CR+LF */
+	cmd[len-2] = '\0';
+	rawlog_output(server->rawlog, cmd);
 
 	/* remove from queue */
 	g_free(cmd);
