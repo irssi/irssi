@@ -282,8 +282,15 @@ void screen_window_clear(SCREEN_WINDOW *window)
 void screen_window_move(SCREEN_WINDOW *window, int x, int y,
 			int width, int height)
 {
+	/* some checks to make sure the window is visible in screen,
+	   otherwise curses could get nasty and not show our window anymore. */
+        if (width < 1) width = 1;
+	if (height < 1) height = 1;
+	if (x+width > screen_width) x = screen_width-width;
+	if (y+height > screen_height) y = screen_height-height;
+
 #ifdef HAVE_CURSES_WRESIZE
-        if (window->width != width || window->height != height)
+	if (window->width != width || window->height != height)
 		wresize(window->win, height, width);
         if (window->x != x || window->y != y)
 		mvwin(window->win, y, x);

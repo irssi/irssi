@@ -601,8 +601,8 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 		view->cache = textbuffer_cache_get(view->siblings, width);
 	}
 
-	view->width = width;
-	view->height = height;
+	view->width = width > 10 ? width : 10;
+	view->height = height > 1 ? height : 1;
 
 	if (view->buffer->first_line == NULL) {
                 view->empty_linecount = height;

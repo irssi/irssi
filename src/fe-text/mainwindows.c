@@ -93,7 +93,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 
         window->width += xdiff;
 	window->height = window->last_line-window->first_line+1;
-        mainwindow_set_screen_size(window);
+	mainwindow_set_screen_size(window);
         mainwindow_resize_windows(window);
 
 	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
@@ -337,59 +337,41 @@ GSList *mainwindows_get_sorted(int reverse)
 	return list;
 }
 
-static void mainwindows_resize_too_small(int xdiff, int ydiff)
-{
-	GSList *sorted, *tmp;
-        int space, moved;
-
-	/* terminal is too small - just take the space whereever possible */
-	sorted = mainwindows_get_sorted(FALSE);
-	moved = 0;
-	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
-
-		space = rec->height;
-		if (ydiff == 0 || space <= 0) {
-			if (moved > 0) {
-				rec->first_line -= moved;
-				rec->last_line -= moved;
-				signal_emit("mainwindow moved", 1, rec);
-			}
-			continue;
-		}
-
-		if (space > -ydiff) space = -ydiff;
-		ydiff += space;
-		rec->first_line -= moved;
-		moved += space;
-		rec->last_line -= space;
-		mainwindow_resize(rec, xdiff, -space);
-	}
-	g_slist_free(sorted);
-}
-
 static void mainwindows_resize_smaller(int xdiff, int ydiff)
 {
+        MAIN_WINDOW_REC *rec;
 	GSList *sorted, *tmp;
         int space;
 
-        space = 0;
-	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
+	for (;;) {
+		sorted = mainwindows_get_sorted(TRUE);
+		space = 0;
+		for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+			rec = tmp->data;
+			space += MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
+		}
 
-		space += MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
-	}
+		if (space >= -ydiff)
+			break;
 
-	if (space < -ydiff) {
-		/* not enough space, use different algorithm */
-		mainwindows_resize_too_small(xdiff, ydiff);
-		return;
+		rec = sorted->data;
+		sorted = g_slist_remove(sorted, rec);
+
+		if (sorted != NULL) {
+			/* terminal is too small - destroy the
+			   uppest window and try again */
+			mainwindow_destroy(rec);
+		} else {
+			/* only one window in screen.. just force the resize */
+			rec->last_line += ydiff;
+			mainwindow_resize(rec, xdiff, ydiff);
+                        return;
+		}
 	}
 
 	/* resize windows that have space */
-	sorted = mainwindows_get_sorted(TRUE);
 	for (tmp = sorted; tmp != NULL && ydiff < 0; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
+		rec = tmp->data;
 
 		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (space <= 0) {
