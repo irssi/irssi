@@ -7,6 +7,9 @@
 
 use Irssi;
 use Irssi::Irc;
+use strict;
+
+my %keep_channels;
 
 sub cmd_mlock {
 	my ($data, $server) = @_;
@@ -14,25 +17,26 @@ sub cmd_mlock {
 
 	$keep_channels{$channel} = $mode;
 	mlock_check_mode($server, $channel);
-        return 1;
 }
 
 sub mlock_check_mode {
         my ($server, $channame) = @_;
 
-	$channel = $server->channel_find($channame);
-	return if (!channel || !$channel->{chanop});
+	my $channel = $server->channel_find($channame);
+	return if (!$channel || !$channel->{chanop});
 
-        $keep_mode = $keep_channels{$channame};
+        my $keep_mode = $keep_channels{$channame};
 	return if (!$keep_mode);
 
 	# old channel mode
+	my ($oldmode, $oldkey, $oldlimit);
 	$oldmode = $channel->{mode};
         $oldmode =~ s/^([^ ]*).*/\1/;
 	$oldkey = $channel->{key};
 	$oldlimit = $channel->{limit};
 
 	# get the new channel key/limit
+	my (@newmodes, $newkey, $limit);
 	@newmodes = split(/ /, $keep_mode); $keep_mode = $newmodes[0];
 	if ($keep_mode =~ /k/) {
 		if ($keep_mode =~ /k.*l/) {
@@ -49,15 +53,15 @@ sub mlock_check_mode {
 	}
 
 	# check the differences
-	undef %allmodes;
+	my %allmodes;
 	$keep_mode =~ s/^\+//;
-	for ($n = 0; $n < length($keep_mode); $n++) {
-		$modechar = substr($keep_mode, $n, 1);
+	for (my $n = 0; $n < length($keep_mode); $n++) {
+		my $modechar = substr($keep_mode, $n, 1);
 		$allmodes{$modechar} = '+';
 	}
 
-	for ($n = 0; $n < length($oldmode); $n++) {
-		$modechar = substr($oldmode, $n, 1);
+	for (my $n = 0; $n < length($oldmode); $n++) {
+		my $modechar = substr($oldmode, $n, 1);
 
 		if ($allmodes{$modechar} eq '+') {
 			next if (($modechar eq "k" && $newkey ne $oldkey) ||
@@ -69,8 +73,8 @@ sub mlock_check_mode {
 	}
 
 	# create the mode change string
-        $modecmd = ""; $extracmd = "";
-	foreach $mode (keys %allmodes) {
+	my ($modecmd, $extracmd);
+	foreach my $mode (keys %allmodes) {
 		Irssi::print("key = '$mode':".$allmodes{$mode});
 		if ($mode eq "k") {
 			if ($allmodes{$mode} eq '+') {

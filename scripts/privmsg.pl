@@ -1,6 +1,7 @@
 # listen PRIVMSGs - send a notice to yourself when your nick is meantioned
 
 use Irssi;
+use strict;
 
 sub event_privmsg {
 	my ($server, $data, $nick, $address) = @_;
@@ -8,7 +9,7 @@ sub event_privmsg {
 
 	return if (!$server->ischannel($target));
 
-	$mynick = $server->{nick};
+	my $mynick = $server->{nick};
 	return if ($text !~ /\b$mynick\b/);
 
 	$server->command("/notice $mynick In channel $target, $nick!$address said: $text");

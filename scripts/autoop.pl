@@ -1,8 +1,9 @@
 # /AUTOOP <*|#channel> [<nickmasks>]
 
 use Irssi;
+use strict;
 
-my %opnicks, %temp_opped;
+my (%opnicks, %temp_opped);
 
 sub cmd_autoop {
 	my ($data) = @_;
@@ -12,7 +13,7 @@ sub cmd_autoop {
 		if (!%opnicks) {
 			Irssi::print("Usage: /AUTOOP <*|#channel> [<nickmasks>]");
 			Irssi::print("No-one's being auto-opped currently.");
-			return 1;
+			return;
 		}
 
 		Irssi::print("Currently auto-opping in channels:");
@@ -25,7 +26,7 @@ sub cmd_autoop {
 				Irssi::print("$channel: $masks");
 			}
 		}
-		return 1;
+		return;
 	}
 
 	if ($masks eq "") {
@@ -39,17 +40,16 @@ sub cmd_autoop {
 	} else {
 		Irssi::print("$channel: Now auto-opping: $masks");
 	}
-	return 1;
 }
 
 sub autoop {
 	my ($channel, $masks, @nicks) = @_;
-	my $server, $nickrec;
+	my ($server, $nickrec);
 
 	$server = $channel->{server};
 	foreach $nickrec (@nicks) {
-		$nick = $nickrec->{nick};
-		$host = $nickrec->{host};
+		my $nick = $nickrec->{nick};
+		my $host = $nickrec->{host};
 
                 if (!$temp_opped{$nick} &&
 		    $server->masks_match($masks, $nick, $host)) {

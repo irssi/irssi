@@ -2,17 +2,19 @@
 
 use Irssi;
 use Irssi::Irc;
+use strict;
 
-$quitfile = "$ENV{HOME}/.irssi/irssi.quit";
+my $quitfile = glob "~/.irssi/irssi.quit";
 
 sub cmd_quit {
 	my ($data, $server, $channel) = @_;
 
 	open (f, $quitfile) || return;
-	$lines = 0; while(<f>) { $lines++; };
+	my $lines = 0; while(<f>) { $lines++; };
 
-	$line = int(rand($lines))+1;
+	my $line = int(rand($lines))+1;
 
+	my $quitmsg;
 	seek(f, 0, 0); $. = 0;
 	while(<f>) {
 		next if ($. != $line);
@@ -23,8 +25,7 @@ sub cmd_quit {
 	}
 	close(f);
 
-	@servers = Irssi::servers;
-	foreach $server (@servers) {
+	foreach my $server (Irssi::servers) {
 		$server->command("/disconnect ".$server->{tag}." $quitmsg");
 	}
 }

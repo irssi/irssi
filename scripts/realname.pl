@@ -2,6 +2,7 @@
 
 use Irssi;
 use Irssi::Irc;
+use strict;
 
 sub cmd_realname {
 	my ($data, $server, $channel) = @_;
@@ -20,7 +21,6 @@ sub cmd_realname {
 			  "event 313", "event empty", 1,
 			  "event 317", "event empty", 1,
 			  "event 319", "event empty", 1);
-	return 1;
 }
 
 sub event_rn_whois {
@@ -28,7 +28,6 @@ sub event_rn_whois {
 	$realname =~ s/^://;
 
 	Irssi::print("%_$nick%_ is $realname");
-	return 1;
 }
 
 Irssi::command_bind('rn', 'cmd_realname');

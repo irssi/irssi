@@ -1,10 +1,11 @@
 # /CLONES - display real name of nick
 
 use Irssi;
+use strict;
 
 sub cmd_clones {
 	my ($data, $server, $channel) = @_;
-	my %hostnames, $host, @nicks, $nick;
+	my (%hostnames, $host, @nicks, $nick);
 
 	@nicks = $channel->nicks();
 
@@ -19,7 +20,6 @@ sub cmd_clones {
 			$channel->print("$host: $clones");
 		}
 	}
-	return 1;
 }
 
 Irssi::command_bind('clones', 'cmd_clones');
