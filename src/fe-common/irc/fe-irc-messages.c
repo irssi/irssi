@@ -81,7 +81,7 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 	char *nickmode, *optarget;
 
 	nickmode = channel_get_nickmode(channel_find(server, target),
-					server->nick);
+					nick);
 
         optarget = g_strconcat("@", target, NULL);
 	printformat_module("fe-common/core", server, target,
