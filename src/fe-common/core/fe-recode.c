@@ -152,9 +152,9 @@ static void fe_recode_remove_cmd (const char *data, SERVER_REC *server, WI_ITEM_
 static void read_settings(void)
 {
 	/* preserve the valid values */
-	const char *old_term_charset = g_strdup(term_charset);
-	const char *old_recode_fallback = g_strdup(recode_fallback);
-	const char *old_recode_out_default = g_strdup(recode_out_default);
+	char *old_term_charset = g_strdup(term_charset);
+	char *old_recode_fallback = g_strdup(recode_fallback);
+	char *old_recode_out_default = g_strdup(recode_out_default);
 	
 	if (recode_fallback)
 		g_free(recode_fallback);
@@ -196,6 +196,10 @@ static void read_settings(void)
 		recode_out_default = is_valid_charset(old_recode_out_default) ? g_strdup(old_recode_out_default) : NULL;
 		settings_set_str("recode_out_default_charset", recode_out_default);
 	}
+
+	g_free(old_term_charset);
+	g_free(old_recode_fallback);
+	g_free(old_recode_out_default);
 }
 
 static void message_own_public(const SERVER_REC *server, const char *msg,
