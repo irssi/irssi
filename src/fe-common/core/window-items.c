@@ -267,7 +267,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		/* use this window IF:
 		     - reuse_unused_windows is ON
 		     - window has no existing items
-		     - window has no level
+		     - window has no name
 		     - window has no sticky binds (/LAYOUT SAVEd)
 		     - we already haven't found "good enough" window,
 		       except if
@@ -276,7 +276,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 			   one doesn't
 		     */
 		if (reuse_unused_windows && rec->items == NULL &&
-		    rec->level == 0 && !window_bind_has_sticky(rec) &&
+		    rec->name == NULL && !window_bind_has_sticky(rec) &&
 		    (window == NULL || rec == active_win ||
 		     window->bound_items != NULL))
 			window = rec;
