@@ -435,7 +435,8 @@ dnl **
 dnl ** internationalization support
 dnl **
 
-ALL_LINGUAS="pl fi pt_BR fr de"
+dnl ALL_LINGUAS="pl fi pt_BR fr de"
+ALL_LINGUAS=""
 AM_GNU_GETTEXT
 
 AC_OUTPUT(
