@@ -255,8 +255,17 @@ abstracts = {
   # background for topicbar (same default)
   #sb_topic_bg = "%4";
 
+  # text at the beginning of statusbars. sb-item already puts
+  # space there,so we don't use anything by default.
+  sbstart = "";
+  # text at the end of statusbars. Use space so that it's never
+  # used for anything.
+  sbend = " ";
+
   sb = " %c[%n$0-%c]%n";
   sbmode = "(%c+%n$0-)";
   sbaway = " (%GzZzZ%n)";
   sbservertag = ":$0 (change with ^X)";
+
+  prompt = "[$0-] ";
 };
