@@ -390,8 +390,10 @@ static char *escape_target(const char *target)
 		else {
 			if (*target == '%')
 				*p++ = '%';
-			*p++ = *target++;
+			*p++ = *target;
 		}
+
+                target++;
 	}
 	*p = '\0';
 
