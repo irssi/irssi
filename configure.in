@@ -580,7 +580,7 @@ dnl **
 
 ALL_LINGUAS="pl pt_BR fr de sv"
 AM_GNU_GETTEXT
-AM_CONDITIONAL(HAVE_MSGFMT, test "x$MSGFMT" = "xyes")
+AM_CONDITIONAL(HAVE_MSGFMT, test "x$MSGFMT" != "xno")
 
 dnl ** common libraries needed by frontends
 COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
