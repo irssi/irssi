@@ -365,6 +365,26 @@ static void autologs_close_all(void)
 	}
 }
 
+/* '%' -> '%%', '/' -> '_' */
+static char *escape_target(const char *target)
+{
+	char *str, *p;
+
+	p = str = g_malloc(strlen(target)*2+1);
+	while (*target != '\0') {
+		if (*target == '/')
+			*p++ = '_';
+		else {
+			if (*target == '%')
+				*p++ = '%';
+			*p++ = *target++;
+		}
+	}
+	*p = '\0';
+
+        return str;
+}
+
 static void autolog_open(SERVER_REC *server, const char *target)
 {
 	LOG_REC *log;
@@ -378,9 +398,10 @@ static void autolog_open(SERVER_REC *server, const char *target)
 	}
 
 	/* '/' -> '_' - don't even accidentally try to log to
-	   #../../../file if you happen to join to such channel.. */
-	fixed_target = g_strdup(target);
-        replace_chars(fixed_target, '/', '_');
+	   #../../../file if you happen to join to such channel..
+
+	   '%' -> '%%' - so strftime() won't mess with them */
+	fixed_target = escape_target(target);
 	fname = parse_special_string(autolog_path, server, NULL,
 				     fixed_target, NULL, 0);
 	g_free(fixed_target);
