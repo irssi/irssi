@@ -8,7 +8,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002101401';
+$VERSION = '2002101402';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -988,9 +988,9 @@ sub cmd_scripassist ($$$) {
 	bg_do("info ".join(' ', @args));
     } elsif ($args[0] eq 'echo') {
 	bg_do("echo");
-    } elsif ($args[0] eq 'top' && defined $args[1]) {
-	shift @args;
-	bg_do("top ".join(' ', @args));
+    } elsif ($args[0] eq 'top') {
+	my $number = defined $args[1] ? $args[1] : 10;
+	bg_do("top ".$number);
     } elsif ($args[0] eq 'cpan' && defined $args[1]) {
 	call_openurl('http://search.cpan.org/search?mode=module&query='.$args[1]);
     } elsif ($args[0] eq 'autorun' && defined $args[1]) {
