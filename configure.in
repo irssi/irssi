@@ -364,6 +364,7 @@ cat > conftest.c <<EOF
 #include <math.h>
 int modfunc(void){return (int)floor(1.2);}
 EOF
+
 ./libtool --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
 if test ! -s conftest.lo; then
   AC_ERROR([error compiling test module])
@@ -667,22 +668,6 @@ done
 
 FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/core/libfe_common_core.a"
 
-dnl **
-dnl ** internationalization support
-dnl **
-
-ALL_LINGUAS="pl pt_BR fr de sv"
-AM_GNU_GETTEXT
-
-dnl stupid gettext.. we must not leave the po/ dir from SUBDIRS or
-dnl "make dist" doesn't work, and po/Makefile doesn't check if MSGFMT
-dnl exists or not, so instead of failing in po/ dir if there's no msgfmt,
-dnl we just do some stupid echos.
-if test "x$MSGFMT" = "xno"; then
-  MSGFMT=echo
-  GMSGFMT=echo
-fi
-
 dnl ** common libraries needed by frontends
 COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
 COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
@@ -716,8 +701,6 @@ fi
 
 AC_OUTPUT(
 Makefile
-po/Makefile.in
-intl/Makefile
 src/Makefile
 src/core/Makefile
 src/irc/Makefile

@@ -147,8 +147,8 @@ void net_disconnect_deinit(void)
 		} else if (first) {
 			/* Display the text when we have already waited
 			   for a while */
-			printf(_("Please wait, waiting for servers to close "
-				 "connections..\n"));
+			printf("Please wait, waiting for servers to close "
+			       "connections..\n");
 			fflush(stdout);
 
 			first = 0;

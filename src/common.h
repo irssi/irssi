@@ -44,7 +44,6 @@
 #endif
 
 #include "core/memdebug.h"
-#include "nls.h"
 
 #define g_free_not_null(a) \
 	G_STMT_START { \

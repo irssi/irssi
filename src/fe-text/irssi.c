@@ -282,7 +282,7 @@ int main(int argc, char **argv)
 	args_execute(argc, argv);
 
 	if (!init_screen())
-		g_error(_("Can't initialize screen handling, quitting.\n"));
+		g_error("Can't initialize screen handling, quitting.\n");
 
 	textui_finish_init();
 	main_loop = g_main_new(TRUE);

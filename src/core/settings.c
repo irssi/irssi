@@ -367,8 +367,8 @@ void settings_check_module(const char *module)
 	if (node == NULL) return;
 
         errors = g_string_new(NULL);
-	g_string_sprintf(errors, _("Unknown settings in configuration "
-				   "file for module %s:"), module);
+	g_string_sprintf(errors, "Unknown settings in configuration "
+			 "file for module %s:", module);
 
         count = 0;
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
@@ -511,7 +511,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	config = config_open(path, -1);
 	if (config == NULL) {
 		last_config_error_msg =
-			g_strdup_printf(_("Error opening configuration file %s: %s"),
+			g_strdup_printf("Error opening configuration file %s: %s",
 					path, g_strerror(errno));
 		config = config_open(NULL, -1);
 	}
@@ -536,12 +536,11 @@ static void init_configfile(void)
 	if (stat(str, &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
 		if (mkpath(str, 0700) != 0) {
-			g_error(_("Couldn't create %s directory"), str);
+			g_error("Couldn't create %s directory", str);
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {
-		g_error(_("%s is not a directory.\n"
-			  "You should remove it with command: rm ~/.irssi"),
-			  str);
+		g_error("%s is not a directory.\n"
+			"You should remove it with command: rm ~/.irssi", str);
 	}
 	g_free(str);
 
@@ -551,8 +550,8 @@ static void init_configfile(void)
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
 		last_config_error_msg =
-			g_strdup_printf(_("Ignored errors in configuration "
-					  "file:\n%s"),
+			g_strdup_printf("Ignored errors in configuration "
+					"file:\n%s",
 					config_last_error(mainconfig));
 	}
 
@@ -576,7 +575,7 @@ int settings_reread(const char *fname)
 	}
 
 	if (config_last_error(tempconfig) != NULL) {
-		str = g_strdup_printf(_("Errors in configuration file:\n%s"),
+		str = g_strdup_printf("Errors in configuration file:\n%s",
 				      config_last_error(tempconfig));
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
@@ -606,8 +605,7 @@ int settings_save(const char *fname)
 	irssi_config_save_state(fname);
 	config_last_modifycounter = mainconfig->modifycounter;
 	if (error) {
-		str = g_strdup_printf(_("Couldn't save "
-					"configuration file: %s"),
+		str = g_strdup_printf("Couldn't save configuration file: %s",
 				      config_last_error(mainconfig));
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
@@ -627,12 +625,11 @@ static void sig_autosave(void)
 		settings_save(NULL);
 	else {
 		fname = g_strconcat(mainconfig->fname, ".autosave", NULL);
-		str = g_strdup_printf(_("Configuration file was modified "
-					"while irssi was running. Saving "
-					"configuration to file '%s' instead. "
-					"Use /SAVE or /RELOAD to get rid of "
-					"this message."),
-					fname);
+		str = g_strdup_printf("Configuration file was modified "
+				      "while irssi was running. Saving "
+				      "configuration to file '%s' instead. "
+				      "Use /SAVE or /RELOAD to get rid of "
+				      "this message.", fname);
 		signal_emit("gui dialog", 2, "warning", str);
 		g_free(str);
 

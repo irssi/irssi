@@ -262,7 +262,7 @@ static void settings_save_fe(const char *fname)
 
 static void settings_save_confirm(const char *line, char *fname)
 {
-	if (g_strncasecmp(line, _("Y"), 1) == 0)
+	if (line[0] == 'Y')
 		settings_save_fe(fname);
 	g_free(fname);
 }
@@ -270,6 +270,8 @@ static void settings_save_confirm(const char *line, char *fname)
 /* SYNTAX: SAVE [<file>] */
 static void cmd_save(const char *data)
 {
+	char *format;
+
 	if (*data == '\0')
 		data = mainconfig->fname;
 
@@ -280,14 +282,17 @@ static void cmd_save(const char *data)
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_CONFIG_MODIFIED, data);
+
+	format = format_get_text(MODULE_NAME, NULL, NULL, NULL,
+				 TXT_OVERWRITE_CONFIG);
 	keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
-				_("Overwrite config (y/N)?"),
-				0, g_strdup(data));
+				format, 0, g_strdup(data));
+        g_free(format);
 }
 
 static void settings_clean_confirm(const char *line)
 {
-	if (g_strncasecmp(line, _("Y"), 1) == 0)
+	if (line[0] == 'Y')
                 settings_clean_invalid();
 }
 
@@ -295,7 +300,7 @@ static void sig_settings_errors(const char *msg)
 {
         printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", msg);
 	keyboard_entry_redirect((SIGNAL_FUNC) settings_clean_confirm,
-				_("Remove unknown settings from config file (Y/n)?"),
+				"Remove unknown settings from config file (Y/n)?",
 				0, NULL);
 }
 

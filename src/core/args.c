@@ -52,12 +52,10 @@ void args_execute(int argc, char *argv[])
 	while ((nextopt = poptGetNextOpt(con)) > 0) ;
 
 	if (nextopt != -1) {
-		printf(_("Error on option %s: %s.\n"
-			 "Run '%s --help' to see a full list of "
-			 "available command line options.\n"),
-		       poptBadOption(con, 0),
-		       poptStrerror(nextopt),
-		       argv[0]);
+		printf("Error on option %s: %s.\n"
+		       "Run '%s --help' to see a full list of "
+		       "available command line options.\n",
+		       poptBadOption(con, 0), poptStrerror(nextopt), argv[0]);
 		exit(1);
 	}
 

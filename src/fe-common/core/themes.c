@@ -788,7 +788,7 @@ static int theme_read(THEME_REC *theme, const char *path, const char *data)
 		config_parse(config);
 
 	if (config_last_error(config) != NULL) {
-		str = g_strdup_printf(_("Ignored errors in theme %s:\n%s"),
+		str = g_strdup_printf("Ignored errors in theme %s:\n%s",
 				      theme->name, config_last_error(config));
 		read_error(str);
                 g_free(str);

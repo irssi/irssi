@@ -414,9 +414,9 @@ static void sig_gui_dialog(const char *type, const char *text)
 	char *format;
 
 	if (g_strcasecmp(type, "warning") == 0)
-		format = _("%_Warning:%_ %s");
+		format = "%_Warning:%_ %s";
 	else if (g_strcasecmp(type, "error") == 0)
-		format = _("%_Error:%_ %s");
+		format = "%_Error:%_ %s";
 	else
 		format = "%s";
 

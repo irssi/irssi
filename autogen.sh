@@ -19,10 +19,6 @@ echo "/* automatically created by autogen.sh */" > irssi-version.h.in
 echo "#define IRSSI_VERSION \"@VERSION@\"" >> irssi-version.h.in
 echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h.in
 
-# create POTFILES.in
-echo "Updating POTFILES.in..."
-find src -name '*.c'|grep -v 'src/perl/.*/' > po/POTFILES.in
-
 # create help files
 echo "Creating help files..."
 perl syntax.pl
@@ -55,16 +51,6 @@ DIE=0
     echo
     echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
     echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.2d.tar.gz"
-    echo "(or a newer version if it is available)"
-    DIE=1
-  }
-}
-
-grep "^AM_GNU_GETTEXT" $srcdir/configure.in >/dev/null && {
-  (gettextize --version) < /dev/null > /dev/null 2>&1 || {
-    echo
-    echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
-    echo "Get ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
   }
@@ -107,14 +93,6 @@ xlc )
 esac
 
 rm -f aclocal.m4
-if grep "^AM_GNU_GETTEXT" configure.in >/dev/null; then
-  echo "Creating aclocal.m4 ..."
-  test -r aclocal.m4 || touch aclocal.m4
-  echo "Running gettextize...  Ignore non-fatal messages."
-  echo "no" | gettextize --force --copy
-  echo "Making aclocal.m4 writable ..."
-  test -r aclocal.m4 && chmod u+w aclocal.m4
-fi
 if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
   echo "Running libtoolize..."
   libtoolize --force --copy

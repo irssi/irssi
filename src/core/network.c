@@ -540,13 +540,13 @@ const char *net_gethosterror(int error)
 #else
 	switch (error) {
 	case HOST_NOT_FOUND:
-		return _("Host not found");
+		return "Host not found";
 	case NO_ADDRESS:
-		return _("No IP address found for name");
+		return "No IP address found for name";
 	case NO_RECOVERY:
-		return _("A non-recovable name server error occurred");
+		return "A non-recovable name server error occurred";
 	case TRY_AGAIN:
-		return _("A temporary error on an authoritative name server");
+		return "A temporary error on an authoritative name server";
 	}
 
 	/* unknown error */

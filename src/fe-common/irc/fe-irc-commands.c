@@ -396,7 +396,7 @@ static void cmd_oper_got_pass(const char *password, OPER_PASS_REC *rec)
 /* SYNTAX: OPER [<nick> [<password>]] */
 static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 {
-	char *nick, *password;
+	char *nick, *password, *format;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
@@ -414,9 +414,13 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 		rec->server = server;
 		rec->nick = g_strdup(*nick != '\0' ? nick : server->nick);
 
+		format = format_get_text(MODULE_NAME, NULL, server, NULL,
+					 IRCTXT_ASK_OPER_PASS);
+
 		keyboard_entry_redirect((SIGNAL_FUNC) cmd_oper_got_pass,
-					_("Operator password:"),
+					format,
 					ENTRY_REDIRECT_FLAG_HIDDEN, rec);
+                g_free(format);
 
 		signal_stop();
 	}

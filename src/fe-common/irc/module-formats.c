@@ -161,6 +161,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "silenced", "Silenced {nick $0}", 1, { 0 } },
 	{ "unsilenced", "Unsilenced {nick $0}", 1, { 0 } },
 	{ "silence_line", "{nick $0}: silence {ban $1}", 2, { 0, 0 } },
+	{ "ask_oper_pass", "Operator password:", 0 },
 
 	{ NULL, NULL, 0 }
 };

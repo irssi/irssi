@@ -13,7 +13,7 @@ if BUILD_SERVERTEST
 SERVERTEST=servertest
 endif
 
-SUBDIRS = po intl src $(SERVERTEST) docs scripts
+SUBDIRS = src $(SERVERTEST) docs scripts
 
 confdir = $(sysconfdir)/irssi
 conf_DATA = config default.theme colorless.theme

@@ -11,7 +11,6 @@ PERLDIR=perl
 endif
 
 noinst_HEADERS = \
-	nls.h \
 	common.h
 
 SUBDIRS = lib-popt lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI)

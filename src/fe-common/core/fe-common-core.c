@@ -119,12 +119,12 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 void fe_common_core_init(void)
 {
 	static struct poptOption options[] = {
-		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, N_("Automatically connect to server/ircnet"), N_("SERVER") },
-		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, N_("Autoconnect password"), N_("SERVER") },
-		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, N_("Autoconnect port"), N_("PORT") },
-		{ "noconnect", '!', POPT_ARG_NONE, &no_autoconnect, 0, N_("Disable autoconnecting"), NULL },
-		{ "nick", 'n', POPT_ARG_STRING, &cmdline_nick, 0, N_("Specify nick to use"), NULL },
-		{ "hostname", 'h', POPT_ARG_STRING, &cmdline_hostname, 0, N_("Specify host name to use"), NULL },
+		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, "Automatically connect to server/ircnet", "SERVER" },
+		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, "Autoconnect password", "SERVER" },
+		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, "Autoconnect port", "PORT" },
+		{ "noconnect", '!', POPT_ARG_NONE, &no_autoconnect, 0, "Disable autoconnecting", NULL },
+		{ "nick", 'n', POPT_ARG_STRING, &cmdline_nick, 0, "Specify nick to use", NULL },
+		{ "hostname", 'h', POPT_ARG_STRING, &cmdline_hostname, 0, "Specify host name to use", NULL },
 		{ NULL, '\0', 0, NULL }
 	};
 
