@@ -703,6 +703,7 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			    WI_ITEM_REC *item)
 {
 	char *ptr, *ret;
+        int chr;
 
 	ret = ptr = g_malloc(strlen(line)+1);
 	for (; *line != '\0'; line++) {
@@ -726,16 +727,14 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			signal_emit("send text", 3, ret, server, item);
 			ptr = ret;
 			break;
-		case 't':
-			*ptr++ = '\t';
-			break;
-		case '\\':
-			*ptr++ = '\\';
-			break;
 		default:
-			*ptr++ = '\\';
-			*ptr++ = *line;
-			break;
+			chr = expand_escape(&line);
+			if (chr != -1)
+                                *ptr++ = chr;
+			else {
+				*ptr++ = '\\';
+				*ptr++ = *line;
+			}
 		}
 	}
 

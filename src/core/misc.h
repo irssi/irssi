@@ -101,4 +101,8 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 /* Return a column sorted copy of a list. */
 GSList *columns_sort_list(GSList *list, int rows);
 
+/* Expand escape string, the first character in data should be the
+   one after '\'. Returns the expanded character or -1 if error. */
+int expand_escape(const char **data);
+
 #endif

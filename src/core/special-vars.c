@@ -471,7 +471,7 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 {
 	char code, **arglist, *ret;
 	GString *str;
-	int need_free;
+	int need_free, chr;
 
 	g_return_val_if_fail(cmd != NULL, NULL);
 	g_return_val_if_fail(data != NULL, NULL);
@@ -483,16 +483,17 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 	code = 0;
 	str = g_string_new(NULL);
 	while (*cmd != '\0') {
-		if (code == '\\'){
-			switch (*cmd) {
-			case 't':
-				g_string_append_c(str, '\t');
-				break;
-			case 'n':
-				g_string_append_c(str, '\n');
-				break;
-			default:
-				g_string_append_c(str, *cmd);
+		if (code == '\\') {
+			if (*cmd == ';')
+				g_string_append_c(str, ';');
+			else {
+				chr = expand_escape(&cmd);
+				if (chr != -1)
+					g_string_append_c(str, chr);
+				else {
+					g_string_append_c(str, '\\');
+					g_string_append_c(str, *cmd);
+				}
 			}
 			code = 0;
 		} else if (code == '$') {

@@ -725,3 +725,47 @@ GSList *columns_sort_list(GSList *list, int rows)
 			     g_slist_length(list), sorted);
         return sorted;
 }
+
+/* Expand escape string, the first character in data should be the
+   one after '\'. Returns the expanded character or -1 if error. */
+int expand_escape(const char **data)
+{
+        char digit[4];
+
+	switch (**data) {
+	case 't':
+		return '\t';
+	case 'r':
+		return '\r';
+	case 'n':
+		return '\n';
+	case 'e':
+		return 27; /* ESC */
+
+	case 'x':
+                /* hex digit */
+		if (!isxdigit((*data)[1]) || !isxdigit((*data)[2]))
+			return -1;
+
+		digit[0] = (*data)[1];
+		digit[1] = (*data)[2];
+                digit[2] = '\0';
+		*data += 2;
+		return strtol(digit, NULL, 16);
+	case 'c':
+                /* control character (\cA = ^A) */
+                (*data)++;
+		return toupper(**data) - 64;
+	default:
+		if (!isdigit(**data))
+			return -1;
+
+                /* octal */
+                digit[0] = (*data)[0];
+                digit[1] = (*data)[1];
+		digit[2] = (*data)[2];
+                digit[3] = '\0';
+		*data += 2;
+		return strtol(digit, NULL, 8);
+	}
+}
