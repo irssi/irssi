@@ -38,6 +38,7 @@ noinst_HEADERS = \
         irc.h \
         irc-channels.h \
 	irc-chatnets.h \
+	irc-commands.h \
         irc-masks.h \
         irc-nicklist.h \
         irc-queries.h \
