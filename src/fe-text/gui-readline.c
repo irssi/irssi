@@ -110,11 +110,15 @@ static const char *get_key_name(int key)
 		return "Tab";
 	case KEY_HOME:
 		return "Home";
+#ifdef KEY_END
 	case KEY_END:
+#endif
 #ifdef KEY_LL
 	case KEY_LL:
 #endif
+#if defined (KEY_END) || defined (KEY_LL)
 		return "End";
+#endif
 	case KEY_PPAGE:
 		return "Prior";
 	case KEY_NPAGE:
