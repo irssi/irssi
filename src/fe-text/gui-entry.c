@@ -324,6 +324,9 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 
 	g_return_val_if_fail(entry != NULL, NULL);
 
+	if (entry->cutbuffer == NULL)
+                return NULL;
+
 	buf = g_malloc(entry->cutbuffer_len*6 + 1);
 	if (entry->utf8)
 		utf16_to_utf8(entry->cutbuffer, buf);
