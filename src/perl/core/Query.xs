@@ -4,11 +4,12 @@ void
 queries()
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Query", 0);
 	for (tmp = queries; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		QUERY_REC *rec = tmp->data;
+
+		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(rec))),
+					   irssi_get_stash(rec))));
 	}
 
 #*******************************
@@ -20,15 +21,17 @@ queries(server)
 	Irssi::Server server
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Query", 0);
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		QUERY_REC *rec = tmp->data;
+
+		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(rec))),
+					   irssi_get_stash(rec))));
 	}
 
 Irssi::Query
-irc_query_create(server, nick, automatic)
+query_create(chat_type, server, nick, automatic)
+	int chat_type
 	Irssi::Server server
 	char *nick
 	int automatic
@@ -46,22 +49,10 @@ void
 values(query)
 	Irssi::Query query
 PREINIT:
-        HV *hv, *stash;
-	char *type;
+        HV *hv;
 PPCODE:
-	type = "query";
-
 	hv = newHV();
-	hv_store(hv, "type", 4, new_pv(type), 0);
-
-	stash = gv_stashpv("Irssi::Server", 0);
-	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(query->server))), stash), 0);
-	hv_store(hv, "name", 4, new_pv(query->name), 0);
-	hv_store(hv, "new_data", 8, newSViv(query->new_data), 0);
-
-	hv_store(hv, "address", 7, new_pv(query->address), 0);
-	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
-
+        perl_query_fill_hash(hv, query);
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
 
 void

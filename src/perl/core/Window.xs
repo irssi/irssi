@@ -1,7 +1,7 @@
 MODULE = Irssi  PACKAGE = Irssi
 
 void
-command(cmd, server=IRC_SERVER(active_win->active_server), item=active_win->active)
+command(cmd, server=active_win->active_server, item=active_win->active)
 	char *cmd
 	Irssi::Server server
 	Irssi::Windowitem item
@@ -18,7 +18,7 @@ OUTPUT:
 Irssi::Server
 active_server()
 CODE:
-	RETVAL = IRC_SERVER(active_win->active_server);
+	RETVAL = active_win->active_server;
 OUTPUT:
 	RETVAL
 
@@ -68,31 +68,44 @@ void
 values(window)
 	Irssi::Window window
 PREINIT:
-        HV *hv, *stash;
-	AV *av;
+        HV *hv;
 	GSList *tmp;
 PPCODE:
 	hv = newHV();
 	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
 	hv_store(hv, "name", 4, new_pv(window->name), 0);
 
-	av = newAV();
-	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		av_push(av, new_pv(tmp->data));
+	if (window->active) {
+		hv_store(hv, "active", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(window->active))),
+						   irssi_get_stash(window->active)), 0);
 	}
-	hv_store(hv, "items", 8, newRV_noinc((SV*)av), 0);
-
-	stash = gv_stashpv("Irssi::Windowitem", 0);
-	hv_store(hv, "active", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(window->active))), stash), 0);
-	stash = gv_stashpv("Irssi::Server", 0);
-	hv_store(hv, "active_server", 13, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(window->active_server))), stash), 0);
+	if (window->active_server) {
+		hv_store(hv, "active_server", 13, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(window->active_server))),
+							   irssi_get_stash(window->active_server)), 0);
+        }
 
 	hv_store(hv, "lines", 5, newSViv(window->lines), 0);
 
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
 	hv_store(hv, "new_data", 8, newSViv(window->new_data), 0);
+	hv_store(hv, "last_color", 10, newSViv(window->last_color), 0);
 	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
+	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
+
+void
+items(window)
+	Irssi::Window window
+PREINIT:
+	GSList *tmp;
+	HV *stash;
+PPCODE:
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+                CHANNEL_REC *rec = tmp->data;
+
+		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(rec))),
+					   irssi_get_stash(rec))));
+	}
 
 void
 command(window, cmd, server=window->active_server, item=window->active)
@@ -111,13 +124,13 @@ void
 values(item)
 	Irssi::Windowitem item
 PREINIT:
-        HV *hv, *stash;
+        HV *hv;
 	AV *av;
 	GSList *tmp;
 PPCODE:
 	hv = newHV();
-	stash = gv_stashpv("Irssi::Server", 0);
-	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(item->server))), stash), 0);
+	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(item->server))),
+					   irssi_get_stash(item->server)), 0);
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 	hv_store(hv, "new_data", 8, newSViv(item->new_data), 0);
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));

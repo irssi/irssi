@@ -6,14 +6,7 @@ Irssi::Channel		T_PTROBJ
 Irssi::Query		T_PTROBJ
 Irssi::Command		T_PTROBJ
 Irssi::Nick		T_PTROBJ
-Irssi::Ban		T_PTROBJ
-Irssi::Dcc		T_PTROBJ
-Irssi::Netsplit		T_PTROBJ
-Irssi::Netsplitserver   T_PTROBJ
-Irssi::Autoignore	T_PTROBJ
 Irssi::Log		T_PTROBJ
 Irssi::Rawlog		T_PTROBJ
-Irssi::Notifylist	T_PTROBJ
-Irssi::Ignore		T_PTROBJ
 Irssi::Window		T_PTROBJ
 Irssi::Windowitem	T_PTROBJ
