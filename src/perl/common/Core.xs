@@ -302,7 +302,7 @@ PREINIT:
 PPCODE:
 	stash = gv_stashpv("Irssi::Command", 0);
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		push_bless(tmp->data, stash);
 	}
 
 void
@@ -335,12 +335,13 @@ MODULE = Irssi  PACKAGE = Irssi::Command  PREFIX = command_
 #*******************************
 
 void
-values(cmd)
+init(cmd)
 	Irssi::Command cmd
 PREINIT:
         HV *hv;
-PPCODE:
-	hv = newHV();
-	hv_store(hv, "category", 8, new_pv(cmd->category), 0);
-	hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
-	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
+CODE:
+	hv = hvref(ST(0));
+	if (hv != NULL) {
+		hv_store(hv, "category", 8, new_pv(cmd->category), 0);
+		hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
+	}

@@ -6,10 +6,7 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		SERVER_REC *rec = tmp->data;
-
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(rec))),
-					   irssi_get_stash(rec))));
+		XPUSHs(sv_2mortal(irssi_bless((SERVER_REC *) tmp->data)));
 	}
 
 void
@@ -20,7 +17,7 @@ PREINIT:
 PPCODE:
 	stash = gv_stashpv("Irssi::Reconnect", 0);
 	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		push_bless(tmp->data, stash);
 	}
 
 Irssi::Connect
@@ -43,14 +40,10 @@ MODULE = Irssi	PACKAGE = Irssi::Server  PREFIX = server_
 #*******************************
 
 void
-values(server)
+init(server)
 	Irssi::Server server
-PREINIT:
-        HV *hv;
-PPCODE:
-	hv = newHV();
-	perl_server_fill_hash(hv, server);
-	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
+CODE:
+	perl_server_fill_hash(hvref(ST(0)), server);
 
 Irssi::Server
 server_connect(conn)
@@ -148,14 +141,10 @@ MODULE = Irssi	PACKAGE = Irssi::Connect  PREFIX = server_
 #*******************************
 
 void
-values(conn)
+init(conn)
 	Irssi::Connect conn
-PREINIT:
-        HV *hv;
-PPCODE:
-	hv = newHV();
-	perl_connect_fill_hash(hv, conn);
-	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
+CODE:
+	perl_connect_fill_hash(hvref(ST(0)), conn);
 
 Irssi::Server
 server_connect(conn)
@@ -166,14 +155,14 @@ MODULE = Irssi	PACKAGE = Irssi::Reconnect
 #*******************************
 
 void
-values(reconnect)
+init(reconnect)
 	Irssi::Reconnect reconnect
 PREINIT:
         HV *hv;
-PPCODE:
-	hv = newHV();
-	perl_connect_fill_hash(hv, reconnect->conn);
-	hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
-	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
-	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
-
+CODE:
+	hv = hvref(ST(0));
+	if (hv != NULL) {
+		perl_reconnect_fill_hash(hv, reconnect->conn);
+		hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
+		hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
+	}

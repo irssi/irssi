@@ -6,7 +6,7 @@ netsplit_find(server, nick, address)
 	char *nick
 	char *address
 
-Irssi::Nick
+Irssi::Irc::Nick
 netsplit_find_channel(server, nick, address, channel)
 	Irssi::Irc::Server server
 	char *nick
@@ -19,7 +19,7 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Netsplit
 #*******************************
 
 void
-values(netsplit)
+init(netsplit)
 	Irssi::Irc::Netsplit netsplit
 PREINIT:
 	HV *hv, *stash;
@@ -30,7 +30,7 @@ PPCODE:
 	hv_store(hv, "destroy", 7, newSViv(netsplit->destroy), 0);
 
 	stash = gv_stashpv("Irssi::Irc::Netsplitserver", 0);
-	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(netsplit->server))), stash), 0);
+	hv_store(hv, "server", 6, new_bless(netsplit->server, stash), 0);
 	/*FIXME: add GSList *channels;*/
 	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
 
@@ -39,7 +39,7 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Netsplitserver
 #*******************************
 
 void
-values(rec)
+init(rec)
 	Irssi::Irc::Netsplitserver rec
 PREINIT:
 	HV *hv;

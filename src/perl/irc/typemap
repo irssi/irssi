@@ -1,8 +1,10 @@
 TYPEMAP
-Irssi::Irc::Server		T_PTROBJ
-Irssi::Irc::Connect		T_PTROBJ
-Irssi::Irc::Channel		T_PTROBJ
-Irssi::Irc::Query		T_PTROBJ
+Irssi::Irc::Server		T_IrssiObj
+Irssi::Irc::Connect		T_IrssiObj
+Irssi::Irc::Channel		T_IrssiObj
+Irssi::Irc::Query		T_IrssiObj
+Irssi::Irc::Nick		T_IrssiObj
+
 Irssi::Irc::Ban			T_PTROBJ
 Irssi::Irc::Dcc			T_PTROBJ
 Irssi::Irc::Netsplit		T_PTROBJ
@@ -10,4 +12,13 @@ Irssi::Irc::Netsplitserver	T_PTROBJ
 Irssi::Irc::Autoignore		T_PTROBJ
 Irssi::Irc::Notifylist		T_PTROBJ
 
-Irssi::Nick			T_PTROBJ
+INPUT
+
+T_IrssiObj
+	$var = irssi_ref_object($arg)
+
+OUTPUT
+
+T_IrssiObj
+	$arg = irssi_bless((SERVER_REC *)$var);
+

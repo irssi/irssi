@@ -8,7 +8,7 @@ PREINIT:
 PPCODE:
 	stash = gv_stashpv("Irssi::Ignore", 0);
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		push_bless(tmp->data, stash);
 	}
 
 int
@@ -41,29 +41,31 @@ MODULE = Irssi  PACKAGE = Irssi::Ignore  PREFIX = ignore_
 #*******************************
 
 void
-values(ignore)
+init(ignore)
 	Irssi::Ignore ignore
 PREINIT:
         HV *hv;
 	AV *av;
 	char **tmp;
-PPCODE:
-	hv = newHV();
-	hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
-	hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
-	av = newAV();
-	for (tmp = ignore->channels; *tmp != NULL; tmp++) {
-		av_push(av, new_pv(*tmp));
+CODE:
+	hv = hvref(ST(0));
+	if (hv != NULL) {
+		hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
+		hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
+		av = newAV();
+		for (tmp = ignore->channels; *tmp != NULL; tmp++) {
+			av_push(av, new_pv(*tmp));
+		}
+		hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
+		hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
+
+		hv_store(hv, "level", 5, newSViv(ignore->level), 0);
+		hv_store(hv, "except_level", 12, newSViv(ignore->except_level), 0);
+
+		hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
+		hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
+		XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
 	}
-	hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
-	hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
-
-	hv_store(hv, "level", 5, newSViv(ignore->level), 0);
-	hv_store(hv, "except_level", 12, newSViv(ignore->except_level), 0);
-
-	hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
-	hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
-	XPUSHs(sv_2mortal(newRV_noinc((SV*)hv)));
 
 void
 ignore_add_rec(rec)

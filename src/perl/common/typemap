@@ -1,12 +1,12 @@
 TYPEMAP
-Irssi::Chatnet		T_PTROBJ
-Irssi::Server		T_PTROBJ
-Irssi::Connect		T_PTROBJ
+Irssi::Chatnet		T_IrssiObj
+Irssi::Server		T_IrssiObj
+Irssi::Connect		T_IrssiObj
 Irssi::Reconnect	T_PTROBJ
-Irssi::Channel		T_PTROBJ
-Irssi::Query		T_PTROBJ
+Irssi::Channel		T_IrssiObj
+Irssi::Query		T_IrssiObj
 Irssi::Command		T_PTROBJ
-Irssi::Nick		T_PTROBJ
+Irssi::Nick		T_IrssiObj
 Irssi::Ignore		T_PTROBJ
 Irssi::Log		T_PTROBJ
 Irssi::LogItem       	T_PTROBJ
@@ -15,4 +15,15 @@ Irssi::Module		T_PTROBJ
 Irssi::Theme		T_PTROBJ
 Irssi::Keyinfo		T_PTROBJ
 Irssi::Window		T_PTROBJ
-Irssi::Windowitem	T_PTROBJ
+Irssi::Windowitem	T_IrssiObj
+
+INPUT
+
+T_IrssiObj
+	$var = irssi_ref_object($arg)
+
+OUTPUT
+
+T_IrssiObj
+	$arg = irssi_bless((SERVER_REC *)$var);
+

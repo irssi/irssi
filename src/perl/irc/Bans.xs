@@ -28,7 +28,7 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Ban
 #*******************************
 
 void
-values(ban)
+init(ban)
 	Irssi::Irc::Ban ban
 PREINIT:
 	HV *hv;

@@ -36,37 +36,92 @@
 #include "servers.h"
 #include "channels.h"
 #include "queries.h"
-#include "window-item-def.h"
+#include "nicklist.h"
 
 #include "perl-common.h"
 
 #include "fe-common/core/formats.h"
 #include "fe-common/core/printtext.h"
 
-GHashTable *perl_stashes;
+static GHashTable *perl_stashes;
 
 /* returns the package who called us */
 char *perl_get_package(void)
 {
 	STRLEN n_a;
-
-	perl_eval_pv("($package) = caller;", TRUE);
-	return SvPV(perl_get_sv("package", FALSE), n_a);
+	return SvPV(perl_eval_pv("caller", TRUE), n_a);
 }
 
-HV *irssi_get_stash_item(int type, int chat_type)
+static void object_fill_values(SV *sv, const char *stash)
 {
-	char *str;
+	dSP;
+        char str[100];
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	XPUSHs(sv_mortalcopy(sv));
+	PUTBACK;
+
+	g_snprintf(str, sizeof(str), "%s::init", stash);
+	perl_call_method(str, G_DISCARD);
+	SPAGAIN;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+}
+
+SV *irssi_bless_object(int type, int chat_type, void *object)
+{
+        char *str;
+	HV *stash, *hv;
+        SV *sv;
 
 	str = g_hash_table_lookup(perl_stashes,
 				  GINT_TO_POINTER(type | (chat_type << 24)));
-	g_return_val_if_fail(str != NULL, gv_stashpv("", 0));
-	return gv_stashpv(str, 1);
+	g_return_val_if_fail(str != NULL, newSViv(GPOINTER_TO_INT(object)));
+
+	stash = gv_stashpv(str, 1);
+
+	hv = newHV();
+	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
+
+	sv = sv_bless(newRV_noinc((SV*)hv), stash);
+	object_fill_values(sv, str);
+        return sv;
+
+}
+
+void *irssi_ref_object(SV *o)
+{
+        SV **sv;
+	HV *hv;
+
+        hv = hvref(o);
+	if (hv == NULL)
+		return 0;
+
+	sv = hv_fetch(hv, "_irssi", 6, 0);
+	if (sv == NULL)
+                croak("variable is damaged");
+	return GINT_TO_POINTER(SvIV(*sv));
+}
+
+void irssi_add_object(int type, int chat_type, const char *stash)
+{
+	g_hash_table_insert(perl_stashes,
+			    GINT_TO_POINTER(type | (chat_type << 24)),
+			    g_strdup(stash));
 }
 
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 {
 	char *type, *chat_type;
+
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(conn != NULL);
 
 	type = "SERVER CONNECT";
 	chat_type = (char *) chat_protocol_find_id(conn->chat_type)->name;
@@ -88,6 +143,9 @@ void perl_server_fill_hash(HV *hv, SERVER_REC *server)
 {
 	char *type, *chat_type;
 	HV *stash;
+
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(server != NULL);
 
 	perl_connect_fill_hash(hv, server->connrec);
 
@@ -123,6 +181,9 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 {
 	char *type, *chat_type;
 
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(item != NULL);
+
 	type = (char *) module_find_id_str("WINDOW ITEM", item->type);
 	chat_type = (char *) chat_protocol_find_id(item->chat_type)->name;
 
@@ -130,8 +191,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
 	if (item->server != NULL) {
-		hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(item->server))),
-						   irssi_get_stash(item->server)), 0);
+		hv_store(hv, "server", 6, irssi_bless(item->server), 0);
 	}
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 
@@ -142,6 +202,9 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 
 void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
 {
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(channel != NULL);
+
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) channel);
 
 	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
@@ -163,11 +226,40 @@ void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
 
 void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 {
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(query != NULL);
+
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) query);
 
 	hv_store(hv, "address", 7, new_pv(query->address), 0);
 	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
 	hv_store(hv, "unwanted", 8, newSViv(query->unwanted), 0);
+}
+
+void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
+{
+	char *type, *chat_type;
+
+        g_return_if_fail(hv != NULL);
+        g_return_if_fail(nick != NULL);
+
+	type = "NICK";
+	chat_type = (char *) chat_protocol_find_id(nick->chat_type)->name;
+
+	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
+
+	hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
+	hv_store(hv, "host", 4, new_pv(nick->host), 0);
+	hv_store(hv, "realname", 8, new_pv(nick->realname), 0);
+	hv_store(hv, "hops", 4, newSViv(nick->hops), 0);
+
+	hv_store(hv, "gone", 4, newSViv(nick->gone), 0);
+	hv_store(hv, "serverop", 8, newSViv(nick->serverop), 0);
+
+	hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);
+	hv_store(hv, "op", 2, newSViv(nick->op), 0);
+	hv_store(hv, "halfop", 6, newSViv(nick->halfop), 0);
+	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
 }
 
 void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
@@ -210,7 +302,8 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	static char *items[] = {
 		"Chatnet",
 		"Server", "ServerConnect", "ServerSetup",
-		"Channel", "Query"
+		"Channel", "Query",
+		"Nick"
 	};
 	char *name, stash[100], code[100];
 	int type, chat_type, n;
@@ -224,20 +317,25 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	/* window items: channel, query */
 	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Channel", name);
-	irssi_add_stash(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash);
 
 	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Query", name);
-	irssi_add_stash(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash);
+
+        /* channel nicks */
+	type = module_get_uniq_id("NICK", 0);
+	g_snprintf(stash, sizeof(stash), "Irssi::%s::Nick", name);
+	irssi_add_object(type, chat_type, stash);
 
 	/* server specific */
 	type = module_get_uniq_id("SERVER", 0);
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Server", name);
-	irssi_add_stash(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash);
 
 	type = module_get_uniq_id("SERVER CONNECT", 0);
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Connect", name);
-	irssi_add_stash(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash);
 
 	/* register ISAs */
 	for (n = 0; n < sizeof(items)/sizeof(items[0]); n++) {
@@ -265,7 +363,7 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 				    GINT_TO_POINTER(rec->id));
 }
 
-static void free_perl_stash(void *key, void *value)
+static void free_perl_stash(void *key, char *value)
 {
 	g_free(value);
 }

@@ -8,7 +8,7 @@ PREINIT:
 PPCODE:
 	stash = gv_stashpv("Irssi::Irc::Notifylist", 0);
 	for (tmp = notifies; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		push_bless(tmp->data, stash);
 	}
 
 Irssi::Irc::Notifylist
@@ -46,7 +46,7 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Notifylist  PREFIX = notifylist_
 #*******************************
 
 void
-values(notify)
+init(notify)
 	Irssi::Irc::Notifylist notify
 PREINIT:
 	HV *hv;

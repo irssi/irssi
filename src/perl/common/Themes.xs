@@ -5,10 +5,9 @@ theme_register(formats)
 	SV *formats
 PREINIT:
 	AV *av;
-	SV *sv;
 	FORMAT_REC *formatrecs;
 	char *key, *value;
-	int len, n, fpos, count;
+	int len, n, fpos;
 CODE:
 
         if (!SvROK(formats))
@@ -19,8 +18,8 @@ CODE:
         	croak("formats list is invalid - not dividable by 3 (%d)", len);
 
 	formatrecs = g_new0(FORMAT_REC, len/2+2);
-	formatrecs[fpos].tag = g_strdup(perl_get_package());
-	formatrecs[fpos].def = g_strdup("Perl script");
+	formatrecs[0].tag = g_strdup(perl_get_package());
+	formatrecs[0].def = g_strdup("Perl script");
 
         for (fpos = 1, n = 0; n < len; n++, fpos++) {
 		key = SvPV(*av_fetch(av, n, 0), PL_na); n++;

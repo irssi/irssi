@@ -17,7 +17,7 @@ MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Autoignore
 #*******************************
 
 void
-values(ai)
+init(ai)
 	Irssi::Irc::Autoignore ai
 PREINIT:
 	HV *hv;

@@ -7,19 +7,25 @@
 #define new_bless(obj, stash) \
 	sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(obj))), stash)
 
-extern GHashTable *perl_stashes;
+#define is_hvref(o) \
+	((o) && SvROK(o) && SvRV(o) && (SvTYPE(SvRV(o)) == SVt_PVHV))
+
+#define hvref(o) \
+	(is_hvref(o) ? (HV *)SvRV(o) : NULL)
+
+#define push_bless(obj, stash) \
+        XPUSHs(sv_2mortal(new_bless(obj, stash)))
+
+#define irssi_bless(object) \
+	irssi_bless_object((object)->type, (object)->chat_type, object)
 
 /* returns the package who called us */
 char *perl_get_package(void);
 
-HV *irssi_get_stash_item(int type, int chat_type);
+SV *irssi_bless_object(int type, int chat_type, void *object);
+void *irssi_ref_object(SV *o);
 
-#define irssi_get_stash(item) \
-	irssi_get_stash_item((item)->type, (item)->chat_type)
-
-#define irssi_add_stash(type, chat_type, stash) \
-	g_hash_table_insert(perl_stashes, GINT_TO_POINTER(type | \
-		(chat_type << 24)), g_strdup(stash))
+void irssi_add_object(int type, int chat_type, const char *stash);
 
 void perl_common_init(void);
 void perl_common_deinit(void);

@@ -348,8 +348,8 @@ static void cmd_run(const char *data)
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	XPUSHs(sv_2mortal(newSVpv(fname, strlen(fname)))); g_free(fname);
-	XPUSHs(sv_2mortal(newSVpv(name, strlen(name)))); g_free(name);
+	XPUSHs(sv_2mortal(new_pv(fname))); g_free(fname);
+	XPUSHs(sv_2mortal(new_pv(name))); g_free(name);
 	PUTBACK;
 
 	retcount = perl_call_pv("Irssi::Load::eval_file",
@@ -360,7 +360,6 @@ static void cmd_run(const char *data)
 		STRLEN n_a;
 
 		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
-		(void) POPs;
 	}
 	else if (retcount > 0) {
 		char *str = POPp;
@@ -478,7 +477,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	XPUSHs(sv_2mortal(newSVpv(rec->data, strlen(rec->data))));
+	XPUSHs(sv_2mortal(new_pv(rec->data)));
 	PUTBACK;
 
 	retcount = perl_call_pv(rec->func, G_EVAL|G_SCALAR);
@@ -488,9 +487,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 		STRLEN n_a;
 
 		signal_emit("perl error", 1, SvPV(ERRSV, n_a));
-		(void) POPs;
 	}
-	else while (retcount--) (void) POPi;
 
 	PUTBACK;
 	FREETMPS;
@@ -516,12 +513,16 @@ int perl_input_add(int source, int condition,
 		   const char *func, const char *data)
 {
 	PERL_SOURCE_REC *rec;
+        GIOChannel *channel;
 
 	rec = g_new(PERL_SOURCE_REC, 1);
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
-	rec->tag = g_input_add(source, condition,
+
+        channel = g_io_channel_unix_new(source);
+	rec->tag = g_input_add(channel, condition,
 			       (GInputFunction) perl_source_event, rec);
+	g_io_channel_unref(channel);
 
 	perl_sources = g_slist_append(perl_sources, rec);
 	return rec->tag;
@@ -562,62 +563,72 @@ static PERL_SIGNAL_ARGS_REC *perl_signal_find(int signal)
 	return NULL;
 }
 
-
-static int call_perl(const char *func, int signal, va_list va)
+/* get arguments to args */
+static int perl_get_args(int signal, SV **args, va_list va)
 {
-	dSP;
 	PERL_SIGNAL_ARGS_REC *rec;
-	int retcount, ret;
-
 	HV *stash;
 	void *arg;
 	int n;
 
-	/* first check if we find exact match */
 	rec = perl_signal_find(signal);
+	if (rec == NULL)
+		return 0;
+
+	for (n = 0; n < 7 && rec->args[n] != NULL; n++) {
+		arg = va_arg(va, void *);
+
+		if (strcmp(rec->args[n], "string") == 0)
+			args[n] = new_pv(arg);
+		else if (strcmp(rec->args[n], "int") == 0)
+			args[n] = newSViv(GPOINTER_TO_INT(arg));
+		else if (strcmp(rec->args[n], "ulongptr") == 0)
+			args[n] = newSViv(*(unsigned long *) arg);
+		else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+			/* linked list - push as AV */
+			GSList *tmp;
+			AV *av;
+
+			av = newAV();
+			stash = gv_stashpv(rec->args[n]+7, 0);
+			for (tmp = arg; tmp != NULL; tmp = tmp->next)
+				av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+			args[n] = (SV*)av;
+		} else if (arg == NULL) {
+			/* don't bless NULL arguments */
+			args[n] = newSViv(0);
+		} else if (strcmp(rec->args[n], "iobject") == 0) {
+			/* "irssi object" - any struct that has
+			   "int type; int chat_type" as its first
+			   variables (server, channel, ..) */
+			args[n] = irssi_bless((SERVER_REC *) arg);
+		} else {
+			/* blessed object */
+			stash = gv_stashpv(rec->args[n], 0);
+			args[n] = new_bless(arg, stash);
+		}
+	}
+        return n;
+}
+
+static int call_perl(const char *func, int signal, va_list va)
+{
+	dSP;
+        SV *args[7];
+	int retcount, ret;
+
+        int n, count;
+
+	/* save the arguments to SV*[] list first, because irssi_bless()
+	   calls perl_call_method() and trashes the stack */
+	count = perl_get_args(signal, args, va);
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(sp);
-
-	if (rec != NULL) {
-		/* push the arguments to perl stack */
-		for (n = 0; n < 7 && rec->args[n] != NULL; n++) {
-			arg = va_arg(va, void *);
-
-			if (strcmp(rec->args[n], "string") == 0)
-				XPUSHs(sv_2mortal(new_pv(arg)));
-			else if (strcmp(rec->args[n], "int") == 0)
-				XPUSHs(sv_2mortal(newSViv(GPOINTER_TO_INT(arg))));
-			else if (strcmp(rec->args[n], "ulongptr") == 0)
-				XPUSHs(sv_2mortal(newSViv(*(unsigned long *) arg)));
-			else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
-				/* linked list - push as AV */
-				GSList *tmp;
-				AV *av;
-
-				av = newAV();
-				stash = gv_stashpv(rec->args[n]+7, 0);
-				for (tmp = arg; tmp != NULL; tmp = tmp->next)
-					av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
-				XPUSHs(newRV_noinc((SV*)av));
-			} else if (arg == NULL) {
-				/* don't bless NULL arguments */
-				XPUSHs(sv_2mortal(newSViv(0)));
-			} else if (strcmp(rec->args[n], "iobject") == 0) {
-				/* "irssi object" - any struct that has
-				   "int type; int chat_type" as its first
-				   variables (server, channel, ..) */
-				stash = irssi_get_stash((SERVER_REC *) arg);
-				XPUSHs(sv_2mortal(new_bless(arg, stash)));
-			} else {
-				/* blessed object */
-				stash = gv_stashpv(rec->args[n], 0);
-				XPUSHs(sv_2mortal(new_bless(arg, stash)));
-			}
-		}
-	}
+	for (n = 0; n < count; n++)
+                XPUSHs(sv_2mortal(args[n]));
 
 	PUTBACK;
 	retcount = perl_call_pv((char *) func, G_EVAL|G_SCALAR);

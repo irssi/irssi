@@ -8,7 +8,7 @@ PREINIT:
 PPCODE:
 	stash = gv_stashpv("Irssi::Irc::Dcc", 0);
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
+		push_bless(tmp->data, stash);
 	}
 
 Irssi::Irc::Dcc
@@ -23,9 +23,9 @@ dcc_find_by_port(nick, port)
 	int port
 
 void
-dcc_ctcp_message(target, server, chat, notice, msg)
-	char *target
+dcc_ctcp_message(server, target, chat, notice, msg)
 	Irssi::Irc::Server server
+	char *target
 	Irssi::Irc::Dcc chat
 	int notice
 	char *msg
@@ -48,7 +48,7 @@ dcc_chat_send(dcc, data)
 	char *data
 
 void
-values(dcc)
+init(dcc)
 	Irssi::Irc::Dcc dcc
 PREINIT:
         HV *hv, *stash;
@@ -57,12 +57,11 @@ PPCODE:
 	hv_store(hv, "type", 4, new_pv((char *) dcc_type2str(dcc->type)), 0);
 	hv_store(hv, "created", 7, newSViv(dcc->created), 0);
 
-	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(dcc->server))),
-					   irssi_get_stash(dcc->server)), 0);
+	hv_store(hv, "server", 6, irssi_bless(dcc->server), 0);
 	hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
 
 	stash = gv_stashpv("Irssi::Irc::Dcc", 0);
-	hv_store(hv, "chat", 4, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(dcc->chat))), stash), 0);
+	hv_store(hv, "chat", 4, new_bless(dcc->chat, stash), 0);
 
 	hv_store(hv, "ircnet", 6, new_pv(dcc->ircnet), 0);
 	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);

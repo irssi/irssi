@@ -1,5 +1,6 @@
 #include "../common/module.h"
 
+#include "irc.h"
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-queries.h"
@@ -17,6 +18,7 @@ typedef IRC_SERVER_REC *Irssi__Irc__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Irc__Connect;
 typedef IRC_CHANNEL_REC *Irssi__Irc__Channel;
 typedef QUERY_REC *Irssi__Irc__Query;
+typedef NICK_REC *Irssi__Irc__Nick;
 
 typedef BAN_REC *Irssi__Irc__Ban;
 typedef DCC_REC *Irssi__Irc__Dcc;
