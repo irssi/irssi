@@ -200,7 +200,7 @@ void gui_windows_reset_settings(void)
 
                 textbuffer_view_set_default_indent(gui->view,
 						   settings_get_int("indent"),
-						   settings_get_bool("indent_always"),
+						   !settings_get_bool("indent_always"),
                                                    get_default_indent_func());
 
 		textbuffer_view_set_scroll(gui->view,
