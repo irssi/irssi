@@ -760,12 +760,19 @@ static void event_received(IRC_SERVER_REC *server, const char *data)
 	ptr = strchr(data, ' ');
 	if (ptr == NULL)
 		return;
+	ptr++;
 
 	/* param1 param2 ... :last parameter */
-        args = g_strdup(ptr);
-	ptr = strstr(args, " :");
-	if (ptr != NULL)
-                g_memmove(ptr+1, ptr+2, strlen(ptr+1));
+	if (*ptr == ':') {
+                /* only one parameter */
+		args = g_strdup(ptr+1);
+	} else {
+		args = g_strdup(ptr);
+		ptr = strstr(args, " :");
+		if (ptr != NULL)
+			g_memmove(ptr+1, ptr+2, strlen(ptr+1));
+	}
+
 	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
 	g_free(args);
 }
