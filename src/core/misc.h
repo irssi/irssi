@@ -101,6 +101,9 @@ int expand_escape(const char **data);
 /* Escape all '"', "'" and '\' chars with '\' */
 char *escape_string(const char *str);
 
+/* Like strlcpy(), but return -1 if buffer was overflown, 0 if not. */
+int strocpy(char *dest, const char *src, size_t dstsize);
+
 int nearest_power(int num);
 
 /* Returns TRUE / FALSE */

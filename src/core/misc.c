@@ -778,6 +778,20 @@ char *escape_string(const char *str)
 	return ret;
 }
 
+int strocpy(char *dest, const char *src, size_t dstsize)
+{
+	if (dstsize == 0)
+		return -1;
+
+	while (*src != '\0' && dstsize > 1) {
+		*dest++ = *src++;
+		dstsize--;
+	}
+
+	*dest++ = '\0';
+	return *src == '\0' ? 0 : -1;
+}
+
 int nearest_power(int num)
 {
 	int n = 1;
