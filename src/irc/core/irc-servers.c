@@ -48,7 +48,7 @@
 #define DEFAULT_USER_MODE "+i"
 #define DEFAULT_CMD_QUEUE_SPEED 2200
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
-#define DEFAULT_MAX_QUERY_CHANS 10
+#define DEFAULT_MAX_QUERY_CHANS 1 /* more and more IRC networks are using stupid ircds.. */
 
 void irc_servers_reconnect_init(void);
 void irc_servers_reconnect_deinit(void);
