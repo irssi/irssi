@@ -293,7 +293,7 @@ void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
 		sendcmd = g_strdup_printf("%c%s", *cmdchars, cmd);
 	}
 
-	signal_emit("send command", 3, cmd, server, item);
+	signal_emit("send command", 3, sendcmd, server, item);
 	if (sendcmd != cmd) g_free(sendcmd);
 }
 
