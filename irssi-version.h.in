@@ -1,0 +1,4 @@
+/* automatically created by configure */
+#define IRSSI_VERSION "@VERSION@"
+#define IRSSI_VERSION_DATE @VERSION_DATE@
+#define IRSSI_VERSION_TIME @VERSION_TIME@

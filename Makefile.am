@@ -21,7 +21,7 @@ conf_DATA = irssi.conf
 themedir = $(datadir)/irssi/themes
 theme_DATA = default.theme colorless.theme
 
-noinst_HEADERS = irssi-version.h
+noinst_HEADERS = irssi-version.h.in
 
 EXTRA_DIST = \
 	ChangeLog \
