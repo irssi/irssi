@@ -30,6 +30,7 @@ static int check_address(const char *mask, int *wildcards)
 {
 	int ret;
 
+	*wildcards = FALSE;
 	ret = FALSE;
 	while (*mask != '\0') {
 		if (*mask == '!') {
