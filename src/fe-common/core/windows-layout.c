@@ -132,34 +132,37 @@ static void sig_layout_restore(void)
 	}
 }
 
-static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
+static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
+				 CONFIG_NODE *node)
 {
 	CONFIG_NODE *subnode;
-	GSList *tmp;
 	const char *type;
 
-	node = config_node_section(node, "items", NODE_TYPE_LIST);
-	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		WI_ITEM_REC *rec = tmp->data;
-		SERVER_REC *server = rec->server;
+	type = module_find_id_str("WINDOW ITEM TYPE", item->type);
+	if (type == NULL)
+		return;
 
-		type = module_find_id_str("WINDOW ITEM TYPE", rec->type);
-		if (type == NULL) continue;
+	subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-		subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	iconfig_node_set_str(subnode, "type", type);
+	type = chat_protocol_find_id(item->chat_type)->name;
+	iconfig_node_set_str(subnode, "chat_type", type);
+	iconfig_node_set_str(subnode, "name", item->name);
 
-		iconfig_node_set_str(subnode, "type", type);
-		type = chat_protocol_find_id(rec->chat_type)->name;
-		iconfig_node_set_str(subnode, "chat_type", type);
-		iconfig_node_set_str(subnode, "name", rec->name);
-
-		if (server != NULL)
-			iconfig_node_set_str(subnode, "tag", server->tag);
-		else if (IS_QUERY(rec)) {
-			iconfig_node_set_str(subnode, "tag",
-					     QUERY(rec)->server_tag);
-		}
+	if (item->server != NULL)
+		iconfig_node_set_str(subnode, "tag", item->server->tag);
+	else if (IS_QUERY(item)) {
+		iconfig_node_set_str(subnode, "tag", QUERY(item)->server_tag);
 	}
+}
+
+static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
+{
+	GSList *tmp;
+
+	node = config_node_section(node, "items", NODE_TYPE_LIST);
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next)
+		signal_emit("layout save item", 3, window, tmp->data, node);
 }
 
 static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
@@ -224,10 +227,12 @@ void windows_layout_init(void)
 {
 	signal_add("layout restore item", (SIGNAL_FUNC) sig_layout_restore_item);
 	signal_add("layout restore", (SIGNAL_FUNC) sig_layout_restore);
+	signal_add("layout save item", (SIGNAL_FUNC) sig_layout_save_item);
 }
 
 void windows_layout_deinit(void)
 {
 	signal_remove("layout restore item", (SIGNAL_FUNC) sig_layout_restore_item);
 	signal_remove("layout restore", (SIGNAL_FUNC) sig_layout_restore);
+	signal_remove("layout save item", (SIGNAL_FUNC) sig_layout_save_item);
 }

@@ -14,6 +14,7 @@ INCLUDES = \
 real_sources = \
 	fe-irc-channels.c \
 	fe-irc-commands.c \
+	fe-irc-layout.c \
 	fe-irc-messages.c \
 	fe-irc-queries.c \
 	fe-irc-server.c \
