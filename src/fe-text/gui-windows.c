@@ -810,7 +810,6 @@ static void signal_window_changed(WINDOW_REC *window)
 
 void gui_window_line2text(LINE_REC *line, int coloring, GString *str)
 {
-	int color;
         unsigned char cmd;
 	char *ptr, *tmp;
 
@@ -819,7 +818,6 @@ void gui_window_line2text(LINE_REC *line, int coloring, GString *str)
 
         g_string_truncate(str, 0);
 
-	color = 0;
 	for (ptr = line->text;;) {
 		if (*ptr != 0) {
 			g_string_append_c(str, *ptr);
@@ -850,28 +848,23 @@ void gui_window_line2text(LINE_REC *line, int coloring, GString *str)
 
 		if ((cmd & 0x80) == 0) {
 			/* set color */
-			color = cmd;
 			g_string_sprintfa(str, "\004%c%c",
-					  (color & 0x0f)+'0',
-					  ((color & 0xf0) >> 4)+'0');
+					  (cmd & 0x0f)+'0',
+					  ((cmd & 0xf0) >> 4)+'0');
 		} else switch (cmd) {
 		case LINE_CMD_UNDERLINE:
 			g_string_append_c(str, 31);
 			break;
 		case LINE_CMD_COLOR0:
 			g_string_sprintfa(str, "\004%c%c",
-					  '0', ((color & 0xf0) >> 4)+'0');
+					  '0', FORMAT_COLOR_NOCHANGE);
 			break;
 		case LINE_CMD_COLOR8:
 			g_string_sprintfa(str, "\004%c%c",
-					  '8', ((color & 0xf0) >> 4)+'0');
-			color &= 0xfff0;
-			color |= 8|ATTR_COLOR8;
+					  '8', FORMAT_COLOR_NOCHANGE);
 			break;
 		case LINE_CMD_BLINK:
-			color |= 0x80;
-			g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
-					  ((color & 0xf0) >> 4)+'0');
+			g_string_sprintfa(str, "\004%c", FORMAT_STYLE_BLINK);
 			break;
 		case LINE_CMD_INDENT:
 			break;
