@@ -224,7 +224,7 @@ static int signal_emitv_id(int signal_id, int params, va_list va)
 
 	arglist[0] = GINT_TO_POINTER(signal_id);
 	for (n = 1; n < 8; n++)
-		arglist[n] = n >= params ? NULL : va_arg(va, gconstpointer);
+		arglist[n] = n > params ? NULL : va_arg(va, gconstpointer);
 
 	/* send "signal" */
 	if (first_signal_rec != NULL) {

@@ -208,15 +208,16 @@ void sig_term(int n)
 static CONFIG_REC *parse_configfile(const char *fname)
 {
 	CONFIG_REC *config;
-	char *str;
+	char *real_fname;
 
-	str = fname != NULL ? g_strdup(fname) :
+	real_fname = fname != NULL ? g_strdup(fname) :
 		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
-	config = config_open(str, -1);
-	g_free(str);
+	config = config_open(real_fname, -1);
 
-	if (config == NULL && *fname != '\0')
+	if (config == NULL && fname != NULL) {
+		g_free(real_fname);
 		return NULL; /* specified config file not found */
+	}
 
 	if (config != NULL)
 		config_parse(config);
@@ -233,9 +234,10 @@ static CONFIG_REC *parse_configfile(const char *fname)
 			config_parse_data(config, default_config, "internal");
 		}
 
-                config_change_file_name(config, fname, 0660);
+                config_change_file_name(config, real_fname, 0660);
 	}
 
+	g_free(real_fname);
 	return config;
 }
 
