@@ -390,8 +390,15 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
-
+		if (rec->op)
+			nickmode[0] = '@';
+		else if (rec->halfop)
+			nickmode[0] = '%';
+		else if (rec->voice)
+			nickmode[0] = '+';
+		else
+			nickmode[0] = ' ';
+		
 		if (linebuf_size < columns[col]-item_extra+1) {
 			linebuf_size = (columns[col]-item_extra+1)*2;
                         linebuf = g_realloc(linebuf, linebuf_size);
@@ -439,9 +446,9 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 {
 	NICK_REC *nick;
 	GSList *tmp, *nicklist, *sorted;
-	int nicks, normal, voices, ops;
+	int nicks, normal, voices, halfops, ops;
 
-	nicks = normal = voices = ops = 0;
+	nicks = normal = voices = halfops = ops = 0;
 	nicklist = nicklist_getnicks(channel);
 	sorted = NULL;
 
@@ -455,6 +462,7 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 			if ((flags & CHANNEL_NICKLIST_FLAG_OPS) == 0)
                                 continue;
 		} else if (nick->halfop) {
+			halfops++;
 			if ((flags & CHANNEL_NICKLIST_FLAG_HALFOPS) == 0)
 				continue;
 		} else if (nick->voice) {
@@ -482,7 +490,7 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 
 	printformat(channel->server, channel->name,
 		    MSGLEVEL_CRAP, TXT_ENDOFNAMES,
-		    channel->name, nicks, ops, voices, normal);
+		    channel->name, nicks, ops, halfops, voices, normal);
 }
 
 /* SYNTAX: NAMES [-count | -ops -halfops -voices -normal] [<channels> | **] */

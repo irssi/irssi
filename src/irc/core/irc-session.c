@@ -77,7 +77,7 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 				     CONFIG_NODE *node)
 {
 	const char *nick;
-        int op, voice;
+        int op, halfop, voice;
         NICK_REC *nickrec;
 
 	if (!IS_IRC_CHANNEL(channel))
@@ -89,8 +89,8 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 
 	op = config_node_get_bool(node, "op", FALSE);
         voice = config_node_get_bool(node, "voice", FALSE);
-	nickrec = irc_nicklist_insert(channel, nick, op, voice, FALSE);
-        nickrec->halfop = config_node_get_bool(node, "halfop", FALSE);
+        halfop = config_node_get_bool(node, "halfop", FALSE);
+	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE);
 }
 
 static void session_restore_channel(IRC_CHANNEL_REC *channel)

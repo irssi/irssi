@@ -356,17 +356,39 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 /* nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 {
+	int status1, status2;
+	
 	if (p1 == NULL) return -1;
 	if (p2 == NULL) return 1;
 
-	if (p1->op && !p2->op) return -1;
-	if (!p1->op && p2->op) return 1;
+	/* we assign each status (op, halfop, voice, normal) a number
+	 * and compare them. this is easier than 100,000 if's and
+	 * returns :-)
+	 * -- yath */
 
-	if (!p1->op) {
-		if (p1->voice && !p2->voice) return -1;
-		if (!p1->voice && p2->voice) return 1;
-	}
+	if (p1->op)
+		status1 = 4;
+	else if (p1->halfop)
+		status1 = 3;
+	else if (p1->voice)
+		status1 = 2;
+	else
+		status1 = 1;
 
+	if (p2->op)
+		status2 = 4;
+	else if (p2->halfop)
+		status2 = 3;
+	else if (p2->voice)
+		status2 = 2;
+	else
+		status2 = 1;
+	
+	if (status1 < status2)
+		return 1;
+	else if (status1 > status2)
+		return -1;
+	
 	return g_strcasecmp(p1->nick, p2->nick);
 }
 

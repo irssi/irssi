@@ -31,7 +31,7 @@
 
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
-			      int op, int voice, int send_massjoin)
+			      int op, int halfop, int voice, int send_massjoin)
 {
 	NICK_REC *rec;
 
@@ -42,6 +42,7 @@ NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 	rec->nick = g_strdup(nick);
 
 	if (op) rec->op = TRUE;
+	if (halfop) rec->halfop = TRUE;
 	if (voice) rec->voice = TRUE;
 	rec->send_massjoin = send_massjoin;
 
@@ -112,7 +113,8 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		if (*names != '\0') *names++ = '\0';
 
 		irc_nicklist_insert(chanrec, ptr+isnickflag(*ptr),
-				    *ptr == '@', *ptr == '+', FALSE);
+				    *ptr == '@', *ptr == '%', *ptr == '+',
+				    FALSE);
 	}
 
 	g_free(params);
@@ -138,7 +140,7 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 			nicks = g_hash_table_size(chanrec->nicks);
 			ownnick = irc_nicklist_insert(chanrec, server->nick,
 						      nicks == 0, FALSE,
-						      FALSE);
+						      FALSE, FALSE);
 		}
 		nicklist_set_own(CHANNEL(chanrec), ownnick);
                 chanrec->chanop = chanrec->ownnick->op;

@@ -108,7 +108,7 @@ FORMAT_REC fecommon_core_formats[] = {
         { "names_nick_halfop", "{names_nick_halfop $0 $1}", 2, { 0, 0 } },
         { "names_nick_voice", "{names_nick_voice $0 $1}", 2, { 0, 0 } },
         { "names_nick", "{names_nick $0 $1}", 2, { 0, 0 } },
-        { "endofnames", "{channel $0}: Total of {hilight $1} nicks {comment {hilight $2} ops, {hilight $3} voices, {hilight $4} normal}", 5, { 0, 1, 1, 1, 1 } },
+        { "endofnames", "{channel $0}: Total of {hilight $1} nicks {comment {hilight $2} ops, {hilight $3} halfops, {hilight $4} voices, {hilight $5} normal}", 6, { 0, 1, 1, 1, 1, 1 } },
 	{ "chanlist_header", "You are on the following channels:", 0 },
 	{ "chanlist_line", "{channel $[-10]0} %|+$1 ($2): $3", 4, { 0, 0, 0, 0 } },
 	{ "chansetup_not_found", "Channel {channel $0} not found", 2, { 0, 0 } },
