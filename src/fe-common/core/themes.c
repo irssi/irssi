@@ -478,7 +478,7 @@ static void theme_save(THEME_REC *theme)
 		path = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(),
 				       g_basename(theme->path));
 		str = strrchr(path, '/');
-		if (strncmp(theme->path, path, (int) (path-str)) != 0 &&
+		if (strncmp(theme->path, path, (int) (path-str)) == 0 ||
 		    config_write(config, str, 0660) == -1)
 			ok = FALSE;
 	}
