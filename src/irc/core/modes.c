@@ -506,7 +506,15 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 
         type = '+'; prevtype = '\0';
 	curmode = cmd_get_param(&modestr);
-	for (; *curmode != '\0'; curmode++) {
+	for (;; curmode++) {
+		if (*curmode == '\0') {
+			/* support for +o nick +o nick2 */
+			curmode = cmd_get_param(&modestr);
+			if (*curmode == '\0')
+				break;
+			continue;
+		}
+
 		if (*curmode == '+' || *curmode == '-') {
 			type = *curmode;
 			continue;
