@@ -128,7 +128,6 @@ int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const 
 	CONFIG_NODE *parent;
 
 	g_return_val_if_fail(rec != NULL, -1);
-	g_return_val_if_fail(section != NULL, -1);
 
 	parent = config_node_traverse(rec, section, TRUE);
 	if (parent == NULL) return -1;
