@@ -130,18 +130,13 @@ AC_ARG_ENABLE(perl,
 	fi,
 	want_perl=yes)
 
-AC_ARG_WITH(servertest,
-[  --with-servertest       Build servertest],
-	if test x$withval = xyes; then
-		want_servertest=yes
-	else
-		if test "x$withval" = xno; then
-			want_servertest=no
-		else
-			want_servertest=yes
-		fi
+AC_ARG_WITH(tests,
+[  --with-tests           Run all the tests],
+	if test x$withval != xno; then
+		TEST_DIR=test
 	fi,
-	want_servertest=no)
+	TEST_DIR=)
+AC_SUBST(TEST_DIR)
 
 AC_ARG_ENABLE(curses-windows,
 [  --enable-curses-windows Use curses windows],
@@ -314,10 +309,10 @@ if test "x$GLIB_DIR" = "x"; then
     glib_file=glib-1.2.9.tar.gz
 
     dlcmd=
-    if test -f "`which ncftpget`"; then
+    if [ "x`ncftpget 2>/dev/null|grep -i ncftp`" != "x" ]; then
       dlcmd="ncftpget ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
     fi
-    if test -f "`which wget`"; then
+    if [ "x`wget 2>/dev/null|grep -i wget`" != "x" ]; then
       dlcmd="wget http://irssi.org/files/$glib_file"
     fi
     if test "x$dlcmd" != "x"; then
@@ -586,7 +581,7 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
-AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
+AM_CONDITIONAL(BUILD_SERVERTEST, test "x$TEST_DIR" != "x")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 
@@ -702,6 +697,7 @@ po/Makefile.in
 intl/Makefile
 src/Makefile
 src/lib/Makefile
+src/lib/test/Makefile
 src/core/Makefile
 src/irc/Makefile
 src/irc/core/Makefile
