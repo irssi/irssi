@@ -9,6 +9,21 @@ IRC base
 
 * Provides signals:
 
+irc.c:
+
+ "send command", char *args, SERVER_REC
+ "command "<cmd>, char *args, SERVER_REC, CHANNEL_REC
+ "default command", char *args, SERVER_REC, CHANNEL_REC
+
+ "server event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+ "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
+ "default event", char *data, SERVER_REC, char *sender_nick, char *sender_address
+
+ "server incoming", SERVER_REC, char *data
+
+(for perl parser..)
+ "redir "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
+
 bans.c:
 
  "ban new", BAN_REC
@@ -39,21 +54,6 @@ ctcp.c:
  "default ctcp msg", char *args, SERVER_REC, char *nick, char *addr, char *target
  "ctcp reply "<cmd>, char *args, SERVER_REC, char *nick, char *addr, char *target
  "default ctcp reply", char *args, SERVER_REC, char *nick, char *addr, char *target
-
-irc.c:
-
- "server incoming", SERVER_REC, char *data
-
- "send command", char *args, SERVER_REC
- "command "<cmd>, char *args, SERVER_REC, CHANNEL_REC
- "default command", char *args, SERVER_REC, CHANNEL_REC
-
- "server event", char *data, SERVER_REC, char *sender_nick, char *sender_address
- "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
- "default event", char *data, SERVER_REC, char *sender_nick, char *sender_address
-
-(for perl parser..)
- "redir "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
 
 lag.c:
 
