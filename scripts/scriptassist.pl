@@ -437,7 +437,7 @@ sub array2table {
     my (@array) = @_;
     my @width;
     foreach my $line (@array) {
-        for (0..scalar(@$line)) {
+        for (0..scalar(@$line)-1) {
             my $l = $line->[$_];
             $l =~ s/%[^%]//g;
             $l =~ s/%%/%/g;
@@ -446,12 +446,12 @@ sub array2table {
     }   
     my $text;
     foreach my $line (@array) {
-        for (0..scalar(@$line)) {
+        for (0..scalar(@$line)-1) {
             my $l = $line->[$_];
             $text .= $line->[$_];
             $l =~ s/%[^%]//g;
             $l =~ s/%%/%/g;
-            $text .= " "x($width[$_]-length($l)+1);
+            $text .= " "x($width[$_]-length($l)+1) unless ($_ == scalar(@$line)-1);
         }
         $text .= "\n";
     }
