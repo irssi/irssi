@@ -342,7 +342,7 @@ static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
 	if (!IS_CHANNEL(item))
 		return NULL;
 
-        if (settings_get_bool("chanmode_expando_strip"))
+        if (!settings_get_bool("chanmode_expando_strip"))
 		return CHANNEL(item)->mode;
 
 	*free_ret = TRUE;
@@ -575,7 +575,7 @@ void expandos_init(void)
 #endif
 	settings_add_str("misc", "STATUS_OPER", "*");
 	settings_add_str("lookandfeel", "timestamp_format", "%H:%M");
-	settings_add_bool("lookandfeel", "chanmode_expando_strip", TRUE);
+	settings_add_bool("lookandfeel", "chanmode_expando_strip", FALSE);
 
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
