@@ -22,7 +22,7 @@
 #define MAX_MASSJOIN_WAIT 5000
 
 /* lists */
-extern GList *aliases, *ignores, *completions, *notifies, *hilights;
+extern GList *aliases, *ignores, *completions, *notifies, *hilights, *replaces, *popups;
 
 /* servers */
 typedef struct
