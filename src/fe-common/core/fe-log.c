@@ -342,7 +342,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 		LOG_REC *log = tmp->data;
 		next = tmp->next;
 
-		if (log->temp || log->items == NULL)
+		if (!log->temp || log->items == NULL)
                         continue;
 
 		logitem = log->items->data;
