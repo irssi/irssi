@@ -5,22 +5,36 @@
     -full: <pattern> must match to full words
     -pattern: <pattern> must match to the message's text
     -replies: Ignore replies to nick in channels. For example
-             "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
-             from Finland, but also anyone sending message
-             "tofinnishnick: blahblah".
-    -except: *DON'T* ignore
+              "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
+              from Finland, but also anyone sending message
+              "tofinnishnick: blahblah".
+    -except: *DON'T* ignore - overrides an existing ignore.
     -channels: Ignore only in channels
     <mask>: Either a nick mask or list of channels
-    <levels>: List of levels to ignore
+    <levels>: List of levels to ignore. You can use -<level> to remove levels
+              from ignore.
     <^levels>: List of levels to NOT ignore
-            (/ignore -except nick notices = /ignore nick ^notices)
+               (/ignore -except nick notices = /ignore nick ^notices)
 
 
-/IGNORE without any arguments displays list of ignores.
+/IGNORE without any arguments displays list of ignores. If you want to remove
+some levels of the ignore, use /IGNORE <mask> -<level> -<level2> etc
 
 The best match always wins, so you can have:
     /IGNORE * CTCPS
     /IGNORE -except *!*@host.org CTCPS
+
+Examples:
+
+    /IGNORE #channel ALL -PUBLIC -ACTIONS   - ignore all but public/actions
+    /IGNORE #channel -JOINS                 - don't ignore joins anymore
+    /IGNORE -replies *!user@*.host.org ALL  - ignore user and all replies
+
+Some suggestions for ignoring annoying public aways:
+    /IGNORE -regexp -pattern "is (away|gone|back)" * ACTIONS
+    /IGNORE *zzz* NICKS
+    /IGNORE *afk* NICKS
+    /IGNORE *away* NICKS
 
 See also: UNIGNORE
 

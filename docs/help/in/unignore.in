@@ -1,7 +1,8 @@
 
 @SYNTAX:unignore@
 
-Unignores the specified userhost mask.
+Unignores the specified userhost mask. If you want to unignore only some
+levels, use /IGNORE <mask> -<level>.
 
 See also: IGNORE
 
