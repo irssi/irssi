@@ -25,6 +25,9 @@
 /* Window ref# */
 static char *expando_winref(SERVER_REC *server, void *item, int *free_ret)
 {
+	if (active_win == NULL)
+		return "";
+
         *free_ret = TRUE;
 	return g_strdup_printf("%d", active_win->refnum);
 }
@@ -32,6 +35,9 @@ static char *expando_winref(SERVER_REC *server, void *item, int *free_ret)
 /* Window name */
 static char *expando_winname(SERVER_REC *server, void *item, int *free_ret)
 {
+	if (active_win == NULL)
+		return "";
+
 	return active_win->name;
 }
 
