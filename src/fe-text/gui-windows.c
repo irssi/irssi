@@ -1021,17 +1021,14 @@ void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
 	raw = g_string_new(NULL);
 	str = gui_window_line_get_format(window, line, raw);
 
-	if (str == NULL) {
-		if (raw->len == 2 &&
-		    raw->str[1] == (char)LINE_CMD_FORMAT_CONT) {
-			/* multiline format, format explained in one the
-			   following lines. remove this line. */
-			gui_window_line_remove(window, line);
-		}
-	} else {
-		/* FIXME: ugly ugly .. at least timestamps should be
-		   printed by GUI itself.. server tags are also a bit
-		   problematic.. */
+        if (str == NULL && raw->len == 2 &&
+            raw->str[1] == (char)LINE_CMD_FORMAT_CONT) {
+                /* multiline format, format explained in one the
+                   following lines. remove this line. */
+                gui_window_line_remove(window, line);
+	} else if (str != NULL) {
+                /* FIXME: ugly ugly .. and this can't handle
+                   non-formatted lines.. */
 		g_string_append_c(raw, '\0');
 		g_string_append_c(raw, (char)LINE_CMD_EOL);
 
@@ -1044,7 +1041,7 @@ void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
 
 		format_create_dest(&dest, NULL, NULL, line->level, window);
 
-		linestart = format_get_line_start(current_theme, &dest);
+		linestart = format_get_line_start(current_theme, &dest, line->time);
 		leveltag = format_get_level_tag(current_theme, &dest);
 
 		prestr = g_strconcat(linestart == NULL ? "" : linestart,

@@ -287,7 +287,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 
 	/* add timestamp/server tag here - if it's done in print_line()
 	   it would be written to log files too */
-	tmp = format_get_line_start(current_theme, dest);
+	tmp = format_get_line_start(current_theme, dest, time(NULL));
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 

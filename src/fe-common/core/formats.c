@@ -390,16 +390,13 @@ char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
 	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
 
-static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest)
+static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 {
 	struct tm *tm;
-	time_t t;
 	int diff;
 
 	if (!show_timestamp(dest->level))
 		return NULL;
-
-	t = time(NULL);
 
 	if (timestamp_timeout > 0) {
 		diff = t - dest->window->last_timestamp;
@@ -442,12 +439,12 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 				      IRCTXT_SERVERTAG, server->tag);
 }
 
-char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest)
+char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 {
 	char *timestamp, *servertag;
 	char *linestart;
 
-	timestamp = get_timestamp(theme, dest);
+	timestamp = get_timestamp(theme, dest, t);
 	servertag = get_server_tag(theme, dest);
 
 	if (timestamp == NULL && servertag == NULL)

@@ -65,7 +65,7 @@ char *format_add_linestart(const char *text, const char *linestart);
 char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest);
 
 /* return timestamp + server tag */
-char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest);
+char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t);
 
 
 /* "private" functions for printtext */
