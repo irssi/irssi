@@ -58,6 +58,7 @@ STRLEN PL_na;
 
 static GHashTable *iobject_stashes, *plain_stashes;
 static GSList *use_protocols;
+static int perl_memory_check_level;
 
 /* returns the package who called us */
 const char *perl_get_package(void)
@@ -166,8 +167,12 @@ void *irssi_ref_object(SV *o)
 		croak("variable is damaged");
 	p = GINT_TO_POINTER(SvIV(*sv));
 #ifdef HAVE_GC
-	if (GC_base(p) == NULL)
-		croak("variable is already free'd");
+	if (perl_memory_check_level > 0) {
+		if (perl_memory_check_level > 1)
+			GC_gcollect();
+		if (GC_base(p) == NULL)
+			croak("variable is already free'd");
+	}
 #endif
 	return p;
 }
@@ -637,6 +642,11 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 				    GINT_TO_POINTER(rec->id));
 }
 
+static void read_settings(void)
+{
+        perl_memory_check_level = settings_get_int("perl_memory_check_level");
+}
+
 void perl_common_start(void)
 {
 	static PLAIN_OBJECT_INIT_REC core_plains[] = {
@@ -651,6 +661,9 @@ void perl_common_start(void)
 		{ NULL, NULL }
 	};
 
+	settings_add_int("perl", "perl_memory_check_level", 1);
+	read_settings();
+
 	iobject_stashes = g_hash_table_new((GHashFunc) g_direct_hash,
 					(GCompareFunc) g_direct_equal);
 	plain_stashes = g_hash_table_new((GHashFunc) g_str_hash,
@@ -662,6 +675,7 @@ void perl_common_start(void)
 
 	signal_add("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
 	signal_add("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void perl_common_stop(void)
@@ -680,4 +694,5 @@ void perl_common_stop(void)
 
 	signal_remove("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
 	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
