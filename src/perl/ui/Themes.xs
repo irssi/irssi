@@ -6,11 +6,16 @@ void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 	char *module, *str;
 	int formatnum;
 
+	formatnum = format_find_tag(module, format);
+	if (formatnum < 0) {
+		die("printformat(): unregistered format '%s'", format);
+		return;
+	}
+
 	module = g_strdup(perl_get_package());
 	theme = dest->window->theme == NULL ? current_theme :
 		dest->window->theme;
 
-	formatnum = format_find_tag(module, format);
 	signal_emit("print format", 5, theme, module,
 		    &dest, GINT_TO_POINTER(formatnum), arglist);
 
