@@ -19,36 +19,19 @@
 */
 
 #include "module.h"
+#include "settings.h"
 
 #include "hilight-text.h"
 
-char *irc_hilight_find_nick(const char *channel, const char *nick, const char *address)
+char *irc_hilight_find_nick(const char *channel, const char *nick,
+			    const char *address, int level, const char *msg)
 {
-	GSList *tmp;
-        char *color;
-	int len, best_match;
+	char *color, *mask;
 
-	g_return_val_if_fail(channel != NULL, NULL);
-	g_return_val_if_fail(nick != NULL, NULL);
-	g_return_val_if_fail(address != NULL, NULL);
+        mask = g_strdup_printf("%s!%s", nick, address);
+	color = hilight_match(channel, mask, level, msg);
+	g_free(mask);
 
-	color = NULL; best_match = 0;
-	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
-		HILIGHT_REC *rec = tmp->data;
-
-		if (!rec->nickmask)
-			continue;
-
-		len = strlen(rec->text);
-		if (best_match < len) {
-			best_match = len;
-			color = rec->color;
-		}
-	}
-
-	if (best_match == 0)
-		return NULL;
-
-	if (color == NULL) color = "\00316";
-	return g_strconcat(isdigit(*color) ? "\003" : "", color, NULL);
+	return color;
 }
+

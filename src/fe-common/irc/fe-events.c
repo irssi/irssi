@@ -53,7 +53,9 @@ static void msg_beep_check(IRC_SERVER_REC *server, int level)
 	}
 }
 
-static void print_channel_msg(IRC_SERVER_REC *server, const char *msg, const char *nick, const char *addr, const char *target)
+static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
+			      const char *nick, const char *addr,
+			      const char *target)
 {
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
@@ -62,7 +64,7 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg, const cha
 
 	chanrec = channel_find(server, target);
 	for_me = irc_nick_match(server->nick, msg);
-	color = irc_hilight_find_nick(target, nick, addr);
+	color = irc_hilight_find_nick(target, nick, addr, MSGLEVEL_PUBLIC, msg);
 
 	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
 	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :

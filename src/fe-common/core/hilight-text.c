@@ -49,7 +49,8 @@ static void hilight_add_config(HILIGHT_REC *rec)
         iconfig_node_set_str(node, "text", rec->text);
         if (rec->level > 0) config_node_set_int(node, "level", rec->level);
         if (rec->color) iconfig_node_set_str(node, "color", rec->color);
-        if (rec->nickmask) config_node_set_bool(node, "nickmask", TRUE);
+        if (rec->nick) config_node_set_bool(node, "nick", TRUE);
+        if (rec->nickmask) config_node_set_bool(node, "mask", TRUE);
         if (rec->fullword) config_node_set_bool(node, "fullword", TRUE);
         if (rec->regexp) config_node_set_bool(node, "regexp", TRUE);
 
@@ -140,28 +141,26 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server, const char *c
 	}
 }
 
-static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer plevel, const char *str)
+char *hilight_match(const char *channel, const char *nickmask, int level, const char *str)
 {
 	GSList *tmp;
-        char *color, *newstr;
-	int len, level, best_match;
+	const char *color;
+	int len, best_match;
 
-	g_return_if_fail(str != NULL);
-
-	level = GPOINTER_TO_INT(plevel);
-	if (level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT)) return;
+	g_return_val_if_fail(str != NULL, NULL);
 
 	color = NULL; best_match = 0;
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if (rec->nickmask)
-			continue;
 		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_CHECK_LEVEL)) == 0)
                         continue;
-		if (rec->channels != NULL && strarray_find(rec->channels, channel) == -1)
+		if (rec->channels != NULL && (channel == NULL || strarray_find(rec->channels, channel) == -1))
 			continue;
-		if (rec->regexp) {
+		if (rec->nickmask) {
+			if (nickmask == NULL || !match_wildcards(rec->text, nickmask))
+				continue;
+		} else if (rec->regexp) {
 			if (!regexp_match(str, rec->text))
 				continue;
 		} else if (rec->fullword) {
@@ -179,19 +178,36 @@ static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, cons
 		}
 	}
 
-	if (best_match > 0) {
-		hilight_next = FALSE;
+	if (best_match == 0)
+		return NULL;
 
-		signal_emit("print text stripped", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), str);
-		signal_stop();
+	if (color == NULL) color = settings_get_str("hilight_color");
+	return g_strconcat(isdigit(*color) ? "\003" : "", color, NULL);
+}
 
-		if (color == NULL) color = "\00316";
-		newstr = g_strconcat(isdigit(*color) ? "\003" : "", color, str, NULL);
-		signal_emit("print text", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
-		g_free(newstr);
+static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer plevel, const char *str)
+{
+	char *newstr, *color;
+	int level;
 
-		hilight_next = TRUE;
-	}
+	g_return_if_fail(str != NULL);
+
+	level = GPOINTER_TO_INT(plevel);
+	if (level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT)) return;
+
+	color = hilight_match(channel, NULL, level, str);
+        if (color == NULL) return;
+
+	hilight_next = FALSE;
+
+	signal_emit("print text stripped", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), str);
+	signal_stop();
+
+	newstr = g_strconcat(color, str, NULL);
+	signal_emit("print text", 5, window, server, channel, GINT_TO_POINTER(level | MSGLEVEL_HILIGHT), newstr);
+	g_free(newstr);
+
+	hilight_next = TRUE;
 }
 
 static void read_hilight_config(void)
@@ -270,7 +286,7 @@ static void cmd_hilight_show(void)
 
 static void cmd_hilight(const char *data)
 {
-	/* /HILIGHT [-nick | -regexp | -word] [-color <color>] [-level <level>] [-channels <channels>] <text> */
+	/* /HILIGHT [-nick] [-mask | -regexp | -word] [-color <color>] [-level <level>] [-channels <channels>] <text> */
         GHashTable *optlist;
 	HILIGHT_REC *rec;
 	char *colorarg, *levelarg, *chanarg, *text;
@@ -312,7 +328,8 @@ static void cmd_hilight(const char *data)
 	}
 
 	hilights = g_slist_append(hilights, rec);
-	rec->nickmask = g_hash_table_lookup(optlist, "nick") != NULL;
+	rec->nick = g_hash_table_lookup(optlist, "nick") != NULL;
+	rec->nickmask = g_hash_table_lookup(optlist, "mask") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 
@@ -355,6 +372,7 @@ void hilight_text_init(void)
 	hilight_next = FALSE;
 
 	read_hilight_config();
+	settings_add_str("misc", "hilight_color", "8");
 
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
@@ -362,7 +380,7 @@ void hilight_text_init(void)
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
 
-	command_set_options("hilight", "-color -level -channels nick word regexp");
+	command_set_options("hilight", "-color -level -channels nick mask word regexp");
 }
 
 void hilight_text_deinit(void)

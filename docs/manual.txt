@@ -858,12 +858,13 @@
 	mask, so you could for example show your friends' nicks with
 	different color.
 
-	/HILIGHT [-nick | -regexp | -word] [-color <color>]
+	/HILIGHT [-mask | -regexp | -word] [-nick] [-color <color>]
 	         [-level <level>] [-channels <channels>] <text>
 
-	    -nick: Match only for nick, <text> is a nick mask
+	    -mask: Match only for nick, <text> is a nick mask
 	    -regexp: <text> is a regular expression
 	    -word: <text> must match to full words
+	    -nick: Hilight only the nick, not the whole line
 	    -color: Print the reply with <color> - see below
 	    -level: Match only for <level> messages, default is
 	            publics,msgs,notices,actions
