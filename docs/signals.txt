@@ -152,8 +152,8 @@ mode-lists.c:
  "ban remove", CHANNEL_REC, BAN_REC
 
 modes.c:
- "channel mode changed", CHANNEL_REC
- "nick mode changed", CHANNEL_REC, NICK_REC
+ "channel mode changed", CHANNEL_REC, char *setby
+ "nick mode changed", CHANNEL_REC, NICK_REC, char *setby
  "user mode changed", SERVER_REC, char *old
  "away mode changed", SERVER_REC
 

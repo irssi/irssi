@@ -32,7 +32,7 @@
 
 /* Change nick's mode in channel */
 static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
-			     const char mode, int type)
+			     const char mode, int type, const char *setby)
 {
 	NICK_REC *nickrec;
 
@@ -46,7 +46,7 @@ static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 	if (mode == '+') nickrec->voice = type == '+';
 	if (mode == '%') nickrec->halfop = type == '+';
 
-	signal_emit("nick mode changed", 2, channel, nickrec);
+	signal_emit("nick mode changed", 3, channel, nickrec, setby);
 }
 
 static int mode_is_set(const char *str, char mode)
@@ -236,13 +236,13 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 		case 'O': /* channel owner in !channels */
 			if (g_strcasecmp(channel->server->nick, arg) == 0)
 				channel->chanop = type == '+';
-			nick_mode_change(channel, arg, '@', type);
+			nick_mode_change(channel, arg, '@', type, setby);
 			break;
 		case 'h':
-			nick_mode_change(channel, arg, '%', type);
+			nick_mode_change(channel, arg, '%', type, setby);
 			break;
 		case 'v':
-			nick_mode_change(channel, arg, '+', type);
+			nick_mode_change(channel, arg, '+', type, setby);
 			break;
 
 		case 'l':
@@ -290,7 +290,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 		g_free(channel->mode);
 		channel->mode = g_strdup(newmode->str);
 
-		signal_emit("channel mode changed", 1, channel);
+		signal_emit("channel mode changed", 2, channel, setby);
 	}
 
 	g_string_free(newmode, TRUE);
