@@ -25,6 +25,8 @@
 #include "irc-servers.h"
 #include "servers-redirect.h"
 
+#define DEFAULT_REDIRECT_TIMEOUT 60
+
 typedef struct {
 	int refcount;
 
@@ -151,7 +153,7 @@ void server_redirect_register_list(const char *command,
 	rec = g_new0(REDIRECT_CMD_REC, 1);
         redirect_cmd_ref(rec);
 	rec->remote = remote;
-	rec->timeout = timeout;
+	rec->timeout = timeout > 0 ? timeout : DEFAULT_REDIRECT_TIMEOUT;
 	rec->start = start;
         rec->stop = stop;
         g_hash_table_insert(command_redirects, g_strdup(command), rec);
@@ -365,10 +367,12 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 	for (tmp = server->redirects; tmp != NULL; tmp = tmp->next) {
 		REDIRECT_REC *rec = tmp->data;
 
-		*signal = redirect_match(rec, event, args, match_stop);
-		if (*signal != NULL) {
-			redirect = rec;
-			break;
+		if (!rec->destroyed) {
+			*signal = redirect_match(rec, event, args, match_stop);
+			if (*signal != NULL) {
+				redirect = rec;
+				break;
+			}
 		}
 	}
 
@@ -384,7 +388,7 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
                 next = tmp->next;
 		if (rec->destroyed ||
 		    (rec->remote && (now-rec->created) > rec->cmd->timeout) ||
-		    (redirect != NULL && !rec->remote)) {
+		    (!rec->remote && redirect != NULL)) {
 			server->redirects =
 				g_slist_remove(server->redirects, rec);
 			if (!rec->destroyed && rec->failure_signal != NULL) {
@@ -398,27 +402,27 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
         return redirect;
 }
 
-const char *server_redirect_get_signal(IRC_SERVER_REC *server,
-				       const char *event,
-				       const char *args)
+static const char *
+server_redirect_get(IRC_SERVER_REC *server, const char *event,
+		    const char *args, REDIRECT_REC **redirect, int *match_stop)
 {
-        REDIRECT_REC *redirect;
         const char *signal;
-	int match_stop;
+
+        *redirect = NULL;
+	*match_stop = FALSE;
 
 	if (server->redirects == NULL)
 		return NULL;
 
-        match_stop = FALSE;
 	if (server->redirect_continue == NULL) {
                 /* find the redirection */
-		redirect = redirect_find(server, event, args,
-					 &signal, &match_stop);
+		*redirect = redirect_find(server, event, args,
+					  &signal, match_stop);
 	} else {
 		/* redirection is already started, now we'll just need to
 		   keep redirecting until stop-event is found. */
-		redirect = server->redirect_continue;
-		signal = redirect_match(redirect, event, NULL, &match_stop);
+		*redirect = server->redirect_continue;
+		signal = redirect_match(*redirect, event, NULL, match_stop);
 		if (signal == NULL) {
 			/* unknown event - redirect to the default signal.
 			   FIXME: if stop event isn't properly got, this
@@ -426,9 +430,23 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 			   we get eg. 10 different unknown events after this,
 			   or if one of them matches to another redirection,
 			   abort this. */
-			signal = redirect->default_signal;
+			signal = (*redirect)->default_signal;
 		}
 	}
+
+        return signal;
+}
+
+const char *server_redirect_get_signal(IRC_SERVER_REC *server,
+				       const char *event,
+				       const char *args)
+{
+	REDIRECT_REC *redirect;
+        const char *signal;
+	int match_stop;
+
+	signal = server_redirect_get(server, event, args,
+				     &redirect, &match_stop);
 
 	if (!match_stop || redirect == NULL)
 		server->redirect_continue = redirect;
@@ -441,6 +459,17 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 	}
 
         return signal;
+}
+
+const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
+					const char *event,
+					const char *args)
+{
+        REDIRECT_REC *redirect;
+	int match_stop;
+
+	return server_redirect_get(server, event, args,
+				   &redirect, &match_stop);
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)
@@ -467,8 +496,8 @@ void servers_redirect_init(void)
 	command_redirects = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
 
 	/* WHOIS - register as remote command by default
-	   with a timeout of one minute */
-	server_redirect_register("whois", TRUE, 60,
+	   with a default timeout */
+	server_redirect_register("whois", TRUE, 0,
 				 "event 311", 1, /* Begins the WHOIS */
                                  "event 401", 1, /* No such nick */
 				 NULL,
@@ -556,8 +585,8 @@ void servers_redirect_init(void)
 				 "event 472", -1, /* unknown mode (you should check I-mode's existance from 004 event instead of relying on this) */
 				 NULL);
 
-        /* PING */
-	server_redirect_register("ping", TRUE, 60,
+        /* PING - use default timeout */
+	server_redirect_register("ping", TRUE, 0,
 				 NULL,
                                  "event 402", -1, /* no such server */
 				 "event pong", -1, /* PONG */
