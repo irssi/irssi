@@ -143,7 +143,7 @@ void fe_common_core_init(void)
 
 	autocon_server = NULL;
 	autocon_password = NULL;
-	autocon_port = 6667;
+	autocon_port = 0;
 	no_autoconnect = FALSE;
 	cmdline_nick = NULL;
 	cmdline_hostname = NULL;

@@ -117,7 +117,7 @@ static void cmd_server_add(const char *data)
 		return;
 
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	port = *portstr == '\0' ? 6667 : atoi(portstr);
+	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
 
 	rec = server_setup_find_port(addr, port);
 	if (rec == NULL) {
