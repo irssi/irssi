@@ -20,7 +20,7 @@ SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST) docs examples
 @MAINT@	cd macros && $(MAKE) macros.dep
 
 if HAVE_GNOME
-desktopdir = $(datadir)/gnome/apps/Network
+desktopdir = $(datadir)/gnome/apps/Internet
 desktop_DATA = irssi.desktop
 
 corbadir = $(sysconfdir)/CORBA/servers
@@ -28,7 +28,7 @@ corba_DATA = irssi.gnorba
 endif
 
 confdir = $(sysconfdir)/irssi
-conf_DATA = config colorless.theme
+conf_DATA = config colorless.theme split.theme
 
 EXTRA_DIST = \
 	autogen.sh \

@@ -1,0 +1,42 @@
+{
+  default_color = 15;
+  colors = {};
+  bg_scrollable = No;
+  bg_scaled = No;
+  bg_shaded = No;
+  formats = {
+    line_start = "%|";
+    join = "%c%_$[-10]1%_%K:%n %|JOIN %K[%c$2%K]";
+    part = "%c$[-10]1%K:%n %|PART %K[%n$4%K]";
+    kick = "%c$[-10]1%K:%n %|KICK by $3 %K[%n$4%K]";
+    quit = "%c$[-10]1%K:%n %|QUIT %K[%n$3%K]";
+    invite = "%_$[-10]1%K:%n %|INVITE %_$2";
+    new_topic = "%_$[-10]1%_%K:%n %|TOPIC: %_$3";
+    chanmode_change = "%_$[-10]3%_%K:%n %|MODE: %_$2";
+    nick_away = "$[-10]1%K:%n %|AWAY: $2";
+    no_such_nick = "$[-10]1%K:%n No such nick/channel";
+    nick_changed = "%_$[-10]1%K:%n %|NICK %c$2";
+    own_msg = "$3%W$[-9]1%K:%n %|$2";
+    own_msg_channel = "$4%W$[-9]1%K:%c$2%K:%n %|$3";
+    own_msg_private_query = "%W$[-10]3%K:%n %|$2";
+    own_me = "%W* $[-9]1%n %|$2";
+    pubmsg_me = "$3%Y$[-9]1%K:%n %|$2";
+    pubmsg_me_channel = "$4%Y$[-9]1%K:%c$2%K:%n %|$3";
+    pubmsg_hilight = "$4$[-9]1$2%K:%n %|$3";
+    pubmsg_hilight_channel = "$5$[-9]1$2%K:%c$3%K:%n %|$4";
+    pubmsg = "$3$[-9]1%K:%n %|$2";
+    pubmsg_channel = "$4$[-9]1%K:%c$2%K:%n %|$3";
+    msg_private_query = "%R$[-10]1%K:%n %|$3";
+    notice_public = "%M$[-10]1%K%K:%n %|NOTICE $3";
+    notice_public_ops = "%M$[-10]1%K:%n %|NOTICE $3";
+    notice_private = "%M$[-10]1%K:%n %|NOTICE $3";
+    action_private_query = "%W* $[-9]1%n %|$3";
+    action_public = "%W* $[-9]1%n %|$2";
+    action_public_channel = "%W* $[-9]1%K:%c$2%n %|$3";
+    ctcp_reply = "%_$[-10]2%_%K:%n %|CTCP %_$1%_ reply: $3";
+    ctcp_ping_reply = "%_$[-10]1%_%K:%n %|CTCP %_PING%_ reply in $2.$3 seconds";
+    wallops = "%_$[-10]1%K:%n %|%_WALLOP%_ $2";
+    action_wallops = "%_$[-10]1%K:%n %|%_WALLOP *%n $2";
+    error = "%_ERROR%_     %K:%n %|$1";
+  };
+}
