@@ -76,9 +76,6 @@ void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 
 	signal_emit("window item remove", 2, window, item);
-
-	if (settings_get_bool("window_close_on_part") && windows->next != NULL)
-		window_destroy(window);
 }
 
 WINDOW_REC *window_item_window(WI_ITEM_REC *item)
@@ -237,19 +234,22 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 	WINDOW_REC *window;
 	GSList *tmp;
 	char *str;
-	int clear_waiting;
+	int clear_waiting, reuse_unused_windows;
 
 	g_return_if_fail(item != NULL);
 
 	str = item->server == NULL ? NULL :
 		g_strdup_printf("%s %s", ((SERVER_REC *) item->server)->tag, item->name);
 
+	reuse_unused_windows = settings_get_bool("reuse_unused_windows");
+
 	clear_waiting = TRUE;
 	window = NULL;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->items == NULL && rec->level == 0 &&
+		if (reuse_unused_windows &&
+		    rec->items == NULL && rec->level == 0 &&
 		    (window == NULL || rec == active_win)) {
                         /* no items in this window, we should probably use it.. */
 			window = rec;
@@ -297,7 +297,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 
 void window_items_init(void)
 {
-	settings_add_bool("lookandfeel", "window_close_on_part", TRUE);
+	settings_add_bool("lookandfeel", "reuse_unused_windows", FALSE);
 
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 }

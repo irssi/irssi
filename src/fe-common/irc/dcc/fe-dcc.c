@@ -264,6 +264,7 @@ static void sig_dcc_destroyed(DCC_REC *dcc)
 
 	if (query != NULL) {
 		/* DCC chat closed, close the query with it. */
+		if (dcc->connection_lost) query->unwanted = TRUE;
 		query_destroy(query);
 	}
 }

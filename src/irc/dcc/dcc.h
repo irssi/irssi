@@ -53,6 +53,7 @@ typedef struct DCC_REC {
 	int gotalldata:1; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
 
 	int mirc_ctcp:1; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
+	int connection_lost:1; /* DCC chat: other side closed connection */
 	int destroyed:1; /* We're about to destroy this DCC recond */
 
 	/* read/write counter buffer */

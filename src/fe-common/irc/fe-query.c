@@ -68,7 +68,13 @@ static void signal_query_destroyed(QUERY_REC *query)
 	g_return_if_fail(query != NULL);
 
 	window = window_item_window((WI_ITEM_REC *) query);
-	if (window != NULL) window_remove_item(window, (WI_ITEM_REC *) query);
+	if (window != NULL) {
+		window_remove_item(window, (WI_ITEM_REC *) query);
+
+		if (windows->next != NULL && !query->unwanted &&
+		    settings_get_bool("window_close_on_part"))
+			window_destroy(window);
+	}
 }
 
 static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
@@ -78,7 +84,7 @@ static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
 	g_return_if_fail(window != NULL);
 
 	query = irc_item_query(item);
-        if (query != NULL) query_destroy(query);
+	if (query != NULL) query_destroy(query);
 }
 
 static void sig_server_connected(IRC_SERVER_REC *server)
@@ -169,7 +175,7 @@ static int sig_query_autoclose(void)
 		window = window_item_window((WI_ITEM_REC *) rec);
 		if (window != active_win && rec->new_data == 0 &&
 		    now-window->last_line > query_auto_close)
-                        query_destroy(rec);
+			query_destroy(rec);
 	}
         return 1;
 }

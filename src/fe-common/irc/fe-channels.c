@@ -25,6 +25,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "channels.h"
@@ -54,7 +55,14 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 	g_return_if_fail(channel != NULL);
 
 	window = window_item_window((WI_ITEM_REC *) channel);
-	if (window != NULL) window_remove_item(window, (WI_ITEM_REC *) channel);
+	if (window != NULL) {
+		window_remove_item(window, (WI_ITEM_REC *) channel);
+
+		if (windows->next != NULL && (!channel->joined || channel->left) &&
+		    settings_get_bool("window_close_on_part")) {
+			window_destroy(window);
+		}
+	}
 }
 
 static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
@@ -235,6 +243,8 @@ static void cmd_channel_remove(const char *data)
 
 void fe_channels_init(void)
 {
+	settings_add_bool("lookandfeel", "window_close_on_part", TRUE);
+
 	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
 	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);

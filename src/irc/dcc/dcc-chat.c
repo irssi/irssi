@@ -166,6 +166,7 @@ static void dcc_chat_input(DCC_REC *dcc)
 		ret = line_split(tmpbuf, recvlen, &str, (LINEBUF_REC **) &dcc->databuf);
 		if (ret == -1) {
 			/* connection lost */
+                        dcc->connection_lost = TRUE;
 			signal_emit("dcc closed", 1, dcc);
 			dcc_destroy(dcc);
 			break;
