@@ -106,11 +106,11 @@ OUTPUT:
 	RETVAL
 
 int
-ischannel(server, flag)
+ischannel(server, data)
 	Irssi::Server server
-	char flag
+	char *data
 CODE:
-	RETVAL = server->ischannel(flag);
+	RETVAL = server->ischannel(data);
 OUTPUT:
 	RETVAL
 

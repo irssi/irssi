@@ -28,9 +28,9 @@ PPCODE:
 	}
 
 Irssi::Query
-query_create(chat_type, server, nick, automatic)
+query_create(chat_type, server_tag, nick, automatic)
 	int chat_type
-	Irssi::Server server
+	char *server_tag
 	char *nick
 	int automatic
 
