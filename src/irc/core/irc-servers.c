@@ -103,6 +103,7 @@ static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	char hostname[100], *address, *ptr, *username, *cmd;
+	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
 
@@ -191,7 +192,6 @@ static void server_init(IRC_SERVER_REC *server)
 
 	/* prevent the queue from sending too early, we have a max cut off of 120 secs */
 	/* this will reset to 1 sec after we get the 001 event */
-	GTimeVal now;
 	g_get_current_time(&now);
 	memcpy(&((IRC_SERVER_REC *)server)->wait_cmd, &now, sizeof(GTimeVal));
 	((IRC_SERVER_REC *)server)->wait_cmd.tv_sec += 120;
@@ -527,6 +527,7 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
+	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
 
@@ -549,7 +550,6 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	server->real_connect_time = time(NULL);
 
 	/* let the queue send now that we are identified */
-	GTimeVal now;
 	g_get_current_time(&now);
 	memcpy(&server->wait_cmd, &now, sizeof(GTimeVal));
 
