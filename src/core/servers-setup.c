@@ -401,6 +401,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
+	rec->no_proxy = config_node_get_bool(node, "no_proxy", FALSE);
 	rec->own_host = g_strdup(config_node_get_str(node, "own_host", NULL));
 
 	signal_emit("server setup read", 2, rec, node);
@@ -435,6 +436,8 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 
 	if (rec->autoconnect)
 		iconfig_node_set_bool(node, "autoconnect", TRUE);
+	if (rec->no_proxy)
+		iconfig_node_set_bool(node, "no_proxy", TRUE);
 
 	signal_emit("server setup saved", 2, rec, node);
 }
