@@ -184,7 +184,8 @@ void fe_common_irc_finish_init(void)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SETUP_SERVER_REC *rec = tmp->data;
 
-		if (rec->autoconnect && (*rec->ircnet == '\0' || gslist_find_icase_string(ircnets, rec->ircnet) == NULL)) {
+		if (rec->autoconnect && (rec->ircnet == NULL || *rec->ircnet == '\0' ||
+					 gslist_find_icase_string(ircnets, rec->ircnet) == NULL)) {
 			if (*rec->ircnet != '\0')
 				ircnets = g_slist_append(ircnets, rec->ircnet);
 
