@@ -434,7 +434,7 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 	gui->last_subline += new_lines;
 }
 
-static void window_clear(GUI_WINDOW_REC *gui)
+static void window_clear_screen(GUI_WINDOW_REC *gui)
 {
 #ifdef USE_CURSES_WINDOWS
         wclear(gui->parent->curses_win);
@@ -450,21 +450,37 @@ static void window_clear(GUI_WINDOW_REC *gui)
 #endif
 }
 
-/* SYNTAX: CLEAR */
-static void cmd_clear(void)
+static void window_clear(WINDOW_REC *window)
 {
-	GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui = WINDOW_GUI(window);
 
-	gui = WINDOW_GUI(active_win);
-
-	if (is_window_visible(active_win))
-		window_clear(gui);
+	if (is_window_visible(window))
+		window_clear_screen(gui);
 
 	gui->ypos = -1;
 	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
 	gui->bottom_subline = gui->subline = gui->last_subline+1;
 	gui->empty_linecount = gui->parent->lines;
 	gui->bottom = TRUE;
+}
+
+/* SYNTAX: CLEAR */
+static void cmd_clear(const char *data)
+{
+	GHashTable *optlist;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_OPTIONS,
+			    "clear", &optlist)) return;
+
+	if (g_hash_table_lookup(optlist, "all") != NULL)
+		g_slist_foreach(windows, (GFunc) window_clear, NULL);
+	else
+                window_clear(active_win);
+
+	cmd_params_free(free_arg);
 }
 
 static void sig_printtext_finished(WINDOW_REC *window)
@@ -548,6 +564,7 @@ void gui_printtext_init(void)
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
+	command_set_options("clear", "all");
 
 	read_settings();
 }
