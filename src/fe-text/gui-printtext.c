@@ -58,8 +58,11 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
                 /* remove lines by line count */
 		while (view->buffer->lines_count > scrollback_lines) {
 			line = view->buffer->lines->data;
-			if (line->info.time >= old_time) {
-				/* too new line, don't remove yet */
+			if (line->info.time >= old_time ||
+			    scrollback_lines == 0) {
+				/* too new line, don't remove yet - also
+				   if scrollback_lines is 0, we want to check
+				   only scrollback_hours setting. */
 				break;
 			}
 			textbuffer_view_remove_line(view, line);
