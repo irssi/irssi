@@ -276,9 +276,14 @@ CONFIG_NODE *config_node_nth(CONFIG_NODE *node, int index)
 	g_return_val_if_fail(node != NULL, NULL);
 	g_return_val_if_fail(is_node_list(node), NULL);
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next, index--) {
-		if (index == 0)
-                        return tmp->data;
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		CONFIG_NODE *node = tmp->data;
+
+		if (node->type != NODE_TYPE_COMMENT) {
+			if (index == 0)
+				return node;
+			index--;
+		}
 	}
 
 	return NULL;
@@ -288,6 +293,8 @@ CONFIG_NODE *config_node_nth(CONFIG_NODE *node, int index)
 int config_node_index(CONFIG_NODE *parent, const char *key)
 {
 	CONFIG_NODE *node;
+	GSList *tmp;
+	int index;
 
 	g_return_val_if_fail(parent != NULL, -1);
 	g_return_val_if_fail(key != NULL, -1);
@@ -296,7 +303,18 @@ int config_node_index(CONFIG_NODE *parent, const char *key)
 	if (node == NULL)
 		return -1;
 
-        return g_slist_index(parent->value, node);
+	index = 0;
+	for (tmp = parent->value; tmp != NULL; tmp = tmp->next) {
+		CONFIG_NODE *tmpnode = tmp->data;
+
+		if (tmpnode == node)
+			return index;
+
+		if (tmpnode->type != NODE_TYPE_COMMENT)
+			index++;
+	}
+
+        return -1;
 }
 
 /* Returns the first non-comment node in list */
