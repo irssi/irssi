@@ -117,7 +117,7 @@ static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 }
 
 static SERVER_CONNECT_REC *
-server_connect_copy_skeleton(SERVER_CONNECT_REC *src)
+server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 {
 	SERVER_CONNECT_REC *dest;
 
@@ -130,6 +130,12 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src)
 	dest->proxy = g_strdup(src->proxy);
         dest->proxy_port = src->proxy_port;
 	dest->proxy_string = g_strdup(src->proxy_string);
+
+	if (connect_info) {
+		dest->address = g_strdup(src->address);
+		dest->port = src->port;
+		dest->password = g_strdup(src->password);
+	}
 
 	dest->chatnet = g_strdup(src->chatnet);
 	dest->nick = g_strdup(src->nick);
@@ -164,7 +170,7 @@ static void sig_reconnect(SERVER_REC *server)
 	if (reconnect_time == -1 || !server_should_reconnect(server))
 		return;
 
-	conn = server_connect_copy_skeleton(server->connrec);
+	conn = server_connect_copy_skeleton(server->connrec, FALSE);
         g_return_if_fail(conn != NULL);
 
 	/* save the server status */
@@ -189,8 +195,7 @@ static void sig_reconnect(SERVER_REC *server)
 		/* not in any chatnet, just reconnect back to same server */
 		conn->address = g_strdup(server->connrec->address);
 		conn->port = server->connrec->port;
-		conn->password = server->connrec->password == NULL ? NULL :
-			g_strdup(server->connrec->password);
+		conn->password = g_strdup(server->connrec->password);
 
 		if (server->connect_time != 0 &&
 		    time(NULL)-server->connect_time > reconnect_time) {
@@ -293,19 +298,21 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	RECONNECT_REC *rec;
-	char *str;
 	int tag;
 
 	if (*data == '\0' && server != NULL) {
 		/* reconnect back to same server */
-		str = g_strdup_printf("%s %d %s %s", server->connrec->address,
-				      server->connrec->port,
-				      server->connrec->password == NULL ? "-" :
-				      server->connrec->password,
-				      server->connrec->nick);
-		signal_emit("command server", 2, str, server);
-		g_free(str);
-		return;
+		conn = server_connect_copy_skeleton(server->connrec, TRUE);
+
+		if (server->connected) {
+			reconnect_save_status(conn, server);
+			signal_emit("command disconnect", 2,
+				    "* Reconnecting", server);
+		}
+
+		conn->reconnection = TRUE;
+		CHAT_PROTOCOL(conn)->server_connect(conn);
+                return;
 	}
 
 	if (*data == '\0') {
