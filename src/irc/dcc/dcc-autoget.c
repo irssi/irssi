@@ -49,6 +49,11 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 	    !masks_match(SERVER(dcc->server), masks, dcc->nick, nickaddr))
 		return;
 
+	/* Unless specifically said in dcc_autoget_masks, don't do autogets
+	   sent to channels. */
+	if (*masks == '\0' && dcc->target != NULL && ischannel(*dcc->target))
+		return;
+
 	/* don't autoget files beginning with a dot, if download dir is
 	   our home dir (stupid kludge for stupid people) */
 	if (*dcc->arg == '.' &&
