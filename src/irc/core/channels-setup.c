@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 
+#include "irc.h"
 #include "channels.h"
 #include "channels-setup.h"
 #include "nicklist.h"
@@ -164,8 +165,14 @@ static void channel_wholist(CHANNEL_REC *channel)
 	/* find first available bot.. */
 	bots = g_strsplit(rec->botmasks, " ", -1);
 	for (bot = bots; *bot != NULL; bot++) {
-		nick = nicklist_find(channel, *bot);
+		const char *botnick = *bot;
+
+		nick = nicklist_find(channel, isnickflag(*botnick) ?
+				     botnick+1 : botnick);
 		if (nick == NULL)
+			continue;
+		if ((*botnick == '@' && !nick->op) ||
+		    (*botnick == '+' && !nick->voice && !nick->op))
 			continue;
 
 		/* got one! */
