@@ -265,25 +265,6 @@ GList *filename_complete(const char *path)
         return list;
 }
 
-static int is_base_command(const char *command)
-{
-	GSList *tmp;
-	int len;
-
-	g_return_val_if_fail(command != NULL, FALSE);
-
-	/* find "command "s */
-        len = strlen(command);
-	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		COMMAND_REC *rec = tmp->data;
-
-		if (g_strncasecmp(rec->cmd, command, len) == 0 && rec->cmd[len] == ' ')
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 static GList *completion_get_settings(const char *key)
 {
 	GList *complist;
@@ -509,7 +490,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	line = linestart[1] == *cmdchars ? g_strdup(linestart+2) :
 		expand_aliases(linestart+1);
 
-	if (is_base_command(line)) {
+	if (command_have_sub(line)) {
 		/* complete subcommand */
                 cmd = g_strconcat(line, " ", word, NULL);
 		*list = completion_get_subcommands(cmd);
@@ -600,7 +581,7 @@ static void sig_complete_command(GList **list, WINDOW_REC *window,
 	if (*line == '\0') {
 		/* complete base command */
 		*list = completion_get_commands(word, '\0');
-	} else if (is_base_command(line)) {
+	} else if (command_have_sub(line)) {
 		/* complete subcommand */
                 cmd = g_strconcat(line, " ", word, NULL);
 		*list = completion_get_subcommands(cmd);

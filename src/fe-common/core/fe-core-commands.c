@@ -107,7 +107,7 @@ static void help_category(GSList *cmdlist, gint items, gint max)
     g_free(cmdbuf);
 }
 
-static int show_help(COMMAND_REC *cmd)
+static int show_help_rec(COMMAND_REC *cmd)
 {
     char tmpbuf[1024], *str, *path;
     LINEBUF_REC *buffer = NULL;
@@ -139,12 +139,12 @@ static int show_help(COMMAND_REC *cmd)
     return TRUE;
 }
 
-static void cmd_help(gchar *data)
+static void show_help(const char *data)
 {
     COMMAND_REC *rec, *last, *helpitem;
     GSList *tmp, *cmdlist;
     gint len, max, items, findlen;
-    gboolean header;
+    gboolean header, found;
 
     g_return_if_fail(data != NULL);
 
@@ -153,7 +153,7 @@ static void cmd_help(gchar *data)
 
     /* print command, sort by category */
     cmdlist = NULL; last = NULL; header = FALSE; helpitem = NULL;
-    max = items = 0; findlen = strlen(data);
+    max = items = 0; findlen = strlen(data); found = FALSE;
     for (tmp = commands; tmp != NULL; last = rec, tmp = tmp->next)
     {
 	rec = tmp->data;
@@ -198,12 +198,21 @@ static void cmd_help(gchar *data)
 		if (max < len) max = len;
 		items++;
 		cmdlist = g_slist_append(cmdlist, rec);
+		found = TRUE;
 	    }
 	}
     }
 
-    if ((helpitem == NULL && items == 0) || (helpitem != NULL && !show_help(helpitem)))
+    if (!found || (helpitem != NULL && !show_help_rec(helpitem)))
 	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "No help for %s", data);
+
+    if (data[strlen(data)-1] != ' ' && command_have_sub(data)) {
+	    char *cmd;
+
+	    cmd = g_strconcat(data, " ", NULL);
+	    show_help(cmd);
+	    g_free(cmd);
+    }
 
     if (items != 0)
     {
@@ -222,6 +231,18 @@ static void cmd_help(gchar *data)
 	help_category(cmdlist, items, max);
 	g_slist_free(cmdlist);
     }
+}
+
+static void cmd_help(const char *data)
+{
+	char *cmd, *ptr;
+
+	cmd = g_strdup(data);
+	ptr = cmd+strlen(cmd);
+	while (ptr[-1] == ' ') ptr--; *ptr = '\0';
+
+	show_help(cmd);
+        g_free(cmd);
 }
 
 static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)

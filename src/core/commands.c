@@ -52,6 +52,25 @@ COMMAND_REC *command_find(const char *cmd)
 	return NULL;
 }
 
+int command_have_sub(const char *command)
+{
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(command != NULL, FALSE);
+
+	/* find "command "s */
+        len = strlen(command);
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->cmd, command, len) == 0 && rec->cmd[len] == ' ')
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;

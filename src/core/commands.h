@@ -52,6 +52,7 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func);
 void command_runsub(const char *cmd, const char *data, void *server, void *item);
 
 COMMAND_REC *command_find(const char *cmd);
+int command_have_sub(const char *command);
 
 /* Specify options that command can accept. `options' contains list of
    options separated with space, each option can contain a special
