@@ -131,10 +131,24 @@ static GModule *module_open(const char *name)
 	return module;
 }
 
+static char *module_get_func(const char *rootmodule, const char *submodule,
+			     const char *function)
+{
+	if (strcmp(submodule, "core") == 0)
+		return g_strconcat(rootmodule, "_core_", function, NULL);
+
+	if (strcmp(rootmodule, submodule) == 0)
+		return g_strconcat(rootmodule, "_", function, NULL);
+
+	return g_strconcat(submodule, "_", rootmodule, "_", function, NULL);
+}
+
 #define module_error(error, text, rootmodule, submodule) \
 	signal_emit("module error", 4, GINT_TO_POINTER(error), text, \
 		    rootmodule, submodule)
 
+/* Returns 1 if ok, 0 if error in module and
+   -1 if module wasn't found */
 static int module_load_name(const char *path, const char *rootmodule,
 			    const char *submodule, int silent)
 {
@@ -150,16 +164,11 @@ static int module_load_name(const char *path, const char *rootmodule,
 			module_error(MODULE_ERROR_LOAD, g_module_error(),
 				     rootmodule, submodule);
 		}
-		return FALSE;
+		return -1;
 	}
 
 	/* get the module's init() function */
-        if (strcmp(submodule, "core") == 0)
-		initfunc = g_strconcat(rootmodule, "_core_init", NULL);
-	else {
-		initfunc = g_strconcat(submodule, "_",
-				       rootmodule, "_init", NULL);
-	}
+	initfunc = module_get_func(rootmodule, submodule, "init");
 
 	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
 		if (!silent)
@@ -167,7 +176,7 @@ static int module_load_name(const char *path, const char *rootmodule,
 				     rootmodule, submodule);
 		g_module_close(gmodule);
 		g_free(initfunc);
-		return FALSE;
+		return 0;
 	}
 	g_free(initfunc);
 
@@ -176,7 +185,10 @@ static int module_load_name(const char *path, const char *rootmodule,
 	module_init();
 
 	module = module_find(rootmodule);
-	rec = module == NULL ? NULL : module_file_find(module, submodule);
+	rec = module == NULL ? NULL :
+                strcmp(rootmodule, submodule) == 0 ?
+		module_file_find(module, "core") :
+		module_file_find(module, submodule);
 	if (rec == NULL) {
 		rec = module_register_full(rootmodule, submodule, NULL);
 		rec->gmodule = gmodule;
@@ -184,7 +196,7 @@ static int module_load_name(const char *path, const char *rootmodule,
 
 		module_error(MODULE_ERROR_INVALID, NULL,
 			     rootmodule, submodule);
-                return FALSE;
+                return 0;
 	}
 
 	rec->gmodule = gmodule;
@@ -193,21 +205,21 @@ static int module_load_name(const char *path, const char *rootmodule,
 	settings_check_module(rec->defined_module_name);
 
 	signal_emit("module loaded", 2, rec->root, rec);
-	return TRUE;
+	return 1;
 }
 
 static int module_load_prefixes(const char *path, const char *module,
 				int start, int end, char **prefixes)
 {
         GString *realpath;
-        int ok;
+        int status;
 
         /* load module_core */
 	realpath = g_string_new(path);
 	g_string_insert(realpath, end, "_core");
 
-	ok = module_load_name(realpath->str, module, "core", FALSE);
-	if (ok && prefixes != NULL) {
+	status = module_load_name(realpath->str, module, "core", FALSE);
+	if (status > 0 && prefixes != NULL) {
 		/* load all the "prefix modules", like the fe-common, irc,
 		   etc. part of the module */
 		while (*prefixes != NULL) {
@@ -223,7 +235,7 @@ static int module_load_prefixes(const char *path, const char *module,
 	}
 
 	g_string_free(realpath, TRUE);
-        return ok;
+        return status;
 }
 
 static int module_load_full(const char *path, const char *rootmodule,
@@ -231,7 +243,7 @@ static int module_load_full(const char *path, const char *rootmodule,
 			    char **prefixes)
 {
 	MODULE_REC *module;
-        int ok, try_prefixes;
+        int status, try_prefixes;
 
 	if (!g_module_supported())
 		return FALSE;
@@ -247,15 +259,15 @@ static int module_load_full(const char *path, const char *rootmodule,
 
 	/* check if the given module exists.. */
 	try_prefixes = strcmp(rootmodule, submodule) == 0;
-	ok = module_load_name(path, rootmodule, submodule, try_prefixes);
-	if (!ok && try_prefixes) {
+	status = module_load_name(path, rootmodule, submodule, try_prefixes);
+	if (status == -1 && try_prefixes) {
 		/* nope, try loading the module_core,
 		   fe_module, etc. */
-		ok = module_load_prefixes(path, rootmodule,
-					  start, end, prefixes);
+		status = module_load_prefixes(path, rootmodule,
+					      start, end, prefixes);
 	}
 
-	return ok;
+	return status > 0;
 }
 
 /* Load module - automatically tries to load also the related non-core
@@ -316,14 +328,7 @@ static void module_file_deinit_gmodule(MODULE_FILE_REC *file)
 	char *deinitfunc;
 
 	/* call the module's deinit() function */
-	if (strcmp(file->name, "core") == 0) {
-		deinitfunc = g_strconcat(file->root->name,
-					 "_core_deinit", NULL);
-	} else {
-		deinitfunc = g_strconcat(file->name, "_",
-					 file->root->name, "_deinit", NULL);
-	}
-
+	deinitfunc = module_get_func(file->root->name, file->name, "deinit");
 	if (g_module_symbol(file->gmodule, deinitfunc,
 			    (gpointer *) &module_deinit))
 		module_deinit();
