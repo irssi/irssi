@@ -34,13 +34,22 @@
 static struct flock lock;
 #endif
 
+const char *rotate_strings[] = {
+	"never",
+	"hourly",
+	"daily",
+	"weekly",
+	"monthly"
+};
+
 GSList *logs;
 
 const char *log_timestamp;
 static int log_file_create_mode;
 static int rotate_tag;
 
-static void log_write_timestamp(int handle, const char *format, const char *suffix, time_t t)
+static void log_write_timestamp(int handle, const char *format,
+				const char *suffix, time_t stamp)
 {
 	struct tm *tm;
 	char str[256];
@@ -48,7 +57,7 @@ static void log_write_timestamp(int handle, const char *format, const char *suff
 	g_return_if_fail(format != NULL);
 	if (*format == '\0') return;
 
-	tm = localtime(&t);
+	tm = localtime(&stamp);
 
 	str[sizeof(str)-1] = '\0';
 	strftime(str, sizeof(str)-1, format, tm);
@@ -61,20 +70,21 @@ int log_start_logging(LOG_REC *log)
 {
 	char *str, fname[1024];
 	struct tm *tm;
-	time_t t;
+	time_t now;
 
 	g_return_val_if_fail(log != NULL, FALSE);
 
 	if (log->handle != -1)
 		return TRUE;
 
-	t = time(NULL);
-	tm = localtime(&t);
+	now = time(NULL);
+	tm = localtime(&now);
 
 	/* Append/create log file */
 	str = convert_home(log->fname);
 	strftime(fname, sizeof(fname), str, tm);
-	log->handle = open(fname, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
+	log->handle = open(fname, O_WRONLY | O_APPEND | O_CREAT,
+			   log_file_create_mode);
 	g_free(str);
 
 	if (log->handle == -1) {
@@ -94,7 +104,9 @@ int log_start_logging(LOG_REC *log)
 	lseek(log->handle, 0, SEEK_END);
 
 	log->opened = log->last = time(NULL);
-	log_write_timestamp(log->handle, settings_get_str("log_open_string"), "\n", log->last);
+	log_write_timestamp(log->handle,
+			    settings_get_str("log_open_string"),
+			    "\n", log->last);
 
 	signal_emit("log started", 1, log);
 	return TRUE;
@@ -109,7 +121,9 @@ void log_stop_logging(LOG_REC *log)
 
 	signal_emit("log stopped", 1, log);
 
-	log_write_timestamp(log->handle, settings_get_str("log_close_string"), "\n", time(NULL));
+	log_write_timestamp(log->handle,
+			    settings_get_str("log_close_string"),
+			    "\n", time(NULL));
 
 #ifdef HAVE_FCNTL
         memset(&lock, 0, sizeof(lock));
@@ -124,7 +138,7 @@ void log_stop_logging(LOG_REC *log)
 void log_write_rec(LOG_REC *log, const char *str)
 {
 	struct tm *tm;
-	time_t t;
+	time_t now;
 	int day;
 
 	g_return_if_fail(log != NULL);
@@ -133,24 +147,27 @@ void log_write_rec(LOG_REC *log, const char *str)
 	if (log->handle == -1)
 		return;
 
-	t = time(NULL);
-	tm = localtime(&t);
+	now = time(NULL);
+	tm = localtime(&now);
 	day = tm->tm_mday;
 
 	tm = localtime(&log->last);
 	if (tm->tm_mday != day) {
 		/* day changed */
-		log_write_timestamp(log->handle, settings_get_str("log_day_changed"), "\n", t);
+		log_write_timestamp(log->handle,
+				    settings_get_str("log_day_changed"),
+				    "\n", now);
 	}
-	log->last = t;
+	log->last = now;
 
-	log_write_timestamp(log->handle, log_timestamp, str, t);
+	log_write_timestamp(log->handle, log_timestamp, str, now);
 	write(log->handle, "\n", 1);
 
 	signal_emit("log written", 2, log, str);
 }
 
-void log_file_write(const char *item, int level, const char *str, int no_fallbacks)
+static void log_file_write(const char *item, int level,
+			   const char *str, int no_fallbacks)
 {
 	GSList *tmp, *fallbacks;
 	char *tmpstr;
@@ -181,7 +198,8 @@ void log_file_write(const char *item, int level, const char *str, int no_fallbac
 		if (level & MSGLEVEL_PUBLIC)
 			tmpstr = g_strconcat(item, ": ", str, NULL);
 
-		g_slist_foreach(fallbacks, (GFunc) log_write_rec, tmpstr ? tmpstr : (char *)str);
+		g_slist_foreach(fallbacks, (GFunc) log_write_rec,
+				tmpstr ? tmpstr : (char *)str);
 		g_free_not_null(tmpstr);
 	}
         g_slist_free(fallbacks);
@@ -208,18 +226,9 @@ LOG_REC *log_find(const char *fname)
 
 const char *log_rotate2str(int rotate)
 {
-	switch (rotate) {
-	case LOG_ROTATE_HOURLY:
-		return "hourly";
-	case LOG_ROTATE_DAILY:
-		return "daily";
-	case LOG_ROTATE_WEEKLY:
-		return "weekly";
-	case LOG_ROTATE_MONTHLY:
-		return "monthly";
-	}
+	g_return_val_if_fail(rotate >= 0 && rotate <= LOG_ROTATE_MONTHLY, NULL);
 
-	return NULL;
+	return rotate_strings[rotate];
 }
 
 int log_str2rotate(const char *str)
@@ -331,7 +340,9 @@ void log_close(LOG_REC *log)
 	log_destroy(log);
 }
 
-static void sig_printtext_stripped(void *window, void *server, const char *item, gpointer levelp, const char *str)
+static void sig_printtext_stripped(void *window, void *server,
+				   const char *item, gpointer levelp,
+				   const char *str)
 {
 	int level;
 
@@ -416,7 +427,8 @@ static void log_read_config(void)
 		log->fname = g_strdup(node->key);
 		log->autoopen = config_node_get_bool(node, "auto_open", FALSE);
 		log->level = level2bits(config_node_get_str(node, "level", 0));
-		log->rotate = log_str2rotate(config_node_get_str(node, "rotate", NULL));
+		log->rotate = log_str2rotate(config_node_get_str(
+						node, "rotate", NULL));
                 if (log->rotate < 0) log->rotate = LOG_ROTATE_NEVER;
 
 		node = config_node_section(node, "items", -1);
@@ -441,11 +453,15 @@ void log_init(void)
 	rotate_tag = g_timeout_add(60000, (GSourceFunc) sig_rotate_check, NULL);
 	logs = NULL;
 
-	settings_add_int("log", "log_create_mode", DEFAULT_LOG_FILE_CREATE_MODE);
+	settings_add_int("log", "log_create_mode",
+			 DEFAULT_LOG_FILE_CREATE_MODE);
 	settings_add_str("log", "log_timestamp", "%H:%M ");
-	settings_add_str("log", "log_open_string", "--- Log opened %a %b %d %H:%M:%S %Y");
-	settings_add_str("log", "log_close_string", "--- Log closed %a %b %d %H:%M:%S %Y");
-	settings_add_str("log", "log_day_changed", "--- Day changed %a %b %d %Y");
+	settings_add_str("log", "log_open_string",
+			 "--- Log opened %a %b %d %H:%M:%S %Y");
+	settings_add_str("log", "log_close_string",
+			 "--- Log closed %a %b %d %H:%M:%S %Y");
+	settings_add_str("log", "log_day_changed",
+			 "--- Day changed %a %b %d %Y");
 
 	read_settings();
 	log_read_config();

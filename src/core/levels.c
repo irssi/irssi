@@ -21,8 +21,7 @@
 #include "module.h"
 #include "levels.h"
 
-static const char *levels[] =
-{
+static const char *levels[] = {
 	"CRAP",
 	"MSGS",
 	"PUBLICS",
@@ -52,7 +51,7 @@ static const char *levels[] =
 
 int level_get(const char *level)
 {
-	int n, len;
+	int n, len, match;
 
 	if (strcmp(level, "ALL") == 0)
 		return MSGLEVEL_ALL;
@@ -60,24 +59,28 @@ int level_get(const char *level)
 	if (strcmp(level, "NEVER") == 0)
 		return MSGLEVEL_NEVER;
 
-	/* I never remember if it was PUBLIC or PUBLICS, MSG or MSGS, etc.
-	   So, make it work with both. */
 	len = strlen(level);
-	if (toupper(level[len-1]) == 'S') len--;
+	if (len == 0) return 0;
 
+	/* partial match allowed, as long as it's the only one that matches */
+	match = 0;
 	for (n = 0; levels[n] != NULL; n++) {
-		if (strncmp(levels[n], level, len) == 0 &&
-		    (levels[n][len] == '\0' || strcmp(levels[n]+len, "S") == 0))
-			return 1 << n;
+		if (strncmp(levels[n], level, len) == 0) {
+			if (match > 0) {
+				/* ambiguous - abort */
+				return 0;
+			}
+			match = 1L << n;
+		}
 	}
 
-	return 0;
+	return match;
 }
 
 int level2bits(const char *level)
 {
 	char *orig, *str, *ptr;
-	int ret, slevel, neg;
+	int ret, singlelevel, negative;
 
 	g_return_val_if_fail(level != NULL, 0);
 
@@ -94,13 +97,13 @@ int level2bits(const char *level)
 		else if (*str != '\0')
 			continue;
 
-		neg = *ptr == '-' ? 1 : 0;
+		negative = *ptr == '-';
 		if (*ptr == '-' || *ptr == '+') ptr++;
 
-		slevel = level_get(ptr);
-		if (slevel != 0) {
-			ret = !neg ? (ret | slevel) :
-				(ret & ~slevel);
+		singlelevel = level_get(ptr);
+		if (singlelevel != 0) {
+			ret = !negative ? (ret | singlelevel) :
+				(ret & ~singlelevel);
 		}
 
        		while (*str == ' ') str++;
@@ -130,10 +133,11 @@ char *bits2level(int bits)
 		g_string_append(str, "NEVER ");
 
 	for (n = 0; levels[n] != NULL; n++) {
-		if (bits & (1 << n))
+		if (bits & (1L << n))
 			g_string_sprintfa(str, "%s ", levels[n]);
 	}
-	g_string_truncate(str, str->len-1);
+        if (str->len > 0)
+		g_string_truncate(str, str->len-1);
 
 	ret = str->str;
 	g_string_free(str, FALSE);
@@ -143,15 +147,17 @@ char *bits2level(int bits)
 
 int combine_level(int dest, const char *src)
 {
-	char **list, **item;
+	char **list, **item, *itemname;
 	int itemlevel;
 
 	g_return_val_if_fail(src != NULL, dest);
 
 	list = g_strsplit(src, " ", -1);
 	for (item = list; *item != NULL; item++) {
-                g_strup(*item);
-		itemlevel = level_get(*item + (**item == '+' || **item == '-' ? 1 : 0));
+		itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
+                g_strup(itemname);
+		itemlevel = level_get(itemname);
+
 		if (**item == '-')
 			dest &= ~(itemlevel);
 		else

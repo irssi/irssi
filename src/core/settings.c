@@ -42,7 +42,8 @@ static const char *settings_get_default_str(const char *key)
 
 	rec = g_hash_table_lookup(settings, key);
 	if (rec == NULL) {
-		g_warning("settings_get_default_str(%s) : unknown setting", key);
+		g_warning("settings_get_default_str(%s) : "
+			  "unknown setting", key);
 		return NULL;
 	}
 
@@ -57,7 +58,8 @@ static int settings_get_default_int(const char *key)
 
 	rec = g_hash_table_lookup(settings, key);
 	if (rec == NULL) {
-		g_warning("settings_get_default_int(%s) : unknown setting", key);
+		g_warning("settings_get_default_int(%s) : "
+			  "unknown setting", key);
 		return -1;
 	}
 
@@ -76,7 +78,8 @@ const int settings_get_int(const char *key)
 
 const int settings_get_bool(const char *key)
 {
-	return iconfig_get_bool("settings", key, settings_get_default_int(key));
+	return iconfig_get_bool("settings", key,
+				settings_get_default_int(key));
 }
 
 void settings_add_str(const char *section, const char *key, const char *def)
@@ -180,9 +183,11 @@ static int settings_compare(SETTINGS_REC *v1, SETTINGS_REC *v2)
 	return strcmp(v1->section, v2->section);
 }
 
-static void settings_hash_get(const char *key, SETTINGS_REC *rec, GSList **list)
+static void settings_hash_get(const char *key, SETTINGS_REC *rec,
+			      GSList **list)
 {
-        *list = g_slist_insert_sorted(*list, rec, (GCompareFunc) settings_compare);
+	*list = g_slist_insert_sorted(*list, rec,
+				      (GCompareFunc) settings_compare);
 }
 
 GSList *settings_get_sorted(void)
@@ -215,14 +220,9 @@ static CONFIG_REC *parse_configfile(const char *fname)
 		g_strdup_printf("%s/.irssi/config", g_get_home_dir());
 	config = config_open(real_fname, -1);
 
-	if (config == NULL && fname != NULL) {
-		g_free(real_fname);
-		return NULL; /* specified config file not found */
-	}
-
 	if (config != NULL)
 		config_parse(config);
-	else {
+	else if (fname == NULL) {
 		/* user configuration file not found, use the default one
 		   from sysconfdir */
 		config = config_open(SYSCONFDIR"/irssi/config", -1);
@@ -245,7 +245,8 @@ static CONFIG_REC *parse_configfile(const char *fname)
 static void sig_print_config_error(void)
 {
 	signal_emit("gui dialog", 2, "error", last_error_msg);
-	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_print_config_error);
+	signal_remove("irssi init finished",
+		      (SIGNAL_FUNC) sig_print_config_error);
 
 	g_free_and_null(last_error_msg);
 }
@@ -258,12 +259,14 @@ static void init_configfile(void)
 	str = g_strdup_printf("%s/.irssi", g_get_home_dir());
 	if (stat(str, &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
-		if (mkdir(str, 0700) != 0)
-			g_error(_("Couldn't create %s/.irssi directory"), g_get_home_dir());
-	} else {
-		if (!S_ISDIR(statbuf.st_mode)) {
-			g_error(_("%s/.irssi is not a directory.\nYou should remove it with command: rm ~/.irssi"), g_get_home_dir());
+		if (mkdir(str, 0700) != 0) {
+			g_error(_("Couldn't create %s/.irssi directory"),
+				g_get_home_dir());
 		}
+	} else if (!S_ISDIR(statbuf.st_mode)) {
+		g_error(_("%s/.irssi is not a directory.\n"
+			  "You should remove it with command: rm ~/.irssi"),
+			g_get_home_dir());
 	}
 	g_free(str);
 
@@ -271,9 +274,12 @@ static void init_configfile(void)
 
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
-		last_error_msg = g_strdup_printf(_("Ignored errors in configuration file:\n%s"),
-						 config_last_error(mainconfig));
-		signal_add("irssi init finished", (SIGNAL_FUNC) sig_print_config_error);
+		last_error_msg =
+			g_strdup_printf(_("Ignored errors in configuration "
+					  "file:\n%s"),
+					config_last_error(mainconfig));
+		signal_add("irssi init finished",
+			   (SIGNAL_FUNC) sig_print_config_error);
 	}
 
 	signal(SIGTERM, sig_term);
@@ -296,11 +302,11 @@ void settings_reread(const char *fname)
 	}
 
 	if (config_last_error(tempconfig) != NULL) {
-		/* error */
 		str = g_strdup_printf(_("Errors in configuration file:\n%s"),
 				      config_last_error(tempconfig));
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
+
 		config_close(tempconfig);
                 return;
 	}
@@ -328,7 +334,8 @@ void settings_save(const char *fname)
 
 void settings_init(void)
 {
-	settings = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	settings = g_hash_table_new((GHashFunc) g_str_hash,
+				    (GCompareFunc) g_str_equal);
 
 	init_configfile();
 }

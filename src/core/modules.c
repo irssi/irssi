@@ -22,8 +22,6 @@
 #include "modules.h"
 #include "signals.h"
 
-#define PLUGINSDIR "/usr/local/lib/irssi/plugins" /*FIXME: configurable*/
-
 GSList *modules;
 
 static GHashTable *uniqids, *uniqstrids;
@@ -34,7 +32,7 @@ static int next_uniq_id;
 int module_get_uniq_id(const char *module, int id)
 {
         GHashTable *ids;
-	gpointer origkey, uniqid;
+	gpointer origkey, uniqid, idp;
 	int ret;
 
 	g_return_val_if_fail(module != NULL, -1);
@@ -42,15 +40,17 @@ int module_get_uniq_id(const char *module, int id)
 	ids = g_hash_table_lookup(idlookup, module);
 	if (ids == NULL) {
 		/* new module */
-		ids = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
+		ids = g_hash_table_new((GHashFunc) g_direct_hash,
+				       (GCompareFunc) g_direct_equal);
 		g_hash_table_insert(idlookup, g_strdup(module), ids);
 	}
 
-	if (!g_hash_table_lookup_extended(ids, GINT_TO_POINTER(id), &origkey, &uniqid)) {
+	idp = GINT_TO_POINTER(id);
+	if (!g_hash_table_lookup_extended(ids, idp, &origkey, &uniqid)) {
 		/* not found */
 		ret = next_uniq_id++;
-                g_hash_table_insert(ids, GINT_TO_POINTER(id), GINT_TO_POINTER(ret));
-                g_hash_table_insert(uniqids, GINT_TO_POINTER(ret), GINT_TO_POINTER(id));
+                g_hash_table_insert(ids, idp, GINT_TO_POINTER(ret));
+                g_hash_table_insert(uniqids, GINT_TO_POINTER(ret), idp);
 	} else {
                 ret = GPOINTER_TO_INT(uniqid);
 	}
@@ -70,7 +70,8 @@ int module_get_uniq_id_str(const char *module, const char *id)
 	ids = g_hash_table_lookup(stridlookup, module);
 	if (ids == NULL) {
 		/* new module */
-		ids = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+		ids = g_hash_table_new((GHashFunc) g_str_hash,
+				       (GCompareFunc) g_str_equal);
 		g_hash_table_insert(stridlookup, g_strdup(module), ids);
 	}
 
@@ -92,22 +93,25 @@ int module_get_uniq_id_str(const char *module, const char *id)
 /* returns the original module specific id, -1 = not found */
 int module_find_id(const char *module, int uniqid)
 {
-	GHashTable *ids;
+	GHashTable *idlist;
 	gpointer origkey, id;
 	int ret;
 
 	g_return_val_if_fail(module != NULL, -1);
 
-	ret = g_hash_table_lookup_extended(uniqids, GINT_TO_POINTER(uniqid), &origkey, &id) ?
-		GPOINTER_TO_INT(id) : -1;
+	if (!g_hash_table_lookup_extended(uniqids, GINT_TO_POINTER(uniqid),
+					  &origkey, &id))
+		return -1;
 
-	if (ret != -1) {
-		/* check that module matches */
-		ids = g_hash_table_lookup(idlookup, module);
-		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id) ||
-		    GPOINTER_TO_INT(id) != uniqid)
-			ret = -1;
-	}
+	/* check that module matches */
+	idlist = g_hash_table_lookup(idlookup, module);
+	if (idlist == NULL)
+		return -1;
+
+	ret = GPOINTER_TO_INT(id);
+	if (!g_hash_table_lookup_extended(idlist, id, &origkey, &id) ||
+	    GPOINTER_TO_INT(id) != uniqid)
+		ret = -1;
 
 	return ret;
 }
@@ -115,32 +119,35 @@ int module_find_id(const char *module, int uniqid)
 /* returns the original module specific id, NULL = not found */
 const char *module_find_id_str(const char *module, int uniqid)
 {
-	GHashTable *ids;
+	GHashTable *idlist;
 	gpointer origkey, id;
 	const char *ret;
 
 	g_return_val_if_fail(module != NULL, NULL);
 
-	ret = g_hash_table_lookup_extended(uniqstrids, GINT_TO_POINTER(uniqid),
-					   &origkey, &id) ? id : NULL;
+	if (!g_hash_table_lookup_extended(uniqstrids, GINT_TO_POINTER(uniqid),
+					  &origkey, &id))
+		return NULL;
 
-	if (ret != NULL) {
-		/* check that module matches */
-		ids = g_hash_table_lookup(stridlookup, module);
-		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id) ||
-		    (GPOINTER_TO_INT(id) != uniqid))
-			ret = NULL;
-	}
+	/* check that module matches */
+	idlist = g_hash_table_lookup(stridlookup, module);
+	if (idlist == NULL)
+		return NULL;
+
+	ret = id;
+	if (!g_hash_table_lookup_extended(idlist, id, &origkey, &id) ||
+	    GPOINTER_TO_INT(id) != uniqid)
+		ret = NULL;
 
 	return ret;
 }
 
-static void gh_uniq_destroy(gpointer key, gpointer value)
+static void uniq_destroy(gpointer key, gpointer value)
 {
         g_hash_table_remove(uniqids, value);
 }
 
-static void gh_uniq_destroy_str(gpointer key, gpointer value)
+static void uniq_destroy_str(gpointer key, gpointer value)
 {
         g_hash_table_remove(uniqstrids, value);
         g_free(key);
@@ -150,23 +157,25 @@ static void gh_uniq_destroy_str(gpointer key, gpointer value)
    when module is destroyed with module's name as the parameter. */
 void module_uniq_destroy(const char *module)
 {
-	GHashTable *ids;
+	GHashTable *idlist;
 	gpointer key;
 
-	if (g_hash_table_lookup_extended(idlookup, module, &key, (gpointer *) &ids)) {
+	if (g_hash_table_lookup_extended(idlookup, module, &key,
+					 (gpointer *) &idlist)) {
 		g_hash_table_remove(idlookup, key);
 		g_free(key);
 
-		g_hash_table_foreach(ids, (GHFunc) gh_uniq_destroy, NULL);
-		g_hash_table_destroy(ids);
+		g_hash_table_foreach(idlist, (GHFunc) uniq_destroy, NULL);
+		g_hash_table_destroy(idlist);
 	}
 
-	if (g_hash_table_lookup_extended(stridlookup, module, &key, (gpointer *) &ids)) {
+	if (g_hash_table_lookup_extended(stridlookup, module, &key,
+					 (gpointer *) &idlist)) {
 		g_hash_table_remove(stridlookup, key);
 		g_free(key);
 
-		g_hash_table_foreach(ids, (GHFunc) gh_uniq_destroy_str, NULL);
-		g_hash_table_destroy(ids);
+		g_hash_table_foreach(idlist, (GHFunc) uniq_destroy_str, NULL);
+		g_hash_table_destroy(idlist);
 	}
 }
 
@@ -216,13 +225,14 @@ GModule *module_open(const char *name)
 	if (g_path_is_absolute(name))
 		path = g_strdup(name);
 	else {
-		path = g_module_build_path(PLUGINSDIR, name);
+		path = g_module_build_path(MODULEDIR, name);
 		module = g_module_open(path, 0);
 		g_free(path);
 		if (module != NULL) return module;
 
-		/* Plugin not found from global plugin dir, check from home dir */
-		str = g_strdup_printf("%s/.irssi/plugins", g_get_home_dir());
+		/* module not found from global module dir,
+		   check from home dir */
+		str = g_strdup_printf("%s/.irssi/modules", g_get_home_dir());
 		path = g_module_build_path(str, name);
 		g_free(str);
 	}
@@ -232,44 +242,39 @@ GModule *module_open(const char *name)
 	return module;
 }
 
-int module_load(const char *path)
+#define module_error(error, module, text) \
+	signal_emit("module error", 3, GINT_TO_POINTER(error), module, text)
+
+static int module_load_name(const char *path, const char *name)
 {
 	void (*module_init) (void);
 	GModule *gmodule;
 	MODULE_REC *rec;
-	char *name, *initfunc;
+	char *initfunc;
 
-	g_return_val_if_fail(path != NULL, FALSE);
-
-	if (!g_module_supported())
-		return FALSE;
-
-	name = module_get_name(path);
 	if (module_find(name)) {
-		signal_emit("module error", 2, GINT_TO_POINTER(MODULE_ERROR_ALREADY_LOADED), name);
-                g_free(name);
+		module_error(MODULE_ERROR_ALREADY_LOADED, name, NULL);
 		return FALSE;
 	}
 
 	gmodule = module_open(path);
 	if (gmodule == NULL) {
-		signal_emit("module error", 3, GINT_TO_POINTER(MODULE_ERROR_LOAD), name, g_module_error());
-                g_free(name);
+		module_error(MODULE_ERROR_LOAD, name, g_module_error());
 		return FALSE;
 	}
 
+	/* get the module's init() function */
 	initfunc = g_strconcat(name, "_init", NULL);
 	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
-		signal_emit("module error", 2, GINT_TO_POINTER(MODULE_ERROR_INVALID), name);
+                module_error(MODULE_ERROR_INVALID, name, NULL);
 		g_module_close(gmodule);
 		g_free(initfunc);
-		g_free(name);
 		return FALSE;
 	}
 	g_free(initfunc);
 
 	rec = g_new0(MODULE_REC, 1);
-	rec->name = name;
+	rec->name = g_strdup(name);
         rec->gmodule = gmodule;
 	modules = g_slist_append(modules, rec);
 
@@ -277,6 +282,23 @@ int module_load(const char *path)
 
 	signal_emit("module loaded", 1, rec);
 	return TRUE;
+}
+
+int module_load(const char *path)
+{
+	char *name;
+	int ret;
+
+	g_return_val_if_fail(path != NULL, FALSE);
+
+	if (!g_module_supported())
+		return FALSE;
+
+	name = module_get_name(path);
+	ret = module_load_name(path, name);
+	g_free(name);
+
+	return ret;
 }
 
 void module_unload(MODULE_REC *module)
@@ -290,8 +312,10 @@ void module_unload(MODULE_REC *module)
 
 	signal_emit("module unloaded", 1, module);
 
+	/* call the module's deinit() function */
 	deinitfunc = g_strconcat(module->name, "_deinit", NULL);
-	if (g_module_symbol(module->gmodule, deinitfunc, (gpointer *) &module_deinit))
+	if (g_module_symbol(module->gmodule, deinitfunc,
+			    (gpointer *) &module_deinit))
 		module_deinit();
 	g_free(deinitfunc);
 
@@ -304,11 +328,15 @@ void modules_init(void)
 {
 	modules = NULL;
 
-	idlookup = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
-	uniqids = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
+	idlookup = g_hash_table_new((GHashFunc) g_str_hash,
+				    (GCompareFunc) g_str_equal);
+	uniqids = g_hash_table_new((GHashFunc) g_direct_hash,
+				   (GCompareFunc) g_direct_equal);
 
-	stridlookup = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
-	uniqstrids = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
+	stridlookup = g_hash_table_new((GHashFunc) g_str_hash,
+				       (GCompareFunc) g_str_equal);
+	uniqstrids = g_hash_table_new((GHashFunc) g_direct_hash,
+				      (GCompareFunc) g_direct_equal);
 	next_uniq_id = 0;
 }
 

@@ -56,7 +56,8 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 		rawlog->nlines++;
 	else {
 		g_free(rawlog->lines->data);
-		rawlog->lines = g_slist_remove(rawlog->lines, rawlog->lines->data);
+		rawlog->lines = g_slist_remove(rawlog->lines,
+					       rawlog->lines->data);
 	}
 
 	if (rawlog->logging) {
@@ -113,7 +114,8 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 		return;
 
 	path = convert_home(fname);
-	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
+	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT,
+			      log_file_create_mode);
 	g_free(path);
 
 	rawlog_dump(rawlog, rawlog->handle);

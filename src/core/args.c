@@ -25,10 +25,13 @@ GArray *iopt_tables = NULL;
 
 void args_register(struct poptOption *options)
 {
-	if (iopt_tables == NULL)
-		iopt_tables = g_array_new(TRUE, TRUE, sizeof(struct poptOption));
+	if (iopt_tables == NULL) {
+		iopt_tables = g_array_new(TRUE, TRUE,
+					  sizeof(struct poptOption));
+	}
 
-	while (options->longName != NULL || options->shortName != '\0' || options->arg != NULL) {
+	while (options->longName != NULL || options->shortName != '\0' ||
+	       options->arg != NULL) {
 		g_array_append_val(iopt_tables, *options);
 		options = options+1;
 	}
@@ -42,13 +45,16 @@ void args_execute(int argc, char *argv[])
 	if (iopt_tables == NULL)
 		return;
 
-	con = poptGetContext(PACKAGE, argc, argv, (struct poptOption *) (iopt_tables->data), 0);
+	con = poptGetContext(PACKAGE, argc, argv,
+			     (struct poptOption *) (iopt_tables->data), 0);
 	poptReadDefaultConfig(con, TRUE);
 
 	while ((nextopt = poptGetNextOpt(con)) > 0) ;
 
 	if (nextopt != -1) {
-		printf(_("Error on option %s: %s.\nRun '%s --help' to see a full list of available command line options.\n"),
+		printf(_("Error on option %s: %s.\n"
+			 "Run '%s --help' to see a full list of "
+			 "available command line options.\n"),
 		       poptBadOption(con, 0),
 		       poptStrerror(nextopt),
 		       argv[0]);

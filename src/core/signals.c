@@ -43,7 +43,8 @@ static SIGNAL_REC *first_signal_rec, *last_signal_rec; /* "signal" and "last sig
 static SIGNAL_REC *current_emitted_signal;
 
 /* bind a signal */
-void signal_add_to(const char *module, int pos, const char *signal, SIGNAL_FUNC func)
+void signal_add_to(const char *module, int pos, const char *signal,
+		   SIGNAL_FUNC func)
 {
 	SIGNAL_REC *rec;
 	int signal_id;
@@ -104,7 +105,8 @@ static int signal_list_find(GPtrArray *array, void *data)
 	return -1;
 }
 
-static void signal_remove_from_list(SIGNAL_REC *rec, int signal_id, int list, int index)
+static void signal_remove_from_list(SIGNAL_REC *rec, int signal_id,
+				    int list, int index)
 {
 	if (rec->emitting) {
 		g_ptr_array_index(rec->siglist[list], index) = NULL;
@@ -118,7 +120,8 @@ static void signal_remove_from_list(SIGNAL_REC *rec, int signal_id, int list, in
 }
 
 /* Remove signal from emit lists */
-static int signal_remove_from_lists(SIGNAL_REC *rec, int signal_id, SIGNAL_FUNC func)
+static int signal_remove_from_lists(SIGNAL_REC *rec, int signal_id,
+				    SIGNAL_FUNC func)
 {
 	int n, index;
 
@@ -149,9 +152,13 @@ void signal_remove(const char *signal, SIGNAL_FUNC func)
 	signal_id = signal_get_uniq_id(signal);
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
-	found = rec == NULL ? 0 : signal_remove_from_lists(rec, signal_id, func);
+	found = rec == NULL ? 0 :
+		signal_remove_from_lists(rec, signal_id, func);
 
-	if (!found) g_warning("signal_remove() : signal \"%s\" isn't grabbed for %p", signal, func);
+	if (!found) {
+		g_warning("signal_remove() : signal \"%s\" isn't "
+			  "grabbed for %p", signal, func);
+	}
 }
 
 /* Remove all NULL functions from signal list */

@@ -129,6 +129,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	RESOLVED_IP_REC iprec;
+	const char *errormsg;
 	int handle;
 
 	g_source_remove(server->connect_tag);
@@ -157,21 +158,33 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
                                other error in nameserver */
 			server->connection_lost = TRUE;
 		}
-		server_cant_connect(server,
-				    iprec.error == 0 ? g_strerror(errno) : /* connect() failed */
-				    (iprec.errorstr != NULL ? iprec.errorstr : "Host lookup failed")); /* gethostbyname() failed */
+
+		if (iprec.error == 0) {
+			/* connect() failed */
+			errormsg = g_strerror(errno);
+		} else {
+			/* gethostbyname() failed */
+			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
+				"Host lookup failed";
+		}
+		server_cant_connect(server, rrormsg);
 		g_free_not_null(iprec.errorstr);
 		return;
 	}
 
 	server->handle = net_sendbuffer_create(handle, 0);
-	server->connect_tag = g_input_add(handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
-					  (GInputFunction) server_connect_callback_init, server);
+	server->connect_tag =
+		g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ |
+			    G_INPUT_EXCEPTION,
+			    (GInputFunction) server_connect_callback_init,
+			    server);
 	signal_emit("server connecting", 2, server, &iprec.ip);
 }
 
 int server_connect(SERVER_REC *server)
 {
+	const char *connect_address;
+
 	g_return_val_if_fail(server != NULL, FALSE);
 
 	MODULE_DATA_INIT(server);
@@ -182,9 +195,11 @@ int server_connect(SERVER_REC *server)
 	}
 
 	server->tag = server_create_tag(server->connrec);
+
+	connect_address = server->connrec->proxy != NULL ?
+		server->connrec->proxy : server->connrec->address;
 	server->connect_pid =
-		net_gethostbyname_nonblock(server->connrec->proxy != NULL ?
-					   server->connrec->proxy : server->connrec->address,
+		net_gethostbyname_nonblock(connect_address,
 					   server->connect_pipe[1]);
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,

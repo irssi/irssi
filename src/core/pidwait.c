@@ -48,11 +48,13 @@ static int child_check(void)
 
 	/* wait for each pid.. */
 	for (tmp = pids; tmp != NULL; tmp = next) {
-                next = tmp->next;
-		if (waitpid(GPOINTER_TO_INT(tmp->data), &status, WNOHANG) > 0) {
+		int pid = GPOINTER_TO_INT(tmp->data);
+
+		next = tmp->next;
+		if (waitpid(pid, &status, WNOHANG) > 0) {
 			/* process terminated, remove from list */
 			pids = g_slist_remove(pids, tmp->data);
-			signal_emit_id(signal_pidwait, 1, GPOINTER_TO_INT(tmp->data));
+			signal_emit_id(signal_pidwait, 1, tmp->data);
 		}
 	}
 	return 1;

@@ -134,8 +134,10 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 
 	/* set socket options */
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(opt));
-	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
+		   (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
+		   (char *) &opt, sizeof(opt));
 
 	/* set our own address, ignore if bind() fails */
 	if (my_ip != NULL) {
@@ -185,8 +187,10 @@ int net_listen(IPADDR *my_ip, int *port)
 
 	/* set socket options */
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(opt));
-	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
+		   (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
+		   (char *) &opt, sizeof(opt));
 
 	/* specify the address/port we want to listen in */
 	ret = bind(handle, &so.sa, sizeof(so));
@@ -260,7 +264,8 @@ int net_receive(int handle, char *buf, int len)
 	if (ret == 0)
 		return -1; /* disconnected */
 
-	if (ret == -1 && (errno == EWOULDBLOCK || errno == EAGAIN))
+	if (ret == -1 && (errno == EWOULDBLOCK || errno == EAGAIN ||
+			  errno == EINTR))
 		return 0; /* no bytes received */
 
 	return ret;
@@ -275,7 +280,8 @@ int net_transmit(int handle, const char *data, int len)
 	g_return_val_if_fail(data != NULL, -1);
 
 	n = send(handle, data, len, 0);
-	if (n == -1 && (errno == EWOULDBLOCK || errno == EAGAIN))
+	if (n == -1 && (errno == EWOULDBLOCK || errno == EAGAIN ||
+			errno == EINTR))
 		return 0;
 
 	return n > 0 ? n : -1;
@@ -332,7 +338,8 @@ int net_gethostbyname(const char *addr, IPADDR *ip)
 	if (host_error != 0)
 		return host_error;
 
-	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, NI_NUMERICHOST))
+	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf,
+			sizeof(hbuf), NULL, 0, NI_NUMERICHOST))
 		return 1;
 
 	so = (union sockaddr_union *) ai->ai_addr;
@@ -377,7 +384,8 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	if (host_error != 0)
 		return host_error;
 
-	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, 0))
+	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf,
+			sizeof(hbuf), NULL, 0, 0))
 		return 1;
 
 	/*FIXME: how does this work? *name = g_strdup(ai->?);*/
@@ -461,7 +469,7 @@ const char *net_gethosterror(int error)
 
 	if (error == 1) {
 		/* getnameinfo() failed ..
-		   FIXME: does strerror return the right error message?? */
+		   FIXME: does strerror return the right error message? */
 		return g_strerror(errno);
 	}
 

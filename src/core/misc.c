@@ -28,10 +28,11 @@
 typedef struct {
 	GInputCondition condition;
 	GInputFunction function;
-        gpointer data;
+        void *data;
 } IRSSI_INPUT_REC;
 
-static gboolean irssi_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
+			   void *data)
 {
 	IRSSI_INPUT_REC *rec = data;
 	GInputCondition icond = 0;
@@ -43,14 +44,16 @@ static gboolean irssi_io_invoke(GIOChannel *source, GIOCondition condition, gpoi
 	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL))
 		icond |= G_INPUT_EXCEPTION;
 
-	if (rec->condition & icond)
-		rec->function(rec->data, g_io_channel_unix_get_fd(source), icond);
+	if (rec->condition & icond) {
+		rec->function(rec->data, g_io_channel_unix_get_fd(source),
+			      icond);
+	}
 
 	return TRUE;
 }
 
 int g_input_add(int source, GInputCondition condition,
-		GInputFunction function, gpointer data)
+		GInputFunction function, void *data)
 {
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
@@ -109,7 +112,8 @@ int find_substr(const char *list, const char *item)
 		ptr = strchr(list, ' ');
 		if (ptr == NULL) ptr = list+strlen(list);
 
-		if (g_strncasecmp(list, item, ptr-list) == 0 && item[ptr-list] == '\0')
+		if (g_strncasecmp(list, item, ptr-list) == 0 &&
+		    item[ptr-list] == '\0')
 			return TRUE;
 
 		list = ptr;
@@ -149,42 +153,10 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
-int copyfile(const char *src, const char *dest)
-{
-	FILE *fs, *fd;
-	int ret;
-
-	g_return_val_if_fail(src != NULL, FALSE);
-	g_return_val_if_fail(dest != NULL, FALSE);
-
-	fs = fopen(src, "rb");
-	if (fs == NULL) return FALSE;
-
-	ret = FALSE;
-	remove(dest); /* just to be sure there's no link already in dest */
-
-	fd = fopen(dest, "w+");
-	if (fd != NULL) {
-		int len;
-		char buf[1024];
-
-		while ((len = fread(buf, 1, sizeof(buf), fs)) > 0) {
-			if (fwrite(buf, 1, len, fd) != len)
-				break;
-		}
-		fclose(fd);
-		ret = TRUE;
-	}
-
-	fclose(fs);
-	return ret;
-}
-
 int execute(const char *cmd)
 {
 	char **args;
-	char *prev, *dupcmd;
-	int pid, max, cnt;
+	int pid;
 
 	g_return_val_if_fail(cmd != NULL, -1);
 
@@ -195,25 +167,9 @@ int execute(const char *cmd)
 		return pid;
 	}
 
-	dupcmd = g_strdup(cmd);
-	max = 5; cnt = 0;
-	args = g_malloc(sizeof(char *)*max);
-	for (prev = dupcmd; ; dupcmd++) {
-		if (*dupcmd == '\0' || *dupcmd == ' ') {
-			args[cnt++] = prev;
-			if (cnt == max) {
-				max += 5;
-				args = g_realloc(args, sizeof(char *)*max);
-			}
-			if (*dupcmd == '\0') break;
-			*dupcmd++ = '\0';
-			prev = dupcmd;
-		}
-	}
-	args[cnt] = NULL;
-
+	args = g_strsplit(cmd, " ", -1);
 	execvp(args[0], args);
-	g_free(dupcmd);
+	g_strfreev(args);
 
 	_exit(99);
 	return -1;

@@ -64,14 +64,16 @@ int command_have_sub(const char *command)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, command, len) == 0 && rec->cmd[len] == ' ')
+		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		    rec->cmd[len] == ' ')
 			return TRUE;
 	}
 
 	return FALSE;
 }
 
-void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func)
+void command_bind_to(int pos, const char *cmd,
+		     const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
 	char *str;
@@ -161,14 +163,16 @@ static const char *command_expand(char *cmd)
 	}
 
 	if (multiple) {
-		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_AMBIGUOUS), cmd);
+		signal_emit("error command", 2,
+			    GINT_TO_POINTER(CMDERR_AMBIGUOUS), cmd);
 		return NULL;
 	}
 
 	return match != NULL ? match : cmd;
 }
 
-void command_runsub(const char *cmd, const char *data, void *server, void *item)
+void command_runsub(const char *cmd, const char *data,
+		    void *server, void *item)
 {
 	const char *newcmd;
 	char *orig, *subcmd, *defcmd, *args;
@@ -177,7 +181,8 @@ void command_runsub(const char *cmd, const char *data, void *server, void *item)
 
 	if (*data == '\0') {
                 /* no subcommand given - unknown command? */
-		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_UNKNOWN), cmd);
+		signal_emit("error command", 2,
+			    GINT_TO_POINTER(CMDERR_UNKNOWN), cmd);
 		return;
 	}
 
@@ -200,8 +205,10 @@ void command_runsub(const char *cmd, const char *data, void *server, void *item)
 	g_strdown(subcmd);
 	if (!signal_emit(subcmd, 3, args, server, item)) {
 		defcmd = g_strdup_printf("default command %s", cmd);
-		if (!signal_emit(defcmd, 3, data, server, item))
-			signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_UNKNOWN), subcmd+8);
+		if (!signal_emit(defcmd, 3, data, server, item)) {
+			signal_emit("error command", 2,
+				    GINT_TO_POINTER(CMDERR_UNKNOWN), subcmd+8);
+		}
                 g_free(defcmd);
 	}
 
@@ -390,7 +397,8 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			option = cmd_get_param(data);
 
 			/* check if this option can have argument */
-			pos = optlist == NULL ? -1 : option_find(optlist, option);
+			pos = optlist == NULL ? -1 :
+				option_find(optlist, option);
 			if (pos == -1 && !ignore_unknown) {
 				/* unknown option! */
                                 *data = option;
@@ -404,9 +412,11 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			if (pos >= 0) {
 				/* if we used a shortcut of parameter, put
 				   the whole parameter name in options table */
-				option = optlist[pos] + iscmdtype(*optlist[pos]);
+				option = optlist[pos] +
+					iscmdtype(*optlist[pos]);
 			}
-			if (options != NULL) g_hash_table_insert(options, option, "");
+			if (options != NULL)
+				g_hash_table_insert(options, option, "");
 
 			if (pos == -1 || !iscmdtype(*optlist[pos]))
 				option = NULL;
@@ -464,7 +474,7 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 	GHashTable **opthash;
 	char **str, *arg, *datad, *old;
 	va_list args;
-	int cnt, error, len;
+	int cnt, error, len, ignore_unknown;
 
 	g_return_val_if_fail(data != NULL, FALSE);
 
@@ -506,8 +516,13 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 			arg = (char *) va_arg(args, char *);
 			opthash = (GHashTable **) va_arg(args, GHashTable **);
 
-			rec->options = *opthash = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
-			error = get_cmd_options(&datad, count & PARAM_FLAG_UNKNOWN_OPTIONS, arg, *opthash);
+			rec->options = *opthash =
+				g_hash_table_new((GHashFunc) g_istr_hash,
+						 (GCompareFunc) g_istr_equal);
+
+			ignore_unknown = count & PARAM_FLAG_UNKNOWN_OPTIONS;
+			error = get_cmd_options(&datad, ignore_unknown,
+						arg, *opthash);
 			if (error) break;
 
 			count &= ~PARAM_FLAG_OPTIONS;
@@ -557,7 +572,8 @@ void cmd_get_remove_func(CMD_GET_FUNC func)
         cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
-static void parse_command(const char *command, int expand_aliases, SERVER_REC *server, void *item)
+static void parse_command(const char *command, int expand_aliases,
+			  SERVER_REC *server, void *item)
 {
 	const char *alias, *newcmd;
 	char *cmd, *orig, *args, *oldcmd;
@@ -589,8 +605,10 @@ static void parse_command(const char *command, int expand_aliases, SERVER_REC *s
 	g_strdown(cmd);
 	oldcmd = current_command;
 	current_command = cmd+8;
-	if (!signal_emit(cmd, 3, args, server, item))
-		signal_emit_id(signal_default_command, 3, command, server, item);
+	if (!signal_emit(cmd, 3, args, server, item)) {
+		signal_emit_id(signal_default_command, 3,
+			       command, server, item);
+	}
 	current_command = oldcmd;
 
 	g_free(cmd);

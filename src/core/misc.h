@@ -16,7 +16,6 @@ int strarray_length(char **array);
 /* return index of `item' in `array' or -1 if not found */
 int strarray_find(char **array, const char *item);
 
-int copyfile(const char *src, const char *dest);
 int execute(const char *cmd); /* returns pid or -1 = error */
 
 GSList *gslist_find_string(GSList *list, const char *key);

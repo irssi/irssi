@@ -33,15 +33,24 @@ enum {
 
 /* Returning from command function with error */
 #define cmd_return_error(a) \
-	{ signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
+	G_STMT_START { \
+	  signal_emit("error command", 1, GINT_TO_POINTER(a)); \
+	  signal_stop(); \
+	  return; \
+	} G_STMT_END
+
 #define cmd_param_error(a) \
-	{ cmd_params_free(free_arg); cmd_return_error(a); }
+	G_STMT_START { \
+	  cmd_params_free(free_arg); \
+	  cmd_return_error(a); \
+	} G_STMT_END
 
 extern GSList *commands;
 extern char *current_command; /* the command we're right now. */
 
 /* Bind command to specified function. */
-void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func);
+void command_bind_to(int pos, const char *cmd,
+		     const char *category, SIGNAL_FUNC func);
 #define command_bind(a, b, c) command_bind_to(1, a, b, c)
 #define command_bind_first(a, b, c) command_bind_to(0, a, b, c)
 #define command_bind_last(a, b, c) command_bind_to(2, a, b, c)
@@ -49,7 +58,8 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func);
 
 /* Run subcommand, `cmd' contains the base command, first word in `data'
    contains the subcommand */
-void command_runsub(const char *cmd, const char *data, void *server, void *item);
+void command_runsub(const char *cmd, const char *data,
+		    void *server, void *item);
 
 COMMAND_REC *command_find(const char *cmd);
 int command_have_sub(const char *command);

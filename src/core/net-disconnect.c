@@ -51,11 +51,7 @@ static void sig_disconnect(NET_DISCONNECT_REC *rec)
 	int ret;
 
 	/* check if there's any data waiting in socket */
-	for (;;) {
-		ret = net_receive(rec->handle, buf, sizeof(buf));
-		if (ret <= 0)
-			break;
-	}
+	while ((ret = net_receive(rec->handle, buf, sizeof(buf))) > 0) ;
 
 	if (ret == -1) {
 		/* socket was closed */
@@ -68,7 +64,6 @@ static int sig_timeout_disconnect(void)
 	NET_DISCONNECT_REC *rec;
 	GSList *tmp, *next;
 	time_t now;
-	int ret;
 
 	/* check if we've waited enough for sockets to close themselves */
 	now = time(NULL);
@@ -77,7 +72,7 @@ static int sig_timeout_disconnect(void)
 		next = tmp->next;
 
 		if (rec->created+MAX_CLOSE_WAIT <= now)
-                        sig_disconnect(rec);
+			net_disconnect_remove(rec);
 	}
 
 	if (disconnects == NULL) {
@@ -85,9 +80,7 @@ static int sig_timeout_disconnect(void)
 		   function */
 		timeout_tag = -1;
 	}
-	ret = disconnects != NULL ? 1 : 0;
-
-	return ret;
+	return disconnects != NULL;
 }
 
 /* Try to let the other side close the connection, if it still isn't
@@ -97,14 +90,17 @@ void net_disconnect_later(int handle)
 	NET_DISCONNECT_REC *rec;
 
 	rec = g_new(NET_DISCONNECT_REC, 1);
-	disconnects = g_slist_append(disconnects, rec);
-
 	rec->created = time(NULL);
 	rec->handle = handle;
-	rec->tag = g_input_add(handle, G_INPUT_READ, (GInputFunction) sig_disconnect, rec);
+	rec->tag = g_input_add(handle, G_INPUT_READ,
+			       (GInputFunction) sig_disconnect, rec);
 
-	if (timeout_tag == -1)
-		timeout_tag = g_timeout_add(10000, (GSourceFunc) sig_timeout_disconnect, NULL);
+	if (timeout_tag == -1) {
+		timeout_tag = g_timeout_add(10000, (GSourceFunc)
+					    sig_timeout_disconnect, NULL);
+	}
+
+	disconnects = g_slist_append(disconnects, rec);
 }
 
 void net_disconnect_init(void)
@@ -120,9 +116,6 @@ void net_disconnect_deinit(void)
 	int first;
 	struct timeval tv;
 	fd_set set;
-
-	if (disconnects == NULL)
-		return;
 
 	/* give the sockets a chance to disconnect themselves.. */
 	max = time(NULL)+MAX_QUIT_CLOSE_WAIT;
@@ -141,12 +134,15 @@ void net_disconnect_deinit(void)
 		FD_SET(rec->handle, &set);
 		tv.tv_sec = first ? 0 : max-now;
 		tv.tv_usec = first ? 100000 : 0;
-		if (select(rec->handle+1, &set, NULL, NULL, &tv) > 0 && FD_ISSET(rec->handle, &set)) {
+		if (select(rec->handle+1, &set, NULL, NULL, &tv) > 0 &&
+		    FD_ISSET(rec->handle, &set)) {
 			/* data coming .. check if we can close the handle */
 			sig_disconnect(rec);
 		} else if (first) {
-			/* Display the text when we have already waited for a while */
-			printf(_("Please wait, waiting for servers to close connections..\n"));
+			/* Display the text when we have already waited
+			   for a while */
+			printf(_("Please wait, waiting for servers to close "
+				 "connections..\n"));
 			fflush(stdout);
 
 			first = 0;

@@ -99,7 +99,8 @@ static char *get_internal_setting(const char *key, int type, int *free_ret)
 	return NULL;
 }
 
-static char *get_long_variable_value(const char *key, void *server, void *item, int *free_ret)
+static char *get_long_variable_value(const char *key, void *server,
+				     void *item, int *free_ret)
 {
 	EXPANDO_FUNC func;
 	char *ret;
@@ -125,7 +126,8 @@ static char *get_long_variable_value(const char *key, void *server, void *item, 
 	return NULL;
 }
 
-static char *get_long_variable(char **cmd, void *server, void *item, int *free_ret)
+static char *get_long_variable(char **cmd, void *server,
+			       void *item, int *free_ret)
 {
 	char *start, *var, *ret;
 
@@ -140,7 +142,8 @@ static char *get_long_variable(char **cmd, void *server, void *item, int *free_r
 }
 
 /* return the value of the variable found from `cmd' */
-static char *get_variable(char **cmd, void *server, void *item, char **arglist, int *free_ret, int *arg_used)
+static char *get_variable(char **cmd, void *server, void *item,
+			  char **arglist, int *free_ret, int *arg_used)
 {
 	if (isdigit(**cmd) || **cmd == '*' || **cmd == '-' || **cmd == '~') {
                 /* argument */
@@ -180,7 +183,8 @@ static char *get_history(char **cmd, void *item, int *free_ret)
 	return ret;
 }
 
-static char *get_special_value(char **cmd, void *server, void *item, char **arglist, int *free_ret, int *arg_used)
+static char *get_special_value(char **cmd, void *server, void *item,
+			       char **arglist, int *free_ret, int *arg_used)
 {
 	char command, *value, *p;
 	int len;
@@ -309,7 +313,8 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 
 /* Parse and expand text after '$' character. return value has to be
    g_free()'d if `free_ret' is TRUE. */
-char *parse_special(char **cmd, void *server, void *item, char **arglist, int *free_ret, int *arg_used)
+char *parse_special(char **cmd, void *server, void *item,
+		    char **arglist, int *free_ret, int *arg_used)
 {
 	static char **nested_orig_cmd = NULL; /* FIXME: KLUDGE! */
 	char command, *value;
@@ -326,9 +331,9 @@ char *parse_special(char **cmd, void *server, void *item, char **arglist, int *f
 	switch (command) {
 	case '[':
 		/* alignment */
-		if (!get_alignment_args(cmd, &align, &align_flags, &align_pad) ||
-		    **cmd == '\0') {
-                        (*cmd)--;
+		if (!get_alignment_args(cmd, &align, &align_flags,
+					&align_pad) || **cmd == '\0') {
+			(*cmd)--;
 			return NULL;
 		}
 		break;
@@ -349,12 +354,14 @@ char *parse_special(char **cmd, void *server, void *item, char **arglist, int *f
 			nest_value = *cmd;
 		} else {
 			(*cmd)++;
-			nest_value = parse_special(cmd, server, item, arglist, &nest_free, arg_used);
+			nest_value = parse_special(cmd, server, item, arglist,
+						   &nest_free, arg_used);
 		}
 
 		while ((*nested_orig_cmd)[1] != '\0') {
 			(*nested_orig_cmd)++;
-			if (**nested_orig_cmd == ')') break;
+			if (**nested_orig_cmd == ')')
+				break;
 		}
 		cmd = &nest_value;
 
@@ -369,7 +376,8 @@ char *parse_special(char **cmd, void *server, void *item, char **arglist, int *f
 		brackets = TRUE;
 	}
 
-	value = get_special_value(cmd, server, item, arglist, free_ret, arg_used);
+	value = get_special_value(cmd, server, item, arglist,
+				  free_ret, arg_used);
 	if (**cmd == '\0')
 		g_error("parse_special() : buffer overflow!");
 
@@ -397,7 +405,8 @@ char *parse_special(char **cmd, void *server, void *item, char **arglist, int *f
 }
 
 /* parse the whole string. $ and \ chars are replaced */
-char *parse_special_string(const char *cmd, void *server, void *item, const char *data, int *arg_used)
+char *parse_special_string(const char *cmd, void *server, void *item,
+			   const char *data, int *arg_used)
 {
 	char code, **arglist, *ret;
 	GString *str;
@@ -428,7 +437,8 @@ char *parse_special_string(const char *cmd, void *server, void *item, const char
 		} else if (code == '$') {
 			char *ret;
 
-			ret = parse_special((char **) &cmd, server, item, arglist, &need_free, arg_used);
+			ret = parse_special((char **) &cmd, server, item,
+					    arglist, &need_free, arg_used);
 			if (ret != NULL) {
 				g_string_append(str, ret);
 				if (need_free) g_free(ret);
@@ -450,8 +460,13 @@ char *parse_special_string(const char *cmd, void *server, void *item, const char
 	return ret;
 }
 
+#define is_split_char(str, start) \
+	((str)[0] == ';' && ((start) == (str) || \
+		((str)[-1] != '\\' && (str)[-1] != '$')))
+
 /* execute the commands in string - commands can be split with ';' */
-void eval_special_string(const char *cmd, const char *data, void *server, void *item)
+void eval_special_string(const char *cmd, const char *data,
+			 void *server, void *item)
 {
 	const char *cmdchars;
 	char *orig, *str, *start, *ret;
@@ -460,14 +475,15 @@ void eval_special_string(const char *cmd, const char *data, void *server, void *
 	cmdchars = settings_get_str("cmdchars");
 	orig = start = str = g_strdup(cmd);
 	do {
-		if (*str == ';' && (start == str || (str[-1] != '\\' && str[-1] != '$')))
+		if (is_split_char(str, start))
 			*str++ = '\0';
 		else if (*str != '\0') {
 			str++;
 			continue;
 		}
 
-		ret = parse_special_string(start, server, item, data, &arg_used);
+		ret = parse_special_string(start, server, item,
+					   data, &arg_used);
 		if (strchr(cmdchars, *ret) == NULL) {
                         /* no command char - let's put it there.. */
 			char *old = ret;
@@ -505,7 +521,8 @@ void expando_create(const char *key, EXPANDO_FUNC func)
 		return;
 	}
 
-	if (g_hash_table_lookup_extended(expandos, key, &origkey, &origvalue)) {
+	if (g_hash_table_lookup_extended(expandos, key, &origkey,
+					 &origvalue)) {
                 g_free(origkey);
 		g_hash_table_remove(expandos, key);
 	}
@@ -527,7 +544,8 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 		return;
 	}
 
-	if (g_hash_table_lookup_extended(expandos, key, &origkey, &origvalue)) {
+	if (g_hash_table_lookup_extended(expandos, key, &origkey,
+					 &origvalue)) {
                 g_free(origkey);
 		g_hash_table_remove(expandos, key);
 	}
@@ -618,7 +636,8 @@ void special_vars_init(void)
 	client_start_time = time(NULL);
 
 	memset(char_expandos, 0, sizeof(char_expandos));
-	expandos = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	expandos = g_hash_table_new((GHashFunc) g_str_hash,
+				    (GCompareFunc) g_str_equal);
 	history_func = NULL;
 
 	char_expandos['F'] = expando_clientstarted;

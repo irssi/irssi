@@ -3,6 +3,7 @@ noinst_LTLIBRARIES = libcore.la
 INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
+	-DMODULEDIR=\""$(libdir)/irssi/modules"\" \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core
 
@@ -24,6 +25,7 @@ libcore_la_SOURCES = \
 	modules.c \
 	net-disconnect.c \
 	net-nonblock.c \
+	net-sendbuffer.c \
 	network.c \
 	pidwait.c \
 	rawlog.c \
@@ -47,6 +49,7 @@ noinst_HEADERS = \
 	net-disconnect.h \
 	net-internal.h \
 	net-nonblock.h \
+	net-sendbuffer.h \
 	network.h \
 	pidwait.h \
 	rawlog.h \

@@ -123,7 +123,8 @@ int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer)
                 len = 0;
 		if (linebuf_find(rec, '\n') == NULL) {
 			/* connection closed and last line is missing \n ..
-			   just add it so we can see if it had anything useful.. */
+			   just add it so we can see if it had
+			   anything useful.. */
 			linebuf_append(rec, "\n", 1);
 		}
 	}

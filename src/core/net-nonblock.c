@@ -25,8 +25,7 @@
 #include "pidwait.h"
 #include "net-nonblock.h"
 
-typedef struct
-{
+typedef struct {
 	NET_CALLBACK func;
 	void *data;
 
@@ -34,8 +33,7 @@ typedef struct
 	int port;
 	IPADDR *my_ip;
 	int tag;
-}
-SIMPLE_THREAD_REC;
+} SIMPLE_THREAD_REC;
 
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
@@ -56,7 +54,8 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 
 	if (pid != 0) {
 		/* failed! */
-		g_warning("net_connect_thread(): fork() failed! Using blocking resolving");
+		g_warning("net_connect_thread(): fork() failed! "
+			  "Using blocking resolving");
 	}
 
 	/* child */
@@ -186,7 +185,8 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, int pipe)
 }
 
 /* Connect to server, call func when finished */
-int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip, NET_CALLBACK func, void *data)
+int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
+			 NET_CALLBACK func, void *data)
 {
 	SIMPLE_THREAD_REC *rec;
 	int fd[2];
@@ -212,7 +212,8 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip, NET_
 	rec->data = data;
 	rec->pipes[0] = fd[0];
 	rec->pipes[1] = fd[1];
-	rec->tag = g_input_add(fd[0], G_INPUT_READ, (GInputFunction) simple_readpipe, rec);
+	rec->tag = g_input_add(fd[0], G_INPUT_READ,
+			       (GInputFunction) simple_readpipe, rec);
 
 	return 1;
 }

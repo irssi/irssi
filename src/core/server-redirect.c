@@ -63,20 +63,24 @@ static void sig_disconnected(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	if (server->eventtable != NULL) {
-		g_hash_table_foreach(server->eventtable, (GHFunc) server_eventtable_destroy, NULL);
+		g_hash_table_foreach(server->eventtable,
+				     (GHFunc) server_eventtable_destroy, NULL);
 		g_hash_table_destroy(server->eventtable);
 	}
 
-	g_hash_table_foreach(server->eventgrouptable, (GHFunc) server_eventgrouptable_destroy, NULL);
+	g_hash_table_foreach(server->eventgrouptable,
+			     (GHFunc) server_eventgrouptable_destroy, NULL);
 	g_hash_table_destroy(server->eventgrouptable);
 
 	if (server->cmdtable != NULL) {
-		g_hash_table_foreach(server->cmdtable, (GHFunc) server_cmdtable_destroy, NULL);
+		g_hash_table_foreach(server->cmdtable,
+				     (GHFunc) server_cmdtable_destroy, NULL);
 		g_hash_table_destroy(server->cmdtable);
 	}
 }
 
-void server_redirect_initv(SERVER_REC *server, const char *command, int last, GSList *list)
+void server_redirect_initv(SERVER_REC *server, const char *command,
+			   int last, GSList *list)
 {
 	REDIRECT_CMD_REC *rec;
 
@@ -85,7 +89,7 @@ void server_redirect_initv(SERVER_REC *server, const char *command, int last, GS
 	g_return_if_fail(last > 0);
 
 	if (g_hash_table_lookup(server->cmdtable, command) != NULL) {
-		/* already in hash table. list of events SHOULD be the same... */
+		/* already in hash table. list of events SHOULD be the same. */
 		g_slist_foreach(list, (GFunc) g_free, NULL);
 		g_slist_free(list);
 		return;
@@ -97,7 +101,8 @@ void server_redirect_initv(SERVER_REC *server, const char *command, int last, GS
 	g_hash_table_insert(server->cmdtable, g_strdup(command), rec);
 }
 
-void server_redirect_init(SERVER_REC *server, const char *command, int last, ...)
+void server_redirect_init(SERVER_REC *server, const char *command,
+			  int last, ...)
 {
 	va_list args;
 	GSList *list;
@@ -112,8 +117,9 @@ void server_redirect_init(SERVER_REC *server, const char *command, int last, ...
 	server_redirect_initv(server, command, last, list);
 }
 
-int server_redirect_single_event(SERVER_REC *server, const char *arg, int last, int group,
-				 const char *event, const char *signal, int argpos)
+int server_redirect_single_event(SERVER_REC *server, const char *arg,
+				 int last, int group, const char *event,
+				 const char *signal, int argpos)
 {
 	REDIRECT_REC *rec;
 	GSList *list, *grouplist;
@@ -133,21 +139,28 @@ int server_redirect_single_event(SERVER_REC *server, const char *arg, int last, 
 	rec->group = group;
 	rec->last = last;
 
-	if (g_hash_table_lookup_extended(server->eventtable, event, (gpointer *) &origkey, (gpointer *) &list))
+	if (g_hash_table_lookup_extended(server->eventtable, event,
+					 (gpointer *) &origkey,
+					 (gpointer *) &list)) {
 		g_hash_table_remove(server->eventtable, origkey);
-	else {
+	} else {
 		list = NULL;
 		origkey = g_strdup(event);
 	}
 
-	grouplist = g_hash_table_lookup(server->eventgrouptable, GINT_TO_POINTER(group));
-	if (grouplist != NULL) g_hash_table_remove(server->eventgrouptable, GINT_TO_POINTER(group));
+	grouplist = g_hash_table_lookup(server->eventgrouptable,
+					GINT_TO_POINTER(group));
+	if (grouplist != NULL) {
+		g_hash_table_remove(server->eventgrouptable,
+				    GINT_TO_POINTER(group));
+	}
 
 	list = g_slist_append(list, rec);
 	grouplist = g_slist_append(grouplist, g_strdup(event));
 
 	g_hash_table_insert(server->eventtable, origkey, list);
-	g_hash_table_insert(server->eventgrouptable, GINT_TO_POINTER(group), grouplist);
+	g_hash_table_insert(server->eventgrouptable,
+			    GINT_TO_POINTER(group), grouplist);
 
 	return group;
 }
@@ -167,7 +180,9 @@ void server_redirect_event(SERVER_REC *server, const char *arg, int last, ...)
 		signal = va_arg(args, gchar *);
 		argpos = va_arg(args, gint);
 
-		group = server_redirect_single_event(server, arg, last > 0, group, event, signal, argpos);
+		group = server_redirect_single_event(server, arg, last > 0,
+						     group, event, signal,
+						     argpos);
 		last--;
 	}
 
@@ -193,12 +208,14 @@ void server_redirect_default(SERVER_REC *server, const char *command)
 
 	/* add all events used by command to eventtable and eventgrouptable */
 	redirect_group++; grouplist = NULL; last = cmdrec->last;
-	for (events = cmdrec->events; events != NULL; events = events->next, last--) {
+	for (events = cmdrec->events; events != NULL; events = events->next) {
 		event = events->data;
 
-		if (g_hash_table_lookup_extended(server->eventtable, event, (gpointer *) &origkey, (gpointer *) &list))
+		if (g_hash_table_lookup_extended(server->eventtable, event,
+						 (gpointer *) &origkey,
+						 (gpointer *) &list)) {
 			g_hash_table_remove(server->eventtable, origkey);
-		else {
+		} else {
 			list = NULL;
 			origkey = g_strdup(event);
 		}
@@ -212,12 +229,16 @@ void server_redirect_default(SERVER_REC *server, const char *command)
 		grouplist = g_slist_append(grouplist, g_strdup(event));
 		list = g_slist_append(list, rec);
 		g_hash_table_insert(server->eventtable, origkey, list);
+
+		last--;
 	}
 
-	g_hash_table_insert(server->eventgrouptable, GINT_TO_POINTER(redirect_group), grouplist);
+	g_hash_table_insert(server->eventgrouptable,
+			    GINT_TO_POINTER(redirect_group), grouplist);
 }
 
-void server_redirect_remove_next(SERVER_REC *server, const char *event, GSList *item)
+void server_redirect_remove_next(SERVER_REC *server, const char *event,
+				 GSList *item)
 {
 	REDIRECT_REC *rec;
 	GSList *grouplist, *list, *events, *tmp;
@@ -227,7 +248,9 @@ void server_redirect_remove_next(SERVER_REC *server, const char *event, GSList *
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(event != NULL);
 
-	if (!g_hash_table_lookup_extended(server->eventtable, event, (gpointer *) &origkey, (gpointer *) &list))
+	if (!g_hash_table_lookup_extended(server->eventtable, event,
+					  (gpointer *) &origkey,
+					  (gpointer *) &list))
 		return;
 
 	rec = item == NULL ? list->data : item->data;
@@ -238,14 +261,19 @@ void server_redirect_remove_next(SERVER_REC *server, const char *event, GSList *
 	group = rec->group;
 
 	/* get list of events from this group */
-	grouplist = g_hash_table_lookup(server->eventgrouptable, GINT_TO_POINTER(group));
+	grouplist = g_hash_table_lookup(server->eventgrouptable,
+					GINT_TO_POINTER(group));
 
 	/* remove all of them */
 	for (list = grouplist; list != NULL; list = list->next) {
 		char *event = list->data;
 
-		if (!g_hash_table_lookup_extended(server->eventtable, event, (gpointer *) &origkey, (gpointer *) &events)) {
-			g_warning("server_redirect_remove_next() : event in eventgrouptable but not in eventtable");
+		if (!g_hash_table_lookup_extended(server->eventtable, event,
+						  (gpointer *) &origkey,
+						  (gpointer *) &events)) {
+			g_warning("server_redirect_remove_next() : "
+				  "event in eventgrouptable but not in "
+				  "eventtable");
 			continue;
 		}
 
@@ -258,7 +286,9 @@ void server_redirect_remove_next(SERVER_REC *server, const char *event, GSList *
 		}
 
 		if (rec == NULL) {
-			g_warning("server_redirect_remove_next() : event in eventgrouptable but not in eventtable (group)");
+			g_warning("server_redirect_remove_next() : "
+				  "event in eventgrouptable but not in "
+				  "eventtable (group)");
 			continue;
 		}
 
@@ -273,15 +303,18 @@ void server_redirect_remove_next(SERVER_REC *server, const char *event, GSList *
 		g_hash_table_remove(server->eventtable, origkey);
 		if (events == NULL)
 			g_free(origkey);
-		else
-			g_hash_table_insert(server->eventtable, origkey, events);
+		else {
+			g_hash_table_insert(server->eventtable,
+					    origkey, events);
+		}
 	}
 
 	g_hash_table_remove(server->eventgrouptable, GINT_TO_POINTER(group));
 	g_slist_free(grouplist);
 }
 
-GSList *server_redirect_getqueue(SERVER_REC *server, const char *event, const char *args)
+GSList *server_redirect_getqueue(SERVER_REC *server, const char *event,
+				 const char *args)
 {
 	REDIRECT_REC *rec;
 	GSList *list;

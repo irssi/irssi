@@ -122,8 +122,7 @@ static void cmd_connect(const char *data)
 
 static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 {
-	IRC_SERVER_REC *ircserver;
-	char *tag, *msg;
+	char *tag, *msg, *str;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
@@ -142,15 +141,10 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
 	signal_emit("server quit", 2, server, msg);
 
-	ircserver = (IRC_SERVER_REC *) server;
-	if (ircserver->handle != -1 && ircserver->buffer != NULL) {
-		/* flush transmit queue */
-		g_slist_foreach(ircserver->cmdqueue, (GFunc) g_free, NULL);
-		g_slist_free(ircserver->cmdqueue);
-		ircserver->cmdqueue = NULL;
-		ircserver->cmdcount = 0;
-
-		irc_send_cmdv(ircserver, "QUIT :%s", msg);
+	if (server->handle != NULL && server->buffer != NULL) {
+		str = g_strdup_printf("QUIT :%s", msg);
+		irc_send_cmd_now(server, str);
+                g_free(str);
 	}
 	cmd_params_free(free_arg);
 
