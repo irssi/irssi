@@ -68,6 +68,7 @@ int command_have_sub(const char *command);
    options separated with space, each option can contain a special
    char in front of it:
 
+   '!': no argument (default)
    '-': optional argument
    '+': argument required
    '@': optional numeric argument
@@ -79,7 +80,7 @@ int command_have_sub(const char *command);
    will be merged. If there's any conflicts with option types, the last
    call will override the previous */
 #define iscmdtype(c) \
-        ((c) == '-' || (c) == '+' || (c) == '@')
+        ((c) == '!' || (c) == '-' || (c) == '+' || (c) == '@')
 void command_set_options(const char *cmd, const char *options);
 
 /* Returns TRUE if command has specified option. */

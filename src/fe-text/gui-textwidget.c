@@ -431,7 +431,7 @@ void gui_textwidget_init(void)
 	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
-	command_set_options("lastlog", "new away word regexp");
+	command_set_options("lastlog", "!- new away word regexp");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }

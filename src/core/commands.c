@@ -361,7 +361,6 @@ static int option_find(char **array, const char *option)
 	g_return_val_if_fail(option != NULL, -1);
 
 	len = strlen(option);
-	g_return_val_if_fail(len > 0, -1);
 
 	found = -1; index = 0; multiple = FALSE;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
@@ -411,7 +410,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			}
 
 			(*data)++;
-			if (**data == '-') {
+			if (**data == '-' && isspace((*data)[1])) {
 				/* -- option means end of options even
 				   if next word starts with - */
 				(*data)++;
@@ -419,7 +418,12 @@ static int get_cmd_options(char **data, int ignore_unknown,
 				break;
 			}
 
-			option = cmd_get_param(data);
+			if (!isspace(**data))
+				option = cmd_get_param(data);
+			else {
+				option = "-";
+				(*data)++;
+			}
 
 			/* check if this option can have argument */
 			pos = optlist == NULL ? -1 :
@@ -443,7 +447,8 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			if (options != NULL)
 				g_hash_table_insert(options, option, "");
 
-			if (pos == -1 || !iscmdtype(*optlist[pos]))
+			if (pos < 0 || !iscmdtype(*optlist[pos]) ||
+			    *optlist[pos] == '!')
 				option = NULL;
 
 			while (isspace(**data)) (*data)++;
