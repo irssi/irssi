@@ -7,25 +7,27 @@ use vars qw($VERSION %IRSSI);
 #don't know which version exactly, probably even works with 0.7.98.4
 use Irssi 20011001;
 
-$VERSION = "0.15";
+$VERSION = "0.17";
 %IRSSI = (
 	authors     => "Bjoern \'fuchs\' Krombholz",
 	contact     => "bjkro\@gmx.de",
 	name        => "splitlong",
+	licence     => "Public Domain",
 	description => "Split overlong PRIVMSGs to msgs with length allowed by ircd",
-	changed     => "Fri Jan 25 07:18:48 CET 2002"
+	changed     => "Wed Mar  8 03:03:10 CET 2002",
+	changes     => "fixed some strange bug, depends on new switches to msg command (-nick|-channel)"
 );
 
 sub sig_command_msg {
 	my ($cmd, $server, $winitem, $TEST) = @_;
-	my ($target, $data) = $cmd =~ /^(\S*)\s(.*)/;
+	my ($type, $target, $data) = $cmd =~ /^(\S*)\s(\S*)\s(.*)/;
 	my $maxlength = Irssi::settings_get_int('splitlong_max_length');
 
 	if ($maxlength == 0) {
 		# 497 = 510 - length(":" . "!" . " PRIVMSG " . " :");
 		$maxlength = 497 - length($server->{nick} . $server->{userhost} . $target);
 	}
-	my $maxlength2 = $maxlength + length("... ");
+	my $maxlength2 = $maxlength - length("... ");
 
 	if (length($data) > ($maxlength)) {
 		my @spltarr;
@@ -39,7 +41,7 @@ sub sig_command_msg {
 
 		push @spltarr, $data;
 		foreach (@spltarr) {
-			Irssi::signal_emit("command msg", "$target $_", $server, $winitem);
+			Irssi::signal_emit("command msg", "$type $target $_", $server, $winitem);
 		}
 		Irssi::signal_stop();
 	}
