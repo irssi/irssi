@@ -701,6 +701,7 @@ Makefile
 po/Makefile.in
 intl/Makefile
 src/Makefile
+src/lib/Makefile
 src/core/Makefile
 src/irc/Makefile
 src/irc/core/Makefile
@@ -785,7 +786,7 @@ if test "x$want_perl" = "xyes"; then
 		if test "x$perl_lib_dir_given" != "xyes"; then
 			echo " - NOTE: This was automatically set to the same directory you gave with"
 			echo "   --prefix. If you want the perl libraries to install to their 'correct'"
-			echo "   path, you'll need to give --enable-perl= (nothing after '=') option"
+			echo "   path, you'll need to give --enable-perl-path= (nothing after '=') option"
 			echo "   to configure. Anyway, installing perl to this directory should work"
 			echo "   just as well.."
 		fi
