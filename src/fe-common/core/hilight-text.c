@@ -474,7 +474,7 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 		    chans != NULL ? chans : "",
 		    levelstr != NULL ? levelstr : "",
 		    rec->nickmask ? " -mask" : "",
-		    rec->fullword ? " -word" : "",
+		    rec->fullword ? " -full" : "",
 		    rec->regexp ? " -regexp" : "");
 	g_free_not_null(chans);
 	g_free_not_null(levelstr);
@@ -563,7 +563,7 @@ static void cmd_hilight(const char *data)
                 rec->nick = TRUE;
 
 	rec->nickmask = g_hash_table_lookup(optlist, "mask") != NULL;
-	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
+	rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 
 	if (colorarg != NULL) {

@@ -3,9 +3,10 @@
 
    -mask: Match only for nick, <text> is a nick mask
    -regexp: <text> is a regular expression
-   -word: <text> must match to full words
+   -full: <text> must match to full words
    -nick: Hilight only the nick, not the whole line (default)
-   -nonick: Hilight the whole line with the hilight color.
+   -word: Hilight only the word (default with non-public messages)
+   -line: Hilight the whole line with the hilight color.
    -color: Print the message with <color>. color is in %code format
            (see docs/formats.txt)
    -level: Match only for <level> messages, default is
