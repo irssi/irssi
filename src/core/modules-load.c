@@ -396,6 +396,7 @@ void module_unload(MODULE_REC *module)
 	while (module->files != NULL)
                 module_file_unload(module->files->data);
 
+        g_free(module->name);
 	g_free(module);
 }
 
