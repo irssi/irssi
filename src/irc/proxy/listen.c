@@ -367,7 +367,7 @@ static void sig_server_event(const char *line, IRC_SERVER_REC *server,
 	}
 
 	/* send the data to clients.. */
-        proxy_outdata_all(server, next_line->str);
+        proxy_outdata_all(server, "%s", next_line->str);
 
 	g_free(event);
 }
