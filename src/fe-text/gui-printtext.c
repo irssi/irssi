@@ -168,12 +168,12 @@ static void get_colors(int flags, int *fg, int *bg)
 	if (flags & PRINTFLAG_MIRC_COLOR) {
 		/* mirc colors */
 		*fg = *fg < 0 || *fg > 16 ?
-			current_theme->default_color : mirc_colors[*fg];
+			/*current_theme->default_color*/0 : mirc_colors[*fg];
 		*bg = *bg < 0 || *bg > 16 ? 0 : mirc_colors[*bg];
 	} else {
 		/* default colors */
 		*fg = *fg < 0 || *fg > 15 ?
-			current_theme->default_color : *fg;
+			/*current_theme->default_color*/0 : *fg;
 		*bg = *bg < 0 || *bg > 15 ? 0 : *bg;
 
 		if (*fg > 8) *fg -= 8;
