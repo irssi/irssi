@@ -332,7 +332,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
         char *format, *stripped;
 	char *linebuf, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
-        int item_extra, linebuf_size;
+        int item_extra, linebuf_size, formatnum;
 
 	window = window_find_closest(channel->server, channel->name,
 				     MSGLEVEL_CLIENTCRAP);
@@ -390,9 +390,13 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		linebuf[columns[col]-item_extra] = '\0';
 		memcpy(linebuf, rec->nick, strlen(rec->nick));
 
+		formatnum = rec->op ? TXT_NAMES_NICK_OP :
+			rec->halfop ? TXT_NAMES_NICK_HALFOP :
+			rec->voice ? TXT_NAMES_NICK_VOICE :
+                        TXT_NAMES_NICK;
 		format = format_get_text(MODULE_NAME, NULL,
 					 channel->server, channel->name,
-					 TXT_NAMES_NICK, nickmode, linebuf);
+					 formatnum, nickmode, linebuf);
 		g_string_append(str, format);
 		g_free(format);
 
