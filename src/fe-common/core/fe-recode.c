@@ -157,7 +157,7 @@ static void read_settings(void)
 	const char *old_recode_out_default = g_strdup(recode_out_default);
 	
 	if (recode_fallback)
-		g_free(term_charset);
+		g_free(recode_fallback);
 	recode_fallback = g_strdup(settings_get_str("recode_fallback"));
 	if (!is_valid_charset(recode_fallback)) {
 		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), recode_fallback);
