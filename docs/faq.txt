@@ -3,3 +3,6 @@ A: Most unices are usually configured to send SIGQUIT to active process when
    Ctrl-\ is pressed. Some terminals also treat Ctrl-4 and Ctrl-\ equally, so
    Irssi will die to SIGQUIT. Two ways to fix this: change it to something 
    else with stty (stty quit undef) or in irssi /SET ignore_signals quit
+
+Q: Where's the GUI version?
+A: Read http://irssi.org/?page=about
