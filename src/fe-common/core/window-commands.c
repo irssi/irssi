@@ -738,7 +738,8 @@ static void cmd_foreach_window(const char *data)
                 list = g_slist_remove(list, list->data);
 	}
 
-        active_win = old;
+	if (g_slist_find(windows, old) != NULL)
+		active_win = old;
 }
 
 void window_commands_init(void)
