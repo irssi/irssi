@@ -89,6 +89,7 @@ command_module_find_and_remove(COMMAND_REC *rec, SIGNAL_FUNC func)
 			if (cb->func == func) {
 				rec->callbacks =
 					g_slist_remove(rec->callbacks, cb);
+				g_free(cb);
 				return rec;
 			}
 		}
