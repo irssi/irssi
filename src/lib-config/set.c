@@ -75,7 +75,7 @@ void config_node_clear(CONFIG_REC *rec, CONFIG_NODE *node)
 	g_return_if_fail(is_node_list(node));
 
 	while (node->value != NULL)
-                config_node_remove(rec, node, node->value);
+                config_node_remove(rec, node, ((GSList *) node->value)->data);
 }
 
 void config_nodes_remove_all(CONFIG_REC *rec)
