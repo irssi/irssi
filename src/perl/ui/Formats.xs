@@ -1,6 +1,6 @@
 #include "module.h"
 
-static int magic_free_text_dest(SV *sv, MAGIC *mg)
+static int magic_free_text_dest(pTHX_ SV *sv, MAGIC *mg)
 {
 	TEXT_DEST_REC *dest = (TEXT_DEST_REC *) mg->mg_ptr;
 	g_free((char *) dest->target);
