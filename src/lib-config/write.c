@@ -49,7 +49,8 @@ static int config_write_str(CONFIG_REC *rec, const char *str)
 	strpos = str;
 	while (*strpos != '\0') {
 		/* fill the indentation */
-		if (rec->tmp_last_lf && rec->tmp_indent_level > 0) {
+		if (rec->tmp_last_lf && rec->tmp_indent_level > 0 &&
+		    *str != '\n') {
 			if (config_write_indent(rec) == -1)
 				return -1;
 		}
