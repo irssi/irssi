@@ -34,12 +34,6 @@ print(str, level=MSGLEVEL_CLIENTNOTICE)
 CODE:
 	printtext_string(NULL, NULL, level, str);
 
-void
-command(cmd)
-	char *cmd
-CODE:
-	perl_command(cmd, active_win->active_server, active_win->active);
-
 Irssi::UI::Window
 window_find_name(name)
 	char *name
@@ -98,13 +92,6 @@ OUTPUT:
 #*******************************
 MODULE = Irssi::UI::Window  PACKAGE = Irssi::Server
 #*******************************
-
-void
-command(server, cmd)
-	Irssi::Server server
-	char *cmd
-CODE:
-	perl_command(cmd, server, NULL);
 
 void
 print(server, channel, str, level=MSGLEVEL_CLIENTNOTICE)
@@ -248,13 +235,6 @@ print(item, str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
 CODE:
 	printtext_string(item->server, item->name, level, str);
-
-void
-command(item, cmd)
-	Irssi::Windowitem item
-	char *cmd
-CODE:
-	perl_command(cmd, item->server, item);
 
 Irssi::UI::Window
 window_create(item, automatic)

@@ -349,6 +349,12 @@ combine_level(level, str)
 	char *str
 
 void
+command(cmd)
+	char *cmd
+CODE:
+	perl_command(cmd, NULL, NULL);
+
+void
 commands()
 PREINIT:
 	GSList *tmp;
@@ -458,6 +464,14 @@ PPCODE:
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
 
+void
+command(server, cmd)
+	Irssi::Server server
+	char *cmd
+CODE:
+	perl_command(cmd, server, NULL);
+
+
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Windowitem
 #*******************************
@@ -474,3 +488,11 @@ PPCODE:
 	ret = parse_special_string(cmd, item->server, item, data, NULL, flags);
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
+
+void
+command(item, cmd)
+	Irssi::Windowitem item
+	char *cmd
+CODE:
+	perl_command(cmd, item->server, item);
+
