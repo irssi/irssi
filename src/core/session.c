@@ -282,7 +282,7 @@ static void sig_init_finished(void)
 void session_init(void)
 {
 	static struct poptOption options[] = {
-		{ "session", 0, POPT_ARG_STRING, &session_file, 0, "", "" },
+		{ "session", 0, POPT_ARG_STRING, &session_file, 0, "Used by /UPGRADE command", "PATH" },
 		{ NULL, '\0', 0, NULL }
 	};
 
