@@ -955,6 +955,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 	signal_add("event 439", (SIGNAL_FUNC) event_received);
+	signal_add("event 479", (SIGNAL_FUNC) event_received);
 	signal_add("event 482", (SIGNAL_FUNC) event_received);
 
 	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
@@ -1042,6 +1043,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 	signal_remove("event 439", (SIGNAL_FUNC) event_received);
+	signal_remove("event 479", (SIGNAL_FUNC) event_received);
 	signal_remove("event 482", (SIGNAL_FUNC) event_received);
 
 	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
