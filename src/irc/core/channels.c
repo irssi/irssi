@@ -162,15 +162,17 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	SETUP_CHANNEL_REC *schannel;
 	CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
-	char *params, *channels, *keys, *key;
+	char *channels, *keys, *key;
 	char **chanlist, **keylist, **tmp, **tmpkey, *channel;
+	void *free_arg;
 	int use_keys;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &channels, &keys);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channels, &keys))
+		return;
 	if (*channels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
         chanlist = g_strsplit(channels, ",", -1);
@@ -221,7 +223,7 @@ void channels_join(IRC_SERVER_REC *server, const char *data, int automatic)
 	g_strfreev(chanlist);
 	g_strfreev(keylist);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 void channels_init(void)

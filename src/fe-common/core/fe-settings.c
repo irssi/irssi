@@ -66,10 +66,12 @@ static void set_boolean(const char *key, const char *value)
 static void cmd_set(char *data)
 {
 	GSList *sets, *tmp;
-	char *params, *key, *value, *last_section;
+	char *key, *value, *last_section;
+	void *free_arg;
 	int found;
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &key, &value);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
+		return;
 
 	last_section = ""; found = 0;
 	sets = settings_get_sorted();
@@ -110,15 +112,17 @@ static void cmd_set(char *data)
         if (!found)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown setting %s", key);
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void cmd_toggle(const char *data)
 {
-	char *params, *key, *value;
+	char *key, *value;
+	void *free_arg;
 	int type;
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &key, &value);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
+		return;
 
 	type = settings_get_type(key);
         if (type == -1)
@@ -130,7 +134,7 @@ static void cmd_toggle(const char *data)
                 set_print(settings_get_record(key));
 	}
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void show_aliases(const char *alias)
@@ -173,11 +177,14 @@ static void alias_remove(const char *alias)
 
 static void cmd_alias(const char *data)
 {
-	char *params, *alias, *value;
+	char *alias, *value;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &alias, &value);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &alias, &value))
+		return;
+
 	if (*alias == '-') {
 		if (alias[1] != '\0') alias_remove(alias+1);
 	} else if (*alias == '\0' || *value == '\0')
@@ -186,7 +193,7 @@ static void cmd_alias(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_ALIAS_ADDED, alias);
 		iconfig_set_str("aliases", alias, value);
 	}
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void cmd_unalias(const char *data)

@@ -231,24 +231,28 @@ static void dcc_error_close_not_found(const char *type, const char *nick, const 
 
 static void dcc_unknown_ctcp(const char *data, const char *sender)
 {
-	char *params, *type, *args;
+	char *type, *args;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &type, &args))
+		return;
 	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_CTCP, type, sender, args);
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void dcc_unknown_reply(const char *data, const char *sender)
 {
-	char *params, *type, *args;
+	char *type, *args;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &type, &args);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &type, &args))
+		return;
 	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_UNKNOWN_REPLY, type, sender, args);
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void sig_dcc_destroyed(DCC_REC *dcc)
@@ -288,7 +292,8 @@ static void sig_query_destroyed(QUERY_REC *query)
 static void cmd_msg(const char *data)
 {
 	DCC_REC *dcc;
-	char *params, *text, *target;
+	char *text, *target;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
@@ -297,7 +302,8 @@ static void cmd_msg(const char *data)
 		return;
 	}
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &text);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
+		return;
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
 	if (dcc == NULL) {
@@ -309,7 +315,7 @@ static void cmd_msg(const char *data)
 			    IRCTXT_OWN_DCC, dcc->mynick, text);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
@@ -327,8 +333,9 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 
 static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *target, *text;
 	DCC_REC *dcc;
+	char *target, *text;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
@@ -337,7 +344,8 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 		return;
 	}
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &text);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &text))
+		return;
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
@@ -348,23 +356,25 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 		printformat(NULL, target, MSGLEVEL_DCC,
 			    IRCTXT_OWN_DCC_ME, dcc->mynick, text);
 	}
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_ctcp(const char *data, SERVER_REC *server)
 {
-	char *params, *target, *ctcpcmd, *ctcpdata;
 	DCC_REC *dcc;
+	char *target, *ctcpcmd, *ctcpdata;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target != '=') {
 		/* handle only DCC CTCPs */
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -378,7 +388,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 			    target, ctcpcmd, ctcpdata);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_dcc_list(const char *data)

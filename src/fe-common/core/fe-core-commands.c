@@ -31,7 +31,7 @@
 #include "windows.h"
 
 static const char *ret_texts[] = {
-        NULL,
+	NULL,
 	"Not enough parameters given",
 	"Not connected to IRC server yet",
 	"Not joined to any channels yet",
@@ -230,15 +230,18 @@ static void cmd_version(char *data)
 
 static void cmd_cat(const char *data)
 {
-	char *params, *fname, *fposstr;
-	char tmpbuf[1024], *str;
 	LINEBUF_REC *buffer = NULL;
+	char *fname, *fposstr;
+	char tmpbuf[1024], *str;
+	void *free_arg;
 	int f, ret, recvlen, fpos;
 
-	params = cmd_get_params(data, 2, &fname, &fposstr);
+	if (!cmd_get_params(data, &free_arg, 2, &fname, &fposstr))
+		return;
+
 	fname = convert_home(fname);
 	fpos = atoi(fposstr);
-	g_free(params);
+        cmd_params_free(free_arg);
 
 	f = open(fname, O_RDONLY);
 	g_free(fname);
@@ -301,15 +304,24 @@ static void event_default_command(const char *data, void *server, WI_ITEM_REC *i
 	cmd_unknown(data, server, item);
 }
 
-static void event_cmderror(gpointer errorp)
+static void event_cmderror(gpointer errorp, const char *arg)
 {
 	int error;
 
 	error = GPOINTER_TO_INT(errorp);
-        if (error == CMDERR_ERRNO)
+	switch (error) {
+	case CMDERR_ERRNO:
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, g_strerror(errno));
-	else
+		break;
+	case CMDERR_OPTION_UNKNOWN:
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown argument: %s", arg);
+		break;
+	case CMDERR_OPTION_ARG_MISSING:
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Missing required argument for: %s", arg);
+		break;
+	default:
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error]);
+	}
 }
 
 void fe_core_commands_init(void)

@@ -25,7 +25,15 @@ GList *glist_find_string(GList *list, const char *key);
 GList *glist_find_icase_string(GList *list, const char *key);
 
 void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, void *data);
-char *gslist_to_string(GSList *list, int offset, const char *delimiter);
+
+/* `list' contains pointer to structure with a char* to string. */
+char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);
+/* `list' contains char* */
+char *gslist_to_string(GSList *list, const char *delimiter);
+
+/* save all keys in hash table to linked list - you shouldn't remove any
+   items while using this list, use g_slist_free() after you're done with it */
+GSList *hashtable_get_keys(GHashTable *hash);
 
 /* strstr() with case-ignoring */
 char *stristr(const char *data, const char *key);

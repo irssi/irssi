@@ -45,18 +45,24 @@ static void cmd_log_open(const char *data)
 {
 	/* /LOG OPEN [-noopen] [-autoopen] [-targets <targets>] [-window]
 	             [-rotate hour|day|week|month] <fname> [<levels>] */
-	char *params, *args, *targetarg, *rotatearg, *fname, *levels;
+        GHashTable *optlist;
+	char *targetarg, *rotatearg, *fname, *levels;
+	void *free_arg;
 	char window[MAX_INT_STRLEN];
 	LOG_REC *log;
 	int level, rotate;
 
-	args = "targets rotate";
-	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
-				&args, &targetarg, &rotatearg, &fname, &levels);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+			    "log open", &optlist, &fname, &levels))
+		return;
+
+	targetarg = g_hash_table_lookup(optlist, "targets");
+	rotatearg = g_hash_table_lookup(optlist, "rotate");
+
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	rotate = LOG_ROTATE_NEVER;
-	if (stristr(args, "-rotate")) {
+	if (rotatearg != NULL) {
 		rotate = log_str2rotate(rotatearg);
 		if (rotate < 0) rotate = LOG_ROTATE_NEVER;
 	}
@@ -64,7 +70,7 @@ static void cmd_log_open(const char *data)
 	level = level2bits(levels);
 	if (level == 0) level = MSGLEVEL_ALL;
 
-	if (stristr(args, "-window")) {
+	if (g_hash_table_lookup(optlist, "window")) {
 		/* log by window ref# */
 		ltoa(window, active_win->refnum);
                 targetarg = window;
@@ -72,12 +78,12 @@ static void cmd_log_open(const char *data)
 
 	log = log_create_rec(fname, level, targetarg);
 	if (log != NULL) {
-		if (stristr(args, "-autoopen"))
+		if (g_hash_table_lookup(optlist, "autoopen"))
 			log->autoopen = TRUE;
                 log->rotate = rotate;
 		log_update(log);
 
-		if (log->handle == -1 && stristr(args, "-noopen") == NULL) {
+		if (log->handle == -1 && g_hash_table_lookup(optlist, "noopen") == NULL) {
 			/* start logging */
 			if (log_start_logging(log)) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -88,7 +94,7 @@ static void cmd_log_open(const char *data)
 		}
 	}
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static LOG_REC *log_find_from_data(const char *data)
@@ -191,10 +197,12 @@ static void cmd_window_log(const char *data)
 {
 	/* /WINDOW LOG ON|OFF|TOGGLE [<filename>] */
 	LOG_REC *log;
-	char *params, *set, *fname, window[MAX_INT_STRLEN];
+	char *set, *fname, window[MAX_INT_STRLEN];
+	void *free_arg;
 	int open_log, close_log;
 
-	params = cmd_get_params(data, 2, &set, &fname);
+	if (!cmd_get_params(data, &free_arg, 2, &set, &fname))
+		return;
 
         ltoa(window, active_win->refnum);
 	log = log_find_item(window);
@@ -209,7 +217,7 @@ static void cmd_window_log(const char *data)
                 close_log = log != NULL;
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_TOGGLE);
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -232,7 +240,7 @@ static void cmd_window_log(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_LOG_CLOSED, log->fname);
 	}
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 /* Create log file entry to window, but don't start logging */
@@ -440,6 +448,8 @@ void fe_log_init(void)
 	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+
+	command_set_options("log open", "noopen autoopen -targets window -rotate");
 }
 
 void fe_log_deinit(void)

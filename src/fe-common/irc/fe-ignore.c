@@ -137,14 +137,16 @@ static void cmd_ignore_show(void)
 static void cmd_ignore(const char *data)
 {
 	/* /IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
-	           [-channels <channel>] <mask> <levels>
+	           [-replies] [-channels <channel>] <mask> <levels>
 	   OR
 
-           /IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
+           /IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
 	           <channels> <levels> */
-	char *params, *args, *patternarg, *chanarg, *mask, *levels, *key;
-	char **channels;
+        GHashTable *optlist;
 	IGNORE_REC *rec;
+	char *patternarg, *chanarg, *mask, *levels, *key;
+	char **channels;
+	void *free_arg;
 	int new_ignore;
 
 	if (*data == '\0') {
@@ -152,16 +154,20 @@ static void cmd_ignore(const char *data)
 		return;
 	}
 
-	args = "pattern channels";
-	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
-				&args, &patternarg, &chanarg, &mask, &levels);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+			    "ignore", &optlist, &mask, &levels))
+		return;
+
+	patternarg = g_hash_table_lookup(optlist, "pattern");
+        chanarg = g_hash_table_lookup(optlist, "channels");
+
 	if (*levels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (ischannel(*mask)) {
 		chanarg = mask;
 		mask = "";
 	}
-	channels = *chanarg == '\0' ? NULL :
+	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(replace_chars(chanarg, ',', ' '), " ", -1);
 
 	rec = ignore_find(NULL, mask, channels);
@@ -177,16 +183,17 @@ static void cmd_ignore(const char *data)
 		g_strfreev(channels);
 	}
 
-	if (stristr(args, "-except") != NULL) {
+	if (g_hash_table_lookup(optlist, "except") != NULL) {
                 rec->except_level = combine_level(rec->except_level, levels);
 	} else {
 		ignore_split_levels(levels, &rec->level, &rec->except_level);
 	}
 
-	rec->pattern = *patternarg == '\0' ? NULL : g_strdup(patternarg);
-	rec->regexp = stristr(args, "-regexp") != NULL;
-	rec->fullword = stristr(args, "-word") != NULL;
-	rec->replies = stristr(args, "-replies") != NULL;
+	rec->pattern = (patternarg == NULL || *patternarg == '\0') ?
+		NULL : g_strdup(patternarg);
+	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
+	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
+	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
 
 	if (rec->level == 0 && rec->except_level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED,
@@ -204,7 +211,7 @@ static void cmd_ignore(const char *data)
 	else
 		ignore_update_rec(rec);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_unignore(const char *data)
@@ -242,6 +249,8 @@ void fe_ignore_init(void)
 {
 	command_bind("ignore", NULL, (SIGNAL_FUNC) cmd_ignore);
 	command_bind("unignore", NULL, (SIGNAL_FUNC) cmd_unignore);
+
+	command_set_options("ignore", "regexp word except replies -pattern -channels");
 }
 
 void fe_ignore_deinit(void)

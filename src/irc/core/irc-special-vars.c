@@ -236,11 +236,13 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *msg;
+	char *target, *msg;
+        void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+		return;
 	if (*target != '\0' && *msg != '\0' && !ischannel(*target) && isalpha(*target)) {
 		g_free_not_null(last_sent_msg);
 		g_free_not_null(last_sent_msg_body);
@@ -248,7 +250,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 		last_sent_msg_body = g_strdup(msg);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)

@@ -394,7 +394,7 @@
 	network and Irssi will pick the server for you.
 
 	You don't need to specify the IRC network, password, nick, etc. if
-	you setup the server using /SERVER -add (see next section). If the
+	you setup the server using /SERVER ADD (see next section). If the
 	settings can't be found there either, Irssi will use the defaults:
 
 	/SET default_nick = <nick>, defaults to user_name
@@ -424,9 +424,9 @@
 
  5.4 Server settings
 
-	/SERVER -add [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
-	             [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-		     <address> [<port> [<password>]]
+	/SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+	            [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+	            <address> [<port> [<password>]]
 
 	    -auto: Automatically connect to server at startup (default)
 	    -noauto: Don't connect to server at startup
@@ -437,9 +437,9 @@
 	    -port: This is pretty much like the port argument later, except
 	           this can be used to modify existing server's port.
 
-	/SERVER -remove <address> [<port>]
+	/SERVER REMOVE <address> [<port>]
 
-	/SERVER -list
+	/SERVER LIST
 
 	Servers are identified by their name and port. You can have multiple
 	entries for the same server name but in different ports. This is
@@ -450,7 +450,7 @@
 	-port command. For example if you had irc.server.org in port 6667
 	and you wanted to change it to port 6668, use command:
 
-	/SERVER -add -port 6668 irc.server.org 6667
+	/SERVER ADD -port 6668 irc.server.org 6667
 
 	If you want to remove some settings from existing server, for
 	example hostname, just give -host "" parameters to it.

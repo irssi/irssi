@@ -154,11 +154,11 @@ static void read_ircnets(void)
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	IRCNET_REC *ircnet;
-	
+
 	if (server->connrec->ircnet == NULL) return;
 
 	ircnet = ircnet_find(server->connrec->ircnet);
-	if (ircnet->autosendcmd)
+	if (ircnet != NULL && ircnet->autosendcmd)
 		eval_special_string(ircnet->autosendcmd, "", server, NULL);
 }
 

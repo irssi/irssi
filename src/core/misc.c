@@ -247,7 +247,8 @@ void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, void *data)
 	return NULL;
 }
 
-char *gslist_to_string(GSList *list, int offset, const char *delimiter)
+/* `list' contains pointer to structure with a char* to string. */
+char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 {
 	GString *str;
 	char **data, *ret;
@@ -264,6 +265,41 @@ char *gslist_to_string(GSList *list, int offset, const char *delimiter)
         ret = str->str;
 	g_string_free(str, FALSE);
 	return ret;
+}
+
+/* `list' contains char* */
+char *gslist_to_string(GSList *list, const char *delimiter)
+{
+	GString *str;
+	char *ret;
+
+	str = g_string_new(NULL);
+	while (list != NULL) {
+		if (str->len != 0) g_string_append(str, delimiter);
+		g_string_append(str, list->data);
+
+		list = list->next;
+	}
+
+        ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
+void hash_save_key(char *key, void *value, GSList **list)
+{
+        *list = g_slist_append(*list, key);
+}
+
+/* save all keys in hash table to linked list - you shouldn't remove any
+   items while using this list, use g_slist_free() after you're done with it */
+GSList *hashtable_get_keys(GHashTable *hash)
+{
+	GSList *list;
+
+	list = NULL;
+	g_hash_table_foreach(hash, (GHFunc) hash_save_key, &list);
+	return list;
 }
 
 GList *glist_find_string(GList *list, const char *key)

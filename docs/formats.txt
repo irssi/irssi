@@ -1,3 +1,6 @@
+
+ Irssi's colors that you can use in text formats etc. :
+
                            text            text            background
    ---------------------------------------------------------------------
    %k      %K      %0      black           bold black      black
@@ -17,3 +20,7 @@
    %|                      Marks the indentation position
    %%                      A single %
 
+ MIRC colors that you can use when writing text to channel and with
+ hilighting text:
+
+ FIXME: list them :)

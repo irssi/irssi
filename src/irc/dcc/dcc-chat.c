@@ -59,7 +59,8 @@ DCC_REC *item_get_dcc(void *item)
 static void cmd_msg(const char *data)
 {
 	DCC_REC *dcc;
-	char *params, *text, *target;
+	char *text, *target;
+	void *free_arg;
 
 	g_return_if_fail(text != NULL);
 
@@ -68,12 +69,13 @@ static void cmd_msg(const char *data)
 		return;
 	}
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &text);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
+		return;
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, ++target, NULL);
 	if (dcc != NULL) dcc_chat_send(dcc, text);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 	signal_stop();
 }
 
@@ -96,9 +98,9 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *text;
 	DCC_REC *dcc;
-	char *str;
+	char *target, *text, *str;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
@@ -107,7 +109,8 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &text);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &text))
+		return;
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
@@ -117,25 +120,26 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 		g_free(str);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 	signal_stop();
 }
 
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *ctcpcmd, *ctcpdata;
 	DCC_REC *dcc;
-	char *str;
+	char *target, *ctcpcmd, *ctcpdata, *str;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target != '=') {
 		/* handle only DCC CTCPs */
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -148,7 +152,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 		g_free(str);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 	signal_stop();
 }
 

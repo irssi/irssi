@@ -79,15 +79,14 @@ static void cmd_ircnet_list(void)
 
 static void cmd_ircnet_add(const char *data)
 {
-	char *params, *args, *kicks, *msgs, *modes, *whois;
-	char *cmdspeed, *cmdmax, *nick, *user, *realname, *host, *autosendcmd, *name;
+	GHashTable *optlist;
+	char *name, *value;
+	void *free_arg;
 	IRCNET_REC *rec;
 
-	args = "kicks msgs modes whois cmdspeed cmdmax nick user realname host autosendcmd";
-	params = cmd_get_params(data, 13 | PARAM_FLAG_MULTIARGS, &args,
-				&kicks, &msgs, &modes, &whois, &cmdspeed,
-				&cmdmax, &nick, &user, &realname, &host, 
-				&autosendcmd, &name);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "ircnet add", &optlist, &name))
+		return;
 	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	rec = ircnet_find(name);
@@ -95,37 +94,50 @@ static void cmd_ircnet_add(const char *data)
 		rec = g_new0(IRCNET_REC, 1);
 		rec->name = g_strdup(name);
 	} else {
-		if (stristr(args, "-nick")) g_free_and_null(rec->nick);
-		if (stristr(args, "-user")) g_free_and_null(rec->username);
-		if (stristr(args, "-realname")) g_free_and_null(rec->realname);
-		if (stristr(args, "-host")) {
+		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
+		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
+		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
+		if (g_hash_table_lookup(optlist, "host")) {
 			g_free_and_null(rec->own_host);
                         rec->own_ip = NULL;
 		}
-		if (stristr(args, "-autosendcmd")) g_free_and_null(rec->autosendcmd);
+		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
 	}
 
-	if (stristr(args, "-kicks")) rec->max_kicks = atoi(kicks);
-	if (stristr(args, "-msgs")) rec->max_msgs = atoi(msgs);
-	if (stristr(args, "-modes")) rec->max_modes = atoi(modes);
-	if (stristr(args, "-whois")) rec->max_whois = atoi(whois);
+	value = g_hash_table_lookup(optlist, "kicks");
+	if (value != NULL) rec->max_kicks = atoi(value);
+	value = g_hash_table_lookup(optlist, "msgs");
+	if (value != NULL) rec->max_msgs = atoi(value);
+	value = g_hash_table_lookup(optlist, "modes");
+	if (value != NULL) rec->max_modes = atoi(value);
+	value = g_hash_table_lookup(optlist, "whois");
+	if (value != NULL) rec->max_whois = atoi(value);
 
-	if (stristr(args, "-cmdspeed")) rec->cmd_queue_speed = atoi(cmdspeed);
-	if (stristr(args, "-cmdmax")) rec->max_cmds_at_once = atoi(cmdmax);
+	value = g_hash_table_lookup(optlist, "cmdspeed");
+	if (value != NULL) rec->cmd_queue_speed = atoi(value);
+	value = g_hash_table_lookup(optlist, "cmdmax");
+	if (value != NULL) rec->max_cmds_at_once = atoi(value);
 
-	if (*nick != '\0') rec->nick = g_strdup(nick);
-	if (*user != '\0') rec->username = g_strdup(user);
-	if (*realname != '\0') rec->realname = g_strdup(realname);
-	if (*host != '\0') {
-		rec->own_host = g_strdup(host);
+	value = g_hash_table_lookup(optlist, "nick");
+	if (value != NULL && *value != '\0') rec->nick = g_strdup(value);
+	value = g_hash_table_lookup(optlist, "user");
+	if (value != NULL && *value != '\0') rec->username = g_strdup(value);
+	value = g_hash_table_lookup(optlist, "realname");
+	if (value != NULL && *value != '\0') rec->realname = g_strdup(value);
+
+	value = g_hash_table_lookup(optlist, "host");
+	if (value != NULL && *value != '\0') {
+		rec->own_host = g_strdup(value);
 		rec->own_ip = NULL;
 	}
-	if (*autosendcmd != '\0') rec->autosendcmd = g_strdup(autosendcmd);
+
+	value = g_hash_table_lookup(optlist, "autosendcmd");
+	if (value != NULL && *value != '\0') rec->autosendcmd = g_strdup(value);
 
 	ircnet_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_ADDED, name);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_ircnet_remove(const char *data)
@@ -149,6 +161,8 @@ void fe_ircnet_init(void)
 	command_bind("ircnet ", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
 	command_bind("ircnet add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
 	command_bind("ircnet remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
+
+	command_set_options("ircnet add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd");
 }
 
 void fe_ircnet_deinit(void)

@@ -460,7 +460,8 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 
 static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *target, *mode;
+	char *target, *mode;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
@@ -468,9 +469,11 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 	if (*data == '+' || *data == '-') {
 		target = "*";
-		params = mode = g_strdup(data); /* cmd_param_error() wants to free params.. */
+		if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST, &mode))
+			return;
 	} else {
-		params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &mode);
+		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &mode))
+			return;
 	}
 
 	if (strcmp(target, "*") == 0) {
@@ -488,7 +491,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	else
 		irc_send_cmdv(server, "MODE %s %s", target, mode);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 void modes_init(void)

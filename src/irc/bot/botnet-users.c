@@ -108,81 +108,94 @@ void botcmd_user_set_password(USER_REC *user, const char *password)
 
 static void botnet_event_user_add(BOT_REC *bot, const char *data, const char *sender)
 {
-	char *params, *nick;
+	char *nick;
+	void *free_arg;
 
-	params = cmd_get_params(data, 1, &nick);
+	if (!cmd_get_params(data, &free_arg, 1, &nick))
+		return;
+
 	botuser_add(nick);
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_user_flags(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *nick, *flags;
+	char *nick, *flags;
+	void *free_arg;
 
-	params = cmd_get_params(data, 2, &nick, &flags);
+	if (!cmd_get_params(data, &free_arg, 2, &nick, &flags))
+		return;
 
 	user = botuser_find(nick, NULL);
 	if (user == NULL) user = botuser_add(nick);
 	botuser_set_flags(user, botuser_flags2value(flags));
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_user_chan_flags(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *nick, *channel, *flags;
+	char *nick, *channel, *flags;
+	void *free_arg;
 
-	params = cmd_get_params(data, 3, &nick, &channel, &flags);
+	if (!cmd_get_params(data, &free_arg, 3, &nick, &channel, &flags))
+		return;
 
 	user = botuser_find(nick, NULL);
 	if (user == NULL) user = botuser_add(nick);
 	botuser_set_channel_flags(user, channel, botuser_flags2value(flags));
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_user_add_mask(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *nick, *mask;
+	char *nick, *mask;
+	void *free_arg;
 
-	params = cmd_get_params(data, 2, &nick, &mask);
+	if (!cmd_get_params(data, &free_arg, 2, &nick, &mask))
+		return;
 
 	user = botuser_find(nick, NULL);
 	if (user == NULL) user = botuser_add(nick);
 	botuser_add_mask(user, mask);
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_user_mask_notflags(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *nick, *mask, *not_flags;
+	char *nick, *mask, *not_flags;
+	void *free_arg;
 
-	params = cmd_get_params(data, 3, &nick, &mask, &not_flags);
+	if (!cmd_get_params(data, &free_arg, 3, &nick, &mask, &not_flags))
+		return;
 
 	user = botuser_find(nick, NULL);
 	if (user == NULL) user = botuser_add(nick);
 	botuser_set_mask_notflags(user, mask, botuser_flags2value(not_flags));
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_user_pass(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *nick, *pass;
+	char *nick, *pass;
+	void *free_arg;
 
-	params = cmd_get_params(data, 2, &nick, &pass);
+	if (!cmd_get_params(data, &free_arg, 2, &nick, &pass))
+		return;
 
 	user = botuser_find(nick, NULL);
 	if (user == NULL) user = botuser_add(nick);
 	botuser_set_password(user, pass);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 void botnet_users_init(void)

@@ -167,14 +167,15 @@ void ban_remove(CHANNEL_REC *channel, const char *bans)
 static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item, int set)
 {
 	CHANNEL_REC *chanrec;
-	char *params, *channel, *nicks;
+	char *channel, *nicks;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
-				item, &channel, &nicks);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+			    item, &channel, &nicks)) return;
 	if (!ischannel(*channel)) cmd_param_error(CMDERR_NOT_JOINED);
 	if (*nicks == '\0') {
 		if (strcmp(data, "*") != 0)
@@ -192,7 +193,7 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 	else
 		ban_remove(chanrec, nicks);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_bantype(const char *data)

@@ -66,6 +66,7 @@ void command_free(COMMAND_REC *rec)
 	signal_emit("commandlist remove", 1, rec);
 
 	g_free_not_null(rec->category);
+	g_strfreev(rec->options);
 	g_free(rec->cmd);
 	g_free(rec);
 }
@@ -93,7 +94,7 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func)
 	}
 }
 
-void command_runsub(const char *cmd, const char *data, void *p1, void *p2)
+void command_runsub(const char *cmd, const char *data, void *server, void *item)
 {
 	char *subcmd, *defcmd, *args;
 
@@ -106,28 +107,99 @@ void command_runsub(const char *cmd, const char *data, void *p1, void *p2)
 	while (*args == ' ') args++;
 
 	g_strdown(subcmd);
-	if (!signal_emit(subcmd, 3, args, p1, p2)) {
+	if (!signal_emit(subcmd, 3, args, server, item)) {
 		defcmd = g_strdup_printf("default command %s", cmd);
-		if (!signal_emit(defcmd, 3, data, p1, p2))
-			signal_emit("unknown command", 3, strchr(subcmd, ' ')+1, p1, p2);
+		if (!signal_emit(defcmd, 3, data, server, item))
+			signal_emit("unknown command", 3, strchr(subcmd, ' ')+1, server, item);
                 g_free(defcmd);
 	}
 	g_free(subcmd);
 }
 
-COMMAND_REC *command_find(const char *command)
+COMMAND_REC *command_find(const char *cmd)
 {
 	GSList *tmp;
-	int len;
+
+	g_return_val_if_fail(cmd != NULL, NULL);
 
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->cmd, command) == 0)
+		if (g_strcasecmp(rec->cmd, cmd) == 0)
 			return rec;
 	}
 
 	return NULL;
+}
+
+#define iscmdtype(c) \
+        ((c) == '-' || (c) == '+' || (c) == '@')
+
+static GSList *optlist_find(GSList *optlist, const char *option)
+{
+	while (optlist != NULL) {
+		char *name = optlist->data;
+		if (iscmdtype(*name)) name++;
+
+		if (g_strcasecmp(name, option) == 0)
+			return optlist;
+
+		optlist = optlist->next;
+	}
+
+	return NULL;
+}
+
+void command_set_options(const char *cmd, const char *options)
+{
+	COMMAND_REC *rec;
+	char **optlist, **tmp, *name, *str;
+	GSList *list, *oldopt;
+
+	g_return_if_fail(cmd != NULL);
+	g_return_if_fail(options != NULL);
+
+        rec = command_find(cmd);
+	g_return_if_fail(rec != NULL);
+
+	optlist = g_strsplit(options, " ", -1);
+
+	if (rec->options == NULL) {
+                /* first call - use specified args directly */
+		rec->options = optlist;
+		return;
+	}
+
+	/* save old options to linked list */
+	list = NULL;
+	for (tmp = rec->options; *tmp != NULL; tmp++)
+                list = g_slist_append(list, g_strdup(*tmp));
+	g_strfreev(rec->options);
+
+	/* merge the options */
+	for (tmp = optlist; *tmp != NULL; tmp++) {
+		name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
+
+		oldopt = optlist_find(list, name);
+		if (oldopt != NULL) {
+                        /* already specified - overwrite old defination */
+			g_free(oldopt->data);
+			oldopt->data = g_strdup(*tmp);
+		} else {
+			/* new option, append to list */
+                        list = g_slist_append(list, g_strdup(*tmp));
+		}
+	}
+	g_strfreev(optlist);
+
+	/* linked list -> string[] */
+        g_free(rec->options);
+	str = gslist_to_string(list, " ");
+	rec->options = g_strsplit(str, " ", -1);
+        g_free(str);
+
+        g_slist_foreach(list, (GFunc) g_free, NULL);
+	g_slist_free(list);
 }
 
 char *cmd_get_param(char **data)
@@ -146,7 +218,7 @@ char *cmd_get_param(char **data)
 	return pos;
 }
 
-char *cmd_get_quoted_param(char **data)
+static char *cmd_get_quoted_param(char **data)
 {
 	char *pos, quote;
 
@@ -171,67 +243,7 @@ char *cmd_get_quoted_param(char **data)
 	return pos;
 }
 
-static char *get_opt_args(char **data)
-{
-	/* -cmd1 -cmd2 -cmd3 ... */
-	char *p, *ret;
-	int stopnext;
-
-	g_return_val_if_fail(data != NULL, NULL);
-	g_return_val_if_fail(*data != NULL, NULL);
-
-        stopnext = FALSE;
-	ret = NULL;
-	for (p = *data;;) {
-		if (*p != '-' || stopnext) {
-			if (p == *data) return "";
-
-			ret = *data;
-			*data = p;
-
-			while (isspace(p[-1]) && p > ret) p--;
-			if (*p != '\0') *p = '\0';
-			return ret;
-		}
-
-		if (p[1] == '-') {
-			/* -- argument means end of arguments even if
-			   next word starts with - */
-			stopnext = TRUE;
-		}
-
-		while (!isspace(*p) && *p != '\0') p++;
-		while (isspace(*p)) p++;
-	}
-}
-
-static void cmd_params_pack(char ***subargs, char *end, char *start, char *newstart)
-{
-	char ***tmp;
-	char *data;
-	int bufsize, datalen, len;
-
-	bufsize = (int) (end-newstart)+1;
-
-	data = g_malloc(bufsize); datalen = 0;
-	for (tmp = subargs; *tmp != NULL; tmp++) {
-		if (**tmp < start || **tmp > end)
-			continue;
-
-                len = strlen(**tmp)+1;
-		if (datalen+len > bufsize)
-			g_error("cmd_params_pack() : buffer overflow!");
-
-		memcpy(data+datalen, **tmp, len);
-		**tmp = newstart+datalen;
-		datalen += len;
-	}
-
-	g_memmove(newstart, data, datalen);
-	g_free(data);
-}
-
-int arg_find(char **array, const char *item)
+static int option_find(char **array, const char *item)
 {
 	char **tmp;
 	int index;
@@ -241,101 +253,83 @@ int arg_find(char **array, const char *item)
 
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		if (g_strcasecmp(*tmp + (**tmp == '@'), item) == 0)
+		if (g_strcasecmp(*tmp + iscmdtype(**tmp), item) == 0)
 			return index;
 	}
 
 	return -1;
 }
 
-static int get_multi_args(char **data, int checkonly, va_list va)
+static int get_cmd_options(char **data, int ignore_unknown,
+			   const char *cmd, GHashTable *options)
 {
-	/* -cmd1 arg1 -cmd2 "argument two" -cmd3 */
-        GString *returnargs;
-	char **args, **arglist, *arg, *origdata;
-	char **nextarg, ***subargs;
-	int eat, pos;
+	COMMAND_REC *rec;
+	char *option, *arg, **optlist;
+	int pos;
 
-	eat = 0;
-	args = (char **) va_arg(va, char **);
-	g_return_val_if_fail(args != NULL && *args != NULL && **args != '\0', 0);
+	/* get option definations */
+	rec = cmd == NULL ? NULL : command_find(cmd);
+	optlist = rec == NULL ? NULL : rec->options;
 
-	arglist = g_strsplit(*args, " ", -1);
-	eat = strarray_length(arglist);
-
-	subargs = g_new(char **, eat+1);
-	for (pos = 0; pos < eat; pos++) {
-		subargs[pos] = (char **) va_arg(va, char **);
-		if (subargs[pos] == NULL) {
-			g_free(subargs);
-			g_warning("get_multi_args() : subargument == NULL");
-			return eat;
-		}
-		*subargs[pos] = "";
-	}
-	subargs[eat] = NULL;
-
-        origdata = *data;
-	returnargs = g_string_new(NULL);
-	nextarg = NULL;
+	option = NULL; pos = -1;
 	for (;;) {
 		if (**data == '-') {
+			if (option != NULL && *optlist[pos] == '+') {
+				/* required argument missing! */
+                                *data = optlist[pos] + 1;
+				return CMDERR_OPTION_ARG_MISSING;
+			}
+
 			(*data)++;
 			if (**data == '-') {
-				/* -- argument means end of arguments even
+				/* -- option means end of options even
 				   if next word starts with - */
 				(*data)++;
 				while (isspace(**data)) (*data)++;
 				break;
 			}
 
-			arg = cmd_get_param(data);
-			g_string_sprintfa(returnargs, "-%s ", arg);
+			option = cmd_get_param(data);
 
-			/* check if this argument can have parameter */
-			pos = arg_find(arglist, arg);
-			nextarg = pos == -1 ? NULL : subargs[pos];
+			/* check if this option can have argument */
+			pos = optlist == NULL ? -1 : option_find(optlist, option);
+			if (pos == -1 && !ignore_unknown) {
+				/* unknown option! */
+                                *data = option;
+				return CMDERR_OPTION_UNKNOWN;
+			}
+			if (pos != -1) {
+				/* if we used a shortcut of parameter, put
+				   the whole parameter name in options table */
+				option = optlist[pos] + iscmdtype(*optlist[pos]);
+			}
+			if (options != NULL) g_hash_table_insert(options, option, "");
+
+			if (pos == -1 || !iscmdtype(*optlist[pos]))
+				option = NULL;
 
 			while (isspace(**data)) (*data)++;
 			continue;
 		}
 
-		if (nextarg == NULL)
+		if (option == NULL)
 			break;
 
-		if (*arglist[pos] == '@' && !isdigit(**data))
+		if (*optlist[pos] == '@' && !isdigit(**data))
 			break; /* expected a numeric argument */
 
-		/* save the sub-argument to `nextarg' */
+		/* save the argument */
 		arg = cmd_get_quoted_param(data);
-                *nextarg = arg; nextarg = NULL;
+		if (options != NULL) {
+			g_hash_table_remove(options, option);
+			g_hash_table_insert(options, option, arg);
+		}
+		option = NULL;
 
 		while (isspace(**data)) (*data)++;
 	}
 
-	if (!checkonly) {
-		/* ok, this is a bit stupid. this will pack the arguments in
-		   `data' like "-arg1 subarg -arg2 sub2\0" ->
-		   "-arg1 -arg2\0subarg\0sub2\0" this is because it's easier
-		   to free only _one_ string instead of two (`args') when
-		   using PARAM_FLAG_MULTIARGS. */
-		if (returnargs->len == 0)
-			*args = "";
-		else {
-			cmd_params_pack(subargs, **data == '\0' ? *data : (*data)-1,
-					origdata, origdata+returnargs->len);
-
-			g_string_truncate(returnargs, returnargs->len-1);
-			strcpy(origdata, returnargs->str);
-			*args = origdata;
-		}
-	}
-
-	g_string_free(returnargs, TRUE);
-	g_strfreev(arglist);
-	g_free(subargs);
-
-	return eat;
+	return 0;
 }
 
 char *cmd_get_callfuncs(const char *data, int *count, va_list *args)
@@ -356,34 +350,38 @@ char *cmd_get_callfuncs(const char *data, int *count, va_list *args)
 	return ret;
 }
 
-char *cmd_get_params(const char *data, int count, ...)
+typedef struct {
+	char *data;
+        GHashTable *options;
+} CMD_TEMP_REC;
+
+int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 {
+	CMD_TEMP_REC *rec;
+	GHashTable **opthash;
 	char **str, *arg, *datad, *old;
 	va_list args;
-	int cnt, eat, len;
+	int cnt, error, len;
 
-	g_return_val_if_fail(data != NULL, NULL);
+	g_return_val_if_fail(data != NULL, FALSE);
 
 	va_start(args, count);
 
-	/* get the length of the arguments in string */
-	if ((count & (PARAM_FLAG_MULTIARGS|PARAM_FLAG_OPTARGS)) == 0)
+	/* get the length of the options in string */
+	if ((count & PARAM_FLAG_OPTIONS) == 0)
 		len = 0;
 	else {
 		old = datad = g_strdup(data);
-		if (count & PARAM_FLAG_MULTIARGS)
-			get_multi_args(&datad, TRUE, args);
-		else
-			get_opt_args(&datad);
+		get_cmd_options(&datad, TRUE, NULL, NULL);
 		len = (int) (datad-old);
 		g_free(old);
 	}
 
-	/* send the text to custom functions to handle - skip arguments */
+	/* send the text to custom functions to handle - skip options */
 	old = datad = cmd_get_callfuncs(data+len, &count, &args);
 
 	if (len > 0) {
-		/* put the arguments + the new data to one string */
+		/* put the options + the new data to one string */
 		datad = g_malloc(len+1 + strlen(old)+1);
 		memcpy(datad, data, len);
 		datad[len] = ' ';
@@ -393,20 +391,25 @@ char *cmd_get_params(const char *data, int count, ...)
 		old = datad;
 	}
 
+	rec = g_new0(CMD_TEMP_REC, 1);
+	rec->data = old;
+	*free_me = rec;
+
 	/* and now handle the string */
+	error = FALSE;
 	cnt = PARAM_WITHOUT_FLAGS(count);
 	while (cnt-- > 0) {
-		if (count & PARAM_FLAG_MULTIARGS) {
-			eat = get_multi_args(&datad, FALSE, args)+1;
-			count &= ~PARAM_FLAG_MULTIARGS;
+		if (count & PARAM_FLAG_OPTIONS) {
+			arg = (char *) va_arg(args, char *);
+			opthash = (GHashTable **) va_arg(args, GHashTable **);
 
-			cnt -= eat-1;
-			while (eat-- > 0)
-				str = (char **) va_arg(args, char **);
+			rec->options = *opthash = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+			error = get_cmd_options(&datad, count & PARAM_FLAG_UNKNOWN_OPTIONS, arg, *opthash);
+			if (error) break;
+
+			count &= ~PARAM_FLAG_OPTIONS;
+			cnt++;
 			continue;
-		} else if (count & PARAM_FLAG_OPTARGS) {
-			arg = get_opt_args(&datad);
-			count &= ~PARAM_FLAG_OPTARGS;
 		} else if (cnt == 0 && count & PARAM_FLAG_GETREST) {
 			/* get rest */
 			arg = datad;
@@ -421,7 +424,24 @@ char *cmd_get_params(const char *data, int count, ...)
 	}
 	va_end(args);
 
-	return old;
+	if (error) {
+                signal_emit("error command", 2, GINT_TO_POINTER(error), datad);
+		signal_stop();
+
+                cmd_params_free(rec);
+		*free_me = NULL;
+	}
+
+	return !error;
+}
+
+void cmd_params_free(void *free_me)
+{
+	CMD_TEMP_REC *rec = free_me;
+
+	if (rec->options != NULL) g_hash_table_destroy(rec->options);
+	g_free(rec->data);
+	g_free(rec);
 }
 
 void cmd_get_add_func(CMD_GET_FUNC func)

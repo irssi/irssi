@@ -348,17 +348,21 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 
 static void cmd_format(const char *data)
 {
-	char *params, *module, *key, *value;
 	GSList *tmp, *modules;
+	char *module, *key, *value;
+	void *free_arg;
 
 	/* /FORMAT [<module>] [<key> [<value>]] */
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &module, &key, &value);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			    &module, &key, &value))
+		return;
 
         modules = get_sorted_modules();
 	if (*module != '\0' && theme_search(modules, module) == NULL) {
 		/* first argument isn't module.. */
-		g_free(params);
-		params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &key, &value);
+		cmd_params_free(free_arg);
+		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
+			return;
 		module = "";
 	}
 
@@ -374,7 +378,7 @@ static void cmd_format(const char *data)
 	g_slist_foreach(modules, (GFunc) g_free, NULL);
 	g_slist_free(modules);
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void module_save(const char *module, MODULE_THEME_REC *rec, CONFIG_NODE *fnode)

@@ -268,9 +268,11 @@ static void cmd_hilight_show(void)
 static void cmd_hilight(const char *data)
 {
 	/* /HILIGHT [-nick | -regexp | -word] [-color <color>] [-level <level>] [-channels <channels>] <text> */
-	char *params, *args, *colorarg, *levelarg, *chanarg, *text;
-	char **channels;
+        GHashTable *optlist;
 	HILIGHT_REC *rec;
+	char *colorarg, *levelarg, *chanarg, *text;
+	char **channels;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
@@ -279,12 +281,17 @@ static void cmd_hilight(const char *data)
 		return;
 	}
 
-	args = "color level channels";
-	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
-				&args, &colorarg, &levelarg, &chanarg, &text);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "hilight", &optlist, &text))
+		return;
+
+	chanarg = g_hash_table_lookup(optlist, "channels");
+	levelarg = g_hash_table_lookup(optlist, "level");
+	colorarg = g_hash_table_lookup(optlist, "color");
+
 	if (*text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	channels = *chanarg == '\0' ? NULL :
+	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(replace_chars(chanarg, ',', ' '), " ", -1);
 
 	rec = hilight_find(text, channels);
@@ -302,17 +309,19 @@ static void cmd_hilight(const char *data)
 	}
 
 	hilights = g_slist_append(hilights, rec);
-	rec->nickmask = stristr(args, "-nick") != NULL;
-	rec->fullword = stristr(args, "-word") != NULL;
-	rec->regexp = stristr(args, "-regexp") != NULL;
+	rec->nickmask = g_hash_table_lookup(optlist, "nick") != NULL;
+	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
+	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 
-	rec->level = level2bits(replace_chars(levelarg, ',', ' '));
-	if (*colorarg != '\0') rec->color = g_strdup(colorarg);
+	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
+		level2bits(replace_chars(levelarg, ',', ' '));
+	if (colorarg != NULL && *colorarg != '\0')
+		rec->color = g_strdup(colorarg);
 
 	hilight_print(g_slist_index(hilights, rec)+1, rec);
 
 	hilight_add_config(rec);
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void cmd_dehilight(const char *data)
@@ -349,6 +358,8 @@ void hilight_text_init(void)
         signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
+
+	command_set_options("hilight", "-color -level -channels nick word regexp");
 }
 
 void hilight_text_deinit(void)

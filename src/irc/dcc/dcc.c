@@ -278,7 +278,8 @@ static void dcc_get_address(const char *str, IPADDR *ip)
 /* Handle incoming DCC CTCP messages */
 static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr, char *target, DCC_REC *chat)
 {
-    char *params, *type, *arg, *addrstr, *portstr, *sizestr, *str;
+    char *type, *arg, *addrstr, *portstr, *sizestr, *str;
+    void *free_arg;
     const char *cstr;
     DCC_REC *dcc;
     gulong size;
@@ -287,8 +288,9 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     g_return_if_fail(data != NULL);
     g_return_if_fail(sender != NULL);
 
-    params = cmd_get_params(data, 5 | PARAM_FLAG_NOQUOTES,
-			    &type, &arg, &addrstr, &portstr, &sizestr);
+    if (!cmd_get_params(data, &free_arg, 5 | PARAM_FLAG_NOQUOTES,
+			&type, &arg, &addrstr, &portstr, &sizestr))
+	    return;
 
     if (sscanf(portstr, "%d", &port) != 1) port = 0;
     if (sscanf(sizestr, "%lu", &size) != 1) size = 0;
@@ -349,20 +351,22 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
             break;
     }
 
-    g_free(params);
+    cmd_params_free(free_arg);
 }
 
 /* Handle incoming DCC CTCP replies */
 static void dcc_ctcp_reply(char *data, IRC_SERVER_REC *server, char *sender, char *sendaddr)
 {
-    char *params, *cmd, *subcmd, *args;
+    char *cmd, *subcmd, *args;
+    void *free_arg;
     int type;
     DCC_REC *dcc;
 
     g_return_if_fail(data != NULL);
     g_return_if_fail(sender != NULL);
 
-    params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &cmd, &subcmd, &args);
+    if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &cmd, &subcmd, &args))
+	    return;
 
     if (g_strcasecmp(cmd, "REJECT") == 0)
     {
@@ -380,7 +384,7 @@ static void dcc_ctcp_reply(char *data, IRC_SERVER_REC *server, char *sender, cha
         signal_emit("dcc unknown reply", 3, data, sender, sendaddr);
     }
 
-    g_free(params);
+    cmd_params_free(free_arg);
 }
 
 static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
@@ -409,20 +413,22 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 {
     DCC_REC *dcc;
     GSList *tmp, *next;
-    char *params, *type, *nick, *arg;
+    char *type, *nick, *arg;
+    void *free_arg;
     gboolean found;
     int itype;
 
     g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 3, &type, &nick, &arg);
+    if (!cmd_get_params(data, &free_arg, 3, &type, &nick, &arg))
+	    return;
 
     g_strup(type);
     itype = dcc_str2type(type);
     if (itype == 0)
     {
         signal_emit("dcc error unknown type", 1, type);
-        g_free(params);
+	cmd_params_free(free_arg);
         return;
     }
 
@@ -442,7 +448,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
     if (!found)
         signal_emit("dcc error close not found", 3, type, nick, arg);
 
-    g_free(params);
+    cmd_params_free(free_arg);
 }
 
 static void cmd_dcc(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)

@@ -192,12 +192,17 @@ static void cmd_channel(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *i
 
 static void cmd_channel_add(const char *data)
 {
-	char *params, *args, *botarg, *botcmdarg, *ircnet, *channel, *password;
+	GHashTable *optlist;
 	SETUP_CHANNEL_REC *rec;
+	char *botarg, *botcmdarg, *ircnet, *channel, *password;
+	void *free_arg;
 
-	args = "bots botcmd";
-	params = cmd_get_params(data, 6 | PARAM_FLAG_MULTIARGS, &args,
-			       &botarg, &botcmdarg, &channel, &ircnet, &password);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
+			    "channel add", &optlist, &channel, &ircnet, &password))
+		return;
+
+	botarg = g_hash_table_lookup(optlist, "bots");
+	botcmdarg = g_hash_table_lookup(optlist, "botcmd");
 
 	if (*ircnet == '\0' || *channel == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -207,27 +212,29 @@ static void cmd_channel_add(const char *data)
 		rec->name = g_strdup(channel);
 		rec->ircnet = g_strdup(ircnet);
 	} else {
-		if (stristr(args, "-bots")) g_free_and_null(rec->botmasks);
-		if (stristr(args, "-botcmd")) g_free_and_null(rec->autosendcmd);
+		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
+		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
 		if (*password != '\0') g_free_and_null(rec->password);
 	}
-	if (stristr(args, "-auto")) rec->autojoin = TRUE;
-	if (stristr(args, "-noauto")) rec->autojoin = FALSE;
-	if (*botarg != '\0') rec->botmasks = g_strdup(botarg);
-	if (*botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
+	if (g_hash_table_lookup(optlist, "auto")) rec->autojoin = TRUE;
+	if (g_hash_table_lookup(optlist, "noauto")) rec->autojoin = FALSE;
+	if (botarg != NULL && *botarg != '\0') rec->botmasks = g_strdup(botarg);
+	if (botcmdarg != NULL && *botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	channels_setup_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_ADDED, channel, ircnet);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_channel_remove(const char *data)
 {
-	char *params, *ircnet, *channel;
 	SETUP_CHANNEL_REC *rec;
+	char *ircnet, *channel;
+	void *free_arg;
 
-	params = cmd_get_params(data, 2, &channel, &ircnet);
+	if (!cmd_get_params(data, &free_arg, 2, &channel, &ircnet))
+		return;
 	if (*ircnet == '\0' || *channel == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -238,7 +245,7 @@ static void cmd_channel_remove(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CHANSETUP_REMOVED, channel, ircnet);
 		channels_setup_destroy(rec);
 	}
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 void fe_channels_init(void)
@@ -257,6 +264,8 @@ void fe_channels_init(void)
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
+
+	command_set_options("channel add", "auto noauto -bots -botcmd");
 }
 
 void fe_channels_deinit(void)

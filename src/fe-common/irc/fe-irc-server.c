@@ -78,17 +78,18 @@ static void print_reconnects(void)
 	}
 }
 
-static void server_add(const char *data)
+static void cmd_server_add(const char *data)
 {
+        GHashTable *optlist;
 	SETUP_SERVER_REC *rec;
-	char *params, *args, *ircnet, *host, *cmdspeed, *cmdmax, *portarg;
-	char *addr, *portstr, *password;
+	char *addr, *portstr, *password, *value;
+	void *free_arg;
 	int port;
 
-	args = "ircnet host cmdspeed cmdmax port";
-	params = cmd_get_params(data, 9 | PARAM_FLAG_MULTIARGS,
-				&args, &ircnet, &host, &cmdspeed, &cmdmax,
-				&portarg, &addr, &portstr, &password);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
+			    "server add", &optlist, &addr, &portstr, &password))
+		return;
+
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? 6667 : atoi(portstr);
 
@@ -98,39 +99,48 @@ static void server_add(const char *data)
 		rec->address = g_strdup(addr);
 		rec->port = port;
 	} else {
-		if (*portarg != '\0') rec->port = atoi(portarg);
-		if (stristr(args, "-ircnet")) g_free_and_null(rec->ircnet);
+		value = g_hash_table_lookup(optlist, "port");
+		if (value != NULL && *value != '\0') rec->port = atoi(value);
+
+		if (g_hash_table_lookup(optlist, "ircnet")) g_free_and_null(rec->ircnet);
 		if (*password != '\0') g_free_and_null(rec->password);
-		if (stristr(args, "-host")) {
+		if (g_hash_table_lookup(optlist, "host")) {
 			g_free_and_null(rec->own_host);
 			rec->own_ip = NULL;
 		}
 	}
 
-	if (stristr(args, "-auto")) rec->autoconnect = TRUE;
-	if (stristr(args, "-noauto")) rec->autoconnect = FALSE;
-	if (*ircnet != '\0') rec->ircnet = g_strdup(ircnet);
+	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
+	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
+
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
-	if (*host != '\0') {
-		rec->own_host = g_strdup(host);
+	value = g_hash_table_lookup(optlist, "ircnet");
+	if (value != NULL && *value != '\0') rec->ircnet = g_strdup(value);
+	value = g_hash_table_lookup(optlist, "host");
+	if (value != NULL && *value != '\0') {
+		rec->own_host = g_strdup(value);
 		rec->own_ip = NULL;
 	}
-	if (*cmdspeed != '\0') rec->cmd_queue_speed = atoi(cmdspeed);
-	if (*cmdmax != '\0') rec->max_cmds_at_once = atoi(cmdmax);
+	value = g_hash_table_lookup(optlist, "cmdspeed");
+	if (value != NULL && *value != '\0') rec->cmd_queue_speed = atoi(value);
+	value = g_hash_table_lookup(optlist, "cmdmax");
+	if (value != NULL && *value != '\0') rec->max_cmds_at_once = atoi(value);
 
 	server_setup_add(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_ADDED, addr, port);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
-static void server_remove(const char *data)
+static void cmd_server_remove(const char *data)
 {
 	SETUP_SERVER_REC *rec;
-	char *params, *args, *addr, *portstr;
+	char *addr, *portstr;
+	void *free_arg;
 	int port;
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_OPTARGS, &args, &addr, &portstr);
+	if (!cmd_get_params(data, &free_arg, 2, &addr, &portstr))
+		return;
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? 6667 : atoi(portstr);
 
@@ -142,10 +152,10 @@ static void server_remove(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_REMOVED, addr, port);
 	}
 
-        g_free(params);
+	cmd_params_free(free_arg);
 }
 
-static void server_list(const char *data)
+static void cmd_server_list(const char *data)
 {
 	GString *str;
 	GSList *tmp;
@@ -177,9 +187,11 @@ static void server_list(const char *data)
 	g_string_free(str, TRUE);
 }
 
-static void cmd_server(const char *data)
+static void cmd_server(const char *data, IRC_SERVER_REC *server, void *item)
 {
-	char *params, *args, *ircnetarg, *hostarg, *addr;
+	GHashTable *optlist;
+	char *addr;
+	void *free_arg;
 
 	if (*data == '\0') {
 		print_servers();
@@ -190,36 +202,40 @@ static void cmd_server(const char *data)
 		return;
 	}
 
-	args = "ircnet host"; /* should be same as in connect_server() in src/irc/core/irc-commands.c */
-	params = cmd_get_params(data, 4 | PARAM_FLAG_MULTIARGS,
-				&args, &ircnetarg, &hostarg, &addr);
-
-	if (stristr(args, "-list") != NULL) {
-		server_list(data);
+	if (g_strncasecmp(data, "add ", 4) == 0 ||
+	    g_strncasecmp(data, "remove ", 7) == 0 ||
+	    g_strcasecmp(data, "list") == 0 ||
+	    g_strncasecmp(data, "list ", 5) == 0) {
+		command_runsub("server", data, server, item);
 		signal_stop();
-	} else if (stristr(args, "-add") != NULL) {
-		if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-                server_add(data);
-		signal_stop();
-	} else if (stristr(args, "-remove") != NULL) {
-		if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-		server_remove(data);
-		signal_stop();
-	} else {
-		if (*addr == '\0' || strcmp(addr, "+") == 0)
-			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-		if (*addr == '+') window_create(NULL, FALSE);
+		return;
 	}
 
-	g_free(params);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "connect", &optlist, &addr))
+		return;
+
+	if (*addr == '\0' || strcmp(addr, "+") == 0)
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*addr == '+') window_create(NULL, FALSE);
+
+	cmd_params_free(free_arg);
 }
 
 void fe_irc_server_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
+	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
+	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
+	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
+
+	command_set_options("server add", "auto noauto -ircnet -host -cmdspeed -cmdmax -port");
 }
 
 void fe_irc_server_deinit(void)
 {
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
+	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
+	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
+	command_unbind("server list", (SIGNAL_FUNC) cmd_server_list);
 }

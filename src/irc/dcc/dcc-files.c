@@ -212,12 +212,14 @@ static void cmd_dcc_get(const char *data)
 {
 	DCC_REC *dcc;
 	GSList *tmp, *next;
-	char *params, *nick, *fname;
+	char *nick, *fname;
+	void *free_arg;
 	int found;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &nick, &fname))
+		return;
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = NULL; found = FALSE;
@@ -235,7 +237,7 @@ static void cmd_dcc_get(const char *data)
 	if (!found)
 		signal_emit("dcc error get not found", 1, nick);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void dcc_resume_send(DCC_REC *dcc, int port)
@@ -264,7 +266,8 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 			 const char *sender, const char *sendaddr,
 			 const char *target, DCC_REC *chat)
 {
-	char *params, *type, *arg, *portstr, *sizestr;
+	char *type, *arg, *portstr, *sizestr;
+	void *free_arg;
 	unsigned long size;
         int port;
 	DCC_REC *dcc;
@@ -272,8 +275,9 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(sender != NULL);
 
-	params = cmd_get_params(data, 4 | PARAM_FLAG_NOQUOTES,
-				&type, &arg, &portstr, &sizestr);
+	if (!cmd_get_params(data, &free_arg, 4 | PARAM_FLAG_NOQUOTES,
+			    &type, &arg, &portstr, &sizestr))
+		return;
 
 	port = atoi(portstr);
 	size = atol(sizestr);
@@ -281,7 +285,7 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 	dcc = dcc_find_by_port(sender, port);
 	if (dcc == NULL || !is_resume_type(type) ||
 	    !is_resume_ok(type, dcc) || !is_accept_ok(type, dcc)) {
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -298,7 +302,7 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 			dcc_get_connect(dcc);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void dcc_resume_rec(DCC_REC *dcc)
@@ -331,12 +335,14 @@ static void cmd_dcc_resume(const char *data)
 {
 	DCC_REC *dcc;
 	GSList *tmp;
-	char *params, *nick, *fname;
+	char *nick, *fname;
+	void *free_arg;
 	int found;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &nick, &fname);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &nick, &fname))
+		return;
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = NULL; found = FALSE;
@@ -353,7 +359,7 @@ static void cmd_dcc_resume(const char *data)
 	if (!found)
 		signal_emit("dcc error get not found", 1, nick);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 /* input function: DCC SEND - we're ready to send more data */
@@ -483,7 +489,8 @@ static void dcc_send_init(DCC_REC *dcc)
 /* command: DCC SEND */
 static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *target, *fname, *str, *ptr;
+	char *target, *fname, *str, *ptr;
+	void *free_arg;
 	char host[MAX_IP_LEN];
 	int hfile, hlisten, port;
 	long fsize;
@@ -492,7 +499,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &fname);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &fname))
+		return;
 	if (*target == '\0' || *fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	/* if we're in dcc chat, send the request via it. */
@@ -506,7 +514,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 
 	if (dcc_find_item(DCC_TYPE_SEND, target, fname)) {
 		signal_emit("dcc error send exists", 2, target, fname);
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -525,7 +533,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 
 	if (hfile == -1) {
 		signal_emit("dcc error file not found", 2, target, fname);
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 	fsize = lseek(hfile, 0, SEEK_END);
@@ -565,7 +573,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 	g_free(str);
 
 	g_free(fname);
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void read_settings(void)

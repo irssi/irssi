@@ -30,41 +30,47 @@
 
 static void cmd_notify(gchar *data)
 {
-	char *params, *mask, *ircnets, *args, *idletime;
+	GHashTable *optlist;
+	char *mask, *ircnets, *idletime;
+	void *free_arg;
 	int away_check, idle_check_time;
 
 	g_return_if_fail(data != NULL);
 
-	args = "@idle";
-	params = cmd_get_params(data, 4 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST, &args, &idletime, &mask, &ircnets);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+			    "notify", &optlist, &mask, &ircnets))
+		return;
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (stristr(args, "-idle") == NULL)
+	idletime = g_hash_table_lookup(optlist, "idle");
+	if (idletime == NULL)
 		idle_check_time = 0;
 	else {
 		idle_check_time = is_numeric(idletime, 0) ? (atoi(idletime)*60) :
 			(settings_get_int("notify_idle_time")*60);
 	}
 
-	away_check = stristr(args, "-away") != NULL;
+	away_check = g_hash_table_lookup(optlist, "away") != NULL;
 	notifylist_remove(mask);
 	notifylist_add(mask, ircnets, away_check, idle_check_time);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_unnotify(const char *data)
 {
-	char *params, *mask;
+	char *mask;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 1, &mask);
+	if (!cmd_get_params(data, &free_arg, 1, &mask))
+		return;
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	notifylist_remove(mask);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 void notifylist_commands_init(void)
@@ -72,6 +78,8 @@ void notifylist_commands_init(void)
 	settings_add_int("misc", "notify_idle_time", DEFAULT_NOTIFY_IDLE_TIME);
 	command_bind("notify", NULL, (SIGNAL_FUNC) cmd_notify);
 	command_bind("unnotify", NULL, (SIGNAL_FUNC) cmd_unnotify);
+
+	command_set_options("notify", "@idle away");
 }
 
 void notifylist_commands_deinit(void)

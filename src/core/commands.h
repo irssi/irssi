@@ -6,10 +6,13 @@
 typedef struct {
 	char *category;
 	char *cmd;
-}
-COMMAND_REC;
+	char **options;
+} COMMAND_REC;
 
 enum {
+	CMDERR_OPTION_UNKNOWN = -2, /* unknown -option */
+	CMDERR_OPTION_ARG_MISSING = -1, /* argument missing for -option */
+
         CMDERR_ERRNO, /* get the error from errno */
 	CMDERR_NOT_ENOUGH_PARAMS, /* not enough parameters given */
 	CMDERR_NOT_CONNECTED, /* not connected to IRC server */
@@ -20,7 +23,7 @@ enum {
 };
 
 #define cmd_return_error(a) { signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
-#define cmd_param_error(a) { g_free(params); cmd_return_error(a); }
+#define cmd_param_error(a) { cmd_params_free(free_arg); cmd_return_error(a); }
 
 extern GSList *commands;
 extern char *current_command;
@@ -29,12 +32,29 @@ void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC
 #define command_bind(a, b, c) command_bind_to(1, a, b, c)
 #define command_bind_first(a, b, c) command_bind_to(0, a, b, c)
 #define command_bind_last(a, b, c) command_bind_to(2, a, b, c)
-
 void command_unbind(const char *cmd, SIGNAL_FUNC func);
 
-void command_runsub(const char *cmd, const char *data, void *p1, void *p2);
+/* Run subcommand, `cmd' contains the base command, first word in `data'
+   contains the subcommand */
+void command_runsub(const char *cmd, const char *data, void *server, void *item);
 
-COMMAND_REC *command_find(const char *command);
+COMMAND_REC *command_find(const char *cmd);
+
+/* Specify options that command can accept. `options' contains list of
+   options separated with space, each option can contain a special
+   char in front of it:
+
+   '-': optional argument
+   '+': argument required
+   '@': optional numeric argument
+
+   for example if options = "save -file +nick", you can use
+   /command -save -file [<filename>] -nick <nickname>
+
+   You can call this command multiple times for same command, options
+   will be merged. If there's any conflicts with option types, the last
+   call will override the previous */
+void command_set_options(const char *cmd, const char *options);
 
 /* count can have these flags: */
 #define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00ffffff)
@@ -42,30 +62,40 @@ COMMAND_REC *command_find(const char *command);
 #define PARAM_FLAG_NOQUOTES 0x01000000
 /* final argument gets all the rest of the arguments */
 #define PARAM_FLAG_GETREST 0x02000000
-/* optional arguments (-cmd -cmd2 -cmd3) */
-#define PARAM_FLAG_OPTARGS 0x04000000
-/* arguments can have arguments too. Example:
+/* command contains options - first you need to specify them with
+   command_set_options() function. Example:
 
-     -cmd arg -noargcmd -cmd2 "another arg -optnumarg rest of the text
+     -cmd requiredarg -noargcmd -cmd2 "another arg" -optnumarg rest of text
 
    You would call this with:
 
-   args = "cmd cmd2 @optnumarg";
-   cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
-                  &args, &arg_cmd, &arg_cmd2, &arg_optnum, &rest);
+   // only once in init
+   command_set_options("mycmd", "+cmd noargcmd -cmd2 @optnumarg");
 
-   The variables are filled as following:
+   GHashTable *optlist;
 
-   args = "-cmd -noargcmd -cmd2 -optnumarg"
-   arg_cmd = "arg"
-   arg_cmd2 = "another arg"
-   rest = "rest of the text"
-   arg_optnum = "" - this is because "rest" isn't a numeric value
+   cmd_get_params(data, &free_me, 1 | PARAM_FLAG_OPTIONS |
+                  PARAM_FLAG_GETREST, "mycmd", &optlist, &rest);
+
+   The optlist hash table is filled:
+
+   "cmd" = "requiredarg"
+   "noargcmd" = ""
+   "cmd2" = "another arg"
+   "optnumarg" = "" - this is because "rest" isn't a numeric value
 */
-#define PARAM_FLAG_MULTIARGS 0x08000000
+#define PARAM_FLAG_OPTIONS 0x04000000
+/* don't complain about unknown options */
+#define PARAM_FLAG_UNKNOWN_OPTIONS 0x08000000
 
 char *cmd_get_param(char **data);
-char *cmd_get_params(const char *data, int count, ...);
+/* get parameters from command - you should point free_me somewhere and
+   cmd_params_free() it after you don't use any of the parameters anymore.
+
+   Returns TRUE if all ok, FALSE if error occured. */
+int cmd_get_params(const char *data, gpointer *free_me, int count, ...);
+
+void cmd_params_free(void *free_me);
 
 typedef char* (*CMD_GET_FUNC) (const char *data, int *count, va_list *args);
 void cmd_get_add_func(CMD_GET_FUNC func);

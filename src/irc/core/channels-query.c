@@ -181,8 +181,8 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 
 		chans = rec->queries[query];
 
-		chanstr_commas = gslist_to_string(rec->queries[query], G_STRUCT_OFFSET(CHANNEL_REC, name), ",");
-		chanstr_spaces = gslist_to_string(rec->queries[query], G_STRUCT_OFFSET(CHANNEL_REC, name), " ");
+		chanstr_commas = gslistptr_to_string(rec->queries[query], G_STRUCT_OFFSET(CHANNEL_REC, name), ",");
+		chanstr_spaces = gslistptr_to_string(rec->queries[query], G_STRUCT_OFFSET(CHANNEL_REC, name), " ");
 
 		chanstr = g_strconcat(chanstr_commas, " ", chanstr_spaces, NULL);
 		g_free(chanstr_spaces);

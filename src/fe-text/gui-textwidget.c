@@ -91,31 +91,43 @@ static gchar *gui_window_line2text(LINE_REC *line)
 #define LASTLOG_FLAG_WORD       0x08
 #define LASTLOG_FLAG_REGEXP     0x10
 
-static int lastlog_parse_args(char *args, int *flags)
+static int lastlog_parse_options(GHashTable *options, int *flags)
 {
-	char **arglist, **tmp;
-	int level;
+	GSList *list, *tmp;
+	int level, optlevel;
+
+	/* move all keys from `options' to linked list */
+	list = hashtable_get_keys(options);
 
 	/* level can be specified in arguments.. */
 	level = 0; *flags = 0;
-	arglist = g_strsplit(args, " ", -1);
-	for (tmp = arglist; *tmp != NULL; tmp++) {
-		if (strcmp(*tmp, "-") == 0)
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
+		char *opt = tmp->data;
+
+		if (strcmp(opt, "-") == 0)
 			*flags |= LASTLOG_FLAG_NOHEADERS;
-		else if (g_strcasecmp(*tmp, "-new") == 0)
+		else if (g_strcasecmp(opt, "new") == 0)
 			*flags |= LASTLOG_FLAG_NEW_LAST;
-		else if (g_strcasecmp(*tmp, "-away") == 0)
+		else if (g_strcasecmp(opt, "away") == 0)
 			*flags |= LASTLOG_FLAG_NEW_AWAY;
-		else if (g_strcasecmp(*tmp, "-word") == 0)
+		else if (g_strcasecmp(opt, "word") == 0)
 			*flags |= LASTLOG_FLAG_WORD;
-		else if (g_strcasecmp(*tmp, "-regexp") == 0)
+		else if (g_strcasecmp(opt, "regexp") == 0)
 			*flags |= LASTLOG_FLAG_REGEXP;
-		else
-			level |= level2bits(tmp[0]+1);
+		else {
+			optlevel = level2bits(opt);
+			if (optlevel != 0)
+				level |= optlevel;
+			else {
+				signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN), opt);
+                                level = -1;
+				break;
+			}
+		}
 	}
 	if (level == 0) level = MSGLEVEL_ALL;
-	g_strfreev(arglist);
 
+	g_slist_free(list);
 	return level;
 }
 
@@ -148,14 +160,19 @@ static GList *lastlog_find_startline(GList *list, int count, int start, int leve
 
 static void cmd_lastlog(const char *data)
 {
+	GHashTable *optlist;
 	GList *startline, *list, *tmp;
-	char *params, *str, *args, *text, *countstr, *start;
+	char *str, *text, *countstr, *start;
+	void *free_arg;
 	struct tm *tm;
 	int level, flags, count;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 4 | PARAM_FLAG_OPTARGS, &args, &text, &countstr, &start);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS,
+			    "lastlog", &optlist, &text, &countstr, &start))
+		return;
+
 	if (*start == '\0' && is_numeric(text, 0)) {
 		if (is_numeric(countstr, 0))
 			start = countstr;
@@ -165,7 +182,12 @@ static void cmd_lastlog(const char *data)
 	count = atoi(countstr);
 	if (count == 0) count = -1;
 
-	level = lastlog_parse_args(args, &flags);
+	level = lastlog_parse_options(optlist, &flags);
+	if (level == -1) {
+		/* error in options */
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_START);
@@ -207,7 +229,7 @@ static void cmd_lastlog(const char *data)
 		g_list_last(WINDOW_GUI(active_win)->bottom_startline);
 
 	g_list_free(list);
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_scrollback(gchar *data, SERVER_REC *server, WI_ITEM_REC *item)
@@ -254,10 +276,12 @@ static void scrollback_goto_pos(WINDOW_REC *window, GList *pos)
 static void cmd_scrollback_goto(gchar *data)
 {
     GList *pos;
-    gchar *params, *arg1, *arg2;
+    gchar *arg1, *arg2;
+    void *free_arg;
     gint lines;
 
-    params = cmd_get_params(data, 2, &arg1, &arg2);
+    if (!cmd_get_params(data, &free_arg, 2, &arg1, &arg2))
+	    return;
     if (*arg2 == '\0' && (*arg1 == '-' || *arg1 == '+'))
     {
 	/* go forward/backward n lines */
@@ -322,7 +346,7 @@ static void cmd_scrollback_goto(gchar *data)
 
 	if (stamp > time(NULL)) {
 		/* we're still looking into future, don't bother checking */
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -338,7 +362,7 @@ static void cmd_scrollback_goto(gchar *data)
 	    }
 	}
     }
-    g_free(params);
+    cmd_params_free(free_arg);
 }
 
 static void cmd_scrollback_home(gchar *data)
@@ -398,6 +422,7 @@ void gui_textwidget_init(void)
 	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
+	command_set_options("lastlog", "new away word regexp");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }

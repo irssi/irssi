@@ -480,14 +480,16 @@ static BOT_REC *bot_add(BOTNET_REC *botnet, const char *nick, const char *parent
 
 static void botnet_event_botinfo(BOT_REC *bot, const char *data, const char *sender)
 {
-	char *params, *nick, *parent, *priority;
+	char *nick, *parent, *priority;
+	void *free_arg;
         BOT_REC *rec;
 
 	/*str = g_strdup_printf("BOTINFO %s", data);
 	botnet_broadcast(bot->botnet, bot, sender, str);
 	g_free(str);*/
 
-	params = cmd_get_params(data, 3, &nick, &parent, &priority);
+	if (!cmd_get_params(data, &free_arg, 3, &nick, &parent, &priority))
+		return;
 	if (*parent == '-' && parent[1] == '\0')
 		parent = NULL;
 
@@ -503,7 +505,7 @@ static void botnet_event_botinfo(BOT_REC *bot, const char *data, const char *sen
 	if (rec != NULL) {
 		rec->priority = atoi(priority);
 	}
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_botquit(BOT_REC *bot, const char *data)

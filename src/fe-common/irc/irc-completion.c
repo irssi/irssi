@@ -167,17 +167,19 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *msg;
+	char *target, *msg;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+		return;
 	if (*target != '\0' && *msg != '\0') {
 		if (!ischannel(*target) && *target != '=' && server != NULL)
 			add_private_msg(server, target);
 	}
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void sig_nick_removed(CHANNEL_REC *channel, NICK_REC *nick)

@@ -187,7 +187,8 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const 
 
 int quitmsg_is_split(const char *msg)
 {
-	char *params, *host1, *host2, *p;
+	char *host1, *host2, *p;
+	void *free_arg;
 	int ok;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
@@ -202,8 +203,10 @@ int quitmsg_is_split(const char *msg)
 		return FALSE;
 
 	/* get the two hosts */
+	if (!cmd_get_params(msg, &free_arg, 2 | PARAM_FLAG_NOQUOTES, &host1, &host2))
+		return FALSE;
+
 	ok = FALSE;
-	params = cmd_get_params(msg, 2 | PARAM_FLAG_NOQUOTES, &host1, &host2);
 	if (g_strcasecmp(host1, host2) != 0) { /* hosts can't be same.. */
 		/* check that domain length is 2 or 3 */
 		p = strrchr(host1, '.');
@@ -215,7 +218,7 @@ int quitmsg_is_split(const char *msg)
 			}
 		}
 	}
-	g_free(params);
+	cmd_params_free(free_arg);
 
 	return ok;
 }

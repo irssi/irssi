@@ -508,13 +508,15 @@ static void botnet_destroy(BOTNET_REC *botnet)
 
 static void botnet_event(BOT_REC *bot, const char *data)
 {
-	char *params, *source, *target, *command, *args, *event;
+	char *source, *target, *command, *args, *event;
+	void *free_arg;
 
 	if (!bot->connected)
 		return;
 
-	params = cmd_get_params(data, 4 | PARAM_FLAG_GETREST,
-				&source, &target, &command, &args);
+	if (!cmd_get_params(data, &free_arg, 4 | PARAM_FLAG_GETREST,
+			    &source, &target, &command, &args))
+		return;
 
 	if (*target == '-' && target[1] == '\0')
 		target = NULL;
@@ -524,23 +526,25 @@ static void botnet_event(BOT_REC *bot, const char *data)
 	signal_emit(event, 4, bot, args, source, target);
 	g_free(event);
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 /* broadcast the signal forward */
 static void botnet_event_broadcast(BOT_REC *bot, const char *data)
 {
-	char *params, *source, *target, *command;
+	char *source, *target, *command;
+	void *free_arg;
 
 	if (!bot->connected)
 		return;
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST,
-				&source, &target, &command);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
+			   &source, &target, &command))
+		return;
 
 	if (g_strcasecmp(target, bot->botnet->nick) == 0) {
 		/* message was for us */
-		g_free(params);
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -552,7 +556,7 @@ static void botnet_event_broadcast(BOT_REC *bot, const char *data)
                 botnet_send_cmd(bot->botnet, source, target, command);
 	}
 
-	g_free(params);
+        cmd_params_free(free_arg);
 }
 
 static void botnet_event_master(BOT_REC *bot, const char *data, const char *sender)

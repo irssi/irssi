@@ -93,18 +93,20 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     WINDOW_REC *window;
     CHANNEL_REC *channel;
     NICK_REC *nickrec;
-    char *params, *target, *msg, *nickmode, *freestr, *newtarget;
+    char *target, *msg, *nickmode, *freestr, *newtarget;
+    void *free_arg;
     int free_ret;
 
     g_return_if_fail(data != NULL);
 
-    params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+    if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+	    return;
     if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
     if (*target == '=')
     {
         /* dcc msg - handled in fe-dcc.c */
-        g_free(params);
+	cmd_params_free(free_arg);
         return;
     }
 
@@ -119,7 +121,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     if (newtarget == NULL) {
 	    printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, *target == ',' ?
 			IRCTXT_NO_MSGS_GOT : IRCTXT_NO_MSGS_SENT);
-	    g_free(params);
+	    cmd_params_free(free_arg);
 	    signal_stop();
 	    return;
     }
@@ -160,7 +162,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     }
     g_free_not_null(freestr);
 
-    g_free(params);
+    cmd_params_free(free_arg);
 }
 
 static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
@@ -180,27 +182,31 @@ static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *text;
+	char *target, *text;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &text);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &text))
+		return;
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	printformat(server, target, MSGLEVEL_ACTIONS, IRCTXT_OWN_ME, server->nick, text);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_notice(gchar *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *msg;
+	char *target, *msg;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
+		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target == '@' && ischannel(target[1]))
@@ -209,17 +215,19 @@ static void cmd_notice(gchar *data, IRC_SERVER_REC *server)
 	printformat(server, target, MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT,
 		    IRCTXT_OWN_NOTICE, target, msg);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 {
-	char *params, *target, *ctcpcmd, *ctcpdata;
+	char *target, *ctcpcmd, *ctcpdata;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target == '@' && ischannel(target[1]))
@@ -228,17 +236,19 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	g_strup(ctcpcmd);
 	printformat(server, target, MSGLEVEL_CTCPS, IRCTXT_OWN_CTCP, target, ctcpcmd, ctcpdata);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 {
-	gchar *params, *target, *ctcpcmd, *ctcpdata;
+	char *target, *ctcpcmd, *ctcpdata;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata);
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
+		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*target == '@' && ischannel(target[1]))
@@ -247,19 +257,21 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	g_strup(ctcpcmd);
 	printformat(server, target, MSGLEVEL_NOTICES, IRCTXT_OWN_NOTICE, target, ctcpcmd, ctcpdata);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *channame, *msg;
 	CHANNEL_REC *chanrec;
+	char *channame, *msg;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg);
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
+		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	chanrec = channel_find(server, channame);
@@ -267,7 +279,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 
 	printformat(server, chanrec->name, MSGLEVEL_NOTICES, IRCTXT_OWN_WALL, chanrec->name, msg);
 
-	g_free(params);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
