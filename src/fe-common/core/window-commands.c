@@ -463,23 +463,49 @@ static void cmd_window_list(void)
         printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_WINDOWLIST_FOOTER);
 }
 
-/* SYNTAX: WINDOW THEME <name> */
+/* SYNTAX: WINDOW THEME [-delete] [<name>] */
 static void cmd_window_theme(const char *data)
 {
 	THEME_REC *theme;
+	GHashTable *optlist;
+        char *name;
+	void *free_arg;
 
-	g_free_not_null(active_win->theme_name);
-	active_win->theme_name = g_strdup(data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "window theme", &optlist, &name))
+		return;
 
-	active_win->theme = theme = theme_load(data);
-	if (theme != NULL) {
+	if (g_hash_table_lookup(optlist, "delete") != NULL) {
+		g_free_and_null(active_win->theme_name);
+
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_THEME_CHANGED,
-				   theme->name, theme->path);
+				   TXT_WINDOW_THEME_REMOVED);
+	} else if (*name == '\0') {
+		if (active_win->theme == NULL) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_WINDOW_THEME_DEFAULT);
+		} else {
+                        theme = active_win->theme;
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_WINDOW_THEME,
+					   theme->name, theme->path);
+		}
 	} else {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_THEME_NOT_FOUND, data);
+		g_free_not_null(active_win->theme_name);
+		active_win->theme_name = g_strdup(data);
+
+		active_win->theme = theme = theme_load(data);
+		if (theme != NULL) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_WINDOW_THEME_CHANGED,
+					   theme->name, theme->path);
+		} else {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_THEME_NOT_FOUND, data);
+		}
 	}
+
+	cmd_params_free(free_arg);
 }
 
 static void cmd_layout(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
@@ -538,6 +564,7 @@ void window_commands_init(void)
 
 	command_set_options("window number", "sticky");
 	command_set_options("window server", "sticky unsticky");
+	command_set_options("window theme", "delete");
 }
 
 void window_commands_deinit(void)
