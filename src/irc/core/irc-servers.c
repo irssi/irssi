@@ -508,17 +508,6 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	return 0;
 }
 
-/* Bugfix: http://bugs.irssi.org/?do=details&id=121
- * Author: Geert Hauwaerts <geert@irssi.org>
- * Date:   Wed Sep 15 23:25:30 CEST 2004
- */
-
-static void real_connected(IRC_SERVER_REC *server)
-{
-	if (server->connrec->usermode != NULL)
-		sig_set_user_mode(server);
-}
-
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
@@ -542,6 +531,11 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	/* last welcome message found - commands can be sent to server now. */
 	server->connected = 1;
 	server->real_connect_time = time(NULL);
+
+	if (server->connrec->usermode != NULL) {
+		/* wait a second and then send the user mode */
+		g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
+	}
 
 	signal_emit("event connected", 1, server);
 	g_free(params);
@@ -783,7 +777,6 @@ void irc_servers_init(void)
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_add_first("event connected", (SIGNAL_FUNC) real_connected);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_add("event 005", (SIGNAL_FUNC) event_isupport);
@@ -808,8 +801,7 @@ void irc_servers_deinit(void)
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-	signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_remove("event connected", (SIGNAL_FUNC) real_connected);
+        signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_remove("event 005", (SIGNAL_FUNC) event_isupport);
