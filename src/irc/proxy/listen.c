@@ -34,6 +34,7 @@ GSList *proxy_listens;
 GSList *proxy_clients;
 
 static GString *next_line;
+static int ignore_next;
 
 static void remove_client(CLIENT_REC *rec)
 {
@@ -219,8 +220,28 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		params = event_get_params(args, 2 | PARAM_FLAG_GETREST,
 					  &target, &msg);
 		proxy_outserver_all_except(client, "PRIVMSG %s", args);
-		signal_emit("message public", 5, client->server, msg,
-			    client->nick, client->proxy_address, target);
+
+		ignore_next = TRUE;
+		if (*msg != '\001' || msg[strlen(msg)-1] != '\001') {
+			signal_emit("message own_public", 4,
+				    client->server, msg, target, target);
+		} else if (strncmp(msg+1, "ACTION ", 7) == 0) {
+			/* action */
+                        msg[strlen(msg)-1] = '\0';
+			signal_emit("message irc own_action", 3,
+				    client->server, msg+8, target);
+		} else {
+                        /* CTCP */
+			char *p;
+
+			msg[strlen(msg)-1] = '\0';
+			p = strchr(msg, ' ');
+                        if (p != NULL) *p++ = '\0'; else p = "";
+
+			signal_emit("message irc own_ctcp", 4,
+				    client->server, msg+1, p, target);
+		}
+		ignore_next = FALSE;
 		g_free(params);
 	} else if (strcmp(cmd, "PING") == 0) {
 		proxy_redirect_event(client, "ping", 1, NULL, TRUE);
@@ -443,7 +464,18 @@ static void sig_message_own_public(IRC_SERVER_REC *server, const char *msg,
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	proxy_outserver_all(server, "PRIVMSG %s :%s", target, msg);
+	if (!ignore_next)
+		proxy_outserver_all(server, "PRIVMSG %s :%s", target, msg);
+}
+
+static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
+                                   const char *target)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (!ignore_next)
+		proxy_outserver_all(server, "PRIVMSG %s :\001ACTION %s\001", target, msg);
 }
 
 static LISTEN_REC *find_listen(const char *ircnet, int port)
@@ -547,6 +579,7 @@ void proxy_listen_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_add("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -564,5 +597,6 @@ void proxy_listen_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+	signal_remove("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
