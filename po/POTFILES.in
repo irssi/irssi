@@ -20,6 +20,7 @@ src/core/special-vars.c
 src/core/net-sendbuffer.c
 src/core/channels-setup.c
 src/core/servers-setup.c
+src/core/ignore.c
 src/core/chatnets.c
 src/core/servers-reconnect.c
 src/core/channels.c
@@ -42,7 +43,6 @@ src/irc/core/channels-query.c
 src/irc/core/irc-channels-setup.c
 src/irc/core/irc-nicklist.c
 src/irc/core/ctcp.c
-src/irc/core/ignore.c
 src/irc/core/irc-core.c
 src/irc/core/irc-log.c
 src/irc/core/irc-rawlog.c
