@@ -141,20 +141,22 @@ static void server_connect_callback_readpipe(SERVER_REC *server, int handle)
 	server->connect_pipe[1] = -1;
 
 	conn = server->connrec;
-	server->handle = iprec.error == -1 ? -1 :
+	server->handle = iprec.error != 0 ? -1 :
 		net_connect_ip(&iprec.ip, conn->proxy != NULL ?
 			       conn->proxy_port : conn->port,
 			       conn->own_ip != NULL ? conn->own_ip : NULL);
 	if (server->handle == -1) {
 		/* failed */
-		if (iprec.error != -1) {
-			/* reconnect only if connect() was the one that
-			   failed, if host lookup failed we most probably
-			   don't want to try reconnecting back. */
+		if (iprec.error == 0 || !net_hosterror_notfound(iprec.error)) {
+			/* reconnect back only if either
+                            1) connect() failed
+                            2) host name lookup failed not because the host
+                               wasn't found, but because there was some
+                               other error in nameserver */
 			server->connection_lost = TRUE;
 		}
 		server_cant_connect(server,
-				    iprec.error != -1 ? g_strerror(errno) : /* connect() failed */
+				    iprec.error == 0 ? g_strerror(errno) : /* connect() failed */
 				    (iprec.errorstr != NULL ? iprec.errorstr : "Host lookup failed")); /* gethostbyname() failed */
 		g_free_not_null(iprec.errorstr);
 		return;

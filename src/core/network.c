@@ -340,7 +340,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip)
 	freeaddrinfo(ai);
 #else
 	hp = gethostbyname(addr);
-	if (hp == NULL) return -1;
+	if (hp == NULL) return h_errno;
 
 	ip->family = AF_INET;
 	memcpy(&ip->addr, hp->h_addr, 4);
@@ -467,7 +467,7 @@ const char *net_gethosterror(int error)
 
 	return gai_strerror(error);
 #else
-	switch (h_errno) {
+	switch (error) {
 	case HOST_NOT_FOUND:
 		return _("Host not found");
 	case NO_ADDRESS:
@@ -480,6 +480,17 @@ const char *net_gethosterror(int error)
 
 	/* unknown error */
 	return NULL;
+#endif
+}
+
+/* return TRUE if host lookup failed because it didn't exist (ie. not
+   some error with name server) */
+int net_hosterror_notfound(int error)
+{
+#ifdef HAVE_IPV6
+	return error != 1 && (error == EAI_NONAME || error == EAI_NODATA);
+#else
+	return error == HOST_NOT_FOUND || error == NO_ADDRESS;
 #endif
 }
 

@@ -58,6 +58,9 @@ int net_gethostbyname(const char *addr, IPADDR *ip);
 int net_gethostbyaddr(IPADDR *ip, char **name);
 /* get error of net_gethostname() */
 const char *net_gethosterror(int error);
+/* return TRUE if host lookup failed because it didn't exist (ie. not
+   some error with name server) */
+int net_hosterror_notfound(int error);
 
 /* Get socket address/port */
 int net_getsockname(int handle, IPADDR *addr, int *port);
