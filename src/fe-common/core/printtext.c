@@ -940,6 +940,9 @@ void printtext_multiline(void *server, const char *channel, int level, const cha
 {
 	char **lines, **tmp;
 
+	g_return_if_fail(format != NULL);
+	g_return_if_fail(text != NULL);
+
 	lines = g_strsplit(text, "\n", -1);
         for (tmp = lines; *tmp != NULL; tmp++)
 		printtext(NULL, NULL, MSGLEVEL_NEVER, format, *tmp);

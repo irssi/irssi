@@ -147,6 +147,8 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 	GSList *tmp;
 	char **ban, **banlist;
 
+	g_return_if_fail(bans != NULL);
+
 	str = g_string_new(NULL);
 	banlist = g_strsplit(bans, " ", -1);
 	for (ban = banlist; *ban != NULL; ban++) {

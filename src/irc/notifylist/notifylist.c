@@ -145,6 +145,9 @@ static IRC_SERVER_REC *notifylist_ison_serverlist(const char *nick, const char *
 	IRC_SERVER_REC *server;
 	char **list, **tmp;
 
+	g_return_val_if_fail(nick != NULL, NULL);
+	g_return_val_if_fail(taglist != NULL, NULL);
+
 	list = g_strsplit(taglist, " ", -1);
 
 	server = NULL;

@@ -131,7 +131,6 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 
 	if (!server_start_connect((SERVER_REC *) server)) {
                 server_connect_free(SERVER_CONNECT(conn));
-		g_free(server->nick);
 		g_free(server);
 		return NULL;
 	}

@@ -245,6 +245,7 @@ int server_start_connect(SERVER_REC *server)
 	if (pipe(server->connect_pipe) != 0) {
 		g_warning("server_connect(): pipe() failed.");
                 g_free(server->tag);
+		g_free(server->nick);
 		return FALSE;
 	}
 

@@ -109,6 +109,7 @@ static void parse_channel_mode(IRC_CHANNEL_REC *channel, const char *mode,
 		return;
 	}
 
+	/* check if unwanted people got ops */
 	str = g_string_new(NULL);
 	dup = modestr = g_strdup(mode);
 
