@@ -234,6 +234,13 @@ if test "$want_perl" = "yes"; then
 	else
 		PERL_LDFLAGS="`$perlpath -MExtUtils::Embed -e ldopts` "
 
+		dnl * Perl 5.004 and older use perl_xxx variables while
+		dnl * later use PL_perl_xxx variables ..
+		have_pl_perl=`$perlpath -e 'print $] < 5.005 ? "no" : "yes";'`
+                if test "x$have_pl_perl" = "xyes"; then
+			AC_DEFINE(HAVE_PL_PERL)
+		fi
+
 		dnl * dynaloader.a -> libperl_dynaloader.la
 		dynaloader=`echo $PERL_LDFLAGS | $sedpath 's/.* \([[^ ]]*\.a\).*/\1/'`
 		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ [[^ ]]*\.a/ libperl_dynaloader.la/'`
