@@ -64,7 +64,8 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 
 	if (send_now) {
 		rawlog_output(server->rawlog, cmd);
-		server_redirect_command(server, cmd);
+		server_redirect_command(server, cmd, server->redirect_next);
+                server->redirect_next = NULL;
 	}
 
 	if (!raw) {
@@ -87,9 +88,18 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	}
 
 	/* add to queue */
-	server->cmdqueue = immediate ?
-		g_slist_prepend(server->cmdqueue, g_strdup(cmd)) :
-		g_slist_append(server->cmdqueue, g_strdup(cmd));
+	if (immediate) {
+		server->cmdqueue = g_slist_prepend(server->cmdqueue,
+						   server->redirect_next);
+		server->cmdqueue = g_slist_prepend(server->cmdqueue,
+						   g_strdup(cmd));
+	} else {
+		server->cmdqueue = g_slist_append(server->cmdqueue,
+						  g_strdup(cmd));
+		server->cmdqueue = g_slist_append(server->cmdqueue,
+						  server->redirect_next);
+	}
+        server->redirect_next = NULL;
 }
 
 /* Send command to IRC server */

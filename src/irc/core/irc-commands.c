@@ -418,7 +418,6 @@ static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
 	server_redirect_event(server, "whowas", nick, -1, NULL,
 			      "event 314", "whowas event",
 			      "event 369", "whowas event end",
-			      "event 406", "event empty",
 			      "", "event empty", NULL);
 	irc_send_cmdv(server, "WHOWAS %s 1", nick);
 

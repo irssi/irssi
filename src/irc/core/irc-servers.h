@@ -38,9 +38,10 @@ struct _IRC_SERVER_REC {
 #include "server-rec.h"
 
 	/* For deciding if event should be redirected */
-        GSList *redirects;
-	void *redirect_next;
-	void *redirect_continue;
+	GSList *redirects;
+        GSList *redirect_queue; /* should be updated from redirect_next each time cmdqueue is updated */
+        REDIRECT_REC *redirect_next;
+	REDIRECT_REC *redirect_continue;
 
 	char *real_address; /* address the irc server gives */
 	char *usermode; /* The whole mode string .. */
@@ -66,7 +67,7 @@ struct _IRC_SERVER_REC {
 	                 there actually is, to make flood control remember
 			 how many messages can be sent before starting the
 			 flood control */
-	GSList *cmdqueue;
+	GSList *cmdqueue; /* command, redirection, ... */
 	GTimeVal wait_cmd; /* don't send anything to server before this */
 	GTimeVal last_cmd; /* last time command was sent to server */
 

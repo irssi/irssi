@@ -5,6 +5,7 @@ typedef struct _IRC_CHATNET_REC IRC_CHATNET_REC;
 typedef struct _IRC_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC;
 typedef struct _IRC_SERVER_REC IRC_SERVER_REC;
 typedef struct _IRC_CHANNEL_REC IRC_CHANNEL_REC;
+typedef struct _REDIRECT_REC REDIRECT_REC;
 
 /* From ircd 2.9.5:
      none    I line with ident

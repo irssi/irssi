@@ -211,20 +211,33 @@ static int command_has_target(const char *cmd, const char *target)
 /* Purge server output, either all or for specified target */
 void irc_server_purge_output(IRC_SERVER_REC *server, const char *target)
 {
-	GSList *tmp, *next;
+	GSList *tmp, *next, *link;
+        REDIRECT_REC *redirect;
 	char *cmd;
 
 	if (target != NULL && *target == '\0')
                 target = NULL;
 
 	for (tmp = server->cmdqueue; tmp != NULL; tmp = next) {
-		next = tmp->next;
+		next = tmp->next->next;
 		cmd = tmp->data;
+                redirect = tmp->next->data;
 
 		if ((target == NULL || command_has_target(cmd, target)) &&
 		    g_strncasecmp(cmd, "PONG ", 5) != 0) {
+                        /* remove the redirection */
+                        link = tmp->next;
+			server->cmdqueue =
+				g_slist_remove_link(server->cmdqueue, link);
+                        g_slist_free_1(link);
+
+			if (redirect != NULL)
+                                server_redirect_destroy(redirect);
+
+                        /* remove the command */
 			server->cmdqueue =
 				g_slist_remove(server->cmdqueue, cmd);
+                        g_free(cmd);
                         server->cmdcount--;
 		}
 	}
@@ -241,10 +254,16 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 static void sig_disconnected(IRC_SERVER_REC *server)
 {
+	GSList *tmp;
+
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	g_slist_foreach(server->cmdqueue, (GFunc) g_free, NULL);
+	for (tmp = server->cmdqueue; tmp != NULL; tmp = tmp->next->next) {
+		g_free(tmp->data);
+		if (tmp->next->data != NULL)
+                        server_redirect_destroy(tmp->next->data);
+	}
 	g_slist_free(server->cmdqueue);
 
 	g_free_not_null(server->real_address);
@@ -268,6 +287,8 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 
 static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
+	REDIRECT_REC *redirect;
+        GSList *link;
 	long usecs;
 	char *cmd;
 	int len;
@@ -290,6 +311,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 
 	/* send command */
 	cmd = server->cmdqueue->data;
+        redirect = server->cmdqueue->next->data;
 	len = strlen(cmd);
 
 	if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
@@ -305,11 +327,15 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	/* add to rawlog without CR+LF */
 	cmd[len-2] = '\0';
 	rawlog_output(server->rawlog, cmd);
-	server_redirect_command(server, cmd);
+	server_redirect_command(server, cmd, redirect);
 
 	/* remove from queue */
 	g_free(cmd);
 	server->cmdqueue = g_slist_remove(server->cmdqueue, cmd);
+
+        link = server->cmdqueue;
+	server->cmdqueue = g_slist_remove_link(server->cmdqueue, link);
+        g_slist_free_1(link);
 }
 
 /* check every now and then if there's data to be sent in command buffer */

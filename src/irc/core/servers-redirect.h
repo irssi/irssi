@@ -53,12 +53,16 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
 
 /* irc_send_cmd() calls this to make sure redirecting knows
    what's sent to server */
-void server_redirect_command(IRC_SERVER_REC *server, const char *command);
+void server_redirect_command(IRC_SERVER_REC *server, const char *command,
+			     REDIRECT_REC *redirect);
 /* Returns the redirection signal for specified event.
    This is the function that contains the real redirecting logic. */
 const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 				       const char *event,
 				       const char *args);
+
+/* Destroy redirection record */
+void server_redirect_destroy(REDIRECT_REC *rec);
 
 void servers_redirect_init(void);
 void servers_redirect_deinit(void);

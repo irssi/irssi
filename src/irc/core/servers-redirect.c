@@ -33,7 +33,7 @@ typedef struct {
 	GSList *start, *stop; /* char *event, int argpos, ... */
 } REDIRECT_CMD_REC;
 
-typedef struct {
+struct _REDIRECT_REC {
 	REDIRECT_CMD_REC *cmd;
 	time_t created;
         int destroyed;
@@ -42,7 +42,7 @@ typedef struct {
         int remote;
 	char *failure_signal, *default_signal;
 	GSList *signals; /* event, signal, ... */
-} REDIRECT_REC;
+};
 
 static GHashTable *command_redirects; /* "command xxx" : REDIRECT_CMD_REC* */
 
@@ -88,7 +88,7 @@ static void redirect_cmd_unref(REDIRECT_CMD_REC *rec)
                 redirect_cmd_destroy(rec);
 }
 
-static void redirect_destroy(REDIRECT_REC *rec)
+void server_redirect_destroy(REDIRECT_REC *rec)
 {
 	redirect_cmd_unref(rec->cmd);
 
@@ -199,7 +199,7 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
         g_return_if_fail((g_slist_length(signals) & 1) == 0);
 
 	if (server->redirect_next != NULL) {
-		redirect_destroy(server->redirect_next);
+		server_redirect_destroy(server->redirect_next);
                 server->redirect_next = NULL;
 	}
 
@@ -232,18 +232,15 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
         server->redirect_next = rec;
 }
 
-void server_redirect_command(IRC_SERVER_REC *server, const char *command)
+void server_redirect_command(IRC_SERVER_REC *server, const char *command,
+			     REDIRECT_REC *redirect)
 {
         REDIRECT_CMD_REC *cmdrec;
-	REDIRECT_REC *rec;
 
 	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(command != NULL);
 
-	if (server->redirect_next != NULL) {
-		rec = server->redirect_next;
-                server->redirect_next = NULL;
-	} else {
+	if (redirect == NULL) {
 		cmdrec = redirect_cmd_find(command);
 		if (cmdrec == NULL)
 			return;
@@ -252,13 +249,13 @@ void server_redirect_command(IRC_SERVER_REC *server, const char *command)
 		   so future redirections wont get messed up. */
 		redirect_cmd_ref(cmdrec);
 
-		rec = g_new0(REDIRECT_REC, 1);
-		rec->created = time(NULL);
-		rec->cmd = cmdrec;
-		rec->remote = cmdrec->remote;
+		redirect = g_new0(REDIRECT_REC, 1);
+		redirect->created = time(NULL);
+		redirect->cmd = cmdrec;
+		redirect->remote = cmdrec->remote;
 	}
 
-	server->redirects = g_slist_append(server->redirects, rec);
+	server->redirects = g_slist_append(server->redirects, redirect);
 }
 
 static int redirect_args_match(const char *event_args,
@@ -316,35 +313,43 @@ static const char *redirect_match(REDIRECT_REC *redirect, const char *event,
 				  const char *args, int *match_stop)
 {
 	GSList *tmp, *cmdpos;
+        const char *signal;
         int stop_signal;
 
+	/* get the signal for redirection event - if it's not found we'll
+	   use the default signal */
+        signal = NULL;
 	for (tmp = redirect->signals; tmp != NULL; tmp = tmp->next->next) {
-		if (strcmp(tmp->data, event) != 0)
-			continue;
-
-                /* find the argument position */
-		cmdpos = redirect_cmd_list_find(redirect->cmd->start, event);
-		if (cmdpos != NULL)
-			stop_signal = FALSE;
-		else {
-			cmdpos = redirect_cmd_list_find(redirect->cmd->stop,
-							event);
-                        stop_signal = cmdpos != NULL;
+		if (strcmp(tmp->data, event) == 0) {
+			signal = tmp->next->data;
+			break;
 		}
-
-		/* check that arguments match */
-		if (args != NULL && redirect->arg != NULL && cmdpos != NULL &&
-		    !redirect_args_match(args, redirect->arg,
-					 GPOINTER_TO_INT(cmdpos->next->data)))
-			continue;
-
-		*match_stop = stop_signal;
-		return tmp->next->data;
 	}
 
-	*match_stop = redirect_cmd_list_find(redirect->cmd->stop,
-					     event) != NULL;
-        return NULL;
+	/* find the argument position */
+	cmdpos = redirect_cmd_list_find(redirect->cmd->start, event);
+	if (cmdpos != NULL)
+		stop_signal = FALSE;
+	else {
+		cmdpos = redirect_cmd_list_find(redirect->cmd->stop,
+						event);
+		stop_signal = cmdpos != NULL;
+	}
+
+	if (signal == NULL && cmdpos == NULL) {
+		/* event not found from specified redirection events nor
+		   registered command events */
+		return NULL;
+	}
+
+	/* check that arguments match */
+	if (args != NULL && redirect->arg != NULL && cmdpos != NULL &&
+	    !redirect_args_match(args, redirect->arg,
+				 GPOINTER_TO_INT(cmdpos->next->data)))
+		return NULL;
+
+	*match_stop = stop_signal;
+	return signal != NULL ? signal : redirect->default_signal;
 }
 
 static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
@@ -386,7 +391,7 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 				/* emit the failure signal */
 				signal_emit(rec->failure_signal, 1, server);
 			}
-			redirect_destroy(rec);
+			server_redirect_destroy(rec);
 		}
 	}
 
@@ -404,6 +409,7 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 	if (server->redirects == NULL)
 		return NULL;
 
+        match_stop = FALSE;
 	if (server->redirect_continue == NULL) {
                 /* find the redirection */
 		redirect = redirect_find(server, event, args,
@@ -442,11 +448,12 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
                 return;
 
-        g_slist_foreach(server->redirects, (GFunc) redirect_destroy, NULL);
+	g_slist_foreach(server->redirects,
+			(GFunc) server_redirect_destroy, NULL);
 	g_slist_free(server->redirects);
 
 	if (server->redirect_next != NULL)
-		redirect_destroy(server->redirect_next);
+		server_redirect_destroy(server->redirect_next);
 }
 
 static void cmd_redirect_destroy(char *key, REDIRECT_CMD_REC *cmd)

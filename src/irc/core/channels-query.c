@@ -167,7 +167,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 {
 	SERVER_QUERY_REC *rec;
 	IRC_CHANNEL_REC *chanrec;
-	GSList *tmp, *chans, *newchans;
+	GSList *chans, *newchans;
 	char *cmd, *chanstr_commas, *chanstr;
 	int onlyone;
 
@@ -206,71 +206,51 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	switch (query) {
 	case CHANNEL_QUERY_MODE:
 		cmd = g_strdup_printf("MODE %s", chanstr_commas);
-		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
-			chanrec = tmp->data;
-
-			server_redirect_event(server, "mode channel", chanstr, -1,
-					      "chanquery mode abort",
-					      "event 324", "chanquery mode",
-                                              "", "chanquery mode abort", NULL);
-		}
+		server_redirect_event(server, "mode channel", chanstr, -1,
+				      "chanquery mode abort",
+				      "event 324", "chanquery mode",
+				      "", "chanquery mode abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_WHO:
 		cmd = g_strdup_printf("WHO %s", chanstr_commas);
 
-		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
-			chanrec = tmp->data;
-
-			server_redirect_event(server, "who", chanstr, -1,
-                                              "chanquery who abort",
-					      "event 315", "chanquery who end",
-					      "event 352", "silent event who",
-                                              "", "chanquery who abort", NULL);
-		}
+		server_redirect_event(server, "who", chanstr, -1,
+				      "chanquery who abort",
+				      "event 315", "chanquery who end",
+				      "event 352", "silent event who",
+				      "", "chanquery who abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_BMODE:
 		cmd = g_strdup_printf("MODE %s b", chanstr_commas);
-		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
-			chanrec = tmp->data;
-
-			/* check all the multichannel problems with all
-			   mode requests - if channels are joined manually
-			   irssi could ask modes separately but afterwards
-			   join the two b/e/I modes together */
-			server_redirect_event(server, "mode b", chanstr, -1,
-					      "chanquery mode abort",
-					      "event 367", "chanquery ban",
-					      "event 368", "chanquery ban end",
-                                              "", "chanquery mode abort", NULL);
-		}
+		/* check all the multichannel problems with all
+		   mode requests - if channels are joined manually
+		   irssi could ask modes separately but afterwards
+		   join the two b/e/I modes together */
+		server_redirect_event(server, "mode b", chanstr, -1,
+				      "chanquery mode abort",
+				      "event 367", "chanquery ban",
+				      "event 368", "chanquery ban end",
+				      "", "chanquery mode abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_EMODE:
 		cmd = g_strdup_printf("MODE %s e", chanstr_commas);
-		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
-			chanrec = tmp->data;
-
-			server_redirect_event(server, "mode e", chanstr, -1,
-					      "chanquery mode abort",
-					      "event 348", "chanquery eban",
-					      "event 349", "chanquery eban end",
-                                              "", "chanquery mode abort", NULL);
-		}
+		server_redirect_event(server, "mode e", chanstr, -1,
+				      "chanquery mode abort",
+				      "event 348", "chanquery eban",
+				      "event 349", "chanquery eban end",
+				      "", "chanquery mode abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_IMODE:
 		cmd = g_strdup_printf("MODE %s I", chanstr_commas);
-		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
-			chanrec = tmp->data;
-
-			server_redirect_event(server, "mode I", chanstr, -1,
-					      "chanquery mode abort",
-					      "event 346", "chanquery ilist",
-					      "event 347", "chanquery ilist end",
-                                              "", "chanquery mode abort", NULL);
-		}
+		server_redirect_event(server, "mode I", chanstr, -1,
+				      "chanquery mode abort",
+				      "event 346", "chanquery ilist",
+				      "event 347", "chanquery ilist end",
+				      "", "chanquery mode abort", NULL);
 		break;
 
 	default:
