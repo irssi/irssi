@@ -224,4 +224,6 @@ void fe_modes_deinit(void)
 
 	signal_remove("message mode", (SIGNAL_FUNC) sig_message_mode);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
+	signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
 }
