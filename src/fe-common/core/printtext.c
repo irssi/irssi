@@ -807,21 +807,28 @@ static int sig_check_daychange(void)
     return TRUE;
 }
 
-static void sig_gui_dialog(const char *type, const char *text)
+void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text)
 {
 	char **lines, **tmp;
 
-	if (g_strcasecmp(type, "warning") == 0)
-		type = _("%_Warning:%_ %s");
-	else if (g_strcasecmp(type, "error") == 0)
-		type = _("%_Error:%_ %s");
-	else
-		type = "%s";
-
 	lines = g_strsplit(text, "\n", -1);
         for (tmp = lines; *tmp != NULL; tmp++)
-		printtext(NULL, NULL, MSGLEVEL_NEVER, type, *tmp);
+		printtext(NULL, NULL, MSGLEVEL_NEVER, format, *tmp);
 	g_strfreev(lines);
+}
+
+static void sig_gui_dialog(const char *type, const char *text)
+{
+	char *format;
+
+	if (g_strcasecmp(type, "warning") == 0)
+		format = _("%_Warning:%_ %s");
+	else if (g_strcasecmp(type, "error") == 0)
+		format = _("%_Error:%_ %s");
+	else
+		format = "%s";
+
+        printtext_multiline(NULL, NULL, MSGLEVEL_NEVER, format, text);
 }
 
 static void read_settings(void)

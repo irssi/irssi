@@ -55,7 +55,8 @@ enum {
 
 	IRCTXT_FILL_6,
 
-	IRCTXT_NOT_TOGGLE
+	IRCTXT_NOT_TOGGLE,
+	IRCTXT_PERL_ERROR
 };
 
 extern FORMAT_REC fecommon_core_formats[];

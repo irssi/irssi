@@ -1,0 +1,7 @@
+Makefile
+Makefile.PL
+Irssi.c
+Irssi.bs
+*.o
+pm_to_blib
+blib

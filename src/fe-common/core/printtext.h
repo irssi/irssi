@@ -53,6 +53,7 @@ void printformat(void *server, const char *channel, int level, int formatnum, ..
 void printformat_format(FORMAT_REC *formats, void *server, const char *channel, int level, int formatnum, ...);
 
 void printtext(void *server, const char *channel, int level, const char *str, ...);
+void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text);
 void printbeep(void);
 
 void printtext_init(void);

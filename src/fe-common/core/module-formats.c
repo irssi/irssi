@@ -83,5 +83,6 @@ FORMAT_REC fecommon_core_formats[] =
     /* ---- */
     { NULL, N_("Misc"), 0 },
 
-    { "not_toggle", N_("Value must be either ON, OFF or TOGGLE"), 0 }
+    { "not_toggle", N_("Value must be either ON, OFF or TOGGLE"), 0 },
+    { "perl_error", N_("Perl error: $0"), 1, { 0 } }
 };

@@ -3,7 +3,7 @@
 
 typedef struct {
 	int logging;
-	int file;
+	int handle;
 
         int nlines;
 	GSList *lines;

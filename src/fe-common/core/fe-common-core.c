@@ -38,6 +38,9 @@ void autorun_deinit(void);
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
 
+void fe_log_init(void);
+void fe_log_deinit(void);
+
 void fe_server_init(void);
 void fe_server_deinit(void);
 

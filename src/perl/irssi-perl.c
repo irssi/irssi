@@ -116,14 +116,13 @@ static void irssi_perl_start(void)
 		"sub load_file()\n"
 		"{\n"
 		"  (my $file_name) = @_;\n"
-		"  open FH, $file_name or return 2;\n"
+		"  open FH, $file_name or return \"File not found: $file_name\";\n"
 		"  local($/) = undef;\n"
 		"  $file = <FH>;\n"
 		"  close FH;\n"
 		"  eval $file;\n"
 		"  eval $file if $@;\n"
-		"  return 1 if $@;\n"
-		"  return 0;\n"
+		"  return $@ if $@;\n"
 		"}";
 
 	first_signals = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
@@ -137,9 +136,16 @@ static void irssi_perl_start(void)
 	perl_eval_pv(load_file, TRUE);
 }
 
-static void signal_destroy_hash(void *key, PERL_SIGNAL_REC *rec)
+static void signal_destroy_hash(void *key, GSList *list)
 {
-        perl_signal_destroy(rec);
+	GSList *next;
+
+	while (list != NULL) {
+		next = list->next;
+
+		perl_signal_destroy(list->data);
+                list = next;
+	}
 }
 
 static void irssi_perl_stop(void)
@@ -195,10 +201,15 @@ static void cmd_run(char *data)
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
 
-		signal_emit("perl error", 1, SvPV(ERRSV, n_a));
+		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
 		(void) POPs;
 	}
-	else while (retcount--) (void) POPi;
+	else if (retcount > 0) {
+		char *str = POPp;
+
+		if (str != NULL && *str != '\0')
+			signal_emit("gui dialog", 2, "error", str);
+	}
 
 	PUTBACK;
 	FREETMPS;
@@ -406,8 +417,12 @@ static int call_perl(const char *func, int signal, va_list va)
 	    }
 	    else
 	    {
-		stash = gv_stashpv(rec->args[n], 0);
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(arg))), stash)));
+                if (arg == NULL)
+			XPUSHs(sv_2mortal(newSViv(0)));
+		else {
+			stash = gv_stashpv(rec->args[n], 0);
+			XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(arg))), stash)));
+		}
 	    }
 	}
     }
@@ -421,7 +436,7 @@ static int call_perl(const char *func, int signal, va_list va)
     {
 	STRLEN n_a;
 
-	signal_emit("perl error", 1, SvPV(ERRSV, n_a));
+	signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
         (void)POPs;
     }
     else
@@ -490,6 +505,7 @@ static void irssi_perl_autorun(void)
 {
 	DIR *dirp;
 	struct dirent *dp;
+	struct stat statbuf;
 	char *path, *fname;
 
 	path = g_strdup_printf("%s/.irssi/scripts/autorun", g_get_home_dir());
@@ -501,7 +517,8 @@ static void irssi_perl_autorun(void)
 
 	while ((dp = readdir(dirp)) != NULL) {
 		fname = g_strdup_printf("%s/%s", path, dp->d_name);
-		cmd_run(fname);
+                if (stat(fname, &statbuf) == 0 && !S_ISDIR(statbuf.st_mode))
+			cmd_run(fname);
 		g_free(fname);
 	}
 	closedir(dirp);
@@ -522,8 +539,8 @@ void irssi_perl_deinit(void)
 {
 	irssi_perl_stop();
 
-	command_unbind("run", (SIGNAL_FUNC) cmd_run);
-	command_unbind("perlflush", (SIGNAL_FUNC) cmd_flush);
 	if (signal_grabbed) signal_remove("signal", (SIGNAL_FUNC) sig_signal);
 	if (siglast_grabbed) signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
+	command_unbind("run", (SIGNAL_FUNC) cmd_run);
+	command_unbind("perlflush", (SIGNAL_FUNC) cmd_flush);
 }

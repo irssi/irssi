@@ -3,18 +3,21 @@ TEXTUI=fe-text
 endif
 
 if BUILD_GNOMEUI
-GNOMEUI=fe-gnome
+#GNOMEUI=fe-gnome
+GNOMEUI=
 endif
 
 if BUILD_IRSSIBOT
 BOTUI=fe-none
 endif
 
+if HAVE_PERL
+PERLDIR=perl
+endif
+
 noinst_HEADERS = \
 	nls.h \
 	common.h \
-	common-setup.h \
-	irssi-plugin.h \
-	irssi-plugin-gui.h
+	common-setup.h
 
-SUBDIRS = lib-popt lib-config core irc fe-common perl $(GNOMEUI) $(TEXTUI) $(BOTUI)
+SUBDIRS = lib-popt lib-config core irc fe-common $(PERLDIR) $(GNOMEUI) $(TEXTUI) $(BOTUI)

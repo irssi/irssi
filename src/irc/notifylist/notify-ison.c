@@ -127,7 +127,7 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 	for (tmp = notifies; tmp != NULL; tmp = tmp->next) {
 		NOTIFYLIST_REC *rec = tmp->data;
 
-		if (!notify_ircnets_match(rec, server->connrec->ircnet))
+		if (!notifylist_ircnets_match(rec, server->connrec->ircnet))
                         continue;
 
 		nick = g_strdup(rec->mask);

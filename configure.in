@@ -404,13 +404,14 @@ dnl **
 CORE_LIBS="../core/libcore.la ../lib-config/libirssi_config.la"
 IRC_LIBS="../irc/libirc.la ../irc/core/libirc_core.la ../irc/dcc/libirc_dcc.la ../irc/flood/libirc_flood.la ../irc/notifylist/libirc_notifylist.la"
 FE_COMMON_LIBS="../fe-common/core/libfe_common_core.la ../fe-common/irc/libfe_common_irc.la ../fe-common/irc/notifylist/libfe_common_irc_notifylist.la ../fe-common/irc/dcc/libfe_common_irc_dcc.la ../fe-common/irc/flood/libfe_common_irc_flood.la"
+PERL_LIBS="../perl/libperl.la"
 
 AC_SUBST(CORE_LIBS)
 AC_SUBST(IRC_LIBS)
 AC_SUBST(FE_COMMON_LIBS)
 
 dnl ** common libraries needed by frontends
-COMMON_LIBS="$FE_COMMON_LIBS $IRC_LIBS $CORE_LIBS"
+COMMON_LIBS="$PERL_LIBS $FE_COMMON_LIBS $IRC_LIBS $CORE_LIBS"
 AC_SUBST(COMMON_LIBS)
 
 dnl **

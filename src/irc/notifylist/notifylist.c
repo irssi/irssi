@@ -85,7 +85,7 @@ void notifylist_remove(const char *mask)
         notify_destroy(rec);
 }
 
-int notify_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet)
+int notifylist_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet)
 {
 	char **tmp;
 
@@ -122,7 +122,7 @@ NOTIFYLIST_REC *notifylist_find(const char *mask, const char *ircnet)
 			continue;
 		}
 
-		if (notify_ircnets_match(rec, ircnet))
+		if (notifylist_ircnets_match(rec, ircnet))
 			return rec;
 	}
 

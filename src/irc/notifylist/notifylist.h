@@ -27,6 +27,6 @@ int notifylist_ison_server(IRC_SERVER_REC *server, const char *nick);
 /* If `ircnet' is "*", it doesn't matter at all. */
 NOTIFYLIST_REC *notifylist_find(const char *mask, const char *ircnet);
 
-int notify_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet);
+int notifylist_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet);
 
 #endif

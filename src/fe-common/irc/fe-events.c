@@ -556,12 +556,6 @@ static void event_ban_type_changed(gchar *bantype)
     }
 }
 
-/*FIXME: move to core
-static void event_perl_error(gchar *text)
-{
-    printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_PERL_ERROR, text);
-}*/
-
 static void sig_server_lag_disconnected(IRC_SERVER_REC *server)
 {
     g_return_if_fail(server != NULL);
@@ -643,7 +637,6 @@ void fe_events_init(void)
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_add("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
-	//signal_add("perl error", (SIGNAL_FUNC) event_perl_error);
 
 	signal_add("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_add("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
@@ -676,7 +669,6 @@ void fe_events_deinit(void)
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_remove("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
-	//signal_remove("perl error", (SIGNAL_FUNC) event_perl_error);
 
 	signal_remove("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_remove("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);

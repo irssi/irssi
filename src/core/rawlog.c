@@ -45,7 +45,7 @@ void rawlog_destroy(RAWLOG_REC *rawlog)
 	g_slist_foreach(rawlog->lines, (GFunc) g_free, NULL);
 	g_slist_free(rawlog->lines);
 
-	if (rawlog->logging) close(rawlog->file);
+	if (rawlog->logging) close(rawlog->handle);
 	g_free(rawlog);
 }
 
@@ -60,8 +60,8 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 	}
 
 	if (rawlog->logging) {
-		write(rawlog->file, str, strlen(str));
-		write(rawlog->file, "\n", 1);
+		write(rawlog->handle, str, strlen(str));
+		write(rawlog->handle, "\n", 1);
 	}
 
 	rawlog->lines = g_slist_append(rawlog->lines, str);
@@ -113,17 +113,17 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 		return;
 
 	path = convert_home(fname);
-	rawlog->file = open(path, O_WRONLY | O_APPEND | O_CREAT, LOG_FILE_CREATE_MODE);
+	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT, LOG_FILE_CREATE_MODE);
 	g_free(path);
 
-	rawlog_dump(rawlog, rawlog->file);
-	rawlog->logging = rawlog->file != -1;
+	rawlog_dump(rawlog, rawlog->handle);
+	rawlog->logging = rawlog->handle != -1;
 }
 
 void rawlog_close(RAWLOG_REC *rawlog)
 {
 	if (rawlog->logging) {
-		close(rawlog->file);
+		close(rawlog->handle);
 		rawlog->logging = 0;
 	}
 }

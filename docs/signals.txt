@@ -4,16 +4,15 @@ IRC base
 * Requires to work properly:
 
  "gui exit"
- "gui channel open", CHANNEL_REC
- "send command", char *command, SERVER_REC, CHANNEL_REC
+"send command", char *command, SERVER_REC, WI_ITEM_REC
 
 * Provides signals:
 
 irc.c:
 
  "send command", char *args, SERVER_REC
- "command "<cmd>, char *args, SERVER_REC, CHANNEL_REC
- "default command", char *args, SERVER_REC, CHANNEL_REC
+ "command "<cmd>, char *args, SERVER_REC, WI_ITEM_REC
+ "default command", char *args, SERVER_REC, WI_ITEM_REC
 
  "server event", char *data, SERVER_REC, char *sender_nick, char *sender_address
  "event "<cmd>, char *args, SERVER_REC, char *sender_nick, char *sender_address
@@ -115,7 +114,6 @@ IRC extra
 * Requires to work properly:
 
  "print text stripped", SERVER_REC, char *channel, int level, char *text
- "plugin add menu", char *menuitem, void (*func) (gpointer, PLUGIN_REC), PLUGIN_REC
 
 * Provides signals:
 
@@ -174,18 +172,6 @@ notifylist.c:
  "notifylist away changed", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
  "notifylist unidle", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
  "notifylist left", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
-
-plugins.c:
-
- "plugin created", PLUGIN_REC
- "plugin loaded", PLUGIN_REC
- "plugin destroyed", PLUGIN_REC
-
- "plugin error already loaded", char *plugin
- "plugin error invalid", char *plugin
- "plugin error load", char *plugin, char *error
- "plugin error not loaded", char *plugin
- "plugin error version", char *plugin
 
 UI common
 ---------

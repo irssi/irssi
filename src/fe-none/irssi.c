@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
 	do {
 		reload = FALSE;
-		module_load(autoload_module, "");
+		/*FIXME:module_load(autoload_module, "");*/
 		main_loop = g_main_new(TRUE);
 		g_main_run(main_loop);
 		g_main_destroy(main_loop);
