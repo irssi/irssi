@@ -105,7 +105,8 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 8, NULL, &channel, &user, &host, NULL, &nick, &stat, &realname);
+	params = event_get_params(data, 8, NULL, &channel, &user,
+				  &host, NULL, &nick, &stat, &realname);
 
 	/* split hops/realname */
 	hops = realname;
@@ -137,11 +138,12 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
+	params = event_get_params(data, 5, NULL, &channel,
+				  &ban, &setby, &tims);
 	secs = *tims == '\0' ? 0 :
 		(long) (time(NULL) - atol(tims));
 
-	printformat(server, NULL, MSGLEVEL_CRAP,
+	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
 		    0, channel, ban, setby, secs);
 
@@ -155,11 +157,12 @@ static void event_eban_list(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
+	params = event_get_params(data, 5, NULL, &channel,
+				  &ban, &setby, &tims);
 	secs = *tims == '\0' ? 0 :
 		(long) (time(NULL) - atol(tims));
 
-	printformat(server, NULL, MSGLEVEL_CRAP,
+	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
 		    channel, ban, setby, secs);
 
@@ -173,7 +176,8 @@ static void event_silence_list(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &mask);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SILENCE_LINE, nick, mask);
+	printformat(server, NULL, MSGLEVEL_CRAP,
+		    IRCTXT_SILENCE_LINE, nick, mask);
 	g_free(params);
 }
 
@@ -185,7 +189,8 @@ static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &invite);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_INVITELIST, channel, invite);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_INVITELIST, channel, invite);
 	g_free(params);
 }
 
@@ -196,8 +201,10 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	if (server->connected)
-		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_NICK_IN_USE, nick);
+	if (server->connected) {
+		printformat(server, NULL, MSGLEVEL_CRAP,
+			    IRCTXT_NICK_IN_USE, nick);
+	}
 
 	g_free(params);
 }
@@ -209,7 +216,8 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &topic);
-	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_TOPIC, channel, topic);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_TOPIC, channel, topic);
 	g_free(params);
 }
 
@@ -236,9 +244,10 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &channel, &mode);
-        printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_MODE,
-                    channel, g_strchomp(mode));
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
+				  NULL, &channel, &mode);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_CHANNEL_MODE, channel, g_strchomp(mode));
 	g_free(params);
 }
 
@@ -285,7 +294,8 @@ static void event_sent_invite(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &channel);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_INVITING, nick, channel);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_INVITING, nick, channel);
 	g_free(params);
 }
 
@@ -295,8 +305,10 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS, nick, user, host, realname);
+	params = event_get_params(data, 6, NULL, &nick, &user,
+				  &host, NULL, &realname);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS, nick, user, host, realname);
 	g_free(params);
 }
 
@@ -325,7 +337,8 @@ static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 			    nick, days, hours, mins, secs);
 	else {
 		timestr = my_asctime(signon);
-		printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_IDLE_SIGNON,
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_IDLE_SIGNON,
 			    nick, days, hours, mins, secs, timestr);
 		g_free(timestr);
 	}
@@ -339,7 +352,8 @@ static void event_whois_server(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, &nick, &whoserver, &desc);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_SERVER, nick, whoserver, desc);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_SERVER, nick, whoserver, desc);
 	g_free(params);
 }
 
@@ -368,7 +382,8 @@ static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_REGISTERED, nick);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_REGISTERED, nick);
 	g_free(params);
 }
 
@@ -431,8 +446,10 @@ static void event_whowas(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOWAS, nick, user, host, realname);
+	params = event_get_params(data, 6, NULL, &nick, &user,
+				  &host, NULL, &realname);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOWAS, nick, user, host, realname);
 	g_free(params);
 }
 
@@ -449,7 +466,8 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 	   should show the channel names as they REALLY are so they could
 	   even be joined without any extra tricks. */
         chans = show_lowascii(chans);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_CHANNELS, nick, chans);
+	printformat(server, nick, MSGLEVEL_CRAP,
+		    IRCTXT_WHOIS_CHANNELS, nick, chans);
 	g_free(chans);
 
 	g_free(params);
@@ -465,14 +483,16 @@ static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 	if (server->whois_coming || !settings_get_bool("show_away_once") ||
 	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
 	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {
-		/* don't show the same away message from the same nick all the time */
+		/* don't show the same away message
+		   from the same nick all the time */
 		g_free_not_null(last_away_nick);
 		g_free_not_null(last_away_msg);
 		last_away_nick = g_strdup(nick);
 		last_away_msg = g_strdup(awaymsg);
 
-		printformat(server, nick, MSGLEVEL_CRAP, server->whois_coming ?
-			    IRCTXT_WHOIS_AWAY : IRCTXT_NICK_AWAY, nick, awaymsg);
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    server->whois_coming ? IRCTXT_WHOIS_AWAY :
+			    IRCTXT_NICK_AWAY, nick, awaymsg);
 	}
 	g_free(params);
 }
@@ -484,7 +504,10 @@ static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	if (server->whois_found) printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_END_OF_WHOIS, nick);
+	if (server->whois_found) {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_END_OF_WHOIS, nick);
+	}
 	g_free(params);
 }
 
@@ -495,7 +518,8 @@ static void event_chanserv_url(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &url);
-	printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_CHANNEL_URL, channel, url);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_CHANNEL_URL, channel, url);
 	g_free(params);
 }
 
@@ -506,31 +530,34 @@ static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	if (server->whowas_found) printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_END_OF_WHOWAS, nick);
+	if (server->whowas_found) {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_END_OF_WHOWAS, nick);
+	}
 	g_free(params);
 }
 
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;
+	char *params, *target;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
-	if (!ischannel(*channel)) {
+	params = event_get_params(data, 2, NULL, &target);
+	if (!ischannel(*target)) {
 		/* nick unavailable */
 		printformat(server, NULL, MSGLEVEL_CRAP,
-			    IRCTXT_NICK_UNAVAILABLE, channel);
+			    IRCTXT_NICK_UNAVAILABLE, target);
 	} else {
-		chanrec = irc_channel_find(server, channel);
+		chanrec = irc_channel_find(server, target);
 		if (chanrec != NULL && chanrec->joined) {
 			/* dalnet - can't change nick while being banned */
 			event_received(server, data);
 		} else {
 			/* channel is unavailable. */
 			printformat(server, NULL, MSGLEVEL_CRAP,
-				    IRCTXT_JOINERROR_UNAVAIL, channel);
+				    IRCTXT_JOINERROR_UNAVAIL, target);
 		}
 	}
 
@@ -555,7 +582,8 @@ static void event_no_such_channel(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_NO_SUCH_CHANNEL, channel);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    IRCTXT_NO_SUCH_CHANNEL, channel);
 	g_free(params);
 }
 
@@ -656,6 +684,21 @@ static void event_received(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_target_received(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *target, *args, *ptr;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
+				  NULL, &target, &args);
+	ptr = strstr(args, " :");
+	if (ptr != NULL)
+                g_memmove(ptr+1, ptr+2, strlen(ptr+1));
+	printtext(server, target, MSGLEVEL_CRAP, "%s %s", target, args);
+	g_free(params);
+}
+
 static void event_motd(IRC_SERVER_REC *server, const char *data)
 {
 	/* don't ignore motd anymore after 3 seconds of connection time -
@@ -737,6 +780,10 @@ void fe_events_numeric_init(void)
 	signal_add("event 432", (SIGNAL_FUNC) event_received);
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
+
+	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 347", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 349", (SIGNAL_FUNC) event_target_received);
 }
 
 void fe_events_numeric_deinit(void)
@@ -805,4 +852,8 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 432", (SIGNAL_FUNC) event_received);
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
+
+	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
 }
