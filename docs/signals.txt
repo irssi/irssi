@@ -47,7 +47,7 @@ log.c:
  "log locked", LOG_REC
  "log started", LOG_REC
  "log stopped", LOG_REC
- "log rotate", LOG_REC
+ "log rotated", LOG_REC
  "log written", LOG_REC, char *line
 
 modules.c:

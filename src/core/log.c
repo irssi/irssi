@@ -176,7 +176,7 @@ static void log_rotate_check(LOG_REC *log)
 	if (strcmp(new_fname, log->real_fname) != 0) {
 		/* rotate log */
 		log_stop_logging(log);
-		signal_emit("log rotate", 1, log);
+		signal_emit("log rotated", 1, log);
 		log_start_logging(log);
 	}
 	g_free(new_fname);
