@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.26)
+AM_INIT_AUTOMAKE(irssi, 0.7.27)
 
 AM_MAINTAINER_MODE
 
@@ -345,26 +345,28 @@ fi
 
 AC_PATH_PROG(sedpath, sed)
 if test "$want_perl" = yes; then
-  AC_PATH_PROG(perlpath, perl)
-  AC_MSG_CHECKING(for Perl compile flags)
-  PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
-  if test "_$PERL_CFLAGS" = _ ; then
-    AC_MSG_RESULT([not found, building without perl.])
-    want_perl=no
-  else
-    PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts |$sedpath 's/-lgdbm //'`
-    PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-ldb //'`
-    PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lndbm //'`
-    if test "$system" = "Linux"; then
-      PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lnsl //'`
-      PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lposix //'`
-    fi
-    PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lc //'`
-    AC_MSG_RESULT(ok)
-    AC_SUBST(PERL_CFLAGS)
-    AC_SUBST(PERL_LDFLAGS)
-    AC_DEFINE(HAVE_PERL)
-  fi
+	AC_PATH_PROG(perlpath, perl)
+	AC_MSG_CHECKING(for Perl compile flags)
+
+	PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+	if test "x$PERL_CFLAGS" = "x"; then
+		AC_MSG_RESULT([not found, building without perl.])
+		want_perl=no
+	else
+		PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts |$sedpath 's/-lgdbm //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-ldb //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lndbm //'`
+		if test "$system" = "Linux"; then
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lnsl //'`
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lposix //'`
+		fi
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lc //'`
+		AC_MSG_RESULT(ok)
+
+		AC_SUBST(PERL_CFLAGS)
+		AC_SUBST(PERL_LDFLAGS)
+		AC_DEFINE(HAVE_PERL)
+	fi
 fi
 
 dnl ** check what we want to build
