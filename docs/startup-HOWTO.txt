@@ -1,7 +1,7 @@
 
  To new Irssi users (not to new IRC users ..)
 
- Copyright (c) 2000 by Timo Sirainen
+ Copyright (c) 2000-2001 by Timo Sirainen
 
 
 I've explained all this to different people too many times, so finally
@@ -80,7 +80,7 @@ If the channel needs a key you can give it after the irc network.
  --- Placing the channels in the windows *I* want them to be in ---
 
 First move the windows where you want them to be with /WINDOW MOVE
-LEFT/RIGHT/number commands. After that use /SAVEWINDOWS command and
+LEFT/RIGHT/number commands. After that use /LAYOUT SAVE command and
 Irssi remembers the window positions the next time you start it.
 
 This doesn't work very well with split windows currently.
