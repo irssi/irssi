@@ -30,5 +30,6 @@ unsigned int reconnection:1; /* we're trying to reconnect */
 unsigned int no_autojoin_channels:1; /* don't autojoin any channels */
 unsigned int unix_socket:1; /* Connect using named unix socket */
 unsigned int use_ssl:1; /* this connection uses SSL */
+unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
 char *channels;
 char *away_reason;

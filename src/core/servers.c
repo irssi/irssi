@@ -178,6 +178,9 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 
 	signal_emit("server connecting", 2, server, ip);
 
+	if (server->connrec->no_connect)
+		return;
+
 	if (ip != NULL) {
 		own_ip = ip == NULL ? NULL :
 			(IPADDR_IS_V6(ip) ? server->connrec->own_ip6 :

@@ -265,6 +265,7 @@ void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 	hv_store(hv, "type", 4, new_pv(type), 0);
 	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
+	hv_store(hv, "tag", 3, new_pv(conn->tag), 0);
 	hv_store(hv, "address", 7, new_pv(conn->address), 0);
 	hv_store(hv, "port", 4, newSViv(conn->port), 0);
 	hv_store(hv, "chatnet", 7, new_pv(conn->chatnet), 0);
@@ -273,6 +274,12 @@ void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 	hv_store(hv, "wanted_nick", 11, new_pv(conn->nick), 0);
 	hv_store(hv, "username", 8, new_pv(conn->username), 0);
 	hv_store(hv, "realname", 8, new_pv(conn->realname), 0);
+
+	hv_store(hv, "reconnection", 12, newSViv(conn->reconnection), 0);
+	hv_store(hv, "no_autojoin_channels", 20, newSViv(conn->no_autojoin_channels), 0);
+	hv_store(hv, "unix_socket", 11, newSViv(conn->unix_socket), 0);
+	hv_store(hv, "use_ssl", 7, newSViv(conn->use_ssl), 0);
+	hv_store(hv, "no_connect", 10, newSViv(conn->no_connect), 0);
 }
 
 void perl_server_fill_hash(HV *hv, SERVER_REC *server)
