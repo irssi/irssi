@@ -19,6 +19,7 @@ conf_DATA = config colorless.theme split.theme
 noinst_HEADERS = irssi-version.h
 
 EXTRA_DIST = \
+	ChangeLog \
 	autogen.sh \
 	curses.m4 \
 	README \
