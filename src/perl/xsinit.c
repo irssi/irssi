@@ -8,6 +8,7 @@ extern "C" {
 
 #include <EXTERN.h>
 #include <perl.h>
+#include "perl-common.h"
 #ifdef PERL_OBJECT
 #define NO_XSLOCKS
 #include <XSUB.h>
