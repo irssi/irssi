@@ -503,6 +503,8 @@ if test "x$want_textui" = "xyes"; then
 
 	TEXTUI_LIBS="$CURSES_LIBS"
 	if test "x$has_curses" = "xtrue"; then
+		old_libs=$LIBS
+		LIBS="$LIBS $CURSES_LIBS"
        		AC_CHECK_FUNC(use_default_colors, AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS))
        		AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
        		AC_CHECK_FUNC(resizeterm, AC_DEFINE(HAVE_CURSES_RESIZETERM))
@@ -510,6 +512,7 @@ if test "x$want_textui" = "xyes"; then
 		AC_CHECK_FUNC(setupterm,, [
 		       	want_termcap=yes
 		])
+		LIBS=$old_libs
 	else
 		AC_CHECK_LIB(tinfo, setupterm, [
 		  TEXTUI_LIBS="-ltinfo"
