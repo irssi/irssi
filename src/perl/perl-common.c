@@ -341,6 +341,7 @@ static void perl_log_fill_hash(HV *hv, LOG_REC *log)
 	GSList *tmp;
 
 	hv_store(hv, "fname", 5, new_pv(log->fname), 0);
+	hv_store(hv, "real_fname", 10, new_pv(log->real_fname), 0);
 	hv_store(hv, "opened", 6, newSViv(log->opened), 0);
 	hv_store(hv, "level", 5, newSViv(log->level), 0);
 	hv_store(hv, "last", 4, newSViv(log->last), 0);
