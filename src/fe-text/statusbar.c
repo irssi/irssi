@@ -426,6 +426,12 @@ STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
 		name = g_strdup_printf("{sb_%s_bg}", group->name);
 		value = theme_format_expand(theme, name);
 		g_free(name);
+
+		if (*value == '\0') {
+			/* fallback to default statusbar background
+			   (also provides backwards compatibility..) */
+			value = theme_format_expand(theme, "{sb_background}");
+		}
 	}
 
 	if (*value == '\0') {
