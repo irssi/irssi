@@ -29,6 +29,8 @@
 #include "irc-server.h"
 #include "ignore.h"
 
+static void fe_unignore(IGNORE_REC *rec);
+
 static char *ignore_get_key(IGNORE_REC *rec)
 {
 	char *chans, *ret;
@@ -125,6 +127,12 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	g_free(levels);
 }
 
+static int unignore_timeout(IGNORE_REC *rec)
+{
+	fe_unignore(rec);
+	return FALSE;
+}
+
 static void cmd_ignore_show(void)
 {
 	GSList *tmp;
@@ -143,14 +151,14 @@ static void cmd_ignore_show(void)
 static void cmd_ignore(const char *data)
 {
 	/* /IGNORE [-regexp | -word] [-pattern <pattern>] [-except]
-	           [-replies] [-channels <channel>] <mask> <levels>
+	           [-replies] [-channels <channel>] [-time <secs>] <mask> <levels>
 	   OR
 
            /IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
-	           <channels> <levels> */
+	           [-time <secs>] <channels> <levels> */
         GHashTable *optlist;
 	IGNORE_REC *rec;
-	char *patternarg, *chanarg, *mask, *levels, *key;
+	char *patternarg, *chanarg, *mask, *levels, *key, *timestr;
 	char **channels;
 	void *free_arg;
 	int new_ignore;
@@ -201,6 +209,8 @@ static void cmd_ignore(const char *data)
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
 	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
+	timestr = g_hash_table_lookup(optlist, "time");
+	rec->time = timestr == NULL ? 0 : atoi(timestr);
 
 	if (rec->level == 0 && rec->except_level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED,
@@ -213,6 +223,9 @@ static void cmd_ignore(const char *data)
 		g_free(levels);
 	}
 
+	if (rec->time > 0)
+		rec->time_tag = g_timeout_add(rec->time*1000, (GSourceFunc) unignore_timeout, rec);
+
 	if (new_ignore)
 		ignore_add_rec(rec);
 	else
@@ -221,11 +234,23 @@ static void cmd_ignore(const char *data)
 	cmd_params_free(free_arg);
 }
 
+static void fe_unignore(IGNORE_REC *rec)
+{
+	char *key;
+
+	key = ignore_get_key(rec);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED, key);
+	g_free(key);
+
+	rec->level = 0;
+	rec->except_level = 0;
+	ignore_update_rec(rec);
+}
+
 static void cmd_unignore(const char *data)
 {
 	IGNORE_REC *rec;
 	GSList *tmp;
-	char *key;
 
 	if (is_numeric(data, ' ')) {
 		/* with index number */
@@ -241,15 +266,8 @@ static void cmd_unignore(const char *data)
 
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IGNORE_NOT_FOUND, data);
-	else {
-		key = ignore_get_key(rec);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_UNIGNORED, key);
-		g_free(key);
-
-		rec->level = 0;
-		rec->except_level = 0;
-		ignore_update_rec(rec);
-	}
+	else
+                fe_unignore(rec);
 }
 
 void fe_ignore_init(void)
@@ -257,7 +275,7 @@ void fe_ignore_init(void)
 	command_bind("ignore", NULL, (SIGNAL_FUNC) cmd_ignore);
 	command_bind("unignore", NULL, (SIGNAL_FUNC) cmd_unignore);
 
-	command_set_options("ignore", "regexp word except replies -pattern -channels");
+	command_set_options("ignore", "regexp word except replies -time -pattern -channels");
 }
 
 void fe_ignore_deinit(void)

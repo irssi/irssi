@@ -197,6 +197,9 @@ static void ignore_set_config(IGNORE_REC *rec)
 	if (rec->level == 0 && rec->except_level == 0)
 		return;
 
+	if (rec->time > 0)
+		return;
+
 	node = iconfig_node_traverse("(ignores", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
@@ -263,6 +266,7 @@ static void ignore_destroy(IGNORE_REC *rec)
 	ignores = g_slist_remove(ignores, rec);
 	signal_emit("ignore destroyed", 1, rec);
 
+	if (rec->time_tag > 0) g_source_remove(rec->time_tag);
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->mask);
 	g_free_not_null(rec->servertag);

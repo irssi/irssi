@@ -10,6 +10,9 @@ typedef struct {
 	int level; /* ignore these levels */
 	int except_level; /* don't ignore these levels */
 
+	int time; /* time in sec for temp ignores */
+	int time_tag;
+
 	int regexp:1;
 	int fullword:1;
 	int replies:1; /* ignore replies to nick in channel */
