@@ -173,6 +173,7 @@ static void textui_finish_init(void)
 
 	fe_common_core_finish_init();
 
+	dirty_check();
 	signal_emit("irssi init finished", 0);
 
 	if (display_firsttimer) {
