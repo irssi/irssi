@@ -108,7 +108,8 @@ int perl_timeout_add(int msecs, SV *func, SV *data, int once)
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
-        rec->script = script;
+	rec->once = once;
+	rec->script = script;
 	rec->func = perl_func_sv_inc(func, pkg);
 	rec->data = SvREFCNT_inc(data);
 	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_source_event, rec);
@@ -131,6 +132,7 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
+	rec->once = once;
         rec->script =script;
 	rec->func = perl_func_sv_inc(func, pkg);
 	rec->data = SvREFCNT_inc(data);
