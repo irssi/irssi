@@ -36,8 +36,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
         if (!IS_DCC_GET(dcc)) return;
 
 	/* check if we want to autoget file offer */
-	if (!settings_get_bool("dcc_autoget") &&
-	    !settings_get_bool("dcc_autoresume"))
+	if (!settings_get_bool("dcc_autoget"))
 		return;
 
 	/* check for lowports */
