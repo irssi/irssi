@@ -658,6 +658,11 @@ AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
 AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
 
+# move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
+PROG_LIBS=$LIBS
+LIBS=
+AC_SUBST(PROG_LIBS)
+
 dnl **
 dnl ** Keep all the libraries here so each frontend doesn't need to
 dnl ** keep track of them all
