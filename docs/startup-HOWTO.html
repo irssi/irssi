@@ -94,30 +94,30 @@ window is created every time you /JOIN a channel or /QUERY someone.
 There's several ways you can change between these windows:</p>
 
 <pre>
-     ALT-1, ALT-2, ... ALT-0 - Jump directly between windows 1-10
-     ALT-q .. ALT-p          - Jump directly between windows 11-20
-     ESC-1 .. ESC-0          - ALT-keys don't work everywhere, but you can
-			       use ESC-key instead of ALT.
+     Meta-1, Meta-2, .. Meta-0 - Jump directly between windows 1-10
+     Meta-q .. Meta-p          - Jump directly between windows 11-20
      /WINDOW &lt;number&gt;        - Jump to any window with specified number
      Ctrl-P, Ctrl-N          - Jump to previous / next window
 </pre>
 
-<p>Clearly the easiest way is to use ALT-number keys. Some terminals
-just don't allow it, with xterm and rxvt you should be able to fix it
-with changing X resources:</p>
+<p>Clearly the easiest way is to use Meta-number keys. And what is the Meta
+key? For some terminals, it's the same as ALT. If you have Windows keyboard,
+it's probably the left Windows key. If they don't work directly, you'll need
+to set a few X resources (NOTE: these work with both xterm and rxvt):</p>   
+
+<p>With rxvt, you can also specify which key acts as Meta key. So if you
+want to use ALT instead of Windows key for it, use:</p>
 
 <pre>
-     XTerm*eightBitInput:   false
-     XTerm*metaSendsEscape: true
+     rxvt*modifier: alt
 </pre>
 
-<p>And how exactly does it happen? For Debian, there's
-/etc/X11/Xresources/xterm file where you can put them and it's read
-automatically when X starts. ~/.Xresources file might also work. If you
-can't get anything else to work, just copy&amp;paste those lines to
-~/.Xresources and directly call "xrdb -merge ~/.Xresources" in some
-xterm. The resources affect only the new xterms you start, not existing
-ones.</p>
+<p>And how exactly do you set these X resources? For Debian, there's
+/etc/X11/Xresources/xterm file where you can put them and it's read 
+automatically when X starts. ~/.Xresources and ~/.Xdefaults files might also
+work. If you can't get anything else to work, just copy&paste those lines to
+~/.Xresources and directly call "xrdb -merge ~/.Xresources" in some xterm.  
+The resources affect only the new xterms you start, not existing ones.</p>  
 
 <p>Many windows SSH clients also don't allow usage of ALT. One excellent
 client that does allow is putty, you can download it from
