@@ -164,7 +164,8 @@ static void ison_save_users(MODULE_SERVER_REC *mserver, char *online)
 	}
 }
 
-static void whois_send(IRC_SERVER_REC *server, char *nicks)
+static void whois_send(IRC_SERVER_REC *server, const char *nicks,
+		       const char *whois_request)
 {
 	char *p, *str;
 
@@ -184,7 +185,7 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 			      "", "event empty", NULL);
 	g_free(str);
 
-	irc_send_cmdv(server, "WHOIS %s", nicks);
+	irc_send_cmdv(server, "WHOIS %s", whois_request);
 }
 
 static void whois_send_server(IRC_SERVER_REC *server, char *nick)
@@ -192,7 +193,7 @@ static void whois_send_server(IRC_SERVER_REC *server, char *nick)
 	char *str;
 
 	str = g_strdup_printf("%s %s", nick, nick);
-	whois_send(server, str);
+	whois_send(server, nick, str);
 	g_free(str);
 }
 
@@ -215,14 +216,14 @@ static void whois_list_send(IRC_SERVER_REC *server, GSList *nicks)
 
 		if (count >= server->max_whois_in_cmd) {
 			g_string_truncate(str, str->len-1);
-			whois_send(server, str->str);
+			whois_send(server, str->str, str->str);
                         count = 0;
 		}
 	}
 
 	if (str->len > 0) {
 		g_string_truncate(str, str->len-1);
-		whois_send(server, str->str);
+		whois_send(server, str->str, str->str);
 	}
 
 	g_string_free(str, TRUE);
