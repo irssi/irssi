@@ -48,6 +48,8 @@ static THEME_REC *log_theme;
 static int skip_next_printtext;
 static const char *log_theme_name;
 
+static int log_dir_create_mode;
+
 static char *log_colorizer_strip(const char *str)
 {
         return strip_codes(str);
@@ -438,7 +440,7 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 		log_item_add(log, LOG_ITEM_TARGET, target, server_tag);
 
 		dir = g_dirname(log->real_fname);
-		mkpath(dir, LOG_DIR_CREATE_MODE);
+		mkpath(dir, log_dir_create_mode);
 		g_free(dir);
 
 		log->temp = TRUE;
@@ -665,6 +667,7 @@ static void sig_theme_destroyed(THEME_REC *theme)
 static void read_settings(void)
 {
 	int old_autolog = autolog_level;
+        int log_file_create_mode;
 
 	autolog_path = settings_get_str("autolog_path");
 	autolog_level = !settings_get_bool("autolog") ? 0 :
@@ -684,6 +687,12 @@ static void read_settings(void)
 
 	log_theme = log_theme_name == NULL ? NULL :
 		theme_load(log_theme_name);
+
+	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
+        log_dir_create_mode = log_file_create_mode;
+        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
+        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
+        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
 }
 
 void fe_log_init(void)

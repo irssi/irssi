@@ -47,6 +47,7 @@ static const char *log_item_types[] = {
 
 const char *log_timestamp;
 static int log_file_create_mode;
+static int log_dir_create_mode;
 static int rotate_tag;
 
 static int log_item_str2type(const char *type)
@@ -116,7 +117,7 @@ int log_start_logging(LOG_REC *log)
 		/* path may contain variables (%time, $vars),
 		   make sure the directory is created */
 		dir = g_dirname(log->real_fname);
-		mkpath(dir, LOG_DIR_CREATE_MODE);
+		mkpath(dir, log_dir_create_mode);
 		g_free(dir);
 	}
 
@@ -557,6 +558,11 @@ static void read_settings(void)
 {
 	log_timestamp = settings_get_str("log_timestamp");
 	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
+
+        log_dir_create_mode = log_file_create_mode;
+        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
+        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
+        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
 }
 
 void log_init(void)
