@@ -24,4 +24,3 @@ char *realname;
 unsigned int reconnection:1; /* we're trying to reconnect */
 char *channels;
 char *away_reason;
-char *usermode;

@@ -176,7 +176,12 @@ create_addr_conn(int chat_type, const char *address, int port,
 	g_return_val_if_fail(address != NULL, NULL);
 
 	sserver = server_setup_find(address, port);
-	if (sserver != NULL) chat_type = sserver->chat_type;
+	if (sserver != NULL) {
+		if (chat_type < 0)
+			chat_type = sserver->chat_type;
+		else if (chat_type != sserver->chat_type)
+                        sserver = NULL;
+	}
 
 	proto = chat_type >= 0 ? chat_protocol_find_id(chat_type) :
                 chat_protocol_get_default();

@@ -26,9 +26,7 @@
 #include "net-sendbuffer.h"
 #include "misc.h"
 #include "rawlog.h"
-#include "settings.h"
 
-#include "chat-protocols.h"
 #include "servers.h"
 #include "servers-reconnect.h"
 #include "servers-redirect.h"
@@ -278,14 +276,6 @@ int server_start_connect(SERVER_REC *server)
 	return TRUE;
 }
 
-/* Connect to server */
-SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
-{
-	g_return_val_if_fail(IS_SERVER_CONNECT(conn), NULL);
-
-        return CHAT_PROTOCOL(conn)->server_connect(conn);
-}
-
 static int server_remove_channels(SERVER_REC *server)
 {
 	GSList *tmp;
@@ -421,7 +411,6 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
 
 	g_free_not_null(conn->channels);
         g_free_not_null(conn->away_reason);
-        g_free_not_null(conn->usermode);
         g_free(conn);
 }
 
@@ -465,52 +454,6 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 	return server;
 }
 
-/* SYNTAX: DISCONNECT *|<tag> [<message>] */
-static void cmd_disconnect(const char *data, SERVER_REC *server)
-{
-	char *tag, *msg;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
-		return;
-
-	if (*tag != '\0' && strcmp(tag, "*") != 0)
-		server = server_find_tag(tag);
-	if (server == NULL) cmd_param_error(CMDERR_NOT_CONNECTED);
-
-	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
-	signal_emit("server quit", 2, server, msg);
-
-	cmd_params_free(free_arg);
-	server_disconnect(server);
-}
-
-/* SYNTAX: QUIT [<message>] */
-static void cmd_quit(const char *data)
-{
-	GSList *tmp, *next;
-	const char *quitmsg;
-	char *str;
-
-	g_return_if_fail(data != NULL);
-
-	quitmsg = *data != '\0' ? data :
-		settings_get_str("quit_message");
-
-	/* disconnect from every server */
-	for (tmp = servers; tmp != NULL; tmp = next) {
-		next = tmp->next;
-
-		str = g_strdup_printf("* %s", quitmsg);
-		cmd_disconnect(str, tmp->data);
-		g_free(str);
-	}
-
-	signal_emit("gui exit", 0);
-}
-
 void servers_init(void)
 {
 	lookup_servers = servers = NULL;
@@ -518,16 +461,10 @@ void servers_init(void)
 	servers_reconnect_init();
 	servers_redirect_init();
 	servers_setup_init();
-
-	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
-	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
 }
 
 void servers_deinit(void)
 {
-	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
-	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
-
 	while (servers != NULL)
 		server_disconnect(servers->data);
 	while (lookup_servers != NULL)

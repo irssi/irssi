@@ -23,6 +23,7 @@
 typedef struct {
 #include "server-connect-rec.h"
 
+	char *usermode;
 	char *alternate_nick;
 
 	int max_cmds_at_once;

@@ -19,7 +19,6 @@
 */
 
 #include "module.h"
-#include "network.h"
 #include "commands.h"
 #include "misc.h"
 #include "special-vars.h"
@@ -52,168 +51,6 @@ typedef struct {
 
 static GString *tmpstr;
 static int knockout_tag;
-
-static SERVER_REC *irc_connect_server(const char *data)
-{
-	SERVER_CONNECT_REC *conn;
-	SERVER_REC *server;
-	GHashTable *optlist;
-	char *addr, *portstr, *password, *nick, *ircnet, *host;
-	void *free_arg;
-
-	g_return_val_if_fail(data != NULL, NULL);
-
-	if (!cmd_get_params(data, &free_arg, 4 | PARAM_FLAG_OPTIONS,
-			    "connect", &optlist, &addr, &portstr,
-			    &password, &nick))
-		return NULL;
-	if (*addr == '+') addr++;
-	if (*addr == '\0') {
-		signal_emit("error command", 1, GINT_TO_POINTER(CMDERR_NOT_ENOUGH_PARAMS));
-		cmd_params_free(free_arg);
-		return NULL;
-	}
-
-	if (strcmp(password, "-") == 0)
-		*password = '\0';
-
-	/* connect to server */
-	conn = server_create_conn(-1, addr, atoi(portstr), password, nick);
-	if (g_hash_table_lookup(optlist, "6") != NULL)
-		conn->family = AF_INET6;
-	else if (g_hash_table_lookup(optlist, "4") != NULL)
-		conn->family = AF_INET;
-
-        ircnet = g_hash_table_lookup(optlist, "ircnet");
-	if (ircnet != NULL && *ircnet != '\0') {
-		g_free_not_null(conn->chatnet);
-		conn->chatnet = g_strdup(ircnet);
-	}
-        host = g_hash_table_lookup(optlist, "host");
-	if (host != NULL && *host != '\0') {
-		IPADDR ip;
-
-		if (net_gethostbyname(host, &ip, conn->family) == 0) {
-			if (conn->own_ip == NULL)
-				conn->own_ip = g_new(IPADDR, 1);
-			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
-		}
-	}
-	server = server_connect(conn);
-
-	cmd_params_free(free_arg);
-	return server;
-}
-
-/* SYNTAX: CONNECT [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
-                   <address>|<ircnet> [<port> [<password> [<nick>]]] */
-static void cmd_connect(const char *data)
-{
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
-	irc_connect_server(data);
-}
-
-static RECONNECT_REC *find_reconnect_server(const char *addr, int port)
-{
-	RECONNECT_REC *match;
-	GSList *tmp;
-
-	g_return_val_if_fail(addr != NULL, NULL);
-
-	if (g_slist_length(reconnects) == 1) {
-		/* only one reconnection, we probably want to use it */
-		match = reconnects->data;
-		return IS_IRC_SERVER_CONNECT(match->conn) ? match : NULL;
-	}
-
-	/* check if there's a reconnection to the same host and maybe even
-	   the same port */
-        match = NULL;
-	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
-		RECONNECT_REC *rec = tmp->data;
-
-		if (IS_IRC_SERVER_CONNECT(rec->conn) &&
-		    g_strcasecmp(rec->conn->address, addr) == 0) {
-			if (rec->conn->port == port)
-				return rec;
-			match = rec;
-		}
-	}
-
-	return match;
-}
-
-/* SYNTAX: SERVER [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
-                  [+]<address>|<ircnet> [<port> [<password> [<nick>]]] */
-static void cmd_server(const char *data, IRC_SERVER_REC *server,
-		       void *item)
-{
-	GHashTable *optlist;
-	IRC_SERVER_CONNECT_REC *conn;
-	char *addr, *port, *channels, *away_reason, *usermode, *ircnet;
-	void *free_arg;
-	int no_old_server;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS,
-			    "connect", &optlist, &addr, &port))
-		return;
-
-	if (*addr == '\0' || strcmp(addr, "+") == 0)
-		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	conn = server == NULL ? NULL : server->connrec;
-	if (*addr != '+' && conn == NULL) {
-		/* check if there's a server waiting for removal in
-		   reconnection queue.. */
-		RECONNECT_REC *rec;
-
-		rec = find_reconnect_server(addr, atoi(port));
-		if (rec != NULL) {
-			/* remove the reconnection.. */
-                        conn = (IRC_SERVER_CONNECT_REC *) rec->conn;
-			server_reconnect_destroy(rec, FALSE);
-		}
-	}
-
-	no_old_server = server == NULL;
-	ircnet = conn == NULL ? NULL : g_strdup(conn->chatnet);
-	if (*addr == '+' || conn == NULL) {
-		channels = away_reason = usermode = NULL;
-	} else if (server != NULL) {
-		channels = irc_server_get_channels((IRC_SERVER_REC *) server);
-		if (*channels == '\0')
-			g_free_and_null(channels);
-		away_reason = !server->usermode_away ? NULL :
-			g_strdup(server->away_reason);
-		usermode = g_strdup(server->usermode);
-		signal_emit("command disconnect", 3,
-			    "* Changing server", server, item);
-	} else {
-		channels = g_strdup(conn->channels);
-		away_reason = g_strdup(conn->away_reason);
-		usermode = g_strdup(conn->usermode);
-	}
-
-	server = IRC_SERVER(irc_connect_server(data));
-	if (*addr == '+' || server == NULL ||
-	    (ircnet != NULL && server->connrec->chatnet != NULL &&
-	     g_strcasecmp(ircnet, server->connrec->chatnet) != 0)) {
-		g_free_not_null(channels);
-		g_free_not_null(usermode);
-		g_free_not_null(away_reason);
-	} else if (server != NULL && conn != NULL) {
-		server->connrec->reconnection = TRUE;
-		server->connrec->channels = channels;
-		server->connrec->usermode = usermode;
-		server->connrec->away_reason = away_reason;
-		if (no_old_server)
-			server_connect_free(SERVER_CONNECT(conn));
-	}
-	g_free_not_null(ircnet);
-	cmd_params_free(free_arg);
-}
 
 /* SYNTAX: NOTICE <targets> <message> */
 static void cmd_notice(const char *data, IRC_SERVER_REC *server)
@@ -1129,9 +966,6 @@ void irc_commands_init(void)
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);
 
-	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
-	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
-	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
@@ -1217,8 +1051,9 @@ void irc_commands_init(void)
 	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
+	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 
-	command_set_options("connect", "4 6 +ircnet +host");
+	command_set_options("connect", "+ircnet");
 	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");
@@ -1229,9 +1064,6 @@ void irc_commands_deinit(void)
 {
 	g_source_remove(knockout_tag);
 
-	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
-	command_unbind("server", (SIGNAL_FUNC) cmd_server);
-	command_unbind("connect", (SIGNAL_FUNC) cmd_connect);
 	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
@@ -1289,6 +1121,7 @@ void irc_commands_deinit(void)
 	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
 	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
 	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);
+	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 
 	g_string_free(tmpstr, TRUE);
 }

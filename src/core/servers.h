@@ -33,8 +33,6 @@ extern GSList *servers, *lookup_servers;
 void servers_init(void);
 void servers_deinit(void);
 
-/* Connect to server */
-SERVER_REC *server_connect(SERVER_CONNECT_REC *conn);
 /* Disconnect from server */
 void server_disconnect(SERVER_REC *server);
 

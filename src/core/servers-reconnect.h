@@ -14,6 +14,7 @@ typedef struct {
 
 extern GSList *reconnects;
 
+void reconnect_save_status(SERVER_CONNECT_REC *conn, SERVER_REC *server);
 void server_reconnect_destroy(RECONNECT_REC *rec, int free_conn);
 
 void servers_reconnect_init(void);

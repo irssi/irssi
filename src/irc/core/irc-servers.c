@@ -60,6 +60,7 @@ static void sig_server_connect_free(IRC_SERVER_CONNECT_REC *conn)
 	if (!IS_IRC_SERVER_CONNECT(conn))
 		return;
 
+	g_free_not_null(conn->usermode);
 	g_free_not_null(conn->alternate_nick);
 }
 

@@ -91,7 +91,8 @@ CHAT_PROTOCOL_REC *chat_protocol_find_net(GHashTable *optlist)
 	for (tmp = chat_protocols; tmp != NULL; tmp = tmp->next) {
 		CHAT_PROTOCOL_REC *rec = tmp->data;
 
-		if (g_hash_table_lookup(optlist, rec->chatnet) != NULL)
+		if (rec->chatnet != NULL &&
+		    g_hash_table_lookup(optlist, rec->chatnet) != NULL)
                         return rec;
 	}
 

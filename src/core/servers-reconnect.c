@@ -23,6 +23,7 @@
 #include "network.h"
 #include "signals.h"
 
+#include "chat-protocols.h"
 #include "servers.h"
 #include "servers-setup.h"
 #include "servers-reconnect.h"
@@ -33,6 +34,15 @@ GSList *reconnects;
 static int last_reconnect_tag;
 static int reconnect_timeout_tag;
 static int reconnect_time;
+
+void reconnect_save_status(SERVER_CONNECT_REC *conn, SERVER_REC *server)
+{
+	g_free_not_null(conn->away_reason);
+	conn->away_reason = !server->usermode_away ? NULL :
+		g_strdup(server->away_reason);
+
+	signal_emit("server reconnect save status", 2, conn, server);
+}
 
 static void server_reconnect_add(SERVER_CONNECT_REC *conn,
 				 time_t next_connect)
@@ -83,7 +93,7 @@ static int server_reconnect_timeout(void)
 		if (rec->next_connect <= now) {
 			conn = rec->conn;
 			server_reconnect_destroy(rec, FALSE);
-			server_connect(conn);
+			CHAT_PROTOCOL(conn)->server_connect(conn);
 		}
 	}
 
@@ -102,7 +112,7 @@ static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 		server_reconnect_add(conn, rec->last_connect+reconnect_time);
 	} else {
 		/* connect to server.. */
-		server_connect(conn);
+		CHAT_PROTOCOL(conn)->server_connect(conn);
 	}
 }
 
@@ -161,11 +171,7 @@ static void sig_reconnect(SERVER_REC *server)
 	if (server->connected) {
 		conn->reconnection = TRUE;
 
-		g_free_not_null(conn->away_reason);
-		conn->away_reason = !server->usermode_away ? NULL :
-			g_strdup(server->away_reason);
-
-		signal_emit("server reconnect save status", 2, conn, server);
+                reconnect_save_status(conn, server);
 	}
 
 	sserver = server_setup_find(server->connrec->address,
@@ -190,7 +196,7 @@ static void sig_reconnect(SERVER_REC *server)
 		    time(NULL)-server->connect_time > reconnect_time) {
 			/* there's been enough time since last connection,
 			   reconnect back immediately */
-			server_connect(conn);
+			CHAT_PROTOCOL(conn)->server_connect(conn);
 		} else {
 			/* reconnect later.. */
 			server_reconnect_add(conn, (server->connect_time == 0 ? time(NULL) :
@@ -282,7 +288,6 @@ static RECONNECT_REC *reconnect_find_tag(int tag)
 	return NULL;
 }
 
-/* Try to reconnect immediately */
 /* SYNTAX: RECONNECT <tag> */
 static void cmd_reconnect(const char *data, SERVER_REC *server)
 {
@@ -294,7 +299,9 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	if (*data == '\0' && server != NULL) {
 		/* reconnect back to same server */
 		str = g_strdup_printf("%s %d %s %s", server->connrec->address,
-				      server->connrec->port, server->connrec->password,
+				      server->connrec->port,
+				      server->connrec->password == NULL ? "-" :
+				      server->connrec->password,
 				      server->connrec->nick);
 		signal_emit("command server", 2, str, server);
 		g_free(str);
@@ -321,7 +328,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 
 	conn = rec->conn;
 	server_reconnect_destroy(rec, FALSE);
-	server_connect(conn);
+	CHAT_PROTOCOL(conn)->server_connect(conn);
 }
 
 static void cmd_disconnect(const char *data, SERVER_REC *server)
