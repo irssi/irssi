@@ -75,14 +75,14 @@ IRC_SOURCES = \
 	irc/typemap \
 	irc/module.h
 
-FE_SOURCES = \
-	irc/UI.xs \
-	irc/UI.pm \
-	common/Themes.xs \
-	common/Window.xs \
-	irc/Makefile.PL.in \
-	irc/typemap \
-	irc/module.h
+UI_SOURCES = \
+	ui/UI.xs \
+	ui/UI.pm \
+	ui/Themes.xs \
+	ui/Window.xs \
+	ui/Makefile.PL.in \
+	ui/typemap \
+	ui/module.h
 
 EXTRA_DIST = \
 	libperl_dynaloader.la \
@@ -90,7 +90,7 @@ EXTRA_DIST = \
 	get-signals.pl \
 	$(CORE_SOURCES) \
 	$(IRC_SOURCES) \
-	$(FE_SOURCES)
+	$(UI_SOURCES)
 
 noinst_HEADERS = \
 	module.h \
