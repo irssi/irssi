@@ -577,6 +577,8 @@ void perl_common_init(void)
 	plain_stashes = g_hash_table_new((GHashFunc) g_str_hash,
 					 (GCompareFunc) g_str_equal);
         irssi_add_plains(core_plains);
+
+        use_protocols = NULL;
 	g_slist_foreach(chat_protocols, (GFunc) perl_register_protocol, NULL);
 
 	signal_add("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
