@@ -33,8 +33,6 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);
 
-char *ignore_get_key(IGNORE_REC *rec);
-
 void ignore_add_rec(IGNORE_REC *rec);
 void ignore_update_rec(IGNORE_REC *rec);
 

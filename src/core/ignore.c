@@ -260,21 +260,6 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 	return NULL;
 }
 
-char *ignore_get_key(IGNORE_REC *rec)
-{
-	char *chans, *ret;
-
-	if (rec->channels == NULL)
-		return rec->mask != NULL ? g_strdup(rec->mask) : NULL;
-
-	chans = g_strjoinv(",", rec->channels);
-	if (rec->mask == NULL) return chans;
-
-	ret = g_strdup_printf("%s %s", rec->mask, chans);
-	g_free(chans);
-	return ret;
-}
-
 static void ignore_set_config(IGNORE_REC *rec)
 {
 	CONFIG_NODE *node;
@@ -351,13 +336,15 @@ void ignore_add_rec(IGNORE_REC *rec)
 		signal_emit("autoignore new", 1, rec);
 }
 
-static void ignore_destroy(IGNORE_REC *rec)
+static void ignore_destroy(IGNORE_REC *rec, int send_signal)
 {
 	ignores = g_slist_remove(ignores, rec);
-	if (!rec->autoignore)
-		signal_emit("ignore destroyed", 1, rec);
-	else
-		signal_emit("autoignore destroyed", 1, rec);
+	if (send_signal) {
+		if (!rec->autoignore)
+			signal_emit("ignore destroyed", 1, rec);
+		else
+			signal_emit("autoignore destroyed", 1, rec);
+	}
 
 #ifdef HAVE_REGEX_H
 	if (rec->regexp_compiled) regfree(&rec->preg);
@@ -377,7 +364,7 @@ void ignore_update_rec(IGNORE_REC *rec)
 	if (rec->level == 0) {
 		/* unignored everything */
 		ignore_remove_config(rec);
-		ignore_destroy(rec);
+		ignore_destroy(rec, TRUE);
 	} else {
 		/* unignore just some levels.. */
 		ignore_remove_config(rec);
@@ -405,7 +392,7 @@ static void read_ignores(void)
 	GSList *tmp;
 
 	while (ignores != NULL)
-                ignore_destroy(ignores->data);
+                ignore_destroy(ignores->data, FALSE);
 
 	node = iconfig_node_traverse("ignores", FALSE);
 	if (node == NULL) {
@@ -486,7 +473,7 @@ void ignore_init(void)
 void ignore_deinit(void)
 {
 	while (ignores != NULL)
-                ignore_destroy(ignores->data);
+                ignore_destroy(ignores->data, TRUE);
         nickmatch_deinit(nickmatch);
 
 	signal_remove("setup reread", (SIGNAL_FUNC) read_ignores);

@@ -29,6 +29,21 @@
 #include "ignore.h"
 #include "printtext.h"
 
+static char *ignore_get_key(IGNORE_REC *rec)
+{
+	char *chans, *ret;
+
+	if (rec->channels == NULL)
+		return g_strdup(rec->mask != NULL ? rec->mask : "*" );
+
+	chans = g_strjoinv(",", rec->channels);
+	if (rec->mask == NULL) return chans;
+
+	ret = g_strdup_printf("%s %s", rec->mask, chans);
+	g_free(chans);
+	return ret;
+}
+
 static void ignore_print(int index, IGNORE_REC *rec)
 {
 	GString *options;
