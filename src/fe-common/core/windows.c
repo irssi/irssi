@@ -231,6 +231,10 @@ WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 	window = window_find_level(server, level);
 	if (window != NULL) return window;
 
+	/* match by level - ignore server */
+	window = window_find_level(NULL, level);
+	if (window != NULL) return window;
+
 	/* fallback to active */
 	return active_win;
 }
