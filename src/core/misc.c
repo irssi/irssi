@@ -301,19 +301,27 @@ GList *glist_find_icase_string(GList *list, const char *key)
 
 char *stristr(const char *data, const char *key)
 {
-	const char *pos, *max;
-	int keylen, datalen;
+	const char *max;
+	int keylen, datalen, pos;
 
 	keylen = strlen(key);
 	datalen = strlen(data);
 
-	if (keylen > datalen)
+	if (keylen > datalen || keylen == 0)
 		return NULL;
 
 	max = data+datalen-keylen;
-	for (pos = data; pos <= max; pos++) {
-		if (g_strncasecmp(pos, key, keylen) == 0)
-			return (char *) pos;
+	pos = 0;
+	while (data <= max) {
+		if (key[pos] == '\0')
+                        return (char *) data;
+
+		if (toupper(data[pos]) == toupper(key[pos]))
+			pos++;
+		else {
+			data++;
+                        pos = 0;
+		}
 	}
 
 	return NULL;
@@ -325,22 +333,34 @@ char *stristr(const char *data, const char *key)
 
 char *stristr_full(const char *data, const char *key)
 {
-	const char *pos, *max;
-	int keylen, datalen;
+	const char *start, *max;
+	int keylen, datalen, pos;
 
 	keylen = strlen(key);
 	datalen = strlen(data);
 
-	if (keylen > datalen)
+	if (keylen > datalen || keylen == 0)
 		return NULL;
 
 	max = data+datalen-keylen;
-	for (pos = data; pos <= max; pos++) {
-		if (pos > data && !isbound(pos[-1])) continue;
+	start = data; pos = 0;
+	while (data <= max) {
+		if (key[pos] == '\0') {
+			if (data[pos] != '\0' && !isbound(data[pos])) {
+				data++;
+				pos = 0;
+                                continue;
+			}
+			return (char *) data;
+		}
 
-		if (g_strncasecmp(pos, key, keylen) == 0 &&
-		    (pos[keylen] == '\0' || isbound(pos[keylen])))
-			return (char *) pos;
+		if (toupper(data[pos]) == toupper(key[pos]) &&
+		    (pos != 0 || data == start || isbound(data[-1])))
+			pos++;
+		else {
+			data++;
+                        pos = 0;
+		}
 	}
 
 	return NULL;
