@@ -401,9 +401,12 @@ void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(dcc != NULL);
 
-	if (dcc->server != NULL) server = dcc->server;
-	if (server != NULL) {
-		signal_emit("dcc rejected", 1, dcc);
+	signal_emit("dcc rejected", 1, dcc);
+
+	if (dcc->server != NULL)
+		server = dcc->server;
+
+	if (server != NULL && dcc_is_connected(dcc)) {
 		irc_send_cmdv(server, "NOTICE %s :\001DCC REJECT %s %s\001",
 			      dcc->nick, dcc_type2str(dcc->orig_type),
 			      dcc->arg);
