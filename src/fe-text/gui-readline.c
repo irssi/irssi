@@ -160,12 +160,10 @@ void handle_key(int key)
 	case KEY_HOME:
 		/* home */
 		gui_entry_set_pos(0);
-		gui_entry_move_pos(0);
 		break;
 	case KEY_END:
 		/* end */
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		gui_entry_move_pos(0);
 		break;
 	case KEY_PPAGE:
 		/* page up */
@@ -223,7 +221,6 @@ void handle_key(int key)
 		c = gui_entry_get_pos();
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
 		gui_entry_erase(strlen(gui_entry_get_text()) - c);
-		gui_entry_move_pos(0);
 		break;
 
 	case 0:
@@ -232,12 +229,10 @@ void handle_key(int key)
 	case 1:
 		/* C-A, home */
 		gui_entry_set_pos(0);
-		gui_entry_move_pos(0);
 		break;
 	case 5:
 		/* C-E, end */
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
-		gui_entry_move_pos(0);
 		break;
 
 	case '\n':

@@ -158,6 +158,9 @@ void gui_entry_set_pos(int p)
 {
 	if (p >= 0 && p <= entry->len)
 		pos = p;
+
+	entry_screenpos();
+	entry_update();
 }
 
 void gui_entry_move_pos(int p)
