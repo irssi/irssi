@@ -5,9 +5,6 @@
 #define new_pv(a) \
 	(newSVpv((a) == NULL ? "" : (a), (a) == NULL ? 0 : strlen(a)))
 
-#define new_bless(obj, stash) \
-	sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(obj))), stash)
-
 #define is_hvref(o) \
 	((o) && SvROK(o) && SvRV(o) && (SvTYPE(SvRV(o)) == SVt_PVHV))
 

@@ -24,8 +24,6 @@ static void perl_ban_fill_hash(HV *hv, BAN_REC *ban)
 
 static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 {
-	HV *stash;
-
 	hv_store(hv, "type", 4, new_pv(dcc_type2str(dcc->type)), 0);
 	hv_store(hv, "orig_type", 9, new_pv(dcc_type2str(dcc->orig_type)), 0);
 	hv_store(hv, "created", 7, newSViv(dcc->created), 0);
@@ -35,8 +33,7 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 	hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
 	hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
 
-	stash = gv_stashpv("Irssi::Irc::Dcc::Chat", 0);
-	hv_store(hv, "chat", 4, new_bless(dcc->chat, stash), 0);
+	hv_store(hv, "chat", 4, dcc_bless(dcc->chat), 0);
 	hv_store(hv, "target", 6, new_pv(dcc->target), 0);
 	hv_store(hv, "arg", 3, new_pv(dcc->arg), 0);
 
@@ -77,20 +74,20 @@ static void perl_dcc_send_fill_hash(HV *hv, SEND_DCC_REC *dcc)
 static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
 {
         AV *av;
-	HV *stash;
         GSList *tmp;
 
 	hv_store(hv, "nick", 4, new_pv(netsplit->nick), 0);
 	hv_store(hv, "address", 7, new_pv(netsplit->address), 0);
 	hv_store(hv, "destroy", 7, newSViv(netsplit->destroy), 0);
 
-	stash = gv_stashpv("Irssi::Irc::Netsplitserver", 0);
-	hv_store(hv, "server", 6, new_bless(netsplit->server, stash), 0);
+	hv_store(hv, "server", 6,
+		 plain_bless(netsplit->server,
+			     "Irssi::Irc::Netsplitserver"), 0);
 
-	stash = gv_stashpv("Irssi::Irc::Netsplitchannel", 0);
 	av = newAV();
 	for (tmp = netsplit->channels; tmp != NULL; tmp = tmp->next) {
-		av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+		av_push(av, plain_bless(tmp->data,
+					"Irssi::Irc::Netsplitchannel"));
 	}
 	hv_store(hv, "channels", 7, newRV_noinc((SV*)av), 0);
 }

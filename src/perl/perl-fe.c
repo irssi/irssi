@@ -30,8 +30,6 @@
 
 static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
 {
-	HV *stash;
-
 	hv_store(hv, "id", 2, newSViv(process->id), 0);
 	hv_store(hv, "name", 4, new_pv(process->name), 0);
 	hv_store(hv, "args", 4, new_pv(process->args), 0);
@@ -39,8 +37,8 @@ static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
 	hv_store(hv, "pid", 3, newSViv(process->pid), 0);
 	hv_store(hv, "target", 6, new_pv(process->target), 0);
 	if (process->target_win != NULL) {
-		stash = gv_stashpv("Irssi::Window", 0);
-		hv_store(hv, "target_win", 10, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(process->target_win))), stash), 0);
+		hv_store(hv, "target_win", 10,
+			 plain_bless(process->target_win, "Irssi::Window"), 0);
 	}
 	hv_store(hv, "shell", 5, newSViv(process->shell), 0);
 	hv_store(hv, "notice", 6, newSViv(process->notice), 0);
@@ -66,10 +64,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 
 static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
 {
-	HV *stash;
-
-	stash = gv_stashpv("Irssi::Window", 0);
-	hv_store(hv, "window", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(dest->window))), stash), 0);
+	hv_store(hv, "window", 6, plain_bless(dest->window, "Irssi::Window"), 0);
 	hv_store(hv, "server", 6, irssi_bless(dest->server), 0);
 	hv_store(hv, "target", 6, new_pv(dest->target), 0);
 	hv_store(hv, "level", 5, newSViv(dest->level), 0);

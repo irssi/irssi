@@ -336,7 +336,6 @@ static void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 
 static void perl_log_fill_hash(HV *hv, LOG_REC *log)
 {
-	HV *stash;
 	AV *av;
 	GSList *tmp;
 
@@ -349,12 +348,11 @@ static void perl_log_fill_hash(HV *hv, LOG_REC *log)
 	hv_store(hv, "failed", 6, newSViv(log->failed), 0);
 	hv_store(hv, "temp", 4, newSViv(log->temp), 0);
 
-	stash = gv_stashpv("Irssi::Logitem", 0);
 	av = newAV();
 	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
-		av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+		av_push(av, plain_bless(tmp->data, "Irssi::Logitem"));
 	}
-	hv_store(hv, "items", 4, newRV_noinc((SV*)av), 0);
+	hv_store(hv, "items", 5, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
