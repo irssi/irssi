@@ -47,7 +47,7 @@ static int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
 		err = g_io_channel_write(channel, (char *) data + sent,
 					 len-sent, &ret);
                 sent += ret;
-	} while (ret < len && !is_fatal_error(err));
+	} while (sent < len && !is_fatal_error(err));
 
 	return err != 0 ? -1 : 0;
 }
