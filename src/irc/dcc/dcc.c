@@ -154,7 +154,7 @@ void dcc_ip2str(IPADDR *ip, char *host)
 {
 	unsigned long addr;
 
-	if (is_ipv6_addr(ip)) {
+	if (IPADDR_IS_V6(ip)) {
 		/* IPv6 */
 		net_ip2host(ip, host);
 	} else {

@@ -4,7 +4,7 @@
 #include "network.h"
 
 typedef struct {
-	IPADDR ip; /* resolved ip addres */
+	IPADDR ip4, ip6; /* resolved ip addresses */
 	int error; /* error, 0 = no error, -1 = error: */
 	int errlen; /* error text length */
 	char *errorstr; /* error string - dynamically allocated, you'll
@@ -24,7 +24,7 @@ typedef void (*NET_CALLBACK) (GIOChannel *, void *);
 typedef void (*NET_HOST_CALLBACK) (RESOLVED_NAME_REC *, void *);
 
 /* nonblocking gethostbyname(), PID of the resolver child is returned. */
-int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe, int family);
+int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe);
 /* Get host's name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data);
 /* get the resolved IP address. returns -1 if some error occured with read() */

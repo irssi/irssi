@@ -16,7 +16,7 @@ struct _SERVER_SETUP_REC {
 
 extern GSList *setupservers;
 
-extern IPADDR *source_host_ip; /* Resolved address */
+extern IPADDR *source_host_ip4, *source_host_ip6; /* Resolved address */
 extern int source_host_ok; /* Use source_host_ip .. */
 
 /* Fill reconnection specific information to connection

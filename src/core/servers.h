@@ -50,6 +50,10 @@ void server_connect_finished(SERVER_REC *server);
 /* connection to server failed */
 void server_connect_failed(SERVER_REC *server, const char *msg);
 
+/* Update own IPv4 and IPv6 records */
+void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
+				IPADDR *ip4, IPADDR *ip6);
+
 /* `optlist' should contain only one unknown key - the server tag.
    returns NULL if there was unknown -option */
 SERVER_REC *cmd_options_get_server(const char *cmd,

@@ -89,13 +89,10 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
-		IPADDR ip;
+		IPADDR ip4, ip6;
 
-		if (net_gethostbyname(host, &ip, conn->family) == 0) {
-			if (conn->own_ip == NULL)
-				conn->own_ip = g_new(IPADDR, 1);
-			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
-		}
+		if (net_gethostbyname(host, &ip4, &ip6) == 0)
+                        server_connect_own_ip_save(conn, &ip4, &ip6);
 	}
 
 	cmd_params_free(free_arg);

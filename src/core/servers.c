@@ -26,6 +26,7 @@
 #include "net-sendbuffer.h"
 #include "misc.h"
 #include "rawlog.h"
+#include "settings.h"
 
 #include "servers.h"
 #include "servers-reconnect.h"
@@ -154,8 +155,10 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	RESOLVED_IP_REC iprec;
-	const char *errormsg;
 	GIOChannel *handle;
+        IPADDR *ip, *own_ip;
+	const char *errormsg;
+        int port;
 
 	g_return_if_fail(IS_SERVER(server));
 
@@ -172,14 +175,23 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	server->connect_pipe[0] = NULL;
 	server->connect_pipe[1] = NULL;
 
-        if (iprec.error == 0)
-		signal_emit("server connecting", 2, server, &iprec.ip);
+	/* figure out if we should use IPv4 or v6 address */
+	ip = iprec.error != 0 ? NULL : iprec.ip6.family == 0 ||
+		server->connrec->family == AF_INET ?
+		&iprec.ip4 : &iprec.ip6;
+	if (iprec.ip4.family != 0 && server->connrec->family == 0 &&
+	    !settings_get_bool("resolve_prefer_ipv6"))
+                ip = &iprec.ip4;
 
-	conn = server->connrec;
-	handle = iprec.error != 0 ? NULL :
-		net_connect_ip(&iprec.ip, conn->proxy != NULL ?
-			       conn->proxy_port : conn->port,
-			       conn->own_ip != NULL ? conn->own_ip : NULL);
+        conn = server->connrec;
+	port = conn->proxy != NULL ? conn->proxy_port : conn->port;
+	own_ip = ip == NULL ? NULL :
+		(IPADDR_IS_V6(ip) ? conn->own_ip6 : conn->own_ip4);
+
+	if (ip != NULL)
+		signal_emit("server connecting", 2, server, ip);
+
+	handle = ip == NULL ? NULL : net_connect_ip(ip, port, own_ip);
 	if (handle == NULL) {
 		/* failed */
 		if (iprec.error == 0 || !net_hosterror_notfound(iprec.error)) {
@@ -259,15 +271,11 @@ int server_start_connect(SERVER_REC *server)
         server->connect_pipe[0] = g_io_channel_unix_new(fd[0]);
 	server->connect_pipe[1] = g_io_channel_unix_new(fd[1]);
 
-	if (server->connrec->family == 0 && server->connrec->own_ip != NULL)
-                server->connrec->family = server->connrec->own_ip->family;
-
 	connect_address = server->connrec->proxy != NULL ?
 		server->connrec->proxy : server->connrec->address;
 	server->connect_pid =
 		net_gethostbyname_nonblock(connect_address,
-					   server->connect_pipe[1],
-					   server->connrec->family);
+					   server->connect_pipe[1]);
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,
 			    (GInputFunction) server_connect_callback_readpipe,
@@ -405,7 +413,8 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->address);
 	g_free_not_null(conn->chatnet);
 
-	g_free_not_null(conn->own_ip);
+	g_free_not_null(conn->own_ip4);
+	g_free_not_null(conn->own_ip6);
 
         g_free_not_null(conn->password);
         g_free_not_null(conn->nick);
@@ -415,6 +424,30 @@ void server_connect_free(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->channels);
         g_free_not_null(conn->away_reason);
         g_free(conn);
+}
+
+/* Update own IPv4 and IPv6 records */
+void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
+				IPADDR *ip4, IPADDR *ip6)
+{
+	if (ip4 == NULL || ip4->family == 0)
+		g_free_and_null(conn->own_ip4);
+	if (ip6 == NULL || ip6->family == 0)
+		g_free_and_null(conn->own_ip6);
+
+	if (ip4 != NULL && ip4->family != 0) {
+		/* IPv4 address was found */
+		if (conn->own_ip4 != NULL)
+			conn->own_ip4 = g_new0(IPADDR, 1);
+		memcpy(conn->own_ip4, ip4, sizeof(IPADDR));
+	}
+
+	if (ip6 != NULL && ip6->family != 0) {
+		/* IPv6 address was found */
+		if (conn->own_ip6 != NULL)
+			conn->own_ip6 = g_new0(IPADDR, 1);
+		memcpy(conn->own_ip6, ip6, sizeof(IPADDR));
+	}
 }
 
 /* `optlist' should contain only one unknown key - the server tag.
@@ -459,6 +492,7 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 
 void servers_init(void)
 {
+	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
 	lookup_servers = servers = NULL;
 
 	servers_reconnect_init();

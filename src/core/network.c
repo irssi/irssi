@@ -47,8 +47,6 @@ union sockaddr_union {
 #  define g_io_channel_new(handle) g_io_channel_unix_new(handle)
 #endif
 
-static unsigned short default_family = 0;
-
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
 
@@ -138,16 +136,37 @@ int sin_get_port(union sockaddr_union *so)
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
-	IPADDR ip;
+	IPADDR ip4, ip6, *ip;
         int family;
 
 	g_return_val_if_fail(addr != NULL, NULL);
 
         family = my_ip == NULL ? 0 : my_ip->family;
-	if (net_gethostbyname(addr, &ip, family) == -1)
+	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
 		return NULL;
 
-	return net_connect_ip(&ip, port, my_ip);
+	if (my_ip == NULL) {
+                /* prefer IPv4 addresses */
+		ip = ip4.family != 0 ? &ip4 : &ip6;
+	} else if (IPADDR_IS_V6(my_ip)) {
+                /* my_ip is IPv6 address, use it if possible */
+		if (ip6.family != 0)
+			ip = &ip6;
+		else {
+			my_ip = NULL;
+                        ip = &ip4;
+		}
+	} else {
+                /* my_ip is IPv4 address, use it if possible */
+		if (ip4.family != 0)
+			ip = &ip4;
+		else {
+			my_ip = NULL;
+                        ip = &ip6;
+		}
+	}
+
+	return net_connect_ip(ip, port, my_ip);
 }
 
 /* Connect to socket with ip address */
@@ -155,6 +174,11 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
+
+	if (my_ip != NULL && ip->family != my_ip->family) {
+		g_warning("net_connect_ip(): ip->family != my_ip->family");
+                my_ip = NULL;
+	}
 
 	/* create the socket */
 	memset(&so, 0, sizeof(so));
@@ -334,28 +358,28 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 	return 0;
 }
 
-/* Get IP address for host. family specifies if we should prefer to
-   IPv4 or IPv6 address (0 = default, AF_INET or AF_INET6).
-   returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip, int family)
+/* Get IP addresses for host, both IPv4 and IPv6 if possible.
+   If ip->family is 0, the address wasn't found.
+   Returns 0 = ok, others = error code for net_gethosterror() */
+int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 {
 #ifdef HAVE_IPV6
 	union sockaddr_union *so;
-	struct addrinfo hints, *ai;
+	struct addrinfo hints, *ai, *origai;
 	char hbuf[NI_MAXHOST];
-	int host_error;
+	int host_error, count;
 #else
 	struct hostent *hp;
 #endif
 
 	g_return_val_if_fail(addr != NULL, -1);
 
-#ifdef HAVE_IPV6
-	memset(ip, 0, sizeof(IPADDR));
+	memset(ip4, 0, sizeof(IPADDR));
+	memset(ip6, 0, sizeof(IPADDR));
 
+#ifdef HAVE_IPV6
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_family = family != 0 ? family : default_family;
 
 	/* save error to host_error for later use */
 	host_error = getaddrinfo(addr, NULL, &hints, &ai);
@@ -366,25 +390,29 @@ int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 			sizeof(hbuf), NULL, 0, NI_NUMERICHOST))
 		return 1;
 
-	so = (union sockaddr_union *) ai->ai_addr;
-        sin_get_ip(so, ip);
-	freeaddrinfo(ai);
+        origai = ai; count = 0;
+	while (ai != NULL && count < 2) {
+		so = (union sockaddr_union *) ai->ai_addr;
+
+		if (ai->ai_family == AF_INET6 && ip6->family == 0) {
+			sin_get_ip(so, ip6);
+                        count++;
+		} else if (ai->ai_family == AF_INET && ip4->family == 0) {
+			sin_get_ip(so, ip4);
+                        count++;
+		}
+                ai = ai->ai_next;
+	}
+	freeaddrinfo(origai);
 #else
 	hp = gethostbyname(addr);
 	if (hp == NULL) return h_errno;
 
-	ip->family = AF_INET;
-	memcpy(&ip->addr, hp->h_addr, 4);
+	ip4->family = AF_INET;
+	memcpy(&ip4->addr, hp->h_addr, 4);
 #endif
 
 	return 0;
-}
-
-/* Set the default address family to use with host resolving
-   (AF_INET or AF_INET6) */
-void net_host_resolver_set_default_family(unsigned short family)
-{
-	default_family = family;
 }
 
 /* Get name for host, *name should be g_free()'d unless it's NULL.

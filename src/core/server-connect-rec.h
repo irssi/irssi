@@ -13,7 +13,7 @@ char *address;
 int port;
 char *chatnet;
 
-IPADDR *own_ip;
+IPADDR *own_ip4, *own_ip6;
 
 char *password;
 char *nick;

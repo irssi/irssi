@@ -33,7 +33,7 @@ struct _IPADDR {
 #  define MAX_IP_LEN 20
 #endif
 
-#define is_ipv6_addr(ip) ((ip)->family != AF_INET)
+#define IPADDR_IS_V6(ip) ((ip)->family != AF_INET)
 
 /* returns 1 if IPADDRs are the same */
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
@@ -58,13 +58,10 @@ int net_receive(GIOChannel *handle, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit(GIOChannel *handle, const char *data, int len);
 
-/* Get IP address for host. family specifies if we should prefer to
-   IPv4 or IPv6 address (0 = default, AF_INET or AF_INET6).
-   returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip, int family);
-/* Set the default address family to use with host resolving
-   (AF_INET or AF_INET6) */
-void net_host_resolver_set_default_family(unsigned short family);
+/* Get IP addresses for host, both IPv4 and IPv6 if possible.
+   If ip->family is 0, the address wasn't found.
+   Returns 0 = ok, others = error code for net_gethosterror() */
+int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6);
 /* Get name for host, *name should be g_free()'d unless it's NULL.
    Return values are the same as with net_gethostbyname() */
 int net_gethostbyaddr(IPADDR *ip, char **name);

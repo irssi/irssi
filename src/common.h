@@ -47,10 +47,14 @@
 #include "nls.h"
 
 #define g_free_not_null(a) \
-	if (a) g_free(a);
+	G_STMT_START { \
+	  if (a) g_free(a); \
+	} G_STMT_END
 
 #define g_free_and_null(a) \
-	if (a) { g_free(a); (a) = NULL; }
+	G_STMT_START { \
+	  if (a) { g_free(a); (a) = NULL; } \
+	} G_STMT_END
 
 #define G_INPUT_READ	(1 << 0)
 #define G_INPUT_WRITE	(1 << 1)

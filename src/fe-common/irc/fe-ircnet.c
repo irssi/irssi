@@ -106,7 +106,7 @@ static void cmd_ircnet_add(const char *data)
 		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
 		if (g_hash_table_lookup(optlist, "host")) {
 			g_free_and_null(rec->own_host);
-                        rec->own_ip = NULL;
+                        rec->own_ip4 = rec->own_ip6 = NULL;
 		}
 		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
 	}
@@ -137,7 +137,7 @@ static void cmd_ircnet_add(const char *data)
 	value = g_hash_table_lookup(optlist, "host");
 	if (value != NULL && *value != '\0') {
 		rec->own_host = g_strdup(value);
-		rec->own_ip = NULL;
+		rec->own_ip4 = rec->own_ip6 = NULL;
 	}
 
 	value = g_hash_table_lookup(optlist, "autosendcmd");

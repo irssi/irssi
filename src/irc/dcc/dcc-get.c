@@ -212,14 +212,15 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 
 void dcc_get_connect(GET_DCC_REC *dcc)
 {
+	IPADDR *own_ip;
+
 	if (dcc->get_type == DCC_GET_DEFAULT) {
 		dcc->get_type = settings_get_bool("dcc_autorename") ?
 			DCC_GET_RENAME : DCC_GET_OVERWRITE;
 	}
 
-
-	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
-				     source_host_ok ? source_host_ip : NULL);
+	own_ip = IPADDR_IS_V6(&dcc->addr) ? source_host_ip6 : source_host_ip4;
+	dcc->handle = net_connect_ip(&dcc->addr, dcc->port, own_ip);
 	if (dcc->handle != NULL) {
 		dcc->tagconn =
 			g_input_add(dcc->handle,
