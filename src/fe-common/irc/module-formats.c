@@ -191,3 +191,4 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "no_msgs_sent", "You have not sent a message to anyone yet", 0 },
 
 	{ NULL, NULL, 0 }
+};
