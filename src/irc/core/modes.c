@@ -591,7 +591,9 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server,
 {
 	char *nicks;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
+	if (!IS_IRC_CHANNEL(channel))
+                cmd_return_error(CMDERR_NOT_JOINED);
 
 	nicks = get_nicks(channel, data, 0, -1);
 	if (nicks != NULL && *nicks != '\0')
@@ -606,6 +608,8 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server,
 	char *nicks;
 
         CMD_IRC_SERVER(server);
+	if (!IS_IRC_CHANNEL(channel))
+                cmd_return_error(CMDERR_NOT_JOINED);
 
 	nicks = get_nicks(channel, data, 1, -1);
 	if (nicks != NULL && *nicks != '\0')
@@ -620,6 +624,8 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server,
 	char *nicks;
 
         CMD_IRC_SERVER(server);
+	if (!IS_IRC_CHANNEL(channel))
+                cmd_return_error(CMDERR_NOT_JOINED);
 
 	nicks = get_nicks(channel, data, 0, 0);
 	if (nicks != NULL && *nicks != '\0')
@@ -634,6 +640,8 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
 	char *nicks;
 
         CMD_IRC_SERVER(server);
+	if (!IS_IRC_CHANNEL(channel))
+                cmd_return_error(CMDERR_NOT_JOINED);
 
 	nicks = get_nicks(channel, data, -1, 1);
 	if (nicks != NULL && *nicks != '\0')
