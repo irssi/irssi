@@ -19,9 +19,9 @@ SUBDIRS = macros src $(PLUGINS) $(SERVERTEST)
 
 ## to automatically rebuild aclocal.m4 if any of the macros in
 ## `macros/' change
-@MAINT@include $(srcdir)/macros/macros.dep
+@MAINT@include macros/macros.dep
 @MAINT@macros/macros.dep: $(srcdir)/macros/Makefile.am
-@MAINT@	cd $(srcdir)/macros && $(MAKE) macros.dep
+@MAINT@	cd macros && $(MAKE) macros.dep
 
 if HAVE_GNOME
 appletdir = $(datadir)/applets/Network

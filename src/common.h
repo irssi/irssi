@@ -29,7 +29,7 @@
 #ifdef HAVE_POPT_H
 #  include <popt.h>
 #else
-#  include <src/lib-popt/popt.h>
+#  include "lib-popt/popt.h"
 #endif
 
 #ifdef HAVE_UNISTD_H
