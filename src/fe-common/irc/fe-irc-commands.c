@@ -289,9 +289,10 @@ static void bans_show_channel(CHANNEL_REC *channel, IRC_SERVER_REC *server)
 		BAN_REC *rec = tmp->data;
 
 		printformat(server, channel->name, MSGLEVEL_CRAP,
-			    *rec->setby == '\0' ? IRCTXT_BANLIST :
-			    IRCTXT_BANLIST_LONG, channel->name, rec->ban,
-			    rec->setby, (int) (time(NULL)-rec->time));
+			    (rec->setby == NULL || *rec->setby == '\0') ?
+			    IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
+			    channel->name, rec->ban, rec->setby,
+			    (int) (time(NULL)-rec->time));
 	}
 
 	/* ..and show ban exceptions.. */
@@ -299,9 +300,10 @@ static void bans_show_channel(CHANNEL_REC *channel, IRC_SERVER_REC *server)
 		BAN_REC *rec = tmp->data;
 
 		printformat(server, channel->name, MSGLEVEL_CRAP,
-			    *rec->setby == '\0' ? IRCTXT_EBANLIST :
-			    IRCTXT_EBANLIST_LONG, channel->name, rec->ban,
-			    rec->setby, (int) (time(NULL)-rec->time));
+			    (rec->setby == NULL || *rec->setby == '\0') ?
+			    IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
+			    channel->name, rec->ban, rec->setby,
+			    (int) (time(NULL)-rec->time));
 	}
 }
 
