@@ -456,6 +456,7 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 
 	if (server->real_address == NULL) {
 		/* set the server address */
+                g_free(server->real_address);
 		server->real_address = from == NULL ?
 			g_strdup(server->connrec->address) : /* shouldn't happen.. */
 			g_strdup(from);
