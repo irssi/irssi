@@ -146,6 +146,8 @@ static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
 
 	config_node_set_str(config, node, "name", channel->name);
 	config_node_set_str(config, node, "topic", channel->topic);
+	config_node_set_str(config, node, "topic_by", channel->topic_by);
+	config_node_set_int(config, node, "topic_time", channel->topic_time);
 	config_node_set_str(config, node, "key", channel->key);
 
 	signal_emit("session save channel", 3, channel, config, node);
@@ -220,6 +222,8 @@ static void session_restore_channel(SERVER_REC *server, CONFIG_NODE *node)
 
 	channel = CHAT_PROTOCOL(server)->channel_create(server, name, TRUE);
 	channel->topic = g_strdup(config_node_get_str(node, "topic", NULL));
+	channel->topic_by = g_strdup(config_node_get_str(node, "topic_by", NULL));
+	channel->topic_time = config_node_get_int(node, "topic_time", 0);
         channel->key = g_strdup(config_node_get_str(node, "key", NULL));
         channel->session_rejoin = TRUE;
 
