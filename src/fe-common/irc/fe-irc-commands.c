@@ -442,6 +442,28 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SETHOST <host> <password> (non-ircops)
+           SETHOST <ident> <host> (ircops) */
+static void cmd_sethost(const char *data, IRC_SERVER_REC *server)
+{
+	GSList *tmp;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	/* Save all the joined channels in server to window binds, since
+	   the server will soon /PART + /JOIN us in all channels. */
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+		CHANNEL_REC *channel = tmp->data;
+
+		window_bind_add(window_item_window(channel),
+				server->tag, channel->name);
+	}
+
+        irc_send_cmdv(server, "SETHOST %s", data);
+}
+
 void fe_irc_commands_init(void)
 {
 	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
@@ -458,6 +480,7 @@ void fe_irc_commands_init(void)
 	command_bind("topic", NULL, (SIGNAL_FUNC) cmd_topic);
 	command_bind("ts", NULL, (SIGNAL_FUNC) cmd_ts);
 	command_bind("oper", NULL, (SIGNAL_FUNC) cmd_oper);
+	command_bind("sethost", NULL, (SIGNAL_FUNC) cmd_sethost);
 }
 
 void fe_irc_commands_deinit(void)
@@ -476,4 +499,5 @@ void fe_irc_commands_deinit(void)
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);
 	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);
+	command_unbind("sethost", (SIGNAL_FUNC) cmd_sethost);
 }
