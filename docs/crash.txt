@@ -1,6 +1,6 @@
 How to submit a good bug report?
 
-Send them to bugs@irssi.org.
+Send them to bug reporting system in http://bugs.irssi.org/
 
 First you should give the following information:
  - irssi version, if CVS (or devel. tarball) then which day?
