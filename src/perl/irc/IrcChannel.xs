@@ -29,7 +29,6 @@ invites(channel)
 	Irssi::Irc::Channel channel
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
 	for (tmp = channel->invitelist; tmp != NULL; tmp = tmp->next) {
 		XPUSHs(new_pv(tmp->data));

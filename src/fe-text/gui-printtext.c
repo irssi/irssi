@@ -140,7 +140,7 @@ void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 				break;
 
 			if ((unsigned char) *text == LINE_CMD_CONTINUE) {
-				unsigned char *tmp;
+				char *tmp;
 
 				memcpy(&tmp, text+1, sizeof(char *));
 

@@ -69,7 +69,6 @@ values(window)
 	Irssi::Window window
 PREINIT:
         HV *hv;
-	GSList *tmp;
 PPCODE:
 	hv = newHV();
 	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
@@ -98,7 +97,6 @@ items(window)
 	Irssi::Window window
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
                 CHANNEL_REC *rec = tmp->data;
@@ -125,8 +123,6 @@ values(item)
 	Irssi::Windowitem item
 PREINIT:
         HV *hv;
-	AV *av;
-	GSList *tmp;
 PPCODE:
 	hv = newHV();
 	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(item->server))),
