@@ -6,3 +6,6 @@ A: Most unices are usually configured to send SIGQUIT to active process when
 
 Q: Where's the GUI version?
 A: Read http://irssi.org/?page=about
+
+Q: How do I easily write text to channel that starts with '/' character?
+A: / /text
