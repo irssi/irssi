@@ -12,25 +12,10 @@ AC_STDC_HEADERS
 AC_ARG_PROGRAM
 AM_PROG_LIBTOOL
 
-dnl * ahem.. :) we don't want static libraries for modules
-if test "x$lt_target" = "x"; then
-        if test "$target" = "NONE"; then
-		lt_target="$host"
-	else
-		lt_target="$target"
-	fi
-fi
 dnl * --disable-static isn't a good idea, complain if it's used
 if test "x$enable_static" = "xno"; then
 	AC_ERROR([Don't give --disable-static option to configure])
 fi
-
-${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
-$libtool_flags --disable-static --output=libtool-shared --no-verify $ac_aux_dir/ltmain.sh $lt_target \
-|| { echo "configure: error: libtool configure failed" 1>&2; exit 1; }
-${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
-$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $host \
-|| { echo "configure: error: libtool configure failed" 1>&2; exit 1; }
 
 AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 
@@ -568,14 +553,12 @@ if test "$want_perl" != "no"; then
 			perl_static_fe_lib=libfe_perl_static.la
 			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		else
-			dnl * build dynamic library of perl module,
-			dnl * use libtool-shared to prevent creating of
-			dnl * libperl.a
+			dnl * build dynamic library of perl module
 			perl_module_lib=libperl_core.la
 			perl_module_fe_lib=libfe_perl.la
 			perl_static_lib=
 			perl_static_fe_lib=
-			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool-shared'
+			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		fi
 		AC_SUBST(perl_module_lib)
 		AC_SUBST(perl_static_lib)
