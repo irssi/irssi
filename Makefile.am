@@ -21,7 +21,6 @@ noinst_HEADERS = irssi-version.h
 EXTRA_DIST = \
 	autogen.sh \
 	README \
-	README-HEBREW \
 	file2header.sh \
 	irssi.spec \
 	irssi.spec.in \
