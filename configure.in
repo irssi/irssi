@@ -754,7 +754,6 @@ src/Makefile
 src/core/Makefile
 src/irc/Makefile
 src/irc/core/Makefile
-src/irc/bot/Makefile
 src/irc/dcc/Makefile
 src/irc/notifylist/Makefile
 src/irc/proxy/Makefile
