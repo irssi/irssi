@@ -420,8 +420,10 @@ static void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 	hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
 	hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
 	av = newAV();
-	for (tmp = ignore->channels; *tmp != NULL; tmp++) {
-		av_push(av, new_pv(*tmp));
+	if (ignore->channels != NULL) {
+		for (tmp = ignore->channels; *tmp != NULL; tmp++) {
+			av_push(av, new_pv(*tmp));
+		}
 	}
 	hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
 	hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
