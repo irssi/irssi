@@ -385,12 +385,12 @@ static void key_backspace(void)
 
 static void key_delete_previous_word(void)
 {
-	/* FIXME */
+  gui_entry_erase_word();
 }
 
 static void key_delete_next_word(void)
 {
-	/* FIXME */
+	gui_entry_erase_next_word();
 }
 
 static void key_delete_to_previous_space(void)

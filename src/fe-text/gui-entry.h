@@ -16,6 +16,7 @@ void gui_entry_insert_char(char chr);
 
 void gui_entry_erase(int size);
 void gui_entry_erase_word(void);
+void gui_entry_erase_next_word(void);
 
 int gui_entry_get_pos(void);
 void gui_entry_set_pos(int pos);
