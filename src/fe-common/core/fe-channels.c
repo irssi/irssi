@@ -294,7 +294,7 @@ void fe_channels_init(void)
 
 	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
-	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
+	signal_add_last("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 

@@ -163,7 +163,6 @@ static void cmd_unquery(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
-	WINDOW_REC *window;
 	QUERY_REC *query;
 	char *nick;
 	void *free_arg;
@@ -200,12 +199,9 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (query == NULL)
 		query_create(server->chat_type, server, nick, FALSE);
 	else {
-		/* query already existed - change to query window */
-		window = window_item_window((WI_ITEM_REC *) query);
-		g_return_if_fail(window != NULL);
-
-		window_set_active(window);
-		window_item_set_active(window, (WI_ITEM_REC *) query);
+                /* query already existed - set query active / move it to this
+                   window */
+		window_item_set_active(active_win, (WI_ITEM_REC *) query);
 	}
 
 	if (g_hash_table_lookup(optlist, "window") != NULL) {
@@ -293,7 +289,7 @@ void fe_queries_init(void)
 
 	signal_add("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_add("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
-	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
+	signal_add_last("window item remove", (SIGNAL_FUNC) signal_window_item_removed);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add_first("message private", (SIGNAL_FUNC) sig_message_private);
