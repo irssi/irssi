@@ -229,29 +229,29 @@ static void sig_dcc_list_print(CHAT_DCC_REC *dcc)
 static void cmd_msg(const char *data)
 {
 	CHAT_DCC_REC *dcc;
+        GHashTable *optlist;
 	char *text, *target;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	if (*data != '=') {
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "msg",
+			    &optlist, &target, &text))
+		return;
+
+	if (*target == '=') {
 		/* handle only DCC messages */
-		return;
-	}
+		dcc = dcc_chat_find_id(target+1);
+		if (dcc == NULL || dcc->sendbuf == NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
+		} else {
+			if (query_find(NULL, target) == NULL)
+				completion_last_message_add(target);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &target, &text))
-		return;
-
-	dcc = dcc_chat_find_id(target+1);
-	if (dcc == NULL || dcc->sendbuf == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
-	} else {
-		if (query_find(NULL, target) == NULL)
-			completion_last_message_add(target);
-
-                signal_emit("message dcc own", 2, dcc, text);
+			signal_emit("message dcc own", 2, dcc, text);
+		}
 	}
 
 	cmd_params_free(free_arg);

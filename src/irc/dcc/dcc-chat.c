@@ -176,26 +176,27 @@ CHAT_DCC_REC *item_get_dcc(WI_ITEM_REC *item)
 static void cmd_msg(const char *data)
 {
 	CHAT_DCC_REC *dcc;
+        GHashTable *optlist;
 	char *text, *target;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-	if (*data != '=') {
-		/* handle only DCC messages */
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "msg",
+			    &optlist, &target, &text))
 		return;
+
+	if (*target == '=') {
+		/* handle only DCC messages */
+		dcc = dcc_chat_find_id(target+1);
+		if (dcc != NULL && dcc->sendbuf != NULL)
+			dcc_chat_send(dcc, text);
+
+		signal_stop();
 	}
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &target, &text))
-		return;
-
-	dcc = dcc_chat_find_id(target+1);
-	if (dcc != NULL && dcc->sendbuf != NULL)
-		dcc_chat_send(dcc, text);
-
 	cmd_params_free(free_arg);
-	signal_stop();
 }
 
 static void cmd_me(const char *data, SERVER_REC *server, QUERY_REC *item)
