@@ -2,6 +2,13 @@
 @SYNTAX:ban@
 
 Bans the specified nick or userhost mask.
+If nick is given as parameter, the current
+BANTYPE affects the ban mask.
+
+Example:
+    /BAN looser    - This bans the nick 'looser'
+    /BAN *!*@*.org - This bans all the users coming from any 
+                     .org domain.
 
 See also: BANTYPE, KNOCKOUT
 

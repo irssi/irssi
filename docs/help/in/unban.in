@@ -3,5 +3,9 @@
 
 Removes the specified ban(s) from the channel.
 
+Examples:
+   /UNBAN *!*@*.fi
+   /UNBAN larry!*@* *!me@*.mydomain.net
+
 See also: BAN, KNOCKOUT
 

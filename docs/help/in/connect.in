@@ -5,7 +5,7 @@
    -host    the host
 
 This command makes irssi to connect to specified server.
-Current connections are kept and another one is created.
+Current connections are kept and a new one is created.
 
 See also: SERVER
 

@@ -1,24 +1,51 @@
 
 @SYNTAX:mode@
 
-Changes and/or views modes. You can either change
-your own modes or channel modes (given that you're
-a channel operator).
+Both channels and users have modes associated with them. For channels, 
+they determine who is a channel operator, the number of people who may
+join the channel, who may not enter the channel, and myriad other things. 
+For users, they determine whether the user is an IRC operator, whether 
+the user will receive special server notices, etc. 
 
-Examples:
+Modes are enabled when prepended with a "+", and disabled when with a "-". 
 
-/MODE * +s    
-   - Makes the current channel secret
+Standard User Modes: 
+     i    When enabled, you are "invisible" to NAMES and WHO queries from 
+          anyone not on a channel common to you. Additionally, you are also 
+          hidden from WHOIS unless you exact nickname is specified. 
+     o    When enabled, this gives you IRC operator status.
+     s    When enabled, you will receive special server notices.
+     w    When enabled, you will receive IRC operator WALLOPS, as well as 
+          notices of any remote CONNECTs or SQUITs. 
 
-/MODE #irssi -o Beel0  
-   - Deops user Beel0 on channel #irssi
+Standard Channel Modes: 
+     b    When enabled, this prevents the specified nick!user@host mask from 
+          entering the channel. 
+     i    When enabled, users may only join the channel if INVITEd. 
+     k    When enabled, users may only join the channel if they specify the 
+          proper "key".
+     l    When enabled, only the specified number of users may enter the channel. 
+     m    When enabled, only users with +o or +v may speak on the channel. 
+     n    When enabled, public messages from outside the channel are not allowed. 
+     o    When enabled, grants the specified nickname channel operator status. 
+     p    When enabled, the channel is made private. The channel name will not show 
+          up in WHO, WHOIS, NAMES, or LIST replies.
+     s    When enabled, makes the channel secret. This is the same as +p, except 
+          the channel will not show up in any WHO/WHOIS /etc. queries from a 
+          person not on the channel. Anyone who is on a +s channel is effectively 
+          invisible, as per user mode +i. 
+     t    When enabled, only channnel operators may set a topic. 
+     v    When enabled, grants the specified nickname voice status. 
 
-/MODE * +b *!*@*.org
-   - Bans on the current channel all users coming 
-     from .org hosts.
+Examples: 
+   /MODE your_nick +sw    - Receive operator WALLOPS and server notices 
+   /MODE your_nick +s+w     (both examples are equivalent). 
+   /MODE #channel +l 35   - Set a channel limit
+   /MODE #channel +o theirnick 
+                          - Make theirnick a channel operator.
+   /MODE #channel +bk-o *!*some@*.ban.com Secret_Key foobar 
+                          - Set a ban, a key, and remove chanop status 
+                            from 'foobar'. 
 
-/MODE yournick +w
-   - Makes you to see the wallops.
-
-See also: BAN, VOICE, OP, DEOP
+See also: BAN, VOICE, OP, DEOP, INVITE
 

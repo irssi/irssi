@@ -6,5 +6,5 @@ You can reconnect to server with /RECONNECT <n>.
 /RECONNECT without any arguments will disconnect from the 
 active server and reconnect back immediately.
 
-See also: SERVER, DISCONNECT
+See also: SERVER, DISCONNECT, RMRECONNS
 

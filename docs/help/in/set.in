@@ -14,5 +14,10 @@ when /TOGGLE behaves exactly like /SET.
 
 Remember that changes are not saved until you use /SAVE!
 
+Examples:
+   /SET autolog OFF    - Sets value for setting 'autolog'
+   /SET close          - Shows all settings whose variable name
+                         contains 'close'. Very practical.
+
 See also: TOGGLE
 
