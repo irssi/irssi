@@ -61,8 +61,7 @@ static void dcc_connected(CHAT_DCC_REC *dcc)
 		if (!autocreate_dccquery)
 			completion_last_message_add(sender);
 		else
-			irc_query_create(dcc->server == NULL ? NULL :
-					 dcc->server->tag, sender, TRUE);
+			irc_query_create(dcc->servertag, sender, TRUE);
 	}
 	g_free(sender);
 }
