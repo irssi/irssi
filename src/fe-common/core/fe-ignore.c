@@ -73,6 +73,12 @@ static void cmd_ignore_show(void)
 	GSList *tmp;
 	int index;
 
+	if (ignores == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_IGNORE_NO_IGNORES);
+                return;
+	}
+
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_IGNORE_HEADER);
 	index = 1;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next, index++) {
