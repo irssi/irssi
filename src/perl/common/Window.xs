@@ -105,8 +105,8 @@ void
 print(server, channel, str, level)
 	Irssi::Server server
 	char *channel
-	int level
 	char *str
+	int level
 CODE:
 	printtext(server, channel, level, str);
 
@@ -130,31 +130,6 @@ window_find_closest(server, name, level)
 #*******************************
 MODULE = Irssi	PACKAGE = Irssi::Window  PREFIX=window_
 #*******************************
-
-void
-init(window)
-	Irssi::Window window
-PREINIT:
-        HV *hv;
-CODE:
-	hv = hvref(ST(0));
-	if (hv != NULL) {
-		hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
-		hv_store(hv, "name", 4, new_pv(window->name), 0);
-
-		if (window->active)
-			hv_store(hv, "active", 6, irssi_bless(window->active), 0);
-		if (window->active_server)
-			hv_store(hv, "active_server", 13, irssi_bless(window->active_server), 0);
-
-		hv_store(hv, "lines", 5, newSViv(window->lines), 0);
-
-		hv_store(hv, "level", 5, newSViv(window->level), 0);
-		hv_store(hv, "new_data", 8, newSViv(window->new_data), 0);
-		hv_store(hv, "last_color", 10, newSViv(window->last_color), 0);
-		hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
-		hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
-	}
 
 void
 items(window)

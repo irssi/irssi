@@ -170,6 +170,8 @@ static void irssi_perl_start(void)
 
 	perl_parse(irssi_perl_interp, xs_init, 3, args, NULL);
 	perl_eval_pv(eval_file_code, TRUE);
+
+        perl_common_init();
 }
 
 static int signal_destroy_hash(void *key, GSList **list, const char *package)
@@ -295,6 +297,9 @@ static void irssi_perl_stop(void)
 	g_slist_free(perl_scripts);
 	perl_scripts = NULL;
 
+	/* perl-common stuff */
+        perl_common_deinit();
+
 	/* perl interpreter */
 	perl_destruct(irssi_perl_interp);
 	perl_free(irssi_perl_interp);
@@ -366,6 +371,34 @@ static void cmd_run(const char *data)
 
 		if (str != NULL && *str != '\0')
 			signal_emit("gui dialog", 2, "error", str);
+	}
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+}
+
+static void cmd_perl(const char *data)
+{
+	dSP;
+        GString *code;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+
+	code = g_string_new("use Irssi;\n");
+        g_string_append(code, data);
+	perl_eval_pv(code->str, G_NOARGS|G_EVAL|G_DISCARD);
+	g_string_free(code, TRUE);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		STRLEN n_a;
+
+		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
 	}
 
 	PUTBACK;
@@ -604,8 +637,7 @@ static int perl_get_args(int signal, SV **args, va_list va)
 			args[n] = irssi_bless((SERVER_REC *) arg);
 		} else {
 			/* blessed object */
-			stash = gv_stashpv(rec->args[n], 0);
-			args[n] = new_bless(arg, stash);
+			args[n] = irssi_bless_plain(rec->args[n], arg);
 		}
 	}
         return n;
@@ -724,24 +756,23 @@ void perl_init(void)
 	perl_scripts = NULL;
 	command_bind("run", NULL, (SIGNAL_FUNC) cmd_run);
 	command_bind_first("unload", NULL, (SIGNAL_FUNC) cmd_unload);
+	command_bind("perl", NULL, (SIGNAL_FUNC) cmd_perl);
 	command_bind("perlflush", NULL, (SIGNAL_FUNC) cmd_perlflush);
 	signal_grabbed = siglast_grabbed = FALSE;
 
         PL_perl_destruct_level = 1;
 	irssi_perl_start();
-
-	perl_common_init();
 	irssi_perl_autorun();
 }
 
 void perl_deinit(void)
 {
 	irssi_perl_stop();
-	perl_common_deinit();
 
 	if (signal_grabbed) signal_remove("signal", (SIGNAL_FUNC) sig_signal);
 	if (siglast_grabbed) signal_remove("last signal", (SIGNAL_FUNC) sig_lastsignal);
 	command_unbind("run", (SIGNAL_FUNC) cmd_run);
 	command_unbind("unload", (SIGNAL_FUNC) cmd_unload);
+	command_unbind("perl", (SIGNAL_FUNC) cmd_perl);
 	command_unbind("perlflush", (SIGNAL_FUNC) cmd_perlflush);
 }

@@ -32,6 +32,12 @@
 #include "signals.h"
 #include "settings.h"
 
+#include "commands.h"
+#include "ignore.h"
+#include "log.h"
+#include "rawlog.h"
+#include "servers-reconnect.h"
+
 #include "chat-protocols.h"
 #include "servers.h"
 #include "channels.h"
@@ -43,7 +49,12 @@
 #include "fe-common/core/formats.h"
 #include "fe-common/core/printtext.h"
 
-static GHashTable *perl_stashes;
+typedef struct {
+	char *stash;
+        PERL_OBJECT_FUNC fill_func;
+} PERL_OBJECT_REC;
+
+static GHashTable *iobject_stashes, *plain_stashes;
 
 /* returns the package who called us */
 char *perl_get_package(void)
@@ -52,46 +63,35 @@ char *perl_get_package(void)
 	return SvPV(perl_eval_pv("caller", TRUE), n_a);
 }
 
-static void object_fill_values(SV *sv, const char *stash)
+SV *irssi_bless_iobject(int type, int chat_type, void *object)
 {
-	dSP;
-        char str[100];
-
-	ENTER;
-	SAVETMPS;
-
-	PUSHMARK(SP);
-	XPUSHs(sv_mortalcopy(sv));
-	PUTBACK;
-
-	g_snprintf(str, sizeof(str), "%s::init", stash);
-	perl_call_method(str, G_DISCARD);
-	SPAGAIN;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-}
-
-SV *irssi_bless_object(int type, int chat_type, void *object)
-{
-        char *str;
+        PERL_OBJECT_REC *rec;
 	HV *stash, *hv;
-        SV *sv;
 
-	str = g_hash_table_lookup(perl_stashes,
+	rec = g_hash_table_lookup(iobject_stashes,
 				  GINT_TO_POINTER(type | (chat_type << 24)));
-	g_return_val_if_fail(str != NULL, newSViv(GPOINTER_TO_INT(object)));
+	g_return_val_if_fail(rec != NULL, newSViv(GPOINTER_TO_INT(object)));
 
-	stash = gv_stashpv(str, 1);
+	stash = gv_stashpv(rec->stash, 1);
 
 	hv = newHV();
 	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
+        rec->fill_func(hv, object);
+	return sv_bless(newRV_noinc((SV*)hv), stash);
+}
 
-	sv = sv_bless(newRV_noinc((SV*)hv), stash);
-	object_fill_values(sv, str);
-        return sv;
+SV *irssi_bless_plain(const char *stash, void *object)
+{
+        PERL_OBJECT_FUNC fill_func;
+	HV *hv;
 
+	fill_func = g_hash_table_lookup(plain_stashes, stash);
+
+	hv = newHV();
+	hv_store(hv, "_irssi", 6, newSViv(GPOINTER_TO_INT(object)), 0);
+	if (fill_func != NULL)
+		fill_func(hv, object);
+	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv(stash, 1));
 }
 
 void *irssi_ref_object(SV *o)
@@ -109,11 +109,34 @@ void *irssi_ref_object(SV *o)
 	return GINT_TO_POINTER(SvIV(*sv));
 }
 
-void irssi_add_object(int type, int chat_type, const char *stash)
+void irssi_add_object(int type, int chat_type, const char *stash,
+		      PERL_OBJECT_FUNC func)
 {
-	g_hash_table_insert(perl_stashes,
-			    GINT_TO_POINTER(type | (chat_type << 24)),
-			    g_strdup(stash));
+	PERL_OBJECT_REC *rec;
+        void *hash;
+
+        hash = GINT_TO_POINTER(type | (chat_type << 24));
+	rec = g_hash_table_lookup(iobject_stashes, hash);
+	if (rec == NULL) {
+		rec = g_new(PERL_OBJECT_REC, 1);
+		rec->stash = g_strdup(stash);
+		g_hash_table_insert(iobject_stashes, hash, rec);
+	}
+	rec->fill_func = func;
+}
+
+void irssi_add_plain(const char *stash, PERL_OBJECT_FUNC func)
+{
+        if (g_hash_table_lookup(plain_stashes, stash) == NULL)
+		g_hash_table_insert(plain_stashes, g_strdup(stash), func);
+}
+
+void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects)
+{
+	while (objects->name != NULL) {
+                irssi_add_plain(objects->name, objects->fill_func);
+                objects++;
+	}
 }
 
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
@@ -262,6 +285,103 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
 }
 
+void perl_command_fill_hash(HV *hv, COMMAND_REC *cmd)
+{
+	hv_store(hv, "category", 8, new_pv(cmd->category), 0);
+	hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
+}
+
+void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
+{
+	AV *av;
+	char **tmp;
+
+	hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
+	hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
+	av = newAV();
+	for (tmp = ignore->channels; *tmp != NULL; tmp++) {
+		av_push(av, new_pv(*tmp));
+	}
+	hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
+	hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
+
+	hv_store(hv, "level", 5, newSViv(ignore->level), 0);
+	hv_store(hv, "except_level", 12, newSViv(ignore->except_level), 0);
+
+	hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
+	hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
+}
+
+void perl_log_fill_hash(HV *hv, LOG_REC *log)
+{
+	HV *stash;
+	AV *av;
+	GSList *tmp;
+
+	hv_store(hv, "fname", 5, new_pv(log->fname), 0);
+	hv_store(hv, "opened", 6, newSViv(log->opened), 0);
+	hv_store(hv, "level", 5, newSViv(log->level), 0);
+	hv_store(hv, "last", 4, newSViv(log->last), 0);
+	hv_store(hv, "autoopen", 8, newSViv(log->autoopen), 0);
+	hv_store(hv, "failed", 6, newSViv(log->failed), 0);
+	hv_store(hv, "temp", 4, newSViv(log->temp), 0);
+
+	stash = gv_stashpv("Irssi::LogItem", 0);
+	av = newAV();
+	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
+		av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+	}
+	hv_store(hv, "items", 4, newRV_noinc((SV*)av), 0);
+}
+
+void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
+{
+	hv_store(hv, "type", 4, newSViv(item->type), 0);
+	hv_store(hv, "name", 4, new_pv(item->name), 0);
+	hv_store(hv, "servertag", 9, new_pv(item->servertag), 0);
+}
+
+void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
+{
+	AV *av;
+	GSList *tmp;
+
+	hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
+	hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
+
+	av = newAV();
+	for (tmp = rawlog->lines; tmp != NULL; tmp = tmp->next) {
+		av_push(av, new_pv(tmp->data));
+	}
+	hv_store(hv, "lines", 5, newRV_noinc((SV*)av), 0);
+}
+
+void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
+{
+	perl_connect_fill_hash(hv, reconnect->conn);
+	hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
+	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
+}
+
+void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
+{
+	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
+	hv_store(hv, "name", 4, new_pv(window->name), 0);
+
+	if (window->active)
+		hv_store(hv, "active", 6, irssi_bless(window->active), 0);
+	if (window->active_server)
+		hv_store(hv, "active_server", 13, irssi_bless(window->active_server), 0);
+
+	hv_store(hv, "lines", 5, newSViv(window->lines), 0);
+
+	hv_store(hv, "level", 5, newSViv(window->level), 0);
+	hv_store(hv, "new_data", 8, newSViv(window->new_data), 0);
+	hv_store(hv, "last_color", 10, newSViv(window->last_color), 0);
+	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
+	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
+}
+
 void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 {
 	THEME_REC *theme;
@@ -317,25 +437,30 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	/* window items: channel, query */
 	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Channel", name);
-	irssi_add_object(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_channel_fill_hash);
 
 	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Query", name);
-	irssi_add_object(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_query_fill_hash);
 
         /* channel nicks */
 	type = module_get_uniq_id("NICK", 0);
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Nick", name);
-	irssi_add_object(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_nick_fill_hash);
 
 	/* server specific */
 	type = module_get_uniq_id("SERVER", 0);
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Server", name);
-	irssi_add_object(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_server_fill_hash);
 
 	type = module_get_uniq_id("SERVER CONNECT", 0);
 	g_snprintf(stash, sizeof(stash), "Irssi::%s::Connect", name);
-	irssi_add_object(type, chat_type, stash);
+	irssi_add_object(type, chat_type, stash,
+			 (PERL_OBJECT_FUNC) perl_connect_fill_hash);
 
 	/* register ISAs */
 	for (n = 0; n < sizeof(items)/sizeof(items[0]); n++) {
@@ -347,10 +472,16 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	g_free(name);
 }
 
+static void free_iobject_hash(void *key, PERL_OBJECT_REC *rec)
+{
+        g_free(rec->stash);
+	g_free(rec);
+}
+
 static int perl_free_protocol(void *key, void *value, void *chat_type)
 {
 	if ((GPOINTER_TO_INT(key) >> 24) == GPOINTER_TO_INT(chat_type)) {
-		g_free(value);
+                free_iobject_hash(key, value);
                 return TRUE;
 	}
 
@@ -359,13 +490,8 @@ static int perl_free_protocol(void *key, void *value, void *chat_type)
 
 static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 {
-	g_hash_table_foreach_remove(perl_stashes, (GHRFunc) perl_free_protocol,
+	g_hash_table_foreach_remove(iobject_stashes, (GHRFunc) perl_free_protocol,
 				    GINT_TO_POINTER(rec->id));
-}
-
-static void free_perl_stash(void *key, char *value)
-{
-	g_free(value);
 }
 
 static void sig_protocol_created(CHAT_PROTOCOL_REC *rec)
@@ -380,8 +506,23 @@ static void sig_protocol_destroyed(CHAT_PROTOCOL_REC *rec)
 
 void perl_common_init(void)
 {
-	perl_stashes = g_hash_table_new((GHashFunc) g_direct_hash,
+	static PLAIN_OBJECT_INIT_REC core_plains[] = {
+		{ "Irssi::Command", (PERL_OBJECT_FUNC) perl_command_fill_hash },
+		{ "Irssi::Ignore", (PERL_OBJECT_FUNC) perl_ignore_fill_hash },
+		{ "Irssi::Log", (PERL_OBJECT_FUNC) perl_log_fill_hash },
+		{ "Irssi::LogItem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
+		{ "Irssi::Rawlog", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
+		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
+		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
+
+		{ NULL, NULL }
+	};
+
+	iobject_stashes = g_hash_table_new((GHashFunc) g_direct_hash,
 					(GCompareFunc) g_direct_equal);
+	plain_stashes = g_hash_table_new((GHashFunc) g_str_hash,
+					 (GCompareFunc) g_str_equal);
+        irssi_add_plains(core_plains);
 	g_slist_foreach(chat_protocols, (GFunc) perl_register_protocol, NULL);
 
 	signal_add("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
@@ -390,8 +531,11 @@ void perl_common_init(void)
 
 void perl_common_deinit(void)
 {
-        g_hash_table_foreach(perl_stashes, (GHFunc) free_perl_stash, NULL);
-	g_hash_table_destroy(perl_stashes);
+        g_hash_table_foreach(iobject_stashes, (GHFunc) free_iobject_hash, NULL);
+	g_hash_table_destroy(iobject_stashes);
+
+	g_hash_table_foreach(plain_stashes, (GHFunc) g_free, NULL);
+	g_hash_table_destroy(plain_stashes);
 
 	signal_remove("chat protocol created", (SIGNAL_FUNC) sig_protocol_created);
 	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) sig_protocol_destroyed);

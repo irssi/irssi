@@ -32,26 +32,6 @@ MODULE = Irssi  PACKAGE = Irssi::Rawlog  PREFIX = rawlog_
 #*******************************
 
 void
-init(rawlog)
-	Irssi::Rawlog rawlog
-PREINIT:
-        HV *hv;
-	AV *av;
-	GSList *tmp;
-CODE:
-	hv = hvref(ST(0));
-	if (hv != NULL) {
-		hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
-		hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
-
-		av = newAV();
-		for (tmp = rawlog->lines; tmp != NULL; tmp = tmp->next) {
-			av_push(av, new_pv(tmp->data));
-		}
-		hv_store(hv, "lines", 5, newRV_noinc((SV*)av), 0);
-	}
-
-void
 rawlog_destroy(rawlog)
 	Irssi::Rawlog rawlog
 

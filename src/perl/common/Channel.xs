@@ -63,12 +63,6 @@ MODULE = Irssi  PACKAGE = Irssi::Channel  PREFIX = channel_
 #*******************************
 
 void
-init(channel)
-	Irssi::Channel channel
-CODE:
-	perl_channel_fill_hash(hvref(ST(0)), channel);
-
-void
 channel_destroy(channel)
 	Irssi::Channel channel
 
@@ -119,14 +113,3 @@ PPCODE:
 		XPUSHs(sv_2mortal(irssi_bless((NICK_REC *) tmp->data)));
 	}
 	g_slist_free(list);
-
-#*******************************
-MODULE = Irssi	PACKAGE = Irssi::Nick
-#*******************************
-
-void
-init(nick)
-	Irssi::Nick nick
-CODE:
-	perl_nick_fill_hash(hvref(ST(0)), nick);
-

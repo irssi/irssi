@@ -44,12 +44,6 @@ MODULE = Irssi  PACKAGE = Irssi::Query  PREFIX = query_
 #*******************************
 
 void
-init(query)
-	Irssi::Query query
-CODE:
-	perl_query_fill_hash(hvref(ST(0)), query);
-
-void
 query_destroy(query)
 	Irssi::Query query
 

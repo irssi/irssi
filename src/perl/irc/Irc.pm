@@ -18,5 +18,7 @@ require DynaLoader;
 
 bootstrap Irssi::Irc $VERSION;
 
+Irssi::Irc::init();
+
 1;
 

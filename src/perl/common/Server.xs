@@ -39,12 +39,6 @@ server_find_chatnet(chatnet)
 MODULE = Irssi	PACKAGE = Irssi::Server  PREFIX = server_
 #*******************************
 
-void
-init(server)
-	Irssi::Server server
-CODE:
-	perl_server_fill_hash(hvref(ST(0)), server);
-
 Irssi::Server
 server_connect(conn)
 	Irssi::Connect conn
@@ -140,29 +134,6 @@ CODE:
 MODULE = Irssi	PACKAGE = Irssi::Connect  PREFIX = server_
 #*******************************
 
-void
-init(conn)
-	Irssi::Connect conn
-CODE:
-	perl_connect_fill_hash(hvref(ST(0)), conn);
-
 Irssi::Server
 server_connect(conn)
 	Irssi::Connect conn
-
-#*******************************
-MODULE = Irssi	PACKAGE = Irssi::Reconnect
-#*******************************
-
-void
-init(reconnect)
-	Irssi::Reconnect reconnect
-PREINIT:
-        HV *hv;
-CODE:
-	hv = hvref(ST(0));
-	if (hv != NULL) {
-		perl_reconnect_fill_hash(hv, reconnect->conn);
-		hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
-		hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
-	}

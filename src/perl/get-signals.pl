@@ -31,14 +31,14 @@ while (<STDIN>) {
 	s/MODULE_REC[^,]*/Irssi::Module/g;
 
 	# irc
-	s/BAN_REC[^,]*/Irssi::Ban/g;
-	s/NETSPLIT_REC[^,]*/Irssi::Netsplit/g;
-	s/NETSPLIT_SERVER_REC[^,]*/Irssi::Netsplitserver/g;
+	s/BAN_REC[^,]*/Irssi::Irc::Ban/g;
+	s/NETSPLIT_REC[^,]*/Irssi::Irc::Netsplit/g;
+	s/NETSPLIT_SERVER_REC[^,]*/Irssi::Irc::Netsplitserver/g;
 
 	# irc modules
-	s/DCC_REC[^,]*/Irssi::Dcc/g;
-	s/AUTOIGNORE_REC[^,]*/Irssi::Autoignore/g;
-	s/NOTIFYLIST_REC[^,]*/Irssi::Notifylist/g;
+	s/DCC_REC[^,]*/Irssi::Irc::Dcc/g;
+	s/AUTOIGNORE_REC[^,]*/Irssi::Irc::Autoignore/g;
+	s/NOTIFYLIST_REC[^,]*/Irssi::Irc::Notifylist/g;
 
 	# fe-common
 	s/THEME_REC[^,]*/Irssi::Theme/g;

@@ -329,19 +329,3 @@ CODE:
 	signal = g_strconcat("command ", cmd, NULL);
 	perl_signal_remove(signal, func);
 	g_free(signal);
-
-#*******************************
-MODULE = Irssi  PACKAGE = Irssi::Command  PREFIX = command_
-#*******************************
-
-void
-init(cmd)
-	Irssi::Command cmd
-PREINIT:
-        HV *hv;
-CODE:
-	hv = hvref(ST(0));
-	if (hv != NULL) {
-		hv_store(hv, "category", 8, new_pv(cmd->category), 0);
-		hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
-	}
