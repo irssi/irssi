@@ -49,14 +49,19 @@ static NETSPLIT_SERVER_REC *netsplit_server_create(IRC_SERVER_REC *server, const
 	NETSPLIT_SERVER_REC *rec;
 
 	rec = netsplit_server_find(server, servername, destserver);
-	if (rec != NULL) return rec;
+	if (rec != NULL) {
+		rec->last = time(NULL);
+		return rec;
+	}
 
 	rec = g_new0(NETSPLIT_SERVER_REC, 1);
+	rec->last = time(NULL);
 	rec->server = g_strdup(servername);
 	rec->destserver = g_strdup(destserver);
 
 	server->split_servers = g_slist_append(server->split_servers, rec);
 	signal_emit("netsplit new server", 2, server, rec);
+
 	return rec;
 }
 

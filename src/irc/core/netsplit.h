@@ -7,6 +7,8 @@ typedef struct {
 	char *server;
 	char *destserver;
 	int count;
+
+	time_t last; /* last time we received a QUIT msg here */
 } NETSPLIT_SERVER_REC;
 
 typedef struct {
@@ -16,6 +18,7 @@ typedef struct {
 	char *address;
 	GSList *channels;
 
+	int printed:1;
 	time_t destroy;
 } NETSPLIT_REC;
 

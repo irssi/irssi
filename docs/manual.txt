@@ -487,9 +487,12 @@
 	he/she/it is just some user that already had ops before the net
 	split.
 
-	/SET hide_netsplit_quits - If ON, when detected net splits, display
-	     only "Net split host1 host" message and hide all the quit
-	     messages
+	/SET hide_netsplit_quits - If ON, hide all netsplit quit messages
+	     and display only "Netsplit host1 host2: nicks".
+
+	/SET netsplit_max_nicks - If non-zero, limit the number of nicks
+	     printed in netsplit message and add "(+<n> more, use /NETSPLIT
+	     to show all of them)" text.
 
  5.9 Lag checking
 
