@@ -235,6 +235,46 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
         (*format)++;
 }
 
+/* returns TRUE if data is empty, or the data is a $variable which is empty */
+static int data_is_empty(const char **data)
+{
+	const char *p;
+	char *ret;
+        int free_ret, empty;
+
+        p = *data;
+	while (*p == ' ') p++;
+
+	if (*p == '}') {
+                /* empty */
+                *data = p+1;
+                return TRUE;
+	}
+
+	if (*p != '$') {
+                /* not empty */
+		return FALSE;
+	}
+
+	/* variable - check if it's empty */
+        p++;
+	ret = parse_special((char **) &p, active_win->active_server,
+			    active_win->active, NULL, &free_ret, NULL, 0);
+        p++;
+
+	while (*p == ' ') p++;
+	empty = *p == '}' && (ret == NULL || *ret == '\0');
+        if (free_ret) g_free(ret);
+
+	if (empty) {
+		/* empty */
+		*data = p+1;
+                return TRUE;
+	}
+
+        return FALSE;
+}
+
 /* expand a single {abstract ...data... } */
 static char *theme_format_expand_abstract(THEME_REC *theme,
 					  const char **formatp,
@@ -261,17 +301,11 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	   treated as arguments */
 	if (*p == ' ') {
 		len++;
-		if ((flags & EXPAND_FLAG_IGNORE_EMPTY)) {
-                        /* if the data is empty, ignore the abstract */
-			p = format+len;
-			while (*p == ' ') p++;
-			if (*p == '}') {
-                                *formatp = p+1;
-				g_free(abstract);
-				return NULL;
-			}
+		if ((flags & EXPAND_FLAG_IGNORE_EMPTY) && data_is_empty(&p)) {
+			*formatp = p;
+			g_free(abstract);
+			return NULL;
 		}
-
 	}
 	*formatp = format+len;
 

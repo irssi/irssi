@@ -44,7 +44,7 @@ void theme_register_module(const char *module, FORMAT_REC *formats);
 void theme_unregister_module(const char *module);
 
 #define EXPAND_FLAG_IGNORE_REPLACES     0x01 /* don't use the character replaces when expanding */
-#define EXPAND_FLAG_IGNORE_EMPTY        0x02 /* if abstract's argument is empty, don't try to expand it (ie. {xx }, but not {xx}) */
+#define EXPAND_FLAG_IGNORE_EMPTY        0x02 /* if abstract's argument is empty, or the argument is a $variable that is empty, don't try to expand it (ie. {xx }, but not {xx}) */
 #define EXPAND_FLAG_RECURSIVE_MASK      0x0f
 /* private */
 #define EXPAND_FLAG_ROOT		0x10

@@ -297,20 +297,6 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 	active_win = old_active_win;
 }
 
-/*STATUSBAR_REC *statusbar_find(int pos, int line)
-{
-	GSList *tmp;
-
-	for (tmp = statusbars; tmp != NULL; tmp = tmp->next) {
-		STATUSBAR_REC *rec = tmp->data;
-
-		if (rec->pos == pos && rec->line == line)
-			return rec;
-	}
-
-	return NULL;
-}*/
-
 void statusbar_redraw(STATUSBAR_REC *bar, int force)
 {
 	if (bar != NULL) {
@@ -673,20 +659,17 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
                 wiitem = active_win->active;
 	}
 
-	/* expand $variables */
-	tmpstr = parse_special_string(str, server, wiitem, data, NULL,
-				      (escape_vars ? PARSE_FLAG_ESCAPE_VARS : 0 ) |
-				      PARSE_FLAG_ESCAPE_THEME);
-
 	/* expand templates */
-        str = tmpstr;
-	tmpstr2 = theme_format_expand_data(current_theme, &str,
-					   'n', 'n',
-					   NULL, NULL,
-					   EXPAND_FLAG_ROOT |
-					   EXPAND_FLAG_IGNORE_REPLACES |
-					   EXPAND_FLAG_IGNORE_EMPTY);
-	g_free(tmpstr);
+	tmpstr = theme_format_expand_data(current_theme, &str,
+					  'n', 'n',
+					  NULL, NULL,
+					  EXPAND_FLAG_ROOT |
+					  EXPAND_FLAG_IGNORE_REPLACES |
+					  EXPAND_FLAG_IGNORE_EMPTY);
+	/* expand $variables */
+	tmpstr2 = parse_special_string(tmpstr, server, wiitem, data, NULL,
+				       (escape_vars ? PARSE_FLAG_ESCAPE_VARS : 0 ));
+        g_free(tmpstr);
 
 	/* remove color codes (not %formats) */
 	tmpstr = strip_codes(tmpstr2);
