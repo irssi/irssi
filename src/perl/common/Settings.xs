@@ -85,6 +85,21 @@ settings_get_bool(key)
 	char *key
 
 void
+settings_set_str(key, value)
+	char *key
+	char *value
+
+void
+settings_set_int(key, value)
+	char *key
+	int value
+
+void
+settings_set_bool(key, value)
+	char *key
+	int value
+
+void
 settings_add_str(section, key, def)
 	char *section
 	char *key
