@@ -1,32 +1,4 @@
-/*
- perl-fe.c : irssi
-
-    Copyright (C) 2001 Timo Sirainen
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
 #include "module.h"
-#include "signals.h"
-
-#include "fe-common/core/fe-exec.h"
-#include "fe-common/core/formats.h"
-#include "fe-common/core/printtext.h"
-#include "fe-common/core/themes.h"
-
-#include "perl-common.h"
 
 static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
 {
@@ -38,7 +10,7 @@ static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
 	hv_store(hv, "target", 6, new_pv(process->target), 0);
 	if (process->target_win != NULL) {
 		hv_store(hv, "target_win", 10,
-			 plain_bless(process->target_win, "Irssi::Window"), 0);
+			 plain_bless(process->target_win, "Irssi::UI::Window"), 0);
 	}
 	hv_store(hv, "shell", 5, newSViv(process->shell), 0);
 	hv_store(hv, "notice", 6, newSViv(process->notice), 0);
@@ -64,7 +36,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 
 static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
 {
-	hv_store(hv, "window", 6, plain_bless(dest->window, "Irssi::Window"), 0);
+	hv_store(hv, "window", 6, plain_bless(dest->window, "Irssi::UI::Window"), 0);
 	hv_store(hv, "server", 6, irssi_bless(dest->server), 0);
 	hv_store(hv, "target", 6, new_pv(dest->target), 0);
 	hv_store(hv, "level", 5, newSViv(dest->level), 0);
@@ -130,23 +102,31 @@ static void sig_perl_stop(void)
 	}
 }
 
-void fe_perl_init(void)
-{
-	static PLAIN_OBJECT_INIT_REC fe_plains[] = {
-		{ "Irssi::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
-		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
-		{ "Irssi::TextDest", (PERL_OBJECT_FUNC) perl_text_dest_fill_hash },
+static PLAIN_OBJECT_INIT_REC fe_plains[] = {
+	{ "Irssi::UI::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
+	{ "Irssi::UI::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
+	{ "Irssi::UI::TextDest", (PERL_OBJECT_FUNC) perl_text_dest_fill_hash },
 
-		{ NULL, NULL }
-	};
+	{ NULL, NULL }
+};
+
+MODULE = Irssi::UI  PACKAGE = Irssi::UI
+
+PROTOTYPES: ENABLE
+
+void
+init()
+PREINIT:
+	static int initialized = FALSE;
+CODE:
+	if (initialized) return;
+	initialized = TRUE;
+
         irssi_add_plains(fe_plains);
 
 	signal_add("script destroy", (SIGNAL_FUNC) sig_script_destroy);
 	signal_add("perl stop", (SIGNAL_FUNC) sig_perl_stop);
-}
 
-void fe_perl_deinit(void)
-{
-	signal_remove("script destroy", (SIGNAL_FUNC) sig_script_destroy);
-	signal_remove("perl stop", (SIGNAL_FUNC) sig_perl_stop);
-}
+
+INCLUDE: Themes.xs
+INCLUDE: Window.xs

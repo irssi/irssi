@@ -1,5 +1,4 @@
 #include "module.h"
-#include "levels.h"
 
 MODULE = Irssi  PACKAGE = Irssi
 
@@ -14,5 +13,3 @@ INCLUDE: Query.xs
 INCLUDE: Rawlog.xs
 INCLUDE: Server.xs
 INCLUDE: Settings.xs
-INCLUDE: Themes.xs
-INCLUDE: Window.xs

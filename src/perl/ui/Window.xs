@@ -1,4 +1,4 @@
-MODULE = Irssi  PACKAGE = Irssi
+MODULE = Irssi::UI  PACKAGE = Irssi
 
 void
 windows()
@@ -6,11 +6,11 @@ PREINIT:
 	GSList *tmp;
 PPCODE:
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Window")));
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::UI::Window")));
 	}
 
 
-Irssi::Window
+Irssi::UI::Window
 active_win()
 CODE:
 	RETVAL = active_win;
@@ -37,11 +37,11 @@ command(cmd)
 CODE:
 	perl_command(cmd, active_win->active_server, active_win->active);
 
-Irssi::Window
+Irssi::UI::Window
 window_find_name(name)
 	char *name
 
-Irssi::Window
+Irssi::UI::Window
 window_find_refnum(refnum)
 	int refnum
 
@@ -58,7 +58,7 @@ window_refnum_next(refnum, wrap)
 int
 windows_refnum_last()
 
-Irssi::Window
+Irssi::UI::Window
 window_find_level(level)
 	int level
 CODE:
@@ -66,7 +66,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-Irssi::Window
+Irssi::UI::Window
 window_find_item(name)
 	char *name
 CODE:
@@ -74,7 +74,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-Irssi::Window
+Irssi::UI::Window
 window_find_closest(name, level)
 	char *name
 	int level
@@ -93,7 +93,7 @@ OUTPUT:
 
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Server
+MODULE = Irssi::UI  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -117,17 +117,17 @@ window_item_find(server, name)
 	Irssi::Server server
 	char *name
 
-Irssi::Window
+Irssi::UI::Window
 window_find_item(server, name)
 	Irssi::Server server
 	char *name
 
-Irssi::Window
+Irssi::UI::Window
 window_find_level(server, level)
 	Irssi::Server server
 	int level
 
-Irssi::Window
+Irssi::UI::Window
 window_find_closest(server, name, level)
 	Irssi::Server server
 	char *name
@@ -135,12 +135,12 @@ window_find_closest(server, name, level)
 
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Window  PREFIX=window_
+MODULE = Irssi::UI  PACKAGE = Irssi::UI::Window  PREFIX=window_
 #*******************************
 
 void
 items(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 PREINIT:
 	GSList *tmp;
 PPCODE:
@@ -152,7 +152,7 @@ PPCODE:
 
 void
 print(window, str, level=MSGLEVEL_CLIENTNOTICE)
-	Irssi::Window window
+	Irssi::UI::Window window
 	char *str
         int level;
 CODE:
@@ -160,14 +160,14 @@ CODE:
 
 void
 command(window, cmd)
-	Irssi::Window window
+	Irssi::UI::Window window
 	char *cmd
 CODE:
 	perl_command(cmd, window->active_server, window->active);
 
 void
 window_item_add(window, item, automatic)
-	Irssi::Window window
+	Irssi::UI::Window window
 	Irssi::Windowitem item
 	int automatic
 
@@ -181,47 +181,47 @@ window_item_destroy(item)
 
 void
 window_item_prev(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 
 void
 window_item_next(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 
 void
 window_destroy(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 
 void
 window_set_active(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 
 void
 window_change_server(window, server)
-	Irssi::Window window
+	Irssi::UI::Window window
 	Irssi::Server server
 
 void
 window_set_refnum(window, refnum)
-	Irssi::Window window
+	Irssi::UI::Window window
 	int refnum
 
 void
 window_set_name(window, name)
-	Irssi::Window window
+	Irssi::UI::Window window
 	char *name
 
 void
 window_set_level(window, level)
-	Irssi::Window window
+	Irssi::UI::Window window
 	int level
 
 char *
 window_get_active_name(window)
-	Irssi::Window window
+	Irssi::UI::Window window
 
 Irssi::Windowitem
 window_item_find(window, server, name)
-	Irssi::Window window
+	Irssi::UI::Window window
 	Irssi::Server server
 	char *name
 CODE:
@@ -230,7 +230,7 @@ OUTPUT:
 	RETVAL
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Windowitem  PREFIX = window_item_
+MODULE = Irssi::UI  PACKAGE = Irssi::Windowitem  PREFIX = window_item_
 #*******************************
 
 void
@@ -248,12 +248,12 @@ command(item, cmd)
 CODE:
 	perl_command(cmd, item->server, item);
 
-Irssi::Window
+Irssi::UI::Window
 window_create(item, automatic)
 	Irssi::Windowitem item
 	int automatic
 
-Irssi::Window
+Irssi::UI::Window
 window(item)
 	Irssi::Windowitem item
 CODE:

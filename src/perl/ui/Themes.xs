@@ -1,5 +1,5 @@
 
-MODULE = Irssi  PACKAGE = Irssi
+MODULE = Irssi::UI  PACKAGE = Irssi
 
 void
 theme_register(formats)
@@ -53,7 +53,7 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Server
+MODULE = Irssi::UI  PACKAGE = Irssi::Server
 #*******************************
 
 void
@@ -77,12 +77,12 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Window
+MODULE = Irssi::UI  PACKAGE = Irssi::UI::Window
 #*******************************
 
 void
 printformat(window, level, format, ...)
-	Irssi::Window window
+	Irssi::UI::Window window
 	int level
 	char *format
 PREINIT:
@@ -100,7 +100,7 @@ CODE:
         printformat_perl(&dest, format, arglist);
 
 #*******************************
-MODULE = Irssi	PACKAGE = Irssi::Windowitem
+MODULE = Irssi::UI  PACKAGE = Irssi::Windowitem
 #*******************************
 
 void

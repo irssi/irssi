@@ -1,0 +1,16 @@
+TYPEMAP
+Irssi::UI::Theme		T_PlainObj
+Irssi::UI::Window		T_PlainObj
+Irssi::UI::Keyinfo		T_PlainObj
+Irssi::UI::TextDest		T_PlainObj
+
+INPUT
+
+T_PlainObj
+	$var = irssi_ref_object($arg)
+
+OUTPUT
+
+T_PlainObj
+	$arg = irssi_bless_plain(\"$type\", $var);
+

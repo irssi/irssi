@@ -2,14 +2,13 @@ LIBTOOL = $(PERL_LIBTOOL)
 
 moduledir = $(libdir)/irssi/modules
 
-module_LTLIBRARIES = $(perl_module_lib) $(perl_module_fe_lib)
-noinst_LTLIBRARIES = $(perl_static_lib) $(perl_static_fe_lib)
+module_LTLIBRARIES = $(perl_module_lib)
+noinst_LTLIBRARIES = $(perl_static_lib)
 EXTRA_LTLIBRARIES = \
-	libperl_core.la libfe_perl.la \
-	libperl_static.la libfe_perl_static.la
+	libperl_core.la \
+	libperl_static.la
 
 libperl_core_la_LDFLAGS = -avoid-version -rpath $(moduledir)
-libfe_perl_la_LDFLAGS = -avoid-version -rpath $(moduledir)
 
 perl.c: perl-signals-list.h
 
@@ -25,8 +24,6 @@ perl_sources = \
 	perl-common.c \
 	perl-signals.c \
 	xsinit.c
-
-perl_fe_sources = perl-fe.c
 
 libperl_core_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
 
@@ -45,16 +42,12 @@ libperl_core_la_SOURCES = \
 libperl_static_la_SOURCES = \
 	$(perl_sources)
 
-libfe_perl_la_SOURCES = \
-	$(perl_fe_sources)
-
-libfe_perl_static_la_SOURCES = \
-	$(perl_fe_sources)
-
 perl-signals-list.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals-list.h
 
 CORE_SOURCES = \
+	common/Irssi.xs \
+	common/Irssi.pm \
 	common/Channel.xs \
 	common/Core.xs \
 	common/Ignore.xs \
@@ -64,15 +57,13 @@ CORE_SOURCES = \
 	common/Rawlog.xs \
 	common/Server.xs \
 	common/Settings.xs \
-	common/Themes.xs \
-	common/Window.xs \
-	common/Irssi.xs \
-	common/Irssi.pm \
 	common/Makefile.PL.in \
 	common/typemap \
 	common/module.h
 
 IRC_SOURCES = \
+	irc/Irc.xs \
+	irc/Irc.pm \
 	irc/Dcc.xs \
 	irc/IrcChannel.xs \
 	irc/IrcQuery.xs \
@@ -80,8 +71,15 @@ IRC_SOURCES = \
 	irc/Modes.xs \
 	irc/Netsplit.xs \
 	irc/Notifylist.xs \
-	irc/Irc.xs \
-	irc/Irc.pm \
+	irc/Makefile.PL.in \
+	irc/typemap \
+	irc/module.h
+
+FE_SOURCES = \
+	irc/UI.xs \
+	irc/UI.pm \
+	common/Themes.xs \
+	common/Window.xs \
 	irc/Makefile.PL.in \
 	irc/typemap \
 	irc/module.h
@@ -91,7 +89,8 @@ EXTRA_DIST = \
 	libperl_orig.la \
 	get-signals.pl \
 	$(CORE_SOURCES) \
-	$(IRC_SOURCES)
+	$(IRC_SOURCES) \
+	$(FE_SOURCES)
 
 noinst_HEADERS = \
 	module.h \
@@ -99,16 +98,19 @@ noinst_HEADERS = \
 	perl-signals.h
 
 all-local:
-	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
+	for dir in common irc ui; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && ($(MAKE) || $(MAKE)) && cd ..; done
 
+# FIXME: remove after .99: the libfe_perl must not be used anymore
 install-exec-local:
-	for dir in common irc; do cd $$dir && $(MAKE) install && cd ..; done
+	-(rm -f $(moduledir)/libfe_perl.*)
+	for dir in common irc ui; do cd $$dir && $(MAKE) install && cd ..; done
 
 clean-generic:
-	rm -f common/Irssi.c irc/Irc.c
+	rm -f common/Irssi.c irc/Irc.c ui/UI.c
 
 distclean: distclean-am
 	-(cd common && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd irc && $(MAKE) realclean && rm -f Makefile.PL)
+	-(cd ui && $(MAKE) realclean && rm -f Makefile.PL)
 
 libperl_core_la_LIBADD = $(PERL_LDFLAGS)

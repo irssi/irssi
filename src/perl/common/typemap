@@ -12,11 +12,7 @@ Irssi::Log		T_PlainObj
 Irssi::Logitem       	T_PlainObj
 Irssi::Rawlog		T_PlainObj
 Irssi::Module		T_PlainObj
-Irssi::Theme		T_PlainObj
-Irssi::Keyinfo		T_PlainObj
-Irssi::Window		T_PlainObj
 Irssi::Windowitem	T_IrssiObj
-Irssi::TextDest		T_PlainObj
 
 INPUT
 
