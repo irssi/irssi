@@ -361,7 +361,7 @@ static GList *completion_get_subcommands(const char *cmd)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (strlen(rec->cmd) < len)
+		if ((int)strlen(rec->cmd) < len)
 			continue;
 
 		if (strchr(rec->cmd+len, ' ') != NULL)

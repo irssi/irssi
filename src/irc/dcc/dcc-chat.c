@@ -64,7 +64,7 @@ static void cmd_msg(const char *data)
 	char *text, *target;
 	void *free_arg;
 
-	g_return_if_fail(text != NULL);
+	g_return_if_fail(data != NULL);
 
 	if (*data != '=') {
 		/* handle only DCC messages */

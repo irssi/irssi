@@ -130,7 +130,7 @@ static int nick_completion_timeout(void)
 		last_msgs_remove_old(&channel->lastmsgs, keep_msgs_time, now);
 
 		if (keep_msgs_count == 0 ||
-		    g_slist_length(channel->lastownmsgs) > keep_msgs_count) {
+		    (int)g_slist_length(channel->lastownmsgs) > keep_msgs_count) {
 			last_msgs_remove_old(&channel->lastownmsgs,
 					     keep_ownmsgs_time, now);
 		}

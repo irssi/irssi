@@ -87,7 +87,7 @@ int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
-			g_string_append_c(out, (int) (p-backs)+'0');
+			g_string_append_c(out, (char) ((int) (p-backs)+'0'));
 			break;
 		}
 
@@ -96,7 +96,7 @@ int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 		p = strchr(fores, format);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, (int) (p-fores)+'0');
+			g_string_append_c(out, (char) ((int) (p-fores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
@@ -106,7 +106,7 @@ int format_expand_styles(GString *out, char format, TEXT_DEST_REC *dest)
 		p = strchr(boldfores, format);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, 8+(int) (p-boldfores)+'0');
+			g_string_append_c(out, (char) (8+(int) (p-boldfores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
