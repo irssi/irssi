@@ -540,7 +540,7 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 		}
 	} else {
 		/* big lag, still waiting .. */
-		g_string_sprintf(str, "%ld (??)", now-server->lag_sent);
+		g_string_sprintf(str, "%ld (??)", (long) (now-server->lag_sent));
 		size_needed = str->len+7;
 	}
 
