@@ -113,8 +113,7 @@ int masks_match(SERVER_REC *server, const char *masks,
 	mask = g_strdup_printf("%s!%s", nick, address);
 	list = g_strsplit(masks, " ", -1);
 	for (tmp = list; *tmp != NULL; tmp++) {
-		if (strchr(*tmp, '!') == NULL &&
-		    g_strcasecmp(*tmp, nick) == 0) {
+		if (g_strcasecmp(*tmp, nick) == 0) {
                         found = TRUE;
 			break;
 		}
