@@ -398,15 +398,11 @@ static void cmd_window_refnum(const char *data)
 {
 	WINDOW_REC *window;
 
-	if (!is_numeric(data, 0)) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_NOT_FOUND, data);
+	if (!is_numeric(data, 0))
 		return;
-	}
 
 	window = window_find_refnum(atoi(data));
-        if (window == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_REFNUM_NOT_FOUND, data);
-	else
+        if (window != NULL)
 		window_set_active(window);
 }
 
