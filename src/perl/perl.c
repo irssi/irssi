@@ -281,7 +281,7 @@ static void cmd_run(const char *data)
 		fname = g_strdup(data);
 	} else {
 		/* add .pl suffix if it's missing */
-		name = (strlen(data) <= 3 || strcmp(data+strlen(data)-3, ".pl") == 0) ?
+		name = (strlen(data) > 3 && strcmp(data+strlen(data)-3, ".pl") == 0) ?
 			g_strdup(data) : g_strdup_printf("%s.pl", data);
 
 		/* check from ~/.irssi/scripts/ */
