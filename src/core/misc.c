@@ -379,13 +379,13 @@ int match_wildcards(const char *cmask, const char *data)
 
 	newmask = mask = g_strdup(cmask);
 	for (; *mask != '\0' && *data != '\0'; mask++) {
-		if (*mask == '?' || toupper(*mask) == toupper(*data)) {
+		if (*mask != '*') {
+			if (*mask != '?' && toupper(*mask) != toupper(*data))
+				break;
+
 			data++;
 			continue;
 		}
-
-		if (*mask != '*')
-			break;
 
 		while (*mask == '?' || *mask == '*') mask++;
 		if (*mask == '\0') {
