@@ -215,6 +215,7 @@ if test "x$want_textui" = "xyes"; then
 
 	if test "$has_curses" != "true"; then
 		want_textui=no;
+		curses_error=yes
         fi
 else
 	has_curses=false
@@ -270,7 +271,7 @@ dnl ** (these could be made configurable)
 
 CHAT_MODULES="irc"
 irc_MODULES="dcc flood notifylist"
-if test "$build_modules" != ""; then
+if test "x$build_modules" != "x"; then
 	irc_MODULES="$irc_MODULES $build_modules"
 fi
 
@@ -394,7 +395,11 @@ fi
 
 echo
 
-echo "Building text frontend ..... : $want_textui"
+if test "$curses_error" != "xyes"; then
+	echo "Building text frontend ..... : $want_textui"
+else
+	echo "Building text frontend ..... : NO!! (Because curses was not found, specify the path to it with --with-curses=/dir)"
+fi
 echo "Building irssi-bot ......... : $want_irssibot"
 echo "Building with IPv6 support . : $want_ipv6"
 echo "Building with Perl support . : $want_perl"

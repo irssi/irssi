@@ -1,15 +1,20 @@
+
 *** New stuff in TODO, try to get rid of these :)
 
+ - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
+   idling" was print to screen with some NULL arguments in text..
+ - There's some problems with logging/highlighting dcc chats..
+
+ - automatic whowas if whois wasn't found should be moved to fe-common.
+   it could also print something like "nick $0 not in IRC, but this user
+   WAS in IRC:"
+ - Add command for changing automatic replaces (/replace)
+ - /ignore -time xx - temprary ignore
  - bash-style (or whatever it could be called) tab-completion
  - /last 05032 ... didn't really do what I wanted :) maybe I should change
    the syntax to have -max parameter instead?
- - /^command would hide the output of the command. Maybe also some
-   /password command so that it would ask you to type the password to
-   entry line and would hide it with asterisks, good if people spy on you :)
  - commands to move channels and servers in the config list, to set the
    join/connect order of them.
- - nick/channel lists at right side of the text version of irssi. Ctrl-N
-   for example could hide/show them. add mouse support for it.
  - statusbar:
      - you can't configure it in any way!
      - move it to fe-common, make some "statusbar" signal .. maybe
@@ -18,19 +23,8 @@
        something like that :)
      - when starting to run out of space some items could be made smaller,
        activity for example .. make some generic flag for items to use.
- - runtime loadable modules aren't working
- - "Netjoins: nick1, nick2, nick3 .." - just as the "Netsplit quits" text
-   except prints when people join back.
- - there's something wrong with netsplits. it sometimes forgets to print
-   some of the nicks (at least if after netjoin comes netsplit again
-   immediately).
  - some problems with finding curses? in openbsd it should be -lcurses,
    not -lncurses..
- - line-split.c: check that 64k limit is working and not crashing irssi!
- - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
-   idling" was print to screen with some NULL arguments in text..
- - When doing a /RELOAD, logs are closed?, window logs are entirely removed?
-   (also, check that window logs work right if window's refnum changes)
  - Implement /bind for making keyboard shortcuts.
  - theme problems:
     - you can't change theme
@@ -45,13 +39,6 @@
    ask for new text.
  - /msg =dcc_chatti,#kanava doesn't work - fix it somehow that also different
    chat plugins could use the same /msg command. /CTCP too.
-
- - Better support for copy+pasting text to irssi:
-     - detection: first line isn't a /command. next line is followed quickly
-       after it, 0.2 sec or something. after pasting is detected, all unknown
-       /commands are sent as normal messages.
-     - fix copypasting from netscape, strip all spaces at the start and end
-       of the line, join multiple lines to one (how about when pasting code?)
  - /NOTIFY -once - notify only once when the user comes to IRC, forget this
    after it.
  - /NOTIFY -comment xxx - add a comment to notify. print the comment when
@@ -59,6 +46,11 @@
  - "Should we check people in notify list when you're away" option
  - Implement /EXEC, /ON and /TIMER commands
  - All those options to /WHO and /LIST commands that EPIC has
+ - /SCROLLBACK FIND ?
+ - nick/channel lists at right side of the text version of irssi. Ctrl-N
+   for example could hide/show them. add mouse support for it.
+ - /password command that asks you to type the password to entry line and
+   would hide it with asterisks, good if people spy on you :)
 
 *** Bugs
 
