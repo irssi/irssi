@@ -96,7 +96,7 @@ static void help_category(GSList *cmdlist, int items)
 
         /* calculate columns */
 	cols = get_max_column_count(cmdlist, get_cmd_length,
-				    max_width, 1, 3, &columns, &rows);
+				    max_width, 6, 1, 3, &columns, &rows);
 	cmdlist = columns_sort_list(cmdlist, rows);
 
         /* rows in last column */

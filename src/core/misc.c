@@ -609,13 +609,14 @@ char *my_asctime(time_t t)
 /* Returns number of columns needed to print items.
    save_column_widths is filled with length of each column. */
 int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
-			 int max_width, int item_extra, int item_min_size,
+			 int max_width, int max_columns,
+			 int item_extra, int item_min_size,
 			 int **save_column_widths, int *rows)
 {
         GSList *tmp;
 	int **columns, *columns_width, *columns_rows;
 	int item_pos, items_count;
-	int ret, len, n, col, max_columns;
+	int ret, len, n, col;
 
 	items_count = g_slist_length(items);
 	if (items_count == 0) {
@@ -624,7 +625,10 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 		return 0;
 	}
 
-	max_columns = max_width/(item_extra+item_min_size);
+	len = max_width/(item_extra+item_min_size);
+	if (max_columns <= 0 || len < max_columns)
+                max_columns = len;
+
 	columns = g_new0(int *, max_columns);
 	columns_width = g_new0(int, max_columns);
 	columns_rows = g_new0(int, max_columns);

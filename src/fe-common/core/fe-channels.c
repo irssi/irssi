@@ -329,8 +329,13 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		g_free(format);
 	}
 
-        /* calculate columns */
+	/* calculate columns */
+	if (settings_get_int("names_max_width") > 0 &&
+	    max_width > settings_get_int("names_max_width"))
+		max_width = settings_get_int("names_max_width");
+
 	cols = get_max_column_count(nicklist, get_nick_length, max_width,
+				    settings_get_int("names_max_columns"),
 				    item_extra, 3, &columns, &rows);
 	nicklist = columns_sort_list(nicklist, rows);
 
@@ -442,6 +447,8 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
+	settings_add_int("lookandfeel", "names_max_columns", 6);
+	settings_add_int("lookandfeel", "names_max_width", 0);
 
 	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
