@@ -184,11 +184,14 @@ CODE:
 	irssi_add_object(module_get_uniq_id_str("DCC", "SEND"),
 			 0, "Irssi::Irc::Dcc::Send",
 			 (PERL_OBJECT_FUNC) perl_dcc_send_fill_hash);
+	irssi_add_object(module_get_uniq_id_str("DCC", "SERVER"),
+			 0, "Irssi::Irc::Dcc::Server",
+			 (PERL_OBJECT_FUNC) perl_dcc_send_fill_hash);
         irssi_add_plains(irc_plains);
-
 	perl_eval_pv("@Irssi::Irc::Dcc::Chat::ISA = qw(Irssi::Irc::Dcc);\n"
 		     "@Irssi::Irc::Dcc::Get::ISA = qw(Irssi::Irc::Dcc);\n"
-		     "@Irssi::Irc::Dcc::Send::ISA = qw(Irssi::Irc::Dcc);\n",
+		     "@Irssi::Irc::Dcc::Send::ISA = qw(Irssi::Irc::Dcc);\n"
+		     "@Irssi::Irc::Dcc::Server::ISA = qw(Irssi::Irc::Dcc);\n",
 		     TRUE);
 
 void
