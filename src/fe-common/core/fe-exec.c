@@ -369,7 +369,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 			WI_ITEM_REC *item)
 {
 	PROCESS_REC *rec;
-        char *target;
+        char *target, *level;
 	int notice, signum, interactive;
 
 	/* check that there's no unknown options. we allowed them
@@ -492,6 +492,9 @@ static void handle_exec(const char *args, GHashTable *optlist,
         rec->silent = g_hash_table_lookup(optlist, "-") != NULL;
 	rec->name = g_strdup(g_hash_table_lookup(optlist, "name"));
 
+	level = g_hash_table_lookup(optlist, "level");
+	rec->level = level == NULL ? MSGLEVEL_CLIENTNOTICE : level2bits(level);
+
 	rec->read_tag = g_input_add(rec->in, G_INPUT_READ,
 				    (GInputFunction) sig_exec_input_reader,
 				    rec);
@@ -569,11 +572,10 @@ static void sig_exec_input(PROCESS_REC *rec, const char *text)
 			    3, str, server, item);
                 g_free(str);
 	} else if (rec->target_item != NULL) {
-		printtext(NULL, rec->target_item->name, MSGLEVEL_CLIENTCRAP,
-			  "%s", text);
+		printtext(NULL, rec->target_item->name,
+			  rec->level, "%s", text);
 	} else {
-		printtext_window(rec->target_win, MSGLEVEL_CLIENTCRAP,
-				 "%s", text);
+		printtext_window(rec->target_win, rec->level, "%s", text);
 	}
 }
 
@@ -603,7 +605,7 @@ static void event_text(const char *data, SERVER_REC *server, EXEC_WI_REC *item)
 void fe_exec_init(void)
 {
 	command_bind("exec", NULL, (SIGNAL_FUNC) cmd_exec);
-	command_set_options("exec", "!- interactive nosh +name out +msg +notice +in window close");
+	command_set_options("exec", "!- interactive nosh +name out +msg +notice +in window close +level");
 
         signal_exec_input = signal_get_uniq_id("exec input");
         signal_add("pidwait", (SIGNAL_FUNC) sig_pidwait);

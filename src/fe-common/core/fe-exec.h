@@ -30,6 +30,7 @@ struct PROCESS_REC {
         LINEBUF_REC *databuf;
 	int read_tag;
 
+        int level; /* what level to use when printing the text */
         char *target; /* send text with /msg <target> ... */
 	WINDOW_REC *target_win; /* print text to this window */
         EXEC_WI_REC *target_item; /* print text to this exec window item */
