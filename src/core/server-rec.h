@@ -60,7 +60,8 @@ int (*ischannel)(SERVER_REC *server, const char *data);
    of them aren't supported '\0' can be used. */
 const char *(*get_nick_flags)(void);
 /* send public or private message to server */
-void (*send_message)(SERVER_REC *server, const char *target, const char *msg);
+void (*send_message)(SERVER_REC *server, const char *target,
+		     const char *msg, int target_type);
 
 /* -- Default implementations are used if NULL -- */
 CHANNEL_REC *(*channel_find_func)(SERVER_REC *server, const char *name);

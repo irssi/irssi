@@ -31,6 +31,9 @@ struct _SERVER_REC {
 #include "server-rec.h"
 };
 
+#define SEND_TARGET_CHANNEL	0
+#define SEND_TARGET_NICK	1
+
 extern GSList *servers, *lookup_servers;
 
 void servers_init(void);

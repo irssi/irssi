@@ -72,7 +72,7 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 }
 
 static void send_message(SERVER_REC *server, const char *target,
-			 const char *msg)
+			 const char *msg, int target_type)
 {
         IRC_SERVER_REC *ircserver;
 	char *str;

@@ -226,7 +226,8 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	query = query_find(server, nick);
 	if (query == NULL)
-		CHAT_PROTOCOL(server)->query_create(server->tag, nick, FALSE);
+		query = CHAT_PROTOCOL(server)->
+			query_create(server->tag, nick, FALSE);
 	else {
 		/* query already exists */
 		WINDOW_REC *window = window_item_window(query);
@@ -252,13 +253,9 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	}
 
 	if (*msg != '\0') {
-		/* FIXME: we'll need some function that does both
-		   of these. and separate the , and . target handling
-		   from own_private messagge.. */
-		server->send_message(server, nick, msg);
-
-		signal_emit("message own_private", 4,
-			    server, msg, nick, nick);
+                msg = g_strdup_printf("-nick %s %s", nick, msg);
+		signal_emit("command msg", 3, msg, server, query);
+                g_free(msg);
 	}
 
 	cmd_params_free(free_arg);

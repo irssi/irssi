@@ -161,9 +161,8 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	g_return_val_if_fail(server != NULL, 0);
         if (nick == NULL) nick = "";
 
-	chanrec = (channel != NULL && server != NULL &&
-		   server_ischannel(server, channel)) ?
-		channel_find(server, channel) : NULL;
+	chanrec = server == NULL || channel == NULL ? NULL :
+		channel_find(server, channel);
 	if (chanrec != NULL && nick != NULL &&
 	    (nickrec = nicklist_find(chanrec, nick)) != NULL) {
                 /* nick found - check only ignores in nickmatch cache */

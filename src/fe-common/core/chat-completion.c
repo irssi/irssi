@@ -762,47 +762,61 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 	return ret;
 }
 
+static char *auto_complete(CHANNEL_REC *channel, const char *line)
+{
+	GList *comp;
+	const char *p;
+        char *nick, *ret;
+
+	p = strstr(line, completion_char);
+	if (p == NULL)
+		return NULL;
+
+        nick = g_strndup(line, (int) (p-line));
+
+        ret = NULL;
+	if (nicklist_find(channel, nick) == NULL) {
+                /* not an exact match, use the first possible completion */
+		comp = completion_channel_nicks(channel, nick, NULL);
+		if (comp != NULL) {
+			ret = g_strconcat(comp->data, p, NULL);
+			g_list_foreach(comp, (GFunc) g_free, NULL);
+			g_list_free(comp);
+		}
+	}
+
+	g_free(nick);
+
+        return ret;
+}
+
 static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *channel;
-	GList *comp;
-	char *line, *str, *ptr, comp_char;
+	char *line, *str;
 
 	g_return_if_fail(data != NULL);
 	if (item == NULL) return;
 
 	line = settings_get_bool("expand_escapes") ?
 		expand_escapes(data, server, item) : g_strdup(data);
-	comp_char = *completion_char;
 
 	/* check for automatic nick completion */
-        ptr = NULL;
-	comp = NULL;
-	channel = CHANNEL(item);
-
-	if (completion_auto && channel != NULL && comp_char != '\0') {
-		ptr = strchr(line, comp_char);
-		if (ptr != NULL) {
-			*ptr++ = '\0';
-			if (nicklist_find(channel, line) == NULL) {
-				comp = completion_channel_nicks(channel,
-								line, NULL);
-			}
+	if (completion_auto && IS_CHANNEL(item)) {
+		str = auto_complete(CHANNEL(item), line);
+		if (str != NULL) {
+			g_free(line);
+                        line = str;
 		}
 	}
 
-	str = g_strdup_printf(ptr == NULL ? "%s %s" : "%s %s%c%s", item->name,
-			      comp != NULL ? (char *) comp->data : line,
-			      comp_char, ptr);
+	str = g_strdup_printf(IS_CHANNEL(item) ? "-channel %s %s" :
+			      IS_QUERY(item) ? "-nick %s %s" : "%s %s",
+			      item->name, line);
+
 	signal_emit("command msg", 3, str, server, item);
 
 	g_free(str);
 	g_free(line);
-
-	if (comp != NULL) {
-		g_list_foreach(comp, (GFunc) g_free, NULL);
-		g_list_free(comp);
-	}
 
 	signal_stop();
 }
@@ -840,6 +854,11 @@ static void read_settings(void)
 	cmdchars = settings_get_str("cmdchars");
 	completion_auto = settings_get_bool("completion_auto");
 	completion_strict = settings_get_bool("completion_strict");
+
+	if (*completion_char == '\0') {
+                /* this would break.. */
+		completion_auto = FALSE;
+	}
 }
 
 void chat_completion_init(void)

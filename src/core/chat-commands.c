@@ -308,13 +308,13 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: MSG [-<server tag>] <targets> <message> */
+/* SYNTAX: MSG [-<server tag>] [-channel | -nick] <targets> <message> */
 static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *target, *origtarget, *msg;
 	void *free_arg;
-	int free_ret;
+	int free_ret, target_type;
 
 	g_return_if_fail(data != NULL);
 
@@ -342,10 +342,23 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		target = item->name;
 	}
 
-	if (target != NULL)
-		server->send_message(server, target, msg);
+	if (g_hash_table_lookup(optlist, "channel") != NULL)
+                target_type = SEND_TARGET_CHANNEL;
+	else if (g_hash_table_lookup(optlist, "nick") != NULL)
+		target_type = SEND_TARGET_NICK;
+	else {
+		/* Need to rely on server_ischannel(). If the protocol
+		   doesn't really know if it's channel or nick based on the
+		   name, it should just assume it's nick, because when typing
+		   text to channels it's always sent with /MSG -channel. */
+		target_type = server_ischannel(server, target) ?
+			SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
+	}
 
-	signal_emit(target != NULL && server_ischannel(server, target) ?
+	if (target != NULL)
+		server->send_message(server, target, msg, target_type);
+
+	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
 		    "message own_public" : "message own_private", 4,
 		    server, msg, target, origtarget);
 
@@ -419,6 +432,7 @@ void chat_commands_init(void)
 
 	command_set_options("connect", "4 6 !! +host noproxy -rawlog");
 	command_set_options("join", "invite");
+	command_set_options("msg", "channel nick");
 }
 
 void chat_commands_deinit(void)
