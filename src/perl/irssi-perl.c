@@ -199,7 +199,7 @@ static int signal_destroy_hash(void *key, GSList **list, const char *package)
 
 static int perl_script_destroy(const char *name)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 	char *package;
 	int package_len;
 
@@ -214,9 +214,10 @@ static int perl_script_destroy(const char *name)
 	g_hash_table_foreach_remove(last_signals,
 				    (GHRFunc) signal_destroy_hash, package);
 
-	for (tmp = perl_timeouts; tmp != NULL; tmp = tmp->next) {
+	for (tmp = perl_timeouts; tmp != NULL; tmp = next) {
 		PERL_TIMEOUT_REC *rec = tmp->data;
 
+		next = tmp->next;
 		if (strncmp(rec->func, package, package_len) == 0)
 			perl_timeout_destroy(rec);
 	}
