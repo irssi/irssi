@@ -201,10 +201,13 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	/* set our own address */
 	if (my_ip != NULL) {
 		sin_set_ip(&so, my_ip);
-		if (bind(handle, &so.sa, SIZEOF_SOCKADDR(so)) == -1) {
+		if (bind(handle, &so.sa, SIZEOF_SOCKADDR(so)) < 0) {
 			/* failed, set it back to INADDR_ANY */
-			sin_set_ip(&so, NULL);
-			bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
+			int old_errno = errno;
+
+			close(handle);
+			errno = old_errno;
+			return NULL;
 		}
 	}
 
