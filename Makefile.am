@@ -13,7 +13,11 @@ if BUILD_SERVERTEST
 SERVERTEST=servertest
 endif
 
-SUBDIRS = po intl $(GLIB_DIR) src $(SERVERTEST) docs scripts
+if HAVE_MSGFMT
+NLS_DIRS=po
+endif
+
+SUBDIRS = $(NLS_DIRS) intl $(GLIB_DIR) src $(SERVERTEST) docs scripts
 
 confdir = $(sysconfdir)/irssi
 conf_DATA = config default.theme colorless.theme
