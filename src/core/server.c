@@ -167,7 +167,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
 				"Host lookup failed";
 		}
-		server_cant_connect(server, rrormsg);
+		server_cant_connect(server, errormsg);
 		g_free_not_null(iprec.errorstr);
 		return;
 	}
