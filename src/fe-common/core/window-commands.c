@@ -183,7 +183,7 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 	window_change_server(window, server);
 }
 
-/* SYNTAX: WINDOW CLOSE [<first> [<last>] */
+/* SYNTAX: WINDOW CLOSE [<first> [<last>]] */
 static void cmd_window_close(const char *data)
 {
         GSList *tmp, *destroys;
