@@ -1,3 +1,60 @@
+ - tab completio jos lis‰‰ utf8 juttuja niin ei oikein toimi?
+ - "window item new" + queryt? .. vai channelit
+16:39 <@Qrczak> cras: I'm not sure how exactly to reproduce it but it happens 
+                often. When I jump to the window with a query using Alt-a 
+                (after the other person said something), and close the window 
+                (being brought to the last used window), and don't switch 
+                windows, and then that person says something again, I'm brought 
+                to the new query window automatically (that's of course bad).
+
+ - /kickban + kicks.pl heitt‰‰ "they aren't on that channel".. ?
+21.04.2002 11:59 [immy(immy@beanus.org)] GLib warning: signal_free(script 
+          destroyed) : signal still has 3 references:
+ - autorejoin +k kanavalle joka on /channel addattu "-" keyn kanssa ei toimi..
+ - jos kickataan nopeasti ja joinaa takas nopeasti chansyncci kaataa
+/WHOssa.. kts. qrczak logi
+ - /set show_server_tags tjsp ett‰ n‰ytt‰is aina (yhdist‰ hide_server_tagsin 
+   kanssa?)
+ - "script destroyed"i‰ pit‰is p‰‰st‰ skriptit kattomaan..
+17:35 <@peder> cras: why isnt 'topic = " {sb_topic $topic}"' in the default 
+ - /SET dcc_create_mode 755 ei toimi vaan laittaa 600?
+ - /SBAR topic placement bottom ei toimi??
+ - /SB GOTO -<days> <ts>
+ - /query -immortal so autoclose_queries wouldn't touch them
+ - /SET hiascii_control_chars if 128..128+32 should be treated as control chars
+
+.... pre-0.9 ...
+
+ - /exec -out kanavalla ei pelaa silciss‰
+ - write about %[-s] etc. to default.theme
+ - away handling is a bit buggy. you do /away;/away reason, irssi remembers
+   the away reason only until it receives "you're no longer away" from the
+   first command.. setting it back to away has then lost the reason.
+ - crash: /exec -msg safari perl -e 'print "A"x600000'"
+ - nick_ nick- _nick nick2 nick3 ...
+17.03.2002 22:25 #irssi.fi: <@Ion> cras: Jos sanon dcc chatissa ett‰ /exec - 
+                                   -out cat iso_tiedosto, niin miksi 
+                                   iso_tiedosto j‰‰ kesken? :)
+ - /op * valitus vois olla joku parempi kuin "not a good idea"..
+ - mitenk‰s tabcompletio completoi taas omaakin nickki‰..?
+ - /hilight -level "public -actions" or something so it wouldn't match
+   actions.
+ - vanhan irssin /upgrades uuteen ennen sit‰ vaihtoi /set autolog_path:iin
+   $1 ja kaatui?..
+ - /win hide vois pelata vaikka oliskin stickyj‰ siin‰ ikkunassa
+ - /SAVE -all?
+14.03.2002 19:10 #irssi: <@fantazja> cras: autoclose_query is also closing (and 
+                                     finishing) dcc chats :/
+ - /window server -sticky:tetyt ikkunat ei aina meinaa tajuta kun serveri
+   yhdistyy?
+ - utf8-tekstitykset bugailee statusbarissa (promptissa)
+ - refcounterit settings_add_xx()‰‰n ett‰ vois definett‰‰ useampia kertoja?
+ - jos /set reuse_unused_windows off, ja ikkuna n‰ytt‰is t‰ysin tyhj‰lle
+   ja niit‰ olis vaan 1, niin sen vois kyll‰ k‰ytt‰‰ silti (?)
+03:37 <@darix>  /away msg -> /upgrade -> im still away but on /away it doesnt 
+               show the awaylog msgs 
+ - /set beep_msg_level hilight ei toimi jos on /hilight -word
+
  - /STATUSBAR xx ENABLE|DISABLE recreates all statusbars which is a bit
    annoying because some scripts want to do it and input line is cleared
    because of this..
@@ -57,6 +114,8 @@
     - support for using strftime() formats (and $tag etc). only problem with
       this is that all the different awaylogs would need to be tracked and
       /CATed when setting yourself unaway
+    - /AWAYLOG could show the current awaylog and optionally reset it
+    - The channel name should be optional there
 
  - Window item placing:
     - !channel vs. !12345channel. it's layout saved with full name, but joined
@@ -148,7 +207,8 @@
 
  - Irssi proxy:
     - doesn't propagate your own nickchanges to other clients
-    - better support for CTCP replies / DCC
+    - list sessions, kill them
+    - /set irssi_proxy_ips <allow connections only from specified IPs>
 
  - Misc IRC related things:
     - better support for !channels (don't log the ID, show nicer in whois,
@@ -209,10 +269,11 @@
     - default binds: M-d, M-y
     - capitalize-word (meta-c), downcase-word (meta-l),
       transpose-words (meta-t), upcase-word (meta-u)                          
-    - UTF-8 support
     - /PASSWORD command that asks you to type the password to entry line and
       would hide it with asterisks, good if people spy on you :)
     - ^R-like history search
+    - Key to execute the command, but not place it in history
+    - Key to remove active entry from command history
 
  - Notify list:
     - showing who's online and who's offline doesn't work properly.
@@ -229,6 +290,7 @@
       user comes to irc.
     - "Should we check people in notify list when you're away" option
     - use /WATCH instead of /ISON in servers that support it
+    - Show when the nick was last seen
 
  - Ignores:
     - /IGNORE -ircnet or -tag
@@ -401,6 +463,11 @@
     - /FORMAT xx <tab>
     - don't add useless completions to list. eg /RUN nick<tab> shouldn't 
       work
+    - Priorities to completions. And at least command completion could use
+      it so it'd put last the commands that require chanops/ircops.
+      Requires support in command_bind().
+    - /DCC commands could complete nicks (/dcc close, /dcc get, ..)
+    - check the TODO about nick completion scripts..
 
  - Modules:
     - Figure out module vs. plugin wording, what is what ;)
@@ -430,6 +497,8 @@
       while settings_add_str() doesn't
     - Try to get the Makefiles generated so that compiling with GCC would
       always work even if the perl wasn't compiled with GCC..
+    - Irssi::Timeout_add() and input_add()'s data option could be optional
+      and maybe allow multiple parameters
 
  - Bigger code changes:
     - Restructure code tree so that non-IRC chat protocols would be in
@@ -449,14 +518,6 @@
       now crash irssi. Also if setting wasn't expected type can cause
       crashes so add proper error checkings everywhere. And is_node_list()
       etc. should be in uppercase..
-    - Would this work..? : command_bind() could specify the parameters
-      it uses, then some generic command parser could parse the commands
-      and options and if all is ok, send the parsed parameters directly with
-      signal_emit() .. I'm just thinking some type checking problems but
-      if all commands would be in format SERVER_REC, WI_ITEM_REC,
-      GHashTable *options, char ** (NULL terminated parameters list) .. ?
-    - support for multiple subcommands in the command parser, like
-      /window name foo level msgs.
     - Channel syncing is evil. Make it optional, and use /USERHOST when
       needed if host isn't known. /BAN at least should do this, and while
       at it, we could make /IGNORE as well to ignore based on mask. Also,
@@ -473,6 +534,19 @@
       but its possible that replies to two remote whoises are received exactly
       at the same time overlapping each others
 
+ - Commands:
+    - Would this work..? : command_bind() could specify the parameters
+      it uses, then some generic command parser could parse the commands
+      and options and if all is ok, send the parsed parameters directly with
+      signal_emit() .. I'm just thinking some type checking problems but
+      if all commands would be in format SERVER_REC, WI_ITEM_REC,
+      GHashTable *options, char ** (NULL terminated parameters list) .. ?
+    - support for multiple subcommands in the command parser, like
+      /window name foo level msgs.
+    - A way to disable some command entirely? eg. not show in completion
+      list or /HELP or anywhere..
+
+ - Read server capabilities from 005 numeric
  - settings_add_int("x") + settings_get_str("x") -> segfault
  - extra spaces after commands don't always work, eg /wii  nick, /help  xx
  - hide channel key in statusbar. This would require a $cmode_nokey or
