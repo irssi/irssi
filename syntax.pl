@@ -34,6 +34,8 @@ while (<docs/help/in/*.in>) {
           $DATARIVI = $SYNTAX;
       } elsif ($DATARIVI =~ /^\S+/) {
           chomp $DATARIVI if ($data[$count+1] =~ /^\S+/);
+      } else {
+	  $DATARIVI =~ s/^\t/         / while ($DATARIVI =~ /^\t/);
       }
       $count++;
    }

@@ -131,7 +131,11 @@ static int show_help_rec(COMMAND_REC *cmd)
 	recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 	ret = line_split(tmpbuf, recvlen, &str, &buffer);
-        if (ret > 0) printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str);
+	if (ret > 0) {
+            str = g_strconcat("%|", str, NULL);
+	    printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str);
+            g_free(str);
+	}
     }
     while (ret > 0);
     line_split_free(buffer);
