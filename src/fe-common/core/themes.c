@@ -814,36 +814,57 @@ static void cmd_format(const char *data)
         cmd_params_free(free_arg);
 }
 
-static void module_save(const char *module, MODULE_THEME_REC *rec, CONFIG_NODE *fnode)
+static void module_save(const char *module, MODULE_THEME_REC *rec,
+                        CONFIG_REC *config)
 {
-	CONFIG_NODE *node;
+	CONFIG_NODE *fnode, *node;
 	FORMAT_REC *formats;
 	int n;
 
-	formats = g_hash_table_lookup(default_formats, rec->name);
+        formats = g_hash_table_lookup(default_formats, rec->name);
 	if (formats == NULL) return;
+
+	fnode = config_node_traverse(config, "formats", TRUE);
 
 	node = config_node_section(fnode, rec->name, NODE_TYPE_BLOCK);
 	for (n = 0; formats[n].def != NULL; n++) {
-                if (rec->formats[n] != NULL)
-			iconfig_node_set_str(node, formats[n].tag, rec->formats[n]);
-	}
+                if (rec->formats[n] != NULL) {
+                        config_node_set_str(config, node, formats[n].tag,
+                                            rec->formats[n]);
+                }
+        }
+
+        if (node->value == NULL) {
+                /* not modified, don't keep the empty section */
+                config_node_remove(config, fnode, node);
+                if (fnode->value == NULL)
+                        config_node_remove(config, config->mainnode, fnode);
+        }
 }
 
 static void theme_save(THEME_REC *theme)
 {
 	CONFIG_REC *config;
-	CONFIG_NODE *fnode;
 	char *path;
 	int ok;
 
-	config = config_open(theme->path, 0660);
-	if (config == NULL) return;
+	config = config_open(theme->path, -1);
+        if (config != NULL)
+                config_parse(config);
+        else {
+                if (g_strcasecmp(theme->name, "default") == 0) {
+                        config = config_open(NULL, -1);
+                        config_parse_data(config, default_theme, "internal");
+                        config_change_file_name(config, theme->path, 0660);
+                } else {
+                        config = config_open(theme->path, 0660);
+                        if (config == NULL)
+                                return;
+                        config_parse(config);
+                }
+        }
 
-	config_parse(config);
-
-	fnode = config_node_traverse(config, "formats", TRUE);
-	g_hash_table_foreach(theme->modules, (GHFunc) module_save, fnode);
+	g_hash_table_foreach(theme->modules, (GHFunc) module_save, config);
 
         ok = TRUE;
 	path = g_strdup(theme->path);
