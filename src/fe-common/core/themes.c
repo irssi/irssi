@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "special-vars.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
@@ -45,21 +46,32 @@ THEME_REC *theme_create(const char *path, const char *name)
 	rec = g_new0(THEME_REC, 1);
 	rec->path = g_strdup(path);
 	rec->name = g_strdup(name);
-	rec->modules = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	rec->abstracts = g_hash_table_new((GHashFunc) g_str_hash,
+					  (GCompareFunc) g_str_equal);
+	rec->modules = g_hash_table_new((GHashFunc) g_istr_hash,
+					(GCompareFunc) g_istr_equal);
 	themes = g_slist_append(themes, rec);
 	signal_emit("theme created", 1, rec);
 
 	return rec;
 }
 
+static void theme_abstract_destroy(char *key, char *value)
+{
+	g_free(key);
+        g_free(value);
+}
+
 static void theme_module_destroy(const char *key, MODULE_THEME_REC *rec)
 {
 	int n;
 
-	for (n = 0; n < rec->count; n++)
-		if (rec->formats[n] != NULL)
-			g_free(rec->formats[n]);
+	for (n = 0; n < rec->count; n++) {
+		g_free_not_null(rec->formats[n]);
+		g_free_not_null(rec->expanded_formats[n]);
+	}
 	g_free(rec->formats);
+	g_free(rec->expanded_formats);
 
 	g_free(rec->name);
 	g_free(rec);
@@ -70,12 +82,183 @@ void theme_destroy(THEME_REC *rec)
 	themes = g_slist_remove(themes, rec);
 
 	signal_emit("theme destroyed", 1, rec);
+
+	g_hash_table_foreach(rec->abstracts, (GHFunc) theme_abstract_destroy, NULL);
+	g_hash_table_destroy(rec->abstracts);
 	g_hash_table_foreach(rec->modules, (GHFunc) theme_module_destroy, NULL);
 	g_hash_table_destroy(rec->modules);
+
+	g_slist_foreach(rec->replace_keys, (GFunc) g_free, NULL);
+	g_slist_free(rec->replace_keys);
+	g_slist_foreach(rec->replace_values, (GFunc) g_free, NULL);
+	g_slist_free(rec->replace_values);
 
 	g_free(rec->path);
 	g_free(rec->name);
 	g_free(rec);
+}
+
+static char *theme_format_expand_data(THEME_REC *theme,
+				      const char **format, int root);
+
+static int theme_replace_find(THEME_REC *theme, char chr)
+{
+	GSList *tmp;
+	int index = 0;
+
+	for (tmp = theme->replace_keys; tmp != NULL; tmp = tmp->next) {
+		if (strchr(tmp->data, chr) != NULL)
+			return index;
+		index++;
+	}
+
+	return -1;
+}
+
+static char *theme_replace_expand(THEME_REC *theme, int index, char chr)
+{
+	GSList *rec;
+	char data[2];
+
+	rec = g_slist_nth(theme->replace_values, index);
+	g_return_val_if_fail(rec != NULL, NULL);
+
+	data[0] = chr; data[1] = '\0';
+	return parse_special_string(rec->data, NULL, NULL, data, NULL);
+}
+
+/* append next "item", either a character or $variable */
+static void theme_format_append_next(THEME_REC *theme, GString *str,
+				     const char **format)
+{
+	int index;
+	char *value;
+
+	if (**format == '$') {
+		/* $variable .. we'll always need to skip this, since it
+		   may contain characters that are in replace chars. */
+                const char *orig;
+		char *args[1] = { NULL };
+		int free_ret;
+
+                orig = *format;
+		(*format)++;
+		value = parse_special((char **) format, NULL, NULL,
+				      args, &free_ret, NULL );
+		if (free_ret) g_free(value);
+		(*format)++;
+
+		/* append the variable name */
+		value = g_strndup(orig, (int) (*format-orig));
+                g_string_append(str, value);
+                g_free(value);
+		return;
+	}
+
+	index = theme_replace_find(theme, **format);
+	if (index == -1)
+		g_string_append_c(str, **format);
+	else {
+		value = theme_replace_expand(theme, index, **format);
+		g_string_append(str, value);
+		g_free(value);
+	}
+
+        (*format)++;
+}
+
+/* expand a single {abstract ...data... } */
+static char *theme_format_expand_abstract(THEME_REC *theme,
+					  const char **formatp)
+{
+	const char *p, *format;
+	char *abstract, *data, *ret;
+	int len;
+
+	format = *formatp;
+
+	/* get abstract name first */
+	p = format;
+	while (*p != '\0' && *p != ' ' &&
+	       *p != '{' && *p != '}') p++;
+	if (*p == '\0' || p == format)
+		return NULL; /* error */
+
+	len = (int) (p-format);
+	abstract = g_strndup(format, len);
+
+	/* skip the following space */
+	if (*p == ' ') len++;
+	*formatp = format + len;
+
+	/* get the abstract data */
+	data = g_hash_table_lookup(theme->abstracts, abstract);
+	g_free(abstract);
+	if (data == NULL) {
+		/* unknown abstract */
+		return NULL;
+	}
+	abstract = g_strdup(data);
+
+	/* abstract may itself contain abstracts or replaces :) */
+	p = data = abstract;
+	abstract = theme_format_expand_data(theme, &p, FALSE);
+	g_free(data);
+
+	/* now we'll need to get the data part. it may contain
+	   more abstracts, they are automatically expanded. */
+	data = theme_format_expand_data(theme, formatp, FALSE);
+
+	ret = parse_special_string(abstract, NULL, NULL, data, NULL);
+	g_free(abstract);
+	g_free(data);
+	return ret;
+}
+
+/* expand the data part in {abstract data}. If root is TRUE, we're actually
+   expanding the original format string so we ignore all extra } chars. */
+static char *theme_format_expand_data(THEME_REC *theme,
+				      const char **format, int root)
+{
+	GString *str;
+	char *ret, *abstract;
+
+	str = g_string_new(NULL);
+
+	while (**format != '\0') {
+		if (!root && **format == '}') {
+			(*format)++;
+			break;
+		}
+
+		if (**format != '{') {
+                        theme_format_append_next(theme, str, format);
+			continue;
+		}
+
+		(*format)++;
+		if (**format == '\0' || **format == '}')
+			break; /* error */
+
+		/* get a single {...} */
+		abstract = theme_format_expand_abstract(theme, format);
+		if (abstract != NULL) {
+			g_string_append(str, abstract);
+			g_free(abstract);
+		}
+	}
+
+	ret = str->str;
+        g_string_free(str, FALSE);
+        return ret;
+}
+
+static char *theme_format_expand(THEME_REC *theme, const char *format)
+{
+	g_return_val_if_fail(theme != NULL, NULL);
+	g_return_val_if_fail(format != NULL, NULL);
+
+	return theme_format_expand_data(theme, &format, TRUE);
 }
 
 static MODULE_THEME_REC *theme_module_create(THEME_REC *theme, const char *module)
@@ -94,18 +277,78 @@ static MODULE_THEME_REC *theme_module_create(THEME_REC *theme, const char *modul
 
 	for (rec->count = 0; formats[rec->count].def != NULL; rec->count++) ;
 	rec->formats = g_new0(char *, rec->count);
+	rec->expanded_formats = g_new0(char *, rec->count);
 
 	g_hash_table_insert(theme->modules, rec->name, rec);
 	return rec;
 }
 
-static void theme_read_formats(CONFIG_REC *config, THEME_REC *theme, const char *module)
+static void theme_read_replaces(CONFIG_REC *config, THEME_REC *theme)
+{
+	GSList *tmp;
+	CONFIG_NODE *node;
+
+	node = config_node_traverse(config, "replaces", FALSE);
+	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
+
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		if (node->key != NULL && node->value != NULL) {
+			theme->replace_keys =
+				g_slist_append(theme->replace_keys,
+					       g_strdup(node->key));
+			theme->replace_values =
+				g_slist_append(theme->replace_values,
+					       g_strdup(node->value));
+		}
+	}
+}
+
+static void theme_read_abstracts(CONFIG_REC *config, THEME_REC *theme)
+{
+	GSList *tmp;
+	CONFIG_NODE *node;
+
+	node = config_node_traverse(config, "abstracts", FALSE);
+	if (node == NULL || node->type !=  NODE_TYPE_BLOCK) return;
+
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		if (node->key != NULL && node->value != NULL &&
+		    g_hash_table_lookup(theme->abstracts, node->key) == NULL) {
+			g_hash_table_insert(theme->abstracts,
+					    g_strdup(node->key),
+					    g_strdup(node->value));
+		}
+	}
+}
+
+static void theme_set_format(THEME_REC *theme, MODULE_THEME_REC *rec,
+			     FORMAT_REC *formats,
+			     const char *key, const char *value)
+{
+	int n;
+
+	for (n = 0; formats[n].def != NULL; n++) {
+		if (formats[n].tag != NULL &&
+		    g_strcasecmp(formats[n].tag, key) == 0) {
+			rec->formats[n] = g_strdup(value);
+			rec->expanded_formats[n] =
+				theme_format_expand(theme, value);
+			break;
+		}
+	}
+}
+
+static void theme_read_formats(CONFIG_REC *config, THEME_REC *theme,
+			       const char *module)
 {
 	MODULE_THEME_REC *rec;
 	FORMAT_REC *formats;
 	CONFIG_NODE *node;
 	GSList *tmp;
-	int n;
 
 	formats = g_hash_table_lookup(default_formats, module);
 	if (formats == NULL) return;
@@ -120,15 +363,9 @@ static void theme_read_formats(CONFIG_REC *config, THEME_REC *theme, const char 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
 
-		if (node->key == NULL || node->value == NULL)
-                        continue;
-
-		for (n = 0; formats[n].def != NULL; n++) {
-			if (formats[n].tag != NULL &&
-			    g_strcasecmp(formats[n].tag, node->key) == 0) {
-				rec->formats[n] = g_strdup(node->value);
-				break;
-			}
+		if (node->key != NULL && node->value != NULL) {
+			theme_set_format(theme, rec, formats,
+					 node->key, node->value);
 		}
 	}
 }
@@ -241,35 +478,6 @@ THEME_REC *theme_load(const char *name)
 	return theme;
 }
 
-#if 0
-/* Add all *.theme files from directory to themes */
-static void find_themes(gchar *path)
-{
-	DIR *dirp;
-	struct dirent *dp;
-	char *fname, *name;
-	int len;
-
-	dirp = opendir(path);
-	if (dirp == NULL) return;
-
-	while ((dp = readdir(dirp)) != NULL) {
-		len = strlen(dp->d_name);
-		if (len <= 6 || strcmp(dp->d_name+len-6, ".theme") != 0)
-			continue;
-
-		name = g_strndup(dp->d_name, strlen(dp->d_name)-6);
-		if (!theme_find(name)) {
-			fname = g_strdup_printf("%s/%s", path, dp->d_name);
-			themes = g_slist_append(themes, theme_create(fname, name));
-			g_free(fname);
-		}
-		g_free(name);
-	}
-	closedir(dirp);
-}
-#endif
-
 typedef struct {
         THEME_REC *theme;
 	CONFIG_REC *config;
@@ -295,6 +503,8 @@ static void theme_read(THEME_REC *theme, const char *path)
 
         config_parse(config);
 	theme->default_color = config_get_int(config, NULL, "default_color", 15);
+        theme_read_replaces(config, theme);
+	theme_read_abstracts(config, theme);
 
 	rec.theme = theme;
 	rec.config = config;
@@ -377,8 +587,10 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 			if (reset || value != NULL) {
 				theme = theme_module_create(current_theme, rec->name);
                                 g_free_not_null(theme->formats[n]);
+                                g_free_not_null(theme->expanded_formats[n]);
 
 				theme->formats[n] = reset ? NULL : g_strdup(value);
+				theme->expanded_formats[n] = reset ? NULL : theme_format_expand(current_theme, value);
 				text = reset ? formats[n].def : value;
 			}
 			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_FORMAT_ITEM, formats[n].tag, text);

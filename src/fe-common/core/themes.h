@@ -8,6 +8,8 @@ typedef struct {
 
 	int count;
 	char **formats; /* in same order as in module's default formats */
+	char **expanded_formats; /* this contains the formats after
+				    expanding {templates} */
 } MODULE_THEME_REC;
 
 typedef struct {
@@ -16,6 +18,10 @@ typedef struct {
 
 	int default_color;
 	GHashTable *modules;
+
+	GSList *replace_keys;
+	GSList *replace_values;
+	GHashTable *abstracts;
 
 	void *gui_data;
 } THEME_REC;

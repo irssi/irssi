@@ -436,7 +436,7 @@ char *output_format_get_text(const char *module, WINDOW_REC *window,
 	va_start(va, formatnum);
 	ret = output_format_text_args(&dest, &formats[formatnum],
 				      module_theme == NULL ? NULL :
-				      module_theme->formats[formatnum], va);
+				      module_theme->expanded_formats[formatnum], va);
 	va_end(va);
 
 	return ret;
@@ -456,7 +456,7 @@ static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 	va_start(va, formatnum);
 	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
 				      module_theme == NULL ? NULL :
-				      module_theme->formats[formatnum], va);
+				      module_theme->expanded_formats[formatnum], va);
 	va_end(va);
 
 	return ret;
@@ -481,7 +481,7 @@ void printformat_module_args(const char *module, void *server,
 
 	str = output_format_text_args(&dest, &formats[formatnum],
 				      module_theme == NULL ? NULL :
-				      module_theme->formats[formatnum], va);
+				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
 }
@@ -511,7 +511,7 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window, int 
 	formats = g_hash_table_lookup(default_formats, module);
 	str = output_format_text_args(&dest, &formats[formatnum],
 				      module_theme == NULL ? NULL :
-				      module_theme->formats[formatnum], va);
+				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
 }
