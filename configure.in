@@ -195,6 +195,15 @@ if test "x$ac_cv_prog_gcc" = "xyes"; then
   CFLAGS="$CFLAGS -Wall"
 fi
 
+dnl * OS specific options
+case "$host_os" in
+  hpux*)
+    CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED"
+    ;;
+  *)
+    ;;
+esac
+
 dnl * socklen_t - AC_CHECK_TYPE() would be _really_ useful if it only would
 dnl * accept header files where to find the typedef..
 AC_MSG_CHECKING([for socklen_t])
