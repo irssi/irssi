@@ -589,6 +589,7 @@ static void cmd_cycle(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	/* FIXME: kludgy kludgy... and it relies on channel not
 	   being destroyed immediately.. */
 	signal_emit("command part", 3, data, server, item);
+        chanrec->left = TRUE;
 	channel_destroy(chanrec);
 
 	server->channels_join(server, joindata, FALSE);
