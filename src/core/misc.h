@@ -7,6 +7,7 @@
 
 typedef void* (*FOREACH_FIND_FUNC) (void *item, void *data);
 
+int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2);
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2);
 
 /* find `item' from a space separated `list' */
