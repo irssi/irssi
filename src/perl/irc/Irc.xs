@@ -53,9 +53,17 @@ static void perl_dcc_chat_fill_hash(HV *hv, CHAT_DCC_REC *dcc)
 	hv_store(hv, "connection_lost", 15, newSViv(dcc->connection_lost), 0);
 }
 
-static void perl_dcc_get_fill_hash(HV *hv, GET_DCC_REC *dcc)
+static void perl_dcc_file_fill_hash(HV *hv, FILE_DCC_REC *dcc)
 {
         perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
+
+	hv_store(hv, "size", 4, newSViv(dcc->size), 0);
+	hv_store(hv, "skipped", 7, newSViv(dcc->skipped), 0);
+}
+
+static void perl_dcc_get_fill_hash(HV *hv, GET_DCC_REC *dcc)
+{
+        perl_dcc_file_fill_hash(hv, (FILE_DCC_REC *) dcc);
 
 	hv_store(hv, "get_type", 8, newSViv(dcc->get_type), 0);
 	hv_store(hv, "file", 4, new_pv(dcc->file), 0);
@@ -64,7 +72,7 @@ static void perl_dcc_get_fill_hash(HV *hv, GET_DCC_REC *dcc)
 
 static void perl_dcc_send_fill_hash(HV *hv, SEND_DCC_REC *dcc)
 {
-        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
+        perl_dcc_file_fill_hash(hv, (FILE_DCC_REC *) dcc);
 
 	hv_store(hv, "file_quoted", 11, newSViv(dcc->file_quoted), 0);
 	hv_store(hv, "waitforend", 10, newSViv(dcc->waitforend), 0);

@@ -12,6 +12,7 @@
 #include "netsplit.h"
 
 #include "dcc/dcc.h"
+#include "dcc/dcc-file.h"
 #include "dcc/dcc-chat.h"
 #include "dcc/dcc-get.h"
 #include "dcc/dcc-send.h"
