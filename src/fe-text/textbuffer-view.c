@@ -1243,6 +1243,8 @@ static int sig_check_linecache(void)
 					    (GHRFunc) line_cache_check_remove,
 					    &now);
 	}
+
+        g_slist_free(caches);
 	return 1;
 }
 
