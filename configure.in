@@ -484,7 +484,7 @@ if test "$want_perl" != "no"; then
 		dnl * nsl is already in ldflags
 		dnl * libc is of course linked without needing -lc
 		dnl * -rdynamic must not be in LIBADD line
-		for word in -ldb -ldbm -lndbm -lgdbm -lnsl -lc -rdynamic; do
+		for word in -ldb -ldbm -lndbm -lgdbm -lc -rdynamic; do
 		  PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e "s/$word //" -e "s/$word$//"`
 		done
 
