@@ -1,21 +1,3 @@
- - TODO for .99:
-    - better support for !channels (don't log the ID, show nicer in whois,
-      layout save doesn't work)
-    - autoreconnect doesn't work after nick collision?
-    - jos gmodulea ei löydy niin huuda siitä configuressa
-    - update redirect_event() stuff in scripts/ dir!
-    - /LAST: Only one bug: separator is not used when -before is given (and no -after).
-    - ne mun /exec tailit jää päälle..
-    - Debian testing .debs are missing
-    - .debs for dcc-send-limiter
-    - fix the /beginner/ URL
-    - remove from code: FIXME: remove after .98
-    - lisää faqiin se /format timestamp
-    - ADD DEFAULT: /BIND meta-backspace delete_previous_word
-    - module_uniq_destroy() - those calls are probably wrong .. for CHANNEL and QUERY at least?
-    - update ICB protocol plugin to work with new send_message()
-    - mobile plugin doesn't work
-
  - /UPGRADE:
     - support DCCs
     - write /HELP
@@ -51,6 +33,7 @@
     - private messages could show mirc-style "Session Ident: nick (host)"
       which would update when nick's host changes. Then you wouldn't need to
       print the host before each msg.
+    - support for logging channel messages from specific people
 
  - Awaylogs:
     - either fully support logging only in servers you're away, or change the
@@ -69,8 +52,8 @@
       with either one
     - when dcc chat is accepted and query exists from the same nick, replace
       the query window with the dcc chat window.
-    - ASK what this means ;) Qrczak> If a window with a closed chat with that 
-      person already exists, a new chat should reuse it.
+    - closed DCC chats should add temporary window bind to the dcc chat so
+      future chats for same nick would use the same window
 
  - DCC
     - /DCC SEND wildcard support
@@ -88,6 +71,8 @@
       work.
     - With fast DCC SENDs (90kB/s, FreeBSD) typing get laggy (really?)
     - /DCC CLOSE #, /DCC would print the IDs
+    - /SET dcc_use_proxy to use IRC proxy for DCC connects as well
+    - support for special vars in /SET dcc_download_path, so $N could be used
 
  - Generic chat commands:
     - /MSG /CTCP /ACTION =dcc_chat,#channel
@@ -101,6 +86,7 @@
       messages from either nick1 or nick2 don't go to that window..
     - /^MSG nick creates query with /SET qutocreate_own_query YES
     - /WHOIS -servertag
+    - /BAN: setting of what netmask to use for banning with IPv6 addresses
 
  - Netsplits
     - BUG: said "+1 more", while the /SETs to control that were set properly,
@@ -118,17 +104,10 @@
     - /NETSPLIT <server>|<#channel>|<nick wildcard>
     - SERVERMODE +ov nick nick is shown instead of just Netjoin @nick because
       code is stupid. fixed in irssi-rewrite..
-
- - Statusbar:
-    - BUG: Position setting with having 2+ top-root-bars isn't working
-    - BUG: With statusbar scripts loaded, and irssi changing prompt at startup
-      (eg. "remove unknown settigs?"), irssi might print some glib errors
-      about missing prompt (couldn't reproduce those) and hides the prompt.
-    - /STATUSBAR command..
-    - /SET theme doesn't update statusbar colors
+    - show in query windows
 
  - Crashes:
-    - perl on moduulina niin kaatuu quitissa
+    - irssi crashes at quit if perl is loaded as module
     - #1  0x68cc7 in module_file_deinit_gmodule (file=0x110e20) at modules-load.c:356 
     - <dg> i've managed to reproduce the bug, if i make three split windows (/window show 3..5), then set the windows to not be sticky  and go to one of the windows, then alt+number to another window then go back the other window the display prints two windows in the same window
     - irssi -cserver -nnick -> crashes - lib-popt is buggy!
@@ -158,14 +137,18 @@
     - better support for CTCP replies / DCC
 
  - Misc IRC related things:
+    - better support for !channels (don't log the ID, show nicer in whois,
+      layout save doesn't work, /win item move !channel)
     - support for mode +q in dancer - also same as +b %xxx modes..
     - properly support RFC-1459 charset (ircnet specific option), eg.
       /QUERY p[ and msgs from p{ aren't placed there.
     - /BAN -ip, -time [<time>] (/ALIAS knockout?)
     - /KICKBAN to support same options than /BAN (would /ALIAS kickban work?)
     - ban list prints "x seconds ago" .. should be x days, mins, hours, ..
+    - /WALL could maybe check if server supports /WALLCHOPS or @#channel?
+      maybe too much trouble figuring out if it can or not.
 
- - windows:
+ - Windows:
      - /WINDOW SIZE -sticky, so f.e. /WINDOW BALANCE wouldn't affect it.
      - /LAYOUT save|reset doesn't affect anything immediately, only after
        restart
@@ -179,6 +162,13 @@
      - Optionally always start the lines from bottom of the screen when 
        screen is empty (how would scrolling work?)
      - Vertically split windows
+     - /SET use_msgs_window and /SET use_status_window should take effect
+       immediately
+     - /WINDOW notify_level - would specify what window activity will be
+       shown for the window
+     - Some sort of autobalancing for split windows after terminal resize,
+       maybe with window-specific options that "this window is n lines",
+       "this is at least n% of available space", etc.
 
  - Keyboard handling:
     - Some kind of state support for it, so it would be possible to make
@@ -196,7 +186,7 @@
 	  4 spaces but some more, it would only remove those 4 spaces from
 	  each so pasting code wouldn't mess up indents etc.
 	- Skip all autoreplaces and completions, so that f.e. tabs are
-	  printed as-is
+	  printed as-is (a few /BINDs would do this but...)
 	- Should empty lines be pasted too? Maybe optionally
     - /BIND -askkey command
     - /BIND -delete doesn't print that it did the deleting
@@ -222,9 +212,10 @@
     - /NOTIFY -comment xxx - add a comment to notify. print the comment when
       user comes to irc.
     - "Should we check people in notify list when you're away" option
+    - use /WATCH instead of /ISON in servers that support it
 
  - Ignores:
-    - /IGNORE -ircnet
+    - /IGNORE -ircnet or -tag
     - /IGNORE <nick> -> use hostmasking (related to channel syncing problem,
       see "bigger code changes") with support for -type and /SET ignore_type
     - /IGNORE -strip -pattern away * actions ..
@@ -254,6 +245,7 @@
     - people want to hilight their own nicks everywhere, eg. /HILIGHT $N
     - automatic nick hilighting at beginning of line should be optional,
       like some people would want -word hilighting in it..
+    - exceptions
 
  - Scrollback:
     - Optionally show a "bookmark" (line mark actually, a line full of '-'
@@ -264,6 +256,7 @@
       redraw timestamp, etc.)
     - /LAST -since <timestamp>
     - /LAST : use /SET timestamp_format
+    - /LAST -allwindows would check the lastlog from all open windows
     - /SCROLLBACK CLEAR all -public - a bit like /LAST -clear
       (make /LAST -clear do /SB CLEAR lastlog)
 
@@ -301,6 +294,8 @@
     - Fix the flood protection to be aware of max. input buffer, which is
       1024 bytes by default (/STATS d, CF). Now irssi may excess flood when
       sending lots of lines longer than ~200 chars.
+    - Flood protection doesn't count the extra penalty for MODEs and KICKs
+      in ircnet.
 
  - Text buffer:
     - support for printing ALL characters in text buffer, including ^B, ^C,
@@ -326,7 +321,14 @@
       overlapping line in the newly redrawn buffer would be colorized for a
       second or two, indicating where to continue reading
 
- - server connecting:
+ - Statusbar
+    - finish the support for multiple statusbar groups, and add
+      /WINDOW STATUSBAR command.
+    - finish the support for multiple input lines and a way to switch
+      between them, so eg. each split window could have it's own input line.
+    - padding char so instead of just spaces you could have ------
+
+ - Server connecting:
     - More verbose connecting
         - show if we're using IPv4 or IPv6
 	- show hostname we're using
@@ -336,6 +338,9 @@
     - DNS problems may cause removal of i-line, irssi shouldn't stop
       trying to reconnect the server if it happens.. Maybe it never should
       stop reconnecting to servers that are in config.
+    - Remember the previous IP while reconnecting, if DNS lookup fails use
+      it. Some DNS servers return "host not found" when their internet
+      connection is broken and irssi stops reconnecting..
     - /RECONNECT <servertag> - If <servertag> belongs to some IRC network,
       reconnect to next server in that ircnet, otherwise just reconnect
       to the server.
@@ -345,6 +350,12 @@
       reconnect queue if it exists (only if there's only one?). Also if
       we're already connected to the ircnet it could complain about it
       and -yes would force it.
+    - connect() may be stuck forever, timeout it after a few minutes.
+    - Raise the reconnect time every time you get disconnected, so if your
+      network goes up/down all the time, we'd see you join/part channels
+      more and more often instead of flooding all the time.
+    - Better support for round robin addresses (eg. irc.openprojects.org)
+    - /CONNECT -raw? A bit like telnet/nc host.
 
  - Tab completion:
     - Command parameter completion doesn't work properly when -options 
@@ -378,12 +389,17 @@
       CHAT_PROTOCOL_REC, etc.
     - signal_emit() - if emitting unknown signal, it could automatically
       save the types of sent parameters so another perl script could
-      signal_add() it (done already?)
+      signal_add() it
     - Irssi::keyboard_entry_redirect()
     - Irssi::format_get_text()
     - "use Symbol(delete_package)" doesn't work with perl 5.004 and crashes
       irssi .. at least remove the crashing!
     - Irssi::signal_remove() could accept hashes
+    - /command parameter parser so it'd be easier to handle -options etc.
+    - when reloading scripts, Irssi::settings_add_int() prints glib errors,
+      while settings_add_str() doesn't
+    - Try to get the Makefiles generated so that compiling with GCC would
+      always work even if the perl wasn't compiled with GCC..
 
  - Bigger code changes:
     - Restructure code tree so that non-IRC chat protocols would be in
@@ -409,6 +425,8 @@
       signal_emit() .. I'm just thinking some type checking problems but
       if all commands would be in format SERVER_REC, WI_ITEM_REC,
       GHashTable *options, char ** (NULL terminated parameters list) .. ?
+    - support for multiple subcommands in the command parser, like
+      /window name foo level msgs.
     - Channel syncing is evil. Make it optional, and use /USERHOST when
       needed if host isn't known. /BAN at least should do this, and while
       at it, we could make /IGNORE as well to ignore based on mask.
@@ -418,7 +436,32 @@
       function that still uses the old saved string which points to free'd
       memory.. this should somehow be fixed failsafe. maybe just g_strdup()
       them everywhere or figure out something better..
+    - Better priority specifying for signals, probably should add
+      int priority without limited range.
 
+ - extra spaces after commands don't always work, eg /wii  nick, /help  xx
+ - hide channel key in statusbar. This would require a $cmode_nokey or
+   something..
+ - fe-none doesn't compile with --with-perl-staticlib because it doesn't find
+   the ui/textui stuff..
+ - we should probably print timestamp even if level contains MSGLEVEL_NEVER,
+   as long as it's not the only level..
+ - If /SET print_active_channel is ON, actions still don't show the channel
+ - nick's user/host can't be printed for public messages
+ - /HELP <alias> should work
+ - /CLEAR -all should clear the window activities as well, leaving hilights
+ - support :: properly in IPv6 masks
+ - /SET activity_hide_targets ircnet/#irssi
+ - when you get disconnected, print your quit message to all channel windows
+ - possibility to print rawlog in window
+ - should $10 work (in special vars)?
+ - /VER should be alias
+ - /MODE #channel b should resync the banlist, and /QUOTE NAMES #channel
+   should resync the nicklist (irssi/ircd bugs).
+ - #include support to config file
+ - make detaching work
+ - with solaris, /EXECs don't die when irssi does (tail -f ...)
+ - /EXEC -interactive: print the commands you send
  - handle /JOINs with server redirections so they get aborted if we're not
    seing a JOIN for a while.
  - make sure the config file is never lost, write it to some temp file first
@@ -439,6 +482,9 @@
  - commands to move channels and servers in the config list, to set the
    join/connect order of them.
  - All those options to /WHO and /LIST commands that EPIC has
+ - Use different formats for /WHO #channel? There's no need to show the
+   channel in every line then (NOTE: /WHO #chan1,#chan2 should have two
+   headers)
  - nick/channel lists at right side of the text version of irssi. Ctrl-N
    for example could hide/show them. add mouse support for it.
 
