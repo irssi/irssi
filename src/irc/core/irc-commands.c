@@ -412,7 +412,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
-	char *qserver, *query;
+	char *qserver, *query, *event_402;
 	void *free_arg;
 	int free_nick;
 
@@ -437,10 +437,14 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	    g_hash_table_lookup(optlist, "yes") == NULL)
 		cmd_param_error(CMDERR_NOT_GOOD_IDEA);
 
+	event_402 = "event 402";
 	if (*qserver == '\0')
 		g_string_sprintf(tmpstr, "WHOIS %s", query);
-	else
+	else {
 		g_string_sprintf(tmpstr, "WHOIS %s %s", qserver, query);
+		if (g_strcasecmp(qserver, query) == 0)
+			event_402 = "whois event noserver";
+	}
 
 	server->whois_found = FALSE;
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
@@ -450,7 +454,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 
 	server_redirect_event((SERVER_REC *) server, query, 2,
 			      "event 318", "event 318", 1,
-			      "event 402", "event 402", -1,
+			      "event 402", event_402, -1,
 			      "event 311", "whois event", 1,
 			      "event 401", "whois not found", 1, NULL);
 	if (free_nick) g_free(query);

@@ -391,7 +391,19 @@ static void event_ban_type_changed(const char *bantype)
 	}
 }
 
-static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server, const char *sender, const char *addr)
+static void sig_whois_event_no_server(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &nick);
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
+	g_free(params);
+}
+
+static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server,
+				 const char *sender, const char *addr)
 {
 	char *params, *nick;
 
@@ -455,6 +467,7 @@ void fe_events_init(void)
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_add("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
+	signal_add("whois event noserver", (SIGNAL_FUNC) sig_whois_event_no_server);
 	signal_add("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 }
 
@@ -483,5 +496,6 @@ void fe_events_deinit(void)
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_remove("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
+	signal_remove("whois event noserver", (SIGNAL_FUNC) sig_whois_event_no_server);
 	signal_remove("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 }
