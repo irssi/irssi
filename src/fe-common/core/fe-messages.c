@@ -334,7 +334,8 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
 				printformat(server, rec->name, MSGLEVEL_QUITS,
-					    TXT_QUIT, nick, address, reason);
+					    TXT_QUIT, nick, address, reason,
+					    rec->name);
 			}
 		}
 		count++;
@@ -347,7 +348,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
 			printformat(server, nick, MSGLEVEL_QUITS,
-				    TXT_QUIT, nick, address, reason);
+				    TXT_QUIT, nick, address, reason, "");
 		}
 	}
 
@@ -380,7 +381,7 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 
 	printformat(server, channel, MSGLEVEL_NICKS,
 		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
-		    oldnick, newnick);
+		    oldnick, newnick, channel);
 }
 
 static void print_nick_change(SERVER_REC *server, const char *newnick,
@@ -428,7 +429,7 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 
 	if (!msgprint && ownnick) {
 		printformat(server, NULL, MSGLEVEL_NICKS,
-			    TXT_YOUR_NICK_CHANGED, oldnick, newnick);
+			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "");
 	}
 }
 
