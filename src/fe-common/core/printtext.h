@@ -12,6 +12,7 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window, int 
 
 void printtext(void *server, const char *target, int level, const char *text, ...);
 void printtext_string(void *server, const char *target, int level, const char *text);
+void printtext_string_window(WINDOW_REC *window, int level, const char *text);
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...);
 void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text);
 void printtext_dest(TEXT_DEST_REC *dest, const char *text, ...);

@@ -159,7 +159,7 @@ print(window, str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
 CODE:
-	printtext_window(window, level, str);
+	printtext_string_window(window, level, str);
 
 void
 command(window, cmd)

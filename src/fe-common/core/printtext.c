@@ -334,6 +334,28 @@ void printtext_string(void *server, const char *target, int level, const char *t
         g_free(str);
 }
 
+/* Like printtext_window(), but don't handle %s etc. */
+void printtext_string_window(WINDOW_REC *window, int level, const char *text)
+{
+	TEXT_DEST_REC dest;
+        char *str;
+
+	g_return_if_fail(text != NULL);
+
+	format_create_dest(&dest, NULL, NULL, level,
+			   window != NULL ? window : active_win);
+
+	if (!sending_print_starting) {
+		sending_print_starting = TRUE;
+		signal_emit_id(signal_print_starting, 1, dest);
+                sending_print_starting = FALSE;
+	}
+
+        str = printtext_expand_formats(text, &dest.flags);
+	print_line(&dest, str);
+        g_free(str);
+}
+
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 {
 	TEXT_DEST_REC dest;
