@@ -27,9 +27,11 @@
 
 #include "statusbar.h"
 #include "statusbar-config.h"
-#include "statusbar-items.h"
 #include "gui-windows.h"
 #include "gui-printtext.h"
+
+void statusbar_items_init(void);
+void statusbar_items_deinit(void);
 
 GSList *statusbar_groups;
 STATUSBAR_GROUP_REC *active_statusbar_group;

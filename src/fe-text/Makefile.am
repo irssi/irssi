@@ -71,7 +71,6 @@ noinst_HEADERS = \
         mainwindows.h \
         statusbar.h \
         statusbar-config.h \
-        statusbar-items.h \
 	term.h \
 	terminfo-core.h \
         textbuffer.h \
