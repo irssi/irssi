@@ -18,11 +18,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <glob.h>
-
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
@@ -37,8 +32,10 @@
 #include "dcc-chat.h"
 #include "dcc-queue.h"
 
+#include <glob.h>
+
 #ifndef GLOB_TILDE
-#  define GLOBL_TILDE 0
+#  define GLOB_TILDE 0 /* unsupported */
 #endif
 
 static int dcc_send_one_file(int queue, const char *target, const char *fname,
@@ -161,13 +158,16 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 	if (g_hash_table_lookup(optlist, "rmhead") != NULL) {
 		queue = dcc_queue_old(nick, servertag);
-		dcc_queue_remove_head(queue);
+		if (queue != -1)
+			dcc_queue_remove_head(queue);
 	} else if (g_hash_table_lookup(optlist, "rmtail") != NULL) {
 		queue = dcc_queue_old(nick, servertag);
-		dcc_queue_remove_tail(queue);
+		if (queue != -1)
+			dcc_queue_remove_tail(queue);
 	} else if (g_hash_table_lookup(optlist, "flush") != NULL) {
 		queue = dcc_queue_old(nick, servertag);
-		while (dcc_queue_remove_head(queue)) ;
+		if (queue != -1)
+			dcc_queue_free(queue);
 	} else {
 		if (g_hash_table_lookup(optlist, "append") != NULL)
 			mode = DCC_QUEUE_APPEND;

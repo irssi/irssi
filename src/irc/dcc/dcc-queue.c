@@ -41,12 +41,11 @@ int dcc_queue_old(const char *nick, const char *servertag)
 	for (i = 0; i < queuelist->len; i++) {
 		GSList *qlist = g_ptr_array_index(queuelist, i);
 
-		if (qlist == NULL)
-			continue;
-
-		/* skip stub */
-		for (qlist = qlist->next; qlist != NULL; qlist = qlist->next) {
+		for (; qlist != NULL; qlist = qlist->next) {
 			DCC_QUEUE_REC *rec = qlist->data;
+
+			if (rec == NULL)
+				continue;
 
 			if (*nick != '\0' && g_strcasecmp(nick, rec->nick) != 0)
 				continue;
@@ -81,6 +80,16 @@ int dcc_queue_new(void)
 	return i;
 }
 
+static void dcc_queue_free_rec(DCC_QUEUE_REC *rec)
+{
+	if (rec != NULL) {
+		g_free(rec->servertag);
+		g_free(rec->nick);
+		g_free(rec->file);
+		g_free(rec);
+	}
+}
+
 void dcc_queue_free(int queue)
 {
 	GSList **qlist;
@@ -88,18 +97,12 @@ void dcc_queue_free(int queue)
 	g_assert(queue >= 0 && queue < queuelist->len);
 
 	qlist = (GSList **) &g_ptr_array_index(queuelist, queue);
-	g_assert(*qlist != NULL && (*qlist)->next == NULL);
+	while (*qlist != NULL) {
+		DCC_QUEUE_REC *rec = (*qlist)->data;
 
-	g_slist_free(*qlist);
-	*qlist = NULL;
-}
-
-static void dcc_queue_free_rec(DCC_QUEUE_REC *rec)
-{
-	g_free(rec->servertag);
-	g_free(rec->nick);
-	g_free(rec->file);
-	g_free(rec);
+		*qlist = (*qlist)->next;
+		dcc_queue_free_rec(rec);
+	}
 }
 
 /* add an element to queue. element will have nick/servertag/fname/chat as data.
@@ -127,9 +130,10 @@ void dcc_queue_add(int queue, int mode, const char *nick, const char *fname,
 		*qlist = g_slist_append(*qlist, rec);
 }
 
-/* removes the head or the tail from the queue, but not the stub. returns the
-   number of elements removed from the queue (0 or 1). if remove_head is
-   non-zero, the head is removed. otherwise the tail is removed */
+/* removes the head or the tail from the queue. returns the number of
+   elements removed from the queue (0 or 1). if remove_head is non-zero,
+   the head is removed (or actually stub is removed and the current head
+   becomes the stub), otherwise the tail is removed. */
 static int dcc_queue_remove_entry(int queue, int remove_head)
 {
 	DCC_QUEUE_REC *rec;
@@ -141,7 +145,7 @@ static int dcc_queue_remove_entry(int queue, int remove_head)
 	if (*qlist == NULL || (*qlist)->next == NULL)
 		return 0;
 
-	rec = remove_head ? (*qlist)->next->data : g_slist_last(*qlist)->data;
+	rec = remove_head ? (*qlist)->data : g_slist_last(*qlist)->data;
 	*qlist = g_slist_remove(*qlist, rec);
 
 	dcc_queue_free_rec(rec);
@@ -192,13 +196,10 @@ static void sig_dcc_destroyed(CHAT_DCC_REC *dcc)
 	for (i = 0; i < queuelist->len; i++) {
 		GSList *qlist = g_ptr_array_index(queuelist, i);
 
-		if (qlist == NULL)
-			continue;
-
-		for (qlist = qlist->next; qlist != NULL; qlist = qlist->next) {
+		for (; qlist != NULL; qlist = qlist->next) {
 			DCC_QUEUE_REC *rec = qlist->data;
 
-			if (rec->chat == dcc)
+			if (rec != NULL && rec->chat == dcc)
 				rec->chat = NULL;
 	       }
 	}
@@ -216,7 +217,7 @@ void dcc_queue_deinit(void)
 	int i;
 
 	for (i = 0; i < queuelist->len; i++)
-		while (dcc_queue_remove_head(i) != 0) ;
+		dcc_queue_free(i);
 
 	g_ptr_array_free(queuelist, TRUE);
 
