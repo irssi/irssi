@@ -295,7 +295,7 @@ static void autolog_log(void *server, const char *target)
 	char *fname, *dir, *str;
 
 	log = log_find_item(target);
-	if (log != NULL) {
+	if (log != NULL && !log->failed) {
 		log_start_logging(log);
 		return;
 	}

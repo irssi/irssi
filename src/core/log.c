@@ -88,6 +88,7 @@ int log_start_logging(LOG_REC *log)
 			   log_file_create_mode);
 	if (log->handle == -1) {
 		signal_emit("log create failed", 1, log);
+		log->failed = TRUE;
 		return FALSE;
 	}
 #ifdef HAVE_FCNTL
@@ -97,6 +98,7 @@ int log_start_logging(LOG_REC *log)
 		close(log->handle);
 		log->handle = -1;
 		signal_emit("log locked", 1, log);
+		log->failed = TRUE;
 		return FALSE;
 	}
 #endif
@@ -108,6 +110,7 @@ int log_start_logging(LOG_REC *log)
 			    "\n", log->last);
 
 	signal_emit("log started", 1, log);
+	log->failed = FALSE;
 	return TRUE;
 }
 
