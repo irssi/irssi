@@ -32,162 +32,100 @@
 #include "hilight-text.h"
 #include "formats.h"
 
-static const char *noact_channels;
+static char **noact_channels;
 static int hilight_level, activity_level;
+
+static void window_activity(WINDOW_REC *window,
+			    int data_level, int hilight_color)
+{
+	int old_data_level;
+
+	old_data_level = window->data_level;
+	if (data_level == 0 || window->data_level < data_level) {
+		window->data_level = data_level;
+		window->hilight_color = hilight_color;
+		signal_emit("window hilight", 1, window);
+	}
+
+	signal_emit("window activity", 2, window,
+		    GINT_TO_POINTER(old_data_level));
+}
+
+static void window_item_activity(WI_ITEM_REC *item,
+				 int data_level, int hilight_color)
+{
+	int old_data_level;
+
+	old_data_level = item->data_level;
+	if (data_level == 0 || item->data_level < data_level) {
+		item->data_level = data_level;
+		item->hilight_color = hilight_color;
+		signal_emit("window item hilight", 1, item);
+	}
+
+	signal_emit("window item activity", 2, item,
+		    GINT_TO_POINTER(old_data_level));
+}
+
+#define hide_target_activity(data_level, target) \
+	((data_level) < DATA_LEVEL_HILIGHT && (target) != NULL && \
+	(noact_channels) != NULL && \
+	strarray_find((noact_channels), target) != -1)
 
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
-	int oldlevel, new_data;
+	WI_ITEM_REC *item;
+	int data_level;
 
 	if (dest->window == active_win ||
 	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
-	/* hilights and private messages get HILIGHT status,
-	   public messages get MSGS status and rest get TEXT */
-	new_data = (dest->level & (MSGLEVEL_HILIGHT|hilight_level)) ?
-		NEWDATA_HILIGHT :
-		((dest->level & activity_level) ? NEWDATA_MSG : NEWDATA_TEXT);
+	data_level = (dest->level & hilight_level) ?
+		DATA_LEVEL_HILIGHT+dest->hilight_priority :
+		((dest->level & activity_level) ?
+		 DATA_LEVEL_MSG : DATA_LEVEL_TEXT);
 
-        /* check that channel isn't in "don't show activity" list */
-	if (new_data < NEWDATA_HILIGHT &&
-	    dest->target != NULL && find_substr(noact_channels, dest->target))
+	if (hide_target_activity(data_level, dest->target))
 		return;
 
-	oldlevel = dest->window->new_data;
-	if (dest->window->new_data < new_data) {
-		dest->window->new_data = new_data;
-		dest->window->last_color = hilight_last_nick_color();;
-		signal_emit("window hilight", 1, dest->window);
+	if (dest->target != NULL) {
+		item = window_item_find(dest->server, dest->target);
+		if (item != NULL) {
+			window_item_activity(item, data_level,
+					     dest->hilight_color);
+		}
 	}
-
-	signal_emit("window activity", 2, dest->window, GINT_TO_POINTER(oldlevel));
-}
-
-static void sig_dehilight(WINDOW_REC *window, WI_ITEM_REC *item)
-{
-	g_return_if_fail(window != NULL);
-
-	if (item != NULL && item->new_data != 0) {
-		item->new_data = 0;
-		item->last_color = 0;
-		signal_emit("window item hilight", 1, item);
-	}
+	window_activity(dest->window, data_level, dest->hilight_color);
 }
 
 static void sig_dehilight_window(WINDOW_REC *window)
 {
         GSList *tmp;
-	int oldlevel;
 
 	g_return_if_fail(window != NULL);
 
-	if (window->new_data == 0)
-		return;
-
-	if (window->new_data != 0) {
-		oldlevel = window->new_data;
-		window->new_data = 0;
-		window->last_color = 0;
-		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
+	if (window->data_level != 0) {
+		window_activity(window, 0, 0);
+		for (tmp = window->items; tmp != NULL; tmp = tmp->next)
+			window_item_activity(tmp->data, 0, 0);
 	}
-	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
-
-	for (tmp = window->items; tmp != NULL; tmp = tmp->next)
-		sig_dehilight(window, tmp->data);
-}
-
-static void sig_hilight_window_item(WI_ITEM_REC *item)
-{
-	WINDOW_REC *window;
-	GSList *tmp;
-	int level, oldlevel, color;
-
-	if (item->new_data < NEWDATA_HILIGHT &&
-	    find_substr(noact_channels, item->name))
-		return;
-
-	window = window_item_window(item); level = 0; color = 0;
-	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		item = tmp->data;
-
-		if (item->new_data > level) {
-			level = item->new_data;
-			color = item->last_color;
-		}
-	}
-
-	oldlevel = window->new_data;
-	if (level == NEWDATA_HILIGHT)
-		window->last_color = color;
-	if (window->new_data < level || level == 0) {
-		window->new_data = level;
-		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
-	}
-	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
-}
-
-static void sig_message(SERVER_REC *server, const char *msg,
-			const char *nick, const char *addr,
-			const char *target, int level)
-{
-	WINDOW_REC *window;
-	WI_ITEM_REC *item;
-
-	/* get window and window item */
-	item = window_item_find(server, target);
-	window = item == NULL ?
-		window_find_closest(server, target, level) :
-		window_item_window(item);
-
-	if (window == active_win)
-		return;
-
-	/* hilight */
-	if (item != NULL) item->last_color = hilight_last_nick_color();
-	level = (item != NULL && item->last_color > 0) ||
-		(level & hilight_level) ?
-		NEWDATA_HILIGHT : NEWDATA_MSG;
-	if (item != NULL && item->new_data < level) {
-		item->new_data = level;
-		signal_emit("window item hilight", 1, item);
-	} else {
-		int oldlevel = window->new_data;
-
-		if (window->new_data < level) {
-			window->new_data = level;
-			window->last_color = hilight_last_nick_color();
-			signal_emit("window hilight", 2, window,
-				    GINT_TO_POINTER(oldlevel));
-		}
-		signal_emit("window activity", 2, window,
-			    GINT_TO_POINTER(oldlevel));
-	}
-}
-
-static void sig_message_public(SERVER_REC *server, const char *msg,
-			       const char *nick, const char *addr,
-			       const char *target)
-{
-	int level = MSGLEVEL_PUBLIC;
-
-	if (nick_match_msg(channel_find(server, target), msg, server->nick))
-                level |= MSGLEVEL_HILIGHT;
-
-	sig_message(server, msg, nick, addr, target, level);
-}
-
-static void sig_message_private(SERVER_REC *server, const char *msg,
-				const char *nick, const char *addr)
-{
-	sig_message(server, msg, nick, addr, nick, MSGLEVEL_MSGS);
 }
 
 static void read_settings(void)
 {
-	noact_channels = settings_get_str("noact_channels");
+	const char *channels;
+
+	if (noact_channels != NULL)
+		g_strfreev(noact_channels);
+
+        channels = settings_get_str("noact_channels");
+	noact_channels = *channels == '\0' ? NULL :
+		g_strsplit(channels, " ", -1);
+
 	activity_level = level2bits(settings_get_str("activity_levels"));
-	hilight_level = level2bits(settings_get_str("hilight_levels"));
+	hilight_level = MSGLEVEL_HILIGHT |
+		level2bits(settings_get_str("hilight_levels"));
 }
 
 void window_activity_init(void)
@@ -198,23 +136,18 @@ void window_activity_init(void)
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);
-	signal_add("window item changed", (SIGNAL_FUNC) sig_dehilight);
 	signal_add("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
-	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
-	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void window_activity_deinit(void)
 {
+	if (noact_channels != NULL)
+		g_strfreev(noact_channels);
+
 	signal_remove("print text", (SIGNAL_FUNC) sig_hilight_text);
-	signal_remove("window item changed", (SIGNAL_FUNC) sig_dehilight);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_remove("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
-	signal_remove("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
-	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

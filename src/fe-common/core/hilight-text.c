@@ -34,10 +34,10 @@
 #include "formats.h"
 
 #define DEFAULT_HILIGHT_LEVEL \
-	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | \
-	MSGLEVEL_ACTIONS | MSGLEVEL_DCCMSGS)
+	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | MSGLEVEL_DCCMSGS)
 
-static int hilight_next, last_nick_color;
+static HILIGHT_REC *next_hilight;
+static int hilight_stop_next;
 GSList *hilights;
 
 static void hilight_add_config(HILIGHT_REC *rec)
@@ -136,14 +136,6 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
-{
-	if (hilight_next) {
-		hilight_next = FALSE;
-		signal_stop();
-	}
-}
-
 /* color name -> mirc color number */
 static int mirc_color_name(const char *name)
 {
@@ -189,16 +181,16 @@ static int mirc_color_name(const char *name)
 	return -1;
 }
 
-char *hilight_match(const char *channel, const char *nickmask, int level, const char *str)
+HILIGHT_REC *hilight_match(const char *channel, const char *nickmask,
+			   int level, const char *str)
 {
 	GSList *tmp;
-	const char *color;
-	char number[MAX_INT_STRLEN];
-	int len, best_match, colornum;
+        HILIGHT_REC *match;
+	int len, best_match;
 
 	g_return_val_if_fail(str != NULL, NULL);
 
-	color = NULL; best_match = 0;
+	match = NULL; best_match = 0;
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
@@ -225,14 +217,24 @@ char *hilight_match(const char *channel, const char *nickmask, int level, const 
 		len = strlen(rec->text);
 		if (best_match < len) {
 			best_match = len;
-			color = rec->color;
+			match = rec;
 		}
 	}
 
-	if (best_match == 0)
-		return NULL;
+        return match;
+}
 
-	if (color == NULL) color = settings_get_str("hilight_color");
+char *hilight_get_color(HILIGHT_REC *rec)
+{
+	const char *color = rec->color;
+	char number[MAX_INT_STRLEN];
+        int colornum;
+
+	g_return_val_if_fail(rec != NULL, NULL);
+
+	if (color == NULL)
+		color = settings_get_str("hilight_color");
+
 	if (isalpha((int) *color)) {
 		/* color was specified with it's name - try to convert it */
 		colornum = mirc_color_name(color);
@@ -241,70 +243,85 @@ char *hilight_match(const char *channel, const char *nickmask, int level, const 
 		ltoa(number, colornum);
 		color = number;
 	}
+
 	return g_strconcat(isdigit(*color) ? "\003" : "", color, NULL);
 }
 
 static void sig_print_text_stripped(TEXT_DEST_REC *dest, const char *str)
 {
+        HILIGHT_REC *hilight;
 	char *newstr, *color;
-	int oldlevel;
 
 	g_return_if_fail(str != NULL);
+
+	if (next_hilight != NULL) {
+		dest->hilight_priority = next_hilight->priority;
+		color = hilight_get_color(next_hilight);
+		dest->hilight_color = (color != NULL && *color == 3) ?
+			atoi(color+1) : 0;
+		g_free(color);
+		next_hilight = NULL;
+                return;
+	}
 
 	if (dest->level & (MSGLEVEL_NOHILIGHT|MSGLEVEL_HILIGHT))
 		return;
 
-	color = hilight_match(dest->target, NULL, dest->level, str);
-	if (color == NULL) return;
+	hilight = hilight_match(dest->target, NULL, dest->level, str);
+	if (hilight == NULL)
+		return;
 
+	/* update the level / hilight info */
+	dest->level |= MSGLEVEL_HILIGHT;
+	if (hilight->priority > 0)
+		dest->hilight_priority = hilight->priority;
+
+	color = hilight_get_color(hilight);
 	if (*color == 3) {
 		/* colorify */
-                dest->window->last_color = atoi(color+1);
+		dest->hilight_color = atoi(color+1);
 	}
 
-	if (dest->window != active_win) {
-		oldlevel = dest->window->new_data;
-		dest->window->new_data = NEWDATA_HILIGHT;
-		signal_emit("window hilight", 2, dest->window, GINT_TO_POINTER(oldlevel));
-		signal_emit("window activity", 2, dest->window, GINT_TO_POINTER(oldlevel));
-	}
+	hilight_stop_next = FALSE;
 
-	hilight_next = FALSE;
-
-	/* update the level, but let the signal pass through.. */
-	dest->level |= MSGLEVEL_HILIGHT;
+	/* send both signals again. "print text stripped" maybe wouldn't
+	   have to be resent, but it would reverse the signal sending
+	   order which some things may depend on, so maybe it's best we
+	   don't do it. */
+	signal_emit("print text stripped", 2, dest, str);
 
 	newstr = g_strconcat(color, str, NULL);
 	signal_emit("print text", 2, dest, newstr);
 	g_free(newstr);
 
-	hilight_next = TRUE;
+	hilight_stop_next = TRUE;
 
 	g_free_not_null(color);
+        signal_stop();
 }
 
-char *hilight_find_nick(const char *channel, const char *nick,
-			const char *address, int level, const char *msg)
+static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
 {
+	if (hilight_stop_next) {
+		hilight_stop_next = FALSE;
+		signal_stop();
+	}
+}
+
+char *hilight_match_nick(const char *channel, const char *nick,
+			 const char *address, int level, const char *msg)
+{
+        HILIGHT_REC *rec;
 	char *color, *mask;
 
         mask = g_strdup_printf("%s!%s", nick, address);
-	color = hilight_match(channel, mask, level, msg);
+	rec = hilight_match(channel, mask, level, msg);
 	g_free(mask);
 
-	last_nick_color = (color != NULL && *color == 3) ?
-		atoi(color+1) : 0;
+	color = rec == NULL ? NULL : hilight_get_color(rec);
+
+        next_hilight = rec;
 	return color;
-}
-
-int hilight_last_nick_color(void)
-{
-	return last_nick_color;
-}
-
-static void sig_message(void)
-{
-	last_nick_color = 0;
 }
 
 static void read_hilight_config(void)
@@ -338,6 +355,7 @@ static void read_hilight_config(void)
 		rec->color = color == NULL || *color == '\0' ? NULL :
 			g_strdup(color);
 		rec->level = config_node_get_int(node, "level", 0);
+		rec->priority = config_node_get_int(node, "priority", 0);
 		rec->nick = config_node_get_bool(node, "nick", TRUE);
 		rec->nickmask = config_node_get_bool(node, "mask", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
@@ -389,7 +407,7 @@ static void cmd_hilight(const char *data)
 {
         GHashTable *optlist;
 	HILIGHT_REC *rec;
-	char *colorarg, *levelarg, *chanarg, *text;
+	char *colorarg, *levelarg, *priorityarg, *chanarg, *text;
 	char **channels;
 	void *free_arg;
 
@@ -406,6 +424,7 @@ static void cmd_hilight(const char *data)
 
 	chanarg = g_hash_table_lookup(optlist, "channels");
 	levelarg = g_hash_table_lookup(optlist, "level");
+	priorityarg = g_hash_table_lookup(optlist, "priority");
 	colorarg = g_hash_table_lookup(optlist, "color");
 
 	if (*text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -429,6 +448,7 @@ static void cmd_hilight(const char *data)
 
 	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
 		level2bits(replace_chars(levelarg, ',', ' '));
+	rec->priority = priorityarg == NULL ? 0 : atoi(priorityarg);
 	rec->nick = settings_get_bool("hilight_only_nick") &&
 		(rec->level == 0 || (rec->level & DEFAULT_HILIGHT_LEVEL) == rec->level) ?
 		g_hash_table_lookup(optlist, "nonick") == NULL :
@@ -473,33 +493,30 @@ static void cmd_dehilight(const char *data)
 
 void hilight_text_init(void)
 {
-	hilight_next = FALSE;
-	last_nick_color = 0;
+        next_hilight = NULL;
+	hilight_stop_next = FALSE;
 
 	read_hilight_config();
 	settings_add_str("misc", "hilight_color", "8");
 	settings_add_bool("misc", "hilight_only_nick", TRUE);
 
-	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
+	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
         signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
-	signal_add_last("message public", (SIGNAL_FUNC) sig_message);
-	signal_add_last("message private", (SIGNAL_FUNC) sig_message);
+
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
-
-	command_set_options("hilight", "-color -level -channels nick nonick mask word regexp");
+	command_set_options("hilight", "-color -level -priority -channels nick nonick mask word regexp");
 }
 
 void hilight_text_deinit(void)
 {
 	hilights_destroy_all();
 
-	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_print_text_stripped);
+	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
         signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
-        signal_remove("message public", (SIGNAL_FUNC) sig_message);
-        signal_remove("message private", (SIGNAL_FUNC) sig_message);
+
 	command_unbind("hilight", (SIGNAL_FUNC) cmd_hilight);
 	command_unbind("dehilight", (SIGNAL_FUNC) cmd_dehilight);
 }

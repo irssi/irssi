@@ -236,10 +236,6 @@ fe-messages.c:
  "message invite", SERVER_REC, char *channel, char *nick, char *address
  "message topic", SERVER_REC, char *channel, char *topic, char *nick, char *address
 
-hilight-text.c:
- "window hilight", WINDOW_REC, int level
- "window activity", WINDOW_REC, int level
-
 keyboard.c:
  "keyinfo created", KEYINFO_REC
  "keyinfo destroyed", KEYINFO_REC
@@ -253,7 +249,10 @@ themes.c:
  "theme destroyed", THEME_REC
 
 window-activity.c:
+ "window hilight", WINDOW_REC
+ "window activity", WINDOW_REC, int old_level
  "window item hilight", WI_ITEM_REC
+ "window item activity", WI_ITEM_REC, int old_lvel
 
 window-items.c:
  "window item new", WINDOW_REC, WI_ITEM_REC

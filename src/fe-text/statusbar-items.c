@@ -328,7 +328,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
     {
 	window = tmp->data;
 
-	is_det = window->new_data >= NEWDATA_HILIGHT;
+	is_det = window->data_level >= DATA_LEVEL_HILIGHT;
 	if (is_det && !det) continue;
 	if (!is_det && !act) continue;
 
@@ -341,17 +341,19 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 	}
 
 	ltoa(str, window->refnum);
-	switch (window->new_data)
+	switch (window->data_level)
 	{
-	case NEWDATA_TEXT:
+	case DATA_LEVEL_NONE:
+                break;
+	case DATA_LEVEL_TEXT:
 		set_color(stdscr, sbar_color_dim);
 		break;
-	case NEWDATA_MSG:
+	case DATA_LEVEL_MSG:
 		set_color(stdscr, sbar_color_bold);
 		break;
-	case NEWDATA_HILIGHT:
-		if (window->last_color > 0)
-			set_color(stdscr, sbar_color_background | mirc_colors[window->last_color]);
+	default:
+		if (window->hilight_color > 0)
+			set_color(stdscr, sbar_color_background | mirc_colors[window->hilight_color%16]);
 		else
 			set_color(stdscr, sbar_color_act_highlight);
 		break;
@@ -376,7 +378,7 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
 
 	size_needed += 1+ltoa(str, window->refnum);
 
-	if (!use_colors && window->new_data >= NEWDATA_HILIGHT)
+	if (!use_colors && window->data_level >= DATA_LEVEL_HILIGHT)
 	    det = TRUE;
 	else
 	    act = TRUE;
@@ -418,7 +420,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 	/* Move the window to the first in the activity list */
 	if (g_list_find(activity_list, window) != NULL)
 	    activity_list = g_list_remove(activity_list, window);
-	if (window->new_data != 0)
+	if (window->data_level != 0)
 	    activity_list = g_list_prepend(activity_list, window);
 	statusbar_item_redraw(activity_item);
 	return;
@@ -427,14 +429,14 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
     if (g_list_find(activity_list, window) != NULL)
     {
 	/* already in activity list */
-	if (window->new_data == 0)
+	if (window->data_level == 0)
 	{
 	    /* remove from activity list */
 	    activity_list = g_list_remove(activity_list, window);
 	    statusbar_item_redraw(activity_item);
 	}
-	else if (window->new_data != GPOINTER_TO_INT(oldlevel) ||
-		 window->last_color != 0)
+	else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
+		 window->hilight_color != 0)
 	{
 		/* different level as last time (or maybe different
 		   hilight color?), just redraw it. */
@@ -443,7 +445,7 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
         return;
     }
 
-    if (window->new_data == 0)
+    if (window->data_level == 0)
 	    return;
 
     /* add window to activity list .. */

@@ -8,6 +8,7 @@ typedef struct {
 	int level; /* match only messages with this level, 0=default */
 	char *color; /* if starts with number, \003 is automatically
 	                inserted before it. */
+	int priority;
 
 	unsigned int nick:1; /* hilight only the nick, not a full line - works only with msgs. */
 	unsigned int nickmask:1; /* `text 'is a nick mask - colorify the nick */
@@ -17,12 +18,12 @@ typedef struct {
 
 extern GSList *hilights;
 
-char *hilight_match(const char *channel, const char *nickmask,
-		    int level, const char *str);
+HILIGHT_REC *hilight_match(const char *channel, const char *nickmask,
+			   int level, const char *str);
+char *hilight_get_color(HILIGHT_REC *rec);
 
-char *hilight_find_nick(const char *channel, const char *nick,
-			const char *address, int level, const char *msg);
-int hilight_last_nick_color(void);
+char *hilight_match_nick(const char *channel, const char *nick,
+			 const char *address, int level, const char *msg);
 
 void hilight_text_init(void);
 void hilight_text_deinit(void);

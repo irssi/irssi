@@ -212,6 +212,9 @@ void format_create_dest(TEXT_DEST_REC *dest,
 	dest->level = level;
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
+
+	dest->hilight_priority = 0;
+        dest->hilight_color = 0;
 }
 
 static char *format_get_text_args(TEXT_DEST_REC *dest,

@@ -240,8 +240,8 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 
 	hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
-	hv_store(hv, "new_data", 8, newSViv(item->new_data), 0);
-	hv_store(hv, "last_color", 10, newSViv(item->last_color), 0);
+	hv_store(hv, "data_level", 8, newSViv(item->data_level), 0);
+	hv_store(hv, "hilight_color", 10, newSViv(item->hilight_color), 0);
 }
 
 void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
@@ -403,8 +403,8 @@ void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	hv_store(hv, "lines", 5, newSViv(window->lines), 0);
 
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
-	hv_store(hv, "new_data", 8, newSViv(window->new_data), 0);
-	hv_store(hv, "last_color", 10, newSViv(window->last_color), 0);
+	hv_store(hv, "data_level", 8, newSViv(window->data_level), 0);
+	hv_store(hv, "hilight_color", 10, newSViv(window->hilight_color), 0);
 	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
 	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
 }

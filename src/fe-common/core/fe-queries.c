@@ -283,7 +283,7 @@ static int sig_query_autoclose(void)
 
 		next = tmp->next;
 		window = window_item_window((WI_ITEM_REC *) rec);
-		if (window != active_win && rec->new_data == 0 &&
+		if (window != active_win && rec->data_level == 0 &&
 		    now-window->last_line > query_auto_close)
 			query_destroy(rec);
 	}

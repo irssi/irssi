@@ -7,10 +7,10 @@
 #include "window-item-def.h"
 
 enum {
-	NEWDATA_TEXT = 1,
-	NEWDATA_MSG,
-        NEWDATA_HILIGHT,
-	NEWDATA_CUSTOM
+        DATA_LEVEL_NONE = 0,
+	DATA_LEVEL_TEXT,
+	DATA_LEVEL_MSG,
+        DATA_LEVEL_HILIGHT
 };
 
 typedef struct {
@@ -21,6 +21,7 @@ typedef struct {
 	WI_ITEM_REC *active;
 	SERVER_REC *active_server;
 
+	int level; /* message level */
 	GSList *waiting_channels; /* list of "<server tag> <channel>" */
 
 	int lines;
@@ -31,9 +32,9 @@ typedef struct {
 	GList *cmdhist, *histpos;
 	int histlines;
 
-	int level;
-	int new_data;
-	int last_color;
+	int data_level; /* current data level */
+	int hilight_color; /* current hilight color */
+
 	time_t last_timestamp; /* When was last timestamp printed */
 	time_t last_line; /* When was last line printed */
 

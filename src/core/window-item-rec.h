@@ -9,7 +9,7 @@ STRUCT_SERVER_REC *server;
 char *name;
 
 time_t createtime;
-int new_data;
-int last_color;  /* if NEWDATA_HILIGHT is set, color number could be specified here */
+int data_level;
+int hilight_color;
 
 #undef STRUCT_SERVER_REC

@@ -103,8 +103,8 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 
 		rec = tmp->data;
 
-		if (rec->new_data && max_act < rec->new_data) {
-			max_act = rec->new_data;
+		if (rec->data_level > 0 && max_act < rec->data_level) {
+			max_act = rec->data_level;
 			max_win = rec;
 		}
 	}
