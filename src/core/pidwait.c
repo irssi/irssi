@@ -53,8 +53,9 @@ static int child_check(void)
 		next = tmp->next;
 		if (waitpid(pid, &status, WNOHANG) > 0) {
 			/* process terminated, remove from list */
+			signal_emit_id(signal_pidwait, 2, tmp->data,
+				       GINT_TO_POINTER(status));
 			pids = g_slist_remove(pids, tmp->data);
-			signal_emit_id(signal_pidwait, 1, tmp->data);
 		}
 	}
 	return 1;

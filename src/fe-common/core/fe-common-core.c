@@ -47,6 +47,9 @@ void fe_channels_deinit(void);
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
 
+void fe_exec_init(void);
+void fe_exec_deinit(void);
+
 void fe_expandos_init(void);
 void fe_expandos_deinit(void);
 
@@ -109,6 +112,7 @@ void fe_common_core_init(void)
 	keyboard_init();
 	printtext_init();
 	formats_init();
+        fe_exec_init();
         fe_expandos_init();
 	fe_ignore_init();
 	fe_log_init();
@@ -141,6 +145,7 @@ void fe_common_core_deinit(void)
 	keyboard_deinit();
 	printtext_deinit();
 	formats_deinit();
+        fe_exec_deinit();
         fe_expandos_deinit();
 	fe_ignore_deinit();
 	fe_log_deinit();
