@@ -104,17 +104,23 @@ static void ignore_split_levels(const char *levels, int *level, int *xlevel)
 
 static void ignore_print(int index, IGNORE_REC *rec)
 {
+	GString *options;
 	char *key, *levels;
 
 	key = ignore_get_key(rec);
 	levels = ignore_get_levels(rec->level, rec->except_level);
+
+	options = g_string_new(NULL);
+	if (rec->regexp) g_string_sprintfa(options, "-regexp ");
+	if (rec->fullword) g_string_sprintfa(options, "-word ");
+	if (rec->replies) g_string_sprintfa(options, "-replies ");
+	if (options->len > 1) g_string_truncate(options, options->len-1);
+
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		    IRCTXT_IGNORE_LINE, index,
 		    key != NULL ? key : "",
-		    levels != NULL ? levels : "",
-		    rec->regexp ? " -regexp" : "",
-		    rec->fullword ? " -word" : "",
-		    rec->replies ? " -replies" : "");
+		    levels != NULL ? levels : "", options->str);
+	g_string_free(options, TRUE);
         g_free(key);
 	g_free(levels);
 }
