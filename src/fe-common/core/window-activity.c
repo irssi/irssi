@@ -188,8 +188,8 @@ void window_activity_init(void)
 	signal_add("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
-	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
