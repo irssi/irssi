@@ -249,7 +249,9 @@ static void sig_connected(IRC_SERVER_REC *server)
 		return;
 
 	server->splits = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
-	server_init(server);
+
+        if (!server->session_reconnect)
+		server_init(server);
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)

@@ -140,6 +140,7 @@ static void textui_init(void)
 
 	theme_register(gui_text_formats);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_exit);
+	signal_add("session clean", (SIGNAL_FUNC) term_deinit);
 }
 
 static void textui_finish_init(void)
@@ -195,6 +196,7 @@ static void textui_deinit(void)
 
         dirty_check(); /* one last time to print any quit messages */
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
+	signal_remove("session clean", (SIGNAL_FUNC) term_deinit);
 
         lastlog_deinit();
 	statusbar_deinit();

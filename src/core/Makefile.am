@@ -45,6 +45,7 @@ libcore_a_SOURCES = \
 	servers.c \
 	servers-reconnect.c \
 	servers-setup.c \
+	session.c \
 	settings.c \
 	signals.c \
 	special-vars.c \
@@ -92,6 +93,7 @@ noinst_HEADERS = \
 	servers.h \
 	servers-reconnect.h \
 	servers-setup.h \
+	session.h \
 	settings.h \
 	signals.h \
 	special-vars.h \

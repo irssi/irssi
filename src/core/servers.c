@@ -196,10 +196,15 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	own_ip = ip == NULL ? NULL :
 		(IPADDR_IS_V6(ip) ? conn->own_ip6 : conn->own_ip4);
 
-	if (ip != NULL)
-		signal_emit("server connecting", 2, server, ip);
+	handle = NULL;
+	if (ip != NULL) {
+		/* allow "server connecting" signal to create the
+		   connection handle */
+		signal_emit("server connecting", 3, server, ip, &handle);
+                if (handle == NULL)
+			handle = net_connect_ip(ip, port, own_ip);
+	}
 
-	handle = ip == NULL ? NULL : net_connect_ip(ip, port, own_ip);
 	if (handle == NULL) {
 		/* failed */
 		if (iprec.error != 0 && net_hosterror_notfound(iprec.error)) {

@@ -36,6 +36,9 @@
 void irc_expandos_init(void);
 void irc_expandos_deinit(void);
 
+void irc_session_init(void);
+void irc_session_deinit(void);
+
 void lag_init(void);
 void lag_deinit(void);
 
@@ -100,6 +103,7 @@ void irc_core_init(void)
 	chat_protocol_register(rec);
         g_free(rec);
 
+        irc_session_init();
 	irc_chatnets_init();
 	irc_servers_init();
 	irc_channels_init();
@@ -130,6 +134,7 @@ void irc_core_deinit(void)
 	irc_irc_deinit();
 	irc_servers_deinit();
 	irc_chatnets_deinit();
+        irc_session_deinit();
 
 	chat_protocol_unregister("IRC");
 }

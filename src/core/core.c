@@ -29,6 +29,7 @@
 #include "net-sendbuffer.h"
 #include "signals.h"
 #include "settings.h"
+#include "session.h"
 
 #include "chat-protocols.h"
 #include "servers.h"
@@ -186,7 +187,9 @@ void core_init_paths(int argc, char *argv[])
         if (irssi_dir == NULL)
 		irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, g_get_home_dir());
 	if (irssi_config_file == NULL)
-                irssi_config_file = g_strdup_printf("%s/config", irssi_dir);
+		irssi_config_file = g_strdup_printf("%s/config", irssi_dir);
+
+	session_set_binary(argv[0]);
 }
 
 static void sig_irssi_init_finished(void)
@@ -213,7 +216,8 @@ void core_init(int argc, char *argv[])
 
 	settings_init();
 	commands_init();
-        nickmatch_cache_init();
+	nickmatch_cache_init();
+        session_init();
 
 	chat_protocols_init();
 	chatnets_init();
@@ -267,6 +271,7 @@ void core_deinit(void)
 	chatnets_deinit();
 	chat_protocols_deinit();
 
+        session_deinit();
         nickmatch_cache_deinit();
 	commands_deinit();
 	settings_deinit();

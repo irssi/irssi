@@ -25,6 +25,7 @@ libirc_core_a_SOURCES = \
         irc-servers.c \
         irc-servers-reconnect.c \
         irc-servers-setup.c \
+        irc-session.c \
         lag.c \
         massjoin.c \
         modes.c \
