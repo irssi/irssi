@@ -320,20 +320,23 @@ static void cmd_foreach(const char *data, SERVER_REC *server,
 /* SYNTAX: FOREACH SERVER <command> */
 static void cmd_foreach_server(const char *data, SERVER_REC *server)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 
-	for (tmp = servers; tmp != NULL; tmp = tmp->next)
+	for (tmp = servers; tmp != NULL; tmp = next) {
+                next = tmp->next;
 		signal_emit("send command", 3, data, tmp->data, NULL);
+	}
 }
 
 /* SYNTAX: FOREACH CHANNEL <command> */
 static void cmd_foreach_channel(const char *data)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 
-	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
+	for (tmp = channels; tmp != NULL; tmp = next) {
 		CHANNEL_REC *rec = tmp->data;
 
+                next = tmp->next;
 		signal_emit("send command", 3, data, rec->server, rec);
 	}
 }
@@ -341,11 +344,12 @@ static void cmd_foreach_channel(const char *data)
 /* SYNTAX: FOREACH QUERY <command> */
 static void cmd_foreach_query(const char *data)
 {
-	GSList *tmp;
+	GSList *tmp, *next;
 
-	for (tmp = queries; tmp != NULL; tmp = tmp->next) {
+	for (tmp = queries; tmp != NULL; tmp = next) {
 		QUERY_REC *rec = tmp->data;
 
+                next = tmp->next;
 		signal_emit("send command", 3, data, rec->server, rec);
 	}
 }
