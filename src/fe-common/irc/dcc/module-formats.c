@@ -32,7 +32,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "own_dcc_ctcp", "%K[%rctcp%K(%R$0%K)]%n $1 $2", 3, { 0, 0, 0 } },
 	{ "dcc_msg", "%K[%G$0%K(%gdcc%K)]%n %|$1", 2, { 0, 0 } },
 	{ "action_dcc", "%W (*dcc*) $0%n %|$1", 2, { 0, 0 } },
-	{ "own_dcc_query", "%K<%W$0%K>%n %|$1", 2, { 0, 0 } },
+	{ "own_dcc_query", "%K<%W$0%K>%n %|$2", 3, { 0, 0, 0 } },
 	{ "dcc_msg_query", "%K<%G$0%K>%n %|$1", 2, { 0, 0 } },
 	{ "dcc_ctcp", "%g>>> DCC CTCP received from %_$0%_%K: %g$1", 2, { 0, 0 } },
 	{ "dcc_chat", "%gDCC CHAT from %_$0%_ %K[%g$1 port $2%K]", 3, { 0, 0, 1 } },
