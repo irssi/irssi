@@ -333,6 +333,22 @@ static void sig_window_refnum_changed(WINDOW_REC *window, gpointer old_refnum)
 	}
 }
 
+static void sig_server_disconnected(SERVER_REC *server)
+{
+        LOG_ITEM_REC *logitem;
+	GSList *tmp, *next;
+
+	for (tmp = logs; tmp != NULL; tmp = next) {
+		LOG_REC *log = tmp->data;
+                next = tmp->next;
+
+		logitem = log->items == NULL ? NULL : log->items->data;
+		if (log->temp && logitem->type == LOG_ITEM_TARGET &&
+		    g_strcasecmp(logitem->servertag, server->tag) == 0)
+			log_close(log);
+	}
+}
+
 static void autologs_close_all(void)
 {
 	GSList *tmp, *next;
@@ -385,7 +401,8 @@ static void autolog_open_check(SERVER_REC *server, const char *target,
 {
 	char **targets, **tmp;
 
-	if ((autolog_level & level) == 0 || target == NULL || *target == '\0')
+	if (level == MSGLEVEL_PARTS || /* FIXME: kind of a kludge, but we don't want to reopen logs when we're parting the channel with /WINDOW CLOSE.. */
+	    (autolog_level & level) == 0 || target == NULL || *target == '\0')
 		return;
 
 	/* there can be multiple targets separated with comma */
@@ -614,6 +631,7 @@ void fe_log_init(void)
 	signal_add_first("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 	signal_add("window item destroy", (SIGNAL_FUNC) sig_window_item_destroy);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
+	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
@@ -639,6 +657,7 @@ void fe_log_deinit(void)
 	signal_remove("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 	signal_remove("window item destroy", (SIGNAL_FUNC) sig_window_item_destroy);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_remove("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_remove("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
