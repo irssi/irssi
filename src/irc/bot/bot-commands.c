@@ -29,137 +29,178 @@
 #include "masks.h"
 
 #include "bot-users.h"
+#include "botnet.h"
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server,
-			  const char *nick, const char *address)
+void botcmd_user_add(const char *nick)
 {
-	char *params, *target, *msg, *args, *str;
+	char *str;
 
-	g_return_if_fail(data != NULL);
+	botuser_add(nick);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-	if (nick == NULL) nick = server->real_address;
-
-	if (*msg == 1 || ischannel(*target)) {
-		g_free(params);
-		return;
-	}
-
-	/* private message for us */
-	str = g_strconcat("bot command ", msg, NULL);
-	args = strchr(str+12, ' ');
-	if (args != NULL) *args++ = '\0'; else args = "";
-
-	g_strdown(str);
-	if (signal_emit(str, 4, args, server, nick, address)) {
-		/* msg was a command - the msg event. */
-		signal_stop();
-	}
+	str = g_strdup_printf("USER_ADD %s", nick);
+	botnet_broadcast(NULL, NULL, NULL, str);
 	g_free(str);
+}
+
+void botcmd_user_set_flags(USER_REC *user, int flags)
+{
+	char *str, *flagstr;
+
+	botuser_set_flags(user, flags);
+
+	flagstr = botuser_value2flags(flags);
+	str = g_strdup_printf("USER_FLAGS %s %s", user->nick, flagstr);
+	g_free(flagstr);
+
+	botnet_broadcast(NULL, NULL, NULL, str);
+	g_free(str);
+}
+
+void botcmd_user_set_channel_flags(USER_REC *user, const char *channel, int flags)
+{
+	char *str, *flagstr;
+
+        botuser_set_channel_flags(user, channel, flags);
+
+	flagstr = botuser_value2flags(flags);
+	str = g_strdup_printf("USER_CHAN_FLAGS %s %s %s", user->nick, channel, flagstr);
+	g_free(flagstr);
+
+	botnet_broadcast(NULL, NULL, NULL, str);
+	g_free(str);
+}
+
+void botcmd_user_add_mask(USER_REC *user, const char *mask)
+{
+	char *str;
+
+	botuser_add_mask(user, mask);
+
+	str = g_strdup_printf("USER_ADD_MASK %s %s", user->nick, mask);
+	botnet_broadcast(NULL, NULL, NULL, str);
+	g_free(str);
+}
+
+void botcmd_user_set_mask_notflags(USER_REC *user, const char *mask, int not_flags)
+{
+	char *str, *flagstr;
+
+        botuser_set_mask_notflags(user, mask, not_flags);
+
+	flagstr = botuser_value2flags(not_flags);
+	str = g_strdup_printf("USER_MASK_NOTFLAGS %s %s %s", user->nick, mask, flagstr);
+	g_free(flagstr);
+
+	botnet_broadcast(NULL, NULL, NULL, str);
+	g_free(str);
+}
+
+void botcmd_user_set_password(USER_REC *user, const char *password)
+{
+	char *str;
+
+	botuser_set_password(user, password);
+
+	str = g_strdup_printf("USER_PASS %s %s", user->nick, password);
+	botnet_broadcast(NULL, NULL, NULL, str);
+	g_free(str);
+}
+
+static void botnet_event_user_add(BOT_REC *bot, const char *data, const char *sender)
+{
+	char *params, *nick;
+
+	params = cmd_get_params(data, 1, &nick);
+	botuser_add(nick);
 	g_free(params);
 }
 
-static void botcmd_op(const char *data, IRC_SERVER_REC *server,
-		      const char *nick, const char *address)
-{
-	CHANNEL_REC *channel;
-	USER_REC *user;
-	USER_CHAN_REC *userchan;
-	GSList *tmp;
-
-	g_return_if_fail(data != NULL);
-
-	if (*data == '\0') {
-		/* no password given? .. */
-		return;
-	}
-
-	user = botuser_find(nick, address);
-	if (user == NULL || (user->not_flags & USER_OP) ||
-	    !botuser_verify_password(user, data)) {
-		/* not found, can't op with this mask or failed password */
-		return;
-	}
-
-	/* find the channels where to op.. */
-	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		channel = tmp->data;
-
-		userchan = g_hash_table_lookup(user->channels, channel->name);
-		if ((user->flags & USER_OP) || (userchan->flags & USER_OP))
-			signal_emit("command op", 3, nick, server, channel);
-	}
-}
-
-static void botcmd_ident(const char *data, IRC_SERVER_REC *server,
-			 const char *nick, const char *address)
+static void botnet_event_user_flags(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *mask;
+	char *params, *nick, *flags;
 
-	g_return_if_fail(data != NULL);
-
-	user = botuser_find(nick, address);
-	if (user != NULL) {
-		/* Already know this host */
-		return;
-	}
+	params = cmd_get_params(data, 2, &nick, &flags);
 
 	user = botuser_find(nick, NULL);
-	if (user == NULL || !botuser_verify_password(user, data)) {
-		/* failed password */
-		return;
-	}
+	if (user == NULL) user = botuser_add(nick);
+	botuser_set_flags(user, botuser_flags2value(flags));
 
-	/* add the new mask */
-	mask = irc_get_mask(nick, address, IRC_MASK_USER | IRC_MASK_DOMAIN);
-	botuser_add_mask(user, mask);
-
-	irc_send_cmdv(server, "NOTICE %s :Added new mask %s", nick, mask);
-	g_free(mask);
+	g_free(params);
 }
 
-static void botcmd_pass(const char *data, IRC_SERVER_REC *server,
-			const char *nick, const char *address)
+static void botnet_event_user_chan_flags(BOT_REC *bot, const char *data, const char *sender)
 {
 	USER_REC *user;
-	char *params, *pass, *newpass;
+	char *params, *nick, *channel, *flags;
 
-	g_return_if_fail(data != NULL);
+	params = cmd_get_params(data, 3, &nick, &channel, &flags);
 
-	params = event_get_params(data, 2, &pass, &newpass);
+	user = botuser_find(nick, NULL);
+	if (user == NULL) user = botuser_add(nick);
+	botuser_set_channel_flags(user, channel, botuser_flags2value(flags));
 
-	user = botuser_find(nick, address);
-	if (user == NULL || *pass == '\0') {
-		g_free(params);
-		return;
-	}
+	g_free(params);
+}
 
-	if (user->password != NULL &&
-	    (*newpass == '\0' || !botuser_verify_password(user, pass))) {
-		g_free(params);
-		return;
-	}
+static void botnet_event_user_add_mask(BOT_REC *bot, const char *data, const char *sender)
+{
+	USER_REC *user;
+	char *params, *nick, *mask;
 
-	/* change the password */
-	botuser_set_password(user, user->password == NULL ? pass : newpass);
-	irc_send_cmdv(server, "NOTICE %s :Password changed", nick);
+	params = cmd_get_params(data, 2, &nick, &mask);
+
+	user = botuser_find(nick, NULL);
+	if (user == NULL) user = botuser_add(nick);
+	botuser_add_mask(user, mask);
+
+	g_free(params);
+}
+
+static void botnet_event_user_mask_notflags(BOT_REC *bot, const char *data, const char *sender)
+{
+	USER_REC *user;
+	char *params, *nick, *mask, *not_flags;
+
+	params = cmd_get_params(data, 3, &nick, &mask, &not_flags);
+
+	user = botuser_find(nick, NULL);
+	if (user == NULL) user = botuser_add(nick);
+	botuser_set_mask_notflags(user, mask, botuser_flags2value(not_flags));
+
+	g_free(params);
+}
+
+static void botnet_event_user_pass(BOT_REC *bot, const char *data, const char *sender)
+{
+	USER_REC *user;
+	char *params, *nick, *pass;
+
+	params = cmd_get_params(data, 2, &nick, &pass);
+
+	user = botuser_find(nick, NULL);
+	if (user == NULL) user = botuser_add(nick);
+	botuser_set_password(user, pass);
 
 	g_free(params);
 }
 
 void bot_commands_init(void)
 {
-	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_add_last("bot command op", (SIGNAL_FUNC) botcmd_op);
-	signal_add_last("bot command ident", (SIGNAL_FUNC) botcmd_ident);
-	signal_add_last("bot command pass", (SIGNAL_FUNC) botcmd_pass);
+	signal_add("botnet event user_add", (SIGNAL_FUNC) botnet_event_user_add);
+	signal_add("botnet event user_flags", (SIGNAL_FUNC) botnet_event_user_flags);
+	signal_add("botnet event user_chan_flags", (SIGNAL_FUNC) botnet_event_user_chan_flags);
+	signal_add("botnet event user_add_mask", (SIGNAL_FUNC) botnet_event_user_add_mask);
+	signal_add("botnet event user_mask_notflags", (SIGNAL_FUNC) botnet_event_user_mask_notflags);
+	signal_add("botnet event user_pass", (SIGNAL_FUNC) botnet_event_user_pass);
 }
 
 void bot_commands_deinit(void)
 {
-	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_remove("bot command op", (SIGNAL_FUNC) botcmd_op);
-	signal_remove("bot command ident", (SIGNAL_FUNC) botcmd_ident);
-	signal_remove("bot command pass", (SIGNAL_FUNC) botcmd_pass);
+	signal_remove("botnet event user_remove", (SIGNAL_FUNC) botnet_event_user_add);
+	signal_remove("botnet event user_flags", (SIGNAL_FUNC) botnet_event_user_flags);
+	signal_remove("botnet event user_chan_flags", (SIGNAL_FUNC) botnet_event_user_chan_flags);
+	signal_remove("botnet event user_remove_mask", (SIGNAL_FUNC) botnet_event_user_add_mask);
+	signal_remove("botnet event user_mask_notflags", (SIGNAL_FUNC) botnet_event_user_mask_notflags);
+	signal_remove("botnet event user_pass", (SIGNAL_FUNC) botnet_event_user_pass);
 }

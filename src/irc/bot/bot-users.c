@@ -79,10 +79,15 @@ static void botuser_save_chan(const char *key, USER_CHAN_REC *rec, CONFIG_NODE *
 	CONFIG_NODE *noderec;
 	char *str;
 
+	if (rec->flags == 0) {
+                /* no flags in this channel - no need to save to config */
+		config_node_set_str(userconfig, node, rec->channel, NULL);
+		return;
+	}
+
 	noderec = config_node_section(node, rec->channel, NODE_TYPE_BLOCK);
 
-	str = rec->flags == 0 ? NULL :
-		botuser_value2flags(rec->flags);
+	str = botuser_value2flags(rec->flags);
 	config_node_set_str(userconfig, noderec, "flags", str);
 	g_free_not_null(str);
 }
@@ -131,26 +136,6 @@ static void botuser_config_save(USER_REC *user)
 	}
 }
 
-static USER_MASK_REC *botuser_create_mask(USER_REC *user, const char *mask)
-{
-	USER_MASK_REC *rec;
-
-	rec = g_new0(USER_MASK_REC, 1);
-	rec->mask = g_strdup(mask);
-
-	user->masks = g_slist_append(user->masks, rec);
-	return rec;
-}
-
-USER_MASK_REC *botuser_add_mask(USER_REC *user, const char *mask)
-{
-	USER_MASK_REC *rec;
-
-	rec = botuser_create_mask(user, mask);
-	botuser_config_save(user);
-	return rec;
-}
-
 static int botuser_find_mask(USER_REC *user, const char *nick, const char *host)
 {
 	GSList *tmp;
@@ -170,6 +155,23 @@ static int botuser_find_mask(USER_REC *user, const char *nick, const char *host)
 	}
 
 	return FALSE;
+}
+
+static USER_MASK_REC *botuser_find_full_mask(USER_REC *user, const char *mask)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(user != NULL, FALSE);
+	g_return_val_if_fail(mask != NULL, FALSE);
+
+	for (tmp = user->masks; tmp != NULL; tmp = tmp->next) {
+		USER_MASK_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->mask, mask) == 0)
+			return rec;
+	}
+
+	return NULL;
 }
 
 static void botuser_getusers_hash(void *key, USER_REC *user, GList **list)
@@ -238,7 +240,7 @@ USER_REC *botuser_find_rec(CHANNEL_REC *channel, NICK_REC *nick)
 	return user;
 }
 
-static USER_CHAN_REC *botuser_channel(USER_REC *user, const char *channel)
+USER_CHAN_REC *botuser_get_channel(USER_REC *user, const char *channel)
 {
 	USER_CHAN_REC *rec;
 
@@ -252,6 +254,66 @@ static USER_CHAN_REC *botuser_channel(USER_REC *user, const char *channel)
 	rec->channel = g_strdup(channel);
 	g_hash_table_insert(user->channels, rec->channel, rec);
 	return rec;
+}
+
+USER_REC *botuser_add(const char *nick)
+{
+	USER_REC *user;
+
+	/* Add new user */
+	user = g_new0(USER_REC, 1);
+	user->nick = g_strdup(nick);
+	g_hash_table_insert(users, user->nick, user);
+
+	botuser_config_save(user);
+	return user;
+}
+
+void botuser_set_flags(USER_REC *user, int flags)
+{
+	user->flags = flags;
+	botuser_config_save(user);
+}
+
+void botuser_set_channel_flags(USER_REC *user, const char *channel, int flags)
+{
+	USER_CHAN_REC *rec;
+
+	rec = botuser_get_channel(user, channel);
+	if (rec != NULL) rec->flags = flags;
+
+	botuser_config_save(user);
+}
+
+static USER_MASK_REC *botuser_create_mask(USER_REC *user, const char *mask)
+{
+	USER_MASK_REC *rec;
+
+	rec = g_new0(USER_MASK_REC, 1);
+	rec->mask = g_strdup(mask);
+
+	user->masks = g_slist_append(user->masks, rec);
+	return rec;
+}
+
+USER_MASK_REC *botuser_add_mask(USER_REC *user, const char *mask)
+{
+	USER_MASK_REC *rec;
+
+	rec = botuser_create_mask(user, mask);
+	botuser_config_save(user);
+	return rec;
+}
+
+void botuser_set_mask_notflags(USER_REC *user, const char *mask, int not_flags)
+{
+	USER_MASK_REC *rec;
+
+	rec = botuser_find_full_mask(user, mask);
+	if (rec == NULL) rec = botuser_create_mask(user, mask);
+
+	rec->not_flags = not_flags;
+	botuser_config_save(user);
 }
 
 void botuser_set_password(USER_REC *user, const char *password)
@@ -303,7 +365,7 @@ static void event_massjoin(CHANNEL_REC *channel, GSList *nicks)
 
 		user = botuser_find(rec->nick, rec->host);
 		if (user != NULL) {
-			userchan = botuser_channel(user, channel->name);
+			userchan = botuser_get_channel(user, channel->name);
 			userchan->nickrec = rec;
 			users = g_slist_append(users, user);
 		}
@@ -333,7 +395,7 @@ static void sig_channel_sync(CHANNEL_REC *channel)
 
 		user = botuser_find(rec->nick, rec->host);
 		if (user != NULL) {
-			userchan = botuser_channel(user, channel->name);
+			userchan = botuser_get_channel(user, channel->name);
 			userchan->nickrec = rec;
 		}
 	}

@@ -430,6 +430,8 @@ static void botnet_event_sync(BOT_REC *bot)
 
 	/* send our downlinks to host */
 	botnet_send_links(bot, TRUE);
+
+	signal_stop_by_name("botnet event");
 }
 
 static BOT_REC *bot_add(BOTNET_REC *botnet, const char *nick, const char *parent)
@@ -460,12 +462,12 @@ static BOT_REC *bot_add(BOTNET_REC *botnet, const char *nick, const char *parent
 
 static void botnet_event_botinfo(BOT_REC *bot, const char *data, const char *sender)
 {
-	char *str, *params, *nick, *parent, *priority;
+	char *params, *nick, *parent, *priority;
         BOT_REC *rec;
 
-	str = g_strdup_printf("BOTINFO %s", data);
+	/*str = g_strdup_printf("BOTINFO %s", data);
 	botnet_broadcast(bot->botnet, bot, sender, str);
-	g_free(str);
+	g_free(str);*/
 
 	params = cmd_get_params(data, 3, &nick, &parent, &priority);
 	if (*parent == '-' && parent[1] == '\0')
@@ -492,6 +494,8 @@ static void botnet_event_botquit(BOT_REC *bot, const char *data)
 
 	node = bot_find_nick(bot->botnet, data);
 	if (node != NULL) bot_destroy(node->data);
+
+	signal_stop_by_name("botnet event");
 }
 
 static void sig_bot_disconnected(BOT_REC *bot)

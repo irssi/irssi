@@ -97,9 +97,12 @@ void bot_send_cmd(BOT_REC *bot, char *data);
 void bot_send_cmdv(BOT_REC *bot, char *format, ...);
 
 /* broadcast a message to everyone in bot network, except for `except_bot'
-   if it's not NULL */
+   if it's not NULL. If botnet is NULL, the message is sent to all botnets. */
 void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
 		      const char *source, const char *data);
+
+void botnet_send_cmd(BOTNET_REC *botnet, const char *source,
+		     const char *target, const char *data);
 
 BOT_REC *botnet_find_master(BOTNET_REC *botnet, BOT_REC *old_master);
 void botnet_set_master(BOTNET_REC *botnet, BOT_REC *bot);

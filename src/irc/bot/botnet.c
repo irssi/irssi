@@ -57,10 +57,8 @@ void bot_send_cmdv(BOT_REC *bot, char *format, ...)
 	va_end(args);
 }
 
-/* broadcast a message to everyone in bot network, except for `except_bot'
-   if it's not NULL */
-void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
-		      const char *source, const char *data)
+static void botnet_broadcast_single(BOTNET_REC *botnet, BOT_REC *except_bot,
+				    const char *source, const char *data)
 {
 	GNode *node;
 	char *str;
@@ -76,6 +74,44 @@ void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
 		if (rec != except_bot && rec->handle != -1)
 			bot_send_cmd(rec, str);
 	}
+	g_free(str);
+}
+
+/* broadcast a message to everyone in bot network, except for `except_bot'
+   if it's not NULL. If botnet is NULL, the message is sent to all botnets. */
+void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
+		      const char *source, const char *data)
+{
+	GSList *tmp;
+
+	g_return_if_fail(botnet != NULL);
+	g_return_if_fail(data != NULL);
+
+	if (botnet != NULL) {
+		botnet_broadcast_single(botnet, except_bot, source, data);
+		return;
+	}
+
+	/* broadcast to all botnets */
+	for (tmp = botnets; tmp != NULL; tmp = tmp->next) {
+		BOTNET_REC *rec = tmp->data;
+
+                botnet_broadcast_single(rec, except_bot, source, data);
+	}
+}
+
+void botnet_send_cmd(BOTNET_REC *botnet, const char *source,
+		     const char *target, const char *data)
+{
+	GNode *node;
+        char *str;
+
+	node = bot_find_path(botnet, target);
+	g_return_if_fail(node != NULL);
+
+	str = g_strdup_printf("%s %s %s", source != NULL ? source :
+			      botnet->nick, target, data);
+	bot_send_cmd(node->data, str);
 	g_free(str);
 }
 
@@ -415,6 +451,35 @@ static void botnet_event(BOT_REC *bot, const char *data)
 	g_free(params);
 }
 
+/* broadcast the signal forward */
+static void botnet_event_broadcast(BOT_REC *bot, const char *data)
+{
+	char *params, *source, *target, *command;
+
+	if (!bot->connected)
+		return;
+
+	params = cmd_get_params(data, 3 | PARAM_FLAG_GETREST,
+				&source, &target, &command);
+
+	if (g_strcasecmp(target, bot->botnet->nick) == 0) {
+		/* message was for us */
+		g_free(params);
+		return;
+	}
+
+	if (*target == '-' && target[1] == '\0') {
+		/* broadcast */
+		botnet_broadcast(bot->botnet, bot, source, command);
+	} else {
+		/* send to specified target */
+                botnet_send_cmd(bot->botnet, source, target, command);
+	}
+
+	g_free(params);
+}
+
+#if 0
 static void botnet_event_bcast(BOT_REC *bot, const char *data, const char *sender)
 {
 	char *str;
@@ -424,6 +489,7 @@ static void botnet_event_bcast(BOT_REC *bot, const char *data, const char *sende
 	botnet_broadcast(bot->botnet, bot, sender, str);
 	g_free(str);
 }
+#endif
 
 static void botnet_event_master(BOT_REC *bot, const char *data, const char *sender)
 {
@@ -450,6 +516,8 @@ static void botnet_event_master(BOT_REC *bot, const char *data, const char *send
 	str = g_strdup_printf("MASTER %s", master->nick);
 	botnet_broadcast(botnet, bot, sender, str);
 	g_free(str);
+
+	signal_stop_by_name("botnet event");
 }
 
 static void botnet_config_read_ips(BOT_DOWNLINK_REC *rec, CONFIG_NODE *node)
@@ -601,7 +669,8 @@ void botnet_init(void)
 	botnet_connection_init();
 
 	signal_add("botnet event", (SIGNAL_FUNC) botnet_event);
-	signal_add("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
+	signal_add_last("botnet event", (SIGNAL_FUNC) botnet_event_broadcast);
+	//signal_add("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
 	signal_add("botnet event master", (SIGNAL_FUNC) botnet_event_master);
 	command_bind("botnet", NULL, (SIGNAL_FUNC) cmd_botnet);
 
@@ -616,7 +685,8 @@ void botnet_deinit(void)
 	botnet_connection_deinit();
 
 	signal_remove("botnet event", (SIGNAL_FUNC) botnet_event);
-	signal_remove("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
+	signal_remove("botnet event", (SIGNAL_FUNC) botnet_event_broadcast);
+	//signal_remove("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
 	signal_remove("botnet event master", (SIGNAL_FUNC) botnet_event_master);
 	command_unbind("botnet", (SIGNAL_FUNC) cmd_botnet);
 }
