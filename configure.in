@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.27)
+AM_INIT_AUTOMAKE(irssi, 0.7.28)
 
 AM_MAINTAINER_MODE
 
@@ -64,6 +64,19 @@ AC_ARG_WITH(imlib,
 	fi,
 	want_imlib=yes)
 
+AC_ARG_WITH(gtk,
+[  --with-gtk              Build GTK frontend],
+	if test x$withval = xyes; then
+		want_gtk=yes
+	else
+		if test "x$withval" = xno; then
+        		want_gtk=no
+		else
+        		want_gtk=yes
+		fi
+	fi,
+	want_gtk=yes)
+
 AC_ARG_WITH(gnome-panel,
 [  --with-gnome-panel      Build with gnome panel applet support],
 	if test x$withval = xyes; then
@@ -78,7 +91,7 @@ AC_ARG_WITH(gnome-panel,
 	want_gnome_panel=yes)
 
 AC_ARG_WITH(textui,
-[  --with-textui           Build irssi-text],
+[  --with-textui           Build text frontend],
 	if test x$withval = xyes; then
     		want_textui=yes
 	else
@@ -248,6 +261,9 @@ if test "x$want_gnome" = "xyes"; then
 	if test "x$GNOME_LIBS" = "x"; then
         	want_gnome="no";
         fi
+	if test "x$want_gtk" = "xno"; then
+        	want_gnome="no";
+        fi
 fi
 
 if test "x$want_gnome" = "xyes"; then
@@ -274,8 +290,13 @@ if test "x$want_gnome" = "xyes"; then
         fi
 else
         want_gnome_panel="no"
-	AC_DEFINE(HAVE_GTK)
-	AM_PATH_GTK(1.2.0)
+
+        if test "x$want_gtk" = "xyes"; then
+		AC_DEFINE(HAVE_GTK)
+		AM_PATH_GTK(1.2.0)
+	else
+		GTK_LIBS=
+	fi
 
 	if test "x$GTK_LIBS" != "x"; then
 		GUI_CFLAGS="$GTK_CFLAGS"

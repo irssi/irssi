@@ -73,12 +73,13 @@ Configure can use these parameters (all of these defaults to yes):
                         irc clients
  --with-socks       	Build with socks library
  --with-mysql=dir   	Build with mysql plugin
+ --without-gtk       	Build without GTK frontend
+ --without-textui	Build without text frontend
+ --without-bot		Build without irssibot
  --without-gnome       	Build without GNOME libraries
  --without-gnome-panel	Build without GNOME panel
  --without-imlib	Build without Imlib library (you can use only .xpm
                         files as backgrounds)
- --without-textui	Build without text mode version
- --without-bot		Build without irssibot
  --enable-memdebug     	Enable memory debugging, great for finding memory
 			leaks
  --enable-gtk-hebrew    Enable Hebrew support - see README-HEBREW
