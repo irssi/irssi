@@ -451,10 +451,14 @@ static void key_previous_window_item(void)
 
 	if (active_win->items != NULL)
 		signal_emit("command window item prev", 3, "", active_win->active_server, active_win->active);
-	else if (active_win->active_server != NULL) {
+	else if (servers != NULL) {
 		/* change server */
-		pos = g_slist_find(servers, active_win->active_server);
-		server = pos->next != NULL ? pos->next->data : servers->data;
+		if (active_win->active_server == NULL)
+			server = servers->data;
+		else {
+			pos = g_slist_find(servers, active_win->active_server);
+			server = pos->next != NULL ? pos->next->data : servers->data;
+		}
 		signal_emit("command window server", 3, server->tag, active_win->active_server, active_win->active);
 	}
 }
@@ -466,11 +470,15 @@ static void key_next_window_item(void)
 
 	if (active_win->items != NULL)
 		signal_emit("command window item next", 3, "", active_win->active_server, active_win->active);
-	else if (active_win->active_server != NULL) {
+	else if (servers != NULL) {
 		/* change server */
-		index = g_slist_index(servers, active_win->active_server);
-		server = index > 0 ? g_slist_nth(servers, index-1)->data :
-			g_slist_last(servers)->data;
+		if (active_win->active_server == NULL)
+			server = servers->data;
+		else {
+			index = g_slist_index(servers, active_win->active_server);
+			server = index > 0 ? g_slist_nth(servers, index-1)->data :
+				g_slist_last(servers)->data;
+		}
 		signal_emit("command window server", 3, server->tag, active_win->active_server, active_win->active);
 	}
 }

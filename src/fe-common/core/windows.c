@@ -382,14 +382,16 @@ static void sig_server_looking(void *server)
 static void sig_server_disconnected(void *server)
 {
 	GSList *tmp;
+        SERVER_REC *new_server;
 
 	g_return_if_fail(server != NULL);
 
+	new_server = servers == NULL ? NULL : servers->data;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec->active_server == server)
-			window_change_server(rec, NULL);
+			window_change_server(rec, new_server);
 	}
 }
 
