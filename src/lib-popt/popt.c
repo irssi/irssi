@@ -4,10 +4,6 @@
 
 #include "common.h"
 
-#if HAVE_ALLOCA_H
-# include <alloca.h>
-#endif
-
 #include "findme.h"
 #include "popt.h"
 #include "poptint.h"
@@ -181,8 +177,7 @@ static void execCommand(poptContext con) {
     if (!con->execAbsolute && strchr(script, '/')) return;
 
     if (!strchr(script, '/') && con->execPath) {
-	argv[pos] = alloca(strlen(con->execPath) + strlen(script) + 2);
-	sprintf(argv[pos], "%s/%s", con->execPath, script);
+	argv[pos] = g_strdup_printf("%s/%s", con->execPath, script);
     } else {
 	argv[pos] = script;
     }
@@ -274,7 +269,7 @@ static const struct poptOption * findOption(const struct poptOption * table,
 int poptGetNextOpt(poptContext con) {
     char * optString, * chptr, * localOptString;
     char * longArg = NULL;
-    char * origOptString;
+    char * origOptString, *dup;
     long aLong;
     char * end;
     const struct poptOption * opt = NULL;
@@ -284,7 +279,12 @@ int poptGetNextOpt(poptContext con) {
     void * cbData;
     int singleDash;
 
+    dup = NULL;
     while (!done) {
+        if (dup) {
+            g_free(dup);
+            dup = NULL;
+        }
 	while (!con->os->nextCharArg && con->os->next == con->os->argc 
 		&& con->os > con->optionStack)
 	    con->os--;
@@ -306,12 +306,13 @@ int poptGetNextOpt(poptContext con) {
 	    }
 
 	    /* Make a copy we can hack at */
-	    localOptString = optString = 
-			strcpy(alloca(strlen(origOptString) + 1), 
-			origOptString);
+	    dup = localOptString = optString =
+			g_strdup(origOptString);
 
-	    if (!optString[0])
+            if (!optString[0]) {
+                g_free(dup);
 		return POPT_ERROR_BADOPT;
+            }
 
 	    if (optString[1] == '-' && !optString[2]) {
 		con->restLeftover = 1;
@@ -337,7 +338,10 @@ int poptGetNextOpt(poptContext con) {
 
 		opt = findOption(con->options, optString, '\0', &cb, &cbData,
 				 singleDash);
-		if (!opt && !singleDash) return POPT_ERROR_BADOPT;
+                if (!opt && !singleDash) {
+                    g_free(dup);
+                    return POPT_ERROR_BADOPT;
+                }
 	    }
 
 	    if (!opt)
@@ -359,8 +363,10 @@ int poptGetNextOpt(poptContext con) {
 
 	    opt = findOption(con->options, NULL, *origOptString, &cb, 
 			     &cbData, 0);
-	    if (!opt) return POPT_ERROR_BADOPT;
-
+            if (!opt) {
+                g_free(dup);
+                return POPT_ERROR_BADOPT;
+            }
 	    origOptString++;
 	    if (*origOptString)
 		con->os->nextCharArg = origOptString;
@@ -380,8 +386,10 @@ int poptGetNextOpt(poptContext con) {
 		while (con->os->next == con->os->argc && 
 		       con->os > con->optionStack)
 		    con->os--;
-		if (con->os->next == con->os->argc)
+                if (con->os->next == con->os->argc) {
+                    g_free(dup);
 		    return POPT_ERROR_NOARG;
+                }
 
 		con->os->nextArg = con->os->argv[con->os->next++];
 	    }
@@ -395,16 +403,22 @@ int poptGetNextOpt(poptContext con) {
 		  case POPT_ARG_INT:
 		  case POPT_ARG_LONG:
 		    aLong = strtol(con->os->nextArg, &end, 0);
-		    if (!(end && *end == '\0')) 
+                    if (!(end && *end == '\0')) {
+                        g_free(dup);
 			return POPT_ERROR_BADNUMBER;
+                    }
 
-		    if (aLong == LONG_MIN || aLong == LONG_MAX)
+                    if (aLong == LONG_MIN || aLong == LONG_MAX) {
+                        g_free(dup);
 			return POPT_ERROR_OVERFLOW;
+                    }
 		    if ((opt->argInfo & POPT_ARG_MASK) == POPT_ARG_LONG) {
 			*((long *) opt->arg) = aLong;
 		    } else {
-			if (aLong > INT_MAX || aLong < INT_MIN)
+                        if (aLong > INT_MAX || aLong < INT_MIN) {
+                            g_free(dup);
 			    return POPT_ERROR_OVERFLOW;
+                        }
 			*((int *) opt->arg) =aLong;
 		    }
 		    break;
@@ -441,6 +455,7 @@ int poptGetNextOpt(poptContext con) {
 	    con->finalArgv[con->finalArgvCount++] = g_strdup(con->os->nextArg);
     }
 
+    if (dup) g_free(dup);
     return opt->val;
 }
 
