@@ -696,8 +696,6 @@ Makefile
 po/Makefile.in
 intl/Makefile
 src/Makefile
-src/lib/Makefile
-src/lib/test/Makefile
 src/core/Makefile
 src/irc/Makefile
 src/irc/core/Makefile
