@@ -94,7 +94,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ NULL, "Who queries", 0 },
 
 	{ "whois", "{nick $0} {nickhost $1@$2}%:{whois ircname $3}", 4, { 0, 0, 0, 0 } },
-	{ "whowas", "{nick $0} {nickhost $1@$2}%:{whois ircname $3}", 4, { 0, 0, 0, 0 } },
+	{ "whowas", "{nick $0} {nickhost $1@$2}%:{whois was $3}", 4, { 0, 0, 0, 0 } },
 	{ "whois_idle", "{whois idle %|$1 days $2 hours $3 mins $4 secs}", 5, { 0, 1, 1, 1, 1 } },
 	{ "whois_idle_signon", "{whois idle %|$1 days $2 hours $3 mins $4 secs {comment signon: $5}}", 6, { 0, 1, 1, 1, 1, 0 } },
 	{ "whois_server", "{whois server %|$1 {comment $2}}", 3, { 0, 0, 0 } },
