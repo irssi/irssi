@@ -21,6 +21,8 @@
 #include "module.h"
 #include "signals.h"
 #include "levels.h"
+#include "misc.h"
+#include "settings.h"
 
 #include "dcc-file.h"
 #include "dcc-send.h"
@@ -101,6 +103,8 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 				  const char *word, const char *line,
 				  int *want_space)
 {
+	char *path;
+
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
@@ -109,7 +113,10 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 		return;
 
 	/* completing filename parameter for /DCC SEND */
-	*list = filename_complete(word, NULL);
+        path = convert_home(settings_get_str("dcc_upload_path"));
+	*list = filename_complete(word, path);
+	g_free(path);
+
 	if (*list != NULL) {
 		*want_space = FALSE;
 		signal_stop();
