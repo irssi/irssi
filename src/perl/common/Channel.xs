@@ -17,14 +17,6 @@ CODE:
 OUTPUT:
 	RETVAL
 
-Irssi::Channel
-channel_create(chat_type, name, automatic)
-	int chat_type
-	char *name
-	int automatic
-CODE:
-	channel_create(chat_type, NULL, name, automatic);
-
 #*******************************
 MODULE = Irssi  PACKAGE = Irssi::Server
 #*******************************

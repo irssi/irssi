@@ -25,11 +25,11 @@ MODULE = Irssi  PACKAGE = Irssi::Log  PREFIX = log_
 #*******************************
 
 void
-log_item_add(log, type, name, server)
+log_item_add(log, type, name, servertag)
 	Irssi::Log log
 	int type
 	char *name
-	Irssi::Server server
+	char *servertag
 
 void
 log_item_destroy(log, item)
@@ -37,11 +37,11 @@ log_item_destroy(log, item)
 	Irssi::Logitem item
 
 Irssi::Logitem
-log_item_find(log, type, item, server)
+log_item_find(log, type, item, servertag)
 	Irssi::Log log
 	int type
 	char *item
-	Irssi::Server server
+	char *servertag
 
 void
 log_update(log)
