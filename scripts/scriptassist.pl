@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-#
 # by Stefan "tommie" Tomanek
 #
 # scriptassist.pl
@@ -8,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002101601';
+$VERSION = '2002101901';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -22,7 +20,7 @@ $VERSION = '2002101601';
 
 use vars qw($forked %remote_db $have_gpg);
 
-use Irssi;
+use Irssi 20020324;
 use Data::Dumper;
 use LWP::UserAgent;
 use POSIX;
@@ -664,7 +662,8 @@ sub print_update (%) {
 	my $signed = 0;
 	if ($data{$_}{installed} == 1) {
 	    my $local = $data{$_}{local};
-	    push @table, ['%yo%n', '%9'.$_.'%9', 'upgraded ('.$local.')'];
+	    my $remote = $data{$_}{remote};
+	    push @table, ['%yo%n', '%9'.$_.'%9', 'upgraded ('.$local.'->'.$remote.')'];
 	    foreach (split /\n/, check_sig($data{$_})) {
 		push @table, ['', '', $_];
 	    }
