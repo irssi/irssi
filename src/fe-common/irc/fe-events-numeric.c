@@ -790,7 +790,7 @@ static void event_received(IRC_SERVER_REC *server, const char *data,
 
 	if (nick == NULL || server->real_address == NULL ||
 	    strcmp(nick, server->real_address) == 0)
-		printtext(server, NULL, MSGLEVEL_CRAP, args);
+		printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
 	else {
 		printformat(server, NULL, MSGLEVEL_CRAP,
 			    IRCTXT_DEFAULT_EVENT, nick, args);
