@@ -279,7 +279,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	if (rec != NULL && rec->join_announced) return;
 	if (rec == NULL) rec = notify_nick_create(server, nick);
 
-	user = g_strdup(userhost);
+	user = g_strdup(userhost == NULL ? "" : userhost);
 	host = strchr(user, '@');
 	if (host != NULL) *host++ = '\0'; else host = "";
 
