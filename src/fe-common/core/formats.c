@@ -525,10 +525,10 @@ static char *get_ansi_color(THEME_REC *theme, char *str,
 			break;
 		default:
 			if (num >= 30 && num <= 37)
-				fg = (fg & 0xf8) + ansitab[num-30];
+				fg = (fg & 0xf8) | ansitab[num-30];
 			if (num >= 40 && num <= 47) {
 				if (bg == -1) bg = 0;
-				bg = (bg & 0xf8) + ansitab[num-40];
+				bg = (bg & 0xf8) | ansitab[num-40];
 			}
 			break;
 		}
