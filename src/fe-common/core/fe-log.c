@@ -340,10 +340,13 @@ static void sig_server_disconnected(SERVER_REC *server)
 
 	for (tmp = logs; tmp != NULL; tmp = next) {
 		LOG_REC *log = tmp->data;
-                next = tmp->next;
+		next = tmp->next;
 
-		logitem = log->items == NULL ? NULL : log->items->data;
-		if (log->temp && logitem->type == LOG_ITEM_TARGET &&
+		if (log->temp || log->items == NULL)
+                        continue;
+
+		logitem = log->items->data;
+		if (logitem->type == LOG_ITEM_TARGET &&
 		    g_strcasecmp(logitem->servertag, server->tag) == 0)
 			log_close(log);
 	}
