@@ -216,6 +216,34 @@ void format_create_dest(TEXT_DEST_REC *dest,
         dest->hilight_bg_color = 0;
 }
 
+int format_get_length(const char *str)
+{
+        GString *tmp;
+	int len;
+
+        tmp = g_string_new(NULL);
+	len = 0;
+	while (*str != '\0') {
+		if (*str == '%' && str[1] != '\0') {
+			str++;
+			if (*str != '%' && format_expand_styles(tmp, *str)) {
+                                str++;
+				continue;
+			}
+
+			/* %% or unknown %code, written as-is */
+			if (*str != '%')
+                                len++;
+		}
+
+                len++;
+                str++;
+	}
+
+	g_string_free(tmp, TRUE);
+        return len;
+}
+
 static char *format_get_text_args(TEXT_DEST_REC *dest,
 				  const char *text, char **arglist)
 {

@@ -19,7 +19,9 @@
 */
 
 #include "module.h"
+#include "formats.h"
 
+#include "gui-printtext.h"
 #include "screen.h"
 
 static GString *entry;
@@ -78,11 +80,11 @@ void gui_entry_set_prompt(const char *str)
 
 		g_free_not_null(prompt);
 		prompt = g_strdup(str);
-		promptlen = strlen(prompt);
+		promptlen = format_get_length(prompt);
 	}
 
-	set_color(stdscr, 0);
-	mvaddstr(LINES-1, 0, prompt);
+        if (prompt != NULL)
+		gui_printtext(0, LINES-1, prompt);
 
 	entry_screenpos();
 	entry_update();
@@ -94,7 +96,7 @@ void gui_entry_set_perm_prompt(const char *str)
 
 	g_free_not_null(prompt);
 	prompt = g_strdup(str);
-	promptlen = strlen(prompt);
+	promptlen = format_get_length(prompt);
 
 	permanent_prompt = TRUE;
 	gui_entry_set_prompt(NULL);

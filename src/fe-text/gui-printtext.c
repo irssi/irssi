@@ -239,16 +239,12 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line, int redraw)
                 gui_window_redraw(window);
 }
 
-void gui_printtext(int xpos, int ypos, const char *str, ...)
+void gui_printtext(int xpos, int ypos, const char *str)
 {
-	va_list va;
-
 	next_xpos = xpos;
 	next_ypos = ypos;
 
-        va_start(va, str);
-	printtext_gui_args(str, va);
-        va_end(va);
+	printtext_gui(str);
 
 	next_xpos = next_ypos = -1;
 }

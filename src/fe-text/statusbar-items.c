@@ -517,9 +517,7 @@ static void sig_statusbar_more_check_remove(WINDOW_REC *window)
 
 static void sig_statusbar_more_check(WINDOW_REC *window)
 {
-	g_return_if_fail(window != NULL);
-
-	if (!is_window_visible(window))
+	if (window == NULL || !is_window_visible(window))
 		return;
 
 	if (!WINDOW_GUI(window)->bottom) {

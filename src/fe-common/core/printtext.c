@@ -348,7 +348,7 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 	va_end(va);
 }
 
-void printtext_gui_args(const char *text, va_list va)
+void printtext_gui(const char *text)
 {
 	TEXT_DEST_REC dest;
         char *str;
@@ -357,18 +357,9 @@ void printtext_gui_args(const char *text, va_list va)
 
         memset(&dest, 0, sizeof(dest));
 
-	str = printtext_get_args(&dest, text, va);
+	str = printtext_expand_formats(text);
 	format_send_to_gui(&dest, str);
 	g_free(str);
-}
-
-void printtext_gui(const char *text, ...)
-{
-	va_list va;
-
-	va_start(va, text);
-        printtext_gui_args(text, va);
-	va_end(va);
 }
 
 static void msg_beep_check(SERVER_REC *server, int level)

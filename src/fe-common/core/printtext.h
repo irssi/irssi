@@ -17,8 +17,7 @@ void printbeep(void);
 
 /* only GUI should call these - used for printing text to somewhere else
    than windows */
-void printtext_gui(const char *text, ...);
-void printtext_gui_args(const char *text, va_list va);
+void printtext_gui(const char *text);
 void printformat_module_gui(const char *module, int formatnum, ...);
 void printformat_module_gui_args(const char *module, int formatnum, va_list va);
 

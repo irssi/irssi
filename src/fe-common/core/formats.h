@@ -43,6 +43,9 @@ typedef struct {
 
 int format_find_tag(const char *module, const char *tag);
 
+/* Return length of text part in string (ie. without % codes) */
+int format_get_length(const char *str);
+
 char *format_get_text(const char *module, WINDOW_REC *window,
 		      void *server, const char *target,
 		      int formatnum, ...);
