@@ -279,7 +279,7 @@ static char *hilight_get_act_color(HILIGHT_REC *rec)
 			settings_get_str("hilight_act_color"));
 }
 
-static char *hilight_get_color(HILIGHT_REC *rec)
+char *hilight_get_color(HILIGHT_REC *rec)
 {
 	const char *color;
 
@@ -291,7 +291,7 @@ static char *hilight_get_color(HILIGHT_REC *rec)
 	return format_string_expand(color, NULL);
 }
 
-static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
+void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 {
 	dest->level |= MSGLEVEL_HILIGHT;
 
@@ -304,6 +304,8 @@ static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
         else
 		dest->hilight_color = hilight_get_act_color(rec);
 }
+
+static void hilight_print(int index, HILIGHT_REC *rec);
 
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 			   const char *stripped)
@@ -398,19 +400,15 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 	signal_stop();
 }
 
-char *hilight_match_nick(SERVER_REC *server, const char *channel,
+HILIGHT_REC *hilight_match_nick(SERVER_REC *server, const char *channel,
 			 const char *nick, const char *address,
 			 int level, const char *msg)
 {
         HILIGHT_REC *rec;
-	char *color;
 
 	rec = hilight_match(server, channel, nick, address,
 			    level, msg, NULL, NULL);
-	color = rec == NULL || !rec->nick ? NULL :
-		hilight_get_color(rec);
-
-	return color;
+	return (rec == NULL || !rec->nick) ? NULL : rec;
 }
 
 static void read_hilight_config(void)

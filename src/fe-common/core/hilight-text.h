@@ -5,6 +5,8 @@
 #  include <regex.h>
 #endif
 
+#include "formats.h"
+
 typedef struct _HILIGHT_REC HILIGHT_REC;
 
 struct _HILIGHT_REC {
@@ -36,9 +38,12 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 			   int level, const char *str,
 			   int *match_beg, int *match_end);
 
-char *hilight_match_nick(SERVER_REC *server, const char *channel,
+HILIGHT_REC *hilight_match_nick(SERVER_REC *server, const char *channel,
 			 const char *nick, const char *address,
 			 int level, const char *msg);
+			 
+char *hilight_get_color(HILIGHT_REC *rec);
+void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec);
 
 void hilight_create(HILIGHT_REC *rec);
 void hilight_remove(HILIGHT_REC *rec);
