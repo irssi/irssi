@@ -367,6 +367,15 @@ static void module_file_deinit_gmodule(MODULE_FILE_REC *file)
 	g_module_close(file->gmodule);
 }
 
+#else /* !HAVE_GMODULE - modules are not supported */
+
+int module_load(const char *path, char **prefixes)
+{
+        return FALSE;
+}
+
+#endif
+
 void module_file_unload(MODULE_FILE_REC *file)
 {
 	MODULE_REC *root;
@@ -377,8 +386,10 @@ void module_file_unload(MODULE_FILE_REC *file)
         if (file->initialized)
 		signal_emit("module unloaded", 2, file->root, file);
 
+#ifdef HAVE_GMODULE
 	if (file->gmodule != NULL)
                 module_file_deinit_gmodule(file);
+#endif
 
 	g_free(file->name);
 	g_free(file->defined_module_name);
@@ -402,16 +413,3 @@ void module_unload(MODULE_REC *module)
         g_free(module->name);
 	g_free(module);
 }
-
-#else /* !HAVE_GMODULE - modules are not supported */
-
-int module_load(const char *path, char **prefixes)
-{
-        return FALSE;
-}
-
-void module_unload(MODULE_REC *module)
-{
-}
-
-#endif
