@@ -85,7 +85,7 @@ static void cmd_log_open(const char *data)
 	log = log_create_rec(fname, level != 0 ? level : MSGLEVEL_ALL);
 
 	/* -<server tag> */
-	server = cmd_options_get_server("join", optlist, NULL);
+	server = cmd_options_get_server("log open", optlist, NULL);
 	servertag = server == NULL ? NULL : server->tag;
 
 	if (g_hash_table_lookup(optlist, "window")) {
