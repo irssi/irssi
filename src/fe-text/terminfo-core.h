@@ -8,6 +8,7 @@
 #define terminfo_scroll(y1, y2, count) current_term->scroll(current_term, y1, y2, count)
 #define terminfo_clear() current_term->clear(current_term)
 #define terminfo_clrtoeol() current_term->clrtoeol(current_term)
+#define terminfo_repeat(chr, count) current_term->repeat(current_term, chr, count)
 #define terminfo_set_fg(color) current_term->set_fg(current_term, color)
 #define terminfo_set_bg(color) current_term->set_bg(current_term, color)
 #define terminfo_set_normal() current_term->set_normal(current_term)
@@ -27,6 +28,7 @@ struct _TERM_REC {
 
         void (*clear)(TERM_REC *term);
 	void (*clrtoeol)(TERM_REC *term);
+	void (*repeat)(TERM_REC *term, int chr, int count);
 
 	void (*set_fg)(TERM_REC *term, int color);
 	void (*set_bg)(TERM_REC *term, int color);
@@ -60,6 +62,9 @@ struct _TERM_REC {
 
         /* Clearing to end of line */
 	const char *TI_el;
+
+	/* Repeating character */
+	const char *TI_rep;
 
 	/* Colors */
         int has_colors;

@@ -177,9 +177,13 @@ void term_window_clear(TERM_WINDOW *window)
 	int y;
 
         terminfo_set_normal();
-	for (y = 0; y < window->height; y++) {
-                term_move(window, 0, y);
-		term_clrtoeol(window);
+        if (window->y == 0 && window->height == term_height) {
+        	term_clear();
+        } else {
+		for (y = 0; y < window->height; y++) {
+			term_move(window, 0, y);
+			term_clrtoeol(window);
+		}
 	}
 }
 
@@ -280,7 +284,15 @@ void term_addstr(TERM_WINDOW *window, char *str)
 
 void term_clrtoeol(TERM_WINDOW *window)
 {
-        terminfo_clrtoeol();
+	if (last_fg == -1 && last_bg == -1 &&
+	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE)) == 0) {
+	    	/* clrtoeol() doesn't necessarily understand colors */
+		terminfo_clrtoeol();
+	} else if (vcx < term_width) {
+		/* we'll need to fill the line ourself. */
+		terminfo_repeat(' ', term_width-vcx);
+		terminfo_move(vcx, vcy);
+	}
 }
 
 void term_move_cursor(int x, int y)

@@ -269,6 +269,21 @@ static void _clrtoeol(TERM_REC *term)
 	tput(tparm(term->TI_el));
 }
 
+/* Repeat character (rep / rp) */
+static void _repeat(TERM_REC *term, int chr, int count)
+{
+	tput(tparm(term->TI_rep, chr, count));
+}
+
+/* Repeat character (manual) */
+static void _repeat_manual(TERM_REC *term, int chr, int count)
+{
+	while (count > 0) {
+		putc(chr, term->out);
+		count--;
+	}
+}
+
 /* Reset all terminal attributes */
 static void _set_normal(TERM_REC *term)
 {
@@ -553,6 +568,12 @@ static int term_setup(TERM_REC *term)
                 fprintf(term->out, "Terminal doesn't support clearing to end of line\n");
 		return 0;
 	}
+
+	/* Repeating character */
+	if (term->TI_rep)
+		term->repeat = _repeat;
+	else
+		term->repeat = _repeat_manual;
 
 	/* Bold, underline, standout */
 	term->set_bold = term->TI_bold ? _set_bold : _ignore;
