@@ -185,6 +185,11 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	g_return_if_fail(cmd != NULL);
 
 	str = split_nicks(cmd, &pre, &nicks, &post, nickarg);
+	if (nicks == NULL) {
+                /* no nicks given? */
+		g_free(str);
+		return;
+	}
 
 	/* split the nicks */
 	nickstr = g_string_new(NULL);
