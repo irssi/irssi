@@ -122,7 +122,7 @@ void irc_expandos_init(void)
 	expando_create("usermode", expando_usermode,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW,
-		       "user mode changed", EXPANDO_ARG_WINDOW, NULL);
+		       "user mode changed", EXPANDO_ARG_SERVER, NULL);
 	expando_create("cumode", expando_cumode,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW,
