@@ -31,6 +31,7 @@
 
 #include "windows.h"
 #include "window-items.h"
+#include "themes.h"
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
@@ -40,6 +41,10 @@
 static int autolog_level;
 static int autoremove_tag;
 static const char *autolog_path;
+
+static THEME_REC *log_theme;
+static int skip_next_printtext;
+static const char *log_theme_name;
 
 static void log_add_targets(LOG_REC *log, const char *targets)
 {
@@ -362,16 +367,13 @@ static void autolog_log(void *server, const char *target)
 	g_free(fname);
 }
 
-static void sig_printtext_stripped(WINDOW_REC *window, void *server,
-				   const char *target, gpointer levelp,
-				   const char *text)
+static void log_line(WINDOW_REC *window, void *server, const char *target,
+		     int level, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
 	char **targets, **tmp;
 	LOG_REC *log;
-	int level;
 
-	level = GPOINTER_TO_INT(levelp);
 	if (level == MSGLEVEL_NEVER) return;
 
 	/* let autolog create the log records */
@@ -388,6 +390,84 @@ static void sig_printtext_stripped(WINDOW_REC *window, void *server,
 	ltoa(windownum, window->refnum);
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, windownum, NULL, NULL);
 	if (log != NULL) log_write_rec(log, text);
+
+	/* save line to log files */
+	if (logs == NULL)
+		return;
+
+        if (target == NULL)
+		log_file_write(server, NULL, level, text, FALSE);
+	else {
+		/* there can be multiple items separated with comma */
+		targets = g_strsplit(target, ",", -1);
+		for (tmp = targets; *tmp != NULL; tmp++)
+			log_file_write(server, *tmp, level, text, FALSE);
+		g_strfreev(targets);
+	}
+}
+
+static void sig_printtext_stripped(WINDOW_REC *window, void *server,
+				   const char *target, gpointer levelp,
+				   const char *text)
+{
+	if (skip_next_printtext) {
+		skip_next_printtext = FALSE;
+		return;
+	}
+
+	log_line(window, server, target, GPOINTER_TO_INT(levelp), text);
+}
+
+static void sig_print_format(THEME_REC *theme, const char *module,
+			     TEXT_DEST_REC *dest, gpointer formatnump,
+			     va_list va)
+{
+	MODULE_THEME_REC *module_theme;
+	FORMAT_REC *formats;
+	int formatnum;
+	char *str, *str2, *stripped, *tmp;
+
+	if (log_theme == NULL) {
+		/* theme isn't loaded for some reason (/reload destroys it),
+		   reload it. */
+		log_theme = theme_load(log_theme_name);
+		if (log_theme == NULL) return;
+	}
+
+	if (theme == log_theme)
+		return;
+
+	/* log uses a different theme .. very ugly kludge follows.. : */
+	formatnum = GPOINTER_TO_INT(formatnump);
+	module_theme = g_hash_table_lookup(log_theme->modules, module);
+	formats = g_hash_table_lookup(default_formats, module);
+
+	str = output_format_text_args(dest, &formats[formatnum],
+				      module_theme->expanded_formats[formatnum], va);
+	if (*str != '\0') {
+		/* get_line_start_text() gets the line start with
+		   current theme. */
+		THEME_REC *old_theme = current_theme;
+		current_theme = log_theme;
+		tmp = get_line_start_text(dest);
+		current_theme = old_theme;
+
+		/* line start + text */
+		str2 = tmp == NULL ? str :
+			g_strconcat(tmp, str, NULL);
+		if (str2 != str) g_free(str);
+		str = str2;
+		g_free_not_null(tmp);
+
+		/* strip colors from text, log it. */
+		stripped = strip_codes(str);
+		skip_next_printtext = TRUE;
+		log_line(dest->window, dest->server, dest->target,
+			 dest->level, stripped);
+		g_free(stripped);
+	}
+	g_free(str);
+
 }
 
 static int sig_autoremove(void)
@@ -458,8 +538,15 @@ static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
 	}
 }
 
+static void sig_theme_destroyed(THEME_REC *theme)
+{
+	if (theme == log_theme)
+		log_theme = NULL;
+}
+
 static void read_settings(void)
 {
+	const char *old_log_theme = log_theme_name;
 	int old_autolog = autolog_level;
 
 	autolog_path = settings_get_str("autolog_path");
@@ -468,15 +555,30 @@ static void read_settings(void)
 
 	if (old_autolog && !autolog_level)
 		autologs_close_all();
+
+	/* write to log files with different theme? */
+	log_theme_name = settings_get_str("log_theme");
+	if (old_log_theme == NULL && *log_theme_name != '\0') {
+                /* theme set */
+		signal_add("print format", (SIGNAL_FUNC) sig_print_format);
+	} else if (old_log_theme != NULL && *log_theme_name == '\0') {
+		/* theme unset */
+		signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
+	}
+
+	log_theme = *log_theme_name == '\0' ? NULL :
+		theme_load(log_theme_name);
 }
 
 void fe_log_init(void)
 {
 	autoremove_tag = g_timeout_add(60000, (GSourceFunc) sig_autoremove, NULL);
+	skip_next_printtext = FALSE;
 
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_str("log", "autolog_level", "all -crap -clientcrap");
         settings_add_bool("log", "autolog", FALSE);
+        settings_add_str("log", "log_theme", "");
 
 	autolog_level = 0;
 	read_settings();
@@ -494,6 +596,7 @@ void fe_log_init(void)
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_add("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
+	signal_add("theme destroyed", (SIGNAL_FUNC) sig_theme_destroyed);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_set_options("log open", "noopen autoopen -targets window");
@@ -502,6 +605,8 @@ void fe_log_init(void)
 void fe_log_deinit(void)
 {
 	g_source_remove(autoremove_tag);
+	if (log_theme_name != NULL && *log_theme_name != '\0')
+                signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 
 	command_unbind("log", (SIGNAL_FUNC) cmd_log);
 	command_unbind("log open", (SIGNAL_FUNC) cmd_log_open);
@@ -516,5 +621,6 @@ void fe_log_deinit(void)
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
 	signal_remove("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_remove("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
+	signal_remove("theme destroyed", (SIGNAL_FUNC) sig_theme_destroyed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

@@ -234,8 +234,8 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 	return NULL;
 }
 
-static void log_file_write(SERVER_REC *server, const char *item, int level,
-			   const char *str, int no_fallbacks)
+void log_file_write(SERVER_REC *server, const char *item, int level,
+		    const char *str, int no_fallbacks)
 {
 	GSList *tmp, *fallbacks;
 	char *tmpstr;
@@ -418,30 +418,6 @@ void log_close(LOG_REC *log)
 	log_destroy(log);
 }
 
-static void sig_printtext_stripped(void *window, SERVER_REC *server,
-				   const char *item, gpointer levelp,
-				   const char *str)
-{
-	char **items, **tmp;
-	int level;
-
-	g_return_if_fail(str != NULL);
-
-	level = GPOINTER_TO_INT(levelp);
-	if (logs == NULL || level == MSGLEVEL_NEVER)
-		return;
-
-        if (item == NULL)
-		log_file_write(server, NULL, level, str, FALSE);
-	else {
-		/* there can be multiple items separated with comma */
-		items = g_strsplit(item, ",", -1);
-		for (tmp = items; *tmp != NULL; tmp++)
-			log_file_write(server, *tmp, level, str, FALSE);
-		g_strfreev(items);
-	}
-}
-
 static int sig_rotate_check(void)
 {
 	static int last_hour = -1;
@@ -559,7 +535,6 @@ void log_init(void)
 	log_read_config();
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);
         signal_add("setup reread", (SIGNAL_FUNC) log_read_config);
-	signal_add("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 }
 
 void log_deinit(void)
@@ -571,5 +546,4 @@ void log_deinit(void)
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
         signal_remove("setup reread", (SIGNAL_FUNC) log_read_config);
-	signal_remove("print text stripped", (SIGNAL_FUNC) sig_printtext_stripped);
 }

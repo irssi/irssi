@@ -33,13 +33,6 @@
 #include "themes.h"
 #include "windows.h"
 
-typedef struct {
-	WINDOW_REC *window;
-	void *server;
-	const char *channel;
-	int level;
-} TEXT_DEST_REC;
-
 static int beep_msg_level, beep_when_away;
 static int timestamps, msgs_timestamps, hide_text_style;
 static int timestamp_timeout;
@@ -48,6 +41,7 @@ static int signal_gui_print_text;
 static int signal_print_text_stripped;
 static int signal_print_text;
 static int signal_print_text_finished;
+static int signal_print_format;
 
 static void print_string(TEXT_DEST_REC *dest, const char *text);
 
@@ -338,18 +332,18 @@ static void read_arglist(va_list va, FORMAT_REC *format,
 }
 
 static void create_dest_rec(TEXT_DEST_REC *dest,
-			    void *server, const char *channel,
+			    void *server, const char *target,
 			    int level, WINDOW_REC *window)
 {
 	dest->server = server;
-	dest->channel = channel;
+	dest->target = target;
 	dest->level = level;
 	dest->window = window != NULL ? window :
-		window_find_closest(server, channel, level);
+		window_find_closest(server, target, level);
 }
 
-static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
-				     const char *text, va_list va)
+char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
+			      const char *text, va_list va)
 {
 	GString *out;
 	char *arglist[10];
@@ -413,7 +407,7 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 }
 
 char *output_format_get_text(const char *module, WINDOW_REC *window,
-			     void *server, const char *channel,
+			     void *server, const char *target,
 			     int formatnum, ...)
 {
 	TEXT_DEST_REC dest;
@@ -423,7 +417,7 @@ char *output_format_get_text(const char *module, WINDOW_REC *window,
 	va_list va;
 	char *ret;
 
-	create_dest_rec(&dest, server, channel, 0, window);
+	create_dest_rec(&dest, server, target, 0, window);
 	theme = dest.window->theme == NULL ? current_theme :
 		dest.window->theme;
 
@@ -458,7 +452,7 @@ static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 }
 
 void printformat_module_args(const char *module, void *server,
-			     const char *channel, int level,
+			     const char *target, int level,
 			     int formatnum, va_list va)
 {
 	THEME_REC *theme;
@@ -467,9 +461,12 @@ void printformat_module_args(const char *module, void *server,
 	FORMAT_REC *formats;
 	char *str;
 
-	create_dest_rec(&dest, server, channel, level, NULL);
+	create_dest_rec(&dest, server, target, level, NULL);
 	theme = dest.window->theme == NULL ? current_theme :
 		dest.window->theme;
+
+	signal_emit_id(signal_print_format, 5, theme, module,
+		       &dest, GINT_TO_POINTER(formatnum), va);
 
 	module_theme = g_hash_table_lookup(theme->modules, module);
 	formats = g_hash_table_lookup(default_formats, module);
@@ -480,16 +477,17 @@ void printformat_module_args(const char *module, void *server,
 	g_free(str);
 }
 
-void printformat_module(const char *module, void *server, const char *channel, int level, int formatnum, ...)
+void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...)
 {
 	va_list va;
 
 	va_start(va, formatnum);
-	printformat_module_args(module, server, channel, level, formatnum, va);
+	printformat_module_args(module, server, target, level, formatnum, va);
 	va_end(va);
 }
 
-void printformat_module_window_args(const char *module, WINDOW_REC *window, int level, int formatnum, va_list va)
+void printformat_module_window_args(const char *module, WINDOW_REC *window,
+				    int level, int formatnum, va_list va)
 {
 	THEME_REC *theme;
 	MODULE_THEME_REC *module_theme;
@@ -500,16 +498,21 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window, int 
 	create_dest_rec(&dest, NULL, NULL, level, window);
 	theme = window->theme == NULL ? current_theme :
 		window->theme;
-	module_theme = g_hash_table_lookup(theme->modules, module);
 
+	signal_emit_id(signal_print_format, 5, theme, module,
+		       &dest, GINT_TO_POINTER(formatnum), va);
+
+	module_theme = g_hash_table_lookup(theme->modules, module);
 	formats = g_hash_table_lookup(default_formats, module);
+
 	str = output_format_text_args(&dest, &formats[formatnum],
 				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
 }
 
-void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...)
+void printformat_module_window(const char *module, WINDOW_REC *window,
+			       int level, int formatnum, ...)
 {
 	va_list va;
 
@@ -527,7 +530,7 @@ void printformat_module_window(const char *module, WINDOW_REC *window, int level
 	MSGLEVEL_ACTIONS | MSGLEVEL_NOTICES | MSGLEVEL_SNOTES | MSGLEVEL_CTCPS)
 
 /* return the "-!- " text at the start of the line */
-static char *get_line_start_text(TEXT_DEST_REC *dest)
+char *get_line_start_text(TEXT_DEST_REC *dest)
 {
 	if (dest->level & LINE_START_IRSSI_LEVEL)
 		return output_format_text(dest, IRCTXT_LINE_START_IRSSI);
@@ -555,10 +558,10 @@ static void print_string(TEXT_DEST_REC *dest, const char *text)
 
 	/* send the plain text version for logging etc.. */
 	tmp = strip_codes(str);
-	signal_emit_id(signal_print_text_stripped, 5, dest->window, dest->server, dest->channel, levelp, tmp);
+	signal_emit_id(signal_print_text_stripped, 5, dest->window, dest->server, dest->target, levelp, tmp);
 	g_free(tmp);
 
-	signal_emit_id(signal_print_text, 5, dest->window, dest->server, dest->channel, levelp, str);
+	signal_emit_id(signal_print_text, 5, dest->window, dest->server, dest->target, levelp, str);
 	if (str != text) g_free(str);
 }
 
@@ -641,8 +644,8 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str, va_list va
 	return ret;
 }
 
-/* Write text to channel - convert color codes */
-void printtext(void *server, const char *channel, int level, const char *text, ...)
+/* Write text to target - convert color codes */
+void printtext(void *server, const char *target, int level, const char *text, ...)
 {
 	TEXT_DEST_REC dest;
 	char *str;
@@ -650,7 +653,7 @@ void printtext(void *server, const char *channel, int level, const char *text, .
 
 	g_return_if_fail(text != NULL);
 
-        create_dest_rec(&dest, server, channel, level, NULL);
+        create_dest_rec(&dest, server, target, level, NULL);
 
 	va_start(va, text);
 	str = printtext_get_args(&dest, text, va);
@@ -929,7 +932,7 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
     signal_emit_id(signal_print_text_finished, 1, window);
 }
 
-void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text)
+void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text)
 {
 	char **lines, **tmp;
 
@@ -974,6 +977,7 @@ void printtext_init(void)
 	signal_print_text_stripped = signal_get_uniq_id("print text stripped");
 	signal_print_text = signal_get_uniq_id("print text");
 	signal_print_text_finished = signal_get_uniq_id("print text finished");
+	signal_print_format = signal_get_uniq_id("print format");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);

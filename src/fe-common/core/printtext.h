@@ -27,18 +27,18 @@ typedef struct {
 #define PRINTFLAG_INDENT        0x40
 
 char *output_format_get_text(const char *module, WINDOW_REC *window,
-			     void *server, const char *channel,
+			     void *server, const char *target,
 			     int formatnum, ...);
 
-void printformat_module(const char *module, void *server, const char *channel, int level, int formatnum, ...);
+void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...);
 void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...);
 
-void printformat_module_args(const char *module, void *server, const char *channel, int level, int formatnum, va_list va);
+void printformat_module_args(const char *module, void *server, const char *target, int level, int formatnum, va_list va);
 void printformat_module_window_args(const char *module, WINDOW_REC *window, int level, int formatnum, va_list va);
 
-void printtext(void *server, const char *channel, int level, const char *text, ...);
+void printtext(void *server, const char *target, int level, const char *text, ...);
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...);
-void printtext_multiline(void *server, const char *channel, int level, const char *format, const char *text);
+void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text);
 void printbeep(void);
 
 /* strip all color (etc.) codes from `input'. returns newly allocated string. */
@@ -55,14 +55,14 @@ void printtext_deinit(void);
  */
 #if defined (__GNUC__) && !defined (__STRICT_ANSI__)
 /* GCC */
-#  define printformat(server, channel, level, formatnum...) \
-	printformat_module(MODULE_NAME, server, channel, level, ##formatnum)
+#  define printformat(server, target, level, formatnum...) \
+	printformat_module(MODULE_NAME, server, target, level, ##formatnum)
 #  define printformat_window(window, level, formatnum...) \
 	printformat_module_window(MODULE_NAME, window, level, ##formatnum)
 #elif defined (_ISOC99_SOURCE)
 /* C99 */
-#  define printformat(server, channel, level, formatnum, ...) \
-	printformat_module(MODULE_NAME, server, channel, level, formatnum, __VA_ARGS__)
+#  define printformat(server, target, level, formatnum, ...) \
+	printformat_module(MODULE_NAME, server, target, level, formatnum, __VA_ARGS__)
 #  define printformat_window(window, level, formatnum, ...) \
 	printformat_module_window(MODULE_NAME, window, level, formatnum, __VA_ARGS__)
 #else
@@ -71,12 +71,12 @@ static
 #ifdef G_CAN_INLINE
 inline
 #endif
-void printformat(void *server, const char *channel, int level, int formatnum, ...)
+void printformat(void *server, const char *target, int level, int formatnum, ...)
 {
 	va_list va;
 
 	va_start(va, formatnum);
-	printformat_module_args(MODULE_NAME, server, channel, level, formatnum, va);
+	printformat_module_args(MODULE_NAME, server, target, level, formatnum, va);
 	va_end(va);
 }
 
@@ -93,5 +93,19 @@ void printformat_window(WINDOW_REC *window, int level, int formatnum, ...)
 	va_end(va);
 }
 #endif
+
+/* semi-private functions.. */
+typedef struct {
+	WINDOW_REC *window;
+	void *server;
+	const char *target;
+	int level;
+} TEXT_DEST_REC;
+
+char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
+			      const char *text, va_list va);
+
+/* return the "-!- " text at the start of the line */
+char *get_line_start_text(TEXT_DEST_REC *dest);
 
 #endif
