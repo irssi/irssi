@@ -175,6 +175,7 @@ static void irssi_perl_stop(void)
 	while (perl_timeouts != NULL)
 		perl_timeout_destroy(perl_timeouts->data);
 
+        PL_perl_destruct_level = 1;
 	perl_destruct(irssi_perl_interp);
 	perl_free(irssi_perl_interp);
 	irssi_perl_interp = NULL;
