@@ -15,7 +15,7 @@ static int check_sbar_destroy(char *key, char *value, char *script)
         return FALSE;
 }
 
-static void sig_script_destroyed(PERL_SCRIPT_REC *script)
+static void script_unregister_statusbars(PERL_SCRIPT_REC *script)
 {
 	g_hash_table_foreach_remove(perl_sbar_defs,
 				    (GHRFunc) check_sbar_destroy,
@@ -26,7 +26,7 @@ void perl_statusbar_init(void)
 {
 	perl_sbar_defs = g_hash_table_new((GHashFunc) g_str_hash,
 					  (GCompareFunc) g_str_equal);
-	signal_add("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
+	signal_add("script destroyed", (SIGNAL_FUNC) script_unregister_statusbars);
 }
 
 static void statusbar_item_def_destroy(void *key, void *value)
@@ -37,7 +37,7 @@ static void statusbar_item_def_destroy(void *key, void *value)
 
 void perl_statusbar_deinit(void)
 {
-	signal_remove("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
+	signal_remove("script destroyed", (SIGNAL_FUNC) script_unregister_statusbars);
 
 	g_hash_table_foreach(perl_sbar_defs,
 			     (GHFunc) statusbar_item_def_destroy, NULL);
@@ -66,22 +66,27 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
+                PERL_SCRIPT_REC *script;
                 char *package;
 
                 package = perl_function_get_package(function);
-		signal_emit("script error", 2,
-			    perl_script_find_package(package),
-			    SvPV(ERRSV, n_a));
+                script = perl_script_find_package(package);
                 g_free(package);
-	}
 
-        /* min_size and max_size can be changed, move them to SBAR_ITEM_REC */
-	hv = hvref(item_sv);
-	if (hv != NULL) {
-		sv = hv_fetch(hv, "min_size", 8, 0);
-		if (sv != NULL) item->min_size = SvIV(*sv);
-		sv = hv_fetch(hv, "max_size", 8, 0);
-		if (sv != NULL) item->max_size = SvIV(*sv);
+		if (script != NULL) {
+                        /* make sure we don't get back here */
+			script_unregister_statusbars(script);
+		}
+		signal_emit("script error", 2, script, SvPV(ERRSV, n_a));
+	} else {
+		/* min_size and max_size can be changed, move them to SBAR_ITEM_REC */
+		hv = hvref(item_sv);
+		if (hv != NULL) {
+			sv = hv_fetch(hv, "min_size", 8, 0);
+			if (sv != NULL) item->min_size = SvIV(*sv);
+			sv = hv_fetch(hv, "max_size", 8, 0);
+			if (sv != NULL) item->max_size = SvIV(*sv);
+		}
 	}
 
 	PUTBACK;
