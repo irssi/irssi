@@ -170,7 +170,8 @@ static void cmd_rawlog(const char *data, SERVER_REC *server, void *item)
 static void cmd_rawlog_save(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || server->rawlog == NULL)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 	rawlog_save(server->rawlog, data);
@@ -180,7 +181,8 @@ static void cmd_rawlog_save(const char *data, SERVER_REC *server)
 static void cmd_rawlog_open(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || server->rawlog == NULL)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 	rawlog_open(server->rawlog, data);
@@ -190,7 +192,8 @@ static void cmd_rawlog_open(const char *data, SERVER_REC *server)
 static void cmd_rawlog_close(const char *data, SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || server->rawlog == NULL)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	rawlog_close(server->rawlog);
 }
