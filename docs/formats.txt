@@ -23,4 +23,38 @@
  MIRC colors that you can use when writing text to channel and with
  hilighting text:
 
- FIXME: list them :)
+               foreground          background
+   -------------------------------------------------------
+	0          white               black
+	1          ligh gray           ---
+	2          blue                blue
+	3          green               green
+	4          light red           ---
+	5          orange              orange
+	6          magenta (purple)    magenta
+	7          red                 red
+	8          yellow              ---
+	9          light green         ---
+   10          cyan                cyan
+   11          light cyan          ---
+   12          light blue          ---
+   13          light magenta       ---
+   14          gray                black on black 
+   15          light gray          black on black
+                                   gray  on light gray (with bold)
+
+ These colors may differ depending on your terminal.
+
+ How to use these colors ('#' means a number as color code):
+ 
+ <Ctrl>-b        set bold
+ <Ctrl>-c#[,#]   set foreground and optionally background color
+ <Ctrl>-o        reset all formats to plain text
+ <Ctrl>-v        set inverted color mode
+ <Ctrl>-_        set underline
+ <Ctrl>-7        same as <Ctrl>-_
+ 
+ To reset a mode set it again, f.e.
+   <Ctrl>-c3<Ctrl>-vFOO<Ctrl>-vBAR
+ creates black on green FOO followed by a green on black BAR
+   
