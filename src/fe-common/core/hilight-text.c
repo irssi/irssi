@@ -41,6 +41,8 @@ static void hilight_add_config(HILIGHT_REC *rec)
 {
 	CONFIG_NODE *node;
 
+	g_return_if_fail(rec != NULL);
+
 	node = iconfig_node_traverse("(hilights", TRUE);
 	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
@@ -61,12 +63,16 @@ static void hilight_remove_config(HILIGHT_REC *rec)
 {
 	CONFIG_NODE *node;
 
+	g_return_if_fail(rec != NULL);
+
 	node = iconfig_node_traverse("hilights", FALSE);
 	if (node != NULL) config_node_list_remove(node, g_slist_index(hilights, rec));
 }
 
 static void hilight_destroy(HILIGHT_REC *rec)
 {
+	g_return_if_fail(rec != NULL);
+
 	g_free(rec->text);
 	g_free_not_null(rec->color);
 	g_free(rec);
@@ -81,6 +87,8 @@ static void hilights_destroy_all(void)
 
 static void hilight_remove(HILIGHT_REC *rec)
 {
+	g_return_if_fail(rec != NULL);
+
 	hilight_remove_config(rec);
 	hilights = g_slist_remove(hilights, rec);
 	hilight_destroy(rec);
@@ -324,9 +332,10 @@ static void cmd_dehilight(const char *data)
 
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_HILIGHT_NOT_FOUND, data);
-	else
+	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_HILIGHT_REMOVED, rec->text);
-	hilight_remove(rec);
+		hilight_remove(rec);
+	}
 }
 
 void hilight_text_init(void)
