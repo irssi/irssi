@@ -71,6 +71,24 @@ static void dcc_queue_send_next(int queue)
 	}
 }
 
+static char *dcc_send_get_file(const char *fname)
+{
+	char *str, *path;
+
+	str = convert_home(fname);
+	if (!g_path_is_absolute(str)) {
+		/* full path not given to file, use dcc_upload_path */
+		g_free(str);
+
+		path = convert_home(settings_get_str("dcc_upload_path"));
+		str = *path == '\0' ? g_strdup(fname) :
+			g_strconcat(path, G_DIR_SEPARATOR_S, fname, NULL);
+		g_free(path);
+	}
+
+        return str;
+}
+
 static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 			 const char *nick, char *fileargs, int add_mode,
 			 int passive)
@@ -101,7 +119,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 
 	/* add all globbed files to a proper queue */
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-		const char *fname = globbuf.gl_pathv[i];
+		char *fname = dcc_send_get_file(globbuf.gl_pathv[i]);
 
 		ret = stat(fname, &st);
 		if (ret == 0 && S_ISDIR(st.st_mode)) {
@@ -113,6 +131,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 		if (ret < 0) {
 			signal_emit("dcc error file open", 3,
 				    nick, fname, errno);
+			g_free(fname);
 			continue;
 		}
 
@@ -137,6 +156,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 			dcc_queue_add_passive(queue, add_mode, nick,
 					      fname, servertag, chat);
 		files++;
+		g_free(fname);
 	}
 
 	if (files > 0 && start_new_transfer)
@@ -339,24 +359,6 @@ static void dcc_send_connect(SEND_DCC_REC *dcc)
 		signal_emit("dcc error connect", 1, dcc);
 		dcc_destroy(DCC(dcc));
 	}
-}
-
-static char *dcc_send_get_file(const char *fname)
-{
-	char *str, *path;
-
-	str = convert_home(fname);
-	if (!g_path_is_absolute(str)) {
-		/* full path not given to file, use dcc_upload_path */
-		g_free(str);
-
-		path = convert_home(settings_get_str("dcc_upload_path"));
-		str = *path == '\0' ? g_strdup(fname) :
-			g_strconcat(path, G_DIR_SEPARATOR_S, fname, NULL);
-		g_free(path);
-	}
-
-        return str;
 }
 
 static int dcc_send_one_file(int queue, const char *target, const char *fname,
