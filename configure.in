@@ -281,11 +281,13 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
       GLIB_LIBS="$full_glib_dir/.libs/libglib.a $GLIB_LDEXTRA"
       if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
 	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
+        AC_DEFINE(HAVE_GMODULE)
       fi
     else
       GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
       if test -f $full_glib_dir/gmodule/libgmodule.a; then
 	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
+        AC_DEFINE(HAVE_GMODULE)
       fi
     fi
     AC_SUBST(GLIB_CFLAGS)
@@ -318,8 +320,8 @@ if test "x$GLIB_DIR" = "x"; then
     dnl * I think it's pretty safe to assume GLib 1.2.9 since the next
     dnl * will be 2.0 (or 1.4?) and it's not sure if irssi compiles
     dnl * with it (yea, just a few weeks after I put this text for 1.2.8
-    dnl * the 1.2.9 came :)
-    glib_file=glib-1.2.9.tar.gz
+    dnl * the 1.2.9 came :) .. and then .10
+    glib_file=glib-1.2.10.tar.gz
 
     dlcmd=
     if [ "x`ncftpget 2>/dev/null|grep -i ncftp`" != "x" ]; then
