@@ -75,6 +75,7 @@ nicklist.c:
  "nicklist remove" CHANNEL_REC, NICK_REC
  "nicklist changed" CHANNEL_REC, NICK_REC, gchar *oldnick
  "nick gone changed" CHANNEL_REC, NICK_REC
+ "nick ircop changed" CHANNEL_REC, NICK_REC
  "server nick changed" SERVER_REC
  "massjoin" CHANNEL_REC, GList of NICK_RECs
 
