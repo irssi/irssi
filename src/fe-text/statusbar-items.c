@@ -593,17 +593,24 @@ static int get_mail_count(void)
 	int count;
 
 	fname = g_getenv("MAIL");
-	if (stat(fname, &statbuf) != 0)
+	if (stat(fname, &statbuf) != 0) {
+		mail_last_mtime = -1;
+		mail_last_size = -1;
+                mail_last_count = 0;
 		return 0;
+	}
 
-	if (statbuf.st_mtime == mail_last_mtime ||
+	if (statbuf.st_mtime == mail_last_mtime &&
 	    statbuf.st_size == mail_last_size)
 		return mail_last_count;
 	mail_last_mtime = statbuf.st_mtime;
 	mail_last_size = statbuf.st_size;
 
 	f = fopen(fname, "r");
-	if (f == NULL) return 0;
+	if (f == NULL) {
+                mail_last_count = 0;
+		return 0;
+	}
 
 	count = 0;
 	while (fgets(str, sizeof(str), f) != NULL) {
