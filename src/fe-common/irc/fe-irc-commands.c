@@ -63,8 +63,11 @@ static void cmd_unquery(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 /* SYNTAX: QUERY <nick> */
 static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
+	GHashTable *optlist;
 	WINDOW_REC *window;
 	QUERY_REC *query;
+	char *nick;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
@@ -74,21 +77,33 @@ static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 		return;
 	}
 
-	if (*data != '=' && (server == NULL || !server->connected))
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "query", &optlist, &nick))
+		return;
+	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	server = irccmd_options_get_server("query", optlist, server);
+	if (server == NULL) {
+		cmd_params_free(free_arg);
+                return;
+	}
 
-	query = query_find(server, data);
-	if (query != NULL) {
+	if (*nick != '=' && (server == NULL || !server->connected))
+		cmd_param_error(CMDERR_NOT_CONNECTED);
+
+	query = query_find(server, nick);
+	if (query == NULL)
+		query_create(server, nick, FALSE);
+	else {
 		/* query already existed - change to query window */
 		window = window_item_window((WI_ITEM_REC *) query);
 		g_return_if_fail(window != NULL);
 
 		window_set_active(window);
 		window_item_set_active(window, (WI_ITEM_REC *) query);
-		return;
 	}
 
-	query_create(server, data, FALSE);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
@@ -109,7 +124,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 			"msg", &optlist, &target, &msg))
 	    return;
     if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-    server = irccmd_options_get_server(optlist, server);
+    server = irccmd_options_get_server("msg", optlist, server);
 
     if (*target == '=')
     {

@@ -47,19 +47,33 @@ static int knockout_tag;
 
 /* `optlist' should contain only one key - the server tag.
    returns NULL if there was unknown -option */
-IRC_SERVER_REC *irccmd_options_get_server(GHashTable *optlist, IRC_SERVER_REC *defserver)
+IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
+					  GHashTable *optlist,
+					  IRC_SERVER_REC *defserver)
 {
 	SERVER_REC *server;
-	GSList *list;
+	GSList *list, *tmp, *next;
 
-	/* -<server tag> */
+	/* get all the options, then remove the known ones. there should
+	   be only one left - the server tag. */
 	list = hashtable_get_keys(optlist);
-	if (list == NULL) return defserver;
+	for (tmp = list; tmp != NULL; tmp = next) {
+		char *option = tmp->data;
+		next = tmp->next;
+
+		if (command_have_option(cmd, option))
+			list = g_slist_remove(list, option);
+	}
+
+	if (list == NULL)
+		return defserver;
 
 	server = server_find_tag(list->data);
 	if (server == NULL || list->next != NULL) {
 		/* unknown option (not server tag) */
-		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN), list->data);
+		signal_emit("error command", 2,
+			    GINT_TO_POINTER(CMDERR_OPTION_UNKNOWN),
+			    server == NULL ? list->data : list->next->data);
 
 		server = NULL;
 	}
@@ -244,7 +258,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 		return;
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	server = irccmd_options_get_server(optlist, server);
+	server = irccmd_options_get_server("msg", optlist, server);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
@@ -349,7 +363,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 			channels_join(server, server->last_invite, FALSE);
 	} else {
 		/* -<server tag> */
-		server = irccmd_options_get_server(optlist, server);
+		server = irccmd_options_get_server("join", optlist, server);
 		if (server != NULL) channels_join(server, channels, FALSE);
 	}
 

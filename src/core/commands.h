@@ -82,6 +82,9 @@ int command_have_sub(const char *command);
         ((c) == '-' || (c) == '+' || (c) == '@')
 void command_set_options(const char *cmd, const char *options);
 
+/* Returns TRUE if command has specified option. */
+int command_have_option(const char *cmd, const char *option);
+
 /* count can have these flags: */
 #define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00ffffff)
 /* don't check for quotes - "arg1 arg2" is NOT treated as one argument */

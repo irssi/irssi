@@ -259,7 +259,7 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "msg", &optlist, &target, &msg))
 		return;
-	server = irccmd_options_get_server(optlist, server);
+	server = irccmd_options_get_server("msg", optlist, server);
 
 	if (*target != '\0' && *msg != '\0') {
 		if (!ischannel(*target) && *target != '=' && server != NULL)

@@ -233,6 +233,27 @@ static GSList *optlist_find(GSList *optlist, const char *option)
 	return NULL;
 }
 
+int command_have_option(const char *cmd, const char *option)
+{
+	COMMAND_REC *rec;
+	char **tmp;
+
+	g_return_val_if_fail(cmd != NULL, FALSE);
+	g_return_val_if_fail(option != NULL, FALSE);
+
+        rec = command_find(cmd);
+	g_return_val_if_fail(rec != NULL, FALSE);
+
+	for (tmp = rec->options; *tmp != NULL; tmp++) {
+		char *name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
+
+		if (g_strcasecmp(name, option) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 void command_set_options(const char *cmd, const char *options)
 {
 	COMMAND_REC *rec;
@@ -276,7 +297,6 @@ void command_set_options(const char *cmd, const char *options)
 	g_strfreev(optlist);
 
 	/* linked list -> string[] */
-        g_free(rec->options);
 	str = gslist_to_string(list, " ");
 	rec->options = g_strsplit(str, " ", -1);
         g_free(str);

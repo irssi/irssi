@@ -108,11 +108,40 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 }
 
-static void cmd_wjoin(const char *data, void *server, WI_ITEM_REC *item)
+static void cmd_wjoin_pre(const char *data)
 {
-	signal_add("channel created", (SIGNAL_FUNC) signal_channel_created_curwin);
-	signal_emit("command join", 3, data, server, item);
-	signal_remove("channel created", (SIGNAL_FUNC) signal_channel_created_curwin);
+	GHashTable *optlist;
+	char *nick;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "join", &optlist, &nick))
+		return;
+
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_add("channel created",
+			   (SIGNAL_FUNC) signal_channel_created_curwin);
+	}
+	cmd_params_free(free_arg);
+}
+
+static void cmd_wjoin_post(const char *data)
+{
+	GHashTable *optlist;
+	char *nick;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "join", &optlist, &nick))
+		return;
+
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_remove("channel created",
+			   (SIGNAL_FUNC) signal_channel_created_curwin);
+	}
+	cmd_params_free(free_arg);
 }
 
 static void cmd_channel_list_joined(void)
@@ -265,13 +294,15 @@ void fe_channels_init(void)
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
-	command_bind("wjoin", NULL, (SIGNAL_FUNC) cmd_wjoin);
+	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_wjoin_pre);
+	command_bind_last("join", NULL, (SIGNAL_FUNC) cmd_wjoin_post);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
+	command_set_options("join", "window");
 }
 
 void fe_channels_deinit(void)
@@ -282,7 +313,8 @@ void fe_channels_deinit(void)
 	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
-	command_unbind("wjoin", (SIGNAL_FUNC) cmd_wjoin);
+	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_pre);
+	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_post);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);

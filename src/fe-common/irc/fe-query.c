@@ -129,11 +129,40 @@ static void cmd_window_server(const char *data)
 	}
 }
 
-static void cmd_wquery(const char *data, void *server, WI_ITEM_REC *item)
+static void cmd_wquery_pre(const char *data)
 {
-	signal_add("query created", (SIGNAL_FUNC) signal_query_created_curwin);
-	signal_emit("command query", 3, data, server, item);
-	signal_remove("query created", (SIGNAL_FUNC) signal_query_created_curwin);
+	GHashTable *optlist;
+	char *nick;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "query", &optlist, &nick))
+		return;
+
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_add("query created",
+			   (SIGNAL_FUNC) signal_query_created_curwin);
+	}
+	cmd_params_free(free_arg);
+}
+
+static void cmd_wquery_post(const char *data)
+{
+	GHashTable *optlist;
+	char *nick;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "query", &optlist, &nick))
+		return;
+
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_remove("query created",
+			      (SIGNAL_FUNC) signal_query_created_curwin);
+	}
+	cmd_params_free(free_arg);
 }
 
 static int window_has_query(WINDOW_REC *window)
@@ -210,8 +239,11 @@ void fe_query_init(void)
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
-	command_bind("wquery", NULL, (SIGNAL_FUNC) cmd_wquery);
+	command_bind_first("query", NULL, (SIGNAL_FUNC) cmd_wquery_pre);
+	command_bind_last("query", NULL, (SIGNAL_FUNC) cmd_wquery_post);
 	command_bind("window server", NULL, (SIGNAL_FUNC) cmd_window_server);
+
+	command_set_options("query", "window");
 }
 
 void fe_query_deinit(void)
@@ -225,6 +257,7 @@ void fe_query_deinit(void)
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
-	command_unbind("wquery", (SIGNAL_FUNC) cmd_wquery);
+	command_unbind("query", (SIGNAL_FUNC) cmd_wquery_pre);
+	command_unbind("query", (SIGNAL_FUNC) cmd_wquery_post);
 	command_unbind("window server", (SIGNAL_FUNC) cmd_window_server);
 }

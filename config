@@ -31,6 +31,8 @@ channels = (
 
 aliases = {
   J = "join";
+  WJOIN = "join -window";
+  WQUERY = "query -window";
   LEAVE = "part";
   BYE = "quit";
   EXIT = "quit";
