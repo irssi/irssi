@@ -257,7 +257,8 @@ int quitmsg_is_split(const char *msg)
 static void split_set_timeout(void *key, NETSPLIT_REC *rec, NETSPLIT_REC *orig)
 {
 	/* same servers -> split over -> destroy old records sooner.. */
-	rec->destroy = time(NULL)+60;
+	if (rec->server == orig->server)
+		rec->destroy = time(NULL)+60;
 }
 
 static void event_join(const char *data, IRC_SERVER_REC *server,
