@@ -98,7 +98,7 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-	WI_ITEM_REC *item;
+	QUERY_REC *query;
 	char *params, *target, *msg;
 
 	g_return_if_fail(data != NULL);
@@ -113,9 +113,9 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 			print_channel_msg(server, msg, nick, addr, target);
 		} else {
 			/* private message */
-			item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), nick, FALSE);
+			query = privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_MSGS);
 			printformat(server, nick, MSGLEVEL_MSGS,
-				    item == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
+				    query == NULL ? IRCTXT_MSG_PRIVATE : IRCTXT_MSG_PRIVATE_QUERY, nick, addr, msg);
 		}
 	}
 
@@ -127,7 +127,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 				  const char *nick, const char *addr, const char *target)
 {
-	WI_ITEM_REC *item;
+	void *item;
 	int level;
 
 	g_return_if_fail(data != NULL);
@@ -143,7 +143,7 @@ static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 
 	if (ischannel(*target)) {
 		/* channel action */
-		item = (WI_ITEM_REC *) irc_channel_find(server, target);
+		item = irc_channel_find(server, target);
 
 		if (window_item_is_active(item)) {
 			/* message to active channel in window */
@@ -156,7 +156,7 @@ static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 		}
 	} else {
 		/* private action */
-		item = (WI_ITEM_REC *) privmsg_get_query(SERVER(server), nick, FALSE);
+		item = privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_MSGS);
 		printformat(server, nick, level,
 			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, addr == NULL ? "" : addr, data);
@@ -185,16 +185,19 @@ static void event_notice(const char *data, IRC_SERVER_REC *server, const char *n
 		op_notice = *target == '@' && ischannel(target[1]);
 		if (op_notice) target++;
 
+		if (ignore_check(server, nick, addr, ischannel(*target) ?
+				 target : NULL, msg, MSGLEVEL_NOTICES))
+			return;
+
 		if (ischannel(*target)) {
 			/* notice in some channel */
-			if (!ignore_check(server, nick, addr, target, msg, MSGLEVEL_NOTICES))
-				printformat(server, target, MSGLEVEL_NOTICES,
-					    op_notice ? IRCTXT_NOTICE_PUBLIC_OPS : IRCTXT_NOTICE_PUBLIC,
-					    nick, target, msg);
+			printformat(server, target, MSGLEVEL_NOTICES,
+				    op_notice ? IRCTXT_NOTICE_PUBLIC_OPS : IRCTXT_NOTICE_PUBLIC,
+				    nick, target, msg);
 		} else {
 			/* private notice */
-			if (!ignore_check(server, nick, addr, NULL, msg, MSGLEVEL_NOTICES))
-				printformat(server, nick, MSGLEVEL_NOTICES, IRCTXT_NOTICE_PRIVATE, nick, addr, msg);
+			privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_NOTICES);
+			printformat(server, nick, MSGLEVEL_NOTICES, IRCTXT_NOTICE_PRIVATE, nick, addr, msg);
 		}
 	}
 
@@ -552,31 +555,6 @@ static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server, const
 	g_free(params);
 }
 
-static void sig_server_lag_disconnected(IRC_SERVER_REC *server)
-{
-	g_return_if_fail(server != NULL);
-
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
-}
-
-static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
-{
-	g_return_if_fail(reconnect != NULL);
-
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
-		    reconnect->conn->chatnet == NULL ? "" : reconnect->conn->chatnet);
-}
-
-static void sig_server_reconnect_not_found(const char *tag)
-{
-	g_return_if_fail(tag != NULL);
-
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_RECONNECT_NOT_FOUND, tag);
-}
-
 static void event_received(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
 	char *params, *cmd, *args, *ptr;
@@ -625,10 +603,6 @@ void fe_events_init(void)
 	signal_add("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_add("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
 	signal_add("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
-
-	signal_add("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
-	signal_add("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
-	signal_add("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
 }
 
 void fe_events_deinit(void)
@@ -656,8 +630,4 @@ void fe_events_deinit(void)
 	signal_remove("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_remove("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
 	signal_remove("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
-
-	signal_remove("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
-	signal_remove("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
-	signal_remove("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
 }

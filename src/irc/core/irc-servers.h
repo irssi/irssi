@@ -78,10 +78,6 @@ typedef struct {
 	GHashTable *splits; /* For keeping track of netsplits */
 	GSList *split_servers; /* Servers that are currently in split */
 
-	time_t lag_sent; /* 0 or time when last lag query was sent to server */
-	time_t lag_last_check; /* last time we checked lag */
-	int lag; /* server lag in milliseconds */
-
 	GSList *rejoin_channels; /* try to join to these channels after a while -
 	                            channels go here if they're "temporarily unavailable"
 				    because of netsplits */

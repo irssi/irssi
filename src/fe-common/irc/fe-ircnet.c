@@ -39,6 +39,9 @@ static void cmd_ircnet_list(void)
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
 		IRC_CHATNET_REC *rec = tmp->data;
 
+		if (!IS_IRCNET(rec))
+                        continue;
+
 		g_string_truncate(str, 0);
 		if (rec->nick != NULL)
 			g_string_sprintfa(str, "nick: %s, ", rec->nick);
@@ -152,7 +155,7 @@ static void cmd_ircnet_remove(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_NOT_FOUND, data);
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_REMOVED, data);
-		chatnet_destroy(CHATNET(rec));
+		chatnet_remove(CHATNET(rec));
 	}
 }
 

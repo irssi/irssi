@@ -25,22 +25,22 @@
 
                foreground          background
    -------------------------------------------------------
-	0          white               black
-	1          ligh gray           ---
-	2          blue                blue
-	3          green               green
-	4          light red           ---
-	5          orange              orange
-	6          magenta (purple)    magenta
-	7          red                 red
-	8          yellow              ---
-	9          light green         ---
-   10          cyan                cyan
-   11          light cyan          ---
-   12          light blue          ---
-   13          light magenta       ---
-   14          gray                black on black 
-   15          light gray          black on black
+    0          white               black
+    1          ligh gray           ---
+    2          blue                blue
+    3          green               green
+    4          light red           ---
+    5          orange              orange
+    6          magenta (purple)    magenta
+    7          red                 red
+    8          yellow              ---
+    9          light green         ---
+    10         cyan                cyan
+    11         light cyan          ---
+    12         light blue          ---
+    13         light magenta       ---
+    14         gray                black on black 
+    15         light gray          black on black
                                    gray  on light gray (with bold)
 
  These colors may differ depending on your terminal.

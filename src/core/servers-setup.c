@@ -385,6 +385,7 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 
 void server_setup_add(SERVER_SETUP_REC *rec)
 {
+	rec->type = module_get_uniq_id("SERVER SETUP", 0);
 	if (g_slist_find(setupservers, rec) == NULL)
 		setupservers = g_slist_append(setupservers, rec);
 	server_setup_save(rec);

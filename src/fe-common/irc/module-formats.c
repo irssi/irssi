@@ -27,19 +27,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 	/* ---- */
 	{ NULL, "Server", 0 },
 
-	{ "lag_disconnected", "No PONG reply from server %_$0%_ in $1 seconds, disconnecting", 2, { 0, 1 } },
-	{ "disconnected", "Disconnected from %_$0%_ %K[%n$1%K]", 2, { 0, 0 } },
-	{ "server_list", "%_$0%_: $1:$2 ($3)", 5, { 0, 0, 1, 0, 0 } },
-	{ "server_lookup_list", "%_$0%_: $1:$2 ($3) (connecting...)", 5, { 0, 0, 1, 0, 0 } },
-	{ "server_reconnect_list", "%_$0%_: $1:$2 ($3) ($5 left before reconnecting)", 6, { 0, 0, 1, 0, 0, 0 } },
-	{ "server_reconnect_removed", "Removed reconnection to server %_$0%_ port %_$1%_", 3, { 0, 1, 0 } },
-	{ "server_reconnect_not_found", "Reconnection tag %_$0%_ not found", 1, { 0 } },
-	{ "setupserver_added", "Server $0 saved", 2, { 0, 1 } },
-	{ "setupserver_removed", "Server $0 removed", 2, { 0, 1 } },
-	{ "setupserver_not_found", "Server $0 not found", 2, { 0, 1 } },
-	{ "setupserver_header", "Server               Port  IRC Net    Settings", 0 },
-	{ "setupserver_line", "%|$[!20]0 $[5]1 $[10]2 $3", 4, { 0, 1, 0, 0 } },
-	{ "setupserver_footer", "", 0 },
 	{ "netsplit", "%RNetsplit%n %_$0%_ %_$1%_ quits: $2", 3, { 0, 0, 0 } },
 	{ "netsplit_more", "%RNetsplit%n %_$0%_ %_$1%_ quits: $2 (+$3 more, use /NETSPLIT to show all of them)", 4, { 0, 0, 0, 1 } },
 	{ "netsplit_join", "%CNetsplit%n over, joins: $0", 1, { 0 } },
@@ -54,6 +41,9 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "ircnet_header", "Ircnets:", 0 },
 	{ "ircnet_line", "$0: $1", 2, { 0, 0 } },
 	{ "ircnet_footer", "", 0 },
+	{ "setupserver_header", "Server               Port  IRC Net    Settings", 0 },
+	{ "setupserver_line", "%|$[!20]0 $[5]1 $[10]2 $3", 4, { 0, 1, 0, 0 } },
+	{ "setupserver_footer", "", 0 },
 
 	/* ---- */
 	{ NULL, "Channels", 0 },

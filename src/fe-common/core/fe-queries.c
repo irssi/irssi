@@ -31,10 +31,11 @@
 #include "windows.h"
 #include "window-items.h"
 
-static int queryclose_tag, query_auto_close;
+static int queryclose_tag, query_auto_close, querycreate_level;
 
 /* Return query where to put the private message. */
-QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick, int own)
+QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick,
+			     int own, int level)
 {
 	QUERY_REC *query;
 
@@ -42,7 +43,7 @@ QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick, int own)
         g_return_val_if_fail(nick != NULL, NULL);
 
 	query = query_find(server, nick);
-	if (query == NULL && settings_get_bool("autocreate_query") &&
+	if (query == NULL && (querycreate_level & level) != 0 &&
 	    (!own || settings_get_bool("autocreate_own_query")))
 		query = query_create(server->chat_type, server, nick, TRUE);
 
@@ -263,6 +264,7 @@ static int sig_query_autoclose(void)
 
 static void read_settings(void)
 {
+	querycreate_level = level2bits(settings_get_str("autocreate_query_level"));
 	query_auto_close = settings_get_int("autoclose_query");
 	if (query_auto_close > 0 && queryclose_tag == -1)
 		queryclose_tag = g_timeout_add(5000, (GSourceFunc) sig_query_autoclose, NULL);
@@ -274,7 +276,7 @@ static void read_settings(void)
 
 void fe_queries_init(void)
 {
-	settings_add_bool("lookandfeel", "autocreate_query", TRUE);
+	settings_add_str("lookandfeel", "autocreate_query_level", "MSGS");
 	settings_add_bool("lookandfeel", "autocreate_own_query", TRUE);
 	settings_add_int("lookandfeel", "autoclose_query", 0);
 

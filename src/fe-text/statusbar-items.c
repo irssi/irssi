@@ -515,7 +515,7 @@ static void sig_statusbar_more_check(WINDOW_REC *window)
 
 static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 {
-	IRC_SERVER_REC *server;
+	SERVER_REC *server;
 	GString *str;
 	int size_needed, lag_unknown;
 	time_t now;
@@ -523,7 +523,7 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 	now = time(NULL);
 	str = g_string_new(NULL);
 
-	server = IRC_SERVER(active_win == NULL ? NULL : active_win->active_server);
+	server = active_win == NULL ? NULL : active_win->active_server;
 	if (server == NULL || server->lag_last_check == 0)
 		size_needed = 0;
 	else if (server->lag_sent == 0 || now-server->lag_sent < 5) {

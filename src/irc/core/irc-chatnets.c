@@ -53,10 +53,10 @@ static void ircnet_save(IRC_CHATNET_REC *rec)
 {
 	CONFIG_NODE *node;
 
-	g_return_if_fail(IS_IRC_CHATNET(rec));
+	g_return_if_fail(rec != NULL);
 
 	node = iconfig_node_traverse("ircnets", TRUE);
-	node = chatnet_save(CHATNET(rec), node);
+	node = chatnet_save((CHATNET_REC *) rec, node);
 
 	if (rec->max_cmds_at_once > 0)
 		config_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
@@ -90,16 +90,21 @@ void ircnet_create(IRC_CHATNET_REC *rec)
 	rec->chat_type = IRC_PROTOCOL;
 
 	ircnet_save(rec);
-        chatnet_create(CHATNET(rec));
+        chatnet_create((CHATNET_REC *) rec);
 }
 
 static void read_ircnets(void)
 {
 	CONFIG_NODE *node;
-	GSList *tmp;
+	GSList *tmp, *next;
 
-	while (chatnets != NULL)
-		chatnet_destroy(chatnets->data);
+	for (tmp = chatnets; tmp != NULL; tmp = next) {
+		CHATNET_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (IS_IRCNET(rec))
+			chatnet_destroy(rec);
+	}
 
 	/* read ircnets */
 	node = iconfig_node_traverse("ircnets", FALSE);

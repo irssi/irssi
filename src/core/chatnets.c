@@ -54,7 +54,7 @@ void *chatnet_save(CHATNET_REC *chatnet, void *parentnode)
 	CONFIG_NODE *node = parentnode;
 
 	g_return_val_if_fail(parentnode != NULL, NULL);
-	g_return_val_if_fail(IS_CHATNET(chatnet), NULL);
+	g_return_val_if_fail(chatnet != NULL, NULL);
 
 	node = config_node_section(node, chatnet->name, NODE_TYPE_BLOCK);
 	iconfig_node_clear(node);
@@ -83,7 +83,7 @@ void chatnet_remove(CHATNET_REC *chatnet)
 	g_return_if_fail(IS_CHATNET(chatnet));
 
 	signal_emit("chatnet removed", 1, chatnet);
-        chatnet_destroy(chatnet);
+	chatnet_destroy(chatnet);
 }
 
 void chatnet_destroy(CHATNET_REC *chatnet)
@@ -135,6 +135,7 @@ static void sig_connected(SERVER_REC *server)
 
 void chatnets_init(void)
 {
+	chatnets = NULL;
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
 }
 

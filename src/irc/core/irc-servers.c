@@ -31,7 +31,6 @@
 #include "queries.h"
 
 #include "irc.h"
-#include "irc-chatnets.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
 #include "server-idle.h"
@@ -396,7 +395,6 @@ void irc_servers_init(void)
 	signal_add("event empty", (SIGNAL_FUNC) event_empty);
 
 	irc_servers_setup_init();
-	irc_chatnets_init();
 	irc_servers_reconnect_init();
 	servers_idle_init();
 }
@@ -422,7 +420,6 @@ void irc_servers_deinit(void)
 	signal_remove("event empty", (SIGNAL_FUNC) event_empty);
 
 	irc_servers_setup_deinit();
-	irc_chatnets_deinit();
 	irc_servers_reconnect_deinit();
 	servers_idle_deinit();
 }

@@ -22,6 +22,7 @@
 #include "chat-protocols.h"
 
 #include "irc-servers.h"
+#include "irc-chatnets.h"
 #include "irc-channels.h"
 #include "irc-queries.h"
 
@@ -52,6 +53,7 @@ void irc_core_init(void)
 {
 	chat_protocol_register("IRC", "Internet Relay Chat", "ircnet");
 
+	irc_chatnets_init();
 	irc_servers_init();
 	irc_channels_init();
 	irc_queries_init();
@@ -84,6 +86,7 @@ void irc_core_deinit(void)
 	irc_channels_deinit();
 	irc_irc_deinit();
 	irc_servers_deinit();
+	irc_chatnets_deinit();
 
 	chat_protocol_unregister("IRC");
 }

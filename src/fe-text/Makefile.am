@@ -14,6 +14,9 @@ irssi_DEPENDENCIES = @COMMON_LIBS@
 
 irssi_LDADD = \
 	@COMMON_LIBS@ \
+	$(top_srcdir)/silc/src/core/.libs/libsilc.a \
+	$(top_srcdir)/silc/src/fe-common/.libs/libfe_common_silc.a \
+	$(top_srcdir)/silc/libsilc-client.a \
 	$(PROG_LIBS) \
 	$(PERL_LDFLAGS) \
         $(CURSES_LIBS)

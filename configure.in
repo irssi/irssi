@@ -51,7 +51,7 @@ AC_ARG_WITH(bot,
         		want_irssibot=yes
 		fi
 	fi,
-	want_irssibot=yes)
+	want_irssibot=no)
 
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
@@ -284,7 +284,7 @@ if test "$want_perl" = "yes"; then
 else
 	PERL_LIBS=""
 fi
-FE_COMMON_LIBS="../fe-common/core/libfe_common_core.a"
+FE_COMMON_LIBS=""
 
 CHAT_LIBS=""
 for c in $CHAT_MODULES; do
@@ -294,14 +294,14 @@ for c in $CHAT_MODULES; do
 	fe_module_deinits=""
 	CHAT_LIBS="$CHAT_LIBS ../$c/lib$c.a ../$c/core/lib${c}_core.a"
 	if test -d $srcdir/src/fe-common/$c; then
-		FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/libfe_common_$c.a"
+		FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/libfe_common_$c.a "
 	fi
 	for s in `eval echo \\$${c}_MODULES`; do
 		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -d $srcdir/src/fe-common/$c/$s; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/$s/.libs/libfe_common_${c}_$s.a"
+			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/.libs/libfe_common_${c}_$s.a "
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi
@@ -328,6 +328,8 @@ for c in $CHAT_MODULES; do
 	        echo "void fe_${c}_modules_deinit(void) { $fe_module_deinits }" >> $file
 	fi
 done
+
+FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/core/libfe_common_core.a"
 
 dnl **
 dnl ** internationalization support
@@ -418,7 +420,7 @@ else
 	echo "   --with-curses=/dir and make sure you have the curses headers"
 	echo "   installed (usually in ncurses-devel package)"
 fi
-echo "Building irssi-bot ......... : $want_irssibot"
+echo "Building irssi bot ......... : $want_irssibot"
 echo "Building with IPv6 support . : $want_ipv6"
 echo "Building with Perl support . : $want_perl"
 if test "x$want_perl" = "xyes"; then
