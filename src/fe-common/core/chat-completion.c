@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
+#include "levels.h"
 #include "settings.h"
 
 #include "chatnets.h"
@@ -603,6 +604,9 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
 		complete_window_nicks(list, window, word, linestart);
+	} else if (window->level & MSGLEVEL_MSGS) {
+		/* msgs window, complete /MSG nicks */
+                *list = completion_msg(server, NULL, word, NULL);
 	}
 
 	if (*list != NULL) signal_stop();
