@@ -281,7 +281,12 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 			}
 		}
 	}
-	g_free_not_null(str);
+        g_free_not_null(str);
+
+        if (window == NULL && !settings_get_bool("autocreate_windows")) {
+                /* never create new windows automatically */
+                window = active_win;
+        }
 
 	if (window == NULL) {
 		/* create new window to use */
@@ -314,6 +319,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 void window_items_init(void)
 {
 	settings_add_bool("lookandfeel", "reuse_unused_windows", FALSE);
+	settings_add_bool("lookandfeel", "autocreate_windows", TRUE);
 
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 }
