@@ -668,7 +668,7 @@ void proxy_listen_init(void)
 	signal_add("server event", (SIGNAL_FUNC) sig_server_event);
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
-	signal_add("event nick", (SIGNAL_FUNC) event_nick);
+	signal_add_first("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
