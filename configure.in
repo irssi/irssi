@@ -388,6 +388,11 @@ if test "$want_perl" = yes; then
 		AC_SUBST(PERL_LDFLAGS)
 		AC_DEFINE(HAVE_PERL)
 	fi
+
+	dnl ** building from objdir..
+	if test ! -d plugins/perl/xs; then
+		mkdir -p plugins/perl/xs
+	fi
 fi
 
 dnl ** check what we want to build
@@ -462,6 +467,17 @@ plugins/perl/xs/Makefile.PL
 plugins/perl/Makefile
 stamp.h
 irssi.spec)
+
+dnl ** for building from objdir
+if test "x$want_perl" = "xyes"; then
+	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
+
+	if test "x$old_dir" != "x$whole_dir"; then
+		ln -sf $whole_dir/plugins/perl/xs/typemap plugins/perl/xs/typemap
+		ln -sf $whole_dir/plugins/perl/xs/Irssi.xs plugins/perl/xs/Irssi.xs
+		ln -sf $whole_dir/plugins/perl/xs/Irssi.pm plugins/perl/xs/Irssi.pm
+	fi
+fi
 
 echo
 
