@@ -302,8 +302,8 @@ static int server_remove_channels(SERVER_REC *server)
 		found = TRUE;
 	}
 
-	for (tmp = server->queries; tmp != NULL; tmp = tmp->next)
-		query_change_server(tmp->data, NULL);
+	while (server->queries != NULL)
+		query_change_server(server->queries->data, NULL);
 
 	g_slist_free(server->channels);
 	g_slist_free(server->queries);

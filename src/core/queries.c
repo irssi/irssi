@@ -47,15 +47,16 @@ void query_init(QUERY_REC *query, int automatic)
 	g_return_if_fail(query->name != NULL);
 
 	queries = g_slist_append(queries, query);
-	if (query->server != NULL) {
-		query->server->queries =
-			g_slist_append(query->server->queries, query);
-	}
 
         MODULE_DATA_INIT(query);
 	query->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
-	if (query->server_tag != NULL)
+	if (query->server_tag != NULL) {
 		query->server = server_find_tag(query->server_tag);
+		if (query->server != NULL) {
+			query->server->queries =
+				g_slist_append(query->server->queries, query);
+		}
+	}
 
 	signal_emit("query created", 2, query, GINT_TO_POINTER(automatic));
 }
@@ -140,6 +141,13 @@ void query_change_address(QUERY_REC *query, const char *address)
 void query_change_server(QUERY_REC *query, SERVER_REC *server)
 {
 	g_return_if_fail(IS_QUERY(query));
+
+	if (query->server != NULL) {
+		query->server->queries =
+                        g_slist_remove(query->server->queries, query);
+	}
+	if (server != NULL)
+                server->queries = g_slist_append(server->queries, query);
 
 	query->server = server;
 	signal_emit("query server changed", 1, query);
