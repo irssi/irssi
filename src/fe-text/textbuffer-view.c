@@ -396,17 +396,14 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		}
 
 		if (xpos < term_width) {
-			if ((*text & 127) >= 32) {
-				if (view->utf8) {
-                                        /* UTF8 - print multiple chars */
-					const unsigned char *end = text;
+			const unsigned char *end = text;
+			if (view->utf8)
+				get_utf8_char(&end);
 
-					get_utf8_char(&end);
-					while (text < end) {
-						term_addch(view->window, *text);
-                                                text++;
-					}
-				}
+			if (*text >= 32 &&
+			    (end != text || (*text & 127) >= 32)) {
+				for (; text < end; text++)
+					term_addch(view->window, *text);
 				term_addch(view->window, *text);
 			} else {
 				/* low-ascii */

@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "utf8.h"
 #include "formats.h"
 
 #include "gui-entry.h"
@@ -27,7 +28,7 @@
 
 GUI_ENTRY_REC *active_entry;
 
-GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width)
+GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
 {
 	GUI_ENTRY_REC *rec;
 
@@ -36,6 +37,7 @@ GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width)
 	rec->ypos = ypos;
         rec->width = width;
 	rec->text = g_string_new(NULL);
+        rec->utf8 = utf8;
 	return rec;
 }
 
@@ -74,8 +76,13 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 {
-	char *p;
+	const unsigned char *p, *end;
 	int xpos, end_xpos;
+
+	if (entry->utf8) {
+		/* FIXME: a stupid kludge to make the chars output correctly */
+		pos = 0;
+	}
 
         xpos = entry->xpos + entry->promptlen + pos;
         end_xpos = entry->xpos + entry->width;
@@ -85,14 +92,20 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	term_set_color(root_window, ATTR_RESET);
 	term_move(root_window, xpos, entry->ypos);
 
-	p = entry->scrstart + pos >= entry->text->len ? "" :
-		entry->text->str + entry->scrstart + pos;
+	p = (unsigned char *) (entry->scrstart + pos >= entry->text->len ? "" :
+			       entry->text->str + entry->scrstart + pos);
 	for (; *p != '\0' && xpos < end_xpos; p++, xpos++) {
+                end = p;
+		if (entry->utf8)
+			get_utf8_char(&end);
+
 		if (entry->hidden)
                         term_addch(root_window, ' ');
-		else if ((unsigned char) *p >= 32)
-			term_addch(root_window, (unsigned char) *p);
-		else {
+		else if (*p >= 32 && (end != p || (*p & 127) >= 32)) {
+                        for (; p < end; p++)
+				term_addch(root_window, *p);
+			term_addch(root_window, *p);
+		} else {
 			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
 			term_addch(root_window, *p+'A'-1);
 			term_set_color(root_window, ATTR_RESET);
@@ -206,6 +219,13 @@ void gui_entry_set_hidden(GUI_ENTRY_REC *entry, int hidden)
         g_return_if_fail(entry != NULL);
 
         entry->hidden = hidden;
+}
+
+void gui_entry_set_utf8(GUI_ENTRY_REC *entry, int utf8)
+{
+        g_return_if_fail(entry != NULL);
+
+        entry->utf8 = utf8;
 }
 
 void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str)

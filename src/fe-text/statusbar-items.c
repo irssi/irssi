@@ -347,7 +347,8 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	rec = g_hash_table_lookup(input_entries, item);
 	if (rec == NULL) {
 		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
-				       item->size);
+				       item->size,
+				       settings_get_bool("term_utf8"));
 		gui_entry_set_active(rec);
 		g_hash_table_insert(input_entries, item, rec);
 	}
@@ -371,6 +372,14 @@ static void sig_statusbar_item_destroyed(SBAR_ITEM_REC *item)
 	if (rec != NULL) {
 		gui_entry_destroy(rec);
 		g_hash_table_remove(input_entries, item);
+	}
+}
+
+static void read_settings(void)
+{
+	if (active_entry != NULL) {
+		gui_entry_set_utf8(active_entry,
+				   settings_get_bool("term_utf8"));
 	}
 }
 
@@ -413,6 +422,9 @@ void statusbar_items_init(void)
 	input_entries = g_hash_table_new((GHashFunc) g_direct_hash,
 					 (GCompareFunc) g_direct_equal);
 	signal_add("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
+
+	read_settings();
+        signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void statusbar_items_deinit(void)
@@ -441,4 +453,6 @@ void statusbar_items_deinit(void)
         /* input */
 	signal_remove("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
         g_hash_table_destroy(input_entries);
+
+        signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
