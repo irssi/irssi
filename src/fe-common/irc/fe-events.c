@@ -261,7 +261,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 {
 	if (nick == NULL) nick = server->real_address;
 
-	if (!ignore_check(SERVER(server), nick, addr, channel, mode, MSGLEVEL_MODES))
+	if (ignore_check(SERVER(server), nick, addr, channel, mode, MSGLEVEL_MODES))
 		return;
 
 	if (!ischannel(*channel)) {
