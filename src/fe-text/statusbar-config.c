@@ -251,6 +251,102 @@ static void read_statusbar_config(void)
         statusbars_create_window_bars();
 }
 
+static const char *sbar_get_type(STATUSBAR_CONFIG_REC *rec)
+{
+	return rec->type == STATUSBAR_TYPE_ROOT ? "root" :
+		rec->type == STATUSBAR_TYPE_WINDOW ? "window" : "??";
+}
+
+static const char *sbar_get_placement(STATUSBAR_CONFIG_REC *rec)
+{
+	return rec->placement == STATUSBAR_TOP ? "top" :
+		rec->placement == STATUSBAR_BOTTOM ? "bottom" : "??";
+}
+
+static const char *sbar_get_visibility(STATUSBAR_CONFIG_REC *rec)
+{
+	return rec->visible == STATUSBAR_VISIBLE_ALWAYS ? "always" :
+		rec->visible == STATUSBAR_VISIBLE_ACTIVE ? "active" :
+		rec->visible == STATUSBAR_VISIBLE_INACTIVE ? "inactive" : "??";
+}
+
+static void statusbar_list_items(STATUSBAR_CONFIG_REC *bar)
+{
+	GSList *tmp;
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_ITEM_HEADER);
+
+	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_CONFIG_REC *rec = tmp->data;
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_STATUSBAR_INFO_ITEM_NAME,
+			    rec->name, rec->priority,
+			    rec->right_alignment ? "right" : "left");
+	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_ITEM_FOOTER);
+}
+
+static void statusbar_print(STATUSBAR_CONFIG_REC *rec)
+{
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_NAME, rec->name);
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_TYPE, sbar_get_type(rec));
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_PLACEMENT,
+		    sbar_get_placement(rec));
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_POSITION, rec->position);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		    TXT_STATUSBAR_INFO_VISIBLE,
+		    sbar_get_visibility(rec));
+
+	if (rec->items != NULL)
+		statusbar_list_items(rec);
+}
+
+static void cmd_statusbar_list(void)
+{
+	GSList *tmp;
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_STATUSBAR_LIST_HEADER);
+
+        tmp = active_statusbar_group->config_bars;
+	for (; tmp != NULL; tmp = tmp->next) {
+		STATUSBAR_CONFIG_REC *rec = tmp->data;
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			    TXT_STATUSBAR_LIST, rec->name, sbar_get_type(rec),
+			    sbar_get_placement(rec), rec->position,
+			    sbar_get_visibility(rec));
+	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_STATUSBAR_LIST_FOOTER);
+}
+
+static void cmd_statusbar_print_info(const char *name)
+{
+	GSList *tmp;
+
+        tmp = active_statusbar_group->config_bars;
+	for (; tmp != NULL; tmp = tmp->next) {
+		STATUSBAR_CONFIG_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, name) == 0) {
+                        statusbar_print(rec);
+			return;
+		}
+	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+		    TXT_STATUSBAR_NOT_FOUND, name);
+}
+
 /* SYNTAX: STATUSBAR <name> ENABLE */
 static void cmd_statusbar_enable(const char *data, void *server,
 				 void *item, CONFIG_NODE *node)
@@ -418,7 +514,20 @@ static void cmd_statusbar(const char *data)
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &name, &cmd, &params))
 		return;
-        if (*cmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	if (*name == '\0') {
+		/* list all statusbars */
+                cmd_statusbar_list();
+		cmd_params_free(free_arg);
+                return;
+	}
+
+	if (*cmd == '\0') {
+		/* print statusbar info */
+                cmd_statusbar_print_info(name);
+		cmd_params_free(free_arg);
+                return;
+	}
 
         /* lookup/create the statusbar node */
 	node = iconfig_node_traverse("statusbar", TRUE);

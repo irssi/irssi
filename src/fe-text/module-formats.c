@@ -51,6 +51,19 @@ FORMAT_REC gui_text_formats[] =
 
 	/* ---- */
 	{ NULL, "Statusbars", 0 },
+
+	{ "statusbar_list_header", "Name                           Type   Placement Position Visible", 0 },
+	{ "statusbar_list_footer", "", 0 },
+	{ "statusbar_list", "$[30]0 $[6]1 $[9]2 $[8]3 $4", 5, { 0, 0, 0, 1, 0 } },
+	{ "statusbar_info_name", "Statusbar: {hilight $0}", 1, { 0 } },
+	{ "statusbar_info_type", "Type     : $0", 1, { 0 } },
+	{ "statusbar_info_placement", "Placement: $0", 1, { 0 } },
+	{ "statusbar_info_position", "Position : $0", 1, { 1 } },
+	{ "statusbar_info_visible", "Visible  : $0", 1, { 0 } },
+	{ "statusbar_info_item_header", "Items    : Name                                Priority  Alignment", 0 },
+	{ "statusbar_info_item_footer", "", 0 },
+	{ "statusbar_info_item_name",  "         : $[35]0 $[9]1 $2", 3, { 0, 1, 0 } },
+	{ "statusbar_not_found", "Statusbar doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_not_found", "Statusbar doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_item_not_found", "Statusbar item doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_unknown_command", "Unknown statusbar command: $0", 1, { 0 } },
