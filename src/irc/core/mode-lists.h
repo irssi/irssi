@@ -10,7 +10,7 @@ typedef struct {
 BAN_REC *banlist_find(GSList *list, const char *ban);
 
 BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban, const char *nick, time_t time);
-void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban);
+void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban, const char *nick);
 
 BAN_REC *banlist_exception_add(IRC_CHANNEL_REC *channel, const char *ban, const char *nick, time_t time);
 void banlist_exception_remove(IRC_CHANNEL_REC *channel, const char *ban);

@@ -88,7 +88,7 @@ BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban,
 	return rec;
 }
 
-void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban)
+void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban, const char *nick)
 {
 	BAN_REC *rec;
 
@@ -97,7 +97,7 @@ void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban)
 
 	rec = banlist_find(channel->banlist, ban);
 	if (rec != NULL) {
-		signal_emit("ban remove", 2, channel, rec);
+		signal_emit("ban remove", 3, channel, rec, nick);
 		ban_free(&channel->banlist, rec);
 	}
 }

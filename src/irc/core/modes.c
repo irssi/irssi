@@ -207,7 +207,7 @@ void modes_type_a(IRC_CHANNEL_REC *channel, const char *setby, char type,
 		if (type == '+')
 			banlist_add(channel, arg, setby, time(NULL));
 		else
-			banlist_remove(channel, arg);
+			banlist_remove(channel, arg, setby);
 	}
 }
 

@@ -147,7 +147,7 @@ massjoin.c:
 
 mode-lists.c:
  "ban new", CHANNEL_REC, BAN_REC
- "ban remove", CHANNEL_REC, BAN_REC
+ "ban remove", CHANNEL_REC, BAN_REC, char *setby
 
 modes.c:
  "channel mode changed", CHANNEL_REC, char *setby
