@@ -157,7 +157,7 @@ static void msg_multi_mode(IRC_CHANNEL_REC *channel, const char *sender,
 	signal_stop();
 }
 
-/* FIXME: should be moved to fe-common/core/fe-messages.c.. */
+/* FIXME: should be moved to fe-irc-messages.c.. */
 static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 			     const char *nick, const char *addr,
 			     const char *mode)
@@ -215,7 +215,7 @@ void fe_modes_init(void)
         mode_tag = -1;
 
 	read_settings();
-	signal_add("message mode", (SIGNAL_FUNC) sig_message_mode);
+	signal_add("message irc mode", (SIGNAL_FUNC) sig_message_mode);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -224,7 +224,7 @@ void fe_modes_deinit(void)
 	if (mode_tag != -1)
 		g_source_remove(mode_tag);
 
-	signal_remove("message mode", (SIGNAL_FUNC) sig_message_mode);
+	signal_remove("message irc mode", (SIGNAL_FUNC) sig_message_mode);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);

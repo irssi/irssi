@@ -205,7 +205,7 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &mode);
 
-	signal_emit("message mode", 5, server, channel, nick, addr,
+	signal_emit("message irc mode", 5, server, channel, nick, addr,
 		    g_strchomp(mode));
 	g_free(params);
 }

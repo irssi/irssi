@@ -399,11 +399,11 @@ static void read_settings(void)
 	if (old_hide && !hide_netsplit_quits) {
 		signal_remove("message quit", (SIGNAL_FUNC) msg_quit);
 		signal_remove("message join", (SIGNAL_FUNC) msg_join);
-		signal_remove("message mode", (SIGNAL_FUNC) msg_mode);
+		signal_remove("message irc mode", (SIGNAL_FUNC) msg_mode);
 	} else if (!old_hide && hide_netsplit_quits) {
 		signal_add("message quit", (SIGNAL_FUNC) msg_quit);
 		signal_add("message join", (SIGNAL_FUNC) msg_join);
-		signal_add("message mode", (SIGNAL_FUNC) msg_mode);
+		signal_add("message irc mode", (SIGNAL_FUNC) msg_mode);
 	}
 }
 
@@ -432,5 +432,5 @@ void fe_netjoin_deinit(void)
 
 	signal_remove("message quit", (SIGNAL_FUNC) msg_quit);
 	signal_remove("message join", (SIGNAL_FUNC) msg_join);
-	signal_remove("message mode", (SIGNAL_FUNC) msg_mode);
+	signal_remove("message irc mode", (SIGNAL_FUNC) msg_mode);
 }
