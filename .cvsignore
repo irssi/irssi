@@ -32,7 +32,6 @@ default-config.h
 default-theme.h
 irssi-version.h
 irssi-config
-colorless.theme
 build-stamp
 configure-stamp
 glib.m4
