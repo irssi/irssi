@@ -322,12 +322,14 @@ static char *irc_parse_prefix(char *line, char **nick, char **address)
 {
 	*nick = *address = NULL;
 
+	/* :<nick> [["!" <user>] "@" <host>] SPACE */
+
 	if (*line != ':')
 		return line;
 
 	*nick = ++line;
 	while (*line != '\0' && *line != ' ') {
-		if (*line == '!') {
+		if (*line == '!' || *line == '@') {
 			*line++ = '\0';
 			*address = line;
 			while (*line != '\0' && *line != ' ')
