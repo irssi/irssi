@@ -6,6 +6,7 @@
 	g_snprintf(str, sizeof(str), "%d", num)
 
 typedef void* (*FOREACH_FIND_FUNC) (void *item, void *data);
+typedef int (*COLUMN_LEN_FUNC)(void *data);
 
 int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2);
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2);
@@ -73,5 +74,14 @@ char *show_lowascii(const char *channel);
 
 /* Get time in human readable form with localtime() + asctime() */
 char *my_asctime(time_t t);
+
+/* Returns number of columns needed to print items.
+   save_column_widths is filled with length of each column. */
+int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
+			 int max_width, int item_extra, int item_min_size,
+			 int **save_column_widths, int *rows);
+
+/* Return a column sorted copy of a list. */
+GSList *columns_sort_list(GSList *list, int rows);
 
 #endif

@@ -605,3 +605,89 @@ char *my_asctime(time_t t)
 	if (len > 0) str[len-1] = '\0';
         return str;
 }
+
+/* Returns number of columns needed to print items.
+   save_column_widths is filled with length of each column. */
+int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
+			 int max_width, int item_extra, int item_min_size,
+			 int **save_column_widths, int *rows)
+{
+	int **columns, *columns_width, *columns_rows;
+	int item_pos, items_count;
+	int ret, len, n, col, max_columns;
+
+	items_count = g_slist_length(items);
+
+	max_columns = max_width/(item_extra+item_min_size);
+	columns = g_new0(int *, max_columns);
+	columns_width = g_new0(int, max_columns);
+	columns_rows = g_new0(int, max_columns);
+
+	for (n = 1; n < max_columns; n++) {
+		columns[n] = g_new0(int, n+1);
+		columns_rows[n] = items_count < n+1 ? 1 :
+                        (items_count+n)/(n+1);
+	}
+
+	/* for each possible column count, save the column widths and
+	   find the biggest column count that fits to screen. */
+        item_pos = 0;
+	while (items != NULL) {
+                len = item_extra+len_func(items->data);
+		for (n = 1; n < max_columns; n++) {
+			if (columns_width[n] > max_width)
+				continue; /* too wide */
+
+			col = item_pos/columns_rows[n];
+			if (columns[n][col] < len) {
+				columns_width[n] += len-columns[n][col];
+                                columns[n][col] = len;
+			}
+		}
+
+		items = items->next;
+                item_pos++;
+	}
+
+	for (n = max_columns-1; n >= 0; n--) {
+		if (columns_width[n] <= max_width)
+                        break;
+	}
+        ret = n+1;
+
+	*save_column_widths = g_new(int, ret);
+	memcpy(*save_column_widths, columns[ret-1], sizeof(int)*ret);
+        *rows = columns_rows[ret-1];
+
+	for (n = 1; n < max_columns; n++)
+                g_free(columns[n]);
+	g_free(columns_width);
+	g_free(columns_rows);
+	g_free(columns);
+
+        return ret;
+}
+
+/* Return a column sorted copy of a list. */
+GSList *columns_sort_list(GSList *list, int rows)
+{
+        GSList *tmp, *sorted;
+	int row, skip;
+
+	sorted = NULL;
+
+	for (row = 0; row < rows; row++) {
+                tmp = g_slist_nth(list, row);
+                skip = 1;
+		for (; tmp != NULL; tmp = tmp->next) {
+			if (--skip == 0) {
+                                skip = rows;
+				sorted = g_slist_append(sorted, tmp->data);
+			}
+		}
+	}
+
+	g_return_val_if_fail(g_slist_length(sorted) ==
+			     g_slist_length(list), sorted);
+        return sorted;
+}
