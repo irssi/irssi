@@ -384,12 +384,12 @@ static void sig_setup_changed(void)
 	}
 
 	if (firsttime) {
+		firsttime = FALSE;
+		changed = TRUE;
+
 		windows_layout_restore();
 		if (windows != NULL)
 			return;
-
-		firsttime = FALSE;
-		changed = TRUE;
 	}
 
 	if (changed)
