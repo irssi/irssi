@@ -1,5 +1,56 @@
 #include "module.h"
 
+void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
+{
+	THEME_REC *theme;
+	char *module, *str;
+	int formatnum;
+
+	module = g_strdup(perl_get_package());
+	theme = dest->window->theme == NULL ? current_theme :
+		dest->window->theme;
+
+	formatnum = format_find_tag(module, format);
+	signal_emit("print format", 5, theme, module,
+		    &dest, GINT_TO_POINTER(formatnum), arglist);
+
+        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
+	if (*str != '\0') printtext_dest(dest, "%s", str);
+	g_free(str);
+	g_free(module);
+}
+
+static void perl_unregister_theme(const char *package)
+{
+	FORMAT_REC *formats;
+	int n;
+
+	formats = g_hash_table_lookup(default_formats, package);
+	if (formats == NULL) return;
+
+	for (n = 0; formats[n].def != NULL; n++) {
+		g_free(formats[n].tag);
+		g_free(formats[n].def);
+	}
+	g_free(formats);
+	theme_unregister_module(package);
+}
+
+static void sig_script_destroyed(PERL_SCRIPT_REC *script)
+{
+	perl_unregister_theme(script->package);
+}
+
+void perl_themes_init(void)
+{
+	signal_add("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
+}
+
+void perl_themes_deinit(void)
+{
+	signal_remove("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
+}
+
 MODULE = Irssi::UI::Themes  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
