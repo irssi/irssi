@@ -396,7 +396,7 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *address, const char *reason)
 {
 	printformat(server, channel, MSGLEVEL_KICKS,
-		    TXT_KICK, nick, channel, kicker, reason);
+		    TXT_KICK, nick, channel, kicker, reason, address);
 }
 
 static void print_nick_change_channel(SERVER_REC *server, const char *channel,
@@ -415,7 +415,7 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 
 	printformat(server, channel, level,
 		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
-		    oldnick, newnick, channel);
+		    oldnick, newnick, channel, address);
 }
 
 static void print_nick_change(SERVER_REC *server, const char *newnick,
@@ -477,7 +477,7 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 
 	str = show_lowascii(channel);
 	printformat(server, NULL, MSGLEVEL_INVITES,
-		    TXT_INVITE, nick, str);
+		    TXT_INVITE, nick, str, address);
 	g_free(str);
 }
 
@@ -487,7 +487,7 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 {
 	printformat(server, channel, MSGLEVEL_TOPICS,
 		    *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET,
-		    nick, channel, topic);
+		    nick, channel, topic, address);
 }
 
 static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
