@@ -1,0 +1,104 @@
+NOTE: This is just a slightly modified file taken from EPIC's help.
+'!' at start of the line means that the feature doesn't work yet..
+
+Special Variables and Expandos
+
+Irssi supports a number of reserved, dynamic variables, sometimes
+referred to as expandos.  They are special in that the client is
+constantly updating their values automatically.  There are also
+numerous variable modifiers available.
+
+   Modifier          Description                                            
+   $variable         A normal variable, expanding to the first match of:
+                     |  1) an internal SET variable
+                     |  2) an environment variable
+   $[num]variable    Expands to the variables value, with 'num' width.  If
+                     | the number is negative, the value is right-aligned.
+                     | The value is padded to meet the width with the
+		     | character given after number (default is space).
+		     | The value is truncated to specified width unless
+		     | '!' character precedes the number.
+   $#variable        Expands to the number of words in $variable. If $variable
+                     | is omitted, it assumes $*
+   $@variable        Expands to the number of characters in $variable. if
+                     | $variable is omitted, it assumes $*
+   $($subvariable)   This is somewhat similar to a pointer, in that the
+                     | value of $subvar is taken as the name of the
+                     | variable to expand to.  Nesting is allowed.
+   ${expression}     Permits the value to be embedded in another string
+                     | unambiguously.
+!  $!history!        Expands to a matching entry in the client's command
+                     | history, wildcards allowed.
+!  $"some text"      Uses 'text' as an input prompt, and returns whatever
+                     | is typed next.  This usage is deprecated, use the
+                     | INPUT command instead.
+!  $'some text'      Same as $"text" except that it only returns the first
+                     | next typed character.
+
+Whenever an alias is called, these expandos are set to the arguments passed
+to it.  If none of these expandos are used in the alias, or the $() form
+shown above, any arguments passed will automatically be appended to the last
+command in the alias.
+
+   Expando   Description                                                    
+   $*        expands to all arguments passed to an alias
+   $n        expands to argument 'n' passed to an alias (counting from zero)
+   $n-m      expands to arguments 'n' through 'm' passed to an alias
+   $n-       expands to all arguments from 'n' on passed to an alias
+   $-m       expands to all arguments up to 'm' passed to an alias
+   $~        expands to the last argument passed to an alias
+
+These variables are set and updated dynamically by the client.  The case of
+$A .. $Z is important.
+
+   Variable   Description                                                   
+!  $,         last person who sent you a MSG
+!  $.         last person to whom you sent a MSG
+!  $:         last person to join a channel you are on
+!  $;         last person to send a public message to a channel you are on
+   $A         text of your AWAY message, if any
+!  $B         body of last MSG you sent
+   $C         current channel
+!  $D         last person that NOTIFY detected a signon for
+!  $E         idle time
+!  $F         time client was started, $time() format
+!  $H         current server numeric being processed
+!  $I         channel you were last INVITEd to
+   $J         client version text string
+   $K         current value of CMDCHARS
+!  $L         current contents of the input line
+   $M         modes of current channel, if any
+   $N         current nickname
+!  $O         value of STATUS_OPER if you are an irc operator
+   $P         if you are a channel operator in $C, expands to a '@'
+   $Q         nickname of whomever you are QUERYing
+!  $R         version of current server
+   $S         current server name
+   $T         target of current input (channel or QUERY nickname)
+!  $U         value of cutbuffer
+!  $V         client release date (numeric version string)
+   $W         current working directory
+!  $X         your /userhost $N address (user@host)
+   $Y         value of REALNAME
+   $Z         time of day (hh:mm)
+   $$         a literal '$'
+
+For example, assume you have the following alias:
+
+   alias blah msg $D Hi there!
+
+If /blah is passed any arguments, they will automatically be appended to the
+MSG text.  For example:
+
+   /blah oops                          /* command as entered */
+   "Hi there! oops"                    /* text sent to $D */
+
+Another useful form is ${}.  In general, variables can be embedded inside
+strings without problems, assuming the surrounding text could not be
+misinterpreted as part of the variable name.  This form guarantees that
+surrounding text will not affect the expression's return value.
+
+   /eval echo foo$Nfoo                 /* breaks, looks for $nfoo */
+   /eval echo foo${N}foo               /* ${N} returns current nickname */
+   fooYourNickfoo                      /* returned by above command */
+

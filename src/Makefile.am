@@ -17,4 +17,4 @@ noinst_HEADERS = \
 	irssi-plugin.h \
 	irssi-plugin-gui.h
 
-SUBDIRS = irc-base irc-extra ui-common lib-config lib-popt settings $(GNOMEUI) $(TEXTUI) $(BOTUI)
+SUBDIRS = lib-popt lib-config irc-base irc-extra ui-common $(GNOMEUI) $(TEXTUI) $(BOTUI)

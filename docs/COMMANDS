@@ -318,20 +318,24 @@ LAST [-pub -msgs...] <text>
  ** Configuration
 
 
-SET [key [=value / [key [key..]]
+SET [key [value]]
 
-	Get/set configuration
+	Get/set configuration. Boolean values also need to be changed
+        with ON/OFF/TOGGLE values (not yes/no). Settings aren't saved
+	to disk until you use /SAVE.
+
+TOGGLE key [ON|OFF]
+
+	Same as /SET <key> TOGGLE, or if ON or OFF parameter is given
+	it will work just like /SET.
+
+SAVE
+
+	Save configuration to disk.
 
 ALIAS, UNALIAS <alias> [command]
 
 	Set/remove alias, /unalias is the same as /alias without command
-
-	These codes are extracted in commands:
-		%0            : name of alias
-		%1, %2, %3 .. : %th word
-		&1, &2, &3 .. : &th word + the rest of the text after it
-		%c            : channel name
-
 	Typing extra / before /command (//command) ignores any aliases
 
 IGNORE, UNIGNORE <mask> [level [level..]]

@@ -23,8 +23,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/utsname.h>
 
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
@@ -38,9 +36,13 @@
 #include <gmodule.h>
 
 #include "irc-base/memdebug.h"
-#include "lib-config/irssi-config.h"
-#include "common-setup.h"
 #include "nls.h"
+
+#define g_free_not_null(a) \
+	if (a) g_free(a);
+
+#define g_free_and_null(a) \
+	if (a) { g_free(a); (a) = NULL; }
 
 typedef enum
 {

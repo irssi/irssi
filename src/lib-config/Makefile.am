@@ -1,9 +1,15 @@
 noinst_LTLIBRARIES = libirssi_config.la
 
-INCLUDES = $(GLIB_CFLAGS)
+INCLUDES = \
+	$(GLIB_CFLAGS) \
+	-I$(top_srcdir)/src
 
 libirssi_config_la_SOURCES = \
-	irssi-config.c
+	get.c \
+	set.c \
+	parse.c \
+	write.c
 
 noinst_HEADERS = \
-	irssi-config.h
+	iconfig.h \
+	module.h

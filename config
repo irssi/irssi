@@ -1,72 +1,70 @@
-{
-  setupservers = (
-    {server = irc.funet.fi;ircnet = IRCNet;port = 6667;autoconnect = No;},
-    {server = irc.efnet.net;ircnet = EFNet;port = 6667;autoconnect = No;},
-    {server = irc.undernet.net;ircnet = Undernet;port = 6667;autoconnect = No;},
-    {server = irc.dal.net;ircnet = DALNet;port = 6667;autoconnect = No;},
-    {server = irc.openprojects.net;ircnet = OPN;port = 6667;autoconnect = No;},
-    {server = irc.ptlink.net;ircnet = PTlink;port = 6667;autoconnect = No;},
-    {server = irc.multichat.org;ircnet = Multichat;port = 6667;autoconnect = No;}
-  );
+setupservers = (
+  {server = "irc.funet.fi"; ircnet = IRCNet; port = 6667; autoconnect = No;},
+  {server = "irc.efnet.net"; ircnet = EFNet; port = 6667; autoconnect = No;},
+  {server = "irc.undernet.net"; ircnet = Undernet; port = 6667; autoconnect = No;},
+  {server = "irc.dal.net"; ircnet = DALNet; port = 6667; autoconnect = No;},
+  {server = "irc.openprojects.net"; ircnet = OPN; port = 6667; autoconnect = No;},
+  {server = "irc.ptlink.net"; ircnet = PTlink; port = 6667; autoconnect = No;},
+  {server = "irc.multichat.org"; ircnet = Multichat; port = 6667; autoconnect = No;}
+);
 
-  ircnets = (
-    {name = IRCNet;max_kicks = 4;max_modes = 3;max_msgs = 3;},
-    {name = EFNet;max_kicks = 4;max_modes = 4;max_msgs = 3;},
-    {name = Undernet;max_kicks = 4;max_modes = 3;max_msgs = 3;},
-    {name = DALNet;max_kicks = 4;max_modes = 6;max_msgs = 3;},
-    {name = OPN;max_kicks = 1;max_modes = 6;max_msgs = 100;},
-    {name = PTlink;max_kicks = 1;max_modes = 6;max_msgs = 100;},
-    {name = Multichat;max_kicks = 1;max_modes = 6;max_msgs = 100;}
-  );
+ircnets = (
+  {name = IRCNet; max_kicks = 4; max_modes = 3; max_msgs = 5;},
+  {name = EFNet; max_kicks = 4; max_modes = 4; max_msgs = 3;},
+  {name = Undernet; max_kicks = 4; max_modes = 3; max_msgs = 3;},
+  {name = DALNet; max_kicks = 4; max_modes = 6; max_msgs = 3;},
+  {name = OPN; max_kicks = 1; max_modes = 6; max_msgs = 100;},
+  {name = PTlink; max_kicks = 1; max_modes = 6; max_msgs = 100;},
+  {name = Multichat; max_kicks = 1; max_modes = 6; max_msgs = 100;}
+);
 
-  channels = (
-    {
-      name = "#irssi";
-      ircnet = ircnet;
-      autojoin = No;
-    }
-  );
-  aliases = (
-    {alias = J;command = "/join &1";},
-    {alias = LEAVE;command = "/part &1";},
-    {alias = BYE;command = "/quit &1";},
-    {alias = WI;command = "/whois &1";},
-    {alias = WII;command = "/whois %1 %1";},
-    {alias = WW;command = "/whowas &1";},
-    {alias = W;command = "/who *";},
-    {alias = N;command = "/names *";},
-    {alias = M;command = "/msg &1";},
-    {alias = T;command = "/topic &1";},
-    {alias = C;command = "/clear";},
-    {alias = CL;command = "/clear";},
-    {alias = K;command = "/kick &1";},
-    {alias = KB;command = "/kickban &1";},
-    {alias = KN;command = "/knockout &1";},
-    {alias = B;command = "/ban &1";},
-    {alias = UB;command = "/unban &1";},
-    {alias = IG;command = "/ignore &1";},
-    {alias = UNIG;command = "/unignore &1";},
-    {alias = SB;command = "/scrollback &1";},
-    {alias = UMODE;command = "/mode %n &1";}
-  );
-  popups = (
-    {label = "<MULTICOMMA>Whois";command = "/whois %s";},
-    {label = "DCC Send File";command = "/dcc send %s";},
-    {label = "Open DCC Chat";command = "/dcc chat %s";},
-    {label = Query;command = "/query %s";},
-    {label = "<MENU><OP>";command = "Op";},
-    {label = "<MULTI>Op";command = "/op %s";},
-    {label = "<MULTI>Deop";command = "/deop %s";},
-    {label = "<MULTI>Voice";command = "/voice %s";},
-    {label = "<MULTI>Devoice";command = "/devoice %s";},
-    {label = "<KICK>Kick";command = "/kick %s %s";},
-    {label = "<MULTI>Ban";command = "/ban %s";},
-    {label = "<KICK>Kick+ban";command = "/kickban %s %s";},
-    {label = "<KICK>Knockout";command = "/knockout %s %s";},
-    {label = "</MENU>";command = "";},
-    {label = "<MENU>";command = "CTCP";},
-    {label = Ping;command = "/ping %s";},
-    {label = Version;command = "/ver %s";},
-    {label = "</MENU>";command = "";}
-  );
-}
+channels = (
+  {
+    name = "#irssi";
+    ircnet = ircnet;
+    autojoin = No;
+  }
+);
+aliases = (
+  {alias = J; command = "join";},
+  {alias = LEAVE; command = "part";},
+  {alias = BYE; command = "quit";},
+  {alias = WI; command = "whois";},
+  {alias = WII; command = "whois $0 $0";},
+  {alias = WW; command = "whowas";},
+  {alias = W; command = "who $C";},
+  {alias = N; command = "names $C";},
+  {alias = M; command = "msg";},
+  {alias = T; command = "topic";},
+  {alias = C; command = "clear";},
+  {alias = CL; command = "clear";},
+  {alias = K; command = "kick";},
+  {alias = KB; command = "kickban";},
+  {alias = KN; command = "knockout";},
+  {alias = B; command = "ban";},
+  {alias = UB; command = "unban";},
+  {alias = IG; command = "ignore";},
+  {alias = UNIG; command = "unignore";},
+  {alias = SB; command = "scrollback";},
+  {alias = UMODE; command = "mode $N";}
+);
+popups = (
+  {label = "<MULTICOMMA>Whois"; command = "/whois %s";},
+  {label = "DCC Send File"; command = "/dcc send %s";},
+  {label = "Open DCC Chat"; command = "/dcc chat %s";},
+  {label = Query; command = "/query %s";},
+  {label = "<MENU><OP>"; command = "Op";},
+  {label = "<MULTI>Op"; command = "/op %s";},
+  {label = "<MULTI>Deop"; command = "/deop %s";},
+  {label = "<MULTI>Voice"; command = "/voice %s";},
+  {label = "<MULTI>Devoice"; command = "/devoice %s";},
+  {label = "<KICK>Kick"; command = "/kick %s %s";},
+  {label = "<MULTI>Ban"; command = "/ban %s";},
+  {label = "<KICK>Kick+ban"; command = "/kickban %s %s";},
+  {label = "<KICK>Knockout"; command = "/knockout %s %s";},
+  {label = "</MENU>"; command = "";},
+  {label = "<MENU>"; command = "CTCP";},
+  {label = Ping; command = "/ping %s";},
+  {label = Version; command = "/ver %s";},
+  {label = "</MENU>"; command = "";}
+);

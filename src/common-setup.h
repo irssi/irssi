@@ -1,11 +1,7 @@
 #ifndef __COMMON_SETUP_H
 #define __COMMON_SETUP_H
 
-#include "irc-base/network.h"
-#include "settings/settings-public.h"
-
 #define LOG_FILE_CREATE_MODE 0644
-#define CMD_CHAR '/'
 
 /* wait for half an hour before trying to reconnect to host where last
    connection failed */
@@ -26,59 +22,7 @@
 /* Maximum time to wait for more JOINs before sending massjoin signal */
 #define MAX_MASSJOIN_WAIT 5000
 
-/* lists */
-extern GSList *aliases, *ignores, *completions, *notifies, *hilights, *replaces, *popups;
-
-/* servers */
-typedef struct {
-	char *server;
-	int port;
-
-	char *ircnet;
-	char *password;
-	int autoconnect;
-	int cmd_queue_speed; /* override the default if > 0 */
-
-        char *own_address; /* address to use when connecting this server */
-	IPADDR own_ip; /* resolved own_address or full of zeros */
-
-	time_t last_connect; /* to avoid reconnecting too fast.. */
-	int last_failed; /* if last connection attempt failed */
-} SETUP_SERVER_REC;
-
-typedef struct {
-	char *name;
-
-	char *nick;
-	char *username;
-	char *realname;
-
-	/* max. number of kicks/msgs/mode changes per command */
-	int max_kicks, max_msgs, max_modes;
-} IRCNET_REC;
-
-extern GSList *setupservers; /* list of local servers */
-extern GSList *ircnets; /* list of available ircnets */
-
-/* channels */
-typedef struct {
-    int autojoin;
-
-    char *name;
-    char *ircnet;
-    char *password;
-
-    char *botmasks;
-    char *autosendcmd;
-
-    char *background;
-    char *font;
-} SETUP_CHANNEL_REC;
-
-extern GSList *setupchannels;
-
-extern gboolean readonly;
-extern IPADDR source_host_ip; /* Resolved address */
-extern gboolean source_host_ok; /* Use source_host_ip .. */
+/* How long to keep netsplits in memory (seconds) */
+#define NETSPLIT_MAX_REMEMBER (60*30)
 
 #endif

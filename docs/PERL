@@ -243,7 +243,7 @@ Server server_find_tag(tag)
 Server server_find_ircnet(ircnet)
   Find first server that is in `ircnet'
 
-Channel channel_find_any(channel)
+Channel channel_find(channel)
   Find `channel' from any server
 
 Channel Server::channel_find_level(level)
@@ -436,6 +436,7 @@ Nick::values()
 	"nick" - Plain nick
 	"host" - Host (blah@there.org)
 	"name" - Real name
+	"hops" - Hop count to the server nick is using
 	"op", "voice", "gone", "ircop" - 1 or 0
 	"last_check" - timestamp when last checked gone/ircop status.
 	"send_massjoin" - Waiting to be sent in a "massjoin" signal - 1 or 0

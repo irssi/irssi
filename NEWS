@@ -1,3 +1,48 @@
+v0.7.90 2000-04-xx  Timo Sirainen <tss@iki.fi>
+
+	* On the way to 0.8.0 .. Major rewriting/rearranging code. There's
+	  some changes in behaviour because I'm trying to make Irssi a bit
+	  more compatible with EPIC.
+
+	* libPropList isn't needed anymore - I'm using my own configuration
+	  library. This is mostly because different proplists worked a bit
+	  differently everywhere and several people had problems with it.
+	  It's also yet another extra library that you needed to compile
+	  Irssi. New configuration library has several advantages:
+
+	  You can add comments to configuration file and they also stay
+	  there when it's saved.
+
+	  It's not nearly as vulnerable as proplist. If some error occurs,
+	  instead of just not reading anything it will try to continue if
+	  possible. Also the error messages are written to irssi's text
+	  window instead of stdout.
+
+	  It can be managed more easily than proplist - setting/getting the
+	  configuration is a lot more easier.
+
+	* Coding style changes - I'm not using gint, gchar etc. anymore,
+	  they're just extra pain when moving code to non-glib projects and
+	  syntax hilighting doesn't work by default with most editors ;)
+
+	  Indentation style was also changed to K&R because of some political
+	  reasons ;) And I'm already starting to like it.. :) It forces me
+	  to split code to different functions more often and the result is
+	  that the code gets more readable.
+
+	  And finally I'm also using `const' all over the place.
+
+	+ /EVAL <commands> - Expand all the special variables from string and
+	  run it. Commands can be split with ; character. See
+	  docs/SPECIAL_VARS for more info.
+	+ Aliases are parsed just like /EVAL - arguments are in $0..$9.
+	+ Text formats are also parsed like /EVAL, arguments used to be in
+	  $1..$9, now they're in $0..$8 so it messes up existing themes..
+	+ /SET [key [value]] - no more the '=' character. Boolean values
+	  also need to be changed with ON/OFF/TOGGLE values (not yes/no).
+	  Settings aren't saved to disk until you use /SAVE.
+	+ /TOGGLE <key> [ON/OFF] - same as /SET <key> TOGGLE
+
 v0.7.28 2000-03-11  Timo Sirainen <tss@iki.fi>
 
 	+ irssi-text: New improved "text widget". It takes less memory and

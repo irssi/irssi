@@ -19,10 +19,6 @@ AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 GNOME_INIT
 GNOME_SUPPORT_CHECKS
 
-AC_ARG_WITH(proplist,
-[  --with-proplist         Specify libPropList location],
-	proplist_dir=$withval)
-
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
 	if test x$withval = xyes; then
@@ -227,29 +223,6 @@ if test $irssi_cv_type_socklen_t = no; then
 AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
 fi
 AC_MSG_RESULT($irssi_cv_type_socklen_t)
-
-
-dnl **
-dnl ** check for libPropList
-dnl **
-
-if test "x$proplist_dir" = "x"; then
-	proplib=
-else
-	proplib=-L$proplist_dir/lib
-fi
-
-AC_CHECK_LIB(PropList, PLSave, [
-	PROG_LIBS="$PROG_LIBS $proplib -lPropList"
-	if test "x$proplist_dir" != "x"; then
-		CFLAGS="$CFLAGS -I$proplist_dir/include"
-	fi
-], [
-	echo "ERROR: Irssi needs libPropList for configuration file handling."
-	echo "Go get it from http://xlife.dhs.org/irssi/download.php"
-	AC_ERROR(["libPropList not found"])
-], $PROG_LIBS $proplib -lPropList)
-
 
 dnl **
 dnl ** check for socks

@@ -68,7 +68,6 @@ make install
 
 Configure can use these parameters (all of these defaults to yes):
 
- --with-proplist=dir	Specify libPropList directory
  --with-servertest	Build test irc server which you can use to try crash
                         irc clients
  --with-socks       	Build with socks library

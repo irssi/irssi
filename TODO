@@ -1,3 +1,41 @@
+ - notifylist ei toimi, /ALIAS, /IGNORE
+- g_strndup() !!!!! auttaa varmaan vaikka missä
+- server-specific source_host
+- curses sijainti jotain rikkoo
+Day changed to 30-26 2000
+[00:10] .. [00:20]
+
+ - "away mode changed"
+ - dcc on särki
+ - /server +blah tekis uuden ikkunan.
+
+[17:37] -!- Magi [^magi@magi.yok.utu.fi] has quit IRC [Killed (Uni-Stuttgart.DE ((^magi@magi.yok.utu.fi)GMD.DE <- (.@vipek-IV.vip.net.pl)*.pl[ircd@hub.irc.pl]))]
+:Magi!^magi@magi.yok.utu.fi QUIT :
+
+Kalled (gart.DE ((^magi@magi.yok.utu.fi)GMD.DE <- (.@vipek-IV.vip.net.pl)*.pl[ircd@hub.irc.pl]))
+      ~cras@0:0:0:0:0:ffff:
+ -teemoihin tee jotain pientä selitystä edes!
+ - alt+left/right vaihtaa kanavaa..
+
+ - checkkaa miten ne autojoin_channelsit nyt meni.. että vapautetaan ym.
+ - raiseta ikkuna jossa on tekstiä mut ei over aktiivisen päälle
+ - line-split.c: varmista että se 64k limitti toimii eikä esim. kaada!
+- vaihda /set nimet järkevimmiksi
+- optio että vaihtaa automaagisesti sinne autocreatettuun ikkunaan. tyhjennä
+entry (laita historyyn) ettei uusi rivi mene query ikkunaan suoraan vahingossa.
+- "älä näytä n. sekunttia pienempää lagia"
+- cmd line switchi source hostille
+- autojoinikaan ei tunnu oikein pelaavan..? vain kun vaihtuu serveri
+- quit näytettäisiin vaan yhdessä ikkunassa.
+- /exec
+ - optionaalisesti voisi niitä logeja ajella siinä toisessa irssisessiossa
+ - msg:issä kun tulee sitä away viestiä näyttäisi vaan kerran..
+ - logrotate
+ - ignoroida tietyt ctcpt. regexpit. ignorettaa tekstiä ..
+   egopallo/#tv.fi CANAL|MAFIA|...
+ - autorun.ircnet
+ - flood protectionia paremmaksi
+ - bottipluginiin tms. .. channel not available tms. rejoini
 
 *** Bugs
 
