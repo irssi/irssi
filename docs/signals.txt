@@ -56,13 +56,12 @@ modules.c:
  "module error", int error, char *text, char *rootmodule, char *submodule
 
 nicklist.c:
- "nicklist new", NICK_REC
- "nicklist remove", NICK_REC
- "nicklist changed", NICK_REC, char *old_nick
- "nicklist host changed", NICK_REC
- "nicklist realname changed", NICK_REC
- "nicklist gone changed", NICK_REC
- "nicklist serverop changed", NICK_REC
+ "nicklist new", CHANNEL_REC, NICK_REC
+ "nicklist remove", CHANNEL_REC, NICK_REC
+ "nicklist changed", CHANNEL_REC, NICK_REC, char *old_nick
+ "nicklist host changed", CHANNEL_REC, NICK_REC
+ "nicklist gone changed", CHANNEL_REC, NICK_REC
+ "nicklist serverop changed", CHANNEL_REC, NICK_REC
 
 pidwait.c:
  "pidwait", int pid, int status
