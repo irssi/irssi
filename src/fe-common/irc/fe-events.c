@@ -208,6 +208,10 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	g_return_if_fail(data != NULL);
 
+	if (settings_get_bool("hide_netsplit_quits") &&
+	    netsplit_is_join(server, nick, addr))
+                return;
+
 	params = event_get_params(data, 1, &channel);
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';

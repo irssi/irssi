@@ -43,6 +43,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "setupserver_footer", "", 0 },
 	{ "netsplit", "%RNetsplit%n %_$0%_ %_$1%_ quits: $2", 3, { 0, 0, 0 } },
 	{ "netsplit_more", "%RNetsplit%n %_$0%_ %_$1%_ quits: $2 (+$3 more, use /NETSPLIT to show all of them)", 4, { 0, 0, 0, 1 } },
+	{ "netsplit_join", "%CNetsplit%n over, joins: $0", 1, { 0 } },
+	{ "netsplit_join_more", "%CNetsplit%n over, joins: $0 (+$1 more)", 2, { 0, 1 } },
 	{ "no_netsplits", "There are no net splits", 0 },
 	{ "netsplits_header", "Nick      Channel    Server               Splitted server", 0 },
 	{ "netsplits_line", "$[9]0 $[10]1 $[20]2 $3", 4, { 0, 0, 0, 0 } },

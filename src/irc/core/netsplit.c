@@ -243,9 +243,8 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	/* check if split is over */
 	rec = g_hash_table_lookup(server->splits, nick);
-	if (rec == NULL) return;
 
-	if (g_strcasecmp(rec->address, address) == 0) {
+	if (rec != NULL && g_strcasecmp(rec->address, address) == 0) {
 		/* yep, looks like it is. for same people that had the same
 		   splitted servers set the timeout to one minute.
 
@@ -253,8 +252,17 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		   same nick (unless the server is broken) so don't bother
 		   checking that the nick's server matches the split. */
 		g_hash_table_foreach(server->splits, (GHFunc) split_set_timeout, rec);
-	} else {
-		/* back from different address.. just destroy it. */
+	}
+}
+
+/* remove the nick from netsplit, but do it last so that other "event join"
+   signal handlers can check if the join was a netjoin */
+static void event_join_last(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+{
+	NETSPLIT_REC *rec;
+
+	rec = g_hash_table_lookup(server->splits, nick);
+	if (rec != NULL) {
 		g_hash_table_remove(server->splits, rec->nick);
 		netsplit_destroy(server, rec);
 	}
@@ -306,6 +314,7 @@ void netsplit_init(void)
 {
 	split_tag = g_timeout_add(1000, (GSourceFunc) split_check_old, NULL);
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
+	signal_add_last("event join", (SIGNAL_FUNC) event_join_last);
 	signal_add_first("event quit", (SIGNAL_FUNC) event_quit);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }
@@ -319,6 +328,7 @@ void netsplit_deinit(void)
 
 	g_source_remove(split_tag);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
+	signal_remove("event join", (SIGNAL_FUNC) event_join_last);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }

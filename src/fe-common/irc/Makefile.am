@@ -20,6 +20,7 @@ libfe_common_irc_la_SOURCES = \
 	fe-events.c \
 	fe-events-numeric.c \
 	fe-ignore.c \
+	fe-netjoin.c \
 	fe-netsplit.c \
 	fe-query.c \
 	fe-common-irc.c \

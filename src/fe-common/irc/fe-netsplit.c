@@ -25,6 +25,7 @@
 #include "levels.h"
 #include "settings.h"
 
+#include "irc.h"
 #include "irc-server.h"
 #include "ignore.h"
 #include "netsplit.h"
@@ -57,7 +58,7 @@ typedef struct {
 
 typedef struct {
         IRC_SERVER_REC *server_rec;
-	NETSPLIT_SERVER_REC *server;
+	GSList *servers; /* if many servers splitted from the same one */
 	GSList *channels;
 } TEMP_SPLIT_REC;
 
@@ -80,7 +81,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 	TEMP_SPLIT_CHAN_REC *chanrec;
 	GSList *tmp;
 
-	if (split->printed || split->server != rec->server)
+	if (split->printed || g_slist_find(rec->servers, split->server) == NULL)
 		return;
 
 	split->printed = TRUE;
@@ -100,6 +101,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 			rec->channels = g_slist_append(rec->channels, chanrec);
 		}
 
+		split->server->prints++;
 		chanrec->nick_count++;
 		if (netsplit_max_nicks <= 0 ||
 		    chanrec->nick_count < netsplit_max_nicks) {
@@ -111,8 +113,25 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 
 static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 {
+	GString *destservers;
+	char *sourceserver;
 	GSList *tmp;
 
+	destservers = g_string_new(NULL);
+	for (tmp = rec->servers; tmp != NULL; tmp = tmp->next) {
+		NETSPLIT_SERVER_REC *rec = tmp->data;
+
+		if (rec->prints > 0)
+			g_string_sprintfa(destservers, "%s, ", rec->destserver);
+	}
+	if (destservers->len == 0) {
+                /* no nicks to print in this server */
+		g_string_free(destservers, TRUE);
+		return;
+	}
+	g_string_truncate(destservers, destservers->len-2);
+
+	sourceserver = ((NETSPLIT_SERVER_REC *) (rec->servers->data))->server;
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		TEMP_SPLIT_CHAN_REC *chan = tmp->data;
 
@@ -120,13 +139,15 @@ static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 
 		if (netsplit_max_nicks > 0 && chan->nick_count > netsplit_max_nicks) {
 			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT_MORE,
-				    rec->server->server, rec->server->destserver, chan->nicks->str,
+				    sourceserver, destservers->str, chan->nicks->str,
 				    chan->nick_count - netsplit_max_nicks);
 		} else {
 			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT,
-				    rec->server->server, rec->server->destserver, chan->nicks->str);
+				    sourceserver, destservers->str, chan->nicks->str);
 		}
 	}
+
+	g_string_free(destservers, TRUE);
 }
 
 static void temp_split_chan_free(TEMP_SPLIT_CHAN_REC *rec)
@@ -137,26 +158,41 @@ static void temp_split_chan_free(TEMP_SPLIT_CHAN_REC *rec)
 
 static int check_server_splits(IRC_SERVER_REC *server)
 {
-	TEMP_SPLIT_REC rec;
-	GSList *tmp;
+	TEMP_SPLIT_REC temp;
+	GSList *tmp, *next, *servers;
 	time_t last;
 
 	last = get_last_split(server);
-	if (last+SPLIT_WAIT_TIME >= time(NULL))
+	if (time(NULL)-last < SPLIT_WAIT_TIME)
 		return FALSE;
 
-	for (tmp = server->split_servers; tmp != NULL; tmp = tmp->next) {
-		NETSPLIT_SERVER_REC *sserver = tmp->data;
+	servers = g_slist_copy(server->split_servers);
+	while (servers != NULL) {
+		NETSPLIT_SERVER_REC *sserver = servers->data;
 
-                rec.server_rec = server;
-		rec.server = sserver;
-		rec.channels = NULL;
+		/* get all the splitted servers that have the same
+		   source server */
+                temp.servers = NULL;
+		for (tmp = servers; tmp != NULL; tmp = next) {
+			NETSPLIT_SERVER_REC *rec = tmp->data;
 
-		g_hash_table_foreach(server->splits, (GHFunc) get_server_splits, &rec);
-		print_splits(server, &rec);
+			next = tmp->next;
+			if (g_strcasecmp(rec->server, sserver->server) == 0) {
+                                rec->prints = 0;
+				temp.servers = g_slist_append(temp.servers, rec);
+				servers = g_slist_remove(servers, rec);
+			}
+		}
 
-		g_slist_foreach(rec.channels, (GFunc) temp_split_chan_free, NULL);
-		g_slist_free(rec.channels);
+                temp.server_rec = server;
+		temp.channels = NULL;
+
+		g_hash_table_foreach(server->splits, (GHFunc) get_server_splits, &temp);
+		print_splits(server, &temp);
+
+		g_slist_foreach(temp.channels, (GFunc) temp_split_chan_free, NULL);
+		g_slist_free(temp.servers);
+		g_slist_free(temp.channels);
 	}
 
         return TRUE;

@@ -67,6 +67,9 @@ void irc_completion_deinit(void);
 void fe_netsplit_init(void);
 void fe_netsplit_deinit(void);
 
+void fe_netjoin_init(void);
+void fe_netjoin_deinit(void);
+
 void irc_hilight_text_init(void);
 void irc_hilight_text_deinit(void);
 
@@ -116,6 +119,7 @@ void fe_common_irc_init(void)
 	fe_events_numeric_init();
 	fe_ignore_init();
 	fe_netsplit_init();
+	fe_netjoin_init();
 	fe_query_init();
 	irc_completion_init();
 	irc_hilight_text_init();
@@ -137,6 +141,7 @@ void fe_common_irc_deinit(void)
 	fe_events_numeric_deinit();
 	fe_ignore_deinit();
 	fe_netsplit_deinit();
+	fe_netjoin_deinit();
 	fe_query_deinit();
 	irc_completion_deinit();
 	irc_hilight_text_deinit();
