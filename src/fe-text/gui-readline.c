@@ -208,6 +208,11 @@ void handle_key(int key)
 		gui_entry_erase(1);
 		break;
 
+	case 23:
+		/* C-w - erase word to the left of marker */
+		gui_entry_erase_word();
+		break;
+
 	case 4:
 	case KEY_DC:
 		if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {

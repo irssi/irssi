@@ -149,6 +149,30 @@ void gui_entry_erase(int size)
 	entry_update();
 }
 
+void gui_entry_erase_word(void)
+{
+	int to;
+	
+	if (pos == 0) return;
+
+	to = pos - 1;
+
+	while (entry->str[to] == ' ' && to > 0)
+		to--;
+
+	while (entry->str[to] != ' ' && to > 0)
+		to--;
+
+	if (entry->str[to] == ' ' && to > 0) 
+		to++;
+
+	g_string_erase(entry, to, pos - to);
+	pos = to;
+
+	entry_screenpos();
+	entry_update();
+}
+
 int gui_entry_get_pos(void)
 {
 	return pos;

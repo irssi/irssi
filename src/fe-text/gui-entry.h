@@ -12,7 +12,9 @@ char *gui_entry_get_text(void);
 
 void gui_entry_insert_text(const char *str);
 void gui_entry_insert_char(char chr);
+
 void gui_entry_erase(int size);
+void gui_entry_erase_word(void);
 
 int gui_entry_get_pos(void);
 void gui_entry_set_pos(int pos);
