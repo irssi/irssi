@@ -162,7 +162,8 @@ void invitelist_remove(IRC_CHANNEL_REC *channel, const char *mask)
 
 static void channel_destroyed(IRC_CHANNEL_REC *channel)
 {
-	g_return_if_fail(channel != NULL);
+	if (!IS_IRC_CHANNEL(channel))
+                return;
 
 	banlist_free(channel->banlist);
 	banlist_free(channel->ebanlist);
