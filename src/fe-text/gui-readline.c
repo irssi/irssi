@@ -497,13 +497,16 @@ void gui_readline_init(void)
 	static char changekeys[] = "1234567890qwertyuio";
 	char *key, data[MAX_INT_STRLEN];
 	int n;
+        GIOChannel *stdin_channel;
 
 	cutbuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
-	readtag = g_input_add_full(g_io_channel_unix_new(0),
+        stdin_channel = g_io_channel_unix_new(0);
+	readtag = g_input_add_full(stdin_channel,
 				   G_PRIORITY_HIGH, G_INPUT_READ,
 				   (GInputFunction) readline, NULL);
+        g_io_channel_unref(stdin_channel);
 
 	settings_add_str("history", "scroll_page_count", "/2");
 

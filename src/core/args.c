@@ -61,4 +61,6 @@ void args_execute(int argc, char *argv[])
 
 	g_array_free(iopt_tables, TRUE);
 	iopt_tables = NULL;
+
+        poptFreeContext(con);
 }

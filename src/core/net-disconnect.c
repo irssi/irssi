@@ -42,6 +42,7 @@ static void net_disconnect_remove(NET_DISCONNECT_REC *rec)
 	disconnects = g_slist_remove(disconnects, rec);
 
 	g_source_remove(rec->tag);
+        net_disconnect(rec->handle);
 	g_free(rec);
 }
 

@@ -114,6 +114,7 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 		   same server and you want to keep the same tags with
 		   the servers (or it would cause problems when rejoining
 		   /LAYOUT SAVEd channels). */
+		g_free(tag);
 		return g_strdup(conn->tag);
 	}
 
