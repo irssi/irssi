@@ -53,7 +53,7 @@ inline void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 	if (ip == NULL) {
 #ifdef HAVE_IPV6
 		so->sin6.sin6_family = AF_INET6;
-		so->sin6.sin6_addr.s_addr = in6addr_any;
+		so->sin6.sin6_addr = in6addr_any;
 #else
 		so->sin.sin_family = AF_INET;
 		so->sin.sin_addr.s_addr = INADDR_ANY;
@@ -361,13 +361,15 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	g_return_val_if_fail(ip != NULL, -1);
 	g_return_val_if_fail(name != NULL, -1);
 
+	net_ip2host(ip, ipname);
+
 	*name = NULL;
 #ifdef HAVE_IPV6
 	memset(&req, 0, sizeof(struct addrinfo));
 	req.ai_socktype = SOCK_STREAM;
 
 	/* save error to host_error for later use */
-	host_error = getaddrinfo(addr, NULL, &req, &ai);
+	host_error = getaddrinfo(ipname, NULL, &req, &ai);
 	if (host_error != 0)
 		return host_error;
 
@@ -378,8 +380,6 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	freeaddrinfo(ai);
 	return 1;
 #else
-	net_ip2host(ip, ipname);
-
 	hp = gethostbyaddr(ipname, strlen(ipname), AF_INET);
 	if (hp == NULL) return -1;
 
