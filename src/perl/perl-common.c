@@ -30,6 +30,7 @@
 #include "rawlog.h"
 #include "servers-reconnect.h"
 
+#include "window-item-def.h"
 #include "chat-protocols.h"
 #include "servers.h"
 #include "channels.h"
@@ -37,10 +38,6 @@
 #include "nicklist.h"
 
 #include "perl-common.h"
-
-#include "fe-common/core/fe-exec.h"
-#include "fe-common/core/formats.h"
-#include "fe-common/core/printtext.h"
 
 typedef struct {
 	char *stash;
@@ -307,13 +304,13 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
 }
 
-void perl_command_fill_hash(HV *hv, COMMAND_REC *cmd)
+static void perl_command_fill_hash(HV *hv, COMMAND_REC *cmd)
 {
 	hv_store(hv, "category", 8, new_pv(cmd->category), 0);
 	hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
 }
 
-void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
+static void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 {
 	AV *av;
 	char **tmp;
@@ -334,7 +331,7 @@ void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 	hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
 }
 
-void perl_log_fill_hash(HV *hv, LOG_REC *log)
+static void perl_log_fill_hash(HV *hv, LOG_REC *log)
 {
 	HV *stash;
 	AV *av;
@@ -356,14 +353,14 @@ void perl_log_fill_hash(HV *hv, LOG_REC *log)
 	hv_store(hv, "items", 4, newRV_noinc((SV*)av), 0);
 }
 
-void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
+static void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
 {
 	hv_store(hv, "type", 4, newSViv(item->type), 0);
 	hv_store(hv, "name", 4, new_pv(item->name), 0);
 	hv_store(hv, "servertag", 9, new_pv(item->servertag), 0);
 }
 
-void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
+static void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 {
 	AV *av;
 	GSList *tmp;
@@ -378,7 +375,7 @@ void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 	hv_store(hv, "lines", 5, newRV_noinc((SV*)av), 0);
 }
 
-void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
+static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 {
 	char *type;
 
@@ -389,64 +386,6 @@ void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 
 	hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
 	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
-}
-
-void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
-{
-	HV *stash;
-
-	hv_store(hv, "id", 2, newSViv(process->id), 0);
-	hv_store(hv, "name", 4, new_pv(process->name), 0);
-	hv_store(hv, "args", 4, new_pv(process->args), 0);
-
-	hv_store(hv, "pid", 3, newSViv(process->pid), 0);
-	hv_store(hv, "target", 6, new_pv(process->target), 0);
-	if (process->target_win != NULL) {
-		stash = gv_stashpv("Irssi::Window", 0);
-		hv_store(hv, "target_win", 10, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(process->target_win))), stash), 0);
-	}
-	hv_store(hv, "shell", 5, newSViv(process->shell), 0);
-	hv_store(hv, "notice", 6, newSViv(process->notice), 0);
-	hv_store(hv, "silent", 6, newSViv(process->silent), 0);
-}
-
-void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
-{
-	hv_store(hv, "refnum", 6, newSViv(window->refnum), 0);
-	hv_store(hv, "name", 4, new_pv(window->name), 0);
-
-	if (window->active)
-		hv_store(hv, "active", 6, irssi_bless(window->active), 0);
-	if (window->active_server)
-		hv_store(hv, "active_server", 13, irssi_bless(window->active_server), 0);
-
-	hv_store(hv, "lines", 5, newSViv(window->lines), 0);
-
-	hv_store(hv, "level", 5, newSViv(window->level), 0);
-	hv_store(hv, "data_level", 8, newSViv(window->data_level), 0);
-	hv_store(hv, "hilight_color", 10, newSViv(window->hilight_color), 0);
-	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
-	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
-}
-
-void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
-{
-	THEME_REC *theme;
-	char *module, *str;
-	int formatnum;
-
-	module = g_strdup(perl_get_package());
-	theme = dest->window->theme == NULL ? current_theme :
-		dest->window->theme;
-
-	formatnum = format_find_tag(module, format);
-	signal_emit("print format", 5, theme, module,
-		    &dest, GINT_TO_POINTER(formatnum), arglist);
-
-        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
-	if (*str != '\0') printtext_window(dest->window, dest->level, "%s", str);
-	g_free(str);
-	g_free(module);
 }
 
 void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
@@ -576,9 +515,7 @@ void perl_common_init(void)
 		{ "Irssi::Log", (PERL_OBJECT_FUNC) perl_log_fill_hash },
 		{ "Irssi::Logitem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
 		{ "Irssi::Rawlog", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
-		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
-		{ "Irssi::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
-		{ "Irssi::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
+		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_reconnect_fill_hash },
 
 		{ NULL, NULL }
 	};
