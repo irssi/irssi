@@ -391,7 +391,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
 		/* at least recode_fallback will be used */
-		recoded = recode_in(reason, NULL);
+		recoded = recode_in(reason, nick);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
 			    nick, address, recoded, chans->str);
