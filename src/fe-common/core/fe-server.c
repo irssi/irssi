@@ -258,10 +258,10 @@ static void sig_connect_failed(SERVER_REC *server, gchar *msg)
 	if (msg == NULL) {
 		/* no message so this wasn't unexpected fail - send
 		   connection_lost message instead */
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CONNECTION_LOST, server->connrec->address);
 	} else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+		printformat(server, NULL, MSGLEVEL_CLIENTERROR,
 			    TXT_CANT_CONNECT, server->connrec->address, server->connrec->port, msg);
 	}
 }
@@ -270,7 +270,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_CONNECTION_LOST, server->connrec->address);
 }
 
@@ -278,7 +278,7 @@ static void sig_server_quit(SERVER_REC *server, const char *msg)
 {
 	g_return_if_fail(server != NULL);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_SERVER_QUIT, server->connrec->address, msg);
 }
 
@@ -286,7 +286,7 @@ static void sig_server_lag_disconnected(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_LAG_DISCONNECTED, server->connrec->address, time(NULL)-server->lag_sent);
 }
 
