@@ -11,6 +11,9 @@ v0.7.24 2000-02-19  Timo Sirainen <tss@iki.fi> [stable]
 	+ irssi-text: Displays topic bar op the top of the screen -
 	  /set toggle_show_topicbar = yes|no
 	+ Recognize +a (anonymous) and +r (reop when opless) modes
+	+ Don't allow any setup file changes or log writing if another irssi
+	  session is running.
+	+ /whois without any arguments gives a whois of yourself
 	- Irc network list was still corrupted in channel dialog.
 	- /LIST dialog - users column is now sorted numerically
 	  (10 shows after 9, not after 1)..
