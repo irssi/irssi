@@ -66,18 +66,14 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
-/* we use "ctcp msg" here because "ctcp msg action" can be ignored with
-   /IGNORE * CTCPS, and we don't want that.. */
-static void ctcp_msg_check_action(IRC_SERVER_REC *server, const char *data,
-				  const char *nick, const char *addr,
-				  const char *target)
+static void ctcp_action(IRC_SERVER_REC *server, const char *data,
+			const char *nick, const char *addr,
+			const char *target)
 {
 	g_return_if_fail(data != NULL);
 
-	if (g_strncasecmp(data, "ACTION ", 7) == 0) {
-		signal_emit("message irc action", 5,
-			    server, data+7, nick, addr, target);
-	}
+	signal_emit("message irc action", 5,
+		    server, data, nick, addr, target);
 }
 
 static void event_notice(IRC_SERVER_REC *server, const char *data,
@@ -414,15 +410,10 @@ static void event_received(IRC_SERVER_REC *server, const char *data,
         g_free(params);
 }
 
-static void sig_empty(void)
-{
-}
-
 void fe_events_init(void)
 {
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg_check_action);
-	signal_add("ctcp msg action", (SIGNAL_FUNC) sig_empty);
+	signal_add("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_add("event notice", (SIGNAL_FUNC) event_notice);
 	signal_add("event join", (SIGNAL_FUNC) event_join);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
@@ -451,8 +442,7 @@ void fe_events_init(void)
 void fe_events_deinit(void)
 {
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
-	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_msg_check_action);
-	signal_remove("ctcp msg action", (SIGNAL_FUNC) sig_empty);
+	signal_remove("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_remove("event notice", (SIGNAL_FUNC) event_notice);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 	signal_remove("event part", (SIGNAL_FUNC) event_part);

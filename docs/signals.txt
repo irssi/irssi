@@ -117,6 +117,7 @@ ctcp.c:
  "ctcp reply", SERVER_REC, char *args, char *nick, char *addr, char *target
  "ctcp reply "<cmd>, SERVER_REC, char *args, char *nick, char *addr, char *target
  "default ctcp reply", SERVER_REC, char *args, char *nick, char *addr, char *target
+ "ctcp action", SERVER_REC, char *args, char *nick, char *addr, char *target
 
 irc-log.c:
  "awaylog show", LOG_REC, int away_msgs, int filepos
