@@ -650,7 +650,7 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 	}
 
 	for (n = max_columns-1; n >= 0; n--) {
-		if (columns_width[n] <= max_width)
+		if (columns_width[n] <= max_width && columns[n][n] > 0)
                         break;
 	}
         ret = n+1;
