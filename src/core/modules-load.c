@@ -25,6 +25,7 @@
 
 #include "settings.h"
 #include "commands.h"
+#include "misc.h"
 
 #ifdef HAVE_GMODULE
 
@@ -35,7 +36,7 @@ static char *module_get_name(const char *path, int *start, int *end)
 	char *module_name, *ptr;
 
         name = NULL;
-	if (g_path_is_absolute(path)) {
+	if (*path == '~' || g_path_is_absolute(path)) {
 		name = strrchr(path, G_DIR_SEPARATOR);
                 if (name != NULL) name++;
 	}
@@ -106,7 +107,7 @@ static GModule *module_open(const char *name)
 	GModule *module;
 	char *path, *str;
 
-	if (g_path_is_absolute(name) ||
+	if (g_path_is_absolute(name) || *name == '~' ||
 	    (*name == '.' && name[1] == G_DIR_SEPARATOR))
 		path = g_strdup(name);
 	else {
@@ -287,21 +288,24 @@ static int module_load_full(const char *path, const char *rootmodule,
    modules given in `prefixes' (like irc, fe, fe_text, ..) */
 int module_load(const char *path, char **prefixes)
 {
-	char *name, *submodule, *rootmodule;
+	char *exppath, *name, *submodule, *rootmodule;
         int start, end, ret;
 
 	g_return_val_if_fail(path != NULL, FALSE);
 
-	name = module_get_name(path, &start, &end);
+	exppath = convert_home(path);
+
+	name = module_get_name(exppath, &start, &end);
 	rootmodule = module_get_root(name, prefixes);
 	submodule = module_get_sub(name, rootmodule);
 	g_free(name);
 
-	ret = module_load_full(path, rootmodule, submodule,
+	ret = module_load_full(exppath, rootmodule, submodule,
 			       start, end, prefixes);
 
 	g_free(rootmodule);
 	g_free(submodule);
+        g_free(exppath);
         return ret;
 }
 
@@ -309,17 +313,19 @@ int module_load(const char *path, char **prefixes)
 int module_load_sub(const char *path, const char *submodule, char **prefixes)
 {
         GString *full_path;
-	char *name, *rootmodule;
+	char *exppath, *name, *rootmodule;
         int start, end, ret;
 
 	g_return_val_if_fail(path != NULL, FALSE);
 	g_return_val_if_fail(submodule != NULL, FALSE);
 
-	name = module_get_name(path, &start, &end);
+        exppath = convert_home(path);
+
+	name = module_get_name(exppath, &start, &end);
 	rootmodule = module_get_root(name, prefixes);
 	g_free(name);
 
-        full_path = g_string_new(path);
+        full_path = g_string_new(exppath);
 	if (strcmp(submodule, "core") == 0)
 		g_string_insert(full_path, end, "_core");
 	else {
@@ -332,6 +338,7 @@ int module_load_sub(const char *path, const char *submodule, char **prefixes)
 
 	g_string_free(full_path, TRUE);
 	g_free(rootmodule);
+	g_free(exppath);
         return ret;
 }
 
