@@ -335,6 +335,38 @@ static void cmd_bind(const char *data)
         cmd_params_free(free_arg);
 }
 
+static GList *completion_get_keyinfos(const char *info)
+{
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	list = NULL; len = strlen(info);
+	for (tmp = keyinfos; tmp != NULL; tmp = tmp->next) {
+		KEYINFO_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->id, info, len) == 0)
+                        list = g_list_append(list, g_strdup(rec->id));
+	}
+
+	return list;
+}
+
+static void sig_complete_bind(GList **list, WINDOW_REC *window,
+			      const char *word, const char *line,
+			      int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line == '\0' || strchr(line, ' ') != NULL)
+		return;
+
+	*list = completion_get_keyinfos(word);
+	if (*list != NULL) signal_stop();
+}
+
 void keyboard_init(void)
 {
 	keys = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
@@ -344,6 +376,7 @@ void keyboard_init(void)
 
 	read_keyboard_config();
 	signal_add("setup reread", (SIGNAL_FUNC) read_keyboard_config);
+	signal_add("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 
 	command_bind("bind", NULL, (SIGNAL_FUNC) cmd_bind);
 	command_set_options("bind", "delete");
@@ -356,5 +389,6 @@ void keyboard_deinit(void)
 	g_hash_table_destroy(keys);
 
         signal_remove("setup reread", (SIGNAL_FUNC) read_keyboard_config);
+	signal_remove("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 	command_unbind("bind", (SIGNAL_FUNC) cmd_bind);
 }
