@@ -207,12 +207,11 @@ static void message_own_private(const SERVER_REC *server, const char *msg,
 }
 
 static void message_irc_own_action(const SERVER_REC *server, const char *msg,
-				   const char *nick, const char *addr,
 				   const char *target)
 {
 	char *recoded;
 	recoded = recode_in(server, msg, target);
-	signal_continue(5, server, recoded, nick, addr, target);
+	signal_continue(3, server, recoded, target);
 	g_free(recoded);
 }
 
