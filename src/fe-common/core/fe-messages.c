@@ -39,6 +39,10 @@
 #include "printtext.h"
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
+#define isnickchar(a) \
+	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || \
+	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
+	(a) == '|' || (a) == '\\' || (a) == '^')
 
 GHashTable *printnicks;
 
@@ -81,11 +85,24 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			   use emphasis on them. */
 			int found;
                         char c;
+			char *end2; 
 
+			/* check if _foo_ is a nick */
 			c = end[1];
                         end[1] = '\0';
                         found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end[1] = c;
+			if (found) continue;
+			
+			/* check if the whole 'word' (e.g. "_foo_^") is a nick
+			   in "_foo_^ ", end will be the second _, end2 the ^ */
+			end2 = end;
+			while (isnickchar(end2[1]))
+				end2++;
+			c = end2[1];
+			end2[1] = '\0';
+			found = nicklist_find(CHANNEL(item), bgn) != NULL;
+			end2[1] = c;
 			if (found) continue;
 		}
 
