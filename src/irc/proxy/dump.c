@@ -201,6 +201,10 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 		proxy_outdata(client, ":%s 332 %s %s :%s\n",
 			      client->proxy_address, client->nick,
 			      channel->name, recode_out(channel->topic, channel->name));
+		if (channel->topic_time > 0)
+			proxy_outdata(client, ":%s 333 %s %s %s %d\n",
+			              client->proxy_address, client->nick,
+			              channel->name, channel->topic_by, channel->topic_time);
 	}
 }
 
