@@ -454,8 +454,8 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 				      dcc->arg, host, port, dcc->size);
 	} else {
 		str = g_strdup_printf(dcc->file_quoted ?
-				      "DCC SEND \"%s\" 16974599 0 %"PRIuUOFF_T" %d" :
-				      "DCC SEND %s 16974599 0 %"PRIuUOFF_T" %d",
+				      "DCC SEND \"%s\" 16843009 0 %"PRIuUOFF_T" %d" :
+				      "DCC SEND %s 16843009 0 %"PRIuUOFF_T" %d",
 				      dcc->arg, dcc->size, dcc->pasv_id);
 	}
 	dcc_ctcp_message(server, target, chat, FALSE, str);

@@ -519,11 +519,11 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 		p_id = rand() % 64;
 		dcc->pasv_id = p_id;
 
-		/* 16974599 is the long format of 1.3.3.7, we use a fake IP
+		/* 16843009 is the long format of 1.1.1.1, we use a fake IP
 		   since the other side shouldn't care of it: they will send
 		   the address for us to connect to in the reply */
 		irc_send_cmdv(server,
-			      "PRIVMSG %s :\001DCC CHAT CHAT 16974599 0 %d\001",
+			      "PRIVMSG %s :\001DCC CHAT CHAT 16843009 0 %d\001",
 			      nick, p_id);
 	}
 	cmd_params_free(free_arg);
