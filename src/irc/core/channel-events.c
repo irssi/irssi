@@ -148,7 +148,8 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 		g_free_not_null(chanrec->topic);
 		chanrec->topic = recoded == NULL ? NULL : g_strdup(recoded);
 	}
-	
+	g_free(recoded);
+
 	g_free_not_null(chanrec->topic_by);
 	chanrec->topic_by = g_strdup(setby);
 	

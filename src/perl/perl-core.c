@@ -373,11 +373,13 @@ char *perl_script_get_path(const char *name)
 		/* check from SCRIPTDIR */
 		g_free(path);
 		path = g_strdup_printf(SCRIPTDIR"/%s", file);
-		if (stat(path, &statbuf) != 0)
-                        path = NULL;
+		if (stat(path, &statbuf) != 0) {
+			g_free(path);
+			path = NULL;
+		}
 	}
 	g_free(file);
-        return path;
+	return path;
 }
 
 /* If core should handle printing script errors */
