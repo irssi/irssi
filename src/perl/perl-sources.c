@@ -28,7 +28,8 @@
 typedef struct {
         PERL_SCRIPT_REC *script;
 	int tag;
-        int refcount;
+	int refcount;
+	int once; /* run only once */
 
 	SV *func;
 	SV *data;
@@ -41,14 +42,15 @@ static void perl_source_ref(PERL_SOURCE_REC *rec)
         rec->refcount++;
 }
 
-static void perl_source_unref(PERL_SOURCE_REC *rec)
+static int perl_source_unref(PERL_SOURCE_REC *rec)
 {
 	if (--rec->refcount != 0)
-		return;
+		return TRUE;
 
         SvREFCNT_dec(rec->data);
         SvREFCNT_dec(rec->func);
 	g_free(rec);
+	return FALSE;
 }
 
 static void perl_source_destroy(PERL_SOURCE_REC *rec)
@@ -81,12 +83,10 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
                 char *error = g_strdup(SvPV(ERRSV, PL_na));
 		signal_emit("script error", 2, rec->script, error);
                 g_free(error);
-	} else if (retcount > 0 && POPi != 0) {
-		/* stopped */
-		perl_source_destroy(rec);
 	}
 
-        perl_source_unref(rec);
+	if (perl_source_unref(rec) && rec->once)
+		perl_source_destroy(rec);
 
 	PUTBACK;
 	FREETMPS;
@@ -95,7 +95,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	return 1;
 }
 
-int perl_timeout_add(int msecs, SV *func, SV *data)
+int perl_timeout_add(int msecs, SV *func, SV *data, int once)
 {
         PERL_SCRIPT_REC *script;
 	PERL_SOURCE_REC *rec;
@@ -117,7 +117,7 @@ int perl_timeout_add(int msecs, SV *func, SV *data)
 	return rec->tag;
 }
 
-int perl_input_add(int source, int condition, SV *func, SV *data)
+int perl_input_add(int source, int condition, SV *func, SV *data, int once)
 {
         PERL_SCRIPT_REC *script;
 	PERL_SOURCE_REC *rec;
