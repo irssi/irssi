@@ -25,6 +25,7 @@ FORMAT_REC gui_text_formats[] =
 {
 	{ MODULE_NAME, "Text user interface", 0 },
 
+	{ "lastlog_too_long", "/LASTLOG would print $0 lines. If you really want to print all these lines use -force option.", 1, { 1 } },
 	{ "lastlog_start", "{hilight Lastlog}:", 0 },
 	{ "lastlog_end", "{hilight End of Lastlog}", 0 },
 

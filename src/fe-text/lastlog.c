@@ -31,6 +31,8 @@
 #include "gui-windows.h"
 #include "gui-printtext.h"
 
+#define MAX_LINES_WITHOUT_FORCE 1000
+
 static void window_lastlog_clear(WINDOW_REC *window)
 {
 	GList *tmp, *next;
@@ -43,84 +45,6 @@ static void window_lastlog_clear(WINDOW_REC *window)
 			gui_window_line_remove(window, line, FALSE);
 	}
         gui_window_redraw(window);
-}
-
-static char *gui_window_line2text(LINE_REC *line, int coloring)
-{
-	GString *str;
-	int color;
-	char *ret, *ptr, *tmp;
-
-	g_return_val_if_fail(line != NULL, NULL);
-
-	str = g_string_new(NULL);
-
-	color = 0;
-	for (ptr = line->text; ; ptr++) {
-		if (*ptr != 0) {
-			g_string_append_c(str, *ptr);
-			continue;
-		}
-
-		ptr++;
-		if (!coloring) {
-			/* no colors, handle only commands that don't
-			   have anything to do with colors */
-			switch ((unsigned char) *ptr) {
-			case LINE_CMD_EOL:
-			case LINE_CMD_FORMAT:
-				ret = str->str;
-				g_string_free(str, FALSE);
-				return ret;
-			case LINE_CMD_CONTINUE:
-				memcpy(&tmp, ptr+1, sizeof(char *));
-				ptr = tmp-1;
-				break;
-			}
-                        continue;
-		}
-
-		if ((*ptr & 0x80) == 0) {
-			/* set color */
-			color = *ptr;
-			g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
-					  ((color & 0xf0) >> 4)+'0');
-		}
-		else switch ((unsigned char) *ptr)
-		{
-		case LINE_CMD_EOL:
-		case LINE_CMD_FORMAT:
-			ret = str->str;
-			g_string_free(str, FALSE);
-			return ret;
-		case LINE_CMD_CONTINUE:
-			memcpy(&tmp, ptr+1, sizeof(char *));
-			ptr = tmp-1;
-			break;
-		case LINE_CMD_UNDERLINE:
-			g_string_append_c(str, 31);
-			break;
-		case LINE_CMD_COLOR0:
-			g_string_sprintfa(str, "\004%c%c",
-					  '0', ((color & 0xf0) >> 4)+'0');
-			break;
-		case LINE_CMD_COLOR8:
-			g_string_sprintfa(str, "\004%c%c",
-					  '8', ((color & 0xf0) >> 4)+'0');
-			color &= 0xfff0;
-			color |= 8|ATTR_COLOR8;
-			break;
-		case LINE_CMD_BLINK:
-			color |= 0x80;
-			g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
-					  ((color & 0xf0) >> 4)+'0');
-			break;
-		case LINE_CMD_INDENT:
-			break;
-		}
-	}
-
-	return NULL;
 }
 
 /* Only unknown keys in `optlist' should be levels.
@@ -162,40 +86,14 @@ int cmd_options_get_level(const char *cmd, GHashTable *optlist)
 	return retlevel;
 }
 
-#define lastlog_match(line, level) \
-	(((line)->level & level) != 0 && ((line)->level & MSGLEVEL_LASTLOG) == 0)
-
-static GList *lastlog_find_startline(GList *list, int count, int start, int level)
-{
-	GList *tmp;
-
-	if (count <= 0) return list;
-
-	for (tmp = g_list_last(list); tmp != NULL; tmp = tmp->prev) {
-		LINE_REC *rec = tmp->data;
-
-		if (!lastlog_match(rec, level))
-			continue;
-
-		if (start > 0) {
-			start--;
-			continue;
-		}
-
-		if (--count == 0)
-			return tmp;
-	}
-
-	return list;
-}
-
 static void show_lastlog(const char *searchtext, GHashTable *optlist,
 			 int start, int count)
 {
         WINDOW_REC *window;
 	GList *startline, *list, *tmp;
-	char *str, *line;
-	int level, fhandle;
+	GString *line;
+        char *str;
+	int level, fhandle, len;
 
         level = cmd_options_get_level("lastlog", optlist);
 	if (level == -1) return; /* error in options */
@@ -243,40 +141,63 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		startline = NULL;
 	if (startline == NULL) startline = WINDOW_GUI(window)->lines;
 
-	list = gui_window_find_text(window, searchtext, startline,
+	list = gui_window_find_text(window, startline,
+				    level, MSGLEVEL_LASTLOG,
+				    searchtext,
 				    g_hash_table_lookup(optlist, "regexp") != NULL,
-				    g_hash_table_lookup(optlist, "word") != NULL);
-	tmp = lastlog_find_startline(list, count, start, level);
+				    g_hash_table_lookup(optlist, "word") != NULL,
+				    g_hash_table_lookup(optlist, "case") != NULL);
 
-	for (; tmp != NULL && (count < 0 || count > 0); tmp = tmp->next) {
+        len = g_list_length(list);
+	if (count <= 0)
+		tmp = list;
+	else {
+		int pos = len-count;
+
+		if (pos < 0) pos = 0;
+		pos += start;
+
+		tmp = pos > len ? NULL : g_list_nth(list, pos);
+		len = g_list_length(tmp);
+	}
+
+	if (len > MAX_LINES_WITHOUT_FORCE && fhandle == -1 &&
+	    g_hash_table_lookup(optlist, "force") == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_LASTLOG_TOO_LONG, len);
+		g_list_free(list);
+		return;
+	}
+
+	line = g_string_new(NULL);
+        while (tmp != NULL && (count < 0 || count > 0)) {
 		LINE_REC *rec = tmp->data;
 
-		if (!lastlog_match(rec, level))
-			continue;
-		count--;
-
                 /* get the line text */
-		line = gui_window_line2text(rec, fhandle == -1);
-		if (settings_get_bool("timestamps"))
-                        str = line;
-		else {
+		gui_window_line2text(rec, fhandle == -1, line);
+		if (!settings_get_bool("timestamps")) {
 			struct tm *tm = localtime(&rec->time);
-			str = g_strdup_printf("%02d:%02d %s",
-					      tm->tm_hour, tm->tm_min, line);
+                        char timestamp[10];
+
+			g_snprintf(timestamp, sizeof(timestamp),
+				   "%02d:%02d ",
+				   tm->tm_hour, tm->tm_min);
+                        g_string_prepend(line, timestamp);
 		}
 
                 /* write to file/window */
 		if (fhandle != -1) {
-			write(fhandle, line, strlen(line));
+			write(fhandle, line->str, line->len);
 			write(fhandle, "\n", 1);
 		} else {
 			printtext_window(active_win, MSGLEVEL_LASTLOG,
-					 "%s", line);
+					 "%s", line->str);
 		}
 
-		if (str != line) g_free(str);
-		g_free(line);
+		count--;
+		tmp = tmp->next;
 	}
+        g_string_free(line, TRUE);
 
 	if (fhandle == -1 && g_hash_table_lookup(optlist, "-") == NULL)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_END);
@@ -291,8 +212,8 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 }
 
 /* SYNTAX: LASTLOG [-] [-file <filename>] [-clear] [-<level> -<level...>]
-		   [-new | -away] [-regexp | -word] [-window <ref#|name>]
-		   [<pattern>] [<count> [<start>]] */
+		   [-new | -away] [-regexp | -word] [-case]
+		   [-window <ref#|name>] [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
 {
 	GHashTable *optlist;
@@ -323,7 +244,7 @@ void lastlog_init(void)
 {
 	command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
 
-	command_set_options("lastlog", "!- clear -file -window new away word regexp");
+	command_set_options("lastlog", "!- force clear -file -window new away word regexp case");
 }
 
 void lastlog_deinit(void)

@@ -789,81 +789,139 @@ static void signal_window_changed(WINDOW_REC *window)
 	screen_refresh_thaw();
 }
 
-GList *gui_window_find_text(WINDOW_REC *window, const char *text,
-			    GList *startline, int regexp, int fullword)
+void gui_window_line2text(LINE_REC *line, int coloring, GString *str)
 {
-#ifdef HAVE_REGEX_H
-    regex_t preg;
-#endif
-    GList *tmp;
-    GList *matches;
-    gchar *str, *ptr;
-    gint n, size;
+	int color;
+        unsigned char cmd;
+	char *ptr, *tmp;
 
-    g_return_val_if_fail(window != NULL, NULL);
-    g_return_val_if_fail(text != NULL, NULL);
+	g_return_if_fail(line != NULL);
+	g_return_if_fail(str != NULL);
 
-    matches = NULL; size = 1024; str = g_malloc(1024);
+        g_string_truncate(str, 0);
 
-#ifdef HAVE_REGEX_H
-    if (regcomp(&preg, text, REG_ICASE|REG_EXTENDED|REG_NOSUB) != 0)
-	    return 0;
-#endif
-
-    if (startline == NULL) startline = WINDOW_GUI(window)->lines;
-    for (tmp = startline; tmp != NULL; tmp = tmp->next)
-    {
-        LINE_REC *rec = tmp->data;
-
-	if (*text == '\0') {
-		matches = g_list_append(matches, rec);
-		continue;
-	}
-
-	for (n = 0, ptr = rec->text; ; ptr++)
-	{
-	    if (*ptr != 0)
-	    {
-		if (n+2 > size)
-		{
-		    size += 1024;
-                    str = g_realloc(str, size);
+	color = 0;
+	for (ptr = line->text;;) {
+		if (*ptr != 0) {
+			g_string_append_c(str, *ptr);
+                        ptr++;
+			continue;
 		}
-		str[n++] = toupper(*ptr);
-	    }
-	    else
-	    {
+
+		ptr++;
+                cmd = (unsigned char) *ptr;
 		ptr++;
 
-		if ((guchar) *ptr == LINE_CMD_CONTINUE)
-		{
-		    gchar *tmp;
-
-		    memcpy(&tmp, ptr+1, sizeof(gchar *));
-		    ptr = tmp-1;
+		if (cmd == LINE_CMD_EOL || cmd == LINE_CMD_FORMAT) {
+                        /* end of line */
+			break;
 		}
-		else if ((guchar) *ptr == LINE_CMD_EOL ||
-			 (guchar) *ptr == LINE_CMD_FORMAT)
-		    break;
-	    }
-	}
-        str[n] = '\0';
 
-	if (
-#ifdef HAVE_REGEX_H
-		regexp ? regexec(&preg, str, 0, NULL, 0) == 0 :
-#endif
-	    fullword ? stristr_full(str, text) != NULL :
-	    stristr(str, text) != NULL) {
-                /* matched */
-		matches = g_list_append(matches, rec);
+		if (cmd == LINE_CMD_CONTINUE) {
+                        /* line continues in another address.. */
+			memcpy(&tmp, ptr, sizeof(char *));
+			ptr = tmp;
+                        continue;
+		}
+
+		if (!coloring) {
+			/* no colors, skip coloring commands */
+                        continue;
+		}
+
+		if ((cmd & 0x80) == 0) {
+			/* set color */
+			color = cmd;
+			g_string_sprintfa(str, "\004%c%c",
+					  (color & 0x0f)+'0',
+					  ((color & 0xf0) >> 4)+'0');
+		} else switch (cmd) {
+		case LINE_CMD_UNDERLINE:
+			g_string_append_c(str, 31);
+			break;
+		case LINE_CMD_COLOR0:
+			g_string_sprintfa(str, "\004%c%c",
+					  '0', ((color & 0xf0) >> 4)+'0');
+			break;
+		case LINE_CMD_COLOR8:
+			g_string_sprintfa(str, "\004%c%c",
+					  '8', ((color & 0xf0) >> 4)+'0');
+			color &= 0xfff0;
+			color |= 8|ATTR_COLOR8;
+			break;
+		case LINE_CMD_BLINK:
+			color |= 0x80;
+			g_string_sprintfa(str, "\004%c%c", (color & 0x0f)+'0',
+					  ((color & 0xf0) >> 4)+'0');
+			break;
+		case LINE_CMD_INDENT:
+			break;
+		}
 	}
-    }
+}
+
+GList *gui_window_find_text(WINDOW_REC *window, GList *startline,
+			    int level, int nolevel, const char *text,
+			    int regexp, int fullword, int case_sensitive)
+{
 #ifdef HAVE_REGEX_H
-    regfree(&preg);
+	regex_t preg;
 #endif
-    if (str != NULL) g_free(str);
-    return matches;
+	GList *tmp;
+	GList *matches;
+        GString *str;
+
+	g_return_val_if_fail(window != NULL, NULL);
+	g_return_val_if_fail(text != NULL, NULL);
+
+	if (regexp) {
+#ifdef HAVE_REGEX_H
+		int flags = REG_EXTENDED | REG_NOSUB |
+			(case_sensitive ? 0 : REG_ICASE);
+		if (regcomp(&preg, text, flags) != 0)
+			return NULL;
+#else
+		return NULL;
+#endif
+	}
+
+	matches = NULL;
+        str = g_string_new(NULL);
+
+	if (startline == NULL)
+		startline = WINDOW_GUI(window)->lines;
+
+	for (tmp = startline; tmp != NULL; tmp = tmp->next) {
+		LINE_REC *rec = tmp->data;
+
+		if ((rec->level & level) == 0 || (rec->level & nolevel) != 0)
+                        continue;
+
+		if (*text == '\0') {
+                        /* no search word, everything matches */
+			matches = g_list_append(matches, rec);
+			continue;
+		}
+
+                gui_window_line2text(rec, FALSE, str);
+
+                if (
+#ifdef HAVE_REGEX_H
+		    regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
+#endif
+		    fullword ? strstr_full_case(str->str, text,
+						!case_sensitive) != NULL :
+		    case_sensitive ? strstr(str->str, text) != NULL :
+				     stristr(str->str, text) != NULL) {
+			/* matched */
+			matches = g_list_append(matches, rec);
+		}
+	}
+#ifdef HAVE_REGEX_H
+	if (regexp) regfree(&preg);
+#endif
+        g_string_free(str, TRUE);
+	return matches;
 }
 
 static void gui_update_bottom_startline(GUI_WINDOW_REC *gui)
