@@ -24,5 +24,8 @@ there's already some <prefix> completion in the list, it will get replaced.
 /COMPLETION -delete <prefix> removes completion of <prefix> from the user
 completion list.
 
+Note: When -auto is specified for the <prefix> you want to remove you have to 
+quote it like /COMPLETION -delete '<prefix>'. Works with doublequotes aswell.
+
 See also: BIND
 
