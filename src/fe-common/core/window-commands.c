@@ -517,16 +517,20 @@ static void cmd_layout(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 static void cmd_foreach_window(const char *data)
 {
         WINDOW_REC *old;
-	GSList *tmp;
+        GSList *list;
 
         old = active_win;
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		WINDOW_REC *rec = tmp->data;
 
-                active_win = rec;
+	list = g_slist_copy(windows);
+	while (list != NULL) {
+		WINDOW_REC *rec = list->data;
+
+		active_win = rec;
 		signal_emit("send command", 3, data, rec->active_server,
 			    rec->active);
+                list = g_slist_remove(list, list->data);
 	}
+
         active_win = old;
 }
 
