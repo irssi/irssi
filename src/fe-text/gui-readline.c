@@ -40,8 +40,6 @@
 
 #include <signal.h>
 
-#define PASTE_MAX_KEYCOUNT 100
-
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 
@@ -272,6 +270,9 @@ static gboolean paste_timeout(gpointer data)
 static int check_pasting(unichar key, int diff)
 {
 	unsigned int i;
+
+	if (paste_state < 0)
+		return FALSE;
 
 	if (paste_state == 0) {
 		/* two keys hit together quick. possibly pasting */
@@ -884,9 +885,7 @@ static void setup_changed(void)
 
 	paste_detect_keycount = settings_get_int("paste_detect_keycount");
 	if (paste_detect_keycount < 2)
-		paste_detect_keycount = 2;
-	else if (paste_detect_keycount > PASTE_MAX_KEYCOUNT)
-		paste_detect_keycount = PASTE_MAX_KEYCOUNT;
+		paste_state = -1;
 
         paste_verify_line_count = settings_get_int("paste_verify_line_count");
 }
