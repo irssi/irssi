@@ -35,6 +35,10 @@ static GHashTable *settings;
 static char *last_error_msg;
 static int timeout_tag;
 
+static time_t config_last_mtime;
+static long config_last_size;
+static unsigned int config_last_checksum;
+
 static const char *settings_get_default_str(const char *key)
 {
 	SETTINGS_REC *rec;
@@ -212,6 +216,51 @@ void sig_term(int n)
 	raise(SIGTERM);
 }
 
+/* Yes, this is my own stupid checksum generator, some "real" algorithm
+   would be nice but would just take more space without much real benefit */
+static unsigned int file_checksum(const char *fname)
+{
+	FILE *f;
+	int n = 0;
+	unsigned int checksum = 0;
+
+	f = fopen(fname, "rb");
+	while (!feof(f))
+		checksum += fgetc(f) << ((n++ & 3)*8);
+	fclose(f);
+	return checksum;
+}
+
+static void irssi_config_save_state(const char *fname)
+{
+	struct stat statbuf;
+
+	g_return_if_fail(fname != NULL);
+
+	if (stat(fname, &statbuf) != 0)
+		return;
+
+	/* save modify time, file size and checksum */
+	config_last_mtime = statbuf.st_mtime;
+	config_last_size = statbuf.st_size;
+	config_last_checksum = file_checksum(fname);
+}
+
+int irssi_config_is_changed(const char *fname)
+{
+	struct stat statbuf;
+
+	if (fname == NULL)
+		fname = mainconfig->fname;
+
+	if (stat(fname, &statbuf) != 0)
+		return FALSE;
+
+	return config_last_mtime != statbuf.st_mtime &&
+		(config_last_size != statbuf.st_size ||
+		 config_last_checksum != file_checksum(fname));
+}
+
 static CONFIG_REC *parse_configfile(const char *fname)
 {
 	CONFIG_REC *config;
@@ -239,6 +288,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
                 config_change_file_name(config, real_fname, 0660);
 	}
 
+        irssi_config_save_state(real_fname);
 	g_free(real_fname);
 	return config;
 }
@@ -323,22 +373,44 @@ int settings_reread(const char *fname)
 int settings_save(const char *fname)
 {
 	char *str;
+	int error;
 
-	if (config_write(mainconfig, fname, 0660) == 0)
-		return TRUE;
+	if (fname == NULL)
+		fname = mainconfig->fname;
 
-	/* error */
-	str = g_strdup_printf(_("Couldn't save configuration file: %s"),
-			      config_last_error(mainconfig));
-	signal_emit("gui dialog", 2, "error", str);
-	g_free(str);
-        return FALSE;
+	error = config_write(mainconfig, fname, 0660) != 0;
+        irssi_config_save_state(fname);
+	if (error) {
+		str = g_strdup_printf(_("Couldn't save "
+					"configuration file: %s"),
+				      config_last_error(mainconfig));
+		signal_emit("gui dialog", 2, "error", str);
+		g_free(str);
+	}
+        return !error;
 }
 
 static void sig_autosave(void)
 {
-	if (settings_get_bool("settings_autosave"))
-                settings_save(NULL);
+	char *fname, *str;
+
+	if (!settings_get_bool("settings_autosave"))
+		return;
+
+	if (!irssi_config_is_changed(NULL))
+		settings_save(NULL);
+	else {
+		fname = g_strconcat(mainconfig->fname, ".autosave", NULL);
+		str = g_strdup_printf(_("Configuration file was modified "
+					"while irssi was running. Saving "
+					"configuration to file '%s' instead"),
+					fname);
+		signal_emit("gui dialog", 2, "warning", str);
+		g_free(str);
+
+                settings_save(fname);
+		g_free(fname);
+	}
 }
 
 void settings_init(void)
@@ -346,6 +418,7 @@ void settings_init(void)
 	settings = g_hash_table_new((GHashFunc) g_str_hash,
 				    (GCompareFunc) g_str_equal);
 
+	config_last_mtime = 0;
 	init_configfile();
 
 	settings_add_bool("misc", "settings_autosave", TRUE);

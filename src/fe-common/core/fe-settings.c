@@ -245,14 +245,38 @@ static void cmd_reload(const char *data)
 	g_free(fname);
 }
 
+static void settings_save_fe(const char *fname)
+{
+	if (settings_save(fname)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_CONFIG_SAVED, fname);
+	}
+}
+
+static void settings_save_confirm(const char *line, char *fname)
+{
+	if (toupper(*line) == 'Y')
+		settings_save_fe(fname);
+	g_free(fname);
+}
+
 /* SYNTAX: SAVE [<file>] */
 static void cmd_save(const char *data)
 {
-	if (settings_save(*data != '\0' ? data : NULL)) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_CONFIG_SAVED, *data != '\0' ? data :
-			    mainconfig->fname);
+	if (*data == '\0')
+		data = mainconfig->fname;
+
+	if (!irssi_config_is_changed(data)) {
+		settings_save_fe(data);
+		return;
 	}
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_CONFIG_MODIFIED, data);
+	signal_emit("gui entry redirect", 4,
+		    settings_save_confirm,
+		    _("Overwrite config (y/N)?"),
+		    GINT_TO_POINTER(FALSE), g_strdup(data));
 }
 
 void fe_settings_init(void)

@@ -57,6 +57,7 @@ SETTINGS_REC *settings_get_record(const char *key);
 /* if `fname' is NULL, the default is used */
 int settings_reread(const char *fname);
 int settings_save(const char *fname);
+int irssi_config_is_changed(const char *fname);
 
 void settings_init(void);
 void settings_deinit(void);
