@@ -28,11 +28,12 @@
 #include "irc.h"
 #include "irc-channels.h"
 
-#include "fe-common/core/printtext.h"
+#include "fe-common/core/printtext.h" /* FIXME: evil. need to do fe-proxy */
 
 GSList *proxy_listens;
 GSList *proxy_clients;
 
+static CLIENT_REC *ctcp_client;
 static GString *next_line;
 static int ignore_next;
 
@@ -42,7 +43,10 @@ static void remove_client(CLIENT_REC *rec)
 
 	proxy_clients = g_slist_remove(proxy_clients, rec);
 
-        signal_emit("proxy client disconnected", 1, rec);
+	if (ctcp_client == rec)
+                ctcp_client = NULL;
+
+	signal_emit("proxy client disconnected", 1, rec);
 	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		  "Proxy: Client disconnected from %s", rec->host);
 
@@ -136,7 +140,9 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	if (strcmp(cmd, "QUIT") == 0) {
 		remove_client(client);
 		return;
-	} if (strcmp(cmd, "PING") == 0) {
+	}
+
+	if (strcmp(cmd, "PING") == 0) {
 		/* Reply to PING, if the target parameter is either
 		   proxy_adress, our own nick or empty. */
 		char *params, *origin, *target;
@@ -152,6 +158,21 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			return;
 		}
 		g_free(params);
+	}
+
+	if (strcmp(cmd, "PROXY") == 0) {
+		if (g_strcasecmp(args, "CTCP ON") == 0) {
+                        /* client wants all ctcps */
+			ctcp_client = client;
+			proxy_outdata(client, ":%s NOTICE %s :You're now receiving all CTCPs sent to proxy\n",
+				      client->proxy_address, client->nick);
+		} else if (g_strcasecmp(args, "CTCP OFF") == 0) {
+                        /* client wants proxy to handle all ctcps */
+			ctcp_client = NULL;
+			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself all CTCPs\n",
+				      client->proxy_address, client->nick);
+		}
+		return;
 	}
 
 	if (client->server == NULL || !client->server->connected) {
@@ -365,11 +386,22 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		}
 	}
 
+        if (strcmp(event, "event privmsg") == 0 &&
+	    strstr(args, " :\001") != NULL &&
+	    strstr(args, " :\001ACTION") == NULL) {
+		/* CTCP - either answer ourself or forward it to one client */
+		if (ctcp_client != NULL) {
+                        /* one of the clients answers */
+			net_transmit(ctcp_client->handle,
+				     next_line->str, next_line->len);
+			signal_stop();
+		}
+		g_free(event);
+		return;
+	}
+
 	if (strcmp(event, "event ping") == 0 ||
-	    strcmp(event, "event pong") == 0 ||
-	    (strcmp(event, "event privmsg") == 0 &&
-	     strstr(args, " :\001") != NULL &&
-	     strstr(args, " :\001ACTION") == NULL)) {
+	    strcmp(event, "event pong") == 0) {
 		/* We want to answer ourself to PINGs and CTCPs.
 		   Also hide PONGs from clients. */
 		g_free(event);
