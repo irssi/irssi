@@ -253,6 +253,9 @@ void handle_key(int key)
 		/* C-E, end */
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
 		break;
+	case CTRL('l'):
+		irssi_redraw();
+		break;
 
 	case '\n':
 	case 13:
