@@ -1,4 +1,4 @@
-IRC base
+IRC base
 --------
 
 * Requires to work properly:
@@ -163,6 +163,7 @@ notifylist.c:
 plugins.c:
 
  "plugin created", PLUGIN_REC
+ "plugin loaded", PLUGIN_REC
  "plugin destroyed", PLUGIN_REC
  "plugin cant load", gchar *name
  "plugin already loaded", gchar *name
@@ -180,6 +181,11 @@ UI common
                                          all "gui print text"s are sent
 
 * Provides signals:
+
+ui-keyboard.c:
+
+ "keyinfo created", KEYINFO_REC
+ "keyinfo destroyed", KEYINFO_REC
 
 ui-printtext.c:
 
