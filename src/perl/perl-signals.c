@@ -163,7 +163,8 @@ static void perl_call_signal(const char *func, int signal_id,
 		signal_emit("script error", 2,
 			    perl_script_find_package(package),
 			    SvPV(ERRSV, n_a));
-                g_free(package);
+		g_free(package);
+                rec = NULL;
 	}
 
         /* restore arguments the perl script modified */
@@ -210,15 +211,16 @@ static void perl_call_signal(const char *func, int signal_id,
 
 static void sig_func(int priority, gconstpointer *args)
 {
-	GSList **list, *tmp;
+	GSList **list, *tmp, *next;
         int signal_id;
 
         signal_id = signal_get_emitted_id();
 	list = g_hash_table_lookup(signals[priority],
 				   GINT_TO_POINTER(signal_id));
-	for (tmp = list == NULL ? NULL : *list; tmp != NULL; tmp = tmp->next) {
+	for (tmp = list == NULL ? NULL : *list; tmp != NULL; tmp = next) {
 		PERL_SIGNAL_REC *rec = tmp->data;
 
+                next = tmp->next;
 		perl_call_signal(rec->func, signal_id, args);
 		if (signal_is_stopped(signal_id))
                         break;
