@@ -527,7 +527,7 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 		lag_unknown = now-server->lag_last_check >
 			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
 
-		if (server->lag < lag_min_show && !lag_unknown)
+		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown))
 			size_needed = 0; /* small lag, don't display */
 		else {
 			g_string_sprintf(str, "%d.%02d", server->lag/1000, (server->lag % 1000)/10);
@@ -541,27 +541,25 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 		size_needed = str->len+7;
 	}
 
-    if (item->size != size_needed)
-    {
-        /* we need more (or less..) space! */
-        statusbar_item_resize(item, size_needed);
-        g_string_free(str, TRUE);
-        return;
-    }
+	if (item->size != size_needed) {
+		/* we need more (or less..) space! */
+		statusbar_item_resize(item, size_needed);
+		g_string_free(str, TRUE);
+		return;
+	}
 
-    if (item->size != 0)
-    {
-	lag_last_draw = now;
-	move(ypos, item->xpos);
-	set_color((1 << 4)+3); addch('[');
-	set_color((1 << 4)+7); addstr("Lag: ");
+	if (item->size != 0) {
+		lag_last_draw = now;
+		move(ypos, item->xpos);
+		set_color((1 << 4)+3); addch('[');
+		set_color((1 << 4)+7); addstr("Lag: ");
 
-	set_color((1 << 4)+15); addstr(str->str);
-	set_color((1 << 4)+3); addch(']');
+		set_color((1 << 4)+15); addstr(str->str);
+		set_color((1 << 4)+3); addch(']');
 
-	screen_refresh();
-    }
-    g_string_free(str, TRUE);
+		screen_refresh();
+	}
+	g_string_free(str, TRUE);
 }
 
 static void sig_statusbar_lag_redraw(void)
