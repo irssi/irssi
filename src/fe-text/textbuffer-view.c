@@ -1066,6 +1066,7 @@ void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 	g_return_if_fail(view != NULL);
 
 	if (view->window != NULL) {
+                werase(view->window);
 		view_draw_top(view, view->height);
 		screen_refresh(view->window);
 	}
