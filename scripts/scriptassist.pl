@@ -8,7 +8,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002101402';
+$VERSION = '2002101601';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -844,7 +844,7 @@ sub download_script ($$) {
     my $response = $ua->request($request);
     if ($response->is_success()) {
 	my $file = $response->content();
-	mkdir $dir.'/scripts/', 0750 unless (-e $dir.'/scripts/');
+	mkdir $dir.'/scripts/' unless (-e $dir.'/scripts/');
 	local *F;
 	open(F, '>'.$dir.'/scripts/'.$script.'.pl.new');
 	print F $file;
@@ -857,7 +857,7 @@ sub download_script ($$) {
 	    if ($response2->is_success()) {
 		local *S;
 		my $sig_dir = $dir.'/scripts/signatures/';
-		mkdir $sig_dir, 0750 unless (-e $sig_dir);
+		mkdir $sig_dir unless (-e $sig_dir);
 		open(S, '>'.$sig_dir.$script.'.pl.asc');
 		my $file2 = $response2->content();
 		print S $file2;
@@ -892,7 +892,7 @@ sub download_script ($$) {
     }
     if ($result{installed}) {
 	my $old_dir = "$dir/scripts/old/";
-	mkdir $old_dir, 0750 unless (-e $old_dir);
+	mkdir $old_dir unless (-e $old_dir);
 	rename "$dir/scripts/$script.pl", "$old_dir/$script.pl.old" if -e "$dir/scripts/$script.pl";
 	rename "$dir/scripts/$script.pl.new", "$dir/scripts/$script.pl";
     }
@@ -922,7 +922,7 @@ sub print_check (%) {
 sub toggle_autorun ($) {
     my ($script) = @_;
     my $dir = Irssi::get_irssi_dir()."/scripts/";
-    mkdir $dir."autorun/", 0750 unless (-e $dir."autorun/");
+    mkdir $dir."autorun/" unless (-e $dir."autorun/");
     return unless (-e $dir.$script.".pl");
     if (check_autorun($script)) {
 	if (readlink($dir."/autorun/".$script.".pl") eq "../".$script.".pl") {
