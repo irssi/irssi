@@ -55,6 +55,8 @@ typedef void (*GInputFunction) (void *data, int source,
 
 int g_input_add(int source, GInputCondition condition,
 		GInputFunction function, void *data);
+int g_input_add_full(int source, int priority, GInputCondition condition,
+		     GInputFunction function, void *data);
 
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)
 

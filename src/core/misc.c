@@ -58,8 +58,8 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	return TRUE;
 }
 
-int g_input_add(int source, GInputCondition condition,
-		GInputFunction function, void *data)
+int g_input_add_full(int source, int priority, GInputCondition condition,
+		     GInputFunction function, void *data)
 {
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
@@ -78,11 +78,18 @@ int g_input_add(int source, GInputCondition condition,
 		cond |= G_IO_OUT;
 
 	channel = g_io_channel_unix_new (source);
-	result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
+	result = g_io_add_watch_full(channel, priority, cond,
 				     irssi_io_invoke, rec, g_free);
 	g_io_channel_unref(channel);
 
 	return result;
+}
+
+int g_input_add(int source, GInputCondition condition,
+		GInputFunction function, void *data)
+{
+	return g_input_add_full(source, G_PRIORITY_DEFAULT, condition,
+				function, data);
 }
 
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2)

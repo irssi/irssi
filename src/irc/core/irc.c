@@ -271,7 +271,7 @@ static void irc_server_event(const char *line, IRC_SERVER_REC *server, const cha
 }
 
 /* Read line from server */
-static int irc_receive_line(SERVER_REC *server, char **str)
+static int irc_receive_line(SERVER_REC *server, char **str, int read_socket)
 {
 	char tmpbuf[512];
 	int recvlen, ret;
@@ -279,8 +279,9 @@ static int irc_receive_line(SERVER_REC *server, char **str)
 	g_return_val_if_fail(server != NULL, -1);
 	g_return_val_if_fail(str != NULL, -1);
 
-	recvlen = net_receive(net_sendbuffer_handle(server->handle),
-			      tmpbuf, sizeof(tmpbuf));
+	recvlen = !read_socket ? 0 :
+		net_receive(net_sendbuffer_handle(server->handle),
+			    tmpbuf, sizeof(tmpbuf));
 
 	ret = line_split(tmpbuf, recvlen, str, (LINEBUF_REC **) &server->buffer);
 	if (ret == -1) {
@@ -332,13 +333,19 @@ static void irc_parse_incoming_line(IRC_SERVER_REC *server, char *line)
 static void irc_parse_incoming(SERVER_REC *server)
 {
 	char *str;
+	int count;
 
 	g_return_if_fail(server != NULL);
 
-	while (irc_receive_line(server, &str) > 0) {
+	/* Some commands can send huge replies and irssi might handle them
+	   too slowly, so read only max. 5 times from the socket before
+	   letting other tasks to run. */
+	count = 0;
+	while (irc_receive_line(server, &str, count < 5) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
 
+		count++;
 		if (g_slist_find(servers, server) == NULL)
 			break; /* disconnected */
 	}
