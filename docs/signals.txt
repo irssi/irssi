@@ -51,9 +51,9 @@ log.c:
  "log written", LOG_REC, char *line
 
 modules.c:
- "module loaded", MODULE_REC
- "module unloaded", MODULE_REC
- "module error", int error, char *module, char *text
+ "module loaded", MODULE_REC, MODULE_FILE_REC
+ "module unloaded", MODULE_REC, MODULE_FILE_REC
+ "module error", int error, char *text, char *rootmodule, char *submodule
 
 nicklist.c:
  "nicklist new", CHANNEL_REC, NICK_REC
