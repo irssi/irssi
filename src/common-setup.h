@@ -85,6 +85,7 @@ extern gboolean toggle_dcc_autodisplay_dialog;
 extern gboolean toggle_dcc_autoget;
 extern gboolean toggle_dcc_autorename;
 extern gint dcc_max_autoget_size;
+extern gchar *dcc_autoget_masks;
 extern gchar *dcc_download_path;
 
 extern gboolean toggle_dcc_fast_send;
