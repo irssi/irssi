@@ -146,6 +146,16 @@ static void server_init(IRC_SERVER_REC *server)
 		if (*ptr == ':') *ptr = '_';
 	}
 
+	/* don't allow hostname to begin with number or '+', '-'. those
+	   can be interpreted as ircnet ircd's mode parameter.
+
+	   username/hostname parameters should probably be configurable since
+	   they're only needed with some old servers which uses them to count
+	   unique users. */
+	if ((hostname[0] >= '0' && hostname[0] <= '9') ||
+	    hostname[0] == '+' || hostname[0] == '-')
+		hostname[0] = '_';
+
 	username = g_strdup(conn->username);
 	ptr = strchr(username, ' ');
 	if (ptr != NULL) *ptr = '\0';
