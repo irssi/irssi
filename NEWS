@@ -2,6 +2,9 @@ v0.7.22 2000-01-13  Timo Sirainen <cras@irccrew.org> [stable]
 
 	+ configure displays a summary of things to compile
 	+ /set toggle_use_colors = yes|no, sets colors on/off in irssi-text
+	+ /window goto active now finds first the window with the higest
+	  activity (msgs to you -> msgs -> rest). Alt-A is also default key
+	  shortcut for this
 	- Some kB/s messages displayed wrong values when resuming DCC
 	  transfers. Also, kB/s is now displayed with two decimals
 	- "Day changed to 00-10-2000" .. month was wrong. No Y2K bugs
@@ -16,6 +19,9 @@ v0.7.22 2000-01-13  Timo Sirainen <cras@irccrew.org> [stable]
 	  build GTK irssi
 	- Doesn't crash when trying to create DCC dialog after being
 	  disconnected from IRC server
+	- Modeless channels (+channel) didn't get synced ever..
+	- Some transparency fixes, it's a lot faster now when moving the
+	  window, but it's still too slow when creating it, not sure why..
 
 v0.7.21 1999-12-20  Timo Sirainen <cras@irccrew.org> [unstable]
 
