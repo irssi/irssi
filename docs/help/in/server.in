@@ -8,8 +8,8 @@
      -ssl_verify: Verify servers SSL certificate
      -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
      -ssl_capath: Directory with CA certificates (implies -ssl_verify)
-     -auto: Automatically connect to server at startup (default)
-     -noauto: Don't connect to server at startup
+     -auto: Automatically connect to server at startup
+     -noauto: Don't connect to server at startup (default)
      -network: Specify what IRC network this server belongs to
      -ircnet: Same as -network. Deprecated. Do not use
      -host: Specify what host name to use, if you have multiple
