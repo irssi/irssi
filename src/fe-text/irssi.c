@@ -22,8 +22,10 @@
 #include "module-formats.h"
 #include "args.h"
 #include "signals.h"
+#include "levels.h"
 #include "core.h"
 
+#include "printtext.h"
 #include "fe-common-core.h"
 #include "fe-common-irc.h"
 #include "themes.h"
@@ -53,6 +55,17 @@ void mainwindow_activity_deinit(void);
 
 static GMainLoop *main_loop;
 int quitting;
+
+static const char *firsttimer_text =
+	"Looks like this is the first time you run irssi.\n"
+	"This is just a reminder that you really should go read\n"
+	"startup-HOWTO if you haven't already. Irssi's default\n"
+	"settings aren't probably what you've used to, and you\n"
+	"shouldn't judge the whole client as crap based on them.\n\n"
+	"You can find startup-HOWTO and more irssi beginner info at\n"
+	"http://irssi.org/beginner/";
+static int display_firsttimer = FALSE;
+
 
 static void sig_exit(void)
 {
@@ -115,6 +128,11 @@ static void textui_finish_init(void)
 #endif
 	signal_emit("irssi init finished", 0);
 
+	if (display_firsttimer) {
+		printtext_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				 "%s", firsttimer_text);
+	}
+
 	screen_refresh_thaw();
 }
 
@@ -148,20 +166,6 @@ static void textui_deinit(void)
 	fe_common_core_deinit();
 	irc_deinit();
 	core_deinit();
-}
-
-static void irssi_firsttimer(void)
-{
-	char str[2];
-
-	printf("\nLooks like this is the first time you run irssi.\n");
-        printf("This is just a reminder that you really should go read\n");
-        printf("startup-HOWTO if you haven't already. Irssi's default\n");
-        printf("settings aren't probably what you've used to, and you\n");
-	printf("shouldn't judge the whole client as crap based on them.\n\n");
-	printf("You can find startup-HOWTO and more irssi beginner info at\n");
-	printf("http://irssi.org/beginner/\n");
-	fgets(str, sizeof(str), stdin);
 }
 
 static void check_oldcrap(void)
@@ -208,7 +212,7 @@ static void check_files(void)
         path = g_strdup_printf("%s/.irssi", g_get_home_dir());
 	if (stat(path, &statbuf) != 0) {
 		/* ~/.irssi doesn't exist, first time running irssi */
-		irssi_firsttimer();
+		display_firsttimer = TRUE;
 	} else {
                 check_oldcrap();
 	}
