@@ -349,7 +349,7 @@ static void cmd_window_server(const char *data)
 	    active_win->servertag != NULL) {
 		g_free_and_null(active_win->servertag);
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_UNSET_SERVER_STICKY, server->tag);
+				   TXT_UNSET_SERVER_STICKY);
 	}
 
 	if (active_win->servertag != NULL &&
