@@ -639,10 +639,14 @@ static char *get_optional_channel(WI_ITEM_REC *active_item, char **data)
 	origtmp = tmp = g_strdup(*data);
 	channel = cmd_get_param(&tmp);
 
-	if (strcmp(channel, "*") == 0 ||
-	    !server_ischannel(active_item->server, channel))
+	if (strcmp(channel, "*") == 0) {
+                /* "*" means active channel */
+		cmd_get_param(data);
 		ret = active_item->name;
-	else {
+	} else if (!server_ischannel(active_item->server, channel)) {
+                /* we don't have channel parameter - use active channel */
+		ret = active_item->name;
+	} else {
 		/* Find the channel first and use it's name if found.
 		   This allows automatic !channel -> !XXXXXchannel replaces. */
                 channel = cmd_get_param(data);
