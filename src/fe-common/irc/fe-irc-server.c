@@ -35,9 +35,9 @@
 #include "fe-windows.h"
 #include "printtext.h"
 
-/* SYNTAX: SERVER ADD [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
-                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-		      <address> [<port> [<password>]] */
+/* SYNTAX: SERVER ADD [-4 | -6] [-auto | -noauto] [-ircnet <ircnet>]
+                      [-host <hostname>] [-cmdspeed <ms>] [-cmdmax <count>]
+		      [-port <port>] <address> [<port> [<password>]] */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
