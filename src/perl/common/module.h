@@ -14,6 +14,7 @@
 #include "special-vars.h"
 #include "window-item-def.h"
 
+#include "chat-protocols.h"
 #include "chatnets.h"
 #include "servers.h"
 #include "servers-reconnect.h"

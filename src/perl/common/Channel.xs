@@ -45,7 +45,7 @@ channel_create(server, name, automatic)
 	char *name
 	int automatic
 CODE:
-	channel_create(server->chat_type, server, name, automatic);
+	CHAT_PROTOCOL(server)->channel_create(server, name, automatic);
 
 Irssi::Channel
 channel_find(server, name)
