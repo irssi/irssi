@@ -100,9 +100,11 @@ static void read_signals(void)
 
 static void read_settings(void)
 {
+	int old_colors = use_colors;
+
 	use_colors = settings_get_bool("colors");
 	read_signals();
-	irssi_redraw();
+	if (use_colors != old_colors) irssi_redraw();
 }
 
 /* Initialize screen, detect screen length */
