@@ -376,6 +376,12 @@ CODE:
 OUTPUT:
 	RETVAL
 
+char *
+get_irssi_dir()
+
+char *
+get_irssi_config()
+
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
 #*******************************

@@ -580,7 +580,7 @@ int settings_reread(const char *fname)
 	config_last_modifycounter = mainconfig->modifycounter;
 
 	signal_emit("setup changed", 0);
-	signal_emit("setup reread", 0);
+	signal_emit("setup reread", 1, mainconfig->fname);
         return TRUE;
 }
 
