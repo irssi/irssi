@@ -342,7 +342,7 @@ static void autologs_close_all(void)
 static void autolog_open(void *server, const char *target)
 {
 	LOG_REC *log;
-	char *fname, *dir, *str;
+	char *fname, *dir;
 
 	log = logs_find_item(LOG_ITEM_TARGET, target, server, NULL);
 	if (log != NULL && !log->failed) {
@@ -352,15 +352,12 @@ static void autolog_open(void *server, const char *target)
 
 	fname = parse_special_string(autolog_path, server, NULL, target, NULL);
 	if (log_find(fname) == NULL) {
-		str = convert_home(fname);
-		dir = g_dirname(str);
-		g_free(str);
-
-		mkpath(dir, LOG_DIR_CREATE_MODE);
-		g_free(dir);
-
 		log = log_create_rec(fname, autolog_level);
 		log_item_add(log, LOG_ITEM_TARGET, target, server);
+
+		dir = g_dirname(log->real_fname);
+		mkpath(dir, LOG_DIR_CREATE_MODE);
+		g_free(dir);
 
 		log->temp = TRUE;
 		log_update(log);

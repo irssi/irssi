@@ -348,6 +348,7 @@ LOG_REC *log_create_rec(const char *fname, int level)
 	if (rec == NULL) {
 		rec = g_new0(LOG_REC, 1);
 		rec->fname = g_strdup(fname);
+		rec->real_fname = log_filename(rec);
 		rec->handle = -1;
 	}
 
