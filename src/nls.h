@@ -12,15 +12,6 @@
 #  else
 #    define N_(String) (String)
 #  endif
-
-#  ifdef HAVE_LANGINFO_H
-#    include <langinfo.h>
-#  else
-#    define nl_langinfo(x) x
-#  endif
-#  ifndef YESEXPR
-#    define YESEXPR "^[yY]"
-#  endif
 #else
 /* Stubs that do something close enough.  */
 #  define textdomain(String) (String)

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-12-03 07:31+0200\n"
+"POT-Creation-Date: 2000-12-03 08:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,6 +96,10 @@ msgid ""
 "%s"
 msgstr ""
 
+#: src/fe-common/core/fe-settings.c:259
+msgid "Y"
+msgstr "Y"
+
 #: src/fe-common/core/fe-settings.c:279
 msgid "Overwrite config (y/N)?"
 msgstr ""
@@ -132,7 +136,7 @@ msgstr ""
 msgid "Specify host name to use"
 msgstr ""
 
-#: src/fe-text/irssi.c:235
+#: src/fe-text/irssi.c:239
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
@@ -983,9 +987,6 @@ msgstr ""
 
 #~ msgid "X"
 #~ msgstr "X"
-
-#~ msgid "Y"
-#~ msgstr "Y"
 
 #~ msgid "Default window"
 #~ msgstr "Domy¶lne okno"

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi 0.7.95\n"
-"POT-Creation-Date: 2000-12-03 07:31+0200\n"
+"POT-Creation-Date: 2000-12-03 08:38+0200\n"
 "PO-Revision-Date: 2000-08-14 01:51+0200\n"
 "Last-Translator: Per von Zweigbergk <pvz@iname.com>\n"
 "Language-Team: Per von Zweigbergh <pvz@iname.com>\n"
@@ -107,6 +107,10 @@ msgstr ""
 "Ignorerade felaktigheter i tema:\n"
 "%s"
 
+#: src/fe-common/core/fe-settings.c:259
+msgid "Y"
+msgstr ""
+
 #: src/fe-common/core/fe-settings.c:279
 msgid "Overwrite config (y/N)?"
 msgstr ""
@@ -143,7 +147,7 @@ msgstr "Välj vilket nicknamn du vill använda"
 msgid "Specify host name to use"
 msgstr "Välj vilket värdnamn du vill använda"
 
-#: src/fe-text/irssi.c:235
+#: src/fe-text/irssi.c:239
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr "Ett skärmhanteringsinitieringsfel uppstod, avslutar.\n"
 

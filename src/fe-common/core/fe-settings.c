@@ -256,7 +256,7 @@ static void settings_save_fe(const char *fname)
 
 static void settings_save_confirm(const char *line, char *fname)
 {
-	if (regexp_match(line, nl_langinfo(YESEXPR)))
+	if (g_strncasecmp(line, _("Y"), 1) == 0)
 		settings_save_fe(fname);
 	g_free(fname);
 }

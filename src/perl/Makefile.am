@@ -51,6 +51,7 @@ CORE_SOURCES = \
 	common/Rawlog.xs \
 	common/Server.xs \
 	common/Settings.xs \
+	common/Themes.xs \
 	common/Window.xs \
 	common/Irssi.xs \
 	common/Irssi.pm \

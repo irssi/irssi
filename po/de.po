@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Irssi 0.7.23\n"
-"POT-Creation-Date: 2000-12-03 07:31+0200\n"
+"POT-Creation-Date: 2000-12-03 08:38+0200\n"
 "PO-Revision-Date: 1999-12-01 10:35-0200\n"
 "Last-Translator: Thomas Heinen <cochi@uni-paderborn.de>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -102,6 +102,10 @@ msgid ""
 "%s"
 msgstr ""
 
+#: src/fe-common/core/fe-settings.c:259
+msgid "Y"
+msgstr ""
+
 #: src/fe-common/core/fe-settings.c:279
 msgid "Overwrite config (y/N)?"
 msgstr ""
@@ -139,7 +143,7 @@ msgstr "Bitte Nickname angeben"
 msgid "Specify host name to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-text/irssi.c:235
+#: src/fe-text/irssi.c:239
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

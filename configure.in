@@ -25,8 +25,7 @@ ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
 $libtool_flags --disable-static --output=libtool-static --no-verify $ac_aux_dir/ltmain.sh $lt_target \
 || { echo "configure: error: libtool configure failed" 1>&2; exit 1; }
 
-AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h)
-AC_CHECK_HEADERS(libintl.h langinfo.h)
+AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
 
 # check posix headers..
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
