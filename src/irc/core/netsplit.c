@@ -162,6 +162,7 @@ static void netsplit_destroy(IRC_SERVER_REC *server, NETSPLIT_REC *rec)
 		g_free(rec->name);
 		g_free(rec);
 	}
+	g_slist_free(rec->channels);
 
 	if (--rec->server->count == 0)
 		netsplit_server_destroy(server, rec->server);
@@ -403,11 +404,6 @@ void netsplit_init(void)
 
 void netsplit_deinit(void)
 {
-	GSList *tmp;
-
-	for (tmp = servers; tmp != NULL; tmp = tmp->next)
-		sig_disconnected(tmp->data);
-
 	g_source_remove(split_tag);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 	signal_remove("event join", (SIGNAL_FUNC) event_join_last);
