@@ -1,0 +1,81 @@
+abstracts = {
+# generic
+  line_start = "-!- ";
+  hilight = "%_$0-%_";
+  error = "$0-";
+
+  channel = "%_$0-%_";
+  nick = "%_$0-%_";
+  nickhost = "[$0-]";
+  server = "%_$0-%_";
+  reason = "[$0-]";
+
+# channel specific messages
+  channick_hilight = "$0-";
+  chanhost_hilight = "{nickhost $0-}";
+  channick = "$0-";
+  chanhost = "{nickhost $0-}";
+  channelhilight = "$0-";
+  ban = "$0-";
+
+# messages
+  msgnick = "<$0-> %|";
+  msgownnick = "$0-";
+  msgchannel = ":$0-";
+  msgme = "%_$0-%_";
+  privmsg = "[$0-] "
+  privmsgnick = "$0-"
+  privmsghost = "($0-)";
+  ownprivmsg = "[$0-] ";
+  ownprivmsgdest = "($0-)";
+
+# actions
+  action = " * $0- ";
+  ownaction = "{action $0-}";
+  pvtaction = " (*) $0- ";
+  pvtaction_query = "{action $0-}";
+  pubaction = "{action $0-}";
+
+# notices
+  ownnotice = "[$0-] ";
+  ownnotice_target = "($0-)";
+  notice = "-$0-- ";
+  pubnotice_channel = ":$0-";
+  pvtnotice_nick = "($0-)";
+  servernotice = "!$0- ";
+
+# ctcp
+  ownctcp = "[$0-] ";
+  ownctcp_target = "($0-)";
+  ctcp = "$0-";
+
+# wall
+  ownwall = "[$0-] ";
+  ownwall_channel = "/$0-";
+
+# wallops
+  wallop = "$0-: ";
+  wallop_nick = "$0-";
+  wallop_action = " * $0- ";
+
+# netsplits
+  netsplit = "$0-";
+  netjoin = "$0-";
+
+# /names list
+  names_nickstat = "%_$0-%_";
+  names_users = "[$0-]";
+  names_channel = "$0-";
+
+# dcc
+  dcc = "$0-";
+  dccfile = "%_$0-%_";
+
+  dccownmsg = "[$0-] ";
+  dccownnick = "($0)";
+  dccownaction = "{action $0-}";
+  dccmsg = "[$0-] "
+  dccmsghost = "($0-)";
+  dccquerynick = "$0-";
+  dccaction = " (*dcc*) $0- %|";
+};

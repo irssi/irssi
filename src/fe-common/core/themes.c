@@ -274,6 +274,20 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	data = theme_format_expand_data(theme, formatp, default_color,
 					NULL, 0);
 
+	len = strlen(data);
+	if (len > 1 && isdigit(data[len-1]) && data[len-2] == '$') {
+		/* ends with $<digit> .. this breaks things if next
+		   character is digit or '-' */
+                char digit, *tmp;
+
+		tmp = data;
+		digit = tmp[len-1];
+		tmp[len-1] = '\0';
+
+		data = g_strdup_printf("%s{%c}", tmp, digit);
+		g_free(tmp);
+	}
+
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL);
 	g_free(abstract);
 	g_free(data);

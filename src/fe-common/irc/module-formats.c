@@ -118,7 +118,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "own_notice", "{ownnotice notice{ownnotice_target $0}}$1", 2, { 0, 0 } },
 	{ "own_action", "{ownaction $0}$1", 2, { 0, 0 } },
 	{ "own_ctcp", "{ownctcp ctcp{ownctcp_target $0}}$1 $2", 3, { 0, 0, 0 } },
-	{ "own_wall", "{ownwall Wall{ownwall_channel}}$1", 2, { 0, 0 } },
+	{ "own_wall", "{ownwall Wall{ownwall_channel $0}}$1", 2, { 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Received messages", 0 },
