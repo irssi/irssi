@@ -7,7 +7,7 @@
      -targets: Log only in specified channels/nicks
      -window: Log the active window
      <filename>: File name where to log, it is parsed with
-                 strftime(), so %d=day, etc. see "man strftime" for
+                 strftime(), so %%d=day, etc. see "man strftime" for
                  more info.
      <levels>: Defaults to ALL
      <id>: ID number of log.   
@@ -17,7 +17,7 @@
 
 All of these are parsed with strftime():
 /SET log_timestamp <text> - Specifies the time stamp format.
-     Default is "%H:%M ".
+     Default is "%%H:%%M ".
 /SET log_open_string <text> - Text written to log when it's opened
 /SET log_close_string <text> - Text written to log when it's closed
 /SET log_day_changed <text> - Text written to log when day changes
@@ -30,7 +30,7 @@ Examples:
 /LOG OPEN -targets cras ~/irclogs/cras.log MSGS
      - Logs all messages from/to nick `cras'
 
-/LOG OPEN -targets #linux ~/irclogs/linux/linux-%Y-%m-%d
+/LOG OPEN -targets #linux ~/irclogs/linux/linux-%%Y-%%m-%%d
      - Logs all messages in channel #linux. Log is rotated daily, so
        logs in 1. May 2000 goes to file "linux-2000-05-01", when the
        day is changed, Irssi closes the log and starts logging to

@@ -24,8 +24,8 @@ to active window by default, but can be also sent as messages or
 notices to specified nick or channel.
 
 Processes can be accessed either by their ID or name if you named it.
-Process identifier must always begin with '%' character, like %0 or
-%name.
+Process identifier must always begin with '%%' character, like %%0 or
+%%name.
 
 Once the process is started, it's output can still be redirected
 elsewhere with the -window, -msg, etc. options. You can send text to
