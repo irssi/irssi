@@ -498,7 +498,8 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 		   more trouble than worth. (eg. we don't want to remove
 		   some good default server modes, but we don't want to
 		   set back +r, etc..) */
-		args = g_strdup_printf("%s %s", server->nick, mode);
+		args = g_strdup_printf((*mode == '+' || *mode == '-') ? "%s %s" : 
+				       "%s +%s", server->nick, mode);
 		signal_emit("command mode", 3, args, server, NULL);
 		g_free(args);
 	}
