@@ -97,11 +97,12 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 static void event_who(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
+	char *serv;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 8, NULL, &channel, &user,
-				  &host, NULL, &nick, &stat, &realname);
+				  &host, &serv, &nick, &stat, &realname);
 
 	/* split hops/realname */
 	hops = realname;
@@ -110,7 +111,7 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	if (realname > hops) realname[-1] = '\0';
 
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
-		    channel, nick, stat, hops, user, host, realname);
+		    channel, nick, stat, hops, user, host, realname, serv);
 
 	g_free(params);
 }

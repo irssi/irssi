@@ -110,7 +110,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
 	{ "end_of_whowas", "End of WHOWAS", 1, { 0 } },
 	{ "whois_not_found", "There is no such nick $0", 1, { 0 } },
-        { "who", "{channelhilight $[-10]0} %|{nick $[!9]1} $[!3]2 $[!2]3 $4@$5 {comment {hilight $6}}", 7, { 0, 0, 0, 0, 0, 0, 0 } },
+        { "who", "{channelhilight $[-10]0} %|{nick $[!9]1} $[!3]2 $[!2]3 $4@$5 {comment {hilight $6}}", 8, { 0, 0, 0, 0, 0, 0, 0, 0 } },
 	{ "end_of_who", "End of /WHO list", 1, { 0 } },
 
 	/* ---- */
