@@ -58,6 +58,7 @@ void core_init(void)
 	signals_init();
 	settings_init();
 	commands_init();
+        nickmatch_cache_init();
 
 	chat_protocols_init();
 	chatnets_init();
@@ -70,7 +71,6 @@ void core_init(void)
 	channels_init();
 	queries_init();
 	nicklist_init();
-        nickmatch_cache_init();
 
 	chat_commands_init();
         settings_check();
@@ -80,7 +80,6 @@ void core_deinit(void)
 {
 	chat_commands_deinit();
 
-        nickmatch_cache_deinit();
 	nicklist_deinit();
 	queries_deinit();
 	channels_deinit();
@@ -93,6 +92,7 @@ void core_deinit(void)
 	chatnets_deinit();
 	chat_protocols_deinit();
 
+        nickmatch_cache_deinit();
 	commands_deinit();
 	settings_deinit();
 	signals_deinit();

@@ -401,7 +401,7 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 		WINDOW_REC *window =
 			window_item_window((WI_ITEM_REC *) channel);
 
-		if (nicklist_find(channel, oldnick) == NULL ||
+		if (nicklist_find(channel, newnick) == NULL ||
 		    g_slist_find(windows, window) != NULL)
 			continue;
 

@@ -36,72 +36,15 @@ static char *ignore_get_key(IGNORE_REC *rec)
 	char *chans, *ret;
 
 	if (rec->channels == NULL)
-		return rec->mask != NULL ? g_strdup(rec->mask) : NULL;
+		return g_strdup(rec->mask == NULL ? "*" : rec->mask);
 
 	chans = g_strjoinv(",", rec->channels);
 	if (rec->mask == NULL) return chans;
 
-	ret = g_strdup_printf("%s %s", rec->mask, chans);
+	ret = g_strdup_printf("%s %s", rec->mask == NULL ?
+			      "*" : rec->mask, chans);
 	g_free(chans);
 	return ret;
-}
-
-static char *ignore_get_levels(int level, int xlevel)
-{
-	GString *str;
-	char *levelstr, *p, *ret;
-
-	str = g_string_new(NULL);
-	if (level != 0) {
-		levelstr = bits2level(level);
-		g_string_append(str, levelstr);
-                g_free(levelstr);
-	}
-
-	if (xlevel != 0) {
-		if (str->len > 0) g_string_append_c(str, ' ');
-
-		levelstr = bits2level(xlevel);
-		for (p = levelstr; *p != '\0'; p++) {
-			if (!isspace(*p) && (p == levelstr || isspace(p[-1])))
-				g_string_append_c(str, '^');
-			g_string_append_c(str, *p);
-		}
-		g_free(levelstr);
-	}
-
-	ret = str->str;
-	g_string_free(str, FALSE);
-	return ret;
-}
-
-/* msgs ^notices : level=msgs, xlevel=notices */
-static void ignore_split_levels(const char *levels, int *level, int *xlevel)
-{
-	GString *slevel, *sxlevel;
-	char **levellist, **tmp;
-
-	if (*levels == '\0') return;
-
-        slevel = g_string_new(NULL);
-        sxlevel = g_string_new(NULL);
-
-	levellist = g_strsplit(levels, " ", -1);
-	for (tmp = levellist; *tmp != NULL; tmp++) {
-		if (**tmp == '^')
-			g_string_sprintfa(sxlevel, "%s ", (*tmp)+1);
-		else if (**tmp == '-' && (*tmp)[1] == '^')
-			g_string_sprintfa(sxlevel, "-%s ", (*tmp)+2);
-		else
-			g_string_sprintfa(slevel, "%s ", *tmp);
-	}
-	g_strfreev(levellist);
-
-	*level = combine_level(*level, slevel->str);
-	*xlevel = combine_level(*xlevel, sxlevel->str);
-
-	g_string_free(slevel, TRUE);
-	g_string_free(sxlevel, TRUE);
 }
 
 static void ignore_print(int index, IGNORE_REC *rec)
@@ -110,9 +53,10 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	char *key, *levels;
 
 	key = ignore_get_key(rec);
-	levels = ignore_get_levels(rec->level, rec->except_level);
+	levels = bits2level(rec->level);
 
 	options = g_string_new(NULL);
+	if (rec->exception) g_string_sprintfa(options, "-except ");
 	if (rec->regexp) g_string_sprintfa(options, "-regexp ");
 	if (rec->fullword) g_string_sprintfa(options, "-word ");
 	if (rec->replies) g_string_sprintfa(options, "-replies ");
@@ -189,34 +133,30 @@ static void cmd_ignore(const char *data)
 	if (rec == NULL) {
 		rec = g_new0(IGNORE_REC, 1);
 
-		rec->mask = (mask != NULL && *mask != '\0') ?
-			g_strdup(mask) : NULL;
+		rec->mask = mask == NULL || *mask == '\0' ||
+			strcmp(mask, "*") == 0 ? NULL : g_strdup(mask);
 		rec->channels = channels;
 	} else {
                 g_free_and_null(rec->pattern);
 		g_strfreev(channels);
 	}
 
-	if (g_hash_table_lookup(optlist, "except") != NULL) {
-                rec->except_level = combine_level(rec->except_level, levels);
-	} else {
-		ignore_split_levels(levels, &rec->level, &rec->except_level);
-	}
-
+	rec->level = combine_level(rec->level, levels);
 	rec->pattern = (patternarg == NULL || *patternarg == '\0') ?
 		NULL : g_strdup(patternarg);
+	rec->exception = g_hash_table_lookup(optlist, "except") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
 	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
 	timestr = g_hash_table_lookup(optlist, "time");
 	rec->time = timestr == NULL ? 0 : atoi(timestr);
 
-	if (rec->level == 0 && rec->except_level == 0) {
+	if (rec->level == 0) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED,
-			    rec->mask == NULL ? "" : rec->mask);
+			    rec->mask == NULL ? "*" : rec->mask);
 	} else {
 		key = ignore_get_key(rec);
-		levels = ignore_get_levels(rec->level, rec->except_level);
+		levels = bits2level(rec->level);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORED, key, levels);
 		g_free(key);
 		g_free(levels);
@@ -242,7 +182,6 @@ static void fe_unignore(IGNORE_REC *rec)
 	g_free(key);
 
 	rec->level = 0;
-	rec->except_level = 0;
 	ignore_update_rec(rec);
 }
 

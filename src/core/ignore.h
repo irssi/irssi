@@ -6,17 +6,16 @@
 #endif
 
 typedef struct {
+	int level; /* ignore these levels */
 	char *mask; /* nick mask */
         char *servertag; /* this is for autoignoring */
 	char **channels; /* ignore only in these channels */
 	char *pattern; /* text body must match this pattern */
 
-	int level; /* ignore these levels */
-	int except_level; /* don't ignore these levels */
-
 	int time; /* time in sec for temp ignores */
 	int time_tag;
 
+	unsigned int exception:1; /* *don't* ignore */
 	unsigned int regexp:1;
 	unsigned int fullword:1;
 	unsigned int replies:1; /* ignore replies to nick in channel */

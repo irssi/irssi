@@ -327,8 +327,8 @@ void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 	hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
 
 	hv_store(hv, "level", 5, newSViv(ignore->level), 0);
-	hv_store(hv, "except_level", 12, newSViv(ignore->except_level), 0);
 
+	hv_store(hv, "exception", 6, newSViv(ignore->exception), 0);
 	hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
 	hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
 }

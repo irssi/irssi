@@ -333,7 +333,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 void irc_nicklist_init(void)
 {
-	signal_add("event nick", (SIGNAL_FUNC) event_nick);
+	signal_add_first("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add_first("event 352", (SIGNAL_FUNC) event_who);
 	signal_add("silent event who", (SIGNAL_FUNC) event_who);
 	signal_add("silent event whois", (SIGNAL_FUNC) event_whois);

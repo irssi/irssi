@@ -29,14 +29,17 @@
 #include "servers.h"
 #include "channels.h"
 #include "nicklist.h"
+#include "nickmatch-cache.h"
 
 #include "ignore.h"
 
 GSList *ignores;
 
+static NICKMATCH_REC *nickmatch;
+
 /* check if `text' contains ignored nick at the start of the line. */
-static int ignore_check_replies(IGNORE_REC *rec, CHANNEL_REC *channel,
-				const char *text)
+static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
+				    const char *text)
 {
 	GSList *nicks, *tmp;
 
@@ -54,101 +57,159 @@ static int ignore_check_replies(IGNORE_REC *rec, CHANNEL_REC *channel,
 	return FALSE;
 }
 
+static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
+{
+	GSList *tmp;
+
+	if (text == NULL || chanrec == NULL)
+		return FALSE;
+
+        /* check reply ignores */
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+		IGNORE_REC *rec = tmp->data;
+
+		if (rec->mask != NULL && rec->replies &&
+		    ignore_check_replies_rec(rec, chanrec, text))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
+{
+	if (rec->pattern == NULL)
+		return TRUE;
+
+        if (text == NULL)
+		return FALSE;
+
+	if (rec->regexp) {
+#ifdef HAVE_REGEX_H
+		return rec->regexp_compiled &&
+			regexec(&rec->preg, text, 0, NULL, 0) == 0;
+#else
+                return FALSE;
+#endif
+	}
+
+	return rec->fullword ?
+		stristr_full(text, rec->pattern) != NULL :
+		stristr(text, rec->pattern) != NULL;
+}
+
+#define ignore_match_level(rec, level) \
+        ((level & (rec)->level) != 0)
+
+#define ignore_match_nickmask(rec, nickmask) \
+	((rec)->mask == NULL || match_wildcards((rec)->mask, nickmask))
+
+#define ignore_match_server(rec, server) \
+	((rec)->servertag == NULL || \
+	g_strcasecmp((server)->tag, (rec)->servertag) == 0)
+
+#define ignore_match_channel(rec, channel) \
+	((rec)->channels == NULL || ((channel) != NULL && \
+		strarray_find((rec)->channels, (channel)) != -1))
+
+static int ignore_check_without_mask(GSList *list, CHANNEL_REC *channel,
+				     int level, const char *text)
+{
+	GSList *tmp;
+        int len, best_mask, best_match, best_patt;
+
+        best_mask = best_patt = 0; best_match = FALSE;
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
+		IGNORE_REC *rec = tmp->data;
+
+		if (ignore_match_level(rec, level) &&
+		    ignore_match_pattern(rec, text)) {
+			len = rec->mask == NULL ? 0 : strlen(rec->mask);
+			if (len > best_mask) {
+				best_mask = len;
+				best_match = !rec->exception;
+			} else if (len == best_mask && rec->pattern != NULL) {
+				len = strlen(rec->pattern);
+				if (len > best_patt) {
+					best_patt = len;
+					best_match = !rec->exception;
+				}
+			}
+		}
+	}
+
+	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
+		return best_match;
+
+        return ignore_check_replies(channel, text);
+}
+
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
 {
 	CHANNEL_REC *chanrec;
-	GSList *tmp;
-	int ok, mask_len, patt_len;
-	int best_mask, best_patt, best_ignore;
+	NICK_REC *nickrec;
+        IGNORE_REC *rec;
+	GSList *tmp, *list;
+        char *nickmask;
+        int len, best_mask, best_match, best_patt;
 
 	g_return_val_if_fail(server != NULL, 0);
 
 	chanrec = (channel != NULL && server != NULL &&
 		   server->ischannel(channel)) ?
 		channel_find(server, channel) : NULL;
+	if (chanrec != NULL && nick != NULL &&
+	    (nickrec = nicklist_find(chanrec, nick)) != NULL) {
+                /* nick found - check only ignores in nickmatch cache */
+		if (nickrec->host == NULL)
+			nicklist_set_host(chanrec, nickrec, host);
 
-	best_mask = 0; best_patt = 0; best_ignore = FALSE;
-	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
-		IGNORE_REC *rec = tmp->data;
-
-		if ((level & (rec->level|rec->except_level)) == 0)
-			continue;
-
-		/* server */
-		if (rec->servertag != NULL && g_strcasecmp(server->tag, rec->servertag) != 0)
-			continue;
-
-		/* channel list */
-		if (rec->channels != NULL) {
-			if (chanrec == NULL ||
-			    strarray_find(rec->channels, channel) == -1)
-				continue;
-		}
-
-		/* nick mask */
-		mask_len = 0;
-		if (rec->mask != NULL) {
-			if (nick == NULL)
-				continue;
-
-			mask_len = strlen(rec->mask);
-			if (mask_len <= best_mask) continue;
-
-			ok = ((host == NULL || *host == '\0')) ?
-				match_wildcards(rec->mask, nick) :
-				mask_match_address(server, rec->mask, nick, host);
-			if (!ok) {
-                                /* nick didn't match, but maybe this is a reply to nick? */
-				if (!rec->replies || chanrec == NULL || text == NULL ||
-				    !ignore_check_replies(rec, chanrec, text))
-					continue;
-			}
-		}
-
-		/* pattern */
-		patt_len = 0;
-		if (rec->pattern != NULL) {
-			if (text == NULL)
-				continue;
-
-			if (!mask_len && !best_mask) {
-				patt_len = strlen(rec->pattern);
-				if (patt_len <= best_patt) continue;
-			}
-
-#ifdef HAVE_REGEX_H
-			if (rec->regexp) {
-				ok = !rec->regexp_compiled ? FALSE :
-					regexec(&rec->preg, text, 0, NULL, 0) == 0;
-			} else
-#endif
-			{
-				ok = rec->fullword ?
-					stristr_full(text, rec->pattern) != NULL :
-					stristr(text, rec->pattern) != NULL;
-			}
-			if (!ok) continue;
-		}
-
-		if (mask_len || best_mask)
-			best_mask = mask_len;
-		else if (patt_len)
-			best_patt = patt_len;
-
-		best_ignore = (rec->level & level) != 0;
+		list = nickmatch_find(nickmatch, nickrec);
+		return ignore_check_without_mask(list, chanrec, level, text);
 	}
 
-	return best_ignore;
+	nickmask = g_strconcat(nick, "!", host, NULL);
+
+        best_mask = best_patt = 0; best_match = FALSE;
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+		rec = tmp->data;
+
+		if (ignore_match_level(rec, level) &&
+		    ignore_match_server(rec, server) &&
+		    ignore_match_channel(rec, channel) &&
+		    ignore_match_nickmask(rec, nickmask) &&
+		    ignore_match_pattern(rec, text)) {
+			len = rec->mask == NULL ? 0 : strlen(rec->mask);
+			if (len > best_mask) {
+				best_mask = len;
+				best_match = !rec->exception;
+			} else if (len == best_mask && rec->pattern != NULL) {
+				len = strlen(rec->pattern);
+				if (len > best_patt) {
+					best_patt = len;
+					best_match = !rec->exception;
+				}
+			}
+		}
+	}
+        g_free(nickmask);
+
+	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
+		return best_match;
+
+        return ignore_check_replies(chanrec, text);
 }
 
-IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels)
+IGNORE_REC *ignore_find(const char *servertag, const char *mask,
+			char **channels)
 {
 	GSList *tmp;
 	char **chan;
 	int ignore_servertag;
 
-	if (mask != NULL && *mask == '\0') mask = NULL;
+	if (mask != NULL && (*mask == '\0' || strcmp(mask, "*") == 0))
+		mask = NULL;
 
 	ignore_servertag = servertag != NULL && strcmp(servertag, "*") == 0;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
@@ -199,10 +260,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	CONFIG_NODE *node;
 	char *levelstr;
 
-	if (rec->level == 0 && rec->except_level == 0)
-		return;
-
-	if (rec->time > 0)
+	if (rec->level == 0 || rec->time > 0)
 		return;
 
 	node = iconfig_node_traverse("(ignores", TRUE);
@@ -214,12 +272,8 @@ static void ignore_set_config(IGNORE_REC *rec)
 		iconfig_node_set_str(node, "level", levelstr);
 		g_free(levelstr);
 	}
-	if (rec->except_level) {
-		levelstr = bits2level(rec->except_level);
-		iconfig_node_set_str(node, "except_level", levelstr);
-		g_free(levelstr);
-	}
 	iconfig_node_set_str(node, "pattern", rec->pattern);
+	if (rec->exception) iconfig_node_set_bool(node, "exception", TRUE);
 	if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
 	if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
 	if (rec->replies) iconfig_node_set_bool(node, "replies", TRUE);
@@ -285,11 +339,13 @@ static void ignore_destroy(IGNORE_REC *rec)
 	g_free_not_null(rec->servertag);
 	g_free_not_null(rec->pattern);
 	g_free(rec);
+
+	nickmatch_rebuild(nickmatch);
 }
 
 void ignore_update_rec(IGNORE_REC *rec)
 {
-	if (rec->level == 0 && rec->except_level == 0) {
+	if (rec->level == 0) {
 		/* unignored everything */
 		ignore_remove_config(rec);
 		ignore_destroy(rec);
@@ -302,6 +358,7 @@ void ignore_update_rec(IGNORE_REC *rec)
 		ignore_set_config(rec);
 
 		signal_emit("ignore changed", 1, rec);
+		nickmatch_rebuild(nickmatch);
 	}
 }
 
@@ -315,7 +372,10 @@ static void read_ignores(void)
                 ignore_destroy(ignores->data);
 
 	node = iconfig_node_traverse("ignores", FALSE);
-	if (node == NULL) return;
+	if (node == NULL) {
+		nickmatch_rebuild(nickmatch);
+		return;
+	}
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
@@ -327,9 +387,19 @@ static void read_ignores(void)
 		ignores = g_slist_append(ignores, rec);
 
 		rec->mask = g_strdup(config_node_get_str(node, "mask", NULL));
+		if (strcmp(rec->mask, "*") == 0) {
+			/* FIXME: remove after .98 */
+                        g_free(rec->mask);
+			rec->mask = NULL;
+		}
 		rec->pattern = g_strdup(config_node_get_str(node, "pattern", NULL));
 		rec->level = level2bits(config_node_get_str(node, "level", ""));
-		rec->except_level = level2bits(config_node_get_str(node, "except_level", ""));
+                rec->exception = config_node_get_bool(node, "exception", FALSE);
+		if (*config_node_get_str(node, "except_level", "") != '\0') {
+			/* FIXME: remove after .98 */
+			rec->level = level2bits(config_node_get_str(node, "except_level", ""));
+                        rec->exception = TRUE;
+		}
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->replies = config_node_get_bool(node, "replies", FALSE);
@@ -337,11 +407,41 @@ static void read_ignores(void)
 		node = config_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
 	}
+
+	nickmatch_rebuild(nickmatch);
+}
+
+static void ignore_nick_cache(GHashTable *list, CHANNEL_REC *channel,
+			      NICK_REC *nick)
+{
+	GSList *tmp, *matches;
+        char *nickmask;
+
+	if (nick->host == NULL)
+		return; /* don't check until host is known */
+
+        matches = NULL;
+	nickmask = g_strconcat(nick->nick, "!", nick->host, NULL);
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+		IGNORE_REC *rec = tmp->data;
+
+		if (ignore_match_nickmask(rec, nickmask) &&
+		    ignore_match_server(rec, channel->server) &&
+		    ignore_match_channel(rec, channel->name))
+			matches = g_slist_append(matches, rec);
+	}
+	g_free_not_null(nickmask);
+
+	if (matches == NULL)
+		g_hash_table_remove(list, nick);
+        else
+                g_hash_table_insert(list, nick, matches);
 }
 
 void ignore_init(void)
 {
 	ignores = NULL;
+	nickmatch = nickmatch_init(ignore_nick_cache);
 
         read_ignores();
         signal_add("setup reread", (SIGNAL_FUNC) read_ignores);
@@ -351,6 +451,7 @@ void ignore_deinit(void)
 {
 	while (ignores != NULL)
                 ignore_destroy(ignores->data);
+        nickmatch_deinit(nickmatch);
 
 	signal_remove("setup reread", (SIGNAL_FUNC) read_ignores);
 }

@@ -72,7 +72,10 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 static void sig_message_nick(SERVER_REC *server, const char *newnick,
 			     const char *oldnick, const char *address)
 {
-	if (ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS))
+	if (ignore_check(server, oldnick, address,
+			 NULL, NULL, MSGLEVEL_NICKS) ||
+	    ignore_check(server, newnick, address,
+			 NULL, NULL, MSGLEVEL_NICKS))
 		signal_stop();
 }
 
