@@ -9,8 +9,6 @@
  - multiple dcc connections from different irc networks from same nick
    doesn't work. Maybe create "server nick" and "refer nick" variables to
    DCC_REC?
- - gfloat doesn't work in formats .. why? In DCC messages kb and kb/s values
-   could be shown as floats..
 
 *** text UI
 

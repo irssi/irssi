@@ -1,3 +1,22 @@
+v0.7.22 2000-01-13  Timo Sirainen <cras@irccrew.org> [stable]
+
+	+ configure displays a summary of things to compile
+	+ /set toggle_use_colors = yes|no, sets colors on/off in irssi-text
+	- Some kB/s messages displayed wrong values when resuming DCC
+	  transfers. Also, kB/s is now displayed with two decimals
+	- "Day changed to 00-10-2000" .. month was wrong. No Y2K bugs
+	  however ;)
+	- List of ircnets was displyed wrong in server dialog.
+	- Userhost replies didn't handle ircops right..
+	- Doesn't quit when receives SIGHUP - some window managers send it
+	  when restarting itself (Afterstep)
+	- Specifying "source host IP" didn't work (vhosts).
+	- Using ctrl-b etc. didn't move the cursor forward..
+	- Don't try to compile GTK parts of plugins if we don't even want
+	  build GTK irssi
+	- Doesn't crash when trying to create DCC dialog after being
+	  disconnected from IRC server
+
 v0.7.21 1999-12-20  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Irssi-text: Channel activities are displayed with different colors

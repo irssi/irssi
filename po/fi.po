@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 1999-12-20 00:26+0200\n"
+"POT-Creation-Date: 2000-01-13 02:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -98,7 +98,7 @@ msgstr ""
 
 #. ----
 #: src/gui-gnome/dialog-links.c:350 src/gui-gnome/setup-servers.c:257
-#: src/gui-gnome/setup-servers.c:477 src/ui-common/ui-formats.c:39
+#: src/gui-gnome/setup-servers.c:489 src/ui-common/ui-formats.c:39
 msgid "Server"
 msgstr ""
 
@@ -281,7 +281,7 @@ msgstr ""
 #. ----
 #: src/gui-gnome/dialog-dcc.c:169 src/gui-gnome/dialog-notifylist.c:243
 #: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/setup-ircnets.c:197
-#: src/gui-gnome/setup-servers.c:542 src/ui-common/ui-formats.c:88
+#: src/gui-gnome/setup-servers.c:554 src/ui-common/ui-formats.c:88
 msgid "Nick"
 msgstr ""
 
@@ -740,11 +740,11 @@ msgstr ""
 msgid "Plugin %_$1%_ not loaded"
 msgstr ""
 
-#: src/ui-common/ui-printtext.c:836
+#: src/ui-common/ui-printtext.c:835
 msgid "%_Warning:%_ %s"
 msgstr ""
 
-#: src/ui-common/ui-printtext.c:838
+#: src/ui-common/ui-printtext.c:837
 msgid "%_Error:%_ %s"
 msgstr ""
 
@@ -1183,7 +1183,7 @@ msgid "Banlist exceptions"
 msgstr ""
 
 #: src/gui-gnome/dialog-modes.c:575 src/gui-gnome/dialog-modes.c:595
-#: src/gui-gnome/setup-ircnets.c:410 src/gui-gnome/setup-servers.c:505
+#: src/gui-gnome/setup-ircnets.c:410 src/gui-gnome/setup-servers.c:517
 #: src/gui-gnome/setup-session.c:139
 msgid "Remove"
 msgstr ""
@@ -1408,7 +1408,7 @@ msgstr ""
 msgid "Apply"
 msgstr ""
 
-#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:449
+#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:446
 #: src/gui-gnome/setup-colors.c:195
 msgid "Cancel"
 msgstr ""
@@ -1535,7 +1535,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: src/gui-gnome/gui-event-who.c:256 src/gui-gnome/setup-servers.c:554
+#: src/gui-gnome/gui-event-who.c:256 src/gui-gnome/setup-servers.c:566
 msgid "Real name"
 msgstr ""
 
@@ -1587,39 +1587,39 @@ msgstr ""
 msgid "Away: %s"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:781
+#: src/gui-gnome/gui-mainwindows.c:778
 msgid "Nick completion"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:782
+#: src/gui-gnome/gui-mainwindows.c:779
 msgid "Check word replaces"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:784
+#: src/gui-gnome/gui-mainwindows.c:781
 msgid "Previous window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:785
+#: src/gui-gnome/gui-mainwindows.c:782
 msgid "Next window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:789
+#: src/gui-gnome/gui-mainwindows.c:786
 msgid "Command history"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:791
+#: src/gui-gnome/gui-mainwindows.c:788
 msgid "Previous page in window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:792
+#: src/gui-gnome/gui-mainwindows.c:789
 msgid "Next page in window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:794
+#: src/gui-gnome/gui-mainwindows.c:791
 msgid "Insert special character"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:805
+#: src/gui-gnome/gui-mainwindows.c:802
 msgid "Change window"
 msgstr ""
 
@@ -2307,11 +2307,11 @@ msgstr ""
 msgid "Max msgs per cmd"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:400 src/gui-gnome/setup-servers.c:497
+#: src/gui-gnome/setup-ircnets.c:400 src/gui-gnome/setup-servers.c:509
 msgid "Add"
 msgstr ""
 
-#: src/gui-gnome/setup-ircnets.c:405 src/gui-gnome/setup-servers.c:501
+#: src/gui-gnome/setup-ircnets.c:405 src/gui-gnome/setup-servers.c:513
 msgid "Edit"
 msgstr ""
 
@@ -2566,7 +2566,7 @@ msgstr ""
 msgid "Clear"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:252 src/gui-gnome/setup-servers.c:477
+#: src/gui-gnome/setup-servers.c:252 src/gui-gnome/setup-servers.c:489
 msgid "IRC Net"
 msgstr ""
 
@@ -2578,7 +2578,7 @@ msgstr ""
 msgid "Autoconnect at startup"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:361
+#: src/gui-gnome/setup-servers.c:373
 msgid ""
 "You have empty entries!\n"
 "At least IRC Net, Server and Port\n"
@@ -2586,40 +2586,40 @@ msgid ""
 msgstr ""
 
 #. 'IRC servers' frame
-#: src/gui-gnome/setup-servers.c:462
+#: src/gui-gnome/setup-servers.c:474
 msgid "IRC Servers"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:477
+#: src/gui-gnome/setup-servers.c:489
 msgid "AC"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:509
+#: src/gui-gnome/setup-servers.c:521
 msgid "User information"
 msgstr ""
 
 #. skip motd
-#: src/gui-gnome/setup-servers.c:513
+#: src/gui-gnome/setup-servers.c:525
 msgid "Skip MOTD"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:521
+#: src/gui-gnome/setup-servers.c:533
 msgid "Seconds to wait before reconnecting (-1 = never)"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:531
+#: src/gui-gnome/setup-servers.c:543
 msgid "Source host (empty=default)"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:546
+#: src/gui-gnome/setup-servers.c:558
 msgid "Alternate nick"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:550
+#: src/gui-gnome/setup-servers.c:562
 msgid "User name"
 msgstr ""
 
-#: src/gui-gnome/setup-servers.c:563
+#: src/gui-gnome/setup-servers.c:575
 msgid "Servers"
 msgstr ""
 

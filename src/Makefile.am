@@ -1,4 +1,4 @@
-if HAS_CURSES
+if BUILD_TEXTUI
 TEXTUI=gui-text
 endif
 
