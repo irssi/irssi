@@ -8,7 +8,7 @@ ignores()
 PREINIT:
 	GSList *tmp;
 PPCODE:
-	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Ignore")));
 	}
 
