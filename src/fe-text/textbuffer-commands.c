@@ -31,28 +31,35 @@
 #include "gui-windows.h"
 #include "textbuffer-reformat.h"
 
-/* SYNTAX: CLEAR */
+/* SYNTAX: CLEAR [-all] [<refnum>] */
 static void cmd_clear(const char *data)
 {
+        WINDOW_REC *window;
 	GHashTable *optlist;
+        char *refnum;
 	void *free_arg;
         GSList *tmp;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_OPTIONS,
-			    "clear", &optlist)) return;
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "clear", &optlist, &refnum)) return;
 
-	if (g_hash_table_lookup(optlist, "all") == NULL) {
-                /* clear active window */
-		textbuffer_view_clear(WINDOW_GUI(active_win)->view);
-	} else {
+	if (g_hash_table_lookup(optlist, "all") != NULL) {
                 /* clear all windows */
 		for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 			WINDOW_REC *window = tmp->data;
 
 			textbuffer_view_clear(WINDOW_GUI(window)->view);
 		}
+	} else if (*refnum != '\0') {
+                /* clear specified window */
+		window = window_find_refnum(atoi(refnum));
+                if (window != NULL)
+			textbuffer_view_clear(WINDOW_GUI(window)->view);
+	} else {
+                /* clear active window */
+		textbuffer_view_clear(WINDOW_GUI(active_win)->view);
 	}
 
 	cmd_params_free(free_arg);
