@@ -223,7 +223,7 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 
 	printformat(server, NULL, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-		    channel, ban, setby, secs);
+		    0, channel, ban, setby, secs);
 
 	g_free(params);
 }
