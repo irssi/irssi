@@ -84,7 +84,7 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 
 static void init_userinfo(void)
 {
-	const char *set, *default_nick, *user_name;
+	const char *set, *nick, *user_name;
 	char *str;
 
 	/* check if nick/username/realname wasn't read from setup.. */
@@ -106,22 +106,22 @@ static void init_userinfo(void)
 	}
 
 	/* nick */
-        default_nick = settings_get_str("default_nick");
-	if (default_nick == NULL || *default_nick == '\0') {
+        nick = settings_get_str("nick");
+	if (nick == NULL || *nick == '\0') {
 		str = g_getenv("IRCNICK");
-		iconfig_set_str("settings", "default_nick",
+		iconfig_set_str("settings", "nick",
 				str != NULL ? str : user_name);
 
-		default_nick = settings_get_str("default_nick");
+		nick = settings_get_str("nick");
 	}
 
 	/* alternate nick */
         set = settings_get_str("alternate_nick");
 	if (set == NULL || *set == '\0') {
-		if (strlen(default_nick) < 9)
-			str = g_strconcat(default_nick, "_", NULL);
+		if (strlen(nick) < 9)
+			str = g_strconcat(nick, "_", NULL);
 		else {
-			str = g_strdup(default_nick);
+			str = g_strdup(nick);
 			str[strlen(str)-1] = '_';
 		}
 		iconfig_set_str("settings", "alternate_nick", str);

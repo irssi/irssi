@@ -105,7 +105,7 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	conn->address = g_strdup(address);
 	conn->port = port > 0 ? port : 6667;
 
-	if (!conn->nick) conn->nick = g_strdup(settings_get_str("default_nick"));
+	if (!conn->nick) conn->nick = g_strdup(settings_get_str("nick"));
 	conn->username = g_strdup(settings_get_str("user_name"));
 	conn->realname = g_strdup(settings_get_str("real_name"));
 
@@ -425,7 +425,7 @@ void servers_setup_init(void)
 {
 	settings_add_str("server", "hostname", "");
 
-	settings_add_str("server", "default_nick", NULL);
+	settings_add_str("server", "nick", NULL);
 	settings_add_str("server", "user_name", NULL);
 	settings_add_str("server", "real_name", NULL);
 

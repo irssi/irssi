@@ -151,7 +151,7 @@ void fe_common_irc_finish_init(void)
 
 	if (cmdline_nick != NULL) {
 		/* override nick found from setup */
-		iconfig_set_str("settings", "default_nick", cmdline_nick);
+		iconfig_set_str("settings", "nick", cmdline_nick);
 	}
 
 	if (cmdline_hostname != NULL) {
