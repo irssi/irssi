@@ -33,6 +33,7 @@
 #include "commands.h"
 #include "misc.h"
 #include "perl-common.h"
+#include "servers.h"
 
 /* For compatibility with perl 5.004 and older */
 #ifndef ERRSV
@@ -493,113 +494,107 @@ void perl_timeout_remove(int tag)
 	}
 }
 
+static PERL_SIGNAL_ARGS_REC *perl_signal_find(int signal)
+{
+	const char *signame;
+	int n;
+
+	for (n = 0; perl_signal_args[n].signal != NULL; n++) {
+		if (signal == perl_signal_args[n].signal_id)
+			return &perl_signal_args[n];
+	}
+
+	/* try to find by name */
+	signame = module_find_id_str("signals", signal);
+	for (n = 0; perl_signal_args[n].signal != NULL; n++) {
+		if (strncmp(signame, perl_signal_args[n].signal,
+			    strlen(perl_signal_args[n].signal)) == 0)
+			return &perl_signal_args[n];
+	}
+
+	return NULL;
+}
+
+
 static int call_perl(const char *func, int signal, va_list va)
 {
 	dSP;
 	PERL_SIGNAL_ARGS_REC *rec;
-	int retcount, n, ret;
-	void *arg;
+	int retcount, ret;
+
 	HV *stash;
+	void *arg;
+	int n;
 
-    /* first check if we find exact match */
-    rec = NULL;
-    for (n = 0; perl_signal_args[n].signal != NULL; n++)
-    {
-	if (signal == perl_signal_args[n].signal_id)
-	{
-	    rec = &perl_signal_args[n];
-	    break;
-	}
-    }
+	/* first check if we find exact match */
+	rec = perl_signal_find(signal);
 
-    if (rec == NULL)
-    {
-	/* try to find by name */
-	const char *signame;
+	ENTER;
+	SAVETMPS;
 
-	signame = module_find_id_str("signals", signal);
-	for (n = 0; perl_signal_args[n].signal != NULL; n++)
-	{
-	    if (strncmp(signame, perl_signal_args[n].signal,
-			strlen(perl_signal_args[n].signal)) == 0)
-	    {
-		rec = &perl_signal_args[n];
-		break;
-	    }
-	}
-    }
+	PUSHMARK(sp);
 
-    ENTER;
-    SAVETMPS;
+	if (rec != NULL) {
+		/* push the arguments to perl stack */
+		for (n = 0; n < 7 && rec->args[n] != NULL; n++) {
+			arg = va_arg(va, void *);
 
-    PUSHMARK(sp);
+			if (strcmp(rec->args[n], "string") == 0)
+				XPUSHs(sv_2mortal(new_pv(arg)));
+			else if (strcmp(rec->args[n], "int") == 0)
+				XPUSHs(sv_2mortal(newSViv(GPOINTER_TO_INT(arg))));
+			else if (strcmp(rec->args[n], "ulongptr") == 0)
+				XPUSHs(sv_2mortal(newSViv(*(unsigned long *) arg)));
+			else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+				/* linked list - push as AV */
+				GSList *tmp;
+				AV *av;
 
-    if (rec != NULL)
-    {
-	/* put the arguments to perl stack */
-	for (n = 0; n < 7; n++)
-	{
-	    arg = va_arg(va, gpointer);
-
-            if (rec->args[n] == NULL)
-                break;
-
-	    if (strcmp(rec->args[n], "string") == 0)
-		XPUSHs(sv_2mortal(newSVpv(arg == NULL ? "" : arg, arg == NULL ? 0 : strlen(arg))));
-	    else if (strcmp(rec->args[n], "int") == 0)
-		XPUSHs(sv_2mortal(newSViv(GPOINTER_TO_INT(arg))));
-	    else if (strcmp(rec->args[n], "ulongptr") == 0)
-		XPUSHs(sv_2mortal(newSViv(*(gulong *) arg)));
-	    else if (strncmp(rec->args[n], "gslist_", 7) == 0)
-	    {
-		GSList *tmp;
-
-		stash = gv_stashpv(rec->args[n]+7, 0);
-		for (tmp = arg; tmp != NULL; tmp = tmp->next)
-		    XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
-	    }
-	    else
-	    {
-                if (arg == NULL)
-			XPUSHs(sv_2mortal(newSViv(0)));
-		else {
-			stash = gv_stashpv(rec->args[n], 0);
-			XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(arg))), stash)));
+				av = newAV();
+				stash = gv_stashpv(rec->args[n]+7, 0);
+				for (tmp = arg; tmp != NULL; tmp = tmp->next)
+					av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+				XPUSHs(newRV_noinc((SV*)av));
+			} else if (arg == NULL) {
+				/* don't bless NULL arguments */
+				XPUSHs(sv_2mortal(newSViv(0)));
+			} else if (strcmp(rec->args[n], "iobject") == 0) {
+				/* "irssi object" - any struct that has
+				   "int type; int chat_type" as its first
+				   variables (server, channel, ..) */
+				stash = irssi_get_stash((SERVER_REC *) arg);
+				XPUSHs(sv_2mortal(new_bless(arg, stash)));
+			} else {
+				/* blessed object */
+				stash = gv_stashpv(rec->args[n], 0);
+				XPUSHs(sv_2mortal(new_bless(arg, stash)));
+			}
 		}
-	    }
 	}
-    }
 
-    PUTBACK;
-    retcount = perl_call_pv((char *) func, G_EVAL|G_SCALAR);
-    SPAGAIN;
+	PUTBACK;
+	retcount = perl_call_pv((char *) func, G_EVAL|G_SCALAR);
+	SPAGAIN;
 
-    ret = 0;
-    if (SvTRUE(ERRSV))
-    {
-	STRLEN n_a;
+	ret = 0;
+	if (SvTRUE(ERRSV)) {
+		STRLEN n_a;
 
-	signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
-        (void)POPs;
-    }
-    else
-    {
-	SV *sv;
+		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
+		(void)POPs;
+	} else if (retcount > 0) {
+		SV *sv = POPs;
 
-	if (retcount > 0)
-	{
-	    sv = POPs;
-            if (SvIOK(sv) && SvIV(sv) == 1) ret = 1;
+		if (SvIOK(sv) && SvIV(sv) == 1) ret = 1;
+		while (--retcount > 0)
+			(void)POPi;
 	}
-	for (n = 2; n <= retcount; n++)
-	    (void)POPi;
-    }
 
-    PUTBACK;
-    FREETMPS;
-    LEAVE;
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
 
-    return ret;
+	return ret;
 }
 
 static void sig_signal(void *signal, ...)

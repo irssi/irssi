@@ -4,6 +4,9 @@
 #define new_pv(a) \
 	(newSVpv((a) == NULL ? "" : (a), (a) == NULL ? 0 : strlen(a)))
 
+#define new_bless(obj, stash) \
+	sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(obj))), stash)
+
 extern GHashTable *perl_stashes;
 
 HV *irssi_get_stash_item(int type, int chat_type);

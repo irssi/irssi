@@ -18,11 +18,10 @@ while (<STDIN>) {
 	s/int[^,]*/int/g;
 	s/GSList of (\w+)s/gslist_\1/g;
 
-        s/SERVER_REC[^,]*/Irssi::Server/g;
-        s/IRC_SERVER_REC[^,]*/Irssi::Server/g;
-        s/RECONNECT_REC[^,]*/Irssi::Reconnect/g;
-	s/CHANNEL_REC[^,]*/Irssi::Channel/g;
-	s/QUERY_REC[^,]*/Irssi::Query/g;
+        s/SERVER_REC[^,]*/iobject/g;
+        s/RECONNECT_REC[^,]*/iobject/g;
+	s/CHANNEL_REC[^,]*/iobject/g;
+	s/QUERY_REC[^,]*/iobject/g;
 	s/COMMAND_REC[^,]*/Irssi::Command/g;
 	s/NICK_REC[^,]*/Irssi::Nick/g;
 	s/BAN_REC[^,]*/Irssi::Ban/g;
@@ -34,7 +33,7 @@ while (<STDIN>) {
 	s/NOTIFYLIST_REC[^,]*/Irssi::Notifylist/g;
 	s/IGNORE_REC[^,]*/Irssi::Ignore/g;
 	s/WINDOW_REC[^,]*/Irssi::Window/g;
-	s/WI_ITEM_REC[^,]*/Irssi::Windowitem/g;
+	s/WI_ITEM_REC[^,]*/iobject/g;
 
 	s/([\w:]+)(,|$)/"\1"\2/g;
 	print "    { -1, \"$signal\", { $_, NULL } },\n";
