@@ -8,10 +8,12 @@ void
 init()
 CODE:
 	perl_api_version_check("Irssi");
+        perl_settings_init();
 
 void
 deinit()
 CODE:
+        perl_settings_deinit();
 
 BOOT:
         irssi_boot(Channel);
