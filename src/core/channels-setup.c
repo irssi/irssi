@@ -50,6 +50,13 @@ static CHANNEL_SETUP_REC *channel_setup_read(CONFIG_NODE *node)
 	rec->autojoin = config_node_get_bool(node, "autojoin", FALSE);
 	rec->name = g_strdup(channel);
 	rec->chatnet = g_strdup(config_node_get_str(node, "chatnet", NULL));
+	if (rec->chatnet == NULL) /* FIXME: remove this after .98... */ {
+		rec->chatnet = g_strdup(config_node_get_str(node, "ircnet", NULL));
+		if (rec->chatnet != NULL) {
+                        iconfig_node_set_str(node, "chatnet", rec->chatnet);
+                        iconfig_node_set_str(node, "ircnet", NULL);
+		}
+	}
 	rec->password = (password == NULL || *password == '\0') ? NULL : g_strdup(password);
 	rec->botmasks = (botmasks == NULL || *botmasks == '\0') ? NULL : g_strdup(botmasks);
 	rec->autosendcmd = (autosendcmd == NULL || *autosendcmd == '\0') ? NULL : g_strdup(autosendcmd);
