@@ -367,6 +367,9 @@ static GList *completion_msg(IRC_SERVER_REC *win_server,
 
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
+		
+		if (!IS_IRC_SERVER(rec))
+			continue;
 
 		if (rec == win_server)
 			newprefix = g_strdup(prefix);
