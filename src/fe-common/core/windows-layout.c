@@ -136,6 +136,7 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 				 CONFIG_NODE *node)
 {
 	CONFIG_NODE *subnode;
+        CHAT_PROTOCOL_REC *proto;
 	const char *type;
 
 	type = module_find_id_str("WINDOW ITEM TYPE", item->type);
@@ -145,8 +146,10 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 	subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
 
 	iconfig_node_set_str(subnode, "type", type);
-	type = chat_protocol_find_id(item->chat_type)->name;
-	iconfig_node_set_str(subnode, "chat_type", type);
+	proto = item->chat_type == 0 ? NULL :
+		chat_protocol_find_id(item->chat_type);
+	if (proto != NULL)
+		iconfig_node_set_str(subnode, "chat_type", proto->name);
 	iconfig_node_set_str(subnode, "name", item->visible_name);
 
 	if (item->server != NULL)
