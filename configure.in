@@ -435,11 +435,9 @@ if test "x$want_textui" = "xyes"; then
        		AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
        		AC_CHECK_FUNC(resizeterm, AC_DEFINE(HAVE_CURSES_RESIZETERM))
        		AC_CHECK_FUNC(wresize, AC_DEFINE(HAVE_CURSES_WRESIZE))
-		if test "x$want_terminfo" = "xyes"; then
-			AC_CHECK_LIB(curses, setupterm,, [
-				want_termcap=yes
-			])
-		fi
+		AC_CHECK_FUNC(setupterm,, [
+		       	want_termcap=yes
+		])
 	else
 		AC_CHECK_LIB(tinfo, setupterm, [
 		  LIBS="$LIBS -ltinfo"
