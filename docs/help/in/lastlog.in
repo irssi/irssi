@@ -6,6 +6,8 @@
     -: don't print the "Lastlog:" and "End of Lastlog" messages.
     -file: write lastlog to file instead of screen
     -window: which window's lastlog to check (output is always to active)
+    -case: Case-sensitive matching
+    -force: Force displaying lastlog even if it's longer than 1000 lines
     -new: show only lines since last /LASTLOG
     -regexp: `text' is a regular expression
     -word: `text' must match to full words
