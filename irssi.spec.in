@@ -1,4 +1,4 @@
-# $Revision: 1.2 $, $Date: 1999/09/04 11:42:33 $
+# $Revision: 1.3 $, $Date: 1999/09/13 16:50:25 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
@@ -19,23 +19,7 @@ BuildRequires:	XFree86-devel
 BuildRoot: 	/tmp/%{name}-%{version}-root
 
 %define		_sysconfdir	/etc
-%define		configure { CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ; \
- CXXFLAGS="${CXXFLAGS:-%optflags}" ; export CXXFLAGS ; \
- FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; \
- ./configure %{_target_platform} \
-	--prefix=%{_prefix} \
-	--exec-prefix=%{_exec_prefix} \
-	--bindir=%{_bindir} \
-	--sbindir=%{_sbindir} \
-	--sysconfdir=%{_sysconfdir} \
-	--datadir=%{_datadir} \
-	--includedir=%{_includedir} \
-	--libdir=%{_libdir} \
-	--libexecdir=%{_libexecdir} \
-	--localstatedir=%{_localstatedir} \
-	--sharedstatedir=%{_sharedstatedir} \
-	--mandir=%{_mandir} \
-	--infodir=%{_infodir} }
+%define		configure { CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ;  CXXFLAGS="${CXXFLAGS:-%optflags}" ; export CXXFLAGS ;  FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; ./configure %{_target_platform} 	--prefix=%{_prefix} --exec-prefix=%{_exec_prefix} --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} --infodir=%{_infodir} }
 
 %description
 Irssi is a textUI IRC client with IPv6 support 
@@ -57,7 +41,6 @@ More information can be found at http://xlife.dhs.org/irssi/.
 %setup -q
 
 %build
-automake
 CPPFLAGS="-I/usr/X11R6/include"; export CPPFLAGS
 LDFLAGS="-s -L/usr/X11R6/lib"; export LDFLAGS
 %configure \
@@ -112,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 All below listed persons can be reached on <cvs_login>@pld.org.pl
 
 $Log: irssi.spec.in,v $
+Revision 1.3  1999/09/13 16:50:25  wiget
+- fixed %%configure macro
+
 Revision 1.2  1999/09/04 11:42:33  wiget
 - new way to update Version: field in spec
 - new target for make 'make rpm'
