@@ -17,17 +17,19 @@
 /DCC SEND [-passive] [-append | -prepend | -flush | -rmtail | -rmhead]
           <nick> <file> [<file> ...]
     - Sends a DCC SEND request to remote client. Remote end has to accept
-      the request before the transmission can be started. Giving multiple files
-      queues them. File names may contain shell expansion characters: * ? [] ~
-      (~ expansion may not be supported on all platforms). Files with spaces
-      in their names need to be quoted (eg. "file name"). If -passive is used
-      then the passive DCC protocol is used (as mIRC and xchat > 2.0.7 can do). 
-      This is useful to bypass a NAT/firewall which limit your possibility in 
-      listening for remote connections.
+      the request before the transmission can be started. Giving multiple
+      files queues them. File names may contain shell expansion
+      characters: * ? [] ~ (~ expansion may not be supported on all
+      platforms). Files with spaces in their names need to be quoted (eg.
+      "file name"). If -passive is used then the passive DCC protocol is
+      used (as mIRC and xchat > 2.0.7 can do). This is useful to bypass a
+      NAT/firewall which limit your possibility in  listening for remote
+      connections.
 /DCC SERVER [<+|-scf> <port>]
-    - Starts a DCC SERVER on the specified port. The remote can connect to this
-      server and initiate chat, send and fserve requests. You can specify + or -
-      using any combination of the flags 's' (Send), 'c' (Chat), or 'f' (Fserver).
+    - Starts a DCC SERVER on the specified port. The remote can connect
+      to this server and initiate chat, send and fserve requests. You can
+      specify + or - using any combination of the flags 's' (Send),
+      'c' (Chat), or 'f' (Fserver).
 /DCC CLOSE <type> <nick> [<file>]
     - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
 
