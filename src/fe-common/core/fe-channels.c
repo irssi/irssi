@@ -39,8 +39,10 @@
 
 static void signal_channel_created(CHANNEL_REC *channel, void *automatic)
 {
-	window_item_create((WI_ITEM_REC *) channel,
-			   GPOINTER_TO_INT(automatic));
+	if (window_item_window(channel) == NULL) {
+		window_item_create((WI_ITEM_REC *) channel,
+				   GPOINTER_TO_INT(automatic));
+	}
 }
 
 static void signal_channel_created_curwin(CHANNEL_REC *channel)
