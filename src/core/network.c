@@ -518,12 +518,16 @@ int net_ip2host(IPADDR *ip, char *host)
 #else
 	unsigned long ip4;
 
-	ip4 = ntohl(ip->ip.s_addr);
-	g_snprintf(host, MAX_IP_LEN, "%lu.%lu.%lu.%lu",
-		   (ip4 & 0xff000000UL) >> 24,
-		   (ip4 & 0x00ff0000) >> 16,
-		   (ip4 & 0x0000ff00) >> 8,
-		   (ip4 & 0x000000ff));
+	if (ip->family != AF_INET) {
+		strcpy(host, "0.0.0.0");
+	} else {
+		ip4 = ntohl(ip->ip.s_addr);
+		g_snprintf(host, MAX_IP_LEN, "%lu.%lu.%lu.%lu",
+			   (ip4 & 0xff000000UL) >> 24,
+			   (ip4 & 0x00ff0000) >> 16,
+			   (ip4 & 0x0000ff00) >> 8,
+			   (ip4 & 0x000000ff));
+	}
 #endif
 	return 0;
 }
@@ -532,15 +536,16 @@ int net_host2ip(const char *host, IPADDR *ip)
 {
 	unsigned long addr;
 
-#ifdef HAVE_IPV6
 	if (strchr(host, ':') != NULL) {
 		/* IPv6 */
 		ip->family = AF_INET6;
+#ifdef HAVE_IPV6
 		if (inet_pton(AF_INET6, host, &ip->ip) == 0)
 			return -1;
-	} else
+#else
+		ip->ip.s_addr = 0;
 #endif
-	{
+	} else {
 		/* IPv4 */
 		ip->family = AF_INET;
 #ifdef HAVE_INET_ATON

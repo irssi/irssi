@@ -315,6 +315,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 {
 	GET_DCC_REC *dcc;
         IPADDR ip;
+	const char *address;
 	char **params, *fname;
 	int paramcount, fileparams;
 	int port, len, quoted = FALSE;
@@ -333,7 +334,8 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	fileparams = get_file_params_count(params, paramcount);
 
-	dcc_str2ip(params[fileparams], &ip);
+	address = params[fileparams];
+	dcc_str2ip(address, &ip);
 	port = atoi(params[fileparams+1]);
 	size = atol(params[fileparams+2]);
 
@@ -357,8 +359,14 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	dcc = dcc_get_create(server, chat, nick, fname);
 	dcc->target = g_strdup(target);
-        memcpy(&dcc->addr, &ip, sizeof(ip));
-	net_ip2host(&dcc->addr, dcc->addrstr);
+	memcpy(&dcc->addr, &ip, sizeof(ip));
+	if (dcc->addr.family == AF_INET)
+		net_ip2host(&dcc->addr, dcc->addrstr);
+	else {
+		/* with IPv6, show it to us as it was sent */
+		strncpy(dcc->addrstr, address, sizeof(dcc->addrstr)-1);
+		dcc->addrstr[sizeof(dcc->addrstr)-1] = '\0';
+	}
 	dcc->port = port;
 	dcc->size = size;
         dcc->file_quoted = quoted;
