@@ -1,10 +1,10 @@
 servers = (
-  { address = "irc.funet.fi"; ircnet = IRCNet; port = 6667; },
-  { address = "irc.efnet.net"; ircnet = EFNet; port = 6667; },
-  { address = "irc.undernet.net"; ircnet = Undernet; port = 6667; },
-  { address = "irc.dal.net"; ircnet = DALNet; port = 6667; },
-  { address = "irc.openprojects.net"; ircnet = OPN; port = 6667; },
-  { address = "irc.ptlink.net"; ircnet = PTlink; port = 6667; }
+  { address = "irc.funet.fi"; chatnet = IRCNet; port = 6667; },
+  { address = "irc.efnet.net"; chatnet = EFNet; port = 6667; },
+  { address = "irc.undernet.net"; chatnet = Undernet; port = 6667; },
+  { address = "irc.dal.net"; chatnet = DALNet; port = 6667; },
+  { address = "irc.openprojects.net"; chatnet = OPN; port = 6667; },
+  { address = "irc.ptlink.net"; chatnet = PTlink; port = 6667; }
 );
 
 ircnets = {
@@ -19,12 +19,12 @@ ircnets = {
 channels = (
   {
     name = "#irssi";
-    ircnet = ircnet;
+    chatnet = ircnet;
     autojoin = No;
   },
   {
     name = "#irssi";
-    ircnet = efnet;
+    chatnet = efnet;
     autojoin = No;
   }
 );
