@@ -249,10 +249,14 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (!nicklist_find(rec, nick) ||
-		    ignore_check(server, nick, address, rec->name,
-				 reason, MSGLEVEL_QUITS))
+		if (!nicklist_find(rec, nick))
 			continue;
+		
+		if (ignore_check(server, nick, address, rec->name,
+				 reason, MSGLEVEL_QUITS)) {
+			count++;
+			continue;
+		}
 
 		if (print_channel == NULL ||
 		    active_win->active == (WI_ITEM_REC *) rec)
