@@ -255,7 +255,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "config_saved", "Saved configuration to file $0", 1, { 0 } },
 	{ "config_reloaded", "Reloaded configuration", 1, { 0 } },
 	{ "config_modified", "Configuration file was modified since irssi was last started - do you want to overwrite the possible changes?", 1, { 0 } },
-	{ "glib_error", "{error GLib $0} $1", 2, { 0, 0 } },
+	{ "glib_error", "{error $0} $1", 2, { 0, 0 } },
 	{ "overwrite_config", "Overwrite config (y/N)?", 0 },
 	{ "set_title", "[{hilight $0}]", 1, { 0 } },
 	{ "set_item", "$0 = $1", 2, { 0, 0 } },
