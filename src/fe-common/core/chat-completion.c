@@ -553,7 +553,8 @@ static void complete_window_nicks(GList **list, WINDOW_REC *window,
 }
 
 static void sig_complete_word(GList **list, WINDOW_REC *window,
-			      const char *word, const char *linestart)
+			      const char *word, const char *linestart,
+			      int *want_space)
 {
 	SERVER_REC *server;
 	CHANNEL_REC *channel;
@@ -600,7 +601,8 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	} else if (channel != NULL) {
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
-                complete_window_nicks(list, window, word, linestart);
+		complete_window_nicks(list, window, word, linestart);
+                if (list != NULL) *want_space = FALSE;
 	}
 
 	if (*list != NULL) signal_stop();
