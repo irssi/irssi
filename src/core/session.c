@@ -186,6 +186,7 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "chatnet", server->connrec->chatnet);
 	config_node_set_str(config, node, "password", server->connrec->password);
 	config_node_set_str(config, node, "nick", server->nick);
+	config_node_set_str(config, node, "version", server->version);
 
 	config_node_set_bool(config, node, "use_ssl", server->connrec->use_ssl);
 	config_node_set_str(config, node, "ssl_cert", server->connrec->ssl_cert);
@@ -291,6 +292,7 @@ static void session_restore_server(CONFIG_NODE *node)
 		conn->connect_handle = g_io_channel_unix_new(handle);
 
 		server = proto->server_init_connect(conn);
+		server->version = g_strdup(config_node_get_str(node, "version", NULL));		
 		server->session_reconnect = TRUE;
 		signal_emit("session restore server", 2, server, node);
 
