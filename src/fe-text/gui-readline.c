@@ -152,6 +152,7 @@ static void paste_send(void)
 {
 	unichar *arr;
 	GString *str;
+	const char *signal_name;
 	char out[10], *text;
 	unsigned int i;
 	int lf;
@@ -175,8 +176,10 @@ static void paste_send(void)
 		return;
 	}
 
+	signal_name = active_win->active == NULL ? "send command" : "send text";
+
         text = gui_entry_get_text(active_entry);
-	signal_emit("send text", 3, text,
+	signal_emit(signal_name, 3, text,
 		    active_win->active_server, active_win->active);
 	g_free(text);
 
@@ -184,7 +187,7 @@ static void paste_send(void)
 	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
-			signal_emit("send text", 3, str->str,
+			signal_emit(signal_name, 3, str->str,
 				    active_win->active_server,
 				    active_win->active);
 			g_string_truncate(str, 0);
@@ -239,7 +242,8 @@ static gboolean paste_timeout(gpointer data)
 		return TRUE;
 	}
 
-	if (paste_line_count < paste_verify_line_count) {
+	if (paste_line_count < paste_verify_line_count ||
+	    active_win->active == NULL) {
 		/* paste without asking */
 		paste_flush(TRUE);
 	} else if (!paste_prompt) {
