@@ -315,23 +315,41 @@ static void cmd_bind(const char *data)
 	GHashTable *optlist;
 	char *key, *id, *keydata;
 	void *free_arg;
+	int command_id;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 			    "bind", &optlist, &key, &id, &keydata))
 		return;
 
 	if (*key != '\0' && g_hash_table_lookup(optlist, "delete")) {
-                key_configure_remove(key);
-	} else if (*id == '\0') {
+                /* delete key */
+		key_configure_remove(key);
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	if (*id == '\0') {
 		/* show some/all keys */
-                cmd_show_keys(key, FALSE);
-	} else if (key_info_find(id) == NULL)
+		cmd_show_keys(key, FALSE);
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	command_id = strchr(settings_get_str("cmdchars"), *id) != NULL;
+	if (command_id) {
+		/* using shortcut to command id */
+		keydata = g_strconcat(id, " ", keydata, NULL);
+		id = "command";
+	}
+
+	if (key_info_find(id) == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_BIND_UNKNOWN_ID, id);
 	else {
 		key_configure_add(id, key, keydata);
 		cmd_show_keys(key, TRUE);
 	}
 
+	if (command_id) g_free(keydata);
         cmd_params_free(free_arg);
 }
 
