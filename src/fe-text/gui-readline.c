@@ -380,13 +380,14 @@ static void sig_gui_key_pressed(gpointer keyp)
 		gui_entry_insert_char(active_entry, key);
 	}
 
-	if (ret != 0) {
-		/* some key create multiple characters - we're in the middle
-		   of one. try to detect the keycombo as a single keypress
-		   rather than multiple small onces to avoid incorrect
-		   paste detection. */
+	/* ret = 0 : some key create multiple characters - we're in the middle
+	   of one. try to detect the keycombo as a single keypress rather than
+	   multiple small onces to avoid incorrect paste detection.
+
+	   CR/LF : don't count them to avoid paste detection when you're
+	   holding enter key down */
+	if (ret != 0 && key != '\r' && key != '\n')
 		last_keypress = now;
-	}
 }
 
 static void key_send_line(void)
