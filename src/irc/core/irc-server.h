@@ -125,7 +125,6 @@ typedef struct {
 	GSList *knockoutlist;
 	time_t knockout_lastcheck;
 
-	GSList *lastmsgs; /* List of nicks who last send you msg */
 	GHashTable *splits; /* For keeping track of netsplits */
 	GSList *split_servers; /* Servers that are currently in split */
 

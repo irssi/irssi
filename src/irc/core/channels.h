@@ -50,9 +50,6 @@ typedef struct {
 	time_t massjoin_start; /* Massjoin start time */
 	int massjoins; /* Number of nicks waiting for massjoin signal.. */
 	int last_massjoins; /* Massjoins when last checked in timeout function */
-
-	GSList *lastmsgs; /* List of nicks who last send message */
-	GSList *lastownmsgs; /* List of nicks who last send message to you */
 } CHANNEL_REC;
 
 extern GSList *channels;

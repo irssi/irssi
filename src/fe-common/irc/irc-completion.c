@@ -96,8 +96,48 @@ static void nick_completion_remove_old(GSList **list, int timeout, time_t now)
 	}
 }
 
+static void last_msg_add(MODULE_SERVER_REC *mserver, const char *nick)
+{
+	LAST_MSG_REC *rec;
+
+	rec = g_new(LAST_MSG_REC, 1);
+	rec->time = time(NULL);
+	rec->nick = g_strdup(nick);
+
+	mserver->lastmsgs = g_slist_append(mserver->lastmsgs, rec);
+}
+
+static void last_msg_free(MODULE_SERVER_REC *mserver, LAST_MSG_REC *rec)
+{
+	mserver->lastmsgs = g_slist_remove(mserver->lastmsgs, rec);
+
+	g_free(rec->nick);
+	g_free(rec);
+}
+
+static LAST_MSG_REC *last_msg_find(MODULE_SERVER_REC *mserver, const char *nick)
+{
+	GSList *tmp;
+
+	for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
+		LAST_MSG_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->nick, nick) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
+static int last_msg_cmp(LAST_MSG_REC *m1, LAST_MSG_REC *m2)
+{
+	return m1->time < m2->time ? 1 : -1;
+}
+
 static int nick_completion_timeout(void)
 {
+	MODULE_SERVER_REC *mserver;
+	MODULE_CHANNEL_REC *mchannel;
 	GSList *tmp, *link;
 	time_t now;
 	int len;
@@ -109,19 +149,20 @@ static int nick_completion_timeout(void)
 		if (!irc_server_check(rec))
 			continue;
 
-		len = g_slist_length(rec->lastmsgs);
+		mserver = MODULE_DATA(rec);
+		len = g_slist_length(mserver->lastmsgs);
 		if (len > 0 && len >= settings_get_int("completion_keep_privates")) {
-			link = g_slist_last(rec->lastmsgs);
-			g_free(link->data);
-			rec->lastmsgs = g_slist_remove(rec->lastmsgs, link->data);
+			link = g_slist_last(mserver->lastmsgs);
+                        last_msg_free(mserver, link->data);
 		}
 	}
 
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		nick_completion_remove_old(&rec->lastownmsgs, settings_get_int("completion_keep_ownpublics"), now);
-		nick_completion_remove_old(&rec->lastmsgs, settings_get_int("completion_keep_publics"), now);
+		mchannel = MODULE_DATA(rec);
+		nick_completion_remove_old(&mchannel->lastownmsgs, settings_get_int("completion_keep_ownpublics"), now);
+		nick_completion_remove_old(&mchannel->lastmsgs, settings_get_int("completion_keep_publics"), now);
 	}
 
 	return 1;
@@ -161,14 +202,15 @@ static NICK_COMPLETION_REC *nick_completion_create(GSList **list, time_t time, c
 
 static void add_private_msg(IRC_SERVER_REC *server, const char *nick)
 {
-	GSList *link;
+	MODULE_SERVER_REC *mserver;
+	LAST_MSG_REC *msg;
 
-	link = gslist_find_icase_string(server->lastmsgs, nick);
-	if (link != NULL) {
-		g_free(link->data);
-		server->lastmsgs = g_slist_remove(server->lastmsgs, link->data);
-	}
-	server->lastmsgs = g_slist_prepend(server->lastmsgs, g_strdup(nick));
+	mserver = MODULE_DATA(server);
+	msg = last_msg_find(mserver, nick);
+	if (msg != NULL)
+		msg->time = time(NULL);
+	else
+		last_msg_add(mserver, nick);
 }
 
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick)
@@ -183,6 +225,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 	if (ischannel(*target)) {
 		/* channel message */
+		MODULE_CHANNEL_REC *mchannel;
 		CHANNEL_REC *channel;
 
 		channel = channel_find(server, target);
@@ -191,9 +234,10 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 			return;
 		}
 
+		mchannel = MODULE_DATA(channel);
 		list = irc_nick_match(server->nick, msg) ?
-			&channel->lastownmsgs :
-			&channel->lastmsgs;
+			&mchannel->lastownmsgs :
+			&mchannel->lastmsgs;
 		nick_completion_create(list, time(NULL), nick);
 	} else {
 		/* private message */
@@ -228,25 +272,31 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server)
 static void sig_nick_removed(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	NICK_COMPLETION_REC *rec;
+	MODULE_CHANNEL_REC *mchannel;
 
-	rec = nick_completion_find(channel->lastownmsgs, nick->nick);
-	if (rec != NULL) nick_completion_destroy(&channel->lastownmsgs, rec);
+	mchannel = MODULE_DATA(channel);
 
-	rec = nick_completion_find(channel->lastmsgs, nick->nick);
-	if (rec != NULL) nick_completion_destroy(&channel->lastmsgs, rec);
+	rec = nick_completion_find(mchannel->lastownmsgs, nick->nick);
+	if (rec != NULL) nick_completion_destroy(&mchannel->lastownmsgs, rec);
+
+	rec = nick_completion_find(mchannel->lastmsgs, nick->nick);
+	if (rec != NULL) nick_completion_destroy(&mchannel->lastmsgs, rec);
 }
 
 static void sig_nick_changed(CHANNEL_REC *channel, NICK_REC *nick, const char *oldnick)
 {
 	NICK_COMPLETION_REC *rec;
+	MODULE_CHANNEL_REC *mchannel;
 
-	rec = nick_completion_find(channel->lastownmsgs, oldnick);
+	mchannel = MODULE_DATA(channel);
+
+	rec = nick_completion_find(mchannel->lastownmsgs, oldnick);
 	if (rec != NULL) {
 		g_free(rec->nick);
 		rec->nick = g_strdup(nick->nick);
 	}
 
-	rec = nick_completion_find(channel->lastmsgs, oldnick);
+	rec = nick_completion_find(mchannel->lastmsgs, oldnick);
 	if (rec != NULL) {
 		g_free(rec->nick);
 		rec->nick = g_strdup(nick->nick);
@@ -254,42 +304,69 @@ static void sig_nick_changed(CHANNEL_REC *channel, NICK_REC *nick, const char *o
 }
 
 /* Complete /MSG from specified server */
-static GList *completion_msg_server(IRC_SERVER_REC *server, const char *nick, const char *prefix)
+static void completion_msg_server(GSList **list, IRC_SERVER_REC *server,
+				  const char *nick, const char *prefix)
 {
+	MODULE_SERVER_REC *mserver;
+	LAST_MSG_REC *msg;
 	GSList *tmp;
-	GList *list;
 	int len;
 
-	g_return_val_if_fail(nick != NULL, NULL);
+	g_return_if_fail(nick != NULL);
 
-	list = NULL; len = strlen(nick);
-	for (tmp = server->lastmsgs; tmp != NULL; tmp = tmp->next) {
-		if (len == 0 || g_strncasecmp(tmp->data, nick, len) == 0) {
-			if (prefix == NULL || *prefix == '\0')
-				list = g_list_append(list, g_strdup(tmp->data));
-			else
-				list = g_list_append(list, g_strconcat(prefix, " ", tmp->data, NULL));
-		}
+	mserver = MODULE_DATA(server);
+	len = strlen(nick);
+	for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
+		LAST_MSG_REC *rec = tmp->data;
+
+		if (len != 0 && g_strncasecmp(rec->nick, nick, len) != 0)
+			continue;
+
+		msg = g_new(LAST_MSG_REC, 1);
+		msg->time = rec->time;
+		msg->nick = prefix == NULL || *prefix == '\0' ?
+			g_strdup(rec->nick) :
+			g_strconcat(prefix, " ", rec->nick, NULL);
+		*list = g_slist_insert_sorted(*list, msg,
+					      (GCompareFunc) last_msg_cmp);
+	}
+}
+
+static GList *convert_msglist(GSList *msglist)
+{
+	GList *list;
+
+	list = NULL;
+	while (msglist != NULL) {
+		LAST_MSG_REC *rec = msglist->data;
+
+                list = g_list_append(list, g_strdup(rec->nick));
+
+		msglist = g_slist_remove(msglist, rec);
+		g_free(rec->nick);
+		g_free(rec);
 	}
 
 	return list;
 }
 
-/* Complete /MSG - if `server' is NULL, complete nicks from all servers */
-static GList *completion_msg(IRC_SERVER_REC *win_server, IRC_SERVER_REC *find_server,
+/* Complete /MSG - if `find_server' is NULL, complete nicks from all servers */
+static GList *completion_msg(IRC_SERVER_REC *win_server,
+			     IRC_SERVER_REC *find_server,
 			     const char *nick, const char *prefix)
 {
-	GSList *tmp;
-	GList *list, *tmplist;
+	GSList *tmp, *list;
 	char *newprefix;
 
 	g_return_val_if_fail(nick != NULL, NULL);
 	if (servers == NULL) return NULL;
 
-	if (find_server != NULL)
-		return completion_msg_server(find_server, nick, prefix);
-
 	list = NULL;
+	if (find_server != NULL) {
+		completion_msg_server(&list, find_server, nick, prefix);
+		return convert_msglist(list);
+	}
+
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
@@ -301,13 +378,11 @@ static GList *completion_msg(IRC_SERVER_REC *win_server, IRC_SERVER_REC *find_se
 				g_strdup_printf("%s -%s", prefix, rec->tag);
 		}
 
-		tmplist = completion_msg_server(rec, nick, newprefix);
-		list = g_list_concat(list, tmplist);
-
+		completion_msg_server(&list, rec, nick, newprefix);
 		g_free_not_null(newprefix);
 	}
 
-	return list;
+	return convert_msglist(list);
 }
 
 static void complete_from_nicklist(GList **outlist, GSList *list,
@@ -332,6 +407,7 @@ static void complete_from_nicklist(GList **outlist, GSList *list,
 
 static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick, const char *prefix)
 {
+	MODULE_CHANNEL_REC *mchannel;
 	GSList *nicks, *tmp;
 	GList *list;
 	int len;
@@ -342,8 +418,9 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick, c
 
 	/* put first the nicks who have recently said something [to you] */
 	list = NULL;
-	complete_from_nicklist(&list, channel->lastownmsgs, nick, prefix);
-	complete_from_nicklist(&list, channel->lastmsgs, nick, prefix);
+	mchannel = MODULE_DATA(channel);
+	complete_from_nicklist(&list, mchannel->lastownmsgs, nick, prefix);
+	complete_from_nicklist(&list, mchannel->lastmsgs, nick, prefix);
 
 	/* and add the rest of the nicks too */
 	len = strlen(nick);
@@ -570,28 +647,59 @@ static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
     signal_stop();
 }
 
-static void completion_deinit_server(IRC_SERVER_REC *server)
+static void completion_init_server(IRC_SERVER_REC *server)
 {
+	MODULE_SERVER_REC *rec;
+
 	g_return_if_fail(server != NULL);
 
 	if (!irc_server_check(server))
 		return;
 
-	g_slist_foreach(server->lastmsgs, (GFunc) g_free, NULL);
-	g_slist_free(server->lastmsgs);
+	rec = g_new0(MODULE_SERVER_REC, 1);
+	MODULE_DATA_SET(server, rec);
+}
+
+static void completion_deinit_server(IRC_SERVER_REC *server)
+{
+	MODULE_SERVER_REC *mserver;
+
+	g_return_if_fail(server != NULL);
+
+	if (!irc_server_check(server))
+		return;
+
+	mserver = MODULE_DATA(server);
+	while (mserver->lastmsgs)
+		last_msg_free(mserver, mserver->lastmsgs->data);
+	g_free(mserver);
+}
+
+static void completion_init_channel(CHANNEL_REC *channel)
+{
+	MODULE_CHANNEL_REC *rec;
+
+	g_return_if_fail(channel != NULL);
+
+	rec = g_new0(MODULE_CHANNEL_REC, 1);
+	MODULE_DATA_SET(channel, rec);
 }
 
 static void completion_deinit_channel(CHANNEL_REC *channel)
 {
+	MODULE_CHANNEL_REC *mchannel;
+
 	g_return_if_fail(channel != NULL);
 
-	while (channel->lastmsgs != NULL)
-		nick_completion_destroy(&channel->lastmsgs, channel->lastmsgs->data);
-	while (channel->lastownmsgs != NULL)
-		nick_completion_destroy(&channel->lastownmsgs, channel->lastownmsgs->data);
+	mchannel = MODULE_DATA(channel);
+	while (mchannel->lastmsgs != NULL)
+		nick_completion_destroy(&mchannel->lastmsgs, mchannel->lastmsgs->data);
+	while (mchannel->lastownmsgs != NULL)
+		nick_completion_destroy(&mchannel->lastownmsgs, mchannel->lastownmsgs->data);
 
-	g_slist_free(channel->lastmsgs);
-	g_slist_free(channel->lastownmsgs);
+	g_slist_free(mchannel->lastmsgs);
+	g_slist_free(mchannel->lastownmsgs);
+	g_free(mchannel);
 }
 
 void irc_completion_init(void)
@@ -612,8 +720,10 @@ void irc_completion_init(void)
 	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
 	signal_add("nicklist changed", (SIGNAL_FUNC) sig_nick_changed);
 	signal_add("send text", (SIGNAL_FUNC) event_text);
+	signal_add("server connected", (SIGNAL_FUNC) completion_init_server);
 	signal_add("server disconnected", (SIGNAL_FUNC) completion_deinit_server);
-	signal_add("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
+	signal_add("channel created", (SIGNAL_FUNC) completion_init_channel);
+	signal_add_last("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
 }
 
 void irc_completion_deinit(void)
@@ -627,6 +737,8 @@ void irc_completion_deinit(void)
 	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
 	signal_remove("nicklist changed", (SIGNAL_FUNC) sig_nick_changed);
 	signal_remove("send text", (SIGNAL_FUNC) event_text);
+	signal_remove("server connected", (SIGNAL_FUNC) completion_init_server);
 	signal_remove("server disconnected", (SIGNAL_FUNC) completion_deinit_server);
+	signal_remove("channel created", (SIGNAL_FUNC) completion_init_channel);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
 }
