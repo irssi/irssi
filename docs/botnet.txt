@@ -1,0 +1,163 @@
+
+HISTORY
+
+ draft v0.1 : 21.8.1999
+
+     Just a first draft of my botnet design I did on a boring friday
+     work afternoon :) I'll try to implement this to irssi some day, it
+     feels pretty interesting now so it might be pretty soon even. Any
+     comments are welcome :)
+
+ draft v0.2 : 21.11.1999
+
+     Exactly three months since the first draft :) Now I actually have
+     some code done, just committed pretty simple botnet to irssi CVS.
+     Made several changes to this document.. Still missing much details
+     but the basic idea should be clear.
+
+------
+
+A small description of what botnet would do: A group of bots
+efficiently working together to perform their tasks. Like when
+someone's trying to take over your channel, bots will quickly decide
+who deops/kicks whom instead of multiple bots deopping or trying to
+kick the same people..
+
+config file:
+
+mybotnet =
+{
+  priority=n;
+  nick=mybot;
+  bots=
+  (
+    { host="another.org"; port=5567; password="blah";
+      valid_addrs=("*.another.org"); },
+    { host="blah.ircnetthing.net"; password="blah";
+      valid_addrs=("*.ircnetthing.net", "*.blah.org"); },
+    { host="some.thing.net"; password="blah";
+      valid_addrs=("some.thing.net"); }
+  );
+}
+
+When connecting to botnet, it first tries to connect to the first bot
+in bots list, then the second, etc. Setting port to 0 will prevent
+connecting to the bot.
+
+Login:
+
+First host checks what client is connecting from bots' valid_addrs. If
+there's no matches it just disconnects the client.
+
+CLIENT: PASS blah
+HOST  : (if error, disconnect)
+CLIENT: NICK nick
+HOST  : (if nick already in use) NICKERROR
+CLIENT: PRIORITY=n
+HOST  : MASTER nick
+HOST  : CONNECTED
+
+Then host sends a list of all connected bots in botnet:
+ BOTINFO nick connected-to-nick address priority
+
+Now we're connected to botnet, rest of the commands will be send to
+everyone. Commands are the following format (I won't write the nick
+from now on):
+
+nick COMMAND [command specific data..]
+
+After connection is established with the client, host sends (except to
+the connected client):
+ BOTNEW client_nick client_address client_priority
+
+Master is the client with the highest priority, if there's multiple
+with the same priority, the one who's nick is the first in alphabet
+"wins" and says:
+
+ MASTER
+
+Also after connecting, client could check if it's priority is bigger than
+current master's and make itself the master.
+
+Bots should every now and then check if their connections are active by
+sending PING, the other side replies with PONG. If PONG isn't received
+for a while (3 min?), the connection should be closed. If there's more
+bots behind the lost bot, either side should try to reconnect to the
+other one. Also if there's too much lag (>30sec) for some bots, their
+priority could be temporarily lowered. When something urgent happens
+and there's a lot of lag, each subset of bots should try to behave
+independently.
+
+When connection is closed to some bot, a notice is sent:
+ BOTQUIT nick
+
+After bot is (dis)connected to some irc network and is ready to take
+commands, it sends notice:
+ BOTCONNECT ircnet (where ircnet is network's name, like IRCNet, EFNet, ..)
+ BOTDISCONNECT ircnet
+
+After joining/leaving channels, bot sends notice:
+ BOTJOIN ircnet #channel
+ BOTPART ircnet #channel
+
+After BOTJOIN, master tries to op the bot. When bot receives +o, it replies:
+ BOTOP ircnet #channel
+
+If it's the first opped bot in channel, master orders the bot to op the rest
+of the bots.
+
+Or after kicked or when being unable to join..:
+ BOTKICK ircnet #channel
+ BOTBANNED ircnet #channel
+ BOTCANTJOIN ircnet #channel
+
+When master notices that bot is kicked, it first checks if there's any other
+opped bots in channel. If not, it waits for a random pause, 5-10sec before
+joining (so it won't get autorejoin ban). When received BOTBANNED, master
+tries to unban bot, BOTCANTJOIN results as invite to channel.
+
+When master notices that bot is the first one joined to channel, it asks bot
+for channel information:
+
+ BOTCMD nick ircnet NAMES #channel
+ BOTCMD nick ircnet WHO #channel 
+ BOTCMD nick ircnet MODE #channel 
+ BOTCMD nick ircnet MODE b #channel
+ BOTCMD nick ircnet MODE e #channel
+ BOTCMD nick ircnet MODE I #channel
+
+Next command is sent right after getting answer from the last query. It's also
+possible that if several bots join immediately after the first bot, the
+commands are shared between all the bots. After getting the results, the bot
+replies:
+
+ BOTREPLY ircnet <reply>
+
+Bots should cache the information as much as possible, at least NAMES command.
+
+Every channel has a priority: LOW, NORMAL, HIGH.
+
+Normally LOW operates just as NORMAL channels, except when some channel
+has HIGH priority and bots are really busy, LOW channels just wait
+until there's time for them.
+
+In NORMAL channels, the most urgent operations (kicks, ops, deops) are
+performed quite soon even while bots are busy handling HIGH priority
+commands.
+
+Channels shouldn't normally be HIGH priority, but if attack against
+channel is detected (like someone comes from split, gets ops and gets
+to op someone else), it's priority is set to HIGH. When channel's
+priority is HIGH, botnet does everything it can to get rid of
+unauthorized opped people as fast as possible.
+
+LOW channel's priority can also be raised to HIGH, but it's priority is
+dropped back to LOW if some NORMAL channel's priority is raised to HIGH
+too.
+
+Channel's priority can also be set manually:
+ CHPRIORITY ircnet #channel <LOW/NORMAL/HIGH>
+
+------
+
+Copyright (c) 1999 Timo Sirainen

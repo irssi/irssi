@@ -1,6 +1,7 @@
 EXTRA_DIST = \
 	FAQ \
 	COMMANDS \
-	FORMATS
+	FORMATS \
+	botnet.txt
 
 SUBDIRS = help
