@@ -108,7 +108,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 			    &target, &msg))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? "" : item->name;
 
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -130,7 +130,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? "" : item->name;
 	if (*target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -161,7 +161,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &text))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? "" : item->name;
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
