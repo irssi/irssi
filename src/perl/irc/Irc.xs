@@ -106,7 +106,7 @@ static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
 		av_push(av, plain_bless(tmp->data,
 					"Irssi::Irc::Netsplitchannel"));
 	}
-	hv_store(hv, "channels", 7, newRV_noinc((SV*)av), 0);
+	hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)

@@ -145,3 +145,6 @@ if test x$NOCONFIGURE = x; then
 else
   echo Skipping configure process.
 fi
+
+# make sure perl hashes have correct length
+find src/perl -name *.c -o -name *.xs | xargs grep -n hv_store | perl -ne 'if (/"(\w+)",\s*(\d+)/) { print unless $2 == length $1 }'
