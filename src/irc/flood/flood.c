@@ -61,10 +61,12 @@ static int flood_hash_check_remove(const char *key, FLOOD_REC *flood,
 		next = tmp->next;
 		/* remove old time entries for current rec item */
 		for (times = rec->msgtimes; times != NULL; times = tnext) {
+                        time_t *data = times->data;
 			tnext = times->next;
+
 			if (*now-*((time_t *) times->data) >= flood_timecheck) {
-				rec->msgtimes = g_slist_remove(rec->msgtimes, times->data);
-				g_free(times->data);
+				rec->msgtimes = g_slist_remove(rec->msgtimes, data);
+				g_free(data);
 			}
 		}
 		/* if no more time entries remove rec item */
