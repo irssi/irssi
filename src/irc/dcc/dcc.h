@@ -43,7 +43,8 @@ DCC_REC *dcc_find_request_latest(int type);
 DCC_REC *dcc_find_request(int type, const char *nick, const char *arg);
 
 /* IP <-> string for DCC CTCP messages.
-   `str' must be at least MAX_IP_LEN bytes  */
+   `str' must be at least MAX_IP_LEN bytes.
+   If /SET dcc_own_ip is set, dcc_ip2str() always returns it. */
 void dcc_ip2str(IPADDR *ip, char *str);
 void dcc_str2ip(const char *str, IPADDR *ip);
 

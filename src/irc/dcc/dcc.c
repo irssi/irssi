@@ -152,7 +152,14 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 
 void dcc_ip2str(IPADDR *ip, char *host)
 {
+	IPADDR temp_ip;
 	unsigned long addr;
+
+	if (*settings_get_str("dcc_own_ip") != '\0') {
+                /* overridden IP address */
+		net_host2ip(settings_get_str("dcc_own_ip"), &temp_ip);
+                ip = &temp_ip;
+	}
 
 	if (IPADDR_IS_V6(ip)) {
 		/* IPv6 */
@@ -420,6 +427,7 @@ void irc_dcc_init(void)
 
 	settings_add_int("dcc", "dcc_port", 0);
 	settings_add_int("dcc", "dcc_timeout", 300);
+	settings_add_str("dcc", "dcc_own_ip", "");
 
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
