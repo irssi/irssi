@@ -300,7 +300,7 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 
 		/* check if it matches for alphanumeric parts of nick */
 		while (*nick != '\0' && *msg != '\0') {
-			if (*nick == *msg) {
+			if (toupper(*nick) == toupper(*msg)) {
 				/* total match */
 				msg++;
 			} else if (isalnum(*msg) && !isalnum(*nick)) {
