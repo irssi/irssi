@@ -43,6 +43,13 @@
    is required */
 #define LIST_MAX_CHANNELS_PASS 1000
 
+/* When /PARTing a channel, if there's more messages in output queue
+   than this, purge the output for channel. The idea behind this is that
+   if you accidentally pasted some large text and /PART the channel, the
+   text won't be fully pasted. Note that this counter is the whole size
+   of the output queue, not channel specific.. */
+#define MAX_COMMANDS_ON_PART_UNTIL_PURGE 10
+
 typedef struct {
 	IRC_CHANNEL_REC *channel;
 	char *ban;
@@ -132,6 +139,10 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*msg == '\0') msg = (char *) settings_get_str("part_message");
+
+        if (server->cmdcount > MAX_COMMANDS_ON_PART_UNTIL_PURGE)
+		irc_server_purge_output(server, channame);
+
 	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
 		      channame, msg);
 
@@ -833,6 +844,24 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SERVER PURGE [<target>] */
+static void cmd_server_purge(const char *data, IRC_SERVER_REC *server)
+{
+        char *target;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 1, &target))
+		return;
+
+	irc_server_purge_output(server, *target == '\0' ? NULL : target);
+
+	cmd_params_free(free_arg);
+}
+
 /* destroy all knockouts in server */
 static void sig_server_disconnected(IRC_SERVER_REC *server)
 {
@@ -1060,6 +1089,7 @@ void irc_commands_init(void)
 	command_bind("wallchops", NULL, (SIGNAL_FUNC) command_2self);
 	command_bind("kickban", NULL, (SIGNAL_FUNC) cmd_kickban);
 	command_bind("knockout", NULL, (SIGNAL_FUNC) cmd_knockout);
+	command_bind("server purge", NULL, (SIGNAL_FUNC) cmd_server_purge);
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
@@ -1131,6 +1161,8 @@ void irc_commands_deinit(void)
 	command_unbind("wallchops", (SIGNAL_FUNC) command_2self);
 	command_unbind("kickban", (SIGNAL_FUNC) cmd_kickban);
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
+	command_unbind("server purge", (SIGNAL_FUNC) cmd_server_purge);
+
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("nickchange over", (SIGNAL_FUNC) sig_nickchange_over);

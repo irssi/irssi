@@ -91,6 +91,9 @@ typedef struct {
 
 IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn);
 
+/* Purge server output, either all or for specified target */
+void irc_server_purge_output(IRC_SERVER_REC *server, const char *target);
+
 /* Return a string of all channels (and keys, if any have them) in server,
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
 char *irc_server_get_channels(IRC_SERVER_REC *server);

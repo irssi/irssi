@@ -25,6 +25,7 @@
 #include "formats.h"
 
 #include "gui-windows.h"
+#include "gui-printtext.h"
 #include "textbuffer.h"
 
 static GString *format;
@@ -187,10 +188,7 @@ void textbuffer_reformat_line(WINDOW_REC *window, LINE_REC *line)
 		g_free(str);
 		g_free(prestr);
 
-                gui->use_insert_after = TRUE;
-                gui->insert_after = line_prev;
-		format_send_to_gui(&dest, tmp);
-                gui->use_insert_after = FALSE;
+                gui_printtext_after(&dest, line_prev, tmp);
 		g_free(tmp);
 
                 line = textbuffer_insert(gui->view->buffer, gui->insert_after,

@@ -44,6 +44,18 @@ void gui_printtext(int xpos, int ypos, const char *str)
 	next_xpos = next_ypos = -1;
 }
 
+void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
+{
+	GUI_WINDOW_REC *gui;
+
+	gui = WINDOW_GUI(dest->window);
+
+	gui->use_insert_after = TRUE;
+	gui->insert_after = prev;
+	format_send_to_gui(dest, str);
+	gui->use_insert_after = FALSE;
+}
+
 static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 {
 	LINE_REC *line;

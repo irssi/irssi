@@ -187,6 +187,43 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 	return server;
 }
 
+/* Returns TRUE if `command' is sent to `target' */
+static int command_has_target(const char *cmd, const char *target)
+{
+	const char *p;
+        int len;
+
+        /* just assume the command is in form "<command> <target> <data>" */
+        p = strchr(cmd, ' ');
+	if (p == NULL) return FALSE;
+	p++;
+
+        len = strlen(target);
+	return strncmp(p, target, len) == 0 && p[len] == ' ';
+}
+
+/* Purge server output, either all or for specified target */
+void irc_server_purge_output(IRC_SERVER_REC *server, const char *target)
+{
+	GSList *tmp, *next;
+	char *cmd;
+
+	if (target != NULL && *target == '\0')
+                target = NULL;
+
+	for (tmp = server->cmdqueue; tmp != NULL; tmp = next) {
+		next = tmp->next;
+		cmd = tmp->data;
+
+		if ((target == NULL || command_has_target(cmd, target)) &&
+		    g_strncasecmp(cmd, "PONG ", 5) != 0) {
+			server->cmdqueue =
+				g_slist_remove(server->cmdqueue, cmd);
+                        server->cmdcount--;
+		}
+	}
+}
+
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	if (!IS_IRC_SERVER(server))

@@ -189,35 +189,29 @@ static void cmd_server_remove(const char *data)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_server(const char *data, SERVER_REC *server, void *item)
+static void cmd_server(const char *data)
+{
+	if (*data != '\0')
+		return;
+
+	if (servers == NULL && lookup_servers == NULL &&
+	    reconnects == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_NO_CONNECTED_SERVERS);
+	} else {
+		print_servers();
+		print_lookup_servers();
+		print_reconnects();
+	}
+
+        signal_stop();
+}
+
+static void cmd_server_connect(const char *data)
 {
 	GHashTable *optlist;
 	char *addr;
 	void *free_arg;
-
-	if (*data == '\0') {
-		if (servers == NULL && lookup_servers == NULL &&
-		    reconnects == NULL) {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-                                    TXT_NO_CONNECTED_SERVERS);
-		} else {
-			print_servers();
-			print_lookup_servers();
-			print_reconnects();
-		}
-
-		signal_stop();
-		return;
-	}
-
-	if (g_strncasecmp(data, "add ", 4) == 0 ||
-	    g_strncasecmp(data, "remove ", 7) == 0 ||
-	    g_strcasecmp(data, "list") == 0 ||
-	    g_strncasecmp(data, "list ", 5) == 0) {
-		command_runsub("server", data, server, item);
-		signal_stop();
-		return;
-	}
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
 			    "connect", &optlist, &addr))
@@ -324,6 +318,7 @@ static void sig_chat_protocol_unknown(const char *protocol)
 void fe_server_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
+	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_set_options("server add", "4 6 auto noauto -host -port");
@@ -345,6 +340,7 @@ void fe_server_init(void)
 void fe_server_deinit(void)
 {
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
+	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
 	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
 	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
 

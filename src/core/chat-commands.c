@@ -175,9 +175,20 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 	}
 }
 
+static void cmd_server(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	command_runsub("server", data, server, item);
+}
+
+static void sig_default_command_server(const char *data, SERVER_REC *server,
+				       WI_ITEM_REC *item)
+{
+        signal_emit("command server connect", 3, data, server, item);
+}
+
 /* SYNTAX: SERVER [-4 | -6] [-ircnet <ircnet>] [-host <hostname>]
                   [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
-static void cmd_server(const char *data, SERVER_REC *server)
+static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
 	SERVER_CONNECT_REC *conn;
 	int plus_addr;
@@ -366,6 +377,7 @@ void chat_commands_init(void)
 	settings_add_str("misc", "quit_message", "leaving");
 
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
+	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
 	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
 	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
@@ -376,6 +388,8 @@ void chat_commands_init(void)
 	command_bind("foreach channel", NULL, (SIGNAL_FUNC) cmd_foreach_channel);
 	command_bind("foreach query", NULL, (SIGNAL_FUNC) cmd_foreach_query);
 
+        signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
+
 	command_set_options("connect", "4 6 +host");
 	command_set_options("join", "invite");
 }
@@ -383,6 +397,7 @@ void chat_commands_init(void)
 void chat_commands_deinit(void)
 {
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
+	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
 	command_unbind("connect", (SIGNAL_FUNC) cmd_connect);
 	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
 	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
@@ -392,4 +407,6 @@ void chat_commands_deinit(void)
 	command_unbind("foreach server", (SIGNAL_FUNC) cmd_foreach_server);
 	command_unbind("foreach channel", (SIGNAL_FUNC) cmd_foreach_channel);
 	command_unbind("foreach query", (SIGNAL_FUNC) cmd_foreach_query);
+
+        signal_remove("default command server", (SIGNAL_FUNC) sig_default_command_server);
 }
