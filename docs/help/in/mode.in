@@ -58,7 +58,7 @@ Irssi knows these channel modes:
 
      I - Invite list. If channel is invite only (+i), people in this
 	 list can join it without being /INVITEd - works only in
-	 IRCnet/EFnet servers.
+	 IRCnet servers.
 
 	 This is excellent for in-country channels that don't want
 	 foreigners (spammers!) to join the channel, for example setting
