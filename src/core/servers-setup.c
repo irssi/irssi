@@ -466,6 +466,8 @@ void server_setup_add(SERVER_SETUP_REC *rec)
 	if (g_slist_find(setupservers, rec) == NULL)
 		setupservers = g_slist_append(setupservers, rec);
 	server_setup_save(rec);
+
+	signal_emit("server setup updated", 1, rec);
 }
 
 void server_setup_remove(SERVER_SETUP_REC *rec)
