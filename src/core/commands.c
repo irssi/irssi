@@ -640,7 +640,8 @@ typedef struct {
         GHashTable *options;
 } CMD_TEMP_REC;
 
-static char *get_optional_channel(WI_ITEM_REC *active_item, char **data)
+static char *get_optional_channel(WI_ITEM_REC *active_item, char **data,
+				  int require_name)
 {
         CHANNEL_REC *chanrec;
 	char *tmp, *origtmp, *channel, *ret;
@@ -653,7 +654,7 @@ static char *get_optional_channel(WI_ITEM_REC *active_item, char **data)
 	origtmp = tmp = g_strdup(*data);
 	channel = cmd_get_param(&tmp);
 
-	if (strcmp(channel, "*") == 0) {
+	if (strcmp(channel, "*") == 0 && !require_name) {
                 /* "*" means active channel */
 		cmd_get_param(data);
 		ret = active_item->name;
@@ -680,7 +681,7 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 	GHashTable **opthash;
 	char **str, *arg, *datad;
 	va_list args;
-	int cnt, error, ignore_unknown;
+	int cnt, error, ignore_unknown, require_name;
 
 	g_return_val_if_fail(data != NULL, FALSE);
 
@@ -714,7 +715,8 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 		cnt = PARAM_WITHOUT_FLAGS(count);
 		if (count & PARAM_FLAG_OPTCHAN) {
 			/* optional channel as first parameter */
-			arg = get_optional_channel(item, &datad);
+                        require_name = (count & PARAM_FLAG_OPTCHAN_NAME);
+			arg = get_optional_channel(item, &datad, require_name);
 
 			str = (char **) va_arg(args, char **);
 			if (str != NULL) *str = arg;

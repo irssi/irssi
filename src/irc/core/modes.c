@@ -591,7 +591,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
         void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN, item, &channame, &nicks))
+			    PARAM_FLAG_OPTCHAN_NAME, item, &channame, &nicks))
 		return NULL;
 
 	if (*nicks == '\0')

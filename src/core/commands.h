@@ -135,6 +135,8 @@ int command_have_option(const char *cmd, const char *option);
 #define PARAM_FLAG_UNKNOWN_OPTIONS 0x00008000
 /* optional channel in first argument */
 #define PARAM_FLAG_OPTCHAN 0x00010000
+/* optional channel in first argument, but don't treat "*" as current channel */
+#define PARAM_FLAG_OPTCHAN_NAME 0x00030000
 
 char *cmd_get_param(char **data);
 /* get parameters from command - you should point free_me somewhere and
