@@ -345,7 +345,7 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 	return ret;
 }
 
-/* SYNTAX: WHOIS [<server>] [<nicks>] */
+/* SYNTAX: WHOIS [-<server tag>] [<server>] [<nicks>] */
 static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
@@ -356,9 +356,18 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS,
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS,
 			    "whois", &optlist, &qserver, &query))
 		return;
+
+	/* -<server tag> */
+	server = IRC_SERVER(cmd_options_get_server(NULL, optlist,
+						   SERVER(server)));
+	if (server == NULL) {
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	if (*query == '\0') {
 		query = qserver;
