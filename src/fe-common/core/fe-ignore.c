@@ -54,9 +54,18 @@ static void ignore_print(int index, IGNORE_REC *rec)
 
 	options = g_string_new(NULL);
 	if (rec->exception) g_string_sprintfa(options, "-except ");
-	if (rec->regexp) g_string_sprintfa(options, "-regexp ");
+	if (rec->regexp) {
+		g_string_sprintfa(options, "-regexp ");
+#ifdef HAVE_REGEX_H
+		if (!rec->regexp_compiled)
+			g_string_sprintfa(options, "[INVALID!] ");
+#endif
+	}
 	if (rec->fullword) g_string_sprintfa(options, "-full ");
 	if (rec->replies) g_string_sprintfa(options, "-replies ");
+	if (rec->pattern != NULL)
+		g_string_sprintfa(options, "-pattern %s ", rec->pattern);
+
 	if (options->len > 1) g_string_truncate(options, options->len-1);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
