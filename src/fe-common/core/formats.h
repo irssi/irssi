@@ -32,7 +32,7 @@ struct _FORMAT_REC {
 
 typedef struct {
 	WINDOW_REC *window;
-	void *server;
+	SERVER_REC *server;
 	const char *target;
 	int level;
 

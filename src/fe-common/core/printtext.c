@@ -32,7 +32,7 @@
 #include "fe-windows.h"
 #include "printtext.h"
 
-static int beep_msg_level, beep_when_away;
+static int beep_msg_level, beep_when_away, beep_when_window_active;
 
 static int signal_gui_print_text;
 static int signal_print_text_stripped;
@@ -356,11 +356,13 @@ void printtext_gui(const char *text)
 	g_free(str);
 }
 
-static void msg_beep_check(SERVER_REC *server, int level)
+static void msg_beep_check(TEXT_DEST_REC *dest)
 {
-	if (level != 0 && (level & MSGLEVEL_NOHILIGHT) == 0 &&
-	    (beep_msg_level & level) &&
-	    (beep_when_away || (server != NULL && !server->usermode_away))) {
+	if (dest->level != 0 && (dest->level & MSGLEVEL_NOHILIGHT) == 0 &&
+	    (beep_msg_level & dest->level) &&
+	    (beep_when_away || (dest->server != NULL &&
+				!dest->server->usermode_away)) &&
+	    (beep_when_window_active || dest->window != active_win)) {
                 signal_emit("beep", 0);
 	}
 }
@@ -372,7 +374,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
 
-	msg_beep_check(dest->server, dest->level);
+	msg_beep_check(dest);
 
 	dest->window->last_line = time(NULL);
 	format_newline(dest->window);
@@ -421,13 +423,11 @@ static void read_settings(void)
 {
 	beep_msg_level = level2bits(settings_get_str("beep_msg_level"));
 	beep_when_away = settings_get_bool("beep_when_away");
+        beep_when_window_active = settings_get_bool("beep_when_window_active");
 }
 
 void printtext_init(void)
 {
-	settings_add_int("misc", "timestamp_timeout", 0);
-	settings_add_str("lookandfeel", "beep_msg_level", "");
-
 	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
 	signal_print_text_stripped = signal_get_uniq_id("print text stripped");
