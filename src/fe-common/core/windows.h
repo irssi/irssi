@@ -48,7 +48,10 @@ typedef struct {
 	time_t last_timestamp; /* When was last timestamp printed */
 	time_t last_line; /* When was last line printed */
 
-	gpointer gui_data;
+        char *theme_name; /* active theme in window, NULL = default */
+	void *theme; /* THEME_REC */
+
+	void *gui_data;
 } WINDOW_REC;
 
 extern GSList *windows;

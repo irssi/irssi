@@ -33,6 +33,8 @@ GSList *themes;
 THEME_REC *current_theme;
 GHashTable *default_formats;
 
+static void theme_read(THEME_REC *theme, const char *path);
+
 THEME_REC *theme_create(const char *path, const char *name)
 {
 	THEME_REC *rec;
@@ -44,6 +46,7 @@ THEME_REC *theme_create(const char *path, const char *name)
 	rec->path = g_strdup(path);
 	rec->name = g_strdup(name);
 	rec->modules = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	themes = g_slist_append(themes, rec);
 	signal_emit("theme created", 1, rec);
 
 	return rec;
@@ -64,12 +67,12 @@ static void theme_module_destroy(const char *key, MODULE_THEME_REC *rec)
 
 void theme_destroy(THEME_REC *rec)
 {
+	themes = g_slist_remove(themes, rec);
+
 	signal_emit("theme destroyed", 1, rec);
 	g_hash_table_foreach(rec->modules, (GHFunc) theme_module_destroy, NULL);
 	g_hash_table_destroy(rec->modules);
 
-	if (rec->bg_pixmap != NULL) g_free(rec->bg_pixmap);
-	if (rec->font != NULL) g_free(rec->font);
 	g_free(rec->path);
 	g_free(rec->name);
 	g_free(rec);
@@ -152,6 +155,11 @@ static void theme_read_module(THEME_REC *theme, const char *module)
 	config_close(config);
 }
 
+static void themes_read_module(const char *module)
+{
+        g_slist_foreach(themes, (GFunc) theme_read_module, (void *) module);
+}
+
 static void theme_remove_module(THEME_REC *theme, const char *module)
 {
 	MODULE_THEME_REC *rec;
@@ -163,15 +171,18 @@ static void theme_remove_module(THEME_REC *theme, const char *module)
 	theme_module_destroy(module, rec);
 }
 
+static void themes_remove_module(const char *module)
+{
+        g_slist_foreach(themes, (GFunc) theme_remove_module, (void *) module);
+}
+
 void theme_register_module(const char *module, FORMAT_REC *formats)
 {
 	if (g_hash_table_lookup(default_formats, module) != NULL)
 		return;
 
         g_hash_table_insert(default_formats, g_strdup(module), formats);
-
-	if (current_theme != NULL)
-                theme_read_module(current_theme, module);
+	themes_read_module(module);
 }
 
 void theme_unregister_module(const char *module)
@@ -184,8 +195,7 @@ void theme_unregister_module(const char *module)
 	g_hash_table_remove(default_formats, key);
 	g_free(key);
 
-	if (current_theme != NULL)
-		theme_remove_module(current_theme, module);
+	themes_remove_module(module);
 }
 
 static THEME_REC *theme_find(const char *name)
@@ -202,6 +212,36 @@ static THEME_REC *theme_find(const char *name)
 	return NULL;
 }
 
+THEME_REC *theme_load(const char *name)
+{
+	THEME_REC *theme;
+	struct stat statbuf;
+	char *fname;
+
+	theme = theme_find(name);
+	if (theme != NULL) return theme;
+
+	/* check home dir */
+	fname = g_strdup_printf("%s/.irssi/%s.theme", g_get_home_dir(), name);
+	if (stat(fname, &statbuf) != 0) {
+		/* check global config dir */
+		g_free(fname);
+		fname = g_strdup_printf(SYSCONFDIR"/irssi/%s.theme", name);
+		if (stat(fname, &statbuf) != 0) {
+			/* theme not found */
+			g_free(fname);
+			return NULL;
+		}
+	}
+
+	theme = theme_create(fname, name);
+	theme_read(theme, theme->path);
+
+	g_free(fname);
+	return theme;
+}
+
+#if 0
 /* Add all *.theme files from directory to themes */
 static void find_themes(gchar *path)
 {
@@ -228,11 +268,23 @@ static void find_themes(gchar *path)
 	}
 	closedir(dirp);
 }
+#endif
+
+typedef struct {
+        THEME_REC *theme;
+	CONFIG_REC *config;
+} THEME_READ_REC;
+
+static void theme_read_modules(const char *module, void *value,
+			       THEME_READ_REC *rec)
+{
+	theme_read_formats(rec->config, rec->theme, module);
+}
 
 static void theme_read(THEME_REC *theme, const char *path)
 {
-        CONFIG_REC *config;
-	char *value;
+	CONFIG_REC *config;
+	THEME_READ_REC rec;
 
 	config = config_open(path, -1);
 	if (config == NULL) {
@@ -242,23 +294,12 @@ static void theme_read(THEME_REC *theme, const char *path)
 	}
 
         config_parse(config);
-
-	/* default color */
 	theme->default_color = config_get_int(config, NULL, "default_color", 15);
-	/* get font */
-	value = config_get_str(config, NULL, "font", NULL);
-	theme->font = (value == NULL || *value == '\0') ? NULL : g_strdup(value);
 
-	/* get background pixmap */
-	value = config_get_str(config, NULL, "bg_pixmap", NULL);
-	theme->bg_pixmap = (value == NULL || *value == '\0') ? NULL : g_strdup(value);
-	/* get background pixmap properties */
-	if (config_get_bool(config, NULL, "bg_scrollable", FALSE))
-		theme->flags |= THEME_FLAG_BG_SCROLLABLE;
-	if (config_get_bool(config, NULL, "bg_scaled", TRUE))
-		theme->flags |= THEME_FLAG_BG_SCALED;
-	if (config_get_bool(config, NULL, "bg_shaded", FALSE))
-		theme->flags |= THEME_FLAG_BG_SHADED;
+	rec.theme = theme;
+	rec.config = config;
+	g_hash_table_foreach(default_formats,
+			     (GHFunc) theme_read_modules, &rec);
 	config_close(config);
 }
 
@@ -408,20 +449,23 @@ static void module_save(const char *module, MODULE_THEME_REC *rec, CONFIG_NODE *
 	}
 }
 
-/* save changed formats */
-static void cmd_save(void)
+static void theme_save(THEME_REC *theme)
 {
 	CONFIG_REC *config;
 	CONFIG_NODE *fnode;
+	char *path;
+	int ok;
 
-	config = config_open(current_theme->path, 0660);
+	config = config_open(theme->path, 0660);
 	if (config == NULL) return;
 
 	config_parse(config);
 
 	fnode = config_node_traverse(config, "formats", TRUE);
-	g_hash_table_foreach(current_theme->modules, (GHFunc) module_save, fnode);
+	g_hash_table_foreach(theme->modules, (GHFunc) module_save, fnode);
 
+        ok = TRUE;
+	path = g_strdup(theme->path);
 	if (config_write(config, NULL, 0660) == -1) {
 		/* we probably tried to save to global directory
 		   where we didn't have access.. try saving it to
@@ -430,16 +474,31 @@ static void cmd_save(void)
 
 		/* check that we really didn't try to save
 		   it to home dir.. */
-		str = g_strdup_printf("%s/.irssi/", g_get_home_dir());
-		if (strncmp(current_theme->path, str, strlen(str)) != 0) {
-			g_free(str);
-			str = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(), g_basename(current_theme->path));
-
-			config_write(config, str, 0660);
-		}
-		g_free(str);
+		g_free(path);
+		path = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(),
+				       g_basename(theme->path));
+		str = strrchr(path, '/');
+		if (strncmp(theme->path, path, (int) (path-str)) != 0 &&
+		    config_write(config, str, 0660) == -1)
+			ok = FALSE;
 	}
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    ok ? IRCTXT_THEME_SAVED : IRCTXT_THEME_SAVE_FAILED,
+		    path, config_last_error(config));
+	g_free(path);
 	config_close(config);
+}
+
+/* save changed formats */
+static void cmd_save(void)
+{
+	GSList *tmp;
+
+	for (tmp = themes; tmp != NULL; tmp = tmp->next) {
+		THEME_REC *theme = tmp->data;
+
+		theme_save(theme);
+	}
 }
 
 static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList **list)
@@ -509,58 +568,76 @@ static void sig_complete_format(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
-void themes_init(void)
+static void read_settings(void)
 {
 	THEME_REC *rec;
-	GSList *tmp;
-	const char *value;
-	char *str;
+	const char *theme;
 
-        default_formats = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	theme = settings_get_str("theme");
+	if (strcmp(current_theme->name, theme) != 0) {
+		rec = theme_load(theme);
+		if (rec != NULL) current_theme = rec;
+	}
+}
+
+static void themes_read(void)
+{
+	GSList *tmp;
+	char *fname;
+
+	while (themes != NULL)
+		theme_destroy(themes->data);
 
 	/* first there's default theme.. */
-	str = g_strdup_printf("%s/.irssi/default.theme", g_get_home_dir());
-	current_theme = theme_create(str, "default");
-	current_theme->default_color = 15;
-	themes = g_slist_append(NULL, current_theme);
-	g_free(str);
-
-	/* read list of themes */
-	str = g_strdup_printf("%s/.irssi", g_get_home_dir());
-	find_themes(str);
-	g_free(str);
-	find_themes(SYSCONFDIR"/irssi");
-
-	/* read formats for all themes */
-	for (tmp = themes; tmp != NULL; tmp = tmp->next) {
-		rec = tmp->data;
-
-		theme_read(rec, rec->path);
+	current_theme = theme_load("default");
+	if (current_theme == NULL) {
+		fname = g_strdup_printf("%s/.irssi/default.theme",
+					g_get_home_dir());
+		current_theme = theme_create(fname, "default");
+		current_theme->default_color = 15;
+		g_free(fname);
 	}
 
-	/* find the current theme to use */
-	value = settings_get_str("current_theme");
+	/* update window theme structures */
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
 
-	rec = theme_find(value);
-	if (rec != NULL) current_theme = rec;
+		if (rec->theme_name != NULL)
+                        rec->theme = theme_load(rec->theme_name);
+	}
+
+	read_settings();
+}
+
+void themes_init(void)
+{
+	settings_add_str("lookandfeel", "theme", "default");
+
+	default_formats = g_hash_table_new((GHashFunc) g_str_hash,
+					   (GCompareFunc) g_str_equal);
+
+	themes = NULL;
+	themes_read();
 
 	command_bind("format", NULL, (SIGNAL_FUNC) cmd_format);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
 	signal_add("complete command format", (SIGNAL_FUNC) sig_complete_format);
+        signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+        signal_add("setup reread", (SIGNAL_FUNC) themes_read);
 
 	command_set_options("format", "delete reset");
 }
 
 void themes_deinit(void)
 {
-	/* free memory used by themes */
-	g_slist_foreach(themes, (GFunc) theme_destroy, NULL);
-	g_slist_free(themes);
-	themes = NULL;
+	while (themes != NULL)
+		theme_destroy(themes->data);
 
 	g_hash_table_destroy(default_formats);
 
 	command_unbind("format", (SIGNAL_FUNC) cmd_format);
 	command_unbind("save", (SIGNAL_FUNC) cmd_save);
 	signal_remove("complete command format", (SIGNAL_FUNC) sig_complete_format);
+        signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+        signal_remove("setup reread", (SIGNAL_FUNC) themes_read);
 }

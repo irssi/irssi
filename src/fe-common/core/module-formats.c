@@ -112,11 +112,19 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "not_good_idea", "Doing this is not a good idea. Add -YES if you really mean it", 0 },
 
 	/* ---- */
-	{ NULL, "Misc", 0 },
+	{ NULL, "Themes", 0 },
 
+	{ "theme_saved", "Theme saved to %_$0%_", 1, { 0 } },
+	{ "theme_save_failed", "Error saving theme to %_$0%_", 1, { 0 } },
+	{ "theme_not_found", "Theme %_$0%_ not found", 1, { 0 } },
+	{ "window_theme_changed", "Using theme %_$0%_ in this window", 1, { 0 } },
 	{ "format_title", "%:%K[%W$0%K] - [%W$1%K]%:%:", 2, { 0, 0 } },
 	{ "format_subtitle", "%K[%W$0%K]", 1, { 0 } },
 	{ "format_item", "$0 %K=%n $1", 2, { 0, 0 } },
+
+	/* ---- */
+	{ NULL, "Misc", 0 },
+
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
 	{ "bind_key", "$[10]0 $1 $2", 3, { 0, 0, 0 } },

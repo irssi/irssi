@@ -114,7 +114,8 @@ char *strip_codes(const char *input)
 }
 
 /* parse ANSI color string */
-static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
+static char *convert_ansi(THEME_REC *theme, char *str,
+			  int *fgcolor, int *bgcolor, int *flags)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	char *start;
@@ -124,7 +125,7 @@ static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 		return str;
 	start = str++;
 
-	fg = *fgcolor < 0 ? current_theme->default_color : *fgcolor;
+	fg = *fgcolor < 0 ? theme->default_color : *fgcolor;
 	bg = *bgcolor < 0 ? -1 : *bgcolor;
 	fl = *flags;
 
@@ -143,7 +144,7 @@ static char *convert_ansi(char *str, int *fgcolor, int *bgcolor, int *flags)
 		switch (num) {
 		case 0:
 			/* reset colors back to default */
-			fg = current_theme->default_color;
+			fg = theme->default_color;
 			bg = -1;
 			fl &= ~(PRINTFLAG_BEEP|PRINTFLAG_INDENT);
 			break;
@@ -336,7 +337,19 @@ static void read_arglist(va_list va, FORMAT_REC *format,
 	}
 }
 
-static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format, const char *text, va_list args)
+static void create_dest_rec(TEXT_DEST_REC *dest,
+			    void *server, const char *channel,
+			    int level, WINDOW_REC *window)
+{
+	dest->server = server;
+	dest->channel = channel;
+	dest->level = level;
+	dest->window = window != NULL ? window :
+		window_find_closest(server, channel, level);
+}
+
+static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
+				     const char *text, va_list args)
 {
 	GString *out;
 	char *arglist[10];
@@ -346,7 +359,7 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format, co
 	char code, *ret;
 	int need_free;
 
-	str = current_theme != NULL && text != NULL ? text : format->def;
+	str = text != NULL ? text : format->def;
 
 	/* read all optional arguments to arglist[] list
 	   so they can be used in any order.. */
@@ -394,37 +407,44 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format, co
 
 static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 {
-	MODULE_THEME_REC *theme;
+	THEME_REC *theme;
+	MODULE_THEME_REC *module_theme;
 	va_list args;
 	char *ret;
 
-	theme = g_hash_table_lookup(current_theme->modules, MODULE_NAME);
+	theme = dest->window->theme == NULL ? current_theme :
+		dest->window->theme;
+	module_theme = g_hash_table_lookup(theme->modules, MODULE_NAME);
 
 	va_start(args, formatnum);
 	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
-				      theme == NULL ? NULL : theme->formats[formatnum], args);
+				      module_theme == NULL ? NULL :
+				      module_theme->formats[formatnum], args);
 	va_end(args);
 
 	return ret;
 }
 
-void printformat_module_args(const char *module, void *server, const char *channel, int level, int formatnum, va_list va)
+void printformat_module_args(const char *module, void *server,
+			     const char *channel, int level,
+			     int formatnum, va_list va)
 {
-	MODULE_THEME_REC *theme;
+	THEME_REC *theme;
+	MODULE_THEME_REC *module_theme;
 	TEXT_DEST_REC dest;
 	FORMAT_REC *formats;
 	char *str;
 
-	dest.window = NULL;
-	dest.server = server;
-	dest.channel = channel;
-	dest.level = level;
+	create_dest_rec(&dest, server, channel, level, NULL);
+	theme = dest.window->theme == NULL ? current_theme :
+		dest.window->theme;
 
-	theme = g_hash_table_lookup(current_theme->modules, module);
+	module_theme = g_hash_table_lookup(theme->modules, module);
 	formats = g_hash_table_lookup(default_formats, module);
 
 	str = output_format_text_args(&dest, &formats[formatnum],
-				theme == NULL ? NULL : theme->formats[formatnum], va);
+				      module_theme == NULL ? NULL :
+				      module_theme->formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
 }
@@ -440,21 +460,21 @@ void printformat_module(const char *module, void *server, const char *channel, i
 
 void printformat_module_window_args(const char *module, WINDOW_REC *window, int level, int formatnum, va_list va)
 {
-	MODULE_THEME_REC *theme;
+	THEME_REC *theme;
+	MODULE_THEME_REC *module_theme;
 	TEXT_DEST_REC dest;
 	FORMAT_REC *formats;
 	char *str;
 
-	dest.window = window;
-	dest.server = NULL;
-	dest.channel = NULL;
-	dest.level = level;
+	create_dest_rec(&dest, NULL, NULL, level, window);
+	theme = window->theme == NULL ? current_theme :
+		window->theme;
+	module_theme = g_hash_table_lookup(theme->modules, module);
 
-	theme = g_hash_table_lookup(current_theme->modules, module);
 	formats = g_hash_table_lookup(default_formats, module);
-
 	str = output_format_text_args(&dest, &formats[formatnum],
-				      theme == NULL ? NULL : theme->formats[formatnum], va);
+				      module_theme == NULL ? NULL :
+				      module_theme->formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
 }
@@ -495,9 +515,6 @@ static void print_string(TEXT_DEST_REC *dest, const char *text)
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
-
-	if (dest->window == NULL)
-		dest->window = window_find_closest(dest->server, dest->channel, dest->level);
 
 	tmp = get_line_start_text(dest);
 	str = tmp == NULL ? (char *) text :
@@ -603,10 +620,7 @@ void printtext(void *server, const char *channel, int level, const char *text, .
 
 	g_return_if_fail(text != NULL);
 
-	dest.window = NULL;
-	dest.server = server;
-	dest.channel = channel;
-	dest.level = level;
+        create_dest_rec(&dest, server, channel, level, NULL);
 
 	va_start(va, text);
 	str = printtext_get_args(&dest, text, va);
@@ -624,10 +638,8 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 
 	g_return_if_fail(text != NULL);
 
-	dest.window = window != NULL ? window : active_win;
-	dest.server = NULL;
-	dest.channel = NULL;
-	dest.level = level;
+	create_dest_rec(&dest, NULL, NULL, level,
+			window != NULL ? window : active_win);
 
 	va_start(va, text);
 	str = printtext_get_args(&dest, text, va);
@@ -709,11 +721,7 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
     g_return_if_fail(text != NULL);
     g_return_if_fail(window != NULL);
 
-    dest.window = window;
-    dest.server = server;
-    dest.channel = target;
-    dest.level = GPOINTER_TO_INT(level);
-
+    create_dest_rec(&dest, server, target, GPOINTER_TO_INT(level), window);
     msg_beep_check(server, dest.level);
 
     flags = 0; fgcolor = -1; bgcolor = -1; type = '\0';
@@ -786,7 +794,8 @@ static void sig_print_text(WINDOW_REC *window, SERVER_REC *server,
                     flags ^= PRINTFLAG_UNDERLINE;
             case 27:
                 /* ansi color code */
-                ptr = convert_ansi(ptr, &fgcolor, &bgcolor, &flags);
+		ptr = convert_ansi(window->theme == NULL ? current_theme :
+				   window->theme, ptr, &fgcolor, &bgcolor, &flags);
                 break;
             case 4:
                 /* user specific colors */

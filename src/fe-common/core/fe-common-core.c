@@ -81,7 +81,6 @@ void fe_common_core_init(void)
 	/*settings_add_bool("lookandfeel", "autoraise_msgs_window", FALSE);*/
 	/*settings_add_bool("lookandfeel", "use_tabbed_windows", TRUE);
 	settings_add_int("lookandfeel", "tab_orientation", 3);*/
-	settings_add_str("lookandfeel", "current_theme", "default");
 
 	themes_init();
         theme_register(fecommon_core_formats);

@@ -27,6 +27,7 @@
 
 #include "levels.h"
 
+#include "themes.h"
 #include "windows.h"
 #include "window-items.h"
 
@@ -355,6 +356,19 @@ static void cmd_window_list(void)
         printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_WINDOWLIST_FOOTER);
 }
 
+/* SYNTAX: WINDOW THEME <name> */
+static void cmd_window_theme(const char *data)
+{
+	active_win->theme = theme_load(data);
+	if (active_win->theme != NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_WINDOW_THEME_CHANGED, data);
+	} else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_THEME_NOT_FOUND, data);
+	}
+}
+
 void window_commands_init(void)
 {
 	command_bind("window", NULL, (SIGNAL_FUNC) cmd_window);
@@ -377,6 +391,7 @@ void window_commands_init(void)
 	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
 	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
 	command_bind("window list", NULL, (SIGNAL_FUNC) cmd_window_list);
+	command_bind("window theme", NULL, (SIGNAL_FUNC) cmd_window_theme);
 }
 
 void window_commands_deinit(void)
@@ -401,4 +416,5 @@ void window_commands_deinit(void)
 	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
 	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
 	command_unbind("window list", (SIGNAL_FUNC) cmd_window_list);
+	command_unbind("window theme", (SIGNAL_FUNC) cmd_window_theme);
 }
