@@ -4,11 +4,9 @@ void
 notifies()
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Irc::Notifylist", 0);
 	for (tmp = notifies; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Irc::Notifylist")));
 	}
 
 Irssi::Irc::Notifylist

@@ -8,9 +8,6 @@
 #define new_bless(obj, stash) \
 	sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(obj))), stash)
 
-#define push_bless(obj, stash) \
-        XPUSHs(sv_2mortal(new_bless(obj, stash)))
-
 #define is_hvref(o) \
 	((o) && SvROK(o) && SvRV(o) && (SvTYPE(SvRV(o)) == SVt_PVHV))
 
@@ -35,6 +32,11 @@ char *perl_get_package(void);
 #define irssi_bless(object) \
 	((object) == NULL ? &PL_sv_undef : \
 	irssi_bless_iobject((object)->type, (object)->chat_type, object))
+
+#define plain_bless(object, stash) \
+	((object) == NULL ? &PL_sv_undef : \
+	irssi_bless_plain(stash, object))
+
 SV *irssi_bless_iobject(int type, int chat_type, void *object);
 SV *irssi_bless_plain(const char *stash, void *object);
 int irssi_is_ref_object(SV *o);

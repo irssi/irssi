@@ -13,11 +13,9 @@ void
 reconnects()
 PREINIT:
 	GSList *tmp;
-        HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Reconnect", 0);
 	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Reconnect")));
 	}
 
 Irssi::Connect

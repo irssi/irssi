@@ -4,11 +4,9 @@ void
 windows()
 PREINIT:
 	GSList *tmp;
-        HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Window", 0);
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Window")));
 	}
 
 

@@ -4,11 +4,9 @@ void
 ignores()
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Ignore", 0);
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Ignore")));
 	}
 
 int

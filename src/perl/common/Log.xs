@@ -4,11 +4,9 @@ void
 logs()
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Log", 0);
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Log")));
 	}
 
 Irssi::Log

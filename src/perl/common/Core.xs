@@ -310,11 +310,9 @@ void
 commands()
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Command", 0);
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Command")));
 	}
 
 void

@@ -5,11 +5,9 @@ bans(channel)
 	Irssi::Irc::Channel channel
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Irc::Ban", 0);
 	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Irc::Ban")));
 	}
 
 void
@@ -17,11 +15,9 @@ ebans(channel)
 	Irssi::Irc::Channel channel
 PREINIT:
 	GSList *tmp;
-	HV *stash;
 PPCODE:
-	stash = gv_stashpv("Irssi::Irc::Ban", 0);
 	for (tmp = channel->ebanlist; tmp != NULL; tmp = tmp->next) {
-		push_bless(tmp->data, stash);
+		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Irc::Ban")));
 	}
 
 void
