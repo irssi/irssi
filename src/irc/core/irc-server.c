@@ -372,6 +372,7 @@ static void event_connected(const char *data, IRC_SERVER_REC *server, const char
 
 	/* last welcome message found - commands can be sent to server now. */
 	server->connected = 1;
+	server->real_connect_time = time(NULL);
 
 	if (!server->connrec->reconnection) {
 		/* wait a second and then send the user mode */

@@ -75,6 +75,8 @@ typedef struct {
 	GHashTable *module_data;
 
         /* -- IRC specific - change if you wish -- */
+	time_t real_connect_time; /* time when we received 001-event. */
+
 	char *real_address; /* address the irc server gives */
         char *version; /* server version - taken from 004 event */
 	char *usermode; /* The whole mode string .. */
