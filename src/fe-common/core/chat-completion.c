@@ -484,7 +484,8 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	channel = CHANNEL(window->active);
 	query = QUERY(window->active);
-	if (channel == NULL && query != NULL) {
+	if (channel == NULL && query != NULL &&
+	    g_strncasecmp(word, query->name, strlen(word)) == 0) {
 		/* completion in query */
                 *list = g_list_append(*list, g_strdup(query->name));
 	} else if (channel != NULL) {
