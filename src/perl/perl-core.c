@@ -24,6 +24,7 @@
 #include "core.h"
 #include "signals.h"
 #include "misc.h"
+#include "settings.h"
 
 #include "perl-core.h"
 #include "perl-common.h"
@@ -397,6 +398,7 @@ static void sig_autorun()
 void perl_core_init(void)
 {
         print_script_errors = 1;
+	settings_add_str("per", "perl_use_lib", PERL_USE_LIB);
 
 	PL_perl_destruct_level = 1;
 	perl_signals_init();

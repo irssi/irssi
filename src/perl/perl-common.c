@@ -172,11 +172,13 @@ char *perl_get_use_list(void)
 	GString *str;
 	GSList *tmp;
         char *ret;
+        const char *use_lib;
 
 	str = g_string_new(NULL);
 
-        if (*PERL_USE_LIB != '\0')
-		g_string_append(str, "use lib \""PERL_USE_LIB"\";");
+	use_lib = settings_get_str("perl_use_lib");
+        if (*use_lib != '\0')
+		g_string_sprintf(str, "use lib qw(%s);", use_lib);
 
         g_string_append(str, "use Irssi;");
 	if (irssi_gui != IRSSI_GUI_NONE)
