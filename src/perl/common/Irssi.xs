@@ -1,5 +1,7 @@
 #include "module.h"
 
+static int initialized = FALSE;
+
 MODULE = Irssi  PACKAGE = Irssi
 
 PROTOTYPES: ENABLE
@@ -7,12 +9,16 @@ PROTOTYPES: ENABLE
 void
 init()
 CODE:
+	if (initialized) return;
 	perl_api_version_check("Irssi");
+	initialized = TRUE;
+
         perl_settings_init();
 
 void
 deinit()
 CODE:
+	if (!initialized) return;
         perl_settings_deinit();
 
 BOOT:

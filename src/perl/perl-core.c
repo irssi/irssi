@@ -141,6 +141,9 @@ void perl_scripts_init(void)
 /* Destroy all perl scripts and deinitialize perl interpreter */
 void perl_scripts_deinit(void)
 {
+	if (my_perl == NULL)
+		return;
+
 	/* destroy all scripts */
         while (perl_scripts != NULL)
 		perl_script_destroy(perl_scripts->data);
@@ -417,7 +420,7 @@ static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 	}
 }
 
-static void sig_autorun()
+static void sig_autorun(void)
 {
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_autorun);
 

@@ -1,5 +1,7 @@
 #include "module.h"
 
+static int initialized = FALSE;
+
 static void perl_main_window_fill_hash(HV *hv, MAIN_WINDOW_REC *window)
 {
 	hv_store(hv, "active", 6, plain_bless(window->active, "Irssi::UI::Window"), 0);
@@ -87,8 +89,6 @@ PROTOTYPES: ENABLE
 
 void
 init()
-PREINIT:
-	static int initialized = FALSE;
 CODE:
 	if (initialized) return;
 	perl_api_version_check("Irssi::TextUI");
@@ -100,6 +100,7 @@ CODE:
 void
 deinit()
 CODE:
+	if (!initialized) return;
         perl_statusbar_deinit();
 
 MODULE = Irssi::TextUI PACKAGE = Irssi

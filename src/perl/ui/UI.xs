@@ -1,5 +1,7 @@
 #include "module.h"
 
+static int initialized = FALSE;
+
 static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)
 {
 	hv_store(hv, "id", 2, newSViv(process->id), 0);
@@ -70,8 +72,6 @@ PROTOTYPES: ENABLE
 
 void
 init()
-PREINIT:
-	static int initialized = FALSE;
 CODE:
 	if (initialized) return;
 	perl_api_version_check("Irssi::UI");
@@ -83,6 +83,7 @@ CODE:
 void
 deinit()
 CODE:
+	if (!initialized) return;
         perl_themes_deinit();
 
 BOOT:

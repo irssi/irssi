@@ -41,14 +41,9 @@ int perl_get_api_version(void);
 /* Checks that the API version is correct. */
 #define perl_api_version_check(library) \
 	if (perl_get_api_version() != IRSSI_PERL_API_VERSION) { \
-		char *str; \
-		str = g_strdup_printf("Version of perl module (%d) " \
-				      "doesn't match the version of " \
-				      library" library (%d)", \
-				      perl_get_api_version(), \
-				      IRSSI_PERL_API_VERSION); \
-		signal_emit("gui dialog", 2, "error", str); \
-		g_free(str); \
+		die("Version of perl module (%d) doesn't match the " \
+		    "version of "library" library (%d)", \
+		    perl_get_api_version(), IRSSI_PERL_API_VERSION); \
 		return; \
         }
 
