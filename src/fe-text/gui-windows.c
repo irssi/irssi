@@ -762,6 +762,11 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
     {
         LINE_REC *rec = tmp->data;
 
+	if (*text == '\0') {
+		matches = g_list_append(matches, rec);
+		continue;
+	}
+
 	for (n = 0, ptr = rec->text; ; ptr++)
 	{
 	    if (*ptr != 0)
