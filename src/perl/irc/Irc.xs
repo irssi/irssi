@@ -134,8 +134,10 @@ static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)
 	hv_store(hv, "idle_check_time", 15, newSViv(notify->idle_check_time), 0);
 
 	av = newAV();
-	for (tmp = notify->ircnets; *tmp != NULL; tmp++) {
-		av_push(av, new_pv(*tmp));
+	if (notify->ircnets != NULL) {
+		for (tmp = notify->ircnets; *tmp != NULL; tmp++) {
+			av_push(av, new_pv(*tmp));
+		}
 	}
 	hv_store(hv, "ircnets", 7, newRV_noinc((SV*)av), 0);
 }
