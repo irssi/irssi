@@ -1,3 +1,24 @@
+v0.7.21 1999-12-20  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	+ Irssi-text: Channel activities are displayed with different colors
+	  in statusbar
+	+ Keeps track of "wanted nick", ie. the nick you specified in the
+	  setup or to /server or /nick. When reconnecting to server it always
+	  tries the wanted nick before falling back to alternate nicks.
+	+ IRC Network specific settings: nick, username, realname,
+	  max. kicks/modes/msgs per command.
+	+ Transparency works
+	+ Automatic logging when you're away. Set it on/off from settings/misc
+	+ /connect and /server changes the server in the current window if
+	  the window isn't channel or query.
+	+ Wallop actions are displayed right
+	+ Ctrl-N/P keys change to previous/next window
+	+ Polish translation updated
+	+ /channel next, /channel prev - changes to next/previous channel in
+	  the current window. Ctrl-X is by default bound to /channel next.
+	- /WHO could crash irssi
+	- /join !!channel crashed
+
 v0.7.20.1 1999-11-28  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	* I just started #irssi in irc.openprojects.net too.. It's still in

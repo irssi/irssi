@@ -1,6 +1,7 @@
- 
+
 *** Bugs
 
+ - split windows are buggy, destroying them doesn't really work well..
  - irssi can't find new themes in ~/.irssi/ while running - scan for new
    themes when opening themes dialog? irssi-text also needs to be restarted
    to use new themes..
@@ -81,7 +82,6 @@
      - you can be joined to same channels in different irc networks (or even
        the same ircnet!) - create the logs to different directiories/names
  - logging: longer format dd.mm.yy hh:mm:ss (configurable?)
- - awaylog (/log create ~/away.log -all +msgs or something), autoaway
 
  * Notify list, join the two different dialogs, ability to track changes in
    gone flag
@@ -107,6 +107,10 @@
 
 *** Little things
 
+ - autoaway when idling
+ - nickserv support (automatic /msg nickserv identify password)
+ - /set colors on|off
+ - /exec
  - itext:
      - save/find text
      - text selection draws the entire selection every time you move the
