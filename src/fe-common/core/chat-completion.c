@@ -799,6 +799,8 @@ static void sig_complete_away(GList **list, WINDOW_REC *window,
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 
+        *want_space = FALSE;
+
 	if (*word == '\0' && window->active_server != NULL) {
 		reason = SERVER(window->active_server)->away_reason;
 		if (reason != NULL) {
