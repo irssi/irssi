@@ -979,21 +979,18 @@ sub toggle_autorun ($) {
     }
 }
 
-sub sig_gui_print_text ($$$$$$) {
-    my ($win, $fg, $bg, $flags, $text, $dest) = @_;
-    return if $flags > 1;
+sub sig_script_error ($$) {
+    my ($script, $msg) = @_;
     return unless Irssi::settings_get_bool('scriptassist_catch_script_errors');
-    if ($text =~ /Can't locate (.*?)\.pm in \@INC \(\@INC contains:(.*?) at/) {
+    if ($msg =~ /Can't locate (.*?)\.pm in \@INC \(\@INC contains:(.*?) at/) {
         my $module = $1;
         $module =~ s/\//::/g;
-	my $time;
-	$time = Irssi::timeout_add(10, \&missing_module, [$module, \$time]);
+	missing_module($module);
     }
 }
 
 sub missing_module ($$) {
-    my ($module, $time) = @{ $_[0] };
-    Irssi::timeout_remove($$time);
+    my ($module) = @_;
     my $text;
     $text .= "The perl module %9".$module."%9 is missing on your system.\n";
     $text .= "Please ask your administrator about it.\n";
@@ -1087,7 +1084,9 @@ Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_integrate', 1);
 Irssi::signal_add_first('complete word', \&sig_complete);
 Irssi::signal_add_first('command script load', \&sig_command_script_load);
 Irssi::signal_add_first('command script unload', \&sig_command_script_load);
-Irssi::signal_add_last('gui print text', \&sig_gui_print_text);
+
+Irssi::signal_register({ 'script error' => [ 'Irssi::Script', 'string' ] });
+Irssi::signal_add_last('script error', \&sig_script_error);
 
 Irssi::command_bind('scriptassist', 'cmd_scripassist');
 
