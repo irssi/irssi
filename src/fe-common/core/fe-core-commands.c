@@ -132,7 +132,7 @@ static int show_help(COMMAND_REC *cmd)
 	ret = line_split(tmpbuf, recvlen, &str, &buffer);
         if (ret > 0) printtext(NULL, NULL, MSGLEVEL_NEVER, str);
     }
-    while (ret >= 0);
+    while (ret > 0);
     line_split_free(buffer);
 
     close(f);
@@ -269,7 +269,7 @@ static void cmd_cat(const char *data)
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
 		if (ret > 0) printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
-	} while (ret >= 0);
+	} while (ret > 0);
 	line_split_free(buffer);
 
 	close(f);
