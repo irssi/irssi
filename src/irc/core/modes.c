@@ -446,7 +446,7 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		      const char *mode)
 {
-	char *modestr, *curmode, *orig, type;
+	char *modestr, *curmode, *orig, type, prevtype;
 	GString *tmode, *targs;
 	int count;
 
@@ -459,22 +459,28 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 
 	orig = modestr = g_strdup(mode);
 
-        type = '+';
+        type = '+'; prevtype = '\0';
 	curmode = cmd_get_param(&modestr);
 	for (; *curmode != '\0'; curmode++) {
-		if (*curmode == '+' || *curmode == '-')
+		if (*curmode == '+' || *curmode == '-') {
 			type = *curmode;
+			continue;
+		}
 
 		if (count == server->max_modes_in_cmd &&
 		    HAS_MODE_ARG(type, *curmode)) {
 			irc_send_cmdv(server, "MODE %s %s%s",
 				      channel, tmode->str, targs->str);
 
-			count = 0;
+			count = 0; prevtype = '\0';
 			g_string_truncate(tmode, 0);
 			g_string_truncate(targs, 0);
 		}
 
+		if (type != prevtype) {
+			prevtype = type;
+			g_string_append_c(tmode, type);
+		}
 		g_string_append_c(tmode, *curmode);
 
 		if (HAS_MODE_ARG(type, *curmode)) {
