@@ -56,8 +56,9 @@ static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int 
 	if (send_now) {
 		if (net_sendbuffer_send(server->handle, str, len) == -1) {
 			/* something bad happened */
-			g_warning("net_sendbuffer_send() failed: %s",
-				  g_strerror(errno));
+			server->connection_lost = TRUE;
+			server_disconnect(SERVER(server));
+			return;
 		}
 
 		g_get_current_time(&server->last_cmd);
@@ -337,6 +338,9 @@ static void irc_parse_incoming(SERVER_REC *server)
 	while (irc_receive_line(server, &str) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
+
+		if (g_slist_find(servers, server) == NULL)
+			break; /* disconnected */
 	}
 }
 
