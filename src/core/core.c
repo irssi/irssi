@@ -59,6 +59,7 @@ void log_away_deinit(void);
 
 int irssi_gui;
 int irssi_init_finished;
+int reload_config;
 
 static char *irssi_dir, *irssi_config_file;
 static GSList *dialog_type_queue, *dialog_text_queue;
@@ -74,15 +75,20 @@ const char *get_irssi_config(void)
         return irssi_config_file;
 }
 
+static void sig_reload_config(int signo)
+{
+        reload_config = TRUE;
+}
+
 static void read_settings(void)
 {
 #ifndef WIN32
 	static int signals[] = {
-		SIGHUP, SIGINT, SIGQUIT, SIGTERM,
+		SIGINT, SIGQUIT, SIGTERM,
 		SIGALRM, SIGUSR1, SIGUSR2
 	};
 	static char *signames[] = {
-		"hup", "int", "quit", "term",
+		"int", "quit", "term",
 		"alrm", "usr1", "usr2"
 	};
 
@@ -94,6 +100,10 @@ static void read_settings(void)
 
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
+
+	/* reload config on SIGHUP */
+        act.sa_handler = sig_reload_config;
+	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
 		act.sa_handler = find_substr(ignores, signames[n]) ?

@@ -348,7 +348,14 @@ int main(int argc, char **argv)
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
 		g_main_iteration(TRUE);
-                dirty_check();
+
+		if (reload_config) {
+                        /* SIGHUP received, do /RELOAD */
+			reload_config = FALSE;
+                        signal_emit("command reload", 1, "");
+		}
+
+		dirty_check();
 	}
 
 	g_main_destroy(main_loop);

@@ -11,6 +11,7 @@
 
 extern int irssi_gui;
 extern int irssi_init_finished; /* TRUE after "irssi init finished" signal is sent */
+extern int reload_config; /* TRUE after received SIGHUP. */
 
 void core_init_paths(int argc, char *argv[]);
 
