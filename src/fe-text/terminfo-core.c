@@ -545,10 +545,10 @@ static int term_setup(TERM_REC *term)
         /* Scrolling */
 	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn)
                 term->scroll = _scroll_region;
-        else if ((term->TI_csr || term->TI_wind) && term->TI_ri && term->TI_ind)
-		term->scroll = _scroll_region_1;
         else if (term->TI_il && term->TI_dl)
 		term->scroll = _scroll_line;
+        else if ((term->TI_csr || term->TI_wind) && term->TI_ri && term->TI_ind)
+		term->scroll = _scroll_region_1;
         else if (term->TI_il1 && term->TI_dl1)
 		term->scroll = _scroll_line_1;
 	else {
