@@ -74,6 +74,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 		signal_emit("event join", 4, server, rec->name,
 			    server->nick, server->userhost);
+                irc_send_cmdv(server, "TOPIC %s", rec->name);
                 irc_send_cmdv(server, "NAMES %s", rec->name);
 	}
 }
