@@ -30,7 +30,6 @@
 
 #include "irc-servers.h"
 #include "irc-queries.h"
-#include "servers-setup.h"
 #include "masks.h"
 
 #include "dcc-chat.h"
@@ -360,8 +359,6 @@ static void sig_chat_connected(CHAT_DCC_REC *dcc)
 
 static void dcc_chat_connect(CHAT_DCC_REC *dcc)
 {
-	IPADDR *own_ip;
-
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
 	if (dcc->addrstr[0] == '\0' ||
@@ -370,8 +367,7 @@ static void dcc_chat_connect(CHAT_DCC_REC *dcc)
 		return;
 	}
 
-	own_ip = IPADDR_IS_V6(&dcc->addr) ? source_host_ip6 : source_host_ip4;
-	dcc->handle = net_connect_ip(&dcc->addr, dcc->port, own_ip);
+	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
 	if (dcc->handle != NULL) {
 		dcc->tagconn = g_input_add(dcc->handle,
 					   G_INPUT_WRITE | G_INPUT_READ,

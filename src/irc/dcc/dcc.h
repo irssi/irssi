@@ -49,6 +49,8 @@ void dcc_str2ip(const char *str, IPADDR *ip);
 
 /* Start listening for incoming connections */
 GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port);
+/* Connect to specified IP address using the correct own_ip. */
+GIOChannel *dcc_connect_ip(IPADDR *ip, int port);
 
 /* Close DCC - sends "dcc closed" signal and calls dcc_destroy() */
 void dcc_close(DCC_REC *dcc);

@@ -29,6 +29,7 @@
 #include "levels.h"
 
 #include "irc-servers.h"
+#include "servers-setup.h"
 
 #include "dcc-chat.h"
 #include "dcc-get.h"
@@ -199,7 +200,7 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	int first, last;
 
 	if (net_getsockname(iface, ip, NULL) == -1)
-                return NULL;
+		return NULL;
 
         /* get first port */
 	dcc_port = settings_get_str("dcc_port");
@@ -231,6 +232,22 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	}
 
         return NULL;
+}
+
+/* Connect to specified IP address using the correct own_ip. */
+GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
+{
+	IPADDR *own_ip, temp_ip;
+
+	if (*settings_get_str("dcc_own_ip") == '\0') {
+		own_ip = IPADDR_IS_V6(ip) ? source_host_ip6 : source_host_ip4;
+	} else {
+                /* use the specified interface for connecting */
+		net_host2ip(settings_get_str("dcc_own_ip"), &temp_ip);
+                own_ip = &temp_ip;
+	}
+
+	return net_connect_ip(ip, port, own_ip);
 }
 
 /* Server connected - update server for DCC records that have
