@@ -1,6 +1,21 @@
 #include "module.h"
 #include "irssi-version.h"
 
+void perl_signal_add_hash(int priority, SV *sv)
+{
+	HV *hv;
+        HE *he;
+	I32 len;
+
+	if (!is_hvref(sv))
+		croak("Usage: Irssi::signal_add(hash)");
+
+        hv = hvref(sv);
+	hv_iterinit(hv);
+	while ((he = hv_iternext(hv)) != NULL)
+                perl_signal_add_to(hv_iterkey(he, &len), HeVAL(he), priority);
+}
+
 MODULE = Irssi::Core  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
@@ -25,25 +40,38 @@ CODE:
 	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5]);
 
 void
-signal_add(signal, func)
-	char *signal
-	SV *func
+signal_add(...)
 CODE:
-	perl_signal_add(signal, func);
+	if (items != 1 && items != 2)
+		croak("Usage: Irssi::signal_add(signal, func)");
+	if (items == 2)
+		perl_signal_add((char *)SvPV(ST(0),PL_na), ST(1));
+	else
+		perl_signal_add_hash(1, ST(0));
 
 void
 signal_add_first(signal, func)
 	char *signal
 	SV *func
 CODE:
-	perl_signal_add_first(signal, func);
+	if (items != 1 && items != 2)
+		croak("Usage: Irssi::signal_add(signal, func)");
+	if (items == 2)
+		perl_signal_add_first((char *)SvPV(ST(0),PL_na), ST(1));
+	else
+		perl_signal_add_hash(0, ST(0));
 
 void
 signal_add_last(signal, func)
 	char *signal
 	SV *func
 CODE:
-	perl_signal_add_last(signal, func);
+	if (items != 1 && items != 2)
+		croak("Usage: Irssi::signal_add(signal, func)");
+	if (items == 2)
+		perl_signal_add_last((char *)SvPV(ST(0),PL_na), ST(1));
+	else
+		perl_signal_add_hash(2, ST(0));
 
 void
 signal_remove(signal, func)
