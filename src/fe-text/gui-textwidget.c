@@ -319,6 +319,18 @@ static void cmd_scrollback_goto(gchar *data)
 	sscanf(arg2, "%d:%d:%d", &tm.tm_hour, &tm.tm_min, &tm.tm_sec);
 	stamp = mktime(&tm);
 
+	if (stamp > time(NULL) && arg1 == arg2) {
+		/* we used /SB GOTO 23:59 or something, we want to jump to
+		   previous day's 23:59 time instead of into future. */
+                stamp -= 3600*24;
+	}
+
+	if (stamp > time(NULL)) {
+		/* we're still looking into future, don't bother checking */
+		g_free(params);
+		return;
+	}
+
 	/* find the first line after timestamp */
 	for (pos = WINDOW_GUI(active_win)->lines; pos != NULL; pos = pos->next)
 	{
