@@ -52,7 +52,7 @@ CODE:
 	signal_emit("send command", 3, cmd, server, item);
 
 void
-printtext(server, channel, level, str)
+printtext(server, channel, str, level)
 	Irssi::Server server
 	char *channel
 	int level
@@ -141,3 +141,15 @@ command(item, cmd)
 	char *cmd
 CODE:
 	signal_emit("send command", 3, cmd, item->server, item);
+
+#*******************************
+MODULE = Irssi	PACKAGE = Irssi::Channel
+#*******************************
+
+void
+print(channel, str, level=MSGLEVEL_CLIENTNOTICE)
+	Irssi::Channel channel
+	int level
+	char *str
+CODE:
+	printtext(channel->server, channel->name, level, str);

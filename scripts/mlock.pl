@@ -1,4 +1,4 @@
-# /MLOCK <channel> <mode> - for Irssi 0.7.29 and above
+# /MLOCK <channel> <mode> - for Irssi 0.7.96 and above
 #
 # Locks the channel mode to <mode>, if someone else tries to change the mode
 # Irssi will automatically change it back. +k and +l are a bit special since
@@ -6,6 +6,7 @@
 # mode to "+ntlk", Irssi will allow all +k and +l (or -lk) mode changes.
 
 use Irssi;
+use Irssi::Irc;
 
 sub cmd_mlock {
 	my ($data, $server) = @_;
@@ -26,7 +27,7 @@ sub mlock_check_mode {
 	return if (!$keep_mode);
 
 	# old channel mode
-	$oldmode = $channel->get_mode();
+	$oldmode = $channel->values()->{'mode'};
         $oldmode =~ s/^([^ ]*).*/\1/;
 	$oldkey = $channel->values()->{'key'};
 	$oldlimit = $channel->values()->{'limit'};

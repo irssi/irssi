@@ -1,6 +1,7 @@
 # /RN - display real name of nick
 
 use Irssi;
+use Irssi::Irc;
 
 sub cmd_realname {
 	my ($data, $server, $channel) = @_;

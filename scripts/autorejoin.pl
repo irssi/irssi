@@ -5,6 +5,7 @@
 # if you kick/get kicked all the time "just for fun" ...
 
 use Irssi;
+use Irssi::Irc;
 
 sub event_rejoin_kick {
 	my ($data, $server) = @_;

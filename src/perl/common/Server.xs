@@ -101,6 +101,48 @@ CODE:
 			(char *) SvPV(ST(n), n_a), (char *) SvPV(ST(n+1), n_a), (int) SvIV(ST(n+2)));
 	}
 
+void
+channels_join(server, data, automatic)
+	Irssi::Server server
+	char *data
+	int automatic
+CODE:
+	server->channels_join(server, data, automatic);
+
+int
+isnickflag(server, flag)
+	Irssi::Server server
+	char flag
+CODE:
+	RETVAL = server->isnickflag(flag);
+OUTPUT:
+	RETVAL
+
+int
+ischannel(server, flag)
+	Irssi::Server server
+	char flag
+CODE:
+	RETVAL = server->ischannel(flag);
+OUTPUT:
+	RETVAL
+
+char *
+get_nick_flags(server)
+	Irssi::Server server
+CODE:
+	RETVAL = (char *) server->get_nick_flags();
+OUTPUT:
+	RETVAL
+
+void
+send_message(server, target, msg)
+	Irssi::Server server
+	char *target
+	char *msg
+CODE:
+	server->send_message(server, target, msg);
+
 #*******************************
 MODULE = Irssi	PACKAGE = Irssi::Connect  PREFIX = server_
 #*******************************

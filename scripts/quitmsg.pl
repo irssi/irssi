@@ -1,6 +1,7 @@
 # Quit with a random quit message read from ~/.irssi/irssi.quit
 
 use Irssi;
+use Irssi::Irc;
 
 $quitfile = "$ENV{HOME}/.irssi/irssi.quit";
 
