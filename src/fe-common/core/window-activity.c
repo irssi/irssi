@@ -94,8 +94,9 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 		if (hide_target_activity(data_level, dest->target))
 			return;
 
-		tagtarget = g_strdup_printf("%s/%s", dest->server_tag,
-					    dest->target);
+		tagtarget = dest->server_tag == NULL ? NULL :
+			g_strdup_printf("%s/%s", dest->server_tag,
+					dest->target);
 		if (hide_target_activity(data_level, tagtarget)) {
 			g_free(tagtarget);
 			return;
