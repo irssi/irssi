@@ -25,6 +25,8 @@
 #include "line-split.h"
 #include "misc.h"
 #include "settings.h"
+#include "ignore.h"
+#include "levels.h"
 
 #include "irc-servers.h"
 
@@ -283,12 +285,41 @@ static void sig_server_nick_changed(IRC_SERVER_REC *server)
 	}
 }
 
+/* handle emitting "ctcp msg dcc" signal - don't use it directly because
+   with /IGNORE * CTCPS we'd be ignored */
+static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
+		     const char *nick, const char *addr, const char *target)
+{
+	if (g_strncasecmp(data, "dcc ", 4) != 0)
+                return;
+	data += 4;
+
+	signal_emit("ctcp msg dcc", 5, server, data, nick, addr, target);
+        signal_stop();
+}
+
+/* handle emitting "ctcp reply dcc" signal - don't use it directly because
+   with /IGNORE * CTCPS we'd be ignored */
+static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
+		       const char *nick, const char *addr, const char *target)
+{
+	if (g_strncasecmp(data, "dcc ", 4) != 0)
+                return;
+	data += 4;
+
+	signal_emit("ctcp reply dcc", 5, server, data, nick, addr, target);
+        signal_stop();
+}
+
 /* Handle incoming DCC CTCP messages - either from IRC server or DCC chat */
 static void ctcp_msg_dcc(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr,
 			 const char *target, DCC_REC *chat)
 {
 	char *args, *str;
+
+	if (ignore_check(SERVER(server), nick, addr, target, data, MSGLEVEL_DCC))
+		return;
 
 	str = g_strconcat("ctcp msg dcc ", data, NULL);
 	args = strchr(str+13, ' ');
@@ -308,6 +339,9 @@ static void ctcp_reply_dcc(IRC_SERVER_REC *server, const char *data,
 			   const char *target)
 {
 	char *args, *str;
+
+	if (ignore_check(SERVER(server), nick, addr, target, data, MSGLEVEL_DCC))
+		return;
 
 	str = g_strconcat("ctcp reply dcc ", data, NULL);
 	args = strchr(str+15, ' ');
@@ -466,6 +500,8 @@ void irc_dcc_init(void)
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
+	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
+	signal_add("ctcp reply", (SIGNAL_FUNC) ctcp_reply);
 	signal_add("ctcp msg dcc", (SIGNAL_FUNC) ctcp_msg_dcc);
 	signal_add("ctcp reply dcc", (SIGNAL_FUNC) ctcp_reply_dcc);
 	signal_add("ctcp reply dcc reject", (SIGNAL_FUNC) ctcp_reply_dcc_reject);
@@ -496,6 +532,8 @@ void irc_dcc_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
+	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
+	signal_remove("ctcp reply", (SIGNAL_FUNC) ctcp_reply);
 	signal_remove("ctcp msg dcc", (SIGNAL_FUNC) ctcp_msg_dcc);
 	signal_remove("ctcp reply dcc", (SIGNAL_FUNC) ctcp_reply_dcc);
 	signal_remove("ctcp reply dcc reject", (SIGNAL_FUNC) ctcp_reply_dcc_reject);
