@@ -1,4 +1,4 @@
-v0.7.17 1999-10-09  Timo Sirainen <cras@irccrew.org> [unstable]
+v0.7.17 1999-10-16  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Irssi text widget! (replaces zvt)
 	   - supports proportional fonts
