@@ -161,7 +161,7 @@ static void _set_cursor_visible(TERM_REC *term, int set)
 #define scroll_region_setup(term, y1, y2) \
 	if ((term)->TI_csr != NULL) \
 		tput(tparm((term)->TI_csr, y1, y2)); \
-	else \
+	else if ((term)->TI_wind != NULL) \
 		tput(tparm((term)->TI_wind, y1, y2, 0, (term)->width-1));
 
 /* Scroll (change_scroll_region+parm_rindex+parm_index / csr+rin+indn) */
@@ -209,6 +209,11 @@ static void _scroll_region_1(TERM_REC *term, int y1, int y2, int count)
 /* Scroll (parm_insert_line+parm_delete_line / il+dl) */
 static void _scroll_line(TERM_REC *term, int y1, int y2, int count)
 {
+	/* setup the scrolling region to wanted area -
+	   this might not necessarily work with il/dl, but at least it
+	   looks better if it does */
+        scroll_region_setup(term, y1, y2);
+
 	if (count > 0) {
 		term->move(term, 0, y1);
 		tput(tparm(term->TI_dl, count, count));
@@ -220,6 +225,9 @@ static void _scroll_line(TERM_REC *term, int y1, int y2, int count)
 		term->move(term, 0, y1);
 		tput(tparm(term->TI_il, -count, -count));
 	}
+
+        /* reset the scrolling region to full screen */
+        scroll_region_setup(term, 0, term->height-1);
 }
 
 /* Scroll (insert_line+delete_line / il1+dl1) */
@@ -484,36 +492,6 @@ void terminfo_cont(TERM_REC *term)
         terminfo_input_init(term);
 }
 
-/* Setup scrolling - if fast is TRUE, we'll use the fastest method to
-   scroll, if it's FALSE, we'll use the one that looks cleanest. */
-void terminfo_setup_scroll(TERM_REC *term, int fast)
-{
-	int region_1;
-
-	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn) {
-                /* this is excellent - if only terminals supported it.. */
-		term->scroll = _scroll_region;
-                return;
-	}
-
-        region_1 = (term->TI_csr || term->TI_wind) && term->TI_ri && term->TI_ind;
-	if (!fast && region_1) {
-                /* we prefer pretty */
-		term->scroll = _scroll_region_1;
-	} else if (term->TI_il && term->TI_dl) {
-                /* either we prefer fast, or can't do pretty */
-		term->scroll = _scroll_line;
-	} else if (region_1) {
-                /* we prefer fast, but can't do it */
-		term->scroll = _scroll_region_1;
-	}
-
-	if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1)) {
-                /* the final slowest and ugliest method we can use */
-		term->scroll = _scroll_line_1;
-	}
-}
-
 void terminfo_stop(TERM_REC *term)
 {
         /* reset colors */
@@ -573,8 +551,15 @@ static int term_setup(TERM_REC *term)
 		_set_cursor_visible : _ignore_parm;
 
         /* Scrolling */
-        terminfo_setup_scroll(term, FALSE);
-	if (term->scroll == NULL) {
+	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn)
+		term->scroll = _scroll_region;
+	else if (term->TI_il && term->TI_dl)
+		term->scroll = _scroll_line;
+	else if ((term->TI_csr || term->TI_wind) && term->TI_ri && term->TI_ind)
+		term->scroll = _scroll_region_1;
+	else if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1))
+		term->scroll = _scroll_line_1;
+	else if (term->scroll == NULL) {
                 fprintf(term->out, "Terminal doesn't support scrolling\n");
 		return 0;
 	}

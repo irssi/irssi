@@ -40,9 +40,6 @@ void term_resize_dirty(void);
 int term_has_colors(void);
 /* Force the colors on any way you can */
 void term_force_colors(int set);
-/* Setup scrolling - if fast is TRUE, we'll use the fastest method to
-   scroll, if it's FALSE, we'll use the one that looks cleanest. */
-void term_setup_scroll(int fast);
 
 /* Clear screen */
 void term_clear(void);

@@ -92,7 +92,6 @@ static void read_settings(void)
 {
 	int old_colors = term_use_colors;
 
-        term_setup_scroll(settings_get_bool("term_scroll_fast"));
 	if (settings_get_bool("term_force_colors")) {
 		if (!term_use_colors) {
                         term_force_colors(TRUE);
@@ -117,7 +116,6 @@ void term_common_init(void)
 #endif
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
-	settings_add_bool("lookandfeel", "term_scroll_fast", FALSE);
 
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
         read_settings();

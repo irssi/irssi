@@ -193,13 +193,6 @@ void term_force_colors(int set)
         /* don't do anything with curses */
 }
 
-/* Setup scrolling - if fast is TRUE, we'll use the fastest method to
-   scroll, if it's FALSE, we'll use the one that looks cleanest. */
-void term_setup_scroll(int fast)
-{
-        /* don't do anything with curses */
-}
-
 /* Clear screen */
 void term_clear(void)
 {
