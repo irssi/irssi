@@ -423,7 +423,7 @@ static void sig_whois_event_no_server(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
+	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
 	g_free(params);
 }
 
@@ -440,7 +440,7 @@ static void sig_whowas_event_end(IRC_SERVER_REC *server, const char *data,
 	}
 
 	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
+	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
 	g_free(params);
 }
 
