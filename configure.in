@@ -286,7 +286,7 @@ AC_CHECK_GLIBDIR
 
 if test -z "$GLIB_DIR"; then
   AM_PATH_GLIB(1.2.0,,, gmodule)
-  if -z "$GLIB_LIBS"; then
+  if test -z "$GLIB_LIBS"; then
     echo "*** trying without -lgmodule"
     glib_config_args=
     AM_PATH_GLIB(1.2.0)
