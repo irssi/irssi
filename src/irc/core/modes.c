@@ -288,7 +288,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 {
 	IRC_SERVER_REC *server = channel->server;
         GString *newmode;
-	char *dup, *modestr, *arg, *curmode, type;
+	char *dup, *modestr, *arg, *curmode, type, *old_key;
 	int umode;
 
 	g_return_if_fail(IS_IRC_CHANNEL(channel));
@@ -296,6 +296,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 
 	type = '+';
 	newmode = g_string_new(channel->mode);
+	old_key = update_key ? NULL : g_strdup(channel->key);
 
 	dup = modestr = g_strdup(mode);
 	curmode = cmd_get_param(&modestr);
@@ -337,6 +338,11 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 		   in channel modes.. */
 		g_free(channel->key);
 		channel->key = NULL;
+	} else if (!update_key) {
+		/* get the old one back, just in case it was replaced */
+		g_free(channel->key);
+		channel->key = old_key;
+		old_key = NULL;
 	}
 
 	if (strcmp(newmode->str, channel->mode) != 0) {
@@ -347,6 +353,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 	}
 
 	g_string_free(newmode, TRUE);
+	g_free(old_key);
 }
 
 /* add `mode' to `old' - return newly allocated mode.
