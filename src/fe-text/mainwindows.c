@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "settings.h"
 #include "printtext.h"
 
 #include "screen.h"
@@ -683,6 +684,10 @@ static void cmd_window_show(const char *data)
 	}
 
 	parent = mainwindow_create();
+	if (settings_get_bool("autostick_split_windows")) {
+		parent->sticky_windows =
+			g_slist_append(parent->sticky_windows, window);
+	}
         parent->active = window;
         gui_window_reparent(window, parent);
 
