@@ -374,13 +374,14 @@ static void sig_gui_dialog(const char *type, const char *text)
 
 static void read_settings(void)
 {
-	beep_msg_level = level2bits(settings_get_str("beep_on_msg"));
+	beep_msg_level = level2bits(settings_get_str("beep_msg_level"));
 	beep_when_away = settings_get_bool("beep_when_away");
 }
 
 void printtext_init(void)
 {
 	settings_add_int("misc", "timestamp_timeout", 0);
+	settings_add_str("lookandfeel", "beep_msg_level", "");
 
 	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
