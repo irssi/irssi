@@ -361,6 +361,19 @@ static void cmd_statusbar_disable(const char *data, void *server,
         iconfig_node_set_bool(node, "disabled", TRUE);
 }
 
+/* SYNTAX: STATUSBAR <name> RESET */
+static void cmd_statusbar_reset(const char *data, void *server,
+				void *item, CONFIG_NODE *node)
+{
+	CONFIG_NODE *parent;
+
+	parent = iconfig_node_traverse("statusbar", TRUE);
+	parent = config_node_section(parent, active_statusbar_group->name,
+				     NODE_TYPE_BLOCK);
+
+        iconfig_node_set_str(parent, node->key, NULL);
+}
+
 /* SYNTAX: STATUSBAR <name> TYPE window|root */
 static void cmd_statusbar_type(const char *data, void *server,
 			       void *item, CONFIG_NODE *node)
@@ -558,6 +571,7 @@ void statusbar_config_init(void)
         command_bind("statusbar", NULL, (SIGNAL_FUNC) cmd_statusbar);
         command_bind("statusbar enable", NULL, (SIGNAL_FUNC) cmd_statusbar_enable);
         command_bind("statusbar disable", NULL, (SIGNAL_FUNC) cmd_statusbar_disable);
+        command_bind("statusbar reset", NULL, (SIGNAL_FUNC) cmd_statusbar_reset);
         command_bind("statusbar add", NULL, (SIGNAL_FUNC) cmd_statusbar_add);
         command_bind("statusbar remove", NULL, (SIGNAL_FUNC) cmd_statusbar_remove);
         command_bind("statusbar type", NULL, (SIGNAL_FUNC) cmd_statusbar_type);
@@ -576,6 +590,7 @@ void statusbar_config_deinit(void)
         command_unbind("statusbar", (SIGNAL_FUNC) cmd_statusbar);
         command_unbind("statusbar enable", (SIGNAL_FUNC) cmd_statusbar_enable);
         command_unbind("statusbar disable", (SIGNAL_FUNC) cmd_statusbar_disable);
+        command_unbind("statusbar reset", (SIGNAL_FUNC) cmd_statusbar_reset);
         command_unbind("statusbar add", (SIGNAL_FUNC) cmd_statusbar_add);
         command_unbind("statusbar remove", (SIGNAL_FUNC) cmd_statusbar_remove);
         command_unbind("statusbar type", (SIGNAL_FUNC) cmd_statusbar_type);
