@@ -382,7 +382,7 @@ DYNLIB_MODULES=no
 dnl ** compile object file
 cat > conftest.c <<EOF
 #include <math.h>
-int modfunc(void){return (int)floor(1.2);}
+int modfunc(){return (int)floor(1.2);}
 EOF
 
 ./libtool --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
