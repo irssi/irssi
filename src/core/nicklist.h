@@ -23,8 +23,10 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
 void nicklist_rename(SERVER_REC *server, const char *old_nick,
 		     const char *new_nick);
 
-/* Find nick record from list */
-NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *mask);
+/* Find nick */
+NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *nick);
+/* Find nick mask, wildcards allowed */
+NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask);
 /* Get list of nicks that match the mask */
 GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask);
 /* Get list of nicks */

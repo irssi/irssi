@@ -63,12 +63,12 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 		/* check that the beginning marker starts a word, and
 		 * that the matching end marker ends a word */
-		if ((pos > 0 && isalnum(bgn[-1])) || !ishighalnum(bgn[1]))
+		if ((pos > 0 && ishighalnum(bgn[-1])) || !ishighalnum(bgn[1]))
 			continue;
 		if ((end = strchr(bgn+1, *bgn)) == NULL) 
 			continue;
 		if (!ishighalnum(end[-1]) ||
-		    isalnum(end[1]) || end[1] == type)
+		    ishighalnum(end[1]) || end[1] == type)
 			continue;
 
 		if (IS_CHANNEL(item)) {
@@ -88,7 +88,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 		if (!settings_get_bool("emphasis_multiword")) {
 			char *c;
 			for (c = bgn+1; c != end; c++) {
-				if (!isalnum(*c))
+				if (!ishighalnum(*c))
 					break;
 			}
 			if (c != end) continue;
@@ -316,7 +316,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 
 		if (!nicklist_find(rec, nick))
 			continue;
-		
+
 		if (ignore_check(server, nick, address, rec->name,
 				 reason, MSGLEVEL_QUITS)) {
 			count++;

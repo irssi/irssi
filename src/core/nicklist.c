@@ -156,8 +156,17 @@ GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask)
 	return nicks;
 }
 
-/* Find nick record from list */
-NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *mask)
+/* Find nick */
+NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *nick)
+{
+	g_return_val_if_fail(IS_CHANNEL(channel), NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+
+	return g_hash_table_lookup(channel->nicks, nick);
+}
+
+/* Find nick mask, wildcards allowed */
+NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 {
 	NICK_REC *nickrec;
 	char *nick, *host;

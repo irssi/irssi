@@ -188,16 +188,15 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 	for (bot = bots; *bot != NULL; bot++) {
 		const char *botnick = *bot;
 
-		nick = nicklist_find(channel,
-				     channel->server->isnickflag(*botnick) ?
-				     botnick+1 : botnick);
-		if (nick == NULL ||
-		    !match_nick_flags(channel->server, nick, *botnick))
-			continue;
-
-		/* got one! */
-		eval_special_string(rec->autosendcmd, nick->nick, channel->server, channel);
-		break;
+		nick = nicklist_find_mask(channel,
+					  channel->server->isnickflag(*botnick) ?
+					  botnick+1 : botnick);
+		if (nick != NULL &&
+		    match_nick_flags(channel->server, nick, *botnick)) {
+			eval_special_string(rec->autosendcmd, nick->nick,
+					    channel->server, channel);
+			break;
+		}
 	}
 	g_strfreev(bots);
 }

@@ -103,11 +103,20 @@ CODE:
 	nicklist_remove(channel, nick);
 
 Irssi::Nick
-nick_find(channel, mask)
+nick_find(channel, nick)
+	Irssi::Channel channel
+	char *nick
+CODE:
+	RETVAL = nicklist_find(channel, nick);
+OUTPUT:
+	RETVAL
+
+Irssi::Nick
+nick_find_mask(channel, mask)
 	Irssi::Channel channel
 	char *mask
 CODE:
-	RETVAL = nicklist_find(channel, mask);
+	RETVAL = nicklist_find_mask(channel, mask);
 OUTPUT:
 	RETVAL
 
