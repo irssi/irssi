@@ -149,6 +149,7 @@ static void window_next_page(void)
 
 static void paste_send(void)
 {
+	HISTORY_REC *history;
 	unichar *arr;
 	GString *str;
 	char out[10], *text;
@@ -170,6 +171,9 @@ static void paste_send(void)
 		}
 
 		text = gui_entry_get_text(active_entry);
+		history = command_history_current(active_win);
+		command_history_add(history, text);
+
 		signal_emit("send command", 3, text,
 			    active_win->active_server, active_win->active);
 		g_free(text);
@@ -179,6 +183,9 @@ static void paste_send(void)
 	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
+			history = command_history_current(active_win);
+			command_history_add(history, str->str);
+
 			signal_emit("send command", 3, str->str,
 				    active_win->active_server,
 				    active_win->active);
