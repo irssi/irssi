@@ -2,6 +2,7 @@
 
 #define MODULE_NAME "fe-common/core"
 
+typedef guint32 unichar;
 typedef struct {
 	time_t time;
 	char *nick;

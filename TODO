@@ -46,7 +46,6 @@
 20:47 <@Juerd> cras: for some reason irssi doesn't know this happens in a 
                query, and displays "< Juerd:> foo" in the status window
  - set TOS field for all connections (DCC especially)
- - /PROXY CTCP ON doesn't work well with multiple servers
 22:51 [IRCNet] [zhafte] irssi muuten taitaa bugaa jos 
           pist‰‰ ACT oikeaan reunaan, vai onkohan se vain mun terminaali?
 22:52 [IRCNet] [zhafte] menev‰t v‰lill‰ p‰‰llekk‰in 

@@ -25,10 +25,14 @@
 #include "levels.h"
 #include "settings.h"
 #include "irssi-version.h"
+#ifdef HAVE_NL_LANGINFO
+#  include <langinfo.h>
+#endif
 
 #include "servers.h"
 #include "channels.h"
 #include "servers-setup.h"
+#include "recode.h"
 
 #include "autorun.h"
 #include "fe-core-commands.h"
@@ -170,7 +174,11 @@ void fe_common_core_init(void)
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
-
+#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
+	settings_add_str("lookandfeel", "term_charset", nl_langinfo(CODESET));
+#else
+	settings_add_str("lookandfeel", "term_charset", "ISO8859-1");
+#endif
 	themes_init();
         theme_register(fecommon_core_formats);
 

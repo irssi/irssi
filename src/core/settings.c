@@ -25,6 +25,7 @@
 #include "misc.h"
 
 #include "lib-config/iconfig.h"
+#include "recode.h"
 #include "settings.h"
 #include "default-config.h"
 
@@ -393,8 +394,8 @@ static void sig_init_finished(void)
 	if (config_changed) {
 		/* some backwards compatibility changes were made to
 		   config file, reload it */
-		g_warning("Some time and size related settings were "
-			  "automatically changed to new format, please /SAVE");
+		g_warning("Some settings were automatically "
+			  "updated, please /SAVE");
 		signal_emit("setup changed", 0);
 	}
 }
@@ -439,15 +440,41 @@ void settings_clean_invalid(void)
 static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 				   CONFIG_NODE *parent)
 {
-	const char *new_key;
+	const char *new_key, *new_module;
+	CONFIG_NODE *new_node;
 	char *new_value;
 	int old_value;
 
+	new_value = NULL; new_key = NULL; new_module = NULL;
+
+	/* fe-text term_type -> fe-common/core term_charset - for 0.8.10-> */
+	if (strcmp(module, "fe-text") == 0) {
+		if (strcasecmp(node->key, "term_type") == 0 ||
+		    /* kludge for cvs-version where term_charset was in fe-text */
+		    strcasecmp(node->key, "term_charset") == 0) {
+			new_module = "fe-common/core";
+			new_key = "term_charset";
+			new_value = !is_valid_charset(node->value) ? NULL :
+				g_strdup(node->value);
+			new_node = iconfig_node_traverse("settings", FALSE);
+			new_node = new_node == NULL ? NULL :
+				config_node_section(new_node, new_module, -1);
+
+			config_node_set_str(mainconfig, new_node,
+					    new_key, new_value);
+			/* remove old */
+			config_node_set_str(mainconfig, parent,
+					    node->key, NULL);
+			g_free(new_value);
+			config_changed = TRUE;
+			return new_key != NULL;
+		}
+	}
+	new_value = NULL, new_key = NULL;
 	/* FIXME: remove later - for 0.8.6 -> */
 	if (node->value == NULL || !is_numeric(node->value, '\0'))
 		return FALSE;
 
-	new_value = NULL; new_key = NULL;
 	old_value = atoi(node->value);
 
 	if (strcmp(module, "fe-text") == 0) {

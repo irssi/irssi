@@ -27,26 +27,21 @@
 #include "settings.h"
 #include "printtext.h"
 #include "formats.h"
+#include "recode.h"
+
+#ifdef HAVE_NL_LANGINFO
+#  include <langinfo.h>
+#endif
+
 #define SLIST_FOREACH(var, head)		\
 for ((var) = (head);				\
 		 (var);					\
 		 (var) = g_slist_next((var)))
 
 #ifdef HAVE_GLIB2
-static gboolean is_valid_charset(const char *charset)
-{
-	const char *from="UTF-8";
-	const char *str="irssi";
-	char *recoded;
-	if (!charset)
-		return FALSE;
-	recoded = g_convert(str, strlen(str), charset, from, NULL, NULL, NULL);
-	if (recoded) {
-		g_free(recoded);
-		return TRUE;
-	} else
-		return FALSE;
-}
+const char *recode_fallback = NULL;
+const char *recode_out_default = NULL;
+const char *term_charset = NULL;
 
 static const char *fe_recode_get_target (WI_ITEM_REC *witem)
 {
@@ -123,7 +118,7 @@ static void fe_recode_add_cmd (const char *data, SERVER_REC *server, WI_ITEM_REC
 		iconfig_set_str("conversions", target, charset);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CONVERSION_ADDED, target, charset);
 	} else
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_CONVERSION_NOT_SUPPORTED, charset);
+		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), charset);
  end:
 	cmd_params_free(free_arg);
 }
@@ -156,23 +151,76 @@ static void fe_recode_remove_cmd (const char *data, SERVER_REC *server, WI_ITEM_
 
 static void read_settings(void)
 {
-        const char *charset;
+	const char *old_term_charset = g_strdup (term_charset);
+	const char *old_recode_fallback = g_strdup (recode_fallback);
+	const char *old_recode_out_default = g_strdup (recode_out_default);
 
-        charset  = settings_get_str("recode_fallback");
-        if (!is_valid_charset(charset)){
-        	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_CONVERSION_NOT_SUPPORTED, charset);
-        	settings_set_str("recode_fallback", "ISO8859-1");
-        }
-        charset = settings_get_str("term_charset");
-        if (charset && !is_valid_charset(charset)) {
-        	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_CONVERSION_NOT_SUPPORTED, charset);
-        	settings_set_str("term_charset", "ISO8859-1");
-        }
-        charset = settings_get_str("recode_out_default_charset");
-        if (charset && !is_valid_charset(charset)) {
-        	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_CONVERSION_NOT_SUPPORTED, charset);
-        	settings_set_str("recode_out_default_charset", "");
-        }
+	recode_fallback = settings_get_str("recode_fallback");
+	if (!is_valid_charset(recode_fallback)) {
+		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), recode_fallback);
+		settings_set_str("recode_fallback", old_recode_fallback != NULL ? old_recode_fallback : "ISO8859-1");
+	}
+	recode_fallback = g_strdup(settings_get_str("recode_fallback"));
+	
+	term_charset = settings_get_str("term_charset");
+	if (!is_valid_charset(term_charset)) {
+#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
+		settings_set_str("term_charset", is_valid_charset(old_term_charset) ? old_term_charset : nl_langinfo(CODESET));
+#else
+		settings_set_str("term_charset", is_valid_charset(old_term_charset) ? old_term_charset : "ISO8859-1");
+#endif		
+		/* FIXME: move the check of term_charset into fe-text/term.c 
+		          it breaks the proper term_input_type 
+		          setup and reemitting of the signal is kludgy */
+		if (g_strcasecmp(term_charset, old_term_charset) != 0);
+			signal_emit("setup changed", 0);
+	}
+	term_charset = g_strdup(settings_get_str("term_charset"));
+
+	recode_out_default = settings_get_str("recode_out_default_charset");
+	if (recode_out_default != NULL && *recode_out_default != '\0')
+		if( !is_valid_charset(recode_out_default)) {
+			signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), recode_out_default);
+			settings_set_str("recode_out_default_charset", old_recode_out_default);
+		}
+	recode_out_default = g_strdup(settings_get_str("recode_out_default_charset"));
+}
+
+static void message_own_public(const SERVER_REC *server, const char *msg,
+			       const char *target)
+{
+	char *recoded;
+	recoded = recode_in(msg, target);
+	signal_continue(3, server, recoded, target);
+	g_free(recoded);
+}
+
+static void message_own_private(const SERVER_REC *server, const char *msg,
+			       const char *target, const char *orig_target)
+{
+	char *recoded;
+	recoded = recode_in(msg, target);
+	signal_continue(4, server, recoded, target, orig_target);
+	g_free(recoded);
+}
+
+static void message_irc_own_action(const SERVER_REC *server, const char *msg,
+				   const char *nick, const char *addr,
+				   const char *target)
+{
+	char *recoded;
+	recoded = recode_in(msg, target);
+	signal_continue(5, server, recoded, nick, addr, target);
+	g_free(recoded);
+}
+
+static void message_irc_own_notice(const SERVER_REC *server, const char *msg,
+				   const char *channel)
+{
+	char *recoded;
+	recoded = recode_in(msg, channel);
+	signal_continue(3, server, recoded, channel);
+	g_free(recoded);
 }
 #endif
 
@@ -184,6 +232,11 @@ void fe_recode_init (void)
 	command_bind("recode add", NULL, (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_bind("recode remove", NULL, (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("message own_public",  (SIGNAL_FUNC) message_own_public);
+	signal_add("message own_private", (SIGNAL_FUNC) message_own_private);
+	signal_add("message irc own_action", (SIGNAL_FUNC) message_irc_own_action);
+	signal_add("message irc own_notice", (SIGNAL_FUNC) message_irc_own_notice);
+	read_settings();
 #endif
 }
 
@@ -195,5 +248,10 @@ void fe_recode_deinit (void)
 	command_unbind("recode add", (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_unbind("recode remove", (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("message own_public",  (SIGNAL_FUNC) message_own_public);
+	signal_remove("message own_private", (SIGNAL_FUNC) message_own_private);
+	signal_remove("message irc own_action", (SIGNAL_FUNC) message_irc_own_action);
+	signal_remove("message irc own_notice", (SIGNAL_FUNC) message_irc_own_notice);
 #endif
 }
+

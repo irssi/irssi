@@ -24,6 +24,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "levels.h"
+#include "recode.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -228,15 +229,17 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *topic;
+	char *params, *topic, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &topic);
+	recoded = recode_in(topic, channel);
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    IRCTXT_TOPIC, channel, topic);
+		    IRCTXT_TOPIC, channel, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_topic_info(IRC_SERVER_REC *server, const char *data)

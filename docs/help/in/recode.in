@@ -12,3 +12,37 @@ RECODE REMOVE %|[<target>]
     %|Remove an entry from the conversion database (if target is
     omitted, the current channel or query will be used)
 
+To specify your local charset you have to set term_charset
+
+Example:
+
+/SET term_charset <charset>
+
+To see the recode settings: /SET recode
+
+You can change them with /SET 
+
+Examples:
+
+/SET recode_fallback <charset> 
+to set the fallback charset for incoming events
+
+This charset will be used if a conversion with 
+the defined charset(/recode add) fails, and if no 
+charset for the target(query or channel) is defined at all.
+
+/SET recode_out_default_charset <charset> 
+to set the global outgoing charset
+
+When it's set to a charset it will be used instead 
+of the charset you have defined with /recode add
+
+/SET recode_transliterate ON 
+to enable the global transliteration.
+
+The transliteration is based on your locale settings, 
+if it doesn't work properly your locale settings may be wrong.
+You can enable it per target by adding //TRANSLIT to the <charset>
+
+Hint: <charset> can be almost everything listed by 'iconv -l'
+

@@ -218,6 +218,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "invalid_time", "Invalid timestamp", 0 },
 	{ "invalid_level", "Invalid message level", 0 },
 	{ "invalid_size", "Invalid size", 0 },
+	{ "invalid_charset", "Invalid charset: $0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Themes", 0 },
@@ -253,7 +254,6 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "conversion_added", "Added {hilight $0}/{hilight $1} to conversion database", 2, { FORMAT_STRING, FORMAT_STRING } },
 	{ "conversion_removed", "Removed {hilight $0} from conversion database", 1, { FORMAT_STRING } },
 	{ "conversion_not_found", "{hilight $0} not found in conversion database", 1, { FORMAT_STRING } },
-	{ "conversion_not_supported", "Conversion to the character set {hilight $0} is not supported",1, { FORMAT_STRING } },
 	{ "recode_header", "%#Target                         Character set", 0 },
 	{ "recode_line", "%#%|$[!30]0 $1", 2, { FORMAT_STRING, FORMAT_STRING } },
 
@@ -261,7 +261,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ NULL, "Misc", 0 },
 
 	{ "unknown_chat_protocol", "Unknown chat protocol: $0", 1, { 0 } },
-	{ "unknown_chatnet", "Unknown chat network: $0 (create it with /IRCNET ADD)", 1, { 0 } },
+	{ "unknown_chatnet", "Unknown chat network: $0 (create it with /NETWORK ADD)", 1, { 0 } },
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
 	{ "bind_header", "%#Key                  Action", 0 },

@@ -38,7 +38,8 @@ enum {
 	CMDERR_CHAN_NOT_SYNCED, /* channel not fully synchronized yet */
 	CMDERR_ILLEGAL_PROTO, /* requires different chat protocol than the active server */
 	CMDERR_NOT_GOOD_IDEA, /* not good idea to do, -yes overrides this */
-	CMDERR_INVALID_TIME /* invalid time specification */
+	CMDERR_INVALID_TIME, /* invalid time specification */
+	CMDERR_INVALID_CHARSET /* invalid charset specification */
 };
 
 /* Return the full command for `alias' */

@@ -48,7 +48,8 @@ static int ret_texts[] = {
 	TXT_CHAN_NOT_SYNCED,
         TXT_ILLEGAL_PROTO,
 	TXT_NOT_GOOD_IDEA,
-        TXT_INVALID_TIME
+        TXT_INVALID_TIME,
+        TXT_INVALID_CHARSET
 };
 
 int command_hide_output;

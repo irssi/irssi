@@ -80,7 +80,7 @@ $A .. $Z is important.
    $Z         time of day (hh:mm, can be changed with /SET timestamp_format)
    $$         a literal '$'
 
-   $versiontim          prints time of the irssi version in HHMM format
+   $versiontime         prints time of the irssi version in HHMM format
    $sysname             system name (eg. Linux)
    $sysrelease          system release (eg. 2.2.18)
    $sysarch             system architecture (eg. i686)
