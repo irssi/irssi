@@ -103,6 +103,9 @@ static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 {
 	g_return_if_fail(query != NULL);
 
+	printformat(query->server, query->name, MSGLEVEL_NICKS,
+		    TXT_NICK_CHANGED, oldnick, query->name, query->name);
+
 	signal_emit("window item changed", 2,
 		    window_item_window((WI_ITEM_REC *) query), query);
 }

@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "servers.h"
 #include "queries.h"
+#include "nicklist.h"
 
 #include "irc.h"
 
@@ -58,11 +59,8 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 		   address. it was probably a nick change or reconnect to
 		   server, so rename the query. */
 		query = query_find_address(server, address);
-		if (query != NULL) {
-			signal_emit("message nick", 4, query->server,
-				    nick, query->name, query->address);
+		if (query != NULL)
 			query_change_nick(query, nick);
-		}
 	}
 }
 
