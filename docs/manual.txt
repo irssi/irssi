@@ -301,8 +301,8 @@
 	The format is pretty much the same as in libPropList and should be
 	easily understandable.
 
-	You can reload the config file on the fly with /REHASH command, you
-	can also read a different config file with /REHASH <filename>.
+	You can reload the config file on the fly with /RELOAD command, you
+	can also read a different config file with /RELOAD <filename>.
 
 	If you change any settings, they aren't saved to file until you use
 	/SAVE. You can save the config file to different place with

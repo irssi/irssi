@@ -600,7 +600,7 @@ void completion_init(void)
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command save", (SIGNAL_FUNC) sig_complete_filename);
-	signal_add("complete command rehash", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 }
@@ -615,7 +615,7 @@ void completion_deinit(void)
 	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command save", (SIGNAL_FUNC) sig_complete_filename);
-	signal_remove("complete command rehash", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 }
