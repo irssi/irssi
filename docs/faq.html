@@ -125,3 +125,16 @@ just fine so why bother?</p>
 better would be if you placed them in <code>~/.irssi/scripts/</code> and
 created symlinks to autorun directory (eg. <code>cd
 ~/.irssi/scripts/autorun/ ; ln -s ../script.pl .</code>)</p>
+
+<h3>Q: How do I easily edit existing topic?</h3>
+
+<p>A: /TOPIC &lt;tab&gt;</p>
+
+<h3>Q: How can I have /WHOIS replies to active window?</h3>
+
+<p>A: Currently there's no other way than to close the status window, or at
+least do <code>/WINDOW LEVEL -CRAP</code> in it, but that would make a lot
+other messages show up in active window too. I don't have many good ideas
+how this could be easily fixed inside irssi (no, kludging it to only work
+with whois isn't a "fix") - it'd be possible to create a script do this
+though but currently it doesn't exist.</p>
