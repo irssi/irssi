@@ -41,6 +41,13 @@ void pidwait_remove(int pid)
 	pids = g_slist_remove(pids, GINT_TO_POINTER(pid));
 }
 
+/* return list of pids that are being waited.
+   don't free the return value. */
+GSList *pidwait_get_pids(void)
+{
+        return pids;
+}
+
 static int child_check(void)
 {
 	GSList *tmp, *next;
