@@ -34,7 +34,7 @@
 
 static int beep_msg_level, beep_when_away, beep_when_window_active;
 
-static int signal_gui_print_text, signal_gui_print_text_finished;
+static int signal_gui_print_text_finished;
 static int signal_print_starting;
 static int signal_print_text;
 static int signal_print_format;
@@ -379,6 +379,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	char *str, *tmp;
 
 	g_return_if_fail(dest != NULL);
+	g_return_if_fail(dest->window != NULL);
 	g_return_if_fail(text != NULL);
 
 	msg_beep_check(dest);
@@ -436,7 +437,6 @@ static void read_settings(void)
 void printtext_init(void)
 {
 	sending_print_starting = FALSE;
-	signal_gui_print_text = signal_get_uniq_id("gui print text");
 	signal_gui_print_text_finished = signal_get_uniq_id("gui print text finished");
 	signal_print_starting = signal_get_uniq_id("print starting");
 	signal_print_text = signal_get_uniq_id("print text");
