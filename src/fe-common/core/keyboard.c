@@ -23,6 +23,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
+#include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
@@ -325,7 +326,7 @@ static void cmd_bind(const char *data)
 
 void keyboard_init(void)
 {
-	keys = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
+	keys = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
 	keyinfos = NULL;
 
 	key_bind("command", "Run any IRC command", NULL, NULL, (SIGNAL_FUNC) sig_command);
