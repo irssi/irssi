@@ -101,7 +101,7 @@ static char *module_get_sub(const char *name, const char *root)
         return g_strdup(name);
 }
 
-static GModule *module_open(const char *name)
+static GModule *module_open(const char *name, int *found)
 {
 	struct stat statbuf;
 	GModule *module;
@@ -119,6 +119,7 @@ static GModule *module_open(const char *name)
 		if (stat(path, &statbuf) == 0) {
 			module = g_module_open(path, (GModuleFlags) 0);
 			g_free(path);
+			*found = TRUE;
 			return module;
 		}
 
@@ -127,6 +128,7 @@ static GModule *module_open(const char *name)
 		path = g_module_build_path(MODULEDIR, name);
 	}
 
+	*found = stat(path, &statbuf) == 0;
 	module = g_module_open(path, (GModuleFlags) 0);
 	g_free(path);
 	return module;
@@ -161,13 +163,13 @@ static int module_load_name(const char *path, const char *rootmodule,
 	char *initfunc, *deinitfunc;
         int found;
 
-	gmodule = module_open(path);
+	gmodule = module_open(path, &found);
 	if (gmodule == NULL) {
-		if (!silent) {
+		if (!silent || found) {
 			module_error(MODULE_ERROR_LOAD, g_module_error(),
 				     rootmodule, submodule);
 		}
-		return -1;
+		return found ? 0 : -1;
 	}
 
 	/* get the module's init() and deinit() functions */
