@@ -324,10 +324,10 @@ if test "x$GLIB_DIR" = "x"; then
     glib_file=glib-1.2.10.tar.gz
 
     dlcmd=
-    if [ "x`ncftpget 2>/dev/null|grep -i ncftp`" != "x" ]; then
+    if test "x`ncftpget 2>/dev/null|grep -i ncftp`" != "x"; then
       dlcmd="ncftpget ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
     fi
-    if [ "x`wget 2>/dev/null|grep -i wget`" != "x" ]; then
+    if test "x`wget 2>/dev/null|grep -i wget`" != "x"; then
       dlcmd="wget http://irssi.org/files/$glib_file"
     fi
     if test "x$dlcmd" != "x"; then
