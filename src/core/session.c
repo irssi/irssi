@@ -54,7 +54,10 @@ void session_set_binary(const char *path)
 	}
 
 	/* we'll need to find it from path. */
-	paths = g_strsplit(g_getenv("PATH"), ":", -1);
+	str = g_getenv("PATH");
+	if (str == NULL) return;
+
+	paths = g_strsplit(str, ":", -1);
 	for (tmp = paths; *tmp != NULL; tmp++) {
                 str = g_strconcat(*tmp, G_DIR_SEPARATOR_S, path, NULL);
 		if (access(str, X_OK) == 0) {
