@@ -100,7 +100,10 @@ static void cmd_set(char *data)
 			/* change the setting */
 			switch (rec->type) {
 			case SETTING_TYPE_BOOLEAN:
-				set_boolean(key, clear ? FALSE : value);
+                                if (clear)
+					settings_set_bool(key, FALSE);
+                                else
+					set_boolean(key, value);
 				break;
 			case SETTING_TYPE_INT:
 				settings_set_int(key, clear ? 0 : atoi(value));
