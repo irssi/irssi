@@ -307,6 +307,8 @@ static void event_invite(IRC_SERVER_REC *server, const char *data)
 
 void channel_events_init(void)
 {
+	settings_add_bool("misc", "join_auto_chans_on_invite", TRUE);
+
 	signal_add_first("event 403", (SIGNAL_FUNC) event_cannot_join); /* no such channel */
 	signal_add_first("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
