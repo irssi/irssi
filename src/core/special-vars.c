@@ -496,12 +496,7 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 				g_string_append_c(str, ';');
 			else {
 				chr = expand_escape(&cmd);
-				if (chr != -1)
-					g_string_append_c(str, chr);
-				else {
-					g_string_append_c(str, '\\');
-					g_string_append_c(str, *cmd);
-				}
+				g_string_append_c(str, chr != -1 ? chr : *cmd);
 			}
 			code = 0;
 		} else if (code == '$') {
