@@ -2,6 +2,12 @@
 
 static int initialized = FALSE;
 
+void perl_expando_init(void);
+void perl_expando_deinit(void);
+
+void perl_settings_init(void);
+void perl_settings_deinit(void);
+
 MODULE = Irssi  PACKAGE = Irssi
 
 PROTOTYPES: ENABLE

@@ -1,4 +1,5 @@
 #include "module.h"
+#include "ctcp.h"
 
 MODULE = Irssi::Irc::Ctcp	PACKAGE = Irssi
 PROTOTYPES: ENABLE

@@ -2,6 +2,8 @@
 #include "irssi-version.h"
 #include "core.h"
 
+#include "pidwait.h"
+
 #define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
 
 void perl_signal_add_hash(int priority, SV *sv)
@@ -194,7 +196,7 @@ CODE:
 		croak("Irssi::timeout() : msecs must be >= 10");
 		RETVAL = -1;
 	} else {
-		RETVAL = perl_timeout_add(msecs, func, data, FALSE);
+		RETVAL = perl_timeout_add(msecs, func, data);
 	}
 OUTPUT:
 	RETVAL
@@ -209,7 +211,7 @@ CODE:
 		croak("Irssi::timeout_once() : msecs must be >= 10");
 		RETVAL = -1;
 	} else {
-		RETVAL = perl_timeout_add(msecs, func, data, TRUE);
+		RETVAL = perl_timeout_add(msecs, func, data);
 	}
 OUTPUT:
 	RETVAL

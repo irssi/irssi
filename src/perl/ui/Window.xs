@@ -1,5 +1,7 @@
 #include "module.h"
 
+#include "window-activity.h"
+
 MODULE = Irssi::UI::Window  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 

@@ -1,5 +1,8 @@
 #include "module.h"
 
+void perl_statusbar_init(void);
+void perl_statusbar_deinit(void);
+
 static int initialized = FALSE;
 
 static void perl_main_window_fill_hash(HV *hv, MAIN_WINDOW_REC *window)

@@ -1,5 +1,8 @@
 #include "module.h"
 
+void perl_themes_init(void);
+void perl_themes_deinit(void);
+
 static int initialized = FALSE;
 
 static void perl_process_fill_hash(HV *hv, PROCESS_REC *process)

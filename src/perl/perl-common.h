@@ -64,6 +64,16 @@ void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects);
 
 char *perl_get_use_list(void);
 
+void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item);
+
+void perl_chatnet_fill_hash(HV *hv, CHATNET_REC *chatnet);
+void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn);
+void perl_server_fill_hash(HV *hv, SERVER_REC *server);
+void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item);
+void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel);
+void perl_query_fill_hash(HV *hv, QUERY_REC *query);
+void perl_nick_fill_hash(HV *hv, NICK_REC *nick);
+
 #define irssi_boot(x) { \
 	extern void boot_Irssi__##x(pTHX_ CV *cv); \
 	irssi_callXS(boot_Irssi__##x, cv, mark); \

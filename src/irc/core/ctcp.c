@@ -28,6 +28,7 @@
 #include "irc-servers.h"
 #include "servers-idle.h"
 #include "ignore.h"
+#include "ctcp.h"
 
 typedef struct {
 	char *name;

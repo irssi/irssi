@@ -18,6 +18,9 @@ void perl_command_bind_to(const char *cmd, const char *category,
 
 void perl_command_unbind(const char *cmd, SV *func);
 
+void perl_command_runsub(const char *cmd, const char *data, 
+			 SERVER_REC *server, WI_ITEM_REC *item);
+
 void perl_signals_start(void);
 void perl_signals_stop(void);
 

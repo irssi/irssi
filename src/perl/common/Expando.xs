@@ -71,13 +71,13 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 	retcount = perl_call_sv(rec->func, G_EVAL|G_SCALAR);
 	SPAGAIN;
 
+	ret = NULL;
 	if (SvTRUE(ERRSV)) {
 		/* make sure we don't get back here */
 		if (rec->script != NULL)
 			script_unregister_expandos(rec->script);
 
 		signal_emit("script error", 2, rec->script, SvPV(ERRSV, PL_na));
-		ret = NULL;
 	} else if (retcount > 0) {
 		ret = g_strdup(POPp);
 		*free_ret = TRUE;
