@@ -8,7 +8,9 @@ use Irssi;
 
 sub event_rejoin_kick {
 	my ($data, $server) = @_;
-	my ($channel) = split(/ +/, $data);
+	my ($channel, $nick) = split(/ +/, $data);
+
+	return if ($server->values()->{'nick'} ne $nick);
 
 	# check if channel has password
 	$chanrec = $server->channel_find($channel);
