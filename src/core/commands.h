@@ -150,6 +150,7 @@ int command_have_option(const char *cmd, const char *option);
 #define PARAM_FLAG_OPTCHAN_NAME (0x00020000|PARAM_FLAG_OPTCHAN)
 
 char *cmd_get_param(char **data);
+char *cmd_get_quoted_param(char **data);
 /* get parameters from command - you should point free_me somewhere and
    cmd_params_free() it after you don't use any of the parameters anymore.
 

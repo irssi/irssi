@@ -26,6 +26,7 @@
 
 #include "dcc-file.h"
 #include "dcc-send.h"
+#include "dcc-queue.h"
 
 #include "module-formats.h"
 #include "printtext.h"
@@ -86,6 +87,12 @@ static void dcc_error_send_exists(const char *nick, const char *fname)
 		    IRCTXT_DCC_SEND_EXISTS, fname, nick);
 }
 
+static void dcc_error_send_no_route(const char *nick, const char *fname)
+{
+	printformat(NULL, NULL, MSGLEVEL_DCC,
+		    IRCTXT_DCC_SEND_NO_ROUTE, nick, fname);
+}
+
 static void dcc_error_close_not_found(const char *type, const char *nick,
 				      const char *fname)
 {
@@ -129,8 +136,22 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 
 static void sig_dcc_list_print(SEND_DCC_REC *dcc)
 {
-	if (IS_DCC_SEND(dcc))
-		dcc_list_print_file((FILE_DCC_REC *) dcc);
+	GSList *queue;
+
+	if (!IS_DCC_SEND(dcc))
+		return;
+
+	dcc_list_print_file((FILE_DCC_REC *) dcc);
+
+	queue = dcc_queue_get_queue(dcc->queue);
+	for (; queue != NULL; queue = queue->next) {
+		DCC_QUEUE_REC *rec = queue->data;
+
+		printformat(NULL, NULL, MSGLEVEL_DCC,
+			    IRCTXT_DCC_LIST_LINE_QUEUED_SEND, rec->nick,
+			    rec->servertag == NULL ? "" : rec->servertag,
+			    rec->file);
+	}
 }
 
 void fe_dcc_send_init(void)
@@ -139,6 +160,7 @@ void fe_dcc_send_init(void)
 	signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
 	signal_add("dcc error file open", (SIGNAL_FUNC) dcc_error_file_open);
 	signal_add("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
+	signal_add("dcc error send no route", (SIGNAL_FUNC) dcc_error_send_no_route);
 	signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
 	signal_add("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
         signal_add("dcc list print", (SIGNAL_FUNC) sig_dcc_list_print);
@@ -150,6 +172,7 @@ void fe_dcc_send_deinit(void)
 	signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);
 	signal_remove("dcc error file open", (SIGNAL_FUNC) dcc_error_file_open);
 	signal_remove("dcc error send exists", (SIGNAL_FUNC) dcc_error_send_exists);
+	signal_remove("dcc error send no route", (SIGNAL_FUNC) dcc_error_send_no_route);
 	signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
 	signal_remove("complete command dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
         signal_remove("dcc list print", (SIGNAL_FUNC) sig_dcc_list_print);

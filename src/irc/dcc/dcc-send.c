@@ -18,6 +18,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <glob.h>
+
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
@@ -30,6 +35,155 @@
 
 #include "dcc-send.h"
 #include "dcc-chat.h"
+#include "dcc-queue.h"
+
+#ifndef GLOB_TILDE
+#  define GLOBL_TILDE 0
+#endif
+
+static int dcc_send_one_file(int queue, const char *target, const char *fname,
+			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat);
+
+static void dcc_queue_send_next(int queue)
+{
+	IRC_SERVER_REC *server;
+        DCC_QUEUE_REC *qrec;
+	int send_started = FALSE;
+
+	while ((qrec = dcc_queue_get_next(queue)) != NULL && !send_started) {
+		server = qrec->servertag == NULL ? NULL :
+			IRC_SERVER(server_find_tag(qrec->servertag));
+
+		if (server == NULL && qrec->chat == NULL) {
+			/* no way to send this request */
+			signal_emit("dcc error send no route", 2,
+				    qrec->nick, qrec->file);
+		} else {
+			send_started = dcc_send_one_file(queue, qrec->nick,
+							 qrec->file, server,
+							 qrec->chat);
+		}
+                dcc_queue_remove_head(queue);
+	}
+
+	if (!send_started) {
+		/* no files in queue anymore, remove it */
+		dcc_queue_free(queue);
+	}
+}
+
+static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
+			 const char *nick, char *fileargs, int add_mode)
+{
+	struct stat st;
+	glob_t globbuf;
+	char *fname;
+	int i, files, flags, queue, start_new_transfer;
+
+	globbuf.gl_offs = 0;
+        flags = GLOB_NOCHECK | GLOB_TILDE;
+
+	/* this loop parses all <file> parameters and adds them to glubbuf */
+	for (;;) {
+		fname = cmd_get_quoted_param(&fileargs);
+		if (*fname == '\0')
+			break;
+
+		if (glob(fname, flags, 0, &globbuf) < 0)
+			break;
+
+		/* this flag must not be set before first call to glob!
+		   (man glob) */
+		flags |= GLOB_APPEND;
+	}
+
+	files = 0; queue = -1; start_new_transfer = 0;
+
+	/* add all globbed files to a proper queue */
+	for (i = 0; i < globbuf.gl_pathc; i++) {
+		if (stat(globbuf.gl_pathv[i], &st) == 0 &&
+		    S_ISREG(st.st_mode) && st.st_size > 0) {
+			if (queue < 0) {
+				/* in append and prepend mode try to find an
+				   old queue. if an old queue is not found
+				   create a new queue. if not in append or
+				   prepend mode, create a new queue */
+				if (add_mode != DCC_QUEUE_NORMAL)
+					queue = dcc_queue_old(nick, servertag);
+				start_new_transfer = 0;
+				if (queue < 0) {
+					queue = dcc_queue_new();
+					start_new_transfer = 1;
+				}
+			}
+
+			dcc_queue_add(queue, add_mode, nick,
+				      globbuf.gl_pathv[i], servertag, chat);
+			files++;
+		}
+	}
+
+	if (files > 0 && start_new_transfer)
+		dcc_queue_send_next(queue);
+
+	globfree(&globbuf);
+}
+
+/* DCC SEND [-append | -prepend | -flush | -rmtail | -rmhead]
+            <nick> <file> [<file> ...] */
+static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
+			 WI_ITEM_REC *item)
+{
+	const char *servertag;
+	char *nick, *fileargs;
+	void *free_arg;
+	CHAT_DCC_REC *chat;
+	GHashTable *optlist;
+	int queue, mode;
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "dcc send",
+			    &optlist, &nick, &fileargs))
+		return;
+
+	chat = item_get_dcc(item);
+	if (chat != NULL &&
+	    (chat->mirc_ctcp || g_strcasecmp(nick, chat->nick) != 0))
+		chat = NULL;
+
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		servertag = NULL;
+	else
+		servertag = server->tag;
+
+	if (servertag == NULL && chat == NULL)
+		cmd_param_error(CMDERR_NOT_CONNECTED);
+
+	if (g_hash_table_lookup(optlist, "rmhead") != NULL) {
+		queue = dcc_queue_old(nick, servertag);
+		dcc_queue_remove_head(queue);
+	} else if (g_hash_table_lookup(optlist, "rmtail") != NULL) {
+		queue = dcc_queue_old(nick, servertag);
+		dcc_queue_remove_tail(queue);
+	} else if (g_hash_table_lookup(optlist, "flush") != NULL) {
+		queue = dcc_queue_old(nick, servertag);
+		while (dcc_queue_remove_head(queue)) ;
+	} else {
+		if (g_hash_table_lookup(optlist, "append") != NULL)
+			mode = DCC_QUEUE_APPEND;
+		else if (g_hash_table_lookup(optlist, "prepend") != NULL)
+			mode = DCC_QUEUE_PREPEND;
+		else
+			mode = DCC_QUEUE_NORMAL;
+
+		if (*fileargs == '\0')
+			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+		dcc_send_add(servertag, chat, nick, fileargs, mode);
+	}
+
+	cmd_params_free(free_arg);
+}
 
 static SEND_DCC_REC *dcc_send_create(IRC_SERVER_REC *server,
 				     CHAT_DCC_REC *chat,
@@ -41,6 +195,7 @@ static SEND_DCC_REC *dcc_send_create(IRC_SERVER_REC *server,
 	dcc->orig_type = module_get_uniq_id_str("DCC", "GET");
 	dcc->type = module_get_uniq_id_str("DCC", "SEND");
 	dcc->fhandle = -1;
+	dcc->queue = -1;
 
 	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
         return dcc;
@@ -50,7 +205,10 @@ static void sig_dcc_destroyed(SEND_DCC_REC *dcc)
 {
 	if (!IS_DCC_SEND(dcc)) return;
 
-	if (dcc->fhandle != -1) close(dcc->fhandle);
+	if (dcc->fhandle != -1)
+		close(dcc->fhandle);
+
+	dcc_queue_send_next(dcc->queue);
 }
 
 /* input function: DCC SEND - we're ready to send more data */
@@ -161,45 +319,20 @@ static char *dcc_send_get_file(const char *fname)
         return str;
 }
 
-/* SYNTAX: DCC SEND <nick> <file> */
-static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
-			 WI_ITEM_REC *item)
+static int dcc_send_one_file(int queue, const char *target, const char *fname,
+			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat)
 {
-	char *target, *str, *fname;
-	void *free_arg;
+	char *str;
 	char host[MAX_IP_LEN];
 	int hfile, port;
 	long fsize;
         SEND_DCC_REC *dcc;
-	CHAT_DCC_REC *chat;
 	IPADDR own_ip;
         GIOChannel *handle;
 
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &target, &fname))
-		return;
-	if (*target == '\0' || *fname == '\0')
-		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	/* if we're in dcc chat, send the request via it. */
-	chat = item_get_dcc(item);
-
-	if (chat != NULL && (chat->mirc_ctcp ||
-			     g_strcasecmp(target, chat->nick) != 0))
-		chat = NULL;
-
-	if (!IS_IRC_SERVER(server))
-		server = NULL;
-
-	if ((server == NULL || !server->connected) && chat == NULL)
-		cmd_param_error(CMDERR_NOT_CONNECTED);
-
 	if (dcc_find_request(DCC_SEND_TYPE, target, fname)) {
-		signal_emit("dcc error send exists", 2, target, fname);
-		cmd_params_free(free_arg);
-		return;
+	        signal_emit("dcc error send exists", 2, target, fname);
+		return FALSE;
 	}
 
         str = dcc_send_get_file(fname);
@@ -209,8 +342,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	if (hfile == -1) {
 		signal_emit("dcc error file open", 3, target, fname,
 			    GINT_TO_POINTER(errno));
-		cmd_params_free(free_arg);
-		return;
+		return FALSE;
 	}
 	fsize = lseek(hfile, 0, SEEK_END);
 	lseek(hfile, 0, SEEK_SET);
@@ -221,21 +353,30 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 			    &own_ip, &port);
 	if (handle == NULL) {
 		close(hfile);
-		cmd_param_error(CMDERR_ERRNO);
+		g_warning("dcc_listen() failed: %s", strerror(errno));
+		return FALSE;
 	}
 
-	fname = (char *) g_basename(fname);
+	fname = g_basename(fname);
 
 	/* Replace all the spaces with underscore so that lesser
 	   intellgent clients can communicate.. */
-	if (settings_get_bool("dcc_send_replace_space_with_underscore"))
-		g_strdelimit(fname, " ", '_');
+	if (!settings_get_bool("dcc_send_replace_space_with_underscore"))
+		str = NULL;
+	else {
+		str = g_strdup(fname);
+		g_strdelimit(str, " ", '_');
+		fname = str;
+	}
 
 	dcc = dcc_send_create(server, chat, target, fname);
-        dcc->handle = handle;
+	g_free(str);
+
+	dcc->handle = handle;
 	dcc->port = port;
 	dcc->size = fsize;
 	dcc->fhandle = hfile;
+	dcc->queue = queue;
         dcc->file_quoted = strchr(fname, ' ') != NULL;
 	dcc->tagconn = g_input_add(handle, G_INPUT_READ,
 				   (GInputFunction) dcc_send_connected, dcc);
@@ -251,7 +392,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	dcc_ctcp_message(server, target, chat, FALSE, str);
 	g_free(str);
 
-	cmd_params_free(free_arg);
+	return TRUE;
 }
 
 void dcc_send_init(void)
@@ -261,10 +402,15 @@ void dcc_send_init(void)
 	settings_add_bool("dcc", "dcc_send_replace_space_with_underscore", FALSE);
 	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
+	command_set_options("dcc send", "append flush prepend rmhead rmtail");
+
+	dcc_queue_init();
 }
 
 void dcc_send_deinit(void)
 {
+	dcc_queue_deinit();
+
         dcc_unregister_type("SEND");
 	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);

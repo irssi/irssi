@@ -483,7 +483,7 @@ char *cmd_get_param(char **data)
 	return pos;
 }
 
-static char *cmd_get_quoted_param(char **data)
+char *cmd_get_quoted_param(char **data)
 {
 	char *pos, quote;
 

@@ -15,9 +15,12 @@ files.
 /DCC GET [<nick> [<file>]]
     - Gets the file offered by remote client. The file is downloaded and
       saved into the current working directory.
-/DCC SEND <nick> <file>
+/DCC SEND [-append | -prepend | -flush | -rmtail | -rmhead]
+          <nick> <file> [<file> ...]
     - Sends a DCC SEND request to remote client. Remote end has to accept
-      the request before the transmission can be started.
+      the request before the transmission can be started. Giving multiple files
+      queues them. File names may contain shell expansion characters: * ? [] ~
+      (~ expansion may not be supported on all platforms)
 /DCC CLOSE <type> <nick> [<file>]
     - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
 

@@ -45,6 +45,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_send", "{dcc DCC SEND from {nick $0} [$1 port $2]: $3 [$4 bytes]}", 5, { 0, 0, 1, 0, 2 } },
 	{ "dcc_send_channel", "{dcc DCC SEND from {nick $0} [$1 port $2]: $3 [$4 bytes] requested in channel {channel $5}}", 6, { 0, 0, 1, 0, 2, 0 } },
 	{ "dcc_send_exists", "{dcc DCC already sending file {dccfile $0} for {nick $1}}", 2, { 0, 0 } },
+	{ "dcc_send_no_route", "{dcc DCC route lost to nick {nick $0} when trying to send file {dccfile $1}}", 2, { 0, 0 } },
 	{ "dcc_send_not_found", "{dcc DCC not sending file {dccfile $1} to {nick $0}}", 2, { 0, 0 } },
 	{ "dcc_send_file_open_error", "{dcc DCC can't open file {dccfile $0}: $1}", 2, { 0, 0 } },
 	{ "dcc_send_connected", "{dcc DCC sending file {dccfile $0} for {nick $1} [$2 port $3]}", 4, { 0, 0, 0, 1 } },
@@ -68,6 +69,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_list_header", "{dcc DCC connections}", 0 },
 	{ "dcc_list_line_chat", "{dcc  $0 $1}", 2, { 0, 0 } },
 	{ "dcc_list_line_file", "{dcc  $0 $1: $2k of $3k ($4%%) - $5kB/s - $6}", 7, { 0, 0, 2, 2, 1, 3, 0 } },
+	{ "dcc_list_line_queued_send", "{dcc   - $0 $2 (queued)}", 3, { 0, 0, 0 } },
 	{ "dcc_list_footer", "", 0 },
 
 	{ NULL, NULL, 0 }
