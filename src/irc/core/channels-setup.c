@@ -158,6 +158,7 @@ static void channel_wholist(CHANNEL_REC *channel)
 	if (rec->botmasks == NULL || !*rec->botmasks) {
 		/* just send the command. */
 		eval_special_string(rec->autosendcmd, "", channel->server, channel);
+		return;
 	}
 
 	/* find first available bot.. */
