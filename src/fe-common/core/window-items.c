@@ -253,7 +253,8 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 
 		if (reuse_unused_windows &&
 		    rec->items == NULL && rec->level == 0 &&
-		    (window == NULL || rec == active_win)) {
+		    (window == NULL || rec == active_win ||
+		     window->waiting_channels == NULL)) {
                         /* no items in this window, we should probably use it.. */
 			window = rec;
 		}
