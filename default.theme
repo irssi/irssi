@@ -48,10 +48,7 @@
 #############################################################################
 
 # default foreground color (%N) - -1 is the "default terminal color"
-default_color = -1;
-# default foreground color when -1 can't be used,
-# such as with bolds and reverses. white is default.
-default_real_color = 7;
+default_color = "-1";
 
 # these characters are automatically replaced with specified color
 # (dark grey by default)
