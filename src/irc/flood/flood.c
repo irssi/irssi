@@ -189,29 +189,20 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick, co
 
 static void flood_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-	int publiclevel;
 	char *params, *target, *text;
+	int level;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (nick == NULL || addr == NULL) {
-		/* don't try to ignore server messages.. */
+	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
 		return;
-	}
 
 	params = event_get_params(data, 2, &target, &text);
 
-	if (*text == 1 && g_strncasecmp(text+1, "ACTION", 6) != 0) {
-		/* CTCP */
-		if (!ignore_check(server, nick, addr, target, text, MSGLEVEL_CTCPS))
-			flood_newmsg(server, MSGLEVEL_CTCPS, nick, addr, target);
-	} else {
-		publiclevel = ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
-
-		if (addr != NULL && !ignore_check(server, nick, addr, target, text, publiclevel))
-			flood_newmsg(server, publiclevel, nick, addr, target);
-	}
+	level = ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
+	if (addr != NULL && !ignore_check(server, nick, addr, target, text, level))
+		flood_newmsg(server, level, nick, addr, target);
 
 	g_free(params);
 }
@@ -223,10 +214,8 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (nick == NULL || addr == NULL) {
-		/* don't try to ignore server messages.. */
+	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
 		return;
-	}
 
 	params = event_get_params(data, 2, &target, &text);
 	if (!ignore_check(server, nick, addr, target, text, MSGLEVEL_NOTICES))
@@ -237,16 +226,18 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 
 static void flood_ctcp(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
+	int level;
+
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (nick == NULL || addr == NULL) {
-		/* don't try to ignore server messages.. */
+	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
 		return;
-	}
 
-	if (!ignore_check(server, nick, addr, target, data, MSGLEVEL_CTCPS))
-		flood_newmsg(server, MSGLEVEL_CTCPS, nick, addr, target);
+	level = g_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :
+		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
+	if (!ignore_check(server, nick, addr, target, data, level))
+		flood_newmsg(server, level, nick, addr, target);
 }
 
 static void read_settings(void)
