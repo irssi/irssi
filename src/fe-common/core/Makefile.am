@@ -13,6 +13,7 @@ libfe_common_core_la_SOURCES = \
 	fe-common-core.c \
 	fe-core-commands.c \
 	fe-log.c \
+	fe-modules.c \
 	fe-server.c \
 	fe-settings.c \
 	hilight-text.c \

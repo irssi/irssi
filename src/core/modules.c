@@ -20,6 +20,11 @@
 
 #include "module.h"
 #include "modules.h"
+#include "signals.h"
+
+#define PLUGINSDIR "/usr/local/lib/irssi/plugins" /*FIXME: configurable*/
+
+GSList *modules;
 
 static GHashTable *uniqids, *uniqstrids;
 static GHashTable *idlookup, *stridlookup;
@@ -163,8 +168,140 @@ void module_uniq_destroy(const char *module)
 	}
 }
 
+MODULE_REC *module_find(const char *name)
+{
+	GSList *tmp;
+
+	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
+		MODULE_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, name) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
+char *module_get_name(const char *path)
+{
+	const char *name;
+	char *module_name, *ptr;
+
+        name = NULL;
+	if (g_path_is_absolute(path)) {
+		name = strrchr(path, G_DIR_SEPARATOR);
+                if (name != NULL) name++;
+	}
+
+	if (name == NULL)
+		name = path;
+
+	if (strncmp(name, "lib", 3) == 0)
+		name += 3;
+
+	module_name = g_strdup(name);
+	ptr = strstr(module_name, ".so");
+	if (ptr != NULL) *ptr = '\0';
+
+	return module_name;
+}
+
+GModule *module_open(const char *name)
+{
+	GModule *module;
+	char *path, *str;
+
+	if (g_path_is_absolute(name))
+		path = g_strdup(name);
+	else {
+		path = g_module_build_path(PLUGINSDIR, name);
+		module = g_module_open(path, 0);
+		g_free(path);
+		if (module != NULL) return module;
+
+		/* Plugin not found from global plugin dir, check from home dir */
+		str = g_strdup_printf("%s/.irssi/plugins", g_get_home_dir());
+		path = g_module_build_path(str, name);
+		g_free(str);
+	}
+
+	module = g_module_open(path, 0);
+	g_free(path);
+	return module;
+}
+
+int module_load(const char *path)
+{
+	void (*module_init) (void);
+	GModule *gmodule;
+	MODULE_REC *rec;
+	char *name, *initfunc;
+
+	g_return_val_if_fail(path != NULL, FALSE);
+
+	if (!g_module_supported())
+		return FALSE;
+
+	name = module_get_name(path);
+	if (module_find(name)) {
+		signal_emit("module error", 2, GINT_TO_POINTER(MODULE_ERROR_ALREADY_LOADED), name);
+                g_free(name);
+		return FALSE;
+	}
+
+	gmodule = module_open(path);
+	if (gmodule == NULL) {
+		signal_emit("module error", 3, GINT_TO_POINTER(MODULE_ERROR_LOAD), name, g_module_error());
+                g_free(name);
+		return FALSE;
+	}
+
+	initfunc = g_strconcat(name, "_init", NULL);
+	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
+		signal_emit("module error", 2, GINT_TO_POINTER(MODULE_ERROR_INVALID), name);
+		g_module_close(gmodule);
+		g_free(initfunc);
+		g_free(name);
+		return FALSE;
+	}
+	g_free(initfunc);
+
+	rec = g_new0(MODULE_REC, 1);
+	rec->name = name;
+        rec->gmodule = gmodule;
+	modules = g_slist_append(modules, rec);
+
+	module_init();
+
+	signal_emit("module loaded", 1, rec);
+	return TRUE;
+}
+
+void module_unload(MODULE_REC *module)
+{
+	void (*module_deinit) (void);
+	char *deinitfunc;
+
+	g_return_if_fail(module != NULL);
+
+	modules = g_slist_remove(modules, module);
+
+	signal_emit("module unloaded", 1, module);
+
+	deinitfunc = g_strconcat(module->name, "_deinit", NULL);
+	if (g_module_symbol(module->gmodule, deinitfunc, (gpointer *) &module_deinit))
+		module_deinit();
+	g_free(deinitfunc);
+
+	g_module_close(module->gmodule);
+	g_free(module->name);
+	g_free(module);
+}
+
 void modules_init(void)
 {
+	modules = NULL;
+
 	idlookup = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
 	uniqids = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 

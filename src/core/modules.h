@@ -1,6 +1,24 @@
 #ifndef __MODULES_H
 #define __MODULES_H
 
+enum {
+	MODULE_ERROR_ALREADY_LOADED,
+	MODULE_ERROR_LOAD,
+	MODULE_ERROR_INVALID
+};
+
+typedef struct {
+	char *name;
+	GModule *gmodule;
+} MODULE_REC;
+
+extern GSList *modules;
+
+MODULE_REC *module_find(const char *name);
+
+int module_load(const char *path);
+void module_unload(MODULE_REC *module);
+
 #define MODULE_DATA_INIT(rec) \
         (rec)->module_data = g_hash_table_new(g_str_hash, g_str_equal)
 

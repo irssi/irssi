@@ -72,13 +72,13 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Logging", 0 },
 
-	{ "log_opened", "Log file %W$0%n opened", 1, { 0 } },
-	{ "log_closed", "Log file %W$0%n closed", 1, { 0 } },
+	{ "log_opened", "Log file %_$0%_ opened", 1, { 0 } },
+	{ "log_closed", "Log file %_$0%_ closed", 1, { 0 } },
 	{ "log_create_failed", "Couldn't create log file %_$0%_: $1", 2, { 0, 0 } },
-	{ "log_locked", "Log file %W$0%n is locked, probably by another running Irssi", 1, { 0 } },
-	{ "log_not_open", "Log file %W$0%n not open", 1, { 0 } },
-	{ "log_started", "Started logging to file %W$0", 1, { 0 } },
-	{ "log_stopped", "Stopped logging to file %W$0", 1, { 0 } },
+	{ "log_locked", "Log file %_$0%_ is locked, probably by another running Irssi", 1, { 0 } },
+	{ "log_not_open", "Log file %_$0%_ not open", 1, { 0 } },
+	{ "log_started", "Started logging to file %_$0", 1, { 0 } },
+	{ "log_stopped", "Stopped logging to file %_$0", 1, { 0 } },
 	{ "log_list_header", "Logs:", 0 },
 	{ "log_list", "$0 $1: $2 $3$4$5", 6, { 1, 0, 0, 0, 0, 0 } },
 	{ "log_list_footer", "", 0 },
@@ -86,6 +86,15 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "windowlog_file_logging", "Can't change window's logfile while log is on", 0 },
 	{ "no_away_msgs", "No new messages in awaylog", 1, { 0 } },
 	{ "away_msgs", "$1 new messages in awaylog:", 2, { 0, 1 } },
+
+	/* ---- */
+	{ NULL, "Modules", 0 },
+
+	{ "module_already_loaded", "Module %_$0%_ already loaded", 1, { 0 } },
+	{ "module_load_error", "Error loading module %_$0%_: $1", 2, { 0, 0 } },
+	{ "module_invalid", "%_$0%_ isn't Irssi module", 1, { 0 } },
+	{ "module_loaded", "Loaded module %_$0", 1, { 0 } },
+	{ "module_unloaded", "Unloaded module %_$0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Misc", 0 },

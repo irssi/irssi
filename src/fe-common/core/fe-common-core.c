@@ -17,6 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "module.h"
 #include "module-formats.h"
 #include "levels.h"
@@ -42,6 +43,9 @@ void fe_core_log_deinit(void);
 
 void fe_log_init(void);
 void fe_log_deinit(void);
+
+void fe_modules_init(void);
+void fe_modules_deinit(void);
 
 void fe_server_init(void);
 void fe_server_deinit(void);
@@ -87,6 +91,7 @@ void fe_common_core_init(void)
 	keyboard_init();
 	printtext_init();
 	fe_log_init();
+	fe_modules_init();
 	fe_server_init();
 	fe_settings_init();
 	translation_init();
@@ -106,6 +111,7 @@ void fe_common_core_deinit(void)
 	keyboard_deinit();
 	printtext_deinit();
 	fe_log_deinit();
+	fe_modules_deinit();
 	fe_server_deinit();
 	fe_settings_deinit();
 	translation_deinit();
