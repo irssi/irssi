@@ -261,7 +261,7 @@ else
 	AC_DEFINE(HAVE_GTK)
 	AM_PATH_GTK(1.2.0)
 	GUI_CFLAGS="$GTK_CFLAGS"
-	GUI_LIBS="$GTK_LIBS ../lib-popt/libpopt.a"
+	GUI_LIBS="$GTK_LIBS"
 
 	if test "x$want_imlib" = "xyes"; then
 		AM_PATH_GDK_IMLIB(, [define_imlib=true])
@@ -271,6 +271,7 @@ else
         		GUI_LIBS="$GDK_IMLIB_LIBS"
 		fi
 	fi
+	GUI_LIBS="$GUI_LIBS ../lib-popt/libpopt.a"
 fi
 
 if test "x$GUI_LIBS" != "x"; then
