@@ -716,6 +716,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 			   whole view */
                         textbuffer_view_redraw(view);
 		} else {
+			term_set_color(view->window, ATTR_RESET);
 			term_window_scroll(view->window, realcount);
 
 			if (draw_nonclean) {
