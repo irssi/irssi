@@ -403,12 +403,35 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	}
 }
 
+/* first argument of command is file name - complete it */
+static void sig_complete_filename(GList **list, WINDOW_REC *window,
+				  const char *word, const char *line, int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line != '\0') return;
+
+	*list = filename_complete(word);
+	if (*list != NULL) {
+		*want_space = FALSE;
+		signal_stop();
+	}
+}
+
 void completion_init(void)
 {
 	complist = NULL;
 	last_linestart = NULL;
 
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command run", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command save", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command rehash", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 }
 
 void completion_deinit(void)
@@ -416,4 +439,10 @@ void completion_deinit(void)
         free_completions();
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command run", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command save", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command rehash", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
 }
