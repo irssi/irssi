@@ -1,7 +1,5 @@
 bin_PROGRAMS = botti
 
-INCLUDES = $(GLIB_CFLAGS)
-
 INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
