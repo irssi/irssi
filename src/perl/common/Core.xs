@@ -22,8 +22,6 @@ PROTOTYPES: ENABLE
 void
 signal_emit(signal, ...)
 	char *signal
-PREINIT:
-        STRLEN n_a;
 CODE:
 	void *p[SIGNAL_MAX_ARGUMENTS];
 	int n;
@@ -31,7 +29,7 @@ CODE:
 	memset(p, 0, sizeof(p));
 	for (n = 1; n < items && n < SIGNAL_MAX_ARGUMENTS+1; n++) {
 		if (SvPOKp(ST(n)))
-			p[n-1] = SvPV(ST(n), n_a);
+			p[n-1] = SvPV(ST(n), PL_na);
 		else if (irssi_is_ref_object(ST(n)))
 			p[n-1] = irssi_ref_object(ST(n));
 		else

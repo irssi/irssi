@@ -234,9 +234,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 
         error = NULL;
 	if (SvTRUE(ERRSV)) {
-		STRLEN n_a;
-
-                error = SvPV(ERRSV, n_a);
+                error = SvPV(ERRSV, PL_na);
 	} else if (retcount > 0) {
 		error = POPp;
 	}

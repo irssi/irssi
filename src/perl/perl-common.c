@@ -47,14 +47,17 @@ typedef struct {
         PERL_OBJECT_FUNC fill_func;
 } PERL_OBJECT_REC;
 
+#ifndef HAVE_PL_PERL
+STRLEN PL_na;
+#endif
+
 static GHashTable *iobject_stashes, *plain_stashes;
 static GSList *use_protocols;
 
 /* returns the package who called us */
 const char *perl_get_package(void)
 {
-	STRLEN n_a;
-	return SvPV(perl_eval_pv("caller", TRUE), n_a);
+	return SvPV(perl_eval_pv("caller", TRUE), PL_na);
 }
 
 /* Parses the package part from function name */
@@ -76,13 +79,12 @@ char *perl_function_get_package(const char *function)
 
 SV *perl_func_sv_inc(SV *func, const char *package)
 {
-	STRLEN n_a;
 	char *name;
 
 	if (SvPOK(func)) {
 		/* prefix with package name */
 		name = g_strdup_printf("%s::%s", package,
-				       (char *) SvPV(func, n_a));
+				       (char *) SvPV(func, PL_na));
 		func = new_pv(name);
                 g_free(name);
 	} else {

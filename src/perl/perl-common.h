@@ -29,6 +29,7 @@ SV *perl_func_sv_inc(SV *func, const char *package);
 /* For compatibility with perl 5.004 and older */
 #ifndef HAVE_PL_PERL
 #  define PL_sv_undef sv_undef
+extern STRLEN PL_na;
 #endif
 
 #define iobject_bless(object) \

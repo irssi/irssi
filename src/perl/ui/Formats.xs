@@ -14,12 +14,11 @@ PREINIT:
 	char **charargs;
 	char *ret;
 	int n;
-	STRLEN n_a;
 PPCODE:
 	charargs = g_new0(char *, items-5+1);
 	charargs[items-5] = NULL;
         for (n = 5; n < items; n++) {
-		charargs[n-5] = (char *)SvPV(ST(n), n_a);
+		charargs[n-5] = (char *)SvPV(ST(n), PL_na);
 	}
 	ret = format_get_text(module, window, server, target, formatnum, charargs);
 	g_free(charargs);

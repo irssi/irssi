@@ -160,9 +160,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		STRLEN n_a;
-
-		signal_emit("script error", 2, script, SvPV(ERRSV, n_a));
+		signal_emit("script error", 2, script, SvPV(ERRSV, PL_na));
                 rec = NULL;
 	}
 
@@ -335,14 +333,13 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
 static void perl_signal_remove_list(GSList **list, SV *func)
 {
 	GSList *tmp;
-        STRLEN n_a;
 
 	g_return_if_fail(list != NULL);
 
 	for (tmp = *list; tmp != NULL; tmp = tmp->next) {
 		PERL_SIGNAL_REC *rec = tmp->data;
 
-		if (sv_func_cmp(rec->func, func, n_a)) {
+		if (sv_func_cmp(rec->func, func, PL_na)) {
 			perl_signal_remove_list_one(list, rec);
 			break;
 		}
