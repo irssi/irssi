@@ -157,7 +157,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 
 			g_free(word);
 			word = g_strdup("");
-			startpos = (int) (wordstart-line)+wordlen+1;
+			startpos = strlen(linestart)+1;/*(int) (wordstart-line)+wordlen+1*/;
 			wordlen = 0;
 		}
 
@@ -173,7 +173,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		return NULL;
 
 	/* word completed */
-	*pos = startpos+strlen(complist->data)+1;
+	*pos = startpos+strlen(complist->data);
 
 	/* replace the word in line - we need to return
 	   a full new line */
@@ -181,8 +181,11 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 	g_string_erase(result, startpos, wordlen);
 	g_string_insert(result, startpos, complist->data);
 
-	if (want_space && !isseparator(result->str[*pos-1]))
-		g_string_insert_c(result, *pos-1, ' ');
+	if (want_space) {
+		if (!isseparator(result->str[*pos]))
+			g_string_insert_c(result, *pos, ' ');
+		(*pos)++;
+	}
 
 	wordlen = strlen(complist->data);
 	last_line_pos = *pos;
@@ -344,7 +347,8 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 			continue;
 
 		if (g_strncasecmp(rec->cmd, cmd, len) == 0) {
-			word = g_strdup_printf("%c%s", cmdchar, rec->cmd);
+			word = cmdchar == '\0' ? g_strdup(rec->cmd) :
+				g_strdup_printf("%c%s", cmdchar, rec->cmd);
 			if (glist_find_icase_string(complist, word) == NULL)
 				complist = g_list_insert_sorted(complist, word, (GCompareFunc) g_istr_cmp);
 			else
@@ -550,10 +554,7 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 	if (*line != '\0') return;
 
 	*list = completion_get_settings(word);
-	if (*list != NULL) {
-		*want_space = FALSE;
-		signal_stop();
-	}
+	if (*list != NULL) signal_stop();
 }
 
 static void sig_complete_toggle(GList **list, WINDOW_REC *window,
@@ -566,10 +567,7 @@ static void sig_complete_toggle(GList **list, WINDOW_REC *window,
 	if (*line != '\0') return;
 
 	*list = completion_get_bool_settings(word);
-	if (*list != NULL) {
-		*want_space = FALSE;
-		signal_stop();
-	}
+	if (*list != NULL) signal_stop();
 }
 
 /* first argument of command is file name - complete it */
@@ -589,6 +587,29 @@ static void sig_complete_filename(GList **list, WINDOW_REC *window,
 	}
 }
 
+/* first argument of command is .. command :) (/HELP command) */
+static void sig_complete_command(GList **list, WINDOW_REC *window,
+				  const char *word, const char *line, int *want_space)
+{
+	char *cmd;
+
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line == '\0') {
+		/* complete base command */
+		*list = completion_get_commands(word, '\0');
+	} else if (is_base_command(line)) {
+		/* complete subcommand */
+                cmd = g_strconcat(line, " ", word, NULL);
+		*list = completion_get_subcommands(cmd);
+		g_free(cmd);
+	}
+
+	if (*list != NULL) signal_stop();
+}
+
 void completion_init(void)
 {
 	complist = NULL;
@@ -603,6 +624,7 @@ void completion_init(void)
 	signal_add("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
+	signal_add("complete command help", (SIGNAL_FUNC) sig_complete_command);
 }
 
 void completion_deinit(void)
@@ -618,4 +640,5 @@ void completion_deinit(void)
 	signal_remove("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command rawlog save", (SIGNAL_FUNC) sig_complete_filename);
+	signal_remove("complete command help", (SIGNAL_FUNC) sig_complete_command);
 }

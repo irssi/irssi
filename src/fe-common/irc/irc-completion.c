@@ -377,31 +377,6 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 	return list1;
 }
 
-static IRC_SERVER_REC *line_get_server(const char *line)
-{
-	IRC_SERVER_REC *server;
-	const char *ptr;
-	char *tag, *p;
-
-	g_return_val_if_fail(line != NULL, NULL);
-
-	ptr = strchr(line, ' ');
-	if (ptr == NULL) return NULL;
-
-	while (*ptr == ' ') ptr++;
-	if (*ptr != '-') return NULL;
-
-	/* -option found - should be server tag */
-	tag = g_strdup(ptr+1);
-	p = strchr(tag, ' ');
-	if (p != NULL) *p = '\0';
-
-	server = (IRC_SERVER_REC *) server_find_tag(tag);
-
-	g_free(tag);
-	return server;
-}
-
 static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart)
 {
@@ -426,15 +401,9 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	if (server == NULL || !server->connected)
 		return;
 
-	channel = irc_item_channel(window->active);
-
-	/* check for /MSG completion */
 	cmdchars = settings_get_str("cmdchars");
-	if ((*linestart == '\0' && *word == '\0') ||
-	    (*linestart == '\0' && strchr(cmdchars, *word) != NULL &&
-	     g_strcasecmp(word+1, "msg") == 0)) {
-		/* pressed TAB at the start of line - add /MSG
-		   ... or ... trying to complete /MSG command */
+	if (*linestart == '\0' && *word == '\0') {
+		/* pressed TAB at the start of line - add /MSG */
                 prefix = g_strdup_printf("%cmsg", *cmdchars);
 		*list = completion_msg(server, NULL, "", prefix);
 		if (*list == NULL) *list = g_list_append(*list, g_strdup(prefix));
@@ -444,17 +413,9 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 	}
 
-	if (strchr(cmdchars, *linestart) != NULL &&
-	    g_strcasecmp(linestart+1, "msg") == 0) {
-                /* completing /MSG nick */
-		IRC_SERVER_REC *msgserver;
-
-		msgserver = line_get_server(linestart);
-		*list = completion_msg(server, msgserver, word, NULL);
-	}
-
 	/* nick completion .. we could also be completing a nick after /MSG
 	   from nicks in channel */
+	channel = irc_item_channel(window->active);
 	if (channel == NULL)
 		return;
 
@@ -464,6 +425,43 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	tmplist = completion_channel_nicks(channel, word, nickprefix);
 	*list = completion_joinlist(*list, tmplist);
 
+	if (*list != NULL) signal_stop();
+}
+
+static IRC_SERVER_REC *line_get_server(const char *line)
+{
+	IRC_SERVER_REC *server;
+	char *tag, *ptr;
+
+	g_return_val_if_fail(line != NULL, NULL);
+	if (*line != '-') return NULL;
+
+	/* -option found - should be server tag */
+	tag = g_strdup(line+1);
+	ptr = strchr(tag, ' ');
+	if (ptr != NULL) *ptr = '\0';
+
+	server = (IRC_SERVER_REC *) server_find_tag(tag);
+
+	g_free(tag);
+	return server;
+}
+
+static void sig_complete_msg(GList **list, WINDOW_REC *window,
+			     const char *word, const char *line, int *want_space)
+{
+	IRC_SERVER_REC *server, *msgserver;
+
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	server = window->active_server;
+	if (server == NULL || !server->connected)
+		return;
+
+	msgserver = line_get_server(line);
+	*list = completion_msg(server, msgserver, word, NULL);
 	if (*list != NULL) signal_stop();
 }
 
@@ -598,6 +596,7 @@ void irc_completion_init(void)
 	complete_tag = g_timeout_add(1000, (GSourceFunc) nick_completion_timeout, NULL);
 
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
@@ -612,6 +611,7 @@ void irc_completion_deinit(void)
 	g_source_remove(complete_tag);
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
+	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
 	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nick_removed);
