@@ -59,7 +59,7 @@ static void print_notify_onserver(IRC_SERVER_REC *server, GSList *nicks,
 	GSList *tmp;
 	GString *str;
 
-	g_return_if_fail(server != NULL);
+	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(offline != NULL);
 	g_return_if_fail(desc != NULL);
 
@@ -104,10 +104,12 @@ static void cmd_notify_show(void)
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
 		IRC_CHATNET_REC *rec = tmp->data;
 
-		if (!IS_IRCNET(rec)) continue;
+		if (!IS_IRCNET(rec))
+			continue;
 
 		server = (IRC_SERVER_REC *) server_find_chatnet(rec->name);
-		if (server == NULL) continue;
+		if (!IS_IRC_SERVER(server))
+			continue;
 
 		print_notify_onserver(server, nicks, &offline, rec->name);
 	}
@@ -116,7 +118,7 @@ static void cmd_notify_show(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		server = tmp->data;
 
-		if (server->connrec->chatnet != NULL)
+		if (!IS_IRC_SERVER(server) || server->connrec->chatnet != NULL)
 			continue;
 		print_notify_onserver(server, nicks, &offline, server->tag);
 	}

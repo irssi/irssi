@@ -134,7 +134,7 @@ int notifylist_ison_server(IRC_SERVER_REC *server, const char *nick)
 	NOTIFY_NICK_REC *rec;
 
 	g_return_val_if_fail(nick != NULL, FALSE);
-	g_return_val_if_fail(server != NULL, FALSE);
+	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
 
 	rec = notify_nick_find(server, nick);
 	return rec != NULL && rec->host_ok && rec->away_ok && rec->idle_ok;
@@ -154,7 +154,8 @@ static IRC_SERVER_REC *notifylist_ison_serverlist(const char *nick, const char *
 	for (tmp = list; *tmp != NULL; tmp++) {
 		server = (IRC_SERVER_REC *) server_find_chatnet(*tmp);
 
-		if (server != NULL && notifylist_ison_server(server, nick))
+		if (IS_IRC_SERVER(server) &&
+		    notifylist_ison_server(server, nick))
 			break;
 	}
 	g_strfreev(list);
@@ -174,7 +175,10 @@ IRC_SERVER_REC *notifylist_ison(const char *nick, const char *serverlist)
 
 	/* any server.. */
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		if (notifylist_ison_server(tmp->data, nick))
+		IRC_SERVER_REC *server = tmp->data;
+
+		if (IS_IRC_SERVER(server) &&
+		    notifylist_ison_server(server, nick))
 			return tmp->data;
 	}
 
