@@ -69,7 +69,7 @@ static void cmd_log_open(const char *data)
 {
         SERVER_REC *server;
         GHashTable *optlist;
-	char *targetarg, *fname, *levels;
+	char *targetarg, *fname, *levels, *servertag;
 	void *free_arg;
 	char window[MAX_INT_STRLEN];
 	LOG_REC *log;
@@ -86,15 +86,17 @@ static void cmd_log_open(const char *data)
 
 	/* -<server tag> */
 	server = cmd_options_get_server("join", optlist, NULL);
+	servertag = server == NULL ? NULL : server->tag;
 
 	if (g_hash_table_lookup(optlist, "window")) {
 		/* log by window ref# */
 		ltoa(window, active_win->refnum);
-		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, server->tag);
+		log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window,
+			     servertag);
 	} else {
 		targetarg = g_hash_table_lookup(optlist, "targets");
 		if (targetarg != NULL && *targetarg != '\0')
-			log_add_targets(log, targetarg, server->tag);
+			log_add_targets(log, targetarg, servertag);
 	}
 
 	if (g_hash_table_lookup(optlist, "autoopen"))

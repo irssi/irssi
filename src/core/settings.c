@@ -393,16 +393,19 @@ void sig_term(int n)
    would be nice but would just take more space without much real benefit */
 static unsigned int file_checksum(const char *fname)
 {
-	FILE *f;
-	int n = 0;
+        char buf[512];
+        int f, ret, n;
 	unsigned int checksum = 0;
 
-	f = fopen(fname, "rb");
-	if (f == NULL) return 0;
+	f = open(fname, O_RDONLY);
+	if (f == -1) return 0;
 
-	while (!feof(f))
-		checksum += fgetc(f) << ((n++ & 3)*8);
-	fclose(f);
+        n = 0;
+	while ((ret = read(f, buf, sizeof(buf))) > 0) {
+		while (ret-- > 0)
+			checksum += buf[ret] << ((n++ & 3)*8);
+	}
+	close(f);
 	return checksum;
 }
 
@@ -439,31 +442,41 @@ int irssi_config_is_changed(const char *fname)
 static CONFIG_REC *parse_configfile(const char *fname)
 {
 	CONFIG_REC *config;
+	struct stat statbuf;
+        const char *path;
 	char *real_fname;
 
 	real_fname = fname != NULL ? g_strdup(fname) :
 		g_strdup_printf("%s"G_DIR_SEPARATOR_S".irssi"
 				G_DIR_SEPARATOR_S"config", g_get_home_dir());
-	config = config_open(real_fname, -1);
 
-	if (config != NULL)
-		config_parse(config);
-	else if (fname == NULL) {
+	if (stat(real_fname, &statbuf) == 0)
+		path = real_fname;
+	else {
 		/* user configuration file not found, use the default one
 		   from sysconfdir */
-		config = config_open(SYSCONFDIR"/irssi/config", -1);
-		if (config != NULL)
-			config_parse(config);
-		else {
+                path = SYSCONFDIR"/irssi/config";
+		if (stat(path, &statbuf) != 0) {
 			/* no configuration file in sysconfdir ..
 			   use the build-in configuration */
-			config = config_open(NULL, -1);
-			config_parse_data(config, default_config, "internal");
+                        path = NULL;
 		}
-
-                config_change_file_name(config, real_fname, 0660);
 	}
 
+	config = config_open(path, -1);
+	if (config == NULL) {
+		last_config_error_msg =
+			g_strdup_printf("Error opening configuration file %s: %s",
+					path, g_strerror(errno));
+		config = config_open(NULL, -1);
+	}
+
+        if (path != NULL)
+		config_parse(config);
+        else
+		config_parse_data(config, default_config, "internal");
+
+	config_change_file_name(config, real_fname, 0660);
         irssi_config_save_state(real_fname);
 	g_free(real_fname);
 	return config;

@@ -40,7 +40,7 @@ GHashTable *default_formats;
 static int init_finished;
 static char *init_errors;
 
-static void theme_read(THEME_REC *theme, const char *path, const char *data);
+static int theme_read(THEME_REC *theme, const char *path, const char *data);
 
 THEME_REC *theme_create(const char *path, const char *name)
 {
@@ -631,10 +631,9 @@ static void window_themes_update(void)
 
 THEME_REC *theme_load(const char *setname)
 {
-	THEME_REC *theme;
+	THEME_REC *theme, *oldtheme;
 	struct stat statbuf;
 	char *fname, *name, *p;
-        int modified;
 
         name = g_strdup(setname);
 	p = strrchr(name, '.');
@@ -659,24 +658,24 @@ THEME_REC *theme_load(const char *setname)
 		}
 	}
 
-        modified = theme != NULL;
-	if (theme != NULL) {
-		if (theme->last_modify == statbuf.st_mtime) {
-                        /* theme not modified, use the one already in memory */
-			g_free(fname);
-			g_free(name);
-			return theme;
-		}
-
-                theme_destroy(theme);
+	if (theme != NULL && theme->last_modify == statbuf.st_mtime) {
+		/* theme not modified, use the one already in memory */
+		g_free(fname);
+		g_free(name);
+		return theme;
 	}
 
+        oldtheme = theme;
 	theme = theme_create(fname, name);
 	theme->last_modify = statbuf.st_mtime;
-	theme_read(theme, theme->path, NULL);
+	if (!theme_read(theme, theme->path, NULL)) {
+                /* error reading .theme file */
+		theme_destroy(theme);
+		theme = NULL;
+	}
 
-	if (modified) {
-		/* make sure no windows use the theme we just destroyed */
+	if (oldtheme != NULL && theme != NULL) {
+		theme_destroy(oldtheme);
 		window_themes_update();
 	}
 
@@ -696,42 +695,47 @@ static void theme_read_modules(const char *module, void *value,
 	theme_init_module(rec->theme, module, rec->config);
 }
 
-static void theme_read(THEME_REC *theme, const char *path, const char *data)
+static void read_error(const char *str)
+{
+	char *old;
+
+	if (init_finished)
+                printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", str);
+	else if (init_errors == NULL)
+		init_errors = g_strdup(str);
+	else {
+                old = init_errors;
+		init_errors = g_strconcat(init_errors, "\n", str, NULL);
+                g_free(old);
+	}
+}
+
+static int theme_read(THEME_REC *theme, const char *path, const char *data)
 {
 	CONFIG_REC *config;
 	THEME_READ_REC rec;
+        char *str;
 
-	if (data == NULL) {
-		config = config_open(path, -1);
-		if (config == NULL) {
-			/* didn't exist or no access? */
-			theme->default_color = 0;
-			theme->default_bold_color = 7;
-			return;
-		}
-		config_parse(config);
-	} else {
-		config = config_open(NULL, -1);
-		config_parse_data(config, data, "internal");
+	config = config_open(data == NULL ? path : NULL, -1) ;
+	if (config == NULL) {
+		/* didn't exist or no access? */
+		str = g_strdup_printf("Error reading theme file %s: %s",
+				      path, g_strerror(errno));
+		read_error(str);
+		g_free(str);
+		return FALSE;
 	}
 
-	if (config_last_error(config) != NULL) {
-		char *str;
+	if (data != NULL)
+		config_parse_data(config, data, "internal");
+        else
+		config_parse(config);
 
+	if (config_last_error(config) != NULL) {
 		str = g_strdup_printf(_("Ignored errors in theme %s:\n%s"),
 				      theme->name, config_last_error(config));
-		if (!init_finished) {
-			if (init_errors == NULL)
-				init_errors = str;
-			else {
-				init_errors = g_strconcat(init_errors, "\n",
-							  str, NULL);
-                                g_free(str);
-			}
-		} else {
-			signal_emit("gui dialog", 2, "error", str);
-			g_free(str);
-		}
+		read_error(str);
+                g_free(str);
 	}
 
 	theme->default_color =
@@ -746,6 +750,8 @@ static void theme_read(THEME_REC *theme, const char *path, const char *data)
 	g_hash_table_foreach(default_formats,
 			     (GHFunc) theme_read_modules, &rec);
 	config_close(config);
+
+        return TRUE;
 }
 
 typedef struct {
