@@ -276,23 +276,23 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 {
 	GUI_ENTRY_REC *rec;
 
-	if (get_size_only) {
-		item->min_size = 2+term_width/10;
-                item->max_size = term_width;
-                return;
-	}
-
 	rec = g_hash_table_lookup(input_entries, item);
 	if (rec == NULL) {
 		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
 				       item->size);
 		gui_entry_set_active(rec);
 		g_hash_table_insert(input_entries, item, rec);
-	} else {
-		gui_entry_move(rec, item->xpos, item->bar->real_ypos,
-			       item->size);
-		gui_entry_redraw(rec); /* FIXME: this is only necessary with ^L.. */
 	}
+
+	if (get_size_only) {
+		item->min_size = 2+term_width/10;
+                item->max_size = term_width;
+                return;
+	}
+
+	gui_entry_move(rec, item->xpos, item->bar->real_ypos,
+		       item->size);
+	gui_entry_redraw(rec); /* FIXME: this is only necessary with ^L.. */
 }
 
 static void sig_statusbar_item_destroyed(SBAR_ITEM_REC *item)

@@ -54,6 +54,9 @@ void gui_entry_destroy(GUI_ENTRY_REC *entry)
 /* Fixes the cursor position in screen */
 static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 {
+	int old_scrstart;
+
+        old_scrstart = entry->scrstart;
 	if (entry->pos - entry->scrstart < entry->width-2 - entry->promptlen &&
 	    entry->pos - entry->scrstart > 0) {
 		entry->scrpos = entry->pos - entry->scrstart;
@@ -64,6 +67,9 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 		entry->scrpos = (entry->width - entry->promptlen)*2/3;
 		entry->scrstart = entry->pos - entry->scrpos;
 	}
+
+	if (old_scrstart != entry->scrstart)
+                entry->redraw_needed_from = 0;
 }
 
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
@@ -102,15 +108,28 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
                         xpos++;
 		}
 	}
+}
+
+static void gui_entry_draw(GUI_ENTRY_REC *entry)
+{
+	if (entry->redraw_needed_from >= 0) {
+		gui_entry_draw_from(entry, entry->redraw_needed_from);
+                entry->redraw_needed_from = -1;
+	}
 
 	term_move_cursor(entry->xpos + entry->scrpos + entry->promptlen,
 			 entry->ypos);
 	term_refresh(NULL);
 }
 
-static void gui_entry_draw(GUI_ENTRY_REC *entry)
+static void gui_entry_redraw_from(GUI_ENTRY_REC *entry, int pos)
 {
-	gui_entry_draw_from(entry, 0);
+	pos -= entry->scrstart;
+	if (pos < 0) pos = 0;
+
+	if (entry->redraw_needed_from == -1 ||
+	    entry->redraw_needed_from > pos)
+		entry->redraw_needed_from = pos;
 }
 
 void gui_entry_move(GUI_ENTRY_REC *entry, int xpos, int ypos, int width)
@@ -135,7 +154,7 @@ void gui_entry_move(GUI_ENTRY_REC *entry, int xpos, int ypos, int width)
                 /* input line grew - need to draw text at the end */
                 old_width = width;
 		entry->width = width;
-                gui_entry_draw_from(entry, old_width);
+		gui_entry_redraw_from(entry, old_width);
 	} else {
 		/* input line shrinked - make sure the cursor
 		   is inside the input line */
@@ -143,9 +162,10 @@ void gui_entry_move(GUI_ENTRY_REC *entry, int xpos, int ypos, int width)
 		if (entry->pos - entry->scrstart >
 		    entry->width-2 - entry->promptlen) {
 			gui_entry_fix_cursor(entry);
-                        gui_entry_draw(entry);
 		}
 	}
+
+	gui_entry_draw(entry);
 }
 
 void gui_entry_set_active(GUI_ENTRY_REC *entry)
@@ -196,6 +216,7 @@ void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str)
 	g_string_assign(entry->text, str);
 	entry->pos = entry->text->len;
 
+        gui_entry_redraw_from(entry, 0);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
@@ -212,6 +233,7 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
         g_return_if_fail(entry != NULL);
 	g_return_if_fail(str != NULL);
 
+        gui_entry_redraw_from(entry, entry->pos);
 	g_string_insert(entry->text, entry->pos, str);
 	entry->pos += strlen(str);
 
@@ -226,6 +248,7 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr)
 	if (chr == 0)
 		return; /* never insert NUL characters */
 
+        gui_entry_redraw_from(entry, entry->pos);
 	g_string_insert_c(entry->text, entry->pos, chr);
 	entry->pos++;
 
@@ -249,6 +272,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
 	entry->pos -= size;
 	g_string_erase(entry->text, entry->pos, size);
 
+	gui_entry_redraw_from(entry, entry->pos);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
@@ -279,6 +303,7 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 	g_string_erase(entry->text, to, entry->pos - to);
 	entry->pos = to;
 
+        gui_entry_redraw_from(entry, entry->pos);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
@@ -306,6 +331,7 @@ void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
 
 	g_string_erase(entry->text, entry->pos, to - entry->pos);
 
+        gui_entry_redraw_from(entry, entry->pos);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
@@ -412,6 +438,7 @@ void gui_entry_redraw(GUI_ENTRY_REC *entry)
         g_return_if_fail(entry != NULL);
 
 	gui_entry_set_prompt(entry, NULL);
+        gui_entry_redraw_from(entry, 0);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }

@@ -117,7 +117,13 @@ void gui_window_resize(WINDOW_REC *window, int width, int height)
 {
 	GUI_WINDOW_REC *gui;
 
+	if (window->width == width && window->height == height)
+                return;
+
 	gui = WINDOW_GUI(window);
+
+	irssi_set_dirty();
+        WINDOW_MAIN(window)->dirty = TRUE;
 
         window->width = width;
 	window->height = height;
@@ -248,14 +254,16 @@ static void signal_window_changed(WINDOW_REC *window)
 		gui_window_reparent(window, active_mainwin);
 	}
 
-        old_window = active_mainwin->active;
-	if (old_window != NULL)
-                textbuffer_view_set_window(WINDOW_GUI(old_window)->view, NULL);
+	old_window = active_mainwin->active;
+	if (old_window != NULL && old_window != window)
+		textbuffer_view_set_window(WINDOW_GUI(old_window)->view, NULL);
 
 	active_mainwin->active = window;
 
 	textbuffer_view_set_window(WINDOW_GUI(window)->view,
 				   parent->screen_win);
+	if (WINDOW_GUI(window)->view->dirty)
+		active_mainwin->dirty = TRUE;
 }
 
 static void read_settings(void)

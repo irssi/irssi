@@ -307,6 +307,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	char *tmp;
 	int xpos, color, drawcount, first;
 
+	if (view->dirty) /* don't bother drawing anything - redraw is coming */
+                return 0;
+
 	cache = textbuffer_view_get_line_cache(view, line);
 	if (subline >= cache->count)
                 return 0;
@@ -581,9 +584,12 @@ static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 }
 
 static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
-		      int subline, int ypos, int lines)
+		      int subline, int ypos, int lines, int fill_bottom)
 {
 	int linecount;
+
+	if (view->dirty) /* don't bother drawing anything - redraw is coming */
+                return;
 
 	while (line != NULL && lines > 0) {
                 linecount = view_line_draw(view, line, subline, ypos, lines);
@@ -593,17 +599,20 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                 line = line->next;
 	}
 
-        /* clear the rest of the view */
-	term_set_color(view->window, ATTR_RESET);
-	while (lines > 0) {
-		term_move(view->window, 0, ypos);
-		term_clrtoeol(view->window);
-		ypos++; lines--;
+	if (fill_bottom) {
+		/* clear the rest of the view */
+		term_set_color(view->window, ATTR_RESET);
+		while (lines > 0) {
+			term_move(view->window, 0, ypos);
+			term_clrtoeol(view->window);
+			ypos++; lines--;
+		}
 	}
 }
 
-#define view_draw_top(view, lines) \
-	view_draw(view, (view)->startline, (view)->subline, 0, lines)
+#define view_draw_top(view, lines, fill_bottom) \
+	view_draw(view, (view)->startline, (view)->subline, \
+		  0, lines, fill_bottom)
 
 static void view_draw_bottom(TEXT_BUFFER_VIEW_REC *view, int lines)
 {
@@ -622,7 +631,7 @@ static void view_draw_bottom(TEXT_BUFFER_VIEW_REC *view, int lines)
                 line = line->next;
 	}
 
-        view_draw(view, line, subline, maxline, lines);
+        view_draw(view, line, subline, maxline, lines, TRUE);
 }
 
 /* Returns number of lines actually scrolled */
@@ -687,7 +696,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 
 			if (draw_nonclean) {
 				if (realcount < 0)
-                                        view_draw_top(view, -realcount);
+                                        view_draw_top(view, -realcount, TRUE);
 				else
 					view_draw_bottom(view, realcount);
 			}
@@ -760,7 +769,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 			view->empty_linecount = view->height-linecount;
 	}
 
-        textbuffer_view_redraw(view);
+	view->dirty = TRUE;
 }
 
 /* Clear the view, don't actually remove any lines from buffer. */
@@ -1154,8 +1163,8 @@ void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
 
 	if (view->window != window) {
 		view->window = window;
-		if (window != NULL)
-			textbuffer_view_redraw(view);
+                if (window != NULL)
+			view->dirty = TRUE;
 	}
 }
 
@@ -1165,8 +1174,9 @@ void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 	g_return_if_fail(view != NULL);
 
 	if (view->window != NULL) {
+		view->dirty = FALSE;
                 term_window_clear(view->window);
-		view_draw_top(view, view->height);
+		view_draw_top(view, view->height, FALSE);
 		term_refresh(view->window);
 	}
 }

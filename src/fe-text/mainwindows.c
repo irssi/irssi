@@ -75,10 +75,9 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
 
-	if (window->resize_freeze_counter > 0) {
-		window->resize_needed = TRUE;
-		return;
-	}
+	if (window->active->width == window->width &&
+	    window->active->height == MAIN_WINDOW_TEXT_HEIGHT(window))
+                return;
 
 	mainwindow_set_screen_size(window);
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
@@ -101,7 +100,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 
         window->width += xdiff;
 	window->height = window->last_line-window->first_line+1;
-        mainwindow_resize_windows(window);
+        window->size_dirty = TRUE;
 }
 
 static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
@@ -165,6 +164,7 @@ void mainwindows_recreate(void)
 		MAIN_WINDOW_REC *rec = tmp->data;
 
 		rec->screen_win = mainwindow_create_screen(rec);
+                rec->dirty = TRUE;
 		textbuffer_view_set_window(WINDOW_GUI(rec->active)->view,
 					   rec->screen_win);
 	}
@@ -308,13 +308,12 @@ void mainwindows_redraw(void)
 {
         GSList *tmp;
 
-	term_refresh_freeze();
+        irssi_set_dirty();
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-                gui_window_redraw(rec->active);
+                rec->dirty = TRUE;
 	}
-	term_refresh_thaw();
 }
 
 static int mainwindows_compare(MAIN_WINDOW_REC *w1, MAIN_WINDOW_REC *w2)
@@ -453,7 +452,6 @@ void mainwindows_resize(int width, int height)
         old_screen_width = width;
         old_screen_height = height;
 
-	term_refresh_freeze();
 	if (ydiff < 0)
 		mainwindows_resize_smaller(xdiff, ydiff);
 	else if (ydiff > 0)
@@ -462,7 +460,6 @@ void mainwindows_resize(int width, int height)
 		mainwindows_resize_horiz(xdiff);
 
         signal_emit("terminal resized", 0);
-	term_refresh_thaw();
 
 	irssi_redraw();
 }
@@ -521,32 +518,20 @@ int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
 	}
 
 	if (top+bottom != 0)
-		mainwindow_resize_windows(window);
+                window->size_dirty = TRUE;
 
         return ret;
-}
-
-void mainwindow_resize_freeze(MAIN_WINDOW_REC *window)
-{
-        window->resize_freeze_counter++;
-}
-
-void mainwindow_resize_thaw(MAIN_WINDOW_REC *window)
-{
-	if (--window->resize_freeze_counter == 0 &&
-	    window->resize_needed) {
-                window->resize_needed = FALSE;
-		mainwindow_resize_windows(window);
-	}
 }
 
 static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
 				   MAIN_WINDOW_REC *shrink_win, int count)
 {
+        irssi_set_dirty();
+
 	mainwindow_resize(grow_win, 0, count);
 	mainwindow_resize(shrink_win, 0, -count);
-	gui_window_redraw(grow_win->active);
-	gui_window_redraw(shrink_win->active);
+	grow_win->dirty = TRUE;
+	shrink_win->dirty = TRUE;
 }
 
 static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
@@ -647,6 +632,24 @@ void mainwindow_set_size(MAIN_WINDOW_REC *window, int height, int resize_lower)
 		mainwindow_shrink(window, -height, resize_lower);
 	else
 		mainwindow_grow(window, height, resize_lower);
+}
+
+void mainwindows_redraw_dirty(void)
+{
+	GSList *tmp;
+
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		if (rec->size_dirty) {
+                        rec->size_dirty = FALSE;
+			mainwindow_resize_windows(rec);
+		}
+		if (rec->dirty) {
+                        rec->dirty = FALSE;
+			gui_window_redraw(rec->active);
+		}
+	}
 }
 
 /* SYNTAX: WINDOW GROW [<lines>] */

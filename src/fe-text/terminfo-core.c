@@ -61,8 +61,8 @@ static TERMINFO_REC tcaps[] = {
 	{ "cup",	"cm",	CAP_TYPE_STR,	&temp_term.TI_cup },
 	{ "hpa",       	"ch",	CAP_TYPE_STR,	&temp_term.TI_hpa },
 	{ "vpa",       	"vh",	CAP_TYPE_STR,	&temp_term.TI_vpa },
-	{ "xvpa",      	"YD",	CAP_TYPE_FLAG,	&temp_term.TI_xvpa },
-	{ "hvpa",      	"YA",	CAP_TYPE_FLAG,	&temp_term.TI_xhpa },
+	{ "cub1",      	"le",	CAP_TYPE_STR,	&temp_term.TI_cub1 },
+	{ "cuf1",      	"nd",	CAP_TYPE_STR,	&temp_term.TI_cuf1 },
 
         /* Scrolling */
 	{ "csr",      	"cs",	CAP_TYPE_STR,	&temp_term.TI_csr },
@@ -111,6 +111,40 @@ static void _move_pa(TERM_REC *term, int x, int y)
 {
 	tput(tparm(term->TI_hpa, x));
 	tput(tparm(term->TI_vpa, y));
+}
+
+/* Move cursor from a known position */
+static void _move_relative(TERM_REC *term, int oldx, int oldy, int x, int y)
+{
+	if (oldx == 0 && x == 0 && y == oldy+1) {
+		/* move to beginning of next line -
+		   hope this works everywhere */
+		tput("\r\n");
+                return;
+	}
+
+	if (oldx > 0 && y == oldy) {
+                /* move cursor left/right */
+		if (x == oldx-1 && term->TI_cub1) {
+			tput(tparm(term->TI_cub1));
+                        return;
+		}
+		if (x == oldx+1 && y == oldy && term->TI_cuf1) {
+			tput(tparm(term->TI_cuf1));
+                        return;
+		}
+	}
+
+        /* fallback to absolute positioning */
+	if (term->TI_cup) {
+		tput(tparm(term->TI_cup, y, x));
+                return;
+	}
+
+	if (oldy != y)
+		tput(tparm(term->TI_vpa, y));
+        if (oldx != x)
+		tput(tparm(term->TI_hpa, x));
 }
 
 #define scroll_region_setup(term, y1, y2) \
@@ -474,13 +508,14 @@ static int term_setup(TERM_REC *term)
 	/* Cursor movement */
 	if (term->TI_cup)
 		term->move = _move_cup;
-	else if (term->TI_hpa && term->TI_vpa &&
-		 !term->TI_xhpa && !term->TI_xvpa)
+	else if (term->TI_hpa && term->TI_vpa)
 		term->move = _move_pa;
 	else {
                 fprintf(term->out, "Terminal doesn't support cursor movement\n");
 		return 0;
 	}
+
+	term->move_relative = _move_relative;
 
         /* Scrolling */
 	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn)

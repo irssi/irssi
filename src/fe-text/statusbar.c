@@ -225,7 +225,12 @@ static void statusbar_resize_items(STATUSBAR_REC *bar, int max_width)
 	g_slist_free(prior_sorted);
 }
 
-static void statusbar_redraw_items(STATUSBAR_REC *bar)
+#define SBAR_ITEM_REDRAW_NEEDED(_bar, _item, _xpos) \
+	(((_bar)->dirty_xpos != -1 && \
+	  (_xpos) >= (_bar)->dirty_xpos) || \
+	 (_item)->xpos != (_xpos) || (_item)->current_size != (_item)->size)
+
+static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 {
         WINDOW_REC *old_active_win;
 	GSList *tmp;
@@ -237,25 +242,46 @@ static void statusbar_redraw_items(STATUSBAR_REC *bar)
 
 	statusbar_resize_items(bar, term_width);
 
+        /* left-aligned items */
 	xpos = 0;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
 		if (!rec->config->right_alignment && rec->size > 0) {
-			rec->xpos = xpos;
-                        xpos += rec->size;
-                        rec->func(rec, FALSE);
+			if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, xpos)) {
+                                /* redraw the item */
+				rec->dirty = TRUE;
+				if (bar->dirty_xpos == -1 ||
+				    xpos < bar->dirty_xpos) {
+                                        irssi_set_dirty();
+					bar->dirty = TRUE;
+					bar->dirty_xpos = xpos;
+				}
+
+				rec->xpos = xpos;
+			}
+			xpos += rec->size;
 		}
 	}
 
+        /* right-aligned items */
 	rxpos = term_width;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
 		if (rec->config->right_alignment && rec->size > 0) {
-                        rxpos -= rec->size;
-			rec->xpos = rxpos;
-			rec->func(rec, FALSE);
+			if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, xpos)) {
+				rec->dirty = TRUE;
+				if (bar->dirty_xpos == -1 ||
+				    xpos < bar->dirty_xpos) {
+                                        irssi_set_dirty();
+					bar->dirty = TRUE;
+					bar->dirty_xpos = xpos;
+				}
+				rec->xpos = rxpos;
+			}
+
+			rxpos -= rec->size;
 		}
 	}
 
@@ -276,26 +302,20 @@ static void statusbar_redraw_items(STATUSBAR_REC *bar)
 	return NULL;
 }*/
 
-void statusbar_redraw(STATUSBAR_REC *bar)
+void statusbar_redraw(STATUSBAR_REC *bar, int force)
 {
-	char *str;
-
-	if (bar == NULL) {
-		if (active_statusbar_group != NULL) {
-			term_refresh_freeze();
-			g_slist_foreach(active_statusbar_group->bars,
-					(GFunc) statusbar_redraw, NULL);
-			term_refresh_thaw();
+	if (bar != NULL) {
+		if (force) {
+			irssi_set_dirty();
+			bar->dirty = TRUE;
+                        bar->dirty_xpos = 0;
 		}
-		return;
+		statusbar_calc_item_positions(bar);
+	} else if (active_statusbar_group != NULL) {
+		g_slist_foreach(active_statusbar_group->bars,
+				(GFunc) statusbar_redraw,
+				GINT_TO_POINTER(force));
 	}
-
-        str = g_strconcat(bar->color, "%>", NULL);
-	gui_printtext(0, bar->real_ypos, str);
-	g_free(str);
-
-	statusbar_redraw_items(bar);
-        term_refresh(NULL);
 }
 
 void statusbar_item_redraw(SBAR_ITEM_REC *item)
@@ -309,15 +329,15 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 		active_win = item->bar->parent_window->active;
 
 	item->func(item, TRUE);
+
+	item->dirty = TRUE;
+	item->bar->dirty = TRUE;
+	irssi_set_dirty();
+
 	if (item->max_size != item->size) {
 		/* item wants a new size - we'll need to redraw
 		   the statusbar to see if this is allowed */
-		/*FIXME:fprintf(stderr, "%s resizes & redraws whole statusbar", item->config->name);*/
-		statusbar_redraw(item->bar);
-	} else {
-		/*FIXME:fprintf(stderr, "%s redrawing", item->config->name);*/
-		item->func(item, FALSE);
-                term_refresh(NULL);
+		statusbar_redraw(item->bar, FALSE);
 	}
 
 	active_win = old_active_win;
@@ -374,7 +394,7 @@ static void statusbars_recalc_ypos(STATUSBAR_REC *bar)
 
 		if (bar->real_ypos != ypos) {
 			bar->real_ypos = ypos;
-                        statusbar_redraw(bar);
+                        statusbar_redraw(bar, TRUE);
 		}
 
                 ypos++;
@@ -438,6 +458,10 @@ STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
 
         bar->config = config;
         bar->parent_window = parent_window;
+
+	irssi_set_dirty();
+	bar->dirty = TRUE;
+        bar->dirty_xpos = 0;
 
         signal_remove("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_remove("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
@@ -554,7 +578,7 @@ void statusbar_recreate_items(STATUSBAR_REC *bar)
                 statusbar_item_create(bar, rec);
 	}
 
-        statusbar_redraw(bar);
+        statusbar_redraw(bar, TRUE);
 }
 
 void statusbars_recreate_items(void)
@@ -835,6 +859,10 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 	items = g_slist_append(items, rec);
         g_hash_table_insert(named_sbar_items, config->name, items);
 
+	irssi_set_dirty();
+	rec->dirty = TRUE;
+	bar->dirty = TRUE;
+
         signal_emit("statusbar item created", 1, rec);
 	return rec;
 }
@@ -893,6 +921,52 @@ void statusbar_item_destroy(SBAR_ITEM_REC *item)
 	g_free(item);
 }
 
+static void statusbar_redraw_needed_items(STATUSBAR_REC *bar)
+{
+        WINDOW_REC *old_active_win;
+	GSList *tmp;
+	char *str;
+
+	old_active_win = active_win;
+        if (bar->parent_window != NULL)
+		active_win = bar->parent_window->active;
+
+	if (bar->dirty_xpos >= 0) {
+		str = g_strconcat(bar->color, "%>", NULL);
+		gui_printtext(bar->dirty_xpos, bar->real_ypos, str);
+		g_free(str);
+	}
+
+	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
+		SBAR_ITEM_REC *rec = tmp->data;
+
+		if (rec->dirty ||
+		    (bar->dirty_xpos != -1 &&
+		     rec->xpos >= bar->dirty_xpos)) {
+                        rec->current_size = rec->size;
+			rec->func(rec, FALSE);
+			rec->dirty = FALSE;
+		}
+	}
+
+        active_win = old_active_win;
+}
+
+void statusbar_redraw_dirty(void)
+{
+	GSList *tmp;
+
+	for (tmp = active_statusbar_group->bars; tmp != NULL; tmp = tmp->next) {
+		STATUSBAR_REC *rec = tmp->data;
+
+		if (rec->dirty) {
+                        statusbar_redraw_needed_items(rec);
+			rec->dirty = FALSE;
+			rec->dirty_xpos = -1;
+		}
+	}
+}
+
 #define STATUSBAR_IS_VISIBLE(bar, window) \
 	((bar)->visible == STATUSBAR_VISIBLE_ALWAYS || \
 	(active_mainwin == (window) && \
@@ -927,7 +1001,7 @@ static void statusbars_add_visible(MAIN_WINDOW_REC *window)
 		    STATUSBAR_IS_VISIBLE(config, window) &&
 		    statusbar_find(group, config->name, window) == NULL) {
 			bar = statusbar_create(group, config, window);
-			statusbar_redraw(bar);
+			statusbar_redraw(bar, TRUE);
 		}
 	}
 }
@@ -951,10 +1025,8 @@ static void sig_window_changed(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-                mainwindow_resize_freeze(rec);
 		statusbars_remove_unvisible(rec);
                 statusbars_add_visible(rec);
-                mainwindow_resize_thaw(rec);
 	}
 }
 

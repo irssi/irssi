@@ -4,3 +4,4 @@
 
 extern int quitting;
 void irssi_redraw(void);
+void irssi_set_dirty(void);

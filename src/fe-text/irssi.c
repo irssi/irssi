@@ -69,6 +69,8 @@ void mainwindow_activity_deinit(void);
 void mainwindows_layout_init(void);
 void mainwindows_layout_deinit(void);
 
+static int dirty, full_redraw;
+
 static GMainLoop *main_loop;
 int quitting;
 
@@ -85,19 +87,43 @@ static int display_firsttimer = FALSE;
 
 static void sig_exit(void)
 {
-	g_main_quit(main_loop);
+        quitting = TRUE;
 }
 
 /* redraw irssi's screen.. */
 void irssi_redraw(void)
 {
-	term_clear();
+	dirty = TRUE;
+        full_redraw = TRUE;
+}
+
+void irssi_set_dirty(void)
+{
+        dirty = TRUE;
+}
+
+static void dirty_check(void)
+{
+	if (!dirty)
+		return;
+
+	if (full_redraw) {
+                full_redraw = FALSE;
+
+		/* first clear the screen so curses will be
+		   forced to redraw the screen */
+		term_clear();
+		term_refresh(NULL);
+
+		mainwindows_redraw();
+		statusbar_redraw(NULL, TRUE);
+	}
+
+	mainwindows_redraw_dirty();
+        statusbar_redraw_dirty();
 	term_refresh(NULL);
 
-	/* windows */
-        mainwindows_redraw();
-	/* statusbar */
-	statusbar_redraw(NULL);
+        dirty = FALSE;
 }
 
 static void textui_init(void)
@@ -152,7 +178,6 @@ static void textui_finish_init(void)
 
 static void textui_deinit(void)
 {
-	quitting = TRUE;
 	signal(SIGINT, SIG_DFL);
 
         term_refresh_freeze();
@@ -164,6 +189,7 @@ static void textui_deinit(void)
         fe_perl_deinit();
 #endif
 
+        dirty_check(); /* one last time to print any quit messages */
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
         lastlog_deinit();
@@ -256,6 +282,7 @@ static void winsock_init(void)
 
 int main(int argc, char **argv)
 {
+	quitting = FALSE;
 	core_init_paths(argc, argv);
 
 	check_files();
@@ -279,7 +306,14 @@ int main(int argc, char **argv)
 
 	textui_finish_init();
 	main_loop = g_main_new(TRUE);
-	g_main_run(main_loop);
+
+	/* Does the same as g_main_run(main_loop), except we
+	   can call our dirty-checker after each iteration */
+	while (!quitting) {
+		g_main_iteration(TRUE);
+                dirty_check();
+	}
+
 	g_main_destroy(main_loop);
 	textui_deinit();
 

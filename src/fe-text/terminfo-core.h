@@ -4,6 +4,7 @@
 #include <termios.h>
 
 #define terminfo_move(x, y) current_term->move(current_term, x, y)
+#define terminfo_move_relative(oldx, oldy, x, y) current_term->move_relative(current_term, oldx, oldy, x, y)
 #define terminfo_scroll(y1, y2, count) current_term->scroll(current_term, y1, y2, count)
 #define terminfo_clear() current_term->clear(current_term)
 #define terminfo_clrtoeol() current_term->clrtoeol(current_term)
@@ -14,12 +15,14 @@
 #define terminfo_set_uline(set) current_term->set_uline(current_term, set)
 #define terminfo_set_standout(set) current_term->set_standout(current_term, set)
 #define terminfo_has_colors(term) (term->TI_fg[0] != NULL)
+#define terminfo_beep(term) current_term->beep(current_term)
 
 typedef struct _TERM_REC TERM_REC;
 
 struct _TERM_REC {
         /* Functions */
 	void (*move)(TERM_REC *term, int x, int y);
+	void (*move_relative)(TERM_REC *term, int oldx, int oldy, int x, int y);
 	void (*scroll)(TERM_REC *term, int y1, int y2, int count);
 
         void (*clear)(TERM_REC *term);
@@ -45,8 +48,7 @@ struct _TERM_REC {
 
         /* Cursor movement */
 	const char *TI_smcup, *TI_rmcup, *TI_cup;
-	const char *TI_hpa, *TI_vpa;
-        int TI_xhpa, TI_xvpa;
+	const char *TI_hpa, *TI_vpa, *TI_cub1, *TI_cuf1;
 
 	/* Scrolling */
 	const char *TI_csr, *TI_wind;

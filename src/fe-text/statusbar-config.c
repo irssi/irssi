@@ -218,7 +218,7 @@ static void create_root_statusbars(void)
 
 		if (rec->type == STATUSBAR_TYPE_ROOT) {
 			bar = statusbar_create(active_statusbar_group, rec, NULL);
-                        statusbar_redraw(bar);
+                        statusbar_redraw(bar, TRUE);
 		}
 	}
 }

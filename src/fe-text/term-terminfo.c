@@ -37,6 +37,7 @@ struct _TERM_WINDOW {
 TERM_WINDOW *root_window;
 int term_width, term_height;
 
+static int vcx, vcy;
 static int curs_x, curs_y;
 static int last_fg, last_bg, last_attrs;
 static int redraw_needed, redraw_tag;
@@ -63,7 +64,8 @@ int term_init(void)
         struct sigaction act;
 
 	last_fg = last_bg = -1;
-        last_attrs = 0;
+	last_attrs = 0;
+        vcx = vcy = -1;
 
 	current_term = terminfo_core_init(stdin, stdout);
 	if (current_term == NULL)
@@ -108,6 +110,8 @@ void term_resize(int width, int height)
 		term_height = current_term->height = height;
                 term_window_move(root_window, 0, 0, term_width, term_height);
 	}
+
+	vcx = vcy = -1;
 }
 
 /* Returns TRUE if terminal has colors */
@@ -125,13 +129,14 @@ void term_force_colors(int set)
 /* Clear screen */
 void term_clear(void)
 {
+        vcx = vcy = -1;
         terminfo_clear();
 }
 
 /* Beep */
 void term_beep(void)
 {
-        /* FIXME */
+        terminfo_beep(current_term);
 }
 
 /* Create a new window in terminal */
@@ -169,14 +174,15 @@ void term_window_clear(TERM_WINDOW *window)
 
         terminfo_set_normal();
 	for (y = 0; y < window->height; y++) {
-                terminfo_move(0, window->y+y);
-		terminfo_clrtoeol();
+                term_move(window, 0, y);
+		term_clrtoeol(window);
 	}
 }
 
 /* Scroll window up/down */
 void term_window_scroll(TERM_WINDOW *window, int count)
 {
+        vcx = vcy = -1;
         terminfo_scroll(window->y, window->y+window->height-1, count);
 }
 
@@ -244,17 +250,32 @@ void term_set_color(TERM_WINDOW *window, int col)
 
 void term_move(TERM_WINDOW *window, int x, int y)
 {
-        terminfo_move(x+window->x, y+window->y);
+	int newx, newy;
+
+	newx = x+window->x;
+        newy = y+window->y;
+	if (vcx != newx || vcy != newy) {
+		terminfo_move_relative(vcx, vcy, newx, newy);
+		vcx = newx; vcy = newy;
+	}
 }
 
 void term_addch(TERM_WINDOW *window, int chr)
 {
-        putc(chr, window->term->out);
+	putc(chr, window->term->out);
+	if (++vcx == window->width) {
+                vcx = 0; vcy++;
+	}
 }
 
 void term_addstr(TERM_WINDOW *window, char *str)
 {
-        fputs(str, window->term->out);
+	fputs(str, window->term->out);
+	vcx += strlen(str);
+	while (vcx > window->width) {
+		vcx -= window->width;
+                vcy++;
+	}
 }
 
 void term_clrtoeol(TERM_WINDOW *window)
@@ -270,7 +291,8 @@ void term_move_cursor(int x, int y)
 
 void term_refresh(TERM_WINDOW *window)
 {
-	terminfo_move(curs_x, curs_y);
+	if (vcx != curs_x || vcy != curs_y)
+		term_move(root_window, curs_x, curs_y);
 	fflush(window != NULL ? window->term->out : current_term->out);
 }
 

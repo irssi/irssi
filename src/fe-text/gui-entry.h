@@ -8,7 +8,9 @@ typedef struct {
         int hidden; /* print the chars as spaces in input line (useful for passwords) */
 
 	int promptlen;
-        char *prompt;
+	char *prompt;
+
+	int redraw_needed_from;
 } GUI_ENTRY_REC;
 
 extern GUI_ENTRY_REC *active_entry;
