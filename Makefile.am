@@ -32,6 +32,7 @@ conf_DATA = config colorless.theme
 
 EXTRA_DIST = \
 	autogen.sh \
+	README \
 	README-HEBREW \
 	file2header.sh \
 	irssi.spec \
