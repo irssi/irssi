@@ -953,20 +953,20 @@ it is. Visible can be always, active or inactive. Active/inactive is
 useful only with split windows, one split window is active and the rest
 are inactive. These settings can be changed with:</p>
 
-<ul>
-<li>STATUSBAR &lt;name&gt; TYPE window|root</li>
-<li>STATUSBAR &lt;name&gt; PLACEMENT top|bottom</li>
-<li>STATUSBAR &lt;name&gt; POSITION &lt;num&gt;</li>
-<li>STATUSBAR &lt;name&gt; VISIBLE always|active|inactive</li>
-</ul>
+<pre>
+     STATUSBAR &lt;name&gt; TYPE window|root
+     STATUSBAR &lt;name&gt; PLACEMENT top|bottom
+     STATUSBAR &lt;name&gt; POSITION &lt;num&gt;
+     STATUSBAR &lt;name&gt; VISIBLE always|active|inactive
+</pre>
 
 <p>When loading a new statusbar scripts, you'll need to also specify
 where you want to show it. Statusbar items can be modified with:</p>
 
-<ul>
-<li>10:52 STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;</li>
-<li>10:52 STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;</li>
-</ul>
+<pre>
+     STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;
+     STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;
+</pre>
 
 <p>The item name with statusbar scripts is usually same as the script's
 name. Script's documentation should tell if this isn't the case. So, to
