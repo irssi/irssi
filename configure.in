@@ -755,11 +755,16 @@ irssi.spec
 irssi-config)
 
 dnl ** for building from objdir
-if test "x$want_perl" != "xno"; then
-	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
+old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
+if test "x$old_dir" != "x$whole_dir"; then
+	$LN_S $srcdir/irssi-version.h irssi-version.h
 
-	if test "x$old_dir" != "x$whole_dir"; then
-		for file in $whole_dir/src/perl/*.[[ch]] $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
+	if test "x$want_perl" != "xno"; then
+		subdirfiles=""
+		for i in $whole_dir/src/perl/common $whole_dir/src/perl/irc $whole_dir/src/perl/ui $whole_dir/src/perl/textui; do
+			subdirfiles=`echo $subdirfiles $i/typemap $i/module.h $i/*.xs`
+		done
+		for file in $whole_dir/src/perl/*.[[ch]] $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $subdirfiles; do
 			link=`echo $file|$sedpath "s?$whole_dir/??"`
 			rm -f $link
 			$LN_S $file $link
