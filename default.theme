@@ -6,6 +6,7 @@ replaces = { "[]<>=" = "%K$0-%n"; };
 # if the ctcp was specified as "%g$0-" and nick was "%W$0-%n", the
 # "requested" text would be green
 
+# information about the %format is found from docs/formats.txt
 abstracts = {
   ##
   ## generic
