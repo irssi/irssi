@@ -571,6 +571,16 @@ static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 	irc_send_cmd(server, data);
 }
 
+/* SYNTAX: RAWQUOTE <data> */
+static void cmd_rawquote(const char *data, IRC_SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !IS_IRC_SERVER(server))
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	irc_send_cmd_full(server, data, FALSE, FALSE, TRUE);
+}
+
 static void cmd_wall_hash(gpointer key, NICK_REC *nick, GSList **nicks)
 {
 	if (nick->op) *nicks = g_slist_append(*nicks, nick);
@@ -1045,6 +1055,7 @@ void irc_commands_init(void)
 	/* SYNTAX: USERHOST <nicks> */
 	command_bind("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind("quote", NULL, (SIGNAL_FUNC) cmd_quote);
+	command_bind("rawquote", NULL, (SIGNAL_FUNC) cmd_rawquote);
 	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
 	command_bind("wait", NULL, (SIGNAL_FUNC) cmd_wait);
 	/* SYNTAX: WALLOPS <message> */
@@ -1118,6 +1129,7 @@ void irc_commands_deinit(void)
 	command_unbind("uping", (SIGNAL_FUNC) command_self);
 	command_unbind("userhost", (SIGNAL_FUNC) command_self);
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
+	command_unbind("rawquote", (SIGNAL_FUNC) cmd_rawquote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
 	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);

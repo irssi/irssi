@@ -42,25 +42,32 @@ static int signal_server_incoming;
 #  define MAX_SOCKET_READS 5
 #endif
 
-static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int immediate)
+/* The core of the irc_send_cmd* functions. If `raw' is TRUE, the `cmd'
+   won't be checked at all if it's 512 bytes or not, or if it contains
+   line feeds or not. Use with extreme caution! */
+void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
+		       int send_now, int immediate, int raw)
 {
-	char str[513], *ptr;
+	char str[513];
 	int len;
 
+	len = strlen(cmd);
 	server->cmdcount++;
 
 	if (send_now)
 		rawlog_output(server->rawlog, cmd);
 
-	/* just check that we don't send any longer commands than 512 bytes.. */
-	strncpy(str, cmd, 510);
-	len = strlen(cmd);
-	if (len > 510) len = 510;
-	str[len++] = 13; str[len++] = 10; str[len] = '\0';
+	if (!raw) {
+		/* check that we don't send any longer commands
+		   than 512 bytes. also add the line feed. */
+		strncpy(str, cmd, 510);
+		if (len > 510) len = 510;
+		str[len++] = 13; str[len++] = 10; str[len] = '\0';
+                cmd = str;
+	}
 
-	ptr = str;
 	if (send_now) {
-		if (net_sendbuffer_send(server->handle, str, len) == -1) {
+		if (net_sendbuffer_send(server->handle, cmd, len) == -1) {
 			/* something bad happened */
 			server->connection_lost = TRUE;
 			server_disconnect(SERVER(server));
@@ -72,11 +79,9 @@ static void cmd_send(IRC_SERVER_REC *server, const char *cmd, int send_now, int 
 	}
 
 	/* add to queue */
-        ptr = g_strdup(ptr);
-	if (!immediate)
-		server->cmdqueue = g_slist_append(server->cmdqueue, ptr);
-	else
-		server->cmdqueue = g_slist_prepend(server->cmdqueue, ptr);
+	server->cmdqueue = immediate ?
+		g_slist_prepend(server->cmdqueue, g_strdup(cmd)) :
+		g_slist_append(server->cmdqueue, g_strdup(cmd));
 }
 
 /* Send command to IRC server */
@@ -93,7 +98,7 @@ void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 		(server->cmdcount < server->max_cmds_at_once ||
 		 server->cmd_queue_speed <= 0);
 
-        cmd_send(server, cmd, send_now, FALSE);
+        irc_send_cmd_full(server, cmd, send_now, FALSE, FALSE);
 }
 
 /* Send command to IRC server */
@@ -118,7 +123,7 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd)
 	g_return_if_fail(cmd != NULL);
 	if (server == NULL) return;
 
-        cmd_send(server, cmd, TRUE, TRUE);
+        irc_send_cmd_full(server, cmd, TRUE, TRUE, FALSE);
 }
 
 static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post, int arg)
