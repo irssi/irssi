@@ -71,6 +71,7 @@ static void server_reconnect_add(SERVER_CONNECT_REC *conn,
 	rec->next_connect = next_connect;
 
 	rec->conn = conn;
+	conn->reconnecting = TRUE;
 	server_connect_ref(conn);
 
 	reconnects = g_slist_append(reconnects, rec);

@@ -31,7 +31,8 @@ char *ssl_capath;
 GIOChannel *connect_handle; /* connect using this handle */
 
 /* when reconnecting, the old server status */
-unsigned int reconnection:1; /* we're trying to reconnect */
+unsigned int reconnection:1; /* we're trying to reconnect a connected server */
+unsigned int reconnecting:1; /* we're trying to reconnect any connection */
 unsigned int no_autojoin_channels:1; /* don't autojoin any channels */
 unsigned int unix_socket:1; /* Connect using named unix socket */
 unsigned int use_ssl:1; /* this connection uses SSL */

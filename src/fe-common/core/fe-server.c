@@ -284,7 +284,9 @@ static void sig_server_connecting(SERVER_REC *server, IPADDR *ip)
 	else
 		net_ip2host(ip, ipaddr);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CONNECTING,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
+		    !server->connrec->reconnecting ?
+		    TXT_CONNECTING : TXT_RECONNECTING,
 		    server->connrec->address, ipaddr, server->connrec->port);
 }
 
