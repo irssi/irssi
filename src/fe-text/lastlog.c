@@ -87,13 +87,13 @@ int cmd_options_get_level(const char *cmd, GHashTable *optlist)
 }
 
 static void show_lastlog(const char *searchtext, GHashTable *optlist,
-			 int start, int count)
+			 int start, int count, int fhandle)
 {
         WINDOW_REC *window;
 	GList *startline, *list, *tmp;
 	GString *line;
         char *str;
-	int level, fhandle, len;
+	int level, len;
 
         level = cmd_options_get_level("lastlog", optlist);
 	if (level == -1) return; /* error in options */
@@ -105,25 +105,6 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
                         return;
 	}
 
-	/* target where to print it */
-        fhandle = -1;
-	str = g_hash_table_lookup(optlist, "file");
-	if (str != NULL) {
-                str = convert_home(str);
-		fhandle = open(str, O_WRONLY | O_APPEND | O_CREAT,
-			       octal2dec(settings_get_int("log_create_mode")));
-                g_free(str);
-
-		if (fhandle == -1) {
-			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
-				  "%s", g_strerror(errno));
-                        return;
-		}
-	}
-
-	if (fhandle == -1 && g_hash_table_lookup(optlist, "-") == NULL)
-		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_START);
-
         /* which window's lastlog to look at? */
         window = active_win;
         str = g_hash_table_lookup(optlist, "window");
@@ -131,6 +112,11 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		window = is_numeric(str, '\0') ?
 			window_find_refnum(atoi(str)) :
 			window_find_item(NULL, str);
+		if (window == NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+                                    TXT_REFNUM_NOT_FOUND, str);
+			return;
+		}
 	}
 
 	if (g_hash_table_lookup(optlist, "new") != NULL)
@@ -169,6 +155,9 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		return;
 	}
 
+	if (fhandle == -1 && g_hash_table_lookup(optlist, "-") == NULL)
+		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_START);
+
 	line = g_string_new(NULL);
         while (tmp != NULL && (count < 0 || count > 0)) {
 		LINE_REC *rec = tmp->data;
@@ -202,9 +191,6 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	if (fhandle == -1 && g_hash_table_lookup(optlist, "-") == NULL)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, TXT_LASTLOG_END);
 
-	if (fhandle != -1)
-                close(fhandle);
-
 	WINDOW_GUI(window)->lastlog_last_check =
 		g_list_last(WINDOW_GUI(window)->bottom_startline);
 
@@ -217,9 +203,9 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 static void cmd_lastlog(const char *data)
 {
 	GHashTable *optlist;
-	char *text, *countstr, *start;
+	char *text, *countstr, *start, *fname;
 	void *free_arg;
-        int count;
+        int count, fhandle;
 
 	g_return_if_fail(data != NULL);
 
@@ -236,7 +222,25 @@ static void cmd_lastlog(const char *data)
 	count = atoi(countstr);
 	if (count == 0) count = -1;
 
-        show_lastlog(text, optlist, atoi(start), count);
+	/* target where to print it */
+        fhandle = -1;
+	fname = g_hash_table_lookup(optlist, "file");
+	if (fname != NULL) {
+                fname = convert_home(fname);
+		fhandle = open(fname, O_WRONLY | O_APPEND | O_CREAT,
+			       octal2dec(settings_get_int("log_create_mode")));
+                g_free(fname);
+	}
+
+	if (fname != NULL && fhandle == -1) {
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			  "%s", g_strerror(errno));
+	} else {
+		show_lastlog(text, optlist, atoi(start), count, fhandle);
+		if (fhandle != -1)
+			close(fhandle);
+	}
+
 	cmd_params_free(free_arg);
 }
 
