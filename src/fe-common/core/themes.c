@@ -443,7 +443,7 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 
 	str = g_string_new(NULL);
 
-	last_fg = last_bg = 'n';
+	last_fg = last_bg = '\0';
 	while (*format != '\0') {
 		if (*format == '$') {
                         /* $variable, skrip it entirely */
