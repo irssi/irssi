@@ -389,8 +389,9 @@ void signals_init(void)
 
 static void signal_free(void *key, Signal *rec)
 {
+	/* refcount-1 because we just referenced it ourself */
 	g_warning("signal_free(%s) : signal still has %d references:",
-		  signal_get_id_str(rec->id), rec->refcount);
+		  signal_get_id_str(rec->id), rec->refcount-1);
 
 	while (rec->hooks != NULL) {
 		g_warning(" - module '%s' function %p",
