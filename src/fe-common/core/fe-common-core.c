@@ -420,7 +420,7 @@ void fe_common_core_finish_init(void)
 #endif
 
         setup_changed = FALSE;
-	if (cmdline_nick != NULL) {
+	if (cmdline_nick != NULL && *cmdline_nick != '\0') {
 		/* override nick found from setup */
 		settings_set_str("nick", cmdline_nick);
 		setup_changed = TRUE;
