@@ -4,10 +4,16 @@
 #include "signals.h"
 
 typedef struct {
-        int count;
+	char *name;
+	char *options;
+        GSList *signals;
+} COMMAND_MODULE_REC;
+
+typedef struct {
+        GSList *modules;
 	char *category;
 	char *cmd;
-	char **options;
+	char **options; /* combined from modules[..]->options */
 } COMMAND_REC;
 
 enum {
@@ -49,11 +55,12 @@ extern GSList *commands;
 extern char *current_command; /* the command we're right now. */
 
 /* Bind command to specified function. */
-void command_bind_to(int pos, const char *cmd,
+void command_bind_to(const char *module, int pos, const char *cmd,
 		     const char *category, SIGNAL_FUNC func);
-#define command_bind(a, b, c) command_bind_to(1, a, b, c)
-#define command_bind_first(a, b, c) command_bind_to(0, a, b, c)
-#define command_bind_last(a, b, c) command_bind_to(2, a, b, c)
+#define command_bind(a, b, c) command_bind_to(MODULE_NAME, 1, a, b, c)
+#define command_bind_first(a, b, c) command_bind_to(MODULE_NAME, 0, a, b, c)
+#define command_bind_last(a, b, c) command_bind_to(MODULE_NAME, 2, a, b, c)
+
 void command_unbind(const char *cmd, SIGNAL_FUNC func);
 
 /* Run subcommand, `cmd' contains the base command, first word in `data'
@@ -81,7 +88,10 @@ int command_have_sub(const char *command);
    call will override the previous */
 #define iscmdtype(c) \
         ((c) == '!' || (c) == '-' || (c) == '+' || (c) == '@')
-void command_set_options(const char *cmd, const char *options);
+void command_set_options_module(const char *module,
+				const char *cmd, const char *options);
+#define command_set_options(cmd, options) \
+	command_set_options_module(MODULE_NAME, cmd, options)
 
 /* Returns TRUE if command has specified option. */
 int command_have_option(const char *cmd, const char *option);
@@ -130,6 +140,8 @@ void cmd_params_free(void *free_me);
 typedef char* (*CMD_GET_FUNC) (const char *data, int *count, va_list *args);
 void cmd_get_add_func(CMD_GET_FUNC func);
 void cmd_get_remove_func(CMD_GET_FUNC func);
+
+void commands_remove_module(const char *module);
 
 void commands_init(void);
 void commands_deinit(void);

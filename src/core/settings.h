@@ -12,6 +12,7 @@ enum {
 };
 
 typedef struct {
+        char *module;
 	int type;
 	char *key;
 	char *section;
@@ -45,10 +46,21 @@ int settings_get_int(const char *key);
 int settings_get_bool(const char *key);
 
 /* Functions to add/remove settings */
-void settings_add_str(const char *section, const char *key, const char *def);
-void settings_add_int(const char *section, const char *key, int def);
-void settings_add_bool(const char *section, const char *key, int def);
+void settings_add_str_module(const char *module, const char *section,
+			     const char *key, const char *def);
+void settings_add_int_module(const char *module, const char *section,
+			     const char *key, int def);
+void settings_add_bool_module(const char *module, const char *section,
+			      const char *key, int def);
 void settings_remove(const char *key);
+void settings_remove_module(const char *module);
+
+#define settings_add_str(section, key, def) \
+	settings_add_str_module(MODULE_NAME, section, key, def)
+#define settings_add_int(section, key, def) \
+	settings_add_int_module(MODULE_NAME, section, key, def)
+#define settings_add_bool(section, key, def) \
+	settings_add_bool_module(MODULE_NAME, section, key, def)
 
 /* Get the type (SETTING_TYPE_xxx) of `key' */
 int settings_get_type(const char *key);

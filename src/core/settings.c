@@ -88,7 +88,8 @@ int settings_get_bool(const char *key)
 				settings_get_default_int(key));
 }
 
-void settings_add_str(const char *section, const char *key, const char *def)
+void settings_add_str_module(const char *module, const char *section,
+			     const char *key, const char *def)
 {
 	SETTINGS_REC *rec;
 
@@ -99,6 +100,7 @@ void settings_add_str(const char *section, const char *key, const char *def)
 	g_return_if_fail(rec == NULL);
 
 	rec = g_new0(SETTINGS_REC, 1);
+        rec->module = g_strdup(module);
 	rec->key = g_strdup(key);
 	rec->section = g_strdup(section);
 	rec->def = def == NULL ? NULL : g_strdup(def);
@@ -106,7 +108,8 @@ void settings_add_str(const char *section, const char *key, const char *def)
 	g_hash_table_insert(settings, rec->key, rec);
 }
 
-void settings_add_int(const char *section, const char *key, int def)
+void settings_add_int_module(const char *module, const char *section,
+			     const char *key, int def)
 {
 	SETTINGS_REC *rec;
 
@@ -117,6 +120,7 @@ void settings_add_int(const char *section, const char *key, int def)
 	g_return_if_fail(rec == NULL);
 
 	rec = g_new0(SETTINGS_REC, 1);
+        rec->module = g_strdup(module);
 	rec->type = SETTING_TYPE_INT;
 	rec->key = g_strdup(key);
 	rec->section = g_strdup(section);
@@ -125,7 +129,8 @@ void settings_add_int(const char *section, const char *key, int def)
 	g_hash_table_insert(settings, rec->key, rec);
 }
 
-void settings_add_bool(const char *section, const char *key, int def)
+void settings_add_bool_module(const char *module, const char *section,
+			      const char *key, int def)
 {
 	SETTINGS_REC *rec;
 
@@ -136,6 +141,7 @@ void settings_add_bool(const char *section, const char *key, int def)
 	g_return_if_fail(rec == NULL);
 
 	rec = g_new0(SETTINGS_REC, 1);
+        rec->module = g_strdup(module);
 	rec->type = SETTING_TYPE_BOOLEAN;
 	rec->key = g_strdup(key);
 	rec->section = g_strdup(section);
@@ -148,6 +154,7 @@ static void settings_destroy(SETTINGS_REC *rec)
 {
 	if (rec->type == SETTING_TYPE_STRING)
 		g_free_not_null(rec->def);
+        g_free(rec->module);
         g_free(rec->section);
         g_free(rec->key);
 	g_free(rec);
@@ -164,6 +171,24 @@ void settings_remove(const char *key)
 
 	g_hash_table_remove(settings, key);
 	settings_destroy(rec);
+}
+
+static int settings_remove_hash(const char *key, SETTINGS_REC *rec,
+				const char *module)
+{
+	if (strcmp(rec->module, module) == 0) {
+		settings_destroy(rec);
+                return TRUE;
+	}
+
+        return FALSE;
+}
+
+void settings_remove_module(const char *module)
+{
+	g_hash_table_foreach_remove(settings,
+				    (GHRFunc) settings_remove_hash,
+				    (void *) module);
 }
 
 int settings_get_type(const char *key)

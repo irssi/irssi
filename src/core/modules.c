@@ -22,6 +22,9 @@
 #include "modules.h"
 #include "signals.h"
 
+#include "commands.h"
+#include "settings.h"
+
 GSList *modules;
 
 static GHashTable *uniqids, *uniqstrids;
@@ -342,7 +345,10 @@ void module_unload(MODULE_REC *module)
 		module_deinit();
 	g_free(deinitfunc);
 
+        settings_remove_module(module->name);
+	commands_remove_module(module->name);
 	signals_remove_module(module->name);
+
 	g_module_close(module->gmodule);
 	g_free(module->name);
 	g_free(module);

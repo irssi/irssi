@@ -53,6 +53,42 @@ COMMAND_REC *command_find(const char *cmd)
 	return NULL;
 }
 
+static COMMAND_MODULE_REC *command_module_find(COMMAND_REC *rec,
+					       const char *module)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(rec != NULL, NULL);
+	g_return_val_if_fail(module != NULL, NULL);
+
+	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
+		COMMAND_MODULE_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, module) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
+static COMMAND_MODULE_REC *command_module_find_func(COMMAND_REC *rec,
+						    SIGNAL_FUNC func)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(rec != NULL, NULL);
+	g_return_val_if_fail(func != NULL, NULL);
+
+	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
+		COMMAND_MODULE_REC *rec = tmp->data;
+
+                if (g_slist_find(rec->signals, func) != NULL)
+			return rec;
+	}
+
+	return NULL;
+}
+
 int command_have_sub(const char *command)
 {
 	GSList *tmp;
@@ -73,12 +109,31 @@ int command_have_sub(const char *command)
 	return FALSE;
 }
 
-void command_bind_to(int pos, const char *cmd,
+static COMMAND_MODULE_REC *command_module_get(COMMAND_REC *rec,
+					      const char *module)
+{
+        COMMAND_MODULE_REC *modrec;
+
+	g_return_val_if_fail(rec != NULL, NULL);
+
+	modrec = command_module_find(rec, module);
+	if (modrec == NULL) {
+		modrec = g_new0(COMMAND_MODULE_REC, 1);
+		modrec->name = g_strdup(module);
+		rec->modules = g_slist_append(rec->modules, modrec);
+	}
+
+        return modrec;
+}
+
+void command_bind_to(const char *module, int pos, const char *cmd,
 		     const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
+        COMMAND_MODULE_REC *modrec;
 	char *str;
 
+	g_return_if_fail(module != NULL);
 	g_return_if_fail(cmd != NULL);
 
 	rec = command_find(cmd);
@@ -88,18 +143,20 @@ void command_bind_to(int pos, const char *cmd,
 		rec->category = category == NULL ? NULL : g_strdup(category);
 		commands = g_slist_append(commands, rec);
 	}
-	rec->count++;
+        modrec = command_module_get(rec, module);
+
+        modrec->signals = g_slist_append(modrec->signals, func);
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
-		signal_add_to(MODULE_NAME, pos, str, func);
+		signal_add_to(module, pos, str, func);
 		g_free(str);
 	}
 
 	signal_emit("commandlist new", 1, rec);
 }
 
-void command_free(COMMAND_REC *rec)
+static void command_free(COMMAND_REC *rec)
 {
 	commands = g_slist_remove(commands, rec);
 	signal_emit("commandlist remove", 1, rec);
@@ -110,22 +167,66 @@ void command_free(COMMAND_REC *rec)
 	g_free(rec);
 }
 
+static void command_module_free(COMMAND_MODULE_REC *modrec, COMMAND_REC *rec)
+{
+	rec->modules = g_slist_remove(rec->modules, modrec);
+
+	g_slist_free(modrec->signals);
+        g_free(modrec->name);
+        g_free_not_null(modrec->options);
+        g_free(modrec);
+}
+
+static void command_module_destroy(COMMAND_REC *rec,
+				   COMMAND_MODULE_REC *modrec)
+{
+	GSList *tmp, *freelist;
+
+        command_module_free(modrec, rec);
+
+	/* command_set_options() might have added module declaration of it's
+	   own without any signals .. check if they're the only ones left
+	   and if so, destroy them. */
+        freelist = NULL;
+	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
+		COMMAND_MODULE_REC *rec = tmp->data;
+
+		if (rec->signals == NULL)
+			freelist = g_slist_append(freelist, rec);
+		else {
+                        g_slist_free(freelist);
+                        freelist = NULL;
+			break;
+		}
+	}
+
+	g_slist_foreach(freelist, (GFunc) command_module_free, rec);
+	g_slist_free(freelist);
+
+	if (rec->modules == NULL)
+		command_free(rec);
+}
+
 void command_unbind(const char *cmd, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
+        COMMAND_MODULE_REC *modrec;
 	char *str;
 
 	g_return_if_fail(cmd != NULL);
+	g_return_if_fail(func != NULL);
 
 	rec = command_find(cmd);
-	if (rec != NULL && --rec->count == 0)
-		command_free(rec);
-
-	if (func != NULL) {
-		str = g_strconcat("command ", cmd, NULL);
-		signal_remove(str, func);
-		g_free(str);
+	if (rec != NULL) {
+		modrec = command_module_find_func(rec, func);
+		modrec->signals = g_slist_remove(modrec->signals, func);
+		if (modrec->signals == NULL)
+			command_module_destroy(rec, modrec);
 	}
+
+	str = g_strconcat("command ", cmd, NULL);
+	signal_remove(str, func);
+	g_free(str);
 }
 
 /* Expand `cmd' - returns `cmd' if not found, NULL if more than one
@@ -256,17 +357,10 @@ int command_have_option(const char *cmd, const char *option)
 	return FALSE;
 }
 
-void command_set_options(const char *cmd, const char *options)
+static void command_calc_options(COMMAND_REC *rec, const char *options)
 {
-	COMMAND_REC *rec;
 	char **optlist, **tmp, *name, *str;
 	GSList *list, *oldopt;
-
-	g_return_if_fail(cmd != NULL);
-	g_return_if_fail(options != NULL);
-
-        rec = command_find(cmd);
-	g_return_if_fail(rec != NULL);
 
 	optlist = g_strsplit(options, " ", -1);
 
@@ -305,6 +399,52 @@ void command_set_options(const char *cmd, const char *options)
 
         g_slist_foreach(list, (GFunc) g_free, NULL);
 	g_slist_free(list);
+}
+
+/* recalculate options to command from options in all modules */
+static void command_update_options(COMMAND_REC *rec)
+{
+	GSList *tmp;
+
+	g_strfreev(rec->options);
+	rec->options = NULL;
+
+	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
+		COMMAND_MODULE_REC *modrec = tmp->data;
+
+		if (modrec->options != NULL)
+			command_calc_options(rec, modrec->options);
+	}
+}
+
+void command_set_options_module(const char *module,
+				const char *cmd, const char *options)
+{
+	COMMAND_REC *rec;
+	COMMAND_MODULE_REC *modrec;
+        int reload;
+
+	g_return_if_fail(module != NULL);
+	g_return_if_fail(cmd != NULL);
+	g_return_if_fail(options != NULL);
+
+        rec = command_find(cmd);
+	g_return_if_fail(rec != NULL);
+        modrec = command_module_get(rec, module);
+
+	reload = modrec->options != NULL;
+        if (reload) {
+		/* options already set for the module ..
+		   we need to recalculate everything */
+		g_free(modrec->options);
+	}
+
+	modrec->options = g_strdup(options);
+
+        if (reload)
+		command_update_options(rec);
+        else
+		command_calc_options(rec, options);
 }
 
 char *cmd_get_param(char **data)
@@ -598,6 +738,40 @@ void cmd_get_add_func(CMD_GET_FUNC func)
 void cmd_get_remove_func(CMD_GET_FUNC func)
 {
         cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
+}
+
+static void command_module_unbind_all(COMMAND_REC *rec,
+				      COMMAND_MODULE_REC *modrec)
+{
+	GSList *tmp, *next;
+
+	for (tmp = modrec->signals; tmp != NULL; tmp = next) {
+		next = tmp->next;
+
+		command_unbind(rec->cmd, tmp->data);
+	}
+
+	if (g_slist_find(commands, rec) != NULL) {
+		/* this module might have removed some options
+		   from command, update them. */
+		command_update_options(rec);
+	}
+}
+
+void commands_remove_module(const char *module)
+{
+	GSList *tmp, *next, *modlist;
+
+	g_return_if_fail(module != NULL);
+
+	for (tmp = commands; tmp != NULL; tmp = next) {
+		COMMAND_REC *rec = tmp->data;
+
+                next = tmp->next;
+		modlist = gslist_find_string(rec->modules, module);
+		if (modlist != NULL)
+			command_module_unbind_all(rec, modlist->data);
+	}
 }
 
 #define alias_runstack_push(alias) \
