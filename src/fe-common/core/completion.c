@@ -537,6 +537,9 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	}
 
 	/* check only for /command completions from now on */
+	if (*linestart == '\0')
+		return;
+
         cmdchars = strchr(cmdchars, *linestart);
 	if (cmdchars == NULL) return;
 
