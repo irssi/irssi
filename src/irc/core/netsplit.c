@@ -103,11 +103,6 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 	g_return_val_if_fail(nick != NULL, NULL);
 	g_return_val_if_fail(address != NULL, NULL);
 
-	if (g_hash_table_lookup(server->splits, nick) != NULL) {
-		g_warning("%s is already in split list (how?)", nick);
-                return NULL;
-	}
-
 	/* get splitted servers */
 	dupservers = g_strdup(servers);
 	p = strchr(dupservers, ' ');
@@ -356,6 +351,24 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 	}
 }
 
+static void event_nick(IRC_SERVER_REC *server, const char *data)
+{
+	NETSPLIT_REC *rec;
+	char *params, *nick;
+
+	params = event_get_params(data, 1, &nick);
+
+	/* remove nick from split list when somebody changed
+	   nick to this one during split */
+        rec = g_hash_table_lookup(server->splits, nick);
+	if (rec != NULL) {
+	        g_hash_table_remove(server->splits, rec->nick);
+		netsplit_destroy(server, rec);
+	}
+
+        g_free(params);
+}
+
 static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
@@ -404,6 +417,7 @@ void netsplit_init(void)
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
 	signal_add_last("event join", (SIGNAL_FUNC) event_join_last);
 	signal_add_first("event quit", (SIGNAL_FUNC) event_quit);
+	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }
 
@@ -413,5 +427,6 @@ void netsplit_deinit(void)
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 	signal_remove("event join", (SIGNAL_FUNC) event_join_last);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
+	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }
