@@ -70,7 +70,7 @@ perl-signals-list.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 irssi-core.pl.h: irssi-core.pl
 	$(top_srcdir)/file2header.sh $(srcdir)/irssi-core.pl irssi_core_code > irssi-core.pl.h
 
-CORE_SOURCES = \
+common_sources = \
 	common/Irssi.xs \
 	common/Irssi.pm \
 	common/Channel.xs \
@@ -86,7 +86,7 @@ CORE_SOURCES = \
 	common/typemap \
 	common/module.h
 
-IRC_SOURCES = \
+irc_sources = \
 	irc/Irc.xs \
 	irc/Irc.pm \
 	irc/Dcc.xs \
@@ -100,7 +100,7 @@ IRC_SOURCES = \
 	irc/typemap \
 	irc/module.h
 
-UI_SOURCES = \
+ui_sources = \
 	ui/UI.xs \
 	ui/UI.pm \
 	ui/Themes.xs \
@@ -109,7 +109,7 @@ UI_SOURCES = \
 	ui/typemap \
 	ui/module.h
 
-TEXTUI_SOURCES = \
+textui_sources = \
 	textui/TextUI.xs \
 	textui/TextUI.pm \
 	textui/TextBuffer.xs \
@@ -124,10 +124,10 @@ EXTRA_DIST = \
 	libperl_orig.la \
 	get-signals.pl \
 	irssi-core.pl \
-	$(CORE_SOURCES) \
-	$(IRC_SOURCES) \
-	$(UI_SOURCES) \
-	$(TEXTUI_SOURCES)
+	$(core_sources) \
+	$(irc_sources) \
+	$(ui_sources) \
+	$(textui_sources)
 
 all-local:
 	for dir in common irc ui textui; do \
