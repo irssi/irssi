@@ -101,6 +101,9 @@ static void flood_init_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	if (!IS_IRC_SERVER(server))
+                return;
+
 	rec = g_new0(MODULE_SERVER_REC, 1);
 	MODULE_DATA_SET(server, rec);
 
@@ -128,6 +131,9 @@ static void flood_deinit_server(IRC_SERVER_REC *server)
 	MODULE_SERVER_REC *mserver;
 
 	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+                return;
 
 	mserver = MODULE_DATA(server);
 	if (mserver != NULL && mserver->floodlist != NULL) {

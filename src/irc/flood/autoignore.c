@@ -90,6 +90,9 @@ static void autoignore_timeout_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	if (!IS_IRC_SERVER(server))
+                return;
+
 	mserver = MODULE_DATA(server);
 	t = time(NULL);
 	t -= mserver->ignore_lastcheck;
@@ -119,6 +122,9 @@ static void autoignore_init_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	if (!IS_IRC_SERVER(server))
+		return;
+
 	mserver = MODULE_DATA(server);
 	mserver->ignorelist = NULL;
 	mserver->ignore_lastcheck = time(NULL)-AUTOIGNORE_TIMECHECK;
@@ -129,6 +135,9 @@ static void autoignore_deinit_server(IRC_SERVER_REC *server)
 	MODULE_SERVER_REC *mserver;
 
 	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+                return;
 
 	mserver = MODULE_DATA(server);
 	while (mserver->ignorelist != NULL)
