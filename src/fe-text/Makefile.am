@@ -1,4 +1,4 @@
-bin_PROGRAMS = irssi irssi-dummy
+bin_PROGRAMS = irssi
 
 INCLUDES = \
 	-I$(top_srcdir)/src \
