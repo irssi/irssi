@@ -602,7 +602,6 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
 		complete_window_nicks(list, window, word, linestart);
-                if (list != NULL) *want_space = FALSE;
 	}
 
 	if (*list != NULL) signal_stop();
