@@ -197,7 +197,7 @@ abstracts = {
   ##
 
   # whois
-  whois = " $[8]0 : $1-";
+  whois = "%# $[8]0 : $1-";
 
   # notices
   ownnotice = "[%r$0%K(%R$1-%K)]%n ";
