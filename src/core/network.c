@@ -286,7 +286,7 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 	if (err == 0 && ret == 0)
 		return -1; /* disconnected */
 
-	if (err == G_IO_ERROR_AGAIN || errno == EINTR)
+	if (err == G_IO_ERROR_AGAIN || (err != 0 && errno == EINTR))
 		return 0; /* no bytes received */
 
 	return err == 0 ? ret : -1;
@@ -301,7 +301,8 @@ int net_transmit(GIOChannel *handle, const char *data, int len)
 	g_return_val_if_fail(data != NULL, -1);
 
 	err = g_io_channel_write(handle, (char *) data, len, &ret);
-	if (err == G_IO_ERROR_AGAIN || errno == EINTR || errno == EPIPE)
+	if (err == G_IO_ERROR_AGAIN || (err != 0 && errno == EINTR ||
+					errno == EPIPE))
 		return 0;
 
 	return err == 0 ? ret : -1;
