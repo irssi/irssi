@@ -1,5 +1,7 @@
 # these characters are automatically replaced with specified color
-replaces = { "[]<>=" = "%K$0-%n"; };
+replaces = {
+  "[]<>=" = "%K$0-%n";
+};
 
 # %n specifies the color set in higher level, like in
 #   {ctcp {nick $0-} requested ... }
@@ -7,79 +9,79 @@ replaces = { "[]<>=" = "%K$0-%n"; };
 # "requested" text would be green
 
 abstracts = {
-  # generic
+# generic
   line_start = "%B-%W!%B-%n";
   hilight = "%_$0-%_";
-  
+
   channel = "%_$0-%_";
   nick = "%_$0-%_";
   server = "%_$0-%_";
   reason = "[$0-]";
-  
-  # channel specific messages
+
+# channel specific messages
   channick_hilight = "%C$0-%n";
   chanhost_hilight = "[%c$0-%n]";
   channick = "%c$0-%n";
   chanhost = "[$0-]";
   channelhilight = "%c$0-%n";
   ban = "%c$0-%n";
-  
-  # messages
+
+# messages
   msgnick = "<$0-> %|";
   msgownnick = "%W$0-%n";
   msgchannel = "%K:%c$0-%n";
   msgme = "%Y$0-%n";
-  privmsgnick = "[%R$0-%n] ";
+  privmsgnick = "[%R$0-%n] "
   privmsghost = "%K(%r$0-%K)%n";
   ownprivmsg = "[%r$0-%n] ";
   ownprivmsgdest = "%K(%R$0-%K)";
-  
-  # actions
+
+# actions
   action = "%W * $0-%n ";
   ownaction = "{action $0-}";
   pvtaction = "%W (*) $0-%n ";
   pvtaction_query = "{action $0-}";
   pubaction = "{action $0-}";
-  
-  # notices
+
+# notices
   ownnotice = "[%r$0-]%n ";
   ownnotice_target = "%K(%R$0-%K)";
   notice = "%K-%M$0-%K-%n ";
   pubnotice_channel = "%K:%m$1";
   pvtnotice_nick = "%K(%m$0-%K)";
   servernotice = "%g!$0-%n ";
-  
-  # ctcp
+
+# ctcp
   ownctcp = "[%r$0-] ";
-  ownctcp_target = "K(%R$0-%K)";
+  ownctcp_target = "%K(%R$0-%K)";
   ctcp = "%g$0-%n";
-  
-  # wall
+
+# wall
   ownwall = "[%W$0-] ";
   ownwall_channel = "%K/%c$0-";
-  
-  # wallops
+
+# wallops
   wallop = "%W$0-%n: ";
   wallop_nick = "%n$0-";
   wallop_action = "%W * $0-%n ";
-  
-  # netsplits
+
+# netsplits
   netsplit = "%G$0-%n";
   netjoin = "%C$0-%n";
-  
-  # /names list
+
+# /names list
   names_nickstat = "%_$0-%_";
   names_users = "[%g$0-%n]";
   names_channel = "%G$0-%n";
-  
-  # dcc
+
+# dcc
   dcc = "%g$0-%n";
   dccfile = "%_$0-%_";
-  
+
   dccownmsg = "[%r$0-%n] ";
   dccownnick = "%K(%R$1%K)%n";
   dccownaction = "{action $0-}";
-  dccmsg = "[%G$0-%n] ";
+  dccmsg = "[%G$0-%n] "
   dccmsghost = "%K(%g$0-%K)%n";
   dccquerynick = "%G$0-%n";
   dccaction = "%W (*dcc*) $0-%n %|";
@@ -98,7 +100,7 @@ formats = {
     windowlist_header = "Ref Name                 Active item     Server          Level";
     windowlist_line = "$[3]0 %|$[20]1 $[15]2 $[15]3 $4";
     windowlist_footer = "";
-    
+
     looking_up = "Looking up {server $0}";
     connecting = "Connecting to {server $0} [$1] port {hilight $2}";
     connection_established = "Connection to {server $0} established";
@@ -117,7 +119,7 @@ formats = {
     setupserver_added = "Server {server $0} saved";
     setupserver_removed = "Server {server $0} removed";
     setupserver_not_found = "Server {server $0} not found";
-    
+
     join = "{channick_hilight $0} {chanhost_hilight $1} has joined {channel $2}";
     part = "{channick $0} {chanhost $1} has left {channel $2} {reason $3}";
     kick = "{channick $0} was kicked from {channel $1} by {nick $2} {reason $3}";
@@ -139,7 +141,7 @@ formats = {
     chansetup_header = "Channel         IRC net    Password   Settings";
     chansetup_line = "{channel $[15]0} %|$[10]1 $[10]2 $3";
     chansetup_footer = "";
-    
+
     own_msg = "{msgnick $2{msgownnick $0}}$1";
     own_msg_channel = "{msgnick $3{msgownnick $0}{msgchannel $1}}$2";
     own_msg_private = "{ownprivmsg msg{ownprivmsgdest $0}}$1";
@@ -154,24 +156,24 @@ formats = {
     msg_private_query = "{msgnick {privmsgnick $0}}$2";
     no_msgs_got = "You have not received a message from anyone yet";
     no_msgs_sent = "You have not sent a message to anyone yet";
-    
+
     query_start = "Starting query with {nick $0}";
     no_query = "No query with {nick $0}";
     query_server_changed = "Query with {nick $2} changed to server {server $1}";
-    
+
     hilight_header = "Highlights:";
     hilight_line = "$[-4]0 $1 $2 $3$4$5";
     hilight_footer = "";
     hilight_not_found = "Highlight not found: $0";
     hilight_removed = "Highlight removed: $0";
-    
+
     alias_added = "Alias $0 added";
     alias_removed = "Alias $0 removed";
     alias_not_found = "No such alias: $0";
     aliaslist_header = "Aliases:";
     aliaslist_line = "$[10]0 $1";
     aliaslist_footer = "";
-    
+
     log_opened = "Log file {hilight $0} opened";
     log_closed = "Log file {hilight $0} closed";
     log_create_failed = "Couldn't create log file {hilight $0}: $1";
@@ -186,13 +188,13 @@ formats = {
     windowlog_file_logging = "Can't change window's logfile while log is on";
     no_away_msgs = "No new messages in awaylog";
     away_msgs = "{hilight $1} new messages in awaylog:";
-    
+
     module_already_loaded = "Module {hilight $0} already loaded";
     module_load_error = "Error loading module {hilight $0}: $1";
     module_invalid = "{hilight $0} isn't Irssi module";
     module_loaded = "Loaded module {hilight $0}";
     module_unloaded = "Unloaded module {hilight $0}";
-    
+
     command_unknown = "Unknown command: $0";
     command_ambiguous = "Ambiguous command: $0";
     option_unknown = "Unknown option: $0";
@@ -204,7 +206,7 @@ formats = {
     chan_not_found = "Not joined to such channel";
     chan_not_synced = "Channel not fully synchronized yet, try again after a while";
     not_good_idea = "Doing this is not a good idea. Add -YES if you really mean it";
-    
+
     theme_saved = "Theme saved to $0";
     theme_save_failed = "Error saving theme to $0";
     theme_not_found = "Theme {hilight $0} not found";
@@ -212,7 +214,7 @@ formats = {
     format_title = "%:[{hilight $0}] - [{hilight $1}]%:%:";
     format_subtitle = "[{hilight $0}]";
     format_item = "$0 = $1";
-    
+
     not_toggle = "Value must be either ON, OFF or TOGGLE";
     perl_error = "Perl error: $0";
     bind_key = "$[10]0 $1 $2";
@@ -220,7 +222,7 @@ formats = {
     config_saved = "Saved configuration to file $0";
     config_reloaded = "Reloaded configuration";
   };
-  
+
   "fe-common/irc" = {
     netsplit = "{netsplit Netsplit} {server $0} {server $1} quits: $2";
     netsplit_more = "{netsplit Netsplit} {server $0} {server $1} quits: $2 (+$3 more, use /NETSPLIT to show all of them)";
@@ -239,7 +241,7 @@ formats = {
     setupserver_header = "Server               Port  IRC Net    Settings";
     setupserver_line = "%|$[!20]0 $[5]1 $[10]2 $3";
     setupserver_footer = "";
-    
+
     joinerror_toomany = "Cannot join to channel {channel $0} (You have joined to too many channels)";
     joinerror_full = "Cannot join to channel {channel $0} (Channel is full)";
     joinerror_invite = "Cannot join to channel {channel $0} (You must be invited)";
@@ -268,7 +270,7 @@ formats = {
     invitelist = "{channel $0}: invite {ban $1}";
     no_such_channel = "{channel $0}: No such channel";
     channel_synced = "Join to {channel $0} was synced in {hilight $1} secs";
-    
+
     usermode_change = "Mode change [{hilight $0}] for user {nick $1}";
     user_mode = "Your user mode is [{hilight $0}]";
     away = "You have been marked as being away";
@@ -279,7 +281,7 @@ formats = {
     nick_in_use = "Nick {nick $0} is already in use";
     nick_unavailable = "Nick {nick $0} is temporarily unavailable";
     your_nick_owned = "Your nick is owned by {nick $3} [$1@$2]";
-    
+
     whois = "{nick $0} [$1@$2]%: ircname  : $3";
     whowas = "{nick $0} [$1@$2]%: ircname  : $3";
     whois_idle = " idle     : $1 days $2 hours $3 mins $4 secs";
@@ -294,12 +296,12 @@ formats = {
     whois_not_found = "There is no such nick $0";
     who = "{channelhilight $[-10]0} %|{nick $[!9]1} $[!3]2 $[!2]3 $4@$5 [{hilight $6}]";
     end_of_who = "End of /WHO list";
-    
+
     own_notice = "{ownnotice notice{ownnotice_target $0}}$1";
     own_action = "{ownaction $0}$1";
     own_ctcp = "{ownctcp ctcp{ownctcp_target $0}}$1 $2";
     own_wall = "{ownwall Wall{ownwall_channel}}$1";
-    
+
     notice_server = "{servernotice $0}$1";
     notice_public = "{notice $0{pubnotice_channel $1}$2";
     notice_public_ops = "{notice $0{pubnotice_channel @$1}$2";
@@ -308,12 +310,12 @@ formats = {
     action_private_query = "{pvtaction_query $0}$2";
     action_public = "{pubaction $0}$1";
     action_public_channel = "{pubaction $0{msgchannel $1}}$2";
-    
+
     ctcp_reply = "CTCP {hilight $0} reply from {nick $1}: $2";
     ctcp_reply_channel = "CTCP {hilight $0} reply from {nick $1} in channel {channel $3}: $2";
     ctcp_ping_reply = "CTCP {hilight PING} reply from {nick $0}: $1.$[-3.0]2 seconds";
     ctcp_requested = "{ctcp >>> {hilight $0} [$1] requested {hilight $2} from {nick $3}}";
-    
+
     online = "Users online: {hilight $0}";
     pong = "PONG received from $0: $1";
     wallops = "{wallop WALLOP{wallop_nick $0}$1";
@@ -321,11 +323,11 @@ formats = {
     error = "{hilight ERROR} $0";
     unknown_mode = "Unknown mode character $0";
     not_chanop = "You're not channel operator in {channel $0}";
-    
+
     silenced = "Silenced {nick $0}";
     unsilenced = "Unsilenced {nick $0}";
     silence_line = "{nick $0}: silence {ban $1}";
-    
+
     ignored = "Ignoring {hilight $1} from {nick $0}";
     unignored = "Unignored {nick $0}";
     ignore_not_found = "{nick $0} is not being ignored";
@@ -334,60 +336,60 @@ formats = {
     ignore_line = "$[-4]0 $1: $2 $3 $4";
     ignore_footer = "";
   };
-  
+
   "fe-common/irc/dcc" = {
-    own_dcc = "{dccownmsg dcc{dccownnick $1}}$2";
-    own_dcc_action = "{dccownaction $0}$1";
-    own_dcc_ctcp = "{ownctcp ctcp{ownctcp_target $0}}$1 $2";
-    dcc_msg = "{dccmsg $0{dccmsghost dcc}}$1";
-    action_dcc = "{dccaction $0}$1";
-    own_dcc_query = "{msgnick {msgownnick $0}}$2";
-    dcc_msg_query = "{msgnick {dccquerynick $0}}$1";
-    dcc_ctcp = "{dcc >>> DCC CTCP received from {hilight $0}: $1}";
-    dcc_chat = "{dcc DCC CHAT from {nick $0} [$1 port $2]}";
-    dcc_chat_not_found = "{dcc No DCC CHAT connection open to {nick $0}}";
-    dcc_chat_connected = "{dcc DCC CHAT connection with {nick $0} [$1 port $2] established}";
-    dcc_chat_disconnected = "{dcc DCC lost chat to {nick $0}}";
-    dcc_send = "{dcc DCC SEND from {nick $0} [$1 port $2]: $3 [$4 bytes]}";
-    dcc_send_exists = "{dcc DCC already sending file {dccfile $0} for {nick $1}}";
-    dcc_send_not_found = "{dcc DCC not sending file {dccfile $1} to {nick $0}}";
-    dcc_send_file_not_found = "{dcc DCC file not found: {dccfile $0}}";
-    dcc_send_connected = "{dcc DCC sending file {dccfile $0} for {nick $1} [$2 port $3]}";
-    dcc_send_complete = "{dcc DCC sent file {dccfile $0} [{hilight $1}kb] for {nick $2} in {hilight $3} secs [{hilight $4kb/s}]}";
-    dcc_send_aborted = "{dcc DCC aborted sending file {dccfile $0} for {nick $1}}";
-    dcc_get_not_found = "{dcc DCC no file offered by {nick $0}}";
-    dcc_get_connected = "{dcc DCC receiving file {dccfile $0} from {nick $1} [$2 port $3]}";
-    dcc_get_complete = "{dcc DCC received file {dccfile $0} [$1kb] from {nick $2} in {hilight $3} secs [$4kb/s]}";
-    dcc_get_aborted = "{dcc DCC aborted receiving file {dccfile $0} from {nick $1}}";
-    dcc_unknown_ctcp = "{dcc DCC unknown ctcp {hilight $0} from {nick $1} [$2]}";
-    dcc_unknown_reply = "{dcc DCC unknown reply {hilight $0} from {nick $1} [$2]}";
-    dcc_unknown_type = "{dcc DCC unknown type {hilight $0}}";
-    dcc_connect_error = "{dcc DCC can't connect to {hilight $0} port {hilight $1}}";
-    dcc_cant_create = "{dcc DCC can't create file {dccfile $0}}";
-    dcc_rejected = "{dcc DCC $0 was rejected by {nick $1} [{hilight $2}]}";
-    dcc_close = "{dcc DCC $0 close for {nick $1} [{hilight $2}]}";
-    dcc_list_header = "{dcc DCC connections}";
-    dcc_list_line_chat = "{dcc  $0 $1}";
-    dcc_list_line_file = "{dcc  $0 $1: $2k of $3k ($4%%) - $5kB/s - $6}";
-    dcc_list_footer = "";
+     own_dcc = "{dccownmsg dcc{dccownnick $1}}$2";
+     own_dcc_action = "{dccownaction $0}$1";
+     own_dcc_ctcp = "{ownctcp ctcp{ownctcp_target $0}}$1 $2";
+     dcc_msg = "{dccmsg $0{dccmsghost dcc}}$1";
+     action_dcc = "{dccaction $0}$1";
+     own_dcc_query = "{msgnick {msgownnick $0}}$2";
+     dcc_msg_query = "{msgnick {dccquerynick $0}}$1";
+     dcc_ctcp = "{dcc >>> DCC CTCP received from {hilight $0}: $1}";
+     dcc_chat = "{dcc DCC CHAT from {nick $0} [$1 port $2]}";
+     dcc_chat_not_found = "{dcc No DCC CHAT connection open to {nick $0}}";
+     dcc_chat_connected = "{dcc DCC CHAT connection with {nick $0} [$1 port $2] established}";
+     dcc_chat_disconnected = "{dcc DCC lost chat to {nick $0}}";
+     dcc_send = "{dcc DCC SEND from {nick $0} [$1 port $2]: $3 [$4 bytes]}";
+     dcc_send_exists = "{dcc DCC already sending file {dccfile $0} for {nick $1}}";
+     dcc_send_not_found = "{dcc DCC not sending file {dccfile $1} to {nick $0}}";
+     dcc_send_file_not_found = "{dcc DCC file not found: {dccfile $0}}";
+     dcc_send_connected = "{dcc DCC sending file {dccfile $0} for {nick $1} [$2 port $3]}";
+     dcc_send_complete = "{dcc DCC sent file {dccfile $0} [{hilight $1}kb] for {nick $2} in {hilight $3} secs [{hilight $4kb/s}]}";
+     dcc_send_aborted = "{dcc DCC aborted sending file {dccfile $0} for {nick $1}}";
+     dcc_get_not_found = "{dcc DCC no file offered by {nick $0}}";
+     dcc_get_connected = "{dcc DCC receiving file {dccfile $0} from {nick $1} [$2 port $3]}";
+     dcc_get_complete = "{dcc DCC received file {dccfile $0} [$1kb] from {nick $2} in {hilight $3} secs [$4kb/s]}";
+     dcc_get_aborted = "{dcc DCC aborted receiving file {dccfile $0} from {nick $1}}";
+     dcc_unknown_ctcp = "{dcc DCC unknown ctcp {hilight $0} from {nick $1} [$2]}";
+     dcc_unknown_reply = "{dcc DCC unknown reply {hilight $0} from {nick $1} [$2]}";
+     dcc_unknown_type = "{dcc DCC unknown type {hilight $0}}";
+     dcc_connect_error = "{dcc DCC can't connect to {hilight $0} port {hilight $1}}";
+     dcc_cant_create = "{dcc DCC can't create file {dccfile $0}}";
+     dcc_rejected = "{dcc DCC $0 was rejected by {nick $1} [{hilight $2}]}";
+     dcc_close = "{dcc DCC $0 close for {nick $1} [{hilight $2}]}";
+     dcc_list_header = "{dcc DCC connections}";
+     dcc_list_line_chat = "{dcc  $0 $1}";
+     dcc_list_line_file = "{dcc  $0 $1: $2k of $3k ($4%%) - $5kB/s - $6}";
+     dcc_list_footer = "";
   };
-  
+
   "fe-common/irc/flood" = {
-    autoignore = "Flood detected from {nick $0}, autoignoring for {hilight $1} minutes";
-    autounignore = "Removed autoignore from {nick $0}";
+     autoignore = "Flood detected from {nick $0}, autoignoring for {hilight $1} minutes";
+     autounignore = "Removed autoignore from {nick $0}";
   };
-  
+
   "fe-common/irc/notifylist" = {
-    notify_join = "{nick $0} [$1@$2] [{hilight $3}] has joined to $4";
-    notify_part = "{nick $0} has left $4";
-    notify_away = "{nick $0} [$5] [$1@$2] [{hilight $3}] is now away: $4";
-    notify_unaway = "{nick $0} [$4] [$1@$2] [{hilight $3}] is now unaway";
-    notify_unidle = "{nick $0} [$5] [$1@$2] [{hilight $3}] just stopped idling";
-    notify_online = "On $0: {hilight $1}";
-    notify_offline = "Offline: $0";
-    notify_list = "$0: $1 $2 $3";
+     notify_join = "{nick $0} [$1@$2] [{hilight $3}] has joined to $4";
+     notify_part = "{nick $0} has left $4";
+     notify_away = "{nick $0} [$5] [$1@$2] [{hilight $3}] is now away: $4";
+     notify_unaway = "{nick $0} [$4] [$1@$2] [{hilight $3}] is now unaway"
+     notify_unidle = "{nick $0} [$5] [$1@$2] [{hilight $3}] just stopped idling";
+     notify_online = "On $0: {hilight $1}";
+     notify_offline = "Offline: $0";
+     notify_list = "$0: $1 $2 $3";
   };
-  
+
   "fe-text" = {
     lastlog_start = "{hilight Lastlog}:";
     lastlog_end = "{hilight End of Lastlog}";
