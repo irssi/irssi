@@ -162,6 +162,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 
 	dest->channels = g_strdup(src->channels);
 	dest->away_reason = g_strdup(src->away_reason);
+        dest->no_autojoin_channels = src->no_autojoin_channels;
 
 	return dest;
 }
