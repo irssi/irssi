@@ -254,24 +254,6 @@ static void query_send(IRC_SERVER_REC *server, int query)
 				      "", "chanquery abort", NULL);
 		break;
 
-	case CHANNEL_QUERY_EMODE:
-		cmd = g_strdup_printf("MODE %s e", chanstr_commas);
-		server_redirect_event(server, "mode e", count, chanstr, -1,
-				      "chanquery abort",
-				      "event 348", "chanquery eban",
-				      "event 349", "chanquery eban end",
-				      "", "chanquery abort", NULL);
-		break;
-
-	case CHANNEL_QUERY_IMODE:
-		cmd = g_strdup_printf("MODE %s I", chanstr_commas);
-		server_redirect_event(server, "mode I", count, chanstr, -1,
-				      "chanquery abort",
-				      "event 346", "chanquery ilist",
-				      "event 347", "chanquery ilist end",
-				      "", "chanquery abort", NULL);
-		break;
-
 	default:
                 cmd = NULL;
 	}
@@ -503,38 +485,6 @@ static void event_end_of_banlist(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_end_of_ebanlist(IRC_SERVER_REC *server, const char *data)
-{
-	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 2, NULL, &channel);
-	chanrec = irc_channel_find(server, channel);
-
-	if (chanrec != NULL)
-		channel_got_query(chanrec, CHANNEL_QUERY_EMODE);
-
-	g_free(params);
-}
-
-static void event_end_of_invitelist(IRC_SERVER_REC *server, const char *data)
-{
-	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 2, NULL, &channel);
-	chanrec = irc_channel_find(server, channel);
-
-	if (chanrec != NULL)
-		channel_got_query(chanrec, CHANNEL_QUERY_IMODE);
-
-	g_free(params);
-}
-
 void channels_query_init(void)
 {
 	settings_add_bool("misc", "channel_sync", TRUE);
@@ -547,9 +497,7 @@ void channels_query_init(void)
 	signal_add("chanquery mode", (SIGNAL_FUNC) event_channel_mode);
 	signal_add("chanquery who end", (SIGNAL_FUNC) event_end_of_who);
 
-	signal_add("chanquery eban end", (SIGNAL_FUNC) event_end_of_ebanlist);
 	signal_add("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
-	signal_add("chanquery ilist end", (SIGNAL_FUNC) event_end_of_invitelist);
 	signal_add("chanquery abort", (SIGNAL_FUNC) query_current_error);
 }
 
@@ -563,8 +511,6 @@ void channels_query_deinit(void)
 	signal_remove("chanquery mode", (SIGNAL_FUNC) event_channel_mode);
 	signal_remove("chanquery who end", (SIGNAL_FUNC) event_end_of_who);
 
-	signal_remove("chanquery eban end", (SIGNAL_FUNC) event_end_of_ebanlist);
 	signal_remove("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
-	signal_remove("chanquery ilist end", (SIGNAL_FUNC) event_end_of_invitelist);
 	signal_remove("chanquery abort", (SIGNAL_FUNC) query_current_error);
 }

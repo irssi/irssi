@@ -16,8 +16,6 @@ struct _IRC_CHANNEL_REC {
 #include "channel-rec.h"
 
 	GSList *banlist; /* list of bans */
-	GSList *ebanlist; /* list of ban exceptions */
-	GSList *invitelist; /* invite list */
 
 	time_t massjoin_start; /* Massjoin start time */
 	int massjoins; /* Number of nicks waiting for massjoin signal.. */

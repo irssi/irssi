@@ -147,10 +147,6 @@ massjoin.c:
 mode-lists.c:
  "ban new", CHANNEL_REC, BAN_REC
  "ban remove", CHANNEL_REC, BAN_REC
- "ban exception new", CHANNEL_REC, BAN_REC
- "ban exception remove", CHANNEL_REC, BAN_REC
- "invitelist new", CHANNEL_REC, char *mask
- "invitelist remove", CHANNEL_REC, char *mask
 
 modes.c:
  "channel mode changed", CHANNEL_REC

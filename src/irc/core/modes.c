@@ -232,19 +232,6 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			else
 				banlist_remove(channel, arg);
 			break;
-		case 'e':
-			if (type == '+')
-				banlist_exception_add(channel, arg, setby,
-						      time(NULL));
-			else
-				banlist_exception_remove(channel, arg);
-			break;
-		case 'I':
-			if (type == '+')
-				invitelist_add(channel, arg);
-			else
-				invitelist_remove(channel, arg);
-			break;
 
 		case 'o':
 		case 'O': /* channel owner in !channels */

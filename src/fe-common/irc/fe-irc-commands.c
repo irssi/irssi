@@ -227,7 +227,7 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 	if (!channel->synced)
 		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
-	if (channel->banlist == NULL && channel->ebanlist == NULL) {
+	if (channel->banlist == NULL) {
 		printformat(server, channel->name, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_NO_BANS, channel->name);
 		return;
@@ -244,17 +244,6 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 			    counter, channel->name, rec->ban, rec->setby,
 			    (int) (time(NULL)-rec->time));
                 counter++;
-	}
-
-	/* ..and show ban exceptions.. */
-	for (tmp = channel->ebanlist; tmp != NULL; tmp = tmp->next) {
-		BAN_REC *rec = tmp->data;
-
-		printformat(server, channel->name, MSGLEVEL_CRAP,
-			    (rec->setby == NULL || *rec->setby == '\0') ?
-			    IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
-			    channel->name, rec->ban, rec->setby,
-			    (int) (time(NULL)-rec->time));
 	}
 }
 
@@ -300,37 +289,6 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 }
 
 /* SYNTAX: INVITELIST [<channel>] */
-static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-	IRC_CHANNEL_REC *channel, *cur_channel;
-	GSList *tmp;
-
-        CMD_IRC_SERVER(server);
-
-	cur_channel = IRC_CHANNEL(item);
-	if (cur_channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
-
-	if (strcmp(data, "*") == 0 || *data == '\0')
-		channel = cur_channel;
-	else
-		channel = irc_channel_find(server, data);
-	if (channel == NULL) cmd_return_error(CMDERR_CHAN_NOT_FOUND);
-
-	if (!channel->synced)
-		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
-
-	if (channel->invitelist == NULL) {
-		printformat(server, channel->name, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_NO_INVITELIST, channel->name);
-	} else {
-		for (tmp = channel->invitelist; tmp != NULL; tmp = tmp->next) {
-			printformat(server, channel->name, MSGLEVEL_CRAP,
-				    IRCTXT_INVITELIST,
-				    channel->name, tmp->data);
-		}
-	}
-}
-
 /* SYNTAX: VER [<target>] */
 static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -464,7 +422,6 @@ void fe_irc_commands_init(void)
 	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
 	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) cmd_wallchops);
 	command_bind_irc("ban", NULL, (SIGNAL_FUNC) cmd_ban);
-	command_bind_irc("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
 	command_bind_irc("ver", NULL, (SIGNAL_FUNC) cmd_ver);
 	command_bind_irc("topic", NULL, (SIGNAL_FUNC) cmd_topic);
 	command_bind_irc("ts", NULL, (SIGNAL_FUNC) cmd_ts);
@@ -482,7 +439,6 @@ void fe_irc_commands_deinit(void)
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
 	command_unbind("wallchops", (SIGNAL_FUNC) cmd_wallchops);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
-	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);
