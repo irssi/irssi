@@ -389,6 +389,7 @@ void term_refresh(TERM_WINDOW *window)
 		terminfo_set_cursor_visible(TRUE);
                 curs_visible = TRUE;
 	}
+	term_set_color(window, ATTR_RESET);
 	fflush(window != NULL ? window->term->out : current_term->out);
 }
 
