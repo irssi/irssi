@@ -27,6 +27,7 @@
 
 #define ALIGN_RIGHT 0x01
 #define ALIGN_CUT   0x02
+#define ALIGN_PAD   0x04
 
 #define isvarchar(c) \
         (isalnum(c) || (c) == '_')
@@ -273,7 +274,7 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 	char *str;
 
 	*align = 0;
-	*flags = ALIGN_CUT;
+	*flags = ALIGN_CUT|ALIGN_PAD;
         *pad = ' ';
 
 	/* '!' = don't cut, '-' = right padding */
@@ -283,6 +284,8 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 			*flags &= ~ALIGN_CUT;
 		else if (*str == '-')
 			*flags |= ALIGN_RIGHT;
+		else if (*str == '.')
+                         *flags &= ~ALIGN_PAD;
 		str++;
 	}
 	if (!isdigit(*str))
@@ -321,11 +324,13 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 		g_string_truncate(str, align);
 
 	/* add pad characters */
-	while (str->len < align) {
-		if (flags & ALIGN_RIGHT)
-			g_string_prepend_c(str, pad);
-		else
-			g_string_append_c(str, pad);
+	if (flags & ALIGN_PAD) {
+		while (str->len < align) {
+			if (flags & ALIGN_RIGHT)
+				g_string_prepend_c(str, pad);
+			else
+				g_string_append_c(str, pad);
+		}
 	}
 
 	ret = str->str;

@@ -7,7 +7,7 @@ referred to as expandos.  They are special in that the client is
 constantly updating their values automatically.  There are also
 numerous variable modifiers available.
 
-   Modifier          Description                                            
+   Modifier          Description
    $variable         A normal variable, expanding to the first match of:
                      |  1) an internal SET variable
                      |  2) an environment variable
@@ -16,7 +16,9 @@ numerous variable modifiers available.
                      | The value is padded to meet the width with the
 		     | character given after number (default is space).
 		     | The value is truncated to specified width unless
-		     | '!' character precedes the number.
+		     | '!' character precedes the number. If '.' character
+		     | precedes the number the value isn't padded, just
+		     | truncated.
    $#variable        Expands to the number of words in $variable. If $variable
                      | is omitted, it assumes $*
    $@variable        Expands to the number of characters in $variable. if

@@ -1119,7 +1119,7 @@ static void read_settings(void)
 void gui_windows_init(void)
 {
 	settings_add_int("lookandfeel", "indent", 10);
-	settings_add_str("lookandfeel", "prompt", "[$T] ");
+	settings_add_str("lookandfeel", "prompt", "[$[.15]T] ");
 	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
 
         prompt = NULL; prompt_window = NULL;
