@@ -4,6 +4,7 @@
     {server = irc.efnet.net;ircnet = EFNet;port = 6667;autoconnect = No;},
     {server = irc.undernet.net;ircnet = Undernet;port = 6667;autoconnect = No;},
     {server = irc.openprojects.net;ircnet = OPN;port = 6667;autoconnect = No;}
+    {server = irc.ptlink.net;ircnet = PTlink;port = 6667;autoconnect = No;}
   );
 
   ircnets = (
@@ -11,6 +12,7 @@
     {name = EFNet;max_kicks = 4;max_modes = 4;max_msgs = 3;},
     {name = Undernet;max_kicks = 4;max_modes = 3;max_msgs = 3;},
     {name = OPN;max_kicks = 1;max_modes = 6;max_msgs = 100;}
+    {name = PTlink;max_kicks = 1;max_modes = 6;max_msgs = 100;}
   );
 
   channels = (
