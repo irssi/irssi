@@ -323,6 +323,7 @@ static void init_configfile(void)
 	g_free(str);
 
 	mainconfig = parse_configfile(NULL);
+	config_last_modifycounter = mainconfig->modifycounter;
 
 	/* any errors? */
 	if (config_last_error(mainconfig) != NULL) {
@@ -365,6 +366,7 @@ int settings_reread(const char *fname)
 
 	config_close(mainconfig);
 	mainconfig = tempconfig;
+	config_last_modifycounter = mainconfig->modifycounter;
 
 	signal_emit("setup changed", 0);
 	signal_emit("setup reread", 0);

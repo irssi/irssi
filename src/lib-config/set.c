@@ -104,9 +104,11 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 		return;
 	}
 
-	if (node != NULL)
+	if (node != NULL) {
+		if (strcmp(node->value, value) == 0)
+			return;
                 g_free(node->value);
-	else {
+	} else {
 		node = g_new0(CONFIG_NODE, 1);
 		parent->value = g_slist_append(parent->value, node);
 
