@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 #include "channels-setup.h"
+#include "settings.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -295,7 +296,7 @@ static void event_invite(IRC_SERVER_REC *server, const char *data)
 		CHANNEL_SETUP_REC *setup;
 
 		setup = channel_setup_find(channel, server->connrec->chatnet);
-		if (setup != NULL && setup->autojoin)
+		if (setup != NULL && setup->autojoin && settings_get_bool("join_auto_chans_on_invite"))
 			server->channels_join(SERVER(server), channel, TRUE);
 	}
 
@@ -314,6 +315,7 @@ void channel_events_init(void)
 	signal_add_first("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
 	signal_add_first("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
 	signal_add_first("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
+	signal_add_first("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
 
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
@@ -335,6 +337,7 @@ void channel_events_deinit(void)
 	signal_remove("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
 	signal_remove("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
 	signal_remove("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
+	signal_remove("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
 
 	signal_remove("event topic", (SIGNAL_FUNC) event_topic);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
