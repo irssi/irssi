@@ -299,7 +299,7 @@ static GList *convert_msglist(GSList *msglist)
 }
 
 /* Complete /MSG - if `find_server' is NULL, complete nicks from all servers */
-static GList *completion_msg(SERVER_REC *win_server,
+GList *completion_msg(SERVER_REC *win_server,
 			     SERVER_REC *find_server,
 			     const char *nick, const char *prefix)
 {
