@@ -276,8 +276,17 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
-		if (rec->config->right_alignment && rec->size > 0)
-			right_items = g_slist_prepend(right_items, rec);
+		if (rec->config->right_alignment) {
+                        if (rec->size > 0)
+				right_items = g_slist_prepend(right_items, rec);
+			else if (rec->current_size > 0) {
+				/* item was hidden - set the dirty position
+				   to begin from the item's old xpos */
+				irssi_set_dirty();
+				bar->dirty = TRUE;
+                                bar->dirty_xpos = rec->xpos;
+			}
+		}
 	}
 
 	rxpos = term_width;
