@@ -166,11 +166,17 @@ abstracts = {
   ## Actions (/ME stuff)
   ##
 
+  # used internally by this theme
+  action_core = "%W * $0-%n";
+
   # generic one that's used by most actions
-  action = "%W * $0-%n ";
+  action = "{action_core $0-} ";
 
   # own action, both private/public
   ownaction = "{action $0-}";
+
+  # own action with target, both private/public
+  ownaction_target = "{action_core $0}%K:%c$1%n ";
 
   # private action sent by others
   pvtaction = "%W (*) $0-%n ";

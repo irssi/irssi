@@ -113,7 +113,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ NULL, "Your messages", 0 },
 
 	{ "own_notice", "{ownnotice notice $0}$1", 2, { 0, 0 } },
-	{ "own_action", "{ownaction $0}$1", 2, { 0, 0 } },
+	{ "own_action", "{ownaction $0}$1", 3, { 0, 0, 0 } },
+	{ "own_action_target", "{ownaction_target $0 $2}$1", 3, { 0, 0, 0 } },
 	{ "own_ctcp", "{ownctcp ctcp $0}$1 $2", 3, { 0, 0, 0 } },
 
 	/* ---- */

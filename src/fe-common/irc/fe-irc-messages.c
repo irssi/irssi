@@ -26,6 +26,7 @@
 
 #include "irc.h"
 #include "irc-channels.h"
+#include "irc-queries.h"
 
 #include "../core/module-formats.h"
 #include "module-formats.h"
@@ -93,10 +94,18 @@ static void sig_message_own_wall(SERVER_REC *server, const char *msg,
 static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
                                    const char *target)
 {
-	printformat(server, target, MSGLEVEL_ACTIONS |
-		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS) |
-		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    IRCTXT_OWN_ME, server->nick, msg);
+	void *item;
+
+        if (ischannel(*target))
+		item = irc_channel_find(server, target);
+	else
+		item = irc_query_find(server, target);
+
+	printformat(server, target,
+		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
+		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
+		    item != NULL ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
+		    server->nick, msg, target);
 }
 
 static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
