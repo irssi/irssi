@@ -27,6 +27,7 @@ channels.c:
  "channel destroyed", CHANNEL_REC
  "channel name changed", CHANNEL_REC
  "channel topic changed", CHANNEL_REC
+ "channel server changed", CHANNEL_REC
 
  "channel query", CHANNEL_REC
  "channel wholist", CHANNEL_REC
