@@ -90,10 +90,6 @@ settings.c:
  "setup reread", char *fname
  "setup saved", char *fname, int autosaved
 
-signal.c:
-
- "signal", char *name, ...
- "last signal", char *name, ...
 
 IRC core
 --------
