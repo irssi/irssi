@@ -103,7 +103,7 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	conn->type = module_get_uniq_id("SERVER CONNECT", 0);
 
 	conn->address = g_strdup(address);
-	conn->port = port > 0 ? port : 6667;
+	if (port > 0) conn->port = port;
 
 	if (!conn->nick) conn->nick = g_strdup(settings_get_str("nick"));
 	conn->username = g_strdup(settings_get_str("user_name"));
@@ -132,7 +132,8 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 
 	sserver->last_connect = time(NULL);
 
-	if (sserver->port > 0) conn->port = sserver->port;
+	if (sserver->port > 0 && conn->port <= 0)
+		conn->port = sserver->port;
 	server_setup_fill_reconn(conn, sserver);
 
 	signal_emit("server setup fill server", 2, conn, sserver);
@@ -304,7 +305,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	if (server == NULL)
 		return NULL;
 
-	port = config_node_get_int(node, "port", 6667);
+	port = config_node_get_int(node, "port", 0);
 	if (server_setup_find_port(server, port) != NULL) {
 		/* already exists - don't let it get there twice or
 		   server reconnects will screw up! */

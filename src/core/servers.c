@@ -204,12 +204,12 @@ int server_start_connect(SERVER_REC *server)
 	const char *connect_address;
 
 	g_return_val_if_fail(server != NULL, FALSE);
+	if (server->connrec->port <= 0) return FALSE;
 
 	MODULE_DATA_INIT(server);
 	server->type = module_get_uniq_id("SERVER", 0);
 
 	server->nick = g_strdup(server->connrec->nick);
-	if (server->connrec->port <= 0) server->connrec->port = 6667;
 	if (server->connrec->username == NULL || *server->connrec->username == '\0') {
 		g_free_not_null(server->connrec->username);
 
