@@ -289,8 +289,10 @@ void signal_stop(void)
 void signal_stop_by_name(const char *signal)
 {
 	SIGNAL_REC *rec;
+	int signal_id;
 
-	rec = g_hash_table_lookup(signals, signal);
+	signal_id = module_get_uniq_id_str("signals", signal);
+	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL)
 		g_warning("signal_stop_by_name() : unknown signal \"%s\"", signal);
 	else if (rec->emitting <= rec->stop_emit)
