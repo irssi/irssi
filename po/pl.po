@@ -813,7 +813,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-channels.c:446
 msgid "Autojoin"
-msgstr "Do³acz automatycznie"
+msgstr "Do³±cz automatycznie"
 
 #: src/gui-gnome/dialog-channels.c:447 src/gui-gnome/setup-ircnets.c:140
 #: src/gui-gnome/setup-ircnets.c:191
@@ -1600,7 +1600,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-mainwindows.c:777
 msgid "Command history"
-msgstr ""
+msgstr "Historial poleceñ"
 
 #: src/gui-gnome/gui-mainwindows.c:779
 msgid "Previous page in window"
@@ -1792,7 +1792,7 @@ msgstr "_Pomoc"
 
 #: src/gui-gnome/gui-menu-commands.c:224
 msgid "_Leave channel"
-msgstr ""
+msgstr "_Opu¶c kana³"
 
 #: src/gui-gnome/gui-menu-commands.c:226
 msgid "Channel _Modes..."
@@ -1862,11 +1862,11 @@ msgstr ""
 #: src/gui-gnome/gui-statusbar.c:237
 #, c-format
 msgid "Connecting to %s:%d"
-msgstr ""
+msgstr "Pod³±czanie do %s:%d"
 
 #: src/gui-gnome/gui-windows.c:39
 msgid "Joining needs an invitation"
-msgstr ""
+msgstr "Przy³±czenie siê wymaga zaproszenia"
 
 #: src/gui-gnome/gui-windows.c:40
 msgid "No external messages"
@@ -1874,7 +1874,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-windows.c:41
 msgid "Only operators can change the topic"
-msgstr ""
+msgstr "Tylko operator moze zmieniæ temat kana³u"
 
 #: src/gui-gnome/gui-windows.c:42
 msgid "Maximum number of people in channel"
@@ -1882,7 +1882,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-windows.c:43
 msgid "Channel password"
-msgstr ""
+msgstr "Has³o kana³u"
 
 #: src/gui-gnome/gui-windows.c:48
 msgid "Whois"
@@ -1903,7 +1903,7 @@ msgstr ""
 
 #: src/gui-gnome/gui-windows.c:568 src/gui-gnome/gui-windows.c:586
 msgid "Close window"
-msgstr ""
+msgstr "Zamknij okno"
 
 #: src/gui-gnome/gui-windows.c:574 src/gui-gnome/gui-windows.c:592
 msgid "Move window tab to left"
@@ -1938,7 +1938,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-appearance.c:95
 msgid "Transparent background"
-msgstr ""
+msgstr "Tapeta w tle"
 
 #: src/gui-gnome/setup-appearance.c:103
 msgid "GNOME Panel"
@@ -1950,7 +1950,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-appearance.c:125
 msgid "channels"
-msgstr ""
+msgstr "kana³y"
 
 #: src/gui-gnome/setup-appearance.c:138
 msgid "Look #2"
@@ -1970,7 +1970,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-bg.c:277
 msgid "Background & Fonts"
-msgstr ""
+msgstr "T³o i fonty"
 
 #: src/gui-gnome/setup-colors.c:29
 msgid "Black"
@@ -2055,7 +2055,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-colors.c:50
 msgid "New msg for you in channel"
-msgstr ""
+msgstr "Nowy komunikat do Ciebie na kanale"
 
 #: src/gui-gnome/setup-colors.c:51
 msgid "Default nick color in nicklist"
@@ -2079,7 +2079,7 @@ msgstr "Kolor"
 
 #: src/gui-gnome/setup-colors.c:336 src/gui-gnome/setup-colors.c:339
 msgid "Sample text"
-msgstr ""
+msgstr "Przyk³adowy tekst"
 
 #: src/gui-gnome/setup-colors.c:338
 msgid "Color                                       "
@@ -2134,11 +2134,11 @@ msgstr ""
 
 #: src/gui-gnome/setup-completion.c:87
 msgid "Remember the last"
-msgstr ""
+msgstr "Zapamiêtaj ostanie"
 
 #: src/gui-gnome/setup-completion.c:87
 msgid "private messages"
-msgstr ""
+msgstr "prywatne komunikaty"
 
 #. --- DCC GET ---
 #: src/gui-gnome/setup-dcc.c:82
@@ -2147,11 +2147,11 @@ msgstr ""
 
 #: src/gui-gnome/setup-dcc.c:89
 msgid "Automatically rename file if it exists"
-msgstr ""
+msgstr "Automatycznie zmieñ nazwê pliku je¿eli itnieje"
 
 #: src/gui-gnome/setup-dcc.c:93
 msgid "Automatically get file when offered"
-msgstr ""
+msgstr "Automatycznie bi¿ plik je¿eli jest Ci oferowany"
 
 #: src/gui-gnome/setup-dcc.c:107
 msgid "Maximum file size to autoget (kB)"
@@ -2167,7 +2167,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-dcc.c:123
 msgid "Create files with permission"
-msgstr ""
+msgstr "Twó¿ pliki z prawami dostêpu"
 
 #: src/gui-gnome/setup-dcc.c:134
 msgid "Transmit"
@@ -2192,7 +2192,7 @@ msgstr ""
 #. --- common ---
 #: src/gui-gnome/setup-dcc.c:166
 msgid "Common"
-msgstr ""
+msgstr "G³ówny"
 
 #: src/gui-gnome/setup-dcc.c:173
 msgid "Automatically open transfer dialog"
@@ -2200,7 +2200,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-dcc.c:181
 msgid "Use specified port for DCC"
-msgstr ""
+msgstr "U¿yj portu do komunikacji DCC"
 
 #: src/gui-gnome/setup-dcc.c:198
 msgid "Timeout before rejecting DCC offers"
@@ -2229,7 +2229,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-flood.c:76
 msgid "messages"
-msgstr ""
+msgstr "komunikaty"
 
 #: src/gui-gnome/setup-flood.c:79
 msgid "Autoignore flooders for"
@@ -2254,11 +2254,11 @@ msgstr ""
 #. ---
 #: src/gui-gnome/setup-history.c:41 src/gui-gnome/setup-history.c:99
 msgid "History"
-msgstr ""
+msgstr "Historia"
 
 #: src/gui-gnome/setup-history.c:48
 msgid "Each window has it's own command history buffer"
-msgstr ""
+msgstr "ka¿de okno ma w³asna bufor historii poleceñ"
 
 #: src/gui-gnome/setup-history.c:52
 msgid "Saved lines in scrollback buffer"
@@ -2270,7 +2270,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-history.c:74
 msgid "Command history length"
-msgstr ""
+msgstr "D³ugo¶æ historii poleceñ"
 
 #: src/gui-gnome/setup-history.c:85
 msgid "Rawlog buffer length"
@@ -2312,7 +2312,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-lists.c:407 src/gui-gnome/setup-lists.c:443
 msgid "Command"
-msgstr ""
+msgstr "Polecenie"
 
 #: src/gui-gnome/setup-lists.c:410
 msgid "Aliases"
@@ -2486,12 +2486,12 @@ msgstr "Klient FTP"
 
 #: src/gui-gnome/setup-misc.c:80
 msgid "E-Mail client"
-msgstr ""
+msgstr "Klient poczty"
 
 #. ---
 #: src/gui-gnome/setup-misc.c:85
 msgid "Lag checking"
-msgstr ""
+msgstr "Sprawdzanie opó¼nieñ"
 
 #: src/gui-gnome/setup-misc.c:92
 msgid "How often to check for lag (secs)"
@@ -2503,7 +2503,7 @@ msgstr ""
 
 #: src/gui-gnome/setup-misc.c:123
 msgid "Default quit message"
-msgstr ""
+msgstr "Domy¶lny komunikat na zakoñczenie"
 
 #: src/gui-gnome/setup-misc.c:128
 msgid "Default user mode"
@@ -2531,7 +2531,7 @@ msgstr "t"
 
 #: src/gui-gnome/setup-servers.c:241
 msgid "Clear"
-msgstr ""
+msgstr "Wyczysæ"
 
 #: src/gui-gnome/setup-servers.c:252 src/gui-gnome/setup-servers.c:472
 msgid "IRC Net"
@@ -2613,7 +2613,7 @@ msgstr "Dodaj nowy temat"
 #: src/gui-gnome/setup-themes.c:240
 #, c-format
 msgid "Really delete theme %s"
-msgstr ""
+msgstr "naprawdê skasuj temat %s"
 
 #: src/gui-gnome/setup-themes.c:259
 msgid "Theme selector"
@@ -2642,7 +2642,7 @@ msgstr ""
 #: src/gui-gnome/wordclick.c:114
 #, c-format
 msgid "Join %s"
-msgstr ""
+msgstr "Do³±cz %s"
 
 #: src/gui-gnome/wordclick.c:133
 #, c-format
