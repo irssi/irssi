@@ -7,6 +7,10 @@
 #define LOG_FILE_CREATE_MODE 0644
 #define CMD_CHAR '/'
 
+/* wait for half an hour before trying to reconnect to host where last
+   connection failed */
+#define FAILED_RECONNECT_WAIT (60*30)
+
 /* How often to check if there's anyone to be unignored in autoignore list */
 #define AUTOIGNORE_TIMECHECK 10000
 
