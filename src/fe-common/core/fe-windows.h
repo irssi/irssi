@@ -2,8 +2,6 @@
 #define __WINDOWS_H
 
 #include "servers.h"
-
-#define STRUCT_SERVER_REC SERVER_REC
 #include "window-item-def.h"
 
 enum {
