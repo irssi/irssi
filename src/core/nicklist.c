@@ -76,7 +76,7 @@ static void nick_hash_remove(CHANNEL_REC *channel, NICK_REC *nick)
 /* Add new nick to list */
 void nicklist_insert(CHANNEL_REC *channel, NICK_REC *nick)
 {
-	MODULE_DATA_INIT(nick);
+	/*MODULE_DATA_INIT(nick);*/
 
 	nick->type = module_get_uniq_id("NICK", 0);
         nick->chat_type = channel->chat_type;
@@ -102,7 +102,7 @@ static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	signal_emit("nicklist remove", 2, channel, nick);
 
-        MODULE_DATA_DEINIT(nick);
+        /*MODULE_DATA_DEINIT(nick);*/
 	g_free(nick->nick);
 	g_free_not_null(nick->realname);
 	g_free_not_null(nick->host);

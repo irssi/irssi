@@ -20,7 +20,7 @@ unsigned int op:1;
 unsigned int halfop:1;
 unsigned int voice:1;
 
-GHashTable *module_data;
+/*GHashTable *module_data;*/
 
 void *unique_id; /* unique ID to use for comparing if one nick is in another channels,
 		    or NULL = nicks are unique, just keep comparing them. */
