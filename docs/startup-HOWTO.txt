@@ -13,7 +13,8 @@ things (still not all) see manual.txt.
 These settings should give you pretty good defaults (the ones I use):
 
 /SET autocreate_own_query OFF
-/SET -c autocreate_query_level
+/SET -c autocreate_query_level (or /SET autocreate_query NO with 0.7.95 
+and older versions)
 /SET use_status_window OFF
 /SET use_msgs_window ON
 /SET autoclose_windows ON
@@ -112,7 +113,8 @@ you send message to someone (with /msg).
 /SET autocreate_query_level MSGS - New query window should be created
 when receiving messages with this level. Only MSGS and NOTICES levels
 work currently. You can disable this with /SET -clear
-autocrate_query_level.
+autocrate_query_level. 0.7.95 and older versions use
+/SET autocreate_query ON|OFF format.
 
 /SET autoclose_query 0 - Query windows can be automatically closed
 after certain time of inactivity. Queries with unread messages aren't
