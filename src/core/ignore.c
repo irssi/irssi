@@ -283,6 +283,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	if (rec->replies) iconfig_node_set_bool(node, "replies", TRUE);
 	if (rec->unignore_time != 0)
 		iconfig_node_set_int(node, "unignore_time", rec->unignore_time);
+	iconfig_node_set_str(node, "servertag", rec->servertag);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = config_node_section(node, "channels", NODE_TYPE_LIST);
@@ -427,6 +428,7 @@ static void read_ignores(void)
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->replies = config_node_get_bool(node, "replies", FALSE);
 		rec->unignore_time = config_node_get_int(node, "unignore_time", 0);
+		rec->servertag = g_strdup(config_node_get_str(node, "servertag", 0));
 
 		node = config_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
