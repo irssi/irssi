@@ -108,15 +108,24 @@ static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
 void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 			      WINDOW_REC *skip_window)
 {
+        WINDOW_REC *window;
 	GSList *tmp;
 
         mainwin->active = NULL;
 	if (mainwin->sticky_windows) {
 		/* sticky window */
                 tmp = get_sticky_windows_sorted(mainwin);
-		window_set_active(tmp->data);
+                window = tmp->data;
+		if (window == skip_window) {
+			window = tmp->next == NULL ? NULL :
+				tmp->next->data;
+		}
                 g_slist_free(tmp);
-                return;
+
+		if (window != NULL) {
+			window_set_active(window);
+			return;
+		}
 	}
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
@@ -129,7 +138,7 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 	}
 
         /* no more non-sticky windows, remove main window */
-        mainwindow_destroy(mainwin);
+	mainwindow_destroy(mainwin);
 }
 
 void mainwindows_recreate(void)
@@ -814,11 +823,18 @@ static void window_reparent(WINDOW_REC *win, MAIN_WINDOW_REC *mainwin)
 	old_mainwin = WINDOW_MAIN(win);
 
 	if (old_mainwin != mainwin) {
+		gui_window_set_unsticky(win);
+
+		if (old_mainwin->active == win) {
+			mainwindow_change_active(old_mainwin, win);
+			if (active_mainwin == NULL) {
+				active_mainwin = mainwin;
+				window_set_active(mainwin->active);
+			}
+		}
+
 		gui_window_reparent(win, mainwin);
 		window_set_active(win);
-
-		if (old_mainwin->active == win)
-			mainwindow_change_active(old_mainwin, win);
 	}
 }
 
@@ -890,7 +906,7 @@ static void cmd_window_move_up(void)
 	MAIN_WINDOW_REC *rec;
 
 	rec = mainwindows_find_upper(active_mainwin->first_line);
-	if (rec != NULL)
+        if (rec != NULL)
 		window_reparent(active_win, rec);
 }
 
