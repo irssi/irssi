@@ -186,12 +186,22 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	server->connect_pipe[1] = NULL;
 
 	/* figure out if we should use IPv4 or v6 address */
-	ip = iprec.error != 0 ? NULL : iprec.ip6.family == 0 ||
-		(server->connrec->family == AF_INET && iprec.ip4.family != 0) ?
-		&iprec.ip4 : &iprec.ip6;
-	if (iprec.ip4.family != 0 && server->connrec->family == 0 &&
-	    !settings_get_bool("resolve_prefer_ipv6"))
-                ip = &iprec.ip4;
+	if (iprec.error != 0) {
+                /* error */
+		ip = NULL;
+	} else if (server->connrec->family == AF_INET) {
+		/* force IPv4 connection */
+		ip = iprec.ip4.family == 0 ? NULL : &iprec.ip4;
+	} else if (server->connrec->family == AF_INET6) {
+		/* force IPv6 connection */
+		ip = iprec.ip6.family == 0 ? NULL : &iprec.ip6;
+	} else {
+		/* pick the one that was found, or if both do it like
+		   /SET resolve_prefer_ipv6 says. */
+		ip = iprec.ip6.family != 0 &&
+			settings_get_bool("resolve_prefer_ipv6") ?
+			&iprec.ip6 : &iprec.ip4;
+	}
 
         conn = server->connrec;
 	port = conn->proxy != NULL ? conn->proxy_port : conn->port;
@@ -209,15 +219,21 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	if (handle == NULL) {
 		/* failed */
-		if (iprec.error != 0 && net_hosterror_notfound(iprec.error)) {
+		if (ip == NULL && (iprec.error == 0 ||
+				   net_hosterror_notfound(iprec.error))) {
 			/* IP wasn't found for the host, don't try to reconnect
 			   back to this server */
 			server->dns_error = TRUE;
 		}
 
-		if (iprec.error == 0) {
+		if (ip != NULL) {
 			/* connect() failed */
 			errormsg = g_strerror(errno);
+		} else if (iprec.error == 0) {
+			/* forced IPv4 or IPv6 address but it wasn't found */
+			errormsg = server->connrec->family == AF_INET ?
+				"IPv4 address not found for host" :
+				"IPv6 address not found for host";
 		} else {
 			/* gethostbyname() failed */
 			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
