@@ -129,9 +129,6 @@ COMMAND_REC *command_find(const char *cmd)
 	return NULL;
 }
 
-#define iscmdtype(c) \
-        ((c) == '-' || (c) == '+' || (c) == '@')
-
 static GSList *optlist_find(GSList *optlist, const char *option)
 {
 	while (optlist != NULL) {
@@ -240,21 +237,41 @@ static char *cmd_get_quoted_param(char **data)
 	return pos;
 }
 
-static int option_find(char **array, const char *item)
+/* Find specified option from list of options - the `option' might be
+   shortened version of the full command. Returns index where the
+   option was found, -1 if not found or -2 if there was multiple matches. */
+static int option_find(char **array, const char *option)
 {
 	char **tmp;
-	int index;
+	int index, found, len;
 
-	g_return_val_if_fail(array != NULL, 0);
-	g_return_val_if_fail(item != NULL, 0);
+	g_return_val_if_fail(array != NULL, -1);
+	g_return_val_if_fail(option != NULL, -1);
 
-	index = 0;
+	len = strlen(option);
+	g_return_val_if_fail(len > 0, -1);
+
+	found = -1; index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		if (g_strcasecmp(*tmp + iscmdtype(**tmp), item) == 0)
-			return index;
+		const char *text = *tmp + iscmdtype(**tmp);
+
+		if (g_strncasecmp(text, option, len) == 0) {
+			if (text[len] == '\0') {
+				/* full match */
+				return index;
+			}
+
+			if (found != -1) {
+				/* multiple matches - abort */
+				return -2;
+			}
+
+			/* partial match, check that it's the only one */
+			found = index;
+		}
 	}
 
-	return -1;
+	return found;
 }
 
 static int get_cmd_options(char **data, int ignore_unknown,
@@ -295,7 +312,12 @@ static int get_cmd_options(char **data, int ignore_unknown,
                                 *data = option;
 				return CMDERR_OPTION_UNKNOWN;
 			}
-			if (pos != -1) {
+			if (pos == -2 && !ignore_unknown) {
+                                /* multiple matches */
+				*data = option;
+				return CMDERR_OPTION_AMBIGUOUS;
+			}
+			if (pos >= 0) {
 				/* if we used a shortcut of parameter, put
 				   the whole parameter name in options table */
 				option = optlist[pos] + iscmdtype(*optlist[pos]);

@@ -314,10 +314,13 @@ static void event_cmderror(gpointer errorp, const char *arg)
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, g_strerror(errno));
 		break;
 	case CMDERR_OPTION_UNKNOWN:
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown argument: %s", arg);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_UNKNOWN, arg);
+		break;
+	case CMDERR_OPTION_AMBIGUOUS:
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_AMBIGUOUS, arg);
 		break;
 	case CMDERR_OPTION_ARG_MISSING:
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Missing required argument for: %s", arg);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_OPTION_MISSING_ARG, arg);
 		break;
 	default:
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error]);

@@ -91,6 +91,9 @@ FORMAT_REC fecommon_core_formats[] = {
 
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
+	{ "option_unknown", "Unknown option: $0", 1, { 0 } },
+	{ "option_ambiguous", "Ambiguous option: $0", 1, { 0 } },
+	{ "option_missing_arg", "Missing required argument for: $0", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };

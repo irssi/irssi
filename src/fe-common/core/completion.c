@@ -173,6 +173,8 @@ GList *list_add_file(GList *list, const char *name)
 	struct stat statbuf;
 	char *fname;
 
+	g_return_val_if_fail(name != NULL, NULL);
+
 	fname = convert_home(name);
 	if (stat(fname, &statbuf) == 0) {
 		list = g_list_append(list, !S_ISDIR(statbuf.st_mode) ? g_strdup(name) :
@@ -190,6 +192,8 @@ GList *filename_complete(const char *path)
 	struct dirent *dp;
 	char *realpath, *dir, *basename, *name;
 	int len;
+
+	g_return_val_if_fail(path != NULL, NULL);
 
 	list = NULL;
 
@@ -237,6 +241,8 @@ static int is_base_command(const char *command)
 	GSList *tmp;
 	int len;
 
+	g_return_val_if_fail(command != NULL, FALSE);
+
 	/* find "command "s */
         len = strlen(command);
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
@@ -254,6 +260,8 @@ static GList *completion_get_settings(const char *key)
 	GList *complist;
 	GSList *tmp, *sets;
 	int len;
+
+	g_return_val_if_fail(key != NULL, NULL);
 
 	sets = settings_get_sorted();
 
@@ -274,6 +282,8 @@ static GList *completion_get_bool_settings(const char *key)
 	GList *complist;
 	GSList *tmp, *sets;
 	int len;
+
+	g_return_val_if_fail(key != NULL, NULL);
 
 	sets = settings_get_sorted();
 
@@ -296,6 +306,8 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 	GSList *tmp;
 	char *word;
 	int len;
+
+	g_return_val_if_fail(cmd != NULL, NULL);
 
 	len = strlen(cmd);
 	complist = NULL;
@@ -323,6 +335,8 @@ static GList *completion_get_subcommands(const char *cmd)
 	char *spacepos;
 	int len, skip;
 
+	g_return_val_if_fail(cmd != NULL, NULL);
+
 	/* get the number of chars to skip at the start of command. */
 	spacepos = strrchr(cmd, ' ');
 	skip = spacepos == NULL ? 0 :
@@ -345,11 +359,37 @@ static GList *completion_get_subcommands(const char *cmd)
 	return complist;
 }
 
+GList *completion_get_options(const char *cmd, const char *option)
+{
+	COMMAND_REC *rec;
+	GList *list;
+	char **tmp;
+	int len;
+
+	g_return_val_if_fail(cmd != NULL, NULL);
+	g_return_val_if_fail(option != NULL, NULL);
+
+	rec = command_find(cmd);
+	if (rec == NULL) return NULL;
+
+	list = NULL;
+	len = strlen(option);
+	for (tmp = rec->options; *tmp != NULL; tmp++) {
+		if (len == 0 || g_strncasecmp(*tmp, option, len) == 0)
+                        list = g_list_append(list, g_strconcat("-", *tmp + iscmdtype(**tmp), NULL));
+	}
+
+	return list;
+}
+
 /* split the line to command and arguments */
 static char *line_get_command(const char *line, char **args, int aliases)
 {
 	const char *ptr, *cmdargs;
 	char *cmd, *checkcmd;
+
+	g_return_val_if_fail(line != NULL, NULL);
+	g_return_val_if_fail(args != NULL, NULL);
 
 	cmd = checkcmd = NULL; *args = "";
 	cmdargs = NULL; ptr = line;
@@ -390,6 +430,8 @@ static char *line_get_command(const char *line, char **args, int aliases)
 static char *expand_aliases(const char *line)
 {
         char *cmd, *args, *ret;
+
+	g_return_val_if_fail(line != NULL, NULL);
 
 	cmd = line_get_command(line, &args, TRUE);
 	if (cmd == NULL) return g_strdup(line);
@@ -448,15 +490,26 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 	}
 
-	/* complete parameters */
 	cmd = line_get_command(line, &args, FALSE);
-	if (cmd != NULL) {
-		signal = g_strconcat("complete command ", cmd, NULL);
-		signal_emit(signal, 5, list, window, word, args, want_space);
-
-		g_free(signal);
-		g_free(cmd);
+	if (cmd == NULL) {
+		g_free(line);
+		return;
 	}
+
+	/* we're completing -option? */
+	if (*word == '-') {
+                *list = completion_get_options(cmd, word+1);
+		g_free(cmd);
+		g_free(line);
+		return;
+	}
+
+	/* complete parameters */
+	signal = g_strconcat("complete command ", cmd, NULL);
+	signal_emit(signal, 5, list, window, word, args, want_space);
+
+	g_free(signal);
+	g_free(cmd);
 
 	g_free(line);
 }

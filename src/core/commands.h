@@ -10,7 +10,8 @@ typedef struct {
 } COMMAND_REC;
 
 enum {
-	CMDERR_OPTION_UNKNOWN = -2, /* unknown -option */
+	CMDERR_OPTION_UNKNOWN = -3, /* unknown -option */
+	CMDERR_OPTION_AMBIGUOUS = -2, /* ambiguous -option */
 	CMDERR_OPTION_ARG_MISSING = -1, /* argument missing for -option */
 
         CMDERR_ERRNO, /* get the error from errno */
@@ -22,15 +23,20 @@ enum {
 	CMDERR_NOT_GOOD_IDEA /* not good idea to do, -yes overrides this */
 };
 
+/* Return the full command for `alias' */
 #define alias_find(alias) \
 	iconfig_get_str("aliases", alias, NULL)
 
-#define cmd_return_error(a) { signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
-#define cmd_param_error(a) { cmd_params_free(free_arg); cmd_return_error(a); }
+/* Returning from command function with error */
+#define cmd_return_error(a) \
+	{ signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
+#define cmd_param_error(a) \
+	{ cmd_params_free(free_arg); cmd_return_error(a); }
 
 extern GSList *commands;
-extern char *current_command;
+extern char *current_command; /* the command we're right now. */
 
+/* Bind command to specified function. */
 void command_bind_to(int pos, const char *cmd, const char *category, SIGNAL_FUNC func);
 #define command_bind(a, b, c) command_bind_to(1, a, b, c)
 #define command_bind_first(a, b, c) command_bind_to(0, a, b, c)
@@ -57,6 +63,8 @@ COMMAND_REC *command_find(const char *cmd);
    You can call this command multiple times for same command, options
    will be merged. If there's any conflicts with option types, the last
    call will override the previous */
+#define iscmdtype(c) \
+        ((c) == '-' || (c) == '+' || (c) == '@')
 void command_set_options(const char *cmd, const char *options);
 
 /* count can have these flags: */
