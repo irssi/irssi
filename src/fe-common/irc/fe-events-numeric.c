@@ -33,8 +33,8 @@
 #include "printtext.h"
 #include "fe-channels.h"
 
-static void event_received(IRC_SERVER_REC *server, const char *data,
-			   const char *nick, const char *addr);
+static void print_event_received(IRC_SERVER_REC *server, const char *data,
+				 const char *nick, int target_param);
 
 static char *last_away_nick = NULL;
 static char *last_away_msg = NULL;
@@ -414,7 +414,7 @@ static void event_whois_registered(IRC_SERVER_REC *server, const char *data,
 			    IRCTXT_WHOIS_REGISTERED, nick);
 	} else {
 		/* or /USERIP reply in undernet.. */
-		event_received(server, data, orignick, addr);
+		print_event_received(server, data, orignick, FALSE);
 	}
 	g_free(params);
 }
@@ -469,7 +469,7 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, "");
 	} else {
 		/* OPN's dancer uses for end of /MAP */
-		event_received(server, data, orignick, addr);
+		print_event_received(server, data, orignick, FALSE);
 	}
 	g_free(params);
 }
@@ -500,7 +500,7 @@ static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data,
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, ip);
 	} else {
-		event_received(server, data, orignick, addr);
+		print_event_received(server, data, orignick, FALSE);
 	}
 	g_free(params);
 }
@@ -522,7 +522,7 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data,
 	} else {
 		/* some servers use this as motd too..
 		   and OPN's dancer for /MAP */
-		event_received(server, data, orignick, addr);
+		print_event_received(server, data, orignick, FALSE);
 	}
 	g_free(params);
 }
@@ -641,7 +641,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data,
 		chanrec = irc_channel_find(server, target);
 		if (chanrec != NULL && chanrec->joined) {
 			/* dalnet - can't change nick while being banned */
-			event_received(server, data, nick, addr);
+			print_event_received(server, data, nick, FALSE);
 		} else {
 			/* channel is unavailable. */
 			printformat(server, NULL, MSGLEVEL_CRAP,
@@ -759,17 +759,17 @@ static void event_not_chanop(IRC_SERVER_REC *server, const char *data)
 }
 
 static void event_numeric(IRC_SERVER_REC *server, const char *data,
-			  const char *nick, const char *addr)
+			  const char *nick)
 {
 	data = strchr(data, ' ');
 	if (data != NULL)
-                event_received(server, data+1, nick, addr);
+                print_event_received(server, data+1, nick, FALSE);
 }
 
-static void event_received(IRC_SERVER_REC *server, const char *data,
-			   const char *nick, const char *addr)
+static void print_event_received(IRC_SERVER_REC *server, const char *data,
+				 const char *nick, int target_param)
 {
-	char *args, *ptr;
+	char *target, *args, *ptr;
 
 	g_return_if_fail(data != NULL);
 
@@ -778,6 +778,19 @@ static void event_received(IRC_SERVER_REC *server, const char *data,
 	if (ptr == NULL)
 		return;
 	ptr++;
+
+	if (!target_param)
+		target = NULL;
+	else {
+                /* target parameter */
+		target = ptr;
+		ptr = strchr(target, ' ');
+		if (ptr == NULL)
+			return;
+
+                target = g_strndup(target, (int) (ptr-target));
+		ptr++;
+	}
 
 	/* param1 param2 ... :last parameter */
 	if (*ptr == ':') {
@@ -792,12 +805,24 @@ static void event_received(IRC_SERVER_REC *server, const char *data,
 
 	if (nick == NULL || server->real_address == NULL ||
 	    strcmp(nick, server->real_address) == 0)
-		printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
+		printtext(server, target, MSGLEVEL_CRAP, "%s", args);
 	else {
-		printformat(server, NULL, MSGLEVEL_CRAP,
+		printformat(server, target, MSGLEVEL_CRAP,
 			    IRCTXT_DEFAULT_EVENT, nick, args);
 	}
 	g_free(args);
+}
+
+static void event_received(IRC_SERVER_REC *server, const char *data,
+			   const char *nick)
+{
+        print_event_received(server, data, nick, FALSE);
+}
+
+static void event_target_received(IRC_SERVER_REC *server, const char *data,
+				  const char *nick)
+{
+        print_event_received(server, data, nick, TRUE);
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data,
@@ -809,7 +834,7 @@ static void event_motd(IRC_SERVER_REC *server, const char *data,
 	    time(NULL)-3 <= server->real_connect_time)
 		return;
 
-        event_received(server, data, nick, addr);
+        print_event_received(server, data, nick, FALSE);
 }
 
 static void sig_empty(void)
@@ -892,11 +917,11 @@ void fe_events_numeric_init(void)
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 
-	signal_add("event 368", (SIGNAL_FUNC) event_received);
-	signal_add("event 347", (SIGNAL_FUNC) event_received);
-	signal_add("event 349", (SIGNAL_FUNC) event_received);
-	signal_add("event 442", (SIGNAL_FUNC) event_received);
-	signal_add("event 477", (SIGNAL_FUNC) event_received);
+	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 347", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 349", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 442", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 477", (SIGNAL_FUNC) event_target_received);
 }
 
 void fe_events_numeric_deinit(void)
@@ -975,9 +1000,9 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 
-	signal_remove("event 368", (SIGNAL_FUNC) event_received);
-	signal_remove("event 347", (SIGNAL_FUNC) event_received);
-	signal_remove("event 349", (SIGNAL_FUNC) event_received);
-	signal_remove("event 442", (SIGNAL_FUNC) event_received);
-	signal_remove("event 477", (SIGNAL_FUNC) event_received);
+	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 442", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 477", (SIGNAL_FUNC) event_target_received);
 }
