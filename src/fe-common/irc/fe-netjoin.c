@@ -324,7 +324,8 @@ static int netjoin_set_operator(NETJOIN_REC *rec, const char *channel, int on)
 	return TRUE;
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server, const char *addr)
+static void event_mode(const char *data, IRC_SERVER_REC *server,
+		       const char *sender, const char *addr)
 {
 	NETJOIN_REC *rec;
 	char *params, *channel, *mode, *nicks;
