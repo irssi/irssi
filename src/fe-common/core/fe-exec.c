@@ -1,7 +1,7 @@
 /*
  fe-exec.c : irssi
 
-    Copyright (C) 2000 Timo Sirainen
+    Copyright (C) 2000-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,7 +67,6 @@ static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
 		g_strdup_printf("%%%s", rec->name) :
 		g_strdup_printf("%%%d", rec->id);
 
-	item->window = window;
 	item->createtime = time(NULL);
         item->process = rec;
 
