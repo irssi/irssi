@@ -35,6 +35,67 @@
 #include "ignore.h"
 #include "printtext.h"
 
+#define ishighalnum(c) ((unsigned char) (c) >= 128 || isalnum(c))
+
+/* convert _underlined_ and *bold* words (and phrases) to use real
+   underlining or bolding */
+char *expand_emphasis(const char *text)
+{
+	GString *str;
+	char *ret;
+	int pos;
+
+        g_return_val_if_fail(text != NULL, NULL);
+
+	str = g_string_new(text);
+
+	for (pos = 0; pos < str->len; pos++) {
+		char type, *bgn, *end;
+
+		bgn = str->str + pos;
+
+		if (*bgn == '*') 
+			type = 2; /* bold */
+		else if (*bgn == '_') 
+			type = 31; /* underlined */
+		else
+			continue;
+
+		/* check that the beginning marker starts a word, and
+		 * that the matching end marker ends a word */
+		if ((pos > 0 && isalnum(bgn[-1])) || !ishighalnum(bgn[1]))
+			continue;
+		if ((end = strchr(bgn+1, *bgn)) == NULL) 
+			continue;
+		if (!ishighalnum(end[-1]) ||
+		    isalnum(end[1]) || end[1] == type)
+			continue;
+
+		/* allow only *word* emphasis, not *multiple words* */
+		if (!settings_get_bool("emphasis_multiword")) {
+			char *c;
+			for (c = bgn+1; c != end; c++) {
+				if (!isalnum(*c))
+					break;
+			}
+			if (c != end) continue;
+		}
+
+		if (settings_get_bool("emphasis_replace")) {
+			*bgn = *end = type;
+                        pos += (end-bgn);
+		} else {
+			g_string_insert_c(str, pos, type);
+                        pos += (end - bgn) + 2;
+			g_string_insert_c(str, pos++, type);
+		}
+	}
+
+	ret = str->str;
+	g_string_free(str, FALSE);
+	return ret;
+}
+
 static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
 {
         NICK_REC *nickrec;
@@ -60,7 +121,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	CHANNEL_REC *chanrec;
 	const char *nickmode;
 	int for_me, print_channel, level;
-	char *color;
+	char *color, *freemsg;
 
 	chanrec = channel_find(server, target);
 	g_return_if_fail(chanrec != NULL);
@@ -76,6 +137,11 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 
 	level = MSGLEVEL_PUBLIC | (for_me || color != NULL ?
 				   MSGLEVEL_HILIGHT : MSGLEVEL_NOHILIGHT);
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(msg);
+        else
+		freemsg = NULL;
 
 	nickmode = get_nickmode(chanrec, nick);
 	if (!print_channel) {
@@ -105,6 +171,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 		}
 	}
 
+        g_free_not_null(freemsg);
 	g_free_not_null(color);
 }
 
@@ -112,11 +179,19 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
 	QUERY_REC *query;
+        char *freemsg;
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(msg);
+        else
+		freemsg = NULL;
 
 	query = query_find(server, nick);
 	printformat(server, nick, MSGLEVEL_MSGS,
 		    query == NULL ? IRCTXT_MSG_PRIVATE :
 		    IRCTXT_MSG_PRIVATE_QUERY, nick, address, msg);
+
+	g_free_not_null(freemsg);
 }
 
 static void print_own_channel_message(SERVER_REC *server, CHANNEL_REC *channel,
@@ -401,6 +476,9 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 
 void fe_messages_init(void)
 {
+	settings_add_bool("lookandfeel", "emphasis", TRUE);
+	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
+	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);

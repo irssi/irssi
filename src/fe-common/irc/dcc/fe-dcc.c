@@ -37,6 +37,7 @@
 
 #include "module-formats.h"
 #include "printtext.h"
+#include "fe-messages.h"
 
 static int autocreate_dccquery;
 
@@ -142,16 +143,22 @@ static void dcc_chat_ctcp(const char *msg, DCC_REC *dcc)
 
 static void dcc_chat_msg(DCC_REC *dcc, const char *msg)
 {
-	char *sender;
+	char *sender, *freemsg;
 
 	g_return_if_fail(dcc != NULL);
 	g_return_if_fail(msg != NULL);
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(msg);
+        else
+		freemsg = NULL;
 
 	sender = g_strconcat("=", dcc->nick, NULL);
 	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
 		    query_find(NULL, sender) ? IRCTXT_DCC_MSG_QUERY :
 		    IRCTXT_DCC_MSG, dcc->nick, msg);
 	g_free(sender);
+        g_free_not_null(freemsg);
 }
 
 static void dcc_request(DCC_REC *dcc)

@@ -40,6 +40,7 @@ noinst_HEADERS = \
 	command-history.h \
 	completion.h \
 	fe-common-core.h \
+	fe-messages.h \
 	fe-queries.h \
 	formats.h \
 	hilight-text.h \
