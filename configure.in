@@ -208,10 +208,26 @@ AC_CHECK_LIB(nsl, inet_addr, [
 	PROG_LIBS="$PROG_LIBS -lnsl"
 ], -lsocket)
 
-# gcc specific options
+dnl * gcc specific options
 if test "x$ac_cv_prog_gcc" = "xyes"; then
   CFLAGS="$CFLAGS -Wall"
 fi
+
+dnl * socklen_t - AC_CHECK_TYPE() would be _really_ useful if it only would
+dnl * accept header files where to find the typedef..
+AC_MSG_CHECKING([for socklen_t])
+AC_CACHE_VAL(irssi_cv_type_socklen_t,
+[AC_TRY_COMPILE([
+#include <sys/socket.h>],
+[socklen_t t;],
+irssi_cv_type_socklen_t=yes,
+irssi_cv_type_socklen_t=no,
+)])
+if test $irssi_cv_type_socklen_t = no; then
+AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
+fi
+AC_MSG_RESULT($irssi_cv_type_socklen_t)
+
 
 dnl **
 dnl ** check for libPropList
