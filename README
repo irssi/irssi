@@ -26,7 +26,7 @@ it does:
  - You can connect to multiple servers. Irssi is also IRC network aware so
    you can specify some settings to work only in specified IRC networks.
  - Automatically connect to IRC server(s) at startup, automatically join to
-   channels when connected
+   channels when connected.
  - All code is nonblocking, it won't hang while connecting to server or
    opening DCC connection. Host lookups are done in separate processes.
  - DCC send, receive and chat with GUI
@@ -40,11 +40,23 @@ it does:
    hilighting lines with specified texts
  - Smart nick completion
  - Configurable logging support
- - You can use ZVT widget to print texts, it's really fast so you can be
-   joined to many high traffic channels and irssi won't slow up
  - Plugins support, creating plugins is really easy.
  - Lots of nice GUI stuff :)
 
+
+ * PROXY PLUGIN
+
+Usage:
+
+Start irssi-text in screen,
+connect to some irc server
+/load proxy <password> [ip address to listen [port to listen]]
+
+
+Finished, default port to listen in is 2777 and default ip is the ip
+where your irc server is connected. Now just connect your clients to
+the proxy. There's not much features yet, if you want to use multiple
+servers you'll need to start multiple irssi-texts now..
 
  * INSTALLATION
 
@@ -75,8 +87,8 @@ There's also some others, you can get a full list with ./configure --help
  --no-applet            Don't start gnome panel applet
  --connect -c <server>  Connect to server at startup
  --port -p <port>         - specify port
- --noconnect -n         Don't autoconnect to any servers at startup
-
+ --noconnect -!         Don't autoconnect to any servers at startup
+ --nick -n              Specify what nick to use
 
  * BUGS / SUGGESTIONS
 

@@ -2,7 +2,7 @@
 
 #include <irc-base/network.h>
 
-#define FLOOD_TIMEOUT 100000
+#define FLOOD_TIMEOUT 50000
 
 typedef struct
 {
@@ -15,6 +15,16 @@ GList *channels;
 gchar *clientnick, *clienthost;
 
 int clienth;
+
+gint gui_input_add(gint handle, GUIInputCondition condition,
+		   GUIInputFunction function, gpointer data)
+{
+    return -1;
+}
+
+void gui_input_remove(gint tag)
+{
+}
 
 /* Read a line */
 gint read_line(gboolean socket, gint handle, GString *output, GString *buffer)

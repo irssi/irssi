@@ -1,3 +1,45 @@
+v0.7.17 1999-10-09  Timo Sirainen <cras@irccrew.org> [unstable]
+
+	+ Irssi text widget! (replaces zvt)
+	   - supports proportional fonts
+           - FAST
+           - background pixmaps (scaled, tiled, scrollable, shaded)
+
+	+ Proxy plugin - Unlike other irc proxies, this is more than just a
+	  simple proxy. You can connect to it from multiple clients at the
+	  same time, but each client will use the _same_ irc session, so you
+	  can keep one irc client open all the time in your home, one at
+	  work, one at wc, etc. All the clients get the same "normal"
+	  messages from server, but if you request a /whois or /who or some
+	  other commands, the reply will be sent to only the client that
+	  requested it. Check README how to use it.
+
+	+ Irssi is now much faster catching up things after joined to
+	  channel, it asks channels' MODE and WHO first, all with the same
+	  command (WHO #a,#b,#c), after them it asks the ban lists etc. less
+	  important things.
+	+ Workaround for GTK themes eating X server's memory
+	+ Command line arguments:
+		-c server [-p port] : connects to server at startup
+		-! : don't autoconnect to any servers
+		-n : specify nick to use (override setup)
+	+ Server lag displayed in statusbar, you can also set irssi to
+	  automatically disconnect from server if it is too lagged
+	+ Channel limit and key is displayed above nicklist
+	+ Number of ops and total number of nicks in channel is displayed
+	+ Nicklist background color can be changed
+	+ Each window can have it's own command history buffer
+	+ Try to let the server disconnect the socket (5 sec timeout) to make
+	  sure that quit message gets through.
+	+ Improved /gwhois dialog
+	+ Setup dialogs are resizeable
+	+ You can specify what port to use with DCC.
+	- Channel dialog fixes: after editing channel, it was moved to the
+	  end of the list, opening multiple channels edit dialogs didn't
+	  work right
+        - Reconnecting to server didn't work (always)
+	- Giving multiple nicks for /gwhois messed up irssi
+
 v0.7.16 1999-09-13  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	+ Started bot plugin, it has simple user management functions and

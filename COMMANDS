@@ -22,15 +22,15 @@
  ** Server handling
 
 
-CONNECT <address>[:port[:password]]
+CONNECT <address> [port [password [nick]]]
 
-	Connect to specified server
+	Connect to specified server, if there's no password set it to -
 
 DISCONNECT <* / tag> [message]
 
 	Disconnect from server
 
-SERVER <address>[:port[:password]]
+SERVER <address> [port [password [nick]]]
 
 	Disconnect from current server and connect to new one
 
