@@ -161,6 +161,7 @@ FORMAT_REC fecommon_irc_formats[] =
     { NULL, "CTCPs", 0 },
 
     { "ctcp_reply", "CTCP %_$0%_ reply from %_$1%_%K:%n $2", 3, { 0, 0, 0 } },
+    { "ctcp_reply_channel", "CTCP %_$0%_ reply from %_$1%_ in channel %_$4%_%K:%n $2", 4, { 0, 0, 0, 0 } },
     { "ctcp_ping_reply", "CTCP %_PING%_ reply from %_$0%_: $1.$2 seconds", 3, { 0, 2, 2 } },
     { "ctcp_requested", "%g>>> %_$0%_ %K[%g$1%K] %grequested %_$2%_ from %_$3", 4, { 0, 0, 0, 0 } },
 

@@ -71,7 +71,7 @@ static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server, const c
 	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
 
 	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
-		    IRCTXT_CTCP_REPLY, str, nick, ptr);
+		    ischannel(*target) ? IRCTXT_CTCP_REPLY_CHANNEL : IRCTXT_CTCP_REPLY, str, nick, ptr, target);
 	g_free(str);
 }
 
