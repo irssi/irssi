@@ -320,16 +320,20 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 		if (xpos == COLS) {
 			xpos = indent_pos;
 
+			sub = g_new(LINE_CACHE_SUB_REC, 1);
 			if (last_space > indent_pos && last_space > 10) {
                                 /* go back to last space */
                                 color = last_color;
 				ptr = last_space_ptr;
 				while (*ptr == ' ') ptr++;
+			} else {
+				/* long word, no indentation in next line */
+				xpos = 0;
+				sub->continues = TRUE;
 			}
 
-			sub = g_new(LINE_CACHE_SUB_REC, 1);
 			sub->start = (char *) ptr;
-			sub->indent = indent_pos;
+			sub->indent = xpos;
 			sub->color = color;
 
 			lines = g_slist_append(lines, sub);
@@ -393,7 +397,9 @@ int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
         return cache->count;
 }
 
-static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *rec, const char *text, const char *text_end)
+static void single_line_draw(GUI_WINDOW_REC *gui, int ypos,
+			     LINE_CACHE_SUB_REC *rec, const char *text,
+			     const char *text_end, int continues)
 {
 	WINDOW *cwin;
 	char *tmp;
@@ -412,7 +418,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 	cwin = stdscr;
 	ypos += gui->parent->first_line;
 #endif
-	wmove(cwin, ypos, xpos);
+	if (!continues) wmove(cwin, ypos, xpos);
 	set_color(cwin, color);
 
 	while (text != text_end) {
@@ -467,8 +473,6 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 		}
 		text++;
 	}
-
-	screen_refresh(cwin);
 }
 
 int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip, int max)
@@ -494,8 +498,16 @@ int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip
 		pos = sub == NULL ? line->text : sub->start;
 		next_pos = (n+1 < cache->count) ?
 			cache->lines[n].start : NULL;
-		single_line_draw(gui, ypos, sub, pos, next_pos);
+
+		single_line_draw(gui, ypos, sub, pos, next_pos,
+				 sub != NULL && sub->continues && n != skip);
 	}
+
+#ifdef USE_CURSES_WINDOWS
+	screen_refresh(gui->parent->curses_win);
+#else
+	screen_refresh(NULL);
+#endif
 
 	return cache->count;
 }

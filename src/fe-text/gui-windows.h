@@ -27,6 +27,7 @@ typedef struct {
 	char *start;
 	int indent;
 	int color;
+	int continues:1; /* first word in line belong to the end of the last word in previous line */
 } LINE_CACHE_SUB_REC;
 
 typedef struct {
