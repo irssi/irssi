@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002120101';
+$VERSION = '2002120202';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -188,6 +188,9 @@ sub script_info ($) {
 	    if (defined $xml->{$_.".pl"}{$entry}) {
 		$result{$_}{$entry} = $xml->{$_.".pl"}{$entry};
 	    }
+	}
+	if ($xml->{$_.".pl"}{signature_available}) {
+	    $result{$_}{signature_available} = 1;
 	}
 	if (defined $xml->{$_.".pl"}{modules}) {
 	    my $modules = $xml->{$_.".pl"}{modules};
@@ -479,7 +482,9 @@ sub print_info (%) {
 	$line .= "  Source     : ".$data{$script}{source}."\n";
 	$line .= "  Installed  : ".$local."\n" if defined $local;
 	$line .= "  Autorun    : ".$autorun."\n" if defined $autorun;
-	$line .= "  Authors    : ".$data{$script}{authors}."\n";
+	$line .= "  Authors    : ".$data{$script}{authors};
+	$line .= " %Go-m signed%n" if $data{$script}{signature_available};
+	$line .= "\n";
 	$line .= "  Contact    : ".$data{$script}{contact}."\n";
 	$line .= "  Description: ".$data{$script}{description}."\n";
 	$line .= "\n" if $data{$script}{modules};
@@ -775,7 +780,7 @@ sub get_scripts {
 		$sites_db{$_}{source} = $src;
 	    }
 	} else {
-	    ###FIXME Panic?!
+	    ## FIXME Panic?!
 	}
 	
     }
@@ -980,12 +985,14 @@ sub sig_gui_print_text ($$$$$$) {
     if ($text =~ /Can't locate (.*?)\.pm in \@INC \(\@INC contains:(.*?) at/) {
         my $module = $1;
         $module =~ s/\//::/g;
-	missing_module($module);
+	my $time;
+	$time = Irssi::timeout_add(10, \&missing_module, [$module, \$time]);
     }
 }
 
-sub missing_module ($) {
-    my ($module) = @_;
+sub missing_module ($$) {
+    my ($module, $time) = @{ $_[0] };
+    Irssi::timeout_remove($$time);
     my $text;
     $text .= "The perl module %9".$module."%9 is missing on your system.\n";
     $text .= "Please ask your administrator about it.\n";
