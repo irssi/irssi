@@ -34,3 +34,5 @@ irssi-config
 colorless.theme
 build-stamp
 configure-stamp
+glib.m4
+glib-2.0.m4
