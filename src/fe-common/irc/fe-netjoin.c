@@ -326,22 +326,13 @@ static int netjoin_set_nickmode(NETJOIN_REC *rec, const char *channel,
 				char mode)
 {
 	GSList *pos;
-        char *oldchannel;
 
 	pos = gslist_find_icase_string(rec->now_channels, channel);
 	if (pos == NULL)
 		return FALSE;
 
-        oldchannel = pos->data;
-	if (isnickflag(*oldchannel) && mode != '\0') {
-		/* already set some mode, should we use old or new one? */
-		if (mode == '+' || (mode == '%' && *oldchannel == '@'))
-                        return TRUE;
-	}
-
 	g_free(pos->data);
-	pos->data = mode == '\0' ? g_strdup(channel) :
-		g_strdup_printf("%c%s", mode, channel);
+	pos->data = g_strdup_printf("%c%s", mode, channel);
 	return TRUE;
 }
 
@@ -355,7 +346,7 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 {
 	NETJOIN_REC *rec;
 	char *params, *mode, *nicks;
-	char **nicklist, **nick, type;
+	char **nicklist, **nick, type, modechr;
 	int show;
 
 	g_return_if_fail(data != NULL);
@@ -379,8 +370,9 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 		if (*nick != NULL && isnickmode(*mode)) {
                         /* give/remove ops */
 			rec = netjoin_find(server, *nick);
-			if (rec == NULL || !netjoin_set_nickmode(rec, channel,
-							 nickmodechar(type)))
+                        modechr = nickmodechar(*mode);
+			if (rec == NULL || type != '+' || modechr == '\0' ||
+			    !netjoin_set_nickmode(rec, channel, modechr))
 				show = TRUE;
                         nick++;
 		} else {
