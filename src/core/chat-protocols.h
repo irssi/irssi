@@ -1,7 +1,7 @@
 #ifndef __CHAT_PROTOCOLS_H
 #define __CHAT_PROTOCOLS_H
 
-typedef struct {
+struct _CHAT_PROTOCOL_REC {
 	int id;
 
 	unsigned int not_initialized:1;
@@ -20,7 +20,7 @@ typedef struct {
         SERVER_REC *(*server_connect) (SERVER_CONNECT_REC *);
         CHANNEL_REC *(*channel_create) (SERVER_REC *, const char *, int);
         QUERY_REC *(*query_create) (const char *, const char *, int);
-} CHAT_PROTOCOL_REC;
+};
 
 extern GSList *chat_protocols;
 

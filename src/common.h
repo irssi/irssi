@@ -101,6 +101,7 @@ typedef struct _LINEBUF_REC LINEBUF_REC;
 typedef struct _NET_SENDBUF_REC NET_SENDBUF_REC;
 typedef struct _RAWLOG_REC RAWLOG_REC;
 
+typedef struct _CHAT_PROTOCOL_REC CHAT_PROTOCOL_REC;
 typedef struct _CHATNET_REC CHATNET_REC;
 typedef struct _SERVER_REC SERVER_REC;
 typedef struct _WI_ITEM_REC WI_ITEM_REC;
