@@ -131,7 +131,7 @@ static int init_curses(void)
 #ifdef HAVE_CURSES_IDCOK
 	idcok(stdscr, 1);
 #endif
-	intrflush(stdscr, FALSE); halfdelay(1); keypad(stdscr, 1);
+	intrflush(stdscr, FALSE); nodelay(stdscr, TRUE); keypad(stdscr, 1);
 
 	if (has_colors())
 		start_color();
