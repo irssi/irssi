@@ -308,11 +308,10 @@ void log_update(LOG_REC *log)
 	signal_emit("log new", 1, log);
 }
 
-void log_close(LOG_REC *log)
+static void log_destroy(LOG_REC *log)
 {
 	g_return_if_fail(log != NULL);
 
-	log_remove_config(log);
 	if (log->handle != -1)
 		log_stop_logging(log);
 
@@ -322,6 +321,14 @@ void log_close(LOG_REC *log)
 	if (log->items != NULL) g_strfreev(log->items);
 	g_free(log->fname);
 	g_free(log);
+}
+
+void log_close(LOG_REC *log)
+{
+	g_return_if_fail(log != NULL);
+
+	log_remove_config(log);
+	log_destroy(log);
 }
 
 static void sig_printtext_stripped(void *window, void *server, const char *item, gpointer levelp, const char *str)
@@ -377,10 +384,21 @@ static void log_read_config(void)
 {
 	CONFIG_NODE *node;
 	LOG_REC *log;
-	GSList *tmp;
+	GSList *tmp, *next, *fnames;
 
-	while (logs != NULL)
-		log_close(logs->data);
+	/* close old logs, save list of open logs */
+	fnames = NULL;
+	for (tmp = logs; tmp != NULL; tmp = next) {
+		log = tmp->data;
+
+		next = tmp->next;
+		if (log->temp)
+			continue;
+
+		if (log->handle != -1)
+			fnames = g_slist_append(fnames, g_strdup(log->fname));
+		log_destroy(log);
+	}
 
 	node = iconfig_node_traverse("logs", FALSE);
 	if (node == NULL) return;
@@ -404,8 +422,12 @@ static void log_read_config(void)
 		node = config_node_section(node, "items", -1);
 		if (node != NULL) log->items = config_node_get_list(node);
 
-		if (log->autoopen) log_start_logging(log);
+		if (log->autoopen || gslist_find_string(fnames, log->fname))
+			log_start_logging(log);
 	}
+
+	g_slist_foreach(fnames, (GFunc) g_free, NULL);
+	g_slist_free(fnames);
 }
 
 static void read_settings(void)
