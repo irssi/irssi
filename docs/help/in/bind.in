@@ -89,6 +89,7 @@ Command can be one of:
   check_replaces - Check word replaces
 
 (Misc)
+  nothing - use this to disable a built-in key
   refresh_screen
   yank_from_cutbuffer - "Undelete" line
   transpose_characters - Swap current and previous character

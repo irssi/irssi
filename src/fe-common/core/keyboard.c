@@ -633,6 +633,10 @@ static void sig_multi(const char *data, void *gui_data)
         g_strfreev(list);
 }
 
+static void sig_nothing(const char *data)
+{
+}
+
 static void cmd_show_keys(const char *searchkey, int full)
 {
 	GSList *info, *key;
@@ -816,6 +820,7 @@ void keyboard_init(void)
 	key_bind("command", "Run any IRC command", NULL, NULL, (SIGNAL_FUNC) sig_command);
 	key_bind("key", "Specify name for key binding", NULL, NULL, (SIGNAL_FUNC) sig_key);
 	key_bind("multi", "Run multiple commands", NULL, NULL, (SIGNAL_FUNC) sig_multi);
+	key_bind("nothing", "Do nothing", NULL, NULL, (SIGNAL_FUNC) sig_nothing);
 
 	/* read the keyboard config when all key binds are known */
 	signal_add("irssi init read settings", (SIGNAL_FUNC) read_keyboard_config);
