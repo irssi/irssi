@@ -48,7 +48,7 @@ typedef struct {
 
 static int timer_tag;
 
-static EXPANDO_REC *char_expandos[127];
+static EXPANDO_REC *char_expandos[255];
 static GHashTable *expandos;
 static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
@@ -56,8 +56,8 @@ static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease, *sysarch;
 static const char *timestamp_format;
 
-#define CHAR_EXPANDOS_COUNT \
-	((int) (sizeof(char_expandos) / sizeof(char_expandos[0])))
+#define CHAR_EXPANDO(chr) \
+	(char_expandos[(int) (unsigned char) chr])
 
 /* Create expando - overrides any existing ones. */
 void expando_create(const char *key, EXPANDO_FUNC func, ...)
@@ -73,7 +73,7 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
 		rec = g_hash_table_lookup(expandos, key);
 	else {
 		/* single character expando */
-		rec = char_expandos[(int) *key];
+		rec = CHAR_EXPANDO(*key);
 	}
 
 	if (rec != NULL)
@@ -83,7 +83,7 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
                 if (key[1] != '\0')
 			g_hash_table_insert(expandos, g_strdup(key), rec);
 		else
-			char_expandos[(int) *key] = rec;
+			char_expandos[(int) (unsigned char) *key] = rec;
 	}
 
 	rec->func = func;
@@ -99,7 +99,7 @@ static EXPANDO_REC *expando_find(const char *key)
 	if (key[1] != '\0')
 		return g_hash_table_lookup(expandos, key);
         else
-		return char_expandos[(int) *key];
+		return CHAR_EXPANDO(*key);
 }
 
 /* Add new signal to expando */
@@ -136,9 +136,9 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 
 	if (key[1] == '\0') {
 		/* single character expando */
-		rec = char_expandos[(int) *key];
+		rec = CHAR_EXPANDO(*key);
 		if (rec != NULL && rec->func == func) {
-			char_expandos[(int) *key] = NULL;
+			char_expandos[(int) (unsigned char) *key] = NULL;
 			g_free(rec);
 		}
 	} else if (g_hash_table_lookup_extended(expandos, key, &origkey,
@@ -211,10 +211,8 @@ void expando_unbind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 
 EXPANDO_FUNC expando_find_char(char chr)
 {
-	g_return_val_if_fail(chr < CHAR_EXPANDOS_COUNT, NULL);
-
-	return char_expandos[(int) chr] == NULL ? NULL :
-		char_expandos[(int) chr]->func;
+	return CHAR_EXPANDO(chr) == NULL ? NULL :
+		CHAR_EXPANDO(chr)->func;
 }
 
 EXPANDO_FUNC expando_find_long(const char *key)
@@ -560,7 +558,7 @@ void expandos_deinit(void)
 {
 	int n;
 
-	for (n = 0; n < CHAR_EXPANDOS_COUNT; n++)
+	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++)
 		g_free_not_null(char_expandos[n]);
 
 	expando_destroy("sysname", expando_sysname);
