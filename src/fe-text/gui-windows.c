@@ -533,6 +533,8 @@ static void window_update_prompt(WINDOW_REC *window)
 	WI_ITEM_REC *item;
 	char *text, *str;
 
+	if (window != active_win) return;
+
 	item = window->active;
 	if (item != NULL)
 		text = item->name;
