@@ -241,7 +241,7 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
   AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
 
   GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
-  if -n "$GLIB_DIR"; then
+  if test -n "$GLIB_DIR"; then
     dnl * glib in irssi directory, use it
     AC_MSG_RESULT([yes, using it])
 
