@@ -50,12 +50,8 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd);
 void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		       int send_now, int immediate, int raw);
 
-#include "commands.h" /* contains the generic PARAM_FLAG_xxx defines */
-
-/* IRC specific: optional channel in first argument */
-#define PARAM_FLAG_OPTCHAN 0x10000000
-
 /* Get count parameters from data */
+#include "commands.h"
 char *event_get_param(char **data);
 char *event_get_params(const char *data, int count, ...);
 

@@ -377,44 +377,8 @@ static void irc_init_server(IRC_SERVER_REC *server)
 			    (GInputFunction) irc_parse_incoming, server);
 }
 
-#define isoptchan(a) \
-	(ischannel((a)[0]) || ((a)[0] == '*' && ((a)[1] == '\0' || (a)[1] == ' ')))
-
-static char *irc_cmd_get_func(const char *data, int *count, va_list *vargs)
-{
-	IRC_CHANNEL_REC *channel;
-	char *ret, *args, *chan, *p;
-
-	if ((*count & PARAM_FLAG_OPTCHAN) == 0)
-		return g_strdup(data);
-
-	*count &= ~PARAM_FLAG_OPTCHAN;
-	channel = (void *) va_arg(*vargs, void *);
-	channel = IRC_CHANNEL(channel);
-
-	/* change first argument in data to full channel name. */
-	p = args = g_strdup(data);
-
-	chan = isoptchan(args) ? cmd_get_param(&args) : NULL;
-	if (chan != NULL && *chan == '!' && channel != NULL) {
-		/* whenever trying to send something to !channel,
-		   change it to the real joined !XXXXXchannel */
-		channel = irc_channel_find(channel->server, chan);
-		if (channel != NULL) chan = channel->name;
-	}
-
-	if (chan == NULL || strcmp(chan, "*") == 0)
-		chan = channel == NULL ? "*" : channel->name;
-
-        ret = g_strconcat(chan, " ", args, NULL);
-	g_free(p);
-	return ret;
-}
-
 void irc_irc_init(void)
 {
-	cmd_get_add_func(irc_cmd_get_func);
-
 	signal_add("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_add("server connected", (SIGNAL_FUNC) irc_init_server);
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);

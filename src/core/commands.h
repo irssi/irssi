@@ -97,11 +97,11 @@ void command_set_options_module(const char *module,
 int command_have_option(const char *cmd, const char *option);
 
 /* count can have these flags: */
-#define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00ffffff)
+#define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00000fff)
 /* don't check for quotes - "arg1 arg2" is NOT treated as one argument */
-#define PARAM_FLAG_NOQUOTES 0x01000000
+#define PARAM_FLAG_NOQUOTES 0x00001000
 /* final argument gets all the rest of the arguments */
-#define PARAM_FLAG_GETREST 0x02000000
+#define PARAM_FLAG_GETREST 0x00002000
 /* command contains options - first you need to specify them with
    command_set_options() function. Example:
 
@@ -124,9 +124,11 @@ int command_have_option(const char *cmd, const char *option);
    "cmd2" = "another arg"
    "optnumarg" = "" - this is because "rest" isn't a numeric value
 */
-#define PARAM_FLAG_OPTIONS 0x04000000
+#define PARAM_FLAG_OPTIONS 0x00004000
 /* don't complain about unknown options */
-#define PARAM_FLAG_UNKNOWN_OPTIONS 0x08000000
+#define PARAM_FLAG_UNKNOWN_OPTIONS 0x00008000
+/* optional channel in first argument */
+#define PARAM_FLAG_OPTCHAN 0x00010000
 
 char *cmd_get_param(char **data);
 /* get parameters from command - you should point free_me somewhere and
@@ -136,10 +138,6 @@ char *cmd_get_param(char **data);
 int cmd_get_params(const char *data, gpointer *free_me, int count, ...);
 
 void cmd_params_free(void *free_me);
-
-typedef char* (*CMD_GET_FUNC) (const char *data, int *count, va_list *args);
-void cmd_get_add_func(CMD_GET_FUNC func);
-void cmd_get_remove_func(CMD_GET_FUNC func);
 
 void commands_remove_module(const char *module);
 

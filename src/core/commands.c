@@ -22,9 +22,11 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
+#include "special-vars.h"
+
 #include "servers.h"
 #include "servers-redirect.h"
-#include "special-vars.h"
+#include "channels.h"
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -32,7 +34,6 @@
 GSList *commands;
 char *current_command;
 
-static GSList *cmdget_funcs;
 static int signal_default_command;
 
 static GSList *alias_runstack;
@@ -613,69 +614,56 @@ static int get_cmd_options(char **data, int ignore_unknown,
 	return 0;
 }
 
-char *cmd_get_callfuncs(const char *data, int *count, va_list *args)
-{
-	CMD_GET_FUNC func;
-	GSList *tmp;
-	char *ret, *old;
-
-	ret = g_strdup(data);
-	for (tmp = cmdget_funcs; tmp != NULL; tmp = tmp->next) {
-		func = (CMD_GET_FUNC) tmp->data;
-
-		old = ret;
-		ret = func(ret, count, args);
-                g_free(old);
-	}
-
-	return ret;
-}
-
 typedef struct {
 	char *data;
         GHashTable *options;
 } CMD_TEMP_REC;
 
+static char *get_optional_channel(CHANNEL_REC *active_channel, char **data)
+{
+        CHANNEL_REC *chanrec;
+	char *tmp, *origtmp, *channel, *ret;
+
+	if (active_channel == NULL) {
+                /* no active channel in window, channel required */
+		return cmd_get_param(data);
+	}
+
+	origtmp = tmp = g_strdup(*data);
+	channel = cmd_get_param(&tmp);
+
+	if (strcmp(channel, "*") == 0 ||
+	    !active_channel->server->ischannel(channel))
+		ret = active_channel->name;
+	else {
+		/* Find the channel first and use it's name if found.
+		   This allows automatic !channel -> !XXXXXchannel replaces. */
+		chanrec = channel_find(active_channel->server, channel);
+		ret = chanrec == NULL ? channel : chanrec->name;
+                cmd_get_param(data);
+	}
+
+	g_free(origtmp);
+        return ret;
+}
+
 int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 {
 	CMD_TEMP_REC *rec;
 	GHashTable **opthash;
-	char **str, *arg, *datad, *old;
+	char **str, *arg, *datad;
 	va_list args;
-	int cnt, error, len, ignore_unknown;
+	int cnt, error, ignore_unknown;
 
 	g_return_val_if_fail(data != NULL, FALSE);
 
 	va_start(args, count);
 
-	/* get the length of the options in string */
-	if ((count & PARAM_FLAG_OPTIONS) == 0)
-		len = 0;
-	else {
-		old = datad = g_strdup(data);
-		get_cmd_options(&datad, TRUE, NULL, NULL);
-		len = (int) (datad-old);
-		g_free(old);
-	}
-
-	/* send the text to custom functions to handle - skip options */
-	old = datad = cmd_get_callfuncs(data+len, &count, &args);
-
-	if (len > 0) {
-		/* put the options + the new data to one string */
-		datad = g_malloc(len+1 + strlen(old)+1);
-		memcpy(datad, data, len);
-		datad[len] = ' ';
-		memcpy(datad+len+1, old, strlen(old)+1);
-		g_free(old);
-
-		old = datad;
-	}
-
 	rec = g_new0(CMD_TEMP_REC, 1);
-	rec->data = old;
+	rec->data = g_strdup(data);
 	*free_me = rec;
 
+        datad = rec->data;
 	error = FALSE;
 	if (count & PARAM_FLAG_OPTIONS) {
 		arg = (char *) va_arg(args, char *);
@@ -693,6 +681,18 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 	if (!error) {
 		/* and now handle the string */
 		cnt = PARAM_WITHOUT_FLAGS(count);
+		if (count & PARAM_FLAG_OPTCHAN) {
+			/* optional channel as first parameter */
+			CHANNEL_REC *chanrec;
+
+			chanrec = (CHANNEL_REC *) va_arg(args, CHANNEL_REC *);
+                        arg = get_optional_channel(chanrec, &datad);
+
+			str = (char **) va_arg(args, char **);
+			if (str != NULL) *str = arg;
+                        cnt--;
+		}
+
 		while (cnt-- > 0) {
 			if (cnt == 0 && count & PARAM_FLAG_GETREST) {
 				/* get rest */
@@ -727,16 +727,6 @@ void cmd_params_free(void *free_me)
 	if (rec->options != NULL) g_hash_table_destroy(rec->options);
 	g_free(rec->data);
 	g_free(rec);
-}
-
-void cmd_get_add_func(CMD_GET_FUNC func)
-{
-        cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
-}
-
-void cmd_get_remove_func(CMD_GET_FUNC func)
-{
-        cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
 static void command_module_unbind_all(COMMAND_REC *rec,
@@ -894,7 +884,6 @@ static void cmd_cd(const char *data)
 void commands_init(void)
 {
 	commands = NULL;
-	cmdget_funcs = NULL;
 	current_command = NULL;
 	alias_runstack = NULL;
 
@@ -910,7 +899,6 @@ void commands_init(void)
 void commands_deinit(void)
 {
 	g_free_not_null(current_command);
-	g_slist_free(cmdget_funcs);
 
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
 
