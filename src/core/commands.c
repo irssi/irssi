@@ -566,9 +566,11 @@ static int get_cmd_options(char **data, int ignore_unknown,
 				break;
 			}
 
-			if (!i_isspace(**data)) {
+			if (**data == '\0')
+				option = "-";
+			else if (!i_isspace(**data))
 				option = cmd_get_param(data);
-			} else {
+			else {
 				option = "-";
 				(*data)++;
 			}
