@@ -203,11 +203,12 @@ static void cmd_lastlog(const char *data)
 	list = gui_window_find_text(active_win, text, startline, flags & LASTLOG_FLAG_REGEXP, flags & LASTLOG_FLAG_WORD);
 	tmp = lastlog_find_startline(list, count, atoi(start), level);
 
-	for (; tmp != NULL && (count < 0 || count > 0); tmp = tmp->next, count--) {
+	for (; tmp != NULL && (count < 0 || count > 0); tmp = tmp->next) {
 		LINE_REC *rec = tmp->data;
 
 		if (!lastlog_match(rec, level))
 			continue;
+		count--;
 
 		text = gui_window_line2text(rec);
 		if (settings_get_bool("timestamps"))
