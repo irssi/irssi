@@ -21,30 +21,29 @@
 #include "module.h"
 #include "settings.h"
 #include "levels.h"
-#include "fe-common/core/printtext.h"
 
-void proxy_deinit(void)
+void irc_proxy_deinit(void)
 {
 	plugin_proxy_listen_deinit();
 }
 
-void proxy_init(void)
+void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
 	settings_add_str("irssiproxy", "irssiproxy_password", "");
 
 	if (*settings_get_str("irssiproxy_password") == '\0') {
 		/* no password - bad idea! */
-		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "Warning!! Password not specified, everyone can "
-			  "use this proxy! Use /set irssiproxy_password "
-			  "<password> to set it");
+		signal_emit("gui dialog", 2, "warning",
+			    "Warning!! Password not specified, everyone can "
+			    "use this proxy! Use /set irssiproxy_password "
+			    "<password> to set it");
 	}
 	if (*settings_get_str("irssiproxy_ports") == '\0') {
-		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "No proxy ports specified. Use /SET "
-			  "irssiproxy_ports <ircnet>=<port> <ircnet2>=<port2> "
-			  "... to set them.");
+		signal_emit("gui dialog", 2, "warning",
+			    "No proxy ports specified. Use /SET "
+			    "irssiproxy_ports <ircnet>=<port> <ircnet2>=<port2> "
+			    "... to set them.");
 	}
 
 	plugin_proxy_listen_init();
