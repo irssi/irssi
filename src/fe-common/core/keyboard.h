@@ -29,6 +29,12 @@ void key_configure_remove(const char *key);
 KEYINFO_REC *key_info_find(const char *id);
 int key_pressed(const char *key, void *data);
 
+#define ENTRY_REDIRECT_FLAG_HOTKEY	0x01
+#define ENTRY_REDIRECT_FLAG_HIDDEN	0x02
+
+void keyboard_entry_redirect(SIGNAL_FUNC func, const char *entry,
+			     int flags, void *data);
+
 void keyboard_init(void);
 void keyboard_deinit(void);
 

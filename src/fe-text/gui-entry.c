@@ -24,6 +24,7 @@
 
 static GString *entry;
 static int promptlen, permanent_prompt, pos, scrstart, scrpos;
+static int prompt_hidden;
 static char *prompt;
 
 static void entry_screenpos(void)
@@ -54,7 +55,9 @@ static void entry_update(void)
 	move(LINES-1, promptlen);
 
 	for (p = entry->str+scrstart, n = 0; n < len; n++, p++) {
-		if ((unsigned char) *p >= 32)
+		if (prompt_hidden)
+                        addch(' ');
+		else if ((unsigned char) *p >= 32)
 			addch((unsigned char) *p);
 		else {
 			set_color(stdscr, ATTR_REVERSE);
@@ -95,6 +98,11 @@ void gui_entry_set_perm_prompt(const char *str)
 
 	permanent_prompt = TRUE;
 	gui_entry_set_prompt(NULL);
+}
+
+void gui_entry_set_hidden(int hidden)
+{
+        prompt_hidden = hidden;
 }
 
 void gui_entry_remove_perm_prompt(void)
@@ -248,6 +256,7 @@ void gui_entry_init(void)
 	pos = scrpos = 0;
 	prompt = NULL; promptlen = 0;
 	permanent_prompt = FALSE;
+        prompt_hidden = FALSE;
 }
 
 void gui_entry_deinit(void)

@@ -6,6 +6,7 @@ void gui_entry_set_prompt(const char *str);
 /* permanent prompt can't be overwritten with gui_entry_set_prompt() */
 void gui_entry_set_perm_prompt(const char *str);
 void gui_entry_remove_perm_prompt(void);
+void gui_entry_set_hidden(int hidden);
 
 void gui_entry_set_text(const char *str);
 char *gui_entry_get_text(void);

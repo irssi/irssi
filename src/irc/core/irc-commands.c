@@ -1000,7 +1000,7 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 	}
 }
 
-/* SYNTAX: OPER [<nick>] <password> */
+/* SYNTAX: OPER [<nick> [<password>]] */
 static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 {
 	char *nick, *password;
@@ -1010,13 +1010,10 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
+        /* asking for password is handled by fe-common */
 	if (!cmd_get_params(data, &free_arg, 2, &nick, &password))
 		return;
-        if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	if (*password == '\0') {
-		password = nick;
-		nick = server->nick;
-	}
+        if (*password == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	irc_send_cmdv(server, "OPER %s %s", nick, password);
 	cmd_params_free(free_arg);

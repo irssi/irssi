@@ -29,6 +29,7 @@
 
 #include "levels.h"
 #include "printtext.h"
+#include "keyboard.h"
 
 static void set_print(SETTINGS_REC *rec)
 {
@@ -274,10 +275,9 @@ static void cmd_save(const char *data)
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    IRCTXT_CONFIG_MODIFIED, data);
-	signal_emit("gui entry redirect", 4,
-		    settings_save_confirm,
-		    _("Overwrite config (y/N)?"),
-		    GINT_TO_POINTER(FALSE), g_strdup(data));
+	keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
+				_("Overwrite config (y/N)?"),
+				0, g_strdup(data));
 }
 
 void fe_settings_init(void)

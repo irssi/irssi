@@ -37,6 +37,7 @@
 #include "fe-windows.h"
 #include "window-items.h"
 #include "printtext.h"
+#include "keyboard.h"
 
 /* SYNTAX: ME <message> */
 static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
@@ -371,6 +372,50 @@ static void cmd_ts(const char *data)
 	}
 }
 
+typedef struct {
+	IRC_SERVER_REC *server;
+	char *nick;
+} OPER_PASS_REC;
+
+static void cmd_oper_got_pass(const char *password, OPER_PASS_REC *rec)
+{
+        if (*password != '\0')
+		irc_send_cmdv(rec->server, "OPER %s %s", rec->nick, password);
+	g_free(rec->nick);
+        g_free(rec);
+}
+
+/* SYNTAX: OPER [<nick> [<password>]] */
+static void cmd_oper(const char *data, IRC_SERVER_REC *server)
+{
+	char *nick, *password;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 2, &nick, &password))
+		return;
+	if (*password == '\0') {
+		/* password not given, ask it.
+		   irc/core handles the /OPER when password is given */
+		OPER_PASS_REC *rec;
+
+		rec = g_new(OPER_PASS_REC, 1);
+		rec->server = server;
+		rec->nick = g_strdup(*nick != '\0' ? nick : server->nick);
+
+		keyboard_entry_redirect((SIGNAL_FUNC) cmd_oper_got_pass,
+					_("Operator password:"),
+					ENTRY_REDIRECT_FLAG_HIDDEN, rec);
+
+		signal_stop();
+	}
+
+	cmd_params_free(free_arg);
+}
+
 void fe_irc_commands_init(void)
 {
 	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
@@ -386,6 +431,7 @@ void fe_irc_commands_init(void)
 	command_bind("ver", NULL, (SIGNAL_FUNC) cmd_ver);
 	command_bind("topic", NULL, (SIGNAL_FUNC) cmd_topic);
 	command_bind("ts", NULL, (SIGNAL_FUNC) cmd_ts);
+	command_bind("oper", NULL, (SIGNAL_FUNC) cmd_oper);
 }
 
 void fe_irc_commands_deinit(void)
@@ -403,4 +449,5 @@ void fe_irc_commands_deinit(void)
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);
+	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);
 }

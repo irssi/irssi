@@ -44,7 +44,7 @@ typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_
 
 typedef struct {
 	SIGNAL_FUNC func;
-        int key;
+        int flags;
 	void *data;
 } ENTRY_REDIRECT_REC;
 
@@ -75,12 +75,16 @@ static void handle_entry_redirect(const char *line)
 	ENTRY_REDIRECT_ENTRY_FUNC func;
 	void *data;
 
+        gui_entry_set_hidden(FALSE);
+
 	func = (ENTRY_REDIRECT_ENTRY_FUNC) redir->func;
 	data = redir->data;
 	g_free_and_null(redir);
 
-	if (func != NULL)
-		func(line, data, active_win->active_server, active_win->active);
+	if (func != NULL) {
+		func(line, data, active_win->active_server,
+		     active_win->active);
+	}
 
 	gui_entry_remove_perm_prompt();
 	window_update_prompt();
@@ -158,6 +162,7 @@ void handle_key(int key)
 {
         const char *keyname;
 	char *str;
+        int add_history;
 
 	/* Quit if we get 5 CTRL-C's in a row. */
 	if (key != CTRL('c'))
@@ -167,7 +172,7 @@ void handle_key(int key)
 
 	idle_time = time(NULL);
 
-	if (redir != NULL && redir->key) {
+	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);
 		return;
 	}
@@ -218,12 +223,21 @@ void handle_key(int key)
 
 		translate_output(str);
 
-		if (redir == NULL)
-			signal_emit("send command", 3, str, active_win->active_server, active_win->active);
-		else
+                add_history = TRUE;
+		if (redir == NULL) {
+			signal_emit("send command", 3, str,
+				    active_win->active_server,
+				    active_win->active);
+		} else {
+			if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
+                                add_history = FALSE;
 			handle_entry_redirect(str);
+		}
 
-		command_history_add(active_win, gui_entry_get_text(), FALSE);
+		if (add_history) {
+			command_history_add(active_win, gui_entry_get_text(),
+					    FALSE);
+		}
 		gui_entry_set_text("");
 		command_history_clear_pos(active_win);
 		break;
@@ -531,13 +545,16 @@ static void sig_window_auto_changed(void)
 	gui_entry_set_text("");
 }
 
-static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry, gpointer key, void *data)
+static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
+				   void *flags, void *data)
 {
 	redir = g_new0(ENTRY_REDIRECT_REC, 1);
 	redir->func = func;
-	redir->key = key != NULL;
+	redir->flags = GPOINTER_TO_INT(flags);
 	redir->data = data;
 
+	if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
+		gui_entry_set_hidden(TRUE);
 	gui_entry_set_perm_prompt(entry);
 }
 

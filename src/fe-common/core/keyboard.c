@@ -234,6 +234,13 @@ int key_pressed(const char *key, void *data)
 	return ret;
 }
 
+void keyboard_entry_redirect(SIGNAL_FUNC func, const char *entry,
+			     int flags, void *data)
+{
+	signal_emit("gui entry redirect", 4, func, entry,
+		    GINT_TO_POINTER(flags), data);
+}
+
 static void sig_command(const char *data)
 {
 	const char *cmdchars;
