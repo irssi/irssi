@@ -385,17 +385,25 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 			event_402 = "whois event noserver";
 	}
 
-	/* do automatic /WHOWAS if any of the nicks wasn't found */
 	query = get_redirect_nicklist(query, &free_nick);
 
-        str = g_strconcat(qserver, " ", query, NULL);
-	server_redirect_event(server, "whois", 1, str, TRUE,
-                              NULL,
-			      "event 318", "whois end",
-			      "event 402", event_402,
-			      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-			      "event 401", "whois not found",
-			      "event 311", "whois event", NULL);
+	str = g_strconcat(qserver, " ", query, NULL);
+	if (settings_get_bool("auto_whowas")) {
+		/* do automatic /WHOWAS if any of the nicks wasn't found */
+		server_redirect_event(server, "whois", 1, str, TRUE,
+				      NULL,
+				      "event 318", "whois end",
+				      "event 402", event_402,
+				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+				      "event 401", "whois not found",
+				      "event 311", "whois event", NULL);
+	} else {
+		server_redirect_event(server, "whois", 1, str, TRUE,
+				      NULL,
+				      "event 318", "whois end",
+				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+				      "event 311", "whois event", NULL);
+	}
         g_free(str);
 
 	server->whois_found = FALSE;
@@ -920,6 +928,7 @@ void irc_commands_init(void)
 	settings_add_time("misc", "knockout_time", "5min");
 	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
 	settings_add_bool("misc", "kick_first_on_kickban", FALSE);
+	settings_add_bool("misc", "auto_whowas", TRUE);
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);
 
