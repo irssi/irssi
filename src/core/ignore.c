@@ -300,9 +300,6 @@ static int ignore_index(IGNORE_REC *find)
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
-		if (rec->servertag != NULL)
-			continue;
-
 		if (rec == find)
 			return index;
 		index++;
