@@ -114,6 +114,8 @@ joining channels)</p>
 /NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
 </pre>
 
+<p>(NOTE: use /IRCNET with 0.8.9 and older)</p>
+
 <p>Then add some servers to different networks (network is already set up 
 for them), irc.kpnqwest.fi is used by default for IRCNet but if it fails,
 irc.funet.fi is tried next:</p>
@@ -269,7 +271,7 @@ irssi correctly with multiple servers see the chapter 6.</p>
 command to see if it's already there. If it isn't, use <code>/NETWORK ADD
 yournetwork</code>. If you want to execute some commands automatically when
 you're connected to some network, use <code>-autosendcmd</code> option.
-Here's some examples:</p>
+(NOTE: use /IRCNET with 0.8.9 and older.) Here's some examples:</p>
 
 <pre>
 /NETWORK ADD -autosendcmd '^msg bot invite' IRCnet
@@ -696,6 +698,8 @@ as with dircproxy, by creating fake connections:</p>
 
 <p>So, you'll specify the usernames with <code>/NETWORK ADD</code> command,
 and the user's password with <code>/SERVER ADD</code>.</p>
+
+<p>(NOTE: use /IRCNET with 0.8.9 and older.)</p>
 
 <p><strong>Irssi proxy</strong></p>
 
