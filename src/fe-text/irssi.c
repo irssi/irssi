@@ -82,6 +82,7 @@ static void textui_init(void)
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
 	irc_init();
+	//silc_init();
 	fe_common_core_init();
 	fe_common_irc_init();
 

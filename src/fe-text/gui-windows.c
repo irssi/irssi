@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "server.h"
 #include "misc.h"
+#include "settings.h"
 
 #include "irc.h"
 #include "channels.h"
@@ -39,10 +40,9 @@
 /* how long to keep line cache in memory (seconds) */
 #define LINE_CACHE_KEEP_TIME (10*60)
 
-#define DEFAULT_INDENT_POS 10
-
 static int linecache_tag;
 static int window_create_override;
+static int default_indent_pos;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 {
@@ -263,7 +263,7 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 	rec = g_new(LINE_CACHE_REC, 1);
         rec->last_access = time(NULL);
 
-	xpos = 0; color = 0; indent_pos = DEFAULT_INDENT_POS;
+	xpos = 0; color = 0; indent_pos = default_indent_pos;
 	last_space = last_color = 0; last_space_ptr = NULL;
 
 	rec->count = 1; lines = NULL;
@@ -850,11 +850,19 @@ static int sig_check_linecache(void)
 	return 1;
 }
 
+static void read_settings(void)
+{
+        default_indent_pos = settings_get_int("indent");
+}
+
 void gui_windows_init(void)
 {
+	settings_add_int("lookandfeel", "indent", 10);
+
 	window_create_override = -1;
 	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
 
+	read_settings();
 	signal_add("gui window create override", (SIGNAL_FUNC) sig_window_create_override);
 	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
@@ -862,6 +870,7 @@ void gui_windows_init(void)
 	signal_add("window item changed", (SIGNAL_FUNC) signal_window_item_update);
 	signal_add("window name changed", (SIGNAL_FUNC) signal_window_item_update);
 	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_update);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void gui_windows_deinit(void)
@@ -878,4 +887,5 @@ void gui_windows_deinit(void)
 	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_update);
 	signal_remove("window name changed", (SIGNAL_FUNC) signal_window_item_update);
 	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_update);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
