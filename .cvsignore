@@ -32,3 +32,4 @@ default-config.h
 irssi-version.h
 irssi-version.h.in
 irssi-config
+colorless.theme
