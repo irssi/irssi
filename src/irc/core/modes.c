@@ -121,10 +121,9 @@ void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mo
 			ptr = cmd_get_param(&modestr);
 			if (*ptr != '\0' || type == '-') {
 				g_free_and_null(channel->key);
-				if (type == '+') {
+				channel->mode_key = type == '+';
+				if (type == '+')
 					channel->key = g_strdup(ptr);
-					channel->mode_key = TRUE;
-				}
 			}
 			signal_emit("channel mode changed", 1, channel);
 			break;
