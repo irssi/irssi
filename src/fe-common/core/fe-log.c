@@ -601,7 +601,8 @@ static void sig_log_locked(LOG_REC *log)
 static void sig_log_create_failed(LOG_REC *log)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		    TXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
+		    TXT_LOG_CREATE_FAILED,
+		    log->real_fname, g_strerror(errno));
 }
 
 static void sig_log_new(LOG_REC *log)
