@@ -35,7 +35,7 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char 
 	int level, oldlevel, new_data;
 
 	level = GPOINTER_TO_INT(levelptr);
-	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT|MSGLEVEL_MSGS)))
+	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
 		return;
 
 	new_data = (level & MSGLEVEL_HILIGHT) ?
