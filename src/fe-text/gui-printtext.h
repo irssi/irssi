@@ -3,27 +3,6 @@
 
 #include "gui-windows.h"
 
-enum
-{
-    BLACK = 0,
-    BLUE,
-    GREEN,
-    CYAN,
-    RED,
-    MAGENTA,
-    YELLOW,
-    WHITE,
-    BBLACK,
-    BBLUE,
-    BGREEN,
-    BCYAN,
-    BRED,
-    BMAGENTA,
-    BYELLOW,
-    BWHITE,
-    NUM_COLORS
-};
-
 extern int mirc_colors[];
 
 void gui_printtext_init(void);
