@@ -155,7 +155,8 @@ SIG_FUNC_DECL(2, last);
 	((rec)->priority == 0 ? sig_func_first : \
 	(rec)->priority == 1 ? sig_func_default : sig_func_last)
 
-void perl_signal_add_to(const char *signal, const char *func, int priority)
+void perl_signal_add_to_int(const char *signal, const char *func,
+			    int priority, int add_signal)
 {
 	PERL_SIGNAL_REC *rec;
 	GHashTable *table;
@@ -180,11 +181,18 @@ void perl_signal_add_to(const char *signal, const char *func, int priority)
 		siglist = g_new0(GSList *, 1);
 		g_hash_table_insert(table, signal_idp, siglist);
 
-		signal_add_to_id(MODULE_NAME, priority, rec->signal_id,
-                                 perl_signal_get_func(rec));
+		if (add_signal) {
+			signal_add_to_id(MODULE_NAME, priority, rec->signal_id,
+					 perl_signal_get_func(rec));
+		}
 	}
 
 	*siglist = g_slist_append(*siglist, rec);
+}
+
+void perl_signal_add_to(const char *signal, const char *func, int priority)
+{
+        perl_signal_add_to_int(signal, func, priority, TRUE);
 }
 
 static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
@@ -256,7 +264,7 @@ void perl_command_bind(const char *cmd, const char *category, const char *func)
 	command_bind(cmd, category, sig_func_default);
 
 	signal = g_strconcat("command ", cmd, NULL);
-	perl_signal_add(signal, func);
+	perl_signal_add_to_int(signal, func, 1, FALSE);
 	g_free(signal);
 }
 
