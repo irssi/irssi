@@ -338,10 +338,11 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 		   in channel modes.. */
 		g_free(channel->key);
 		channel->key = NULL;
-	} else if (!update_key) {
+	} else if (!update_key && old_key != NULL) {
 		/* get the old one back, just in case it was replaced */
 		g_free(channel->key);
 		channel->key = old_key;
+		mode_set_arg(channel->server, newmode, '+', 'k', old_key, FALSE);
 		old_key = NULL;
 	}
 
