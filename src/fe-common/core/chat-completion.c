@@ -738,23 +738,29 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			break;
 		}
 
-		switch (*line) {
-		case 'n':
+		chr = expand_escape(&line);
+		if (chr == '\r' || chr == '\n') {
 			/* newline .. we need to send another "send text"
 			   event to handle it (or actually the text before
 			   the newline..) */
-			*ptr = '\0';
-			signal_emit("send text", 3, ret, server, item);
-			ptr = ret;
+			if (ret != ptr) {
+				*ptr = '\0';
+				signal_emit("send text", 3, ret, server, item);
+				ptr = ret;
+			}
+		} else if (chr != -1) {
+                        /* escaping went ok */
+			*ptr++ = chr;
+		} else {
+                        /* unknown escape, add it as-is */
+			*ptr++ = '\\';
+			*ptr++ = *line;
+		}
+
+		switch (*line) {
+		case 'n':
 			break;
 		default:
-			chr = expand_escape(&line);
-			if (chr != -1)
-                                *ptr++ = chr;
-			else {
-				*ptr++ = '\\';
-				*ptr++ = *line;
-			}
 		}
 	}
 
