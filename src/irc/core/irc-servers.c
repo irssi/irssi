@@ -416,21 +416,15 @@ static int sig_set_user_mode(IRC_SERVER_REC *server)
 	newmode = server->usermode == NULL ? NULL :
 		modes_join(server->usermode, mode, FALSE);
 
-	if (server->usermode == NULL) {
-		/* server didn't set user mode, just set the new one */
-		irc_send_cmdv(server, "MODE %s %s", server->nick, mode);
-	} else if (strcmp(newmode, server->usermode) != 0) {
-		if (server->connrec->reconnection) {
-			/* when reconnecting, we want to set exactly the
-			   same mode we had before reconnect */
-			args = g_strdup_printf("%s -%s+%s", server->nick,
-					       server->usermode, mode);
-		} else {
-                        /* allow using modes the server gave us */
-			args = g_strdup_printf("%s -%s", server->nick, mode);
-		}
-		signal_emit("command mode", 3, server, args, NULL);
-                g_free(args);
+	if (newmode == NULL || strcmp(newmode, server->usermode) != 0) {
+		/* change the user mode. we used to do some trickery to
+		   get rid of unwanted modes at reconnect time, but that's
+		   more trouble than worth. (eg. we don't want to remove
+		   some good default server modes, but we don't want to
+		   set back +r, etc..) */
+		args = g_strdup_printf("%s %s", server->nick, mode);
+		signal_emit("command mode", 3, args, server, NULL);
+		g_free(args);
 	}
 
 	g_free_not_null(newmode);
