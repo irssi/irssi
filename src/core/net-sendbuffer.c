@@ -99,7 +99,7 @@ static int sig_sendbuffer(void)
 }
 
 /* Add `data' to transmit buffer - return FALSE if buffer is full */
-static int buffer_add(NET_SENDBUF_REC *rec, void *data, int size)
+static int buffer_add(NET_SENDBUF_REC *rec, const void *data, int size)
 {
 	if (rec->buffer == NULL) {
 		rec->buffer = g_malloc(rec->bufsize);
@@ -117,7 +117,7 @@ static int buffer_add(NET_SENDBUF_REC *rec, void *data, int size)
 /* Send data, if all of it couldn't be sent immediately, it will be resent
    automatically after a while. Returns -1 if some unrecoverable error
    occured. */
-int net_sendbuffer_send(NET_SENDBUF_REC *rec, void *data, int size)
+int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 {
 	int ret;
 
