@@ -610,7 +610,7 @@ static char *expando_sysname(void *server, void *item, int *free_ret)
 {
 	struct utsname un;
 
-	if (uname(&un) != 0)
+	if (uname(&un) == -1)
 		return NULL;
 
 	*free_ret = TRUE;
@@ -623,7 +623,7 @@ static char *expando_sysrelease(void *server, void *item, int *free_ret)
 {
 	struct utsname un;
 
-	if (uname(&un) != 0)
+	if (uname(&un) == -1)
 		return NULL;
 
 	*free_ret = TRUE;
