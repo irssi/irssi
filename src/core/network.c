@@ -607,7 +607,11 @@ const char *net_gethosterror(int error)
 int net_hosterror_notfound(int error)
 {
 #ifdef HAVE_IPV6
+#ifdef EAI_NODATA /* NODATA is depricated */
 	return error != 1 && (error == EAI_NONAME || error == EAI_NODATA);
+#else
+	return error != 1 && (error == EAI_NONAME);
+#endif
 #else
 	return error == HOST_NOT_FOUND || error == NO_ADDRESS;
 #endif
