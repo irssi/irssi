@@ -177,7 +177,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	/* figure out if we should use IPv4 or v6 address */
 	ip = iprec.error != 0 ? NULL : iprec.ip6.family == 0 ||
-		server->connrec->family == AF_INET ?
+		(server->connrec->family == AF_INET && iprec.ip4.family != 0) ?
 		&iprec.ip4 : &iprec.ip6;
 	if (iprec.ip4.family != 0 && server->connrec->family == 0 &&
 	    !settings_get_bool("resolve_prefer_ipv6"))
