@@ -24,7 +24,7 @@ enum {
 	CMDERR_NOT_GOOD_IDEA /* not good idea to do, -yes overrides this */
 };
 
-#define cmd_return_error(a) { signal_emit("error command", 1, GINT_TO_POINTER(a)); return; }
+#define cmd_return_error(a) { signal_emit("error command", 1, GINT_TO_POINTER(a)); signal_stop(); return; }
 #define cmd_param_error(a) { g_free(params); cmd_return_error(a); }
 
 extern GSList *commands;
