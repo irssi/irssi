@@ -392,11 +392,17 @@ dnl **
 
 if test "$want_perl" != "no"; then
 	AC_PATH_PROG(perlpath, perl)
-	AC_MSG_CHECKING(for Perl compile flags)
+	AC_MSG_CHECKING(for working Perl support)
 
-	PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+	if test "x$perlpath" = "x"; then
+       		perl_check_error="perl binary not found"
+	else
+		PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+	fi
+
 	if test "x$PERL_CFLAGS" = "x"; then
-		AC_MSG_RESULT([not found, building without Perl.])
+		perl_check_error="Error getting perl CFLAGS"
+		AC_MSG_RESULT([not found, building without Perl])
 		want_perl=no
 	else
 		PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
@@ -449,6 +455,25 @@ if test "$want_perl" != "no"; then
 		dnl * must not be in LIBADD line
 		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-rdynamic\( \|$\)//'`
 
+		dnl * check that perl's ldflags actually work
+		AC_CACHE_VAL(irssi_cv_lib_perl_works, [
+			echo "main(){return 0;}" > conftest.c
+			$CC $CFLAGS $LDFLAGS $PERL_LDFLAGS conftest.c -o conftest 2> /dev/null > /dev/null
+			if test -s conftest; then
+				irssi_cv_lib_perl_works=yes
+			else
+				irssi_cv_lib_perl_works=no
+			fi
+		])
+
+		if test "x$irssi_cv_lib_perl_works" = "xno"; then
+			perl_check_error="Error linking with perl libraries: $PERL_LDFLAGS"
+			AC_MSG_RESULT([error linking with perl libraries, building without Perl])
+			want_perl=no
+		fi
+	fi
+
+	if test "x$want_perl" != "xno"; then
 		if test "x$want_perl" = "xstatic"; then
 			AC_MSG_RESULT(ok)
 		elif test "x$DYNALOADER_A" = "x"; then
@@ -686,7 +711,12 @@ if test "x$want_perl" = "xstatic"; then
 elif test "x$want_perl" = "xyes"; then
 	echo "Building with Perl support . : module"
 else
-	echo "Building with Perl support . : no"
+	if test "x$perl_check_error" = "x"; then
+		echo "Building with Perl support . : no"
+	else
+		echo "Building with Perl support . : NO!"
+		echo " - $perl_check_error"
+	fi
 fi
 
 if test "x$perl_mod_error" != "x"; then
@@ -701,12 +731,11 @@ if test "x$want_perl" = "xyes"; then
 	else
 		echo "Perl library directory ..... : $PERL_LIB_DIR"
 		if test "x$perl_lib_dir_given" != "xyes"; then
-			echo " - NOTE: This is automatically set to the same directory you gave with"
-			echo "   --prefix. Irssi's perl scripts do not work unless you also add"
-			echo "   this directory to @INC (or do some other magic)."
-			echo "   *OR* what you might want to do instead, is to simply give --enable-perl="
-			echo "   (nothing after '=') option to configure, and make install will install"
-			echo "   the Perl libraries to defaut directory."
+			echo " - NOTE: This was automatically set to the same directory you gave with"
+			echo "   --prefix. If you want the perl libraries to install to their 'correct'"
+			echo "   path, you'll need to give --enable-perl= (nothing after '=') option"
+			echo "   to configure. Anyway, installing perl to this directory should work"
+			echo "   just as well.."
 		fi
 	fi
 fi

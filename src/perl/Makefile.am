@@ -15,6 +15,7 @@ perl.c: perl-signals-list.h
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
+	-DPERL_LIB_DIR=\""$(PERL_LIB_DIR)"\" \
 	$(PERL_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core

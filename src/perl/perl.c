@@ -72,7 +72,7 @@ static void irssi_perl_start(void)
 		"  my $sub = <FH>;\n"
 		"  close FH;\n"
 		"\n"
-		"  my $eval = qq{package $package; sub handler { $sub; }};\n"
+		"  my $eval = qq{package $package; %s sub handler { $sub; }};\n"
 		"  {\n"
 		"      # hide our variables within this block\n"
 		"      my ($filename, $package, $sub);\n"
@@ -83,6 +83,7 @@ static void irssi_perl_start(void)
 		"  eval {$package->handler;};\n"
 		"  die $@ if $@;\n"
 		"}\n";
+	char *code, *use_code;
 
         perl_signals_start();
 	perl_sources = NULL;
@@ -91,7 +92,13 @@ static void irssi_perl_start(void)
 	perl_construct(my_perl);
 
 	perl_parse(my_perl, xs_init, 3, args, NULL);
-	perl_eval_pv(eval_file_code, TRUE);
+
+	use_code = *PERL_LIB_DIR == '\0' ? "" :
+                "use lib \""PERL_LIB_DIR"\";";
+
+        code = g_strdup_printf(eval_file_code, use_code);
+	perl_eval_pv(code, TRUE);
+        g_free(code);
 
         perl_common_init();
 }
