@@ -83,7 +83,6 @@ src/fe-common/core/fe-common-core.c
 src/fe-common/core/fe-core-commands.c
 src/fe-common/core/fe-log.c
 src/fe-common/core/fe-server.c
-src/fe-common/core/fe-settings.c
 src/fe-common/core/keyboard.c
 src/fe-common/core/module-formats.c
 src/fe-common/core/printtext.c
@@ -92,14 +91,16 @@ src/fe-common/core/translation.c
 src/fe-common/core/window-activity.c
 src/fe-common/core/window-commands.c
 src/fe-common/core/window-items.c
-src/fe-common/core/windows.c
 src/fe-common/core/fe-channels.c
 src/fe-common/core/fe-queries.c
 src/fe-common/core/fe-messages.c
 src/fe-common/core/fe-ignore.c
+src/fe-common/core/formats.c
 src/fe-common/core/chat-completion.c
 src/fe-common/core/fe-ignore-messages.c
+src/fe-common/core/fe-settings.c
 src/fe-common/core/fe-modules.c
+src/fe-common/core/fe-windows.c
 src/fe-common/core/hilight-text.c
 src/fe-common/core/window-save.c
 src/fe-common/irc/dcc/fe-dcc.c
