@@ -132,20 +132,28 @@ static void cmd_join(const char *data, SERVER_REC *server)
 {
 	WINDOW_REC *window;
         CHANNEL_REC *channel;
+	GHashTable *optlist;
+	char *channelname;
+	void *free_arg;
 
-        if (strchr(data, ' ') != NULL || strchr(data, ',') != NULL)
-                return;
-
-        channel = channel_find(server, data);
-	if (channel == NULL)
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS,
+			    "join", &optlist, &channelname))
 		return;
 
-	/* already joined to channel, set it active */
-        window = window_item_window(channel);
-	if (window != active_win)
-		window_set_active(window);
+	/* -<server tag> */
+	server = cmd_options_get_server("join", optlist, server);
+	
+	channel = channel_find(server, channelname);
+	if (channel != NULL) {
+		/* already joined to channel, set it active */
+		window = window_item_window(channel);
+		if (window != active_win)
+			window_set_active(window);
 
-	window_item_set_active(active_win, (WI_ITEM_REC *) channel);
+		window_item_set_active(active_win, (WI_ITEM_REC *) channel);
+	}
+	cmd_params_free(free_arg);
 }
 
 static void cmd_wjoin_post(const char *data)
