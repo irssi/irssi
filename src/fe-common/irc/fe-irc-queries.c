@@ -42,16 +42,14 @@ static QUERY_REC *query_find_address(SERVER_REC *server, const char *address)
 	return NULL;
 }
 
-static int have_channel_with_nicks(SERVER_REC *server, const char *nick1,
-				   const char *nick2)
+static int server_has_nick(SERVER_REC *server, const char *nick)
 {
 	GSList *tmp;
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 
-		if (nicklist_find(channel, nick1) != NULL &&
-		    nicklist_find(channel, nick2) != NULL)
+		if (nicklist_find(channel, nick) != NULL)
 			return TRUE;
 	}
 
@@ -76,10 +74,8 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 		   server, so rename the query. */
 		query = query_find_address(server, address);
 		if (query != NULL) {
-			/* make sure the old and new nicks aren't on the
-			   same channel - happens with eg. www gateways
-			   and such.. */
-			if (!have_channel_with_nicks(server, nick, query->name))
+			/* make sure the old nick doesn't exist anymore */
+			if (!server_has_nick(server, query->name))
 				query_change_nick(query, nick);
 		}
 	}
