@@ -337,7 +337,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
 {
         g_return_if_fail(entry != NULL);
 
-	if (entry->pos < size)
+	if (entry->pos < size || size == 0)
 		return;
 
         /* put erased text to cutbuffer */
