@@ -282,9 +282,9 @@ void signal_stop(void)
 	SIGNAL_REC *rec;
 
 	rec = current_emitted_signal;
-	if (rec == NULL || rec->emitting <= rec->stop_emit)
+	if (rec == NULL)
 		g_warning("signal_stop() : no signals are being emitted currently");
-	else
+	else if (rec->emitting > rec->stop_emit)
 		rec->stop_emit++;
 }
 
@@ -298,9 +298,7 @@ void signal_stop_by_name(const char *signal)
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL)
 		g_warning("signal_stop_by_name() : unknown signal \"%s\"", signal);
-	else if (rec->emitting <= rec->stop_emit)
-		g_warning("signal_stop_by_name() : signal \"%s\" not being emitted", signal);
-	else
+	else if (rec->emitting > rec->stop_emit)
 		rec->stop_emit++;
 }
 
