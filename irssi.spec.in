@@ -1,213 +1,73 @@
-# $Revision: 1.11 $, $Date: 2001/03/29 14:38:28 $
+# $Revision: 1.12 $, $Date: 2001/09/21 14:57:29 $
 Name: 		irssi
 Version: 	@VERSION@
 Release: 	1
 Vendor: 	Timo Sirainen <tss@iki.fi>
 Summary:  	Irssi is a IRC client
-Summary(pl):	Irssi - klient IRC
 Copyright: 	GPL
 Group: 		Applications/Communications
-Group(pl):      Aplikacje/Komunikacja
 URL: 		http://irssi.org/
 Source0: 	http://irssi.org/irssi/files/%{name}-%{version}.tar.gz
 BuildRequires:	glib-devel
 BuildRequires:	ncurses-devel
-BuildRequires:	imlib-devel
-BuildRequires:	gtk+-devel
-BuildRequires:	gnome-libs-devel
-BuildRequires:	XFree86-devel
 BuildRoot: 	/tmp/%{name}-%{version}-root
 
 %define		_sysconfdir	/etc
 %define		configure { CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ;  CXXFLAGS="${CXXFLAGS:-%optflags}" ; export CXXFLAGS ;  FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; ./configure %{_target_platform} 	--prefix=%{_prefix} --exec-prefix=%{_exec_prefix} --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} --infodir=%{_infodir} }
 
 %description
-Irssi is a textUI IRC client with IPv6 support 
-by Timo Sirainen <tss@iki.fi>.
+Irssi is a modular IRC client that currently has only text
+mode user interface, but 80-90% of the code isn't text mode specific
+so other UI could be created pretty easily. Also, Irssi isn't really
+even IRC specific anymore, there's already a working SILC module
+available. Support for other protocols like ICQ could be create some day
+too.
+
 More information can be found at http://irssi.org/.
-
-%description -l pl
-Irssi jest tekstowym klientem IRC ze wsparciem dla IPv6.
-Napisany zosta³ przez Timo Strainen <tss@iki.fi>
-Wiêcej informacji mo¿na znale¶æ pod adresem
-http://irssi.org/
-
-%package GNOME
-Summary: 	GNOME version of irssi IRC client
-Summary(pl):	Wersja dla ¶rodowiska GNOME klienta IRC irssi
-Group:		X11/Applications/Communications
-Group(pl):	X11/Aplikacje/Komunikacja
-Requires:	%{name} = %{version}
-
-%description GNOME
-Irssi is a GTK based (with GNOME) GUI IRC client with IPv6 support
-by Timo Sirainen <tss@iki.fi>.
-More information can be found at http://irssi.org/.
-
-%description GNOME -l pl
-Irssi jest graficznym klientem IRC ze wsparciem dla IPv6 pracuj±cym
-w ¶rodowisku GNOME. Napisany zosta³ przez Timo Sirainen <tss@iki.fi>.
-Wiêcej informacji mo¿na znale¶æ pod adresem
-http://irssi.org/
 
 %prep
 %setup -q
 
 %build
-CPPFLAGS="-I/usr/X11R6/include"; export CPPFLAGS
-LDFLAGS="-s -L/usr/X11R6/lib"; export LDFLAGS
+export NOCONFIGURE=x
+./autogen.sh       
 %configure \
-	--with-gnome \
-	--with-gnome-panel \
 	--with-imlib \
 	--enable-ipv6 \
-	--with-textui=ncurses \
-	--without-socks \
-	--with-plugins
+	--with-textui \
+	--with-socks \
+        --with-bot \
+        --with-proxy \
+        --with-perl=yes \
+	--with-ncurses
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT install
-strip --strip-unneeded $RPM_BUILD_ROOT%{_libdir}/irssi/plugins/lib*.so.*.*
-
-gzip -9fn AUTHORS ChangeLog README TODO NEWS
+make DESTDIR=$RPM_BUILD_ROOT PREFIX=$RPM_BUILD_ROOT/usr install
+mv $RPM_BUILD_ROOT/%{_datadir}/doc/irssi $RPM_BUILD_ROOT/%{_datadir}/doc/irssi-%version
+strip $RPM_BUILD_ROOT/%{_bindir}/*
+strip $RPM_BUILD_ROOT/%{_libdir}/irssi/modules/lib*.so*
+rm -f $RPM_BUILD_ROOT/%{_libdir}/perl5/5.6.0/i386-linux/perllocal.pod
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files 
 %defattr (644,root,root,755)
-%doc {AUTHORS,ChangeLog,README,TODO,NEWS}.gz
+%doc %{_datadir}/doc/irssi-%version/
 
-%attr(755,root,root) %{_bindir}/irssi
-%attr(755,root,root) %{_bindir}/irssi-text
-%attr(755,root,root) %{_bindir}/irssi-bot
+%attr(755,root,root) %{_bindir}/*
 
-%dir %{_sysconfdir}/irssi
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/irssi/*
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/irssi*
 
-%dir %{_libdir}/irssi
-%dir %{_libdir}/irssi/plugins
-%attr(755,root,root) %{_libdir}/irssi/plugins/lib*.so.*.*
-%attr(755,root,root) %{_libdir}/irssi/plugins/lib*.so
-#%attr(755,root,root) %{_libdir}/irssi/plugins/lib*.la
-#%attr(755,root,root) %{_libdir}/irssi/plugins/lib*.a
+%dir %{_libdir}
+%attr(755,root,root) %{_libdir}/irssi
+%attr(755,root,root) %{_libdir}/perl5
 
-%files GNOME
-%defattr (644,root,root,755)
-%attr(755,root,root) %{_bindir}/irssi
+%dir %{_datadir}/irssi
+%attr(755,root,root) %{_datadir}/irssi/*
 
-%{_sysconfdir}/CORBA/servers/irssi.gnorba
-%{_datadir}/gnome/apps/Network/irssi.desktop
-%{_datadir}/gnome/help/irssi
-%{_datadir}/pixmaps/*
-
-%define date    %(echo `LC_ALL="C" date +"%a %b %d %Y"`)
 %changelog
-* %{date} PLD Team <pld-list@pld.org.pl>
-All below listed persons can be reached on <cvs_login>@pld.org.pl
-
-$Log: irssi.spec.in,v $
-Revision 1.11  2001/03/29 14:38:28  cras
-http://irssi.org -> http://irssi.org/
-
-Revision 1.10  2000/06/02 01:55:01  cras
-Changed irssi's url to http://irssi.org/
-
-Revision 1.9  2000/04/17 09:37:05  kloczek
-- added pixmaps to %files (irssi have now own icon).
-
-Revision 1.8  2000/04/14 11:27:02  cras
-Sorry for a big update - I still don't have internet connection at home
-and this is what I've been doing a few weeks now.. :) You really shouldn't
-upgrade to this version without keeping a backup of the working one, since
-this will break everything and at least notify list is broken - probably
-something else too.
-
-* On the way to 0.8.0 .. Major rewriting/rearranging code. There's
-  some changes in behaviour because I'm trying to make Irssi a bit
-  more compatible with EPIC.
-
-* libPropList isn't needed anymore - I'm using my own configuration
-  library. This is mostly because different proplists worked a bit
-  differently everywhere and several people had problems with it.
-  It's also yet another extra library that you needed to compile
-  Irssi. New configuration library has several advantages:
-
-  You can add comments to configuration file and they also stay
-  there when it's saved.
-
-  It's not nearly as vulnerable as proplist. If some error occurs,
-  instead of just not reading anything it will try to continue if
-  possible. Also the error messages are written to irssi's text
-  window instead of stdout.
-
-  It can be managed more easily than proplist - setting/getting the
-  configuration is a lot more easier.
-
-* Coding style changes - I'm not using gint, gchar etc. anymore,
-  they're just extra pain when moving code to non-glib projects and
-  syntax hilighting doesn't work by default with most editors ;)
-
-  Indentation style was also changed to K&R because of some political
-  reasons ;) And I'm already starting to like it.. :) It forces me
-  to split code to different functions more often and the result is
-  that the code gets more readable.
-
-  And finally I'm also using nst' all over the place.
-
-+ /EVAL <commands> - Expand all the special variables from string and
-  run it. Commands can be split with ; character. See
-  docs/SPECIAL_VARS for more info.
-+ Aliases are parsed just like /EVAL - arguments are in $0..$9.
-+ Text formats are also parsed like /EVAL, arguments used to be in
-  $1..$9, now they're in $0..$8 so it messes up existing themes..
-+ /SET [key [value]] - no more the '=' character. Boolean values
-  also need to be changed with ON/OFF/TOGGLE values (not yes/no).
-  Settings aren't saved to disk until you use /SAVE.
-+ /TOGGLE <key> [ON/OFF] - same as /SET <key> TOGGLE
-
-Revision 1.7  2000/02/25 17:03:15  cras
-Irssi 0.7.27 released.
-
-Revision 1.6  2000/01/27 19:03:28  cras
-fixes by vkoivula@saunalahti.fi
-
-Revision 1.6  2000/01/25 00:00:00 vkoivula@saunalahti.fi
-- requires libProbList-devel changed to libPropList (problist.h is actually in
-  this package)
-- fixed filelist
-
-Revision 1.5  2000/01/13 02:13:20  kloczek
-- irssi.desktop now this is not applet but application description file -
-  place them in $(datadir)/gnome/apps/Network.
-
-Revision 1.4  1999/10/16 13:05:25  wiget
-- polish translation
-
-Revision 1.3  1999/09/13 16:50:25  wiget
-- fixed %%configure macro
-
-Revision 1.2  1999/09/04 11:42:33  wiget
-- new way to update Version: field in spec
-- new target for make 'make rpm'
-
-Revision 1.4  1999/09/03 09:36:24  wiget
-- updated to 0.7.16alpha-1
-
-Revision 1.3  1999/09/02 17:27:36  wiget
-- added BuildRequires rules
-
-Revision 1.2  1999/09/02 17:22:51  wiget
-- rewrite to PLD style coding:
--- correct Group and Group(pl)
--- %%changelog moved to end
--- splited to irssi and irssi-GNOME
--- added patch to allow 'make install DESTDIR=/some/dir'
--- added ./configure parameters
--- striped unneeded symbol from plugins
--- gziped docs
--- corrected %%files section
-
-- based at spec from tarball (by JT Traub <jtraub@dragoncat.net>)
+* Fri Aug 17 2001 - Joose Vettenranta <joose@iki.fi>
+  Created new spec file from spec file founded in irssi-0.7.98.3
