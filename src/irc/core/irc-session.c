@@ -35,6 +35,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 
 	config_node_set_str(config, node, "real_address", server->real_address);
 	config_node_set_str(config, node, "userhost", server->userhost);
+	config_node_set_str(config, node, "usermode", server->usermode);
 
         chans = irc_server_get_channels(server);
 	config_node_set_str(config, node, "channels", chans);
@@ -50,6 +51,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
         if (server->real_address == NULL)
 		server->real_address = g_strdup(config_node_get_str(node, "real_address", NULL));
 	server->userhost = g_strdup(config_node_get_str(node, "userhost", NULL));
+	server->usermode = g_strdup(config_node_get_str(node, "usermode", NULL));
 
 	g_free_not_null(server->connrec->channels);
 	server->connrec->channels = g_strdup(config_node_get_str(node, "channels", NULL));
