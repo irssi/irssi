@@ -7,20 +7,15 @@ use strict;
 sub cmd_realname {
 	my ($data, $server, $channel) = @_;
 
-	$server->send_raw("WHOIS :$data");
-
 	# ignore all whois replies except "No such nick" or the 
 	# first line of the WHOIS reply
-	$server->redirect_event($data, 2,
-			  "event 318", "event empty", -1,
-			  "event 402", "event 402", -1,
-			  "event 401", "event 401", 1,
-			  "event 311", "redir whois", 1,
-			  "event 301", "event empty", 1,
-			  "event 312", "event empty", 1,
-			  "event 313", "event empty", 1,
-			  "event 317", "event empty", 1,
-			  "event 319", "event empty", 1);
+	$server->redirect_event('whois', 1, $data, -1, '', {
+			  'event 402' => 'event 402',
+			  'event 401' => 'event 401',
+			  'event 311' => 'redir whois',
+			  '' => 'event empty' });
+
+	$server->send_raw("WHOIS :$data");
 }
 
 sub event_rn_whois {
