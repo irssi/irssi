@@ -19,6 +19,7 @@
 #undef HAVE_IPV6
 #undef HAVE_POPT_H
 #undef HAVE_SOCKS_H
+#undef HAVE_PERL
 
 /* macros/curses checks */
 #undef HAS_CURSES
