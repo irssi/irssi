@@ -121,7 +121,8 @@ aclocal $aclocalinclude
 
 # aclocal for some reason doesn't complain about glib2, so we still need
 # to check it later again..
-if ! grep "^AC_DEFUN.AM_PATH_GLIB_2_0" aclocal.m4 >/dev/null; then
+if grep "^AC_DEFUN.AM_PATH_GLIB_2_0" aclocal.m4 >/dev/null; then :;
+else
   cp glib-2.0.m4_ glib-2.0.m4
   aclocal $aclocalinclude
 fi
