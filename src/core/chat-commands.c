@@ -402,7 +402,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 				SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
 		}
 	}
-	recoded = recode_out(msg, target);
+	recoded = recode_out(server, msg, target);
 	if (target != NULL) {
 		signal_emit("server sendmsg", 4, server, target, recoded,
 			    GINT_TO_POINTER(target_type));

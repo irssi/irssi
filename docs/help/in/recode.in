@@ -4,9 +4,11 @@
 RECODE
     %|List the conversion database
 
-RECODE ADD %|[<target>] <charset>
+RECODE ADD %|[[<tag>/]<target>] <charset>
     %|Add an entry to the conversion database (if target is omitted,
-    the current channel or query will be used)
+    the current channel or query will be used). You can specify the
+    <tag> to have different charsets for the same <target> for
+    different networks.
 
 RECODE REMOVE %|[<target>]
     %|Remove an entry from the conversion database (if target is
@@ -45,4 +47,6 @@ if it doesn't work properly your locale settings may be wrong.
 You can enable it per target by adding //TRANSLIT to the <charset>
 
 Hint: <charset> can be almost everything listed by 'iconv -l'
+
+See also: NETWORK
 

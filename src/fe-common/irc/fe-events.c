@@ -52,7 +52,7 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 	if (nick == NULL) nick = server->real_address;
 	if (addr == NULL) addr = "";
-	recoded = recode_in(msg, target);
+	recoded = recode_in(SERVER(server), msg, target);
 	if (*target == '@' && ischannel(target[1])) {
 		/* Hybrid 6 feature, send msg to all ops in channel */
 		signal_emit("message irc op_public", 5,
@@ -76,7 +76,7 @@ static void ctcp_action(IRC_SERVER_REC *server, const char *data,
 	char *recoded;
 
 	g_return_if_fail(data != NULL);
-	recoded = recode_in(data, target);
+	recoded = recode_in(SERVER(server), data, target);
 	signal_emit("message irc action", 5,
 		    server, recoded, nick, addr,
 		    get_visible_target(server, target));
@@ -91,7 +91,7 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-	recoded = recode_in(msg, target);
+	recoded = recode_in(SERVER(server), msg, target);
 	if (nick == NULL) {
 		nick = server->real_address == NULL ?
 			server->connrec->address :
@@ -129,7 +129,7 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &reason);
-	recoded = recode_in(reason, channel);
+	recoded = recode_in(SERVER(server), reason, channel);
 	signal_emit("message part", 5, server,
 		    get_visible_target(server, channel), nick, addr, recoded);
 	g_free(params);
@@ -154,7 +154,7 @@ static void event_kick(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
 				  &channel, &nick, &reason);
-	recoded = recode_in(reason, channel);
+	recoded = recode_in(SERVER(server), reason, channel);
 	signal_emit("message kick", 6,
 		    server, get_visible_target(server, channel),
 		    nick, kicker, addr, recoded);
@@ -261,7 +261,7 @@ static void event_topic(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &topic);
-	recoded = recode_in(topic, channel);
+	recoded = recode_in(SERVER(server), topic, channel);
 	signal_emit("message topic", 5, server,
 		    get_visible_target(server, channel), recoded, nick, addr);
 	g_free(params);

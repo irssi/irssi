@@ -192,7 +192,7 @@ static void message_own_public(const SERVER_REC *server, const char *msg,
 			       const char *target)
 {
 	char *recoded;
-	recoded = recode_in(msg, target);
+	recoded = recode_in(server, msg, target);
 	signal_continue(3, server, recoded, target);
 	g_free(recoded);
 }
@@ -201,7 +201,7 @@ static void message_own_private(const SERVER_REC *server, const char *msg,
 			       const char *target, const char *orig_target)
 {
 	char *recoded;
-	recoded = recode_in(msg, target);
+	recoded = recode_in(server, msg, target);
 	signal_continue(4, server, recoded, target, orig_target);
 	g_free(recoded);
 }
@@ -211,7 +211,7 @@ static void message_irc_own_action(const SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	char *recoded;
-	recoded = recode_in(msg, target);
+	recoded = recode_in(server, msg, target);
 	signal_continue(5, server, recoded, nick, addr, target);
 	g_free(recoded);
 }
@@ -220,7 +220,7 @@ static void message_irc_own_notice(const SERVER_REC *server, const char *msg,
 				   const char *channel)
 {
 	char *recoded;
-	recoded = recode_in(msg, channel);
+	recoded = recode_in(server, msg, channel);
 	signal_continue(3, server, recoded, channel);
 	g_free(recoded);
 }

@@ -363,7 +363,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
-				recoded = recode_in(reason, rec->visible_name);
+				recoded = recode_in(server, reason, rec->visible_name);
 				printformat(server, rec->visible_name,
 					    MSGLEVEL_QUITS,
 					    TXT_QUIT, nick, address, recoded,
@@ -380,7 +380,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		   display the quit there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
-			recoded = recode_in(reason, nick);
+			recoded = recode_in(server, reason, nick);
 			printformat(server, nick, MSGLEVEL_QUITS,
 				    TXT_QUIT, nick, address, recoded, "");
 			g_free(recoded);
@@ -391,7 +391,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
 		/* at least recode_fallback will be used */
-		recoded = recode_in(reason, nick);
+		recoded = recode_in(server, reason, nick);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
 			    nick, address, recoded, chans->str);

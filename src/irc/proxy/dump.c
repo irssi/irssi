@@ -199,7 +199,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 		      client->proxy_address, client->nick, channel->name);
 	if (channel->topic != NULL) {
 		/* this is needed because the topic may be encoded into other charsets internaly */
-		recoded = recode_out(channel->topic, channel->name);
+		recoded = recode_out(SERVER(client->server), channel->topic, channel->name);
 		proxy_outdata(client, ":%s 332 %s %s :%s\n",
 			      client->proxy_address, client->nick,
 			      channel->name, recoded);

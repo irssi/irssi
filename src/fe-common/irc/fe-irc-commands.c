@@ -68,7 +68,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	target = window_item_get_target(item);
-	recoded = recode_out(data, target);
+	recoded = recode_out(SERVER(server), data, target);
 
 	signal_emit("message irc own_action", 3, server, recoded,
 		    item->visible_name);
@@ -100,7 +100,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	recoded = recode_out(text, target);
+	recoded = recode_out(SERVER(server), text, target);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
 
 	target = skip_target(target);
@@ -128,7 +128,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 		
-	recoded = recode_out(msg, target);
+	recoded = recode_out(SERVER(server), msg, target);
 	signal_emit("message irc own_notice", 3, server, recoded, target);
 	
 	g_free(recoded);

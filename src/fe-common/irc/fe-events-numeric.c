@@ -119,7 +119,7 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	while (*realname == ' ') realname++;
 	if (realname > hops) realname[-1] = '\0';
 	
-	recoded = recode_in(realname, nick);
+	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
 		    channel, nick, stat, hops, user, host, recoded, serv);
 
@@ -236,7 +236,7 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &topic);
-	recoded = recode_in(topic, channel);
+	recoded = recode_in(SERVER(server), topic, channel);
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    IRCTXT_TOPIC, channel, recoded);
@@ -316,7 +316,7 @@ static void event_away(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
-	recoded = recode_in(awaymsg, nick);
+	recoded = recode_in(SERVER(server), awaymsg, nick);
 	if (!settings_get_bool("show_away_once") ||
 	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
 	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {

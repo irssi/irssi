@@ -65,13 +65,14 @@ static gboolean is_translit(const char *charset)
 	return (pos != NULL);
 }
 
-char *recode_in(const char *str, const char *target)
+char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 {
 #ifdef HAVE_GLIB2
 	const char *from = NULL;
 	const char *to = NULL;
 	char *translit_to = NULL;
 	char *recoded = NULL;
+	char *tagtarget = NULL;
 	gboolean term_is_utf8, str_is_utf8, translit;
 	int len;
 
@@ -83,7 +84,13 @@ char *recode_in(const char *str, const char *target)
 	str_is_utf8 = g_utf8_validate(str, len, NULL);
 	translit = settings_get_bool("recode_transliterate");
 
-	if (target != NULL)
+	if (server != NULL)
+		tagtarget = server->tag == NULL ? NULL :
+			    g_strdup_printf("%s/%s", server->tag, target);
+	if (tagtarget != NULL)
+		from = iconfig_get_str("conversions", tagtarget, NULL);
+	g_free(tagtarget);
+	if (target != NULL && from == NULL)
 		from = iconfig_get_str("conversions", target, NULL);
 
 	term_is_utf8 = recode_get_charset(&to);
@@ -115,7 +122,7 @@ char *recode_in(const char *str, const char *target)
 #endif
 }
 
-char *recode_out(const char *str, const char *target)
+char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 {
 #ifdef HAVE_GLIB2
 	char *recoded = NULL;
@@ -133,8 +140,16 @@ char *recode_out(const char *str, const char *target)
 	if (target) {
 		const char *to = NULL;
 		char *translit_to = NULL;
+		char *tagtarget = NULL;
 
-		to = iconfig_get_str("conversions", target, NULL);
+		if (server != NULL)
+			tagtarget = server->tag == NULL ? NULL :
+				    g_strdup_printf("%s/%s", server->tag, target);
+		if (tagtarget != NULL)
+			to = iconfig_get_str("conversions", tagtarget, NULL);
+		else
+			to = iconfig_get_str("conversions", target, NULL);
+		g_free(tagtarget);
 		if (to == NULL || *to == '\0')
 			/* default outgoing charset if set */
 			to = settings_get_str("recode_out_default_charset");
