@@ -416,7 +416,8 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 
 	msg_beep_check(dest);
 
-	dest->window->last_line = time(NULL);
+        if ((dest->level & MSGLEVEL_NEVER) == 0)
+		dest->window->last_line = time(NULL);
 
 	/* add timestamp/server tag here - if it's done in print_line()
 	   it would be written to log files too */
