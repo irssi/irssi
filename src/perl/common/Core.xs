@@ -445,7 +445,7 @@ version()
 PREINIT:
 	char version[100];
 CODE:
-	g_snprintf(version, sizeof(version), "%d.%d",
+	g_snprintf(version, sizeof(version), "%d.%04d",
 		   IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 	RETVAL = version;
 OUTPUT:
