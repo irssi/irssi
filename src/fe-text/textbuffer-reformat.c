@@ -87,7 +87,8 @@ static char *textbuffer_line_get_format(WINDOW_REC *window, LINE_REC *line,
 	text = (const unsigned char *) line->text;
 
 	/* skip the beginning of the line until we find the format */
-	g_free(line_read_format(&text));
+	format_name = line_read_format(&text);
+	g_free(format_name);
 	if (text[1] == LINE_CMD_FORMAT_CONT) {
 		if (raw != NULL) {
 			g_string_append_c(raw, '\0');

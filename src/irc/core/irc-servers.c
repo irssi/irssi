@@ -373,8 +373,8 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	server_redirect_command(server, cmd, redirect);
 
 	/* remove from queue */
-	g_free(cmd);
 	server->cmdqueue = g_slist_remove(server->cmdqueue, cmd);
+	g_free(cmd);
 
         link = server->cmdqueue;
 	server->cmdqueue = g_slist_remove_link(server->cmdqueue, link);

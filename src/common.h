@@ -52,6 +52,10 @@
 #  include <gmodule.h>
 #endif
 
+#ifdef USE_GC
+#  define g_free(x) G_STMT_START { (x) = NULL; } G_STMT_END
+#endif
+
 #if defined (UOFF_T_INT)
 typedef unsigned int uoff_t;
 #elif defined (UOFF_T_LONG)
