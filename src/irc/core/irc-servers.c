@@ -150,8 +150,9 @@ static void server_init(IRC_SERVER_REC *server)
 	server->cmdcount = 0;
 }
 
-IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
+SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 {
+	IRC_SERVER_CONNECT_REC *ircconn;
 	IRC_SERVER_REC *server;
 
 	g_return_val_if_fail(IS_IRC_SERVER_CONNECT(conn), NULL);
@@ -161,34 +162,39 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 	server = g_new0(IRC_SERVER_REC, 1);
 	server->chat_type = IRC_PROTOCOL;
 
-	server->connrec = conn;
-        server_connect_ref(SERVER_CONNECT(conn));
+	ircconn = (IRC_SERVER_CONNECT_REC *) conn;
+	server->connrec = ircconn;
+        server_connect_ref(conn);
 
 	if (server->connrec->port <= 0)
 		server->connrec->port = 6667;
 
-	server->cmd_queue_speed = conn->cmd_queue_speed > 0 ?
-		conn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
-	server->max_cmds_at_once = conn->max_cmds_at_once > 0 ?
-		conn->max_cmds_at_once : settings_get_int("cmds_max_at_once");
-	server->max_query_chans = conn->max_query_chans > 0 ?
-		conn->max_query_chans : DEFAULT_MAX_QUERY_CHANS;
+	server->cmd_queue_speed = ircconn->cmd_queue_speed > 0 ?
+		ircconn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
+	server->max_cmds_at_once = ircconn->max_cmds_at_once > 0 ?
+		ircconn->max_cmds_at_once : settings_get_int("cmds_max_at_once");
+	server->max_query_chans = ircconn->max_query_chans > 0 ?
+		ircconn->max_query_chans : DEFAULT_MAX_QUERY_CHANS;
 
-	server->max_kicks_in_cmd = conn->max_kicks > 0 ?
-		conn->max_kicks : DEFAULT_MAX_KICKS;
-	server->max_modes_in_cmd = conn->max_modes > 0 ?
-		conn->max_modes : DEFAULT_MAX_MODES;
-	server->max_whois_in_cmd = conn->max_whois > 0 ?
-		conn->max_whois : DEFAULT_MAX_WHOIS;
-	server->max_msgs_in_cmd = conn->max_msgs > 0 ?
-		conn->max_msgs : DEFAULT_MAX_MSGS;
+	server->max_kicks_in_cmd = ircconn->max_kicks > 0 ?
+		ircconn->max_kicks : DEFAULT_MAX_KICKS;
+	server->max_modes_in_cmd = ircconn->max_modes > 0 ?
+		ircconn->max_modes : DEFAULT_MAX_MODES;
+	server->max_whois_in_cmd = ircconn->max_whois > 0 ?
+		ircconn->max_whois : DEFAULT_MAX_WHOIS;
+	server->max_msgs_in_cmd = ircconn->max_msgs > 0 ?
+		ircconn->max_msgs : DEFAULT_MAX_MSGS;
 
-	if (!server_start_connect((SERVER_REC *) server)) {
-                server_connect_unref(SERVER_CONNECT(conn));
+        server_connect_init((SERVER_REC *) server);
+	return (SERVER_REC *) server;
+}
+
+void irc_server_connect(SERVER_REC *server)
+{
+	if (!server_start_connect(server)) {
+                server_connect_unref(server->connrec);
 		g_free(server);
-		return NULL;
 	}
-	return server;
 }
 
 /* Returns TRUE if `command' is sent to `target' */

@@ -91,8 +91,8 @@ void irc_core_init(void)
 	rec->create_server_connect = create_server_connect;
 	rec->destroy_server_connect = destroy_server_connect;
 
-	rec->server_connect = (SERVER_REC *(*) (SERVER_CONNECT_REC *))
-		irc_server_connect;
+	rec->server_init_connect = irc_server_init_connect;
+	rec->server_connect = irc_server_connect;
 	rec->channel_create =
 		(CHANNEL_REC *(*) (SERVER_REC *, const char *,
 				   const char *, int))

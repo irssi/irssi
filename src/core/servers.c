@@ -264,6 +264,18 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	g_free(iprec.errorstr);
 }
 
+SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
+{
+	CHAT_PROTOCOL_REC *proto;
+	SERVER_REC *server;
+
+	proto = CHAT_PROTOCOL(conn);
+	server = proto->server_init_connect(conn);
+	proto->server_connect(server);
+
+	return server;
+}
+
 /* initializes server record but doesn't start connecting */
 void server_connect_init(SERVER_REC *server)
 {
@@ -305,15 +317,7 @@ int server_start_connect(SERVER_REC *server)
 	if (!server->connrec->unix_socket && server->connrec->port <= 0)
 		return FALSE;
 
-	server_connect_init(server);
 	server->rawlog = rawlog_create();
-
-	if (server->connrec->session_reconnect) {
-		/* /UPGRADE connection - the session_connect is meant
-		   for us only once, move it into server->session_connect */
-		server->connrec->session_reconnect = FALSE;
-		server->session_reconnect = TRUE;
-	}
 
 	if (server->connrec->connect_handle != NULL) {
 		/* already connected */

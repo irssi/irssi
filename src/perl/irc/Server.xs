@@ -129,9 +129,3 @@ CODE:
 	RETVAL = (char *) server_redirect_peek_signal(server, event, args, &redirection);
 OUTPUT:
 	RETVAL
-
-MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Connect  PREFIX = irc_server_
-
-Irssi::Irc::Server
-irc_server_connect(conn)
-	Irssi::Irc::Connect conn

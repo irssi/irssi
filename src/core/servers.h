@@ -53,6 +53,8 @@ int server_start_connect(SERVER_REC *server);
 void server_connect_ref(SERVER_CONNECT_REC *conn);
 void server_connect_unref(SERVER_CONNECT_REC *conn);
 
+SERVER_REC *server_connect(SERVER_CONNECT_REC *conn);
+
 /* initializes server record but doesn't start connecting */
 void server_connect_init(SERVER_REC *server);
 /* Connection to server finished, fill the rest of the fields */

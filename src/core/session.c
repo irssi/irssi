@@ -277,10 +277,12 @@ static void session_restore_server(CONFIG_NODE *node)
 	if (conn != NULL) {
 		conn->reconnection = TRUE;
 		conn->connect_handle = g_io_channel_unix_new(handle);
-		conn->session_reconnect = TRUE;
 
-		server = proto->server_connect(conn);
+		server = proto->server_init_connect(conn);
+		server->session_reconnect = TRUE;
 		signal_emit("session restore server", 2, server, node);
+
+		proto->server_connect(server);
 	}
 }
 

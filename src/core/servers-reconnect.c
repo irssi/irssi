@@ -99,7 +99,7 @@ static int server_reconnect_timeout(void)
 			conn = rec->conn;
 			server_connect_ref(conn);
 			server_reconnect_destroy(rec);
-			CHAT_PROTOCOL(conn)->server_connect(conn);
+			server_connect(conn);
 			server_connect_unref(conn);
 		}
 	}
@@ -329,7 +329,7 @@ static void reconnect_all(void)
 	while (list != NULL) {
 		conn = list->data;
 
-		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server_connect(conn);
                 server_connect_unref(conn);
                 list = g_slist_remove(list, conn);
 	}
@@ -351,7 +351,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 		signal_emit("command disconnect", 2, "* Reconnecting", server);
 
 		conn->reconnection = TRUE;
-		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server_connect(conn);
 		server_connect_unref(conn);
                 return;
 	}
@@ -383,7 +383,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	conn = rec->conn;
 	server_connect_ref(conn);
 	server_reconnect_destroy(rec);
-	CHAT_PROTOCOL(conn)->server_connect(conn);
+	server_connect(conn);
 	server_connect_unref(conn);
 }
 

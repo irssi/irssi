@@ -118,7 +118,7 @@ static void cmd_connect(const char *data)
 
 	conn = get_server_connect(data, NULL, &rawlog_file);
 	if (conn != NULL) {
-		server = CHAT_PROTOCOL(conn)->server_connect(conn);
+		server = server_connect(conn);
                 server_connect_unref(conn);
 
 		if (server != NULL && rawlog_file != NULL)
@@ -224,7 +224,7 @@ static void cmd_server_connect(const char *data, SERVER_REC *server)
 	if (conn != NULL) {
 		if (!plus_addr)
 			update_reconnection(conn, server);
-		server = CHAT_PROTOCOL(conn)->server_connect(conn);
+		server = server_connect(conn);
 		server_connect_unref(conn);
 
 		if (server != NULL && rawlog_file != NULL)

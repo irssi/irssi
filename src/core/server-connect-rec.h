@@ -29,6 +29,5 @@ GIOChannel *connect_handle; /* connect using this handle */
 unsigned int reconnection:1; /* we're trying to reconnect */
 unsigned int no_autojoin_channels:1; /* don't autojoin any channels */
 unsigned int unix_socket:1; /* Connect using named unix socket */
-unsigned int session_reconnect:1; /* Connected to this server with /UPGRADE */
 char *channels;
 char *away_reason;
