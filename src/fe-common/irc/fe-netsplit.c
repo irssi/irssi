@@ -162,6 +162,8 @@ static int check_server_splits(IRC_SERVER_REC *server)
 	GSList *tmp, *next, *servers;
 	time_t last;
 
+	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
+
 	last = get_last_split(server);
 	if (time(NULL)-last < SPLIT_WAIT_TIME)
 		return FALSE;
@@ -207,6 +209,9 @@ static int sig_check_splits(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
+		if (!IS_IRC_SERVER(rec))
+			continue;
+
 		if (rec->split_servers != NULL) {
 			if (!check_server_splits(rec))
 				stop = FALSE;
@@ -242,7 +247,7 @@ static void split_print(const char *nick, NETSPLIT_REC *rec)
 /* SYNTAX: NETSPLIT */
 static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 {
-	if (server == NULL || !server->connected)
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (server->split_servers == NULL) {
