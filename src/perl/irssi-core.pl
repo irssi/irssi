@@ -13,6 +13,7 @@ sub is_static {
 }
 
 sub destroy {
+  eval { $_[0]->UNLOAD; };
   Symbol::delete_package($_[0]);
 }
 
