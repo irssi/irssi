@@ -197,6 +197,8 @@ char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
 {
 	CONFIG_NODE *node;
 
+        if (parent == NULL) return (char *) def;
+
 	node = config_node_find(parent, key);
 	return (node == NULL || !has_node_value(node)) ? def : node->value;
 }
