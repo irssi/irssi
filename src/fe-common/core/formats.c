@@ -216,10 +216,13 @@ void format_create_dest(TEXT_DEST_REC *dest,
         dest->hilight_bg_color = 0;
 }
 
+/* Return length of text part in string (ie. without % codes) */
 int format_get_length(const char *str)
 {
         GString *tmp;
 	int len;
+
+        g_return_val_if_fail(str != NULL, 0);
 
         tmp = g_string_new(NULL);
 	len = 0;
@@ -233,15 +236,51 @@ int format_get_length(const char *str)
 
 			/* %% or unknown %code, written as-is */
 			if (*str != '%')
-                                len++;
+				len++;
 		}
 
                 len++;
-                str++;
+		str++;
 	}
 
 	g_string_free(tmp, TRUE);
         return len;
+}
+
+/* Return how many characters in `str' must be skipped before `len'
+   characters of text is skipped. Like strip_real_length(), except this
+   handles %codes. */
+int format_real_length(const char *str, int len)
+{
+	GString *tmp;
+	const char *start;
+
+        g_return_val_if_fail(str != NULL, 0);
+        g_return_val_if_fail(len >= 0, 0);
+
+        start = str;
+        tmp = g_string_new(NULL);
+	while (*str != '\0' && len > 0) {
+		if (*str == '%' && str[1] != '\0') {
+			str++;
+			if (*str != '%' && format_expand_styles(tmp, *str)) {
+                                str++;
+				continue;
+			}
+
+			/* %% or unknown %code, written as-is */
+			if (*str != '%') {
+				if (--len == 0)
+                                        break;
+			}
+		}
+
+                len--;
+		str++;
+	}
+
+	g_string_free(tmp, TRUE);
+        return (int) (str-start);
 }
 
 static char *format_get_text_args(TEXT_DEST_REC *dest,
