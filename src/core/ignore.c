@@ -387,7 +387,7 @@ static void read_ignores(void)
 		ignores = g_slist_append(ignores, rec);
 
 		rec->mask = g_strdup(config_node_get_str(node, "mask", NULL));
-		if (strcmp(rec->mask, "*") == 0) {
+		if (rec->mask != NULL && strcmp(rec->mask, "*") == 0) {
 			/* FIXME: remove after .98 */
                         g_free(rec->mask);
 			rec->mask = NULL;
