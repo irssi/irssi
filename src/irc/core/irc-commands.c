@@ -523,7 +523,10 @@ static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: QUOTE <data> */
 static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	if (server != NULL && !IS_IRC_SERVER(server))
+		return;
+	if (server == NULL)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	irc_send_cmd(server, data);
 }
@@ -531,7 +534,10 @@ static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: RAWQUOTE <data> */
 static void cmd_rawquote(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	if (server != NULL && !IS_IRC_SERVER(server))
+		return;
+	if (server == NULL)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	irc_send_cmd_full(server, data, FALSE, FALSE, TRUE);
 }
