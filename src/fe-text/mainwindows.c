@@ -389,6 +389,8 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 
 		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (space <= 0) {
+			mainwindow_resize(rec, xdiff, 0);
+
 			rec->first_line += ydiff;
 			rec->last_line += ydiff;
 			signal_emit("mainwindow moved", 1, rec);
@@ -403,6 +405,14 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 
 		mainwindow_resize(rec, xdiff, -space);
 	}
+
+	if (xdiff != 0) {
+		while (tmp != NULL) {
+			mainwindow_resize(tmp->data, xdiff, 0);
+			tmp = tmp->next;
+		}
+	}
+
 	g_slist_free(sorted);
 }
 
@@ -418,6 +428,7 @@ static void mainwindows_resize_bigger(int xdiff, int ydiff)
 
 		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (ydiff == 0 || (space >= 0 && tmp->next != NULL)) {
+			mainwindow_resize(rec, xdiff, 0);
 			if (moved > 0) {
 				rec->first_line += moved;
 				rec->last_line += moved;
