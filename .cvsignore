@@ -28,6 +28,7 @@ ABOUT-NLS
 COPYING
 irssi.spec
 default-config.h
+default-theme.h
 irssi-version.h
 irssi-version.h.in
 irssi-config
