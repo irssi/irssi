@@ -601,7 +601,7 @@ int settings_save(const char *fname, int autosave)
 		signal_emit("gui dialog", 2, "error", str);
 		g_free(str);
 	}
-	signal_emit("setup saved", 2, fname, GINT_TO_POINTER(autosave);
+	signal_emit("setup saved", 2, fname, GINT_TO_POINTER(autosave));
         return !error;
 }
 
