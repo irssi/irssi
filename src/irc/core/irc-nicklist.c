@@ -30,9 +30,12 @@
 #include "servers.h"
 
 #define isnickchar(a) \
-    (isalnum((int) (a)) || (a) == '`' || (a) == '-' || (a) == '_' || \
-    (a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
-    (a) == '|' || (a) == '\\' || (a) == '^')
+	(isalnum((int) (a)) || (a) == '`' || (a) == '-' || (a) == '_' || \
+	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
+	(a) == '|' || (a) == '\\' || (a) == '^')
+
+#define isalnumhigh(a) \
+        (isalnum(a) || (unsigned char) (a) >= 128)
 
 /* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
 char *irc_nick_strip(const char *nick)
@@ -56,27 +59,40 @@ char *irc_nick_strip(const char *nick)
 /* Check is `msg' is meant for `nick'. */
 int irc_nick_match(const char *nick, const char *msg)
 {
-	char *stripnick, *stripmsg;
-	int ret, len;
+	int len;
 
 	g_return_val_if_fail(nick != NULL, FALSE);
 	g_return_val_if_fail(msg != NULL, FALSE);
 
+	/* first check for identical match */
 	len = strlen(nick);
-	if (g_strncasecmp(msg, nick, len) == 0 && !isalnum((int) msg[len]))
+	if (g_strncasecmp(msg, nick, len) == 0 && !isalnumhigh((int) msg[len]))
 		return TRUE;
 
-	stripnick = irc_nick_strip(nick);
-	stripmsg = irc_nick_strip(msg);
+	/* check if it matches for alphanumeric parts of nick */
+	while (*nick != '\0' && *msg != '\0') {
+		if (*nick == *msg) {
+			/* total match */
+			msg++;
+		} else if (isalnum(*msg) && !isalnum(*nick)) {
+			/* some strange char in your nick, pass it */
+		} else
+			break;
 
-	len = strlen(stripnick);
-	ret = len > 0 && g_strncasecmp(stripmsg, stripnick, len) == 0 &&
-		!isalnum((int) stripmsg[len]) &&
-		(unsigned char) stripmsg[len] < 128;
+		nick++;
+	}
 
-	g_free(stripnick);
-	g_free(stripmsg);
-	return ret;
+	if (isalnumhigh(*msg)) {
+		/* message continues with another alphanumeric character,
+		   it isn't for us. */
+		return FALSE;
+	}
+
+	/* remove all the non-alphanumeric characters at the end of
+	   the nick and check if message matched that far. */
+	while (*nick != '\0' && !isalnum(*nick)) nick++;
+
+	return *nick == '\0';
 }
 
 static void event_names_list(const char *data, SERVER_REC *server)
