@@ -21,9 +21,13 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
 /* Change nick */
 void nicklist_rename(SERVER_REC *server, const char *old_nick,
 		     const char *new_nick);
+void nicklist_rename_unique(SERVER_REC *server, void *old_nick_id,
+			    const char *old_nick, const char *new_nick);
 
 /* Find nick */
 NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *nick);
+NICK_REC *nicklist_find_unique(CHANNEL_REC *channel, const char *nick,
+			       void *id);
 /* Find nick mask, wildcards allowed */
 NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask);
 /* Get list of nicks that match the mask */
@@ -32,9 +36,12 @@ GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask);
 GSList *nicklist_getnicks(CHANNEL_REC *channel);
 /* Get all the nick records of `nick'. Returns channel, nick, channel, ... */
 GSList *nicklist_get_same(SERVER_REC *server, const char *nick);
+GSList *nicklist_get_same_unique(SERVER_REC *server, void *id);
 
 /* Update specified nick's status in server. */
 void nicklist_update_flags(SERVER_REC *server, const char *nick,
+			   int gone, int ircop);
+void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 			   int gone, int ircop);
 
 /* Nick record comparision for sort functions */

@@ -30,6 +30,41 @@
 #define isalnumhigh(a) \
         (isalnum(a) || (unsigned char) (a) >= 128)
 
+static void nick_hash_add(CHANNEL_REC *channel, NICK_REC *nick)
+{
+	NICK_REC *list;
+
+	list = g_hash_table_lookup(channel->nicks, nick->nick);
+        if (list == NULL)
+		g_hash_table_insert(channel->nicks, nick->nick, nick);
+	else {
+                /* multiple nicks with same name */
+		while (list->next != NULL)
+			list = list->next;
+                list->next = nick;
+	}
+}
+
+static void nick_hash_remove(CHANNEL_REC *channel, NICK_REC *nick)
+{
+	NICK_REC *list;
+
+	list = g_hash_table_lookup(channel->nicks, nick->nick);
+	if (list == NULL)
+		return;
+
+	if (list->next == NULL)
+		g_hash_table_remove(channel->nicks, nick->nick);
+	else if (list == nick) {
+		g_hash_table_insert(channel->nicks, nick->nick,
+				    nick->next);
+	} else {
+		while (list->next != nick)
+			list = list->next;
+		list->next = nick->next;
+	}
+}
+
 /* Add new nick to list */
 void nicklist_insert(CHANNEL_REC *channel, NICK_REC *nick)
 {
@@ -38,7 +73,7 @@ void nicklist_insert(CHANNEL_REC *channel, NICK_REC *nick)
 	nick->type = module_get_uniq_id("NICK", 0);
         nick->chat_type = channel->chat_type;
 
-	g_hash_table_insert(channel->nicks, nick->nick, nick);
+        nick_hash_add(channel, nick);
 	signal_emit("nicklist new", 2, channel, nick);
 }
 
@@ -71,35 +106,47 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 	g_return_if_fail(IS_CHANNEL(channel));
 	g_return_if_fail(nick != NULL);
 
-	g_hash_table_remove(channel->nicks, nick->nick);
+        nick_hash_remove(channel, nick);
 	nicklist_destroy(channel, nick);
 }
 
-/* Change nick */
-void nicklist_rename(SERVER_REC *server, const char *old_nick,
-		     const char *new_nick)
+static void nicklist_rename_list(SERVER_REC *server, const char *old_nick,
+				 const char *new_nick, GSList *nicks)
 {
 	CHANNEL_REC *channel;
 	NICK_REC *nickrec;
-	GSList *nicks, *tmp;
+	GSList *tmp;
 
-	nicks = nicklist_get_same(server, old_nick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
 		channel = tmp->data;
 		nickrec = tmp->next->data;
 
 		/* remove old nick from hash table */
-		g_hash_table_remove(channel->nicks, nickrec->nick);
+                nick_hash_remove(channel, nickrec);
 
 		g_free(nickrec->nick);
 		nickrec->nick = g_strdup(new_nick);
 
 		/* add new nick to hash table */
-		g_hash_table_insert(channel->nicks, nickrec->nick, nickrec);
+                nick_hash_add(channel, nickrec);
 
 		signal_emit("nicklist changed", 3, channel, nickrec, old_nick);
 	}
 	g_slist_free(nicks);
+}
+
+void nicklist_rename(SERVER_REC *server, const char *old_nick,
+		     const char *new_nick)
+{
+	return nicklist_rename_list(server, old_nick, new_nick,
+				    nicklist_get_same(server, old_nick));
+}
+
+void nicklist_rename_unique(SERVER_REC *server, void *old_nick_id,
+			    const char *old_nick, const char *new_nick)
+{
+	return nicklist_rename_list(server, old_nick, new_nick,
+				    nicklist_get_same_unique(server, old_nick_id));
 }
 
 static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
@@ -150,6 +197,21 @@ NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *nick)
 	return g_hash_table_lookup(channel->nicks, nick);
 }
 
+NICK_REC *nicklist_find_unique(CHANNEL_REC *channel, const char *nick,
+			       void *id)
+{
+	NICK_REC *rec;
+
+	g_return_val_if_fail(IS_CHANNEL(channel), NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+
+	rec = g_hash_table_lookup(channel->nicks, nick);
+	while (rec != NULL && rec->unique_id != id)
+                rec = rec->next;
+
+        return rec;
+}
+
 /* Find nick mask, wildcards allowed */
 NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 {
@@ -170,10 +232,13 @@ NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 
 	nickrec = g_hash_table_lookup(channel->nicks, nick);
 
-	if (nickrec != NULL && host != NULL &&
-	    (nickrec->host == NULL || !match_wildcards(host, nickrec->host))) {
-                /* hosts didn't match */
-		nickrec = NULL;
+	if (host != NULL) {
+		while (nickrec != NULL) {
+			if (nickrec->host != NULL &&
+			    match_wildcards(host, nickrec->host))
+				break; /* match */
+			nickrec = nickrec->next;
+		}
 	}
 	g_free(nick);
 	return nickrec;
@@ -181,7 +246,10 @@ NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 
 static void get_nicks_hash(gpointer key, NICK_REC *rec, GSList **list)
 {
-	*list = g_slist_append(*list, rec);
+	while (rec != NULL) {
+		*list = g_slist_append(*list, rec);
+                rec = rec->next;
+	}
 }
 
 /* Get list of nicks */
@@ -228,6 +296,40 @@ GSList *nicklist_get_same(SERVER_REC *server, const char *nick)
 	return rec.list;
 }
 
+typedef struct {
+	CHANNEL_REC *channel;
+        void *id;
+	GSList *list;
+} NICKLIST_GET_SAME_UNIQUE_REC;
+
+static void get_nicks_same_hash_unique(gpointer key, NICK_REC *nick,
+				       NICKLIST_GET_SAME_UNIQUE_REC *rec)
+{
+	if (nick->unique_id == rec->id) {
+		rec->list = g_slist_append(rec->list, rec->channel);
+		rec->list = g_slist_append(rec->list, nick);
+	}
+}
+
+GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
+{
+	NICKLIST_GET_SAME_UNIQUE_REC rec;
+	GSList *tmp;
+
+	g_return_val_if_fail(IS_SERVER(server), NULL);
+	g_return_val_if_fail(id != NULL, NULL);
+
+        rec.id = id;
+	rec.list = NULL;
+	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
+		rec.channel = tmp->data;
+		g_hash_table_foreach(rec.channel->nicks,
+				     (GHFunc) get_nicks_same_hash_unique,
+				     &rec);
+	}
+	return rec.list;
+}
+
 /* nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 {
@@ -245,17 +347,15 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 	return g_strcasecmp(p1->nick, p2->nick);
 }
 
-void nicklist_update_flags(SERVER_REC *server, const char *nick,
-			   int gone, int serverop)
+static void nicklist_update_flags_list(SERVER_REC *server, int gone,
+				       int serverop, GSList *nicks)
 {
-	GSList *nicks, *tmp;
+	GSList *tmp;
 	CHANNEL_REC *channel;
 	NICK_REC *rec;
 
 	g_return_if_fail(IS_SERVER(server));
-	g_return_if_fail(nick != NULL);
 
-	nicks = nicklist_get_same(server, nick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
 		channel = tmp->data;
 		rec = tmp->next->data;
@@ -275,6 +375,20 @@ void nicklist_update_flags(SERVER_REC *server, const char *nick,
 	g_slist_free(nicks);
 }
 
+void nicklist_update_flags(SERVER_REC *server, const char *nick,
+			   int gone, int serverop)
+{
+	return nicklist_update_flags_list(server, gone, serverop,
+					  nicklist_get_same(server, nick));
+}
+
+void nicklist_update_flags_unique(SERVER_REC *server, void *id,
+				  int gone, int serverop)
+{
+	return nicklist_update_flags_list(server, gone, serverop,
+					  nicklist_get_same_unique(server, id));
+}
+
 static void sig_channel_created(CHANNEL_REC *channel)
 {
 	g_return_if_fail(IS_CHANNEL(channel));
@@ -286,7 +400,13 @@ static void sig_channel_created(CHANNEL_REC *channel)
 static void nicklist_remove_hash(gpointer key, NICK_REC *nick,
 				 CHANNEL_REC *channel)
 {
-	nicklist_destroy(channel, nick);
+	NICK_REC *next;
+
+	while (nick != NULL) {
+                next = nick->next;
+		nicklist_destroy(channel, nick);
+                nick = next;
+	}
 }
 
 static void sig_channel_destroyed(CHANNEL_REC *channel)
@@ -305,6 +425,13 @@ static NICK_REC *nick_nfind(CHANNEL_REC *channel, const char *nick, int len)
 
 	tmpnick = g_strndup(nick, len);
 	rec = g_hash_table_lookup(channel->nicks, tmpnick);
+
+	/* if there's multiple, get the one with identical case */
+	while (rec->next != NULL) {
+		if (strcmp(rec->nick, tmpnick) == 0)
+                        break;
+	}
+
         g_free(tmpnick);
 	return rec;
 }
