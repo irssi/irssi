@@ -50,10 +50,11 @@ struct _REDIRECT_REC {
 	unsigned int destroyed:1;
 	unsigned int aborted:1;
 	unsigned int remote:1;
+	unsigned int first_signal_sent:1;
 
 	char *arg;
         int count;
-	char *failure_signal, *default_signal;
+	char *failure_signal, *default_signal, *first_signal, *last_signal;
 	GSList *signals; /* event, signal, ... */
 };
 
@@ -207,14 +208,33 @@ void server_redirect_event(IRC_SERVER_REC *server, const char *command,
 				   failure_signal, signals);
 }
 
+/* Find specified event from signals list. If it's found, remove it from the
+   list and return it's target signal. */
+static char *signal_list_move(GSList **signals, const char *event)
+{
+	GSList *link;
+        char *linkevent, *linksignal;
+
+	link = gslist_find_string(*signals, event);
+	if (link == NULL)
+		return NULL;
+
+	linkevent = link->data;
+        linksignal = link->next->data;
+
+	*signals = g_slist_remove(*signals, linkevent);
+	*signals = g_slist_remove(*signals, linksignal);
+
+	g_free(linkevent);
+        return linksignal;
+}
+
 void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
 				int count, const char *arg, int remote,
 				const char *failure_signal, GSList *signals)
 {
 	REDIRECT_CMD_REC *cmdrec;
 	REDIRECT_REC *rec;
-	GSList *default_signal;
-        char *default_signal_key;
 
 	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(command != NULL);
@@ -236,15 +256,9 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
 	rec->remote = remote != -1 ? remote : cmdrec->remote;
 	rec->failure_signal = g_strdup(failure_signal);
 
-	default_signal = gslist_find_string(signals, "");
-	if (default_signal != NULL) {
-                default_signal_key = default_signal->data;
-		rec->default_signal = default_signal->next->data;
-
-                signals = g_slist_remove(signals, default_signal_key);
-		signals = g_slist_remove(signals, rec->default_signal);
-                g_free(default_signal_key);
-	}
+        rec->default_signal = signal_list_move(&signals, "");
+        rec->first_signal = signal_list_move(&signals, "redirect first");
+        rec->last_signal = signal_list_move(&signals, "redirect last");
 	rec->signals = signals;
 
 	if (server->redirect_next != NULL)
@@ -407,7 +421,11 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 
 		if (rec->failure_signal != NULL)
 			signal_emit(rec->failure_signal, 1, server);
+	} else if (rec->last_signal != NULL) {
+                /* emit the last signal */
+		signal_emit(rec->last_signal, 1, server);
 	}
+
 	server_redirect_destroy(rec);
 }
 
@@ -499,6 +517,13 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 				signal = NULL;
 			}
 		}
+	}
+
+	if (*redirect != NULL && (*redirect)->first_signal != NULL &&
+	    !(*redirect)->first_signal_sent) {
+		/* emit the first_signal */
+                (*redirect)->first_signal_sent = TRUE;
+		signal_emit((*redirect)->first_signal, 1, server);
 	}
 
         return signal;
