@@ -34,6 +34,7 @@ perl_fe_sources = \
 
 noinst_HEADERS = \
 	module.h \
+	module-formats.h \
 	perl-core.h \
 	perl-common.h \
 	perl-signals.h \
