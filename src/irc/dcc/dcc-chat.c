@@ -198,7 +198,7 @@ static void dcc_chat_listen(DCC_REC *dcc)
 
 	/* TODO: add paranoia check - see dcc-files.c */
 
-	g_source_remove(dcc->tagread);
+	g_source_remove(dcc->tagconn);
 	close(dcc->handle);
 
 	dcc->starttime = time(NULL);
@@ -217,7 +217,6 @@ static void sig_chat_connected(DCC_REC *dcc)
 {
 	g_return_if_fail(dcc != NULL);
 
-	g_source_remove(dcc->tagread);
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
@@ -226,6 +225,7 @@ static void sig_chat_connected(DCC_REC *dcc)
 	}
 
 	/* connect ok. */
+	g_source_remove(dcc->tagconn);
 	dcc->starttime = time(NULL);
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) dcc_chat_input, dcc);
@@ -245,7 +245,7 @@ static void dcc_chat_connect(DCC_REC *dcc)
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1) {
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
+		dcc->tagconn = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 					   (GInputFunction) sig_chat_connected, dcc);
 	} else {
 		/* error connecting */
@@ -290,7 +290,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 		cmd_param_error(CMDERR_ERRNO);
 
 	dcc = dcc_create(DCC_TYPE_CHAT, handle, nick, "chat", server, NULL);
-	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
+	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) dcc_chat_listen, dcc);
 
 	/* send the request */

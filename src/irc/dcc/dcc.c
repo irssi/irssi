@@ -68,7 +68,7 @@ DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg,
 	dcc->nick = g_strdup(nick);
 	dcc->handle = handle;
 	dcc->fhandle = -1;
-	dcc->tagread = dcc->tagwrite = -1;
+	dcc->tagconn = dcc->tagread = dcc->tagwrite = -1;
 	dcc->server = server;
 	dcc->mynick = g_strdup(server != NULL ? server->nick :
 			       chat != NULL ? chat->nick : "??");
@@ -110,6 +110,7 @@ void dcc_destroy(DCC_REC *dcc)
 
 	if (dcc->fhandle != -1) close(dcc->fhandle);
 	if (dcc->handle != -1) net_disconnect(dcc->handle);
+	if (dcc->tagconn != -1) g_source_remove(dcc->tagconn);
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
 

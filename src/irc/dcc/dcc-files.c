@@ -61,7 +61,7 @@ void dcc_get_send_received(DCC_REC *dcc)
 	   count_buf should be re-sent.. also, if it's 1, 2 or 3, the
 	   last 1-3 bytes should be sent later. these happen probably
 	   never, but I just want to do it right.. :) */
-	if (dcc->tagwrite != -1) {
+	if (dcc->tagwrite == -1) {
 		dcc->tagwrite = g_input_add(dcc->handle, G_INPUT_WRITE,
 					    (GInputFunction) sig_dccget_send, dcc);
 	}
@@ -151,13 +151,14 @@ static void sig_dccget_connected(DCC_REC *dcc)
 
 	g_return_if_fail(dcc != NULL);
 
-	g_source_remove(dcc->tagread);
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
 		dcc_destroy(dcc);
 		return;
 	}
+
+	g_source_remove(dcc->tagconn);
 
 	g_free_not_null(dcc->file);
 	dcc->file = dcc_get_download_path(dcc->arg);
@@ -196,7 +197,7 @@ static void dcc_get_connect(DCC_REC *dcc)
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1) {
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
+		dcc->tagconn = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ|G_INPUT_EXCEPTION,
 					   (GInputFunction) sig_dccget_connected, dcc);
 	} else {
 		/* error connecting */
@@ -458,7 +459,7 @@ static void dcc_send_init(DCC_REC *dcc)
 	   that the host of the nick who we sent the request matches the
 	   address who connected us. */
 
-	g_source_remove(dcc->tagread);
+	g_source_remove(dcc->tagconn);
 	close(dcc->handle);
 
 	dcc->starttime = time(NULL);
@@ -562,7 +563,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *i
 	dcc->port = port;
 	dcc->size = fsize;
 	dcc->fhandle = hfile;
-	dcc->tagread = g_input_add(hlisten, G_INPUT_READ,
+	dcc->tagconn = g_input_add(hlisten, G_INPUT_READ,
 				   (GInputFunction) dcc_send_init, dcc);
 
 	/* send DCC request */

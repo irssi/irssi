@@ -118,7 +118,7 @@ static void dcc_chat_action(const char *msg, DCC_REC *dcc)
 	g_return_if_fail(msg != NULL);
 
 	sender = g_strconcat("=", dcc->nick, NULL);
-	printformat(NULL, sender, MSGLEVEL_DCC | MSGLEVEL_MSGS,
+	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
 		    IRCTXT_ACTION_DCC, dcc->nick, msg);
 	g_free(sender);
 }
@@ -131,7 +131,7 @@ static void dcc_chat_ctcp(const char *msg, DCC_REC *dcc)
 	g_return_if_fail(msg != NULL);
 
 	sender = g_strconcat("=", dcc->nick, NULL);
-	printformat(NULL, sender, MSGLEVEL_DCC | MSGLEVEL_CTCPS, IRCTXT_DCC_CTCP, dcc->nick, msg);
+	printformat(NULL, sender, MSGLEVEL_DCC, IRCTXT_DCC_CTCP, dcc->nick, msg);
 	g_free(sender);
 }
 
@@ -143,7 +143,7 @@ static void dcc_chat_msg(DCC_REC *dcc, const char *msg)
 	g_return_if_fail(msg != NULL);
 
 	sender = g_strconcat("=", dcc->nick, NULL);
-	printformat(NULL, sender, MSGLEVEL_DCC | MSGLEVEL_MSGS,
+	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
 		    query_find(NULL, sender) ? IRCTXT_DCC_MSG_QUERY :
 		    IRCTXT_DCC_MSG, dcc->nick, msg);
 	g_free(sender);
@@ -310,7 +310,7 @@ static void cmd_msg(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
-		printformat(NULL, target, MSGLEVEL_DCC | MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT,
+		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
 			    query_find(NULL, target) ? IRCTXT_OWN_DCC_QUERY :
 			    IRCTXT_OWN_DCC, dcc->mynick, text);
 	}
@@ -327,7 +327,7 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 	dcc = item_get_dcc(item);
 	if (dcc == NULL) return;
 
-        printformat(NULL, item->name, MSGLEVEL_DCC | MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT,
+        printformat(NULL, item->name, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
                     IRCTXT_OWN_DCC_ME, dcc->mynick, data);
 }
 
@@ -353,7 +353,7 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
-		printformat(NULL, target, MSGLEVEL_DCC | MSGLEVEL_ACTIONS,
+		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
 			    IRCTXT_OWN_DCC_ME, dcc->mynick, text);
 	}
 	cmd_params_free(free_arg);
@@ -384,7 +384,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		g_strup(ctcpcmd);
-		printformat(server, target, MSGLEVEL_DCC | MSGLEVEL_CTCPS, IRCTXT_OWN_DCC_CTCP,
+		printformat(server, target, MSGLEVEL_DCC, IRCTXT_OWN_DCC_CTCP,
 			    target, ctcpcmd, ctcpdata);
 	}
 

@@ -32,7 +32,8 @@
 #include "hilight-text.h"
 
 #define DEFAULT_HILIGHT_LEVEL \
-	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | MSGLEVEL_NOTICES | MSGLEVEL_ACTIONS)
+	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | MSGLEVEL_NOTICES | \
+	 MSGLEVEL_ACTIONS | MSGLEVEL_DCCMSGS)
 
 static int hilight_next;
 GSList *hilights;
@@ -201,8 +202,7 @@ char *hilight_match(const char *channel, const char *nickmask, int level, const 
 
 		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_LEVEL)) == 0)
                         continue;
-		if ((rec->nick && nickmask == NULL) ||
-		    (!rec->nick && nickmask != NULL))
+		if (!rec->nick && nickmask != NULL)
                         continue;
 		if (rec->channels != NULL && (channel == NULL || strarray_find(rec->channels, channel) == -1))
 			continue;

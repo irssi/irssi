@@ -40,6 +40,7 @@ static const char *levels[] =
 	"INVITES",
 	"NICKS",
 	"DCC",
+	"DCCMSGS",
 	"CLIENTNOTICES",
 	"CLIENTCRAP",
 	"CLIENTERRORS",

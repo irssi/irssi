@@ -178,9 +178,11 @@ static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	if (!irc_item_check(item))
 		return;
 
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	printformat(server, item->name, MSGLEVEL_ACTIONS,
+	printformat(server, item->name, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT |
+		    (ischannel(*item->name) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    IRCTXT_OWN_ME, server->nick, data);
 
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", item->name, data);
@@ -192,13 +194,17 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
-	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*target == '\0' || *text == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	printformat(server, target, MSGLEVEL_ACTIONS, IRCTXT_OWN_ME, server->nick, text);
+	printformat(server, target, MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT |
+		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
+		    IRCTXT_OWN_ME, server->nick, text);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, text);
 	cmd_params_free(free_arg);
 }
@@ -235,6 +241,12 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (*target == '\0' || *ctcpcmd == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	if (*target == '=') {
+		/* don't handle DCC CTCPs */
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	if (*target == '@' && ischannel(target[1]))
 		target++; /* Hybrid 6 feature, send ctcp to all ops in channel */

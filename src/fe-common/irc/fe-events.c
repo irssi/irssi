@@ -129,6 +129,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr, gchar *target)
 {
 	WI_ITEM_REC *item;
+	int level;
 
 	g_return_if_fail(data != NULL);
 
@@ -136,7 +137,9 @@ static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *ni
 		return;
 	data += 7;
 
-	if (ignore_check(server, nick, addr, target, data, MSGLEVEL_ACTIONS))
+	level = MSGLEVEL_ACTIONS |
+		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
+	if (ignore_check(server, nick, addr, target, data, level))
 		return;
 
 	if (ischannel(*target)) {
@@ -145,17 +148,17 @@ static void ctcp_msg_check_action(gchar *data, IRC_SERVER_REC *server, gchar *ni
 
 		if (window_item_is_active(item)) {
 			/* message to active channel in window */
-			printformat(server, target, MSGLEVEL_ACTIONS,
+			printformat(server, target, level,
 				    IRCTXT_ACTION_PUBLIC, nick, data);
 		} else {
 			/* message to not existing/active channel */
-			printformat(server, target, MSGLEVEL_ACTIONS,
+			printformat(server, target, level,
 				    IRCTXT_ACTION_PUBLIC_CHANNEL, nick, target, data);
 		}
 	} else {
 		/* private action */
 		item = (WI_ITEM_REC *) privmsg_get_query(server, nick, FALSE);
-		printformat(server, nick, MSGLEVEL_ACTIONS,
+		printformat(server, nick, level,
 			    item == NULL ? IRCTXT_ACTION_PRIVATE : IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, addr == NULL ? "" : addr, data);
 	}

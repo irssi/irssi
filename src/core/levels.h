@@ -24,12 +24,13 @@
 #define MSGLEVEL_INVITES        0x0004000
 #define MSGLEVEL_NICKS          0x0008000
 #define MSGLEVEL_DCC            0x0010000
-#define MSGLEVEL_CLIENTNOTICE   0x0020000
-#define MSGLEVEL_CLIENTCRAP     0x0040000
-#define MSGLEVEL_CLIENTERROR    0x0080000
-#define MSGLEVEL_HILIGHT        0x0100000
+#define MSGLEVEL_DCCMSGS        0x0020000
+#define MSGLEVEL_CLIENTNOTICE   0x0040000
+#define MSGLEVEL_CLIENTCRAP     0x0080000
+#define MSGLEVEL_CLIENTERROR    0x0100000
+#define MSGLEVEL_HILIGHT        0x0200000
 
-#define MSGLEVEL_ALL            0x01fffff
+#define MSGLEVEL_ALL            0x03fffff
 
 #define MSGLEVEL_NOHILIGHT      0x1000000 /* Don't try to hilight words in this message */
 #define MSGLEVEL_NO_ACT         0x2000000 /* Don't trigger channel activity */
