@@ -406,6 +406,8 @@ static void cmd_scrollback_end(const char *data)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(active_win);
+	if (gui->bottom)
+                return;
 
 	gui->startline = gui->bottom_startline;
 	gui->subline = gui->bottom_subline;

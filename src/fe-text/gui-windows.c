@@ -832,33 +832,76 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
     return matches;
 }
 
+static void gui_update_bottom_startline(GUI_WINDOW_REC *gui)
+{
+	GList *tmp;
+        int linecount, total;
+
+	if (gui->empty_linecount == 0) {
+		/* no empty lines in screen, don't try to keep the old
+		   bottom startline */
+                gui->bottom_startline = NULL;
+	}
+
+        total = 0;
+	for (tmp = g_list_last(gui->lines); tmp != NULL; tmp = tmp->prev) {
+		LINE_REC *line = tmp->data;
+
+		linecount = gui_window_get_linecount(gui, line);
+		if (tmp == gui->bottom_startline) {
+			/* keep the old one, make sure that subline is ok */
+			if (gui->bottom_subline > linecount+1)
+				gui->bottom_subline = linecount+1;
+			gui->empty_linecount = gui->parent->lines-total-
+				gui->bottom_subline;
+                        return;
+		}
+
+                total += linecount;
+		if (total >= gui->parent->lines) {
+			gui->bottom_startline = tmp;
+			gui->bottom_subline = total-gui->parent->lines;
+                        gui->empty_linecount = 0;
+                        return;
+		}
+	}
+
+        /* not enough lines so we must be at the beginning of the window */
+	gui->bottom_startline = gui->lines;
+	gui->bottom_subline = 0;
+	gui->empty_linecount = gui->parent->lines-total;
+}
+
 static void gui_window_horiz_resize(WINDOW_REC *window)
 {
 	GUI_WINDOW_REC *gui;
-	int linecount;
+	int linecount, diff;
 
 	gui = WINDOW_GUI(window);
 	if (gui->lines == NULL) return;
 
 	g_hash_table_foreach_remove(gui->line_cache, (GHRFunc) line_cache_destroy, NULL);
 
-	linecount = gui_window_get_linecount(gui, g_list_last(gui->lines)->data);
-	gui->last_subline = linecount-1;
+	linecount = gui_window_get_linecount(gui, gui->startline->data);
+	if (gui->subline > linecount+1)
+                gui->subline = linecount+1;
 
-	/* fake a /CLEAR and scroll window up one page */
-	gui->ypos = -1;
-	gui->bottom = TRUE;
-	gui->empty_linecount = gui->parent->lines-1;
+	gui_window_update_ypos(gui);
+	gui_update_bottom_startline(gui);
 
-	gui->bottom_startline = gui->startline = g_list_last(gui->lines);
-	gui->bottom_subline = gui->subline = gui->last_subline+1;
-	gui_window_scroll(window, -gui->empty_linecount-1);
-
-	gui->bottom_startline = gui->startline;
-	gui->bottom_subline = gui->subline;
-
-	gui->bottom = TRUE;
-	gui->empty_linecount = gui->parent->lines-1-gui->ypos;
+	if (gui->bottom) {
+		if (g_list_find(gui->startline,
+				gui->bottom_startline->data) == NULL ||
+		    (gui->startline == gui->bottom_startline &&
+		     gui->subline > gui->bottom_subline)) {
+			gui->startline = gui->bottom_startline;
+			gui->subline = gui->bottom_subline;
+			gui_window_update_ypos(gui);
+		} else {
+			diff = gui->ypos+1-gui->parent->lines;
+			if (diff > 0) gui_window_scroll(window, diff);
+		}
+	}
 }
 
 void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
@@ -885,12 +928,16 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 		}
 	}
 
-	if (gui->bottom && gui->startline == gui->lines && ychange > 0) {
-		/* less than screenful of text, add empty space */
+	if (ychange > 0 && gui->bottom && gui->empty_linecount > 0)
 		gui->empty_linecount += ychange;
-	} else {
+	else {
 		gui_window_update_bottom(WINDOW_GUI(window), -ychange);
 		gui_window_scroll(window, -ychange);
+
+		if (ychange > 0 && gui->bottom &&
+		    gui->ypos+1 < gui->parent->lines) {
+			gui->empty_linecount += gui->parent->lines-gui->ypos-1;
+		}
 	}
 }
 
