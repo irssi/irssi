@@ -1,7 +1,7 @@
 servers = (
   { address = "irc.funet.fi"; chatnet = IRCNet; port = 6667; },
   { address = "irc.efnet.net"; chatnet = EFNet; port = 6667; },
-  { address = "irc.undernet.net"; chatnet = Undernet; port = 6667; },
+  { address = "irc.undernet.org"; chatnet = Undernet; port = 6667; },
   { address = "irc.dal.net"; chatnet = DALNet; port = 6667; },
   { address = "irc.openprojects.net"; chatnet = OPN; port = 6667; },
   { address = "irc.ptlink.net"; chatnet = PTlink; port = 6667; }
