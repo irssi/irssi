@@ -95,15 +95,19 @@ int term_init(void)
         term_lines_empty = g_new0(char, term_height);
 
 	term_common_init();
+        g_atexit(term_deinit);
         return TRUE;
 }
 
 void term_deinit(void)
 {
-	g_source_remove(redraw_tag);
+	if (current_term != NULL) {
+		g_source_remove(redraw_tag);
 
-	term_common_deinit();
-        terminfo_core_deinit(current_term);
+		term_common_deinit();
+		terminfo_core_deinit(current_term);
+		current_term = NULL;
+	}
 }
 
 static void term_move_real(void)
