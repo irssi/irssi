@@ -6,3 +6,4 @@
 Makefile
 Makefile.in
 so_locations
+irc-modules.c
