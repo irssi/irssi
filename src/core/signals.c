@@ -26,9 +26,9 @@
 
 typedef struct {
 	int id; /* signal id */
+        int refcount;
 
 	int emitting; /* signal is being emitted */
-	int altered; /* some signal functions are marked as NULL */
 	int stop_emit; /* this signal was stopped */
 
 	GPtrArray *modulelist[SIGNAL_LISTS]; /* list of what signals belong
@@ -42,6 +42,37 @@ typedef struct {
 static GMemChunk *signals_chunk;
 static GHashTable *signals;
 static SIGNAL_REC *current_emitted_signal;
+
+#define signal_ref(signal) ++(signal)->refcount
+#define signal_unref(rec) (signal_unref_full(rec, TRUE))
+
+static int signal_unref_full(SIGNAL_REC *rec, int remove_hash)
+{
+	if (rec->refcount == 0) {
+		g_error("signal_unref(%s) : BUG - reference counter == 0",
+			signal_get_id_str(rec->id));
+	}
+
+	if (--rec->refcount != 0)
+		return FALSE;
+
+	/* remove whole signal from memory */
+	if (!signal_is_emitlist_empty(rec)) {
+		g_error("signal_unref(%s) : BUG - emitlist wasn't empty",
+			signal_get_id_str(rec->id));
+	}
+
+	if (remove_hash)
+		g_hash_table_remove(signals, GINT_TO_POINTER(rec->id));
+	g_mem_chunk_free(signals_chunk, rec);
+	return TRUE;
+}
+
+static void signal_unref_count(SIGNAL_REC *rec, int count)
+{
+	while (count-- > 0)
+                signal_unref(rec);
+}
 
 void signal_add_to(const char *module, int pos,
 		   const char *signal, SIGNAL_FUNC func)
@@ -64,7 +95,7 @@ void signal_add_to_id(const char *module, int pos,
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL) {
 		rec = g_mem_chunk_alloc0(signals_chunk);
-                rec->id = signal_id;
+		rec->id = signal_id;
 		g_hash_table_insert(signals, GINT_TO_POINTER(signal_id), rec);
 	}
 
@@ -75,14 +106,8 @@ void signal_add_to_id(const char *module, int pos,
 
 	g_ptr_array_add(rec->siglist[pos], (void *) func);
 	g_ptr_array_add(rec->modulelist[pos], (void *) module);
-}
 
-/* Destroy the whole signal */
-static void signal_destroy(SIGNAL_REC *rec)
-{
-	/* remove whole signal from memory */
-	g_hash_table_remove(signals, GINT_TO_POINTER(rec->id));
-	g_mem_chunk_free(signals_chunk, rec);
+        signal_ref(rec);
 }
 
 static int signal_list_find(GPtrArray *array, void *data)
@@ -105,21 +130,16 @@ static void signal_list_free(SIGNAL_REC *rec, int list)
 	rec->modulelist[list] = NULL;
 }
 
+/* Returns TRUE if the whole signal is removed after this remove */
 static void signal_remove_from_list(SIGNAL_REC *rec, int list, int index)
 {
-	if (rec->emitting) {
-		g_ptr_array_index(rec->siglist[list], index) = NULL;
-		rec->altered = TRUE;
-	} else {
-		g_ptr_array_remove_index(rec->siglist[list], index);
-		g_ptr_array_remove_index(rec->modulelist[list], index);
+	g_ptr_array_remove_index(rec->siglist[list], index);
+	g_ptr_array_remove_index(rec->modulelist[list], index);
 
-		if (rec->siglist[list]->len == 0)
-			signal_list_free(rec, list);
+	if (rec->siglist[list]->len == 0)
+		signal_list_free(rec, list);
 
-		if (signal_is_emitlist_empty(rec))
-			signal_destroy(rec);
-	}
+	signal_unref(rec);
 }
 
 /* Remove signal from emit lists */
@@ -162,39 +182,21 @@ void signal_remove(const char *signal, SIGNAL_FUNC func)
 	signal_remove_id(signal_get_uniq_id(signal), func);
 }
 
-/* Remove all NULL functions from signal list */
-static void signal_list_clean(SIGNAL_REC *rec)
+static int signal_emit_real(SIGNAL_REC *rec, int params, va_list va)
 {
-	int n, index;
-
-	for (n = 0; n < SIGNAL_LISTS; n++) {
-		if (rec->siglist[n] == NULL)
-			continue;
-
-		for (index = rec->siglist[n]->len-1; index >= 0; index--) {
-			if (g_ptr_array_index(rec->siglist[n], index) == NULL) {
-				g_ptr_array_remove_index(rec->siglist[n], index);
-				g_ptr_array_remove_index(rec->modulelist[n], index);
-			}
-		}
-
-		if (rec->siglist[n]->len == 0)
-                        signal_list_free(rec, n);
-	}
-
-	if (signal_is_emitlist_empty(rec))
-		signal_destroy(rec);
-}
-
-static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
-{
+	gconstpointer arglist[SIGNAL_MAX_ARGUMENTS];
         SIGNAL_REC *prev_emitted_signal;
         SIGNAL_FUNC func;
 	int n, index, stopped, stop_emit_count;
 
+	for (n = 0; n < SIGNAL_MAX_ARGUMENTS; n++)
+		arglist[n] = n >= params ? NULL : va_arg(va, gconstpointer);
+
 	/* signal_stop_by_name("signal"); signal_emit("signal", ...);
 	   fails if we compare rec->stop_emit against 0. */
 	stop_emit_count = rec->stop_emit;
+
+        signal_ref(rec);
 
 	stopped = FALSE;
 	rec->emitting++;
@@ -206,15 +208,13 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 		for (index = rec->siglist[n]->len-1; index >= 0; index--) {
 			func = (SIGNAL_FUNC) g_ptr_array_index(rec->siglist[n], index);
 
-			if (func != NULL) {
-                                prev_emitted_signal = current_emitted_signal;
-				current_emitted_signal = rec;
+			prev_emitted_signal = current_emitted_signal;
+			current_emitted_signal = rec;
 #if SIGNAL_MAX_ARGUMENTS != 6
-#  error SIGNAL_MAX_ARGS changed - update code
+#  error SIGNAL_MAX_ARGUMENTS changed - update code
 #endif
-				func(arglist[0], arglist[1], arglist[2], arglist[3], arglist[4], arglist[5]);
-				current_emitted_signal = prev_emitted_signal;
-			}
+			func(arglist[0], arglist[1], arglist[2], arglist[3], arglist[4], arglist[5]);
+			current_emitted_signal = prev_emitted_signal;
 
 			if (rec->stop_emit != stop_emit_count) {
 				stopped = TRUE;
@@ -231,60 +231,48 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 			/* signal_stop() used too many times */
                         rec->stop_emit = 0;
 		}
-		if (rec->altered) {
-			signal_list_clean(rec);
-			rec->altered = FALSE;
-		}
 	}
 
+        signal_unref(rec);
 	return stopped;
-}
-
-static int signal_emitv_id(int signal_id, int params, va_list va)
-{
-	gconstpointer arglist[SIGNAL_MAX_ARGUMENTS];
-	SIGNAL_REC *rec;
-	int n;
-
-	g_return_val_if_fail(signal_id >= 0, FALSE);
-	g_return_val_if_fail(params >= 0 && params <= SIGNAL_MAX_ARGUMENTS, FALSE);
-
-	for (n = 0; n < SIGNAL_MAX_ARGUMENTS; n++)
-		arglist[n] = n >= params ? NULL : va_arg(va, gconstpointer);
-
-	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
-	if (rec != NULL && signal_emit_real(rec, arglist))
-		return TRUE;
-
-	return rec != NULL;
 }
 
 int signal_emit(const char *signal, int params, ...)
 {
+	SIGNAL_REC *rec;
 	va_list va;
-	int signal_id, ret;
+	int signal_id;
 
-	/* get arguments */
+	g_return_val_if_fail(params >= 0 && params <= SIGNAL_MAX_ARGUMENTS, FALSE);
+
 	signal_id = signal_get_uniq_id(signal);
 
-	va_start(va, params);
-	ret = signal_emitv_id(signal_id, params, va);
-	va_end(va);
+	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
+	if (rec != NULL) {
+		va_start(va, params);
+		signal_emit_real(rec, params, va);
+		va_end(va);
+	}
 
-	return ret;
+	return rec != NULL;
 }
 
 int signal_emit_id(int signal_id, int params, ...)
 {
+	SIGNAL_REC *rec;
 	va_list va;
-	int ret;
 
-	/* get arguments */
-	va_start(va, params);
-	ret = signal_emitv_id(signal_id, params, va);
-	va_end(va);
+	g_return_val_if_fail(signal_id >= 0, FALSE);
+	g_return_val_if_fail(params >= 0 && params <= SIGNAL_MAX_ARGUMENTS, FALSE);
 
-	return ret;
+	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
+	if (rec != NULL) {
+		va_start(va, params);
+		signal_emit_real(rec, params, va);
+		va_end(va);
+	}
+
+	return rec != NULL;
 }
 
 /* stop the current ongoing signal emission */
@@ -343,18 +331,27 @@ int signal_is_stopped(int signal_id)
 static void signal_remove_module(void *signal, SIGNAL_REC *rec,
 				 const char *module)
 {
-	unsigned int index;
+        unsigned int index;
 	int list;
 
 	for (list = 0; list < SIGNAL_LISTS; list++) {
 		if (rec->modulelist[list] == NULL)
 			continue;
 
-		for (index = 0; index < rec->modulelist[list]->len; index++) {
-			if (g_strcasecmp(g_ptr_array_index(rec->modulelist[list], index), module) == 0)
-				signal_remove_from_list(rec, list, index);
-		}
+		for (index = rec->modulelist[list]->len; index > 0; index--)
+			if (g_strcasecmp(g_ptr_array_index(rec->modulelist[list], index-1), module) == 0)
+				signal_remove_from_list(rec, list, index-1);
 	}
+}
+
+static void signal_foreach_ref(void *signal, SIGNAL_REC *rec)
+{
+        signal_ref(rec);
+}
+
+static int signal_foreach_unref(void *signal, SIGNAL_REC *rec)
+{
+        return signal_unref_full(rec, FALSE);
 }
 
 /* remove all signals that belong to `module' */
@@ -362,7 +359,9 @@ void signals_remove_module(const char *module)
 {
 	g_return_if_fail(module != NULL);
 
+	g_hash_table_foreach(signals, (GHFunc) signal_foreach_ref, NULL);
 	g_hash_table_foreach(signals, (GHFunc) signal_remove_module, (void *) module);
+	g_hash_table_foreach_remove(signals, (GHRFunc) signal_foreach_unref, NULL);
 }
 
 void signals_init(void)
@@ -376,15 +375,19 @@ static void signal_free(void *key, SIGNAL_REC *rec)
 {
 	int n;
 
+        signal_ref(rec);
+
 	for (n = 0; n < SIGNAL_LISTS; n++) {
 		if (rec->siglist[n] != NULL) {
-			g_ptr_array_free(rec->siglist[n], TRUE);
-			g_ptr_array_free(rec->modulelist[n], TRUE);
+			signal_unref_count(rec, rec->siglist[n]->len);
+                        signal_list_free(rec, n);
 		}
 	}
 
-	g_mem_chunk_free(signals_chunk, rec);
-	current_emitted_signal = NULL;
+	if (!signal_unref_full(rec, FALSE)) {
+		g_error("signal_free(%s) : BUG - signal still has %d references",
+			signal_get_id_str(rec->id), rec->refcount);
+	}
 }
 
 void signals_deinit(void)
