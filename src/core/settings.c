@@ -138,7 +138,7 @@ int settings_get_time(const char *key)
 
 	str = settings_get_str_type(key, SETTING_TYPE_TIME);
 	if (str != NULL && !parse_time_interval(str, &msecs))
-		g_warning("settings_get_size(%s) : Invalid time '%s'", key, str);
+		g_warning("settings_get_time(%s) : Invalid time '%s'", key, str);
 	return str == NULL ? 0 : msecs;
 }
 
