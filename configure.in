@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.98)
+AM_INIT_AUTOMAKE(irssi, 0.7.99pre)
 
 AM_MAINTAINER_MODE
 
@@ -526,7 +526,7 @@ if test "$want_perl" != "no"; then
 			AC_MSG_RESULT(ok)
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
 			if test "x$LIBPERL_A" != "x"; then
-				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
+				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e 's/-lperl /libperl_orig.la /' -e 's/-lperl$/libperl_orig.la$/'`
 			fi
 			AC_SUBST(LIBPERL_A)
 			AC_SUBST(DYNALOADER_A)
