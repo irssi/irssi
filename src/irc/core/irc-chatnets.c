@@ -75,14 +75,32 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 		iconfig_node_set_int(node, "max_whois", rec->max_whois);
 }
 
+static void sig_chatnet_destroyed(IRC_CHATNET_REC *rec)
+{
+	if (IS_IRC_CHATNET(rec))
+                g_free(rec->usermode);
+}
+
+
 void irc_chatnets_init(void)
 {
 	signal_add("chatnet read", (SIGNAL_FUNC) sig_chatnet_read);
 	signal_add("chatnet saved", (SIGNAL_FUNC) sig_chatnet_saved);
+	signal_add("chatnet destroyed", (SIGNAL_FUNC) sig_chatnet_destroyed);
 }
 
 void irc_chatnets_deinit(void)
 {
+	GSList *tmp, *next;
+
+	for (tmp = chatnets; tmp != NULL; tmp = next) {
+		CHATNET_REC *rec = tmp->data;
+
+		if (IS_IRC_CHATNET(rec))
+                        chatnet_destroy(rec);
+	}
+
 	signal_remove("chatnet read", (SIGNAL_FUNC) sig_chatnet_read);
 	signal_remove("chatnet saved", (SIGNAL_FUNC) sig_chatnet_saved);
+	signal_remove("chatnet destroyed", (SIGNAL_FUNC) sig_chatnet_destroyed);
 }

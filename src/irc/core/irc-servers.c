@@ -277,6 +277,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_free(server->cmdqueue);
         server->cmdqueue = NULL;
 
+	g_free_and_null(server->wanted_usermode);
 	g_free_and_null(server->real_address);
 	g_free_and_null(server->usermode);
 	g_free_and_null(server->userhost);

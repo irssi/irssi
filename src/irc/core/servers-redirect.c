@@ -113,6 +113,8 @@ void server_redirect_destroy(REDIRECT_REC *rec)
 	g_free_not_null(rec->arg);
         g_free_not_null(rec->failure_signal);
         g_free_not_null(rec->default_signal);
+        g_free_not_null(rec->first_signal);
+        g_free_not_null(rec->last_signal);
 	g_slist_foreach(rec->signals, (GFunc) g_free, NULL);
 	g_slist_free(rec->signals);
         g_free(rec);

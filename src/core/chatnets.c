@@ -193,8 +193,6 @@ void chatnets_init(void)
 
 void chatnets_deinit(void)
 {
-	while (chatnets != NULL)
-		chatnet_destroy(chatnets->data);
 	module_uniq_destroy("CHATNET");
 
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);

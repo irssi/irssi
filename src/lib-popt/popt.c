@@ -452,7 +452,8 @@ int poptGetNextOpt(poptContext con) {
 
 	if (opt->arg && (opt->argInfo & POPT_ARG_MASK) != POPT_ARG_NONE
 		     && (opt->argInfo & POPT_ARG_MASK) != POPT_ARG_VAL) 
-	    con->finalArgv[con->finalArgvCount++] = g_strdup(con->os->nextArg);
+	    con->finalArgv[con->finalArgvCount++] =
+	        strcpy(malloc(strlen(con->os->nextArg)), con->os->nextArg);
     }
 
     if (dup) g_free(dup);
