@@ -458,7 +458,7 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &channel, &rest))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channel, &rest))
 		return;
 
 	if (strcmp(channel, "*") == 0 || *channel == '\0') {

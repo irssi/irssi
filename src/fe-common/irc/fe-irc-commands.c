@@ -188,7 +188,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &text))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
