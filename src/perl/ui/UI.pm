@@ -13,7 +13,7 @@ require Exporter;
 require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
-@EXPORT = qw(active_win active_server print command printformat);
+@EXPORT = qw();
 @EXPORT_OK = qw();
 
 bootstrap Irssi::UI $VERSION;
