@@ -44,7 +44,7 @@ typedef struct {
 
 static GSList *perl_sources;
 static GSList *perl_scripts;
-static PerlInterpreter *irssi_perl_interp;
+PerlInterpreter *my_perl;
 
 static void perl_source_destroy(PERL_SOURCE_REC *rec)
 {
@@ -90,10 +90,10 @@ static void irssi_perl_start(void)
         perl_signals_start();
 	perl_sources = NULL;
 
-	irssi_perl_interp = perl_alloc();
-	perl_construct(irssi_perl_interp);
+	my_perl = perl_alloc();
+	perl_construct(my_perl);
 
-	perl_parse(irssi_perl_interp, xs_init, 3, args, NULL);
+	perl_parse(my_perl, xs_init, 3, args, NULL);
 	perl_eval_pv(eval_file_code, TRUE);
 
         perl_common_init();
@@ -175,9 +175,9 @@ static void irssi_perl_stop(void)
         perl_common_deinit();
 
 	/* perl interpreter */
-	perl_destruct(irssi_perl_interp);
-	perl_free(irssi_perl_interp);
-	irssi_perl_interp = NULL;
+	perl_destruct(my_perl);
+	perl_free(my_perl);
+	my_perl = NULL;
 }
 
 static void script_fix_name(char *name)

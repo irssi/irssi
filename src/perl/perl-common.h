@@ -1,6 +1,8 @@
 #ifndef __PERL_COMMON_H
 #define __PERL_COMMON_H
 
+extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implementations won't work */
+
 /* helper defines */
 #define new_pv(a) \
 	(newSVpv((a) == NULL ? "" : (a), (a) == NULL ? 0 : strlen(a)))
