@@ -54,6 +54,9 @@ FORMAT_REC gui_text_formats[] =
 	{ "statusbar_not_found", "Statusbar doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_item_not_found", "Statusbar item doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_unknown_command", "Unknown statusbar command: $0", 1, { 0 } },
+	{ "statusbar_unknown_type", "Statusbar type must be 'window' or 'root'", 1, { 0 } },
+	{ "statusbar_unknown_placement", "Statusbar placement must be 'top' or 'bottom'", 1, { 0 } },
+	{ "statusbar_unknown_visibility", "Statusbar visibility must be 'always', 'active' or 'inactive'", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };
