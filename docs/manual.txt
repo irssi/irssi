@@ -202,7 +202,8 @@
 	WALLOPS         - Wallop is received
 	INVITES         - Invite is received
 	NICKS           - Someone changes nick
-	DCC             - DCC messages
+	DCC             - DCC related messages
+        DCCMSGS		- DCC chat messages
 	CLIENTNOTICES   - Irssi's notices
 	CLIENTERRORS    - Irssi's error messages
 	CLIENTCRAP      - Some other messages from Irssi

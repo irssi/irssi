@@ -1,6 +1,7 @@
 
 *** New stuff in TODO, try to get rid of these :)
 
+( - translate all those TODO items I have in finnish to english ;) )
  - /ignore -activity .. would ignore it just in window activity list,
    not hide the text.
  - autoignoring:
@@ -159,6 +160,7 @@
      - if some other window has got much text, switching to it first time
        takes some time..?
  - editor in setup for ~/.irssi/startup
+ - dcc floods could pop up lots of dialogs..
  - gui help
  - change signal handling in gui-gnome so that the actual drawing and
    functionality are in different signals, so that plugin could change the

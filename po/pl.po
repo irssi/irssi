@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-09-26 18:28+0300\n"
+"POT-Creation-Date: 2000-10-19 21:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,59 +27,69 @@ msgstr ""
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
 
-#: src/core/network.c:480
+#: src/core/network.c:475
 msgid "Host not found"
 msgstr ""
 
-#: src/core/network.c:482
+#: src/core/network.c:477
 msgid "No IP address found for name"
 msgstr ""
 
-#: src/core/network.c:484
+#: src/core/network.c:479
 msgid "A non-recovable name server error occurred"
 msgstr ""
 
-#: src/core/network.c:486
+#: src/core/network.c:481
 msgid "A temporary error on an authoritative name server"
 msgstr ""
 
-#: src/core/settings.c:264
+#: src/core/settings.c:314
 #, c-format
 msgid "Couldn't create %s/.irssi directory"
 msgstr "Nie mo¿na utworzyæ katalogu %s/.irssi"
 
-#: src/core/settings.c:268
+#: src/core/settings.c:318
 #, c-format
 msgid ""
 "%s/.irssi is not a directory.\n"
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 
-#: src/core/settings.c:279
+#: src/core/settings.c:329
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#: src/core/settings.c:306
+#: src/core/settings.c:356
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#. error
-#: src/core/settings.c:331
+#: src/core/settings.c:384
 #, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr ""
 
-#: src/fe-common/core/printtext.c:944
+#: src/core/settings.c:404
+#, c-format
+msgid ""
+"Configuration file was modified while irssi was running. Saving "
+"configuration to file '%s' instead"
+msgstr ""
+
+#: src/fe-common/core/fe-settings.c:278
+msgid "Overwrite config (y/N)?"
+msgstr ""
+
+#: src/fe-common/core/printtext.c:957
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/fe-common/core/printtext.c:946
+#: src/fe-common/core/printtext.c:959
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 
@@ -90,39 +100,39 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:89
+#: src/fe-common/irc/fe-common-irc.c:73
 msgid "Automatically connect to server/ircnet"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:89 src/fe-common/irc/fe-common-irc.c:90
+#: src/fe-common/irc/fe-common-irc.c:73 src/fe-common/irc/fe-common-irc.c:74
 msgid "SERVER"
 msgstr "SERWER"
 
-#: src/fe-common/irc/fe-common-irc.c:90
+#: src/fe-common/irc/fe-common-irc.c:74
 msgid "Autoconnect password"
 msgstr "Has³o autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:91
+#: src/fe-common/irc/fe-common-irc.c:75
 msgid "Autoconnect port"
 msgstr "Port autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:91
+#: src/fe-common/irc/fe-common-irc.c:75
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:92
+#: src/fe-common/irc/fe-common-irc.c:76
 msgid "Disable autoconnecting"
 msgstr "Wy³±czenie autopo³±czenia"
 
-#: src/fe-common/irc/fe-common-irc.c:93
+#: src/fe-common/irc/fe-common-irc.c:77
 msgid "Specify nick to use"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:94
+#: src/fe-common/irc/fe-common-irc.c:78
 msgid "Specify host name to use"
 msgstr ""
 
-#: src/fe-text/irssi.c:164
+#: src/fe-text/irssi.c:165
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

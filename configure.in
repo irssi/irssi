@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.95)
+AM_INIT_AUTOMAKE(irssi, 0.7.96)
 
 AM_MAINTAINER_MODE
 
@@ -440,7 +440,7 @@ dnl **
 dnl ** internationalization support
 dnl **
 
-ALL_LINGUAS="pl fi pt_BR fr de sv"
+ALL_LINGUAS="pl pt_BR fr de sv"
 AM_GNU_GETTEXT
 
 if test "x$MSGFMT" = "xno"; then

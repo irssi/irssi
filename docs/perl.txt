@@ -2,6 +2,8 @@
  --------------------
 
 FIXME: part of this file is out of date..
+UPDATE: 0.7.96 - this is even yet more out of date ;) See scripts in
+samples/ directory, they'll help you get started :)
 
 Place new scripts to ~/.irssi/scripts/, or /usr/lib/irssi/scripts/
 directory and run then with /RUN script. Or you could also run the

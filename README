@@ -3,6 +3,7 @@
 irssi
 
 (ok, this file is out of date, there is no gtk version currently)
+(read docs/startup-HOWTO.txt - it will help you get started)
 
 
  * ABOUT
@@ -16,9 +17,7 @@ also like to see KDE version.
  * FEATURES
 
 docs/manual.txt - new manual
-
-See docs/commands.txt file for list of (almost) all commands irssi knows.
-See docs/perl.txt for some documentation of Perl scripting.
+docs/perl.txt - some documentation of Perl scripting
 
 I've been asked quite a lot about why should one use irssi, what does it do
 that other IRC clients don't? Well, to tell you the truth, I have no idea :)

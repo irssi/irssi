@@ -87,6 +87,7 @@ gint read_line(gboolean socket, gint handle, GString *output, GString *buffer)
 }
 void client_send(char *text)
 {
+    if (strlen(text) > 508) text[508] = 0;
     write(clienth, text, strlen(text));
     write(clienth, "\r\n", 2);
 }
@@ -99,12 +100,12 @@ void makerand(char *str, int len)
 
 void makerand2(char *str, int len)
 {
-#if 0
+#if 1
     gchar c;
 
     while (len > 0)
     {
-	c = rand() & 255;
+	c = (rand() % 20)+ 'A';
 	if (c != 0 && c != 13 && c != 10)
 	{
 	    *str++ = c;
@@ -229,7 +230,7 @@ void send_cmd(void)
                 {
                     pos += sprintf(str+pos, "%s: ", clientnick);
 		}
-                str[pos] = 'X';
+		str[pos] = 'X';
 		break;
         }
 
@@ -352,25 +353,10 @@ int main(void)
     static fd_set fdset;
     struct timeval tv;
     int serverh, port;
-    IPADDR ip;
-
-#ifdef HAVE_IPV6
-    if (net_gethostname("::1", &ip) != 0)
-    {
-	printf("net_gethostname()\n");
-	return 1;
-    }
-#else
-    if (net_gethostname("127.0.0.1", &ip) != 0)
-    {
-	printf("net_gethostname()\n");
-	return 1;
-    }
-#endif
 
     srand(0);
     port = 6660;
-    serverh = net_listen(&ip, &port);
+    serverh = net_listen(NULL, &port);
     if (serverh == -1)
     {
 	printf("listen()\n");
