@@ -30,7 +30,7 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#define DEFAULT_LOG_FILE_CREATE_MODE 644
+#define DEFAULT_LOG_FILE_CREATE_MODE 600
 
 #ifdef HAVE_FCNTL
 static struct flock lock;
