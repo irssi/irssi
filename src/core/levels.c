@@ -53,7 +53,7 @@ int level_get(const char *level)
 {
 	int n, len, match;
 
-	if (g_strcasecmp(level, "ALL") == 0)
+	if (g_strcasecmp(level, "ALL") == 0 || strcmp(level, "*") == 0)
 		return MSGLEVEL_ALL;
 
 	if (g_strcasecmp(level, "NEVER") == 0)
