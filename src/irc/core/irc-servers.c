@@ -102,32 +102,38 @@ static void send_message(SERVER_REC *server, const char *target,
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	char hostname[100], *address, *ptr, *username;
+	char hostname[100], *address, *ptr, *username, *cmd;
 
 	g_return_if_fail(server != NULL);
 
 	conn = server->connrec;
 
 	if (conn->proxy != NULL && conn->proxy_password != NULL &&
-	    *conn->proxy_password != '\0')
-		irc_send_cmdv(server, "PASS %s", conn->proxy_password);
+	    *conn->proxy_password != '\0') {
+		cmd = g_strdup_printf("PASS %s", conn->proxy_password);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
 
-	if (conn->proxy != NULL && conn->proxy_string != NULL)
-		irc_send_cmdv(server, conn->proxy_string, conn->address, conn->port);
+	if (conn->proxy != NULL && conn->proxy_string != NULL) {
+		cmd = g_strdup_printf(conn->proxy_string, conn->address, conn->port);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
-		server->cmdcount = 0;
-		irc_send_cmdv(server, "PASS %s", conn->password);
+		cmd = g_strdup_printf("PASS %s", conn->password);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
 	}
 
         /* send nick */
-	server->cmdcount = 0;
-	irc_send_cmdv(server, "NICK %s", conn->nick);
+	cmd = g_strdup_printf("NICK %s", conn->nick);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
 
 	/* send user/realname */
-	server->cmdcount = 0;
-
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
 		strcpy(hostname, "xx");
 
@@ -163,15 +169,15 @@ static void server_init(IRC_SERVER_REC *server)
 	ptr = strchr(username, ' ');
 	if (ptr != NULL) *ptr = '\0';
 
-	irc_send_cmdv(server, "USER %s %s %s :%s", username, hostname,
-		      address, conn->realname);
+	cmd = g_strdup_printf("USER %s %s %s :%s", username, hostname, address, conn->realname);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
 	g_free(username);
 
-	server->cmdcount = 0;
-
 	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
-		irc_send_cmdv(server, conn->proxy_string_after,
-			      conn->address, conn->port);
+		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
 	}
 
 	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
@@ -182,6 +188,13 @@ static void server_init(IRC_SERVER_REC *server)
 	g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
 
 	server->cmdcount = 0;
+
+	/* prevent the queue from sending too early, we have a max cut off of 120 secs */
+	/* this will reset to 1 sec after we get the 001 event */
+	GTimeVal now;
+	g_get_current_time(&now);
+	memcpy(&((IRC_SERVER_REC *)server)->wait_cmd, &now, sizeof(GTimeVal));
+	((IRC_SERVER_REC *)server)->wait_cmd.tv_sec += 120;
 }
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
@@ -534,6 +547,11 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	/* last welcome message found - commands can be sent to server now. */
 	server->connected = 1;
 	server->real_connect_time = time(NULL);
+
+	/* let the queue send now that we are identified */
+	GTimeVal now;
+	g_get_current_time(&now);
+	memcpy(&server->wait_cmd, &now, sizeof(GTimeVal));
 
 	if (server->connrec->usermode != NULL) {
 		/* wait a second and then send the user mode */

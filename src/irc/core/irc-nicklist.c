@@ -291,7 +291,7 @@ static void event_whois_ircop(SERVER_REC *server, const char *data)
 
 static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 {
-	char *str;
+	char *str, *cmd;
 	int n;
 
 	g_return_if_fail(data != NULL);
@@ -330,7 +330,9 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 		}
 	}
 
-	irc_send_cmdv(server, "NICK %s", server->nick);
+	cmd = g_strdup_printf("NICK %s", server->nick);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);	
 }
 
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
