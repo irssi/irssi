@@ -110,6 +110,7 @@ void statusbar_items_redraw(const char *name);
 
 void statusbar_recreate_items(STATUSBAR_REC *bar);
 void statusbars_recreate_items(void);
+void statusbars_create_window_bars(void);
 
 void statusbar_redraw_dirty(void);
 
