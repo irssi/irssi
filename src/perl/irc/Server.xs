@@ -118,8 +118,10 @@ server_redirect_peek_signal(server, event, args)
 	Irssi::Irc::Server server
 	char *event
 	char *args
+PREINIT:
+	int redirection;
 CODE:
-	RETVAL = (char *) server_redirect_peek_signal(server, event, args);
+	RETVAL = (char *) server_redirect_peek_signal(server, event, args, &redirection);
 OUTPUT:
 	RETVAL
 
