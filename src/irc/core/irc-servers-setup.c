@@ -55,7 +55,7 @@ static void sig_server_create_conn(SERVER_CONNECT_REC **conn,
 		return;
 
 	rec = g_new0(IRC_SERVER_CONNECT_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC SERVER CONNECT", 0);
+	rec->chat_type = IRC_PROTOCOL;
 	rec->alternate_nick = g_strdup(settings_get_str("alternate_nick"));
 
 	*conn = (SERVER_CONNECT_REC *) rec;
@@ -150,7 +150,7 @@ static void sig_server_setup_read(SERVER_SETUP_REC **setuprec,
 		return;
 
 	rec = g_new0(IRC_SERVER_SETUP_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC SERVER SETUP", 0);
+	rec->chat_type = IRC_PROTOCOL;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
@@ -191,6 +191,4 @@ void irc_servers_setup_deinit(void)
 	signal_remove("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
 	signal_remove("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_remove("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
-
-	module_uniq_destroy("IRC SERVER SETUP");
 }

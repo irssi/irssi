@@ -52,7 +52,7 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 	g_return_val_if_fail(name != NULL, NULL);
 
 	rec = g_new0(IRC_CHANNEL_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC CHANNEL", 0);
+	rec->chat_type = IRC_PROTOCOL;
 	rec->name = g_strdup(name);
 	rec->server = server;
 	if (*name == '+') rec->no_modes = TRUE;
@@ -154,7 +154,7 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (rec->chat_type != server->channel_type)
+		if (rec->chat_type != server->chat_type)
                         continue;
 
 		if (g_strcasecmp(channel, rec->name) == 0)
@@ -175,7 +175,6 @@ static void sig_connected(SERVER_REC *server)
 		return;
 
 	server->channel_find_func = (void *) irc_channel_find_server;
-	server->channel_type = module_get_uniq_id("IRC CHANNEL", 0);;
 }
 
 void irc_channels_init(void)
@@ -210,6 +209,4 @@ void irc_channels_deinit(void)
 	mode_lists_deinit();
 	massjoin_deinit();
 	irc_nicklist_deinit();
-
-	module_uniq_destroy("IRC CHANNEL");
 }

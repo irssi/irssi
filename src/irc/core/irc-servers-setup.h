@@ -1,10 +1,12 @@
 #ifndef __IRC_SERVERS_SETUP_H
 #define __IRC_SERVERS_SETUP_H
 
+#include "chat-protocols.h"
+#include "servers-setup.h"
 
 #define IRC_SERVER_SETUP(server) \
-	MODULE_CHECK_CAST(server, IRC_SERVER_SETUP_REC, \
-			 chat_type, "IRC SERVER SETUP")
+	PROTO_CHECK_CAST(SERVER_SETUP(server), IRC_SERVER_SETUP_REC, \
+			 chat_type, "IRC")
 
 #define IS_IRC_SERVER_SETUP(server) \
 	(IRC_SERVER_SETUP(server) ? TRUE : FALSE)

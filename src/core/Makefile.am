@@ -18,6 +18,7 @@ libcore_a_SOURCES = \
 	channels.c \
 	channels-setup.c \
 	commands.c \
+	chat-protocols.c \
 	chatnets.c \
 	core.c \
         levels.c \
@@ -57,6 +58,7 @@ noinst_HEADERS = \
 	channels.h \
 	channels-setup.h \
 	commands.h \
+	chat-protocols.h \
 	chatnets.h \
 	core.h \
         levels.h \

@@ -132,15 +132,18 @@ static int statusbar_clock_timeout(void)
 static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 {
 	CHANNEL_REC *channel;
-	IRC_SERVER_REC *server;
+	SERVER_REC *server;
+	IRC_SERVER_REC *ircserver;
 	NICK_REC *nickrec;
 	int size_needed;
 	int umode_size;
 	char nick[10];
 
-	server = (IRC_SERVER_REC *) (active_win == NULL ? NULL : active_win->active_server);
+	server = active_win == NULL ? NULL : active_win->active_server;
+	ircserver = IRC_SERVER(server);
 
-	umode_size = server == NULL || server->usermode == NULL ? 0 : strlen(server->usermode)+3;
+	umode_size = ircserver == NULL || ircserver->usermode == NULL ? 0 :
+		strlen(ircserver->usermode)+3;
 
 	/* nick */
 	if (server == NULL || server->nick == NULL) {
@@ -151,7 +154,8 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 		nick[9] = '\0';
 
 		channel = CHANNEL(active_win->active);
-		nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
+		nickrec = channel == NULL ? NULL :
+			nicklist_find(channel, server->nick);
 	}
 
 	size_needed = 2 + strlen(nick) + umode_size +
@@ -176,7 +180,7 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 	if (umode_size) {
 		set_color(stdscr, sbar_color_bold); addch('(');
 		set_color(stdscr, sbar_color_dim); addch('+');
-		set_color(stdscr, sbar_color_normal); addstr(server->usermode);
+		set_color(stdscr, sbar_color_normal); addstr(ircserver->usermode);
 		set_color(stdscr, sbar_color_bold); addch(')');
 	}
 	if (server != NULL && server->usermode_away) {
@@ -519,7 +523,7 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 	now = time(NULL);
 	str = g_string_new(NULL);
 
-	server = (IRC_SERVER_REC *) (active_win == NULL ? NULL : active_win->active_server);
+	server = IRC_SERVER(active_win == NULL ? NULL : active_win->active_server);
 	if (server == NULL || server->lag_last_check == 0)
 		size_needed = 0;
 	else if (server->lag_sent == 0 || now-server->lag_sent < 5) {

@@ -62,6 +62,7 @@ void channel_destroy(CHANNEL_REC *channel)
         MODULE_DATA_DEINIT(channel);
 	g_free_not_null(channel->topic);
 	g_free_not_null(channel->key);
+	g_free(channel->mode);
 	g_free(channel->name);
 	g_free(channel);
 }
@@ -84,7 +85,7 @@ static CHANNEL_REC *channel_find_server(SERVER_REC *server,
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (rec->chat_type == server->channel_type &&
+		if (rec->chat_type == server->chat_type &&
 		    g_strcasecmp(name, rec->name) == 0)
 			return rec;
 	}

@@ -404,6 +404,4 @@ void irc_irc_deinit(void)
 	signal_remove("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_remove("server connected", (SIGNAL_FUNC) irc_init_server);
 	signal_remove("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
-
-	module_uniq_destroy("IRC");
 }

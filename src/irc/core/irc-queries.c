@@ -34,19 +34,11 @@ QUERY_REC *irc_query_create(IRC_SERVER_REC *server,
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_new0(QUERY_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC QUERY", 0);
+	rec->chat_type = IRC_PROTOCOL;
 	rec->name = g_strdup(nick);
 	rec->server = (SERVER_REC *) server;
 	query_init(rec, automatic);
 	return rec;
-}
-
-static void sig_connected(SERVER_REC *server)
-{
-	if (!IS_IRC_SERVER(server))
-		return;
-
-	server->query_type = module_get_uniq_id("IRC QUERY", 0);;
 }
 
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
@@ -94,16 +86,12 @@ static void event_nick(const char *data, IRC_SERVER_REC *server, const char *ori
 
 void irc_queries_init(void)
 {
-	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 }
 
 void irc_queries_deinit(void)
 {
-	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
-
-	module_uniq_destroy("IRC QUERY");
 }

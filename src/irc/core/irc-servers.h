@@ -1,15 +1,16 @@
 #ifndef __IRC_SERVERS_H
 #define __IRC_SERVERS_H
 
+#include "chat-protocols.h"
 #include "servers.h"
 
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
-	MODULE_CHECK_CAST(server, IRC_SERVER_REC, chat_type, "IRC SERVER")
+	PROTO_CHECK_CAST(SERVER(server), IRC_SERVER_REC, chat_type, "IRC")
 
 #define IRC_SERVER_CONNECT(conn) \
-	MODULE_CHECK_CAST(conn, IRC_SERVER_CONNECT_REC, \
-			 chat_type, "IRC SERVER CONNECT")
+	PROTO_CHECK_CAST(SERVER_CONNECT(conn), IRC_SERVER_CONNECT_REC, \
+			 chat_type, "IRC")
 
 #define IS_IRC_SERVER(server) \
 	(IRC_SERVER(server) ? TRUE : FALSE)

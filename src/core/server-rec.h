@@ -1,7 +1,7 @@
 /* SERVER_REC definition, used for inheritance */
 
-int type; /* should always be "SERVER" */
-int chat_type;
+int type; /* module_get_uniq_id("SERVER", 0) */
+int chat_type; /* chat_protocol_lookup(xx) */
 
 STRUCT_SERVER_CONNECT_REC *connrec;
 time_t connect_time; /* connection time */
@@ -42,9 +42,6 @@ GSList *queries;
 /* support for multiple server types */
 void *channel_find_func;
 void *query_find_func;
-int channel_type;
-int query_type;
-
 void *mask_match_func;
 
 #undef STRUCT_SERVER_CONNECT_REC

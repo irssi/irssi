@@ -36,7 +36,7 @@ static void ircnet_read(CONFIG_NODE *node)
 		return;
 
 	rec = g_new0(IRC_CHATNET_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC CHATNET", 0);
+	rec->chat_type = IRC_PROTOCOL;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
@@ -87,7 +87,7 @@ void ircnet_create(IRC_CHATNET_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
 
-	rec->chat_type = module_get_uniq_id("IRC CHATNET", 0);
+	rec->chat_type = IRC_PROTOCOL;
 
 	ircnet_save(rec);
         chatnet_create(CHATNET(rec));
@@ -127,6 +127,4 @@ void irc_chatnets_deinit(void)
 {
 	signal_remove("chatnet removed", (SIGNAL_FUNC) sig_chatnet_removed);
         signal_remove("setup reread", (SIGNAL_FUNC) read_ircnets);
-
-	module_uniq_destroy("IRC CHATNET");
 }

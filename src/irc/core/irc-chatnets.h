@@ -1,11 +1,12 @@
 #ifndef __IRC_CHATNETS_H
 #define __IRC_CHATNETS_H
 
-#include "modules.h"
+#include "chat-protocols.h"
+#include "chatnets.h"
 
 /* returns IRC_CHATNET_REC if it's IRC network, NULL if it isn't */
 #define IRC_CHATNET(chatnet) \
-	MODULE_CHECK_CAST(chatnet, IRC_CHATNET_REC, chat_type, "IRC CHATNET")
+	PROTO_CHECK_CAST(CHATNET(chatnet), IRC_CHATNET_REC, chat_type, "IRC")
 
 #define IS_IRC_CHATNET(chatnet) \
 	(IRC_CHATNET(chatnet) ? TRUE : FALSE)

@@ -27,6 +27,7 @@
 #include "signals.h"
 #include "settings.h"
 
+#include "chat-protocols.h"
 #include "servers.h"
 #include "chatnets.h"
 #include "commands.h"
@@ -51,6 +52,7 @@ void core_init(void)
 	settings_init();
 	commands_init();
 
+	chat_protocols_init();
 	chatnets_init();
 	servers_init();
 	log_init();
@@ -73,6 +75,7 @@ void core_deinit(void)
 	log_deinit();
 	servers_deinit();
 	chatnets_deinit();
+	chat_protocols_deinit();
 
 	commands_deinit();
 	settings_deinit();

@@ -1,7 +1,7 @@
 /* SERVER_CONNECT_REC definition, used for inheritance */
 
-int type;
-int chat_type;
+int type; /* module_get_uniq_id("SERVER CONNECT", 0) */
+int chat_type; /* chat_protocol_lookup(xx) */
 
 /* if we're connecting via proxy, or just NULLs */
 char *proxy;

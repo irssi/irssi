@@ -1,7 +1,7 @@
 /* WI_ITEM_REC definition, used for inheritance */
 
-int type; /* window item type - channel/query/.. */
-int chat_type; /* chat server type - irc/silc/.. */
+int type; /* module_get_uniq_id("CHANNEL/QUERY/xxx", 0) */
+int chat_type; /* chat_protocol_lookup(xx) */
 GHashTable *module_data;
 
 STRUCT_SERVER_REC *server;

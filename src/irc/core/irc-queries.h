@@ -1,12 +1,13 @@
 #ifndef __IRC_QUERIES_H
 #define __IRC_QUERIES_H
 
+#include "chat-protocols.h"
 #include "queries.h"
 #include "irc-servers.h"
 
 /* Returns IRC_QUERY_REC if it's IRC query, NULL if it isn't. */
 #define IRC_QUERY(query) \
-	MODULE_CHECK_CAST(query, QUERY_REC, chat_type, "IRC QUERY")
+	PROTO_CHECK_CAST(QUERY(query), QUERY_REC, chat_type, "IRC")
 
 #define IS_IRC_QUERY(query) \
 	(IRC_QUERY(query) ? TRUE : FALSE)

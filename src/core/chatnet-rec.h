@@ -1,5 +1,5 @@
-int type; /* should always be "CHATNET" */
-int chat_type;
+int type; /* module_get_uniq_id("CHATNET", 0) */
+int chat_type; /* chat_protocol_lookup(xx) */
 
 char *name;
 

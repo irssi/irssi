@@ -1,12 +1,13 @@
 #ifndef __IRC_CHANNELS_H
 #define __IRC_CHANNELS_H
 
+#include "chat-protocols.h"
 #include "channels.h"
 #include "irc-servers.h"
 
 /* Returns IRC_CHANNEL_REC if it's IRC channel, NULL if it isn't. */
 #define IRC_CHANNEL(channel) \
-	MODULE_CHECK_CAST(channel, IRC_CHANNEL_REC, chat_type, "IRC CHANNEL")
+	PROTO_CHECK_CAST(CHANNEL(channel), IRC_CHANNEL_REC, chat_type, "IRC")
 
 #define IS_IRC_CHANNEL(channel) \
 	(IRC_CHANNEL(channel) ? TRUE : FALSE)

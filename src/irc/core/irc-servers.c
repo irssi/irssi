@@ -112,7 +112,7 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 	if (conn->nick == NULL || *conn->nick == '\0') return NULL;
 
 	server = g_new0(IRC_SERVER_REC, 1);
-	server->chat_type = module_get_uniq_id("IRC SERVER", 0);
+	server->chat_type = IRC_PROTOCOL;
 	server->connrec = conn;
 	if (server->connrec->port <= 0) server->connrec->port = 6667;
 
@@ -425,6 +425,4 @@ void irc_servers_deinit(void)
 	irc_chatnets_deinit();
 	irc_servers_reconnect_deinit();
 	servers_idle_deinit();
-
-	module_uniq_destroy("IRC SERVER");
 }

@@ -39,7 +39,7 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 		return;
 
 	rec = g_new0(IRC_SERVER_CONNECT_REC, 1);
-	rec->chat_type = module_get_uniq_id("IRC SERVER CONNECT", 0);
+	rec->chat_type = IRC_PROTOCOL;
 	rec->cmd_queue_speed = src->cmd_queue_speed;
 	rec->max_kicks = src->max_kicks;
 	rec->max_modes = src->max_modes;
