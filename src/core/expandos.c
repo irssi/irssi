@@ -360,11 +360,18 @@ static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
 	return item == NULL ? "" : ((WI_ITEM_REC *) item)->name;
 }
 
-/* client release date (numeric version string) */
+/* client release date (in YYYYMMDD format) */
 static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
 {
         *free_ret = TRUE;
 	return g_strdup_printf("%d", IRSSI_VERSION_DATE);
+}
+
+/* client release time (in HHMM format) */
+static char *expando_releasetime(SERVER_REC *server, void *item, int *free_ret)
+{
+        *free_ret = TRUE;
+	return g_strdup_printf("%d", IRSSI_VERSION_TIME);
 }
 
 /* current working directory */
@@ -584,6 +591,8 @@ void expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
 	expando_create("V", expando_releasedate,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("versiontime", expando_releasetime,
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("W", expando_workdir, NULL);
 	expando_create("Y", expando_realname,

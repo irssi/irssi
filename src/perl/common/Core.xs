@@ -445,6 +445,13 @@ CODE:
 OUTPUT:
 	RETVAL
 
+int
+version_time()
+CODE:
+	RETVAL = IRSSI_VERSION_TIME;
+OUTPUT:
+	RETVAL
+
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
 #*******************************
