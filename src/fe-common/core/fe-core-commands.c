@@ -393,6 +393,8 @@ static void event_command(const char *data)
 	cmdchar = strchr(settings_get_str("cmdchars"), *data);
 	if (cmdchar != NULL && (data[1] == '^' || (data[1] == *cmdchar && data[2] == '^'))) {
                 hide_output = TRUE;
+		signal_add_first("print starting", (SIGNAL_FUNC) sig_stop);
+		signal_add_first("print format", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text stripped", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
 	}
@@ -402,6 +404,8 @@ static void event_command_last(const char *data)
 {
 	if (hide_output) {
 		hide_output = FALSE;
+		signal_remove("print starting", (SIGNAL_FUNC) sig_stop);
+		signal_remove("print format", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print text stripped", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print text", (SIGNAL_FUNC) sig_stop);
 	}
