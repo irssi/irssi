@@ -41,6 +41,7 @@ static void remove_client(CLIENT_REC *rec)
 
 	proxy_clients = g_slist_remove(proxy_clients, rec);
 
+	g_free(rec->proxy_address);
 	net_disconnect(rec->handle);
 	g_source_remove(rec->tag);
 	line_split_free(rec->buffer);
@@ -144,17 +145,18 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 	}
 	if (strcmp(cmd, "PING") == 0) {
 		char *server = strchr(args, ':');
-		if (server == NULL || strcmp(server+1, "proxy") == 0) {
+		if (server == NULL ||
+		    strcmp(server+1, client->proxy_address) == 0) {
 			if (server != NULL) *server = '\0';
 			if (*args == '\0') args = client->nick;
-			proxy_outserver(client, "PONG proxy :%s\n", args);
+			proxy_outdata(client, ":%s PONG proxy :%s", client->proxy_address, args);
 			return;
 		}
 	}
 
 	if (client->server == NULL || !client->server->connected) {
-		proxy_outserver(client, "NOTICE %s :Not connected to server",
-				client->nick);
+		proxy_outdata(client, ":%s NOTICE %s :Not connected to server",
+			      client->proxy_address, client->nick);
                 return;
 	}
 
@@ -237,7 +239,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 					  &target, &msg);
 		proxy_outserver_all_except(client, "PRIVMSG %s", args);
 		signal_emit("message public", 5, client->server, msg,
-			    client->nick, "proxy", target);
+			    client->nick, client->proxy_address, target);
 		g_free(params);
 	}
 }
@@ -291,6 +293,7 @@ static void sig_listen(LISTEN_REC *listen)
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
 	rec->handle = handle;
+	rec->proxy_address = g_strdup(listen->ircnet);
 	rec->server = IRC_SERVER(server_find_chatnet(listen->ircnet));
 	rec->tag = g_input_add(handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen_client, rec);
@@ -377,7 +380,8 @@ static void event_connected(IRC_SERVER_REC *server)
 
 		if (rec->connected && rec->server == NULL &&
 		    g_strcasecmp(server->connrec->chatnet, rec->listen->ircnet) == 0) {
-			proxy_outserver(rec, "NOTICE %s :Connected to server", rec->nick);
+			proxy_outdata(rec, ":%s NOTICE %s :Connected to server",
+				      rec->proxy_address, rec->nick);
 			rec->server = server;
 		}
 	}
@@ -388,8 +392,9 @@ static void proxy_server_disconnected(CLIENT_REC *client,
 {
 	GSList *tmp;
 
-	proxy_outdata(client, ":proxy NOTICE %s :Connection lost to server %s\n",
-		      client->nick, server->connrec->address);
+	proxy_outdata(client, ":%s NOTICE %s :Connection lost to server %s\n",
+		      client->proxy_address, client->nick,
+		      server->connrec->address);
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		IRC_CHANNEL_REC *rec = tmp->data;

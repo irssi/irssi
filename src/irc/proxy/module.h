@@ -21,6 +21,7 @@ typedef struct {
 	int handle;
 	int tag;
 
+	char *proxy_address;
 	LISTEN_REC *listen;
 	IRC_SERVER_REC *server;
 	int pass_sent:1;
