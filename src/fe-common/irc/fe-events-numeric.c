@@ -111,14 +111,14 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint it
 
 	if (col == cols || tmp->next == NULL)
 	{
-	    printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, str->str);
+	    printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	    g_string_truncate(str, 0);
 	    col = 0; line++;
 	    tmp = g_slist_nth(nicklist, line-1); skip = 1;
 	}
     }
     if (str->len != 0)
-	printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, str->str);
+	printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, "%s", str->str);
     g_string_free(str, TRUE);
     g_free(linebuf);
 }

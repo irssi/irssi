@@ -96,14 +96,14 @@ static void help_category(GSList *cmdlist, gint items, gint max)
 
 	if (col == cols || tmp->next == NULL)
 	{
-	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, str->str);
+	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	    g_string_truncate(str, 0);
 	    col = 0; line++;
 	    tmp = g_slist_nth(cmdlist, line-1); skip = 1;
 	}
     }
     if (str->len != 0)
-	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, str->str);
+	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str->str);
     g_string_free(str, TRUE);
     g_free(cmdbuf);
 }
@@ -131,7 +131,7 @@ static int show_help_rec(COMMAND_REC *cmd)
 	recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 	ret = line_split(tmpbuf, recvlen, &str, &buffer);
-        if (ret > 0) printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, str);
+        if (ret > 0) printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str);
     }
     while (ret > 0);
     line_split_free(buffer);
@@ -457,7 +457,7 @@ static void event_cmderror(gpointer errorp, const char *arg)
 	error = GPOINTER_TO_INT(errorp);
 	if (error == CMDERR_ERRNO) {
                 /* errno is special */
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, g_strerror(errno));
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "%s", g_strerror(errno));
 	} else {
                 /* others */
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, ret_texts[error + -CMDERR_OPTION_UNKNOWN], arg);

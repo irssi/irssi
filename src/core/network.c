@@ -301,8 +301,8 @@ int net_transmit(GIOChannel *handle, const char *data, int len)
 	g_return_val_if_fail(data != NULL, -1);
 
 	err = g_io_channel_write(handle, (char *) data, len, &ret);
-	if (err == G_IO_ERROR_AGAIN || (err != 0 && errno == EINTR ||
-					errno == EPIPE))
+	if (err == G_IO_ERROR_AGAIN ||
+	    (err != 0 && (errno == EINTR || errno == EPIPE)))
 		return 0;
 
 	return err == 0 ? ret : -1;
@@ -420,11 +420,11 @@ int net_ip2host(IPADDR *ip, char *host)
 	unsigned long ip4;
 
 	ip4 = ntohl(ip->addr.ip.s_addr);
-	sprintf(host, "%lu.%lu.%lu.%lu",
-		(ip4 & 0xff000000UL) >> 24,
-		(ip4 & 0x00ff0000) >> 16,
-		(ip4 & 0x0000ff00) >> 8,
-		(ip4 & 0x000000ff));
+	g_snprintf(host, MAX_IP_LEN, "%lu.%lu.%lu.%lu",
+		   (ip4 & 0xff000000UL) >> 24,
+		   (ip4 & 0x00ff0000) >> 16,
+		   (ip4 & 0x0000ff00) >> 8,
+		   (ip4 & 0x000000ff));
 #endif
 	return 0;
 }

@@ -138,7 +138,8 @@ void dcc_make_address(IPADDR *ip, char *host)
 		net_ip2host(ip, host);
 	} else {
 		memcpy(&addr, &ip->addr, 4);
-		sprintf(host, "%lu", (unsigned long) htonl(addr));
+		g_snprintf(host, MAX_IP_LEN, "%lu",
+			   (unsigned long) htonl(addr));
 	}
 }
 

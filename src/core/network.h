@@ -67,7 +67,9 @@ int net_hosterror_notfound(int error);
 /* Get socket address/port */
 int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port);
 
+/* IPADDR -> char* translation. `host' must be at least MAX_IP_LEN bytes */
 int net_ip2host(IPADDR *ip, char *host);
+/* char* -> IPADDR translation. */
 int net_host2ip(const char *host, IPADDR *ip);
 
 /* Get socket error */

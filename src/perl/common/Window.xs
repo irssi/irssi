@@ -31,14 +31,14 @@ print(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
 CODE:
-	printtext(NULL, NULL, level, str);
+	printtext(NULL, NULL, level, "%s", str);
 
 void
 print_window(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
 CODE:
-	printtext_window(active_win, level, str);
+	printtext_window(active_win, level, "%s", str);
 
 void
 command(cmd, server=active_win->active_server, item=active_win->active)
@@ -108,7 +108,7 @@ print(server, channel, str, level)
 	char *str
 	int level
 CODE:
-	printtext(server, channel, level, str);
+	printtext(server, channel, level, "%s", str);
 
 Irssi::Windowitem
 window_item_find(server, name)
@@ -277,4 +277,4 @@ print(item, str, level=MSGLEVEL_CLIENTNOTICE)
 	int level
 	char *str
 CODE:
-	printtext(item->server, item->name, level, str);
+	printtext(item->server, item->name, level, "%s", str);
