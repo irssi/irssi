@@ -442,6 +442,73 @@ static void cmd_save(void)
 	config_close(config);
 }
 
+static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList **list)
+{
+	MODULE_THEME_REC *theme;
+	FORMAT_REC *formats;
+	int n, len;
+
+	formats = g_hash_table_lookup(default_formats, rec->name);
+	theme = g_hash_table_lookup(current_theme->modules, rec->name);
+
+	len = strlen(key);
+	for (n = 1; formats[n].def != NULL; n++) {
+		const char *item = formats[n].tag;
+
+		if (item != NULL && g_strncasecmp(item, key, len) == 0)
+                        *list = g_list_append(*list, g_strdup(item));
+	}
+}
+
+static GList *completion_get_formats(const char *module, const char *key)
+{
+	GSList *modules, *tmp;
+	GList *list;
+
+	g_return_val_if_fail(key != NULL, NULL);
+
+	list = NULL;
+
+	modules = get_sorted_modules();
+	if (*module == '\0' || theme_search(modules, module) != NULL) {
+		for (tmp = modules; tmp != NULL; tmp = tmp->next) {
+			THEME_SEARCH_REC *rec = tmp->data;
+
+			if (*module == '\0' || g_strcasecmp(rec->short_name, module) == 0)
+				complete_format_list(rec, key, &list);
+		}
+	}
+	g_slist_foreach(modules, (GFunc) g_free, NULL);
+	g_slist_free(modules);
+
+	return list;
+}
+
+static void sig_complete_format(GList **list, WINDOW_REC *window,
+				const char *word, const char *line, int *want_space)
+{
+	const char *ptr;
+	int words;
+
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+        ptr = line;
+
+	words = 0;
+	do {
+		words++;
+                ptr = strchr(ptr, ' ');
+	} while (ptr != NULL);
+
+	if (words > 2)
+		return;
+
+	*list = completion_get_formats(line, word);
+	if (*list != NULL) signal_stop();
+}
+
 void themes_init(void)
 {
 	THEME_REC *rec;
@@ -479,6 +546,7 @@ void themes_init(void)
 
 	command_bind("format", NULL, (SIGNAL_FUNC) cmd_format);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
+	signal_add("complete command format", (SIGNAL_FUNC) sig_complete_format);
 
 	command_set_options("format", "delete reset");
 }
@@ -494,4 +562,5 @@ void themes_deinit(void)
 
 	command_unbind("format", (SIGNAL_FUNC) cmd_format);
 	command_unbind("save", (SIGNAL_FUNC) cmd_save);
+	signal_remove("complete command format", (SIGNAL_FUNC) sig_complete_format);
 }
