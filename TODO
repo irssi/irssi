@@ -1,4 +1,4 @@
- - window goto active, name
+ - tee se column sorttingi kaikkiin clistoihin
 
 *** Bugs
 
@@ -77,13 +77,6 @@
 
  - command line parameter handling, specify what server/ircnet to autoconnect
    or none.
- - /list:
-     - gui optional
-     - sort it by clicking the headers
-     - change the size of columns
-     - total number of channels
-     - copy/paste things in list?
-     - search the list
  - log option: add the open/close time to log
  - log directory, automatically log all channels and queries there
      - overwrite/append
