@@ -67,8 +67,7 @@ static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
 	item = g_new0(EXEC_WI_REC, 1);
 	item->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC");
         item->destroy = (void (*) (WI_ITEM_REC *)) exec_wi_destroy;
-	item->name = rec->name != NULL ?
-		g_strdup_printf("%%%s", rec->name) :
+	item->name = rec->name != NULL ? g_strdup(rec->name) :
 		g_strdup_printf("%%%d", rec->id);
 
 	item->createtime = time(NULL);
