@@ -197,7 +197,7 @@ static void notifylist_left(IRC_SERVER_REC *server, const char *nick,
 {
 	g_return_if_fail(nick != NULL);
 
-	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_PART,
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT, IRCTXT_NOTIFY_PART,
 		    nick, username, host, realname,
 		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
@@ -209,7 +209,7 @@ static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
 	g_return_if_fail(nick != NULL);
 
 	if (awaymsg != NULL) {
-		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE | MSGLEVEL_HILIGHT,
 			    IRCTXT_NOTIFY_AWAY, nick, username, host, realname, awaymsg,
 			    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 	} else {
