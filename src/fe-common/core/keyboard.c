@@ -147,20 +147,15 @@ static void keyconfig_save(const char *id, const char *key, const char *data)
 	iconfig_node_set_str(node, "data", data);
 }
 
-static void keyconfig_clear(const char *id, const char *key)
+static void keyconfig_clear(const char *key)
 {
 	CONFIG_NODE *node;
 
-	g_return_if_fail(id != NULL);
+	g_return_if_fail(key != NULL);
 
 	/* remove old keyboard settings */
 	node = iconfig_node_traverse("keyboard", TRUE);
-	if (key == NULL)
-		iconfig_node_set_str(node, id, NULL);
-	else {
-		node = config_node_section(node, id, -1);
-		if (node != NULL) iconfig_node_set_str(node, key, NULL);
-	}
+	iconfig_node_set_str(node, key, NULL);
 }
 
 KEYINFO_REC *key_info_find(const char *id)
@@ -411,7 +406,7 @@ void key_configure_remove(const char *key)
 	rec = g_hash_table_lookup(keys, key);
 	if (rec == NULL) return;
 
-        keyconfig_clear(rec->info->id, key);
+        keyconfig_clear(key);
 	key_configure_destroy(rec);
 }
 
@@ -453,7 +448,9 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 		rec = g_tree_search(key_states,
 				    (GSearchFunc) key_states_search,
 				    (void *) key);
-		if (rec == NULL || strcmp(rec->info->id, "key") != 0) {
+		if (rec == NULL ||
+		    (g_tree_lookup(key_states, (void *) key) != NULL &&
+		     strcmp(rec->info->id, "key") != 0)) {
 			/* a single non-combo key was pressed */
 			rec = g_hash_table_lookup(keys, key);
 			if (rec == NULL)
