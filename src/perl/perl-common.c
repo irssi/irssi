@@ -229,7 +229,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
         g_return_if_fail(hv != NULL);
         g_return_if_fail(item != NULL);
 
-	type = (char *) module_find_id_str("WINDOW ITEM", item->type);
+	type = (char *) module_find_id_str("WINDOW ITEM TYPE", item->type);
 	chat_type = (char *) chat_protocol_find_id(item->chat_type)->name;
 
 	hv_store(hv, "type", 4, new_pv(type), 0);
