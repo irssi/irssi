@@ -463,10 +463,13 @@ static void log_items_read_config(CONFIG_NODE *node, LOG_REC *log)
 	LOG_ITEM_REC *rec;
 	GSList *tmp;
 	char *item;
-        int type;
+	int type;
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
+
+		if (node->type != NODE_TYPE_BLOCK)
+			continue;
 
 		item = config_node_get_str(node, "name", NULL);
 		type = log_item_str2type(config_node_get_str(node, "type", NULL));
@@ -477,6 +480,8 @@ static void log_items_read_config(CONFIG_NODE *node, LOG_REC *log)
 		rec->type = type;
 		rec->name = g_strdup(item);
 		rec->servertag = g_strdup(config_node_get_str(node, "server", NULL));
+
+		log->items = g_slist_append(log->items, rec);
 	}
 }
 
