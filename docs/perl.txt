@@ -103,8 +103,12 @@ commands() - return list of all commands
 dccs() - return list of all dcc connections
 logs() - return list of all log files
 
-print(str)
-  Print `str' to current window as "Irssi notice".
+print(str, [level])
+  Print `str' to some window (status/current probably), default level is
+  "Irssi notice".
+
+print_window(str, [level])
+  Print `str' to current window, default level is "Irssi notice".
 
 command(cmd, [Server server, [Channel channel]])
   Send a command `cmd' (in current channel). This will work just as if you

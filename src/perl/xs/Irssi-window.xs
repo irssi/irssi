@@ -23,10 +23,18 @@ OUTPUT:
 	RETVAL
 
 void
-print(str)
+print(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
+        int level;
 CODE:
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE, str);
+	printtext(NULL, NULL, level, str);
+
+void
+print_window(str, level=MSGLEVEL_CLIENTNOTICE)
+	char *str
+        int level;
+CODE:
+	printtext_window(active_win, level, str);
 
 
 #*******************************
