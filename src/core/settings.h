@@ -35,6 +35,7 @@ typedef struct {
 #define iconfig_node_add_list(a, b) config_node_add_list(mainconfig, a, b)
 
 extern CONFIG_REC *mainconfig;
+extern const char *default_config;
 
 /* Functions for handling the "settings" node of Irssi configuration */
 const char *settings_get_str(const char *key);
