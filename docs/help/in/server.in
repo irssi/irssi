@@ -2,6 +2,7 @@
 @SYNTAX:server@
 
      -4, -6: specify explicitly whether to use IPv4 or IPv6 address
+     -ssl: use SSL when connecting
      -auto: Automatically connect to server at startup (default)
      -noauto: Don't connect to server at startup
      -ircnet: Specify what IRC network this server belongs to

@@ -2,6 +2,7 @@
 @SYNTAX:connect@
 
      -4, -6: specify explicitly whether to use IPv4 or IPv6 address
+     -ssl: use SSL when connecting
      -ircnet: the IRCNet
      -host: the host
      -!: don't autojoin channels
