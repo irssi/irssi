@@ -12,10 +12,12 @@ v0.7.16 1999-09-xx  Timo Sirainen <cras@irccrew.org> [unstable]
 	+ /window goto active - moves you to first window with activity
 	+ /list and /names complains if they're run without any arguments,
 	  -YES overrides this
-	+ /list -nogui doesn't use the GUI list display
-	+ /list and /who dialog changes: you can resize columns, sort the
-	  list by clicking the headers, displays total number of channels and
-	  the list is searchable
+	+ Giving -nogui parameter to /list and /who commands doesn't use the
+	  GUI dialog
+	+ All the dialogs that have clist widget: you can resize columns and
+	  sort the list by clicking the headers
+	+ /list and /who dialogs displays total number of items and the list
+	  is searchable
 	- Notifylist and checking of who uses your nick uses WHOIS again,
 	  WHO didn't display user info unless s/he was -i or in same
 	  channels..
