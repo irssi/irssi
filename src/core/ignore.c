@@ -329,6 +329,7 @@ void ignore_add_rec(IGNORE_REC *rec)
 	ignore_set_config(rec);
 
 	signal_emit("ignore created", 1, rec);
+	nickmatch_rebuild(nickmatch);
 }
 
 static void ignore_destroy(IGNORE_REC *rec, int send_signal)

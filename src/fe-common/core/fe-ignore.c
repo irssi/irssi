@@ -134,6 +134,18 @@ static void cmd_ignore(const char *data)
 	}
 
 	rec->level = combine_level(rec->level, levels);
+
+	if (new_ignore && rec->level == 0) {
+		/* tried to unignore levels from nonexisting ignore */
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_IGNORE_NOT_FOUND, rec->mask);
+		g_free(rec->mask);
+		g_strfreev(rec->channels);
+		g_free(rec);
+		cmd_params_free(free_arg);
+                return;
+	}
+
 	rec->pattern = (patternarg == NULL || *patternarg == '\0') ?
 		NULL : g_strdup(patternarg);
 	rec->exception = g_hash_table_lookup(optlist, "except") != NULL;
@@ -143,11 +155,6 @@ static void cmd_ignore(const char *data)
 	timestr = g_hash_table_lookup(optlist, "time");
         if (timestr != NULL)
 		rec->unignore_time = time(NULL)+atoi(timestr);
-
-	if (rec->level == 0) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_UNIGNORED,
-			    rec->mask == NULL ? "*" : rec->mask);
-	}
 
 	if (new_ignore)
 		ignore_add_rec(rec);
@@ -196,7 +203,7 @@ static void sig_ignore_created(IGNORE_REC *rec)
 	char *key, *levels;
 
 	key = ignore_get_key(rec);
-        levels = bits2level(rec->level);
+	levels = bits2level(rec->level);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_IGNORED, key, levels);
 	g_free(key);
