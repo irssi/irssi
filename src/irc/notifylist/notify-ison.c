@@ -29,8 +29,8 @@
 
 #include "notifylist.h"
 
-#define DEFAULT_NOTIFY_CHECK_TIME 60
-#define DEFAULT_NOTIFY_WHOIS_TIME (60*5)
+#define DEFAULT_NOTIFY_CHECK_TIME "1min"
+#define DEFAULT_NOTIFY_WHOIS_TIME "5min"
 
 typedef struct {
 	char *nick;
@@ -321,15 +321,16 @@ static void event_ison(IRC_SERVER_REC *server, const char *data)
 static void read_settings(void)
 {
 	if (notify_tag != -1) g_source_remove(notify_tag);
-	notify_tag = g_timeout_add(1000*settings_get_int("notify_check_time"), (GSourceFunc) notifylist_timeout_func, NULL);
+	notify_tag = g_timeout_add(settings_get_time("notify_check_time"),
+				   (GSourceFunc) notifylist_timeout_func, NULL);
 
-	notify_whois_time = settings_get_int("notify_whois_time");
+	notify_whois_time = settings_get_time("notify_whois_time")/1000;
 }
 
 void notifylist_ison_init(void)
 {
-	settings_add_int("misc", "notify_check_time", DEFAULT_NOTIFY_CHECK_TIME);
-	settings_add_int("misc", "notify_whois_time", DEFAULT_NOTIFY_WHOIS_TIME);
+	settings_add_time("misc", "notify_check_time", DEFAULT_NOTIFY_CHECK_TIME);
+	settings_add_time("misc", "notify_whois_time", DEFAULT_NOTIFY_WHOIS_TIME);
 
 	notify_tag = -1;
 	read_settings();

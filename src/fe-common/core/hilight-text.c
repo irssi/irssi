@@ -676,14 +676,14 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 
 static void read_settings(void)
 {
-	default_hilight_level = level2bits(settings_get_str("hilight_level"));
+	default_hilight_level = settings_get_level("hilight_level");
 }
 
 void hilight_text_init(void)
 {
 	settings_add_str("lookandfeel", "hilight_color", "%Y");
 	settings_add_str("lookandfeel", "hilight_act_color", "%M");
-	settings_add_str("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
+	settings_add_level("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
 
         read_settings();
 

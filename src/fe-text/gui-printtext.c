@@ -30,7 +30,7 @@
 #include "gui-windows.h"
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7 };
-static int scrollback_lines, scrollback_hours, scrollback_burst_remove;
+static int scrollback_lines, scrollback_time, scrollback_burst_remove;
 
 static int last_fg, last_bg, last_flags;
 static int next_xpos, next_ypos;
@@ -120,7 +120,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	LINE_REC *line;
 	time_t old_time;
 
-	old_time = time(NULL)-(scrollback_hours*3600)+1;
+	old_time = time(NULL)-scrollback_time+1;
 	if (view->buffer->lines_count >=
 	    scrollback_lines+scrollback_burst_remove) {
                 /* remove lines by line count */
@@ -130,7 +130,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 			    scrollback_lines == 0) {
 				/* too new line, don't remove yet - also
 				   if scrollback_lines is 0, we want to check
-				   only scrollback_hours setting. */
+				   only scrollback_time setting. */
 				break;
 			}
 			textbuffer_view_remove_line(view, line);
@@ -302,7 +302,7 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 static void read_settings(void)
 {
 	scrollback_lines = settings_get_int("scrollback_lines");
-	scrollback_hours = settings_get_int("scrollback_hours");
+	scrollback_time = settings_get_time("scrollback_time")/1000;
         scrollback_burst_remove = settings_get_int("scrollback_burst_remove");
 }
 
@@ -314,7 +314,7 @@ void gui_printtext_init(void)
 					    (GCompareFunc) g_str_equal);
 
 	settings_add_int("history", "scrollback_lines", 500);
-	settings_add_int("history", "scrollback_hours", 24);
+	settings_add_time("history", "scrollback_time", "day");
 	settings_add_int("history", "scrollback_burst_remove", 10);
 
 	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);

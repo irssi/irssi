@@ -105,4 +105,8 @@ char *escape_string(const char *str);
 
 int nearest_power(int num);
 
+/* Returns TRUE / FALSE */
+int parse_time_interval(const char *time, int *msecs);
+int parse_size(const char *size, int *bytes);
+
 #endif

@@ -1,18 +1,30 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
-enum {
+typedef enum {
 	SETTING_TYPE_STRING,
 	SETTING_TYPE_INT,
-	SETTING_TYPE_BOOLEAN
-};
+	SETTING_TYPE_BOOLEAN,
+	SETTING_TYPE_TIME,
+	SETTING_TYPE_LEVEL,
+	SETTING_TYPE_SIZE
+} SettingType;
+
+typedef union {
+	char *v_string;
+	int v_int;
+	unsigned int v_bool:1;
+} SettingValue;
 
 typedef struct {
-        char *module;
-	int type;
+	int refcount;
+
+	char *module;
 	char *key;
 	char *section;
-	void *def;
+
+	SettingType type;
+	SettingValue default_value;
 } SETTINGS_REC;
 
 /* macros for handling the default Irssi configuration */
@@ -40,6 +52,9 @@ extern const char *default_config;
 const char *settings_get_str(const char *key);
 int settings_get_int(const char *key);
 int settings_get_bool(const char *key);
+int settings_get_time(const char *key); /* as milliseconds */
+int settings_get_level(const char *key);
+int settings_get_size(const char *key); /* as bytes */
 
 /* Functions to add/remove settings */
 void settings_add_str_module(const char *module, const char *section,
@@ -48,6 +63,12 @@ void settings_add_int_module(const char *module, const char *section,
 			     const char *key, int def);
 void settings_add_bool_module(const char *module, const char *section,
 			      const char *key, int def);
+void settings_add_time_module(const char *module, const char *section,
+			      const char *key, const char *def);
+void settings_add_level_module(const char *module, const char *section,
+			       const char *key, const char *def);
+void settings_add_size_module(const char *module, const char *section,
+			      const char *key, const char *def);
 void settings_remove(const char *key);
 void settings_remove_module(const char *module);
 
@@ -57,13 +78,22 @@ void settings_remove_module(const char *module);
 	settings_add_int_module(MODULE_NAME, section, key, def)
 #define settings_add_bool(section, key, def) \
 	settings_add_bool_module(MODULE_NAME, section, key, def)
+#define settings_add_time(section, key, def) \
+	settings_add_time_module(MODULE_NAME, section, key, def)
+#define settings_add_level(section, key, def) \
+	settings_add_level_module(MODULE_NAME, section, key, def)
+#define settings_add_size(section, key, def) \
+	settings_add_size_module(MODULE_NAME, section, key, def)
 
 void settings_set_str(const char *key, const char *value);
 void settings_set_int(const char *key, int value);
 void settings_set_bool(const char *key, int value);
+int settings_set_time(const char *key, const char *value);
+int settings_set_level(const char *key, const char *value);
+int settings_set_size(const char *key, const char *value);
 
 /* Get the type (SETTING_TYPE_xxx) of `key' */
-int settings_get_type(const char *key);
+SettingType settings_get_type(const char *key);
 /* Get all settings sorted by section. Free the result with g_slist_free() */
 GSList *settings_get_sorted(void);
 /* Get the record of the setting */

@@ -138,18 +138,18 @@ static void read_settings(void)
 		g_strsplit(targets, " ", -1);
 
 	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT |
-		level2bits(settings_get_str("activity_hide_level"));
-	msg_level = level2bits(settings_get_str("activity_msg_level"));
+		settings_get_level("activity_hide_level");
+	msg_level = settings_get_level("activity_msg_level");
 	hilight_level = MSGLEVEL_HILIGHT |
-		level2bits(settings_get_str("activity_hilight_level"));
+		settings_get_level("activity_hilight_level");
 }
 
 void window_activity_init(void)
 {
 	settings_add_str("lookandfeel", "activity_hide_targets", "");
-	settings_add_str("lookandfeel", "activity_hide_level", "");
-	settings_add_str("lookandfeel", "activity_msg_level", "PUBLIC");
-	settings_add_str("lookandfeel", "activity_hilight_level", "MSGS DCCMSGS");
+	settings_add_level("lookandfeel", "activity_hide_level", "");
+	settings_add_level("lookandfeel", "activity_msg_level", "PUBLIC");
+	settings_add_level("lookandfeel", "activity_hilight_level", "MSGS DCCMSGS");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);

@@ -340,7 +340,7 @@ static void read_settings(void)
 {
 	int level;
 
-	level = level2bits(settings_get_str("autocreate_query_level"));
+	level = settings_get_level("autocreate_query_level");
 	autocreate_dccquery = (level & MSGLEVEL_DCCMSGS) != 0;
 }
 

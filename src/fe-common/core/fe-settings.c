@@ -45,6 +45,9 @@ static void set_print(SETTINGS_REC *rec)
 		value = value_int;
 		break;
 	case SETTING_TYPE_STRING:
+	case SETTING_TYPE_TIME:
+	case SETTING_TYPE_LEVEL:
+	case SETTING_TYPE_SIZE:
 		value = settings_get_str(rec->key);
 		break;
 	default:
@@ -106,19 +109,37 @@ static void cmd_set(char *data)
                                 if (clear)
 					settings_set_bool(key, FALSE);
 				else if (set_default)
-					settings_set_bool(key, GPOINTER_TO_INT(rec->def));
+					settings_set_bool(key, rec->default_value.v_bool);
 				else
 					set_boolean(key, value);
 				break;
 			case SETTING_TYPE_INT:
 				settings_set_int(key, clear ? 0 :
-						 set_default ? GPOINTER_TO_INT(rec->def) :
+						 set_default ? rec->default_value.v_int :
 						 atoi(value));
 				break;
 			case SETTING_TYPE_STRING:
 				settings_set_str(key, clear ? "" :
-						 set_default ? rec->def :
+						 set_default ? rec->default_value.v_string :
 						 value);
+				break;
+			case SETTING_TYPE_TIME:
+				if (!settings_set_time(key, clear ? "0" :
+						       set_default ? rec->default_value.v_string : value))
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+						    TXT_INVALID_TIME);
+				break;
+			case SETTING_TYPE_LEVEL:
+				if (!settings_set_level(key, clear ? "" :
+							set_default ? rec->default_value.v_string : value))
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+						    TXT_INVALID_LEVEL);
+				break;
+			case SETTING_TYPE_SIZE:
+				if (!settings_set_size(key, clear ? "0" :
+						       set_default ? rec->default_value.v_string : value))
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+						    TXT_INVALID_SIZE);
 				break;
 			}
 			signal_emit("setup changed", 0);

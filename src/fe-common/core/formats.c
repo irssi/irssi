@@ -1091,11 +1091,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 static void read_settings(void)
 {
 	timestamp_level = settings_get_bool("timestamps") ? MSGLEVEL_ALL : 0;
-	if (timestamp_level > 0) {
-		timestamp_level =
-			level2bits(settings_get_str("timestamp_level"));
-	}
-	timestamp_timeout = settings_get_int("timestamp_timeout");
+	if (timestamp_level > 0)
+		timestamp_level = settings_get_level("timestamp_level");
+	timestamp_timeout = settings_get_time("timestamp_timeout")/1000;
 
 	hide_server_tags = settings_get_bool("hide_server_tags");
 	hide_text_style = settings_get_bool("hide_text_style");

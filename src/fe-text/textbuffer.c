@@ -137,6 +137,8 @@ static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 				break;
 
 			text = tmp-1;
+		} else if (*text == LINE_CMD_INDENT_FUNC) {
+			text += sizeof(int (*) ());
 		}
 	}
 }

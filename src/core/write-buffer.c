@@ -134,17 +134,14 @@ static int flush_timeout(void)
 
 static void read_settings(void)
 {
-	int msecs;
-
 	write_buffer_flush();
 
-	write_buffer_max_blocks = settings_get_int("write_buffer_kb") *
-		1024/BUFFER_BLOCK_SIZE;
+	write_buffer_max_blocks =
+		settings_get_size("write_buffer_size") / BUFFER_BLOCK_SIZE;
 
-	if (settings_get_int("write_buffer_mins") > 0) {
-                msecs = settings_get_int("write_buffer_mins")*60*1000;
+	if (settings_get_time("write_buffer_timeout") > 0) {
 		if (timeout_tag == -1) {
-			timeout_tag = g_timeout_add(msecs,
+			timeout_tag = g_timeout_add(settings_get_time("write_buffer_timeout"),
 						    (GSourceFunc) flush_timeout,
 						    NULL);
 		}
@@ -161,8 +158,8 @@ static void cmd_flushbuffer(void)
 
 void write_buffer_init(void)
 {
-	settings_add_int("misc", "write_buffer_mins", 0);
-	settings_add_int("misc", "write_buffer_kb", 0);
+	settings_add_time("misc", "write_buffer_timeout", "0");
+	settings_add_size("misc", "write_buffer_size", "0");
 
 	buffers = g_hash_table_new((GHashFunc) g_direct_hash,
 				   (GCompareFunc) g_direct_equal);

@@ -290,15 +290,16 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	int lag, lag_unknown;
 
 	server = active_win == NULL ? NULL : active_win->active_server;
-	lag = get_lag(server, &lag_unknown)/10;
+	lag = get_lag(server, &lag_unknown);
 
-	if (lag <= 0 || lag < settings_get_int("lag_min_show")) {
+	if (lag <= 0 || lag < settings_get_time("lag_min_show")) {
 		/* don't print the lag item */
 		if (get_size_only)
 			item->min_size = item->max_size = 0;
 		return;
 	}
 
+	lag /= 10;
 	last_lag = lag;
 	last_lag_unknown = lag_unknown;
 
@@ -321,8 +322,10 @@ static void lag_check_update(void)
 	server = active_win == NULL ? NULL : active_win->active_server;
 	lag = get_lag(server, &lag_unknown)/10;
 
-	if (lag < settings_get_int("lag_min_show"))
-                lag = 0;
+	if (lag < settings_get_time("lag_min_show"))
+		lag = 0;
+	else
+		lag /= 10;
 
 	if (lag != last_lag || (lag > 0 && lag_unknown != last_lag_unknown))
                 statusbar_items_redraw("lag");
@@ -372,7 +375,7 @@ static void read_settings(void)
 
 void statusbar_items_init(void)
 {
-	settings_add_int("misc", "lag_min_show", 100);
+	settings_add_time("misc", "lag_min_show", "100msec");
 	settings_add_bool("lookandfeel", "actlist_moves", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);

@@ -38,16 +38,13 @@ static void sig_log_written(LOG_REC *log)
 
 static void awaylog_open(void)
 {
-	const char *fname, *levelstr;
+	const char *fname;
 	LOG_REC *log;
 	int level;
 
 	fname = settings_get_str("awaylog_file");
-	levelstr = settings_get_str("awaylog_level");
-	if (*fname == '\0' || *levelstr == '\0') return;
-
-	level = level2bits(levelstr);
-	if (level == 0) return;
+	level = settings_get_level("awaylog_level");
+	if (*fname == '\0' || level == 0) return;
 
 	log = log_find(fname);
 	if (log != NULL && log->handle != -1)
@@ -106,7 +103,7 @@ void log_away_init(void)
 	away_msgs = 0;
 
 	settings_add_str("log", "awaylog_file", IRSSI_DIR_SHORT"/away.log");
-	settings_add_str("log", "awaylog_level", "msgs hilight");
+	settings_add_level("log", "awaylog_level", "msgs hilight");
 
 	signal_add("log written", (SIGNAL_FUNC) sig_log_written);
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);

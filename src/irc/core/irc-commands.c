@@ -736,7 +736,7 @@ static int knockout_timeout(void)
 	return 1;
 }
 
-/* SYNTAX: KNOCKOUT [<seconds>] <nicks> <reason> */
+/* SYNTAX: KNOCKOUT [<time>] <nicks> <reason> */
 static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 			 IRC_CHANNEL_REC *channel)
 {
@@ -753,20 +753,21 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	if (!channel->wholist)
 		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
-	if (is_numeric(data, ' ')) {
+	if (i_isdigit(*data)) {
 		/* first argument is the timeout */
 		if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 				    &timeoutstr, &nicks, &reason))
                         return;
-		timeleft = atoi(timeoutstr);
+
+		if (!parse_time_interval(timeoutstr, &timeleft))
+			cmd_param_error(CMDERR_INVALID_TIME);
 	} else {
 		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 				    &nicks, &reason))
 			return;
-                timeleft = 0;
+                timeleft = settings_get_time("knockout_time");
 	}
 
-	if (timeleft == 0) timeleft = settings_get_int("knockout_time");
 	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	nicklist = g_strsplit(nicks, ",", -1);
@@ -797,7 +798,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	else {
 		/* create knockout record */
 		rec = g_new(KNOCKOUT_REC, 1);
-		rec->unban_time = time(NULL)+timeleft;
+		rec->unban_time = time(NULL)+timeleft/1000;
 		rec->channel = channel;
 		rec->ban = banmasks;
 
@@ -916,7 +917,7 @@ void irc_commands_init(void)
 	tmpstr = g_string_new(NULL);
 
 	settings_add_str("misc", "part_message", "");
-	settings_add_int("misc", "knockout_time", 300);
+	settings_add_time("misc", "knockout_time", "5min");
 	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
 	settings_add_bool("misc", "kick_first_on_kickban", FALSE);
 

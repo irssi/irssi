@@ -57,8 +57,8 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 
 	/* check file size limit, NOTE: it's still possible to send a
 	   bogus file size and then just send what ever sized file.. */
-        max_size = settings_get_int("dcc_autoget_max_size");
-	if (max_size > 0 && (uoff_t)max_size*1024 < dcc->size)
+        max_size = settings_get_size("dcc_autoget_max_size");
+	if (max_size > 0 && (uoff_t)max_size < dcc->size)
                 return;
 
 	/* ok. but do we want/need to resume? */
@@ -77,7 +77,7 @@ void dcc_autoget_init(void)
 	settings_add_bool("dcc", "dcc_autoget", FALSE);
 	settings_add_bool("dcc", "dcc_autoaccept_lowports", FALSE);
 	settings_add_bool("dcc", "dcc_autoresume", FALSE);
-	settings_add_int("dcc", "dcc_autoget_max_size", 0);
+	settings_add_size("dcc", "dcc_autoget_max_size", 0);
 	settings_add_str("dcc", "dcc_autoget_masks", "");
 
 	signal_add_last("dcc request", (SIGNAL_FUNC) sig_dcc_request);

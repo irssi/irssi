@@ -32,7 +32,8 @@
 void autoignore_update(IGNORE_REC *rec, int level)
 {
 	rec->level |= level;
-	rec->unignore_time = time(NULL)+settings_get_int("autoignore_time");
+	rec->unignore_time = time(NULL) +
+		settings_get_time("autoignore_time")/1000;
 
 	ignore_update_rec(rec);
 }
@@ -46,7 +47,8 @@ void autoignore_add(IRC_SERVER_REC *server, char *mask, int level)
 	rec->mask = g_strdup(mask);
 	rec->servertag = g_strdup(server->tag);
 	rec->level = level;
-	rec->unignore_time = time(NULL)+settings_get_int("autoignore_time");
+	rec->unignore_time = time(NULL) +
+		settings_get_time("autoignore_time")/1000;
 
 	ignore_add_rec(rec);
 }
@@ -60,7 +62,7 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 	g_return_if_fail(IS_IRC_SERVER(server));
 
 	level = GPOINTER_TO_INT(levelp);
-	check_level = level2bits(settings_get_str("autoignore_level"));
+	check_level = settings_get_level("autoignore_level");
 
         mask = g_strdup_printf("%s!%s", nick, host);
 	if (level & check_level) {
@@ -75,8 +77,8 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 
 void autoignore_init(void)
 {
-	settings_add_int("flood", "autoignore_time", 300);
-	settings_add_str("flood", "autoignore_level", "");
+	settings_add_time("flood", "autoignore_time", "5min");
+	settings_add_level("flood", "autoignore_level", "");
 
   	signal_add("flood", (SIGNAL_FUNC) sig_flood);
 }

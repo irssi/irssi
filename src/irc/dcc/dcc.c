@@ -420,7 +420,7 @@ static int dcc_timeout_func(void)
 	GSList *tmp, *next;
 	time_t now;
 
-	now = time(NULL)-settings_get_int("dcc_timeout");
+	now = time(NULL)-settings_get_time("dcc_timeout")/1000;
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
 		DCC_REC *dcc = tmp->data;
 
@@ -514,7 +514,7 @@ void irc_dcc_init(void)
 	dcc_timeouttag = g_timeout_add(1000, (GSourceFunc) dcc_timeout_func, NULL);
 
 	settings_add_str("dcc", "dcc_port", "0");
-	settings_add_int("dcc", "dcc_timeout", 300);
+	settings_add_time("dcc", "dcc_timeout", "5min");
 	settings_add_str("dcc", "dcc_own_ip", "");
 
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);

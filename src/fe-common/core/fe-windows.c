@@ -70,7 +70,7 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 
 	rec = g_new0(WINDOW_REC, 1);
 	rec->refnum = window_get_new_refnum();
-	rec->level = level2bits(settings_get_str("window_default_level"));
+	rec->level = settings_get_level("window_default_level");
 
 	windows = g_slist_prepend(windows, rec);
 	signal_emit("window created", 2, rec, GINT_TO_POINTER(automatic));
@@ -646,7 +646,7 @@ void windows_init(void)
 	settings_add_bool("lookandfeel", "window_auto_change", FALSE);
 	settings_add_bool("lookandfeel", "windows_auto_renumber", TRUE);
 	settings_add_bool("lookandfeel", "window_check_level_first", FALSE);
-	settings_add_str("lookandfeel", "window_default_level", "NONE");
+	settings_add_level("lookandfeel", "window_default_level", "NONE");
 
 	read_settings();
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_connected);

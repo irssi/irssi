@@ -340,8 +340,8 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 
 static void read_settings(void)
 {
-	querycreate_level = level2bits(settings_get_str("autocreate_query_level"));
-	query_auto_close = settings_get_int("autoclose_query");
+	querycreate_level = settings_get_level("autocreate_query_level");
+	query_auto_close = settings_get_time("autoclose_query")/1000;
 	if (query_auto_close > 0 && queryclose_tag == -1)
 		queryclose_tag = g_timeout_add(5000, (GSourceFunc) sig_query_autoclose, NULL);
 	else if (query_auto_close <= 0 && queryclose_tag != -1) {
@@ -352,9 +352,9 @@ static void read_settings(void)
 
 void fe_queries_init(void)
 {
-	settings_add_str("lookandfeel", "autocreate_query_level", "MSGS DCCMSGS");
+	settings_add_level("lookandfeel", "autocreate_query_level", "MSGS DCCMSGS");
 	settings_add_bool("lookandfeel", "autocreate_own_query", TRUE);
-	settings_add_int("lookandfeel", "autoclose_query", 0);
+	settings_add_time("lookandfeel", "autoclose_query", "0");
 
 	queryclose_tag = -1;
 	read_settings();

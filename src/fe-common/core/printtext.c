@@ -474,7 +474,7 @@ static void sig_gui_dialog(const char *type, const char *text)
 
 static void read_settings(void)
 {
-	beep_msg_level = level2bits(settings_get_str("beep_msg_level"));
+	beep_msg_level = settings_get_level("beep_msg_level");
 	beep_when_away = settings_get_bool("beep_when_away");
         beep_when_window_active = settings_get_bool("beep_when_window_active");
 }

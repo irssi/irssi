@@ -461,14 +461,14 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 
 static void read_settings(void)
 {
-	reconnect_time = settings_get_int("server_reconnect_time");
-        connect_timeout = settings_get_int("server_connect_timeout");
+	reconnect_time = settings_get_time("server_reconnect_time")/1000;
+        connect_timeout = settings_get_time("server_connect_timeout")/1000;
 }
 
 void servers_reconnect_init(void)
 {
-	settings_add_int("server", "server_reconnect_time", 300);
-	settings_add_int("server", "server_connect_timeout", 300);
+	settings_add_time("server", "server_reconnect_time", "5min");
+	settings_add_time("server", "server_connect_timeout", "5min");
 
 	reconnects = NULL;
 	last_reconnect_tag = 0;

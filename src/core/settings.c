@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "misc.h"
 
 #include "lib-config/iconfig.h"
@@ -28,6 +29,8 @@
 #include "default-config.h"
 
 #include <signal.h>
+
+#define SETTINGS_AUTOSAVE_TIMEOUT (1000*60*60) /* 1 hour */
 
 CONFIG_REC *mainconfig;
 
@@ -60,131 +63,212 @@ static SETTINGS_REC *settings_find(const char *key)
 	return rec;
 }
 
-const char *settings_get_str(const char *key)
+static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
 	SETTINGS_REC *rec;
-	CONFIG_NODE *setnode, *node;
 
 	rec = settings_find(key);
-        g_return_val_if_fail(rec != NULL, NULL);
+	if (rec == NULL) {
+		g_warning("settings_get(%s) : not found", key);
+		return 0;
+	}
+	if (type != -1 && rec->type != type) {
+		g_warning("settings_get(%s) : invalid type", key);
+		return 0;
+	}
 
-	setnode = iconfig_node_traverse("settings", FALSE);
-	if (setnode == NULL)
-		return rec->def;
+	return rec;
+}
 
-	node = config_node_section(setnode, rec->module, -1);
-	return node == NULL ? rec->def :
-		config_node_get_str(node, key, rec->def);
+static const char *
+settings_get_str_type(const char *key, SettingType type)
+{
+	SETTINGS_REC *rec;
+	CONFIG_NODE *node;
+
+	rec = settings_get(key, type);
+	if (rec == NULL) return NULL;
+
+	node = iconfig_node_traverse("settings", FALSE);
+	node = node == NULL ? NULL : config_node_section(node, rec->module, -1);
+
+	return node == NULL ? rec->default_value.v_string :
+		config_node_get_str(node, key, rec->default_value.v_string);
+}
+
+const char *settings_get_str(const char *key)
+{
+	return settings_get_str_type(key, -1);
 }
 
 int settings_get_int(const char *key)
 {
 	SETTINGS_REC *rec;
-	CONFIG_NODE *setnode, *node;
-        int def;
+	CONFIG_NODE *node;
 
-	rec = settings_find(key);
-        g_return_val_if_fail(rec != NULL, 0);
-        def = GPOINTER_TO_INT(rec->def);
+	rec = settings_get(key, SETTING_TYPE_INT);
+	if (rec == NULL) return 0;
 
-	setnode = iconfig_node_traverse("settings", FALSE);
-	if (setnode == NULL)
-		return def;
+	node = iconfig_node_traverse("settings", FALSE);
+	node = node == NULL ? NULL : config_node_section(node, rec->module, -1);
 
-	node = config_node_section(setnode, rec->module, -1);
-	return node == NULL ? def :
-		config_node_get_int(node, key, def);
+	return node == NULL ? rec->default_value.v_int :
+		config_node_get_int(node, key, rec->default_value.v_int);
 }
 
 int settings_get_bool(const char *key)
 {
 	SETTINGS_REC *rec;
-	CONFIG_NODE *setnode, *node;
-        int def;
+	CONFIG_NODE *node;
 
-	rec = settings_find(key);
-        g_return_val_if_fail(rec != NULL, 0);
-        def = GPOINTER_TO_INT(rec->def);
+	rec = settings_get(key, SETTING_TYPE_BOOLEAN);
+	if (rec == NULL) return FALSE;
 
-	setnode = iconfig_node_traverse("settings", FALSE);
-	if (setnode == NULL)
-		return def;
+	node = iconfig_node_traverse("settings", FALSE);
+	node = node == NULL ? NULL : config_node_section(node, rec->module, -1);
 
-	node = config_node_section(setnode, rec->module, -1);
-	return node == NULL ? def :
-		config_node_get_bool(node, key, def);
+	return node == NULL ? rec->default_value.v_bool :
+		config_node_get_bool(node, key, rec->default_value.v_bool);
+}
+
+int settings_get_time(const char *key)
+{
+	const char *str;
+	int msecs;
+
+	str = settings_get_str_type(key, SETTING_TYPE_TIME);
+	if (str != NULL && !parse_time_interval(str, &msecs))
+		g_warning("settings_get_size(%s) : Invalid time '%s'", key, str);
+	return str == NULL ? 0 : msecs;
+}
+
+int settings_get_level(const char *key)
+{
+	const char *str;
+
+	str = settings_get_str_type(key, SETTING_TYPE_LEVEL);
+	return str == NULL ? 0 : level2bits(str);
+}
+
+int settings_get_size(const char *key)
+{
+	const char *str;
+	int bytes;
+
+	str = settings_get_str_type(key, SETTING_TYPE_SIZE);
+	if (str != NULL && !parse_size(str, &bytes))
+		g_warning("settings_get_size(%s) : Invalid size '%s'", key, str);
+	return str == NULL ? 0 : bytes;
+}
+
+static void settings_add(const char *module, const char *section,
+			 const char *key, SettingType type,
+			 SettingValue *default_value)
+{
+	SETTINGS_REC *rec;
+
+	g_return_if_fail(key != NULL);
+	g_return_if_fail(section != NULL);
+
+	rec = g_hash_table_lookup(settings, key);
+	if (rec != NULL) {
+		/* Already exists, make sure it's correct type */
+		if (rec->type != type) {
+			g_warning("Trying to add already existing "
+				  "setting '%s' with different type.", key);
+			return;
+		}
+	} else {
+		rec = g_new(SETTINGS_REC, 1);
+		rec->module = g_strdup(module);
+		rec->key = g_strdup(key);
+		rec->section = g_strdup(section);
+                rec->type = type;
+
+		rec->default_value = *default_value;
+		if (type != SETTING_TYPE_INT &&
+		    type != SETTING_TYPE_BOOLEAN) {
+			rec->default_value.v_string =
+				g_strdup(default_value->v_string);
+		}
+
+		g_hash_table_insert(settings, rec->key, rec);
+	}
+
+        rec->refcount++;
 }
 
 void settings_add_str_module(const char *module, const char *section,
 			     const char *key, const char *def)
 {
-	SETTINGS_REC *rec;
+	SettingValue default_value;
 
-	g_return_if_fail(key != NULL);
-	g_return_if_fail(section != NULL);
-
-	rec = g_hash_table_lookup(settings, key);
-	g_return_if_fail(rec == NULL);
-
-	rec = g_new0(SETTINGS_REC, 1);
-        rec->module = g_strdup(module);
-	rec->key = g_strdup(key);
-	rec->section = g_strdup(section);
-	rec->def = def == NULL ? NULL : g_strdup(def);
-
-	g_hash_table_insert(settings, rec->key, rec);
+	default_value.v_string = (char *) def;
+	settings_add(module, section, key, SETTING_TYPE_STRING, &default_value);
 }
 
 void settings_add_int_module(const char *module, const char *section,
 			     const char *key, int def)
 {
-	SETTINGS_REC *rec;
+	SettingValue default_value;
 
-	g_return_if_fail(key != NULL);
-	g_return_if_fail(section != NULL);
-
-	rec = g_hash_table_lookup(settings, key);
-	g_return_if_fail(rec == NULL);
-
-	rec = g_new0(SETTINGS_REC, 1);
-        rec->module = g_strdup(module);
-	rec->type = SETTING_TYPE_INT;
-	rec->key = g_strdup(key);
-	rec->section = g_strdup(section);
-	rec->def = GINT_TO_POINTER(def);
-
-	g_hash_table_insert(settings, rec->key, rec);
+        default_value.v_int = def;
+	settings_add(module, section, key, SETTING_TYPE_INT, &default_value);
 }
 
 void settings_add_bool_module(const char *module, const char *section,
 			      const char *key, int def)
 {
-	SETTINGS_REC *rec;
+	SettingValue default_value;
 
-	g_return_if_fail(key != NULL);
-	g_return_if_fail(section != NULL);
+        default_value.v_bool = def;
+	settings_add(module, section, key, SETTING_TYPE_BOOLEAN,
+		     &default_value);
+}
 
-	rec = g_hash_table_lookup(settings, key);
-	g_return_if_fail(rec == NULL);
+void settings_add_time_module(const char *module, const char *section,
+			      const char *key, const char *def)
+{
+	SettingValue default_value;
 
-	rec = g_new0(SETTINGS_REC, 1);
-        rec->module = g_strdup(module);
-	rec->type = SETTING_TYPE_BOOLEAN;
-	rec->key = g_strdup(key);
-	rec->section = g_strdup(section);
-	rec->def = GINT_TO_POINTER(def);
+	default_value.v_string = (char *) def;
+	settings_add(module, section, key, SETTING_TYPE_TIME, &default_value);
+}
 
-	g_hash_table_insert(settings, rec->key, rec);
+void settings_add_level_module(const char *module, const char *section,
+			       const char *key, const char *def)
+{
+	SettingValue default_value;
+
+	default_value.v_string = (char *) def;
+	settings_add(module, section, key, SETTING_TYPE_LEVEL, &default_value);
+}
+
+void settings_add_size_module(const char *module, const char *section,
+			      const char *key, const char *def)
+{
+	SettingValue default_value;
+
+	default_value.v_string = (char *) def;
+	settings_add(module, section, key, SETTING_TYPE_SIZE, &default_value);
 }
 
 static void settings_destroy(SETTINGS_REC *rec)
 {
 	if (rec->type == SETTING_TYPE_STRING)
-		g_free_not_null(rec->def);
+		g_free(rec->default_value.v_string);
         g_free(rec->module);
         g_free(rec->section);
         g_free(rec->key);
 	g_free(rec);
+}
+
+static void settings_unref(SETTINGS_REC *rec)
+{
+	if (--rec->refcount == 0) {
+		g_hash_table_remove(settings, rec->key);
+		settings_destroy(rec);
+	}
 }
 
 void settings_remove(const char *key)
@@ -194,17 +278,15 @@ void settings_remove(const char *key)
 	g_return_if_fail(key != NULL);
 
 	rec = g_hash_table_lookup(settings, key);
-	if (rec == NULL) return;
-
-	g_hash_table_remove(settings, key);
-	settings_destroy(rec);
+	if (rec != NULL)
+		settings_unref(rec);
 }
 
 static int settings_remove_hash(const char *key, SETTINGS_REC *rec,
 				const char *module)
 {
 	if (strcmp(rec->module, module) == 0) {
-		settings_destroy(rec);
+		settings_unref(rec);
                 return TRUE;
 	}
 
@@ -226,7 +308,10 @@ static CONFIG_NODE *settings_get_node(const char *key)
 	g_return_val_if_fail(key != NULL, NULL);
 
 	rec = g_hash_table_lookup(settings, key);
-	g_return_val_if_fail(rec != NULL, NULL);
+	if (rec == NULL) {
+		g_warning("Changing unknown setting '%s'", key);
+		return NULL;
+	}
 
 	node = iconfig_node_traverse("settings", TRUE);
 	return config_node_section(node, rec->module, NODE_TYPE_BLOCK);
@@ -247,7 +332,35 @@ void settings_set_bool(const char *key, int value)
         iconfig_node_set_bool(settings_get_node(key), key, value);
 }
 
-int settings_get_type(const char *key)
+int settings_set_time(const char *key, const char *value)
+{
+	int msecs;
+
+	if (!parse_time_interval(value, &msecs))
+		return FALSE;
+
+	iconfig_node_set_str(settings_get_node(key), key, value);
+	return TRUE;
+}
+
+int settings_set_level(const char *key, const char *value)
+{
+        iconfig_node_set_str(settings_get_node(key), key, value);
+	return TRUE;
+}
+
+int settings_set_size(const char *key, const char *value)
+{
+	int size;
+
+	if (!parse_size(value, &size))
+		return FALSE;
+
+        iconfig_node_set_str(settings_get_node(key), key, value);
+	return TRUE;
+}
+
+SettingType settings_get_type(const char *key)
 {
 	SETTINGS_REC *rec;
 
@@ -621,7 +734,8 @@ void settings_init(void)
 	init_configfile();
 
 	settings_add_bool("misc", "settings_autosave", TRUE);
-	timeout_tag = g_timeout_add(1000*60*60, (GSourceFunc) sig_autosave, NULL);
+	timeout_tag = g_timeout_add(SETTINGS_AUTOSAVE_TIMEOUT,
+				    (GSourceFunc) sig_autosave, NULL);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_autosave);
 }

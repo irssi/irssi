@@ -816,3 +816,117 @@ int nearest_power(int num)
 	while (n < num) n <<= 1;
 	return n;
 }
+
+int parse_time_interval(const char *time, int *msecs)
+{
+	const char *desc;
+	int number, len;
+
+	*msecs = 0;
+
+	/* max. return value is about 1.6 years */
+	number = 0;
+	for (;;) {
+		if (i_isdigit(*time)) {
+			number = number*10 + (*time - '0');
+			time++;
+			continue;
+		}
+
+		/* skip punctuation */
+		while (*time != '\0' && i_ispunct(*time))
+			time++;
+
+		/* get description */
+		for (len = 0, desc = time; i_isalpha(*time); time++)
+			len++;
+
+		if (len == 0) {
+			if (number == 0) {
+				/* "0" - allow it */
+				return TRUE;
+			}
+
+			*msecs += number; /* assume seconds */
+			return FALSE;
+		}
+
+		if (g_strncasecmp(desc, "weeks", len) == 0)
+			*msecs += number * 1000*3600*7;
+		if (g_strncasecmp(desc, "days", len) == 0)
+			*msecs += number * 1000*3600;
+		else if (g_strncasecmp(desc, "minutes", len) == 0 ||
+			 g_strncasecmp(desc, "mins", len) == 0)
+			*msecs += number * 1000*60;
+		else if (g_strncasecmp(desc, "seconds", len) == 0 ||
+			 g_strncasecmp(desc, "secs", len) == 0)
+			*msecs += number * 1000;
+		else if (g_strncasecmp(desc, "milliseconds", len) == 0 ||
+			 g_strncasecmp(desc, "millisecs", len) == 0 ||
+			 g_strncasecmp(desc, "mseconds", len) == 0 ||
+			 g_strncasecmp(desc, "msecs", len) == 0)
+			*msecs += number;
+
+		/* skip punctuation */
+		while (*time != '\0' && i_ispunct(*time))
+			time++;
+
+		if (*time == '\0')
+			break;
+
+		number = 0;
+	}
+
+	return TRUE;
+}
+
+int parse_size(const char *size, int *bytes)
+{
+	const char *desc;
+	int number, len;
+
+	*bytes = 0;
+
+	/* max. return value is about 1.6 years */
+	number = 0;
+	while (*size != '\0') {
+		if (i_isdigit(*size)) {
+			number = number*10 + (*size - '0');
+			size++;
+			continue;
+		}
+
+		/* skip punctuation */
+		while (*size != '\0' && i_ispunct(*size))
+			size++;
+
+		/* get description */
+		for (len = 0, desc = size; i_isalpha(*size); size++)
+			len++;
+
+		if (len == 0) {
+			if (number == 0) {
+				/* "0" - allow it */
+				return TRUE;
+			}
+
+			*bytes += number*1024; /* assume kilobytes */
+			return FALSE;
+		}
+
+		if (g_strncasecmp(desc, "gbytes", len) == 0)
+			*bytes += number * 1024*1024*1024;
+		if (g_strncasecmp(desc, "mbytes", len) == 0)
+			*bytes += number * 1024*1024;
+		if (g_strncasecmp(desc, "kbytes", len) == 0)
+			*bytes += number * 1024;
+		if (g_strncasecmp(desc, "bytes", len) == 0)
+			*bytes += number;
+
+		/* skip punctuation */
+		while (*size != '\0' && i_ispunct(*size))
+			size++;
+	}
+
+	return TRUE;
+}

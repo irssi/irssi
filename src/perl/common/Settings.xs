@@ -99,6 +99,21 @@ settings_set_bool(key, value)
 	char *key
 	int value
 
+int
+settings_set_time(key, value)
+	char *key
+	char *value
+
+int
+settings_set_level(key, value)
+	char *key
+	char *value
+
+int
+settings_set_size(key, value)
+	char *key
+	char *value
+
 void
 settings_add_str(section, key, def)
 	char *section
@@ -125,6 +140,33 @@ settings_add_bool(section, key, def)
 CODE:
         perl_settings_add(key);
 	settings_add_bool_module(MODULE_NAME"/scripts", section, key, def);
+
+void
+settings_add_time(section, key, def)
+	char *section
+	char *key
+	char *def
+CODE:
+        perl_settings_add(key);
+	settings_add_time_module(MODULE_NAME"/scripts", section, key, def);
+
+void
+settings_add_level(section, key, def)
+	char *section
+	char *key
+	char *def
+CODE:
+        perl_settings_add(key);
+	settings_add_level_module(MODULE_NAME"/scripts", section, key, def);
+
+void
+settings_add_size(section, key, def)
+	char *section
+	char *key
+	char *def
+CODE:
+        perl_settings_add(key);
+	settings_add_size_module(MODULE_NAME"/scripts", section, key, def);
 
 void
 settings_remove(key)

@@ -671,7 +671,7 @@ static void read_settings(void)
 
 	autolog_path = settings_get_str("autolog_path");
 	autolog_level = !settings_get_bool("autolog") ? 0 :
-		level2bits(settings_get_str("autolog_level"));
+		settings_get_level("autolog_level");
 
 	if (old_autolog && !autolog_level)
 		autologs_close_all();
@@ -704,7 +704,7 @@ void fe_log_init(void)
         settings_add_bool("log", "autolog", FALSE);
 	settings_add_bool("log", "autolog_colors", FALSE);
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
-	settings_add_str("log", "autolog_level", "all -crap -clientcrap -ctcps");
+	settings_add_level("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_str("log", "log_theme", "");
 
 	autolog_level = 0;

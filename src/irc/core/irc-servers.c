@@ -46,7 +46,7 @@
 #define DEFAULT_MAX_MSGS 1
 
 #define DEFAULT_USER_MODE "+i"
-#define DEFAULT_CMD_QUEUE_SPEED 2200
+#define DEFAULT_CMD_QUEUE_SPEED "2200msec"
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
 #define DEFAULT_MAX_QUERY_CHANS 1 /* more and more IRC networks are using stupid ircds.. */
 
@@ -180,7 +180,7 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 	}
 
 	server->cmd_queue_speed = ircconn->cmd_queue_speed > 0 ?
-		ircconn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
+		ircconn->cmd_queue_speed : settings_get_time("cmd_queue_speed");
 	server->max_cmds_at_once = ircconn->max_cmds_at_once > 0 ?
 		ircconn->max_cmds_at_once : settings_get_int("cmds_max_at_once");
 	server->max_query_chans = ircconn->max_query_chans > 0 ?
@@ -587,7 +587,7 @@ static void event_empty(void)
 void irc_servers_init(void)
 {
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
-	settings_add_int("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
+	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 
 	cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
