@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "servers.h"
 #include "misc.h"
+#include "settings.h"
 
 #include "completion.h"
 #include "command-history.h"
@@ -85,18 +86,28 @@ static void handle_entry_redirect(const char *line)
 	window_update_prompt(active_win);
 }
 
+static int get_scroll_count(void)
+{
+	const char *str;
+	int count;
+
+	str = settings_get_str("scroll_page_count");
+	count = atoi(str + (*str == '/'));
+	if (count < 0) count = 1;
+	
+	if (*str == '/')
+		count = WINDOW_GUI(active_win)->parent->lines/count;
+	return count;
+}
+
 static void window_prev_page(void)
 {
-	GUI_WINDOW_REC *gui = WINDOW_GUI(active_win);
-
-	gui_window_scroll(active_win, -gui->parent->lines/2);
+	gui_window_scroll(active_win, -get_scroll_count());
 }
 
 static void window_next_page(void)
 {
-	GUI_WINDOW_REC *gui = WINDOW_GUI(active_win);
-
-	gui_window_scroll(active_win, gui->parent->lines/2);
+	gui_window_scroll(active_win, get_scroll_count());
 }
 
 static const char *get_key_name(int key)
@@ -540,6 +551,8 @@ void gui_readline_init(void)
 	redir = NULL;
 	idle_time = time(NULL);
 	readtag = g_input_add_full(0, G_PRIORITY_HIGH, G_INPUT_READ, (GInputFunction) readline, NULL);
+
+	settings_add_str("history", "scroll_page_count", "/2");
 
 	key_bind("backward_character", "", "Left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "", "Right", NULL, (SIGNAL_FUNC) key_forward_character);
