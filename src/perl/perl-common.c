@@ -178,8 +178,8 @@ char *perl_get_use_list(void)
 	str = g_string_new(NULL);
 
 	use_lib = settings_get_str("perl_use_lib");
-        if (*use_lib != '\0')
-		g_string_sprintf(str, "use lib qw(%s);", use_lib);
+	g_string_sprintf(str, "use lib qw(%s/scripts "SCRIPTDIR" %s);",
+			 get_irssi_dir(), use_lib);
 
         g_string_append(str, "use Irssi;");
 	if (irssi_gui != IRSSI_GUI_NONE)
