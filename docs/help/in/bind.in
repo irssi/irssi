@@ -75,6 +75,7 @@ Command can be one of:
   delete_character
   delete_next_word
   delete_previous_word
+  delete_to_next_space
   delete_to_previous_space
   erase_line
   erase_to_beg_of_line
