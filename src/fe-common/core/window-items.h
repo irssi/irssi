@@ -5,8 +5,8 @@
 
 /* Add/remove/destroy window item from `window' */
 void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);
-void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item);
-void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item);
+void window_item_remove(WI_ITEM_REC *item);
+void window_item_destroy(WI_ITEM_REC *item);
 
 /* Find a window for `item' and call window_item_add(). */
 void window_item_create(WI_ITEM_REC *item, int automatic);

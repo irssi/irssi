@@ -114,7 +114,7 @@ void window_destroy(WINDOW_REC *window)
 	}
 
 	while (window->items != NULL)
-		window_item_destroy(window, window->items->data);
+		window_item_destroy(window->items->data);
 
         if (settings_get_bool("windows_auto_renumber"))
 		windows_pack(window->refnum);

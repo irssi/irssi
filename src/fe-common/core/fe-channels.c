@@ -58,7 +58,7 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 
 	window = window_item_window((WI_ITEM_REC *) channel);
 	if (window != NULL) {
-		window_item_destroy(window, (WI_ITEM_REC *) channel);
+		window_item_destroy((WI_ITEM_REC *) channel);
 
 		if (window->items == NULL && windows->next != NULL &&
 		    (!channel->joined || channel->left) &&

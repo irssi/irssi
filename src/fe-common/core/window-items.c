@@ -58,10 +58,13 @@ void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 	}
 }
 
-void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
+void window_item_remove(WI_ITEM_REC *item)
 {
-	g_return_if_fail(window != NULL);
+	WINDOW_REC *window;
+
 	g_return_if_fail(item != NULL);
+
+	window = window_item_window(item);
 
 	if (g_slist_find(window->items, item) == NULL)
 		return;
@@ -77,9 +80,12 @@ void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 	signal_emit("window item remove", 2, window, item);
 }
 
-void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
+void window_item_destroy(WI_ITEM_REC *item)
 {
-        window_item_remove(window, item);
+	WINDOW_REC *window;
+
+	window = window_item_window(item);
+        window_item_remove(item);
 
 	signal_emit("window item destroy", 2, window, item);
 }
@@ -103,7 +109,7 @@ void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 
         if (item != NULL && window_item_window(item) != window) {
                 /* move item to different window */
-                window_item_remove(window_item_window(item), item);
+                window_item_remove(item);
                 window_item_add(window, item, FALSE);
         }
 
