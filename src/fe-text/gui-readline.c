@@ -65,6 +65,7 @@ static GArray *paste_buffer;
 
 static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
+static int paste_join_multiline;
 
 static void sig_input(void);
 
@@ -147,6 +148,107 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
+static void paste_buffer_join_lines(GArray *buf)
+{
+#define IS_WHITE(c) ((c) == ' ' || (c) == '\t')
+	unsigned int i, count, indent, line_len;
+	unichar *arr, *dest, *last_lf_pos;
+	int last_lf;
+
+	/* first check if we actually want to join anything. This is assuming
+	   that we only want to join lines if
+
+	   a) first line doesn't begin with whitespace
+	   b) subsequent lines begin with same amount of whitespace
+	   c) whenever there's no whitespace, goto a)
+
+	   For example:
+
+	   line 1
+	     line 2
+	     line 3
+	   line 4
+	   line 5
+	     line 6
+
+	   ->
+
+	   line1 line2 line 3
+	   line4
+	   line5 line 6
+	*/
+	if (buf->len == 0)
+		return;
+
+	arr = (unichar *) paste_buffer->data;
+
+	/* first line */
+	if (IS_WHITE(arr[0]))
+		return;
+
+	/* find the first beginning of indented line */
+	for (i = 1; i < buf->len; i++) {
+		if (arr[i-1] == '\n' && IS_WHITE(arr[i]))
+			break;
+	}
+	if (i == buf->len)
+		return;
+
+	/* get how much indentation we have.. */
+	for (indent = 0; i < buf->len; i++, indent++) {
+		if (!IS_WHITE(arr[i]))
+			break;
+	}
+	if (i == buf->len)
+		return;
+
+	/* now, enforce these to all subsequent lines */
+	count = indent; last_lf = TRUE;
+	for (; i < buf->len; i++) {
+		if (last_lf) {
+			if (IS_WHITE(arr[i]))
+				count++;
+			else {
+				last_lf = FALSE;
+				if (count != 0 && count != indent)
+					return;
+				count = 0;
+			}
+		}
+		if (arr[i] == '\n')
+			last_lf = TRUE;
+	}
+
+	/* all looks fine - now remove the whitespace, but don't let lines
+	   get longer than 400 chars */
+	dest = arr; last_lf = TRUE; last_lf_pos = NULL; line_len = 0;
+	for (i = 0; i < buf->len; i++) {
+		if (last_lf && IS_WHITE(arr[i])) {
+			/* whitespace, ignore */
+		} else if (arr[i] == '\n') {
+			if (!last_lf && i+1 != buf->len &&
+			    IS_WHITE(arr[i+1]))
+				last_lf_pos = dest;
+			else {
+				*dest++ = '\n'; /* double-LF */
+				line_len = 0;
+				last_lf_pos = NULL;
+			}
+			last_lf = TRUE;
+		} else {
+			last_lf = FALSE;
+			if (++line_len >= 400 && last_lf_pos != NULL) {
+				memmove(last_lf_pos+1, last_lf_pos,
+					dest - last_lf_pos);
+				*last_lf_pos = '\n'; last_lf_pos = NULL;
+				dest++;
+			}
+			*dest++ = arr[i];
+		}
+	}
+	buf->len = dest - arr;
+}
+
 static void paste_send(void)
 {
 	HISTORY_REC *history;
@@ -154,6 +256,9 @@ static void paste_send(void)
 	GString *str;
 	char out[10], *text;
 	unsigned int i;
+
+	if (paste_join_multiline)
+		paste_buffer_join_lines(paste_buffer);
 
 	arr = (unichar *) paste_buffer->data;
 	if (active_entry->text_len == 0)
@@ -854,7 +959,8 @@ static void setup_changed(void)
 	else if (paste_state == -1)
 		paste_state = 0;
 
-        paste_verify_line_count = settings_get_int("paste_verify_line_count");
+	paste_verify_line_count = settings_get_int("paste_verify_line_count");
+	paste_join_multiline = settings_get_bool("paste_join_multiline");
 }
 
 void gui_readline_init(void)
@@ -879,6 +985,7 @@ void gui_readline_init(void)
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
+	settings_add_bool("misc", "paste_join_multiline", TRUE);
         setup_changed();
 
 	keyboard = keyboard_create(NULL);
