@@ -92,7 +92,7 @@ static void sig_message_dcc_action(CHAT_DCC_REC *dcc, const char *msg)
 	query = query_find(NULL, tag);
 	printformat(NULL, tag, MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS,
 		    query != NULL ? IRCTXT_ACTION_DCC_QUERY :
-		    IRCTXT_ACTION_DCC, dcc->id, dcc->mynick, msg);
+		    IRCTXT_ACTION_DCC, dcc->id, msg);
         g_free(tag);
 }
 
