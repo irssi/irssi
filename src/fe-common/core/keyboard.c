@@ -179,6 +179,18 @@ void key_configure_add(const char *id, const char *key, const char *data)
         keyconfig_save(id, key, data);
 }
 
+static void key_configure_destroy(KEY_REC *rec)
+{
+	g_return_if_fail(rec != NULL);
+
+	rec->info->keys = g_slist_remove(rec->info->keys, rec);
+	g_hash_table_remove(keys, rec->key);
+
+	g_free_not_null(rec->data);
+	g_free(rec->key);
+	g_free(rec);
+}
+
 /* Remove key */
 void key_configure_remove(const char *key)
 {
@@ -190,13 +202,7 @@ void key_configure_remove(const char *key)
 	if (rec == NULL) return;
 
         keyconfig_clear(rec->info->id, key);
-
-	rec->info->keys = g_slist_remove(rec->info->keys, rec);
-	g_hash_table_remove(keys, key);
-
-	g_free_not_null(rec->data);
-	g_free(rec->key);
-	g_free(rec);
+	key_configure_destroy(rec);
 }
 
 int key_pressed(const char *key, void *data)
@@ -232,14 +238,14 @@ void read_keyinfo(KEYINFO_REC *info, CONFIG_NODE *node)
 
 	/* remove all old keys */
 	while (info->keys != NULL)
-		key_configure_remove(((KEY_REC *) info->keys->data)->key);
+		key_configure_destroy(info->keys->data);
 
 	/* add the new keys */
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
 
 		if (node->key != NULL)
-			key_configure_add(info->id, node->value, node->key);
+			key_configure_add(info->id, node->key, node->value);
 	}
 }
 
