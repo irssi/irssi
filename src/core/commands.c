@@ -224,6 +224,8 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func)
 	rec = command_find(cmd);
 	if (rec != NULL) {
 		modrec = command_module_find_func(rec, func);
+		g_return_if_fail(modrec != NULL);
+
 		modrec->signals = g_slist_remove(modrec->signals, func);
 		if (modrec->signals == NULL)
 			command_module_destroy(rec, modrec);
