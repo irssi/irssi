@@ -34,11 +34,10 @@
 
 static int beep_msg_level, beep_when_away, beep_when_window_active;
 
-static int signal_gui_print_text;
-static int signal_print_text;
-static int signal_print_text_finished;
-static int signal_print_format;
+static int signal_gui_print_text, signal_gui_print_text_finished;
 static int signal_print_starting;
+static int signal_print_text;
+static int signal_print_format;
 
 static int sending_print_starting;
 
@@ -235,7 +234,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
 			break;
 		}
 		default:
-			if (!format_expand_styles(out, *str)) {
+			if (!format_expand_styles(out, &str, &dest->flags)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *str);
 			}
@@ -248,7 +247,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
 	return ret;
 }
 
-static char *printtext_expand_formats(const char *str)
+static char *printtext_expand_formats(const char *str, int *flags)
 {
 	GString *out;
 	char *ret;
@@ -263,7 +262,7 @@ static char *printtext_expand_formats(const char *str)
 		if (*++str == '\0')
 			break;
 
-		if (!format_expand_styles(out, *str)) {
+		if (!format_expand_styles(out, &str, flags)) {
 			g_string_append_c(out, '%');
 			g_string_append_c(out, *str);
 		}
@@ -320,7 +319,7 @@ void printtext_string(void *server, const char *target, int level, const char *t
                 sending_print_starting = FALSE;
 	}
 
-        str = printtext_expand_formats(text);
+        str = printtext_expand_formats(text, &dest.flags);
 	print_line(&dest, str);
         g_free(str);
 }
@@ -349,7 +348,7 @@ void printtext_gui(const char *text)
 
         memset(&dest, 0, sizeof(dest));
 
-	str = printtext_expand_formats(text);
+	str = printtext_expand_formats(text, &dest.flags);
 	format_send_to_gui(&dest, str);
 	g_free(str);
 }
@@ -385,7 +384,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	format_send_to_gui(dest, str);
 	g_free(str);
 
-	signal_emit_id(signal_print_text_finished, 1, dest->window);
+	signal_emit_id(signal_gui_print_text_finished, 1, dest->window);
 }
 
 static void sig_print_text_free(TEXT_DEST_REC *dest, const char *text)
@@ -432,10 +431,10 @@ void printtext_init(void)
 {
 	sending_print_starting = FALSE;
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
-	signal_print_text = signal_get_uniq_id("print text");
-	signal_print_text_finished = signal_get_uniq_id("print text finished");
-	signal_print_format = signal_get_uniq_id("print format");
+	signal_gui_print_text_finished = signal_get_uniq_id("gui print text finished");
 	signal_print_starting = signal_get_uniq_id("print starting");
+	signal_print_text = signal_get_uniq_id("print text");
+	signal_print_format = signal_get_uniq_id("print format");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);

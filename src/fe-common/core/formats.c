@@ -59,11 +59,51 @@ int format_find_tag(const char *module, const char *tag)
 	return -1;
 }
 
-int format_expand_styles(GString *out, char format)
+static void format_expand_code(const char **format, int *flags)
 {
-	char *p;
+	int set;
 
-	switch (format) {
+	if (flags == NULL) {
+                /* flags are being ignored - skip the code */
+		while (**format != ']')
+			(*format)++;
+                return;
+	}
+
+        set = TRUE;
+	(*format)++;
+	while (**format != ']') {
+		if (**format == '+')
+			set = TRUE;
+		else if (**format == '-')
+			set = FALSE;
+		else switch (**format) {
+		case 's':
+		case 'S':
+			*flags |= !set ? PRINT_FLAG_UNSET_LINE_START :
+				**format == 's' ? PRINT_FLAG_SET_LINE_START :
+				PRINT_FLAG_SET_LINE_START_IRSSI;
+			break;
+		case 't':
+			*flags |= set ? PRINT_FLAG_SET_TIMESTAMP :
+                                PRINT_FLAG_UNSET_TIMESTAMP;
+                        break;
+		case 'T':
+			*flags |= set ? PRINT_FLAG_SET_SERVERTAG :
+                                PRINT_FLAG_UNSET_SERVERTAG;
+                        break;
+		}
+
+		(*format)++;
+	}
+}
+
+int format_expand_styles(GString *out, const char **format, int *flags)
+{
+	char *p, fmt;
+
+        fmt = **format;
+	switch (fmt) {
 	case 'U':
 		/* Underline on/off */
 		g_string_append_c(out, 4);
@@ -103,9 +143,13 @@ int format_expand_styles(GString *out, char format)
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_DEFAULTS);
 		break;
+	case '[':
+		/* code */
+                format_expand_code(format, flags);
+		break;
 	default:
 		/* check if it's a background color */
-		p = strchr(format_backs, format);
+		p = strchr(format_backs, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
@@ -114,8 +158,8 @@ int format_expand_styles(GString *out, char format)
 		}
 
 		/* check if it's a foreground color */
-		if (format == 'p') format = 'm';
-		p = strchr(format_fores, format);
+		if (fmt == 'p') fmt = 'm';
+		p = strchr(format_fores, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, (char) ((int) (p-format_fores)+'0'));
@@ -124,8 +168,8 @@ int format_expand_styles(GString *out, char format)
 		}
 
 		/* check if it's a bold foreground color */
-		if (format == 'P') format = 'M';
-		p = strchr(format_boldfores, format);
+		if (fmt == 'P') fmt = 'M';
+		p = strchr(format_boldfores, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, (char) (8+(int) (p-format_boldfores)+'0'));
@@ -208,14 +252,13 @@ void format_create_dest(TEXT_DEST_REC *dest,
 			void *server, const char *target,
 			int level, WINDOW_REC *window)
 {
+        memset(dest, 0, sizeof(TEXT_DEST_REC));
+
 	dest->server = server;
 	dest->target = target;
 	dest->level = level;
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
-
-	dest->hilight_priority = 0;
-        dest->hilight_color = NULL;
 }
 
 /* Return length of text part in string (ie. without % codes) */
@@ -231,7 +274,8 @@ int format_get_length(const char *str)
 	while (*str != '\0') {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' && format_expand_styles(tmp, *str)) {
+			if (*str != '%' &&
+			    format_expand_styles(tmp, &str, NULL)) {
                                 str++;
 				continue;
 			}
@@ -265,7 +309,8 @@ int format_real_length(const char *str, int len)
 	while (*str != '\0' && len > 0) {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' && format_expand_styles(tmp, *str)) {
+			if (*str != '%' &&
+			    format_expand_styles(tmp, &str, NULL)) {
                                 str++;
 				continue;
 			}
@@ -285,7 +330,7 @@ int format_real_length(const char *str, int len)
         return (int) (str-start);
 }
 
-char *format_string_expand(const char *text)
+char *format_string_expand(const char *text, int *flags)
 {
 	GString *out;
 	char code, *ret;
@@ -294,11 +339,12 @@ char *format_string_expand(const char *text)
 
 	out = g_string_new(NULL);
 
+	if (flags != NULL) *flags = 0;
 	code = 0;
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, *text)) {
+			if (!format_expand_styles(out, &text, flags)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
@@ -332,7 +378,7 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, *text)) {
+			if (!format_expand_styles(out, &text, &dest->flags)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
@@ -487,19 +533,29 @@ char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 {
 	int format;
 
-	if (dest->level & LINE_START_IRSSI_LEVEL)
-		format = TXT_LINE_START_IRSSI;
-	else if ((dest->level & NOT_LINE_START_LEVEL) == 0)
-		format = TXT_LINE_START;
-	else
+        /* check for flags if we want to override defaults */
+	if (dest->flags & PRINT_FLAG_UNSET_LINE_START)
 		return NULL;
+
+	if (dest->flags & PRINT_FLAG_SET_LINE_START)
+		format = TXT_LINE_START;
+        else if (dest->flags & PRINT_FLAG_SET_LINE_START_IRSSI)
+		format = TXT_LINE_START_IRSSI;
+	else {
+                /* use defaults */
+		if (dest->level & LINE_START_IRSSI_LEVEL)
+			format = TXT_LINE_START_IRSSI;
+		else if ((dest->level & NOT_LINE_START_LEVEL) == 0)
+			format = TXT_LINE_START;
+		else
+			return NULL;
+	}
 
 	return format_get_text_theme(theme, MODULE_NAME, dest, format);
 }
 
 #define show_timestamp(level) \
-	((level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) == 0 && \
-	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS))))
+	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS)))
 
 static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 {
@@ -508,6 +564,15 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 
 	if (!show_timestamp(dest->level))
 		return NULL;
+
+        /* check for flags if we want to override defaults */
+	if (dest->flags & PRINT_FLAG_UNSET_TIMESTAMP)
+		return NULL;
+
+	if ((dest->flags & PRINT_FLAG_SET_TIMESTAMP) == 0 &&
+	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) != 0)
+                return NULL;
+
 
 	if (timestamp_timeout > 0) {
 		diff = t - dest->window->last_timestamp;
@@ -530,25 +595,35 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 
 	server = dest->server;
 
-	if (server == NULL || hide_server_tags ||
-	    (dest->window->active != NULL &&
-	     dest->window->active->server == server))
+	if (server == NULL || hide_server_tags)
+                return NULL;
+
+        /* check for flags if we want to override defaults */
+	if (dest->flags & PRINT_FLAG_UNSET_SERVERTAG)
 		return NULL;
 
-	if (servers != NULL) {
-		count++;
-		if (servers->next != NULL)
+	if ((dest->flags & PRINT_FLAG_SET_SERVERTAG) == 0) {
+		if (dest->window->active != NULL &&
+		    dest->window->active->server == server)
+			return NULL;
+
+		if (servers != NULL) {
 			count++;
-	}
-	if (count < 2 && lookup_servers != NULL) {
-                count++;
-		if (lookup_servers->next != NULL)
+			if (servers->next != NULL)
+				count++;
+		}
+		if (count < 2 && lookup_servers != NULL) {
 			count++;
+			if (lookup_servers->next != NULL)
+				count++;
+		}
+
+		if (count < 2)
+                        return NULL;
 	}
 
-	return count < 2 ? NULL :
-		format_get_text_theme(theme, MODULE_NAME, dest,
-				      TXT_SERVERTAG, server->tag);
+	return format_get_text_theme(theme, MODULE_NAME, dest,
+				     TXT_SERVERTAG, server->tag);
 }
 
 char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
@@ -576,7 +651,7 @@ void format_newline(WINDOW_REC *window)
 
 	signal_emit_id(signal_gui_print_text, 6, window,
 		       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
-		       GINT_TO_POINTER(PRINTFLAG_NEWLINE),
+		       GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE),
 		       "", GINT_TO_POINTER(-1));
 }
 
@@ -613,19 +688,19 @@ static char *get_ansi_color(THEME_REC *theme, char *str,
 			/* reset colors back to default */
 			fg = theme->default_color;
 			bg = -1;
-			flags &= ~PRINTFLAG_INDENT;
+			flags &= ~GUI_PRINT_FLAG_INDENT;
 			break;
 		case 1:
 			/* hilight */
-			flags |= PRINTFLAG_BOLD;
+			flags |= GUI_PRINT_FLAG_BOLD;
 			break;
 		case 5:
 			/* blink */
-			flags |= PRINTFLAG_BLINK;
+			flags |= GUI_PRINT_FLAG_BLINK;
 			break;
 		case 7:
 			/* reverse */
-			flags |= PRINTFLAG_REVERSE;
+			flags |= GUI_PRINT_FLAG_REVERSE;
 			break;
 		default:
 			if (num >= 30 && num <= 37)
@@ -817,7 +892,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				       GINT_TO_POINTER(bgcolor),
 				       GINT_TO_POINTER(flags), str,
 				       dest->level);
-			flags &= ~PRINTFLAG_INDENT;
+			flags &= ~GUI_PRINT_FLAG_INDENT;
 		}
 
 		if (type == '\n')
@@ -831,7 +906,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 2:
 			/* bold */
 			if (!hide_text_style)
-				flags ^= PRINTFLAG_BOLD;
+				flags ^= GUI_PRINT_FLAG_BOLD;
 			break;
 		case 3:
 			/* MIRC color */
@@ -839,40 +914,40 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				       hide_text_style ? NULL : &fgcolor,
 				       hide_text_style ? NULL : &bgcolor);
 			if (!hide_text_style)
-				flags |= PRINTFLAG_MIRC_COLOR;
+				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
 		case 4:
 			/* user specific colors */
-			flags &= ~PRINTFLAG_MIRC_COLOR;
+			flags &= ~GUI_PRINT_FLAG_MIRC_COLOR;
 			switch (*ptr) {
 			case FORMAT_STYLE_BLINK:
-				flags ^= PRINTFLAG_BLINK;
+				flags ^= GUI_PRINT_FLAG_BLINK;
 				break;
 			case FORMAT_STYLE_UNDERLINE:
-				flags ^= PRINTFLAG_UNDERLINE;
+				flags ^= GUI_PRINT_FLAG_UNDERLINE;
 				break;
 			case FORMAT_STYLE_BOLD:
-				flags ^= PRINTFLAG_BOLD;
+				flags ^= GUI_PRINT_FLAG_BOLD;
 				break;
 			case FORMAT_STYLE_REVERSE:
-				flags ^= PRINTFLAG_REVERSE;
+				flags ^= GUI_PRINT_FLAG_REVERSE;
 				break;
 			case FORMAT_STYLE_INDENT:
-				flags |= PRINTFLAG_INDENT;
+				flags |= GUI_PRINT_FLAG_INDENT;
 				break;
 			case FORMAT_STYLE_DEFAULTS:
 				fgcolor = bgcolor = -1;
-				flags &= PRINTFLAG_INDENT;
+				flags &= GUI_PRINT_FLAG_INDENT;
 				break;
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					fgcolor = (unsigned char) *ptr-'0';
 					if (fgcolor <= 7)
-						flags &= ~PRINTFLAG_BOLD;
+						flags &= ~GUI_PRINT_FLAG_BOLD;
 					else {
 						/* bold */
 						if (fgcolor != 8) fgcolor -= 8;
-						flags |= PRINTFLAG_BOLD;
+						flags |= GUI_PRINT_FLAG_BOLD;
 					}
 				}
 				ptr++;
@@ -884,22 +959,22 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		case 6:
 			/* blink */
 			if (!hide_text_style)
-				flags ^= PRINTFLAG_BLINK;
+				flags ^= GUI_PRINT_FLAG_BLINK;
 			break;
 		case 15:
 			/* remove all styling */
 			fgcolor = bgcolor = -1;
-			flags &= PRINTFLAG_INDENT;
+			flags &= GUI_PRINT_FLAG_INDENT;
 			break;
 		case 22:
 			/* reverse */
 			if (!hide_text_style)
-				flags ^= PRINTFLAG_REVERSE;
+				flags ^= GUI_PRINT_FLAG_REVERSE;
 			break;
 		case 31:
 			/* underline */
 			if (!hide_text_style)
-				flags ^= PRINTFLAG_UNDERLINE;
+				flags ^= GUI_PRINT_FLAG_UNDERLINE;
 			break;
 		case 27:
 			/* ansi color code */

@@ -263,7 +263,7 @@ static char *hilight_get_color(HILIGHT_REC *rec)
 	color = rec->color != NULL ? rec->color :
 		settings_get_str("hilight_color");
 
-	return format_string_expand(color);
+	return format_string_expand(color, NULL);
 }
 
 static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)

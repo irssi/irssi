@@ -4,13 +4,13 @@
 #include "themes.h"
 #include "fe-windows.h"
 
-#define PRINTFLAG_BOLD          0x01
-#define PRINTFLAG_REVERSE       0x02
-#define PRINTFLAG_UNDERLINE     0x04
-#define PRINTFLAG_BLINK         0x08
-#define PRINTFLAG_MIRC_COLOR    0x10
-#define PRINTFLAG_INDENT        0x20
-#define PRINTFLAG_NEWLINE       0x40
+#define GUI_PRINT_FLAG_BOLD          0x01
+#define GUI_PRINT_FLAG_REVERSE       0x02
+#define GUI_PRINT_FLAG_UNDERLINE     0x04
+#define GUI_PRINT_FLAG_BLINK         0x08
+#define GUI_PRINT_FLAG_MIRC_COLOR    0x10
+#define GUI_PRINT_FLAG_INDENT        0x20
+#define GUI_PRINT_FLAG_NEWLINE       0x40
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200
@@ -30,6 +30,16 @@ struct _FORMAT_REC {
 	int paramtypes[MAX_FORMAT_PARAMS];
 };
 
+#define PRINT_FLAG_SET_LINE_START	0x0001
+#define PRINT_FLAG_SET_LINE_START_IRSSI	0x0002
+#define PRINT_FLAG_UNSET_LINE_START	0x0003
+
+#define PRINT_FLAG_SET_TIMESTAMP	0x0004
+#define PRINT_FLAG_UNSET_TIMESTAMP	0x0008
+
+#define PRINT_FLAG_SET_SERVERTAG	0x0010
+#define PRINT_FLAG_UNSET_SERVERTAG	0x0020
+
 typedef struct {
 	WINDOW_REC *window;
 	SERVER_REC *server;
@@ -38,6 +48,7 @@ typedef struct {
 
 	int hilight_priority;
 	char *hilight_color;
+        int flags;
 } TEXT_DEST_REC;
 
 int format_find_tag(const char *module, const char *tag);
@@ -49,7 +60,7 @@ int format_get_length(const char *str);
    handles %codes. */
 int format_real_length(const char *str, int len);
 
-char *format_string_expand(const char *text);
+char *format_string_expand(const char *text, int *flags);
 
 char *format_get_text(const char *module, WINDOW_REC *window,
 		      void *server, const char *target,
@@ -107,7 +118,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_REVERSE	(0x04 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_INDENT	(0x05 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_DEFAULTS	(0x06 + FORMAT_STYLE_SPECIAL)
-int format_expand_styles(GString *out, char format);
+int format_expand_styles(GString *out, const char **format, int *flags);
 
 void formats_init(void);
 void formats_deinit(void);

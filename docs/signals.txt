@@ -224,7 +224,7 @@ FE common
  "gui window goto", int number
 
 (Can be used to determine when all "gui print text"s are sent (not required))
- "print text finished", WINDOW_REC
+ "gui print text finished", WINDOW_REC
 
 * Provides signals:
 

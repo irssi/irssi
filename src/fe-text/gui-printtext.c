@@ -72,7 +72,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 
 static void get_colors(int flags, int *fg, int *bg)
 {
-	if (flags & PRINTFLAG_MIRC_COLOR) {
+	if (flags & GUI_PRINT_FLAG_MIRC_COLOR) {
 		/* mirc colors - real range is 0..15, but after 16
 		   colors wrap to 0, 1, ... */
 		*bg = *bg < 0 ? 0 : mirc_colors[*bg % 16];
@@ -88,19 +88,19 @@ static void get_colors(int flags, int *fg, int *bg)
 			current_theme->default_real_color;
 	}
 
-	if (flags & PRINTFLAG_REVERSE) {
+	if (flags & GUI_PRINT_FLAG_REVERSE) {
 		int tmp;
 
 		tmp = *fg; *fg = *bg; *bg = tmp;
 	}
 
 	if (*fg == 8) *fg |= ATTR_COLOR8;
-	if (flags & PRINTFLAG_BOLD) {
+	if (flags & GUI_PRINT_FLAG_BOLD) {
 		if (*fg == 0) *fg = current_theme->default_real_color;
 		*fg |= 8;
 	}
-	if (flags & PRINTFLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
-	if (flags & PRINTFLAG_BLINK) *bg |= 0x08;
+	if (flags & GUI_PRINT_FLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
+	if (flags & GUI_PRINT_FLAG_BLINK) *bg |= 0x08;
 }
 
 static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
@@ -120,7 +120,7 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = color == 0 ? LINE_CMD_COLOR0 : color;
 	}
 
-	if ((flags & PRINTFLAG_UNDERLINE) != (last_flags & PRINTFLAG_UNDERLINE)) {
+	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_UNDERLINE;
 	}
@@ -132,7 +132,7 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_BLINK;
 	}
-	if (flags & PRINTFLAG_INDENT) {
+	if (flags & GUI_PRINT_FLAG_INDENT) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_INDENT;
 	}
@@ -182,14 +182,14 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	insert_after = WINDOW_GUI(window)->use_insert_after ?
 		WINDOW_GUI(window)->insert_after : view->buffer->cur_line;
 
-	if (flags & PRINTFLAG_NEWLINE)
+	if (flags & GUI_PRINT_FLAG_NEWLINE)
                 view_add_eol(view, &insert_after);
 	line_add_colors(view->buffer, &insert_after, fg, bg, flags);
 	textbuffer_insert(view->buffer, insert_after,
 			  str, strlen(str), &lineinfo);
 }
 
-static void sig_printtext_finished(WINDOW_REC *window)
+static void sig_gui_printtext_finished(WINDOW_REC *window)
 {
 	TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
@@ -258,7 +258,7 @@ void gui_printtext_init(void)
 	settings_add_bool("history", "scrollback_save_formats", FALSE);
 
 	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
-	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_add("gui print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
@@ -270,7 +270,7 @@ void gui_printtext_deinit(void)
 	g_string_free(format, TRUE);
 
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
-	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
+	signal_remove("print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
