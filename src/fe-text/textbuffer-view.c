@@ -199,8 +199,12 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 
 		if (!view->utf8) {
-			next_ptr = ptr+1;
-			char_len = 1;
+			/* MH */
+			if (ptr[1] == '\0' || !is_big5(ptr[0], ptr[1]))
+				char_len = 1;
+			else
+				char_len = 2;
+			next_ptr = ptr+char_len;
 		} else {
 			char_len = 1;
 			while (ptr[char_len] != '\0' && char_len < 6)
@@ -251,7 +255,11 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			continue;
 		}
 
-		if (*ptr == ' ') {
+		if (!view->utf8 && char_len > 1) {
+			last_space = xpos;
+			last_space_ptr = next_ptr;
+			last_color = color;
+		} else if (*ptr == ' ') {
 			last_space = xpos;
 			last_space_ptr = ptr;
 			last_color = color;
