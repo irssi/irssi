@@ -624,9 +624,11 @@ int strip_real_length(const char *str, int len,
                                         *last_color_len = 2;
 			}
                         str += 2;
-		} else if (!IS_COLOR_CODE(*str)) {
-			if (len-- == 0)
-                                break;
+		} else {
+			if (!IS_COLOR_CODE(*str)) {
+				if (len-- == 0)
+					break;
+			}
 			str++;
 		}
 	}
