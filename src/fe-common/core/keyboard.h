@@ -3,11 +3,13 @@
 
 #include "signals.h"
 
+typedef struct KEYBOARD_REC KEYBOARD_REC;
+
 typedef struct {
 	char *id;
 	char *description;
 
-	GSList *keys;
+	GSList *keys, *default_keys;
 } KEYINFO_REC;
 
 typedef struct {
@@ -19,15 +21,27 @@ typedef struct {
 
 extern GSList *keyinfos;
 
+/* Creates a new "keyboard" - this is used only for keeping track of
+   key combo states and sending the gui_data parameter in "key pressed"
+   signal */
+KEYBOARD_REC *keyboard_create(void *gui_data);
+/* Destroys a keyboard */
+void keyboard_destroy(KEYBOARD_REC *keyboard);
+/* Returns TRUE if key press was consumed. Control characters should be sent
+   as "^@" .. "^_" instead of #0..#31 chars, #127 should be sent as ^? */
+int key_pressed(KEYBOARD_REC *keyboard, const char *key);
+
 void key_bind(const char *id, const char *description,
 	      const char *key_default, const char *data, SIGNAL_FUNC func);
 void key_unbind(const char *id, SIGNAL_FUNC func);
+
+void key_configure_freeze(void);
+void key_configure_thaw(void);
 
 void key_configure_add(const char *id, const char *key, const char *data);
 void key_configure_remove(const char *key);
 
 KEYINFO_REC *key_info_find(const char *id);
-int key_pressed(const char *key, void *data);
 
 #define ENTRY_REDIRECT_FLAG_HOTKEY	0x01
 #define ENTRY_REDIRECT_FLAG_HIDDEN	0x02
