@@ -104,6 +104,7 @@ irc_sources = \
 ui_sources = \
 	ui/UI.xs \
 	ui/UI.pm \
+	ui/Formats.xs \
 	ui/Themes.xs \
 	ui/Window.xs \
 	ui/Makefile.PL.in \
