@@ -610,6 +610,10 @@ static void event_command(const char *line, SERVER_REC *server, void *item)
 		expand_aliases = FALSE;
 	}
 
+	/* ^command hides the output - we'll do this at fe-common but
+	   we have to skip the ^ char here.. */
+	if (*line == '^') line++;
+
 	parse_command(line, expand_aliases, server, item);
 }
 

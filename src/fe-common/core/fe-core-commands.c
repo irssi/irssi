@@ -49,6 +49,7 @@ static int ret_texts[] = {
    "default command" event handler, but there we don't know if the start of
    the line had one or two command chars, and which one.. */
 static const char *current_cmdline;
+static int hide_output;
 
 static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 {
@@ -274,9 +275,33 @@ static void cmd_beep(void)
 	printbeep();
 }
 
+static void sig_stop(void)
+{
+	signal_stop();
+}
+
 static void event_command(const char *data)
 {
-        current_cmdline = data;
+	const char *cmdchar;
+
+	current_cmdline = data;
+
+	cmdchar = strchr(settings_get_str("cmdchars"), *data);
+	if (cmdchar != NULL && (data[1] == '^' || (data[1] == *cmdchar && data[2] == '^'))) {
+		/* /^command hides the output of the command */
+                hide_output = TRUE;
+		signal_add_first("print text stripped", (SIGNAL_FUNC) sig_stop);
+		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
+	}
+}
+
+static void event_command_last(const char *data)
+{
+	if (hide_output) {
+		hide_output = FALSE;
+		signal_remove("print text stripped", (SIGNAL_FUNC) sig_stop);
+		signal_remove("print text", (SIGNAL_FUNC) sig_stop);
+	}
 }
 
 static void event_default_command(const char *data, void *server, WI_ITEM_REC *item)
@@ -321,6 +346,8 @@ static void event_cmderror(gpointer errorp, const char *arg)
 
 void fe_core_commands_init(void)
 {
+	hide_output = FALSE;
+
 	command_bind("help", NULL, (SIGNAL_FUNC) cmd_help);
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
@@ -328,6 +355,7 @@ void fe_core_commands_init(void)
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 
 	signal_add("send command", (SIGNAL_FUNC) event_command);
+	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
 	signal_add("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
 }
@@ -341,6 +369,7 @@ void fe_core_commands_deinit(void)
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
+	signal_remove("send command", (SIGNAL_FUNC) event_command_last);
 	signal_remove("default command", (SIGNAL_FUNC) event_default_command);
 	signal_remove("error command", (SIGNAL_FUNC) event_cmderror);
 }
