@@ -111,7 +111,7 @@ management (send me a note if you can think of more):</p>
 joining channels)</p>
 
 <pre>
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
 </pre>
 
 <p>Then add some servers to different networks (ircnet is already set up 
@@ -272,7 +272,7 @@ Here's some examples:</p>
 
 <pre>
 /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -opn 2000" opn
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
 </pre>
 
 <p>After that you need to add your servers. For example:</p>
@@ -401,12 +401,12 @@ without any parameters. You should see a list of something like:</p>
 
 <pre>
 -!- IRCNet: irc.song.fi:6667 (IRCNet)
--!- OPN: tolkien.openprojects.net:6667 (OPN)
+-!- freenode: irc.freenode.net:6667 (freenode)
 -!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
 </pre>
 
-<p>Here you see that we're connected to IRCNet and OPN networks. The
-the IRCNet at the beginning is called the "server tag" while the
+<p>Here you see that we're connected to IRCNet and freenode networks.
+The IRCNet at the beginning is called the "server tag" while the
 (IRCnet) at the end shows the IRC network. Server tag specifies unique
 tag to refer to the server, usually it's the same as the IRC network.
 When the IRC network isn't known it's some part of the server name.
@@ -662,7 +662,7 @@ you can just forget that your bouncer even exists.</p>
 
 <p>dircproxy separates the server connections by passwords. So, if you
 for example have ircnet connection with password ircpass and
-openprojects connection with opnpass, you would do something like
+openprojects connection with freenodepass, you would do something like
 this:</p>
 
 <pre>
@@ -670,7 +670,7 @@ this:</p>
 /SET -clear proxy_string
 
 /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
 </pre>
 
 <p>The server name and port you give isn't used anywhere, so you can
@@ -689,8 +689,8 @@ as with dircproxy, by creating fake connections:</p>
 
 /IRCNET ADD -user ircnetuser ircnet
 /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/IRCNET ADD -user opnuser opn
-/SERVER ADD -auto -ircnet opn fake.opn 6667 opnpass
+/IRCNET ADD -user freenodeuser freenode
+/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
 </pre>
 
 <p>So, you'll specify the usernames with <code>/IRCNET ADD</code> command,

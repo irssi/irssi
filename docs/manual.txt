@@ -387,7 +387,7 @@
 	after connecting to ircnet. This is useful for automatically 
 	identifying yourself to NickServ, for example
 
-	/IRCNET ADD -autosendcmd "/msg NickServ identify secret" OPN
+	/IRCNET ADD -autosendcmd "/msg NickServ identify secret" freenode
 
 	/IRCNET REMOVE <name>
 

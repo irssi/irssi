@@ -19,7 +19,7 @@ You really should set some password for the proxy with:
 Then you'll need to configure the ports/ircnets the proxy listens in,
 something like:
 
-  /SET irssiproxy_ports ircnet=2777 efnet=2778 opn=2779
+  /SET irssiproxy_ports ircnet=2777 efnet=2778 freenode=2779
 
 There we have 3 different irc networks answering in 3 ports. Note that
 you'll have to make the correct /IRCNET ADD and /SERVER ADD commands to
