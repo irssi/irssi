@@ -204,6 +204,7 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 {
 	GList *complist;
 	GSList *tmp;
+	char *word;
 	int len;
 
 	len = strlen(cmd);
@@ -214,8 +215,13 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 		if (strchr(rec->cmd, ' ') != NULL)
 			continue;
 
-		if (g_strncasecmp(rec->cmd, cmd, len) == 0)
-			complist = g_list_append(complist, g_strdup_printf("%c%s", cmdchar, rec->cmd));
+		if (g_strncasecmp(rec->cmd, cmd, len) == 0) {
+			word = g_strdup_printf("%c%s", cmdchar, rec->cmd);
+			if (glist_find_icase_string(complist, word) == NULL)
+				complist = g_list_append(complist, word);
+			else
+				g_free(word);
+		}
 	}
 	return complist;
 }
@@ -228,7 +234,7 @@ static GList *completion_get_subcommands(const char *cmd)
 	int len, skip;
 
 	/* get the number of chars to skip at the start of command. */
-	spacepos = strchr(cmd, ' ');
+	spacepos = strrchr(cmd, ' ');
 	skip = spacepos == NULL ? 0 :
 		((int) (spacepos-cmd) + 1);
 
