@@ -93,8 +93,8 @@ void server_setup_fill_conn(IRC_SERVER_CONNECT_REC *conn, SETUP_SERVER_REC *sser
 
 /* Create server connection record. `address' is required, rest can be NULL */
 static IRC_SERVER_CONNECT_REC *
-create_addr_conn(const char *address, int port, const char *password,
-		 const char *nick)
+create_addr_conn(const char *address, int port, const
+		 char *password, const char *nick)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	SETUP_SERVER_REC *sserver;
@@ -170,37 +170,57 @@ create_addr_conn(const char *address, int port, const char *password,
         return conn;
 }
 
-/* Create server connection record. `dest' is required, rest can be NULL.
-   `dest' is either a server address or irc network */
-IRC_SERVER_CONNECT_REC *
-irc_server_create_conn(const char *dest, int port, const char *password, const char *nick)
+/* Connect to server where last connect succeeded (or we haven't tried to
+   connect yet). If there's no such server, connect to server where we
+   haven't connected for the longest time */
+static IRC_SERVER_CONNECT_REC *
+create_ircnet_conn(const char *dest, int port,
+		   const char *password, const char *nick)
 {
+	SETUP_SERVER_REC *bestrec;
 	GSList *tmp;
-	time_t now;
-	int n;
+	time_t now, besttime;
 
-	g_return_val_if_fail(dest != NULL, NULL);
-
-	/* check if `dest' is IRC network */
-	if (ircnet_find(dest) == NULL)
-		return create_addr_conn(dest, port, password, nick);
-
-	/* first try to find a server that hasn't had any connection failures
-	   for the past half an hour. If that isn't found, try any server. */
 	now = time(NULL);
-	for (n = 0; n < 2; n++) {
-		for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
-			SETUP_SERVER_REC *rec = tmp->data;
+	bestrec = NULL; besttime = now;
+	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
+		SETUP_SERVER_REC *rec = tmp->data;
 
-			if (rec->ircnet == NULL || g_strcasecmp(rec->ircnet, dest) != 0)
-				continue;
+		if (rec->ircnet == NULL || g_strcasecmp(rec->ircnet, dest) != 0)
+			continue;
 
-			if (n == 1 || !rec->last_failed || rec->last_connect < now-FAILED_RECONNECT_WAIT)
-				return create_addr_conn(rec->address, port, password, nick);
+		if (!rec->last_failed) {
+			bestrec = rec;
+			break;
+		}
+
+		if (bestrec == NULL || besttime > rec->last_connect) {
+			bestrec = rec;
+			besttime = rec->last_connect;
 		}
 	}
 
-	return NULL;
+	return bestrec == NULL ? NULL :
+		create_addr_conn(bestrec->address, port, password, nick);
+}
+
+/* Create server connection record. `dest' is required, rest can be NULL.
+   `dest' is either a server address or irc network */
+IRC_SERVER_CONNECT_REC *
+irc_server_create_conn(const char *dest, int port,
+		       const char *password, const char *nick)
+{
+	IRC_SERVER_CONNECT_REC *rec;
+
+	g_return_val_if_fail(dest != NULL, NULL);
+
+	if (ircnet_find(dest) != NULL) {
+		rec = create_ircnet_conn(dest, port, password, nick);
+		if (rec != NULL)
+			return rec;
+	}
+
+	return create_addr_conn(dest, port, password, nick);
 }
 
 /* Find matching server from setup. Set port to -1 if you don't care about it */
