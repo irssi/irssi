@@ -451,9 +451,17 @@ int mkpath(const char *path, int mode)
 /* convert ~/ to $HOME */
 char *convert_home(const char *path)
 {
-	return *path == '~' && (*(path+1) == '/' || *(path+1) == '\0') ?
-		g_strconcat(g_get_home_dir(), path+1, NULL) :
-		g_strdup(path);
+	const char *home;
+
+	if (*path == '~' && (*(path+1) == '/' || *(path+1) == '\0')) {
+		home = g_get_home_dir();
+		if (home == NULL)
+			home = ".";
+
+		return g_strconcat(home, path+1, NULL);
+	} else {
+		return g_strdup(path);
+	}
 }
 
 int g_istr_equal(gconstpointer v, gconstpointer v2)
