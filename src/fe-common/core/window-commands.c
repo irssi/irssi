@@ -224,7 +224,7 @@ static void cmd_window_server(const char *data)
 			    "window server", &optlist, &tag))
 		return;
 
-	if (*tag == '\0' &&
+	if (*tag == '\0' && active_win->active_server != NULL &&
 	    (g_hash_table_lookup(optlist, "sticky") != NULL ||
 	     g_hash_table_lookup(optlist, "unsticky") != NULL)) {
 		tag = active_win->active_server->tag;
