@@ -108,6 +108,7 @@ char *recode_in(const char *str, const char *target)
 		if (!recoded)
 			recoded = g_strdup(str);
 	}
+	g_free(translit_to);
 	return recoded;
 #else
 	return g_strdup(str);
