@@ -138,15 +138,15 @@ static void nicklist_rename_list(SERVER_REC *server, const char *old_nick,
 void nicklist_rename(SERVER_REC *server, const char *old_nick,
 		     const char *new_nick)
 {
-	return nicklist_rename_list(server, old_nick, new_nick,
-				    nicklist_get_same(server, old_nick));
+	nicklist_rename_list(server, old_nick, new_nick,
+			     nicklist_get_same(server, old_nick));
 }
 
 void nicklist_rename_unique(SERVER_REC *server, void *old_nick_id,
 			    const char *old_nick, const char *new_nick)
 {
-	return nicklist_rename_list(server, old_nick, new_nick,
-				    nicklist_get_same_unique(server, old_nick_id));
+	nicklist_rename_list(server, old_nick, new_nick,
+			     nicklist_get_same_unique(server, old_nick_id));
 }
 
 static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
@@ -378,15 +378,15 @@ static void nicklist_update_flags_list(SERVER_REC *server, int gone,
 void nicklist_update_flags(SERVER_REC *server, const char *nick,
 			   int gone, int serverop)
 {
-	return nicklist_update_flags_list(server, gone, serverop,
-					  nicklist_get_same(server, nick));
+	nicklist_update_flags_list(server, gone, serverop,
+				   nicklist_get_same(server, nick));
 }
 
 void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 				  int gone, int serverop)
 {
-	return nicklist_update_flags_list(server, gone, serverop,
-					  nicklist_get_same_unique(server, id));
+	nicklist_update_flags_list(server, gone, serverop,
+				   nicklist_get_same_unique(server, id));
 }
 
 /* Specify which nick in channel is ours */
