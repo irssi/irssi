@@ -9,28 +9,35 @@ typedef struct
     gchar *name;
     GList *nicks;
 }
-CHANNEL_REC;
+SERVER_CHANNEL_REC;
 
 GList *channels;
 gchar *clientnick, clienthost[MAX_IP_LEN];
 
-int clienth;
+GIOChannel *clienth;
+
+#ifdef MEM_DEBUG
+/* we don't -lgmodule.. */
+#undef g_module_build_path
+char *g_module_build_path(const char *dir, const char *module)
+{
+        return NULL;
+}
+#endif
 
 /* Read a line */
-gint read_line(gboolean socket, gint handle, GString *output, GString *buffer)
+gint read_line(GIOChannel *handle, GString *output, GString *buffer)
 {
     gchar tmpbuf[512];
     gint recvlen, pos;
 
-    g_return_val_if_fail(handle != -1, -1);
+    g_return_val_if_fail(handle != NULL, -1);
     g_return_val_if_fail(output != NULL, -1);
     g_return_val_if_fail(buffer != NULL, -1);
 
     g_string_truncate(output, 0);
 
-    recvlen = socket ?
-        net_receive(handle, tmpbuf, sizeof(tmpbuf)-1) :
-        read(handle, tmpbuf, sizeof(tmpbuf)-1);
+    recvlen = net_receive(handle, tmpbuf, sizeof(tmpbuf)-1);
 
     if (recvlen <= 0)
     {
@@ -88,8 +95,8 @@ gint read_line(gboolean socket, gint handle, GString *output, GString *buffer)
 void client_send(char *text)
 {
     if (strlen(text) > 508) text[508] = 0;
-    write(clienth, text, strlen(text));
-    write(clienth, "\r\n", 2);
+    net_transmit(clienth, text, strlen(text));
+    net_transmit(clienth, "\r\n", 2);
 }
 
 void makerand(char *str, int len)
@@ -128,7 +135,7 @@ void send_cmd(void)
     str[511] = '\0';
     for (tmp = g_list_first(channels); tmp != NULL; tmp = tmp->next)
     {
-        CHANNEL_REC *rec = tmp->data;
+        SERVER_CHANNEL_REC *rec = tmp->data;
 
         makerand(str, 511);
         str[0] = ':';
@@ -246,7 +253,7 @@ void send_cmd(void)
             /* join */
             if (g_list_length(channels) < 20)
             {
-                CHANNEL_REC *rec;
+                SERVER_CHANNEL_REC *rec;
                 int n, pos;
 
                 n = (rand()%20)+25;
@@ -254,7 +261,7 @@ void send_cmd(void)
                 str[pos] = '#';
                 str[n] = '\0';
 
-                rec = g_new(CHANNEL_REC, 1);
+                rec = g_new(SERVER_CHANNEL_REC, 1);
                 rec->name = g_strdup(str+pos);
                 rec->nicks = g_list_append(NULL, g_strdup(clientnick));
 
@@ -272,7 +279,7 @@ void send_cmd(void)
             /* leave channel (by kick) */
             if (g_list_length(channels) > 3)
             {
-                CHANNEL_REC *chan;
+                SERVER_CHANNEL_REC *chan;
 
                 chan = g_list_nth(channels, rand()%g_list_length(channels))->data;
                 if (rand() % 3 != 0)
@@ -352,46 +359,48 @@ int main(void)
 {
     static fd_set fdset;
     struct timeval tv;
-    int serverh, port;
+    GIOChannel *serverh;
+    int port;
 
     srand(0);
     port = 6660;
     serverh = net_listen(NULL, &port);
-    if (serverh == -1)
+    if (serverh == NULL)
     {
 	printf("listen()\n");
 	return 1;
     }
 
-    clienth = -1; channels = NULL;
+    clienth = NULL; channels = NULL;
     for (;;)
     {
         FD_ZERO(&fdset);
-        if (clienth != -1) FD_SET(clienth, &fdset);
-        FD_SET(serverh, &fdset);
+        if (clienth != NULL) FD_SET(g_io_channel_unix_get_fd(clienth), &fdset);
+        FD_SET(g_io_channel_unix_get_fd(serverh), &fdset);
 
         tv.tv_sec = 0;
         tv.tv_usec = FLOOD_TIMEOUT;
-        if (select((serverh > clienth ? serverh : clienth)+1, &fdset, NULL, NULL, &tv) <= 0)
+	if (select((g_io_channel_unix_get_fd(serverh) > g_io_channel_unix_get_fd(clienth) ?
+		    g_io_channel_unix_get_fd(serverh) : g_io_channel_unix_get_fd(clienth))+1, &fdset, NULL, NULL, &tv) <= 0)
         {
 		/* nothing happened, bug the client with some commands.. */
-		if (clienth != -1 && clientnick != NULL) send_cmd();
+		if (clienth != NULL && clientnick != NULL) send_cmd();
         }
         else
 	{
-            if (FD_ISSET(serverh, &fdset))
+            if (FD_ISSET(g_io_channel_unix_get_fd(serverh), &fdset))
             {
                 /* client connecting! */
-                if (clienth != -1)
+                if (clienth != NULL)
                 {
                     /* only one client allowed.. */
-                    int handle;
+                    GIOChannel *handle;
 
                     handle = net_accept(serverh, NULL, &port);
-                    if (handle != -1)
+                    if (handle != NULL)
                     {
                         client_send("Only one client allowed");
-                        close(handle);
+                        net_disconnect(handle);
                         continue;
                     }
                 }
@@ -400,7 +409,7 @@ int main(void)
 		    IPADDR clientip;
 
                     clienth = net_accept(serverh, &clientip, &port);
-                    if (clienth != -1)
+                    if (clienth != NULL)
 		    {
 			net_ip2host(&clientip, clienthost);
                         client_send(":server 001 pla");
@@ -420,12 +429,12 @@ int main(void)
                 buf = g_string_new(NULL);
                 do
                 {
-                    ret = read_line(TRUE, clienth, str, buf);
+                    ret = read_line(clienth, str, buf);
                     if (ret == -1)
                     {
                         /* client disconnected */
-                        close(clienth);
-                        clienth = -1;
+                        net_disconnect(clienth);
+                        clienth = NULL;
                         break;
                     }
                     if (ret == 1) handle_command(str->str);
