@@ -63,40 +63,56 @@ static void cmd_script_exec(const char *data)
 static void cmd_script_load(const char *data)
 {
         PERL_SCRIPT_REC *script;
-	char *fname;
+	char *fname, *path;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1, &path))
+		return;
+
+        if (*path == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	fname = perl_script_get_path(data);
 	if (fname == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
                             TXT_SCRIPT_NOT_FOUND, data);
-		return;
+	} else {
+		script = perl_script_load_file(fname);
+		if (script != NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    TXT_SCRIPT_LOADED,
+				    script->name, script->path);
+		}
+		g_free(fname);
 	}
-
-	script = perl_script_load_file(fname);
-	if (script != NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    TXT_SCRIPT_LOADED, script->name, script->path);
-	}
-        g_free(fname);
+	cmd_params_free(free_arg);
 }
 
 static void cmd_script_unload(const char *data)
 {
-        PERL_SCRIPT_REC *script;
+	PERL_SCRIPT_REC *script;
+        char *name;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 1, &name))
+		return;
+
+        if (*name == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	script = perl_script_find(data);
 	if (script == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
                             TXT_SCRIPT_NOT_LOADED, data);
-                return;
+	} else {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_SCRIPT_UNLOADED, script->name);
+		perl_script_unload(script);
 	}
-
-	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-		    TXT_SCRIPT_UNLOADED, script->name);
-	perl_script_unload(script);
+	cmd_params_free(free_arg);
 }
 
-static void cmd_script_flush(const char *data)
+static void cmd_script_reset(const char *data)
 {
 	perl_scripts_deinit();
 	perl_scripts_init();
@@ -207,7 +223,7 @@ void fe_perl_init(void)
 	command_bind("script exec", NULL, (SIGNAL_FUNC) cmd_script_exec);
 	command_bind("script load", NULL, (SIGNAL_FUNC) cmd_script_load);
 	command_bind("script unload", NULL, (SIGNAL_FUNC) cmd_script_unload);
-	command_bind("script flush", NULL, (SIGNAL_FUNC) cmd_script_flush);
+	command_bind("script reset", NULL, (SIGNAL_FUNC) cmd_script_reset);
 	command_bind("script list", NULL, (SIGNAL_FUNC) cmd_script_list);
 	command_set_options("script exec", "permanent");
 
@@ -222,7 +238,7 @@ void fe_perl_deinit(void)
 	command_unbind("script exec", (SIGNAL_FUNC) cmd_script_exec);
 	command_unbind("script load", (SIGNAL_FUNC) cmd_script_load);
 	command_unbind("script unload", (SIGNAL_FUNC) cmd_script_unload);
-	command_unbind("script flush", (SIGNAL_FUNC) cmd_script_flush);
+	command_unbind("script reset", (SIGNAL_FUNC) cmd_script_reset);
 	command_unbind("script list", (SIGNAL_FUNC) cmd_script_list);
 
         signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
