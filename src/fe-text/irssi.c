@@ -265,7 +265,7 @@ static void check_oldcrap(void)
 
 	str[0] = '\0';
 	fgets(str, sizeof(str), stdin);
-	if (toupper(str[0]) == 'Y' || str[0] == '\n' || str[0] == '\0')
+	if (i_toupper(str[0]) == 'Y' || str[0] == '\n' || str[0] == '\0')
                 remove(path);
 	g_free(path);
 }

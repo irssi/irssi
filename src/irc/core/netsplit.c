@@ -282,7 +282,7 @@ int quitmsg_is_split(const char *msg)
         /* top-domain1 must be 2+ chars long and contain only alphabets */
 	p = host2-1;
 	while (p[-1] != '.') {
-		if (!isalpha(p[-1]))
+		if (!i_isalpha(p[-1]))
                         return FALSE;
 		p--;
 	}
@@ -291,7 +291,7 @@ int quitmsg_is_split(const char *msg)
         /* top-domain2 must be 2+ chars long and contain only alphabets */
 	p = host2+strlen(host2);
 	while (p[-1] != '.') {
-		if (!isalpha(p[-1]))
+		if (!i_isalpha(p[-1]))
                         return FALSE;
 		p--;
 	}

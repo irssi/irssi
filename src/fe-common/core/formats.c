@@ -699,7 +699,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 	for (;; str++) {
 		if (*str == '\0') return start;
 
-		if (isdigit((int) *str)) {
+		if (i_isdigit(*str)) {
 			num = num*10 + (*str-'0');
 			continue;
 		}
@@ -758,7 +758,7 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 	fg = fg_ret == NULL ? -1 : *fg_ret;
 	bg = bg_ret == NULL ? -1 : *bg_ret;
 
-	if (!isdigit((int) **str) && **str != ',') {
+	if (!i_isdigit(**str) && **str != ',') {
 		fg = -1;
 		bg = -1;
 	} else {
@@ -766,7 +766,7 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		if (**str != ',') {
 			fg = **str-'0';
                         (*str)++;
-			if (isdigit((int) **str)) {
+			if (i_isdigit(**str)) {
 				fg = fg*10 + (**str-'0');
 				(*str)++;
 			}
@@ -774,12 +774,12 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		if (**str == ',') {
 			/* background color */
 			(*str)++;
-			if (!isdigit((int) **str))
+			if (!i_isdigit(**str))
 				bg = -1;
 			else {
 				bg = **str-'0';
 				(*str)++;
-				if (isdigit((int) **str)) {
+				if (i_isdigit(**str)) {
 					bg = bg*10 + (**str-'0');
 					(*str)++;
 				}

@@ -266,7 +266,7 @@ GNode *bot_find_path(BOTNET_REC *botnet, const char *nick)
 static int is_ip_mask(const char *addr)
 {
 	while (*addr != '\0') {
-		if (!isdigit(*addr) && *addr != '.' &&
+		if (!i_isdigit(*addr) && *addr != '.' &&
 		    *addr != '*' && *addr != '?') return FALSE;
 		addr++;
 	}

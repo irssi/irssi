@@ -393,7 +393,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 		/* remove non alnum chars from nick */
 		in = rec->nick; out = str;
 		while (*in != '\0') {
-			if (isalnum(*in))
+			if (i_isalnum(*in))
 				*out++ = *in;
                         in++;
 		}

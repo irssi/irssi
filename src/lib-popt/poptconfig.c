@@ -17,19 +17,19 @@ static void configLine(poptContext con, char * line) {
     
     if (strncmp(line, con->appName, nameLength)) return;
     line += nameLength;
-    if (!*line || !isspace(*line)) return;
-    while (*line && isspace(*line)) line++;
+    if (!*line || !i_isspace(*line)) return;
+    while (*line && i_isspace(*line)) line++;
     entryType = line;
 
-    while (!*line || !isspace(*line)) line++;
+    while (!*line || !i_isspace(*line)) line++;
     *line++ = '\0';
-    while (*line && isspace(*line)) line++;
+    while (*line && i_isspace(*line)) line++;
     if (!*line) return;
     opt = line;
 
-    while (!*line || !isspace(*line)) line++;
+    while (!*line || !i_isspace(*line)) line++;
     *line++ = '\0';
-    while (*line && isspace(*line)) line++;
+    while (*line && i_isspace(*line)) line++;
     if (!*line) return;
 
     if (opt[0] == '-' && opt[1] == '-')
@@ -92,7 +92,7 @@ int poptReadConfigFile(poptContext con, char * fn) {
 	  case '\n':
 	    *dst = '\0';
 	    dst = buf;
-	    while (*dst && isspace(*dst)) dst++;
+	    while (*dst && i_isspace(*dst)) dst++;
 	    if (*dst && *dst != '#') {
 		configLine(con, dst);
 	    }

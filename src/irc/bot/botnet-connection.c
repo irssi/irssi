@@ -342,7 +342,7 @@ static void botnet_connect_event_uplink(BOT_REC *bot, const char *data)
 		/* nick already in use, change it by adding a number
 		   at the end of it */
 		p = botnet->nick+strlen(botnet->nick);
-		while (p > botnet->nick && isdigit(p[-1])) p--;
+		while (p > botnet->nick && i_isdigit(p[-1])) p--;
 		num = *p == '\0' ? 2 : atoi(p)+1; *p = '\0';
 		str = g_strdup_printf("%s%d", botnet->nick, num);
 		g_free(botnet->nick); botnet->nick = str;

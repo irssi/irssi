@@ -208,13 +208,13 @@ static int parse_custom_ban(const char *type)
         ban_type = 0;
 	list = g_strsplit(type, " ", -1);
 	for (n = 0; list[n] != NULL; n++) {
-		if (toupper(list[n][0]) == 'N')
+		if (i_toupper(list[n][0]) == 'N')
 			ban_type |= IRC_MASK_NICK;
-		else if (toupper(list[n][0]) == 'U')
+		else if (i_toupper(list[n][0]) == 'U')
 			ban_type |= IRC_MASK_USER;
-		else if (toupper(list[n][0]) == 'H')
+		else if (i_toupper(list[n][0]) == 'H')
 			ban_type |= IRC_MASK_HOST | IRC_MASK_DOMAIN;
-		else if (toupper(list[n][0]) == 'D')
+		else if (i_toupper(list[n][0]) == 'D')
 			ban_type |= IRC_MASK_DOMAIN;
 	}
 	g_strfreev(list);
@@ -228,15 +228,15 @@ static int parse_ban_type(const char *type)
 
 	g_return_val_if_fail(type != NULL, 0);
 
-	if (toupper(type[0]) == 'N')
+	if (i_toupper(type[0]) == 'N')
 		return BAN_TYPE_NORMAL;
-	if (toupper(type[0]) == 'U')
+	if (i_toupper(type[0]) == 'U')
 		return BAN_TYPE_USER;
-	if (toupper(type[0]) == 'H')
+	if (i_toupper(type[0]) == 'H')
 		return BAN_TYPE_HOST;
-	if (toupper(type[0]) == 'D')
+	if (i_toupper(type[0]) == 'D')
 		return BAN_TYPE_DOMAIN;
-	if (toupper(type[0]) == 'C') {
+	if (i_toupper(type[0]) == 'C') {
 		pos = strchr(type, ' ');
                 if (pos != NULL)
 			return parse_custom_ban(pos+1);

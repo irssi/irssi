@@ -41,7 +41,7 @@ static int last_want_space, last_line_pos;
         ((c) == ',')
 
 #define isseparator(c) \
-	(isspace((int) (c)) || isseparator_notspace(c))
+	(i_isspace(c) || isseparator_notspace(c))
 
 void chat_completion_init(void);
 void chat_completion_deinit(void);
@@ -489,7 +489,7 @@ static char *line_get_command(const char *line, char **args, int aliases)
 		} else {
 			checkcmd = g_strndup(line, (int) (ptr-line));
 
-			while (isspace(*ptr)) ptr++;
+			while (i_isspace(*ptr)) ptr++;
 			cmdargs = ptr;
 		}
 

@@ -41,7 +41,7 @@ static char *get_domain_mask(char *host)
         if (is_ipv4_address(host)) {
 		/* it's an IP address, change last digit to * */
 		ptr = strrchr(host, '.');
-		if (ptr != NULL && isdigit(ptr[1]))
+		if (ptr != NULL && i_isdigit(ptr[1]))
 			strcpy(ptr+1, "*");
 	} else {
 		/* if more than one dot, skip the first

@@ -152,19 +152,19 @@ static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post,
 	*pre = g_strdup(cmd);
 	*post = *nicks = NULL;
 	for (p = *pre; *p != '\0'; p++) {
-		if (!isspace(*p))
+		if (!i_isspace(*p))
 			continue;
 
 		if (arg == 1) {
 			/* text after nicks */
 			*p++ = '\0';
-			while (isspace(*p)) p++;
+			while (i_isspace(*p)) p++;
 			*post = p;
 			break;
 		}
 
 		/* find nicks */
-		while (isspace(p[1])) p++;
+		while (i_isspace(p[1])) p++;
 		if (--arg == 1) {
 			*p = '\0';
 			*nicks = p+1;

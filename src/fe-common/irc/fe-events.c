@@ -397,7 +397,7 @@ static void event_received(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (!isdigit((gint) *data)) {
+	if (!i_isdigit(*data)) {
 		printtext(server, NULL, MSGLEVEL_CRAP, "%s", data);
 		return;
 	}

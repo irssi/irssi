@@ -178,7 +178,7 @@ void script_fix_name(char *name)
 	if (p != NULL) *p = '\0';
 
 	while (*name != '\0') {
-		if (*name != '_' && !isalnum(*name))
+		if (*name != '_' && !i_isalnum(*name))
 			*name = '_';
 		name++;
 	}

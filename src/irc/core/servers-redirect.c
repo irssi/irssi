@@ -311,7 +311,7 @@ static int redirect_args_match(const char *event_args,
 	start = event_args;
 	while (*arg != '\0') {
 		while (*arg != '\0' && *arg != ' ' && *event_args != '\0') {
-			if (toupper(*arg) != toupper(*event_args))
+			if (i_toupper(*arg) != i_toupper(*event_args))
 				break;
 			arg++; event_args++;
 		}
@@ -505,7 +505,7 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 		if (signal == NULL) {
 			/* unknown event - redirect to the default signal. */
 			if (strncmp(event, "event ", 6) == 0 &&
-			    isdigit(event[6])) {
+			    i_isdigit(event[6])) {
 				signal = (*redirect)->default_signal;
                                 if (*match == MATCH_NONE)
 					*match = MATCH_START;

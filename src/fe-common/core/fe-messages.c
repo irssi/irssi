@@ -37,7 +37,7 @@
 #include "hilight-text.h"
 #include "printtext.h"
 
-#define ishighalnum(c) ((unsigned char) (c) >= 128 || isalnum(c))
+#define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
 
 static GHashTable *printnicks;
 
@@ -67,7 +67,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 		/* check that the beginning marker starts a word, and
 		   that the matching end marker ends a word */
-		if ((pos > 0 && !isspace(bgn[-1])) || !ishighalnum(bgn[1]))
+		if ((pos > 0 && !i_isspace(bgn[-1])) || !ishighalnum(bgn[1]))
 			continue;
 		if ((end = strchr(bgn+1, *bgn)) == NULL)
 			continue;

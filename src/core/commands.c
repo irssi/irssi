@@ -557,15 +557,15 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			}
 
 			(*data)++;
-			if (**data == '-' && isspace((*data)[1])) {
+			if (**data == '-' && i_isspace((*data)[1])) {
 				/* -- option means end of options even
 				   if next word starts with - */
 				(*data)++;
-				while (isspace(**data)) (*data)++;
+				while (i_isspace(**data)) (*data)++;
 				break;
 			}
 
-			if (!isspace(**data)) {
+			if (!i_isspace(**data)) {
 				option = cmd_get_param(data);
 			} else {
 				option = "-";
@@ -610,14 +610,14 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			    *optlist[pos] == '!')
 				option = NULL;
 
-			while (isspace(**data)) (*data)++;
+			while (i_isspace(**data)) (*data)++;
 			continue;
 		}
 
 		if (option == NULL)
 			break;
 
-		if (*optlist[pos] == '@' && !isdigit(**data))
+		if (*optlist[pos] == '@' && !i_isdigit(**data))
 			break; /* expected a numeric argument */
 
 		/* save the argument */
@@ -628,7 +628,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 		}
 		option = NULL;
 
-		while (isspace(**data)) (*data)++;
+		while (i_isspace(**data)) (*data)++;
 	}
 
 	return 0;

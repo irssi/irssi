@@ -332,7 +332,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 					NULL, NULL, flags);
 	len = strlen(data);
 
-	if (len > 1 && isdigit(data[len-1]) && data[len-2] == '$') {
+	if (len > 1 && i_isdigit(data[len-1]) && data[len-2] == '$') {
 		/* ends with $<digit> .. this breaks things if next
 		   character is digit or '-' */
                 char digit, *tmp;

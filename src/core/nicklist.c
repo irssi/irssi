@@ -28,7 +28,7 @@
 #include "masks.h"
 
 #define isalnumhigh(a) \
-        (isalnum(a) || (unsigned char) (a) >= 128)
+        (i_isalnum(a) || (unsigned char) (a) >= 128)
 
 static void nick_hash_add(CHANNEL_REC *channel, NICK_REC *nick)
 {
@@ -532,10 +532,10 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 
 		/* check if it matches for alphanumeric parts of nick */
 		while (*nick != '\0' && *msg != '\0') {
-			if (toupper(*nick) == toupper(*msg)) {
+			if (i_toupper(*nick) == i_toupper(*msg)) {
 				/* total match */
 				msg++;
-			} else if (isalnum(*msg) && !isalnum(*nick)) {
+			} else if (i_isalnum(*msg) && !i_isalnum(*nick)) {
 				/* some strange char in your nick, pass it */
                                 fullmatch = FALSE;
 			} else
@@ -552,7 +552,7 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 				/* remove the rest of the non-alphanum chars
 				   from nick and check if it then matches. */
                                 fullmatch = FALSE;
-				while (*nick != '\0' && !isalnum(*nick))
+				while (*nick != '\0' && !i_isalnum(*nick))
 					nick++;
 			}
 

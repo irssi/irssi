@@ -32,7 +32,7 @@ static unsigned int g_istr_hash(gconstpointer v)
 	unsigned int h = 0, g;
 
 	while (*s != '\0') {
-		h = (h << 4) + toupper(*s);
+		h = (h << 4) + i_toupper(*s);
 		if ((g = h & 0xf0000000UL)) {
 			h = h ^ (g >> 24);
 			h = h ^ g;

@@ -94,15 +94,15 @@ static void singleOptionHelp(FILE * f, int maxLeftCol,
     helpLength = strlen(help);
     while (helpLength > lineLength) {
 	ch = help + lineLength - 1;
-	while (ch > help && !isspace(*ch)) ch--;
+	while (ch > help && !i_isspace(*ch)) ch--;
 	if (ch == help) break;		/* give up */
-	while (ch > (help + 1) && isspace(*ch)) ch--;
+	while (ch > (help + 1) && i_isspace(*ch)) ch--;
 	ch++;
 
 	sprintf(format, "%%.%ds\n%%%ds", (int) (ch - help), indentLength);
 	fprintf(f, format, help, " ");
 	help = ch;
-	while (isspace(*help) && *help) help++;
+	while (i_isspace(*help) && *help) help++;
 	helpLength = strlen(help);
     }
 

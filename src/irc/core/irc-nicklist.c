@@ -51,7 +51,7 @@ NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 }
 
 #define isnickchar(a) \
-	(isalnum((int) (a)) || (a) == '`' || (a) == '-' || (a) == '_' || \
+	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || \
 	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
 	(a) == '|' || (a) == '\\' || (a) == '^')
 
@@ -64,7 +64,7 @@ char *irc_nick_strip(const char *nick)
 
 	spos = stripped = g_strdup(nick);
 	while (isnickchar(*nick)) {
-		if (isalnum((int) *nick))
+		if (i_isalnum(*nick))
 			*spos++ = *nick;
 		nick++;
 	}

@@ -568,7 +568,7 @@ char *tparm(const char *str, ...) {
 					return OOPS;
 				i = 0;
 				sp++;
-				while(isdigit(*sp))
+				while(i_isdigit(*sp))
 					i = 10 * i + *sp++ - '0';
 				if (*sp++ != '}' || pushnum(i))
 					return OOPS;

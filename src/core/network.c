@@ -582,7 +582,7 @@ char *net_getservbyport(int port)
 int is_ipv4_address(const char *host)
 {
 	while (*host != '\0') {
-		if (*host != '.' && !isdigit(*host))
+		if (*host != '.' && !i_isdigit(*host))
 			return 0;
                 host++;
 	}

@@ -50,7 +50,7 @@ void translate_output(char *text)
 }
 
 #define gethex(a) \
-	(isdigit(a) ? ((a)-'0') : (toupper(a)-'A'+10))
+	(i_isdigit(a) ? ((a)-'0') : (i_toupper(a)-'A'+10))
 
 void translation_parse_line(const char *str, int *pos)
 {

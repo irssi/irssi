@@ -126,7 +126,7 @@ int find_substr(const char *list, const char *item)
 		return FALSE;
 
 	for (;;) {
-		while (isspace((gint) *list)) list++;
+		while (i_isspace(*list)) list++;
 		if (*list == '\0') break;
 
 		ptr = strchr(list, ' ');
@@ -324,7 +324,7 @@ char *stristr(const char *data, const char *key)
 		if (key[pos] == '\0')
                         return (char *) data;
 
-		if (toupper(data[pos]) == toupper(key[pos]))
+		if (i_toupper(data[pos]) == i_toupper(key[pos]))
 			pos++;
 		else {
 			data++;
@@ -337,7 +337,7 @@ char *stristr(const char *data, const char *key)
 
 #define isbound(c) \
 	((unsigned char) (c) < 128 && \
-	(isspace((int) (c)) || ispunct((int) (c))))
+	(i_isspace(c) || i_ispunct(c)))
 
 char *strstr_full_case(const char *data, const char *key, int icase)
 {
@@ -364,7 +364,7 @@ char *strstr_full_case(const char *data, const char *key, int icase)
 			return (char *) data;
 		}
 
-		match = icase ? (toupper(data[pos]) == toupper(key[pos])) :
+		match = icase ? (i_toupper(data[pos]) == i_toupper(key[pos])) :
 				 data[pos] == key[pos];
 
 		if (match && (pos != 0 || data == start || isbound(data[-1])))
@@ -473,7 +473,7 @@ unsigned int g_istr_hash(gconstpointer v)
 	unsigned int h = 0, g;
 
 	while (*s != '\0') {
-		h = (h << 4) + toupper(*s);
+		h = (h << 4) + i_toupper(*s);
 		if ((g = h & 0xf0000000UL)) {
 			h = h ^ (g >> 24);
 			h = h ^ g;
@@ -493,7 +493,7 @@ int match_wildcards(const char *cmask, const char *data)
 	newmask = mask = g_strdup(cmask);
 	for (; *mask != '\0' && *data != '\0'; mask++) {
 		if (*mask != '*') {
-			if (*mask != '?' && toupper(*mask) != toupper(*data))
+			if (*mask != '?' && i_toupper(*mask) != i_toupper(*data))
 				break;
 
 			data++;
@@ -539,7 +539,7 @@ int is_numeric(const char *str, char end_char)
 		return FALSE;
 
 	while (*str != '\0' && *str != end_char) {
-		if (!isdigit(*str)) return FALSE;
+		if (!i_isdigit(*str)) return FALSE;
 		str++;
 	}
 
@@ -756,9 +756,9 @@ int expand_escape(const char **data)
 	case 'c':
                 /* control character (\cA = ^A) */
                 (*data)++;
-		return toupper(**data) - 64;
+		return i_toupper(**data) - 64;
 	default:
-		if (!isdigit(**data))
+		if (!i_isdigit(**data))
 			return -1;
 
                 /* octal */

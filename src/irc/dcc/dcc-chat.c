@@ -456,7 +456,7 @@ static void cmd_mircdcc(const char *data, SERVER_REC *server,
 	dcc = item_get_dcc((WI_ITEM_REC *) item);
 	if (dcc == NULL) return;
 
-	dcc->mirc_ctcp = toupper(*data) != 'N' &&
+	dcc->mirc_ctcp = i_toupper(*data) != 'N' &&
 		g_strncasecmp(data, "OF", 2) != 0;
 }
 

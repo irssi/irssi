@@ -293,9 +293,9 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 		while (entry->text->str[to] != ' ' && to > 0)
 			to--;
 	} else {
-		while (!isalnum(entry->text->str[to]) && to > 0)
+		while (!i_isalnum(entry->text->str[to]) && to > 0)
 			to--;
-		while (isalnum(entry->text->str[to]) && to > 0)
+		while (i_isalnum(entry->text->str[to]) && to > 0)
 			to--;
 	}
 	if (to > 0) to++;
@@ -323,9 +323,9 @@ void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
 		while (entry->text->str[to] != ' ' && to < entry->text->len)
 			to++;
 	} else {
-		while (!isalnum(entry->text->str[to]) && to < entry->text->len)
+		while (!i_isalnum(entry->text->str[to]) && to < entry->text->len)
 			to++;
-		while (isalnum(entry->text->str[to]) && to < entry->text->len)
+		while (i_isalnum(entry->text->str[to]) && to < entry->text->len)
 			to++;
 	}
 
@@ -386,9 +386,9 @@ static void gui_entry_move_words_left(GUI_ENTRY_REC *entry, int count, int to_sp
 			while (pos > 0 && entry->text->str[pos-1] != ' ')
 				pos--;
 		} else {
-			while (pos > 0 && !isalnum(entry->text->str[pos-1]))
+			while (pos > 0 && !i_isalnum(entry->text->str[pos-1]))
 				pos--;
-			while (pos > 0 &&  isalnum(entry->text->str[pos-1]))
+			while (pos > 0 &&  i_isalnum(entry->text->str[pos-1]))
 				pos--;
 		}
 		count--;
@@ -409,9 +409,9 @@ static void gui_entry_move_words_right(GUI_ENTRY_REC *entry, int count, int to_s
 			while (pos < entry->text->len && entry->text->str[pos] != ' ')
 				pos++;
 		} else {
-			while (pos < entry->text->len && !isalnum(entry->text->str[pos]))
+			while (pos < entry->text->len && !i_isalnum(entry->text->str[pos]))
 				pos++;
-			while (pos < entry->text->len &&  isalnum(entry->text->str[pos]))
+			while (pos < entry->text->len &&  i_isalnum(entry->text->str[pos]))
 				pos++;
 		}
 		count--;

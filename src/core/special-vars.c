@@ -30,10 +30,10 @@
 #define ALIGN_PAD   0x04
 
 #define isvarchar(c) \
-        (isalnum(c) || (c) == '_')
+        (i_isalnum(c) || (c) == '_')
 
 #define isarg(c) \
-	(isdigit(c) || (c) == '*' || (c) == '~' || (c) == '-')
+	(i_isdigit(c) || (c) == '*' || (c) == '~' || (c) == '-')
 
 static SPECIAL_HISTORY_FUNC history_func = NULL;
 
@@ -54,7 +54,7 @@ static char *get_argument(char **cmd, char **arglist)
 		/* get last argument */
 		arg = max = argcount-1;
 	} else {
-		if (isdigit(**cmd)) {
+		if (i_isdigit(**cmd)) {
 			/* first argument */
 			arg = max = (**cmd)-'0';
 			(*cmd)++;
@@ -63,7 +63,7 @@ static char *get_argument(char **cmd, char **arglist)
 		if (**cmd == '-') {
 			/* get more than one argument */
 			(*cmd)++;
-			if (!isdigit(**cmd))
+			if (!i_isdigit(**cmd))
 				max = -1; /* get all the rest */
 			else {
 				max = (**cmd)-'0';
@@ -163,7 +163,7 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 			get_argument(cmd, arglist);
 	}
 
-	if (isalpha(**cmd) && isvarchar((*cmd)[1])) {
+	if (i_isalpha(**cmd) && isvarchar((*cmd)[1])) {
 		/* long variable name.. */
 		return get_long_variable(cmd, server, item, free_ret, getname);
 	}
@@ -287,7 +287,7 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 
 	/* '!' = don't cut, '-' = right padding */
 	str = *data;
-	while (*str != '\0' && *str != ']' && !isdigit(*str)) {
+	while (*str != '\0' && *str != ']' && !i_isdigit(*str)) {
 		if (*str == '!')
 			*flags &= ~ALIGN_CUT;
 		else if (*str == '-')
@@ -296,11 +296,11 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
                          *flags &= ~ALIGN_PAD;
 		str++;
 	}
-	if (!isdigit(*str))
+	if (!i_isdigit(*str))
 		return FALSE; /* expecting number */
 
 	/* get the alignment size */
-	while (isdigit(*str)) {
+	while (i_isdigit(*str)) {
 		*align = (*align) * 10 + (*str-'0');
 		str++;
 	}

@@ -153,7 +153,7 @@ int config_get_bool(CONFIG_REC *rec, const char *section, const char *key, int d
 	str = config_get_str(rec, section, key, NULL);
 	if (str == NULL) return def;
 
-        return toupper(*str) == 'T' || toupper(*str) == 'Y';
+        return i_toupper(*str) == 'T' || i_toupper(*str) == 'Y';
 }
 
 /* Return value of key `value_key' from list item where `key' is `value' */
@@ -224,8 +224,8 @@ int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def)
 	str = config_node_get_str(parent, key, NULL);
 	if (str == NULL) return def;
 
-	return toupper(*str) == 'T' || toupper(*str) == 'Y' ||
-		(toupper(*str) == 'O' && toupper(str[1]) == 'N');
+	return i_toupper(*str) == 'T' || i_toupper(*str) == 'Y' ||
+		(i_toupper(*str) == 'O' && i_toupper(str[1]) == 'N');
 }
 
 /* Get the value of keys `key' and `key_value' and put them to
