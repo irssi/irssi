@@ -211,7 +211,7 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (channel->banlist == NULL && channel->ebanlist == NULL) {
-		printformat(server, channel->name, MSGLEVEL_CRAP,
+		printformat(server, channel->name, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_NO_BANS, channel->name);
 		return;
 	}
@@ -302,8 +302,19 @@ static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC
 		channel = irc_channel_find(server, data);
 	if (channel == NULL) cmd_return_error(CMDERR_CHAN_NOT_FOUND);
 
-	for (tmp = channel->invitelist; tmp != NULL; tmp = tmp->next)
-		printformat(server, channel->name, MSGLEVEL_CRAP, IRCTXT_INVITELIST, channel->name, tmp->data);
+	if (!channel->synced)
+		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
+
+	if (channel->invitelist == NULL) {
+		printformat(server, channel->name, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_NO_INVITELIST, channel->name);
+	} else {
+		for (tmp = channel->invitelist; tmp != NULL; tmp = tmp->next) {
+			printformat(server, channel->name, MSGLEVEL_CRAP,
+				    IRCTXT_INVITELIST,
+				    channel->name, tmp->data);
+		}
+	}
 }
 
 static void cmd_join(const char *data, IRC_SERVER_REC *server)
