@@ -411,6 +411,10 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 	server_redirect_destroy(rec);
 }
 
+#define REDIRECT_IS_TIMEOUTED(rec) \
+	((now-(rec)->created) > (rec)->cmd->timeout)
+
+
 static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 				   const char *args, const char **signal,
 				   int *match)
@@ -442,13 +446,18 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 		if (rec == redirect)
 			break;
 
-                next = tmp->next;
-		if (rec->destroyed ||
-		    (rec->remote && (now-rec->created) > rec->cmd->timeout) ||
-		    (!rec->remote && redirect != NULL)) {
-			if (rec->aborted || rec->remote ||
-			    ++rec->failures >= MAX_FAILURE_COUNT)
-				redirect_abort(server, rec);
+		next = tmp->next;
+		if (rec->destroyed) {
+                        /* redirection is finished, destroy it */
+			redirect_abort(server, rec);
+		} else if (redirect != NULL) {
+                        /* check if redirection failed */
+			if (rec->aborted ||
+			    ++rec->failures >= MAX_FAILURE_COUNT) {
+                                /* enough failures, abort it now */
+				if (!rec->remote || REDIRECT_IS_TIMEOUTED(rec))
+					redirect_abort(server, rec);
+			}
 		}
 	}
 
