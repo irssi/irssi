@@ -417,7 +417,7 @@ else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
 else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
 return 0; }
 EOF
-  $CC $CFLAGS conftest.c -o conftest $GLIB_CFLAGS $GLIB_LIBS 2> /dev/null > /dev/null
+  $CC $CFLAGS $LDFLAGS conftest.c -o conftest $GLIB_CFLAGS $GLIB_LIBS 2> /dev/null > /dev/null
   if test ! -s conftest; then
     AC_MSG_RESULT([no, error compiling test program])
   else
