@@ -76,6 +76,9 @@ void window_remove_item(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 
 	signal_emit("window item remove", 2, window, item);
+
+	if (settings_get_bool("window_close_on_part") && windows->next != NULL)
+		window_destroy(window);
 }
 
 WINDOW_REC *window_item_window(WI_ITEM_REC *item)
@@ -278,6 +281,8 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 
 void window_items_init(void)
 {
+	settings_add_bool("lookandfeel", "window_close_on_part", TRUE);
+
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 }
 
