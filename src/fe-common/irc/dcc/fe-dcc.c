@@ -306,7 +306,7 @@ static void cmd_msg(const char *data)
 		return;
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
-	if (dcc == NULL) {
+	if (dcc == NULL || dcc->sendbuf == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
@@ -349,7 +349,7 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
 	if (*target == '\0' || *text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
-	if (dcc == NULL) {
+	if (dcc == NULL || dcc->sendbuf == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
@@ -379,7 +379,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 	}
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, target+1, NULL);
-	if (dcc == NULL) {
+	if (dcc == NULL || dcc->sendbuf == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {

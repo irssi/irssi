@@ -201,7 +201,7 @@ void dcc_ctcp_message(const char *target, IRC_SERVER_REC *server, DCC_REC *chat,
 {
 	char *str;
 
-	if (chat != NULL) {
+	if (chat != NULL && chat->sendbuf != NULL) {
 		/* send it via open DCC chat */
 		str = g_strdup_printf("%s\001%s\001", chat->mirc_ctcp ? "" :
 				      notice ? "CTCP_REPLY " : "CTCP_MESSAGE ", msg);

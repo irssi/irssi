@@ -38,6 +38,7 @@
 void dcc_chat_send(DCC_REC *dcc, const char *data)
 {
         g_return_if_fail(dcc != NULL);
+        g_return_if_fail(dcc->sendbuf != NULL);
 	g_return_if_fail(data != NULL);
 
 	net_sendbuffer_send(dcc->sendbuf, data, strlen(data));
@@ -73,7 +74,8 @@ static void cmd_msg(const char *data)
 		return;
 
 	dcc = dcc_find_item(DCC_TYPE_CHAT, ++target, NULL);
-	if (dcc != NULL) dcc_chat_send(dcc, text);
+	if (dcc != NULL && dcc->sendbuf != NULL)
+		dcc_chat_send(dcc, text);
 
 	cmd_params_free(free_arg);
 	signal_stop();
