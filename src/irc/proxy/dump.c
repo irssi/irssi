@@ -217,7 +217,10 @@ void proxy_client_reset_nick(CLIENT_REC *client)
 
 static void proxy_dump_data_005(gpointer key, gpointer value, gpointer context)
 {
-	g_string_sprintfa(context, "%s=%s ", (char *)key, (char *)value);
+	if (*(char *)value != '\0')
+		g_string_sprintfa(context, "%s=%s ", (char *)key, (char *)value);
+	else
+		g_string_sprintfa(context, "%s ", (char *)key);
 }
 
 void proxy_dump_data(CLIENT_REC *client)
