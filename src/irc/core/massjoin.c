@@ -66,19 +66,22 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		chanrec->last_massjoins = 0;
 	}
 
-	/* Check if user is already in some other channel,
-	   get the realname from there */
-	nicks = nicklist_get_same(server, nick);
-	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
-		NICK_REC *rec = tmp->next->data;
+	if (nickrec->realname == NULL) {
+		/* Check if user is already in some other channel,
+		   get the realname and other stuff from there */
+		nicks = nicklist_get_same(server, nick);
+		for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+			NICK_REC *rec = tmp->next->data;
 
-		if (rec->realname != NULL) {
-			nickrec->last_check = rec->last_check;
-			nickrec->realname = g_strdup(rec->realname);
-			nickrec->gone = rec->gone;
+			if (rec->realname != NULL) {
+				nickrec->last_check = rec->last_check;
+				nickrec->realname = g_strdup(rec->realname);
+				nickrec->gone = rec->gone;
+				break;
+			}
 		}
+		g_slist_free(nicks);
 	}
-	g_slist_free(nicks);
 
 	chanrec->massjoins++;
 }
