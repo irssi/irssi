@@ -54,7 +54,8 @@ typedef struct {
 } TEXT_DEST_REC;
 
 #define window_get_theme(window) \
-	((window)->theme != NULL ? (window)->theme : current_theme)
+	(window != NULL && (window)->theme != NULL ? \
+	(window)->theme : current_theme)
 
 int format_find_tag(const char *module, const char *tag);
 
