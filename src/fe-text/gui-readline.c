@@ -300,6 +300,10 @@ static void paste_send(void)
 		} else if (active_entry->utf8) {
 			out[utf16_char_to_utf8(arr[i], out)] = '\0';
 			g_string_append(str, out);
+		} else if (term_type == TERM_TYPE_BIG5) {
+			if (arr[i] > 0xff)
+				g_string_append_c(str, (arr[i] >> 8) & 0xff);
+			g_string_append_c(str, arr[i] & 0xff);
 		} else {
 			g_string_append_c(str, arr[i]);
 		}

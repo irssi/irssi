@@ -68,28 +68,91 @@ void gui_entry_destroy(GUI_ENTRY_REC *entry)
         g_free(entry);
 }
 
-/* Fixes the cursor position if it at big5_lo .
-   Direct: -1    ,  left shift 1 byte.
-   Direct: 0, +1 ,  right shift 1 byte.
-*/
-static int _fix_big5_pos(unichar *p, int pos, int direct)
+/* big5 functions */
+#define big5_width(ch) ((ch)>0xff ? 2:1)
+
+void unichars_to_big5(const unichar *str, char *out)
 {
-	int newpos;
+	for (; *str != '\0'; str++) {
+		if (*str > 0xff)
+			*out++ = (*str >> 8) & 0xff;
+		*out++ = *str & 0xff;
+	}
+	*out = '\0';
+}
+
+int strlen_big5(const unsigned char *str)
+{
+	int len=0;
 
 	if (term_type != TERM_TYPE_BIG5)
-		return pos;
+		return strlen(str);
 
-	for (newpos = 0; newpos < pos && p[newpos] != 0; ) {
-		if (is_big5(p[newpos], p[newpos+1]))
-			newpos += 2;
+	while (*str != '\0') {
+		if (is_big5(str[0], str[1]))
+			str++;
+		len++;
+		str++;
+	}
+	return len;
+}
+
+void big5_to_unichars(const char *str, unichar *out)
+{
+	const unsigned char *p = (const unsigned char *) str;
+
+	while (*p != '\0') {
+		if (is_big5(p[0], p[1])) {
+			*out++ = p[0] << 8 | p[1];
+			p += 2;
+		} else {
+			*out++ = *p++;
+		}
+	}
+	*out = '\0';
+}
+
+/* ----------------------------- */
+
+static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
+{
+	unichar *p;
+	int xpos = 0;
+
+	for (p = entry->text; p - entry->text < pos; p++) {
+		if (term_type == TERM_TYPE_BIG5)
+			xpos += big5_width(*p);
+		else if (entry->utf8)
+			xpos += utf8_width(*p);
 		else
-			newpos++;
+			xpos++;
+	}
+	return xpos;
+}
+
+static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
+{
+	int i, width, xpos;
+
+	for (i = 0, xpos = 0; entry->text[i]; i++) {
+		unichar *p = entry->text+i;
+
+		if (term_type == TERM_TYPE_BIG5)
+			width = big5_width(*p);
+		else if (entry->utf8)
+			width = utf8_width(*p);
+		else
+			width = 1;
+
+		if (xpos + width > pos)
+			break;
+		xpos += width;
 	}
 
-	if (newpos != pos)
-		pos += direct > 0 ? 1 : -1;
-
-	return pos;
+	if (xpos == pos)
+		return i;
+	else
+		return i-1;
 }
 
 /* Fixes the cursor position in screen */
@@ -97,19 +160,22 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 {
 	int old_scrstart;
 
-        old_scrstart = entry->scrstart;
-	if (entry->pos - entry->scrstart < entry->width-2 - entry->promptlen &&
-	    entry->pos - entry->scrstart > 0) {
-		entry->scrpos = entry->pos - entry->scrstart;
-	} else if (entry->pos < entry->width-1 - entry->promptlen) {
-		entry->scrstart = 0;
-		entry->scrpos = entry->pos;
-	} else {
-		entry->scrpos = (entry->width - entry->promptlen)*2/3;
-		entry->scrstart = entry->pos - entry->scrpos;
-	}
+	/* assume prompt len == prompt scrlen */
+	int start = pos2scrpos(entry, entry->scrstart);
+	int now = pos2scrpos(entry, entry->pos);
 
-	entry->scrstart = _fix_big5_pos(entry->text, entry->scrstart, -1);
+	old_scrstart = entry->scrstart;
+	if (now-start < entry->width - 2 - entry->promptlen && now-start > 0)
+		entry->scrpos = now-start;
+	else if (now < entry->width - 1 - entry->promptlen) {
+		entry->scrstart = 0;
+		entry->scrpos = now;
+	} else {
+		entry->scrstart = scrpos2pos(entry, now-(entry->width -
+							 entry->promptlen)*2/3);
+		start = pos2scrpos(entry, entry->scrstart);
+		entry->scrpos = now - start;
+	}
 
 	if (old_scrstart != entry->scrstart)
                 entry->redraw_needed_from = 0;
@@ -120,8 +186,11 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	const unichar *p;
 	int xpos, end_xpos;
 
-        xpos = entry->xpos + entry->promptlen + pos;
+	xpos = entry->xpos + entry->promptlen + 
+		pos2scrpos(entry, pos + entry->scrstart) - 
+		pos2scrpos(entry, entry->scrstart);
         end_xpos = entry->xpos + entry->width;
+
 	if (xpos > end_xpos)
                 return;
 
@@ -131,7 +200,15 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	p = entry->scrstart + pos < entry->text_len ?
 		entry->text + entry->scrstart + pos : empty_str;
 	for (; *p != '\0'; p++) {
-		xpos += utf8_width(*p);
+		if (entry->hidden)
+			xpos++;
+		else if (term_type == TERM_TYPE_BIG5)
+			xpos += big5_width(*p);
+		else if (entry->utf8)
+			xpos += utf8_width(*p);
+		else
+			xpos++;
+
 		if (xpos > end_xpos)
 			break;
 
@@ -285,8 +362,11 @@ char *gui_entry_get_text(GUI_ENTRY_REC *entry)
 	if (entry->utf8)
 		utf16_to_utf8(entry->text, buf);
 	else {
-		for (i = 0; i <= entry->text_len; i++)
-			buf[i] = entry->text[i];
+		if (term_type == TERM_TYPE_BIG5)
+			unichars_to_big5(entry->text, buf);
+		else
+			for (i = 0; i <= entry->text_len; i++)
+				buf[i] = entry->text[i];
 	}
 	return buf;
 }
@@ -301,7 +381,7 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 
         gui_entry_redraw_from(entry, entry->pos);
 
-	len = !entry->utf8 ? strlen(str) : strlen_utf8(str);
+	len = !entry->utf8 ? strlen_big5(str) : strlen_utf8(str);
         entry_text_grow(entry, len);
 
         /* make space for the string */
@@ -309,8 +389,14 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
 
 	if (!entry->utf8) {
-		for (i = 0; i < len; i++)
-                        entry->text[entry->pos+i] = str[i];
+		if (term_type == TERM_TYPE_BIG5) {
+			chr = entry->text[entry->pos + len];
+			big5_to_unichars(str, entry->text + entry->pos);
+			entry->text[entry->pos + len] = chr;
+		} else {
+			for (i = 0; i < len; i++)
+				entry->text[entry->pos + i] = str[i];
+		}
 	} else {
                 chr = entry->text[entry->pos+len];
 		utf8_to_utf16(str, entry->text+entry->pos);
@@ -360,7 +446,9 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 	buf = g_malloc(entry->cutbuffer_len*6 + 1);
 	if (entry->utf8)
 		utf16_to_utf8(entry->cutbuffer, buf);
-	else {
+	else if (term_type == TERM_TYPE_BIG5) {
+		unichars_to_big5(entry->cutbuffer, buf);
+	} else {
 		for (i = 0; i <= entry->cutbuffer_len; i++)
 			buf[i] = entry->cutbuffer[i];
 	}
@@ -374,23 +462,16 @@ void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, int update_cutbuffer)
 	g_return_if_fail(entry != NULL);
 
 	for (newpos = gui_entry_get_pos(entry); newpos > pos; size++)
-		newpos = _fix_big5_pos(entry->text, newpos - 1, -1);
+		newpos = newpos - 1;
 	gui_entry_erase(entry, size, update_cutbuffer);
 }
 
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 {
-	int newpos;
-
         g_return_if_fail(entry != NULL);
 
 	if (entry->pos < size)
 		return;
-
-	/* recount the erase size with big5 charsets */
-	for (newpos = entry->pos; newpos > 0 && size > 0; size--)
-		newpos = _fix_big5_pos(entry->text, newpos-1, -1);
-	size = entry->pos - newpos;
 
 	if (update_cutbuffer) {
 		/* put erased text to cutbuffer */
@@ -515,24 +596,10 @@ void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos)
 
 void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 {
-	int newpos;
-
         g_return_if_fail(entry != NULL);
 
-	/* move cursor with big5 charset */
-	newpos = _fix_big5_pos(entry->text, entry->pos, -1);
-	if (pos > 0) {
-		while (pos > 0 && newpos < entry->text_len) {
-			newpos = _fix_big5_pos(entry->text, newpos+1, 1);
-			pos--;
-		}
-	} else {
-		while (pos < 0 && newpos > 0) {
-			newpos = _fix_big5_pos(entry->text, newpos-1, -1);
-			pos++;
-		}
-	}
-	entry->pos = newpos;
+	if (entry->pos + pos >= 0 && entry->pos + pos <= entry->text_len)
+		entry->pos += pos;
 
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);

@@ -435,7 +435,12 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			unichar chr = get_utf8_char(&end, 6);
 			char_width = utf8_width(chr);
 		} else {
-			char_width = 1;
+			if (term_type == TERM_TYPE_BIG5 &&
+			    is_big5(end[0], end[1]))
+				char_width = 2;
+			else
+				char_width = 1;
+			end += char_width-1;
 		}
 
 		xpos += char_width;

@@ -255,7 +255,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 		if (flags & GUI_PRINT_FLAG_CLRTOEOL)
 			term_clrtoeol(root_window);
 		term_addstr(root_window, str);
-		next_xpos += strlen(str);
+		next_xpos += strlen(str); /* FIXME utf8 or big5 */
                 return;
 	}
 
