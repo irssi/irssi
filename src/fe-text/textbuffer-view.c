@@ -20,7 +20,6 @@
 
 #include "module.h"
 #include "textbuffer-view.h"
-#include "screen.h"
 
 typedef struct {
 	char *name;
@@ -102,6 +101,46 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
                 textbuffer_cache_destroy(cache);
 }
 
+#define FGATTR (ATTR_NOCOLORS | ATTR_RESETBG | ATTR_BLINK | 0xf0)
+#define BGATTR (ATTR_NOCOLORS | ATTR_RESETFG | ATTR_BOLD | 0x0f)
+
+static void update_cmd_color(unsigned char cmd, int *color)
+{
+	if ((cmd & 0x80) == 0) {
+		if (cmd & LINE_COLOR_BG) {
+			/* set background color */
+			*color &= BGATTR;
+			if ((cmd & LINE_COLOR_DEFAULT) == 0)
+				*color |= (cmd & 0x0f) << 4;
+			else {
+				*color |= ATTR_RESETBG;
+                                if (cmd & LINE_COLOR_BLINK)
+					*color |= ATTR_BLINK;
+			}
+		} else {
+			/* set foreground color */
+			*color &= FGATTR;
+			if ((cmd & LINE_COLOR_DEFAULT) == 0)
+				*color |= cmd & 0x0f;
+			else {
+				*color |= ATTR_RESETFG;
+                                if (cmd & LINE_COLOR_BOLD)
+					*color |= ATTR_BOLD;
+			}
+		}
+	} else switch (cmd) {
+	case LINE_CMD_UNDERLINE:
+		*color ^= ATTR_UNDERLINE;
+		break;
+	case LINE_CMD_REVERSE:
+		*color ^= ATTR_REVERSE;
+		break;
+	case LINE_CMD_COLOR0:
+		*color &= BGATTR;
+		break;
+	}
+}
+
 static LINE_CACHE_REC *
 view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
@@ -115,7 +154,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	g_return_val_if_fail(line->text != NULL, NULL);
 
-	xpos = 0; color = 0; indent_pos = view->default_indent;
+	color = ATTR_RESETFG | ATTR_RESETBG;
+	xpos = 0; indent_pos = view->default_indent;
 	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
 
         indent_func = view->default_indent_func;
@@ -139,38 +179,17 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				continue;
 			}
 
-			if ((cmd & 0x80) == 0) {
-				/* set color */
-				color = (color & ATTR_NOCOLORS) | cmd;
-			} else switch (cmd) {
-			case LINE_CMD_UNDERLINE:
-				color ^= ATTR_UNDERLINE;
-				break;
-			case LINE_CMD_REVERSE:
-				color ^= ATTR_REVERSE;
-				break;
-			case LINE_CMD_COLOR0:
-				color = color & ATTR_NOCOLORS;
-				break;
-			case LINE_CMD_COLOR8:
-				color &= 0xfff0;
-				color |= 8|ATTR_COLOR8;
-				break;
-			case LINE_CMD_BLINK:
-				color |= 0x80;
-				break;
-			case LINE_CMD_INDENT:
+			if (cmd == LINE_CMD_INDENT) {
 				/* set indentation position here - don't do
 				   it if we're too close to right border */
 				if (xpos < view->width-5) indent_pos = xpos;
-				break;
-			case LINE_CMD_INDENT_FUNC:
+			} else if (cmd == LINE_CMD_INDENT_FUNC) {
 				memcpy(&indent_func, ptr, sizeof(INDENT_FUNC));
 				ptr += sizeof(INDENT_FUNC);
 				if (indent_func == NULL)
                                         indent_func = view->default_indent_func;
-				break;
-			}
+			} else
+				update_cmd_color(cmd, &color);
 			continue;
 		}
 
@@ -306,9 +325,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			}
 
                         /* first clear the line */
-			screen_set_color(view->window, 0);
-			screen_move(view->window, 0, ypos);
-			screen_clrtoeol(view->window);
+			term_set_color(view->window, ATTR_RESET);
+			term_move(view->window, 0, ypos);
+			term_clrtoeol(view->window);
 
 			if (subline > 0) {
                                 indent_func = cache->lines[subline-1].indent_func;
@@ -318,8 +337,8 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                                 color = cache->lines[subline-1].color;
 			}
 
-			screen_move(view->window, xpos, ypos);
-			screen_set_color(view->window, color);
+			term_move(view->window, xpos, ypos);
+			term_set_color(view->window, color);
 
 			/* get the beginning of the next subline */
 			text_newline = subline == cache->count-1 ? NULL :
@@ -335,47 +354,28 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (*text == LINE_CMD_EOL || *text == LINE_CMD_FORMAT)
                                 break;
 
-			if ((*text & 0x80) == 0) {
-				/* set color */
-				color = (color & ATTR_NOCOLORS) | *text;
-			} else if (*text == LINE_CMD_CONTINUE) {
+			if (*text == LINE_CMD_CONTINUE) {
                                 /* jump to next block */
 				memcpy(&tmp, text+1, sizeof(unsigned char *));
 				text = tmp;
 				continue;
-			} else switch (*text) {
-			case LINE_CMD_UNDERLINE:
-				color ^= ATTR_UNDERLINE;
-				break;
-			case LINE_CMD_REVERSE:
-				color ^= ATTR_REVERSE;
-				break;
-			case LINE_CMD_COLOR0:
-				color = color & ATTR_NOCOLORS;
-				break;
-			case LINE_CMD_COLOR8:
-				color &= 0xfff0;
-				color |= 8|ATTR_COLOR8;
-				break;
-			case LINE_CMD_BLINK:
-				color |= 0x80;
-				break;
-			case LINE_CMD_INDENT_FUNC:
-                                text += sizeof(INDENT_FUNC);
-                                break;
+			} else if (*text == LINE_CMD_INDENT_FUNC) {
+				text += sizeof(INDENT_FUNC);
+			} else {
+				update_cmd_color(*text, &color);
+				term_set_color(view->window, color);
 			}
-			screen_set_color(view->window, color);
 			text++;
 			continue;
 		}
 
 		if ((*text & 127) >= 32)
-			screen_addch(view->window, *text);
+			term_addch(view->window, *text);
 		else {
 			/* low-ascii */
-			screen_set_color(view->window, ATTR_REVERSE);
-			screen_addch(view->window, (*text & 127)+'A'-1);
-			screen_set_color(view->window, color);
+			term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
+			term_addch(view->window, (*text & 127)+'A'-1);
+			term_set_color(view->window, color);
 		}
 		text++;
 	}
@@ -594,9 +594,10 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	}
 
         /* clear the rest of the view */
+	term_set_color(view->window, ATTR_RESET);
 	while (lines > 0) {
-		screen_move(view->window, 0, ypos);
-		screen_clrtoeol(view->window);
+		term_move(view->window, 0, ypos);
+		term_clrtoeol(view->window);
 		ypos++; lines--;
 	}
 }
@@ -682,7 +683,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 			   whole view */
                         textbuffer_view_redraw(view);
 		} else {
-			screen_window_scroll(view->window, realcount);
+			term_window_scroll(view->window, realcount);
 
 			if (draw_nonclean) {
 				if (realcount < 0)
@@ -691,7 +692,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 					view_draw_bottom(view, realcount);
 			}
 
-			screen_refresh(view->window);
+			term_refresh(view->window);
 		}
 	}
 
@@ -792,7 +793,7 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 	view->bottom = view_is_bottom(view);
 
         if (view->window != NULL)
-		screen_refresh(view->window);
+		term_refresh(view->window);
 }
 
 /* Scroll to specified line */
@@ -888,7 +889,7 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	}
 
         if (view->window != NULL)
-		screen_refresh(view->window);
+		term_refresh(view->window);
 }
 
 /* Update some line in the buffer which has been modified using
@@ -1051,7 +1052,7 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 	view->bottom = view_is_bottom(view);
         if (view->window != NULL)
-		screen_refresh(view->window);
+		term_refresh(view->window);
 }
 
 /* Remove one line from buffer. */
@@ -1147,7 +1148,7 @@ LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 /* Specify window where the changes in view should be drawn,
    NULL disables it. */
 void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
-				SCREEN_WINDOW *window)
+				TERM_WINDOW *window)
 {
 	g_return_if_fail(view != NULL);
 
@@ -1164,9 +1165,9 @@ void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 	g_return_if_fail(view != NULL);
 
 	if (view->window != NULL) {
-                screen_window_clear(view->window);
+                term_window_clear(view->window);
 		view_draw_top(view, view->height);
-		screen_refresh(view->window);
+		term_refresh(view->window);
 	}
 }
 

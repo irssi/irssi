@@ -2,7 +2,7 @@
 #define __MAINWINDOWS_H
 
 #include "fe-windows.h"
-#include "screen.h"
+#include "term.h"
 
 #define WINDOW_MIN_SIZE 2
 
@@ -12,7 +12,7 @@
 typedef struct {
 	WINDOW_REC *active;
 
-	SCREEN_WINDOW *screen_win;
+	TERM_WINDOW *screen_win;
         int sticky_windows; /* number of sticky windows */
 
 	int first_line, last_line; /* first/last line used by this window (0..x) (includes statusbars) */

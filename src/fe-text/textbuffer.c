@@ -340,16 +340,55 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 	buffer->last_eol = TRUE;
 }
 
+static void set_color(GString *str, int cmd, int *last_fg, int *last_bg)
+{
+	if (cmd & LINE_COLOR_DEFAULT) {
+		g_string_sprintfa(str, "\004%c", FORMAT_STYLE_DEFAULTS);
+
+		/* need to reset the fg/bg color */
+		if (cmd & LINE_COLOR_BG) {
+                        *last_bg = -1;
+			if (*last_fg != -1) {
+				g_string_sprintfa(str, "\004%c%c",
+						  *last_fg,
+						  FORMAT_COLOR_NOCHANGE);
+			}
+		} else {
+                        *last_fg = -1;
+			if (*last_bg != -1) {
+				g_string_sprintfa(str, "\004%c%c",
+						  FORMAT_COLOR_NOCHANGE,
+						  *last_bg);
+			}
+		}
+                return;
+	}
+
+	if ((cmd & LINE_COLOR_BG) == 0) {
+                /* change foreground color */
+                *last_fg = (cmd & 0x0f)+'0';
+		g_string_sprintfa(str, "\004%c%c", *last_fg,
+				  FORMAT_COLOR_NOCHANGE);
+	} else {
+		/* change background color */
+                *last_bg = (cmd & 0x0f)+'0';
+		g_string_sprintfa(str, "\004%c%c",
+				  FORMAT_COLOR_NOCHANGE, *last_bg);
+	}
+}
+
 void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 {
         unsigned char cmd;
 	char *ptr, *tmp;
+        int last_fg, last_bg;
 
 	g_return_if_fail(line != NULL);
 	g_return_if_fail(str != NULL);
 
         g_string_truncate(str, 0);
 
+        last_fg = last_bg = -1;
 	for (ptr = line->text;;) {
 		if (*ptr != 0) {
 			g_string_append_c(str, *ptr);
@@ -380,9 +419,7 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 
 		if ((cmd & 0x80) == 0) {
 			/* set color */
-			g_string_sprintfa(str, "\004%c%c",
-					  (cmd & 0x0f)+'0',
-					  ((cmd & 0xf0) >> 4)+'0');
+                        set_color(str, cmd, &last_fg, &last_bg);
 		} else switch (cmd) {
 		case LINE_CMD_UNDERLINE:
 			g_string_append_c(str, 31);
@@ -393,13 +430,6 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 		case LINE_CMD_COLOR0:
 			g_string_sprintfa(str, "\004%c%c",
 					  '0', FORMAT_COLOR_NOCHANGE);
-			break;
-		case LINE_CMD_COLOR8:
-			g_string_sprintfa(str, "\004%c%c",
-					  '8', FORMAT_COLOR_NOCHANGE);
-			break;
-		case LINE_CMD_BLINK:
-			g_string_sprintfa(str, "\004%c", FORMAT_STYLE_BLINK);
 			break;
 		case LINE_CMD_INDENT:
 			break;

@@ -38,7 +38,7 @@ static void window_lastlog_clear(WINDOW_REC *window)
 	TEXT_BUFFER_VIEW_REC *view;
         LINE_REC *line, *next;
 
-        screen_refresh_freeze();
+        term_refresh_freeze();
 	view = WINDOW_GUI(window)->view;
 	line = textbuffer_view_get_lines(view);
 
@@ -50,7 +50,7 @@ static void window_lastlog_clear(WINDOW_REC *window)
                 line = next;
 	}
         textbuffer_view_redraw(view);
-        screen_refresh_thaw();
+        term_refresh_thaw();
 }
 
 /* Only unknown keys in `optlist' should be levels.

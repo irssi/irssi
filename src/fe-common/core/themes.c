@@ -799,9 +799,11 @@ static int theme_read(THEME_REC *theme, const char *path, const char *data)
 	}
 
 	theme->default_color =
-		config_get_int(config, NULL, "default_color", 0);
-	theme->default_real_color =
-		config_get_int(config, NULL, "default_real_color", 7);
+		config_get_int(config, NULL, "default_color", -1);
+	/* FIXME: remove after 0.7.99 */
+	if (theme->default_color == 0 &&
+	    config_get_int(config, NULL, "default_real_color", -1) != -1)
+                theme->default_color = -1;
 	theme_read_replaces(config, theme);
 
 	if (data == NULL) {
@@ -1141,8 +1143,7 @@ static void themes_read(void)
 	if (current_theme == NULL) {
 		fname = g_strdup_printf("%s/default.theme", get_irssi_dir());
 		current_theme = theme_create(fname, "default");
-		current_theme->default_color = 0;
-		current_theme->default_real_color = 7;
+		current_theme->default_color = -1;
                 theme_read(current_theme, NULL, default_theme);
 		g_free(fname);
 	}

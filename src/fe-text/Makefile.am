@@ -19,9 +19,27 @@ irssi_LDADD = \
 	@COMMON_LIBS@ \
 	@PERL_LINK_LIBS@ \
 	@PERL_FE_LINK_LIBS@ \
-	@PERL_LINK_FLAGS@ \
-	$(PROG_LIBS) \
-        $(CURSES_LIBS)
+	@PERL_LINK_FLAGS@
+
+tparm_sources = \
+	tparm.c
+
+terminfo_sources = \
+        term-terminfo.c \
+        terminfo-core.c
+
+curses_sources = \
+	term-curses.c
+
+if NEED_TPARM
+use_tparm_sources = $(tparm_sources)
+endif
+
+if USE_CURSES
+use_term_sources = $(curses_sources)
+else
+use_term_sources = $(terminfo_sources)
+endif
 
 irssi_SOURCES = \
         gui-entry.c \
@@ -33,10 +51,12 @@ irssi_SOURCES = \
         mainwindows.c \
         mainwindow-activity.c \
         mainwindows-layout.c \
-        screen.c \
         statusbar.c \
         statusbar-config.c \
         statusbar-items.c \
+        term.c \
+	$(use_tparm_sources) \
+	$(use_term_sources) \
         textbuffer.c \
         textbuffer-commands.c \
         textbuffer-reformat.c \
@@ -50,12 +70,18 @@ noinst_HEADERS = \
         gui-readline.h \
         gui-windows.h \
         mainwindows.h \
-        screen.h \
         statusbar.h \
         statusbar-config.h \
         statusbar-items.h \
+	term.h \
+	terminfo-core.h \
         textbuffer.h \
         textbuffer-view.h \
         textbuffer-reformat.h \
 	module.h \
 	module-formats.h
+
+EXTRA_DIST = \
+	$(tparm_sources) \
+	$(terminfo_sources) \
+	$(curses_sources)

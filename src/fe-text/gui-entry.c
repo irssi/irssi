@@ -23,7 +23,7 @@
 
 #include "gui-entry.h"
 #include "gui-printtext.h"
-#include "screen.h"
+#include "term.h"
 
 GUI_ENTRY_REC *active_entry;
 
@@ -76,36 +76,36 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	if (xpos > end_xpos)
                 return;
 
-	screen_set_color(screen_root, 0);
-	screen_move(screen_root, xpos, entry->ypos);
+	term_set_color(root_window, ATTR_RESET);
+	term_move(root_window, xpos, entry->ypos);
 
 	p = entry->scrstart + pos >= entry->text->len ? "" :
 		entry->text->str + entry->scrstart + pos;
 	for (; *p != '\0' && xpos < end_xpos; p++, xpos++) {
 		if (entry->hidden)
-                        screen_addch(screen_root, ' ');
+                        term_addch(root_window, ' ');
 		else if ((unsigned char) *p >= 32)
-			screen_addch(screen_root, (unsigned char) *p);
+			term_addch(root_window, (unsigned char) *p);
 		else {
-			screen_set_color(screen_root, ATTR_REVERSE);
-			screen_addch(screen_root, *p+'A'-1);
-			screen_set_color(screen_root, 0);
+			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
+			term_addch(root_window, *p+'A'-1);
+			term_set_color(root_window, ATTR_RESET);
 		}
 	}
 
         /* clear the rest of the input line */
-        if (end_xpos == screen_width)
-		screen_clrtoeol(screen_root);
+        if (end_xpos == term_width)
+		term_clrtoeol(root_window);
 	else {
 		while (xpos < end_xpos) {
-                        screen_addch(screen_root, ' ');
+                        term_addch(root_window, ' ');
                         xpos++;
 		}
 	}
 
-	screen_move_cursor(entry->xpos + entry->scrpos + entry->promptlen,
-			   entry->ypos);
-	screen_refresh(NULL);
+	term_move_cursor(entry->xpos + entry->scrpos + entry->promptlen,
+			 entry->ypos);
+	term_refresh(NULL);
 }
 
 static void gui_entry_draw(GUI_ENTRY_REC *entry)
@@ -153,9 +153,9 @@ void gui_entry_set_active(GUI_ENTRY_REC *entry)
 	active_entry = entry;
 
 	if (entry != NULL) {
-		screen_move_cursor(entry->xpos + entry->scrpos +
-				   entry->promptlen, entry->ypos);
-		screen_refresh(NULL);
+		term_move_cursor(entry->xpos + entry->scrpos +
+				 entry->promptlen, entry->ypos);
+		term_refresh(NULL);
 	}
 }
 

@@ -29,7 +29,7 @@
 #include "keyboard.h"
 #include "translation.h"
 
-#include "screen.h"
+#include "term.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
 
@@ -330,7 +330,7 @@ void readline(void)
 	int key;
 
 	for (;;) {
-		key = screen_getch();
+		key = term_getch();
 		if (key == -1)
                         break;
 
@@ -485,6 +485,11 @@ static void key_insert_text(const char *data)
         g_free(str);
 }
 
+static void key_sig_stop(void)
+{
+        term_stop();
+}
+
 static void sig_window_auto_changed(void)
 {
 	command_history_next(active_win, gui_entry_get_text(active_entry));
@@ -615,15 +620,20 @@ void gui_readline_init(void)
         /* inserting special input characters to line.. */
 	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
 
+        /* autoreplaces */
 	key_bind("multi", NULL, "return", "check_replaces;send_line", NULL);
 	key_bind("multi", NULL, "space", "check_replaces;insert_text  ", NULL);
 
+        /* moving between windows */
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("meta-%c", changekeys[n]);
 		ltoa(data, n+1);
 		key_bind("change_window", "Change window", key, data, (SIGNAL_FUNC) key_change_window);
 		g_free(key);
 	}
+
+        /* misc */
+	key_bind("stop_irc", "Send SIGSTOP to client", "^Z", NULL, (SIGNAL_FUNC) key_sig_stop);
 
         key_configure_thaw();
 
@@ -681,6 +691,7 @@ void gui_readline_deinit(void)
 
 	key_unbind("insert_text", (SIGNAL_FUNC) key_insert_text);
 	key_unbind("change_window", (SIGNAL_FUNC) key_change_window);
+	key_unbind("stop_irc", (SIGNAL_FUNC) key_sig_stop);
         keyboard_destroy(keyboard);
 
         key_configure_thaw();

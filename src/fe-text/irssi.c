@@ -32,7 +32,7 @@
 #include "fe-common-irc.h"
 #include "themes.h"
 
-#include "screen.h"
+#include "term.h"
 #include "gui-entry.h"
 #include "mainwindows.h"
 #include "gui-printtext.h"
@@ -91,8 +91,8 @@ static void sig_exit(void)
 /* redraw irssi's screen.. */
 void irssi_redraw(void)
 {
-	screen_clear();
-	screen_refresh(NULL);
+	term_clear();
+	term_refresh(NULL);
 
 	/* windows */
         mainwindows_redraw();
@@ -116,7 +116,7 @@ static void textui_finish_init(void)
 {
 	quitting = FALSE;
 
-	screen_refresh_freeze();
+	term_refresh_freeze();
         textbuffer_init();
         textbuffer_view_init();
 	textbuffer_commands_init();
@@ -130,7 +130,7 @@ static void textui_finish_init(void)
 	mainwindows_layout_init();
 	gui_windows_init();
 	statusbar_init();
-	screen_refresh_thaw();
+	term_refresh_thaw();
 
 	settings_check();
 	module_register("core", "fe-text");
@@ -155,7 +155,7 @@ static void textui_deinit(void)
 	quitting = TRUE;
 	signal(SIGINT, SIG_DFL);
 
-        screen_refresh_freeze();
+        term_refresh_freeze();
 	while (modules != NULL)
 		module_unload(modules->data);
 
@@ -180,8 +180,8 @@ static void textui_deinit(void)
         textbuffer_view_deinit();
         textbuffer_deinit();
 
-        screen_refresh_thaw();
-	deinit_screen();
+        term_refresh_thaw();
+        term_deinit();
 
 	theme_unregister();
 
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 	textui_init();
 	args_execute(argc, argv);
 
-	if (!init_screen())
+	if (!term_init())
 		g_error("Can't initialize screen handling, quitting.\n");
 
 	textui_finish_init();

@@ -235,7 +235,7 @@ static void statusbar_redraw_items(STATUSBAR_REC *bar)
         if (bar->parent_window != NULL)
 		active_win = bar->parent_window->active;
 
-	statusbar_resize_items(bar, screen_width);
+	statusbar_resize_items(bar, term_width);
 
 	xpos = 0;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
@@ -248,7 +248,7 @@ static void statusbar_redraw_items(STATUSBAR_REC *bar)
 		}
 	}
 
-	rxpos = screen_width;
+	rxpos = term_width;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
@@ -282,10 +282,10 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 
 	if (bar == NULL) {
 		if (active_statusbar_group != NULL) {
-			screen_refresh_freeze();
+			term_refresh_freeze();
 			g_slist_foreach(active_statusbar_group->bars,
 					(GFunc) statusbar_redraw, NULL);
-			screen_refresh_thaw();
+			term_refresh_thaw();
 		}
 		return;
 	}
@@ -295,7 +295,7 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 	g_free(str);
 
 	statusbar_redraw_items(bar);
-        screen_refresh(NULL);
+        term_refresh(NULL);
 }
 
 void statusbar_item_redraw(SBAR_ITEM_REC *item)
@@ -317,7 +317,7 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 	} else {
 		/*FIXME:fprintf(stderr, "%s redrawing", item->config->name);*/
 		item->func(item, FALSE);
-                screen_refresh(NULL);
+                term_refresh(NULL);
 	}
 
 	active_win = old_active_win;
@@ -360,7 +360,7 @@ static void statusbars_recalc_ypos(STATUSBAR_REC *bar)
         /* get the Y-position for the first statusbar */
 	if (bar->config->type == STATUSBAR_TYPE_ROOT) {
 		ypos = bar->config->placement == STATUSBAR_TOP ? 0 :
-			screen_height - g_slist_length(bar_group);
+			term_height - g_slist_length(bar_group);
 	} else {
 		ypos = bar->config->placement == STATUSBAR_TOP ?
 			bar->parent_window->first_line :

@@ -25,14 +25,14 @@
 #include "formats.h"
 #include "printtext.h"
 
-#include "screen.h"
+#include "term.h"
 #include "gui-printtext.h"
 #include "gui-windows.h"
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7 };
 static int scrollback_lines, scrollback_hours, scrollback_burst_remove;
 
-static int last_color, last_flags;
+static int last_fg, last_bg, last_flags;
 static int next_xpos, next_ypos;
 
 static GHashTable *indent_functions;
@@ -137,51 +137,51 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	}
 }
 
-static void get_colors(int flags, int *fg, int *bg)
+static void get_colors(int flags, int *fg, int *bg, int *attr)
 {
 	if (flags & GUI_PRINT_FLAG_MIRC_COLOR) {
 		/* mirc colors - real range is 0..15, but after 16
 		   colors wrap to 0, 1, ... */
-		*bg = *bg < 0 ? 0 : mirc_colors[*bg % 16];
-		if (*fg > 0) *fg = mirc_colors[*fg % 16];
-	} else {
-		/* default colors */
-		*bg = *bg < 0 || *bg > 15 ? 0 : *bg;
-                if (*fg > 8) *fg &= ~8;
+                if (*bg >= 0) *bg = mirc_colors[*bg % 16];
+		if (*fg >= 0) *fg = mirc_colors[*fg % 16];
 	}
 
-	if (*fg < 0 || *fg > 15) {
-		*fg = *bg == 0 ? current_theme->default_color :
-			current_theme->default_real_color;
-	}
+	if (*fg < 0 || *fg > 15)
+		*fg = current_theme->default_color;
+	if (*bg < 0 || *bg > 15)
+                *bg = -1;
 
-	if (flags & GUI_PRINT_FLAG_REVERSE)
-                *fg |= ATTR_REVERSE;
-
-	if (*fg == 8) *fg |= ATTR_COLOR8;
-	if (flags & GUI_PRINT_FLAG_BOLD) {
-		if (*fg == 0) *fg = current_theme->default_real_color;
-		*fg |= 8;
-	}
-	if (flags & GUI_PRINT_FLAG_UNDERLINE) *fg |= ATTR_UNDERLINE;
-	if (flags & GUI_PRINT_FLAG_BLINK) *bg |= 0x08;
+	*attr = 0;
+	if (flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
+	if (flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
+	if (flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
+	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
 }
 
 static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 			    int fg, int bg, int flags)
 {
 	unsigned char data[20];
-	int color, pos;
+	int pos;
 
-	/* color should never have last bit on or it would be treated as a
-	   command! */
-	color = (fg & 0x0f) | ((bg & 0x07) << 4);
+        /* get the fg & bg command chars */
+	fg = fg < 0 ? LINE_COLOR_DEFAULT : fg & 0x0f;
+	bg = LINE_COLOR_BG | (bg < 0 ? LINE_COLOR_DEFAULT : bg & 0x0f);
+	if (flags & GUI_PRINT_FLAG_BOLD)
+		fg |= LINE_COLOR_BOLD;
+	if (flags & GUI_PRINT_FLAG_BLINK)
+                bg |= LINE_COLOR_BLINK;
+
 	pos = 0;
-
-	if (((fg & ATTR_COLOR8) == 0 && (fg|(bg << 4)) != last_color) ||
-	    ((fg & ATTR_COLOR8) && (fg & 0xf0) != (last_color & 0xf0))) {
+	if (fg != last_fg) {
+		last_fg = fg;
 		data[pos++] = 0;
-		data[pos++] = color == 0 ? LINE_CMD_COLOR0 : color;
+		data[pos++] = fg == 0 ? LINE_CMD_COLOR0 : fg;
+	}
+	if (bg != last_bg) {
+                last_bg = bg;
+		data[pos++] = 0;
+		data[pos++] = bg;
 	}
 
 	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
@@ -192,14 +192,6 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_REVERSE;
 	}
-	if (fg & ATTR_COLOR8) {
-		data[pos++] = 0;
-		data[pos++] = LINE_CMD_COLOR8;
-	}
-	if (bg & 0x08) {
-		data[pos++] = 0;
-		data[pos++] = LINE_CMD_BLINK;
-	}
 	if (flags & GUI_PRINT_FLAG_INDENT) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_INDENT;
@@ -209,7 +201,6 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		*line = textbuffer_insert(buffer, *line, data, pos, NULL);
 
 	last_flags = flags;
-	last_color = fg | (bg << 4);
 }
 
 static void line_add_indent_func(TEXT_BUFFER_REC *buffer, LINE_REC **line,
@@ -243,24 +234,24 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
         LINE_INFO_REC lineinfo;
-	int fg, bg, flags;
+	int fg, bg, flags, attr;
 
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
-	get_colors(flags, &fg, &bg);
+	get_colors(flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
                 g_return_if_fail(next_xpos != -1);
 
-		screen_move(screen_root, next_xpos, next_ypos);
-		if (flags & GUI_PRINT_FLAG_CLRTOEOL) {
-			screen_set_bg(screen_root, fg | (bg << 4));
-			screen_clrtoeol(screen_root);
-			screen_set_bg(screen_root, 0);
-		}
-		screen_set_color(screen_root, fg | (bg << 4));
-		screen_addstr(screen_root, str);
+		attr |= fg > 0 ? fg : ATTR_RESETFG;
+		attr |= bg > 0 ? (bg << 4) : ATTR_RESETBG;
+		term_set_color(root_window, attr);
+
+		term_move(root_window, next_xpos, next_ypos);
+		if (flags & GUI_PRINT_FLAG_CLRTOEOL)
+			term_clrtoeol(root_window);
+		term_addstr(root_window, str);
 		next_xpos += strlen(str);
                 return;
 	}
@@ -293,7 +284,7 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
 
-        last_color = 0;
+        last_fg = last_bg = -1;
 	last_flags = 0;
 
 	view = WINDOW_GUI(window)->view;

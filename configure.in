@@ -90,6 +90,18 @@ AC_ARG_WITH(proxy,
 	fi,
 	want_irssiproxy=no)
 
+AC_ARG_WITH(terminfo,
+[  --with-terminfo         Use terminfo directly instead of curses],
+	if test x$withval = xyes; then
+		want_terminfo=yes
+	else
+		if test "x$withval" = xno; then
+			want_terminfo=no
+		else
+			want_terminfo=yes
+		fi
+	fi,
+	want_terminfo=auto)
 
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
@@ -173,13 +185,6 @@ AC_ARG_WITH(tests,
 	TEST_DIR=)
 AC_SUBST(TEST_DIR)
 
-AC_ARG_ENABLE(curses-windows,
-[  --enable-curses-windows Use curses windows],
-	if test x$enableval != xno; then
-		AC_DEFINE(USE_CURSES_WINDOWS)
-	fi,
-	AC_DEFINE(USE_CURSES_WINDOWS))
-
 AC_ARG_ENABLE(memdebug,
 [  --enable-memdebug       Enable memory debugging],
 	if test x$enableval = xyes; then
@@ -213,11 +218,11 @@ dnl **
 AC_CHECK_FUNCS(mkfifo fcntl)
 
 AC_CHECK_LIB(socket, socket, [
-	PROG_LIBS="$PROG_LIBS -lsocket"
+	LIBS="$LIBS -lsocket"
 ])
 
 AC_CHECK_LIB(nsl, inet_addr, [
-	PROG_LIBS="$PROG_LIBS -lnsl"
+	LIBS="$LIBS -lnsl"
 ], -lsocket)
 
 dnl * gcc specific options
@@ -256,7 +261,7 @@ dnl **
 
 if test "x$want_socks" = "xyes"; then
 	AC_CHECK_LIB(socks, connect, [
-		PROG_LIBS="$PROG_LIBS -lsocks"
+		LIBS="$LIBS -lsocks"
 		AC_CHECK_HEADER(socks.h, [
 			AC_DEFINE(HAVE_SOCKS_H)
 			CFLAGS="$CFLAGS -DSOCKS"
@@ -369,7 +374,7 @@ if test -z "$GLIB_DIR"; then
   fi
 fi
 
-PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
+LIBS="$LIBS $GLIB_LIBS"
 
 dnl **
 dnl ** check if we can link dynamic libraries to modules
@@ -434,35 +439,38 @@ dnl **
 if test "x$want_textui" = "xyes"; then
 	AC_CHECK_CURSES
 
-	if test -n "$has_ncurses"; then
-		AC_CHECK_LIB(ncurses, use_default_colors, [
-			AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS)
-		],, $CURSES_LIBS)
-		AC_CHECK_LIB(ncurses, idcok, [
-			AC_DEFINE(HAVE_CURSES_IDCOK)
-		],, $CURSES_LIBS)
-		AC_CHECK_LIB(ncurses, resizeterm, [
-			AC_DEFINE(HAVE_CURSES_RESIZETERM)
-		],, $CURSES_LIBS)
-		AC_CHECK_LIB(ncurses, wresize, [
-			AC_DEFINE(HAVE_CURSES_WRESIZE)
-		],, $CURSES_LIBS)
-	elif test "x$has_curses" = "xtrue"; then
-		AC_CHECK_LIB(curses, idcok, [
-			AC_DEFINE(HAVE_CURSES_IDCOK)
-		],, $CURSES_LIBS)
-		AC_CHECK_LIB(curses, resizeterm, [
-			AC_DEFINE(HAVE_CURSES_RESIZETERM)
-		],, $CURSES_LIBS)
-		AC_CHECK_LIB(curses, wresize, [
-			AC_DEFINE(HAVE_CURSES_WRESIZE)
-		],, $CURSES_LIBS)
+	LIBS="$LIBS $CURSES_LIBS"
+	if test "x$has_curses" = "xtrue"; then
+       		AC_CHECK_FUNC(use_default_colors, AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS))
+       		AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
+       		AC_CHECK_FUNC(resizeterm, AC_DEFINE(HAVE_CURSES_RESIZETERM))
+       		AC_CHECK_FUNC(wresize, AC_DEFINE(HAVE_CURSES_WRESIZE))
+		if test "x$want_terminfo" = "xauto" -a "x$has_ncurses" != "xtrue"; then
+			dnl * we'd rather use terminfo/termcap than plain curses
+			want_terminfo=yes
+       			AC_CHECK_FUNC(setupterm,, want_termcap=yes)
+		fi
 	else
-		want_textui=no
-		curses_error=yes
+		AC_CHECK_LIB(tinfo, setupterm, [
+		  LIBS="$LIBS -ltinfo"
+		  want_terminfo=yes
+		], AC_CHECK_LIB(termlib, tgetent, [
+		  LIBS="$LIBS -ltermlib"
+		  want_termcap=yes
+		], AC_CHECK_LIB(termcap, tgetent, [
+		  LIBS="$LIBS -ltermcap"
+		  want_termcap=yes
+		], [
+		  AC_MSG_WARN(Terminfo/termcap not found)
+		  want_textui=no
+		  curses_error=yes
+		])))
         fi
-else
-	has_curses=false
+       	if test "x$want_termcap" = "xyes"; then
+       		AC_CHECK_FUNC(tparm,, need_tparm=yes)
+	else
+		AC_DEFINE(HAVE_TERMINFO)
+       	fi
 fi
 
 dnl **
@@ -642,8 +650,8 @@ AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
 AM_CONDITIONAL(BUILD_SERVERTEST, test -n "$TEST_DIR")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
-
-AC_SUBST(PROG_LIBS)
+AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
+AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
 
 dnl **
 dnl ** Keep all the libraries here so each frontend doesn't need to
@@ -811,7 +819,16 @@ fi
 echo
 
 if test "x$curses_error" != "xyes"; then
-	echo "Building text frontend ..... : $want_textui"
+	if test "x$want_textui" = "xno"; then
+		text=no
+	elif test "x$want_termcap" = "xyes"; then
+		text="yes, using termcap"
+	elif test "x$want_terminfo" = "xyes"; then
+		text="yes, using terminfo"
+	else
+		text="yes, using curses"
+	fi
+	echo "Building text frontend ..... : $text"
 else
 	echo "Building text frontend ..... : NO!!"
 	echo " - Because curses was not found, specify the path to it with"

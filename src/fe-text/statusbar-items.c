@@ -277,8 +277,8 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	GUI_ENTRY_REC *rec;
 
 	if (get_size_only) {
-		item->min_size = 2+screen_width/10;
-                item->max_size = screen_width;
+		item->min_size = 2+term_width/10;
+                item->max_size = term_width;
                 return;
 	}
 

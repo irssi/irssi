@@ -239,7 +239,7 @@ static void cmd_scrollback_redraw(void)
 
 	gui = WINDOW_GUI(active_win);
 
-	screen_refresh_freeze();
+	term_refresh_freeze();
 	line = textbuffer_view_get_lines(gui->view);
 	while (line != NULL) {
 		next = line->next;
@@ -248,7 +248,7 @@ static void cmd_scrollback_redraw(void)
 	}
 
 	gui_window_redraw(active_win);
-	screen_refresh_thaw();
+	term_refresh_thaw();
 }
 
 static void cmd_scrollback_status(void)

@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "special-vars.h"
 
-#include "screen.h"
+#include "term.h"
 #include "gui-entry.h"
 #include "gui-windows.h"
 #include "gui-printtext.h"

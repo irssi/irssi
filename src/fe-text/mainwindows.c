@@ -27,7 +27,7 @@
 #include "settings.h"
 #include "printtext.h"
 
-#include "screen.h"
+#include "term.h"
 #include "gui-windows.h"
 
 #define NEW_WINDOW_SIZE (WINDOW_MIN_SIZE + 1)
@@ -39,16 +39,16 @@ int screen_reserved_top, screen_reserved_bottom;
 static int old_screen_width, old_screen_height;
 
 #define mainwindow_create_screen(window) \
-	screen_window_create(0, \
-			     (window)->first_line + (window)->statusbar_lines_top, \
-			     (window)->width, \
-			     (window)->height + (window)->statusbar_lines)
-
-#define mainwindow_set_screen_size(window) \
-	screen_window_move((window)->screen_win, 0, \
+	term_window_create(0, \
 			   (window)->first_line + (window)->statusbar_lines_top, \
 			   (window)->width, \
-			   (window)->height - (window)->statusbar_lines);
+			   (window)->height + (window)->statusbar_lines)
+
+#define mainwindow_set_screen_size(window) \
+	term_window_move((window)->screen_win, 0, \
+			 (window)->first_line + (window)->statusbar_lines_top, \
+			 (window)->width, \
+			 (window)->height - (window)->statusbar_lines);
 
 
 static MAIN_WINDOW_REC *find_window_with_room(void)
@@ -176,13 +176,13 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	int space;
 
 	rec = g_new0(MAIN_WINDOW_REC, 1);
-	rec->width = screen_width;
+	rec->width = term_width;
 
 	if (mainwindows == NULL) {
 		active_mainwin = rec;
 
 		rec->first_line = screen_reserved_top;
-		rec->last_line = screen_height-1 - screen_reserved_bottom;
+		rec->last_line = term_height-1 - screen_reserved_bottom;
 		rec->height = rec->last_line-rec->first_line+1;
 	} else {
 		parent = WINDOW_MAIN(active_win);
@@ -204,7 +204,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	}
 
 	rec->screen_win = mainwindow_create_screen(rec);
-	screen_refresh(NULL);
+	term_refresh(NULL);
 
 	mainwindows = g_slist_append(mainwindows, rec);
 	signal_emit("mainwindow created", 1, rec);
@@ -290,7 +290,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 	mainwindows = g_slist_remove(mainwindows, window);
 	signal_emit("mainwindow destroyed", 1, window);
 
-        screen_window_destroy(window->screen_win);
+        term_window_destroy(window->screen_win);
 
 	if (!quitting && mainwindows != NULL) {
 		gui_windows_remove_parent(window);
@@ -308,13 +308,13 @@ void mainwindows_redraw(void)
 {
         GSList *tmp;
 
-	screen_refresh_freeze();
+	term_refresh_freeze();
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
                 gui_window_redraw(rec->active);
 	}
-	screen_refresh_thaw();
+	term_refresh_thaw();
 }
 
 static int mainwindows_compare(MAIN_WINDOW_REC *w1, MAIN_WINDOW_REC *w2)
@@ -453,7 +453,7 @@ void mainwindows_resize(int width, int height)
         old_screen_width = width;
         old_screen_height = height;
 
-	screen_refresh_freeze();
+	term_refresh_freeze();
 	if (ydiff < 0)
 		mainwindows_resize_smaller(xdiff, ydiff);
 	else if (ydiff > 0)
@@ -462,7 +462,7 @@ void mainwindows_resize(int width, int height)
 		mainwindows_resize_horiz(xdiff);
 
         signal_emit("terminal resized", 0);
-	screen_refresh_thaw();
+	term_refresh_thaw();
 
 	irssi_redraw();
 }
@@ -492,7 +492,7 @@ int mainwindows_reserve_lines(int top, int bottom)
 		ret = screen_reserved_bottom;
 		screen_reserved_bottom += bottom;
 
-		window = mainwindows_find_upper(screen_height);
+		window = mainwindows_find_upper(term_height);
 		if (window != NULL) {
 			window->last_line -= bottom;
 			mainwindow_resize(window, 0, -bottom);
@@ -706,7 +706,7 @@ static void cmd_window_balance(void)
 	windows = g_slist_length(mainwindows);
 	if (windows == 1) return;
 
-	avail_size = screen_height - screen_reserved_top-screen_reserved_bottom;
+	avail_size = term_height - screen_reserved_top-screen_reserved_bottom;
 	unit_size = avail_size/windows;
 	bigger_units = avail_size%windows;
 
@@ -1033,8 +1033,8 @@ static void sig_window_print_info(WINDOW_REC *win)
 
 void mainwindows_init(void)
 {
-	old_screen_width = screen_width;
-	old_screen_height = screen_height;
+	old_screen_width = term_width;
+	old_screen_height = term_height;
 
 	mainwindows = NULL;
 	active_mainwin = NULL;

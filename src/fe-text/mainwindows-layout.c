@@ -123,7 +123,7 @@ static void sig_layout_restore(void)
         windows_count = g_slist_length(sorted_config);
 
         /* calculate the saved terminal height */
-	avail_height = screen_height -
+	avail_height = term_height -
 		screen_reserved_top - screen_reserved_bottom;
 	height = 0;
         heights = g_new0(int, windows_count);

@@ -3,16 +3,19 @@
 
 #define LINE_TEXT_CHUNK_SIZE 16384
 
+#define LINE_COLOR_BG		0x20
+#define LINE_COLOR_DEFAULT	0x10
+#define LINE_COLOR_BOLD		0x08
+#define LINE_COLOR_BLINK       	0x08
+
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
 	LINE_CMD_CONTINUE,	/* line continues in next block */
 	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
-	LINE_CMD_COLOR8,	/* change to dark grey, normally 8 = bold black */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
 	LINE_CMD_REVERSE,	/* enable/disable reversed text */
 	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
 	LINE_CMD_INDENT_FUNC,	/* if line is split, use the specified indentation function */
-	LINE_CMD_BLINK,		/* blinking background */
 	LINE_CMD_FORMAT,	/* end of line, but next will come the format that was used to create the
 				   text in format <module><format_name><arg><arg2...> - fields are separated
 				   with \0<format> and last argument ends with \0<eol>. \0<continue> is allowed
@@ -26,9 +29,17 @@ typedef struct {
 } LINE_INFO_REC;
 
 typedef struct _LINE_REC {
-	/* text in the line. \0 means that the next char will be a
-	   color or command. <= 127 = color or if 8. bit is set, the
-	   first 7 bits are the command. See LINE_CMD_xxxx.
+	/* Text in the line. \0 means that the next char will be a
+	   color or command.
+
+	   If the 8th bit is set, the first 7 bits are the command
+	   (see LINE_CMD_xxxx). Otherwise they specify a color change:
+
+	   Bit:
+            5 - Setting a background color
+            4 - Use "default terminal color"
+            3 - Bold (fg) / blink (bg) - can be used with 4th bit
+            0-2 - Color
 
 	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
 	   LINE_CMD_COLOR0 instead. */
