@@ -65,8 +65,37 @@ could use /IGNORE instead for both of these :)
 You can also use signal_add_last() if you wish to let the Irssi's internal
 functions be run before yours.
 
-A list of signals that irssi send can be found from signals.txt file.
+A list of signals that irssi sends can be found from signals.txt file.
 
+
+ Creating/replacing /COMMANDS
+ ----------------------------
+
+You can create your own commands, or replace existing ones with
+Irssi::command_bind(). The command handling work internally pretty much
+the same as signal handlers, so if you replace existing command and don't
+wish to let it run, call Irssi::signal_stop(). Here's an example:
+
+  # Usage: /HELLO [<nick>]
+  sub cmd_hello {
+    my ($data, $server, $witem) = @_;
+
+    if (!$server || !$server->{connected}) {
+      Irssi::print("Not connected to server");
+      return;
+    }
+
+    if ($data) {
+      $server->command("/MSG $data Hello!");
+    } elsif ($witem) {
+      # there's query/channel active in window
+      $server->command("/MSG * Hello!");
+    } else {
+      Irssi::print("Nick not given, and no active channel/query in window");
+    }
+  }
+
+  Irssi::command_bind('hello', 'cmd_hello');
 
  Message levels
  --------------
@@ -95,6 +124,23 @@ You can use them with a MSGLEVEL_ prefix, for example:
   $server->print("#channel", 'Hello, world', MSGLEVEL_CLIENTCRAP);
 
 Writes text to #channel window with CLIENTCRAP level.
+
+
+ Window items
+ ------------
+
+Meaning of "window" should be pretty clear, but "window item" is
+something I couldn't really figure out a better name for :) They're
+simply something that's inside a window, a channel or a query usually.
+Windows can have multiple items inside them. It's possible to create
+non-channel/query window items too, currently the third possible window
+item is created by /EXEC -interactive.
+
+In scripts, I think you can quite safely assume that the window item is
+query or channel if the script is intended to be run in one of them.
+Stupid users won't probably have other window items, and smart users
+know where to run the script, or at least later figure out why it
+didn't work :)
 
 
  Functions that you can use in Irssi's Perl scripts
@@ -802,7 +848,9 @@ Server::send_raw_split(cmd, nickarg, max_nicks)
 
 Server::ctcp_send_reply(data)
   Send CTCP reply. This will be "CTCP flood protected" so if there's too
-  many CTCP requests in buffer, this reply might not get sent.
+  many CTCP requests in buffer, this reply might not get sent. The data
+  is the full raw command to be sent to server, like
+    "NOTICE nick :\001VERSION irssi\001"
 
 
  *** IRC channels
