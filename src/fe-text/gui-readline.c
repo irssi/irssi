@@ -574,11 +574,16 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-2~", "insert", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-3~", "delete", (SIGNAL_FUNC) key_combo);
 
-        /* cursor movement */
+	key_bind("key", NULL, "meta2-d", "cleft", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-c", "cright", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-5D", "cleft", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-5C", "cright", (SIGNAL_FUNC) key_combo);
+
+	/* cursor movement */
 	key_bind("backward_character", "", "left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "", "right", NULL, (SIGNAL_FUNC) key_forward_character);
- 	key_bind("backward_word", "", "meta2-d", NULL, (SIGNAL_FUNC) key_backward_word);
-	key_bind("forward_word", "", "meta2-c", NULL, (SIGNAL_FUNC) key_forward_word);
+ 	key_bind("backward_word", "", "cleft", NULL, (SIGNAL_FUNC) key_backward_word);
+	key_bind("forward_word", "", "cright", NULL, (SIGNAL_FUNC) key_forward_word);
  	key_bind("backward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_backward_to_space);
 	key_bind("forward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_forward_to_space);
 	key_bind("beginning_of_line", "", "home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
