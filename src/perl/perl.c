@@ -488,7 +488,7 @@ int perl_input_add(int source, int condition,
 	rec = g_new(PERL_SOURCE_REC, 1);
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
-	rec->tag = g_input_add(source, condition,
+	rec->tag = g_input_add(source, (GInputCondition) condition,
 			       (GInputFunction) perl_source_event, rec);
 
 	perl_sources = g_slist_append(perl_sources, rec);

@@ -861,12 +861,10 @@ static void cmd_save(void)
 
 static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList **list)
 {
-	MODULE_THEME_REC *theme;
 	FORMAT_REC *formats;
 	int n, len;
 
 	formats = g_hash_table_lookup(default_formats, rec->name);
-	theme = g_hash_table_lookup(current_theme->modules, rec->name);
 
 	len = strlen(key);
 	for (n = 1; formats[n].def != NULL; n++) {

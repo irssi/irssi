@@ -130,16 +130,16 @@ static TEXT_CHUNK_REC *text_chunk_find(GUI_WINDOW_REC *gui, const char *data)
 void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 {
 	TEXT_CHUNK_REC *chunk;
-        const unsigned char *text;
+        const char *text;
 
 	text = line->text;
 	for (;;) {
 		if (*text == '\0') {
                         text++;
-			if (*text == LINE_CMD_EOL)
+			if ((unsigned char) *text == LINE_CMD_EOL)
 				break;
 
-			if (*text == LINE_CMD_CONTINUE) {
+			if ((unsigned char) *text == LINE_CMD_CONTINUE) {
 				unsigned char *tmp;
 
 				memcpy(&tmp, text+1, sizeof(char *));
@@ -152,7 +152,7 @@ void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 				text = tmp;
 				continue;
 			}
-			if (*text & 0x80)
+			if ((unsigned char) *text & 0x80)
 				text++;
 		}
 

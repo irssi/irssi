@@ -945,7 +945,7 @@ static char *gui_window_line_get_format(WINDOW_REC *window, LINE_REC *line,
 	TEXT_DEST_REC dest;
 	int formatnum, argcount;
 
-	text = line->text;
+	text = (const unsigned char *) line->text;
 
 	/* skip the beginning of the line until we find the format */
 	g_free(line_read_format(&text));
@@ -975,11 +975,6 @@ static char *gui_window_line_get_format(WINDOW_REC *window, LINE_REC *line,
 	if (formatnum == -1)
 		ret = NULL;
 	else {
-		THEME_REC *theme;
-
-		theme = window->theme == NULL ? current_theme :
-			window->theme;
-
 		argcount = 0;
 		while (*text != '\0' || text[1] != LINE_CMD_EOL) {
 			args[argcount] = line_read_format(&text);

@@ -35,6 +35,7 @@
 
 #include <signal.h>
 
+#undef CTRL
 #define CTRL(x) ((x) & 0x1f)	/* Ctrl+x */
 
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
