@@ -252,7 +252,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size)
 	gui_entry_draw(entry);
 }
 
-void gui_entry_erase_word(GUI_ENTRY_REC *entry)
+void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 {
 	int to;
 
@@ -262,14 +262,18 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry)
 
 	to = entry->pos - 1;
 
-	while (entry->text->str[to] == ' ' && to > 0)
-		to--;
-
-	while (entry->text->str[to] != ' ' && to > 0)
-		to--;
-
-	if (entry->text->str[to] == ' ' && to > 0)
-		to++;
+	if (to_space) {
+		while (entry->text->str[to] == ' ' && to > 0)
+			to--;
+		while (entry->text->str[to] != ' ' && to > 0)
+			to--;
+	} else {
+		while (!isalnum(entry->text->str[to]) && to > 0)
+			to--;
+		while (isalnum(entry->text->str[to]) && to > 0)
+			to--;
+	}
+	if (to > 0) to++;
 
 	g_string_erase(entry->text, to, entry->pos - to);
 	entry->pos = to;
@@ -278,7 +282,7 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry)
 	gui_entry_draw(entry);
 }
 
-void gui_entry_erase_next_word(GUI_ENTRY_REC *entry)
+void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
 {
 	int to;
 
@@ -287,11 +291,17 @@ void gui_entry_erase_next_word(GUI_ENTRY_REC *entry)
 		return;
 
         to = entry->pos;
-	while (entry->text->str[to] == ' ' && to < entry->text->len)
-		to++;
-
-	while (entry->text->str[to] != ' ' && to < entry->text->len)
-		to++;
+	if (to_space) {
+		while (entry->text->str[to] == ' ' && to < entry->text->len)
+			to++;
+		while (entry->text->str[to] != ' ' && to < entry->text->len)
+			to++;
+	} else {
+		while (!isalnum(entry->text->str[to]) && to < entry->text->len)
+			to++;
+		while (isalnum(entry->text->str[to]) && to < entry->text->len)
+			to++;
+	}
 
 	g_string_erase(entry->text, entry->pos, to - entry->pos);
 

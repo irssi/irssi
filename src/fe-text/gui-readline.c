@@ -293,17 +293,22 @@ static void key_backspace(void)
 
 static void key_delete_previous_word(void)
 {
-	gui_entry_erase_word(active_entry);
+	gui_entry_erase_word(active_entry, FALSE);
 }
 
 static void key_delete_next_word(void)
 {
-	gui_entry_erase_next_word(active_entry);
+	gui_entry_erase_next_word(active_entry, FALSE);
 }
 
 static void key_delete_to_previous_space(void)
 {
-	gui_entry_erase_word(active_entry);
+	gui_entry_erase_word(active_entry, TRUE);
+}
+
+static void key_delete_to_next_space(void)
+{
+	gui_entry_erase_next_word(active_entry, TRUE);
 }
 
 void readline(void)
@@ -557,6 +562,7 @@ void gui_readline_init(void)
 	key_bind("delete_next_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_next_word);
 	key_bind("delete_previous_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_previous_word);
 	key_bind("delete_to_previous_space", "", "^W", NULL, (SIGNAL_FUNC) key_delete_to_previous_space);
+	key_bind("delete_to_next_space", "", "", NULL, (SIGNAL_FUNC) key_delete_to_next_space);
 	key_bind("erase_line", "", "^U", NULL, (SIGNAL_FUNC) key_erase_line);
 	key_bind("erase_to_beg_of_line", "", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_bind("erase_to_end_of_line", "", "^K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);

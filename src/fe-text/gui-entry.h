@@ -29,8 +29,8 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str);
 void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr);
 
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size);
-void gui_entry_erase_word(GUI_ENTRY_REC *entry);
-void gui_entry_erase_next_word(GUI_ENTRY_REC *entry);
+void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space);
+void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space);
 
 int gui_entry_get_pos(GUI_ENTRY_REC *entry);
 void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos);
