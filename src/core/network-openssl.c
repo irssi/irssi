@@ -530,7 +530,6 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 	chan->ctx = ctx;
 	chan->got_cert = cert != NULL;
 	chan->verify = verify;
-	g_io_channel_ref(handle);
 
 	gchan = (GIOChannel *)chan;
 	gchan->funcs = &irssi_ssl_channel_funcs;
@@ -541,9 +540,13 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 
 GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify)
 {
-	GIOChannel *gret = net_connect_ip(ip, port, my_ip);
-	gret = irssi_ssl_get_iochannel(gret, cert, pkey, cafile, capath, verify);
-	return gret;
+	GIOChannel *handle, *ssl_handle;
+
+	handle = net_connect_ip(ip, port, my_ip);
+	ssl_handle  = irssi_ssl_get_iochannel(handle, cert, pkey, cafile, capath, verify);
+	if (ssl_handle == NULL)
+		g_io_channel_unref(handle);
+	return ssl_handle;
 }
 
 #else /* HAVE_OPENSSL */
