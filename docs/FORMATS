@@ -1,0 +1,25 @@
+                           text            text            background
+   ---------------------------------------------------------------------
+   %k      %K      %0      black           bold black      black
+   %r      %R      %1      red             bold red        red
+   %g      %G      %2      green           bold green      green
+   %y      %Y      %3      yellow          bold yellow     yellow
+   %b      %B      %4      blue            bold blue       blue
+   %m      %M      %5      magenta         bold magenta    magenta
+   %p      %P              magenta (think: purple)
+   %c      %C      %6      cyan            bold cyan       cyan
+   %w      %W      %7      white           bold white      white
+   %n                      All colors turned off
+   %U                      Underline on/off
+   %8                      Reverse on/off
+   %9      %_              Bold on/off
+   %:                      Insert newline
+   %%                      A single %
+
+parameter handling:
+
+$[30]1    prints parameter 1 cut/padded to 30 chars
+$[!30]1   prints parameter 1 padded to min. 30 chars
+$[-30]1   prints parameter 1 right padded
+$[30?]1   prints parameter 1 padded with '?' characters
+$[30.0]1  prints parameter 1 padded with '0' characters
