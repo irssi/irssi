@@ -133,3 +133,18 @@ if test x$NOCONFIGURE = x; then
 else
   echo Skipping configure process.
 fi
+
+# generate colorless.theme
+echo "formats = {" > colorless.theme
+
+files=`find src -name 'module-formats.c'`
+for i in $files; do
+  file=`echo "$i"|sed 's@^src/@@'`
+  file=`echo "$file"|sed 's@/module-formats\.c$@@'`
+  echo "  \"$file\" = {" >> colorless.theme
+  #cat $i | perl -e 'while (<>) { if (/.*".*".*".*"/) { s/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/    \1 = "\2;"/; print $_; } }' >> colorless.theme
+  cat $i | perl -e 'while (<>) { if (/^\W*{\W*"([^"]*)",\W*"([^"]*)".*/) { $key = $1; $value = $2; $value ~= s/%[krgybmpcwKRGYBMPCW01234567]//g; print("    $key = \"$value\";\n"); } }' >> colorless.theme
+  echo "  };" >> colorless.theme
+done
+
+echo "};" >> colorless.theme
