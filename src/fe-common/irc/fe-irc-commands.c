@@ -248,6 +248,26 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+{
+	char *params, *channame, *msg;
+	CHANNEL_REC *chanrec;
+
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected || !irc_server_check(server))
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg);
+	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	chanrec = channel_find(server, channame);
+	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
+
+	printformat(server, chanrec->name, MSGLEVEL_NOTICES, IRCTXT_OWN_WALL, chanrec->name, msg);
+
+	g_free(params);
+}
+
 static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
 	CHANNEL_REC *cur_channel, *channel;
@@ -393,6 +413,7 @@ void fe_irc_commands_init(void)
 	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
+	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
 	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
@@ -411,6 +432,7 @@ void fe_irc_commands_deinit(void)
 	command_unbind("notice", (SIGNAL_FUNC) cmd_notice);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
+	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);

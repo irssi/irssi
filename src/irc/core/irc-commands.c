@@ -547,7 +547,7 @@ static void cmd_wall_hash(gpointer key, NICK_REC *nick, GSList **nicks)
 
 static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 {
-	char *params, *channame, *msg;
+	char *params, *channame, *msg, *args;
 	CHANNEL_REC *chanrec;
 	GSList *tmp, *nicks;
 
@@ -565,11 +565,17 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	nicks = NULL;
 	g_hash_table_foreach(chanrec->nicks, (GHFunc) cmd_wall_hash, &nicks);
 
+	args = g_strconcat(chanrec->name, " ", msg, NULL);
+	msg = parse_special_string(settings_get_str("wall_format"), server, item, args, NULL);
+	g_free(args);
+
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		irc_send_cmdv(server, "NOTICE %s :%s", rec->nick, msg);
+		if (g_strcasecmp(rec->nick, server->nick) != 0)
+			irc_send_cmdv(server, "NOTICE %s :%s", rec->nick, msg);
 	}
+	g_free(msg);
 	g_slist_free(nicks);
 
 	g_free(params);
@@ -772,6 +778,7 @@ void irc_commands_init(void)
 
 	settings_add_str("misc", "quit_message", "leaving");
 	settings_add_int("misc", "knockout_time", 300);
+	settings_add_str("misc", "wall_format", "[Wall/$0] $1");
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);
 

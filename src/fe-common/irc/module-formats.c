@@ -142,6 +142,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "own_notice", "%K[%rnotice%K(%R$0%K)]%n $1", 2, { 0, 0 } },
 	{ "own_me", "%W * $0%n $1", 2, { 0, 0 } },
 	{ "own_ctcp", "%K[%rctcp%K(%R$0%K)]%n $1 $2", 3, { 0, 0, 0 } },
+	{ "own_wall", "%K[%WWall%K/%c$0%K]%n $1", 2, { 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Received messages", 0 },
