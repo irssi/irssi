@@ -40,10 +40,13 @@ static char *get_nickmode(CHANNEL_REC *channel, const char *nick)
 
 	g_return_val_if_fail(nick != NULL, NULL);
 
+	if (!settings_get_bool("show_nickmode"))
+                return "";
+
 	nickrec = channel == NULL ? NULL :
 		nicklist_find(channel, nick);
-	return (nickrec == NULL || !settings_get_bool("show_nickmode")) ?
-		"" : (nickrec->op ? "@" : (nickrec->voice ? "+" : " "));
+	return nickrec == NULL ? " " :
+		(nickrec->op ? "@" : (nickrec->voice ? "+" : " "));
 }
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
