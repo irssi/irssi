@@ -267,8 +267,8 @@ static void read_settings(void)
 
 void irc_flood_init(void)
 {
-	settings_add_int("flood", "flood_timecheck", 5000);
-	settings_add_int("flood", "flood_max_msgs", 4);
+	settings_add_int("flood", "flood_timecheck", 8000);
+	settings_add_int("flood", "flood_max_msgs", 5);
 
 	flood_tag = -1;
 	read_settings();
