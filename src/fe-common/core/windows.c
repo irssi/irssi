@@ -266,33 +266,37 @@ static int windows_refnum_last(void)
 static int window_refnum_prev(int refnum)
 {
 	GSList *tmp;
-	int max;
+	int prev, max;
 
-	max = -1;
+	max = prev = -1;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec->refnum < refnum && (max == -1 || rec->refnum > max))
 			max = rec->refnum;
+		if (max == -1 || rec->refnum > max)
+			max = rec->refnum;
 	}
 
-	return max;
+	return prev != -1 ? prev : max;
 }
 
 static int window_refnum_next(int refnum)
 {
 	GSList *tmp;
-	int min;
+	int min, next;
 
-	min = -1;
+	min = next = -1;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->refnum > refnum && (min == -1 || rec->refnum < min))
+		if (rec->refnum > refnum && (next == -1 || rec->refnum < next))
+			next = rec->refnum;
+		if (min == -1 || rec->refnum < min)
 			min = rec->refnum;
 	}
 
-	return min;
+	return next != -1 ? next : min;
 }
 
 static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
