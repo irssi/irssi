@@ -28,6 +28,9 @@
 #define ALIGN_RIGHT 0x01
 #define ALIGN_CUT   0x02
 
+#define isvarchar(c) \
+        (isalnum(c) || (c) == '_')
+
 static SPECIAL_HISTORY_FUNC history_func = NULL;
 
 static char *get_argument(char **cmd, char **arglist)
@@ -128,7 +131,7 @@ static char *get_long_variable(char **cmd, SERVER_REC *server,
 
 	/* get variable name */
 	start = *cmd;
-	while (isalnum((*cmd)[1])) (*cmd)++;
+	while (isvarchar((*cmd)[1])) (*cmd)++;
 
 	var = g_strndup(start, (int) (*cmd-start)+1);
 	ret = get_long_variable_value(var, server, item, free_ret);
@@ -149,7 +152,7 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 		return get_argument(cmd, arglist);
 	}
 
-	if (isalpha(**cmd) && isalnum((*cmd)[1])) {
+	if (isalpha(**cmd) && isvarchar((*cmd)[1])) {
 		/* long variable name.. */
 		return get_long_variable(cmd, server, item, free_ret);
 	}
