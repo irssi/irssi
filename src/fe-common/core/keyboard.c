@@ -524,7 +524,8 @@ static int key_emit_signal(KEYBOARD_REC *keyboard, KEY_REC *key)
         return consumed;
 }
 
-static int key_states_search(const char *combo, const char *search)
+static int key_states_search(const unsigned char *combo,
+			     const unsigned char *search)
 {
 	while (*search != '\0') {
 		if (*combo != *search)
@@ -541,13 +542,13 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 {
 	KEY_REC *rec;
         char *combo;
-        int consumed, single_key;
+        int consumed;
 
 	g_return_val_if_fail(keyboard != NULL, FALSE);
 	g_return_val_if_fail(key != NULL && *key != '\0', FALSE);
 
-        single_key = keyboard->key_state == NULL && key[1] == '\0';
-	if (single_key && !used_keys[(int) (unsigned char) key[0]]) {
+	if (keyboard->key_state == NULL && key[1] == '\0' &&
+	    !used_keys[(int) (unsigned char) key[0]]) {
 		/* fast check - key not used */
 		return FALSE;
 	}
@@ -576,7 +577,7 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 	consumed = key_emit_signal(keyboard, rec);
 
 	/* never consume non-control characters */
-	return consumed && !single_key;
+	return consumed;
 }
 
 void keyboard_entry_redirect(SIGNAL_FUNC func, const char *entry,

@@ -505,6 +505,7 @@ void gui_readline_init(void)
 	keyboard = keyboard_create(NULL);
         key_configure_freeze();
 
+	key_bind("key", NULL, " ", "space", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^M", "return", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^J", "return", (SIGNAL_FUNC) key_combo);
 
@@ -567,8 +568,7 @@ void gui_readline_init(void)
         /* line transmitting */
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
 	key_bind("word_completion", "", "^I", NULL, (SIGNAL_FUNC) key_word_completion);
-	key_bind("check_replaces", "Check word replaces", " ", NULL, (SIGNAL_FUNC) key_check_replaces);
-	key_bind("check_replaces", NULL, NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
+	key_bind("check_replaces", "Check word replaces", NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
 
         /* window managing */
 	key_bind("previous_window", "Previous window", "^P", NULL, (SIGNAL_FUNC) key_previous_window);
@@ -593,6 +593,7 @@ void gui_readline_init(void)
 	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
 
 	key_bind("multi", NULL, "return", "check_replaces;send_line", NULL);
+	key_bind("multi", NULL, "space", "check_replaces;insert_text  ", NULL);
 
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("meta-%c", changekeys[n]);
