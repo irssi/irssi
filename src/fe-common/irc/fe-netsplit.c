@@ -102,8 +102,10 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 
 		chanrec->nick_count++;
 		if (netsplit_max_nicks <= 0 ||
-		    chanrec->nick_count < netsplit_max_nicks)
+		    chanrec->nick_count < netsplit_max_nicks) {
+			if (splitchan->nick.op) g_string_append_c(chanrec->nicks, '@');
 			g_string_sprintfa(chanrec->nicks, "%s ", split->nick);
+		}
 	}
 }
 
