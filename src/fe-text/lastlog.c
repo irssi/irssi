@@ -31,6 +31,8 @@
 #include "gui-windows.h"
 #include "gui-printtext.h"
 
+#define DEFAULT_LASTLOG_BEFORE 3
+#define DEFAULT_LASTLOG_AFTER 3
 #define MAX_LINES_WITHOUT_FORCE 1000
 
 static void window_lastlog_clear(WINDOW_REC *window)
@@ -100,7 +102,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	GList *list, *tmp;
 	GString *line;
         char *str;
-	int level, len;
+	int level, before, after, len;
 
         level = cmd_options_get_level("lastlog", optlist);
 	if (level == -1) return; /* error in options */
@@ -136,9 +138,23 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	if (startline == NULL)
                 startline = textbuffer_view_get_lines(WINDOW_GUI(window)->view);
 
+	str = g_hash_table_lookup(optlist, "#");
+	if (str != NULL) {
+		before = after = atoi(str);
+	} else {
+		str = g_hash_table_lookup(optlist, "before");
+		before = str == NULL ? 0 : *str != '\0' ?
+			atoi(str) : DEFAULT_LASTLOG_BEFORE;
+
+		str = g_hash_table_lookup(optlist, "after");
+		if (str == NULL) str = g_hash_table_lookup(optlist, "a");
+		after = str == NULL ? 0 : *str != '\0' ?
+			atoi(str) : DEFAULT_LASTLOG_AFTER;
+	}
+
 	list = textbuffer_find_text(WINDOW_GUI(window)->view->buffer, startline,
 				    level, MSGLEVEL_LASTLOG,
-				    searchtext,
+				    searchtext, before, after,
 				    g_hash_table_lookup(optlist, "regexp") != NULL,
 				    g_hash_table_lookup(optlist, "word") != NULL,
 				    g_hash_table_lookup(optlist, "case") != NULL);
@@ -154,12 +170,12 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		len = g_list_length(tmp);
 	}
 
-      if(g_hash_table_lookup(optlist, "count") != NULL) {
-         printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-                       TXT_LASTLOG_COUNT, len);
-              g_list_free(list);
-              return;
-      }
+	if (g_hash_table_lookup(optlist, "count") != NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_LASTLOG_COUNT, len);
+		g_list_free(list);
+		return;
+	}
 
 	if (len > MAX_LINES_WITHOUT_FORCE && fhandle == -1 &&
 	    g_hash_table_lookup(optlist, "force") == NULL) {
@@ -175,6 +191,20 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	line = g_string_new(NULL);
         while (tmp != NULL && (count < 0 || count > 0)) {
 		LINE_REC *rec = tmp->data;
+
+		if (rec == NULL) {
+			if (tmp->next == NULL)
+                                break;
+			if (fhandle != -1) {
+				write(fhandle, "--\n", 3);
+			} else {
+				printformat_window(active_win,
+						   MSGLEVEL_LASTLOG,
+						   TXT_LASTLOG_SEPARATOR);
+			}
+                        tmp = tmp->next;
+			continue;
+		}
 
                 /* get the line text */
 		textbuffer_line2text(rec, fhandle == -1, line);
@@ -212,9 +242,10 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	g_list_free(list);
 }
 
-/* SYNTAX: LASTLOG [-] [-file <filename>] [-clear] [-<level> -<level...>]
-		   [-count] [-new | -away] [-regexp | -word] [-case]
-		   [-window <ref#|name>] [<pattern>] [<count> [<start>]] */
+/* SYNTAX: LASTLOG [-] [-file <filename>] [-window <ref#|name>] [-new | -away]
+		   [-<level> -<level...>] [-clear] [-count] [-case]
+		   [-regexp | -word] [-before [<#>]] [-after [<#>]]
+		   [-<# before+after>] [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
 {
 	GHashTable *optlist;
@@ -224,8 +255,9 @@ static void cmd_lastlog(const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS,
-			    "lastlog", &optlist, &text, &countstr, &start))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS, "lastlog", &optlist,
+			    &text, &countstr, &start))
 		return;
 
 	if (*start == '\0' && is_numeric(text, 0) && *text != '0' &&
@@ -263,7 +295,7 @@ void lastlog_init(void)
 {
 	command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
 
-	command_set_options("lastlog", "!- force clear -file -window new away word regexp case count");
+	command_set_options("lastlog", "!- # force clear -file -window new away word regexp case count @a @after @before");
 }
 
 void lastlog_deinit(void)

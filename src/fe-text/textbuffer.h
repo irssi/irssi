@@ -96,6 +96,7 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer);
 void textbuffer_line2text(LINE_REC *line, int coloring, GString *str);
 GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			    int level, int nolevel, const char *text,
+			    int before, int after,
 			    int regexp, int fullword, int case_sensitive);
 
 void textbuffer_init(void);

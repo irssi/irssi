@@ -196,7 +196,6 @@ static LINE_REC *textbuffer_line_insert(TEXT_BUFFER_REC *buffer,
 			buffer->first_line->prev = line;
 		buffer->first_line = line;
 	} else {
-                line->prev = prev;
 		line->next = prev->next;
                 if (line->next != NULL)
 			line->next->prev = line;
@@ -234,7 +233,8 @@ void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list)
 	g_return_if_fail(buffer != NULL);
 
 	while (list != NULL) {
-                textbuffer_line_unref(buffer, list->data);
+                if (list->data != NULL)
+			textbuffer_line_unref(buffer, list->data);
                 list = list->next;
 	}
 }
@@ -445,14 +445,16 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 
 GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			    int level, int nolevel, const char *text,
+			    int before, int after,
 			    int regexp, int fullword, int case_sensitive)
 {
 #ifdef HAVE_REGEX_H
 	regex_t preg;
 #endif
-        LINE_REC *line;
+        LINE_REC *line, *pre_line;
 	GList *matches;
-        GString *str;
+	GString *str;
+        int i, match_after, line_matched;
 
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(text != NULL, NULL);
@@ -468,7 +470,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 #endif
 	}
 
-	matches = NULL;
+	matches = NULL; match_after = 0;
         str = g_string_new(NULL);
 
 	line = startline != NULL ? startline : buffer->first_line;
@@ -487,17 +489,38 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
                 textbuffer_line2text(line, FALSE, str);
 
-                if (
+		line_matched =
 #ifdef HAVE_REGEX_H
-		    regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
+			regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
 #endif
-		    fullword ? strstr_full_case(str->str, text,
-						!case_sensitive) != NULL :
-		    case_sensitive ? strstr(str->str, text) != NULL :
-				     stristr(str->str, text) != NULL) {
+			fullword ? strstr_full_case(str->str, text, !case_sensitive) != NULL :
+			case_sensitive ? strstr(str->str, text) != NULL :
+			stristr(str->str, text) != NULL;
+		if (line_matched) {
+                        /* add the -before lines */
+			pre_line = line;
+			for (i = 0; i < before; i++) {
+				if (pre_line->prev == NULL ||
+				    g_list_find(matches, pre_line->prev) != NULL)
+					break;
+                                pre_line = pre_line->prev;
+			}
+
+			for (; pre_line != line; pre_line = pre_line->next) {
+				textbuffer_line_ref(pre_line);
+				matches = g_list_append(matches, pre_line);
+			}
+
+			match_after = after;
+		}
+
+		if (line_matched || match_after > 0) {
 			/* matched */
                         textbuffer_line_ref(line);
 			matches = g_list_append(matches, line);
+
+			if (!line_matched && --match_after == 0)
+				matches = g_list_append(matches, NULL);
 		}
 	}
 #ifdef HAVE_REGEX_H

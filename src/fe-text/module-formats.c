@@ -29,6 +29,7 @@ FORMAT_REC gui_text_formats[] =
 	{ "lastlog_count", "{hilight Lastlog}: $0 lines", 1, { 1 } },
 	{ "lastlog_start", "{hilight Lastlog}:", 0 },
 	{ "lastlog_end", "{hilight End of Lastlog}", 0 },
+	{ "lastlog_separator", "--", 0 },
 
 	{ "refnum_not_found", "Window number $0 not found", 1, { 0 } },
 	{ "window_too_small", "Not enough room to resize this window", 0 },

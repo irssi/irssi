@@ -565,9 +565,9 @@ static int get_cmd_options(char **data, int ignore_unknown,
 				break;
 			}
 
-			if (!isspace(**data))
+			if (!isspace(**data)) {
 				option = cmd_get_param(data);
-			else {
+			} else {
 				option = "-";
 				(*data)++;
 			}
@@ -575,6 +575,18 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			/* check if this option can have argument */
 			pos = optlist == NULL ? -1 :
 				option_find(optlist, option);
+
+			if (pos == -1 && optlist != NULL &&
+			    is_numeric(option, '\0')) {
+				/* check if we want -<number> option */
+				pos = option_find(optlist, "#");
+				if (pos != -1) {
+					g_hash_table_insert(options, "#",
+							    option);
+                                        pos = -3;
+				}
+			}
+
 			if (pos == -1 && !ignore_unknown) {
 				/* unknown option! */
                                 *data = option;
@@ -591,7 +603,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 				option = optlist[pos] +
 					iscmdtype(*optlist[pos]);
 			}
-			if (options != NULL)
+			if (options != NULL && pos != -3)
 				g_hash_table_insert(options, option, "");
 
 			if (pos < 0 || !iscmdtype(*optlist[pos]) ||
