@@ -21,6 +21,7 @@
 #define NEED_PERL_H
 #include "module.h"
 #include "modules.h"
+#include "core.h"
 #include "signals.h"
 #include "misc.h"
 
@@ -386,6 +387,13 @@ static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 	}
 }
 
+static void sig_autorun()
+{
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_autorun);
+
+        perl_scripts_autorun();
+}
+
 void perl_core_init(void)
 {
         print_script_errors = 1;
@@ -395,7 +403,11 @@ void perl_core_init(void)
         signal_add_last("script error", (SIGNAL_FUNC) sig_script_error);
 
 	perl_scripts_init();
-	perl_scripts_autorun();
+
+        if (irssi_init_finished)
+		perl_scripts_autorun();
+	else
+                signal_add("irssi init finished", (SIGNAL_FUNC) sig_autorun);
 
 	module_register("perl", "core");
 }

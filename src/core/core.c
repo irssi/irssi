@@ -57,6 +57,7 @@ void log_away_init(void);
 void log_away_deinit(void);
 
 int irssi_gui;
+int irssi_init_finished;
 
 static char *irssi_dir, *irssi_config_file;
 static GSList *dialog_type_queue, *dialog_text_queue;
@@ -188,6 +189,11 @@ void core_init_paths(int argc, char *argv[])
                 irssi_config_file = g_strdup_printf("%s/config", irssi_dir);
 }
 
+static void sig_irssi_init_finished(void)
+{
+        irssi_init_finished = TRUE;
+}
+
 void core_init(int argc, char *argv[])
 {
 	dialog_type_queue = NULL;
@@ -233,6 +239,7 @@ void core_init(int argc, char *argv[])
 #endif
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
 	settings_check();
 
@@ -242,6 +249,7 @@ void core_init(int argc, char *argv[])
 void core_deinit(void)
 {
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
 	chat_commands_deinit();
 
