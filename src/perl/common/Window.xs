@@ -48,7 +48,7 @@ command(cmd, server=active_win->active_server, item=active_win->active)
 	Irssi::Server server
 	Irssi::Windowitem item
 CODE:
-	signal_emit("send command", 3, cmd, server, item);
+	perl_command(cmd, server, item);
 
 Irssi::Window
 window_find_name(name)
@@ -101,7 +101,7 @@ command(server, cmd, item=active_win->active)
 CODE:
 	if (item != NULL && item->server != SERVER(server))
 		item = NULL;
-	signal_emit("send command", 3, cmd, server, item);
+	perl_command(cmd, server, item);
 
 void
 print(server, channel, str, level)
@@ -181,7 +181,7 @@ command(window, cmd, server=window->active_server, item=window->active)
 	Irssi::Server server
 	Irssi::Windowitem item
 CODE:
-	signal_emit("send command", 3, cmd, server, item);
+	perl_command(cmd, server, item);
 
 void
 window_item_add(window, item, automatic)
@@ -281,7 +281,7 @@ command(item, cmd)
 	Irssi::Windowitem item
 	char *cmd
 CODE:
-	signal_emit("send command", 3, cmd, item->server, item);
+	perl_command(cmd, item->server, item);
 
 Irssi::Window
 window_create(item, automatic)

@@ -30,6 +30,7 @@
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
+#include "settings.h"
 
 #include "chat-protocols.h"
 #include "servers.h"
@@ -187,6 +188,21 @@ void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 	if (*str != '\0') printtext_window(dest->window, dest->level, "%s", str);
 	g_free(str);
 	g_free(module);
+}
+
+void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
+{
+        const char *cmdchars;
+	char *sendcmd = (char *) cmd;
+
+        cmdchars = settings_get_str("cmdchars");
+	if (strchr(cmdchars, *cmd) == NULL) {
+		/* no command char - let's put it there.. */
+		sendcmd = g_strdup_printf("%c%s", *cmdchars, cmd);
+	}
+
+	signal_emit("send command", 3, cmd, server, item);
+	if (sendcmd != cmd) g_free(sendcmd);
 }
 
 static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
