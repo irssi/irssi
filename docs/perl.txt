@@ -958,12 +958,6 @@ Server::channel_create(name, automatic)
 Channel::bans()
   Return a list of bans in channel.
 
-Channel::ebans()
-  Return a list of ban exceptions in channel.
-
-Channel::invites()
-  Return invite list (+I) of channel.
-
 Channel::ban_get_mask(nick)
   Get ban mask for `nick'.
 
@@ -972,22 +966,6 @@ Channel::banlist_add(ban, nick, time)
 
 Channel::banlist_remove(ban)
    Remove a ban from channel.
-
-Channel::banlist_exception_add(ban, nick, time)
-   Add a new ban exception to channel.
-
-Channel::banlist_exception_remove(ban)
-   Remove a ban exception from channel.
-
-Channel::invitelist_add(mask)
-   Add a new invite mask to channel.
-
-Channel::invitelist_remove(mask)
-   Remove invite mask from channel.
-
-modes_join(old, mode, channel)
-  Add `mode' to `old' - return newly allocated mode. If `channel' is 1,
-  we're parsing channel mode and we should try to join mode arguments too.
 
 
  *** DCC
