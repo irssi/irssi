@@ -34,6 +34,13 @@ union sockaddr_union {
 #endif
 };
 
+#ifdef HAVE_IPV6
+#  define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
+	sizeof(so.sin6) : sizeof(so.sin))
+#else
+#  define SIZEOF_SOCKADDR(so) (sizeof(so.sin))
+#endif
+
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
 
@@ -52,7 +59,12 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
 
 
 /* copy IP to sockaddr */
-inline void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
+#ifdef G_CAN_INLINE
+G_INLINE_FUNC
+#else
+static
+#endif
+void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
 	if (ip == NULL) {
 #ifdef HAVE_IPV6
@@ -74,7 +86,7 @@ inline void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 		memcpy(&so->sin.sin_addr, &ip->addr, 4);
 }
 
-inline void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
+void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
 {
 	ip->family = so->sin.sin_family;
 
@@ -86,7 +98,12 @@ inline void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
 		memcpy(&ip->addr, &so->sin.sin_addr, 4);
 }
 
-G_INLINE_FUNC void sin_set_port(union sockaddr_union *so, int port)
+#ifdef G_CAN_INLINE
+G_INLINE_FUNC
+#else
+static
+#endif
+void sin_set_port(union sockaddr_union *so, int port)
 {
 #ifdef HAVE_IPV6
 	if (so->sin.sin_family == AF_INET6)
@@ -96,7 +113,12 @@ G_INLINE_FUNC void sin_set_port(union sockaddr_union *so, int port)
 		so->sin.sin_port = htons((unsigned short)port);
 }
 
-G_INLINE_FUNC int sin_get_port(union sockaddr_union *so)
+#ifdef G_CAN_INLINE
+G_INLINE_FUNC
+#else
+static
+#endif
+int sin_get_port(union sockaddr_union *so)
 {
 #ifdef HAVE_IPV6
 	if (so->sin.sin_family == AF_INET6)
@@ -144,13 +166,13 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	/* set our own address, ignore if bind() fails */
 	if (my_ip != NULL) {
 		sin_set_ip(&so, my_ip);
-		bind(handle, &so.sa, sizeof(so));
+		bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
 	}
 
 	/* connect */
 	sin_set_ip(&so, ip);
 	sin_set_port(&so, port);
-	ret = connect(handle, &so.sa, sizeof(so));
+	ret = connect(handle, &so.sa, SIZEOF_SOCKADDR(so));
 
 #ifndef WIN32
 	if (ret < 0 && errno != EINPROGRESS) {
@@ -176,7 +198,7 @@ int net_listen(IPADDR *my_ip, int *port)
 {
 	union sockaddr_union so;
 	int ret, handle, opt = 1;
-	socklen_t len = sizeof(so);
+	socklen_t len;
 
 	g_return_val_if_fail(port != NULL, -1);
 
@@ -199,13 +221,14 @@ int net_listen(IPADDR *my_ip, int *port)
 		   (char *) &opt, sizeof(opt));
 
 	/* specify the address/port we want to listen in */
-	ret = bind(handle, &so.sa, sizeof(so));
+	ret = bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
 	if (ret < 0) {
 		close(handle);
 		return -1;
 	}
 
 	/* get the actual port we started listen */
+	len = SIZEOF_SOCKADDR(so);
 	ret = getsockname(handle, &so.sa, &len);
 	if (ret < 0) {
 		close(handle);
@@ -232,7 +255,7 @@ int net_accept(int handle, IPADDR *addr, int *port)
 
 	g_return_val_if_fail(handle != -1, -1);
 
-	addrlen = sizeof(so);
+	addrlen = SIZEOF_SOCKADDR(so);
 	ret = accept(handle, &so.sa, &addrlen);
 
 	if (ret < 0)
@@ -299,20 +322,13 @@ int net_transmit(int handle, const char *data, int len)
 int net_getsockname(int handle, IPADDR *addr, int *port)
 {
 	union sockaddr_union so;
-#ifdef HAVE_IPV6
-	socklen_t len = sizeof(so.sin6);
-#else
-	socklen_t len = sizeof(so.sin);
-#endif
+	socklen_t len;
 
 	g_return_val_if_fail(handle != -1, -1);
 	g_return_val_if_fail(addr != NULL, -1);
 
-#ifdef HAVE_IPV6
-	if (getsockname(handle, &so.sin6, &len) == -1)
-#else
-	if (getsockname(handle, (struct sockaddr *) &so.sin, &len) == -1)
-#endif
+	len = SIZEOF_SOCKADDR(so);
+	if (getsockname(handle, (struct sockaddr *) &so, &len) == -1)
 		return -1;
 
         sin_get_ip(&so, addr);
