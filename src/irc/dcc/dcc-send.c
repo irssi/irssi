@@ -230,6 +230,11 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 	fname = g_basename(fname);
 
+	/* Replace all the spaces with underscore so that lesser
+	   intellgent clients can communicate.. */
+	if (settings_get_bool("dcc_send_replace_space_with_underscore"))
+		g_strdelimit(fname, " ", '_');
+
 	dcc = dcc_send_create(server, chat, target, fname);
         dcc->handle = handle;
 	dcc->port = port;
@@ -257,7 +262,7 @@ void dcc_send_init(void)
 {
         dcc_register_type("SEND");
 	settings_add_str("dcc", "dcc_upload_path", "~");
-
+	settings_add_bool("dcc", "dcc_send_replace_space_with_underscore", FALSE);
 	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
 }
