@@ -78,6 +78,7 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	char *params, *type, *channel, *names, *ptr;
+        int op, halfop, voice;
 
 	g_return_if_fail(data != NULL);
 
@@ -112,9 +113,27 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		while (*names != '\0' && *names != ' ') names++;
 		if (*names != '\0') *names++ = '\0';
 
-		irc_nicklist_insert(chanrec, ptr+isnickflag(*ptr),
-				    *ptr == '@', *ptr == '%', *ptr == '+',
-				    FALSE);
+		/* some servers show ".@nick", there's also been talk about
+		   showing "@+nick" and since none of these chars are valid
+		   nick chars, just check them until a non-nickflag char is
+		   found. FIXME: we just ignore owner char now. */
+		op = halfop = voice = FALSE;
+		while (isnickflag(*ptr)) {
+			switch (*ptr) {
+			case '@':
+                                op = TRUE;
+                                break;
+			case '%':
+                                halfop = TRUE;
+                                break;
+			case '+':
+                                voice = TRUE;
+                                break;
+			}
+                        ptr++;
+		}
+
+		irc_nicklist_insert(chanrec, ptr, op, halfop, voice, FALSE);
 	}
 
 	g_free(params);

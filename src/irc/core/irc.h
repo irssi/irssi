@@ -20,8 +20,8 @@ typedef struct _REDIRECT_REC REDIRECT_REC;
 	(a) == '+' || (a) == '=' || (a) == '-')
 
 #define isnickflag(a) \
-	((a) == '@' || (a) == '+' || (a) == '%' || /* op / voice / half-op */ \
-	(a) == '-' || (a) == '~') /* no idea, just copied from somewhere.. */
+	((a) == '@' || (a) == '+' || (a) == '%' || /* op / voice */ \
+	(a) == '%' || (a) == '.') /* extensions: half-op / owner */
 
 #define ischannel(a) \
 	((a) == '#' || /* normal */ \
