@@ -308,7 +308,7 @@ static THEME_SEARCH_REC *theme_search(GSList *list, const char *module)
 	return NULL;
 }
 
-static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value)
+static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value, int reset)
 {
 	MODULE_THEME_REC *theme;
 	FORMAT_REC *formats;
@@ -335,10 +335,12 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 			}
 			if (last_title != NULL)
 				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%K[%W%s%K]", last_title);
-			if (value != NULL) {
+			if (reset || value != NULL) {
 				theme = theme_module_create(current_theme, rec->name);
-                                theme->formats[n] = g_strdup(value);
-				text = value;
+                                g_free_not_null(theme->formats[n]);
+
+				theme->formats[n] = reset ? NULL : g_strdup(value);
+				text = reset ? formats[n].def : value;
 			}
 			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s %K=%n %s", formats[n].tag, text);
 			last_title = NULL;
@@ -348,32 +350,41 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 
 static void cmd_format(const char *data)
 {
+        GHashTable *optlist;
 	GSList *tmp, *modules;
 	char *module, *key, *value;
 	void *free_arg;
+	int reset;
 
 	/* /FORMAT [<module>] [<key> [<value>]] */
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-			    &module, &key, &value))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "format", &optlist, &module, &key, &value))
 		return;
 
         modules = get_sorted_modules();
 	if (*module != '\0' && theme_search(modules, module) == NULL) {
 		/* first argument isn't module.. */
 		cmd_params_free(free_arg);
-		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
+		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+				    "format", &optlist, &key, &value))
 			return;
 		module = "";
 	}
 
+	reset = FALSE;
 	if (*key == '\0') key = NULL;
-	if (*value == '\0') value = NULL;
+	if (g_hash_table_lookup(optlist, "reset"))
+		reset = TRUE;
+	else if (g_hash_table_lookup(optlist, "delete"))
+		value = "";
+	else if (*value == '\0')
+		value = NULL;
 
 	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 		THEME_SEARCH_REC *rec = tmp->data;
 
 		if (*module == '\0' || g_strcasecmp(rec->short_name, module) == 0)
-			theme_show(rec, key, value);
+			theme_show(rec, key, value, reset);
 	}
 	g_slist_foreach(modules, (GFunc) g_free, NULL);
 	g_slist_free(modules);
@@ -468,6 +479,8 @@ void themes_init(void)
 
 	command_bind("format", NULL, (SIGNAL_FUNC) cmd_format);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
+
+	command_set_options("format", "delete reset");
 }
 
 void themes_deinit(void)
