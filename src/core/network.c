@@ -466,33 +466,31 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 int net_gethostbyaddr(IPADDR *ip, char **name)
 {
 #ifdef HAVE_IPV6
-	struct addrinfo req, *ai;
+	union sockaddr_union so;
 	int host_error;
+	char hostname[NI_MAXHOST];
 #else
 	struct hostent *hp;
 #endif
-	char ipname[MAX_IP_LEN];
 
 	g_return_val_if_fail(ip != NULL, -1);
 	g_return_val_if_fail(name != NULL, -1);
 
-	net_ip2host(ip, ipname);
-
 	*name = NULL;
 #ifdef HAVE_IPV6
-	memset(&req, 0, sizeof(struct addrinfo));
-	req.ai_socktype = SOCK_STREAM;
-	req.ai_flags = AI_CANONNAME;
+	memset(&so, 0, sizeof(so));
+	sin_set_ip(&so, ip);
 
 	/* save error to host_error for later use */
-	host_error = getaddrinfo(ipname, NULL, &req, &ai);
-	if (host_error != 0)
-		return host_error;
-	*name = g_strdup(ai->ai_canonname);
+        host_error = getnameinfo((struct sockaddr *) &so, sizeof(so),
+                                 hostname, sizeof(hostname), NULL, 0, 0);
+        if (host_error != 0)
+                return host_error;
 
-	freeaddrinfo(ai);
+	*name = g_strdup(hostname);
 #else
-	hp = gethostbyaddr(ipname, strlen(ipname), AF_INET);
+	if (ip->family != AF_INET) return -1;
+	hp = gethostbyaddr(&ip->ip, 4, AF_INET);
 	if (hp == NULL) return -1;
 
 	*name = g_strdup(hp->h_name);
