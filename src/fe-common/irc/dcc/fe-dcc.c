@@ -410,7 +410,7 @@ static void cmd_dcc_list(const char *data)
 		else
 			printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_LINE_FILE,
 				  dcc->nick, dcc_type2str(dcc->type), dcc->transfd/1024, dcc->size/1024,
-				  dcc->size == 0 ? 0 : (100*dcc->transfd/dcc->size),
+				  dcc->size == 0 ? 0 : (int)((double)dcc->transfd/(double)dcc->size*100.0),
 				  (double) (dcc->transfd-dcc->skipped)/going/1024, dcc->arg);
 	}
 	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_FOOTER);
