@@ -28,6 +28,7 @@
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "nicklist.h"
+#include "mode-lists.h"
 
 #include "../core/module-formats.h"
 #include "printtext.h"
@@ -133,6 +134,8 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 
 static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 {
+	IRC_CHANNEL_REC *chanrec;
+	BAN_REC *banrec;
 	const char *channel;
 	char *params, *ban, *setby, *tims;
 	long secs;
@@ -144,10 +147,14 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 	secs = *tims == '\0' ? 0 :
 		(long) (time(NULL) - atol(tims));
 
+	chanrec = irc_channel_find(server, channel);
+	banrec = chanrec == NULL ? NULL : banlist_find(chanrec->banlist, ban);
+
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-		    0, channel, ban, setby, secs);
+		    banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec)+1,
+		    channel, ban, setby, secs);
 
 	g_free(params);
 }

@@ -7,6 +7,8 @@ typedef struct {
 	time_t time;
 } BAN_REC;
 
+BAN_REC *banlist_find(GSList *list, const char *ban);
+
 BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban, const char *nick, time_t time);
 void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban);
 

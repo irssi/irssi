@@ -44,7 +44,7 @@ void banlist_free(GSList *banlist)
 		ban_free(&banlist, banlist->data);
 }
 
-static BAN_REC *banlist_find(GSList *list, const char *ban)
+BAN_REC *banlist_find(GSList *list, const char *ban)
 {
 	GSList *tmp;
 
