@@ -65,6 +65,18 @@ static SERVER_CONNECT_REC *create_server_connect(void)
         return g_malloc0(sizeof(IRC_SERVER_CONNECT_REC));
 }
 
+static void destroy_server_connect(SERVER_CONNECT_REC *conn)
+{
+	IRC_SERVER_CONNECT_REC *ircconn;
+
+        ircconn = IRC_SERVER_CONNECT(conn);
+	if (ircconn == NULL)
+		return;
+
+	g_free_not_null(ircconn->usermode);
+	g_free_not_null(ircconn->alternate_nick);
+}
+
 void irc_core_init(void)
 {
 	CHAT_PROTOCOL_REC *rec;
@@ -80,6 +92,7 @@ void irc_core_init(void)
         rec->create_server_setup = create_server_setup;
         rec->create_channel_setup = create_channel_setup;
 	rec->create_server_connect = create_server_connect;
+	rec->destroy_server_connect = destroy_server_connect;
 
 	rec->server_connect = (SERVER_REC *(*) (SERVER_CONNECT_REC *))
 		irc_server_connect;

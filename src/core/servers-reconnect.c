@@ -56,20 +56,22 @@ static void server_reconnect_add(SERVER_CONNECT_REC *conn,
 
 	rec = g_new(RECONNECT_REC, 1);
 	rec->tag = ++last_reconnect_tag;
-	rec->conn = conn;
 	rec->next_connect = next_connect;
+
+	rec->conn = conn;
+	server_connect_ref(conn);
 
 	reconnects = g_slist_append(reconnects, rec);
 }
 
-void server_reconnect_destroy(RECONNECT_REC *rec, int free_conn)
+void server_reconnect_destroy(RECONNECT_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
 
 	reconnects = g_slist_remove(reconnects, rec);
 
 	signal_emit("server reconnect remove", 1, rec);
-	if (free_conn) server_connect_free(rec->conn);
+	server_connect_unref(rec->conn);
 	g_free(rec);
 
 	if (reconnects == NULL)
@@ -95,8 +97,10 @@ static int server_reconnect_timeout(void)
 
 		if (rec->next_connect <= now) {
 			conn = rec->conn;
-			server_reconnect_destroy(rec, FALSE);
+			server_connect_ref(conn);
+			server_reconnect_destroy(rec);
 			CHAT_PROTOCOL(conn)->server_connect(conn);
+			server_connect_unref(conn);
 		}
 	}
 
@@ -118,6 +122,7 @@ static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 		/* connect to server.. */
 		CHAT_PROTOCOL(conn)->server_connect(conn);
 	}
+	server_connect_unref(conn);
 }
 
 static SERVER_CONNECT_REC *
@@ -129,6 +134,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	signal_emit("server connect copy", 2, &dest, src);
 	g_return_val_if_fail(dest != NULL, NULL);
 
+        server_connect_ref(dest);
 	dest->type = module_get_uniq_id("SERVER CONNECT", 0);
 	dest->reconnection = src->reconnection;
 	dest->proxy = g_strdup(src->proxy);
@@ -226,6 +232,7 @@ static void sig_reconnect(SERVER_REC *server)
 			server_reconnect_add(conn, (server->connect_time == 0 ? time(NULL) :
 						    server->connect_time) + reconnect_time);
 		}
+		server_connect_unref(conn);
 		return;
 	}
 
@@ -270,7 +277,7 @@ static void sig_reconnect(SERVER_REC *server)
 		if (through) {
 			/* shouldn't happen unless there's no servers in
 			   this chatnet in setup.. */
-                        server_connect_free(conn);
+			server_connect_unref(conn);
 			break;
 		}
 
@@ -294,7 +301,7 @@ static void sig_connected(SERVER_REC *server)
 static void cmd_rmreconns(void)
 {
 	while (reconnects != NULL)
-		server_reconnect_destroy(reconnects->data, TRUE);
+		server_reconnect_destroy(reconnects->data);
 }
 
 static RECONNECT_REC *reconnect_find_tag(int tag)
@@ -325,7 +332,8 @@ static void reconnect_all(void)
 		rec = reconnects->data;
 
 		list = g_slist_append(list, rec->conn);
-		server_reconnect_destroy(rec, FALSE);
+                server_connect_unref(rec->conn);
+		server_reconnect_destroy(rec);
 	}
 
 
@@ -333,6 +341,7 @@ static void reconnect_all(void)
 		conn = list->data;
 
 		CHAT_PROTOCOL(conn)->server_connect(conn);
+                server_connect_unref(conn);
                 list = g_slist_remove(list, conn);
 	}
 }
@@ -356,6 +365,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 
 		conn->reconnection = TRUE;
 		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server_connect_unref(conn);
                 return;
 	}
 
@@ -384,8 +394,10 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	}
 
 	conn = rec->conn;
-	server_reconnect_destroy(rec, FALSE);
+	server_connect_ref(conn);
+	server_reconnect_destroy(rec);
 	CHAT_PROTOCOL(conn)->server_connect(conn);
+	server_connect_unref(conn);
 }
 
 static void cmd_disconnect(const char *data, SERVER_REC *server)
@@ -400,7 +412,7 @@ static void cmd_disconnect(const char *data, SERVER_REC *server)
 	if (rec == NULL)
 		signal_emit("server reconnect not found", 1, data);
 	else
-		server_reconnect_destroy(rec, TRUE);
+		server_reconnect_destroy(rec);
 	signal_stop();
 }
 
@@ -413,7 +425,7 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 
                 next = tmp->next;
                 if (rec->conn->chat_type == proto->id)
-			server_reconnect_destroy(rec, TRUE);
+			server_reconnect_destroy(rec);
 	}
 }
 

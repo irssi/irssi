@@ -73,7 +73,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 	if (proto->not_initialized) {
 		/* trying to use protocol that isn't yet initialized */
 		signal_emit("chat protocol unknown", 1, proto->name);
-		server_connect_free(conn);
+		server_connect_unref(conn);
                 cmd_params_free(free_arg);
 		return NULL;
 	}
@@ -102,8 +102,10 @@ static void cmd_connect(const char *data)
 	SERVER_CONNECT_REC *conn;
 
 	conn = get_server_connect(data, NULL);
-        if (conn != NULL)
+	if (conn != NULL) {
 		CHAT_PROTOCOL(conn)->server_connect(conn);
+                server_connect_unref(conn);
+	}
 }
 
 static RECONNECT_REC *find_reconnect_server(int chat_type,
@@ -147,6 +149,7 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 
 	if (server != NULL) {
 		oldconn = server->connrec;
+                server_connect_ref(oldconn);
                 reconnect_save_status(conn, server);
 	} else {
 		/* maybe we can reconnect some server from
@@ -156,7 +159,8 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 		if (recon == NULL) return;
 
 		oldconn = recon->conn;
-		server_reconnect_destroy(recon, FALSE);
+                server_connect_ref(oldconn);
+		server_reconnect_destroy(recon);
 
 		conn->away_reason = g_strdup(oldconn->away_reason);
 		conn->channels = g_strdup(oldconn->channels);
@@ -167,11 +171,10 @@ static void update_reconnection(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 	if (conn->chatnet == NULL && oldconn->chatnet != NULL)
 		conn->chatnet = g_strdup(oldconn->chatnet);
 
+	server_connect_unref(oldconn);
 	if (server != NULL) {
 		signal_emit("command disconnect", 2,
 			    "* Changing server", server);
-	} else {
-		server_connect_free(oldconn);
 	}
 }
 
@@ -201,6 +204,7 @@ static void cmd_server_connect(const char *data, SERVER_REC *server)
 		if (!plus_addr)
 			update_reconnection(conn, server);
 		CHAT_PROTOCOL(conn)->server_connect(conn);
+		server_connect_unref(conn);
 	}
 }
 

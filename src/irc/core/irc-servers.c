@@ -55,15 +55,6 @@ void irc_servers_reconnect_deinit(void);
 
 static int cmd_tag;
 
-static void sig_server_connect_free(IRC_SERVER_CONNECT_REC *conn)
-{
-	if (!IS_IRC_SERVER_CONNECT(conn))
-		return;
-
-	g_free_not_null(conn->usermode);
-	g_free_not_null(conn->alternate_nick);
-}
-
 static int isnickflag_func(char flag)
 {
 	return isnickflag(flag);
@@ -171,8 +162,12 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 
 	server = g_new0(IRC_SERVER_REC, 1);
 	server->chat_type = IRC_PROTOCOL;
+
 	server->connrec = conn;
-	if (server->connrec->port <= 0) server->connrec->port = 6667;
+        server_connect_ref(SERVER_CONNECT(conn));
+
+	if (server->connrec->port <= 0)
+		server->connrec->port = 6667;
 
 	server->cmd_queue_speed = conn->cmd_queue_speed > 0 ?
 		conn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
@@ -191,7 +186,7 @@ IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn)
 		conn->max_msgs : DEFAULT_MAX_MSGS;
 
 	if (!server_start_connect((SERVER_REC *) server)) {
-                server_connect_free(SERVER_CONNECT(conn));
+                server_connect_unref(SERVER_CONNECT(conn));
 		g_free(server);
 		return NULL;
 	}
@@ -498,7 +493,6 @@ void irc_servers_init(void)
 
 	cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
 
-	signal_add("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
 	signal_add_first("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
@@ -520,7 +514,6 @@ void irc_servers_deinit(void)
 {
 	g_source_remove(cmd_tag);
 
-	signal_remove("server connect free", (SIGNAL_FUNC) sig_server_connect_free);
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);

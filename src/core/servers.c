@@ -59,7 +59,7 @@ void server_connect_failed(SERVER_REC *server, const char *msg)
 	}
 
 	MODULE_DATA_DEINIT(server);
-	server_connect_free(server->connrec);
+	server_connect_unref(server->connrec);
 	g_free_not_null(server->nick);
 	g_free(server->tag);
 	g_free(server);
@@ -361,7 +361,7 @@ void server_disconnect(SERVER_REC *server)
 		g_source_remove(server->readtag);
 
         MODULE_DATA_DEINIT(server);
-	server_connect_free(server->connrec);
+	server_connect_unref(server->connrec);
 	rawlog_destroy(server->rawlog);
 	line_split_free(server->buffer);
 	g_free_not_null(server->version);
@@ -413,12 +413,25 @@ SERVER_REC *server_find_chatnet(const char *chatnet)
 	return NULL;
 }
 
-void server_connect_free(SERVER_CONNECT_REC *conn)
+void server_connect_ref(SERVER_CONNECT_REC *conn)
+{
+        conn->refcount++;
+}
+
+void server_connect_unref(SERVER_CONNECT_REC *conn)
 {
 	g_return_if_fail(IS_SERVER_CONNECT(conn));
 
-	signal_emit("server connect free", 1, conn);
-        g_free_not_null(conn->proxy);
+	if (--conn->refcount > 0)
+		return;
+	if (conn->refcount < 0) {
+		g_warning("Connection '%s' refcount = %d",
+			  conn->tag, conn->refcount);
+	}
+
+        CHAT_PROTOCOL(conn)->destroy_server_connect(conn);
+
+	g_free_not_null(conn->proxy);
 	g_free_not_null(conn->proxy_string);
 	g_free_not_null(conn->proxy_password);
 

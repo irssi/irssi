@@ -15,6 +15,7 @@ typedef struct {
 	SERVER_SETUP_REC *(*create_server_setup) (void);
         CHANNEL_SETUP_REC *(*create_channel_setup) (void);
 	SERVER_CONNECT_REC *(*create_server_connect) (void);
+        void (*destroy_server_connect) (SERVER_CONNECT_REC *);
 
         SERVER_REC *(*server_connect) (SERVER_CONNECT_REC *);
         CHANNEL_REC *(*channel_create) (SERVER_REC *, const char *, int);

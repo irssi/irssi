@@ -3,6 +3,8 @@
 int type; /* module_get_uniq_id("SERVER CONNECT", 0) */
 int chat_type; /* chat_protocol_lookup(xx) */
 
+int refcount;
+
 /* if we're connecting via proxy, or just NULLs */
 char *proxy;
 int proxy_port;

@@ -168,15 +168,15 @@ static void server_setup_fill_chatnet(SERVER_CONNECT_REC *conn,
 	g_return_if_fail(IS_SERVER_CONNECT(conn));
 	g_return_if_fail(IS_CHATNET(chatnet));
 
-	if (chatnet->nick) {
+	if (chatnet->nick != NULL) {
 		g_free(conn->nick);
 		conn->nick = g_strdup(chatnet->nick);;
 	}
-	if (chatnet->username) {
+	if (chatnet->username != NULL) {
                 g_free(conn->username);
 		conn->username = g_strdup(chatnet->username);;
 	}
-	if (chatnet->realname) {
+	if (chatnet->realname != NULL) {
                 g_free(conn->realname);
 		conn->realname = g_strdup(chatnet->realname);;
 	}
@@ -212,6 +212,8 @@ create_addr_conn(int chat_type, const char *address, int port,
                 chat_protocol_get_default();
 
 	conn = proto->create_server_connect();
+	server_connect_ref(conn);
+
 	conn->chat_type = proto->id;
         if (chatnet != NULL && *chatnet != '\0')
 		conn->chatnet = g_strdup(chatnet);
