@@ -1,17 +1,9 @@
 Q: Why doesn't irssi display colors even when ircii etc. displays them?
-A: Irssi uses curses, ircii and others don't (no, not even if ldd says they
-   use it). Curses decides if terminal supports colors based on the TERM
-   variable, so changing it should help. Some values to try when running
-   in xterm are: xterm, xterm-color and color_xterm.
-
-Q: Why does irssi crash when pressing Ctrl-4?
-A: Most unices are usually configured to send SIGQUIT to active process when
-   Ctrl-\ is pressed. Some terminals also treat Ctrl-4 and Ctrl-\ equally, so
-   Irssi will die to SIGQUIT. Two ways to fix this: change it to something 
-   else with stty (stty quit undef) or in irssi /SET ignore_signals quit
-
-Q: Where's the GUI version?
-A: Read http://irssi.org/?page=about
+A: They force ANSI colors even if terminal doesn't support them. By default,
+   irssi uses colors only if terminfo/termcap so says. The correct way to
+   fix this would be to change your TERM environment to a value where colors
+   work, like xterm-color or color_xterm. If this doesn't help, then use the
+   evil way of /SET term_force_colors ON.
 
 Q: How do I easily write text to channel that starts with '/' character?
 A: / /text
@@ -25,12 +17,23 @@ A: Two ways. The "good way" to do it is with /DISCONNECT. Check the server
    reconnections with /RMRECONNS, easier but may remove some connections
    you actually wanted to reconnect (if you used multiple servers..).
 
+Q: How do I add seconds to timestamp?
+A: "/FORMAT timestamp {timestamp %%H:%%M:%%S} " - and remember to add the
+   trailing space :)
+
 Q: Why does irssi say "Irssi: Channel not fully synchronized yet, try again
    after a while" when I try to use /BAN etc?
-A: IRC server you use is coded badly, do something like this:
-     /IRCNET ADD -querychans 1 quakenet
-     /SERVER ADD -ircnet quakenet irc.quakenet.org
-     /SAVE
-   After that /CONNECT quakenet should work properly (NOTE: when you do this
-   the first time you'll have to /DISCONNECT and /CONNECT again, /SERVER
-   doesn't work correctly).
+A: Possibly a bug in irssi, or ircd you're using does something that irssi
+   didn't really notice. The new code should make this happen far less often
+   than before, but one known reason for this is when irssi doesn't notice
+   that you were unable to join some channel. Currently however I don't know
+   of any such events irssi doesn't know about.
+
+   Anyway, if this does happen, do "/RAWLOG SAVE ~/rawlog" soon after joining
+   to channel, and either try to figure out yourself why irssi didn't get
+   reply to WHO request, or send the whole log to tss@iki.fi. Note that the
+   rawlog is by default only 200 lines and it may not be enough to show all
+   needed information, so you might want to do /SET rawlog_lines 1000 or so.
+
+Q: Where's the GUI version?
+A: Read http://irssi.org/?page=about
