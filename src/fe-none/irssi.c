@@ -21,6 +21,7 @@
 #include "module.h"
 #include "args.h"
 #include "signals.h"
+#include "modules.h"
 #include "core.h"
 
 #ifdef HAVE_STATIC_PERL
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 
 	do {
 		reload = FALSE;
-		/*FIXME:module_load(autoload_module, "");*/
+		module_load(autoload_module, NULL);
 		main_loop = g_main_new(TRUE);
 		g_main_run(main_loop);
 		g_main_destroy(main_loop);
