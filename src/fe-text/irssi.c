@@ -177,9 +177,11 @@ static void textui_finish_init(void)
 		gui_windows_init();
 		statusbar_init();
 		term_refresh_thaw();
+
+		/* don't check settings with dummy mode */
+		settings_check();
 	}
 
-	settings_check();
 	module_register("core", "fe-text");
 
 #ifdef HAVE_STATIC_PERL
@@ -347,9 +349,9 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
-                term_refresh_freeze();
+                if (!dummy) term_refresh_freeze();
 		g_main_iteration(TRUE);
-                term_refresh_thaw();
+                if (!dummy) term_refresh_thaw();
 
 		if (reload_config) {
                         /* SIGHUP received, do /RELOAD */
