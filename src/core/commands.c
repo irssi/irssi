@@ -421,8 +421,8 @@ void cmd_get_remove_func(CMD_GET_FUNC func)
 
 static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
 {
-	const char *cmdchars, *alias;
-	char *cmd, *str, *args, *oldcmd;
+	const char *alias;
+	char *cmd, *str, *args, *oldcmd, *cmdchar;
 	int use_alias = TRUE;
 
 	g_return_if_fail(line != NULL);
@@ -433,8 +433,8 @@ static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
 		return;
 	}
 
-	cmdchars = settings_get_str("cmdchars");
-	if (strchr(cmdchars, *line) == NULL)
+	cmdchar = strchr(settings_get_str("cmdchars"), *line);
+        if (cmdchar == NULL)
 		return; /* handle only /commands here */
 	line++;
 	if (*line == ' ') {
@@ -442,8 +442,8 @@ static void parse_outgoing(const char *line, SERVER_REC *server, void *item)
 		return;
 	}
 
-	/* //command ignores aliases */
-	if (strchr(cmdchars, *line) != NULL) {
+	/* same cmdchar twice ignores aliases ignores aliases */
+	if (*line == *cmdchar) {
 		line++;
 		use_alias = FALSE;
 	}
