@@ -538,7 +538,7 @@ void expandos_init(void)
 	struct utsname un;
 #endif
 	settings_add_str("misc", "STATUS_OPER", "*");
-	settings_add_str("misc", "timestamp_format", "%H:%M");
+	settings_add_str("lookandfeel", "timestamp_format", "%H:%M");
 
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
