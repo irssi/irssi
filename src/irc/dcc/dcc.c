@@ -287,7 +287,7 @@ static void dcc_ctcp_msg(IRC_SERVER_REC *server, char *data,
 {
     char *type, *arg, *addrstr, *portstr, *sizestr, *str;
     void *free_arg;
-    const char *cstr;
+    const char *masks;
     DCC_REC *dcc, *olddcc;
     long size;
     int dcctype, port;
@@ -331,38 +331,22 @@ static void dcc_ctcp_msg(IRC_SERVER_REC *server, char *data,
     switch (dcc->type)
     {
 	case DCC_TYPE_GET:
-	    cstr = settings_get_str("dcc_autoget_masks");
-	    /* check that autoget masks match */
-	    if (settings_get_bool("dcc_autoget") && (*cstr == '\0' || masks_match(SERVER(server), cstr, sender, sendaddr)) &&
-                /* check file size limit, FIXME: it's possible to send a bogus file size and then just send what ever sized file.. */
-		(settings_get_int("dcc_max_autoget_size") <= 0 || (settings_get_int("dcc_max_autoget_size") > 0 && size <= settings_get_int("dcc_max_autoget_size")*1024)))
-            {
-                /* automatically get */
-                str = g_strdup_printf("GET %s %s", dcc->nick, dcc->arg);
-                signal_emit("command dcc", 2, str, server);
-                g_free(str);
-            }
-            else
-            {
-                /* send request */
-                signal_emit("dcc request", 1, dcc);
-            }
+	    /* send request */
+	    signal_emit("dcc request", 2, dcc, sendaddr);
             break;
 
 	case DCC_TYPE_CHAT:
-	    cstr = settings_get_str("dcc_autochat_masks");
+	    /* send request */
+	    signal_emit("dcc request", 2, dcc, sendaddr);
+
+	    masks = settings_get_str("dcc_autochat_masks");
 	    if (olddcc != NULL ||
-		(*cstr != '\0' && masks_match(SERVER(server), cstr, sender, sendaddr)))
+		(*masks != '\0' && masks_match(SERVER(server), masks, sender, sendaddr)))
 	    {
                 /* automatically accept chat */
                 str = g_strdup_printf("CHAT %s", dcc->nick);
                 signal_emit("command dcc", 2, str, server);
                 g_free(str);
-	    }
-	    else
-	    {
-		/* send request */
-		signal_emit("dcc request", 1, dcc);
 	    }
 	    break;
 
@@ -416,7 +400,8 @@ static void dcc_ctcp_reply(IRC_SERVER_REC *server, char *data,
     cmd_params_free(free_arg);
 }
 
-static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
+/* reject DCC request */
+void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 {
     char *str;
 
@@ -438,7 +423,7 @@ static void dcc_reject(DCC_REC *dcc, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: DCC CLOSE <type> <nick> [<file>] */
-static void cmd_dcc_close(IRC_SERVER_REC *server, char *data)
+static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 {
     DCC_REC *dcc;
     GSList *tmp, *next;
@@ -540,6 +525,7 @@ void irc_dcc_init(void)
 
     settings_add_bool("dcc", "dcc_autorename", FALSE);
     settings_add_bool("dcc", "dcc_autoget", FALSE);
+    settings_add_bool("dcc", "dcc_autoresume", FALSE);
     settings_add_int("dcc", "dcc_max_autoget_size", 1000);
     settings_add_str("dcc", "dcc_download_path", "~");
     settings_add_int("dcc", "dcc_file_create_mode", 644);

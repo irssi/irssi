@@ -297,10 +297,14 @@ static void dcc_ctcp_msg(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	if (lseek(dcc->fhandle, size, SEEK_SET) != size) {
+	if (lseek(dcc->fhandle, 0, SEEK_END) == size) {
+		/* whole file sent */
+		dcc->starttime = time(NULL);
+		dcc_reject(dcc, server);
+	}
+	else if (lseek(dcc->fhandle, size, SEEK_SET) != size) {
 		/* error, or trying to seek after end of file */
-		signal_emit("dcc closed", 1, dcc);
-		dcc_destroy(dcc);
+		dcc_reject(dcc, server);
 	} else {
 		dcc->transfd = dcc->skipped = size;
 
@@ -319,19 +323,25 @@ static void dcc_resume_rec(DCC_REC *dcc)
 
 	g_return_if_fail(dcc != NULL);
 
-	dcc->get_type = DCC_GET_RESUME;
 	dcc->file = dcc_get_download_path(dcc->arg);
-
 	dcc->fhandle = open(dcc->file, O_WRONLY, dcc_file_create_mode);
 	if (dcc->fhandle == -1) {
 		signal_emit("dcc error file not found", 2, dcc, dcc->file);
-		dcc_destroy(dcc);
 		return;
 	}
+
+	dcc->get_type = DCC_GET_RESUME;
 
 	dcc->transfd = lseek(dcc->fhandle, 0, SEEK_END);
 	if (dcc->transfd < 0) dcc->transfd = 0;
 	dcc->skipped = dcc->transfd;
+
+	if (dcc->skipped == dcc->size) {
+		/* already received whole file */
+		dcc->starttime = time(NULL);
+		dcc_reject(dcc, NULL);
+                return;
+	}
 
 	str = g_strdup_printf("DCC RESUME %s %d %lu",
 			      dcc->arg, dcc->port, dcc->transfd);
@@ -343,7 +353,7 @@ static void dcc_resume_rec(DCC_REC *dcc)
 static void cmd_dcc_resume(const char *data)
 {
 	DCC_REC *dcc;
-	GSList *tmp;
+	GSList *tmp, *next;
 	char *nick, *fname;
 	void *free_arg;
 	int found;
@@ -355,9 +365,10 @@ static void cmd_dcc_resume(const char *data)
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	dcc = NULL; found = FALSE;
-	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
+	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
 		dcc = tmp->data;
 
+                next = tmp->next;
 		if (dcc_is_unget(dcc) && g_strcasecmp(dcc->nick, nick) == 0 &&
 		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
 			dcc_resume_rec(dcc);
@@ -589,6 +600,44 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 	cmd_params_free(free_arg);
 }
 
+static void sig_dcc_request(DCC_REC *dcc, const char *nickaddr)
+{
+        struct stat statbuf;
+	const char *masks;
+        char *str, *file;
+        int max_size;
+
+	g_return_if_fail(dcc != NULL);
+	if (dcc->type != DCC_TYPE_GET) return;
+
+	/* check if we want to autoget file offer */
+	if (!settings_get_bool("dcc_autoget") &&
+	    !settings_get_bool("dcc_autoresume"))
+		return;
+
+	/* check that autoget masks match */
+	masks = settings_get_str("dcc_autoget_masks");
+	if (*masks != '\0' &&
+	    !masks_match(SERVER(dcc->server), masks, dcc->nick, nickaddr))
+		return;
+
+	/* check file size limit, FIXME: it's still possible to send a
+	   bogus file size and then just send what ever sized file.. */
+        max_size = settings_get_int("dcc_max_autoget_size");
+	if (max_size > 0 && max_size*1024 < dcc->size)
+                return;
+
+	/* ok. but do we want/need to resume? */
+	file = dcc_get_download_path(dcc->arg);
+	str = g_strdup_printf(settings_get_bool("dcc_autoresume") &&
+			      stat(file, &statbuf) == 0 ?
+			      "RESUME %s %s" : "GET %s %s",
+			      dcc->nick, dcc->arg);
+	signal_emit("command dcc", 2, str, dcc->server);
+        g_free(file);
+	g_free(str);
+}
+
 static void read_settings(void)
 {
 	dcc_file_create_mode = octal2dec(settings_get_int("dcc_file_create_mode"));
@@ -598,6 +647,7 @@ void dcc_files_init(void)
 {
 	signal_add("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add_last("dcc request", (SIGNAL_FUNC) sig_dcc_request);
 	signal_add("irssi init finished", (SIGNAL_FUNC) read_settings);
 	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
 	command_bind("dcc get", NULL, (SIGNAL_FUNC) cmd_dcc_get);
@@ -608,6 +658,7 @@ void dcc_files_deinit(void)
 {
 	signal_remove("ctcp msg dcc", (SIGNAL_FUNC) dcc_ctcp_msg);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("dcc request", (SIGNAL_FUNC) sig_dcc_request);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) read_settings);
 	command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);
 	command_unbind("dcc get", (SIGNAL_FUNC) cmd_dcc_get);
