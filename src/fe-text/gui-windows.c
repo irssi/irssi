@@ -693,7 +693,8 @@ void window_update_prompt(void)
 
 	prompt = parse_special_string(special, active_win->active_server,
 				      active_win->active, "", &var_used,
-				      PARSE_FLAG_ISSET_ANY);
+				      PARSE_FLAG_ISSET_ANY |
+				      PARSE_FLAG_ESCAPE_VARS);
 	if (!var_used && strchr(special, '$') != NULL) {
                 /* none of the $vars had non-empty values, use empty prompt */
 		*prompt = '\0';

@@ -435,6 +435,16 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	return value;
 }
 
+static void gstring_append_escaped(GString *str, const char *text)
+{
+	while (*text != '\0') {
+		if (*text == '%')
+                        g_string_append_c(str, '%');
+		g_string_append_c(str, *text);
+		text++;
+	}
+}
+
 /* parse the whole string. $ and \ chars are replaced */
 char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 			   const char *data, int *arg_used, int flags)
@@ -472,7 +482,10 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 					    arglist, &need_free, arg_used,
 					    flags);
 			if (ret != NULL) {
-				g_string_append(str, ret);
+                                if ((flags & PARSE_FLAG_ESCAPE_VARS) == 0)
+					g_string_append(str, ret);
+				else
+                                        gstring_append_escaped(str, ret);
 				if (need_free) g_free(ret);
 			}
 			code = 0;
