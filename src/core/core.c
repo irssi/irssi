@@ -77,11 +77,11 @@ const char *get_irssi_config(void)
 static void read_settings(void)
 {
 #ifndef WIN32
-	int signals[] = {
+	static int signals[] = {
 		SIGHUP, SIGINT, SIGQUIT, SIGTERM,
 		SIGALRM, SIGUSR1, SIGUSR2
 	};
-	char *signames[] = {
+	static char *signames[] = {
 		"hup", "int", "quit", "term",
 		"alrm", "usr1", "usr2"
 	};
