@@ -302,6 +302,13 @@ static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
         return sysrelease;
 }
 
+/* Topic of active channel (or address of queried nick) */
+static char *expando_topic(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IS_CHANNEL(item) ? CHANNEL(item)->topic :
+		IS_QUERY(item) ? QUERY(item)->address : "";
+}
+
 /* Server tag */
 static char *expando_servertag(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -436,6 +443,11 @@ void expandos_init(void)
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("sysrelease", expando_sysrelease,
 		       "", EXPANDO_NEVER, NULL);
+	expando_create("topic", expando_topic,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "channel topic changed", EXPANDO_ARG_WINDOW_ITEM,
+		       "query address changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
 	expando_create("tag", expando_servertag,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
@@ -457,6 +469,7 @@ void expandos_deinit(void)
 
 	expando_destroy("sysname", expando_sysname);
 	expando_destroy("sysrelease", expando_sysrelease);
+	expando_destroy("topic", expando_servertag);
 	expando_destroy("tag", expando_servertag);
 	expando_destroy("chatnet", expando_chatnet);
 
