@@ -115,7 +115,7 @@ static void dcc_chat_action(const char *msg, CHAT_DCC_REC *dcc)
 	sender = g_strconcat("=", dcc->id, NULL);
 	if (query_find(NULL, sender) == NULL)
 		completion_last_message_add(sender);
-	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
+	printformat(NULL, sender, MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS,
 		    IRCTXT_ACTION_DCC, dcc->id, msg);
 	g_free(sender);
 }
