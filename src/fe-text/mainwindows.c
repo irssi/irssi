@@ -57,6 +57,12 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
+static void create_curses_window(MAIN_WINDOW_REC *window)
+{
+	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
+        idlok(window->curses_win, 1);
+}
+
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 {
 	GSList *tmp;
@@ -69,7 +75,7 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	mvwin(window->curses_win, window->first_line, 0);
 #else
 	delwin(window->curses_win);
-	window->curses_win = newwin(window->lines, COLS, window->first_line, 0);
+	create_curses_window(window);
 #endif
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
@@ -91,7 +97,7 @@ void mainwindows_recreate(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		rec->curses_win = newwin(rec->lines, COLS, rec->first_line, 0);
+		create_curses_window(rec);
 		gui_window_redraw(rec->active);
 	}
 }
