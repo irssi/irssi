@@ -464,10 +464,10 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, GList *line,
 	}
 
         /* clear the rest of the view */
-	while (ypos < lines) {
+	while (lines > 0) {
 		wmove(view->window, ypos, 0);
 		wclrtoeol(view->window);
-                ypos++;
+		ypos++; lines--;
 	}
 }
 
@@ -543,7 +543,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
 		}
 	}
 
-	if (scroll_visible && realcount != 0) {
+	if (scroll_visible && realcount != 0 && view->window != NULL) {
 		if (realcount <= -view->height || realcount >= view->height) {
 			/* scrolled more than screenful, redraw the
 			   whole view */
@@ -650,7 +650,8 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 	view->ypos += lines < 0 ? count : -count;
 	view->bottom = view_is_bottom(view);
 
-	screen_refresh(view->window);
+        if (view->window != NULL)
+		screen_refresh(view->window);
 }
 
 /* Scroll to specified line */
@@ -757,16 +758,21 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			view->ypos -= linecount;
 		}
 
-		ypos = view->ypos+1 - view->cache->last_linecount;
-		if (ypos >= 0)
-			subline = 0;
-		else {
-			subline = -ypos;
-			ypos = 0;
+		if (view->window != NULL) {
+			ypos = view->ypos+1 - view->cache->last_linecount;
+			if (ypos >= 0)
+				subline = 0;
+			else {
+				subline = -ypos;
+				ypos = 0;
+			}
+			view_line_draw(view, line, subline, ypos,
+				       view->height - ypos);
 		}
-		view_line_draw(view, line, subline, ypos, view->height-ypos);
 	}
-	screen_refresh(view->window);
+
+        if (view->window != NULL)
+		screen_refresh(view->window);
 }
 
 /* Update some line in the buffer which has been modified using
@@ -913,7 +919,8 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	}
 
 	view->bottom = view_is_bottom(view);
-	screen_refresh(view->window);
+        if (view->window != NULL)
+		screen_refresh(view->window);
 }
 
 /* Remove one line from buffer. */
@@ -1011,11 +1018,10 @@ void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view, WINDOW *window)
 /* Redraw a view to window */
 void textbuffer_view_redraw(TEXT_BUFFER_VIEW_REC *view)
 {
-	if (view->window == NULL)
-                return;
-
-	view_draw_top(view, view->height);
-        screen_refresh(view->window);
+	if (view->window != NULL) {
+		view_draw_top(view, view->height);
+		screen_refresh(view->window);
+	}
 }
 
 static int line_cache_check_remove(void *key, LINE_CACHE_REC *cache,
