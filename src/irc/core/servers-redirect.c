@@ -28,6 +28,11 @@
 
 #define DEFAULT_REDIRECT_TIMEOUT 60
 
+/* Allow 2 non-expected redirections to come before the expected one
+   before aborting it. Some IRC bouncers/proxies reply to eg. PINGs
+   immediately. */
+#define MAX_FAILURE_COUNT 2
+
 typedef struct {
         char *name;
 	int refcount;
@@ -40,6 +45,7 @@ typedef struct {
 struct _REDIRECT_REC {
 	REDIRECT_CMD_REC *cmd;
 	time_t created;
+        int failures;
 	int destroyed;
 
 	char *arg;
@@ -411,8 +417,10 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
                 next = tmp->next;
 		if (rec->destroyed ||
 		    (rec->remote && (now-rec->created) > rec->cmd->timeout) ||
-		    (!rec->remote && redirect != NULL))
-			redirect_abort(server, rec);
+		    (!rec->remote && redirect != NULL)) {
+			if (rec->remote || ++rec->failures >= MAX_FAILURE_COUNT)
+				redirect_abort(server, rec);
+		}
 	}
 
         return redirect;
