@@ -36,6 +36,7 @@
 
 int term_use_colors;
 
+static int force_colors;
 static int resize_dirty;
 
 /* Resize the terminal if needed */
@@ -92,18 +93,13 @@ static void read_settings(void)
 {
 	int old_colors = term_use_colors;
 
-	if (settings_get_bool("term_force_colors")) {
-		if (!term_use_colors) {
-                        term_force_colors(TRUE);
-			term_use_colors = TRUE;
-		}
-	} else {
-		if (!term_has_colors() && term_use_colors)
-			term_force_colors(FALSE);
-		term_use_colors = settings_get_bool("colors");
-		if (term_use_colors && !term_has_colors())
-			term_use_colors = FALSE;
+	if (force_colors != settings_get_bool("term_force_colors")) {
+		force_colors = !settings_get_bool("term_force_colors");
+		term_force_colors(force_colors);
 	}
+
+	term_use_colors = settings_get_bool("colors") &&
+		(force_colors || term_has_colors());
 
 	if (term_use_colors != old_colors)
 		irssi_redraw();
