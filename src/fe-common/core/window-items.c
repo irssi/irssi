@@ -224,35 +224,13 @@ WI_ITEM_REC *window_item_find(void *server, const char *name)
 	return NULL;
 }
 
-static int waiting_channels_get(WINDOW_REC *window, const char *tag)
-{
-	GSList *tmp;
-
-	g_return_val_if_fail(window != NULL, FALSE);
-	g_return_val_if_fail(tag != NULL, FALSE);
-
-	for (tmp = window->waiting_channels; tmp != NULL; tmp = tmp->next) {
-		if (g_strcasecmp(tmp->data, tag) == 0) {
-			g_free(tmp->data);
-			window->waiting_channels = g_slist_remove(window->waiting_channels, tmp->data);
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
 void window_item_create(WI_ITEM_REC *item, int automatic)
 {
 	WINDOW_REC *window;
 	GSList *tmp, *sorted;
-	char *str;
 	int clear_waiting, reuse_unused_windows;
 
 	g_return_if_fail(item != NULL);
-
-	str = item->server == NULL ? NULL :
-		g_strdup_printf("%s %s", ((SERVER_REC *) item->server)->tag, item->name);
 
 	reuse_unused_windows =
 		!settings_get_bool("autoclose_windows") ||
@@ -267,23 +245,21 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		if (reuse_unused_windows &&
 		    rec->items == NULL && rec->level == 0 &&
 		    (window == NULL || rec == active_win ||
-		     window->waiting_channels != NULL)) {
-                        /* no items in this window, we should probably use it.. */
+		     window->bound_items != NULL)) {
+			/* no items in this window,
+			   we should probably use it.. */
 			window = rec;
 		}
 
-		if (rec->waiting_channels != NULL && str != NULL) {
-			/* right name/server tag combination in
-			   some waiting list? */
-			if (waiting_channels_get(rec, str)) {
-				window = rec;
-				clear_waiting = FALSE;
-				break;
-			}
+                /* is item bound to this window? */
+		if (item->server != NULL &&
+		    window_bind_find(rec, item->server->tag, item->name)) {
+			window = rec;
+			clear_waiting = FALSE;
+			break;
 		}
 	}
         g_slist_free(sorted);
-        g_free_not_null(str);
 
         if (window == NULL && !settings_get_bool("autocreate_windows")) {
                 /* never create new windows automatically */
@@ -298,12 +274,8 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		window_item_add(window, item, automatic);
 	}
 
-	if (clear_waiting) {
-		/* clear window's waiting_channels list */
-		g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL),
-		g_slist_free(window->waiting_channels);
-                window->waiting_channels = NULL;
-	}
+	if (clear_waiting)
+                window_bind_remove_unsticky(window);
 }
 
 static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)

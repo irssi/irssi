@@ -14,6 +14,12 @@ enum {
 };
 
 typedef struct {
+	char *servertag;
+        char *name;
+	unsigned int sticky:1;
+} WINDOW_BIND_REC;
+
+typedef struct {
 	int refnum;
 	char *name;
 
@@ -25,7 +31,7 @@ typedef struct {
         char *servertag; /* active_server must be either NULL or have this tag (unless there's items in this window) */
 
 	int level; /* message level */
-	GSList *waiting_channels; /* list of "<server tag> <channel>" */
+	GSList *bound_items; /* list of WINDOW_BIND_RECs */
 
 	int lines;
 	unsigned int sticky_refnum:1;
@@ -74,6 +80,14 @@ int window_refnum_next(int refnum, int wrap);
 int windows_refnum_last(void);
 
 GSList *windows_get_sorted(void);
+
+WINDOW_BIND_REC *window_bind_add(WINDOW_REC *window, const char *servertag,
+				 const char *name);
+void window_bind_destroy(WINDOW_REC *window, WINDOW_BIND_REC *rec);
+
+WINDOW_BIND_REC *window_bind_find(WINDOW_REC *window, const char *servertag,
+				  const char *name);
+void window_bind_remove_unsticky(WINDOW_REC *window);
 
 void windows_init(void);
 void windows_deinit(void);

@@ -89,8 +89,7 @@ static void sig_disconnected(SERVER_REC *server)
 		CHANNEL_REC *channel = tmp->data;
 
 		window = window_item_window((WI_ITEM_REC *) channel);
-		window->waiting_channels =
-			g_slist_append(window->waiting_channels, g_strdup_printf("%s %s", server->tag, channel->name));
+		window_bind_add(window, server->tag, channel->name);
 	}
 }
 

@@ -38,20 +38,19 @@
 static void sig_window_restore_item(WINDOW_REC *window, const char *type,
 				    CONFIG_NODE *node)
 {
-	char *name, *tag, *chat_type, *str;
+	char *name, *tag, *chat_type;
 
 	chat_type = config_node_get_str(node, "chat_type", NULL);
 	name = config_node_get_str(node, "name", NULL);
 	tag = config_node_get_str(node, "tag", NULL);
-	if (name == NULL) return;
+
+	if (name == NULL || tag == NULL)
+		return;
 
 	if (g_strcasecmp(type, "CHANNEL") == 0) {
-		/* add channel to "waiting channels" list */
-		str = tag == NULL ? g_strdup(name) :
-			g_strdup_printf("%s %s", tag, name);
-
-		window->waiting_channels =
-			g_slist_append(window->waiting_channels, str);
+		/* bind channel to window */
+		WINDOW_BIND_REC *rec = window_bind_add(window, tag, name);
+                rec->sticky = TRUE;
 	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
 		/* create query immediately */
 		query_create(chat_protocol_lookup(chat_type),

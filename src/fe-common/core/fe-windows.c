@@ -121,8 +121,8 @@ void window_destroy(WINDOW_REC *window)
 
 	signal_emit("window destroyed", 1, window);
 
-	g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL);
-	g_slist_free(window->waiting_channels);
+	while (window->bound_items != NULL)
+                window_bind_destroy(window, window->bound_items->data);
 
 	g_free_not_null(window->servertag);
 	g_free_not_null(window->theme_name);
@@ -384,6 +384,68 @@ GSList *windows_get_sorted(void)
 	}
 
         return sorted;
+}
+
+WINDOW_BIND_REC *window_bind_add(WINDOW_REC *window, const char *servertag,
+				 const char *name)
+{
+	WINDOW_BIND_REC *rec;
+
+        g_return_val_if_fail(window != NULL, NULL);
+        g_return_val_if_fail(servertag != NULL, NULL);
+        g_return_val_if_fail(name != NULL, NULL);
+
+	rec = g_new0(WINDOW_BIND_REC, 1);
+        rec->name = g_strdup(name);
+        rec->servertag = g_strdup(servertag);
+
+	window->bound_items = g_slist_append(window->bound_items, rec);
+        return rec;
+}
+
+void window_bind_destroy(WINDOW_REC *window, WINDOW_BIND_REC *rec)
+{
+	g_return_if_fail(window != NULL);
+        g_return_if_fail(rec != NULL);
+
+	window->bound_items = g_slist_remove(window->bound_items, rec);
+
+        g_free(rec->servertag);
+        g_free(rec->name);
+        g_free(rec);
+}
+
+WINDOW_BIND_REC *window_bind_find(WINDOW_REC *window, const char *servertag,
+				  const char *name)
+{
+	GSList *tmp;
+
+        g_return_val_if_fail(window != NULL, NULL);
+        g_return_val_if_fail(servertag != NULL, NULL);
+        g_return_val_if_fail(name != NULL, NULL);
+
+	for (tmp = window->bound_items; tmp != NULL; tmp = tmp->next) {
+		WINDOW_BIND_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->name, name) == 0 &&
+		    g_strcasecmp(rec->servertag, servertag) == 0)
+                        return rec;
+	}
+
+        return NULL;
+}
+
+void window_bind_remove_unsticky(WINDOW_REC *window)
+{
+	GSList *tmp, *next;
+
+	for (tmp = window->bound_items; tmp != NULL; tmp = tmp->next) {
+		WINDOW_BIND_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (!rec->sticky)
+                        window_bind_destroy(window, rec);
+	}
 }
 
 static void sig_server_looking(SERVER_REC *server)
