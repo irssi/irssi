@@ -461,11 +461,6 @@ void irc_servers_init(void)
 
 void irc_servers_deinit(void)
 {
-	while (servers != NULL)
-		server_disconnect(servers->data);
-	while (lookup_servers != NULL)
-		server_disconnect(lookup_servers->data);
-
 	g_source_remove(cmd_tag);
 
 	signal_remove("server connect free", (SIGNAL_FUNC) sig_server_connect_free);

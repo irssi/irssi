@@ -28,6 +28,8 @@
 #include "rawlog.h"
 #include "settings.h"
 
+
+#include "chat-protocols.h"
 #include "servers.h"
 #include "servers-reconnect.h"
 #include "servers-redirect.h"
@@ -490,10 +492,31 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 	return server;
 }
 
+static void disconnect_servers(GSList *servers, int chat_type)
+{
+	GSList *tmp, *next;
+
+	for (tmp = servers; tmp != NULL; tmp = next) {
+		SERVER_REC *rec = tmp->data;
+
+                next = tmp->next;
+                if (rec->chat_type == chat_type)
+			server_disconnect(rec);
+	}
+}
+
+static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
+{
+        disconnect_servers(servers, proto->id);
+        disconnect_servers(lookup_servers, proto->id);
+}
+
 void servers_init(void)
 {
 	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
 	lookup_servers = servers = NULL;
+
+	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 
 	servers_reconnect_init();
 	servers_redirect_init();
@@ -502,10 +525,7 @@ void servers_init(void)
 
 void servers_deinit(void)
 {
-	while (servers != NULL)
-		server_disconnect(servers->data);
-	while (lookup_servers != NULL)
-		server_connect_failed(lookup_servers->data, NULL);
+	signal_remove("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 
 	servers_setup_deinit();
 	servers_redirect_deinit();

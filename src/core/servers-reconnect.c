@@ -392,6 +392,19 @@ static void cmd_disconnect(const char *data, SERVER_REC *server)
 	signal_stop();
 }
 
+static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
+{
+	GSList *tmp, *next;
+
+	for (tmp = reconnects; tmp != NULL; tmp = next) {
+		RECONNECT_REC *rec = tmp->data;
+
+                next = tmp->next;
+                if (rec->conn->chat_type == proto->id)
+			server_reconnect_destroy(rec, TRUE);
+	}
+}
+
 static void read_settings(void)
 {
 	reconnect_time = settings_get_int("server_reconnect_time");
@@ -410,7 +423,9 @@ void servers_reconnect_init(void)
 	signal_add("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_reconnect);
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+
 	command_bind("rmreconns", NULL, (SIGNAL_FUNC) cmd_rmreconns);
 	command_bind("reconnect", NULL, (SIGNAL_FUNC) cmd_reconnect);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
@@ -420,13 +435,12 @@ void servers_reconnect_deinit(void)
 {
 	g_source_remove(reconnect_timeout_tag);
 
-	while (reconnects != NULL)
-		server_reconnect_destroy(reconnects->data, TRUE);
-
 	signal_remove("server connect failed", (SIGNAL_FUNC) sig_reconnect);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_reconnect);
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
 	command_unbind("rmreconns", (SIGNAL_FUNC) cmd_rmreconns);
 	command_unbind("reconnect", (SIGNAL_FUNC) cmd_reconnect);
 	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);

@@ -111,6 +111,8 @@ void irc_core_init(void)
 
 void irc_core_deinit(void)
 {
+	signal_emit("chat protocol deinit", 1, chat_protocol_find("IRC"));
+
         irc_log_deinit();
 	irc_expandos_deinit();
 	irc_rawlog_deinit();
