@@ -112,10 +112,11 @@ static const char *command_expand(char *cmd)
 {
 	GSList *tmp;
 	const char *match;
-	int len;
+	int len, multiple;
 
 	g_return_val_if_fail(cmd != NULL, NULL);
 
+	multiple = FALSE;
 	match = NULL;
 	len = strlen(cmd);
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
@@ -123,20 +124,26 @@ static const char *command_expand(char *cmd)
 
 		if (g_strncasecmp(rec->cmd, cmd, len) == 0 &&
 		    strchr(rec->cmd+len, ' ') == NULL) {
-			if (match != NULL) {
-                                /* multiple matches */
-				signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_AMBIGUOUS), cmd);
-				return NULL;
-			}
-
 			if (rec->cmd[len] == '\0') {
 				/* full match */
 				return rec->cmd;
 			}
 
+			if (match != NULL) {
+				/* multiple matches, we still need to check
+				   if there's some command left that is a
+				   full match.. */
+				multiple = TRUE;
+			}
+
 			/* check that this is the only match */
 			match = rec->cmd;
 		}
+	}
+
+	if (multiple) {
+		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_AMBIGUOUS), cmd);
+		return NULL;
 	}
 
 	return match != NULL ? match : cmd;
@@ -297,7 +304,7 @@ static char *cmd_get_quoted_param(char **data)
 static int option_find(char **array, const char *option)
 {
 	char **tmp;
-	int index, found, len;
+	int index, found, len, multiple;
 
 	g_return_val_if_fail(array != NULL, -1);
 	g_return_val_if_fail(option != NULL, -1);
@@ -305,7 +312,7 @@ static int option_find(char **array, const char *option)
 	len = strlen(option);
 	g_return_val_if_fail(len > 0, -1);
 
-	found = -1; index = 0;
+	found = -1; index = 0; multiple = FALSE;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
 		const char *text = *tmp + iscmdtype(**tmp);
 
@@ -316,14 +323,18 @@ static int option_find(char **array, const char *option)
 			}
 
 			if (found != -1) {
-				/* multiple matches - abort */
-				return -2;
+				/* multiple matches - we still need to check
+				   if there's a full match left.. */
+				multiple = TRUE;
 			}
 
 			/* partial match, check that it's the only one */
 			found = index;
 		}
 	}
+
+	if (multiple)
+		return -2;
 
 	return found;
 }
