@@ -27,6 +27,7 @@ libcore_a_SOURCES = \
         levels.c \
 	line-split.c \
 	log.c \
+	log-away.c \
 	masks.c \
         $(memdebug_src) \
 	misc.c \

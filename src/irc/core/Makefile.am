@@ -18,7 +18,6 @@ libirc_core_a_SOURCES = \
 	irc-chatnets.c \
         irc-commands.c \
         irc-expandos.c \
-        irc-log.c \
         irc-masks.c \
         irc-nicklist.c \
         irc-queries.c \

@@ -48,6 +48,9 @@
 void chat_commands_init(void);
 void chat_commands_deinit(void);
 
+void log_away_init(void);
+void log_away_deinit(void);
+
 int irssi_gui;
 
 static char *irssi_dir, *irssi_config_file;
@@ -180,6 +183,7 @@ void core_init(int argc, char *argv[])
 	servers_init();
         write_buffer_init();
 	log_init();
+	log_away_init();
 	rawlog_init();
 
 	channels_init();
@@ -206,6 +210,7 @@ void core_deinit(void)
 	channels_deinit();
 
 	rawlog_deinit();
+	log_away_deinit();
 	log_deinit();
         write_buffer_deinit();
 	servers_deinit();

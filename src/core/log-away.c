@@ -1,7 +1,7 @@
 /*
- irc-log.c : irssi
+ log-away.c : Awaylog handling
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,9 +22,8 @@
 #include "signals.h"
 #include "levels.h"
 #include "log.h"
+#include "servers.h"
 #include "settings.h"
-
-#include "irc-servers.h"
 
 static LOG_REC *awaylog;
 static int away_filepos;
@@ -37,7 +36,7 @@ static void sig_log_written(LOG_REC *log)
         away_msgs++;
 }
 
-static void event_away(IRC_SERVER_REC *server, const char *data)
+static void awaylog_open(void)
 {
 	const char *fname, *levelstr;
 	LOG_REC *log;
@@ -71,7 +70,7 @@ static void event_away(IRC_SERVER_REC *server, const char *data)
 	away_msgs = 0;
 }
 
-static void event_unaway(IRC_SERVER_REC *server, const char *data)
+static void awaylog_close(void)
 {
 	const char *fname;
 	LOG_REC *log;
@@ -92,7 +91,15 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 	log_close(log);
 }
 
-void irc_log_init(void)
+static void sig_away_changed(SERVER_REC *server)
+{
+	if (server->usermode_away)
+		awaylog_open();
+	else
+                awaylog_close();
+}
+
+void log_away_init(void)
 {
 	awaylog = NULL;
 	away_filepos = 0;
@@ -102,13 +109,11 @@ void irc_log_init(void)
 	settings_add_str("log", "awaylog_level", "msgs hilight");
 
 	signal_add("log written", (SIGNAL_FUNC) sig_log_written);
-	signal_add("event 306", (SIGNAL_FUNC) event_away);
-	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
+	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
 
-void irc_log_deinit(void)
+void log_away_deinit(void)
 {
 	signal_remove("log written", (SIGNAL_FUNC) sig_log_written);
-	signal_remove("event 306", (SIGNAL_FUNC) event_away);
-	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
+	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }

@@ -42,9 +42,6 @@ void irc_rawlog_deinit(void);
 void irc_expandos_init(void);
 void irc_expandos_deinit(void);
 
-void irc_log_init(void);
-void irc_log_deinit(void);
-
 void lag_init(void);
 void lag_deinit(void);
 
@@ -106,14 +103,12 @@ void irc_core_init(void)
 	netsplit_init();
 	irc_rawlog_init();
 	irc_expandos_init();
-	irc_log_init();
 }
 
 void irc_core_deinit(void)
 {
 	signal_emit("chat protocol deinit", 1, chat_protocol_find("IRC"));
 
-        irc_log_deinit();
 	irc_expandos_deinit();
 	irc_rawlog_deinit();
 	netsplit_deinit();
