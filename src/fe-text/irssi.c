@@ -84,11 +84,11 @@ int quitting;
 static const char *firsttimer_text =
 	"Looks like this is the first time you've run irssi.\n"
 	"This is just a reminder that you really should go read\n"
-	"startup-HOWTO if you haven't already. Irssi's default\n"
-	"settings aren't probably what you've been used to, and you\n"
-	"shouldn't judge the whole client as crap based on them.\n\n"
-	"You can find startup-HOWTO and more irssi beginner info at\n"
-	"http://irssi.org/beginner/";
+	"startup-HOWTO if you haven't already. You can find it\n"
+	"and more irssi beginner info at http://irssi.org/help/\n"
+	"\n"
+	"For the truly impatient people who don't like any automatic\n"
+	"window creation or closing, just type: /MANUAL-WINDOWS";
 static int display_firsttimer = FALSE;
 
 
