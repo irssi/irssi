@@ -239,7 +239,8 @@ char *module_get_name(const char *path)
 	return module_name;
 }
 
-GModule *module_open(const char *name)
+#ifdef HAVE_GMODULE
+static GModule *module_open(const char *name)
 {
 	struct stat statbuf;
 	GModule *module;
@@ -310,9 +311,11 @@ static int module_load_name(const char *path, const char *name)
 	signal_emit("module loaded", 1, rec);
 	return TRUE;
 }
+#endif
 
 int module_load(const char *path)
 {
+#ifdef HAVE_GMODULE
 	char *name;
 	int ret;
 
@@ -326,10 +329,14 @@ int module_load(const char *path)
 	g_free(name);
 
 	return ret;
+#else
+        return FALSE;
+#endif
 }
 
 void module_unload(MODULE_REC *module)
 {
+#ifdef HAVE_GMODULE
 	void (*module_deinit) (void);
 	char *deinitfunc;
 
@@ -353,6 +360,7 @@ void module_unload(MODULE_REC *module)
 	g_module_close(module->gmodule);
 	g_free(module->name);
 	g_free(module);
+#endif
 }
 
 static void uniq_get_modules(char *key, void *value, GSList **list)

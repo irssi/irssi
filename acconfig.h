@@ -10,6 +10,7 @@
 #undef HAVE_SOCKS_H
 #undef HAVE_PL_PERL
 #undef HAVE_STATIC_PERL
+#undef HAVE_GMODULE
 
 /* macros/curses checks */
 #undef HAS_CURSES

@@ -253,13 +253,32 @@ if test "x$GLIB_DIR" != "x"; then
   GLIB_LDEXTRA=`$GLIB_DIR/glib-config --libs gmodule|sed -e 's/-lglib//' -e 's/-lgmodule//' -e 's,-L/usr/local/lib ,,'|sed 's/ \+/ /g'`
   full_glib_dir="`pwd`/$GLIB_DIR"
   GLIB_CFLAGS="-I$full_glib_dir -I$full_glib_dir/gmodule"
-  GLIB_LIBS="$full_glib_dir/.libs/libglib.a $full_glib_dir/gmodule/.libs/libgmodule.a $GLIB_LDEXTRA"
+  if test -f $full_glib_dir/.libs/libglib.a; then
+    GLIB_LIBS="$full_glib_dir/.libs/libglib.a $GLIB_LDEXTRA"
+    if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
+      GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
+    fi
+  elif test -f $full_glib_dir/libglib.a; then
+    GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
+    if test -f $full_glib_dir/gmodule/libgmodule.a; then
+      GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
+    fi
+  else
+    AC_ERROR([GLIB was not compiled properly, libglib.a not found])
+  fi
   AC_SUBST(GLIB_DIR)
   AC_SUBST(GLIB_CFLAGS)
   AC_SUBST(GLIB_LIBS)
 else
   AC_MSG_RESULT([no])
   AM_PATH_GLIB(1.2.0,,, gmodule)
+  if test "x$GLIB_LIBS" = "x"; then
+    echo "*** trying without -lgmodule"
+    glib_config_args=
+    AM_PATH_GLIB(1.2.0)
+  else
+    AC_DEFINE(HAVE_GMODULE)
+  fi
   if test "x$GLIB_LIBS" = "x"; then
 	echo
 	echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
@@ -274,52 +293,64 @@ PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
 
 dnl **
 dnl ** check if we can link dynamic libraries to modules
+dnl ** also checks if libraries are built to .libs dir
 dnl **
 
 AC_MSG_CHECKING([if we can link dynamic libraries with modules])
 DYNLIB_MODULES=no
 
+dnl ** compile object file
 cat > conftest.c <<EOF
 #include <math.h>
 int modfunc(void){return (int)floor(1.2);}
 EOF
 ./libtool --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
 if test ! -s conftest.lo; then
-  AC_MSG_RESULT([no, error compiling test module])
+  AC_ERROR([error compiling test module])
+fi
+
+dnl ** link to library
+./libtool --mode=link $CC $CFLAGS $LDFLAGS -module -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
+if test -s .libs/libconftest.a; then
+  LIBDIR=.libs/
+elif test -s libconftest.a; then
+  LIBDIR=
 else
-  ./libtool --mode=link $CC $CFLAGS $LDFLAGS -module -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
-  if test ! -s .libs/libconftest.so -a -s .libs/libconftest.so.0.0; then
-    mv .libs/libconftest.so.0.0 .libs/libconftest.so
-  fi
-  if test ! -s .libs/libconftest.so; then
-    AC_MSG_RESULT([no, error linking test module])
-  else
-    cat > conftest.c <<EOF
+  AC_ERROR([error, can't even find .a library])
+fi
+
+dnl ** check if dynamic linking worked
+if test ! -s ${LIBDIR}libconftest.so -a -s ${LIBDIR}libconftest.so.0.0; then
+  mv ${LIBDIR}libconftest.so.0.0 ${LIBDIR}libconftest.so
+fi
+if test ! -s ${LIBDIR}libconftest.so; then
+  AC_MSG_RESULT([no, error linking test module])
+else
+  cat > conftest.c <<EOF
 #include <gmodule.h>
 main() {
-  GModule *m; int (*modfunc)(void);
-  m = g_module_open(".libs/libconftest.so", 0);
-  if (!m) g_print("error loading: %s", g_module_error());
-  else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
-    g_print("modfunc() symbol not found from module");
-  else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
-  return 0; }
+GModule *m; int (*modfunc)(void);
+m = g_module_open("${LIBDIR}libconftest.so", 0);
+if (!m) g_print("error loading: %s", g_module_error());
+else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
+  g_print("modfunc() symbol not found from module");
+else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
+return 0; }
 EOF
-    $CC $CFLAGS conftest.c -o conftest `$GLIB_CONFIG --cflags --libs gmodule` 2> /dev/null > /dev/null
-    if test ! -s conftest; then
-      AC_MSG_RESULT([no, error compiling test program])
+  $CC $CFLAGS conftest.c -o conftest `$GLIB_CONFIG --cflags --libs gmodule` 2> /dev/null > /dev/null
+  if test ! -s conftest; then
+    AC_MSG_RESULT([no, error compiling test program])
+  else
+    status="`./conftest`"
+    if test "x$status" = "xok"; then
+      DYNLIB_MODULES=yes
+      AC_MSG_RESULT([yes])
     else
-      status="`./conftest`"
-      if test "x$status" = "xok"; then
-        DYNLIB_MODULES=yes
-        AC_MSG_RESULT([yes])
-      else
-        AC_MSG_RESULT([no, error running: $status])
-      fi
+      AC_MSG_RESULT([no, error running: $status])
     fi
   fi
-  rm -rf conftest.* libconftest.la .libs
 fi
+rm -rf conftest.* libconftest.* .libs
 
 dnl **
 dnl ** curses checks
@@ -509,11 +540,11 @@ for c in $CHAT_MODULES; do
 		FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/libfe_common_$c.a "
 	fi
 	for s in `eval echo \\$${c}_MODULES`; do
-		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/${LIBDIR}lib${c}_$s.a"
 		module_inits="$module_inits ${c}_${s}_init();"
 		module_deinits="${c}_${s}_deinit(); $module_deinits"
 		if test -d $srcdir/src/fe-common/$c/$s; then
-			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/.libs/libfe_common_${c}_$s.a "
+			FE_COMMON_LIBS="$FE_COMMON_LIBS../fe-common/$c/$s/${LIBDIR}libfe_common_${c}_$s.a "
 			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
 			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
 		fi

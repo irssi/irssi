@@ -5,7 +5,7 @@
 #define IRSSI_WEBSITE "http://irssi.org"
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "../config.h"
 #endif
 
 #include <stdio.h>
@@ -39,7 +39,9 @@
 #endif
 
 #include <glib.h>
-#include <gmodule.h>
+#ifdef HAVE_GMODULE
+#  include <gmodule.h>
+#endif
 
 #include "core/memdebug.h"
 #include "nls.h"

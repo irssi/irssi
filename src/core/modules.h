@@ -21,7 +21,9 @@ enum {
 
 typedef struct {
 	char *name;
+#ifdef HAVE_GMODULE
 	GModule *gmodule;
+#endif
 } MODULE_REC;
 
 extern GSList *modules;
