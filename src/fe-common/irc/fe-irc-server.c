@@ -50,7 +50,7 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 
 	return target;
 }
-/* SYNTAX: SERVER ADD [-4 | -6] [-auto | -noauto] [-ircnet <ircnet>]
+/* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-auto | -noauto] [-ircnet <ircnet>]
                       [-host <hostname>] [-cmdspeed <ms>] [-cmdmax <count>]
 		      [-port <port>] <address> [<port> [<password>]] */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
@@ -98,6 +98,8 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
+		if (rec->use_ssl)
+			g_string_append(str, "SSL, ");
 		if (rec->max_cmds_at_once > 0)
 			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)

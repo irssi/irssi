@@ -166,8 +166,10 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 	server->connrec = ircconn;
         server_connect_ref(conn);
 
-	if (server->connrec->port <= 0)
-		server->connrec->port = 6667;
+	if (server->connrec->port <= 0) {
+		server->connrec->port =
+			server->connrec->use_ssl ? 9999 : 6667;
+	}
 
 	server->cmd_queue_speed = ircconn->cmd_queue_speed > 0 ?
 		ircconn->cmd_queue_speed : settings_get_int("cmd_queue_speed");
@@ -184,6 +186,7 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 		ircconn->max_whois : DEFAULT_MAX_WHOIS;
 	server->max_msgs_in_cmd = ircconn->max_msgs > 0 ?
 		ircconn->max_msgs : DEFAULT_MAX_MSGS;
+	server->connrec->use_ssl = conn->use_ssl;
 
         server_connect_init((SERVER_REC *) server);
 	return (SERVER_REC *) server;
