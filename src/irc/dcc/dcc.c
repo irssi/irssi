@@ -287,7 +287,8 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     g_return_if_fail(data != NULL);
     g_return_if_fail(sender != NULL);
 
-    params = cmd_get_params(data, 5, &type, &arg, &addrstr, &portstr, &sizestr);
+    params = cmd_get_params(data, 5 | PARAM_FLAG_NOQUOTES,
+			    &type, &arg, &addrstr, &portstr, &sizestr);
 
     if (sscanf(portstr, "%d", &port) != 1) port = 0;
     if (sscanf(sizestr, "%lu", &size) != 1) size = 0;

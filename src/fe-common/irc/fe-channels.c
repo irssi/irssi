@@ -157,13 +157,13 @@ static void cmd_channel_list(void)
 
 		g_string_truncate(str, 0);
 		if (rec->autojoin)
-			g_string_append(str, "autojoin ");
+			g_string_append(str, "autojoin, ");
 		if (rec->botmasks != NULL && *rec->botmasks != '\0')
-			g_string_sprintfa(str, "bots: %s ", rec->botmasks);
+			g_string_sprintfa(str, "bots: %s, ", rec->botmasks);
 		if (rec->autosendcmd != NULL && *rec->autosendcmd != '\0')
-			g_string_sprintfa(str, "botcmd: %s ", rec->autosendcmd);
+			g_string_sprintfa(str, "botcmd: %s, ", rec->autosendcmd);
 
-		if (str->len > 0) g_string_truncate(str, str->len-1);
+		if (str->len > 1) g_string_truncate(str, str->len-1);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_LINE,
 			    rec->name, rec->ircnet == NULL ? "" : rec->ircnet,
 			    rec->password == NULL ? "" : rec->password, str->str);
@@ -242,8 +242,8 @@ void fe_channels_init(void)
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 
 	command_bind("wjoin", NULL, (SIGNAL_FUNC) cmd_wjoin);
-	command_bind("channel ", NULL, (SIGNAL_FUNC) cmd_channel_list_joined);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
+	command_bind("channel ", NULL, (SIGNAL_FUNC) cmd_channel_list_joined);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);

@@ -352,13 +352,17 @@ char *cmd_get_params(const char *data, int count, ...)
 	va_start(args, count);
 
 	/* get the length of the arguments in string */
-	old = datad = g_strdup(data);
-	if (count & PARAM_FLAG_MULTIARGS)
-		get_multi_args(&datad, TRUE, args);
-	else if (count & PARAM_FLAG_OPTARGS)
-		get_opt_args(&datad);
-	len = (int) (datad-old);
-	g_free(old);
+	if ((count & (PARAM_FLAG_MULTIARGS|PARAM_FLAG_OPTARGS)) == 0)
+		len = 0;
+	else {
+		old = datad = g_strdup(data);
+		if (count & PARAM_FLAG_MULTIARGS)
+			get_multi_args(&datad, TRUE, args);
+		else
+			get_opt_args(&datad);
+		len = (int) (datad-old);
+		g_free(old);
+	}
 
 	/* send the text to custom functions to handle - skip arguments */
 	old = datad = cmd_get_callfuncs(data+len, &count, &args);
@@ -392,7 +396,9 @@ char *cmd_get_params(const char *data, int count, ...)
 			/* get rest */
 			arg = datad;
 		} else {
-			arg = cmd_get_quoted_param(&datad);
+			arg = (count & PARAM_FLAG_NOQUOTES) ?
+				cmd_get_param(&datad) :
+				cmd_get_quoted_param(&datad);
 		}
 
 		str = (char **) va_arg(args, char **);

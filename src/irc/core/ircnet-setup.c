@@ -29,6 +29,64 @@
 
 GSList *ircnets; /* list of available ircnets */
 
+static void ircnet_config_add(IRCNET_REC *ircnet)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("ircnets", TRUE);
+	iconfig_node_set_str(node, ircnet->name, NULL);
+	node = config_node_section(node, ircnet->name, NODE_TYPE_BLOCK);
+
+	iconfig_node_set_str(node, "nick", ircnet->nick);
+	iconfig_node_set_str(node, "username", ircnet->username);
+	iconfig_node_set_str(node, "realname", ircnet->realname);
+	iconfig_node_set_str(node, "host", ircnet->own_host);
+
+	if (ircnet->max_cmds_at_once > 0)
+		config_node_set_int(node, "cmdmax", ircnet->max_cmds_at_once);
+	if (ircnet->cmd_queue_speed > 0)
+		config_node_set_int(node, "cmdspeed", ircnet->cmd_queue_speed);
+
+	if (ircnet->max_kicks > 0)
+		config_node_set_int(node, "max_kicks", ircnet->max_kicks);
+	if (ircnet->max_msgs > 0)
+		config_node_set_int(node, "max_msgs", ircnet->max_msgs);
+	if (ircnet->max_modes > 0)
+		config_node_set_int(node, "max_modes", ircnet->max_modes);
+	if (ircnet->max_whois > 0)
+		config_node_set_int(node, "max_whois", ircnet->max_whois);
+
+}
+
+static void ircnet_config_remove(IRCNET_REC *ircnet)
+{
+	CONFIG_NODE *node;
+
+	node = iconfig_node_traverse("ircnets", FALSE);
+	if (node != NULL) iconfig_node_set_str(node, ircnet->name, NULL);
+}
+
+void ircnet_create(IRCNET_REC *ircnet)
+{
+	if (g_slist_find(ircnets, ircnet) == NULL)
+		ircnets = g_slist_append(ircnets, ircnet);
+
+        ircnet_config_add(ircnet);
+}
+
+void ircnet_destroy(IRCNET_REC *ircnet)
+{
+        ircnet_config_remove(ircnet);
+	ircnets = g_slist_remove(ircnets, ircnet);
+
+	g_free(ircnet->name);
+	g_free_not_null(ircnet->nick);
+	g_free_not_null(ircnet->username);
+	g_free_not_null(ircnet->realname);
+	g_free_not_null(ircnet->own_host);
+	g_free(ircnet);
+}
+
 /* Find the irc network by name */
 IRCNET_REC *ircnet_find(const char *name)
 {
@@ -46,41 +104,28 @@ IRCNET_REC *ircnet_find(const char *name)
 	return NULL;
 }
 
-static void ircnet_destroy(IRCNET_REC *rec)
-{
-	ircnets = g_slist_remove(ircnets, rec);
-
-	g_free(rec->name);
-	if (rec->nick != NULL) g_free(rec->nick);
-	if (rec->username != NULL) g_free(rec->username);
-	if (rec->realname != NULL) g_free(rec->realname);
-	g_free(rec);
-}
-
 static IRCNET_REC *ircnet_add(CONFIG_NODE *node)
 {
 	IRCNET_REC *rec;
-	char *name, *nick, *username, *realname;
 
 	g_return_val_if_fail(node != NULL, NULL);
-
-	name = config_node_get_str(node, "name", NULL);
-	if (name == NULL) return NULL;
-
-	nick = config_node_get_str(node, "nick", NULL);
-	username = config_node_get_str(node, "username", NULL);
-	realname = config_node_get_str(node, "realname", NULL);
+	if (node->key == NULL) return NULL;
 
 	rec = g_new0(IRCNET_REC, 1);
+
+	rec->name = g_strdup(node->key);
+	rec->nick = g_strdup(config_node_get_str(node, "nick", NULL));
+	rec->username = g_strdup(config_node_get_str(node, "username", NULL));
+	rec->realname = g_strdup(config_node_get_str(node, "realname", NULL));
+	rec->own_host = g_strdup(config_node_get_str(node, "host", NULL));
+
+	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
+	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
+
 	rec->max_kicks = config_node_get_int(node, "max_kicks", 0);
 	rec->max_msgs = config_node_get_int(node, "max_msgs", 0);
 	rec->max_modes = config_node_get_int(node, "max_modes", 0);
 	rec->max_whois = config_node_get_int(node, "max_whois", 0);
-
-	rec->name = g_strdup(name);
-	rec->nick = (nick == NULL || *nick == '\0') ? NULL : g_strdup(nick);
-	rec->username = (username == NULL || *username == '\0') ? NULL : g_strdup(username);
-	rec->realname = (realname == NULL || *realname == '\0') ? NULL : g_strdup(realname);
 
 	ircnets = g_slist_append(ircnets, rec);
 	return rec;

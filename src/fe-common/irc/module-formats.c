@@ -47,6 +47,12 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "netsplits_header", "Nick      Channel    Server               Splitted server", 0 },
 	{ "netsplits_line", "$[9]0 $[10]1 $[20]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "netsplits_footer", "", 0 },
+	{ "ircnet_added", "Ircnet $0 saved", 1, { 0 } },
+	{ "ircnet_removed", "Ircnet $0 removed", 1, { 0 } },
+	{ "ircnet_not_found", "Ircnet $0 not found", 1, { 0 } },
+	{ "ircnet_header", "Ircnets:", 0 },
+	{ "ircnet_line", "$0: $1", 2, { 0, 0 } },
+	{ "ircnet_footer", "", 0 },
 
 	/* ---- */
 	{ NULL, "Channels", 0 },

@@ -40,6 +40,9 @@ void fe_channels_deinit(void);
 void fe_irc_commands_init(void);
 void fe_irc_commands_deinit(void);
 
+void fe_ircnet_init(void);
+void fe_ircnet_deinit(void);
+
 void fe_irc_server_init(void);
 void fe_irc_server_deinit(void);
 
@@ -100,6 +103,7 @@ void fe_common_irc_init(void)
 
 	fe_channels_init();
 	fe_irc_commands_init();
+	fe_ircnet_init();
 	fe_irc_server_init();
 	fe_ctcp_init();
 	fe_events_init();
@@ -119,6 +123,7 @@ void fe_common_irc_deinit(void)
 
 	fe_channels_deinit();
 	fe_irc_commands_deinit();
+	fe_ircnet_deinit();
 	fe_irc_server_deinit();
 	fe_ctcp_deinit();
 	fe_events_deinit();

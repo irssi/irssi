@@ -16,6 +16,7 @@ libfe_common_irc_la_SOURCES = \
 	fe-channels.c \
 	fe-irc-commands.c \
 	fe-irc-server.c \
+	fe-ircnet.c \
 	fe-ctcp.c \
 	fe-events.c \
 	fe-events-numeric.c \

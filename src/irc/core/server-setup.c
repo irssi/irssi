@@ -49,6 +49,30 @@ static void get_source_host_ip(void)
 	}
 }
 
+static void conn_set_ip(IRC_SERVER_CONNECT_REC *conn, IPADDR **own_ip, const char *own_host)
+{
+	IPADDR ip;
+
+	if (*own_ip != NULL) {
+                /* use already resolved IP */
+		if (conn->own_ip == NULL)
+			conn->own_ip = g_new(IPADDR, 1);
+		memcpy(conn->own_ip, *own_ip, sizeof(IPADDR));
+		return;
+	}
+
+
+	/* resolve the IP and use it */
+	if (net_gethostbyname(own_host, &ip) == 0) {
+		if (conn->own_ip == NULL)
+			conn->own_ip = g_new(IPADDR, 1);
+		memcpy(conn->own_ip, &ip, sizeof(IPADDR));
+
+		*own_ip = g_new(IPADDR, 1);
+		memcpy(*own_ip, &ip, sizeof(IPADDR));
+	}
+}
+
 /* Create server connection record. `address' is required, rest can be NULL */
 static IRC_SERVER_CONNECT_REC *
 create_addr_conn(const char *address, int port, const char *password,
@@ -91,25 +115,8 @@ create_addr_conn(const char *address, int port, const char *password,
 	sserver = server_setup_find(address, -1);
 	if (sserver == NULL) return conn;
 
-	if (sserver->own_ip != NULL) {
-                /* use already resolved IP */
-		if (conn->own_ip == NULL)
-			conn->own_ip = g_new(IPADDR, 1);
-		memcpy(conn->own_ip, sserver->own_ip, sizeof(IPADDR));
-	} else if (sserver->own_host != NULL) {
-		/* resolve the IP and use it */
-		IPADDR ip;
-
-		if (net_gethostbyname(sserver->own_host, &ip) == 0) {
-			if (conn->own_ip == NULL)
-				conn->own_ip = g_new(IPADDR, 1);
-			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
-
-			sserver->own_ip = g_new(IPADDR, 1);
-			memcpy(sserver->own_ip, &ip, sizeof(IPADDR));
-		}
-	}
-
+	if (sserver->own_host != NULL)
+		conn_set_ip(conn, &sserver->own_ip, sserver->own_host);
 	sserver->last_connect = time(NULL);
 
 	if (sserver->ircnet) conn->ircnet = g_strdup(sserver->ircnet);
@@ -140,6 +147,14 @@ create_addr_conn(const char *address, int port, const char *password,
 	if (ircnet->max_msgs > 0) conn->max_msgs = ircnet->max_msgs;
 	if (ircnet->max_modes > 0) conn->max_modes = ircnet->max_modes;
 	if (ircnet->max_whois > 0) conn->max_whois = ircnet->max_whois;
+
+	if (ircnet->max_cmds_at_once > 0 && sserver->max_cmds_at_once <= 0)
+		conn->max_cmds_at_once = ircnet->max_cmds_at_once;
+	if (ircnet->cmd_queue_speed > 0 && sserver->cmd_queue_speed <= 0)
+		conn->cmd_queue_speed = ircnet->cmd_queue_speed;
+
+	if (sserver->own_host == NULL && ircnet->own_host != NULL)
+		conn_set_ip(conn, &ircnet->own_ip, ircnet->own_host);
 
         return conn;
 }

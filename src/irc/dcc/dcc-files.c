@@ -272,7 +272,8 @@ static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(sender != NULL);
 
-	params = cmd_get_params(data, 4, &type, &arg, &portstr, &sizestr);
+	params = cmd_get_params(data, 4 | PARAM_FLAG_NOQUOTES,
+				&type, &arg, &portstr, &sizestr);
 
 	port = atoi(portstr);
 	size = atol(sizestr);

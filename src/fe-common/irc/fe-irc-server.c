@@ -101,14 +101,20 @@ static void server_add(const char *data)
 		if (*portarg != '\0') rec->port = atoi(portarg);
 		if (stristr(args, "-ircnet")) g_free_and_null(rec->ircnet);
 		if (*password != '\0') g_free_and_null(rec->password);
-		if (stristr(args, "-host")) g_free_and_null(rec->own_host);
+		if (stristr(args, "-host")) {
+			g_free_and_null(rec->own_host);
+			rec->own_ip = NULL;
+		}
 	}
 
 	if (stristr(args, "-auto")) rec->autoconnect = TRUE;
 	if (stristr(args, "-noauto")) rec->autoconnect = FALSE;
 	if (*ircnet != '\0') rec->ircnet = g_strdup(ircnet);
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
-	if (*host != '\0') rec->own_host = g_strdup(host);
+	if (*host != '\0') {
+		rec->own_host = g_strdup(host);
+		rec->own_ip = NULL;
+	}
 	if (*cmdspeed != '\0') rec->cmd_queue_speed = atoi(cmdspeed);
 	if (*cmdmax != '\0') rec->max_cmds_at_once = atoi(cmdmax);
 
@@ -151,15 +157,17 @@ static void server_list(const char *data)
 
 		g_string_truncate(str, 0);
 		if (rec->password != NULL)
-			g_string_append(str, "(pass) ");
+			g_string_append(str, "(pass), ");
 		if (rec->autoconnect)
-			g_string_append(str, "autoconnect ");
+			g_string_append(str, "autoconnect, ");
 		if (rec->max_cmds_at_once > 0)
-			g_string_sprintfa(str, "cmdmax: %d ", rec->max_cmds_at_once);
+			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)
-			g_string_sprintfa(str, "cmdspeed: %d ", rec->cmd_queue_speed);
+			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
 		if (rec->own_host != NULL)
-			g_string_sprintfa(str, "host: %s ", rec->own_host);
+			g_string_sprintfa(str, "host: %s, ", rec->own_host);
+
+		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_LINE,
 			    rec->address, rec->port,
 			    rec->ircnet == NULL ? "" : rec->ircnet,

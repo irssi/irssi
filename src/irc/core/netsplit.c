@@ -203,7 +203,7 @@ int quitmsg_is_split(const char *msg)
 
 	/* get the two hosts */
 	ok = FALSE;
-	params = cmd_get_params(msg, 2, &host1, &host2);
+	params = cmd_get_params(msg, 2 | PARAM_FLAG_NOQUOTES, &host1, &host2);
 	if (g_strcasecmp(host1, host2) != 0) { /* hosts can't be same.. */
 		/* check that domain length is 2 or 3 */
 		p = strrchr(host1, '.');

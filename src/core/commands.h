@@ -36,7 +36,9 @@ void command_runsub(const char *cmd, const char *data, void *p1, void *p2);
 
 /* count can have these flags: */
 #define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00ffffff)
-/* cmd_get_params() */
+/* don't check for quotes - "arg1 arg2" is NOT treated as one argument */
+#define PARAM_FLAG_NOQUOTES 0x01000000
+/* final argument gets all the rest of the arguments */
 #define PARAM_FLAG_GETREST 0x02000000
 /* optional arguments (-cmd -cmd2 -cmd3) */
 #define PARAM_FLAG_OPTARGS 0x04000000
