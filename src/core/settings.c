@@ -632,8 +632,8 @@ static void sig_autosave(void)
 
 void settings_init(void)
 {
-	settings = g_hash_table_new((GHashFunc) g_str_hash,
-				    (GCompareFunc) g_str_equal);
+	settings = g_hash_table_new((GHashFunc) g_istr_hash,
+				    (GCompareFunc) g_istr_equal);
 
 	last_errors = NULL;
         last_invalid_modules = NULL;
