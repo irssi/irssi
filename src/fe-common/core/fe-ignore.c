@@ -55,7 +55,7 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	options = g_string_new(NULL);
 	if (rec->exception) g_string_sprintfa(options, "-except ");
 	if (rec->regexp) g_string_sprintfa(options, "-regexp ");
-	if (rec->fullword) g_string_sprintfa(options, "-word ");
+	if (rec->fullword) g_string_sprintfa(options, "-full ");
 	if (rec->replies) g_string_sprintfa(options, "-replies ");
 	if (options->len > 1) g_string_truncate(options, options->len-1);
 
@@ -83,9 +83,9 @@ static void cmd_ignore_show(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_IGNORE_FOOTER);
 }
 
-/* SYNTAX: IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
+/* SYNTAX: IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
                   [-channels <channel>] [-time <secs>] <mask> [<levels>]
-           IGNORE [-regexp | -word] [-pattern <pattern>] [-except] [-replies]
+           IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
 	          [-time <secs>] <channels> [<levels>] */
 static void cmd_ignore(const char *data)
 {
@@ -138,7 +138,7 @@ static void cmd_ignore(const char *data)
 		NULL : g_strdup(patternarg);
 	rec->exception = g_hash_table_lookup(optlist, "except") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
-	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
+	rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
 	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
 	timestr = g_hash_table_lookup(optlist, "time");
         if (timestr != NULL)
@@ -221,7 +221,7 @@ void fe_ignore_init(void)
 	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
 	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
-	command_set_options("ignore", "regexp word except replies -time -pattern -channels");
+	command_set_options("ignore", "regexp full except replies -time -pattern -channels");
 }
 
 void fe_ignore_deinit(void)
