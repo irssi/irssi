@@ -241,6 +241,7 @@ static void paste_buffer_join_lines(GArray *buf)
 				memmove(last_lf_pos+1, last_lf_pos,
 					dest - last_lf_pos);
 				*last_lf_pos = '\n'; last_lf_pos = NULL;
+				line_len = 0;
 				dest++;
 			}
 			*dest++ = arr[i];
