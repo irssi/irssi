@@ -745,7 +745,7 @@ int expand_escape(const char **data)
 
 	case 'x':
                 /* hex digit */
-		if (!isxdigit((*data)[1]) || !isxdigit((*data)[2]))
+		if (!i_isxdigit((*data)[1]) || !i_isxdigit((*data)[2]))
 			return -1;
 
 		digit[0] = (*data)[1];
