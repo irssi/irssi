@@ -437,6 +437,30 @@ static void cmd_scrollback_redraw(void)
 	screen_refresh_thaw();
 }
 
+static void cmd_scrollback_status(void)
+{
+	GSList *tmp;
+        int window_kb, total_lines, total_kb;
+
+        total_lines = 0; total_kb = 0;
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *window = tmp->data;
+                GUI_WINDOW_REC *gui = WINDOW_GUI(window);
+
+		window_kb = g_slist_length(gui->text_chunks)*
+			LINE_TEXT_CHUNK_SIZE/1024;
+		total_lines += window->lines;
+                total_kb += window_kb;
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			  "Window %d: %d lines, %dkB of data",
+			  window->refnum, window->lines, window_kb);
+	}
+
+	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		  "Total: %d lines, %dkB of data",
+		  total_lines, total_kb);
+}
+
 static void sig_away_changed(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
@@ -461,6 +485,7 @@ void gui_textwidget_init(void)
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
 	command_bind("scrollback redraw", NULL, (SIGNAL_FUNC) cmd_scrollback_redraw);
+	command_bind("scrollback status", NULL, (SIGNAL_FUNC) cmd_scrollback_status);
 	command_set_options("lastlog", "!- new away word regexp");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
@@ -475,6 +500,7 @@ void gui_textwidget_deinit(void)
 	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
 	command_unbind("scrollback redraw", (SIGNAL_FUNC) cmd_scrollback_redraw);
+	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
 
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
