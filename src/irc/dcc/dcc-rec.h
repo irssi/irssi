@@ -18,7 +18,7 @@ int port; /* port we're connected in */
 GIOChannel *handle; /* socket handle */
 int tagconn, tagread, tagwrite;
 time_t starttime; /* transfer start time */
-unsigned long transfd; /* bytes transferred */
+uoff_t transfd; /* bytes transferred */
 
 unsigned int destroyed:1; /* We're about to destroy this DCC recond */
 

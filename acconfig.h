@@ -39,3 +39,14 @@
 
 /* SSL */
 #undef HAVE_OPENSSL
+
+/* If set to 64, enables 64bit off_t for some systems (eg. Linux, Solaris) */
+#undef _FILE_OFFSET_BITS
+
+/* What type should be used for uoff_t */
+#undef UOFF_T_INT
+#undef UOFF_T_LONG
+#undef UOFF_T_LONG_LONG
+
+/* printf()-format for uoff_t, eg. "u" or "lu" or "llu" */
+#undef PRIuUOFF_T

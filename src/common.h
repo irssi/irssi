@@ -52,6 +52,16 @@
 #  include <gmodule.h>
 #endif
 
+#if defined (UOFF_T_INT)
+typedef unsigned int uoff_t;
+#elif defined (UOFF_T_LONG)
+typedef unsigned long uoff_t;
+#elif defined (UOFF_T_LONG_LONG)
+typedef unsigned long long uoff_t;
+#else
+#  error uoff_t size not set
+#endif
+
 /* input functions */
 #define G_INPUT_READ	(1 << 0)
 #define G_INPUT_WRITE	(1 << 1)

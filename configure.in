@@ -183,6 +183,12 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
+AC_ARG_WITH(file-offset-size,
+[  --with-file-offset-size=BITS  Set size of file offsets. Usually 32 or 64.
+                          (default: 64 if available)],
+	preferred_off_t_bits=$withval,
+	preferred_off_t_bits=64)
+
 AC_ARG_ENABLE(ipv6,
 [  --enable-ipv6           Enable IPv6 support],
 	if test x$enableval = xyes; then
@@ -261,6 +267,54 @@ if test $irssi_cv_type_socklen_t = no; then
 AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
 fi
 AC_MSG_RESULT($irssi_cv_type_socklen_t)
+
+dnl * off_t checks, try to make it 64bit
+AC_DEFINE_UNQUOTED(_FILE_OFFSET_BITS, $preferred_off_t_bits)
+
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+
+dnl * older autoconfs don't include sys/types.h, so do it manually
+AC_MSG_CHECKING([size of off_t])
+AC_TRY_RUN([
+  #include <stdio.h>
+  #include <sys/types.h>
+  int main() {
+    FILE *f=fopen("conftestval", "w");
+    if (!f) exit(1);
+    fprintf(f, "%d\n", sizeof(off_t));
+    return 0;
+  }
+], [
+  sizeof_off_t=`cat conftestval`
+  rm -f conftestval
+], [
+  AC_ERROR([Unsupported off_t size])
+])
+AC_MSG_RESULT($sizeof_off_t)
+
+if test $sizeof_off_t = 8; then
+  offt_64bit=yes
+else
+  offt_64bit=no
+fi
+
+if test x$sizeof_off_t = x$ac_cv_sizeof_long; then
+  # try to use unsigned long always first
+  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "lu")
+  AC_DEFINE(UOFF_T_LONG)
+elif test x$sizeof_off_t = x$ac_cv_sizeof_int; then
+  # next try int
+  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "u")
+  AC_DEFINE(UOFF_T_INT)
+elif test x$sizeof_off_t = x$ac_cv_sizeof_long_long; then
+  # and finally long long
+  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "llu")
+  AC_DEFINE(UOFF_T_LONG_LONG)
+else
+  AC_ERROR([Couldn't find integer type for off_t])
+fi
 
 dnl **
 dnl ** check for socks
@@ -892,11 +946,11 @@ elif test "x$want_terminfo" = "xyes"; then
 else
 	text="yes, using curses"
 fi
-echo "Building text frontend ..... : $text"
-echo "Building irssi bot ......... : $want_irssibot"
-echo "Building irssi proxy ....... : $want_irssiproxy"
+echo "Building text frontend ........... : $text"
+echo "Building irssi bot ............... : $want_irssibot"
+echo "Building irssi proxy ............. : $want_irssiproxy"
 if test "x$have_gmodule" = "xyes"; then
-	echo "Building with module support : yes"
+	echo "Building with module support ..... : yes"
 else
 	echo "Building with module support : NO!! /LOAD will not work!"
 	echo " - You're missing gmodule (comes with glib) for some reason,"
@@ -904,14 +958,14 @@ else
 fi
 
 if test "x$want_perl" = "xstatic"; then
-	echo "Building with Perl support . : static (in irssi binary)"
+	echo "Building with Perl support ....... : static (in irssi binary)"
 elif test "x$want_perl" = "xmodule"; then
-	echo "Building with Perl support . : module"
+	echo "Building with Perl support ....... : module"
 else
 	if test -z "$perl_check_error"; then
-		echo "Building with Perl support . : no"
+		echo "Building with Perl support ....... : no"
 	else
-		echo "Building with Perl support . : NO!"
+		echo "Building with Perl support ....... : NO!"
 		echo " - $perl_check_error"
 	fi
 fi
@@ -933,7 +987,7 @@ if test "x$want_perl" != "xno"; then
 	if test -z "$perl_library_dir"; then
 		perl_library_dir="(site default - `$perlpath -e 'use Config; print $Config{sitearch}'`)"
 	fi
-       	echo "Perl library directory ..... : $perl_library_dir"
+       	echo "Perl library directory ........... : $perl_library_dir"
 	if test "x$perl_prefix_note" = "xyes"; then
 		echo "  - NOTE: This was automatically set to the same directory you gave with"
 		echo "  --prefix. If you want the perl libraries to install to their 'correct'"
@@ -941,12 +995,13 @@ if test "x$want_perl" != "xno"; then
 		echo "  Anyway, installing perl to this directory should work just as well."
 	fi
 fi
-echo "Install prefix ............. : $prefix"
+echo "Install prefix ................... : $prefix"
 
 echo
 
-echo "Building with IPv6 support . : $want_ipv6"
-echo "Building with SSL support .. : ${enable_openssl}"
+echo "Building with IPv6 support ....... : $want_ipv6"
+echo "Building with SSL support ........ : ${enable_openssl}"
+echo "Building with 64bit DCC support .. : $offt_64bit"
 if test "x$enable_openssl" = "xno" -a "x$ssl_error" != "x"; then
   echo "  - $ssl_error"
 fi

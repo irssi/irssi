@@ -58,7 +58,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 	/* check file size limit, NOTE: it's still possible to send a
 	   bogus file size and then just send what ever sized file.. */
         max_size = settings_get_int("dcc_autoget_max_size");
-	if (max_size > 0 && (unsigned long) max_size*1024 < dcc->size)
+	if (max_size > 0 && (uoff_t)max_size*1024 < dcc->size)
                 return;
 
 	/* ok. but do we want/need to resume? */

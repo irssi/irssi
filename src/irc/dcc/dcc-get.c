@@ -89,7 +89,7 @@ void dcc_get_send_received(GET_DCC_REC *dcc)
 {
 	guint32 recd;
 
-	recd = (guint32) htonl(dcc->transfd);
+	recd = (guint32) htonl(dcc->transfd & 0xffffffff);
 	memcpy(dcc->count_buf, &recd, 4);
 
 	dcc->count_pos =
@@ -133,7 +133,7 @@ static void sig_dccget_send(GET_DCC_REC *dcc)
 	}
 
 	memcpy(&recd, dcc->count_buf, 4);
-	if (recd != (guint32) htonl(dcc->transfd))
+	if (recd != (guint32) htonl(dcc->transfd & 0xffffffff))
                 dcc_get_send_received(dcc);
 }
 
@@ -323,7 +323,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	char **params, *fname;
 	int paramcount, fileparams;
 	int port, len, quoted = FALSE;
-        long size;
+        uoff_t size;
 
 	/* SEND <file name> <address> <port> <size> [...] */
 	params = g_strsplit(data, " ", -1);
@@ -341,7 +341,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	address = params[fileparams];
 	dcc_str2ip(address, &ip);
 	port = atoi(params[fileparams+1]);
-	size = atol(params[fileparams+2]);
+	size = str_to_uofft(params[fileparams+2]);
 
 	params[fileparams] = NULL;
         fname = g_strjoinv(" ", params);

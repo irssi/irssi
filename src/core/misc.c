@@ -592,6 +592,20 @@ int dec2octal(int decimal)
 	return octal;
 }
 
+/* string -> uoff_t */
+uoff_t str_to_uofft(const char *str)
+{
+	uoff_t ret;
+
+	ret = 0;
+	while (*str != '\0') {
+		ret = ret*10 + (*str - '0');
+		str++;
+	}
+
+	return ret;
+}
+
 /* convert all low-ascii (<32) to ^<A..> combinations */
 char *show_lowascii(const char *channel)
 {

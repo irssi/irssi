@@ -254,7 +254,6 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	guint32 bytes;
 	int ret;
 
-	/* we need to get 4 bytes.. */
 	ret = net_receive(dcc->handle, dcc->count_buf+dcc->count_pos,
 			  4-dcc->count_pos);
 	if (ret == -1) {
@@ -267,14 +266,12 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	if (dcc->count_pos != 4)
 		return;
 
-	memcpy(&bytes, dcc->count_buf, 4);
-	bytes = (guint32) ntohl(bytes);
-
-	dcc->gotalldata = (unsigned long) bytes == dcc->transfd;
+	bytes = ntohl(*((guint32 *) dcc->count_buf));
 	dcc->count_pos = 0;
 
-	if (dcc->waitforend && dcc->gotalldata) {
+	if (dcc->waitforend && bytes == (dcc->transfd & 0xffffffff)) {
 		/* file is sent */
+		dcc->gotalldata = TRUE;
 		dcc_close(DCC(dcc));
 	}
 }
@@ -334,10 +331,10 @@ static char *dcc_send_get_file(const char *fname)
 static int dcc_send_one_file(int queue, const char *target, const char *fname,
 			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat)
 {
+	struct stat st;
 	char *str;
 	char host[MAX_IP_LEN];
 	int hfile, port;
-	long fsize;
         SEND_DCC_REC *dcc;
 	IPADDR own_ip;
         GIOChannel *handle;
@@ -356,8 +353,12 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 			    GINT_TO_POINTER(errno));
 		return FALSE;
 	}
-	fsize = lseek(hfile, 0, SEEK_END);
-	lseek(hfile, 0, SEEK_SET);
+
+	if (fstat(hfile, &st) < 0) {
+		g_warning("fstat() failed: %s", strerror(errno));
+		close(hfile);
+		return FALSE;
+	}
 
         /* start listening */
 	handle = dcc_listen(chat != NULL ? chat->handle :
@@ -386,7 +387,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 
 	dcc->handle = handle;
 	dcc->port = port;
-	dcc->size = fsize;
+	dcc->size = st.st_size;
 	dcc->fhandle = hfile;
 	dcc->queue = queue;
         dcc->file_quoted = strchr(fname, ' ') != NULL;
@@ -398,9 +399,9 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 
 	dcc_ip2str(&own_ip, host);
 	str = g_strdup_printf(dcc->file_quoted ?
-			      "DCC SEND \"%s\" %s %d %lu" :
-			      "DCC SEND %s %s %d %lu",
-			      dcc->arg, host, port, fsize);
+			      "DCC SEND \"%s\" %s %d %"PRIuUOFF_T :
+			      "DCC SEND %s %s %d %"PRIuUOFF_T,
+			      dcc->arg, host, port, dcc->size);
 	dcc_ctcp_message(server, target, chat, FALSE, str);
 	g_free(str);
 

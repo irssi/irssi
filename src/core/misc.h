@@ -85,6 +85,9 @@ char *replace_chars(char *str, char from, char to);
 int octal2dec(int octal);
 int dec2octal(int decimal);
 
+/* string -> uoff_t */
+uoff_t str_to_uofft(const char *str);
+
 /* convert all low-ascii (<32) to ^<A..> combinations */
 char *show_lowascii(const char *channel);
 
