@@ -34,7 +34,7 @@ FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ "dcc_msg", "{dccmsg dcc $0}$1", 2, { 0, 0 } },
 	{ "action_dcc", "{dccaction $0}$1", 2, { 0, 0 } },
 	{ "action_dcc_query", "{dccaction $0}$1", 2, { 0, 0 } },
-	{ "own_dcc_query", "{ownmsgnick {ownnick $0}}$2", 3, { 0, 0, 0 } },
+	{ "own_dcc_query", "{ownmsgnick {dccownquerynick $0}}$2", 3, { 0, 0, 0 } },
 	{ "dcc_msg_query", "{privmsgnick $0}$1", 2, { 0, 0 } },
 	{ "dcc_ctcp", "{dcc >>> DCC CTCP {hilight $1} received from {hilight $0}: $2}", 3, { 0, 0, 0 } },
 	{ "dcc_chat", "{dcc DCC CHAT from {nick $0} [$1 port $2]}", 3, { 0, 0, 1 } },
