@@ -28,5 +28,9 @@ where the server is connected (ie. /window new hide;
 
 /SERVER LIST
 
+/SERVER PURGE [<target>] 
+
+Clears the server send queue. Useful if, for example, you accidentally paste lots of text to a channel.
+
 See also: CONNECT, DISCONNECT, RECONNECT, RMRECONNS
 

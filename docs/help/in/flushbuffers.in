@@ -1,0 +1,6 @@
+
+@SYNTAX:flushbuffers@
+
+If either write_buffer_mins or write_buffer_kb have been set an immediate
+write of the buffers is forced.
+
