@@ -32,10 +32,11 @@
 
 #include "printtext.h"
 
-#define SPLIT_WAIT_TIME 2 /* how many seconds to wait for the QUIT split messages to stop */
+#define SPLIT_WAIT_TIME 5 /* how many seconds to wait for the QUIT split messages to stop */
 
 static int split_tag;
 static int netsplit_max_nicks, netsplit_nicks_hide_threshold;
+static int printing_splits;
 
 static int get_last_split(IRC_SERVER_REC *server)
 {
@@ -196,6 +197,8 @@ static void print_splits(IRC_SERVER_REC *server)
 	TEMP_SPLIT_REC temp;
 	GSList *servers;
 
+	printing_splits = TRUE;
+
 	servers = g_slist_copy(server->split_servers);
 	while (servers != NULL) {
 		NETSPLIT_SERVER_REC *sserver = servers->data;
@@ -215,6 +218,8 @@ static void print_splits(IRC_SERVER_REC *server)
 		g_slist_free(temp.servers);
 		g_slist_free(temp.channels);
 	}
+
+	printing_splits = FALSE;
 }
 
 static int check_server_splits(IRC_SERVER_REC *server)
@@ -236,6 +241,9 @@ static int check_server_splits(IRC_SERVER_REC *server)
 static void sig_print_starting(void)
 {
 	GSList *tmp;
+
+	if (printing_splits)
+		return;
 
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
@@ -320,6 +328,7 @@ void fe_netsplit_init(void)
 	settings_add_int("misc", "netsplit_max_nicks", 10);
 	settings_add_int("misc", "netsplit_nicks_hide_threshold", 15);
 	split_tag = -1;
+	printing_splits = FALSE;
 
 	read_settings();
 	signal_add("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);

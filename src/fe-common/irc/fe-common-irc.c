@@ -54,6 +54,9 @@ void fe_events_deinit(void);
 void fe_events_numeric_init(void);
 void fe_events_numeric_deinit(void);
 
+void fe_modes_init(void);
+void fe_modes_deinit(void);
+
 void fe_netsplit_init(void);
 void fe_netsplit_deinit(void);
 
@@ -98,6 +101,7 @@ void fe_common_irc_init(void)
 	fe_ctcp_init();
 	fe_events_init();
 	fe_events_numeric_init();
+	fe_modes_init();
 	fe_netsplit_init();
 	fe_netjoin_init();
 
@@ -115,6 +119,7 @@ void fe_common_irc_deinit(void)
 	fe_ctcp_deinit();
 	fe_events_deinit();
 	fe_events_numeric_deinit();
+	fe_modes_deinit();
 	fe_netsplit_deinit();
 	fe_netjoin_deinit();
 

@@ -19,6 +19,7 @@ libfe_common_irc_a_SOURCES = \
 	fe-ctcp.c \
 	fe-events.c \
 	fe-events-numeric.c \
+	fe-modes.c \
 	fe-netjoin.c \
 	fe-netsplit.c \
 	fe-common-irc.c \

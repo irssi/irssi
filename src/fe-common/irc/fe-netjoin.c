@@ -33,7 +33,7 @@
 
 #include "printtext.h"
 
-#define NETJOIN_WAIT_TIME 2 /* how many seconds to wait for the netsplitted JOIN messages to stop */
+#define NETJOIN_WAIT_TIME 5 /* how many seconds to wait for the netsplitted JOIN messages to stop */
 #define NETJOIN_MAX_WAIT 30 /* how many seconds to wait for nick to join to the rest of the channels she was before the netsplit */
 
 typedef struct {
@@ -56,6 +56,7 @@ typedef struct {
 
 static int join_tag;
 static int netjoin_max_nicks, hide_netsplit_quits;
+static int printing_joins;
 static GSList *joinservers;
 
 static NETJOIN_SERVER_REC *netjoin_find_server(IRC_SERVER_REC *server)
@@ -172,6 +173,8 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
+	printing_joins = TRUE;
+
 	/* save nicks to string, clear now_channels and remove the same
 	   channels from old_channels list */
 	channels = g_hash_table_new((GHashFunc) g_istr_hash,
@@ -225,7 +228,9 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 	g_hash_table_destroy(channels);
 
 	if (server->netjoins == NULL)
-                netjoin_server_remove(server);
+		netjoin_server_remove(server);
+
+	printing_joins = FALSE;
 }
 
 /* something is going to be printed to screen, print our current netsplit
@@ -233,6 +238,9 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 static void sig_print_starting(void)
 {
 	GSList *tmp, *next;
+
+	if (printing_joins)
+		return;
 
 	for (tmp = joinservers; tmp != NULL; tmp = next) {
 		NETJOIN_SERVER_REC *server = tmp->data;
@@ -398,6 +406,7 @@ void fe_netjoin_init(void)
 	settings_add_int("misc", "netjoin_max_nicks", 10);
 
 	join_tag = -1;
+	printing_joins = FALSE;
 
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
