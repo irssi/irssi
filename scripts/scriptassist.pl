@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002121101';
+$VERSION = '2002123101';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -66,6 +66,16 @@ sub show_help() {
         $text .= $_."\n";
     }
     print CLIENTCRAP &draw_box("ScriptAssist", $text, "scriptassist help", 1);
+    #theme_box("ScriptAssist", $text, "scriptassist help", 1);
+}
+
+sub theme_box ($$$$) {
+    my ($title, $text, $footer, $colour) = @_;
+    Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'box_header', $title);
+    foreach (split(/\n/, $text)) {
+	Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'box_inside', $_);
+    }
+    Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'box_footer', $footer);
 }
 
 sub draw_box ($$$$) {
@@ -598,16 +608,18 @@ sub print_install (%) {
 	    my $hacked;
 	    if ($have_gpg && Irssi::settings_get_bool('scriptassist_use_gpg')) {
 		if ($data{$script}{signed} >= 0) {
-		    load_script($script);
+		    load_script($script) unless (lc($script) eq lc($IRSSI{name}));
 		} else {
 		    $hacked = 1;
 		}
 	    } else {
-		load_script($script);
+		load_script($script) unless (lc($script) eq lc($IRSSI{name}));
 	    }
-    	    if (get_local_version($script)) {
+    	    if (get_local_version($script) && not lc($script) eq lc($IRSSI{name})) {
 		$line .= "%go%n %9".$script."%9 installed\n";
 		push @installed, $script;
+	    } elsif (lc($script) eq lc($IRSSI{name})) {
+		$line .= "%yo%n %9".$script."%9 installed, please reload manually\n";
 	    } else {
     		$line .= "%Ro%n %9".$script."%9 fetched, but unable to load\n";
 		$crashed .= $script." " unless $hacked;
@@ -1089,6 +1101,10 @@ if (defined &Irssi::signal_register) {
 
 Irssi::command_bind('scriptassist', 'cmd_scripassist');
 
+Irssi::theme_register(['box_header', '%R,--[%n$*%R]%n',
+'box_inside', '%R|%n $*',
+'box_footer', '%R`--<%n$*%R>->%n',
+]);
 
 foreach my $cmd ( ( 'check', 'install', 'update', 'contact', 'search', '-h', 'help', 'ratings', 'rate', 'info', 'echo', 'top', 'cpan', 'autorun', 'new') ) {
     Irssi::command_bind('scriptassist '.$cmd => sub {
