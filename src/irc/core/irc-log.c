@@ -51,6 +51,9 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 	if (level == 0) return;
 
 	log = log_find(fname);
+	if (log != NULL && log->handle != -1)
+		return; /* already open */
+
 	if (log == NULL) {
 		log = log_create_rec(fname, level, NULL);
 		log->temp = TRUE;
