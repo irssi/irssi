@@ -418,19 +418,9 @@ static void read_ignores(void)
 		ignores = g_slist_append(ignores, rec);
 
 		rec->mask = g_strdup(config_node_get_str(node, "mask", NULL));
-		if (rec->mask != NULL && strcmp(rec->mask, "*") == 0) {
-			/* FIXME: remove after .98 */
-                        g_free(rec->mask);
-			rec->mask = NULL;
-		}
 		rec->pattern = g_strdup(config_node_get_str(node, "pattern", NULL));
 		rec->level = level2bits(config_node_get_str(node, "level", ""));
                 rec->exception = config_node_get_bool(node, "exception", FALSE);
-		if (*config_node_get_str(node, "except_level", "") != '\0') {
-			/* FIXME: remove after .98 */
-			rec->level = level2bits(config_node_get_str(node, "except_level", ""));
-                        rec->exception = TRUE;
-		}
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->replies = config_node_get_bool(node, "replies", FALSE);

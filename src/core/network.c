@@ -414,7 +414,9 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	return count > 0 ? 0 : 1;
 #else
 	hp = gethostbyname(addr);
-	if (hp == NULL) return h_errno;
+	if (hp == NULL)
+                return -1;
+		//return h_errno;
 
 	ip4->family = AF_INET;
 	memcpy(&ip4->ip, hp->h_addr, 4);

@@ -168,17 +168,6 @@ static void read_chatnets(void)
                 chatnet_destroy(chatnets->data);
 
 	node = iconfig_node_traverse("chatnets", FALSE);
-	if (node == NULL) {
-		/* FIXME: remove after .98 */
-		node = iconfig_node_traverse("ircnets", FALSE);
-		if (node != NULL) {
-			/* very dirty method - doesn't update hashtables
-			   but this will do temporarily.. */
-			g_free(node->key);
-                        node->key = g_strdup("chatnets");
-		}
-	}
-
 	if (node != NULL) {
 		tmp = config_node_first(node->value);
 		for (; tmp != NULL; tmp = config_node_next(tmp))
