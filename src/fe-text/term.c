@@ -27,7 +27,6 @@
 #include "mainwindows.h"
 
 #ifdef HAVE_NL_LANGINFO
-#  include <locale.h>
 #  include <langinfo.h>
 #endif
 
@@ -155,7 +154,6 @@ void term_common_init(void)
         read_settings();
 
 #if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-        setlocale(LC_CTYPE, "");
 	if (strcmp(nl_langinfo(CODESET), "UTF-8") == 0) {
 		term_type = TERM_TYPE_UTF8;
 		term_set_input_type(TERM_TYPE_UTF8);

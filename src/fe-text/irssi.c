@@ -42,6 +42,7 @@
 #include "textbuffer-reformat.h"
 
 #include <signal.h>
+#include <locale.h>
 
 #ifdef HAVE_STATIC_PERL
 void perl_core_init(void);
@@ -332,6 +333,14 @@ int main(int argc, char **argv)
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 #endif
+
+	/* setlocale() must be called at the beginning before any calls that
+	   affect it, especially regexps seem to break if they're generated
+	   before t his call.
+
+	   locales aren't actually used for anything else than autodetection
+	   of UTF-8 currently.. */
+	setlocale(LC_CTYPE, "");
 
 	textui_init();
 	args_register(options);
