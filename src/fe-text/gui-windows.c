@@ -261,7 +261,7 @@ static void signal_window_changed(WINDOW_REC *window)
 	active_mainwin->active = window;
 
 	textbuffer_view_set_window(WINDOW_GUI(window)->view,
-				   parent->screen_win);
+				   active_mainwin->screen_win);
 	if (WINDOW_GUI(window)->view->dirty)
 		active_mainwin->dirty = TRUE;
 }
