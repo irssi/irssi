@@ -22,6 +22,7 @@
 #include "module-formats.h"
 #include "levels.h"
 #include "settings.h"
+#include "channels.h"
 
 #include "fe-queries.h"
 #include "hilight-text.h"
@@ -83,12 +84,28 @@ void window_commands_deinit(void);
 void fe_core_commands_init(void);
 void fe_core_commands_deinit(void);
 
+static void sig_connected(SERVER_REC *server)
+{
+	MODULE_DATA_SET(server, g_new0(MODULE_SERVER_REC, 1));
+}
+
+static void sig_disconnected(SERVER_REC *server)
+{
+	g_free(MODULE_DATA(server));
+}
+
+static void sig_channel_created(CHANNEL_REC *channel)
+{
+	MODULE_DATA_SET(channel, g_new0(MODULE_CHANNEL_REC, 1));
+}
+
+static void sig_channel_destroyed(CHANNEL_REC *channel)
+{
+	g_free(MODULE_DATA(channel));
+}
+
 void fe_common_core_init(void)
 {
-	/*settings_add_bool("lookandfeel", "show_menubar", TRUE);
-	settings_add_bool("lookandfeel", "show_toolbar", FALSE);
-	settings_add_bool("lookandfeel", "show_statusbar", TRUE);
-	settings_add_bool("lookandfeel", "show_nicklist", TRUE);*/
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
@@ -98,9 +115,6 @@ void fe_common_core_init(void)
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
-	/*settings_add_bool("lookandfeel", "autoraise_msgs_window", FALSE);*/
-	/*settings_add_bool("lookandfeel", "use_tabbed_windows", TRUE);
-	settings_add_int("lookandfeel", "tab_orientation", 3);*/
 
 	themes_init();
         theme_register(fecommon_core_formats);
@@ -133,7 +147,12 @@ void fe_common_core_init(void)
 	fe_messages_init();
 	fe_ignore_messages_init();
 
-        settings_check();
+	settings_check();
+
+        signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
+        signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+        signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);
+        signal_add_last("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
 
 void fe_common_core_deinit(void)
@@ -168,6 +187,11 @@ void fe_common_core_deinit(void)
 
         theme_unregister();
 	themes_deinit();
+
+        signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+        signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+        signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
+        signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
 
 void fe_common_core_finish_init(void)

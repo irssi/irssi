@@ -10,15 +10,15 @@
 #define IS_CHATNET(chatnet) \
 	(CHATNET(chatnet) ? TRUE : FALSE)
 
-typedef struct {
+struct _CHATNET_REC {
 #include "chatnet-rec.h"
-} CHATNET_REC;
+};
 
 extern GSList *chatnets; /* list of available chat networks */
 
 /* read/save to configuration file */
-void chatnet_read(CHATNET_REC *chatnet, void *node);
-void *chatnet_save(CHATNET_REC *chatnet, void *parentnode);
+void chatnet_read(CHATNET_REC *chatnet, CONFIG_NODE *node);
+CONFIG_NODE *chatnet_save(CHATNET_REC *chatnet, CONFIG_NODE *parentnode);
 
 /* add the chatnet to chat networks list */
 void chatnet_create(CHATNET_REC *chatnet);

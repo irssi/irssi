@@ -1,8 +1,6 @@
 #ifndef __SERVERS_REDIRECT_H
 #define __SERVERS_REDIRECT_H
 
-#include "servers.h"
-
 typedef struct {
 	int last; /* number of "last" events at the start of the events list */
 	GSList *events; /* char* list of events */

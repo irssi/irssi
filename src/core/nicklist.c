@@ -22,6 +22,8 @@
 #include "signals.h"
 #include "misc.h"
 
+#include "servers.h"
+#include "channels.h"
 #include "nicklist.h"
 #include "masks.h"
 

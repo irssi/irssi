@@ -1,7 +1,7 @@
 #ifndef __SERVERS_SETUP_H
 #define __SERVERS_SETUP_H
 
-#include "servers.h"
+#include "modules.h"
 
 #define SERVER_SETUP(server) \
 	MODULE_CHECK_CAST(server, SERVER_SETUP_REC, type, "SERVER SETUP")
@@ -10,9 +10,9 @@
 	(SERVER_SETUP(server) ? TRUE : FALSE)
 
 /* servers */
-typedef struct {
+struct _SERVER_SETUP_REC {
 #include "server-setup-rec.h"
-} SERVER_SETUP_REC;
+};
 
 extern GSList *setupservers;
 

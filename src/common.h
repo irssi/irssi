@@ -62,4 +62,23 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)
 
+typedef struct _IPADDR IPADDR;
+typedef struct _CONFIG_REC CONFIG_REC;
+typedef struct _CONFIG_NODE CONFIG_NODE;
+
+typedef struct _LINEBUF_REC LINEBUF_REC;
+typedef struct _NET_SENDBUF_REC NET_SENDBUF_REC;
+typedef struct _RAWLOG_REC RAWLOG_REC;
+
+typedef struct _CHATNET_REC CHATNET_REC;
+typedef struct _SERVER_REC SERVER_REC;
+typedef struct _WI_ITEM_REC WI_ITEM_REC;
+typedef struct _CHANNEL_REC CHANNEL_REC;
+typedef struct _QUERY_REC QUERY_REC;
+typedef struct _NICK_REC NICK_REC;
+
+typedef struct _SERVER_CONNECT_REC SERVER_CONNECT_REC;
+typedef struct _SERVER_SETUP_REC SERVER_SETUP_REC;
+typedef struct _CHANNEL_SETUP_REC CHANNEL_SETUP_REC;
+
 #endif

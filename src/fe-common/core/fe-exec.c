@@ -325,8 +325,7 @@ static void sig_exec_input_reader(PROCESS_REC *rec)
 		recvlen = -1;
 
 	do {
-		ret = line_split(tmpbuf, recvlen, &str,
-				 (LINEBUF_REC **) &rec->databuf);
+		ret = line_split(tmpbuf, recvlen, &str, &rec->databuf);
 		if (ret == -1) {
 			/* link to terminal closed? */
 			g_source_remove(rec->read_tag);

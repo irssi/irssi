@@ -1,7 +1,7 @@
 #ifndef __CHANNELS_H
 #define __CHANNELS_H
 
-#include "servers.h"
+#include "modules.h"
 
 /* Returns CHANNEL_REC if it's channel, NULL if it isn't. */
 #define CHANNEL(channel) \
@@ -12,9 +12,9 @@
 	(CHANNEL(channel) ? TRUE : FALSE)
 
 #define STRUCT_SERVER_REC SERVER_REC
-typedef struct {
+struct _CHANNEL_REC {
 #include "channel-rec.h"
-} CHANNEL_REC;
+};
 
 extern GSList *channels;
 

@@ -156,8 +156,7 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 		nick[9] = '\0';
 
 		channel = CHANNEL(active_win->active);
-		nickrec = channel == NULL ? NULL :
-			nicklist_find(channel, server->nick);
+		nickrec = channel == NULL ? NULL : channel->ownnick;
 	}
 
 	size_needed = 2 + strlen(nick) + umode_size +

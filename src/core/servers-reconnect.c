@@ -23,6 +23,7 @@
 #include "network.h"
 #include "signals.h"
 
+#include "servers.h"
 #include "servers-setup.h"
 #include "servers-reconnect.h"
 

@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "levels.h"
 #include "servers.h"
+#include "channels.h"
 #include "misc.h"
 #include "settings.h"
 

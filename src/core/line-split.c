@@ -31,12 +31,12 @@
    too high. */
 #define MAX_CHARS_IN_LINE 65536
 
-typedef struct {
+struct _LINEBUF_REC {
         int len;
 	int alloc;
 	int remove;
         char *str;
-} LINEBUF_REC;
+};
 
 static inline int nearest_power(int num)
 {

@@ -4,6 +4,7 @@ int type; /* module_get_uniq_id("CHANNEL/QUERY/xxx", 0) */
 int chat_type; /* chat_protocol_lookup(xx) */
 GHashTable *module_data;
 
+void *window;
 STRUCT_SERVER_REC *server;
 char *name;
 

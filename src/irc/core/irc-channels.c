@@ -93,14 +93,14 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))
 
-static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
+static void irc_channels_join(SERVER_REC *server, const char *data,
 			      int automatic)
 {
 	CHANNEL_SETUP_REC *schannel;
-	IRC_CHANNEL_REC *chanrec;
+	CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
 	char *channels, *keys, *key;
-	char **chanlist, **keylist, **tmp, **tmpkey, *channel;
+	char **chanlist, **keylist, **tmp, **tmpkey, *channel, *channame;
 	void *free_arg;
 	int use_keys;
 
@@ -124,7 +124,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 		channel = ischannel(**tmp) ? g_strdup(*tmp) :
 			g_strdup_printf("#%s", *tmp);
 
-		chanrec = irc_channel_find(server, channel);
+		chanrec = channel_find(server, channel);
 		if (chanrec == NULL) {
 			schannel = channels_setup_find(channel, server->connrec->chatnet);
 
@@ -138,7 +138,10 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			} else key = NULL;
 
 			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
-			chanrec = irc_channel_create(server, channel + (channel[0] == '!' && channel[1] == '!'), automatic);
+			channame = channel + (channel[0] == '!' &&
+					      channel[1] == '!');
+			chanrec = channel_create(server->chat_type, server,
+						 channame, automatic);
 			if (key != NULL) chanrec->key = g_strdup(key);
 		}
 		g_free(channel);
@@ -150,7 +153,8 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	if (outchans->len > 0) {
 		g_string_truncate(outchans, outchans->len-1);
 		g_string_truncate(outkeys, outkeys->len-1);
-		irc_send_cmdv(server, use_keys ? "JOIN %s %s" : "JOIN %s",
+		irc_send_cmdv(IRC_SERVER(server),
+			      use_keys ? "JOIN %s %s" : "JOIN %s",
 			      outchans->str, outkeys->str);
 	}
 
@@ -192,10 +196,8 @@ static void sig_server_looking(SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->channel_find_func =
-		(void *(*)(void *, const char *)) irc_channel_find_server;
-	server->channels_join =
-		(void (*)(void *, const char *, int)) irc_channels_join;
+	server->channel_find_func = irc_channel_find_server;
+	server->channels_join = irc_channels_join;
 }
 
 void irc_channels_init(void)

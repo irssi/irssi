@@ -1,9 +1,6 @@
 #ifndef __NICKLIST_H
 #define __NICKLIST_H
 
-#include "servers.h"
-#include "channels.h"
-
 /* Returns NICK_REC if it's nick, NULL if it isn't. */
 #define NICK(server) \
 	MODULE_CHECK_CAST(server, NICK_REC, type, "NICK")
@@ -11,9 +8,9 @@
 #define IS_NICK(server) \
 	(NICK(server) ? TRUE : FALSE)
 
-typedef struct {
+struct _NICK_REC {
 #include "nick-rec.h"
-} NICK_REC;
+};
 
 /* Add new nick to list */
 NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,

@@ -2,8 +2,8 @@
 #define __WINDOW_ITEM_DEF_H
 
 #define STRUCT_SERVER_REC SERVER_REC
-typedef struct {
+struct _WI_ITEM_REC {
 #include "window-item-rec.h"
-} WI_ITEM_REC;
+};
 
 #endif

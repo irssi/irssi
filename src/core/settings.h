@@ -1,10 +1,6 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
-#ifndef __ICONFIG_H
-typedef struct _config_rec CONFIG_REC;
-#endif
-
 enum {
 	SETTING_TYPE_STRING,
 	SETTING_TYPE_INT,

@@ -3,8 +3,6 @@
 
 #define DEFAULT_BUFFER_SIZE 8192
 
-typedef struct _NET_SENDBUF_REC NET_SENDBUF_REC;
-
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
 NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize);

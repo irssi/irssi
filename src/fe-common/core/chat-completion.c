@@ -22,10 +22,8 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
-#include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "servers.h"
 #include "chatnets.h"
 #include "servers-setup.h"
 #include "channels.h"
@@ -36,12 +34,17 @@
 #include "completion.h"
 #include "window-items.h"
 
-static int complete_tag;
+static int keep_privates_count, keep_publics_count;
+static int completion_lowercase;
+static const char *completion_char, *cmdchars;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
-	last_msg_add(&server->lastmsgs, nick)
-#define SERVER_LAST_MSG_DESTROY(server, nick) \
-	last_msg_destroy(&server->lastmsgs, nick)
+	last_msg_add(&((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs, \
+		     nick, TRUE, keep_privates_count)
+
+#define CHANNEL_LAST_MSG_ADD(channel, nick, own) \
+	last_msg_add(&((MODULE_CHANNEL_REC *) MODULE_DATA(channel))->lastmsgs, \
+		     nick, own, keep_publics_count)
 
 static LAST_MSG_REC *last_msg_find(GSList *list, const char *nick)
 {
@@ -56,19 +59,42 @@ static LAST_MSG_REC *last_msg_find(GSList *list, const char *nick)
 	return NULL;
 }
 
-static void last_msg_add(GSList **list, const char *nick)
+static void last_msg_dec_owns(GSList *list)
+{
+	LAST_MSG_REC *rec;
+
+	while (list != NULL) {
+		rec = list->data;
+		if (rec->own) rec->own--;
+
+		list = list->next;
+	}
+}
+
+static void last_msg_add(GSList **list, const char *nick, int own, int max)
 {
 	LAST_MSG_REC *rec;
 
 	rec = last_msg_find(*list, nick);
 	if (rec != NULL) {
 		/* msg already exists, update it */
-                *list = g_slist_remove(*list, rec);
+		*list = g_slist_remove(*list, rec);
+		if (own)
+			rec->own = max;
+		else if (rec->own)
+                        rec->own--;
 	} else {
 		rec = g_new(LAST_MSG_REC, 1);
 		rec->nick = g_strdup(nick);
+
+		if (g_slist_length(*list) == max)
+			*list = g_slist_remove(*list, (*list)->data);
+
+		rec->own = own ? max : 0;
 	}
 	rec->time = time(NULL);
+
+        last_msg_dec_owns(*list);
 
 	*list = g_slist_prepend(*list, rec);
 }
@@ -81,77 +107,17 @@ static void last_msg_destroy(GSList **list, LAST_MSG_REC *rec)
 	g_free(rec);
 }
 
-static void last_msgs_remove_old(GSList **list, int timeout, time_t now)
-{
-	GSList *tmp, *next;
-
-	for (tmp = *list; tmp != NULL; tmp = next) {
-		LAST_MSG_REC *rec = tmp->data;
-
-		next = tmp->next;
-		if (now-rec->time > timeout)
-			last_msg_destroy(list, rec);
-	}
-}
-
-static int last_msg_cmp(LAST_MSG_REC *m1, LAST_MSG_REC *m2)
-{
-	return m1->time < m2->time ? 1 : -1;
-}
-
-static int nick_completion_timeout(void)
-{
-	GSList *tmp;
-	time_t now;
-	int len, keep_private_count;
-	int keep_msgs_time, keep_msgs_count, keep_ownmsgs_time;
-
-	keep_private_count = settings_get_int("completion_keep_privates");
-
-	now = time(NULL);
-	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		SERVER_REC *server = tmp->data;
-
-		len = g_slist_length(server->lastmsgs);
-		if (len > 0 && len >= keep_private_count) {
-                        /* remove the oldest msg nick. */
-			GSList *link = g_slist_last(server->lastmsgs);
-			SERVER_LAST_MSG_DESTROY(server, link->data);
-		}
-	}
-
-	keep_ownmsgs_time = settings_get_int("completion_keep_ownpublics");
-	keep_msgs_time = settings_get_int("completion_keep_publics");
-	keep_msgs_count = settings_get_int("completion_keep_publics_count");
-
-	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
-		CHANNEL_REC *channel = tmp->data;
-
-		last_msgs_remove_old(&channel->lastmsgs, keep_msgs_time, now);
-
-		if (keep_msgs_count == 0 ||
-		    (int)g_slist_length(channel->lastownmsgs) > keep_msgs_count) {
-			last_msgs_remove_old(&channel->lastownmsgs,
-					     keep_ownmsgs_time, now);
-		}
-	}
-
-	return 1;
-}
-
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
 			       const char *target)
 {
 	CHANNEL_REC *channel;
-	GSList **list;
+        int own;
 
 	channel = channel_find(server, target);
 	if (channel != NULL) {
-		list = nick_match_msg(channel, msg, server->nick) ?
-			&channel->lastownmsgs :
-			&channel->lastmsgs;
-                last_msg_add(list, nick);
+                own = nick_match_msg(channel, msg, server->nick);
+		CHANNEL_LAST_MSG_ADD(channel, nick, own);
 	}
 }
 
@@ -164,7 +130,8 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 static void cmd_msg(const char *data, SERVER_REC *server)
 {
 	GHashTable *optlist;
-	char *target, *msg;
+        NICK_REC *nick;
+	char *target, *msg, *p;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
@@ -175,46 +142,74 @@ static void cmd_msg(const char *data, SERVER_REC *server)
 		return;
 	server = cmd_options_get_server("msg", optlist, server);
 
-	if (*target != '\0' && *msg != '\0' && *target != '=' &&
-	    server != NULL && !server->ischannel(*target))
-		SERVER_LAST_MSG_ADD(server, target);
+	if (server != NULL && *target != '\0' && *msg != '\0' &&
+	    query_find(server, target) == NULL) {
+                CHANNEL_REC *channel = channel_find(server, target);
+		MODULE_CHANNEL_REC *mchannel;
+
+		mchannel = MODULE_DATA(channel);
+
+		if (channel != NULL) {
+			/* channel msg - if first word in line is nick,
+                           add it to lastmsgs */
+			p = strchr(msg, ' ');
+			if (p != NULL && p != msg) {
+				*p = '\0';
+				nick = nicklist_find(channel, msg);
+				if (nick == NULL) {
+					/* probably ':' or ',' or some other
+					   char after nick, try without it */
+					p[-1] = '\0';
+					nick = nicklist_find(channel, msg);
+				}
+				if (nick != NULL && nick != channel->ownnick) {
+					CHANNEL_LAST_MSG_ADD(channel,
+							     nick->nick, TRUE);
+				}
+			}
+		} else if (!server->ischannel(*target)) {
+                        /* private msg */
+			SERVER_LAST_MSG_ADD(server, target);
+		}
+	}
 
 	cmd_params_free(free_arg);
 }
 
 static void sig_nick_removed(CHANNEL_REC *channel, NICK_REC *nick)
 {
+        MODULE_CHANNEL_REC *mchannel;
 	LAST_MSG_REC *rec;
 
-	rec = last_msg_find(channel->lastownmsgs, nick->nick);
-	if (rec != NULL) last_msg_destroy(&channel->lastownmsgs, rec);
-
-	rec = last_msg_find(channel->lastmsgs, nick->nick);
-	if (rec != NULL) last_msg_destroy(&channel->lastmsgs, rec);
+        mchannel = MODULE_DATA(channel);
+	rec = last_msg_find(mchannel->lastmsgs, nick->nick);
+	if (rec != NULL) last_msg_destroy(&mchannel->lastmsgs, rec);
 }
 
 static void sig_nick_changed(CHANNEL_REC *channel, NICK_REC *nick,
 			     const char *oldnick)
 {
+        MODULE_CHANNEL_REC *mchannel;
 	LAST_MSG_REC *rec;
 
-	rec = last_msg_find(channel->lastownmsgs, oldnick);
+        mchannel = MODULE_DATA(channel);
+	rec = last_msg_find(mchannel->lastmsgs, oldnick);
 	if (rec != NULL) {
 		g_free(rec->nick);
 		rec->nick = g_strdup(nick->nick);
 	}
+}
 
-	rec = last_msg_find(channel->lastmsgs, oldnick);
-	if (rec != NULL) {
-		g_free(rec->nick);
-		rec->nick = g_strdup(nick->nick);
-	}
+static int last_msg_cmp(LAST_MSG_REC *m1, LAST_MSG_REC *m2)
+{
+	return m1->time < m2->time ? 1 : -1;
 }
 
 /* Complete /MSG from specified server */
 static void completion_msg_server(GSList **list, SERVER_REC *server,
 				  const char *nick, const char *prefix)
 {
+        MODULE_SERVER_REC *mserver;
 	LAST_MSG_REC *msg;
 	GSList *tmp;
 	int len;
@@ -222,7 +217,8 @@ static void completion_msg_server(GSList **list, SERVER_REC *server,
 	g_return_if_fail(nick != NULL);
 
 	len = strlen(nick);
-	for (tmp = server->lastmsgs; tmp != NULL; tmp = tmp->next) {
+        mserver = MODULE_DATA(server);
+	for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
 		if (len != 0 && g_strncasecmp(rec->nick, nick, len) != 0)
@@ -290,49 +286,55 @@ static GList *completion_msg(SERVER_REC *win_server,
 	return convert_msglist(list);
 }
 
-static void complete_from_nicklist(GList **outlist, GSList *list,
-				   const char *nick, const char *prefix)
+static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
+				   const char *nick, const char *suffix)
 {
+        MODULE_CHANNEL_REC *mchannel;
 	GSList *tmp;
+        GList *ownlist;
 	char *str;
-	int len, lowercase;
+	int len;
 
-	lowercase = settings_get_bool("completion_nicks_lowercase");
-
+	/* go through the last x nicks who have said something in the channel.
+	   nicks of all the "own messages" are placed before others */
+        ownlist = NULL;
 	len = strlen(nick);
-	for (tmp = list; tmp != NULL; tmp = tmp->next) {
+        mchannel = MODULE_DATA(channel);
+	for (tmp = mchannel->lastmsgs; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(*outlist, rec->nick) == NULL) {
-			str = g_strconcat(rec->nick, prefix, NULL);
-			if (lowercase) g_strdown(str);
-			*outlist = g_list_append(*outlist, str);
+			str = g_strconcat(rec->nick, suffix, NULL);
+			if (completion_lowercase) g_strdown(str);
+			if (rec->own)
+				ownlist = g_list_append(ownlist, str);
+                        else
+				*outlist = g_list_append(*outlist, str);
 		}
 	}
+
+        *outlist = g_list_concat(ownlist, *outlist);
 }
 
 static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
-				       const char *prefix)
+				       const char *suffix)
 {
 	GSList *nicks, *tmp;
 	GList *list;
 	char *str;
-	int lowercase, len;
+	int len;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 	if (*nick == '\0') return NULL;
 
-	lowercase = settings_get_bool("completion_nicks_lowercase");
+	if (suffix != NULL && *suffix == '\0')
+		suffix = NULL;
 
-	if (prefix != NULL && *prefix == '\0')
-		prefix = NULL;
-
-	/* put first the nicks who have recently said something [to you] */
+	/* put first the nicks who have recently said something */
 	list = NULL;
-	complete_from_nicklist(&list, channel->lastownmsgs, nick, prefix);
-	complete_from_nicklist(&list, channel->lastmsgs, nick, prefix);
+	complete_from_nicklist(&list, channel, nick, suffix);
 
 	/* and add the rest of the nicks too */
 	len = strlen(nick);
@@ -342,9 +344,9 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(list, rec->nick) == NULL &&
-		    g_strcasecmp(rec->nick, channel->server->nick) != 0) {
-			str = g_strconcat(rec->nick, prefix, NULL);
-			if (lowercase) g_strdown(str);
+		    rec != channel->ownnick) {
+			str = g_strconcat(rec->nick, suffix, NULL);
+			if (completion_lowercase) g_strdown(str);
 			list = g_list_append(list, str);
 		}
 	}
@@ -353,6 +355,8 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	return list;
 }
 
+/* append all strings in list2 to list1 that already aren't there and
+   free list2 */
 static GList *completion_joinlist(GList *list1, GList *list2)
 {
 	GList *old;
@@ -396,7 +400,8 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_SETUP_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->name, word, len) == 0)
+		if (g_strncasecmp(rec->name, word, len) == 0 &&
+		    glist_find_icase_string(list, rec->name) == NULL)
 			list = g_list_append(list, g_strdup(rec->name));
 
 	}
@@ -410,20 +415,19 @@ static void complete_window_nicks(GList **list, WINDOW_REC *window,
         CHANNEL_REC *channel;
         GList *tmplist;
         GSList *tmp;
-        const char *nickprefix;
+        const char *nicksuffix;
 
-        nickprefix = *linestart != '\0' ? NULL :
-                settings_get_str("completion_char");
+        nicksuffix = *linestart != '\0' ? NULL : completion_char;
 
         channel = CHANNEL(window->active);
 
         /* first the active channel */
         if (channel != NULL) {
-                tmplist = completion_channel_nicks(channel, word, nickprefix);
+                tmplist = completion_channel_nicks(channel, word, nicksuffix);
                 *list = completion_joinlist(*list, tmplist);
         }
 
-        if (nickprefix != NULL) {
+        if (nicksuffix != NULL) {
                 /* completing nick at the start of line - probably answering
                    to some other nick, don't even try to complete from
                    non-active channels */
@@ -435,7 +439,7 @@ static void complete_window_nicks(GList **list, WINDOW_REC *window,
                 channel = CHANNEL(tmp->data);
                 if (channel != NULL && tmp->data != window->active) {
                         tmplist = completion_channel_nicks(channel, word,
-                                                           nickprefix);
+                                                           nicksuffix);
                         *list = completion_joinlist(*list, tmplist);
                 }
         }
@@ -447,7 +451,6 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	SERVER_REC *server;
 	CHANNEL_REC *channel;
 	QUERY_REC *query;
-	const char *cmdchars;
 	char *prefix;
 
 	g_return_if_fail(list != NULL);
@@ -469,7 +472,6 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	if (server == NULL || !server->connected)
 		return;
 
-	cmdchars = settings_get_str("cmdchars");
 	if (*linestart == '\0' && *word == '\0') {
 		/* pressed TAB at the start of line - add /MSG */
                 prefix = g_strdup_printf("%cmsg", *cmdchars);
@@ -645,7 +647,7 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	line = settings_get_bool("expand_escapes") ?
 		expand_escapes(data, server, item) : g_strdup(data);
-	comp_char = *settings_get_str("completion_char");
+	comp_char = *completion_char;
 
 	/* check for automatic nick completion */
         ptr = NULL;
@@ -682,35 +684,47 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 static void sig_server_disconnected(SERVER_REC *server)
 {
+	MODULE_SERVER_REC *mserver;
+
 	g_return_if_fail(server != NULL);
 
-	while (server->lastmsgs)
-		SERVER_LAST_MSG_DESTROY(server, server->lastmsgs->data);
+        mserver = MODULE_DATA(server);
+	while (mserver->lastmsgs)
+                last_msg_destroy(&mserver->lastmsgs, mserver->lastmsgs->data);
 }
 
 static void sig_channel_destroyed(CHANNEL_REC *channel)
 {
+	MODULE_CHANNEL_REC *mchannel;
+
 	g_return_if_fail(channel != NULL);
 
-	while (channel->lastmsgs != NULL)
-		last_msg_destroy(&channel->lastmsgs, channel->lastmsgs->data);
-	while (channel->lastownmsgs != NULL)
-		last_msg_destroy(&channel->lastownmsgs, channel->lastownmsgs->data);
+        mchannel = MODULE_DATA(channel);
+	while (mchannel->lastmsgs != NULL) {
+		last_msg_destroy(&mchannel->lastmsgs,
+				 mchannel->lastmsgs->data);
+	}
+}
+
+static void read_settings(void)
+{
+	keep_privates_count = settings_get_int("completion_keep_privates");
+	keep_publics_count = settings_get_int("completion_keep_publics");
+	completion_lowercase = settings_get_bool("completion_nicks_lowercase");
+	completion_char = settings_get_str("completion_char");
+	cmdchars = settings_get_str("cmdchars");
 }
 
 void chat_completion_init(void)
 {
 	settings_add_str("completion", "completion_char", ":");
 	settings_add_bool("completion", "completion_auto", FALSE);
-	settings_add_int("completion", "completion_keep_publics", 180);
-	settings_add_int("completion", "completion_keep_publics_count", 50);
-	settings_add_int("completion", "completion_keep_ownpublics", 360);
+	settings_add_int("completion", "completion_keep_publics", 50);
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "expand_escapes", FALSE);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 
-	complete_tag = g_timeout_add(1000, (GSourceFunc) nick_completion_timeout, NULL);
-
+        read_settings();
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
@@ -723,12 +737,11 @@ void chat_completion_init(void)
 	signal_add("send text", (SIGNAL_FUNC) event_text);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void chat_completion_deinit(void)
 {
-	g_source_remove(complete_tag);
-
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
 	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
@@ -741,4 +754,5 @@ void chat_completion_deinit(void)
 	signal_remove("send text", (SIGNAL_FUNC) event_text);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

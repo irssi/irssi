@@ -1,7 +1,7 @@
 #ifndef __QUERIES_H
 #define __QUERIES_H
 
-#include "servers.h"
+#include "modules.h"
 
 /* Returns QUERY_REC if it's query, NULL if it isn't. */
 #define QUERY(query) \
@@ -12,9 +12,9 @@
 	(QUERY(query) ? TRUE : FALSE)
 
 #define STRUCT_SERVER_REC SERVER_REC
-typedef struct {
+struct _QUERY_REC {
 #include "query-rec.h"
-} QUERY_REC;
+};
 
 extern GSList *queries;
 

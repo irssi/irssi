@@ -1,7 +1,6 @@
 #ifndef __IGNORE_H
 #define __IGNORE_H
 
-#include "servers.h"
 #ifdef HAVE_REGEX_H
 #  include <regex.h>
 #endif

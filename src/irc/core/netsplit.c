@@ -24,6 +24,7 @@
 #include "misc.h"
 
 #include "irc-servers.h"
+#include "irc-channels.h"
 #include "netsplit.h"
 
 /* How long to keep netsplits in memory (seconds) */

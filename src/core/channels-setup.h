@@ -3,7 +3,7 @@
 
 #include "modules.h"
 
-typedef struct {
+struct _CHANNEL_SETUP_REC {
 	char *name;
 	char *chatnet;
 	char *password;
@@ -13,7 +13,7 @@ typedef struct {
 
 	unsigned int autojoin:1;
 	GHashTable *module_data;
-} CHANNEL_SETUP_REC;
+};
 
 extern GSList *setupchannels;
 

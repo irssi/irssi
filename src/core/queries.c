@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 
+#include "servers.h"
 #include "queries.h"
 
 GSList *queries;

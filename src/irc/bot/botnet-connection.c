@@ -58,7 +58,7 @@ static void sig_bot_read(BOT_REC *bot)
 	for (;;) {
 		recvlen = bot->handle == NULL ? -1 :
 			net_receive(bot->handle, tmpbuf, sizeof(tmpbuf));
-		ret = line_split(tmpbuf, recvlen, &str, (LINEBUF_REC **) &bot->buffer);
+		ret = line_split(tmpbuf, recvlen, &str, &bot->buffer);
 
 		if (ret == 0)
 			break;

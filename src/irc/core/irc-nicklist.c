@@ -85,9 +85,6 @@ static void event_names_list(SERVER_REC *server, const char *data)
 		while (*names != '\0' && *names != ' ') names++;
 		if (*names != '\0') *names++ = '\0';
 
-		if (*ptr == '@' && g_strcasecmp(server->nick, ptr+1) == 0)
-			chanrec->chanop = TRUE;
-
 		nicklist_insert(chanrec, ptr+isnickflag(*ptr),
 				*ptr == '@', *ptr == '+', FALSE);
 	}
@@ -98,14 +95,16 @@ static void event_names_list(SERVER_REC *server, const char *data)
 static void event_end_of_names(SERVER_REC *server, const char *data)
 {
 	char *params, *channel;
-	IRC_CHANNEL_REC *chanrec;
+	CHANNEL_REC *chanrec;
 
 	g_return_if_fail(server != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
 
-	chanrec = irc_channel_find(server, channel);
+	chanrec = channel_find(server, channel);
 	if (chanrec != NULL && !chanrec->names_got) {
+		chanrec->ownnick = nicklist_find(chanrec, server->nick);
+                chanrec->chanop = chanrec->ownnick->op;
 		chanrec->names_got = TRUE;
 		signal_emit("channel joined", 1, chanrec);
 	}

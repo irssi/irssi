@@ -14,11 +14,11 @@ enum {
 #define is_node_list(a) \
         ((a)->type == NODE_TYPE_BLOCK || (a)->type == NODE_TYPE_LIST)
 
-typedef struct {
+struct _CONFIG_NODE {
 	int type;
         char *key;
 	void *value;
-} CONFIG_NODE;
+};
 
 /* a = { x=y; y=z; }
 
@@ -43,7 +43,7 @@ typedef struct {
 
 */
 
-struct _config_rec {
+struct _CONFIG_REC {
 	char *fname;
 	int handle;
 	int create_mode;
@@ -60,8 +60,6 @@ struct _config_rec {
 	int tmp_indent_level; /* indentation position */
 	int tmp_last_lf; /* last character was a line feed */
 };
-
-typedef struct _config_rec CONFIG_REC;
 
 /* Open configuration. The file is created if it doesn't exist, unless
    `create_mode' is -1. `fname' can be NULL if you just want to use

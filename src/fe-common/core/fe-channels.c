@@ -27,6 +27,7 @@
 #include "misc.h"
 #include "settings.h"
 
+#include "channels.h"
 #include "channels-setup.h"
 #include "nicklist.h"
 
@@ -34,7 +35,7 @@
 #include "window-items.h"
 #include "printtext.h"
 
-static void signal_channel_created(CHANNEL_REC *channel, gpointer automatic)
+static void signal_channel_created(CHANNEL_REC *channel, void *automatic)
 {
 	if (window_item_find(channel->server, channel->name) == NULL) {
 		window_item_create((WI_ITEM_REC *) channel,

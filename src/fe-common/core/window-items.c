@@ -36,7 +36,7 @@ void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic)
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(item != NULL);
 
-	MODULE_DATA_SET(item, window);
+        item->window = window;
 
 	if (window->items == NULL) {
 		window->active = item;
@@ -66,7 +66,7 @@ void window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 	if (g_slist_find(window->items, item) == NULL)
 		return;
 
-	MODULE_DATA_SET(item, NULL);
+        item->window = NULL;
 	window->items = g_slist_remove(window->items, item);
 
 	if (window->active == item) {
@@ -82,13 +82,6 @@ void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
         window_item_remove(window, item);
 
 	signal_emit("window item destroy", 2, window, item);
-}
-
-WINDOW_REC *window_item_window(WI_ITEM_REC *item)
-{
-	g_return_val_if_fail(item != NULL, NULL);
-
-        return MODULE_DATA(item);
 }
 
 void window_item_change_server(WI_ITEM_REC *item, void *server)

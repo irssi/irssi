@@ -46,7 +46,7 @@ typedef struct {
 
 	GIOChannel *handle;
 	int read_tag;
-	void *buffer;
+	LINEBUF_REC *buffer;
 
 	int file_handle; /* if bot is sending a file to us */
 

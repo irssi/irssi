@@ -1,8 +1,6 @@
 #ifndef __LINE_SPLIT_H
 #define __LINE_SPLIT_H
 
-typedef struct _LINEBUF_REC LINEBUF_REC;
-
 /* line-split `data'. Initially `*buffer' should contain NULL. */
 int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer);
 void line_split_free(LINEBUF_REC *buffer);

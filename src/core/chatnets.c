@@ -30,10 +30,8 @@
 
 GSList *chatnets; /* list of available chat networks */
 
-void chatnet_read(CHATNET_REC *chatnet, void *nodep)
+void chatnet_read(CHATNET_REC *chatnet, CONFIG_NODE *node)
 {
-	CONFIG_NODE *node = nodep;
-
 	g_return_if_fail(chatnet != NULL);
 	g_return_if_fail(node != NULL);
 	g_return_if_fail(node->key != NULL);
@@ -49,11 +47,9 @@ void chatnet_read(CHATNET_REC *chatnet, void *nodep)
 	chatnets = g_slist_append(chatnets, chatnet);
 }
 
-void *chatnet_save(CHATNET_REC *chatnet, void *parentnode)
+CONFIG_NODE *chatnet_save(CHATNET_REC *chatnet, CONFIG_NODE *node)
 {
-	CONFIG_NODE *node = parentnode;
-
-	g_return_val_if_fail(parentnode != NULL, NULL);
+	g_return_val_if_fail(node != NULL, NULL);
 	g_return_val_if_fail(chatnet != NULL, NULL);
 
 	node = config_node_section(node, chatnet->name, NODE_TYPE_BLOCK);

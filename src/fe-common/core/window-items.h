@@ -11,7 +11,8 @@ void window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item);
 /* Find a window for `item' and call window_item_add(). */
 void window_item_create(WI_ITEM_REC *item, int automatic);
 
-WINDOW_REC *window_item_window(WI_ITEM_REC *item);
+#define window_item_window(item) \
+	((WINDOW_REC *) ((WI_ITEM_REC *) (item))->window)
 void window_item_change_server(WI_ITEM_REC *item, void *server);
 
 void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item);

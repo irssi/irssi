@@ -218,7 +218,7 @@ static void server_rejoin_channels(IRC_SERVER_REC *server)
                 g_string_truncate(keys, keys->len-1);
 
 		if (use_keys) g_string_sprintfa(channels, " %s", keys->str);
-		server->channels_join(server, channels->str, TRUE);
+		server->channels_join(SERVER(server), channels->str, TRUE);
 	}
 
 	g_string_free(channels, TRUE);

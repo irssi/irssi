@@ -3,10 +3,6 @@
 
 #include "modules.h"
 
-#ifndef __NETWORK_H
-typedef struct _ipaddr IPADDR;
-#endif
-
 /* Returns SERVER_REC if it's server, NULL if it isn't. */
 #define SERVER(server) \
 	MODULE_CHECK_CAST(server, SERVER_REC, type, "SERVER")
@@ -23,19 +19,14 @@ typedef struct _ipaddr IPADDR;
 
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
-typedef struct {
+struct _SERVER_CONNECT_REC {
 #include "server-connect-rec.h"
-} SERVER_CONNECT_REC;
+};
 
 #define STRUCT_SERVER_CONNECT_REC SERVER_CONNECT_REC
-typedef struct {
+struct _SERVER_REC {
 #include "server-rec.h"
-} SERVER_REC;
-
-typedef struct {
-	time_t time;
-	char *nick;
-} LAST_MSG_REC;
+};
 
 extern GSList *servers, *lookup_servers;
 

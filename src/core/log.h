@@ -1,8 +1,6 @@
 #ifndef __LOG_H
 #define __LOG_H
 
-#include "servers.h"
-
 enum {
 	LOG_ITEM_TARGET, /* channel, query, .. */
 	LOG_ITEM_WINDOW_REFNUM

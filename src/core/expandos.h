@@ -2,7 +2,6 @@
 #define __EXPANDOS_H
 
 #include "signals.h"
-#include "servers.h"
 
 /* first argument of signal must match to active .. */
 typedef enum {

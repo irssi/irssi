@@ -778,7 +778,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->nick, server->nick) != 0)
+		if (rec != chanrec->ownnick)
 			irc_send_cmdv(server, "NOTICE %s :%s", rec->nick, msg);
 	}
 	g_free(msg);

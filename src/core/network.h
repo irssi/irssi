@@ -7,7 +7,7 @@
 #  include <netinet/in.h>
 #endif
 
-struct _ipaddr {
+struct _IPADDR {
 	unsigned short family;
 	union {
 #ifdef HAVE_IPV6
@@ -17,8 +17,6 @@ struct _ipaddr {
 #endif
 	} addr;
 };
-
-typedef struct _ipaddr IPADDR;
 
 /* maxmimum string length of IP address */
 #ifdef HAVE_IPV6

@@ -422,7 +422,6 @@ static void multi_query_remove(IRC_SERVER_REC *server, const char *event, const 
 static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
-	NICK_REC *nick;
 	char *params, *channel, **chans;
 	int n, onewho;
 
@@ -441,8 +440,7 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		/* check that the WHO actually did return something
 		   (that it understood #chan1,#chan2,..) */
 		chanrec = irc_channel_find(server, chans[0]);
-		nick = nicklist_find(CHANNEL(chanrec), server->nick);
-		if (nick->host == NULL)
+		if (chanrec->ownnick->host == NULL)
 			server->no_multi_who = TRUE;
 	}
 

@@ -41,7 +41,7 @@ typedef struct DCC_REC {
 
 	long size, transfd, skipped; /* file size / bytes transferred / skipped at start */
 	GIOChannel *handle; /* socket handle */
-	void *sendbuf;
+	NET_SENDBUF_REC *sendbuf;
 	int tagconn, tagread, tagwrite;
 	int fhandle; /* file handle */
 	time_t starttime; /* transfer start time */

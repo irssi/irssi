@@ -291,7 +291,7 @@ static int irc_receive_line(SERVER_REC *server, char **str, int read_socket)
 		net_receive(net_sendbuffer_handle(server->handle),
 			    tmpbuf, sizeof(tmpbuf));
 
-	ret = line_split(tmpbuf, recvlen, str, (LINEBUF_REC **) &server->buffer);
+	ret = line_split(tmpbuf, recvlen, str, &server->buffer);
 	if (ret == -1) {
 		/* connection lost */
 		server->connection_lost = TRUE;

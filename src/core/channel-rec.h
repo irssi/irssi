@@ -5,7 +5,9 @@
 char *topic;
 char *topic_by;
 time_t topic_time;
+
 GHashTable *nicks; /* list of nicks */
+NICK_REC *ownnick; /* our own nick */
 
 unsigned int no_modes:1; /* channel doesn't support modes */
 char *mode;
@@ -21,6 +23,3 @@ unsigned int joined:1; /* Have we even received JOIN event for this channel? */
 unsigned int left:1; /* You just left the channel */
 unsigned int kicked:1; /* You just got kicked */
 unsigned int destroying:1;
-
-GSList *lastmsgs; /* List of nicks who last send message */
-GSList *lastownmsgs; /* List of nicks who last send message to you */

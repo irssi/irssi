@@ -1,13 +1,13 @@
 #ifndef __RAWLOG_H
 #define __RAWLOG_H
 
-typedef struct {
+struct _RAWLOG_REC {
 	int logging;
 	int handle;
 
         int nlines;
 	GSList *lines;
-} RAWLOG_REC;
+};
 
 RAWLOG_REC *rawlog_create(void);
 void rawlog_destroy(RAWLOG_REC *rawlog);

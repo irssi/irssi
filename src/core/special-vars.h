@@ -2,7 +2,6 @@
 #define __SPECIAL_VARS_H
 
 #include "signals.h"
-#include "servers.h"
 
 #define PARSE_FLAG_GETNAME	0x01 /* return argument name instead of it's value */
 #define PARSE_FLAG_ISSET_ANY	0x02 /* arg_used field specifies that at least one of the $variables was non-empty */

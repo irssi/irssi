@@ -13,7 +13,7 @@ char *nick; /* current nick */
 unsigned int connected:1; /* connected to server */
 unsigned int connection_lost:1; /* Connection lost unintentionally */
 
-void *handle; /* NET_SENDBUF_REC socket */
+NET_SENDBUF_REC *handle;
 int readtag; /* input tag */
 
 /* for net_connect_nonblock() */
@@ -26,8 +26,8 @@ GHashTable *eventtable; /* "event xxx" : GSList* of REDIRECT_RECs */
 GHashTable *eventgrouptable; /* event group : GSList* of REDIRECT_RECs */
 GHashTable *cmdtable; /* "command xxx" : REDIRECT_CMD_REC* */
 
-void *rawlog;
-void *buffer; /* receive buffer */
+RAWLOG_REC *rawlog;
+LINEBUF_REC *buffer; /* receive buffer */
 GHashTable *module_data;
 
 char *version; /* server version */
@@ -41,8 +41,6 @@ time_t lag_sent; /* 0 or time when last lag query was sent to server */
 time_t lag_last_check; /* last time we checked lag */
 int lag; /* server lag in milliseconds */
 
-GSList *lastmsgs; /* List of nicks who last send you msg */
-
 GSList *channels;
 GSList *queries;
 
@@ -52,7 +50,7 @@ GSList *queries;
 /* join to a number of channels, channels are specified in `data' separated
    with commas. there can exist other information after first space like
    channel keys etc. */
-void (*channels_join)(void *server, const char *data, int automatic);
+void (*channels_join)(SERVER_REC *server, const char *data, int automatic);
 /* returns true if `flag' indicates a nick flag (op/voice/halfop) */
 int (*isnickflag)(char flag);
 /* returns true if `flag' indicates a channel */
@@ -61,11 +59,11 @@ int (*ischannel)(char flag);
    of them aren't supported '\0' can be used. */
 const char *(*get_nick_flags)(void);
 /* send public or private message to server */
-void (*send_message)(void *server, const char *target, const char *msg);
+void (*send_message)(SERVER_REC *server, const char *target, const char *msg);
 
 /* -- Default implementations are used if NULL -- */
-void *(*channel_find_func)(void *server, const char *name);
-void *(*query_find_func)(void *server, const char *nick);
+CHANNEL_REC *(*channel_find_func)(SERVER_REC *server, const char *name);
+QUERY_REC *(*query_find_func)(SERVER_REC *server, const char *nick);
 int (*mask_match_func)(const char *mask, const char *data);
 /* returns true if `msg' was meant for `nick' */
 int (*nick_match_msg)(const char *nick, const char *msg);

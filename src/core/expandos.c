@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "signals.h"
 #include "expandos.h"
 #include "settings.h"
@@ -26,6 +27,7 @@
 #include "misc.h"
 #include "irssi-version.h"
 
+#include "servers.h"
 #include "channels.h"
 #include "queries.h"
 #include "window-item-def.h"
