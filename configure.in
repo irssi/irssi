@@ -20,7 +20,7 @@ if test "x$enable_static" = "xno"; then
 	AC_ERROR([Don't give --disable-static option to configure])
 fi
 
-AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
+AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
