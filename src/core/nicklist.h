@@ -15,8 +15,12 @@ struct _NICK_REC {
 /* Add new nick to list */
 NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
 			  int op, int voice, int send_massjoin);
-/* remove nick from list */
+/* Remove nick from list */
 void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
+/* Change nick */
+void nicklist_rename(SERVER_REC *server, const char *old_nick,
+		     const char *new_nick);
+
 /* Find nick record from list */
 NICK_REC *nicklist_find(CHANNEL_REC *channel, const char *mask);
 /* Get list of nicks that match the mask */

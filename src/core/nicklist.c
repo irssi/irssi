@@ -67,7 +67,7 @@ static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 	g_free(nick);
 }
 
-/* remove nick from list */
+/* Remove nick from list */
 void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	g_return_if_fail(IS_CHANNEL(channel));
@@ -75,6 +75,33 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 
 	g_hash_table_remove(channel->nicks, nick->nick);
 	nicklist_destroy(channel, nick);
+}
+
+/* Change nick */
+void nicklist_rename(SERVER_REC *server, const char *old_nick,
+		     const char *new_nick)
+{
+	CHANNEL_REC *channel;
+	NICK_REC *nickrec;
+	GSList *nicks, *tmp;
+
+	nicks = nicklist_get_same(server, old_nick);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+		channel = tmp->data;
+		nickrec = tmp->next->data;
+
+		/* remove old nick from hash table */
+		g_hash_table_remove(channel->nicks, nickrec->nick);
+
+		g_free(nickrec->nick);
+		nickrec->nick = g_strdup(new_nick);
+
+		/* add new nick to hash table */
+		g_hash_table_insert(channel->nicks, nickrec->nick, nickrec);
+
+		signal_emit("nicklist changed", 3, channel, nickrec, old_nick);
+	}
+	g_slist_free(nicks);
 }
 
 static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
