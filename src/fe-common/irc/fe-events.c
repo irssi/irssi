@@ -240,32 +240,32 @@ static void event_notice(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar
     g_free(params);
 }
 
-static void event_join(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    gchar *params, *channel, *tmp;
+	char *params, *channel, *tmp;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 1, &channel);
-    tmp = strchr(channel, 7); /* ^G does something weird.. */
-    if (tmp != NULL) *tmp = '\0';
+	params = event_get_params(data, 1, &channel);
+	tmp = strchr(channel, 7); /* ^G does something weird.. */
+	if (tmp != NULL) *tmp = '\0';
 
-    if (!ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_JOINS))
-	printformat(server, channel, MSGLEVEL_JOINS, IRCTXT_JOIN, nick, addr, channel);
-    g_free(params);
+	if (!ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_JOINS))
+		printformat(server, channel, MSGLEVEL_JOINS, IRCTXT_JOIN, nick, addr, channel);
+	g_free(params);
 }
 
-static void event_part(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_part(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    gchar *params, *channel, *reason;
+	char *params, *channel, *reason;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &reason);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &reason);
 
-    if (!ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_PARTS))
-	printformat(server, channel, MSGLEVEL_PARTS, IRCTXT_PART, nick, addr, channel, reason);
-    g_free(params);
+	if (!ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_PARTS))
+		printformat(server, channel, MSGLEVEL_PARTS, IRCTXT_PART, nick, addr, channel, reason);
+	g_free(params);
 }
 
 static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
@@ -315,19 +315,18 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	}
 }
 
-static void event_kick(gchar *data, IRC_SERVER_REC *server, gchar *kicker, gchar *addr)
+static void event_kick(const char *data, IRC_SERVER_REC *server, const char *kicker, const char *addr)
 {
-    gchar *params, *channel, *nick, *reason;
+	char *params, *channel, *nick, *reason;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &channel, &nick, &reason);
-    if (!ignore_check(server, kicker, addr, channel, reason, MSGLEVEL_KICKS))
-    {
-	printformat(server, channel, MSGLEVEL_KICKS,
-		    IRCTXT_KICK, nick, channel, kicker, reason);
-    }
-    g_free(params);
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &channel, &nick, &reason);
+	if (!ignore_check(server, kicker, addr, channel, reason, MSGLEVEL_KICKS)) {
+		printformat(server, channel, MSGLEVEL_KICKS,
+			    IRCTXT_KICK, nick, channel, kicker, reason);
+	}
+	g_free(params);
 }
 
 static void print_nick_change(IRC_SERVER_REC *server, const char *target, const char *newnick, const char *oldnick, const char *addr, int ownnick)
@@ -421,147 +420,139 @@ static void event_pong(const char *data, IRC_SERVER_REC *server, const char *nic
 	g_free(params);
 }
 
-static void event_invite(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_invite(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    gchar *params, *channel;
+	char *params, *channel;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 2, NULL, &channel);
-    if (*channel != '\0' && !ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_INVITES))
-        printformat(server, NULL, MSGLEVEL_INVITES, IRCTXT_INVITE, nick, channel);
-    g_free(params);
+	params = event_get_params(data, 2, NULL, &channel);
+	if (*channel != '\0' && !ignore_check(server, nick, addr, channel, NULL, MSGLEVEL_INVITES))
+		printformat(server, NULL, MSGLEVEL_INVITES, IRCTXT_INVITE, nick, channel);
+	g_free(params);
 }
 
-static void event_topic(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_topic(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    gchar *params, *channel, *topic;
+	char *params, *channel, *topic;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &topic);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &topic);
 
-    if (!ignore_check(server, nick, addr, channel, topic, MSGLEVEL_TOPICS))
-	printformat(server, channel, MSGLEVEL_TOPICS,
-		    *topic != '\0' ? IRCTXT_NEW_TOPIC : IRCTXT_TOPIC_UNSET,
-		    nick, channel, topic);
-    g_free(params);
+	if (!ignore_check(server, nick, addr, channel, topic, MSGLEVEL_TOPICS))
+		printformat(server, channel, MSGLEVEL_TOPICS,
+			    *topic != '\0' ? IRCTXT_NEW_TOPIC : IRCTXT_TOPIC_UNSET,
+			    nick, channel, topic);
+	g_free(params);
 }
 
-static void event_error(gchar *data, IRC_SERVER_REC *server)
+static void event_error(const char *data, IRC_SERVER_REC *server)
 {
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    if (*data == ':') data++;
-    printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_ERROR, data);
+	if (*data == ':') data++;
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_ERROR, data);
 }
 
-static void event_wallops(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    if (*data == ':') data++;
-    if (!ignore_check(server, nick, addr, NULL, data, MSGLEVEL_WALLOPS))
-    {
+	if (*data == ':') data++;
+	if (ignore_check(server, nick, addr, NULL, data, MSGLEVEL_WALLOPS))
+		return;
+
 	if (g_strncasecmp(data, "\001ACTION", 7) != 0)
-	    printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_WALLOPS, nick, data);
-	else
-	{
-	    /* Action in WALLOP */
-	    gint len;
+		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_WALLOPS, nick, data);
+	else {
+		/* Action in WALLOP */
+		int len;
 
-	    data = g_strdup(data);
-	    len = strlen(data);
-            if (data[len-1] == 1) data[len-1] = '\0';
-	    printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, data);
-	    g_free(data);
+		data = g_strdup(data);
+		len = strlen(data);
+		if (data[len-1] == 1) data[len-1] = '\0';
+		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, data);
+		g_free(data);
 	}
 	msg_beep_check(server, MSGLEVEL_WALLOPS);
-    }
 }
 
 static void channel_sync(CHANNEL_REC *channel)
 {
-    g_return_if_fail(channel != NULL);
+	g_return_if_fail(channel != NULL);
 
-    printformat(channel->server, channel->name, MSGLEVEL_CLIENTNOTICE|MSGLEVEL_NO_ACT, IRCTXT_CHANNEL_SYNCED,
-                channel->name, (glong) (time(NULL)-channel->createtime));
+	printformat(channel->server, channel->name, MSGLEVEL_CLIENTNOTICE|MSGLEVEL_NO_ACT,
+		    IRCTXT_CHANNEL_SYNCED, channel->name, (long) (time(NULL)-channel->createtime));
 }
 
 static void event_connected(IRC_SERVER_REC *server)
 {
-    gchar *str;
+	char *nick;
 
-    g_return_if_fail(server != NULL);
+	g_return_if_fail(server != NULL);
 
-    if (*settings_get_str("default_nick") == '\0' ||
-	g_strcasecmp(server->nick, settings_get_str("default_nick")) == 0)
-        return;
+	nick = settings_get_str("default_nick");
+	if (*nick == '\0' || g_strcasecmp(server->nick, nick) == 0)
+		return;
 
-    /* someone has our nick, find out who. */
-    str = g_strdup_printf("WHOIS %s", settings_get_str("default_nick"));
-    irc_send_cmd(server, str);
-    g_free(str);
-
-    server_redirect_event((SERVER_REC *) server, settings_get_str("default_nick"), 1,
-			  "event 318", "event empty", 1,
-			  "event 401", "event empty", 1,
-			  "event 311", "nickfind event whois", 1,
-			  "event 301", "event empty", 1,
-			  "event 312", "event empty", 1,
-			  "event 313", "event empty", 1,
-			  "event 317", "event empty", 1,
-			  "event 319", "event empty", 1, NULL);
+	/* someone has our nick, find out who. */
+	irc_send_cmdv(server, "WHOIS %s", nick);
+	server_redirect_event((SERVER_REC *) server, nick, 1,
+			      "event 318", "event empty", 1,
+			      "event 401", "event empty", 1,
+			      "event 311", "nickfind event whois", 1,
+			      "event 301", "event empty", 1,
+			      "event 312", "event empty", 1,
+			      "event 313", "event empty", 1,
+			      "event 317", "event empty", 1,
+			      "event 319", "event empty", 1, NULL);
 
 }
 
-static void event_nickfind_whois(gchar *data, IRC_SERVER_REC *server)
+static void event_nickfind_whois(const char *data, IRC_SERVER_REC *server)
 {
-    gchar *params, *nick, *user, *host, *realname;
+	char *params, *nick, *user, *host, *realname;
 
-    g_return_if_fail(data != NULL);
+	g_return_if_fail(data != NULL);
 
-    params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
-    printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_YOUR_NICK_OWNED, nick, user, host, realname);
-    g_free(params);
+	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_YOUR_NICK_OWNED, nick, user, host, realname);
+	g_free(params);
 }
 
-static void event_ban_type_changed(gchar *bantype)
+static void event_ban_type_changed(const char *bantype)
 {
-    GString *str;
+	GString *str;
 
-    g_return_if_fail(bantype != NULL);
+	g_return_if_fail(bantype != NULL);
 
-    if (strcmp(bantype, "UD") == 0)
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Normal");
-    else if (strcmp(bantype, "HD") == 0 || strcmp(bantype, "H") == 0)
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Host");
-    else if (strcmp(bantype, "D") == 0)
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Domain");
-    else
-    {
-        str = g_string_new("Custom:");
-        if (*bantype == 'N')
-        {
-            g_string_append(str, " Nick");
-            bantype++;
-        }
-        if (*bantype == 'U')
-        {
-            g_string_append(str, " User");
-            bantype++;
-        }
-        if (*bantype == 'H')
-        {
-            g_string_append(str, " Host");
-            bantype++;
-        }
-        if (*bantype == 'D')
-            g_string_append(str, " Domain");
+	if (strcmp(bantype, "UD") == 0)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Normal");
+	else if (strcmp(bantype, "HD") == 0 || strcmp(bantype, "H") == 0)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Host");
+	else if (strcmp(bantype, "D") == 0)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, "Domain");
+	else {
+		str = g_string_new("Custom:");
+		if (*bantype == 'N') {
+			g_string_append(str, " Nick");
+			bantype++;
+		}
+		if (*bantype == 'U') {
+			g_string_append(str, " User");
+			bantype++;
+		}
+		if (*bantype == 'H') {
+			g_string_append(str, " Host");
+			bantype++;
+		}
+		if (*bantype == 'D')
+			g_string_append(str, " Domain");
 
-        printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, str->str);
-        g_string_free(str, TRUE);
-    }
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_BANTYPE, str->str);
+		g_string_free(str, TRUE);
+	}
 }
 
 static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server, const char *sender, const char *addr)
@@ -597,7 +588,7 @@ static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
 		    reconnect->conn->ircnet == NULL ? "" : reconnect->conn->ircnet);
 }
 
-static void sig_server_reconnect_not_found(gchar *tag)
+static void sig_server_reconnect_not_found(const char *tag)
 {
 	g_return_if_fail(tag != NULL);
 
@@ -605,7 +596,7 @@ static void sig_server_reconnect_not_found(gchar *tag)
 		    IRCTXT_RECONNECT_NOT_FOUND, tag);
 }
 
-static void event_received(gchar *data, IRC_SERVER_REC *server, gchar *nick, gchar *addr)
+static void event_received(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
 	char *params, *cmd, *args, *ptr;
 
