@@ -28,12 +28,12 @@ FORMAT_REC fecommon_irc_notifylist_formats[] =
 	/* ---- */
 	{ NULL, "Notifylist", 0 },
 
-	{ "notify_join", "%_$0%_ %K[%n$1@$2%K] [%n%_$3%_%K]%n has joined to $4", 5, { 0, 0, 0, 0, 0 } },
-	{ "notify_part", "%_$0%_ has left $4", 5, { 0, 0, 0, 0, 0 } },
-	{ "notify_away", "%_$0%_ %K[%n$5%K]%n %K[%n$1@$2%K] [%n%_$3%_%K]%n is now away: $4", 6, { 0, 0, 0, 0, 0, 0 } },
-	{ "notify_unaway", "%_$0%_ %K[%n$4%K]%n %K[%n$1@$2%K] [%n%_$3%_%K]%n is now unaway", 5, { 0, 0, 0, 0, 0 } },
-	{ "notify_unidle", "%_$0%_ %K[%n$5%K]%n %K[%n$1@$2%K] [%n%_$3%_%K]%n just stopped idling", 6, { 0, 0, 0, 0, 0, 0 } },
-	{ "notify_online", "On $0: %_$1%_", 2, { 0, 0 } },
+	{ "notify_join", "{nick $0} [$1@$2] [{hilight $3}] has joined to $4", 5, { 0, 0, 0, 0, 0 } },
+	{ "notify_part", "{nick $0} has left $4", 5, { 0, 0, 0, 0, 0 } },
+	{ "notify_away", "{nick $0} [$5] [$1@$2] [{hilight $3}] is now away: $4", 6, { 0, 0, 0, 0, 0, 0 } },
+	{ "notify_unaway", "{nick $0} [$4] [$1@$2] [{hilight $3}] is now unaway", 5, { 0, 0, 0, 0, 0 } },
+	{ "notify_unidle", "{nick $0} [$5] [$1@$2] [{hilight $3}] just stopped idling", 6, { 0, 0, 0, 0, 0, 0 } },
+	{ "notify_online", "On $0: {hilight $1}", 2, { 0, 0 } },
 	{ "notify_offline", "Offline: $0", 1, { 0 } },
 	{ "notify_list", "$0: $1 $2 $3", 4, { 0, 0, 0, 0 } },
 

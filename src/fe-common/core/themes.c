@@ -256,8 +256,8 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	data = g_hash_table_lookup(theme->abstracts, abstract);
 	g_free(abstract);
 	if (data == NULL) {
-		/* unknown abstract */
-		return NULL;
+		/* unknown abstract, just display the data */
+		data = "$0-";
 	}
 	abstract = g_strdup(data);
 
@@ -474,23 +474,17 @@ static void theme_set_format(THEME_REC *theme, MODULE_THEME_REC *rec,
 	}
 }
 
-static void theme_read_formats(CONFIG_REC *config, THEME_REC *theme,
-			       const char *module)
+static void theme_read_formats(THEME_REC *theme, const char *module,
+			       CONFIG_REC *config, FORMAT_REC *formats,
+			       MODULE_THEME_REC *rec)
 {
-	MODULE_THEME_REC *rec;
-	FORMAT_REC *formats;
 	CONFIG_NODE *node;
 	GSList *tmp;
-
-	formats = g_hash_table_lookup(default_formats, module);
-	if (formats == NULL) return;
 
 	node = config_node_traverse(config, "formats", FALSE);
 	if (node == NULL) return;
 	node = config_node_section(node, module, -1);
 	if (node == NULL) return;
-
-	rec = theme_module_create(theme, module);
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		node = tmp->data;
@@ -502,26 +496,50 @@ static void theme_read_formats(CONFIG_REC *config, THEME_REC *theme,
 	}
 }
 
+static void theme_init_module(THEME_REC *theme, const char *module,
+			      CONFIG_REC *config)
+{
+	MODULE_THEME_REC *rec;
+	FORMAT_REC *formats;
+	int n;
+
+	formats = g_hash_table_lookup(default_formats, module);
+	g_return_if_fail(formats != NULL);
+
+	rec = theme_module_create(theme, module);
+
+	if (config != NULL)
+		theme_read_formats(theme, module, config, formats, rec);
+
+	/* expand the remaining formats */
+	for (n = 0; n < rec->count; n++) {
+		if (rec->expanded_formats[n] == NULL) {
+			rec->expanded_formats[n] =
+				theme_format_expand(theme, formats[n].def);
+		}
+	}
+}
+
 static void theme_read_module(THEME_REC *theme, const char *module)
 {
 	CONFIG_REC *config;
 	char *msg;
 
 	config = config_open(theme->path, -1);
-	if (config == NULL) return;
+	if (config != NULL) {
+		config_parse(config);
 
-	config_parse(config);
-
-	if (config_last_error(mainconfig) != NULL) {
-		msg = g_strdup_printf(_("Ignored errors in theme:\n%s"),
-				      config_last_error(mainconfig));
-		signal_emit("gui dialog", 2, "error", msg);
-		g_free(msg);
+		if (config_last_error(mainconfig) != NULL) {
+			msg = g_strdup_printf(_("Ignored errors in theme:\n%s"),
+					      config_last_error(mainconfig));
+			signal_emit("gui dialog", 2, "error", msg);
+			g_free(msg);
+		}
 	}
 
-	theme_read_formats(config, theme, module);
+	theme_init_module(theme, module, config);
 
-	config_close(config);
+	if (config != NULL) config_close(config);
 }
 
 static void themes_read_module(const char *module)
@@ -618,7 +636,7 @@ typedef struct {
 static void theme_read_modules(const char *module, void *value,
 			       THEME_READ_REC *rec)
 {
-	theme_read_formats(rec->config, rec->theme, module);
+	theme_init_module(rec->theme, module, rec->config);
 }
 
 static void theme_read(THEME_REC *theme, const char *path)

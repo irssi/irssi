@@ -355,11 +355,8 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 	char *arglist[10];
 	char buffer[200]; /* should be enough? (won't overflow even if it isn't) */
 
-	const char *str;
 	char code, *ret;
 	int need_free;
-
-	str = text != NULL ? text : format->def;
 
 	/* read all optional arguments to arglist[] list
 	   so they can be used in any order.. */
@@ -370,20 +367,20 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 	out = g_string_new(NULL);
 
 	code = 0;
-	while (*str != '\0') {
+	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!expand_styles(out, *str, dest)) {
+			if (!expand_styles(out, *text, dest)) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
-				g_string_append_c(out, *str);
+				g_string_append_c(out, *text);
 			}
 			code = 0;
 		} else if (code == '$') {
 			/* argument */
 			char *ret;
 
-			ret = parse_special((char **) &str, active_win->active_server,
+			ret = parse_special((char **) &text, active_win->active_server,
 					    active_win->active, arglist, &need_free, NULL);
 
 			if (ret != NULL) {
@@ -401,13 +398,13 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 			}
 			code = 0;
 		} else {
-			if (*str == '%' || *str == '$')
-				code = *str;
+			if (*text == '%' || *text == '$')
+				code = *text;
 			else
-				g_string_append_c(out, *str);
+				g_string_append_c(out, *text);
 		}
 
-		str++;
+		text++;
 	}
 
 	ret = out->str;
@@ -435,7 +432,6 @@ char *output_format_get_text(const char *module, WINDOW_REC *window,
 
 	va_start(va, formatnum);
 	ret = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme == NULL ? NULL :
 				      module_theme->expanded_formats[formatnum], va);
 	va_end(va);
 
@@ -455,7 +451,6 @@ static char *output_format_text(TEXT_DEST_REC *dest, int formatnum, ...)
 
 	va_start(va, formatnum);
 	ret = output_format_text_args(dest, &fecommon_core_formats[formatnum],
-				      module_theme == NULL ? NULL :
 				      module_theme->expanded_formats[formatnum], va);
 	va_end(va);
 
@@ -480,7 +475,6 @@ void printformat_module_args(const char *module, void *server,
 	formats = g_hash_table_lookup(default_formats, module);
 
 	str = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme == NULL ? NULL :
 				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
@@ -510,7 +504,6 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window, int 
 
 	formats = g_hash_table_lookup(default_formats, module);
 	str = output_format_text_args(&dest, &formats[formatnum],
-				      module_theme == NULL ? NULL :
 				      module_theme->expanded_formats[formatnum], va);
 	if (*str != '\0') print_string(&dest, str);
 	g_free(str);
