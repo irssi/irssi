@@ -56,12 +56,13 @@ modules.c:
  "module error", int error, char *text, char *rootmodule, char *submodule
 
 nicklist.c:
- "nicklist new", CHANNEL_REC, NICK_REC
- "nicklist remove", CHANNEL_REC, NICK_REC
- "nicklist changed", CHANNEL_REC, NICK_REC, char *orignick
- "nicklist host changed", CHANNEL_REC, NICK_REC
- "nicklist gone changed", CHANNEL_REC, NICK_REC
- "nicklist serverop changed", CHANNEL_REC, NICK_REC
+ "nicklist new", NICK_REC
+ "nicklist remove", NICK_REC
+ "nicklist changed", NICK_REC, char *old_nick
+ "nicklist host changed", NICK_REC
+ "nicklist realname changed", NICK_REC
+ "nicklist gone changed", NICK_REC
+ "nicklist serverop changed", NICK_REC
 
 pidwait.c:
  "pidwait", int pid, int status
@@ -151,7 +152,7 @@ mode-lists.c:
 
 modes.c:
  "channel mode changed", CHANNEL_REC
- "nick mode changed", CHANNEL_REC, NICK_REC
+ "nick mode changed", NICK_REC
  "user mode changed", SERVER_REC, char *old
  "away mode changed", SERVER_REC
 
@@ -220,7 +221,6 @@ FE common
 * Requires to work properly:
 
  "gui print text", WINDOW_REC, int fg, int bg, int flags, char *text, int level
- "gui window goto", int number
 
 (Can be used to determine when all "gui print text"s are sent (not required))
  "gui print text finished", WINDOW_REC
