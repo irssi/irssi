@@ -21,7 +21,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <glib.h>
+#include <gmodule.h>
 
 /*#define ENABLE_BUFFER_CHECKS*/
 #define BUFFER_CHECK_SIZE 5
@@ -307,6 +309,15 @@ char *ig_dirname(const char *file, int line, const char *fname)
 	char *ret;
 
 	ret = g_dirname(fname);
+	data_add(ret, INT_MIN, file, line);
+	return ret;
+}
+
+char *ig_module_build_path(const char *file, int line, const char *dir, const char *module)
+{
+	char *ret;
+
+	ret = g_module_build_path(dir, module);
 	data_add(ret, INT_MIN, file, line);
 	return ret;
 }

@@ -27,6 +27,7 @@ char *ig_dirname(const char *file, int line, const char *fname);
 #define g_string_free(a, b) ig_string_free(__FILE__, __LINE__, a, b)
 #define g_strjoinv(a,b) ig_strjoinv(__FILE__, __LINE__, a, b)
 #define g_dirname(a) ig_dirname(__FILE__, __LINE__, a)
+#define g_module_build_path(a, b) ig_module_build_path(__FILE__, __LINE__, a, b)
 
 #ifndef __STRICT_ANSI__
 #define g_strconcat(a...) ig_strconcat(__FILE__, __LINE__, ##a)
