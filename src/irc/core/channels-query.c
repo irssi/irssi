@@ -50,6 +50,8 @@ loop:
 #include "irc-servers.h"
 #include "servers-redirect.h"
 
+#define MAX_QUERIES_IN_LINE 10
+
 enum {
 	CHANNEL_QUERY_MODE,
 	CHANNEL_QUERY_WHO,
@@ -164,7 +166,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 {
 	SERVER_QUERY_REC *rec;
 	IRC_CHANNEL_REC *chanrec;
-	GSList *tmp, *chans;
+	GSList *tmp, *chans, *newchans;
 	char *cmd, *chanstr_commas, *chanstr;
 	int onlyone;
 
@@ -174,6 +176,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	onlyone = (server->no_multi_who && query == CHANNEL_QUERY_WHO) ||
 		(server->no_multi_mode && CHANNEL_IS_MODE_QUERY(query));
 
+        newchans = NULL;
 	if (onlyone) {
 		chanrec = rec->queries[query]->data;
 		chans = g_slist_append(NULL, chanrec);
@@ -183,6 +186,14 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		char *chanstr_spaces;
 
 		chans = rec->queries[query];
+
+		if (g_slist_length(rec->queries[query]) > MAX_QUERIES_IN_LINE) {
+			GSList *lastchan;
+
+			lastchan = g_slist_nth(rec->queries[query], MAX_QUERIES_IN_LINE-1);
+			newchans = lastchan->next;
+                        lastchan->next = NULL;
+		}
 
 		chanstr_commas = gslistptr_to_string(rec->queries[query], G_STRUCT_OFFSET(IRC_CHANNEL_REC, name), ",");
 		chanstr_spaces = gslistptr_to_string(rec->queries[query], G_STRUCT_OFFSET(IRC_CHANNEL_REC, name), " ");
@@ -278,9 +289,11 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	rec->last_query = query;
 
 	if (!onlyone) {
-		/* all channels queried, set to NULL */
+		/* all channels queried, set to newchans which contains
+		   the rest of the channels for the same query (usually NULL
+		   unless query count exceeded MAX_QUERIES_IN_LINE) */
 		g_slist_free(rec->queries[query]);
-		rec->queries[query] = NULL;
+		rec->queries[query] = newchans;
 	} else {
 		/* remove the first channel from list */
 		rec->queries[query] = g_slist_remove(rec->queries[query], chans->data);
