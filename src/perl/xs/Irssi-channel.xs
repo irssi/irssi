@@ -76,6 +76,7 @@ PPCODE:
 	hv_store(hv, "createtime", 10, newSViv(channel->createtime), 0);
 
 	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
+	hv_store(hv, "mode", 4, new_pv(channel->mode), 0);
 	hv_store(hv, "limit", 5, newSViv(channel->limit), 0);
 	hv_store(hv, "key", 3, new_pv(channel->key), 0);
 
@@ -108,10 +109,6 @@ command(channel, cmd)
 	char *cmd
 CODE:
 	signal_emit("send command", 3, cmd, channel->server, channel);
-
-char *
-channel_get_mode(channel)
-        Irssi::Channel channel
 
 Irssi::Nick
 nicklist_insert(channel, nick, op, voice, send_massjoin)

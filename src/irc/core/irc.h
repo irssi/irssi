@@ -12,9 +12,19 @@
      =       i line with OTHER type ident
      -       i line, no ident
 */
-#define ishostflag(a) ((a) == '^' || (a) == '~' || (a) == '+' || (a) == '=' || (a) == '-')
-#define isnickflag(a) ((a) == '@' || (a) == '+' || (a) == '-' || (a) == '~')
-#define ischannel(a) ((a) == '#' || (a) == '&' || (a) == '!' || (a) == '+')
+#define ishostflag(a) \
+	((a) == '^' || (a) == '~' || \
+	(a) == '+' || (a) == '=' || (a) == '-')
+
+#define isnickflag(a) \
+	((a) == '@' || (a) == '+' || (a) == '%' || /* op / voice / half-op */ \
+	(a) == '-' || (a) == '~') /* no idea, just copied from somewhere.. */
+
+#define ischannel(a) \
+	((a) == '#' || /* normal */ \
+	(a) == '&' || /* local */ \
+	(a) == '!' || /* secure */ \
+	(a) == '+') /* modeless */
 
 /* values returned by module_category() */
 enum {

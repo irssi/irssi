@@ -359,7 +359,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 				show = TRUE;
                         nick++;
 		} else {
-			if (HAS_MODE_ARG(*mode) && *nick != NULL)
+			if (HAS_MODE_ARG(type, *mode) && *nick != NULL)
 				nick++;
 			show = TRUE;
 		}

@@ -28,7 +28,8 @@
 #include "nicklist.h"
 
 /* Change nick's mode in channel */
-static void nick_mode_change(CHANNEL_REC *channel, const char *nick, const char mode, gboolean set)
+static void nick_mode_change(CHANNEL_REC *channel, const char *nick,
+			     const char mode, int type)
 {
 	NICK_REC *nickrec;
 
@@ -38,26 +39,173 @@ static void nick_mode_change(CHANNEL_REC *channel, const char *nick, const char 
 	nickrec = nicklist_find(channel, nick);
 	if (nickrec == NULL) return; /* No /names list got yet */
 
-	if (mode == '@') nickrec->op = set;
-	if (mode == '+') nickrec->voice = set;
+	if (mode == '@') nickrec->op = type == '+';
+	if (mode == '+') nickrec->voice = type == '+';
+	if (mode == '%') nickrec->halfop = type == '+';
 
 	signal_emit("nick mode changed", 2, channel, nickrec);
 }
 
-/* Parse channel mode string */
-void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mode)
+static int mode_is_set(const char *str, char mode)
 {
-	char *dup, *modestr, *ptr, *curmode, type;
+	char *end, *pos;
+
+	g_return_val_if_fail(str != NULL, FALSE);
+
+	end = strchr(str, ' ');
+	pos = strchr(str, mode);
+	return pos != NULL && (end == NULL || pos < end);
+}
+
+/* add argument to specified position */
+static void mode_add_arg(GString *str, int pos, const char *arg)
+{
+	char *p;
+
+	for (p = str->str; *p != '\0'; p++) {
+		if (*p != ' ')
+			continue;
+
+		if (pos == 0)
+			break;
+		pos--;
+	}
+
+	/* .. GLib shouldn't fail when inserting at the end of the string */
+	if (*p == '\0') {
+		g_string_append_c(str, ' ');
+		g_string_append(str, arg);
+	} else {
+		pos = (int) (p-str->str);
+		g_string_insert_c(str, pos, ' ');
+		g_string_insert(str, pos+1, arg);
+	}
+}
+
+/* Add mode character to list sorted alphabetically */
+static void mode_add_sorted(GString *str, char mode, const char *arg)
+{
+	char *p;
+	int argpos = 0;
+
+	/* check that mode isn't already set */
+	if (mode_is_set(str->str, mode))
+		return;
+
+	for (p = str->str; *p != '\0' && *p != ' '; p++) {
+		if (mode < *p)
+			break;
+		if (HAS_MODE_ARG_SET(*p))
+			argpos++;
+	}
+
+	/* .. GLib shouldn't fail when inserting at the end of the string */
+	if (*p == '\0')
+		g_string_append_c(str, mode);
+	else
+		g_string_insert_c(str, (int) (p-str->str), mode);
+	if (arg != NULL)
+                mode_add_arg(str, argpos+1, arg);
+}
+
+/* remove the n'th argument */
+static void node_remove_arg(GString *str, int pos)
+{
+	char *p;
+	int startpos;
+
+	startpos = -1;
+	for (p = str->str; *p != '\0'; p++) {
+		if (*p != ' ')
+			continue;
+
+		if (pos < 0)
+			break;
+		if (pos == 0)
+			startpos = (int) (p-str->str);
+		pos--;
+	}
+
+	if (startpos == -1)
+		return; /* not found */
+
+        g_string_erase(str, startpos, (int) (p-str->str)-startpos);
+}
+
+/* remove mode (and it's argument) from string */
+static void mode_remove(GString *str, char mode)
+{
+	char *p;
+	int argpos = 0;
+
+	for (p = str->str; *p != '\0' && *p != ' '; p++) {
+		if (mode == *p) {
+			g_string_erase(str, (int) (p-str->str), 1);
+			if (HAS_MODE_ARG_SET(mode))
+                                node_remove_arg(str, argpos);
+			break;
+		}
+		if (HAS_MODE_ARG_SET(*p))
+			argpos++;
+	}
+}
+
+static void mode_set(GString *str, char type, char mode)
+{
+	g_return_if_fail(str != NULL);
+
+	if (type == '-')
+		mode_remove(str, mode);
+        else
+		mode_add_sorted(str, mode, NULL);
+}
+
+static void mode_set_arg(GString *str, char type, char mode, const char *arg)
+{
+	g_return_if_fail(str != NULL);
+	g_return_if_fail(type == '-' || arg != NULL);
+
+	if (type == '-')
+		mode_remove(str, mode);
+        else
+		mode_add_sorted(str, mode, arg);
+}
+
+int channel_mode_is_set(CHANNEL_REC *channel, char mode)
+{
+	g_return_val_if_fail(channel != NULL, FALSE);
+
+	return channel->mode == NULL ? FALSE :
+		mode_is_set(channel->mode, mode);
+}
+
+/* Parse channel mode string */
+void parse_channel_modes(CHANNEL_REC *channel, const char *setby,
+			 const char *mode)
+{
+        GString *newmode;
+	char *dup, *modestr, *arg, *curmode, type;
 
 	g_return_if_fail(channel != NULL);
-	g_return_if_fail(setby != NULL);
 	g_return_if_fail(mode != NULL);
 
 	type = '+';
+	newmode = g_string_new(channel->mode);
 
 	dup = modestr = g_strdup(mode);
 	curmode = cmd_get_param(&modestr);
 	while (*curmode != '\0') {
+		if (HAS_MODE_ARG(type, *curmode)) {
+			/* get the argument for the mode. since we're
+			   expecting argument, ignore the mode if there's
+			   no argument (shouldn't happen). */
+			arg = cmd_get_param(&modestr);
+			if (*arg == '\0')
+				continue;
+		} else {
+			arg = NULL;
+		}
+
 		switch (*curmode) {
 		case '+':
 		case '-':
@@ -65,98 +213,50 @@ void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mo
 			break;
 
 		case 'b':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr == '\0') break;
-
 			if (type == '+')
-				banlist_add(channel, ptr, setby, time(NULL));
+				banlist_add(channel, arg, setby, time(NULL));
 			else
-				banlist_remove(channel, ptr);
+				banlist_remove(channel, arg);
 			break;
-
 		case 'e':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr == '\0') break;
-
 			if (type == '+')
-				banlist_exception_add(channel, ptr, setby, time(NULL));
+				banlist_exception_add(channel, arg, setby,
+						      time(NULL));
 			else
-				banlist_exception_remove(channel, ptr);
+				banlist_exception_remove(channel, arg);
 			break;
-
 		case 'I':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr == '\0') break;
-
 			if (type == '+')
-				invitelist_add(channel, ptr);
+				invitelist_add(channel, arg);
 			else
-				invitelist_remove(channel, ptr);
-			break;
-
-		case 'v':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr != '\0')
-				nick_mode_change(channel, ptr, '+', type == '+');
+				invitelist_remove(channel, arg);
 			break;
 
 		case 'o':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr == '\0') break;
-
-			if (g_strcasecmp(channel->server->nick, ptr) == 0)
-				channel->chanop = type == '+' ? TRUE : FALSE;
-			nick_mode_change(channel, ptr, '@', type == '+');
+			if (g_strcasecmp(channel->server->nick, arg) == 0)
+				channel->chanop = type == '+';
+			nick_mode_change(channel, arg, '@', type);
+			break;
+		case 'h':
+			nick_mode_change(channel, arg, '%', type);
+			break;
+		case 'v':
+			nick_mode_change(channel, arg, '+', type);
 			break;
 
 		case 'l':
-			if (type == '-')
-				channel->limit = 0;
-			else {
-				ptr = cmd_get_param(&modestr);
-				sscanf(ptr, "%d", &channel->limit);
-			}
-			signal_emit("channel mode changed", 1, channel);
+			mode_set_arg(newmode, type, 'l', arg);
+			channel->limit = type == '-' ? 0 : atoi(arg);
 			break;
 		case 'k':
-			ptr = cmd_get_param(&modestr);
-			if (*ptr != '\0' || type == '-') {
-				g_free_and_null(channel->key);
-				channel->mode_key = type == '+';
-				if (type == '+')
-					channel->key = g_strdup(ptr);
-			}
-			signal_emit("channel mode changed", 1, channel);
+			mode_set_arg(newmode, type, 'k', arg);
+			g_free_and_null(channel->key);
+			if (type == '+')
+				channel->key = g_strdup(arg);
 			break;
 
 		default:
-			switch (*curmode) {
-			case 'i':
-				channel->mode_invite = type == '+';
-				break;
-			case 'm':
-				channel->mode_moderate = type == '+';
-				break;
-			case 's':
-				channel->mode_secret = type == '+';
-				break;
-			case 'p':
-				channel->mode_private = type == '+';
-				break;
-			case 'n':
-				channel->mode_nomsgs = type == '+';
-				break;
-			case 't':
-				channel->mode_optopic = type == '+';
-				break;
-			case 'a':
-				channel->mode_anonymous = type == '+';
-				break;
-			case 'r':
-				channel->mode_reop = type == '+';
-				break;
-			}
-			signal_emit("channel mode changed", 1, channel);
+                        mode_set(newmode, type, *curmode);
 			break;
 		}
 
@@ -164,52 +264,57 @@ void parse_channel_modes(CHANNEL_REC *channel, const char *setby, const char *mo
 	}
 	g_free(dup);
 
-	if (!channel->mode_key && channel->key != NULL) {
+	if (strchr(channel->mode, 'k') == NULL && channel->key != NULL) {
 		/* join was used with key but there's no key set
 		   in channel modes.. */
 		g_free(channel->key);
 		channel->key = NULL;
 	}
-}
 
-static int compare_char(const void *p1, const void *p2)
-{
-	const char *c1 = p1, *c2 = p2;
+	if (strcmp(newmode->str, channel->mode) != 0) {
+		g_free(channel->mode);
+		channel->mode = g_strdup(newmode->str);
 
-	return *c1 < *c2 ? -1 :
-		(*c1 > *c2 ? 1 : 0);
+		signal_emit("channel mode changed", 1, channel);
+	}
+
+	g_string_free(newmode, TRUE);
 }
 
 /* add `mode' to `old' - return newly allocated mode. */
 char *modes_join(const char *old, const char *mode)
 {
 	GString *newmode;
-	char type, *p;
+	char *dup, *modestr, *curmode, type;
 
         g_return_val_if_fail(mode != NULL, NULL);
 
 	type = '+';
 	newmode = g_string_new(old);
-	while (*mode != '\0' && *mode != ' ') {
-		if (*mode == '+' || *mode == '-') {
-                        type = *mode;
-		} else {
-			p = strchr(newmode->str, *mode);
 
-			if (type == '+' && p == NULL)
-				g_string_append_c(newmode, *mode);
-			else if (type == '-' && p != NULL)
-				g_string_erase(newmode, (int) (p-newmode->str), 1);
+	dup = modestr = g_strdup(mode);
+	curmode = cmd_get_param(&modestr);
+	while (*curmode != '\0' && *curmode != ' ') {
+		if (*curmode == '+' || *curmode == '-') {
+			type = *curmode;
+			curmode++;
+			continue;
 		}
 
-		mode++;
+		if (!HAS_MODE_ARG(type, *curmode))
+			mode_set(newmode, type, *curmode);
+		else {
+			mode_set_arg(newmode, type, *curmode,
+				     cmd_get_param(&modestr));
+		}
+
+		curmode++;
 	}
+	g_free(dup);
 
-	qsort(newmode->str, sizeof(char), newmode->len, compare_char);
-
-	p = newmode->str;
+	modestr = newmode->str;
 	g_string_free(newmode, FALSE);
-	return p;
+	return modestr;
 }
 
 /* Parse user mode string */
@@ -280,7 +385,8 @@ static void event_unaway(const char *data, IRC_SERVER_REC *server)
 	signal_emit("away mode changed", 1, server);
 }
 
-void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const char *nicks, const char *mode)
+void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
+			    const char *nicks, const char *mode)
 {
 	GString *str;
 	int num, modepos;
@@ -323,9 +429,10 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const c
 	g_string_free(str, TRUE);
 }
 
-void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *mode)
+void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
+		      const char *mode)
 {
-	char *modestr, *curmode, *orig;
+	char *modestr, *curmode, *orig, type;
 	GString *tmode, *targs;
 	int count;
 
@@ -339,9 +446,14 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 	orig = modestr = g_strdup(mode);
 
+        type = '+';
 	curmode = cmd_get_param(&modestr);
 	for (; *curmode != '\0'; curmode++) {
-		if (count == server->max_modes_in_cmd && HAS_MODE_ARG(*curmode)) {
+		if (*curmode == '+' || *curmode == '-')
+			type = *curmode;
+
+		if (count == server->max_modes_in_cmd &&
+		    HAS_MODE_ARG(type, *curmode)) {
 			irc_send_cmdv(server, "MODE %s %s%s", channel, tmode->str, targs->str);
 
 			count = 0;
@@ -351,7 +463,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 		g_string_append_c(tmode, *curmode);
 
-		if (HAS_MODE_ARG(*curmode)) {
+		if (HAS_MODE_ARG(type, *curmode)) {
 			char *arg;
 
 			count++;

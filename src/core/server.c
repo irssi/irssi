@@ -204,7 +204,8 @@ int server_connect(SERVER_REC *server)
 					   server->connect_pipe[1]);
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,
-			    (GInputFunction) server_connect_callback_readpipe, server);
+			    (GInputFunction) server_connect_callback_readpipe,
+			    server);
 
 	lookup_servers = g_slist_append(lookup_servers, server);
 
@@ -278,7 +279,8 @@ SERVER_REC *server_find_ircnet(const char *ircnet)
 		SERVER_REC *server = tmp->data;
 
 		if (server->connrec->ircnet != NULL &&
-		    g_strcasecmp(server->connrec->ircnet, ircnet) == 0) return server;
+		    g_strcasecmp(server->connrec->ircnet, ircnet) == 0)
+			return server;
 	}
 
 	return NULL;

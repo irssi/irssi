@@ -149,7 +149,6 @@ static void cmd_channel_list_joined(void)
 	CHANNEL_REC *channel;
 	GString *nicks;
 	GSList *nicklist, *tmp, *ntmp;
-	char *mode;
 
 	if (channels == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_IN_CHANNELS);
@@ -167,7 +166,6 @@ static void cmd_channel_list_joined(void)
 		channel = tmp->data;
 
 		nicklist = nicklist_getnicks(channel);
-		mode = channel_get_mode(channel);
 		nicks = g_string_new(NULL);
 		for (ntmp = nicklist; ntmp != NULL; ntmp = ntmp->next) {
 			NICK_REC *rec = ntmp->data;
@@ -177,9 +175,8 @@ static void cmd_channel_list_joined(void)
 
 		if (nicks->len > 1) g_string_truncate(nicks, nicks->len-1);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANLIST_LINE,
-			    channel->name, mode, channel->server->tag, nicks->str);
+			    channel->name, channel->mode, channel->server->tag, nicks->str);
 
-		g_free(mode);
 		g_slist_free(nicklist);
 		g_string_free(nicks, TRUE);
 	}

@@ -62,6 +62,7 @@ CHANNEL_REC *channel_create(IRC_SERVER_REC *server, const char *channel, int aut
 	rec->name = g_strdup(channel);
 	rec->server = server;
 	rec->createtime = time(NULL);
+	rec->mode = g_strdup("");
 
 	if (*channel == '+')
 		rec->no_modes = TRUE;
@@ -125,34 +126,6 @@ CHANNEL_REC *channel_find(IRC_SERVER_REC *server, const char *channel)
 	return gslist_foreach_find(servers, (FOREACH_FIND_FUNC) channel_find_server, (void *) channel);
 }
 
-
-char *channel_get_mode(CHANNEL_REC *channel)
-{
-	GString *mode;
-	char *ret;
-
-	g_return_val_if_fail(channel != NULL, NULL);
-
-	mode = g_string_new(NULL);
-
-	if (channel->mode_secret) g_string_append_c(mode, 's');
-	if (channel->mode_private) g_string_append_c(mode, 'p');
-	if (channel->mode_moderate) g_string_append_c(mode, 'm');
-	if (channel->mode_invite) g_string_append_c(mode, 'i');
-	if (channel->mode_nomsgs) g_string_append_c(mode, 'n');
-	if (channel->mode_optopic) g_string_append_c(mode, 't');
-	if (channel->mode_anonymous) g_string_append_c(mode, 'a');
-	if (channel->mode_reop) g_string_append_c(mode, 'r');
-	if (channel->mode_key) g_string_append_c(mode, 'k');
-	if (channel->limit > 0) g_string_append_c(mode, 'l');
-
-	if (channel->mode_key) g_string_sprintfa(mode, " %s", channel->key);
-	if (channel->limit > 0) g_string_sprintfa(mode, " %d", channel->limit);
-
-	ret = mode->str;
-	g_string_free(mode, FALSE);
-	return ret;
-}
 
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))

@@ -43,17 +43,18 @@ void banlist_free(GSList *banlist)
 		ban_free(&banlist, banlist->data);
 }
 
-BAN_REC *banlist_add(CHANNEL_REC *channel, const char *ban, const char *nick, time_t time)
+BAN_REC *banlist_add(CHANNEL_REC *channel, const char *ban,
+		     const char *nick, time_t time)
 {
 	BAN_REC *rec;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(ban != NULL, NULL);
-	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_new(BAN_REC, 1);
 	rec->ban = g_strdup(ban);
-	rec->setby = g_strdup(nick);
+	rec->setby = nick == NULL || *nick == '\0' ? NULL :
+		g_strdup(nick);
 	rec->time = time;
 
 	channel->banlist = g_slist_append(channel->banlist, rec);
@@ -62,36 +63,48 @@ BAN_REC *banlist_add(CHANNEL_REC *channel, const char *ban, const char *nick, ti
 	return rec;
 }
 
-void banlist_remove(CHANNEL_REC *channel, const char *ban)
+static BAN_REC *banlist_find(GSList *list, const char *ban)
 {
 	GSList *tmp;
 
-	g_return_if_fail(ban != NULL);
+	g_return_val_if_fail(ban != NULL, NULL);
 
-	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next)
-	{
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		BAN_REC *rec = tmp->data;
 
 		if (g_strcasecmp(rec->ban, ban) == 0)
-		{
-			signal_emit("ban remove", 1, rec);
-			ban_free(&channel->banlist, rec);
-			break;
-		}
+			return rec;
+	}
+
+	return NULL;
+}
+
+void banlist_remove(CHANNEL_REC *channel, const char *ban)
+{
+	BAN_REC *rec;
+
+	g_return_if_fail(channel != NULL);
+	g_return_if_fail(ban != NULL);
+
+	rec = banlist_find(channel->banlist, ban);
+	if (rec != NULL) {
+		signal_emit("ban remove", 1, rec);
+		ban_free(&channel->banlist, rec);
 	}
 }
 
-BAN_REC *banlist_exception_add(CHANNEL_REC *channel, const char *ban, const char *nick, time_t time)
+BAN_REC *banlist_exception_add(CHANNEL_REC *channel, const char *ban,
+			       const char *nick, time_t time)
 {
 	BAN_REC *rec;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(ban != NULL, NULL);
-	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_new(BAN_REC, 1);
 	rec->ban = g_strdup(ban);
-	rec->setby = g_strdup(nick);
+	rec->setby = nick == NULL || *nick == '\0' ? NULL :
+		g_strdup(nick);
 	rec->time = time;
 
 	channel->ebanlist = g_slist_append(channel->ebanlist, rec);
@@ -102,20 +115,15 @@ BAN_REC *banlist_exception_add(CHANNEL_REC *channel, const char *ban, const char
 
 void banlist_exception_remove(CHANNEL_REC *channel, const char *ban)
 {
-	GSList *tmp;
+	BAN_REC *rec;
 
+	g_return_if_fail(channel != NULL);
 	g_return_if_fail(ban != NULL);
 
-	for (tmp = channel->ebanlist; tmp != NULL; tmp = tmp->next)
-	{
-		BAN_REC *rec = tmp->data;
-
-		if (g_strcasecmp(rec->ban, ban) == 0)
-		{
-			signal_emit("ban exception remove", 1, rec);
-			ban_free(&channel->ebanlist, rec);
-			break;
-		}
+	rec = banlist_find(channel->ebanlist, ban);
+	if (rec != NULL) {
+		signal_emit("ban exception remove", 1, rec);
+		ban_free(&channel->ebanlist, rec);
 	}
 }
 
@@ -172,9 +180,7 @@ static void event_banlist(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
 	chanrec = channel_find(server, channel);
 	if (chanrec != NULL) {
-		if (sscanf(tims, "%ld", (long *) &tim) != 1)
-			tim = time(NULL);
-
+		tim = (time_t) atol(tims);
 		banlist_add(chanrec, ban, setby, tim);
 	}
 	g_free(params);
@@ -191,9 +197,7 @@ static void event_ebanlist(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
 	chanrec = channel_find(server, channel);
 	if (chanrec != NULL) {
-		if (sscanf(tims, "%ld", (long *) &tim) != 1)
-			tim = time(NULL);
-
+		tim = (time_t) atol(tims);
 		banlist_exception_add(chanrec, ban, setby, tim);
 	}
 	g_free(params);

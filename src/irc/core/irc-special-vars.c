@@ -101,10 +101,7 @@ static char *expando_chanmode(void *server, void *item, int *free_ret)
         CHANNEL_REC *channel;
 
 	channel = irc_item_channel(item);
-	if (channel == NULL) return NULL;
-
-	*free_ret = TRUE;
-	return channel_get_mode(channel);
+	return channel == NULL ? NULL : channel->mode;
 }
 
 /* current nickname */

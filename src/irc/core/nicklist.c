@@ -25,11 +25,13 @@
 #include "channels.h"
 #include "irc.h"
 #include "masks.h"
+#include "modes.h"
 #include "nicklist.h"
 #include "irc-server.h"
 
 /* Add new nick to list */
-NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick, int op, int voice, int send_massjoin)
+NICK_REC *nicklist_insert(CHANNEL_REC *channel, const char *nick,
+			  int op, int voice, int send_massjoin)
 {
 	NICK_REC *rec;
 
@@ -70,7 +72,8 @@ void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 	nicklist_destroy(channel, nick);
 }
 
-static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel, const char *mask)
+static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
+					 const char *mask)
 {
 	GSList *nicks, *tmp;
 	NICK_REC *nick;
@@ -80,7 +83,7 @@ static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel, const char *mask)
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		nick = tmp->data;
 
-		if (irc_mask_match_address(mask, nick->nick, nick->host == NULL ? "" : nick->host))
+		if (irc_mask_match_address(mask, nick->nick, nick->host))
 			break;
 	}
 	g_slist_free(nicks);
@@ -96,7 +99,7 @@ GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask)
 		NICK_REC *nick = tmp->data;
 
 		next = tmp->next;
-		if (!irc_mask_match_address(mask, nick->nick, nick->host == NULL ? "" : nick->host))
+		if (!irc_mask_match_address(mask, nick->nick, nick->host))
                         nicks = g_slist_remove(nicks, tmp->data);
 	}
 
@@ -170,7 +173,8 @@ GSList *nicklist_get_same(IRC_SERVER_REC *server, const char *nick)
 	rec.list = NULL;
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		rec.channel = tmp->data;
-		g_hash_table_foreach(rec.channel->nicks, (GHFunc) get_nicks_same_hash, &rec);
+		g_hash_table_foreach(rec.channel->nicks,
+				     (GHFunc) get_nicks_same_hash, &rec);
 	}
 	return rec.list;
 }
@@ -224,8 +228,9 @@ int irc_nick_match(const char *nick, const char *msg)
 	g_return_val_if_fail(nick != NULL, FALSE);
 	g_return_val_if_fail(msg != NULL, FALSE);
 
-	if (g_strncasecmp(msg, nick, strlen(nick)) == 0 &&
-	    !isalnum((int) msg[strlen(nick)])) return TRUE;
+	len = strlen(nick);
+	if (g_strncasecmp(msg, nick, len) == 0 && !isalnum((int) msg[len]))
+		return TRUE;
 
 	stripnick = nick_strip(nick);
 	stripmsg = nick_strip(msg);
@@ -262,9 +267,9 @@ static void event_names_list(const char *data, IRC_SERVER_REC *server)
 	   get to know if the channel is +p or +s a few seconds before
 	   we receive the MODE reply... */
 	if (*type == '*')
-		chanrec->mode_private = TRUE;
+		parse_channel_modes(chanrec, NULL, "+p");
 	else if (*type == '@')
-		chanrec->mode_secret = TRUE;
+		parse_channel_modes(chanrec, NULL, "+s");
 
 	while (*names != '\0') {
 		while (*names == ' ') names++;
@@ -275,7 +280,8 @@ static void event_names_list(const char *data, IRC_SERVER_REC *server)
 		if (*ptr == '@' && g_strcasecmp(server->nick, ptr+1) == 0)
 			chanrec->chanop = TRUE;
 
-		nicklist_insert(chanrec, ptr+isnickflag(*ptr), *ptr == '@', *ptr == '+', FALSE);
+		nicklist_insert(chanrec, ptr+isnickflag(*ptr),
+				*ptr == '@', *ptr == '+', FALSE);
 	}
 
 	g_free(params);
@@ -299,7 +305,8 @@ static void event_end_of_names(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void nicklist_update_flags(IRC_SERVER_REC *server, const char *nick, int gone, int ircop)
+static void nicklist_update_flags(IRC_SERVER_REC *server, const char *nick,
+				  int gone, int ircop)
 {
 	GSList *nicks, *tmp;
 	CHANNEL_REC *channel;
@@ -336,7 +343,8 @@ static void event_who(const char *data, IRC_SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 8, NULL, &channel, &user, &host, NULL, &nick, &stat, &realname);
+	params = event_get_params(data, 8, NULL, &channel, &user, &host,
+				  NULL, &nick, &stat, &realname);
 
 	/* get hop count */
 	hops = realname;
@@ -372,8 +380,10 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 
 	server->whois_coming = TRUE;
 
-	/* first remove the gone-flag, if user is gone it will be set later.. */
-	params = event_get_params(data, 6, NULL, &nick, NULL, NULL, NULL, &realname);
+	/* first remove the gone-flag, if user is gone
+	   it will be set later.. */
+	params = event_get_params(data, 6, NULL, &nick, NULL,
+				  NULL, NULL, &realname);
 
 	nicks = nicklist_get_same(server, nick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
@@ -477,7 +487,8 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_nick(const char *data, IRC_SERVER_REC *server, const char *orignick)
+static void event_nick(const char *data, IRC_SERVER_REC *server,
+		       const char *orignick)
 {
 	CHANNEL_REC *channel;
 	NICK_REC *nickrec;
@@ -550,10 +561,12 @@ static void sig_channel_created(CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-	channel->nicks = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	channel->nicks = g_hash_table_new((GHashFunc) g_istr_hash,
+					  (GCompareFunc) g_istr_equal);
 }
 
-static void nicklist_remove_hash(gpointer key, NICK_REC *nick, CHANNEL_REC *channel)
+static void nicklist_remove_hash(gpointer key, NICK_REC *nick,
+				 CHANNEL_REC *channel)
 {
 	nicklist_destroy(channel, nick);
 }
@@ -562,7 +575,8 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-	g_hash_table_foreach(channel->nicks, (GHFunc) nicklist_remove_hash, channel);
+	g_hash_table_foreach(channel->nicks,
+			     (GHFunc) nicklist_remove_hash, channel);
 	g_hash_table_destroy(channel->nicks);
 }
 

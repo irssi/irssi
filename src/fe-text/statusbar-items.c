@@ -214,7 +214,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     WI_ITEM_REC *witem;
     CHANNEL_REC *channel;
     SERVER_REC *server;
-    gchar channame[21], winnum[MAX_INT_STRLEN], *mode, *tmpname;
+    gchar channame[21], winnum[MAX_INT_STRLEN], *tmpname;
     int size_needed;
     int mode_size;
 
@@ -230,8 +230,8 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     {
 	/* display server tag */
         channame[0] = '\0';
-        mode = NULL;
 	mode_size = 0;
+	channel = NULL;
 
 	size_needed = 3 + strlen(winnum) + (server == NULL ? 0 : (17+strlen(server->tag)));
     }
@@ -245,10 +245,8 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
 	channel = irc_item_channel(witem);
 	if (channel == NULL) {
                 mode_size = 0;
-		mode = NULL;
 	} else {
-		mode = channel_get_mode(channel);
-		mode_size = strlen(mode);
+		mode_size = strlen(channel->mode);
 		if (mode_size > 0) mode_size += 3; /* (+) */
 	}
 
@@ -259,7 +257,6 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     {
         /* we need more (or less..) space! */
         statusbar_item_resize(item, size_needed);
-        if (mode != NULL) g_free(mode);
         return;
     }
 
@@ -284,14 +281,12 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
 	{
 	    set_color(stdscr, sbar_color_bold); addch('(');
 	    set_color(stdscr, sbar_color_dim); addch('+');
-	    set_color(stdscr, sbar_color_normal); addstr(mode);
+	    set_color(stdscr, sbar_color_normal); addstr(channel->mode);
 	    set_color(stdscr, sbar_color_bold); addch(')');
 	}
     }
     set_color(stdscr, sbar_color_dim); addch(']');
     screen_refresh(NULL);
-
-    if (mode != NULL) g_free(mode);
 }
 
 static void sig_statusbar_channel_redraw(void)

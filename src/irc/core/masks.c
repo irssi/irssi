@@ -39,10 +39,16 @@ static int check_mask(const char *mask, int *wildcards)
 	return FALSE;
 }
 
-int irc_mask_match(const char *mask, const char *nick, const char *user, const char *host)
+int irc_mask_match(const char *mask, const char *nick,
+		   const char *user, const char *host)
 {
 	char *str;
 	int ret, wildcards;
+
+	g_return_val_if_fail(mask != NULL, FALSE);
+	g_return_val_if_fail(nick != NULL, FALSE);
+	g_return_val_if_fail(user != NULL, FALSE);
+	g_return_val_if_fail(host != NULL, FALSE);
 
 	if (!check_mask(mask, &wildcards)) {
 		return wildcards ?
@@ -57,12 +63,14 @@ int irc_mask_match(const char *mask, const char *nick, const char *user, const c
 	return ret;
 }
 
-int irc_mask_match_address(const char *mask, const char *nick, const char *address)
+int irc_mask_match_address(const char *mask, const char *nick,
+			   const char *address)
 {
 	char *str;
 	int ret, wildcards;
 
-	g_return_val_if_fail(address != NULL, FALSE);
+	g_return_val_if_fail(mask != NULL, FALSE);
+	g_return_val_if_fail(nick != NULL, FALSE);
 
 	if (!check_mask(mask, &wildcards)) {
 		return wildcards ?
@@ -70,7 +78,7 @@ int irc_mask_match_address(const char *mask, const char *nick, const char *addre
 			g_strcasecmp(mask, nick) == 0;
 	}
 
-	str = g_strdup_printf("%s!%s", nick, address);
+	str = g_strdup_printf("%s!%s", nick, address != NULL ? address : "");
 	ret = match_wildcards(mask, str);
 	g_free(str);
 
@@ -136,7 +144,8 @@ char *irc_get_mask(const char *nick, const char *address, int flags)
 	char *ret, *user, *host;
 
 	/* strip -, ^ or ~ from start.. */
-	user = g_strconcat("*", ishostflag(*address) ? address+1 : address, NULL);
+	user = g_strconcat("*", ishostflag(*address) ?
+			   address+1 : address, NULL);
 
 	/* split user and host */
 	host = strchr(user, '@');

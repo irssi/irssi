@@ -15,6 +15,7 @@ typedef struct {
 	int hops;
 
 	int op:1;
+	int halfop:1;
 	int voice:1;
 	int gone:1;
 	int ircop:1;

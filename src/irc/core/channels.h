@@ -21,20 +21,12 @@ typedef struct {
 	GSList *invitelist; /* invite list */
 
 	char *topic;
-	int limit; /* user limit */
-	char *key; /* password key */
 
 	/* channel mode */
 	int no_modes:1; /* channel doesn't support modes */
-	int mode_invite:1;
-	int mode_secret:1;
-	int mode_private:1;
-	int mode_moderate:1;
-	int mode_nomsgs:1;
-	int mode_optopic:1;
-	int mode_key:1;
-	int mode_anonymous:1;
-	int mode_reop:1;
+        char *mode;
+	int limit; /* user limit */
+	char *key; /* password key */
 
 	int chanop:1; /* You're a channel operator */
 
@@ -63,8 +55,6 @@ void channel_destroy(CHANNEL_REC *channel);
 
 /* find channel by name, if `server' is NULL, search from all servers */
 CHANNEL_REC *channel_find(IRC_SERVER_REC *server, const char *channel);
-
-char *channel_get_mode(CHANNEL_REC *channel);
 
 /* Join to channels. `data' contains channels and channel keys */
 void channels_join(IRC_SERVER_REC *server, const char *data, int automatic);
