@@ -111,6 +111,43 @@ gui_printtext(xpos, ypos, str)
 	int ypos
 	char *str
 
+MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Window
+
+void
+gui_printtext_after(window, prev, level, str)
+	Irssi::UI::Window window
+	Irssi::TextUI::Line prev
+	int level
+	char *str
+PREINIT:
+	TEXT_DEST_REC dest;
+CODE:
+	format_create_dest(&dest, NULL, NULL, level, window);
+	gui_printtext_after(&dest, prev, str);
+
+Irssi::TextUI::Line
+last_line_insert(window)
+	Irssi::UI::Window window
+CODE:
+	RETVAL = WINDOW_GUI(window)->insert_after;
+OUTPUT:
+	RETVAL
+
+MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Server
+
+void
+gui_printtext_after(server, target, prev, level, str)
+	Irssi::Server server
+	char *target
+	Irssi::TextUI::Line prev
+	int level
+	char *str
+PREINIT:
+	TEXT_DEST_REC dest;
+CODE:
+	format_create_dest(&dest, server, target, level, NULL);
+	gui_printtext_after(&dest, prev, str);
+
 BOOT:
 	irssi_boot(TextUI__Statusbar);
 	irssi_boot(TextUI__TextBuffer);

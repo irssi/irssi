@@ -207,17 +207,19 @@ CODE:
 MODULE = Irssi::UI::Themes  PACKAGE = Irssi::UI::Theme  PREFIX = theme_
 #*******************************
 
-char *
+void
 theme_format_expand(theme, format, flags=0)
 	Irssi::UI::Theme theme
 	char *format
         int flags
-CODE:
+PREINIT:
+	char *ret;
+PPCODE:
 	if (flags == 0) {
-		RETVAL = theme_format_expand(theme, format);
+		ret = theme_format_expand(theme, format);
 	} else {
-		RETVAL = theme_format_expand_data(theme, (const char **) &format, 'n', 'n',
-						  NULL, NULL, EXPAND_FLAG_ROOT | flags);
+		ret = theme_format_expand_data(theme, (const char **) &format, 'n', 'n',
+					       NULL, NULL, EXPAND_FLAG_ROOT | flags);
 	}
-OUTPUT:
-	RETVAL
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free_not_null(ret);

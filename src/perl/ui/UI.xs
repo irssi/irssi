@@ -87,5 +87,6 @@ CODE:
         perl_themes_deinit();
 
 BOOT:
+	irssi_boot(UI__Formats);
 	irssi_boot(UI__Themes);
 	irssi_boot(UI__Window);
