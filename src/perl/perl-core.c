@@ -169,7 +169,7 @@ void perl_scripts_deinit(void)
    translated to '_' */
 void script_fix_name(char *name)
 {
-	char *ret, *p;
+	char *p;
 
 	p = strrchr(name, '.');
 	if (p != NULL) *p = '\0';
