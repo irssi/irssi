@@ -618,6 +618,11 @@ int get_max_column_count(GSList *items, COLUMN_LEN_FUNC len_func,
 	int ret, len, n, col, max_columns;
 
 	items_count = g_slist_length(items);
+	if (items_count == 0) {
+		*save_column_widths = NULL;
+                *rows = 0;
+		return 0;
+	}
 
 	max_columns = max_width/(item_extra+item_min_size);
 	columns = g_new0(int *, max_columns);
@@ -679,6 +684,9 @@ GSList *columns_sort_list(GSList *list, int rows)
 {
         GSList *tmp, *sorted;
 	int row, skip;
+
+	if (list == NULL || rows == 0)
+                return list;
 
 	sorted = NULL;
 
