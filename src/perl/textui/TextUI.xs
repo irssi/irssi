@@ -69,7 +69,8 @@ static void perl_statusbar_item_fill_hash(HV *hv, SBAR_ITEM_REC *item)
 	hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);
 	hv_store(hv, "xpos", 4, newSViv(item->xpos), 0);
 	hv_store(hv, "size", 4, newSViv(item->size), 0);
-	hv_store(hv, "window", 6, plain_bless(item->bar->parent_window, "Irssi::UI::Window"), 0);
+	hv_store(hv, "window", 6, plain_bless(item->bar->parent_window->active,
+					      "Irssi::UI::Window"), 0);
 }
 
 static PLAIN_OBJECT_INIT_REC textui_plains[] = {
