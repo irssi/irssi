@@ -245,10 +245,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 
 	g_return_if_fail(item != NULL);
 
-	reuse_unused_windows =
-                settings_get_bool("reuse_unused_windows") ||
-		(!settings_get_bool("autoclose_windows") &&
-		 settings_get_bool("autocreate_windows"));
+	reuse_unused_windows = settings_get_bool("reuse_unused_windows");
 
 	clear_waiting = TRUE;
 	window = NULL;
