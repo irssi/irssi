@@ -308,3 +308,17 @@ CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index)
 
 	return NULL;
 }
+
+/* Returns the next non-comment node in list */
+GSList *config_node_next(GSList *list)
+{
+	list = list->next;
+	while (list != NULL) {
+		CONFIG_NODE *node = list->data;
+
+		if (node->type != NODE_TYPE_COMMENT)
+                        break;
+		list = list->next;
+	}
+	return list;
+}
