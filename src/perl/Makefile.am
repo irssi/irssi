@@ -1,4 +1,5 @@
-noinst_LIBRARIES = libperl.a
+moduledir = $(libdir)/irssi/modules
+module_LTLIBRARIES = libirssi_perl.la
 
 irssi-perl.c: perl-signals.h
 
@@ -8,7 +9,7 @@ INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core
 
-libperl_a_SOURCES = \
+libirssi_perl_la_SOURCES = \
 	irssi-perl.c \
 	xsinit.c
 
@@ -16,6 +17,7 @@ perl-signals.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals.h
 
 EXTRA_DIST = \
+	libperl_dynaloader.la \
 	get-signals.pl \
 	xs/Irssi-bans.xs \
 	xs/Irssi-channel.xs \
@@ -47,3 +49,5 @@ all-local:
 
 install-exec-local:
 	cd xs && make install && cd ..
+
+libirssi_perl_la_LIBADD = $(PERL_LDFLAGS)

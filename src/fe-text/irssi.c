@@ -46,11 +46,6 @@ void irc_deinit(void);
 void mainwindow_activity_init(void);
 void mainwindow_activity_deinit(void);
 
-#ifdef HAVE_PERL
-void irssi_perl_init(void);
-void irssi_perl_deinit(void);
-#endif
-
 static GMainLoop *main_loop;
 int quitting;
 
@@ -110,9 +105,6 @@ static void textui_finish_init(void)
 	fe_common_core_finish_init();
 	fe_common_irc_finish_init();
 
-#ifdef HAVE_PERL
-	irssi_perl_init();
-#endif
 	signal_emit("irssi init finished", 0);
 
 	screen_refresh_thaw();
@@ -124,9 +116,6 @@ static void textui_deinit(void)
 	signal(SIGINT, SIG_DFL);
 
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
-#ifdef HAVE_PERL
-	irssi_perl_deinit();
-#endif
 	gui_textwidget_deinit();
 	gui_special_vars_deinit();
 	statusbar_deinit();
