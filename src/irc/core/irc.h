@@ -21,7 +21,7 @@ typedef struct _REDIRECT_REC REDIRECT_REC;
 
 #define isnickflag(a) \
 	((a) == '@' || (a) == '+' || (a) == '%' || /* op / voice */ \
-	(a) == '%' || (a) == '.') /* extensions: half-op / owner */
+	(a) == '%' || (a) == '.' || (a) == '!') /* extensions: half-op / owners */
 
 #define ischannel(a) \
 	((a) == '#' || /* normal */ \
