@@ -189,12 +189,13 @@ static void server_setup_fill_chatnet(SERVER_CONNECT_REC *conn,
 
 static SERVER_CONNECT_REC *
 create_addr_conn(int chat_type, const char *address, int port,
-		 const char *password, const char *nick)
+		 const char *chatnet, const char *password,
+		 const char *nick)
 {
         CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	SERVER_SETUP_REC *sserver;
-	CHATNET_REC *chatnet;
+	CHATNET_REC *chatnetrec;
 
 	g_return_val_if_fail(address != NULL, NULL);
 
@@ -210,16 +211,19 @@ create_addr_conn(int chat_type, const char *address, int port,
                 chat_protocol_get_default();
 
 	conn = proto->create_server_connect();
-        conn->chat_type = proto->id;
+	conn->chat_type = proto->id;
+        if (chatnet != NULL && *chatnet != '\0')
+		conn->chatnet = g_strdup(chatnet);
 
 	/* fill in the defaults */
 	server_setup_fill(conn, address, port);
 
 	/* fill the rest from chat network settings */
-	chatnet = sserver == NULL || sserver->chatnet == NULL ? NULL :
-		chatnet_find(sserver->chatnet);
-	if (chatnet != NULL)
-		server_setup_fill_chatnet(conn, chatnet);
+	chatnetrec = chatnet != NULL ? chatnet_find(chatnet) :
+		(sserver == NULL || sserver->chatnet == NULL ? NULL :
+		 chatnet_find(sserver->chatnet));
+	if (chatnetrec != NULL)
+		server_setup_fill_chatnet(conn, chatnetrec);
 
 	/* fill the information from setup */
 	if (sserver != NULL)
@@ -271,15 +275,16 @@ create_chatnet_conn(const char *dest, int port,
 	}
 
 	return bestrec == NULL ? NULL :
-		create_addr_conn(bestrec->chat_type,
-				 bestrec->address, 0, NULL, nick);
+		create_addr_conn(bestrec->chat_type, bestrec->address, 0,
+				 dest, NULL, nick);
 }
 
 /* Create server connection record. `dest' is required, rest can be NULL.
    `dest' is either a server address or chat network */
 SERVER_CONNECT_REC *
 server_create_conn(int chat_type, const char *dest, int port,
-		   const char *password, const char *nick)
+		   const char *chatnet, const char *password,
+		   const char *nick)
 {
 	SERVER_CONNECT_REC *rec;
 
@@ -291,7 +296,8 @@ server_create_conn(int chat_type, const char *dest, int port,
 			return rec;
 	}
 
-	return create_addr_conn(chat_type, dest, port, password, nick);
+	return create_addr_conn(chat_type, dest, port,
+				chatnet, password, nick);
 }
 
 /* Find matching server from setup. Try to find record with a same port,
