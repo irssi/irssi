@@ -57,8 +57,8 @@ static int readtag;
 static unichar prev_key;
 static GTimeVal last_keypress;
 
-static int paste_detect_time, paste_verify_line_count;
-static int paste_state;
+static int paste_detect_time, paste_detect_keycount, paste_verify_line_count;
+static int paste_state, paste_keycount;
 static char *paste_entry, *prev_entry;
 static int paste_entry_pos, prev_entry_pos;
 static GArray *paste_buffer;
@@ -325,6 +325,7 @@ static void paste_flush(int send)
 
 	paste_line_count = 0;
 	paste_state = 0;
+        paste_keycount = 0;
 
 	gui_entry_redraw(active_entry);
 }
@@ -387,6 +388,7 @@ static int check_pasting(unichar key, int diff)
 
 		paste_state++;
 		paste_line_count = 0;
+		paste_keycount = 0;
 		g_array_set_size(paste_buffer, 0);
 		if (prev_key != '\r' && prev_key != '\n')
 			g_array_append_val(paste_buffer, prev_key);
@@ -394,6 +396,7 @@ static int check_pasting(unichar key, int diff)
 		   paste_line_count == 0) {
 		/* reset paste state */
 		paste_state = 0;
+		paste_keycount = 0;
 		return FALSE;
 	}
 
@@ -405,6 +408,15 @@ static int check_pasting(unichar key, int diff)
 
 	g_array_append_val(paste_buffer, key);
 	if (key == '\r' || key == '\n') {
+		if (paste_state == 1 &&
+		    paste_keycount < paste_detect_keycount) {
+			/* not enough keypresses to determine if this is
+			   pasting or not. don't reset paste keycount, but
+			   send this line as non-pasted */
+			g_array_set_size(paste_buffer, 0);
+			return FALSE;
+		}
+
 		/* newline - assume this line was pasted */
 		if (paste_state == 1) {
 			paste_state = 2;
@@ -481,7 +493,6 @@ static void sig_gui_key_pressed(gpointer keyp)
 	g_free(prev_entry);
 	prev_entry = gui_entry_get_text(active_entry);
 	prev_entry_pos = gui_entry_get_pos(active_entry);
-	prev_key = key;
 
 	if (escape_next_key) {
 		escape_next_key = FALSE;
@@ -499,10 +510,13 @@ static void sig_gui_key_pressed(gpointer keyp)
 	   of one. try to detect the keycombo as a single keypress rather than
 	   multiple small onces to avoid incorrect paste detection.
 
-	   CR/LF : don't count them to avoid paste detection when you're
-	   holding enter key down */
-	if (ret != 0 && key != '\r' && key != '\n')
+	   don't count repeated keys so paste detection won't go on when
+	   you're holding some key down */
+	if (ret != 0 && key != prev_key) {
 		last_keypress = now;
+		paste_keycount++;
+	}
+	prev_key = key;
 }
 
 static void key_send_line(void)
@@ -966,6 +980,10 @@ static void setup_changed(void)
 	else if (paste_state == -1)
 		paste_state = 0;
 
+	paste_detect_keycount = settings_get_int("paste_detect_keycount");
+	if (paste_detect_keycount < 2)
+		paste_state = -1;
+
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
 }
@@ -980,6 +998,7 @@ void gui_readline_init(void)
 	redir = NULL;
 	prev_entry = NULL;
 	paste_state = 0;
+        paste_keycount = 0;
 	paste_entry = NULL;
 	paste_entry_pos = 0;
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
@@ -989,6 +1008,7 @@ void gui_readline_init(void)
 
 	settings_add_str("history", "scroll_page_count", "/2");
 	settings_add_time("misc", "paste_detect_time", "5msecs");
+	settings_add_int("misc", "paste_detect_keycount", 5);
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
