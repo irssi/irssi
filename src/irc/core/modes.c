@@ -581,18 +581,30 @@ static void get_wildcard_nicks(GString *output, const char *mask,
 	g_slist_free(nicks);
 }
 
-static char *get_nicks(IRC_CHANNEL_REC *channel,
-		       const char *data, int op, int voice)
+static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
+		       const char *data, int op, int voice,
+		       IRC_CHANNEL_REC **ret_channel)
 {
+        IRC_CHANNEL_REC *channel;
         GString *str;
-	char **matches, **match, *ret;
+	char **matches, **match, *ret, *channame, *nicks;
+        void *free_arg;
 
-	g_return_val_if_fail(channel != NULL, NULL);
-	g_return_val_if_fail(data != NULL, NULL);
-	if (*data == '\0') return NULL;
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTCHAN, item, &channame, &nicks))
+		return NULL;
+
+	if (*nicks == '\0')
+		return NULL;
+
+	channel = irc_channel_find(server, channame);
+	if (channel == NULL) {
+		cmd_params_free(free_arg);
+		return NULL;
+	}
 
 	str = g_string_new(NULL);
-	matches = g_strsplit(data, " ", -1);
+	matches = g_strsplit(nicks, " ", -1);
 	for (match = matches; *match != NULL; match++) {
 		if (strchr(*match, '*') == NULL &&
 		    strchr(*match, '?') == NULL) {
@@ -606,20 +618,23 @@ static char *get_nicks(IRC_CHANNEL_REC *channel,
         if (str->len > 0) g_string_truncate(str, str->len-1);
 	ret = str->str;
 	g_string_free(str, FALSE);
+
+	cmd_params_free(free_arg);
+
+	*ret_channel = channel;
 	return ret;
 }
 
 /* SYNTAX: OP <nicks> */
 static void cmd_op(const char *data, IRC_SERVER_REC *server,
-		   IRC_CHANNEL_REC *channel)
+		   WI_ITEM_REC *item)
 {
+        IRC_CHANNEL_REC *channel;
 	char *nicks;
 
 	CMD_IRC_SERVER(server);
-	if (!IS_IRC_CHANNEL(channel))
-                cmd_return_error(CMDERR_NOT_JOINED);
 
-	nicks = get_nicks(channel, data, 0, -1);
+	nicks = get_nicks(server, item, data, 0, -1, &channel);
 	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(channel, nicks, "+o");
 	g_free_not_null(nicks);
@@ -627,15 +642,14 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: DEOP <nicks> */
 static void cmd_deop(const char *data, IRC_SERVER_REC *server,
-		     IRC_CHANNEL_REC *channel)
+		     WI_ITEM_REC *item)
 {
+        IRC_CHANNEL_REC *channel;
 	char *nicks;
 
         CMD_IRC_SERVER(server);
-	if (!IS_IRC_CHANNEL(channel))
-                cmd_return_error(CMDERR_NOT_JOINED);
 
-	nicks = get_nicks(channel, data, 1, -1);
+	nicks = get_nicks(server, item, data, 1, -1, &channel);
 	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(channel, nicks, "-o");
 	g_free_not_null(nicks);
@@ -643,15 +657,14 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: VOICE <nicks> */
 static void cmd_voice(const char *data, IRC_SERVER_REC *server,
-		      IRC_CHANNEL_REC *channel)
+		      WI_ITEM_REC *item)
 {
+        IRC_CHANNEL_REC *channel;
 	char *nicks;
 
         CMD_IRC_SERVER(server);
-	if (!IS_IRC_CHANNEL(channel))
-                cmd_return_error(CMDERR_NOT_JOINED);
 
-	nicks = get_nicks(channel, data, 0, 0);
+	nicks = get_nicks(server, item, data, 0, 0, &channel);
 	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(channel, nicks, "+v");
 	g_free_not_null(nicks);
@@ -659,15 +672,14 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: DEVOICE <nicks> */
 static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
-			IRC_CHANNEL_REC *channel)
+			WI_ITEM_REC *item)
 {
+        IRC_CHANNEL_REC *channel;
 	char *nicks;
 
         CMD_IRC_SERVER(server);
-	if (!IS_IRC_CHANNEL(channel))
-                cmd_return_error(CMDERR_NOT_JOINED);
 
-	nicks = get_nicks(channel, data, -1, 1);
+	nicks = get_nicks(server, item, data, -1, 1, &channel);
 	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(channel, nicks, "-v");
 	g_free_not_null(nicks);
