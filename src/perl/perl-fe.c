@@ -160,6 +160,25 @@ static void cmd_script_list(void)
 		    TXT_SCRIPT_LIST_FOOTER);
 }
 
+static void cmd_load(const char *data, SERVER_REC *server, void *item)
+{
+        char *rootmodule, *submodule;
+	void *free_arg;
+	size_t len;
+
+	if (!cmd_get_params(data, &free_arg, 2 , &rootmodule, &submodule))
+		return;
+
+	len = strlen(rootmodule);
+	if (len > 3 && strcmp(rootmodule + len - 3, ".pl") == 0) {
+		/* make /LOAD script.pl work as expected */
+		signal_stop();
+		cmd_script_load(data);
+	}
+
+	cmd_params_free(free_arg);
+}
+
 static void sig_script_error(PERL_SCRIPT_REC *script, const char *error)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
@@ -230,6 +249,7 @@ void fe_perl_init(void)
 	command_bind("script unload", NULL, (SIGNAL_FUNC) cmd_script_unload);
 	command_bind("script reset", NULL, (SIGNAL_FUNC) cmd_script_reset);
 	command_bind("script list", NULL, (SIGNAL_FUNC) cmd_script_list);
+	command_bind("load", NULL, (SIGNAL_FUNC) cmd_load);
 	command_set_options("script exec", "permanent");
 
         signal_add("script error", (SIGNAL_FUNC) sig_script_error);
@@ -248,6 +268,7 @@ void fe_perl_deinit(void)
 	command_unbind("script unload", (SIGNAL_FUNC) cmd_script_unload);
 	command_unbind("script reset", (SIGNAL_FUNC) cmd_script_reset);
 	command_unbind("script list", (SIGNAL_FUNC) cmd_script_list);
+	command_unbind("load", (SIGNAL_FUNC) cmd_load);
 
         signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
 	signal_remove("complete command script load", (SIGNAL_FUNC) sig_complete_load);
