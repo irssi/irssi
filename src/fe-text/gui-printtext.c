@@ -332,12 +332,12 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 
 static void window_clear(GUI_WINDOW_REC *gui)
 {
-	int n;
-
 #ifdef USE_CURSES_WINDOWS
         wclear(gui->parent->curses_win);
 	screen_refresh(gui->parent->curses_win);
 #else
+	int n;
+
 	for (n = gui->parent->first_line; n < gui->parent->last_line; n++) {
 		move(n, 0);
 		clrtoeol();
