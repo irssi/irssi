@@ -26,13 +26,13 @@
 struct _NET_SENDBUF_REC {
 	GIOChannel *handle;
 
+        int send_tag;
 	int bufsize;
 	int bufpos;
 	char *buffer; /* Buffer is NULL until it's actually needed. */
 };
 
 static GSList *buffers;
-static int timeout_tag;
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
@@ -43,6 +43,7 @@ NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize)
 	g_return_val_if_fail(handle != NULL, NULL);
 
 	rec = g_new0(NET_SENDBUF_REC, 1);
+        rec->send_tag = -1;
 	rec->handle = handle;
 	rec->bufsize = bufsize > 0 ? bufsize : DEFAULT_BUFFER_SIZE;
 
@@ -55,6 +56,7 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close)
 {
 	buffers = g_slist_remove(buffers, rec);
 
+        if (rec->send_tag != -1) g_source_remove(rec->send_tag);
 	if (close) net_disconnect(rec->handle);
 	g_free_not_null(rec->buffer);
 	g_free(rec);
@@ -79,23 +81,15 @@ static int buffer_send(NET_SENDBUF_REC *rec)
 	return FALSE;
 }
 
-static int sig_sendbuffer(void)
+static void sig_sendbuffer(NET_SENDBUF_REC *rec)
 {
-	GSList *tmp;
-	int stop;
-
-	stop = TRUE;
-	for (tmp = buffers; tmp != NULL; tmp = tmp->next) {
-		NET_SENDBUF_REC *rec = tmp->data;
-
-		if (rec->buffer != NULL) {
-			if (!buffer_send(rec))
-				stop = FALSE;
-		}
+	if (rec->buffer != NULL) {
+		if (!buffer_send(rec))
+                        return;
 	}
 
-        if (stop) timeout_tag = -1;
-	return !stop;
+	g_source_remove(rec->send_tag);
+	rec->send_tag = -1;
 }
 
 /* Add `data' to transmit buffer - return FALSE if buffer is full */
@@ -133,18 +127,17 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 		data = ((char *) data) + ret;
 	}
 
-	if (size > 0) {
-		/* everything couldn't be sent. */
-		if (timeout_tag == -1) {
-			timeout_tag = g_timeout_add(100, (GSourceFunc)
-						    sig_sendbuffer, NULL);
-		}
+	if (size <= 0)
+		return 0;
 
-		if (!buffer_add(rec, data, size))
-			return -1;
+	/* everything couldn't be sent. */
+	if (rec->send_tag == -1) {
+		rec->send_tag =
+			g_input_add(rec->handle, G_INPUT_WRITE,
+				    (GInputFunction) sig_sendbuffer, rec);
 	}
 
-	return 0;
+	return buffer_add(rec, data, size) ? 0 : -1;
 }
 
 /* Returns the socket handle */
@@ -157,11 +150,9 @@ GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec)
 
 void net_sendbuffer_init(void)
 {
-	timeout_tag = -1;
 	buffers = NULL;
 }
 
 void net_sendbuffer_deinit(void)
 {
-	if (timeout_tag != -1) g_source_remove(timeout_tag);
 }
