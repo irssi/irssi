@@ -42,13 +42,13 @@ static int old_screen_width, old_screen_height;
 	screen_window_create(0, \
 			     (window)->first_line + (window)->statusbar_lines_top, \
 			     (window)->width, \
-			     (window)->height + (window)->statusbar_lines_bottom)
+			     (window)->height + (window)->statusbar_lines)
 
 #define mainwindow_set_screen_size(window) \
 	screen_window_move((window)->screen_win, 0, \
 			   (window)->first_line + (window)->statusbar_lines_top, \
 			   (window)->width, \
-			   (window)->height - (window)->statusbar_lines_bottom);
+			   (window)->height - (window)->statusbar_lines);
 
 
 static MAIN_WINDOW_REC *find_window_with_room(void)
