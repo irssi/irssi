@@ -67,45 +67,72 @@ static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 	return strcmp(rec->cmd, rec2->cmd);
 }
 
-static void help_category(GSList *cmdlist, gint items, gint max)
+static int get_cmd_length(void *data)
 {
-    COMMAND_REC *rec;
-    GString *str;
-    GSList *tmp;
-    gint lines, cols, line, col, skip;
-    gchar *cmdbuf;
+        return strlen(((COMMAND_REC *) data)->cmd);
+}
 
-    str = g_string_new(NULL);
+static void help_category(GSList *cmdlist, int items)
+{
+        WINDOW_REC *window;
+	TEXT_DEST_REC dest;
+	GString *str;
+	GSList *tmp;
+	int *columns, cols, rows, col, row, last_col_rows, max_width;
+	char *linebuf, *format, *stripped;
 
-    cols = max > 65 ? 1 : (65 / max);
-    lines = items <= cols ? 1 : items / cols+1;
+	window = window_find_closest(NULL, NULL, MSGLEVEL_CLIENTCRAP);
+        max_width = window->width;
 
-    cmdbuf = g_malloc(max+1); cmdbuf[max] = '\0';
-    for (line = 0, col = 0, skip = 1, tmp = cmdlist; line < lines; tmp = tmp->next)
-    {
-	rec = tmp->data;
-
-	if (--skip == 0)
-	{
-	    skip = lines;
-	    memset(cmdbuf, ' ', max);
-	    memcpy(cmdbuf, rec->cmd, strlen(rec->cmd));
-	    g_string_sprintfa(str, "%s ", cmdbuf);
-	    cols++;
+        /* remove width of timestamp from max_width */
+	format_create_dest(&dest, NULL, NULL, MSGLEVEL_CLIENTCRAP, NULL);
+	format = format_get_line_start(current_theme, &dest, time(NULL));
+	if (format != NULL) {
+		stripped = strip_codes(format);
+		max_width -= strlen(stripped);
+		g_free(stripped);
+		g_free(format);
 	}
 
-	if (col == cols || tmp->next == NULL)
-	{
-	    printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str->str);
-	    g_string_truncate(str, 0);
-	    col = 0; line++;
-	    tmp = g_slist_nth(cmdlist, line-1); skip = 1;
+        /* calculate columns */
+	cols = get_max_column_count(cmdlist, get_cmd_length,
+				    max_width, 1, 3, &columns, &rows);
+	cmdlist = columns_sort_list(cmdlist, rows);
+
+        /* rows in last column */
+	last_col_rows = rows-(cols*rows-g_slist_length(cmdlist));
+	if (last_col_rows == 0)
+                last_col_rows = rows;
+
+	str = g_string_new(NULL);
+	linebuf = g_malloc(max_width+1);
+
+        col = 0; row = 0;
+	for (tmp = cmdlist; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		memset(linebuf, ' ', columns[col]);
+		linebuf[columns[col]] = '\0';
+		memcpy(linebuf, rec->cmd, strlen(rec->cmd));
+		g_string_append(str, linebuf);
+
+		if (++col == cols) {
+			printtext(NULL, NULL,
+				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+			g_string_truncate(str, 0);
+			col = 0; row++;
+
+			if (row == last_col_rows)
+                                cols--;
+		}
 	}
-    }
-    if (str->len != 0)
-	printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str->str);
-    g_string_free(str, TRUE);
-    g_free(cmdbuf);
+	if (str->len != 0)
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s", str->str);
+
+	g_slist_free(cmdlist);
+	g_string_free(str, TRUE);
+	g_free(columns);
+	g_free(linebuf);
 }
 
 static int show_help_rec(COMMAND_REC *cmd)
@@ -148,7 +175,7 @@ static void show_help(const char *data)
 {
     COMMAND_REC *rec, *last, *helpitem;
     GSList *tmp, *cmdlist;
-    gint len, max, items, findlen;
+    gint items, findlen;
     gboolean header, found;
 
     g_return_if_fail(data != NULL);
@@ -158,7 +185,7 @@ static void show_help(const char *data)
 
     /* print command, sort by category */
     cmdlist = NULL; last = NULL; header = FALSE; helpitem = NULL;
-    max = items = 0; findlen = strlen(data); found = FALSE;
+    items = 0; findlen = strlen(data); found = FALSE;
     for (tmp = commands; tmp != NULL; last = rec, tmp = tmp->next)
     {
 	rec = tmp->data;
@@ -179,11 +206,11 @@ static void show_help(const char *data)
 		    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
 		    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s:", last->category);
 		}
-		help_category(cmdlist, items, max);
+		help_category(cmdlist, items);
 	    }
 
 	    g_slist_free(cmdlist); cmdlist = NULL;
-	    items = 0; max = 0;
+	    items = 0;
 	}
 
 	if (last != NULL && g_strcasecmp(rec->cmd, last->cmd) == 0)
@@ -201,8 +228,6 @@ static void show_help(const char *data)
 	    else if (strchr(rec->cmd+findlen+1, ' ') == NULL)
 	    {
 		/* not a subcommand (and matches the query) */
-		len = strlen(rec->cmd);
-		if (max < len) max = len;
 		items++;
 		cmdlist = g_slist_append(cmdlist, rec);
 		found = TRUE;
@@ -236,7 +261,7 @@ static void show_help(const char *data)
 	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "");
 	    printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s:", last->category);
 	}
-	help_category(cmdlist, items, max);
+	help_category(cmdlist, items);
 	g_slist_free(cmdlist);
     }
 }

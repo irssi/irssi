@@ -289,6 +289,156 @@ static void cmd_channel_remove(const char *data)
 	cmd_params_free(free_arg);
 }
 
+static int get_nick_length(void *data)
+{
+        return strlen(((NICK_REC *) data)->nick);
+}
+
+static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
+{
+        WINDOW_REC *window;
+	TEXT_DEST_REC dest;
+	GString *str;
+	GSList *tmp;
+        char *format, *stripped;
+	char *linebuf, nickmode[2] = { 0, 0 };
+	int *columns, cols, rows, last_col_rows, col, row, max_width;
+        int item_extra;
+
+	window = window_find_closest(channel->server, channel->name,
+				     MSGLEVEL_CLIENTCRAP);
+        max_width = window->width;
+
+        /* get the length of item extra stuff ("[ ] ") */
+	format = format_get_text(MODULE_NAME, NULL,
+				 channel->server, channel->name,
+				 TXT_NAMES_NICK, " ", "");
+	stripped = strip_codes(format);
+	item_extra = strlen(stripped);
+        g_free(stripped);
+	g_free(format);
+
+        /* remove width of timestamp from max_width */
+	format_create_dest(&dest, channel->server, channel->name,
+			   MSGLEVEL_CLIENTCRAP, NULL);
+	format = format_get_line_start(current_theme, &dest, time(NULL));
+	if (format != NULL) {
+		stripped = strip_codes(format);
+		max_width -= strlen(stripped);
+		g_free(stripped);
+		g_free(format);
+	}
+
+        /* calculate columns */
+	cols = get_max_column_count(nicklist, get_nick_length, max_width,
+				    item_extra, 3, &columns, &rows);
+	nicklist = columns_sort_list(nicklist, rows);
+
+        /* rows in last column */
+	last_col_rows = rows-(cols*rows-g_slist_length(nicklist));
+	if (last_col_rows == 0)
+                last_col_rows = rows;
+
+	str = g_string_new(NULL);
+	linebuf = g_malloc(max_width+1);
+
+        col = 0; row = 0;
+	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
+		NICK_REC *rec = tmp->data;
+
+		nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
+
+		memset(linebuf, ' ', columns[col]-item_extra);
+		linebuf[columns[col]-item_extra] = '\0';
+		memcpy(linebuf, rec->nick, strlen(rec->nick));
+
+		format = format_get_text(MODULE_NAME, NULL,
+					 channel->server, channel->name,
+					 TXT_NAMES_NICK, nickmode, linebuf);
+		g_string_append(str, format);
+		g_free(format);
+
+		if (++col == cols) {
+			printtext(channel->server, channel->name,
+				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+			g_string_truncate(str, 0);
+			col = 0; row++;
+
+			if (row == last_col_rows)
+                                cols--;
+		}
+	}
+
+	if (str->len != 0) {
+		printtext(channel->server, channel->name,
+			  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+	}
+
+	g_slist_free(nicklist);
+	g_string_free(str, TRUE);
+	g_free(columns);
+	g_free(linebuf);
+}
+
+void fe_channels_nicklist(CHANNEL_REC *channel)
+{
+	NICK_REC *nick;
+	GSList *tmp, *nicklist, *sorted;
+	int nicks, normal, voices, ops;
+
+	nicks = normal = voices = ops = 0;
+	nicklist = nicklist_getnicks(channel);
+	sorted = NULL;
+
+	/* sort the nicklist */
+	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
+		nick = tmp->data;
+
+		sorted = g_slist_insert_sorted(sorted, nick, (GCompareFunc) nicklist_compare);
+		if (nick->op)
+			ops++;
+		else if (nick->voice)
+			voices++;
+		else
+			normal++;
+		nicks++;
+	}
+	g_slist_free(nicklist);
+
+	/* display the nicks */
+	printformat(channel->server, channel->name,
+		    MSGLEVEL_CRAP, TXT_NAMES, channel->name, "");
+	display_sorted_nicks(channel, sorted);
+	g_slist_free(sorted);
+
+	printformat(channel->server, channel->name,
+		    MSGLEVEL_CRAP, TXT_ENDOFNAMES,
+		    channel->name, nicks, ops, voices, normal);
+}
+
+static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	CHANNEL_REC *channel;
+
+	g_return_if_fail(data != NULL);
+
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (strcmp(data, "*") == 0) {
+		if (!IS_CHANNEL(item))
+			cmd_return_error(CMDERR_NOT_JOINED);
+
+		data = item->name;
+	}
+
+	channel = channel_find(server, data);
+	if (channel != NULL) {
+		fe_channels_nicklist(channel);
+                signal_stop();
+	}
+}
+
 void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
@@ -306,6 +456,7 @@ void fe_channels_init(void)
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
+	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
 	command_set_options("join", "window");
@@ -326,4 +477,5 @@ void fe_channels_deinit(void)
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);
+	command_unbind("names", (SIGNAL_FUNC) cmd_names);
 }

@@ -30,7 +30,9 @@
 #include "irc-channels.h"
 #include "nicklist.h"
 
+#include "../core/module-formats.h"
 #include "printtext.h"
+#include "fe-channels.h"
 
 static void event_received(IRC_SERVER_REC *server, const char *data);
 
@@ -69,97 +71,12 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, NULL, &channel, &names);
-	if (irc_channel_find(server, channel) == NULL)
-		printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_NAMES, channel, names);
+	if (irc_channel_find(server, channel) == NULL) {
+		printformat_module("fe-common/core", server, channel,
+				   MSGLEVEL_CRAP, TXT_NAMES,
+				   channel, names);
+	}
 	g_free(params);
-}
-
-static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint items, gint max)
-{
-    NICK_REC *rec;
-    GString *str;
-    GSList *tmp;
-    gint lines, cols, line, col, skip;
-    gchar *linebuf;
-
-    max++; /* op/voice */
-    str = g_string_new(NULL);
-
-    cols = max > 65 ? 1 : (65 / (max+3)); /* "[] " */
-    lines = items <= cols ? 1 : items/cols + 1;
-    if (lines > items) lines = items;
-
-    linebuf = g_malloc(max+1); linebuf[max] = '\0';
-    for (line = 0, col = 0, skip = 1, tmp = nicklist; line < lines; tmp = tmp->next)
-    {
-	rec = tmp->data;
-
-	if (--skip == 0)
-	{
-      	    char *ret, nickmode[2] = { 0, 0 };
-	    skip = lines;
-	    memset(linebuf, ' ', max);
-	    nickmode[0] = rec->op ? '@' : rec->voice ? '+' : ' ';
-	    memcpy(linebuf, rec->nick, strlen(rec->nick));
-	    ret = format_get_text(MODULE_NAME, NULL,
-				  channel->server, channel->name,
-				  IRCTXT_NAMES_NICK, nickmode, linebuf);
-	    g_string_append(str, ret);
-	    g_free(ret);
-	    cols++;
-	}
-
-	if (col == cols || tmp->next == NULL)
-	{
-	    printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, "%s", str->str);
-	    g_string_truncate(str, 0);
-	    col = 0; line++;
-	    tmp = g_slist_nth(nicklist, line-1); skip = 1;
-	}
-    }
-    if (str->len != 0)
-	printtext(channel->server, channel->name, MSGLEVEL_CLIENTCRAP, "%s", str->str);
-    g_string_free(str, TRUE);
-    g_free(linebuf);
-}
-
-static void display_nicks(CHANNEL_REC *channel)
-{
-    NICK_REC *nick;
-    GSList *tmp, *nicklist, *sorted;
-    gint nicks, normal, voices, ops, len, max;
-
-    nicks = normal = voices = ops = 0;
-    nicklist = nicklist_getnicks(channel);
-    sorted = NULL;
-
-    /* sort the nicklist */
-    max = 0;
-    for (tmp = nicklist; tmp != NULL; tmp = tmp->next)
-    {
-	nick = tmp->data;
-
-	sorted = g_slist_insert_sorted(sorted, nick, (GCompareFunc) nicklist_compare);
-        if (nick->op)
-	    ops++;
-	else if (nick->voice)
-	    voices++;
-	else
-	    normal++;
-	nicks++;
-
-	len = strlen(nick->nick);
-	if (len > max) max = len;
-    }
-    g_slist_free(nicklist);
-
-    /* display the nicks */
-    printformat(channel->server, channel->name, MSGLEVEL_CRAP, IRCTXT_NAMES, channel->name, "");
-    display_sorted_nicks(channel, sorted, nicks, max);
-    g_slist_free(sorted);
-
-    printformat(channel->server, channel->name, MSGLEVEL_CRAP, IRCTXT_ENDOFNAMES,
-		channel->name, nicks, ops, voices, normal);
 }
 
 static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
@@ -172,10 +89,13 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 2, NULL, &channel);
 
 	chanrec = irc_channel_find(server, channel);
-	if (chanrec == NULL)
-		printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_ENDOFNAMES, channel, 0, 0, 0, 0);
-	else
-		display_nicks(CHANNEL(chanrec));
+	if (chanrec != NULL)
+		fe_channels_nicklist(CHANNEL(chanrec));
+	else {
+		printformat_module("fe-common/core", server, channel,
+				   MSGLEVEL_CRAP, TXT_ENDOFNAMES,
+				   channel, 0, 0, 0, 0);
+	}
 	g_free(params);
 }
 

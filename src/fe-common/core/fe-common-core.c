@@ -33,6 +33,7 @@
 #include "formats.h"
 #include "themes.h"
 #include "translation.h"
+#include "fe-channels.h"
 #include "fe-windows.h"
 #include "window-items.h"
 #include "window-save.h"
@@ -41,9 +42,6 @@
 
 void autorun_init(void);
 void autorun_deinit(void);
-
-void fe_channels_init(void);
-void fe_channels_deinit(void);
 
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
