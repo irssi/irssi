@@ -72,6 +72,10 @@ typedef struct {
 	                        a screenful when started or used /CLEAR */
 	int bottom; /* window is at the bottom of the text buffer */
 
+	/* For /LAST -new and -away */
+	GList *lastlog_last_check;
+	GList *lastlog_last_away;
+
 	/* for gui-printtext.c */
 	int last_subline;
 	int last_color, last_flags;

@@ -114,6 +114,11 @@ static void remove_first_line(WINDOW_REC *window)
 	if (--chunk->lines == 0)
 		text_chunk_free(gui, chunk);
 
+	if (gui->lastlog_last_check->data == window)
+		gui->lastlog_last_check = NULL;
+	if (gui->lastlog_last_away->data == window)
+		gui->lastlog_last_away = NULL;
+
 	if (gui->startline->prev == NULL) {
                 /* first line in screen removed */
 		gui->startline = gui->startline->next;

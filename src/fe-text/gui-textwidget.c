@@ -26,6 +26,7 @@
 #include "levels.h"
 #include "settings.h"
 
+#include "irc-server.h"
 #include "windows.h"
 
 #include "screen.h"
@@ -84,10 +85,11 @@ static gchar *gui_window_line2text(LINE_REC *line)
     return NULL;
 }
 
-#define LASTLOG_FLAG_NEW        0x01
-#define LASTLOG_FLAG_NOHEADERS  0x02
-#define LASTLOG_FLAG_WORD       0x04
-#define LASTLOG_FLAG_REGEXP     0x08
+#define LASTLOG_FLAG_NEW_LAST   0x01
+#define LASTLOG_FLAG_NEW_AWAY   0x02
+#define LASTLOG_FLAG_NOHEADERS  0x04
+#define LASTLOG_FLAG_WORD       0x08
+#define LASTLOG_FLAG_REGEXP     0x10
 
 static int lastlog_parse_args(char *args, int *flags)
 {
@@ -101,7 +103,9 @@ static int lastlog_parse_args(char *args, int *flags)
 		if (strcmp(*tmp, "-") == 0)
 			*flags |= LASTLOG_FLAG_NOHEADERS;
 		else if (g_strcasecmp(*tmp, "-new") == 0)
-			*flags |= LASTLOG_FLAG_NEW;
+			*flags |= LASTLOG_FLAG_NEW_LAST;
+		else if (g_strcasecmp(*tmp, "-away") == 0)
+			*flags |= LASTLOG_FLAG_NEW_AWAY;
 		else if (g_strcasecmp(*tmp, "-word") == 0)
 			*flags |= LASTLOG_FLAG_WORD;
 		else if (g_strcasecmp(*tmp, "-regexp") == 0)
@@ -117,23 +121,6 @@ static int lastlog_parse_args(char *args, int *flags)
 
 #define lastlog_match(line, level) \
 	(((line)->level & level) != 0 && ((line)->level & MSGLEVEL_LASTLOG) == 0)
-
-static GList *lastlog_window_startline(int only_new)
-{
-	GList *startline, *tmp;
-
-	startline = WINDOW_GUI(active_win)->lines;
-	if (!only_new) return startline;
-
-	for (tmp = startline; tmp != NULL; tmp = tmp->next) {
-		LINE_REC *rec = tmp->data;
-
-		if (rec->level & MSGLEVEL_LASTLOG)
-			startline = tmp;
-	}
-
-	return startline;
-}
 
 static GList *lastlog_find_startline(GList *list, int count, int start, int level)
 {
@@ -183,7 +170,14 @@ static void cmd_lastlog(const char *data)
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_START);
 
-	startline = lastlog_window_startline(flags & LASTLOG_FLAG_NEW);
+	if (flags & LASTLOG_FLAG_NEW_LAST)
+		startline = WINDOW_GUI(active_win)->lastlog_last_check;
+	else if (flags & LASTLOG_FLAG_NEW_AWAY)
+		startline = WINDOW_GUI(active_win)->lastlog_last_away;
+	else
+		startline = NULL;
+	if (startline == NULL) startline = WINDOW_GUI(active_win)->lines;
+
 	list = gui_window_find_text(active_win, text, startline, flags & LASTLOG_FLAG_REGEXP, flags & LASTLOG_FLAG_WORD);
 	tmp = lastlog_find_startline(list, count, atoi(start), level);
 
@@ -208,6 +202,9 @@ static void cmd_lastlog(const char *data)
 
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_END);
+
+	WINDOW_GUI(active_win)->lastlog_last_check =
+		g_list_last(WINDOW_GUI(active_win)->bottom_startline);
 
 	g_list_free(list);
 	g_free(params);
@@ -378,22 +375,41 @@ static void cmd_scrollback_end(gchar *data)
     signal_emit("gui page scrolled", 1, active_win);
 }
 
+static void sig_away_changed(IRC_SERVER_REC *server)
+{
+	GSList *tmp;
+
+	if (!server->usermode_away)
+		return;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		WINDOW_GUI(rec)->lastlog_last_away =
+			g_list_last(WINDOW_GUI(rec)->bottom_startline);
+	}
+}
+
 void gui_textwidget_init(void)
 {
-    command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
-    command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
-    command_bind("scrollback clear", NULL, (SIGNAL_FUNC) cmd_scrollback_clear);
-    command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
-    command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
-    command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
+	command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
+	command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
+	command_bind("scrollback clear", NULL, (SIGNAL_FUNC) cmd_scrollback_clear);
+	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
+	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
+	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
+
+	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
 
 void gui_textwidget_deinit(void)
 {
-    command_unbind("lastlog", (SIGNAL_FUNC) cmd_lastlog);
-    command_unbind("scrollback", (SIGNAL_FUNC) cmd_scrollback);
-    command_unbind("scrollback clear", (SIGNAL_FUNC) cmd_scrollback_clear);
-    command_unbind("scrollback goto", (SIGNAL_FUNC) cmd_scrollback_goto);
-    command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
-    command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
+	command_unbind("lastlog", (SIGNAL_FUNC) cmd_lastlog);
+	command_unbind("scrollback", (SIGNAL_FUNC) cmd_scrollback);
+	command_unbind("scrollback clear", (SIGNAL_FUNC) cmd_scrollback_clear);
+	command_unbind("scrollback goto", (SIGNAL_FUNC) cmd_scrollback_goto);
+	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
+	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
+
+	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
