@@ -158,7 +158,8 @@ CODE:
 	old = active_win;
 	active_win = window;
 	perl_command(cmd, window->active_server, window->active);
-        active_win = old;
+        if (g_slist_find(windows, old) != NULL)
+        	active_win = old;
 
 void
 window_item_add(window, item, automatic)
