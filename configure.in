@@ -580,7 +580,15 @@ dnl **
 
 ALL_LINGUAS="pl pt_BR fr de sv"
 AM_GNU_GETTEXT
-AM_CONDITIONAL(HAVE_MSGFMT, test "x$MSGFMT" != "xno")
+
+dnl stupid gettext.. we must not leave the po/ dir from SUBDIRS or
+dnl "make dist" doesn't work, and po/Makefile doesn't check if MSGFMT
+dnl exists or not, so instead of failing in po/ dir if there's no msgfmt,
+dnl we just do some stupid echos.
+if test "x$MSGFMT" = "xno"; then
+  MSGFMT=echo
+  GMSGFMT=echo
+fi
 
 dnl ** common libraries needed by frontends
 COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
