@@ -599,6 +599,8 @@ static int get_mail_count(void)
 	int count;
 
 	fname = g_getenv("MAIL");
+	if (fname == NULL) return 0;
+
 	if (stat(fname, &statbuf) != 0) {
 		mail_last_mtime = -1;
 		mail_last_size = -1;
