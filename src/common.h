@@ -46,8 +46,7 @@
 
 typedef enum {
 	G_INPUT_READ       = 1 << 0,
-	G_INPUT_WRITE      = 1 << 1,
-	G_INPUT_EXCEPTION  = 1 << 2
+	G_INPUT_WRITE      = 1 << 1
 } GInputCondition;
 
 typedef void (*GInputFunction) (void *data, int source,

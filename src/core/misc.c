@@ -37,12 +37,18 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	IRSSI_INPUT_REC *rec = data;
 	GInputCondition icond = 0;
 
+	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
+		/* error, we have to call the function.. */
+		if (rec->condition & G_IO_IN)
+			icond |= G_INPUT_READ;
+		else
+			icond |= G_INPUT_WRITE;
+	}
+
 	if (condition & (G_IO_IN | G_IO_PRI))
 		icond |= G_INPUT_READ;
 	if (condition & G_IO_OUT)
 		icond |= G_INPUT_WRITE;
-	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL))
-		icond |= G_INPUT_EXCEPTION;
 
 	if (rec->condition & icond) {
 		rec->function(rec->data, g_io_channel_unix_get_fd(source),
@@ -58,19 +64,18 @@ int g_input_add(int source, GInputCondition condition,
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
 	GIOChannel *channel;
-	GIOCondition cond = 0;
+	GIOCondition cond;
 
 	rec = g_new(IRSSI_INPUT_REC, 1);
 	rec->condition = condition;
 	rec->function = function;
 	rec->data = data;
 
+	cond = G_IO_ERR|G_IO_HUP|G_IO_NVAL;
 	if (condition & G_INPUT_READ)
-		cond |= (G_IO_IN | G_IO_PRI);
+		cond |= G_IO_IN|G_IO_PRI;
 	if (condition & G_INPUT_WRITE)
 		cond |= G_IO_OUT;
-	if (condition & G_INPUT_EXCEPTION)
-		cond |= G_IO_ERR|G_IO_HUP|G_IO_NVAL;
 
 	channel = g_io_channel_unix_new (source);
 	result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,

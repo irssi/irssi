@@ -170,7 +170,7 @@ static void cmd_query(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 	}
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    PARAM_FLAG_UNKNOWN_OPTIONS,
 			    "query", &optlist, &nick))
 		return;
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
