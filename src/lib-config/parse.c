@@ -347,7 +347,7 @@ void config_close(CONFIG_REC *rec)
 	g_hash_table_destroy(rec->cache);
 	g_hash_table_destroy(rec->cache_nodes);
 	g_free_not_null(rec->last_error);
-	g_free(rec->fname);
+	g_free_not_null(rec->fname);
 	g_free(rec);
 }
 
