@@ -124,7 +124,7 @@ static void perl_call_signal(const char *func, int signal_id,
 			perlarg = irssi_bless((SERVER_REC *) arg);
 		} else {
 			/* blessed object */
-			perlarg = plain_bless(rec->args[n], arg);
+			perlarg = plain_bless(arg, rec->args[n]);
 		}
 		XPUSHs(sv_2mortal(perlarg));
 	}
