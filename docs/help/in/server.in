@@ -6,6 +6,7 @@
      -noauto: Don't connect to server at startup
      -ircnet: Specify what IRC network this server belongs to
      -host: Specify what host name to use, if you have multiple
+     -!: don't autojoin channels
      -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
      -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
      -port: This is pretty much like the port argument later, 

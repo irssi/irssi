@@ -4,6 +4,7 @@
      -4, -6: specify explicitly whether to use IPv4 or IPv6 address
      -ircnet: the IRCNet
      -host: the host
+     -!: don't autojoin channels
 
 This command makes irssi to connect to specified server.
 Current connections are kept and a new one is created.
