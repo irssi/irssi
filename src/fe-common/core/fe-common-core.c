@@ -74,7 +74,7 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "bell_beeps", FALSE);
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 
-	settings_add_bool("lookandfeel", "use_status_window", FALSE);
+	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
 	/*settings_add_bool("lookandfeel", "autoraise_msgs_window", FALSE);*/
 	/*settings_add_bool("lookandfeel", "use_tabbed_windows", TRUE);
