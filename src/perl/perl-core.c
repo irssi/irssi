@@ -65,9 +65,11 @@ static void perl_script_destroy_package(PERL_SCRIPT_REC *script)
 
 static void perl_script_destroy(PERL_SCRIPT_REC *script)
 {
-        signal_emit("script destroyed", 1, script);
+	perl_scripts = g_slist_remove(perl_scripts, script);
 
-        perl_signal_remove_package(script->package);
+	signal_emit("script destroyed", 1, script);
+
+	perl_signal_remove_package(script->package);
 	perl_source_remove_package(script->package);
 
 	g_free(script->name);
@@ -75,8 +77,6 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
         g_free_not_null(script->path);
         g_free_not_null(script->data);
         g_free(script);
-
-	perl_scripts = g_slist_remove(perl_scripts, script);
 }
 
 /* Initialize perl interpreter */
@@ -349,10 +349,19 @@ static void perl_scripts_autorun(void)
 	g_free(path);
 }
 
+static void sig_script_error(PERL_SCRIPT_REC *script)
+{
+	if (script != NULL) {
+		perl_script_destroy(script);
+                signal_stop();
+	}
+}
+
 void perl_core_init(void)
 {
 	PL_perl_destruct_level = 1;
 	perl_signals_init();
+        signal_add_last("script error", (SIGNAL_FUNC) sig_script_error);
 
 	perl_scripts_init();
 	perl_scripts_autorun();
@@ -362,4 +371,6 @@ void perl_core_deinit(void)
 {
 	perl_signals_deinit();
         perl_scripts_deinit();
+
+	signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
 }
