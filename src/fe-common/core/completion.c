@@ -204,6 +204,8 @@ GList *filename_complete(const char *path)
 	if (dirp == NULL) return NULL;
 
 	dir = g_dirname(path);
+	if (*dir == G_DIR_SEPARATOR && dir[1] == '\0')
+		*dir = '\0'; /* completing file in root directory */
 	basename = g_basename(path);
 	len = strlen(basename);
 
