@@ -101,8 +101,8 @@ server_redirect_event(server, command, arg, remote, failure_signal, signals)
 	char *failure_signal
 	void *signals
 CODE:
-	server_redirect_event_list(server, command, arg, remote,
-				   failure_signal,
+	server_redirect_event_list(server, command, *arg == '\0' ? NULL : arg, remote,
+				   *failure_signal == '\0' ? NULL : failure_signal,
 				   event_hash2list(hvref(ST(5))));
 
 char *
