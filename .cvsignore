@@ -26,7 +26,6 @@ mkinstalldirs
 INSTALL
 intl
 ABOUT-NLS
-COPYING
 irssi.spec
 default-config.h
 default-theme.h
