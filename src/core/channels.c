@@ -129,6 +129,26 @@ CHANNEL_REC *channel_find(SERVER_REC *server, const char *name)
 				   (void *) name);
 }
 
+void channel_change_name(CHANNEL_REC *channel, const char *name)
+{
+	g_return_if_fail(IS_CHANNEL(channel));
+
+	g_free(channel->name);
+	channel->name = g_strdup(name);
+
+	signal_emit("channel name changed", 1, channel);
+}
+
+void channel_change_visible_name(CHANNEL_REC *channel, const char *name)
+{
+	g_return_if_fail(IS_CHANNEL(channel));
+
+	g_free(channel->visible_name);
+	channel->visible_name = g_strdup(name);
+
+	signal_emit("window item name changed", 1, channel);
+}
+
 static CHANNEL_REC *channel_find_servers(GSList *servers, const char *name)
 {
 	return gslist_foreach_find(servers,

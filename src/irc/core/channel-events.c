@@ -236,8 +236,18 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 		shortchan = g_strdup_printf("!%s", channel+6);
 		chanrec = channel_find_unjoined(server, shortchan);
 		if (chanrec != NULL) {
+			channel_change_name(CHANNEL(chanrec), channel);
 			g_free(chanrec->name);
 			chanrec->name = g_strdup(channel);
+		} else {
+			/* well, did we join it with full name? if so, and if
+			   this was the first short one, change it's name. */
+			chanrec = channel_find_unjoined(server, channel);
+			if (chanrec != NULL &&
+			    irc_channel_find(server, shortchan) == NULL) {
+				channel_change_visible_name(CHANNEL(chanrec),
+							    shortchan);
+			}
 		}
 	}
 

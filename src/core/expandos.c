@@ -643,7 +643,9 @@ void expandos_init(void)
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 	expando_create("itemname", expando_itemname,
 		       "window changed", EXPANDO_ARG_NONE,
-		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "window item name changed", EXPANDO_ARG_WINDOW_ITEM,
+		       NULL);
 
 	read_settings();
 

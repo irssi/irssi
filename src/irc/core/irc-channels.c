@@ -149,12 +149,11 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
 		if (rec->chat_type != server->chat_type)
                         continue;
 
+		/* check both !ABCDEchannel and !channel */
 		if (g_strcasecmp(channel, rec->name) == 0)
 			return rec;
 
-                /* check after removing ABCDE from !ABCDEchannel */
-		if (*channel == '!' && *rec->name == '!' &&
-		    g_strcasecmp(channel+1, rec->name+6) == 0)
+		if (g_strcasecmp(channel, rec->visible_name) == 0)
 			return rec;
 	}
 
