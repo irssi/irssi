@@ -213,40 +213,6 @@ AC_ARG_WITH(openssl-libs,
 	    [openssl_prefix=$withval], 
 	    [openssl_prefix=/usr/lib])
 
-if test "x$enable_ssl" = xyes; then
-	###
-	### Check for OpenSSL
-	###
-	save_CFLAGS=$CFLAGS;
-	CFLAGS="-lcrypto";
-
-	enable_openssl="no"; 
-	OPENSSL_LDFLAGS="";
-	AC_CHECK_LIB(ssl, SSL_read,
-			AC_CHECK_LIB(crypto, X509_new,
-					AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h,
-						[
-							enable_openssl="yes";
-							OPENSSL_LDFLAGS="-lssl -lcrypto"
-						],
-					AC_ERROR([Cannot find OpenSSL includes !])),
-				AC_ERROR([Cannot find libCrypto !])),
-			AC_ERROR([Cannot find libSSL !]))
-	CFLAGS=$save_CFLAGS
-
-	if test "x$enable_openssl" = xyes; then
-		AC_DEFINE(HAVE_OPENSSL)
-		OPENSSL_LIBS="-L$openssl_prefix $OPENSSL_LDFLAGS"
-		OPENSSL_CFLAGS="$openssl_inc_prefix"
-	else
-		OPENSSL_LIBS=
-		OPENSSL_CFLAGS=
-	fi
-else
-	enable_openssl="no"
-fi
-
-
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -443,16 +409,40 @@ fi
 LIBS="$LIBS $GLIB_LIBS"
 
 dnl * make sure glib2 + ssl isn't tried to be used, it won't work
-if test "x$enable_openssl" != "xno"; then
-  if test "x`echo $GLIB_LIBS|grep glib-2.0`" != "x"; then
-    ssl_error="GLIB2 and OpenSSL don't work together currently, SSL is disabled"
-    enable_openssl=no
-    OPENSSL_LIBS=
-    OPENSSL_CFLAGS=
-  fi
+if test "x$enable_ssl" = xyes; then
+	###
+	### Check for OpenSSL
+	###
+	save_CFLAGS=$CFLAGS;
+	CFLAGS="-lcrypto";
 
-  LIBS="$LIBS $OPENSSL_LIBS"
-  CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+	enable_openssl="no"; 
+	OPENSSL_LDFLAGS="";
+	AC_CHECK_LIB(ssl, SSL_read,
+			AC_CHECK_LIB(crypto, X509_new,
+					AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h,
+						[
+							enable_openssl="yes";
+							OPENSSL_LDFLAGS="-lssl -lcrypto"
+						],
+					AC_ERROR([Cannot find OpenSSL includes !])),
+				AC_ERROR([Cannot find libCrypto !])),
+			AC_ERROR([Cannot find libSSL !]))
+	CFLAGS=$save_CFLAGS
+
+	if test "x`echo $GLIB_LIBS|grep glib-2.0`" != "x"; then
+		ssl_error="GLIB2 and OpenSSL don't work together currently, SSL is disabled"
+		enable_openssl=no
+	fi
+
+	if test "x$enable_openssl" = xyes; then
+		AC_DEFINE(HAVE_OPENSSL)
+
+		LIBS="$LIBS -L$openssl_prefix $OPENSSL_LDFLAGS"
+		CFLAGS="$CFLAGS $openssl_inc_prefix"
+	fi
+else
+	enable_openssl="no"
 fi
 
 dnl **
