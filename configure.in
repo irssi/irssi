@@ -115,6 +115,7 @@ AC_ARG_WITH(perl-lib,
 		want_perl=no
 	elif test "x$withval" = xsite; then
 		want_perl=yes
+		PERL_MM_PARAMS=""
 	elif test "x$withval" = xvendor; then
 		want_perl=yes
 		if test -z "`$perlpath -v|grep '5\.0'`"; then
