@@ -454,15 +454,74 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 
 static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 {
+	char *params, *qserver, *query, *nicks;
+	int one_nick;
+
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected || !irc_server_check(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	while (*data == ' ') data++;
-	if (*data == '\0') data = server->nick;
+	params = cmd_get_params(data, 2, &qserver, &query);
+	if (*query == '\0') {
+                g_free(params);
+		params = cmd_get_params(data, 1, &query);
+		qserver = "";
+	}
 
-	g_string_sprintf(tmpstr, "WHOIS %s", data);
+        if (*query == '\0') query = server->nick;
+
+	if (*qserver == '\0')
+		g_string_sprintf(tmpstr, "WHOIS %s", query);
+	else
+		g_string_sprintf(tmpstr, "WHOIS %s %s", qserver, query);
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
+
+	/* do automatic /WHOWAS if any of the nicks wasn't found */
+	one_nick = strchr(query, ',') == NULL;
+	if (!one_nick) {
+		nicks = g_strdup(query);
+		g_strdelimit(query, ",", ' ');
+		query = g_strconcat(nicks, " ", query, NULL);
+		g_free(nicks);
+	}
+
+	server->whois_found = FALSE;
+	server_redirect_event((SERVER_REC *) server, query, 2,
+			      "event 318", "event 318", 1,
+			      "event 402", "event 402", -1,
+			      "event 311", "whois event", 1,
+			      "event 401", "whois not found", 1, NULL);
+	if (!one_nick) g_free(query);
+	g_free(params);
+}
+
+static void event_whois(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+{
+	server->whois_found = TRUE;
+	signal_emit("event 311", 4, data, server, nick, addr);
+}
+
+static void sig_whois_not_found(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &nick);
+	irc_send_cmdv(server, "WHOWAS %s 1", nick);
+
+	server->whowas_found = FALSE;
+	server_redirect_event((SERVER_REC *) server, nick, 1,
+			      "event 369", "whowas event end", 1,
+			      "event 314", "whowas event", 1,
+			      "event 406", "event empty", 1, NULL);
+	g_free(params);
+}
+
+static void event_whowas(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+{
+	server->whowas_found = TRUE;
+	signal_emit("event 314", 4, data, server, nick, addr);
 }
 
 static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
@@ -475,6 +534,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	if (*data == '\0') data = server->nick;
 
 	irc_send_cmdv(server, "WHOWAS %s", data);
+	server->whowas_found = FALSE;
 }
 
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
@@ -855,6 +915,9 @@ void irc_commands_init(void)
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
+	signal_add("whois event", (SIGNAL_FUNC) event_whois);
+	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
 }
 
 void irc_commands_deinit(void)
@@ -918,6 +981,9 @@ void irc_commands_deinit(void)
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
+	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
+	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
+	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);
 
 	g_string_free(tmpstr, TRUE);
 }

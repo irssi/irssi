@@ -564,6 +564,22 @@ static void event_ban_type_changed(gchar *bantype)
     }
 }
 
+static void sig_whowas_event_end(const char *data, IRC_SERVER_REC *server, const char *sender, const char *addr)
+{
+	char *params, *nick;
+
+	g_return_if_fail(data != NULL);
+
+	if (server->whowas_found) {
+		signal_emit("event 369", 4, data, server, sender, addr);
+		return;
+	}
+
+	params = event_get_params(data, 2, NULL, &nick);
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
+	g_free(params);
+}
+
 static void sig_server_lag_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
@@ -646,6 +662,7 @@ void fe_events_init(void)
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_add("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
+	signal_add("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 
 	signal_add("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_add("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
@@ -678,6 +695,7 @@ void fe_events_deinit(void)
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_remove("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
+	signal_remove("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 
 	signal_remove("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_remove("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);

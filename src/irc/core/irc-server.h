@@ -87,6 +87,8 @@ typedef struct {
 	int server_operator:1;
 
 	int whois_coming:1; /* Mostly just to display away message right.. */
+	int whois_found:1; /* Did WHOIS return any entries? */
+	int whowas_found:1; /* Did WHOWAS return any entries? */
 
 	int emode_known:1; /* Server understands ban exceptions and invite lists */
 	int no_multi_mode:1; /* Server doesn't understand MODE #chan1,#chan2,... */

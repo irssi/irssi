@@ -122,6 +122,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ NULL, "Who queries", 0 },
 
 	{ "whois", "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3", 4, { 0, 0, 0, 0 } },
+	{ "whowas", "%_$0%_ %K[%n$1@$2%K]%n%: ircname  : $3", 4, { 0, 0, 0, 0 } },
 	{ "whois_idle", " idle     : $1 hours $2 mins $3 secs", 4, { 0, 1, 1, 1 } },
 	{ "whois_idle_signon", " idle     : $1 hours $2 mins $3 secs %K[%nsignon: $4%K]", 5, { 0, 1, 1, 1, 0 } },
 	{ "whois_server", " server   : $1 %K[%n$2%K]", 3, { 0, 0, 0 } },
@@ -129,6 +130,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_channels", " channels : $1", 2, { 0, 0 } },
 	{ "whois_away", " away     : $1", 2, { 0, 0 } },
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
+	{ "end_of_whowas", "End of WHOWAS", 1, { 0 } },
+	{ "whois_not_found", "There is no such nick $0", 1, { 0 } },
 	{ "who", "$[-10]0 %|%_$[!9]1%_ $[!3]2 $[!2]3 $4@$5 %K(%W$6%K)", 7, { 0, 0, 0, 0, 0, 0, 0 } },
 	{ "end_of_who", "End of /WHO list", 1, { 0 } },
 
