@@ -155,6 +155,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	GSList *tmp, *nicks;
 	GString *str;
 	int first;
+	char *recoded;
 
 	proxy_outserver(client, "JOIN %s", channel->name);
 
@@ -196,11 +197,13 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 
 	proxy_outdata(client, ":%s 366 %s %s :End of /NAMES list.\n",
 		      client->proxy_address, client->nick, channel->name);
-	/* this is needed because the topic may be encoded into other charsets internaly */
 	if (channel->topic != NULL) {
+		/* this is needed because the topic may be encoded into other charsets internaly */
+		recoded = recode_out(channel->topic, channel->name);
 		proxy_outdata(client, ":%s 332 %s %s :%s\n",
 			      client->proxy_address, client->nick,
-			      channel->name, recode_out(channel->topic, channel->name));
+			      channel->name, recoded);
+		g_free(recoded);
 		if (channel->topic_time > 0)
 			proxy_outdata(client, ":%s 333 %s %s %s %d\n",
 			              client->proxy_address, client->nick,
