@@ -109,9 +109,10 @@ void window_destroy(WINDOW_REC *window)
 	window->destroying = TRUE;
 	windows = g_slist_remove(windows, window);
 
-	if (active_win == window && windows != NULL) {
-                active_win = NULL; /* it's corrupted */
-		window_set_active(windows->data);
+	if (active_win == window) {
+		active_win = NULL; /* it's corrupted */
+		if (windows != NULL)
+			window_set_active(windows->data);
 	}
 
 	while (window->items != NULL)
