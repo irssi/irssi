@@ -722,7 +722,7 @@ void irc_completion_init(void)
 	signal_add("send text", (SIGNAL_FUNC) event_text);
 	signal_add("server connected", (SIGNAL_FUNC) completion_init_server);
 	signal_add("server disconnected", (SIGNAL_FUNC) completion_deinit_server);
-	signal_add("channel created", (SIGNAL_FUNC) completion_init_channel);
+	signal_add_first("channel created", (SIGNAL_FUNC) completion_init_channel);
 	signal_add_last("channel destroyed", (SIGNAL_FUNC) completion_deinit_channel);
 }
 

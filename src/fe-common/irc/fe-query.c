@@ -49,8 +49,12 @@ QUERY_REC *privmsg_get_query(IRC_SERVER_REC *server, const char *nick, int own)
 
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
+	if (window_item_find(query->server, query->nick) != NULL)
+		return;
+
 	window_item_create((WI_ITEM_REC *) query, GPOINTER_TO_INT(automatic));
-        printformat(query->server, query->nick, MSGLEVEL_CLIENTNOTICE, IRCTXT_QUERY_STARTED, query->nick);
+	printformat(query->server, query->nick, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_QUERY_STARTED, query->nick);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)
@@ -58,7 +62,6 @@ static void signal_query_created_curwin(QUERY_REC *query)
 	g_return_if_fail(query != NULL);
 
 	window_add_item(active_win, (WI_ITEM_REC *) query, FALSE);
-	signal_stop();
 }
 
 static void signal_query_destroyed(QUERY_REC *query)

@@ -37,7 +37,10 @@
 
 static void signal_channel_created(CHANNEL_REC *channel, gpointer automatic)
 {
-	window_item_create((WI_ITEM_REC *) channel, GPOINTER_TO_INT(automatic));
+	if (window_item_find(channel->server, channel->name) == NULL) {
+		window_item_create((WI_ITEM_REC *) channel,
+				   GPOINTER_TO_INT(automatic));
+	}
 }
 
 static void signal_channel_created_curwin(CHANNEL_REC *channel)
@@ -45,7 +48,6 @@ static void signal_channel_created_curwin(CHANNEL_REC *channel)
 	g_return_if_fail(channel != NULL);
 
 	window_add_item(active_win, (WI_ITEM_REC *) channel, FALSE);
-	signal_stop();
 }
 
 static void signal_channel_destroyed(CHANNEL_REC *channel)
