@@ -253,10 +253,11 @@ static int data_is_empty(const char **data)
 {
 	/* since we don't know the real argument list, assume there's always
 	   an argument in them */
-	char *arglist[] = {
+	static char *arglist[] = {
 		"x", "x", "x", "x", "x", "x","x", "x", "x", "x",
 		NULL
 	};
+	SERVER_REC *server;
 	const char *p;
 	char *ret;
         int free_ret, empty;
@@ -277,8 +278,12 @@ static int data_is_empty(const char **data)
 
 	/* variable - check if it's empty */
         p++;
-	ret = parse_special((char **) &p,
-			    active_win == NULL ? NULL : active_win->active_server,
+
+	server = active_win == NULL ? NULL :
+		active_win->active_server != NULL ?
+		active_win->active_server : active_win->connect_server;
+
+	ret = parse_special((char **) &p, server,
 			    active_win == NULL ? NULL : active_win->active,
 			    arglist, &free_ret, NULL, 0);
         p++;

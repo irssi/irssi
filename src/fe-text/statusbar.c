@@ -699,8 +699,9 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 		server = NULL;
                 wiitem = NULL;
 	} else {
-		server = active_win->active_server;
-                wiitem = active_win->active;
+		server = active_win->active_server != NULL ?
+			active_win->active_server : active_win->connect_server;
+		wiitem = active_win->active;
 	}
 
 	/* expand templates */
