@@ -64,13 +64,16 @@ static char *module_get_root(const char *name, char **prefixes)
 	int len;
 
 	/* skip any of the prefixes.. */
-	while (*prefixes != NULL) {
-                len = strlen(*prefixes);
-		if (strncmp(name, *prefixes, len) == 0 && name[len] == '_') {
-			name += len+1;
-                        break;
+	if (prefixes != NULL) {
+		while (*prefixes != NULL) {
+			len = strlen(*prefixes);
+			if (strncmp(name, *prefixes, len) == 0 &&
+			    name[len] == '_') {
+				name += len+1;
+				break;
+			}
+			prefixes++;
 		}
-		prefixes++;
 	}
 
 	/* skip the _core part */
