@@ -407,7 +407,7 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 			 const char *target)
 {
 	LOG_REC *log;
-	char *fname, *dir, *fixed_target;
+	char *fname, *dir, *fixed_target, *params;
 
 	log = logs_find_item(LOG_ITEM_TARGET, target, server_tag, NULL);
 	if (log != NULL && !log->failed) {
@@ -423,9 +423,13 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 	if (CHAT_PROTOCOL(server)->case_insensitive)
 		g_strdown(fixed_target);
 
-	fname = parse_special_string(autolog_path, server, NULL,
-				     fixed_target, NULL, 0);
+        /* $0 = target, $1 = server tag */
+        params = g_strconcat(fixed_target, " ", server_tag, NULL);
 	g_free(fixed_target);
+
+	fname = parse_special_string(autolog_path, server, NULL,
+				     params, NULL, 0);
+	g_free(params);
 
 	if (log_find(fname) == NULL) {
 		log = log_create_rec(fname, autolog_level);
