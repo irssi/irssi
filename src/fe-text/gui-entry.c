@@ -245,8 +245,8 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, char chr)
 {
         g_return_if_fail(entry != NULL);
 
-	if (chr == 0)
-		return; /* never insert NUL characters */
+	if (chr == 0 || chr == 13 || chr == 10)
+		return; /* never insert NUL, CR or LF characters */
 
         gui_entry_redraw_from(entry, entry->pos);
 	g_string_insert_c(entry->text, entry->pos, chr);
