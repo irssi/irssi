@@ -276,6 +276,7 @@ static void event_kick(IRC_SERVER_REC *server, const char *data)
 
 	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec != NULL) {
+		irc_server_purge_output(server, channel);
 		chanrec->kicked = TRUE;
 		channel_destroy(chanrec);
 	}
