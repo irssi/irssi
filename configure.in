@@ -275,7 +275,7 @@ dnl ** keep track of them all
 dnl **
 dnl ** (these could be made configurable)
 
-CHAT_MODULES="irc silc"
+CHAT_MODULES="irc"
 irc_MODULES="dcc flood notifylist"
 if test "x$build_modules" != "x"; then
 	irc_MODULES="$irc_MODULES $build_modules"
