@@ -323,16 +323,18 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 	for (tmp = buffer->text_chunks; tmp != NULL; tmp = tmp->next)
                 g_mem_chunk_free(text_chunk, tmp->data);
 	g_slist_free(buffer->text_chunks);
-        buffer->text_chunks = NULL;
+	buffer->text_chunks = NULL;
 
 	while (buffer->first_line != NULL) {
 		line = buffer->first_line->next;
 		g_mem_chunk_free(line_chunk, buffer->first_line);
                 buffer->first_line = line;
 	}
+	buffer->lines_count = 0;
 
         buffer->cur_line = NULL;
-	buffer->lines_count = 0;
+        buffer->cur_text = NULL;
+
 	buffer->last_eol = TRUE;
 }
 
