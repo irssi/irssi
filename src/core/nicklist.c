@@ -446,10 +446,12 @@ static NICK_REC *nick_nfind(CHANNEL_REC *channel, const char *nick, int len)
 	tmpnick = g_strndup(nick, len);
 	rec = g_hash_table_lookup(channel->nicks, tmpnick);
 
-	/* if there's multiple, get the one with identical case */
-	while (rec->next != NULL) {
-		if (strcmp(rec->nick, tmpnick) == 0)
-                        break;
+	if (rec != NULL) {
+		/* if there's multiple, get the one with identical case */
+		while (rec->next != NULL) {
+			if (strcmp(rec->nick, tmpnick) == 0)
+				break;
+		}
 	}
 
         g_free(tmpnick);
