@@ -126,7 +126,7 @@ abstracts = {
   # Example2.2: But you still want to keep <> grey for other messages:
   #  pubmsgnick = "%K{msgnick $0 $1-%K}%n";
   #  pubmsgmenick = "%K{msgnick $0 $1-%K}%n";
-  #  pubmsghinick = "%K{msgnick $1 $0$2-%K}%n";
+  #  pubmsghinick = "%K{msgnick $1 $0$2-%n%K}%n";
   #  ownprivmsgnick = "%K{msgnick  $0-%K}%n";
   #  privmsgnick = "%K{msgnick  %R$0-%K}%n";
 
@@ -144,7 +144,7 @@ abstracts = {
 
   # public highlighted message in channel
   # $0 = highlight color, $1 = nick mode, $2 = nick
-  pubmsghinick = "{msgnick $1 $0$2-}";
+  pubmsghinick = "{msgnick $1 $0$2-%n}";
 
   # channel name is printed with message
   msgchannel = "%K:%c$0-%n";
