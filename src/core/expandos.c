@@ -54,6 +54,7 @@ static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease;
+static const char *timestamp_format;
 
 #define CHAR_EXPANDOS_COUNT \
 	((int) (sizeof(char_expandos) / sizeof(char_expandos[0])))
@@ -348,12 +349,18 @@ static char *expando_realname(SERVER_REC *server, void *item, int *free_ret)
 /* time of day (hh:mm) */
 static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
 {
-	time_t now = time(NULL);
+	time_t now;
 	struct tm *tm;
+        char str[256];
 
+        now = time(NULL);
 	tm = localtime(&now);
+
+	if (strftime(str, sizeof(str), timestamp_format, tm) == 0)
+                return "";
+
 	*free_ret = TRUE;
-	return g_strdup_printf("%02d:%02d", tm->tm_hour, tm->tm_min);
+        return g_strdup(str);
 }
 
 /* a literal '$' */
@@ -430,12 +437,18 @@ static int sig_timer(void)
         return 1;
 }
 
+static void read_settings(void)
+{
+        timestamp_format = settings_get_str("timestamp_format");
+}
+
 void expandos_init(void)
 {
 #ifdef HAVE_SYS_UTSNAME_H
 	struct utsname un;
 #endif
 	settings_add_str("misc", "STATUS_OPER", "*");
+	settings_add_str("misc", "timestamp_format", "%H:%M");
 
 	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
@@ -525,10 +538,13 @@ void expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 
+	read_settings();
+
         timer_tag = g_timeout_add(1000, (GSourceFunc) sig_timer, NULL);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void expandos_deinit(void)
@@ -554,4 +570,5 @@ void expandos_deinit(void)
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

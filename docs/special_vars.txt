@@ -76,7 +76,7 @@ $A .. $Z is important.
    $W         current working directory
    $X         your /userhost $N address (user@host)
    $Y         value of REALNAME
-   $Z         time of day (hh:mm)
+   $Z         time of day (hh:mm, can be changed with /SET timestamp_format)
    $$         a literal '$'
 
    $sysname     system name (eg. Linux)
