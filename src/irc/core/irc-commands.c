@@ -695,7 +695,7 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 			WI_ITEM_REC *item)
 {
         IRC_CHANNEL_REC *chanrec;
-	char *channel, *nicks, *reason, *str;
+	char *channel, *nicks, *reason, *kickcmd, *bancmd;
         char **nicklist, *spacenicks;
 	void *free_arg;
 
@@ -720,15 +720,20 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
         spacenicks = g_strjoinv(" ", nicklist);
 	g_strfreev(nicklist);
 
-	str = g_strdup_printf("%s %s", chanrec->name, spacenicks);
-	signal_emit("command ban", 3, str, server, channel);
-	g_free(str);
-
-	str = g_strdup_printf("%s %s %s", chanrec->name, nicks, reason);
-	signal_emit("command kick", 3, str, server, channel);
-	g_free(str);
-
+	kickcmd = g_strdup_printf("%s %s %s", chanrec->name, nicks, reason);
+	bancmd = g_strdup_printf("%s %s", chanrec->name, spacenicks);
         g_free(spacenicks);
+
+        if (settings_get_bool("kick_first_on_kickban")) {
+		signal_emit("command kick", 3, kickcmd, server, channel);
+		signal_emit("command ban", 3, bancmd, server, channel);
+	} else {
+		signal_emit("command ban", 3, bancmd, server, channel);
+		signal_emit("command kick", 3, kickcmd, server, channel);
+	}
+	g_free(kickcmd);
+	g_free(bancmd);
+	
 	cmd_params_free(free_arg);
 }
 
@@ -779,7 +784,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 			 IRC_CHANNEL_REC *channel)
 {
 	KNOCKOUT_REC *rec;
-	char *nicks, *reason, *timeoutstr, *str;
+	char *nicks, *reason, *timeoutstr, *kickcmd, *bancmd;
         char **nicklist, *spacenicks, *banmasks;
 	void *free_arg;
 	int timeleft;
@@ -813,15 +818,21 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	banmasks = ban_get_masks(channel, spacenicks, 0);
 	g_free(spacenicks);
 
-	if (*banmasks != '\0') {
-		str = g_strdup_printf("%s %s", channel->name, banmasks);
-		signal_emit("command ban", 3, str, server, channel);
-		g_free(str);
+	kickcmd = g_strdup_printf("%s %s %s", channel->name, nicks, reason);
+	bancmd = *banmasks == '\0'? NULL :
+		g_strdup_printf("%s %s", channel->name, banmasks);
+	
+        if (settings_get_bool("kick_first_on_kickban")) {
+		signal_emit("command kick", 3, kickcmd, server, channel);
+		if (bancmd != NULL)
+			signal_emit("command ban", 3, bancmd, server, channel);
+	} else {
+		if (bancmd != NULL)
+			signal_emit("command ban", 3, bancmd, server, channel);
+		signal_emit("command kick", 3, kickcmd, server, channel);
 	}
-
-	str = g_strdup_printf("%s %s %s", channel->name, nicks, reason);
-	signal_emit("command kick", 3, str, server, channel);
-	g_free(str);
+	g_free(kickcmd);
+	g_free_not_null(bancmd);
 
 	if (*banmasks == '\0')
 		g_free(banmasks);
@@ -983,6 +994,7 @@ void irc_commands_init(void)
 	settings_add_str("misc", "part_message", "");
 	settings_add_int("misc", "knockout_time", 300);
 	settings_add_str("misc", "wall_format", "[Wall/$0] $1-");
+	settings_add_bool("misc", "kick_first_on_kickban", FALSE);
 
 	knockout_tag = g_timeout_add(KNOCKOUT_TIMECHECK, (GSourceFunc) knockout_timeout, NULL);
 
