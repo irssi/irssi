@@ -46,7 +46,7 @@ void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects);
 
 char *perl_get_use_list(void);
 
-void perl_common_init(void);
-void perl_common_deinit(void);
+void perl_common_start(void);
+void perl_common_stop(void);
 
 #endif

@@ -91,25 +91,9 @@ static void perl_unregister_theme(const char *package)
 	theme_unregister_module(package);
 }
 
-static void sig_script_destroy(const char *type, const char *name,
-			       const char *package)
+static void sig_script_destroy(PERL_SCRIPT_REC *script)
 {
-	if (strcmp(type, "PERL") == 0)
-		perl_unregister_theme(package);
-}
-
-static void sig_perl_stop(void)
-{
-	GSList *tmp;
-        char *package;
-
-	/* themes */
-	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
-		package = g_strdup_printf("Irssi::Script::%s",
-					  (char *) tmp->data);
-		perl_unregister_theme(package);
-		g_free(package);
-	}
+	perl_unregister_theme(script->package);
 }
 
 static PLAIN_OBJECT_INIT_REC fe_plains[] = {
@@ -135,7 +119,6 @@ CODE:
         irssi_add_plains(fe_plains);
 
 	signal_add("script destroy", (SIGNAL_FUNC) sig_script_destroy);
-	signal_add("perl stop", (SIGNAL_FUNC) sig_perl_stop);
 
 
 INCLUDE: Themes.xs

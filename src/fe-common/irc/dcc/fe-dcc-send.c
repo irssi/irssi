@@ -109,7 +109,7 @@ static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
 		return;
 
 	/* completing filename parameter for /DCC SEND */
-	*list = filename_complete(word);
+	*list = filename_complete(word, NULL);
 	if (*list != NULL) {
 		*want_space = FALSE;
 		signal_stop();

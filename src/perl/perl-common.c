@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#define NEED_PERL_H
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
@@ -513,7 +514,7 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 				    GINT_TO_POINTER(rec->id));
 }
 
-void perl_common_init(void)
+void perl_common_start(void)
 {
 	static PLAIN_OBJECT_INIT_REC core_plains[] = {
 		{ "Irssi::Command", (PERL_OBJECT_FUNC) perl_command_fill_hash },
@@ -539,7 +540,7 @@ void perl_common_init(void)
 	signal_add("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);
 }
 
-void perl_common_deinit(void)
+void perl_common_stop(void)
 {
         g_hash_table_foreach(iobject_stashes, (GHFunc) free_iobject_hash, NULL);
 	g_hash_table_destroy(iobject_stashes);

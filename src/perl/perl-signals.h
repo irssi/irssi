@@ -10,6 +10,8 @@ void perl_signal_add_to(const char *signal, const char *func, int priority);
         perl_signal_add_to(signal, func, 2)
 
 void perl_signal_remove(const char *signal, const char *func);
+/* remove all signals used by package */
+void perl_signal_remove_package(const char *package);
 
 void perl_command_bind_to(const char *cmd, const char *category,
 			  const char *func, int priority);
@@ -21,9 +23,6 @@ void perl_command_bind_to(const char *cmd, const char *category,
         perl_command_bind_to(cmd, category, func, 2)
 
 void perl_command_unbind(const char *cmd, const char *func);
-
-/* destroy all signals used by package */
-void perl_signals_package_destroy(const char *package);
 
 void perl_signals_start(void);
 void perl_signals_stop(void);

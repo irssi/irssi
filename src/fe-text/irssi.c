@@ -45,6 +45,9 @@
 #ifdef HAVE_STATIC_PERL
 void perl_core_init(void);
 void perl_core_deinit(void);
+
+void fe_perl_init(void);
+void fe_perl_deinit(void);
 #endif
 
 void irc_init(void);
@@ -139,6 +142,7 @@ static void textui_finish_init(void)
 
 #ifdef HAVE_STATIC_PERL
 	perl_core_init();
+	fe_perl_init();
 #endif
 
 	if (display_firsttimer) {
@@ -178,6 +182,7 @@ static void textui_deinit(void)
 
 #ifdef HAVE_STATIC_PERL
         perl_core_deinit();
+        fe_perl_deinit();
 #endif
 
 	theme_unregister();

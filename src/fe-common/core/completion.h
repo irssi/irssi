@@ -8,7 +8,7 @@ char *auto_word_complete(const char *line, int *pos);
 /* manual word completion - called when TAB is pressed */
 char *word_complete(WINDOW_REC *window, const char *line, int *pos);
 
-GList *filename_complete(const char *path);
+GList *filename_complete(const char *path, const char *default_path);
 
 void completion_init(void);
 void completion_deinit(void);

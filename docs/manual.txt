@@ -146,10 +146,10 @@
 	--enable-memdebug  Enable memory debugging, great for finding
 	                   memory leaks
 
-	--enable-perl=static  Build Perl support statically to irssi binary
+	--with-perl=static Build Perl support statically to irssi binary
 	                   (default is to build a module)
-	--enable-perl-path=dir  Specify installation dir for Perl libraries
-	--disable-perl     Disable Perl support
+	--with-perl-path=dir  Specify installation dir for Perl libraries
+	--without-perl     Disable Perl support
 
 	--with-socks       Build with socks library
 	--with-bot         Build irssi-bot

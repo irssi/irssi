@@ -1,11 +1,7 @@
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
-
-#undef _
-#undef VERSION
+#define NEED_PERL_H
 #define HAVE_CONFIG_H
 #include "../module.h"
+#include <XSUB.h>
 
 #include "network.h"
 #include "levels.h"
@@ -27,6 +23,7 @@
 #include "queries.h"
 #include "nicklist.h"
 
+#include "perl/perl-core.h"
 #include "perl/perl-common.h"
 #include "perl/perl-signals.h"
 

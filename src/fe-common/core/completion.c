@@ -208,7 +208,14 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 	return ret;
 }
 
-GList *list_add_file(GList *list, const char *name)
+#define IS_CURRENT_DIR(dir) \
+        ((dir)[0] == '.' && ((dir)[1] == '\0' || (dir)[1] == G_DIR_SEPARATOR))
+
+#define USE_DEFAULT_PATH(path, default_path) \
+	((!g_path_is_absolute(path) || IS_CURRENT_DIR(path)) && \
+	 default_path != NULL)
+
+GList *list_add_file(GList *list, const char *name, const char *default_path)
 {
 	struct stat statbuf;
 	char *fname;
@@ -216,6 +223,11 @@ GList *list_add_file(GList *list, const char *name)
 	g_return_val_if_fail(name != NULL, NULL);
 
 	fname = convert_home(name);
+	if (USE_DEFAULT_PATH(fname, default_path)) {
+                g_free(fname);
+		fname = g_strconcat(default_path, G_DIR_SEPARATOR_S,
+				    name, NULL);
+	}
 	if (stat(fname, &statbuf) == 0) {
 		list = g_list_append(list, !S_ISDIR(statbuf.st_mode) ? g_strdup(name) :
 				     g_strconcat(name, G_DIR_SEPARATOR_S, NULL));
@@ -225,7 +237,7 @@ GList *list_add_file(GList *list, const char *name)
 	return list;
 }
 
-GList *filename_complete(const char *path)
+GList *filename_complete(const char *path, const char *default_path)
 {
         GList *list;
 	DIR *dirp;
@@ -239,17 +251,31 @@ GList *filename_complete(const char *path)
 
 	/* get directory part of the path - expand ~/ */
 	realpath = convert_home(path);
-	dir = g_dirname(realpath);
-	g_free(realpath);
+	if (USE_DEFAULT_PATH(realpath, default_path)) {
+                g_free(realpath);
+		realpath = g_strconcat(default_path, G_DIR_SEPARATOR_S,
+				       path, NULL);
+	}
 
 	/* open directory for reading */
+	dir = g_dirname(realpath);
 	dirp = opendir(dir);
 	g_free(dir);
-	if (dirp == NULL) return NULL;
+        g_free(realpath);
+
+	if (dirp == NULL)
+		return NULL;
 
 	dir = g_dirname(path);
-	if (*dir == G_DIR_SEPARATOR && dir[1] == '\0')
-		*dir = '\0'; /* completing file in root directory */
+	if (*dir == G_DIR_SEPARATOR && dir[1] == '\0') {
+                /* completing file in root directory */
+		*dir = '\0';
+	} else if (IS_CURRENT_DIR(dir) && !IS_CURRENT_DIR(path)) {
+		/* completing file in default_path
+		   (path not set, and leave it that way) */
+		g_free_and_null(dir);
+	}
+
 	basename = g_basename(path);
 	len = strlen(basename);
 
@@ -265,14 +291,15 @@ GList *filename_complete(const char *path)
 		}
 
 		if (len == 0 || strncmp(dp->d_name, basename, len) == 0) {
-			name = g_strdup_printf("%s"G_DIR_SEPARATOR_S"%s", dir, dp->d_name);
-			list = list_add_file(list, name);
+			name = dir == NULL ? g_strdup(dp->d_name) :
+				g_strdup_printf("%s"G_DIR_SEPARATOR_S"%s", dir, dp->d_name);
+			list = list_add_file(list, name, default_path);
 			g_free(name);
 		}
 	}
 	closedir(dirp);
 
-	g_free(dir);
+	g_free_not_null(dir);
         return list;
 }
 
@@ -617,7 +644,7 @@ static void sig_complete_filename(GList **list, WINDOW_REC *window,
 
 	if (*line != '\0') return;
 
-	*list = filename_complete(word);
+	*list = filename_complete(word, NULL);
 	if (*list != NULL) {
 		*want_space = FALSE;
 		signal_stop();
@@ -658,7 +685,6 @@ void completion_init(void)
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_add("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
-	signal_add("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_add("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);
@@ -676,7 +702,6 @@ void completion_deinit(void)
 	signal_remove("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_remove("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
 	signal_remove("complete command cat", (SIGNAL_FUNC) sig_complete_filename);
-	signal_remove("complete command run", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command save", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command reload", (SIGNAL_FUNC) sig_complete_filename);
 	signal_remove("complete command rawlog open", (SIGNAL_FUNC) sig_complete_filename);

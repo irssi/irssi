@@ -1,9 +1,31 @@
+/*
+ perl-signals.c : irssi
+
+    Copyright (C) 1999-2001 Timo Sirainen
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#define NEED_PERL_H
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
 #include "servers.h"
 
+#include "perl-core.h"
 #include "perl-common.h"
 #include "perl-signals.h"
 
@@ -136,7 +158,9 @@ static void perl_call_signal(const char *func, int signal_id,
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
 
-		signal_emit("gui dialog", 2, "error", SvPV(ERRSV, n_a));
+		signal_emit("script error", 2,
+			    perl_script_find_package(perl_get_package()),
+			    SvPV(ERRSV, n_a));
 	}
 
         /* restore arguments the perl script modified */
@@ -379,7 +403,7 @@ static int signal_destroy_hash(void *key, GSList **list, const char *package)
 }
 
 /* destroy all signals used by package */
-void perl_signals_package_destroy(const char *package)
+void perl_signal_remove_package(const char *package)
 {
 	int n;
 
