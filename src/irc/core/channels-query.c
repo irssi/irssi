@@ -304,6 +304,27 @@ static void query_check(IRC_SERVER_REC *server)
         query_send(server, query);
 }
 
+/* if there's no more queries in queries in buffer, send the sync signal */
+static void channel_checksync(IRC_CHANNEL_REC *channel)
+{
+	SERVER_QUERY_REC *rec;
+	int n;
+
+	g_return_if_fail(channel != NULL);
+
+	if (channel->synced)
+		return; /* already synced */
+
+	rec = channel->server->chanqueries;
+	for (n = 0; n < CHANNEL_QUERIES; n++) {
+		if (g_slist_find(rec->queries[n], channel))
+			return;
+	}
+
+	channel->synced = TRUE;
+	signal_emit("channel sync", 1, channel);
+}
+
 /* Error occured when trying to execute query - abort and try again. */
 static void query_current_error(IRC_SERVER_REC *server)
 {
@@ -336,6 +357,10 @@ static void query_current_error(IRC_SERVER_REC *server)
 			rec->queries[query] =
 				g_slist_append(rec->queries[query], tmp->data);
 		}
+	} else {
+		/* check if failed channels are synced after this error */
+		g_slist_foreach(rec->current_queries,
+				(GFunc) channel_checksync, NULL);
 	}
 
 	g_slist_free(rec->current_queries);
@@ -365,27 +390,6 @@ static void sig_channel_joined(IRC_CHANNEL_REC *channel)
 	}
 
 	query_check(channel->server);
-}
-
-/* if there's no more queries in queries in buffer, send the sync signal */
-static void channel_checksync(IRC_CHANNEL_REC *channel)
-{
-	SERVER_QUERY_REC *rec;
-	int n;
-
-	g_return_if_fail(channel != NULL);
-
-	if (channel->synced)
-		return; /* already synced */
-
-	rec = channel->server->chanqueries;
-	for (n = 0; n < CHANNEL_QUERIES; n++) {
-		if (g_slist_find(rec->queries[n], channel))
-			return;
-	}
-
-	channel->synced = TRUE;
-	signal_emit("channel sync", 1, channel);
 }
 
 static void channel_got_query(IRC_CHANNEL_REC *chanrec, int query_type)
