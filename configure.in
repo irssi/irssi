@@ -344,6 +344,8 @@ if test -z "$GLIB_DIR"; then
     fi
     if test -n "$dlcmd"; then
       echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
+      echo
+      echo "*** Press ENTER to continue"
       read answer
       eval $dlcmd
       if `gunzip $glib_file`; then
