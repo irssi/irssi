@@ -19,3 +19,6 @@ int joined:1; /* Have we even received JOIN event for this channel? */
 int left:1; /* You just left the channel */
 int kicked:1; /* You just got kicked */
 int destroying:1;
+
+GSList *lastmsgs; /* List of nicks who last send message */
+GSList *lastownmsgs; /* List of nicks who last send message to you */

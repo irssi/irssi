@@ -41,6 +41,8 @@ time_t lag_sent; /* 0 or time when last lag query was sent to server */
 time_t lag_last_check; /* last time we checked lag */
 int lag; /* server lag in milliseconds */
 
+GSList *lastmsgs; /* List of nicks who last send you msg */
+
 GSList *channels;
 GSList *queries;
 

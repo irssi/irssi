@@ -43,6 +43,9 @@ static int last_want_space, last_line_pos;
 #define isseparator(c) \
 	(isspace((int) (c)) || isseparator_notspace(c))
 
+void chat_completion_init(void);
+void chat_completion_deinit(void);
+
 /* Return whole word at specified position in string */
 char *get_word_at(const char *str, int pos, char **startpos)
 {
@@ -598,6 +601,8 @@ void completion_init(void)
 	complist = NULL;
 	last_line = NULL; last_line_pos = -1;
 
+	chat_completion_init();
+
 	signal_add_first("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command set", (SIGNAL_FUNC) sig_complete_set);
 	signal_add("complete command toggle", (SIGNAL_FUNC) sig_complete_toggle);
@@ -613,6 +618,8 @@ void completion_init(void)
 void completion_deinit(void)
 {
         free_completions();
+
+	chat_completion_deinit();
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command set", (SIGNAL_FUNC) sig_complete_set);

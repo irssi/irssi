@@ -8,12 +8,14 @@ INCLUDES = \
 
 libfe_common_core_a_SOURCES = \
 	autorun.c \
+	chat-completion.c \
 	command-history.c \
 	completion.c \
 	fe-channels.c \
 	fe-common-core.c \
 	fe-core-commands.c \
 	fe-ignore.c \
+	fe-ignore-messages.c \
 	fe-log.c \
 	fe-messages.c \
 	fe-modules.c \

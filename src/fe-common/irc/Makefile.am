@@ -22,7 +22,6 @@ libfe_common_irc_a_SOURCES = \
 	fe-netjoin.c \
 	fe-netsplit.c \
 	fe-common-irc.c \
-	irc-completion.c \
         irc-modules.c \
 	module-formats.c 
 

@@ -32,6 +32,11 @@ typedef struct {
 #include "server-rec.h"
 } SERVER_REC;
 
+typedef struct {
+	time_t time;
+	char *nick;
+} LAST_MSG_REC;
+
 extern GSList *servers, *lookup_servers;
 
 void servers_init(void);

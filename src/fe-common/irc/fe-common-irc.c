@@ -29,7 +29,6 @@
 #include "servers-setup.h"
 
 #include "themes.h"
-#include "completion.h"
 
 void fe_irc_modules_init(void);
 void fe_irc_modules_deinit(void);
@@ -54,9 +53,6 @@ void fe_events_deinit(void);
 
 void fe_events_numeric_init(void);
 void fe_events_numeric_deinit(void);
-
-void irc_completion_init(void);
-void irc_completion_deinit(void);
 
 void fe_netsplit_init(void);
 void fe_netsplit_deinit(void);
@@ -104,7 +100,6 @@ void fe_common_irc_init(void)
 	fe_events_numeric_init();
 	fe_netsplit_init();
 	fe_netjoin_init();
-	irc_completion_init();
 
 	fe_irc_modules_init();
 }
@@ -122,7 +117,6 @@ void fe_common_irc_deinit(void)
 	fe_events_numeric_deinit();
 	fe_netsplit_deinit();
 	fe_netjoin_deinit();
-	irc_completion_deinit();
 
 	theme_unregister();
 }

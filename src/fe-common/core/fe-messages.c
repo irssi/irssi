@@ -55,9 +55,6 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	int for_me, print_channel, level;
 	char *color;
 
-	if (ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC))
-		return;
-
 	chanrec = channel_find(server, target);
 	for_me = nick_match_msg(server, msg, server->nick);
 	color = for_me ? NULL :
@@ -106,9 +103,6 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
 	QUERY_REC *query;
-
-	if (ignore_check(server, nick, address, NULL, msg, MSGLEVEL_MSGS))
-		return;
 
 	query = query_find(server, nick);
 	printformat(server, nick, MSGLEVEL_MSGS,
@@ -214,9 +208,6 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 static void sig_message_join(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address)
 {
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS))
-		return;
-
 	printformat(server, channel, MSGLEVEL_JOINS,
 		    IRCTXT_JOIN, nick, address, channel);
 }
@@ -225,9 +216,6 @@ static void sig_message_part(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address,
 			     const char *reason)
 {
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_PARTS))
-		return;
-
 	printformat(server, channel, MSGLEVEL_PARTS,
 		    IRCTXT_PART, nick, address, channel, reason);
 }
@@ -240,9 +228,6 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	GSList *tmp, *windows;
 	char *print_channel;
 	int once, count;
-
-	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
-		return;
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
@@ -289,10 +274,6 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *kicker,
 			     const char *address, const char *reason)
 {
-	if (ignore_check(server, kicker, address,
-			 channel, reason, MSGLEVEL_KICKS))
-		return;
-
 	printformat(server, channel, MSGLEVEL_KICKS,
 		    IRCTXT_KICK, nick, channel, kicker, reason);
 }
@@ -317,9 +298,6 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 {
 	GSList *tmp, *windows;
 	int msgprint;
-
-	if (ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS))
-		return;
 
 	msgprint = FALSE;
 
@@ -380,11 +358,6 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 {
 	char *str;
 
-	if (*channel == '\0' ||
-	    ignore_check(server, nick, address,
-			 channel, NULL, MSGLEVEL_INVITES))
-		return;
-
 	str = show_lowascii(channel);
 	printformat(server, NULL, MSGLEVEL_INVITES,
 		    IRCTXT_INVITE, nick, str);
@@ -395,10 +368,6 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *topic,
 			      const char *nick, const char *address)
 {
-	if (ignore_check(server, nick, address,
-			 channel, topic, MSGLEVEL_TOPICS))
-		return;
-
 	printformat(server, channel, MSGLEVEL_TOPICS,
 		    *topic != '\0' ? IRCTXT_NEW_TOPIC : IRCTXT_TOPIC_UNSET,
 		    nick, channel, topic);
