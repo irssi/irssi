@@ -194,9 +194,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		for (tmp = chans; tmp != NULL; tmp = tmp->next) {
 			chanrec = tmp->data;
 
-			server_redirect_event((SERVER_REC *) server, chanstr, 3,
+			server_redirect_event((SERVER_REC *) server, chanstr, 4,
 					      "event 403", "chanquery mode abort", 1,
 					      "event 442", "chanquery mode abort", 1, /* "you're not on that channel" */
+					      "event 479", "chanquery mode abort", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
 					      "event 324", "chanquery mode", 1, NULL);
 		}
 		break;
