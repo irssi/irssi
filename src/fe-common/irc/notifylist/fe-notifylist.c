@@ -89,8 +89,11 @@ static void cmd_notify_show(void)
 	GSList *nicks, *offline, *tmp;
 	IRC_SERVER_REC *server;
 
-	if (notifies == NULL)
+	if (notifies == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_NOTIFY_LIST_EMPTY);
 		return;
+	}
 
 	/* build a list containing only the nicks */
 	nicks = NULL;
@@ -164,7 +167,12 @@ static void notifylist_print(NOTIFYLIST_REC *rec)
 
 static void cmd_notifylist_show(void)
 {
-	g_slist_foreach(notifies, (GFunc) notifylist_print, NULL);
+	if (notifies == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_NOTIFY_LIST_EMPTY);
+	} else {
+		g_slist_foreach(notifies, (GFunc) notifylist_print, NULL);
+	}
 }
 
 static void cmd_notify(const char *data)
