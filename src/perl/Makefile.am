@@ -124,7 +124,7 @@ EXTRA_DIST = \
 	libperl_orig.la \
 	get-signals.pl \
 	irssi-core.pl \
-	$(core_sources) \
+	$(common_sources) \
 	$(irc_sources) \
 	$(ui_sources) \
 	$(textui_sources)
