@@ -463,10 +463,11 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	g_slist_free(nicklist);
 
 	/* display the nicks */
-	printformat(channel->server, channel->name,
-		    MSGLEVEL_CRAP, TXT_NAMES, channel->name, "");
-        if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0)
+        if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0) {
+		printformat(channel->server, channel->name,
+			    MSGLEVEL_CRAP, TXT_NAMES, channel->name, "");
 		display_sorted_nicks(channel, sorted);
+	}
 	g_slist_free(sorted);
 
 	printformat(channel->server, channel->name,
