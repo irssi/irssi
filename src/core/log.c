@@ -256,6 +256,9 @@ static void log_set_config(LOG_REC *log)
 	CONFIG_NODE *node;
 	char *levelstr;
 
+	if (log->temp)
+		return;
+
 	node = iconfig_node_traverse("logs", TRUE);
 	node = config_node_section(node, log->fname, NODE_TYPE_BLOCK);
 
