@@ -20,9 +20,13 @@
 
 #include "module.h"
 #include "module-formats.h"
+#include "args.h"
+#include "misc.h"
 #include "levels.h"
 #include "settings.h"
+
 #include "channels.h"
+#include "servers-setup.h"
 
 #include "fe-queries.h"
 #include "hilight-text.h"
@@ -39,6 +43,13 @@
 #include "window-save.h"
 
 #include <signal.h>
+
+static char *autocon_server;
+static char *autocon_password;
+static int autocon_port;
+static int no_autoconnect;
+static char *cmdline_nick;
+static char *cmdline_hostname;
 
 void autorun_init(void);
 void autorun_deinit(void);
@@ -104,6 +115,24 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 
 void fe_common_core_init(void)
 {
+	static struct poptOption options[] = {
+		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, N_("Automatically connect to server/ircnet"), N_("SERVER") },
+		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, N_("Autoconnect password"), N_("SERVER") },
+		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, N_("Autoconnect port"), N_("PORT") },
+		{ "noconnect", '!', POPT_ARG_NONE, &no_autoconnect, 0, N_("Disable autoconnecting"), NULL },
+		{ "nick", 'n', POPT_ARG_STRING, &cmdline_nick, 0, N_("Specify nick to use"), NULL },
+		{ "hostname", 'h', POPT_ARG_STRING, &cmdline_hostname, 0, N_("Specify host name to use"), NULL },
+		{ NULL, '\0', 0, NULL }
+	};
+
+	autocon_server = NULL;
+	autocon_password = NULL;
+	autocon_port = 6667;
+	no_autoconnect = FALSE;
+	cmdline_nick = NULL;
+	cmdline_hostname = NULL;
+	args_register(options);
+
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
 	settings_add_bool("lookandfeel", "hide_text_style", FALSE);
@@ -220,20 +249,9 @@ void glog_func(const char *log_domain, GLogLevelFlags log_level,
 	}
 }
 
-void fe_common_core_finish_init(void)
+static void create_windows(void)
 {
 	WINDOW_REC *window;
-
-	g_log_set_handler(G_LOG_DOMAIN,
-			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
-					    G_LOG_LEVEL_WARNING),
-			  (GLogFunc) glog_func, NULL);
-
-	signal_emit("irssi init read settings", 0);
-
-#ifdef SIGPIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
 
 	windows_restore();
 	if (windows != NULL)
@@ -257,4 +275,70 @@ void fe_common_core_finish_init(void)
 		/* we have to have at least one window.. */
                 window = window_create(NULL, TRUE);
 	}
+}
+
+static void autoconnect_servers(void)
+{
+	GSList *tmp, *chatnets;
+	char *str;
+
+	if (autocon_server != NULL) {
+		/* connect to specified server */
+		str = g_strdup_printf(autocon_password == NULL ? "%s %d" : "%s %d %s",
+				      autocon_server, autocon_port, autocon_password);
+		signal_emit("command connect", 1, str);
+		g_free(str);
+		return;
+	}
+
+	if (no_autoconnect) {
+		/* don't autoconnect */
+		return;
+	}
+
+	/* connect to autoconnect servers */
+	chatnets = NULL;
+	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
+		SERVER_SETUP_REC *rec = tmp->data;
+
+		if (rec->autoconnect &&
+		    (rec->chatnet == NULL ||
+		     gslist_find_icase_string(chatnets, rec->chatnet) == NULL)) {
+			if (rec->chatnet != NULL)
+				chatnets = g_slist_append(chatnets, rec->chatnet);
+
+			str = g_strdup_printf("%s %d", rec->address, rec->port);
+			signal_emit("command connect", 1, str);
+			g_free(str);
+		}
+	}
+
+	g_slist_free(chatnets);
+}
+
+void fe_common_core_finish_init(void)
+{
+	g_log_set_handler(G_LOG_DOMAIN,
+			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
+					    G_LOG_LEVEL_WARNING),
+			  (GLogFunc) glog_func, NULL);
+
+	signal_emit("irssi init read settings", 0);
+
+#ifdef SIGPIPE
+	signal(SIGPIPE, SIG_IGN);
+#endif
+
+	if (cmdline_nick != NULL) {
+		/* override nick found from setup */
+		settings_set_str("nick", cmdline_nick);
+	}
+
+	if (cmdline_hostname != NULL) {
+		/* override host name found from setup */
+		settings_set_str("hostname", cmdline_hostname);
+	}
+
+	create_windows();
+        autoconnect_servers();
 }

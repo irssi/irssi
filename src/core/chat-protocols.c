@@ -202,7 +202,8 @@ CHAT_PROTOCOL_REC *chat_protocol_get_unknown(const char *name)
 	if (rec != NULL)
                 return rec;
 
-        rec = g_new0(CHAT_PROTOCOL_REC, 1);
+	rec = g_new0(CHAT_PROTOCOL_REC, 1);
+        rec->not_initialized = TRUE;
 	rec->name = (char *) name;
 	rec->create_chatnet = create_chatnet;
         rec->create_server_setup = create_server_setup;

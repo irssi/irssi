@@ -207,6 +207,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Misc", 0 },
 
+	{ "unknown_chat_protocol", "Unknown chat protocol: $0", 1, { 0 } },
 	{ "unknown_chatnet", "Unknown chat network: $0", 1, { 0 } },
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },
 	{ "perl_error", "Perl error: $0", 1, { 0 } },

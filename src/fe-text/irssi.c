@@ -135,7 +135,6 @@ static void textui_finish_init(void)
 	settings_check();
 
 	fe_common_core_finish_init();
-	fe_common_irc_finish_init();
 
 #ifdef HAVE_STATIC_PERL
 	perl_core_init();

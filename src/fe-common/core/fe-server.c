@@ -302,6 +302,14 @@ static void sig_server_reconnect_not_found(const char *tag)
 		    TXT_RECONNECT_NOT_FOUND, tag);
 }
 
+static void sig_chat_protocol_unknown(const char *protocol)
+{
+	g_return_if_fail(protocol != NULL);
+
+	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+                    TXT_UNKNOWN_CHAT_PROTOCOL, protocol);
+}
+
 void fe_server_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
@@ -319,6 +327,8 @@ void fe_server_init(void)
 	signal_add("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_add("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
 	signal_add("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
+
+	signal_add("chat protocol unknown", (SIGNAL_FUNC) sig_chat_protocol_unknown);
 }
 
 void fe_server_deinit(void)
@@ -337,4 +347,6 @@ void fe_server_deinit(void)
 	signal_remove("server lag disconnect", (SIGNAL_FUNC) sig_server_lag_disconnected);
 	signal_remove("server reconnect remove", (SIGNAL_FUNC) sig_server_reconnect_removed);
 	signal_remove("server reconnect not found", (SIGNAL_FUNC) sig_server_reconnect_not_found);
+
+	signal_remove("chat protocol unknown", (SIGNAL_FUNC) sig_chat_protocol_unknown);
 }

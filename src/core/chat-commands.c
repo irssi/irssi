@@ -66,6 +66,14 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
         if (proto == NULL)
 		proto = chat_protocol_find_id(conn->chat_type);
 
+	if (proto->not_initialized) {
+		/* trying to use protocol that isn't yet initialized */
+		signal_emit("chat protocol unknown", 1, proto->name);
+		server_connect_free(conn);
+                cmd_params_free(free_arg);
+		return NULL;
+	}
+
 	if (g_hash_table_lookup(optlist, "6") != NULL)
 		conn->family = AF_INET6;
 	else if (g_hash_table_lookup(optlist, "4") != NULL)

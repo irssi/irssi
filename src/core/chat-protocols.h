@@ -4,6 +4,8 @@
 typedef struct {
 	int id;
 
+	unsigned int not_initialized:1;
+
 	char *name;
 	char *fullname;
 	char *chatnet;
