@@ -153,6 +153,7 @@ static void cmd_toggle(const char *data)
 	else {
 		set_boolean(key, *value != '\0' ? value : "TOGGLE");
                 set_print(settings_get_record(key));
+		signal_emit("setup changed", 0);
 	}
 
         cmd_params_free(free_arg);
