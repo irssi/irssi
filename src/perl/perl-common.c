@@ -50,10 +50,27 @@ static GHashTable *iobject_stashes, *plain_stashes;
 static GSList *use_protocols;
 
 /* returns the package who called us */
-char *perl_get_package(void)
+const char *perl_get_package(void)
 {
 	STRLEN n_a;
 	return SvPV(perl_eval_pv("caller", TRUE), n_a);
+}
+
+/* Parses the package part from function name */
+char *perl_function_get_package(const char *function)
+{
+	const char *p;
+        int pos;
+
+        pos = 0;
+	for (p = function; *p != '\0'; p++) {
+		if (*p == ':' && p[1] == ':') {
+			if (++pos == 3)
+                                return g_strndup(function, (int) (p-function));
+		}
+	}
+
+        return NULL;
 }
 
 SV *irssi_bless_iobject(int type, int chat_type, void *object)

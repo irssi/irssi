@@ -157,10 +157,13 @@ static void perl_call_signal(const char *func, int signal_id,
 
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
+                char *package;
 
+                package = perl_function_get_package(func);
 		signal_emit("script error", 2,
-			    perl_script_find_package(perl_get_package()),
+			    perl_script_find_package(package),
 			    SvPV(ERRSV, n_a));
+                g_free(package);
 	}
 
         /* restore arguments the perl script modified */

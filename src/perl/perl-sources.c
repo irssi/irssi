@@ -27,20 +27,36 @@
 
 typedef struct {
 	int tag;
+        int refcount;
 	char *func;
 	char *data;
 } PERL_SOURCE_REC;
 
 static GSList *perl_sources;
 
+static void perl_source_ref(PERL_SOURCE_REC *rec)
+{
+        rec->refcount++;
+}
+
+static void perl_source_unref(PERL_SOURCE_REC *rec)
+{
+	if (--rec->refcount != 0)
+		return;
+
+	g_free(rec->func);
+	g_free(rec->data);
+	g_free(rec);
+}
+
 static void perl_source_destroy(PERL_SOURCE_REC *rec)
 {
 	perl_sources = g_slist_remove(perl_sources, rec);
 
 	g_source_remove(rec->tag);
-	g_free(rec->func);
-	g_free(rec->data);
-	g_free(rec);
+	rec->tag = -1;
+
+	perl_source_unref(rec);
 }
 
 static int perl_source_event(PERL_SOURCE_REC *rec)
@@ -55,16 +71,21 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	XPUSHs(sv_2mortal(new_pv(rec->data)));
 	PUTBACK;
 
+        perl_source_ref(rec);
 	retcount = perl_call_pv(rec->func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
 		STRLEN n_a;
+                char *package;
 
+                package = perl_function_get_package(rec->func);
 		signal_emit("script error", 2,
-			    perl_script_find_package(perl_get_package()),
+			    perl_script_find_package(package),
 			    SvPV(ERRSV, n_a));
+                g_free(package);
 	}
+        perl_source_unref(rec);
 
 	PUTBACK;
 	FREETMPS;
@@ -78,6 +99,8 @@ int perl_timeout_add(int msecs, const char *func, const char *data)
 	PERL_SOURCE_REC *rec;
 
 	rec = g_new(PERL_SOURCE_REC, 1);
+	perl_source_ref(rec);
+
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
 	rec->tag = g_timeout_add(msecs, (GSourceFunc) perl_source_event, rec);
@@ -93,6 +116,8 @@ int perl_input_add(int source, int condition,
         GIOChannel *channel;
 
 	rec = g_new(PERL_SOURCE_REC, 1);
+	perl_source_ref(rec);
+
 	rec->func = g_strdup_printf("%s::%s", perl_get_package(), func);
 	rec->data = g_strdup(data);
 

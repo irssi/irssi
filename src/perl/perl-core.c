@@ -124,7 +124,9 @@ void perl_scripts_deinit(void)
 /* Unload perl script */
 void perl_script_unload(PERL_SCRIPT_REC *script)
 {
-        perl_script_destroy_package(script);
+        g_return_if_fail(script != NULL);
+
+	perl_script_destroy_package(script);
         perl_script_destroy(script);
 }
 
@@ -240,6 +242,8 @@ PERL_SCRIPT_REC *perl_script_load_file(const char *path)
 {
 	char *name;
 
+        g_return_val_if_fail(path != NULL, NULL);
+
         name = script_file_get_name(path);
         return script_load(name, path, NULL);
 }
@@ -249,6 +253,8 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 {
 	char *name;
 
+        g_return_val_if_fail(data != NULL, NULL);
+
 	name = script_data_get_name();
 	return script_load(name, NULL, data);
 }
@@ -257,6 +263,8 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 PERL_SCRIPT_REC *perl_script_find(const char *name)
 {
 	GSList *tmp;
+
+        g_return_val_if_fail(name != NULL, NULL);
 
 	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
 		PERL_SCRIPT_REC *rec = tmp->data;
@@ -272,6 +280,8 @@ PERL_SCRIPT_REC *perl_script_find(const char *name)
 PERL_SCRIPT_REC *perl_script_find_package(const char *package)
 {
 	GSList *tmp;
+
+        g_return_val_if_fail(package != NULL, NULL);
 
 	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
 		PERL_SCRIPT_REC *rec = tmp->data;

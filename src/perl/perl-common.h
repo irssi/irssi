@@ -18,8 +18,10 @@ typedef struct {
         PERL_OBJECT_FUNC fill_func;
 } PLAIN_OBJECT_INIT_REC;
 
-/* returns the package who called us */
-char *perl_get_package(void);
+/* Returns the package who called us */
+const char *perl_get_package(void);
+/* Parses the package part from function name */
+char *perl_function_get_package(const char *function);
 
 /* For compatibility with perl 5.004 and older */
 #ifndef HAVE_PL_PERL
