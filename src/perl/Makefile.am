@@ -109,6 +109,15 @@ UI_SOURCES = \
 	ui/typemap \
 	ui/module.h
 
+TEXTUI_SOURCES = \
+	ui/TextUI.xs \
+	ui/TextUI.pm \
+	ui/TextBuffer.xs \
+	ui/TextBufferView.xs \
+	ui/Makefile.PL.in \
+	ui/typemap \
+	ui/module.h
+
 EXTRA_DIST = \
 	libperl_dynaloader.la \
 	libperl_orig.la \
@@ -116,7 +125,8 @@ EXTRA_DIST = \
 	irssi-core.pl \
 	$(CORE_SOURCES) \
 	$(IRC_SOURCES) \
-	$(UI_SOURCES)
+	$(UI_SOURCES) \
+	$(TEXTUI_SOURCES)
 
 all-local:
 	for dir in common irc ui textui; do \
