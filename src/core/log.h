@@ -10,13 +10,16 @@ enum {
 
 typedef char *(*COLORIZE_FUNC)(const char *str);
 
-typedef struct {
+typedef struct _LOG_REC LOG_REC;
+typedef struct _LOG_ITEM_REC LOG_ITEM_REC;
+
+struct _LOG_ITEM_REC {
 	int type;
         char *name;
 	char *servertag;
-} LOG_ITEM_REC;
+};
 
-typedef struct {
+struct _LOG_REC {
 	char *fname; /* file name, in strftime() format */
 	char *real_fname; /* the current expanded file name */
 	int handle; /* file handle */
@@ -31,7 +34,7 @@ typedef struct {
 	unsigned int autoopen:1; /* automatically start logging at startup */
 	unsigned int failed:1; /* opening log failed last time */
 	unsigned int temp:1; /* don't save this to config file */
-} LOG_REC;
+};
 
 extern GSList *logs;
 

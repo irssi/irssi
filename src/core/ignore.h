@@ -5,7 +5,9 @@
 #  include <regex.h>
 #endif
 
-typedef struct {
+typedef struct _IGNORE_REC IGNORE_REC;
+
+struct _IGNORE_REC {
 	int level; /* ignore these levels */
 	char *mask; /* nick mask */
 	char *servertag; /* this is for autoignoring */
@@ -22,7 +24,7 @@ typedef struct {
 	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	regex_t preg;
 #endif
-} IGNORE_REC;
+};
 
 extern GSList *ignores;
 
