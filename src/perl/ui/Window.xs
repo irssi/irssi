@@ -165,8 +165,13 @@ void
 command(window, cmd)
 	Irssi::UI::Window window
 	char *cmd
+PREINIT:
+	WINDOW_REC *old;
 CODE:
+	old = active_win;
+	active_win = window;
 	perl_command(cmd, window->active_server, window->active);
+        active_win = old;
 
 void
 window_item_add(window, item, automatic)
