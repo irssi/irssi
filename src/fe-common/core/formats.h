@@ -45,6 +45,7 @@ struct _FORMAT_REC {
 typedef struct {
 	WINDOW_REC *window;
 	SERVER_REC *server;
+        const char *server_tag; /* if server is non-NULL, must be server->tag */
 	const char *target;
 	int level;
 
@@ -100,6 +101,9 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t);
 void format_create_dest(TEXT_DEST_REC *dest,
 			void *server, const char *target,
 			int level, WINDOW_REC *window);
+void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
+			    const char *server_tag, const char *target,
+			    int level, WINDOW_REC *window);
 
 void format_newline(WINDOW_REC *window);
 

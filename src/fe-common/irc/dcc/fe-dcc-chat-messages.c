@@ -30,80 +30,100 @@
 
 static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 {
+        TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
-	printformat(NULL, tag, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-		    query != NULL ? IRCTXT_OWN_DCC_QUERY :
-		    IRCTXT_OWN_DCC, dcc->mynick, dcc->id, msg);
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT, NULL);
+
+	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_QUERY :
+			 IRCTXT_OWN_DCC, dcc->mynick, dcc->id, msg);
         g_free(tag);
 }
 
 static void sig_message_dcc_own_action(CHAT_DCC_REC *dcc, const char *msg)
 {
+        TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
-	printformat(NULL, tag, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-		    query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
-		    IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, msg);
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS |
+			       MSGLEVEL_NOHILIGHT, NULL);
+
+	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
+			 IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, msg);
         g_free(tag);
 }
 
 static void sig_message_dcc_own_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 				     const char *data)
 {
+        TEXT_DEST_REC dest;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 
-	printformat(NULL, tag, MSGLEVEL_DCC, IRCTXT_OWN_DCC_CTCP,
-		    dcc->id, cmd, data);
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCC | MSGLEVEL_CTCPS, NULL);
+
+	printformat_dest(&dest, IRCTXT_OWN_DCC_CTCP, dcc->id, cmd, data);
         g_free(tag);
 }
 
 static void sig_message_dcc(CHAT_DCC_REC *dcc, const char *msg)
 {
+        TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
-
 	query = query_find(NULL, tag);
-	printformat(NULL, tag, MSGLEVEL_DCCMSGS,
-		    query != NULL ? IRCTXT_DCC_MSG_QUERY : IRCTXT_DCC_MSG,
-		    dcc->id, msg);
+
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCCMSGS, NULL);
+
+	printformat_dest(&dest, query != NULL ? IRCTXT_DCC_MSG_QUERY :
+			 IRCTXT_DCC_MSG, dcc->id, msg);
         g_free(tag);
 }
 
 static void sig_message_dcc_action(CHAT_DCC_REC *dcc, const char *msg)
 {
+        TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
-
 	query = query_find(NULL, tag);
-	printformat(NULL, tag, MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS,
-		    query != NULL ? IRCTXT_ACTION_DCC_QUERY :
-		    IRCTXT_ACTION_DCC, dcc->id, msg);
-        g_free(tag);
+
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS, NULL);
+
+	printformat_dest(&dest, query != NULL ? IRCTXT_ACTION_DCC_QUERY :
+			 IRCTXT_ACTION_DCC, dcc->id, msg);
+	g_free(tag);
 }
 
 static void sig_message_dcc_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 				 const char *data)
 {
+        TEXT_DEST_REC dest;
 	char *tag;
 
 	tag = g_strconcat("=", dcc->id, NULL);
-	printformat(NULL, tag, MSGLEVEL_DCC, IRCTXT_DCC_CTCP,
-		    dcc->id, cmd, data);
+
+	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
+			       MSGLEVEL_DCC | MSGLEVEL_CTCPS, NULL);
+
+	printformat_dest(&dest, IRCTXT_DCC_CTCP, dcc->id, cmd, data);
         g_free(tag);
 }
 

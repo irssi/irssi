@@ -257,11 +257,11 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 	return NULL;
 }
 
-void log_file_write(SERVER_REC *server, const char *item, int level,
+void log_file_write(const char *server_tag, const char *item, int level,
 		    const char *str, int no_fallbacks)
 {
 	GSList *tmp, *fallbacks;
-	char *tmpstr, *servertag;
+	char *tmpstr;
 	int found;
 
 	g_return_if_fail(str != NULL);
@@ -269,7 +269,6 @@ void log_file_write(SERVER_REC *server, const char *item, int level,
 	if (logs == NULL)
 		return;
 
-	servertag = server == NULL ? NULL : server->tag;
 	fallbacks = NULL; found = FALSE;
 
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
@@ -285,7 +284,7 @@ void log_file_write(SERVER_REC *server, const char *item, int level,
 			fallbacks = g_slist_append(fallbacks, rec);
 		else if (item != NULL &&
 			 log_item_find(rec, LOG_ITEM_TARGET, item,
-				       servertag) != NULL)
+				       server_tag) != NULL)
 			log_write_rec(rec, str, level);
 	}
 

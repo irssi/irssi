@@ -43,8 +43,8 @@ static int sending_print_starting;
 
 static void print_line(TEXT_DEST_REC *dest, const char *text);
 
-static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
-				    int formatnum, va_list va)
+void printformat_module_dest_args(const char *module, TEXT_DEST_REC *dest,
+				  int formatnum, va_list va)
 {
 	char *arglist[MAX_FORMAT_PARAMS];
 	char buffer[DEFAULT_FORMAT_ARGLIST_SIZE];
@@ -74,6 +74,16 @@ static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 	g_free(str);
 }
 
+void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
+			     int formatnum, ...)
+{
+	va_list va;
+
+	va_start(va, formatnum);
+	printformat_module_dest_args(module, dest, formatnum, va);
+	va_end(va);
+}
+
 void printformat_module_args(const char *module, void *server,
 			     const char *target, int level,
 			     int formatnum, va_list va)
@@ -81,7 +91,7 @@ void printformat_module_args(const char *module, void *server,
 	TEXT_DEST_REC dest;
 
 	format_create_dest(&dest, server, target, level, NULL);
-	printformat_module_dest(module, &dest, formatnum, va);
+	printformat_module_dest_args(module, &dest, formatnum, va);
 }
 
 void printformat_module(const char *module, void *server, const char *target,
@@ -100,7 +110,7 @@ void printformat_module_window_args(const char *module, WINDOW_REC *window,
 	TEXT_DEST_REC dest;
 
 	format_create_dest(&dest, NULL, NULL, level, window);
-	printformat_module_dest(module, &dest, formatnum, va);
+	printformat_module_dest_args(module, &dest, formatnum, va);
 }
 
 void printformat_module_window(const char *module, WINDOW_REC *window,

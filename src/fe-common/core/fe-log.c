@@ -363,7 +363,8 @@ static void sig_server_disconnected(SERVER_REC *server)
 		logitem = log->items->data;
 		if (logitem->type == LOG_ITEM_TARGET &&
 		    logitem->servertag != NULL &&
-		    g_strcasecmp(logitem->servertag, server->tag) == 0)
+		    g_strcasecmp(logitem->servertag, server->tag) == 0 &&
+		    server_ischannel(server, logitem->name)) /* kludge again.. so we won't close dcc chats */
 			log_close(log);
 	}
 }
@@ -402,13 +403,13 @@ static char *escape_target(const char *target)
         return str;
 }
 
-static void autolog_open(SERVER_REC *server, const char *target)
+static void autolog_open(SERVER_REC *server, const char *server_tag,
+			 const char *target)
 {
 	LOG_REC *log;
-	char *fname, *dir, *fixed_target, *tag;
+	char *fname, *dir, *fixed_target;
 
-        tag = server == NULL ? NULL : server->tag;
-	log = logs_find_item(LOG_ITEM_TARGET, target, tag, NULL);
+	log = logs_find_item(LOG_ITEM_TARGET, target, server_tag, NULL);
 	if (log != NULL && !log->failed) {
 		log_start_logging(log);
 		return;
@@ -430,7 +431,7 @@ static void autolog_open(SERVER_REC *server, const char *target)
 		log = log_create_rec(fname, autolog_level);
                 if (!settings_get_bool("autolog_colors"))
 			log->colorizer = log_colorizer_strip;
-		log_item_add(log, LOG_ITEM_TARGET, target, tag);
+		log_item_add(log, LOG_ITEM_TARGET, target, server_tag);
 
 		dir = g_dirname(log->real_fname);
 		mkpath(dir, LOG_DIR_CREATE_MODE);
@@ -443,23 +444,27 @@ static void autolog_open(SERVER_REC *server, const char *target)
 	g_free(fname);
 }
 
-static void autolog_open_check(SERVER_REC *server, const char *target,
-			       int level)
+static void autolog_open_check(SERVER_REC *server, const char *server_tag,
+			       const char *target, int level)
 {
 	char **targets, **tmp;
 
-	if (level == MSGLEVEL_PARTS || /* FIXME: kind of a kludge, but we don't want to reopen logs when we're parting the channel with /WINDOW CLOSE.. */
+	/* FIXME: kind of a kludge, but we don't want to reopen logs when
+	   we're parting the channel with /WINDOW CLOSE.. Maybe a small
+	   timeout would be nice instead of immediately closing the log file
+	   after "window item destroyed" */
+	if (level == MSGLEVEL_PARTS ||
 	    (autolog_level & level) == 0 || target == NULL || *target == '\0')
 		return;
 
 	/* there can be multiple targets separated with comma */
 	targets = g_strsplit(target, ",", -1);
 	for (tmp = targets; *tmp != NULL; tmp++)
-		autolog_open(server, *tmp);
+		autolog_open(server, server_tag, *tmp);
 	g_strfreev(targets);
 }
 
-static void log_single_line(WINDOW_REC *window, void *server,
+static void log_single_line(WINDOW_REC *window, const char *server_tag,
 			    const char *target, int level, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
@@ -475,26 +480,26 @@ static void log_single_line(WINDOW_REC *window, void *server,
 	}
 
 	if (target == NULL)
-		log_file_write(server, NULL, level, text, FALSE);
+		log_file_write(server_tag, NULL, level, text, FALSE);
 	else {
 		/* there can be multiple items separated with comma */
 		targets = g_strsplit(target, ",", -1);
 		for (tmp = targets; *tmp != NULL; tmp++)
-			log_file_write(server, *tmp, level, text, FALSE);
+			log_file_write(server_tag, *tmp, level, text, FALSE);
 		g_strfreev(targets);
 	}
 }
 
-static void log_line(WINDOW_REC *window, SERVER_REC *server,
-		     const char *target, int level, const char *text)
+static void log_line(TEXT_DEST_REC *dest, const char *text)
 {
 	char **lines, **tmp;
 
-	if (level == MSGLEVEL_NEVER)
+	if (dest->level == MSGLEVEL_NEVER)
 		return;
 
 	/* let autolog open the log records */
-	autolog_open_check(server, target, level);
+	autolog_open_check(dest->server, dest->server_tag,
+			   dest->target, dest->level);
 
 	if (logs == NULL)
 		return;
@@ -503,7 +508,8 @@ static void log_line(WINDOW_REC *window, SERVER_REC *server,
 	   line at a time */
 	lines = g_strsplit(text, "\n", -1);
 	for (tmp = lines; *tmp != NULL; tmp++)
-		log_single_line(window, server, target, level, *tmp);
+		log_single_line(dest->window, dest->server_tag,
+				dest->target, dest->level, *tmp);
 	g_strfreev(lines);
 }
 
@@ -515,8 +521,7 @@ static void sig_printtext(TEXT_DEST_REC *dest, const char *text,
 		return;
 	}
 
-	log_line(dest->window, dest->server, dest->target,
-		 dest->level, text);
+	log_line(dest, text);
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module,
@@ -547,8 +552,7 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 		g_free(tmp);
 
 		/* strip colors from text, log it. */
-		log_line(dest->window, dest->server, dest->target,
-			 dest->level, str);
+		log_line(dest, str);
 	}
 	g_free(str);
 

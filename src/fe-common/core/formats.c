@@ -278,9 +278,17 @@ void format_create_dest(TEXT_DEST_REC *dest,
 			void *server, const char *target,
 			int level, WINDOW_REC *window)
 {
+        format_create_dest_tag(dest, server, NULL, target, level, window);
+}
+
+void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
+			    const char *server_tag, const char *target,
+			    int level, WINDOW_REC *window)
+{
         memset(dest, 0, sizeof(TEXT_DEST_REC));
 
 	dest->server = server;
+	dest->server_tag = server != NULL ? SERVER(server)->tag : server_tag;
 	dest->target = target;
 	dest->level = level;
 	dest->window = window != NULL ? window :
@@ -611,12 +619,9 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 
 static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 {
-	SERVER_REC *server;
 	int count = 0;
 
-	server = dest->server;
-
-	if (server == NULL || hide_server_tags)
+	if (dest->server_tag == NULL || hide_server_tags)
                 return NULL;
 
         /* check for flags if we want to override defaults */
@@ -625,7 +630,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 
 	if ((dest->flags & PRINT_FLAG_SET_SERVERTAG) == 0) {
 		if (dest->window->active != NULL &&
-		    dest->window->active->server == server)
+		    dest->window->active->server == dest->server)
 			return NULL;
 
 		if (servers != NULL) {
@@ -644,7 +649,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 	}
 
 	return format_get_text_theme(theme, MODULE_NAME, dest,
-				     TXT_SERVERTAG, server->tag);
+				     TXT_SERVERTAG, dest->server_tag);
 }
 
 char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
