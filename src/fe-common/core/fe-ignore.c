@@ -25,8 +25,7 @@
 #include "levels.h"
 #include "misc.h"
 
-#include "irc.h"
-#include "irc-servers.h"
+#include "servers.h"
 #include "ignore.h"
 
 static void fe_unignore(IGNORE_REC *rec);
@@ -175,7 +174,8 @@ static void cmd_ignore(const char *data)
 
 	if (*levels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	if (ischannel(*mask)) {
+	if (active_win->active_server != NULL &&
+	    active_win->active_server->ischannel(*mask)) {
 		chanarg = mask;
 		mask = NULL;
 	}
@@ -251,6 +251,9 @@ static void cmd_unignore(const char *data)
 	IGNORE_REC *rec;
 	GSList *tmp;
 
+	if (*data == '\0')
+                cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+
 	if (is_numeric(data, ' ')) {
 		/* with index number */
 		tmp = g_slist_nth(ignores, atoi(data)-1);
@@ -259,8 +262,12 @@ static void cmd_unignore(const char *data)
 		/* with mask */
 		const char *chans[2] = { "*", NULL };
 
-		if (ischannel(*data)) chans[0] = data;
-		rec = ignore_find("*", ischannel(*data) ? NULL : data, (char **) chans);
+		if (active_win->active_server != NULL &&
+		    active_win->active_server->ischannel(*data)) {
+			chans[0] = data;
+			data = NULL;
+		}
+		rec = ignore_find("*", data, (char **) chans);
 	}
 
 	if (rec == NULL)

@@ -183,6 +183,17 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "format_item", "$0 %K=%n $1", 2, { 0, 0 } },
 
 	/* ---- */
+	{ NULL, "Ignores", 0 },
+
+	{ "ignored", "Ignoring %_$1%_ from %_$0%_", 2, { 0, 0 } },
+	{ "unignored", "Unignored %_$0%_", 1, { 0 } },
+	{ "ignore_not_found", "%_$0%_ is not being ignored", 1, { 0 } },
+	{ "ignore_no_ignores", "There are no ignores", 0 },
+	{ "ignore_header", "Ignorance List:", 0 },
+	{ "ignore_line", "$[-4]0 $1: $2 $3 $4", 4, { 1, 0, 0, 0 } },
+	{ "ignore_footer", "", 0 },
+
+	/* ---- */
 	{ NULL, "Misc", 0 },
 
 	{ "not_toggle", "Value must be either ON, OFF or TOGGLE", 0 },

@@ -46,6 +46,9 @@ void fe_channels_deinit(void);
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
 
+void fe_ignore_init(void);
+void fe_ignore_deinit(void);
+
 void fe_log_init(void);
 void fe_log_deinit(void);
 
@@ -100,6 +103,7 @@ void fe_common_core_init(void)
 	printtext_init();
         fe_channels_init();
         fe_queries_init();
+	fe_ignore_init();
 	fe_log_init();
 	fe_messages_init();
 	fe_modules_init();
@@ -125,6 +129,7 @@ void fe_common_core_deinit(void)
         fe_channels_deinit();
         fe_queries_deinit();
 	fe_messages_deinit();
+	fe_ignore_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
 	fe_server_deinit();

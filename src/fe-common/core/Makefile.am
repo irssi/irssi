@@ -13,6 +13,7 @@ libfe_common_core_a_SOURCES = \
 	fe-channels.c \
 	fe-common-core.c \
 	fe-core-commands.c \
+	fe-ignore.c \
 	fe-log.c \
 	fe-messages.c \
 	fe-modules.c \
