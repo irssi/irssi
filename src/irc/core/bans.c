@@ -117,16 +117,28 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 	GString *str;
 	GSList *tmp;
 	char **ban, **banlist;
+        int found;
 
 	g_return_if_fail(bans != NULL);
 
 	str = g_string_new(NULL);
 	banlist = g_strsplit(bans, " ", -1);
 	for (ban = banlist; *ban != NULL; ban++) {
+                found = FALSE;
 		for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
 			BAN_REC *rec = tmp->data;
 
-			if (match_wildcards(*ban, rec->ban))
+			if (match_wildcards(*ban, rec->ban)) {
+				g_string_sprintfa(str, "%s ", rec->ban);
+                                found = TRUE;
+			}
+		}
+
+		if (!found && is_numeric(*ban, '\0')) {
+			/* unbanning with ban# */
+			BAN_REC *rec = g_slist_nth_data(channel->banlist,
+							atoi(*ban)-1);
+			if (rec != NULL)
 				g_string_sprintfa(str, "%s ", rec->ban);
 		}
 	}
@@ -167,17 +179,8 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server,
 
 	if (set)
 		ban_set(chanrec, nicks, ban_type);
-	else {
-		if (is_numeric(nicks, '\0')) {
-			/* unban with ban number */
-			BAN_REC *ban = g_slist_nth_data(chanrec->banlist,
-							atoi(nicks)-1);
-			if (ban != NULL)
-                                nicks = ban->ban;
-		}
-
+	else
 		ban_remove(chanrec, nicks);
-	}
 
 	cmd_params_free(free_arg);
 }
