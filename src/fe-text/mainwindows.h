@@ -26,6 +26,7 @@ typedef struct {
 
 extern GSList *mainwindows;
 extern MAIN_WINDOW_REC *active_mainwin;
+extern int screen_reserved_top, screen_reserved_bottom;
 
 void mainwindows_init(void);
 void mainwindows_deinit(void);
@@ -36,7 +37,11 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window);
 void mainwindows_redraw(void);
 void mainwindows_recreate(void);
 
-void mainwindow_set_size(MAIN_WINDOW_REC *window, int size);
+/* Change the window height - the height includes the lines needed for
+   statusbars. If resize_lower is TRUE, the lower window is first tried
+   to be resized instead of upper window. */
+void mainwindow_set_size(MAIN_WINDOW_REC *window, int height,
+			 int resize_lower);
 void mainwindows_resize(int width, int height);
 
 void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,

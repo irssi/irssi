@@ -35,7 +35,7 @@
 GSList *mainwindows;
 MAIN_WINDOW_REC *active_mainwin;
 
-static int reserved_top, reserved_bottom;
+int screen_reserved_top, screen_reserved_bottom;
 static int old_screen_width, old_screen_height;
 
 #define mainwindow_create_screen(window) \
@@ -61,7 +61,7 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->height;
+		space = MAIN_WINDOW_TEXT_HEIGHT(rec);
 		if (space >= WINDOW_MIN_SIZE+NEW_WINDOW_SIZE && space > biggest) {
 			biggest = space;
 			biggest_rec = rec;
@@ -178,12 +178,13 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	if (mainwindows == NULL) {
 		active_mainwin = rec;
 
-		rec->first_line = reserved_top;
-		rec->last_line = screen_height-1 - reserved_bottom;
+		rec->first_line = screen_reserved_top;
+		rec->last_line = screen_height-1 - screen_reserved_bottom;
 		rec->height = rec->last_line-rec->first_line+1;
 	} else {
 		parent = WINDOW_MAIN(active_win);
-		if (parent->height < WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
+		if (MAIN_WINDOW_TEXT_HEIGHT(parent) <
+		    WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
 			parent = find_window_with_room();
 		if (parent == NULL)
 			return NULL; /* not enough space */
@@ -376,7 +377,7 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space += rec->height-WINDOW_MIN_SIZE;
+		space += MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 	}
 
 	if (space < -ydiff) {
@@ -390,7 +391,7 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 	for (tmp = sorted; tmp != NULL && ydiff < 0; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->height-WINDOW_MIN_SIZE;
+		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (space <= 0) {
 			rec->first_line += ydiff;
 			rec->last_line += ydiff;
@@ -419,7 +420,7 @@ static void mainwindows_resize_bigger(int xdiff, int ydiff)
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = rec->height-WINDOW_MIN_SIZE;
+		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (ydiff == 0 || (space >= 0 && tmp->next != NULL)) {
 			if (moved > 0) {
 				rec->first_line += moved;
@@ -488,10 +489,10 @@ int mainwindows_reserve_lines(int top, int bottom)
 
         ret = -1;
 	if (top != 0) {
-		g_return_val_if_fail(top > 0 || reserved_top > top, -1);
+		g_return_val_if_fail(top > 0 || screen_reserved_top > top, -1);
 
-		ret = reserved_top;
-		reserved_top += top;
+		ret = screen_reserved_top;
+		screen_reserved_top += top;
 
 		window = mainwindows_find_lower(-1);
 		if (window != NULL) {
@@ -501,10 +502,10 @@ int mainwindows_reserve_lines(int top, int bottom)
 	}
 
 	if (bottom != 0) {
-		g_return_val_if_fail(bottom > 0 || reserved_bottom > bottom, -1);
+		g_return_val_if_fail(bottom > 0 || screen_reserved_bottom > bottom, -1);
 
-		ret = reserved_bottom;
-		reserved_bottom += bottom;
+		ret = screen_reserved_bottom;
+		screen_reserved_bottom += bottom;
 
 		window = mainwindows_find_upper(screen_height);
 		if (window != NULL) {
@@ -551,60 +552,104 @@ static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
 	gui_window_redraw(shrink_win->active);
 }
 
-static int mainwindow_grow(MAIN_WINDOW_REC *window, int count)
+static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
-	/* shrink lower window */
 	shrink_win = mainwindows_find_lower(window->last_line);
-	if (shrink_win != NULL && shrink_win->height-count >= WINDOW_MIN_SIZE) {
+	if (shrink_win != NULL &&
+	    MAIN_WINDOW_TEXT_HEIGHT(shrink_win)-count >= WINDOW_MIN_SIZE) {
                 window->last_line += count;
 		shrink_win->first_line += count;
-	} else {
-		/* shrink upper window */
-		shrink_win = mainwindows_find_upper(window->first_line);
-		if (shrink_win == NULL ||
-		    shrink_win->height-count < WINDOW_MIN_SIZE)
-			return FALSE;
-
-		window->first_line -= count;
-		shrink_win->last_line -= count;
+		mainwindows_resize_two(window, shrink_win, count);
+                return TRUE;
 	}
 
-	mainwindows_resize_two(window, shrink_win, count);
+        return FALSE;
+}
+
+static int try_shrink_upper(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *shrink_win;
+
+	shrink_win = mainwindows_find_upper(window->first_line);
+	if (shrink_win != NULL &&
+	    MAIN_WINDOW_TEXT_HEIGHT(shrink_win)-count >= WINDOW_MIN_SIZE) {
+		window->first_line -= count;
+		shrink_win->last_line -= count;
+		mainwindows_resize_two(window, shrink_win, count);
+                return TRUE;
+	}
+
+        return FALSE;
+}
+
+static int mainwindow_grow(MAIN_WINDOW_REC *window, int count,
+			   int resize_lower)
+{
+	if (!resize_lower || !try_shrink_lower(window, count)) {
+		if (!try_shrink_upper(window, count)) {
+                        if (resize_lower || !try_shrink_lower(window, count))
+				return FALSE;
+		}
+	}
+
         return TRUE;
 }
 
-static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count)
+static int try_grow_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
-
-	if (window->height-count < WINDOW_MIN_SIZE)
-                return FALSE;
 
 	grow_win = mainwindows_find_lower(window->last_line);
 	if (grow_win != NULL) {
                 window->last_line -= count;
 		grow_win->first_line -= count;
-	} else {
-		grow_win = mainwindows_find_upper(window->first_line);
-		if (grow_win == NULL) return FALSE;
-
-		window->first_line += count;
-		grow_win->last_line += count;
+		mainwindows_resize_two(grow_win, window, count);
 	}
 
-	mainwindows_resize_two(grow_win, window, count);
+        return grow_win != NULL;
+}
+
+static int try_grow_upper(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *grow_win;
+
+	grow_win = mainwindows_find_upper(window->first_line);
+	if (grow_win != NULL) {
+		window->first_line += count;
+		grow_win->last_line += count;
+		mainwindows_resize_two(grow_win, window, count);
+	}
+
+        return grow_win != NULL;
+}
+
+static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count, int resize_lower)
+{
+	if (MAIN_WINDOW_TEXT_HEIGHT(window)-count < WINDOW_MIN_SIZE)
+                return FALSE;
+
+	if (!resize_lower || !try_grow_lower(window, count)) {
+		if (!try_grow_upper(window, count)) {
+                        if (resize_lower || !try_grow_lower(window, count))
+				return FALSE;
+		}
+	}
+
         return TRUE;
 }
 
-void mainwindow_set_size(MAIN_WINDOW_REC *window, int size)
+/* Change the window height - the height includes the lines needed for
+   statusbars. If resize_lower is TRUE, the lower window is first tried
+   to be resized instead of upper window. */
+void mainwindow_set_size(MAIN_WINDOW_REC *window, int height, int resize_lower)
 {
-        size -= window->height;
-	if (size < 0)
-		mainwindow_shrink(window, -size);
+        height -= window->height;
+	if (height < 0)
+		mainwindow_shrink(window, -height, resize_lower);
 	else
-		mainwindow_grow(window, size);
+		mainwindow_grow(window, height, resize_lower);
 }
 
 /* SYNTAX: WINDOW GROW [<lines>] */
@@ -616,7 +661,7 @@ static void cmd_window_grow(const char *data)
 	count = *data == '\0' ? 1 : atoi(data);
 	window = WINDOW_MAIN(active_win);
 
-	if (!mainwindow_grow(window, count)) {
+	if (!mainwindow_grow(window, count, FALSE)) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_WINDOW_TOO_SMALL);
 	}
@@ -628,7 +673,7 @@ static void cmd_window_shrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	if (!mainwindow_shrink(WINDOW_MAIN(active_win), count)) {
+	if (!mainwindow_shrink(WINDOW_MAIN(active_win), count, FALSE)) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_WINDOW_TOO_SMALL);
 	}
@@ -643,7 +688,8 @@ static void cmd_window_size(const char *data)
 	if (!is_numeric(data, 0)) return;
 	size = atoi(data);
 
-	size -= WINDOW_MAIN(active_win)->height;
+	size -= WINDOW_MAIN(active_win)->height -
+		WINDOW_MAIN(active_win)->statusbar_lines;
 	if (size == 0) return;
 
 	ltoa(sizestr, size < 0 ? -size : size);
@@ -663,12 +709,12 @@ static void cmd_window_balance(void)
 	windows = g_slist_length(mainwindows);
 	if (windows == 1) return;
 
-	avail_size = screen_height - reserved_top-reserved_bottom;
+	avail_size = screen_height - screen_reserved_top-screen_reserved_bottom;
 	unit_size = avail_size/windows;
 	bigger_units = avail_size%windows;
 
 	sorted = mainwindows_get_sorted(FALSE);
-        last_line = reserved_top;
+        last_line = screen_reserved_top;
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
@@ -995,7 +1041,7 @@ void mainwindows_init(void)
 
 	mainwindows = NULL;
 	active_mainwin = NULL;
-	reserved_top = reserved_bottom = 0;
+	screen_reserved_top = screen_reserved_bottom = 0;
 
 	command_bind("window grow", NULL, (SIGNAL_FUNC) cmd_window_grow);
 	command_bind("window shrink", NULL, (SIGNAL_FUNC) cmd_window_shrink);
