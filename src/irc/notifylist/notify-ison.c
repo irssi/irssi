@@ -168,8 +168,6 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 {
 	char *p, *str;
 
-	irc_send_cmdv(server, "WHOIS %s", nicks);
-
 	/* "nick1,nick2" -> "nick1,nick2 nick1 nick2" because
 	   End of WHOIS give nick1,nick2 while other whois events give
 	   nick1 or nick2 */
@@ -184,7 +182,9 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 			      "event 301", "notifylist event whois away",
 			      "event 317", "notifylist event whois idle",
 			      "", "event empty", NULL);
-        g_free(str);
+	g_free(str);
+
+	irc_send_cmdv(server, "WHOIS %s", nicks);
 }
 
 static void whois_send_server(IRC_SERVER_REC *server, char *nick)
