@@ -447,10 +447,12 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *str)
 		/* end of the line */
 		pos = strip_real_length(str, next_hilight_end,
 					&color_pos, &color_len);
-                lastcolor = g_strndup(str+color_pos, color_len);
-		g_string_append(tmp, lastcolor);
-		g_string_append(tmp, str+pos);
-                g_free(lastcolor);
+		if (color_pos > 0) {
+			lastcolor = g_strndup(str+color_pos, color_len);
+			g_string_append(tmp, lastcolor);
+			g_string_append(tmp, str+pos);
+			g_free(lastcolor);
+		}
 
                 newstr = tmp->str;
                 g_string_free(tmp, FALSE);

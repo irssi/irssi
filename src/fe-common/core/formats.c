@@ -630,6 +630,11 @@ int strip_real_length(const char *str, int len,
 {
 	const char *start = str;
 
+        if (last_color_pos != NULL)
+		*last_color_pos = -1;
+	if (last_color_len != NULL)
+		*last_color_len = -1;
+
 	while (*str != '\0') {
 		if (*str == 3) {
 			const char *mircstart = str;
