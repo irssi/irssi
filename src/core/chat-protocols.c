@@ -156,7 +156,13 @@ void chat_protocol_unregister(const char *name)
 	g_return_if_fail(name != NULL);
 
 	rec = chat_protocol_find(name);
-	if (rec != NULL) chat_protocol_destroy(rec);
+	if (rec != NULL) {
+		chat_protocol_destroy(rec);
+
+		/* there might still be references to this chat protocol -
+		   recreate it as a dummy protocol */
+		chat_protocol_get_unknown(name);
+	}
 }
 
 /* Default chat protocol to use */
@@ -190,6 +196,10 @@ static SERVER_CONNECT_REC *create_server_connect(void)
         return g_new0(SERVER_CONNECT_REC, 1);
 }
 
+static void destroy_server_connect(SERVER_CONNECT_REC *conn)
+{
+}
+
 /* Return "unknown chat protocol" record. Used when protocol name is
    specified but it isn't registered yet. */
 CHAT_PROTOCOL_REC *chat_protocol_get_unknown(const char *name)
@@ -209,6 +219,7 @@ CHAT_PROTOCOL_REC *chat_protocol_get_unknown(const char *name)
         rec->create_server_setup = create_server_setup;
         rec->create_channel_setup = create_channel_setup;
 	rec->create_server_connect = create_server_connect;
+	rec->destroy_server_connect = destroy_server_connect;
 
 	newrec = chat_protocol_register(rec);
 	g_free(rec);
