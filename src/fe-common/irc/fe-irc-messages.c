@@ -189,8 +189,8 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	const char *oldtarget;
-	
-	if (address == NULL) {
+
+	if (address == NULL || *address == '\0') {
 		/* notice from server */
 		if (!ignore_check(server, nick, "",
 				  target, msg, MSGLEVEL_SNOTES)) {
