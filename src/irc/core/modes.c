@@ -311,7 +311,7 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const c
 
 		g_string_sprintfa(str, " %s", *nick);
 
-		if (++num == server->connrec->max_modes) {
+		if (++num == server->max_modes_in_cmd) {
 			/* max. modes / command reached, send to server */
 			irc_send_cmd(server, str->str);
 			num = 0;
@@ -341,7 +341,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 	curmode = cmd_get_param(&modestr);
 	for (; *curmode != '\0'; curmode++) {
-		if (count == server->connrec->max_modes && HAS_MODE_ARG(*curmode)) {
+		if (count == server->max_modes_in_cmd && HAS_MODE_ARG(*curmode)) {
 			irc_send_cmdv(server, "MODE %s %s%s", channel, tmode->str, targs->str);
 
 			count = 0;
