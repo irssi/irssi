@@ -15,10 +15,6 @@ fi
 # get versions
 version_date=`date +%Y%m%d`
 
-echo "/* automatically created by autogen.sh */" > irssi-version.h.in
-echo "#define IRSSI_VERSION \"@VERSION@\"" >> irssi-version.h.in
-echo "#define IRSSI_VERSION_DATE \"$version_date\"" >> irssi-version.h.in
-
 # create help files
 echo "Creating help files..."
 perl syntax.pl
