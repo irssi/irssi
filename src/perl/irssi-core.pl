@@ -13,7 +13,7 @@ sub is_static {
 }
 
 sub destroy {
-  $_[0]->UNLOAD() if $_[0]->can('UNLOAD');
+  eval { $_[0]->UNLOAD() if $_[0]->can('UNLOAD'); };
   Symbol::delete_package($_[0]);
 }
 
