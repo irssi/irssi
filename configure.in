@@ -307,10 +307,11 @@ if test "x$GLIB_DIR" = "x"; then
     echo "*** Irssi will automatically compile and use it."
     echo
 
-    dnl * I think it's pretty safe to assume GLib 1.2.8 since the next
+    dnl * I think it's pretty safe to assume GLib 1.2.9 since the next
     dnl * will be 2.0 (or 1.4?) and it's not sure if irssi compiles
-    dnl * with it
-    glib_file=glib-1.2.8.tar.gz
+    dnl * with it (yea, just a few weeks after I put this text for 1.2.8
+    dnl * the 1.2.9 came :)
+    glib_file=glib-1.2.9.tar.gz
 
     dlcmd=
     if test -f "`which ncftpget`"; then
