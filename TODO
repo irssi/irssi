@@ -1,3 +1,7 @@
+ - @ in netjoins doent show up
+ - change paste detection not to get on without linefeed
+ - escape_char broken?
+
  - /whowas server nick doesn't work
 01:18 <@darix> cras: /foreach server /disconnect $tag n8 <-- doesnt work
  - /hilight -priority is broken
