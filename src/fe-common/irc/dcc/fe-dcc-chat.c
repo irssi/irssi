@@ -226,7 +226,7 @@ static void sig_dcc_list_print(CHAT_DCC_REC *dcc)
 		    dcc->id, "CHAT");
 }
 
-static void cmd_msg(const char *data)
+static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	CHAT_DCC_REC *dcc;
         GHashTable *optlist;
@@ -240,18 +240,22 @@ static void cmd_msg(const char *data)
 			    &optlist, &target, &text))
 		return;
 
-	if (*target == '=') {
-		/* handle only DCC messages */
+	/* handle only DCC messages */
+	if (strcmp(target, "*") == 0)
+		dcc = item_get_dcc(item);
+	else if (*target == '=')
 		dcc = dcc_chat_find_id(target+1);
-		if (dcc == NULL || dcc->sendbuf == NULL) {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-				    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
-		} else {
-			if (query_find(NULL, target) == NULL)
-				completion_last_message_add(target);
+	else
+		dcc = NULL;
 
-			signal_emit("message dcc own", 2, dcc, text);
-		}
+	if (dcc == NULL && *target == '=') {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
+	} else if (dcc != NULL) {
+		if (query_find(NULL, target) == NULL)
+			completion_last_message_add(target);
+
+		signal_emit("message dcc own", 2, dcc, text);
 	}
 
 	cmd_params_free(free_arg);
