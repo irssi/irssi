@@ -192,11 +192,41 @@ void dcc_str2ip(const char *str, IPADDR *ip)
 /* Start listening for incoming connections */
 GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 {
+        GIOChannel *handle;
+        const char *dcc_port;
+	int first, last;
+
 	if (net_getsockname(iface, ip, NULL) == -1)
                 return NULL;
 
-	*port = settings_get_int("dcc_port");
-	return net_listen(ip, port);
+        /* get first port */
+	dcc_port = settings_get_str("dcc_port");
+	first = atoi(dcc_port);
+	if (first == 0) {
+                /* random port */
+		*port = 0;
+		return net_listen(ip, port);
+	}
+
+        /* get last port */
+	dcc_port = strchr(dcc_port, ' ');
+	if (dcc_port == NULL) dcc_port = strchr(dcc_port, '-');
+	if (dcc_port == NULL)
+		last = first;
+	else {
+		last = atoi(dcc_port+1);
+		if (last == 0)
+			last = first;
+	}
+
+        /* use the first available port */
+	for (*port = first; *port <= last; (*port)++) {
+		handle = net_listen(ip, port);
+		if (handle != NULL)
+                        return handle;
+	}
+
+        return NULL;
 }
 
 /* Server connected - update server for DCC records that have
@@ -427,7 +457,7 @@ void irc_dcc_init(void)
 	dcc_conns = NULL;
 	dcc_timeouttag = g_timeout_add(1000, (GSourceFunc) dcc_timeout_func, NULL);
 
-	settings_add_int("dcc", "dcc_port", 0);
+	settings_add_str("dcc", "dcc_port", "0");
 	settings_add_int("dcc", "dcc_timeout", 300);
 	settings_add_str("dcc", "dcc_own_ip", "");
 
