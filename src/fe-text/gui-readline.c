@@ -884,6 +884,7 @@ void gui_readline_init(void)
 	paste_entry = NULL;
 	paste_entry_pos = 0;
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
+        paste_old_prompt = NULL;
 	g_get_current_time(&last_keypress);
         input_listen_init(STDIN_FILENO);
 
