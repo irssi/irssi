@@ -1,7 +1,7 @@
 /*
  irc-expandos.c : irssi
 
-    Copyright (C) 2000 Timo Sirainen
+    Copyright (C) 2000-2002 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "settings.h"
 
 #include "irc-servers.h"
-#include "channels.h"
+#include "irc-channels.h"
 #include "nicklist.h"
 
 static char *last_join;
@@ -85,7 +85,7 @@ static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
 /* expands to your usermode on channel, op '@', halfop '%', "+" voice */
 static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
 {
-	if (IS_CHANNEL(item) && CHANNEL(item)->ownnick) {
+	if (IS_IRC_CHANNEL(item) && CHANNEL(item)->ownnick) {
 		return NICK(CHANNEL(item)->ownnick)->op ? "@" :
 		       NICK(CHANNEL(item)->ownnick)->halfop ? "%" :
 		       NICK(CHANNEL(item)->ownnick)->voice ? "+" : "";
@@ -98,7 +98,10 @@ static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_cumode_space(SERVER_REC *server, void *item, int *free_ret)
 {
 	char *ret;
-	
+
+	if (!IS_IRC_SERVER(server))
+                return "";
+
 	ret = expando_cumode(server, item, free_ret);
 	return *ret == '\0' ? " " : ret;
 }
