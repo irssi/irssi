@@ -159,6 +159,14 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		g_free(shortchan);
 	}
 
+	chanrec = channel_find(server, channel);
+	if (chanrec != NULL && chanrec->joined) {
+		/* already joined this channel - this check was added
+		   here because of broken irssi proxy :) */
+		g_free(params);
+                return;
+	}
+
 	chanrec = channel_find_unjoined(server, channel);
 	if (chanrec == NULL) {
 		/* didn't get here with /join command.. */
