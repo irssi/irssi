@@ -310,7 +310,7 @@ else
         			GUI_LIBS="$GDK_IMLIB_LIBS"
 			fi
 		fi
-		GUI_LIBS="$GUI_LIBS ../lib-popt/libpopt.a"
+		GUI_LIBS="$GUI_LIBS ../lib-popt/libpopt.la"
 	fi
 fi
 
@@ -452,7 +452,7 @@ src/lib-nongui/Makefile
 src/lib-popt/Makefile
 src/settings/Makefile
 servertest/Makefile
-examples/Makefile
+scripts/Makefile
 docs/Makefile
 docs/help/Makefile
 plugins/Makefile
