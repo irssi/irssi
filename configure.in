@@ -319,7 +319,7 @@ if test "$want_perl" != "no"; then
 		dnl * don't check dynaloader if libperl.a wasn't found..
 		if test "x$LIBPERL_A" != "x"; then
 			dnl * dynaloader.a -> libperl_dynaloader.la
-			DYNALOADER_A=`echo $PERL_LDFLAGS | $sedpath 's/.* \([[^ ]]*\.a\).*/\1/'`
+			DYNALOADER_A=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*\([[^ ]]*DynaLoader\.a\).*/\2/'`
 		fi
 
 		dnl * remove all database stuffs
@@ -347,7 +347,7 @@ if test "$want_perl" != "no"; then
 			want_perl=static
 		else
 			AC_MSG_RESULT(ok)
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ [[^ ]]*\.a/ libperl_dynaloader.la/'`
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
 			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
 			AC_SUBST(LIBPERL_A)
 			AC_SUBST(DYNALOADER_A)
@@ -534,7 +534,7 @@ if test "x$want_perl" != "xno"; then
 	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 
 	if test "x$old_dir" != "x$whole_dir"; then
-		for file in $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
+		for file in $whole_dir/src/perl/*.[[ch]] $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
 			link=`echo $file|sed "s?$whole_dir/??"`
 			rm -f $link
 			$LN_S $file $link
