@@ -39,6 +39,7 @@ typedef struct {
 typedef struct {
 	char *signal;
 	char *args[7];
+	int dynamic;
 } PERL_SIGNAL_ARGS_REC;
 
 #include "perl-signals-list.h"
@@ -388,6 +389,34 @@ void perl_signals_stop(void)
 	signals = NULL;
 }
 
+static void register_signal_rec(PERL_SIGNAL_ARGS_REC *rec)
+{
+	if (rec->signal[strlen(rec->signal)-1] == ' ') {
+		perl_signal_args_partial =
+			g_slist_append(perl_signal_args_partial, rec);
+	} else {
+		int signal_id = signal_get_uniq_id(rec->signal);
+		g_hash_table_insert(perl_signal_args_hash,
+				    GINT_TO_POINTER(signal_id), rec);
+	}
+}
+
+void perl_signal_register(const char *signal, const char **args)
+{
+	PERL_SIGNAL_ARGS_REC *rec;
+	int i;
+
+	if (perl_signal_args_find(signal_get_uniq_id(signal)) != NULL)
+		return;
+
+	rec = g_new0(PERL_SIGNAL_ARGS_REC, 1);
+	for (i = 0; i < 6 && args[i] != NULL; i++)
+		rec->args[i] = g_strdup(args[i]);
+	rec->dynamic = TRUE;
+	rec->signal = g_strdup(signal);
+	register_signal_rec(rec);
+}
+
 void perl_signals_init(void)
 {
 	int n;
@@ -396,23 +425,35 @@ void perl_signals_init(void)
 						 (GCompareFunc) g_direct_equal);
         perl_signal_args_partial = NULL;
 
-	for (n = 0; perl_signal_args[n].signal != NULL; n++) {
-		PERL_SIGNAL_ARGS_REC *rec = &perl_signal_args[n];
+	for (n = 0; perl_signal_args[n].signal != NULL; n++)
+		register_signal_rec(&perl_signal_args[n]);
+}
 
-		if (rec->signal[strlen(rec->signal)-1] == ' ') {
-			perl_signal_args_partial =
-				g_slist_append(perl_signal_args_partial, rec);
-		} else {
-                        int signal_id = signal_get_uniq_id(rec->signal);
-			g_hash_table_insert(perl_signal_args_hash,
-					    GINT_TO_POINTER(signal_id),
-					    rec);
-		}
-	}
+static void signal_args_free(PERL_SIGNAL_ARGS_REC *rec)
+{
+	int i;
+
+	if (!rec->dynamic)
+		return;
+
+	for (i = 0; i < 6 && rec->args[i] != NULL; i++)
+		g_free(rec->args[i]);
+	g_free(rec->signal);
+	g_free(rec);
+}
+
+static void signal_args_hash_free(void *key, PERL_SIGNAL_ARGS_REC *rec)
+{
+        signal_args_free(rec);
 }
 
 void perl_signals_deinit(void)
 {
-        g_slist_free(perl_signal_args_partial);
+	g_slist_foreach(perl_signal_args_partial,
+			(GFunc) signal_args_free, NULL);
+	g_slist_free(perl_signal_args_partial);
+
+	g_hash_table_foreach(perl_signal_args_hash,
+			     (GHFunc) signal_args_hash_free, NULL);
         g_hash_table_destroy(perl_signal_args_hash);
 }

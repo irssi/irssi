@@ -142,6 +142,39 @@ CODE:
 	else
 		perl_signal_add_hash(SvIV(ST(0)), ST(1));
 
+void
+signal_register(...)
+PREINIT:
+	HV *hv;
+        HE *he;
+	I32 len, pos;
+	const char *arr[7];
+CODE:
+	if (items != 1 || !is_hvref(ST(0)))
+		croak("Usage: Irssi::signal_register(hash)");
+
+        hv = hvref(ST(0));
+	hv_iterinit(hv);
+	while ((he = hv_iternext(hv)) != NULL) {
+		const char *key = hv_iterkey(he, &len);
+		SV *val = HeVAL(he);
+		AV *av;
+
+		if (!SvROK(val) || SvTYPE(SvRV(val)) != SVt_PVAV)
+			croak("not array reference");
+
+		av = (AV *) SvRV(val);
+		len = av_len(av)+1;
+		if (len > 6) len = 6;
+		for (pos = 0; pos < len; pos++) {
+                	SV **val = av_fetch(av, pos, 0);
+			arr[pos] = SvPV(*val, PL_na);
+		}
+		arr[pos] = NULL;
+		perl_signal_register(key, arr);
+	}
+
+
 int
 SIGNAL_PRIORITY_LOW()
 CODE:
