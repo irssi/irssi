@@ -14,16 +14,13 @@
 int init_screen(void); /* Initialize screen, detect screen length */
 void deinit_screen(void); /* Deinitialize screen */
 
-void set_color(int col);
-void set_bg(int col);
-
-void scroll_up(int y1, int y2); /* Scroll area up */
-void scroll_down(int y1, int y2); /* Scroll area down */
+void set_color(WINDOW *window, int col);
+void set_bg(WINDOW *window, int col);
 
 void move_cursor(int y, int x);
 
 void screen_refresh_freeze(void);
 void screen_refresh_thaw(void);
-void screen_refresh(void);
+void screen_refresh(WINDOW *window);
 
 #endif

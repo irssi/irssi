@@ -241,8 +241,9 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 	}
 
 	if (visible) {
-		scroll_up(gui->parent->first_line, gui->parent->last_line);
-		move(gui->parent->last_line, 0); clrtoeol();
+		wscrl(gui->parent->curses_win, 1);
+		wmove(gui->parent->curses_win, gui->parent->lines, 0);
+		wclrtoeol(gui->parent->curses_win);
 	}
 }
 
@@ -383,6 +384,7 @@ int gui_window_get_linecount(GUI_WINDOW_REC *gui, LINE_REC *line)
 
 static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *rec, const char *text, const char *text_end)
 {
+	WINDOW *cwin;
 	char *tmp;
 	int xpos, color;
 
@@ -393,8 +395,9 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 		color = rec->color;
 	}
 
-	move(ypos, xpos);
-	set_color(color);
+	cwin = gui->parent->curses_win;
+	wmove(cwin, ypos, xpos);
+	set_color(cwin, color);
 
 	while (text != text_end) {
 		if (*text == '\0') {
@@ -424,7 +427,7 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 				color |= 8|ATTR_COLOR8;
 				break;
 			}
-			set_color(color);
+			set_color(cwin, color);
 			text++;
 			continue;
 		}
@@ -436,15 +439,17 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 		}
 
 		if ((unsigned char) *text >= 32)
-			addch((unsigned char) *text);
+			waddch(cwin, (unsigned char) *text);
 		else {
 			/* low-ascii */
-			set_color(ATTR_REVERSE);
-			addch(*text+'A'-1);
-			set_color(color);
+			set_color(cwin, ATTR_REVERSE);
+			waddch(cwin, *text+'A'-1);
+			set_color(cwin, color);
 		}
 		text++;
 	}
+
+	screen_refresh(cwin);
 }
 
 int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip, int max)
@@ -479,22 +484,24 @@ int gui_window_line_draw(GUI_WINDOW_REC *gui, LINE_REC *line, int ypos, int skip
 void gui_window_redraw(WINDOW_REC *window)
 {
 	GUI_WINDOW_REC *gui;
+	WINDOW *cwin;
 	GList *line;
 	int ypos, lines, skip, max;
 
 	g_return_if_fail(window != NULL);
 
 	gui = WINDOW_GUI(window);
+	cwin = gui->parent->curses_win;
 
 	/* clear the lines first */
-	set_color(0);
-	for (ypos = gui->parent->first_line; ypos <= gui->parent->last_line; ypos++) {
-		move(ypos, 0);
-		clrtoeol();
+	set_color(cwin, 0);
+	for (ypos = 0; ypos <= gui->parent->lines; ypos++) {
+		wmove(cwin, ypos, 0);
+		wclrtoeol(cwin);
 	}
 
 	skip = gui->subline;
-	ypos = gui->parent->first_line;
+	ypos = 0;
 	for (line = gui->startline; line != NULL; line = line->next) {
 		LINE_REC *rec = line->data;
 
@@ -506,7 +513,7 @@ void gui_window_redraw(WINDOW_REC *window)
 		skip = 0;
 	}
 
-	screen_refresh();
+        screen_refresh(cwin);
 }
 
 static void gui_window_scroll_up(GUI_WINDOW_REC *gui, int lines)

@@ -6,7 +6,8 @@
 typedef struct {
 	WINDOW_REC *active;
 
-	int first_line, last_line;
+	WINDOW *curses_win;
+	int first_line, last_line, lines;
 	int statusbar_lines;
 	void *statusbar;
 	void *statusbar_channel_item;

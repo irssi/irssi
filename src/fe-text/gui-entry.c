@@ -50,22 +50,22 @@ static void entry_update(void)
 	len = entry->len-scrstart > COLS-promptlen ?
 		COLS-promptlen : entry->len-scrstart;
 
-	set_color(0);
+	set_color(stdscr, 0);
 	move(LINES-1, promptlen);
 
 	for (p = entry->str+scrstart, n = 0; n < len; n++, p++) {
 		if ((unsigned char) *p >= 32)
 			addch((unsigned char) *p);
 		else {
-			set_color(ATTR_REVERSE);
+			set_color(stdscr, ATTR_REVERSE);
 			addch(*p+'A'-1);
-			set_color(0);
+			set_color(stdscr, 0);
 		}
 	}
 	clrtoeol();
 
 	move_cursor(LINES-1, scrpos+promptlen);
-	screen_refresh();
+	screen_refresh(NULL);
 }
 
 void gui_entry_set_prompt(const char *str)
@@ -78,7 +78,7 @@ void gui_entry_set_prompt(const char *str)
 		promptlen = strlen(prompt);
 	}
 
-	set_color(0);
+	set_color(stdscr, 0);
 	mvaddstr(LINES-1, 0, prompt);
 
 	entry_screenpos();

@@ -119,9 +119,9 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 		return;
 	}
 
-	set_bg(settings_get_int("statusbar_background") << 4);
+	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
 	move(bar->ypos, 0); clrtoeol();
-	set_bg(0);
+	set_bg(stdscr, 0);
 
 	statusbar_redraw_line(bar);
 }
@@ -160,9 +160,9 @@ STATUSBAR_REC *statusbar_create(int pos, int ypos)
 		rec->line -= sbar_lowest;
 	}
 
-	set_bg(settings_get_int("statusbar_background") << 4);
+	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
 	move(rec->ypos, 0); clrtoeol();
-	set_bg(0);
+	set_bg(stdscr, 0);
 
 	return rec;
 }

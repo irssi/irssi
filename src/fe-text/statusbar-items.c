@@ -100,11 +100,11 @@ static void statusbar_clock(SBAR_ITEM_REC *item, int ypos)
 	g_snprintf(str, sizeof(str), "%02d:%02d", tm->tm_hour, tm->tm_min);
 
 	move(ypos, item->xpos);
-	set_color(sbar_color_dim); addch('[');
-	set_color(sbar_color_bold); addstr(str);
-	set_color(sbar_color_dim); addch(']');
+	set_color(stdscr, sbar_color_dim); addch('[');
+	set_color(stdscr, sbar_color_bold); addstr(str);
+	set_color(stdscr, sbar_color_dim); addch(']');
 
-	screen_refresh();
+	screen_refresh(NULL);
 }
 
 /* check if we need to redraw clock.. */
@@ -166,25 +166,25 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 	/* size ok, draw the nick */
 	move(ypos, item->xpos);
 
-	set_color(sbar_color_dim); addch('[');
+	set_color(stdscr, sbar_color_dim); addch('[');
 	if (nickrec != NULL && (nickrec->op || nickrec->voice)) {
-		set_color(sbar_color_bold);
+		set_color(stdscr, sbar_color_bold);
 		addch(nickrec->op ? '@' : '+');
 	}
-	set_color(sbar_color_normal); addstr(nick);
+	set_color(stdscr, sbar_color_normal); addstr(nick);
 	if (umode_size) {
-		set_color(sbar_color_bold); addch('(');
-		set_color(sbar_color_dim); addch('+');
-		set_color(sbar_color_normal); addstr(server->usermode);
-		set_color(sbar_color_bold); addch(')');
+		set_color(stdscr, sbar_color_bold); addch('(');
+		set_color(stdscr, sbar_color_dim); addch('+');
+		set_color(stdscr, sbar_color_normal); addstr(server->usermode);
+		set_color(stdscr, sbar_color_bold); addch(')');
 	}
 	if (server != NULL && server->usermode_away) {
-		set_color(sbar_color_normal); addstr(" (");
-		set_color(sbar_color_away); addstr("zZzZ");
-		set_color(sbar_color_normal); addch(')');
+		set_color(stdscr, sbar_color_normal); addstr(" (");
+		set_color(stdscr, sbar_color_away); addstr("zZzZ");
+		set_color(stdscr, sbar_color_normal); addch(')');
 	}
-	set_color(sbar_color_dim); addch(']');
-	screen_refresh();
+	set_color(stdscr, sbar_color_dim); addch(']');
+	screen_refresh(NULL);
 }
 
 static void sig_statusbar_nick_redraw(void)
@@ -263,32 +263,32 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
     }
 
     move(ypos, item->xpos);
-    set_color(sbar_color_dim); addch('[');
+    set_color(stdscr, sbar_color_dim); addch('[');
 
     /* window number */
-    set_color(sbar_color_normal); addstr(winnum);
-    set_color(sbar_color_dim); addch(':');
+    set_color(stdscr, sbar_color_normal); addstr(winnum);
+    set_color(stdscr, sbar_color_dim); addch(':');
 
     if (channame[0] == '\0' && server != NULL)
     {
 	/* server tag */
-	set_color(sbar_color_normal); addstr(server->tag);
+	set_color(stdscr, sbar_color_normal); addstr(server->tag);
         addstr(" (change with ^X)");
     }
     else if (channame[0] != '\0')
     {
 	/* channel + mode */
-	set_color(sbar_color_normal); addstr(channame);
+	set_color(stdscr, sbar_color_normal); addstr(channame);
 	if (mode_size)
 	{
-	    set_color(sbar_color_bold); addch('(');
-	    set_color(sbar_color_dim); addch('+');
-	    set_color(sbar_color_normal); addstr(mode);
-	    set_color(sbar_color_bold); addch(')');
+	    set_color(stdscr, sbar_color_bold); addch('(');
+	    set_color(stdscr, sbar_color_dim); addch('+');
+	    set_color(stdscr, sbar_color_normal); addstr(mode);
+	    set_color(stdscr, sbar_color_bold); addch(')');
 	}
     }
-    set_color(sbar_color_dim); addch(']');
-    screen_refresh();
+    set_color(stdscr, sbar_color_dim); addch(']');
+    screen_refresh(NULL);
 
     if (mode != NULL) g_free(mode);
 }
@@ -320,7 +320,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
     gchar str[MAX_INT_STRLEN];
     gboolean first, is_det;
 
-    set_color(sbar_color_normal); addstr(title);
+    set_color(stdscr, sbar_color_normal); addstr(title);
 
     first = TRUE;
     for (tmp = activity_list; tmp != NULL; tmp = tmp->next)
@@ -335,7 +335,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 	    first = FALSE;
 	else
 	{
-	    set_color(sbar_color_dim);
+	    set_color(stdscr, sbar_color_dim);
 	    addch(',');
 	}
 
@@ -343,16 +343,16 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 	switch (window->new_data)
 	{
 	case NEWDATA_TEXT:
-		set_color(sbar_color_dim);
+		set_color(stdscr, sbar_color_dim);
 		break;
 	case NEWDATA_MSG:
-		set_color(sbar_color_bold);
+		set_color(stdscr, sbar_color_bold);
 		break;
 	case NEWDATA_HILIGHT:
 		if (window->last_color > 0)
-			set_color(sbar_color_background | mirc_colors[window->last_color]);
+			set_color(stdscr, sbar_color_background | mirc_colors[window->last_color]);
 		else
-			set_color(sbar_color_act_highlight);
+			set_color(stdscr, sbar_color_act_highlight);
 		break;
 	}
 	addstr(str);
@@ -396,13 +396,13 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
         return;
 
     move(ypos, item->xpos);
-    set_color(sbar_color_dim); addch('[');
+    set_color(stdscr, sbar_color_dim); addch('[');
     if (act) draw_activity("Act: ", TRUE, !det);
     if (act && det) addch(' ');
     if (det) draw_activity("Det: ", FALSE, TRUE);
-    set_color(sbar_color_dim); addch(']');
+    set_color(stdscr, sbar_color_dim); addch(']');
 
-    screen_refresh();
+    screen_refresh(NULL);
 }
 
 static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel)
@@ -478,8 +478,8 @@ static void statusbar_more(SBAR_ITEM_REC *item, int ypos)
 	if (item->size != 10) return;
 
 	move(ypos, item->xpos);
-	set_color(sbar_color_bold); addstr("-- more --");
-	screen_refresh();
+	set_color(stdscr, sbar_color_bold); addstr("-- more --");
+	screen_refresh(NULL);
 }
 
 static void sig_statusbar_more_check_remove(WINDOW_REC *window)
@@ -554,13 +554,13 @@ static void statusbar_lag(SBAR_ITEM_REC *item, int ypos)
 	if (item->size != 0) {
 		lag_last_draw = now;
 		move(ypos, item->xpos);
-		set_color(sbar_color_dim); addch('[');
-		set_color(sbar_color_normal); addstr("Lag: ");
+		set_color(stdscr, sbar_color_dim); addch('[');
+		set_color(stdscr, sbar_color_normal); addstr("Lag: ");
 
-		set_color(sbar_color_bold); addstr(str->str);
-		set_color(sbar_color_dim); addch(']');
+		set_color(stdscr, sbar_color_bold); addstr(str->str);
+		set_color(stdscr, sbar_color_dim); addch(']');
 
-		screen_refresh();
+		screen_refresh(NULL);
 	}
 	g_string_free(str, TRUE);
 }
@@ -641,13 +641,13 @@ static void statusbar_mail(SBAR_ITEM_REC *item, int ypos)
 		return;
 
 	move(ypos, item->xpos);
-	set_color(sbar_color_dim); addch('[');
-	set_color(sbar_color_normal); addstr("Mail: ");
+	set_color(stdscr, sbar_color_dim); addch('[');
+	set_color(stdscr, sbar_color_normal); addstr("Mail: ");
 
-	set_color(sbar_color_bold); addstr(str);
-	set_color(sbar_color_dim); addch(']');
+	set_color(stdscr, sbar_color_bold); addstr(str);
+	set_color(stdscr, sbar_color_dim); addch(']');
 
-	screen_refresh();
+	screen_refresh(NULL);
 }
 
 static int statusbar_mail_timeout(void)
@@ -669,8 +669,8 @@ static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 	}
 
 	move(ypos, item->xpos);
-	set_bg(settings_get_int("statusbar_background") << 4);
-	clrtoeol(); set_bg(0);
+	set_bg(stdscr, settings_get_int("statusbar_background") << 4);
+	clrtoeol(); set_bg(stdscr, 0);
 
 	if (active_win == NULL)
 		return;
@@ -684,12 +684,12 @@ static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 	if (topic != NULL) {
 		topic = strip_codes(topic);
 		str = g_strdup_printf("%.*s", item->size, topic);
-		set_color(sbar_color_bold); addstr(str);
+		set_color(stdscr, sbar_color_bold); addstr(str);
 		g_free(str);
 		g_free(topic);
 	}
 
-	screen_refresh();
+	screen_refresh(NULL);
 }
 
 static void sig_statusbar_topic_redraw(void)

@@ -167,7 +167,7 @@ void deinit_screen(void)
 	endwin();
 }
 
-void set_color(int col)
+void set_color(WINDOW *window, int col)
 {
 	int attr;
 
@@ -185,10 +185,10 @@ void set_color(int col)
 	if (col & ATTR_UNDERLINE) attr |= A_UNDERLINE;
 	if (col & ATTR_REVERSE) attr |= A_REVERSE;
 
-	attrset(attr);
+	wattrset(window, attr);
 }
 
-void set_bg(int col)
+void set_bg(WINDOW *window, int col)
 {
 	int attr;
 
@@ -203,23 +203,7 @@ void set_bg(int col)
 	if (col & 0x08) attr |= A_BOLD;
 	if (col & 0x80) attr |= A_BLINK;
 
-	bkgdset(' ' | attr);
-}
-
-/* Scroll area up */
-void scroll_up(int y1, int y2)
-{
-	scrollok(stdscr, TRUE);
-	setscrreg(y1, y2); scrl(1);
-	scrollok(stdscr, FALSE);
-}
-
-/* Scroll area down */
-void scroll_down(int y1, int y2)
-{
-	scrollok(stdscr, TRUE);
-	setscrreg(y1, y2); scrl(-1);
-	scrollok(stdscr, FALSE);
+	wbkgdset(window, ' ' | attr);
 }
 
 void move_cursor(int y, int x)
@@ -237,14 +221,17 @@ void screen_refresh_thaw(void)
 {
 	if (freeze_refresh > 0) {
 		freeze_refresh--;
-		if (freeze_refresh == 0) screen_refresh();
+		if (freeze_refresh == 0) screen_refresh(NULL);
 	}
 }
 
-void screen_refresh(void)
+void screen_refresh(WINDOW *window)
 {
+	if (window != NULL)
+		wnoutrefresh(window);
 	if (freeze_refresh == 0) {
 		move(scry, scrx);
-		refresh();
+		wnoutrefresh(stdscr);
+		doupdate();
 	}
 }
