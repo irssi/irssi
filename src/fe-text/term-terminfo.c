@@ -379,9 +379,15 @@ void term_addch(TERM_WINDOW *window, int chr)
 	if (term_detached) return;
 
 	if (vcmove) term_move_real();
-        term_printed_text(1);
-	if (vcy != term_height || vcx != 0)
-		putc(chr, window->term->out);
+
+	/* With UTF-8, move cursor only if this char is either single-byte
+	   (8. bit on) or beginning of multibyte (7+8 bits on) */
+	if (term_type != TERM_TYPE_UTF8 ||
+	    (chr & 0x80) == 0 || (chr & 0x40) == 0) {
+		term_printed_text(1);
+		if (vcy != term_height || vcx != 0)
+			putc(chr, window->term->out);
+	}
 }
 
 static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
