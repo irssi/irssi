@@ -104,7 +104,8 @@ int module_find_id(const char *module, int uniqid)
 	if (ret != -1) {
 		/* check that module matches */
 		ids = g_hash_table_lookup(idlookup, module);
-		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id))
+		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id) ||
+		    GPOINTER_TO_INT(id) != uniqid)
 			ret = -1;
 	}
 
@@ -126,7 +127,8 @@ const char *module_find_id_str(const char *module, int uniqid)
 	if (ret != NULL) {
 		/* check that module matches */
 		ids = g_hash_table_lookup(stridlookup, module);
-		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id))
+		if (ids == NULL || !g_hash_table_lookup_extended(ids, GINT_TO_POINTER(ret), &origkey, &id) ||
+		    (GPOINTER_TO_INT(id) != uniqid))
 			ret = NULL;
 	}
 
