@@ -331,7 +331,7 @@ void fe_netsplit_init(void)
 	printing_splits = FALSE;
 
 	read_settings();
-	signal_add("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_add("netsplit new", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("netsplit", NULL, (SIGNAL_FUNC) cmd_netsplit);
 }
@@ -343,7 +343,7 @@ void fe_netsplit_deinit(void)
 		signal_remove("print starting", (SIGNAL_FUNC) sig_print_starting);
 	}
 
-	signal_remove("netsplit add", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_remove("netsplit new", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("netsplit", (SIGNAL_FUNC) cmd_netsplit);
 }

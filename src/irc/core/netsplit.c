@@ -141,7 +141,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 
 	g_hash_table_insert(server->splits, rec->nick, rec);
 
-	signal_emit("netsplit add", 1, rec);
+	signal_emit("netsplit new", 1, rec);
 	return rec;
 }
 
