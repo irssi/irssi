@@ -391,13 +391,13 @@ static void channel_got_query(IRC_SERVER_REC *server, IRC_CHANNEL_REC *chanrec,
 
 	rec = server->chanqueries;
 	g_return_if_fail(rec != NULL);
-	g_return_if_fail(rec->last_query_chan != NULL);
 
 	/* check if channel is synced */
 	if (chanrec != NULL) channel_checksync(chanrec);
 
 	/* check if we need to get another query.. */
-	if (g_strcasecmp(rec->last_query_chan, channel) == 0)
+	if (rec->last_query_chan != NULL &&
+	    g_strcasecmp(rec->last_query_chan, channel) == 0)
 		channels_query_check(server);
 }
 
