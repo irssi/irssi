@@ -148,7 +148,8 @@ static void event_connected(SERVER_REC *server)
 
 	g_return_if_fail(SERVER(server));
 
-	if (server->connrec->reconnection)
+	if (server->connrec->reconnection ||
+	    server->connrec->no_autojoin_channels)
 		return;
 
 	/* get list of servers in same chat network */

@@ -25,5 +25,6 @@ char *realname;
 
 /* when reconnecting, the old server status */
 unsigned int reconnection:1; /* we're trying to reconnect */
+unsigned int no_autojoin_channels:1; /* don't autojoin any channels */
 char *channels;
 char *away_reason;

@@ -83,6 +83,9 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr)
 	else if (g_hash_table_lookup(optlist, "4") != NULL)
 		conn->family = AF_INET;
 
+	if (g_hash_table_lookup(optlist, "!") != NULL)
+                conn->no_autojoin_channels = TRUE;
+
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
 		IPADDR ip4, ip6;
@@ -394,7 +397,7 @@ void chat_commands_init(void)
 
         signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 
-	command_set_options("connect", "4 6 +host");
+	command_set_options("connect", "4 6 !! +host");
 	command_set_options("join", "invite");
 }
 
