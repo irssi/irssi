@@ -28,7 +28,7 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#define LOG_FILE_CREATE_MODE 644
+#define DEFAULT_LOG_FILE_CREATE_MODE 644
 
 #ifdef HAVE_FCNTL
 static struct flock lock;
@@ -418,7 +418,7 @@ void log_init(void)
 	rotate_tag = g_timeout_add(60000, (GSourceFunc) sig_rotate_check, NULL);
 	logs = NULL;
 
-	settings_add_int("log", "log_create_mode", LOG_FILE_CREATE_MODE);
+	settings_add_int("log", "log_create_mode", DEFAULT_LOG_FILE_CREATE_MODE);
 	settings_add_str("log", "log_timestamp", "%H:%M ");
 	settings_add_str("log", "log_open_string", "--- Log opened %a %b %d %H:%M:%S %Y");
 	settings_add_str("log", "log_close_string", "--- Log closed %a %b %d %H:%M:%S %Y");

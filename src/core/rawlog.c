@@ -25,10 +25,10 @@
 #include "misc.h"
 
 #include "settings.h"
-#include "common-setup.h"
 
 static int rawlog_lines;
 static int signal_rawlog;
+static int log_file_create_mode;
 
 RAWLOG_REC *rawlog_create(void)
 {
@@ -113,7 +113,7 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 		return;
 
 	path = convert_home(fname);
-	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT, LOG_FILE_CREATE_MODE);
+	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
 	g_free(path);
 
 	rawlog_dump(rawlog, rawlog->handle);
@@ -134,7 +134,7 @@ void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
 	int f;
 
 	path = convert_home(fname);
-	f = open(path, O_WRONLY | O_APPEND | O_CREAT, LOG_FILE_CREATE_MODE);
+	f = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
 	g_free(path);
 
 	rawlog_dump(rawlog, f);
@@ -149,6 +149,7 @@ void rawlog_set_size(int lines)
 static void read_settings(void)
 {
 	rawlog_set_size(settings_get_int("rawlog_lines"));
+	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
 }
 
 void rawlog_init(void)
