@@ -14,16 +14,19 @@ CODE:
 	initialized = TRUE;
 
         perl_settings_init();
+	perl_expando_init();
 
 void
 deinit()
 CODE:
 	if (!initialized) return;
+	perl_expando_deinit();
         perl_settings_deinit();
 
 BOOT:
         irssi_boot(Channel);
 	irssi_boot(Core);
+	irssi_boot(Expando);
 	irssi_boot(Ignore);
 	irssi_boot(Log);
 	irssi_boot(Masks);

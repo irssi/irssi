@@ -113,8 +113,10 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 
 	/* expando? */
         func = expando_find_long(key);
-	if (func != NULL)
+	if (func != NULL) {
+		current_expando = key;
 		return func(server, item, free_ret);
+	}
 
 	/* internal setting? */
 	type = settings_get_type(key);
@@ -176,7 +178,15 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 	}
 	*free_ret = FALSE;
 	func = expando_find_char(**cmd);
-	return func == NULL ? NULL : func(server, item, free_ret);
+	if (func == NULL)
+		return NULL;
+	else {
+		char str[2];
+
+		str[0] = **cmd; str[1] = '\0';
+		current_expando = str;
+		return func(server, item, free_ret);
+	}
 }
 
 static char *get_history(char **cmd, void *item, int *free_ret)

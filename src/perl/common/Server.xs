@@ -31,7 +31,7 @@ PPCODE:
 	}
 
 Irssi::Connect
-server_create_conn(chat_type, dest, port=6667, chatnet=NULL, password=NULL, nick=NULL)
+server_create_conn(chat_type, dest, port, chatnet=NULL, password=NULL, nick=NULL)
 	int chat_type
 	char *dest
 	int port

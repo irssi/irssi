@@ -31,6 +31,7 @@ void perl_statusbar_init(void)
 
 static void statusbar_item_def_destroy(void *key, void *value)
 {
+	statusbar_item_unregister(key);
 	g_free(key);
         g_free(value);
 }

@@ -78,6 +78,7 @@ common_sources = \
 	common/Irssi.pm \
 	common/Channel.xs \
 	common/Core.xs \
+	common/Expandos.xs \
 	common/Ignore.xs \
 	common/Log.xs \
 	common/Masks.xs \

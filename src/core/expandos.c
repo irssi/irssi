@@ -46,6 +46,8 @@ typedef struct {
         int signal_args[MAX_EXPANDO_SIGNALS];
 } EXPANDO_REC;
 
+const char *current_expando = NULL;
+
 static int timer_tag;
 
 static EXPANDO_REC *char_expandos[255];

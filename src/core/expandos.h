@@ -16,6 +16,8 @@ typedef enum {
 typedef char* (*EXPANDO_FUNC)
 	(SERVER_REC *server, void *item, int *free_ret);
 
+extern const char *current_expando;
+
 /* Create expando - overrides any existing ones.
    ... = signal, type, ..., NULL - list of signals that might change the
    value of this expando */
