@@ -86,8 +86,10 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec->gui_data != NULL &&
-		    WINDOW_GUI(rec)->parent == window)
-			gui_window_resize(rec, window->width, window->height);
+		    WINDOW_GUI(rec)->parent == window) {
+			gui_window_resize(rec, window->width,
+					  MAIN_WINDOW_TEXT_HEIGHT(window));
+		}
 	}
 
 	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
@@ -468,6 +470,8 @@ void mainwindows_resize(int width, int height)
 		mainwindows_resize_bigger(xdiff, ydiff);
         else if (xdiff != 0)
 		mainwindows_resize_horiz(xdiff);
+
+        signal_emit("terminal resized", 0);
 	screen_refresh_thaw();
 
 	irssi_redraw();

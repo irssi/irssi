@@ -322,7 +322,7 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 	active_win = old_active_win;
 }
 
-static void statusbar_recalc_ypos(STATUSBAR_REC *bar)
+static void statusbars_recalc_ypos(STATUSBAR_REC *bar)
 {
 	GSList *tmp, *bar_group;
         int ypos;
@@ -441,7 +441,7 @@ STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
 	bar->color = g_strconcat("%n", value, NULL);
 	g_free(value);
 
-        statusbar_recalc_ypos(bar);
+        statusbars_recalc_ypos(bar);
         signal_emit("statusbar created", 1, bar);
 
         /* create the items to statusbar */
@@ -474,7 +474,7 @@ void statusbar_destroy(STATUSBAR_REC *bar)
 
 	if (bar->config->type != STATUSBAR_TYPE_WINDOW ||
 	    bar->parent_window != NULL)
-		statusbar_recalc_ypos(bar);
+		statusbars_recalc_ypos(bar);
 
 	top = bar->config->placement == STATUSBAR_TOP;
 	if (bar->config->type == STATUSBAR_TYPE_ROOT) {
@@ -804,6 +804,21 @@ void statusbar_item_destroy(SBAR_ITEM_REC *item)
 	g_free(item);
 }
 
+static void sig_terminal_resized(void)
+{
+	GSList *tmp;
+
+	for (tmp = active_statusbar_group->bars; tmp != NULL; tmp = tmp->next) {
+		STATUSBAR_REC *bar = tmp->data;
+
+		if (bar->config->type == STATUSBAR_TYPE_ROOT &&
+		    bar->config->placement == STATUSBAR_BOTTOM) {
+			statusbars_recalc_ypos(bar);
+                        break;
+		}
+	}
+}
+
 static void mainwindow_recalc_ypos(MAIN_WINDOW_REC *window, int placement)
 {
 	GSList *tmp;
@@ -812,7 +827,7 @@ static void mainwindow_recalc_ypos(MAIN_WINDOW_REC *window, int placement)
 		STATUSBAR_REC *bar = tmp->data;
 
 		if (bar->config->placement == placement) {
-			statusbar_recalc_ypos(bar);
+			statusbars_recalc_ypos(bar);
                         break;
 		}
 	}
@@ -922,6 +937,7 @@ void statusbar_init(void)
 	statusbar_items_init();
 	statusbar_config_init();
 
+        signal_add("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_add("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_add("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
@@ -947,6 +963,7 @@ void statusbar_deinit(void)
 			     (GHFunc) statusbar_item_signal_destroy, NULL);
 	g_hash_table_destroy(sbar_item_signals);
 
+        signal_remove("terminal resized", (SIGNAL_FUNC) sig_terminal_resized);
 	signal_remove("mainwindow resized", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_remove("mainwindow moved", (SIGNAL_FUNC) sig_mainwindow_resized);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);
