@@ -27,7 +27,7 @@
 #include "mainwindows.h"
 #include "gui-windows.h"
 
-static void sig_window_save(WINDOW_REC *window, CONFIG_NODE *node)
+static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *active;
 
@@ -39,7 +39,7 @@ static void sig_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	}
 }
 
-static void sig_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
+static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *parent;
 
@@ -62,7 +62,7 @@ static void main_window_save(MAIN_WINDOW_REC *window, CONFIG_NODE *node)
 	iconfig_node_set_int(node, "lines", window->height);
 }
 
-static void sig_windows_saved(void)
+static void sig_layout_save(void)
 {
 	CONFIG_NODE *node;
 
@@ -93,7 +93,7 @@ static GSList *get_sorted_windows_config(CONFIG_NODE *node)
         return output;
 }
 
-static void sig_windows_restored(void)
+static void sig_layout_restore(void)
 {
         MAIN_WINDOW_REC *lower_window;
         WINDOW_REC *window;
@@ -129,18 +129,25 @@ static void sig_windows_restored(void)
 		mainwindow_set_size(lower_window, lower_size);
 }
 
+static void sig_layout_reset(void)
+{
+	iconfig_set_str(NULL, "mainwindows", NULL);
+}
+
 void mainwindows_layout_init(void)
 {
-	signal_add("window save", (SIGNAL_FUNC) sig_window_save);
-	signal_add("window restore", (SIGNAL_FUNC) sig_window_restore);
-	signal_add("windows saved", (SIGNAL_FUNC) sig_windows_saved);
-	signal_add_first("windows restored", (SIGNAL_FUNC) sig_windows_restored);
+	signal_add("layout window save", (SIGNAL_FUNC) sig_layout_window_save);
+	signal_add("layout window restore", (SIGNAL_FUNC) sig_layout_window_restore);
+	signal_add("layout save", (SIGNAL_FUNC) sig_layout_save);
+	signal_add_first("layout restore", (SIGNAL_FUNC) sig_layout_restore);
+	signal_add("layout reset", (SIGNAL_FUNC) sig_layout_reset);
 }
 
 void mainwindows_layout_deinit(void)
 {
-	signal_remove("window save", (SIGNAL_FUNC) sig_window_save);
-	signal_remove("window restore", (SIGNAL_FUNC) sig_window_restore);
-	signal_remove("windows saved", (SIGNAL_FUNC) sig_windows_saved);
-	signal_remove("windows restored", (SIGNAL_FUNC) sig_windows_restored);
+	signal_remove("layout window save", (SIGNAL_FUNC) sig_layout_window_save);
+	signal_remove("layout window restore", (SIGNAL_FUNC) sig_layout_window_restore);
+	signal_remove("layout save", (SIGNAL_FUNC) sig_layout_save);
+	signal_remove("layout restore", (SIGNAL_FUNC) sig_layout_restore);
+	signal_remove("layout reset", (SIGNAL_FUNC) sig_layout_reset);
 }
