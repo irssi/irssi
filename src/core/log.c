@@ -170,17 +170,19 @@ void log_write_rec(LOG_REC *log, const char *str)
 	day = tm->tm_mday;
 
 	tm = localtime(&log->last);
+	day -= tm->tm_mday; /* tm breaks in log_rotate_check() .. */
 	if (tm->tm_hour != hour) {
 		/* hour changed, check if we need to rotate log file */
                 log_rotate_check(log);
 	}
 
-	if (tm->tm_mday != day) {
+	if (day != 0) {
 		/* day changed */
 		log_write_timestamp(log->handle,
 				    settings_get_str("log_day_changed"),
 				    "\n", now);
 	}
+
 	log->last = now;
 
 	log_write_timestamp(log->handle, log_timestamp, str, now);
