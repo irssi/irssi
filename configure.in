@@ -480,9 +480,8 @@ if test "$enable_ssl" = "yes"; then
       ])
     ],, -lcrypto)
   fi
-  if test "$have_openssl" = "yes"; then
+  if test "$enable_openssl" = "yes"; then
     AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
-    enable_openssl="yes"
   fi
 fi
 
