@@ -320,37 +320,40 @@ static void cmd_foreach(const char *data, SERVER_REC *server,
 /* SYNTAX: FOREACH SERVER <command> */
 static void cmd_foreach_server(const char *data, SERVER_REC *server)
 {
-	GSList *tmp, *next;
+        GSList *list;
 
-	for (tmp = servers; tmp != NULL; tmp = next) {
-                next = tmp->next;
-		signal_emit("send command", 3, data, tmp->data, NULL);
+	list = g_slist_copy(servers);
+	while (list != NULL) {
+		signal_emit("send command", 3, data, list->data, NULL);
+                list = g_slist_remove(list, list->data);
 	}
 }
 
 /* SYNTAX: FOREACH CHANNEL <command> */
 static void cmd_foreach_channel(const char *data)
 {
-	GSList *tmp, *next;
+        GSList *list;
 
-	for (tmp = channels; tmp != NULL; tmp = next) {
-		CHANNEL_REC *rec = tmp->data;
+	list = g_slist_copy(channels);
+	while (list != NULL) {
+		CHANNEL_REC *rec = list->data;
 
-                next = tmp->next;
 		signal_emit("send command", 3, data, rec->server, rec);
+                list = g_slist_remove(list, list->data);
 	}
 }
 
 /* SYNTAX: FOREACH QUERY <command> */
 static void cmd_foreach_query(const char *data)
 {
-	GSList *tmp, *next;
+        GSList *list;
 
-	for (tmp = queries; tmp != NULL; tmp = next) {
-		QUERY_REC *rec = tmp->data;
+	list = g_slist_copy(channels);
+	while (list != NULL) {
+		QUERY_REC *rec = list->data;
 
-                next = tmp->next;
 		signal_emit("send command", 3, data, rec->server, rec);
+                list = g_slist_remove(list, list->data);
 	}
 }
 
