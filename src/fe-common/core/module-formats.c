@@ -233,7 +233,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Ignores", 0 },
 
-	{ "ignored", "Ignoring {hilight $1} from {nick $0} [$2]", 3, { 0, 0, 0 } },
+	{ "ignored", "Ignoring {hilight $1} from {nick $0}", 2, { 0, 0 } },
+	{ "ignored_options", "Ignoring {hilight $1} from {nick $0} {comment $2}", 3, { 0, 0, 0 } },
 	{ "unignored", "Unignored {nick $0}", 1, { 0 } },
 	{ "ignore_not_found", "{nick $0} is not being ignored", 1, { 0 } },
 	{ "ignore_no_ignores", "There are no ignores", 0 },

@@ -74,7 +74,8 @@ static void ignore_print(int index, IGNORE_REC *rec)
 			    levels != NULL ? levels : "", options->str);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-			    TXT_IGNORED, key != NULL ? key : "",
+			    options->len > 0 ? TXT_IGNORED_OPTIONS : TXT_IGNORED,
+			    key != NULL ? key : "",
 			    levels != NULL ? levels : "", options->str);
 	}
 	g_string_free(options, TRUE);
