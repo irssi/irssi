@@ -122,9 +122,14 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 				if (patt_len <= best_patt) continue;
 			}
 
-			ok = rec->regexp ? regexp_match(text, rec->pattern) :
-				rec->fullword ? stristr_full(text, rec->pattern) != NULL :
-				stristr(text, rec->pattern) != NULL;
+			if (rec->regexp) {
+				ok = !rec->regexp_compiled ? FALSE :
+					regexec(&rec->preg, text, 0, NULL, 0) == 0;
+			} else {
+				ok = rec->fullword ?
+					stristr_full(text, rec->pattern) != NULL :
+					stristr(text, rec->pattern) != NULL;
+			}
 			if (!ok) continue;
 		}
 
@@ -257,6 +262,10 @@ static void ignore_remove_config(IGNORE_REC *rec)
 
 void ignore_add_rec(IGNORE_REC *rec)
 {
+	rec->regexp_compiled = !rec->regexp || rec->pattern == NULL ? FALSE :
+		regcomp(&rec->preg, rec->pattern,
+			REG_EXTENDED|REG_ICASE|REG_NOSUB) == 0;
+
 	ignores = g_slist_append(ignores, rec);
 	ignore_set_config(rec);
 
@@ -268,6 +277,7 @@ static void ignore_destroy(IGNORE_REC *rec)
 	ignores = g_slist_remove(ignores, rec);
 	signal_emit("ignore destroyed", 1, rec);
 
+	if (rec->regexp_compiled) regfree(&rec->preg);
 	if (rec->time_tag > 0) g_source_remove(rec->time_tag);
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->mask);

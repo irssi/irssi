@@ -2,6 +2,9 @@
 #define __IGNORE_H
 
 #include "servers.h"
+#ifdef HAVE_REGEX_H
+#  include <regex.h>
+#endif
 
 typedef struct {
 	char *mask; /* nick mask */
@@ -18,6 +21,10 @@ typedef struct {
 	int regexp:1;
 	int fullword:1;
 	int replies:1; /* ignore replies to nick in channel */
+#ifdef HAVE_REGEX_H
+	int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
+	regex_t preg;
+#endif
 } IGNORE_REC;
 
 extern GSList *ignores;
