@@ -32,7 +32,7 @@ void
 textbuffer_view_clear(view)
 	Irssi::TextUI::TextBufferView view
 
-void
+Irssi::TextUI::Line
 textbuffer_view_get_lines(view)
 	Irssi::TextUI::TextBufferView view
 
@@ -72,12 +72,12 @@ textbuffer_view_set_bookmark(view, name, line)
 	Irssi::TextUI::Line line
 
 void
-textbuffer_view_set_bookmark_bottom(view, name);
+textbuffer_view_set_bookmark_bottom(view, name)
 	Irssi::TextUI::TextBufferView view
 	char *name
 
 Irssi::TextUI::Line
-textbuffer_view_get_bookmark(view, name);
+textbuffer_view_get_bookmark(view, name)
 	Irssi::TextUI::TextBufferView view
 	char *name
 
