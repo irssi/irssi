@@ -416,7 +416,7 @@ if test "$want_perl" != "no"; then
 
 		if test "$want_perl" != "static"; then
 			dnl * dynaloader.a -> libperl_dynaloader.la
-			DYNALOADER_A=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*\([[^ ]]*DynaLoader\.a\).*/\2/'`
+			DYNALOADER_A=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*([[^ ]]*DynaLoader\.a).*/\2/'`
 		fi
 
 		dnl * don't check libperl.a if dynaloader.a wasn't found..
@@ -456,7 +456,7 @@ if test "$want_perl" != "no"; then
 			want_perl=static
 		else
 			AC_MSG_RESULT(ok)
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/^\(.* \)*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
 			if test "x$LIBPERL_A" != "x"; then
 				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/ -lperl/ libperl_orig.la/'`
 			fi
