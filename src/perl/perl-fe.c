@@ -32,6 +32,9 @@
 
 static void cmd_script(const char *data, SERVER_REC *server, void *item)
 {
+	if (*data == '\0')
+                data = "list";
+
 	command_runsub("script", data, server, item);
 }
 
