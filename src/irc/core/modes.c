@@ -595,7 +595,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
         GHashTable *optlist;
 	char **matches, **match, *ret, *channame, *nicks;
 	void *free_arg;
-        int count;
+        int count, max_modes;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
 			    PARAM_FLAG_OPTIONS | PARAM_FLAG_OPTCHAN_NAME,
@@ -621,7 +621,8 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 		} else {
 			count = get_wildcard_nicks(str, *match, channel,
 						   op, voice);
-			if (count > settings_get_int("max_wildcard_modes") &&
+                        max_modes = settings_get_int("max_wildcard_modes");
+			if (max_modes > 0 && count > max_modes &&
 			    g_hash_table_lookup(optlist, "yes") == NULL) {
                                 /* too many matches */
 				g_string_free(str, TRUE);
