@@ -252,7 +252,7 @@ GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
 
 /* Server connected - update server for DCC records that have
    the same server tag */
-static void sig_server_connected(IRC_SERVER_REC *server)
+static void sig_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -517,7 +517,7 @@ void irc_dcc_init(void)
 	settings_add_int("dcc", "dcc_timeout", 300);
 	settings_add_str("dcc", "dcc_own_ip", "");
 
-	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
 	signal_add("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
@@ -549,7 +549,7 @@ void irc_dcc_deinit(void)
 	dcc_resume_deinit();
 	dcc_autoget_deinit();
 
-	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
+	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("server nick changed", (SIGNAL_FUNC) sig_server_nick_changed);
 	signal_remove("ctcp msg", (SIGNAL_FUNC) ctcp_msg);
