@@ -1,7 +1,18 @@
 # /AUTOOP <*|#channel> [<nickmasks>]
+# use friends.pl if you need more features
 
 use Irssi;
 use strict;
+use vars qw($VERSION %IRSSI);
+
+$VERSION = "1.00";
+%IRSSI = (
+    authors     => 'Timo Sirainen',
+    name        => 'autoop',
+    description => 'Simple auto-op script',
+    license     => 'Public Domain',
+    changed	=> 'Sun Mar 10 23:18 EET 2002'
+);
 
 my (%opnicks, %temp_opped);
 

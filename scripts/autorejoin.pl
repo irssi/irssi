@@ -6,8 +6,19 @@
 # will just result as ban. You've probably misunderstood the idea of /KICK
 # if you kick/get kicked all the time "just for fun" ...
 
-use strict;
+use Irssi;
 use Irssi::Irc;
+use strict;
+use vars qw($VERSION %IRSSI);
+
+$VERSION = "1.00";
+%IRSSI = (
+    authors     => 'Timo Sirainen',
+    name        => 'autorejoin',
+    description => 'Automatically rejoin to channel after kicked',
+    license     => 'Public Domain',
+    changed	=> 'Sun Mar 10 23:18 EET 2002'
+);
 
 sub channel_rejoin {
   my ($server, $channel) = @_;

@@ -4,6 +4,16 @@
 use Irssi;
 use Irssi::Irc;
 use strict;
+use vars qw($VERSION %IRSSI);
+
+$VERSION = "1.00";
+%IRSSI = (
+    authors     => 'Timo Sirainen',
+    name        => 'quitmsg',
+    description => 'Random quit messages',
+    license     => 'Public Domain',
+    changed	=> 'Sun Mar 10 23:18 EET 2002'
+);
 
 my $quitfile = glob "~/.irssi/irssi.quit";
 

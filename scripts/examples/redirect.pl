@@ -1,8 +1,19 @@
+# Example how to do redirections, we'll grab the output of /WHOIS:
+
 # /RN - display real name of nick
 
 use Irssi;
 use Irssi::Irc;
 use strict;
+use vars qw($VERSION %IRSSI);
+
+$VERSION = "1.00";
+%IRSSI = (
+    authors     => 'Timo Sirainen',
+    name        => 'redirect',
+    description => 'Redirection example',
+    license     => 'Public Domain'
+);
 
 sub cmd_realname {
 	my ($data, $server, $channel) = @_;

@@ -4,10 +4,21 @@
 # Irssi will automatically change it back. +k and +l are a bit special since
 # they require the parameter. If you omit the parameter, like setting the
 # mode to "+ntlk", Irssi will allow all +k and +l (or -lk) mode changes.
+# You can remove the lock with /MODE #channel -
 
 use Irssi;
 use Irssi::Irc;
 use strict;
+use vars qw($VERSION %IRSSI);
+
+$VERSION = "1.00";
+%IRSSI = (
+    authors     => 'Timo Sirainen',
+    name        => 'mlock',
+    description => 'Channel mode locking',
+    license     => 'Public Domain',
+    changed	=> 'Sun Mar 10 23:18 EET 2002'
+);
 
 my %keep_channels;
 
@@ -15,8 +26,13 @@ sub cmd_mlock {
 	my ($data, $server) = @_;
 	my ($channel, $mode) = split(/ /, $data, 2);
 
-	$keep_channels{$channel} = $mode;
-	mlock_check_mode($server, $channel);
+	if ($mode eq "-") {
+		# remove checking
+		delete $keep_channels{$channel};
+	} else {
+		$keep_channels{$channel} = $mode;
+		mlock_check_mode($server, $channel);
+	}
 }
 
 sub mlock_check_mode {
