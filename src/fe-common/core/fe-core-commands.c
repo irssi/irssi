@@ -92,12 +92,15 @@ static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 /* SYNTAX: VERSION */
 static void cmd_version(char *data)
 {
+	char time[10];
+
 	g_return_if_fail(data != NULL);
 
 	if (*data == '\0') {
+                g_snprintf(time, sizeof(time), "%04d", IRSSI_VERSION_TIME);
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "Client: "PACKAGE" " IRSSI_VERSION" (%d %04d)",
-			  IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
+			  "Client: "PACKAGE" " IRSSI_VERSION" (%d %s)",
+			  IRSSI_VERSION_DATE, time);
 	}
 }
 
