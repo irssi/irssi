@@ -534,7 +534,10 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	}
 	if (*query == '\0') {
 		QUERY_REC *queryitem = QUERY(item);
-		query = queryitem != NULL ? queryitem->name : server->nick;
+		if (queryitem == NULL)
+			query = server->nick;
+		else
+			query = qserver = queryitem->name;
 	}
 
 	if (strcmp(query, "*") == 0 &&
