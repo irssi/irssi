@@ -462,7 +462,7 @@ void expandos_init(void)
 
         sysname = sysrelease = sysarch = NULL;
 #ifdef HAVE_SYS_UTSNAME_H
-	if (uname(&un) == 0) {
+	if (uname(&un) >= 0) {
 		sysname = g_strdup(un.sysname);
 		sysrelease = g_strdup(un.release);
 		sysarch = g_strdup(un.machine);
