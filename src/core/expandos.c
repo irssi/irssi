@@ -144,8 +144,8 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 	} else if (g_hash_table_lookup_extended(expandos, key, &origkey,
 						(gpointer *) &rec)) {
 		if (rec->func == func) {
-			g_free(origkey);
 			g_hash_table_remove(expandos, key);
+			g_free(origkey);
 			g_free(rec);
 		}
 	}

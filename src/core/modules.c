@@ -405,7 +405,7 @@ void module_unload(MODULE_REC *module)
 
 static void uniq_get_modules(char *key, void *value, GSList **list)
 {
-        *list = g_slist_append(*list, key);
+        *list = g_slist_append(*list, g_strdup(key));
 }
 
 void modules_init(void)
@@ -434,6 +434,7 @@ void modules_deinit(void)
 
 	while (list != NULL) {
 		module_uniq_destroy(list->data);
+		g_free(list->data);
 		list = g_slist_remove(list, list->data);
 	}
 
