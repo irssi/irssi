@@ -418,16 +418,14 @@ if test "x$enable_ssl" = xyes; then
 
 	enable_openssl="no"; 
 	OPENSSL_LDFLAGS="";
-	AC_CHECK_LIB(ssl, SSL_read,
-			AC_CHECK_LIB(crypto, X509_new,
-					AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h,
-						[
-							enable_openssl="yes";
-							OPENSSL_LDFLAGS="-lssl -lcrypto"
-						],
-					AC_ERROR([Cannot find OpenSSL includes !])),
-				AC_ERROR([Cannot find libCrypto !])),
-			AC_ERROR([Cannot find libSSL !]))
+	AC_CHECK_LIB(ssl, SSL_read, [
+	  AC_CHECK_LIB(crypto, X509_new, [
+	    AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
+	      enable_openssl="yes";
+	      OPENSSL_LDFLAGS="-lssl -lcrypto"
+	    ])
+	  ])
+	])
 	CFLAGS=$save_CFLAGS
 
 	if test "x`echo $GLIB_LIBS|grep glib-2.0`" != "x"; then
