@@ -288,6 +288,10 @@ timeout_add(msecs, func, data)
   Call `func' every `msecs' milliseconds (1000 = 1 second) with
   parameter `data'. Returns tag which can be used to stop the timeout.
 
+timeout_add_once(msecs, func, data);
+  Call 'func' once after `msecs' milliseconds (1000 = 1 second)
+  with parameter `data'. Returns tag which can be used to stop the timeout.
+
 timeout_remove(tag)
   Remove timeout with tag.
 
