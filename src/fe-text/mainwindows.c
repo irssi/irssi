@@ -643,6 +643,7 @@ static void cmd_window_hide(const char *data)
 /* SYNTAX: WINDOW SHOW <number>|<name> */
 static void cmd_window_show(const char *data)
 {
+        MAIN_WINDOW_REC *parent;
 	WINDOW_REC *window;
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -666,8 +667,9 @@ static void cmd_window_show(const char *data)
                 return;
 	}
 
-	WINDOW_GUI(window)->parent = mainwindow_create();
-	WINDOW_GUI(window)->parent->active = window;
+	parent = mainwindow_create();
+        parent->active = window;
+        gui_window_reparent(window, parent);
 
 	active_mainwin = NULL;
 	window_set_active(window);
