@@ -221,10 +221,17 @@ static void item_more(SBAR_ITEM_REC *item, int get_size_only)
         MAIN_WINDOW_REC *mainwin;
 	int visible;
 
-	mainwin = WINDOW_MAIN(active_win);
-	visible = WINDOW_GUI(active_win)->view->more_text;
+	if (active_win == NULL) {
+                mainwin = NULL;
+		visible = FALSE;
+	} else {
+		mainwin = WINDOW_MAIN(active_win);
+		visible = WINDOW_GUI(active_win)->view->more_text;
+	}
+
 	if (!visible) {
-                more_visible = g_slist_remove(more_visible, mainwin);
+		if (mainwin != NULL)
+			more_visible = g_slist_remove(more_visible, mainwin);
 		if (get_size_only)
 			item->min_size = item->max_size = 0;
 		return;
