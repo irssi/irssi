@@ -94,6 +94,16 @@ static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
 	return "";
 }
 
+/* expands to your usermode on channel,
+   op '@', halfop '%', "+" voice, " " normal */
+static char *expando_cumode_space(SERVER_REC *server, void *item, int *free_ret)
+{
+	char *ret;
+	
+	ret = expando_cumode(server, item, free_ret);
+	return *ret == '\0' ? " " : ret;
+}
+
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
@@ -124,6 +134,10 @@ void irc_expandos_init(void)
 		       "window server changed", EXPANDO_ARG_WINDOW,
 		       "user mode changed", EXPANDO_ARG_SERVER, NULL);
 	expando_create("cumode", expando_cumode,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW,
+		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
+	expando_create("cumode_space", expando_cumode_space,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW,
 		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
