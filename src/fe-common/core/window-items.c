@@ -90,7 +90,7 @@ void window_item_change_server(WI_ITEM_REC *item, void *server)
 
 	g_return_if_fail(item != NULL);
 
-	window = MODULE_DATA(item);
+	window = window_item_window(item);
 	item->server = server;
 
         signal_emit("window item server changed", 2, window, item);

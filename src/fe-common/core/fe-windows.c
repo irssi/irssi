@@ -308,7 +308,7 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 	if (item == NULL)
 		return 0;
 
-	return MODULE_DATA(item);
+	return window_item_window(item);
 }
 
 int window_refnum_prev(int refnum, int wrap)
