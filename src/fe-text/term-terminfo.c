@@ -119,6 +119,7 @@ int term_init(void)
 void term_deinit(void)
 {
 	if (current_term != NULL) {
+		signal(SIGCONT, SIG_DFL);
 		g_source_remove(redraw_tag);
 
 		term_common_deinit();
