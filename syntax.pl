@@ -10,8 +10,8 @@
 # Remember to include the asterisk ('*').
 $SRC_PATH='src';
 
-# This is quick and dirty, but works for sure :)
-$FOO = `find src -name '*.c' -exec grep -e '/* SYNTAX:' \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
+$FOO = `find src -name '*.c' -exec ./findsyntax.pl \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
+
 
 while (<docs/help/in/*.in>) {
    open (FILE, "$_");
@@ -21,7 +21,8 @@ while (<docs/help/in/*.in>) {
       if ($DATARIVI =~ /\@SYNTAX\:(.+)\@/) {
           $etsittava = "\U$1 ";
           $SYNTAX = `grep \'^$etsittava\' irssi_syntax`;
-          $SYNTAX =~ s/\*\///g; $SYNTAX =~ s/ *$//;
+	  $SYNTAX =~ s/\*\///g;
+	  $SYNTAX =~ s/ *$//; $SYNTAX =~ s/ *\n/\n/g;
           $DATARIVI = $SYNTAX;
       }
    }
