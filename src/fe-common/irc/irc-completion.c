@@ -300,8 +300,8 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 	return list1;
 }
 
-static void sig_word_complete(WINDOW_REC *window, const char *word,
-			      const char *linestart, GList **list)
+static void sig_word_complete(GList **list, WINDOW_REC *window,
+			      const char *word, const char *linestart)
 {
 	IRC_SERVER_REC *server;
 	CHANNEL_REC *channel;
@@ -309,7 +309,10 @@ static void sig_word_complete(WINDOW_REC *window, const char *word,
 	const char *cmdchars, *nickprefix;
 	char *prefix;
 
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(window != NULL);
 	g_return_if_fail(word != NULL);
+	g_return_if_fail(linestart != NULL);
 
 	server = window->active_server;
 	if (server == NULL || !server->connected)

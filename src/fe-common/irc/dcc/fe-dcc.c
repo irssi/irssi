@@ -31,6 +31,7 @@
 
 #include "irc/dcc/dcc.h"
 
+#include "completion.h"
 #include "themes.h"
 #include "windows.h"
 
@@ -405,6 +406,24 @@ static void cmd_dcc_list(const char *data)
 	printformat(NULL, NULL, MSGLEVEL_DCC, IRCTXT_DCC_LIST_FOOTER);
 }
 
+static void sig_dcc_send_complete(GList **list, WINDOW_REC *window,
+				  const char *word, const char *line, int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+	g_return_if_fail(line != NULL);
+
+	if (*line == '\0' || strchr(line, ' ') != NULL)
+		return;
+
+	/* completing filename parameter for /DCC SEND */
+	*list = filename_complete(word);
+	if (*list != NULL) {
+		*want_space = FALSE;
+		signal_stop();
+	}
+}
+
 void fe_irc_dcc_init(void)
 {
     signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
@@ -425,6 +444,7 @@ void fe_irc_dcc_init(void)
     signal_add("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
     signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
     signal_add("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+    signal_add("command complete dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
     command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
     command_bind("me", NULL, (SIGNAL_FUNC) cmd_me);
     command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
@@ -457,6 +477,7 @@ void fe_irc_dcc_deinit(void)
     signal_remove("dcc unknown reply", (SIGNAL_FUNC) dcc_unknown_reply);
     signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
     signal_remove("query destroyed", (SIGNAL_FUNC) sig_query_destroyed);
+    signal_remove("command complete dcc send", (SIGNAL_FUNC) sig_dcc_send_complete);
     command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
     command_unbind("me", (SIGNAL_FUNC) cmd_me);
     command_unbind("action", (SIGNAL_FUNC) cmd_action);

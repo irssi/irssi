@@ -34,6 +34,8 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func);
 
 void command_runsub(const char *cmd, const char *data, void *p1, void *p2);
 
+COMMAND_REC *command_find(const char *command);
+
 /* count can have these flags: */
 #define PARAM_WITHOUT_FLAGS(a) ((a) & 0x00ffffff)
 /* don't check for quotes - "arg1 arg2" is NOT treated as one argument */

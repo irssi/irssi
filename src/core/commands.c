@@ -115,6 +115,21 @@ void command_runsub(const char *cmd, const char *data, void *p1, void *p2)
 	g_free(subcmd);
 }
 
+COMMAND_REC *command_find(const char *command)
+{
+	GSList *tmp;
+	int len;
+
+	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
+		COMMAND_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->cmd, command) == 0)
+			return rec;
+	}
+
+	return NULL;
+}
+
 char *cmd_get_param(char **data)
 {
 	char *pos;

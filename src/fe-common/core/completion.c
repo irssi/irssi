@@ -35,6 +35,7 @@
 
 static GList *complist; /* list of commands we're currently completing */
 static char *last_linestart;
+static int last_want_space;
 
 #define isseparator_notspace(c) \
         ((c) == ',')
@@ -113,7 +114,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 {
 	GString *result;
 	char *word, *wordstart, *linestart, *ret;
-	int startpos, wordlen;
+	int startpos, wordlen, want_space;
 
 	g_return_val_if_fail(line != NULL, NULL);
 	g_return_val_if_fail(pos != NULL, NULL);
@@ -132,12 +133,15 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		/* complete from old list */
 		complist = complist->next != NULL ? complist->next :
 			g_list_first(complist);
+		want_space = last_want_space;
 	} else {
 		/* get new completion list */
 		free_completions();
 
 		last_linestart = g_strdup(linestart);
-		signal_emit("word complete", 4, window, word, linestart, &complist);
+		want_space = TRUE;
+		signal_emit("word complete", 5, &complist, window, word, linestart, &want_space);
+		last_want_space = want_space;
 	}
 
 	if (complist == NULL)
@@ -152,7 +156,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		g_string_erase(result, startpos, wordlen);
 		g_string_insert(result, startpos, complist->data);
 
-		if (!isseparator(result->str[*pos-1]))
+		if (want_space && !isseparator(result->str[*pos-1]))
 			g_string_insert_c(result, *pos-1, ' ');
 
 		ret = result->str;
@@ -164,7 +168,51 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 	return ret;
 }
 
-static int is_sub_command(const char *command)
+GList *list_add_file(GList *list, const char *name)
+{
+	struct stat statbuf;
+
+	if (stat(name, &statbuf) != 0)
+		return list;
+
+	return g_list_append(list, !S_ISDIR(statbuf.st_mode) ? g_strdup(name) :
+			     g_strconcat(name, G_DIR_SEPARATOR_S, NULL));
+}
+
+GList *filename_complete(const char *path)
+{
+        GList *list;
+	DIR *dirp;
+	struct dirent *dp;
+	char *realpath, *dir, *basename, *name;
+	int len;
+
+	list = NULL;
+
+	realpath = strncmp(path, "~/", 2) != 0 ? g_strdup(path) :
+		g_strconcat(g_get_home_dir(), path+1, NULL);
+
+	dir = g_dirname(realpath);
+	dirp = opendir(dir);
+
+	basename = g_basename(realpath);
+	len = strlen(basename);
+
+	while ((dp = readdir(dirp)) != NULL) {
+		if (len == 0 || strncmp(dp->d_name, basename, len) == 0) {
+			name = g_strdup_printf("%s"G_DIR_SEPARATOR_S"%s", dir, dp->d_name);
+			list = list_add_file(list, name);
+			g_free(name);
+		}
+	}
+	closedir(dirp);
+
+	g_free(realpath);
+	g_free(dir);
+        return list;
+}
+
+static int is_base_command(const char *command)
 {
 	GSList *tmp;
 	int len;
@@ -256,12 +304,50 @@ static GList *completion_get_subcommands(const char *cmd)
 	return complist;
 }
 
-static void sig_word_complete(WINDOW_REC *window, const char *word,
-			      const char *linestart, GList **list)
+/* split the line to command and arguments */
+static char *line_get_command(const char *line, char **args)
+{
+	const char *ptr, *cmdargs;
+	char *cmd, *checkcmd;
+
+	cmd = checkcmd = NULL;
+	cmdargs = NULL; ptr = line;
+
+	do {
+		ptr = strchr(ptr, ' ');
+		if (ptr == NULL) {
+			checkcmd = g_strdup(line);
+			cmdargs = "";
+		} else {
+			checkcmd = g_strndup(line, (int) (ptr-line));
+
+			while (isspace(*ptr)) ptr++;
+			cmdargs = ptr;
+		}
+
+		if (!command_find(checkcmd)) {
+			/* not found, use the previous */
+			g_free(checkcmd);
+			break;
+		}
+
+		/* found, check if it has subcommands */
+		g_free_not_null(cmd);
+		cmd = checkcmd;
+		*args = (char *) cmdargs;
+	} while (ptr != NULL);
+
+	return cmd;
+}
+
+static void sig_word_complete(GList **list, WINDOW_REC *window,
+			      const char *word, const char *linestart, int *want_space)
 {
 	const char *newword, *cmdchars;
 
+	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
+	g_return_if_fail(linestart != NULL);
 
 	/* check against "completion words" list */
 	newword = completion_find(word);
@@ -290,8 +376,8 @@ static void sig_word_complete(WINDOW_REC *window, const char *word,
 		return;
 	}
 
-	if (strchr(cmdchars, *linestart) && is_sub_command(linestart+1)) {
-		/* complete (/command's) subcommand */
+	if (strchr(cmdchars, *linestart) && is_base_command(linestart+1)) {
+		/* complete /command's subcommand */
 		char *tmp;
 
                 tmp = g_strconcat(linestart+1, " ", word, NULL);
@@ -300,6 +386,20 @@ static void sig_word_complete(WINDOW_REC *window, const char *word,
 
 		if (*list != NULL) signal_stop();
 		return;
+	}
+
+	if (strchr(cmdchars, *linestart)) {
+		/* complete /command's parameters */
+		char *signal, *cmd, *args;
+
+		cmd = line_get_command(linestart+1, &args);
+		if (cmd != NULL) {
+			signal = g_strconcat("command complete ", cmd, NULL);
+			signal_emit(signal, 5, list, window, word, args, want_space);
+
+			g_free(signal);
+			g_free(cmd);
+		}
 	}
 }
 
