@@ -210,7 +210,7 @@ static IRC_CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server,
 
 static void event_join(IRC_SERVER_REC *server, const char *data, const char *nick, const char *address)
 {
-	char *params, *channel, *tmp;
+	char *params, *channel, *tmp, *shortchan;
 	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
@@ -227,41 +227,46 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
-	if (*channel == '!') {
+	if (*channel != '!')
+		shortchan = NULL;
+	else {
 		/* !channels have 5 chars long identification string before
 		   it's name, it's not known when /join is called so rename
 		   !channel here to !ABCDEchannel */
-		char *shortchan;
-
 		shortchan = g_strdup_printf("!%s", channel+6);
 		chanrec = channel_find_unjoined(server, shortchan);
 		if (chanrec != NULL) {
 			g_free(chanrec->name);
 			chanrec->name = g_strdup(channel);
 		}
-
-		g_free(shortchan);
 	}
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL && chanrec->joined) {
 		/* already joined this channel - this check was added
 		   here because of broken irssi proxy :) */
+		g_free(shortchan);
 		g_free(params);
                 return;
 	}
 
-	chanrec = channel_find_unjoined(server, channel);
+	if (chanrec == NULL) {
+		/* look again, because of the channel name cut issues. */
+		chanrec = channel_find_unjoined(server, channel);
+	}
+
 	if (chanrec == NULL) {
 		/* didn't get here with /join command.. */
-		chanrec = irc_channel_create(server, channel, NULL, TRUE);
+		chanrec = irc_channel_create(server, channel, shortchan, TRUE);
 	}
+
 	chanrec->joined = TRUE;
 	if (strcmp(chanrec->name, channel) != 0) {
                 g_free(chanrec->name);
 		chanrec->name = g_strdup(channel);
 	}
 
+	g_free(shortchan);
 	g_free(params);
 }
 

@@ -48,7 +48,6 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server, const char *name,
 				    const char *visible_name, int automatic)
 {
 	IRC_CHANNEL_REC *rec;
-	char *new_name;
 
 	g_return_val_if_fail(server == NULL || IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(name != NULL, NULL);
@@ -56,25 +55,8 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server, const char *name,
 	rec = g_new0(IRC_CHANNEL_REC, 1);
 	if (*name == '+') rec->no_modes = TRUE;
 
-	new_name = NULL;
-	if (visible_name == NULL) {
-		/* !?????channel -> !channel */
-		new_name = *name == '!' && strlen(name) >= 1+5 ?
-			g_strconcat("!", name+1+5, NULL) :
-			g_strdup(name);
-
-		if (irc_channel_find(server, new_name) != NULL) {
-			/* this was second !channel with same name,
-			   show the channel id after all */
-			g_free_and_null(new_name);
-		}
-
-		visible_name = new_name;
-	}
-
 	channel_init((CHANNEL_REC *) rec, (SERVER_REC *) server,
 		     name, visible_name, automatic);
-	g_free(new_name);
 	return rec;
 }
 
