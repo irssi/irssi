@@ -290,9 +290,8 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	char *str;
 	int tag;
 
-	if (*data == '\0') {
+	if (*data == '\0' && server != NULL) {
 		/* reconnect back to same server */
-		if (server == NULL) cmd_return_error(CMDERR_NOT_CONNECTED);
 		str = g_strdup_printf("%s %d %s %s", server->connrec->address,
 				      server->connrec->port, server->connrec->password,
 				      server->connrec->nick);
@@ -301,19 +300,25 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 		return;
 	}
 
-	if (g_strncasecmp(data, "RECON-", 6) == 0)
-		data += 6;
+	if (*data == '\0') {
+		/* reconnect to first server in reconnection list */
+		if (reconnects == NULL)
+			cmd_return_error(CMDERR_NOT_CONNECTED);
+                rec = reconnects->data;
+	} else {
+		if (g_strncasecmp(data, "RECON-", 6) == 0)
+			data += 6;
 
-	tag = atoi(data);
-	rec = tag <= 0 ? NULL : reconnect_find_tag(tag);
+		tag = atoi(data);
+		rec = tag <= 0 ? NULL : reconnect_find_tag(tag);
 
-	if (rec == NULL)
-		signal_emit("server reconnect not found", 1, data);
-	else {
-		conn = rec->conn;
-		server_reconnect_destroy(rec, FALSE);
-		server_connect(conn);
+		if (rec == NULL)
+			signal_emit("server reconnect not found", 1, data);
 	}
+
+	conn = rec->conn;
+	server_reconnect_destroy(rec, FALSE);
+	server_connect(conn);
 }
 
 static void cmd_disconnect(const char *data, SERVER_REC *server)
