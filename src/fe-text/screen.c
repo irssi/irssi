@@ -92,7 +92,6 @@ static void read_signals(void)
 	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
 	signal(SIGQUIT, find_substr(ignores, "quit") ? SIG_IGN : SIG_DFL);
 	signal(SIGTERM, find_substr(ignores, "term") ? SIG_IGN : SIG_DFL);
-	signal(SIGPIPE, find_substr(ignores, "pipe") ? SIG_IGN : SIG_DFL);
 	signal(SIGALRM, find_substr(ignores, "alrm") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR1, find_substr(ignores, "usr1") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR2, find_substr(ignores, "usr2") ? SIG_IGN : SIG_DFL);
