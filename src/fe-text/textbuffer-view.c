@@ -343,13 +343,14 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (subline > 0) {
                                 /* continuing previous line - indent it */
 				indent_func = cache->lines[subline-1].indent_func;
-				xpos = indent_func != NULL ?
-					indent_func(view, line, ypos) :
-					cache->lines[subline-1].indent;
+				if (indent_func == NULL)
+					xpos = cache->lines[subline-1].indent;
                                 color = cache->lines[subline-1].color;
+			} else {
+				indent_func = NULL;
 			}
 
-			if (xpos == 0)
+			if (xpos == 0 && indent_func == NULL)
                                 need_clrtoeol = TRUE;
 			else {
 				/* line was indented - need to clear the
@@ -357,6 +358,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				term_set_color(view->window, ATTR_RESET);
 				term_move(view->window, 0, ypos);
 				term_clrtoeol(view->window);
+
+				if (indent_func != NULL)
+					xpos = indent_func(view, line, ypos);
 			}
 
 			if (need_move || xpos > 0)
