@@ -378,7 +378,9 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
+#ifdef USE_GC
 		GC_collect_a_little();
+#endif
 		if (!dummy) term_refresh_freeze();
 		g_main_iteration(TRUE);
                 if (!dummy) term_refresh_thaw();
