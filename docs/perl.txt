@@ -74,10 +74,16 @@ A list of signals that irssi sends can be found from signals.txt file.
 You can create your own commands, or replace existing ones with
 Irssi::command_bind(). The command handling work internally pretty much
 the same as signal handlers, so if you replace existing command and don't
-wish to let it run, call Irssi::signal_stop(). Here's an example:
+wish to let it run, call Irssi::signal_stop().
+
+Here's an example:
 
   # Usage: /HELLO [<nick>]
   sub cmd_hello {
+    # data - contains the parameters for /HELLO
+    # server - the active server in window
+    # witem - the active window item (eg. channel, query)
+    #         or undef if the window is empty
     my ($data, $server, $witem) = @_;
 
     if (!$server || !$server->{connected}) {
@@ -87,15 +93,17 @@ wish to let it run, call Irssi::signal_stop(). Here's an example:
 
     if ($data) {
       $server->command("/MSG $data Hello!");
-    } elsif ($witem) {
+    } elsif ($witem && ($witem->{type} eq "CHANNEL" ||
+                        $witem->{type} eq "QUERY")) {
       # there's query/channel active in window
-      $server->command("/MSG * Hello!");
+      $witem->command("/MSG ".$witem->{name}." Hello!");
     } else {
       Irssi::print("Nick not given, and no active channel/query in window");
     }
   }
 
   Irssi::command_bind('hello', 'cmd_hello');
+
 
  Message levels
  --------------
