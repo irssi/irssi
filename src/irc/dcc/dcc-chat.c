@@ -104,7 +104,8 @@ CHAT_DCC_REC *dcc_chat_find_id(const char *id)
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
 		CHAT_DCC_REC *dcc = tmp->data;
 
-		if (IS_DCC_CHAT(dcc) && g_strcasecmp(dcc->id, id) == 0)
+		if (IS_DCC_CHAT(dcc) && dcc->id != NULL &&
+		    g_strcasecmp(dcc->id, id) == 0)
 			return dcc;
 	}
 
@@ -783,6 +784,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 
                 /* change the id too */
 		g_free(dcc->id);
+		dcc->id = NULL;
 		dcc->id = dcc_chat_get_new_id(nick);
 
 		if (query != NULL) {
