@@ -605,6 +605,11 @@ static int get_mail_count(void)
 	while (fgets(str, sizeof(str), f) != NULL) {
 		if (strncmp(str, "From ", 5) == 0)
 			count++;
+		if (strncmp(str, "Subject: ", 9) == 0 &&
+		    strstr(str, "FOLDER INTERNAL DATA")) {
+			/* don't count these. */
+			count--;
+		}
 	}
 
 	fclose(f);
