@@ -443,6 +443,9 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 {
 	GSList *tmp;
 
+	if (!IS_IRC_SERVER(server))
+		return;
+
 	if (g_strcasecmp(orignick, server->nick) != 0)
 		return;
 
@@ -455,6 +458,15 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 			rec->nick = g_strdup(data);
 		}
 	}
+}
+
+static void sig_message_own_public(IRC_SERVER_REC *server, const char *msg,
+                                   const char *target)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	proxy_outserver_all(server, "PRIVMSG %s :%s", target, msg);
 }
 
 static LISTEN_REC *find_listen(const char *ircnet, int port)
@@ -557,6 +569,7 @@ void plugin_proxy_listen_init(void)
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
+	signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -573,5 +586,6 @@ void plugin_proxy_listen_deinit(void)
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
+	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

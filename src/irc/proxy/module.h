@@ -44,5 +44,5 @@ void plugin_proxy_dump_data(CLIENT_REC *client);
 void proxy_outdata(CLIENT_REC *client, const char *data, ...);
 void proxy_outdata_all(IRC_SERVER_REC *server, const char *data, ...);
 void proxy_outserver(CLIENT_REC *client, const char *data, ...);
-/*void proxy_outserver_all(const char *data, ...);*/
+void proxy_outserver_all(IRC_SERVER_REC *server, const char *data, ...);
 void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...);

@@ -88,7 +88,7 @@ void proxy_outserver(CLIENT_REC *client, const char *data, ...)
 	va_end(args);
 }
 
-/*void proxy_outserver_all(IRC_SERVER_REC *server, const char *data, ...)
+void proxy_outserver_all(IRC_SERVER_REC *server, const char *data, ...)
 {
 	va_list args;
 	GSList *tmp;
@@ -111,7 +111,7 @@ void proxy_outserver(CLIENT_REC *client, const char *data, ...)
 	g_free(str);
 
 	va_end(args);
-}*/
+}
 
 void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...)
 {
