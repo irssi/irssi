@@ -30,7 +30,7 @@
 #include "irc-chatnets.h"
 #include "printtext.h"
 
-static void cmd_ircnet_list(void)
+static void cmd_network_list(void)
 {
 	GString *str;
 	GSList *tmp;
@@ -86,7 +86,7 @@ static void cmd_ircnet_list(void)
 		      [-querychans <count>] [-whois <count>] [-msgs <count>]
 		      [-kicks <count>] [-modes <count>]
 		      [-cmdspeed <ms>] [-cmdmax <count>] <name> */
-static void cmd_ircnet_add(const char *data)
+static void cmd_network_add(const char *data)
 {
 	GHashTable *optlist;
 	char *name, *value;
@@ -155,7 +155,7 @@ static void cmd_ircnet_add(const char *data)
 }
 
 /* SYNTAX: NETWORK REMOVE <network> */
-static void cmd_ircnet_remove(const char *data)
+static void cmd_network_remove(const char *data)
 {
 	IRC_CHATNET_REC *rec;
 
@@ -170,28 +170,28 @@ static void cmd_ircnet_remove(const char *data)
 	}
 }
 
-static void cmd_ircnet(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_network(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	if (*data == '\0')
-		cmd_ircnet_list();
+		cmd_network_list();
 	else
-		command_runsub("ircnet", data, server, item);
+		command_runsub("network", data, server, item);
 }
 
 void fe_ircnet_init(void)
 {
-	command_bind("network", NULL, (SIGNAL_FUNC) cmd_ircnet);
-	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_ircnet_list);
-	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_ircnet_add);
-	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_ircnet_remove);
+	command_bind("network", NULL, (SIGNAL_FUNC) cmd_network);
+	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_network_list);
+	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_network_add);
+	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_network_remove);
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed -cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode");
 }
 
 void fe_ircnet_deinit(void)
 {
-	command_unbind("network", (SIGNAL_FUNC) cmd_ircnet);
-	command_unbind("network list", (SIGNAL_FUNC) cmd_ircnet_list);
-	command_unbind("network add", (SIGNAL_FUNC) cmd_ircnet_add);
-	command_unbind("network remove", (SIGNAL_FUNC) cmd_ircnet_remove);
+	command_unbind("network", (SIGNAL_FUNC) cmd_network);
+	command_unbind("network list", (SIGNAL_FUNC) cmd_network_list);
+	command_unbind("network add", (SIGNAL_FUNC) cmd_network_add);
+	command_unbind("network remove", (SIGNAL_FUNC) cmd_network_remove);
 }
