@@ -112,12 +112,38 @@ static void hilights_destroy_all(void)
 	hilights = NULL;
 }
 
-static void hilight_remove(HILIGHT_REC *rec)
+static void hilight_init_rec(HILIGHT_REC *rec)
+{
+#ifdef HAVE_REGEX_H
+	if (rec->regexp_compiled) regfree(&rec->preg);
+	rec->regexp_compiled = !rec->regexp ? FALSE :
+		regcomp(&rec->preg, rec->text, REG_EXTENDED|REG_ICASE) == 0;
+#endif
+}
+
+void hilight_create(HILIGHT_REC *rec)
+{
+	if (g_slist_find(hilights, rec) != NULL) {
+		hilights = g_slist_remove(hilights, rec);
+		hilight_remove_config(rec);
+	}
+
+	hilights = g_slist_append(hilights, rec);
+	hilight_add_config(rec);
+
+	hilight_init_rec(rec);
+
+	signal_emit("hilight created", 1, rec);
+}
+
+void hilight_remove(HILIGHT_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
 
 	hilight_remove_config(rec);
 	hilights = g_slist_remove(hilights, rec);
+
+	signal_emit("hilight destroyed", 1, rec);
 	hilight_destroy(rec);
 }
 
@@ -435,11 +461,7 @@ static void read_hilight_config(void)
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 
-#ifdef HAVE_REGEX_H
-		rec->regexp_compiled = !rec->regexp ? FALSE :
-			regcomp(&rec->preg, rec->text,
-				REG_EXTENDED|REG_ICASE) == 0;
-#endif
+		hilight_init_rec(rec);
 
 		node = config_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
@@ -527,9 +549,6 @@ static void cmd_hilight(const char *data)
 		rec->channels = channels;
 	} else {
 		g_strfreev(channels);
-
-                hilight_remove_config(rec);
-		hilights = g_slist_remove(hilights, rec);
 	}
 
 	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
@@ -564,15 +583,7 @@ static void cmd_hilight(const char *data)
 			rec->act_color = g_strdup(actcolorarg);
 	}
 
-#ifdef HAVE_REGEX_H
-	if (rec->regexp_compiled)
-		regfree(&rec->preg);
-	rec->regexp_compiled = !rec->regexp ? FALSE :
-		regcomp(&rec->preg, rec->text, REG_EXTENDED|REG_ICASE) == 0;
-#endif
-
-	hilights = g_slist_append(hilights, rec);
-	hilight_add_config(rec);
+	hilight_create(rec);
 
 	hilight_print(g_slist_index(hilights, rec)+1, rec);
         cmd_params_free(free_arg);

@@ -40,6 +40,9 @@ char *hilight_match_nick(SERVER_REC *server, const char *channel,
 			 const char *nick, const char *address,
 			 int level, const char *msg);
 
+void hilight_create(HILIGHT_REC *rec);
+void hilight_remove(HILIGHT_REC *rec);
+
 void hilight_text_init(void);
 void hilight_text_deinit(void);
 

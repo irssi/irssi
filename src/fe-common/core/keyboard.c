@@ -388,6 +388,8 @@ static void key_configure_destroy(KEY_REC *rec)
 	rec->info->keys = g_slist_remove(rec->info->keys, rec);
 	g_hash_table_remove(keys, rec->key);
 
+	signal_emit("key destroyed", 1, rec);
+
 	if (!key_config_frozen)
                 key_states_rescan();
 
@@ -420,6 +422,8 @@ static void key_configure_create(const char *id, const char *key,
 	rec->data = g_strdup(data);
 	info->keys = g_slist_append(info->keys, rec);
 	g_hash_table_insert(keys, rec->key, rec);
+
+	signal_emit("key created", 1, rec);
 
 	if (!key_config_frozen)
                 key_states_rescan();

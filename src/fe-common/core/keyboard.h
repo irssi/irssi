@@ -4,20 +4,22 @@
 #include "signals.h"
 
 typedef struct _KEYBOARD_REC KEYBOARD_REC;
+typedef struct _KEYINFO_REC KEYINFO_REC;
+typedef struct _KEY_REC KEY_REC;
 
-typedef struct {
+struct _KEYINFO_REC {
 	char *id;
 	char *description;
 
 	GSList *keys, *default_keys;
-} KEYINFO_REC;
+};
 
-typedef struct {
+struct _KEY_REC {
 	KEYINFO_REC *info;
 
 	char *key;
 	char *data;
-} KEY_REC;
+};
 
 extern GSList *keyinfos;
 
