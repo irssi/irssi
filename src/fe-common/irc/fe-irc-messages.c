@@ -239,15 +239,15 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *msg,
 
 void fe_irc_messages_init(void)
 {
-        signal_add("message own_public", (SIGNAL_FUNC) sig_message_own_public);
-        signal_add("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
-        signal_add("message irc own_wall", (SIGNAL_FUNC) sig_message_own_wall);
-        signal_add("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
-        signal_add("message irc action", (SIGNAL_FUNC) sig_message_irc_action);
-        signal_add("message irc own_notice", (SIGNAL_FUNC) sig_message_own_notice);
-        signal_add("message irc notice", (SIGNAL_FUNC) sig_message_irc_notice);
-        signal_add("message irc own_ctcp", (SIGNAL_FUNC) sig_message_own_ctcp);
-        signal_add("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
+        signal_add_last("message own_public", (SIGNAL_FUNC) sig_message_own_public);
+        signal_add_last("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
+        signal_add_last("message irc own_wall", (SIGNAL_FUNC) sig_message_own_wall);
+        signal_add_last("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
+        signal_add_last("message irc action", (SIGNAL_FUNC) sig_message_irc_action);
+        signal_add_last("message irc own_notice", (SIGNAL_FUNC) sig_message_own_notice);
+        signal_add_last("message irc notice", (SIGNAL_FUNC) sig_message_irc_notice);
+        signal_add_last("message irc own_ctcp", (SIGNAL_FUNC) sig_message_own_ctcp);
+        signal_add_last("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
 }
 
 void fe_irc_messages_deinit(void)
