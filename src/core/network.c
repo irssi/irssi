@@ -378,9 +378,8 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 {
 #ifdef HAVE_IPV6
 	union sockaddr_union *so;
-	struct addrinfo hints, *ai, *origai;
-	char hbuf[NI_MAXHOST];
-	int host_error, count;
+	struct addrinfo hints, *ai, *ailist;
+	int ret, count;
 #else
 	struct hostent *hp;
 #endif
@@ -395,30 +394,23 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	hints.ai_socktype = SOCK_STREAM;
 
 	/* save error to host_error for later use */
-	host_error = getaddrinfo(addr, NULL, &hints, &ai);
-	if (host_error != 0)
-		return host_error;
+	ret = getaddrinfo(addr, NULL, &hints, &ailist);
+	if (ret != 0)
+		return ret;
 
-	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf,
-			sizeof(hbuf), NULL, 0, NI_NUMERICHOST))
-		return 1;
-
-        origai = ai; count = 0;
-	while (ai != NULL && count < 2) {
+        count = 0;
+	for (ai = ailist; ai != NULL && count < 2; ai = ai->ai_next) {
 		so = (union sockaddr_union *) ai->ai_addr;
 
-		if (so != NULL) {
-			if (ai->ai_family == AF_INET6 && ip6->family == 0) {
-				sin_get_ip(so, ip6);
-	                        count++;
-			} else if (ai->ai_family == AF_INET && ip4->family == 0) {
-				sin_get_ip(so, ip4);
-	                        count++;
-			}
+		if (ai->ai_family == AF_INET6 && ip6->family == 0) {
+			sin_get_ip(so, ip6);
+                        count++;
+		} else if (ai->ai_family == AF_INET && ip4->family == 0) {
+			sin_get_ip(so, ip4);
+                        count++;
 		}
-                ai = ai->ai_next;
 	}
-	freeaddrinfo(origai);
+	freeaddrinfo(ailist);
 #else
 	hp = gethostbyname(addr);
 	if (hp == NULL) return h_errno;
@@ -427,7 +419,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	memcpy(&ip4->ip, hp->h_addr, 4);
 #endif
 
-	return 0;
+	return count > 0 ? 0 : 1;
 }
 
 /* Get name for host, *name should be g_free()'d unless it's NULL.
