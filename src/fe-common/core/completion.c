@@ -156,7 +156,8 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		   BUT if we start completion with "/msg "<tab>, we don't
 		   want to complete the /msg word, but instead complete empty
 		   word with /msg being in linestart. */
-		if (*pos > 0 && line[*pos-1] == ' ') {
+		if (*pos > 0 && line[*pos-1] == ' ' &&
+		    (*linestart == '\0' || wordstart[-1] != ' ')) {
 			char *old;
 
                         old = linestart;
