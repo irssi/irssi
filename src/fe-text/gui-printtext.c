@@ -472,6 +472,8 @@ static void sig_printtext_finished(WINDOW_REC *window)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(window);
+	if (gui->cur_line == NULL)
+                return;
 
 	if (format->len > 0) {
                 /* save format of the line */
