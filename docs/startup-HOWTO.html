@@ -84,7 +84,7 @@ to bot after joined to efnet/#irssi:</p>
 
 <pre>
      /CHANNEL ADD -auto #irssi ircnet
-     /CHANNEL ADD -auto -bots *!*@bot@host.org -botcmd "/^msg $0 op pass"
+     /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass"
 		  #irssi efnet
 </pre>
 
@@ -233,7 +233,7 @@ same network if the -auto server fails.</p>
 <p>And finally channels:</p>
 
 <pre>
-     /CHANNEL ADD -auto -bots *!*@bot@host.org -botcmd "/^msg $0 op pass"
+     /CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass"
 		  #irssi efnet
      /CHANNEL ADD -auto #secret ircnet password
 </pre>
