@@ -287,6 +287,7 @@ static void cmd_window_log(const char *data)
 					active_win->name != NULL ? active_win->name : "Window",
 					active_win->name != NULL ? "" : window);
 		log = log_create_rec(fname, MSGLEVEL_ALL);
+		log->colorizer = log_colorizer_strip;
                 log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
 		log_update(log);
 		g_free(fname);
@@ -319,6 +320,7 @@ static void cmd_window_logfile(const char *data)
 	}
 
 	log = log_create_rec(data, MSGLEVEL_ALL);
+	log->colorizer = log_colorizer_strip;
 	log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
 	log_update(log);
 
@@ -418,6 +420,8 @@ static void autolog_open(SERVER_REC *server, const char *target)
 
 	if (log_find(fname) == NULL) {
 		log = log_create_rec(fname, autolog_level);
+                if (!settings_get_bool("autolog_colors"))
+			log->colorizer = log_colorizer_strip;
 		log_item_add(log, LOG_ITEM_TARGET, target, tag);
 
 		dir = g_dirname(log->real_fname);
@@ -670,9 +674,10 @@ void fe_log_init(void)
 	skip_next_printtext = FALSE;
 
 	settings_add_bool("log", "awaylog_colors", TRUE);
+        settings_add_bool("log", "autolog", FALSE);
+	settings_add_bool("log", "autolog_colors", FALSE);
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_str("log", "autolog_level", "all -crap -clientcrap -ctcps");
-        settings_add_bool("log", "autolog", FALSE);
         settings_add_str("log", "log_theme", "");
 
 	autolog_level = 0;
