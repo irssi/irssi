@@ -135,11 +135,13 @@ void irc_expandos_init(void)
 	expando_create("cumode", expando_cumode,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW,
-		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
+		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM,
+		       "channel joined", EXPANDO_ARG_WINDOW_ITEM, NULL);
 	expando_create("cumode_space", expando_cumode_space,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window item changed", EXPANDO_ARG_WINDOW,
-		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM, NULL);
+		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM,
+		       "channel joined", EXPANDO_ARG_WINDOW_ITEM, NULL);
 
         expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
 
