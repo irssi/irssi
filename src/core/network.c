@@ -281,7 +281,7 @@ int net_transmit(int handle, const char *data, int len)
 
 	n = send(handle, data, len, 0);
 	if (n == -1 && (errno == EWOULDBLOCK || errno == EAGAIN ||
-			errno == EINTR))
+			errno == EINTR || errno == EPIPE))
 		return 0;
 
 	return n > 0 ? n : -1;
