@@ -158,7 +158,7 @@ static int init_curses(void)
 #endif
 	raw(); noecho(); idlok(stdscr, 1);
 #ifdef HAVE_CURSES_IDCOK
-	idcok(stdscr, 1);
+	/*idcok(stdscr, 1); - disabled currently, causes redrawing problems with NetBSD */
 #endif
 	intrflush(stdscr, FALSE); nodelay(stdscr, TRUE);
 
