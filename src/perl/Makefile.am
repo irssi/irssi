@@ -150,7 +150,7 @@ install-exec-local:
 clean-generic:
 	rm -f common/Makefile irc/Makefile ui/Makefile textui/Makefile
 
-distclean: distclean-am
+distclean-generic:
 	-(cd common && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd irc && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd ui && $(MAKE) realclean && rm -f Makefile.PL)
