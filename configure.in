@@ -295,8 +295,8 @@ else
         want_gnome_panel="no"
 	AC_DEFINE(HAVE_GTK)
 	AM_PATH_GTK(1.2.0)
-	GUI_CFLAGS="$GTK_CFLAGS $POPT_LIBS"
-	GUI_LIBS="$GTK_LIBS"
+	GUI_CFLAGS="$GTK_CFLAGS $POPT_CFLAGS"
+	GUI_LIBS="$GTK_LIBS $POPT_LIBS"
 
 	if test "x$want_imlib" = "xyes"; then
 		AM_PATH_GDK_IMLIB(, [define_imlib=true])
