@@ -44,8 +44,8 @@ PREINIT:
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
-	for (n = 4; n < 4+MAX_FORMAT_PARAMS; n++) {
-		arglist[n-4] = n < items ? SvPV(ST(n), PL_na) : "";
+	for (n = 2; n < 2+MAX_FORMAT_PARAMS; n++) {
+		arglist[n-2] = n < items ? SvPV(ST(n), PL_na) : "";
 	}
 
         printformat_perl(&dest, format, arglist);
