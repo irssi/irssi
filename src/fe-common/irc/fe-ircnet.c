@@ -180,6 +180,7 @@ static void cmd_network(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 void fe_ircnet_init(void)
 {
+	command_bind("ircnet", NULL, (SIGNAL_FUNC) cmd_network);
 	command_bind("network", NULL, (SIGNAL_FUNC) cmd_network);
 	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_network_list);
 	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_network_add);
@@ -190,6 +191,7 @@ void fe_ircnet_init(void)
 
 void fe_ircnet_deinit(void)
 {
+	command_unbind("ircnet", (SIGNAL_FUNC) cmd_network);
 	command_unbind("network", (SIGNAL_FUNC) cmd_network);
 	command_unbind("network list", (SIGNAL_FUNC) cmd_network_list);
 	command_unbind("network add", (SIGNAL_FUNC) cmd_network_add);
