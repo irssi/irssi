@@ -1,3 +1,4 @@
+
 MODULE = Irssi  PACKAGE = Irssi
 
 void
@@ -33,9 +34,7 @@ CODE:
 	theme_register_module(perl_get_package(), formatrecs);
 
 void
-printformat(server, target, level, format, ...)
-	Irssi::Server server
-	char *target
+printformat(level, format, ...)
 	int level
 	char *format
 PREINIT:
@@ -43,7 +42,7 @@ PREINIT:
 	char *arglist[MAX_FORMAT_PARAMS];
 	int n;
 CODE:
-	format_create_dest(&dest, server, target, level, NULL);
+	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 4; n < 4+MAX_FORMAT_PARAMS; n++) {
 		arglist[n-4] = n < items ? SvPV(ST(n), PL_na) : "";
