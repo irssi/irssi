@@ -1,0 +1,11 @@
+
+SAY <message>
+(alias for "/MSG *")
+
+The actual command used to put <message> into the current channel. A very
+useful command if you need aliases for often used phrases.
+
+For example: /alias brb say I'm off for a while, be right back.
+
+This would allow you to use /brb to put the "I'm off*" into the channel.
+
