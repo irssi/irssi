@@ -33,7 +33,7 @@ loop:
  - if not found anything -> all channels are synced
  - send "command #chan1,#chan2,#chan3,.." command to server
  - wait for reply from server, then check if it was last query to be sent to
-   server. If it was, send "channel sync" signal
+   channel. If it was, send "channel sync" signal
  - check if the reply was for last channel in the command list. If so,
    goto loop
 */
@@ -220,9 +220,9 @@ static void query_send(IRC_SERVER_REC *server, int query)
 
 		/* the stop-event is received once for each channel */
 		server_redirect_event(server, "mode channel", count,
-				      chanstr, -1, "chanquery mode abort",
+				      chanstr, -1, "chanquery abort",
 				      "event 324", "chanquery mode",
-				      "", "chanquery mode abort", NULL);
+				      "", "chanquery abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_WHO:
@@ -231,10 +231,10 @@ static void query_send(IRC_SERVER_REC *server, int query)
 		server_redirect_event(server, "who",
 				      server->one_endofwho ? 1 : count,
 				      chanstr, -1,
-				      "chanquery who abort",
+				      "chanquery abort",
 				      "event 315", "chanquery who end",
 				      "event 352", "silent event who",
-				      "", "chanquery who abort", NULL);
+				      "", "chanquery abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_BMODE:
@@ -244,28 +244,28 @@ static void query_send(IRC_SERVER_REC *server, int query)
 		   irssi could ask modes separately but afterwards
 		   join the two b/e/I modes together */
 		server_redirect_event(server, "mode b", count, chanstr, -1,
-				      "chanquery mode abort",
+				      "chanquery abort",
 				      "event 367", "chanquery ban",
 				      "event 368", "chanquery ban end",
-				      "", "chanquery mode abort", NULL);
+				      "", "chanquery abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_EMODE:
 		cmd = g_strdup_printf("MODE %s e", chanstr_commas);
 		server_redirect_event(server, "mode e", count, chanstr, -1,
-				      "chanquery mode abort",
+				      "chanquery abort",
 				      "event 348", "chanquery eban",
 				      "event 349", "chanquery eban end",
-				      "", "chanquery mode abort", NULL);
+				      "", "chanquery abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_IMODE:
 		cmd = g_strdup_printf("MODE %s I", chanstr_commas);
 		server_redirect_event(server, "mode I", count, chanstr, -1,
-				      "chanquery mode abort",
+				      "chanquery abort",
 				      "event 346", "chanquery ilist",
 				      "event 347", "chanquery ilist end",
-				      "", "chanquery mode abort", NULL);
+				      "", "chanquery abort", NULL);
 		break;
 
 	default:
@@ -313,29 +313,21 @@ static void query_current_error(IRC_SERVER_REC *server)
 
 	rec = server->chanqueries;
 
-	/* fix the thing that went wrong */
+	/* fix the thing that went wrong - or if it was already fixed,
+	   then all we can do is abort. */
         abort_query = FALSE;
 
 	query = rec->current_query_type;
-	switch (query) {
-	case CHANNEL_QUERY_WHO:
-		/* /WHO should work always if done with /WHO #channel */
-		server->no_multi_who = TRUE;
-		break;
-	case CHANNEL_QUERY_MODE:
-		/* /MODE #channel should also work always.. */
-		server->no_multi_mode = TRUE;
-		break;
-	case CHANNEL_QUERY_BMODE:
-	case CHANNEL_QUERY_EMODE:
-	case CHANNEL_QUERY_IMODE:
-		/* /MODE b/e/I - try without multi-mode, but if it also
-		   fails just ignore it */
+	if (query == CHANNEL_QUERY_WHO) {
+		if (server->no_multi_who)
+			abort_query = TRUE;
+		else
+			server->no_multi_who = TRUE;
+	} else {
 		if (server->no_multi_mode)
                         abort_query = TRUE;
                 else
 			server->no_multi_mode = TRUE;
-		break;
 	}
 
 	if (!abort_query) {
@@ -522,54 +514,6 @@ static void event_end_of_invitelist(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-#if 0
-static void channel_lost(IRC_SERVER_REC *server, const char *channel)
-{
-	IRC_CHANNEL_REC *chanrec;
-
-	chanrec = irc_channel_find(server, channel);
-	if (chanrec != NULL) {
-		/* channel not found - probably created a new channel
-		   and left it immediately. */
-		query_remove_all(chanrec);
-	}
-
-	channel_got_query(chanrec, channel);
-}
-
-static void multi_command_error(IRC_SERVER_REC *server, const char *data,
-				int query, const char *event)
-{
-	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel, **chans;
-	int n;
-
-	params = event_get_params(data, 2, NULL, &channel);
-
-	chans = g_strsplit(channel, ",", -1);
-	for (n = 0; chans[n] != NULL; n++)
-	{
-		chanrec = irc_channel_find(server, chans[n]);
-		if (chanrec != NULL)
-			query_add_channel(chanrec, query);
-	}
-	g_strfreev(chans);
-	g_free(params);
-
-	query_check(server);
-}
-#endif
-
-static void event_mode_abort(IRC_SERVER_REC *server, const char *data)
-{
-        query_current_error(server);
-}
-
-static void event_who_abort(IRC_SERVER_REC *server, const char *data)
-{
-        query_current_error(server);
-}
-
 void channels_query_init(void)
 {
 	settings_add_bool("misc", "channel_sync", TRUE);
@@ -585,8 +529,7 @@ void channels_query_init(void)
 	signal_add("chanquery eban end", (SIGNAL_FUNC) event_end_of_ebanlist);
 	signal_add("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
 	signal_add("chanquery ilist end", (SIGNAL_FUNC) event_end_of_invitelist);
-	signal_add("chanquery mode abort", (SIGNAL_FUNC) event_mode_abort);
-	signal_add("chanquery who abort", (SIGNAL_FUNC) event_who_abort);
+	signal_add("chanquery abort", (SIGNAL_FUNC) query_current_error);
 }
 
 void channels_query_deinit(void)
@@ -602,6 +545,5 @@ void channels_query_deinit(void)
 	signal_remove("chanquery eban end", (SIGNAL_FUNC) event_end_of_ebanlist);
 	signal_remove("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
 	signal_remove("chanquery ilist end", (SIGNAL_FUNC) event_end_of_invitelist);
-	signal_remove("chanquery mode abort", (SIGNAL_FUNC) event_mode_abort);
-	signal_remove("chanquery who abort", (SIGNAL_FUNC) event_who_abort);
+	signal_remove("chanquery abort", (SIGNAL_FUNC) query_current_error);
 }
