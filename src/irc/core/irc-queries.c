@@ -25,34 +25,33 @@
 #include "irc.h"
 #include "irc-queries.h"
 
-QUERY_REC *irc_query_create(IRC_SERVER_REC *server,
+QUERY_REC *irc_query_create(const char *server_tag,
 			    const char *nick, int automatic)
 {
 	QUERY_REC *rec;
 
-	g_return_val_if_fail(server == NULL || IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_new0(QUERY_REC, 1);
 	rec->chat_type = IRC_PROTOCOL;
 	rec->name = g_strdup(nick);
-	rec->server = (SERVER_REC *) server;
+        rec->server_tag = g_strdup(server_tag);
 	query_init(rec, automatic);
 	return rec;
 }
 
 static void sig_query_create(QUERY_REC **query,
-			     void *chat_type, IRC_SERVER_REC *server,
+			     void *chat_type, const char *server_tag,
 			     const char *nick, void *automatic)
 {
 	if (chat_protocol_lookup("IRC") != GPOINTER_TO_INT(chat_type))
 		return;
 
-	g_return_if_fail(server == NULL || IS_IRC_SERVER(server));
 	g_return_if_fail(query != NULL);
 	g_return_if_fail(nick != NULL);
 
-	*query = irc_query_create(server, nick, GPOINTER_TO_INT(automatic));
+	*query = irc_query_create(server_tag, nick,
+				  GPOINTER_TO_INT(automatic));
 	signal_stop();
 }
 

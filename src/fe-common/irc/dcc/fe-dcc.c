@@ -53,7 +53,8 @@ static void dcc_connected(DCC_REC *dcc)
 		printformat(dcc->server, NULL, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
 			    dcc->nick, dcc->addrstr, dcc->port);
 		if (autocreate_dccquery && query_find(NULL, sender) == NULL)
-			irc_query_create(dcc->server, sender, TRUE);
+			irc_query_create(dcc->server == NULL ? NULL :
+					 dcc->server->tag, sender, TRUE);
 		g_free(sender);
 		break;
 	case DCC_TYPE_SEND:

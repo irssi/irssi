@@ -28,17 +28,16 @@
 GSList *queries;
 
 /* Create a new query */
-QUERY_REC *query_create(int chat_type, SERVER_REC *server,
+QUERY_REC *query_create(int chat_type, const char *server_tag,
 			const char *nick, int automatic)
 {
 	QUERY_REC *query;
 
-	g_return_val_if_fail(server == NULL || IS_SERVER(server), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	query = NULL;
 	signal_emit("query create", 5, &query, GINT_TO_POINTER(chat_type),
-		    server, nick, GINT_TO_POINTER(automatic));
+		    server_tag, nick, GINT_TO_POINTER(automatic));
 	return query;
 }
 
@@ -55,8 +54,8 @@ void query_init(QUERY_REC *query, int automatic)
 
         MODULE_DATA_INIT(query);
 	query->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
-	if (query->server != NULL)
-		query->server_tag = g_strdup(query->server->tag);
+	if (query->server_tag != NULL)
+		query->server = server_find_tag(query->server_tag);
 
 	signal_emit("query created", 2, query, GINT_TO_POINTER(automatic));
 }
@@ -76,9 +75,9 @@ void query_destroy(QUERY_REC *query)
 	signal_emit("query destroyed", 1, query);
 
         MODULE_DATA_DEINIT(query);
+        g_free_not_null(query->server_tag);
         g_free_not_null(query->address);
 	g_free(query->name);
-        g_free(query->server_tag);
 	g_free(query);
 }
 

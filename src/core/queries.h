@@ -22,7 +22,7 @@ void query_init(QUERY_REC *query, int automatic);
 void query_destroy(QUERY_REC *query);
 
 /* Create a new query */
-QUERY_REC *query_create(int chat_type, SERVER_REC *server,
+QUERY_REC *query_create(int chat_type, const char *server_tag,
 			const char *nick, int automatic);
 
 /* Find query by name, if `server' is NULL, search from all servers */

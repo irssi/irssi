@@ -50,19 +50,10 @@ static void sig_window_restore_item(WINDOW_REC *window, const char *type,
 
 		window->waiting_channels =
 			g_slist_append(window->waiting_channels, str);
-	} else if (g_strcasecmp(type, "QUERY") == 0) {
+	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
 		/* create query immediately */
-		QUERY_REC *query;
-		SERVER_REC *server;
-
-		if (chat_type == NULL)
-			return;
-
-		server = tag == NULL ? NULL : server_find_tag(tag);
-		query = query_create(chat_protocol_lookup(chat_type),
-				     server, name, TRUE);
-		if (server == NULL && tag != NULL)
-                        query->server_tag = g_strdup(tag);
+		query_create(chat_protocol_lookup(chat_type),
+			     tag, name, TRUE);
 	}
 }
 
@@ -136,6 +127,10 @@ static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 
 		if (server != NULL)
 			iconfig_node_set_str(subnode, "tag", server->tag);
+		else if (IS_QUERY(rec)) {
+			iconfig_node_set_str(subnode, "tag",
+					     QUERY(rec)->server_tag);
+		}
 	}
 }
 
