@@ -17,7 +17,7 @@ void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 	theme = dest->window->theme == NULL ? current_theme :
 		dest->window->theme;
 	signal_emit("print format", 5, theme, module,
-		    &dest, GINT_TO_POINTER(formatnum), arglist);
+		    dest, GINT_TO_POINTER(formatnum), arglist);
 
         str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
 	if (*str != '\0') printtext_dest(dest, "%s", str);
