@@ -189,7 +189,8 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 1, &newnick);
 
-	signal_emit(g_strcasecmp(sender, server->nick) == 0 ?
+	/* NOTE: server->nick was already changed in irc/core/irc-nicklist.c */
+	signal_emit(g_strcasecmp(newnick, server->nick) == 0 ?
 		    "message own_nick" : "message nick", 4,
 		    server, newnick, sender, addr);
 
