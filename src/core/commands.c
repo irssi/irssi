@@ -863,7 +863,11 @@ static void parse_command(const char *command, int expand_aliases,
 		signal_emit_id(signal_default_command, 3,
 			       command, server, item);
 	}
-	if (server != NULL) server_unref(server);
+	if (server != NULL) {
+		if (server->connection_lost)
+			server_disconnect(server);
+		server_unref(server);
+	}
 	current_command = oldcmd;
 
 	g_free(cmd);
