@@ -286,6 +286,15 @@ char *ig_strjoinv(const char *file, int line, const char *sepa, char **array)
 	return ret;
 }
 
+char *ig_dirname(const char *file, int line, const char *fname)
+{
+	char *ret;
+
+	ret = g_dirname(fname);
+	data_add(ret, INT_MIN, file, line);
+	return ret;
+}
+
 void ig_profile_line(void *key, MEM_REC *rec)
 {
 	char *data;

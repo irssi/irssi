@@ -15,6 +15,7 @@ void ig_free(void *p);
 GString *ig_string_new(const char *file, int line, const char *str);
 void ig_string_free(const char *file, int line, GString *str, int freeit);
 char *ig_strjoinv(const char *file, int line, const char *sepa, char **array);
+char *ig_dirname(const char *file, int line, const char *fname);
 
 #define g_malloc(a) ig_malloc(a, __FILE__, __LINE__)
 #define g_malloc0(a) ig_malloc0(a, __FILE__, __LINE__)
@@ -28,4 +29,5 @@ char *ig_strjoinv(const char *file, int line, const char *sepa, char **array);
 #define g_string_new(a) ig_string_new(__FILE__, __LINE__, a)
 #define g_string_free(a, b) ig_string_free(__FILE__, __LINE__, a, b)
 #define g_strjoinv(a,b) ig_strjoinv(__FILE__, __LINE__, a, b)
+#define g_dirname(a) ig_dirname(__FILE__, __LINE__, a)
 #endif
