@@ -154,7 +154,7 @@ void fe_common_core_init(void)
 	args_register(options);
 
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
-	settings_add_bool("lookandfeel", "msgs_timestamps", FALSE);
+	settings_add_str("lookandfeel", "timestamp_level", "ALL");
 	settings_add_int("lookandfeel", "timestamp_timeout", 0);
 
 	settings_add_bool("lookandfeel", "bell_beeps", FALSE);

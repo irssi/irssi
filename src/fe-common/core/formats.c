@@ -40,7 +40,7 @@ static const char *format_boldfores = "KBGCRMYW";
 static int signal_gui_print_text;
 static int hide_text_style, hide_server_tags, hide_mirc_colors;
 
-static int timestamps, msgs_timestamps;
+static int timestamp_level;
 static int timestamp_timeout;
 
 int format_find_tag(const char *module, const char *tag)
@@ -575,16 +575,13 @@ char *format_get_level_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 	return format_get_text_theme(theme, MODULE_NAME, dest, format);
 }
 
-#define show_timestamp(level) \
-	(timestamps || (msgs_timestamps && ((level) & MSGLEVEL_MSGS)))
-
 static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 {
         char *format, str[256];
 	struct tm *tm;
 	int diff;
 
-	if (!show_timestamp(dest->level))
+	if ((timestamp_level & dest->level) == 0)
 		return NULL;
 
         /* check for flags if we want to override defaults */
@@ -1047,11 +1044,15 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 static void read_settings(void)
 {
+	timestamp_level = settings_get_bool("timestamps") ? MSGLEVEL_ALL : 0;
+	if (timestamp_level > 0) {
+		timestamp_level =
+			level2bits(settings_get_str("timestamp_level"));
+	}
+	timestamp_timeout = settings_get_int("timestamp_timeout");
+
 	hide_server_tags = settings_get_bool("hide_server_tags");
 	hide_text_style = settings_get_bool("hide_text_style");
-	timestamps = settings_get_bool("timestamps");
-	timestamp_timeout = settings_get_int("timestamp_timeout");
-	msgs_timestamps = settings_get_bool("msgs_timestamps");
 	hide_mirc_colors = settings_get_bool("hide_mirc_colors");
 }
 
