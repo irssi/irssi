@@ -101,7 +101,7 @@ AC_ARG_WITH(terminfo,
 			want_terminfo=yes
 		fi
 	fi,
-	want_terminfo=auto)
+	want_terminfo=yes)
 
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
@@ -445,11 +445,6 @@ if test "x$want_textui" = "xyes"; then
        		AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
        		AC_CHECK_FUNC(resizeterm, AC_DEFINE(HAVE_CURSES_RESIZETERM))
        		AC_CHECK_FUNC(wresize, AC_DEFINE(HAVE_CURSES_WRESIZE))
-		if test "x$want_terminfo" = "xauto" -a "x$has_ncurses" != "xtrue"; then
-			dnl * we'd rather use terminfo/termcap than plain curses
-			want_terminfo=yes
-       			AC_CHECK_FUNC(setupterm,, want_termcap=yes)
-		fi
 		if test "x$want_terminfo" = "xyes"; then
 			AC_CHECK_LIB(curses, setupterm,, [
 				want_termcap=yes
