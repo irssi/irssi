@@ -74,7 +74,7 @@ void irc_server_connect_free(IRC_SERVER_CONNECT_REC *rec)
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	char hostname[100];
+	char hostname[100], *address, *ptr;
 
 	g_return_if_fail(server != NULL);
 
@@ -99,8 +99,15 @@ static void server_init(IRC_SERVER_REC *server)
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
 		strcpy(hostname, "xx");
 
+	address = server->connrec->address;
+        ptr = strrchr(address, ':');
+	if (ptr != NULL) {
+		/* IPv6 address .. doesn't work here, use the string after
+		   the last : char */
+                address = ptr+1;
+	}
 	irc_send_cmdv(server, "USER %s %s %s :%s", conn->username, hostname,
-		      server->connrec->address, conn->realname);
+		      address, conn->realname);
 
 	server->cmdcount = 0;
 }
