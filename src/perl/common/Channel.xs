@@ -83,13 +83,6 @@ void
 channel_destroy(channel)
 	Irssi::Channel channel
 
-void
-command(channel, cmd)
-	Irssi::Channel channel
-	char *cmd
-CODE:
-	signal_emit("send command", 3, cmd, channel->server, channel);
-
 Irssi::Nick
 nick_insert(channel, nick, op, voice, send_massjoin)
 	Irssi::Channel channel
