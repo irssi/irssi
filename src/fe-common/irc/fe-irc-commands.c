@@ -40,7 +40,7 @@
 #include "printtext.h"
 #include "keyboard.h"
 
-static char *skip_target(char *target)
+static const char *skip_target(const char *target)
 {
 	if (*target == '@') {
 		/* @#channel, @+#channel - Hybrid6 / Bahamut features */
@@ -63,17 +63,18 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	if (server == NULL || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	signal_emit("message irc own_action", 3, server, data, item->name);
+	signal_emit("message irc own_action", 3, server, data,
+		    item->visible_name);
 
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001",
-		      item->name, data);
+		      window_item_get_target(item), data);
 }
 
 /* SYNTAX: ACTION [-<server tag>] <target> <message> */
 static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
-	char *target, *text;
+	const char *target, *text;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -99,7 +100,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		       WI_ITEM_REC *item)
 {
-	char *target, *msg;
+	const char *target, *msg;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -108,7 +109,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 			    &target, &msg))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? "" : item->name;
+		target = item == NULL ? "" : window_item_get_target(item);
 
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -121,7 +122,8 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 		     WI_ITEM_REC *item)
 {
-	char *target, *ctcpcmd, *ctcpdata;
+	const char *target;
+	char *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -130,7 +132,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? "" : item->name;
+		target = item == NULL ? "" : window_item_get_target(item);
 	if (*target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -152,7 +154,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
-	char *target, *text;
+	const char *target, *text;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -161,7 +163,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &text))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? "" : item->name;
+		target = item == NULL ? "" : window_item_get_target(item);
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -174,7 +176,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server,
 		     WI_ITEM_REC *item)
 {
 	IRC_CHANNEL_REC *chanrec;
-	char *channame, *msg;
+	const char *channame, *msg;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -187,7 +189,8 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server,
 	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
-	signal_emit("message irc own_wall", 3, server, msg, chanrec->name);
+	signal_emit("message irc own_wall", 3, server, msg,
+		    chanrec->visible_name);
 
 	cmd_params_free(free_arg);
 }
@@ -234,8 +237,9 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (channel->banlist == NULL) {
-		printformat(server, channel->name, MSGLEVEL_CLIENTNOTICE,
-			    IRCTXT_NO_BANS, channel->name);
+		printformat(server, channel->visible_name,
+			    MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_NO_BANS, channel->visible_name);
 		return;
 	}
 
@@ -244,10 +248,11 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
 		BAN_REC *rec = tmp->data;
 
-		printformat(server, channel->name, MSGLEVEL_CRAP,
+		printformat(server, channel->visible_name, MSGLEVEL_CRAP,
 			    (rec->setby == NULL || *rec->setby == '\0') ?
 			    IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-			    counter, channel->name, rec->ban, rec->setby,
+			    counter, channel->visible_name,
+			    rec->ban, rec->setby,
 			    (int) (time(NULL)-rec->time));
                 counter++;
 	}
@@ -306,7 +311,8 @@ static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	if (*data == '\0' && !IS_IRC_ITEM(item))
 		cmd_return_error(CMDERR_NOT_JOINED);
 
-	str = g_strdup_printf("%s VERSION", *data == '\0' ? item->name : data);
+	str = g_strdup_printf("%s VERSION", *data == '\0' ?
+			      window_item_get_target(item) : data);
 	signal_emit("command ctcp", 3, str, server, item);
 	g_free(str);
 }
@@ -321,9 +327,9 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	channel = *data != '\0' ? channel_find(server, data) : CHANNEL(item);
 	if (channel == NULL) return;
 
-	printformat(server, channel->name, MSGLEVEL_CRAP,
+	printformat(server, channel->visible_name, MSGLEVEL_CRAP,
 		    channel->topic == NULL ? IRCTXT_NO_TOPIC : IRCTXT_TOPIC,
-		    channel->name, channel->topic);
+		    channel->visible_name, channel->topic);
 
 	if (channel->topic_time > 0) {
 		byhost = strchr(channel->topic_by, '!');
@@ -337,7 +343,7 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		}
 
 		timestr = my_asctime(channel->topic_time);
-		printformat(server, channel->name, MSGLEVEL_CRAP,
+		printformat(server, channel->visible_name, MSGLEVEL_CRAP,
 			    IRCTXT_TOPIC_INFO, bynick, timestr, byhost);
 		g_free(timestr);
 		g_free(bynick);
@@ -356,7 +362,8 @@ static void cmd_ts(const char *data)
 		CHANNEL_REC *rec = tmp->data;
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_TOPIC,
-			    rec->name, rec->topic == NULL ? "" : rec->topic);
+			    rec->visible_name,
+			    rec->topic == NULL ? "" : rec->topic);
 	}
 }
 
@@ -423,7 +430,7 @@ static void cmd_sethost(const char *data, IRC_SERVER_REC *server)
 		CHANNEL_REC *channel = tmp->data;
 
 		window_bind_add(window_item_window(channel),
-				server->tag, channel->name);
+				server->tag, channel->visible_name);
 	}
 
         irc_send_cmdv(server, "SETHOST %s", data);

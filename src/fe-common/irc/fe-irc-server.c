@@ -29,12 +29,27 @@
 #include "levels.h"
 #include "irc-chatnets.h"
 #include "irc-servers.h"
+#include "irc-channels.h"
 #include "servers-reconnect.h"
 #include "irc-servers-setup.h"
 
 #include "fe-windows.h"
 #include "printtext.h"
 
+const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
+{
+	IRC_CHANNEL_REC *channel;
+
+	if (*target == '!') {
+		/* visible_name of !channels is different - don't bother
+		   checking other types for now, they'll just slow up */
+		channel = irc_channel_find(server, target);
+		if (channel != NULL)
+			return channel->visible_name;
+	}
+
+	return target;
+}
 /* SYNTAX: SERVER ADD [-4 | -6] [-auto | -noauto] [-ircnet <ircnet>]
                       [-host <hostname>] [-cmdspeed <ms>] [-cmdmax <count>]
 		      [-port <port>] <address> [<port> [<password>]] */

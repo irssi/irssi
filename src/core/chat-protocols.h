@@ -18,7 +18,8 @@ struct _CHAT_PROTOCOL_REC {
         void (*destroy_server_connect) (SERVER_CONNECT_REC *);
 
         SERVER_REC *(*server_connect) (SERVER_CONNECT_REC *);
-        CHANNEL_REC *(*channel_create) (SERVER_REC *, const char *, int);
+	CHANNEL_REC *(*channel_create) (SERVER_REC *, const char *,
+					const char *, int);
         QUERY_REC *(*query_create) (const char *, const char *, int);
 };
 

@@ -501,7 +501,9 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	for (; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->name, word, len) == 0)
+		if (g_strncasecmp(rec->visible_name, word, len) == 0)
+			list = g_list_append(list, g_strdup(rec->visible_name));
+		else if (g_strncasecmp(rec->name, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->name));
 	}
 
@@ -861,7 +863,7 @@ static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 	str = g_strdup_printf(IS_CHANNEL(item) ? "-channel %s %s" :
 			      IS_QUERY(item) ? "-nick %s %s" : "%s %s",
-			      item->name, line);
+                              window_item_get_target(item), line);
 
 	signal_emit("command msg", 3, str, server, item);
 

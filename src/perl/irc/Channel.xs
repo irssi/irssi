@@ -61,11 +61,3 @@ CODE:
 	RETVAL = irc_nicklist_insert(channel, nick, op, halfop, voice, send_massjoin);
 OUTPUT:
 	RETVAL
-
-MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc::Server  PREFIX = irc_
-
-Irssi::Irc::Channel
-irc_channel_create(server, name, automatic)
-	Irssi::Irc::Server server
-	char *name
-	int automatic

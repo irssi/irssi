@@ -14,7 +14,6 @@ INCLUDES = \
 real_sources = \
 	fe-irc-channels.c \
 	fe-irc-commands.c \
-	fe-irc-layout.c \
 	fe-irc-messages.c \
 	fe-irc-queries.c \
 	fe-irc-server.c \
@@ -33,6 +32,7 @@ libfe_common_irc_a_SOURCES = \
         irc-modules.c
 
 noinst_HEADERS = \
+	fe-irc-server.h \
 	module.h \
 	module-formats.h
 

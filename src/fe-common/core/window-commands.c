@@ -64,7 +64,8 @@ static void window_print_items(WINDOW_REC *win)
 		type = module_find_id_str("WINDOW ITEM TYPE", item->type);
 		printformat_window(win, MSGLEVEL_CLIENTCRAP,
 				   TXT_WINDOW_INFO_ITEM,
-				   type == NULL ? "??" : type, item->name,
+				   type == NULL ? "??" : type,
+				   item->visible_name,
 				   item->server == NULL ? "" :
 				   item->server->tag);
 	}
@@ -660,7 +661,7 @@ static void cmd_window_list(void)
 		levelstr = bits2level(rec->level);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_WINDOWLIST_LINE,
 			    rec->refnum, rec->name == NULL ? "" : rec->name,
-			    rec->active == NULL ? "" : rec->active->name,
+			    rec->active == NULL ? "" : rec->active->visible_name,
 			    rec->active_server == NULL ? "" : ((SERVER_REC *) rec->active_server)->tag,
 			    levelstr);
 		g_free(levelstr);

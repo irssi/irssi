@@ -39,8 +39,8 @@
 #include "printtext.h"
 #include "fe-queries.h"
 #include "fe-windows.h"
-
-#include "completion.h"
+#include "fe-irc-server.h"
+//#include "completion.h"
 
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
@@ -56,11 +56,13 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	if (*target == '@' && ischannel(target[1])) {
 		/* Hybrid 6 feature, send msg to all ops in channel */
 		signal_emit("message irc op_public", 5,
-			    server, msg, nick, addr, target+1);
+			    server, msg, nick, addr,
+			    get_visible_target(server, target+1));
 	} else {
 		signal_emit(ischannel(*target) ?
 			    "message public" : "message private", 5,
-			    server, msg, nick, addr, target);
+			    server, msg, nick, addr,
+			    get_visible_target(server, target));
 	}
 
 	g_free(params);
@@ -73,7 +75,8 @@ static void ctcp_action(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	signal_emit("message irc action", 5,
-		    server, data, nick, addr, target);
+		    server, data, nick, addr,
+		    get_visible_target(server, target));
 }
 
 static void event_notice(IRC_SERVER_REC *server, const char *data,
@@ -90,21 +93,25 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 			server->real_address;
 	}
 
-	signal_emit("message irc notice", 5,
-		    server, msg, nick, addr, target);
+	signal_emit("message irc notice", 5, server, msg, nick, addr,
+		    get_visible_target(server, target));
 	g_free(params);
 }
 
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *channel, *tmp;
+	const char *channel;
+	char *params, *tmp;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 1, &channel);
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
+
+	if (g_strcasecmp(server->nick, nick) != 0)
+                channel = get_visible_target(server, channel);
 
 	signal_emit("message join", 4, server, channel, nick, addr);
 	g_free(params);
@@ -119,7 +126,8 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &reason);
-	signal_emit("message part", 5, server, channel, nick, addr, reason);
+	signal_emit("message part", 5, server,
+		    get_visible_target(server, channel), nick, addr, reason);
 	g_free(params);
 }
 
@@ -141,8 +149,9 @@ static void event_kick(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
 				  &channel, &nick, &reason);
-	signal_emit("message kick", 6, server, channel, nick,
-		    kicker, addr, reason);
+	signal_emit("message kick", 6,
+		    server, get_visible_target(server, channel),
+		    nick, kicker, addr, reason);
 	g_free(params);
 }
 
@@ -205,8 +214,9 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &mode);
 
-	signal_emit("message irc mode", 5, server, channel, nick, addr,
-		    g_strchomp(mode));
+	signal_emit("message irc mode", 5,
+		    server, get_visible_target(server, channel),
+		    nick, addr, g_strchomp(mode));
 	g_free(params);
 }
 
@@ -230,7 +240,8 @@ static void event_invite(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
-	signal_emit("message invite", 4, server, channel, nick, addr);
+	signal_emit("message invite", 4,
+		    server, get_visible_target(server, channel), nick, addr);
 	g_free(params);
 }
 
@@ -243,7 +254,8 @@ static void event_topic(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &topic);
-	signal_emit("message topic", 5, server, channel, topic, nick, addr);
+	signal_emit("message topic", 5, server,
+		    get_visible_target(server, channel), topic, nick, addr);
 	g_free(params);
 }
 
@@ -291,8 +303,10 @@ static void channel_sync(CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-	printformat(channel->server, channel->name, MSGLEVEL_CLIENTNOTICE|MSGLEVEL_NO_ACT,
-		    IRCTXT_CHANNEL_SYNCED, channel->name, (long) (time(NULL)-channel->createtime));
+	printformat(channel->server, channel->visible_name,
+		    MSGLEVEL_CLIENTNOTICE|MSGLEVEL_NO_ACT,
+		    IRCTXT_CHANNEL_SYNCED, channel->visible_name,
+		    (long) (time(NULL)-channel->createtime));
 }
 
 static void event_connected(IRC_SERVER_REC *server)

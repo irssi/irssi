@@ -44,21 +44,37 @@ void irc_channels_setup_deinit(void);
 void massjoin_init(void);
 void massjoin_deinit(void);
 
-IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
-				    const char *name, int automatic)
+IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server, const char *name,
+				    const char *visible_name, int automatic)
 {
 	IRC_CHANNEL_REC *rec;
+	char *new_name;
 
 	g_return_val_if_fail(server == NULL || IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(name != NULL, NULL);
 
 	rec = g_new0(IRC_CHANNEL_REC, 1);
-	rec->chat_type = IRC_PROTOCOL;
-	rec->name = g_strdup(name);
-	rec->server = server;
 	if (*name == '+') rec->no_modes = TRUE;
 
-	channel_init((CHANNEL_REC *) rec, automatic);
+	new_name = NULL;
+	if (visible_name == NULL) {
+		/* !?????channel -> !channel */
+		new_name = *name == '!' && strlen(name) >= 1+5 ?
+			g_strconcat("!", name+1+5, NULL) :
+			g_strdup(name);
+
+		if (irc_channel_find(server, new_name) != NULL) {
+			/* this was second !channel with same name,
+			   show the channel id after all */
+			g_free_and_null(new_name);
+		}
+
+		visible_name = new_name;
+	}
+
+	channel_init((CHANNEL_REC *) rec, (SERVER_REC *) server,
+		     name, visible_name, automatic);
+	g_free(new_name);
 	return rec;
 }
 
@@ -112,7 +128,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
 			channame = channel + (channel[0] == '!' &&
 					      channel[1] == '!');
-			chanrec = irc_channel_create(server, channame,
+			chanrec = irc_channel_create(server, channame, NULL,
 						     automatic);
 			if (key != NULL) chanrec->key = g_strdup(key);
 		}

@@ -254,7 +254,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 	chanrec = channel_find_unjoined(server, channel);
 	if (chanrec == NULL) {
 		/* didn't get here with /join command.. */
-		chanrec = irc_channel_create(server, channel, TRUE);
+		chanrec = irc_channel_create(server, channel, NULL, TRUE);
 	}
 	chanrec->joined = TRUE;
 	if (strcmp(chanrec->name, channel) != 0) {

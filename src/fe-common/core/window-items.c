@@ -23,6 +23,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "servers.h"
+#include "channels.h"
 #include "settings.h"
 
 #include "levels.h"
@@ -195,14 +196,22 @@ void window_item_next(WINDOW_REC *window)
 WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
                                      void *server, const char *name)
 {
+	CHANNEL_REC *channel;
 	GSList *tmp;
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		WI_ITEM_REC *rec = tmp->data;
 
 		if ((server == NULL || rec->server == server) &&
-		    g_strcasecmp(name, rec->name) == 0) return rec;
+		    g_strcasecmp(name, rec->visible_name) == 0)
+			return rec;
 	}
+
+	/* try with channel name too, it's not necessarily
+	   same as visible_name (!channels) */
+	channel = channel_find(server, name);
+	if (channel != NULL && window_item_window(channel) == window)
+		return (WI_ITEM_REC *) channel;
 
 	return NULL;
 }
@@ -259,7 +268,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
                 /* is item bound to this window? */
 		if (item->server != NULL) {
 			bind = window_bind_find(rec, item->server->tag,
-						item->name);
+						item->visible_name);
 			if (bind != NULL) {
                                 if (!bind->sticky)
 					window_bind_destroy(rec, bind);
@@ -316,8 +325,9 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 	if (g_slist_length(window->items) > 1) {
 		/* default to printing "talking with ...",
 		   you can override it it you wish */
-		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,
-			    TXT_TALKING_WITH, item->name);
+		printformat(item->server, item->visible_name,
+			    MSGLEVEL_CLIENTNOTICE,
+			    TXT_TALKING_WITH, item->visible_name);
 	}
 }
 

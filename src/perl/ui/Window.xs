@@ -225,6 +225,10 @@ window_activity(window, data_level, hilight_color=NULL)
 char *
 window_get_active_name(window)
 	Irssi::UI::Window window
+CODE:
+	RETVAL = (char *) window_get_active_name(window);
+OUTPUT:
+	RETVAL
 
 Irssi::Windowitem
 window_item_find(window, server, name)
@@ -246,7 +250,7 @@ print(item, str, level=MSGLEVEL_CLIENTNOTICE)
 	int level
 	char *str
 CODE:
-	printtext_string(item->server, item->name, level, str);
+	printtext_string(item->server, item->visible_name, level, str);
 
 Irssi::UI::Window
 window_create(item, automatic)

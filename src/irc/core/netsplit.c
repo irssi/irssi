@@ -131,7 +131,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 			continue;
 
 		splitchan = g_new0(NETSPLIT_CHAN_REC, 1);
-		splitchan->name = g_strdup(channel->name);
+		splitchan->name = g_strdup(channel->visible_name);
 		splitchan->op = nickrec->op;
 		splitchan->halfop = nickrec->halfop;
 		splitchan->voice = nickrec->voice;

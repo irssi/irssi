@@ -19,7 +19,8 @@ struct _CHANNEL_REC {
 extern GSList *channels;
 
 /* Create new channel record */
-void channel_init(CHANNEL_REC *channel, int automatic);
+void channel_init(CHANNEL_REC *channel, SERVER_REC *server, const char *name,
+		  const char *visible_name, int automatic);
 void channel_destroy(CHANNEL_REC *channel);
 
 /* find channel by name, if `server' is NULL, search from all servers */

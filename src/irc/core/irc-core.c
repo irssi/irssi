@@ -94,7 +94,8 @@ void irc_core_init(void)
 	rec->server_connect = (SERVER_REC *(*) (SERVER_CONNECT_REC *))
 		irc_server_connect;
 	rec->channel_create =
-		(CHANNEL_REC *(*) (SERVER_REC *, const char *, int))
+		(CHANNEL_REC *(*) (SERVER_REC *, const char *,
+				   const char *, int))
                 irc_channel_create;
 	rec->query_create =
 		(QUERY_REC *(*) (const char *, const char *, int))

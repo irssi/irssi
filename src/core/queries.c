@@ -27,6 +27,11 @@
 
 GSList *queries;
 
+static const char *query_get_target(WI_ITEM_REC *item)
+{
+	return ((QUERY_REC *) item)->name;
+}
+
 void query_init(QUERY_REC *query, int automatic)
 {
 	g_return_if_fail(query != NULL);
@@ -37,8 +42,10 @@ void query_init(QUERY_REC *query, int automatic)
         MODULE_DATA_INIT(query);
 	query->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
         query->destroy = (void (*) (WI_ITEM_REC *)) query_destroy;
+	query->get_target = query_get_target;
 	query->createtime = time(NULL);
 	query->last_unread_msg = time(NULL);
+	query->visible_name = g_strdup(query->name);
 
 	if (query->server_tag != NULL) {
 		query->server = server_find_tag(query->server_tag);
@@ -69,6 +76,7 @@ void query_destroy(QUERY_REC *query)
 	g_free_not_null(query->hilight_color);
         g_free_not_null(query->server_tag);
         g_free_not_null(query->address);
+	g_free(query->visible_name);
 	g_free(query->name);
 
         query->type = 0;
@@ -124,6 +132,10 @@ void query_change_nick(QUERY_REC *query, const char *nick)
 
         oldnick = query->name;
 	query->name = g_strdup(nick);
+
+	g_free(query->visible_name);
+	query->visible_name = g_strdup(nick);
+
 	signal_emit("query nick changed", 2, query, oldnick);
 	signal_emit("window item name changed", 1, query);
         g_free(oldnick);

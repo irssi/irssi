@@ -147,7 +147,7 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 	iconfig_node_set_str(subnode, "type", type);
 	type = chat_protocol_find_id(item->chat_type)->name;
 	iconfig_node_set_str(subnode, "chat_type", type);
-	iconfig_node_set_str(subnode, "name", item->name);
+	iconfig_node_set_str(subnode, "name", item->visible_name);
 
 	if (item->server != NULL)
 		iconfig_node_set_str(subnode, "tag", item->server->tag);

@@ -43,14 +43,6 @@ CODE:
 	server->channels_join(server, channels, automatic);
 
 Irssi::Channel
-channel_create(server, name, automatic)
-	Irssi::Server server
-	char *name
-	int automatic
-CODE:
-	CHAT_PROTOCOL(server)->channel_create(server, name, automatic);
-
-Irssi::Channel
 channel_find(server, name)
 	Irssi::Server server
 	char *name

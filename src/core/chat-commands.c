@@ -344,9 +344,8 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 		target_type = IS_CHANNEL(item) ?
 			SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
-		target = item->name;
-	}
-	else if (g_hash_table_lookup(optlist, "channel") != NULL)
+		target = (char *) window_item_get_target(item);
+	} else if (g_hash_table_lookup(optlist, "channel") != NULL)
                 target_type = SEND_TARGET_CHANNEL;
 	else if (g_hash_table_lookup(optlist, "nick") != NULL)
 		target_type = SEND_TARGET_NICK;

@@ -26,8 +26,8 @@ void irc_channels_init(void);
 void irc_channels_deinit(void);
 
 /* Create new IRC channel record */
-IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
-				    const char *name, int automatic);
+IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server, const char *name,
+				    const char *visible_name, int automatic);
 
 #define irc_channel_find(server, name) \
 	IRC_CHANNEL(channel_find(SERVER(server), name))

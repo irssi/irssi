@@ -490,8 +490,9 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		      const char *mode)
 {
-	char *modestr, *curmode, *orig, type, prevtype;
+	IRC_CHANNEL_REC *chanrec;
 	GString *tmode, *targs;
+	char *modestr, *curmode, *orig, type, prevtype;
 	int count;
 
 	g_return_if_fail(IS_IRC_SERVER(server));
@@ -500,6 +501,10 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 	tmode = g_string_new(NULL);
 	targs = g_string_new(NULL);
 	count = 0;
+
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec != NULL)
+		channel = chanrec->name;
 
 	orig = modestr = g_strdup(mode);
 

@@ -347,7 +347,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		if (!nicklist_find(rec, nick))
 			continue;
 
-		if (ignore_check(server, nick, address, rec->name,
+		if (ignore_check(server, nick, address, rec->visible_name,
 				 reason, MSGLEVEL_QUITS)) {
 			count++;
 			continue;
@@ -355,17 +355,18 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 
 		if (print_channel == NULL ||
 		    active_win->active == (WI_ITEM_REC *) rec)
-			print_channel = rec->name;
+			print_channel = rec->visible_name;
 
 		if (once)
-			g_string_sprintfa(chans, "%s,", rec->name);
+			g_string_sprintfa(chans, "%s,", rec->visible_name);
 		else {
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
-				printformat(server, rec->name, MSGLEVEL_QUITS,
+				printformat(server, rec->visible_name,
+					    MSGLEVEL_QUITS,
 					    TXT_QUIT, nick, address, reason,
-					    rec->name);
+					    rec->visible_name);
 			}
 		}
 		count++;
@@ -441,8 +442,8 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 			continue;
 
 		windows = g_slist_append(windows, window);
-		print_nick_change_channel(server, channel->name, newnick,
-					  oldnick, address, ownnick);
+		print_nick_change_channel(server, channel->visible_name,
+					  newnick, oldnick, address, ownnick);
 		msgprint = TRUE;
 	}
 

@@ -232,12 +232,12 @@ void window_set_immortal(WINDOW_REC *window, int immortal)
 }
 
 /* return active item's name, or if none is active, window's name */
-char *window_get_active_name(WINDOW_REC *window)
+const char *window_get_active_name(WINDOW_REC *window)
 {
 	g_return_val_if_fail(window != NULL, NULL);
 
 	if (window->active != NULL)
-		return window->active->name;
+		return window->active->visible_name;
 
 	return window->name;
 }

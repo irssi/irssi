@@ -54,7 +54,7 @@ static void exec_wi_destroy(EXEC_WI_REC *rec)
 		window_item_destroy((WI_ITEM_REC *) rec);
 
 	MODULE_DATA_DEINIT(rec);
-	g_free(rec->name);
+	g_free(rec->visible_name);
         g_free(rec);
 }
 
@@ -68,7 +68,7 @@ static EXEC_WI_REC *exec_wi_create(WINDOW_REC *window, PROCESS_REC *rec)
 	item = g_new0(EXEC_WI_REC, 1);
 	item->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC");
         item->destroy = (void (*) (WI_ITEM_REC *)) exec_wi_destroy;
-	item->name = rec->name != NULL ? g_strdup(rec->name) :
+	item->visible_name = rec->name != NULL ? g_strdup(rec->name) :
 		g_strdup_printf("%%%d", rec->id);
 
 	item->createtime = time(NULL);
@@ -411,7 +411,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
                 /* redirect output to active channel/query */
 		if (item == NULL)
 			cmd_return_error(CMDERR_NOT_JOINED);
-		target = item->name;
+		target = (char *) window_item_get_target(item);
 		target_channel = IS_CHANNEL(item);
 		target_nick = IS_QUERY(item);
 	} else if (g_hash_table_lookup(optlist, "msg") != NULL) {
@@ -589,7 +589,7 @@ static void sig_exec_input(PROCESS_REC *rec, const char *text)
 			    3, str, server, item);
                 g_free(str);
 	} else if (rec->target_item != NULL) {
-		printtext(NULL, rec->target_item->name,
+		printtext(NULL, rec->target_item->visible_name,
 			  rec->level, "%s", text);
 	} else {
 		printtext_window(rec->target_win, rec->level, "%s", text);

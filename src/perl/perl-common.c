@@ -326,7 +326,7 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	if (item->server != NULL) {
 		hv_store(hv, "server", 6, iobject_bless(item->server), 0);
 	}
-	hv_store(hv, "name", 4, new_pv(item->name), 0);
+	hv_store(hv, "visible_name", 12, new_pv(item->visible_name), 0);
 
 	hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
 	hv_store(hv, "data_level", 10, newSViv(item->data_level), 0);
@@ -343,6 +343,7 @@ void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
         if (channel->ownnick != NULL)
 		hv_store(hv, "ownnick", 7, iobject_bless(channel->ownnick), 0);
 
+	hv_store(hv, "name", 4, new_pv(channel->name), 0);
 	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
 	hv_store(hv, "topic_by", 8, new_pv(channel->topic_by), 0);
 	hv_store(hv, "topic_time", 10, newSViv(channel->topic_time), 0);
@@ -369,6 +370,7 @@ void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) query);
 
+	hv_store(hv, "name", 4, new_pv(query->name), 0);
 	hv_store(hv, "last_unread_msg", 15, newSViv(query->last_unread_msg), 0);
 	hv_store(hv, "address", 7, new_pv(query->address), 0);
 	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);

@@ -358,7 +358,8 @@ static char *expando_serverversion(SERVER_REC *server, void *item, int *free_ret
 /* target of current input (channel or QUERY nickname) */
 static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
 {
-	return item == NULL ? "" : ((WI_ITEM_REC *) item)->name;
+	return item == NULL ? "" :
+		(char *) window_item_get_target((WI_ITEM_REC *) item);
 }
 
 /* client release date (in YYYYMMDD format) */
@@ -459,6 +460,12 @@ static char *expando_servertag(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_chatnet(SERVER_REC *server, void *item, int *free_ret)
 {
 	return server == NULL ? "" : server->connrec->chatnet;
+}
+
+/* visible_name of current window item */
+static char *expando_itemname(SERVER_REC *server, void *item, int *free_ret)
+{
+	return item == NULL ? "" : ((WI_ITEM_REC *) item)->visible_name;
 }
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
@@ -634,6 +641,9 @@ void expandos_init(void)
 	expando_create("chatnet", expando_chatnet,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("itemname", expando_itemname,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window item changed", EXPANDO_ARG_WINDOW, NULL);
 
 	read_settings();
 

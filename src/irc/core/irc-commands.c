@@ -62,7 +62,7 @@ static int knockout_tag;
 static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		       WI_ITEM_REC *item)
 {
-	char *target, *msg;
+	const char *target, *msg;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -71,7 +71,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 			    &target, &msg))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? NULL : window_item_get_target(item);
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -85,7 +85,8 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 		     WI_ITEM_REC *item)
 {
-	char *target, *ctcpcmd, *ctcpdata;
+	const char *target;
+	char *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -94,7 +95,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? NULL : window_item_get_target(item);
 	if (*target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -112,7 +113,8 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
-	char *target, *ctcpcmd, *ctcpdata;
+	const char *target;
+	char *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -121,7 +123,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (strcmp(target, "*") == 0)
-		target = item == NULL ? NULL : item->name;
+		target = item == NULL ? NULL : window_item_get_target(item);
 	if (*target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -216,7 +218,7 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 		if (!IS_IRC_CHANNEL(item))
 			cmd_param_error(CMDERR_NOT_JOINED);
 
-		channame = item->name;
+		channame = IRC_CHANNEL(item)->name;
 	}
 
 	irc_send_cmdv(server, "INVITE %s %s", nick, channame);
@@ -262,7 +264,7 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 		if (!IS_IRC_CHANNEL(item))
                         cmd_param_error(CMDERR_NOT_JOINED);
 
-		channel = item->name;
+		channel = IRC_CHANNEL(item)->name;
 	}
 	if (strcmp(channel, "**") == 0) {
 		/* ** displays all nicks.. */
@@ -291,7 +293,7 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server,
 		if (!IS_IRC_CHANNEL(item))
                         cmd_param_error(CMDERR_NOT_JOINED);
 
-		channel = item->name;
+		channel = IRC_CHANNEL(item)->name;
 	}
 
 	if (strcmp(channel, "**") == 0) {
@@ -480,7 +482,7 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 		if (!IS_IRC_ITEM(item))
                         cmd_return_error(CMDERR_NOT_JOINED);
 
-		data = item->name;
+		data = window_item_get_target(item);
 	}
 
 	g_get_current_time(&tv);

@@ -35,23 +35,36 @@ static char *get_join_data(CHANNEL_REC *channel)
 	return g_strdup(channel->name);
 }
 
-void channel_init(CHANNEL_REC *channel, int automatic)
+static const char *channel_get_target(WI_ITEM_REC *item)
+{
+	return ((CHANNEL_REC *) item)->name;
+}
+
+void channel_init(CHANNEL_REC *channel, SERVER_REC *server, const char *name,
+		  const char *visible_name, int automatic)
 {
 	g_return_if_fail(channel != NULL);
-	g_return_if_fail(channel->name != NULL);
+	g_return_if_fail(name != NULL);
+	g_return_if_fail(server != NULL);
 
-	channels = g_slist_append(channels, channel);
-	if (channel->server != NULL) {
-		channel->server->channels =
-			g_slist_append(channel->server->channels, channel);
-	}
+	if (visible_name == NULL)
+		visible_name = name;
 
         MODULE_DATA_INIT(channel);
 	channel->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
         channel->destroy = (void (*) (WI_ITEM_REC *)) channel_destroy;
-        channel->mode = g_strdup("");
-	channel->createtime = time(NULL);
+	channel->get_target = channel_get_target;
         channel->get_join_data = get_join_data;
+
+	channel->chat_type = server->chat_type;
+	channel->server = server;
+	channel->name = g_strdup(name);
+	channel->visible_name = g_strdup(visible_name);
+	channel->mode = g_strdup("");
+	channel->createtime = time(NULL);
+
+	channels = g_slist_append(channels, channel);
+	server->channels = g_slist_append(server->channels, channel);
 
 	signal_emit("channel created", 2, channel, GINT_TO_POINTER(automatic));
 }

@@ -69,7 +69,7 @@ void window_set_level(WINDOW_REC *window, int level);
 void window_set_immortal(WINDOW_REC *window, int immortal);
 
 /* return active item's name, or if none is active, window's name */
-char *window_get_active_name(WINDOW_REC *window);
+const char *window_get_active_name(WINDOW_REC *window);
 
 WINDOW_REC *window_find_level(void *server, int level);
 WINDOW_REC *window_find_closest(void *server, const char *name, int level);

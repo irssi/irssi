@@ -195,7 +195,7 @@ PREINIT:
 	char *arglist[MAX_FORMAT_PARAMS+1];
 	int n;
 CODE:
-	format_create_dest(&dest, item->server, item->name, level, NULL);
+	format_create_dest(&dest, item->server, item->visible_name, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 3; n < items && n < MAX_FORMAT_PARAMS+3; n++) {
 		arglist[n-3] = SvPV(ST(n), PL_na);

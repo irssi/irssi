@@ -595,7 +595,7 @@ static void sig_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
 {
 	LOG_REC *log;
 
-	log = logs_find_item(LOG_ITEM_TARGET, item->name,
+	log = logs_find_item(LOG_ITEM_TARGET, item->visible_name,
 			     item->server == NULL ? NULL :
 			     item->server->tag, NULL);
 	if (log != NULL && log->temp)

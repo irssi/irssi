@@ -673,14 +673,6 @@ Server::channels_join(channels, automatic)
   was requested by user. If channel join is "automatic", irssi doesn't
   jump to the window where the channel was joined.
 
-Channel
-Server::channel_create(name, automatic)
-  Create new channel.
-
-Channel
-channel_create(chat_type, name, automatic)
-  Create new channel with specified chat type.
-  FIXME: should this be removed? is this useful for anything?
 
 Channel::destroy()
   Destroy channel.
@@ -950,10 +942,6 @@ Ban->{}
   ban - The ban
   setby - Nick of who set the ban
   time - Timestamp when ban was set
-
-Channel
-Server::channel_create(name, automatic)
-  Create new channel.
 
 Channel::bans()
   Return a list of bans in channel.
