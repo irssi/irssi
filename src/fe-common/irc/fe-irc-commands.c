@@ -375,7 +375,7 @@ static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC
 static void cmd_join(const char *data, IRC_SERVER_REC *server)
 {
 	if ((*data == '\0' || g_strncasecmp(data, "-invite", 7) == 0) &&
-	    server->last_invite == NULL) {
+	    server != NULL && server->last_invite == NULL) {
                 printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_INVITED);
 		signal_stop();
 	}
