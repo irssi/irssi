@@ -236,7 +236,7 @@ dnl **
 AC_PATH_PROG(sedpath, sed)
 AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
 
-GLIB_DIR=`for d in *; do test -e $d/glib.h && echo $d; done`
+GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
 if test "x$GLIB_DIR" != "x"; then
   dnl glib in irssi directory, use it
   AC_MSG_RESULT([yes, using it])
