@@ -385,8 +385,18 @@ static char *output_format_text_args(TEXT_DEST_REC *dest, FORMAT_REC *format,
 
 			ret = parse_special((char **) &str, active_win->active_server,
 					    active_win->active, arglist, &need_free, NULL);
+
 			if (ret != NULL) {
+				/* string shouldn't end with \003 or it could
+				   mess up the next one or two characters */
+                                int diff;
+				int len = strlen(ret);
+				while (len > 0 && ret[len-1] == 3) len--;
+				diff = strlen(ret)-len;
+
 				g_string_append(out, ret);
+				if (diff > 0)
+					g_string_truncate(out, out->len-diff);
 				if (need_free) g_free(ret);
 			}
 			code = 0;
