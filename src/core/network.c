@@ -26,10 +26,6 @@
 #  define INADDR_NONE INADDR_BROADCAST
 #endif
 
-#ifndef EINPROGRESS
-#  define EINPROGESS 0 /* win32 */
-#endif
-
 union sockaddr_union {
 	struct sockaddr sa;
 	struct sockaddr_in sin;
