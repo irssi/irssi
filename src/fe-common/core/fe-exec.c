@@ -530,12 +530,17 @@ static void cmd_exec(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 static void sig_pidwait(void *pid, void *statusp)
 {
 	PROCESS_REC *rec;
+        char *str;
 	int status = GPOINTER_TO_INT(statusp);
 
         rec = process_find_pid(GPOINTER_TO_INT(pid));
 	if (rec == NULL) return;
 
-	/* process exited */
+	/* process exited - print the last line if
+	   there wasn't a newline at end. */
+	if (line_split("\n", 1, &str, &rec->databuf) > 0 && *str != '\0')
+		signal_emit_id(signal_exec_input, 2, rec, str);
+
 	if (!rec->silent) {
 		if (WIFSIGNALED(status)) {
 			status = WTERMSIG(status);
