@@ -211,14 +211,9 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 	curmode = cmd_get_param(&modestr);
 	while (*curmode != '\0') {
 		if (HAS_MODE_ARG(type, *curmode)) {
-			/* get the argument for the mode. since we're
-			   expecting argument, ignore the mode if there's
-			   no argument (shouldn't happen). */
+			/* get the argument for the mode. NOTE: We don't
+			   get the +k's argument when joining to channel. */
 			arg = cmd_get_param(&modestr);
-			if (*arg == '\0') {
-				curmode++;
-				continue;
-			}
 		} else {
 			arg = NULL;
 		}
@@ -267,10 +262,17 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			channel->limit = type == '-' ? 0 : atoi(arg);
 			break;
 		case 'k':
+			if (*arg == '\0' && type == '+') {
+				arg = channel->key != NULL ? channel->key :
+					"???";
+			}
 			mode_set_arg(newmode, type, 'k', arg);
-			g_free_and_null(channel->key);
-			if (type == '+')
-				channel->key = g_strdup(arg);
+
+			if (arg != channel->key) {
+				g_free_and_null(channel->key);
+				if (type == '+')
+					channel->key = g_strdup(arg);
+			}
 			break;
 
 		default:
