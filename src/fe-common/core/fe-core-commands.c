@@ -96,8 +96,8 @@ static void cmd_version(char *data)
 
 	if (*data == '\0') {
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "Client: "PACKAGE" " IRSSI_VERSION
-			  " ("IRSSI_VERSION_DATE")");
+			  "Client: "PACKAGE" " IRSSI_VERSION" (%s)",
+			  IRSSI_VERSION_DATE);
 	}
 }
 

@@ -363,7 +363,8 @@ static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
 /* client release date (numeric version string) */
 static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
 {
-	return IRSSI_VERSION_DATE;
+        *free_ret = TRUE;
+	return g_strdup_printf("%d", IRSSI_VERSION_DATE);
 }
 
 /* current working directory */

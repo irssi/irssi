@@ -97,7 +97,7 @@ void fe_core_commands_deinit(void);
 
 static void print_version(void)
 {
-	printf(PACKAGE" " IRSSI_VERSION" ("IRSSI_VERSION_DATE")\n");
+	printf(PACKAGE" " IRSSI_VERSION" (%d)\n", IRSSI_VERSION_DATE);
         exit(0);
 }
 

@@ -438,7 +438,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-char *
+int
 version()
 CODE:
 	RETVAL = IRSSI_VERSION_DATE;
