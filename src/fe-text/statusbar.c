@@ -242,7 +242,7 @@ static void sig_mainwindow_resized(MAIN_WINDOW_REC *window)
 	STATUSBAR_REC *rec;
 
 	rec = window->statusbar;
-        rec->ypos = window->last_line+1;
+        rec->ypos = window->first_line+window->lines;
 }
 
 void statusbar_init(void)

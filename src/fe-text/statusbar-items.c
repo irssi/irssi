@@ -781,7 +781,7 @@ static void sidebar_remove_items(MAIN_WINDOW_REC *window)
 
 static void sig_mainwindow_created(MAIN_WINDOW_REC *window)
 {
-	window->statusbar = statusbar_create(STATUSBAR_POS_MIDDLE, window->last_line+1);
+	window->statusbar = statusbar_create(STATUSBAR_POS_MIDDLE, window->first_line+window->lines);
 	sidebar_add_items(window);
 }
 

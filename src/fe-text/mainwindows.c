@@ -57,12 +57,6 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
-static void create_curses_window(MAIN_WINDOW_REC *window)
-{
-	window->curses_win =
-		subwin(stdscr, window->lines, COLS, window->first_line, 0);
-}
-
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 {
 	GSList *tmp;
@@ -70,8 +64,8 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int ychange, int xchange)
 	if (ychange == 0 && !xchange) return;
 
 	window->lines = window->last_line-window->first_line+1;
-	delwin(window->curses_win);
-	create_curses_window(window);
+	wresize(window->curses_win, window->lines, COLS);
+	mvwin(window->curses_win, window->first_line, 0);
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
@@ -110,13 +104,13 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		rec->lines = rec->last_line-rec->first_line+1;
 		parent->first_line = rec->last_line+1+rec->statusbar_lines;
 		parent->lines = parent->last_line-parent->first_line+1;
-		delwin(parent->curses_win);
-		create_curses_window(parent);
 
 		mainwindow_resize(parent, -space-1, FALSE);
 	}
 
-	create_curses_window(rec);
+	rec->curses_win = newwin(rec->lines, COLS, rec->first_line, 0);
+	refresh();
+
 	mainwindows = g_slist_append(mainwindows, rec);
 	signal_emit("mainwindow created", 1, rec);
 	return rec;
@@ -416,7 +410,8 @@ int mainwindows_reserve_lines(int count, int up)
 	return ret;
 }
 
-static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win, MAIN_WINDOW_REC *shrink_win, int count)
+static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
+				   MAIN_WINDOW_REC *shrink_win, int count)
 {
 	mainwindow_resize(grow_win, count, FALSE);
 	mainwindow_resize(shrink_win, -count, FALSE);
@@ -526,6 +521,7 @@ static void cmd_window_balance(void)
 		rec->first_line = last_line+1;
 		rec->last_line = rec->first_line-1 + unit_size -
 			rec->statusbar_lines;
+		rec->lines = rec->last_line-rec->first_line+1;
 
 		if (bigger_units > 0) {
 			rec->last_line++;

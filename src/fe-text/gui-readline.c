@@ -88,14 +88,14 @@ static void window_prev_page(void)
 {
 	GUI_WINDOW_REC *gui = WINDOW_GUI(active_win);
 
-	gui_window_scroll(active_win, -(gui->parent->last_line-gui->parent->first_line)/2);
+	gui_window_scroll(active_win, -gui->parent->lines/2);
 }
 
 static void window_next_page(void)
 {
 	GUI_WINDOW_REC *gui = WINDOW_GUI(active_win);
 
-	gui_window_scroll(active_win, (gui->parent->last_line-gui->parent->first_line)/2);
+	gui_window_scroll(active_win, gui->parent->lines/2);
 }
 
 static const char *get_key_name(int key)

@@ -269,7 +269,7 @@ static void scrollback_goto_pos(WINDOW_REC *window, GList *pos)
 
 		gui->startline = gui->bottom_startline;
 		gui->subline = gui->bottom_subline;
-		gui->ypos = gui->parent->last_line-gui->parent->first_line;
+		gui->ypos = gui->parent->lines-1;
 		gui->bottom = TRUE;
 	}
 
@@ -400,7 +400,7 @@ static void cmd_scrollback_end(const char *data)
 
 	gui->startline = gui->bottom_startline;
 	gui->subline = gui->bottom_subline;
-	gui->ypos = gui->parent->last_line-gui->parent->first_line;
+	gui->ypos = gui->parent->lines-1;
 	gui->bottom = TRUE;
 
 	if (is_window_visible(active_win))
