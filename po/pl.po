@@ -369,7 +369,7 @@ msgstr ""
 
 #: src/ui-common/ui-formats.c:113
 msgid "End of /WHO list"
-msgstr ""
+msgstr "Koniec listy /WHO"
 
 #. ----
 #: src/ui-common/ui-formats.c:116
@@ -758,7 +758,7 @@ msgstr ""
 #: src/gui-gnome/dialog-join.c:160 src/gui-gnome/gui-event-list.c:198
 #: src/gui-gnome/gui-event-who.c:255 src/gui-gnome/gui-menu-commands.c:231
 msgid "Channel"
-msgstr ""
+msgstr "Kana³"
 
 #. irc network
 #: src/gui-gnome/dialog-channels.c:184 src/gui-gnome/dialog-connect.c:129
@@ -769,7 +769,7 @@ msgstr ""
 #. bot masks, bot command
 #: src/gui-gnome/dialog-channels.c:200 src/gui-gnome/setup-servers.c:267
 msgid "Password"
-msgstr ""
+msgstr "HAs³o"
 
 #: src/gui-gnome/dialog-channels.c:202
 msgid "Bot masks"
@@ -797,14 +797,14 @@ msgstr ""
 #: src/gui-gnome/dialog-notifylist.c:35 src/gui-gnome/dialog-notifylist.c:175
 #: src/gui-gnome/dialog-plugins.c:33 src/gui-gnome/dialog-plugins.c:34
 msgid "Yes"
-msgstr ""
+msgstr "Tak"
 
 #: src/gui-gnome/dialog-channels.c:253 src/gui-gnome/dialog-channels.c:254
 #: src/gui-gnome/dialog-log.c:223 src/gui-gnome/dialog-log.c:726
 #: src/gui-gnome/dialog-notifylist.c:35 src/gui-gnome/dialog-notifylist.c:204
 #: src/gui-gnome/dialog-plugins.c:33 src/gui-gnome/dialog-plugins.c:34
 msgid "No"
-msgstr ""
+msgstr "Nie"
 
 #: src/gui-gnome/dialog-channels.c:446 src/gui-gnome/dialog-notifylist.c:243
 msgid "Joined"
@@ -862,7 +862,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-dcc.c:169
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: src/gui-gnome/dialog-dcc.c:169
 msgid "File Size"
@@ -883,7 +883,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-dcc.c:171
 msgid "File name"
-msgstr ""
+msgstr "Nazwa pliku"
 
 #: src/gui-gnome/dialog-dcc.c:173
 msgid "Create dialog"
@@ -895,7 +895,7 @@ msgstr ""
 
 #: src/gui-gnome/dialog-disconnect.c:129 src/gui-gnome/gui-menu-commands.c:259
 msgid "Disconnect"
-msgstr ""
+msgstr "Roz³±cz"
 
 #: src/gui-gnome/dialog-irssibot.c:73
 msgid ""
