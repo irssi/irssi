@@ -314,6 +314,7 @@ void channel_events_init(void)
 	signal_add_first("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_add_first("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
+	signal_add_first("event 477", (SIGNAL_FUNC) event_cannot_join); /* need to be identify to registered nick (dalnet) */
 	signal_add_first("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
 	signal_add_first("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
 	signal_add_first("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
@@ -337,6 +338,7 @@ void channel_events_deinit(void)
 	signal_remove("event 405", (SIGNAL_FUNC) event_cannot_join); /* too many channels */
 	signal_remove("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 	signal_remove("event 442", (SIGNAL_FUNC) event_cannot_join); /* not on that channel (dalnet) */
+	signal_remove("event 477", (SIGNAL_FUNC) event_cannot_join); /* need to be identify to registered nick (dalnet) */
 	signal_remove("event 471", (SIGNAL_FUNC) event_cannot_join); /* channel is full */
 	signal_remove("event 473", (SIGNAL_FUNC) event_cannot_join); /* invite only */
 	signal_remove("event 474", (SIGNAL_FUNC) event_cannot_join); /* banned */
