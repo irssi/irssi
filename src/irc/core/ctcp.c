@@ -73,6 +73,21 @@ static void ctcp_ping(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
 
+	if (strlen(data) > 100) {
+		/* Yes, this is kind of a kludge, but people who PING you
+		   with messages this long deserve not to get the reply.
+
+		   The problem with long messages is that when you send lots
+		   of data to server, it's input buffer gets full and you get
+		   killed from server because of "excess flood".
+
+		   Irssi's current flood protection doesn't count the message
+		   length, but even if it did, the CTCP flooder would still
+		   be able to at least slow down your possibility to send
+		   messages to server. */
+                return;
+	}
+
 	str = g_strdup_printf("NOTICE %s :\001PING %s\001", nick, data);
 	ctcp_send_reply(server, str);
 	g_free(str);
