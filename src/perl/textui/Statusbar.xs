@@ -4,8 +4,9 @@ static GHashTable *perl_sbar_defs;
 
 static int check_sbar_destroy(char *key, char *value, char *script)
 {
-	if (strncmp(key, script, strlen(script)) == 0 &&
-	    key[strlen(script)] == ':') {
+	if (strncmp(value, script, strlen(script)) == 0 &&
+	    value[strlen(script)] == ':') {
+                statusbar_item_unregister(key);
 		g_free(key);
                 g_free(value);
 		return TRUE;
@@ -14,18 +15,18 @@ static int check_sbar_destroy(char *key, char *value, char *script)
         return FALSE;
 }
 
-static void sig_script_destroy(PERL_SCRIPT_REC *script)
+static void sig_script_destroyed(PERL_SCRIPT_REC *script)
 {
 	g_hash_table_foreach_remove(perl_sbar_defs,
 				    (GHRFunc) check_sbar_destroy,
-				    script->name);
+				    script->package);
 }
 
 void perl_statusbar_init(void)
 {
 	perl_sbar_defs = g_hash_table_new((GHashFunc) g_str_hash,
 					  (GCompareFunc) g_str_equal);
-	signal_add("script destroy", (SIGNAL_FUNC) sig_script_destroy);
+	signal_add("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
 }
 
 static void statusbar_item_def_destroy(void *key, void *value)
@@ -36,7 +37,7 @@ static void statusbar_item_def_destroy(void *key, void *value)
 
 void perl_statusbar_deinit(void)
 {
-	signal_remove("script destroy", (SIGNAL_FUNC) sig_script_destroy);
+	signal_remove("script destroyed", (SIGNAL_FUNC) sig_script_destroyed);
 
 	g_hash_table_foreach(perl_sbar_defs,
 			     (GHFunc) statusbar_item_def_destroy, NULL);
