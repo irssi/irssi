@@ -94,6 +94,7 @@ currently there's no public scripts for either of these, and the only way
 I'm going to add such to irssi.org is if the script contains a setting to
 specify which specific channels the announcement is sent.</p>
 
+
 <h3>Q: Why does irssi autojoin on invite by default?</h3>
 
 <p>A: The setting is /SET join_auto_chans_on_invite - it's not the same
@@ -108,9 +109,11 @@ default. I guess someone could start kicking/inviting you all the time
 but server connection shouldn't drop because of that, and you shouldn't
 join channels whose operators are that evil.</p>
 
+
 <h3>Q: How to make UTF-8 support work with irssi?</h3>
 
 <p>A: xterm -u8, screen -U, /SET term_type utf-8</p>
+
 
 <h3>Q: Will there be /DETACH-like feature?</h3>
 
@@ -119,12 +122,14 @@ don't have much interest in coding it, and
 <a href="http://www.gnu.org/software/screen/screen.html">screen</a> works
 just fine so why bother?</p>
 
+
 <h3>Q: How do I run scripts automatically at startup?</h3>
 
 <p>A: Put them into <code>~/.irssi/scripts/autorun/</code> directory. Or
 better would be if you placed them in <code>~/.irssi/scripts/</code> and
 created symlinks to autorun directory (eg. <code>cd
 ~/.irssi/scripts/autorun/ ; ln -s ../script.pl .</code>)</p>
+
 
 <h3>Q: How do I easily edit existing topic?</h3>
 
@@ -138,3 +143,8 @@ other messages show up in active window too. I don't have many good ideas
 how this could be easily fixed inside irssi (no, kludging it to only work
 with whois isn't a "fix") - it'd be possible to create a script do this
 though but currently it doesn't exist.</p>
+
+<h3>Q: How do i add the active network to the statusbar</h3>
+
+<p>A: Modify the window-line in statusbar section in config file to
+<code>window = "{sb $winref:$chatnet/$T{sbmode $M}}";</code></p>
