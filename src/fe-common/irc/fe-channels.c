@@ -60,7 +60,8 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 	if (window != NULL) {
 		window_remove_item(window, (WI_ITEM_REC *) channel);
 
-		if (windows->next != NULL && (!channel->joined || channel->left) &&
+		if (window->items == NULL && windows->next != NULL &&
+		    (!channel->joined || channel->left) &&
 		    settings_get_bool("autoclose_windows")) {
 			window_destroy(window);
 		}
