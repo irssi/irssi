@@ -289,7 +289,7 @@ static int expand_key(const char *key, GSList **out)
 			expand_out_char(*out, '^');
 			expand_out_char(*out, *key);
 			expand_out_char(*out, '-');
-                        last_hyphen = TRUE;
+                        last_hyphen = FALSE; /* optional */
 		} else {
                         /* key / combo */
 			start = key;
