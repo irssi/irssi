@@ -159,9 +159,9 @@ void mainwindow_change_active(MAIN_WINDOW_REC *mainwin,
 		}
 	}
 
-	/* no more non-sticky windows, remove main window */
 	window_set_active(other);
-	mainwindow_destroy(mainwin);
+	if (mainwindows->next != NULL)
+		mainwindow_destroy(mainwin);
 }
 
 void mainwindows_recreate(void)
