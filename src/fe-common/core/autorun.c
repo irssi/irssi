@@ -44,7 +44,7 @@ void autorun_startup(void)
 		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
 
 		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0) {
+		if (ret > 0 && *str != '#') {
 			eval_special_string(str, "",
 					    active_win->active_server,
 					    active_win->active);
