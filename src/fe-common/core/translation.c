@@ -19,12 +19,17 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "line-split.h"
 #include "misc.h"
+#include "levels.h"
 #include "settings.h"
 
+#include "printtext.h"
+
 unsigned char translation_in[256], translation_out[256];
+static char *current_translation;
 
 void translation_reset(void)
 {
@@ -81,7 +86,12 @@ int translation_read(const char *file)
 	f = open(file, O_RDONLY);
 	g_free(path);
 
-	if (f == -1) return FALSE;
+	if (f == -1) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_TRANSLATION_NOT_FOUND, file,
+			    g_strerror(errno));
+		return FALSE;
+	}
 
 	pos = 0; buffer = NULL;
 	while (pos < 512) {
@@ -95,20 +105,40 @@ int translation_read(const char *file)
 	line_split_free(buffer);
 
 	close(f);
-	if (pos != 512)
+	if (pos != 512) {
 		translation_reset();
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_TRANSLATION_FILE_ERROR, file);
+	}
 	return pos == 512;
 }
 
 static void read_settings(void)
 {
-	translation_read(settings_get_str("translation"));
+	const char *translation;
+
+	translation = settings_get_str("translation");
+	if (*translation == '\0') {
+		if (current_translation != NULL) {
+			g_free_and_null(current_translation);
+                        translation_reset();
+		}
+		return;
+	}
+
+	if (current_translation != NULL &&
+	    strcmp(translation, current_translation) != 0) {
+                g_free_not_null(current_translation);
+		current_translation = g_strdup(translation);
+		translation_read(translation);
+	}
 }
 
 void translation_init(void)
 {
 	translation_reset();
 
+        current_translation = NULL;
 	settings_add_str("misc", "translation", "");
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 

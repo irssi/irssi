@@ -213,7 +213,9 @@ enum {
         TXT_SET_TITLE,
         TXT_SET_ITEM,
         TXT_SET_UNKNOWN,
-        TXT_SET_NOT_BOOLEAN
+	TXT_SET_NOT_BOOLEAN,
+	TXT_TRANSLATION_NOT_FOUND,
+        TXT_TRANSLATION_FILE_ERROR
 };
 
 extern FORMAT_REC fecommon_core_formats[];
