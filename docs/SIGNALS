@@ -100,7 +100,8 @@ server.c:
 
 server-reconnect.c:
 
- "server reconnect removed", RECONNECT_REC
+ "server reconnect new", RECONNECT_REC
+ "server reconnect remove", RECONNECT_REC
  "server reconnect not found", char *tag
 
 signal.c:

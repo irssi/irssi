@@ -116,6 +116,9 @@ Channel::command(cmd)
 Server::printtext(channel, level, str)
   Print `str'.
 
+setup_get(option)
+  Get value of `option' from setup and return it.
+
 
  *** Message levels
 
@@ -425,6 +428,21 @@ Dcc dcc_find_item(type, nick, arg)
 
 Dcc dcc_find_by_port(nick, port)
   Find DCC connection by port.
+
+
+ *** Reconnects
+
+Reconnect::values()
+  Get some information about reconnect. This function returns a reference to
+  hash table. Hash table has keys:
+	"tag" - Unique numeric tag
+	"address" - Address where we're going to connect
+	"password" - Password we use in connection
+	"port" - Port where we're going to connect
+	"ircnet" - IRC network
+	"nick" - Nick we want to use
+	"channels" - Join to these channels once connected
+	"next_connect" - Unix time stamp when the next connection occurs
 
 
  *** Netsplits
