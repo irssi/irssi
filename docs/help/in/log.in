@@ -3,6 +3,7 @@
 
      -noopen: Create the entry to log list, but don't start logging
      -autoopen: Automatically open this log file at startup
+     -<server tag>: Targets are logged only in this server
      -targets: Log only in specified channels/nicks
      -window: Log the active window
      <filename>: File name where to log, it is parsed with
