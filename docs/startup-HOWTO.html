@@ -142,7 +142,7 @@ If you want lines containing your nick to hilight:
 
 <p>Windows can be scrolled up/down with PgUp and PgDown keys. If they don't
 work for you, use Meta-p and Meta-n keys. For jumping to beginning or end of
-the buffer, use /SB HOME and /SB END commands.</p>
+the buffer, use <code>/SB HOME</code> and <code>/SB END</code> commands.</p>
 
 <p>By default, irssi uses "hidden windows" for everything. Hidden window is
 created every time you <code>/JOIN</code> a channel or <code>/QUERY</code>
@@ -267,8 +267,8 @@ irssi correctly with multiple servers see the chapter 6.</p>
 <p>First you need to have your IRC network set, use <code>/IRCNET</code>
 command to see if it's already there. If it isn't, use <code>/IRCNET ADD
 yourircnet</code>. If you want to execute some commands automatically when
-you're connected to some network, use -autosendcmd option. Here's some
-examples:</p>
+you're connected to some network, use <code>-autosendcmd</code> option.
+Here's some examples:</p>
 
 <pre>
      /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
@@ -282,10 +282,11 @@ examples:</p>
      /SERVER ADD -auto -ircnet worknet irc.mycompany.com 6667 password
 </pre>
 
-<p>The -auto option specifies that this server is automatically connected
-at startup. You don't need to make more than one server with -auto
-option to one IRC network, other servers are automatically connected in
-same network if the -auto server fails.</p>
+<p>The <code>-auto</code> option specifies that this server is
+automatically connected at startup. You don't need to make more than one
+server with <code>-auto</code> option to one IRC network, other servers are
+automatically connected in same network if the <code>-auto</code> server
+fails.</p>
 
 <p>And finally channels:</p>
 
@@ -295,14 +296,15 @@ same network if the -auto server fails.</p>
      /CHANNEL ADD -auto #secret ircnet password
 </pre>
 
-<p>-bots and -botcmd should be the only ones needing a bit of
-explaining. They're used to send commands automatically to bot when
-channel is joined, usually to get ops automatically. You can specify
-multiple bot masks with -bots option separated with spaces (and
-remember to quote the string then). The $0 in -botcmd specifies the
-first found bot in the list. If you don't need the bot masks (ie. the
-bot is always with the same nick, like chanserv) you can give only the
--botcmd option and the command is always sent.</p>
+<p><code>-bots</code> and <code>-botcmd</code> should be the only ones
+needing a bit of explaining. They're used to send commands automatically to
+bot when channel is joined, usually to get ops automatically. You can
+specify multiple bot masks with <code>-bots</code> option separated with
+spaces (and remember to quote the string then). The $0 in
+<code>-botcmd</code> specifies the first found bot in the list. If you
+don't need the bot masks (ie. the bot is always with the same nick, like
+chanserv) you can give only the <code>-botcmd</code> option and the command
+is always sent.</p>
 
 <h3><a id="c4">4. Setting up windows and automatically restoring them at startup</a></h3>
 
@@ -375,10 +377,10 @@ list of levels with</p>
      /HELP levels
 </pre>
 
-<p>Status window has message level "ALL -MSGS", meaning that all messages,
-except private messages, without more specific place go to status
-window. The -MSGS is there so it doesn't conflict with messages
-window.</p>
+<p>Status window has message level <code>ALL -MSGS</code>, meaning that all
+messages, except private messages, without more specific place go to status
+window. The <code>-MSGS</code> is there so it doesn't conflict with
+messages window.</p>
 
 
 <h3><a id="c6">6. How support for multiple servers works in irssi</a></h3>
@@ -413,9 +415,9 @@ When there's multiple connections to same IRC network or server, irssi
 adds a number after the tag so there could be ircnet, ircnet2, ircnet3
 etc.</p>
 
-<p>Server tags beginning with RECON- mean server reconnections. Above we
-see that connection to server at 192.168.0.1 wasn't successful and
-irssi will try to connect it again in 3 minutes.</p>
+<p>Server tags beginning with <code>RECON-</code> mean server
+reconnections. Above we see that connection to server at 192.168.0.1 wasn't
+successful and irssi will try to connect it again in 3 minutes.</p>
 
 <p>To disconnect one of the servers, or to stop irssi from
 reconnecting, use</p>
@@ -445,8 +447,8 @@ multiple connected servers, irssi adds [servertag] prefix to all
 messages in non-channel/query messages so you'll know where it came
 from.</p>
 
-<p>Several commands also accept -servertag option to specify which server
-it should use:</p>
+<p>Several commands also accept <code>-servertag</code> option to specify
+which server it should use:</p>
 
 <pre>
      /MSG -tag nick message
@@ -454,8 +456,8 @@ it should use:</p>
      /QUERY -tag nick
 </pre>
 
-<p>/MSG tab completion also automatically adds the -tag option when
-nick isn't in active server.</p>
+<p><code>/MSG</code> tab completion also automatically adds the
+<code>-tag</code> option when nick isn't in active server.</p>
 
 <p>Window's server can be made sticky. When sticky, it will never
 automatically change to anything else, and if server gets disconnected, the
@@ -494,16 +496,16 @@ scrollback buffer. Simplest usages are</p>
 </pre>
 
 <p>If there's more than 1000 lines to be printed, irssi thinks that you
-probably made some mistake and won't print them without -force option.
-If you want to save the full lastlog to file, use</p>
+probably made some mistake and won't print them without <code>-force</code>
+option. If you want to save the full lastlog to file, use</p>
 
 <pre>
      /LASTLOG -file ~/irc.log
 </pre>
 
-<p>With -file option you don't need -force even if there's more than 1000
-lines. /LASTLOG has a lot of other options too, see <code>/HELP
-lastlog</code> for details.</p>
+<p>With <code>-file</code> option you don't need <code>-force</code> even
+if there's more than 1000 lines. <code>/LASTLOG</code> has a lot of other
+options too, see <code>/HELP lastlog</code> for details.</p>
 
 <p>Once you've found the lines you were interested in, you might want
 to check the discussion around them. Irssi has <code>/SCROLLBACK</code> (or
@@ -626,9 +628,9 @@ about them:</p>
 servers through your BNC. All server connections are made through them so
 you can just forget that your bouncer even exists.</p>
 
-<p>If you don't want to use the proxy for some reason, there's -noproxy
-option which you can give to <code>/SERVER</code> and <code>/SERVER
-ADD</code> commands.</p>
+<p>If you don't want to use the proxy for some reason, there's
+<code>-noproxy</code> option which you can give to <code>/SERVER</code> and
+<code>/SERVER ADD</code> commands.</p>
 
 <p><strong>Proxy specific settings:</strong></p>
 
@@ -698,7 +700,7 @@ and the user's password with <code>/SERVER ADD</code>.</p>
 <p><strong>Irssi proxy</strong></p>
 
 <p>Irssi contains it's own proxy which you can build giving
-<strong>--with-proxy</strong> option to configure. You'll still need to run
+<code>--with-proxy</code> option to configure. You'll still need to run
 irssi in a screen to use it though.</p>
 
 <p>Irssi proxy is a bit different than most proxies, normally proxies
@@ -743,9 +745,9 @@ specified in <code>/SET irssiproxy_password</code>. For example:</p>
 
 <p><strong>SOCKS</strong></p>
 
-Irssi can be compiled with socks support (<strong>--with-socks</strong>
-option to configure), but I don't really know how it works, if at all. /SET
-proxy settings don't have anything to do with socks however.
+Irssi can be compiled with socks support (<code>--with-socks</code> option
+to configure), but I don't really know how it works, if at all. <code>/SET
+proxy</code> settings don't have anything to do with socks however.
 
 <p><strong>Others</strong></p>
 
@@ -778,12 +780,12 @@ of them you might want to change (the default value is shown):</p>
 <dl>
 <dt>/SET autocreate_own_query ON</dt>
   <dd>Should new query window be created when you send message to someone
-  (with /msg).</dd>
+  (with <code>/MSG</code>).</dd>
 
 <dt>/SET autocreate_query_level MSGS</dt>
   <dd>New query window should be created when receiving messages with
   this level. MSGS, DCCMSGS and NOTICES levels work currently. You can
-  disable this with /SET -clear autocrate_query_level.</dd>
+  disable this with <code>/SET -clear autocrate_query_level</code>.</dd>
 
 <dt>/SET autoclose_query 0</dt>
   <dd>Query windows can be automatically closed after certain time of
@@ -803,8 +805,8 @@ of them you might want to change (the default value is shown):</p>
 <dt>/SET use_status_window ON</dt>
   <dd>Create status window at startup. All messages that don't really
   have better place go here, like all /WHOIS replies etc. Status window
-  can also be created manually with /WINDOW LEVEL ALL -MSGS, /WINDOW NAME
-  (status).</dd>
+  can also be created manually with <code>/WINDOW LEVEL ALL -MSGS</code>,
+  <code>/WINDOW NAME (status)</code>.</dd>
 
 <dt>/SET autocreate_windows ON</dt>
   <dd>Should we create new windows for new window items or just place
@@ -812,7 +814,7 @@ of them you might want to change (the default value is shown):</p>
 
 <dt>/SET autoclose_windows ON</dt>
   <dd>Should window be automatically closed when the last item in them is
-  removed (ie. /PART, /UNQUERY).</dd>
+  removed (ie. <code>/PART</code>, <code>/UNQUERY</code>).</dd>
 
 <dt>/SET reuse_unused_windows OFF</dt>
   <dd>When finding where to place new window item (channel, query) Irssi
@@ -821,16 +823,16 @@ of them you might want to change (the default value is shown):</p>
   ignored if autoclose_windows is set ON.</dd>
 
 <dt>/SET window_auto_change OFF</dt>
-  <dd>Should Irssi automatically change to automatically created windows
-  - usually queries when someone sends you a message. To prevent
+  <dd>Should Irssi automatically change to automatically created windows -
+  usually queries when someone sends you a message. To prevent
   accidentally sending text meant to some other channel/nick, Irssi
   clears the input buffer when changing the window. The text is still in
   scrollback buffer, you can get it back with pressing arrow up key.</dd>
 
 <dt>/SET print_active_channel OFF</dt>
   <dd>When you keep more than one channel in same window, Irssi prints
-  the messages coming to active channel as &quot;&lt;nick&gt; text&quot;
-  and other channels as &quot;&lt;nick:channel&gt; text&quot;. If this
+  the messages coming to active channel as <code>&lt;nick&gt; text</code>
+  and other channels as <code>&lt;nick:channel&gt; text</code>. If this
   setting is set ON, the messages to active channels are also printed in
   the latter way.</dd>
 
@@ -886,11 +888,12 @@ of them you might want to change (the default value is shown):</p>
 
 <dt>/SET show_nickmode ON</dt>
   <dd>Show the nick's mode before nick in channels, ie. ops have
-  &lt;@nick&gt;, voices &lt;+nick&gt; and others &lt;&nbsp;nick&gt;</dd>
+  <code>&lt;@nick&gt;</code>, voices <code>&lt;+nick&gt;</code> and others
+  <code>&lt;&nbsp;nick&gt;</code></dd>
 
 <dt>/SET show_nickmode_empty ON</dt>
   <dd>If the nick doesn't have a mode, use one space. ie. ON:
-  &lt;&nbsp;nick&gt;, OFF: &lt;nick&gt;</dd>
+  <code>&lt;&nbsp;nick&gt;</code>, OFF: <code>&lt;nick&gt;</code></dd>
 
 <dt>/SET show_quit_once OFF</dt>
   <dd>Show quit message only once in some of the channel windows the
@@ -904,13 +907,13 @@ of them you might want to change (the default value is shown):</p>
   <dd>When lines are longer than screen width they have to be split to
   multiple lines. This specifies how much space to put at the beginning
   of the line before the text begins. This can be overridden in text
-  formats with %| format.</dd>
+  formats with <code>%|</code> format.</dd>
 
 <dt>/SET activity_hide_targets</dt>
   <dd>If you don't want to see window activity in some certain channels
-  or queries, list them here. For example "#boringchannel =bot1 =bot2".
-  If any highlighted text or message for you appears in that window, this
-  setting is ignored and the activity is shown.</dd>
+  or queries, list them here. For example <code>#boringchannel =bot1
+  =bot2</code>. If any highlighted text or message for you appears in that
+  window, this setting is ignored and the activity is shown.</dd>
 </dl>
 
 <p><strong>Nick completion</strong></p>
