@@ -950,7 +950,7 @@ static int theme_read(THEME_REC *theme, const char *path)
                 theme->default_color = -1;
 	theme_read_replaces(config, theme);
 
-	if (path == NULL)
+	if (path != NULL)
 		theme_copy_abstracts(theme, internal_theme);
 	theme_read_abstracts(config, theme);
 
