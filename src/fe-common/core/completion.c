@@ -552,7 +552,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	/* command completion? */
 	cmdchars = settings_get_str("cmdchars");
-	if (strchr(cmdchars, *word) && *linestart == '\0') {
+	if (*word != '\0' && *linestart == '\0' && strchr(cmdchars, *word)) {
 		/* complete /command */
 		*list = completion_get_commands(word+1, *word);
 
