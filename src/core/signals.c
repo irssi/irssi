@@ -183,7 +183,11 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 {
         SIGNAL_REC *prev_emitted_signal;
         SIGNAL_FUNC func;
-	int n, index, stopped;
+	int n, index, stopped, stop_emit_count;
+
+	/* signal_stop_by_name("signal"); signal_emit("signal", ...);
+	   fails if we compare rec->stop_emit against 0. */
+	stop_emit_count = rec->stop_emit;
 
 	stopped = FALSE;
 	rec->emitting++;
@@ -202,7 +206,7 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 				current_emitted_signal = prev_emitted_signal;
 			}
 
-			if (rec->stop_emit) {
+			if (rec->stop_emit != stop_emit_count) {
 				stopped = TRUE;
 				rec->stop_emit--;
 				n = SIGNAL_LISTS;
@@ -212,9 +216,15 @@ static int signal_emit_real(SIGNAL_REC *rec, gconstpointer *arglist)
 	}
 	rec->emitting--;
 
-	if (!rec->emitting && rec->altered) {
-		signal_list_clean(rec);
-		rec->altered = FALSE;
+	if (!rec->emitting) {
+		if (rec->stop_emit != 0) {
+			/* signal_stop() used too many times */
+                        rec->stop_emit = 0;
+		}
+		if (rec->altered) {
+			signal_list_clean(rec);
+			rec->altered = FALSE;
+		}
 	}
 
 	return stopped;
