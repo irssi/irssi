@@ -207,7 +207,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 void ctcp_init(void)
 {
 	settings_add_str("misc", "ctcp_version_reply",
-			 PACKAGE" v$J - running on $sysname");
+			 PACKAGE" v$J - running on $sysname $sysarch");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
