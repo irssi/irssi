@@ -587,6 +587,46 @@ static void event_whowas(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
+{
+	const char *idchan;
+	char *p, *dest, *end, id;
+	int count, length;
+
+	if (!server->isupport_sent)
+		idchan = "!:5";
+	else {
+		idchan = g_hash_table_lookup(server->isupport, "IDCHAN");
+		if (idchan == NULL)
+			return;
+	}
+
+	while (*idchan != '\0') {
+		id = *idchan;
+		if (idchan[1] != ':')
+			return;
+
+		length = strtoul(idchan+2, &end, 10);
+		if (*end == ',')
+			end++;
+		else if (*end != '\0')
+			return;
+		idchan = end;
+
+		count = 0;
+		for (dest = p = chans; *p != '\0'; p++) {
+			if (count > 0)
+				count--;
+			else {
+				if (*p == id)
+					count = length;
+				*dest++ = *p;
+			}
+		}
+		*dest = '\0';
+	}
+}
+
 static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *chans;
@@ -599,7 +639,9 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 	   colors, bolds, etc. are mostly just to fool people, I think we
 	   should show the channel names as they REALLY are so they could
 	   even be joined without any extra tricks. */
-        chans = show_lowascii(chans);
+	chans = show_lowascii(chans);
+	if (settings_get_bool("whois_hide_safe_channel_id"))
+		hide_safe_channel_id(server, chans);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_CHANNELS, nick, chans);
 	g_free(chans);
@@ -881,6 +923,8 @@ void fe_events_numeric_init(void)
 {
 	last_away_nick = NULL;
 	last_away_msg = NULL;
+
+	settings_add_bool("lookandfeel", "whois_hide_safe_channel_id", TRUE);
 
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
