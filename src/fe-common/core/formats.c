@@ -943,7 +943,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			get_mirc_color((const char **) &ptr,
 					hide_mirc_colors || hide_text_style ? NULL : &fgcolor,
 					hide_mirc_colors || hide_text_style ? NULL : &bgcolor);
-			if (!hide_mirc_colors || !hide_text_style)
+			if (!hide_mirc_colors && !hide_text_style)
 				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
 		case 4:
