@@ -103,6 +103,7 @@ static int server_reconnect_timeout(void)
 
 static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 {
+        conn->family = rec->family;
 	conn->address = g_strdup(rec->address);
 	if (conn->port == 0) conn->port = rec->port;
 
@@ -132,6 +133,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->proxy_string = g_strdup(src->proxy_string);
 
 	if (connect_info) {
+                dest->family = src->family;
 		dest->address = g_strdup(src->address);
 		dest->port = src->port;
 		dest->password = g_strdup(src->password);
@@ -202,6 +204,7 @@ static void sig_reconnect(SERVER_REC *server)
 
 	if (sserver == NULL || conn->chatnet == NULL) {
 		/* not in any chatnet, just reconnect back to same server */
+                conn->family = server->connrec->family;
 		conn->address = g_strdup(server->connrec->address);
 		conn->port = server->connrec->port;
 		conn->password = g_strdup(server->connrec->password);
