@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Pekka Aleksi Knuutila <pa@debian.org>
 Standards-Version: 3.1.0
-Build-Depends: libglib1.2-dev, perl (&gt;= 5.6.0-16), libperl-dev, libncurses5-dev, debhelper (&gt;= 3.0.18), gettext
+Build-Depends: libglib1.2-dev, perl (&gt;= 5.6.0-16), libperl-dev, libncurses5-dev, debhelper (&gt;= 3.0.18)
 
 Package: irssi-text
 Architecture: any
