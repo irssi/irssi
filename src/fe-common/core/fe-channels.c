@@ -103,6 +103,12 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 	}
 }
 
+static void sig_channel_joined(CHANNEL_REC *channel)
+{
+	if (settings_get_bool("show_names_on_join"))
+		fe_channels_nicklist(channel, CHANNEL_NICKLIST_FLAG_ALL);
+}
+
 static void cmd_wjoin_pre(const char *data)
 {
 	GHashTable *optlist;
@@ -601,6 +607,7 @@ static void cmd_cycle(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
+	settings_add_bool("lookandfeel", "show_names_on_join", TRUE);
 	settings_add_int("lookandfeel", "names_max_columns", 6);
 	settings_add_int("lookandfeel", "names_max_width", 0);
 
@@ -608,6 +615,7 @@ void fe_channels_init(void)
 	signal_add("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
 	signal_add_last("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 
 	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_wjoin_pre);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
@@ -630,6 +638,7 @@ void fe_channels_deinit(void)
 	signal_remove("channel destroyed", (SIGNAL_FUNC) signal_channel_destroyed);
 	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_changed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_remove("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 
 	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_pre);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);

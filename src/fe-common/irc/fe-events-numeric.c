@@ -68,12 +68,15 @@ static void event_ison(IRC_SERVER_REC *server, const char *data)
 
 static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *names;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, NULL, &channel, &names);
-	if (irc_channel_find(server, channel) == NULL) {
+
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec == NULL || chanrec->names_got) {
 		printformat_module("fe-common/core", server, channel,
 				   MSGLEVEL_CRAP, TXT_NAMES,
 				   channel, 0, 0, 0, 0, 0);
@@ -83,19 +86,19 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
+static void event_end_of_names(IRC_SERVER_REC *server, const char *data,
+			       const char *nick)
 {
-	char *params, *channel;
 	IRC_CHANNEL_REC *chanrec;
+	char *params, *channel;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
 
 	chanrec = irc_channel_find(server, channel);
-	if (chanrec != NULL)
-		fe_channels_nicklist(CHANNEL(chanrec),
-				     CHANNEL_NICKLIST_FLAG_ALL);
+	if (chanrec == NULL || chanrec->names_got)
+		print_event_received(server, data, nick, FALSE);
 	g_free(params);
 }
 
@@ -878,7 +881,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
 	signal_add("event 353", (SIGNAL_FUNC) event_names_list);
-	signal_add("event 366", (SIGNAL_FUNC) event_end_of_names);
+	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_add("event 352", (SIGNAL_FUNC) event_who);
 	signal_add("event 315", (SIGNAL_FUNC) event_end_of_who);
 	signal_add("event 271", (SIGNAL_FUNC) event_silence_list);
