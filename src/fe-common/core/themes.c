@@ -301,6 +301,40 @@ static int data_is_empty(const char **data)
         return FALSE;
 }
 
+/* return "data" from {abstract data} string */
+char *theme_format_expand_get(THEME_REC *theme, const char **format)
+{
+	GString *str;
+	char *ret, dummy;
+	int braces = 1; /* we start with one brace opened */
+
+	str = g_string_new(NULL);
+	while (**format != '\0' && braces != 0) {
+		if (**format == '{')
+			braces++;
+		else if (**format == '}')
+			braces--;
+		else {
+			theme_format_append_next(theme, str, format,
+						 'n', 'n',
+						 &dummy, &dummy, 0);
+			continue;
+		}
+		
+		if (braces == 0) {
+			(*format)++;
+			break;
+		}
+
+		g_string_append_c(str, **format);
+		(*format)++;
+	}
+
+	ret = str->str;
+        g_string_free(str, FALSE);
+        return ret;
+}
+
 /* expand a single {abstract ...data... } */
 static char *theme_format_expand_abstract(THEME_REC *theme,
 					  const char **formatp,
@@ -345,9 +379,8 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	abstract = g_strdup(data);
 
 	/* we'll need to get the data part. it may contain
-	   more abstracts, they are automatically expanded. */
-	data = theme_format_expand_data(theme, formatp, default_fg, default_bg,
-					NULL, NULL, flags);
+	   more abstracts, they are _NOT_ expanded. */
+	data = theme_format_expand_get(theme, formatp);
 	len = strlen(data);
 
 	if (len > 1 && i_isdigit(data[len-1]) && data[len-2] == '$') {
