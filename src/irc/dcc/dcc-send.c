@@ -168,8 +168,7 @@ static char *dcc_send_get_file(const char *fname)
 static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 			 WI_ITEM_REC *item)
 {
-	const char *fname;
-	char *target, *str;
+	char *target, *str, *fname;
 	void *free_arg;
 	char host[MAX_IP_LEN];
 	int hfile, port;
@@ -228,7 +227,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 		cmd_param_error(CMDERR_ERRNO);
 	}
 
-	fname = g_basename(fname);
+	fname = (char *) g_basename(fname);
 
 	/* Replace all the spaces with underscore so that lesser
 	   intellgent clients can communicate.. */
