@@ -399,13 +399,18 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_registered(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *params, *nick, *txt_identified;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_REGISTERED, nick);
+	params = event_get_params(data, 3, NULL, &nick, &txt_identified);
+	if (*txt_identified != '\0') {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_REGISTERED, nick);
+	} else {
+		/* or /USERIP reply in undernet.. */
+		event_received(server, data);
+	}
 	g_free(params);
 }
 
@@ -436,7 +441,7 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *txt_real, *txt_hostname, *hostname, *text;
+	char *params, *nick, *txt_real, *txt_hostname, *hostname;
 
 	g_return_if_fail(data != NULL);
 
@@ -458,9 +463,7 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, "");
 	} else {
 		/* OPN's dancer uses for end of /MAP */
-                g_free(params);
-		params = event_get_params(data, 2, NULL, &text);
-                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
+		event_received(server, data);
 	}
 	g_free(params);
 }
@@ -486,21 +489,18 @@ static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
 
 	/* <yournick> <hostname> <ip> :Real hostname/IP */
 	params = event_get_params(data, 5, NULL, &nick, &hostname, &ip, &text);
-	if (*text == '\0') {
-                g_free(params);
-
-		params = event_get_params(data, 2, NULL, &text);
-                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
-	} else {
+	if (*text != '\0') {
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, ip);
+	} else {
+		event_received(server, data);
 	}
 	g_free(params);
 }
 
 static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *txt_usermodes, *nick, *usermode, *text;
+	char *params, *txt_usermodes, *nick, *usermode;
 
 	g_return_if_fail(data != NULL);
 
@@ -514,9 +514,7 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 	} else {
 		/* some servers use this as motd too..
 		   and OPN's dancer for /MAP */
-                g_free(params);
-		params = event_get_params(data, 2, NULL, &text);
-                printtext(server, NULL, MSGLEVEL_CRAP, "%s", text);
+		event_received(server, data);
 	}
 	g_free(params);
 }
