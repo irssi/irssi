@@ -54,6 +54,13 @@ void perl_themes_deinit(void)
 MODULE = Irssi::UI::Themes  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
+Irssi::UI::Theme
+current_theme()
+CODE:
+	RETVAL = current_theme;
+OUTPUT:
+	RETVAL
+
 void
 theme_register(formats)
 	SV *formats
@@ -175,3 +182,11 @@ CODE:
 
         printformat_perl(&dest, format, arglist);
 
+#*******************************
+MODULE = Irssi::UI::Themes  PACKAGE = Irssi::UI::Theme  PREFIX = theme_
+#*******************************
+
+char *
+theme_format_expand(theme, format)
+	Irssi::UI::Theme theme
+	char *format

@@ -41,6 +41,7 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	hv_store(hv, "last_timestamp", 14, newSViv(window->last_timestamp), 0);
 	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
 
+	hv_store(hv, "theme", 5, plain_bless(window->theme, "Irssi::UI::Theme"), 0);
 	hv_store(hv, "theme_name", 10, new_pv(window->theme_name), 0);
 }
 
