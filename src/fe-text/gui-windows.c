@@ -789,7 +789,7 @@ void gui_window_resize(WINDOW_REC *window, int ychange, int xchange)
 		if (gui->empty_linecount >= 0)
 			ychange = 0;
 		else {
-			ychange -= gui->empty_linecount;
+			ychange = gui->empty_linecount;
 			gui->empty_linecount = 0;
 		}
 	}
