@@ -98,7 +98,7 @@ CODE:
 	av = (AV *) SvRV(formats);
 	len = av_len(av)+1;
 	if (len == 0 || (len & 1) != 0)
-        	croak("formats list is invalid - not dividable by 3 (%d)", len);
+        	croak("formats list is invalid - not divisible by 2 (%d)", len);
 
 	formatrecs = g_new0(FORMAT_REC, len/2+2);
 	formatrecs[0].tag = g_strdup(perl_get_package());
