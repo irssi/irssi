@@ -158,6 +158,14 @@ void handle_key(gint key)
             gui_entry_erase(1);
             break;
 
+        case KEY_DC:
+            if (gui_entry_get_pos() < strlen(gui_entry_get_text()))
+            {
+                gui_entry_move_pos(1);
+                gui_entry_erase(1);
+            }
+            break;
+
 	case 0:
 	    /* Ctrl-space - ignore */
 	    break;
