@@ -52,8 +52,7 @@ static void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
 	THEME_REC *theme;
 	char *str;
 
-	theme = dest->window->theme == NULL ? current_theme :
-		dest->window->theme;
+	theme = window_get_theme(dest->window);
 
 	formats = g_hash_table_lookup(default_formats, module);
 	format_read_arglist(va, &formats[formatnum],
@@ -131,7 +130,8 @@ void printformat_module_gui_args(const char *module, int formatnum, va_list va)
 			    arglist, sizeof(arglist)/sizeof(char *),
 			    buffer, sizeof(buffer));
 
-	str = format_get_text_theme_charargs(current_theme, module, &dest,
+	str = format_get_text_theme_charargs(window_get_theme(dest.window),
+					     module, &dest,
 					     formatnum, arglist);
 	if (*str != '\0') format_send_to_gui(&dest, str);
 	g_free(str);
@@ -153,7 +153,7 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
 
-	tmp = format_get_level_tag(current_theme, dest);
+	tmp = format_get_level_tag(window_get_theme(dest->window), dest);
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 
@@ -377,7 +377,8 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 
 	/* add timestamp/server tag here - if it's done in print_line()
 	   it would be written to log files too */
-	tmp = format_get_line_start(current_theme, dest, time(NULL));
+	tmp = format_get_line_start(window_get_theme(dest->window),
+				    dest, time(NULL));
 	str = format_add_linestart(text, tmp);
 	g_free_not_null(tmp);
 

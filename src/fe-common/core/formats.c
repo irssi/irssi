@@ -430,10 +430,8 @@ char *format_get_text_theme(THEME_REC *theme, const char *module,
 	va_list va;
 	char *str;
 
-	if (theme == NULL) {
-		theme = dest->window->theme == NULL ? current_theme :
-			dest->window->theme;
-	}
+	if (theme == NULL)
+		theme = window_get_theme(dest->window);
 
 	va_start(va, formatnum);
 	str = format_get_text_theme_args(theme, module, dest, formatnum, va);
@@ -484,8 +482,7 @@ char *format_get_text(const char *module, WINDOW_REC *window,
 	char *str;
 
 	format_create_dest(&dest, server, target, 0, window);
-	theme = dest.window->theme == NULL ? current_theme :
-		dest.window->theme;
+	theme = window_get_theme(dest.window);
 
 	va_start(va, formatnum);
 	str = format_get_text_theme_args(theme, module, &dest, formatnum, va);

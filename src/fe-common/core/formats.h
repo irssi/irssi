@@ -51,6 +51,9 @@ typedef struct {
         int flags;
 } TEXT_DEST_REC;
 
+#define window_get_theme(window) \
+	((window)->theme != NULL ? (window)->theme : current_theme)
+
 int format_find_tag(const char *module, const char *tag);
 
 /* Return length of text part in string (ie. without % codes) */
