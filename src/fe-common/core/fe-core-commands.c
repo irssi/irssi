@@ -216,8 +216,8 @@ static void event_command(const char *data)
 	cmdchar = *data == '\0' ? NULL :
 		strchr(settings_get_str("cmdchars"), *data);
 	if (cmdchar != NULL && (data[1] == '^' ||
-				(data[1] == *cmdchar && data[2] == '^'))) {
-                command_hide_output = TRUE;
+				(data[1] == *cmdchar && data[2] == '^'))
+			    && !command_hide_output++) {
 		signal_add_first("print starting", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print format", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
@@ -226,8 +226,7 @@ static void event_command(const char *data)
 
 static void event_command_last(const char *data)
 {
-	if (command_hide_output) {
-		command_hide_output = FALSE;
+	if (command_hide_output && !--command_hide_output) {
 		signal_remove("print starting", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print format", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print text", (SIGNAL_FUNC) sig_stop);
@@ -317,7 +316,7 @@ static void event_list_subcommands(const char *command)
 
 void fe_core_commands_init(void)
 {
-	command_hide_output = FALSE;
+	command_hide_output = 0;
 
 	command_cmd = FALSE;
 	memset(&time_command_now, 0, sizeof(GTimeVal));
