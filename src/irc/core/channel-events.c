@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
+#include "channels-setup.h"
 
 #include "irc.h"
 #include "irc-channels.h"
@@ -288,6 +289,16 @@ static void event_invite(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
+
+	if (irc_channel_find(server, channel) == NULL) {
+                /* check if we're supposed to autojoin this channel */
+		CHANNEL_SETUP_REC *setup;
+
+		setup = channel_setup_find(channel, server->connrec->chatnet);
+		if (setup != NULL && setup->autojoin)
+			server->channels_join(SERVER(server), channel, TRUE);
+	}
+
 	g_free_not_null(server->last_invite);
 	server->last_invite = g_strdup(channel);
 	g_free(params);

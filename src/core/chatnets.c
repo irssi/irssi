@@ -186,7 +186,7 @@ void chatnets_init(void)
 {
 	chatnets = NULL;
 
-	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add_first("event connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("setup reread", (SIGNAL_FUNC) read_chatnets);
         signal_add_first("irssi init read settings", (SIGNAL_FUNC) read_chatnets);
 }
