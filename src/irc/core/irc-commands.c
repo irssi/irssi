@@ -952,6 +952,28 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 	}
 }
 
+/* SYNTAX: OPER [<nick>] <password> */
+static void cmd_oper(const char *data, IRC_SERVER_REC *server)
+{
+	char *nick, *password;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected || !irc_server_check(server))
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 2, &nick, &password))
+		return;
+        if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*password == '\0') {
+		password = nick;
+		nick = server->nick;
+	}
+
+	irc_send_cmdv(server, "OPER %s %s", nick, password);
+	cmd_params_free(free_arg);
+}
+
 static void command_self(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -1075,8 +1097,7 @@ void irc_commands_init(void)
 	command_bind("die", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: HASH */
 	command_bind("hash", NULL, (SIGNAL_FUNC) command_self);
-	/* SYNTAX: OPER [<nick> [<password>]] */
-	command_bind("oper", NULL, (SIGNAL_FUNC) command_self);
+	command_bind("oper", NULL, (SIGNAL_FUNC) cmd_oper);
 	/* SYNTAX: RESTART */
 	command_bind("restart", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: RPING <server> */
@@ -1157,7 +1178,7 @@ void irc_commands_deinit(void)
 	command_unbind("deop", (SIGNAL_FUNC) cmd_deop);
 	command_unbind("die", (SIGNAL_FUNC) command_self);
 	command_unbind("hash", (SIGNAL_FUNC) command_self);
-	command_unbind("oper", (SIGNAL_FUNC) command_self);
+	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);
 	command_unbind("restart", (SIGNAL_FUNC) command_self);
 	command_unbind("rping", (SIGNAL_FUNC) command_self);
 	command_unbind("squit", (SIGNAL_FUNC) command_2self);
