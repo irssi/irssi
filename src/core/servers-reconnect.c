@@ -332,7 +332,7 @@ static void reconnect_all(void)
 		rec = reconnects->data;
 
 		list = g_slist_append(list, rec->conn);
-                server_connect_unref(rec->conn);
+                server_connect_ref(rec->conn);
 		server_reconnect_destroy(rec);
 	}
 
