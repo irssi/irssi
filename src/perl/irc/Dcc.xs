@@ -12,15 +12,42 @@ PPCODE:
 	}
 
 Irssi::Irc::Dcc
-dcc_find_item(type, nick, arg)
+dcc_find_request_latest(type)
+	int type
+
+Irssi::Irc::Dcc
+dcc_find_request(type, nick, arg)
 	int type
 	char *nick
 	char *arg
 
+char *
+dcc_type2str(type)
+	int type
+CODE:
+	RETVAL = (char *) dcc_type2str(type);
+OUTPUT:
+	RETVAL
+
+int
+dcc_str2type(type)
+	char *type
+
 Irssi::Irc::Dcc
-dcc_find_by_port(nick, port)
+dcc_create(type, nick, arg, server, chat)
+	int type
 	char *nick
-	int port
+	char *arg
+	Irssi::Irc::Server server
+	Irssi::Irc::Dcc chat
+
+Irssi::Irc::Dcc
+dcc_chat_find_id(id)
+	char *id
+
+char *
+dcc_get_download_path(fname)
+	char *fname
 
 #*******************************
 MODULE = Irssi::Irc  PACKAGE = Irssi::Windowitem PREFIX = item_
@@ -64,3 +91,8 @@ void
 dcc_chat_send(dcc, data)
 	Irssi::Irc::Dcc dcc
 	char *data
+
+void 
+dcc_reject(dcc, server)
+	Irssi::Irc::Dcc dcc
+	Irssi::Irc::Server server

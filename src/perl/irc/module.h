@@ -11,6 +11,8 @@
 #include "netsplit.h"
 
 #include "dcc/dcc.h"
+#include "dcc/dcc-chat.h"
+#include "dcc/dcc-get.h"
 #include "flood/autoignore.h"
 #include "notifylist/notifylist.h"
 
