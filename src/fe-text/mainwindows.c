@@ -455,7 +455,7 @@ int mainwindows_reserve_lines(int count, int up)
 	}
 
 	if (window != NULL)
-		mainwindow_resize(window, -count, FALSE);
+		mainwindow_resize(window, 0, -count);
 
 	return ret;
 }
@@ -463,8 +463,8 @@ int mainwindows_reserve_lines(int count, int up)
 static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
 				   MAIN_WINDOW_REC *shrink_win, int count)
 {
-	mainwindow_resize(grow_win, count, FALSE);
-	mainwindow_resize(shrink_win, -count, FALSE);
+	mainwindow_resize(grow_win, 0, count);
+	mainwindow_resize(shrink_win, 0, -count);
 	gui_window_redraw(grow_win->active);
 	gui_window_redraw(shrink_win->active);
 	statusbar_redraw(grow_win->statusbar);
@@ -607,7 +607,7 @@ static void cmd_window_balance(void)
 		}
 		last_line = rec->last_line + rec->statusbar_lines;
 
-		mainwindow_resize(rec, rec->height-old_size, FALSE);
+		mainwindow_resize(rec, 0, rec->height-old_size);
 	}
 	g_slist_free(sorted);
 
