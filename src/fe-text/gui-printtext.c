@@ -26,6 +26,7 @@
 #include "printtext.h"
 
 #include "screen.h"
+#include "gui-printtext.h"
 #include "gui-windows.h"
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7 };
@@ -33,6 +34,63 @@ static int scrollback_lines, scrollback_hours, scrollback_burst_remove;
 
 static int last_color, last_flags;
 static int next_xpos, next_ypos;
+
+static GHashTable *indent_functions;
+static INDENT_FUNC default_indent_func;
+
+void gui_register_indent_func(const char *name, INDENT_FUNC func)
+{
+	gpointer key, value;
+        GSList *list;
+
+	if (g_hash_table_lookup_extended(indent_functions, name, &key, &value)) {
+                list = value;
+		g_hash_table_remove(indent_functions, key);
+	} else {
+		key = g_strdup(name);
+                list = NULL;
+	}
+
+	list = g_slist_append(list, func);
+	g_hash_table_insert(indent_functions, key, list);
+}
+
+void gui_unregister_indent_func(const char *name, INDENT_FUNC func)
+{
+	gpointer key, value;
+        GSList *list;
+
+	if (g_hash_table_lookup_extended(indent_functions, name, &key, &value)) {
+		list = value;
+
+		list = g_slist_remove(list, func);
+		g_hash_table_remove(indent_functions, key);
+		if (list == NULL)
+			g_free(key);
+                else
+			g_hash_table_insert(indent_functions, key, list);
+	}
+
+	if (default_indent_func == func)
+		gui_set_default_indent(NULL);
+
+	textbuffer_views_unregister_indent_func(func);
+}
+
+void gui_set_default_indent(const char *name)
+{
+	GSList *list;
+
+	list = name == NULL ? NULL :
+		g_hash_table_lookup(indent_functions, name);
+	default_indent_func = list == NULL ? NULL : list->data;
+        gui_windows_reset_settings();
+}
+
+INDENT_FUNC get_default_indent_func(void)
+{
+        return default_indent_func;
+}
 
 void gui_printtext(int xpos, int ypos, const char *str)
 {
@@ -154,6 +212,21 @@ static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 	last_color = fg | (bg << 4);
 }
 
+static void line_add_indent_func(TEXT_BUFFER_REC *buffer, LINE_REC **line,
+				 const char *function)
+{
+        GSList *list;
+        unsigned char data[1+sizeof(INDENT_FUNC)];
+
+        list = g_hash_table_lookup(indent_functions, function);
+	if (list != NULL) {
+		data[0] = LINE_CMD_INDENT_FUNC;
+		memcpy(data+1, list->data, sizeof(INDENT_FUNC));
+		*line = textbuffer_insert(buffer, *line,
+					  data, sizeof(data), NULL);
+	}
+}
+
 static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
 {
 	static const unsigned char eol[] = { 0, LINE_CMD_EOL };
@@ -203,8 +276,14 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	if (flags & GUI_PRINT_FLAG_NEWLINE)
                 view_add_eol(view, &insert_after);
 	line_add_colors(view->buffer, &insert_after, fg, bg, flags);
-	insert_after = textbuffer_insert(view->buffer, insert_after,
-					 str, strlen(str), &lineinfo);
+
+	if (flags & GUI_PRINT_FLAG_INDENT_FUNC) {
+		/* specify the indentation function */
+                line_add_indent_func(view->buffer, &insert_after, str);
+	} else {
+		insert_after = textbuffer_insert(view->buffer, insert_after,
+						 str, strlen(str), &lineinfo);
+	}
 	if (gui->use_insert_after)
                 gui->insert_after = insert_after;
 }
@@ -235,6 +314,9 @@ static void read_settings(void)
 void gui_printtext_init(void)
 {
 	next_xpos = next_ypos = -1;
+	default_indent_func = NULL;
+	indent_functions = g_hash_table_new((GHashFunc) g_str_hash,
+					    (GCompareFunc) g_str_equal);
 
 	settings_add_int("history", "scrollback_lines", 500);
 	settings_add_int("history", "scrollback_hours", 24);
@@ -249,6 +331,8 @@ void gui_printtext_init(void)
 
 void gui_printtext_deinit(void)
 {
+	g_hash_table_destroy(indent_functions);
+
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_printtext_finished);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);

@@ -39,4 +39,6 @@ void gui_window_scroll_line(WINDOW_REC *window, LINE_REC *line);
 void gui_window_set_sticky(WINDOW_REC *window);
 void gui_window_set_unsticky(WINDOW_REC *window);
 
+void gui_windows_reset_settings(void);
+
 #endif

@@ -4,9 +4,16 @@
 #include "textbuffer.h"
 #include "screen.h"
 
+typedef struct _TEXT_BUFFER_VIEW_REC TEXT_BUFFER_VIEW_REC;
+
+/* if ypos == -1, don't print anything, just return the indent size */
+typedef int (*INDENT_FUNC) (TEXT_BUFFER_VIEW_REC *view,
+			    LINE_REC *line, int ypos);
+
 typedef struct {
 	unsigned char *start;
 	int indent;
+        INDENT_FUNC indent_func;
 	int color;
 
 	/* first word in line belong to the end of the last word in
@@ -37,7 +44,7 @@ typedef struct {
 	int last_linecount;
 } TEXT_BUFFER_CACHE_REC;
 
-typedef struct {
+struct _TEXT_BUFFER_VIEW_REC {
 	TEXT_BUFFER_REC *buffer;
 	GSList *siblings; /* other views that use the same buffer */
 
@@ -45,6 +52,7 @@ typedef struct {
 	int width, height;
 
 	int default_indent;
+        INDENT_FUNC default_indent_func;
 	unsigned int longword_noindent:1;
 	unsigned int scroll:1; /* scroll down automatically when at bottom */
 
@@ -67,20 +75,21 @@ typedef struct {
 	/* Bookmarks to the lines in the buffer - removed automatically
 	   when the line gets removed from buffer */
         GHashTable *bookmarks;
-} TEXT_BUFFER_VIEW_REC;
+};
 
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int default_indent,
-					     int longword_noindent,
 					     int scroll);
 /* Destroy the view. */
 void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view);
 /* Change the default indent position */
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 					int default_indent,
-					int longword_noindent);
+					int longword_noindent,
+					INDENT_FUNC indent_func);
+void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func);
+
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll);
 
 /* Resize the view. */

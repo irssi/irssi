@@ -4,14 +4,15 @@
 #include "themes.h"
 #include "fe-windows.h"
 
-#define GUI_PRINT_FLAG_BOLD          0x01
-#define GUI_PRINT_FLAG_REVERSE       0x02
-#define GUI_PRINT_FLAG_UNDERLINE     0x04
-#define GUI_PRINT_FLAG_BLINK         0x08
-#define GUI_PRINT_FLAG_MIRC_COLOR    0x10
-#define GUI_PRINT_FLAG_INDENT        0x20
-#define GUI_PRINT_FLAG_NEWLINE       0x40
-#define GUI_PRINT_FLAG_CLRTOEOL      0x80
+#define GUI_PRINT_FLAG_BOLD          0x0001
+#define GUI_PRINT_FLAG_REVERSE       0x0002
+#define GUI_PRINT_FLAG_UNDERLINE     0x0004
+#define GUI_PRINT_FLAG_BLINK         0x0008
+#define GUI_PRINT_FLAG_MIRC_COLOR    0x0010
+#define GUI_PRINT_FLAG_INDENT        0x0020
+#define GUI_PRINT_FLAG_INDENT_FUNC   0x0040
+#define GUI_PRINT_FLAG_NEWLINE       0x0080
+#define GUI_PRINT_FLAG_CLRTOEOL      0x0100
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200
@@ -121,8 +122,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_BOLD	(0x03 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_REVERSE	(0x04 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_INDENT	(0x05 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_DEFAULTS	(0x06 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_CLRTOEOL	(0x07 + FORMAT_STYLE_SPECIAL)
+#define FORMAT_STYLE_INDENT_FUNC (0x06 + FORMAT_STYLE_SPECIAL)
+#define FORMAT_STYLE_DEFAULTS	(0x07 + FORMAT_STYLE_SPECIAL)
+#define FORMAT_STYLE_CLRTOEOL	(0x08 + FORMAT_STYLE_SPECIAL)
 int format_expand_styles(GString *out, const char **format, int *flags);
 
 void formats_init(void);

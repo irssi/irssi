@@ -43,9 +43,11 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 	gui->parent = parent;
 	gui->view = textbuffer_view_create(textbuffer_create(),
 					   window->width, window->height,
+					   settings_get_bool("scroll"));
+	textbuffer_view_set_default_indent(gui->view,
 					   settings_get_int("indent"),
 					   settings_get_bool("indent_always"),
-					   settings_get_bool("scroll"));
+					   get_default_indent_func());
 	return gui;
 }
 
@@ -182,6 +184,25 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 	}
 }
 
+void gui_windows_reset_settings(void)
+{
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+                GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
+
+                textbuffer_view_set_default_indent(gui->view,
+						   settings_get_int("indent"),
+						   settings_get_bool("indent_always"),
+                                                   get_default_indent_func());
+
+		textbuffer_view_set_scroll(gui->view,
+					   gui->use_scroll ? gui->scroll :
+					   settings_get_bool("scroll"));
+	}
+}
+
 static MAIN_WINDOW_REC *mainwindow_find_unsticky(void)
 {
 	GSList *tmp;
@@ -239,20 +260,7 @@ static void signal_window_changed(WINDOW_REC *window)
 
 static void read_settings(void)
 {
-	GSList *tmp;
-
-	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-		WINDOW_REC *rec = tmp->data;
-                GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
-
-                textbuffer_view_set_default_indent(gui->view,
-						   settings_get_int("indent"),
-						   settings_get_bool("indent_always"));
-
-		textbuffer_view_set_scroll(gui->view,
-					   gui->use_scroll ? gui->scroll :
-					   settings_get_bool("scroll"));
-	}
+        gui_windows_reset_settings();
 }
 
 void gui_windows_init(void)

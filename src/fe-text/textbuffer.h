@@ -11,6 +11,7 @@ enum {
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
 	LINE_CMD_REVERSE,	/* enable/disable reversed text */
 	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
+	LINE_CMD_INDENT_FUNC,	/* if line is split, use the specified indentation function */
 	LINE_CMD_BLINK,		/* blinking background */
 	LINE_CMD_FORMAT,	/* end of line, but next will come the format that was used to create the
 				   text in format <module><format_name><arg><arg2...> - fields are separated

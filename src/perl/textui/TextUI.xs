@@ -96,11 +96,13 @@ CODE:
 
         irssi_add_plains(textui_plains);
         perl_statusbar_init();
+        perl_textbuffer_view_init();
 
 void
 deinit()
 CODE:
         perl_statusbar_deinit();
+        perl_textbuffer_view_deinit();
 
 MODULE = Irssi::TextUI PACKAGE = Irssi
 

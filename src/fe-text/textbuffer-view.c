@@ -105,6 +105,7 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
 static LINE_CACHE_REC *
 view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
+        INDENT_FUNC indent_func;
 	LINE_CACHE_REC *rec;
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
@@ -117,6 +118,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	xpos = 0; color = 0; indent_pos = view->default_indent;
 	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
 
+        indent_func = view->default_indent_func;
         linecount = 1;
 	lines = NULL;
 	for (ptr = line->text;;) {
@@ -162,6 +164,12 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				   it if we're too close to right border */
 				if (xpos < view->width-5) indent_pos = xpos;
 				break;
+			case LINE_CMD_INDENT_FUNC:
+				memcpy(&indent_func, ptr, sizeof(INDENT_FUNC));
+				ptr += sizeof(INDENT_FUNC);
+				if (indent_func == NULL)
+                                        indent_func = view->default_indent_func;
+				break;
 			}
 			continue;
 		}
@@ -175,7 +183,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 
 		if (xpos == view->width) {
-			xpos = indent_pos;
+			xpos = indent_func == NULL ? indent_pos :
+				indent_func(view, line, -1);
 
 			sub = g_new0(LINE_CACHE_SUB_REC, 1);
 			if (last_space > indent_pos && last_space > 10) {
@@ -191,6 +200,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 			sub->start = ptr;
 			sub->indent = xpos;
+                        sub->indent_func = indent_func;
 			sub->color = color;
 
 			lines = g_slist_append(lines, sub);
@@ -227,9 +237,52 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	return rec;
 }
 
+static void view_remove_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
+			      unsigned char update_counter)
+{
+	LINE_CACHE_REC *cache;
+
+	if (view->cache->update_counter == update_counter)
+		return;
+	view->cache->update_counter = update_counter;
+
+	cache = g_hash_table_lookup(view->cache->line_cache, line);
+	if (cache != NULL) {
+                g_free(cache);
+		g_hash_table_remove(view->cache->line_cache, line);
+	}
+}
+
+static void view_update_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
+			      unsigned char update_counter)
+{
+	view_remove_cache(view, line, update_counter);
+
+	if (view->buffer->cur_line == line)
+		view->cache->last_linecount = view_get_linecount(view, line);
+}
+
+static void view_reset_cache(TEXT_BUFFER_VIEW_REC *view)
+{
+	GSList *tmp;
+
+	/* destroy line caches - note that you can't do simultaneously
+	   unrefs + cache_get()s or it will keep using the old caches */
+	textbuffer_cache_unref(view->cache);
+        g_slist_foreach(view->siblings, (GFunc) textbuffer_cache_unref, NULL);
+
+	view->cache = textbuffer_cache_get(view->siblings, view->width);
+	for (tmp = view->siblings; tmp != NULL; tmp = tmp->next) {
+		TEXT_BUFFER_VIEW_REC *rec = tmp->data;
+
+		rec->cache = textbuffer_cache_get(rec->siblings, rec->width);
+	}
+}
+
 static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			  int subline, int ypos, int max)
 {
+        INDENT_FUNC indent_func;
 	LINE_CACHE_REC *cache;
         const unsigned char *text, *text_newline;
 	char *tmp;
@@ -252,14 +305,18 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 					break;
 			}
 
-			if (subline > 0) {
-				xpos = cache->lines[subline-1].indent;
-                                color = cache->lines[subline-1].color;
-			}
-
+                        /* first clear the line */
 			screen_set_color(view->window, 0);
 			screen_move(view->window, 0, ypos);
 			screen_clrtoeol(view->window);
+
+			if (subline > 0) {
+                                indent_func = cache->lines[subline-1].indent_func;
+				xpos = indent_func != NULL ?
+					indent_func(view, line, ypos) :
+					cache->lines[subline-1].indent;
+                                color = cache->lines[subline-1].color;
+			}
 
 			screen_move(view->window, xpos, ypos);
 			screen_set_color(view->window, color);
@@ -302,6 +359,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				break;
 			case LINE_CMD_BLINK:
 				color |= 0x80;
+				break;
+			case LINE_CMD_INDENT_FUNC:
+                                text += sizeof(INDENT_FUNC);
                                 break;
 			}
 			screen_set_color(view->window, color);
@@ -378,8 +438,6 @@ static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int default_indent,
-					     int longword_noindent,
 					     int scroll)
 {
 	TEXT_BUFFER_VIEW_REC *view;
@@ -393,8 +451,6 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 
 	view->width = width;
         view->height = height;
-	view->default_indent = default_indent;
-	view->longword_noindent = longword_noindent;
         view->scroll = scroll;
 
 	view->cache = textbuffer_cache_get(view->siblings, width);
@@ -445,10 +501,65 @@ void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view)
 /* Change the default indent position */
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 					int default_indent,
-					int longword_noindent)
+					int longword_noindent,
+					INDENT_FUNC indent_func)
 {
-	view->default_indent = default_indent;
-        view->longword_noindent = longword_noindent;
+        if (default_indent != -1)
+		view->default_indent = default_indent;
+        if (view->longword_noindent != -1)
+		view->longword_noindent = longword_noindent;
+
+	view->default_indent_func = indent_func;
+}
+
+static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
+					INDENT_FUNC indent_func)
+{
+        INDENT_FUNC func;
+	LINE_REC *line;
+        const unsigned char *text, *tmp;
+
+	if (view->default_indent_func == indent_func)
+		view->default_indent_func = NULL;
+
+	/* recreate cache so it won't contain references
+	   to the indent function */
+	view_reset_cache(view);
+	view->cache = textbuffer_cache_get(view->siblings, view->width);
+
+        /* remove all references to the indent function from buffer */
+	line = view->buffer->first_line;
+	while (line != NULL) {
+		text = line->text;
+
+		for (text = line->text;; text++) {
+			if (*text != '\0')
+				continue;
+
+                        text++;
+			if (*text == LINE_CMD_EOL)
+				break;
+
+			if (*text == LINE_CMD_INDENT_FUNC) {
+				text++;
+				memcpy(&func, text, sizeof(INDENT_FUNC));
+				if (func == indent_func)
+                                        memset(&func, 0, sizeof(INDENT_FUNC));
+				text += sizeof(INDENT_FUNC);
+			} else if (*text == LINE_CMD_CONTINUE) {
+				memcpy(&tmp, text+1, sizeof(char *));
+				text = tmp-1;
+			}
+		}
+
+		line = line->next;
+	}
+}
+
+void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func)
+{
+	g_slist_foreach(views, (GFunc) view_unregister_indent_func,
+			indent_func);
 }
 
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll)
@@ -721,31 +832,6 @@ LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
         return cache;
 }
 
-static void view_remove_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
-			      unsigned char update_counter)
-{
-	LINE_CACHE_REC *cache;
-
-	if (view->cache->update_counter == update_counter)
-		return;
-	view->cache->update_counter = update_counter;
-
-	cache = g_hash_table_lookup(view->cache->line_cache, line);
-	if (cache != NULL) {
-                g_free(cache);
-		g_hash_table_remove(view->cache->line_cache, line);
-	}
-}
-
-static void view_update_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
-			      unsigned char update_counter)
-{
-	view_remove_cache(view, line, update_counter);
-
-	if (view->buffer->cur_line == line)
-		view->cache->last_linecount = view_get_linecount(view, line);
-}
-
 static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
 	int linecount, ypos, subline;
@@ -1003,8 +1089,6 @@ static int g_free_true(void *data)
 /* Remove all lines from buffer. */
 void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 {
-	GSList *tmp;
-
 	g_return_if_fail(view != NULL);
 
 	textbuffer_remove_all_lines(view->buffer);
@@ -1012,21 +1096,9 @@ void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 	g_hash_table_foreach_remove(view->bookmarks,
 				    (GHRFunc) g_free_true, NULL);
 
-	/* destroy line caches - note that you can't do simultaneously
-	   unrefs + cache_get()s or it will keep using the old caches */
-	textbuffer_cache_unref(view->cache);
-        g_slist_foreach(view->siblings, (GFunc) textbuffer_cache_unref, NULL);
-
-        /* recreate caches, clear screens */
-	view->cache = textbuffer_cache_get(view->siblings, view->width);
+	view_reset_cache(view);
 	textbuffer_view_clear(view);
-
-	for (tmp = view->siblings; tmp != NULL; tmp = tmp->next) {
-		TEXT_BUFFER_VIEW_REC *rec = tmp->data;
-
-		rec->cache = textbuffer_cache_get(rec->siblings, rec->width);
-		textbuffer_view_clear(rec);
-	}
+	g_slist_foreach(view->siblings, (GFunc) textbuffer_view_clear, NULL);
 }
 
 /* Set a bookmark in view */

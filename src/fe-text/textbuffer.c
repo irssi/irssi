@@ -403,6 +403,9 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 			break;
 		case LINE_CMD_INDENT:
 			break;
+		case LINE_CMD_INDENT_FUNC:
+                        ptr += sizeof(void *);
+			break;
 		}
 	}
 }
