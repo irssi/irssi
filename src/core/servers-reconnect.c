@@ -34,6 +34,7 @@ GSList *reconnects;
 static int last_reconnect_tag;
 static int reconnect_timeout_tag;
 static int reconnect_time;
+static int connect_timeout;
 
 void reconnect_save_status(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 {
@@ -92,14 +93,28 @@ void server_reconnect_destroy(RECONNECT_REC *rec)
 static int server_reconnect_timeout(void)
 {
 	SERVER_CONNECT_REC *conn;
-	GSList *list, *tmp;
+	GSList *list, *tmp, *next;
 	time_t now;
+
+	now = time(NULL);
+
+	/* timeout any connections that haven't gotten to connected-stage */
+	for (tmp = servers; tmp != NULL; tmp = next) {
+		SERVER_REC *server = tmp->data;
+
+		next = tmp->next;
+		if (!server->connected &&
+		    server->connect_time + connect_timeout < now &&
+		    connect_timeout > 0) {
+			server->connection_lost = TRUE;
+			server_disconnect(server);
+		}
+	}
 
 	/* If server_connect() removes the next reconnection in queue,
 	   we're screwed. I don't think this should happen anymore, but just
 	   to be sure we don't crash, do this safely. */
 	list = g_slist_copy(reconnects);
-	now = time(NULL);
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		RECONNECT_REC *rec = tmp->data;
 
@@ -447,11 +462,13 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 static void read_settings(void)
 {
 	reconnect_time = settings_get_int("server_reconnect_time");
+        connect_timeout = settings_get_int("server_connect_timeout");
 }
 
 void servers_reconnect_init(void)
 {
 	settings_add_int("server", "server_reconnect_time", 300);
+	settings_add_int("server", "server_connect_timeout", 300);
 
 	reconnects = NULL;
 	last_reconnect_tag = 0;
