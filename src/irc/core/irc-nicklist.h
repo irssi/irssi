@@ -2,6 +2,7 @@
 #define __IRC_NICKLIST_H
 
 #include "nicklist.h"
+#include "irc-channels.h"
 
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
