@@ -148,7 +148,6 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "query_stop", "Closing query with {nick $0}", 1, { 0 } },
 	{ "no_query", "No query with {nick $0}", 1, { 0 } },
 	{ "query_server_changed", "Query with {nick $0} changed to server {server $1}", 2, { 0, 0 } },
-	{ "query_move_notify", "Query with {nick $0} is already created to window $1, use \"/WINDOW ITEM MOVE $0\" to move it to this window", 2, { 0, 1 } },
 
 	/* ---- */
 	{ NULL, "Highlighting", 0 },
