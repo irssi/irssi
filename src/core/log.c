@@ -120,7 +120,7 @@ int log_start_logging(LOG_REC *log)
 #ifdef HAVE_FCNTL
         memset(&lock, 0, sizeof(lock));
 	lock.l_type = F_WRLCK;
-	if (fcntl(log->handle, F_SETLK, &lock) == -1) {
+	if (fcntl(log->handle, F_SETLK, &lock) == -1 && errno == EACCES) {
 		close(log->handle);
 		log->handle = -1;
 		signal_emit("log locked", 1, log);
