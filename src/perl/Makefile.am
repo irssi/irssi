@@ -103,7 +103,7 @@ all-local:
 	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR) PREFIX=$(PERL_LIB_DIR); fi; fi && if ! $(MAKE); then $(MAKE); fi && cd ..; done
 
 install-exec-local:
-	for dir in common irc; do cd $$dir && make install && cd ..; done
+	for dir in common irc; do cd $$dir && $(MAKE) install && cd ..; done
 
 clean-generic:
 	rm -f common/Irssi.c irc/Irc.c
