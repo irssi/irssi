@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "levels.h"
 #include "ignore.h"
+#include "servers.h"
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
@@ -64,7 +65,9 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *kicker,
 			     const char *address, const char *reason)
 {
-	if (ignore_check(server, kicker, address,
+        /* never ignore if you were kicked */
+	if (g_strcasecmp(nick, server->nick) != 0 &&
+	    ignore_check(server, kicker, address,
 			 channel, reason, MSGLEVEL_KICKS))
 		signal_stop();
 }
