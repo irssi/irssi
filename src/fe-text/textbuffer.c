@@ -151,7 +151,8 @@ static void text_chunk_append(TEXT_BUFFER_REC *buffer,
         chunk = buffer->cur_text;
 	while (chunk->pos + len >= TEXT_CHUNK_USABLE_SIZE) {
 		left = TEXT_CHUNK_USABLE_SIZE - chunk->pos;
-		if (data[left-1] == 0) left--; /* don't split the commands */
+		if (left > 0 && data[left-1] == 0)
+			left--; /* don't split the commands */
 
 		memcpy(chunk->buffer + chunk->pos, data, left);
 		chunk->pos += left;
