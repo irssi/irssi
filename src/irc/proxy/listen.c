@@ -50,15 +50,15 @@ static void remove_client(CLIENT_REC *rec)
 }
 
 static void proxy_redirect_event(CLIENT_REC *client, const char *command,
-				 const char *arg, int remote)
+				 int count, const char *arg, int remote)
 {
 	char *str;
 
 	g_return_if_fail(client != NULL);
 
 	str = g_strdup_printf("proxy %p", client);
-	server_redirect_event(client->server, command, arg, remote, NULL,
-			      "", str, NULL);
+	server_redirect_event(client->server, command, count,
+			      arg, remote, NULL, "", str, NULL);
 	g_free(str);
 }
 
@@ -79,7 +79,7 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 		}
 
 		chanevent = g_strdup_printf("%s %s", chlist, *tmp);
-		proxy_redirect_event(client, "who", chanevent, -1);
+		proxy_redirect_event(client, "who", 1, chanevent, -1);
 		g_free(chanevent);
 	}
 	g_strfreev(list);
@@ -146,11 +146,11 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		for (p = args; *p != '\0'; p++)
 			if (*p == ',') *p = ' ';
 
-		proxy_redirect_event(client, "whois", args, remote);
+		proxy_redirect_event(client, "whois", 1, args, remote);
 	} else if (strcmp(cmd, "ISON") == 0)
-		proxy_redirect_event(client, "ison", args, -1);
+		proxy_redirect_event(client, "ison", 1, args, -1);
 	else if (strcmp(cmd, "USERHOST") == 0)
-		proxy_redirect_event(client, "userhost", args, -1);
+		proxy_redirect_event(client, "userhost", 1, args, -1);
 	else if (strcmp(cmd, "MODE") == 0) {
 		/* convert dots to spaces */
 		char *slist, *str, mode, *p;
@@ -173,16 +173,16 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		str = g_strdup_printf("%s %s", args, slist);
 		switch (mode) {
 		case '\0':
-			proxy_redirect_event(client, "mode channel", str, -1);
+			proxy_redirect_event(client, "mode channel", argc, str, -1);
 			break;
 		case 'b':
-			proxy_redirect_event(client, "mode b", str, -1);
+			proxy_redirect_event(client, "mode b", argc, str, -1);
 			break;
 		case 'e':
-			proxy_redirect_event(client, "mode e", str, -1);
+			proxy_redirect_event(client, "mode e", argc, str, -1);
 			break;
 		case 'I':
-			proxy_redirect_event(client, "mode I", str, -1);
+			proxy_redirect_event(client, "mode I", argc, str, -1);
 			break;
 		}
 		g_free(str);
@@ -199,7 +199,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		g_free(params);
 	} else if (strcmp(cmd, "PING") == 0) {
 		/* send all PINGs to server. */
-		proxy_redirect_event(client, "ping", NULL, TRUE);
+		proxy_redirect_event(client, "ping", 1, NULL, TRUE);
 	}
 
 	irc_send_cmd(client->server, data);

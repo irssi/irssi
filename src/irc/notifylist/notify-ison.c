@@ -91,7 +91,7 @@ static void ison_send(IRC_SERVER_REC *server, GString *cmd)
 	g_string_truncate(cmd, cmd->len-1);
 	g_string_prepend(cmd, "ISON :");
 
-	server_redirect_event(server, "ison", NULL, -1, NULL,
+	server_redirect_event(server, "ison", 1, NULL, -1, NULL,
 			      "event 303", "notifylist event", NULL);
 	irc_send_cmd(server, cmd->str);
 
@@ -177,7 +177,7 @@ static void whois_send(IRC_SERVER_REC *server, char *nicks)
 	for (p = str+strlen(nicks)+1; *p != '\0'; p++)
 		if (*p == ',') *p = ' ';
 
-	server_redirect_event(server, "whois", str, FALSE,
+	server_redirect_event(server, "whois", 1, str, FALSE,
                               "notifylist event whois end",
 			      "event 318", "notifylist event whois end",
 			      "event 311", "notifylist event whois",

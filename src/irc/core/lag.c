@@ -62,7 +62,7 @@ static void lag_send(LAG_REC *lag)
 
         server = lag->server;
 	server->lag_sent = server->lag_last_check = time(NULL);
-	server_redirect_event(server, "ping", NULL, FALSE,
+	server_redirect_event(server, "ping", 1, NULL, FALSE,
 			      "lag ping error",
                               "event pong", "lag pong", NULL);
 	irc_send_cmdv(server, "PING %s", server->real_address);

@@ -38,9 +38,10 @@ typedef struct {
 struct _REDIRECT_REC {
 	REDIRECT_CMD_REC *cmd;
 	time_t created;
-        int destroyed;
+	int destroyed;
 
 	char *arg;
+        int count;
         int remote;
 	char *failure_signal, *default_signal;
 	GSList *signals; /* event, signal, ... */
@@ -160,7 +161,7 @@ void server_redirect_register_list(const char *command,
 }
 
 void server_redirect_event(IRC_SERVER_REC *server, const char *command,
-			   const char *arg, int remote,
+			   int count, const char *arg, int remote,
 			   const char *failure_signal, ...)
 {
 	GSList *signals;
@@ -183,12 +184,12 @@ void server_redirect_event(IRC_SERVER_REC *server, const char *command,
 
 	va_end(va);
 
-	server_redirect_event_list(server, command, arg, remote,
+	server_redirect_event_list(server, command, count, arg, remote,
 				   failure_signal, signals);
 }
 
 void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
-				const char *arg, int remote,
+				int count, const char *arg, int remote,
 				const char *failure_signal, GSList *signals)
 {
 	REDIRECT_CMD_REC *cmdrec;
@@ -199,11 +200,6 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
 	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(command != NULL);
         g_return_if_fail((g_slist_length(signals) & 1) == 0);
-
-	if (server->redirect_next != NULL) {
-		server_redirect_destroy(server->redirect_next);
-                server->redirect_next = NULL;
-	}
 
 	cmdrec = g_hash_table_lookup(command_redirects, command);
 	if (cmdrec == NULL) {
@@ -217,6 +213,7 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
         rec->created = time(NULL);
         rec->cmd = cmdrec;
 	rec->arg = g_strdup(arg);
+        rec->count = count;
 	rec->remote = remote != -1 ? remote : cmdrec->remote;
 	rec->failure_signal = g_strdup(failure_signal);
 
@@ -231,6 +228,8 @@ void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
 	}
 	rec->signals = signals;
 
+	if (server->redirect_next != NULL)
+                server_redirect_destroy(server->redirect_next);
         server->redirect_next = rec;
 }
 
@@ -243,12 +242,12 @@ void server_redirect_command(IRC_SERVER_REC *server, const char *command,
 	g_return_if_fail(command != NULL);
 
 	if (redirect == NULL) {
+		/* no redirection wanted, but still register the command
+		   so future redirections wont get messed up. */
 		cmdrec = redirect_cmd_find(command);
 		if (cmdrec == NULL)
 			return;
 
-		/* no redirection wanted, but still register the command
-		   so future redirections wont get messed up. */
 		redirect_cmd_ref(cmdrec);
 
 		redirect = g_new0(REDIRECT_REC, 1);
@@ -454,7 +453,8 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
 		/* stop event - remove this redirection next time this
 		   function is called (can't destroy now or our return
 		   value would be corrupted) */
-                redirect->destroyed = TRUE;
+                if (--redirect->count <= 0)
+			redirect->destroyed = TRUE;
 		server->redirect_continue = NULL;
 	}
 
@@ -482,7 +482,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	g_slist_free(server->redirects);
 
 	if (server->redirect_next != NULL)
-		server_redirect_destroy(server->redirect_next);
+                server_redirect_destroy(server->redirect_next);
 }
 
 static void cmd_redirect_destroy(char *key, REDIRECT_CMD_REC *cmd)

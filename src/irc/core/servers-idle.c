@@ -30,7 +30,8 @@ typedef struct {
 	char *arg;
 	int tag;
 
-        char *redirect_cmd;
+	char *redirect_cmd;
+        int count;
 	int remote;
 	char *failure_signal;
 	GSList *redirects;
@@ -40,8 +41,9 @@ static int idle_tag, idlepos;
 
 /* Add new idle command to queue */
 static SERVER_IDLE_REC *
-server_idle_create(const char *cmd, const char *redirect_cmd, const char *arg,
-		   int remote, const char *failure_signal, va_list va)
+server_idle_create(const char *cmd, const char *redirect_cmd, int count,
+		   const char *arg, int remote, const char *failure_signal,
+		   va_list va)
 {
 	SERVER_IDLE_REC *rec;
 	const char *event, *signal;
@@ -54,6 +56,7 @@ server_idle_create(const char *cmd, const char *redirect_cmd, const char *arg,
 	rec->tag = ++idlepos;
 
         rec->redirect_cmd = g_strdup(redirect_cmd);
+	rec->count = count;
 	rec->remote = remote;
         rec->failure_signal = g_strdup(failure_signal);
 
@@ -93,7 +96,7 @@ static SERVER_IDLE_REC *server_idle_find_rec(IRC_SERVER_REC *server, int tag)
 
 /* Add new idle command to queue */
 int server_idle_add_redir(IRC_SERVER_REC *server, const char *cmd,
-			  const char *redirect_cmd, const char *arg,
+			  const char *redirect_cmd, int count, const char *arg,
 			  int remote, const char *failure_signal, ...)
 {
 	va_list va;
@@ -102,7 +105,7 @@ int server_idle_add_redir(IRC_SERVER_REC *server, const char *cmd,
 	g_return_val_if_fail(server != NULL, -1);
 
 	va_start(va, failure_signal);
-	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+	rec = server_idle_create(cmd, redirect_cmd, count, arg, remote,
 				 failure_signal, va);
 	server->idles = g_slist_append(server->idles, rec);
 	va_end(va);
@@ -112,8 +115,9 @@ int server_idle_add_redir(IRC_SERVER_REC *server, const char *cmd,
 
 /* Add new idle command to first of queue */
 int server_idle_add_first_redir(IRC_SERVER_REC *server, const char *cmd,
-				const char *redirect_cmd, const char *arg,
-				int remote, const char *failure_signal, ...)
+				const char *redirect_cmd, int count,
+				const char *arg, int remote,
+				const char *failure_signal, ...)
 {
 	va_list va;
 	SERVER_IDLE_REC *rec;
@@ -121,7 +125,7 @@ int server_idle_add_first_redir(IRC_SERVER_REC *server, const char *cmd,
 	g_return_val_if_fail(server != NULL, -1);
 
 	va_start(va, failure_signal);
-	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+	rec = server_idle_create(cmd, redirect_cmd, count, arg, remote,
 				 failure_signal, va);
 	server->idles = g_slist_prepend(server->idles, rec);
 	va_end(va);
@@ -131,8 +135,9 @@ int server_idle_add_first_redir(IRC_SERVER_REC *server, const char *cmd,
 
 /* Add new idle command to specified position of queue */
 int server_idle_insert_redir(IRC_SERVER_REC *server, const char *cmd, int tag,
-			     const char *redirect_cmd, const char *arg,
-			     int remote, const char *failure_signal, ...)
+			     const char *redirect_cmd, int count,
+			     const char *arg, int remote,
+			     const char *failure_signal, ...)
 {
 	va_list va;
 	SERVER_IDLE_REC *rec;
@@ -146,7 +151,7 @@ int server_idle_insert_redir(IRC_SERVER_REC *server, const char *cmd, int tag,
 	rec = server_idle_find_rec(server, tag);
 	pos = g_slist_index(server->idles, rec);
 
-	rec = server_idle_create(cmd, redirect_cmd, arg, remote,
+	rec = server_idle_create(cmd, redirect_cmd, count, arg, remote,
 				 failure_signal, va);
         server->idles = pos < 0 ?
 		g_slist_append(server->idles, rec) :
@@ -206,7 +211,8 @@ static void server_idle_next(IRC_SERVER_REC *server)
 
 	/* Send command */
 	if (rec->redirect_cmd != NULL) {
-		server_redirect_event_list(server, rec->redirect_cmd, rec->arg,
+		server_redirect_event_list(server, rec->redirect_cmd,
+					   rec->count, rec->arg,
 					   rec->remote, rec->failure_signal,
 					   rec->redirects);
 	}

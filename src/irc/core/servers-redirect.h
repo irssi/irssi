@@ -29,6 +29,9 @@ void server_redirect_register_list(const char *command,
    command - Specifies the registered command that should be used for this
    redirection.
 
+   count - How many times to execute the redirection. Some commands may send
+   multiple stop events, like MODE #a,#b.
+
    arg - The argument to be compared in event strings. You can give multiple
    arguments separated with space.
 
@@ -41,12 +44,12 @@ void server_redirect_register_list(const char *command,
    If the `event' is "", all the events belonging to the redirection but not
    specified here, will be sent there. */
 void server_redirect_event(IRC_SERVER_REC *server, const char *command,
-			   const char *arg, int remote,
+			   int count, const char *arg, int remote,
 			   const char *failure_signal, ...);
 /* Signals list shouldn't be free'd after, and it's strings should be
    dynamically allocated */
 void server_redirect_event_list(IRC_SERVER_REC *server, const char *command,
-				const char *arg, int remote,
+				int count, const char *arg, int remote,
 				const char *failure_signal, GSList *signals);
 
 /* INTERNAL: */

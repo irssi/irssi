@@ -169,7 +169,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	IRC_CHANNEL_REC *chanrec;
 	GSList *chans, *newchans;
 	char *cmd, *chanstr_commas, *chanstr;
-	int onlyone;
+	int onlyone, count;
 
 	rec = server->chanqueries;
 	g_return_if_fail(rec != NULL);
@@ -183,15 +183,19 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		chans = g_slist_append(NULL, chanrec);
 		chanstr_commas = g_strdup(chanrec->name);
 		chanstr = g_strdup(chanrec->name);
+                count = 1;
 	} else {
 		char *chanstr_spaces;
 
 		chans = rec->queries[query];
+                count = g_slist_length(chans);
 
-		if ((int)g_slist_length(rec->queries[query]) > server->max_query_chans) {
+		if (count > server->max_query_chans) {
 			GSList *lastchan;
 
-			lastchan = g_slist_nth(rec->queries[query], server->max_query_chans-1);
+			lastchan = g_slist_nth(rec->queries[query],
+					       server->max_query_chans-1);
+                        count = server->max_query_chans;
 			newchans = lastchan->next;
                         lastchan->next = NULL;
 		}
@@ -206,8 +210,10 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	switch (query) {
 	case CHANNEL_QUERY_MODE:
 		cmd = g_strdup_printf("MODE %s", chanstr_commas);
-		server_redirect_event(server, "mode channel", chanstr, -1,
-				      "chanquery mode abort",
+
+		/* the stop-event is received once for each channel */
+		server_redirect_event(server, "mode channel", count,
+				      chanstr, -1, "chanquery mode abort",
 				      "event 324", "chanquery mode",
 				      "", "chanquery mode abort", NULL);
 		break;
@@ -215,7 +221,9 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 	case CHANNEL_QUERY_WHO:
 		cmd = g_strdup_printf("WHO %s", chanstr_commas);
 
-		server_redirect_event(server, "who", chanstr, -1,
+		server_redirect_event(server, "who",
+				      server->one_endofwho ? 1 : count,
+				      chanstr, -1,
 				      "chanquery who abort",
 				      "event 315", "chanquery who end",
 				      "event 352", "silent event who",
@@ -228,7 +236,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		   mode requests - if channels are joined manually
 		   irssi could ask modes separately but afterwards
 		   join the two b/e/I modes together */
-		server_redirect_event(server, "mode b", chanstr, -1,
+		server_redirect_event(server, "mode b", count, chanstr, -1,
 				      "chanquery mode abort",
 				      "event 367", "chanquery ban",
 				      "event 368", "chanquery ban end",
@@ -237,7 +245,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 
 	case CHANNEL_QUERY_EMODE:
 		cmd = g_strdup_printf("MODE %s e", chanstr_commas);
-		server_redirect_event(server, "mode e", chanstr, -1,
+		server_redirect_event(server, "mode e", count, chanstr, -1,
 				      "chanquery mode abort",
 				      "event 348", "chanquery eban",
 				      "event 349", "chanquery eban end",
@@ -246,7 +254,7 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 
 	case CHANNEL_QUERY_IMODE:
 		cmd = g_strdup_printf("MODE %s I", chanstr_commas);
-		server_redirect_event(server, "mode I", chanstr, -1,
+		server_redirect_event(server, "mode I", count, chanstr, -1,
 				      "chanquery mode abort",
 				      "event 346", "chanquery ilist",
 				      "event 347", "chanquery ilist end",
@@ -273,7 +281,8 @@ static void channel_send_query(IRC_SERVER_REC *server, int query)
 		rec->queries[query] = newchans;
 	} else {
 		/* remove the first channel from list */
-		rec->queries[query] = g_slist_remove(rec->queries[query], chans->data);
+		rec->queries[query] =
+			g_slist_remove(rec->queries[query], chans->data);
 	}
 
 	/* send the command */
