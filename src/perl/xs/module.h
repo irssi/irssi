@@ -14,6 +14,7 @@
 #include "irc/core/bans.h"
 #include "irc/core/channels.h"
 #include "irc/core/query.h"
+#include "irc/core/irc.h"
 #include "irc/core/irc-server.h"
 #include "irc/core/server-reconnect.h"
 #include "irc/core/server-setup.h"
