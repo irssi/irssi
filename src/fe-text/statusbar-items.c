@@ -433,10 +433,12 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 	    activity_list = g_list_remove(activity_list, window);
 	    statusbar_item_redraw(activity_item);
 	}
-	else if (window->new_data != GPOINTER_TO_INT(oldlevel))
+	else if (window->new_data != GPOINTER_TO_INT(oldlevel) ||
+		 window->last_color != 0)
 	{
-	    /* different level as last time, just redraw it. */
-	    statusbar_item_redraw(activity_item);
+		/* different level as last time (or maybe different
+		   hilight color?), just redraw it. */
+		statusbar_item_redraw(activity_item);
 	}
         return;
     }

@@ -379,16 +379,16 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 
-	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
-	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
-	signal_add_last("message join", (SIGNAL_FUNC) sig_message_join);
-	signal_add_last("message part", (SIGNAL_FUNC) sig_message_part);
-	signal_add_last("message quit", (SIGNAL_FUNC) sig_message_quit);
-	signal_add_last("message kick", (SIGNAL_FUNC) sig_message_kick);
-	signal_add_last("message nick", (SIGNAL_FUNC) sig_message_nick);
-	signal_add_last("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
-	signal_add_last("message invite", (SIGNAL_FUNC) sig_message_invite);
-	signal_add_last("message topic", (SIGNAL_FUNC) sig_message_topic);
+	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
+	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
+	signal_add("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_add("message part", (SIGNAL_FUNC) sig_message_part);
+	signal_add("message quit", (SIGNAL_FUNC) sig_message_quit);
+	signal_add("message kick", (SIGNAL_FUNC) sig_message_kick);
+	signal_add("message nick", (SIGNAL_FUNC) sig_message_nick);
+	signal_add("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
+	signal_add("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_add("message topic", (SIGNAL_FUNC) sig_message_topic);
 	command_bind_last("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 }
 

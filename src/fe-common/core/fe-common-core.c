@@ -108,7 +108,6 @@ void fe_common_core_init(void)
         fe_queries_init();
 	fe_ignore_init();
 	fe_log_init();
-	fe_messages_init();
 	fe_modules_init();
 	fe_server_init();
 	fe_settings_init();
@@ -120,6 +119,7 @@ void fe_common_core_init(void)
 	window_save_init();
 	fe_core_commands_init();
 
+	fe_messages_init();
 	fe_ignore_messages_init();
 }
 
@@ -133,7 +133,6 @@ void fe_common_core_deinit(void)
 	printtext_deinit();
         fe_channels_deinit();
         fe_queries_deinit();
-	fe_messages_deinit();
 	fe_ignore_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
@@ -147,6 +146,7 @@ void fe_common_core_deinit(void)
 	window_save_deinit();
 	fe_core_commands_deinit();
 
+	fe_messages_deinit();
 	fe_ignore_messages_init();
 
         theme_unregister();
