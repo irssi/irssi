@@ -101,11 +101,30 @@ static void sig_connected(IRC_SERVER_REC *server)
 	}
 }
 
+static void event_kill(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *addr)
+{
+	time_t new_connect;
+
+	if (!IS_IRC_SERVER(server)/* || addr != NULL*/)
+		return;
+
+	/* after server kills we want to connect back immediately - it was
+	   probably a nick collision. but no matter how hard they kill us,
+	   don't connect to the server more than once in every 10 seconds. */
+
+	new_connect = server->connect_time+10 -
+		settings_get_int("server_reconnect_time");
+	if (server->connect_time > new_connect)
+		server->connect_time = new_connect;
+}
+
 void irc_servers_reconnect_init(void)
 {
 	signal_add("server connect copy", (SIGNAL_FUNC) sig_server_connect_copy);
 	signal_add("server reconnect save status", (SIGNAL_FUNC) sig_server_reconnect_save_status);
 	signal_add("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("event kill", (SIGNAL_FUNC) event_kill);
 }
 
 void irc_servers_reconnect_deinit(void)
@@ -113,4 +132,5 @@ void irc_servers_reconnect_deinit(void)
 	signal_remove("server connect copy", (SIGNAL_FUNC) sig_server_connect_copy);
 	signal_remove("server reconnect save status", (SIGNAL_FUNC) sig_server_reconnect_save_status);
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("event kill", (SIGNAL_FUNC) event_kill);
 }

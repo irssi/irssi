@@ -193,6 +193,38 @@ static void event_kick(const char *data, IRC_SERVER_REC *server,
 	g_free(params);
 }
 
+static void event_kill(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *addr)
+{
+	char *params, *path, *reason;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+				  NULL, &path);
+	reason = strstr(path, " (");
+	if (reason == NULL || reason[strlen(reason)-1] != ')') {
+		/* weird server, maybe it didn't give path */
+                reason = path;
+		path = "";
+	} else {
+		/* reason inside (...) */
+		*reason = '\0';
+		reason += 2;
+		reason[strlen(reason)-1] = '\0';
+	}
+
+	if (addr != NULL) {
+		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_KILL,
+			    nick, addr, reason, path);
+	} else {
+		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_KILL_SERVER,
+			    nick, reason, path);
+	}
+
+	g_free(params);
+}
+
 static void event_nick(const char *data, IRC_SERVER_REC *server,
 		       const char *sender, const char *addr)
 {
@@ -453,6 +485,7 @@ void fe_events_init(void)
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
+	signal_add("event kill", (SIGNAL_FUNC) event_kill);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add("event mode", (SIGNAL_FUNC) event_mode);
 	signal_add("event pong", (SIGNAL_FUNC) event_pong);
@@ -482,6 +515,7 @@ void fe_events_deinit(void)
 	signal_remove("event part", (SIGNAL_FUNC) event_part);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);
+	signal_remove("event kill", (SIGNAL_FUNC) event_kill);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("event mode", (SIGNAL_FUNC) event_mode);
 	signal_remove("event pong", (SIGNAL_FUNC) event_pong);

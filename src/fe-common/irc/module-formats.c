@@ -147,7 +147,9 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "pong", "PONG received from $0: $1", 2, { 0, 0 } },
 	{ "wallops", "{wallop WALLOP {wallop_nick $0}} $1", 2, { 0, 0 } },
 	{ "action_wallops", "{wallop WALLOP {wallop_action $0}} $1", 2, { 0, 0 } },
-	{ "error", "{hilight ERROR} $0", 1, { 0 } },
+	{ "kill", "You were {error killed} by {nick $0} {nickhost $1} {reason $2} [Path: $3]", 4, { 0, 0, 0, 0 } },
+	{ "kill_server", "You were {error killed} by {server $0} {reason $1} [Path: $2]", 3, { 0, 0, 0 } },
+	{ "error", "{error ERROR} $0", 1, { 0 } },
 	{ "unknown_mode", "Unknown mode character $0", 1, { 0 } },
 	{ "not_chanop", "You're not channel operator in {channel $0}", 1, { 0 } },
 
