@@ -142,7 +142,7 @@ void term_common_init(void)
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
         read_settings();
 
-#ifdef HAVE_NL_LANGINFO
+#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
         setlocale(LC_CTYPE, "");
 	if (strcmp(nl_langinfo(CODESET), "UTF-8") == 0) {
 		term_type = TERM_TYPE_UTF8;
