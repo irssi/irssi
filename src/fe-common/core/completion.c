@@ -140,7 +140,14 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 		wordlen = strlen(word);
 
 		/* get the start of line until the word we're completing */
-		while (wordstart > line && isseparator(wordstart[-1])) wordstart--;
+		if (isseparator(*line)) {
+			/* empty space at the start of line */
+			if (wordstart == line)
+				wordstart += strlen(wordstart);
+		} else {
+			while (wordstart > line && isseparator(wordstart[-1]))
+				wordstart--;
+		}
 		linestart = g_strndup(line, (int) (wordstart-line));
 
 		/* completions usually add space after the word, that makes
@@ -160,7 +167,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 
 			g_free(word);
 			word = g_strdup("");
-			startpos = strlen(linestart)+1;/*(int) (wordstart-line)+wordlen+1*/;
+			startpos = strlen(linestart)+1;
 			wordlen = 0;
 		}
 
