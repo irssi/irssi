@@ -128,7 +128,7 @@ void perl_scripts_init(void)
         perl_common_start();
 
 	use_code = perl_get_use_list();
-        code = g_strdup_printf(irssi_core_code, use_code);
+        code = g_strdup_printf(irssi_core_code, PERL_STATIC_LIBS, use_code);
 	perl_eval_pv(code, TRUE);
 
 	g_free(code);
