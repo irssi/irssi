@@ -29,7 +29,7 @@
 #include "masks.h"
 
 #include "bot-users.h"
-#include "bot-commands.h"
+#include "botnet-users.h"
 
 static void event_privmsg(const char *data, IRC_SERVER_REC *server,
 			  const char *nick, const char *address)

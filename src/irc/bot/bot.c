@@ -20,9 +20,6 @@
 
 #include "module.h"
 
-void bot_commands_deinit(void);
-void bot_commands_init(void);
-
 void bot_irc_commands_deinit(void);
 void bot_irc_commands_init(void);
 
@@ -38,7 +35,6 @@ void botnet_deinit(void);
 void irc_bot_init(void)
 {
 	bot_users_init();
-	bot_commands_init();
 	bot_irc_commands_init();
 	bot_events_init();
 	botnet_init();
@@ -47,7 +43,6 @@ void irc_bot_init(void)
 void irc_bot_deinit(void)
 {
 	bot_users_deinit();
-	bot_commands_deinit();
 	bot_irc_commands_deinit();
 	bot_events_deinit();
 	botnet_deinit();

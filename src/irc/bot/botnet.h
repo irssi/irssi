@@ -48,6 +48,8 @@ typedef struct {
 	int read_tag;
 	void *buffer;
 
+	int file_handle; /* if bot is sending a file to us */
+
 	GSList *ircnets;
 } BOT_REC;
 
@@ -103,6 +105,8 @@ void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
 
 void botnet_send_cmd(BOTNET_REC *botnet, const char *source,
 		     const char *target, const char *data);
+
+int botnet_send_file(BOTNET_REC *botnet, const char *target, const char *fname);
 
 BOT_REC *botnet_find_master(BOTNET_REC *botnet, BOT_REC *old_master);
 void botnet_set_master(BOTNET_REC *botnet, BOT_REC *bot);

@@ -8,18 +8,18 @@ libirc_bot_la_LIBADD = -lcrypt
 
 libirc_bot_la_SOURCES = \
 	bot.c \
-	bot-commands.c \
 	bot-irc-commands.c \
 	bot-events.c \
 	bot-users.c \
         botnet.c \
-        botnet-connection.c
+        botnet-connection.c \
+	botnet-users.c
 
 noinst_HEADERS = \
 	bot.h \
+	bot-users.h \
 	botnet.h \
-	bot-commands.h \
-	bot-users.h
+	botnet-users.h
 
 EXTRA_DIST = \
 	users.sample \

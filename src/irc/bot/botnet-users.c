@@ -1,5 +1,5 @@
 /*
- bot-commands.c : IRC bot plugin for irssi
+ botnet-users.c : IRC bot plugin for irssi
 
     Copyright (C) 1999-2000 Timo Sirainen
 
@@ -185,7 +185,7 @@ static void botnet_event_user_pass(BOT_REC *bot, const char *data, const char *s
 	g_free(params);
 }
 
-void bot_commands_init(void)
+void botnet_users_init(void)
 {
 	signal_add("botnet event user_add", (SIGNAL_FUNC) botnet_event_user_add);
 	signal_add("botnet event user_flags", (SIGNAL_FUNC) botnet_event_user_flags);
@@ -195,7 +195,7 @@ void bot_commands_init(void)
 	signal_add("botnet event user_pass", (SIGNAL_FUNC) botnet_event_user_pass);
 }
 
-void bot_commands_deinit(void)
+void botnet_users_deinit(void)
 {
 	signal_remove("botnet event user_add", (SIGNAL_FUNC) botnet_event_user_add);
 	signal_remove("botnet event user_flags", (SIGNAL_FUNC) botnet_event_user_flags);

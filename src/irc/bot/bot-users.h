@@ -32,6 +32,7 @@ typedef struct {
 
 	int not_flags; /* active not_flags based on current host mask,
 	                  botuser_find() updates this */
+        time_t last_modify; /* last time the user settings were modified */
 } USER_REC;
 
 int botuser_flags2value(const char *flags);
@@ -49,5 +50,7 @@ void botuser_set_mask_notflags(USER_REC *user, const char *mask, int not_flags);
 
 void botuser_set_password(USER_REC *user, const char *password);
 int botuser_verify_password(USER_REC *user, const char *password);
+
+void botuser_save(const char *fname);
 
 #endif

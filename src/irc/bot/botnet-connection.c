@@ -28,6 +28,7 @@
 #include "lib-config/iconfig.h"
 
 #include "botnet.h"
+#include "bot-users.h"
 
 #define BOTNET_RECONNECT_TIME (60*5)
 
@@ -368,6 +369,7 @@ static void botnet_connect_event_uplink(BOT_REC *bot, const char *data)
 static void botnet_event(BOT_REC *bot, const char *data)
 {
 	BOT_DOWNLINK_REC *downlink;
+	char *fname;
 
 	g_return_if_fail(bot != NULL);
 	g_return_if_fail(data != NULL);
@@ -423,6 +425,14 @@ static void botnet_event(BOT_REC *bot, const char *data)
 		botnet_send_links(bot, FALSE);
 		botnet_send_links(bot, TRUE);
 		bot_send_cmdv(bot, "%s - MASTER %s", bot->botnet->nick, bot->botnet->master->nick);
+
+		/* send our current user configuration */
+		fname = g_strdup_printf("%s/.irssi/users.temp", g_get_home_dir());
+		botuser_save(fname);
+		botnet_send_file(bot->botnet, bot->nick, fname);
+		g_free(fname);
+
+		/* send sync msg */
 		bot_send_cmdv(bot, "%s - SYNC", bot->botnet->nick);
 		return;
 	}

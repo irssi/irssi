@@ -1,5 +1,5 @@
-#ifndef __BOT_COMMANDS_H
-#define __BOT_COMMANDS_H
+#ifndef __BOTNET_USERS_H
+#define __BOTNET_USERS_H
 
 void botcmd_user_add(const char *nick);
 void botcmd_user_set_flags(USER_REC *user, int flags);

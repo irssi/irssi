@@ -98,6 +98,8 @@ static void botuser_config_save(USER_REC *user)
 	GSList *tmp;
 	char *str;
 
+	user->last_modify = time(NULL);
+
 	node = config_node_traverse(userconfig, "users", TRUE);
 	node = config_node_section(node, user->nick, NODE_TYPE_BLOCK);
 
@@ -107,6 +109,7 @@ static void botuser_config_save(USER_REC *user)
 	g_free_not_null(str);
 
 	config_node_set_str(userconfig, node, "password", user->password);
+	config_node_set_int(node, "last_modify", (int) user->last_modify);
 
 	/* Save masks */
 	if (user->masks == NULL)
@@ -350,6 +353,11 @@ int botuser_verify_password(USER_REC *user, const char *password)
 	return strcmp(user->password, pass) == 0;
 }
 
+void botuser_save(const char *fname)
+{
+	config_write(userconfig, fname, 0600);
+}
+
 static void event_massjoin(CHANNEL_REC *channel, GSList *nicks)
 {
 	USER_REC *user;
@@ -473,9 +481,10 @@ static void botuser_config_read_user(CONFIG_NODE *node)
 	user->nick = g_strdup(node->key);
 	g_hash_table_insert(users, user->nick, user);
 
-	/* password, flags */
+	/* password, flags, modify time */
 	user->password = g_strdup(config_node_get_str(node, "password", NULL));
 	user->flags = botuser_flags2value(config_node_get_str(node, "flags", ""));
+	user->last_modify = (time_t) config_node_get_int(node, "last_modify", 0);
 
 	/* get masks */
         user->masks = NULL;

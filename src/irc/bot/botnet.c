@@ -32,6 +32,9 @@
 void botnet_connection_init(void);
 void botnet_connection_deinit(void);
 
+void botnet_users_deinit(void);
+void botnet_users_init(void);
+
 GSList *botnets;
 
 void bot_send_cmd(BOT_REC *bot, char *data)
@@ -119,6 +122,73 @@ void botnet_send_cmd(BOTNET_REC *botnet, const char *source,
 			      botnet->nick, target, data);
 	bot_send_cmd(node->data, str);
 	g_free(str);
+}
+
+static void escape_buffer(char *buffer, int len)
+{
+	char *dest, *tempbuf, *p;
+
+	dest = buffer;
+	tempbuf = p = g_malloc(len*2+2);
+	while (len > 0) {
+		if (*buffer == '\0') {
+			*p++ = '\\';
+			*p++ = '0';
+		} else if (*buffer == '\r') {
+			*p++ = '\\';
+			*p++ = 'r';
+		} else if (*buffer == '\n') {
+			*p++ = '\\';
+			*p++ = 'n';
+		} else if (*buffer == '\\') {
+			*p++ = '\\';
+			*p++ = '\\';
+		} else {
+			*p++ = *buffer;
+		}
+                len--; buffer++;
+	}
+	*p++ = '\0';
+
+	len = (int) (p-tempbuf);
+	memcpy(dest, tempbuf, len);
+        g_free(tempbuf);
+}
+
+int botnet_send_file(BOTNET_REC *botnet, const char *target, const char *fname)
+{
+	GNode *node;
+	GString *str;
+	char buffer[1024];
+	int f, len;
+
+	node = bot_find_path(botnet, target);
+	if (node == NULL) {
+		g_warning("Can't find route for target %s", target);
+		return FALSE;
+	}
+
+	f = open(fname, O_RDONLY);
+	if (f == -1) return FALSE;
+
+	str = g_string_new(NULL);
+
+	g_string_sprintf(str, "%s %s FILE %s", botnet->nick, target, g_basename(fname));
+	bot_send_cmd(node->data, str->str);
+
+	while ((len = read(f, buffer, sizeof(buffer)/2-2)) > 0) {
+		escape_buffer(buffer, len);
+
+		g_string_sprintf(str, "%s %s FILE %s", botnet->nick, target, buffer);
+		bot_send_cmd(node->data, str->str);
+	}
+
+	g_string_sprintf(str, "%s %s FILE", botnet->nick, target);
+	bot_send_cmd(node->data, str->str);
+	g_string_free(str, TRUE);
+
+	close(f);
+	return TRUE;
 }
 
 BOTNET_REC *botnet_find(const char *name)
@@ -485,18 +555,6 @@ static void botnet_event_broadcast(BOT_REC *bot, const char *data)
 	g_free(params);
 }
 
-#if 0
-static void botnet_event_bcast(BOT_REC *bot, const char *data, const char *sender)
-{
-	char *str;
-
-	/* broadcast message to all bots */
-	str = g_strdup_printf("BCAST %s", data);
-	botnet_broadcast(bot->botnet, bot, sender, str);
-	g_free(str);
-}
-#endif
-
 static void botnet_event_master(BOT_REC *bot, const char *data, const char *sender)
 {
 	BOTNET_REC *botnet;
@@ -524,6 +582,72 @@ static void botnet_event_master(BOT_REC *bot, const char *data, const char *send
 	g_free(str);
 
 	signal_stop_by_name("botnet event");
+}
+
+static int unescape_data(const char *input, char *output)
+{
+	int len;
+
+	len = 0;
+	while (*input != '\0') {
+		if (*input != '\\')
+                        *output++ = *input;
+		else {
+			input++;
+			g_return_val_if_fail(*input != '\0', len);
+			switch (*input) {
+			case '\\':
+				*output++ = '\\';
+				break;
+			case '0':
+				*output++ = '\0';
+				break;
+			case 'r':
+				*output++ = '\r';
+				break;
+			case 'n':
+				*output++ = '\n';
+				break;
+			}
+		}
+		input++;
+                len++;
+	}
+
+	return len;
+}
+
+static void botnet_event_file(BOT_REC *bot, const char *data, const char *sender, const char *target)
+{
+	GNode *node;
+	char *tempbuf, *str;
+	int len;
+
+	if (g_strcasecmp(target, bot->botnet->nick) != 0)
+		return;
+
+	node = bot_find_nick(bot->botnet, sender);
+	g_return_if_fail(node != NULL);
+
+	bot = node->data;
+	if (bot->file_handle <= 0) {
+		/* first line - data contains file name */
+		str = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(), data);
+		bot->file_handle = open(str, O_CREAT|O_TRUNC|O_WRONLY, 0600);
+                g_free(str);
+	} else if (*data == '\0') {
+		/* no data - end of file */
+		if (bot->file_handle > 0) {
+			close(bot->file_handle);
+			bot->file_handle = -1;
+		}
+	} else {
+		/* file data */
+		tempbuf = g_malloc(strlen(data)*2+2);
+		len = unescape_data(data, tempbuf);
+		write(bot->file_handle, tempbuf, len);
+		g_free(tempbuf);
+	}
 }
 
 static void botnet_config_read_ips(BOT_DOWNLINK_REC *rec, CONFIG_NODE *node)
@@ -673,11 +797,12 @@ void botnet_init(void)
 {
 	botnet_config_read();
 	botnet_connection_init();
+	botnet_users_init();
 
 	signal_add("botnet event", (SIGNAL_FUNC) botnet_event);
 	signal_add_last("botnet event", (SIGNAL_FUNC) botnet_event_broadcast);
-	//signal_add("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
 	signal_add("botnet event master", (SIGNAL_FUNC) botnet_event_master);
+	signal_add("botnet event file", (SIGNAL_FUNC) botnet_event_file);
 	command_bind("botnet", NULL, (SIGNAL_FUNC) cmd_botnet);
 
 	autoconnect_botnets();
@@ -689,10 +814,11 @@ void botnet_deinit(void)
 		botnet_destroy(botnets->data);
 
 	botnet_connection_deinit();
+	botnet_users_deinit();
 
 	signal_remove("botnet event", (SIGNAL_FUNC) botnet_event);
 	signal_remove("botnet event", (SIGNAL_FUNC) botnet_event_broadcast);
-	//signal_remove("botnet event bcast", (SIGNAL_FUNC) botnet_event_bcast);
 	signal_remove("botnet event master", (SIGNAL_FUNC) botnet_event_master);
+	signal_remove("botnet event file", (SIGNAL_FUNC) botnet_event_file);
 	command_unbind("botnet", (SIGNAL_FUNC) cmd_botnet);
 }
