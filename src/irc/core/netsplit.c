@@ -132,7 +132,9 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 
 		splitchan = g_new0(NETSPLIT_CHAN_REC, 1);
 		splitchan->name = g_strdup(channel->name);
-		memcpy(&splitchan->nick, nickrec, sizeof(NICK_REC));
+		splitchan->op = nickrec->op;
+		splitchan->halfop = nickrec->halfop;
+		splitchan->voice = nickrec->voice;
 
 		rec->channels = g_slist_append(rec->channels, splitchan);
 	}
@@ -190,8 +192,9 @@ NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick,
 		g_strcasecmp(rec->address, address) == 0) ? rec : NULL;
 }
 
-NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
-				const char *address, const char *channel)
+NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server,
+					 const char *nick, const char *address,
+					 const char *channel)
 {
 	NETSPLIT_REC *rec;
 	GSList *tmp;
@@ -207,7 +210,7 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
 		NETSPLIT_CHAN_REC *rec = tmp->data;
 
 		if (g_strcasecmp(rec->name, channel) == 0)
-			return &rec->nick;
+			return rec;
 	}
 
 	return NULL;

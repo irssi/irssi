@@ -25,14 +25,16 @@ typedef struct {
 
 typedef struct {
 	char *name;
-	NICK_REC nick;
+	unsigned int op:1;
+	unsigned int halfop:1;
+	unsigned int voice:1;
 } NETSPLIT_CHAN_REC;
 
 void netsplit_init(void);
 void netsplit_deinit(void);
 
 NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick, const char *address);
-NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const char *address, const char *channel);
+NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const char *address, const char *channel);
 
 /* check if quit message is a netsplit message */
 int quitmsg_is_split(const char *msg);

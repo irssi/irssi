@@ -9,7 +9,7 @@ netsplit_find(server, nick, address)
 	char *nick
 	char *address
 
-Irssi::Irc::Nick
+Irssi::Irc::Netsplitchannel
 netsplit_find_channel(server, nick, address, channel)
 	Irssi::Irc::Server server
 	char *nick

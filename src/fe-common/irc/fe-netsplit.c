@@ -130,7 +130,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 		chanrec->nick_count++;
 		if (netsplit_nicks_hide_threshold <= 0 ||
 		    chanrec->nick_count <= netsplit_nicks_hide_threshold) {
-			if (splitchan->nick.op)
+			if (splitchan->op)
 				g_string_append_c(chanrec->nicks, '@');
 			g_string_sprintfa(chanrec->nicks, "%s ", split->nick);
 
@@ -306,8 +306,8 @@ static void split_print(NETSPLIT_REC *rec)
 
 	chan = rec->channels->data;
 	chanstr = chan == NULL ? "" :
-		g_strconcat(chan->nick.op ? "@" :
-			    (chan->nick.voice ? "+" : ""), chan->name, NULL);
+		g_strconcat(chan->op ? "@" :
+			    (chan->voice ? "+" : ""), chan->name, NULL);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_LINE,
 		    rec->nick, chanstr, rec->server->server,

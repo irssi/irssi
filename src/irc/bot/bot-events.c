@@ -89,7 +89,8 @@ static void event_massjoin(IRC_CHANNEL_REC *channel, GSList *users)
 static void parse_channel_mode(IRC_CHANNEL_REC *channel, const char *mode,
 			       const char *nick, const char *address)
 {
-	NICK_REC *nickrec, *splitnick;
+	NETSPLIT_CHAN_REC *splitnick;
+	NICK_REC *nickrec;
 	USER_REC *user;
 	GString *str;
 	char *ptr, *curmode, type, *dup, *modestr;

@@ -119,7 +119,9 @@ static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)
 static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHAN_REC *rec)
 {
 	hv_store(hv, "name", 4, new_pv(rec->name), 0);
-	hv_store(hv, "nick", 4, iobject_bless(&rec->nick), 0);
+	hv_store(hv, "op", 2, newSViv(rec->op), 0);
+	hv_store(hv, "halfop", 6, newSViv(rec->halfop), 0);
+	hv_store(hv, "voice", 5, newSViv(rec->voice), 0);
 }
 
 static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)
