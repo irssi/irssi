@@ -62,7 +62,7 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close)
 	g_free(rec);
 }
 
-/* Transmit all data from buffer - return TRUE if successful */
+/* Transmit all data from buffer - return TRUE if the whole buffer was sent */
 static int buffer_send(NET_SENDBUF_REC *rec)
 {
 	int ret;
@@ -138,6 +138,25 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 	}
 
 	return buffer_add(rec, data, size) ? 0 : -1;
+}
+
+/* Flush the buffer, blocks until finished. */
+void net_sendbuffer_flush(NET_SENDBUF_REC *rec)
+{
+	int handle;
+
+	if (rec->buffer == NULL)
+		return;
+
+        /* set the socket blocking while doing this */
+	handle = g_io_channel_unix_get_fd(rec->handle);
+#ifndef WIN32
+	fcntl(handle, F_SETFL, 0);
+#endif
+	while (!buffer_send(rec)) ;
+#ifndef WIN32
+	fcntl(handle, F_SETFL, O_NONBLOCK);
+#endif
 }
 
 /* Returns the socket handle */

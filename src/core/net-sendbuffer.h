@@ -14,6 +14,9 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
    occured. */
 int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size);
 
+/* Flush the buffer, blocks until finished. */
+void net_sendbuffer_flush(NET_SENDBUF_REC *rec);
+
 /* Returns the socket handle */
 GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec);
 
