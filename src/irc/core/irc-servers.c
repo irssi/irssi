@@ -516,8 +516,12 @@ static void event_motd(IRC_SERVER_REC *server, const char *data, const char *fro
 	   you'd think they could at least get that right??
 	   But no, then I'll have to go and add these idiotic kludges
 	   to make them work. Maybe I should instead get the users of these
-	   servers to complain about it to their admins. */
-        event_connected(server, data, from);
+	   servers to complain about it to their admins.
+
+	   Oh, and looks like it also doesn't answer anything to PINGs,
+	   disable lag checking. */
+        server->disable_lag = TRUE;
+	event_connected(server, data, from);
 }
 
 static void event_channels_formed(IRC_SERVER_REC *server, const char *data)
