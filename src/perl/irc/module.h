@@ -1,4 +1,4 @@
-#include "../core/module.h"
+#include "../common/module.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"

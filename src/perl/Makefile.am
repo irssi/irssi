@@ -1,9 +1,9 @@
 moduledir = $(libdir)/irssi/modules
-module_LTLIBRARIES = libirssi_perl.la
+module_LTLIBRARIES = libperl.la
 
-libirssi_perl_la_LDFLAGS = -avoid-version
+libperl_la_LDFLAGS = -avoid-version
 
-irssi-perl.c: perl-signals.h
+perl.c: perl-signals.h
 
 INCLUDES = $(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(libdir)/irssi/scripts"\" \
@@ -11,8 +11,8 @@ INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core
 
-libirssi_perl_la_SOURCES = \
-	irssi-perl.c \
+libperl_la_SOURCES = \
+	perl.c \
 	perl-common.c \
 	xsinit.c
 
@@ -54,6 +54,7 @@ IRC_SOURCES = \
 
 EXTRA_DIST = \
 	libperl_dynaloader.la \
+	libperl_orig.la \
 	get-signals.pl \
 	$(CORE_SOURCES) \
 	$(IRC_SOURCES)
@@ -63,9 +64,9 @@ noinst_HEADERS = \
 	perl-common.h
 
 all-local:
-	for dir in core irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && $(MAKE) && cd ..; done
+	for dir in common irc; do cd $$dir && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && $(MAKE) && cd ..; done
 
 install-exec-local:
-	for dir in core irc; do cd $$dir && make install && cd ..; done
+	for dir in common irc; do cd $$dir && make install && cd ..; done
 
-libirssi_perl_la_LIBADD = $(PERL_LDFLAGS)
+libperl_la_LIBADD = $(PERL_LDFLAGS)

@@ -666,7 +666,7 @@ static void irssi_perl_autorun(void)
 	g_free(path);
 }
 
-void irssi_perl_init(void)
+void perl_init(void)
 {
 	perl_common_init();
 
@@ -681,7 +681,7 @@ void irssi_perl_init(void)
 	irssi_perl_autorun();
 }
 
-void irssi_perl_deinit(void)
+void perl_deinit(void)
 {
 	irssi_perl_stop();
 	perl_common_deinit();
