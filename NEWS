@@ -1,4 +1,4 @@
-v0.8.7 2003-11-17  Timo Sirainen <tss@iki.fi>
+v0.8.7 2003-11-23  Timo Sirainen <tss@iki.fi>
 
 	* Settings changes - we have now "time", "size" and "level" setting
 	  types.
@@ -15,23 +15,18 @@ v0.8.7 2003-11-17  Timo Sirainen <tss@iki.fi>
 	  prompt in pasting mode.
 
 	  /SET paste_detect_time controls how closely each others characters
-	  must occur for it to be considered pasting. Pasting mode goes on
-	  after /SET paste_detect_keycount characters have been received and
-	  detected as pasting.
+	  must occur for it to be considered pasting. Paste mode goes on when
+	  first pasted CR/LF is found.
 
-	  The first paste_detect_keycount characters may also contain some
-	  command characters. They are executed, but their action in entry
-	  line is reverted once pasting is detected. Of course, if any such
-	  character was followed by CR/LF, it was already sent to
-	  channel/query and is unreversable.
+	  The first line may also contain some command characters. They are
+	  executed, but their action in entry line is reverted once pasting
+	  is detected.
 
 	  What this means in practise is that even if you have TABs (assuming
-	  TAB is completion key) in the first few pasted characters, they get
-	  pasted as TABs as long as they weren't immediately followed by
-	  CR/LF.
+	  TAB is completion key) in the first pasted line, they get pasted as
+	  TABs.
 
-	  This detection isn't perfect and especially with laggy connections
-	  it could do things wrong. If you don't like it, you can disable it
+	  This detection isn't perfect, so if it annoys you it can be disabled
 	  with /SET paste_detect_time 0
 	+ If pasting more lines than /SET paste_verify_line_count, irssi asks
 	  if you actually want to do that. This should be useful to prevent
