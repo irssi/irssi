@@ -28,6 +28,8 @@ QUERY_REC *query_create(int chat_type, SERVER_REC *server,
 /* Find query by name, if `server' is NULL, search from all servers */
 QUERY_REC *query_find(SERVER_REC *server, const char *nick);
 
+void query_change_nick(QUERY_REC *query, const char *nick);
+void query_change_address(QUERY_REC *query, const char *address);
 void query_change_server(QUERY_REC *query, SERVER_REC *server);
 
 void queries_init(void);

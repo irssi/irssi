@@ -116,12 +116,33 @@ QUERY_REC *query_find(SERVER_REC *server, const char *nick)
 				   (void *) nick);
 }
 
+void query_change_nick(QUERY_REC *query, const char *nick)
+{
+	char *oldnick;
+
+	g_return_if_fail(IS_QUERY(query));
+
+        oldnick = query->name;
+	query->name = g_strdup(nick);
+	signal_emit("query nick changed", 2, query, oldnick);
+        g_free(oldnick);
+}
+
+void query_change_address(QUERY_REC *query, const char *address)
+{
+	g_return_if_fail(IS_QUERY(query));
+
+        g_free_not_null(query->address);
+	query->address = g_strdup(address);
+	signal_emit("query address changed", 1, query);
+}
+
 void query_change_server(QUERY_REC *query, SERVER_REC *server)
 {
 	g_return_if_fail(IS_QUERY(query));
 
 	query->server = server;
-	signal_emit("query server changed", 2, query, server);
+	signal_emit("query server changed", 1, query);
 }
 
 void queries_init(void)

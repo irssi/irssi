@@ -56,47 +56,39 @@ static void sig_query_create(QUERY_REC **query,
 	signal_stop();
 }
 
-static void event_privmsg(IRC_SERVER_REC *server, const char *data, const char *nick, const char *addr)
+static void event_privmsg(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *address)
 {
-	char *params, *target, *msg;
 	QUERY_REC *query;
+	char *params, *target, *msg;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 
-	if (addr != NULL && !ischannel(*target)) {
+	if (address != NULL && !ischannel(*target)) {
 		/* save nick's address to query */
 		query = irc_query_find(server, nick);
-		if (query != NULL && (query->address == NULL || strcmp(query->address, addr) != 0)) {
-			g_free_not_null(query->address);
-			query->address = g_strdup(addr);
-
-			signal_emit("query address changed", 1, query);
-		}
+		if (query != NULL && (query->address == NULL ||
+				      strcmp(query->address, address) != 0))
+                        query_change_address(query, address);
 	}
 
 	g_free(params);
 }
 
-static void event_nick(IRC_SERVER_REC *server, const char *data, const char *orignick)
+static void event_nick(SERVER_REC *server, const char *data,
+		       const char *orignick)
 {
+        QUERY_REC *query;
 	char *params, *nick;
-	GSList *tmp;
 
-	params = event_get_params(data, 1, &nick);
-
-	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
-		QUERY_REC *rec = tmp->data;
-
-		if (g_strcasecmp(rec->name, orignick) == 0) {
-			g_free(rec->name);
-			rec->name = g_strdup(nick);
-			signal_emit("query nick changed", 1, rec);
-		}
+	query = query_find(server, orignick);
+	if (query != NULL) {
+		params = event_get_params(data, 1, &nick);
+		query_change_nick(query, nick);
+		g_free(params);
 	}
-
-	g_free(params);
 }
 
 void irc_queries_init(void)

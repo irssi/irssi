@@ -901,7 +901,6 @@ void statusbar_items_init(void)
 	/* more */
 	more_item = NULL;
 	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
-	signal_add("window item changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_add("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
 
@@ -963,7 +962,6 @@ void statusbar_items_deinit(void)
 
 	/* more */
 	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_check_remove);
-	signal_remove("window item changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_check);
 	signal_remove("gui print text", (SIGNAL_FUNC) sig_statusbar_more_check);
 

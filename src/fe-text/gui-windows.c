@@ -732,11 +732,6 @@ static void signal_window_changed(WINDOW_REC *window)
 	screen_refresh_thaw();
 }
 
-static void signal_window_item_update(WINDOW_REC *window)
-{
-	window_update_prompt(window);
-}
-
 GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, int regexp, int fullword)
 {
 #ifdef HAVE_REGEX_H
@@ -1082,9 +1077,9 @@ void gui_windows_init(void)
 	signal_add("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_add_first("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_add("window item changed", (SIGNAL_FUNC) signal_window_item_update);
-	signal_add("window name changed", (SIGNAL_FUNC) signal_window_item_update);
-	signal_add("window item remove", (SIGNAL_FUNC) signal_window_item_update);
+	signal_add("window item changed", (SIGNAL_FUNC) window_update_prompt);
+	signal_add("window name changed", (SIGNAL_FUNC) window_update_prompt);
+	signal_add("window item remove", (SIGNAL_FUNC) window_update_prompt);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -1099,8 +1094,8 @@ void gui_windows_deinit(void)
 	signal_remove("window created", (SIGNAL_FUNC) gui_window_created);
 	signal_remove("window destroyed", (SIGNAL_FUNC) gui_window_destroyed);
 	signal_remove("window changed", (SIGNAL_FUNC) signal_window_changed);
-	signal_remove("window item changed", (SIGNAL_FUNC) signal_window_item_update);
-	signal_remove("window name changed", (SIGNAL_FUNC) signal_window_item_update);
-	signal_remove("window item remove", (SIGNAL_FUNC) signal_window_item_update);
+	signal_remove("window item changed", (SIGNAL_FUNC) window_update_prompt);
+	signal_remove("window name changed", (SIGNAL_FUNC) window_update_prompt);
+	signal_remove("window item remove", (SIGNAL_FUNC) window_update_prompt);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

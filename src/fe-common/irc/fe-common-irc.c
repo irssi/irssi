@@ -36,6 +36,9 @@ void fe_irc_modules_deinit(void);
 void fe_irc_channels_init(void);
 void fe_irc_channels_deinit(void);
 
+void fe_irc_queries_init(void);
+void fe_irc_queries_deinit(void);
+
 void fe_irc_commands_init(void);
 void fe_irc_commands_deinit(void);
 
@@ -95,6 +98,7 @@ void fe_common_irc_init(void)
 	theme_register(fecommon_irc_formats);
 
 	fe_irc_channels_init();
+	fe_irc_queries_init();
 	fe_irc_commands_init();
 	fe_ircnet_init();
 	fe_irc_server_init();
@@ -113,6 +117,7 @@ void fe_common_irc_deinit(void)
 	fe_irc_modules_deinit();
 
 	fe_irc_channels_deinit();
+	fe_irc_queries_deinit();
 	fe_irc_commands_deinit();
 	fe_ircnet_deinit();
 	fe_irc_server_deinit();

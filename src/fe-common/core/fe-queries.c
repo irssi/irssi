@@ -53,6 +53,8 @@ QUERY_REC *privmsg_get_query(SERVER_REC *server, const char *nick,
 
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
+	g_return_if_fail(IS_QUERY(query));
+
 	if (window_item_find(query->server, query->name) != NULL)
 		return;
 
@@ -63,7 +65,7 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 
 static void signal_query_created_curwin(QUERY_REC *query)
 {
-	g_return_if_fail(query != NULL);
+	g_return_if_fail(IS_QUERY(query));
 
 	window_item_add(active_win, (WI_ITEM_REC *) query, FALSE);
 }
@@ -72,7 +74,7 @@ static void signal_query_destroyed(QUERY_REC *query)
 {
 	WINDOW_REC *window;
 
-	g_return_if_fail(query != NULL);
+	g_return_if_fail(IS_QUERY(query));
 
 	window = window_item_window((WI_ITEM_REC *) query);
 	if (window != NULL) {
@@ -82,6 +84,25 @@ static void signal_query_destroyed(QUERY_REC *query)
 		    !query->unwanted && settings_get_bool("autoclose_windows"))
 			window_destroy(window);
 	}
+}
+
+static void signal_query_server_changed(QUERY_REC *query)
+{
+	WINDOW_REC *window;
+
+	g_return_if_fail(query != NULL);
+
+	window = window_item_window((WI_ITEM_REC *) query);
+	if (window->active == (WI_ITEM_REC *) query)
+		window_change_server(window, query->server);
+}
+
+static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
+{
+	g_return_if_fail(query != NULL);
+
+	signal_emit("window item changed", 2,
+		    window_item_window((WI_ITEM_REC *) query), query);
 }
 
 static void signal_window_item_destroy(WINDOW_REC *window, WI_ITEM_REC *item)
@@ -116,23 +137,20 @@ static void sig_server_connected(SERVER_REC *server)
 static void cmd_window_server(const char *data)
 {
 	SERVER_REC *server;
+        QUERY_REC *query;
 
 	g_return_if_fail(data != NULL);
 
 	server = server_find_tag(data);
-	if (!IS_SERVER(server) || !IS_QUERY(active_win->active))
+        query = QUERY(active_win->active);
+	if (server == NULL || query == NULL)
 		return;
 
 	/* /WINDOW SERVER used in a query window */
-	query_change_server(QUERY(active_win->active), server);
-	window_change_server(active_win, server);
-
+	query_change_server(query, server);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    IRCTXT_QUERY_SERVER_CHANGED,
-		    server->tag, server->connrec->address,
-		    server->connrec->chatnet == NULL ? "" :
-		    server->connrec->chatnet);
-
+		    query->name, server->tag);
 	signal_stop();
 }
 
@@ -289,6 +307,8 @@ void fe_queries_init(void)
 
 	signal_add("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_add("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
+	signal_add("query server changed", (SIGNAL_FUNC) signal_query_server_changed);
+	signal_add("query nick changed", (SIGNAL_FUNC) signal_query_nick_changed);
 	signal_add_last("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_add("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_add("window changed", (SIGNAL_FUNC) sig_window_changed);
@@ -308,6 +328,8 @@ void fe_queries_deinit(void)
 
 	signal_remove("query created", (SIGNAL_FUNC) signal_query_created);
 	signal_remove("query destroyed", (SIGNAL_FUNC) signal_query_destroyed);
+	signal_remove("query server changed", (SIGNAL_FUNC) signal_query_server_changed);
+	signal_remove("query nick changed", (SIGNAL_FUNC) signal_query_nick_changed);
 	signal_remove("window item destroy", (SIGNAL_FUNC) signal_window_item_destroy);
 	signal_remove("server connected", (SIGNAL_FUNC) sig_server_connected);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_window_changed);

@@ -14,6 +14,7 @@ INCLUDES = \
 libfe_common_irc_a_SOURCES = \
 	fe-irc-channels.c \
 	fe-irc-commands.c \
+	fe-irc-queries.c \
 	fe-irc-server.c \
 	fe-ircnet.c \
 	fe-ctcp.c \
