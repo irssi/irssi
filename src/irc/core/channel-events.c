@@ -330,7 +330,7 @@ static void event_kick(IRC_SERVER_REC *server, const char *data)
 
 static void event_invite(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel;
+	char *params, *channel, *shortchan;
 
 	g_return_if_fail(data != NULL);
 
@@ -341,6 +341,13 @@ static void event_invite(IRC_SERVER_REC *server, const char *data)
 		CHANNEL_SETUP_REC *setup;
 
 		setup = channel_setup_find(channel, server->connrec->chatnet);
+		if (setup == NULL && channel[0] == '!' &&
+		    strlen(channel) > 6) {
+			shortchan = g_strdup_printf("!%s", channel+6);
+			setup = channel_setup_find(shortchan,
+						   server->connrec->chatnet);
+			g_free(shortchan);
+		}
 		if (setup != NULL && setup->autojoin && settings_get_bool("join_auto_chans_on_invite"))
 			server->channels_join(SERVER(server), channel, TRUE);
 	}
