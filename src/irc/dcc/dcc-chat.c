@@ -574,7 +574,7 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 /* DCC CHAT: text received */
 static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 {
-	char *cmd, *ptr;
+	char *event, *cmd, *ptr;
 	int reply;
 
 	g_return_if_fail(IS_DCC_CHAT(dcc));
@@ -600,23 +600,29 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 		return;
 
 	/* get ctcp command, remove \001 chars */
-	cmd = g_strconcat(reply ? "dcc reply " : "dcc ctcp ", msg+1, NULL);
-	if (cmd[strlen(cmd)-1] == 1) cmd[strlen(cmd)-1] = '\0';
+	event = g_strconcat(reply ? "dcc reply " : "dcc ctcp ", msg+1, NULL);
+	if (event[strlen(event)-1] == 1) event[strlen(event)-1] = '\0';
 
-	ptr = strchr(cmd+(reply ? 10 : 9), ' ');
+        cmd = event + (reply ? 10 : 9);
+	ptr = strchr(cmd, ' ');
 	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
 
-	g_strdown(cmd+9);
-	if (!signal_emit(cmd, 2, ptr, dcc)) {
+	cmd = g_strdup(cmd);
+	g_strup(cmd);
+
+	g_strdown(event+9);
+	if (!signal_emit(event, 2, dcc, ptr)) {
 		signal_emit(reply ? "default dcc reply" :
-			    "default dcc ctcp", 2, msg, dcc);
+			    "default dcc ctcp", 3, dcc, cmd, ptr);
 	}
-	g_free(cmd);
+
+        g_free(cmd);
+	g_free(event);
 
 	signal_stop();
 }
 
-static void dcc_ctcp_redirect(const char *msg, CHAT_DCC_REC *dcc)
+static void dcc_ctcp_redirect(CHAT_DCC_REC *dcc, const char *msg)
 {
 	g_return_if_fail(msg != NULL);
 	g_return_if_fail(IS_DCC_CHAT(dcc));
@@ -625,7 +631,7 @@ static void dcc_ctcp_redirect(const char *msg, CHAT_DCC_REC *dcc)
 		    dcc->nick, "dcc", dcc->mynick, dcc);
 }
 
-static void dcc_ctcp_reply_redirect(const char *msg, CHAT_DCC_REC *dcc)
+static void dcc_ctcp_reply_redirect(CHAT_DCC_REC *dcc, const char *msg)
 {
 	g_return_if_fail(msg != NULL);
 	g_return_if_fail(IS_DCC_CHAT(dcc));

@@ -1,7 +1,7 @@
 /*
  fe-dcc-chat.c : irssi
 
-    Copyright (C) 1999-2001 Timo Sirainen
+    Copyright (C) 1999-2002 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@
 #include "fe-messages.h"
 
 #include "chat-completion.h"
+
+void fe_dcc_chat_messages_init(void);
+void fe_dcc_chat_messages_deinit(void);
 
 static int autocreate_dccquery;
 
@@ -95,17 +98,15 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
         else
 		freemsg = NULL;
 
-	if (query_find(NULL, sender) == NULL)
+	if (query == NULL)
 		completion_last_message_add(sender);
-	printformat(NULL, sender, MSGLEVEL_DCCMSGS,
-		    query != NULL ? IRCTXT_DCC_MSG_QUERY :
-		    IRCTXT_DCC_MSG, dcc->id, msg);
+	signal_emit("message dcc", 2, dcc, msg);
 
 	g_free_not_null(freemsg);
 	g_free(sender);
 }
 
-static void dcc_chat_action(const char *msg, CHAT_DCC_REC *dcc)
+static void dcc_chat_action(CHAT_DCC_REC *dcc, const char *msg)
 {
 	char *sender;
 
@@ -115,22 +116,16 @@ static void dcc_chat_action(const char *msg, CHAT_DCC_REC *dcc)
 	sender = g_strconcat("=", dcc->id, NULL);
 	if (query_find(NULL, sender) == NULL)
 		completion_last_message_add(sender);
-	printformat(NULL, sender, MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS,
-		    IRCTXT_ACTION_DCC, dcc->id, msg);
+
+	signal_emit("message dcc action", 2, dcc, msg);
 	g_free(sender);
 }
 
-static void dcc_chat_ctcp(const char *msg, CHAT_DCC_REC *dcc)
+static void dcc_chat_ctcp(CHAT_DCC_REC *dcc, const char *cmd, const char *data)
 {
-	char *sender;
-
 	g_return_if_fail(IS_DCC_CHAT(dcc));
-	g_return_if_fail(msg != NULL);
 
-	sender = g_strconcat("=", dcc->id, NULL);
-	printformat(NULL, sender, MSGLEVEL_DCC,
-		    IRCTXT_DCC_CTCP, dcc->id, msg);
-	g_free(sender);
+	signal_emit("message dcc ctcp", 3, dcc, cmd, data);
 }
 
 static void dcc_error_ctcp(const char *type, const char *data,
@@ -233,7 +228,6 @@ static void sig_dcc_list_print(CHAT_DCC_REC *dcc)
 
 static void cmd_msg(const char *data)
 {
-        QUERY_REC *query;
 	CHAT_DCC_REC *dcc;
 	char *text, *target;
 	void *free_arg;
@@ -254,13 +248,10 @@ static void cmd_msg(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
-		query = query_find(NULL, target);
-
-		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-			    query != NULL ? IRCTXT_OWN_DCC_QUERY :
-			    IRCTXT_OWN_DCC, dcc->mynick, target+1, text);
-		if (query == NULL)
+		if (query_find(NULL, target) == NULL)
 			completion_last_message_add(target);
+
+                signal_emit("message dcc own", 2, dcc, text);
 	}
 
 	cmd_params_free(free_arg);
@@ -270,18 +261,13 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	CHAT_DCC_REC *dcc;
 
-	g_return_if_fail(data != NULL);
-
 	dcc = item_get_dcc(item);
-	if (dcc == NULL) return;
-
-        printformat(NULL, item->name, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-                    IRCTXT_OWN_DCC_ACTION_QUERY, dcc->mynick, item->name, data);
+	if (dcc != NULL)
+		signal_emit("message dcc own_action", 2, dcc, data);
 }
 
 static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-        QUERY_REC *query;
 	CHAT_DCC_REC *dcc;
 	char *target, *text;
 	void *free_arg;
@@ -304,13 +290,10 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
-		query = query_find(NULL, target);
-
-		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-			    query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
-			    IRCTXT_OWN_DCC_ACTION, dcc->mynick, target, text);
-		if (query == NULL)
+		if (query_find(NULL, target) == NULL)
 			completion_last_message_add(target);
+
+		signal_emit("message dcc own_action", 2, dcc, text);
 	}
 	cmd_params_free(free_arg);
 }
@@ -343,8 +326,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		g_strup(ctcpcmd);
-		printformat(server, target, MSGLEVEL_DCC, IRCTXT_OWN_DCC_CTCP,
-			    target, ctcpcmd, ctcpdata);
+		signal_emit("message dcc own_ctcp", 3, dcc, ctcpcmd, ctcpdata);
 	}
 
 	cmd_params_free(free_arg);
@@ -361,6 +343,8 @@ static void read_settings(void)
 void fe_dcc_chat_init(void)
 {
 	read_settings();
+	fe_dcc_chat_messages_init();
+
 	signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
 	signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
 	signal_add("dcc closed", (SIGNAL_FUNC) dcc_closed);
@@ -383,6 +367,8 @@ void fe_dcc_chat_init(void)
 
 void fe_dcc_chat_deinit(void)
 {
+	fe_dcc_chat_messages_deinit();
+
 	signal_remove("dcc request", (SIGNAL_FUNC) dcc_request);
 	signal_remove("dcc connected", (SIGNAL_FUNC) dcc_connected);
 	signal_remove("dcc closed", (SIGNAL_FUNC) dcc_closed);

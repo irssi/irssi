@@ -298,6 +298,14 @@ fe-irc-messages.c:
  "message irc own_ctcp", SERVER_REC, char *cmd, char *data, char *target
  "message irc ctcp", SERVER_REC, char *msg, char *nick, char *address, char *target
 
+dcc/fe-dcc-chat-messages.c:
+ "message dcc own", DCC_REC *dcc, char *msg
+ "message dcc own_action", DCC_REC *dcc, char *msg
+ "message dcc own_ctcp", DCC_REC *dcc, char *cmd, char *data
+ "message dcc", DCC_REC *dcc, char *msg
+ "message dcc action", DCC_REC *dcc, char *msg
+ "message dcc ctcp", DCC_REC *dcc, char *cmd, char *data
+
 Text FE
 -------
 

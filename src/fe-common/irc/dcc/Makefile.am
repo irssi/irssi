@@ -13,6 +13,7 @@ INCLUDES = \
 libfe_irc_dcc_a_SOURCES = \
 	fe-dcc.c \
 	fe-dcc-chat.c \
+	fe-dcc-chat-messages.c \
 	fe-dcc-get.c \
 	fe-dcc-send.c \
 	module-formats.c
