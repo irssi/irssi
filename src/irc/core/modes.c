@@ -198,11 +198,11 @@ static void mode_set_arg(IRC_SERVER_REC *server, GString *str,
 		mode_add_sorted(server, str, mode, arg, user);
 }
 
-/* Mode that needs a parameter of a mask for both setting and removing (eg: bans) */
+/* Mode that needs a parameter of a mask for both setting and removing
+   (eg: bans) */
 void modes_type_a(IRC_CHANNEL_REC *channel, const char *setby, char type,
 		  char mode, char *arg, GString *newmode)
 {
-	/* Currently only +b is dealt with */
 	if (mode == 'b') {
 		if (type == '+')
 			banlist_add(channel, arg, setby, time(NULL));
@@ -251,6 +251,26 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 	int umode = (unsigned char) mode;
 	nick_mode_change(channel, arg, channel->server->modes[umode].prefix,
 			 type, setby);
+
+	if (g_strcasecmp(channel->server->nick, arg) == 0) {
+		/* see if we need to update channel->chanop */
+		const char *prefix =
+			g_hash_table_lookup(channel->server->isupport, "PREFIX");
+		if (*prefix == '(') {
+			prefix++;
+			while (*prefix != ')' && *prefix != '\0') {
+				if (*prefix == mode) {
+					channel->chanop = type == '+';
+					break;
+				}
+				if (*prefix == 'o')
+					break;
+			}
+		} else {
+			if (mode == 'o' || mode == 'O')
+				channel->chanop = type == '+';
+		}
+	}
 }
 
 int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode)
