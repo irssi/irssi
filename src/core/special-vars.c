@@ -476,9 +476,14 @@ void eval_special_string(const char *cmd, const char *data,
 {
 	const char *cmdchars;
 	char *orig, *str, *start, *ret;
-	int arg_used;
+	int arg_used, arg_used_ever;
+	GSList *commands;
 
+	commands = NULL;
+	arg_used_ever = FALSE;
 	cmdchars = settings_get_str("cmdchars");
+
+	/* get a list of all the commands to run */
 	orig = start = str = g_strdup(cmd);
 	do {
 		if (is_split_char(str, start))
@@ -490,6 +495,8 @@ void eval_special_string(const char *cmd, const char *data,
 
 		ret = parse_special_string(start, server, item,
 					   data, &arg_used);
+		if (arg_used) arg_used_ever = TRUE;
+
 		if (strchr(cmdchars, *ret) == NULL) {
                         /* no command char - let's put it there.. */
 			char *old = ret;
@@ -497,19 +504,26 @@ void eval_special_string(const char *cmd, const char *data,
 			ret = g_strdup_printf("%c%s", *cmdchars, old);
 			g_free(old);
 		}
-		if (!arg_used && *data != '\0') {
-			/* append the string with all the arguments */
+		commands = g_slist_append(commands, ret);
+		start = str;
+	} while (*start != '\0');
+
+	/* run the command, if no arguments were ever used, append all of them
+	   after each command */
+	while (commands != NULL) {
+		ret = commands->data;
+
+		if (!arg_used_ever && *data != '\0') {
 			char *old = ret;
 
 			ret = g_strconcat(old, " ", data, NULL);
 			g_free(old);
 		}
 		signal_emit("send command", 3, ret, server, item);
+
 		g_free(ret);
-
-		start = str;
-	} while (*start != '\0');
-
+		commands = g_slist_remove(commands, commands->data);
+	}
 	g_free(orig);
 }
 

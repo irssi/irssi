@@ -429,12 +429,14 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 	/* get all the options, then remove the known ones. there should
 	   be only one left - the server tag. */
 	list = hashtable_get_keys(optlist);
-	for (tmp = list; tmp != NULL; tmp = next) {
-		char *option = tmp->data;
-		next = tmp->next;
+	if (cmd != NULL) {
+		for (tmp = list; tmp != NULL; tmp = next) {
+			char *option = tmp->data;
+			next = tmp->next;
 
-		if (command_have_option(cmd, option))
-			list = g_slist_remove(list, option);
+			if (command_have_option(cmd, option))
+				list = g_slist_remove(list, option);
+		}
 	}
 
 	if (list == NULL)
