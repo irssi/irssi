@@ -70,7 +70,7 @@ void printformat_module_dest_args(const char *module, TEXT_DEST_REC *dest,
 
 	str = format_get_text_theme_charargs(theme, module, dest,
 					     formatnum, arglist);
-	if (*str != '\0') print_line(dest, str);
+	if (str != NULL && *str != '\0') print_line(dest, str);
 	g_free(str);
 }
 
