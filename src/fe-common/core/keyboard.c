@@ -279,7 +279,7 @@ static void read_keyboard_config(void)
 	}
 }
 
-static void cmd_show_keys(const char *searchkey)
+static void cmd_show_keys(const char *searchkey, int full)
 {
 	GSList *info, *key;
         int len;
@@ -291,7 +291,8 @@ static void cmd_show_keys(const char *searchkey)
 		for (key = rec->keys; key != NULL; key = key->next) {
 			KEY_REC *rec = key->data;
 
-			if (len == 0 || strncmp(rec->key, searchkey, len) == 0) {
+			if ((len == 0 || g_strncasecmp(rec->key, searchkey, len) == 0) &&
+			    (!full || rec->key[len] == '\0')) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_BIND_KEY,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
 			}
@@ -313,12 +314,12 @@ static void cmd_bind(const char *data)
                 key_configure_remove(key);
 	} else if (*id == '\0') {
 		/* show some/all keys */
-                cmd_show_keys(key);
+                cmd_show_keys(key, FALSE);
 	} else if (key_info_find(id) == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, IRCTXT_BIND_UNKNOWN_ID, id);
 	else {
 		key_configure_add(id, key, keydata);
-		cmd_show_keys(key);
+		cmd_show_keys(key, TRUE);
 	}
 
         cmd_params_free(free_arg);
