@@ -65,10 +65,7 @@ const char *get_irssi_config(void);
 /* max. size for %d */
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)
 
-#define g_free_not_null(a) \
-	G_STMT_START { \
-	  if (a) g_free(a); \
-	} G_STMT_END
+#define g_free_not_null(a) g_free(a)
 
 #define g_free_and_null(a) \
 	G_STMT_START { \
