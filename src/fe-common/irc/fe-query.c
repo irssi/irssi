@@ -126,22 +126,30 @@ static void cmd_wquery(const char *data, void *server, WI_ITEM_REC *item)
 	signal_remove("query created", (SIGNAL_FUNC) signal_query_created_curwin);
 }
 
-static void sig_window_changed(WINDOW_REC *window)
+static int window_has_query(WINDOW_REC *window)
 {
 	GSList *tmp;
 
+	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
+		if (irc_item_query(tmp->data))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static void sig_window_changed(WINDOW_REC *window, WINDOW_REC *old_window)
+{
 	if (query_auto_close <= 0)
 		return;
 
-	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
-		if (irc_item_query(tmp->data))
-			break;
-	}
-	if (tmp == NULL) return; /* no queries in window */
-
 	/* reset the window's last_line timestamp so that query doesn't get
-	   closed immediately after switched to the window. */
-        window->last_line = time(NULL);
+	   closed immediately after switched to the window, or after changed
+	   to some other window from it */
+	if (window_has_query(window))
+		window->last_line = time(NULL);
+	if (window_has_query(old_window))
+		old_window->last_line = time(NULL);
 }
 
 static int sig_query_autoclose(void)

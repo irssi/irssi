@@ -129,14 +129,17 @@ void window_destroy(WINDOW_REC *window)
 
 void window_set_active(WINDOW_REC *window)
 {
+	WINDOW_REC *old_window;
+
 	if (window == active_win)
 		return;
 
+	old_window = active_win;
 	active_win = window;
         windows = g_slist_remove(windows, active_win);
 	windows = g_slist_prepend(windows, active_win);
 
-	signal_emit("window changed", 1, active_win);
+	signal_emit("window changed", 2, active_win, old_window);
 }
 
 void window_change_server(WINDOW_REC *window, void *server)
