@@ -955,7 +955,7 @@ void statusbar_redraw_dirty(void)
 {
 	GSList *tmp;
 
-	if (statusbar_recreate_items) {
+	if (statusbar_need_recreate_items) {
 		statusbar_need_recreate_items = FALSE;
 		statusbars_recreate_items();
 	}
