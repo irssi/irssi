@@ -107,7 +107,6 @@
 
  - autoaway when idling
  - nickserv support (automatic /msg nickserv identify password)
- - /set colors on|off
  - /exec
  - itext:
      - save/find text
@@ -115,8 +114,6 @@
        mouse...
      - if some other window has got much text, switching to it first time
        takes some time..?
- - possibility to display different colors in nicks from different people..
-   and different colors for word hilighting too
  - exceptions for ignoring
  - editor in setup for ~/.irssi/startup
  - gui help

@@ -1,4 +1,4 @@
-v0.7.22 2000-01-13  Timo Sirainen <cras@irccrew.org> [stable]
+v0.7.22 2000-01-17  Timo Sirainen <cras@irccrew.org> [stable]
 
 	+ configure displays a summary of things to compile
 	+ /set toggle_use_colors = yes|no, sets colors on/off in irssi-text
@@ -8,6 +8,12 @@ v0.7.22 2000-01-13  Timo Sirainen <cras@irccrew.org> [stable]
 	+ When connection is lost to server, irssi will remember the channels
 	  in windows. After reconnected, (auto)joining to same channels will
 	  join the channels to the old windows.
+	+ Improved hilighting: You can specify what color to hilight the text
+	  with, to channel field type the (mirc) color number, like
+	  "4 #blah" hilights the text with red in channel #blah, both color
+	  and channel(s) are optional. You can also hilight nicks' colors, to
+	  text field type "NICK:nick!mask", like NICK:nick, or
+	  NICK:*!*@*.blah.fi hilights people from blah.fi domain
 	- Modeless channels (+channel) didn't get synced ever..
 	- Some kB/s messages displayed wrong values when resuming DCC
 	  transfers. Also, kB/s is now displayed with two decimals

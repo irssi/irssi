@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-01-13 02:08+0200\n"
+"POT-Creation-Date: 2000-01-16 17:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1425,7 +1425,7 @@ msgstr "Ok"
 msgid "Apply"
 msgstr "Zastosuj"
 
-#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:446
+#: src/gui-gnome/gtk-specific.c:68 src/gui-gnome/gui-mainwindows.c:445
 #: src/gui-gnome/setup-colors.c:195
 msgid "Cancel"
 msgstr "Anuluj"
@@ -1606,39 +1606,39 @@ msgstr ""
 msgid "Away: %s"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:778
+#: src/gui-gnome/gui-mainwindows.c:783
 msgid "Nick completion"
 msgstr "Uzupe³nianie nicków"
 
-#: src/gui-gnome/gui-mainwindows.c:779
+#: src/gui-gnome/gui-mainwindows.c:784
 msgid "Check word replaces"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:781
+#: src/gui-gnome/gui-mainwindows.c:786
 msgid "Previous window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:782
+#: src/gui-gnome/gui-mainwindows.c:787
 msgid "Next window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:786
+#: src/gui-gnome/gui-mainwindows.c:792
 msgid "Command history"
 msgstr "Historial poleceñ"
 
-#: src/gui-gnome/gui-mainwindows.c:788
+#: src/gui-gnome/gui-mainwindows.c:794
 msgid "Previous page in window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:789
+#: src/gui-gnome/gui-mainwindows.c:795
 msgid "Next page in window"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:791
+#: src/gui-gnome/gui-mainwindows.c:797
 msgid "Insert special character"
 msgstr ""
 
-#: src/gui-gnome/gui-mainwindows.c:802
+#: src/gui-gnome/gui-mainwindows.c:808
 msgid "Change window"
 msgstr ""
 
