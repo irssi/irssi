@@ -323,21 +323,12 @@ command_bind(cmd, category, func)
 	char *category
 	char *func
 CODE:
-	char *signal;
-
 	if (*category == '\0') category = "Perl scripts' commands";
-	command_bind(cmd, category, NULL);
-	signal = g_strconcat("command ", cmd, NULL);
-	perl_signal_add(signal, func);
-	g_free(signal);
+	perl_command_bind(cmd, category, func);
 
 void
 command_unbind(cmd, func)
 	char *cmd
 	char *func
 CODE:
-	char *signal;
-
-	signal = g_strconcat("command ", cmd, NULL);
-	perl_signal_remove(signal, func);
-	g_free(signal);
+	perl_command_unbind(cmd, func);

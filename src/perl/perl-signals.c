@@ -5,6 +5,7 @@
 #include "servers.h"
 
 #include "perl-common.h"
+#include "perl-signals.h"
 
 typedef struct {
 	int signal_id;
@@ -201,7 +202,7 @@ void perl_signal_add_to(const char *signal, const char *func, int priority)
 static void perl_signal_destroy(PERL_SIGNAL_REC *rec)
 {
 	if (strncmp(rec->signal, "command ", 8) == 0)
-		command_unbind(rec->signal+8, NULL);
+		command_unbind(rec->signal+8, sig_func_default);
 
 	g_free(rec->signal);
 	g_free(rec->func);
@@ -258,6 +259,27 @@ void perl_signal_remove(const char *signal, const char *func)
 			perl_signal_remove_list(list, func);
 	}
 	g_free(fullfunc);
+}
+
+void perl_command_bind(const char *cmd, const char *category, const char *func)
+{
+	char *signal;
+
+	command_bind(cmd, category, sig_func_default);
+
+	signal = g_strconcat("command ", cmd, NULL);
+	perl_signal_add(signal, func);
+	g_free(signal);
+}
+
+void perl_command_unbind(const char *cmd, const char *func)
+{
+	char *signal;
+
+        /* perl_signal_remove() calls command_unbind() */
+	signal = g_strconcat("command ", cmd, NULL);
+	perl_signal_remove(signal, func);
+	g_free(signal);
 }
 
 static int signal_destroy_hash(void *key, GSList **list, const char *package)
