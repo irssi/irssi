@@ -266,14 +266,16 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 
 static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg;
+	char *params, *nick, *awaymsg, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	recoded = recode_in(awaymsg, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_AWAY, nick, awaymsg);
+		    IRCTXT_WHOIS_AWAY, nick, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
