@@ -582,7 +582,18 @@ void eval_special_string(const char *cmd, const char *data,
 			ret = g_strconcat(old, " ", data, NULL);
 			g_free(old);
 		}
+
+                server_ref(server);
 		signal_emit("send command", 3, ret, server, item);
+
+		if (!server_unref(server)) {
+                        /* the server was destroyed */
+			server = NULL;
+                        item = NULL;
+		}
+
+		/* FIXME: window item would need reference counting as well,
+		   eg. "/EVAL win close;say hello" wouldn't work now.. */
 
 		g_free(ret);
 		commands = g_slist_remove(commands, commands->data);
