@@ -137,10 +137,15 @@ static void cmd_toggle(const char *data)
         cmd_params_free(free_arg);
 }
 
+static int config_key_compare(CONFIG_NODE *node1, CONFIG_NODE *node2)
+{
+	return g_strcasecmp(node1->key, node2->key);
+}
+
 static void show_aliases(const char *alias)
 {
 	CONFIG_NODE *node;
-	GSList *tmp;
+	GSList *tmp, *list;
 	int aliaslen;
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_HEADER);
@@ -148,6 +153,8 @@ static void show_aliases(const char *alias)
 	node = iconfig_node_traverse("aliases", FALSE);
 	tmp = node == NULL ? NULL : node->value;
 
+	/* first get the list of aliases sorted */
+	list = NULL;
 	aliaslen = strlen(alias);
 	for (; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
@@ -158,9 +165,17 @@ static void show_aliases(const char *alias)
 		if (aliaslen != 0 && g_strncasecmp(node->key, alias, aliaslen) != 0)
 			continue;
 
+		list = g_slist_insert_sorted(list, node, (GCompareFunc) config_key_compare);
+	}
+
+	/* print the aliases */
+	for (tmp = list; tmp != NULL; tmp = tmp->next) {
+		CONFIG_NODE *node = tmp->data;
+
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_LINE,
 			    node->key, node->value);
 	}
+	g_slist_free(list);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_ALIASLIST_FOOTER);
 }
