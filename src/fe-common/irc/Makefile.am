@@ -25,6 +25,7 @@ libfe_common_irc_la_SOURCES = \
 	fe-common-irc.c \
 	irc-window-activity.c \
 	irc-hilight-text.c \
+        irc-modules.c \
 	module-formats.c 
 
 noinst_HEADERS = \

@@ -322,7 +322,7 @@ static void sig_channel_wholist(CHANNEL_REC *channel)
         g_slist_free(nicks);
 }
 
-void notifylist_init(void)
+void irc_notifylist_init(void)
 {
 	notifylist_read_config();
 
@@ -338,7 +338,7 @@ void notifylist_init(void)
 	signal_add("setup reread", (SIGNAL_FUNC) notifylist_read_config);
 }
 
-void notifylist_deinit(void)
+void irc_notifylist_deinit(void)
 {
 	notifylist_commands_deinit();
 	notifylist_ison_deinit();

@@ -1,0 +1,15 @@
+botnets = {
+  irssinet = {
+    nick = irssibot;
+    priority = 5;
+    autoconnect = yes;
+    uplinks = (
+      { host = "main.botnet.org"; password = "mypass"; }
+    );
+    downlinks = (
+      { password = "thepass"; valid_addrs = ( "192.168.0.*" ); },
+      { password = "blah"; valid_addrs = ( "*.botnet.org" ); },
+      { password = "localpass"; valid_addrs = ( "127.*" ); }
+    );
+  };
+};

@@ -41,7 +41,7 @@ static void get_source_host_ip(void)
 	/* FIXME: This will block! */
 	if (!source_host_ok) {
 		source_host_ok = *settings_get_str("hostname") != '\0' &&
-			net_gethostname(settings_get_str("hostname"), &ip) == 0;
+			net_gethostbyname(settings_get_str("hostname"), &ip) == 0;
 		if (source_host_ok) {
 			source_host_ip = g_new(IPADDR, 1);
                         memcpy(source_host_ip, &ip, sizeof(IPADDR));
@@ -100,7 +100,7 @@ create_addr_conn(const char *address, int port, const char *password,
 		/* resolve the IP and use it */
 		IPADDR ip;
 
-		if (net_gethostname(sserver->own_host, &ip) == 0) {
+		if (net_gethostbyname(sserver->own_host, &ip) == 0) {
 			if (conn->own_ip == NULL)
 				conn->own_ip = g_new(IPADDR, 1);
 			memcpy(conn->own_ip, &ip, sizeof(IPADDR));

@@ -508,7 +508,7 @@ static void event_no_such_nick(gchar *data, IRC_SERVER_REC *server)
     g_free(params);
 }
 
-void dcc_init(void)
+void irc_dcc_init(void)
 {
     dcc_conns = NULL;
     dcc_timeouttag = g_timeout_add(1000, (GSourceFunc) dcc_timeout_func, NULL);
@@ -542,7 +542,7 @@ void dcc_init(void)
     dcc_files_init();
 }
 
-void dcc_deinit(void)
+void irc_dcc_deinit(void)
 {
     dcc_chat_deinit();
     dcc_files_deinit();

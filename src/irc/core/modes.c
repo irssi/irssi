@@ -23,6 +23,7 @@
 #include "signals.h"
 
 #include "irc.h"
+#include "modes.h"
 #include "mode-lists.h"
 #include "nicklist.h"
 
@@ -322,9 +323,6 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel, const c
 	g_string_free(str, TRUE);
 }
 
-#define MODE_HAS_ARG(c) ((c) == 'b' || (c) == 'e' || (c) == 'I' || \
-	(c) == 'v' || (c) == 'o' || (c) == 'l' || (c) == 'k')
-
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *mode)
 {
 	char *modestr, *curmode, *orig;
@@ -343,7 +341,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 	curmode = cmd_get_param(&modestr);
 	for (; *curmode != '\0'; curmode++) {
-		if (count == server->connrec->max_modes && MODE_HAS_ARG(*curmode)) {
+		if (count == server->connrec->max_modes && HAS_MODE_ARG(*curmode)) {
 			irc_send_cmdv(server, "MODE %s %s%s", channel, tmode->str, targs->str);
 
 			count = 0;
@@ -353,7 +351,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel, const char *m
 
 		g_string_append_c(tmode, *curmode);
 
-		if (MODE_HAS_ARG(*curmode)) {
+		if (HAS_MODE_ARG(*curmode)) {
 			char *arg;
 
 			count++;

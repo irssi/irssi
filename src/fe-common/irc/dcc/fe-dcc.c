@@ -403,7 +403,7 @@ static void dcc_chat_closed(WINDOW_REC *window, WI_IRC_REC *item)
 	}
 }
 
-void fe_dcc_init(void)
+void fe_irc_dcc_init(void)
 {
     signal_add("dcc connected", (SIGNAL_FUNC) dcc_connected);
     signal_add("dcc rejected", (SIGNAL_FUNC) dcc_rejected);
@@ -432,7 +432,7 @@ void fe_dcc_init(void)
     theme_register(fecommon_irc_dcc_formats);
 }
 
-void fe_dcc_deinit(void)
+void fe_irc_dcc_deinit(void)
 {
     theme_unregister();
 

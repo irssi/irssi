@@ -24,7 +24,6 @@
 #include "signals.h"
 #include "core.h"
 
-#include "irc-core.h"
 #include "fe-common-core.h"
 #include "fe-common-irc.h"
 #include "themes.h"

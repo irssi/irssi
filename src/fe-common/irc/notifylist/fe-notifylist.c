@@ -224,7 +224,7 @@ static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
 		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
 }
 
-void fe_notifylist_init(void)
+void fe_irc_notifylist_init(void)
 {
 	theme_register(fecommon_irc_notifylist_formats);
 
@@ -235,7 +235,7 @@ void fe_notifylist_init(void)
 	signal_add("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
 }
 
-void fe_notifylist_deinit(void)
+void fe_irc_notifylist_deinit(void)
 {
 	theme_unregister();
 

@@ -22,7 +22,6 @@
 #include "args.h"
 #include "signals.h"
 #include "core.h"
-#include "irc-core.h"
 
 void irc_init(void);
 void irc_deinit(void);

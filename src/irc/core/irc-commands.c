@@ -70,7 +70,7 @@ static IRC_SERVER_REC *connect_server(const char *data)
 	if (*host != '\0') {
 		IPADDR ip;
 
-		if (net_gethostname(host, &ip) == 0) {
+		if (net_gethostbyname(host, &ip) == 0) {
 			if (conn->own_ip == NULL)
 				conn->own_ip = g_new(IPADDR, 1);
 			memcpy(conn->own_ip, &ip, sizeof(IPADDR));

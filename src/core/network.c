@@ -50,7 +50,18 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
 /* copy IP to sockaddr */
 inline void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
-        so->sin.sin_family = ip->family;
+	if (ip == NULL) {
+#ifdef HAVE_IPV6
+		so->sin6.sin6_family = AF_INET6;
+		so->sin6.sin6_addr.s_addr = in6addr_any;
+#else
+		so->sin.sin_family = AF_INET;
+		so->sin.sin_addr.s_addr = INADDR_ANY;
+#endif
+		return;
+	}
+
+	so->sin.sin_family = ip->family;
 #ifdef HAVE_IPV6
 	if (ip->family == AF_INET6)
 		memcpy(&so->sin6.sin6_addr, &ip->addr, sizeof(ip->addr.ip6));
@@ -97,7 +108,7 @@ int net_connect(const char *addr, int port, IPADDR *my_ip)
 
 	g_return_val_if_fail(addr != NULL, -1);
 
-	if (net_gethostname(addr, &ip) == -1)
+	if (net_gethostbyname(addr, &ip) == -1)
 		return -1;
 
 	return net_connect_ip(&ip, port, my_ip);
@@ -149,21 +160,22 @@ void net_disconnect(int handle)
 	close(handle);
 }
 
-/* Listen for connections on a socket */
+/* Listen for connections on a socket. if `my_ip' is NULL, listen in any
+   address. */
 int net_listen(IPADDR *my_ip, int *port)
 {
 	union sockaddr_union so;
 	int ret, handle, opt = 1;
 	socklen_t len = sizeof(so);
 
-	g_return_val_if_fail(my_ip != NULL, -1);
 	g_return_val_if_fail(port != NULL, -1);
 
-	/* create the socket */
 	memset(&so, 0, sizeof(so));
-        so.sin.sin_family = my_ip->family;
-	handle = socket(my_ip->family, SOCK_STREAM, 0);
+	sin_set_port(&so, *port);
+	sin_set_ip(&so, my_ip);
 
+	/* create the socket */
+	handle = socket(so.sin.sin_family, SOCK_STREAM, 0);
 	if (handle == -1)
 		return -1;
 
@@ -173,7 +185,6 @@ int net_listen(IPADDR *my_ip, int *port)
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(opt));
 
 	/* specify the address/port we want to listen in */
-	sin_set_port(&so, *port);
 	ret = bind(handle, &so.sa, sizeof(so));
 	if (ret < 0) {
 		close(handle);
@@ -190,8 +201,7 @@ int net_listen(IPADDR *my_ip, int *port)
 	*port = sin_get_port(&so);
 
 	/* start listening */
-	if (listen(handle, 1) < 0)
-	{
+	if (listen(handle, 1) < 0) {
 		close(handle);
 		return -1;
 	}
@@ -207,8 +217,6 @@ int net_accept(int handle, IPADDR *addr, int *port)
 	socklen_t addrlen;
 
 	g_return_val_if_fail(handle != -1, -1);
-	g_return_val_if_fail(addr != NULL, -1);
-	g_return_val_if_fail(port != NULL, -1);
 
 	addrlen = sizeof(so);
 	ret = accept(handle, &so.sa, &addrlen);
@@ -216,8 +224,8 @@ int net_accept(int handle, IPADDR *addr, int *port)
 	if (ret < 0)
 		return -1;
 
-	sin_get_ip(&so, addr);
-	*port = sin_get_port(&so);
+	if (addr != NULL) sin_get_ip(&so, addr);
+	if (port != NULL) *port = sin_get_port(&so);
 
 	fcntl(ret, F_SETFL, O_NONBLOCK);
 	return ret;
@@ -297,7 +305,7 @@ int net_getsockname(int handle, IPADDR *addr, int *port)
 
 /* Get IP address for host, returns 0 = ok,
    others = error code for net_gethosterror() */
-int net_gethostname(const char *addr, IPADDR *ip)
+int net_gethostbyname(const char *addr, IPADDR *ip)
 {
 #ifdef HAVE_IPV6
 	union sockaddr_union *so;
@@ -310,7 +318,6 @@ int net_gethostname(const char *addr, IPADDR *ip)
 
 	g_return_val_if_fail(addr != NULL, -1);
 
-	/* host name */
 #ifdef HAVE_IPV6
 	memset(ip, 0, sizeof(IPADDR));
 	memset(&req, 0, sizeof(struct addrinfo));
@@ -333,6 +340,50 @@ int net_gethostname(const char *addr, IPADDR *ip)
 
 	ip->family = AF_INET;
 	memcpy(&ip->addr, hp->h_addr, 4);
+#endif
+
+	return 0;
+}
+
+/* Get name for host, *name should be g_free()'d unless it's NULL.
+   Return values are the same as with net_gethostbyname() */
+int net_gethostbyaddr(IPADDR *ip, char **name)
+{
+#ifdef HAVE_IPV6
+	struct addrinfo req, *ai;
+	char hbuf[NI_MAXHOST];
+	int host_error;
+#else
+	struct hostent *hp;
+#endif
+	char ipname[MAX_IP_LEN];
+
+	g_return_val_if_fail(ip != NULL, -1);
+	g_return_val_if_fail(name != NULL, -1);
+
+	*name = NULL;
+#ifdef HAVE_IPV6
+	memset(&req, 0, sizeof(struct addrinfo));
+	req.ai_socktype = SOCK_STREAM;
+
+	/* save error to host_error for later use */
+	host_error = getaddrinfo(addr, NULL, &req, &ai);
+	if (host_error != 0)
+		return host_error;
+
+	if (getnameinfo(ai->ai_addr, ai->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, 0))
+		return 1;
+
+	/*FIXME: how does this work? *name = g_strdup(ai->???);*/
+	freeaddrinfo(ai);
+	return 1;
+#else
+	net_ip2host(ip, ipname);
+
+	hp = gethostbyaddr(ipname, strlen(ipname), AF_INET);
+	if (hp == NULL) return -1;
+
+	*name = g_strdup(hp->h_name);
 #endif
 
 	return 0;

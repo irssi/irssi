@@ -175,9 +175,9 @@ int server_connect(SERVER_REC *server)
 	server->handle = -1;
 
 	server->connect_pid =
-		net_gethostname_nonblock(server->connrec->proxy != NULL ?
-					 server->connrec->proxy : server->connrec->address,
-					 server->connect_pipe[1]);
+		net_gethostbyname_nonblock(server->connrec->proxy != NULL ?
+					   server->connrec->proxy : server->connrec->address,
+					   server->connect_pipe[1]);
 
 	server->connect_tag =
 		g_input_add(server->connect_pipe[0], G_INPUT_READ,

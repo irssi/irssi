@@ -258,7 +258,7 @@ static void read_settings(void)
 	}
 }
 
-void flood_init(void)
+void irc_flood_init(void)
 {
 	settings_add_int("flood", "flood_timecheck", 5000);
 	settings_add_int("flood", "flood_max_msgs", 4);
@@ -272,7 +272,7 @@ void flood_init(void)
 	autoignore_init();
 }
 
-void flood_deinit(void)
+void irc_flood_deinit(void)
 {
 	autoignore_deinit();
 

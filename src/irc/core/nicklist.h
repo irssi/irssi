@@ -1,6 +1,7 @@
 #ifndef __NICKLIST_H
 #define __NICKLIST_H
 
+#include "irc-server.h"
 #include "channels.h"
 
 typedef struct {

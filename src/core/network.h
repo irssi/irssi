@@ -52,7 +52,10 @@ int net_transmit(int handle, const char *data, int len);
 
 /* Get IP address for host, returns 0 = ok,
    others = error code for net_gethosterror() */
-int net_gethostname(const char *addr, IPADDR *ip);
+int net_gethostbyname(const char *addr, IPADDR *ip);
+/* Get name for host, *name should be g_free()'d unless it's NULL.
+   Return values are the same as with net_gethostbyname() */
+int net_gethostbyaddr(IPADDR *ip, char **name);
 /* get error of net_gethostname() */
 const char *net_gethosterror(int error);
 

@@ -31,6 +31,9 @@
 #include "themes.h"
 #include "completion.h"
 
+void fe_irc_modules_init(void);
+void fe_irc_modules_deinit(void);
+
 void fe_channels_init(void);
 void fe_channels_deinit(void);
 
@@ -42,9 +45,6 @@ void fe_irc_server_deinit(void);
 
 void fe_ctcp_init(void);
 void fe_ctcp_deinit(void);
-
-void fe_dcc_init(void);
-void fe_dcc_deinit(void);
 
 void fe_events_init(void);
 void fe_events_deinit(void);
@@ -60,12 +60,6 @@ void fe_query_deinit(void);
 
 void irc_window_activity_init(void);
 void irc_window_activity_deinit(void);
-
-void fe_notifylist_init(void);
-void fe_notifylist_deinit(void);
-
-void fe_flood_init(void);
-void fe_flood_deinit(void);
 
 void fe_netsplit_init(void);
 void fe_netsplit_deinit(void);
@@ -108,30 +102,28 @@ void fe_common_irc_init(void)
 	fe_irc_commands_init();
 	fe_irc_server_init();
 	fe_ctcp_init();
-	fe_dcc_init();
 	fe_events_init();
 	fe_events_numeric_init();
 	fe_ignore_init();
-	fe_notifylist_init();
-	fe_flood_init();
 	fe_netsplit_init();
 	fe_query_init();
 	completion_init();
 	irc_window_activity_init();
+
+	fe_irc_modules_init();
 }
 
 void fe_common_irc_deinit(void)
 {
+	fe_irc_modules_deinit();
+
 	fe_channels_deinit();
 	fe_irc_commands_deinit();
 	fe_irc_server_deinit();
 	fe_ctcp_deinit();
-	fe_dcc_deinit();
 	fe_events_deinit();
 	fe_events_numeric_deinit();
 	fe_ignore_deinit();
-	fe_notifylist_deinit();
-	fe_flood_deinit();
 	fe_netsplit_deinit();
 	fe_query_deinit();
 	completion_deinit();

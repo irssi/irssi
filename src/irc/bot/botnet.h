@@ -1,0 +1,124 @@
+#ifndef __BOT_BOTNET_H
+#define __BOT_BOTNET_H
+
+#include "nicklist.h"
+
+#define DEFAULT_BOTNET_PORT 2255
+#define DEFAULT_BOTNET_PRIORITY 5
+
+typedef struct _botnet_rec BOTNET_REC;
+
+typedef struct {
+	char *name;
+	GSList *nicks; /* NICK_RECs */
+	int chanop:1;
+
+	GSList *banlist;
+	GSList *ebanlist;
+	GSList *invitelist;
+
+	char *mode;
+	int limit;
+	char *key;
+} BOT_CHANNEL_REC;
+
+typedef struct {
+        char *tag; /* same as server->tag */
+	char *ircnet;
+        char *server;
+	char *nick;
+
+	GSList *channels;
+} BOT_IRCNET_REC;
+
+typedef struct {
+	BOTNET_REC *botnet;
+	void *link; /* NULL, BOT_UPLINK_REC or BOT_DOWNLINK_REC */
+
+	int uplink:1; /* this is our uplink */
+	int pass_ok:1; /* downlink's password was ok */
+	int connected:1; /* bot is in this botnet now */
+	int disconnect:1; /* just disconnecting this bot.. */
+	int master:1; /* this bot is the bot network's current master */
+
+	char *nick; /* bot's unique nick in botnet */
+	int priority;
+
+	int handle;
+	int read_tag;
+	void *buffer;
+
+	GSList *ircnets;
+} BOT_REC;
+
+typedef struct {
+	BOTNET_REC *botnet;
+
+	char *host;
+	int port;
+	char *password;
+
+	time_t last_connect;
+} BOT_UPLINK_REC;
+
+typedef struct {
+	BOTNET_REC *botnet;
+
+	GSList *valid_addrs; /* IP/host masks where this bot is allowed to connect */
+	char *password;
+} BOT_DOWNLINK_REC;
+
+struct _botnet_rec {
+	int connected:1;
+	int autoconnect:1;
+
+	char *name; /* botnet name */
+	char *nick; /* our nick in botnet */
+	int priority; /* our priority in botnet */
+
+	char *addr; /* in what address we should listen, NULL = all */
+	int port; /* what port we should listen, 0 = default, -1 = don't listen */
+
+	int listen_handle;
+	int listen_tag;
+
+	GSList *uplinks;
+	GSList *downlinks;
+
+	GNode *bots;
+	BOT_REC *uplink; /* our current uplink */
+	BOT_REC *master; /* link to current master */
+};
+
+void bot_send_cmd(BOT_REC *bot, char *data);
+void bot_send_cmdv(BOT_REC *bot, char *format, ...);
+
+/* broadcast a message to everyone in bot network, except for `except_bot'
+   if it's not NULL */
+void botnet_broadcast(BOTNET_REC *botnet, BOT_REC *except_bot,
+		      const char *source, const char *data);
+
+BOT_REC *botnet_find_master(BOTNET_REC *botnet, BOT_REC *old_master);
+void botnet_set_master(BOTNET_REC *botnet, BOT_REC *bot);
+
+BOTNET_REC *botnet_find(const char *name);
+GNode *bot_find_nick(BOTNET_REC *botnet, const char *nick);
+/* Return the bot who we should send the message if we wanted `nick' to get it. */
+GNode *bot_find_path(BOTNET_REC *botnet, const char *nick);
+
+BOT_DOWNLINK_REC *bot_downlink_find(BOTNET_REC *botnet, IPADDR *ip, const char *host);
+
+void bot_nick_destroy(BOT_CHANNEL_REC *rec, NICK_REC *nick);
+void bot_channel_destroy(BOT_IRCNET_REC *ircnet, BOT_CHANNEL_REC *rec);
+void bot_ircnet_destroy(BOT_REC *bot, BOT_IRCNET_REC *rec);
+
+void bot_disconnect(BOT_REC *bot);
+void bot_destroy(BOT_REC *bot);
+
+void bot_downlink_destroy(BOT_DOWNLINK_REC *rec);
+void bot_uplink_destroy(BOT_UPLINK_REC *rec);
+
+int botnet_connect(const char *network);
+void botnet_disconnect(BOTNET_REC *botnet);
+
+#endif

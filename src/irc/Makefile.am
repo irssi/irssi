@@ -1,4 +1,4 @@
-SUBDIRS = core dcc flood notifylist
+SUBDIRS = core bot dcc flood notifylist
 
 noinst_LTLIBRARIES = libirc.la
 

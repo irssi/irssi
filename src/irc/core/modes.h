@@ -4,6 +4,9 @@
 #include "server.h"
 #include "channels.h"
 
+#define HAS_MODE_ARG(c) ((c) == 'b' || (c) == 'e' || (c) == 'I' || \
+	(c) == 'v' || (c) == 'o' || (c) == 'l' || (c) == 'k')
+
 void modes_init(void);
 void modes_deinit(void);
 

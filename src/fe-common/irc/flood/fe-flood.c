@@ -43,7 +43,7 @@ static void event_autoignore_remove(IRC_SERVER_REC *server, AUTOIGNORE_REC *igno
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_AUTOUNIGNORE, ignore->nick);
 }
 
-void fe_flood_init(void)
+void fe_irc_flood_init(void)
 {
 	signal_add("autoignore new", (SIGNAL_FUNC) event_autoignore_new);
 	signal_add("autoignore remove", (SIGNAL_FUNC) event_autoignore_remove);
@@ -51,7 +51,7 @@ void fe_flood_init(void)
         theme_register(fecommon_irc_flood_formats);
 }
 
-void fe_flood_deinit(void)
+void fe_irc_flood_deinit(void)
 {
 	theme_unregister();
 

@@ -409,7 +409,7 @@ int match_wildcards(const char *cmask, const char *data)
 	}
 
 	ret = data != NULL && *data == '\0' && *mask == '\0';
-	free(newmask);
+	g_free(newmask);
 
 	return ret;
 }

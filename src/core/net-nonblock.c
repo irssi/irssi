@@ -39,7 +39,7 @@ SIMPLE_THREAD_REC;
 
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
-int net_gethostname_nonblock(const char *addr, int pipe)
+int net_gethostbyname_nonblock(const char *addr, int pipe)
 {
 	RESOLVED_IP_REC rec;
 	const char *errorstr;
@@ -60,7 +60,8 @@ int net_gethostname_nonblock(const char *addr, int pipe)
 	}
 
 	/* child */
-	rec.error = net_gethostname(addr, &rec.ip);
+        memset(&rec, 0, sizeof(rec));
+	rec.error = net_gethostbyname(addr, &rec.ip);
 	if (rec.error == 0) {
 		errorstr = NULL;
 	} else {
@@ -105,7 +106,7 @@ int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec)
 
 	if (rec->error) {
 		/* read error string */
-		rec->errorstr = g_malloc(rec->errlen);
+		rec->errorstr = g_malloc(rec->errlen+1);
                 len = 0;
 		do {
 			ret = read(pipe, rec->errorstr+len, rec->errlen-len);
@@ -120,6 +121,13 @@ int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec)
 	}
 
 	return 0;
+}
+
+/* Get host name, call func when finished */
+int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data)
+{
+        /*FIXME*/
+	return FALSE;
 }
 
 /* Kill the resolver child */
@@ -173,7 +181,7 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, int pipe)
 		return;
 	}
 
-	rec->tag = g_input_add(handle, G_INPUT_WRITE,
+	rec->tag = g_input_add(handle, G_INPUT_READ | G_INPUT_WRITE,
 			       (GInputFunction) simple_init, rec);
 }
 
@@ -192,7 +200,7 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip, NET_
 	}
 
 	/* start nonblocking host name lookup */
-	net_gethostname_nonblock(server, fd[1]);
+	net_gethostbyname_nonblock(server, fd[1]);
 
 	rec = g_new0(SIMPLE_THREAD_REC, 1);
 	rec->port = port;

@@ -1,0 +1,18 @@
+users =
+{
+  mynick = {
+    flags = oa;
+    masks = (
+      { mask="*!*@somewhere" },
+      { mask="*!*@somewhere.else"; not_flags=a; }
+    );
+  };
+
+  other = {
+    masks = ( { mask="*!nick@home.org"; } );
+    channels = (
+      { channel = "#irssi";flags = oa; },
+      { channel = "#chan";flags = oa; }
+    );
+  };
+};
