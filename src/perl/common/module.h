@@ -23,6 +23,7 @@
 #include "perl/perl-common.h"
 
 #include "fe-common/core/fe-windows.h"
+#include "fe-common/core/window-items.h"
 #include "fe-common/core/themes.h"
 #include "fe-common/core/keyboard.h"
 

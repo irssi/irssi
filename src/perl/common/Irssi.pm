@@ -18,5 +18,8 @@ require DynaLoader;
 
 bootstrap Irssi $VERSION;
 
+@Irssi::Channel::ISA = qw(Irssi::Windowitem);
+@Irssi::Query::ISA = qw(Irssi::Windowitem);
+
 1;
 

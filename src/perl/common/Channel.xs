@@ -41,6 +41,26 @@ channel_find(server, name)
 	Irssi::Server server
 	char *name
 
+void
+nicklist_get_same(server, nick)
+	Irssi::Server server
+        char *nick
+PREINIT:
+	GSList *list, *tmp;
+	HV *nickstash;
+PPCODE:
+	list = nicklist_get_same(server, nick);
+
+	nickstash = gv_stashpv("Irssi::Nick", 0);
+	for (tmp = list; tmp != NULL; tmp = tmp->next->next) {
+		CHANNEL_REC *channel = tmp->data;
+
+		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(channel))),
+					   irssi_get_stash(channel))));
+		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->next->data))), nickstash)));
+	}
+	g_slist_free(list);
+
 #*******************************
 MODULE = Irssi  PACKAGE = Irssi::Channel  PREFIX = channel_
 #*******************************
@@ -104,26 +124,6 @@ PPCODE:
 	stash = gv_stashpv("Irssi::Nick", 0);
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->data))), stash)));
-	}
-	g_slist_free(list);
-
-void
-nicklist_get_same(server, nick)
-	Irssi::Server server
-        char *nick
-PREINIT:
-	GSList *list, *tmp;
-	HV *nickstash;
-PPCODE:
-	list = nicklist_get_same(server, nick);
-
-	nickstash = gv_stashpv("Irssi::Nick", 0);
-	for (tmp = list; tmp != NULL; tmp = tmp->next->next) {
-		CHANNEL_REC *channel = tmp->data;
-
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(channel))),
-					   irssi_get_stash(channel))));
-		XPUSHs(sv_2mortal(sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(tmp->next->data))), nickstash)));
 	}
 	g_slist_free(list);
 
