@@ -71,16 +71,9 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
-static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
+static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
-
-	if (quitting || (xdiff == 0 && ydiff == 0))
-                return;
-
-        window->width += xdiff;
-	window->height = window->last_line-window->first_line+1;
-        mainwindow_set_screen_size(window);
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
@@ -91,6 +84,17 @@ static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 					  MAIN_WINDOW_TEXT_HEIGHT(window));
 		}
 	}
+}
+
+static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
+{
+	if (quitting || (xdiff == 0 && ydiff == 0))
+                return;
+
+        window->width += xdiff;
+	window->height = window->last_line-window->first_line+1;
+        mainwindow_set_screen_size(window);
+        mainwindow_resize_windows(window);
 
 	textbuffer_view_set_window(WINDOW_GUI(window->active)->view,
 				   window->screen_win);
@@ -532,8 +536,7 @@ int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
 
 	if (top+bottom != 0) {
 		mainwindow_set_screen_size(window);
-		gui_window_resize(window->active, window->width,
-				  MAIN_WINDOW_TEXT_HEIGHT(window));
+		mainwindow_resize_windows(window);
 	}
 
         return ret;
