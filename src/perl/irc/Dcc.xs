@@ -22,21 +22,39 @@ dcc_find_by_port(nick, port)
 	char *nick
 	int port
 
-void
-dcc_ctcp_message(server, target, chat, notice, msg)
-	Irssi::Irc::Server server
-	char *target
-	Irssi::Irc::Dcc chat
-	int notice
-	char *msg
+#*******************************
+MODULE = Irssi::Irc  PACKAGE = Irssi::Windowitem PREFIX = item_
+#*******************************
 
 Irssi::Irc::Dcc
 item_get_dcc(item)
-	void *item
+	Irssi::Windowitem item
+
+#*******************************
+MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Server
+#*******************************
+
+void
+dcc_ctcp_message(server, target, notice, msg)
+	Irssi::Irc::Server server
+	char *target
+	int notice
+	char *msg
+CODE:
+	dcc_ctcp_message(server, target, NULL, notice, msg);
 
 #*******************************
 MODULE = Irssi::Irc  PACKAGE = Irssi::Irc::Dcc  PREFIX = dcc_
 #*******************************
+
+void
+dcc_ctcp_message(chat, target, notice, msg)
+	Irssi::Irc::Dcc chat
+	char *target
+	int notice
+	char *msg
+CODE:
+	dcc_ctcp_message(chat->server, target, chat, notice, msg);
 
 void
 dcc_destroy(dcc)

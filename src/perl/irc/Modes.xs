@@ -7,31 +7,13 @@ modes_join(old, mode, channel)
         int channel
 
 #*******************************
-MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Server
-#*******************************
-
-void
-channel_set_singlemode(server, channel, nicks, mode)
-	Irssi::Irc::Server server
-	char *channel
-	char *nicks
-	char *mode
-
-void
-channel_set_mode(server, channel, mode)
-	Irssi::Irc::Server server
-	char *channel
-	char *mode
-
-#*******************************
 MODULE = Irssi::Irc	PACKAGE = Irssi::Irc::Channel  PREFIX = channel_
 #*******************************
 
-void
-parse_channel_modes(channel, setby, modestr)
+char *
+ban_get_mask(channel, nick)
 	Irssi::Irc::Channel channel
-	char *setby
-	char *modestr
+	char *nick
 
 Irssi::Irc::Ban
 banlist_add(channel, ban, nick, time)

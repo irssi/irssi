@@ -52,7 +52,9 @@ static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
 
 static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
 {
+        AV *av;
 	HV *stash;
+        GSList *tmp;
 
 	hv_store(hv, "nick", 4, new_pv(netsplit->nick), 0);
 	hv_store(hv, "address", 7, new_pv(netsplit->address), 0);
@@ -60,7 +62,13 @@ static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
 
 	stash = gv_stashpv("Irssi::Irc::Netsplitserver", 0);
 	hv_store(hv, "server", 6, new_bless(netsplit->server, stash), 0);
-	/*FIXME: add GSList *channels;*/
+
+	stash = gv_stashpv("Irssi::Irc::Netsplitchannel", 0);
+	av = newAV();
+	for (tmp = netsplit->channels; tmp != NULL; tmp = tmp->next) {
+		av_push(av, sv_2mortal(new_bless(tmp->data, stash)));
+	}
+	hv_store(hv, "channels", 7, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)
@@ -68,6 +76,12 @@ static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)
 	hv_store(hv, "server", 6, new_pv(rec->server), 0);
 	hv_store(hv, "destserver", 10, new_pv(rec->destserver), 0);
 	hv_store(hv, "count", 5, newSViv(rec->count), 0);
+}
+
+static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHANNEL_REC *rec)
+{
+	hv_store(hv, "name", 4, new_pv(rec->name), 0);
+	hv_store(hv, "nick", 4, irssi_bless(rec->nick), 0);
 }
 
 static void perl_autoignore_fill_hash(HV *hv, AUTOIGNORE_REC *ai)
@@ -98,6 +112,7 @@ static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ "Irssi::Irc::Dcc", (PERL_OBJECT_FUNC) perl_dcc_fill_hash },
 	{ "Irssi::Irc::Netsplit", (PERL_OBJECT_FUNC) perl_netsplit_fill_hash },
 	{ "Irssi::Irc::Netsplitserver", (PERL_OBJECT_FUNC) perl_netsplit_server_fill_hash },
+	{ "Irssi::Irc::Netsplitchannel", (PERL_OBJECT_FUNC) perl_netsplit_channel_fill_hash },
 	{ "Irssi::Irc::Autoignore", (PERL_OBJECT_FUNC) perl_autoignore_fill_hash },
 	{ "Irssi::Irc::Notifylist", (PERL_OBJECT_FUNC) perl_notifylist_fill_hash },
 
@@ -127,7 +142,6 @@ CODE:
 			 (PERL_OBJECT_FUNC) perl_irc_server_fill_hash);
         irssi_add_plains(irc_plains);
 
-INCLUDE: Bans.xs
 INCLUDE: IrcServer.xs
 INCLUDE: IrcChannel.xs
 INCLUDE: IrcQuery.xs

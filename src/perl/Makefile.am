@@ -61,7 +61,6 @@ CORE_SOURCES = \
 	common/module.h
 
 IRC_SOURCES = \
-	irc/Bans.xs \
 	irc/Dcc.xs \
 	irc/Flood.xs \
 	irc/IrcChannel.xs \

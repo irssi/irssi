@@ -46,17 +46,15 @@ Irssi::signal_stop();
 
 For example:
 
---------------------------------------------------------
-sub event_privmsg {
-  # $data = "nick/#channel :text"
-  my ($server, $data, $nick, $address) = @_;
-  my ($target, $text) = split(/ :/, $data, 2);
+  sub event_privmsg {
+    # $data = "nick/#channel :text"
+    my ($server, $data, $nick, $address) = @_;
+    my ($target, $text) = split(/ :/, $data, 2);
 
-  Irssi::signal_stop() if ($text =~ /free.*porn/ || $nick =~ /idiot/);
-}
+    Irssi::signal_stop() if ($text =~ /free.*porn/ || $nick =~ /idiot/);
+  }
 
 Irssi::signal_add("event privmsg", "event_privmsg")
---------------------------------------------------------
 
 This will hide all public or private messages that match the regexp
 "free.*porn" or the sender's nick contain the word "idiot". Yes, you
@@ -114,9 +112,10 @@ of all the information that are in objects are in "Object->{}" sections
 below.
 
 Commands are split in two groups, generic ones that could be used with
-any chat protocol, and IRC specific commands, you'll need to put
-"use Irssi::Irc;" to your scripts. IRC specific commands are listed
-after the generic ones.
+any chat protocol, and IRC specific commands. If you want to use IRC
+specific commands, or use IRC specific ->{data} in your scripts, you'll
+need to add "use Irssi::Irc" to your scripts. IRC specific commands are
+listed after the generic ones.
 
 
  *** General
@@ -759,162 +758,43 @@ Server::ignore_check(nick, host, channel, text, level)
   Return 1 if ignoring matched.
 
 
- *** Channel modes
+ ***
+ *** IRC specific functions. All objects below this are prefixed with Irc::
+ ***
 
-irc_get_mask(nick, host, flags)
-  Create IRC mask from nick!host.
-  flags = you need to combine these:
-  (FIXME: export the IRC_xxx defines to perl (or something))
-	IRC_MASK_NICK   0x01
-	IRC_MASK_USER   0x02
-	IRC_MASK_HOST   0x04
-	IRC_MASK_DOMAIN 0x08
+ *** IRC servers
 
-Ban::values()
-  Get some information about ban. This function returns a reference to
-  hash table. Hash table has keys:
-	"ban" - The ban
-	"setby" - Nick of who set the ban
-	"time" - Timestamp when ban was set
+Irc::Server->{}
+  (..contains all the same data as core Server object..)
+  real_address - Address the IRC server gives
+  usermode - User mode in server
+  userhost - Your user host in server
 
-Ban Channel::ban_add(ban, nick, time)
-  Add new ban. (!!)
+Irc::Connect->{}
+  (..contains all the same data as core Connect object..)
+  alternate_nick - Alternate nick to use if default nick is taken.
 
-Channel::ban_remove(ban)
-  Remove ban. (!!)
+Connect::connect()
+  Connect to IRC server.
 
-Ban Channel::ban_exception_add(ban, nick, time)
-  Add ban exception (!!)
-
-Channel::ban_exception_remove(ban)
-  Remove ban exception (!!)
-
-Channel::invitelist_add(mask)
-  Add invite (!!)
-
-Channel::invitelist_remove(mask)
-  Remove invite (!!)
-
-Channel::modes_parse_channel(setby, modestr)
-  Parse mode string (!!)
-
-Channel::ban_get_mask(nick)
-  Get ban mask for `nick'.
-
-Channel::modes_set(data, mode)
-  Set mode `mode' ("+o", "-o", etc.) to all nicks in `data'
-  separated with spaces.
-
-
- *** DCC
-
-Dcc::values()
-  Get some information about nick. This function returns a reference to
-  hash table. Hash table has keys:
-	"type" - Type of the DCC: chat, send, get
-	"created" - Unix time stamp when the DCC record was created
-
-	"server" - Server where the DCC was initiated.
-	"chat" - DCC chat record if the request came through DCC chat
-	"ircnet" - IRC network where the DCC was initiated.
-	"mynick" - Our nick to use in DCC chat.
-
-	"nick" - Other side's nick name.
-	"addr" - Other side's IP address.
-	"port" - Port we're connecting in.
-
-	"arg" - Given argument .. file name usually
-	"file" - The real file name which we use.
-
-	"size" - File size
-	"transfd" - Bytes transferred
-	"skipped" - Bytes skipped from start (resuming file)
-	"starttime" - Unix time stamp when the DCC transfer was started
-
-Dcc::destroy()
-  Destroy DCC connection. (!!)
-
-Dcc dcc_find_item(type, nick, arg)
-  Find DCC connection.
-
-Dcc dcc_find_by_port(nick, port)
-  Find DCC connection by port.
-
-dcc_ctcp_message(target, server, chat, notice, msg)
-  Send a CTCP message/notify to target. Send the CTCP via DCC chat if
-  `chat' is specified.
-
-Dcc::dcc_chat_send(data)
-  Send `data' to dcc chat.
-
-Dcc item_get_dcc(item)
-  If window item `item' is a query of a =nick, return DCC chat record
-  of nick.
-
- *** Netsplits
-
-Netsplit::values()
-  Get some information about netsplit. This function returns a reference to
-  hash table. Hash table has keys:
-	"nick" - Nick
-	"address" - Nick's host
-	"server" - The server nick was in
-	"destserver" - The other server where split occured.
-	"destroy" - Timestamp when this record should be destroyed
-	/*FIXME: add list of channels the nick was in;*/
-
-Netsplit Server::netsplit_find(nick, address)
-  Check if nick!address is on the other side of netsplit. Netsplit records
-  are automatically removed after 30 minutes (current default)..
-
-Nick Server::netsplit_find_channel(nick, address, channel)
-  Find nick record for nick!address in channel `channel'.
-
-
- *** Notify list
-
-notifylist_add(nick, ircnet)
-  Add `nick' to notify list in irc network `ircnet'
-
-Server notifylist_ison(nick, ircnets)
-  Check if `nick' is in IRC. `ircnets' is a space separated
-  list of irc networks. If it's empty string, all servers will be checked.
-
-Server::notifylist_ison_server(nick)
-  Check if `nick' is on IRC server.
-
-
- *** Plugins
-
-Plugin::values()
-  Get some information about plugin. This function returns a reference to
-  hash table. Hash table has keys:
-	"name" - Plugin name
-	"description" - Plugin description
-
-plugin_load(name, args)
-  Load plugin.
-
-plugin_get_description(name)
-  Get plugin description string.
-
-Plugin plugin_find(name)
-  Find plugin.
-
-
- *** IRC
-
-dccs() - return list of all dcc connections
+Server::get_channels(server)
+  Return a string of all channels (and keys, if any have them) in server,
+  like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g"
 
 Server::send_raw(cmd)
   Send raw message to server, it will be flood protected so you
   don't need to worry about it.
 
-Server::irc_send_cmd_split(cmd, arg, max_nicks)
-  Split the `cmd' into several commands so `arg' argument has only
+Server::send_raw_now(cmd)
+  Send raw message to server immediately without flood protection.
+
+Server::send_raw_split(cmd, nickarg, max_nicks)
+  Split the `cmd' into several commands so `nickarg' argument has only
   `max_nicks' number of nicks.
 
-  Example: $server->irc_send_cmd_split("KICK #channel nick1,nick2,nick3 :byebye", 2, 2);
+  Example:
+    $server->send_raw_split("KICK #channel nick1,nick2,nick3 :byebye", 2, 2);
+
   Irssi will send commands "KICK #channel nick1,nick2 :byebye" and
   "KICK #channel nick3 :byebye" to server.
 
@@ -922,15 +802,174 @@ Server::ctcp_send_reply(data)
   Send CTCP reply. This will be "CTCP flood protected" so if there's too
   many CTCP requests in buffer, this reply might not get sent.
 
-Autoignore::values()
-  Get some information about autoignore. This function returns a reference to
-  hash table. Hash table has keys:
-	"nick" - Ignored nick
-	"timeleft" - Seconds left to ignore
-	"level" - Ignoring level number
 
-Server::autoignore_add(type, nick)
-  Autoignore `nick' in server with level number `type'.
+ *** IRC channels
+
+Ban->{}
+  ban - The ban
+  setby - Nick of who set the ban
+  time - Timestamp when ban was set
+
+Channel
+Server::channel_create(name, automatic)
+  Create new channel.
+
+Channel::bans()
+  Return a list of bans in channel.
+
+Channel::ebans()
+  Return a list of ban exceptions in channel.
+
+Channel::invites()
+  Return invite list (+I) of channel.
+
+Channel::ban_get_mask(nick)
+  Get ban mask for `nick'.
+
+Channel::banlist_add(ban, nick, time)
+   Add a new ban to channel.
+
+Channel::banlist_remove(ban)
+   Remove a ban from channel.
+
+Channel::banlist_exception_add(ban, nick, time)
+   Add a new ban exception to channel.
+
+Channel::banlist_exception_remove(ban)
+   Remove a ban exception from channel.
+
+Channel::invitelist_add(mask)
+   Add a new invite mask to channel.
+
+Channel::invitelist_remove(mask)
+   Remove invite mask from channel.
+
+modes_join(old, mode, channel)
+  Add `mode' to `old' - return newly allocated mode. If `channel' is 1,
+  we're parsing channel mode and we should try to join mode arguments too.
+
+
+ *** DCC
+
+Dcc->{}
+  type - Type of the DCC: chat, send, get
+  created - Time stamp when the DCC record was created
+
+  server - Server where the DCC was initiated.
+  nick - Other side's nick name.
+
+  chat - Dcc chat record if the request came through DCC chat
+
+  ircnet - IRC network where the DCC was initiated.
+  mynick - Our nick to use in DCC chat.
+
+  arg - Given argument .. file name usually
+  file - The real file name which we use.
+
+  addr - Other side's IP address.
+  port - Port we're connecting in.
+
+  size - File size
+  transfd - Bytes transferred
+  skipped - Bytes skipped from start (resuming file)
+  starttime - Unix time stamp when the DCC transfer was started
+
+dccs() - return list of all dcc connections
+
+Dcc::destroy()
+  Destroy DCC connection.
+
+Dcc
+dcc_find_item(type, nick, arg)
+  Find DCC connection.
+
+Dcc
+dcc_find_by_port(nick, port)
+  Find DCC connection by port.
+
+Dcc
+Windowitem::get_dcc(item)
+  If `item' is a query of a =nick, return DCC chat record of nick.
+
+Dcc::chat_send(data)
+  Send `data' to dcc chat.
+
+Server::dcc_ctcp_message(target, notice, msg)
+Dcc::ctcp_message(target, notice, msg)
+  Send a CTCP message/notify to target.
+
+
+ *** Netsplits
+
+Netsplit->{}
+  nick - Nick
+  address - Nick's host
+  destroy - Timestamp when this record should be destroyed
+  server - Netsplitserver object
+  channels - list of channels (Netsplitchannel objects) the nick was in
+
+Netsplitserver->{}
+  server - The server nick was in
+  destserver - The other server where split occured.
+  count - Number of splits in server
+
+Netsplitchannel->{}
+  name - Channel name
+  nick - Nick object
+
+Netsplit
+Server::netsplit_find(nick, address)
+  Check if nick!address is on the other side of netsplit. Netsplit records
+  are automatically removed after 30 minutes (current default)..
+
+Nick
+Server::netsplit_find_channel(nick, address, channel)
+  Find nick record for nick!address in channel `channel'.
+
+
+ *** Notify list
+
+Notifylist->{}
+  mask - Notify nick mask
+  away_check - Notify away status changes
+  idle_check_time - Notify when idle time is reset and idle was bigger
+                    than this (seconds)
+  ircnets - List of ircnets (strings) the notify is checked
+
+notifies() - Return list of all notifies
+
+Notifylist
+notifylist_add(mask, ircnets, away_check, idle_check_time)
+  Add new item to notify list.
+
+notifylist_remove(mask)
+  Remove item from notify list.
+
+Notifylist
+notifylist_find(mask, ircnet)
+  Find notify.
+
+Server
+notifylist_ison(nick, serverlist)
+  Check if `nick' is in IRC. `serverlist' is a space separated
+  list of server tags. If it's empty string, all servers will be checked.
+
+Server::notifylist_ison_server(nick)
+  Check if `nick' is on IRC server.
+
+Notifylist::ircnets_match(ircnet)
+  Returns 1 if notify is checked in `ircnet'.
+
+
+ *** Autoignoring
+
+Autoignore->{}
+  nick - Ignored nick
+  timeleft - Seconds left to ignore
+  level - Ignoring level number
+
+Server::autoignore_add(nick, level)
+  Add new autoignore.
 
 Server::autoignore_remove(mask, level)
-  Remove autoignoring `nick' from server. `level' is a string.
+  Remove autoignore.

@@ -9,6 +9,7 @@ Irssi::Irc::Ban			T_PlainObj
 Irssi::Irc::Dcc			T_PlainObj
 Irssi::Irc::Netsplit		T_PlainObj
 Irssi::Irc::Netsplitserver	T_PlainObj
+Irssi::Irc::Netsplitchannel	T_PlainObj
 Irssi::Irc::Autoignore		T_PlainObj
 Irssi::Irc::Notifylist		T_PlainObj
 
