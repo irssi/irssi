@@ -262,10 +262,23 @@ abstracts = {
   # used for anything.
   sbend = " ";
 
+  prompt = "[$*] ";
+
   sb = " %c[%n$*%c]%n";
   sbmode = "(%c+%n$*)";
   sbaway = " (%GzZzZ%n)";
   sbservertag = ":$0 (change with ^X)";
 
-  prompt = "[$*] ";
+  # activity in statusbar
+
+  # ',' separator
+  sb_act_sep = "%c$*";
+  # normal text
+  sb_act_text = "%c$*";
+  # public message
+  sb_act_msg = "%W$*";
+  # hilight
+  sb_act_hilight = "%M$*";
+  # hilight with specified color, $0 = color, $1 = text
+  sb_act_hilight_color = "$0$1-%n";
 };

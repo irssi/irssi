@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "settings.h"
 
+#include "themes.h"
 #include "statusbar.h"
 #include "gui-entry.h"
 
@@ -118,14 +119,19 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	g_string_free(str, TRUE);
 }
 
-static char *get_activity_list(int normal, int hilight)
+static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 {
+        THEME_REC *theme;
 	GString *str;
 	GList *tmp;
-        char *ret;
+        char *ret, *name, *format, *value;
         int is_det;
 
 	str = g_string_new(NULL);
+
+	theme = window != NULL && window->active != NULL &&
+		window->active->theme != NULL ?
+		window->active->theme : current_theme;
 
 	for (tmp = activity_list; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *window = tmp->data;
@@ -134,26 +140,41 @@ static char *get_activity_list(int normal, int hilight)
 		if ((!is_det && !normal) || (is_det && !hilight))
                         continue;
 
-		g_string_append(str, "%c");
-                if (str->len > 2)
-			g_string_append_c(str, ',');
+                /* comma separator */
+		if (str->len > 0) {
+			value = theme_format_expand(theme, "{sb_act_sep ,}");
+			g_string_append(str, value);
+			g_free(value);
+		}
 
 		switch (window->data_level) {
 		case DATA_LEVEL_NONE:
 		case DATA_LEVEL_TEXT:
+			name = "{sb_act_text %d}";
 			break;
 		case DATA_LEVEL_MSG:
-                        g_string_append(str, "%W");
+			name = "{sb_act_msg %d}";
 			break;
 		default:
-			g_string_append(str, window->hilight_color == NULL ?
-					"%M" : window->hilight_color);
+                        if (window->hilight_color == NULL)
+				name = "{sb_act_hilight %d}";
+			else
+                                name = NULL;
 			break;
 		}
-		g_string_sprintfa(str, "%d", window->refnum);
 
-                /* make sure the background is returned to default */
-		g_string_append(str, "%n");
+		if (name != NULL)
+			format = g_strdup_printf(name, window->refnum);
+		else
+			format = g_strdup_printf("{sb_act_hilight_color %s %d}",
+						 window->hilight_color,
+						 window->refnum);
+
+		value = theme_format_expand(theme, format);
+		g_string_append(str, value);
+                g_free(value);
+
+		g_free(format);
 	}
 
 	ret = str->len == 0 ? NULL : str->str;
@@ -168,7 +189,7 @@ static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 {
 	char *actlist;
 
-	actlist = get_activity_list(TRUE, TRUE);
+	actlist = get_activity_list(item->bar->parent_window, TRUE, TRUE);
 	if (actlist == NULL) {
 		if (get_size_only)
 			item->min_size = item->max_size = 0;
