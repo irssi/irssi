@@ -272,8 +272,11 @@ static void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 	if (rec->priority > 0)
 		dest->hilight_priority = rec->priority;
 
-        g_free_not_null(dest->hilight_color);
-        dest->hilight_color = hilight_get_act_color(rec);
+	g_free_and_null(dest->hilight_color);
+	if (rec->act_color != NULL && strcmp(rec->act_color, "%n") == 0)
+		dest->level |= MSGLEVEL_NO_ACT;
+        else
+		dest->hilight_color = hilight_get_act_color(rec);
 }
 
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
