@@ -1,7 +1,43 @@
 #include "module.h"
 
-MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc::Channel  PREFIX = irc_
+MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc  PREFIX = irc_
 PROTOTYPES: ENABLE
+
+char *
+irc_get_mask(nick, address, flags)
+	char *nick
+	char *address
+	int flags
+
+int
+MASK_NICK()
+CODE:
+	RETVAL = IRC_MASK_NICK;
+OUTPUT:
+	RETVAL
+
+int
+MASK_USER()
+CODE:
+	RETVAL = IRC_MASK_USER;
+OUTPUT:
+	RETVAL
+
+int
+MASK_HOST()
+CODE:
+	RETVAL = IRC_MASK_HOST;
+OUTPUT:
+	RETVAL
+
+int
+MASK_DOMAIN()
+CODE:
+	RETVAL = IRC_MASK_DOMAIN;
+OUTPUT:
+	RETVAL
+
+MODULE = Irssi::Irc::Channel	PACKAGE = Irssi::Irc::Channel  PREFIX = irc_
 
 void
 bans(channel)
