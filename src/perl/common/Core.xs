@@ -348,3 +348,43 @@ pidwait_add(pid)
 void 
 pidwait_remove(pid)
 	int pid
+
+char *
+parse_special(cmd, data="", flags=0)
+	char *cmd
+	char *data
+	int flags
+CODE:
+	RETVAL = parse_special_string(cmd, NULL, NULL, data, NULL, flags);
+OUTPUT:
+	RETVAL
+
+#*******************************
+MODULE = Irssi	PACKAGE = Irssi::Server
+#*******************************
+
+char *
+parse_special(server, cmd, data="", flags=0)
+	Irssi::Server server
+	char *cmd
+	char *data
+	int flags
+CODE:
+	RETVAL = parse_special_string(cmd, server, NULL, data, NULL, flags);
+OUTPUT:
+	RETVAL
+
+#*******************************
+MODULE = Irssi	PACKAGE = Irssi::Windowitem
+#*******************************
+
+char *
+parse_special(item, cmd, data="", flags=0)
+	Irssi::Windowitem item
+	char *cmd
+	char *data
+	int flags
+CODE:
+	RETVAL = parse_special_string(cmd, item->server, item, data, NULL, flags);
+OUTPUT:
+	RETVAL

@@ -14,6 +14,7 @@
 #include "ignore.h"
 #include "settings.h"
 #include "masks.h"
+#include "special-vars.h"
 
 #include "chatnets.h"
 #include "servers.h"
