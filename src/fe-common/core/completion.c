@@ -193,19 +193,21 @@ GList *filename_complete(const char *path)
 
 	list = NULL;
 
-	realpath = strncmp(path, "~/", 2) != 0 ? g_strdup(path) :
-		g_strconcat(g_get_home_dir(), path+1, NULL);
-
+	/* get directory part of the path - expand ~/ */
+	realpath = convert_home(path);
 	dir = g_dirname(realpath);
-	dirp = opendir(dir);
-	g_free(dir);
 	g_free(realpath);
 
-	dir = g_dirname(path);
+	/* open directory for reading */
+	dirp = opendir(dir);
+	g_free(dir);
+	if (dirp == NULL) return NULL;
 
+	dir = g_dirname(path);
 	basename = g_basename(path);
 	len = strlen(basename);
 
+	/* add all files in directory to completion list */
 	while ((dp = readdir(dirp)) != NULL) {
 		if (dp->d_name[0] == '.') {
 			if (dp->d_name[1] == '\0' ||
