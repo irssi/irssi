@@ -84,9 +84,6 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	guint32 bytes;
 	int ret;
 
-	if (dcc->count_pos == 4)
-		return;
-
 	/* we need to get 4 bytes.. */
 	ret = net_receive(dcc->handle, dcc->count_buf+dcc->count_pos,
 			  4-dcc->count_pos);
