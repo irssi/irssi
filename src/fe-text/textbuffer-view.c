@@ -110,9 +110,10 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		if (cmd & LINE_COLOR_BG) {
 			/* set background color */
 			*color &= BGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
+			if ((cmd & LINE_COLOR_DEFAULT) == 0) {
+                                *color &= 0x70;
 				*color |= (cmd & 0x0f) << 4;
-			else {
+			} else {
 				*color |= ATTR_RESETBG;
                                 if (cmd & LINE_COLOR_BLINK)
 					*color |= ATTR_BLINK;
@@ -120,9 +121,10 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		} else {
 			/* set foreground color */
 			*color &= FGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
+			if ((cmd & LINE_COLOR_DEFAULT) == 0) {
+                                *color &= 0x0f;
 				*color |= cmd & 0x0f;
-			else {
+			} else {
 				*color |= ATTR_RESETFG;
                                 if (cmd & LINE_COLOR_BOLD)
 					*color |= ATTR_BOLD;
