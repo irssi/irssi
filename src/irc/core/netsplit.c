@@ -217,7 +217,7 @@ NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
 int quitmsg_is_split(const char *msg)
 {
 	const char *host1, *host2;
-        int prev, len;
+        int prev, len, host1_dot, host2_dot;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
 
@@ -232,14 +232,14 @@ int quitmsg_is_split(const char *msg)
 	   domains which breaks that code too.
 
 	   So, the check is currently just:
-             - host1[.domain1] host2[.domain2]
+             - host1.domain1 host2.domain2
 	     - only 1 space
 	     - no double-dots (".." - probably useless check)
 	     - hosts/domains can't start or end with a dot
              - the two hosts can't be identical (probably useless check)
 	   */
-        host1 = msg;
-        host2 = NULL; prev = '\0'; len = 0;
+	host1 = msg; host2 = NULL;
+	prev = '\0'; len = 0; host1_dot = host2_dot = 0;
 	while (*msg != '\0') {
 		if (*msg == ' ') {
 			if (prev == '.' || prev == '\0') {
@@ -249,6 +249,8 @@ int quitmsg_is_split(const char *msg)
 			}
 			if (host2 != NULL)
 				return FALSE; /* only one space allowed */
+			if (!host1_dot)
+                                return FALSE; /* host1 didn't have domain */
                         host2 = msg+1; len = -1;
 		} else if (*msg == '.') {
 			if (prev == '\0' || prev == ' ' || prev == '.') {
@@ -256,13 +258,18 @@ int quitmsg_is_split(const char *msg)
 				   and can't have ".." */
 				return FALSE;
 			}
+
+			if (host2 != NULL)
+				host2_dot = TRUE;
+			else
+                                host1_dot = TRUE;
 		}
 
 		prev = *msg;
                 msg++; len++;
 	}
 
-	if (host2 == NULL || prev == '.')
+	if (!host2_dot || prev == '.')
                 return FALSE;
 
 	if (len == (int) (host2-host1)-1 &&
