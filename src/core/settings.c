@@ -76,12 +76,12 @@ const char *settings_get_str(const char *key)
 	return iconfig_get_str("settings", key, settings_get_default_str(key));
 }
 
-const int settings_get_int(const char *key)
+int settings_get_int(const char *key)
 {
 	return iconfig_get_int("settings", key, settings_get_default_int(key));
 }
 
-const int settings_get_bool(const char *key)
+int settings_get_bool(const char *key)
 {
 	return iconfig_get_bool("settings", key,
 				settings_get_default_int(key));

@@ -37,7 +37,7 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 			   void *data)
 {
 	IRSSI_INPUT_REC *rec = data;
-	GInputCondition icond = 0;
+	GInputCondition icond = (GInputCondition)0;
 
 	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
 		/* error, we have to call the function.. */
@@ -73,7 +73,7 @@ int g_input_add_full(int source, int priority, GInputCondition condition,
 	rec->function = function;
 	rec->data = data;
 
-	cond = G_IO_ERR|G_IO_HUP|G_IO_NVAL;
+	cond = (GIOCondition) (G_IO_ERR|G_IO_HUP|G_IO_NVAL);
 	if (condition & G_INPUT_READ)
 		cond |= G_IO_IN|G_IO_PRI;
 	if (condition & G_INPUT_WRITE)

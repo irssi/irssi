@@ -4,6 +4,6 @@
 
 char *address;
 char *server_tag;
-int unwanted:1; /* TRUE if the other side closed or
-                   some error occured (DCC chats!) */
-int destroying:1;
+unsigned int unwanted:1; /* TRUE if the other side closed or
+			    some error occured (DCC chats!) */
+unsigned int destroying:1;

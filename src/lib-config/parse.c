@@ -134,8 +134,9 @@ static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, GTokenType exp
 static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 {
 	CONFIG_NODE *newnode;
+	GTokenType last_char;
 	int print_warning;
-	char *key, last_char;
+	char *key;
 
 	g_return_val_if_fail(rec != NULL, G_TOKEN_ERROR);
 	g_return_val_if_fail(node != NULL, G_TOKEN_ERROR);
@@ -182,7 +183,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 			return G_TOKEN_ERROR;
 
 		newnode = config_node_section(node, key, NODE_TYPE_BLOCK);
-		config_parse_loop(rec, newnode, '}');
+		config_parse_loop(rec, newnode, (GTokenType) '}');
 		g_free_not_null(key);
 
 		config_parse_get_token(rec->scanner, node);
@@ -197,7 +198,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		if (key == NULL)
 			return G_TOKEN_ERROR;
 		newnode = config_node_section(node, key, NODE_TYPE_LIST);
-		config_parse_loop(rec, newnode, ')');
+		config_parse_loop(rec, newnode, (GTokenType) ')');
 		g_free_not_null(key);
 
 		config_parse_get_token(rec->scanner, node);
@@ -218,7 +219,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, GTokenType expect)
 {
-	int expected_token;
+	GTokenType expected_token;
 
 	g_return_if_fail(rec != NULL);
 	g_return_if_fail(node != NULL);

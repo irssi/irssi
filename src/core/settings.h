@@ -38,8 +38,8 @@ extern CONFIG_REC *mainconfig;
 
 /* Functions for handling the "settings" node of Irssi configuration */
 const char *settings_get_str(const char *key);
-const int settings_get_int(const char *key);
-const int settings_get_bool(const char *key);
+int settings_get_int(const char *key);
+int settings_get_bool(const char *key);
 
 /* Functions to add/remove settings */
 void settings_add_str(const char *section, const char *key, const char *def);

@@ -11,7 +11,7 @@ typedef struct {
 	char *botmasks;
 	char *autosendcmd;
 
-	int autojoin:1;
+	unsigned int autojoin:1;
 	GHashTable *module_data;
 } CHANNEL_SETUP_REC;
 

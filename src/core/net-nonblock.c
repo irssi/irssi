@@ -190,7 +190,8 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, int pipe)
 		return;
 	}
 
-	rec->tag = g_input_add(handle, G_INPUT_READ | G_INPUT_WRITE,
+	rec->tag = g_input_add(handle,
+			       (GInputCondition) (G_INPUT_READ|G_INPUT_WRITE),
 			       (GInputFunction) simple_init, rec);
 }
 

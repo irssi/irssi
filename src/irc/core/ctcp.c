@@ -33,7 +33,7 @@ static void ctcp_queue_clean(IRC_SERVER_REC *server)
 {
 	GSList *tmp, *next;
 
-	for (tmp = server->ctcpqueue; tmp != NULL; tmp = tmp->next) {
+	for (tmp = server->ctcpqueue; tmp != NULL; tmp = next) {
 		next = tmp->next;
 		if (!server_idle_find(server, GPOINTER_TO_INT(tmp->data))) {
 			server->ctcpqueue =

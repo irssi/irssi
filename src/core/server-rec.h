@@ -10,8 +10,8 @@ time_t real_connect_time; /* time when server replied that we really are connect
 char *tag; /* tag name for addressing server */
 char *nick; /* current nick */
 
-int connected:1; /* connected to server */
-int connection_lost:1; /* Connection lost unintentionally */
+unsigned int connected:1; /* connected to server */
+unsigned int connection_lost:1; /* Connection lost unintentionally */
 
 void *handle; /* NET_SENDBUF_REC socket */
 int readtag; /* input tag */
@@ -33,9 +33,9 @@ GHashTable *module_data;
 char *version; /* server version */
 char *away_reason;
 char *last_invite; /* channel where you were last invited */
-int server_operator:1;
-int usermode_away:1;
-int banned:1; /* not allowed to connect to this server */
+unsigned int server_operator:1;
+unsigned int usermode_away:1;
+unsigned int banned:1; /* not allowed to connect to this server */
 
 time_t lag_sent; /* 0 or time when last lag query was sent to server */
 time_t lag_last_check; /* last time we checked lag */

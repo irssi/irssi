@@ -13,14 +13,14 @@ typedef struct {
 	int hops;
 
 	/* status in server */
-	int gone:1;
-	int serverop:1;
+	unsigned int gone:1;
+	unsigned int serverop:1;
 
 	/* status in channel */
-	int send_massjoin:1; /* Waiting to be sent in massjoin signal */
-	int op:1;
-	int halfop:1;
-	int voice:1;
+	unsigned int send_massjoin:1; /* Waiting to be sent in massjoin signal */
+	unsigned int op:1;
+	unsigned int halfop:1;
+	unsigned int voice:1;
 } NICK_REC;
 
 /* Add new nick to list */

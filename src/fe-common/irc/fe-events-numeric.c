@@ -75,7 +75,7 @@ static void event_names_list(const char *data, IRC_SERVER_REC *server)
 
 static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint items, gint max)
 {
-    NICK_REC *rec, *last;
+    NICK_REC *rec;
     GString *str;
     GSList *tmp;
     gint lines, cols, line, col, skip;
@@ -88,8 +88,8 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist, gint it
     lines = items <= cols ? 1 : items/cols + 1;
     if (lines > items) lines = items;
 
-    last = NULL; linebuf = g_malloc(max+1); linebuf[max] = '\0';
-    for (line = 0, col = 0, skip = 1, tmp = nicklist; line < lines; last = rec, tmp = tmp->next)
+    linebuf = g_malloc(max+1); linebuf[max] = '\0';
+    for (line = 0, col = 0, skip = 1, tmp = nicklist; line < lines; tmp = tmp->next)
     {
 	rec = tmp->data;
 

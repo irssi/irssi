@@ -251,7 +251,7 @@ GModule *module_open(const char *name)
 		g_free(str);
 
 		if (stat(path, &statbuf) == 0) {
-			module = g_module_open(path, 0);
+			module = g_module_open(path, (GModuleFlags) 0);
 			g_free(path);
 			return module;
 		}
@@ -260,7 +260,7 @@ GModule *module_open(const char *name)
 		path = g_module_build_path(MODULEDIR, name);
 	}
 
-	module = g_module_open(path, 0);
+	module = g_module_open(path, (GModuleFlags) 0);
 	g_free(path);
 	return module;
 }

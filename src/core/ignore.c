@@ -100,7 +100,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 				mask_match_address(server, rec->mask, nick, host);
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
-				if (!rec->replies || channel == NULL || text == NULL ||
+				if (!rec->replies || chanrec == NULL || text == NULL ||
 				    !ignore_check_replies(rec, chanrec, text))
 					continue;
 			}

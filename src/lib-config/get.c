@@ -203,7 +203,8 @@ char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
         if (parent == NULL) return (char *) def;
 
 	node = config_node_find(parent, key);
-	return (node == NULL || !has_node_value(node)) ? def : node->value;
+	return (char *) ((node != NULL && has_node_value(node)) ?
+			 node->value : def);
 }
 
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def)

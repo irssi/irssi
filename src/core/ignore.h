@@ -18,11 +18,11 @@ typedef struct {
 	int time; /* time in sec for temp ignores */
 	int time_tag;
 
-	int regexp:1;
-	int fullword:1;
-	int replies:1; /* ignore replies to nick in channel */
+	unsigned int regexp:1;
+	unsigned int fullword:1;
+	unsigned int replies:1; /* ignore replies to nick in channel */
 #ifdef HAVE_REGEX_H
-	int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
+	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	regex_t preg;
 #endif
 } IGNORE_REC;

@@ -31,7 +31,7 @@ typedef struct {
 	char *start;
 	int indent;
 	int color;
-	int continues:1; /* first word in line belong to the end of the last word in previous line */
+	unsigned int continues:1; /* first word in line belong to the end of the last word in previous line */
 } LINE_CACHE_SUB_REC;
 
 typedef struct {
@@ -79,8 +79,8 @@ typedef struct {
 	int bottom_subline;
 	int empty_linecount; /* how many empty lines are in screen.
 	                        a screenful when started or used /CLEAR */
-	int bottom:1; /* window is at the bottom of the text buffer */
-	int eol_marked:1; /* last line marked for eol */
+	unsigned int bottom:1; /* window is at the bottom of the text buffer */
+	unsigned int eol_marked:1; /* last line marked for eol */
 
 	/* For /LAST -new and -away */
 	GList *lastlog_last_check;

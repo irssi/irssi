@@ -198,7 +198,8 @@ static void dcc_get_connect(DCC_REC *dcc)
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
 	if (dcc->handle != -1) {
-		dcc->tagconn = g_input_add(dcc->handle, G_INPUT_WRITE|G_INPUT_READ,
+		dcc->tagconn = g_input_add(dcc->handle,
+					   (GInputCondition) (G_INPUT_WRITE|G_INPUT_READ),
 					   (GInputFunction) sig_dccget_connected, dcc);
 	} else {
 		/* error connecting */

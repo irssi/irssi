@@ -69,7 +69,7 @@ static int commands_compare(COMMAND_REC *rec, COMMAND_REC *rec2)
 
 static void help_category(GSList *cmdlist, gint items, gint max)
 {
-    COMMAND_REC *rec, *last;
+    COMMAND_REC *rec;
     GString *str;
     GSList *tmp;
     gint lines, cols, line, col, skip;
@@ -80,8 +80,8 @@ static void help_category(GSList *cmdlist, gint items, gint max)
     cols = max > 65 ? 1 : (65 / max);
     lines = items <= cols ? 1 : items / cols+1;
 
-    last = NULL; cmdbuf = g_malloc(max+1); cmdbuf[max] = '\0';
-    for (line = 0, col = 0, skip = 1, tmp = cmdlist; line < lines; last = rec, tmp = tmp->next)
+    cmdbuf = g_malloc(max+1); cmdbuf[max] = '\0';
+    for (line = 0, col = 0, skip = 1, tmp = cmdlist; line < lines; tmp = tmp->next)
     {
 	rec = tmp->data;
 

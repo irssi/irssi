@@ -93,7 +93,8 @@ static void sig_server_looking(IRC_SERVER_REC *server)
 
 	server->isnickflag = isnickflag_func;
 	server->ischannel = ischannel_func;
-	server->send_message = (void *) send_message;
+	server->send_message =
+		(void (*)(void *, const char *, const char *)) send_message;
 }
 
 static void server_init(IRC_SERVER_REC *server)

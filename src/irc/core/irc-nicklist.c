@@ -343,8 +343,10 @@ static const char *get_nick_flags(void)
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
-	if (IS_IRC_SERVER(server))
-		server->get_nick_flags = (void *) get_nick_flags;
+	if (IS_IRC_SERVER(server)) {
+		server->get_nick_flags =
+			(const char *(*)(void)) get_nick_flags;
+	}
 }
 
 void irc_nicklist_init(void)

@@ -200,7 +200,8 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	server->handle = net_sendbuffer_create(handle, 0);
 	server->connect_tag =
-		g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
+		g_input_add(handle,
+			    (GInputCondition) (G_INPUT_WRITE|G_INPUT_READ),
 			    (GInputFunction) server_connect_callback_init,
 			    server);
 	signal_emit("server connecting", 2, server, &iprec.ip);

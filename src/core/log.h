@@ -25,9 +25,9 @@ typedef struct {
 
 	time_t last; /* when last message was written */
 
-	int autoopen:1; /* automatically start logging at startup */
-	int failed:1; /* opening log failed last time */
-	int temp:1; /* don't save this to config file */
+	unsigned int autoopen:1; /* automatically start logging at startup */
+	unsigned int failed:1; /* opening log failed last time */
+	unsigned int temp:1; /* don't save this to config file */
 } LOG_REC;
 
 extern GSList *logs;

@@ -3,7 +3,7 @@
 #include <XSUB.h>
 
 #undef _
-#include "common.h"
+#include "../module.h"
 #include "network.h"
 #include "commands.h"
 #include "log.h"

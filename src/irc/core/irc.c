@@ -31,7 +31,6 @@
 #include "servers-redirect.h"
 
 char *current_server_event;
-static int signal_send_command;
 static int signal_default_event;
 static int signal_server_event;
 static int signal_server_incoming;
@@ -407,7 +406,6 @@ void irc_irc_init(void)
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	current_server_event = NULL;
-	signal_send_command = signal_get_uniq_id("send command");
 	signal_default_event = signal_get_uniq_id("default event");
 	signal_server_event = signal_get_uniq_id("server event");
 	signal_server_incoming = signal_get_uniq_id("server incoming");

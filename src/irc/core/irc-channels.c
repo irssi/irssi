@@ -192,8 +192,10 @@ static void sig_server_looking(SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->channel_find_func = (void *) irc_channel_find_server;
-	server->channels_join = (void *) irc_channels_join;
+	server->channel_find_func =
+		(void *(*)(void *, const char *)) irc_channel_find_server;
+	server->channels_join =
+		(void (*)(void *, const char *, int)) irc_channels_join;
 }
 
 void irc_channels_init(void)

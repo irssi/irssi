@@ -122,7 +122,6 @@ command_bind(cmd, category, func)
 	char *func
 CODE:
 	char *signal;
-        GSList *tmp;
 
 	if (*category == '\0') category = "Perl scripts' commands";
 	command_bind(cmd, category, NULL);
