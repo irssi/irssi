@@ -407,7 +407,6 @@ static void cmd_oper_got_pass(const char *password, OPER_PASS_REC *rec)
         g_free(rec);
 }
 
-/* SYNTAX: OPER [<nick> [<password>]] */
 static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 {
 	char *nick, *password, *format;
