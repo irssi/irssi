@@ -280,11 +280,26 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 
 static void cmd_join(const char *data, IRC_SERVER_REC *server)
 {
-	if (*data == '\0' || g_strncasecmp(data, "-invite", 7) == 0) {
+	char *params, *args, *channels;
+
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected || !irc_server_check(server))
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	params = cmd_get_params(data, 2 | PARAM_FLAG_OPTARGS | PARAM_FLAG_GETREST, &args, &channels);
+
+	if (stristr(args, "-invite")) {
 		if (server->last_invite != NULL)
 			channels_join(server, server->last_invite, FALSE);
-	} else
-		channels_join(server, data, FALSE);
+	} else {
+		if (*args != '\0') {
+			server = (IRC_SERVER_REC *) server_find_tag(args+1);
+			if (server == NULL) cmd_param_error(CMDERR_NOT_CONNECTED);
+		}
+		channels_join(server, channels, FALSE);
+	}
+
+	g_free(params);
 }
 
 static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
