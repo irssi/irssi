@@ -34,9 +34,9 @@ PPCODE:
 		XPUSHs(new_pv(tmp->data));
 	}
 
-Irssi::Nick
+Irssi::Irc::Nick
 irc_nick_insert(channel, nick, op, voice, send_massjoin)
-	Irssi::Channel channel
+	Irssi::Irc::Channel channel
 	char *nick
 	int op
 	int voice
