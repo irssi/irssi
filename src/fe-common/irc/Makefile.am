@@ -31,3 +31,6 @@ libfe_common_irc_a_SOURCES = \
 noinst_HEADERS = \
 	module.h \
 	module-formats.h
+
+distclean-generic:
+	rm -f irc-modules.c
