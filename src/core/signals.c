@@ -39,21 +39,27 @@ typedef struct {
 
 static GMemChunk *signals_chunk;
 static GHashTable *signals;
+static int first_signal_id, last_signal_id;
 static SIGNAL_REC *first_signal_rec, *last_signal_rec; /* "signal" and "last signal" */
 static SIGNAL_REC *current_emitted_signal;
 
+void signal_add_to(const char *module, int pos,
+		   const char *signal, SIGNAL_FUNC func)
+{
+	g_return_if_fail(signal != NULL);
+
+	signal_add_to_id(module, pos, signal_get_uniq_id(signal), func);
+}
+
 /* bind a signal */
-void signal_add_to(const char *module, int pos, const char *signal,
-		   SIGNAL_FUNC func)
+void signal_add_to_id(const char *module, int pos,
+		      int signal_id, SIGNAL_FUNC func)
 {
 	SIGNAL_REC *rec;
-	int signal_id;
 
-	g_return_if_fail(signal != NULL);
+	g_return_if_fail(signal_id >= 0);
 	g_return_if_fail(func != NULL);
 	g_return_if_fail(pos >= 0 && pos < SIGNAL_LISTS);
-
-	signal_id = signal_get_uniq_id(signal);
 
 	rec = g_hash_table_lookup(signals, GINT_TO_POINTER(signal_id));
 	if (rec == NULL) {
@@ -61,9 +67,9 @@ void signal_add_to(const char *module, int pos, const char *signal,
 		g_hash_table_insert(signals, GINT_TO_POINTER(signal_id), rec);
 	}
 
-	if (strcmp(signal, "signal") == 0)
+	if (signal_id == first_signal_id)
 		first_signal_rec = rec;
-	else if (strcmp(signal, "last signal") == 0)
+	else if (signal_id == last_signal_id)
 		last_signal_rec = rec;
 
 	if (rec->siglist[pos] == NULL) {
@@ -352,6 +358,8 @@ void signals_init(void)
 
 	first_signal_rec = NULL;
 	last_signal_rec = NULL;
+        first_signal_id = signal_get_uniq_id("signal");
+        last_signal_id = signal_get_uniq_id("last signal");
 }
 
 static void signal_free(void *key, SIGNAL_REC *rec)

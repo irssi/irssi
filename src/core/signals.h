@@ -1,7 +1,9 @@
 #ifndef __SIGNAL_H
 #define __SIGNAL_H
 
-typedef void (*SIGNAL_FUNC) (gconstpointer, gconstpointer, gconstpointer, gconstpointer, gconstpointer, gconstpointer, gconstpointer);
+typedef void (*SIGNAL_FUNC) (gconstpointer, gconstpointer,
+			     gconstpointer, gconstpointer,
+			     gconstpointer, gconstpointer, gconstpointer);
 
 void signals_init(void);
 void signals_deinit(void);
@@ -11,7 +13,10 @@ void signals_deinit(void);
         module_get_uniq_id_str("signals", signal)
 
 /* bind a signal */
-void signal_add_to(const char *module, int pos, const char *signal, SIGNAL_FUNC func);
+void signal_add_to(const char *module, int pos,
+		   const char *signal, SIGNAL_FUNC func);
+void signal_add_to_id(const char *module, int pos,
+		      int signal, SIGNAL_FUNC func);
 #define signal_add(a, b) signal_add_to(MODULE_NAME, 1, a, b)
 #define signal_add_first(a, b) signal_add_to(MODULE_NAME, 0, a, b)
 #define signal_add_last(a, b) signal_add_to(MODULE_NAME, 2, a, b)
