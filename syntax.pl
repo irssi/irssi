@@ -10,7 +10,7 @@
 # Remember to include the asterisk ('*').
 $SRC_PATH='src';
 
-$FOO = `find src -name '*.c' -exec ./findsyntax.pl \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
+$FOO = `find src -name '*.c' -exec perl findsyntax.pl \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
 
 while (<docs/help/in/*.in>) {
    next if (/Makefile/);
