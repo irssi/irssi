@@ -32,8 +32,8 @@
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-sizeof(char*))
 
-static gint mirc_colors[] = { 15, 0, 1, 2, 4, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
-static gint max_textwidget_lines;
+static int mirc_colors[] = { 15, 0, 1, 2, 4, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
+static int scrollback_lines, scrollback_hours;
 
 #define mark_temp_eol(text) \
 	memcpy((text)->buffer + (text)->pos, "\0\x80", 2);
@@ -130,6 +130,28 @@ static void remove_first_line(WINDOW_REC *window)
 		gui_window_redraw(window);
 }
 
+static void remove_old_lines(WINDOW_REC *window)
+{
+	GUI_WINDOW_REC *gui;
+	LINE_REC *line;
+	time_t old_time;
+
+	gui = WINDOW_GUI(window);
+
+	old_time = time(NULL)-(scrollback_hours*3600);
+	if (scrollback_lines > 0) {
+                /* remove lines by line count */
+		while (window->lines > scrollback_lines) {
+			line = gui->lines->data;
+			if (line->time >= old_time) {
+				/* too new line, don't remove yet */
+				break;
+			}
+			remove_first_line(window);
+		}
+	}
+}
+
 static void get_colors(int flags, int *fg, int *bg)
 {
 	if (flags & PRINTFLAG_MIRC_COLOR) {
@@ -224,10 +246,9 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 
 	g_return_if_fail(window != NULL);
 
-	gui = WINDOW_GUI(window);
-	if (max_textwidget_lines > 0 && max_textwidget_lines <= window->lines)
-		remove_first_line(window);
+	remove_old_lines(window);
 
+	gui = WINDOW_GUI(window);
 	visible = is_window_visible(window) && gui->bottom;
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
@@ -320,11 +341,15 @@ static void sig_printtext_finished(WINDOW_REC *window)
 
 static void read_settings(void)
 {
-	max_textwidget_lines = settings_get_int("max_textwidget_lines");
+	scrollback_lines = settings_get_int("scrollback_lines");
+	scrollback_hours = settings_get_int("scrollback_hours");
 }
 
 void gui_printtext_init(void)
 {
+	settings_add_int("history", "scrollback_lines", 500);
+	settings_add_int("history", "scrollback_hours", 24);
+
 	signal_add("gui print text", (SIGNAL_FUNC) gui_printtext);
 	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);

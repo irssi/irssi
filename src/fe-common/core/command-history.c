@@ -156,8 +156,6 @@ static void read_settings(void)
 
 void command_history_init(void)
 {
-	settings_add_int("history", "max_textwidget_lines", 1000);
-	settings_add_int("history", "block_remove_lines", 20);
 	settings_add_int("history", "max_command_history", 100);
 	settings_add_bool("history", "window_history", FALSE);
 
