@@ -33,7 +33,7 @@
 #include "formats.h"
 
 static char **hide_targets;
-static int hilight_levels, msg_levels;
+static int hide_level, msg_level, hilight_level;
 
 static void window_activity(WINDOW_REC *window,
 			    int data_level, int hilight_color)
@@ -76,14 +76,15 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 	WI_ITEM_REC *item;
 	int data_level;
 
-	if (dest->window == active_win ||
-	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT)))
+	if (dest->window == active_win || (dest->level & hide_level))
 		return;
 
-	data_level = (dest->level & hilight_levels) ?
-		DATA_LEVEL_HILIGHT+dest->hilight_priority :
-		((dest->level & msg_levels) ?
-		 DATA_LEVEL_MSG : DATA_LEVEL_TEXT);
+	if (dest->level & hilight_level)
+		data_level = DATA_LEVEL_HILIGHT+dest->hilight_priority;
+	else {
+		data_level = (dest->level & msg_level) ?
+			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
+	}
 
 	if (hide_target_activity(data_level, dest->target))
 		return;
@@ -122,16 +123,19 @@ static void read_settings(void)
 	hide_targets = *targets == '\0' ? NULL :
 		g_strsplit(targets, " ", -1);
 
-	msg_levels = level2bits(settings_get_str("activity_msg_levels"));
-	hilight_levels = MSGLEVEL_HILIGHT |
-		level2bits(settings_get_str("activity_hilight_levels"));
+	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT |
+		level2bits(settings_get_str("activity_hide_level"));
+	msg_level = level2bits(settings_get_str("activity_msg_level"));
+	hilight_level = MSGLEVEL_HILIGHT |
+		level2bits(settings_get_str("activity_hilight_level"));
 }
 
 void window_activity_init(void)
 {
 	settings_add_str("lookandfeel", "activity_hide_targets", "");
-	settings_add_str("lookandfeel", "activity_msg_levels", "PUBLIC");
-	settings_add_str("lookandfeel", "activity_hilight_levels", "MSGS DCCMSGS");
+	settings_add_str("lookandfeel", "activity_hide_level", "");
+	settings_add_str("lookandfeel", "activity_msg_level", "PUBLIC");
+	settings_add_str("lookandfeel", "activity_hilight_level", "MSGS DCCMSGS");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);

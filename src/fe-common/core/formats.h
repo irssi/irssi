@@ -78,7 +78,13 @@ void format_create_dest(TEXT_DEST_REC *dest,
 
 void format_newline(WINDOW_REC *window);
 
-/* strip all color (etc.) codes from `input'. returns newly allocated string. */
+/* Return how many characters in `str' must be skipped before `len'
+   characters of text is skipped. */
+int strip_real_length(const char *str, int len,
+		      int *last_color_pos, int *last_color_len);
+
+/* strip all color (etc.) codes from `input'.
+   Returns newly allocated string. */
 char *strip_codes(const char *input);
 
 /* send a fully parsed text string for GUI to print */

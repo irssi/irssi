@@ -592,41 +592,83 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
 	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 31)
 
-char *strip_codes(const char *input)
+/* Return how many characters in `str' must be skipped before `len'
+   characters of text is skipped. */
+int strip_real_length(const char *str, int len,
+		      int *last_color_pos, int *last_color_len)
 {
-	const char *p;
-	char *str, *out;
+	const char *start = str;
 
-	out = str = g_strdup(input);
-	for (p = input; *p != '\0'; p++) {
-		if (*p == 3) {
-			p++;
+	while (*str != '\0') {
+		if (*str == 3) {
+			const char *mircstart = str;
 
-			/* mirc color */
-			get_mirc_color(&p, NULL, NULL);
-			p--;
-			continue;
-		}
+			if (last_color_pos != NULL)
+				*last_color_pos = (int) (str-start);
+                        str++;
+			get_mirc_color(&str, NULL, NULL);
+                        if (last_color_len != NULL)
+				*last_color_len = (int) (str-mircstart);
 
-		if (*p == 4 && p[1] != '\0') {
-			if (p[1] >= FORMAT_STYLE_SPECIAL) {
-				p++;
-				continue;
+		} else if (*str == 4 && str[1] != '\0') {
+			if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
+				if (last_color_pos != NULL)
+					*last_color_pos = (int) (str-start);
+                                if (last_color_len != NULL)
+                                        *last_color_len = 3;
+				str++;
+			} else if (str[1] == FORMAT_STYLE_DEFAULTS) {
+				if (last_color_pos != NULL)
+					*last_color_pos = (int) (str-start);
+                                if (last_color_len != NULL)
+                                        *last_color_len = 2;
 			}
-
-			/* irssi color */
-			if (p[2] != '\0') {
-				p += 2;
-				continue;
-			}
+                        str += 2;
+		} else if (!IS_COLOR_CODE(*str)) {
+			if (len-- == 0)
+                                break;
+			str++;
 		}
-
-		if (!IS_COLOR_CODE(*p))
-			*out++ = *p;
 	}
 
-	*out = '\0';
-	return str;
+	return (int) (str-start);
+}
+
+char *strip_codes(const char *input)
+{
+        const char *p;
+        char *str, *out;
+
+        out = str = g_strdup(input);
+        for (p = input; *p != '\0'; p++) {
+                if (*p == 3) {
+                        p++;  
+
+                        /* mirc color */
+                        get_mirc_color(&p, NULL, NULL);
+                        p--;
+                        continue;
+                }
+
+                if (*p == 4 && p[1] != '\0') {
+                        if (p[1] >= FORMAT_STYLE_SPECIAL) {
+                                p++;
+                                continue;
+                        }
+
+                        /* irssi color */
+                        if (p[2] != '\0') {
+                                p += 2;
+                                continue;
+                        }
+                }
+
+                if (!IS_COLOR_CODE(*p))
+                        *out++ = *p;   
+        }
+
+        *out = '\0';
+        return str; 
 }
 
 /* send a fully parsed text string for GUI to print */

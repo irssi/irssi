@@ -142,7 +142,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 
 	for_me = nick_match_msg(chanrec, msg, server->nick);
 	color = for_me ? NULL :
-		hilight_match_nick(target, nick, address, MSGLEVEL_PUBLIC, msg);
+		hilight_match_nick(server, target, nick, address, MSGLEVEL_PUBLIC, msg);
 
 	print_channel = chanrec == NULL ||
 		!window_item_is_active((WI_ITEM_REC *) chanrec);
