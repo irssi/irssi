@@ -91,4 +91,6 @@ typedef struct _SERVER_CONNECT_REC SERVER_CONNECT_REC;
 typedef struct _SERVER_SETUP_REC SERVER_SETUP_REC;
 typedef struct _CHANNEL_SETUP_REC CHANNEL_SETUP_REC;
 
+typedef struct _WINDOW_REC WINDOW_REC;
+
 #endif

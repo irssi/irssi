@@ -27,6 +27,7 @@
 #include "line-split.h"
 #include "settings.h"
 #include "irssi-version.h"
+#include "servers.h"
 
 #include "fe-windows.h"
 #include "printtext.h"

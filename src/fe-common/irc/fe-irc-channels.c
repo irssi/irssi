@@ -23,6 +23,7 @@
 #include "signals.h"
 #include "levels.h"
 
+#include "irc-servers.h"
 #include "irc-channels.h"
 #include "channel-rejoin.h"
 

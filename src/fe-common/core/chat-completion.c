@@ -25,6 +25,7 @@
 #include "settings.h"
 
 #include "chatnets.h"
+#include "servers.h"
 #include "servers-setup.h"
 #include "channels.h"
 #include "channels-setup.h"

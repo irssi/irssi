@@ -1,7 +1,6 @@
 #ifndef __WINDOWS_H
 #define __WINDOWS_H
 
-#include "servers.h"
 #include "window-item-def.h"
 
 enum {
@@ -17,7 +16,7 @@ typedef struct {
 	unsigned int sticky:1;
 } WINDOW_BIND_REC;
 
-typedef struct {
+struct _WINDOW_REC {
 	int refnum;
 	char *name;
 
@@ -48,7 +47,7 @@ typedef struct {
 	void *theme; /* THEME_REC */
 
 	void *gui_data;
-} WINDOW_REC;
+};
 
 extern GSList *windows;
 extern WINDOW_REC *active_win;

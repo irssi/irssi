@@ -29,6 +29,7 @@
 
 #include "chat-protocols.h"
 #include "chatnets.h"
+#include "servers.h"
 #include "channels.h"
 #include "channels-setup.h"
 #include "nicklist.h"

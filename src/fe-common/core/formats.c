@@ -25,6 +25,7 @@
 #include "settings.h"
 
 #include "levels.h"
+#include "servers.h"
 
 #include "fe-windows.h"
 #include "window-items.h"

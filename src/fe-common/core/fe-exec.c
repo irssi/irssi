@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "signals.h"
 #include "commands.h"
 #include "pidwait.h"

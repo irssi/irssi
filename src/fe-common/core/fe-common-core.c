@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "irssi-version.h"
 
+#include "servers.h"
 #include "channels.h"
 #include "servers-setup.h"
 

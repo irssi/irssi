@@ -25,6 +25,7 @@
 #include "settings.h"
 
 #include "irc.h"
+#include "irc-servers.h"
 #include "irc-queries.h"
 #include "dcc-chat.h"
 

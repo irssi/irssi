@@ -102,6 +102,7 @@ static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	signal_emit("nicklist remove", 2, channel, nick);
 
+	if (g_hash_table_size(nick->module_data) > 5) g_error("BUG!"); // FIXME: debug
         MODULE_DATA_DEINIT(nick);
 	g_free(nick->nick);
 	g_free_not_null(nick->realname);

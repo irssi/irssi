@@ -27,6 +27,7 @@
 #include "settings.h"
 
 #include "chat-protocols.h"
+#include "servers.h"
 #include "queries.h"
 
 #include "fe-windows.h"

@@ -27,12 +27,14 @@
 #include "special-vars.h"
 #include "settings.h"
 
-#include "window-items.h"
-#include "fe-queries.h"
+#include "servers.h"
 #include "channels.h"
 #include "nicklist.h"
-#include "hilight-text.h"
 #include "ignore.h"
+
+#include "window-items.h"
+#include "fe-queries.h"
+#include "hilight-text.h"
 #include "printtext.h"
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || isalnum(c))
