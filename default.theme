@@ -66,7 +66,7 @@ abstracts = {
   wallop_action = "%W * $0-%n ";
 
 # netsplits
-  netsplit = "%G$0-%n";
+  netsplit = "%R$0-%n";
   netjoin = "%C$0-%n";
 
 # /names list
