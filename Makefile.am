@@ -4,9 +4,6 @@ config.h: default-config.h
 default-config.h: $(srcdir)/config
 	$(srcdir)/file2header.sh $(srcdir)/config > default-config.h
 
-## if <internationalization support>
-#SUBDIRS = po intl macros support # <your subdirs here>
-## else
 if BUILD_PLUGINS
 PLUGINS=plugins
 endif
@@ -14,8 +11,7 @@ if BUILD_SERVERTEST
 SERVERTEST=servertest
 endif
 
-SUBDIRS = macros src $(PLUGINS) $(SERVERTEST)
-## endif
+SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST)
 
 ## to automatically rebuild aclocal.m4 if any of the macros in
 ## `macros/' change

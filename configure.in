@@ -172,17 +172,6 @@ if test "x$ac_cv_prog_gcc" = "xyes"; then
   CFLAGS="$CFLAGS -Wall"
 fi
 
-if test "x$prefix" = "xNONE"; then
-	prefix="/usr/local"
-else
-	prefix=$prefix
-fi
-
-AM_CONDITIONAL(BUILD_PLUGINS, test "x$want_plugins" = "xyes")
-AM_CONDITIONAL(BUILD_SERVERTEST, test "x$want_servertest" = "xyes")
-AC_DEFINE_UNQUOTED(SYSCONFDIR, "$prefix/etc")
-AC_DEFINE_UNQUOTED(PLUGINSDIR, "$prefix/lib/irssi/plugins")
-
 dnl **
 dnl ** check for libPropList
 dnl **
@@ -233,7 +222,6 @@ if test "x$want_gnome" = "xyes"; then
         fi
 fi
 
-AM_CONDITIONAL(HAVE_GNOME, test "x$want_gnome" = "xyes")
 if test "x$want_gnome" = "xyes"; then
 	AC_DEFINE(HAVE_GTK)
 	AC_DEFINE(HAVE_GNOME)
@@ -280,8 +268,6 @@ fi
 
 AC_SUBST(GUI_LIBS)
 AC_SUBST(GUI_CFLAGS)
-AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
-AM_CONDITIONAL(HAVE_GNOME_PANEL, test "x$want_gnome_panel" = "xyes")
 
 
 dnl **
@@ -289,6 +275,9 @@ dnl ** gui-text checks
 dnl **
 
 AM_PATH_GLIB(1.2.0,,, gmodule)
+
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.a"
+AC_SUBST(PROG_LIBS)
 
 dnl **
 dnl ** curses checks
@@ -314,8 +303,13 @@ else
 fi
 AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true)
 
-dnl ** check if we want to build irssibot
+dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "xyes")
+AM_CONDITIONAL(BUILD_PLUGINS, test "x$want_plugins" = "xyes")
+AM_CONDITIONAL(BUILD_SERVERTEST, test "x$want_servertest" = "xyes")
+AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
+AM_CONDITIONAL(HAVE_GNOME, test "x$want_gnome" = "xyes")
+AM_CONDITIONAL(HAVE_GNOME_PANEL, test "x$want_gnome_panel" = "xyes")
 
 dnl **
 dnl ** memory debugging
@@ -334,23 +328,17 @@ if test "x$want_ipv6" = "xyes"; then
 	AC_DEFINE(HAVE_IPV6)
 fi
 
-PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.a"
-AC_SUBST(PROG_LIBS)
-
-
 dnl **
 dnl ** internationalization support
 dnl **
 
-dnl ALL_LINGUAS=""
-dnl AM_GNU_GETTEXT
-dnl AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
+ALL_LINGUAS="fi"
+AM_GNU_GETTEXT
 
 AC_OUTPUT(
 Makefile
-dnl ## internationalization support
-dnl po/Makefile.in
-dnl intl/Makefile
+po/Makefile.in
+intl/Makefile
 macros/Makefile
 src/Makefile
 src/irc-base/Makefile
