@@ -453,7 +453,7 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 		} else if (redirect != NULL) {
                         /* check if redirection failed */
 			if (rec->aborted ||
-			    ++rec->failures >= MAX_FAILURE_COUNT) {
+			    rec->failures++ >= MAX_FAILURE_COUNT) {
                                 /* enough failures, abort it now */
 				if (!rec->remote || REDIRECT_IS_TIMEOUTED(rec))
 					redirect_abort(server, rec);
