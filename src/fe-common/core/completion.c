@@ -495,17 +495,6 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	line = linestart[1] == *cmdchars ? g_strdup(linestart+2) :
 		expand_aliases(linestart+1);
 
-	if (command_have_sub(line)) {
-		/* complete subcommand */
-                cmd = g_strconcat(line, " ", word, NULL);
-		*list = completion_get_subcommands(cmd);
-		g_free(cmd);
-
-		if (*list != NULL) signal_stop();
-                g_free(line);
-		return;
-	}
-
 	cmd = line_get_command(line, &args, FALSE);
 	if (cmd == NULL) {
 		g_free(line);
@@ -514,7 +503,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	/* we're completing -option? */
 	if (*word == '-') {
-                *list = completion_get_options(cmd, word+1);
+		*list = completion_get_options(cmd, word+1);
 		g_free(cmd);
 		g_free(line);
 		return;
@@ -523,6 +512,15 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	/* complete parameters */
 	signal = g_strconcat("complete command ", cmd, NULL);
 	signal_emit(signal, 5, list, window, word, args, want_space);
+
+	if (command_have_sub(line)) {
+		/* complete subcommand */
+		g_free(cmd);
+		cmd = g_strconcat(line, " ", word, NULL);
+		*list = g_list_concat(completion_get_subcommands(cmd), *list);
+
+		if (*list != NULL) signal_stop();
+	}
 
 	g_free(signal);
 	g_free(cmd);

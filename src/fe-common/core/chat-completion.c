@@ -26,6 +26,8 @@
 #include "settings.h"
 
 #include "servers.h"
+#include "chatnets.h"
+#include "servers-setup.h"
 #include "channels.h"
 #include "channels-setup.h"
 #include "queries.h"
@@ -500,6 +502,60 @@ static void sig_complete_msg(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
+GList *completion_get_chatnets(const char *word)
+{
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
+		CHATNET_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->name, word, len) == 0)
+			list = g_list_append(list, g_strdup(rec->name));
+	}
+
+	return list;
+}
+
+GList *completion_get_servers(const char *word)
+{
+	GList *list;
+	GSList *tmp;
+	int len;
+
+	g_return_val_if_fail(word != NULL, NULL);
+
+	len = strlen(word);
+	list = NULL;
+
+	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
+		SERVER_SETUP_REC *rec = tmp->data;
+
+		if (g_strncasecmp(rec->address, word, len) == 0) 
+			list = g_list_append(list, g_strdup(rec->address));
+	}
+
+	return list;
+}
+
+static void sig_complete_connect(GList **list, WINDOW_REC *window,
+				 const char *word, const char *line, 
+				 int *want_space)
+{
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	*list = completion_get_chatnets(word);
+	*list = g_list_concat(*list, completion_get_servers(word));
+	if (*list != NULL) signal_stop();
+}
+
 /* expand \n, \t and \\ */
 static char *expand_escapes(const char *line, SERVER_REC *server,
 			    WI_ITEM_REC *item)
@@ -624,6 +680,8 @@ void chat_completion_init(void)
 
 	signal_add("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_add("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
+	signal_add("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
+	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("command msg", (SIGNAL_FUNC) cmd_msg);
@@ -640,6 +698,8 @@ void chat_completion_deinit(void)
 
 	signal_remove("complete word", (SIGNAL_FUNC) sig_complete_word);
 	signal_remove("complete command msg", (SIGNAL_FUNC) sig_complete_msg);
+	signal_remove("complete command connect", (SIGNAL_FUNC) sig_complete_connect);
+	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("command msg", (SIGNAL_FUNC) cmd_msg);
