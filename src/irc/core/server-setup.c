@@ -142,7 +142,8 @@ create_addr_conn(const char *address, int port, const char *password,
 	if (ircnet == NULL) return conn;
 
 	if (ircnet->nick && !(nick && *nick)) {
-                g_free(conn->nick);
+                g_free_and_null(conn->alternate_nick);
+		g_free(conn->nick);
 		conn->nick = g_strdup(ircnet->nick);;
 	}
 	if (ircnet->username) {
