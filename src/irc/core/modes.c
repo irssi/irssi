@@ -374,6 +374,10 @@ static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 	GSList *nicks, *tmp;
 	char **matches, **match, *ret;
 
+	g_return_val_if_fail(item != NULL, NULL);
+	g_return_val_if_fail(data != NULL, NULL);
+	if (*data == '\0') return NULL;
+
 	str = g_string_new(NULL);
 	matches = g_strsplit(data, " ", -1);
 	for (match = matches; *match != NULL; match++) {
@@ -415,9 +419,9 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 		return;
 
 	nicks = get_nicks(item, data, 0, -1);
-	if (*nicks != '\0')
+	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(server, item->name, nicks, "+o");
-	g_free(nicks);
+	g_free_not_null(nicks);
 }
 
 /* SYNTAX: DEOP <nicks> */
@@ -429,9 +433,9 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 		return;
 
 	nicks = get_nicks(item, data, 1, -1);
-	if (*nicks != '\0')
+	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(server, item->name, nicks, "-o");
-	g_free(nicks);
+	g_free_not_null(nicks);
 }
 
 /* SYNTAX: VOICE <nicks> */
@@ -443,9 +447,9 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 		return;
 
 	nicks = get_nicks(item, data, 0, 0);
-	if (*nicks != '\0')
+	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(server, item->name, nicks, "+v");
-	g_free(nicks);
+	g_free_not_null(nicks);
 }
 
 /* SYNTAX: DEVOICE <nicks> */
@@ -457,9 +461,9 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *it
 		return;
 
 	nicks = get_nicks(item, data, 0, 1);
-	if (*nicks != '\0')
+	if (nicks != NULL && *nicks != '\0')
 		channel_set_singlemode(server, item->name, nicks, "-v");
-	g_free(nicks);
+	g_free_not_null(nicks);
 }
 
 /* SYNTAX: MODE <your nick>|<channel> [<mode> [<mode parameters>]] */
