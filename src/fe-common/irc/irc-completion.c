@@ -529,7 +529,8 @@ static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	    expand_escapes(line, server, item) : g_strdup(line);
 
     /* check for nick completion */
-    if (settings_get_bool("completion_disable_auto") || *settings_get_str("completion_char") == '\0')
+    if (!settings_get_bool("completion_auto") ||
+	*settings_get_str("completion_char") == '\0')
     {
 	ptr = NULL;
 	comp = NULL;
@@ -593,7 +594,7 @@ static void completion_deinit_channel(CHANNEL_REC *channel)
 void irc_completion_init(void)
 {
 	settings_add_str("completion", "completion_char", ":");
-	settings_add_bool("completion", "completion_disable_auto", TRUE);
+	settings_add_bool("completion", "completion_auto", FALSE);
 	settings_add_int("completion", "completion_keep_publics", 180);
 	settings_add_int("completion", "completion_keep_ownpublics", 360);
 	settings_add_int("completion", "completion_keep_privates", 10);
