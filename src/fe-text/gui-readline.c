@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "special-vars.h"
+#include "servers.h"
 
 #include "completion.h"
 #include "command-history.h"

@@ -25,6 +25,7 @@
 #include "misc.h"
 #include "levels.h"
 #include "settings.h"
+#include "servers.h"
 
 #include "printtext.h"
 #include "gui-windows.h"

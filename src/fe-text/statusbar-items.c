@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "settings.h"
+#include "servers.h"
 
 #include "themes.h"
 #include "statusbar.h"
