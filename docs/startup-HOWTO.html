@@ -34,8 +34,12 @@
     <li>How can I save all texts in a window to file?</li>
     </ul></li>
 <li><a href="#c8">Logging</a></li>
-<li><a href="#c9">Proxies and IRC bouncers</a></li>
-<li><a href="#c10">Irssi's settings</a></li>
+<li><a href="#c9">Changing keyboard bindings</a>
+    <ul>
+    <li>How do I make F1 key do something?</li>
+    </ul></li>
+<li><a href="#c10">Proxies and IRC bouncers</a></li>
+<li><a href="#c11">Irssi's settings</a></li>
 </ol>
 
 <h3><a id="c1">1. For all the lazy people</a></h3>
@@ -436,9 +440,9 @@ buffer. Simplest usages are</p>
      /LASTLOG -topics  - print all topic changes
 </pre>
 
-<p>If there's more lines to be printed than 1000, irssi doesn't thinks
-that you probably made some mistake and won't print them without -force
-option. If you want to save the full lastlog to file, use</p>
+<p>If there's more than 1000 lines to be printed, irssi thinks that you
+probably made some mistake and won't print them without -force option.
+If you want to save the full lastlog to file, use</p>
 
 <pre>
      /LASTLOG -file ~/irc.log
@@ -501,7 +505,28 @@ logs by adding date/time formats to the file name. The formats are in
 <p>For logging only some specific channels or nicks, see /HELP log</p>
 
 
-<h3><a id="c9">9. Proxies and IRC bouncers</a></h3>
+<h3><a id="c9">9. Changing keyboard bindings</a></h3>
+
+<p>You can change any keyboard binding that terminal lets irssi know
+about. It doesn't let it know everything, so for example
+shift-backspace can't be bound unless you modify xterm resources
+somehow.</p>
+
+<p>/HELP bind tells pretty much everything there is to know about
+keyboard bindings. However, there's the problem of how to bind some
+non-standard keys. They might differ a bit with each terminal, so
+you'll need to find out what exactly the keypress produces. Easiest
+way to check that would be to see what it prints in "cat". Here's
+an example for pressing F1 key:</p>
+
+<pre>
+[cras@hurina] ~% cat
+^[OP
+</pre>
+
+<p>So with irssi you would use /BIND ^[OP /ECHO F1 pressed.</p>
+
+<h3><a id="c10">10. Proxies and IRC bouncers</a></h3>
 
 <p>Irssi supports connecting to IRC servers via a proxy. All proxies have
 these settings in common:</p>
@@ -564,7 +589,7 @@ ports, like you can share ircnet in port 2777 and efnet in port 2778.</p>
 <p>Usage in proxy side:</p>
 
 <pre>
-     /LOAD irc_proxy (/LOAD proxy in irssi 0.7.98.3 and older)
+     /LOAD proxy
      /SET irssiproxy_password &lt;password&gt;
      /SET irssiproxy_ports &lt;ircnet&gt;=&lt;port&gt; ... (eg. ircnet=2777 efnet=2778)
 </pre>
@@ -575,7 +600,7 @@ are using to server and ircnet lists with /SERVER ADD and /IRCNET ADD.
 one server connection, you may simply set:</p>
 
 <pre>
-     /SET irssiproxy_ports *=2777 (irssi 0.7.99 and later only)
+     /SET irssiproxy_ports *=2777
 </pre>
 
 <p>Usage in client side:</p>
@@ -616,7 +641,7 @@ give it with:</p>
 proxy_string_after is sent after them. %s and %d can be used with both
 of them.</p>
 
-<h3><a id="c10">10. Irssi's settings</a></h3>
+<h3><a id="c11">11. Irssi's settings</a></h3>
 
 <p>You probably don't like Irssi's default settings. I don't like them.
 But I'm still convinced that they're pretty good defaults. Here's some
