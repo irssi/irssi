@@ -1013,7 +1013,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				signal_emit_id(signal_gui_print_text, 6,
 					       dest->window, NULL, NULL,
 					       GINT_TO_POINTER(GUI_PRINT_FLAG_INDENT_FUNC),
-					       str, start, dest);
+					       start, dest);
 				break;
 			}
 			case FORMAT_STYLE_DEFAULTS:
