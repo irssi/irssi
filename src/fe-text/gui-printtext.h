@@ -22,6 +22,8 @@ enum
     NUM_COLORS
 };
 
+extern int mirc_colors[];
+
 void gui_printtext_init(void);
 void gui_printtext_deinit(void);
 

@@ -327,7 +327,7 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
     {
 	window = tmp->data;
 
-	is_det = window->new_data == NEWDATA_MSG_FORYOU;
+	is_det = window->new_data >= NEWDATA_HILIGHT;
 	if (is_det && !det) continue;
 	if (!is_det && !act) continue;
 
@@ -342,14 +342,14 @@ static void draw_activity(gchar *title, gboolean act, gboolean det)
 	ltoa(str, window->refnum);
 	switch (window->new_data)
 	{
-	    case NEWDATA_TEXT:
+	case NEWDATA_TEXT:
 		set_color((1 << 4)+3);
 		break;
-	    case NEWDATA_MSG:
+	case NEWDATA_MSG:
 		set_color((1 << 4)+15);
 		break;
-	    case NEWDATA_MSG_FORYOU:
-		set_color((1 << 4)+13);
+	case NEWDATA_HILIGHT:
+		set_color((1 << 4) + (window->last_color > 0 ? mirc_colors[window->last_color] : 13));
 		break;
 	}
 	addstr(str);
@@ -372,7 +372,7 @@ static void statusbar_activity(SBAR_ITEM_REC *item, int ypos)
 
 	size_needed += 1+ltoa(str, window->refnum);
 
-	if (!use_colors && window->new_data == NEWDATA_MSG_FORYOU)
+	if (!use_colors && window->new_data >= NEWDATA_HILIGHT)
 	    det = TRUE;
 	else
 	    act = TRUE;

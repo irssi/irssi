@@ -39,15 +39,16 @@ static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char 
 		return;
 
 	new_data = (level & MSGLEVEL_HILIGHT) ?
-		NEWDATA_MSG_FORYOU : NEWDATA_TEXT;
+		NEWDATA_HILIGHT : NEWDATA_TEXT;
 
-	if (new_data < NEWDATA_MSG_FORYOU &&
+	if (new_data < NEWDATA_HILIGHT &&
 	    channel != NULL && find_substr(noact_channels, channel))
 		return;
 
 	oldlevel = window->new_data;
 	if (window->new_data < new_data) {
 		window->new_data = new_data;
+		window->last_color = 0;
 		signal_emit("window hilight", 1, window);
 	}
 
@@ -60,6 +61,7 @@ static void sig_dehilight(WINDOW_REC *window, WI_ITEM_REC *item)
 
 	if (item != NULL && item->new_data != 0) {
 		item->new_data = 0;
+		item->last_color = 0;
 		signal_emit("window item hilight", 1, item);
 	}
 }
@@ -77,6 +79,7 @@ static void sig_dehilight_window(WINDOW_REC *window)
 	if (window->new_data != 0) {
 		oldlevel = window->new_data;
 		window->new_data = 0;
+		window->last_color = 0;
 		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
 	}
 	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
@@ -89,21 +92,25 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 {
 	WINDOW_REC *window;
 	GSList *tmp;
-	int level, oldlevel;
+	int level, oldlevel, color;
 
-	if (item->new_data < NEWDATA_MSG_FORYOU &&
+	if (item->new_data < NEWDATA_HILIGHT &&
 	    find_substr(noact_channels, item->name))
 		return;
 
-	window = window_item_window(item); level = 0;
+	window = window_item_window(item); level = 0; color = 0;
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		item = tmp->data;
 
-		if (item->new_data > level)
+		if (item->new_data > level) {
 			level = item->new_data;
+			color = item->last_color;
+		}
 	}
 
 	oldlevel = window->new_data;
+	if (level == MSGLEVEL_HILIGHT)
+		window->last_color = color;
 	if (window->new_data < level || level == 0) {
 		window->new_data = level;
 		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));

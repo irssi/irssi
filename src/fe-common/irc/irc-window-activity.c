@@ -30,6 +30,7 @@
 #include "completion.h"
 #include "windows.h"
 #include "window-items.h"
+#include "irc-hilight-text.h"
 
 static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
 {
@@ -53,9 +54,10 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	   that it didn't get ignored */
         if (window != active_win && !ignore_check(server, nick, addr, target, msg, level)) {
                 /* hilight */
-		level = !ischannel(*target) ||
+		item->last_color = irc_hilight_last_color();
+		level = item->last_color > 0 || !ischannel(*target) ||
 			irc_nick_match(server->nick, msg) ?
-			NEWDATA_MSG_FORYOU : NEWDATA_MSG;
+			NEWDATA_HILIGHT : NEWDATA_MSG;
 		if (item != NULL && item->new_data < level) {
 			item->new_data = level;
 			signal_emit("window item hilight", 1, item);
@@ -64,6 +66,7 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 
 			if (window->new_data < level) {
 				window->new_data = level;
+				window->last_color = irc_hilight_last_color();
 				signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
 			}
 			signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));

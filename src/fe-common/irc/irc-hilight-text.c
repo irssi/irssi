@@ -19,9 +19,12 @@
 */
 
 #include "module.h"
+#include "signals.h"
 #include "settings.h"
 
 #include "hilight-text.h"
+
+static int last_color;
 
 char *irc_hilight_find_nick(const char *channel, const char *nick,
 			    const char *address, int level, const char *msg)
@@ -32,6 +35,28 @@ char *irc_hilight_find_nick(const char *channel, const char *nick,
 	color = hilight_match(channel, mask, level, msg);
 	g_free(mask);
 
+	last_color = (color != NULL && *color == 3) ?
+		atoi(color+1) : 0;
 	return color;
 }
 
+int irc_hilight_last_color(void)
+{
+	return last_color;
+}
+
+static void event_privmsg(void)
+{
+        last_color = 0;
+}
+
+void irc_hilight_text_init(void)
+{
+	last_color = 0;
+	signal_add_last("event privmsg", (SIGNAL_FUNC) event_privmsg);
+}
+
+void irc_hilight_text_deinit(void)
+{
+	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
+}

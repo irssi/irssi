@@ -32,7 +32,7 @@
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-sizeof(char*))
 
-static int mirc_colors[] = { 15, 0, 1, 2, 4, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
+int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
 static int scrollback_lines, scrollback_hours;
 
 #define mark_temp_eol(text) \

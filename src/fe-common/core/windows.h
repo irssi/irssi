@@ -4,7 +4,7 @@
 enum {
 	NEWDATA_TEXT = 1,
 	NEWDATA_MSG,
-	NEWDATA_MSG_FORYOU,
+        NEWDATA_HILIGHT,
 	NEWDATA_CUSTOM
 };
 
@@ -19,6 +19,7 @@ typedef struct {
 	char *name;
 
 	int new_data;
+	int last_color; /* if NEWDATA_HILIGHT is set, color number could be specified here */
 } WI_ITEM_REC;
 
 typedef struct {
@@ -40,6 +41,7 @@ typedef struct {
 
 	int level;
 	int new_data;
+	int last_color;
 	time_t last_timestamp; /* When was last timestamp printed */
 	time_t last_line; /* When was last line printed */
 
