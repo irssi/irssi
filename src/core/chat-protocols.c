@@ -102,27 +102,31 @@ CHAT_PROTOCOL_REC *chat_protocol_find_net(GHashTable *optlist)
 CHAT_PROTOCOL_REC *chat_protocol_register(CHAT_PROTOCOL_REC *rec)
 {
 	CHAT_PROTOCOL_REC *newrec;
+        int created;
 
 	g_return_val_if_fail(rec != NULL, NULL);
 
-        newrec = chat_protocol_find(rec->name);
-	if (newrec == NULL)
+	newrec = chat_protocol_find(rec->name);
+        created = newrec == NULL;
+	if (newrec == NULL) {
 		newrec = g_new0(CHAT_PROTOCOL_REC, 1);
-	else if (rec->fullname != NULL) {
-		/* already registered */
-		return newrec;
+		chat_protocols = g_slist_append(chat_protocols, newrec);
+	} else {
+		/* updating existing protocol */
+                g_free(newrec->name);
 	}
 
 	memcpy(newrec, rec, sizeof(CHAT_PROTOCOL_REC));
 	newrec->id = module_get_uniq_id_str("PROTOCOL", rec->name);
-        newrec->name = g_strdup(rec->name);
-
-	chat_protocols = g_slist_append(chat_protocols, newrec);
+	newrec->name = g_strdup(rec->name);
 
 	if (default_proto == NULL)
                 chat_protocol_set_default(newrec);
 
-	signal_emit("chat protocol created", 1, newrec);
+        if (created)
+		signal_emit("chat protocol created", 1, newrec);
+        else
+		signal_emit("chat protocol updated", 1, newrec);
         return newrec;
 }
 
