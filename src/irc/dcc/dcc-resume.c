@@ -45,7 +45,7 @@ static FILE_DCC_REC *dcc_resume_find(int type, const char *nick, int port)
 }
 
 static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
-				 FILE_DCC_REC **dcc, long *size)
+				 FILE_DCC_REC **dcc, unsigned long *size)
 {
 	char **params;
 	int paramcount;
@@ -57,7 +57,7 @@ static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 
 	if (paramcount >= 3) {
 		port = atoi(params[paramcount-2]);
-		*size = atol(params[paramcount-1]);
+		*size = strtoul(params[paramcount-1], NULL, 10);
 
 		*dcc = dcc_resume_find(type, nick, port);
 	}
@@ -66,13 +66,13 @@ static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 }
 
 static int dcc_resume_file_check(FILE_DCC_REC *dcc, IRC_SERVER_REC *server,
-				 long size)
+				 unsigned long size)
 {
 	if (size >= dcc->size) {
 		/* whole file sent */
 		dcc->starttime = time(NULL);
 		dcc_reject(DCC(dcc), server);
-	} else if (lseek(dcc->fhandle, size, SEEK_SET) != size) {
+	} else if (lseek(dcc->fhandle, size, SEEK_SET) != (long)size) {
 		/* error, or trying to seek after end of file */
 		dcc_reject(DCC(dcc), server);
 	} else {
@@ -90,7 +90,7 @@ static void ctcp_msg_dcc_resume(IRC_SERVER_REC *server, const char *data,
 {
 	FILE_DCC_REC *dcc;
         char *str;
-        long size;
+        unsigned long size;
 
 	if (!dcc_ctcp_resume_parse(DCC_SEND_TYPE, data, nick, &dcc, &size)) {
 		signal_emit("dcc error ctcp", 5, "RESUME", data,
@@ -112,7 +112,7 @@ static void ctcp_msg_dcc_accept(IRC_SERVER_REC *server, const char *data,
 				const char *target, DCC_REC *chat)
 {
 	FILE_DCC_REC *dcc;
-        long size;
+        unsigned long size;
 
 	if (!dcc_ctcp_resume_parse(DCC_GET_TYPE, data, nick, &dcc, &size) ||
 	    (dcc != NULL && DCC_GET(dcc)->get_type != DCC_GET_RESUME)) {

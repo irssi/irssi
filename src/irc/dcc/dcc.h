@@ -48,7 +48,7 @@ void dcc_ip2str(IPADDR *ip, char *str);
 void dcc_str2ip(const char *str, IPADDR *ip);
 
 /* Start listening for incoming connections */
-GIOChannel *dcc_listen(GIOChannel *interface, IPADDR *ip, int *port);
+GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port);
 
 /* Close DCC - sends "dcc closed" signal and calls dcc_destroy() */
 void dcc_close(DCC_REC *dcc);

@@ -101,7 +101,7 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	memcpy(&bytes, dcc->count_buf, 4);
 	bytes = (guint32) ntohl(bytes);
 
-	dcc->gotalldata = (long) bytes == dcc->transfd;
+	dcc->gotalldata = (unsigned long) bytes == dcc->transfd;
 	dcc->count_pos = 0;
 
 	if (dcc->waitforend && dcc->gotalldata) {

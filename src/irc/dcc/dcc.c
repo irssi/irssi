@@ -181,9 +181,9 @@ void dcc_str2ip(const char *str, IPADDR *ip)
 }
 
 /* Start listening for incoming connections */
-GIOChannel *dcc_listen(GIOChannel *interface, IPADDR *ip, int *port)
+GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 {
-	if (net_getsockname(interface, ip, NULL) == -1)
+	if (net_getsockname(iface, ip, NULL) == -1)
                 return NULL;
 
 	*port = settings_get_int("dcc_port");
