@@ -444,20 +444,6 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 		msgprint = TRUE;
 	}
 
-	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
-		QUERY_REC *query = tmp->data;
-		WINDOW_REC *window =
-			window_item_window((WI_ITEM_REC *) query);
-
-		if (g_strcasecmp(query->name, oldnick) != 0 ||
-		    g_slist_find(windows, window) != NULL)
-			continue;
-
-		windows = g_slist_append(windows, window);
-		print_nick_change_channel(server, query->name, newnick,
-					  oldnick, address, ownnick);
-		msgprint = TRUE;
-	}
 	g_slist_free(windows);
 
 	if (!msgprint && ownnick) {
