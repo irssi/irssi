@@ -161,6 +161,10 @@ FORMAT_REC fecommon_irc_formats[] = {
 	/* ---- */
 	{ NULL, "Misc", 0 },
 
+	{ "silenced", "Silenced %_$0%_", 1, { 0 } },
+	{ "unsilenced", "Unsilenced %_$0%_", 1, { 0 } },
+	{ "silence_line", "%_$0%_: silence %c$1", 2, { 0, 0 } },
+
 	{ "ignored", "Ignoring %_$1%_ from %_$0%_", 2, { 0, 0 } },
 	{ "unignored", "Unignored %_$0%_", 1, { 0 } },
 	{ "ignore_not_found", "%_$0%_ is not being ignored", 1, { 0 } },

@@ -1,7 +1,7 @@
 
 @SYNTAX:silence@
 
-Works only in the Undernet.
+Works only in the Undernet and Open Projects.
 
 SILENCE is similar in many respects to IGNORE, except that it is 
 server-based. What this means is the server will never even send 

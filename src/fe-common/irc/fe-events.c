@@ -402,6 +402,15 @@ static void event_wallops(const char *data, IRC_SERVER_REC *server, const char *
 	}
 }
 
+static void event_silence(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+{
+	g_return_if_fail(data != NULL);
+	
+	g_return_if_fail(*data == '+' || *data == '-');
+
+	printformat(server, NULL, MSGLEVEL_CRAP, *data == '+' ? IRCTXT_SILENCED : IRCTXT_UNSILENCED, data+1);
+}
+
 static void channel_sync(CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
@@ -535,6 +544,7 @@ void fe_events_init(void)
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
 	signal_add("event error", (SIGNAL_FUNC) event_error);
 	signal_add("event wallops", (SIGNAL_FUNC) event_wallops);
+	signal_add("event silence", (SIGNAL_FUNC) event_silence);
 
 	signal_add("default event", (SIGNAL_FUNC) event_received);
 
@@ -562,6 +572,7 @@ void fe_events_deinit(void)
 	signal_remove("event topic", (SIGNAL_FUNC) event_topic);
 	signal_remove("event error", (SIGNAL_FUNC) event_error);
 	signal_remove("event wallops", (SIGNAL_FUNC) event_wallops);
+	signal_remove("event silence", (SIGNAL_FUNC) event_silence);
 
 	signal_remove("default event", (SIGNAL_FUNC) event_received);
 

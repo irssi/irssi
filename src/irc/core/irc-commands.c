@@ -821,6 +821,19 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: UNSILENCE <nick!user@host> */
+static void cmd_unsilence(const char *data, IRC_SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (*data == '\0') 
+		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	irc_send_cmdv(server, "SILENCE -%s", data);
+}
+
 static void command_self(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
@@ -932,6 +945,7 @@ void irc_commands_init(void)
 	/* SYNTAX: SILENCE [[+|-]<nick!user@host>]
 	           SILENCE [<nick>] */
 	command_bind("silence", NULL, (SIGNAL_FUNC) command_self);
+	command_bind("unsilence", NULL, (SIGNAL_FUNC) cmd_unsilence);
 	command_bind("sconnect", NULL, (SIGNAL_FUNC) cmd_sconnect);
 	/* SYNTAX: SQUERY <service> [<commands>] */
 	command_bind("squery", NULL, (SIGNAL_FUNC) command_2self);
@@ -1011,6 +1025,7 @@ void irc_commands_deinit(void)
 	command_unbind("version", (SIGNAL_FUNC) command_self);
 	command_unbind("servlist", (SIGNAL_FUNC) command_self);
 	command_unbind("silence", (SIGNAL_FUNC) command_self);
+	command_unbind("unsilence", (SIGNAL_FUNC) cmd_unsilence);
 	command_unbind("sconnect", (SIGNAL_FUNC) cmd_sconnect);
 	command_unbind("squery", (SIGNAL_FUNC) command_2self);
 	command_unbind("deop", (SIGNAL_FUNC) cmd_deop);

@@ -241,6 +241,18 @@ static void event_eban_list(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void event_silence_list(const char *data, IRC_SERVER_REC *server)
+{
+	char *params, *nick, *mask;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &nick, &mask);
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SILENCE_LINE, nick, mask);
+	g_free(params);
+}
+
+
 static void event_invite_list(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel, *invite;
@@ -654,6 +666,10 @@ static void event_motd(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
+static void sig_empty(void)
+{
+}
+
 void fe_events_numeric_init(void)
 {
 	last_away_nick = NULL;
@@ -665,6 +681,8 @@ void fe_events_numeric_init(void)
 	signal_add("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_add("event 352", (SIGNAL_FUNC) event_who);
 	signal_add("event 315", (SIGNAL_FUNC) event_end_of_who);
+	signal_add("event 271", (SIGNAL_FUNC) event_silence_list);
+	signal_add("event 272", (SIGNAL_FUNC) sig_empty);
 	signal_add("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_add("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
@@ -721,6 +739,8 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_remove("event 352", (SIGNAL_FUNC) event_who);
 	signal_remove("event 315", (SIGNAL_FUNC) event_end_of_who);
+	signal_remove("event 271", (SIGNAL_FUNC) event_silence_list);
+	signal_remove("event 272", (SIGNAL_FUNC) sig_empty);
 	signal_remove("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_remove("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
