@@ -72,10 +72,10 @@ AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
 	build_modules="$withval")
 
-if [ "x$prefix" = "xNONE" ]; then
-	PERL_LIB_DIR=
+if test "x$prefix" = "xNONE"; then
+	PERL_LIB_DIR=""
 else
-	PERL_LIB_DIR=$prefix
+	PERL_LIB_DIR="$prefix"
 fi
 
 AC_ARG_ENABLE(perl,
