@@ -12,6 +12,10 @@ $VERSION = "0.9";
 require Exporter;
 require DynaLoader;
 
+sub Irssi::UI::Window::create_handle {
+  goto &Irssi::create_window_handle;
+}
+
 @ISA = qw(Exporter DynaLoader);
 @EXPORT = qw();
 @EXPORT_OK = qw();

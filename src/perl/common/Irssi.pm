@@ -5,7 +5,100 @@
 package Irssi;
 
 use strict;
+use Carp;
 use vars qw($VERSION $in_irssi @ISA @EXPORT @EXPORT_OK);
+
+# TIEHANDLE methods
+
+sub TIEHANDLE {
+  my ($class, $level, $object, $target) = @_;
+  return bless [ $level, $object, $target ], $class;
+}
+
+sub WRITE {
+  croak "Cannot syswrite() to an Irssi handle"
+}
+
+sub PRINT {
+  my ($self, @list) = @_;
+  if (defined $self->[1]) {
+    if (defined $self->[2]) {
+      $self->[1]->print($self->[2], join('', @list), $self->[0]);
+    } else {
+      $self->[1]->print(join('', @list), $self->[0]);
+    }
+  } else {
+    Irssi::print(join('', @list), $self->[0]);
+  }
+}
+
+sub PRINTF {
+  my ($self, $format, @list) = @_;
+  if (defined $self->[1]) {
+    if (defined $self->[2]) {
+      $self->[1]->print($self->[2], sprintf($format, @list), $self->[0]);
+    } else {
+      $self->[1]->print(sprintf($format, @list), $self->[0]);
+    }
+  } else {
+    Irssi::print(sprintf($format, @list), $self->[0]);
+  }
+}
+
+sub READ {
+  croak "Cannot [sys]read() from an Irssi handle"
+}
+
+sub READLINE {
+  croak "Cannot readline() from an Irssi handle"
+}
+
+sub GETC {
+  croak "Cannot getc() from an Irssi handle"
+}
+
+sub CLOSE {}
+sub UNTIE {}
+sub DESTROY {}
+
+# End of TIEHANDLE methods
+
+# Handle creators
+
+sub create_window_handle {
+  my ($object, $level) = @_;
+  $object = eval 'active_win'          unless defined $object;
+  $level  = eval 'MSGLEVEL_CLIENTCRAP' unless defined $level;
+  croak 'Usage: create_window_handle([$window[, $level]])'
+    if ref $object !~ /::Window$/i;
+  no strict 'refs';
+  my $symref = 'Irssi::Handles::' . $object . '/' . $level;
+  my $fh = \*{$symref};
+  tie *{$symref}, __PACKAGE__, $level, $object;
+  return $fh;
+}
+
+sub create_server_handle {
+  my ($object, $target, $level) = @_;
+  croak 'Usage: create_server_handle($server, $target[, $level])'
+    if not defined $object
+    or not defined $target
+    or ref $object !~ /::Server$/i;
+  $level = eval 'MSGLEVEL_CLIENTCRAP' unless defined $level;
+  no strict 'refs';
+  my $symref = 'Irssi::Handles::' . $object . '/' . $target . '/' . $level;
+  my $fh = \*{$symref};
+  tie *{$symref}, __PACKAGE__, $level, $object, $target;
+  return $fh;
+}
+
+# Object interface for create_server_handle
+
+sub Irssi::Server::create_handle {
+  goto &Irssi::create_server_handle;
+}
+
+# Normal Irssi.pm stuff
 
 sub VERSION {
   my $version = $_[1];
@@ -14,8 +107,20 @@ sub VERSION {
 }
 
 sub EXPORT_ALL () {
+  my %exports = map { $_ => undef } @EXPORT, @EXPORT_OK;
   no strict 'refs';
-  @EXPORT_OK = grep { /[a-z]/ && defined *{$_}{CODE} } keys %Irssi::;
+  for (keys %Irssi::) {
+    if (/^MSGLEVEL_/) {
+      (my $short = $_) =~ s///;
+      next if exists $exports{"*$short"};
+      tie *{ $short }, __PACKAGE__, &$_();
+      push @EXPORT, "*$short";
+    } else {
+      next if exists $exports{$_};
+      push @EXPORT_OK, $_ if /[a-z]/ && defined *{$_}{CODE};
+    }
+  }
+  select CLIENTCRAP;
 }
 
 sub in_irssi {
@@ -37,7 +142,8 @@ require DynaLoader;
 	MSGLEVEL_CLIENTERROR MSGLEVEL_HILIGHT MSGLEVEL_ALL MSGLEVEL_NOHILIGHT
 	MSGLEVEL_NO_ACT MSGLEVEL_NEVER MSGLEVEL_LASTLOG
 );
-@EXPORT_OK = qw();
+
+require Irssi::TieHandle;
 
 my $static = 0;
 
@@ -60,4 +166,3 @@ if (!in_irssi()) {
 }
 
 1;
-
