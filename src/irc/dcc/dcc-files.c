@@ -510,7 +510,7 @@ static void cmd_dcc_send(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
     lseek(fh, 0, SEEK_SET);
 
     /* get the IP address we use with IRC server */
-    if (!net_getsockname(chat != NULL ? chat->handle : server->handle, &addr, NULL))
+    if (net_getsockname(chat != NULL ? chat->handle : server->handle, &addr, NULL) == -1)
     {
         close(fh);
         cmd_param_error(CMDERR_GETSOCKNAME);
