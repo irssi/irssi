@@ -305,8 +305,10 @@ static void key_yank_from_cutbuffer(void)
 	char *cutbuffer;
 
         cutbuffer = gui_entry_get_cutbuffer(active_entry);
-	if (cutbuffer != NULL)
+	if (cutbuffer != NULL) {
 		gui_entry_insert_text(active_entry, cutbuffer);
+                g_free(cutbuffer);
+	}
 }
 
 static void key_transpose_characters(void)
