@@ -972,6 +972,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				while (*ptr != ',' && *ptr != '\0')
 					ptr++;
 				if (*ptr != '\0') *ptr++ = '\0';
+                                ptr--;
 				signal_emit_id(signal_gui_print_text, 6,
 					       dest->window, NULL, NULL,
 					       GINT_TO_POINTER(GUI_PRINT_FLAG_INDENT_FUNC),
