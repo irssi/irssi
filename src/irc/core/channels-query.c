@@ -43,12 +43,11 @@ loop:
 #include "signals.h"
 #include "settings.h"
 
-#include "channels.h"
-#include "irc.h"
 #include "modes.h"
 #include "mode-lists.h"
 #include "nicklist.h"
 #include "irc-servers.h"
+#include "irc-channels.h"
 #include "servers-redirect.h"
 
 enum {

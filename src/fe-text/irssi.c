@@ -29,7 +29,6 @@
 
 #include "printtext.h"
 #include "fe-common-core.h"
-#include "fe-common-irc.h"
 #include "themes.h"
 
 #include "term.h"
@@ -53,6 +52,9 @@ void fe_perl_deinit(void);
 
 void irc_init(void);
 void irc_deinit(void);
+
+void fe_common_irc_init(void);
+void fe_common_irc_deinit(void);
 
 void gui_expandos_init(void);
 void gui_expandos_deinit(void);

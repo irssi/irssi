@@ -165,7 +165,7 @@ static void cmd_ircnet_remove(const char *data)
 	}
 }
 
-static void cmd_ircnet(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_ircnet(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	if (*data == '\0')
 		cmd_ircnet_list();

@@ -25,7 +25,6 @@
 #include "special-vars.h"
 #include "settings.h"
 
-#include "irc.h"
 #include "irc-servers.h"
 #include "server-idle.h"
 #include "ignore.h"

@@ -22,7 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 
-#include "irc.h"
+#include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-masks.h"
 #include "irc-nicklist.h"

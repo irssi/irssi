@@ -23,7 +23,6 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "irc.h"
 #include "irc-servers.h"
 
 typedef struct {

@@ -111,8 +111,8 @@ int command_have_sub(const char *command)
 	return FALSE;
 }
 
-static COMMAND_MODULE_REC *command_module_get(COMMAND_REC *rec,
-					      const char *module)
+static COMMAND_MODULE_REC *
+command_module_get(COMMAND_REC *rec, const char *module, int protocol)
 {
         COMMAND_MODULE_REC *modrec;
 
@@ -122,14 +122,18 @@ static COMMAND_MODULE_REC *command_module_get(COMMAND_REC *rec,
 	if (modrec == NULL) {
 		modrec = g_new0(COMMAND_MODULE_REC, 1);
 		modrec->name = g_strdup(module);
+                modrec->protocol = -1;
 		rec->modules = g_slist_append(rec->modules, modrec);
 	}
+
+        if (protocol != -1)
+		modrec->protocol = protocol;
 
         return modrec;
 }
 
 void command_bind_to(const char *module, int pos, const char *cmd,
-		     const char *category, SIGNAL_FUNC func)
+		     int protocol, const char *category, SIGNAL_FUNC func)
 {
 	COMMAND_REC *rec;
         COMMAND_MODULE_REC *modrec;
@@ -145,7 +149,7 @@ void command_bind_to(const char *module, int pos, const char *cmd,
 		rec->category = category == NULL ? NULL : g_strdup(category);
 		commands = g_slist_append(commands, rec);
 	}
-        modrec = command_module_get(rec, module);
+        modrec = command_module_get(rec, module, protocol);
 
         modrec->signals = g_slist_append(modrec->signals, func);
 
@@ -433,7 +437,7 @@ void command_set_options_module(const char *module,
 
         rec = command_find(cmd);
 	g_return_if_fail(rec != NULL);
-        modrec = command_module_get(rec, module);
+        modrec = command_module_get(rec, module, -1);
 
 	reload = modrec->options != NULL;
         if (reload) {
@@ -769,6 +773,28 @@ void commands_remove_module(const char *module)
 	}
 }
 
+static int cmd_protocol_match(COMMAND_REC *cmd, SERVER_REC *server)
+{
+	GSList *tmp;
+
+	for (tmp = cmd->modules; tmp != NULL; tmp = tmp->next) {
+		COMMAND_MODULE_REC *rec = tmp->data;
+
+		if (rec->protocol == -1) {
+			/* at least one module accepts the command
+			   without specific protocol */
+			return 1;
+		}
+
+		if (server != NULL && rec->protocol == server->chat_type) {
+                        /* matching protocol found */
+                        return 1;
+		}
+	}
+
+        return 0;
+}
+
 #define alias_runstack_push(alias) \
 	alias_runstack = g_slist_append(alias_runstack, alias)
 
@@ -781,6 +807,7 @@ void commands_remove_module(const char *module)
 static void parse_command(const char *command, int expand_aliases,
 			  SERVER_REC *server, void *item)
 {
+        COMMAND_REC *rec;
 	const char *alias, *newcmd;
 	char *cmd, *orig, *args, *oldcmd;
 
@@ -807,6 +834,17 @@ static void parse_command(const char *command, int expand_aliases,
 	if (newcmd == NULL) {
                 /* ambiguous command */
 		g_free(orig);
+		return;
+	}
+
+	rec = command_find(newcmd);
+	if (rec != NULL && !cmd_protocol_match(rec, server)) {
+		g_free(orig);
+
+		signal_emit("error command", 2,
+			    GINT_TO_POINTER(server == NULL ?
+					    CMDERR_NOT_CONNECTED :
+					    CMDERR_ILLEGAL_PROTO));
 		return;
 	}
 

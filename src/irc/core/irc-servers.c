@@ -30,7 +30,6 @@
 #include "channels.h"
 #include "queries.h"
 
-#include "irc.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
 #include "channel-rejoin.h"

@@ -23,7 +23,7 @@
 #include "misc.h"
 #include "channels-setup.h"
 
-#include "irc.h"
+#include "irc-servers.h"
 #include "irc-channels.h"
 
 static void event_cannot_join(IRC_SERVER_REC *server, const char *data)

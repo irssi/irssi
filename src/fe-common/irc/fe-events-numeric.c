@@ -23,10 +23,9 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
-
-#include "irc.h"
 #include "levels.h"
-#include "servers.h"
+
+#include "irc-servers.h"
 #include "irc-channels.h"
 #include "nicklist.h"
 

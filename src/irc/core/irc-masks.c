@@ -21,7 +21,6 @@
 #include "module.h"
 #include "network.h"
 
-#include "irc.h"
 #include "irc-masks.h"
 
 static char *get_domain_mask(char *host)

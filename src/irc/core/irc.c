@@ -26,7 +26,6 @@
 #include "rawlog.h"
 #include "misc.h"
 
-#include "irc.h"
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "servers-redirect.h"

@@ -22,7 +22,8 @@
 #include "misc.h"
 #include "signals.h"
 
-#include "irc.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
 #include "mode-lists.h"
 
 static void ban_free(GSList **list, BAN_REC *rec)

@@ -23,8 +23,9 @@
 #include "signals.h"
 #include "misc.h"
 
-#include "irc.h"
+#include "irc-servers.h"
 #include "irc-channels.h"
+#include "irc-commands.h"
 #include "channel-rejoin.h"
 
 #define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
@@ -241,8 +242,7 @@ static int sig_rejoin(void)
 
 static void cmd_rmrejoins(const char *data, IRC_SERVER_REC *server)
 {
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	while (server->rejoin_channels != NULL)
 		rejoin_destroy(server, server->rejoin_channels->data);
@@ -253,7 +253,7 @@ void channel_rejoin_init(void)
 	rejoin_tag = g_timeout_add(REJOIN_TIMEOUT,
 				   (GSourceFunc) sig_rejoin, NULL);
 
-	command_bind("rmrejoins", NULL, (SIGNAL_FUNC) cmd_rmrejoins);
+	command_bind_irc("rmrejoins", NULL, (SIGNAL_FUNC) cmd_rmrejoins);
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add_first("channel joined", (SIGNAL_FUNC) sig_remove_rejoin);

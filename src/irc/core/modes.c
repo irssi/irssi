@@ -20,10 +20,11 @@
 
 #include "module.h"
 #include "signals.h"
-#include "commands.h"
 #include "settings.h"
 
-#include "irc.h"
+#include "irc-commands.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
 #include "modes.h"
 #include "mode-lists.h"
 #include "nicklist.h"
@@ -590,8 +591,7 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server,
 {
 	char *nicks;
 
-	if (!IS_IRC_CHANNEL(channel))
-		return;
+        CMD_IRC_SERVER(server);
 
 	nicks = get_nicks(channel, data, 0, -1);
 	if (nicks != NULL && *nicks != '\0')
@@ -605,8 +605,7 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server,
 {
 	char *nicks;
 
-	if (!IS_IRC_CHANNEL(channel))
-		return;
+        CMD_IRC_SERVER(server);
 
 	nicks = get_nicks(channel, data, 1, -1);
 	if (nicks != NULL && *nicks != '\0')
@@ -620,8 +619,7 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server,
 {
 	char *nicks;
 
-	if (!IS_IRC_CHANNEL(channel))
-		return;
+        CMD_IRC_SERVER(server);
 
 	nicks = get_nicks(channel, data, 0, 0);
 	if (nicks != NULL && *nicks != '\0')
@@ -635,8 +633,7 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
 {
 	char *nicks;
 
-	if (!IS_IRC_CHANNEL(channel))
-		return;
+        CMD_IRC_SERVER(server);
 
 	nicks = get_nicks(channel, data, -1, 1);
 	if (nicks != NULL && *nicks != '\0')
@@ -651,9 +648,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 	char *target, *mode;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (*data == '+' || *data == '-') {
 		target = "*";
@@ -692,11 +687,11 @@ void modes_init(void)
 	signal_add("event 381", (SIGNAL_FUNC) event_oper);
 	signal_add("event mode", (SIGNAL_FUNC) event_mode);
 
-	command_bind("op", NULL, (SIGNAL_FUNC) cmd_op);
-	command_bind("deop", NULL, (SIGNAL_FUNC) cmd_deop);
-	command_bind("voice", NULL, (SIGNAL_FUNC) cmd_voice);
-	command_bind("devoice", NULL, (SIGNAL_FUNC) cmd_devoice);
-	command_bind("mode", NULL, (SIGNAL_FUNC) cmd_mode);
+	command_bind_irc("op", NULL, (SIGNAL_FUNC) cmd_op);
+	command_bind_irc("deop", NULL, (SIGNAL_FUNC) cmd_deop);
+	command_bind_irc("voice", NULL, (SIGNAL_FUNC) cmd_voice);
+	command_bind_irc("devoice", NULL, (SIGNAL_FUNC) cmd_devoice);
+	command_bind_irc("mode", NULL, (SIGNAL_FUNC) cmd_mode);
 }
 
 void modes_deinit(void)

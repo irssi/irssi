@@ -1,9 +1,6 @@
 #ifndef __MODES_H
 #define __MODES_H
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-
 /* modes that have argument always */
 #define HAS_MODE_ARG_ALWAYS(mode) \
 	((mode) == 'b' || (mode) == 'e' || (mode) == 'I' || (mode) == 'k' || \

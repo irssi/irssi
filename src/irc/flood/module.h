@@ -1,4 +1,5 @@
 #include "common.h"
+#include "irc.h"
 
 typedef struct {
 	/* Flood protection */

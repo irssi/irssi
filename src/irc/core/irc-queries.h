@@ -3,7 +3,6 @@
 
 #include "chat-protocols.h"
 #include "queries.h"
-#include "irc-servers.h"
 
 /* Returns IRC_QUERY_REC if it's IRC query, NULL if it isn't. */
 #define IRC_QUERY(query) \

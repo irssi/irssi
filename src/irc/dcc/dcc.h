@@ -3,7 +3,6 @@
 
 #include "modules.h"
 #include "network.h"
-#include "irc-servers.h"
 
 #define DCC(dcc) ((DCC_REC *) (dcc))
 

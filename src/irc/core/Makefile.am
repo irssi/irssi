@@ -21,7 +21,6 @@ libirc_core_a_SOURCES = \
         irc-masks.c \
         irc-nicklist.c \
         irc-queries.c \
-        irc-rawlog.c \
         irc-servers.c \
         irc-servers-reconnect.c \
         irc-servers-setup.c \

@@ -82,6 +82,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "setupserver_added", "Server {server $0} saved", 2, { 0, 1 } },
 	{ "setupserver_removed", "Server {server $0} removed", 2, { 0, 1 } },
 	{ "setupserver_not_found", "Server {server $0} not found", 2, { 0, 1 } },
+	{ "your_nick", "Your nickname is {nick $0}", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Channels", 0 },
@@ -92,6 +93,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "quit", "{channick $0} {chanhost $1} has quit {reason $2}", 4, { 0, 0, 0, 0 } },
 	{ "quit_once", "{channel $3} {channick $0} {chanhost $1} has quit {reason $2}", 4, { 0, 0, 0, 0 } },
 	{ "invite", "{nick $0} invites you to {channel $1}", 2, { 0, 0 } },
+	{ "not_invited", "You have not been invited to a channel!", 0 },
 	{ "new_topic", "{nick $0} changed the topic of {channel $1} to: $2", 3, { 0, 0, 0 } },
 	{ "topic_unset", "Topic unset by {nick $0} on {channel $1}", 2, { 0, 0 } },
 	{ "your_nick_changed", "You're now known as {nick $1}", 3, { 0, 0, 0 } },
@@ -202,6 +204,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "not_joined", "Not joined to any channel", 0 },
 	{ "chan_not_found", "Not joined to such channel", 0 },
 	{ "chan_not_synced", "Channel not fully synchronized yet, try again after a while", 0 },
+	{ "illegal_proto", "Command isn't designed for the chat protocol of the active server", 0 },
 	{ "not_good_idea", "Doing this is not a good idea. Add -YES if you really mean it", 0 },
 
 	/* ---- */

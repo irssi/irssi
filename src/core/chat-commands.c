@@ -262,25 +262,25 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (!IS_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "join", &optlist, &channels))
 		return;
 
+	/* -<server tag> */
+	server = cmd_options_get_server("join", optlist, server);
+	if (server == NULL || !server->connected)
+                cmd_param_error(CMDERR_NOT_CONNECTED);
+
 	if (g_hash_table_lookup(optlist, "invite"))
 		channels = server->last_invite;
 	else {
 		if (*channels == '\0')
 			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-		/* -<server tag> */
-		server = cmd_options_get_server("join", optlist, server);
 	}
 
-	if (server != NULL && channels != NULL)
+	if (channels != NULL)
 		server->channels_join(server, channels, FALSE);
 	cmd_params_free(free_arg);
 }

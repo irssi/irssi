@@ -28,10 +28,10 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "masks.h"
-#include "irc.h"
-#include "servers-setup.h"
+#include "irc-servers.h"
 #include "irc-queries.h"
+#include "servers-setup.h"
+#include "masks.h"
 
 #include "dcc-chat.h"
 
@@ -199,7 +199,7 @@ static void cmd_msg(const char *data)
 	signal_stop();
 }
 
-static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
+static void cmd_me(const char *data, SERVER_REC *server, QUERY_REC *item)
 {
 	CHAT_DCC_REC *dcc;
 	char *str;
@@ -216,7 +216,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 	signal_stop();
 }
 
-static void cmd_action(const char *data, IRC_SERVER_REC *server)
+static void cmd_action(const char *data, SERVER_REC *server)
 {
 	CHAT_DCC_REC *dcc;
 	char *target, *text, *str;
@@ -246,15 +246,13 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	signal_stop();
 }
 
-static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
+static void cmd_ctcp(const char *data, SERVER_REC *server)
 {
 	CHAT_DCC_REC *dcc;
 	char *target, *ctcpcmd, *ctcpdata, *str;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
@@ -425,7 +423,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	}
 
 	/* start listening  */
-	if (server == NULL || !server->connected)
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	handle = dcc_listen(net_sendbuffer_handle(server->handle),
@@ -449,7 +447,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: MIRCDCC ON|OFF */
-static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server,
+static void cmd_mircdcc(const char *data, SERVER_REC *server,
 			QUERY_REC *item)
 {
 	CHAT_DCC_REC *dcc;
@@ -465,7 +463,7 @@ static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server,
 
 /* DCC CLOSE CHAT <nick> - check only from chat_ids in open DCC chats,
    the default handler will check from DCC chat requests */
-static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
+static void cmd_dcc_close(char *data, SERVER_REC *server)
 {
 	GSList *tmp, *next;
 	char *nick;
@@ -488,8 +486,8 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 		if (IS_DCC_CHAT(dcc) && dcc->id != NULL &&
 		    g_strcasecmp(dcc->id, nick) == 0) {
 			found = TRUE;
-			if (!dcc_is_connected(dcc))
-				dcc_reject(DCC(dcc), server);
+			if (!dcc_is_connected(dcc) && IS_IRC_SERVER(server))
+				dcc_reject(DCC(dcc), IRC_SERVER(server));
 			else {
 				/* don't send DCC REJECT after DCC chat
 				   is already open */
@@ -503,7 +501,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_whois(const char *data, IRC_SERVER_REC *server,
+static void cmd_whois(const char *data, SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
 	CHAT_DCC_REC *dcc;

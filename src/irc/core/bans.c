@@ -20,14 +20,15 @@
 
 #include "module.h"
 #include "signals.h"
-#include "commands.h"
 #include "misc.h"
 #include "settings.h"
 
+#include "irc-servers.h"
+#include "irc-channels.h"
 #include "irc-masks.h"
+#include "irc-commands.h"
 #include "modes.h"
 #include "mode-lists.h"
-#include "irc.h"
 #include "nicklist.h"
 
 #define BAN_TYPE_NORMAL (IRC_MASK_USER | IRC_MASK_DOMAIN)
@@ -253,6 +254,8 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, void *item)
         int ban_type;
 	void *free_arg;
 
+        CMD_IRC_SERVER(server);
+
 	if (!cmd_get_params(data, &free_arg, 1 |
 			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
 			    "ban", &optlist, &ban))
@@ -285,12 +288,14 @@ static void cmd_unban(const char *data, IRC_SERVER_REC *server, void *item)
 	GHashTable *optlist;
 	char *ban;
 	void *free_arg;
-		
+
+        CMD_IRC_SERVER(server);
+
 	if (!cmd_get_params(data, &free_arg, 1 |
 			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
 			    "unban", &optlist, &ban))
 		return;
-	
+
 	ban = NULL;
 	if (g_hash_table_lookup(optlist, "first") != NULL)
 		ban = g_strdup(BAN_FIRST);
@@ -326,8 +331,8 @@ void bans_init(void)
         default_ban_type_str = NULL;
 	settings_add_str("misc", "ban_type", "normal");
 
-	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
-	command_bind("unban", NULL, (SIGNAL_FUNC) cmd_unban);
+	command_bind_irc("ban", NULL, (SIGNAL_FUNC) cmd_ban);
+	command_bind_irc("unban", NULL, (SIGNAL_FUNC) cmd_unban);
 	command_set_options("ban", "normal user host domain +custom");
 	command_set_options("unban", "first last");
 

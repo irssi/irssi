@@ -24,7 +24,6 @@
 #include "irc-servers.h"
 #include "server-idle.h"
 #include "servers-redirect.h"
-#include "irc.h"
 
 typedef struct {
 	char *event;

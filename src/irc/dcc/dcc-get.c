@@ -25,7 +25,9 @@
 #include "misc.h"
 #include "settings.h"
 
+#include "irc-servers.h"
 #include "servers-setup.h"
+
 #include "dcc-get.h"
 
 static int dcc_file_create_mode;

@@ -22,9 +22,12 @@
 #include "rawlog.h"
 #include "modules.h"
 #include "signals.h"
+#include "commands.h"
 #include "misc.h"
 #include "write-buffer.h"
 #include "settings.h"
+
+#include "servers.h"
 
 static int rawlog_lines;
 static int signal_rawlog;
@@ -158,6 +161,40 @@ static void read_settings(void)
 	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
 }
 
+static void cmd_rawlog(const char *data, SERVER_REC *server, void *item)
+{
+	command_runsub("rawlog", data, server, item);
+}
+
+/* SYNTAX: RAWLOG SAVE <file> */
+static void cmd_rawlog_save(const char *data, SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+	rawlog_save(server->rawlog, data);
+}
+
+/* SYNTAX: RAWLOG OPEN <file> */
+static void cmd_rawlog_open(const char *data, SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+	rawlog_open(server->rawlog, data);
+}
+
+/* SYNTAX: RAWLOG CLOSE */
+static void cmd_rawlog_close(const char *data, SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	rawlog_close(server->rawlog);
+}
+
 void rawlog_init(void)
 {
 	signal_rawlog = signal_get_uniq_id("rawlog");
@@ -166,9 +203,19 @@ void rawlog_init(void)
 	read_settings();
 
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+
+	command_bind("rawlog", NULL, (SIGNAL_FUNC) cmd_rawlog);
+	command_bind("rawlog save", NULL, (SIGNAL_FUNC) cmd_rawlog_save);
+	command_bind("rawlog open", NULL, (SIGNAL_FUNC) cmd_rawlog_open);
+	command_bind("rawlog close", NULL, (SIGNAL_FUNC) cmd_rawlog_close);
 }
 
 void rawlog_deinit(void)
 {
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
+	command_unbind("rawlog", (SIGNAL_FUNC) cmd_rawlog);
+	command_unbind("rawlog save", (SIGNAL_FUNC) cmd_rawlog_save);
+	command_unbind("rawlog open", (SIGNAL_FUNC) cmd_rawlog_open);
+	command_unbind("rawlog close", (SIGNAL_FUNC) cmd_rawlog_close);
 }

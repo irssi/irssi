@@ -30,14 +30,8 @@
 #include "channels-setup.h"
 
 #include "ctcp.h"
-#include "irc.h"
+#include "irc-commands.h"
 #include "netsplit.h"
-
-void irc_commands_init(void);
-void irc_commands_deinit(void);
-
-void irc_rawlog_init(void);
-void irc_rawlog_deinit(void);
 
 void irc_expandos_init(void);
 void irc_expandos_deinit(void);
@@ -116,7 +110,6 @@ void irc_core_init(void)
 	irc_irc_init();
 	lag_init();
 	netsplit_init();
-	irc_rawlog_init();
 	irc_expandos_init();
 
 	module_register("core", "irc");
@@ -127,7 +120,6 @@ void irc_core_deinit(void)
 	signal_emit("chat protocol deinit", 1, chat_protocol_find("IRC"));
 
 	irc_expandos_deinit();
-	irc_rawlog_deinit();
 	netsplit_deinit();
 	lag_deinit();
 	irc_commands_deinit();

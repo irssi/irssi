@@ -14,7 +14,7 @@
 #define IS_IRCNET(ircnet) IS_IRC_CHATNET(ircnet)
 #define IRCNET(ircnet) IRC_CHATNET(ircnet)
 
-typedef struct {
+struct _IRC_CHATNET_REC {
 #include "chatnet-rec.h"
 	int max_cmds_at_once;
 	int cmd_queue_speed;
@@ -23,7 +23,7 @@ typedef struct {
 
 	/* max. number of kicks/msgs/mode/whois per command */
 	int max_kicks, max_msgs, max_modes, max_whois;
-} IRC_CHATNET_REC;
+};
 
 void ircnet_create(IRC_CHATNET_REC *rec);
 

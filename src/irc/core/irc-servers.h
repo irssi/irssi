@@ -20,7 +20,7 @@
 
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
-typedef struct {
+struct _IRC_SERVER_CONNECT_REC {
 #include "server-connect-rec.h"
 
 	char *usermode;
@@ -31,10 +31,10 @@ typedef struct {
 	int max_query_chans;
 
 	int max_kicks, max_msgs, max_modes, max_whois;
-} IRC_SERVER_CONNECT_REC;
+};
 
 #define STRUCT_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC
-typedef struct {
+struct _IRC_SERVER_REC {
 #include "server-rec.h"
 
 	char *real_address; /* address the irc server gives */
@@ -87,7 +87,7 @@ typedef struct {
 	                            channels go here if they're "temporarily unavailable"
 				    because of netsplits */
 	void *chanqueries;
-} IRC_SERVER_REC;
+};
 
 IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn);
 

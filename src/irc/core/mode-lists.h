@@ -1,8 +1,6 @@
 #ifndef __MODE_LISTS_H
 #define __MODE_LISTS_H
 
-#include "irc-channels.h"
-
 typedef struct {
 	char *ban;
 	char *setby;

@@ -29,6 +29,5 @@ libfe_common_irc_a_SOURCES = \
 	module-formats.c 
 
 noinst_HEADERS = \
-	fe-common-irc.h \
 	module.h \
 	module-formats.h

@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "masks.h"
 #include "settings.h"
+#include "servers.h"
 
 #include "dcc-get.h"
 

@@ -6,6 +6,7 @@
 typedef struct {
 	char *name;
 	char *options;
+        int protocol; /* chat protocol required for this command */
         GSList *signals;
 } COMMAND_MODULE_REC;
 
@@ -26,10 +27,11 @@ enum {
 
         CMDERR_ERRNO, /* get the error from errno */
 	CMDERR_NOT_ENOUGH_PARAMS, /* not enough parameters given */
-	CMDERR_NOT_CONNECTED, /* not connected to IRC server */
+	CMDERR_NOT_CONNECTED, /* not connected to server */
 	CMDERR_NOT_JOINED, /* not joined to any channels in this window */
 	CMDERR_CHAN_NOT_FOUND, /* channel not found */
 	CMDERR_CHAN_NOT_SYNCED, /* channel not fully synchronized yet */
+	CMDERR_ILLEGAL_PROTO, /* requires different chat protocol than the active server */
 	CMDERR_NOT_GOOD_IDEA /* not good idea to do, -yes overrides this */
 };
 
@@ -56,10 +58,14 @@ extern char *current_command; /* the command we're right now. */
 
 /* Bind command to specified function. */
 void command_bind_to(const char *module, int pos, const char *cmd,
-		     const char *category, SIGNAL_FUNC func);
-#define command_bind(a, b, c) command_bind_to(MODULE_NAME, 1, a, b, c)
-#define command_bind_first(a, b, c) command_bind_to(MODULE_NAME, 0, a, b, c)
-#define command_bind_last(a, b, c) command_bind_to(MODULE_NAME, 2, a, b, c)
+                     int protocol, const char *category, SIGNAL_FUNC func);
+#define command_bind(a, b, c) command_bind_to(MODULE_NAME, 1, a, -1, b, c)
+#define command_bind_first(a, b, c) command_bind_to(MODULE_NAME, 0, a, -1, b, c)
+#define command_bind_last(a, b, c) command_bind_to(MODULE_NAME, 2, a, -1, b, c)
+
+#define command_bind_proto(a, b, c, d) command_bind_to(MODULE_NAME, 1, a, b, c, d)
+#define command_bind_proto_first(a, b, c, d) command_bind_to(MODULE_NAME, 0, a, b, c, d)
+#define command_bind_proto_last(a, b, c, d) command_bind_to(MODULE_NAME, 2, a, b, c, d)
 
 void command_unbind(const char *cmd, SIGNAL_FUNC func);
 

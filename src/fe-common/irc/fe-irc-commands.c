@@ -21,16 +21,16 @@
 #include "module.h"
 #include "module-formats.h"
 #include "signals.h"
-#include "commands.h"
 #include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
 
 #include "levels.h"
-#include "irc.h"
 #include "servers.h"
 #include "mode-lists.h"
 #include "nicklist.h"
+#include "irc-commands.h"
+#include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-queries.h"
 
@@ -56,8 +56,7 @@ static char *skip_target(char *target)
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	g_return_if_fail(data != NULL);
-
+        CMD_IRC_SERVER(server);
 	if (!IS_IRC_ITEM(item))
 		return;
 
@@ -76,9 +75,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	char *target, *text;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &text))
@@ -98,9 +95,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	char *target, *msg;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &msg))
@@ -118,9 +113,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	char *target, *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
@@ -148,9 +141,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	char *target, *text;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &text))
@@ -170,9 +161,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server,
 	char *channame, *msg;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
 			    PARAM_FLAG_GETREST, item, &channame, &msg))
@@ -249,9 +238,7 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	char *channel, *nicks;
 	void *free_arg;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 |
 			    PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
@@ -290,8 +277,7 @@ static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC
 	IRC_CHANNEL_REC *channel, *cur_channel;
 	GSList *tmp;
 
-	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	cur_channel = IRC_CHANNEL(item);
 	if (cur_channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
@@ -317,28 +303,6 @@ static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC
 	}
 }
 
-static void cmd_join(const char *data, IRC_SERVER_REC *server)
-{
-	if ((*data == '\0' || g_strncasecmp(data, "-invite", 7) == 0) &&
-	    server != NULL && server->last_invite == NULL) {
-                printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOT_INVITED);
-		signal_stop();
-	}
-}
-
-static void cmd_nick(const char *data, IRC_SERVER_REC *server)
-{
-	g_return_if_fail(data != NULL);
-
-	if (*data != '\0') return;
-	if (server == NULL || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	/* display current nick */
-	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_YOUR_NICK, server->nick);
-	signal_stop();
-}
-
 /* SYNTAX: VER [<target>] */
 static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -346,8 +310,7 @@ static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 
 	g_return_if_fail(data != NULL);
 
-	if (!IS_IRC_SERVER(server) || !server->connected)
-                cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 	if (*data == '\0' && !IS_IRC_ITEM(item))
 		cmd_return_error(CMDERR_NOT_JOINED);
 
@@ -465,21 +428,19 @@ static void cmd_sethost(const char *data, IRC_SERVER_REC *server)
 
 void fe_irc_commands_init(void)
 {
-	command_bind_last("me", NULL, (SIGNAL_FUNC) cmd_me);
-	command_bind_last("action", NULL, (SIGNAL_FUNC) cmd_action);
-	command_bind("notice", NULL, (SIGNAL_FUNC) cmd_notice);
-	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
-	command_bind("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
-	command_bind("wall", NULL, (SIGNAL_FUNC) cmd_wall);
-	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
-	command_bind("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
-	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
-	command_bind("nick", NULL, (SIGNAL_FUNC) cmd_nick);
-	command_bind("ver", NULL, (SIGNAL_FUNC) cmd_ver);
-	command_bind("topic", NULL, (SIGNAL_FUNC) cmd_topic);
-	command_bind("ts", NULL, (SIGNAL_FUNC) cmd_ts);
-	command_bind("oper", NULL, (SIGNAL_FUNC) cmd_oper);
-	command_bind("sethost", NULL, (SIGNAL_FUNC) cmd_sethost);
+	command_bind_irc_last("me", NULL, (SIGNAL_FUNC) cmd_me);
+	command_bind_irc_last("action", NULL, (SIGNAL_FUNC) cmd_action);
+	command_bind_irc("notice", NULL, (SIGNAL_FUNC) cmd_notice);
+	command_bind_irc("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
+	command_bind_irc("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
+	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
+	command_bind_irc("ban", NULL, (SIGNAL_FUNC) cmd_ban);
+	command_bind_irc("invitelist", NULL, (SIGNAL_FUNC) cmd_invitelist);
+	command_bind_irc("ver", NULL, (SIGNAL_FUNC) cmd_ver);
+	command_bind_irc("topic", NULL, (SIGNAL_FUNC) cmd_topic);
+	command_bind_irc("ts", NULL, (SIGNAL_FUNC) cmd_ts);
+	command_bind_irc("oper", NULL, (SIGNAL_FUNC) cmd_oper);
+	command_bind_irc("sethost", NULL, (SIGNAL_FUNC) cmd_sethost);
 }
 
 void fe_irc_commands_deinit(void)
@@ -492,8 +453,6 @@ void fe_irc_commands_deinit(void)
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("invitelist", (SIGNAL_FUNC) cmd_invitelist);
-	command_unbind("join", (SIGNAL_FUNC) cmd_join);
-	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);
 	command_unbind("ts", (SIGNAL_FUNC) cmd_ts);

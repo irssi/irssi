@@ -24,7 +24,6 @@
 #include "misc.h"
 #include "settings.h"
 
-#include "irc.h"
 #include "levels.h"
 #include "servers.h"
 #include "servers-redirect.h"
@@ -32,12 +31,14 @@
 #include "queries.h"
 #include "ignore.h"
 
-#include "fe-queries.h"
+#include "irc-servers.h"
 #include "irc-channels.h"
 #include "irc-nicklist.h"
 #include "irc-masks.h"
-#include "fe-windows.h"
+
 #include "printtext.h"
+#include "fe-queries.h"
+#include "fe-windows.h"
 
 #include "completion.h"
 

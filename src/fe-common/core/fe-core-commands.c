@@ -45,6 +45,7 @@ static int ret_texts[] = {
 	TXT_NOT_JOINED,
 	TXT_CHAN_NOT_FOUND,
 	TXT_CHAN_NOT_SYNCED,
+        TXT_ILLEGAL_PROTO,
 	TXT_NOT_GOOD_IDEA
 };
 
@@ -143,6 +144,43 @@ static void cmd_cat(const char *data)
 static void cmd_beep(void)
 {
         signal_emit("beep", 0);
+}
+
+static void cmd_nick(const char *data, SERVER_REC *server)
+{
+	g_return_if_fail(data != NULL);
+
+	if (*data != '\0') return;
+	if (server == NULL || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	/* display current nick */
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_YOUR_NICK, server->nick);
+	signal_stop();
+}
+
+static void cmd_join(const char *data, SERVER_REC *server)
+{
+	GHashTable *optlist;
+	char *channels;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "join", &optlist, &channels))
+		return;
+
+	server = cmd_options_get_server("join", optlist, server);
+	if (g_hash_table_lookup(optlist, "invite") &&
+	    server != NULL && server->last_invite == NULL) {
+                /* ..all this trouble just to print this error message */
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_INVITED);
+		signal_stop();
+	}
+
+	cmd_params_free(free_arg);
 }
 
 static void sig_stop(void)
@@ -277,6 +315,8 @@ void fe_core_commands_init(void)
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
 	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
+	command_bind_first("nick", NULL, (SIGNAL_FUNC) cmd_nick);
+	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_join);
 
 	signal_add("send command", (SIGNAL_FUNC) event_command);
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
@@ -293,6 +333,8 @@ void fe_core_commands_deinit(void)
 	command_unbind("version", (SIGNAL_FUNC) cmd_version);
 	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
+	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
+	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
 	signal_remove("send command", (SIGNAL_FUNC) event_command_last);

@@ -1,7 +1,10 @@
 #ifndef __IRC_H
 #define __IRC_H
 
-#include "irc-servers.h"
+typedef struct _IRC_CHATNET_REC IRC_CHATNET_REC;
+typedef struct _IRC_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC;
+typedef struct _IRC_SERVER_REC IRC_SERVER_REC;
+typedef struct _IRC_CHANNEL_REC IRC_CHANNEL_REC;
 
 /* From ircd 2.9.5:
      none    I line with ident
@@ -26,6 +29,7 @@
 	(a) == '+') /* modeless */
 
 #define IS_IRC_ITEM(rec) (IS_IRC_CHANNEL(rec) || IS_IRC_QUERY(rec))
+#define IRC_PROTOCOL (chat_protocol_lookup("IRC"))
 
 extern char *current_server_event; /* current server event being processed */
 

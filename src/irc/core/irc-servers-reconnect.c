@@ -23,7 +23,6 @@
 #include "network.h"
 #include "signals.h"
 
-#include "irc.h"
 #include "modes.h"
 #include "irc-servers.h"
 

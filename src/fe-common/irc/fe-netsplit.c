@@ -21,12 +21,11 @@
 #include "module.h"
 #include "module-formats.h"
 #include "signals.h"
-#include "commands.h"
 #include "levels.h"
 #include "settings.h"
 
-#include "irc.h"
 #include "irc-servers.h"
+#include "irc-commands.h"
 #include "ignore.h"
 #include "netsplit.h"
 
@@ -322,8 +321,7 @@ static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 {
 	GSList *list;
 
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+        CMD_IRC_SERVER(server);
 
 	if (server->split_servers == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -360,7 +358,7 @@ void fe_netsplit_init(void)
 	read_settings();
 	signal_add("netsplit new", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	command_bind("netsplit", NULL, (SIGNAL_FUNC) cmd_netsplit);
+	command_bind_irc("netsplit", NULL, (SIGNAL_FUNC) cmd_netsplit);
 }
 
 void fe_netsplit_deinit(void)

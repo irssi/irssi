@@ -22,7 +22,7 @@
 #include "signals.h"
 #include "misc.h"
 
-#include "irc.h"
+#include "irc-servers.h"
 #include "irc-queries.h"
 
 QUERY_REC *irc_query_create(const char *server_tag,

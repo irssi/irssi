@@ -1,8 +1,6 @@
 #ifndef __BANS_H
 #define __BANS_H
 
-#include "irc-channels.h"
-
 void bans_init(void);
 void bans_deinit(void);
 

@@ -26,6 +26,8 @@
 #include "misc.h"
 #include "settings.h"
 
+#include "irc-servers.h"
+
 #include "dcc-send.h"
 #include "dcc-chat.h"
 
@@ -188,6 +190,9 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	if (chat != NULL && (chat->mirc_ctcp ||
 			     g_strcasecmp(target, chat->nick) != 0))
 		chat = NULL;
+
+	if (!IS_IRC_SERVER(server))
+		server = NULL;
 
 	if ((server == NULL || !server->connected) && chat == NULL)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
