@@ -385,9 +385,10 @@ void term_addch(TERM_WINDOW *window, int chr)
 	if (term_type != TERM_TYPE_UTF8 ||
 	    (chr & 0x80) == 0 || (chr & 0x40) == 0) {
 		term_printed_text(1);
-		if (vcy != term_height || vcx != 0)
-			putc(chr, window->term->out);
 	}
+
+	if (vcy != term_height || vcx != 0)
+		putc(chr, window->term->out);
 }
 
 static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
