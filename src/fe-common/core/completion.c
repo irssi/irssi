@@ -171,12 +171,16 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos)
 GList *list_add_file(GList *list, const char *name)
 {
 	struct stat statbuf;
+	char *fname;
 
-	if (stat(name, &statbuf) != 0)
-		return list;
+	fname = convert_home(name);
+	if (stat(fname, &statbuf) == 0) {
+		list = g_list_append(list, !S_ISDIR(statbuf.st_mode) ? g_strdup(name) :
+				     g_strconcat(name, G_DIR_SEPARATOR_S, NULL));
+	}
 
-	return g_list_append(list, !S_ISDIR(statbuf.st_mode) ? g_strdup(name) :
-			     g_strconcat(name, G_DIR_SEPARATOR_S, NULL));
+        g_free(fname);
+	return list;
 }
 
 GList *filename_complete(const char *path)
@@ -194,11 +198,24 @@ GList *filename_complete(const char *path)
 
 	dir = g_dirname(realpath);
 	dirp = opendir(dir);
+	g_free(dir);
+	g_free(realpath);
 
-	basename = g_basename(realpath);
+	dir = g_dirname(path);
+
+	basename = g_basename(path);
 	len = strlen(basename);
 
 	while ((dp = readdir(dirp)) != NULL) {
+		if (dp->d_name[0] == '.') {
+			if (dp->d_name[1] == '\0' ||
+			    (dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
+				continue; /* skip . and .. */
+
+			if (basename[0] != '.')
+				continue;
+		}
+
 		if (len == 0 || strncmp(dp->d_name, basename, len) == 0) {
 			name = g_strdup_printf("%s"G_DIR_SEPARATOR_S"%s", dir, dp->d_name);
 			list = list_add_file(list, name);
@@ -207,7 +224,6 @@ GList *filename_complete(const char *path)
 	}
 	closedir(dirp);
 
-	g_free(realpath);
 	g_free(dir);
         return list;
 }
