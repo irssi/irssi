@@ -47,6 +47,12 @@
 
 #############################################################################
 
+# default foreground color (%N) - 0 is the "default terminal color"
+default_color = 0;
+# default foreground color when "0" can't be used,
+# such as with bolds and reverses. white is default.
+default_real_color = 7;
+
 # these characters are automatically replaced with specified color
 # (dark grey by default)
 replaces = { "[]<>=" = "%K$0-%n"; };
@@ -242,7 +248,7 @@ abstracts = {
 
   sbmode = "(%c+%n$0-)";
   sbaway = " (%GzZzZ%n)";
-  sbservertag = ":$0 (change with ^X)";
+  sbservertag = "%c:%n$0 (change with ^X)";
   sbmore = "%_-- more --%_";
   sblag = "{sb Lag: $0-}";
   sbmail = "{sb Mail: $0-}";
