@@ -31,7 +31,7 @@
 
 #include "hilight-text.h"
 
-#define DEFAULT_HILIGHT_CHECK_LEVEL \
+#define DEFAULT_HILIGHT_LEVEL \
 	(MSGLEVEL_PUBLIC | MSGLEVEL_MSGS | MSGLEVEL_NOTICES | MSGLEVEL_ACTIONS)
 
 static int hilight_next;
@@ -199,7 +199,7 @@ char *hilight_match(const char *channel, const char *nickmask, int level, const 
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_CHECK_LEVEL)) == 0)
+		if ((level & (rec->level > 0 ? rec->level : DEFAULT_HILIGHT_LEVEL)) == 0)
                         continue;
 		if ((rec->nick && nickmask == NULL) ||
 		    (!rec->nick && nickmask != NULL))
@@ -260,10 +260,12 @@ static void sig_print_text_stripped(WINDOW_REC *window, SERVER_REC *server, cons
                 window->last_color = atoi(color+1);
 	}
 
-	oldlevel = window->new_data;
-	window->new_data = NEWDATA_HILIGHT;
-	signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
-	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
+	if (window != active_win) {
+		oldlevel = window->new_data;
+		window->new_data = NEWDATA_HILIGHT;
+		signal_emit("window hilight", 2, window, GINT_TO_POINTER(oldlevel));
+		signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
+	}
 
 	hilight_next = FALSE;
 
@@ -397,22 +399,23 @@ static void cmd_hilight(const char *data)
 		hilights = g_slist_remove(hilights, rec);
 	}
 
-	hilights = g_slist_append(hilights, rec);
-	rec->nick = settings_get_bool("hilight_only_nick") ?
+	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
+		level2bits(replace_chars(levelarg, ',', ' '));
+	rec->nick = settings_get_bool("hilight_only_nick") &&
+		(rec->level == 0 || (rec->level & DEFAULT_HILIGHT_LEVEL) == rec->level) ?
 		g_hash_table_lookup(optlist, "nonick") == NULL :
 		g_hash_table_lookup(optlist, "nick") != NULL;
 	rec->nickmask = g_hash_table_lookup(optlist, "mask") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "word") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 
-	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
-		level2bits(replace_chars(levelarg, ',', ' '));
 	if (colorarg != NULL && *colorarg != '\0')
 		rec->color = g_strdup(colorarg);
 
-	hilight_print(g_slist_index(hilights, rec)+1, rec);
-
+	hilights = g_slist_append(hilights, rec);
 	hilight_add_config(rec);
+
+	hilight_print(g_slist_index(hilights, rec)+1, rec);
         cmd_params_free(free_arg);
 }
 
