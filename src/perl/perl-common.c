@@ -561,12 +561,15 @@ void perl_common_stop(void)
 {
         g_hash_table_foreach(iobject_stashes, (GHFunc) free_iobject_hash, NULL);
 	g_hash_table_destroy(iobject_stashes);
+        iobject_stashes = NULL;
 
 	g_hash_table_foreach(plain_stashes, (GHFunc) g_free, NULL);
 	g_hash_table_destroy(plain_stashes);
+        plain_stashes = NULL;
 
 	g_slist_foreach(use_protocols, (GFunc) g_free, NULL);
-        g_slist_free(use_protocols);
+	g_slist_free(use_protocols);
+        use_protocols = NULL;
 
 	signal_remove("chat protocol created", (SIGNAL_FUNC) perl_register_protocol);
 	signal_remove("chat protocol destroyed", (SIGNAL_FUNC) perl_unregister_protocol);

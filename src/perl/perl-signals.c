@@ -435,6 +435,7 @@ void perl_signals_stop(void)
 		g_hash_table_foreach(signals[n],
 				     (GHFunc) signal_destroy_hash, NULL);
 		g_hash_table_destroy(signals[n]);
+                signals[n] = NULL;
 	}
 }
 
