@@ -10,7 +10,7 @@ replaces = {
 
 abstracts = {
 # generic
-  line_start = "%B-%W!%B-%n";
+  line_start = "%B-%W!%B-%n ";
   hilight = "%_$0-%_";
 
   channel = "%_$0-%_";
