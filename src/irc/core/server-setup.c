@@ -357,11 +357,16 @@ static void read_servers(void)
 	}
 }
 
+static void read_settings(void)
+{
+	g_free_and_null(source_host_ip);
+
+	source_host_ok = FALSE;
+        get_source_host_ip();
+}
+
 void servers_setup_init(void)
 {
-	source_host_ok = FALSE;
-	source_host_ip = NULL;
-
 	settings_add_int("server", "server_reconnect_time", 300);
 	settings_add_str("server", "hostname", "");
 	settings_add_bool("server", "skip_motd", FALSE);
@@ -377,15 +382,22 @@ void servers_setup_init(void)
 	settings_add_str("ircproxy", "proxy_string", "CONNECT %s %d");
 
 	init_userinfo();
-
 	read_servers();
+
+	source_host_ip = NULL;
+	read_settings();
+
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_add("setup reread", (SIGNAL_FUNC) read_servers);
 }
 
 void servers_setup_deinit(void)
 {
+	g_free_not_null(source_host_ip);
+
 	while (setupservers != NULL)
 		setupserver_destroy(setupservers->data);
 
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("setup reread", (SIGNAL_FUNC) read_servers);
 }
