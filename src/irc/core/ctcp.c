@@ -191,7 +191,7 @@ static void ctcp_deinit_server(IRC_SERVER_REC *server)
 
 void ctcp_init(void)
 {
-	settings_add_str("misc", "ctcp_version_reply", PACKAGE" v$J - running on $sysname $sysrelease");
+	settings_add_str("misc", "ctcp_version_reply", PACKAGE" v$J - running on $sysname");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) ctcp_deinit_server);
