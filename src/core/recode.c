@@ -25,8 +25,6 @@
 #include "lib-config/iconfig.h"
 #include "misc.h"
 
-#include <locale.h>
-
 #ifdef HAVE_GLIB2
 static gboolean recode_get_charset(const char **charset)
 {
@@ -34,9 +32,7 @@ static gboolean recode_get_charset(const char **charset)
 	if (**charset)
 		/* we use the same test as in src/fe-text/term.c:123 */
 			return !g_strcasecmp(*charset, "utf-8");
-	
-	/* we have to set LC_ALL to "" to get the charset of the user */
-	setlocale(LC_ALL, "");
+
 	return g_get_charset(charset);
 }
 #endif

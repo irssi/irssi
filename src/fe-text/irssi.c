@@ -362,6 +362,10 @@ int main(int argc, char **argv)
 	   of UTF-8 currently.. */
 	setlocale(LC_CTYPE, "");
 
+	/* to get the users's charset with g_get_charset() properly you have 
+	   to call setlocale(LC_ALL, "") aswell */
+	setlocale(LC_ALL, "");
+	
 	textui_init();
 	args_register(options);
 	args_execute(argc, argv);
