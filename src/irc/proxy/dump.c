@@ -167,7 +167,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 
 		if (str->len >= 500) {
 			g_string_append_c(str, '\n');
-			proxy_outdata(client, str->str);
+			proxy_outdata(client, "%s", str->str);
 			create_names_start(str, channel, client);
 			first = TRUE;
 		}
@@ -188,7 +188,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	g_slist_free(nicks);
 
 	g_string_append_c(str, '\n');
-	proxy_outdata(client, str->str);
+	proxy_outdata(client, "%s", str->str);
 	g_string_free(str, TRUE);
 
 	proxy_outdata(client, ":%s 366 %s %s :End of /NAMES list.\n",
