@@ -37,6 +37,7 @@ static int queryclose_tag, query_auto_close;
 static void signal_query_created(QUERY_REC *query, gpointer automatic)
 {
 	window_item_create((WI_ITEM_REC *) query, GPOINTER_TO_INT(automatic));
+        printformat(query->server, query->nick, MSGLEVEL_CLIENTNOTICE, IRCTXT_QUERY_STARTED, query->nick);
 }
 
 static void signal_query_created_curwin(QUERY_REC *query)

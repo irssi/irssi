@@ -197,6 +197,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "ignore_line", "$[-4]0 $1: $2 $3 $4", 5, { 1, 0, 0, 0, 0 } },
 	{ "ignore_footer", "", 0 },
 	{ "talking_in", "You are now talking in %_$0%_", 1, { 0 } },
+	{ "query_start", "Starting query with %_$0%_", 1, { 0 } },
 	{ "no_query", "No query with %_$0%_", 1, { 0 } },
 	{ "no_msgs_got", "You have not received a message from anyone yet", 0 },
 	{ "no_msgs_sent", "You have not sent a message to anyone yet", 0 },
