@@ -475,7 +475,7 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, GList *line,
 
         /* clear the rest of the view */
 	while (lines > 0) {
-		screen_move(view->window, ypos, 0);
+		screen_move(view->window, 0, ypos);
 		screen_clrtoeol(view->window);
 		ypos++; lines--;
 	}
