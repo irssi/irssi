@@ -75,6 +75,8 @@ void channel_destroy(CHANNEL_REC *channel)
 	g_free_not_null(channel->key);
 	g_free(channel->mode);
 	g_free(channel->name);
+
+        channel->type = 0;
 	g_free(channel);
 }
 

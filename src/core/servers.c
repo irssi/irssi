@@ -402,6 +402,8 @@ int server_unref(SERVER_REC *server)
 	g_free(server->away_reason);
 	g_free(server->nick);
 	g_free(server->tag);
+
+	server->type = 0;
 	g_free(server);
         return FALSE;
 }
@@ -485,7 +487,9 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
 	g_free_not_null(conn->channels);
         g_free_not_null(conn->away_reason);
-        g_free(conn);
+
+        conn->type = 0;
+	g_free(conn);
 }
 
 void server_change_nick(SERVER_REC *server, const char *nick)
