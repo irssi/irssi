@@ -496,11 +496,11 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	/* do automatic /WHOWAS if any of the nicks wasn't found */
 	query = get_redirect_nicklist(query, &free_nick);
 
-	server_redirect_event(SERVER(server), query, 2,
+	server_redirect_event(SERVER(server), query, 3,
 			      "event 318", "event 318", 1,
 			      "event 402", event_402, -1,
-			      "event 311", "whois event", 1,
-			      "event 401", "whois not found", 1, NULL);
+			      "event 401", "whois not found", 1,
+			      "event 311", "whois event", 1, NULL);
 	if (free_nick) g_free(query);
 	cmd_params_free(free_arg);
 }
@@ -931,12 +931,40 @@ static void sig_connected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	server_redirect_init((SERVER_REC *) server, "", 2, "event 318", "event 402", "event 401",
+	/* FIXME: these two aren't probably needed? this whole redirection
+	   thing might need some rethinking :) */
+	/* WHOIS */
+	/*server_redirect_init(SERVER(server), "", 2,
+			     "event 318", "event 402", "event 401",
 			     "event 301", "event 311", "event 312", "event 313",
-			     "event 317", "event 319", NULL);
+			     "event 317", "event 319", NULL);*/
 
-	/* gui-gnome can use server_redirect_event() in who/list commands so
-	   we can't use "command who" or list here.. */
+	/* NICK */
+	/*server_redirect_init(SERVER(server), "", 5,
+			     "event nick", "event 433", "event 437",
+			     "event 432", "event 438", NULL);*/
+
+	/* problem (doesn't really apply currently since there's no GUI):
+
+	   second argument of server_redirect_init() is the command that
+	   generates the redirection automatically when it's called, but the
+	   command handler doesn't really know about the redirection itself.
+
+	   every time the command is called, this redirection is generated.
+	   this is a problem if the redirection is wanted sometimes but not
+	   always. for example /WHO #channel could create a window with a
+	   list of people in channel redirecting WHO's events to it's own use,
+	   but /WHO -nogui #channel would use the default WHO handler which
+	   doesn't know anything about redirection. with GUI /WHO the
+	   redirection would be done twice then..
+
+	   so the kludgy workaround currently is this: make the default
+	   handler handle the redirection always.. when default WHO/LIST
+	   handler is called, they call
+	   server_redirect_default("bogus command who") or ..list..
+
+	   this is really a problem if some script/plugin wants to override
+           some default command to use redirections.. */
 	server_redirect_init(SERVER(server), "bogus command who", 2, "event 401", "event 315", "event 352", NULL);
 	server_redirect_init(SERVER(server), "bogus command list", 1, "event 321", "event 322", "event 323", NULL);
 }
