@@ -420,16 +420,25 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 	signal_emit("away mode changed", 1, server);
 }
 
-void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
-			    const char *nicks, const char *mode)
+void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
+			    const char *mode)
 {
 	GString *str;
 	int num, modepos;
 	char **nick, **nicklist;
 
-	g_return_if_fail(IS_IRC_SERVER(server));
-	g_return_if_fail(channel != NULL && nicks != NULL && mode != NULL);
+	g_return_if_fail(IS_IRC_CHANNEL(channel));
+	g_return_if_fail(nicks != NULL && mode != NULL);
 	if (*nicks == '\0') return;
+
+	if (!channel->chanop) {
+                /* not op - can we do anything? */
+		if (!channel->ownnick->halfop)
+			return; /* not even halfop, abort */
+
+		if (mode[0] != '\0' && mode[1] == 'o')
+                        return; /* halfops can't op/deop */
+	}
 
 	num = modepos = 0;
 	str = g_string_new(NULL);
@@ -441,7 +450,8 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
 
 		if (num == 0)
 		{
-			g_string_sprintf(str, "MODE %s %s", channel, mode);
+			g_string_sprintf(str, "MODE %s %s",
+					 channel->name, mode);
 			modepos = str->len;
 		} else {
 			/* insert the mode string */
@@ -450,13 +460,13 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
 
 		g_string_sprintfa(str, " %s", *nick);
 
-		if (++num == server->max_modes_in_cmd) {
+		if (++num == channel->server->max_modes_in_cmd) {
 			/* max. modes / command reached, send to server */
-			irc_send_cmd(server, str->str);
+			irc_send_cmd(channel->server, str->str);
 			num = 0;
 		}
 	}
-	if (num > 0) irc_send_cmd(server, str->str);
+	if (num > 0) irc_send_cmd(channel->server, str->str);
 
 	g_strfreev(nicklist);
 	g_string_free(str, TRUE);
@@ -585,7 +595,7 @@ static void cmd_op(const char *data, IRC_SERVER_REC *server,
 
 	nicks = get_nicks(channel, data, 0, -1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, channel->name, nicks, "+o");
+		channel_set_singlemode(channel, nicks, "+o");
 	g_free_not_null(nicks);
 }
 
@@ -600,7 +610,7 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server,
 
 	nicks = get_nicks(channel, data, 1, -1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, channel->name, nicks, "-o");
+		channel_set_singlemode(channel, nicks, "-o");
 	g_free_not_null(nicks);
 }
 
@@ -615,7 +625,7 @@ static void cmd_voice(const char *data, IRC_SERVER_REC *server,
 
 	nicks = get_nicks(channel, data, 0, 0);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, channel->name, nicks, "+v");
+		channel_set_singlemode(channel, nicks, "+v");
 	g_free_not_null(nicks);
 }
 
@@ -630,7 +640,7 @@ static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
 
 	nicks = get_nicks(channel, data, 0, 1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, channel->name, nicks, "-v");
+		channel_set_singlemode(channel, nicks, "-v");
 	g_free_not_null(nicks);
 }
 

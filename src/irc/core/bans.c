@@ -107,8 +107,7 @@ void ban_set(IRC_CHANNEL_REC *channel, const char *bans, int ban_type)
 		ban_type = default_ban_type;
 
 	masks = ban_get_masks(channel, bans, ban_type);
-	channel_set_singlemode(channel->server, channel->name,
-			       masks, "+b");
+	channel_set_singlemode(channel, masks, "+b");
         g_free(masks);
 }
 
@@ -145,8 +144,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 	g_strfreev(banlist);
 
 	if (str->len > 0)
-		channel_set_singlemode(channel->server, channel->name,
-				       str->str, "-b");
+		channel_set_singlemode(channel, str->str, "-b");
 	g_string_free(str, TRUE);
 }
 

@@ -33,8 +33,8 @@ int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode);
 void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			 const char *modestr);
 
-void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
-			    const char *nicks, const char *mode);
+void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
+			    const char *mode);
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		      const char *mode);
 
