@@ -344,12 +344,13 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 {
 	GUI_ENTRY_REC *rec;
 
-	rec = g_hash_table_lookup(input_entries, item->bar);
+	rec = g_hash_table_lookup(input_entries, item->bar->config->name);
 	if (rec == NULL) {
 		rec = gui_entry_create(item->xpos, item->bar->real_ypos,
 				       item->size, term_type == TERM_TYPE_UTF8);
 		gui_entry_set_active(rec);
-		g_hash_table_insert(input_entries, item->bar, rec);
+		g_hash_table_insert(input_entries,
+				    g_strdup(item->bar->config->name), rec);
 	}
 
 	if (get_size_only) {
@@ -361,17 +362,6 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	gui_entry_move(rec, item->xpos, item->bar->real_ypos,
 		       item->size);
 	gui_entry_redraw(rec); /* FIXME: this is only necessary with ^L.. */
-}
-
-static void sig_statusbar_destroyed(STATUSBAR_REC *bar)
-{
-	GUI_ENTRY_REC *rec;
-
-	rec = g_hash_table_lookup(input_entries, bar);
-	if (rec != NULL) {
-		gui_entry_destroy(rec);
-		g_hash_table_remove(input_entries, bar);
-	}
 }
 
 static void read_settings(void)
@@ -418,9 +408,8 @@ void statusbar_items_init(void)
         lag_timeout_tag = g_timeout_add(5000, (GSourceFunc) sig_lag_timeout, NULL);
 
         /* input */
-	input_entries = g_hash_table_new((GHashFunc) g_direct_hash,
-					 (GCompareFunc) g_direct_equal);
-	signal_add("statusbar destroyed", (SIGNAL_FUNC) sig_statusbar_destroyed);
+	input_entries = g_hash_table_new((GHashFunc) g_str_hash,
+					 (GCompareFunc) g_str_equal);
 
 	read_settings();
         signal_add_last("setup changed", (SIGNAL_FUNC) read_settings);
@@ -450,8 +439,8 @@ void statusbar_items_deinit(void)
         g_source_remove(lag_timeout_tag);
 
         /* input */
-	signal_remove("statusbar destroyed", (SIGNAL_FUNC) sig_statusbar_destroyed);
-        g_hash_table_destroy(input_entries);
+        g_hash_table_foreach(input_entries, (GHFunc) g_free, NULL);
+	g_hash_table_destroy(input_entries);
 
         signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
