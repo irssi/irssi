@@ -419,10 +419,12 @@ parse_special(cmd, data="", flags=0)
 	char *cmd
 	char *data
 	int flags
-CODE:
-	RETVAL = parse_special_string(cmd, NULL, NULL, data, NULL, flags);
-OUTPUT:
-	RETVAL
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = parse_special_string(cmd, NULL, NULL, data, NULL, flags);
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free_not_null(ret);
 
 char *
 get_irssi_dir()
@@ -438,19 +440,16 @@ CODE:
 OUTPUT:
 	RETVAL
 
-int
+char *
 version()
+PREINIT:
+	char version[100];
 CODE:
-	RETVAL = IRSSI_VERSION_DATE;
+	g_snprintf(version, sizeof(version), "%d.%d",
+		   IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
+	RETVAL = version;
 OUTPUT:
-	RETVAL
-
-int
-version_time()
-CODE:
-	RETVAL = IRSSI_VERSION_TIME;
-OUTPUT:
-	RETVAL
+        RETVAL
 
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
