@@ -1,6 +1,8 @@
 #include "module.h"
 #include "irssi-version.h"
 
+#define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
+
 void perl_signal_add_hash(int priority, SV *sv)
 {
 	HV *hv;
@@ -14,6 +16,41 @@ void perl_signal_add_hash(int priority, SV *sv)
 	hv_iterinit(hv);
 	while ((he = hv_iternext(hv)) != NULL)
                 perl_signal_add_to(hv_iterkey(he, &len), HeVAL(he), priority);
+}
+
+static void perl_command_bind_add_hash(int priority, SV *sv, char *category)
+{
+	HV *hv;
+        HE *he;
+	I32 len;
+
+        hv = hvref(sv);
+	hv_iterinit(hv);
+	while ((he = hv_iternext(hv)) != NULL)
+		perl_command_bind_to(hv_iterkey(he, &len), category, HeVAL(he), priority);
+}
+
+static void handle_command_bind(int priority, int items, SV *p0, SV *p1, SV *p2)
+{
+	char *category;
+	int hash;
+
+	hash = items > 0 && is_hvref(p0);
+	if (!hash) {
+		if (items < 2 || items > 3)
+			croak("Usage: Irssi::command_bind(signal, func, category)");
+	} else if (items > 2)
+		croak("Usage: Irssi::command_bind(signals_hash, category)");
+
+	if (!hash) {
+		category = items < 3 ? DEFAULT_COMMAND_CATEGORY :
+			(char *)SvPV(p2, PL_na);
+		perl_command_bind_to((char *)SvPV(p0, PL_na), category, p1, priority);
+	} else {
+		category = items < 2 ? DEFAULT_COMMAND_CATEGORY :
+			(char *)SvPV(p1, PL_na);
+		perl_command_bind_add_hash(priority, p0, category);
+	}
 }
 
 MODULE = Irssi::Core  PACKAGE = Irssi
@@ -360,28 +397,19 @@ PPCODE:
 	}
 
 void
-command_bind_first(cmd, func, category = "Perl scripts' commands")
-	char *cmd
-	char *category
-	SV *func
+command_bind_first(...)
 CODE:
-	perl_command_bind_first(cmd, category, func);
+	handle_command_bind(0, items, ST(0), ST(1), ST(2));
 
 void
-command_bind(cmd, func, category = "Perl scripts' commands")
-	char *cmd
-	char *category
-	SV *func
+command_bind(...)
 CODE:
-	perl_command_bind(cmd, category, func);
+	handle_command_bind(1, items, ST(0), ST(1), ST(2));
 
 void
-command_bind_last(cmd, func, category = "Perl scripts' commands")
-	char *cmd
-	char *category
-	SV *func
+command_bind_last(...)
 CODE:
-	perl_command_bind_last(cmd, category, func);
+	handle_command_bind(2, items, ST(0), ST(1), ST(2));
 
 void
 command_runsub(cmd, data, server, item)
