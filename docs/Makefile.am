@@ -1,6 +1,5 @@
 EXTRA_DIST = \
 	botnet.txt \
-	commands.txt \
 	design.txt \
 	formats.txt \
 	manual.txt \
