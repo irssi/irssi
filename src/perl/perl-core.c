@@ -20,6 +20,7 @@
 
 #define NEED_PERL_H
 #include "module.h"
+#include "modules.h"
 #include "signals.h"
 #include "misc.h"
 
@@ -363,6 +364,8 @@ void perl_core_init(void)
 
 	perl_scripts_init();
 	perl_scripts_autorun();
+
+	module_register("perl", "core");
 }
 
 void perl_core_deinit(void)

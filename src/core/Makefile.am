@@ -32,6 +32,7 @@ libcore_a_SOURCES = \
         $(memdebug_src) \
 	misc.c \
 	modules.c \
+	modules-load.c \
 	net-disconnect.c \
 	net-nonblock.c \
 	net-sendbuffer.c \
@@ -78,6 +79,7 @@ noinst_HEADERS = \
 	misc.h \
 	module.h \
 	modules.h \
+	modules-load.h \
 	net-disconnect.h \
 	net-nonblock.h \
 	net-sendbuffer.h \

@@ -139,6 +139,7 @@ void fe_irc_dcc_init(void)
 	command_bind("dcc list", NULL, (SIGNAL_FUNC) cmd_dcc_list);
 
 	theme_register(fecommon_irc_dcc_formats);
+	module_register("dcc", "fe-irc");
 }
 
 void fe_irc_dcc_deinit(void)

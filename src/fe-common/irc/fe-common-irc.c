@@ -85,8 +85,10 @@ void fe_common_irc_init(void)
 	fe_netsplit_init();
 	fe_netjoin_init();
 
-	fe_irc_modules_init();
 	settings_check();
+	module_register("core", "fe-irc");
+
+	fe_irc_modules_init();
 }
 
 void fe_common_irc_deinit(void)

@@ -211,7 +211,9 @@ void core_init(int argc, char *argv[])
 	signal_add("setup changed", (SIGNAL_FUNC) read_signals);
 	read_signals();
 
-        settings_check();
+	settings_check();
+
+        module_register("core", "core");
 }
 
 void core_deinit(void)

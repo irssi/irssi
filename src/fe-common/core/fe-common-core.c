@@ -206,6 +206,8 @@ void fe_common_core_init(void)
         signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
         signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);
         signal_add_last("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+
+	module_register("core", "fe");
 }
 
 void fe_common_core_deinit(void)

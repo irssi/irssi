@@ -309,6 +309,7 @@ void irc_flood_init(void)
 	signal_add("server disconnected", (SIGNAL_FUNC) flood_deinit_server);
 
 	autoignore_init();
+	module_register("flood", "irc");
 }
 
 void irc_flood_deinit(void)

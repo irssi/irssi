@@ -18,7 +18,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "module.h"
+#include "module-fe.h"
+#include "modules.h"
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
@@ -230,6 +231,8 @@ void fe_perl_init(void)
         signal_add("script error", (SIGNAL_FUNC) sig_script_error);
 	signal_add("complete command script load", (SIGNAL_FUNC) sig_complete_load);
 	signal_add("complete command script unload", (SIGNAL_FUNC) sig_complete_unload);
+
+	module_register("perl", "fe");
 }
 
 void fe_perl_deinit(void)

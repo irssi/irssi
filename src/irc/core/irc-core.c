@@ -103,6 +103,8 @@ void irc_core_init(void)
 	netsplit_init();
 	irc_rawlog_init();
 	irc_expandos_init();
+
+	module_register("core", "irc");
 }
 
 void irc_core_deinit(void)

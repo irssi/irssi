@@ -352,6 +352,8 @@ void irc_notifylist_init(void)
 	signal_add("event join", (SIGNAL_FUNC) event_join);
 	signal_add("channel wholist", (SIGNAL_FUNC) sig_channel_wholist);
 	signal_add("setup reread", (SIGNAL_FUNC) notifylist_read_config);
+
+	module_register("notifylist", "irc");
 }
 
 void irc_notifylist_deinit(void)

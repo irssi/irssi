@@ -13,27 +13,50 @@
 #define MODULE_DATA(rec) \
 	g_hash_table_lookup((rec)->module_data, MODULE_NAME)
 
+
+#ifdef HAVE_GMODULE
+#  define MODULE_IS_STATIC(rec) \
+        ((rec)->gmodule == NULL)
+#else
+#  define MODULE_IS_STATIC(rec) TRUE
+#endif
+
 enum {
 	MODULE_ERROR_ALREADY_LOADED,
 	MODULE_ERROR_LOAD,
 	MODULE_ERROR_INVALID
 };
 
+typedef struct _MODULE_REC MODULE_REC;
+
 typedef struct {
+	MODULE_REC *root;
 	char *name;
+        char *defined_module_name;
+
 #ifdef HAVE_GMODULE
-	GModule *gmodule;
+	GModule *gmodule; /* static, if NULL */
 #endif
-} MODULE_REC;
+	unsigned int initialized:1;
+} MODULE_FILE_REC;
+
+struct _MODULE_REC {
+	char *name;
+        GSList *files; /* list of modules that belong to this root module */
+};
 
 extern GSList *modules;
 
-MODULE_REC *module_find(const char *name);
+/* Register a new module. The `name' is the root module name, `submodule'
+   specifies the current module to be registered (eg. "perl", "fe").
+   The module is registered as statically loaded by default. */
+MODULE_FILE_REC *module_register_full(const char *name, const char *submodule,
+				      const char *defined_module_name);
+#define module_register(name, submodule) \
+        module_register_full(name, submodule, MODULE_NAME)
 
-/* Load module - automatically tries to load also the related non-core
-   modules given in `prefixes' (like irc, fe, fe_text, ..) */
-int module_load(const char *path, char **prefixes);
-void module_unload(MODULE_REC *module);
+MODULE_REC *module_find(const char *name);
+MODULE_FILE_REC *module_file_find(MODULE_REC *module, const char *name);
 
 #define MODULE_CHECK_CAST(object, cast, type_field, id) \
 	((cast *) module_check_cast(object, offsetof(cast, type_field), id))

@@ -18,4 +18,4 @@ extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implemen
 
 #include "common.h"
 
-#define MODULE_NAME "irssi-perl"
+#define MODULE_NAME "perl/core"

@@ -446,6 +446,8 @@ void irc_dcc_init(void)
 	dcc_send_init();
 	dcc_resume_init();
 	dcc_autoget_init();
+
+	module_register("dcc", "irc");
 }
 
 void irc_dcc_deinit(void)

@@ -1,7 +1,7 @@
 /*
  modules.c : irssi
 
-    Copyright (C) 1999-2000 Timo Sirainen
+    Copyright (C) 1999-2001 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,6 @@
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
-
-#include "commands.h"
-#include "settings.h"
 
 GSList *modules;
 
@@ -201,6 +198,36 @@ void module_uniq_destroy(const char *module)
 	}
 }
 
+/* Register a new module. The `name' is the root module name, `submodule'
+   specifies the current module to be registered (eg. "perl", "fe").
+   The module is registered as statically loaded by default. */
+MODULE_FILE_REC *module_register_full(const char *name, const char *submodule,
+				      const char *defined_module_name)
+{
+	MODULE_REC *module;
+        MODULE_FILE_REC *file;
+
+	module = module_find(name);
+	if (module == NULL) {
+		module = g_new0(MODULE_REC, 1);
+		module->name = g_strdup(name);
+
+                modules = g_slist_append(modules, module);
+	}
+
+	file = module_file_find(module, submodule);
+	if (file != NULL)
+		return file;
+
+	file = g_new0(MODULE_FILE_REC, 1);
+	file->root = module;
+	file->name = g_strdup(submodule);
+        file->defined_module_name = g_strdup(defined_module_name);
+
+	module->files = g_slist_append(module->files, file);
+        return file;
+}
+
 MODULE_REC *module_find(const char *name)
 {
 	GSList *tmp;
@@ -215,192 +242,18 @@ MODULE_REC *module_find(const char *name)
 	return NULL;
 }
 
-#ifdef HAVE_GMODULE
-static char *module_get_name(const char *path, int *start, int *end)
+MODULE_FILE_REC *module_file_find(MODULE_REC *module, const char *name)
 {
-	const char *name;
-	char *module_name, *ptr;
+	GSList *tmp;
 
-        name = NULL;
-	if (g_path_is_absolute(path)) {
-		name = strrchr(path, G_DIR_SEPARATOR);
-                if (name != NULL) name++;
+	for (tmp = module->files; tmp != NULL; tmp = tmp->next) {
+		MODULE_FILE_REC *rec = tmp->data;
+
+		if (strcmp(rec->name, name) == 0)
+                        return rec;
 	}
 
-	if (name == NULL)
-		name = path;
-
-	if (strncmp(name, "lib", 3) == 0)
-		name += 3;
-
-	module_name = g_strdup(name);
-	ptr = strchr(module_name, '.');
-	if (ptr != NULL) *ptr = '\0';
-
-	*start = (int) (name-path);
-	*end = *start + (ptr == NULL ? strlen(name) :
-			 (int) (ptr-module_name));
-
-	return module_name;
-}
-
-static GModule *module_open(const char *name)
-{
-	struct stat statbuf;
-	GModule *module;
-	char *path, *str;
-
-	if (g_path_is_absolute(name) ||
-	    (*name == '.' && name[1] == G_DIR_SEPARATOR))
-		path = g_strdup(name);
-	else {
-		/* first try from home dir */
-		str = g_strdup_printf("%s/modules", get_irssi_dir());
-		path = g_module_build_path(str, name);
-		g_free(str);
-
-		if (stat(path, &statbuf) == 0) {
-			module = g_module_open(path, (GModuleFlags) 0);
-			g_free(path);
-			return module;
-		}
-
-		/* module not found from home dir, try global module dir */
-		g_free(path);
-		path = g_module_build_path(MODULEDIR, name);
-	}
-
-	module = g_module_open(path, (GModuleFlags) 0);
-	g_free(path);
-	return module;
-}
-
-#define module_error(error, module, text) \
-	signal_emit("module error", 3, GINT_TO_POINTER(error), module, text)
-
-static int module_load_name(const char *path, const char *name, int silent)
-{
-	void (*module_init) (void);
-	GModule *gmodule;
-	MODULE_REC *rec;
-	char *initfunc;
-
-	gmodule = module_open(path);
-	if (gmodule == NULL) {
-		if (!silent) {
-			module_error(MODULE_ERROR_LOAD, name,
-				     g_module_error());
-		}
-		return FALSE;
-	}
-
-	/* get the module's init() function */
-	initfunc = g_strconcat(name, "_init", NULL);
-	if (!g_module_symbol(gmodule, initfunc, (gpointer *) &module_init)) {
-		if (!silent)
-			module_error(MODULE_ERROR_INVALID, name, NULL);
-		g_module_close(gmodule);
-		g_free(initfunc);
-		return FALSE;
-	}
-	g_free(initfunc);
-
-	rec = g_new0(MODULE_REC, 1);
-	rec->name = g_strdup(name);
-        rec->gmodule = gmodule;
-	modules = g_slist_append(modules, rec);
-
-	module_init();
-	settings_check_module(name);
-
-	signal_emit("module loaded", 1, rec);
-	return TRUE;
-}
-#endif
-
-/* Load module - automatically tries to load also the related non-core
-   modules given in `prefixes' (like irc, fe, fe_text, ..) */
-int module_load(const char *path, char **prefixes)
-{
-#ifdef HAVE_GMODULE
-        GString *realpath;
-	char *name, *pname;
-	int ret, start, end;
-
-	g_return_val_if_fail(path != NULL, FALSE);
-
-	if (!g_module_supported())
-		return FALSE;
-
-	name = module_get_name(path, &start, &end);
-	if (module_find(name)) {
-		module_error(MODULE_ERROR_ALREADY_LOADED, name, NULL);
-                g_free(name);
-		return FALSE;
-	}
-
-        /* load "module_core" instead of "module" if it exists */
-	realpath = g_string_new(path);
-	g_string_insert(realpath, end, "_core");
-
-        pname = g_strconcat(name, "_core", NULL);
-	ret = module_load_name(realpath->str, pname, TRUE);
-	g_free(pname);
-
-	if (!ret) {
-                /* load "module" - complain if it's not found */
-		ret = module_load_name(path, name, FALSE);
-	} else if (prefixes != NULL) {
-		/* load all the "prefix modules", like the fe-common, irc,
-		   etc. part of the module */
-		while (*prefixes != NULL) {
-                        g_string_assign(realpath, path);
-			g_string_insert(realpath, start, "_");
-			g_string_insert(realpath, start, *prefixes);
-
-                        pname = g_strconcat(*prefixes, "_", name, NULL);
-			module_load_name(realpath->str, pname, TRUE);
-			g_free(pname);
-
-                        prefixes++;
-		}
-	}
-
-        g_string_free(realpath, TRUE);
-	g_free(name);
-	return ret;
-#else
-        return FALSE;
-#endif
-}
-
-void module_unload(MODULE_REC *module)
-{
-#ifdef HAVE_GMODULE
-	void (*module_deinit) (void);
-	char *deinitfunc;
-
-	g_return_if_fail(module != NULL);
-
-	modules = g_slist_remove(modules, module);
-
-	signal_emit("module unloaded", 1, module);
-
-	/* call the module's deinit() function */
-	deinitfunc = g_strconcat(module->name, "_deinit", NULL);
-	if (g_module_symbol(module->gmodule, deinitfunc,
-			    (gpointer *) &module_deinit))
-		module_deinit();
-	g_free(deinitfunc);
-
-        settings_remove_module(module->name);
-	commands_remove_module(module->name);
-	signals_remove_module(module->name);
-
-	g_module_close(module->gmodule);
-	g_free(module->name);
-	g_free(module);
-#endif
+        return NULL;
 }
 
 static void uniq_get_modules(char *key, void *value, GSList **list)

@@ -179,14 +179,15 @@ FORMAT_REC fecommon_core_formats[] = {
 	/* ---- */
 	{ NULL, "Modules", 0 },
 
-	{ "module_header", "Loaded modules:", 0, },
-	{ "module_line", "  $0", 1, { 0 } },
+	{ "module_header", "Module               Type    Submodules", 0, },
+	{ "module_line", "$[!20]0 $[7]1 $2", 3, { 0, 0, 0 } },
 	{ "module_footer", "", 0, },
-	{ "module_already_loaded", "Module {hilight $0} already loaded", 1, { 0 } },
-	{ "module_load_error", "Error loading module {hilight $0}: $1", 2, { 0, 0 } },
-	{ "module_invalid", "{hilight $0} isn't Irssi module", 1, { 0 } },
-	{ "module_loaded", "Loaded module {hilight $0}", 1, { 0 } },
-	{ "module_unloaded", "Unloaded module {hilight $0}", 1, { 0 } },
+	{ "module_already_loaded", "Module {hilight $0/$1} already loaded", 2, { 0, 0 } },
+	{ "module_not_loaded", "Module {hilight $0/$1} is not loaded", 2, { 0, 0 } },
+	{ "module_load_error", "Error loading module {hilight $0/$1}: $2", 3, { 0, 0, 0 } },
+	{ "module_invalid", "{hilight $0/$1} isn't Irssi module", 2, { 0, 0 } },
+	{ "module_loaded", "Loaded module {hilight $0/$1}", 2, { 0, 0 } },
+	{ "module_unloaded", "Unloaded module {hilight $0/$1}", 2, { 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Commands", 0 },

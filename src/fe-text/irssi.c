@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "module-formats.h"
+#include "modules-load.h"
 #include "args.h"
 #include "signals.h"
 #include "levels.h"
@@ -135,6 +136,7 @@ static void textui_finish_init(void)
 	screen_refresh_thaw();
 
 	settings_check();
+	module_register("core", "fe-text");
 
 	fe_common_core_finish_init();
 
