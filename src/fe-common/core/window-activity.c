@@ -76,6 +76,7 @@ void window_item_activity(WI_ITEM_REC *item, int data_level,
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
 	WI_ITEM_REC *item;
+        char *tagtarget;
 	int data_level;
 
 	if (dest->window == active_win || (dest->level & hide_level))
@@ -88,9 +89,19 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if ((dest->level & MSGLEVEL_HILIGHT) == 0 &&
-	    hide_target_activity(data_level, dest->target))
-		return;
+	if ((dest->level & MSGLEVEL_HILIGHT) == 0) {
+		/* check for both target and tag/target */
+		if (hide_target_activity(data_level, dest->target))
+			return;
+
+		tagtarget = g_strdup_printf("%s/%s", dest->server_tag,
+					    dest->target);
+		if (hide_target_activity(data_level, tagtarget)) {
+			g_free(tagtarget);
+			return;
+		}
+		g_free(tagtarget);
+	}
 
 	if (dest->target != NULL) {
 		item = window_item_find(dest->server, dest->target);
