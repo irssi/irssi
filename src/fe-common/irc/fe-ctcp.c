@@ -47,17 +47,17 @@ static void ctcp_print(const char *pre, const char *data, IRC_SERVER_REC *server
 
 static void ctcp_default_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
-    return ctcp_print("unknown CTCP", data, server, nick, addr, target);
+	ctcp_print("unknown CTCP", data, server, nick, addr, target);
 }
 
 static void ctcp_ping_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
-    return ctcp_print("CTCP PING", data, server, nick, addr, target);
+	ctcp_print("CTCP PING", data, server, nick, addr, target);
 }
 
 static void ctcp_version_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
 {
-    return ctcp_print("CTCP VERSION", data, server, nick, addr, target);
+	ctcp_print("CTCP VERSION", data, server, nick, addr, target);
 }
 
 static void ctcp_default_reply(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)

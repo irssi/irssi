@@ -13,10 +13,9 @@ irssi_text_DEPENDENCIES = @COMMON_LIBS@
 
 irssi_text_LDADD = \
 	@COMMON_LIBS@ \
-        $(PROG_LIBS) \
-        $(CURSES_LIBS) \
-	$(INTLLIBS) \
-	$(PERL_LDFLAGS)
+	$(PROG_LIBS) \
+	$(PERL_LDFLAGS) \
+        $(CURSES_LIBS)
 
 irssi_text_SOURCES = \
         gui-entry.c \

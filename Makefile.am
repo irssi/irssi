@@ -11,21 +11,7 @@ if BUILD_SERVERTEST
 SERVERTEST=servertest
 endif
 
-SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST) docs scripts
-
-## to automatically rebuild aclocal.m4 if any of the macros in
-## `macros/' change
-@MAINT@include macros/macros.dep
-@MAINT@macros/macros.dep: $(srcdir)/macros/Makefile.am
-@MAINT@	cd macros && $(MAKE) macros.dep
-
-if HAVE_GNOME
-desktopdir = $(datadir)/gnome/apps/Internet
-desktop_DATA = irssi.desktop
-
-corbadir = $(sysconfdir)/CORBA/servers
-corba_DATA = irssi.gnorba
-endif
+SUBDIRS = po intl src $(SERVERTEST) docs scripts
 
 confdir = $(sysconfdir)/irssi
 conf_DATA = config colorless.theme split.theme
@@ -40,7 +26,8 @@ EXTRA_DIST = \
 	irssi.spec \
 	$(conf_DATA) \
 	irssi.gnorba \
-	irssi.desktop
+	irssi.desktop \
+	irssi-config.in
 
 ## make rpms
 rpm: Makefile

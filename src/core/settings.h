@@ -8,7 +8,7 @@ typedef struct _config_rec CONFIG_REC;
 enum {
 	SETTING_TYPE_STRING,
 	SETTING_TYPE_INT,
-	SETTING_TYPE_BOOLEAN,
+	SETTING_TYPE_BOOLEAN
 };
 
 typedef struct {

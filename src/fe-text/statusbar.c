@@ -58,7 +58,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 		if (!rec->right_justify && xpos+rec->size < COLS) {
 			rec->xpos = xpos;
 
-			func = rec->func;
+			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);
 
 			if (resized) break;
@@ -73,7 +73,7 @@ static void statusbar_redraw_line(STATUSBAR_REC *bar)
 		if (rec->right_justify && rxpos-rec->size > xpos) {
 			rec->xpos = rxpos-rec->size;
 
-			func = rec->func;
+			func = (STATUSBAR_FUNC) rec->func;
 			func(rec, bar->ypos);
 
 			if (resized) break;
@@ -131,7 +131,7 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 
 	g_return_if_fail(item != NULL);
 
-	func = item->func;
+	func = (STATUSBAR_FUNC) item->func;
 	func(item, item->bar->ypos);
 }
 
@@ -215,7 +215,7 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar, int size, int right_jus
 	rec->xpos = -1;
 	rec->size = size;
 	rec->right_justify = right_justify;
-	rec->func = func;
+	rec->func = (void *) func;
 
 	return rec;
 }

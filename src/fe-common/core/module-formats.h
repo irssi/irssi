@@ -66,3 +66,5 @@ enum {
 
 extern FORMAT_REC fecommon_core_formats[];
 #define MODULE_FORMATS fecommon_core_formats
+
+#include "printformat.h"

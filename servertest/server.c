@@ -1,8 +1,8 @@
 #include <common.h>
 
-#include <irc-base/network.h>
+#include "core/network.h"
 
-#define FLOOD_TIMEOUT 50000
+#define FLOOD_TIMEOUT 1
 
 typedef struct
 {
@@ -12,19 +12,9 @@ typedef struct
 CHANNEL_REC;
 
 GList *channels;
-gchar *clientnick, *clienthost;
+gchar *clientnick, clienthost[MAX_IP_LEN];
 
 int clienth;
-
-gint gui_input_add(gint handle, GUIInputCondition condition,
-		   GUIInputFunction function, gpointer data)
-{
-    return -1;
-}
-
-void gui_input_remove(gint tag)
-{
-}
 
 /* Read a line */
 gint read_line(gboolean socket, gint handle, GString *output, GString *buffer)
@@ -135,7 +125,6 @@ void send_cmd(void)
 
     /* send msg to every channel */
     str[511] = '\0';
-
     for (tmp = g_list_first(channels); tmp != NULL; tmp = tmp->next)
     {
         CHANNEL_REC *rec = tmp->data;
@@ -246,12 +235,10 @@ void send_cmd(void)
 
         client_send(str);
     }
-
     makerand(str, 511);
     str[0] = ':';
     str[10] = '!';
     str[20] = '@';
-
     switch (rand() % 11)
     {
 	case 0:
@@ -330,7 +317,7 @@ void send_cmd(void)
             break;
         case 7:
             /* invite */
-            pos = 30+sprintf(str+30, " INVITE %s", clientnick);
+            pos = 30+sprintf(str+30, " INVITE %s ", clientnick);
             str[pos] = 'X';
             break;
         case 8:
@@ -358,11 +345,6 @@ void handle_command(char *str)
     {
         clientnick = g_strdup(str+5); /* got the nick */
     }
-}
-
-guint gui_timeout_add(guint32 interval, GUITimeoutFunction function, gpointer data)
-{
-    return -1;
 }
 
 int main(void)
@@ -406,8 +388,8 @@ int main(void)
         tv.tv_usec = FLOOD_TIMEOUT;
         if (select((serverh > clienth ? serverh : clienth)+1, &fdset, NULL, NULL, &tv) <= 0)
         {
-            /* nothing happened, bug the client with some commands.. */
-            if (clienth != -1 && clientnick != NULL) send_cmd();
+		/* nothing happened, bug the client with some commands.. */
+		if (clienth != -1 && clientnick != NULL) send_cmd();
         }
         else
 	{
@@ -434,7 +416,7 @@ int main(void)
                     clienth = net_accept(serverh, &clientip, &port);
                     if (clienth != -1)
 		    {
-			clienthost = g_strdup(net_ip2host(&clientip));
+			net_ip2host(&clientip, clienthost);
                         client_send(":server 001 pla");
                         client_send(":server 002 plapla");
                         client_send(":server 003 plaplapla");

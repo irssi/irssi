@@ -102,12 +102,12 @@ void config_node_set_int(CONFIG_NODE *parent, const char *key, int value)
 	char str[MAX_INT_STRLEN];
 
 	g_snprintf(str, sizeof(str), "%d", value);
-	return config_node_set_str(parent, key, str);
+	config_node_set_str(parent, key, str);
 }
 
 void config_node_set_bool(CONFIG_NODE *parent, const char *key, int value)
 {
-	return config_node_set_str(parent, key, value ? "yes" : "no");
+	config_node_set_str(parent, key, value ? "yes" : "no");
 }
 
 int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const char *value)

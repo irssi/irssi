@@ -5,8 +5,6 @@ AM_INIT_AUTOMAKE(irssi, 0.7.90)
 
 AM_MAINTAINER_MODE
 
-AM_ACLOCAL_INCLUDE(macros)
-
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CPP
@@ -15,9 +13,6 @@ AC_ARG_PROGRAM
 AM_PROG_LIBTOOL
 
 AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
-
-GNOME_INIT
-GNOME_SUPPORT_CHECKS
 
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
@@ -46,45 +41,6 @@ AC_ARG_WITH(mysql,
     		fi
 	fi,
 	want_mysql=no)
-
-AC_ARG_WITH(imlib,
-[  --with-imlib            Build with imlib support],
-	if test x$withval = xyes; then
-		want_imlib=yes
-	else
-		if test "x$withval" = xno; then
-        		want_imlib=no
-		else
-        		want_imlib=yes
-		fi
-	fi,
-	want_imlib=yes)
-
-AC_ARG_WITH(gtk,
-[  --with-gtk              Build GTK frontend],
-	if test x$withval = xyes; then
-		want_gtk=yes
-	else
-		if test "x$withval" = xno; then
-        		want_gtk=no
-		else
-        		want_gtk=yes
-		fi
-	fi,
-	want_gtk=yes)
-
-AC_ARG_WITH(gnome-panel,
-[  --with-gnome-panel      Build with gnome panel applet support],
-	if test x$withval = xyes; then
-		want_gnome_panel=yes
-	else
-		if test "x$withval" = xno; then
-        		want_gnome_panel=no
-		else
-        		want_gnome_panel=yes
-		fi
-	fi,
-	want_gnome_panel=yes)
 
 AC_ARG_WITH(textui,
 [  --with-textui           Build text frontend],
@@ -177,19 +133,6 @@ AC_ARG_ENABLE(ipv6,
 	fi,
 	want_ipv6=no)
 
-AC_ARG_ENABLE(gtk-hebrew,
-[  --enable-gtk-hebrew     Enable Hebrew support],
-	if test "x$enableval" = xno; then
-		want_gtk_hebrew=no
-		HEBREW_LIBS=""
-	else
-        	AC_DEFINE(GTK_HEBREW)
-        	AC_DEFINE_UNQUOTED(GTK_HEBREW_RC, "$enableval")
-        	HEBREW_LIBS="-lfribidi"
-		want_gtk_hebrew=yes
-	fi,
-	want_gtk_hebrew=no)
-
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -243,81 +186,12 @@ if test "x$want_socks" = "xyes"; then
 fi
 
 dnl **
-dnl ** check for gnome
-dnl **
-
-if test "x$want_gnome" = "xyes"; then
-	if test "x$GNOME_LIBS" = "x"; then
-        	want_gnome="no";
-        fi
-	if test "x$want_gtk" = "xno"; then
-        	want_gnome="no";
-        fi
-fi
-
-if test "x$want_gnome" = "xyes"; then
-	AC_DEFINE(HAVE_GTK)
-	AC_DEFINE(HAVE_GNOME)
-	AC_DEFINE(HAVE_IMLIB)
-
-	GUI_CFLAGS="$GNOME_INCLUDEDIR"
-
-	dnl **
-	dnl ** check for gnome panel applet library
-	dnl **
-
-        if test "x$want_gnome_panel" = "xyes"; then
-		AC_CHECK_LIB(panel_applet, applet_widget_init, [
-			GUI_LIBS="$GNOME_LIBDIR $GNOMEGNORBA_LIBS -lpanel_applet"
-			AC_DEFINE(HAVE_GNOME_PANEL)
-		], [
-			GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS"
-                	want_gnome_panel="no"
-		], $GNOME_LIBDIR $GNOMEGNORBA_LIBS -lpanel_applet)
-        else
-		GUI_LIBS="$GNOME_LIBDIR $GNOMEUI_LIBS"
-        fi
-else
-        want_gnome_panel="no"
-
-        if test "x$want_gtk" = "xyes"; then
-		AC_DEFINE(HAVE_GTK)
-		AM_PATH_GTK(1.2.0)
-	else
-		GTK_LIBS=
-	fi
-
-	if test "x$GTK_LIBS" != "x"; then
-		GUI_CFLAGS="$GTK_CFLAGS"
-		GUI_LIBS="$GTK_LIBS"
-
-		if test "x$want_imlib" = "xyes"; then
-			AM_PATH_GDK_IMLIB(, [define_imlib=true])
-			if test x$define_imlib = xtrue; then
-				AC_DEFINE(HAVE_IMLIB)
-        			GUI_CFLAGS="$GUI_CFLAGS $GDK_IMLIB_CFLAGS"
-        			GUI_LIBS="$GDK_IMLIB_LIBS"
-			fi
-		fi
-		GUI_LIBS="$GUI_LIBS ../lib-popt/libpopt.la"
-	fi
-fi
-
-if test "x$GUI_LIBS" != "x"; then
-	GUI_LIBS="$GUI_LIBS $HEBREW_LIBS $PROG_LIBS"
-fi
-
-AC_SUBST(GUI_LIBS)
-AC_SUBST(GUI_CFLAGS)
-
-
-dnl **
 dnl ** fe-text checks
 dnl **
 
 AM_PATH_GLIB(1.2.0,,, gmodule)
 
-PROG_LIBS="$PROG_LIBS $GLIB_LIBS ../lib-popt/libpopt.la"
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
 AC_SUBST(PROG_LIBS)
 
 dnl **
@@ -385,13 +259,10 @@ if test "$want_perl" = yes; then
 fi
 
 dnl ** check what we want to build
-AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
 AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
-AM_CONDITIONAL(HAVE_GNOME, test "$want_gnome" = "yes")
-AM_CONDITIONAL(HAVE_GNOME_PANEL, test "$want_gnome_panel" = "yes")
 AM_CONDITIONAL(HAVE_MYSQL, test "$want_mysql" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" = "yes")
 
@@ -401,17 +272,38 @@ dnl **
 dnl ** Keep all the libraries here so each frontend doesn't need to
 dnl ** keep track of them all
 dnl **
-CORE_LIBS="../core/libcore.la ../lib-config/libirssi_config.la"
-IRC_LIBS="../irc/libirc.la ../irc/core/libirc_core.la ../irc/dcc/libirc_dcc.la ../irc/flood/libirc_flood.la ../irc/notifylist/libirc_notifylist.la"
-FE_COMMON_LIBS="../fe-common/core/libfe_common_core.la ../fe-common/irc/libfe_common_irc.la ../fe-common/irc/notifylist/libfe_common_irc_notifylist.la ../fe-common/irc/dcc/libfe_common_irc_dcc.la ../fe-common/irc/flood/libfe_common_irc_flood.la"
-PERL_LIBS="../perl/libperl.la"
+dnl ** (these could be made configurable)
 
-AC_SUBST(CORE_LIBS)
-AC_SUBST(IRC_LIBS)
-AC_SUBST(FE_COMMON_LIBS)
+CHAT_MODULES="irc"
+irc_MODULES="dcc flood notifylist"
+
+dnl ****************************************
+
+AC_SUBST(CHAT_MODULES)
+AC_SUBST(irc_MODULES)
+
+CORE_LIBS="../core/libcore.la ../lib-config/libirssi_config.la ../lib-popt/libpopt.la"
+if test "$want_perl" = "yes"; then
+	PERL_LIBS="../perl/libperl.la"
+else
+	PERL_LIBS=""
+fi
+FE_COMMON_LIBS="../fe-common/core/libfe_common_core.la"
+
+CHAT_LIBS=""
+for c in $CHAT_MODULES; do
+	CHAT_LIBS="$CHAT_LIBS ../$c/lib$c.la ../$c/core/lib${c}_core.la"
+	FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/libfe_common_$c.la"
+	for s in `eval echo \\$${c}_MODULES`; do
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/lib${c}_$s.la"
+		FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/$s/libfe_common_${c}_$s.la"
+	done
+done
 
 dnl ** common libraries needed by frontends
-COMMON_LIBS="$PERL_LIBS $FE_COMMON_LIBS $IRC_LIBS $CORE_LIBS"
+COMMON_NOUI_LIBS="$PERL_LIBS $CHAT_LIBS $CORE_LIBS $INTLLIBS"
+COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
+AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
 
 dnl **
@@ -443,7 +335,6 @@ AC_OUTPUT(
 Makefile
 po/Makefile.in
 intl/Makefile
-macros/Makefile
 src/Makefile
 src/core/Makefile
 src/irc/Makefile
@@ -459,10 +350,6 @@ src/fe-common/irc/flood/Makefile
 src/fe-common/irc/notifylist/Makefile
 src/fe-none/Makefile
 src/fe-text/Makefile
-src/fe-gnome/Makefile
-src/fe-gnome/help/Makefile
-src/fe-gnome/help/C/Makefile
-src/fe-gnome/pixmaps/Makefile
 src/lib-config/Makefile
 src/lib-popt/Makefile
 src/perl/Makefile
@@ -471,16 +358,9 @@ servertest/Makefile
 scripts/Makefile
 docs/Makefile
 docs/help/Makefile
-plugins/Makefile
-plugins/sample/Makefile
-plugins/speech/Makefile
-plugins/sound/Makefile
-plugins/proxy/Makefile
-plugins/external/Makefile
-plugins/bot/Makefile
-plugins/sql/Makefile
 stamp.h
-irssi.spec)
+irssi.spec
+irssi-config)
 
 dnl ** for building from objdir
 if test "x$want_perl" = "xyes"; then
@@ -494,14 +374,6 @@ if test "x$want_perl" = "xyes"; then
 fi
 
 echo
-
-if test "x$GUI_LIBS" != "x"; then
-	echo Building GTK frontend ...... : yes
-else
-	echo Building GTK frontend ...... : no
-fi
-echo Building with GNOME ........ : $want_gnome
-echo Building with GNOME panel .. : $want_gnome_panel
 
 echo Building text frontend ..... : $want_textui
 echo Building irssi-bot ......... : $want_irssibot

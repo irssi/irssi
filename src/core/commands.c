@@ -310,7 +310,7 @@ char *cmd_get_callfuncs(const char *data, int *count, va_list *args)
 
 	ret = g_strdup(data);
 	for (tmp = cmdget_funcs; tmp != NULL; tmp = tmp->next) {
-		func = tmp->data;
+		func = (CMD_GET_FUNC) tmp->data;
 
 		old = ret;
 		ret = func(ret, count, args);
@@ -361,12 +361,12 @@ char *cmd_get_params(const char *data, int count, ...)
 
 void cmd_get_add_func(CMD_GET_FUNC func)
 {
-        cmdget_funcs = g_slist_prepend(cmdget_funcs, func);
+        cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
 void cmd_get_remove_func(CMD_GET_FUNC func)
 {
-        cmdget_funcs = g_slist_prepend(cmdget_funcs, func);
+        cmdget_funcs = g_slist_prepend(cmdget_funcs, (void *) func);
 }
 
 static void parse_outgoing(const char *line, SERVER_REC *server, void *item)

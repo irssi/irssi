@@ -32,8 +32,10 @@ enum {
 	IRCTXT_DCC_CONNECT_ERROR,
 	IRCTXT_DCC_CANT_CREATE,
 	IRCTXT_DCC_REJECTED,
-	IRCTXT_DCC_CLOSE,
+	IRCTXT_DCC_CLOSE
 };
 
 extern FORMAT_REC fecommon_irc_dcc_formats[];
 #define MODULE_FORMATS fecommon_irc_dcc_formats
+
+#include "printformat.h"

@@ -108,7 +108,7 @@ static char *get_long_variable_value(const char *key, void *server, void *item, 
 	*free_ret = FALSE;
 
 	/* expando? */
-	func = g_hash_table_lookup(expandos, key);
+	func = (EXPANDO_FUNC) g_hash_table_lookup(expandos, key);
 	if (func != NULL)
 		return func(server, item, free_ret);
 
@@ -502,7 +502,7 @@ void expando_create(const char *key, EXPANDO_FUNC func)
                 g_free(origkey);
 		g_hash_table_remove(expandos, key);
 	}
-	g_hash_table_insert(expandos, g_strdup(key), func);
+	g_hash_table_insert(expandos, g_strdup(key), (void *) func);
 }
 
 /* Destroy expando */

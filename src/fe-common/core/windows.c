@@ -181,6 +181,17 @@ void window_set_level(WINDOW_REC *window, int level)
         signal_emit("window level changed", 1, window);
 }
 
+/* return active item's name, or if none is active, window's name */
+char *window_get_active_name(WINDOW_REC *window)
+{
+	g_return_val_if_fail(window != NULL, NULL);
+
+	if (window->active != NULL)
+		return window->active->name;
+
+	return window->name;
+}
+
 WINDOW_REC *window_find_level(void *server, int level)
 {
 	WINDOW_REC *match;

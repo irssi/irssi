@@ -58,8 +58,11 @@ void window_change_server(WINDOW_REC *window, void *server);
 
 void window_set_refnum(WINDOW_REC *window, int refnum);
 void window_set_name(WINDOW_REC *window, const char *name);
-
 void window_set_level(WINDOW_REC *window, int level);
+
+/* return active item's name, or if none is active, window's name */
+char *window_get_active_name(WINDOW_REC *window);
+
 WINDOW_REC *window_find_level(void *server, int level);
 WINDOW_REC *window_find_closest(void *server, const char *name, int level);
 WINDOW_REC *window_find_refnum(int refnum);

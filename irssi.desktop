@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=irssi
-Comment=irssi IRC client
-Comment[pl]=irssi - klient IRC
-Icon=irssi-icon.png
-Exec=irssi
-Terminal=0
-Type=Application

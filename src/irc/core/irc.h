@@ -61,7 +61,7 @@ extern char *current_server_event; /* current server event being processed */
 
 /* Send command to IRC server */
 void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd);
-void irc_send_cmdv(IRC_SERVER_REC *server, const char *cmd, ...) G_GNUC_PRINTF (2, 3);;
+void irc_send_cmdv(IRC_SERVER_REC *server, const char *cmd, ...) G_GNUC_PRINTF (2, 3);
 /* Send command to IRC server, split to multiple commands if necessary so
    that command will never have more target nicks than `max_nicks'. Nicks
    are separated with commas. (works with /msg, /kick, ...) */

@@ -8,13 +8,11 @@ INCLUDES = \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/
 
-irssi_bot_DEPENDENCIES = @IRC_LIBS@ @CORE_LIBS@
+irssi_bot_DEPENDENCIES = @COMMON_NOUI_LIBS@
 
 irssi_bot_LDADD = \
-	@IRC_LIBS@ \
-	@CORE_LIBS@ \
-        $(PROG_LIBS) \
-	$(INTLLIBS) \
+	@COMMON_NOUI_LIBS@ \
+	$(PROG_LIBS) \
 	$(PERL_LDFLAGS)
 
 irssi_bot_SOURCES = \

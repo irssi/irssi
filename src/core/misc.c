@@ -377,7 +377,7 @@ int match_wildcards(const char *cmask, const char *data)
 	char *mask, *newmask, *p1, *p2;
 	int ret;
 
-	newmask = mask = strdup(cmask);
+	newmask = mask = g_strdup(cmask);
 	for (; *mask != '\0' && *data != '\0'; mask++) {
 		if (*mask == '?' || toupper(*mask) == toupper(*data)) {
 			data++;

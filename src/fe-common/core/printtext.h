@@ -24,32 +24,6 @@ typedef struct {
 #define PRINTFLAG_MIRC_COLOR    0x20
 #define PRINTFLAG_INDENT        0x40
 
-/* printformat(...) = printformat_format(module_formats, ...)
-
-   Could this be any harder? :) With GNU C compiler and C99 compilers,
-   use #define. With others use either inline functions if they are
-   supported or static functions if they are not..
- */
-#ifdef __GNUC__
-/* GCC */
-#  define printformat(server, channel, level, formatnum...) \
-	printformat_format(MODULE_FORMATS, server, channel, level, ##formatnum)
-#elif defined (_ISOC99_SOURCE)
-/* C99 */
-#  define printformat(server, channel, level, formatnum, ...) \
-	printformat_format(MODULE_FORMATS, server, channel, level, formatnum, __VA_ARGS__)
-#else
-/* inline/static */
-#ifdef G_CAN_INLINE
-inline
-#else
-static
-#endif
-void printformat(void *server, const char *channel, int level, int formatnum, ...)
-{
-        printformat_format(MODULE_FORMATS, server, channel, level, ##formatnum);
-}
-#endif
 void printformat_format(FORMAT_REC *formats, void *server, const char *channel, int level, int formatnum, ...);
 
 void printtext(void *server, const char *channel, int level, const char *str, ...);

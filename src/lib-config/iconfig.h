@@ -6,7 +6,7 @@ enum {
         NODE_TYPE_VALUE,
         NODE_TYPE_BLOCK,
         NODE_TYPE_LIST,
-	NODE_TYPE_COMMENT,
+	NODE_TYPE_COMMENT
 };
 
 #define has_node_value(a) \
