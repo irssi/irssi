@@ -369,6 +369,7 @@ void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) query);
 
+	hv_store(hv, "last_unread_msg", 15, newSViv(query->last_unread_msg), 0);
 	hv_store(hv, "address", 7, new_pv(query->address), 0);
 	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
 	hv_store(hv, "unwanted", 8, newSViv(query->unwanted), 0);
