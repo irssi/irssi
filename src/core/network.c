@@ -202,7 +202,6 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	if (my_ip != NULL) {
 		sin_set_ip(&so, my_ip);
 		if (bind(handle, &so.sa, SIZEOF_SOCKADDR(so)) < 0) {
-			/* failed, set it back to INADDR_ANY */
 			int old_errno = errno;
 
 			close(handle);
