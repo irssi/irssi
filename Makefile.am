@@ -20,8 +20,8 @@ SUBDIRS = po intl macros src $(PLUGINS) $(SERVERTEST) docs
 @MAINT@	cd macros && $(MAKE) macros.dep
 
 if HAVE_GNOME
-appletdir = $(datadir)/applets/Network
-applet_DATA = irssi.desktop
+desktopdir = $(datadir)/gnome/apps/Network
+desktop_DATA = irssi.desktop
 
 corbadir = $(sysconfdir)/CORBA/servers
 corba_DATA = irssi.gnorba
