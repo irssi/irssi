@@ -22,21 +22,32 @@
 #include "signals.h"
 #include "levels.h"
 #include "server.h"
+#include "misc.h"
+#include "settings.h"
 
 #include "windows.h"
 #include "window-items.h"
 
+static const char *noact_channels;
+
 static void sig_hilight_text(WINDOW_REC *window, SERVER_REC *server, const char *channel, gpointer levelptr, const char *msg)
 {
-	int level, oldlevel;
+	int level, oldlevel, new_data;
 
 	level = GPOINTER_TO_INT(levelptr);
 	if (window == active_win || (level & (MSGLEVEL_NEVER|MSGLEVEL_NO_ACT|MSGLEVEL_MSGS)))
 		return;
 
+	new_data = (level & MSGLEVEL_HILIGHT) ?
+		NEWDATA_MSG_FORYOU : NEWDATA_TEXT;
+
+	if (new_data < NEWDATA_MSG_FORYOU &&
+	    channel != NULL && find_substr(noact_channels, channel))
+		return;
+
 	oldlevel = window->new_data;
-	if (window->new_data < NEWDATA_TEXT) {
-		window->new_data = NEWDATA_TEXT;
+	if (window->new_data < new_data) {
+		window->new_data = new_data;
 		signal_emit("window hilight", 1, window);
 	}
 
@@ -80,6 +91,10 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 	GSList *tmp;
 	int level, oldlevel;
 
+	if (item->new_data < NEWDATA_MSG_FORYOU &&
+	    find_substr(noact_channels, item->name))
+		return;
+
 	window = window_item_window(item); level = 0;
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		item = tmp->data;
@@ -96,13 +111,22 @@ static void sig_hilight_window_item(WI_ITEM_REC *item)
 	signal_emit("window activity", 2, window, GINT_TO_POINTER(oldlevel));
 }
 
+static void read_settings(void)
+{
+	noact_channels = settings_get_str("noact_channels");
+}
+
 void window_activity_init(void)
 {
+	settings_add_str("lookandfeel", "noact_channels", "");
+
+	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);
 	signal_add("window item changed", (SIGNAL_FUNC) sig_dehilight);
 	signal_add("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_add("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void window_activity_deinit(void)
@@ -112,4 +136,5 @@ void window_activity_deinit(void)
 	signal_remove("window changed", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_remove("window dehilight", (SIGNAL_FUNC) sig_dehilight_window);
 	signal_remove("window item hilight", (SIGNAL_FUNC) sig_hilight_window_item);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
