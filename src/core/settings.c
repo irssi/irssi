@@ -452,7 +452,7 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 
 	if (strcmp(module, "fe-text") == 0) {
 		if (strcasecmp(node->key, "lag_min_show") == 0)
-			new_value = g_strdup_printf("%dms", old_value*100);
+			new_value = g_strdup_printf("%dms", old_value*10);
 		else if (strcasecmp(node->key, "scrollback_hours") == 0) {
 			new_value = g_strdup_printf("%dh", old_value);
 			new_key = "scrollback_time";
