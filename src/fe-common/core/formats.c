@@ -297,43 +297,13 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 		window_find_closest(server, target, level);
 }
 
-static gboolean term_is_utf8 (void)
-{
-  const char *charset;
-  
-  charset = settings_get_str("term_type");
-  if (*charset)
-    return ! g_strcasecmp(charset, "utf-8");
-
-  return g_get_charset(&charset);
-}
-
-static int advance (char const **str, gboolean utf8)
-{
-	if (utf8) {
-		gunichar c;
-      
-		c = g_utf8_get_char(*str);
-		*str = g_utf8_next_char(*str);
-
-		return g_unichar_iswide(c) ? 2 : 1;
-	} else {
-		*str += 1;
-
-		return 1;
-	}
-}
-
 /* Return length of text part in string (ie. without % codes) */
 int format_get_length(const char *str)
 {
         GString *tmp;
 	int len;
-	gboolean utf8;
 
         g_return_val_if_fail(str != NULL, 0);
-
-	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
 
         tmp = g_string_new(NULL);
 	len = 0;
@@ -351,7 +321,8 @@ int format_get_length(const char *str)
 				len++;
 		}
 
-		len += advance(&str, utf8);
+                len++;
+		str++;
 	}
 
 	g_string_free(tmp, TRUE);
@@ -365,12 +336,9 @@ int format_real_length(const char *str, int len)
 {
 	GString *tmp;
 	const char *start;
-	gboolean utf8;
 
         g_return_val_if_fail(str != NULL, 0);
         g_return_val_if_fail(len >= 0, 0);
-
-	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
 
         start = str;
         tmp = g_string_new(NULL);
@@ -390,7 +358,8 @@ int format_real_length(const char *str, int len)
 			}
 		}
 
-		len -= advance(&str, utf8);
+                len--;
+		str++;
 	}
 
 	g_string_free(tmp, TRUE);
