@@ -33,7 +33,7 @@
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
-int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7, 15 };
+int mirc_colors[] = { 15, 0, 1, 2, 12, 6, 5, 4, 14, 10, 3, 11, 9, 13, 8, 7 };
 static int scrollback_lines, scrollback_hours;
 
 static int scrollback_save_formats;
@@ -247,10 +247,11 @@ static void remove_old_lines(WINDOW_REC *window)
 static void get_colors(int flags, int *fg, int *bg)
 {
 	if (flags & PRINTFLAG_MIRC_COLOR) {
-		/* mirc colors */
-		*fg = *fg < 0 || *fg > 16 ?
-			/*current_theme->default_color*/0 : mirc_colors[*fg];
-		*bg = *bg < 0 || *bg > 16 ? 0 : mirc_colors[*bg];
+		/* mirc colors - real range is 0..15, but after 16
+		   colors wrap to 0, 1, ... */
+		*fg = *fg < 0 ?
+			/*current_theme->default_color*/0 : mirc_colors[*fg % 16];
+		*bg = *bg < 0 ? 0 : mirc_colors[*bg % 16];
 	} else {
 		/* default colors */
 		*fg = *fg < 0 || *fg > 15 ?
