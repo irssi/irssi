@@ -617,14 +617,24 @@ static THEME_REC *theme_find(const char *name)
 	return NULL;
 }
 
-THEME_REC *theme_load(const char *name)
+THEME_REC *theme_load(const char *setname)
 {
 	THEME_REC *theme;
 	struct stat statbuf;
-	char *fname;
+	char *fname, *name, *p;
+
+        name = g_strdup(setname);
+	p = strrchr(name, '.');
+	if (p != NULL && strcmp(p, ".theme") == 0) {
+		/* remove the trailing .theme */
+                *p = '\0';
+	}
 
 	theme = theme_find(name);
-	if (theme != NULL) return theme;
+	if (theme != NULL) {
+                g_free(name);
+		return theme;
+	}
 
 	/* check home dir */
 	fname = g_strdup_printf("%s/.irssi/%s.theme", g_get_home_dir(), name);
@@ -635,6 +645,7 @@ THEME_REC *theme_load(const char *name)
 		if (stat(fname, &statbuf) != 0) {
 			/* theme not found */
 			g_free(fname);
+			g_free(name);
 			return NULL;
 		}
 	}
@@ -643,6 +654,7 @@ THEME_REC *theme_load(const char *name)
 	theme_read(theme, theme->path, NULL);
 
 	g_free(fname);
+	g_free(name);
 	return theme;
 }
 
@@ -999,7 +1011,12 @@ static void read_settings(void)
 	theme = settings_get_str("theme");
 	if (strcmp(current_theme->name, theme) != 0) {
 		rec = theme_load(theme);
-		if (rec != NULL) current_theme = rec;
+		if (rec != NULL)
+			current_theme = rec;
+		else {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    TXT_THEME_NOT_FOUND, theme);
+		}
 	}
 }
 
