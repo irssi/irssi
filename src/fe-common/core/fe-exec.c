@@ -349,7 +349,7 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 static void sig_exec_input_reader(PROCESS_REC *rec)
 {
         char tmpbuf[512], *str;
-        unsigned int recvlen;
+        gsize recvlen;
 	int err, ret;
 
 	g_return_if_fail(rec != NULL);
