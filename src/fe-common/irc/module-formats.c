@@ -106,7 +106,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_modes", " {whois modes $1}", 2, { 0, 0 } },
 	{ "whois_realhost", "{whois hostname $1}", 2, { 0, 0 } },
 	{ "whois_channels", "{whois channels %|$1}", 2, { 0, 0 } },
-	{ "whois_away", " {whois away %|$1}", 2, { 0, 0 } },
+	{ "whois_away", "{whois away %|$1}", 2, { 0, 0 } },
 	{ "whois_special", "{whois  %|{hilight $1}}", 2, { 0, 0 } },
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
 	{ "end_of_whowas", "End of WHOWAS", 1, { 0 } },
