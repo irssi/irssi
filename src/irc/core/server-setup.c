@@ -296,7 +296,7 @@ void server_setup_add(SETUP_SERVER_REC *rec)
 {
 	if (g_slist_find(setupservers, rec) != NULL) {
 		setupserver_config_remove(rec);
-		setupservers = g_slist_append(setupservers, rec);
+		setupservers = g_slist_remove(setupservers, rec);
 	}
 
 	setupservers = g_slist_append(setupservers, rec);

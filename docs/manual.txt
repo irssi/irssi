@@ -417,19 +417,33 @@
 
  5.4 Server settings
 
-	/SERVER -add [-auto] [-ircnet <ircnet>] [-host <hostname>]
-	             [-cmdspeed <ms>] [-cmdmax <count>] <address>
-	             [<port> [<password> [<nick>]]]
+	/SERVER -add [-auto | -noauto] [-ircnet <ircnet>] [-host <hostname>]
+	             [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+		     <address> [<port> [<password>]]
 
-	    -auto: Automatically connect to server at startup
+	    -auto: Automatically connect to server at startup (default)
+	    -noauto: Don't connect to server at startup
 	    -ircnet: Specify what IRC network this server belongs to
 	    -host: Specify what host name to use, if you have multiple
 	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
 	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+	    -port: This is pretty much like the port argument later, except
+	           this can be used to modify existing server's port.
 
 	/SERVER -remove <address> [<port>]
 
 	/SERVER -list
+
+	Servers are identified by their name and port. You can have multiple
+	entries for the same server name but in different ports. This is
+	useful for IRC proxies, in one port you could have IRCNet proxy,
+	another port would have EFNet, etc.
+
+	If you wish to change existing server's port to something else, use
+	-port command. For example if you had irc.server.org in port 6667
+	and you wanted to change it to port 6668, use command:
+
+	/SERVER -add -port 6668 irc.server.org 6667
 
 	After connected to server, Irssi can automatically change your user
 	mode. You can set it with /SET usermode <mode>, default is +i.

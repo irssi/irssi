@@ -81,14 +81,14 @@ static void print_reconnects(void)
 static void server_add(const char *data)
 {
 	SETUP_SERVER_REC *rec;
-	char *params, *args, *ircnet, *host, *cmdspeed, *cmdmax;
-	char *addr, *portstr, *password, *nick;
+	char *params, *args, *ircnet, *host, *cmdspeed, *cmdmax, *portarg;
+	char *addr, *portstr, *password;
 	int port;
 
-	args = "ircnet host cmdspeed cmdmax";
+	args = "ircnet host cmdspeed cmdmax port";
 	params = cmd_get_params(data, 9 | PARAM_FLAG_MULTIARGS,
 				&args, &ircnet, &host, &cmdspeed, &cmdmax,
-				&addr, &portstr, &password, &nick);
+				&portarg, &addr, &portstr, &password);
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? 6667 : atoi(portstr);
 
@@ -98,17 +98,19 @@ static void server_add(const char *data)
 		rec->address = g_strdup(addr);
 		rec->port = port;
 	} else {
-		g_free_and_null(rec->ircnet);
-		g_free_and_null(rec->password);
-		g_free_and_null(rec->own_host);
+		if (*portarg != '\0') rec->port = atoi(portarg);
+		if (stristr(args, "-ircnet")) g_free_and_null(rec->ircnet);
+		if (*password != '\0') g_free_and_null(rec->password);
+		if (stristr(args, "-host")) g_free_and_null(rec->own_host);
 	}
 
-	rec->autoconnect = stristr(args, "-auto") != NULL;
+	if (stristr(args, "-auto")) rec->autoconnect = TRUE;
+	if (stristr(args, "-noauto")) rec->autoconnect = FALSE;
 	if (*ircnet != '\0') rec->ircnet = g_strdup(ircnet);
-	if (*password != '\0') rec->password = g_strdup(password);
+	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	if (*host != '\0') rec->own_host = g_strdup(host);
-	rec->cmd_queue_speed = atoi(cmdspeed);
-	rec->max_cmds_at_once = atoi(cmdmax);
+	if (*cmdspeed != '\0') rec->cmd_queue_speed = atoi(cmdspeed);
+	if (*cmdmax != '\0') rec->max_cmds_at_once = atoi(cmdmax);
 
 	server_setup_add(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_ADDED, addr, port);
@@ -180,7 +182,7 @@ static void cmd_server(const char *data)
 		return;
 	}
 
-	args = "ircnet host";
+	args = "ircnet host"; /* should be same as in connect_server() in src/irc/core/irc-commands.c */
 	params = cmd_get_params(data, 4 | PARAM_FLAG_MULTIARGS,
 				&args, &ircnetarg, &hostarg, &addr);
 
