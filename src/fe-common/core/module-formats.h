@@ -188,7 +188,11 @@ enum {
 	TXT_CONFIG_RELOADED,
 	TXT_CONFIG_MODIFIED,
 	TXT_GLIB_ERROR,
-        TXT_OVERWRITE_CONFIG
+        TXT_OVERWRITE_CONFIG,
+        TXT_SET_TITLE,
+        TXT_SET_ITEM,
+        TXT_SET_UNKNOWN,
+        TXT_SET_NOT_BOOLEAN
 };
 
 extern FORMAT_REC fecommon_core_formats[];

@@ -50,7 +50,8 @@ static void set_print(SETTINGS_REC *rec)
 	default:
 		value = "";
 	}
-	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%s = %s", rec->key, value);
+	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_SET_ITEM,
+		    rec->key, value);
 }
 
 static void set_boolean(const char *key, const char *value)
@@ -92,7 +93,8 @@ static void cmd_set(char *data)
 
 		if (strcmp(last_section, rec->section) != 0) {
 			/* print section */
-			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP, "%_[ %s ]", rec->section);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				    TXT_SET_TITLE, rec->section);
 			last_section = rec->section;
 		}
 
@@ -123,8 +125,10 @@ static void cmd_set(char *data)
 	}
 	g_slist_free(sets);
 
-        if (!found)
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown setting %s", key);
+        if (!found) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_SET_UNKNOWN, key);
+	 }
 
         cmd_params_free(free_arg);
 }
@@ -143,9 +147,9 @@ static void cmd_toggle(const char *data)
 
 	type = settings_get_type(key);
         if (type == -1)
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Unknown setting %_%s", key);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_UNKNOWN, key);
 	else if (type != SETTING_TYPE_BOOLEAN)
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Setting %_%s%_ isn't boolean, use /SET", key);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_NOT_BOOLEAN, key);
 	else {
 		set_boolean(key, *value != '\0' ? value : "TOGGLE");
                 set_print(settings_get_record(key));

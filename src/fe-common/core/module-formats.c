@@ -223,6 +223,10 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "config_modified", "Configuration file was modified since irssi was last started - do you want to overwrite the possible changes?", 1, { 0 } },
 	{ "glib_error", "{error GLib $0} $1", 2, { 0, 0 } },
 	{ "overwrite_config", "Overwrite config (y/N)?", 0 },
+	{ "set_title", "[{hilight $0}]", 1, { 0 } },
+	{ "set_item", "$0 = $1", 2, { 0, 0 } },
+	{ "set_unknown", "Unknown setting $0", 1, { 0 } },
+	{ "set_not_boolean", "Setting {hilight $0} isn't boolean, use /SET", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };
