@@ -120,7 +120,7 @@ static void parse_channel_mode(CHANNEL_REC *channel, const char *mode,
 			continue;
 		}
 
-		if (!HAS_MODE_ARG(*curmode))
+		if (!HAS_MODE_ARG(type, *curmode))
 			ptr = NULL;
 		else {
 			ptr = cmd_get_param(&modestr);
