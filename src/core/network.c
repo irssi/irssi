@@ -23,7 +23,11 @@
 #include "net-internal.h"
 
 #ifndef INADDR_NONE
-#define INADDR_NONE INADDR_BROADCAST
+#  define INADDR_NONE INADDR_BROADCAST
+#endif
+
+#ifndef EINPROGRESS
+#  define EINPROGESS 0 /* win32 */
 #endif
 
 union sockaddr_union {
@@ -39,6 +43,12 @@ union sockaddr_union {
 	sizeof(so.sin6) : sizeof(so.sin))
 #else
 #  define SIZEOF_SOCKADDR(so) (sizeof(so.sin))
+#endif
+
+#ifdef WIN32
+#  define g_io_channel_new(handle) g_io_channel_win32_new_stream_socket(handle)
+#else
+#  define g_io_channel_new(handle) g_io_channel_unix_new(handle)
 #endif
 
 /* Cygwin need this, don't know others.. */
@@ -128,20 +138,20 @@ int sin_get_port(union sockaddr_union *so)
 }
 
 /* Connect to socket */
-int net_connect(const char *addr, int port, IPADDR *my_ip)
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
 	IPADDR ip;
 
-	g_return_val_if_fail(addr != NULL, -1);
+	g_return_val_if_fail(addr != NULL, NULL);
 
 	if (net_gethostbyname(addr, &ip) == -1)
-		return -1;
+		return NULL;
 
 	return net_connect_ip(&ip, port, my_ip);
 }
 
 /* Connect to socket with ip address */
-int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -152,7 +162,7 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	handle = socket(ip->family, SOCK_STREAM, 0);
 
 	if (handle == -1)
-		return -1;
+		return NULL;
 
 	/* set socket options */
 #ifndef WIN32
@@ -174,33 +184,32 @@ int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	sin_set_port(&so, port);
 	ret = connect(handle, &so.sa, SIZEOF_SOCKADDR(so));
 
-#ifndef WIN32
 	if (ret < 0 && errno != EINPROGRESS) {
 		close(handle);
-		return -1;
+		return NULL;
 	}
-#endif
 
-	return handle;
+	return g_io_channel_new(handle);
 }
 
 /* Disconnect socket */
-void net_disconnect(int handle)
+void net_disconnect(GIOChannel *handle)
 {
-	g_return_if_fail(handle != -1);
+	g_return_if_fail(handle != NULL);
 
-	close(handle);
+	g_io_channel_close(handle);
+	g_io_channel_unref(handle);
 }
 
 /* Listen for connections on a socket. if `my_ip' is NULL, listen in any
    address. */
-int net_listen(IPADDR *my_ip, int *port)
+GIOChannel *net_listen(IPADDR *my_ip, int *port)
 {
 	union sockaddr_union so;
 	int ret, handle, opt = 1;
 	socklen_t len;
 
-	g_return_val_if_fail(port != NULL, -1);
+	g_return_val_if_fail(port != NULL, NULL);
 
 	memset(&so, 0, sizeof(so));
 	sin_set_port(&so, *port);
@@ -209,7 +218,7 @@ int net_listen(IPADDR *my_ip, int *port)
 	/* create the socket */
 	handle = socket(so.sin.sin_family, SOCK_STREAM, 0);
 	if (handle == -1)
-		return -1;
+		return NULL;
 
 	/* set socket options */
 #ifndef WIN32
@@ -222,44 +231,39 @@ int net_listen(IPADDR *my_ip, int *port)
 
 	/* specify the address/port we want to listen in */
 	ret = bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
-	if (ret < 0) {
-		close(handle);
-		return -1;
+	if (ret >= 0) {
+		/* get the actual port we started listen */
+		len = SIZEOF_SOCKADDR(so);
+		ret = getsockname(handle, &so.sa, &len);
+		if (ret >= 0) {
+			*port = sin_get_port(&so);
+
+			/* start listening */
+			if (listen(handle, 1) >= 0)
+                                return g_io_channel_new(handle);
+		}
+
 	}
 
-	/* get the actual port we started listen */
-	len = SIZEOF_SOCKADDR(so);
-	ret = getsockname(handle, &so.sa, &len);
-	if (ret < 0) {
-		close(handle);
-		return -1;
-	}
-
-	*port = sin_get_port(&so);
-
-	/* start listening */
-	if (listen(handle, 1) < 0) {
-		close(handle);
-		return -1;
-	}
-
-	return handle;
+        /* error */
+	close(handle);
+	return NULL;
 }
 
 /* Accept a connection on a socket */
-int net_accept(int handle, IPADDR *addr, int *port)
+GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 {
 	union sockaddr_union so;
 	int ret;
 	socklen_t addrlen;
 
-	g_return_val_if_fail(handle != -1, -1);
+	g_return_val_if_fail(handle != NULL, NULL);
 
 	addrlen = SIZEOF_SOCKADDR(so);
-	ret = accept(handle, &so.sa, &addrlen);
+	ret = accept(g_io_channel_unix_get_fd(handle), &so.sa, &addrlen);
 
 	if (ret < 0)
-		return -1;
+		return NULL;
 
 	if (addr != NULL) sin_get_ip(&so, addr);
 	if (port != NULL) *port = sin_get_port(&so);
@@ -267,68 +271,54 @@ int net_accept(int handle, IPADDR *addr, int *port)
 #ifndef WIN32
 	fcntl(ret, F_SETFL, O_NONBLOCK);
 #endif
-	return ret;
+	return g_io_channel_new(ret);
 }
 
 /* Read data from socket, return number of bytes read, -1 = error */
-int net_receive(int handle, char *buf, int len)
+int net_receive(GIOChannel *handle, char *buf, int len)
 {
-#ifdef BLOCKING_SOCKETS
-	fd_set set;
-	struct timeval tv;
-#endif
-	int ret;
+	int ret, err;
 
-	g_return_val_if_fail(handle != -1, -1);
+	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(buf != NULL, -1);
 
-#ifdef BLOCKING_SOCKETS
-	FD_ZERO(&set);
-	FD_SET(handle, &set);
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-	if (select(handle+1, &set, NULL, NULL, &tv) <= 0 ||
-	    !FD_ISSET(handle, &set)) return 0;
-#endif
-
-	ret = recv(handle, buf, len, 0);
-	if (ret == 0)
+	err = g_io_channel_read(handle, buf, len, &ret);
+	if (err == 0 && ret == 0)
 		return -1; /* disconnected */
 
-	if (ret == -1 && (errno == EWOULDBLOCK || errno == EAGAIN ||
-			  errno == EINTR))
+	if (err == G_IO_ERROR_AGAIN || errno == EINTR)
 		return 0; /* no bytes received */
 
-	return ret;
+	return err == 0 ? ret : -1;
 }
 
 /* Transmit data, return number of bytes sent, -1 = error */
-int net_transmit(int handle, const char *data, int len)
+int net_transmit(GIOChannel *handle, const char *data, int len)
 {
-	int n;
+	int ret, err;
 
-	g_return_val_if_fail(handle != -1, -1);
+	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(data != NULL, -1);
 
-	n = send(handle, data, len, 0);
-	if (n == -1 && (errno == EWOULDBLOCK || errno == EAGAIN ||
-			errno == EINTR || errno == EPIPE))
+	err = g_io_channel_write(handle, (char *) data, len, &ret);
+	if (err == G_IO_ERROR_AGAIN || errno == EINTR || errno == EPIPE)
 		return 0;
 
-	return n > 0 ? n : -1;
+	return err == 0 ? ret : -1;
 }
 
 /* Get socket address/port */
-int net_getsockname(int handle, IPADDR *addr, int *port)
+int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 {
 	union sockaddr_union so;
 	socklen_t len;
 
-	g_return_val_if_fail(handle != -1, -1);
+	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(addr != NULL, -1);
 
 	len = SIZEOF_SOCKADDR(so);
-	if (getsockname(handle, (struct sockaddr *) &so, &len) == -1)
+	if (getsockname(g_io_channel_unix_get_fd(handle),
+			(struct sockaddr *) &so, &len) == -1)
 		return -1;
 
         sin_get_ip(&so, addr);
@@ -469,12 +459,13 @@ int net_host2ip(const char *host, IPADDR *ip)
 }
 
 /* Get socket error */
-int net_geterror(int handle)
+int net_geterror(GIOChannel *handle)
 {
 	int data;
 	socklen_t len = sizeof(data);
 
-	if (getsockopt(handle, SOL_SOCKET, SO_ERROR, (void *) &data, &len) == -1)
+	if (getsockopt(g_io_channel_unix_get_fd(handle),
+		       SOL_SOCKET, SO_ERROR, (void *) &data, &len) == -1)
 		return -1;
 
 	return data;

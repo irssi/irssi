@@ -190,19 +190,20 @@ static void dcc_chat_input(DCC_REC *dcc)
 static void dcc_chat_listen(DCC_REC *dcc)
 {
 	IPADDR ip;
-	int handle, port;
+        GIOChannel *handle;
+	int port;
 
 	g_return_if_fail(dcc != NULL);
 
 	/* accept connection */
 	handle = net_accept(dcc->handle, &ip, &port);
-	if (handle == -1)
+	if (handle == NULL)
 		return;
 
 	/* TODO: add paranoia check - see dcc-files.c */
 
 	g_source_remove(dcc->tagconn);
-	close(dcc->handle);
+	net_disconnect(dcc->handle);
 
 	dcc->starttime = time(NULL);
 	dcc->handle = handle;
@@ -243,14 +244,14 @@ static void dcc_chat_connect(DCC_REC *dcc)
 	g_return_if_fail(dcc != NULL);
 
 	if (dcc->addrstr[0] == '\0' ||
-	    dcc->starttime != 0 || dcc->handle != -1) {
+	    dcc->starttime != 0 || dcc->handle != NULL) {
 		/* already sent a chat request / already chatting */
 		return;
 	}
 
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
-	if (dcc->handle != -1) {
+	if (dcc->handle != NULL) {
 		dcc->tagconn = g_input_add(dcc->handle,
 					   G_INPUT_WRITE | G_INPUT_READ,
 					   (GInputFunction) sig_chat_connected, dcc);
@@ -267,8 +268,9 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 	DCC_REC *dcc;
 	IPADDR own_ip;
+        GIOChannel *handle;
 	char *nick, *str, host[MAX_IP_LEN];
-	int port, handle;
+	int port;
 
 	g_return_if_fail(data != NULL);
 
@@ -288,12 +290,13 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	if (net_getsockname(net_sendbuffer_handle(server->handle), &own_ip, NULL) == -1)
+	if (net_getsockname(net_sendbuffer_handle(server->handle),
+			    &own_ip, NULL) == -1)
 		cmd_param_error(CMDERR_ERRNO);
 
 	port = settings_get_int("dcc_port");
 	handle = net_listen(&own_ip, &port);
-	if (handle == -1)
+	if (handle == NULL)
 		cmd_param_error(CMDERR_ERRNO);
 
 	dcc = dcc_create(DCC_TYPE_CHAT, handle, nick, "chat", server, NULL);

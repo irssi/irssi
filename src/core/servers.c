@@ -51,9 +51,11 @@ void server_connect_failed(SERVER_REC *server, const char *msg)
 	if (server->handle != NULL)
 		net_sendbuffer_destroy(server->handle, TRUE);
 
-	if (server->connect_pipe[0] != -1) {
-		close(server->connect_pipe[0]);
-		close(server->connect_pipe[1]);
+	if (server->connect_pipe[0] != NULL) {
+		g_io_channel_close(server->connect_pipe[0]);
+		g_io_channel_unref(server->connect_pipe[0]);
+		g_io_channel_close(server->connect_pipe[1]);
+		g_io_channel_unref(server->connect_pipe[1]);
 	}
 
 	MODULE_DATA_DEINIT(server);
@@ -129,7 +131,7 @@ void server_connect_finished(SERVER_REC *server)
 	signal_emit("server connected", 1, server);
 }
 
-static void server_connect_callback_init(SERVER_REC *server, int handle)
+static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
 {
 	int error;
 
@@ -154,7 +156,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	SERVER_CONNECT_REC *conn;
 	RESOLVED_IP_REC iprec;
 	const char *errormsg;
-	int handle;
+	GIOChannel *handle;
 
 	g_return_if_fail(IS_SERVER(server));
 
@@ -163,18 +165,20 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	net_gethostbyname_return(server->connect_pipe[0], &iprec);
 
-	close(server->connect_pipe[0]);
-	close(server->connect_pipe[1]);
+	g_io_channel_close(server->connect_pipe[0]);
+	g_io_channel_unref(server->connect_pipe[0]);
+	g_io_channel_close(server->connect_pipe[1]);
+	g_io_channel_unref(server->connect_pipe[1]);
 
-	server->connect_pipe[0] = -1;
-	server->connect_pipe[1] = -1;
+	server->connect_pipe[0] = NULL;
+	server->connect_pipe[1] = NULL;
 
 	conn = server->connrec;
-	handle = iprec.error != 0 ? -1 :
+	handle = iprec.error != 0 ? NULL :
 		net_connect_ip(&iprec.ip, conn->proxy != NULL ?
 			       conn->proxy_port : conn->port,
 			       conn->own_ip != NULL ? conn->own_ip : NULL);
-	if (handle == -1) {
+	if (handle == NULL) {
 		/* failed */
 		if (iprec.error == 0 || !net_hosterror_notfound(iprec.error)) {
 			/* reconnect back only if either
@@ -237,18 +241,22 @@ void server_connect_init(SERVER_REC *server)
 int server_start_connect(SERVER_REC *server)
 {
 	const char *connect_address;
+        int fd[2];
 
 	g_return_val_if_fail(server != NULL, FALSE);
 	if (server->connrec->port <= 0) return FALSE;
 
 	server_connect_init(server);
 
-	if (pipe(server->connect_pipe) != 0) {
+	if (pipe(fd) != 0) {
 		g_warning("server_connect(): pipe() failed.");
                 g_free(server->tag);
 		g_free(server->nick);
 		return FALSE;
 	}
+
+        server->connect_pipe[0] = g_io_channel_unix_new(fd[0]);
+        server->connect_pipe[1] = g_io_channel_unix_new(fd[1]);
 
 	connect_address = server->connrec->proxy != NULL ?
 		server->connrec->proxy : server->connrec->address;

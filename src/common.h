@@ -53,11 +53,11 @@
 #define G_INPUT_READ	(1 << 0)
 #define G_INPUT_WRITE	(1 << 1)
 
-typedef void (*GInputFunction) (void *data, int source, int condition);
+typedef void (*GInputFunction) (void *data, GIOChannel *source, int condition);
 
-int g_input_add(int source, int condition,
+int g_input_add(GIOChannel *source, int condition,
 		GInputFunction function, void *data);
-int g_input_add_full(int source, int priority, int condition,
+int g_input_add_full(GIOChannel *source, int priority, int condition,
 		     GInputFunction function, void *data);
 
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)

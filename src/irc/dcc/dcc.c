@@ -52,7 +52,7 @@ GSList *dcc_conns;
 static int dcc_timeouttag;
 
 /* Create new DCC record */
-DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg,
+DCC_REC *dcc_create(int type, GIOChannel *handle, const char *nick, const char *arg,
 		    IRC_SERVER_REC *server, DCC_REC *chat)
 {
 	DCC_REC *dcc;
@@ -110,7 +110,7 @@ void dcc_destroy(DCC_REC *dcc)
 	signal_emit("dcc destroyed", 1, dcc);
 
 	if (dcc->fhandle != -1) close(dcc->fhandle);
-	if (dcc->handle != -1) net_disconnect(dcc->handle);
+	if (dcc->handle != NULL) net_disconnect(dcc->handle);
 	if (dcc->tagconn != -1) g_source_remove(dcc->tagconn);
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
@@ -304,21 +304,21 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
     if (olddcc != NULL) {
 	    /* same DCC request offered again */
 	    if (olddcc->type == DCC_TYPE_CHAT &&
-		olddcc->handle != -1 && olddcc->starttime == 0) {
+		olddcc->handle != NULL && olddcc->starttime == 0) {
 		    /* we requested dcc chat, they requested
 		       dcc chat from us .. allow it. */
 		    dcc_destroy(olddcc);
 	    } else {
 		    /* if the connection isn't open, update the port,
 		       otherwise just ignore */
-		    if (olddcc->handle == -1)
+		    if (olddcc->handle == NULL)
 			    olddcc->port = port;
 		    cmd_params_free(free_arg);
 		    return;
 	    }
     }
 
-    dcc = dcc_create(dcctype, -1, sender, arg, server, chat);
+    dcc = dcc_create(dcctype, NULL, sender, arg, server, chat);
     dcc_get_address(addrstr, &dcc->addr);
     net_ip2host(&dcc->addr, dcc->addrstr);
     dcc->port = port;

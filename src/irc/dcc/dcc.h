@@ -40,7 +40,7 @@ typedef struct DCC_REC {
 	int port; /* port we're connected in */
 
 	long size, transfd, skipped; /* file size / bytes transferred / skipped at start */
-	int handle; /* socket handle */
+	GIOChannel *handle; /* socket handle */
 	void *sendbuf;
 	int tagconn, tagread, tagwrite;
 	int fhandle; /* file handle */
@@ -80,7 +80,7 @@ const char *dcc_type2str(int type);
 int dcc_str2type(const char *type);
 void dcc_make_address(IPADDR *ip, char *host);
 
-DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
+DCC_REC *dcc_create(int type, GIOChannel *handle, const char *nick, const char *arg, IRC_SERVER_REC *server, DCC_REC *chat);
 void dcc_destroy(DCC_REC *dcc);
 
 /* Send a CTCP message/notify to target. Send the CTCP via DCC chat if

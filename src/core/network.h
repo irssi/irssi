@@ -33,24 +33,24 @@ typedef struct _ipaddr IPADDR;
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 
 /* Connect to socket */
-int net_connect(const char *addr, int port, IPADDR *my_ip);
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
 /* Connect to socket with ip address */
-int net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
 /* Disconnect socket */
-void net_disconnect(int handle);
+void net_disconnect(GIOChannel *handle);
 /* Try to let the other side close the connection, if it still isn't
    disconnected after certain amount of time, close it ourself */
-void net_disconnect_later(int handle);
+void net_disconnect_later(GIOChannel *handle);
 
 /* Listen for connections on a socket */
-int net_listen(IPADDR *my_ip, int *port);
+GIOChannel *net_listen(IPADDR *my_ip, int *port);
 /* Accept a connection on a socket */
-int net_accept(int handle, IPADDR *addr, int *port);
+GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port);
 
 /* Read data from socket, return number of bytes read, -1 = error */
-int net_receive(int handle, char *buf, int len);
+int net_receive(GIOChannel *handle, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
-int net_transmit(int handle, const char *data, int len);
+int net_transmit(GIOChannel *handle, const char *data, int len);
 
 /* Get IP address for host, returns 0 = ok,
    others = error code for net_gethosterror() */
@@ -65,13 +65,13 @@ const char *net_gethosterror(int error);
 int net_hosterror_notfound(int error);
 
 /* Get socket address/port */
-int net_getsockname(int handle, IPADDR *addr, int *port);
+int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port);
 
 int net_ip2host(IPADDR *ip, char *host);
 int net_host2ip(const char *host, IPADDR *ip);
 
 /* Get socket error */
-int net_geterror(int handle);
+int net_geterror(GIOChannel *handle);
 
 int is_ipv4_address(const char *host);
 int is_ipv6_address(const char *host);

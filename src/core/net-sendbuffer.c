@@ -24,7 +24,7 @@
 #include "net-sendbuffer.h"
 
 struct _NET_SENDBUF_REC {
-	int handle;
+	GIOChannel *handle;
 
 	int bufsize;
 	int bufpos;
@@ -36,11 +36,11 @@ static int timeout_tag;
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
-NET_SENDBUF_REC *net_sendbuffer_create(int handle, int bufsize)
+NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize)
 {
 	NET_SENDBUF_REC *rec;
 
-	g_return_val_if_fail(handle != -1, NULL);
+	g_return_val_if_fail(handle != NULL, NULL);
 
 	rec = g_new0(NET_SENDBUF_REC, 1);
 	rec->handle = handle;
@@ -148,9 +148,9 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 }
 
 /* Returns the socket handle */
-int net_sendbuffer_handle(NET_SENDBUF_REC *rec)
+GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec)
 {
-	g_return_val_if_fail(rec != NULL, -1);
+	g_return_val_if_fail(rec != NULL, NULL);
 
 	return rec->handle;
 }

@@ -550,7 +550,9 @@ void gui_readline_init(void)
 	cutbuffer = NULL;
 	redir = NULL;
 	idle_time = time(NULL);
-	readtag = g_input_add_full(0, G_PRIORITY_HIGH, G_INPUT_READ, (GInputFunction) readline, NULL);
+	readtag = g_input_add_full(g_io_channel_unix_new(0),
+				   G_PRIORITY_HIGH, G_INPUT_READ,
+				   (GInputFunction) readline, NULL);
 
 	settings_add_str("history", "scroll_page_count", "/2");
 

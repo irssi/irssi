@@ -20,18 +20,19 @@ typedef struct {
 	char *errorstr;
 } RESOLVED_NAME_REC;
 
-typedef void (*NET_CALLBACK) (int, void *);
+typedef void (*NET_CALLBACK) (GIOChannel *, void *);
 typedef void (*NET_HOST_CALLBACK) (RESOLVED_NAME_REC *, void *);
 
 /* nonblocking gethostbyname(), PID of the resolver child is returned. */
-int net_gethostbyname_nonblock(const char *addr, int pipe);
+int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe);
 /* Get host's name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data);
 /* get the resolved IP address. returns -1 if some error occured with read() */
-int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec);
+int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec);
 
 /* Connect to server, call func when finished */
-int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip, NET_CALLBACK func, void *data);
+int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
+			 NET_CALLBACK func, void *data);
 /* Kill the resolver child */
 void net_disconnect_nonblock(int pid);
 

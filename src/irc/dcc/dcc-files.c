@@ -197,7 +197,7 @@ static void dcc_get_connect(DCC_REC *dcc)
 {
 	dcc->handle = net_connect_ip(&dcc->addr, dcc->port,
 				     source_host_ok ? source_host_ip : NULL);
-	if (dcc->handle != -1) {
+	if (dcc->handle != NULL) {
 		dcc->tagconn = g_input_add(dcc->handle,
 					   G_INPUT_WRITE | G_INPUT_READ,
 					   (GInputFunction) sig_dccget_connected, dcc);
@@ -209,7 +209,7 @@ static void dcc_get_connect(DCC_REC *dcc)
 }
 
 #define dcc_is_unget(dcc) \
-        ((dcc)->type == DCC_TYPE_GET && (dcc)->handle == -1)
+        ((dcc)->type == DCC_TYPE_GET && (dcc)->handle == NULL)
 
 /* SYNTAX: DCC GET <nick> [<file>] */
 static void cmd_dcc_get(const char *data)
@@ -268,7 +268,7 @@ static void dcc_resume_send(DCC_REC *dcc, int port)
 #define is_accept_ok(type, dcc) \
 	(g_strcasecmp(type, "ACCEPT") != 0 || \
 	((dcc)->type == DCC_TYPE_GET && \
-	(dcc)->get_type == DCC_GET_RESUME && (dcc)->handle == -1))
+	(dcc)->get_type == DCC_GET_RESUME && (dcc)->handle == NULL))
 
 static void dcc_ctcp_msg(const char *data, IRC_SERVER_REC *server,
 			 const char *sender, const char *sendaddr,
@@ -453,14 +453,15 @@ static void dcc_send_read_size(DCC_REC *dcc)
 /* input function: DCC SEND - someone tried to connect to our socket */
 static void dcc_send_init(DCC_REC *dcc)
 {
-	int handle, port;
+        GIOChannel *handle;
 	IPADDR addr;
+	int port;
 
 	g_return_if_fail(dcc != NULL);
 
 	/* accept connection */
 	handle = net_accept(dcc->handle, &addr, &port);
-	if (handle == -1)
+	if (handle == NULL)
 		return;
 
 	/* TODO: some kind of paranoia check would be nice. it would check
@@ -468,7 +469,7 @@ static void dcc_send_init(DCC_REC *dcc)
 	   address who connected us. */
 
 	g_source_remove(dcc->tagconn);
-	close(dcc->handle);
+	net_disconnect(dcc->handle);
 
 	dcc->starttime = time(NULL);
 	dcc->fastsend = settings_get_bool("dcc_fast_send");
@@ -501,10 +502,11 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 	char *target, *fname, *str, *ptr;
 	void *free_arg;
 	char host[MAX_IP_LEN];
-	int hfile, hlisten, port;
+	int hfile, port;
 	long fsize;
 	DCC_REC *dcc, *chat;
 	IPADDR own_ip;
+        GIOChannel *handle, *hlisten;
 
 	g_return_if_fail(data != NULL);
 
@@ -549,7 +551,9 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 	lseek(hfile, 0, SEEK_SET);
 
 	/* get the IP address we use with IRC server */
-	if (net_getsockname(chat != NULL ? chat->handle : net_sendbuffer_handle(server->handle), &own_ip, NULL) == -1) {
+	handle = chat != NULL ? chat->handle :
+		net_sendbuffer_handle(server->handle);
+	if (net_getsockname(handle, &own_ip, NULL) == -1) {
 		close(hfile);
 		cmd_param_error(CMDERR_ERRNO);
 	}
@@ -557,7 +561,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 	/* start listening */
 	port = settings_get_int("dcc_port");
 	hlisten = net_listen(&own_ip, &port);
-	if (hlisten == -1) {
+	if (hlisten == NULL) {
 		close(hfile);
 		cmd_param_error(CMDERR_ERRNO);
 	}

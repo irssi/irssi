@@ -29,7 +29,7 @@
 
 typedef struct {
 	time_t created;
-	int handle;
+	GIOChannel *handle;
 	int tag;
 } NET_DISCONNECT_REC;
 
@@ -85,7 +85,7 @@ static int sig_timeout_disconnect(void)
 
 /* Try to let the other side close the connection, if it still isn't
    disconnected after certain amount of time, close it ourself */
-void net_disconnect_later(int handle)
+void net_disconnect_later(GIOChannel *handle)
 {
 	NET_DISCONNECT_REC *rec;
 
@@ -114,7 +114,7 @@ void net_disconnect_deinit(void)
 #ifndef WIN32
 	NET_DISCONNECT_REC *rec;
 	time_t now, max;
-	int first;
+	int first, fd;
 	struct timeval tv;
 	fd_set set;
 
@@ -131,12 +131,13 @@ void net_disconnect_deinit(void)
 			continue;
 		}
 
+                fd = g_io_channel_unix_get_fd(rec->handle);
 		FD_ZERO(&set);
-		FD_SET(rec->handle, &set);
+		FD_SET(fd, &set);
 		tv.tv_sec = first ? 0 : max-now;
 		tv.tv_usec = first ? 100000 : 0;
-		if (select(rec->handle+1, &set, NULL, NULL, &tv) > 0 &&
-		    FD_ISSET(rec->handle, &set)) {
+		if (select(fd+1, &set, NULL, NULL, &tv) > 0 &&
+		    FD_ISSET(fd, &set)) {
 			/* data coming .. check if we can close the handle */
 			sig_disconnect(rec);
 		} else if (first) {

@@ -29,15 +29,49 @@ typedef struct {
 	NET_CALLBACK func;
 	void *data;
 
-	int pipes[2];
+	GIOChannel *pipes[2];
 	int port;
 	IPADDR *my_ip;
 	int tag;
 } SIMPLE_THREAD_REC;
 
+#define is_fatal_error(err) \
+	(err != 0 && err != G_IO_ERROR_AGAIN && errno != EINTR)
+
+static int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
+{
+	int err, ret, sent;
+
+	sent = 0;
+	do {
+		err = g_io_channel_write(channel, (char *) data + sent,
+					 len-sent, &ret);
+                sent += ret;
+	} while (ret < len && !is_fatal_error(err));
+
+	return err != 0 ? -1 : 0;
+}
+
+static int g_io_channel_read_block(GIOChannel *channel, void *data, int len)
+{
+	time_t maxwait;
+	int err, ret, received;
+
+	maxwait = time(NULL)+2;
+	received = 0;
+	do {
+		err = g_io_channel_read(channel, (char *) data + received,
+					len-received, &ret);
+		received += ret;
+	} while (received < len && time(NULL) < maxwait &&
+		 (ret != 0 || !is_fatal_error(err)));
+
+	return received < len ? -1 : 0;
+}
+
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
-int net_gethostbyname_nonblock(const char *addr, int pipe)
+int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe)
 {
 	RESOLVED_IP_REC rec;
 	const char *errorstr;
@@ -72,9 +106,9 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 		rec.errlen = strlen(errorstr)+1;
 	}
 
-	write(pipe, &rec, sizeof(rec));
+        g_io_channel_write_block(pipe, &rec, sizeof(rec));
 	if (rec.error != 0)
-		write(pipe, errorstr, rec.errlen);
+		g_io_channel_write_block(pipe, (void *) errorstr, rec.errlen);
 
 #ifndef WIN32
 	if (pid == 0)
@@ -86,45 +120,24 @@ int net_gethostbyname_nonblock(const char *addr, int pipe)
 }
 
 /* get the resolved IP address */
-int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec)
+int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 {
-	time_t maxwait;
-	int len, ret;
-
 	rec->error = -1;
 	rec->errorstr = NULL;
 
 	/* get ip+error - try for max. 1-2 seconds */
 #ifndef WIN32
-	fcntl(pipe, F_SETFL, O_NONBLOCK);
+	fcntl(g_io_channel_unix_get_fd(pipe), F_SETFL, O_NONBLOCK);
 #endif
 
-	maxwait = time(NULL)+2;
-	len = 0;
-	do {
-		ret = read(pipe, (char *) rec+len, sizeof(*rec)-len);
-		if (ret == -1) return -1;
-
-		len += ret;
-	} while (len < sizeof(*rec) && time(NULL) < maxwait);
-
-	if (len < sizeof(*rec))
-		return -1; /* timeout */
+	if (g_io_channel_read_block(pipe, rec, sizeof(*rec)) == -1)
+                return -1;
 
 	if (rec->error) {
-		/* read error string */
-		rec->errorstr = g_malloc(rec->errlen+1);
-                len = 0;
-		do {
-			ret = read(pipe, rec->errorstr+len, rec->errlen-len);
-			if (ret == -1) break;
-                        len += ret;
-		} while (len < rec->errlen && time(NULL) < maxwait);
-
-		if (len < rec->errlen) {
-			/* just ignore the rest of the error message.. */
-			rec->errorstr[len] = '\0';
-		}
+		/* read error string, if we can't read everything for some
+		   reason, just ignore it. */
+		rec->errorstr = g_malloc0(rec->errlen+1);
+                g_io_channel_read_block(pipe, rec->errorstr, rec->errlen);
 	}
 
 	return 0;
@@ -133,7 +146,7 @@ int net_gethostbyname_return(int pipe, RESOLVED_IP_REC *rec)
 /* Get host name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data)
 {
-        /*FIXME*/
+	/* FIXME: not implemented */
 	return FALSE;
 }
 
@@ -147,7 +160,7 @@ void net_disconnect_nonblock(int pid)
 #endif
 }
 
-static void simple_init(SIMPLE_THREAD_REC *rec, int handle)
+static void simple_init(SIMPLE_THREAD_REC *rec, GIOChannel *handle)
 {
 	g_return_if_fail(rec != NULL);
 
@@ -155,18 +168,19 @@ static void simple_init(SIMPLE_THREAD_REC *rec, int handle)
 
 	if (net_geterror(handle) != 0) {
 		/* failed */
-		close(handle);
-		handle = -1;
+		g_io_channel_close(handle);
+                g_io_channel_unref(handle);
+		handle = NULL;
 	}
 
 	rec->func(handle, rec->data);
 	g_free(rec);
 }
 
-static void simple_readpipe(SIMPLE_THREAD_REC *rec, int pipe)
+static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
 {
 	RESOLVED_IP_REC iprec;
-	int handle;
+	GIOChannel *handle;
 
 	g_return_if_fail(rec != NULL);
 
@@ -175,17 +189,19 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, int pipe)
 	net_gethostbyname_return(pipe, &iprec);
 	g_free_not_null(iprec.errorstr);
 
-	close(rec->pipes[0]);
-	close(rec->pipes[1]);
+	g_io_channel_close(rec->pipes[0]);
+	g_io_channel_unref(rec->pipes[0]);
+	g_io_channel_close(rec->pipes[1]);
+	g_io_channel_unref(rec->pipes[1]);
 
-	handle = iprec.error == -1 ? -1 :
+	handle = iprec.error == -1 ? NULL :
 		net_connect_ip(&iprec.ip, rec->port, rec->my_ip);
 
 	g_free_not_null(rec->my_ip);
 
-	if (handle == -1) {
+	if (handle == NULL) {
 		/* failed */
-		rec->func(-1, rec->data);
+		rec->func(NULL, rec->data);
 		g_free(rec);
 		return;
 	}
@@ -209,9 +225,6 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
 		return FALSE;
 	}
 
-	/* start nonblocking host name lookup */
-	net_gethostbyname_nonblock(server, fd[1]);
-
 	rec = g_new0(SIMPLE_THREAD_REC, 1);
 	rec->port = port;
 	if (my_ip != NULL) {
@@ -220,10 +233,13 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
 	}
 	rec->func = func;
 	rec->data = data;
-	rec->pipes[0] = fd[0];
-	rec->pipes[1] = fd[1];
-	rec->tag = g_input_add(fd[0], G_INPUT_READ,
+	rec->pipes[0] = g_io_channel_unix_new(fd[0]);
+	rec->pipes[1] = g_io_channel_unix_new(fd[1]);
+
+	/* start nonblocking host name lookup */
+	net_gethostbyname_nonblock(server, rec->pipes[1]);
+	rec->tag = g_input_add(rec->pipes[0], G_INPUT_READ,
 			       (GInputFunction) simple_readpipe, rec);
 
-	return 1;
+	return TRUE;
 }

@@ -52,20 +52,17 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	if (condition & G_IO_OUT)
 		icond |= G_INPUT_WRITE;
 
-	if (rec->condition & icond) {
-		rec->function(rec->data, g_io_channel_unix_get_fd(source),
-			      icond);
-	}
+	if (rec->condition & icond)
+		rec->function(rec->data, source, icond);
 
 	return TRUE;
 }
 
-int g_input_add_full(int source, int priority, int condition,
+int g_input_add_full(GIOChannel *source, int priority, int condition,
 		     GInputFunction function, void *data)
 {
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
-	GIOChannel *channel;
 	GIOCondition cond;
 
 	rec = g_new(IRSSI_INPUT_REC, 1);
@@ -79,15 +76,13 @@ int g_input_add_full(int source, int priority, int condition,
 	if (condition & G_INPUT_WRITE)
 		cond |= G_IO_OUT;
 
-	channel = g_io_channel_unix_new (source);
-	result = g_io_add_watch_full(channel, priority, cond,
+	result = g_io_add_watch_full(source, priority, cond,
 				     irssi_io_invoke, rec, g_free);
-	g_io_channel_unref(channel);
 
 	return result;
 }
 
-int g_input_add(int source, int condition,
+int g_input_add(GIOChannel *source, int condition,
 		GInputFunction function, void *data)
 {
 	return g_input_add_full(source, G_PRIORITY_DEFAULT, condition,

@@ -17,7 +17,7 @@ void *handle; /* NET_SENDBUF_REC socket */
 int readtag; /* input tag */
 
 /* for net_connect_nonblock() */
-int connect_pipe[2];
+GIOChannel *connect_pipe[2];
 int connect_tag;
 int connect_pid;
 
