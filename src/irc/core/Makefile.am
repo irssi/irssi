@@ -16,6 +16,7 @@ libirc_core_la_SOURCES = \
         irc.c \
         irc-core.c \
         irc-commands.c \
+        irc-log.c \
         irc-rawlog.c \
         irc-server.c \
         irc-special-vars.c \
@@ -36,20 +37,13 @@ noinst_HEADERS = \
 	bans.h \
         ctcp.h \
         channels.h \
-        channels-query.h \
         channels-setup.h \
-        channel-events.h \
         ignore.h \
         irc.h \
         irc-core.h \
-        irc-commands.h \
-        irc-rawlog.h \
         irc-server.h \
-        irc-special-vars.h \
 	ircnet-setup.h \
-        lag.h \
         masks.h \
-        massjoin.h \
         modes.h \
         mode-lists.h \
 	module.h \

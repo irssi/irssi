@@ -25,13 +25,24 @@
 #include "query.h"
 
 #include "ctcp.h"
-#include "irc-commands.h"
-#include "irc-rawlog.h"
-#include "irc-special-vars.h"
 #include "ignore.h"
 #include "irc.h"
-#include "lag.h"
 #include "netsplit.h"
+
+void irc_commands_init(void);
+void irc_commands_deinit(void);
+
+void irc_rawlog_init(void);
+void irc_rawlog_deinit(void);
+
+void irc_special_vars_init(void);
+void irc_special_vars_deinit(void);
+
+void irc_log_init(void);
+void irc_log_deinit(void);
+
+void lag_init(void);
+void lag_deinit(void);
 
 void irc_core_init(void)
 {
@@ -47,10 +58,12 @@ void irc_core_init(void)
 	ignore_init();
 	irc_rawlog_init();
 	irc_special_vars_init();
+	irc_log_init();
 }
 
 void irc_core_deinit(void)
 {
+        irc_log_deinit();
 	irc_special_vars_deinit();
 	irc_rawlog_deinit();
 	ignore_deinit();

@@ -454,7 +454,7 @@ static void event_nick(const char *data, IRC_SERVER_REC *server, const char *ori
 		signal_emit("server nick changed", 1, server);
 	}
 
-	nicks = nicklist_get_same(server, nick);
+	nicks = nicklist_get_same(server, orignick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
 		channel = tmp->data;
 		nickrec = tmp->next->data;

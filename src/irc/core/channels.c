@@ -25,15 +25,21 @@
 
 #include "bans.h"
 #include "channels.h"
-#include "channel-events.h"
-#include "channels-query.h"
 #include "channels-setup.h"
 #include "irc.h"
 #include "modes.h"
 #include "levels.h"
 #include "mode-lists.h"
-#include "massjoin.h"
 #include "nicklist.h"
+
+void channels_query_init(void);
+void channels_query_deinit(void);
+
+void channel_events_init(void);
+void channel_events_deinit(void);
+
+void massjoin_init(void);
+void massjoin_deinit(void);
 
 GSList *channels; /* List of all channels */
 
