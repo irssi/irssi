@@ -651,9 +651,9 @@ static char *get_timestamp(TEXT_DEST_REC *dest)
 	if (!show_timestamp(dest->level))
 		return NULL;
 
-	if (timestamp_timeout > 0) {
-		t = time(NULL);
+	t = time(NULL);
 
+	if (timestamp_timeout > 0) {
 		diff = t - dest->window->last_timestamp;
 		dest->window->last_timestamp = t;
 		if (diff < timestamp_timeout)
