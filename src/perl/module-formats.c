@@ -35,7 +35,7 @@ FORMAT_REC feperl_formats[] = {
 	{ "script_list_header", "Loaded scripts:", 0 },
 	{ "script_list_line", "$[!15]0 $1", 2, { 0, 0 } },
 	{ "script_list_footer", "", 0 },
-	{ "script_error", "{error Error loading script {hilight $0}:}", 1, { 0 } },
+	{ "script_error", "{error Error in script {hilight $0}:}", 1, { 0 } },
 
 	{ NULL, NULL, 0 }
 };
