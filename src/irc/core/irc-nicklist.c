@@ -107,7 +107,7 @@ static void event_end_of_names(const char *data, SERVER_REC *server)
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL && !chanrec->names_got) {
 		chanrec->names_got = TRUE;
-		signal_emit("channel query", 1, chanrec);
+		signal_emit("channel joined", 1, chanrec);
 	}
 
 	g_free(params);

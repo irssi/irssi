@@ -22,8 +22,8 @@
 
  How the thing works:
 
- - After channel is joined and NAMES list is got, send "channel query" signal
- - "channel query" : add channel to server->quries lists
+ - After channel is joined and NAMES list is got, send "channel joined" signal
+ - "channel joined" : add channel to server->queries lists
 
 loop:
  - Wait for NAMES list from all channels before doing anything else..
@@ -304,11 +304,12 @@ static void channels_query_check(IRC_SERVER_REC *server)
         channel_send_query(server, query);
 }
 
-static void sig_channel_query(IRC_CHANNEL_REC *channel)
+static void sig_channel_joined(IRC_CHANNEL_REC *channel)
 {
 	SERVER_QUERY_REC *rec;
 
-	g_return_if_fail(channel != NULL);
+	if (!IS_IRC_CHANNEL(channel))
+		return;
 
 	/* Add channel to query lists */
 	if (!channel->no_modes)
@@ -567,7 +568,7 @@ void channels_query_init(void)
 {
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-	signal_add("channel query", (SIGNAL_FUNC) sig_channel_query);
+	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	signal_add("chanquery mode", (SIGNAL_FUNC) event_channel_mode);
@@ -584,7 +585,7 @@ void channels_query_deinit(void)
 {
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-	signal_remove("channel query", (SIGNAL_FUNC) sig_channel_query);
+	signal_remove("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	signal_remove("chanquery mode", (SIGNAL_FUNC) event_channel_mode);

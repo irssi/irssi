@@ -19,11 +19,22 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
+#include "levels.h"
 #include "servers.h"
 
 #include "irc.h"
+#include "channel-rejoin.h"
+
+static void sig_channel_rejoin(IRC_SERVER_REC *server, REJOIN_REC *rec)
+{
+	g_return_if_fail(rec != NULL);
+
+	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_CHANNEL_REJOIN, rec->channel);
+}
 
 static void cmd_channel(const char *data, SERVER_REC *server)
 {
@@ -35,10 +46,12 @@ static void cmd_channel(const char *data, SERVER_REC *server)
 
 void fe_irc_channels_init(void)
 {
+	signal_add("channel rejoin new", (SIGNAL_FUNC) sig_channel_rejoin);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 }
 
 void fe_irc_channels_deinit(void)
 {
+	signal_remove("channel rejoin new", (SIGNAL_FUNC) sig_channel_rejoin);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 }

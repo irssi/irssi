@@ -21,24 +21,22 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
-
-#include "bans.h"
-#include "irc-channels.h"
-#include "channels-setup.h"
-#include "irc.h"
-#include "modes.h"
 #include "levels.h"
+#include "channels-setup.h"
+
+#include "irc.h"
+#include "bans.h"
+#include "modes.h"
 #include "mode-lists.h"
+#include "irc-channels.h"
 #include "irc-nicklist.h"
+#include "channel-rejoin.h"
 
 void channels_query_init(void);
 void channels_query_deinit(void);
 
 void channel_events_init(void);
 void channel_events_deinit(void);
-
-void channel_rejoin_init(void);
-void channel_rejoin_deinit(void);
 
 void massjoin_init(void);
 void massjoin_deinit(void);
@@ -104,12 +102,12 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	int use_keys;
 
 	g_return_if_fail(data != NULL);
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
+	g_return_if_fail(IS_IRC_SERVER(server) && server->connected);
+	if (*data == '\0') return;
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channels, &keys))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
+			    &channels, &keys))
 		return;
-	if (*channels == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
         chanlist = g_strsplit(channels, ",", -1);
 	keylist = g_strsplit(keys, ",", -1);
@@ -202,7 +200,7 @@ void irc_channels_init(void)
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_init();
-	channel_rejoin_init();
+	channel_rejoin_init(); /* after channel_events_init() */
         channels_query_init();
 	channels_setup_init();
 

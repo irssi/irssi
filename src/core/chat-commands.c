@@ -46,6 +46,9 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	if (g_hash_table_lookup(optlist, "invite"))
 		channels = server->last_invite;
 	else {
+		if (*channels == '\0')
+			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
 		/* -<server tag> */
 		server = cmd_options_get_server("join", optlist, server);
 	}

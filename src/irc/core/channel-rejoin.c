@@ -25,10 +25,44 @@
 
 #include "irc.h"
 #include "irc-channels.h"
+#include "channel-rejoin.h"
 
-#define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
+//#define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
+#define REJOIN_TIMEOUT (1000*10) /* FIXME: test */
 
 static int rejoin_tag;
+
+static void rejoin_destroy(IRC_SERVER_REC *server, REJOIN_REC *rec)
+{
+	g_return_if_fail(IS_IRC_SERVER(server));
+	g_return_if_fail(rec != NULL);
+
+	server->rejoin_channels =
+		g_slist_remove(server->rejoin_channels, rec);
+
+	signal_emit("channel rejoin remove", 2, server, rec);
+
+	g_free(rec->channel);
+	g_free_not_null(rec->key);
+	g_free(rec);
+}
+
+static REJOIN_REC *rejoin_find(IRC_SERVER_REC *server, const char *channel)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
+	g_return_val_if_fail(channel != NULL, NULL);
+
+	for (tmp = server->rejoin_channels; tmp != NULL; tmp = tmp->next) {
+                REJOIN_REC *rec = tmp->data;
+
+		if (g_strcasecmp(rec->channel, channel) == 0)
+                        return rec;
+	}
+
+	return NULL;
+}
 
 #define channel_have_key(chan) \
 	((chan) != NULL && (chan)->key != NULL && (chan)->key[0] != '\0')
@@ -36,14 +70,34 @@ static int rejoin_tag;
 static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 {
 	IRC_CHANNEL_REC *chanrec;
-	char *str;
+	REJOIN_REC *rec;
+
+	g_return_if_fail(IS_IRC_SERVER(server));
+	g_return_if_fail(channel != NULL);
 
 	chanrec = irc_channel_find(server, channel);
-	str = channel_have_key(chanrec) ? g_strdup(channel) :
-		g_strdup_printf("%s %s", channel, chanrec->key);
+
+	rec = rejoin_find(server, channel);
+	if (rec != NULL) {
+		/* already exists */
+		rec->joining = FALSE;
+
+		/* update channel key */
+		g_free_and_null(rec->key);
+		if (channel_have_key(chanrec))
+			rec->key = g_strdup(chanrec->key);
+		return;
+	}
+
+	/* new rejoin */
+	rec = g_new0(REJOIN_REC, 1);
+	rec->channel = g_strdup(channel);
+	if (channel_have_key(chanrec))
+		rec->key = g_strdup(chanrec->key);
 
 	server->rejoin_channels =
-		g_slist_append(server->rejoin_channels, str);
+		g_slist_append(server->rejoin_channels, rec);
+	signal_emit("channel rejoin new", 2, server, rec);
 }
 
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
@@ -56,9 +110,26 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 	if (ischannel(*channel)) {
 		/* channel is unavailable - try to join again a bit later */
 		channel_rejoin(server, channel);
+		signal_stop();
 	}
 
 	g_free(params);
+}
+
+/* join ok/failed - remove from rejoins list. this happens always after join
+   except if the "target unavailable" error happens again */
+static void sig_remove_rejoin(IRC_CHANNEL_REC *channel)
+{
+	REJOIN_REC *rec;
+
+	if (!IS_IRC_CHANNEL(channel) && channel->server != NULL)
+		return;
+
+	rec = rejoin_find(channel->server, channel->name);
+	if (rec != NULL && rec->joining) {
+		/* join failed, remove the rejoin */
+		rejoin_destroy(channel->server, rec);
+	}
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)
@@ -66,19 +137,53 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	g_slist_foreach(server->rejoin_channels, (GFunc) g_free, NULL);
-	g_slist_free(server->rejoin_channels);
+	while (server->rejoin_channels != NULL)
+		rejoin_destroy(server, server->rejoin_channels->data);
 }
 
 static void server_rejoin_channels(IRC_SERVER_REC *server)
 {
-	while (server->rejoin_channels != NULL) {
-		char *channel = server->rejoin_channels->data;
+	GSList *tmp, *next;
+	GString *channels, *keys;
+	int use_keys;
 
-                server->channels_join(server, channel, TRUE);
-		server->rejoin_channels =
-			g_slist_remove(server->rejoin_channels, channel);
+	g_return_if_fail(IS_IRC_SERVER(server));
+
+	channels = g_string_new(NULL);
+	keys = g_string_new(NULL);
+
+        use_keys = FALSE;
+	for (tmp = server->rejoin_channels; tmp != NULL; tmp = next) {
+		REJOIN_REC *rec = tmp->data;
+		next = tmp->next;
+
+		if (rec->joining) {
+			/* we missed the join (failed) message,
+			   remove from rejoins.. */
+			rejoin_destroy(server, rec);
+			continue;
+		}
+
+		rec->joining = TRUE;
+		g_string_sprintfa(channels, "%s,", rec->channel);
+		if (rec->key == NULL)
+			g_string_append(keys, "x,");
+		else {
+			g_string_sprintfa(keys, "%s,", rec->key);
+                        use_keys = TRUE;
+		}
 	}
+
+	if (channels->len > 0) {
+                g_string_truncate(channels, channels->len-1);
+                g_string_truncate(keys, keys->len-1);
+
+		if (use_keys) g_string_sprintfa(channels, " %s", keys->str);
+		server->channels_join(server, channels->str, TRUE);
+	}
+
+	g_string_free(channels, TRUE);
+	g_string_free(keys, TRUE);
 }
 
 static int sig_rejoin(void)
@@ -88,11 +193,20 @@ static int sig_rejoin(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
-		if (IS_IRC_SERVER(rec))
+		if (IS_IRC_SERVER(rec) && rec->rejoin_channels != NULL)
 			server_rejoin_channels(rec);
 	}
 
 	return TRUE;
+}
+
+static void cmd_rmrejoins(const char *data, IRC_SERVER_REC *server)
+{
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	while (server->rejoin_channels != NULL)
+		rejoin_destroy(server, server->rejoin_channels->data);
 }
 
 void channel_rejoin_init(void)
@@ -100,7 +214,10 @@ void channel_rejoin_init(void)
 	rejoin_tag = g_timeout_add(REJOIN_TIMEOUT,
 				   (GSourceFunc) sig_rejoin, NULL);
 
+	command_bind("rmrejoins", NULL, (SIGNAL_FUNC) cmd_rmrejoins);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
+	signal_add_first("channel joined", (SIGNAL_FUNC) sig_remove_rejoin);
+	signal_add_first("channel destroyed", (SIGNAL_FUNC) sig_remove_rejoin);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }
 
@@ -108,6 +225,9 @@ void channel_rejoin_deinit(void)
 {
 	g_source_remove(rejoin_tag);
 
+	command_unbind("rmrejoins", (SIGNAL_FUNC) cmd_rmrejoins);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
+	signal_remove("channel joined", (SIGNAL_FUNC) sig_remove_rejoin);
+	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_remove_rejoin);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 }
