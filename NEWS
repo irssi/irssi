@@ -1,3 +1,53 @@
+v0.7.98.3 2001-03-17  Timo Sirainen <tss@iki.fi>
+
+	* Highlighting changes: /HILIGHT -color, /SET hilight_color and
+	  /SET hilight_act_color don't accept the numeric color value
+	  anymore, the colors must be the %code format (see the beginning
+	  of docs/formats.txt). The color can also have background and
+	  underline/blinking set (%F%Y = blinking yellow)
+
+	* Statusbar rewrite: Statusbar should finally work well when
+	  there's not enough space for it in screen. Least important items
+	  start shrinking/disappearing before more important ones, activity
+	  list should be always fully visible now.
+
+	  /SET statusbar_xxx settings have been removed, everything is
+	  configurable from theme now. Even the texts in the statusbar
+	  items. See end of default.theme.
+
+	  FULLY configurable statusbar with possibility to create your own
+	  items and support for multiple lines will hopefully come soon.
+
+	+ /WINDOW CLOSE [<first> [<last>] - you can close multiple
+	  windows at once now.
+	+ Emphasis work with actions now
+	+ If there's any unknown settings in your configuration file, irssi
+	  asks at startup if they should be removed.
+	+ All abstracts in theme files now default to same as in
+	  default.theme, so you may override only those you want to change
+	  leaving the rest commented out.
+	- Irssi crashed when specifying vhost to use (not always?)
+	- Fixed one nasty usage of already free'd memory. Hopefully solves
+	  some weird crashes?
+	- Some perl fixes, Irssi::Nick and "massjoin" signal didn't work
+	  properly which broke all auto-op scripts.
+	- If one server fails because of DNS error, don't stop reconnecting
+	  to entire chatnet.
+	- Updated default config to have max_query_chans=1 in undernet to
+	  avoid those channel syncing problems.
+	- /SERVER didn't autojoin channels if it was used when you weren't
+	  connected to any other servers
+	- /CONNECT -ircnet didn't load ircnet specific settings correctly
+	- /SET scroll_page_count - don't crash if /0 is given. Works now
+	  properly if /0.xx is given.
+	- ^O did reset only colors, not underlines etc.
+	- Several fixes with handling blinking text
+	- Irssi crashed almost immediately with NetBSD/Alpha, fixed. Still
+	  not sure if it was compiler bug or is my code just non-standard C.
+	- Reconnecting in IPv6 server shouldn't change to IPv4
+	- Irssi proxy didn't work properly with systems where irssi was
+	  compiled with --enable-ipv6 but OS didn't support IPv6
+
 v0.7.98.2 2001-03-04  Timo Sirainen <tss@iki.fi>
 
 	+ /LASTLOG: added -case option for case-sensitive matching.
