@@ -11,6 +11,7 @@ typedef struct {
 	char *nick;
 
 	int new_data;
+	int last_color;
 
 	char *address;
 	char *server_tag;

@@ -10,7 +10,10 @@ enum {
 
 /* All window items *MUST* have these variables in same order
    at the start of the structure - the server's type can of course be
-   replaced with the preferred record type. */
+   replaced with the preferred record type.
+
+   !!!! So IF YOU CHANGE THIS: REMEMBER TO UPDATE WI_IRC_REC, CHANNEL_REC
+   and QUERY_REC !!!! (I already forgot this once :) */
 typedef struct {
 	int type;
         GHashTable *module_data;

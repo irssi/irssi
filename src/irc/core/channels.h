@@ -11,6 +11,7 @@ typedef struct {
 	char *name;
 
 	int new_data;
+	int last_color;
 
 	time_t createtime;
 

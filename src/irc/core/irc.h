@@ -31,6 +31,7 @@ typedef struct {
 	char *name;
 
 	int new_data;
+	int last_color;
 } WI_IRC_REC;
 
 /* return TRUE if `item' is an IRC type. */
