@@ -52,11 +52,7 @@
 
  - online help, documentation, ...
  - plugins:
-     - perl plugin .. implementation problems, C's structures need to be
-       handled some way .. like for server structure get_address(),
-       get_port(), set_address(), set_port() etc..             - other scripting plugins would be easier? scheme, tcl, pythong?
-       sula premirex uses scheme, it would probably be pretty easy to learn
-       from it how to do it to irssi :)
+     - scheme, tcl, python scripting? eggdrop/epic compatible scripting?
      - IRC bot, eggdrop is too old, needs a replacement ;) (started)
      - DCC file server, I'm not too excited about this, maybe someone else
        wants to do it..

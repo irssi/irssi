@@ -4,19 +4,34 @@ v0.7.27 2000-02-26  Timo Sirainen <tss@iki.fi>
 	  Well, I could have done it ages ago but it wouldn't have had
 	  all the flexibility it now has - you should be able to do almost
 	  anything with perl scripts. See DOCS/PERL for some documentation
-	  and examples/ directory for couple of example scripts.
+	  and examples/ directory for a couple of example scripts.
 
 	  This is the very first version and I haven't even tested that all
 	  functions work correctly! Any suggestions are welcome. I don't
 	  really like the values() functions so if someone knows better ways
-	  to them I'd really like to hear.
+	  to do them I'd really like to hear.
 
 	  BTW. I haven't had time to learn Perl well yet, so my scripts are
 	  probably not the best examples.. :)
 
+	  If for some reason you don't wish to use Perl, you can disble it
+	  with giving --disable-perl to configure.
+
+	+ /CYCLE [#channel] - parts/rejoins the channel
+	+ Autojoining doesn't switch automatically to the joined channel's
+	  window.
+	+ Server tag generation is a bit smarter now.
+	+ irssi-text: Resizing terminal works now right even if your curses
+	  don't have resizeterm() function.
+	- /NAMES crashed when done in a non-channel window
+	- irssi-text: Resizing terminal when irssi had some empty windows
+	  messed them up..
+	- toggle_show_nickmode didn't actually do anything :) It was
+	  always on..
+
 v0.7.26 2000-02-19  Timo Sirainen <tss@iki.fi>
 
-	-
+	- Space (and maybe other keys) didn't work when caps/numlock was on.
 
 v0.7.25 2000-02-19  Timo Sirainen <tss@iki.fi>
 

@@ -5,15 +5,16 @@ irssi
 
  * ABOUT
 
-Irssi is an IRC client made with GTK+ toolkit and (optional) GNOME libraries.
-A small text mode version is also somewhat working, there's also a really
-simple daemon version which just loads "bot" plugin (which doesn't exist).
-I'd also like to see KDE version but someone else will have to do it.
+Irssi is an IRC client made with GTK+ toolkit and (optional) GNOME
+libraries. A small text mode version is also somewhat working, there's
+also a really simple daemon version which just loads "bot" plugin. I'd
+also like to see KDE version.
 
 
  * FEATURES
 
-See COMMANDS file for list of all commands irssi knows.
+See docs/COMMANDS file for list of (almost) all commands irssi knows.
+See docs/PERL for some documentation of Perl scripting.
 
 I've been asked quite a lot about why should one use irssi, what does it do
 that other IRC clients don't? Well, to tell you the truth, I have no idea :)
@@ -41,6 +42,7 @@ it does:
  - Smart nick completion
  - Configurable logging support
  - Plugins support, creating plugins is really easy.
+ - Extremely flexible Perl scripting support.
  - Lots of nice GUI stuff :)
 
 
@@ -80,6 +82,7 @@ Configure can use these parameters (all of these defaults to yes):
  --enable-memdebug     	Enable memory debugging, great for finding memory
 			leaks
  --enable-gtk-hebrew    Enable Hebrew support - see README-HEBREW
+ --disable-perl		Disable Perl support
 
 There's also some others, you can get a full list with ./configure --help
 
@@ -99,4 +102,4 @@ See TODO file if it is already listed in there - if not send me email..
 
  * AUTHOR
 
-Timo Sirainen, cras@irccrew.org, cras/ircnet/#irssi, http://xlife.dhs.org/irssi/
+Timo Sirainen, tss@iki.fi, cras/ircnet/#irssi, http://xlife.dhs.org/irssi/

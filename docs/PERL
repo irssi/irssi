@@ -127,7 +127,7 @@ Server::values()
 	"connection_lost" - Did we lose the connection (1) or was
 	                    the connection meant to be disconnected (0)
   Example:
-	%server_info = %{$Irssi::cur_server->values()};
+	%server_info = %{Irssi::cur_server->values()};
 	Irssi::print("Current server = ".$server_info{'address'});
 
 Server server_connect(address, [port=6667, [password='', [nick='']]])
@@ -195,7 +195,7 @@ Server::redirect_event(arg, last, ...)
 
   Example:
 	$server->send_raw('WHOIS :cras');
-	$server->redirect_event('cras', 2
+	$server->redirect_event('cras', 2,
 			  "event 318", "redir end_of_whois", -1,
 			  "event 402", "redir no_such_server", -1,
 			  "event 401", "redir no_such_nick", 1,
@@ -242,6 +242,7 @@ Channel::values()
   has keys:
 	"name" - channel name
 	"type" - channel type ("channel", "query", "dcc chat", "empty")
+	"password" - channel password
 
 Channel Server::channel_create(channel, type, automatic)
   Create new channel with name `channel'. `type' is one of:
@@ -253,7 +254,7 @@ Channel Server::channel_create(channel, type, automatic)
   `automatic' means that channel is created "automatically" and
   Irssi will NOT change the active window to it.
 
-Channel::_destroy()
+Channel::destroy()
   Destroy channel.
 
 Channel::change_name(name)

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi-0.7.23\n"
-"POT-Creation-Date: 2000-02-19 16:33+0200\n"
+"POT-Creation-Date: 2000-02-19 18:58+0200\n"
 "PO-Revision-Date: 2000-01-26 16:33+0100\n"
 "Last-Translator: Julien Boulnois <jboulnois@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
