@@ -76,7 +76,7 @@ static int buffer_send(NET_SENDBUF_REC *rec)
 
 	if (ret > 0) {
                 rec->bufpos -= ret;
-		memmove(rec->buffer, rec->buffer+ret, rec->bufpos);
+		g_memmove(rec->buffer, rec->buffer+ret, rec->bufpos);
 	}
 	return FALSE;
 }

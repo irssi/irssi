@@ -671,7 +671,7 @@ static void event_received(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, NULL, &args);
 	ptr = strstr(args, " :");
 	if (ptr != NULL)
-                memmove(ptr+1, ptr+2, strlen(ptr+1));
+                g_memmove(ptr+1, ptr+2, strlen(ptr+1));
 	printtext(server, NULL, MSGLEVEL_CRAP, "%s", args);
 	g_free(params);
 }
