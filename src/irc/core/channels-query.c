@@ -444,12 +444,12 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
         SERVER_QUERY_REC *rec;
         GSList *tmp, *next;
 	char *params, *channel;
-        int failed;
+        int failed, multiple;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
-        server->one_endofwho = strchr(channel, ',') != NULL;
+	multiple = strchr(channel, ',') != NULL;
 
         failed = FALSE;
 	rec = server->chanqueries;
@@ -457,19 +457,24 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		IRC_CHANNEL_REC *chanrec = tmp->data;
 
                 next = tmp->next;
-		if (chanrec->ownnick->host == NULL && !server->one_endofwho) {
+		if (chanrec->ownnick->host == NULL && multiple &&
+		    !server->one_endofwho) {
 			/* we should receive our own host for each channel.
 			   However, some servers really are stupid enough
 			   not to reply anything to /WHO requests.. */
 			failed = TRUE;
-		} else {
+		} else if (chanrec->ownnick->host != NULL ||
+			   server->one_endofwho) {
 			chanrec->wholist = TRUE;
 			signal_emit("channel wholist", 1, chanrec);
 			channel_got_query(chanrec, CHANNEL_QUERY_WHO);
 		}
 	}
 
-	if (server->one_endofwho && failed) {
+	if (multiple)
+		server->one_endofwho = TRUE;
+
+	if (failed) {
 		/* server didn't understand multiple WHO replies,
 		   send them again separately */
                 query_current_error(server);
