@@ -29,7 +29,7 @@
 
 #include "masks.h"
 #include "irc.h"
-#include "server-setup.h"
+#include "servers-setup.h"
 
 #include "dcc.h"
 
@@ -495,7 +495,7 @@ static void dcc_send_init(DCC_REC *dcc)
 }
 
 /* SYNTAX: DCC SEND <nick> <file> */
-static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	char *target, *fname, *str, *ptr;
 	void *free_arg;

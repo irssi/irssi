@@ -25,7 +25,7 @@
 #include "gui-readline.h"
 
 /* idle time */
-static char *expando_idletime(void *server, void *item, int *free_ret)
+static char *expando_idletime(SERVER_REC *server, void *item, int *free_ret)
 {
 	int diff;
 
@@ -35,13 +35,13 @@ static char *expando_idletime(void *server, void *item, int *free_ret)
 }
 
 /* current contents of the input line */
-static char *expando_inputline(void *server, void *item, int *free_ret)
+static char *expando_inputline(SERVER_REC *server, void *item, int *free_ret)
 {
 	return gui_entry_get_text();
 }
 
 /* FIXME: value of cutbuffer */
-static char *expando_cutbuffer(void *server, void *item, int *free_ret)
+static char *expando_cutbuffer(SERVER_REC *server, void *item, int *free_ret)
 {
 	return cutbuffer;
 }

@@ -28,13 +28,13 @@
 #include "levels.h"
 #include "irc.h"
 #include "irc-commands.h"
-#include "server.h"
+#include "servers.h"
 #include "mode-lists.h"
 #include "nicklist.h"
-#include "channels.h"
-#include "query.h"
+#include "irc-channels.h"
+#include "irc-queries.h"
 
-#include "fe-query.h"
+#include "fe-queries.h"
 #include "windows.h"
 #include "window-items.h"
 
@@ -42,7 +42,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
     GHashTable *optlist;
     WINDOW_REC *window;
-    CHANNEL_REC *channel;
+    IRC_CHANNEL_REC *channel;
     NICK_REC *nickrec;
     const char *nickmode;
     char *target, *msg, *freestr, *newtarget;
@@ -67,9 +67,9 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 
     free_ret = FALSE;
     if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0)
-	    newtarget = parse_special(&target, server, item, NULL, &free_ret, NULL);
+	    newtarget = parse_special(&target, SERVER(server), item, NULL, &free_ret, NULL);
     else if (strcmp(target, "*") == 0 &&
-	     (irc_item_channel(item) || irc_item_query(item)))
+	     (IS_IRC_CHANNEL(item) || IS_IRC_QUERY(item)))
 	    newtarget = item->name;
     else newtarget = target;
 
@@ -83,7 +83,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     target = newtarget;
 
     if (server == NULL || !server->connected) cmd_param_error(CMDERR_NOT_CONNECTED);
-    channel = channel_find(server, target);
+    channel = irc_channel_find(server, target);
 
     freestr = !free_ret ? NULL : target;
     if (*target == '@' && ischannel(target[1]))
@@ -92,7 +92,8 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     if (ischannel(*target))
     {
 	/* msg to channel */
-	nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
+	    nickrec = channel == NULL ? NULL :
+		    nicklist_find(CHANNEL(channel), server->nick);
 	nickmode = !settings_get_bool("show_nickmode") || nickrec == NULL ? "" :
 	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
 
@@ -128,11 +129,11 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 }
 
 /* SYNTAX: ME <message> */
-static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_me(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	g_return_if_fail(data != NULL);
 
-	if (!irc_item_check(item))
+	if (!IS_IRC_ITEM(item))
 		return;
 
 	if (server == NULL || !server->connected)
@@ -237,21 +238,21 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channame, *msg;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	chanrec = channel_find(server, channame);
+	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	printformat(server, chanrec->name, MSGLEVEL_NOTICES, IRCTXT_OWN_WALL, chanrec->name, msg);
@@ -260,7 +261,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
-			     WI_IRC_REC *item)
+			     WI_ITEM_REC *item)
 {
 	GString *str;
 
@@ -274,7 +275,7 @@ static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
 	g_string_free(str, TRUE);
 }
 
-static void bans_show_channel(CHANNEL_REC *channel, IRC_SERVER_REC *server)
+static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -309,9 +310,9 @@ static void bans_show_channel(CHANNEL_REC *channel, IRC_SERVER_REC *server)
 
 /* SYNTAX: BAN [<channel>] [<nicks>] */
 static void cmd_ban(const char *data, IRC_SERVER_REC *server,
-		    WI_IRC_REC *item)
+		    WI_ITEM_REC *item)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channel, *nicks;
 	void *free_arg;
 
@@ -331,12 +332,12 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	}
 
 	/* display bans */
-	chanrec = irc_item_channel(item);
+	chanrec = IRC_CHANNEL(item);
 	if (chanrec == NULL && *channel == '\0')
 		cmd_param_error(CMDERR_NOT_JOINED);
 
 	if (*channel != '\0' && strcmp(channel, "*") != 0)
-		chanrec = channel_find(server, channel);
+		chanrec = irc_channel_find(server, channel);
 
 	if (chanrec == NULL) {
 		/* not joined to such channel,
@@ -351,21 +352,21 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 }
 
 /* SYNTAX: INVITELIST [<channel>] */
-static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_invitelist(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *channel, *cur_channel;
+	IRC_CHANNEL_REC *channel, *cur_channel;
 	GSList *tmp;
 
 	g_return_if_fail(data != NULL);
 	if (server == NULL || !server->connected) cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	cur_channel = irc_item_channel(item);
+	cur_channel = IRC_CHANNEL(item);
 	if (cur_channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
 
 	if (strcmp(data, "*") == 0 || *data == '\0')
 		channel = cur_channel;
 	else
-		channel = channel_find(server, data);
+		channel = irc_channel_find(server, data);
 	if (channel == NULL) cmd_return_error(CMDERR_CHAN_NOT_FOUND);
 
 	for (tmp = channel->invitelist; tmp != NULL; tmp = tmp->next)
@@ -395,15 +396,15 @@ static void cmd_nick(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: VER [<target>] */
-static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *str;
 
 	g_return_if_fail(data != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
                 cmd_return_error(CMDERR_NOT_CONNECTED);
-	if (*data == '\0' && !irc_item_check(item))
+	if (*data == '\0' && !IS_IRC_ITEM(item))
 		cmd_return_error(CMDERR_NOT_JOINED);
 
 	str = g_strdup_printf("%s VERSION", *data == '\0' ? item->name : data);

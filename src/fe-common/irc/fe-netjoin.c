@@ -26,7 +26,7 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "modes.h"
 #include "ignore.h"
 #include "netsplit.h"

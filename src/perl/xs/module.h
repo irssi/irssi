@@ -6,20 +6,20 @@
 #include "common.h"
 #include "network.h"
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 #include "log.h"
 #include "rawlog.h"
 #include "settings.h"
+#include "masks.h"
 
 #include "irc/core/bans.h"
-#include "irc/core/channels.h"
-#include "irc/core/query.h"
 #include "irc/core/irc.h"
-#include "irc/core/irc-server.h"
+#include "irc/core/irc-servers.h"
 #include "irc/core/server-reconnect.h"
 #include "irc/core/server-setup.h"
-#include "irc/core/nicklist.h"
-#include "irc/core/masks.h"
+#include "irc/core/irc-channels.h"
+#include "irc/core/irc-queries.h"
+#include "irc/core/irc-nicklist.h"
 #include "irc/core/modes.h"
 #include "irc/core/mode-lists.h"
 #include "irc/core/netsplit.h"
@@ -37,7 +37,7 @@ typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;
 typedef RAWLOG_REC *Irssi__Rawlog;
 
-typedef CHANNEL_REC *Irssi__Channel;
+typedef IRC_CHANNEL_REC *Irssi__Channel;
 typedef QUERY_REC *Irssi__Query;
 typedef IRC_SERVER_REC *Irssi__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Connect;

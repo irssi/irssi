@@ -133,6 +133,8 @@ void fe_common_core_finish_init(void)
 {
 	WINDOW_REC *window;
 
+	signal_emit("irssi init read settings", 0);
+
 	signal(SIGPIPE, SIG_IGN);
 
 	windows_restore();

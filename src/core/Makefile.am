@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libcore.la
+noinst_LIBRARIES = libcore.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -13,13 +13,17 @@ else
 memdebug_src=
 endif
 
-libcore_la_SOURCES = \
+libcore_a_SOURCES = \
 	args.c \
+	channels.c \
+	channels-setup.c \
 	commands.c \
+	chatnets.c \
 	core.c \
         levels.c \
 	line-split.c \
 	log.c \
+	masks.c \
         $(memdebug_src) \
 	misc.c \
 	modules.c \
@@ -27,21 +31,38 @@ libcore_la_SOURCES = \
 	net-nonblock.c \
 	net-sendbuffer.c \
 	network.c \
+	nicklist.c \
 	pidwait.c \
+	queries.c \
 	rawlog.c \
-	server.c \
-	server-redirect.c \
+	servers.c \
+	servers-reconnect.c \
+	servers-redirect.c \
+	servers-setup.c \
 	settings.c \
 	signals.c \
 	special-vars.c
 
+structure_headers = \
+	chatnet-rec.h \
+	channel-rec.h \
+	query-rec.h \
+	server-rec.h \
+	server-setup-rec.h \
+	server-connect-rec.h \
+	window-item-rec.h
+
 noinst_HEADERS = \
 	args.h \
+	channels.h \
+	channels-setup.h \
 	commands.h \
+	chatnets.h \
 	core.h \
         levels.h \
 	line-split.h \
 	log.h \
+	masks.h \
         memdebug.h \
 	misc.h \
 	module.h \
@@ -51,13 +72,19 @@ noinst_HEADERS = \
 	net-nonblock.h \
 	net-sendbuffer.h \
 	network.h \
+	nicklist.h \
 	pidwait.h \
+	queries.h \
 	rawlog.h \
-	server.h \
-	server-redirect.h \
+	servers.h \
+	servers-reconnect.h \
+	servers-redirect.h \
+	servers-setup.h \
 	settings.h \
 	signals.h \
-	special-vars.h
+	special-vars.h \
+	window-item-def.h \
+	$(structure_headers)
 
 EXTRA_DIST = \
 	memdebug.c

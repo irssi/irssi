@@ -324,6 +324,11 @@ void module_unload(MODULE_REC *module)
 	g_free(module);
 }
 
+static void uniq_get_modules(char *key, void *value, GSList **list)
+{
+        *list = g_slist_append(*list, key);
+}
+
 void modules_init(void)
 {
 	modules = NULL;
@@ -342,11 +347,19 @@ void modules_init(void)
 
 void modules_deinit(void)
 {
-	g_hash_table_foreach(idlookup, (GHFunc) module_uniq_destroy, NULL);
-	g_hash_table_destroy(idlookup);
-	g_hash_table_destroy(uniqids);
+	GSList *list;
 
-	g_hash_table_foreach(stridlookup, (GHFunc) module_uniq_destroy, NULL);
+	list = NULL;
+	g_hash_table_foreach(idlookup, (GHFunc) uniq_get_modules, &list);
+	g_hash_table_foreach(stridlookup, (GHFunc) uniq_get_modules, &list);
+
+	while (list != NULL) {
+		module_uniq_destroy(list->data);
+		list = g_slist_remove(list, list->data);
+	}
+
+	g_hash_table_destroy(idlookup);
 	g_hash_table_destroy(stridlookup);
+	g_hash_table_destroy(uniqids);
 	g_hash_table_destroy(uniqstrids);
 }

@@ -25,6 +25,10 @@
 #include "misc.h"
 #include "irssi-version.h"
 
+#include "channels.h"
+#include "queries.h"
+#include "window-item-def.h"
+
 #include <sys/utsname.h>
 
 #define ALIGN_RIGHT 0x01
@@ -99,7 +103,7 @@ static char *get_internal_setting(const char *key, int type, int *free_ret)
 	return NULL;
 }
 
-static char *get_long_variable_value(const char *key, void *server,
+static char *get_long_variable_value(const char *key, SERVER_REC *server,
 				     void *item, int *free_ret)
 {
 	EXPANDO_FUNC func;
@@ -126,7 +130,7 @@ static char *get_long_variable_value(const char *key, void *server,
 	return NULL;
 }
 
-static char *get_long_variable(char **cmd, void *server,
+static char *get_long_variable(char **cmd, SERVER_REC *server,
 			       void *item, int *free_ret)
 {
 	char *start, *var, *ret;
@@ -142,7 +146,7 @@ static char *get_long_variable(char **cmd, void *server,
 }
 
 /* return the value of the variable found from `cmd' */
-static char *get_variable(char **cmd, void *server, void *item,
+static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 			  char **arglist, int *free_ret, int *arg_used)
 {
 	if (isdigit(**cmd) || **cmd == '*' || **cmd == '-' || **cmd == '~') {
@@ -183,7 +187,7 @@ static char *get_history(char **cmd, void *item, int *free_ret)
 	return ret;
 }
 
-static char *get_special_value(char **cmd, void *server, void *item,
+static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 			       char **arglist, int *free_ret, int *arg_used)
 {
 	char command, *value, *p;
@@ -313,7 +317,7 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 
 /* Parse and expand text after '$' character. return value has to be
    g_free()'d if `free_ret' is TRUE. */
-char *parse_special(char **cmd, void *server, void *item,
+char *parse_special(char **cmd, SERVER_REC *server, void *item,
 		    char **arglist, int *free_ret, int *arg_used)
 {
 	static char **nested_orig_cmd = NULL; /* FIXME: KLUDGE! */
@@ -405,7 +409,7 @@ char *parse_special(char **cmd, void *server, void *item,
 }
 
 /* parse the whole string. $ and \ chars are replaced */
-char *parse_special_string(const char *cmd, void *server, void *item,
+char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 			   const char *data, int *arg_used)
 {
 	char code, **arglist, *ret;
@@ -466,7 +470,7 @@ char *parse_special_string(const char *cmd, void *server, void *item,
 
 /* execute the commands in string - commands can be split with ';' */
 void eval_special_string(const char *cmd, const char *data,
-			 void *server, void *item)
+			 SERVER_REC *server, void *item)
 {
 	const char *cmdchars;
 	char *orig, *str, *start, *ret;
@@ -556,40 +560,101 @@ void special_history_func_set(SPECIAL_HISTORY_FUNC func)
 	history_func = func;
 }
 
+/* text of your AWAY message, if any */
+static char *expando_awaymsg(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->away_reason;
+}
+
+/* current channel */
+static char *expando_channel(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->name;
+}
+
 /* time client was started, $time() format */
-static char *expando_clientstarted(void *server, void *item, int *free_ret)
+static char *expando_clientstarted(SERVER_REC *server, void *item, int *free_ret)
 {
         *free_ret = TRUE;
 	return g_strdup_printf("%ld", (long) client_start_time);
 }
 
 /* client version text string */
-static char *expando_version(void *server, void *item, int *free_ret)
+static char *expando_version(SERVER_REC *server, void *item, int *free_ret)
 {
 	return IRSSI_VERSION;
 }
 
 /* current value of CMDCHARS */
-static char *expando_cmdchars(void *server, void *item, int *free_ret)
+static char *expando_cmdchars(SERVER_REC *server, void *item, int *free_ret)
 {
 	return (char *) settings_get_str("cmdchars");
 }
 
+/* modes of current channel, if any */
+static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_CHANNEL(item) ? NULL : CHANNEL(item)->mode;
+}
+
+/* current nickname */
+static char *expando_nick(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->nick;
+}
+
+/* value of STATUS_OPER if you are an irc operator */
+static char *expando_statusoper(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL || !server->server_operator ? "" :
+		(char *) settings_get_str("STATUS_OPER");
+}
+
+/* if you are a channel operator in $C, expands to a '@' */
+static char *expando_chanop(SERVER_REC *server, void *item, int *free_ret)
+{
+	return IS_CHANNEL(item) && CHANNEL(item)->chanop ? "@" : "";
+}
+
+/* nickname of whomever you are QUERYing */
+static char *expando_query(SERVER_REC *server, void *item, int *free_ret)
+{
+	return !IS_QUERY(item) ? "" : QUERY(item)->name;
+}
+
+/* version of current server */
+static char *expando_serverversion(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->version;
+}
+
+/* target of current input (channel or QUERY nickname) */
+static char *expando_target(SERVER_REC *server, void *item, int *free_ret)
+{
+	return ((WI_ITEM_REC *) item)->name;
+}
+
 /* client release date (numeric version string) */
-static char *expando_releasedate(void *server, void *item, int *free_ret)
+static char *expando_releasedate(SERVER_REC *server, void *item, int *free_ret)
 {
 	return IRSSI_VERSION_DATE;
 }
 
 /* current working directory */
-static char *expando_workdir(void *server, void *item, int *free_ret)
+static char *expando_workdir(SERVER_REC *server, void *item, int *free_ret)
 {
 	*free_ret = TRUE;
 	return g_get_current_dir();
 }
 
+/* value of REALNAME */
+static char *expando_realname(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->connrec->realname;
+}
+
 /* time of day (hh:mm) */
-static char *expando_time(void *server, void *item, int *free_ret)
+static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
 {
 	time_t now = time(NULL);
 	struct tm *tm;
@@ -600,13 +665,13 @@ static char *expando_time(void *server, void *item, int *free_ret)
 }
 
 /* a literal '$' */
-static char *expando_dollar(void *server, void *item, int *free_ret)
+static char *expando_dollar(SERVER_REC *server, void *item, int *free_ret)
 {
 	return "$";
 }
 
 /* system name */
-static char *expando_sysname(void *server, void *item, int *free_ret)
+static char *expando_sysname(SERVER_REC *server, void *item, int *free_ret)
 {
 	struct utsname un;
 
@@ -619,7 +684,7 @@ static char *expando_sysname(void *server, void *item, int *free_ret)
 }
 
 /* system release */
-static char *expando_sysrelease(void *server, void *item, int *free_ret)
+static char *expando_sysrelease(SERVER_REC *server, void *item, int *free_ret)
 {
 	struct utsname un;
 
@@ -631,8 +696,22 @@ static char *expando_sysrelease(void *server, void *item, int *free_ret)
 
 }
 
+/* Server tag */
+static char *expando_servertag(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->tag;
+}
+
+/* Server chatnet */
+static char *expando_chatnet(SERVER_REC *server, void *item, int *free_ret)
+{
+	return server == NULL ? "" : server->connrec->chatnet;
+}
+
 void special_vars_init(void)
 {
+	settings_add_str("misc", "STATUS_OPER", "*");
+
 	client_start_time = time(NULL);
 
 	memset(char_expandos, 0, sizeof(char_expandos));
@@ -640,22 +719,36 @@ void special_vars_init(void)
 				    (GCompareFunc) g_str_equal);
 	history_func = NULL;
 
+	char_expandos['A'] = expando_awaymsg;
+	char_expandos['C'] = expando_channel;
 	char_expandos['F'] = expando_clientstarted;
 	char_expandos['J'] = expando_version;
 	char_expandos['K'] = expando_cmdchars;
+	char_expandos['M'] = expando_chanmode;
+	char_expandos['N'] = expando_nick;
+	char_expandos['O'] = expando_statusoper;
+	char_expandos['P'] = expando_chanop;
+	char_expandos['Q'] = expando_query;
+	char_expandos['R'] = expando_serverversion;
+	char_expandos['T'] = expando_target;
 	char_expandos['V'] = expando_releasedate;
 	char_expandos['W'] = expando_workdir;
+	char_expandos['Y'] = expando_realname;
 	char_expandos['Z'] = expando_time;
 	char_expandos['$'] = expando_dollar;
 
 	expando_create("sysname", expando_sysname);
 	expando_create("sysrelease", expando_sysrelease);
+	expando_create("tag", expando_servertag);
+	expando_create("chatnet", expando_chatnet);
 }
 
 void special_vars_deinit(void)
 {
 	expando_destroy("sysname", expando_sysname);
 	expando_destroy("sysrelease", expando_sysrelease);
+	expando_destroy("tag", expando_servertag);
+	expando_destroy("chatnet", expando_chatnet);
 
         g_hash_table_destroy(expandos);
 }

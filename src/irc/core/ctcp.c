@@ -1,7 +1,7 @@
 /*
  ctcp.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2000 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "server-idle.h"
 #include "ignore.h"
 
@@ -35,8 +35,10 @@ static void ctcp_queue_clean(IRC_SERVER_REC *server)
 
 	for (tmp = server->ctcpqueue; tmp != NULL; tmp = tmp->next) {
 		next = tmp->next;
-		if (!server_idle_find(server, GPOINTER_TO_INT(tmp->data)))
-			server->ctcpqueue = g_slist_remove(server->ctcpqueue, tmp->data);
+		if (!server_idle_find(server, GPOINTER_TO_INT(tmp->data))) {
+			server->ctcpqueue =
+				g_slist_remove(server->ctcpqueue, tmp->data);
+		}
 	}
 }
 
@@ -50,15 +52,19 @@ void ctcp_send_reply(IRC_SERVER_REC *server, const char *data)
 
 	ctcp_queue_clean(server);
 
-	if (g_slist_length(server->ctcpqueue) < settings_get_int("max_ctcp_queue")) {
-		/* Add to first in idle queue */
-		tag = server_idle_add(server, data, NULL, 0, NULL);
-		server->ctcpqueue = g_slist_append(server->ctcpqueue, GINT_TO_POINTER(tag));
-	}
+	if ((int)g_slist_length(server->ctcpqueue) >=
+	    settings_get_int("max_ctcp_queue"))
+		return;
+
+	/* Add to first in idle queue */
+	tag = server_idle_add(server, data, NULL, 0, NULL);
+	server->ctcpqueue =
+		g_slist_append(server->ctcpqueue, GINT_TO_POINTER(tag));
 }
 
 /* CTCP ping */
-static void ctcp_ping(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void ctcp_ping(const char *data, IRC_SERVER_REC *server,
+		      const char *nick)
 {
 	char *str;
 
@@ -72,14 +78,16 @@ static void ctcp_ping(const char *data, IRC_SERVER_REC *server, const char *nick
 }
 
 /* CTCP version */
-static void ctcp_version(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void ctcp_version(const char *data, IRC_SERVER_REC *server,
+			 const char *nick)
 {
 	char *str, *reply;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
 
-	reply = parse_special_string(settings_get_str("ctcp_version_reply"), server, NULL, "", NULL);
+	reply = parse_special_string(settings_get_str("ctcp_version_reply"),
+				     SERVER(server), NULL, "", NULL);
 	str = g_strdup_printf("NOTICE %s :\001VERSION %s\001", nick, reply);
 	ctcp_send_reply(server, str);
 	g_free(str);
@@ -107,7 +115,8 @@ static void ctcp_time(const char *data, IRC_SERVER_REC *server, const char *nick
 	g_free(reply);
 }
 
-static void ctcp_msg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_msg(const char *data, IRC_SERVER_REC *server,
+		     const char *nick, const char *addr, const char *target)
 {
 	char *args, *str;
 
@@ -119,12 +128,15 @@ static void ctcp_msg(const char *data, IRC_SERVER_REC *server, const char *nick,
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	g_strdown(str+9);
-	if (!signal_emit(str, 5, args, server, nick, addr, target))
-		signal_emit("default ctcp msg", 5, data, server, nick, addr, target);
+	if (!signal_emit(str, 5, args, server, nick, addr, target)) {
+		signal_emit("default ctcp msg", 5,
+			    data, server, nick, addr, target);
+	}
 	g_free(str);
 }
 
-static void ctcp_reply(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr, const char *target)
+static void ctcp_reply(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *addr, const char *target)
 {
 	char *args, *str;
 
@@ -136,12 +148,15 @@ static void ctcp_reply(const char *data, IRC_SERVER_REC *server, const char *nic
 	if (args != NULL) *args++ = '\0'; else args = "";
 
 	g_strdown(str+11);
-	if (!signal_emit(str, 5, args, server, nick, addr, target))
-		signal_emit("default ctcp reply", 5, data, server, nick, addr, target);
+	if (!signal_emit(str, 5, args, server, nick, addr, target)) {
+		signal_emit("default ctcp reply", 5,
+			    data, server, nick, addr, target);
+	}
 	g_free(str);
 }
 
-static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_privmsg(const char *data, IRC_SERVER_REC *server,
+			  const char *nick, const char *addr)
 {
 	char *params, *target, *msg, *ptr;
 
@@ -162,7 +177,8 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	g_free(params);
 }
 
-static void event_notice(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_notice(const char *data, IRC_SERVER_REC *server,
+			 const char *nick, const char *addr)
 {
 	char *params, *target, *ptr, *msg;
 
@@ -186,7 +202,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	g_slist_free(server->ctcpqueue);
@@ -194,7 +210,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 
 void ctcp_init(void)
 {
-	settings_add_str("misc", "ctcp_version_reply", PACKAGE" v$J - running on $sysname");
+	settings_add_str("misc", "ctcp_version_reply",
+			 PACKAGE" v$J - running on $sysname");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);

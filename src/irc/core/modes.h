@@ -1,8 +1,8 @@
 #ifndef __MODES_H
 #define __MODES_H
 
-#include "server.h"
-#include "channels.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
 
 /* modes that have argument always */
 #define HAS_MODE_ARG_ALWAYS(mode) \
@@ -26,9 +26,9 @@ void modes_deinit(void);
 /* add `mode' to `old' - return newly allocated mode. */
 char *modes_join(const char *old, const char *mode);
 
-int channel_mode_is_set(CHANNEL_REC *channel, char mode);
+int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode);
 
-void parse_channel_modes(CHANNEL_REC *channel, const char *setby,
+void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			 const char *modestr);
 
 void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,

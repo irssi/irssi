@@ -1,6 +1,6 @@
 SUBDIRS = dcc flood notifylist
 
-noinst_LTLIBRARIES = libfe_common_irc.la
+noinst_LIBRARIES = libfe_common_irc.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -11,7 +11,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_common_irc_la_SOURCES = \
+libfe_common_irc_a_SOURCES = \
 	fe-channels.c \
 	fe-irc-commands.c \
 	fe-irc-server.c \
@@ -22,7 +22,7 @@ libfe_common_irc_la_SOURCES = \
 	fe-ignore.c \
 	fe-netjoin.c \
 	fe-netsplit.c \
-	fe-query.c \
+	fe-queries.c \
 	fe-common-irc.c \
 	irc-completion.c \
 	irc-window-activity.c \
@@ -32,7 +32,7 @@ libfe_common_irc_la_SOURCES = \
 
 noinst_HEADERS = \
 	fe-common-irc.h \
-	fe-query.h \
+	fe-queries.h \
 	irc-hilight-text.h \
 	module.h \
 	module-formats.h

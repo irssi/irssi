@@ -29,8 +29,8 @@
 
 #include "masks.h"
 #include "irc.h"
-#include "server-setup.h"
-#include "query.h"
+#include "servers-setup.h"
+#include "irc-queries.h"
 
 #include "dcc.h"
 
@@ -50,10 +50,11 @@ DCC_REC *item_get_dcc(void *item)
 {
 	QUERY_REC *query;
 
-	query = irc_item_query(item);
-	if (query == NULL || *query->nick != '=') return NULL;
+	query = IRC_QUERY(item);
+	if (query == NULL || *query->name != '=')
+		return NULL;
 
-	return dcc_find_item(DCC_TYPE_CHAT, query->nick+1, NULL);
+	return dcc_find_item(DCC_TYPE_CHAT, query->name+1, NULL);
 }
 
 /* Send text to DCC chat */
@@ -81,7 +82,7 @@ static void cmd_msg(const char *data)
 	signal_stop();
 }
 
-static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_me(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 {
 	DCC_REC *dcc;
 	char *str;
@@ -309,7 +310,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: MIRCDCC ON|OFF */
-static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_mircdcc(const char *data, IRC_SERVER_REC *server, QUERY_REC *item)
 {
 	DCC_REC *dcc;
 

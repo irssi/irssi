@@ -27,7 +27,7 @@
 #include "settings.h"
 
 #include "levels.h"
-#include "server.h"
+#include "servers.h"
 
 #include "hilight-text.h"
 

@@ -24,7 +24,7 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 
 typedef struct {
 	IRC_SERVER_REC *server;
@@ -130,7 +130,7 @@ static int sig_check_lag(void)
 		IRC_SERVER_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (!irc_server_check(rec))
+		if (!IS_IRC_SERVER(rec))
 			continue;
 
 		if (rec->lag_sent != 0) {

@@ -24,8 +24,8 @@
 
 #include "irc.h"
 #include "ignore.h"
-#include "irc-server.h"
-#include "nicklist.h"
+#include "irc-servers.h"
+#include "irc-nicklist.h"
 
 #include "completion.h"
 #include "windows.h"

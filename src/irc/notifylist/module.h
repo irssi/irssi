@@ -25,7 +25,7 @@ typedef struct {
 	GSList *ison_tempusers; /* Temporary list for saving /ISON events.. */
 } MODULE_SERVER_REC;
 
-#include "irc-server.h"
+#include "irc-servers.h"
 
 NOTIFY_NICK_REC *notify_nick_create(IRC_SERVER_REC *server, const char *nick);
 void notify_nick_destroy(NOTIFY_NICK_REC *rec);

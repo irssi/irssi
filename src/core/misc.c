@@ -196,12 +196,12 @@ GSList *gslist_find_icase_string(GSList *list, const char *key)
 	return NULL;
 }
 
-void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, void *data)
+void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data)
 {
 	void *ret;
 
 	while (list != NULL) {
-		ret = func(list->data, data);
+		ret = func(list->data, (void *) data);
                 if (ret != NULL) return ret;
 
 		list = list->next;

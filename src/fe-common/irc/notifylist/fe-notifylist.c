@@ -23,12 +23,13 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
+#include "chatnets.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
 #include "levels.h"
-#include "irc-server.h"
-#include "ircnet-setup.h"
+#include "irc-servers.h"
+#include "irc-chatnets.h"
 #include "irc/notifylist/notifylist.h"
 
 #include "themes.h"
@@ -100,10 +101,12 @@ static void cmd_notify_show(void)
 	offline = g_slist_copy(nicks);
 
         /* print the notifies on specific ircnets */
-	for (tmp = ircnets; tmp != NULL; tmp = tmp->next) {
-                IRCNET_REC *rec = tmp->data;
+	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
+		IRC_CHATNET_REC *rec = tmp->data;
 
-		server = (IRC_SERVER_REC *) server_find_ircnet(rec->name);
+		if (!IS_IRCNET(rec)) continue;
+
+		server = (IRC_SERVER_REC *) server_find_chatnet(rec->name);
 		if (server == NULL) continue;
 
 		print_notify_onserver(server, nicks, &offline, rec->name);
@@ -113,7 +116,7 @@ static void cmd_notify_show(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		server = tmp->data;
 
-		if (server->connrec->ircnet != NULL)
+		if (server->connrec->chatnet != NULL)
 			continue;
 		print_notify_onserver(server, nicks, &offline, server->tag);
 	}
@@ -182,7 +185,7 @@ static void notifylist_joined(IRC_SERVER_REC *server, const char *nick,
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_JOIN,
 		    nick, username, host, realname,
-		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
 
 static void notifylist_left(IRC_SERVER_REC *server, const char *nick,
@@ -193,7 +196,7 @@ static void notifylist_left(IRC_SERVER_REC *server, const char *nick,
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_PART,
 		    nick, username, host, realname,
-		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
 
 static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
@@ -205,11 +208,11 @@ static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
 	if (awaymsg != NULL) {
 		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_AWAY,
 			    nick, username, host, realname, awaymsg,
-			    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+			    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 	} else {
 		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_UNAWAY,
 			    nick, username, host, realname,
-			    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+			    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 	}
 }
 
@@ -221,7 +224,7 @@ static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_UNIDLE,
 		    nick, username, host, realname, awaymsg != NULL ? awaymsg : "",
-		    server->connrec->ircnet == NULL ? "IRC" : server->connrec->ircnet);
+		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
 }
 
 void fe_irc_notifylist_init(void)

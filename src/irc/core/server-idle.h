@@ -1,7 +1,7 @@
 #ifndef __SERVER_IDLE_H
 #define __SERVER_IDLE_H
 
-#include "irc-server.h"
+#include "irc-servers.h"
 
 /* Add new idle command to queue */
 int server_idle_add(IRC_SERVER_REC *server, const char *cmd, const char *arg, int last, ...);

@@ -22,7 +22,7 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 #include "levels.h"
 #include "misc.h"
 #include "log.h"

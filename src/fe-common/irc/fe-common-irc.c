@@ -26,7 +26,7 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "server-setup.h"
+#include "servers-setup.h"
 
 #include "themes.h"
 #include "completion.h"
@@ -181,12 +181,12 @@ void fe_common_irc_finish_init(void)
 	/* connect to autoconnect servers */
 	ircnets = NULL;
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
-		SETUP_SERVER_REC *rec = tmp->data;
+		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (rec->autoconnect && (rec->ircnet == NULL || *rec->ircnet == '\0' ||
-					 gslist_find_icase_string(ircnets, rec->ircnet) == NULL)) {
-			if (rec->ircnet != NULL && *rec->ircnet != '\0')
-				ircnets = g_slist_append(ircnets, rec->ircnet);
+		if (rec->autoconnect && (rec->chatnet == NULL || *rec->chatnet == '\0' ||
+					 gslist_find_icase_string(ircnets, rec->chatnet) == NULL)) {
+			if (rec->chatnet != NULL && *rec->chatnet != '\0')
+				ircnets = g_slist_append(ircnets, rec->chatnet);
 
 			str = g_strdup_printf("%s %d", rec->address, rec->port);
 			signal_emit("command connect", 1, str);

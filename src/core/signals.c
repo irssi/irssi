@@ -310,7 +310,8 @@ void signal_stop_by_name(const char *signal)
 
 static void signal_remove_module(void *signal, SIGNAL_REC *rec, const char *module)
 {
-	int signal_id, list, index;
+	unsigned int index;
+	int signal_id, list;
 
 	signal_id = GPOINTER_TO_INT(signal);
 

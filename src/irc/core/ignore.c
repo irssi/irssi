@@ -26,10 +26,10 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "masks.h"
-#include "irc-server.h"
-#include "channels.h"
-#include "nicklist.h"
+#include "irc-masks.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
+#include "irc-nicklist.h"
 
 #include "ignore.h"
 
@@ -39,7 +39,7 @@ GSList *ignores;
 static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 				const char *channel, const char *text)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	GSList *nicks, *tmp;
 
 	g_return_val_if_fail(rec != NULL, FALSE);
@@ -47,10 +47,10 @@ static int ignore_check_replies(IGNORE_REC *rec, IRC_SERVER_REC *server,
 	g_return_val_if_fail(channel != NULL, FALSE);
 	g_return_val_if_fail(text != NULL, FALSE);
 
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL) return FALSE;
 
-	nicks = nicklist_find_multiple(chanrec, rec->mask);
+	nicks = nicklist_find_multiple(CHANNEL(chanrec), rec->mask);
 	if (nicks == NULL) return FALSE;
 
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
@@ -103,7 +103,7 @@ int ignore_check(IRC_SERVER_REC *server, const char *nick, const char *host,
 
 			ok = ((host == NULL || *host == '\0')) ?
 				match_wildcards(rec->mask, nick) :
-				irc_mask_match_address(rec->mask, nick, host);
+				mask_match_address(SERVER(server), rec->mask, nick, host);
 			if (!ok) {
                                 /* nick didn't match, but maybe this is a reply to nick? */
 				if (!rec->replies || channel == NULL || text == NULL ||

@@ -26,8 +26,8 @@
 
 #include "irc.h"
 #include "levels.h"
-#include "server.h"
-#include "channels.h"
+#include "servers.h"
+#include "irc-channels.h"
 #include "nicklist.h"
 
 static char *last_away_nick = NULL;
@@ -64,7 +64,7 @@ static void event_names_list(const char *data, IRC_SERVER_REC *server)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 4, NULL, NULL, &channel, &names);
-	if (channel_find(server, channel) == NULL)
+	if (irc_channel_find(server, channel) == NULL)
 		printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_NAMES, channel, names);
 	g_free(params);
 }
@@ -160,17 +160,17 @@ static void display_nicks(CHANNEL_REC *channel)
 static void event_end_of_names(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
 
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL)
 		printformat(server, channel, MSGLEVEL_CRAP, IRCTXT_ENDOFNAMES, channel, 0, 0, 0, 0);
 	else
-		display_nicks(chanrec);
+		display_nicks(CHANNEL(chanrec));
 	g_free(params);
 }
 

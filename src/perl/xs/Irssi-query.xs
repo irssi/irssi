@@ -28,7 +28,7 @@ PPCODE:
 	}
 
 Irssi::Query
-query_create(server, nick, automatic)
+irc_query_create(server, nick, automatic)
 	Irssi::Server server
 	char *nick
 	int automatic
@@ -56,7 +56,7 @@ PPCODE:
 
 	stash = gv_stashpv("Irssi::Server", 0);
 	hv_store(hv, "server", 6, sv_bless(newRV_noinc(newSViv(GPOINTER_TO_INT(query->server))), stash), 0);
-	hv_store(hv, "nick", 4, new_pv(query->nick), 0);
+	hv_store(hv, "name", 4, new_pv(query->name), 0);
 	hv_store(hv, "new_data", 8, newSViv(query->new_data), 0);
 
 	hv_store(hv, "address", 7, new_pv(query->address), 0);

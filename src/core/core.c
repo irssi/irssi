@@ -1,7 +1,7 @@
 /*
  core.c : irssi
 
-    Copyright (C) 1999 Timo Sirainen
+    Copyright (C) 1999-2000 Timo Sirainen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include "module.h"
 
-#include "modules.h"
 #include "pidwait.h"
 
 #include "net-disconnect.h"
@@ -28,11 +27,16 @@
 #include "signals.h"
 #include "settings.h"
 
-#include "server.h"
+#include "servers.h"
+#include "chatnets.h"
 #include "commands.h"
 #include "log.h"
 #include "rawlog.h"
 #include "special-vars.h"
+
+#include "channels.h"
+#include "queries.h"
+#include "nicklist.h"
 
 int irssi_gui;
 
@@ -47,18 +51,28 @@ void core_init(void)
 	settings_init();
 	commands_init();
 
+	chatnets_init();
 	servers_init();
 	log_init();
 	rawlog_init();
 	special_vars_init();
+
+	channels_init();
+	queries_init();
+	nicklist_init();
 }
 
 void core_deinit(void)
 {
+	nicklist_deinit();
+	queries_deinit();
+	channels_deinit();
+
 	special_vars_deinit();
 	rawlog_deinit();
 	log_deinit();
 	servers_deinit();
+	chatnets_deinit();
 
 	commands_deinit();
 	settings_deinit();

@@ -20,12 +20,11 @@
 
 #include "module.h"
 #include "rawlog.h"
-#include "modules.h"
 #include "signals.h"
 #include "misc.h"
 
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 
 #include "settings.h"
 

@@ -20,10 +20,10 @@
 
 #include "module.h"
 #include "signals.h"
-
 #include "misc.h"
-#include "channels.h"
+
 #include "irc.h"
+#include "irc-channels.h"
 
 static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
 {
@@ -37,12 +37,12 @@ static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
 	if (channel[0] == '!' && channel[1] == '!')
 		channel++; /* server didn't understand !channels */
 
-	chanrec = channel_find(server, channel);
+	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec == NULL && channel[0] == '!') {
 		/* it probably replied with the full !channel name,
 		   find the channel with the short name.. */
 		channel = g_strdup_printf("!%s", channel+6);
-		chanrec = channel_find(server, channel);
+		chanrec = channel_find(SERVER(server), channel);
 		g_free(channel);
 	}
 
@@ -73,7 +73,7 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel, co
 {
 	CHANNEL_REC *chanrec;
 
-	chanrec = channel_find(server, channel);
+	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec != NULL) {
 		g_free_not_null(chanrec->topic);
 		chanrec->topic = *topic == '\0' ? NULL : g_strdup(topic);
@@ -105,16 +105,18 @@ static void event_topic(const char *data, IRC_SERVER_REC *server)
 
 /* Find any unjoined channel that matches `channel'. Long channel names are
    also a bit problematic, so find a channel where start of the name matches. */
-static CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server, const char *channel)
+static IRC_CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server,
+					      const char *channel)
 {
 	GSList *tmp;
 	int len;
 
 	len = strlen(channel);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		CHANNEL_REC *rec = tmp->data;
+		IRC_CHANNEL_REC *rec = tmp->data;
 
-		if (rec->joined) continue;
+		if (!IS_IRC_CHANNEL(rec) || rec->joined)
+			continue;
 
 		if (g_strncasecmp(channel, rec->name, len) == 0 &&
 		    (len > 20 || rec->name[len] == '\0'))
@@ -127,7 +129,7 @@ static CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server, const char *ch
 static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
 {
 	char *params, *channel, *tmp;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
 
@@ -159,7 +161,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		g_free(shortchan);
 	}
 
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL && chanrec->joined) {
 		/* already joined this channel - this check was added
 		   here because of broken irssi proxy :) */
@@ -170,7 +172,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	chanrec = channel_find_unjoined(server, channel);
 	if (chanrec == NULL) {
 		/* didn't get here with /join command.. */
-		chanrec = channel_create(server, channel, TRUE);
+		chanrec = irc_channel_create(server, channel, TRUE);
 	}
 	chanrec->joined = TRUE;
 	if (strcmp(chanrec->name, channel) != 0) {
@@ -195,7 +197,7 @@ static void event_part(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	params = event_get_params(data, 2, &channel, &reason);
 
-	chanrec = channel_find(server, channel);
+	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec != NULL) {
 		chanrec->left = TRUE;
 		channel_destroy(chanrec);
@@ -219,7 +221,7 @@ static void event_kick(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	chanrec = channel_find(server, channel);
+	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec != NULL) {
 		chanrec->kicked = TRUE;
 		channel_destroy(chanrec);

@@ -1,7 +1,7 @@
 MODULE = Irssi  PACKAGE = Irssi
 
 void
-command(cmd, server=active_win->active_server, item=active_win->active)
+command(cmd, server=IRC_SERVER(active_win->active_server), item=active_win->active)
 	char *cmd
 	Irssi::Server server
 	Irssi::Windowitem item
@@ -18,7 +18,7 @@ OUTPUT:
 Irssi::Server
 active_server()
 CODE:
-	RETVAL = active_win->active_server;
+	RETVAL = IRC_SERVER(active_win->active_server);
 OUTPUT:
 	RETVAL
 
@@ -47,7 +47,7 @@ command(server, cmd, item=active_win->active)
 	Irssi::Server server
 	Irssi::Windowitem item
 CODE:
-	if (item != NULL && item->server != server)
+	if (item != NULL && item->server != SERVER(server))
 		item = NULL;
 	signal_emit("send command", 3, cmd, server, item);
 

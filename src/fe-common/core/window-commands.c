@@ -23,7 +23,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
-#include "server.h"
+#include "servers.h"
 
 #include "levels.h"
 
@@ -183,7 +183,7 @@ static void cmd_window_server(const char *data)
 	else if (active_win->active == NULL) {
 		window_change_server(active_win, server);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SERVER_CHANGED, server->tag, server->connrec->address,
-			    server->connrec->ircnet == NULL ? "" : server->connrec->ircnet);
+			    server->connrec->chatnet == NULL ? "" : server->connrec->chatnet);
 	}
 }
 

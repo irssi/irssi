@@ -23,10 +23,10 @@
 #include "commands.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "channels.h"
 #include "nicklist.h"
-#include "masks.h"
+#include "irc-masks.h"
 
 #include "bot-users.h"
 #include "botnet-users.h"

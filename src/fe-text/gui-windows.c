@@ -21,7 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 
@@ -244,9 +244,6 @@ void gui_window_newline(GUI_WINDOW_REC *gui, int visible)
 		scrollok(gui->parent->curses_win, TRUE);
 		wscrl(gui->parent->curses_win, 1);
 		scrollok(gui->parent->curses_win, FALSE);
-
-		wmove(gui->parent->curses_win, gui->parent->lines, 0);
-		wclrtoeol(gui->parent->curses_win);
 	}
 }
 

@@ -291,3 +291,19 @@ char **config_node_get_list(CONFIG_NODE *node)
 	g_string_free(values, TRUE);
         return ret;
 }
+
+/* Returns n'th node from list. */
+CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index)
+{
+	GSList *tmp;
+
+	g_return_val_if_fail(node != NULL, NULL);
+	g_return_val_if_fail(is_node_list(node), NULL);
+
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next, index--) {
+		if (index == 0)
+                        return tmp->data;
+	}
+
+	return NULL;
+}

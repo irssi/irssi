@@ -22,7 +22,7 @@
 #include "lib-config/iconfig.h"
 #include "settings.h"
 
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "notifylist.h"
 
 void notifylist_add_config(NOTIFYLIST_REC *rec)

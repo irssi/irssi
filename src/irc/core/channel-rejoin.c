@@ -21,25 +21,29 @@
 
 #include "module.h"
 #include "signals.h"
-
 #include "misc.h"
-#include "channels.h"
+
 #include "irc.h"
+#include "irc-channels.h"
 
 #define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
 
 static int rejoin_tag;
 
+#define channel_have_key(chan) \
+	((chan) != NULL && (chan)->key != NULL && (chan)->key[0] != '\0')
+
 static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *str;
 
-	chanrec = channel_find(server, channel);
-	str = chanrec == NULL || chanrec->key == NULL || *chanrec->key == '\0' ?
-		g_strdup(channel) : g_strdup_printf("%s %s", channel, chanrec->key);
+	chanrec = irc_channel_find(server, channel);
+	str = channel_have_key(chanrec) ? g_strdup(channel) :
+		g_strdup_printf("%s %s", channel, chanrec->key);
 
-	server->rejoin_channels = g_slist_append(server->rejoin_channels, str);
+	server->rejoin_channels =
+		g_slist_append(server->rejoin_channels, str);
 }
 
 static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
@@ -59,7 +63,7 @@ static void event_target_unavailable(const char *data, IRC_SERVER_REC *server)
 
 static void sig_disconnected(IRC_SERVER_REC *server)
 {
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	g_slist_foreach(server->rejoin_channels, (GFunc) g_free, NULL);
@@ -71,8 +75,9 @@ static void server_rejoin_channels(IRC_SERVER_REC *server)
 	while (server->rejoin_channels != NULL) {
 		char *channel = server->rejoin_channels->data;
 
-                channels_join(server, channel, TRUE);
-		server->rejoin_channels = g_slist_remove(server->rejoin_channels, channel);
+                irc_channels_join(server, channel, TRUE);
+		server->rejoin_channels =
+			g_slist_remove(server->rejoin_channels, channel);
 	}
 }
 
@@ -83,7 +88,7 @@ static int sig_rejoin(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
-		if (irc_server_check(rec))
+		if (IS_IRC_SERVER(rec))
 			server_rejoin_channels(rec);
 	}
 
@@ -92,7 +97,8 @@ static int sig_rejoin(void)
 
 void channel_rejoin_init(void)
 {
-	rejoin_tag = g_timeout_add(REJOIN_TIMEOUT, (GSourceFunc) sig_rejoin, NULL);
+	rejoin_tag = g_timeout_add(REJOIN_TIMEOUT,
+				   (GSourceFunc) sig_rejoin, NULL);
 
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);

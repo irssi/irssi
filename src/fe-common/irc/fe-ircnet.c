@@ -24,9 +24,10 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
+#include "chatnets.h"
 
-#include "irc-server.h"
-#include "ircnet-setup.h"
+#include "irc-servers.h"
+#include "irc-chatnets.h"
 
 static void cmd_ircnet_list(void)
 {
@@ -35,8 +36,8 @@ static void cmd_ircnet_list(void)
 
 	str = g_string_new(NULL);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_IRCNET_HEADER);
-	for (tmp = ircnets; tmp != NULL; tmp = tmp->next) {
-		IRCNET_REC *rec = tmp->data;
+	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
+		IRC_CHATNET_REC *rec = tmp->data;
 
 		g_string_truncate(str, 0);
 		if (rec->nick != NULL)
@@ -81,7 +82,7 @@ static void cmd_ircnet_add(const char *data)
 	GHashTable *optlist;
 	char *name, *value;
 	void *free_arg;
-	IRCNET_REC *rec;
+	IRC_CHATNET_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
 			    "ircnet add", &optlist, &name))
@@ -90,7 +91,7 @@ static void cmd_ircnet_add(const char *data)
 
 	rec = ircnet_find(name);
 	if (rec == NULL) {
-		rec = g_new0(IRCNET_REC, 1);
+		rec = g_new0(IRC_CHATNET_REC, 1);
 		rec->name = g_strdup(name);
 	} else {
 		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
@@ -142,7 +143,7 @@ static void cmd_ircnet_add(const char *data)
 /* SYNTAX: IRCNET REMOVE <ircnet> */
 static void cmd_ircnet_remove(const char *data)
 {
-	IRCNET_REC *rec;
+	IRC_CHATNET_REC *rec;
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -151,7 +152,7 @@ static void cmd_ircnet_remove(const char *data)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_NOT_FOUND, data);
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_IRCNET_REMOVED, data);
-		ircnet_destroy(rec);
+		chatnet_destroy(CHATNET(rec));
 	}
 }
 

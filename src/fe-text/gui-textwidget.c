@@ -26,7 +26,7 @@
 #include "levels.h"
 #include "settings.h"
 
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "windows.h"
 
 #include "screen.h"

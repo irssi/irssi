@@ -32,6 +32,7 @@ typedef struct {
 #define iconfig_node_set_str(a, b, c) config_node_set_str(mainconfig, a, b, c)
 #define iconfig_node_list_remove(a, b) config_node_list_remove(mainconfig, a, b)
 #define iconfig_node_remove(a, b) config_node_remove(mainconfig, a, b)
+#define iconfig_node_clear(a) config_node_clear(mainconfig, a)
 
 extern CONFIG_REC *mainconfig;
 

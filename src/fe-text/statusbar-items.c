@@ -20,14 +20,14 @@
 
 #include "module.h"
 #include "signals.h"
-#include "server.h"
+#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 
 #include "irc.h"
 #include "channels.h"
-#include "query.h"
-#include "irc-server.h"
+#include "queries.h"
+#include "irc-servers.h"
 #include "nicklist.h"
 
 #include "windows.h"
@@ -150,7 +150,7 @@ static void statusbar_nick(SBAR_ITEM_REC *item, int ypos)
 		strncpy(nick, server->nick, 9);
 		nick[9] = '\0';
 
-		channel = irc_item_channel(active_win->active);
+		channel = CHANNEL(active_win->active);
 		nickrec = channel == NULL ? NULL : nicklist_find(channel, server->nick);
 	}
 
@@ -224,7 +224,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
 
     ltoa(winnum, window == NULL ? 0 : window->refnum);
 
-    witem = window != NULL && irc_item_check(window->active) ?
+    witem = window != NULL && (IS_CHANNEL(window->active) || IS_QUERY(window->active)) ?
 	    window->active : NULL;
     if (witem == NULL)
     {
@@ -242,7 +242,7 @@ static void statusbar_channel(SBAR_ITEM_REC *item, int ypos)
         strncpy(channame, tmpname, 20); channame[20] = '\0';
         g_free(tmpname);
 
-	channel = irc_item_channel(witem);
+	channel = CHANNEL(witem);
 	if (channel == NULL) {
                 mode_size = 0;
 	} else {
@@ -681,8 +681,8 @@ static void statusbar_topic(SBAR_ITEM_REC *item, int ypos)
 		return;
 
 	topic = NULL;
-	channel = irc_item_channel(active_win->active);
-	query = irc_item_query(active_win->active);
+	channel = CHANNEL(active_win->active);
+	query = QUERY(active_win->active);
 	if (channel != NULL && channel->topic != NULL) topic = channel->topic;
 	if (query != NULL && query->address != NULL) topic = query->address;
 

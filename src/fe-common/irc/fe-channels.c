@@ -28,7 +28,7 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "channels.h"
+#include "irc-channels.h"
 #include "channels-setup.h"
 #include "nicklist.h"
 
@@ -70,12 +70,12 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 
 static void signal_window_item_removed(WINDOW_REC *window, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *channel;
+	IRC_CHANNEL_REC *channel;
 
 	g_return_if_fail(window != NULL);
 
-	channel = irc_item_channel(item);
-        if (channel != NULL) channel_destroy(channel);
+	channel = IRC_CHANNEL(item);
+        if (channel != NULL) channel_destroy(CHANNEL(channel));
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)
@@ -84,7 +84,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	GSList *tmp;
 
 	g_return_if_fail(server != NULL);
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
@@ -101,7 +101,7 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 	g_return_if_fail(window != NULL);
 	if (item == NULL) return;
 
-	if (g_slist_length(window->items) > 1 && irc_item_channel(item)) {
+	if (g_slist_length(window->items) > 1 && IS_IRC_CHANNEL(item)) {
 		printformat(item->server, item->name, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_TALKING_IN, item->name);
                 signal_stop();
@@ -146,7 +146,7 @@ static void cmd_wjoin_post(const char *data)
 
 static void cmd_channel_list_joined(void)
 {
-	CHANNEL_REC *channel;
+	IRC_CHANNEL_REC *channel;
 	GString *nicks;
 	GSList *nicklist, *tmp, *ntmp;
 
@@ -156,7 +156,7 @@ static void cmd_channel_list_joined(void)
 	}
 
 	/* print active channel */
-	channel = irc_item_channel(active_win->active);
+	channel = IRC_CHANNEL(active_win->active);
 	if (channel != NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_CURRENT_CHANNEL, channel->name);
 
@@ -165,7 +165,7 @@ static void cmd_channel_list_joined(void)
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
 		channel = tmp->data;
 
-		nicklist = nicklist_getnicks(channel);
+		nicklist = nicklist_getnicks(CHANNEL(channel));
 		nicks = g_string_new(NULL);
 		for (ntmp = nicklist; ntmp != NULL; ntmp = ntmp->next) {
 			NICK_REC *rec = ntmp->data;
@@ -191,7 +191,7 @@ static void cmd_channel_list(void)
 	str = g_string_new(NULL);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_HEADER);
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
-		SETUP_CHANNEL_REC *rec = tmp->data;
+		CHANNEL_SETUP_REC *rec = tmp->data;
 
 		g_string_truncate(str, 0);
 		if (rec->autojoin)
@@ -203,7 +203,7 @@ static void cmd_channel_list(void)
 
 		if (str->len > 2) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_CHANSETUP_LINE,
-			    rec->name, rec->ircnet == NULL ? "" : rec->ircnet,
+			    rec->name, rec->chatnet == NULL ? "" : rec->chatnet,
 			    rec->password == NULL ? "" : rec->password, str->str);
 	}
 	g_string_free(str, TRUE);
@@ -225,7 +225,7 @@ static void cmd_channel(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *i
 static void cmd_channel_add(const char *data)
 {
 	GHashTable *optlist;
-	SETUP_CHANNEL_REC *rec;
+	CHANNEL_SETUP_REC *rec;
 	char *botarg, *botcmdarg, *ircnet, *channel, *password;
 	void *free_arg;
 
@@ -240,9 +240,9 @@ static void cmd_channel_add(const char *data)
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	rec = channels_setup_find(channel, ircnet);
 	if (rec == NULL) {
-		rec = g_new0(SETUP_CHANNEL_REC, 1);
+		rec = g_new0(CHANNEL_SETUP_REC, 1);
 		rec->name = g_strdup(channel);
-		rec->ircnet = g_strdup(ircnet);
+		rec->chatnet = g_strdup(ircnet);
 	} else {
 		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
 		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
@@ -262,7 +262,7 @@ static void cmd_channel_add(const char *data)
 /* SYNTAX: CHANNEL REMOVE <channel> <ircnet> */
 static void cmd_channel_remove(const char *data)
 {
-	SETUP_CHANNEL_REC *rec;
+	CHANNEL_SETUP_REC *rec;
 	char *ircnet, *channel;
 	void *free_arg;
 

@@ -43,7 +43,7 @@ void banlist_free(GSList *banlist)
 		ban_free(&banlist, banlist->data);
 }
 
-BAN_REC *banlist_add(CHANNEL_REC *channel, const char *ban,
+BAN_REC *banlist_add(IRC_CHANNEL_REC *channel, const char *ban,
 		     const char *nick, time_t time)
 {
 	BAN_REC *rec;
@@ -79,7 +79,7 @@ static BAN_REC *banlist_find(GSList *list, const char *ban)
 	return NULL;
 }
 
-void banlist_remove(CHANNEL_REC *channel, const char *ban)
+void banlist_remove(IRC_CHANNEL_REC *channel, const char *ban)
 {
 	BAN_REC *rec;
 
@@ -93,7 +93,7 @@ void banlist_remove(CHANNEL_REC *channel, const char *ban)
 	}
 }
 
-BAN_REC *banlist_exception_add(CHANNEL_REC *channel, const char *ban,
+BAN_REC *banlist_exception_add(IRC_CHANNEL_REC *channel, const char *ban,
 			       const char *nick, time_t time)
 {
 	BAN_REC *rec;
@@ -113,7 +113,7 @@ BAN_REC *banlist_exception_add(CHANNEL_REC *channel, const char *ban,
 	return rec;
 }
 
-void banlist_exception_remove(CHANNEL_REC *channel, const char *ban)
+void banlist_exception_remove(IRC_CHANNEL_REC *channel, const char *ban)
 {
 	BAN_REC *rec;
 
@@ -127,7 +127,7 @@ void banlist_exception_remove(CHANNEL_REC *channel, const char *ban)
 	}
 }
 
-static void invitelist_free(CHANNEL_REC *channel)
+static void invitelist_free(IRC_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
@@ -135,7 +135,7 @@ static void invitelist_free(CHANNEL_REC *channel)
 	g_slist_free(channel->invitelist);
 }
 
-void invitelist_add(CHANNEL_REC *channel, const char *mask)
+void invitelist_add(IRC_CHANNEL_REC *channel, const char *mask)
 {
 	g_return_if_fail(channel != NULL);
 	g_return_if_fail(mask != NULL);
@@ -145,7 +145,7 @@ void invitelist_add(CHANNEL_REC *channel, const char *mask)
 	signal_emit("invitelist new", 2, channel, mask);
 }
 
-void invitelist_remove(CHANNEL_REC *channel, const char *mask)
+void invitelist_remove(IRC_CHANNEL_REC *channel, const char *mask)
 {
 	GSList *tmp;
 
@@ -160,7 +160,7 @@ void invitelist_remove(CHANNEL_REC *channel, const char *mask)
 	channel->invitelist = g_slist_remove(channel->invitelist, tmp->data);
 }
 
-static void channel_destroyed(CHANNEL_REC *channel)
+static void channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
@@ -171,14 +171,14 @@ static void channel_destroyed(CHANNEL_REC *channel)
 
 static void event_banlist(const char *data, IRC_SERVER_REC *server)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *ban, *setby, *tims;
 	time_t tim;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL) {
 		tim = (time_t) atol(tims);
 		banlist_add(chanrec, ban, setby, tim);
@@ -188,14 +188,14 @@ static void event_banlist(const char *data, IRC_SERVER_REC *server)
 
 static void event_ebanlist(const char *data, IRC_SERVER_REC *server)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *ban, *setby, *tims;
 	time_t tim;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL) {
 		tim = (time_t) atol(tims);
 		banlist_exception_add(chanrec, ban, setby, tim);
@@ -205,13 +205,13 @@ static void event_ebanlist(const char *data, IRC_SERVER_REC *server)
 
 static void event_invite_list(const char *data, IRC_SERVER_REC *server)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *invite;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &invite);
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 
 	if (chanrec != NULL)
 		invitelist_add(chanrec, invite);

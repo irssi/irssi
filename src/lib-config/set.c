@@ -59,17 +59,23 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 /* Remove n'th node from a list */
 void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index)
 {
-	GSList *tmp;
+	CONFIG_NODE *child;
 
 	g_return_if_fail(node != NULL);
 	g_return_if_fail(is_node_list(node));
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next, index--) {
-		if (index == 0) {
-                        config_node_remove(rec, node, tmp->data);
-                        break;
-		}
-	}
+	child = config_node_index(node, index);
+	if (child != NULL) config_node_remove(rec, node, child);
+}
+
+/* Clear all data inside node, but leave the node */
+void config_node_clear(CONFIG_REC *rec, CONFIG_NODE *node)
+{
+	g_return_if_fail(node != NULL);
+	g_return_if_fail(is_node_list(node));
+
+	while (node->value != NULL)
+                config_node_remove(rec, node, node->value);
 }
 
 void config_nodes_remove_all(CONFIG_REC *rec)

@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libfe_common_core.la
+noinst_LIBRARIES = libfe_common_core.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
@@ -6,7 +6,7 @@ INCLUDES = \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
-libfe_common_core_la_SOURCES = \
+libfe_common_core_a_SOURCES = \
 	autorun.c \
 	command-history.c \
 	completion.c \

@@ -24,20 +24,23 @@
 #include "misc.h"
 #include "special-vars.h"
 #include "settings.h"
+#include "window-item-def.h"
+
+#include "nicklist.h"
+#include "servers-redirect.h"
+#include "servers-setup.h"
 
 #include "bans.h"
-#include "channels.h"
-#include "irc-server.h"
 #include "irc.h"
-#include "nicklist.h"
-#include "server-redirect.h"
-#include "server-setup.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
+#include "irc-queries.h"
 
 /* How often to check if there's anyone to be unbanned in knockout list */
 #define KNOCKOUT_TIMECHECK 10000
 
 typedef struct {
-	CHANNEL_REC *channel;
+	IRC_CHANNEL_REC *channel;
 	char *ban;
         int timeleft;
 } KNOCKOUT_REC;
@@ -85,7 +88,7 @@ IRC_SERVER_REC *irccmd_options_get_server(const char *cmd,
 
 static IRC_SERVER_REC *connect_server(const char *data)
 {
-	IRC_SERVER_CONNECT_REC *conn;
+	SERVER_CONNECT_REC *conn;
 	IRC_SERVER_REC *server;
 	GHashTable *optlist;
 	char *addr, *portstr, *password, *nick, *ircnet, *host;
@@ -107,11 +110,11 @@ static IRC_SERVER_REC *connect_server(const char *data)
 		*password = '\0';
 
 	/* connect to server */
-	conn = irc_server_create_conn(addr, atoi(portstr), password, nick);
+	conn = server_create_conn(addr, atoi(portstr), password, nick);
         ircnet = g_hash_table_lookup(optlist, "ircnet");
 	if (ircnet != NULL && *ircnet != '\0') {
-		g_free_not_null(conn->ircnet);
-		conn->ircnet = g_strdup(ircnet);
+		g_free_not_null(conn->chatnet);
+		conn->chatnet = g_strdup(ircnet);
 	}
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
@@ -123,7 +126,7 @@ static IRC_SERVER_REC *connect_server(const char *data)
 			memcpy(conn->own_ip, &ip, sizeof(IPADDR));
 		}
 	}
-	server = irc_server_connect(conn);
+	server = irc_server_connect(IRC_SERVER_CONNECT(conn));
 
 	cmd_params_free(free_arg);
 	return server;
@@ -146,15 +149,12 @@ static void cmd_disconnect(const char *data, IRC_SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strncasecmp(data, "RECON-", 6) == 0)
-		return; /* remove reconnection, handle in server-reconnect.c */
-
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
 		return;
 
 	if (*tag != '\0' && strcmp(tag, "*") != 0)
 		server = (IRC_SERVER_REC *) server_find_tag(tag);
-	if (server == NULL || !irc_server_check(server))
+	if (server == NULL || !IS_IRC_SERVER(server))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	if (*msg == '\0') msg = (char *) settings_get_str("quit_message");
@@ -192,7 +192,7 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 	if (*addr == '+' || server == NULL) {
 		channels = away_reason = usermode = ircnet = NULL;
 	} else {
-		ircnet = g_strdup(server->connrec->ircnet);
+		ircnet = g_strdup(server->connrec->chatnet);
 		channels = irc_server_get_channels((IRC_SERVER_REC *) server);
 		if (*channels == '\0')
 			g_free_and_null(channels);
@@ -204,8 +204,8 @@ static void cmd_server(const char *data, IRC_SERVER_REC *server)
 
 	server = connect_server(data);
 	if (*addr == '+' || server == NULL ||
-	    (ircnet != NULL && server->connrec->ircnet != NULL &&
-	     g_strcasecmp(ircnet, server->connrec->ircnet) != 0)) {
+	    (ircnet != NULL && server->connrec->chatnet != NULL &&
+	     g_strcasecmp(ircnet, server->connrec->chatnet) != 0)) {
 		g_free_not_null(channels);
 		g_free_not_null(usermode);
 		g_free_not_null(away_reason);
@@ -244,7 +244,7 @@ static void cmd_quit(const char *data)
 }
 
 /* SYNTAX: MSG [-<server tag>] <targets> <message> */
-static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *target, *msg;
@@ -260,14 +260,14 @@ static void cmd_msg(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	if (*target == '\0' || *msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	server = irccmd_options_get_server("msg", optlist, server);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	free_ret = FALSE;
 	if (strcmp(target, ",") == 0 || strcmp(target, ".") == 0)
-		target = parse_special(&target, server, item, NULL, &free_ret, NULL);
+		target = parse_special(&target, SERVER(server), item, NULL, &free_ret, NULL);
 	else if (strcmp(target, "*") == 0 &&
-		 (irc_item_channel(item) || irc_item_query(item)))
+		 (IS_IRC_CHANNEL(item) || IS_IRC_QUERY(item)))
 		target = item->name;
 	if (target != NULL) {
 		g_string_sprintf(tmpstr, "PRIVMSG %s :%s", target, msg);
@@ -286,7 +286,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &msg))
@@ -306,7 +306,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
@@ -330,7 +330,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST, &target, &ctcpcmd, &ctcpdata))
@@ -352,7 +352,7 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS |
@@ -361,32 +361,32 @@ static void cmd_join(const char *data, IRC_SERVER_REC *server)
 
 	if (g_hash_table_lookup(optlist, "invite")) {
 		if (server->last_invite != NULL)
-			channels_join(server, server->last_invite, FALSE);
+			irc_channels_join(server, server->last_invite, FALSE);
 	} else {
 		/* -<server tag> */
 		server = irccmd_options_get_server("join", optlist, server);
-		if (server != NULL) channels_join(server, channels, FALSE);
+		if (server != NULL) irc_channels_join(server, channels, FALSE);
 	}
 
 	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: PART [<channels>] [<message>] */
-static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channame, *msg;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	chanrec = channel_find(server, channame);
+	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
@@ -396,13 +396,13 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 /* SYNTAX: KICK [<channel>] <nicks> [<reason>] */
-static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *channame, *nicks, *reason;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
@@ -419,14 +419,14 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 /* SYNTAX: TOPIC [-delete] [<channel>] [<topic>] */
-static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *channame, *topic;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
@@ -442,13 +442,13 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 }
 
 /* SYNTAX: INVITE <nick> [<channel>] */
-static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *nick, *channame;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2, &nick, &channame))
@@ -456,7 +456,7 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *ite
 
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	if (*channame == '\0' || strcmp(channame, "*") == 0) {
-		if (!irc_item_channel(item))
+		if (!IS_IRC_CHANNEL(item))
 			cmd_param_error(CMDERR_NOT_JOINED);
 
 		channame = item->name;
@@ -467,14 +467,14 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *ite
 }
 
 /* SYNTAX: LIST [-yes] [<channel>] */
-static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *str;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
@@ -492,20 +492,20 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 /* SYNTAX: WHO <nicks>|<channels>|** */
-static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *channel, *rest;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channel, &rest))
 		return;
 
 	if (strcmp(channel, "*") == 0 || *channel == '\0') {
-		if (!irc_item_channel(item))
+		if (!IS_IRC_CHANNEL(item))
                         cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = item->name;
@@ -524,16 +524,16 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 /* SYNTAX: NAMES [-yes] [<channels>] */
-static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	g_return_if_fail(data != NULL);
 
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_GOOD_IDEA);
 
 	if (strcmp(data, "*") == 0) {
-		if (!irc_item_channel(item))
+		if (!IS_IRC_CHANNEL(item))
 			cmd_return_error(CMDERR_NOT_JOINED);
 
 		data = item->name;
@@ -572,7 +572,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server)
 	int free_nick;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2, &qserver, &query))
@@ -642,7 +642,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	int free_nick;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2, &nicks, &count))
@@ -662,17 +662,17 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 }
 
 /* SYNTAX: PING <nicks> */
-static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GTimeVal tv;
         char *str;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (*data == '\0' || strcmp(data, "*") == 0) {
-		if (!irc_item_check(item))
+		if (!IS_IRC_ITEM(item))
                         cmd_return_error(CMDERR_NOT_JOINED);
 
 		data = item->name;
@@ -701,7 +701,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
@@ -719,7 +719,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 static void cmd_deop(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (*data == '\0')
@@ -730,7 +730,7 @@ static void cmd_deop(const char *data, IRC_SERVER_REC *server)
 static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -741,7 +741,7 @@ static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !irc_server_check(server))
+	if (server == NULL || !IS_IRC_SERVER(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	irc_send_cmd(server, data);
@@ -753,15 +753,15 @@ static void cmd_wall_hash(gpointer key, NICK_REC *nick, GSList **nicks)
 }
 
 /* SYNTAX: WALL [<channel>] <message> */
-static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *channame, *msg, *args;
 	void *free_arg;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	GSList *tmp, *nicks;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
@@ -769,7 +769,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	chanrec = channel_find(server, channame);
+	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	/* send notice to all ops */
@@ -777,7 +777,8 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	g_hash_table_foreach(chanrec->nicks, (GHFunc) cmd_wall_hash, &nicks);
 
 	args = g_strconcat(chanrec->name, " ", msg, NULL);
-	msg = parse_special_string(settings_get_str("wall_format"), server, item, args, NULL);
+	msg = parse_special_string(settings_get_str("wall_format"),
+				   SERVER(server), item, args, NULL);
 	g_free(args);
 
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
@@ -793,21 +794,21 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 }
 
 /* SYNTAX: CYCLE [<channel>] [<message>] */
-static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channame, *msg;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	chanrec = channel_find(server, channame);
+	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
@@ -819,7 +820,7 @@ static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item
 }
 
 /* SYNTAX: KICKBAN [<channel>] <nick> <reason> */
-static void cmd_kickban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_kickban(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *nick;
 	void *free_arg;
@@ -850,7 +851,7 @@ static void knockout_timeout_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	t = server->knockout_lastcheck == 0 ? 0 :
@@ -878,19 +879,19 @@ static int knockout_timeout(void)
 }
 
 /* SYNTAX: KNOCKOUT [<seconds>] <nick> <reason> */
-static void cmd_knockout(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
+			 IRC_CHANNEL_REC *channel)
 {
 	KNOCKOUT_REC *rec;
-	CHANNEL_REC *channel;
 	char *nick, *reason, *timeoutstr, *str;
 	void *free_arg;
 	int timeleft;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL) cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	channel = irc_item_channel(item);
-	if (channel == NULL) cmd_return_error(CMDERR_NOT_JOINED);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+	if (!IS_IRC_CHANNEL(channel))
+		cmd_return_error(CMDERR_NOT_JOINED);
 
 	if (is_numeric(data, ' ')) {
 		/* first argument is the timeout */
@@ -928,7 +929,7 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	while (server->knockoutlist != NULL)
@@ -936,12 +937,12 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 }
 
 /* destroy all knockouts in channel */
-static void sig_channel_destroyed(CHANNEL_REC *channel)
+static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	GSList *tmp, *next;
 
-	g_return_if_fail(channel != NULL);
-	if (channel->server == NULL) return;
+	if (!IS_IRC_CHANNEL(channel) || !IS_IRC_SERVER(channel->server))
+		return;
 
 	for (tmp = channel->server->knockoutlist; tmp != NULL; tmp = next) {
 		KNOCKOUT_REC *rec = tmp->data;
@@ -959,7 +960,7 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2, &nick, &password))
@@ -977,7 +978,7 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 static void command_self(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	irc_send_cmdv(server, *data == '\0' ? "%s" : "%s %s", current_command, data);
@@ -986,7 +987,7 @@ static void command_self(const char *data, IRC_SERVER_REC *server)
 static void command_1self(const char *data, IRC_SERVER_REC *server)
 {
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -999,7 +1000,7 @@ static void command_2self(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))

@@ -22,7 +22,7 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 #include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"

@@ -21,7 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "levels.h"
-#include "server.h"
+#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 

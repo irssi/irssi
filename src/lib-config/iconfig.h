@@ -98,6 +98,8 @@ int config_get_bool(CONFIG_REC *rec, const char *section, const char *key, int d
 const char *config_list_find(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
 /* Like config_list_find(), but return node instead of it's value */
 CONFIG_NODE *config_list_find_node(CONFIG_REC *rec, const char *section, const char *key, const char *value, const char *value_key);
+/* Returns n'th node from list. */
+CONFIG_NODE *config_node_index(CONFIG_NODE *node, int index);
 
 /* Setting values */
 int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const char *value);
@@ -135,6 +137,8 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 /* Remove n'th node from a list */
 void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index);
 
+/* Clear all data inside node, but leave the node */
+void config_node_clear(CONFIG_REC *rec, CONFIG_NODE *node);
 /* Clear the entire configuration */
 void config_nodes_remove_all(CONFIG_REC *rec);
 

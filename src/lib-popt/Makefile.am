@@ -1,10 +1,10 @@
-noinst_LTLIBRARIES = libpopt.la
+noinst_LIBRARIES = libpopt.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src
 
-libpopt_la_SOURCES = \
+libpopt_a_SOURCES = \
 	findme.c popt.c poptconfig.c popthelp.c poptparse.c
 
 noinst_HEADERS = \

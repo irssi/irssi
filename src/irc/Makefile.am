@@ -4,6 +4,6 @@ endif
 
 SUBDIRS = core $(BOT) dcc flood notifylist
 
-noinst_LTLIBRARIES = libirc.la
+noinst_LIBRARIES = libirc.a
 
-libirc_la_SOURCES = irc.c
+libirc_a_SOURCES = irc.c

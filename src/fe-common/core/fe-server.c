@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
 #include "signals.h"
-#include "settings.h"
 #include "network.h"
-
 #include "levels.h"
-#include "server.h"
+#include "servers.h"
+#include "settings.h"
+
+#include "module-formats.h"
 
 static void sig_server_looking(SERVER_REC *server)
 {

@@ -23,7 +23,7 @@
 #include "commands.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "channels.h"
 #include "nicklist.h"
 #include "masks.h"

@@ -1,6 +1,11 @@
 #ifndef __WINDOWS_H
 #define __WINDOWS_H
 
+#include "servers.h"
+
+#define STRUCT_SERVER_REC SERVER_REC
+#include "window-item-def.h"
+
 enum {
 	NEWDATA_TEXT = 1,
 	NEWDATA_MSG,
@@ -8,30 +13,13 @@ enum {
 	NEWDATA_CUSTOM
 };
 
-/* All window items *MUST* have these variables in same order
-   at the start of the structure - the server's type can of course be
-   replaced with the preferred record type.
-
-   !!!! So IF YOU CHANGE THIS: REMEMBER TO UPDATE WI_IRC_REC, CHANNEL_REC
-   and QUERY_REC !!!! (I already forgot this once :) */
-typedef struct {
-	int type;
-        GHashTable *module_data;
-
-	void *server;
-	char *name;
-
-	int new_data;
-	int last_color; /* if NEWDATA_HILIGHT is set, color number could be specified here */
-} WI_ITEM_REC;
-
 typedef struct {
 	int refnum;
 	char *name;
 
 	GSList *items;
 	WI_ITEM_REC *active;
-	void *active_server;
+	SERVER_REC *active_server;
 
 	GSList *waiting_channels; /* list of "<server tag> <channel>" */
 

@@ -24,7 +24,7 @@
 #include "log.h"
 #include "settings.h"
 
-#include "irc-server.h"
+#include "irc-servers.h"
 
 static LOG_REC *awaylog;
 static int away_filepos;

@@ -28,7 +28,7 @@
 #include "lib-config/iconfig.h"
 
 #include "channels.h"
-#include "nicklist.h"
+#include "irc-nicklist.h"
 #include "masks.h"
 
 #include "bot-users.h"
@@ -154,7 +154,7 @@ static int botuser_find_mask(USER_REC *user, const char *nick, const char *host)
 	for (tmp = user->masks; tmp != NULL; tmp = tmp->next) {
 		USER_MASK_REC *rec = tmp->data;
 
-		if (irc_mask_match_address(rec->mask, nick, host)) {
+		if (mask_match_address(NULL, rec->mask, nick, host)) {
 			user->not_flags = rec->not_flags;
 			return TRUE;
 		}
@@ -194,7 +194,7 @@ USER_REC *botuser_find(const char *nick, const char *host)
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	/* First check for user with same nick */
-	stripnick = nick_strip(nick);
+	stripnick = irc_nick_strip(nick);
 	user = g_hash_table_lookup(users, stripnick);
 	g_free(stripnick);
 

@@ -24,8 +24,8 @@
 #include "settings.h"
 
 #include "irc.h"
-#include "irc-server.h"
-#include "server-redirect.h"
+#include "irc-servers.h"
+#include "servers-redirect.h"
 
 #include "notifylist.h"
 
@@ -127,7 +127,7 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 	for (tmp = notifies; tmp != NULL; tmp = tmp->next) {
 		NOTIFYLIST_REC *rec = tmp->data;
 
-		if (!notifylist_ircnets_match(rec, server->connrec->ircnet))
+		if (!notifylist_ircnets_match(rec, server->connrec->chatnet))
                         continue;
 
 		nick = g_strdup(rec->mask);
@@ -251,7 +251,7 @@ static void ison_check_joins(IRC_SERVER_REC *server)
 	for (tmp = mserver->ison_tempusers; tmp != NULL; tmp = tmp->next) {
 		char *nick = tmp->data;
 
-		notify = notifylist_find(nick, server->connrec->ircnet);
+		notify = notifylist_find(nick, server->connrec->chatnet);
 		send_whois = notify != NULL &&
 			(notify->away_check || notify->idle_check_time > 0);
 

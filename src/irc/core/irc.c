@@ -26,9 +26,9 @@
 #include "rawlog.h"
 
 #include "irc.h"
-#include "irc-server.h"
-#include "channels.h"
-#include "server-redirect.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
+#include "servers-redirect.h"
 
 char *current_server_event;
 static int signal_send_command;
@@ -355,31 +355,29 @@ static void irc_init_server(IRC_SERVER_REC *server)
 
 static char *irc_cmd_get_func(const char *data, int *count, va_list *vargs)
 {
-        WI_IRC_REC *item;
-	CHANNEL_REC *channel;
+	IRC_CHANNEL_REC *channel;
 	char *ret, *args, *chan, *p;
 
 	if ((*count & PARAM_FLAG_OPTCHAN) == 0)
 		return g_strdup(data);
 
 	*count &= ~PARAM_FLAG_OPTCHAN;
-	item = (WI_IRC_REC *) va_arg(*vargs, WI_IRC_REC *);
-	channel = irc_item_channel(item);
+	channel = (void *) va_arg(*vargs, void *);
+	channel = IRC_CHANNEL(channel);
 
 	/* change first argument in data to full channel name. */
 	p = args = g_strdup(data);
 
 	chan = isoptchan(args) ? cmd_get_param(&args) : NULL;
-	if (chan != NULL && *chan == '!') {
+	if (chan != NULL && *chan == '!' && channel != NULL) {
 		/* whenever trying to send something to !channel,
 		   change it to the real joined !XXXXXchannel */
-		channel = channel_find(channel->server, chan);
+		channel = irc_channel_find(channel->server, chan);
 		if (channel != NULL) chan = channel->name;
 	}
 
-	if (chan == NULL || strcmp(chan, "*") == 0) {
+	if (chan == NULL || strcmp(chan, "*") == 0)
 		chan = channel == NULL ? "*" : channel->name;
-	}
 
         ret = g_strconcat(chan, " ", args, NULL);
 	g_free(p);

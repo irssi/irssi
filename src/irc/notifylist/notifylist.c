@@ -23,8 +23,8 @@
 #include "signals.h"
 
 #include "irc.h"
-#include "irc-server.h"
-#include "server-redirect.h"
+#include "irc-channels.h"
+#include "servers-redirect.h"
 #include "masks.h"
 #include "nicklist.h"
 
@@ -149,7 +149,7 @@ static IRC_SERVER_REC *notifylist_ison_serverlist(const char *nick, const char *
 
 	server = NULL;
 	for (tmp = list; *tmp != NULL; tmp++) {
-		server = (IRC_SERVER_REC *) server_find_ircnet(*tmp);
+		server = (IRC_SERVER_REC *) server_find_chatnet(*tmp);
 
 		if (server != NULL && notifylist_ison_server(server, nick))
 			break;
@@ -227,7 +227,7 @@ static void notifylist_idle_reset(IRC_SERVER_REC *server, const char *nick)
 	NOTIFY_NICK_REC *rec;
 	NOTIFYLIST_REC *notify;
 
-	notify = notifylist_find(nick, server->connrec->ircnet);
+	notify = notifylist_find(nick, server->connrec->chatnet);
 	rec = notify_nick_find(server, nick);
 
 	if (notify != NULL && rec != NULL && notify->idle_check_time > 0 &&
@@ -257,7 +257,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	NOTIFY_NICK_REC *rec;
 	char *user, *host;
 
-	notify = notifylist_find(nick, server->connrec->ircnet);
+	notify = notifylist_find(nick, server->connrec->chatnet);
 	if (notify == NULL) return;
 
 	rec = notify_nick_find(server, nick);
@@ -268,7 +268,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	host = strchr(user, '@');
 	if (host != NULL) *host++ = '\0'; else host = "";
 
-	if (!irc_mask_match(notify->mask, nick, user, host)) {
+	if (!mask_match(SERVER(server), notify->mask, nick, user, host)) {
 		g_free(user);
 		return;
 	}
@@ -309,11 +309,11 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	notifylist_check_join(server, nick, address, "", -1);
 }
 
-static void sig_channel_wholist(CHANNEL_REC *channel)
+static void sig_channel_wholist(IRC_CHANNEL_REC *channel)
 {
 	GSList *nicks, *tmp;
 
-	nicks = nicklist_getnicks(channel);
+	nicks = nicklist_getnicks(CHANNEL(channel));
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 

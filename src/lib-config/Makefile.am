@@ -1,10 +1,10 @@
-noinst_LTLIBRARIES = libirssi_config.la
+noinst_LIBRARIES = libirssi_config.a
 
 INCLUDES = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src
 
-libirssi_config_la_SOURCES = \
+libirssi_config_a_SOURCES = \
 	get.c \
 	set.c \
 	parse.c \

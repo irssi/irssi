@@ -1,8 +1,7 @@
 #ifndef __IRC_H
 #define __IRC_H
 
-#include "modules.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 
 /* From ircd 2.9.5:
      none    I line with ident
@@ -26,46 +25,7 @@
 	(a) == '!' || /* secure */ \
 	(a) == '+') /* modeless */
 
-/* values returned by module_category() */
-enum {
-	WI_IRC_CHANNEL,
-	WI_IRC_QUERY
-};
-
-/* *MUST* have the same contents as WI_ITEM_REC in same order. */
-typedef struct {
-	int type;
-	GHashTable *module_data;
-
-	IRC_SERVER_REC *server;
-	char *name;
-
-	int new_data;
-	int last_color;
-} WI_IRC_REC;
-
-/* return TRUE if `item' is an IRC type. */
-#define irc_item_check(item) \
-	(item != NULL && module_find_id("IRC", ((WI_IRC_REC *) (item))->type) != -1)
-
-/* return `item' type, or -1 if it's not IRC type. */
-#define irc_item_get(item) \
-	(item == NULL ? -1 : module_find_id("IRC", ((WI_IRC_REC *) (item))->type))
-
-/* Return `item' if it's channel, NULL if it isn't. */
-#define irc_item_channel(item) \
-	(item != NULL && module_find_id("IRC", ((WI_IRC_REC *) (item))->type) == WI_IRC_CHANNEL ? \
-	(void *) (item) : NULL)
-
-/* Return `item' if it's query, NULL if it isn't. */
-#define irc_item_query(item) \
-	(item != NULL && module_find_id("IRC", ((WI_IRC_REC *) (item))->type) == WI_IRC_QUERY ? \
-	(void *) (item) : NULL)
-
-/* Return `item' if it's DCC chat, NULL if it isn't. */
-#define irc_item_dcc_chat(item) \
-	(item != NULL && module_find_id("IRC", ((WI_IRC_REC *) (item))->type) == WI_IRC_DCC_CHAT ? \
-	(void *) (item) : NULL)
+#define IS_IRC_ITEM(rec) (IS_IRC_CHANNEL(rec) || IS_IRC_QUERY(rec))
 
 extern char *current_server_event; /* current server event being processed */
 

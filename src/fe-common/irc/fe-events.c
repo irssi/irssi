@@ -26,15 +26,15 @@
 
 #include "irc.h"
 #include "levels.h"
-#include "server.h"
-#include "server-redirect.h"
-#include "server-reconnect.h"
-#include "channels.h"
-#include "query.h"
-#include "nicklist.h"
+#include "servers.h"
+#include "servers-redirect.h"
+#include "servers-reconnect.h"
+#include "queries.h"
 #include "ignore.h"
 
-#include "fe-query.h"
+#include "fe-queries.h"
+#include "irc-channels.h"
+#include "irc-nicklist.h"
 #include "irc-hilight-text.h"
 #include "windows.h"
 
@@ -47,17 +47,18 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 			      const char *nick, const char *addr,
 			      const char *target)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	const char *nickmode;
 	int for_me, print_channel;
 	char *color;
 
-	chanrec = channel_find(server, target);
+	chanrec = irc_channel_find(server, target);
 	for_me = irc_nick_match(server->nick, msg);
 	color = for_me ? NULL : irc_hilight_find_nick(target, nick, addr, MSGLEVEL_PUBLIC, msg);
 
-	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
+	nickrec = chanrec == NULL ? NULL :
+		nicklist_find(CHANNEL(chanrec), nick);
 	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :
 		(nickrec->op ? "@" : nickrec->voice ? "+" : " ");
 
@@ -139,7 +140,7 @@ static void ctcp_msg_check_action(const char *data, IRC_SERVER_REC *server,
 
 	if (ischannel(*target)) {
 		/* channel action */
-		item = (WI_ITEM_REC *) channel_find(server, target);
+		item = (WI_ITEM_REC *) irc_channel_find(server, target);
 
 		if (window_item_is_active(item)) {
 			/* message to active channel in window */
@@ -245,9 +246,10 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	count = 0; windows = NULL;
 	chans = !once ? NULL : g_string_new(NULL);
 	for (tmp = channels; tmp != NULL; tmp = tmp->next) {
-		CHANNEL_REC *rec = tmp->data;
+		IRC_CHANNEL_REC *rec = tmp->data;
 
-		if (rec->server != server || !nicklist_find(rec, nick) ||
+		if (!IS_IRC_CHANNEL(rec) || rec->server != server ||
+		    !nicklist_find(CHANNEL(rec), nick) ||
 		    ignore_check(server, nick, addr, rec->name, data, MSGLEVEL_QUITS))
 			continue;
 
@@ -338,10 +340,10 @@ static void event_nick(gchar *data, IRC_SERVER_REC *server, gchar *sender, gchar
 		WINDOW_REC *window =
 			window_item_window((WI_ITEM_REC *) query);
 
-		if (g_strcasecmp(query->nick, sender) == 0 &&
+		if (g_strcasecmp(query->name, sender) == 0 &&
 		    g_slist_find(windows, window) == NULL) {
 			windows = g_slist_append(windows, window);
-			print_nick_change(server, query->nick, newnick, sender, addr, ownnick);
+			print_nick_change(server, query->name, newnick, sender, addr, ownnick);
 			msgprint = TRUE;
 		}
 	}
@@ -561,7 +563,7 @@ static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    IRCTXT_RECONNECT_REMOVED, reconnect->conn->address, reconnect->conn->port,
-		    reconnect->conn->ircnet == NULL ? "" : reconnect->conn->ircnet);
+		    reconnect->conn->chatnet == NULL ? "" : reconnect->conn->chatnet);
 }
 
 static void sig_server_reconnect_not_found(const char *tag)

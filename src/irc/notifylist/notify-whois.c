@@ -23,7 +23,7 @@
 #include "special-vars.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "masks.h"
 
 #include "notifylist.h"
@@ -41,8 +41,8 @@ static void event_whois(const char *data, IRC_SERVER_REC *server)
 
 	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
 
-	notify = notifylist_find(nick, server->connrec->ircnet);
-	if (notify != NULL && !irc_mask_match(notify->mask, nick, user, host)) {
+	notify = notifylist_find(nick, server->connrec->chatnet);
+	if (notify != NULL && !mask_match(SERVER(server), notify->mask, nick, user, host)) {
 		/* user or host didn't match */
 		g_free(params);
 		return;
@@ -80,7 +80,7 @@ static void event_whois_idle(const char *data, IRC_SERVER_REC *server)
 	params = event_get_params(data, 3, NULL, &nick, &secstr);
 	secs = atol(secstr);
 
-	notify = notifylist_find(nick, server->connrec->ircnet);
+	notify = notifylist_find(nick, server->connrec->chatnet);
 	nickrec = notify_nick_find(server, nick);
 	if (notify != NULL && nickrec != NULL) {
 		nickrec->idle_changed = secs < nickrec->idle_time &&
@@ -127,7 +127,7 @@ static void event_whois_end(const char *data, IRC_SERVER_REC *server)
 		if (rec->realname == NULL)
 			continue;
 
-		notify = notifylist_find(rec->nick, server->connrec->ircnet);
+		notify = notifylist_find(rec->nick, server->connrec->chatnet);
 		if (notify == NULL) continue;
 
 		away_ok = !notify->away_check || !rec->away;
@@ -155,7 +155,7 @@ static void event_whois_end(const char *data, IRC_SERVER_REC *server)
 }
 
 /* last person that NOTIFY detected a signon for */
-static char *expando_lastnotify(void *server, void *item, int *free_ret)
+static char *expando_lastnotify(SERVER_REC *server, void *item, int *free_ret)
 {
 	return last_notify_nick;
 }

@@ -1,0 +1,101 @@
+#ifndef __IRC_SERVERS_H
+#define __IRC_SERVERS_H
+
+#include "servers.h"
+
+#define IS_IRC_SERVER(server) \
+	((server) != NULL && \
+	 module_find_id("IRC SERVER", (server)->chat_type) != -1)
+
+#define IS_IRC_SERVER_CONNECT(conn) \
+	((conn) != NULL && \
+	 module_find_id("IRC SERVER CONNECT", (conn)->chat_type) != -1)
+
+/* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
+#define IRC_SERVER(server) \
+	(IS_IRC_SERVER(server) ? (IRC_SERVER_REC *) (server) : NULL)
+
+#define IRC_SERVER_CONNECT(conn) \
+	(IS_IRC_SERVER_CONNECT(conn) ? \
+	 (IRC_SERVER_CONNECT_REC *) (conn) : NULL)
+
+/* all strings should be either NULL or dynamically allocated */
+/* address and nick are mandatory, rest are optional */
+typedef struct {
+#include "server-connect-rec.h"
+
+	char *alternate_nick;
+
+	int max_cmds_at_once;
+	int cmd_queue_speed;
+	int max_kicks, max_msgs, max_modes, max_whois;
+} IRC_SERVER_CONNECT_REC;
+
+#define STRUCT_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC
+typedef struct {
+#include "server-rec.h"
+
+	char *real_address; /* address the irc server gives */
+	char *usermode; /* The whole mode string .. */
+        char *userhost; /* /USERHOST <nick> - set when joined to first channel */
+        char *last_invite; /* channel where you were last invited */
+
+	int whois_coming:1; /* Mostly just to display away message right.. */
+	int whois_found:1; /* Did WHOIS return any entries? */
+	int whowas_found:1; /* Did WHOWAS return any entries? */
+
+	int emode_known:1; /* Server understands ban exceptions and invite lists */
+	int no_multi_mode:1; /* Server doesn't understand MODE #chan1,#chan2,... */
+	int no_multi_who:1; /* Server doesn't understand WHO #chan1,#chan2,... */
+	int one_endofwho:1; /* /WHO #a,#b,.. replies only with one End of WHO message */
+
+	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
+	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
+	int max_whois_in_cmd; /* max. number of nicks in one /WHOIS command */
+	int max_msgs_in_cmd; /* max. number of targets in one /MSG */
+
+	/* Command sending queue */
+	int cmdcount; /* number of commands in `cmdqueue'. Can be more than
+	                 there actually is, to make flood control remember
+			 how many messages can be sent before starting the
+			 flood control */
+	int cmd_last_split; /* Last command wasn't sent entirely to server.
+	                       First item in `cmdqueue' should be re-sent. */
+	GSList *cmdqueue;
+	GTimeVal last_cmd; /* last time command was sent to server */
+
+	int max_cmds_at_once; /* How many messages can be sent immediately before timeouting starts */
+	int cmd_queue_speed; /* Timeout between sending commands */
+
+	GSList *idles; /* Idle queue - send these commands to server
+	                  if there's nothing else to do */
+
+	GSList *ctcpqueue; /* CTCP flood protection - list of tags in idle queue */
+
+	/* /knockout ban list */
+	GSList *knockoutlist;
+	time_t knockout_lastcheck;
+
+	GHashTable *splits; /* For keeping track of netsplits */
+	GSList *split_servers; /* Servers that are currently in split */
+
+	time_t lag_sent; /* 0 or time when last lag query was sent to server */
+	time_t lag_last_check; /* last time we checked lag */
+	int lag; /* server lag in milliseconds */
+
+	GSList *rejoin_channels; /* try to join to these channels after a while -
+	                            channels go here if they're "temporarily unavailable"
+				    because of netsplits */
+	void *chanqueries;
+} IRC_SERVER_REC;
+
+IRC_SERVER_REC *irc_server_connect(IRC_SERVER_CONNECT_REC *conn);
+
+/* Return a string of all channels (and keys, if any have them) in server,
+   like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
+char *irc_server_get_channels(IRC_SERVER_REC *server);
+
+void irc_servers_init(void);
+void irc_servers_deinit(void);
+
+#endif

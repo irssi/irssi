@@ -24,10 +24,12 @@
 #include "commands.h"
 #include "misc.h"
 
+#include "servers-setup.h"
+
 #include "levels.h"
-#include "irc-server.h"
-#include "server-reconnect.h"
-#include "server-setup.h"
+#include "irc-servers.h"
+#include "servers-reconnect.h"
+#include "irc-servers-setup.h"
 
 #include "windows.h"
 
@@ -40,7 +42,7 @@ static void print_servers(void)
 
 		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,
-			    rec->connrec->ircnet == NULL ? "" : rec->connrec->ircnet, rec->connrec->nick);
+			    rec->connrec->chatnet == NULL ? "" : rec->connrec->chatnet, rec->connrec->nick);
 	}
 }
 
@@ -52,7 +54,7 @@ static void print_lookup_servers(void)
 
 		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_LOOKUP_LIST,
 			    rec->tag, rec->connrec->address, rec->connrec->port,
-			    rec->connrec->ircnet == NULL ? "" : rec->connrec->ircnet, rec->connrec->nick);
+			    rec->connrec->chatnet == NULL ? "" : rec->connrec->chatnet, rec->connrec->nick);
 	}
 }
 
@@ -64,14 +66,14 @@ static void print_reconnects(void)
 
 	for (tmp = reconnects; tmp != NULL; tmp = tmp->next) {
 		RECONNECT_REC *rec = tmp->data;
-		IRC_SERVER_CONNECT_REC *conn = rec->conn;
+		SERVER_CONNECT_REC *conn = rec->conn;
 
 		tag = g_strdup_printf("RECON-%d", rec->tag);
 		left = rec->next_connect-time(NULL);
 		next_connect = g_strdup_printf("%02d:%02d", left/60, left%60);
 		printformat(NULL, NULL, MSGLEVEL_CRAP, IRCTXT_SERVER_RECONNECT_LIST,
 			    tag, conn->address, conn->port,
-			    conn->ircnet == NULL ? "" : conn->ircnet,
+			    conn->chatnet == NULL ? "" : conn->chatnet,
 			    conn->nick, next_connect);
 		g_free(next_connect);
 		g_free(tag);
@@ -84,7 +86,7 @@ static void print_reconnects(void)
 static void cmd_server_add(const char *data)
 {
         GHashTable *optlist;
-	SETUP_SERVER_REC *rec;
+	IRC_SERVER_SETUP_REC *rec;
 	char *addr, *portstr, *password, *value;
 	void *free_arg;
 	int port;
@@ -96,16 +98,16 @@ static void cmd_server_add(const char *data)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? 6667 : atoi(portstr);
 
-	rec = server_setup_find_port(addr, port);
+	rec = IRC_SERVER_SETUP(server_setup_find_port(addr, port));
 	if (rec == NULL) {
-		rec = g_new0(SETUP_SERVER_REC, 1);
+		rec = g_new0(IRC_SERVER_SETUP_REC, 1);
 		rec->address = g_strdup(addr);
 		rec->port = port;
 	} else {
 		value = g_hash_table_lookup(optlist, "port");
 		if (value != NULL && *value != '\0') rec->port = atoi(value);
 
-		if (g_hash_table_lookup(optlist, "ircnet")) g_free_and_null(rec->ircnet);
+		if (g_hash_table_lookup(optlist, "ircnet")) g_free_and_null(rec->chatnet);
 		if (*password != '\0') g_free_and_null(rec->password);
 		if (g_hash_table_lookup(optlist, "host")) {
 			g_free_and_null(rec->own_host);
@@ -118,7 +120,7 @@ static void cmd_server_add(const char *data)
 
 	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
 	value = g_hash_table_lookup(optlist, "ircnet");
-	if (value != NULL && *value != '\0') rec->ircnet = g_strdup(value);
+	if (value != NULL && *value != '\0') rec->chatnet = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "host");
 	if (value != NULL && *value != '\0') {
 		rec->own_host = g_strdup(value);
@@ -129,7 +131,7 @@ static void cmd_server_add(const char *data)
 	value = g_hash_table_lookup(optlist, "cmdmax");
 	if (value != NULL && *value != '\0') rec->max_cmds_at_once = atoi(value);
 
-	server_setup_add(rec);
+	server_setup_add(SERVER_SETUP(rec));
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_ADDED, addr, port);
 
 	cmd_params_free(free_arg);
@@ -138,7 +140,7 @@ static void cmd_server_add(const char *data)
 /* SYNTAX: SERVER REMOVE <address> [<port>] */
 static void cmd_server_remove(const char *data)
 {
-	SETUP_SERVER_REC *rec;
+	SERVER_SETUP_REC *rec;
 	char *addr, *portstr;
 	void *free_arg;
 	int port;
@@ -168,7 +170,7 @@ static void cmd_server_list(const char *data)
 	str = g_string_new(NULL);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_HEADER);
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
-		SETUP_SERVER_REC *rec = tmp->data;
+		IRC_SERVER_SETUP_REC *rec = tmp->data;
 
 		g_string_truncate(str, 0);
 		if (rec->password != NULL)
@@ -185,7 +187,7 @@ static void cmd_server_list(const char *data)
 		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_LINE,
 			    rec->address, rec->port,
-			    rec->ircnet == NULL ? "" : rec->ircnet,
+			    rec->chatnet == NULL ? "" : rec->chatnet,
 			    str->str);
 	}
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_FOOTER);

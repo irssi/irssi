@@ -19,12 +19,11 @@
 */
 
 #include "module.h"
-#include "modules.h"
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
-#include "server.h"
-#include "server-redirect.h"
+#include "servers.h"
+#include "servers-redirect.h"
 #include "special-vars.h"
 
 #include "lib-config/iconfig.h"
@@ -617,6 +616,8 @@ static void parse_command(const char *command, int expand_aliases,
 	const char *alias, *newcmd;
 	char *cmd, *orig, *args, *oldcmd;
 
+	g_return_if_fail(command != NULL);
+
 	cmd = orig = g_strconcat("command ", command, NULL);
 	args = strchr(cmd+8, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
@@ -643,7 +644,7 @@ static void parse_command(const char *command, int expand_aliases,
 
 	cmd = g_strconcat("command ", newcmd, NULL);
 	if (server != NULL)
-		server_redirect_default((SERVER_REC *) server, cmd);
+		server_redirect_default(SERVER(server), cmd);
 
 	g_strdown(cmd);
 	oldcmd = current_command;

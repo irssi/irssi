@@ -23,7 +23,7 @@
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
-#include "server.h"
+#include "servers.h"
 #include "misc.h"
 #include "settings.h"
 

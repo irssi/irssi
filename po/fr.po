@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi-0.7.23\n"
-"POT-Creation-Date: 2000-08-13 03:27+0300\n"
+"POT-Creation-Date: 2000-09-26 18:28+0300\n"
 "PO-Revision-Date: 2000-01-26 16:33+0100\n"
 "Last-Translator: Julien Boulnois <jboulnois@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,7 +129,7 @@ msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 msgid "Specify host name to use"
 msgstr "SpÅÈcifiez un nick Å‡ utiliser"
 
-#: src/fe-text/irssi.c:158
+#: src/fe-text/irssi.c:164
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

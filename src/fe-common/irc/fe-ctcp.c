@@ -25,9 +25,9 @@
 
 #include "irc.h"
 #include "levels.h"
-#include "server.h"
+#include "servers.h"
 #include "channels.h"
-#include "query.h"
+#include "queries.h"
 #include "ignore.h"
 
 #include "windows.h"

@@ -76,7 +76,7 @@ DCC_REC *dcc_create(int type, int handle, const char *nick, const char *arg,
 
 	dcc->ircnet = server == NULL ?
 		(chat == NULL || chat->ircnet == NULL ? NULL : g_strdup(chat->ircnet)) :
-		(server->connrec->ircnet == NULL ? NULL : g_strdup(server->connrec->ircnet));
+		(server->connrec->chatnet == NULL ? NULL : g_strdup(server->connrec->chatnet));
 	dcc_conns = g_slist_append(dcc_conns, dcc);
 
 	signal_emit("dcc created", 1, dcc);
@@ -222,14 +222,14 @@ static void dcc_server_connected(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	if (server->connrec->ircnet == NULL)
+	if (server->connrec->chatnet == NULL)
 		return;
 
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
 		DCC_REC *dcc = tmp->data;
 
 		if (dcc->server == NULL && dcc->ircnet != NULL &&
-		    g_strcasecmp(dcc->ircnet, server->connrec->ircnet) == 0) {
+		    g_strcasecmp(dcc->ircnet, server->connrec->chatnet) == 0) {
 			dcc->server = server;
 			g_free(dcc->mynick);
 			dcc->mynick = g_strdup(server->nick);
@@ -253,7 +253,7 @@ static void dcc_server_disconnected(IRC_SERVER_REC *server)
 		if (dcc->ircnet == NULL)
 			dcc->server = NULL;
 		else {
-			dcc->server = (IRC_SERVER_REC *) server_find_ircnet(dcc->ircnet);
+			dcc->server = (IRC_SERVER_REC *) server_find_chatnet(dcc->ircnet);
 			if (dcc->server != NULL) {
 				g_free(dcc->mynick);
 				dcc->mynick = g_strdup(dcc->server->nick);
@@ -309,7 +309,7 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
 	case DCC_TYPE_GET:
 	    cstr = settings_get_str("dcc_autoget_masks");
 	    /* check that autoget masks match */
-	    if (settings_get_bool("dcc_autoget") && (*cstr == '\0' || irc_masks_match(cstr, sender, sendaddr)) &&
+	    if (settings_get_bool("dcc_autoget") && (*cstr == '\0' || masks_match(SERVER(server), cstr, sender, sendaddr)) &&
                 /* check file size limit, FIXME: it's possible to send a bogus file size and then just send what ever sized file.. */
 		(settings_get_int("dcc_max_autoget_size") <= 0 || (settings_get_int("dcc_max_autoget_size") > 0 && size <= settings_get_int("dcc_max_autoget_size")*1024)))
             {
@@ -327,7 +327,7 @@ static void dcc_ctcp_msg(char *data, IRC_SERVER_REC *server, char *sender, char 
 
 	case DCC_TYPE_CHAT:
 	    cstr = settings_get_str("dcc_autochat_masks");
-	    if (*cstr != '\0' && irc_masks_match(cstr, sender, sendaddr))
+	    if (*cstr != '\0' && masks_match(SERVER(server), cstr, sender, sendaddr))
 	    {
                 /* automatically accept chat */
                 str = g_strdup_printf("CHAT %s", dcc->nick);
@@ -454,7 +454,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
     cmd_params_free(free_arg);
 }
 
-static void cmd_dcc(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_dcc(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	command_runsub("dcc", data, server, item);
 }

@@ -20,7 +20,7 @@
 
 #include "module.h"
 #include "signals.h"
-#include "server.h"
+#include "servers.h"
 #include "settings.h"
 
 #include "windows.h"

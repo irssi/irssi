@@ -28,15 +28,15 @@
 #include "nicklist.h"
 
 /* Change nick's mode in channel */
-static void nick_mode_change(CHANNEL_REC *channel, const char *nick,
+static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 			     const char mode, int type)
 {
 	NICK_REC *nickrec;
 
-	g_return_if_fail(channel != NULL);
+	g_return_if_fail(IS_IRC_CHANNEL(channel));
 	g_return_if_fail(nick != NULL);
 
-	nickrec = nicklist_find(channel, nick);
+	nickrec = nicklist_find(CHANNEL(channel), nick);
 	if (nickrec == NULL) return; /* No /names list got yet */
 
 	if (mode == '@') nickrec->op = type == '+';
@@ -185,22 +185,22 @@ static void mode_set_arg(GString *str, char type, char mode, const char *arg)
 		mode_add_sorted(str, mode, arg);
 }
 
-int channel_mode_is_set(CHANNEL_REC *channel, char mode)
+int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode)
 {
-	g_return_val_if_fail(channel != NULL, FALSE);
+	g_return_val_if_fail(IS_IRC_CHANNEL(channel), FALSE);
 
 	return channel->mode == NULL ? FALSE :
 		mode_is_set(channel->mode, mode);
 }
 
 /* Parse channel mode string */
-void parse_channel_modes(CHANNEL_REC *channel, const char *setby,
+void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			 const char *mode)
 {
         GString *newmode;
 	char *dup, *modestr, *arg, *curmode, type;
 
-	g_return_if_fail(channel != NULL);
+	g_return_if_fail(IS_IRC_CHANNEL(channel));
 	g_return_if_fail(mode != NULL);
 
 	type = '+';
@@ -336,7 +336,7 @@ static void parse_user_mode(IRC_SERVER_REC *server, const char *modestr)
 {
 	char *newmode, *oldmode;
 
-	g_return_if_fail(server != NULL);
+	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(modestr != NULL);
 
 	newmode = modes_join(server->usermode, modestr);
@@ -360,21 +360,23 @@ static void event_user_mode(const char *data, IRC_SERVER_REC *server)
 	g_free(params);
 }
 
-static void event_mode(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_mode(const char *data, IRC_SERVER_REC *server,
+		       const char *nick)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &channel, &mode);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+				  &channel, &mode);
 
 	if (!ischannel(*channel)) {
 		/* user mode change */
 		parse_user_mode(server, mode);
 	} else {
 		/* channel mode change */
-		chanrec = channel_find(server, channel);
+		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL)
 			parse_channel_modes(chanrec, nick, mode);
 	}
@@ -406,10 +408,8 @@ void channel_set_singlemode(IRC_SERVER_REC *server, const char *channel,
 	int num, modepos;
 	char **nick, **nicklist;
 
-	g_return_if_fail(server != NULL);
-	g_return_if_fail(channel != NULL);
-	g_return_if_fail(nicks != NULL);
-	g_return_if_fail(mode != NULL);
+	g_return_if_fail(IS_IRC_SERVER(server));
+	g_return_if_fail(channel != NULL && nicks != NULL && mode != NULL);
 	if (*nicks == '\0') return;
 
 	num = modepos = 0;
@@ -450,9 +450,8 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 	GString *tmode, *targs;
 	int count;
 
-	g_return_if_fail(server != NULL);
-	g_return_if_fail(channel != NULL);
-	g_return_if_fail(mode != NULL);
+	g_return_if_fail(IS_IRC_SERVER(server));
+	g_return_if_fail(channel != NULL && mode != NULL);
 
 	tmode = g_string_new(NULL);
 	targs = g_string_new(NULL);
@@ -468,7 +467,8 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 
 		if (count == server->max_modes_in_cmd &&
 		    HAS_MODE_ARG(type, *curmode)) {
-			irc_send_cmdv(server, "MODE %s %s%s", channel, tmode->str, targs->str);
+			irc_send_cmdv(server, "MODE %s %s%s",
+				      channel, tmode->str, targs->str);
 
 			count = 0;
 			g_string_truncate(tmode, 0);
@@ -486,21 +486,24 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		}
 	}
 
-	if (tmode->len > 0)
-		irc_send_cmdv(server, "MODE %s %s%s", channel, tmode->str, targs->str);
+	if (tmode->len > 0) {
+		irc_send_cmdv(server, "MODE %s %s%s",
+			      channel, tmode->str, targs->str);
+	}
 
 	g_string_free(tmode, TRUE);
 	g_string_free(targs, TRUE);
 	g_free(orig);
 }
 
-static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
+static char *get_nicks(IRC_CHANNEL_REC *channel,
+		       const char *data, int op, int voice)
 {
         GString *str;
 	GSList *nicks, *tmp;
 	char **matches, **match, *ret;
 
-	g_return_val_if_fail(item != NULL, NULL);
+	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(data != NULL, NULL);
 	if (*data == '\0') return NULL;
 
@@ -514,7 +517,7 @@ static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 		}
 
 		/* wildcards */
-		nicks = nicklist_find_multiple((CHANNEL_REC *) item, data);
+		nicks = nicklist_find_multiple(CHANNEL(channel), data);
 		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 			NICK_REC *rec = tmp->data;
 
@@ -522,7 +525,7 @@ static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 			    (voice == 1 && !rec->voice) || (voice == 0 && rec->voice))
 				continue;
 
-			if (g_strcasecmp(rec->nick, item->server->nick) == 0)
+			if (g_strcasecmp(rec->nick, channel->server->nick) == 0)
 				continue;
 
 			g_string_sprintfa(str, "%s ", rec->nick);
@@ -537,69 +540,74 @@ static char *get_nicks(WI_IRC_REC *item, const char *data, int op, int voice)
 }
 
 /* SYNTAX: OP <nicks> */
-static void cmd_op(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_op(const char *data, IRC_SERVER_REC *server,
+		   IRC_CHANNEL_REC *channel)
 {
 	char *nicks;
 
-	if (!irc_item_channel(item))
+	if (!IS_IRC_CHANNEL(channel))
 		return;
 
-	nicks = get_nicks(item, data, 0, -1);
+	nicks = get_nicks(channel, data, 0, -1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, item->name, nicks, "+o");
+		channel_set_singlemode(server, channel->name, nicks, "+o");
 	g_free_not_null(nicks);
 }
 
 /* SYNTAX: DEOP <nicks> */
-static void cmd_deop(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_deop(const char *data, IRC_SERVER_REC *server,
+		     IRC_CHANNEL_REC *channel)
 {
 	char *nicks;
 
-	if (!irc_item_channel(item))
+	if (!IS_IRC_CHANNEL(channel))
 		return;
 
-	nicks = get_nicks(item, data, 1, -1);
+	nicks = get_nicks(channel, data, 1, -1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, item->name, nicks, "-o");
+		channel_set_singlemode(server, channel->name, nicks, "-o");
 	g_free_not_null(nicks);
 }
 
 /* SYNTAX: VOICE <nicks> */
-static void cmd_voice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_voice(const char *data, IRC_SERVER_REC *server,
+		      IRC_CHANNEL_REC *channel)
 {
 	char *nicks;
 
-	if (!irc_item_channel(item))
+	if (!IS_IRC_CHANNEL(channel))
 		return;
 
-	nicks = get_nicks(item, data, 0, 0);
+	nicks = get_nicks(channel, data, 0, 0);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, item->name, nicks, "+v");
+		channel_set_singlemode(server, channel->name, nicks, "+v");
 	g_free_not_null(nicks);
 }
 
 /* SYNTAX: DEVOICE <nicks> */
-static void cmd_devoice(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_devoice(const char *data, IRC_SERVER_REC *server,
+			IRC_CHANNEL_REC *channel)
 {
 	char *nicks;
 
-	if (!irc_item_channel(item))
+	if (!IS_IRC_CHANNEL(channel))
 		return;
 
-	nicks = get_nicks(item, data, 0, 1);
+	nicks = get_nicks(channel, data, 0, 1);
 	if (nicks != NULL && *nicks != '\0')
-		channel_set_singlemode(server, item->name, nicks, "-v");
+		channel_set_singlemode(server, channel->name, nicks, "-v");
 	g_free_not_null(nicks);
 }
 
 /* SYNTAX: MODE <your nick>|<channel> [<mode> [<mode parameters>]] */
-static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_mode(const char *data, IRC_SERVER_REC *server,
+		     IRC_CHANNEL_REC *channel)
 {
 	char *target, *mode;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (*data == '+' || *data == '-') {
@@ -612,10 +620,10 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	}
 
 	if (strcmp(target, "*") == 0) {
-		if (!irc_item_channel(item))
+		if (!IS_IRC_CHANNEL(channel))
 			cmd_param_error(CMDERR_NOT_JOINED);
 
-		target = item->name;
+		target = channel->name;
 	}
 	if (*target == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 

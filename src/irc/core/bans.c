@@ -19,12 +19,11 @@
 */
 
 #include "module.h"
-
+#include "signals.h"
 #include "commands.h"
 #include "misc.h"
-#include "signals.h"
 
-#include "masks.h"
+#include "irc-masks.h"
 #include "modes.h"
 #include "mode-lists.h"
 #include "irc.h"
@@ -33,15 +32,15 @@
 static int bantype;
 
 /* Get ban mask */
-char *ban_get_mask(CHANNEL_REC *channel, const char *nick)
+char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick)
 {
 	NICK_REC *rec;
 	char *str, *user, *host;
 
-	g_return_val_if_fail(channel != NULL, NULL);
+	g_return_val_if_fail(IS_IRC_CHANNEL(channel), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
-	rec = nicklist_find(channel, nick);
+	rec = nicklist_find(CHANNEL(channel), nick);
 	if (rec == NULL || rec->host == NULL) return NULL;
 
 	str = irc_get_mask(nick, rec->host, bantype);
@@ -109,7 +108,7 @@ void ban_set_type(const char *type)
 	signal_emit("ban type changed", 1, bantypestr);
 }
 
-void ban_set(CHANNEL_REC *channel, const char *bans)
+void ban_set(IRC_CHANNEL_REC *channel, const char *bans)
 {
 	GString *str;
 	char **ban, **banlist, *realban;
@@ -136,12 +135,13 @@ void ban_set(CHANNEL_REC *channel, const char *bans)
 
 	if (str->len > 0) {
 		g_string_truncate(str, str->len-1);
-		channel_set_singlemode(channel->server, channel->name, str->str, "+b");
+		channel_set_singlemode(channel->server, channel->name,
+				       str->str, "+b");
 	}
 	g_string_free(str, TRUE);
 }
 
-void ban_remove(CHANNEL_REC *channel, const char *bans)
+void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 {
 	GString *str;
 	GSList *tmp;
@@ -160,18 +160,19 @@ void ban_remove(CHANNEL_REC *channel, const char *bans)
 	g_strfreev(banlist);
 
 	if (str->len > 0)
-		channel_set_singlemode(channel->server, channel->name, str->str, "-b");
+		channel_set_singlemode(channel->server, channel->name,
+				       str->str, "-b");
 	g_string_free(str, TRUE);
 }
 
-static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item, int set)
+static void command_set_ban(const char *data, IRC_SERVER_REC *server, void *item, int set)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channel, *nicks;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-	if (server == NULL || !server->connected || !irc_server_check(server))
+	if (server == NULL || !server->connected || !IS_IRC_SERVER(server))
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
@@ -184,9 +185,11 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC
 		nicks = (char *) data;
 	}
 
-	chanrec = channel_find(server, channel);
-	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
-	if (!chanrec->wholist) cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec == NULL)
+		cmd_param_error(CMDERR_CHAN_NOT_FOUND);
+	if (!chanrec->wholist)
+		cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (set)
 		ban_set(chanrec, nicks);
@@ -204,13 +207,13 @@ static void cmd_bantype(const char *data)
 }
 
 /* SYNTAX: BAN <nicks/masks> */
-static void cmd_ban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_ban(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	command_set_ban(data, server, item, TRUE);
 }
 
 /* SYNTAX: UNBAN <masks> */
-static void cmd_unban(const char *data, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_unban(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	command_set_ban(data, server, item, FALSE);
 }

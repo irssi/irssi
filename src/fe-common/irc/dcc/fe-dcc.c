@@ -19,7 +19,6 @@
 */
 
 #include "module.h"
-#include "./module-formats.h"
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
@@ -27,13 +26,15 @@
 #include "levels.h"
 #include "irc.h"
 #include "channels.h"
-#include "query.h"
+#include "irc-queries.h"
 
 #include "irc/dcc/dcc.h"
 
 #include "completion.h"
 #include "themes.h"
 #include "windows.h"
+
+#include "module-formats.h"
 
 static void dcc_connected(DCC_REC *dcc)
 {
@@ -47,7 +48,7 @@ static void dcc_connected(DCC_REC *dcc)
 		printformat(dcc->server, sender, MSGLEVEL_DCC, IRCTXT_DCC_CHAT_CONNECTED,
 			    dcc->nick, dcc->addrstr, dcc->port);
 		if (query_find(NULL, sender) == NULL)
-			query_create(dcc->server, sender, TRUE);
+			irc_query_create(dcc->server, sender, TRUE);
 		g_free(sender);
 		break;
 	case DCC_TYPE_SEND:
@@ -278,10 +279,10 @@ static void sig_query_destroyed(QUERY_REC *query)
 {
 	DCC_REC *dcc;
 
-	if (*query->nick != '=')
+	if (*query->name != '=')
 		return;
 
-	dcc = dcc_find_item(DCC_TYPE_CHAT, query->nick+1, NULL);
+	dcc = dcc_find_item(DCC_TYPE_CHAT, query->name+1, NULL);
 	if (dcc != NULL && !dcc->destroyed) {
 		/* DCC query window closed, close the dcc chat too. */
 		signal_emit("dcc closed", 1, dcc);
@@ -318,7 +319,7 @@ static void cmd_msg(const char *data)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	DCC_REC *dcc;
 
@@ -331,7 +332,7 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_IRC_REC *item)
                     IRCTXT_OWN_DCC_ME, dcc->mynick, data);
 }
 
-static void cmd_action(const char *data, SERVER_REC *server, WI_IRC_REC *item)
+static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	DCC_REC *dcc;
 	char *target, *text;

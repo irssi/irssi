@@ -1,0 +1,137 @@
+/*
+ masks.c : irssi
+
+    Copyright (C) 1999-2000 Timo Sirainen
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#include "module.h"
+#include "network.h"
+#include "misc.h"
+
+#include "servers.h"
+
+typedef int (*MASK_MATCH_FUNC) (const char *, const char *);
+
+/* Returns TRUE if mask contains '!' ie. address should be checked too.
+   Also checks if mask contained any wildcards. */
+static int check_address(const char *mask, int *wildcards)
+{
+	int ret;
+
+	ret = FALSE;
+	while (*mask != '\0') {
+		if (*mask == '!') {
+			if (*wildcards) return TRUE;
+			ret = TRUE;
+		}
+
+		if (*mask == '?' || *mask == '*') {
+			*wildcards = TRUE;
+			if (ret) return TRUE;
+		}
+		mask++;
+	}
+
+	return ret;
+}
+
+static int check_mask(SERVER_REC *server, const char *mask,
+		      const char *str, int wildcards)
+{
+	MASK_MATCH_FUNC mask_match_func;
+
+	if (server != NULL && server->mask_match_func != NULL) {
+		/* use server specified mask match function */
+		mask_match_func = (MASK_MATCH_FUNC)server->mask_match_func;
+		return mask_match_func(mask, str);
+	}
+
+	return wildcards ? match_wildcards(mask, str) :
+		g_strcasecmp(mask, str) == 0;
+}
+
+int mask_match(SERVER_REC *server, const char *mask,
+	       const char *nick, const char *user, const char *host)
+{
+	char *str;
+	int ret, wildcards;
+
+	g_return_val_if_fail(server == NULL || IS_SERVER(server), FALSE);
+	g_return_val_if_fail(mask != NULL && nick != NULL &&
+			     nick != NULL && host != NULL, FALSE);
+
+	str = !check_address(mask, &wildcards) ? (char *) nick :
+		g_strdup_printf("%s!%s@%s", nick, user, host);
+	ret = check_mask(server, mask, str, wildcards);
+	if (str != nick) g_free(str);
+
+	return ret;
+}
+
+int mask_match_address(SERVER_REC *server, const char *mask,
+		       const char *nick, const char *address)
+{
+	char *str;
+	int ret, wildcards;
+
+	g_return_val_if_fail(server == NULL || IS_SERVER(server), FALSE);
+	g_return_val_if_fail(mask != NULL && nick != NULL, FALSE);
+	if (address == NULL) address = "";
+
+	str = !check_address(mask, &wildcards) ? (char *) nick :
+		g_strdup_printf("%s!%s", nick, address);
+	ret = check_mask(server, mask, str, wildcards);
+	if (str != nick) g_free(str);
+
+	return ret;
+}
+
+int masks_match(SERVER_REC *server, const char *masks,
+		const char *nick, const char *address)
+{
+	MASK_MATCH_FUNC mask_match_func;
+	char **list, **tmp, *mask;
+	int found;
+
+	g_return_val_if_fail(server == NULL || IS_SERVER(server), FALSE);
+	g_return_val_if_fail(masks != NULL &&
+			     nick != NULL && address != NULL, FALSE);
+
+	mask_match_func = server != NULL && server->mask_match_func != NULL ?
+		(MASK_MATCH_FUNC) server->mask_match_func :
+		(MASK_MATCH_FUNC) match_wildcards;
+
+	found = FALSE;
+	mask = g_strdup_printf("%s!%s", nick, address);
+	list = g_strsplit(masks, " ", -1);
+	for (tmp = list; *tmp != NULL; tmp++) {
+		if (strchr(*tmp, '!') == NULL &&
+		    g_strcasecmp(*tmp, nick) == 0) {
+                        found = TRUE;
+			break;
+		}
+
+		if (mask_match_func(*tmp, mask)) {
+			found = TRUE;
+			break;
+		}
+	}
+	g_strfreev(list);
+	g_free(mask);
+
+	return found;
+}

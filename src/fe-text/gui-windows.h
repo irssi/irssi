@@ -1,7 +1,7 @@
 #ifndef __GUI_WINDOWS_H
 #define __GUI_WINDOWS_H
 
-#include "server.h"
+#include "servers.h"
 #include "mainwindows.h"
 
 #define WINDOW_GUI(a) ((GUI_WINDOW_REC *) ((a)->gui_data))

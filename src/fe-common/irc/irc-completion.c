@@ -27,10 +27,11 @@
 
 #include "irc.h"
 #include "irc-commands.h"
-#include "server.h"
-#include "channels.h"
+#include "servers.h"
+#include "irc-channels.h"
+#include "irc-queries.h"
 #include "channels-setup.h"
-#include "nicklist.h"
+#include "irc-nicklist.h"
 
 #include "completion.h"
 #include "window-items.h"
@@ -65,7 +66,7 @@ GList *completion_get_channels(IRC_SERVER_REC *server, const char *word)
 
 	/* get channels from setup */
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
-		SETUP_CHANNEL_REC *rec = tmp->data;
+		CHANNEL_SETUP_REC *rec = tmp->data;
 
 		if (g_strncasecmp(rec->name, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->name));
@@ -146,7 +147,7 @@ static int nick_completion_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
-		if (!irc_server_check(rec))
+		if (!IS_IRC_SERVER(rec))
 			continue;
 
 		mserver = MODULE_DATA(rec);
@@ -226,9 +227,9 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	if (ischannel(*target)) {
 		/* channel message */
 		MODULE_CHANNEL_REC *mchannel;
-		CHANNEL_REC *channel;
+		IRC_CHANNEL_REC *channel;
 
-		channel = channel_find(server, target);
+		channel = irc_channel_find(server, target);
 		if (channel == NULL) {
 			g_free(params);
 			return;
@@ -405,7 +406,7 @@ static void complete_from_nicklist(GList **outlist, GSList *list,
 	}
 }
 
-static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick, const char *prefix)
+static GList *completion_channel_nicks(IRC_CHANNEL_REC *channel, const char *nick, const char *prefix)
 {
 	MODULE_CHANNEL_REC *mchannel;
 	GSList *nicks, *tmp;
@@ -424,7 +425,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick, c
 
 	/* and add the rest of the nicks too */
 	len = strlen(nick);
-	nicks = nicklist_getnicks(channel);
+	nicks = nicklist_getnicks(CHANNEL(channel));
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
@@ -464,7 +465,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart)
 {
 	IRC_SERVER_REC *server;
-	CHANNEL_REC *channel;
+	IRC_CHANNEL_REC *channel;
 	GList *tmplist;
 	const char *cmdchars, *nickprefix;
 	char *prefix;
@@ -480,7 +481,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
                 return;
 	}
 
-	server = window->active_server;
+	server = IRC_SERVER(window->active_server);
 	if (server == NULL || !server->connected)
 		return;
 
@@ -498,7 +499,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	/* nick completion .. we could also be completing a nick after /MSG
 	   from nicks in channel */
-	channel = irc_item_channel(window->active);
+	channel = IRC_CHANNEL(window->active);
 	if (channel == NULL)
 		return;
 
@@ -539,7 +540,7 @@ static void sig_complete_msg(GList **list, WINDOW_REC *window,
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
 
-	server = window->active_server;
+	server = IRC_SERVER(window->active_server);
 	if (server == NULL || !server->connected)
 		return;
 
@@ -549,7 +550,7 @@ static void sig_complete_msg(GList **list, WINDOW_REC *window,
 }
 
 /* expand \n, \t and \\ - FIXME: this doesn't work right */
-static char *expand_escapes(const char *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static char *expand_escapes(const char *line, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *ptr, *ret;
 
@@ -590,15 +591,15 @@ static char *expand_escapes(const char *line, IRC_SERVER_REC *server, WI_IRC_REC
 	return ret;
 }
 
-static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
+static void event_text(gchar *line, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-    CHANNEL_REC *channel;
+    IRC_CHANNEL_REC *channel;
     GList *comp;
     gchar *str, *ptr;
 
     g_return_if_fail(line != NULL);
 
-    if (!irc_item_check(item))
+    if (!IS_IRC_ITEM(item))
 	    return;
 
     /* FIXME: this really should go to fe-common/core. */
@@ -617,10 +618,10 @@ static void event_text(gchar *line, IRC_SERVER_REC *server, WI_IRC_REC *item)
 	ptr = strchr(line, *settings_get_str("completion_char"));
 	if (ptr != NULL) *ptr++ = '\0';
 
-	channel = irc_item_channel(item);
+	channel = IRC_CHANNEL(item);
 
 	comp = ptr == NULL || channel == NULL ||
-	    nicklist_find(channel, line) != NULL ? NULL :
+	    nicklist_find(CHANNEL(channel), line) != NULL ? NULL :
 	    completion_channel_nicks(channel, line, NULL);
     }
 
@@ -653,7 +654,7 @@ static void completion_init_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	rec = g_new0(MODULE_SERVER_REC, 1);
@@ -666,7 +667,7 @@ static void completion_deinit_server(IRC_SERVER_REC *server)
 
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	mserver = MODULE_DATA(server);

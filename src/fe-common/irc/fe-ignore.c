@@ -26,7 +26,7 @@
 #include "misc.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "ignore.h"
 
 static void fe_unignore(IGNORE_REC *rec);

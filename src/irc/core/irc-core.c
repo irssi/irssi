@@ -20,9 +20,9 @@
 
 #include "module.h"
 
-#include "irc-server.h"
-#include "channels.h"
-#include "query.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
+#include "irc-queries.h"
 
 #include "ctcp.h"
 #include "ignore.h"
@@ -47,8 +47,8 @@ void lag_deinit(void);
 void irc_core_init(void)
 {
 	irc_servers_init();
-	channels_init();
-	query_init();
+	irc_channels_init();
+	irc_queries_init();
 
 	ctcp_init();
 	irc_commands_init();
@@ -72,8 +72,8 @@ void irc_core_deinit(void)
 	irc_commands_deinit();
 	ctcp_deinit();
 
-	query_deinit();
-	channels_deinit();
+	irc_queries_deinit();
+	irc_channels_deinit();
 	irc_irc_deinit();
 	irc_servers_deinit();
 }

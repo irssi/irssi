@@ -38,7 +38,7 @@ typedef struct {
 static GHashTable *data = NULL, *preallocs = NULL;
 static const char *comment = "";
 
-static void add_flow_checks(guchar *p, unsigned long size)
+static void add_flow_checks(char *p, unsigned long size)
 {
 #ifdef ENABLE_BUFFER_CHECKS
 	int n;
@@ -75,7 +75,7 @@ static void mem_check(void)
 #endif
 }
 
-static void data_add(void *p, int size, const char *file, int line)
+static void data_add(char *p, int size, const char *file, int line)
 {
 	MEM_REC *rec;
 
@@ -106,7 +106,19 @@ static void data_add(void *p, int size, const char *file, int line)
 	mem_check();
 }
 
-static void *data_remove(void *p, const char *file, int line)
+static void data_clear(char *p)
+{
+	MEM_REC *rec;
+
+	if (g_hash_table_lookup(preallocs, p) != NULL)
+		p += BUFFER_CHECK_SIZE;
+
+	rec = g_hash_table_lookup(data, p);
+	if (rec != NULL && rec->size > 0)
+		memset(p, 'F', rec->size);
+}
+
+static void *data_remove(char *p, const char *file, int line)
 {
 	MEM_REC *rec;
 
@@ -132,34 +144,34 @@ static void *data_remove(void *p, const char *file, int line)
 
 void *ig_malloc(int size, const char *file, int line)
 {
-	void *p;
+	char *p;
 
 	size += BUFFER_CHECK_SIZE*2;
 	p = g_malloc(size);
 	data_add(p, size, file, line);
-	return p+BUFFER_CHECK_SIZE;
+	return (void *) (p+BUFFER_CHECK_SIZE);
 }
 
 void *ig_malloc0(int size, const char *file, int line)
 {
-	void *p;
+	char *p;
 
 	size += BUFFER_CHECK_SIZE*2;
 	p = g_malloc0(size);
 	data_add(p, size, file, line);
-	return p+BUFFER_CHECK_SIZE;
+	return (void *) (p+BUFFER_CHECK_SIZE);
 }
 
 void *ig_realloc(void *mem, unsigned long size, const char *file, int line)
 {
-	void *p;
+	char *p, *oldmem = mem;
 
 	size += BUFFER_CHECK_SIZE*2;
-	mem -= BUFFER_CHECK_SIZE;
-	data_remove(mem, file, line);
-	p = g_realloc(mem, size);
+	oldmem -= BUFFER_CHECK_SIZE;
+	data_remove(oldmem, file, line);
+	p = g_realloc(oldmem, size);
 	data_add(p, size, file, line);
-	return p+BUFFER_CHECK_SIZE;
+	return (void *) (p+BUFFER_CHECK_SIZE);
 }
 
 char *ig_strdup(const char *str, const char *file, int line)
@@ -252,11 +264,14 @@ char *ig_strdup_vprintf(const char *file, int line, const char *format, va_list 
 
 void ig_free(void *p)
 {
-	if (p == NULL) g_error("ig_free() : trying to free NULL");
+	char *cp = p;
 
-	p -= BUFFER_CHECK_SIZE;
-	p = data_remove(p, "??", 0);
-	if (p != NULL) g_free(p);
+	if (cp == NULL) g_error("ig_free() : trying to free NULL");
+
+	cp -= BUFFER_CHECK_SIZE;
+	data_clear(cp);
+	cp = data_remove(cp, "??", 0);
+	if (cp != NULL) g_free(cp);
 }
 
 GString *ig_string_new(const char *file, int line, const char *str)
@@ -264,13 +279,13 @@ GString *ig_string_new(const char *file, int line, const char *str)
 	GString *ret;
 
 	ret = g_string_new(str);
-	data_add(ret, INT_MIN, file, line);
+	data_add((void *) ret, INT_MIN, file, line);
 	return ret;
 }
 
 void ig_string_free(const char *file, int line, GString *str, gboolean freeit)
 {
-	data_remove(str, file, line);
+	data_remove((void *) str, file, line);
 	if (!freeit)
 		data_add(str->str, INT_MIN, file, line);
 
@@ -304,7 +319,7 @@ void ig_profile_line(void *key, MEM_REC *rec)
 	     strcmp(rec->file, "ig_strdup_vprintf") == 0 ||
 	     strcmp(rec->file, "ig_strconcat") == 0 ||
 	     strcmp(rec->file, "ig_string_free (free = FALSE)") == 0))
-		data = rec->p + BUFFER_CHECK_SIZE;
+		data = (char *) rec->p + BUFFER_CHECK_SIZE;
 	else
 		data = rec->comment;
 	fprintf(stderr, "%s:%d %d bytes (%s)\n", rec->file, rec->line, rec->size, data);

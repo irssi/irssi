@@ -22,10 +22,10 @@
 #include "signals.h"
 #include "settings.h"
 
-#include "channels.h"
 #include "irc.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
 #include "nicklist.h"
-#include "irc-server.h"
 
 static int massjoin_tag;
 static int massjoin_max_joins;
@@ -33,10 +33,11 @@ static int massjoin_max_joins;
 /* Massjoin support - really useful when trying to do things (like op/deop)
    to people after netjoins. It sends
    "massjoin #channel nick!user@host nick2!user@host ..." signals */
-static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_join(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *address)
 {
 	char *params, *channel, *ptr;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	GSList *nicks, *tmp;
 
@@ -52,12 +53,12 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	if (ptr != NULL) *ptr = '\0';
 
 	/* find channel */
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	g_free(params);
 	if (chanrec == NULL) return;
 
 	/* add user to nicklist */
-	nickrec = nicklist_insert(chanrec, nick, FALSE, FALSE, TRUE);
+	nickrec = nicklist_insert(CHANNEL(chanrec), nick, FALSE, FALSE, TRUE);
 	nickrec->host = g_strdup(address);
 
 	if (chanrec->massjoins == 0) {
@@ -69,7 +70,7 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	if (nickrec->realname == NULL) {
 		/* Check if user is already in some other channel,
 		   get the realname and other stuff from there */
-		nicks = nicklist_get_same(server, nick);
+		nicks = nicklist_get_same(SERVER(server), nick);
 		for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
 			NICK_REC *rec = tmp->next->data;
 
@@ -86,10 +87,11 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 	chanrec->massjoins++;
 }
 
-static void event_part(const char *data, IRC_SERVER_REC *server, const char *nick, const char *addr)
+static void event_part(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *addr)
 {
 	char *params, *channel, *reason;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 
 	g_return_if_fail(data != NULL);
@@ -102,28 +104,29 @@ static void event_part(const char *data, IRC_SERVER_REC *server, const char *nic
 	params = event_get_params(data, 2, &channel, &reason);
 
 	/* find channel */
-	chanrec = channel_find(server, channel);
+	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL) {
 		g_free(params);
 		return;
 	}
 
 	/* remove user from nicklist */
-	nickrec = nicklist_find(chanrec, nick);
+	nickrec = nicklist_find(CHANNEL(chanrec), nick);
 	if (nickrec != NULL) {
 		if (nickrec->send_massjoin) {
 			/* quick join/part after which it's useless to send
 			   nick in massjoin */
 			chanrec->massjoins--;
 		}
-		nicklist_remove(chanrec, nickrec);
+		nicklist_remove(CHANNEL(chanrec), nickrec);
 	}
 	g_free(params);
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nick)
+static void event_quit(const char *data, IRC_SERVER_REC *server,
+		       const char *nick)
 {
-        CHANNEL_REC *channel;
+        IRC_CHANNEL_REC *channel;
 	NICK_REC *nickrec;
 	GSList *nicks, *tmp;
 
@@ -135,7 +138,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	}
 
 	/* Remove nick from all channels */
-	nicks = nicklist_get_same(server, nick);
+	nicks = nicklist_get_same(SERVER(server), nick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
                 channel = tmp->data;
 		nickrec = tmp->next->data;
@@ -145,7 +148,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 			   send nick in massjoin */
 			channel->massjoins--;
 		}
-		nicklist_remove(channel, nickrec);
+		nicklist_remove(CHANNEL(channel), nickrec);
 	}
 	g_slist_free(nicks);
 }
@@ -153,7 +156,7 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 static void event_kick(const char *data, IRC_SERVER_REC *server)
 {
 	char *params, *channel, *nick, *reason;
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 
 	g_return_if_fail(data != NULL);
@@ -167,15 +170,17 @@ static void event_kick(const char *data, IRC_SERVER_REC *server)
 	}
 
 	/* Remove user from nicklist */
-	chanrec = channel_find(server, channel);
-	nickrec = chanrec == NULL ? NULL : nicklist_find(chanrec, nick);
+	chanrec = irc_channel_find(server, channel);
+	nickrec = chanrec == NULL ? NULL :
+		nicklist_find(CHANNEL(chanrec), nick);
+
 	if (chanrec != NULL && nickrec != NULL) {
 		if (nickrec->send_massjoin) {
 			/* quick join/kick after which it's useless to
 			   send nick in massjoin */
 			chanrec->massjoins--;
 		}
-		nicklist_remove(chanrec, nickrec);
+		nicklist_remove(CHANNEL(chanrec), nickrec);
 	}
 
 	g_free(params);
@@ -190,7 +195,7 @@ static void massjoin_send_hash(gpointer key, NICK_REC *nick, GSList **list)
 }
 
 /* Send channel's massjoin list signal */
-static void massjoin_send(CHANNEL_REC *channel)
+static void massjoin_send(IRC_CHANNEL_REC *channel)
 {
 	GSList *list;
 
@@ -208,9 +213,9 @@ static void server_check_massjoins(IRC_SERVER_REC *server, time_t max)
 
 	/* Scan all channels through for massjoins */
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		CHANNEL_REC *rec = tmp->data;
+		IRC_CHANNEL_REC *rec = tmp->data;
 
-		if (rec->massjoins <= 0)
+		if (!IS_IRC_CHANNEL(rec) || rec->massjoins <= 0)
 			continue;
 
 		if (rec->massjoin_start < max || /* We've waited long enough */
@@ -234,7 +239,7 @@ static int sig_massjoin_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
 
-                if (irc_server_check(server))
+                if (IS_IRC_SERVER(server))
 			server_check_massjoins(server, max);
 	}
 

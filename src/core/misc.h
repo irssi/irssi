@@ -23,7 +23,7 @@ GSList *gslist_find_icase_string(GSList *list, const char *key);
 GList *glist_find_string(GList *list, const char *key);
 GList *glist_find_icase_string(GList *list, const char *key);
 
-void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, void *data);
+void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data);
 
 /* `list' contains pointer to structure with a char* to string. */
 char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);

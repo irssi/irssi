@@ -21,9 +21,9 @@
 #include "module.h"
 #include "signals.h"
 
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "server-idle.h"
-#include "server-redirect.h"
+#include "servers-redirect.h"
 #include "irc.h"
 
 typedef struct {
@@ -217,7 +217,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	while (server->idles != NULL)
@@ -232,7 +232,7 @@ static int sig_idle_timeout(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *rec = tmp->data;
 
-		if (irc_server_check(rec) &&
+		if (IS_IRC_SERVER(rec) &&
 		    rec->idles != NULL && rec->cmdcount == 0) {
 			/* We're idling and we have idle commands to run! */
 			server_idle_next(rec);

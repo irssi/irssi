@@ -23,7 +23,7 @@
 #include "commands.h"
 
 #include "irc.h"
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "channels.h"
 #include "nicklist.h"
 #include "modes.h"
@@ -31,7 +31,7 @@
 
 #include "bot-users.h"
 
-static int get_flags(USER_REC *user, CHANNEL_REC *channel)
+static int get_flags(USER_REC *user, IRC_CHANNEL_REC *channel)
 {
 	USER_CHAN_REC *userchan;
 
@@ -43,7 +43,7 @@ static int get_flags(USER_REC *user, CHANNEL_REC *channel)
 		(~user->not_flags);
 }
 
-static void event_massjoin(CHANNEL_REC *channel, GSList *users)
+static void event_massjoin(IRC_CHANNEL_REC *channel, GSList *users)
 {
 	USER_REC *user;
 	USER_CHAN_REC *userchan;
@@ -86,7 +86,7 @@ static void event_massjoin(CHANNEL_REC *channel, GSList *users)
 }
 
 /* Parse channel mode string */
-static void parse_channel_mode(CHANNEL_REC *channel, const char *mode,
+static void parse_channel_mode(IRC_CHANNEL_REC *channel, const char *mode,
 			       const char *nick, const char *address)
 {
 	NICK_REC *nickrec, *splitnick;
@@ -140,7 +140,7 @@ static void parse_channel_mode(CHANNEL_REC *channel, const char *mode,
 			continue;
 
 		/* check that op is valid */
-		nickrec = nicklist_find(channel, ptr);
+		nickrec = nicklist_find(CHANNEL(channel), ptr);
 		if (nickrec == NULL || nickrec->host == NULL)
 			continue;
 
@@ -169,7 +169,7 @@ static void parse_channel_mode(CHANNEL_REC *channel, const char *mode,
 static void event_mode(const char *data, IRC_SERVER_REC *server,
 		       const char *nick, const char *address)
 {
-	CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *params, *channel, *mode;
 
 	g_return_if_fail(data != NULL);
@@ -178,7 +178,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 
 	if (ischannel(*channel)) {
 		/* channel mode change */
-		chanrec = channel_find(server, channel);
+		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL)
 			parse_channel_mode(chanrec, mode, nick, address);
 	}

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-08-13 03:27+0300\n"
+"POT-Creation-Date: 2000-09-26 18:28+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,7 +122,7 @@ msgstr ""
 msgid "Specify host name to use"
 msgstr ""
 
-#: src/fe-text/irssi.c:158
+#: src/fe-text/irssi.c:164
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 

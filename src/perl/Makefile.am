@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libperl.la
+noinst_LIBRARIES = libperl.a
 
 irssi-perl.c: perl-signals.h
 
@@ -8,7 +8,7 @@ INCLUDES = $(GLIB_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core
 
-libperl_la_SOURCES = \
+libperl_a_SOURCES = \
 	irssi-perl.c \
 	xsinit.c
 

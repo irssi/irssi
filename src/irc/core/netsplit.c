@@ -19,12 +19,11 @@
 */
 
 #include "module.h"
-#include "modules.h"
 #include "signals.h"
 #include "commands.h"
 #include "misc.h"
 
-#include "irc-server.h"
+#include "irc-servers.h"
 #include "netsplit.h"
 
 /* How long to keep netsplits in memory (seconds) */
@@ -284,7 +283,7 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	if (!irc_server_check(server))
+	if (!IS_IRC_SERVER(server))
 		return;
 
 	g_hash_table_foreach(server->splits, (GHFunc) netsplit_destroy_hash, server);
@@ -308,7 +307,7 @@ static int split_check_old(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
 
-		if (irc_server_check(server))
+		if (IS_IRC_SERVER(server))
 			g_hash_table_foreach_remove(server->splits, (GHRFunc) split_server_check, server);
 	}
 

@@ -116,7 +116,8 @@ static void config_parse_peek_token(GScanner *scanner, CONFIG_NODE *node)
 }
 
 /* get optional token, optionally warn if it's missing */
-static void config_parse_warn_missing(CONFIG_REC *rec, CONFIG_NODE *node, int expected_token, int print_warning)
+static void config_parse_warn_missing(CONFIG_REC *rec, CONFIG_NODE *node,
+				      GTokenType expected_token, int print_warning)
 {
 	config_parse_peek_token(rec->scanner, node);
 	if (rec->scanner->next_token == expected_token) {
@@ -128,7 +129,7 @@ static void config_parse_warn_missing(CONFIG_REC *rec, CONFIG_NODE *node, int ex
 		g_scanner_warn(rec->scanner, "Warning: missing '%c'", expected_token);
 }
 
-static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, int expect);
+static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, GTokenType expect);
 
 static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 {
@@ -215,7 +216,7 @@ static int config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
         return G_TOKEN_NONE;
 }
 
-static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, int expect)
+static void config_parse_loop(CONFIG_REC *rec, CONFIG_NODE *node, GTokenType expect)
 {
 	int expected_token;
 
