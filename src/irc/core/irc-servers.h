@@ -38,15 +38,15 @@ typedef struct {
 	char *usermode; /* The whole mode string .. */
         char *userhost; /* /USERHOST <nick> - set when joined to first channel */
 
-	int nick_changing:1; /* We've sent nick change command to server */
-	int whois_coming:1; /* Mostly just to display away message right.. */
-	int whois_found:1; /* Did WHOIS return any entries? */
-	int whowas_found:1; /* Did WHOWAS return any entries? */
+	unsigned int nick_changing:1; /* We've sent nick change command to server */
+	unsigned int whois_coming:1; /* Mostly just to display away message right.. */
+	unsigned int whois_found:1; /* Did WHOIS return any entries? */
+	unsigned int whowas_found:1; /* Did WHOWAS return any entries? */
 
-	int emode_known:1; /* Server understands ban exceptions and invite lists */
-	int no_multi_mode:1; /* Server doesn't understand MODE #chan1,#chan2,... */
-	int no_multi_who:1; /* Server doesn't understand WHO #chan1,#chan2,... */
-	int one_endofwho:1; /* /WHO #a,#b,.. replies only with one End of WHO message */
+	unsigned int emode_known:1; /* Server understands ban exceptions and invite lists */
+	unsigned int no_multi_mode:1; /* Server doesn't understand MODE #chan1,#chan2,... */
+	unsigned int no_multi_who:1; /* Server doesn't understand WHO #chan1,#chan2,... */
+	unsigned int one_endofwho:1; /* /WHO #a,#b,.. replies only with one End of WHO message */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */

@@ -49,13 +49,13 @@ typedef struct DCC_REC {
 
 	int get_type; /* DCC get: what to do if file exists? */
 
-	int fastsend:1; /* fastsending (just in case that global fastsend toggle changes while transferring..) */
-	int waitforend:1; /* DCC fast send: file is sent, just wait for the replies from the other side */
-	int gotalldata:1; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
+	unsigned int fastsend:1; /* fastsending (just in case that global fastsend toggle changes while transferring..) */
+	unsigned int waitforend:1; /* DCC fast send: file is sent, just wait for the replies from the other side */
+	unsigned int gotalldata:1; /* DCC fast send: got all acks from the other end (needed to make sure the end of transfer works right) */
 
-	int mirc_ctcp:1; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
-	int connection_lost:1; /* DCC chat: other side closed connection */
-	int destroyed:1; /* We're about to destroy this DCC recond */
+	unsigned int mirc_ctcp:1; /* DCC chat: Send CTCPs without the CTCP_MESSAGE prefix */
+	unsigned int connection_lost:1; /* DCC chat: other side closed connection */
+	unsigned int destroyed:1; /* We're about to destroy this DCC recond */
 
 	/* read/write counter buffer */
 	char count_buf[4];

@@ -6,7 +6,7 @@ typedef struct {
 	char **ircnets; /* if non-NULL, check only from these irc networks */
 
 	/* notify when AWAY status changes (uses /USERHOST) */
-	int away_check:1;
+	unsigned int away_check:1;
 	/* notify when idle time is reset and it was bigger than this
 	   (uses /WHOIS and PRIVMSG events) */
 	int idle_check_time;

@@ -19,7 +19,7 @@ typedef struct {
 	char *address;
 	GSList *channels;
 
-	int printed:1;
+	unsigned int printed:1;
 	time_t destroy;
 } NETSPLIT_REC;
 

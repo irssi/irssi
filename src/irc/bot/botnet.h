@@ -11,7 +11,7 @@ typedef struct _botnet_rec BOTNET_REC;
 typedef struct {
 	char *name;
 	GSList *nicks; /* NICK_RECs */
-	int chanop:1;
+	unsigned int chanop:1;
 
 	GSList *banlist;
 	GSList *ebanlist;
@@ -35,11 +35,11 @@ typedef struct {
 	BOTNET_REC *botnet;
 	void *link; /* NULL, BOT_UPLINK_REC or BOT_DOWNLINK_REC */
 
-	int uplink:1; /* this is our uplink */
-	int pass_ok:1; /* downlink's password was ok */
-	int connected:1; /* bot is in this botnet now */
-	int disconnect:1; /* just disconnecting this bot.. */
-	int master:1; /* this bot is the bot network's current master */
+	unsigned int uplink:1; /* this is our uplink */
+	unsigned int pass_ok:1; /* downlink's password was ok */
+	unsigned int connected:1; /* bot is in this botnet now */
+	unsigned int disconnect:1; /* just disconnecting this bot.. */
+	unsigned int master:1; /* this bot is the bot network's current master */
 
 	char *nick; /* bot's unique nick in botnet */
 	int priority;
@@ -71,9 +71,9 @@ typedef struct {
 } BOT_DOWNLINK_REC;
 
 struct _botnet_rec {
-	int connected:1;
-	int autoconnect:1;
-	int reconnect:1;
+	unsigned int connected:1;
+	unsigned int autoconnect:1;
+	unsigned int reconnect:1;
 
 	char *name; /* botnet name */
 	char *nick; /* our nick in botnet */

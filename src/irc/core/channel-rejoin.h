@@ -4,7 +4,7 @@
 typedef struct {
 	char *channel;
 	char *key;
-	int joining:1;
+	unsigned int joining:1;
 } REJOIN_REC;
 
 void channel_rejoin_init(void);

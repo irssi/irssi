@@ -9,10 +9,10 @@ typedef struct {
 	char *color; /* if starts with number, \003 is automatically
 	                inserted before it. */
 
-	int nick:1; /* hilight only the nick, not a full line - works only with msgs. */
-	int nickmask:1; /* `text 'is a nick mask - colorify the nick */
-	int fullword:1; /* match `text' only for full words */
-	int regexp:1; /* `text' is a regular expression */
+	unsigned int nick:1; /* hilight only the nick, not a full line - works only with msgs. */
+	unsigned int nickmask:1; /* `text 'is a nick mask - colorify the nick */
+	unsigned int fullword:1; /* match `text' only for full words */
+	unsigned int regexp:1; /* `text' is a regular expression */
 } HILIGHT_REC;
 
 extern GSList *hilights;
