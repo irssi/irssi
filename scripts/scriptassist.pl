@@ -6,7 +6,7 @@
 use strict;
 
 use vars qw($VERSION %IRSSI);
-$VERSION = '2002110401';
+$VERSION = '2002111001';
 %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -434,19 +434,25 @@ sub array2table {
     my @width;
     foreach my $line (@array) {
         for (0..scalar(@$line)) {
-            $width[$_] = length($line->[$_]) if $width[$_]<length($line->[$_]);
+            my $l = $line->[$_];
+            $l =~ s/%[^%]//g;
+            $l =~ s/%%/%/g;
+            $width[$_] = length($l) if $width[$_]<length($l);
         }
     }   
     my $text;
     foreach my $line (@array) {
         for (0..scalar(@$line)) {
+            my $l = $line->[$_];
             $text .= $line->[$_];
-            $text .= " "x($width[$_]-length($line->[$_])+1);
+            $l =~ s/%[^%]//g;
+            $l =~ s/%%/%/g;
+            $text .= " "x($width[$_]-length($l)+1);
         }
         $text .= "\n";
     }
     return $text;
-}   
+}
 
 
 sub print_info (%) {
