@@ -590,7 +590,7 @@ int is_ipv4_address(const char *host)
 int is_ipv6_address(const char *host)
 {
 	while (*host != '\0') {
-		if (*host != ':' && !isxdigit(*host))
+		if (*host != ':' && !i_isxdigit(*host))
 			return 0;
                 host++;
 	}
