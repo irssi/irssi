@@ -158,7 +158,7 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 void dcc_ip2str(IPADDR *ip, char *host)
 {
 	IPADDR temp_ip;
-	guint32 addr;
+	in_addr_t addr;
 
 	if (*settings_get_str("dcc_own_ip") != '\0') {
                 /* overridden IP address */
@@ -170,7 +170,7 @@ void dcc_ip2str(IPADDR *ip, char *host)
 		/* IPv6 */
 		net_ip2host(ip, host);
 	} else {
-		memcpy(&addr, &ip->ip, 4);
+		memcpy(&addr, &ip->ip, sizeof(addr));
 		g_snprintf(host, MAX_IP_LEN, "%lu",
 			   (unsigned long) htonl(addr));
 	}
@@ -178,14 +178,14 @@ void dcc_ip2str(IPADDR *ip, char *host)
 
 void dcc_str2ip(const char *str, IPADDR *ip)
 {
-	guint32 addr;
+	in_addr_t addr;
 
 	if (strchr(str, ':') == NULL) {
 		/* normal IPv4 address in 32bit number form */
                 addr = strtoul(str, NULL, 10);
 		ip->family = AF_INET;
 		addr = (guint32) ntohl(addr);
-		memcpy(&ip->ip, &addr, 4);
+		memcpy(&ip->ip, &addr, sizeof(addr));
 	} else {
 		/* IPv6 - in standard form */
 		net_host2ip(str, ip);
