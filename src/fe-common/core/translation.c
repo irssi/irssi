@@ -126,7 +126,7 @@ static void read_settings(void)
 		return;
 	}
 
-	if (current_translation != NULL &&
+	if (current_translation == NULL ||
 	    strcmp(translation, current_translation) != 0) {
                 g_free_not_null(current_translation);
 		current_translation = g_strdup(translation);
