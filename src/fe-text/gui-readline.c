@@ -247,7 +247,7 @@ static void paste_buffer_join_lines(GArray *buf)
 			*dest++ = arr[i];
 		}
 	}
-	buf->len = dest - arr;
+	g_array_set_size(buf, dest - arr);
 }
 
 static void paste_send(void)
