@@ -98,7 +98,7 @@ int perl_timeout_add(int msecs, const char *func, SV *data)
 {
 	PERL_SOURCE_REC *rec;
 
-	rec = g_new(PERL_SOURCE_REC, 1);
+	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
         SvREFCNT_inc(data);
@@ -116,7 +116,7 @@ int perl_input_add(int source, int condition, const char *func, SV *data)
 	PERL_SOURCE_REC *rec;
         GIOChannel *channel;
 
-	rec = g_new(PERL_SOURCE_REC, 1);
+	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
 
         SvREFCNT_inc(data);
