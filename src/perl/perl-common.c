@@ -40,6 +40,7 @@
 #include "queries.h"
 #include "nicklist.h"
 
+#include "perl-core.h"
 #include "perl-common.h"
 
 typedef struct {
@@ -489,6 +490,14 @@ static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
 }
 
+static void perl_script_fill_hash(HV *hv, PERL_SCRIPT_REC *script)
+{
+	hv_store(hv, "name", 4, new_pv(script->name), 0);
+	hv_store(hv, "package", 7, new_pv(script->package), 0);
+	hv_store(hv, "path", 4, new_pv(script->path), 0);
+	hv_store(hv, "data", 4, new_pv(script->data), 0);
+}
+
 void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
 {
         const char *cmdchars;
@@ -626,6 +635,7 @@ void perl_common_start(void)
 		{ "Irssi::Logitem", (PERL_OBJECT_FUNC) perl_log_item_fill_hash },
 		{ "Irssi::Rawlog", (PERL_OBJECT_FUNC) perl_rawlog_fill_hash },
 		{ "Irssi::Reconnect", (PERL_OBJECT_FUNC) perl_reconnect_fill_hash },
+		{ "Irssi::Script", (PERL_OBJECT_FUNC) perl_script_fill_hash },
 
 		{ NULL, NULL }
 	};

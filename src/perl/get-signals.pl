@@ -51,6 +51,9 @@ while (<STDIN>) {
 	s/WINDOW_REC[^,]*/Irssi::UI::Window/g;
 	s/WI_ITEM_REC[^,]*/iobject/g;
 
+	# perl
+	s/PERL_SCRIPT_REC[^,]*/Irssi::Script/g;
+
 	s/([\w\*:]+)(,|$)/"\1"\2/g;
 	print "    { \"$signal\", { $_, NULL } },\n";
 }

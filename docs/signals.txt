@@ -324,3 +324,8 @@ gui-readline.c:
 
 gui-printtext.c:
  "beep"
+
+Perl
+----
+
+"script error", PERL_SCRIPT_REC, char *errormsg
