@@ -1035,14 +1035,17 @@ static void cmd_window_move_down(void)
 		window_reparent(active_win, rec);
 }
 
-static void windows_print_sticky(MAIN_WINDOW_REC *win)
+static void windows_print_sticky(WINDOW_REC *win)
 {
+        MAIN_WINDOW_REC *mainwin;
         GSList *tmp, *list;
 	GString *str;
 
+        mainwin = WINDOW_MAIN(win);
+
         /* convert to string */
 	str = g_string_new(NULL);
-	list = get_sticky_windows_sorted(win);
+	list = get_sticky_windows_sorted(mainwin);
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
@@ -1051,15 +1054,24 @@ static void windows_print_sticky(MAIN_WINDOW_REC *win)
         g_string_truncate(str, str->len-2);
         g_slist_free(list);
 
-	printformat_window(win->active, MSGLEVEL_CLIENTCRAP,
+	printformat_window(win, MSGLEVEL_CLIENTCRAP,
 			   TXT_WINDOW_INFO_STICKY, str->str);
         g_string_free(str, TRUE);
 }
 
 static void sig_window_print_info(WINDOW_REC *win)
 {
+	GUI_WINDOW_REC *gui;
+
+	gui = WINDOW_GUI(win);
+	if (gui->use_scroll) {
+		printformat_window(win, MSGLEVEL_CLIENTCRAP,
+				   TXT_WINDOW_INFO_SCROLL,
+				   gui->scroll ? "yes" : "no");
+	}
+
 	if (WINDOW_MAIN(win)->sticky_windows)
-                windows_print_sticky(WINDOW_MAIN(win));
+                windows_print_sticky(win);
 }
 
 void mainwindows_init(void)
