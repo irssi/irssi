@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi-0.7.23\n"
-"POT-Creation-Date: 2000-06-04 18:48+0300\n"
+"POT-Creation-Date: 2000-06-14 23:12+0300\n"
 "PO-Revision-Date: 2000-01-26 16:33+0100\n"
 "Last-Translator: Julien Boulnois <jboulnois@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,19 +28,19 @@ msgstr ""
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Veillez patienter, dÅÈconnexion en cours ...\n"
 
-#: src/core/network.c:468
+#: src/core/network.c:472
 msgid "Host not found"
 msgstr "HÅÙte introuvable"
 
-#: src/core/network.c:470
+#: src/core/network.c:474
 msgid "No IP address found for name"
 msgstr "Aucune adresse IP trouvÅÈe pour ce domaine"
 
-#: src/core/network.c:472
+#: src/core/network.c:476
 msgid "A non-recovable name server error occurred"
 msgstr "Erreur du serveur"
 
-#: src/core/network.c:474
+#: src/core/network.c:478
 msgid "A temporary error on an authoritative name server"
 msgstr "Erreur temporaire sur un nom de serveur autorisÅÈ"
 
@@ -81,11 +81,11 @@ msgstr ""
 "Impossible de crÅÈer le fichier:\n"
 "%s"
 
-#: src/fe-common/core/printtext.c:865
+#: src/fe-common/core/printtext.c:880
 msgid "%_Warning:%_ %s"
 msgstr "%_Attention:%_ %s"
 
-#: src/fe-common/core/printtext.c:867
+#: src/fe-common/core/printtext.c:882
 msgid "%_Error:%_ %s"
 msgstr "%_Erreur:%_ %s"
 

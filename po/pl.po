@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2000-06-04 18:48+0300\n"
+"POT-Creation-Date: 2000-06-14 23:12+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,19 +26,19 @@ msgstr ""
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Prosze czekaæ, trwa zamykanie po³±czeñ do serwerów..\n"
 
-#: src/core/network.c:468
+#: src/core/network.c:472
 msgid "Host not found"
 msgstr ""
 
-#: src/core/network.c:470
+#: src/core/network.c:474
 msgid "No IP address found for name"
 msgstr ""
 
-#: src/core/network.c:472
+#: src/core/network.c:476
 msgid "A non-recovable name server error occurred"
 msgstr ""
 
-#: src/core/network.c:474
+#: src/core/network.c:478
 msgid "A temporary error on an authoritative name server"
 msgstr ""
 
@@ -75,11 +75,11 @@ msgstr ""
 msgid "Couldn't save configuration file: %s"
 msgstr "Nie mozna otworzyæ plik logu %W$1"
 
-#: src/fe-common/core/printtext.c:865
+#: src/fe-common/core/printtext.c:880
 msgid "%_Warning:%_ %s"
 msgstr "%_Ostrze¿enie:%_ %s"
 
-#: src/fe-common/core/printtext.c:867
+#: src/fe-common/core/printtext.c:882
 msgid "%_Error:%_ %s"
 msgstr "%_B³±d:%_ %s"
 

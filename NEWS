@@ -1,3 +1,36 @@
+v0.7.91 2000-06-14  Timo Sirainen <tss@iki.fi>
+
+	+ Ctrl-X changes IRC server in stats/msgs/empty windows.
+	+ /JOIN -<server tag> #channel joins to channel in specified server.
+	+ /WHOIS automatically sends a /WHOWAS query if nick wasn't in IRC.
+	+ if some unknown /command had another / in it, like /usr/bin,
+	  send it as normal message. good for copypasting paths :)
+	+ If you're not allowed to connect to server (K-lined, no I-line),
+	  Irssi won't try to reconnect back to the server.
+	+ You can disable window activity notifies in specified channels
+	  with /SET noact_channels #chan1 #chan2 .. The activity is
+	  displayed if window had a message to you.
+	+ Tab-completion works now with /commands and /set variables
+	+ /SET close_window_on_part - should we close the window too when
+	  /PARTing channel
+	+ /SET autocreate_own_query ON - creates query window when you
+	  send message with /MSG nick.
+	+ /SET mail_counter specifies if we should show mail counter in
+	  statusbar.
+	+ /SET wall_format specifies the text that's sent with /WALL
+	+ If you /SET expand_escapes ON and type \n or \t to text line, they
+	  will be expanded to newline and tab.
+	+ Ctrl-W deletes word in left
+	- Flood was detected wrong - /SET flood_timecheck's argument was
+	  supposed to be seconds, not milliseconds.
+	- Unignoring autoignored nicks didn't work
+	- Logging wrote messages to log file twice
+	- /WINDOW MOVE <number> could put irssi to infinite loop
+	- ANSI blink code crashed irssi.
+	- Replying to DCC GET and CHAT requests didn't work
+	- /HILIGHT displayed levels twice, /HILIGHT -channels didn't work
+	- /SET ignore_signals wasn't read at startup..
+
 v0.7.90 2000-06-04  Timo Sirainen <tss@iki.fi>
 
 	* On the way to 0.8.0 .. Major rewriting/rearranging code. There's

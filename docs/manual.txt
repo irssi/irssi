@@ -274,7 +274,7 @@
 	Autoignore uses this also, see section 10.2.
 
 	Flood is detected when more than `flood_max_msgs' same kind of
-	messages arrives in `flood_timecheck' milliseconds to same target
+	messages arrives in `flood_timecheck' seconds to same target
 	(channel or private msg) so it isn't flooding if same user sends a
 	message to 10 different channels you are on, but it is flooding if
 	10 messages are sent to same channel by the same user.
@@ -283,7 +283,7 @@
 	flooding.
 
 	/SET flood_max_msgs = <count>, default is 4
-	/SET flood_timecheck = <milliseconds>, default is 5 seconds
+	/SET flood_timecheck = <seconds>, default is 5 seconds
 	If either of these is 0, the flood checking is disabled.
 
 
@@ -566,6 +566,10 @@
 	           with net splits. /JOIN !channel joins to existing
 	           !channel, /JOIN !!channel creates a new channel.
 
+	Most of the commands that take channel name as parameter, can also
+	accept * as the channel name, which means the active channel.
+
+
  6.2 Joining, parting
 
 	Channels can be joined with /JOIN command. You can join to multiple
@@ -593,6 +597,10 @@
 	#public didn't have any password, so we used "x" as it's password.
 	It doesn't really matter what password you send with channels that
 	don't have passwords.
+
+	If you want to join to channel in different server than active one
+	in window, you can do it with /JOIN -<server tag> #channel, like
+	/JOIN -efnet #irssi.
 
 	You can leave channels with /PART [<channels>] [<part message>].
 	For example "/PART byebye all" leaves the active channel with
