@@ -95,8 +95,8 @@ MODULE = Irssi	PACKAGE = Irssi::Server
 
 void
 command(server, cmd, item=active_win->active)
-	char *cmd
 	Irssi::Server server
+	char *cmd
 	Irssi::Windowitem item
 CODE:
 	if (item != NULL && item->server != SERVER(server))
