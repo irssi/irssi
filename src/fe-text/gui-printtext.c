@@ -169,9 +169,11 @@ void gui_window_line_text_free(GUI_WINDOW_REC *gui, LINE_REC *line)
 
 void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
 {
-	GUI_WINDOW_REC *gui;
+        GUI_WINDOW_REC *gui;
+        int screenchange;
 
 	g_return_if_fail(window != NULL);
+	g_return_if_fail(line != NULL);
 
 	gui = WINDOW_GUI(window);
 
@@ -183,24 +185,41 @@ void gui_window_line_remove(WINDOW_REC *window, LINE_REC *line)
 	    gui->lastlog_last_away->data == line)
 		gui->lastlog_last_away = NULL;
 
-	if (gui->startline->prev == NULL) {
+        screenchange = g_list_find(gui->startline, line) != NULL;
+        if (screenchange) gui->ypos--;
+
+	if (gui->startline->data == line) {
                 /* first line in screen removed */
-		gui->startline = gui->startline->next;
-		gui->subline = 0;
-		gui->ypos--;
-	}
-	if (gui->bottom_startline->prev == NULL) {
-                /* bottom line removed (shouldn't happen?) */
-		gui->bottom_startline = gui->bottom_startline->next;
-		gui->bottom_subline = 0;
+                if (gui->startline->next != NULL) {
+                        gui->startline = gui->startline->next;
+                        gui->subline = 0;
+                } else {
+                        gui->startline = gui->startline->prev;
+                        gui->subline = gui->last_subline+1;
+                        gui->ypos = -1;
+                }
+        }
+
+        if (gui->bottom_startline->data == line) {
+                /* bottom line removed */
+                if (gui->bottom_startline->next != NULL) {
+                        gui->bottom_startline = gui->bottom_startline->next;
+                        gui->bottom_subline = 0;
+                } else {
+                        gui->bottom_startline = gui->bottom_startline->prev;
+                        gui->bottom_subline = gui->last_subline+1;
+                }
 	}
 
 	window->lines--;
 	g_mem_chunk_free(gui->line_chunk, line);
 	gui->lines = g_list_remove(gui->lines, line);
 
-	if (gui->startline->prev == NULL && is_window_visible(window))
-		gui_window_redraw(window);
+        if (window->lines == 0)
+                gui_window_clear(window);
+
+        if (screenchange && is_window_visible(window))
+                gui_window_redraw(window);
 }
 
 static void remove_old_lines(WINDOW_REC *window)
@@ -357,8 +376,9 @@ static void gui_printtext(WINDOW_REC *window, void *fgcolor, void *bgcolor,
 		}
 		gui->eol_marked = FALSE;
 
-		line = create_line(gui, 0);
-		gui_window_newline(gui, visible && gui->temp_line == NULL);
+                line = create_line(gui, 0);
+                if (gui->temp_line == NULL || g_list_find(gui->startline, gui->temp_line) != NULL)
+                        gui_window_newline(gui, visible);
 
 		gui->last_subline = 0;
 	} else {

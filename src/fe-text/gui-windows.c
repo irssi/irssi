@@ -1035,8 +1035,11 @@ void gui_window_reformat_line(WINDOW_REC *window, LINE_REC *line)
 		g_string_append_c(raw, '\0');
 		g_string_append_c(raw, (char)LINE_CMD_EOL);
 
-		gui->temp_line = line;
+                gui_window_line_text_free(gui, line);
+
+                gui->temp_line = line;
 		gui->temp_line->text = gui->cur_text->buffer+gui->cur_text->pos;
+                gui->cur_text->lines++;
 		gui->eol_marked = FALSE;
 
 		format_create_dest(&dest, NULL, NULL, line->level, window);
