@@ -11,14 +11,14 @@ typedef struct {
 	char *ircnet;
 
 	int tag;
-	int handle;
+	GIOChannel *handle;
 } LISTEN_REC;
 
 typedef struct {
 	LINEBUF_REC *buffer;
 
 	char *nick;
-	int handle;
+	GIOChannel *handle;
 	int tag;
 
 	char *proxy_address;

@@ -56,7 +56,7 @@ static void sig_bot_read(BOT_REC *bot)
 
 	botnet = bot->botnet;
 	for (;;) {
-		recvlen = bot->handle == -1 ? -1 :
+		recvlen = bot->handle == NULL ? -1 :
 			net_receive(bot->handle, tmpbuf, sizeof(tmpbuf));
 		ret = line_split(tmpbuf, recvlen, &str, (LINEBUF_REC **) &bot->buffer);
 
@@ -80,7 +80,7 @@ static void sig_bot_read(BOT_REC *bot)
 	}
 }
 
-static void connect_downlink(BOTNET_REC *botnet, int handle,
+static void connect_downlink(BOTNET_REC *botnet, GIOChannel *handle,
 			     IPADDR *ip, const char *host)
 {
 	BOT_DOWNLINK_REC *downlink;
@@ -110,7 +110,7 @@ static void connect_downlink(BOTNET_REC *botnet, int handle,
 typedef struct {
 	char *botnet;
 	IPADDR ip;
-	int handle;
+	GIOChannel *handle;
 } BOT_CONNECT_REC;
 
 static void sig_host_got(RESOLVED_NAME_REC *name, BOT_CONNECT_REC *rec)
@@ -133,13 +133,13 @@ static void sig_botnet_listen(BOTNET_REC *botnet)
 {
 	BOT_CONNECT_REC *rec;
 	IPADDR ip;
-	int handle;
+	GIOChannel *handle;
 
 	g_return_if_fail(botnet != NULL);
 
 	/* accept connection */
 	handle = net_accept(botnet->listen_handle, &ip, NULL);
-	if (handle == -1)
+	if (handle == NULL)
 		return;
 
 	rec = g_new0(BOT_CONNECT_REC, 1);
@@ -173,7 +173,7 @@ static int botnet_listen(BOTNET_REC *botnet)
 		botnet->listen_handle = net_listen(&addr, &port);
 	}
 
-	if (botnet->listen_handle == -1) {
+	if (botnet->listen_handle == NULL) {
 		g_warning("Couldn't start listening botnet\n");
 		return FALSE;
 	}
@@ -184,7 +184,7 @@ static int botnet_listen(BOTNET_REC *botnet)
 	return TRUE;
 }
 
-static void sig_botnet_connected(int handle, BOT_UPLINK_REC *uplink)
+static void sig_botnet_connected(GIOChannel *handle, BOT_UPLINK_REC *uplink)
 {
 	BOTNET_REC *botnet;
 	BOT_REC *bot;
@@ -193,7 +193,7 @@ static void sig_botnet_connected(int handle, BOT_UPLINK_REC *uplink)
 
 	botnet = uplink->botnet;
 
-	if (handle == -1) {
+	if (handle == NULL) {
 		/* error, try another bot */
 		botnet_connect(botnet);
 		return;
@@ -235,7 +235,6 @@ void botnet_connect(BOTNET_REC *botnet)
 		bot->connected = TRUE;
 		bot->master = TRUE;
 
-		bot->handle = -1;
 		bot->read_tag = -1;
 
 		botnet->connected = TRUE;
@@ -244,7 +243,7 @@ void botnet_connect(BOTNET_REC *botnet)
 		botnet->bots = g_node_new(bot);
 	}
 
-	if (botnet->listen_handle == -1) {
+	if (botnet->listen_handle == NULL) {
 		/* start listening */
 		botnet_listen(botnet);
 	}
@@ -470,7 +469,6 @@ static BOT_REC *bot_add(BOTNET_REC *botnet, const char *nick, const char *parent
 	rec->botnet = botnet;
 	rec->nick = g_strdup(nick);
 
-	rec->handle = -1;
 	rec->read_tag = -1;
 	rec->connected = TRUE;
 
@@ -527,7 +525,7 @@ static void sig_bot_disconnected(BOT_REC *bot)
 	if (!bot->botnet->connected)
 		return;
 
-	if (bot->connected && bot->handle != -1) {
+	if (bot->connected && bot->handle != NULL) {
 		/* send notice to rest of the botnet about quit */
 		str = g_strdup_printf("BOTQUIT %s", bot->nick);
 		botnet_broadcast(bot->botnet, bot, NULL, str);

@@ -65,7 +65,7 @@ static void proxy_redirect_event(CLIENT_REC *client,
 	group = 0;
 	while ((event = va_arg(vargs, char *)) != NULL) {
 		argpos = va_arg(vargs, int);
-		g_string_sprintf(str, "proxy %d", client->handle);
+		g_string_sprintf(str, "proxy %p", client->handle);
 		group = server_redirect_single_event(SERVER(client->server), args, last > 0,
 						     group, event, str->str, argpos);
 		last--;
@@ -132,7 +132,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 
 static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args)
 {
-	int server_handle;
+	GIOChannel *server_handle;
 
 	if (!client->connected) {
 		handle_client_connect_cmd(client, cmd, args);
@@ -289,14 +289,15 @@ static void sig_listen(LISTEN_REC *listen)
 {
 	CLIENT_REC *rec;
 	IPADDR ip;
+        GIOChannel *handle;
 	char host[MAX_IP_LEN];
-	int port, handle;
+	int port;
 
 	g_return_if_fail(listen != NULL);
 
 	/* accept connection */
 	handle = net_accept(listen->handle, &ip, &port);
-	if (handle == -1)
+	if (handle == NULL)
 		return;
 	net_ip2host(&ip, host);
 
@@ -342,7 +343,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	if (list != NULL) {
 		/* we want to send this to one client (or proxy itself) only */
 		REDIRECT_REC *rec;
-		int handle;
+		void *handle;
 
 		rec = list->data;
 		if (g_strncasecmp(rec->name, "proxy ", 6) != 0) {
@@ -351,7 +352,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			return;
 		}
 
-		if (sscanf(rec->name+6, "%d", &handle) == 1) {
+		if (sscanf(rec->name+6, "%p", &handle) == 1) {
 			/* send it to specific client only */
 			server_redirect_remove_next(SERVER(server), event, list);
 			net_transmit(handle, next_line->str, next_line->len);
@@ -478,7 +479,7 @@ static void add_listen(const char *ircnet, int port)
 
 	/* start listening */
 	rec->handle = net_listen(NULL, &rec->port);
-	if (rec->handle == -1) {
+	if (rec->handle == NULL) {
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "Proxy: Listen in port %d failed: %s",
 			  rec->port, g_strerror(errno));

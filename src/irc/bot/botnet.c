@@ -74,7 +74,7 @@ static void botnet_broadcast_single(BOTNET_REC *botnet, BOT_REC *except_bot,
 	for (node = botnet->bots->children; node != NULL; node = node->next) {
 		BOT_REC *rec = node->data;
 
-		if (rec != except_bot && rec->handle != -1)
+		if (rec != except_bot && rec->handle != NULL)
 			bot_send_cmd(rec, str);
 	}
 	g_free(str);
@@ -402,9 +402,9 @@ void bot_disconnect(BOT_REC *bot)
 		g_source_remove(bot->read_tag);
 		bot->read_tag = -1;
 	}
-	if (bot->handle != -1) {
+	if (bot->handle != NULL) {
 		net_disconnect(bot->handle);
-		bot->handle = -1;
+		bot->handle = NULL;
 	}
 }
 
@@ -483,9 +483,9 @@ void botnet_disconnect(BOTNET_REC *botnet)
 		g_source_remove(botnet->listen_tag);
 		botnet->listen_tag = -1;
 	}
-	if (botnet->listen_handle != -1) {
+	if (botnet->listen_handle != NULL) {
 		net_disconnect(botnet->listen_handle);
-		botnet->listen_handle = -1;
+		botnet->listen_handle = NULL;
 	}
 }
 
@@ -730,7 +730,6 @@ static void botnet_config_read_botnet(CONFIG_NODE *node)
 	botnet->addr = g_strdup(config_node_get_str(node, "listen_addr", NULL));
 	botnet->port = config_node_get_int(node, "listen_port", DEFAULT_BOTNET_PORT);
 
-	botnet->listen_handle = -1;
 	botnet->listen_tag = -1;
 
 	/* read uplinks */

@@ -44,7 +44,7 @@ typedef struct {
 	char *nick; /* bot's unique nick in botnet */
 	int priority;
 
-	int handle;
+	GIOChannel *handle;
 	int read_tag;
 	void *buffer;
 
@@ -82,7 +82,7 @@ struct _botnet_rec {
 	char *addr; /* in what address we should listen, NULL = all */
 	int port; /* what port we should listen, 0 = default, -1 = don't listen */
 
-	int listen_handle;
+	GIOChannel *listen_handle;
 	int listen_tag;
 
 	GSList *uplinks;

@@ -112,7 +112,7 @@ static void botuser_config_save(USER_REC *user)
 	g_free_not_null(str);
 
 	config_node_set_str(userconfig, node, "password", user->password);
-	iconfig_node_set_int(node, "last_modify", (int) user->last_modify);
+	config_node_set_int(userconfig, node, "last_modify", (int) user->last_modify);
 
 	/* Save masks */
 	if (user->masks == NULL)
