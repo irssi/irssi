@@ -143,8 +143,6 @@ require DynaLoader;
 	MSGLEVEL_NO_ACT MSGLEVEL_NEVER MSGLEVEL_LASTLOG
 );
 
-require Irssi::TieHandle;
-
 my $static = 0;
 
 eval {
