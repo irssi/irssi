@@ -181,11 +181,11 @@ static void cmd_lastlog(const char *data)
 	if (count == 0) count = -1;
 
 	level = lastlog_parse_args(args, &flags);
-	startline = lastlog_window_startline(flags & LASTLOG_FLAG_NEW);
 
 	if ((flags & LASTLOG_FLAG_NOHEADERS) == 0)
 		printformat(NULL, NULL, MSGLEVEL_LASTLOG, IRCTXT_LASTLOG_START);
 
+	startline = lastlog_window_startline(flags & LASTLOG_FLAG_NEW);
 	list = gui_window_find_text(active_win, text, startline, flags & LASTLOG_FLAG_REGEXP, flags & LASTLOG_FLAG_WORD);
 	tmp = lastlog_find_startline(list, count, atoi(start), level);
 

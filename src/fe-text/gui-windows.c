@@ -613,13 +613,10 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
     g_return_val_if_fail(window != NULL, NULL);
     g_return_val_if_fail(text != NULL, NULL);
 
-    text = g_strdup(text); g_strup(text);
     matches = NULL; size = 1024; str = g_malloc(1024);
 
-    if (regcomp(&preg, text, REG_EXTENDED|REG_NOSUB) != 0) {
-	    g_free(text);
+    if (regcomp(&preg, text, REG_ICASE|REG_EXTENDED|REG_NOSUB) != 0)
 	    return 0;
-    }
 
     if (startline == NULL) startline = WINDOW_GUI(window)->lines;
     for (tmp = startline; tmp != NULL; tmp = tmp->next)
@@ -656,9 +653,9 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
 	}
         str[n] = '\0';
 
-	if (regexp ? /*regexec(&preg, str, 0, NULL, 0) == 0*/regexp_match(str, text) :
+	if (regexp ? regexec(&preg, str, 0, NULL, 0) == 0 :
 	    fullword ? stristr_full(str, text) != NULL :
-	    strstr(str, text) != NULL) {
+	    stristr(str, text) != NULL) {
                 /* matched */
 		matches = g_list_append(matches, rec);
 	}
@@ -666,7 +663,6 @@ GList *gui_window_find_text(WINDOW_REC *window, gchar *text, GList *startline, i
     regfree(&preg);
 
     if (str != NULL) g_free(str);
-    g_free(text);
     return matches;
 }
 
