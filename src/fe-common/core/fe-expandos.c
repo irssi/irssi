@@ -41,6 +41,7 @@ void fe_expandos_init(void)
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window refnum changed", EXPANDO_ARG_WINDOW, NULL);
 	expando_create("winname", expando_winname,
+		       "window changed", EXPANDO_ARG_NONE,
 		       "window name changed", EXPANDO_ARG_WINDOW, NULL);
 }
 
