@@ -328,6 +328,14 @@ void term_stop(void)
 
 int term_gets(unsigned char *buffer, int size)
 {
+	int ret;
+
         /* fread() doesn't work */
-        return read(fileno(current_term->in), buffer, size);
+        ret = read(fileno(current_term->in), buffer, size);
+	if (ret == 0)
+                ret = -1;/* EOF - terminal got lost */
+	else if (ret == -1 && (errno == EINTR || errno == EAGAIN))
+		ret = 0;
+
+	return ret;
 }

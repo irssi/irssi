@@ -331,6 +331,12 @@ void readline(void)
 	int ret, i;
 
 	ret = term_gets(buffer, sizeof(buffer));
+	if (ret == -1) {
+		/* lost terminal */
+		signal_emit("command quit", 1, "Lost terminal");
+                return;
+	}
+
 	for (i = 0; i < ret; i++)
 		handle_key(buffer[i]);
 }
