@@ -42,6 +42,9 @@ void irssi_add_plains(PLAIN_OBJECT_INIT_REC *objects);
 
 char *perl_get_use_list(void);
 
+/* change all %s strings to %%s */
+char *perl_fix_formats(char *str);
+
 void perl_common_init(void);
 void perl_common_deinit(void);
 

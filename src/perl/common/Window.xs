@@ -30,15 +30,23 @@ void
 print(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
+PREINIT:
+        char *fixed;
 CODE:
-	printtext(NULL, NULL, level, "%s", str);
+        fixed = perl_fix_formats(str);
+	printtext(NULL, NULL, level, fixed);
+        g_free(fixed);
 
 void
 print_window(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
+PREINIT:
+        char *fixed;
 CODE:
-	printtext_window(active_win, level, "%s", str);
+        fixed = perl_fix_formats(str);
+	printtext_window(active_win, level, fixed);
+        g_free(fixed);
 
 void
 command(cmd, server=active_win->active_server, item=active_win->active)
@@ -107,8 +115,12 @@ print(server, channel, str, level)
 	char *channel
 	char *str
 	int level
+PREINIT:
+        char *fixed;
 CODE:
-	printtext(server, channel, level, "%s", str);
+        fixed = perl_fix_formats(str);
+	printtext(server, channel, level, fixed);
+        g_free(fixed);
 
 Irssi::Windowitem
 window_item_find(server, name)
@@ -276,5 +288,9 @@ print(item, str, level=MSGLEVEL_CLIENTNOTICE)
 	Irssi::Windowitem item
 	int level
 	char *str
+PREINIT:
+        char *fixed;
 CODE:
-	printtext(item->server, item->name, level, "%s", str);
+        fixed = perl_fix_formats(str);
+	printtext(item->server, item->name, level, fixed);
+        g_free(fixed);

@@ -4,6 +4,7 @@
 
 #undef _
 #undef VERSION
+#define HAVE_CONFIG_H
 #include "../module.h"
 
 #include "network.h"

@@ -435,6 +435,41 @@ void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 	g_free(module);
 }
 
+/* change all %s strings to %%s */
+char *perl_fix_formats(char *str)
+{
+	char *ret, *out;
+
+	out = ret = g_malloc(strlen(str)*2+1);
+	while (*str != '\0') {
+		if (*str == '%') {
+                        str++;
+			switch (*str) {
+			case 's':
+			case 'd':
+			case 'f':
+			case 'u':
+			case 'l':
+			case '%':
+                                *out++ = '%';
+				*out++ = '%';
+				if (*str == '%')
+                                        str += 2;
+				break;
+			default:
+				*out++ = '%';
+                                break;
+			}
+
+                        continue;
+		}
+
+                *out++ = *str++;
+	}
+        *out = '\0';
+        return ret;
+}
+
 void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
 {
         const char *cmdchars;
