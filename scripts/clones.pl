@@ -22,4 +22,4 @@ sub cmd_clones {
 	return 1;
 }
 
-Irssi::command_bind('clones', '', 'cmd_clones');
+Irssi::command_bind('clones', 'cmd_clones');

@@ -9,4 +9,4 @@ sub cmd_hello {
 	return 1;
 }
 
-Irssi::command_bind('hello', '', 'cmd_hello');
+Irssi::command_bind('hello', 'cmd_hello');

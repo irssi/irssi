@@ -31,5 +31,5 @@ sub event_rn_whois {
 	return 1;
 }
 
-Irssi::command_bind('rn', '', 'cmd_realname');
+Irssi::command_bind('rn', 'cmd_realname');
 Irssi::signal_add('redir whois', 'event_rn_whois');

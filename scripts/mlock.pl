@@ -110,6 +110,6 @@ sub mlock_synced {
 	mlock_check_mode($channel->{server}, $channel->{name});
 }
 
-Irssi::command_bind('mlock', '', 'cmd_mlock');
+Irssi::command_bind('mlock', 'cmd_mlock');
 Irssi::signal_add_last("event mode", "mlock_mode_changed");
 Irssi::signal_add("channel synced", "mlock_synced");

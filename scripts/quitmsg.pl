@@ -29,4 +29,4 @@ sub cmd_quit {
 	}
 }
 
-Irssi::command_bind('quit', '', 'cmd_quit');
+Irssi::command_bind('quit', 'cmd_quit');

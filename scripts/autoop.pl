@@ -76,5 +76,5 @@ sub event_massjoin {
 	autoop($channel, $masks, @nicks) if ($masks);
 }
 
-Irssi::command_bind('autoop', '', 'cmd_autoop');
+Irssi::command_bind('autoop', 'cmd_autoop');
 Irssi::signal_add_last('massjoin', 'event_massjoin');
