@@ -27,13 +27,17 @@
 #include "netsplit.h"
 
 /* How long to keep netsplits in memory (seconds) */
-#define NETSPLIT_MAX_REMEMBER (60*30)
+#define NETSPLIT_MAX_REMEMBER (60*60)
 
 static int split_tag;
 
-static NETSPLIT_SERVER_REC *netsplit_server_find(IRC_SERVER_REC *server, const char *servername, const char *destserver)
+static NETSPLIT_SERVER_REC *netsplit_server_find(IRC_SERVER_REC *server,
+						 const char *servername,
+						 const char *destserver)
 {
 	GSList *tmp;
+
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 
 	for (tmp = server->split_servers; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_SERVER_REC *rec = tmp->data;
@@ -46,9 +50,13 @@ static NETSPLIT_SERVER_REC *netsplit_server_find(IRC_SERVER_REC *server, const c
 	return NULL;
 }
 
-static NETSPLIT_SERVER_REC *netsplit_server_create(IRC_SERVER_REC *server, const char *servername, const char *destserver)
+static NETSPLIT_SERVER_REC *netsplit_server_create(IRC_SERVER_REC *server,
+						   const char *servername,
+						   const char *destserver)
 {
 	NETSPLIT_SERVER_REC *rec;
+
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 
 	rec = netsplit_server_find(server, servername, destserver);
 	if (rec != NULL) {
@@ -62,21 +70,27 @@ static NETSPLIT_SERVER_REC *netsplit_server_create(IRC_SERVER_REC *server, const
 	rec->destserver = g_strdup(destserver);
 
 	server->split_servers = g_slist_append(server->split_servers, rec);
-	signal_emit("netsplit new server", 2, server, rec);
+	signal_emit("netsplit server new", 2, server, rec);
 
 	return rec;
 }
 
-static void netsplit_destroy_server(IRC_SERVER_REC *server, NETSPLIT_SERVER_REC *rec)
+static void netsplit_server_destroy(IRC_SERVER_REC *server,
+				    NETSPLIT_SERVER_REC *rec)
 {
+	g_return_if_fail(IS_IRC_SERVER(server));
+
 	server->split_servers = g_slist_remove(server->split_servers, rec);
+
+	signal_emit("netsplit server remove", 2, server, rec);
 
         g_free(rec->server);
 	g_free(rec->destserver);
 	g_free(rec);
 }
 
-static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick, const char *address, const char *servers)
+static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
+				  const char *address, const char *servers)
 {
 	NETSPLIT_REC *rec;
 	NETSPLIT_CHAN_REC *splitchan;
@@ -84,7 +98,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick, cons
 	GSList *tmp;
 	char *p, *dupservers;
 
-	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 	g_return_val_if_fail(address != NULL, NULL);
 
@@ -93,7 +107,8 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick, cons
 	p = strchr(dupservers, ' ');
 	if (p == NULL) {
 		g_free(dupservers);
-		g_return_val_if_fail(p != NULL, NULL);
+		g_warning("netsplit_add() : only one server found");
+		return NULL;
 	}
 	*p++ = '\0';
 
@@ -122,7 +137,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick, cons
 	}
 
 	if (rec->channels == NULL)
-		g_warning("netsplit_add(): channels == NULL ??");
+		g_warning("netsplit_add(): nick not in any channels");
 
 	g_hash_table_insert(server->splits, rec->nick, rec);
 
@@ -134,6 +149,7 @@ static void netsplit_destroy(IRC_SERVER_REC *server, NETSPLIT_REC *rec)
 {
 	GSList *tmp;
 
+	g_return_if_fail(IS_IRC_SERVER(server));
 	g_return_if_fail(rec != NULL);
 
 	signal_emit("netsplit remove", 1, rec);
@@ -145,35 +161,43 @@ static void netsplit_destroy(IRC_SERVER_REC *server, NETSPLIT_REC *rec)
 	}
 
 	if (--rec->server->count == 0)
-		netsplit_destroy_server(server, rec->server);
+		netsplit_server_destroy(server, rec->server);
 
 	g_free(rec->nick);
 	g_free(rec->address);
 	g_free(rec);
 }
 
-static void netsplit_destroy_hash(void *key, NETSPLIT_REC *rec, IRC_SERVER_REC *server)
+static void netsplit_destroy_hash(void *key, NETSPLIT_REC *rec,
+				  IRC_SERVER_REC *server)
 {
 	netsplit_destroy(server, rec);
 }
 
-NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick, const char *address)
+NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick,
+			    const char *address)
 {
 	NETSPLIT_REC *rec;
 
-	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = g_hash_table_lookup(server->splits, nick);
 	if (rec == NULL) return NULL;
 
-	return (address == NULL || g_strcasecmp(rec->address, address) == 0) ? rec : NULL;
+	return (address == NULL ||
+		g_strcasecmp(rec->address, address) == 0) ? rec : NULL;
 }
 
-NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick, const char *address, const char *channel)
+NICK_REC *netsplit_find_channel(IRC_SERVER_REC *server, const char *nick,
+				const char *address, const char *channel)
 {
 	NETSPLIT_REC *rec;
 	GSList *tmp;
+
+	g_return_val_if_fail(IS_IRC_SERVER(server), NULL);
+	g_return_val_if_fail(nick != NULL, NULL);
+	g_return_val_if_fail(channel != NULL, NULL);
 
 	rec = netsplit_find(server, nick, address);
 	if (rec == NULL) return NULL;
@@ -200,11 +224,12 @@ int quitmsg_is_split(const char *msg)
 
 	/* must have only two words */
 	p = strchr(msg, ' ');
-	if (p == NULL || p == msg || strchr(p+1, ' ') != NULL) return FALSE;
+	if (p == NULL || p == msg || strchr(p+1, ' ') != NULL)
+		return FALSE;
 
 	/* check that it looks ok.. */
 	if (!match_wildcards("*.* *.*", msg) ||
-	    match_wildcards("*..*", msg) || strstr(msg, "))") != NULL)
+	    strstr(msg, "..") != NULL || strstr(msg, "))") != NULL)
 		return FALSE;
 
 	/* get the two hosts */
@@ -217,7 +242,8 @@ int quitmsg_is_split(const char *msg)
 		p = strrchr(host1, '.');
 		if (p != NULL && (strlen(p+1) == 2 || strlen(p+1) == 3)) {
 			p = strrchr(host2, '.');
-			if (p != NULL && (strlen(p+1) == 2 || strlen(p+1) == 3)) {
+			if (p != NULL && (strlen(p+1) == 2 ||
+					  strlen(p+1) == 3)) {
 				/* it looks just like a netsplit to me. */
 				ok = TRUE;
 			}
@@ -230,17 +256,12 @@ int quitmsg_is_split(const char *msg)
 
 static void split_set_timeout(void *key, NETSPLIT_REC *rec, NETSPLIT_REC *orig)
 {
-	if (rec == orig) {
-		/* original nick, destroy it in a few seconds.. */
-		rec->destroy = time(NULL)+4;
-	} else if (g_strcasecmp(rec->server->server, orig->server->server) == 0 &&
-		 g_strcasecmp(rec->server->destserver, orig->server->destserver) == 0) {
-		/* same servers -> split over -> destroy old records sooner.. */
-		rec->destroy = time(NULL)+60;
-	}
+	/* same servers -> split over -> destroy old records sooner.. */
+	rec->destroy = time(NULL)+60;
 }
 
-static void event_join(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_join(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *address)
 {
 	NETSPLIT_REC *rec;
 
@@ -251,16 +272,18 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 		/* yep, looks like it is. for same people that had the same
 		   splitted servers set the timeout to one minute.
 
-		   .. if the user just changed server, he/she can't use the
+		   .. if the user just changed server, she can't use the
 		   same nick (unless the server is broken) so don't bother
 		   checking that the nick's server matches the split. */
-		g_hash_table_foreach(server->splits, (GHFunc) split_set_timeout, rec);
+		g_hash_table_foreach(server->splits,
+				     (GHFunc) split_set_timeout, rec);
 	}
 }
 
 /* remove the nick from netsplit, but do it last so that other "event join"
    signal handlers can check if the join was a netjoin */
-static void event_join_last(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_join_last(const char *data, IRC_SERVER_REC *server,
+			    const char *nick, const char *address)
 {
 	NETSPLIT_REC *rec;
 
@@ -271,7 +294,8 @@ static void event_join_last(const char *data, IRC_SERVER_REC *server, const char
 	}
 }
 
-static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nick, const char *address)
+static void event_quit(const char *data, IRC_SERVER_REC *server,
+		       const char *nick, const char *address)
 {
 	g_return_if_fail(data != NULL);
 
@@ -289,11 +313,13 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	g_hash_table_foreach(server->splits, (GHFunc) netsplit_destroy_hash, server);
+	g_hash_table_foreach(server->splits,
+			     (GHFunc) netsplit_destroy_hash, server);
 	g_hash_table_destroy(server->splits);
 }
 
-static int split_server_check(void *key, NETSPLIT_REC *rec, IRC_SERVER_REC *server)
+static int split_server_check(void *key, NETSPLIT_REC *rec,
+			      IRC_SERVER_REC *server)
 {
 	/* Check if this split record is too old.. */
 	if (rec->destroy > time(NULL))
@@ -310,8 +336,12 @@ static int split_check_old(void)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		IRC_SERVER_REC *server = tmp->data;
 
-		if (IS_IRC_SERVER(server))
-			g_hash_table_foreach_remove(server->splits, (GHRFunc) split_server_check, server);
+		if (!IS_IRC_SERVER(server))
+			continue;
+
+		g_hash_table_foreach_remove(server->splits,
+					    (GHRFunc) split_server_check,
+					    server);
 	}
 
 	return 1;

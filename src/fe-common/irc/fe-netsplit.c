@@ -33,7 +33,7 @@
 #define SPLIT_WAIT_TIME 2 /* how many seconds to wait for the QUIT split messages to stop */
 
 static int split_tag;
-static int netsplit_max_nicks;
+static int netsplit_max_nicks, netsplit_nicks_hide_threshold;
 
 static int get_last_split(IRC_SERVER_REC *server)
 {
@@ -52,7 +52,7 @@ static int get_last_split(IRC_SERVER_REC *server)
 
 typedef struct {
 	char *name;
-	int nick_count;
+	int nick_count, maxnickpos;
 	GString *nicks;
 } TEMP_SPLIT_CHAN_REC;
 
@@ -62,7 +62,27 @@ typedef struct {
 	GSList *channels;
 } TEMP_SPLIT_REC;
 
-static TEMP_SPLIT_CHAN_REC *find_split_chan(TEMP_SPLIT_REC *rec, const char *name)
+static GSList *get_source_servers(const char *server, GSList **servers)
+{
+	GSList *list, *next, *tmp;
+
+	list = NULL;
+	for (tmp = *servers; tmp != NULL; tmp = next) {
+		NETSPLIT_SERVER_REC *rec = tmp->data;
+		next = tmp->next;
+
+		if (g_strcasecmp(rec->server, server) == 0) {
+			rec->prints = 0;
+			list = g_slist_append(list, rec);
+			*servers = g_slist_remove(*servers, rec);
+		}
+	}
+
+	return list;
+}
+
+static TEMP_SPLIT_CHAN_REC *find_split_chan(TEMP_SPLIT_REC *rec,
+					    const char *name)
 {
 	GSList *tmp;
 
@@ -76,12 +96,14 @@ static TEMP_SPLIT_CHAN_REC *find_split_chan(TEMP_SPLIT_REC *rec, const char *nam
 	return NULL;
 }
 
-static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *rec)
+static void get_server_splits(void *key, NETSPLIT_REC *split,
+			      TEMP_SPLIT_REC *rec)
 {
 	TEMP_SPLIT_CHAN_REC *chanrec;
 	GSList *tmp;
 
-	if (split->printed || g_slist_find(rec->servers, split->server) == NULL)
+	if (split->printed ||
+	    g_slist_find(rec->servers, split->server) == NULL)
 		return;
 
 	split->printed = TRUE;
@@ -104,10 +126,14 @@ static void get_server_splits(void *key, NETSPLIT_REC *split, TEMP_SPLIT_REC *re
 
 		split->server->prints++;
 		chanrec->nick_count++;
-		if (netsplit_max_nicks <= 0 ||
-		    chanrec->nick_count <= netsplit_max_nicks) {
-			if (splitchan->nick.op) g_string_append_c(chanrec->nicks, '@');
+		if (netsplit_nicks_hide_threshold <= 0 ||
+		    chanrec->nick_count <= netsplit_nicks_hide_threshold) {
+			if (splitchan->nick.op)
+				g_string_append_c(chanrec->nicks, '@');
 			g_string_sprintfa(chanrec->nicks, "%s ", split->nick);
+
+			if (chanrec->nick_count == netsplit_max_nicks)
+                                chanrec->maxnickpos = chanrec->nicks->len;
 		}
 	}
 }
@@ -122,8 +148,10 @@ static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 	for (tmp = rec->servers; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_SERVER_REC *rec = tmp->data;
 
-		if (rec->prints > 0)
-			g_string_sprintfa(destservers, "%s, ", rec->destserver);
+		if (rec->prints > 0) {
+			g_string_sprintfa(destservers, "%s, ",
+					  rec->destserver);
+		}
 	}
 	if (destservers->len == 0) {
                 /* no nicks to print in this server */
@@ -138,13 +166,17 @@ static void print_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 
 		g_string_truncate(chan->nicks, chan->nicks->len-1);
 
-		if (netsplit_max_nicks > 0 && chan->nick_count > netsplit_max_nicks) {
-			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT_MORE,
-				    sourceserver, destservers->str, chan->nicks->str,
+		if (netsplit_max_nicks > 0 &&
+		    chan->nick_count > netsplit_max_nicks) {
+			g_string_truncate(chan->nicks, chan->maxnickpos);
+			printformat(server, chan->name, MSGLEVEL_QUITS,
+				    IRCTXT_NETSPLIT_MORE, sourceserver,
+				    destservers->str, chan->nicks->str,
 				    chan->nick_count - netsplit_max_nicks);
 		} else {
-			printformat(server, chan->name, MSGLEVEL_QUITS, IRCTXT_NETSPLIT,
-				    sourceserver, destservers->str, chan->nicks->str);
+			printformat(server, chan->name, MSGLEVEL_QUITS,
+				    IRCTXT_NETSPLIT, sourceserver,
+				    destservers->str, chan->nicks->str);
 		}
 	}
 
@@ -160,7 +192,7 @@ static void temp_split_chan_free(TEMP_SPLIT_CHAN_REC *rec)
 static int check_server_splits(IRC_SERVER_REC *server)
 {
 	TEMP_SPLIT_REC temp;
-	GSList *tmp, *next, *servers;
+	GSList *servers;
 	time_t last;
 
 	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
@@ -175,25 +207,16 @@ static int check_server_splits(IRC_SERVER_REC *server)
 
 		/* get all the splitted servers that have the same
 		   source server */
-                temp.servers = NULL;
-		for (tmp = servers; tmp != NULL; tmp = next) {
-			NETSPLIT_SERVER_REC *rec = tmp->data;
-
-			next = tmp->next;
-			if (g_strcasecmp(rec->server, sserver->server) == 0) {
-                                rec->prints = 0;
-				temp.servers = g_slist_append(temp.servers, rec);
-				servers = g_slist_remove(servers, rec);
-			}
-		}
-
+                temp.servers = get_source_servers(sserver->server, &servers);
                 temp.server_rec = server;
 		temp.channels = NULL;
 
-		g_hash_table_foreach(server->splits, (GHFunc) get_server_splits, &temp);
+		g_hash_table_foreach(server->splits,
+				     (GHFunc) get_server_splits, &temp);
 		print_splits(server, &temp);
 
-		g_slist_foreach(temp.channels, (GFunc) temp_split_chan_free, NULL);
+		g_slist_foreach(temp.channels,
+				(GFunc) temp_split_chan_free, NULL);
 		g_slist_free(temp.servers);
 		g_slist_free(temp.channels);
 	}
@@ -226,13 +249,14 @@ static int sig_check_splits(void)
 	return 1;
 }
 
-static void sig_netsplit_servers(IRC_SERVER_REC *server, NETSPLIT_SERVER_REC *rec)
+static void sig_netsplit_servers(IRC_SERVER_REC *server,
+				 NETSPLIT_SERVER_REC *rec)
 {
-	if (!settings_get_bool("hide_netsplit_quits"))
-		return;
-
-	if (split_tag == -1)
-		split_tag = g_timeout_add(1000, (GSourceFunc) sig_check_splits, NULL);
+	if (settings_get_bool("hide_netsplit_quits") && split_tag == -1) {
+		split_tag = g_timeout_add(1000,
+					  (GSourceFunc) sig_check_splits,
+					  NULL);
+	}
 }
 
 static void split_print(const char *nick, NETSPLIT_REC *rec)
@@ -252,7 +276,8 @@ static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	if (server->split_servers == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NO_NETSPLITS);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    IRCTXT_NO_NETSPLITS);
 		return;
 	}
 
@@ -264,15 +289,18 @@ static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
 static void read_settings(void)
 {
         netsplit_max_nicks = settings_get_int("netsplit_max_nicks");
+	netsplit_nicks_hide_threshold =
+		settings_get_int("netsplit_nicks_hide_threshold");
 }
 
 void fe_netsplit_init(void)
 {
 	settings_add_int("misc", "netsplit_max_nicks", 10);
+	settings_add_int("misc", "netsplit_nicks_hide_threshold", 15);
 	split_tag = -1;
 
 	read_settings();
-	signal_add("netsplit new server", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_add("netsplit server new", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("netsplit", NULL, (SIGNAL_FUNC) cmd_netsplit);
 }
@@ -281,7 +309,7 @@ void fe_netsplit_deinit(void)
 {
 	if (split_tag != -1) g_source_remove(split_tag);
 
-	signal_remove("netsplit new server", (SIGNAL_FUNC) sig_netsplit_servers);
+	signal_remove("netsplit server new", (SIGNAL_FUNC) sig_netsplit_servers);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("netsplit", (SIGNAL_FUNC) cmd_netsplit);
 }

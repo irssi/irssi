@@ -74,7 +74,8 @@ static void hide_output(void)
 {
 	if (!output_hidden) {
 		output_hidden = TRUE;
-		signal_add_first("print text stripped", (SIGNAL_FUNC) sig_stop);
+		signal_add_first("print text stripped",
+				 (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
 	}
 }
@@ -95,7 +96,8 @@ static NETJOIN_SERVER_REC *netjoin_find_server(IRC_SERVER_REC *server)
 	return NULL;
 }
 
-static NETJOIN_REC *netjoin_add(IRC_SERVER_REC *server, const char *nick, GSList *channels)
+static NETJOIN_REC *netjoin_add(IRC_SERVER_REC *server, const char *nick,
+				GSList *channels)
 {
 	NETJOIN_REC *rec;
 	NETJOIN_SERVER_REC *srec;
@@ -108,7 +110,8 @@ static NETJOIN_REC *netjoin_add(IRC_SERVER_REC *server, const char *nick, GSList
 	while (channels != NULL) {
 		NETSPLIT_CHAN_REC *channel = channels->data;
 
-		rec->old_channels = g_slist_append(rec->old_channels, g_strdup(channel->name));
+		rec->old_channels = g_slist_append(rec->old_channels,
+						   g_strdup(channel->name));
 		channels = channels->next;
 	}
 
@@ -167,13 +170,15 @@ static void netjoin_server_remove(NETJOIN_SERVER_REC *server)
         g_free(server);
 }
 
-static void print_channel_netjoins(char *channel, TEMP_PRINT_REC *rec, NETJOIN_SERVER_REC *server)
+static void print_channel_netjoins(char *channel, TEMP_PRINT_REC *rec,
+				   NETJOIN_SERVER_REC *server)
 {
 	if (rec->nicks->len > 0)
 		g_string_truncate(rec->nicks, rec->nicks->len-2);
 
 	printformat(server->server, channel, MSGLEVEL_JOINS,
-		    rec->count > netjoin_max_nicks ? IRCTXT_NETSPLIT_JOIN_MORE : IRCTXT_NETSPLIT_JOIN,
+		    rec->count > netjoin_max_nicks ?
+		    IRCTXT_NETSPLIT_JOIN_MORE : IRCTXT_NETSPLIT_JOIN,
 		    rec->nicks->str, rec->count-netjoin_max_nicks);
 
 	g_string_free(rec->nicks, TRUE);
@@ -191,7 +196,8 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 
 	/* save nicks to string, clear now_channels and remove the same
 	   channels from old_channels list */
-	channels = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	channels = g_hash_table_new((GHashFunc) g_istr_hash,
+				    (GCompareFunc) g_istr_equal);
 	for (tmp = server->netjoins; tmp != NULL; tmp = next) {
 		NETJOIN_REC *rec = tmp->data;
 
@@ -204,32 +210,40 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 			if (temp == NULL) {
 				temp = g_new0(TEMP_PRINT_REC, 1);
 				temp->nicks = g_string_new(NULL);
-				g_hash_table_insert(channels, g_strdup(realchannel), temp);
+				g_hash_table_insert(channels,
+						    g_strdup(realchannel),
+						    temp);
 			}
 
 			temp->count++;
 			if (temp->count <= netjoin_max_nicks) {
 				if (*channel == '@')
 					g_string_append_c(temp->nicks, '@');
-				g_string_sprintfa(temp->nicks, "%s, ", rec->nick);
+				g_string_sprintfa(temp->nicks, "%s, ",
+						  rec->nick);
 			}
 
 			/* remove the channel from old_channels too */
-			old = gslist_find_icase_string(rec->old_channels, realchannel);
+			old = gslist_find_icase_string(rec->old_channels,
+						       realchannel);
 			if (old != NULL) {
 				g_free(old->data);
-				rec->old_channels = g_slist_remove(rec->old_channels, old->data);
+				rec->old_channels =
+					g_slist_remove(rec->old_channels,
+						       old->data);
 			}
 
 			g_free(channel);
-                        rec->now_channels = g_slist_remove(rec->now_channels, channel);
+			rec->now_channels =
+				g_slist_remove(rec->now_channels, channel);
 		}
 
 		if (rec->old_channels == NULL)
                         netjoin_remove(server, rec);
 	}
 
-        g_hash_table_foreach(channels, (GHFunc) print_channel_netjoins, server);
+	g_hash_table_foreach(channels, (GHFunc) print_channel_netjoins,
+			     server);
 	g_hash_table_destroy(channels);
 
 	if (server->netjoins == NULL)
@@ -296,14 +310,18 @@ static void event_join(const char *data, IRC_SERVER_REC *server,
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
-	if (!ignore_check(SERVER(server), nick, address, channel, NULL, MSGLEVEL_JOINS)) {
-                if (join_tag == -1)
-			join_tag = g_timeout_add(1000, (GSourceFunc) sig_check_netjoins, NULL);
+	if (!ignore_check(SERVER(server), nick, address,
+			  channel, NULL, MSGLEVEL_JOINS)) {
+		if (join_tag == -1) {
+			join_tag = g_timeout_add(1000, (GSourceFunc)
+						 sig_check_netjoins, NULL);
+		}
 
 		if (netjoin == NULL)
 			netjoin = netjoin_add(server, nick, split->channels);
 
-		netjoin->now_channels = g_slist_append(netjoin->now_channels, g_strdup(channel));
+		netjoin->now_channels = g_slist_append(netjoin->now_channels,
+						       g_strdup(channel));
 		hide_output();
 	}
 	g_free(params);
@@ -333,7 +351,8 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, &channel, &mode, &nicks);
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
+				  &channel, &mode, &nicks);
 
 	if (!ischannel(*channel) || addr != NULL) {
 		g_free(params);
@@ -354,7 +373,8 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 		if (*mode == 'o' && *nick != NULL) {
                         /* give/remove ops */
 			rec = netjoin_find(server, *nick);
-			if (rec == NULL || !netjoin_set_operator(rec, channel, type == '+'))
+			if (rec == NULL ||
+			    !netjoin_set_operator(rec, channel, type == '+'))
 				show = TRUE;
                         nick++;
 		} else {
