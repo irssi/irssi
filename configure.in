@@ -438,7 +438,7 @@ if test "$want_perl" != "no"; then
 	AC_PATH_PROG(perlpath, perl)
 	AC_MSG_CHECKING(for working Perl support)
 
-	if test "-z $perlpath"; then
+	if test -z "$perlpath"; then
        		perl_check_error="perl binary not found"
 	else
 		PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
