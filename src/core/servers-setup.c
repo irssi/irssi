@@ -314,8 +314,6 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 
 	rec = NULL;
 	chatnet = config_node_get_str(node, "chatnet", NULL);
-	if (chatnet == NULL) /* FIXME: remove this in time... */
-		chatnet = config_node_get_str(node, "ircnet", NULL);
 	signal_emit("server setup read", 3, &rec, node,
 		    chatnet == NULL ? NULL : chatnet_find(chatnet));
 	if (rec == NULL) {
