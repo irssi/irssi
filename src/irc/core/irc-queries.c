@@ -40,17 +40,26 @@ QUERY_REC *irc_query_create(const char *server_tag,
 	return rec;
 }
 
-static void check_address_change(IRC_SERVER_REC *server, const char *nick,
-				 const char *address, const char *target)
+static void check_query_changes(IRC_SERVER_REC *server, const char *nick,
+				const char *address, const char *target)
 {
 	QUERY_REC *query;
 
-	if (address != NULL && !ischannel(*target)) {
-		/* save nick's address to query */
-		query = irc_query_find(server, nick);
-		if (query != NULL && (query->address == NULL ||
-				      strcmp(query->address, address) != 0))
-                        query_change_address(query, address);
+	if (ischannel(*target))
+                return;
+
+	query = irc_query_find(server, nick);
+	if (query == NULL)
+		return;
+
+	if (strcmp(query->name, nick) != 0) {
+		/* upper/lowercase chars in nick changed */
+		query_change_nick(query, nick);
+	}
+
+	if (query->address == NULL || strcmp(query->address, address) != 0) {
+                /* host changed */
+		query_change_address(query, address);
 	}
 }
 
@@ -62,7 +71,7 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-        check_address_change(server, nick, address, target);
+        check_query_changes(server, nick, address, target);
 	g_free(params);
 }
 
@@ -70,9 +79,8 @@ static void ctcp_action(IRC_SERVER_REC *server, const char *msg,
 			const char *nick, const char *address,
 			const char *target)
 {
-        check_address_change(server, nick, address, target);
+        check_query_changes(server, nick, address, target);
 }
-
 
 static void event_nick(SERVER_REC *server, const char *data,
 		       const char *orignick)
