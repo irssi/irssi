@@ -98,7 +98,7 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
     const char *nickmode;
     char *target, *msg, *freestr, *newtarget;
     void *free_arg;
-    int free_ret;
+    int free_ret, print_channel;
 
     g_return_if_fail(data != NULL);
 
@@ -148,7 +148,14 @@ static void cmd_msg(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	    nickrec->op ? "@" : nickrec->voice ? "+" : " ";
 
 	window = channel == NULL ? NULL : window_item_window((WI_ITEM_REC *) channel);
-	if (window != NULL && window->active == (WI_ITEM_REC *) channel)
+
+	print_channel = window == NULL ||
+		window->active != (WI_ITEM_REC *) channel;
+	if (!print_channel && settings_get_bool("print_active_channel") &&
+	    window != NULL && g_slist_length(window->items) > 1)
+		print_channel = TRUE;
+
+	if (!print_channel)
 	{
 	    printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT,
 			IRCTXT_OWN_MSG, server->nick, msg, nickmode);

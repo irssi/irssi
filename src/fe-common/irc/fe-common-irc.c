@@ -107,6 +107,7 @@ void fe_common_irc_init(void)
 	settings_add_bool("lookandfeel", "beep_when_away", TRUE);
 	settings_add_bool("lookandfeel", "show_away_once", TRUE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
+	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 
 	theme_register(fecommon_irc_formats);
 

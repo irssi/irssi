@@ -59,8 +59,8 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 {
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
-	int for_me;
 	const char *nickmode;
+	int for_me, print_channel;
 	char *color;
 
 	chanrec = channel_find(server, target);
@@ -71,7 +71,12 @@ static void print_channel_msg(IRC_SERVER_REC *server, const char *msg,
 	nickmode = (!settings_get_bool("show_nickmode") || nickrec == NULL) ? "" :
 		(nickrec->op ? "@" : nickrec->voice ? "+" : " ");
 
-	if (window_item_is_active((WI_ITEM_REC *) chanrec)) {
+	print_channel = !window_item_is_active((WI_ITEM_REC *) chanrec);
+	if (!print_channel && settings_get_bool("print_active_channel") &&
+	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
+		print_channel = TRUE;
+
+	if (!print_channel) {
 		/* message to active channel in window */
 		if (color != NULL) {
 			/* highlighted nick */
