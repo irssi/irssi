@@ -176,7 +176,7 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 {
 	struct stat statbuf;
 	char *fname, *tempfname;
-        int temphandle, old_umask;
+        int ret, temphandle, old_umask;
 
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
@@ -215,12 +215,22 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 		temphandle = mkstemp(tempfname);
                 umask(old_umask);
 
-                dcc->fhandle = -1;
-		if (link(tempfname, dcc->file) == 0) {
-                        /* ok, we're the file owner now */
-			dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT,
-					    dcc_file_create_mode);
+		if (temphandle == -1)
+			ret = -1;
+		else {
+			ret = link(tempfname, dcc->file);
+			if (ret == -1 && errno == EPERM) {
+				/* hard links aren't supported - some people
+				   want to download stuff to FAT/NTFS/etc
+				   partitions, so fallback to rename() */
+				ret = rename(tempfname, dcc->file);
+			}
 		}
+
+		/* if ret = 0, we're the file owner now */
+		dcc->fhandle = ret == -1 ? -1 :
+			open(dcc->file, O_WRONLY | O_TRUNC,
+			     dcc_file_create_mode);
 
                 /* close/remove the temp file */
 		close(temphandle);
