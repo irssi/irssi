@@ -90,7 +90,8 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL)
-		fe_channels_nicklist(CHANNEL(chanrec));
+		fe_channels_nicklist(CHANNEL(chanrec),
+				     CHANNEL_NICKLIST_FLAG_ALL);
 	else {
 		printformat_module("fe-common/core", server, channel,
 				   MSGLEVEL_CRAP, TXT_ENDOFNAMES,

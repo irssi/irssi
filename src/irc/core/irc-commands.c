@@ -237,8 +237,9 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server,
 	server_redirect_default((SERVER_REC *) server, "bogus command list");
 }
 
-/* SYNTAX: WHO <nicks>|<channels>|** */
-static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+/* SYNTAX: WHO [<nicks> | <channels> | **] */
+static void cmd_who(const char *data, IRC_SERVER_REC *server,
+		    WI_ITEM_REC *item)
 {
 	char *channel, *rest;
 	void *free_arg;
@@ -269,26 +270,36 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	server_redirect_default((SERVER_REC *) server, "bogus command who");
 }
 
-/* SYNTAX: NAMES [-yes] [<channels>] */
-static void cmd_names(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_names(const char *data, IRC_SERVER_REC *server,
+		      WI_ITEM_REC *item)
 {
-	g_return_if_fail(data != NULL);
+        GHashTable *optlist;
+	char *channel;
+	void *free_arg;
 
+	g_return_if_fail(data != NULL);
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_GOOD_IDEA);
 
-	if (strcmp(data, "*") == 0) {
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "names", &optlist, &channel))
+		return;
+
+	if (strcmp(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_IRC_CHANNEL(item))
-			cmd_return_error(CMDERR_NOT_JOINED);
+                        cmd_param_error(CMDERR_NOT_JOINED);
 
-		data = item->name;
+		channel = item->name;
 	}
 
-	if (g_strcasecmp(data, "-YES") == 0)
-		irc_send_cmd(server, "NAMES");
-	else
-		irc_send_cmdv(server, "NAMES %s", data);
+	if (strcmp(channel, "**") == 0) {
+		/* ** displays all nicks.. */
+                irc_send_cmd(server, "NAMES");
+	} else {
+		irc_send_cmdv(server, "NAMES %s", channel);
+	}
+
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: NICK <new nick> */

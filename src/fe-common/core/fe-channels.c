@@ -34,6 +34,7 @@
 #include "nicklist.h"
 
 #include "fe-windows.h"
+#include "fe-channels.h"
 #include "window-items.h"
 #include "printtext.h"
 
@@ -416,11 +417,11 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 
 	g_slist_free(nicklist);
 	g_string_free(str, TRUE);
-	g_free(columns);
+	g_free_not_null(columns);
 	g_free(linebuf);
 }
 
-void fe_channels_nicklist(CHANNEL_REC *channel)
+void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 {
 	NICK_REC *nick;
 	GSList *tmp, *nicklist, *sorted;
@@ -434,14 +435,26 @@ void fe_channels_nicklist(CHANNEL_REC *channel)
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		nick = tmp->data;
 
-		sorted = g_slist_insert_sorted(sorted, nick, (GCompareFunc) nicklist_compare);
-		if (nick->op)
-			ops++;
-		else if (nick->voice)
-			voices++;
-		else
-			normal++;
 		nicks++;
+		if (nick->op) {
+			ops++;
+			if ((flags & CHANNEL_NICKLIST_FLAG_OPS) == 0)
+                                continue;
+		} else if (nick->halfop) {
+			if ((flags & CHANNEL_NICKLIST_FLAG_HALFOPS) == 0)
+				continue;
+		} else if (nick->voice) {
+			voices++;
+			if ((flags & CHANNEL_NICKLIST_FLAG_VOICES) == 0)
+				continue;
+		} else {
+			normal++;
+			if ((flags & CHANNEL_NICKLIST_FLAG_NORMAL) == 0)
+				continue;
+		}
+
+		sorted = g_slist_insert_sorted(sorted, nick, (GCompareFunc)
+					       nicklist_compare);
 	}
 	g_slist_free(nicklist);
 
@@ -456,27 +469,65 @@ void fe_channels_nicklist(CHANNEL_REC *channel)
 		    channel->name, nicks, ops, voices, normal);
 }
 
+/* SYNTAX: NAMES [-ops -halfops -voices -normal] [<channels> | **] */
 static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-	CHANNEL_REC *channel;
+	CHANNEL_REC *chanrec;
+	GHashTable *optlist;
+        GString *unknowns;
+	char *channel, **channels, **tmp;
+        int flags;
+	void *free_arg;
 
 	g_return_if_fail(data != NULL);
-
-	if (server == NULL || !server->connected)
+	if (!IS_SERVER(server) || !server->connected)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	if (strcmp(data, "*") == 0) {
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_GETREST, "names", &optlist, &channel))
+		return;
+
+	if (strcmp(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_CHANNEL(item))
-			cmd_return_error(CMDERR_NOT_JOINED);
+                        cmd_param_error(CMDERR_NOT_JOINED);
 
-		data = item->name;
+		channel = item->name;
 	}
 
-	channel = channel_find(server, data);
-	if (channel != NULL) {
-		fe_channels_nicklist(channel);
-                signal_stop();
+	flags = 0;
+	if (g_hash_table_lookup(optlist, "ops") != NULL)
+		flags |= CHANNEL_NICKLIST_FLAG_OPS;
+	if (g_hash_table_lookup(optlist, "halfops") != NULL)
+		flags |= CHANNEL_NICKLIST_FLAG_HALFOPS;
+	if (g_hash_table_lookup(optlist, "voices") != NULL)
+		flags |= CHANNEL_NICKLIST_FLAG_VOICES;
+	if (g_hash_table_lookup(optlist, "normal") != NULL)
+		flags |= CHANNEL_NICKLIST_FLAG_NORMAL;
+
+        if (flags == 0) flags = CHANNEL_NICKLIST_FLAG_ALL;
+
+        unknowns = g_string_new(NULL);
+
+	channels = g_strsplit(channel, ",", -1);
+	for (tmp = channels; *tmp != NULL; tmp++) {
+		chanrec = channel_find(server, *tmp);
+		if (chanrec != NULL)
+			fe_channels_nicklist(chanrec, flags);
+		else
+                        g_string_sprintfa(unknowns, "%s,", *tmp);
 	}
+	g_strfreev(channels);
+
+	if (unknowns->len > 1)
+                g_string_truncate(unknowns, unknowns->len-1);
+
+	if (unknowns->len > 0 && strcmp(channel, unknowns->str) != 0) {
+		signal_stop();
+                signal_emit("command names", 3, unknowns->str, server, item);
+	}
+        g_string_free(unknowns, TRUE);
+
+	cmd_params_free(free_arg);
 }
 
 void fe_channels_init(void)
@@ -501,6 +552,7 @@ void fe_channels_init(void)
 	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
+	command_set_options("names", "ops halfops voices normal");
 	command_set_options("join", "window");
 }
 
