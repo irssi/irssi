@@ -132,6 +132,24 @@ static void key_default_add(const char *id, const char *key, const char *data)
 	g_hash_table_insert(default_keys, rec->key, rec);
 }
 
+static CONFIG_NODE *key_config_find(const char *key)
+{
+	CONFIG_NODE *node;
+        GSList *tmp;
+
+	/* remove old keyboard settings */
+	node = iconfig_node_traverse("(keyboard", TRUE);
+
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+		node = tmp->data;
+
+		if (strcmp(config_node_get_str(node, "key", ""), key) == 0)
+                        return node;
+	}
+
+        return NULL;
+}
+
 static void keyconfig_save(const char *id, const char *key, const char *data)
 {
 	CONFIG_NODE *node;
@@ -139,10 +157,13 @@ static void keyconfig_save(const char *id, const char *key, const char *data)
 	g_return_if_fail(id != NULL);
 	g_return_if_fail(key != NULL);
 
-	/* remove old keyboard settings */
-	node = iconfig_node_traverse("keyboard", TRUE);
-	node = config_node_section(node, key, NODE_TYPE_BLOCK);
+	node = key_config_find(key);
+	if (node == NULL) {
+		node = iconfig_node_traverse("(keyboard", TRUE);
+		node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	}
 
+	iconfig_node_set_str(node, "key", key);
 	iconfig_node_set_str(node, "id", id);
 	iconfig_node_set_str(node, "data", data);
 }
@@ -154,8 +175,9 @@ static void keyconfig_clear(const char *key)
 	g_return_if_fail(key != NULL);
 
 	/* remove old keyboard settings */
-	node = iconfig_node_traverse("keyboard", TRUE);
-	iconfig_node_set_str(node, key, NULL);
+	node = key_config_find(key);
+        if (node != NULL)
+		iconfig_node_clear(node);
 }
 
 KEYINFO_REC *key_info_find(const char *id)
@@ -170,80 +192,6 @@ KEYINFO_REC *key_info_find(const char *id)
 	}
 
 	return NULL;
-}
-
-/* Bind a key for function */
-void key_bind(const char *id, const char *description,
-	      const char *key_default, const char *data, SIGNAL_FUNC func)
-{
-	KEYINFO_REC *info;
-	char *key;
-
-	g_return_if_fail(id != NULL);
-
-	/* create key info record */
-	info = key_info_find(id);
-	if (info == NULL) {
-		g_return_if_fail(func != NULL);
-
-		if (description == NULL)
-			g_warning("key_bind(%s) should have description!", id);
-		info = g_new0(KEYINFO_REC, 1);
-		info->id = g_strdup(id);
-		info->description = g_strdup(description);
-		keyinfos = g_slist_append(keyinfos, info);
-
-		/* add the signal */
-		key = g_strconcat("key ", id, NULL);
-		signal_add(key, func);
-		g_free(key);
-
-		signal_emit("keyinfo created", 1, info);
-	}
-
-	if (key_default != NULL && *key_default != '\0') {
-                key_default_add(id, key_default, data);
-		key_configure_add(id, key_default, data);
-	}
-}
-
-static void keyinfo_remove(KEYINFO_REC *info)
-{
-	g_return_if_fail(info != NULL);
-
-	keyinfos = g_slist_remove(keyinfos, info);
-	signal_emit("keyinfo destroyed", 1, info);
-
-	/* destroy all keys */
-        g_slist_foreach(info->keys, (GFunc) key_destroy, keys);
-        g_slist_foreach(info->default_keys, (GFunc) key_destroy, default_keys);
-
-	/* destroy key info */
-	g_slist_free(info->keys);
-	g_slist_free(info->default_keys);
-	g_free_not_null(info->description);
-	g_free(info->id);
-	g_free(info);
-}
-
-/* Unbind key */
-void key_unbind(const char *id, SIGNAL_FUNC func)
-{
-	KEYINFO_REC *info;
-	char *key;
-
-	g_return_if_fail(id != NULL);
-	g_return_if_fail(func != NULL);
-
-	/* remove keys */
-	info = key_info_find(id);
-	if (info != NULL)
-		keyinfo_remove(info);
-
-	/* remove signal */
-	key = g_strconcat("key ", id, NULL);
-	signal_remove(key, func);
-	g_free(key);
 }
 
 static KEY_REC *key_combo_find(const char *key)
@@ -386,6 +334,80 @@ static void key_configure_create(const char *id, const char *key,
 
 	if (!key_config_frozen)
                 key_states_rescan();
+}
+
+/* Bind a key for function */
+void key_bind(const char *id, const char *description,
+	      const char *key_default, const char *data, SIGNAL_FUNC func)
+{
+	KEYINFO_REC *info;
+	char *key;
+
+	g_return_if_fail(id != NULL);
+
+	/* create key info record */
+	info = key_info_find(id);
+	if (info == NULL) {
+		g_return_if_fail(func != NULL);
+
+		if (description == NULL)
+			g_warning("key_bind(%s) should have description!", id);
+		info = g_new0(KEYINFO_REC, 1);
+		info->id = g_strdup(id);
+		info->description = g_strdup(description);
+		keyinfos = g_slist_append(keyinfos, info);
+
+		/* add the signal */
+		key = g_strconcat("key ", id, NULL);
+		signal_add(key, func);
+		g_free(key);
+
+		signal_emit("keyinfo created", 1, info);
+	}
+
+	if (key_default != NULL && *key_default != '\0') {
+                key_default_add(id, key_default, data);
+		key_configure_create(id, key_default, data);
+	}
+}
+
+static void keyinfo_remove(KEYINFO_REC *info)
+{
+	g_return_if_fail(info != NULL);
+
+	keyinfos = g_slist_remove(keyinfos, info);
+	signal_emit("keyinfo destroyed", 1, info);
+
+	/* destroy all keys */
+        g_slist_foreach(info->keys, (GFunc) key_destroy, keys);
+        g_slist_foreach(info->default_keys, (GFunc) key_destroy, default_keys);
+
+	/* destroy key info */
+	g_slist_free(info->keys);
+	g_slist_free(info->default_keys);
+	g_free_not_null(info->description);
+	g_free(info->id);
+	g_free(info);
+}
+
+/* Unbind key */
+void key_unbind(const char *id, SIGNAL_FUNC func)
+{
+	KEYINFO_REC *info;
+	char *key;
+
+	g_return_if_fail(id != NULL);
+	g_return_if_fail(func != NULL);
+
+	/* remove keys */
+	info = key_info_find(id);
+	if (info != NULL)
+		keyinfo_remove(info);
+
+	/* remove signal */
+	key = g_strconcat("key ", id, NULL);
+	signal_remove(key, func);
+	g_free(key);
 }
 
 /* Configure new key */
@@ -698,11 +720,24 @@ static void keyboard_reset_defaults(void)
         g_hash_table_foreach(default_keys, (GHFunc) key_copy_default, NULL);
 }
 
+static void key_config_read(CONFIG_NODE *node)
+{
+	char *key, *id, *data;
+
+	g_return_if_fail(node != NULL);
+
+	key = config_node_get_str(node, "key", NULL);
+	id = config_node_get_str(node, "id", NULL);
+	data = config_node_get_str(node, "data", NULL);
+
+	if (key != NULL && id != NULL)
+		key_configure_create(id, key, data);
+}
+
 static void read_keyboard_config(void)
 {
 	CONFIG_NODE *node;
 	GSList *tmp;
-        char *id, *data;
 
         key_configure_freeze();
 
@@ -717,23 +752,14 @@ static void read_keyboard_config(void)
 	/* FIXME: backward "compatibility" - remove after irssi .99 */
 	tmp = node->value;
 	if (tmp != NULL &&
-	    config_node_get_str(tmp->data, "id", NULL) == NULL) {
+	    config_node_get_str(tmp->data, "key", NULL) == NULL) {
                 iconfig_node_clear(node);
 		key_configure_thaw();
 		return;
 	}
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
-		node = tmp->data;
-
-		if (node->key == NULL || node->value == NULL)
-			continue;
-
-                id = config_node_get_str(node, "id", NULL);
-                data = config_node_get_str(node, "data", NULL);
-                if (id != NULL)
-			key_configure_create(id, node->key, data);
-	}
+	for (tmp = node->value; tmp != NULL; tmp = tmp->next)
+		key_config_read(tmp->data);
 
         key_configure_thaw();
 }
