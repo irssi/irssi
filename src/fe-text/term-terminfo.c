@@ -646,7 +646,7 @@ int term_gets(unichar *buffer, int size)
 		if (i >= term_inbuf_pos)
 			term_inbuf_pos = 0;
 		else if (i > 0) {
-			memmove(term_inbuf+i, term_inbuf, term_inbuf_pos-i);
+			memmove(term_inbuf, term_inbuf+i, term_inbuf_pos-i);
                         term_inbuf_pos -= i;
 		}
 	}
