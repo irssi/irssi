@@ -221,7 +221,7 @@ AC_CHECK_FUNC(socket, [], [
 AC_CHECK_FUNC(inet_addr, [], [
 	AC_CHECK_LIB(nsl, inet_addr, [
 		LIBS="$LIBS -lnsl"
-	], -lsocket)
+	])
 ])
 
 dnl * gcc specific options
