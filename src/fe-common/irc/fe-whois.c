@@ -88,18 +88,22 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &type);
-	/* type = "is an IRC Operator" */
-	if (strlen(type) > 5) {
+
+	/* Bugfix: http://bugs.irssi.org/?do=details&id=99
+	 * Author: Geert Hauwaerts <geert@irssi.org>
+	 * Date:   Wed Sep 15 20:17:24 CEST 2004
+	 */
+
+	if ((!strncmp(type, "is an ", 6)) || (!strncmp(type, "is a ", 5))) {
 		type += 5;
 		if (*type == ' ') type++;
 	}
-	if (*type == '\0') {
-		/* shouldn't happen */
+
+	if (*type == '\0')
 		type = "IRC Operator";
-	}
 
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_OPER, nick, type);
+		IRCTXT_WHOIS_OPER, nick, type);
 	g_free(params);
 }
 
