@@ -463,7 +463,7 @@ if test ! -s conftest.lo; then
 fi
 
 dnl ** link to library
-./libtool --mode=link $LD $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
+./libtool --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
 if test ! -s .libs/libconftest.a; then
   AC_ERROR([error, can't even find .a library])
 fi
@@ -615,10 +615,7 @@ if test "$want_perl" != "no"; then
 
 		dnl * check that perl's ldflags actually work
 		echo "main(){perl_alloc(); return 0;}" > conftest.c
-		$CC $CFLAGS conftest.c -c -o conftest.o 2> perl.error.tmp > /dev/null
-		if test -s conftest.o; then
-			$LD conftest.o -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
-		fi
+		$CC $CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
 		if test ! -s conftest; then
 			perl_check_error="Error linking with perl libraries: $PERL_LDFLAGS: `cat perl.error.tmp`"
 			AC_MSG_RESULT([error linking with perl libraries, building without Perl])
