@@ -249,7 +249,7 @@ static void event_part(IRC_SERVER_REC *server, const char *data, const char *nic
 	params = event_get_params(data, 2, &channel, &reason);
 
 	chanrec = channel_find(SERVER(server), channel);
-	if (chanrec != NULL) {
+	if (chanrec != NULL && chanrec->joined) {
 		chanrec->left = TRUE;
 		channel_destroy(chanrec);
 	}

@@ -534,6 +534,36 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: CYCLE [<channel>] [<message>] */
+static void cmd_cycle(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	CHANNEL_REC *chanrec;
+	char *channame, *msg, *joindata;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN,
+			    item, &channame, &msg))
+		return;
+	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	chanrec = channel_find(server, channame);
+	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
+
+	joindata = chanrec->get_join_data(chanrec);
+	window_bind_add(window_item_window(chanrec),
+			chanrec->server->tag, chanrec->name);
+        channel_destroy(chanrec);
+
+	server->channels_join(server, joindata, FALSE);
+	g_free(joindata);
+
+	cmd_params_free(free_arg);
+}
+
 void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
@@ -554,6 +584,7 @@ void fe_channels_init(void)
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
 	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
+	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
 	command_set_options("names", "ops halfops voices normal");
@@ -576,4 +607,5 @@ void fe_channels_deinit(void)
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);
 	command_unbind("names", (SIGNAL_FUNC) cmd_names);
+	command_unbind("cycle", (SIGNAL_FUNC) cmd_cycle);
 }

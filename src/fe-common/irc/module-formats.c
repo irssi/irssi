@@ -140,7 +140,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "ctcp_reply", "CTCP {hilight $0} reply from {nick $1}: $2", 3, { 0, 0, 0 } },
 	{ "ctcp_reply_channel", "CTCP {hilight $0} reply from {nick $1} in channel {channel $3}: $2", 4, { 0, 0, 0, 0 } },
 	{ "ctcp_ping_reply", "CTCP {hilight PING} reply from {nick $0}: $1.$[-3.0]2 seconds", 3, { 0, 2, 2 } },
-        { "ctcp_requested", "{ctcp >>> {hilight $0} {comment $1} requested {hilight $2} from {nick $3}}", 4, { 0, 0, 0, 0 } },
+        { "ctcp_requested", "{ctcp {hilight $0} {comment $1} requested {hilight $2} from {nick $3}}", 4, { 0, 0, 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Other server events", 0 },

@@ -62,18 +62,6 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server,
 	return rec;
 }
 
-static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
-{
-	if (!IS_IRC_CHANNEL(channel))
-                return;
-
-	if (channel->server != NULL && !channel->left && !channel->kicked) {
-		/* destroying channel record without actually
-		   having left the channel yet */
-		signal_emit("command part", 3, "", channel->server, channel);
-	}
-}
-
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))
 
@@ -185,9 +173,36 @@ static void sig_server_looking(SERVER_REC *server)
 		irc_channels_join;
 }
 
+static char *irc_get_join_data(CHANNEL_REC *channel)
+{
+	IRC_CHANNEL_REC *irc_channel = (IRC_CHANNEL_REC *) channel;
+
+	return irc_channel->key == NULL ? g_strdup(irc_channel->name) :
+                g_strconcat(irc_channel->name, " ", irc_channel->key, NULL);
+}
+
+static void sig_channel_created(IRC_CHANNEL_REC *channel)
+{
+	if (IS_IRC_CHANNEL(channel))
+                channel->get_join_data = irc_get_join_data;
+}
+
+static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
+{
+	if (!IS_IRC_CHANNEL(channel))
+                return;
+
+	if (channel->server != NULL && !channel->left && !channel->kicked) {
+		/* destroying channel record without actually
+		   having left the channel yet */
+		signal_emit("command part", 3, "", channel->server, channel);
+	}
+}
+
 void irc_channels_init(void)
 {
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
+	signal_add("channel created", (SIGNAL_FUNC) sig_channel_created);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_init();
@@ -205,6 +220,7 @@ void irc_channels_init(void)
 void irc_channels_deinit(void)
 {
 	signal_remove("server looking", (SIGNAL_FUNC) sig_server_looking);
+	signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	channel_events_deinit();

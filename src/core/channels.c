@@ -30,6 +30,11 @@
 
 GSList *channels; /* List of all channels */
 
+static char *get_join_data(CHANNEL_REC *channel)
+{
+	return g_strdup(channel->name);
+}
+
 void channel_init(CHANNEL_REC *channel, int automatic)
 {
 	g_return_if_fail(channel != NULL);
@@ -45,6 +50,7 @@ void channel_init(CHANNEL_REC *channel, int automatic)
 	channel->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
         channel->mode = g_strdup("");
 	channel->createtime = time(NULL);
+        channel->get_join_data = get_join_data;
 
 	signal_emit("channel created", 2, channel, GINT_TO_POINTER(automatic));
 }

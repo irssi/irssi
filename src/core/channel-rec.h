@@ -23,3 +23,8 @@ unsigned int joined:1; /* Have we even received JOIN event for this channel? */
 unsigned int left:1; /* You just left the channel */
 unsigned int kicked:1; /* You just got kicked */
 unsigned int destroying:1;
+
+/* Return the information needed to call SERVER_REC->channels_join() for
+   this channel. Usually just the channel name, but may contain also the
+   channel key. */
+char *(*get_join_data)(CHANNEL_REC *channel);

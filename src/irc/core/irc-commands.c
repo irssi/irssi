@@ -664,32 +664,6 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: CYCLE [<channel>] [<message>] */
-static void cmd_cycle(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-	IRC_CHANNEL_REC *chanrec;
-	char *channame, *msg;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		cmd_return_error(CMDERR_NOT_CONNECTED);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN, item, &channame, &msg))
-		return;
-	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	chanrec = irc_channel_find(server, channame);
-	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
-
-	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
-		      channame, msg);
-	irc_send_cmdv(server, chanrec->key == NULL ? "JOIN %s" : "JOIN %s %s",
-		      channame, chanrec->key);
-
-	cmd_params_free(free_arg);
-}
-
 /* SYNTAX: KICKBAN [<channel>] <nicks> <reason> */
 static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 			WI_ITEM_REC *item)
@@ -733,7 +707,7 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 	}
 	g_free(kickcmd);
 	g_free(bancmd);
-	
+
 	cmd_params_free(free_arg);
 }
 
@@ -1074,7 +1048,6 @@ void irc_commands_init(void)
 	command_bind("wallops", NULL, (SIGNAL_FUNC) command_1self);
 	/* SYNTAX: WALLCHOPS <channel> <message> */
 	command_bind("wallchops", NULL, (SIGNAL_FUNC) command_2self);
-	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 	command_bind("kickban", NULL, (SIGNAL_FUNC) cmd_kickban);
 	command_bind("knockout", NULL, (SIGNAL_FUNC) cmd_knockout);
 
@@ -1146,7 +1119,6 @@ void irc_commands_deinit(void)
 	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
 	command_unbind("wallchops", (SIGNAL_FUNC) command_2self);
-	command_unbind("cycle", (SIGNAL_FUNC) cmd_cycle);
 	command_unbind("kickban", (SIGNAL_FUNC) cmd_kickban);
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
