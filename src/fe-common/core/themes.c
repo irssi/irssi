@@ -938,27 +938,15 @@ static void theme_save(THEME_REC *theme)
 
 	g_hash_table_foreach(theme->modules, (GHFunc) module_save, config);
 
-        ok = TRUE;
-	path = g_strdup(theme->path);
-	if (config_write(config, NULL, 0660) == -1) {
-		/* we probably tried to save to global directory
-		   where we didn't have access.. try saving it to
-		   home dir instead. */
-		char *str;
+        /* always save the theme to ~/.irssi/ */
+	path = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(),
+			       g_basename(theme->path));
+	ok = config_write(config, path, 0660) == 0;
 
-		/* check that we really didn't try to save
-		   it to home dir.. */
-		g_free(path);
-		path = g_strdup_printf("%s/.irssi/%s", g_get_home_dir(),
-				       g_basename(theme->path));
-		str = strrchr(path, '/');
-		if (strncmp(theme->path, path, (int) (path-str)) == 0 ||
-		    config_write(config, path, 0660) == -1)
-			ok = FALSE;
-	}
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    ok ? TXT_THEME_SAVED : TXT_THEME_SAVE_FAILED,
 		    path, config_last_error(config));
+
 	g_free(path);
 	config_close(config);
 }
