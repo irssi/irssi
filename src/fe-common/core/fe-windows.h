@@ -33,7 +33,6 @@ typedef struct {
 	int level; /* message level */
 	GSList *bound_items; /* list of WINDOW_BIND_RECs */
 
-	int lines;
 	unsigned int sticky_refnum:1;
 	unsigned int destroying:1;
 

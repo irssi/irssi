@@ -573,13 +573,10 @@ void format_newline(WINDOW_REC *window)
 {
 	g_return_if_fail(window != NULL);
 
-	window->lines++;
-	if (window->lines != 1) {
-		signal_emit_id(signal_gui_print_text, 6, window,
-			       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
-			       GINT_TO_POINTER(PRINTFLAG_NEWLINE),
-			       "", GINT_TO_POINTER(-1));
-	}
+	signal_emit_id(signal_gui_print_text, 6, window,
+		       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
+		       GINT_TO_POINTER(PRINTFLAG_NEWLINE),
+		       "", GINT_TO_POINTER(-1));
 }
 
 /* parse ANSI color string */

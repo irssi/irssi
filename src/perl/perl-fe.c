@@ -57,8 +57,6 @@ static void perl_window_fill_hash(HV *hv, WINDOW_REC *window)
 	if (window->active_server)
 		hv_store(hv, "active_server", 13, irssi_bless(window->active_server), 0);
 
-	hv_store(hv, "lines", 5, newSViv(window->lines), 0);
-
 	hv_store(hv, "level", 5, newSViv(window->level), 0);
 	hv_store(hv, "data_level", 8, newSViv(window->data_level), 0);
 	hv_store(hv, "hilight_color", 10, new_pv(window->hilight_color), 0);
