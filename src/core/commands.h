@@ -4,10 +4,15 @@
 #include "signals.h"
 
 typedef struct {
+	SIGNAL_FUNC func;
+	void *user_data;
+} COMMAND_CALLBACK_REC;
+
+typedef struct {
 	char *name;
 	char *options;
         int protocol; /* chat protocol required for this command */
-        GSList *signals;
+        GSList *callbacks;
 } COMMAND_MODULE_REC;
 
 typedef struct {
@@ -57,17 +62,23 @@ extern GSList *commands;
 extern char *current_command; /* the command we're right now. */
 
 /* Bind command to specified function. */
-void command_bind_to(const char *module, int pos, const char *cmd,
-                     int protocol, const char *category, SIGNAL_FUNC func);
-#define command_bind(a, b, c) command_bind_to(MODULE_NAME, 1, a, -1, b, c)
-#define command_bind_first(a, b, c) command_bind_to(MODULE_NAME, 0, a, -1, b, c)
-#define command_bind_last(a, b, c) command_bind_to(MODULE_NAME, 2, a, -1, b, c)
+void command_bind_full(const char *module, int priority, const char *cmd,
+		       int protocol, const char *category, SIGNAL_FUNC func,
+		       void *user_data);
+#define command_bind(a, b, c) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_DEFAULT, a, -1, b, c, NULL)
+#define command_bind_first(a, b, c) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_HIGH, a, -1, b, c, NULL)
+#define command_bind_last(a, b, c) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_LOW, a, -1, b, c, NULL)
 
-#define command_bind_proto(a, b, c, d) command_bind_to(MODULE_NAME, 1, a, b, c, d)
-#define command_bind_proto_first(a, b, c, d) command_bind_to(MODULE_NAME, 0, a, b, c, d)
-#define command_bind_proto_last(a, b, c, d) command_bind_to(MODULE_NAME, 2, a, b, c, d)
+#define command_bind_data(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_DEFAULT, a, -1, b, c, d)
+#define command_bind_data_first(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_HIGH, a, -1, b, c, d)
+#define command_bind_data_last(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_LOW, a, -1, b, c, d)
 
-void command_unbind(const char *cmd, SIGNAL_FUNC func);
+#define command_bind_proto(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_DEFAULT, a, b, c, d, NULL)
+#define command_bind_proto_first(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_HIGH, a, b, c, d, NULL)
+#define command_bind_proto_last(a, b, c, d) command_bind_full(MODULE_NAME, SIGNAL_PRIORITY_LOW, a, b, c, d, NULL)
+
+void command_unbind_full(const char *cmd, SIGNAL_FUNC func, void *user_data);
+#define command_unbind(cmd, func) command_unbind_full(cmd, func, NULL)
 
 /* Run subcommand, `cmd' contains the base command, first word in `data'
    contains the subcommand */

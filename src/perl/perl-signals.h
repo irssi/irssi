@@ -1,13 +1,7 @@
 #ifndef __PERL_SIGNALS_H
 #define __PERL_SIGNALS_H
 
-void perl_signal_add_to(const char *signal, SV *func, int priority);
-#define perl_signal_add_first(signal, func) \
-        perl_signal_add_to(signal, func, 0)
-#define perl_signal_add(signal, func) \
-        perl_signal_add_to(signal, func, 1)
-#define perl_signal_add_last(signal, func) \
-        perl_signal_add_to(signal, func, 2)
+void perl_signal_add_full(const char *signal, SV *func, int priority);
 
 void perl_signal_remove(const char *signal, SV *func);
 /* remove all signals used by script */

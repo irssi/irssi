@@ -860,7 +860,8 @@ static void statusbar_item_default_signals(SBAR_ITEM_REC *item)
                                 break;
 			}
 			if (func != NULL) {
-				signal_add_full_id(MODULE_NAME, 1,
+				signal_add_full_id(MODULE_NAME,
+						   SIGNAL_PRIORITY_DEFAULT,
 						   *pos, func, NULL);
 			}
 		}

@@ -72,10 +72,10 @@ static COMMAND_MODULE_REC *command_module_find(COMMAND_REC *rec,
 	return NULL;
 }
 
-static COMMAND_MODULE_REC *command_module_find_func(COMMAND_REC *rec,
-						    SIGNAL_FUNC func)
+static COMMAND_MODULE_REC *
+command_module_find_and_remove(COMMAND_REC *rec, SIGNAL_FUNC func)
 {
-	GSList *tmp;
+	GSList *tmp, *tmp2;
 
 	g_return_val_if_fail(rec != NULL, NULL);
 	g_return_val_if_fail(func != NULL, NULL);
@@ -83,8 +83,15 @@ static COMMAND_MODULE_REC *command_module_find_func(COMMAND_REC *rec,
 	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
 		COMMAND_MODULE_REC *rec = tmp->data;
 
-                if (g_slist_find(rec->signals, (void *) func) != NULL)
-			return rec;
+		for (tmp2 = rec->callbacks; tmp2 != NULL; tmp2 = tmp2->next) {
+			COMMAND_CALLBACK_REC *cb = tmp2->data;
+
+			if (cb->func == func) {
+				rec->callbacks =
+					g_slist_remove(rec->callbacks, cb);
+				return rec;
+			}
+		}
 	}
 
 	return NULL;
@@ -131,11 +138,13 @@ command_module_get(COMMAND_REC *rec, const char *module, int protocol)
         return modrec;
 }
 
-void command_bind_to(const char *module, int pos, const char *cmd,
-		     int protocol, const char *category, SIGNAL_FUNC func)
+void command_bind_full(const char *module, int priority, const char *cmd,
+		       int protocol, const char *category, SIGNAL_FUNC func,
+		       void *user_data)
 {
 	COMMAND_REC *rec;
-        COMMAND_MODULE_REC *modrec;
+	COMMAND_MODULE_REC *modrec;
+        COMMAND_CALLBACK_REC *cb;
 	char *str;
 
 	g_return_if_fail(module != NULL);
@@ -150,11 +159,14 @@ void command_bind_to(const char *module, int pos, const char *cmd,
 	}
         modrec = command_module_get(rec, module, protocol);
 
-        modrec->signals = g_slist_append(modrec->signals, (void *) func);
+	cb = g_new0(COMMAND_CALLBACK_REC, 1);
+	cb->func = func;
+	cb->user_data = user_data;
+	modrec->callbacks = g_slist_append(modrec->callbacks, cb);
 
 	if (func != NULL) {
 		str = g_strconcat("command ", cmd, NULL);
-		signal_add_full(module, pos, str, func, NULL);
+		signal_add_full(module, priority, str, func, user_data);
 		g_free(str);
 	}
 
@@ -176,7 +188,8 @@ static void command_module_free(COMMAND_MODULE_REC *modrec, COMMAND_REC *rec)
 {
 	rec->modules = g_slist_remove(rec->modules, modrec);
 
-	g_slist_free(modrec->signals);
+	g_slist_foreach(modrec->callbacks, (GFunc) g_free, NULL);
+	g_slist_free(modrec->callbacks);
         g_free(modrec->name);
         g_free_not_null(modrec->options);
         g_free(modrec);
@@ -196,7 +209,7 @@ static void command_module_destroy(COMMAND_REC *rec,
 	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
 		COMMAND_MODULE_REC *rec = tmp->data;
 
-		if (rec->signals == NULL)
+		if (rec->callbacks == NULL)
 			freelist = g_slist_append(freelist, rec);
 		else {
                         g_slist_free(freelist);
@@ -212,10 +225,10 @@ static void command_module_destroy(COMMAND_REC *rec,
 		command_free(rec);
 }
 
-void command_unbind(const char *cmd, SIGNAL_FUNC func)
+void command_unbind_full(const char *cmd, SIGNAL_FUNC func, void *user_data)
 {
 	COMMAND_REC *rec;
-        COMMAND_MODULE_REC *modrec;
+	COMMAND_MODULE_REC *modrec;
 	char *str;
 
 	g_return_if_fail(cmd != NULL);
@@ -223,17 +236,15 @@ void command_unbind(const char *cmd, SIGNAL_FUNC func)
 
 	rec = command_find(cmd);
 	if (rec != NULL) {
-		modrec = command_module_find_func(rec, func);
+		modrec = command_module_find_and_remove(rec, func);
 		g_return_if_fail(modrec != NULL);
 
-		modrec->signals =
-			g_slist_remove(modrec->signals, (void *) func);
-		if (modrec->signals == NULL)
+		if (modrec->callbacks == NULL)
 			command_module_destroy(rec, modrec);
 	}
 
 	str = g_strconcat("command ", cmd, NULL);
-	signal_remove(str, func);
+	signal_remove_data(str, func, user_data);
 	g_free(str);
 }
 
@@ -767,10 +778,11 @@ static void command_module_unbind_all(COMMAND_REC *rec,
 {
 	GSList *tmp, *next;
 
-	for (tmp = modrec->signals; tmp != NULL; tmp = next) {
+	for (tmp = modrec->callbacks; tmp != NULL; tmp = next) {
+		COMMAND_CALLBACK_REC *cb = tmp->data;
 		next = tmp->next;
 
-		command_unbind(rec->cmd, (SIGNAL_FUNC) tmp->data);
+		command_unbind_full(rec->cmd, cb->func, cb->user_data);
 	}
 
 	if (g_slist_find(commands, rec) != NULL) {

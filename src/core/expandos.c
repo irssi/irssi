@@ -179,8 +179,8 @@ void expando_bind(const char *key, int funccount, SIGNAL_FUNC *funcs)
 		func = arg < funccount ? funcs[arg] : NULL;
 		if (func == NULL) func = funcs[EXPANDO_ARG_NONE];
 
-		signal_add_full_id(MODULE_NAME, 1, rec->signal_ids[n],
-				   func, NULL);
+		signal_add_full_id(MODULE_NAME, SIGNAL_PRIORITY_DEFAULT,
+				   rec->signal_ids[n], func, NULL);
 	}
 }
 
