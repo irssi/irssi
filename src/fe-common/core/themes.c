@@ -881,7 +881,7 @@ static void theme_save(THEME_REC *theme)
 				       g_basename(theme->path));
 		str = strrchr(path, '/');
 		if (strncmp(theme->path, path, (int) (path-str)) == 0 ||
-		    config_write(config, str, 0660) == -1)
+		    config_write(config, path, 0660) == -1)
 			ok = FALSE;
 	}
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
