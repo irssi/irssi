@@ -146,16 +146,18 @@ static void cmd_server_add(const char *data)
 static void cmd_server_remove(const char *data)
 {
 	SERVER_SETUP_REC *rec;
-	char *addr, *portstr;
+	char *addr, *port;
 	void *free_arg;
-	int port;
 
-	if (!cmd_get_params(data, &free_arg, 2, &addr, &portstr))
+	if (!cmd_get_params(data, &free_arg, 2, &addr, &port))
 		return;
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	port = *portstr == '\0' ? -1 : atoi(portstr);
 
-	rec = server_setup_find_port(addr, port);
+        if (*port == '\0')
+		rec = server_setup_find(addr, -1);
+	else
+		rec = server_setup_find_port(addr, atoi(port));
+
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_SETUPSERVER_NOT_FOUND, addr, port);
 	else {
