@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Irssi 0.7.23\n"
-"POT-Creation-Date: 2000-10-19 21:57+0300\n"
+"POT-Creation-Date: 2000-12-03 07:31+0200\n"
 "PO-Revision-Date: 1999-12-01 10:35-0200\n"
 "Last-Translator: Thomas Heinen <cochi@uni-paderborn.de>\n"
 "Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
@@ -25,130 +25,130 @@ msgstr ""
 
 #. Display the text when we have already waited
 #. for a while
-#: src/core/net-disconnect.c:144
+#: src/core/net-disconnect.c:145
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Bitte warten, schliesse Serververbindungen..\n"
 
-#: src/core/network.c:475
+#: src/core/network.c:499
 msgid "Host not found"
 msgstr "Host nicht gefunden"
 
-#: src/core/network.c:477
+#: src/core/network.c:501
 msgid "No IP address found for name"
 msgstr "Keine IP Adresse zum Namen gefunden"
 
-#: src/core/network.c:479
+#: src/core/network.c:503
 msgid "A non-recovable name server error occurred"
 msgstr "Ein nicht behebbarer Nameserverfehler ist aufgetreten"
 
-#: src/core/network.c:481
+#: src/core/network.c:505
 msgid "A temporary error on an authoritative name server"
 msgstr "Temporaerer Fehler des authoritativen Nameservers"
 
-#: src/core/settings.c:314
+#: src/core/settings.c:317
 #, fuzzy, c-format
 msgid "Couldn't create %s/.irssi directory"
 msgstr ""
 "Datei kann nicht erzeugt werden:\n"
 "%s"
 
-#: src/core/settings.c:318
+#: src/core/settings.c:321
 #, c-format
 msgid ""
 "%s/.irssi is not a directory.\n"
 "You should remove it with command: rm ~/.irssi"
 msgstr ""
 
-#: src/core/settings.c:329
+#: src/core/settings.c:333
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#: src/core/settings.c:356
+#: src/core/settings.c:360
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
 "%s"
 msgstr ""
 
-#: src/core/settings.c:384
+#: src/core/settings.c:390
 #, fuzzy, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr ""
 "Datei kann nicht erzeugt werden:\n"
 "%s"
 
-#: src/core/settings.c:404
+#: src/core/settings.c:411
 #, c-format
 msgid ""
 "Configuration file was modified while irssi was running. Saving "
 "configuration to file '%s' instead"
 msgstr ""
 
-#: src/fe-common/core/fe-settings.c:278
-msgid "Overwrite config (y/N)?"
-msgstr ""
-
-#: src/fe-common/core/printtext.c:957
+#: src/fe-common/core/printtext.c:382
 msgid "%_Warning:%_ %s"
 msgstr "%_Warnung:%_ %s"
 
-#: src/fe-common/core/printtext.c:959
+#: src/fe-common/core/printtext.c:384
 msgid "%_Error:%_ %s"
 msgstr "%_Fehler:%_ %s"
 
-#: src/fe-common/core/themes.c:147
+#: src/fe-common/core/themes.c:545
 #, c-format
 msgid ""
 "Ignored errors in theme:\n"
 "%s"
 msgstr ""
 
-#: src/fe-common/irc/fe-common-irc.c:73
+#: src/fe-common/core/fe-settings.c:279
+msgid "Overwrite config (y/N)?"
+msgstr ""
+
+#: src/fe-common/irc/fe-common-irc.c:76
 msgid "Automatically connect to server/ircnet"
 msgstr "Automatisch verbinden mit Server/IRCNet"
 
-#: src/fe-common/irc/fe-common-irc.c:73 src/fe-common/irc/fe-common-irc.c:74
+#: src/fe-common/irc/fe-common-irc.c:76 src/fe-common/irc/fe-common-irc.c:77
 msgid "SERVER"
 msgstr "SERVER"
 
-#: src/fe-common/irc/fe-common-irc.c:74
+#: src/fe-common/irc/fe-common-irc.c:77
 msgid "Autoconnect password"
 msgstr "Autoconnect Passwort"
 
-#: src/fe-common/irc/fe-common-irc.c:75
+#: src/fe-common/irc/fe-common-irc.c:78
 msgid "Autoconnect port"
 msgstr "Autoconnect Port"
 
-#: src/fe-common/irc/fe-common-irc.c:75
+#: src/fe-common/irc/fe-common-irc.c:78
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:76
+#: src/fe-common/irc/fe-common-irc.c:79
 msgid "Disable autoconnecting"
 msgstr "Autoconnect deaktivieren"
 
-#: src/fe-common/irc/fe-common-irc.c:77
+#: src/fe-common/irc/fe-common-irc.c:80
 msgid "Specify nick to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-common/irc/fe-common-irc.c:78
+#: src/fe-common/irc/fe-common-irc.c:81
 #, fuzzy
 msgid "Specify host name to use"
 msgstr "Bitte Nickname angeben"
 
-#: src/fe-text/irssi.c:165
+#: src/fe-text/irssi.c:235
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr ""
 
-#: src/lib-popt/popthelp.c:28
+#: src/lib-popt/popthelp.c:24
 #, fuzzy
 msgid "Show this help message"
 msgstr "Keine externen Nachrichten"
 
-#: src/lib-popt/popthelp.c:29
+#: src/lib-popt/popthelp.c:25
 #, fuzzy
 msgid "Display brief usage message"
 msgstr "private Nachrichten"

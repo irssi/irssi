@@ -1,3 +1,76 @@
+v0.7.97 2000-12-03  Timo Sirainen <tss@iki.fi>
+
+	* Added templates for themes - this allowed separation of the
+	  actual texts and styling/coloring. See default.theme file for
+	  more information. You should remove your old ~/.irssi/default.theme
+	  or at least merge it with the defaul.theme.
+
+	* If GLIB sources are found unpacked from some subdirectory, always
+	  compile it and use it even if GLIB is already installed somewhere
+	  else.
+
+	+ /SCROLLBACK REDRAW - redraw contents of current window according
+	  to active formats, ie. changing theme updates the scrollback.
+	  This requires /SET scrollback_save_formats ON.
+	+ /SET log_theme <theme> - you can specify what theme to use for
+	  writing texts to log file.
+	+ /WAIT [-<server tag>] <milliseconds> - wait for <milliseconds>
+	  before sending anything else to server
+	+ /EXEC <command> - execute command and print it's output (stdout
+	  only) to screen. (by Tinuk)
+	+ Don't indent the next line when long word is split, this should
+	  help a bit when copying long URLs.
+	+ Remember who set the topic and when, display the info when using
+	  /TOPIC.
+	+ /SET emphasis - convert _underlined_ and *bold* words (and phrases)
+	  to use real underlines/bolds. (by tommik)
+	+ While waiting for more netsplits/netjoins, if anything else is
+	  printed to screen, print the current netsplit/netjoin messages
+	  before that text.
+	+ Print multiple identical mode changes in one line
+	  (mode +o nick by nick1, nick2, nick3)
+	+ /WINDOW ITEM GOTO <name> - sets <name> active in current window
+	+ /WINDOW ITEM MOVE <window#>|<name> - moves window item to another
+	  window.
+	+ /SET autocreate_windows - should we create new windows for new
+	  window items or just place everything to one window
+	+ /JOIN #already_joined_channel, /QUERY already_queried_nick - same
+	  as /WINDOW ITEM MOVE <name>
+	+ /SET activity_level, /SET hilight_level - specifies which message
+	  levels should be treated as msg/hilight activity. (by tommik)
+	+ DCC queries are now created automatically only if /SET
+	  autocreate_query_level has DCCMSGS level
+	+ If other side replies to our DCC CHAT request with DCC CHAT
+	  request of their own (maybe we were inside firewall and other
+	  side noticed it), connect to it immediately.
+	+ Don't allow more than one identical DCC request, if more is
+	  received just update the port of the previous request.
+	+ Added KILL handling - user/server kills are now printed formatted.
+	+ If server KILLs you, connect back (almost) immediately (don't wait
+	  for the default 5 minutes)
+	+ Nick completion now completes nicks from all channels in active
+	  window, except when completing the first word in line only nicks
+	  in active channel are completed.
+	+ /SET show_nickmode_empty - when nick has no mode, should we
+	  display " " or ""
+	+ /SET part_message - default message with /PART
+	+ Added -current, -window and -level options to /ECHO
+	+ Ctrl-T = transpose_characters
+	+ Perl scripting supports now printformat(), ie. user can change
+	  the text format with /FORMAT just like any other formats.
+	+ Proxy plugin now supports multiple servers, blocks CTCPs from
+	  clients behind it and if one client sends message to channel,
+	  other clients + proxy itself also receives the message.
+	- Netsplit/netjoin printing fixes. Sometimes netsplits were hidden
+	  completely and some netjoins were forgotten and printed as normal
+	  joins instead.
+	- Lag checking broke sometimes when nick was changed
+	- Don't close non-autolog logs when leaving channel / closing query.
+	- Time formats didn't work in directory name of autologs.
+	- Sometimes join to channel didn't ever get synced.
+	- IPv6 support didn't work correctly with all non-Linux OSes.
+	- Lots of minor fixes and changes to make your life easier.
+
 v0.7.96 2000-10-19  Timo Sirainen <tss@iki.fi>
 
 	* new configure option: --disable-curses-windows. Use this if curses

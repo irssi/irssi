@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: irssi 0.7.95\n"
-"POT-Creation-Date: 2000-10-19 21:57+0300\n"
+"POT-Creation-Date: 2000-12-03 07:31+0200\n"
 "PO-Revision-Date: 2000-08-14 01:51+0200\n"
 "Last-Translator: Per von Zweigbergk <pvz@iname.com>\n"
 "Language-Team: Per von Zweigbergh <pvz@iname.com>\n"
@@ -26,32 +26,32 @@ msgstr ""
 
 #. Display the text when we have already waited
 #. for a while
-#: src/core/net-disconnect.c:144
+#: src/core/net-disconnect.c:145
 msgid "Please wait, waiting for servers to close connections..\n"
 msgstr "Var god dröj, väntar på att servrarna ska avsluta uppkopplingarna...\n"
 
-#: src/core/network.c:475
+#: src/core/network.c:499
 msgid "Host not found"
 msgstr "Värdnamnet hittades inte"
 
-#: src/core/network.c:477
+#: src/core/network.c:501
 msgid "No IP address found for name"
 msgstr "Ingen IP-address fanns för värdnamnet"
 
-#: src/core/network.c:479
+#: src/core/network.c:503
 msgid "A non-recovable name server error occurred"
 msgstr "Ett allvarligt namnserverfel uppstod"
 
-#: src/core/network.c:481
+#: src/core/network.c:505
 msgid "A temporary error on an authoritative name server"
 msgstr "Ett tillfälligt fel på en autorativ namnserver uppstod"
 
-#: src/core/settings.c:314
+#: src/core/settings.c:317
 #, c-format
 msgid "Couldn't create %s/.irssi directory"
 msgstr "Kunde inte skapa katalogen %s/.irssi"
 
-#: src/core/settings.c:318
+#: src/core/settings.c:321
 #, c-format
 msgid ""
 "%s/.irssi is not a directory.\n"
@@ -60,7 +60,7 @@ msgstr ""
 "%s/.irssi är inte en katalog.\n"
 "Du borde ta bort den med kommandot: rm ~/.irssi"
 
-#: src/core/settings.c:329
+#: src/core/settings.c:333
 #, c-format
 msgid ""
 "Ignored errors in configuration file:\n"
@@ -69,7 +69,7 @@ msgstr ""
 "Ignorerade felaktigheter i konfigurationsfilen:\n"
 "%s"
 
-#: src/core/settings.c:356
+#: src/core/settings.c:360
 #, c-format
 msgid ""
 "Errors in configuration file:\n"
@@ -78,31 +78,27 @@ msgstr ""
 "Felaktigheter i konfigurationsfilen:\n"
 "%s"
 
-#: src/core/settings.c:384
+#: src/core/settings.c:390
 #, c-format
 msgid "Couldn't save configuration file: %s"
 msgstr "Kunde inte spara konfigurationen till konfigurationsfilen: %s"
 
-#: src/core/settings.c:404
+#: src/core/settings.c:411
 #, c-format
 msgid ""
 "Configuration file was modified while irssi was running. Saving "
 "configuration to file '%s' instead"
 msgstr ""
 
-#: src/fe-common/core/fe-settings.c:278
-msgid "Overwrite config (y/N)?"
-msgstr ""
-
-#: src/fe-common/core/printtext.c:957
+#: src/fe-common/core/printtext.c:382
 msgid "%_Warning:%_ %s"
 msgstr "%_Varning:%_ %s"
 
-#: src/fe-common/core/printtext.c:959
+#: src/fe-common/core/printtext.c:384
 msgid "%_Error:%_ %s"
 msgstr "%_Fel:%_ %s"
 
-#: src/fe-common/core/themes.c:147
+#: src/fe-common/core/themes.c:545
 #, c-format
 msgid ""
 "Ignored errors in theme:\n"
@@ -111,46 +107,50 @@ msgstr ""
 "Ignorerade felaktigheter i tema:\n"
 "%s"
 
-#: src/fe-common/irc/fe-common-irc.c:73
+#: src/fe-common/core/fe-settings.c:279
+msgid "Overwrite config (y/N)?"
+msgstr ""
+
+#: src/fe-common/irc/fe-common-irc.c:76
 msgid "Automatically connect to server/ircnet"
 msgstr "Koppla automatiskt upp mot server/irc-nätverk"
 
-#: src/fe-common/irc/fe-common-irc.c:73 src/fe-common/irc/fe-common-irc.c:74
+#: src/fe-common/irc/fe-common-irc.c:76 src/fe-common/irc/fe-common-irc.c:77
 msgid "SERVER"
 msgstr "SERVER"
 
-#: src/fe-common/irc/fe-common-irc.c:74
+#: src/fe-common/irc/fe-common-irc.c:77
 msgid "Autoconnect password"
 msgstr "Lösenord för automatisk uppkoppling"
 
-#: src/fe-common/irc/fe-common-irc.c:75
+#: src/fe-common/irc/fe-common-irc.c:78
 msgid "Autoconnect port"
 msgstr "Portnummer för automatisk uppkoppling"
 
-#: src/fe-common/irc/fe-common-irc.c:75
+#: src/fe-common/irc/fe-common-irc.c:78
 msgid "PORT"
 msgstr "PORT"
 
-#: src/fe-common/irc/fe-common-irc.c:76
+#: src/fe-common/irc/fe-common-irc.c:79
 msgid "Disable autoconnecting"
 msgstr "Avaktivera automatisk uppkoppling"
 
-#: src/fe-common/irc/fe-common-irc.c:77
+#: src/fe-common/irc/fe-common-irc.c:80
 msgid "Specify nick to use"
 msgstr "Välj vilket nicknamn du vill använda"
 
-#: src/fe-common/irc/fe-common-irc.c:78
+#: src/fe-common/irc/fe-common-irc.c:81
 msgid "Specify host name to use"
 msgstr "Välj vilket värdnamn du vill använda"
 
-#: src/fe-text/irssi.c:165
+#: src/fe-text/irssi.c:235
 msgid "Can't initialize screen handling, quitting.\n"
 msgstr "Ett skärmhanteringsinitieringsfel uppstod, avslutar.\n"
 
-#: src/lib-popt/popthelp.c:28
+#: src/lib-popt/popthelp.c:24
 msgid "Show this help message"
 msgstr "Visa det här hjälpmeddelandet"
 
-#: src/lib-popt/popthelp.c:29
+#: src/lib-popt/popthelp.c:25
 msgid "Display brief usage message"
 msgstr "Visa ett kortfattat hjälpmeddelande."

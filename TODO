@@ -1,3 +1,110 @@
+ *** sorry for the finnish items, they're just too many to translate and 
+ *** I've kept writing them in finnish usually... They also don't always
+ *** tell very well about the problem, just some note to myself that I'd
+ *** remember myself..
+
+ - /sb redraw doesn't do anything to non-format lines (should redraw 
+   timestamp, etc.)
+ - autorename query when msg is received from another nick in same host
+ - /formatabstract & /formatreplace to update abstracts & replaces in themes
+ - queries don't work properly in waiting channels .. because the server tag
+   verifying fails, we should just create the query and give the server tag
+   to it without checking if the server tag is really found at that time.
+ - autologissa tulee ongelmia jos printataan targettiin ilman serveri‰ ..
+   tapahtuu esim. "starting query with xxx" kun restoretaan ikkunoita
+   jos query oli savetettu. sitten huono kun se ei katoa koskaan itsekseen..
+ - perl:
+   - joku tapa ett‰ perlill‰kin voisi muuttaa kokonaan inputtirivi‰
+   - perliin: CHATNET_REC, MODULE_REC, THEME_REC, KEYINFO_REC,
+     "complete word" signaali, haluaa GSList **:n .. tuon muuttaminen,
+     listan alkuun tai loppuun kaman lis‰ys..
+
+ - joku printnickmsg() jolla voisi printata nuo nickin vaihdot ja quitit
+   ..ja killit skriptiss‰..
+ - /bind -delete?
+ - <tommik> hmm, I just did /notify nick, /unnotify nick, /notify nick OPN...
+   and now /notify shows the nick in all networks I'm connected to -
+   /notify -idle and you make /whois nick nick ei toimi
+ - redirectiot sotkee jotenkin jos on notify idless‰ xmunkki ja tekee
+   /wii xmunkki .. kun se laittaa "event empty"yn channelit ja muut, ei
+   realname/endofwhoisi‰
+ - jos serveri ei lˆyd‰ mun dns:‰‰ niin voi tulla i-linen puute.. irssi ei
+   saisi lopettaa tossa kohtaa serveriin yhdist‰mist‰... voisi jotenkin
+   s‰‰t‰‰ ett‰ bannin tullessa jos on ircnet asetettu niin ei lopettaisi
+   koskaan..
+ - serveri jos asettaa +r:n niin siit‰ ei sen j‰lkeen p‰‰se eroon mill‰‰n
+   muulla kuin /disconnectilla.. voisi pit‰‰ muistissa vaan itse annettuja
+   modeja eik‰ niit‰ mit‰ serverill‰ oli disconnectin aikana.
+ - se komentojuttu.. vois tehd‰ command_bind()iin suoraan parametrit ja optiot
+   optioistakin vois pit‰‰ sen historyn jos core ja fe-common tms. on eri
+   niin sitten fe-comon unloadattaessa tulis se coren takaisin voimaan.
+   mutta kuitenkin se merge juttu olis kokoajan ett‰ olis nopea..
+ - <fuchs> when i am called _` or just ] or { or something like that
+   every incomming msg is hilighted :/
+ - proxyyn tuki sille ett‰ kirjoittaa proxyss‰ msg:n niin clientitkin saa sen
+ - moduuleilta vois ottaa automaagisesti pois unloadissa niiden settingsit 
+   myˆs. ja otetaanko niilt‰ commandeja/signeeleja edes viel‰?
+ - valita jos yritet‰‰n k‰ytt‰‰ disable-staticcia configuressa.
+
+ - /mark .. ja automarkki ett‰ n‰kyy joku ------------ uuden tekstin kohdassa.
+ - /server -ircnet EFNet -next to cycle to the next server (or /reconnect
+   ircnet actually..).
+ - laita se splittaamaan automaagisesti msg:t ja noticet
+ - kommentit configgifiless‰ blockeissa bugaa. tee kunnon tarkistukset
+   kaikkialle noita ja virheellisi‰ juttuja varten.
+   is_node_list() uppercaseksi ja tee IS_NODE_BLOCK
+ - silc k‰skyt gruuppiin
+
+ - irc-nicklist.c: move nick change to core.
+ - irc-queries.c:  - '' -
+
+ - logausta vois tutkia v‰h‰n.. manuaalisesti ei voi nyt esim. logittaa
+   joko efnetin tai ircnetin #irssi‰.
+
+ - --more-- tulee jotenkin splitikkunoihin vaikkei pit‰isi.
+   window show, window hiden j‰lkeen ehk‰ ..eivaan ton j‰lkeen rivit ei
+   vaihdu en‰‰ vaan pit‰‰ itse pgdownia painaa ja shown j‰lkeen tuli
+   joku outo tyhji‰ rivej‰ vaan jotain corruptiota.. 2 ikkunaa oli vaan.
+
+ - hilightit + window activityt koodi on ihan sekasotkua. privamsg hilightit
+   vois tehd‰ pubmsg hilightien tyyliin
+ - /notify -away ja -idless‰ olis kiva jos nickiss‰ voisi olla wildcardeja
+ - completio vois hyppi‰ niiden -optioiden ohi. vois myˆs t‰ydennell‰
+   erikseen option parametrej‰? ja se conffattava completio.. alias completio
+ - ignore -pattern:n arvo pit‰isi n‰ytt‰‰
+ - n‰yt‰ /hilight:n ulostuksessa v‰rit
+ - autoignore korjaa.
+ - /save -all, tallentais kaikki configin asetukset ja teeman koko teeman
+ - haluis et teksti alkais ruudun alhaalta eik‰ ylh‰‰lt‰
+ - autoresume dcc autogetiss‰
+ - dcc time left
+ - dcc chatissa ei vaihdu nickki vaikka muualla vaihtuu.. oma ja toisen.
+ - dcc filet v‰lilyˆnneill‰ vois pelata
+ - plugin.h API
+ - fserver
+ - settingssit moduuleittain omiin blokkeihin niin sitten vois valittaa
+   tuntemattomista jos on typoja ja sellasta
+ - pit‰is pakottaa ircnet asettamaan setupserveriss‰ .. ja jos poistaa
+   ircnetin? "chat network xxx not found, assuming standard IRC network"..
+ - editorimainen rivin editointimahdollisuus pitkille riveille :)
+ - /window scroll off
+ - vertically split windows
+ - /set prompt $N etc.
+ - try profiling the code with /cat filewith10000lines
+ - when pasting text, irssi could notice it and ask 
+   "pasting 30 lines of text, ok?"
+ - wait 1 sec before sending the text, if arrow up key is pressed abort
+   sending the text. also really remove the line from screen and maybe
+   put some notice?
+
+ - ircnetin nimen voisi napata sielt‰ /ircnet:st‰ .. ett‰ se case menee
+   oikein. /server, /server list, /channel list, status ikkuna, [ircnet] ..
+ - optio k‰ytt‰‰ sit‰ VALKOISTA tai m‰‰r‰tty‰ v‰ri‰ eik‰ "default" v‰ri‰
+
+ - skriptej‰:
+   - nappula status window/takaisin hyppimiseen
+   - xtermin titlen asettelija
+
 
 *** New stuff in TODO, try to get rid of these :)
 
@@ -7,7 +114,6 @@
  - autoignoring:
      - it shouldn't save them to config file
      - it could be merged with /ignore -time
- - fix the proxy plugin to work again..
  - /server <number> would connect to n'th server in list. show the numbers
    with /server list
  - when dcc chat is accepted and query exists from the same nick, replace
@@ -51,7 +157,6 @@
      - add user counts (ops/voices/normal/total)
  - themes:
     - document the different formats briefly :)
-    - logging messages could be printed with a different theme
  - Make /SET HOLD_MODE
  - /CAT should pause on every screenful of text, this should be some kind of
    printtext_multiline_paused() function which would use some callback to
@@ -63,13 +168,15 @@
  - /NOTIFY -comment xxx - add a comment to notify. print the comment when
    user comes to irc.
  - "Should we check people in notify list when you're away" option
- - Implement /EXEC, /ON and /TIMER commands
+ - Implement /EXEC (steal all options from epic, make shell window somehow
+   with query), /ON and /TIMER commands
  - All those options to /WHO and /LIST commands that EPIC has
  - /SCROLLBACK FIND ?
  - nick/channel lists at right side of the text version of irssi. Ctrl-N
    for example could hide/show them. add mouse support for it.
  - /password command that asks you to type the password to entry line and
    would hide it with asterisks, good if people spy on you :)
+ - CTCP #channel HISTORY # - give # last lines of history from channel
 
 *** Bugs
 
