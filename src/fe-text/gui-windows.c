@@ -298,6 +298,9 @@ static LINE_CACHE_REC *gui_window_line_cache(GUI_WINDOW_REC *gui, LINE_REC *line
 				color &= 0xfff0;
 				color |= 8|ATTR_COLOR8;
 				break;
+			case LINE_CMD_BLINK:
+				color |= 0x80;
+				break;
 			case LINE_CMD_INDENT:
 				/* set indentation position here - don't do
 				   it if we're too close to right border */
@@ -429,6 +432,9 @@ static void single_line_draw(GUI_WINDOW_REC *gui, int ypos, LINE_CACHE_SUB_REC *
 				color &= 0xfff0;
 				color |= 8|ATTR_COLOR8;
 				break;
+			case LINE_CMD_BLINK:
+				color |= 0x80;
+                                break;
 			}
 			set_color(cwin, color);
 			text++;

@@ -80,6 +80,10 @@ static gchar *gui_window_line2text(LINE_REC *line)
 		color &= 0xfff0;
 		color |= 8|ATTR_COLOR8;
 		break;
+	    case LINE_CMD_BLINK:
+		color |= 0x80;
+		g_string_sprintfa(str, "\003%c%c", (color & 0x0f)+1, ((color & 0xf0) >> 4)+1);
+		break;
 	    case LINE_CMD_INDENT:
 		break;
 	}
