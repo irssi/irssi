@@ -76,7 +76,7 @@ static int config_has_specials(const char *text)
 	g_return_val_if_fail(text != NULL, FALSE);
 
 	while (*text != '\0') {
-		if (!isalnum((int) *text))
+		if (!isalnum((int) *text) && *text != '_')
 			return TRUE;
 		text++;
 	}
