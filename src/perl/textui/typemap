@@ -1,0 +1,18 @@
+TYPEMAP
+Irssi::TextUI::MainWindow	T_PlainObj
+Irssi::TextUI::TextBuffer	T_PlainObj
+Irssi::TextUI::TextBufferView	T_PlainObj
+Irssi::TextUI::Line		T_PlainObj
+Irssi::TextUI::LineCache	T_PlainObj
+Irssi::TextUI::LineInfo		T_PlainObj
+
+INPUT
+
+T_PlainObj
+	$var = irssi_ref_object($arg)
+
+OUTPUT
+
+T_PlainObj
+	$arg = plain_bless($var, \"$type\");
+

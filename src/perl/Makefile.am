@@ -118,7 +118,7 @@ EXTRA_DIST = \
 	$(UI_SOURCES)
 
 all-local:
-	for dir in common irc ui; do \
+	for dir in common irc ui textui; do \
 	  cd $$dir && \
 	  if [ ! -f Makefile ]; then \
             $(perlpath) Makefile.PL $(PERL_MM_PARAMS); \
@@ -128,16 +128,17 @@ all-local:
 	done
 
 install-exec-local:
-	for dir in common irc ui; do \
+	for dir in common irc ui textui; do \
 	  cd $$dir && $(MAKE) install && cd ..; \
 	done
 
 clean-generic:
-	rm -f common/Makefile irc/Makefile ui/Makefile
+	rm -f common/Makefile irc/Makefile ui/Makefile textui/Makefile
 
 distclean: distclean-am
 	-(cd common && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd irc && $(MAKE) realclean && rm -f Makefile.PL)
 	-(cd ui && $(MAKE) realclean && rm -f Makefile.PL)
+	-(cd textui && $(MAKE) realclean && rm -f Makefile.PL)
 
 libperl_core_la_LIBADD = $(PERL_LDFLAGS)
