@@ -196,7 +196,7 @@ CODE:
 		croak("Irssi::timeout() : msecs must be >= 10");
 		RETVAL = -1;
 	} else {
-		RETVAL = perl_timeout_add(msecs, func, data);
+		RETVAL = perl_timeout_add(msecs, func, data, FALSE);
 	}
 OUTPUT:
 	RETVAL
@@ -211,7 +211,7 @@ CODE:
 		croak("Irssi::timeout_once() : msecs must be >= 10");
 		RETVAL = -1;
 	} else {
-		RETVAL = perl_timeout_add(msecs, func, data);
+		RETVAL = perl_timeout_add(msecs, func, data, TRUE);
 	}
 OUTPUT:
 	RETVAL
@@ -244,7 +244,7 @@ input_add(source, condition, func, data)
 	SV *func
 	SV *data
 CODE:
-	RETVAL = perl_input_add(source, condition, func, data);
+	RETVAL = perl_input_add(source, condition, func, data, FALSE);
 OUTPUT:
 	RETVAL
 
