@@ -86,6 +86,7 @@ void sigint_handler(int p)
 static void read_settings(void)
 {
 	use_colors = settings_get_bool("colors");
+	signal(SIGQUIT, settings_get_bool("ignore_sigquit") ? SIG_IGN : SIG_DFL);
 	irssi_redraw();
 }
 
@@ -108,6 +109,7 @@ int init_screen(void)
 	intrflush(stdscr, FALSE); halfdelay(1); keypad(stdscr, 1);
 
 	settings_add_bool("lookandfeel", "colors", TRUE);
+	settings_add_bool("misc", "ignore_sigquit", FALSE);
 
 	use_colors = settings_get_bool("colors") && has_colors();
 	if (has_colors()) start_color();
