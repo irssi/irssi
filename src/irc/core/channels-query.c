@@ -218,10 +218,12 @@ static void query_send(IRC_SERVER_REC *server, int query)
 	case CHANNEL_QUERY_MODE:
 		cmd = g_strdup_printf("MODE %s", chanstr_commas);
 
-		/* the stop-event is received once for each channel */
+		/* the stop-event is received once for each channel,
+		   and we want to print 329 event (channel created). */
 		server_redirect_event(server, "mode channel", count,
 				      chanstr, -1, "chanquery abort",
 				      "event 324", "chanquery mode",
+                                      "event 329", "event 329",
 				      "", "chanquery abort", NULL);
 		break;
 
