@@ -44,7 +44,7 @@ noinst_HEADERS = \
 	xs/module.h
 
 all-local:
-	cd xs && if [ ! -f Makefile ]; then $(perlpath) Makefile.PL; fi && $(MAKE) && cd ..
+	cd xs && if [ ! -f Makefile ]; then if [ "x$(PERL_LIB_DIR)" = "x" ]; then $(perlpath) Makefile.PL; else $(perlpath) Makefile.PL LIB=$(PERL_LIB_DIR); fi; fi && $(MAKE) && cd ..
 
 install-exec-local:
 	cd xs && make install && cd ..

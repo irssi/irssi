@@ -1,7 +1,7 @@
 AC_INIT(src)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.7.92)
+AM_INIT_AUTOMAKE(irssi, 0.7.93)
 
 AM_MAINTAINER_MODE
 
@@ -72,8 +72,9 @@ AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
 	build_modules="$withval")
 
+PERL_LIB_DIR=
 AC_ARG_ENABLE(perl,
-[  --enable-perl           Enable Perl scripting],
+[  --enable-perl[=dir]     Enable Perl scripting, you can specify the Perl libraries installation path],
 	if test x$enableval = xyes; then
     		want_perl=yes
 	else
@@ -81,6 +82,7 @@ AC_ARG_ENABLE(perl,
 			want_perl=no
 		else
         		want_perl=yes
+			PERL_LIB_DIR="$enableval"
 		fi
 	fi,
 	want_perl=yes)
@@ -240,6 +242,7 @@ if test "$want_perl" = yes; then
 
 		AC_SUBST(PERL_CFLAGS)
 		AC_SUBST(PERL_LDFLAGS)
+		AC_SUBST(PERL_LIB_DIR)
 		AC_DEFINE(HAVE_PERL)
 	fi
 
@@ -391,9 +394,16 @@ fi
 
 echo
 
-echo Building text frontend ..... : $want_textui
-echo Building irssi-bot ......... : $want_irssibot
-echo Building with IPv6 support . : $want_ipv6
-echo Building with Perl support . : $want_perl
-echo Install prefix ............. : $prefix
+echo "Building text frontend ..... : $want_textui"
+echo "Building irssi-bot ......... : $want_irssibot"
+echo "Building with IPv6 support . : $want_ipv6"
+echo "Building with Perl support . : $want_perl"
+if test "x$want_perl" = "xyes"; then
+	if test "x$PERL_LIB_DIR" = "x"; then
+		echo "Perl library directory ..... : (default - usually /usr/local/lib/perl_site)"
+	else
+		echo "Perl library directory ..... : $PERL_LIB_DIR"
+	fi
+fi
+echo "Install prefix ............. : $prefix"
 
