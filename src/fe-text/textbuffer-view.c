@@ -36,7 +36,7 @@ static int linecache_tag;
 static GSList *views;
 
 #define view_is_bottom(view) \
-        ((view)->ypos >= 0 && (view)->ypos < (view)->height)
+        ((view)->ypos >= -1 && (view)->ypos < (view)->height)
 
 #define view_get_linecount(view, line) \
         textbuffer_view_get_line_cache(view, line)->count
