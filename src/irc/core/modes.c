@@ -250,6 +250,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			break;
 
 		case 'o':
+		case 'O': /* channel owner in !channels */
 			if (g_strcasecmp(channel->server->nick, arg) == 0)
 				channel->chanop = type == '+';
 			nick_mode_change(channel, arg, '@', type);
