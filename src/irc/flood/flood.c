@@ -204,7 +204,7 @@ static void flood_notice(const char *data, IRC_SERVER_REC *server, const char *n
 {
 	char *params, *target, *text;
 
-	g_return_if_fail(text != NULL);
+	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
 	if (nick == NULL) {
