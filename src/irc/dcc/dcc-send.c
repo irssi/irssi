@@ -39,7 +39,8 @@
 #endif
 
 static int dcc_send_one_file(int queue, const char *target, const char *fname,
-			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat);
+			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
+			     int passive);
 
 static void dcc_queue_send_next(int queue)
 {
@@ -58,7 +59,8 @@ static void dcc_queue_send_next(int queue)
 		} else {
 			send_started = dcc_send_one_file(queue, qrec->nick,
 							 qrec->file, server,
-							 qrec->chat);
+							 qrec->chat,
+							 qrec->passive);
 		}
                 dcc_queue_remove_head(queue);
 	}
@@ -70,7 +72,8 @@ static void dcc_queue_send_next(int queue)
 }
 
 static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
-			 const char *nick, char *fileargs, int add_mode)
+			 const char *nick, char *fileargs, int add_mode,
+			 int passive)
 {
 	struct stat st;
 	glob_t globbuf;
@@ -127,8 +130,12 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 			}
 		}
 
-		dcc_queue_add(queue, add_mode, nick,
-			      fname, servertag, chat);
+		if (!passive)
+			dcc_queue_add(queue, add_mode, nick,
+				      fname, servertag, chat);
+		else
+			dcc_queue_add_passive(queue, add_mode, nick,
+					      fname, servertag, chat);
 		files++;
 	}
 
@@ -138,7 +145,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 	globfree(&globbuf);
 }
 
-/* DCC SEND [-append | -prepend | -flush | -rmtail | -rmhead]
+/* DCC SEND [-append | -prepend | -flush | -rmtail | -rmhead | -passive]
             <nick> <file> [<file> ...] */
 static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 			 WI_ITEM_REC *item)
@@ -148,7 +155,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	void *free_arg;
 	CHAT_DCC_REC *chat;
 	GHashTable *optlist;
-	int queue, mode;
+	int queue, mode, passive;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_GETREST, "dcc send",
@@ -168,6 +175,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	if (servertag == NULL && chat == NULL)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
+	passive = g_hash_table_lookup(optlist, "passive") != NULL;
+    
 	if (g_hash_table_lookup(optlist, "rmhead") != NULL) {
 		queue = dcc_queue_old(nick, servertag);
 		if (queue != -1)
@@ -190,8 +199,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 		if (*fileargs == '\0')
 			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-		dcc_send_add(servertag, chat, nick, fileargs, mode);
+        
+		dcc_send_add(servertag, chat, nick, fileargs, mode, passive);
 	}
 
 	cmd_params_free(free_arg);
@@ -310,6 +319,28 @@ static void dcc_send_connected(SEND_DCC_REC *dcc)
 	signal_emit("dcc connected", 1, dcc);
 }
 
+/* input function: DCC SEND - connect to the receiver (passive protocol) */
+static void dcc_send_connect(SEND_DCC_REC *dcc)
+{
+	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
+
+	if (dcc->handle != NULL) {
+		dcc->starttime = time(NULL);
+
+		dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
+					   (GInputFunction) dcc_send_read_size,
+					   dcc);
+		dcc->tagwrite = g_input_add(dcc->handle, G_INPUT_WRITE,
+					    (GInputFunction) dcc_send_data,
+					    dcc);
+		signal_emit("dcc connected", 1, dcc);
+	} else {
+		/* error connecting */
+		signal_emit("dcc error connect", 1, dcc);
+		dcc_destroy(DCC(dcc));
+	}
+}
+
 static char *dcc_send_get_file(const char *fname)
 {
 	char *str, *path;
@@ -329,22 +360,23 @@ static char *dcc_send_get_file(const char *fname)
 }
 
 static int dcc_send_one_file(int queue, const char *target, const char *fname,
-			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat)
+			     IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
+			     int passive)
 {
 	struct stat st;
 	char *str;
 	char host[MAX_IP_LEN];
-	int hfile, port;
+	int hfile, port = 0;
         SEND_DCC_REC *dcc;
 	IPADDR own_ip;
-        GIOChannel *handle;
+	GIOChannel *handle;
 
 	if (dcc_find_request(DCC_SEND_TYPE, target, fname)) {
-	        signal_emit("dcc error send exists", 2, target, fname);
+		signal_emit("dcc error send exists", 2, target, fname);
 		return FALSE;
 	}
 
-        str = dcc_send_get_file(fname);
+	str = dcc_send_get_file(fname);
 	hfile = open(str, O_RDONLY);
 	g_free(str);
 
@@ -360,14 +392,19 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 		return FALSE;
 	}
 
-        /* start listening */
-	handle = dcc_listen(chat != NULL ? chat->handle :
-			    net_sendbuffer_handle(server->handle),
-			    &own_ip, &port);
-	if (handle == NULL) {
-		close(hfile);
-		g_warning("dcc_listen() failed: %s", strerror(errno));
-		return FALSE;
+	/* start listening (only if passive == FALSE )*/
+
+	if (passive == FALSE) {
+		handle = dcc_listen(chat != NULL ? chat->handle :
+				    net_sendbuffer_handle(server->handle),
+				    &own_ip, &port);
+		if (handle == NULL) {
+			close(hfile);
+			g_warning("dcc_listen() failed: %s", strerror(errno));
+			return FALSE;
+		}
+	} else {
+		handle = NULL;
 	}
 
 	fname = g_basename(fname);
@@ -391,20 +428,37 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	dcc->fhandle = hfile;
 	dcc->queue = queue;
         dcc->file_quoted = strchr(fname, ' ') != NULL;
-	dcc->tagconn = g_input_add(handle, G_INPUT_READ,
-				   (GInputFunction) dcc_send_connected, dcc);
+	if (!passive) {
+		dcc->tagconn = g_input_add(handle, G_INPUT_READ,
+					   (GInputFunction) dcc_send_connected,
+					   dcc);
+	}
 
+	/* Generate an ID for this send if using passive protocol */
+	if (passive) {
+		srand(time(NULL));
+		dcc->pasv_id = rand() % 64;
+	}
+    
 	/* send DCC request */
 	signal_emit("dcc request send", 1, dcc);
 
+    
 	dcc_ip2str(&own_ip, host);
-	str = g_strdup_printf(dcc->file_quoted ?
-			      "DCC SEND \"%s\" %s %d %"PRIuUOFF_T :
-			      "DCC SEND %s %s %d %"PRIuUOFF_T,
-			      dcc->arg, host, port, dcc->size);
+	if (passive == FALSE) {
+		str = g_strdup_printf(dcc->file_quoted ?
+				      "DCC SEND \"%s\" %s %d %"PRIuUOFF_T :
+				      "DCC SEND %s %s %d %"PRIuUOFF_T,
+				      dcc->arg, host, port, dcc->size);
+	} else {
+		str = g_strdup_printf(dcc->file_quoted ?
+				      "DCC SEND \"%s\" 16974599 0 %"PRIuUOFF_T" %d" :
+				      "DCC SEND %s 16974599 0 %"PRIuUOFF_T" %d",
+				      dcc->arg, dcc->size, dcc->pasv_id);
+	}
 	dcc_ctcp_message(server, target, chat, FALSE, str);
-	g_free(str);
 
+	g_free(str);
 	return TRUE;
 }
 
@@ -414,8 +468,9 @@ void dcc_send_init(void)
 	settings_add_str("dcc", "dcc_upload_path", "~");
 	settings_add_bool("dcc", "dcc_send_replace_space_with_underscore", FALSE);
 	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+	signal_add("dcc reply send pasv", (SIGNAL_FUNC) dcc_send_connect);
 	command_bind("dcc send", NULL, (SIGNAL_FUNC) cmd_dcc_send);
-	command_set_options("dcc send", "append flush prepend rmhead rmtail");
+	command_set_options("dcc send", "append flush prepend rmhead rmtail passive");
 
 	dcc_queue_init();
 }
@@ -426,5 +481,6 @@ void dcc_send_deinit(void)
 
         dcc_unregister_type("SEND");
 	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
+	signal_remove("dcc reply send pasv", (SIGNAL_FUNC) dcc_send_connect);
 	command_unbind("dcc send", (SIGNAL_FUNC) cmd_dcc_send);
 }

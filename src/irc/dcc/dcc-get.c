@@ -24,10 +24,11 @@
 #include "network.h"
 #include "misc.h"
 #include "settings.h"
-
+#include "net-sendbuffer.h"
 #include "irc-servers.h"
 
 #include "dcc-get.h"
+#include "dcc-send.h"
 
 static int dcc_file_create_mode;
 
@@ -290,6 +291,54 @@ void dcc_get_connect(GET_DCC_REC *dcc)
 	}
 }
 
+static void dcc_get_listen(GET_DCC_REC *dcc)
+{
+	GIOChannel *handle;
+	IPADDR addr;
+	int port;
+
+	/* accept connection */
+	handle = net_accept(dcc->handle, &addr, &port);
+	if (handle == NULL)
+		return;
+
+	net_disconnect(dcc->handle);
+	g_source_remove(dcc->tagconn);
+	dcc->tagconn = -1;
+
+	dcc->starttime = time(NULL);
+	dcc->handle = handle;
+	memcpy(&dcc->addr, &addr, sizeof(IPADDR));
+	net_ip2host(&dcc->addr, dcc->addrstr);
+	dcc->port = port;
+
+	dcc->tagconn = g_input_add(handle, G_INPUT_READ | G_INPUT_WRITE,
+				   (GInputFunction) sig_dccget_connected, dcc);
+}
+
+void dcc_get_passive(GET_DCC_REC *dcc)
+{
+	GIOChannel *handle;
+	IPADDR own_ip;
+	int port;
+	char host[MAX_IP_LEN];
+
+	handle = dcc_listen(net_sendbuffer_handle(dcc->server->handle),
+			    &own_ip, &port);
+	if (handle == NULL)
+		cmd_return_error(CMDERR_ERRNO);
+
+	dcc->handle = handle;
+	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
+				   (GInputFunction) dcc_get_listen, dcc);
+
+	/* Let's send the reply to the other client! */
+	dcc_ip2str(&own_ip, host);
+	irc_send_cmdv(dcc->server,
+		      "PRIVMSG %s :\001DCC SEND %s %s %d %"PRIuUOFF_T" %d\001",
+		      dcc->nick, dcc->arg, host, port, dcc->size, dcc->pasv_id);
+}
+
 #define get_params_match(params, pos) \
 	((is_numeric(params[pos], '\0') || is_ipv6_address(params[pos])) && \
 	is_numeric(params[(pos)+1], '\0') && atol(params[(pos)+1]) < 65536 && \
@@ -332,14 +381,18 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 			      const char *target, CHAT_DCC_REC *chat)
 {
 	GET_DCC_REC *dcc;
-        IPADDR ip;
+	SEND_DCC_REC *temp_dcc;
+	IPADDR ip;
 	const char *address;
 	char **params, *fname;
 	int paramcount, fileparams;
 	int port, len, quoted = FALSE;
         uoff_t size;
+	int p_id = -1;
+	int passive = FALSE;
 
 	/* SEND <file name> <address> <port> <size> [...] */
+	/* SEND <file name> <address> 0 <size> <id> (DCC SEND passive protocol) */
 	params = g_strsplit(data, " ", -1);
 	paramcount = strarray_length(params);
 
@@ -357,6 +410,12 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	port = atoi(params[fileparams+1]);
 	size = str_to_uofft(params[fileparams+2]);
 
+	/* If this DCC uses passive protocol then store the id for later use. */
+	if (paramcount == fileparams + 4) {
+		p_id = atoi(params[fileparams+3]);
+		passive = TRUE;
+	}
+
 	params[fileparams] = NULL;
         fname = g_strjoinv(" ", params);
 	g_strfreev(params);
@@ -368,36 +427,73 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		g_memmove(fname, fname+1, len);
                 quoted = TRUE;
 	}
+    
+	if (passive && port != 0) {
+		/* This is NOT a DCC SEND request! This is a reply to our
+		   passive request. We MUST check the IDs and then connect to
+		   the remote host. */
+
+		temp_dcc = DCC_SEND(dcc_find_request(DCC_SEND_TYPE, nick, fname));
+		if (temp_dcc != NULL && p_id == temp_dcc->pasv_id) {
+			temp_dcc->target = g_strdup(target);
+			temp_dcc->port = port;
+			temp_dcc->size = size;
+			temp_dcc->file_quoted = quoted;
+
+			memcpy(&temp_dcc->addr, &ip, sizeof(IPADDR));
+			if (temp_dcc->addr.family == AF_INET)
+				net_ip2host(&temp_dcc->addr, temp_dcc->addrstr);
+			else {
+				/* with IPv6, show it to us as it was sent */
+				strocpy(temp_dcc->addrstr, address,
+					sizeof(temp_dcc->addrstr));
+			}
+
+			/* This new signal is added to let us invoke
+			   dcc_send_connect() which is found in dcc-send.c */
+			signal_emit("dcc reply send pasv", 1, temp_dcc);
+			g_free(fname);
+			return;
+		} else if (temp_dcc != NULL && p_id != temp_dcc->pasv_id) {
+			/* IDs don't match... remove the old DCC SEND and
+			   return */
+			dcc_destroy(DCC(temp_dcc));
+			g_free(fname);
+			return;
+		}
+	}
 
 	dcc = DCC_GET(dcc_find_request(DCC_GET_TYPE, nick, fname));
-	if (dcc != NULL) {
-		/* same DCC request offered again, remove the old one */
-		dcc_destroy(DCC(dcc));
-	}
+	if (dcc != NULL)
+		dcc_destroy(DCC(dcc)); /* remove the old DCC */
 
 	dcc = dcc_get_create(server, chat, nick, fname);
 	dcc->target = g_strdup(target);
+
+	if (passive && port == 0)
+		dcc->pasv_id = p_id; /* Assign the ID to the DCC */
+    
 	memcpy(&dcc->addr, &ip, sizeof(ip));
 	if (dcc->addr.family == AF_INET)
 		net_ip2host(&dcc->addr, dcc->addrstr);
 	else {
 		/* with IPv6, show it to us as it was sent */
-		strncpy(dcc->addrstr, address, sizeof(dcc->addrstr)-1);
-		dcc->addrstr[sizeof(dcc->addrstr)-1] = '\0';
+		strocpy(dcc->addrstr, address, sizeof(dcc->addrstr));
 	}
 	dcc->port = port;
 	dcc->size = size;
-        dcc->file_quoted = quoted;
+	dcc->file_quoted = quoted;
 
 	signal_emit("dcc request", 2, dcc, addr);
 
-        g_free(fname);
+	g_free(fname);
 }
 
 /* handle receiving DCC - GET/RESUME. */
-void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
+void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
+		     DCC_GET_FUNC pasv_accept_func)
 {
-        GET_DCC_REC *dcc;
+	GET_DCC_REC *dcc;
 	GSList *tmp, *next;
 	char *nick, *fname;
 	void *free_arg;
@@ -411,8 +507,12 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
 
 	if (*nick == '\0') {
 		dcc = DCC_GET(dcc_find_request_latest(DCC_GET_TYPE));
-		if (dcc != NULL)
-			accept_func(dcc);
+		if (dcc != NULL) {
+			if (!dcc_is_passive(dcc))
+				accept_func(dcc);
+			else
+				pasv_accept_func(dcc);
+		}
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -426,7 +526,10 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
 		    (dcc_is_waiting_user(dcc) || dcc->from_dccserver) &&
 		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
 			found = TRUE;
-			accept_func(dcc);
+			if (!dcc_is_passive(dcc))
+				accept_func(dcc);
+			else
+				pasv_accept_func(dcc);
 		}
 	}
 
@@ -439,7 +542,7 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func)
 /* SYNTAX: DCC GET [<nick> [<file>]] */
 static void cmd_dcc_get(const char *data)
 {
-        cmd_dcc_receive(data, dcc_get_connect);
+	cmd_dcc_receive(data, dcc_get_connect, dcc_get_passive);
 }
 
 static void read_settings(void)

@@ -92,7 +92,9 @@ void dcc_init_rec(DCC_REC *dcc, IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 
 	dcc->servertag = server != NULL ? g_strdup(server->tag) :
 		(chat == NULL ? NULL : g_strdup(chat->servertag));
-
+	
+	dcc->pasv_id = -1; /* Not a passive DCC */
+	
 	dcc_conns = g_slist_append(dcc_conns, dcc);
 	signal_emit("dcc created", 1, dcc);
 }

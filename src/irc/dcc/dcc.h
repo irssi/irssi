@@ -24,6 +24,10 @@ typedef struct {
 #define dcc_is_waiting_user(dcc) \
         ((dcc)->handle == NULL)
 
+/* passive DCC */
+#define dcc_is_passive(dcc) \
+	((dcc)->pasv_id >= 0)
+		
 extern GSList *dcc_conns;
 
 void dcc_register_type(const char *type);

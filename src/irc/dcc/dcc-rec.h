@@ -20,6 +20,8 @@ int tagconn, tagread, tagwrite;
 time_t starttime; /* transfer start time */
 uoff_t transfd; /* bytes transferred */
 
+int pasv_id; /* DCC Id for passive DCCs. <0 means a passive DCC, >=0 means a standard DCC */
+
 unsigned int destroyed:1; /* We're about to destroy this DCC recond */
 
 GHashTable *module_data;

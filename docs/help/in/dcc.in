@@ -1,27 +1,29 @@
 
 @SYNTAX:dcc@
 
-This is a command to handle different DCC-connections. DCC is mainly
-used for more reliable and faster chatting and for sending and receiving 
-files.
-
 /DCC LIST
     - Shows all the open DCC connections.
 /DCC RESUME [<nick> [<file>]]
     - Resumes a DCC SEND/GET connection.
-/DCC CHAT [<nick>]
+/DCC CHAT [-passive] [<nick>]
     - Sends a chat connection request to remote client or accepts 
       a chat connection if the remote end has already sent a request.
+      If -passive is used then the passive DCC protocol is used (as mIRC
+      can do). This is useful to bypass a NAT/firewall which limit your
+      possibility in listening for remote connections.
 /DCC GET [<nick> [<file>]]
     - Gets the file offered by remote client. The file is downloaded and
       saved into the current working directory.
-/DCC SEND [-append | -prepend | -flush | -rmtail | -rmhead]
+/DCC SEND [-passive] [-append | -prepend | -flush | -rmtail | -rmhead]
           <nick> <file> [<file> ...]
     - Sends a DCC SEND request to remote client. Remote end has to accept
       the request before the transmission can be started. Giving multiple files
       queues them. File names may contain shell expansion characters: * ? [] ~
       (~ expansion may not be supported on all platforms). Files with spaces
-      in their names need to be quoted (eg. "file name").
+      in their names need to be quoted (eg. "file name"). If -passive is used
+      then the passive DCC protocol is used (as mIRC and xchat > 2.0.7 can do). 
+      This is useful to bypass a NAT/firewall which limit your possibility in 
+      listening for remote connections.
 /DCC SERVER [<+|-scf> <port>]
     - Starts a DCC SERVER on the specified port. The remote can connect to this
       server and initiate chat, send and fserve requests. You can specify + or -

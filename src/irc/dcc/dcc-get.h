@@ -32,8 +32,10 @@ typedef struct {
 typedef void (*DCC_GET_FUNC) (GET_DCC_REC *);
 
 /* handle receiving DCC - GET/RESUME. */
-void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func);
+void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
+		     DCC_GET_FUNC pasv_accept_func);
 
+void dcc_get_passive(GET_DCC_REC *dcc);
 void dcc_get_connect(GET_DCC_REC *dcc);
 char *dcc_get_download_path(const char *fname);
 

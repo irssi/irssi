@@ -45,24 +45,29 @@ static FILE_DCC_REC *dcc_resume_find(int type, const char *nick, int port)
 }
 
 static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
-				 FILE_DCC_REC **dcc, uoff_t *size)
+				 FILE_DCC_REC **dcc, uoff_t *size, int *pasv_id)
 {
 	char **params;
 	int paramcount;
         int port;
 
 	/* RESUME|ACCEPT <file name> <port> <size> */
+	/* RESUME|ACCEPT <file name> 0 <size> <id> (passive protocol) */
 	params = g_strsplit(data, " ", -1);
 	paramcount = strarray_length(params);
 
 	if (paramcount >= 3) {
-		port = atoi(params[paramcount-2]);
-		*size = str_to_uofft(params[paramcount-1]);
-
+		port = atoi(params[1]);
+		*size = str_to_uofft(params[2]);
+		*pasv_id = (port == 0) ? atoi(params[3]) : -1;
 		*dcc = dcc_resume_find(type, nick, port);
+		g_strfreev(params);
+
+		/* If the ID is different then the DCC cannot be resumed */
+		return ((*dcc)->pasv_id == *pasv_id);
 	}
 	g_strfreev(params);
-	return paramcount >= 3;
+	return FALSE;
 }
 
 static int dcc_resume_file_check(FILE_DCC_REC *dcc, IRC_SERVER_REC *server,
@@ -90,16 +95,24 @@ static void ctcp_msg_dcc_resume(IRC_SERVER_REC *server, const char *data,
 {
 	FILE_DCC_REC *dcc;
         char *str;
-        uoff_t size;
+	uoff_t size;
+	int pasv_id = -1;
 
-	if (!dcc_ctcp_resume_parse(DCC_SEND_TYPE, data, nick, &dcc, &size)) {
+	if (!dcc_ctcp_resume_parse(DCC_SEND_TYPE, data, nick, &dcc, &size, &pasv_id)) {
 		signal_emit("dcc error ctcp", 5, "RESUME", data,
 			    nick, addr, target);
 	} else if (dcc != NULL && dcc_resume_file_check(dcc, server, size)) {
-		str = g_strdup_printf(DCC_SEND(dcc)->file_quoted ?
-				      "DCC ACCEPT \"%s\" %d %"PRIuUOFF_T :
-				      "DCC ACCEPT %s %d %"PRIuUOFF_T,
-				      dcc->arg, dcc->port, dcc->transfd);
+		if (!dcc_is_passive(dcc)) {
+			str = g_strdup_printf(DCC_SEND(dcc)->file_quoted ?
+					      "DCC ACCEPT \"%s\" %d %"PRIuUOFF_T :
+					      "DCC ACCEPT %s %d %"PRIuUOFF_T,
+					      dcc->arg, dcc->port, dcc->transfd);
+		} else {
+			str = g_strdup_printf(DCC_SEND(dcc)->file_quoted ?
+					      "DCC ACCEPT \"%s\" 0 %"PRIuUOFF_T" %d" :
+					      "DCC ACCEPT %s 0 %"PRIuUOFF_T" %d",
+					      dcc->arg, dcc->transfd, dcc->pasv_id);
+		}
 		dcc_ctcp_message(dcc->server, dcc->nick,
 				 dcc->chat, FALSE, str);
 		g_free(str);
@@ -113,13 +126,18 @@ static void ctcp_msg_dcc_accept(IRC_SERVER_REC *server, const char *data,
 {
 	FILE_DCC_REC *dcc;
         uoff_t size;
+	int pasv_id;
 
-	if (!dcc_ctcp_resume_parse(DCC_GET_TYPE, data, nick, &dcc, &size) ||
+	if (!dcc_ctcp_resume_parse(DCC_GET_TYPE, data, nick, &dcc, &size, &pasv_id) ||
 	    (dcc != NULL && DCC_GET(dcc)->get_type != DCC_GET_RESUME)) {
 		signal_emit("dcc error ctcp", 5, "ACCEPT", data,
 			    nick, addr, target);
-	} else if (dcc != NULL && dcc_resume_file_check(dcc, server, size))
-		dcc_get_connect(DCC_GET(dcc));
+	} else if (dcc != NULL && dcc_resume_file_check(dcc, server, size)) {
+		if (!dcc_is_passive(dcc))
+			dcc_get_connect(DCC_GET(dcc));
+		else
+			dcc_get_passive(DCC_GET(dcc));
+	}
 }
 
 /* Resume a DCC GET */
@@ -128,7 +146,7 @@ static void dcc_send_resume(GET_DCC_REC *dcc)
         off_t pos;
 	char *str;
 
-	g_return_if_fail(dcc != NULL);
+        g_return_if_fail(dcc != NULL);
 
 	dcc->file = dcc_get_download_path(dcc->arg);
 	dcc->fhandle = open(dcc->file, O_WRONLY);
@@ -149,10 +167,17 @@ static void dcc_send_resume(GET_DCC_REC *dcc)
 		dcc->starttime = time(NULL);
 		dcc_reject(DCC(dcc), NULL);
 	} else {
-		str = g_strdup_printf(dcc->file_quoted ?
-				      "DCC RESUME \"%s\" %d %"PRIuUOFF_T :
-				      "DCC RESUME %s %d %"PRIuUOFF_T,
-				      dcc->arg, dcc->port, dcc->transfd);
+		if (!dcc_is_passive(dcc)) {
+			str = g_strdup_printf(dcc->file_quoted ?
+					      "DCC RESUME \"%s\" %d %"PRIuUOFF_T :
+					      "DCC RESUME %s %d %"PRIuUOFF_T,
+					      dcc->arg, dcc->port, dcc->transfd);
+		} else {
+			str = g_strdup_printf(dcc->file_quoted ?
+					      "DCC RESUME \"%s\" 0 %"PRIuUOFF_T" %d" :
+					      "DCC RESUME %s 0 %"PRIuUOFF_T" %d",
+					      dcc->arg, dcc->transfd, dcc->pasv_id);
+		}
 		dcc_ctcp_message(dcc->server, dcc->nick,
 				 dcc->chat, FALSE, str);
 		g_free(str);
@@ -162,7 +187,7 @@ static void dcc_send_resume(GET_DCC_REC *dcc)
 /* SYNTAX: DCC RESUME [<nick> [<file>]] */
 static void cmd_dcc_resume(const char *data)
 {
-	cmd_dcc_receive(data, dcc_send_resume);
+	cmd_dcc_receive(data, dcc_send_resume, dcc_send_resume);
 }
 
 void dcc_resume_init(void)

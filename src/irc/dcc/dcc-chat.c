@@ -388,35 +388,77 @@ static void dcc_chat_connect(CHAT_DCC_REC *dcc)
 	}
 }
 
-/* SYNTAX: DCC CHAT [<nick>] */
+static void dcc_chat_passive(CHAT_DCC_REC *dcc)
+{
+	IPADDR own_ip;
+	int port;
+	GIOChannel *handle;
+	char host[MAX_IP_LEN];
+
+	g_return_if_fail(IS_DCC_CHAT(dcc));
+
+	if (dcc->addrstr[0] == '\0' ||
+	    dcc->starttime != 0 || dcc->handle != NULL) {
+		/* already sent a chat request / already chatting */
+		return;
+	}
+
+	handle = dcc_listen(net_sendbuffer_handle(dcc->server->handle),
+			    &own_ip, &port);
+	if (handle == NULL)
+		cmd_return_error(CMDERR_ERRNO);
+
+	dcc->handle = handle;
+	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
+				   (GInputFunction) dcc_chat_listen, dcc);
+
+	/* Let's send the reply to the other client! */
+	dcc_ip2str(&own_ip, host);
+	irc_send_cmdv(dcc->server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d %d\001",
+		      dcc->nick, host, port, dcc->pasv_id);
+         
+}
+
+/* SYNTAX: DCC CHAT [-passive] [<nick>] */
 static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 {
 	void *free_arg;
 	CHAT_DCC_REC *dcc;
 	IPADDR own_ip;
-        GIOChannel *handle;
+	GIOChannel *handle;
+	GHashTable *optlist;
+	int p_id;
 	char *nick, host[MAX_IP_LEN];
 	int port;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 1, &nick))
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "dcc chat", &optlist, &nick))
 		return;
 
 	if (*nick == '\0') {
 		dcc = DCC_CHAT(dcc_find_request_latest(DCC_CHAT_TYPE));
-		if (dcc != NULL)
-			dcc_chat_connect(dcc);
+		if (dcc != NULL) {
+			if (!dcc_is_passive(dcc))
+				dcc_chat_connect(dcc);
+			else
+				dcc_chat_passive(dcc);
+		}
 		cmd_params_free(free_arg);
 		return;
 	}
 
 	dcc = dcc_chat_find_id(nick);
 	if (dcc != NULL && dcc_is_waiting_user(dcc)) {
-		/* found from dcc chat requests,
-		   we're the connecting side */
-		dcc_chat_connect(dcc);
-		cmd_params_free(free_arg);
+		if (!dcc_is_passive(dcc)) {
+			/* found from dcc chat requests,
+			   we're the connecting side */
+			dcc_chat_connect(dcc);
+		} else {
+			/* We are accepting a passive DCC CHAT. */
+			dcc_chat_passive(dcc);
+		}
 		return;
 	}
 
@@ -424,30 +466,50 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	    dcc->server == server) {
 		/* sending request again even while old request is
 		   still waiting, remove it. */
-                dcc_destroy(DCC(dcc));
+		dcc_destroy(DCC(dcc));
 	}
 
-	/* start listening  */
 	if (!IS_IRC_SERVER(server) || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	handle = dcc_listen(net_sendbuffer_handle(server->handle),
-			    &own_ip, &port);
-	if (handle == NULL)
-		cmd_param_error(CMDERR_ERRNO);
-
 	dcc = dcc_chat_create(server, NULL, nick, "chat");
-        dcc->handle = handle;
-	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) dcc_chat_listen, dcc);
 
-	/* send the chat request */
-	signal_emit("dcc request send", 1, dcc);
+	if (g_hash_table_lookup(optlist, "passive") == NULL) {
+		/* Standard DCC CHAT... let's listen for incoming connections */
+		handle = dcc_listen(net_sendbuffer_handle(server->handle),
+				    &own_ip, &port);
+		if (handle == NULL)
+			cmd_param_error(CMDERR_ERRNO);
 
-	dcc_ip2str(&own_ip, host);
-	irc_send_cmdv(server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
-		      nick, host, port);
+		dcc->handle = handle;
+		dcc->tagconn =
+			g_input_add(dcc->handle, G_INPUT_READ,
+				    (GInputFunction) dcc_chat_listen, dcc);
 
+		/* send the chat request */
+		signal_emit("dcc request send", 1, dcc);
+
+		dcc_ip2str(&own_ip, host);
+		irc_send_cmdv(server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d\001",
+			      nick, host, port);
+	} else {
+		/* Passive protocol... we want the other side to listen */
+		/* send the chat request */
+		dcc->port = 0;
+		signal_emit("dcc request send", 1, dcc);
+
+		/* generate a random id */
+		srand(time(NULL));
+		p_id = rand() % 64;
+		dcc->pasv_id = p_id;
+
+		/* 16974599 is the long format of 1.3.3.7, we use a fake IP
+		   since the other side shouldn't care of it: they will send
+		   the address for us to connect to in the reply */
+		irc_send_cmdv(server,
+			      "PRIVMSG %s :\001DCC CHAT CHAT 16974599 0 %d\001",
+			      nick, p_id);
+	}
 	cmd_params_free(free_arg);
 }
 
@@ -541,16 +603,18 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
         CHAT_DCC_REC *dcc;
 	char **params;
 	int paramcount;
-        int autoallow = FALSE;
-
+        int passive, autoallow = FALSE;
+	
         /* CHAT <unused> <address> <port> */
+	/* CHAT <unused> <address> 0 <id> (DCC CHAT passive protocol) */
 	params = g_strsplit(data, " ", -1);
 	paramcount = strarray_length(params);
 
 	if (paramcount < 3) {
 		g_strfreev(params);
-                return;
+		return;
 	}
+	passive = paramcount == 4 && strcmp(params[2], "0") == 0;
 
 	dcc = DCC_CHAT(dcc_find_request(DCC_CHAT_TYPE, nick, NULL));
 	if (dcc != NULL) {
@@ -559,24 +623,50 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 			   dcc chat from us .. allow it. */
 			dcc_destroy(DCC(dcc));
 			autoallow = TRUE;
-		} else {
+		} else if (!dcc_is_passive(dcc)) {
 			/* we already have one dcc chat request
 			   from this nick, remove it. */
-                        dcc_destroy(DCC(dcc));
+			dcc_destroy(DCC(dcc));
+		} else if (passive) {
+			if (dcc->pasv_id != atoi(params[3])) {
+				/* IDs don't match! */
+				dcc_destroy(DCC(dcc));
+			} else {
+				/* IDs are ok! Update address and port and
+				   connect! */
+				dcc->target = g_strdup(target);
+				dcc->port = atoi(params[2]);
+				dcc_str2ip(params[1], &dcc->addr);
+				net_ip2host(&dcc->addr, dcc->addrstr);
+
+				dcc_chat_connect(dcc);
+				g_strfreev(params);
+				return;
+			}
 		}
 	}
-
+	
 	dcc = dcc_chat_create(server, chat, nick, params[0]);
 	dcc->target = g_strdup(target);
 	dcc->port = atoi(params[2]);
+	
+	if (passive)
+		dcc->pasv_id = atoi(params[3]);
+	
 	dcc_str2ip(params[1], &dcc->addr);
 	net_ip2host(&dcc->addr, dcc->addrstr);
 
 	signal_emit("dcc request", 2, dcc, addr);
 
-	if (autoallow || DCC_CHAT_AUTOACCEPT(dcc, server, nick, addr))
-		dcc_chat_connect(dcc);
-
+	if (autoallow || DCC_CHAT_AUTOACCEPT(dcc, server, nick, addr)) {
+		if (passive) {
+			/* Passive DCC... let's set up a listening socket
+			   and send reply back */
+			dcc_chat_passive(dcc);
+		} else {
+			dcc_chat_connect(dcc);
+		}
+	}
 	g_strfreev(params);
 }
 
@@ -716,6 +806,7 @@ void dcc_chat_init(void)
 	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind("dcc chat", NULL, (SIGNAL_FUNC) cmd_dcc_chat);
+	command_set_options("dcc chat", "passive");
 	command_bind("mircdcc", NULL, (SIGNAL_FUNC) cmd_mircdcc);
 	command_bind("dcc close", NULL, (SIGNAL_FUNC) cmd_dcc_close);
 	command_bind("whois", NULL, (SIGNAL_FUNC) cmd_whois);
