@@ -164,7 +164,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 
 		if (xpos == view->width && sub != NULL &&
-		    (last_space <= indent_pos || last_space <= 10)) {
+		    (last_space <= indent_pos || last_space <= 10) &&
+		    !view->longword_noindent) {
                         /* long word, remove the indentation from this line */
 			xpos -= sub->indent;
                         sub->indent = 0;
@@ -179,7 +180,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                                 color = last_color;
 				ptr = last_space_ptr;
 				while (*ptr == ' ') ptr++;
-			} else {
+			} else if (!view->longword_noindent) {
 				/* long word, no indentation in next line */
 				xpos = 0;
 				sub->continues = TRUE;
@@ -373,7 +374,8 @@ static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int default_indent)
+					     int default_indent,
+					     int longword_noindent)
 {
 	TEXT_BUFFER_VIEW_REC *view;
 
@@ -386,7 +388,8 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 
 	view->width = width;
         view->height = height;
-        view->default_indent = default_indent;
+	view->default_indent = default_indent;
+        view->longword_noindent = longword_noindent;
 
 	view->cache = textbuffer_cache_get(view->siblings, width);
 	textbuffer_view_init_bottom(view);
@@ -435,11 +438,11 @@ void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view)
 
 /* Change the default indent position */
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
-					int default_indent)
+					int default_indent,
+					int longword_noindent)
 {
-	g_return_if_fail(view != NULL);
-
-        view->default_indent = default_indent;
+	view->default_indent = default_indent;
+        view->longword_noindent = longword_noindent;
 }
 
 static int view_get_linecount_all(TEXT_BUFFER_VIEW_REC *view, GList *lines)

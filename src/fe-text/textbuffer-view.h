@@ -43,9 +43,13 @@ typedef struct {
 
         WINDOW *window;
 	int width, height;
+
 	int default_indent;
+	int longword_noindent:1;
 
 	TEXT_BUFFER_CACHE_REC *cache;
+	int ypos; /* cursor position - visible area is 0..height-1 */
+
 	GList *startline; /* line at the top of the screen */
 	int subline; /* number of "real lines" to skip from `startline' */
 
@@ -59,12 +63,6 @@ typedef struct {
         /* window is at the bottom of the text buffer */
 	unsigned int bottom:1;
 
-	/* info how to efficiently refresh window buffer */
-	//unsigned int redraw:1;
-	int ypos; /* cursor position - visible area is 0..height-1 */
-	/*GList *drawn_startline;
-        int drawn_subline;*/
-
 	/* Bookmarks to the lines in the buffer - removed automatically
 	   when the line gets removed from buffer */
         GHashTable *bookmarks;
@@ -73,12 +71,14 @@ typedef struct {
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
-					     int default_indent);
+					     int default_indent,
+					     int longword_noindent);
 /* Destroy the view. */
 void textbuffer_view_destroy(TEXT_BUFFER_VIEW_REC *view);
 /* Change the default indent position */
 void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
-					int default_indent);
+					int default_indent,
+					int longword_noindent);
 
 /* Resize the view. */
 void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height);

@@ -45,7 +45,8 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 	gui->parent = parent;
 	gui->view = textbuffer_view_create(textbuffer_create(),
 					   window->width, window->height,
-					   settings_get_int("indent"));
+					   settings_get_int("indent"),
+					   settings_get_bool("indent_always"));
 	return gui;
 }
 
@@ -283,7 +284,8 @@ static void read_settings(void)
 		WINDOW_REC *rec = tmp->data;
 
                 textbuffer_view_set_default_indent(WINDOW_GUI(rec)->view,
-						   settings_get_int("indent"));
+						   settings_get_int("indent"),
+						   settings_get_bool("indent_always"));
 	}
 
 	special_vars_add_signals(prompt, 4, funcs);
@@ -296,6 +298,7 @@ void gui_windows_init(void)
 {
         settings_add_bool("lookandfeel", "autostick_split_windows", TRUE);
 	settings_add_int("lookandfeel", "indent", 10);
+	settings_add_bool("lookandfeel", "indent_always", FALSE);
 	settings_add_str("lookandfeel", "prompt", "[$[.15]T] ");
 	settings_add_str("lookandfeel", "prompt_window", "[$winname] ");
 
