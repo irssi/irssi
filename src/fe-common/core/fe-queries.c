@@ -228,9 +228,22 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (query == NULL)
 		CHAT_PROTOCOL(server)->query_create(server->tag, nick, FALSE);
 	else {
-                /* query already existed - set query active / move it to this
-                   window */
-		window_item_set_active(active_win, (WI_ITEM_REC *) query);
+		/* query already exists */
+		WINDOW_REC *window = window_item_window(query);
+
+		if (window == active_win) {
+                        /* query is in active window, set it active */
+			window_item_set_active(active_win,
+					       (WI_ITEM_REC *) query);
+		} else {
+			/* notify user how to move the query to active
+			   window. this was used to be done automatically
+			   but it just confused everyone who did it
+			   accidentally */
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+					   TXT_QUERY_MOVE_NOTIFY, query->name,
+					   window->refnum);
+		}
 	}
 
 	if (g_hash_table_lookup(optlist, "window") != NULL) {

@@ -94,6 +94,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "chansetup_header", "Channel         IRC net    Password   Settings", 0 },
 	{ "chansetup_line", "{channel $[15]0} %|$[10]1 $[10]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "chansetup_footer", "", 0 },
+	{ "channel_move_notify", "{channel $0} is already joined in window $1, use \"/WINDOW ITEM MOVE $0\" to move it to this window", 2, { 0, 1 } },
 
 	/* ---- */
 	{ NULL, "Messages", 0 },
@@ -119,6 +120,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "query_start", "Starting query with {nick $0}", 1, { 0 } },
 	{ "no_query", "No query with {nick $0}", 1, { 0 } },
 	{ "query_server_changed", "Query with {nick $0} changed to server {server $1}", 2, { 0, 0 } },
+	{ "query_move_notify", "Query with {nick $0} is already created to window $1, use \"/WINDOW ITEM MOVE $0\" to move it to this window", 2, { 0, 1 } },
 
 	/* ---- */
 	{ NULL, "Highlighting", 0 },
