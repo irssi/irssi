@@ -250,13 +250,14 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 			channel->limit = type == '-' ? 0 : atoi(arg);
 			break;
 		case 'k':
-			if (*arg == '\0' && type == '+') {
+			if ((*arg == '\0' && type == '+') ||
+			    (channel->key != NULL && !update_key)) {
 				arg = channel->key != NULL ? channel->key :
 					"???";
 			}
 			mode_set_arg(newmode, type, 'k', arg);
 
-			if (arg != channel->key && update_key) {
+			if (arg != channel->key) {
 				g_free_and_null(channel->key);
 				if (type == '+')
 					channel->key = g_strdup(arg);
