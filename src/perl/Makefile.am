@@ -1,3 +1,5 @@
+LIBTOOL = $(PERL_LIBTOOL)
+
 moduledir = $(libdir)/irssi/modules
 
 module_LTLIBRARIES = $(module_lib)
@@ -22,9 +24,13 @@ perl_sources = \
 libperl_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
 
 .libs/libperl_orig.a:
-	ln -sf $(LIBPERL_A) .libs/libperl_orig.a
+	if [ ! -d .libs ]; then mkdir .libs; fi
+	rm -f .libs/libperl_orig.a
+	$(LN_S) $(LIBPERL_A) .libs/libperl_orig.a
 .libs/DynaLoader.a:
-	ln -sf $(DYNALOADER_A) .libs/DynaLoader.a
+	if [ ! -d .libs ]; then mkdir .libs; fi
+	rm -f .libs/DynaLoader.a
+	$(LN_S) $(DYNALOADER_A) .libs/DynaLoader.a
 
 libperl_la_SOURCES = \
 	$(perl_sources)

@@ -127,7 +127,7 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	)
 
 	AC_ARG_WITH(ncurses,
-	  [  --with-ncurses[=dir]  Compile with ncurses/locate base dir],
+	  [  --with-ncurses[=dir]    Compile with ncurses/locate base dir],
 	  if test x$withval = xno ; then
 		search_ncurses=false
 	  elif test x$withval != xyes ; then
