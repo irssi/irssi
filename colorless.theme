@@ -26,6 +26,7 @@
     topic_unset = "Topic unset by %_$1%_ on $2";
     topic_info = "Topic set by %_$1%_ [$2]";
     chanmode_change = "mode/$1 [$2] by %_$3";
+    server_chanmode_change = "ServerMode/$1 [$2] by %_$3";
     channel_mode = "mode/$1 [$2]";
     banlist = "%_$1%_: ban $2";
     banlist_long = "%_$1%_: ban $2 [by %_$3%_, $4 secs ago]";
