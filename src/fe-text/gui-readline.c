@@ -154,33 +154,30 @@ static void paste_send(void)
 	const char *signal_name;
 	char out[10], *text;
 	unsigned int i;
-	int lf;
 
 	arr = (unichar *) paste_buffer->data;
-	lf = FALSE;
+	signal_name = active_win->active == NULL ?
+		"send command" : "send text";
 
-	/* first line has to be kludged kind of to get pasting in the
-	   middle of line right.. */
-	for (i = 0; i < paste_buffer->len; i++) {
-		if (arr[i] == '\r' || arr[i] == '\n') {
-			i++; lf = TRUE;
-			break;
+	if (active_entry->text_len == 0)
+		i = 0;
+	else {
+		/* first line has to be kludged kind of to get pasting in the
+		   middle of line right.. */
+		for (i = 0; i < paste_buffer->len; i++) {
+			if (arr[i] == '\r' || arr[i] == '\n') {
+				i++;
+				break;
+			}
+
+			gui_entry_insert_char(active_entry, arr[i]);
 		}
 
-		gui_entry_insert_char(active_entry, arr[i]);
+		text = gui_entry_get_text(active_entry);
+		signal_emit(signal_name, 3, text,
+			    active_win->active_server, active_win->active);
+		g_free(text);
 	}
-
-	if (!lf) {
-		/* not a multiline paste */
-		return;
-	}
-
-	signal_name = active_win->active == NULL ? "send command" : "send text";
-
-        text = gui_entry_get_text(active_entry);
-	signal_emit(signal_name, 3, text,
-		    active_win->active_server, active_win->active);
-	g_free(text);
 
 	/* rest of the lines */
 	str = g_string_new(NULL);
@@ -190,9 +187,11 @@ static void paste_send(void)
 				    active_win->active_server,
 				    active_win->active);
 			g_string_truncate(str, 0);
-		} else {
+		} else if (active_entry->utf8) {
 			out[utf16_char_to_utf8(arr[i], out)] = '\0';
 			g_string_append(str, out);
+		} else {
+			g_string_append_c(str, arr[i]);
 		}
 	}
 
@@ -202,13 +201,11 @@ static void paste_send(void)
 
 static void paste_flush(int send)
 {
+	gui_entry_set_text(active_entry, paste_entry);
+	gui_entry_set_pos(active_entry, paste_entry_pos);
+
 	if (send)
 		paste_send();
-	else {
-		/* revert back to pre-paste state */
-		gui_entry_set_text(active_entry, paste_entry);
-		gui_entry_set_pos(active_entry, paste_entry_pos);
-	}
 	g_array_set_size(paste_buffer, 0);
 
 	gui_entry_set_prompt(active_entry,
@@ -264,13 +261,8 @@ static gboolean paste_timeout(gpointer data)
 	return TRUE;
 }
 
-#define IS_PASTE_SKIP_KEY(c) \
-	((c) == '\r' || (c) == '\n')
-
 static int check_pasting(unichar key, int diff)
 {
-	unsigned int i;
-
 	if (paste_state < 0)
 		return FALSE;
 
@@ -286,67 +278,42 @@ static int check_pasting(unichar key, int diff)
 		paste_state++;
 		paste_line_count = 0;
 		g_array_set_size(paste_buffer, 0);
-		if (!IS_PASTE_SKIP_KEY(prev_key))
+		if (prev_key != '\r' && prev_key != '\n')
 			g_array_append_val(paste_buffer, prev_key);
 	} else if (paste_state > 0 && diff > paste_detect_time &&
 		   paste_line_count == 0) {
 		/* reset paste state */
-		if (paste_state == paste_detect_keycount)
-			paste_flush(TRUE);
 		paste_state = 0;
 		return FALSE;
 	}
 
 	/* continuing quick hits */
-	if (paste_state == paste_detect_keycount) {
-		/* pasting.. */
-		if ((key == 15 || key == 3) && paste_prompt) {
-			paste_flush(key == 15);
-			return TRUE;
-		}
-
-		if (IS_PASTE_SKIP_KEY(key)) {
-			if (paste_verify_line_count <= 0) {
-				/* handle CR/LF the normal way */
-				return FALSE;
-			}
-
-			paste_line_count++;
-		}
-		if (paste_verify_line_count > 0)
-			g_array_append_val(paste_buffer, key);
-		else
-			gui_entry_insert_char(active_entry, key);
+	if ((key == 11 || key == 3) && paste_prompt) {
+		paste_flush(key == 11);
 		return TRUE;
 	}
 
-	if (IS_PASTE_SKIP_KEY(key)) {
-		/* we might be pasting, but we can't go back from executed
-		   commands.. */
-		paste_state++;
-		g_array_set_size(paste_buffer, 0);
-		return FALSE;
-	}
-
-	paste_state++;
 	g_array_append_val(paste_buffer, key);
-	if (paste_state == paste_detect_keycount) {
-		/* ok, we started pasting. */
-		gui_entry_set_text(active_entry, paste_entry);
-		gui_entry_set_pos(active_entry, paste_entry_pos);
+	if (key == '\r' || key == '\n') {
+		/* newline - assume this line was pasted */
+		if (paste_state == 1) {
+			paste_state = 2;
+			gui_entry_set_text(active_entry, paste_entry);
+			gui_entry_set_pos(active_entry, paste_entry_pos);
+			if (paste_verify_line_count > 0)
+				g_timeout_add(100, paste_timeout, NULL);
+		}
+
 		if (paste_verify_line_count <= 0) {
-			for (i = 0; i < paste_buffer->len; i++) {
-				gui_entry_insert_char(active_entry,
-					g_array_index(paste_buffer, unichar, i));
-			}
+			/* paste previous line */
+			paste_send();
 			g_array_set_size(paste_buffer, 0);
 		} else {
-			g_timeout_add(100, paste_timeout, NULL);
+			paste_line_count++;
 		}
-		return TRUE;
 	}
 
-	return FALSE;
+	return paste_state == 2;
 }
 
 static void sig_gui_key_pressed(gpointer keyp)

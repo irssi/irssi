@@ -74,8 +74,8 @@ FORMAT_REC gui_text_formats[] =
 	/* ---- */
 	{ NULL, "Pasting", 0 },
 
-	{ "paste_warning", "Pasting $0 lines to $1. Press Ctrl-O if you wish to do this or Ctrl-C to cancel.", 2, { 1, 0 } },
-	{ "paste_prompt", "Hit Ctrl-O to paste, Ctrl-C to abort?", 0 },
+	{ "paste_warning", "Pasting $0 lines to $1. Press Ctrl-K if you wish to do this or Ctrl-C to cancel.", 2, { 1, 0 } },
+	{ "paste_prompt", "Hit Ctrl-K to paste, Ctrl-C to abort?", 0 },
 
 	{ NULL, NULL, 0 }
 };
