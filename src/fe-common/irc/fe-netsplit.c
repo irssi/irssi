@@ -299,7 +299,7 @@ static void split_get(void *key, NETSPLIT_REC *rec, GSList **list)
 				      (GCompareFunc) split_equal);
 }
 
-static void split_print(NETSPLIT_REC *rec)
+static void split_print(NETSPLIT_REC *rec, SERVER_REC *server)
 {
 	NETSPLIT_CHAN_REC *chan;
         char *chanstr;
@@ -309,7 +309,7 @@ static void split_print(NETSPLIT_REC *rec)
 		g_strconcat(chan->op ? "@" :
 			    (chan->voice ? "+" : ""), chan->name, NULL);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_LINE,
+	printformat(server, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_LINE,
 		    rec->nick, chanstr, rec->server->server,
 		    rec->server->destserver);
 
@@ -324,19 +324,19 @@ static void cmd_netsplit(const char *data, IRC_SERVER_REC *server)
         CMD_IRC_SERVER(server);
 
 	if (server->split_servers == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 			    IRCTXT_NO_NETSPLITS);
 		return;
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_HEADER);
+	printformat(server, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_HEADER);
 
         list = NULL;
 	g_hash_table_foreach(server->splits, (GHFunc) split_get, &list);
-	g_slist_foreach(list, (GFunc) split_print, NULL);
+	g_slist_foreach(list, (GFunc) split_print, server);
         g_slist_free(list);
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_FOOTER);
+	printformat(server, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_FOOTER);
 }
 
 static void read_settings(void)
