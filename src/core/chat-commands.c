@@ -370,7 +370,7 @@ static void cmd_foreach_query(const char *data)
 {
         GSList *list;
 
-	list = g_slist_copy(channels);
+	list = g_slist_copy(queries);
 	while (list != NULL) {
 		QUERY_REC *rec = list->data;
 
