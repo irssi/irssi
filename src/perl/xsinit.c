@@ -8,7 +8,6 @@ extern "C" {
 
 #include <EXTERN.h>
 #include <perl.h>
-#include "perl-common.h"
 #ifdef PERL_OBJECT
 #define NO_XSLOCKS
 #include <XSUB.h>
@@ -26,6 +25,8 @@ extern "C" {
 #    define EXTERN_C extern
 #  endif
 #endif
+
+extern PerlInterpreter *my_perl;
 
 EXTERN_C void xs_init _((void));
 
