@@ -159,11 +159,11 @@ dnl **
 AC_CHECK_FUNCS(mkfifo)
 
 AC_CHECK_LIB(socket, socket, [
-	LIBS="$LIBS -lsocket"
+	PROG_LIBS="$PROG_LIBS -lsocket"
 ])
 
 AC_CHECK_LIB(nsl, inet_addr, [
-	LIBS="$LIBS -lnsl"
+	PROG_LIBS="$PROG_LIBS -lnsl"
 ], -lsocket)
 
 # gcc specific options
@@ -188,12 +188,12 @@ dnl **
 if test "x$popt_dir" = "x"; then
 	AC_CHECK_HEADER(popt.h, [
 		AC_DEFINE(HAVE_POPT_H)
-		LIBS="-lpopt"
+		PROG_LIBS="$PROG_LIBS -lpopt"
 	])
 else
 	poptlib=-L$popt_dir/lib
 	CFLAGS="$CFLAGS -I$popt_dir/include"
-	LIBS="$LIBS $poptlib -lpopt"
+	PROG_LIBS="$PROG_LIBS $poptlib -lpopt"
 	if test -f $popt_dir/include/popt.h; then
 		AC_DEFINE(HAVE_POPT_H)
         else
@@ -210,8 +210,8 @@ AC_CHECK_LIB(popt, poptGetContext, [
 		POPT_LIBS="$poptlib $GNOME_LIBDIR -lgnomesupport"
 	], [
 		AC_ERROR(["libpropt or libgnomesupport not found"])
-	], $LIBS $poptlib $GNOME_LIBDIR -lgnomesupport)
-], $LIBS $poptlib -lpopt)
+	], $PROG_LIBS $poptlib $GNOME_LIBDIR -lgnomesupport)
+], $PROG_LIBS $poptlib -lpopt)
 
 
 dnl **
@@ -225,7 +225,7 @@ else
 fi
 
 AC_CHECK_LIB(PropList, PLSave, [
-	LIBS="$LIBS $proplib -lPropList"
+	PROG_LIBS="$PROG_LIBS $proplib -lPropList"
 	if test "x$proplist_dir" != "x"; then
 		CFLAGS="$CFLAGS -I$proplist_dir/include"
 	fi
@@ -233,7 +233,7 @@ AC_CHECK_LIB(PropList, PLSave, [
 	echo "ERROR: Irssi needs libPropList for configuration file handling."
 	echo "Go get it from http://xlife.dhs.org/irssi/download.php"
 	AC_ERROR(["libPropList not found"])
-], $LIBS $proplib -lPropList)
+], $PROG_LIBS $proplib -lPropList)
 
 
 dnl **
@@ -242,7 +242,7 @@ dnl **
 
 if test "x$want_socks" = "xyes"; then
 	AC_CHECK_LIB(socks, connect, [
-		LIBS="$LIBS -lsocks"
+		PROG_LIBS="$PROG_LIBS -lsocks"
 		AC_CHECK_HEADER(socks.h, [
 			AC_DEFINE(HAVE_SOCKS_H)
 			CFLAGS="$CFLAGS -DSOCKS"
@@ -309,14 +309,14 @@ else
 fi
 
 if test "x$GUI_LIBS" != "x"; then
-	GUI_LIBS="$GUI_LIBS $HEBREW_LIBS"
+	GUI_LIBS="$GUI_LIBS $HEBREW_LIBS $PROG_LIBS"
 fi
 
-AC_SUBST(POPT_LIBS)
 AC_SUBST(GUI_LIBS)
 AC_SUBST(GUI_CFLAGS)
 AM_CONDITIONAL(BUILD_GNOMEUI, test "x$GUI_LIBS" != "x")
 AM_CONDITIONAL(HAVE_GNOME_PANEL, test "x$want_gnome_panel" = "xyes")
+
 
 dnl **
 dnl ** gui-text checks
@@ -367,6 +367,10 @@ dnl **
 if test "x$want_ipv6" = "xyes"; then
 	AC_DEFINE(HAVE_IPV6)
 fi
+
+PROG_LIBS="$PROG_LIBS $POPT_LIBS $GLIB_LIBS"
+AC_SUBST(PROG_LIBS)
+
 
 dnl **
 dnl ** internationalization support
