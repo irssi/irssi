@@ -184,27 +184,6 @@ AC_DEFINE_UNQUOTED(SYSCONFDIR, "$prefix/etc")
 AC_DEFINE_UNQUOTED(PLUGINSDIR, "$prefix/lib/irssi/plugins")
 
 dnl **
-dnl ** check for popt.h
-dnl **
-if test "x$popt_dir" = "x"; then
-	AC_CHECK_HEADER(popt.h, [
-		AC_DEFINE(HAVE_POPT_H)
-		PROG_LIBS="$PROG_LIBS -lpopt"
-	])
-else
-	poptlib=-L$popt_dir/lib
-	CFLAGS="$CFLAGS -I$popt_dir/include"
-	PROG_LIBS="$PROG_LIBS $poptlib -lpopt"
-	if test -f $popt_dir/include/popt.h; then
-		AC_DEFINE(HAVE_POPT_H)
-	fi
-fi
-
-if test "x$POPT_LIBS" = "x"; then
-	POPT_LIBS="../lib-popt/libpopt.a"
-fi
-
-dnl **
 dnl ** check for libPropList
 dnl **
 
@@ -281,8 +260,9 @@ else
         want_gnome_panel="no"
 	AC_DEFINE(HAVE_GTK)
 	AM_PATH_GTK(1.2.0)
-	GUI_CFLAGS="$GTK_CFLAGS $POPT_CFLAGS"
-	GUI_LIBS="$GTK_LIBS $POPT_LIBS"
+	GUI_CFLAGS="$GTK_CFLAGS"
+	GUI_LIBS="$GTK_LIBS"
+	PROG_LIBS="$PROG_LIBS ../lib-popt/libpopt.a"
 
 	if test "x$want_imlib" = "xyes"; then
 		AM_PATH_GDK_IMLIB(, [define_imlib=true])
@@ -354,7 +334,7 @@ if test "x$want_ipv6" = "xyes"; then
 	AC_DEFINE(HAVE_IPV6)
 fi
 
-PROG_LIBS="$PROG_LIBS $POPT_LIBS $GLIB_LIBS"
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
 AC_SUBST(PROG_LIBS)
 
 
