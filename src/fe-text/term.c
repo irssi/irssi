@@ -56,6 +56,9 @@ int term_get_size(int *width, int *height)
 	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
 		return FALSE;
 
+	if (ws.ws_row == 0 && ws.ws_col == 0)
+		return FALSE;
+
 	*width = ws.ws_col;
         *height = ws.ws_row;
 
