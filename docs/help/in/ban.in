@@ -7,15 +7,16 @@ If nick is given as parameter, the ban type is used to generate the ban
 mask. /SET ban_type specified the default ban type. Ban type is one of
 the following:
 
-    Normal - *!user@*.domain.net
+    Normal - *!*user@*.domain.net
+    User   - *!*user@*
     Host   - *!*@host.domain.net
     Domain - *!*@*.domain.net
     Custom [nick] [user] [host] [domain]
 
 Examples:
-    /BAN looser    - This bans the nick 'looser'
-    /BAN *!*@*.org - This bans all the users coming from any 
-                     .org domain.
+    /BAN looser       - Bans the nick 'looser'
+    /BAN -host looser - Bans the host of nick 'looser'
+    /BAN *!*@*.org    - Bans all the users coming from any .org domain.
 
     /SET ban_type custom nick domain - nick!*@*.domain.net
     /SET ban_type custom user host   - *!user@host.domain.net

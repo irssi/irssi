@@ -30,6 +30,11 @@
 #include "irc.h"
 #include "nicklist.h"
 
+#define BAN_TYPE_NORMAL (IRC_MASK_USER | IRC_MASK_DOMAIN)
+#define BAN_TYPE_USER (IRC_MASK_USER)
+#define BAN_TYPE_HOST (IRC_MASK_HOST | IRC_MASK_DOMAIN)
+#define BAN_TYPE_DOMAIN (IRC_MASK_DOMAIN)
+
 static char *default_ban_type_str;
 static int default_ban_type;
 
@@ -183,43 +188,57 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-static int ban_parse_type(const char *type)
+static int parse_custom_ban(const char *type)
 {
 	char **list;
 	int n, ban_type;
 
-	g_return_val_if_fail(type != NULL, 0);
-
         ban_type = 0;
-	if (toupper(type[0]) == 'N')
-		ban_type = IRC_MASK_USER | IRC_MASK_DOMAIN;
-	else if (toupper(type[0]) == 'H')
-		ban_type = IRC_MASK_HOST | IRC_MASK_DOMAIN;
-	else if (toupper(type[0]) == 'D')
-		ban_type = IRC_MASK_DOMAIN;
-	else if (toupper(type[0]) == 'C') {
-		list = g_strsplit(type, " ", -1);
-                for (n = 1; list[n] != NULL; n++) {
-			if (toupper(list[n][0]) == 'N')
-				ban_type |= IRC_MASK_NICK;
-			else if (toupper(list[n][0]) == 'U')
-				ban_type |= IRC_MASK_USER;
-			else if (toupper(list[n][0]) == 'H')
-				ban_type |= IRC_MASK_HOST | IRC_MASK_DOMAIN;
-			else if (toupper(list[n][0]) == 'D')
-				ban_type |= IRC_MASK_DOMAIN;
-		}
-                g_strfreev(list);
+	list = g_strsplit(type, " ", -1);
+	for (n = 0; list[n] != NULL; n++) {
+		if (toupper(list[n][0]) == 'N')
+			ban_type |= IRC_MASK_NICK;
+		else if (toupper(list[n][0]) == 'U')
+			ban_type |= IRC_MASK_USER;
+		else if (toupper(list[n][0]) == 'H')
+			ban_type |= IRC_MASK_HOST | IRC_MASK_DOMAIN;
+		else if (toupper(list[n][0]) == 'D')
+			ban_type |= IRC_MASK_DOMAIN;
 	}
+	g_strfreev(list);
 
         return ban_type;
 }
 
-/* SYNTAX: BAN [-type <ban type>] <nicks/masks> */
+static int parse_ban_type(const char *type)
+{
+	const char *pos;
+
+	g_return_val_if_fail(type != NULL, 0);
+
+	if (toupper(type[0]) == 'N')
+		return BAN_TYPE_NORMAL;
+	if (toupper(type[0]) == 'U')
+		return BAN_TYPE_USER;
+	if (toupper(type[0]) == 'H')
+		return BAN_TYPE_HOST;
+	if (toupper(type[0]) == 'D')
+		return BAN_TYPE_DOMAIN;
+	if (toupper(type[0]) == 'C') {
+		pos = strchr(type, ' ');
+                if (pos != NULL)
+			return parse_custom_ban(pos+1);
+	}
+
+        return 0;
+}
+
+/* SYNTAX: BAN [-normal | -user | -host | -domain | -custom <type>] <nicks/masks> */
 static void cmd_ban(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	GHashTable *optlist;
-	char *ban, *ban_type_str;
+        const char *custom_type;
+	char *ban;
         int ban_type;
 	void *free_arg;
 
@@ -228,9 +247,21 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server, void *item)
 			    "ban", &optlist, &ban))
 		return;
 
-	ban_type_str = g_hash_table_lookup(optlist, "type");
-	ban_type = ban_type_str == NULL ? default_ban_type :
-		ban_parse_type(ban_type_str);
+	if (g_hash_table_lookup(optlist, "normal") != NULL)
+		ban_type = BAN_TYPE_NORMAL;
+	else if (g_hash_table_lookup(optlist, "user") != NULL)
+		ban_type = BAN_TYPE_USER;
+	else if (g_hash_table_lookup(optlist, "host") != NULL)
+		ban_type = BAN_TYPE_HOST;
+	else if (g_hash_table_lookup(optlist, "domain") != NULL)
+		ban_type = BAN_TYPE_DOMAIN;
+	else {
+		custom_type = g_hash_table_lookup(optlist, "custom");
+                if (custom_type != NULL)
+			ban_type = parse_custom_ban(custom_type);
+                else
+			ban_type = default_ban_type;
+	}
 
 	command_set_ban(ban, server, item, TRUE, ban_type);
 
@@ -250,7 +281,7 @@ static void read_settings(void)
 		return;
 
 	g_free_not_null(default_ban_type_str);
-	default_ban_type = ban_parse_type(settings_get_str("ban_type"));
+	default_ban_type = parse_ban_type(settings_get_str("ban_type"));
 	if (default_ban_type <= 0 || default_ban_type_str != NULL) {
 		signal_emit("ban type changed", 1,
 			    GINT_TO_POINTER(default_ban_type));
@@ -269,7 +300,7 @@ void bans_init(void)
 
 	command_bind("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind("unban", NULL, (SIGNAL_FUNC) cmd_unban);
-	command_set_options("ban", "+type");
+	command_set_options("ban", "normal user host domain +custom");
 
         read_settings();
         signal_add("setup changed", (SIGNAL_FUNC) read_settings);
