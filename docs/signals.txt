@@ -282,3 +282,9 @@ windows.c:
  "window refnum changed", WINDOW_REC, int old
  "window name changed", WINDOW_REC
  "window level changed", WINDOW_REC
+
+Text FE
+-------
+
+gui-printtext.c:
+ "beep"

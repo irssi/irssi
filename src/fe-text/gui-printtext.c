@@ -368,7 +368,7 @@ static void line_add_colors(GUI_WINDOW_REC *gui, int fg, int bg, int flags)
 		buffer[pos++] = LINE_CMD_INDENT;
 	}
 	if (flags & PRINTFLAG_BEEP)
-                beep();
+		signal_emit("beep", 0);
 
 	linebuf_add(gui, (char *) buffer, pos);
 
@@ -606,6 +606,7 @@ void gui_printtext_init(void)
 	signal_add("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("beep", (SIGNAL_FUNC) beep);
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 	command_set_options("clear", "all");
 
@@ -620,5 +621,6 @@ void gui_printtext_deinit(void)
 	signal_remove("print text finished", (SIGNAL_FUNC) sig_printtext_finished);
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("beep", (SIGNAL_FUNC) beep);
 	command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
 }
