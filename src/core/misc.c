@@ -793,7 +793,7 @@ int parse_time_interval(const char *time, int *msecs)
 
 	*msecs = 0;
 
-	/* max. return value is about 1.6 years */
+	/* max. return value is around 24 days */
 	number = 0; ret = TRUE;
 	for (;;) {
 		if (i_isdigit(*time)) {
@@ -815,10 +815,14 @@ int parse_time_interval(const char *time, int *msecs)
 			return TRUE;
 		}
 
-		if (g_strncasecmp(desc, "weeks", len) == 0)
-			*msecs += number * 1000*3600*7;
-		if (g_strncasecmp(desc, "days", len) == 0)
-			*msecs += number * 1000*3600;
+		if (g_strncasecmp(desc, "days", len) == 0) {
+			if (number > 24) {
+				/* would overflow */
+				return FALSE;
+			}
+			*msecs += number * 1000*3600*24;
+		} else if (g_strncasecmp(desc, "hours", len) == 0)
+			*msecs += number * 1000*60*3600;
 		else if (g_strncasecmp(desc, "minutes", len) == 0 ||
 			 g_strncasecmp(desc, "mins", len) == 0)
 			*msecs += number * 1000*60;
