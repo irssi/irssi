@@ -65,7 +65,7 @@ static void set_boolean(const char *key, const char *value)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_NOT_TOGGLE);
 }
 
-/* SYNTAX: SET [-clear] [<key> [<value>] */
+/* SYNTAX: SET [-clear] [<key> [<value>]] */
 static void cmd_set(char *data)
 {
         GHashTable *optlist;
