@@ -73,7 +73,7 @@ FORMAT_REC fecommon_core_formats[] = {
 
 	{ "log_opened", "Log file %W$0%n opened", 1, { 0 } },
 	{ "log_closed", "Log file %W$0%n closed", 1, { 0 } },
-	{ "log_create_failed", "Couldn't create log file %W$0", 1, { 0 } },
+	{ "log_create_failed", "Couldn't create log file %_$0%_: $1", 2, { 0, 0 } },
 	{ "log_locked", "Log file %W$0%n is locked, probably by another running Irssi", 1, { 0 } },
 	{ "log_not_open", "Log file %W$0%n not open", 1, { 0 } },
 	{ "log_started", "Started logging to file %W$0", 1, { 0 } },

@@ -173,7 +173,6 @@ static int gui_window_update_bottom(GUI_WINDOW_REC *gui, int lines)
 				break;
 			gui->bottom_startline = gui->bottom_startline->next;
 		}
-		lines--;
 	}
 
 	return last_linecount;
@@ -471,81 +470,84 @@ void gui_window_redraw(WINDOW_REC *window)
 	screen_refresh();
 }
 
-static void gui_window_scroll_up(GUI_WINDOW_REC *gui, gint lines)
+#define is_window_bottom(gui) \
+	((gui)->startline == (gui)->bottom_startline && \
+	(gui)->subline >= (gui)->bottom_subline)
+
+static void gui_window_scroll_up(GUI_WINDOW_REC *gui, int lines)
 {
-    LINE_REC *line;
-    gint count, linecount;
+	LINE_REC *line;
+	gint count, linecount;
 
-    if (gui->startline == NULL)
-	return;
+	if (gui->startline == NULL)
+		return;
 
-    count = lines-gui->subline; gui->ypos += gui->subline;
-    gui->subline = 0;
+	count = lines-gui->subline; gui->ypos += gui->subline;
+	gui->subline = 0;
 
-    while (gui->startline->prev != NULL && count > 0)
-    {
-	gui->startline = gui->startline->prev;
+	while (gui->startline->prev != NULL && count > 0) {
+		gui->startline = gui->startline->prev;
 
-        line = gui->startline->data;
-	linecount = gui_window_get_linecount(gui, line);
-	count -= linecount;
-	gui->ypos += linecount;
-    }
+		line = gui->startline->data;
+		linecount = gui_window_get_linecount(gui, line);
+		count -= linecount;
+		gui->ypos += linecount;
+	}
 
-    if (count < 0)
-    {
-	gui->subline = -count;
-	gui->ypos -= -count;
-    }
+	if (count < 0) {
+		gui->subline = -count;
+		gui->ypos -= -count;
+	}
 
-    gui->bottom = (gui->ypos >= -1 && gui->ypos <= gui->parent->last_line-gui->parent->first_line);
+	gui->bottom = is_window_bottom(gui);
 }
 
-static void gui_window_scroll_down(GUI_WINDOW_REC *gui, gint lines)
+static void gui_window_scroll_down(GUI_WINDOW_REC *gui, int lines)
 {
-    LINE_REC *line;
-    gint count, linecount;
+	LINE_REC *line;
+	int count, linecount;
 
-    if (gui->startline == gui->bottom_startline && gui->subline == gui->bottom_subline)
-	return;
+	if (is_window_bottom(gui))
+		return;
 
-    count = lines+gui->subline; gui->ypos += gui->subline;
-    gui->subline = 0;
+	count = lines+gui->subline; gui->ypos += gui->subline;
+	gui->subline = 0;
 
-    while (count > 0)
-    {
-	line = gui->startline->data;
+	while (count > 0) {
+		line = gui->startline->data;
 
-	linecount = gui_window_get_linecount(gui, line);
-	count -= linecount;
-	gui->ypos -= linecount;
+		linecount = gui_window_get_linecount(gui, line);
+		count -= linecount;
+		gui->ypos -= linecount;
 
-	if (gui->startline == gui->bottom_startline &&
-	   linecount+count > gui->bottom_subline)
-	{
-	    /* reached the last screenful of text */
-	    gui->subline = gui->bottom_subline;
-	    gui->ypos += linecount;
-	    gui->ypos -= gui->subline;
-	    break;
+		if (gui->startline == gui->bottom_startline &&
+		    linecount+count > gui->bottom_subline) {
+			/* reached the last screenful of text */
+			gui->subline = gui->bottom_subline;
+			gui->ypos += linecount;
+			gui->ypos -= gui->subline;
+			break;
+		}
+
+		if (count == 0) {
+			gui->startline = gui->startline->next;
+			break;
+		}
+
+		if (count < 0) {
+			gui->subline = linecount+count;
+			gui->ypos += -count;
+			break;
+		}
+
+		if (gui->startline->next == NULL) {
+			gui->subline = linecount;
+			break;
+		}
+		gui->startline = gui->startline->next;
 	}
 
-	if (count <= 0)
-	{
-	    gui->subline = linecount+count;
-	    gui->ypos += -count;
-	    break;
-	}
-
-	if (gui->startline->next == NULL)
-	{
-	    gui->subline = linecount;
-	    break;
-	}
-        gui->startline = gui->startline->next;
-    }
-
-    gui->bottom = (gui->ypos >= -1 && gui->ypos <= gui->parent->last_line-gui->parent->first_line);
+	gui->bottom = is_window_bottom(gui);
 }
 
 void gui_window_scroll(WINDOW_REC *window, int lines)

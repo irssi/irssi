@@ -251,7 +251,6 @@ static void read_ignores(void)
 	IGNORE_REC *rec;
 	CONFIG_NODE *node;
 	GSList *tmp;
-	char *str;
 
 	while (ignores != NULL)
                 ignore_destroy(ignores->data);

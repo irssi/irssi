@@ -40,20 +40,15 @@ static void event_away(const char *data, IRC_SERVER_REC *server)
 	if (level == 0) return;
 
 	log = log_find(fname);
-	if (log != NULL) {
-		/* awaylog already created */
-		if (log->handle == -1) {
-			/* ..but not open, open it. */
-			log_start_logging(log);
-		}
-		return;
-	}
-
-	log = log_create_rec(fname, level, NULL);
-	if (log != NULL) {
+	if (log == NULL) {
+		log = log_create_rec(fname, level, NULL);
 		log->temp = TRUE;
 		log_update(log);
-		log_start_logging(log);
+	}
+
+	if (!log_start_logging(log)) {
+		/* creating log file failed? close it. */
+		log_close(log);
 	}
 }
 

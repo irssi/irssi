@@ -45,6 +45,9 @@ static void log_write_timestamp(int handle, const char *format, const char *suff
 	struct tm *tm;
 	char str[256];
 
+	g_return_if_fail(format != NULL);
+	if (*format == '\0') return;
+
 	tm = localtime(&t);
 
 	str[sizeof(str)-1] = '\0';
@@ -74,7 +77,10 @@ int log_start_logging(LOG_REC *log)
 	log->handle = open(fname, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
 	g_free(str);
 
-	if (log->handle == -1) return FALSE;
+	if (log->handle == -1) {
+		signal_emit("log create failed", 1, log);
+		return FALSE;
+	}
 #ifdef HAVE_FCNTL
         memset(&lock, 0, sizeof(lock));
 	lock.l_type = F_WRLCK;
@@ -317,7 +323,7 @@ void log_close(LOG_REC *log)
 	g_free(log);
 }
 
-static void sig_printtext_stripped(void *server, const char *item, gpointer levelp, const char *str)
+static void sig_printtext_stripped(void *window, void *server, const char *item, gpointer levelp, const char *str)
 {
 	int level;
 

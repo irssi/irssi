@@ -46,7 +46,7 @@ typedef struct {
 static int flood_tag;
 static int flood_max_msgs, flood_timecheck;
 
-static int flood_hash_deinit(const char *key, FLOOD_REC *flood, gpointer nowp)
+static int flood_hash_check_remove(const char *key, FLOOD_REC *flood, gpointer nowp)
 {
 	GSList *tmp, *next;
 	time_t now;
@@ -59,8 +59,11 @@ static int flood_hash_deinit(const char *key, FLOOD_REC *flood, gpointer nowp)
 		FLOOD_ITEM_REC *rec = tmp->data;
 
 		next = tmp->next;
-		if (now-rec->first >= flood_timecheck)
+		if (now-rec->first >= flood_timecheck) {
 			flood->items = g_slist_remove(flood->items, rec);
+			g_free(rec->target);
+			g_free(rec);
+		}
 	}
 
 	if (flood->items != NULL)
@@ -83,7 +86,7 @@ static int flood_timeout(void)
 		IRC_SERVER_REC *rec = tmp->data;
 
 		mserver = MODULE_DATA(rec);
-		g_hash_table_foreach_remove(mserver->floodlist, (GHRFunc) flood_hash_deinit, GINT_TO_POINTER((int) now));
+		g_hash_table_foreach_remove(mserver->floodlist, (GHRFunc) flood_hash_check_remove, GINT_TO_POINTER((int) now));
 	}
 	return 1;
 }
@@ -101,6 +104,21 @@ static void flood_init_server(IRC_SERVER_REC *server)
 	rec->floodlist = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
 }
 
+static void flood_hash_destroy(const char *key, FLOOD_REC *flood)
+{
+	while (flood->items != NULL) {
+		FLOOD_ITEM_REC *rec = flood->items->data;
+
+		g_free(rec->target);
+		g_free(rec);
+
+		flood->items = g_slist_remove(flood->items, rec);
+	}
+
+	g_free(flood->nick);
+	g_free(flood);
+}
+
 /* Deinitialize flood protection */
 static void flood_deinit_server(IRC_SERVER_REC *server)
 {
@@ -112,9 +130,7 @@ static void flood_deinit_server(IRC_SERVER_REC *server)
 	if (mserver != NULL && mserver->floodlist != NULL) {
 		flood_timecheck = 0;
 
-		g_hash_table_freeze(mserver->floodlist);
-		g_hash_table_foreach(mserver->floodlist, (GHFunc) flood_hash_deinit, NULL);
-		g_hash_table_thaw(mserver->floodlist);
+		g_hash_table_foreach(mserver->floodlist, (GHFunc) flood_hash_destroy, NULL);
 		g_hash_table_destroy(mserver->floodlist);
 	}
 	g_free(mserver);

@@ -160,6 +160,7 @@ log.c:
 
  "log new", LOG_REC
  "log remove", LOG_REC
+ "log open failed", LOG_REC
  "log locked", LOG_REC
  "log started", LOG_REC
  "log stopped", LOG_REC

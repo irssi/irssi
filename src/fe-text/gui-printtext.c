@@ -220,7 +220,7 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 {
 	GUI_WINDOW_REC *gui;
 	LINE_REC *line;
-	int fg, bg, flags, new_lines, n, visible, ypos;
+	int fg, bg, flags, new_lines, n, visible, ypos, subline;
 
 	g_return_if_fail(window != NULL);
 
@@ -265,12 +265,21 @@ static void gui_printtext(WINDOW_REC *window, gpointer fgcolor, gpointer bgcolor
 
 	if (visible) {
 		/* draw the line to screen. */
-                ypos = gui->parent->first_line+gui->ypos-new_lines;
+                ypos = gui->ypos-new_lines;
 		if (new_lines > 0) {
 			set_color(0);
-			move(ypos, 0); clrtoeol();
+			move(gui->parent->first_line+ypos, 0); clrtoeol();
 		}
-		gui_window_line_draw(gui, line, ypos, gui->last_subline, -1);
+
+		if (ypos >= 0)
+			subline = gui->last_subline;
+		else {
+			/* *LONG* line - longer than screen height */
+			subline = -ypos+gui->last_subline;
+			ypos = 0;
+		}
+		ypos += gui->parent->first_line;
+		gui_window_line_draw(gui, line, ypos, subline, -1);
 	}
 
 	gui->last_subline += new_lines;

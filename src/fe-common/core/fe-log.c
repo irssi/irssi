@@ -48,7 +48,7 @@ static void cmd_log_open(const char *data)
 	char *params, *args, *targetarg, *rotatearg, *fname, *levels;
 	char window[MAX_INT_STRLEN];
 	LOG_REC *log;
-	int opened, level, rotate;
+	int level, rotate;
 
 	args = "targets rotate";
 	params = cmd_get_params(data, 5 | PARAM_FLAG_MULTIARGS | PARAM_FLAG_GETREST,
@@ -73,12 +73,15 @@ static void cmd_log_open(const char *data)
 	log = log_create_rec(fname, level, targetarg);
 	if (log != NULL && log->handle == -1 && stristr(args, "-noopen") == NULL) {
 		/* start logging */
-		opened = log_start_logging(log);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    opened ? IRCTXT_LOG_OPENED :
-			    IRCTXT_LOG_CREATE_FAILED, fname);
-		if (!opened) log_close(log);
+		if (log_start_logging(log)) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				    IRCTXT_LOG_OPENED, fname);
+		} else {
+			log_close(log);
+			log = NULL;
+		}
 	}
+
 	if (log != NULL) {
 		if (stristr(args, "-autoopen"))
 			log->autoopen = TRUE;
@@ -366,6 +369,12 @@ static void sig_log_locked(LOG_REC *log)
 		    IRCTXT_LOG_LOCKED, log->fname);
 }
 
+static void sig_log_create_failed(LOG_REC *log)
+{
+	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		    IRCTXT_LOG_CREATE_FAILED, log->fname, g_strerror(errno));
+}
+
 static void read_settings(void)
 {
 	int old_autolog = autolog_level;
@@ -401,6 +410,7 @@ void fe_log_init(void)
 	signal_add("window item remove", (SIGNAL_FUNC) sig_window_item_remove);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_add("log locked", (SIGNAL_FUNC) sig_log_locked);
+	signal_add("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -420,5 +430,6 @@ void fe_log_deinit(void)
 	signal_remove("window item remove", (SIGNAL_FUNC) sig_window_item_remove);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_window_refnum_changed);
 	signal_remove("log locked", (SIGNAL_FUNC) sig_log_locked);
+	signal_remove("log create failed", (SIGNAL_FUNC) sig_log_create_failed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
