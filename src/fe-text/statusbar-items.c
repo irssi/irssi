@@ -30,13 +30,10 @@
 /* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10
 
-/* If we haven't been able to check lag for this long, "(??)" is added after
-   the lag */
-#define MAX_LAG_UNKNOWN_TIME 30
-
 static GList *activity_list;
 static int more_visible;
 static GHashTable *input_entries;
+static int last_lag, last_lag_unknown, lag_timeout_tag;
 
 static void item_window_active(SBAR_ITEM_REC *item, int get_size_only)
 {
@@ -68,55 +65,6 @@ static void item_window_empty(SBAR_ITEM_REC *item, int get_size_only)
 	} else if (get_size_only) {
                 item->min_size = item->max_size = 0;
 	}
-}
-
-static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
-{
-	SERVER_REC *server;
-	GString *str;
-	int lag_unknown, lag_min_show;
-	time_t now;
-
-	server = active_win == NULL ? NULL : active_win->active_server;
-	if (server == NULL || server->lag_last_check == 0) {
-                /* No lag information */
-		if (get_size_only)
-			item->min_size = item->max_size = 0;
-		return;
-	}
-
-	now = time(NULL);
-	str = g_string_new(NULL);
-
-	/* FIXME: ugly ugly.. */
-	if (server->lag_sent.tv_sec == 0 || now-server->lag_sent.tv_sec < 5) {
-		lag_unknown = now-server->lag_last_check >
-			MAX_LAG_UNKNOWN_TIME+settings_get_int("lag_check_time");
-                lag_min_show = settings_get_int("lag_min_show")*10;
-
-		if (lag_min_show < 0 || (server->lag < lag_min_show && !lag_unknown)) {
-                        /* small lag, don't display */
-		} else {
-			g_string_sprintfa(str, "%d.%02d", server->lag/1000,
-					  (server->lag % 1000)/10);
-			if (lag_unknown)
-				g_string_append(str, " (?""?)");
-		}
-	} else {
-		/* big lag, still waiting .. */
-		g_string_sprintfa(str, "%ld (?""?)",
-				  (long) (now-server->lag_sent.tv_sec));
-	}
-
-	if (str->len != 0) {
-		statusbar_item_default_handler(item, get_size_only,
-					       NULL, str->str, TRUE);
-	} else {
-		if (get_size_only)
-			item->min_size = item->max_size = 0;
-	}
-
-	g_string_free(str, TRUE);
 }
 
 static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
@@ -286,6 +234,95 @@ static void sig_statusbar_more_updated(void)
                 statusbar_items_redraw("more");
 }
 
+/* Returns the lag in milliseconds. If we haven't been able to ask the lag
+   for a while, unknown is set to TRUE. */
+static int get_lag(SERVER_REC *server, int *unknown)
+{
+	long lag;
+
+        *unknown = FALSE;
+
+	if (server == NULL || server->lag_last_check == 0) {
+                /* lag has not been asked even once yet */
+		return 0;
+	}
+
+	if (server->lag_sent.tv_sec == 0) {
+		/* no lag queries going on currently */
+                return server->lag;
+	}
+
+        /* we're not sure about our current lag.. */
+	*unknown = TRUE;
+
+        lag = (long) (time(NULL)-server->lag_sent.tv_sec);
+	if (server->lag/1000 > lag) {
+		/* we've been waiting the lag reply less time than
+		   what last known lag was -> use the last known lag */
+		return server->lag;
+	}
+
+        /* return how long we have been waiting for lag reply */
+        return lag*1000;
+}
+
+static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
+{
+	SERVER_REC *server;
+        char str[MAX_INT_STRLEN+10];
+	int lag, lag_unknown;
+
+	server = active_win == NULL ? NULL : active_win->active_server;
+	lag = get_lag(server, &lag_unknown)/10;
+
+	if (lag <= 0 || lag < settings_get_int("lag_min_show")) {
+		/* don't print the lag item */
+		if (get_size_only)
+			item->min_size = item->max_size = 0;
+		return;
+	}
+
+	last_lag = lag;
+	last_lag_unknown = lag_unknown;
+
+	if (lag_unknown) {
+		snprintf(str, sizeof(str), "%d (?""?)", lag/100);
+	} else {
+		snprintf(str, sizeof(str),
+			 lag%100 == 0 ? "%d" : "%d.%02d", lag/100, lag%100);
+	}
+
+	statusbar_item_default_handler(item, get_size_only,
+				       NULL, str, TRUE);
+}
+
+static void lag_check_update(void)
+{
+	SERVER_REC *server;
+	int lag, lag_unknown;
+
+	server = active_win == NULL ? NULL : active_win->active_server;
+	lag = get_lag(server, &lag_unknown)/10;
+
+	if (lag < settings_get_int("lag_min_show"))
+                lag = 0;
+
+	if (lag != last_lag || (lag > 0 && lag_unknown != last_lag_unknown))
+                statusbar_items_redraw("lag");
+}
+
+static void sig_server_lag_updated(SERVER_REC *server)
+{
+	if (active_win != NULL && active_win->active_server == server)
+                lag_check_update();
+}
+
+static int sig_lag_timeout(void)
+{
+        lag_check_update();
+        return 1;
+}
+
 static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 {
 	GUI_ENTRY_REC *rec;
@@ -334,14 +371,13 @@ void statusbar_items_init(void)
 	statusbar_item_register("more", NULL, item_more);
 	statusbar_item_register("input", NULL, item_input);
 
-	input_entries = g_hash_table_new((GHashFunc) g_direct_hash,
-					 (GCompareFunc) g_direct_equal);
-
+        /* activity */
 	activity_list = NULL;
 	signal_add("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_add("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
 
+        /* more */
         more_visible = FALSE;
 	signal_add("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_add("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
@@ -349,25 +385,42 @@ void statusbar_items_init(void)
 	signal_add_last("command clear", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_add_last("command scrollback", (SIGNAL_FUNC) sig_statusbar_more_updated);
 
+        /* lag */
+	last_lag = 0; last_lag_unknown = FALSE;
+	signal_add("server lag", (SIGNAL_FUNC) sig_server_lag_updated);
+	signal_add("window changed", (SIGNAL_FUNC) lag_check_update);
+	signal_add("window server changed", (SIGNAL_FUNC) lag_check_update);
+        lag_timeout_tag = g_timeout_add(5000, (GSourceFunc) sig_lag_timeout, NULL);
+
+        /* input */
+	input_entries = g_hash_table_new((GHashFunc) g_direct_hash,
+					 (GCompareFunc) g_direct_equal);
 	signal_add("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
 }
 
 void statusbar_items_deinit(void)
 {
-        g_hash_table_destroy(input_entries);
-
+        /* activity */
 	signal_remove("window activity", (SIGNAL_FUNC) sig_statusbar_activity_hilight);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_statusbar_activity_window_destroyed);
 	signal_remove("window refnum changed", (SIGNAL_FUNC) sig_statusbar_activity_updated);
+	g_list_free(activity_list);
+        activity_list = NULL;
 
+        /* more */
 	signal_remove("gui page scrolled", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("window changed", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("command clear", (SIGNAL_FUNC) sig_statusbar_more_updated);
 	signal_remove("command scrollback", (SIGNAL_FUNC) sig_statusbar_more_updated);
 
-	g_list_free(activity_list);
-        activity_list = NULL;
+        /* lag */
+	signal_remove("server lag", (SIGNAL_FUNC) sig_server_lag_updated);
+	signal_remove("window changed", (SIGNAL_FUNC) lag_check_update);
+	signal_remove("window server changed", (SIGNAL_FUNC) lag_check_update);
+        g_source_remove(lag_timeout_tag);
 
+        /* input */
 	signal_remove("statusbar item destroyed", (SIGNAL_FUNC) sig_statusbar_item_destroyed);
+        g_hash_table_destroy(input_entries);
 }
