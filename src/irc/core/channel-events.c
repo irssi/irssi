@@ -38,6 +38,14 @@ static void event_cannot_join(const char *data, IRC_SERVER_REC *server)
 		channel++; /* server didn't understand !channels */
 
 	chanrec = channel_find(server, channel);
+	if (chanrec == NULL && channel[0] == '!') {
+		/* it probably replied with the full !channel name,
+		   find the channel with the short name.. */
+		channel = g_strdup_printf("!%s", channel+6);
+		chanrec = channel_find(server, channel);
+		g_free(channel);
+	}
+
 	if (chanrec != NULL && !chanrec->names_got) {
 		chanrec->left = TRUE;
 		channel_destroy(chanrec);
