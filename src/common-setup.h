@@ -97,6 +97,8 @@ typedef struct
     gchar *password;
     gint port;
     gboolean autoconnect;
+    gboolean query_multichan; /* speeding up channel syncing,
+                                 all servers don't like this. */
     time_t last_connect; /* to avoid reconnecting too fast.. */
 }
 SETUP_SERVER_REC;
