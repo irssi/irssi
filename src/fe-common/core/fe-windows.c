@@ -124,6 +124,7 @@ void window_destroy(WINDOW_REC *window)
 	while (window->bound_items != NULL)
                 window_bind_destroy(window, window->bound_items->data);
 
+	g_free_not_null(window->hilight_color);
 	g_free_not_null(window->servertag);
 	g_free_not_null(window->theme_name);
 	g_free_not_null(window->name);
