@@ -248,6 +248,15 @@ static void irssi_perl_stop(void)
 	irssi_perl_interp = NULL;
 }
 
+static void script_fix_name(char *name)
+{
+	while (*name != '\0') {
+		if (*name != '_' && !isalnum(*name))
+			*name = '_';
+		name++;
+	}
+}
+
 static void cmd_run(const char *data)
 {
 	dSP;
@@ -278,6 +287,7 @@ static void cmd_run(const char *data)
 	p = strrchr(name, '.');
 	if (p != NULL) *p = '\0';
 
+	script_fix_name(name);
 	perl_script_destroy(name);
 	perl_scripts = g_slist_append(perl_scripts, g_strdup(name));
 
@@ -313,8 +323,13 @@ static void cmd_run(const char *data)
 
 static void cmd_unload(const char *data)
 {
-	if (perl_script_destroy(data))
-                signal_stop();
+	char *name;
+
+	name = g_strdup(data);
+	script_fix_name(name);
+	if (perl_script_destroy(name))
+		signal_stop();
+	g_free(name);
 }
 
 static void cmd_perlflush(const char *data)
@@ -322,30 +337,6 @@ static void cmd_perlflush(const char *data)
 	irssi_perl_stop();
 	irssi_perl_start();
 }
-
-#if 0
-static int perl_signal_find(const char *signal, const char *func, int last)
-{
-	GHashTable *table;
-        GSList *siglist;
-	int signal_id;
-
-	table = last ? last_signals : first_signals;
-
-	signal_id = signal_get_uniq_id(signal);
-        siglist = g_hash_table_lookup(table, GINT_TO_POINTER(signal_id));
-
-	while (siglist != NULL) {
-		PERL_SIGNAL_REC *rec = siglist->data;
-
-		if (strcmp(rec->func, func) == 0)
-			return TRUE;
-		siglist = siglist->next;
-	}
-
-	return FALSE;
-}
-#endif
 
 /* returns the package who called us */
 static char *perl_get_package(void)
@@ -362,9 +353,6 @@ static void perl_signal_to(const char *signal, const char *func, int last)
 	GHashTable *table;
 	GSList **siglist;
 	void *signal_idp;
-
-	/*if (perl_signal_find(signal, func, last))
-		return;*/
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
 	rec->signal_id = signal_get_uniq_id(signal);
