@@ -169,7 +169,8 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
 static void sig_dccget_connected(GET_DCC_REC *dcc)
 {
 	struct stat statbuf;
-	char *fname;
+	char *fname, *tempfname;
+        int temphandle, old_umask;
 
 	if (net_geterror(dcc->handle) != 0) {
 		/* error connecting */
@@ -195,8 +196,30 @@ static void sig_dccget_connected(GET_DCC_REC *dcc)
 	}
 
 	if (dcc->get_type != DCC_GET_RESUME) {
-		dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT,
-				    dcc_file_create_mode);
+		/* we want to overwrite the file, remove it here.
+		   if it gets created after this, we'll fail. */
+		unlink(dcc->file);
+
+		/* just to make sure we won't run into race conditions
+		   if download_path is in some global temp directory */
+		tempfname = g_strconcat(dcc->file, ".XXXXXX", NULL);
+
+                old_umask = umask(066);
+		temphandle = mkstemp(tempfname);
+                umask(old_umask);
+
+                dcc->fhandle = -1;
+		if (link(tempfname, dcc->file) == 0) {
+                        /* ok, we're the file owner now */
+			dcc->fhandle = open(dcc->file, O_WRONLY | O_TRUNC | O_CREAT,
+					    dcc_file_create_mode);
+		}
+
+                /* close/remove the temp file */
+		close(temphandle);
+		unlink(tempfname);
+		g_free(tempfname);
+
 		if (dcc->fhandle == -1) {
 			signal_emit("dcc error file create", 2,
 				    dcc, dcc->file);
