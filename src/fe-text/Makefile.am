@@ -48,5 +48,6 @@ noinst_HEADERS = \
         screen.h \
         textbuffer.h \
         textbuffer-view.h \
+        textbuffer-reformat.h \
 	module.h \
 	module-formats.h
