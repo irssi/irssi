@@ -274,7 +274,7 @@ static char *printtext_expand_formats(const char *str, int *flags)
 	return ret;
 }
 
-void printtext_dest(TEXT_DEST_REC *dest, const char *text, va_list va)
+static void printtext_dest_args(TEXT_DEST_REC *dest, const char *text, va_list va)
 {
 	char *str;
 
@@ -289,6 +289,15 @@ void printtext_dest(TEXT_DEST_REC *dest, const char *text, va_list va)
 	g_free(str);
 }
 
+void printtext_dest(TEXT_DEST_REC *dest, const char *text, ...)
+{
+	va_list va;
+
+	va_start(va, text);
+	printtext_dest_args(dest, text, va);
+	va_end(va);
+}
+
 /* Write text to target - convert color codes */
 void printtext(void *server, const char *target, int level, const char *text, ...)
 {
@@ -300,7 +309,7 @@ void printtext(void *server, const char *target, int level, const char *text, ..
         format_create_dest(&dest, server, target, level, NULL);
 
 	va_start(va, text);
-	printtext_dest(&dest, text, va);
+	printtext_dest_args(&dest, text, va);
 	va_end(va);
 }
 
@@ -336,7 +345,7 @@ void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
 			   window != NULL ? window : active_win);
 
 	va_start(va, text);
-	printtext_dest(&dest, text, va);
+	printtext_dest_args(&dest, text, va);
 	va_end(va);
 }
 

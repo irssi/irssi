@@ -70,7 +70,7 @@ void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 		    &dest, GINT_TO_POINTER(formatnum), arglist);
 
         str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
-	if (*str != '\0') printtext_window(dest->window, dest->level, "%s", str);
+	if (*str != '\0') printtext_dest(dest, "%s", str);
 	g_free(str);
 	g_free(module);
 }
