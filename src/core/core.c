@@ -66,6 +66,9 @@ void core_init(void)
 
 void core_deinit(void)
 {
+	while (modules != NULL)
+		module_unload(modules->data);
+
 	nicklist_deinit();
 	queries_deinit();
 	channels_deinit();

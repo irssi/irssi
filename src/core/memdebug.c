@@ -95,7 +95,7 @@ static void data_add(char *p, int size, const char *file, int line)
 
 	rec->p = p;
 	rec->size = size;
-	rec->file = (char *) file;
+	rec->file = g_strdup(file);
 	rec->line = line;
 	rec->comment = g_strdup(comment);
 
@@ -136,6 +136,7 @@ static void *data_remove(char *p, const char *file, int line)
 	}
 
 	g_hash_table_remove(data, p);
+	g_free(rec->file);
 	g_free(rec->comment);
 	g_free(rec);
 
