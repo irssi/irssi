@@ -69,10 +69,12 @@ Configure can use these parameters (all of these defaults to yes):
  --with-proplist=dir	Specify libPropList directory
  --with-servertest	Build test irc server which you can use to try crash
                         irc clients
+ --with-socks       	Build with socks library
+ --with-mysql=dir   	Build with mysql plugin
  --without-gnome       	Build without GNOME libraries
  --without-gnome-panel	Build without GNOME panel
- --without-imlib	Build without Imlib library
- --without-socks       	Build without socks library
+ --without-imlib	Build without Imlib library (you can use only .xpm
+                        files as backgrounds)
  --without-textui	Build without text mode version
  --without-bot		Build without irssibot
  --enable-memdebug     	Enable memory debugging, great for finding memory
