@@ -266,7 +266,7 @@ static void settings_save_fe(const char *fname)
 
 static void settings_save_confirm(const char *line, char *fname)
 {
-	if (line[0] == 'Y')
+	if (toupper(line[0]) == 'Y')
 		settings_save_fe(fname);
 	g_free(fname);
 }
@@ -296,7 +296,7 @@ static void cmd_save(const char *data)
 
 static void settings_clean_confirm(const char *line)
 {
-	if (line[0] == 'Y')
+	if (toupper(line[0]) == 'Y')
                 settings_clean_invalid();
 }
 
