@@ -234,43 +234,54 @@ dnl ** fe-text checks
 dnl **
 
 AC_PATH_PROG(sedpath, sed)
-AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
 
-GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
-if test "x$GLIB_DIR" != "x"; then
-  dnl glib in irssi directory, use it
-  AC_MSG_RESULT([yes, using it])
+AC_DEFUN(AC_CHECK_GLIBDIR,[
+  AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
 
-  dnl * we have to do this at this point so we know what libs gmodule needs
-  echo
-  echo "configuring GLib ..."
-  echo
-  cd $GLIB_DIR
-  ./configure
-  cd ..
-  echo
+  GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
+  if test "x$GLIB_DIR" != "x"; then
+    dnl * glib in irssi directory, use it
+    AC_MSG_RESULT([yes, using it])
 
-  GLIB_LDEXTRA=`$GLIB_DIR/glib-config --libs gmodule|sed -e 's/-lglib//' -e 's/-lgmodule//' -e 's,-L/usr/local/lib ,,'|sed 's/ \+/ /g'`
-  full_glib_dir="`pwd`/$GLIB_DIR"
-  GLIB_CFLAGS="-I$full_glib_dir -I$full_glib_dir/gmodule"
-  if test -f $full_glib_dir/.libs/libglib.a; then
-    GLIB_LIBS="$full_glib_dir/.libs/libglib.a $GLIB_LDEXTRA"
-    if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
-      GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
+    dnl * we have to do this at this point so we know what libs gmodule needs
+    if test ! -f $GLIB_DIR/.libs/libglib.a; then
+      echo
+      echo "configuring GLib ..."
+      echo
+      cd $GLIB_DIR
+      if test ! -f glib-config; then
+        ./configure
+      fi
+      ${MAKE-make}
+      cd ..
+      echo
     fi
-  elif test -f $full_glib_dir/libglib.a; then
-    GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
-    if test -f $full_glib_dir/gmodule/libgmodule.a; then
-      GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
+
+    GLIB_LDEXTRA=`$GLIB_DIR/glib-config --libs gmodule|$sedpath -e 's/-lglib//' -e 's/-lgmodule//' -e 's,-L/usr/local/lib ,,'|$sedpath 's/ \+/ /g'`
+    full_glib_dir="`pwd`/$GLIB_DIR"
+    GLIB_CFLAGS="-I$full_glib_dir -I$full_glib_dir/gmodule"
+    if test -f $full_glib_dir/.libs/libglib.a; then
+      GLIB_LIBS="$full_glib_dir/.libs/libglib.a $GLIB_LDEXTRA"
+      if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
+	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
+      fi
+    else
+      GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
+      if test -f $full_glib_dir/gmodule/libgmodule.a; then
+	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
+      fi
     fi
+    AC_SUBST(GLIB_DIR)
+    AC_SUBST(GLIB_CFLAGS)
+    AC_SUBST(GLIB_LIBS)
   else
-    AC_ERROR([GLIB was not compiled properly, libglib.a not found])
+    AC_MSG_RESULT([no])
   fi
-  AC_SUBST(GLIB_DIR)
-  AC_SUBST(GLIB_CFLAGS)
-  AC_SUBST(GLIB_LIBS)
-else
-  AC_MSG_RESULT([no])
+])
+
+AC_CHECK_GLIBDIR
+
+if test "x$GLIB_DIR" = "x"; then
   AM_PATH_GLIB(1.2.0,,, gmodule)
   if test "x$GLIB_LIBS" = "x"; then
     echo "*** trying without -lgmodule"
@@ -279,13 +290,43 @@ else
   else
     AC_DEFINE(HAVE_GMODULE)
   fi
+
   if test "x$GLIB_LIBS" = "x"; then
-	echo
-	echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
-	echo "*** If you can't install GLIB anywhere or if you don't want to,"
-	echo "*** you can just unpack it to Irssi's source directory and"
-	echo "*** Irssi will automatically compile and use it."
-	AC_ERROR([GLIB is required to build irssi.])
+    echo
+    echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
+    echo "*** If you can't install GLIB anywhere or if you don't want to,"
+    echo "*** you can just unpack it to Irssi's source directory and"
+    echo "*** Irssi will automatically compile and use it."
+    echo
+
+    dnl * I think it's pretty safe to assume GLib 1.2.8 since the next
+    dnl * will be 2.0 (or 1.4?) and it's not sure if irssi compiles
+    dnl * with it
+    glib_file=glib-1.2.8.tar.gz
+
+    dlcmd=
+    if test -f "`which ncftpget`"; then
+      dlcmd="ncftpget ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+    fi
+    if test -f "`which wget`"; then
+      dlcmd="wget http://irssi.org/files/$glib_file"
+    fi
+    if test "x$dlcmd" != "x"; then
+      echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
+      read answer
+      eval $dlcmd
+      if `gunzip $glib_file`; then
+	glib_file=`echo $glib_file|$sedpath s/\.gz$//`
+	if `tar xf $glib_file`; then
+	  rm -f $glib_file
+	  AC_CHECK_GLIBDIR
+	fi
+      fi
+    fi
+
+    if test "x$GLIB_LIBS" = "x"; then
+      AC_ERROR([GLIB is required to build irssi.])
+    fi
   fi
 fi
 
@@ -316,24 +357,22 @@ if test ! -s .libs/libconftest.a; then
 fi
 
 dnl ** check if dynamic linking worked
-if test ! -s .libs/libconftest.so -a -s .libs/libconftest.so.0.0; then
-  mv .libs/libconftest.so.0.0 .libs/libconftest.so
-fi
-if test ! -s .libs/libconftest.so; then
+libfile=`grep ^library_names libconftest.la|$sedpath "s/library_names='\(.*\)'.*/\1/"|$sedpath 's/.* \([[^ ]]*\)$/\1/'`
+if test ! -s .libs/$libfile; then
   AC_MSG_RESULT([no, error linking test module])
 else
   cat > conftest.c <<EOF
 #include <gmodule.h>
 main() {
 GModule *m; int (*modfunc)(void);
-m = g_module_open(".libs/libconftest.so", 0);
+m = g_module_open(".libs/$libfile", 0);
 if (!m) g_print("error loading: %s", g_module_error());
 else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
   g_print("modfunc() symbol not found from module");
 else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
 return 0; }
 EOF
-  $CC $CFLAGS conftest.c -o conftest `$GLIB_CONFIG --cflags --libs gmodule` 2> /dev/null > /dev/null
+  $CC $CFLAGS conftest.c -o conftest $GLIB_CFLAGS $GLIB_LIBS 2> /dev/null > /dev/null
   if test ! -s conftest; then
     AC_MSG_RESULT([no, error compiling test program])
   else
@@ -438,27 +477,31 @@ if test "$want_perl" != "no"; then
 		fi
 
 		dnl * remove all database stuffs
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldb\( \|$\)//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-ldbm\( \|$\)//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lndbm\( \|$\)//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lgdbm\( \|$\)//'`
 		dnl * nsl is already in ldflags
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lnsl\( \|$\)//'`
+		dnl * libc is of course linked without needing -lc
+		dnl * -rdynamic must not be in LIBADD line
+		for word in -ldb -ldbm -lndbm -lgdbm -lnsl -lc -rdynamic; do
+		  PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e "s/$word //" -e "s/$word$//"`
+		done
 
-		dnl * linux specific ..
-		if echo $host_os | grep linux > /dev/null; then
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lposix\( \|$\)//'`
-		fi
-
-		dnl * libc is of course in list already
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-lc\( \|$\)//'`
-		dnl * must not be in LIBADD line
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath 's/-rdynamic\( \|$\)//'`
+		case "$host_os" in
+		  linux*)
+		    PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e 's/-lposix //' -e 's/-lposix$//'`
+		    ;;
+		  hpux*)
+		    if test "x$ac_cv_prog_gcc" = "xyes"; then
+		      PERL_CFLAGS=`echo $PERL_CFLAGS | $sedpath -e 's/-Ae //' -e 's/-Ae$//'`
+		      PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e 's/-Ae //' -e 's/-Ae$//'`
+		    fi
+		    ;;
+		  *)
+		    ;;
+		esac
 
 		dnl * check that perl's ldflags actually work
 		AC_CACHE_VAL(irssi_cv_lib_perl_works, [
-			echo "main(){return 0;}" > conftest.c
-			$CC $CFLAGS $LDFLAGS $PERL_LDFLAGS conftest.c -o conftest 2> /dev/null > /dev/null
+			echo "main(){perl_alloc(); return 0;}" > conftest.c
+			$CC $CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> /dev/null > /dev/null
 			if test -s conftest; then
 				irssi_cv_lib_perl_works=yes
 			else
@@ -686,7 +729,7 @@ if test "x$want_perl" != "xno"; then
 
 	if test "x$old_dir" != "x$whole_dir"; then
 		for file in $whole_dir/src/perl/*.[[ch]] $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $whole_dir/src/perl/common/typemap $whole_dir/src/perl/common/module.h $whole_dir/src/perl/common/*.xs $whole_dir/src/perl/irc/typemap $whole_dir/src/perl/irc/module.h $whole_dir/src/perl/irc/*.xs; do
-			link=`echo $file|sed "s?$whole_dir/??"`
+			link=`echo $file|$sedpath "s?$whole_dir/??"`
 			rm -f $link
 			$LN_S $file $link
 		done
@@ -706,6 +749,7 @@ fi
 echo "Building irssi bot ......... : $want_irssibot"
 echo "Building irssi proxy ....... : $want_irssiproxy"
 echo "Building with IPv6 support . : $want_ipv6"
+
 if test "x$want_perl" = "xstatic"; then
 	echo "Building with Perl support . : static (in irssi binary)"
 elif test "x$want_perl" = "xyes"; then
@@ -719,7 +763,7 @@ else
 	fi
 fi
 
-if test "x$perl_mod_error" != "x"; then
+if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 	echo " - NOTE: Perl support will be compiled statically to irssi, not as"
 	echo "   a module as requested. Reason:"
 	echo "   $perl_mod_error"

@@ -99,21 +99,21 @@
       so server won't split it when it adds your nick+host mask)
 
  - server connecting:
-     - Don't try to restore user modes set by server automatically when
-       reconnecting to another server. Like when server sets +r mode to you
-       you won't get rid of it until you /disconnect.
-     - DNS problems may cause removal of i-line, irssi shouldn't stop
-       trying to reconnect the server if it happens.. Maybe it never should
-       stop reconnecting to servers that are in config.
-     - /RECONNECT <servertag> - If <servertag> belongs to some IRC network,
-       reconnect to next server in that ircnet, otherwise just reconnect
-       to the server.
-     - /SERVER <number> would connect to n'th server in list. Show the
-       numbers with /SERVER LIST
-     - /CONNECT <ircnet> could remove existing ircnet connection from
-       reconnect queue if it exists (only if there's only one?). Also if
-       we're already connected to the ircnet it could complain about it
-       and -yes would force it.
+    - Don't try to restore user modes set by server automatically when
+      reconnecting to another server. Like when server sets +r mode to you
+      you won't get rid of it until you /disconnect.
+    - DNS problems may cause removal of i-line, irssi shouldn't stop
+      trying to reconnect the server if it happens.. Maybe it never should
+      stop reconnecting to servers that are in config.
+    - /RECONNECT <servertag> - If <servertag> belongs to some IRC network,
+      reconnect to next server in that ircnet, otherwise just reconnect
+      to the server.
+    - /SERVER <number> would connect to n'th server in list. Show the
+      numbers with /SERVER LIST
+    - /CONNECT <ircnet> could remove existing ircnet connection from
+      reconnect queue if it exists (only if there's only one?). Also if
+      we're already connected to the ircnet it could complain about it
+      and -yes would force it.
 
  - Tab completion:
     - Complete aliases
@@ -142,21 +142,21 @@
     - Try to make them create only .so files instead of .a and all..
 
  - perl scripting:
-     - /SCRIPT for listing scripts, /SCRIPT REMOVE <name>|ALL, 
-       /SCRIPT PERL RELOAD == ex. /PERLFLUSH
-     - /PERL command - how does signal_add() work with it? probably not well.
-       How to remove those scripts? etc. /SCRIPT could show them as some
-       anonymous scripts, maybe list the whole script in the line..
-     - Possibility to modify entry line somehow
-     - Possibility to use "complete word" signal, needs GSList** handling
-     - Add structures: CHATNET_REC, MODULE_REC, THEME_REC, KEYINFO_REC, 
-       CHAT_PROTOCOL_REC
-     - signal_emit() - if emitting unknown signal, it could automatically
-       save the types of sent parameters so another perl script could
-       signal_add() it.
-     - Perl module and the Irssi and Irssi::Irc libraries could have some
-       version checks so that if they don't match it would complain.
-     - Dependencies don't work with .xs files..
+    - /SCRIPT for listing scripts, /SCRIPT REMOVE <name>|ALL, 
+      /SCRIPT PERL RELOAD == ex. /PERLFLUSH
+    - /PERL command - how does signal_add() work with it? probably not well.
+      How to remove those scripts? etc. /SCRIPT could show them as some
+      anonymous scripts, maybe list the whole script in the line..
+    - Possibility to modify entry line somehow
+    - Possibility to use "complete word" signal, needs GSList** handling
+    - Add structures: CHATNET_REC, MODULE_REC, THEME_REC, KEYINFO_REC, 
+      CHAT_PROTOCOL_REC
+    - signal_emit() - if emitting unknown signal, it could automatically
+      save the types of sent parameters so another perl script could
+      signal_add() it.
+    - Perl module and the Irssi and Irssi::Irc libraries could have some
+      version checks so that if they don't match it would complain.
+    - Dependencies don't work with .xs files..
 
  - Bigger code changes:
     - Restructure code tree so that non-IRC chat protocols would be in
