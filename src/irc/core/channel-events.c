@@ -365,6 +365,7 @@ void channel_events_init(void)
 	signal_add_first("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
 	signal_add_first("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
 	signal_add_first("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
+	signal_add_first("event 439", (SIGNAL_FUNC) event_cannot_join); /* target change too fast */
 
 	signal_add("event topic", (SIGNAL_FUNC) event_topic);
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
@@ -389,6 +390,7 @@ void channel_events_deinit(void)
 	signal_remove("event 475", (SIGNAL_FUNC) event_cannot_join); /* bad channel key */
 	signal_remove("event 476", (SIGNAL_FUNC) event_cannot_join); /* bad channel mask */
 	signal_remove("event 379", (SIGNAL_FUNC) event_cannot_join); /* forwarding to another channel */
+	signal_remove("event 439", (SIGNAL_FUNC) event_cannot_join); /* target change too fast */
 
 	signal_remove("event topic", (SIGNAL_FUNC) event_topic);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
