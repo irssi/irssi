@@ -67,14 +67,16 @@ static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
 	SETTINGS_REC *rec;
 
+	g_return_val_if_fail(key != NULL, NULL);
+
 	rec = settings_find(key);
 	if (rec == NULL) {
 		g_warning("settings_get(%s) : not found", key);
-		return 0;
+		return NULL;
 	}
 	if (type != -1 && rec->type != type) {
 		g_warning("settings_get(%s) : invalid type", key);
-		return 0;
+		return NULL;
 	}
 
 	return rec;

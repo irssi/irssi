@@ -847,7 +847,7 @@ int parse_time_interval(const char *time, int *msecs)
 				return TRUE;
 			}
 
-			*msecs += number; /* assume seconds */
+			*msecs += number * 1000; /* assume seconds */
 			return FALSE;
 		}
 
