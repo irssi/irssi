@@ -39,9 +39,15 @@
 #endif
 
 #ifndef COLOR_PAIRS
-#define COLOR_PAIRS 64
+#  define COLOR_PAIRS 64
 #endif
 
+#if defined (TIOCGWINSZ) && defined (HAVE_CURSES_RESIZETERM)
+#  define USE_RESIZE_TERM
+#endif
+
+
+#define RESIZE_TIMEOUT 500 /* how often to check if the terminal has been resized */
 #define MIN_SCREEN_WIDTH 20
 
 struct _SCREEN_WINDOW {
@@ -60,18 +66,28 @@ static void deinit_screen_int(void);
 
 #ifdef SIGWINCH
 
-static void sig_winch(int p)
+static int resize_timeout_tag, resize_needed;
+
+static int resize_timeout(void)
 {
-#if defined (TIOCGWINSZ) && defined (HAVE_CURSES_RESIZETERM)
+#ifdef USE_RESIZE_TERM
 	struct winsize ws;
+#endif
+
+	if (!resize_needed)
+		return TRUE;
+
+        resize_needed = FALSE;
+
+#ifdef USE_RESIZE_TERM
 
 	/* Get new window size */
 	if (ioctl(0, TIOCGWINSZ, &ws) < 0)
-		return;
+		return TRUE;
 
 	if (ws.ws_row == LINES && ws.ws_col == COLS) {
 		/* Same size, abort. */
-		return;
+		return TRUE;
 	}
 
 	if (ws.ws_col < MIN_SCREEN_WIDTH)
@@ -79,16 +95,22 @@ static void sig_winch(int p)
 
 	/* Resize curses terminal */
 	resizeterm(ws.ws_row, ws.ws_col);
-
-	screen_width = COLS;
-	screen_height = LINES;
 #else
 	deinit_screen_int();
 	init_screen_int();
 	mainwindows_recreate();
 #endif
 
+	screen_width = COLS;
+	screen_height = LINES;
 	mainwindows_resize(COLS, LINES);
+
+	return TRUE;
+}
+
+static void sig_winch(int p)
+{
+        resize_needed = TRUE;
 }
 #endif
 
@@ -108,7 +130,7 @@ static int init_curses(void)
 {
 	char ansi_tab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	int num;
-#ifndef WIN32
+#if !defined (WIN32) && defined(SIGWINCH)
 	struct sigaction act;
 #endif
 
@@ -189,13 +211,21 @@ int init_screen(void)
 	signal_add("beep", (SIGNAL_FUNC) beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
-        return init_screen_int();
+#ifdef SIGWINCH
+	resize_timeout_tag = g_timeout_add(RESIZE_TIMEOUT,
+					   (GSourceFunc) resize_timeout, NULL);
+#endif
+	return init_screen_int();
 }
 
 /* Deinitialize screen */
 void deinit_screen(void)
 {
 	deinit_screen_int();
+
+#ifdef SIGWINCH
+	g_source_remove(resize_timeout_tag);
+#endif
 
 	signal_remove("beep", (SIGNAL_FUNC) beep);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
