@@ -75,6 +75,8 @@ CODE:
 			p[n-1] = irssi_ref_object(ST(n));
 		else if (SvROK(ST(n)))
 			p[n-1] = (void *) SvIV((SV*)SvRV(ST(n)));
+		else if (SvIOK(ST(n)))
+			p[n-1] = (void *)SvIV(ST(n));
 		else
 			p[n-1] = NULL;
 	}
