@@ -54,9 +54,9 @@ static void event_privmsg(const char *data, IRC_SERVER_REC *server, const char *
 	   that it didn't get ignored */
         if (window != active_win && !ignore_check(server, nick, addr, target, msg, level)) {
                 /* hilight */
-		item->last_color = irc_hilight_last_color();
-		level = item->last_color > 0 || !ischannel(*target) ||
-			irc_nick_match(server->nick, msg) ?
+		if (item != NULL) item->last_color = irc_hilight_last_color();
+		level = (item != NULL && item->last_color > 0) ||
+			!ischannel(*target) || irc_nick_match(server->nick, msg) ?
 			NEWDATA_HILIGHT : NEWDATA_MSG;
 		if (item != NULL && item->new_data < level) {
 			item->new_data = level;
