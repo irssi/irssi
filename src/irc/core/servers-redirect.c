@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
+#include "rawlog.h"
 
 #include "irc-servers.h"
 #include "servers-redirect.h"
@@ -28,6 +29,7 @@
 #define DEFAULT_REDIRECT_TIMEOUT 60
 
 typedef struct {
+        char *name;
 	int refcount;
 
 	int remote;
@@ -77,7 +79,8 @@ static void redirect_cmd_destroy(REDIRECT_CMD_REC *rec)
                 g_free(tmp->data);
         g_slist_free(rec->start);
         g_slist_free(rec->stop);
-        g_free(rec);
+        g_free(rec->name);
+	g_free(rec);
 }
 
 static void redirect_cmd_ref(REDIRECT_CMD_REC *rec)
@@ -148,16 +151,16 @@ void server_redirect_register_list(const char *command,
 		   the old one */
 		g_hash_table_remove(command_redirects, command);
                 redirect_cmd_unref(value);
-		g_free(key);
 	}
 
 	rec = g_new0(REDIRECT_CMD_REC, 1);
         redirect_cmd_ref(rec);
+        rec->name = g_strdup(command);
 	rec->remote = remote;
 	rec->timeout = timeout > 0 ? timeout : DEFAULT_REDIRECT_TIMEOUT;
 	rec->start = start;
         rec->stop = stop;
-        g_hash_table_insert(command_redirects, g_strdup(command), rec);
+        g_hash_table_insert(command_redirects, rec->name, rec);
 }
 
 void server_redirect_event(IRC_SERVER_REC *server, const char *command,
@@ -360,6 +363,7 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
         REDIRECT_REC *redirect;
 	GSList *tmp, *next;
 	time_t now;
+        char *str;
 
 	/* find the redirection */
 	*signal = NULL; redirect = NULL;
@@ -392,6 +396,11 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 				g_slist_remove(server->redirects, rec);
 			if (!rec->destroyed && rec->failure_signal != NULL) {
 				/* emit the failure signal */
+				str = g_strdup_printf("FAILED %s: %s",
+						      rec->cmd->name,
+						      rec->failure_signal);
+				rawlog_redirect(server->rawlog, str);
+                                g_free(str);
 				signal_emit(rec->failure_signal, 1, server);
 			}
 			server_redirect_destroy(rec);
@@ -487,7 +496,6 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 
 static void cmd_redirect_destroy(char *key, REDIRECT_CMD_REC *cmd)
 {
-	g_free(key);
         redirect_cmd_unref(cmd);
 }
 
