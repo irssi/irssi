@@ -150,8 +150,10 @@ static void keyconfig_clear(const char *key)
 
 	/* remove old keyboard settings */
 	node = key_config_find(key);
-        if (node != NULL)
-		iconfig_node_clear(node);
+	if (node != NULL) {
+		iconfig_node_remove(iconfig_node_traverse("(keyboard", FALSE),
+				    node);
+	}
 }
 
 KEYINFO_REC *key_info_find(const char *id)
