@@ -121,6 +121,9 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick, cons
 		rec->channels = g_slist_append(rec->channels, splitchan);
 	}
 
+	if (rec->channels == NULL)
+		g_warning("netsplit_add(): channels == NULL ??");
+
 	g_hash_table_insert(server->splits, rec->nick, rec);
 
 	signal_emit("netsplit add", 1, rec);

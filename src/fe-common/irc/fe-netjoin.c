@@ -355,7 +355,7 @@ static void event_mode(const char *data, IRC_SERVER_REC *server,
 		if (*mode == 'o' && *nick != NULL) {
                         /* give/remove ops */
 			rec = netjoin_find(server, *nick);
-			if (rec != NULL && !netjoin_set_operator(rec, channel, type == '+'))
+			if (rec == NULL || !netjoin_set_operator(rec, channel, type == '+'))
 				show = TRUE;
                         nick++;
 		} else {
