@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "module-formats.h"
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
@@ -226,6 +227,7 @@ static void paste_flush(int send)
 static gboolean paste_timeout(gpointer data)
 {
 	GTimeVal now;
+	char *str;
 	int diff;
 
 	if (paste_state == 0) {
@@ -249,13 +251,17 @@ static gboolean paste_timeout(gpointer data)
 	} else if (!paste_prompt) {
 		paste_prompt = TRUE;
 		paste_old_prompt = g_strdup(active_entry->prompt);
-		printtext_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				 "Pasting %u lines to %s. Press Ctrl-O if you wish to do this or Ctrl-C to cancel.",
-				 paste_line_count,
-				 active_win->active == NULL ? "window" :
-				 active_win->active->visible_name);
-		gui_entry_set_prompt(active_entry, "Hit Ctrl-O to paste, Ctrl-C to abort?");
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_PASTE_WARNING,
+				   paste_line_count,
+				   active_win->active == NULL ? "window" :
+				   active_win->active->visible_name);
+
+		str = format_get_text(MODULE_NAME, active_win, NULL, NULL,
+				      TXT_PASTE_PROMPT, 0, 0);
+		gui_entry_set_prompt(active_entry, str);
 		gui_entry_set_text(active_entry, "");
+		g_free(str);
 	}
 	return TRUE;
 }
