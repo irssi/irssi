@@ -7,7 +7,8 @@ doc_DATA = \
 	manual.txt \
 	perl.txt \
 	signals.txt \
-	special_vars.txt
+	special_vars.txt \
+	startup-HOWTO.txt
 
 EXTRA_DIST = $(doc_DATA)
 
