@@ -565,6 +565,8 @@ void gui_readline_init(void)
 	key_bind("key", NULL, " ", "space", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^M", "return", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^J", "return", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "^H", "backspace", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "^?", "backspace", (SIGNAL_FUNC) key_combo);
 
         /* meta */
 	key_bind("key", NULL, "^[", "meta", (SIGNAL_FUNC) key_combo);
@@ -616,8 +618,7 @@ void gui_readline_init(void)
 	key_bind("forward_history", "", "down", NULL, (SIGNAL_FUNC) key_forward_history);
 
         /* line editing */
-	key_bind("backspace", "", "^H", NULL, (SIGNAL_FUNC) key_backspace);
-	key_bind("backspace", "", "^?", NULL, (SIGNAL_FUNC) key_backspace);
+	key_bind("backspace", "", "backspace", NULL, (SIGNAL_FUNC) key_backspace);
 	key_bind("delete_character", "", "delete", NULL, (SIGNAL_FUNC) key_delete_character);
 	key_bind("delete_character", NULL, "^D", NULL, (SIGNAL_FUNC) key_delete_character);
 	key_bind("delete_next_word", "", NULL, NULL, (SIGNAL_FUNC) key_delete_next_word);
