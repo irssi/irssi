@@ -35,6 +35,8 @@
 
 #include <signal.h>
 
+#define CTRL(x) ((x) & 0x1f)	/* Ctrl+x */
+
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 
@@ -130,7 +132,7 @@ void handle_key(int key)
 	int c;
 
 	/* Quit if we get 5 CTRL-C's in a row. */
-	if (key != 3)
+	if (key != CTRL('c'))
 		sigint_count = 0;
 	else if (++sigint_count >= 5)
 		raise(SIGTERM);
@@ -194,16 +196,17 @@ void handle_key(int key)
 		gui_entry_move_pos(-1);
 		break;
 
-	case 21:
+	case CTRL('u'):
 		/* Ctrl-U, clear line */
                 g_free_not_null(savebuffer);
 		savebuffer = g_strdup(gui_entry_get_text());
 
 		gui_entry_set_text("");
 		break;
-	case 25:
+	case CTRL('y'):
 		/* Ctrl-Y, write last ^U'd line */
-		gui_entry_insert_text(savebuffer);
+		if (savebuffer != NULL)
+			gui_entry_insert_text(savebuffer);
 		break;
 	case 9:
 		key_pressed("Tab", NULL);
@@ -215,12 +218,12 @@ void handle_key(int key)
 		gui_entry_erase(1);
 		break;
 
-	case 23:
+	case CTRL('w'):
 		/* C-w - erase word to the left of marker */
 		gui_entry_erase_word();
 		break;
 
-	case 4:
+	case CTRL('d'):
 	case KEY_DC:
 		if (gui_entry_get_pos() < strlen(gui_entry_get_text())) {
 			gui_entry_move_pos(1);
@@ -228,7 +231,7 @@ void handle_key(int key)
 		}
 		break;
 
-	case 11:
+	case CTRL('k'):
 		/* C-K - erase the rest of the line */
 		c = gui_entry_get_pos();
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
@@ -238,11 +241,11 @@ void handle_key(int key)
 	case 0:
 		/* Ctrl-space - ignore */
 		break;
-	case 1:
+	case CTRL('a'):
 		/* C-A, home */
 		gui_entry_set_pos(0);
 		break;
-	case 5:
+	case CTRL('e'):
 		/* C-E, end */
 		gui_entry_set_pos(strlen(gui_entry_get_text()));
 		break;
