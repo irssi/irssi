@@ -468,7 +468,8 @@ if test "$want_perl" != "no"; then
 			dnl * building with static perl support
 			dnl * all PERL_LDFLAGS linking is done in fe-text
 			PERL_LDFLAGS="../perl/libperl_static.la $PERL_LDFLAGS"
-			PROG_LIBS="$PROG_LIBS $PERL_LDFLAGS"
+			PERL_LINK_LIBS="$PERL_LDFLAGS"
+			PERL_FE_LINK_LIBS="../perl/libfe_perl_static.la"
 			PERL_LDFLAGS=
 			AC_DEFINE(HAVE_STATIC_PERL)
 
@@ -593,8 +594,8 @@ if test "x$MSGFMT" = "xno"; then
 fi
 
 dnl ** common libraries needed by frontends
-COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS"
-COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
+COMMON_NOUI_LIBS="$CHAT_LIBS $CORE_LIBS $INTLLIBS $PERL_LINK_LIBS"
+COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS $PERL_FE_LINK_LIBS"
 AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
 
