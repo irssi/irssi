@@ -10,6 +10,7 @@ void printformat_module_args(const char *module, void *server, const char *targe
 void printformat_module_window_args(const char *module, WINDOW_REC *window, int level, int formatnum, va_list va);
 
 void printtext(void *server, const char *target, int level, const char *text, ...);
+void printtext_string(void *server, const char *target, int level, const char *text);
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...);
 void printtext_multiline(void *server, const char *target, int level, const char *format, const char *text);
 void printbeep(void);

@@ -30,23 +30,15 @@ void
 print(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
-PREINIT:
-        char *fixed;
 CODE:
-        fixed = perl_fix_formats(str);
-	printtext(NULL, NULL, level, fixed);
-        g_free(fixed);
+	printtext_string(NULL, NULL, level, str);
 
 void
 print_window(str, level=MSGLEVEL_CLIENTNOTICE)
 	char *str
         int level;
-PREINIT:
-        char *fixed;
 CODE:
-        fixed = perl_fix_formats(str);
-	printtext_window(active_win, level, fixed);
-        g_free(fixed);
+	printtext_window(active_win, level, str);
 
 void
 command(cmd, server=active_win->active_server, item=active_win->active)
