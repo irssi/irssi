@@ -723,8 +723,12 @@ Channel::nick_remove(nick)
   Remove nick from nicklist.
 
 Nick
-Channel::nick_find(mask)
+Channel::nick_find(nick)
   Find nick from nicklist.
+
+Nick
+Channel::nick_find_mask(mask)
+  Find nick mask from nicklist, wildcards allowed.
 
 Channel::nicks(channel)
   Return a list of all nicks in channel.
