@@ -135,17 +135,19 @@ AC_ARG_WITH(perl-lib,
 	want_perl=yes)
 
 AC_ARG_WITH(perl,
-[  --with-perl[=yes|no|static]  Build with Perl support - also specifies
+[  --with-perl[=yes|no|module]  Build with Perl support - also specifies
                         if it should be built into main irssi binary
-                        (static) or as module (default)],
+                        (static, default) or as module],
 	if test x$withval = xyes; then
-		want_perl=yes
+		want_perl=static
 	elif test x$withval = xstatic; then
 		want_perl=static
+	elif test x$withval = xmodule; then
+		want_perl=module
 	else
 		want_perl=no
 	fi,
-	want_perl=yes)
+	want_perl=static)
 
 AC_ARG_WITH(tests,
 [  --with-tests           Run all the tests],
@@ -781,7 +783,7 @@ echo "Building with IPv6 support . : $want_ipv6"
 
 if test "x$want_perl" = "xstatic"; then
 	echo "Building with Perl support . : static (in irssi binary)"
-elif test "x$want_perl" = "xyes"; then
+elif test "x$want_perl" = "xmodule"; then
 	echo "Building with Perl support . : module"
 else
 	if test -z "$perl_check_error"; then
@@ -798,7 +800,7 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 	echo "   $perl_mod_error"
 fi
 
-if test "x$want_perl" = "xyes"; then
+if test "x$want_perl" != "xno"; then
 	if test -z "$perl_library_dir"; then
 		perl_library_dir="(site default - `$perlpath -e 'use Config; print $Config{sitearch}'`)"
 	fi
