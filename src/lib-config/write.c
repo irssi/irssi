@@ -310,9 +310,14 @@ static int config_write_block(CONFIG_REC *rec, CONFIG_NODE *node, int list, int 
 /* Write configuration file. Write to `fname' if it's not NULL. */
 int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 {
+	int ret;
+
 	g_return_val_if_fail(rec != NULL, -1);
         g_return_val_if_fail(fname != NULL || rec->fname != NULL, -1);
         g_return_val_if_fail(create_mode != -1 || rec->create_mode != -1, -1);
+
+	if (rec->handle != -1)
+		close(rec->handle);
 
 	rec->handle = open(fname != NULL ? fname : rec->fname,
 			   O_WRONLY | O_TRUNC | O_CREAT,
@@ -322,14 +327,14 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 
 	rec->tmp_indent_level = 0;
 	rec->tmp_last_lf = TRUE;
-	if (config_write_block(rec, rec->mainnode, FALSE, TRUE) == -1) {
+        ret = config_write_block(rec, rec->mainnode, FALSE, TRUE);
+	if (ret == -1) {
 		/* write error */
 		config_error(rec, errno == 0 ? "bug" : g_strerror(errno));
-		return -1;
 	}
 
 	close(rec->handle);
 	rec->handle = -1;
 
-	return 0;
+	return ret;
 }
