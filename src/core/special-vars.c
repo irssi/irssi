@@ -32,6 +32,9 @@
 #define isvarchar(c) \
         (isalnum(c) || (c) == '_')
 
+#define isarg(c) \
+	(isdigit(c) || (c) == '*' || (c) == '~' || (c) == '-')
+
 static SPECIAL_HISTORY_FUNC history_func = NULL;
 
 static char *get_argument(char **cmd, char **arglist)
@@ -152,7 +155,7 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 {
 	EXPANDO_FUNC func;
 
-	if (isdigit(**cmd) || **cmd == '*' || **cmd == '-' || **cmd == '~') {
+	if (isarg(**cmd)) {
 		/* argument */
 		*free_ret = TRUE;
 		if (arg_used != NULL) *arg_used = TRUE;
@@ -202,7 +205,7 @@ static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 	char command, *value, *p;
 	int len;
 
-	if ((flags & PARSE_FLAG_ONLY_PARAMS) && !isdigit(**cmd)) {
+	if ((flags & PARSE_FLAG_ONLY_PARAMS) && !isarg(**cmd)) {
 		*free_ret = TRUE;
 		return g_strdup_printf("$%c", **cmd);
 	}
