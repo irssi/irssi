@@ -21,6 +21,7 @@
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
+#include "core.h"
 #include "misc.h"
 #include "settings.h"
 
@@ -155,6 +156,13 @@ char *perl_get_use_list(void)
         char *ret;
 
 	str = g_string_new(NULL);
+
+        if (*PERL_LIB_DIR != '\0')
+		g_string_append(str, "use lib \""PERL_LIB_DIR"\";");
+
+        g_string_append(str, "use Irssi;");
+	if (irssi_gui != IRSSI_GUI_NONE)
+		g_string_append(str, "use Irssi::UI;");
 
 	for (tmp = use_protocols; tmp != NULL; tmp = tmp->next)
 		g_string_sprintfa(str, "use Irssi::%s;", (char *) tmp->data);

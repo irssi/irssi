@@ -94,12 +94,12 @@ static void irssi_perl_start(void)
 
 	perl_parse(my_perl, xs_init, 3, args, NULL);
 
-	use_code = *PERL_LIB_DIR == '\0' ? "" :
-                "use lib \""PERL_LIB_DIR"\";";
-
+	use_code = perl_get_use_list();
         code = g_strdup_printf(eval_file_code, use_code);
 	perl_eval_pv(code, TRUE);
-        g_free(code);
+
+	g_free(code);
+        g_free(use_code);
 
         perl_common_init();
 }
@@ -249,7 +249,7 @@ static void cmd_perl(const char *data)
 	code = g_string_new(NULL);
 
 	uses = perl_get_use_list();
-	g_string_sprintf(code, "sub { use Irssi;%s\n%s }", uses, data);
+	g_string_sprintf(code, "sub { %s\n%s }", uses, data);
 
 	sv = perl_eval_pv(code->str, TRUE);
 	perl_call_sv(sv, G_VOID|G_NOARGS|G_EVAL|G_DISCARD);
