@@ -47,7 +47,7 @@ while (<STDIN>) {
 	s/WI_ITEM_REC[^,]*/iobject/g;
 
 	s/([\w:]+)(,|$)/"\1"\2/g;
-	print "    { -1, \"$signal\", { $_, NULL } },\n";
+	print "    { \"$signal\", { $_, NULL } },\n";
 }
 
-print "\n    { -1, NULL }\n};\n";
+print "\n    { NULL }\n};\n";

@@ -16,7 +16,6 @@ typedef struct {
 } PERL_SIGNAL_REC;
 
 typedef struct {
-	int signal_id;
 	char *signal;
 	char *args[7];
 } PERL_SIGNAL_ARGS_REC;
@@ -53,7 +52,7 @@ static void perl_call_signal(const char *func, int signal_id,
 			     gconstpointer *args)
 {
 	dSP;
-	int retcount, ret;
+	int retcount;
 
 	PERL_SIGNAL_ARGS_REC *rec;
 	HV *stash;
@@ -347,8 +346,9 @@ void perl_signals_init(void)
 			perl_signal_args_partial =
 				g_slist_append(perl_signal_args_partial, rec);
 		} else {
+                        int signal_id = signal_get_uniq_id(rec->signal);
 			g_hash_table_insert(perl_signal_args_hash,
-					    GINT_TO_POINTER(rec->signal_id),
+					    GINT_TO_POINTER(signal_id),
 					    rec);
 		}
 	}

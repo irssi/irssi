@@ -6,11 +6,11 @@ signal_emit(signal, ...)
 PREINIT:
         STRLEN n_a;
 CODE:
-	void *p[7];
+	void *p[SIGNAL_MAX_ARGUMENTS];
 	int n;
 
 	memset(p, 0, sizeof(p));
-	for (n = 1; n < items && n < 7; n++) {
+	for (n = 1; n < items && n < SIGNAL_MAX_ARGUMENTS+1; n++) {
 		if (SvPOKp(ST(n)))
 			p[n-1] = SvPV(ST(n), n_a);
 		else if (irssi_is_ref_object(ST(n)))
@@ -18,7 +18,7 @@ CODE:
 		else
 			p[n-1] = (void *) SvIV((SV*)SvRV(ST(n)));
 	}
-	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+	signal_emit(signal, items-1, p[0], p[1], p[2], p[3], p[4], p[5]);
 
 void
 signal_add(signal, func)

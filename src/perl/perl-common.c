@@ -109,7 +109,7 @@ void *irssi_ref_object(SV *o)
 
         hv = hvref(o);
 	if (hv == NULL)
-		return 0;
+		return NULL;
 
 	sv = hv_fetch(hv, "_irssi", 6, 0);
 	if (sv == NULL)
