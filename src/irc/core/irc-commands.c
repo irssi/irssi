@@ -428,6 +428,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 				      "event 318", "whois end",
 				      "event 402", event_402,
 				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+				      "event 313", "whois oper",
 				      "event 401", "whois not found",
 				      "event 311", "whois event",
 				      "", "whois default event", NULL);
@@ -436,6 +437,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 				      NULL,
 				      "event 318", "whois end",
 				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+				      "event 313", "whois oper",
 				      "event 311", "whois event",
 				      "", "whois default event", NULL);
 	}

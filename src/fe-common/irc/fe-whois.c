@@ -327,7 +327,6 @@ struct whois_event_table {
 
 static struct whois_event_table events[] = {
 	{ 312, event_whois_server },
-	{ 313, event_whois_oper },
 	{ 326, event_whois_usermode326 },
 	{ 327, event_whois_realhost327 },
 	{ 379, event_whois_modes },
@@ -360,6 +359,7 @@ void fe_whois_init(void)
 
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_add("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("whowas away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("whois default event", (SIGNAL_FUNC) event_whois_default);
 	signal_add("event 318", (SIGNAL_FUNC) event_end_of_whois);
@@ -371,6 +371,7 @@ void fe_whois_deinit(void)
 {
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("whowas away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("whois default event", (SIGNAL_FUNC) event_whois_default);
 	signal_remove("event 318", (SIGNAL_FUNC) event_end_of_whois);

@@ -424,8 +424,8 @@ void irc_nicklist_init(void)
 	signal_add("silent event who", (SIGNAL_FUNC) event_who);
 	signal_add("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
-	signal_add_first("event 301", (SIGNAL_FUNC) event_whois_away);
-	signal_add_first("event 313", (SIGNAL_FUNC) event_whois_ircop);
+	signal_add_first("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_add_first("whois oper", (SIGNAL_FUNC) event_whois_ircop);
 	signal_add_first("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_add_first("event 432", (SIGNAL_FUNC) event_nick_in_use);
@@ -444,8 +444,8 @@ void irc_nicklist_deinit(void)
 	signal_remove("silent event who", (SIGNAL_FUNC) event_who);
 	signal_remove("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
-	signal_remove("event 301", (SIGNAL_FUNC) event_whois_away);
-	signal_remove("event 313", (SIGNAL_FUNC) event_whois_ircop);
+	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
+	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_ircop);
 	signal_remove("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
 	signal_remove("event 432", (SIGNAL_FUNC) event_nick_in_use);
