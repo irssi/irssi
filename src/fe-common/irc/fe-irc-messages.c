@@ -179,7 +179,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
-	printformat(server, target, MSGLEVEL_NOTICES |
+	printformat(server, skip_target(target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_NOTICE, target, msg);
 }
@@ -190,6 +190,9 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 {
 	const char *oldtarget;
 
+	oldtarget = target;
+	target = skip_target(target);
+
 	if (address == NULL || *address == '\0') {
 		/* notice from server */
 		if (!ignore_check(server, nick, "",
@@ -199,9 +202,6 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 		}
                 return;
 	}
-
-	oldtarget = target;
-	target = skip_target(target);
 
 	if (ignore_check(server, nick, address,
 			 ischannel(*target) ? target : NULL,

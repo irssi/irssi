@@ -114,7 +114,6 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	target = skip_target(target);
 	signal_emit("message irc own_notice", 3, server, msg, target);
 	cmd_params_free(free_arg);
 }
