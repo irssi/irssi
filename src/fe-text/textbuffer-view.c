@@ -611,6 +611,7 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 			view_scroll(view, &view->startline, &view->subline,
 				    -view->empty_linecount, FALSE);
 		}
+		textbuffer_view_init_ypos(view);
 	}
 
 	view->bottom = view_is_bottom(view);
