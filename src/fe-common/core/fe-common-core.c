@@ -344,20 +344,25 @@ static void autoconnect_servers(void)
 
 void fe_common_core_finish_init(void)
 {
+	int setup_changed;
+
 	signal_emit("irssi init read settings", 0);
 
 #ifdef SIGPIPE
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
+        setup_changed = FALSE;
 	if (cmdline_nick != NULL) {
 		/* override nick found from setup */
 		settings_set_str("nick", cmdline_nick);
+		setup_changed = TRUE;
 	}
 
 	if (cmdline_hostname != NULL) {
 		/* override host name found from setup */
 		settings_set_str("hostname", cmdline_hostname);
+		setup_changed = TRUE;
 	}
 
 	create_windows();
@@ -367,6 +372,9 @@ void fe_common_core_finish_init(void)
 			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
 					    G_LOG_LEVEL_WARNING),
 			  (GLogFunc) glog_func, NULL);
+
+	if (setup_changed)
+                signal_emit("setup changed", 0);
 
 	autoconnect_servers();
 }
