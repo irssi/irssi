@@ -286,11 +286,13 @@ static void read_settings(void)
 	flood_max_msgs = settings_get_int("flood_max_msgs");
 
 	if (flood_timecheck > 0 && flood_max_msgs > 0) {
-		flood_tag = g_timeout_add(500, (GSourceFunc) flood_timeout, NULL);
+		if (flood_tag == -1) {
+			flood_tag = g_timeout_add(500, (GSourceFunc) flood_timeout, NULL);
 
-		signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
-		signal_add("event notice", (SIGNAL_FUNC) flood_notice);
-		signal_add("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
+			signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
+			signal_add("event notice", (SIGNAL_FUNC) flood_notice);
+			signal_add("ctcp msg", (SIGNAL_FUNC) flood_ctcp);
+		}
 	} else if (flood_tag != -1) {
 		g_source_remove(flood_tag);
 		flood_tag = -1;
