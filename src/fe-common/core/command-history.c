@@ -28,50 +28,61 @@
 #include "window-items.h"
 
 /* command history */
-static GList *cmdhist, *histpos;
-static int histlines;
+static GList *history, *history_pos;
+static int history_lines, history_over_counter;
 static int window_history;
 
 void command_history_add(WINDOW_REC *window, const char *text)
 {
-	GList **pcmdhist, *link;
-	int *phistlines;
+	GList **phistory, *link;
+	int *phistory_lines;
 
 	g_return_if_fail(text != NULL);
 
 	if (window_history) {
 		/* window specific command history */
-		pcmdhist = &window->cmdhist;
-		phistlines = &window->histlines;
+		phistory = &window->history;
+		phistory_lines = &window->history_lines;
 	} else {
 		/* global command history */
-		pcmdhist = &cmdhist;
-		phistlines = &histlines;
+		phistory = &history;
+		phistory_lines = &history_lines;
 	}
 
-	if (settings_get_int("max_command_history") < 1 || *phistlines < settings_get_int("max_command_history"))
-		(*phistlines)++;
+	if (settings_get_int("max_command_history") < 1 || *phistory_lines < settings_get_int("max_command_history"))
+		(*phistory_lines)++;
 	else {
-		link = *pcmdhist;
+		link = *phistory;
 		g_free(link->data);
-		*pcmdhist = g_list_remove_link(*pcmdhist, link);
+		*phistory = g_list_remove_link(*phistory, link);
 		g_list_free_1(link);
 	}
 
-	*pcmdhist = g_list_append(*pcmdhist, g_strdup(text));
+	*phistory = g_list_append(*phistory, g_strdup(text));
 }
 
 const char *command_history_prev(WINDOW_REC *window, const char *text)
 {
-	GList *pos, **phistpos;
+	GList *pos, **phistory_pos;
+        int *phistory_over_counter;
 
-	phistpos = window_history ? &window->histpos : &histpos;
+	if (window_history) {
+		phistory_pos = &window->history_pos;
+		phistory_over_counter = &window->history_over_counter;
+	} else {
+		phistory_pos = &history_pos;
+		phistory_over_counter = &history_over_counter;
+	}
 
-	pos = *phistpos;
-	if (*phistpos == NULL)
-		*phistpos = g_list_last(window_history ? window->cmdhist : cmdhist);
-	else
-		*phistpos = (*phistpos)->prev;
+	pos = *phistory_pos;
+	if (*phistory_pos != NULL) {
+		*phistory_pos = (*phistory_pos)->prev;
+		if (*phistory_pos == NULL)
+                        (*phistory_over_counter)++;
+	} else {
+		*phistory_pos = g_list_last(window_history ?
+					    window->history : history);
+	}
 
 	if (*text != '\0' &&
 	    (pos == NULL || strcmp(pos->data, text) != 0)) {
@@ -79,45 +90,51 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 		command_history_add(window, text);
 	}
 
-	return *phistpos == NULL ? "" : (*phistpos)->data;
+	return *phistory_pos == NULL ? "" : (*phistory_pos)->data;
 }
 
 const char *command_history_next(WINDOW_REC *window, const char *text)
 {
-	GList *pos, **phistpos;
+	GList *pos, **phistory_pos;
+        int *phistory_over_counter;
 
-	phistpos = window_history ? &window->histpos : &histpos;
+	if (window_history) {
+		phistory_pos = &window->history_pos;
+		phistory_over_counter = &window->history_over_counter;
+	} else {
+		phistory_pos = &history_pos;
+		phistory_over_counter = &history_over_counter;
+	}
 
-	pos = *phistpos;
+	pos = *phistory_pos;
 
 	if (pos != NULL)
-		*phistpos = (*phistpos)->next;
+		*phistory_pos = (*phistory_pos)->next;
+	else if (*phistory_over_counter > 0) {
+		(*phistory_over_counter)--;
+		*phistory_pos = window_history ? window->history : history;
+	}
 
 	if (*text != '\0' &&
 	    (pos == NULL || strcmp(pos->data, text) != 0)) {
 		/* save the old entry to history */
 		command_history_add(window, text);
 	}
-	return *phistpos == NULL ? "" : (*phistpos)->data;
+	return *phistory_pos == NULL ? "" : (*phistory_pos)->data;
 }
 
 void command_history_clear_pos(WINDOW_REC *window)
 {
-	window->histpos = NULL;
-	histpos = NULL;
-}
-
-static void sig_window_created(WINDOW_REC *window)
-{
-	window->histlines = 0;
-	window->cmdhist = NULL;
-	window->histpos = NULL;
+	window->history_over_counter = 0;
+	window->history_pos = NULL;
+        history_over_counter = 0;
+	history_pos = NULL;
 }
 
 static void sig_window_destroyed(WINDOW_REC *window)
 {
-	g_list_foreach(window->cmdhist, (GFunc) g_free, NULL);
-	g_list_free(window->cmdhist);
+	g_list_foreach(window->history, (GFunc) g_free, NULL);
+	g_list_free(window->history);
 }
 
 static char *special_history_func(const char *text, void *item, int *free_ret)
@@ -131,7 +148,7 @@ static char *special_history_func(const char *text, void *item, int *free_ret)
 	findtext = g_strdup_printf("*%s*", text);
 	ret = NULL;
 
-	tmp = window_history ? window->cmdhist : cmdhist;
+	tmp = window_history ? window->history : history;
 	for (; tmp != NULL; tmp = tmp->next) {
 		const char *line = tmp->data;
 
@@ -157,20 +174,19 @@ void command_history_init(void)
 
 	special_history_func_set(special_history_func);
 
-	histlines = 0;
-	cmdhist = NULL; histpos = NULL;
+	history_lines = 0; history_over_counter = 0;
+	history = NULL; history_pos = NULL;
+
 	read_settings();
-	signal_add("window created", (SIGNAL_FUNC) sig_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void command_history_deinit(void)
 {
-	signal_remove("window created", (SIGNAL_FUNC) sig_window_created);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
-	g_list_foreach(cmdhist, (GFunc) g_free, NULL);
-	g_list_free(cmdhist);
+	g_list_foreach(history, (GFunc) g_free, NULL);
+	g_list_free(history);
 }

@@ -190,12 +190,12 @@ static void cmd_unquery(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	query_destroy(query);
 }
 
-/* SYNTAX: QUERY [-window] <nick> */
+/* SYNTAX: QUERY [-window] [-<server tag>] <nick> [<message>] */
 static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	QUERY_REC *query;
-	char *nick;
+	char *nick, *msg;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
@@ -206,9 +206,9 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 	}
 
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS,
-			    "query", &optlist, &nick))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_OPTIONS | PARAM_FLAG_UNKNOWN_OPTIONS,
+			    "query", &optlist, &nick, &msg))
 		return;
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -251,6 +251,16 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (g_hash_table_lookup(optlist, "window") != NULL) {
 		signal_remove("query created",
 			      (SIGNAL_FUNC) signal_query_created_curwin);
+	}
+
+	if (*msg != '\0') {
+		/* FIXME: we'll need some function that does both
+		   of these. and separate the , and . target handling
+		   from own_private messagge.. */
+		server->send_message(server, nick, msg);
+
+		signal_emit("message own_private", 4,
+			    server, msg, nick, nick);
 	}
 
 	cmd_params_free(free_arg);

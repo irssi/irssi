@@ -38,8 +38,8 @@ typedef struct {
 	unsigned int destroying:1;
 
 	/* window-specific command line history */
-	GList *cmdhist, *histpos;
-	int histlines;
+	GList *history, *history_pos;
+	int history_lines, history_over_counter;
 
 	int data_level; /* current data level */
 	int hilight_color, hilight_bg_color; /* current hilight color */
