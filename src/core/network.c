@@ -212,10 +212,11 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	ret = connect(handle, &so.sa, SIZEOF_SOCKADDR(so));
 
 #ifndef WIN32
-	if (ret < 0 && errno != EINPROGRESS) {
+	if (ret < 0 && errno != EINPROGRESS)
 #else
-	if (ret < 0 && WSAGetLastError() != WSAEWOULDBLOCK) {
+	if (ret < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
 #endif
+	{
 		close(handle);
 		return NULL;
 	}
