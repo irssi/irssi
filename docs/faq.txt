@@ -24,3 +24,13 @@ A: Two ways. The "good way" to do it is with /DISCONNECT. Check the server
    going to do /DISCONNECT recon-1. The other way is to remove all the
    reconnections with /RMRECONNS, easier but may remove some connections
    you actually wanted to reconnect (if you used multiple servers..).
+
+Q: Why does irssi say "Irssi: Channel not fully synchronized yet, try again
+   after a while" when I try to use /BAN etc?
+A: IRC server you use is coded badly, do something like this:
+     /IRCNET ADD -querychans 1 quakenet
+     /SERVER ADD -ircnet quakenet irc.quakenet.org
+     /SAVE
+   After that /CONNECT quakenet should work properly (NOTE: when you do this
+   the first time you'll have to /DISCONNECT and /CONNECT again, /SERVER
+   doesn't work correctly).
