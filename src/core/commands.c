@@ -649,6 +649,7 @@ static char *get_optional_channel(CHANNEL_REC *active_channel, char **data)
 
 int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 {
+        CHANNEL_REC *chanrec;
 	CMD_TEMP_REC *rec;
 	GHashTable **opthash;
 	char **str, *arg, *datad;
@@ -665,6 +666,10 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 
         datad = rec->data;
 	error = FALSE;
+
+	chanrec = (count & PARAM_FLAG_OPTCHAN) == 0 ? NULL:
+		(CHANNEL_REC *) va_arg(args, CHANNEL_REC *);
+
 	if (count & PARAM_FLAG_OPTIONS) {
 		arg = (char *) va_arg(args, char *);
 		opthash = (GHashTable **) va_arg(args, GHashTable **);
@@ -683,14 +688,11 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 		cnt = PARAM_WITHOUT_FLAGS(count);
 		if (count & PARAM_FLAG_OPTCHAN) {
 			/* optional channel as first parameter */
-			CHANNEL_REC *chanrec;
-
-			chanrec = (CHANNEL_REC *) va_arg(args, CHANNEL_REC *);
-                        arg = get_optional_channel(chanrec, &datad);
+			arg = get_optional_channel(chanrec, &datad);
 
 			str = (char **) va_arg(args, char **);
 			if (str != NULL) *str = arg;
-                        cnt--;
+			cnt--;
 		}
 
 		while (cnt-- > 0) {
