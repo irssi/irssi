@@ -76,6 +76,7 @@ void dcc_init_rec(DCC_REC *dcc, IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 	g_return_if_fail(arg != NULL);
 	g_return_if_fail(server != NULL || chat != NULL);
 
+        MODULE_DATA_INIT(dcc);
 	dcc->created = time(NULL);
 	dcc->chat = chat;
 	dcc->arg = g_strdup(arg);
@@ -108,6 +109,7 @@ void dcc_destroy(DCC_REC *dcc)
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
 
+        MODULE_DATA_DEINIT(dcc);
 	g_free_not_null(dcc->servertag);
 	g_free_not_null(dcc->target);
 	g_free(dcc->mynick);
