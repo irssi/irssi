@@ -511,20 +511,20 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	channels = g_strsplit(channel, ",", -1);
 	for (tmp = channels; *tmp != NULL; tmp++) {
 		chanrec = channel_find(server, *tmp);
-		if (chanrec != NULL)
+		if (chanrec == NULL)
+			g_string_sprintfa(unknowns, "%s,", *tmp);
+		else {
 			fe_channels_nicklist(chanrec, flags);
-		else
-                        g_string_sprintfa(unknowns, "%s,", *tmp);
+			signal_stop();
+		}
 	}
 	g_strfreev(channels);
 
 	if (unknowns->len > 1)
                 g_string_truncate(unknowns, unknowns->len-1);
 
-	if (unknowns->len > 0 && strcmp(channel, unknowns->str) != 0) {
-		signal_stop();
+	if (unknowns->len > 0 && strcmp(channel, unknowns->str) != 0)
                 signal_emit("command names", 3, unknowns->str, server, item);
-	}
         g_string_free(unknowns, TRUE);
 
 	cmd_params_free(free_arg);
