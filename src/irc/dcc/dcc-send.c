@@ -75,7 +75,7 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 	struct stat st;
 	glob_t globbuf;
 	char *fname;
-	int i, files, flags, queue, start_new_transfer;
+	int i, ret, files, flags, queue, start_new_transfer;
 
 	globbuf.gl_offs = 0;
         flags = GLOB_NOCHECK | GLOB_TILDE;
@@ -100,31 +100,36 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 	for (i = 0; i < globbuf.gl_pathc; i++) {
 		const char *fname = globbuf.gl_pathv[i];
 
-		if (stat(fname, &st) != 0) {
+		ret = stat(fname, &st);
+		if (ret == 0 && S_ISDIR(st.st_mode)) {
+			/* we don't want directories */
+			errno = EISDIR;
+			ret = -1;
+		}
+
+		if (ret < 0) {
 			signal_emit("dcc error file open", 3,
 				    nick, fname, errno);
 			continue;
 		}
 
-		if (S_ISREG(st.st_mode) && st.st_size > 0) {
+		if (queue < 0) {
+			/* in append and prepend mode try to find an
+			   old queue. if an old queue is not found
+			   create a new queue. if not in append or
+			   prepend mode, create a new queue */
+			if (add_mode != DCC_QUEUE_NORMAL)
+				queue = dcc_queue_old(nick, servertag);
+			start_new_transfer = 0;
 			if (queue < 0) {
-				/* in append and prepend mode try to find an
-				   old queue. if an old queue is not found
-				   create a new queue. if not in append or
-				   prepend mode, create a new queue */
-				if (add_mode != DCC_QUEUE_NORMAL)
-					queue = dcc_queue_old(nick, servertag);
-				start_new_transfer = 0;
-				if (queue < 0) {
-					queue = dcc_queue_new();
-					start_new_transfer = 1;
-				}
+				queue = dcc_queue_new();
+				start_new_transfer = 1;
 			}
-
-			dcc_queue_add(queue, add_mode, nick,
-				      fname, servertag, chat);
-			files++;
 		}
+
+		dcc_queue_add(queue, add_mode, nick,
+			      fname, servertag, chat);
+		files++;
 	}
 
 	if (files > 0 && start_new_transfer)
