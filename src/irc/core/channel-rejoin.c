@@ -162,7 +162,7 @@ static void sig_remove_rejoin(IRC_CHANNEL_REC *channel)
 {
 	REJOIN_REC *rec;
 
-	if (!IS_IRC_CHANNEL(channel) || channel->server == NULL)
+	if (!IS_IRC_CHANNEL(channel))
 		return;
 
 	rec = rejoin_find(channel->server, channel->name);

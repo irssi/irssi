@@ -331,7 +331,6 @@ static int server_remove_channels(SERVER_REC *server)
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 
-		channel->server = NULL;
 		channel_destroy(channel);
 		found = TRUE;
 	}

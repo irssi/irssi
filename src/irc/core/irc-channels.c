@@ -192,7 +192,7 @@ static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 	if (!IS_IRC_CHANNEL(channel))
                 return;
 
-	if (channel->server != NULL && !channel->left && !channel->kicked) {
+	if (!channel->server->disconnected && !channel->left && !channel->kicked) {
 		/* destroying channel record without actually
 		   having left the channel yet */
 		signal_emit("command part", 3, "", channel->server, channel);

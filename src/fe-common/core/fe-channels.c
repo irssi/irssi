@@ -67,7 +67,7 @@ static void signal_channel_destroyed(CHANNEL_REC *channel)
 	window_item_destroy((WI_ITEM_REC *) channel);
 
 	if (channel->joined && !channel->left &&
-	    channel->server != NULL) {
+	    !channel->server->disconnected) {
 		/* kicked out from channel */
 		window_bind_add(window, channel->server->tag,
 				channel->name);
