@@ -72,12 +72,9 @@ static void window_print_items(WINDOW_REC *win)
 			   TXT_WINDOW_INFO_ITEMS_FOOTER);
 }
 
-static void cmd_window_info(void)
+static void cmd_window_info(WINDOW_REC *win)
 {
-	WINDOW_REC *win;
         char *levelstr;
-
-	win = active_win;
 
 	printformat_window(win, MSGLEVEL_CLIENTCRAP,
 			   TXT_WINDOW_INFO_HEADER);
@@ -148,7 +145,7 @@ static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
         while (*data == ' ') data++;
 
 	if (*data == '\0')
-                cmd_window_info();
+                cmd_window_info(active_win);
 	else if (is_numeric(data, 0))
                 signal_emit("command window refnum", 3, data, server, item);
         else
