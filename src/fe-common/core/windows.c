@@ -107,11 +107,16 @@ void window_destroy(WINDOW_REC *window)
 
 	if (window->destroying) return;
 	window->destroying = TRUE;
+	windows = g_slist_remove(windows, window);
+
+	if (active_win == window && windows != NULL) {
+                active_win = NULL; /* it's corrupted */
+		window_set_active(windows->data);
+	}
 
 	while (window->items != NULL)
 		window_remove_item(window, window->items->data);
 
-	windows = g_slist_remove(windows, window);
 	signal_emit("window destroyed", 1, window);
 
 	g_slist_foreach(window->waiting_channels, (GFunc) g_free, NULL);
@@ -121,11 +126,6 @@ void window_destroy(WINDOW_REC *window)
 	g_free_not_null(window->theme_name);
 	g_free_not_null(window->name);
 	g_free(window);
-
-	if (active_win == window && windows != NULL) {
-                active_win = NULL; /* it's corrupted */
-		window_set_active(windows->data);
-	}
 
 	windows_pack(refnum);
 }
