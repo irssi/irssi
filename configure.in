@@ -190,6 +190,9 @@ dnl ** fe-text checks
 dnl **
 
 AM_PATH_GLIB(1.2.0,,, gmodule)
+if test "x$GLIB_LIBS" = "x"; then
+	AC_ERROR([GLib is required to build Irssi])
+fi
 
 PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
 AC_SUBST(PROG_LIBS)
