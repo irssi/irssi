@@ -159,6 +159,11 @@ static void textui_deinit(void)
 	while (modules != NULL)
 		module_unload(modules->data);
 
+#ifdef HAVE_STATIC_PERL
+        perl_core_deinit();
+        fe_perl_deinit();
+#endif
+
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
         lastlog_deinit();
@@ -177,11 +182,6 @@ static void textui_deinit(void)
 
         screen_refresh_thaw();
 	deinit_screen();
-
-#ifdef HAVE_STATIC_PERL
-        perl_core_deinit();
-        fe_perl_deinit();
-#endif
 
 	theme_unregister();
 
