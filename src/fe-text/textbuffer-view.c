@@ -510,6 +510,9 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, GList **lines, int *subline,
 {
 	int linecount, realcount, scroll_visible;
 
+	if (*lines == NULL)
+                return 0;
+
 	/* scroll down */
 	scroll_visible = lines == &view->startline;
 
