@@ -33,8 +33,6 @@
 #include "query.h"
 #include "nicklist.h"
 #include "ignore.h"
-#include "netsplit.h"
-#include "fe-netjoin.h"
 
 #include "fe-query.h"
 #include "irc-hilight-text.h"
@@ -209,10 +207,6 @@ static void event_join(const char *data, IRC_SERVER_REC *server, const char *nic
 
 	g_return_if_fail(data != NULL);
 
-	if (settings_get_bool("hide_netsplit_quits") &&
-	    netsplit_is_join(server, nick, addr))
-                return;
-
 	params = event_get_params(data, 1, &channel);
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
@@ -247,9 +241,6 @@ static void event_quit(const char *data, IRC_SERVER_REC *server, const char *nic
 	if (*data == ':') data++; /* quit message */
 	if (ignore_check(server, nick, addr, NULL, data, MSGLEVEL_QUITS))
 		return;
-
-	if (settings_get_bool("hide_netsplit_quits") && quitmsg_is_split(data))
-                return;
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
@@ -598,7 +589,6 @@ static void read_settings(void)
 
 void fe_events_init(void)
 {
-	settings_add_bool("misc", "hide_netsplit_quits", TRUE);
 	beep_msg_level = 0;
 
 	read_settings();
