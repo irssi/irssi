@@ -1,3 +1,74 @@
+v0.8.0 2002-02-17  Timo Sirainen <tss@iki.fi>
+
+	* I really should make releases more often. Once in every two weeks
+	  used to be nice. Maybe once in a month would be good now. There
+	  was many reasons why this release took this long .. first being
+	  addicted to books, then life stuff, then it took forever to figure
+	  out that irssi was crashing under solaris (and not because of one
+	  of the big changes I made while moving to IRC from solaris box).
+
+	  And now.. well, after this release I'll start working more with
+	  the yet another irssi rewrite :) The code is getting too ugly
+	  again, and some things need rewriting to support some new features
+	  more easily. It will take a while to get it all done, so I'll try
+	  to keep updating this "stable" irssi as well.
+
+	  There's too many changes since 0.7.98.3 (and .4 which was just
+	  minor bugfix), about 6600 lines in ChangeLog. I'm not going to
+	  read all that, so I'll just list the biggest changes that I can
+	  remember now.
+
+	  This version was supposed to be called 0.7.99, but since there
+	  were so many changes, and I originally though of putting 0.8.0
+	  out long time ago, and 0.7.100 would look stupid, I guess it's
+	  time for 0.8.0 :)
+
+	+ /UPGRADE - upgrade irssi to new version on-the-fly without
+	  disconnecting from server, so other people won't even notice you
+	  quit from IRC. This ONLY executes the new binary, it does NOT
+	  download/compile/whatever irssi.
+	+ UTF-8 support with /SET term_type UTF-8, default is "8bit".
+	  It's also automatically detected from system locale (if supported).
+	+ Fully configurable statusbar. Yes. FULLY. Don't bother asking if
+	  something could be done with it, it can, just ask how. Well,
+	  there's a few things I didn't have time/energy to finish:
+	  window-specific statusbar groups and support for multiple input
+	  lines in screen.
+	+ Rewritten keyboard handling. No more the CTRL-X and ALT-x handling,
+	  now you can create whatever keyboard combinations your terminal
+	  can send to irssi.
+	+ Rewritten text buffer (scrollback) handling.
+	+ Irssi doesn't depend on curses anymore, so it can be installed
+	  anywhere a working terminfo/termcap exists. This also allows us to
+	  use all the possible colors terminal has (curses limits to 64), so
+	  eg. %0 is now always black background, not the default terminal
+	  background (%n).
+
+	  Several systems have also terminfo/termcap database that doesn't
+	  support colors, so I've added /SET term_force_colors option to
+	  force ANSI-style colors. Note that eg. BitchX does this by default.
+
+	  Getting rid of curses allows also one great thing for you people
+	  copy&pasting long urls :) If a long word gets split to two lines,
+	  doubleclicking the word selects it from both lines.
+	+ Rewritten server event redirections. Before it was pretty easy to
+	  mess up irssi's expectations of what server sends, and some things
+	  might have stayd in the buffer forever. Especially notify lists
+	  messed up /WHOIS requests for the notified people. Now all this
+	  should be history and it's a lot easier for scripts to use the
+	  redirections as well.
+	+ New ICB chat protocol plugin - very basic and doesn't support
+	  nicklist, but works. :)
+	+ --home and --config parameters to specify alternate ~/.irssi
+	  directory or config file.
+	+ Scripts can be unloaded separately with /SCRIPT UNLOAD. You can get
+	  a list of runnning scripts with /SCRIPT.
+	+ /SERVER PURGE [<target>] - purge the output buffer (for given
+	  target). Useful for example if you accidentally paste 100 lines :)
+	  The buffer is automatically purged if you get kicked from channel,
+	  or if you /PART the channel and there's more than 10 lines in
+	  output buffer.
+
 v0.7.98.3 2001-03-17  Timo Sirainen <tss@iki.fi>
 
 	* Highlighting changes: /HILIGHT -color, /SET hilight_color and
