@@ -293,6 +293,32 @@ static RECONNECT_REC *reconnect_find_tag(int tag)
 	return NULL;
 }
 
+static void reconnect_all(void)
+{
+	GSList *list;
+	SERVER_CONNECT_REC *conn;
+	RECONNECT_REC *rec;
+
+	/* first move reconnects to another list so if server_connect()
+	   fails and goes to reconnection list again, we won't get stuck
+	   here forever */
+	list = NULL;
+	while (reconnects != NULL) {
+		rec = reconnects->data;
+
+		list = g_slist_append(list, rec->conn);
+		server_reconnect_destroy(rec, FALSE);
+	}
+
+
+	while (list != NULL) {
+		conn = list->data;
+
+		CHAT_PROTOCOL(conn)->server_connect(conn);
+                list = g_slist_remove(list, conn);
+	}
+}
+
 /* SYNTAX: RECONNECT <tag> */
 static void cmd_reconnect(const char *data, SERVER_REC *server)
 {
@@ -312,6 +338,12 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 
 		conn->reconnection = TRUE;
 		CHAT_PROTOCOL(conn)->server_connect(conn);
+                return;
+	}
+
+	if (g_strcasecmp(data, "all") == 0) {
+		/* reconnect all servers in reconnect queue */
+                reconnect_all();
                 return;
 	}
 
