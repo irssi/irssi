@@ -223,9 +223,9 @@ static void cmd_lastlog(const char *data)
 			    "lastlog", &optlist, &text, &countstr, &start))
 		return;
 
-	if (*start == '\0' && is_numeric(text, 0)) {
-		if (is_numeric(countstr, 0))
-			start = countstr;
+	if (*start == '\0' && is_numeric(text, 0) &&
+	    (*countstr == '\0' || is_numeric(countstr, 0)) {
+		start = countstr;
 		countstr = text;
 		text = "";
 	}
