@@ -13,6 +13,8 @@ Irssi::Irc::Netsplitchannel	T_PlainObj
 Irssi::Irc::Autoignore		T_PlainObj
 Irssi::Irc::Notifylist		T_PlainObj
 
+Irssi::Windowitem	T_IrssiObj
+
 INPUT
 
 T_IrssiObj

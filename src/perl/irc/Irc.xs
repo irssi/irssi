@@ -78,10 +78,10 @@ static void perl_netsplit_server_fill_hash(HV *hv, NETSPLIT_SERVER_REC *rec)
 	hv_store(hv, "count", 5, newSViv(rec->count), 0);
 }
 
-static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHANNEL_REC *rec)
+static void perl_netsplit_channel_fill_hash(HV *hv, NETSPLIT_CHAN_REC *rec)
 {
 	hv_store(hv, "name", 4, new_pv(rec->name), 0);
-	hv_store(hv, "nick", 4, irssi_bless(rec->nick), 0);
+	hv_store(hv, "nick", 4, irssi_bless(&rec->nick), 0);
 }
 
 static void perl_autoignore_fill_hash(HV *hv, AUTOIGNORE_REC *ai)
