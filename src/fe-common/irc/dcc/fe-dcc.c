@@ -329,7 +329,7 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (dcc == NULL) return;
 
         printformat(NULL, item->name, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-                    IRCTXT_OWN_DCC_ME, dcc->mynick, data);
+                    IRCTXT_OWN_DCC_ACTION, dcc->mynick, data);
 }
 
 static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
@@ -355,7 +355,7 @@ static void cmd_action(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 			    IRCTXT_DCC_CHAT_NOT_FOUND, target+1);
 	} else {
 		printformat(NULL, target, MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT,
-			    IRCTXT_OWN_DCC_ME, dcc->mynick, text);
+			    IRCTXT_OWN_DCC_ACTION, dcc->mynick, text);
 	}
 	cmd_params_free(free_arg);
 }
