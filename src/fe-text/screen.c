@@ -84,11 +84,9 @@ void sigint_handler(int p)
 	readline();
 }
 
-static void read_settings(void)
+static void read_signals(void)
 {
 	const char *ignores;
-
-	use_colors = settings_get_bool("colors");
 
 	ignores = settings_get_str("ignore_signals");
 	signal(SIGHUP, find_substr(ignores, "hup") ? SIG_IGN : SIG_DFL);
@@ -98,6 +96,12 @@ static void read_settings(void)
 	signal(SIGALRM, find_substr(ignores, "alrm") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR1, find_substr(ignores, "usr1") ? SIG_IGN : SIG_DFL);
 	signal(SIGUSR2, find_substr(ignores, "usr2") ? SIG_IGN : SIG_DFL);
+}
+
+static void read_settings(void)
+{
+	use_colors = settings_get_bool("colors");
+	read_signals();
 	irssi_redraw();
 }
 
@@ -121,7 +125,7 @@ int init_screen(void)
 
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_str("misc", "ignore_signals", "");
-	read_settings();
+	read_signals();
 
 	use_colors = settings_get_bool("colors") && has_colors();
 	if (has_colors()) start_color();
