@@ -11,8 +11,7 @@
 $SRC_PATH='src';
 
 # This is quick and dirty, but works for sure :)
-#$FOO = `grep -r -e '/* SYNTAX:' $SRC_PATH | sed 's/.*SYNTAX: //' > irssi_syntax`;
-$FOO = `find $SRC_PATH -name '*.c' -print0 | xargs -l30 -0 grep -e '/* SYNTAX:' | sed 's/.*SYNTAX: //'  > irssi_syntax`;
+$FOO = `find src -name '*.c' -exec grep -e '/* SYNTAX:' \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
 
 while (<docs/help/in/*.in>) {
    open (FILE, "$_");
