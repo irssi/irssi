@@ -208,7 +208,13 @@ void statusbar_redraw(STATUSBAR_REC *bar)
 
 void statusbar_item_redraw(SBAR_ITEM_REC *item)
 {
+        WINDOW_REC *old_active_win;
+
 	g_return_if_fail(item != NULL);
+
+	old_active_win = active_win;
+        if (item->bar->window != NULL)
+		active_win = item->bar->window->active;
 
 	item->func(item, TRUE);
 	if (item->max_size != item->size)
@@ -217,6 +223,8 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 		item->func(item, FALSE);
                 screen_refresh(NULL);
 	}
+
+	active_win = old_active_win;
 }
 
 static int get_last_bg(const char *str)
