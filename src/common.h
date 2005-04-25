@@ -14,7 +14,7 @@
 #define DEFAULT_SERVER_ADD_PORT 6667
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../config.h"
 #endif
 
 #include <stdio.h>
