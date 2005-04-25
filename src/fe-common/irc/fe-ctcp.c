@@ -79,6 +79,22 @@ static void ctcp_time_msg(IRC_SERVER_REC *server, const char *data,
 		    data, nick, addr, target);
 }
 
+static void ctcp_userinfo_msg(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *addr,
+			  const char *target)
+{
+	signal_emit("message irc ctcp", 6, server, "USERINFO",
+		    data, nick, addr, target);
+}
+
+static void ctcp_clientinfo_msg(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *addr,
+			  const char *target)
+{
+	signal_emit("message irc ctcp", 6, server, "CLIENTINFO",
+		    data, nick, addr, target);
+}
+
 static void ctcp_default_reply(IRC_SERVER_REC *server, const char *data,
 			       const char *nick, const char *addr,
 			       const char *target)
@@ -131,6 +147,8 @@ void fe_ctcp_init(void)
 	signal_add("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping_msg);
 	signal_add("ctcp msg version", (SIGNAL_FUNC) ctcp_version_msg);
 	signal_add("ctcp msg time", (SIGNAL_FUNC) ctcp_time_msg);
+	signal_add("ctcp msg userinfo", (SIGNAL_FUNC) ctcp_userinfo_msg);
+	signal_add("ctcp msg clientinfo", (SIGNAL_FUNC) ctcp_clientinfo_msg);
 	signal_add("default ctcp reply", (SIGNAL_FUNC) ctcp_default_reply);
 	signal_add("ctcp reply ping", (SIGNAL_FUNC) ctcp_ping_reply);
 }
@@ -141,6 +159,8 @@ void fe_ctcp_deinit(void)
 	signal_remove("ctcp msg ping", (SIGNAL_FUNC) ctcp_ping_msg);
 	signal_remove("ctcp msg version", (SIGNAL_FUNC) ctcp_version_msg);
 	signal_remove("ctcp msg time", (SIGNAL_FUNC) ctcp_time_msg);
+	signal_remove("ctcp msg userinfo", (SIGNAL_FUNC) ctcp_userinfo_msg);
+	signal_remove("ctcp msg clientinfo", (SIGNAL_FUNC) ctcp_clientinfo_msg);
 	signal_remove("default ctcp reply", (SIGNAL_FUNC) ctcp_default_reply);
 	signal_remove("ctcp reply ping", (SIGNAL_FUNC) ctcp_ping_reply);
 }
