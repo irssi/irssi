@@ -45,7 +45,9 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 	rec->max_kicks = src->max_kicks;
 	rec->max_modes = src->max_modes;
 	rec->max_msgs = src->max_msgs;
+	rec->max_whois = src->max_whois;
 	rec->usermode = g_strdup(src->usermode);
+	rec->alternate_nick = g_strdup(src->alternate_nick);
 	*dest = (SERVER_CONNECT_REC *) rec;
 }
 
