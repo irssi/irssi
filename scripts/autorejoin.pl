@@ -39,7 +39,7 @@ sub event_rejoin_kick {
   return if ($server->{nick} ne $nick);
 
   # check if we want to autorejoin this channel
-  my @chans = split(/ ,/, Irssi::settings_get_str('autorejoin_channels'));
+  my @chans = split(/[ ,]+/, Irssi::settings_get_str('autorejoin_channels'));
   foreach my $chan (@chans) {
     if (lc($chan) eq lc($channel)) {
       channel_rejoin($server, $channel);

@@ -281,6 +281,7 @@ static void paste_send(void)
 		history = command_history_current(active_win);
 		command_history_add(history, text);
 
+		translate_output(text);
 		signal_emit("send command", 3, text,
 			    active_win->active_server, active_win->active);
 		g_free(text);
@@ -293,6 +294,7 @@ static void paste_send(void)
 			history = command_history_current(active_win);
 			command_history_add(history, str->str);
 
+			translate_output(str->str);
 			signal_emit("send command", 3, str->str,
 				    active_win->active_server,
 				    active_win->active);
