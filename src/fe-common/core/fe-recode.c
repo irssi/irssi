@@ -90,7 +90,7 @@ static void fe_recode_cmd (const char *data, SERVER_REC *server, WI_ITEM_REC *wi
 	}
 }
 
-/* SYNTAX: RECODE ADD [<target>] <charset> */
+/* SYNTAX: RECODE ADD [[<tag>/]<target>] <charset> */
 static void fe_recode_add_cmd (const char *data, SERVER_REC *server, WI_ITEM_REC *witem)
 {
 	const char *first;
