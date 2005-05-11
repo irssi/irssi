@@ -70,9 +70,9 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	IRC_CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
 	char *channels, *keys, *key;
-	char **chanlist, **keylist, **tmp, **tmpkey, *channel, *channame;
+	char **chanlist, **keylist, **tmp, **tmpkey, **tmpstr, *channel, *channame;
 	void *free_arg;
-	int use_keys;
+	int use_keys, cmdlen;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(IS_IRC_SERVER(server) && server->connected);
@@ -90,44 +90,68 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 
 	use_keys = *keys != '\0';
 	tmpkey = keylist;
-	for (tmp = chanlist; *tmp != NULL; tmp++) {
-		channel = ischannel(**tmp) ? g_strdup(*tmp) :
+	tmp = chanlist;
+	for (;; tmp++) {
+		if (*tmp !=  NULL) {
+			channel = ischannel(**tmp) ? g_strdup(*tmp) :
 			g_strdup_printf("#%s", *tmp);
 
-		chanrec = irc_channel_find(server, channel);
-		if (chanrec == NULL) {
-			schannel = channel_setup_find(channel, server->connrec->chatnet);
+			chanrec = irc_channel_find(server, channel);
+			if (chanrec == NULL) {
+				schannel = channel_setup_find(channel, server->connrec->chatnet);
 
-                        g_string_sprintfa(outchans, "%s,", channel);
-                        if (*tmpkey != NULL && **tmpkey != '\0')
-                        	key = *tmpkey;
-                        else if (schannel != NULL && schannel->password != NULL) {
-				/* get password from setup record */
-                                use_keys = TRUE;
-				key = schannel->password;
-			} else key = NULL;
+				g_string_sprintfa(outchans, "%s,", channel);
+				if (*tmpkey != NULL && **tmpkey != '\0')
+                        		key = *tmpkey;
+	                        else if (schannel != NULL && schannel->password != NULL) {
+					/* get password from setup record */
+                	                use_keys = TRUE;
+					key = schannel->password;
+				} else key = NULL;
+				
+				g_string_sprintfa(outkeys, "%s,", get_join_key(key));
+				channame = channel + (channel[0] == '!' &&
+						      channel[1] == '!');
+				chanrec = irc_channel_create(server, channame, NULL,
+							     automatic);
+				if (key != NULL) chanrec->key = g_strdup(key);
+			}
+			g_free(channel);
 
-			g_string_sprintfa(outkeys, "%s,", get_join_key(key));
-			channame = channel + (channel[0] == '!' &&
-					      channel[1] == '!');
-			chanrec = irc_channel_create(server, channame, NULL,
-						     automatic);
-			if (key != NULL) chanrec->key = g_strdup(key);
+			if (*tmpkey != NULL)
+                	        tmpkey++;
+	
+			tmpstr = tmp;
+			tmpstr++;
+			cmdlen = outchans->len-1;
+			
+			if (use_keys)
+				cmdlen += outkeys->len;
+			if (*tmpstr != NULL)
+				cmdlen += ischannel(**tmpstr) ? strlen(*tmpstr) :
+					  strlen(*tmpstr)+1;
+			if (*tmpkey != NULL)
+				cmdlen += strlen(*tmpkey);
+				
+			/* don't try to send too long lines 
+			   make sure it's not longer than 510
+			   so 510 - strlen("JOIN ") = 505 */
+			if (cmdlen < 505)
+				continue;
 		}
-		g_free(channel);
-
-		if (*tmpkey != NULL)
-                        tmpkey++;
+		if (outchans->len > 0) {
+			g_string_truncate(outchans, outchans->len-1);
+			g_string_truncate(outkeys, outkeys->len-1);
+			irc_send_cmdv(IRC_SERVER(server),
+				      use_keys ? "JOIN %s %s" : "JOIN %s",
+				      outchans->str, outkeys->str);
+		}
+		cmdlen = 0;
+		g_string_truncate(outchans,0);
+		g_string_truncate(outkeys,0);
+		if (*tmp == NULL || tmp[1] == NULL)
+			break;
 	}
-
-	if (outchans->len > 0) {
-		g_string_truncate(outchans, outchans->len-1);
-		g_string_truncate(outkeys, outkeys->len-1);
-		irc_send_cmdv(IRC_SERVER(server),
-			      use_keys ? "JOIN %s %s" : "JOIN %s",
-			      outchans->str, outkeys->str);
-	}
-
 	g_string_free(outchans, TRUE);
 	g_string_free(outkeys, TRUE);
 
