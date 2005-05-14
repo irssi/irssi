@@ -77,6 +77,14 @@ static void last_msg_dec_owns(GSList *list)
 	}
 }
 
+static void last_msg_destroy(GSList **list, LAST_MSG_REC *rec)
+{
+	*list = g_slist_remove(*list, rec);
+
+	g_free(rec->nick);
+	g_free(rec);
+}
+
 static void last_msg_add(GSList **list, const char *nick, int own, int max)
 {
 	LAST_MSG_REC *rec;
@@ -97,8 +105,7 @@ static void last_msg_add(GSList **list, const char *nick, int own, int max)
 		rec->nick = g_strdup(nick);
 
 		if ((int)g_slist_length(*list) == max) {
-			*list = g_slist_remove(*list,
-					       g_slist_last(*list)->data);
+			last_msg_destroy(list, g_slist_last(*list)->data);
 		}
 
 		rec->own = own ? max : 0;
@@ -108,14 +115,6 @@ static void last_msg_add(GSList **list, const char *nick, int own, int max)
         last_msg_dec_owns(*list);
 
 	*list = g_slist_prepend(*list, rec);
-}
-
-static void last_msg_destroy(GSList **list, LAST_MSG_REC *rec)
-{
-	*list = g_slist_remove(*list, rec);
-
-	g_free(rec->nick);
-	g_free(rec);
 }
 
 void completion_last_message_add(const char *nick)
