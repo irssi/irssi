@@ -104,7 +104,7 @@ static void last_msg_add(GSList **list, const char *nick, int own, int max)
 		rec = g_new(LAST_MSG_REC, 1);
 		rec->nick = g_strdup(nick);
 
-		if ((int)g_slist_length(*list) == max) {
+		while ((int)g_slist_length(*list) >= max) {
 			last_msg_destroy(list, g_slist_last(*list)->data);
 		}
 
