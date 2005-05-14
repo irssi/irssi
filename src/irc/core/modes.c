@@ -258,7 +258,7 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 		/* see if we need to update channel->chanop */
 		const char *prefix =
 			g_hash_table_lookup(channel->server->isupport, "PREFIX");
-		if (*prefix == '(') {
+		if (prefix != NULL && *prefix == '(') {
 			prefix++;
 			while (*prefix != ')' && *prefix != '\0') {
 				if (*prefix == mode) {
