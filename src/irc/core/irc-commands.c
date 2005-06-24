@@ -900,6 +900,8 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
+	g_free(server->last_nick);
+
 	while (server->knockoutlist != NULL)
 		knockout_destroy(server, server->knockoutlist->data);
 }
