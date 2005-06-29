@@ -26,6 +26,9 @@ You can change them with /SET
 
 Examples:
 
+/SET recode OFF 
+to turn off recode completely
+
 /SET recode_fallback <charset> 
 to set the fallback charset for incoming events
 

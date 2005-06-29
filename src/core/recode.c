@@ -73,14 +73,18 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	char *translit_to = NULL;
 	char *recoded = NULL;
 	char *tagtarget = NULL;
-	gboolean term_is_utf8, str_is_utf8, translit;
+	gboolean term_is_utf8, str_is_utf8, translit, recode;
 	int len;
 
 	if (!str)
 		return NULL;
 
+	recode = settings_get_bool("recode");
+	if (!recode)
+		return g_strdup(str);
+
 	len = strlen(str);
-	
+
 	str_is_utf8 = g_utf8_validate(str, len, NULL);
 	translit = settings_get_bool("recode_transliterate");
 
@@ -127,11 +131,15 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 #ifdef HAVE_GLIB2
 	char *recoded = NULL;
 	const char *from = NULL;
-	gboolean translit, term_is_utf8;
+	gboolean translit, term_is_utf8, recode;
 	int len;
 
 	if (!str)
 		return NULL;
+
+	recode = settings_get_bool("recode");
+	if (!recode)
+		return g_strdup(str);
 
 	len = strlen(str);
 
@@ -174,13 +182,15 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 
 void recode_init(void)
 {
+	settings_add_bool("misc", "recode", TRUE);
 	settings_add_str("misc", "recode_fallback", "ISO8859-1");
 	settings_add_str("misc", "recode_out_default_charset", "");
 	settings_add_bool("misc", "recode_transliterate", FALSE);
 }
 
 void recode_deinit(void)
-{
+{	
+	settings_remove("recode");
 	settings_remove("recode_fallback");
 	settings_remove("recode_out_default_charset");
 	settings_remove("recode_transliterate");
