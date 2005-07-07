@@ -7,5 +7,5 @@ the specified nick in the form of MSGs.
 
 Usually this command opens up a new window, too.
 
-See also: WINDOW, MSG, SET QUERY
+See also: WINDOW, MSG, SET QUERY, UNQUERY
 
