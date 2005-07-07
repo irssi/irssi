@@ -7,5 +7,8 @@ the specified nick in the form of MSGs.
 
 Usually this command opens up a new window, too.
 
+Note: It removes the active query from the active window when
+used without parameters, like UNQUERY.
+
 See also: WINDOW, MSG, SET QUERY, UNQUERY
 
