@@ -1,0 +1,7 @@
+debian/tmp/etc/irssi.conf
+debian/tmp/usr/bin/botti
+debian/tmp/usr/bin/irssi
+debian/tmp/usr/lib/irssi/
+debian/tmp/usr/lib/perl5/
+debian/tmp/usr/share/doc/irssi/
+debian/tmp/usr/share/irssi/

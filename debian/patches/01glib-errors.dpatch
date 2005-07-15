@@ -1,0 +1,21 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 01glib-errors.dpatch by David Pashley <david@davidpashley.com>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-common/core/fe-common-core.c /tmp/dpep-work.Z3VDTJ/irssi-0.8.10~rc5/src/fe-common/core/fe-common-core.c
+--- ./src/fe-common/core/fe-common-core.c	2004-08-20 03:02:29.000000000 +0300
++++ /tmp/dpep-work.Z3VDTJ/irssi-0.8.10~rc5/src/fe-common/core/fe-common-core.c	2005-07-15 21:57:54.000000000 +0300
+@@ -430,6 +430,10 @@
+ 			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
+ 					    G_LOG_LEVEL_WARNING),
+ 			  (GLogFunc) glog_func, NULL);
++	g_log_set_handler("GLib",
++			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
++					    G_LOG_LEVEL_WARNING),
++			  (GLogFunc) glog_func, NULL);
+ 
+ 	if (setup_changed)
+                 signal_emit("setup changed", 0);

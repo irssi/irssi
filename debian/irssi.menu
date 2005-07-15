@@ -1,0 +1,2 @@
+?package(irssi-text):needs="text" section="Apps/Net" \
+title="irssi-text" command="/usr/bin/irssi-text"

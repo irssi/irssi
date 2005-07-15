@@ -1,28 +1,86 @@
-This package was debianized by Pekka Aleksi Knuutila <pa@debian.org> on
-Wed, 26 Jul 2000 21:40:40 +0300
+License
+=======
 
-The source for the package can be found from http://www.irssi.org/
-
-Upstream Author(s): Timo Sirainen <tss@iki.fi>
-
-Copyright:
-
-    Copyright (C) 1999 Timo Sirainen
+src/fe-text/irssi.c includes:
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+A copy of the GPL can be found in /usr/share/common-licenses/GPL-2
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+COPYING includes the following addition to the GPL:
 
+   Specific permission is granted for the GPLed code in this
+   distribition to be linked to OpenSSL without invoking GPL clause
+   2(b).
 
-On Debian GNU/Linux systems, the complete text of the GNU General
-Public License can be found in /usr/share/common-licenes/GPL
+Sources
+=======
+
+The source was obtained from http://www.irssi.org/files/
+
+Copyright
+=========
+
+AUTHORS contains:
+
+   Original code:
+
+     Timo Sirainen <cras@irssi.org>
+
+   Large feature patches by:
+
+     David Leadbeater (dg, dgl) : isupport
+     vjt@users.sf.net : SSL support
+     Joel Eriksson : SSL certs
+     Heikki Orsila : DCC SEND queueing
+     Mark Trumbull : DCC SERVER
+     Francesco Fracassi : Passive DCC
+
+   Other patches (grep for "patch" in ChangeLog) by:
+
+     Joost Vunderink
+     Wang WenRui
+     Valentin Batz
+     Jochen Eisinger (c0ffee)
+     Jean-Yves Lefort
+     Joel Eriksson
+     Maarten van der Zwaart
+     Noah Levitt
+     Wouter Coekaerts (coekie)
+     Krzysztof Kowalik (Borys)
+     Peder Stray
+     mls@suse.de
+     nix@suhs.nu
+     Marcin Kowalczyk (Qrczak)
+     Petr Baudis
+     Bjoern Krombholz (fuchs)
+     aldem-irssi@aldem.net,
+     BC-bd
+     Juerd
+     Han
+     pv2b
+     Tommi Komulainen (tommik)
+     mike@po.cs.msu.su
+     zinx@magenet.net
+     yathen@web.de
+     paul@raade.org
+     Leszek Matok
+     tygrys@moo.pl
+     manoj@io.com
+     cph@cph.demon.co.uk
+     ganesh@earth.li
+     Jakub Jankowski (shasta)
+     vanilla@freebsd.org
+     Tinuk
+     Mark Glines
+     Kjetil Ødegaard
+
+Debian Packaging
+================
+
+This packaging was written by David Pashley <david@davidpashley.com> and
+contains ideas and code from previous irssi packaging by Pekka Aleksi
+Knuutila <pa@debian.org>.

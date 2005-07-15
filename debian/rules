@@ -1,49 +1,77 @@
 #!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This is the debhelper compatability version to use.
-export DH_COMPAT=2
+include /usr/share/dpatch/dpatch.make
 
-TMP=`pwd`/debian/irssi-text
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-configure: configure-stamp
-configure-stamp:
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+config.status: patch-stamp configure
 	dh_testdir
-	./configure --prefix=/usr --exec-prefix=/usr --sysconf=/etc \
+	# Add here commands to configure the package.
+	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
+			 --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info \
+			 --sysconfdir=/etc \
 	--without-servertest --enable-ipv6 --with-bot --with-proxy \
-	--enable-perl=yes --with-perl-lib=vendor
-	touch configure-stamp
+	--enable-perl --with-perl-lib=vendor
 
-build: configure-stamp build-stamp
-build-stamp:
+
+build: build-stamp
+
+build-stamp:  config.status
 	dh_testdir
-	$(MAKE) CFLAGS="-O2 -g -Wall"
+
+	# Add here commands to compile the package.
+	$(MAKE)
+	#docbook-to-man debian/irssi.sgml > irssi.1
+
 	touch build-stamp
 
-clean:
+clean: unpatch
 	dh_testdir
+	dh_testroot
+	rm -f build-stamp 
 
+	# Add here commands to clean up after the build process.
 	-$(MAKE) distclean
-	-rm -f src/perl/perl-signals-list.h
-	-rm -f default-theme.h
-	#-rm -f `find . -name "*~"` debian/*debhelper debian/{files,substvars} 
-	-rm -f default-config.h libtool*
-	find -name Makefile -o -name Makefile.PL | xargs rm -f
+ifneq "$(wildcard /usr/share/misc/config.sub)" ""
+	cp -f /usr/share/misc/config.sub config.sub
+endif
+ifneq "$(wildcard /usr/share/misc/config.guess)" ""
+	cp -f /usr/share/misc/config.guess config.guess
+endif
 
-	dh_clean build-stamp configure-stamp
+
+	dh_clean 
 
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k
+	dh_clean -k 
 	dh_installdirs
 
-	$(MAKE) install DESTDIR=$(TMP) PREFIX=$(TMP)/usr
-	mv $(TMP)/usr/bin/irssi $(TMP)/usr/bin/irssi-text
-	rm -rf $(TMP)/usr/share/doc
-	find $(TMP) -name perllocal.pod -o -name .packlist | xargs rm -f
+	# Add here commands to install the package into debian/tmp.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -53,23 +81,32 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-
-	dh_installdocs README TODO AUTHORS docs/*.txt
-	dh_installchangelogs NEWS
-	dh_installmenu
-	dh_undocumented
-ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	dh_installchangelogs ChangeLog
+	dh_installdocs
+	dh_installexamples
+	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link
 	dh_strip
-endif
 	dh_compress
 	dh_fixperms
+	dh_perl
+#	dh_python
 	dh_makeshlibs
 	dh_installdeb
-	dh_perl
 	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
+.PHONY: build clean binary-indep binary-arch binary install 
