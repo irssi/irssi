@@ -945,12 +945,18 @@ static void event_command(const char *line, SERVER_REC *server, void *item)
 	parse_command(line, expand_aliases, server, item);
 }
 
+static int eval_recursion_depth=0;
 /* SYNTAX: EVAL <command(s)> */
 static void cmd_eval(const char *data, SERVER_REC *server, void *item)
 {
 	g_return_if_fail(data != NULL);
+	if (eval_recursion_depth > 100) 
+		cmd_return_error(CMDERR_EVAL_MAX_RECURSE);
 
+ 
+	eval_recursion_depth++;
 	eval_special_string(data, "", server, item);
+	eval_recursion_depth--;
 }
 
 /* SYNTAX: CD <directory> */
