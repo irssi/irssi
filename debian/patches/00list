@@ -1,3 +1,5 @@
 01glib-errors
 02tr_TR
 03sigtstp
+04eval_recurse
+05upgrade-check-binary

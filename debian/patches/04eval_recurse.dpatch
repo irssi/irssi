@@ -1,0 +1,77 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 04eval_recurse.dpatch by David Pashley <david@davidpashley.com>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad --exclude=CVS --exclude=.svn ./src/core/commands.c /tmp/dpep-work.k5u2gD/irssi/src/core/commands.c
+--- ./src/core/commands.c	2005-07-16 00:48:59.000000000 +0300
++++ /tmp/dpep-work.k5u2gD/irssi/src/core/commands.c	2005-07-16 12:48:01.000000000 +0300
+@@ -945,12 +945,18 @@
+ 	parse_command(line, expand_aliases, server, item);
+ }
+ 
++static int eval_recursion_depth=0;
+ /* SYNTAX: EVAL <command(s)> */
+ static void cmd_eval(const char *data, SERVER_REC *server, void *item)
+ {
+ 	g_return_if_fail(data != NULL);
++	if (eval_recursion_depth > 100) 
++		cmd_return_error(CMDERR_EVAL_MAX_RECURSE);
+ 
++ 
++	eval_recursion_depth++;
+ 	eval_special_string(data, "", server, item);
++	eval_recursion_depth--;
+ }
+ 
+ /* SYNTAX: CD <directory> */
+diff -urNad --exclude=CVS --exclude=.svn ./src/core/commands.h /tmp/dpep-work.k5u2gD/irssi/src/core/commands.h
+--- ./src/core/commands.h	2005-07-16 00:48:59.000000000 +0300
++++ /tmp/dpep-work.k5u2gD/irssi/src/core/commands.h	2005-07-16 12:49:14.000000000 +0300
+@@ -39,7 +39,8 @@
+ 	CMDERR_ILLEGAL_PROTO, /* requires different chat protocol than the active server */
+ 	CMDERR_NOT_GOOD_IDEA, /* not good idea to do, -yes overrides this */
+ 	CMDERR_INVALID_TIME, /* invalid time specification */
+-	CMDERR_INVALID_CHARSET /* invalid charset specification */
++	CMDERR_INVALID_CHARSET, /* invalid charset specification */
++	CMDERR_EVAL_MAX_RECURSE /* eval hit recursion limit */
+ };
+ 
+ /* Return the full command for `alias' */
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-common/core/fe-core-commands.c /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/fe-core-commands.c
+--- ./src/fe-common/core/fe-core-commands.c	2005-07-16 00:48:55.000000000 +0300
++++ /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/fe-core-commands.c	2005-07-16 12:50:12.000000000 +0300
+@@ -49,7 +49,8 @@
+         TXT_ILLEGAL_PROTO,
+ 	TXT_NOT_GOOD_IDEA,
+         TXT_INVALID_TIME,
+-        TXT_INVALID_CHARSET
++        TXT_INVALID_CHARSET,
++        TXT_EVAL_MAX_RECURSE
+ };
+ 
+ int command_hide_output;
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-common/core/module-formats.c /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/module-formats.c
+--- ./src/fe-common/core/module-formats.c	2005-07-16 00:48:55.000000000 +0300
++++ /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/module-formats.c	2005-07-16 12:50:59.000000000 +0300
+@@ -219,6 +219,7 @@
+ 	{ "invalid_level", "Invalid message level", 0 },
+ 	{ "invalid_size", "Invalid size", 0 },
+ 	{ "invalid_charset", "Invalid charset: $0", 1, { 0 } },
++	{ "eval_max_recurse", "/eval hit maximum recursion limit", 0 },
+ 
+ 	/* ---- */
+ 	{ NULL, "Themes", 0 },
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-common/core/module-formats.h /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/module-formats.h
+--- ./src/fe-common/core/module-formats.h	2005-07-16 00:48:55.000000000 +0300
++++ /tmp/dpep-work.k5u2gD/irssi/src/fe-common/core/module-formats.h	2005-07-16 12:51:23.000000000 +0300
+@@ -188,6 +188,7 @@
+ 	TXT_INVALID_LEVEL,
+ 	TXT_INVALID_SIZE,
+ 	TXT_INVALID_CHARSET,
++	TXT_EVAL_MAX_RECURSE,
+ 
+ 	TXT_FILL_11,
+ 
