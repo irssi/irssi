@@ -1,0 +1,12 @@
+irssi (0.8.10~rc5-1) unstable; urgency=low
+
+  * This package has the beginnings of GNUTLS support for SSL rather
+    than the upstream OpenSSL code.  This may have many bugs in and is
+    not feature complete. In particular it does not support verification
+    of the server's certificate. As a result the connection is vunerable
+    to man in the middle attack. This is only a regression if you use
+    the -cafile or -capath options to /connect. The data is still
+    encrypted.
+
+ -- David Pashley <david@davidpashley.com>  Sun, 17 Jul 2005 19:39:37 +0300
+
