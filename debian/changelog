@@ -9,7 +9,7 @@ irssi (0.8.10~rc5-1) unstable; urgency=low
   * Redirect Glib critical errors to the status window rather than to stderr
     (Closes: #270596)
   * Correctly lower case chat protocols using g_ascii_strdown() rather than
-    using the deprecated g_strdown() (Closes: #232628)
+    using the deprecated g_strdown() (pushed upstream) (Closes: #232628)
 
  -- David Pashley <david@davidpashley.com>  Sun, 10 Jul 2005 15:11:38 +0300
 
