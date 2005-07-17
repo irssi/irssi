@@ -440,6 +440,10 @@ void fe_common_core_finish_init(void)
 			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
 					    G_LOG_LEVEL_WARNING),
 			  (GLogFunc) glog_func, NULL);
+	g_log_set_handler("GLib",
+			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
+					    G_LOG_LEVEL_WARNING),
+			  (GLogFunc) glog_func, NULL); /* send glib errors to the same place */
 
 	if (setup_changed)
                 signal_emit("setup changed", 0);
