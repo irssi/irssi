@@ -15,7 +15,7 @@ diff -urNad --exclude=CVS --exclude=.svn ./src/fe-common/core/fe-common-core.c /
 +	g_log_set_handler("GLib",
 +			  (GLogLevelFlags) (G_LOG_LEVEL_CRITICAL |
 +					    G_LOG_LEVEL_WARNING),
-+			  (GLogFunc) glog_func, NULL);
++			  (GLogFunc) glog_func, NULL); /* send glib errors to the same place */
  
  	if (setup_changed)
                  signal_emit("setup changed", 0);
