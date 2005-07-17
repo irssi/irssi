@@ -362,7 +362,7 @@ void term_refresh(TERM_WINDOW *window)
 void term_stop(void)
 {
 	term_deinit_int();
-	kill(getpid(), SIGSTOP);
+	kill(getpid(), SIGTSTP);
         term_init_int();
 	irssi_redraw();
 }

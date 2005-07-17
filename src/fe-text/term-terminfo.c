@@ -543,10 +543,10 @@ void term_attach(FILE *in, FILE *out)
 void term_stop(void)
 {
 	if (term_detached) {
-		kill(getpid(), SIGSTOP);
+		kill(getpid(), SIGTSTP);
 	} else {
 		terminfo_stop(current_term);
-		kill(getpid(), SIGSTOP);
+		kill(getpid(), SIGTSTP);
 		terminfo_cont(current_term);
 		irssi_redraw();
 	}
