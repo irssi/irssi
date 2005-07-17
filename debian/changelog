@@ -1,6 +1,15 @@
 irssi (0.8.10~rc5-1) unstable; urgency=low
 
   * Initial packaging to unify irssi-text and irssi-snapshot
+  * Check for an executable file before we try to execute it with /upgrade
+    (Closes: #242026)
+  * Only allow /exec to recurse 100 times (Closes: #186416)
+  * Call SIGTSTP rather than SIGSTOP on ^Z (With thanks to Mark Hymers
+    <mark.hymers@ncl.ac.uk>) (Closes: #177108) 
+  * Redirect Glib critical errors to the status window rather than to stderr
+    (Closes: #270596)
+  * Correctly lower case chat protocols using g_ascii_strdown() rather than
+    using the deprecated g_strdown() (Closes: #232628)
 
  -- David Pashley <david@davidpashley.com>  Sun, 10 Jul 2005 15:11:38 +0300
 

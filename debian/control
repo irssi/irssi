@@ -2,12 +2,15 @@ Source: irssi
 Section: net
 Priority: optional
 Maintainer: David Pashley <david@davidpashley.com>
-Build-Depends: debhelper (>= 4.0.0), autotools-dev
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, libglib2.0-dev, perl (>= 5.8.1), libperl-dev (>= 5.8.1), libncurses5-dev, libssl-dev, openssl
 Standards-Version: 3.6.2
 
 Package: irssi
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${perl:Depends}, ${misc:Depends}, perl-base(>= 5.8.1)
+Suggests: irssi-scripts (>= 2)
+Conflicts: irssi-scripts (= 1), irssi-common
+Replaces: irssi-scripts (<= 8)
 Description: text-mode version of the irssi IRC client
  Irssi is an IRC client from the author of yagirc, Timo Sirainen. It has a
  text, GTK and GNOME interface (with integration to the GNOME panel).
