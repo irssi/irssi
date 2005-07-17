@@ -1,0 +1,593 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 06gnutls-support.dpatch by David Pashley <david@davidpashley.com>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad --exclude=CVS --exclude=.svn ./configure.in /tmp/dpep-work.Xa2n5L/irssi/configure.in
+--- ./configure.in	2005-07-17 16:00:49.000000000 +0300
++++ /tmp/dpep-work.Xa2n5L/irssi/configure.in	2005-07-17 16:46:18.000000000 +0300
+@@ -222,7 +222,11 @@
+ AC_ARG_ENABLE(ssl, 
+ 	    [  --disable-ssl           Disable Secure Sockets Layer support],,
+ 	    enable_ssl=yes)
+-
++if test "$enable_ssl" = "yes"; then
++   AM_PATH_LIBGNUTLS(1.0.16, have_gnutls="true", have_gnutls="false")
++   AC_DEFINE(HAVE_GNUTLS,, Build with GNUTLS support)
++fi
++AM_CONDITIONAL(HAVE_GNUTLS, test "x$have_gnutls" = "xtrue")
+ dnl **
+ dnl ** just some generic stuff...
+ dnl **
+diff -urNad --exclude=CVS --exclude=.svn ./src/core/Makefile.am /tmp/dpep-work.Xa2n5L/irssi/src/core/Makefile.am
+--- ./src/core/Makefile.am	2005-07-17 16:00:43.000000000 +0300
++++ /tmp/dpep-work.Xa2n5L/irssi/src/core/Makefile.am	2005-07-17 16:46:18.000000000 +0300
+@@ -7,6 +7,12 @@
+ 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
+ 	-DMODULEDIR=\""$(libdir)/irssi/modules"\"
+ 
++#if HAVE_OPENSSL
++#SSL = network-openssl.c
++#else
++SSL = network-gnutls.c
++#endif
++
+ libcore_a_SOURCES = \
+ 	args.c \
+ 	channels.c \
+@@ -30,7 +36,7 @@
+ 	net-nonblock.c \
+ 	net-sendbuffer.c \
+ 	network.c \
+-	network-openssl.c \
++	$(SSL) \
+ 	nicklist.c \
+ 	nickmatch-cache.c \
+ 	pidwait.c \
+diff -urNad --exclude=CVS --exclude=.svn ./src/core/network-gnutls.c /tmp/dpep-work.Xa2n5L/irssi/src/core/network-gnutls.c
+--- ./src/core/network-gnutls.c	1970-01-01 02:00:00.000000000 +0200
++++ /tmp/dpep-work.Xa2n5L/irssi/src/core/network-gnutls.c	2005-07-17 16:46:18.000000000 +0300
+@@ -0,0 +1,514 @@
++/*
++ network-ssl.c : SSL support
++
++    Copyright (C) 2002 vjt
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++*/
++
++#include "module.h"
++#include "network.h"
++#include "misc.h"
++
++#define HAVE_GNUTLS
++
++#ifdef HAVE_GNUTLS
++
++#include <gnutls/gnutls.h>
++#include <gnutls/extra.h>
++#include <gnutls/x509.h>
++
++/* ssl i/o channel object */
++typedef struct
++{
++	GIOChannel pad;
++	gint fd;
++	GIOChannel *giochan;
++   gnutls_session session;
++	unsigned int got_cert:1;
++	unsigned int verify:1;
++   unsigned int have_handshaked:1;
++   gnutls_anon_client_credentials anon_cred;
++   gnutls_certificate_credentials xcred;
++} GIOSSLChannel;
++	
++static void irssi_ssl_free(GIOChannel *handle)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	g_io_channel_unref(chan->giochan);
++   gnutls_bye(chan->session, GNUTLS_SHUT_RDWR);
++   gnutls_deinit(chan->session);
++	g_free(chan);
++}
++
++/*static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, X509 *cert)
++{
++	if (SSL_get_verify_result(ssl) != X509_V_OK) {
++		unsigned char md[EVP_MAX_MD_SIZE];
++		unsigned int n;
++		char *str;
++
++		g_warning("Could not verify SSL servers certificate:");
++		if ((str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0)) == NULL)
++			g_warning("  Could not get subject-name from peer certificate");
++		else {
++			g_warning("  Subject : %s", str);
++			free(str);
++		}
++		if ((str = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0)) == NULL)
++			g_warning("  Could not get issuer-name from peer certificate");
++		else {
++			g_warning("  Issuer  : %s", str);
++			free(str);
++		}
++		if (! X509_digest(cert, EVP_md5(), md, &n))
++			g_warning("  Could not get fingerprint from peer certificate");
++		else {
++			char hex[] = "0123456789ABCDEF";
++			char fp[EVP_MAX_MD_SIZE*3];
++			if (n < sizeof(fp)) {
++				unsigned int i;
++				for (i = 0; i < n; i++) {
++					fp[i*3+0] = hex[(md[i] >> 4) & 0xF];
++					fp[i*3+1] = hex[(md[i] >> 0) & 0xF];
++					fp[i*3+2] = i == n - 1 ? '\0' : ':';
++				}
++				g_warning("  MD5 Fingerprint : %s", fp);
++			}
++		}
++		return FALSE;
++	}
++	return TRUE;
++}
++*/
++
++int irssi_ssl_handshake(GIOChannel *handle) {
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	int ret;
++   while(1) {
++      fd_set fds_read;
++      fd_set fds_write;
++      struct timeval timeout={1,0};
++
++      ret = gnutls_handshake(chan->session);
++
++      if((ret != GNUTLS_E_AGAIN) &&
++            (ret != GNUTLS_E_INTERRUPTED))
++         break;
++
++      FD_ZERO(&fds_read);
++      FD_ZERO(&fds_write);
++
++      FD_SET(chan->fd, &fds_read);
++      FD_SET(chan->fd, &fds_write);
++      select(chan->fd+1, &fds_read, &fds_write, NULL, &timeout);
++   }
++   if (ret < 0) {
++      g_warning( "*** Handshake failed: %s", gnutls_strerror(ret));
++      if (ret == GNUTLS_E_FATAL_ALERT_RECEIVED) {
++         g_warning( "*** alert: %s", gnutls_alert_get_name (gnutls_alert_get (chan->session)));
++      }
++
++      
++   } else {
++      chan->have_handshaked = 1;
++      g_warning("- Handshake was completed");
++   }
++
++   return ret;
++
++}
++#if GLIB_MAJOR_VERSION < 2
++
++#ifdef G_CAN_INLINE
++G_INLINE_FUNC
++#else
++static
++#endif
++GIOError ssl_errno(gint e)
++{
++	switch(e)
++	{
++		case EINVAL:
++			return G_IO_ERROR_INVAL;
++		case EINTR:
++		case EAGAIN:
++			return G_IO_ERROR_AGAIN;
++		default:
++			return G_IO_ERROR_INVAL;
++	}
++	/*UNREACH*/
++	return G_IO_ERROR_INVAL;
++}
++
++static GIOError irssi_ssl_cert_step(GIOSSLChannel *chan)
++{
++   g_warning("irssi_ssl_cert_step");
++	/*UNREACH*/
++	return G_IO_ERROR_INVAL;
++}
++
++static GIOError irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	gint err;
++	
++	err = gnutls_record_recv(chan->session, buf, len);
++	if(err < 0) {
++		*ret = 0;
++		return ssl_errno(errno);
++	} else {
++		*ret = err;
++		return G_IO_ERROR_NONE;
++	}
++	/*UNREACH*/
++	return -1;
++}
++
++static GIOError irssi_ssl_write(GIOChannel *handle, gchar *buf, guint len, guint *ret)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	gint err;
++
++
++	err = gnutls_record_send(chan->session, buf, len);
++	if(err < 0)
++	{
++		*ret = 0;
++		return ssl_errno(errno);
++	}
++	else
++	{
++		*ret = err;
++		return G_IO_ERROR_NONE;
++	}
++	/*UNREACH*/
++	return G_IO_ERROR_INVAL;
++}
++
++static GIOError irssi_ssl_seek(GIOChannel *handle, gint offset, GSeekType type)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	GIOError e;
++	e = g_io_channel_seek(chan->giochan, offset, type);
++	return (e == G_IO_ERROR_NONE) ? G_IO_ERROR_NONE : G_IO_ERROR_INVAL;
++}
++
++static void irssi_ssl_close(GIOChannel *handle)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	g_io_channel_close(chan->giochan);
++}
++
++static guint irssi_ssl_create_watch(GIOChannel *handle, gint priority, GIOCondition cond,
++			     GIOFunc func, gpointer data, GDestroyNotify notify)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++
++	return chan->giochan->funcs->io_add_watch(handle, priority, cond, func, data, notify);
++}
++
++/* ssl function pointers */
++static GIOFuncs irssi_ssl_channel_funcs =
++{
++	irssi_ssl_read,
++	irssi_ssl_write,
++	irssi_ssl_seek,
++	irssi_ssl_close,
++	irssi_ssl_create_watch,
++	irssi_ssl_free
++};
++
++#else /* GLIB_MAJOR_VERSION < 2 */
++
++#ifdef G_CAN_INLINE
++G_INLINE_FUNC
++#else
++static
++#endif
++GIOStatus ssl_errno(gint e)
++{
++	switch(e)
++	{
++		case EINVAL:
++			return G_IO_STATUS_ERROR;
++		case EINTR:
++		case EAGAIN:
++			return G_IO_STATUS_AGAIN;
++		default:
++			return G_IO_STATUS_ERROR;
++	}
++	/*UNREACH*/
++	return G_IO_STATUS_ERROR;
++}
++
++static GIOStatus irssi_ssl_cert_step(GIOSSLChannel *chan)
++{
++   g_warning("irssi_ssl_cert_step");
++	/*UNREACH*/
++	return G_IO_STATUS_ERROR;
++}
++
++static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret, GError **gerr)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	gint err;
++   if (!chan->have_handshaked) {
++      irssi_ssl_handshake(handle);
++   }
++	
++	
++	err = gnutls_record_recv(chan->session, buf, len);
++	if(err < 0)
++	{
++		*ret = 0;
++		return ssl_errno(errno);
++	}
++	else
++	{
++		*ret = err;
++		return G_IO_STATUS_NORMAL;
++	}
++	/*UNREACH*/
++	return G_IO_STATUS_ERROR;
++}
++
++static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len, gsize *ret, GError **gerr)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	gint err;
++
++   if (!chan->have_handshaked) {
++   irssi_ssl_handshake(handle);
++   }
++
++
++	err = gnutls_record_send(chan->session, buf, len);
++	if(err < 0)
++	{
++		*ret = 0;
++		return ssl_errno(errno);
++	}
++	else
++	{
++		*ret = err;
++		return G_IO_STATUS_NORMAL;
++	}
++	/*UNREACH*/
++	return G_IO_STATUS_ERROR;
++}
++
++static GIOStatus irssi_ssl_seek(GIOChannel *handle, gint64 offset, GSeekType type, GError **gerr)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	GIOError e;
++	e = g_io_channel_seek(chan->giochan, offset, type);
++	return (e == G_IO_ERROR_NONE) ? G_IO_STATUS_NORMAL : G_IO_STATUS_ERROR;
++}
++
++static GIOStatus irssi_ssl_close(GIOChannel *handle, GError **gerr)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++	g_io_channel_close(chan->giochan);
++
++	return G_IO_STATUS_NORMAL;
++}
++
++static GSource *irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
++{
++	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++
++	return chan->giochan->funcs->io_create_watch(handle, cond);
++}
++
++static GIOStatus irssi_ssl_set_flags(GIOChannel *handle, GIOFlags flags, GError **gerr)
++{
++    GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++
++    return chan->giochan->funcs->io_set_flags(handle, flags, gerr);
++}
++
++static GIOFlags irssi_ssl_get_flags(GIOChannel *handle)
++{
++    GIOSSLChannel *chan = (GIOSSLChannel *)handle;
++
++    return chan->giochan->funcs->io_get_flags(handle);
++}
++
++static GIOFuncs irssi_ssl_channel_funcs = {
++    irssi_ssl_read,
++    irssi_ssl_write,
++    irssi_ssl_seek,
++    irssi_ssl_close,
++    irssi_ssl_create_watch,
++    irssi_ssl_free,
++    irssi_ssl_set_flags,
++    irssi_ssl_get_flags
++};
++
++#endif
++
++static void tls_log_func(int level, const char *str)
++{
++   
++       g_warning( "|<%d>| %s", level, g_strchomp(str));
++}
++
++static gboolean irssi_ssl_init(void)
++{
++   g_warning("irssi_ssl_init");
++   int ret;
++	if ((ret = gnutls_global_init())) {
++      g_warning( "failed to init gnutls: %s", gnutls_strerror(ret));
++      return FALSE;
++   } 
++   gnutls_global_set_log_function(tls_log_func);
++   gnutls_global_set_log_level(0);
++
++	return TRUE;
++
++}
++
++int is_socket_connected(int fd) {
++   fd_set fds_write;
++   struct timeval timeout={0,0};
++   FD_ZERO(&fds_write);
++   FD_SET(fd, &fds_write);
++   select(fd+1, 0, &fds_write, NULL, &timeout);
++
++   struct sockaddr s;
++   socklen_t s_len;
++   if (getpeername(fd,&s,&s_len) == -1 && errno == ENOTCONN) {
++      char ch;
++      read(fd,&ch,1);
++      return FALSE;
++   }
++   return TRUE;
++}
++
++
++/*static*/ GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycert, const char *mypkey, const char *cafile, const char *capath, gboolean verify)
++{
++   g_warning("irssi_ssl_get_iochannel");
++	GIOSSLChannel *chan;
++	GIOChannel *gchan;
++	int ret, fd;
++   gnutls_session session;
++   
++   
++   gnutls_anon_client_credentials anon_cred;
++   gnutls_certificate_credentials xcred;
++
++   int protocol_priority[] = { GNUTLS_TLS1_1, GNUTLS_TLS1_0, GNUTLS_SSL3, 0 };
++   int kx_priority[] =
++   { GNUTLS_KX_DHE_RSA, GNUTLS_KX_DHE_DSS, GNUTLS_KX_RSA,
++      GNUTLS_KX_SRP_RSA, GNUTLS_KX_SRP_DSS, GNUTLS_KX_SRP,
++      /* Do not use anonymous authentication, unless you know what that means */
++      GNUTLS_KX_RSA_EXPORT, GNUTLS_KX_ANON_DH, 0
++   };
++   int cipher_priority[] =
++   { GNUTLS_CIPHER_AES_256_CBC, GNUTLS_CIPHER_AES_128_CBC,
++      GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128,
++      GNUTLS_CIPHER_ARCFOUR_40, 0
++   };
++   int comp_priority[] = { GNUTLS_COMP_ZLIB, GNUTLS_COMP_NULL, 0 };
++   int mac_priority[] = 
++   { GNUTLS_MAC_SHA, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160, 0 };
++   int cert_type_priority[] = { GNUTLS_CRT_X509, GNUTLS_CRT_OPENPGP, 0 };
++
++
++	g_return_val_if_fail(handle != NULL, NULL);
++	
++	if(!irssi_ssl_init())
++		return NULL;
++   
++   fd = g_io_channel_unix_get_fd(handle);
++//if(!(fd = g_io_channel_unix_get_fd(handle)) || !is_socket_connected(fd)) {
++//      return NULL;
++//   }
++
++   g_warning ("irssi_ssl_get_iochannel sanity checks complete");
++
++
++   gnutls_certificate_allocate_credentials(&xcred);
++	gnutls_certificate_set_verify_flags(xcred, GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT);
++   gnutls_anon_allocate_client_credentials(&anon_cred);
++   if (cafile) {
++      /* sets the trusted cas file */
++      if ((ret = gnutls_certificate_set_x509_trust_file(xcred, cafile, GNUTLS_X509_FMT_PEM)) < 0) {
++         g_warning( "gnutls_certificate_set_x509_trust_file failed: %s", gnutls_strerror(ret));
++      }
++   }
++   
++   /* Initialize TLS session  */
++   if (gnutls_init(&session, GNUTLS_CLIENT) < 0 ) {
++         g_warning( "gnutls_init failed: %s", gnutls_strerror(ret));
++      }
++   
++   gnutls_certificate_type_set_priority(session, cert_type_priority);
++	gnutls_cipher_set_priority(session, cipher_priority);
++	gnutls_compression_set_priority(session, comp_priority);
++	gnutls_kx_set_priority(session, kx_priority);
++	gnutls_protocol_set_priority(session, protocol_priority);
++	gnutls_mac_set_priority(session, mac_priority);
++
++	gnutls_dh_set_prime_bits(session, 512);
++
++	gnutls_credentials_set(session, GNUTLS_CRD_ANON, anon_cred);
++	gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, xcred);
++   
++
++   /* connect to the peer */
++   gnutls_transport_set_ptr(session, (gnutls_transport_ptr) fd);
++
++   
++	chan = g_new0(GIOSSLChannel, 1);
++	chan->fd = fd;
++	chan->giochan = handle;
++	chan->session = session;
++	//chan->got_cert = cert != NULL;
++	chan->verify = verify;
++   chan->anon_cred = anon_cred;
++   chan->xcred = xcred;
++
++	gchan = (GIOChannel *)chan;
++	gchan->funcs = &irssi_ssl_channel_funcs;
++	g_io_channel_init(gchan);
++	
++   /* Perform the TLS handshake */
++	return gchan;
++}
++
++GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify)
++{
++	GIOChannel *handle, *ssl_handle;
++
++	handle = net_connect_ip(ip, port, my_ip);
++   ssl_handle  = irssi_ssl_get_iochannel(handle, cert, pkey, cafile, capath, verify);
++	if (ssl_handle == NULL)
++		g_io_channel_unref(handle);
++	return ssl_handle;
++}
++
++#else /* HAVE_OPENSSL */
++
++GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify)
++{
++	g_warning("Connection failed: SSL support not enabled in this build.");
++	errno = ENOSYS;
++	return NULL;
++}
++
++#endif /* ! HAVE_OPENSSL */
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-none/Makefile.am /tmp/dpep-work.Xa2n5L/irssi/src/fe-none/Makefile.am
+--- ./src/fe-none/Makefile.am	2005-07-17 16:00:41.000000000 +0300
++++ /tmp/dpep-work.Xa2n5L/irssi/src/fe-none/Makefile.am	2005-07-17 16:46:18.000000000 +0300
+@@ -12,7 +12,8 @@
+ 	@COMMON_NOUI_LIBS@ \
+ 	@PERL_LINK_LIBS@ \
+ 	@PERL_LINK_FLAGS@ \
+-	@PROG_LIBS@
++	@PROG_LIBS@ \
++	-lgnutls
+ 
+ botti_SOURCES = \
+         irssi.c
+diff -urNad --exclude=CVS --exclude=.svn ./src/fe-text/Makefile.am /tmp/dpep-work.Xa2n5L/irssi/src/fe-text/Makefile.am
+--- ./src/fe-text/Makefile.am	2005-07-17 16:00:44.000000000 +0300
++++ /tmp/dpep-work.Xa2n5L/irssi/src/fe-text/Makefile.am	2005-07-17 16:46:18.000000000 +0300
+@@ -21,7 +21,9 @@
+ 	@PERL_FE_LINK_LIBS@ \
+ 	@PERL_LINK_FLAGS@ \
+ 	@PROG_LIBS@ \
+-	@TEXTUI_LIBS@
++	@TEXTUI_LIBS@ \
++	-lgnutls
++
+ 
+ tparm_sources = \
+ 	tparm.c
