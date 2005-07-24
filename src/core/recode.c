@@ -107,7 +107,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
 
 	if (from)
-		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL);
+		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
 	if (!recoded) {
 		if (term_is_utf8) {
@@ -118,7 +118,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			from = "UTF-8";
 
 		if (from)
-			recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL);
+			recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
 		if (!recoded)
 			recoded = g_strdup(str);
