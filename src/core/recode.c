@@ -87,15 +87,19 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 
 	str_is_utf8 = g_utf8_validate(str, len, NULL);
 	translit = settings_get_bool("recode_transliterate");
-
+	
 	if (server != NULL)
 		tagtarget = server->tag == NULL ? NULL :
 			    g_strdup_printf("%s/%s", server->tag, target);
 	if (tagtarget != NULL)
 		from = iconfig_get_str("conversions", tagtarget, NULL);
 	g_free(tagtarget);
+
 	if (target != NULL && from == NULL)
 		from = iconfig_get_str("conversions", target, NULL);
+
+	if (from == NULL)	
+		from = iconfig_get_str("conversions", server->tag, NULL);
 
 	term_is_utf8 = recode_get_charset(&to);
 
@@ -103,7 +107,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
 
 	if (from)
-		recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
+		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL);
 
 	if (!recoded) {
 		if (term_is_utf8) {
@@ -114,7 +118,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			from = "UTF-8";
 
 		if (from)
-			recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
+			recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL);
 
 		if (!recoded)
 			recoded = g_strdup(str);
@@ -158,6 +162,8 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		g_free(tagtarget);
 		if (to == NULL || *to == '\0')
 			to = iconfig_get_str("conversions", target, NULL);
+		if (to == NULL || *to == '\0')
+			to = iconfig_get_str("conversions", server->tag, NULL);
 		if (to == NULL || *to == '\0')
 			/* default outgoing charset if set */
 			to = settings_get_str("recode_out_default_charset");

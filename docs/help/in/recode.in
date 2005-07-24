@@ -4,14 +4,15 @@
 RECODE
     %|List the conversion database
 
-RECODE ADD %|[[<tag>/]<target>] <charset>
-    %|Add an entry to the conversion database (if target is omitted,
-    the current channel or query will be used). You can specify the
-    <tag> to have different charsets for the same <target> for
-    different networks.
+RECODE ADD %|<tag>|[<tag>/]<target>] <charset>
+    %|Add an entry to the conversion database (if tag or target is 
+    omitted, the current channel or query will be used). You can specify 
+    the <tag> to have different charsets for the same <target> for
+    different networks. You can omit the target, and specify only the tag
+    if you want to add an entry for the network.
 
-RECODE REMOVE %|[<target>]
-    %|Remove an entry from the conversion database (if target is
+RECODE REMOVE %|[<tag>|<target>]
+    %|Remove an entry from the conversion database (if tag or target is
     omitted, the current channel or query will be used)
 
 To specify your local charset you have to set term_charset
