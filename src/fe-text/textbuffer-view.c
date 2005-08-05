@@ -1056,6 +1056,8 @@ static void view_bookmarks_check(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			if (new_line != NULL) {
 				g_hash_table_insert(view->bookmarks,
 						    tmp->data, new_line);
+			} else {
+				g_free(tmp->data);
 			}
 		}
 		g_slist_free(rec.remove_list);
