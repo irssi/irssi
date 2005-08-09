@@ -2,6 +2,13 @@ Original code:
 
   Timo Sirainen <cras@irssi.org>
 
+Irssi staff (current maintainers) <staff@irssi.org>:
+
+  Valentin Batz (senneth, vb)
+  Wouter Coekaerts (coekie)
+  Jochen Eisinger (c0ffee)
+  Geert Hauwaerts
+
 Large feature patches by:
 
   David Leadbeater (dg, dgl) : isupport
@@ -13,15 +20,15 @@ Large feature patches by:
 
 Other patches (grep for "patch" in ChangeLog) by:
 
-  Joost Vunderink
+  Toby Peterson
+  Soren Jacobsen
+  Kuang-che Wu
+  Joost Vunderink (Garion)
   Wang WenRui
-  Valentin Batz
-  Jochen Eisinger (c0ffee)
-  Jean-Yves Lefort
+  Jean-Yves Lefort (decadix)
   Joel Eriksson
   Maarten van der Zwaart
   Noah Levitt
-  Wouter Coekaerts (coekie)
   Krzysztof Kowalik (Borys)
   Peder Stray
   mls@suse.de

@@ -1,5 +1,12 @@
-v0.8.10 2004-03-xx  Timo Sirainen <tss@iki.fi>
+v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 
+	* Long delayed release, with lots of changes. Most important ones:
+	    + Recode support, by decadix and senneth
+	    + isupport (005 numeric), by David Leadbeater
+	    + Passive DCC support, by Francesco Fracassi
+	    - Many memleak fixes, by Toby Peterson
+
+	+ Moved to subversion
 	+ /SET paste_join_multiline ON - When paste detection is enabled and
 	  you paste lines which look like they're being copy&pasted from irssi
 	  itself, it attempts to merge lines said originally in a single line.
@@ -7,8 +14,6 @@ v0.8.10 2004-03-xx  Timo Sirainen <tss@iki.fi>
 	  How this really works is that all indented lines must have the same
 	  amount of indentation. Indented lines are merged to last
 	  unindented line. If line gets longer than 400 characters, it's split.
-	+ Initial support for isupport (005 numeric), patch by David Leadbeater
-	+ Passive DCC support, patch by Francesco Fracassi
 	+ /SET whois_hide_safe_channel_id ON - Hides the channel ID prefix
 	  of !channels in WHOIS replies
 	+ When reconnecting to server, say that it can be aborted with
@@ -21,8 +26,71 @@ v0.8.10 2004-03-xx  Timo Sirainen <tss@iki.fi>
 	  /SET hostname or /SERVER -host settings.
 	+ If channel has more nicks than /SET channel_max_who_sync, don't ask
 	  /WHO list to avoid getting kicked out of server (Max SendQ exceeded).
+	+ /LOAD script.pl loads the perl script
+	+ /IGNORE -network ignores only on specified network
+	+ /SET use_status_window and /SET use_msgs_window make the effects 
+	  immediately
+	+ Changed the confusing "ircnet" to "network" everywhere
+	+ Don't autoget files sent to channels, unless dcc_autoget_masks is set
+	+ Added a default "*" target which matches everything on the server,
+	  including NULL items associated with it, by jimmy
+	+ /UPGRADE now saves server->version
+	+ If available, send who set topic and when to irssi-proxy clients
+	+ Removed 'freenode' from the network list
+	+ New default aliases: MANUAL-WINDOWS, EXEMPTLIST and ATAG
 	- Pasted lines weren't added to command history. Some other paste
 	  detection fixes
+	- Fixed /BIND escape_char
+	- Fixes for Chinese multibyte characters handling and cursor movement
+	  by Wang WenRui
+	- Pasting multibyte chars was buggy, patch by Kuang-che Wu
+	- Fixed handling WHOIS printing once and for all. Everything unknown
+	  between "beginning of whois" and "end of whois" events is now printed
+	  as whois_special. Removed whois_registered and whois_help, they're
+	  printed with whois_special as well.
+	- Don't replace channel key when receiving channel mode numeric. It
+	  could be a fake key there.
+	- Don't crash if dcc chated user changes nick
+	- Help files are always lowercased. Make sure /HELP COMMAND works too.
+	- /EXEC crashed with 64bit systems. Patch by Soren Jacobsen
+	- Handle 432 numeric (errorneus nickname) as "nick in use". Fixes
+	  problems with ircnet 2.11 ircd when irssi tries to reconnect using
+	  UID as nick. Patch by Petr Baudis
+	- /SET -default fixes
+	- /DCC SEND didn't actually use /SET dcc_upload_path
+	- Fixed /WHOIS -yes (Bug 67)
+	- Make /JOIN -tag #channel and /JOIN #channel<space> switch to that
+	  channel (Bugs 13 and 93)
+	- Fixed readded (changed) hilights being in config twice, resulted in
+	  duplicate hilights or removed hilights coming back (Bug 39)
+	- Fixed messages to @#channel showed *your* nickmode, not the one of
+	  the sender (part of Bug 80)
+	- Fixed /KNOCK support
+	- Fixed own nick changes in irssi-proxy
+	- Fixed /HILIGHT -actcolor -mask (Bug 131)
+	- Recognise a param of signal_emit/continue in perl script if it's int
+	- Fixed bug 120 where proxy doesn't set the server_rec->away_reason
+	- Fixed /join -invite -window bug if there is no invite
+	- Fixed bug with time settings where hours actually returned 60*hours
+	- Fix multiple entries for local IP in /etc/hosts prevents connecting,
+	  patch by eridius (Bug 167)
+	- Fixed a bug with /me, use the right arguments for 
+	  "message irc own_action"
+	- Update our own nickrec->gone flag on /away <reason> or on /away
+	- Fixed output of /hilight (add a space after -levels if any)
+	- Add libtool's -module flag to get built properly on all platforms,
+	  by Toby Peterson (Bug 212)
+	- Don't apply emphasis on _foo_^ if it's a nick (Bug 52)
+	- Fix displaying of ctcp userinfo and clientinfo (Bug 222)
+	- Remember alternate_nick and max_whois on reconnect (Bug 181)
+	- Fix tr_TR locale problem for glib2 (still a bug with glib1.2)
+	  by David Pashley
+	- Fixed pasting not using the character translation (Bug 151)
+	- Fixed a bug where the channel list to join/rejoin on reconnect
+	  gets too long, not all channels will be joined. (Bug 108)
+	- Print glib errors nicely, by David Pashley
+	- Handle ^Z better, by David Pashley
+	- Fixed /eval recursion crashing, by David Pashley
 
 v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 
