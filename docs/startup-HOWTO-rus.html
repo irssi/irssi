@@ -102,10 +102,10 @@
 
 <p>Вот пример добавления серверов:</p>
 
-<p>(сеть freenode, идентифицироваться через nickserv и ждать 2 секунды перед заходом на каналы)</p>
+<p>(сеть OFTC, идентифицироваться через nickserv и ждать 2 секунды перед заходом на каналы)</p>
 
 <pre>
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
 </pre>
 
 <p>Теперь добавление нескольких серверов к разным сетям (IRC-сеть для них уже установлена),
@@ -243,7 +243,7 @@ Split window 3: win#5 - efnet/#channel1, win#6 - efnet/#channel2
 
 <pre>
 /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
 </pre>
 
 <p>После этого вы должны добавить к этой сети серверы. Например:</p>
@@ -348,11 +348,11 @@ MSGS - для приватных сообщений и CRAP для остальных сообщений, которые нельзя кл
 
 <pre>
 -!- IRCNet: irc.song.fi:6667 (IRCNet)
--!- freenode: irc.freenode.net:6667 (freenode)
+-!- OFTC: irc.oftc.net:6667 (OFTC)
 -!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
 </pre>
 
-<p>Здесь видно, что мы подключены к сетям IRCNet и freenode.
+<p>Здесь видно, что мы подключены к сетям IRCNet и OFTC.
 Надпись IRCNet в начале является "меткой сервера" а 
 (IRCnet) в конце показывает соответствующую IRC-сеть. Метка сервера соответствует уникальному имени, которое обычно совпадает с названием сети.
 Когда IRC-сеть не известна это какая-то часть имени сервера.
@@ -580,14 +580,14 @@ irc.bouncer.org 5000. Вы хотите использовать его для подключения к серверам irc.
 <p><strong>dircproxy</strong></p>
 
 <p>dircproxy производит подключения к серверам по паролям. Так что если например вы хотите подключиться к серверу ircnet с паролем ircpass 
-и к freenode с паролем freenodepass, вы должны сделать примерно следующее:</p>
+и к OFTC с паролем oftcpass, вы должны сделать примерно следующее:</p>
 
 <pre>
 /SET -clear proxy_password
 /SET -clear proxy_string
 
 /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
+/SERVER ADD -auto -ircnet OFTC fake.oftc 6667 oftcpass
 </pre>
 
 <p>Имя сервера и порт, которые вы вводите нигде не используются, так что вы можете писать сюда всё что угодно.</p>
@@ -604,8 +604,8 @@ irc.bouncer.org 5000. Вы хотите использовать его для подключения к серверам irc.
 
 /IRCNET ADD -user ircnetuser ircnet
 /SERVER ADD -auto -ircnet ircnet fake.ircnet 6667 ircpass
-/IRCNET ADD -user freenodeuser freenode
-/SERVER ADD -auto -ircnet freenode fake.freenode 6667 freenodepass
+/IRCNET ADD -user oftcuser OFTC
+/SERVER ADD -auto -ircnet OFTC fake.oftc 6667 oftcpass
 </pre>
 
 <p>Здесь при помощи команды <code>/IRCNET ADD</code> вы задаете имена пользователей

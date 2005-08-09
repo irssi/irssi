@@ -107,11 +107,11 @@ management (send me a note if you can think of more):</p>
 
 <p>And example how to add servers:</p>
 
-<p>(freenode network, identify with nickserv and wait for 2 seconds before
+<p>(OFTC network, identify with nickserv and wait for 2 seconds before
 joining channels)</p>
 
 <pre>
-/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
 </pre>
 
 <p>(NOTE: use /IRCNET with 0.8.9 and older)</p>
@@ -275,7 +275,7 @@ you're connected to some network, use <code>-autosendcmd</code> option.
 
 <pre>
 /NETWORK ADD -autosendcmd '^msg bot invite' IRCnet
-/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait -freenode 2000" freenode
+/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
 </pre>
 
 <p>After that you need to add your servers. For example:</p>
@@ -404,11 +404,11 @@ without any parameters. You should see a list of something like:</p>
 
 <pre>
 -!- IRCNet: irc.song.fi:6667 (IRCNet)
--!- freenode: irc.freenode.net:6667 (freenode)
+-!- OFTC: irc.oftc.net:6667 (OFTC)
 -!- RECON-1: 192.168.0.1:6667 () (02:59 left before reconnecting)
 </pre>
 
-<p>Here you see that we're connected to IRCNet and freenode networks.
+<p>Here you see that we're connected to IRCNet and OFTC networks.
 The IRCNet at the beginning is called the "server tag" while the
 (IRCnet) at the end shows the IRC network. Server tag specifies unique
 tag to refer to the server, usually it's the same as the IRC network.
@@ -665,7 +665,7 @@ you can just forget that your bouncer even exists.</p>
 
 <p>dircproxy separates the server connections by passwords. So, if you
 for example have network connection with password ircpass and
-freenode connection with freenodepass, you would do something like
+OFTC connection with oftcpass, you would do something like
 this:</p>
 
 <pre>
@@ -673,7 +673,7 @@ this:</p>
 /SET -clear proxy_string
 
 /SERVER ADD -auto -network IRCnet fake.network 6667 ircpass
-/SERVER ADD -auto -network freenode fake.freenode 6667 freenodepass
+/SERVER ADD -auto -network OFTC fake.oftc 6667 oftcpass
 </pre>
 
 <p>The server name and port you give isn't used anywhere, so you can
@@ -692,8 +692,8 @@ as with dircproxy, by creating fake connections:</p>
 
 /NETWORK ADD -user networkuser IRCnet
 /SERVER ADD -auto -network IRCnet fake.network 6667 ircpass
-/NETWORK ADD -user freenodeuser freenode
-/SERVER ADD -auto -network freenode fake.freenode 6667 freenodepass
+/NETWORK ADD -user oftcuser OFTC
+/SERVER ADD -auto -network OFTC fake.oftc 6667 oftcpass
 </pre>
 
 <p>So, you'll specify the usernames with <code>/NETWORK ADD</code> command,
