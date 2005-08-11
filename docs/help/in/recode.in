@@ -4,7 +4,7 @@
 RECODE
     %|List the conversion database
 
-RECODE ADD %|<tag>|[<tag>/]<target>] <charset>
+RECODE ADD %|[<tag>]|[[<tag>/]<target>] <charset>
     %|Add an entry to the conversion database (if tag or target is 
     omitted, the current channel or query will be used). You can specify 
     the <tag> to have different charsets for the same <target> for

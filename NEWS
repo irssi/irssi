@@ -38,6 +38,17 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	+ If available, send who set topic and when to irssi-proxy clients
 	+ Removed 'freenode' from the network list
 	+ New default aliases: MANUAL-WINDOWS, EXEMPTLIST and ATAG
+	+ Recode support: /RECODE for manipulation of the conversion database.
+	  Setting "term_type" has been renamed to "term_charset".
+	  /SET recode OFF to disable recode completely.
+	  /SET recode_out_default_charset <charset> to specify the default
+	  outgoing charset.
+	  /SET recode_fallback <charset> to specify a charset that will be
+	  used when the normal conversion is failing.
+	  /SET recode_transliterate ON to enable character transliteration,
+	  so unavailable characters will be transliterated into something 
+	  readable
+	  <charset> can be almost everything listed by 'iconv -l'
 	- Pasted lines weren't added to command history. Some other paste
 	  detection fixes
 	- Fixed /BIND escape_char
