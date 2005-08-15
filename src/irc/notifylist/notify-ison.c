@@ -217,6 +217,7 @@ static void whois_list_send(IRC_SERVER_REC *server, GSList *nicks)
 		if (count >= server->max_whois_in_cmd) {
 			g_string_truncate(str, str->len-1);
 			whois_send(server, str->str, str->str);
+			g_string_truncate(str, 0);
                         count = 0;
 		}
 	}
