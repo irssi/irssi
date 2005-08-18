@@ -245,6 +245,8 @@ settings_set_time(key, value)
 settings_set_level(key, value)
 settings_set_size(key, value)
   Set value for setting.
+  If you change the settings of another module/script with one of these, you
+  must emit a "setup changed" signal afterwards.
 
 settings_add_str(section, key, def)
 settings_add_int(section, key, def)
