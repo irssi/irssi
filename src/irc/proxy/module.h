@@ -21,9 +21,8 @@ typedef struct {
 	LINEBUF_REC *buffer;
 
 	char *nick, *host;
-	GIOChannel *handle;
-	int tag;
-
+	NET_SENDBUF_REC *handle;
+	int recv_tag;
 	char *proxy_address;
 	LISTEN_REC *listen;
 	IRC_SERVER_REC *server;

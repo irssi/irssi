@@ -30,6 +30,15 @@
 
 #include "fe-common/core/printtext.h" /* FIXME: evil. need to do fe-proxy */
 
+struct _NET_SENDBUF_REC {
+        GIOChannel *handle;
+
+        int send_tag;
+        int bufsize;
+        int bufpos;
+        char *buffer; /* Buffer is NULL until it's actually needed. */
+};
+
 GSList *proxy_listens;
 GSList *proxy_clients;
 
@@ -48,8 +57,8 @@ static void remove_client(CLIENT_REC *rec)
 		  "Proxy: Client disconnected from %s", rec->host);
 
 	g_free(rec->proxy_address);
-	net_disconnect(rec->handle);
-	g_source_remove(rec->tag);
+	net_sendbuffer_destroy(rec->handle, TRUE);
+	g_source_remove(rec->recv_tag);
 	line_split_free(rec->buffer);
 	g_free_not_null(rec->nick);
 	g_free_not_null(rec->host);
@@ -171,7 +180,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	                for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 				CLIENT_REC *rec = tmp->data;
 				if ((g_strcasecmp(client->listen->ircnet,rec->listen->ircnet) == 0) &&
-					(client->tag != rec->tag)) {
+					/* kludgy way to check if the clients aren't the same */
+					(client->recv_tag != rec->recv_tag)) {
 						if (rec->want_ctcp == 1)
 							proxy_outdata(rec, ":%s NOTICE %s :Another client is now receiving CTCPs sent to %s\n",
 			                                      rec->proxy_address, rec->nick, rec->listen->ircnet);
@@ -299,7 +309,7 @@ static void sig_listen_client(CLIENT_REC *client)
 	g_return_if_fail(client != NULL);
 
 	while (g_slist_find(proxy_clients, client) != NULL) {
-		recvlen = net_receive(client->handle, tmpbuf, sizeof(tmpbuf));
+		recvlen = net_receive(client->handle->handle, tmpbuf, sizeof(tmpbuf));
 		ret = line_split(tmpbuf, recvlen, &str, &client->buffer);
 		if (ret == -1) {
 			/* connection lost */
@@ -326,6 +336,7 @@ static void sig_listen(LISTEN_REC *listen)
 {
 	CLIENT_REC *rec;
 	IPADDR ip;
+	NET_SENDBUF_REC *sendbuf;
         GIOChannel *handle;
 	char host[MAX_IP_LEN];
 	int port;
@@ -337,10 +348,10 @@ static void sig_listen(LISTEN_REC *listen)
 	if (handle == NULL)
 		return;
 	net_ip2host(&ip, host);
-
+	sendbuf = net_sendbuffer_create(handle, 0);
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
-	rec->handle = handle;
+	rec->handle = sendbuf;
         rec->host = g_strdup(host);
 	if (strcmp(listen->ircnet, "*") == 0) {
 		rec->proxy_address = g_strdup("irc.proxy");
@@ -350,7 +361,7 @@ static void sig_listen(LISTEN_REC *listen)
 		rec->server = servers == NULL ? NULL :
 			IRC_SERVER(server_find_chatnet(listen->ircnet));
 	}
-	rec->tag = g_input_add(handle, G_INPUT_READ,
+	rec->recv_tag = g_input_add(handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen_client, rec);
 
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
@@ -403,7 +414,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		if (sscanf(signal+6, "%p", &client) == 1) {
 			/* send it to specific client only */
 			if (g_slist_find(proxy_clients, client) != NULL)
-				net_transmit(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
+				net_sendbuffer_send(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
 			g_free(event);
                         signal_stop();
 			return;
@@ -418,11 +429,10 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	        	CLIENT_REC *rec = tmp->data;
 		                        
 			if (rec->want_ctcp == 1) {
-                        	/* one of the clients answers */ 
-                        	/* patched, so only CTCP for the chatnet where client is connected to will be forwarded */
-                        	if (strstr(rec->proxy_address,server->connrec->chatnet) != NULL) {
-					net_transmit(rec->handle,
-						     next_line->str, next_line->len);
+                        	/* only CTCP for the chatnet where client is connected to will be forwarded */
+                        	if (strstr(rec->proxy_address, server->connrec->chatnet) != NULL) {
+					net_sendbuffer_send(rec->handle,
+							    next_line->str, next_line->len);
 					signal_stop();
 				}
 			}

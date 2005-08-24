@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "network.h"
+#include "net-sendbuffer.h"
 #include "settings.h"
 #include "irssi-version.h"
 #include "recode.h"
@@ -40,7 +41,7 @@ void proxy_outdata(CLIENT_REC *client, const char *data, ...)
 	va_start(args, data);
 
 	str = g_strdup_vprintf(data, args);
-	net_transmit(client->handle, str, strlen(str));
+	net_sendbuffer_send(client->handle, str, strlen(str));
 	g_free(str);
 
 	va_end(args);
@@ -64,7 +65,7 @@ void proxy_outdata_all(IRC_SERVER_REC *server, const char *data, ...)
 		CLIENT_REC *rec = tmp->data;
 
 		if (rec->connected && rec->server == server)
-			net_transmit(rec->handle, str, len);
+			net_sendbuffer_send(rec->handle, str, len);
 	}
 	g_free(str);
 
