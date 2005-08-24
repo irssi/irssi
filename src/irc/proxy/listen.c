@@ -30,15 +30,6 @@
 
 #include "fe-common/core/printtext.h" /* FIXME: evil. need to do fe-proxy */
 
-struct _NET_SENDBUF_REC {
-        GIOChannel *handle;
-
-        int send_tag;
-        int bufsize;
-        int bufpos;
-        char *buffer; /* Buffer is NULL until it's actually needed. */
-};
-
 GSList *proxy_listens;
 GSList *proxy_clients;
 

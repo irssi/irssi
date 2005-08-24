@@ -23,15 +23,6 @@
 #include "network.h"
 #include "net-sendbuffer.h"
 
-struct _NET_SENDBUF_REC {
-	GIOChannel *handle;
-
-        int send_tag;
-	int bufsize;
-	int bufpos;
-	char *buffer; /* Buffer is NULL until it's actually needed. */
-};
-
 static GSList *buffers;
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
