@@ -576,6 +576,123 @@ void gui_entry_transpose_chars(GUI_ENTRY_REC *entry)
 	gui_entry_draw(entry);
 }
 
+void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
+{
+	int spos1, epos1, spos2, epos2;
+
+	/* find last position */
+	epos2 = entry->pos;
+	while (epos2 < entry->text_len && !i_isalnum(entry->text[epos2]))
+		epos2++;
+	while (epos2 < entry->text_len &&  i_isalnum(entry->text[epos2]))
+		epos2++;
+
+	/* find other position */
+	spos2 = epos2;
+	while (spos2 > 0 && !i_isalnum(entry->text[spos2-1]))
+		spos2--;
+	while (spos2 > 0 &&  i_isalnum(entry->text[spos2-1]))
+		spos2--;
+
+	epos1 = spos2;
+	while (epos1 > 0 && !i_isalnum(entry->text[epos1-1]))
+		epos1--;
+
+	spos1 = epos1;
+	while (spos1 > 0 && i_isalnum(entry->text[spos1-1]))
+		spos1--;
+
+	/* do wordswap if any found */
+	if (spos1 < epos1 && epos1 < spos2 && spos2 < epos2) {
+		unichar *first, *sep, *second;
+		int i;
+
+		first  = (unichar *) g_malloc( (epos1 - spos1) * sizeof(unichar) );
+		sep    = (unichar *) g_malloc( (spos2 - epos1) * sizeof(unichar) );
+		second = (unichar *) g_malloc( (epos2 - spos2) * sizeof(unichar) );
+
+		for (i = spos1; i < epos1; i++)
+			first[i-spos1] = entry->text[i];
+		for (i = epos1; i < spos2; i++)
+			sep[i-epos1] = entry->text[i];
+		for (i = spos2; i < epos2; i++)
+			second[i-spos2] = entry->text[i];
+
+		entry->pos = spos1;
+		for (i = 0; i < epos2-spos2; i++)
+			entry->text[entry->pos++] = second[i];
+		for (i = 0; i < spos2-epos1; i++)
+			entry->text[entry->pos++] = sep[i];
+		for (i = 0; i < epos1-spos1; i++)
+			entry->text[entry->pos++] = first[i];
+
+		g_free(first);
+		g_free(sep);
+		g_free(second);
+
+	}
+	
+	gui_entry_redraw_from(entry, spos1);
+	gui_entry_fix_cursor(entry);
+	gui_entry_draw(entry);
+}
+
+void gui_entry_capitalize_word(GUI_ENTRY_REC *entry)
+{
+	int pos = entry->pos;
+	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+		pos++;
+
+	if (pos < entry->text_len) {
+		entry->text[pos] = g_unichar_toupper(entry->text[pos]);
+		pos++;
+	}
+
+	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
+		entry->text[pos] = g_unichar_tolower(entry->text[pos]);
+		pos++;
+	}
+
+	gui_entry_redraw_from(entry, entry->pos);
+	entry->pos = pos;
+	gui_entry_fix_cursor(entry);
+	gui_entry_draw(entry);
+}
+
+void gui_entry_downcase_word(GUI_ENTRY_REC *entry)
+{
+	int pos = entry->pos;
+	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+		pos++;
+
+	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
+		entry->text[pos] = g_unichar_tolower(entry->text[pos]);
+		pos++;
+	}
+
+	gui_entry_redraw_from(entry, entry->pos);
+	entry->pos = pos;
+	gui_entry_fix_cursor(entry);
+	gui_entry_draw(entry);
+}
+
+void gui_entry_upcase_word(GUI_ENTRY_REC *entry)
+{
+	int pos = entry->pos;
+	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+		pos++;
+
+	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
+		entry->text[pos] = g_unichar_toupper(entry->text[pos]);
+		pos++;
+	}
+
+	gui_entry_redraw_from(entry, entry->pos);
+	entry->pos = pos;
+	gui_entry_fix_cursor(entry);
+	gui_entry_draw(entry);
+}
+
 int gui_entry_get_pos(GUI_ENTRY_REC *entry)
 {
         g_return_val_if_fail(entry != NULL, 0);

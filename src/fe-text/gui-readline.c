@@ -668,6 +668,25 @@ static void key_transpose_characters(void)
 	gui_entry_transpose_chars(active_entry);
 }
 
+static void key_transpose_words(void)
+{
+	gui_entry_transpose_words(active_entry);
+}
+
+static void key_capitalize_word(void)
+{
+	gui_entry_capitalize_word(active_entry);
+}
+
+static void key_downcase_word(void)
+{
+	gui_entry_downcase_word(active_entry);
+}
+static void key_upcase_word(void)
+{
+	gui_entry_upcase_word(active_entry);
+}
+
 static void key_delete_character(void)
 {
 	if (gui_entry_get_pos(active_entry) < active_entry->text_len) {
@@ -1095,6 +1114,10 @@ void gui_readline_init(void)
 	key_bind("erase_to_end_of_line", "", "^K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_bind("yank_from_cutbuffer", "", "^Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
 	key_bind("transpose_characters", "Swap current and previous character", "^T", NULL, (SIGNAL_FUNC) key_transpose_characters);
+	key_bind("transpose_words", "Swap current and previous word", NULL, NULL, (SIGNAL_FUNC) key_transpose_words);
+	key_bind("capitalize_word", "Capitalize word", NULL, NULL, (SIGNAL_FUNC) key_capitalize_word);
+	key_bind("downcase_word", "Downcase word", NULL, NULL, (SIGNAL_FUNC) key_downcase_word);
+	key_bind("upcase_word", "Upcase word", NULL, NULL, (SIGNAL_FUNC) key_upcase_word);
 
         /* line transmitting */
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
@@ -1177,6 +1200,11 @@ void gui_readline_deinit(void)
 	key_unbind("erase_to_end_of_line", (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_unbind("yank_from_cutbuffer", (SIGNAL_FUNC) key_yank_from_cutbuffer);
 	key_unbind("transpose_characters", (SIGNAL_FUNC) key_transpose_characters);
+	key_unbind("transpose_words", (SIGNAL_FUNC) key_transpose_words);
+
+	key_unbind("capitalize_word", (SIGNAL_FUNC) key_capitalize_word);
+	key_unbind("downcase_word", (SIGNAL_FUNC) key_downcase_word);
+	key_unbind("upcase_word", (SIGNAL_FUNC) key_upcase_word);
 
 	key_unbind("send_line", (SIGNAL_FUNC) key_send_line);
 	key_unbind("word_completion", (SIGNAL_FUNC) key_word_completion);

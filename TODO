@@ -349,8 +349,6 @@
     - /BIND -deletes should be saved in config
     - ^W (and some others) don't update cut buffer.
     - default binds: M-d, M-y
-    - capitalize-word (meta-c), downcase-word (meta-l),
-      transpose-words (meta-t), upcase-word (meta-u)                          
     - /PASSWORD command that asks you to type the password to entry line and
       would hide it with asterisks, good if people spy on you :)
     - ^R-like history search

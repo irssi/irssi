@@ -45,6 +45,11 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space);
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space);
 
 void gui_entry_transpose_chars(GUI_ENTRY_REC *entry);
+void gui_entry_transpose_words(GUI_ENTRY_REC *entry);
+
+void gui_entry_capitalize_word(GUI_ENTRY_REC *entry);
+void gui_entry_downcase_word(GUI_ENTRY_REC *entry);
+void gui_entry_upcase_word(GUI_ENTRY_REC *entry);
 
 int gui_entry_get_pos(GUI_ENTRY_REC *entry);
 void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos);
