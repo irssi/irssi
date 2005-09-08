@@ -32,26 +32,37 @@ perl syntax.pl
 # create changelog
 # the TZ hack is needed.
 # otherwise the log will have local timezone
-SVN=svn
-if test -f $srcdir/ChangeLog; then
-	CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| grep '^r' | sed 's/^r\([0-9]*\).*/\1/'`
+if test -z "$SVN"; then
+	SVN=svn
 fi
-if test -z $CHANGELOG_VERSION; then
-	echo "Getting ChangeLog from svn..."
-	TZ=UTC $SVN log -v > $srcdir/ChangeLog
-else
-	SVN_VERSION=`$SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
-	if test -z SVN_VERSION; then
-		echo "**Error**: Couldn't get svn revision number. svn or .svn dirs missing?"
-		exit 1
+if type -p $SVN > /dev/null; then 
+	if test -f $srcdir/ChangeLog; then
+		CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| grep '^r' | sed 's/^r\([0-9]*\).*/\1/'`
 	fi
-	if test $SVN_VERSION -eq $CHANGELOG_VERSION; then
-		echo ChangeLog is already up-to-date.
+	if test -z $CHANGELOG_VERSION; then
+		echo "Getting ChangeLog from svn..."
+		TZ=UTC $SVN log -v > $srcdir/ChangeLog
 	else
-		echo "Updating ChangeLog from version $CHANGELOG_VERSION to $SVN_VERSION..."
-		mv $srcdir/ChangeLog $srcdir/ChangeLog.prev
-		TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:`expr $CHANGELOG_VERSION + 1` > $srcdir/ChangeLog
-		cat $srcdir/ChangeLog.prev >> $srcdir/ChangeLog
+		SVN_VERSION=`$SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
+		if test -z "$SVN_VERSION"; then
+			echo "**Warning**: Couldn't get svn revision number. This is probably not an svn checkout."
+		else
+			if test $SVN_VERSION -eq $CHANGELOG_VERSION; then
+				echo ChangeLog is already up-to-date.
+			else
+				echo "Updating ChangeLog from version $CHANGELOG_VERSION to $SVN_VERSION..."
+				mv $srcdir/ChangeLog $srcdir/ChangeLog.prev
+				TZ=UTC $SVN log -v --incremental $srcdir -r $SVN_VERSION:`expr $CHANGELOG_VERSION + 1` > $srcdir/ChangeLog
+				cat $srcdir/ChangeLog.prev >> $srcdir/ChangeLog
+			fi
+		fi
+	fi
+else
+	if test -f $srcdir/ChangeLog; then
+		echo "**Warning**: svn not found, skipping ChangeLog updating. The reported irssi version may be incorrect."
+	else
+		echo "**Error**: svn not found, and ChangeLog file missing, can not determine version."
+		exit 1
 	fi
 fi
 
@@ -115,7 +126,7 @@ fi
 if test -z "$*"; then
   echo "**Warning**: I am going to run \`configure' with no arguments."
   echo "If you wish to pass any to it, please specify them on the"
-  echo "\`$0\' command line."
+  echo \`$0\'" command line."
   echo
 fi
 
@@ -166,9 +177,9 @@ conf_flags="--enable-maintainer-mode --enable-compile-warnings" #--enable-iso-c
 if test x$NOCONFIGURE = x; then
   echo Running $srcdir/configure $conf_flags "$@" ...
   $srcdir/configure $conf_flags "$@" \
-  && echo "Now type \`make\' to compile $PKG_NAME" || exit 1
+  && echo Now type \`make\' to compile $PKG_NAME || exit 1
 else
-  echo "Skipping configure process."
+  echo Skipping configure process.
 fi
 
 # make sure perl hashes have correct length
