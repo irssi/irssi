@@ -35,7 +35,7 @@ perl syntax.pl
 if test -z "$SVN"; then
 	SVN=svn
 fi
-if type -p $SVN > /dev/null; then 
+if $SVN --version >/dev/null 2>/dev/null; then
 	if test -f $srcdir/ChangeLog; then
 		CHANGELOG_VERSION=`head -n 2 $srcdir/ChangeLog| grep '^r' | sed 's/^r\([0-9]*\).*/\1/'`
 	fi
