@@ -803,13 +803,19 @@ int nearest_power(int num)
 int parse_time_interval(const char *time, int *msecs)
 {
 	const char *desc;
-	int number, len, ret;
+	int number, sign, len, ret;
 
 	*msecs = 0;
 
 	/* max. return value is around 24 days */
-	number = 0; ret = TRUE;
+	number = 0; sign = 1; ret = TRUE;
 	for (;;) {
+		if (*time == '-') {
+			sign = -sign;
+			time++;
+			continue;
+		}
+
 		if (i_isdigit(*time)) {
 			number = number*10 + (*time - '0');
 			time++;
@@ -826,6 +832,7 @@ int parse_time_interval(const char *time, int *msecs)
 
 		if (len == 0) {
 			*msecs += number * 1000; /* assume seconds */
+			*msecs *= sign;
 			return TRUE;
 		}
 
@@ -862,6 +869,7 @@ int parse_time_interval(const char *time, int *msecs)
 		number = 0;
 	}
 
+	*msecs *= sign;
 	return ret;
 }
 
