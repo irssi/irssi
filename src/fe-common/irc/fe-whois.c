@@ -33,7 +33,7 @@ static void event_whois_special(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &str);
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &nick, &str);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_SPECIAL, nick, str);
 	g_free(params);
