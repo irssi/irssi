@@ -780,6 +780,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	char *params, *nick, *tag;
 
 	g_return_if_fail(data != NULL);
+	g_return_if_fail(orignick != NULL);
 
 	params = event_get_params(data, 1, &nick);
 	if (g_strcasecmp(nick, orignick) == 0) {
