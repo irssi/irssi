@@ -415,32 +415,21 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	else {
 		g_string_sprintf(tmpstr, "WHOIS %s %s", qserver, query);
 		if (g_strcasecmp(qserver, query) == 0)
-			event_402 = "whois event noserver";
+			event_402 = "whois event not found";
 	}
 
 	query = get_redirect_nicklist(query, &free_nick);
 
 	str = g_strconcat(qserver, " ", query, NULL);
-	if (settings_get_bool("auto_whowas")) {
-		/* do automatic /WHOWAS if any of the nicks wasn't found */
-		server_redirect_event(server, "whois", 1, str, TRUE,
-				      NULL,
-				      "event 318", "whois end",
-				      "event 402", event_402,
-				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-				      "event 313", "whois oper",
-				      "event 401", "whois not found",
-				      "event 311", "whois event",
-				      "", "whois default event", NULL);
-	} else {
-		server_redirect_event(server, "whois", 1, str, TRUE,
-				      NULL,
-				      "event 318", "whois end",
-				      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-				      "event 313", "whois oper",
-				      "event 311", "whois event",
-				      "", "whois default event", NULL);
-	}
+	server_redirect_event(server, "whois", 1, str, TRUE,
+		      NULL,
+		      "event 318", "whois end",
+		      "event 402", event_402,
+		      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+		      "event 313", "whois oper",
+		      "event 401", (settings_get_bool("auto_whowas") ? "whois try whowas" : "whois event not found"),
+		      "event 311", "whois event",
+		      "", "whois default event", NULL);
         g_free(str);
 
 	server->whois_found = FALSE;
@@ -457,7 +446,7 @@ static void event_whois(IRC_SERVER_REC *server, const char *data,
 	signal_emit("event 311", 4, server, data, nick, addr);
 }
 
-static void sig_whois_not_found(IRC_SERVER_REC *server, const char *data)
+static void sig_whois_try_whowas(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -489,16 +478,16 @@ static void event_whowas(IRC_SERVER_REC *server, const char *data,
 	signal_emit("event 314", 4, server, data, nick, addr);
 }
 
-/* SYNTAX: WHOWAS [<nicks> [<count>]] */
+/* SYNTAX: WHOWAS [<nicks> [<count> [server]]] */
 static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 {
-	char *nicks, *count, *nicks_redir;
+	char *nicks, *rest, *nicks_redir;
 	void *free_arg;
 	int free_nick;
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2, &nicks, &count))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &nicks, &rest))
 		return;
 	if (*nicks == '\0') nicks = server->nick;
 
@@ -509,8 +498,8 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	if (free_nick) g_free(nicks_redir);
 
 	server->whowas_found = FALSE;
-	irc_send_cmdv(server, *count == '\0' ? "WHOWAS %s" :
-		      "WHOWAS %s %s", nicks, count);
+	irc_send_cmdv(server, *rest == '\0' ? "WHOWAS %s" :
+		      "WHOWAS %s %s", nicks, rest);
 
 	cmd_params_free(free_arg);
 }
@@ -1076,7 +1065,7 @@ void irc_commands_init(void)
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
-	signal_add("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
+	signal_add("whois try whowas", (SIGNAL_FUNC) sig_whois_try_whowas);
 	signal_add("whois event", (SIGNAL_FUNC) event_whois);
 	signal_add("whois end", (SIGNAL_FUNC) event_end_of_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
@@ -1147,7 +1136,7 @@ void irc_commands_deinit(void)
 
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
-	signal_remove("whois not found", (SIGNAL_FUNC) sig_whois_not_found);
+	signal_remove("whois try whowas", (SIGNAL_FUNC) sig_whois_try_whowas);
 	signal_remove("whois event", (SIGNAL_FUNC) event_whois);
 	signal_remove("whois end", (SIGNAL_FUNC) event_end_of_whois);
 	signal_remove("whowas event", (SIGNAL_FUNC) event_whowas);

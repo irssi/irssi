@@ -386,7 +386,7 @@ static void event_ban_type_changed(void *ban_typep)
 	}
 }
 
-static void sig_whois_event_no_server(IRC_SERVER_REC *server, const char *data)
+static void sig_whois_event_not_found(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick;
 
@@ -451,7 +451,7 @@ void fe_events_init(void)
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_add("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
-	signal_add("whois event noserver", (SIGNAL_FUNC) sig_whois_event_no_server);
+	signal_add("whois event not found", (SIGNAL_FUNC) sig_whois_event_not_found);
 	signal_add("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 }
 
@@ -480,6 +480,6 @@ void fe_events_deinit(void)
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("nickfind event whois", (SIGNAL_FUNC) event_nickfind_whois);
 	signal_remove("ban type changed", (SIGNAL_FUNC) event_ban_type_changed);
-	signal_remove("whois event noserver", (SIGNAL_FUNC) sig_whois_event_no_server);
+	signal_remove("whois event not found", (SIGNAL_FUNC) sig_whois_event_not_found);
 	signal_remove("whowas event end", (SIGNAL_FUNC) sig_whowas_event_end);
 }
