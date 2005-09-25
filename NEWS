@@ -49,6 +49,8 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	  so unavailable characters will be transliterated into something 
 	  readable
 	  <charset> can be almost everything listed by 'iconv -l'
+	+ Added transpose_words, capitalize_word, downcase_word, upcase_word
+	  key bindings
 	- Pasted lines weren't added to command history. Some other paste
 	  detection fixes
 	- Fixed /BIND escape_char
@@ -102,6 +104,12 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	- Print glib errors nicely, by David Pashley
 	- Handle ^Z better, by David Pashley
 	- Fixed /eval recursion crashing, by David Pashley
+	- Fix notify with more nicks than max_whois_in_cmd (Bug 257),
+	  based on patch by Krzysztof Kowalik (Borys)
+	- Fixed irssiproxy sometimes missing (parts of) lines
+	- Fixed remote /WHOWAS
+	- Parse negative time setting values, makes it possible again to do
+	  /SET server_reconnect_time -1 to disable reconnecting
 
 v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 

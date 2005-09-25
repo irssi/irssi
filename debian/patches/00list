@@ -1,6 +1,3 @@
-01glib-errors
-03sigtstp
-04eval_recurse
 05upgrade-check-binary
 06gnutls-support
 07gnutls-support-automakery
