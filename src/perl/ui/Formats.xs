@@ -3,7 +3,8 @@
 static int magic_free_text_dest(pTHX_ SV *sv, MAGIC *mg)
 {
 	TEXT_DEST_REC *dest = (TEXT_DEST_REC *) mg->mg_ptr;
-	g_free((char *) dest->target);
+	char *target = (char *) dest->target;
+	g_free(target);
 	g_free(dest);
 	mg->mg_ptr = NULL;
 	sv_setiv(sv, 0);
