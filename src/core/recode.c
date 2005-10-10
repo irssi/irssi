@@ -98,7 +98,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	if (target != NULL && from == NULL)
 		from = iconfig_get_str("conversions", target, NULL);
 
-	if (from == NULL)	
+	if (from == NULL && server != NULL)
 		from = iconfig_get_str("conversions", server->tag, NULL);
 
 	term_is_utf8 = recode_get_charset(&to);
@@ -162,7 +162,7 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		g_free(tagtarget);
 		if (to == NULL || *to == '\0')
 			to = iconfig_get_str("conversions", target, NULL);
-		if (to == NULL || *to == '\0')
+		if ((to == NULL || *to == '\0') && server != NULL)
 			to = iconfig_get_str("conversions", server->tag, NULL);
 		if (to == NULL || *to == '\0')
 			/* default outgoing charset if set */
