@@ -24,6 +24,7 @@
 #include "channels.h"
 #include "ignore.h"
 #include "settings.h"
+#include "recode.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -54,7 +55,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
 {
 	const char *oldtarget;
-	char *nickmode;
+	char *nickmode, *recoded;
 
 	oldtarget = target;
 	target = skip_target(target);
@@ -64,13 +65,17 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		nickmode = channel_get_nickmode(channel_find(server, target),
 						server->nick);
 
+		/* ugly: recode the sent message back for printing */
+                recoded = recode_in(SERVER(server), msg, target);
 		printformat_module("fe-common/core", server, target,
 				   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 				   MSGLEVEL_NO_ACT,
 				   TXT_OWN_MSG_CHANNEL,
-				   server->nick, oldtarget, msg, nickmode);
+				   server->nick, oldtarget, recoded, nickmode);
+                g_free(recoded);
                 signal_stop();
 	}
+	
 }
 
 /* received msg to all ops in channel */
@@ -94,17 +99,20 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 static void sig_message_own_wall(SERVER_REC *server, const char *msg,
 				 const char *target)
 {
-        char *nickmode, *optarget;
+        char *nickmode, *optarget, *recoded;
 
 	nickmode = channel_get_nickmode(channel_find(server, target),
 					server->nick);
 
         optarget = g_strconcat("@", target, NULL);
+        /* ugly: recode the sent message back for printing */
+        recoded = recode_in(SERVER(server), msg, target);
 	printformat_module("fe-common/core", server, target,
 			   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 			   MSGLEVEL_NO_ACT,
 			   TXT_OWN_MSG_CHANNEL,
 			   server->nick, optarget, msg, nickmode);
+        g_free(recoded);
         g_free(optarget);
 }
 
@@ -112,22 +120,24 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
                                    const char *target)
 {
 	void *item;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 
         if (ischannel(*target))
 		item = irc_channel_find(server, target);
 	else
 		item = irc_query_find(server, target);
 
+	/* ugly: recode the sent message back for printing */
+	recoded = recode_in(SERVER(server), msg, target);
 	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis(item, msg);
+		msg = freemsg = expand_emphasis(item, recoded);
 
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    item != NULL ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
 		    server->nick, msg, target);
-
+        g_free(recoded);
         g_free_not_null(freemsg);
 }
 
@@ -179,9 +189,12 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
+        /* ugly: recode the sent message back for printing */
+        char *recoded = recode_in(SERVER(server), msg, target);
 	printformat(server, skip_target(target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_NOTICE, target, msg);
+        g_free(recoded);
 }
 
 static void sig_message_irc_notice(SERVER_REC *server, const char *msg,

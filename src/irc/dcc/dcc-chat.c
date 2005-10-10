@@ -215,7 +215,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	cmd_params_free(free_arg);
 }
 
-static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	CHAT_DCC_REC *dcc;
 	char *str;
@@ -226,13 +226,13 @@ static void cmd_me(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (dcc == NULL) return;
 
 	str = g_strconcat("ACTION ", data, NULL);
-	dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
+	dcc_ctcp_message(server, dcc->nick, dcc, FALSE, str);
 	g_free(str);
 
 	signal_stop();
 }
 
-static void cmd_action(const char *data, SERVER_REC *server)
+static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	CHAT_DCC_REC *dcc;
 	char *target, *text, *str;
@@ -254,7 +254,7 @@ static void cmd_action(const char *data, SERVER_REC *server)
 	dcc = dcc_chat_find_id(target+1);
 	if (dcc != NULL) {
 		str = g_strconcat("ACTION ", text, NULL);
-		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
+		dcc_ctcp_message(server, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
 
@@ -262,7 +262,7 @@ static void cmd_action(const char *data, SERVER_REC *server)
 	signal_stop();
 }
 
-static void cmd_ctcp(const char *data, SERVER_REC *server)
+static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 {
 	CHAT_DCC_REC *dcc;
 	char *target, *ctcpcmd, *ctcpdata, *str;
@@ -287,7 +287,7 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 		g_strup(ctcpcmd);
 
 		str = g_strconcat(ctcpcmd, " ", ctcpdata, NULL);
-		dcc_ctcp_message(NULL, dcc->nick, dcc, FALSE, str);
+		dcc_ctcp_message(server, dcc->nick, dcc, FALSE, str);
 		g_free(str);
 	}
 

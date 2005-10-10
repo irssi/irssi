@@ -257,9 +257,10 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	WINDOW_REC *window;
 	CHANNEL_REC *channel;
 	const char *nickmode;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 	int print_channel;
-
+	/* ugly: recode the sent message back for printing */ 
+	recoded = recode_in(server, msg, target);
 	channel = channel_find(server, target);
 	if (channel != NULL)
 		target = channel->visible_name;
@@ -281,12 +282,13 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG, server->nick, msg, nickmode);
+			    TXT_OWN_MSG, server->nick, recoded, nickmode);
 	} else {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
+			    TXT_OWN_MSG_CHANNEL, server->nick, target, recoded, nickmode);
 	}
 
+	g_free(recoded);
 	g_free_not_null(freemsg);
 }
 
@@ -294,11 +296,10 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				    const char *target, const char *origtarget)
 {
 	QUERY_REC *query;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(msg != NULL);
-
 	if (target == NULL) {
 		/* this should only happen if some special target failed and
 		   we should display some error message. currently the special
@@ -315,14 +316,17 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 
 	query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
 
+	/* ugly: recode the sent message back for printing */
+	recoded = recode_in(server, msg, target);
 	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, recoded);
 
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    query == NULL ? TXT_OWN_MSG_PRIVATE :
 		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
 
+	g_free(recoded);
 	g_free_not_null(freemsg);
 }
 

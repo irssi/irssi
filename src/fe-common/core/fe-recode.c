@@ -201,42 +201,6 @@ static void read_settings(void)
 	g_free(old_recode_fallback);
 	g_free(old_recode_out_default);
 }
-
-static void message_own_public(const SERVER_REC *server, const char *msg,
-			       const char *target)
-{
-	char *recoded;
-	recoded = recode_in(server, msg, target);
-	signal_continue(3, server, recoded, target);
-	g_free(recoded);
-}
-
-static void message_own_private(const SERVER_REC *server, const char *msg,
-			       const char *target, const char *orig_target)
-{
-	char *recoded;
-	recoded = recode_in(server, msg, target);
-	signal_continue(4, server, recoded, target, orig_target);
-	g_free(recoded);
-}
-
-static void message_irc_own_action(const SERVER_REC *server, const char *msg,
-				   const char *target)
-{
-	char *recoded;
-	recoded = recode_in(server, msg, target);
-	signal_continue(3, server, recoded, target);
-	g_free(recoded);
-}
-
-static void message_irc_own_notice(const SERVER_REC *server, const char *msg,
-				   const char *channel)
-{
-	char *recoded;
-	recoded = recode_in(server, msg, channel);
-	signal_continue(3, server, recoded, channel);
-	g_free(recoded);
-}
 #endif
 
 void fe_recode_init (void)
@@ -247,10 +211,6 @@ void fe_recode_init (void)
 	command_bind("recode add", NULL, (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_bind("recode remove", NULL, (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_add("message own_public",  (SIGNAL_FUNC) message_own_public);
-	signal_add("message own_private", (SIGNAL_FUNC) message_own_private);
-	signal_add("message irc own_action", (SIGNAL_FUNC) message_irc_own_action);
-	signal_add("message irc own_notice", (SIGNAL_FUNC) message_irc_own_notice);
 	read_settings();
 #endif
 }
@@ -263,9 +223,5 @@ void fe_recode_deinit (void)
 	command_unbind("recode add", (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_unbind("recode remove", (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_remove("message own_public",  (SIGNAL_FUNC) message_own_public);
-	signal_remove("message own_private", (SIGNAL_FUNC) message_own_private);
-	signal_remove("message irc own_action", (SIGNAL_FUNC) message_irc_own_action);
-	signal_remove("message irc own_notice", (SIGNAL_FUNC) message_irc_own_notice);
 #endif
 }

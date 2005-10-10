@@ -21,7 +21,9 @@
 #include "module.h"
 #include "signals.h"
 #include "levels.h"
+#include "recode.h"
 
+#include "irc-servers.h"
 #include "irc-queries.h"
 #include "dcc-chat.h"
 
@@ -32,7 +34,7 @@ static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 {
         TEXT_DEST_REC dest;
         QUERY_REC *query;
-	char *tag;
+	char *tag, *recoded;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
@@ -41,8 +43,11 @@ static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 			       MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT |
 			       MSGLEVEL_NO_ACT, NULL);
 
+        /* ugly: recode the sent message back for printin */
+	recoded = recode_in(SERVER(dcc->server), msg, dcc->target == NULL ? dcc->mynick : dcc->target);
 	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_QUERY :
-			 IRCTXT_OWN_DCC, dcc->mynick, dcc->id, msg);
+			 IRCTXT_OWN_DCC, dcc->mynick, dcc->id, recoded);
+        g_free(recoded);
         g_free(tag);
 }
 
@@ -50,7 +55,7 @@ static void sig_message_dcc_own_action(CHAT_DCC_REC *dcc, const char *msg)
 {
         TEXT_DEST_REC dest;
         QUERY_REC *query;
-	char *tag;
+	char *tag, *recoded;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
@@ -58,9 +63,12 @@ static void sig_message_dcc_own_action(CHAT_DCC_REC *dcc, const char *msg)
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS |
 			       MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, NULL);
-
-	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
-			 IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, msg);
+        
+        /* ugly: recode the sent message back for printing */
+        recoded = recode_in(SERVER(dcc->server), msg, dcc->target == NULL ? dcc->mynick : dcc->target);
+        printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
+			 IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, recoded);
+        g_free(recoded);
         g_free(tag);
 }
 

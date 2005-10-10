@@ -399,8 +399,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	GET_DCC_REC *dcc;
 	SEND_DCC_REC *temp_dcc;
 	IPADDR ip;
-	const char *address;
-	char **params, *fname;
+	char *address, **params, *fname;
 	int paramcount, fileparams;
 	int port, len, quoted = FALSE;
         uoff_t size;
