@@ -259,8 +259,6 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	const char *nickmode;
         char *freemsg = NULL, *recoded;
 	int print_channel;
-	/* ugly: recode the sent message back for printing */ 
-	recoded = recode_in(server, msg, target);
 	channel = channel_find(server, target);
 	if (channel != NULL)
 		target = channel->visible_name;
@@ -280,6 +278,9 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) channel, msg);
 
+	/* ugly: recode the sent message back for printing */ 
+	recoded = recode_in(server, msg, target);
+	
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 			    TXT_OWN_MSG, server->nick, recoded, nickmode);
@@ -316,15 +317,16 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 
 	query = privmsg_get_query(server, target, TRUE, MSGLEVEL_MSGS);
 
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
+
 	/* ugly: recode the sent message back for printing */
 	recoded = recode_in(server, msg, target);
-	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, recoded);
 
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    query == NULL ? TXT_OWN_MSG_PRIVATE :
-		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		    TXT_OWN_MSG_PRIVATE_QUERY, target, recoded, server->nick);
 
 	g_free(recoded);
 	g_free_not_null(freemsg);

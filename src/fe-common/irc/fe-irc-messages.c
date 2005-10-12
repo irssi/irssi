@@ -111,7 +111,7 @@ static void sig_message_own_wall(SERVER_REC *server, const char *msg,
 			   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 			   MSGLEVEL_NO_ACT,
 			   TXT_OWN_MSG_CHANNEL,
-			   server->nick, optarget, msg, nickmode);
+			   server->nick, optarget, recoded, nickmode);
         g_free(recoded);
         g_free(optarget);
 }
@@ -127,16 +127,17 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 	else
 		item = irc_query_find(server, target);
 
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis(item, msg);
+
 	/* ugly: recode the sent message back for printing */
 	recoded = recode_in(SERVER(server), msg, target);
-	if (settings_get_bool("emphasis"))
-		msg = freemsg = expand_emphasis(item, recoded);
 
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    item != NULL ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
-		    server->nick, msg, target);
+		    server->nick, recoded, target);
         g_free(recoded);
         g_free_not_null(freemsg);
 }

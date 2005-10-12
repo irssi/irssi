@@ -359,13 +359,12 @@ int main(int argc, char **argv)
 	   before t his call.
 
 	   locales aren't actually used for anything else than autodetection
-	   of UTF-8 currently.. */
-	setlocale(LC_CTYPE, "");
+	   of UTF-8 currently..  
 
-	/* to get the users's charset with g_get_charset() properly you have 
-	   to call setlocale(LC_ALL, "") aswell */
+	   furthermore to get the users's charset with g_get_charset() properly 
+	   you have to call setlocale(LC_ALL, "") */
 	setlocale(LC_ALL, "");
-	
+
 	textui_init();
 	args_register(options);
 	args_execute(argc, argv);
