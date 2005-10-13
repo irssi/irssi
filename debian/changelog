@@ -1,3 +1,11 @@
+irssi (0.8.10~rc6-1) unstable; urgency=low
+
+  * New upstream version
+  * Disable the GnuTLS patch for now.
+  * Added Provides, Replaces and Conflicts for irssi-text and irssi-snapshot 
+
+ -- David Pashley <david@davidpashley.com>  Fri, 14 Oct 2005 00:39:15 +0100
+
 irssi (0.8.10~rc5-1) unstable; urgency=low
 
   * Initial packaging to unify irssi-text and irssi-snapshot
