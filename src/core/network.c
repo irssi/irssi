@@ -70,13 +70,7 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
 }
 
 
-/* copy IP to sockaddr */
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
+static void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
 	if (ip == NULL) {
 #ifdef HAVE_IPV6
@@ -110,12 +104,7 @@ void sin_get_ip(const union sockaddr_union *so, IPADDR *ip)
 		memcpy(&ip->ip, &so->sin.sin_addr, 4);
 }
 
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-void sin_set_port(union sockaddr_union *so, int port)
+static void sin_set_port(union sockaddr_union *so, int port)
 {
 #ifdef HAVE_IPV6
 	if (so->sin.sin_family == AF_INET6)
@@ -125,12 +114,7 @@ void sin_set_port(union sockaddr_union *so, int port)
 		so->sin.sin_port = htons((unsigned short)port);
 }
 
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-int sin_get_port(union sockaddr_union *so)
+static int sin_get_port(union sockaddr_union *so)
 {
 #ifdef HAVE_IPV6
 	if (so->sin.sin_family == AF_INET6)

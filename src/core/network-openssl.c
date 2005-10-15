@@ -97,12 +97,7 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, X509 *cert)
 
 #if GLIB_MAJOR_VERSION < 2
 
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-GIOError ssl_errno(gint e)
+static GIOError ssl_errno(gint e)
 {
 	switch(e)
 	{
@@ -239,12 +234,7 @@ static GIOFuncs irssi_ssl_channel_funcs =
 
 #else /* GLIB_MAJOR_VERSION < 2 */
 
-#ifdef G_CAN_INLINE
-G_INLINE_FUNC
-#else
-static
-#endif
-GIOStatus ssl_errno(gint e)
+static GIOStatus ssl_errno(gint e)
 {
 	switch(e)
 	{
