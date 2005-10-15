@@ -147,7 +147,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	void *item;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 	int level;
 
 	level = MSGLEVEL_ACTIONS |
@@ -164,27 +164,29 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis(item, msg);
 
+	recoded = recode_in(SERVER(server), msg, target);
 	if (ischannel(*target)) {
 		/* channel action */
 		if (window_item_is_active(item)) {
 			/* message to active channel in window */
 			printformat(server, target, level,
-				    IRCTXT_ACTION_PUBLIC, nick, msg);
+				    IRCTXT_ACTION_PUBLIC, nick, recoded);
 		} else {
 			/* message to not existing/active channel */
 			printformat(server, target, level,
 				    IRCTXT_ACTION_PUBLIC_CHANNEL,
-				    nick, target, msg);
+				    nick, target, recoded);
 		}
 	} else {
 		/* private action */
 		printformat(server, nick, MSGLEVEL_ACTIONS | MSGLEVEL_MSGS,
 			    item == NULL ? IRCTXT_ACTION_PRIVATE :
 			    IRCTXT_ACTION_PRIVATE_QUERY,
-			    nick, address == NULL ? "" : address, msg);
+			    nick, address == NULL ? "" : address, recoded);
 	}
-
-        g_free_not_null(freemsg);
+	
+	g_free(recoded);
+	g_free_not_null(freemsg);
 }
 
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
@@ -203,17 +205,20 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	const char *oldtarget;
-
+	char *recoded;
+	
 	oldtarget = target;
 	target = skip_target(target);
 
 	if (address == NULL || *address == '\0') {
 		/* notice from server */
+		recoded = recode_in(SERVER(server), msg, NULL);
 		if (!ignore_check(server, nick, "",
 				  target, msg, MSGLEVEL_SNOTES)) {
 			printformat(server, target, MSGLEVEL_SNOTES,
 				    IRCTXT_NOTICE_SERVER, nick, msg);
 		}
+		g_free(recoded);
                 return;
 	}
 
@@ -222,17 +227,19 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 			 msg, MSGLEVEL_NOTICES))
 		return;
 
-	if (ischannel(*target)) {
+        recoded = recode_in(SERVER(server), msg, target);
+        if (ischannel(*target)) {
 		/* notice in some channel */
 		printformat(server, target, MSGLEVEL_NOTICES,
-			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
+			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, recoded);
 	} else {
 		/* private notice */
 		privmsg_get_query(SERVER(server), nick, FALSE,
 				  MSGLEVEL_NOTICES);
 		printformat(server, nick, MSGLEVEL_NOTICES,
-			    IRCTXT_NOTICE_PRIVATE, nick, address, msg);
+			    IRCTXT_NOTICE_PRIVATE, nick, address, recoded);
 	}
+	g_free(recoded);
 }
 
 static void sig_message_own_ctcp(IRC_SERVER_REC *server, const char *cmd,

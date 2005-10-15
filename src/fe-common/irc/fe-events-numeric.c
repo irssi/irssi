@@ -505,7 +505,7 @@ static void event_numeric(IRC_SERVER_REC *server, const char *data,
 static void print_event_received(IRC_SERVER_REC *server, const char *data,
 				 const char *nick, int target_param)
 {
-	char *target, *args, *ptr;
+	char *target, *args, *ptr, *recoded;
 	int format;
 
 	g_return_if_fail(data != NULL);
@@ -540,11 +540,14 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 			g_memmove(ptr+1, ptr+2, strlen(ptr+1));
 	}
 
+	recoded = recode_in(SERVER(server), args, NULL);
 	format = nick == NULL || server->real_address == NULL ||
 		strcmp(nick, server->real_address) == 0 ?
 		IRCTXT_DEFAULT_EVENT : IRCTXT_DEFAULT_EVENT_SERVER;
 	printformat(server, target, MSGLEVEL_CRAP, format,
-		    nick, args, current_server_event);
+		    nick, recoded, current_server_event);
+
+	g_free(recoded);
 	g_free(args);
 	g_free(target);
 }
