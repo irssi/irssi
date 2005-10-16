@@ -88,7 +88,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	str_is_utf8 = g_utf8_validate(str, len, NULL);
 	translit = settings_get_bool("recode_transliterate");
 	
-	if (server != NULL)
+	if (server != NULL && target != NULL)
 		tagtarget = server->tag == NULL ? NULL :
 			    g_strdup_printf("%s/%s", server->tag, target);
 	if (tagtarget != NULL)
@@ -154,7 +154,7 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		char *translit_to = NULL;
 		char *tagtarget = NULL;
 
-		if (server != NULL)
+		if (server != NULL && target != NULL)
 			tagtarget = server->tag == NULL ? NULL :
 				    g_strdup_printf("%s/%s", server->tag, target);
 		if (tagtarget != NULL)

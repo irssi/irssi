@@ -196,7 +196,7 @@ static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
         char *recoded = recode_in(SERVER(server), msg, target);
 	printformat(server, skip_target(target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    IRCTXT_OWN_NOTICE, target, msg);
+		    IRCTXT_OWN_NOTICE, target, recoded);
         g_free(recoded);
 }
 
@@ -216,7 +216,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 		if (!ignore_check(server, nick, "",
 				  target, msg, MSGLEVEL_SNOTES)) {
 			printformat(server, target, MSGLEVEL_SNOTES,
-				    IRCTXT_NOTICE_SERVER, nick, msg);
+				    IRCTXT_NOTICE_SERVER, nick, recoded);
 		}
 		g_free(recoded);
                 return;
