@@ -392,7 +392,7 @@ AC_DEFUN(AC_CHECK_GLIBDIR,[
 AC_CHECK_GLIBDIR
 
 if test -z "$GLIB_DIR"; then
-  if test "x$with_glib1" = "xyes"; then
+  if test "x$want_glib1" = "xyes"; then
     dnl * check only for glib1
     checks="1 2"
   else
