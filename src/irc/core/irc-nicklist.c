@@ -434,7 +434,7 @@ static const char *get_nick_flags(SERVER_REC *server)
 	const char *prefix =
 		g_hash_table_lookup(irc_server->isupport, "PREFIX");
 
-	prefix = strchr(prefix, ')');
+	prefix = prefix == NULL ? NULL : strchr(prefix, ')');
 	return prefix == NULL ? "" : prefix+1;
 }
 
