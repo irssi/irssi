@@ -326,7 +326,7 @@ dnl **
 
 if test "x$want_socks" = "xyes"; then
 	AC_CHECK_LIB(socks, connect, [
-		AC_DEFINE(HAVE_SOCKS)
+		AC_DEFINE(HAVE_SOCKS,, Build with socks support)
 		LIBS="$LIBS -lsocks"
 		AC_CHECK_HEADER(socks.h, [
 			AC_DEFINE(HAVE_SOCKS_H)

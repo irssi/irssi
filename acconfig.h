@@ -41,9 +41,6 @@
 #undef HAVE_LC_MESSAGES
 #undef HAVE_STPCPY
 
-/* SSL */
-#undef HAVE_OPENSSL
-
 /* If set to 64, enables 64bit off_t for some systems (eg. Linux, Solaris) */
 #undef _FILE_OFFSET_BITS
 
