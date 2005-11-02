@@ -640,16 +640,16 @@ void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
 void gui_entry_capitalize_word(GUI_ENTRY_REC *entry)
 {
 	int pos = entry->pos;
-	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+	while (pos < entry->text_len && !i_isalnum(entry->text[pos]))
 		pos++;
 
 	if (pos < entry->text_len) {
-		entry->text[pos] = g_unichar_toupper(entry->text[pos]);
+		entry->text[pos] = i_toupper(entry->text[pos]);
 		pos++;
 	}
 
-	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
-		entry->text[pos] = g_unichar_tolower(entry->text[pos]);
+	while (pos < entry->text_len && i_isalnum(entry->text[pos])) {
+		entry->text[pos] = i_tolower(entry->text[pos]);
 		pos++;
 	}
 
@@ -662,11 +662,11 @@ void gui_entry_capitalize_word(GUI_ENTRY_REC *entry)
 void gui_entry_downcase_word(GUI_ENTRY_REC *entry)
 {
 	int pos = entry->pos;
-	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+	while (pos < entry->text_len && !i_isalnum(entry->text[pos]))
 		pos++;
 
-	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
-		entry->text[pos] = g_unichar_tolower(entry->text[pos]);
+	while (pos < entry->text_len && i_isalnum(entry->text[pos])) {
+		entry->text[pos] = i_tolower(entry->text[pos]);
 		pos++;
 	}
 
@@ -679,11 +679,11 @@ void gui_entry_downcase_word(GUI_ENTRY_REC *entry)
 void gui_entry_upcase_word(GUI_ENTRY_REC *entry)
 {
 	int pos = entry->pos;
-	while (pos < entry->text_len && !g_unichar_isalnum(entry->text[pos]))
+	while (pos < entry->text_len && !i_isalnum(entry->text[pos]))
 		pos++;
 
-	while (pos < entry->text_len && g_unichar_isalnum(entry->text[pos])) {
-		entry->text[pos] = g_unichar_toupper(entry->text[pos]);
+	while (pos < entry->text_len && i_isalnum(entry->text[pos])) {
+		entry->text[pos] = i_toupper(entry->text[pos]);
 		pos++;
 	}
 
