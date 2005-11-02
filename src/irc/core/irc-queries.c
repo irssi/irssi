@@ -85,6 +85,8 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	char *params, *target, *msg;
 
 	g_return_if_fail(data != NULL);
+	if (nick == NULL)
+		return;
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
         check_query_changes(server, nick, address, target);
