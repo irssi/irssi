@@ -431,21 +431,18 @@ if test -z "$GLIB_DIR"; then
     echo "*** Irssi will automatically compile and use it."
     echo
 
-    dnl * I think it's pretty safe to assume GLib 1.2.9 since the next
-    dnl * will be 2.0 (or 1.4?) and it's not sure if irssi compiles
-    dnl * with it (yea, just a few weeks after I put this text for 1.2.8
-    dnl * the 1.2.9 came :) .. and then .10
-    glib_file=glib-1.2.10.tar.gz
+    glib_url=ftp://ftp.gtk.org/pub/gtk/v2.8/
+    glib_file=glib-2.8.3.tar.gz
 
     dlcmd=
     if test -n "`wget --version 2>/dev/null|grep -i wget`"; then
-      dlcmd="wget -c ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+      dlcmd="wget -c $glib_url$glib_file"
     elif test -n "`ncftpget --version 2>/dev/null|grep -i ncftp`"; then
-      dlcmd="ncftpget -z ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+      dlcmd="ncftpget -z $glib_url$glib_file"
     elif test -n "`lynx --version 2>/dev/null|grep -i lynx`"; then
-      dlcmd="lynx --source ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file > $glib_file"
+      dlcmd="lynx --source $glib_url$glib_file > $glib_file"
     elif test -n "`curl --version 2>/dev/null|grep -i curl`"; then
-      dlcmd="curl -C - ftp://ftp.gtk.org/pub/gtk/v1.2/$glib_file"
+      dlcmd="curl -C - $glib_url$glib_file"
     fi
     if test -n "$dlcmd"; then
       echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
