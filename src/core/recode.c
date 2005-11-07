@@ -73,7 +73,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	char *translit_to = NULL;
 	char *recoded = NULL;
 	char *tagtarget = NULL;
-	gboolean term_is_utf8, str_is_utf8, translit, recode;
+	gboolean term_is_utf8, str_is_utf8, translit, recode, autodetect;
 	int len;
 
 	if (!str)
@@ -87,25 +87,34 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 
 	str_is_utf8 = g_utf8_validate(str, len, NULL);
 	translit = settings_get_bool("recode_transliterate");
-	
-	if (server != NULL && target != NULL)
-		tagtarget = server->tag == NULL ? NULL :
-			    g_strdup_printf("%s/%s", server->tag, target);
-	if (tagtarget != NULL)
-		from = iconfig_get_str("conversions", tagtarget, NULL);
-	g_free(tagtarget);
-
-	if (target != NULL && from == NULL)
-		from = iconfig_get_str("conversions", target, NULL);
-
-	if (from == NULL && server != NULL)
-		from = iconfig_get_str("conversions", server->tag, NULL);
-
+	autodetect = settings_get_bool("recode_autodetect_utf8");
 	term_is_utf8 = recode_get_charset(&to);
+
+	if (autodetect && str_is_utf8)
+		if (term_is_utf8)
+			return g_strdup(str);
+		else
+			from = "UTF-8";
+			
+	else {
+		if (server != NULL && target != NULL)
+			tagtarget = server->tag == NULL ? NULL :
+				g_strdup_printf("%s/%s", server->tag, target);
+		if (tagtarget != NULL)
+			from = iconfig_get_str("conversions", tagtarget, NULL);
+		g_free(tagtarget);
+
+		if (target != NULL && from == NULL)
+			from = iconfig_get_str("conversions", target, NULL);
+
+		if (from == NULL && server != NULL)
+			from = iconfig_get_str("conversions", server->tag, NULL);
+
+	}
 
 	if (translit && !is_translit(to))
 		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
-
+		
 	if (from)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
@@ -189,15 +198,13 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 void recode_init(void)
 {
 	settings_add_bool("misc", "recode", TRUE);
-	settings_add_str("misc", "recode_fallback", "ISO8859-1");
+	settings_add_str("misc", "recode_fallback", "CP1252");
 	settings_add_str("misc", "recode_out_default_charset", "");
 	settings_add_bool("misc", "recode_transliterate", FALSE);
+	settings_add_bool("misc", "recode_autodetect_utf8", TRUE);
 }
 
 void recode_deinit(void)
 {	
-	settings_remove("recode");
-	settings_remove("recode_fallback");
-	settings_remove("recode_out_default_charset");
-	settings_remove("recode_transliterate");
+
 }

@@ -50,6 +50,9 @@ The transliteration is based on your locale settings,
 if it doesn't work properly your locale settings may be wrong.
 You can enable it per target by adding //TRANSLIT to the <charset>
 
+/SET recode_autodetect_utf8 OFF
+to turn automatic UTF-8 detection off.
+
 Hint: <charset> can be almost everything listed by 'iconv -l'
 
 See also: NETWORK
