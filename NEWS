@@ -36,7 +36,7 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	  including NULL items associated with it, by jimmy
 	+ /UPGRADE now saves server->version
 	+ If available, send who set topic and when to irssi-proxy clients
-	+ Removed 'freenode' from the network list
+	+ Cleaned up network list: removed smaller networks, added QuakeNet
 	+ New default aliases: MANUAL-WINDOWS, EXEMPTLIST and ATAG
 	+ Recode support: /RECODE for manipulation of the conversion database.
 	  Setting "term_type" has been renamed to "term_charset".
@@ -110,6 +110,10 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	- Fixed remote /WHOWAS
 	- Parse negative time setting values, makes it possible again to do
 	  /SET server_reconnect_time -1 to disable reconnecting
+	- Compile with gcc4
+	- Compile with readonly srcdir
+	- Fixed crash if receiving broken privmsg without source
+	  (which bitlbee can send if you msg yourself)
 
 v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 
