@@ -530,7 +530,7 @@ static int term_setup(TERM_REC *term)
 	if (tgetent(term->buffer1, term_env) < 1)
 	{
 		fprintf(term->out, "Termcap not found for TERM=%s\n", term_env);
-		return -1;
+		return 0;
 	}
 #endif
 
