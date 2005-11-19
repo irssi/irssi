@@ -200,7 +200,7 @@ void recode_init(void)
 	settings_add_bool("misc", "recode", TRUE);
 	settings_add_str("misc", "recode_fallback", "CP1252");
 	settings_add_str("misc", "recode_out_default_charset", "");
-	settings_add_bool("misc", "recode_transliterate", FALSE);
+	settings_add_bool("misc", "recode_transliterate", TRUE);
 	settings_add_bool("misc", "recode_autodetect_utf8", TRUE);
 }
 
