@@ -155,7 +155,16 @@ static void read_settings(void)
 	char *old_term_charset = g_strdup(term_charset);
 	char *old_recode_fallback = g_strdup(recode_fallback);
 	char *old_recode_out_default = g_strdup(recode_out_default);
-	
+
+	if (settings_get_bool("recode_transliterate")) {
+		/* check if transliterations are supported in this system */
+		if (!is_valid_charset("ASCII")) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    TXT_CONVERSION_NO_TRANSLITS);
+			settings_set_bool("recode_transliterate", FALSE);
+		}
+	}
+
 	if (recode_fallback)
 		g_free(recode_fallback);
 	recode_fallback = g_strdup(settings_get_str("recode_fallback"));

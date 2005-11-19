@@ -37,32 +37,37 @@ static gboolean recode_get_charset(const char **charset)
 }
 #endif
 
+static gboolean is_translit(const char *charset)
+{
+	char *pos;
+	pos = stristr(charset, "//translit");
+	return (pos != NULL);
+}
+
 gboolean is_valid_charset(const char *charset)
 {
 #ifdef HAVE_GLIB2
 	const char *from="UTF-8";
 	const char *str="irssi";
-	char *recoded;
+	char *recoded, *to = NULL;
 	gboolean valid;
 
 	if (!charset || *charset == '\0')
 		return FALSE;
+
+	if (settings_get_bool("recode_transliterate") && !is_translit(charset))
+		charset = to = g_strconcat(charset, "//TRANSLIT", NULL);
+
 	recoded = g_convert(str, strlen(str), charset, from, NULL, NULL, NULL);
 	valid = (recoded != NULL);
 	g_free(recoded);
+	g_free(to);
 	return valid;
 #else
 	if (!charset || *charset =='\0')
 		return FALSE;
 	return TRUE;
 #endif
-}
-
-static gboolean is_translit(const char *charset)
-{
-	char *pos;
-	pos = stristr(charset, "//translit");
-	return (pos != NULL);
 }
 
 char *recode_in(const SERVER_REC *server, const char *str, const char *target)

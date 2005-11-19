@@ -255,6 +255,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "conversion_added", "Added {hilight $0}/{hilight $1} to conversion database", 2, { FORMAT_STRING, FORMAT_STRING } },
 	{ "conversion_removed", "Removed {hilight $0} from conversion database", 1, { FORMAT_STRING } },
 	{ "conversion_not_found", "{hilight $0} not found in conversion database", 1, { FORMAT_STRING } },
+	{ "conversion_no_translits", "Transliterations not supported in this system", 0 },
 	{ "recode_header", "%#Target                         Character set", 0 },
 	{ "recode_line", "%#%|$[!30]0 $1", 2, { FORMAT_STRING, FORMAT_STRING } },
 
