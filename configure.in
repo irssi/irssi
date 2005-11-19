@@ -213,7 +213,7 @@ AC_ARG_ENABLE(ipv6,
 			want_ipv6=yes
 		fi
 	fi,
-	want_ipv6=no)
+	want_ipv6=yes)
 
 dnl **
 dnl ** SSL Library checks (OpenSSL)
