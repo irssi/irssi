@@ -407,9 +407,10 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 #ifdef HAVE_IPV6
 	union sockaddr_union *so;
 	struct addrinfo hints, *ai, *ailist;
-	int ret, count;
+	int ret, count_v4, count_v6, use_v4, use_v6;
 #else
 	struct hostent *hp;
+	int count;
 #endif
 
 	g_return_val_if_fail(addr != NULL, -1);
@@ -426,27 +427,54 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	if (ret != 0)
 		return ret;
 
-        count = 0;
-	for (ai = ailist; ai != NULL && count < 2; ai = ai->ai_next) {
+	/* count IPs */
+        count_v4 = count_v6 = 0;
+	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
+		if (ai->ai_family == AF_INET)
+			count_v4++;
+		else if (ai->ai_family == AF_INET6)
+			count_v6++;
+	}
+
+	if (count_v4 == 0 && count_v6 == 0)
+		return HOST_NOT_FOUND; /* shouldn't happen? */
+
+	/* if there are multiple addresses, return random one */
+	use_v4 = count_v4 <= 1 ? 0 : rand() % count_v4;
+	use_v6 = count_v6 <= 1 ? 0 : rand() % count_v6;
+
+	count_v4 = count_v6 = 0;
+	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
 		so = (union sockaddr_union *) ai->ai_addr;
 
-		if (ai->ai_family == AF_INET6 && ip6->family == 0) {
-			sin_get_ip(so, ip6);
-                        count++;
-		} else if (ai->ai_family == AF_INET && ip4->family == 0) {
-			sin_get_ip(so, ip4);
-                        count++;
+		if (ai->ai_family == AF_INET) {
+			if (use_v4 == count_v4)
+				sin_get_ip(so, ip4);
+                        count_v4++;
+		} else if (ai->ai_family == AF_INET6) {
+			if (use_v6 == count_v6)
+				sin_get_ip(so, ip6);
+			count_v6++;
 		}
 	}
 	freeaddrinfo(ailist);
-	return count > 0 ? 0 : 1;
+	return 0;
 #else
 	hp = gethostbyname(addr);
 	if (hp == NULL)
 		return h_errno;
 
+	/* count IPs */
+	count = 0;
+	while (hp->h_addr_list[count] != NULL)
+		count++;
+
+	if (count == 0)
+		return HOST_NOT_FOUND; /* shouldn't happen? */
+
+	/* if there are multiple addresses, return random one */
 	ip4->family = AF_INET;
-	memcpy(&ip4->ip, hp->h_addr, 4);
+	memcpy(&ip4->ip, hp->h_addr_list[rand() % count], 4);
 
 	return 0;
 #endif
