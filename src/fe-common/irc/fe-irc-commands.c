@@ -315,7 +315,6 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: INVITELIST [<channel>] */
 /* SYNTAX: VER [<target>] */
 static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -324,8 +323,8 @@ static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	g_return_if_fail(data != NULL);
 
         CMD_IRC_SERVER(server);
-	if (*data == '\0' && !IS_IRC_ITEM(item))
-		cmd_return_error(CMDERR_NOT_JOINED);
+	if (*data == '\0' && !IS_QUERY(item))
+		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	str = g_strdup_printf("%s VERSION", *data == '\0' ?
 			      window_item_get_target(item) : data);
