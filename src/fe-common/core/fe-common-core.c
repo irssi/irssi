@@ -436,7 +436,7 @@ void fe_common_core_finish_init(void)
 	signal_add_first("setup changed", (SIGNAL_FUNC) sig_setup_changed);
 
         /* _after_ windows are created.. */
-#ifdef HAVE_GLIB2
+#if GLIB_CHECK_VERSION(2,6,0)
 	g_log_set_default_handler((GLogFunc) glog_func, NULL);
 #else
 	g_log_set_handler(G_LOG_DOMAIN,
