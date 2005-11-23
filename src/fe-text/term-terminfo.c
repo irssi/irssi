@@ -556,13 +556,12 @@ static int input_utf8(const unsigned char *buffer, int size, unichar *result)
 {
         const unsigned char *end = buffer;
 
-        *result = get_utf8_char(&end, size);
-	switch (*result) {
-	case (unichar) -2:
+	switch (get_utf8_char(&end, size, result)) {
+	case -2:
 		/* not UTF8 - fallback to 8bit ascii */
 		*result = *buffer;
 		return 1;
-	case (unichar) -1:
+	case -1:
                 /* need more data */
 		return -1;
 	default:

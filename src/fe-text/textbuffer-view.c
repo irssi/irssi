@@ -212,8 +212,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				char_len++;
 
 			next_ptr = ptr;
-			chr = get_utf8_char(&next_ptr, char_len);
-			if (chr < 0)
+			if (get_utf8_char(&next_ptr, char_len, &chr) < 0)
 				char_len = 1;
 			else
 				char_len = utf8_width(chr);
@@ -432,8 +431,11 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 		end = text;
 		if (view->utf8) {
-			unichar chr = get_utf8_char(&end, 6);
-			char_width = utf8_width(chr);
+			unichar chr;
+			if (get_utf8_char(&end, 6, &chr)<0)
+				char_width = 1;
+			else
+				char_width = utf8_width(chr);
 		} else {
 			if (term_type == TERM_TYPE_BIG5 &&
 			    is_big5(end[0], end[1]))

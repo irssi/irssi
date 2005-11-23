@@ -2,7 +2,7 @@
 #define __UTF8_H
 
 /* Returns -2 = invalid, -1 = need more data, otherwise unichar. */
-unichar get_utf8_char(const unsigned char **ptr, int len);
+int get_utf8_char(const unsigned char **ptr, int len, unichar *chr_r);
 
 /* Returns length of UTF8 string */
 int strlen_utf8(const char *str);

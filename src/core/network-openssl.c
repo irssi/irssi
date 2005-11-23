@@ -277,7 +277,7 @@ static GIOStatus irssi_ssl_cert_step(GIOSSLChannel *chan)
 	return G_IO_STATUS_ERROR;
 }
 
-static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, guint len, guint *ret, GError **gerr)
+static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize *ret, GError **gerr)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
