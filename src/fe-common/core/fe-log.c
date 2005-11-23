@@ -191,7 +191,7 @@ static char *log_items_get_list(LOG_REC *log)
 	GSList *tmp;
 	GString *str;
 	char *ret;
-	LOG_ITEM_REC *rec;
+	LOG_ITEM_REC *rec = NULL;
 
 	g_return_val_if_fail(log != NULL, NULL);
 	g_return_val_if_fail(log->items != NULL, NULL);
