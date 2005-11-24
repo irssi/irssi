@@ -106,6 +106,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 		g_hash_table_insert(server->isupport, g_strdup(node->key),
 				    g_strdup(node->value));
 	}
+	irc_server_init_isupport(server);
 
 }
 

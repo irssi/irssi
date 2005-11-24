@@ -595,7 +595,7 @@ static void parse_chanmodes(IRC_SERVER_REC *server, const char *sptr)
 	chanmodes = g_strsplit(sptr, ",", 5); /* ignore extras */
 
 	for (i = 0, item = chanmodes; *item != NULL && i < 4; item++, i++) {
-		unsigned char *p = *item;
+		unsigned char *p = (unsigned char*) *item;
 		while (*p != '\0') {
 			server->modes[(int)*p].func = modefuncs[i];
 			p++;
@@ -625,6 +625,7 @@ static void parse_prefix(IRC_SERVER_REC *server, const char *sptr)
 		sptr++; eptr++;
 	}
 }
+
 
 static void event_isupport(IRC_SERVER_REC *server, const char *data)
 {
@@ -679,47 +680,8 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 		g_free(value);
 	}
 	g_strfreev(isupport);
+	irc_server_init_isupport(server);
 
-	/* chanmodes/prefix will fully override defaults */
-	memset(server->modes, 0, sizeof(server->modes));
-	memset(server->prefix, 0, sizeof(server->prefix));
-
-	if ((sptr = g_hash_table_lookup(server->isupport, "CHANMODES")))
-		parse_chanmodes(server, sptr);
-
-	/* This is after chanmode because some servers define modes in both */
-	if (g_hash_table_lookup_extended(server->isupport, "PREFIX",
-					 &key, &value)) {
-		sptr = value;
-		if (*sptr != '(') {
-			/* server incompatible with isupport draft */
-			g_hash_table_remove(server->isupport, key);
-			g_free(key);
-			g_free(value);
-			sptr = NULL;
-		}
-	} else {
-		sptr = NULL;
-	}
-
-	if (sptr == NULL) {
-		sptr = g_strdup("(ohv)@%+");
-		g_hash_table_insert(server->isupport, g_strdup("PREFIX"), sptr);
-	}
-	parse_prefix(server, sptr);
-
-	if ((sptr = g_hash_table_lookup(server->isupport, "MODES"))) {
-		server->max_modes_in_cmd = atoi(sptr);
-		if (server->max_modes_in_cmd < 1)
-			server->max_modes_in_cmd = DEFAULT_MAX_MODES;
-	}
-
-	if ((sptr = g_hash_table_lookup(server->isupport, "CASEMAPPING"))) {
-		if (strstr(sptr, "rfc1459") != NULL)
-			server->nick_comp_func = irc_nickcmp_rfc1459;
-		else
-			server->nick_comp_func = irc_nickcmp_ascii;
-	}
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data, const char *from)
@@ -785,6 +747,52 @@ static void event_ping(IRC_SERVER_REC *server, const char *data)
 
 static void event_empty(void)
 {
+}
+
+void irc_server_init_isupport(IRC_SERVER_REC *server)
+{
+	char *sptr;
+	gpointer key, value;
+	/* chanmodes/prefix will fully override defaults */
+	memset(server->modes, 0, sizeof(server->modes));
+	memset(server->prefix, 0, sizeof(server->prefix));
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "CHANMODES")))
+		parse_chanmodes(server, sptr);
+
+	/* This is after chanmode because some servers define modes in both */
+	if (g_hash_table_lookup_extended(server->isupport, "PREFIX",
+					 &key, &value)) {
+		sptr = value;
+		if (*sptr != '(') {
+			/* server incompatible with isupport draft */
+			g_hash_table_remove(server->isupport, key);
+			g_free(key);
+			g_free(value);
+			sptr = NULL;
+		}
+	} else {
+		sptr = NULL;
+	}
+
+	if (sptr == NULL) {
+		sptr = g_strdup("(ohv)@%+");
+		g_hash_table_insert(server->isupport, g_strdup("PREFIX"), sptr);
+	}
+	parse_prefix(server, sptr);
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "MODES"))) {
+		server->max_modes_in_cmd = atoi(sptr);
+		if (server->max_modes_in_cmd < 1)
+			server->max_modes_in_cmd = DEFAULT_MAX_MODES;
+	}
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "CASEMAPPING"))) {
+		if (strstr(sptr, "rfc1459") != NULL)
+			server->nick_comp_func = irc_nickcmp_rfc1459;
+		else
+			server->nick_comp_func = irc_nickcmp_ascii;
+	}
 }
 
 void irc_servers_init(void)

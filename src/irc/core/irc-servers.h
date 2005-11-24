@@ -118,6 +118,7 @@ char *irc_server_get_channels(IRC_SERVER_REC *server);
 
 /* INTERNAL: */
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
+void irc_server_init_isupport(IRC_SERVER_REC *server);
 
 void irc_servers_init(void);
 void irc_servers_deinit(void);
