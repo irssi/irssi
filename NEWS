@@ -51,6 +51,7 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	  <charset> can be almost everything listed by 'iconv -l'
 	+ Added transpose_words, capitalize_word, downcase_word, upcase_word
 	  key bindings
+	+ Avoid accidentaly /VER in a channel, by requiring parameter
 	- Pasted lines weren't added to command history. Some other paste
 	  detection fixes
 	- Fixed /BIND escape_char
@@ -114,6 +115,8 @@ v0.8.10 2005-xx-xx  The Irssi team <staff@irssi.org>
 	- Compile with readonly srcdir
 	- Fixed crash if receiving broken privmsg without source
 	  (which bitlbee can send if you msg yourself)
+	- Fixed crash with invalid TERM and termcap
+	- When looking up IP addresses, return random IP instead of the first one
 
 v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 

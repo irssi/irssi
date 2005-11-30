@@ -368,7 +368,7 @@
 	or the safe defaults will be used. The default configuration file
 	contains the settings for the biggest IRC networks.
 
-	/IRCNET ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
+	/NETWORK ADD [-kicks <count>] [-msgs <count>] [-modes <count>]
 	            [-whois <count>] [-cmdspeed <ms>] [-cmdmax <count>]
 	            [-nick <nick>] [-user <user>] [-realname <name>]
 	            [-host <host>] [-autosendcmd <cmd>] <name>
