@@ -2,7 +2,7 @@ Source: irssi
 Section: net
 Priority: optional
 Maintainer: David Pashley <david@davidpashley.com>
-Build-Depends: debhelper (>= 4.0.0), autotools-dev, libglib2.0-dev, perl (>= 5.8.1), libperl-dev (>= 5.8.1), libncurses5-dev, libssl-dev, openssl
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, libglib2.0-dev, perl (>= 5.8.1), libperl-dev (>= 5.8.1), libncurses5-dev, libssl-dev, openssl, dpatch
 Standards-Version: 3.6.2
 
 Package: irssi

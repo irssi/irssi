@@ -1,3 +1,10 @@
+irssi (0.8.10~rc8-1) unstable; urgency=low
+
+  * New upstream (Closes: #340287)
+  * Add dpatch to the build-depends
+
+ -- David Pashley <david@davidpashley.com>  Wed, 30 Nov 2005 23:10:27 +0000
+
 irssi (0.8.10~rc6-1) unstable; urgency=low
 
   * New upstream version
@@ -9,6 +16,7 @@ irssi (0.8.10~rc6-1) unstable; urgency=low
 irssi (0.8.10~rc5-1) unstable; urgency=low
 
   * Initial packaging to unify irssi-text and irssi-snapshot
+  * Provide a -dev package for building modules (Closes: #184771)
   * Check for an executable file before we try to execute it with /upgrade
     (Closes: #242026)
   * Only allow /exec to recurse 100 times (Closes: #186416)
