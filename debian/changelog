@@ -1,3 +1,10 @@
+irssi (0.8.10-2) unstable; urgency=low
+
+  * Not uploaded to Debian (work in progress)
+  * Fix Conflicts and Replaces lines to make backporting to sarge easier
+  
+ -- David Pashley <david@davidpashley.com>  Wed, 14 Dec 2005 08:40:18 +0000
+
 irssi (0.8.10-1) unstable; urgency=low
 
   * new upstream release

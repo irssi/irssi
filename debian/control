@@ -9,8 +9,8 @@ Package: irssi
 Architecture: any
 Depends: ${shlibs:Depends}, ${perl:Depends}, ${misc:Depends}, perl-base(>= 5.8.1)
 Suggests: irssi-scripts (>= 2)
-Conflicts: irssi-scripts (= 1), irssi-common, irssi-text (<= 0.8.9-3.1), irssi-snapshot ( <= 0.8.9-3.1)
-Replaces: irssi-scripts (<= 8), irssi-text (<= 0.8.9-3.1), irssi-snapshot ( <= 0.8.9-3.1)
+Conflicts: irssi-scripts (= 1), irssi-common, irssi-text (<= 0.8.9-3.1), irssi-snapshot (<= 0.8.9-3.1)
+Replaces: irssi-scripts (<= 8), irssi-text (<= 0.8.9-3.1), irssi-snapshot (<= 0.8.9-3.1)
 Provides: irssi-text, irssi-snapshot
 Description: text-mode version of the irssi IRC client
  Irssi is an IRC client from the author of yagirc, Timo Sirainen. It has a
@@ -26,8 +26,8 @@ Description: text-mode version of the irssi IRC client
 Package: irssi-dev
 Architecture: any
 Depends: irssi
-Conflicts: irssi-snapshot-dev ( <= 0.8.6+cvs.20031114-1)
-Replaces: irssi-snapshot-dev ( <= 0.8.6+cvs.20031114-1)
+Conflicts: irssi-snapshot-dev (<= 0.8.6+cvs.20031114-1)
+Replaces: irssi-snapshot-dev (<= 0.8.6+cvs.20031114-1)
 Provides: irssi-snapshot-dev
 Description: text-mode version of the irssi IRC client development files
  Irssi is an IRC client from the author of yagirc, Timo Sirainen. It has a
@@ -43,17 +43,3 @@ Depends: irssi
 Description: irssi dummy transition package
  This is a dummy transition package from irssi-text and is safe to
  remove.
-
-Package: irssi-snapshot
-Architecture: any
-Depends: irssi
-Description: irssi dummy transition package
- This is a dummy transition package from irssi-snapshot and is safe to
- remove.
-
-Package: irssi-snapshot-dev
-Architecture: any
-Depends: irssi-dev
-Description: irssi dummy transition package
- This is a dummy transition package from irssi-snapshot-dev and is safe
- to remove.
