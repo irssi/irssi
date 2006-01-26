@@ -577,7 +577,7 @@ static void cmd_quote(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || server->connect_time == 0)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
-	irc_send_cmd(server, data);
+	irc_send_cmd_now(server, data);
 }
 
 /* SYNTAX: RAWQUOTE <data> */
