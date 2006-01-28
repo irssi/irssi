@@ -198,11 +198,23 @@ void dcc_str2ip(const char *str, IPADDR *ip)
 GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 {
         GIOChannel *handle;
-        const char *dcc_port, *p;
+	IPADDR *listen_ip = NULL;
+	const char *dcc_port, *p, *own_ip;
 	int first, last;
 
 	if (net_getsockname(iface, ip, NULL) == -1)
 		return NULL;
+
+	/* figure out if we want to listen in IPv4 address or in "any" address,
+	   which may mean IPv4+IPv6 or just IPv6 depending on OS. */
+	own_ip = settings_get_str("dcc_own_ip");
+	if (*own_ip != '\0') {
+		if (is_ipv4_address(own_ip))
+			listen_ip = &ip4_any;
+	} else {
+		if (!IPADDR_IS_V6(ip))
+			listen_ip = &ip4_any;
+	}
 
         /* get first port */
 	dcc_port = settings_get_str("dcc_port");
@@ -210,10 +222,7 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	if (first == 0) {
                 /* random port */
 		*port = 0;
-		if (IPADDR_IS_V6(ip))
-			return net_listen(NULL, port);
-		else
-			return net_listen(&ip4_any, port);
+		return net_listen(listen_ip, port);
 	}
 
         /* get last port */
@@ -231,10 +240,7 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 
         /* use the first available port */
 	for (*port = first; *port <= last; (*port)++) {
-		if (IPADDR_IS_V6(ip))
-			handle = net_listen(NULL, port);
-		else
-			handle = net_listen(&ip4_any, port);
+		handle = net_listen(listen_ip, port);
 		if (handle != NULL)
                         return handle;
 	}
