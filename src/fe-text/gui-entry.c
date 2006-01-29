@@ -97,6 +97,24 @@ int strlen_big5(const unsigned char *str)
 	return len;
 }
 
+void unichars_to_big5_with_pos(const unichar *str, int spos, char *out, int *opos)
+{
+	const unichar *sstart = str;
+	char *ostart = out;
+
+	*opos = 0;
+	while(*str != '\0')
+	{
+		if(*str > 0xff)
+			*out ++ = (*str >> 8) & 0xff;
+		*out ++ = *str & 0xff;
+		str ++;
+		if(str - sstart == spos)
+			*opos = out - ostart;
+	}
+	*out = '\0';
+}
+
 void big5_to_unichars(const char *str, unichar *out)
 {
 	const unsigned char *p = (const unsigned char *) str;
@@ -367,6 +385,29 @@ char *gui_entry_get_text(GUI_ENTRY_REC *entry)
 		else
 			for (i = 0; i <= entry->text_len; i++)
 				buf[i] = entry->text[i];
+	}
+	return buf;
+}
+
+char *gui_entry_get_text_and_pos(GUI_ENTRY_REC *entry, int *pos)
+{
+	char *buf;
+        int i;
+
+	g_return_val_if_fail(entry != NULL, NULL);
+
+	buf = g_malloc(entry->text_len*6 + 1);
+	if (entry->utf8)
+		utf16_to_utf8_with_pos(entry->text, entry->pos, buf, pos);
+	else {
+		if(term_type==TERM_TYPE_BIG5)
+			unichars_to_big5_with_pos(entry->text, entry->pos, buf, pos);
+		else
+		{
+			for (i = 0; i <= entry->text_len; i++)
+				buf[i] = entry->text[i];
+			*pos = entry->pos;
+		}
 	}
 	return buf;
 }

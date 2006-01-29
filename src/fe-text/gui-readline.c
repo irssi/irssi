@@ -778,9 +778,7 @@ static void key_completion(int erase)
 	char *text, *line;
 	int pos;
 
-	pos = gui_entry_get_pos(active_entry);
-
-        text = gui_entry_get_text(active_entry);
+        text = gui_entry_get_text_and_pos(active_entry, &pos);
 	line = word_complete(active_win, text, &pos, erase);
 	g_free(text);
 
@@ -806,9 +804,7 @@ static void key_check_replaces(void)
 	char *text, *line;
 	int pos;
 
-	pos = gui_entry_get_pos(active_entry);
-
-        text = gui_entry_get_text(active_entry);
+        text = gui_entry_get_text_and_pos(active_entry, &pos);
 	line = auto_word_complete(text, &pos);
 	g_free(text);
 
