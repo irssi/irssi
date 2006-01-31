@@ -416,23 +416,23 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	terminfo_colors_deinit(term);
         term->has_colors = term->TI_setf || term->TI_setaf;
 
-	if (term->TI_setf) {
-		for (i = 0; i < 8; i++)
-                        term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0));
-	} else if (term->TI_setaf) {
+	if (term->TI_setaf) {
 		for (i = 0; i < 8; i++)
                         term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, ansitab[i], 0));
+	} else if (term->TI_setf) {
+		for (i = 0; i < 8; i++)
+                        term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_fg[i] = g_strdup_printf("\033[%dm", 30+ansitab[i]);
 	}
 
-	if (term->TI_setb) {
-		for (i = 0; i < 8; i++)
-                        term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0));
-	} else if (term->TI_setab) {
+	if (term->TI_setab) {
 		for (i = 0; i < 8; i++)
                         term->TI_bg[i] = g_strdup(tparm(term->TI_setab, ansitab[i], 0));
+	} else if (term->TI_setb) {
+		for (i = 0; i < 8; i++)
+                        term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_bg[i] = g_strdup_printf("\033[%dm", 40+ansitab[i]);
