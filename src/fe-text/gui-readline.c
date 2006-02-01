@@ -127,8 +127,10 @@ static int get_scroll_count(void)
 
 	str = settings_get_str("scroll_page_count");
 	count = atof(str + (*str == '/'));
-	if (count <= 0)
+	if (count == 0)
 		count = 1;
+	else if (count < 0)
+		count = active_mainwin->height-active_mainwin->statusbar_lines+count;
 	else if (count < 1)
                 count = 1.0/count;
 
