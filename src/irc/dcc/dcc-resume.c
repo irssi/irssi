@@ -89,7 +89,7 @@ static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 	params = g_strsplit(data, " ", -1);
 	paramcount = strarray_length(params);
 
-	if (paramcount < 3 || paramcount > 4)
+	if (paramcount < 3)
 		return 0;
 
 	fileparams = get_file_params_count_resume(params, paramcount);
