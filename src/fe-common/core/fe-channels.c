@@ -473,12 +473,14 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	NICK_REC *nick;
 	GSList *tmp, *nicklist, *sorted;
 	int nicks, normal, voices, halfops, ops;
+	const char *nick_flags;
 
 	nicks = normal = voices = halfops = ops = 0;
 	nicklist = nicklist_getnicks(channel);
 	sorted = NULL;
+	nick_flags = channel->server->get_nick_flags(channel->server);
 
-	/* sort the nicklist */
+	/* filter (for flags) and count ops, halfops, voices */
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		nick = tmp->data;
 
@@ -501,10 +503,12 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 				continue;
 		}
 
-		sorted = g_slist_insert_sorted(sorted, nick, (GCompareFunc)
-					       nicklist_compare);
+		sorted = g_slist_prepend(sorted, nick);
 	}
 	g_slist_free(nicklist);
+
+	/* sort the nicklist */
+	sorted = g_slist_sort_with_data(sorted, (GCompareDataFunc) nicklist_compare, (void *)nick_flags);
 
 	/* display the nicks */
         if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0) {

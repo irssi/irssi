@@ -49,7 +49,7 @@ void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick);
 
 /* Nick record comparision for sort functions */
-int nicklist_compare(NICK_REC *p1, NICK_REC *p2);
+int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix);
 
 /* Check is `msg' is meant for `nick'. */
 int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick);

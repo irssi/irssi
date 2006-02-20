@@ -357,7 +357,7 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 }
 
 /* nick record comparision for sort functions */
-int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
+int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 {
 	int status1, status2;
 	
@@ -369,10 +369,10 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 	 * returns :-)
 	 * -- yath */
 
-	/* Treat others as highest - should really use order in 005 numeric */
-	if (p1->other)
-		status1 = 5;
-	else if (p1->op)
+	if (p1->other) {
+		const char *other = (nick_prefix == NULL) ? NULL : strchr(nick_prefix, p1->other);
+		status1 = (other == NULL) ? 5 : 1000 - (other - nick_prefix);
+	} else if (p1->op)
 		status1 = 4;
 	else if (p1->halfop)
 		status1 = 3;
@@ -381,9 +381,10 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2)
 	else
 		status1 = 1;
 
-	if (p2->other)
-		status2 = 5;
-	else if (p2->op)
+	if (p2->other) {
+		const char *other = (nick_prefix == NULL) ? NULL : strchr(nick_prefix, p2->other);
+		status2 = (other == NULL) ? 5 : 1000 - (other - nick_prefix);
+	} else if (p2->op)
 		status2 = 4;
 	else if (p2->halfop)
 		status2 = 3;
