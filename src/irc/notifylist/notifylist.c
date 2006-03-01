@@ -273,6 +273,9 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	NOTIFY_NICK_REC *rec;
 	char *user, *host;
 
+	if (nick == NULL)
+		return;
+
 	notify = notifylist_find(nick, server->connrec->chatnet);
 	if (notify == NULL) return;
 

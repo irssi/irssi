@@ -309,6 +309,9 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 {
 	NETSPLIT_REC *rec;
 
+	if (nick == NULL)
+		return;
+
 	/* check if split is over */
 	rec = g_hash_table_lookup(server->splits, nick);
 
@@ -330,6 +333,9 @@ static void event_join_last(IRC_SERVER_REC *server, const char *data,
 			    const char *nick, const char *address)
 {
 	NETSPLIT_REC *rec;
+
+	if (nick == NULL)
+		return;
 
 	rec = g_hash_table_lookup(server->splits, nick);
 	if (rec != NULL) {
