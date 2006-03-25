@@ -331,6 +331,7 @@ void botuser_set_password(USER_REC *user, const char *password)
 	g_return_if_fail(user != NULL);
 	g_return_if_fail(password != NULL);
 
+	srand(time(NULL));
 	salt[0] = rand()%20 + 'A';
 	salt[1] = rand()%20 + 'A';
 	salt[2] = '\0';
