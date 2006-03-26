@@ -438,7 +438,6 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 
 	/* Generate an ID for this send if using passive protocol */
 	if (passive) {
-		srand(time(NULL));
 		dcc->pasv_id = rand() % 64;
 	}
     

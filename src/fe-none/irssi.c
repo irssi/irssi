@@ -55,6 +55,8 @@ void noui_init(void)
 		{ NULL, '\0', 0, NULL }
 	};
 
+	srand(time(NULL));
+
 	autoload_module = NULL;
 	args_register(options);
 

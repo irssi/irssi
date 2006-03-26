@@ -440,7 +440,6 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 		return HOST_NOT_FOUND; /* shouldn't happen? */
 
 	/* if there are multiple addresses, return random one */
-	srand(time(NULL));
 	use_v4 = count_v4 <= 1 ? 0 : rand() % count_v4;
 	use_v6 = count_v6 <= 1 ? 0 : rand() % count_v6;
 
@@ -475,7 +474,6 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 
 	/* if there are multiple addresses, return random one */
 	ip4->family = AF_INET;
-	srand(time(NULL));
 	memcpy(&ip4->ip, hp->h_addr_list[rand() % count], 4);
 
 	return 0;

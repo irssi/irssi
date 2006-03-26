@@ -515,7 +515,6 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 		signal_emit("dcc request send", 1, dcc);
 
 		/* generate a random id */
-		srand(time(NULL));
 		p_id = rand() % 64;
 		dcc->pasv_id = p_id;
 

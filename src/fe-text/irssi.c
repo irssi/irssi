@@ -336,6 +336,8 @@ int main(int argc, char **argv)
 	g_mem_set_vtable(&gc_mem_table);
 #endif
 
+	srand(time(NULL));
+
 	dummy = FALSE;
 	quitting = FALSE;
 	core_init_paths(argc, argv);
