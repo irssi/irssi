@@ -70,6 +70,13 @@ CODE:
 	irc_send_cmd_now(server, cmd);
 
 void
+send_raw_first(server, cmd)
+	Irssi::Irc::Server server
+	char *cmd
+CODE:
+	irc_send_cmd_first(server, cmd);
+
+void
 send_raw_split(server, cmd, nickarg, max_nicks)
 	Irssi::Irc::Server server
 	char *cmd

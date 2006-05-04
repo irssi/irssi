@@ -44,6 +44,10 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 /* Send command to server immediately bypassing all flood protections
    and queues. */
 void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd);
+/* Send command to server putting it at the beginning of the queue of
+    commands to send -- it will go out as soon as possible in accordance
+    to the flood protection settings. */
+void irc_send_cmd_first(IRC_SERVER_REC *server, const char *cmd);
 /* The core of the irc_send_cmd* functions. If `raw' is TRUE, the `cmd'
    won't be checked at all if it's 512 bytes or not, or if it contains
    line feeds or not. Use with extreme caution! */

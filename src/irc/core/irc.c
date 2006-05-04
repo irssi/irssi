@@ -139,6 +139,16 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd)
         irc_send_cmd_full(server, cmd, TRUE, TRUE, FALSE);
 }
 
+/* Send command to server putting it at the beginning of the queue of
+    commands to send -- it will go out as soon as possible in accordance
+    to the flood protection settings. */
+void irc_send_cmd_first(IRC_SERVER_REC *server, const char *cmd)
+{
+	g_return_if_fail(cmd != NULL);
+
+        irc_send_cmd_full(server, cmd, FALSE, TRUE, FALSE);
+}
+
 static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post, int arg)
 {
 	char *p;
