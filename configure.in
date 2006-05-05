@@ -1043,4 +1043,4 @@ if test "x$enable_openssl" = "xno" -a "x$ssl_error" != "x"; then
 fi
 
 echo
-echo "If there was any problems, read the INSTALL file."
+echo "If there are any problems, read the INSTALL file."
