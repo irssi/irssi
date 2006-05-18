@@ -202,9 +202,9 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 
 static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 {
-	const char *idchan;
+	const char *idchan, *nick_flags;
 	char *p, *dest, *end, id;
-	int count, length;
+	int count, length, chanstart;
 
 	if (!server->isupport_sent)
 		idchan = "!:5";
@@ -213,6 +213,7 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 		if (idchan == NULL)
 			return;
 	}
+	nick_flags = server->get_nick_flags(server);
 
 	while (*idchan != '\0') {
 		id = *idchan;
@@ -227,12 +228,18 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 		idchan = end;
 
 		count = 0;
+		chanstart = TRUE;
 		for (dest = p = chans; *p != '\0'; p++) {
 			if (count > 0)
 				count--;
 			else {
-				if (*p == id)
-					count = length;
+				if (*p == ' ')
+					chanstart = TRUE;
+				else {
+					if (chanstart && *p == id)
+						count = length;
+					chanstart = chanstart && strchr(nick_flags, *p);
+				}
 				*dest++ = *p;
 			}
 		}
