@@ -130,7 +130,7 @@ static char **module_prefixes_get(void)
         char **list, *name;
         int count;
 
-	list = g_new(char *, 2 + 2*g_slist_length(chat_protocols));
+	list = g_new(char *, 2 + 3*g_slist_length(chat_protocols));
 	list[0] = "fe";
 
 	count = 1;
@@ -142,6 +142,7 @@ static char **module_prefixes_get(void)
 
 		list[count++] = name;
                 list[count++] = g_strconcat("fe_", name, NULL);
+                list[count++] = g_strconcat("fe_common_", name, NULL);
 	}
 	list[count] = NULL;
 
