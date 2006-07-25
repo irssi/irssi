@@ -80,6 +80,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	char *tagtarget = NULL;
 	gboolean term_is_utf8, str_is_utf8, translit, recode, autodetect;
 	int len;
+	int i;
 
 	if (!str)
 		return NULL;
@@ -90,7 +91,14 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 
 	len = strlen(str);
 
-	str_is_utf8 = g_utf8_validate(str, len, NULL);
+	/* Only validate for UTF-8 if an 8-bit encoding. */
+	str_is_utf8 = 0;
+	for (i = 0; i < len; ++i) {
+		if (str[i] & 0x80) {
+			str_is_utf8 = g_utf8_validate(str, len, NULL);
+			break;
+		}
+	}
 	translit = settings_get_bool("recode_transliterate");
 	autodetect = settings_get_bool("recode_autodetect_utf8");
 	term_is_utf8 = recode_get_charset(&to);
