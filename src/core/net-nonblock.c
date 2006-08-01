@@ -101,6 +101,8 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 #endif
 
 	/* child */
+	srand(time(NULL));
+
         memset(&rec, 0, sizeof(rec));
 	rec.error = net_gethostbyname(addr, &rec.ip4, &rec.ip6);
 	if (rec.error == 0) {
