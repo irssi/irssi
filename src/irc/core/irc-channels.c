@@ -69,7 +69,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	CHANNEL_SETUP_REC *schannel;
 	IRC_CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
-	char *channels, *keys, *key;
+	char *channels, *keys, *key, *space;
 	char **chanlist, **keylist, **tmp, **tmpkey, **tmpstr, *channel, *channame;
 	void *free_arg;
 	int use_keys, cmdlen;
@@ -81,6 +81,12 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &channels, &keys))
 		return;
+
+	/* keys shouldn't contain space */
+	space = strchr(keys, ' ');
+	if (space != NULL) {
+		*space = '\0';
+	}
 
         chanlist = g_strsplit(channels, ",", -1);
 	keylist = g_strsplit(keys, ",", -1);
