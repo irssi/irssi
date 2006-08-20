@@ -274,8 +274,10 @@ static void query_check(IRC_SERVER_REC *server)
 	if (rec->current_queries != NULL)
                 return; /* old queries haven't been answered yet */
 
-	if (!channels_have_all_names(server)) {
+	if (server->max_query_chans > 1 && !server->no_multi_who && !server->no_multi_mode && !channels_have_all_names(server)) {
 		/* all channels haven't sent /NAMES list yet */
+		/* only do this if there would be a benefit in combining
+		 * queries -- jilles */
 		return;
 	}
 
