@@ -508,7 +508,12 @@ void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
 	g_slist_free(nicklist);
 
 	/* sort the nicklist */
+#if GLIB_MAJOR_VERSION < 2
+	/* glib1 doesn't have g_slist_sort_with_data, so non-standard prefixes won't be sorted correctly */
+	sorted = g_slist_sort(sorted, (GCompareFunc)nicklist_compare_glib1);
+#else
 	sorted = g_slist_sort_with_data(sorted, (GCompareDataFunc) nicklist_compare, (void *)nick_flags);
+#endif
 
 	/* display the nicks */
         if ((flags & CHANNEL_NICKLIST_FLAG_COUNT) == 0) {
