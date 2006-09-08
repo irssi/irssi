@@ -1,18 +1,11 @@
-/* paths */
-#undef SYSCONFDIR
-#undef HELPDIR
-#undef PLUGINSDIR
-
 /* misc.. */
 #undef HAVE_IPV6
-#undef HAVE_POPT_H
 #undef HAVE_SOCKS_H
 #undef HAVE_PL_PERL
 #undef HAVE_STATIC_PERL
 #undef HAVE_GMODULE
 #undef HAVE_GC_H
 #undef HAVE_GC_GC_H
-#undef WANT_BIG5
 #undef USE_GC
 #undef HAVE_GLIB2
 
@@ -33,13 +26,6 @@
 
 /* terminfo/termcap */
 #undef HAVE_TERMINFO
-
-/* nls */
-#undef ENABLE_NLS
-#undef HAVE_CATGETS
-#undef HAVE_GETTEXT
-#undef HAVE_LC_MESSAGES
-#undef HAVE_STPCPY
 
 /* If set to 64, enables 64bit off_t for some systems (eg. Linux, Solaris) */
 #undef _FILE_OFFSET_BITS
