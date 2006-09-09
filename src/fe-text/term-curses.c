@@ -421,8 +421,7 @@ int term_gets(unichar *buffer, int size)
 			continue;
 #endif
 
-                buffer[count] = key;
-                count++;
+		buffer[count++] = key;
 	}
 
 	return count;
