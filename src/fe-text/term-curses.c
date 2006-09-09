@@ -319,6 +319,15 @@ void term_addch(TERM_WINDOW *window, int chr)
 
 void term_add_unichar(TERM_WINDOW *window, unichar chr)
 {
+#ifdef WIDEC_CURSES
+	cchar_t wch;
+	wchar_t temp[2];
+	temp[0] = chr;
+	temp[1] = 0;
+	if (setcchar(&wch, temp, A_NORMAL, 0, NULL) == OK)
+		wadd_wch(window->win, &wch);
+	else
+#endif
         waddch(window->win, chr);
 }
 
@@ -393,17 +402,24 @@ void term_set_input_type(int type)
 
 int term_gets(unichar *buffer, int size)
 {
-	int key, count;
+	int count;
+#ifdef WIDEC_CURSES
+	wint_t key;
+#else
+	int key;
+#endif
 
 	for (count = 0; count < size; ) {
-		key = getch();
+#ifdef WIDEC_CURSES
+		if (get_wch(&key) == ERR)
+#else
+		if ((key = getch()) == ERR)
+#endif
+			break;
 #ifdef KEY_RESIZE
 		if (key == KEY_RESIZE)
 			continue;
 #endif
-
-		if (key == ERR)
-			break;
 
                 buffer[count] = key;
                 count++;
