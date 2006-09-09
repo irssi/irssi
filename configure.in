@@ -96,7 +96,7 @@ AC_ARG_WITH(terminfo,
 	want_terminfo=yes)
 
 AC_ARG_WITH(cuix,
-[ --with-cuix   Use curses ui extended],
+[  --with-cuix             Use curses ui extended],
     if test x$withval = xyes; then
             want_terminfo=no
             want_cuix=yes
