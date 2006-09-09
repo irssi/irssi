@@ -50,7 +50,7 @@ endif
 
 if USE_CUIX
 use_term_sources += $(cuix_sources)
-irssi_LDFLAGS += -lform -lpanel -lmenu
+irssi_LDADD += -lform -lpanel -lmenu
 INCLUDES += -I$(top_srcdir)/src/irc/core
 endif
 
