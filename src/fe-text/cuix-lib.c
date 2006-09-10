@@ -72,7 +72,7 @@ int show_banlist (char *nothing)
     for (tmp = chan->banlist, i = 0; tmp; tmp = tmp->next, i++) {
         ban = tmp->data;
         baninfo[i] = g_string_new (NULL);
-        g_string_printf (baninfo[i], "%s set by %s %d seconds ago", ban->ban, ban->setby, (int)(time(NULL)-ban->time));
+        g_string_sprintf (baninfo[i], "%s set by %s %d seconds ago", ban->ban, ban->setby, (int)(time(NULL)-ban->time));
         entry = create_label (baninfo[i]->str);
         entries[i] = entry;
     }
