@@ -68,11 +68,12 @@ void perl_settings_deinit(void)
 MODULE = Irssi::Settings  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
-char *
+SV *
 settings_get_str(key)
 	char *key
 CODE:
-	RETVAL = (char *) settings_get_str(key);
+	RETVAL = newSVpv(settings_get_str(key), 0);
+	SvUTF8_on(RETVAL);
 OUTPUT:
 	RETVAL
 
