@@ -5,7 +5,7 @@ dnl =============
 dnl
 dnl - Determine which version of curses is installed on your system
 dnl   and set the -I/-L/-l compiler entries and add a few preprocessor
-dnl   symbols 
+dnl   symbols
 dnl - Do an AC_SUBST on the CURSES_INCLUDEDIR and CURSES_LIBS so that
 dnl   @CURSES_INCLUDEDIR@ and @CURSES_LIBS@ will be available in
 dnl   Makefile.in's
@@ -15,7 +15,7 @@ dnl   CURSES_INCLUDEDIR - contains -I's and possibly -DRENAMED_CURSES if
 dnl                       an ncurses.h that's been renamed to curses.h
 dnl                       is found.
 dnl   CURSES_LIBS       - sets -L and -l's appropriately
-dnl   CFLAGS            - if --with-sco, add -D_SVID3 
+dnl   CFLAGS            - if --with-sco, add -D_SVID3
 dnl   has_curses        - exports result of tests to rest of configure
 dnl
 dnl Usage:
@@ -39,7 +39,7 @@ dnl - call AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true) from
 dnl   configure.in
 dnl - your Makefile.am can look something like this
 dnl   -----------------------------------------------
-dnl   INCLUDES= blah blah blah $(CURSES_INCLUDEDIR) 
+dnl   INCLUDES= blah blah blah $(CURSES_INCLUDEDIR)
 dnl   if HAS_CURSES
 dnl   CURSES_TARGETS=name_of_curses_prog
 dnl   endif
@@ -57,25 +57,25 @@ dnl
 dnl /*=== Curses version detection defines ===*/
 dnl /* Found some version of curses that we're going to use */
 dnl #undef HAS_CURSES
-dnl    
+dnl   
 dnl /* Use SunOS SysV curses? */
 dnl #undef USE_SUNOS_CURSES
-dnl 
+dnl
 dnl /* Use old BSD curses - not used right now */
 dnl #undef USE_BSD_CURSES
-dnl 
+dnl
 dnl /* Use SystemV curses? */
 dnl #undef USE_SYSV_CURSES
-dnl 
+dnl
 dnl /* Use Ncurses? */
 dnl #undef USE_NCURSES
-dnl 
+dnl
 dnl /* If you Curses does not have color define this one */
 dnl #undef NO_COLOR_CURSES
-dnl 
+dnl
 dnl /* Define if you want to turn on SCO-specific code */
 dnl #undef SCO_FLAVOR
-dnl 
+dnl
 dnl /* Set to reflect version of ncurses *
 dnl  *   0 = version 1.*
 dnl  *   1 = version 1.9.9g
@@ -83,7 +83,7 @@ dnl  *   2 = version 4.0/4.1 */
 dnl #undef NCURSES_970530
 dnl
 dnl /*=== End new stuff for acconfig.h ===*/
-dnl 
+dnl
 
 
 AC_DEFUN(AC_CHECK_CURSES,[
@@ -198,7 +198,7 @@ dnl	AC_WARN(display/input problems.)
 dnl	AC_WARN(Reconsider using xcurses)
 dnl)
 
-	
+
 dnl
 dnl Parameters: directory filename curses_LIBS curses_INCLUDEDIR nicename
 dnl
@@ -246,7 +246,7 @@ AC_DEFUN(AC_SEARCH_NCURSES, [
     dnl
     dnl We couldn't find ncurses, try SysV curses
     dnl
-    if $search_ncurses 
+    if $search_ncurses
     then
         AC_EGREP_HEADER(init_color, /usr/include/curses.h,
 	    AC_USE_SYSV_CURSES)
