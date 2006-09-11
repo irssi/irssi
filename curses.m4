@@ -200,7 +200,7 @@ dnl)
 
 	
 dnl
-dnl Parameters: directory filename cureses_LIBS curses_INCLUDEDIR nicename
+dnl Parameters: directory filename curses_LIBS curses_INCLUDEDIR nicename
 dnl
 AC_DEFUN(AC_NCURSES, [
     if $search_ncurses
