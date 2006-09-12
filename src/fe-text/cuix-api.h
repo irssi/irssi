@@ -1,22 +1,9 @@
 #ifndef __CUIX_API_H
 #define __CUIX_API_H
 
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-#  include <ncurses.h>
-#else
-#  include <curses.h>
-#endif
-#include <form.h>
-#include <panel.h>
+#include "term-curses.h"
 
 #define MAX_FIELD_SIZE 64
-
-/* Should be updated if the one in term-curses.c changes */
-struct _TERM_WINDOW {
-    int x, y;
-    int width, height;
-    WINDOW *win;
-};
 
 WINDOW *cuix_win;
 PANEL *p_main;

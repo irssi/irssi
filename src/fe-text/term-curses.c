@@ -26,13 +26,9 @@
 #ifdef HAVE_CUIX
 #include "cuix.h"
 #endif
-#include "panel.h"
 
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-#  include <ncurses.h>
-#else
-#  include <curses.h>
-#endif
+#include "term-curses.h"
+
 #include <termios.h>
 #include <signal.h>
 
@@ -47,12 +43,6 @@
 #ifndef _POSIX_VDISABLE
 #  define _POSIX_VDISABLE 0
 #endif
-
-struct _TERM_WINDOW {
-	int x, y;
-        int width, height;
-	WINDOW *win;
-};
 
 TERM_WINDOW *root_window;
 
