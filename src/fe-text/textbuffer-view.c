@@ -1095,8 +1095,7 @@ static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 	int scroll;
 
 	if (view->startline == line) {
-		view->startline = view->startline->prev != NULL ?
-			view->startline->prev : view->startline->next;
+		view->startline = view->startline->next;
 		view->subline = 0;
 	} else {
 		scroll = view->height -
