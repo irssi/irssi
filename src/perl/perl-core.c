@@ -470,8 +470,8 @@ void perl_core_init(void)
 
 void perl_core_deinit(void)
 {
-	perl_signals_deinit();
         perl_scripts_deinit();
+	perl_signals_deinit();
 
 	signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
 }
