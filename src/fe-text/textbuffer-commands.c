@@ -51,8 +51,7 @@ static void cmd_clear(const char *data)
 	if (g_hash_table_lookup(optlist, "all") != NULL) {
                 /* clear all windows */
 		for (tmp = windows; tmp != NULL; tmp = tmp->next) {
-			WINDOW_REC *window = tmp->data;
-
+			window = tmp->data;
 			textbuffer_view_clear(WINDOW_GUI(window)->view);
 		}
 	} else if (*refnum != '\0') {
