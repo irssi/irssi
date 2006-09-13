@@ -37,11 +37,11 @@
 /* SYNTAX: CLEAR [-all] [<refnum>] */
 static void cmd_clear(const char *data)
 {
-        WINDOW_REC *window;
+	WINDOW_REC *window;
 	GHashTable *optlist;
-        char *refnum;
+	char *refnum;
 	void *free_arg;
-        GSList *tmp;
+	GSList *tmp;
 
 	g_return_if_fail(data != NULL);
 
@@ -49,18 +49,18 @@ static void cmd_clear(const char *data)
 			    "clear", &optlist, &refnum)) return;
 
 	if (g_hash_table_lookup(optlist, "all") != NULL) {
-                /* clear all windows */
+		/* clear all windows */
 		for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 			window = tmp->data;
 			textbuffer_view_clear(WINDOW_GUI(window)->view);
 		}
 	} else if (*refnum != '\0') {
-                /* clear specified window */
+		/* clear specified window */
 		window = window_find_refnum(atoi(refnum));
-                if (window != NULL)
+		if (window != NULL)
 			textbuffer_view_clear(WINDOW_GUI(window)->view);
 	} else {
-                /* clear active window */
+		/* clear active window */
 		textbuffer_view_clear(WINDOW_GUI(active_win)->view);
 	}
 
