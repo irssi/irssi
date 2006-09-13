@@ -99,10 +99,37 @@ static void cmd_scrollback(const char *data, SERVER_REC *server,
 	command_runsub("scrollback", data, server, item);
 }
 
-/* SYNTAX: SCROLLBACK CLEAR */
-static void cmd_scrollback_clear(void)
+/* SYNTAX: SCROLLBACK CLEAR [-all] [<refnum>] */
+static void cmd_scrollback_clear(const char *data)
 {
-	textbuffer_view_remove_all_lines(WINDOW_GUI(active_win)->view);
+	WINDOW_REC *window;
+	GHashTable *optlist;
+	char *refnum;
+	void *free_arg;
+	GSList *tmp;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "scrollback clear", &optlist, &refnum)) return;
+
+	if (g_hash_table_lookup(optlist, "all") != NULL) {
+		/* clear all windows */
+		for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
+			textbuffer_view_remove_all_lines(WINDOW_GUI(window)->view);
+		}
+	} else if (*refnum != '\0') {
+		/* clear specified window */
+		window = window_find_refnum(atoi(refnum));
+		if (window != NULL)
+			textbuffer_view_remove_all_lines(WINDOW_GUI(window)->view);
+	} else {
+		/* clear active window */
+		textbuffer_view_remove_all_lines(WINDOW_GUI(active_win)->view);
+	}
+
+	cmd_params_free(free_arg);
 }
 
 static void scrollback_goto_line(int linenum)
@@ -338,6 +365,7 @@ void textbuffer_commands_init(void)
 #endif
 
 	command_set_options("clear", "all");
+	command_set_options("scrollback clear", "all");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
