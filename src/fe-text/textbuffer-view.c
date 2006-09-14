@@ -1148,7 +1148,6 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 						linecount, FALSE);
 			view->ypos -= realcount;
 			view->empty_linecount += linecount-realcount;
-			view->startline = view->startline->next;
 		}
 	} else {
 		if (textbuffer_line_exists_after(view->bottom_startline,
