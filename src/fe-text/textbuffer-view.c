@@ -1143,11 +1143,15 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 		if (view->startline == line) {
                         /* removing the first line in screen */
+			int is_last = view->startline->next == NULL;
+
 			realcount = view_scroll(view, &view->startline,
 						&view->subline,
 						linecount, FALSE);
 			view->ypos -= realcount;
 			view->empty_linecount += linecount-realcount;
+			if (is_last == 1)
+				view->startline = NULL;
 		}
 	} else {
 		if (textbuffer_line_exists_after(view->bottom_startline,
