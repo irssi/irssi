@@ -74,7 +74,7 @@ settings_get_str(key)
 CODE:
 	const char *str;
 
-	RETVAL = NULL;
+	RETVAL = Nullsv;
 	str = settings_get_str(key);
 	if (str != NULL) {
 		RETVAL = newSVpv(str, 0);
