@@ -279,7 +279,7 @@ static int get_attr(int color)
 			color &= ~0x0f;
 			color |= settings_get_int("default_color");
 		}
-		attr = (COLOR_PAIR((color&7) + (color&0x70)/2));
+		attr = COLOR_PAIR((color&7) | ((color&0x70)>>1));
 	}
 
 	if ((color & 0x08) || (color & ATTR_BOLD)) attr |= A_BOLD;
