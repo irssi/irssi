@@ -270,8 +270,8 @@ static int get_attr(int color)
 
 	if (!term_use_colors)
 		attr = (color & 0x70) ? A_REVERSE : 0;
-	else if (((color & 0x0f) == 8) && (color & ATTR_BOLD) == 0)
-                attr = (A_DIM | COLOR_PAIR(63));
+	else if ((color & 0xff) == 8 || (color & (0xff | ATTR_RESETFG)) == 0)
+		attr = COLOR_PAIR(63);
 	else if ((color & 0x77) == 0)
 		attr = A_NORMAL;
 	else {
