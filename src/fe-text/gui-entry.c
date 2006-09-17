@@ -242,7 +242,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	}
 
         /* clear the rest of the input line */
-        if (end_xpos == term_width)
+        if (end_xpos == term_width-1)
 		term_clrtoeol(root_window);
 	else {
 		while (xpos < end_xpos) {
