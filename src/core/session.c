@@ -93,8 +93,6 @@ static void cmd_upgrade(const char *data)
 
 	if (*data == '\0')
 		data = irssi_binary;
-	if (data == NULL)
-                cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	/* save the session */
         session_file = g_strdup_printf("%s/session", get_irssi_dir());
