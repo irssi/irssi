@@ -220,6 +220,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "invalid_size", "Invalid size", 0 },
 	{ "invalid_charset", "Invalid charset: $0", 1, { 0 } },
 	{ "eval_max_recurse", "/eval hit maximum recursion limit", 0 },
+	{ "program_not_found", "Could not find file or file is not executable", 0 },
 
 	/* ---- */
 	{ NULL, "Themes", 0 },

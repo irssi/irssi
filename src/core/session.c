@@ -37,42 +37,59 @@ char *irssi_binary = NULL;
 
 static char **session_args;
 
-void session_set_binary(const char *path)
+#ifndef HAVE_GLIB2
+static char *g_find_program_in_path(const char *path)
 {
 	const char *envpath;
 	char **paths, **tmp;
         char *str;
-
-	g_free_and_null(irssi_binary);
+	char *result = NULL;
 
 	if (g_path_is_absolute(path)) {
                 /* full path - easy */
-		irssi_binary = g_strdup(path);
-                return;
+		if(access(path, X_OK) == -1)
+			return NULL;
+		else
+			return g_strdup(path);
 	}
 
 	if (strchr(path, G_DIR_SEPARATOR) != NULL) {
 		/* relative path */
                 str = g_get_current_dir();
-		irssi_binary = g_strconcat(str, G_DIR_SEPARATOR_S, path, NULL);
+		result = g_strconcat(str, G_DIR_SEPARATOR_S, path, NULL);
 		g_free(str);
-                return;
+		if (access(result, X_OK) == -1) {
+			g_free(result);
+			return NULL;
+		}
+		else
+			return result;
 	}
 
 	/* we'll need to find it from path. */
 	envpath = g_getenv("PATH");
-	if (envpath == NULL) return;
+	if (envpath == NULL) return NULL;
 
 	paths = g_strsplit(envpath, ":", -1);
 	for (tmp = paths; *tmp != NULL; tmp++) {
                 str = g_strconcat(*tmp, G_DIR_SEPARATOR_S, path, NULL);
 		if (access(str, X_OK) == 0) {
-			irssi_binary = str;
+			result = str;
                         break;
 		}
                 g_free(str);
 	}
 	g_strfreev(paths);
+
+	return result;
+}
+#endif
+
+void session_set_binary(const char *path)
+{
+	g_free_and_null(irssi_binary);
+
+	irssi_binary = g_strdup(path);
 }
 
 void session_upgrade(void)
@@ -80,7 +97,7 @@ void session_upgrade(void)
 	if (session_args == NULL)
                 return;
 
-	execvp(session_args[0], session_args);
+	execv(session_args[0], session_args);
 	fprintf(stderr, "exec failed: %s: %s\n",
 		session_args[0], g_strerror(errno));
 }
@@ -90,9 +107,13 @@ static void cmd_upgrade(const char *data)
 {
 	CONFIG_REC *session;
 	char *session_file, *str;
+	char *binary;
 
 	if (*data == '\0')
 		data = irssi_binary;
+
+	if ((binary = g_find_program_in_path(data)) == NULL)
+		cmd_return_error(CMDERR_PROGRAM_NOT_FOUND);
 
 	/* save the session */
         session_file = g_strdup_printf("%s/session", get_irssi_dir());
@@ -106,7 +127,8 @@ static void cmd_upgrade(const char *data)
 	/* data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
 	str = g_strdup_printf("%s --noconnect --session=%s --home=%s --config=%s",
-			      data, session_file, get_irssi_dir(), get_irssi_config());
+			      binary, session_file, get_irssi_dir(), get_irssi_config());
+	g_free(binary);
 	g_free(session_file);
         session_args = g_strsplit(str, " ", -1);
         g_free(str);

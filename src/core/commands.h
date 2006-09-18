@@ -40,7 +40,8 @@ enum {
 	CMDERR_NOT_GOOD_IDEA, /* not good idea to do, -yes overrides this */
 	CMDERR_INVALID_TIME, /* invalid time specification */
 	CMDERR_INVALID_CHARSET, /* invalid charset specification */
-	CMDERR_EVAL_MAX_RECURSE /* eval hit recursion limit */
+	CMDERR_EVAL_MAX_RECURSE, /* eval hit recursion limit */
+	CMDERR_PROGRAM_NOT_FOUND /* program not found */
 };
 
 /* Return the full command for `alias' */
