@@ -74,12 +74,9 @@ settings_get_str(key)
 CODE:
 	const char *str;
 
-	RETVAL = Nullsv;
 	str = settings_get_str(key);
-	if (str != NULL) {
-		RETVAL = newSVpv(str, 0);
-		SvUTF8_on(RETVAL);
-	}
+	RETVAL = new_pv(str);
+	SvUTF8_on(RETVAL);
 OUTPUT:
 	RETVAL
 
