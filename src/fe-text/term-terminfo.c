@@ -339,7 +339,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 	/* bold */
 	if (col & 0x08)
 		col |= ATTR_BOLD;
-	else if (col & ATTR_BOLD)
+	if (col & ATTR_BOLD)
 		terminfo_set_bold();
 
 	/* underline */
