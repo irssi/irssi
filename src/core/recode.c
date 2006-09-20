@@ -25,7 +25,6 @@
 #include "lib-config/iconfig.h"
 #include "misc.h"
 
-#ifdef HAVE_GLIB2
 static gboolean recode_get_charset(const char **charset)
 {
 	*charset = settings_get_str("term_charset");
@@ -33,9 +32,19 @@ static gboolean recode_get_charset(const char **charset)
 		/* we use the same test as in src/fe-text/term.c:123 */
 			return !g_strcasecmp(*charset, "utf-8");
 
+#ifdef HAVE_GLIB2
 	return g_get_charset(charset);
-}
+#else
+	return FALSE;
 #endif
+}
+
+gboolean is_utf8(void)
+{
+	const char *charset;
+
+	return recode_get_charset(&charset);
+}
 
 static gboolean is_translit(const char *charset)
 {

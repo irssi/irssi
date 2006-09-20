@@ -33,6 +33,7 @@
 #include "themes.h"
 #include "translation.h"
 #ifdef HAVE_GLIB2
+#include "recode.h"
 #include "utf8.h"
 #endif
 
@@ -299,17 +300,6 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 		window_find_closest(server, target, level);
 }
 #ifdef HAVE_GLIB2
-static gboolean term_is_utf8 (void)
-{
-	const char *charset;
-
-	charset = settings_get_str("term_charset");
-	if (*charset)
-	return ! g_strcasecmp(charset, "utf-8");
-
-	return g_get_charset(&charset);
-}
-
 static int advance (char const **str, gboolean utf8)
 {
 	if (utf8) {
@@ -338,7 +328,7 @@ int format_get_length(const char *str)
 	g_return_val_if_fail(str != NULL, 0);
 
 #ifdef HAVE_GLIB2
-	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
 #endif
 
 	tmp = g_string_new(NULL);
@@ -382,7 +372,7 @@ int format_real_length(const char *str, int len)
 	g_return_val_if_fail(len >= 0, 0);
 
 #ifdef HAVE_GLIB2
-	utf8 = term_is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
 #endif
 
 	start = str;
