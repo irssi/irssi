@@ -46,12 +46,14 @@ gboolean is_utf8(void)
 	return recode_get_charset(&charset);
 }
 
+#ifdef HAVE_GLIB2
 static gboolean is_translit(const char *charset)
 {
 	char *pos;
 	pos = stristr(charset, "//translit");
 	return (pos != NULL);
 }
+#endif
 
 gboolean is_valid_charset(const char *charset)
 {
