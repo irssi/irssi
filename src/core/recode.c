@@ -30,7 +30,7 @@ static gboolean recode_get_charset(const char **charset)
 	*charset = settings_get_str("term_charset");
 	if (**charset)
 		/* we use the same test as in src/fe-text/term.c:123 */
-			return !g_strcasecmp(*charset, "utf-8");
+		return (g_strcasecmp(*charset, "utf-8") == 0);
 
 #ifdef HAVE_GLIB2
 	return g_get_charset(charset);
@@ -50,6 +50,7 @@ gboolean is_utf8(void)
 static gboolean is_translit(const char *charset)
 {
 	char *pos;
+
 	pos = stristr(charset, "//translit");
 	return (pos != NULL);
 }
