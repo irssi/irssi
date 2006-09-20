@@ -1,4 +1,5 @@
 #include "module.h"
+#include "recode.h"
 
 MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
 PROTOTYPES: ENABLE
@@ -75,9 +76,13 @@ textbuffer_line_get_text(line, coloring)
 	int coloring
 PREINIT:
 	GString *str;
+	SV *result;
 PPCODE:
 	str = g_string_new(NULL);
 	textbuffer_line2text(line, coloring, str);
-	XPUSHs(sv_2mortal(new_pv(str->str)));
+	result = new_pv(str->str);
+	if (is_utf8())
+		SvUTF8_on(result);
+	XPUSHs(sv_2mortal(result));
 	g_string_free(str, TRUE);
 
