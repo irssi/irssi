@@ -1,9 +1,9 @@
 AC_INIT(src)
 
 # we don't want VERSION in our config.h
-if test -n "`grep '^#undef VERSION' config.h.in`"; then
-  grep -v '^#undef VERSION' config.h.in > config.h.in.temp
-  mv -f config.h.in.temp config.h.in
+if test -n "`grep '^#undef VERSION' $srcdir/config.h.in`"; then
+  grep -v '^#undef VERSION' $srcdir/config.h.in > config.h.in.temp
+  mv -f config.h.in.temp $srcdir/config.h.in
 fi
 
 AM_CONFIG_HEADER(config.h)
