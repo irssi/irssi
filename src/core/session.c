@@ -89,7 +89,7 @@ void session_set_binary(const char *path)
 {
 	g_free_and_null(irssi_binary);
 
-	irssi_binary = g_strdup(path);
+	irssi_binary = g_find_program_in_path(path);
 }
 
 void session_upgrade(void)
@@ -110,9 +110,11 @@ static void cmd_upgrade(const char *data)
 	char *binary;
 
 	if (*data == '\0')
-		data = irssi_binary;
+		binary = g_strdup(irssi_binary);
+	else
+		binary = g_find_program_in_path(data);
 
-	if ((binary = g_find_program_in_path(data)) == NULL)
+	if (binary == NULL)
 		cmd_return_error(CMDERR_PROGRAM_NOT_FOUND);
 
 	/* save the session */
