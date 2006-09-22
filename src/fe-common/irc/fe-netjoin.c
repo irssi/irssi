@@ -255,12 +255,17 @@ static int sig_check_netjoins(void)
 {
 	GSList *tmp, *next;
 	int diff;
+	time_t now;
 
+	now = time(NULL);
+	/* first print all netjoins which haven't had any new joins
+	 * for NETJOIN_WAIT_TIME; this may cause them to be removed
+	 * (all users who rejoined, rejoined all channels) */
 	for (tmp = joinservers; tmp != NULL; tmp = next) {
 		NETJOIN_SERVER_REC *server = tmp->data;
 
 		next = tmp->next;
-		diff = time(NULL)-server->last_netjoin;
+		diff = now-server->last_netjoin;
 		if (diff <= NETJOIN_WAIT_TIME) {
 			/* wait for more JOINs */
 			continue;
@@ -268,8 +273,18 @@ static int sig_check_netjoins(void)
 
                 if (server->netjoins != NULL)
 			print_netjoins(server);
-		else if (diff >= NETJOIN_MAX_WAIT) {
-			/* waited long enough, remove the netjoin */
+	}
+
+	/* now remove all netjoins which haven't had any new joins
+	 * for NETJOIN_MAX_WAIT (user rejoined some but not all channels
+	 * after split) */
+	for (tmp = joinservers; tmp != NULL; tmp = next) {
+		NETJOIN_SERVER_REC *server = tmp->data;
+
+		next = tmp->next;
+		diff = now-server->last_netjoin;
+		if (diff >= NETJOIN_MAX_WAIT) {
+			/* waited long enough, forget about the rest */
                         netjoin_server_remove(server);
 		}
 	}
@@ -294,6 +309,8 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 {
 	NETSPLIT_REC *split;
 	NETJOIN_REC *netjoin;
+	GSList *channels;
+	int rejoin = 1;
 
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -307,6 +324,25 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 	if (split == NULL && netjoin == NULL)
                 return;
 
+	/* if this was not a channel they split from, treat it normally */
+	if (netjoin != NULL) {
+		if (!gslist_find_icase_string(netjoin->old_channels, channel))
+			return;
+	} else {
+		channels = split->channels;
+		while (channels != NULL) {
+			NETSPLIT_CHAN_REC *schannel = channels->data;
+
+			if (!strcasecmp(schannel->name, channel))
+				break;
+			channels = channels->next;
+		}
+		/* we still need to create a NETJOIN_REC now as the
+		 * NETSPLIT_REC will be destroyed */
+		if (channels == NULL)
+			rejoin = 0;
+	}
+
 	if (join_tag == -1) {
 		join_tag = g_timeout_add(1000, (GSourceFunc)
 					 sig_check_netjoins, NULL);
@@ -316,9 +352,12 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 	if (netjoin == NULL)
 		netjoin = netjoin_add(server, nick, split->channels);
 
-	netjoin->now_channels = g_slist_append(netjoin->now_channels,
-					       g_strconcat(" ", channel, NULL));
-	signal_stop();
+	if (rejoin)
+	{
+		netjoin->now_channels = g_slist_append(netjoin->now_channels,
+						       g_strconcat(" ", channel, NULL));
+		signal_stop();
+	}
 }
 
 static int netjoin_set_nickmode(IRC_SERVER_REC *server, NETJOIN_REC *rec,
