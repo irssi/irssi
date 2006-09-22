@@ -110,11 +110,9 @@ static void cmd_upgrade(const char *data)
 	char *binary;
 
 	if (*data == '\0')
-		binary = g_strdup(irssi_binary);
-	else
-		binary = g_find_program_in_path(data);
+		data = irssi_binary;
 
-	if (binary == NULL)
+	if ((binary = g_find_program_in_path(data)) == NULL)
 		cmd_return_error(CMDERR_PROGRAM_NOT_FOUND);
 
 	/* save the session */
