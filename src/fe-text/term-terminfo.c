@@ -354,6 +354,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 
 void term_move(TERM_WINDOW *window, int x, int y)
 {
+	if (x >= 0 && y >= 0) {
 	vcmove = TRUE;
 	vcx = x+window->x;
         vcy = y+window->y;
@@ -362,6 +363,7 @@ void term_move(TERM_WINDOW *window, int x, int y)
 		vcx = term_width-1;
 	if (vcy >= term_height)
                 vcy = term_height-1;
+	}
 }
 
 static void term_printed_text(int count)
