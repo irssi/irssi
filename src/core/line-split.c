@@ -90,6 +90,7 @@ static int remove_newline(LINEBUF_REC *rec)
 int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer)
 {
 	LINEBUF_REC *rec;
+	int ret;
 
 	g_return_val_if_fail(data != NULL, -1);
 	g_return_val_if_fail(output != NULL, -1);
@@ -122,8 +123,9 @@ int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer)
 		}
 	}
 
+	ret = remove_newline(rec);
 	*output = rec->str;
-	return remove_newline(rec);
+	return ret;
 }
 
 void line_split_free(LINEBUF_REC *buffer)
