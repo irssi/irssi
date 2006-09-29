@@ -550,13 +550,13 @@ cat > conftest.c <<EOF
 int modfunc(){return (int)floor(1.2);}
 EOF
 
-./libtool --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
+./libtool --tag=CC --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
 if test ! -s conftest.lo; then
   AC_ERROR([error compiling test module])
 fi
 
 dnl ** link to library
-./libtool --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
+./libtool --tag=CC --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
 if test ! -s .libs/libconftest.a; then
   AC_ERROR([error, can't even find .a library])
 fi
