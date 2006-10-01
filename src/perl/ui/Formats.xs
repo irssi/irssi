@@ -133,4 +133,4 @@ print(dest, str)
 	Irssi::UI::TextDest dest
 	char *str
 CODE:
-	printtext_dest(dest, str);
+	printtext_dest(dest, "%s", str);
