@@ -35,3 +35,6 @@ standard input of the process with -in option.
 kill the process. It is meant to remove the processes that don't die
 even with SIGKILL. This option just closes the pipes used to
 communicate with the process and frees all memory it used.
+
+EXEC without any arguments displays the list of started processes.
+
