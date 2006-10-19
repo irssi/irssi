@@ -738,7 +738,7 @@ Nick
 Channel::nick_find_mask(mask)
   Find nick mask from nicklist, wildcards allowed.
 
-Channel::nicks(channel)
+Channel::nicks()
   Return a list of all nicks in channel.
 
 Server::nicks_get_same(nick)
