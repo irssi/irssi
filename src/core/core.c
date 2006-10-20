@@ -251,7 +251,7 @@ void core_init(int argc, char *argv[])
 	chat_commands_init();
 
 	settings_add_str("misc", "ignore_signals", "");
-	settings_add_bool("misc", "override_coredump_limit", TRUE);
+	settings_add_bool("misc", "override_coredump_limit", FALSE);
 
 #ifdef HAVE_SYS_RESOURCE_H
 	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
