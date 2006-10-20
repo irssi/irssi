@@ -61,6 +61,7 @@ void log_away_deinit(void);
 int irssi_gui;
 int irssi_init_finished;
 int reload_config;
+time_t client_start_time;
 
 static char *irssi_dir, *irssi_config_file;
 static GSList *dialog_type_queue, *dialog_text_queue;
@@ -215,6 +216,7 @@ void core_init(int argc, char *argv[])
 {
 	dialog_type_queue = NULL;
 	dialog_text_queue = NULL;
+	client_start_time = time(NULL);
 
 	modules_init();
 #ifndef WIN32

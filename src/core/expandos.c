@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "core.h"
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
@@ -52,7 +53,6 @@ static int timer_tag;
 
 static EXPANDO_REC *char_expandos[255];
 static GHashTable *expandos;
-static time_t client_start_time;
 static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease, *sysarch;
@@ -577,7 +577,6 @@ void expandos_init(void)
 	settings_add_str("lookandfeel", "timestamp_format", "%H:%M");
 	settings_add_bool("lookandfeel", "chanmode_expando_strip", FALSE);
 
-	client_start_time = time(NULL);
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
 	last_privmsg_from = NULL; last_public_from = NULL;
         last_timestamp = 0;

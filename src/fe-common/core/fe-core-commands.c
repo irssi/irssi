@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "core.h"
 #include "module.h"
 #include "module-formats.h"
 #include "signals.h"
@@ -194,6 +195,22 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: UPTIME */
+static void cmd_uptime(char *data)
+{
+	time_t uptime;
+
+	g_return_if_fail(data != NULL);
+
+	if (*data == '\0') {
+		uptime = time(NULL) - client_start_time;
+		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "Uptime: %ldd %ldh %ldm %lds",
+			  uptime/3600/24, uptime/3600%24,
+			  uptime/60%60, uptime%60);
+	}
+}
+
 static void sig_stop(void)
 {
 	signal_stop();
@@ -327,6 +344,7 @@ void fe_core_commands_init(void)
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);
 	command_bind("cat", NULL, (SIGNAL_FUNC) cmd_cat);
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
+	command_bind("uptime", NULL, (SIGNAL_FUNC) cmd_uptime);
 	command_bind_first("nick", NULL, (SIGNAL_FUNC) cmd_nick);
 	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_join);
 
@@ -345,6 +363,7 @@ void fe_core_commands_deinit(void)
 	command_unbind("version", (SIGNAL_FUNC) cmd_version);
 	command_unbind("cat", (SIGNAL_FUNC) cmd_cat);
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
+	command_unbind("uptime", (SIGNAL_FUNC) cmd_uptime);
 	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 

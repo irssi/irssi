@@ -1,6 +1,8 @@
 #ifndef __IRSSI_CORE_H
 #define __IRSSI_CORE_H
 
+#include <time.h>
+
 /* for determining what GUI is currently in use: */
 #define IRSSI_GUI_NONE	0
 #define IRSSI_GUI_TEXT	1
@@ -12,6 +14,7 @@
 extern int irssi_gui;
 extern int irssi_init_finished; /* TRUE after "irssi init finished" signal is sent */
 extern int reload_config; /* TRUE after received SIGHUP. */
+extern time_t client_start_time;
 
 void core_init_paths(int argc, char *argv[]);
 
