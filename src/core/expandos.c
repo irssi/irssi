@@ -260,6 +260,13 @@ EXPANDO_FUNC expando_find_long(const char *key)
 	return rec == NULL ? NULL : rec->func;
 }
 
+static gboolean free_expando(gpointer key, gpointer value, gpointer user_data)
+{
+	g_free(key);
+	g_free(value);
+	return TRUE;
+}
+
 /* last person who sent you a MSG */
 static char *expando_lastmsg(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -698,13 +705,7 @@ void expandos_deinit(void)
 	for (n = 0; n < sizeof(char_expandos)/sizeof(char_expandos[0]); n++)
 		g_free_not_null(char_expandos[n]);
 
-	expando_destroy("sysname", expando_sysname);
-	expando_destroy("sysrelease", expando_sysrelease);
-	expando_destroy("sysarch", expando_sysarch);
-	expando_destroy("topic", expando_topic);
-	expando_destroy("tag", expando_servertag);
-	expando_destroy("chatnet", expando_chatnet);
-
+	g_hash_table_foreach_remove(expandos, free_expando, NULL);
         g_hash_table_destroy(expandos);
 
 	g_free_not_null(last_sent_msg); g_free_not_null(last_sent_msg_body);
