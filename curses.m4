@@ -220,7 +220,7 @@ AC_DEFUN(AC_NCURSES, [
 	    ], $CURSES_LIBS)
 	    CURSES_INCLUDEDIR="$4"
 	    search_ncurses=false
-	    screen_manager=$5
+	    screen_manager="$5"
             AC_DEFINE(HAS_CURSES)
             has_curses=true
 	    has_ncurses=true
