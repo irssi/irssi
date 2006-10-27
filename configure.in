@@ -1,4 +1,5 @@
 AC_INIT(src)
+AC_PREREQ(2.50)
 
 # we don't want VERSION in our config.h
 if grep '^#undef VERSION' $srcdir/config.h.in >/dev/null; then
@@ -285,41 +286,23 @@ AC_DEFINE_UNQUOTED(_FILE_OFFSET_BITS, $preferred_off_t_bits)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(off_t)
 
-dnl * older autoconfs don't include sys/types.h, so do it manually
-AC_MSG_CHECKING([size of off_t])
-AC_TRY_RUN([
-  #include <stdio.h>
-  #include <sys/types.h>
-  int main() {
-    FILE *f=fopen("conftestval", "w");
-    if (!f) exit(1);
-    fprintf(f, "%d\n", sizeof(off_t));
-    return 0;
-  }
-], [
-  sizeof_off_t=`cat conftestval`
-  rm -f conftestval
-], [
-  AC_ERROR([Unsupported off_t size])
-])
-AC_MSG_RESULT($sizeof_off_t)
-
-if test $sizeof_off_t = 8; then
+if test $ac_cv_sizeof_off_t = 8; then
   offt_64bit=yes
 else
   offt_64bit=no
 fi
 
-if test x$sizeof_off_t = x$ac_cv_sizeof_long; then
+if test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_long; then
   # try to use unsigned long always first
   AC_DEFINE_UNQUOTED(PRIuUOFF_T, "lu")
   AC_DEFINE(UOFF_T_LONG)
-elif test x$sizeof_off_t = x$ac_cv_sizeof_int; then
+elif test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_int; then
   # next try int
   AC_DEFINE_UNQUOTED(PRIuUOFF_T, "u")
   AC_DEFINE(UOFF_T_INT)
-elif test x$sizeof_off_t = x$ac_cv_sizeof_long_long; then
+elif test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_long_long; then
   # and finally long long
   AC_DEFINE_UNQUOTED(PRIuUOFF_T, "llu")
   AC_DEFINE(UOFF_T_LONG_LONG)
