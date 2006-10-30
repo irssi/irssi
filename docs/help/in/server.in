@@ -8,6 +8,7 @@
      -ssl_verify: Verify servers SSL certificate
      -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
      -ssl_capath: Directory with CA certificates (implies -ssl_verify)
+     -noproxy: Ignore the global proxy configuration for this server
      -auto: Automatically connect to server at startup
      -noauto: Don't connect to server at startup (default)
      -network: Specify what IRC network this server belongs to
