@@ -692,7 +692,7 @@ static CONFIG_REC *parse_configfile(const char *fname)
 		config = config_open(NULL, -1);
 	}
 
-        if (path != NULL)
+        if (config->fname != NULL)
 		config_parse(config);
         else
 		config_parse_data(config, default_config, "internal");
