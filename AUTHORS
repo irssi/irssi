@@ -8,6 +8,7 @@ Irssi staff (current maintainers) <staff@irssi.org>:
   Wouter Coekaerts (coekie)
   Jochen Eisinger (c0ffee)
   Geert Hauwaerts
+  Emanuele Giaquinta (exg)
 
 Large feature patches by:
 
@@ -56,3 +57,12 @@ Other patches (grep for "patch" in ChangeLog) by:
   Tinuk
   Mark Glines
   Kjetil Ødegaard
+  Chris Moore
+  ComradeP
+  Jilles Tjoelker
+  Lauri Nurmi
+  Mikko Rauhala
+  Sven Wegener
+  loafier
+  Nicolas Collignon
+  Daniel Koning

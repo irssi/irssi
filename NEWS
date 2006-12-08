@@ -1,3 +1,54 @@
+v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
+	+ Send /QUOTE immediately if server didn't send the 001 event yet
+	+ If dcc_own_ip contains IPv4 address, listen only in IPv4
+	+ Negative scroll_page_count scrolls screensize-n lines
+	  (Patch by Chris Moore)
+	+ Sort nicks with custom prefix by the order defined in isupport in /NAMES
+	+ New perl command send_raw_first, patch by ComradeP (Bug 413)
+	+ Let the module loader also check for fe_common_$protocol files
+	+ Don't wait for all /NAMES replies before syncing if we can't combine
+	  queries anyways (Patch by jilles)
+	+ Renamed irc.efnet.net to irc.efnet.org
+	+ Add support for wide curses
+	+ Add support for utf8 to Irssi::settings_get_str and
+	  Irssi::TextUI::Line::get_text.
+	+ /SCROLLBACK CLEAR accepts the same arguments as /CLEAR
+	+ Check if binary exists and can be executed before /UPGRADE
+	+ Change default value of override_coredump_limit to OFF
+	+ UPTIME command by Lauri Nurmi with some modifications (Bug 458)
+	+ Remove CR and LF from Perl commands, to make it harder to introduce a
+	  security bug
+	- Fixed segfault on quit introduced in 0.8.10
+	- Fixed a bug where tab-complete didn't worked with utf8/big5 properly
+	- Fixed colors with TERM=xterm-{88,256}color
+	- Ignore joins without a nick from broken servers
+	- Rand
+	- Fix whois_hide_safe_channel_id: only look at the beginning of a channel
+	  name, not in the middle
+	- Don't assume that 7bit ascii strings are encoded in UTF-8, only
+	  validate the strings when they contain octest with highest bit set
+	  (patch by Mikko Rauhala)
+	- Make random really random when resolving
+	- Don't get confused by a join command with too many arguments, keys
+	  can't have spaces in them (Bug 437)
+	- Fix some curses related things in configure.in and curses.m4
+	- Don't crash on /QUIT with scripts causing and catching signals on UNLOAD
+	- Don't crash when settings_get_str returns NULL in Perl scripting
+	- Fix off-by-one error in gui_entry_draw_from
+	- Fix %k and %K mappings
+	- Fix bold on monochrome terminals.
+	- Fix building with srcdir != builddir.
+	- Don't get confused and keep saying "Netsplit over" on every join for
+	  user that only rejoined some channels.
+	- Fix crash with one line high terminal 
+	- Fix crash in /EXEC, patch by Sven Wegener (Bug 439)
+	- Fix format string in printtext_dest call from Perl, patch by loafier.
+	- Fix memory leaks in expandos_deinit by Nicolas Collignon (Bug 419)
+	- Detect off_t size using AC_CHECK_SIZEOF because it works also when
+	  cross-compiling in autoconf-2.50 and higher.
+	- Fix failed assertion when the config file is unreadable, patch by
+	  Daniel Koning (Bug 164)
+
 v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 
 	* Long delayed release, with lots of changes. Most important ones:
