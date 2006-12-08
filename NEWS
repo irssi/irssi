@@ -41,7 +41,7 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Don't get confused and keep saying "Netsplit over" on every join for
 	  user that only rejoined some channels.
 	- Fix crash with one line high terminal 
-	- Fix crash in /EXEC, patch by Sven Wegener (Bug 439)
+	- Fix crash in /EXEC (Bug 439)
 	- Fix format string in printtext_dest call from Perl, patch by loafier.
 	- Fix memory leaks in expandos_deinit by Nicolas Collignon (Bug 419)
 	- Detect off_t size using AC_CHECK_SIZEOF because it works also when
