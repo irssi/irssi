@@ -526,6 +526,16 @@ static void perl_script_fill_hash(HV *hv, PERL_SCRIPT_REC *script)
 	hv_store(hv, "data", 4, new_pv(script->data), 0);
 }
 
+static void remove_newlines(char *str)
+{
+	char *writing = str;
+
+	for (;*str;str++)
+		if (*str != '\n' && *str != '\r')
+			*(writing++) = *str;
+	*writing = '\0';
+}
+
 void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
 {
         const char *cmdchars;
@@ -538,6 +548,14 @@ void perl_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)
 	if (strchr(cmdchars, *cmd) == NULL) {
 		/* no command char - let's put it there.. */
 		sendcmd = g_strdup_printf("%c%s", *cmdchars, cmd);
+	}
+
+	/* remove \r and \n from commands,
+	   to make it harder to introduce a security bug in a script */
+	if(strpbrk(sendcmd, "\r\n")) {
+		if (sendcmd == cmd)
+			sendcmd = strdup(cmd);
+		remove_newlines(sendcmd);
 	}
 
 	signal_emit("send command", 3, sendcmd, server, item);
