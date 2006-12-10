@@ -20,7 +20,6 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Fixed segfault on quit introduced in 0.8.10
 	- Fixed a bug where tab-complete didn't worked with utf8/big5 properly
 	- Ignore joins without a nick from broken servers
-	- Rand
 	- Fix whois_hide_safe_channel_id: only look at the beginning of a channel
 	  name, not in the middle
 	- Don't assume that 7bit ascii strings are encoded in UTF-8, only
@@ -29,10 +28,9 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Make random really random when resolving
 	- Don't get confused by a join command with too many arguments, keys
 	  can't have spaces in them (Bug 437)
-	- Fix some curses related things in configure.in and curses.m4
 	- Don't crash on /QUIT with scripts causing and catching signals on UNLOAD
 	- Fix off-by-one error in gui_entry_draw_from
-	- Fix %k and %K mappings in ncurses frontend
+	- Fix %k and %K mappings in curses frontend
 	- Fix bold on monochrome terminals in terminfo frontend
 	- Fixed colors with TERM=xterm-{88,256}color in terminfo frontend
 	- Fix building with srcdir != builddir
