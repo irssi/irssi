@@ -72,9 +72,9 @@ PROTOTYPES: ENABLE
 SV *
 settings_get_str(key)
 	char *key
-CODE:
+PREINIT:
 	const char *str;
-
+CODE:
 	str = settings_get_str(key);
 	RETVAL = new_pv(str);
 	if (is_utf8())
