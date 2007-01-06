@@ -167,6 +167,8 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 #ifdef HAVE_GLIB2
 	char *recoded = NULL;
 	const char *from = NULL;
+	const char *to = NULL;
+	char *translit_to = NULL;
 	gboolean translit, term_is_utf8, recode;
 	int len;
 
@@ -180,10 +182,6 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 	len = strlen(str);
 
 	translit = settings_get_bool("recode_transliterate");
-
-	if (target) {
-		const char *to = NULL;
-		char *translit_to = NULL;
 
 		if (server != NULL && server->tag != NULL && target != NULL) {
 			char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
@@ -206,7 +204,6 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 			recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
 		}
 		g_free(translit_to);
-	}
 	if (!recoded)
 		recoded = g_strdup(str);
 
