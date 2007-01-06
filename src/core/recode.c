@@ -89,7 +89,6 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	const char *to = NULL;
 	char *translit_to = NULL;
 	char *recoded = NULL;
-	char *tagtarget = NULL;
 	gboolean term_is_utf8, str_is_utf8, translit, recode, autodetect;
 	int len;
 	int i;
@@ -122,12 +121,11 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			from = "UTF-8";
 			
 	else {
-		if (server != NULL && target != NULL)
-			tagtarget = server->tag == NULL ? NULL :
-				g_strdup_printf("%s/%s", server->tag, target);
-		if (tagtarget != NULL)
+		if (server != NULL && server->tag != NULL && target != NULL) {
+			char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
 			from = iconfig_get_str("conversions", tagtarget, NULL);
-		g_free(tagtarget);
+			g_free(tagtarget);
+		}
 
 		if (target != NULL && from == NULL)
 			from = iconfig_get_str("conversions", target, NULL);
@@ -186,14 +184,12 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 	if (target) {
 		const char *to = NULL;
 		char *translit_to = NULL;
-		char *tagtarget = NULL;
 
-		if (server != NULL && target != NULL)
-			tagtarget = server->tag == NULL ? NULL :
-				    g_strdup_printf("%s/%s", server->tag, target);
-		if (tagtarget != NULL)
+		if (server != NULL && server->tag != NULL && target != NULL) {
+			char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
 			to = iconfig_get_str("conversions", tagtarget, NULL);
-		g_free(tagtarget);
+			g_free(tagtarget);
+		}
 		if (to == NULL || *to == '\0')
 			to = iconfig_get_str("conversions", target, NULL);
 		if ((to == NULL || *to == '\0') && server != NULL)
