@@ -183,27 +183,27 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 
 	translit = settings_get_bool("recode_transliterate");
 
-		if (server != NULL && server->tag != NULL && target != NULL) {
-			char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
-			to = iconfig_get_str("conversions", tagtarget, NULL);
-			g_free(tagtarget);
-		}
-		if (to == NULL || *to == '\0')
-			to = iconfig_get_str("conversions", target, NULL);
-		if ((to == NULL || *to == '\0') && server != NULL)
-			to = iconfig_get_str("conversions", server->tag, NULL);
-		if (to == NULL || *to == '\0')
-			/* default outgoing charset if set */
-			to = settings_get_str("recode_out_default_charset");
+	if (server != NULL && server->tag != NULL && target != NULL) {
+		char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
+		to = iconfig_get_str("conversions", tagtarget, NULL);
+		g_free(tagtarget);
+	}
+	if (to == NULL || *to == '\0')
+		to = iconfig_get_str("conversions", target, NULL);
+	if ((to == NULL || *to == '\0') && server != NULL)
+		to = iconfig_get_str("conversions", server->tag, NULL);
+	if (to == NULL || *to == '\0')
+		/* default outgoing charset if set */
+		to = settings_get_str("recode_out_default_charset");
 
-		if (to && *to != '\0') {
-			if (translit && !is_translit(to))
-				to = translit_to = g_strconcat(to ,"//TRANSLIT", NULL);
+	if (to && *to != '\0') {
+		if (translit && !is_translit(to))
+			to = translit_to = g_strconcat(to ,"//TRANSLIT", NULL);
 
-			term_is_utf8 = recode_get_charset(&from);
-			recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
-		}
-		g_free(translit_to);
+		term_is_utf8 = recode_get_charset(&from);
+		recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
+	}
+	g_free(translit_to);
 	if (!recoded)
 		recoded = g_strdup(str);
 
