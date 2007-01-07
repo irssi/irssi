@@ -98,11 +98,15 @@ static void sig_away_changed(SERVER_REC *server)
 
 void log_away_init(void)
 {
+	char *awaylog_file;
+
 	awaylog = NULL;
 	away_filepos = 0;
 	away_msgs = 0;
 
-	settings_add_str("log", "awaylog_file", IRSSI_DIR_SHORT"/away.log");
+	awaylog_file = g_strconcat(get_irssi_dir(), "/away.log", NULL);
+	settings_add_str("log", "awaylog_file", awaylog_file);
+	g_free(awaylog_file);
 	settings_add_level("log", "awaylog_level", "msgs hilight");
 
 	signal_add("log written", (SIGNAL_FUNC) sig_log_written);
