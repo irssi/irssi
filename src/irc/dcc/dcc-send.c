@@ -149,12 +149,8 @@ static void dcc_send_add(const char *servertag, CHAT_DCC_REC *chat,
 			}
 		}
 
-		if (!passive)
-			dcc_queue_add(queue, add_mode, nick,
-				      fname, servertag, chat);
-		else
-			dcc_queue_add_passive(queue, add_mode, nick,
-					      fname, servertag, chat);
+		dcc_queue_add(queue, add_mode, nick,
+			      fname, servertag, chat, passive);
 		files++;
 		g_free(fname);
 	}

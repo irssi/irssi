@@ -28,10 +28,7 @@ int dcc_queue_old(const char *nick, const char *servertag);
 
 /* adds nick/fname/servertag triplet into queue */
 void dcc_queue_add(int queue, int mode, const char *nick, const char *fname,
-		   const char *servertag, CHAT_DCC_REC *chat);
-void dcc_queue_add_passive(int queue, int mode, const char *nick,
-			   const char *fname, const char *servertag,
-			   CHAT_DCC_REC *chat);
+		   const char *servertag, CHAT_DCC_REC *chat, int passive);
 
 int dcc_queue_remove_head(int queue);
 
