@@ -252,6 +252,7 @@ void config_parse_init(CONFIG_REC *rec, const char *name)
 
 	rec->scanner = scanner = g_scanner_new(NULL);
 	scanner->config->skip_comment_single = FALSE;
+	scanner->config->cset_identifier_first = G_CSET_a_2_z"_0123456789"G_CSET_A_2_Z;
 	scanner->config->cset_skip_characters = " \t";
 	scanner->config->scan_binary = FALSE;
 	scanner->config->scan_octal = FALSE;
