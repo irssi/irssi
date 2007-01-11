@@ -160,7 +160,8 @@ CODE:
 	old = active_win;
 	active_win = window;
 	perl_command(cmd, window->active_server, window->active);
-        if (g_slist_find(windows, old) != NULL)
+	if (active_win == window &&
+	    g_slist_find(windows, old) != NULL)
         	active_win = old;
 
 void
