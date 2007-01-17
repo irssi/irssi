@@ -313,6 +313,12 @@ static void event_whois_ircop(SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_nick_invalid(IRC_SERVER_REC *server, const char *data)
+{
+	if (!server->connected)
+		server_disconnect((SERVER_REC *) server);
+}
+
 static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 {
 	char *str, *cmd;
@@ -457,7 +463,7 @@ void irc_nicklist_init(void)
 	signal_add_first("event 305", (SIGNAL_FUNC) event_own_unaway);
 	signal_add_first("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_add_first("event 366", (SIGNAL_FUNC) event_end_of_names);
-	signal_add_first("event 432", (SIGNAL_FUNC) event_nick_in_use);
+	signal_add_first("event 432", (SIGNAL_FUNC) event_nick_invalid);
 	signal_add_first("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add_first("event 302", (SIGNAL_FUNC) event_userhost);
@@ -479,7 +485,7 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 305", (SIGNAL_FUNC) event_own_unaway);
 	signal_remove("event 353", (SIGNAL_FUNC) event_names_list);
 	signal_remove("event 366", (SIGNAL_FUNC) event_end_of_names);
-	signal_remove("event 432", (SIGNAL_FUNC) event_nick_in_use);
+	signal_remove("event 432", (SIGNAL_FUNC) event_nick_invalid);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
