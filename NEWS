@@ -9,8 +9,6 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	+ Don't wait for all /NAMES replies before syncing if we can't combine
 	  queries anyways (Patch by jilles)
 	+ Renamed irc.efnet.net to irc.efnet.org
-	+ Add support for utf8 to Irssi::settings_get_str and
-	  Irssi::TextUI::Line::get_text
 	+ /SCROLLBACK CLEAR accepts the same arguments as /CLEAR
 	+ Check if binary exists and can be executed before /UPGRADE
 	+ Change default value of override_coredump_limit to OFF

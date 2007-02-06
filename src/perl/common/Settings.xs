@@ -1,6 +1,5 @@
 #include "module.h"
 #include "misc.h"
-#include "recode.h"
 
 static GHashTable *perl_settings;
 
@@ -77,8 +76,6 @@ PREINIT:
 CODE:
 	str = settings_get_str(key);
 	RETVAL = new_pv(str);
-	if (is_utf8())
-		SvUTF8_on(RETVAL);
 OUTPUT:
 	RETVAL
 
