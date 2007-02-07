@@ -507,8 +507,18 @@ void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, int update_cutbuffer)
 	gui_entry_erase(entry, size, update_cutbuffer);
 }
 
+static size_t cell_width(unichar *buf, int len)
+{
+	unichar *str = buf;
+
+	while (len-- && utf8_width(*str--) == 0);
+	return buf - str;
+}
+
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 {
+	size_t w = 0;
+
         g_return_if_fail(entry != NULL);
 
 	if (entry->pos < size)
@@ -532,13 +542,16 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 		return;
 	}
 
+	if (entry->utf8)
+		w = cell_width(entry->text + entry->pos - size, entry->pos - size + 1)-1;
+
 	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
 		  (entry->text_len-entry->pos+1) * sizeof(unichar));
 
 	entry->pos -= size;
         entry->text_len -= size;
 
-	gui_entry_redraw_from(entry, entry->pos);
+	gui_entry_redraw_from(entry, entry->pos-w);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
