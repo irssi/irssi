@@ -366,6 +366,7 @@ int format_real_length(const char *str, int len)
 	GString *tmp;
 	const char *start;
 #ifdef HAVE_GLIB2
+	const char *oldstr;
 	gboolean utf8;
 #endif
 	g_return_val_if_fail(str != NULL, 0);
@@ -394,7 +395,10 @@ int format_real_length(const char *str, int len)
 		}
 
 #ifdef HAVE_GLIB2
+		oldstr = str;
 		len -= advance(&str, utf8);
+		if (len < 0)
+			str = oldstr;
 #else
 	  len--;
 		str++;
