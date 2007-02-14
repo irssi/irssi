@@ -5,7 +5,6 @@
 #define IRSSI_AUTHOR_EMAIL "cras@irssi.org"
 #define IRSSI_AUTHOR "Timo Sirainen <"IRSSI_AUTHOR_EMAIL">"
 
-#define IRSSI_DIR_SHORT "~/.irssi"
 #define IRSSI_DIR_FULL "%s/.irssi" /* %s == g_get_home_dir() */
 
 #define IRSSI_GLOBAL_CONFIG "irssi.conf" /* config file name in /etc/ */

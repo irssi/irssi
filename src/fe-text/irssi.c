@@ -269,7 +269,7 @@ static void check_oldcrap(void)
 		return;
 	}
 
-	printf("\nYou seem to have old default.theme in "IRSSI_DIR_SHORT"/ directory.\n");
+	printf("\nYou seem to have an old default.theme in %s/ directory.\n", get_irssi_dir());
         printf("Themeing system has changed a bit since last irssi release,\n");
         printf("you should either delete your old default.theme or manually\n");
         printf("merge it with the new default.theme.\n\n");
