@@ -126,6 +126,7 @@ void textbuffer_view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line);
 void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line);
 /* Remove all lines from buffer. */
 void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view);
+void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level);
 
 /* Set a bookmark in view */
 void textbuffer_view_set_bookmark(TEXT_BUFFER_VIEW_REC *view,

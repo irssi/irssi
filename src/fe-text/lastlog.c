@@ -35,26 +35,6 @@
 #define DEFAULT_LASTLOG_AFTER 3
 #define MAX_LINES_WITHOUT_FORCE 1000
 
-static void window_lastlog_clear(WINDOW_REC *window)
-{
-	TEXT_BUFFER_VIEW_REC *view;
-        LINE_REC *line, *next;
-
-        term_refresh_freeze();
-	view = WINDOW_GUI(window)->view;
-	line = textbuffer_view_get_lines(view);
-
-	while (line != NULL) {
-                next = line->next;
-
-		if (line->info.level & MSGLEVEL_LASTLOG)
-			textbuffer_view_remove_line(view, line);
-                line = next;
-	}
-        textbuffer_view_redraw(view);
-        term_refresh_thaw();
-}
-
 /* Only unknown keys in `optlist' should be levels.
    Returns -1 if unknown option was given. */
 int cmd_options_get_level(const char *cmd, GHashTable *optlist)
@@ -109,7 +89,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
         if (level == 0) level = MSGLEVEL_ALL;
 
 	if (g_hash_table_lookup(optlist, "clear") != NULL) {
-		window_lastlog_clear(active_win);
+		textbuffer_view_remove_lines_by_level(WINDOW_GUI(active_win)->view, MSGLEVEL_LASTLOG);
 		if (*searchtext == '\0')
                         return;
 	}

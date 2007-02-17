@@ -1201,6 +1201,24 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	textbuffer_remove(view->buffer, line);
 }
 
+void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level)
+{
+	LINE_REC *line, *next;
+	
+	term_refresh_freeze();
+	line = textbuffer_view_get_lines(view);
+
+	while (line != NULL) {
+		next = line->next;
+
+		if (line->info.level & level)
+			textbuffer_view_remove_line(view, line);
+		line = next;
+	}
+	textbuffer_view_redraw(view);
+	term_refresh_thaw();
+}
+
 static int g_free_true(void *data)
 {
 	g_free(data);
