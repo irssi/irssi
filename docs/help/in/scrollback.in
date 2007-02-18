@@ -3,10 +3,17 @@
 
 /SCROLLBACK, or the default alias /SB:
 
-/SB CLEAR - Clear screen, free all memory used by texts in window.
-/SB HOME - Jump to start of the buffer
-/SB END - Jump to end of the buffer
-/SB GOTO [[-|+]line#|time] - Jump to specified line or timestamp.
+/SB LEVELCLEAR
+   - Remove lines with level matching one of those
+     specified in scrollback_levelclear_levels.
+/SB CLEAR
+   - Clear screen, free all memory used by texts in window.
+/SB HOME
+   - Jump to start of the buffer.
+/SB END
+   - Jump to end of the buffer.
+/SB GOTO [[-|+]line#|time]
+   - Jump to specified line or timestamp.
 
 See also: SET SCROLL
 

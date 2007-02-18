@@ -132,6 +132,46 @@ static void cmd_scrollback_clear(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: SCROLLBACK LEVELCLEAR [-all] [<refnum>] */
+static void cmd_scrollback_levelclear(const char *data)
+{
+	WINDOW_REC *window;
+	GHashTable *optlist;
+	char *refnum;
+	void *free_arg;
+	GSList *tmp;
+	int level;
+
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "scrollback levelclear", &optlist, &refnum)) return;
+
+	level = settings_get_level("scrollback_levelclear_levels");
+	if (level == 0) {
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	if (g_hash_table_lookup(optlist, "all") != NULL) {
+		/* clear all windows */
+		for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
+			textbuffer_view_remove_lines_by_level(WINDOW_GUI(window)->view, level);
+		}
+	} else if (*refnum != '\0') {
+		/* clear specified window */
+		window = window_find_refnum(atoi(refnum));
+		if (window != NULL)
+			textbuffer_view_remove_lines_by_level(WINDOW_GUI(window)->view, level);
+	} else {
+		/* clear active window */
+		textbuffer_view_remove_lines_by_level(WINDOW_GUI(active_win)->view, level);
+	}
+
+	cmd_params_free(free_arg);
+}
+
 static void scrollback_goto_line(int linenum)
 {
         TEXT_BUFFER_VIEW_REC *view;
@@ -351,10 +391,12 @@ static void cmd_cuix(void)
 
 void textbuffer_commands_init(void)
 {
+	settings_add_level("misc", "scrollback_levelclear_levels", "crap clientcrap");
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 	command_bind("window scroll", NULL, (SIGNAL_FUNC) cmd_window_scroll);
 	command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
 	command_bind("scrollback clear", NULL, (SIGNAL_FUNC) cmd_scrollback_clear);
+	command_bind("scrollback levelclear", NULL, (SIGNAL_FUNC) cmd_scrollback_levelclear);
 	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
@@ -366,6 +408,7 @@ void textbuffer_commands_init(void)
 
 	command_set_options("clear", "all");
 	command_set_options("scrollback clear", "all");
+	command_set_options("scrollback levelclear", "all");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
@@ -376,6 +419,7 @@ void textbuffer_commands_deinit(void)
 	command_unbind("window scroll", (SIGNAL_FUNC) cmd_window_scroll);
 	command_unbind("scrollback", (SIGNAL_FUNC) cmd_scrollback);
 	command_unbind("scrollback clear", (SIGNAL_FUNC) cmd_scrollback_clear);
+	command_unbind("scrollback levelclear", (SIGNAL_FUNC) cmd_scrollback_levelclear);
 	command_unbind("scrollback goto", (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
