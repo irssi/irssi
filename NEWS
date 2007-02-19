@@ -1,4 +1,11 @@
 v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
+	+ New crapbuster-like "scrollback levelclear" command
+	+ irssi now aborts a connection when, on an attempt to connect, the server
+	  returns code 432 (Erroneous Nickname), bug #425
+	+ Allow identifiers in config file to start with a digit, bug #177.
+	+ Modify Irssi::UI::Window::command to restore the original active window
+	  only if the command executed has not made another one active, bug #403.
+	+ Make awaylog_file respect --home, bug #304
 	+ Send /QUOTE immediately if server didn't send the 001 event yet
 	+ If dcc_own_ip contains IPv4 address, listen only in IPv4
 	+ Negative scroll_page_count scrolls screensize-n lines
@@ -15,6 +22,7 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	+ UPTIME command by Lauri Nurmi with some modifications (Bug 458)
 	+ Remove CR and LF from Perl commands, to make it harder to introduce a
 	  security bug
+	- Fix some UTF-8 issues, bugs #452 (Patch by Yi-Hsuan Hsin), #459, #460
 	- Fixed segfault on quit introduced in 0.8.10
 	- Fixed a bug where tab-complete didn't worked with utf8/big5 properly
 	- Ignore joins without a nick from broken servers
@@ -31,10 +39,10 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Fix %k and %K mappings in curses frontend
 	- Fix bold on monochrome terminals in terminfo frontend
 	- Fixed colors with TERM=xterm-{88,256}color in terminfo frontend
+	- Fix crash with one line high terminal in terminfo frontend
 	- Fix building with srcdir != builddir
 	- Don't get confused and keep saying "Netsplit over" on every join for
 	  user that only rejoined some channels
-	- Fix crash with one line high terminal
 	- Fix crash in /EXEC (Bug 439)
 	- Fix format string in printtext_dest call from Perl, patch by loafier
 	- Fix memory leaks in expandos_deinit by Nicolas Collignon (Bug 419)
