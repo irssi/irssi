@@ -8,7 +8,7 @@ if grep '^#undef VERSION' $srcdir/config.h.in >/dev/null; then
 fi
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.8.10)
+AM_INIT_AUTOMAKE(irssi, 0.8.11-rc1)
 
 AM_MAINTAINER_MODE
 
