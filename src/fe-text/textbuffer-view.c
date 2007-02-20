@@ -342,6 +342,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	LINE_CACHE_REC *cache;
         const unsigned char *text, *end, *text_newline;
 	unsigned char *tmp;
+	unichar chr;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
@@ -432,9 +433,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			continue;
 		}
 
+		chr = *text;
 		end = text;
 		if (view->utf8) {
-			unichar chr;
 			if (get_utf8_char(&end, 6, &chr)<0)
 				char_width = 1;
 			else
@@ -450,15 +451,14 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 		xpos += char_width;
 		if (xpos <= term_width) {
-			if (*text >= 32 &&
-			    (end != text || (*text & 127) >= 32)) {
+			if ((chr & ~0x80) >= 32) {
 				for (; text < end; text++)
 					term_addch(view->window, *text);
 				term_addch(view->window, *text);
 			} else {
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
-				term_addch(view->window, (*text & 127)+'A'-1);
+				term_addch(view->window, (chr & 127)+'A'-1);
 				term_set_color(view->window, color);
 			}
 		}
