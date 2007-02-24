@@ -23,6 +23,12 @@ irssi windows.
    - /window level all -msgs - creates status window
 /WINDOW NEW [HIDDEN|SPLIT] 
    - creates new hidden/splitted window, 
+/WINDOW ITEM MOVE <number>|<name>
+   - with a numeric argument, moves the active window
+     item of the active window to the window with
+     refnum <number>.
+     with a string argument, moves the window item with
+     name <name> to the active window.
 
 Window logging
         
@@ -32,7 +38,7 @@ Window logging
 /WINDOW LOGFILE <filename> 
    - Sets the default log file to use in the window, it can be
      overridden by specifying the file name in /WINDOW LOG. 
-     If no file name isn't given, Irssi defaults to 
+     If no file name is given, Irssi defaults to 
      ~/irc.log.<windowname> or ~/irc.log.Window<ref#> if window 
      doesn't have a name.
 
