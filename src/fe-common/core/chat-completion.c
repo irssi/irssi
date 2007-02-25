@@ -910,6 +910,33 @@ static void sig_complete_alias(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void sig_complete_window(GList **list, WINDOW_REC *window,
+				const char *word, const char *linestart,
+				int *want_space)
+{
+	WINDOW_REC *win;
+	WI_ITEM_REC *item;
+	GSList *tmp;
+	int len;
+
+	g_return_if_fail(list != NULL);
+	g_return_if_fail(word != NULL);
+
+	len = strlen(word);
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		win = tmp->data;
+		item = win->active;
+
+		if (win->name != NULL && g_strncasecmp(win->name, word, len) == 0)
+			*list = g_list_append(*list, g_strdup(win->name));
+		if (item != NULL && g_strncasecmp(item->visible_name, word, len) == 0)
+			*list = g_list_append(*list, g_strdup(item->visible_name));
+	}
+
+	if (*list != NULL) signal_stop();
+}
+
 static void sig_complete_channel(GList **list, WINDOW_REC *window,
 				 const char *word, const char *line,
 				 int *want_space)
@@ -1136,6 +1163,7 @@ void chat_completion_init(void)
 	signal_add("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_add("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
 	signal_add("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
+	signal_add("complete command window goto", (SIGNAL_FUNC) sig_complete_window);
 	signal_add("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_add("complete command server add", (SIGNAL_FUNC) sig_complete_server);
 	signal_add("complete command server remove", (SIGNAL_FUNC) sig_complete_server);
@@ -1173,6 +1201,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_remove("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
 	signal_remove("complete command alias", (SIGNAL_FUNC) sig_complete_alias);
+	signal_remove("complete command window goto", (SIGNAL_FUNC) sig_complete_window);
 	signal_remove("complete command window item move", (SIGNAL_FUNC) sig_complete_channel);
 	signal_remove("complete command server add", (SIGNAL_FUNC) sig_complete_server);
 	signal_remove("complete command server remove", (SIGNAL_FUNC) sig_complete_server);

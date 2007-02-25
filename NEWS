@@ -1,4 +1,5 @@
 v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
+	+ Add completion for /window goto
 	+ New crapbuster-like "scrollback levelclear" command
 	+ irssi now aborts a connection when, on an attempt to connect, the server
 	  returns code 432 (Erroneous Nickname), bug #425
