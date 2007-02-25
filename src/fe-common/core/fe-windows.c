@@ -574,14 +574,15 @@ static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
         THEME_REC *theme;
         TEXT_DEST_REC dest;
 	char *format, str[256];
+	int ret;
 
 	theme = active_win->theme != NULL ? active_win->theme : current_theme;
 	format_create_dest(&dest, NULL, NULL, MSGLEVEL_NEVER, window);
 	format = format_get_text_theme(theme, MODULE_NAME, &dest,
 				       TXT_DAYCHANGE);
-	if (strftime(str, sizeof(str), format, tm) <= 0)
-                str[0] = '\0';
+	ret = strftime(str, sizeof(str), format, tm);
 	g_free(format);
+	if (ret <= 0) return;
 
 	printtext_string_window(window, MSGLEVEL_NEVER, str);
 }
