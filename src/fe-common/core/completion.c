@@ -651,13 +651,11 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		g_free(cmd);
 		cmd = g_strconcat(line, " ", word, NULL);
 		*list = g_list_concat(completion_get_subcommands(cmd), *list);
-
 	}
 
 	if (*list != NULL) signal_stop();
 	g_free(signal);
 	g_free(cmd);
-
 	g_free(line);
 }
 
