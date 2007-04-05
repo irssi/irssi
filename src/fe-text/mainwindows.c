@@ -820,7 +820,7 @@ static void cmd_window_show(const char *data)
 	if (window == NULL || is_window_visible(window))
 		return;
 
-	if (WINDOW_MAIN(window)->sticky_windows) {
+	if (WINDOW_GUI(window)->sticky) {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 				   TXT_CANT_SHOW_STICKY_WINDOWS);
                 return;
