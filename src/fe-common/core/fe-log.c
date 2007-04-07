@@ -252,6 +252,7 @@ static LOG_REC *logs_find_item(int type, const char *item,
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
 		LOG_REC *log = tmp->data;
 
+		if (type == LOG_ITEM_TARGET && log->temp == 0) continue;
 		logitem = log_item_find(log, type, item, servertag);
 		if (logitem != NULL) {
 			if (ret_item != NULL) *ret_item = logitem;
