@@ -212,7 +212,7 @@ static void sig_irssi_init_finished(void)
         irssi_init_finished = TRUE;
 }
 
-void core_init(int argc, char *argv[])
+void core_init(void)
 {
 	dialog_type_queue = NULL;
 	dialog_text_queue = NULL;
