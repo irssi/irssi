@@ -299,10 +299,11 @@ void log_file_write(const char *server_tag, const char *item, int level,
 		if ((level & rec->level) == 0)
 			continue;
 
-		if (rec->items == NULL)
+		if (item == NULL) {
+			if (rec->temp == 0) log_write_rec(rec, str, level);
+		} else if (rec->items == NULL)
 			fallbacks = g_slist_append(fallbacks, rec);
-		else if (item != NULL &&
-			 log_item_find(rec, LOG_ITEM_TARGET, item,
+		else if (log_item_find(rec, LOG_ITEM_TARGET, item,
 				       server_tag) != NULL)
 			log_write_rec(rec, str, level);
 	}
