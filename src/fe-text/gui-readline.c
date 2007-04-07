@@ -1080,6 +1080,8 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-c", "cright", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-5D", "cleft", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-5C", "cright", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;5D", "cleft", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;5C", "cright", (SIGNAL_FUNC) key_combo);
 
 	/* cursor movement */
 	key_bind("backward_character", "", "left", NULL, (SIGNAL_FUNC) key_backward_character);
