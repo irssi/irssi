@@ -350,11 +350,6 @@ int main(int argc, char **argv)
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif
-#ifdef ENABLE_NLS
-	/* initialize the i18n stuff */
-	bindtextdomain(PACKAGE, LOCALEDIR);
-	textdomain(PACKAGE);
-#endif
 
 	/* setlocale() must be called at the beginning before any calls that
 	   affect it, especially regexps seem to break if they're generated
