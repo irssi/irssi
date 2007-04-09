@@ -409,7 +409,7 @@ static void parse_user_mode(IRC_SERVER_REC *server, const char *modestr)
 	newmode = modes_join(NULL, server->usermode, modestr, FALSE);
 	oldmode = server->usermode;
 	server->usermode = newmode;
-	server->server_operator = (strchr(newmode, 'o') != NULL);
+	server->server_operator = ((strchr(newmode, 'o') != NULL) || (strchr(newmode, 'O') != NULL));
 
 	signal_emit("user mode changed", 2, server, oldmode);
 	g_free_not_null(oldmode);
