@@ -36,7 +36,6 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Don't get confused by a join command with too many arguments, keys
 	  can't have spaces in them (Bug 437)
 	- Don't crash on /QUIT with scripts causing and catching signals on UNLOAD
-	- Fix off-by-one error in gui_entry_draw_from
 	- Fix %k and %K mappings in curses frontend
 	- Fix bold on monochrome terminals in terminfo frontend
 	- Fixed colors with TERM=xterm-{88,256}color in terminfo frontend
