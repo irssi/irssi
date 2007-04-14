@@ -14,6 +14,7 @@
    - Jump to end of the buffer.
 /SB GOTO [[-|+]line#|time]
    - Jump to specified line or timestamp.
+     time format is [dd[.mm] | -<days ago>] hh:mi[:ss].
 
 See also: SET SCROLL
 
