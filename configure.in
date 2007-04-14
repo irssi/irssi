@@ -97,7 +97,7 @@ AC_ARG_WITH(terminfo,
 	want_terminfo=yes)
 
 AC_ARG_WITH(cuix,
-[  --with-cuix             Use curses ui extended],
+[  --with-cuix             Use curses ui extended (experimental, not usable)],
     if test x$withval = xyes; then
             want_terminfo=no
             want_cuix=yes
@@ -337,126 +337,45 @@ dnl **
 dnl ** fe-text checks
 dnl **
 
-AC_DEFUN(AC_CHECK_GLIBDIR,[
-  AC_MSG_CHECKING([whether GLib is unpacked to irssi dir])
+if test "x$want_glib1" = "xyes"; then
+  dnl * check only for glib1
+  checks="1 2"
+else
+  dnl * check glib2 then glib1
+  checks="3 4 1 2"
+fi
 
-  GLIB_DIR=`for d in *; do test -f $d/glib.h && echo $d; done`
-  if test -n "$GLIB_DIR"; then
-    dnl * glib in irssi directory, use it
-    AC_MSG_RESULT([yes, using it])
-
-    dnl * we have to do this at this point so we know what libs gmodule needs
-    if test ! -f $GLIB_DIR/.libs/libglib.a; then
-      echo
-      echo "configuring GLib ..."
-      echo
-      cd $GLIB_DIR
-      if test ! -f glib-config; then
-        ./configure
-      fi
-      ${MAKE-make}
-      cd ..
-      echo
-    fi
-
-    GLIB_LDEXTRA=`$GLIB_DIR/glib-config --libs gmodule|$sedpath -e 's/-lglib//' -e 's/-lgmodule//' -e 's,-L/usr/local/lib ,,'|$sedpath 's/ \+/ /g'`
-    full_glib_dir="`pwd`/$GLIB_DIR"
-    GLIB_CFLAGS="-I$full_glib_dir -I$full_glib_dir/gmodule"
-    if test -f $full_glib_dir/.libs/libglib.a; then
-      GLIB_LIBS="$full_glib_dir/.libs/libglib.a $GLIB_LDEXTRA"
-      if test -f $full_glib_dir/gmodule/.libs/libgmodule.a; then
-	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/.libs/libgmodule.a"
-        AC_DEFINE(HAVE_GMODULE)
-	have_gmodule=yes
-      fi
-    else
-      GLIB_LIBS="$full_glib_dir/libglib.a $GLIB_LDEXTRA"
-      if test -f $full_glib_dir/gmodule/libgmodule.a; then
-	GLIB_LIBS="$GLIB_LIBS $full_glib_dir/gmodule/libgmodule.a"
-        AC_DEFINE(HAVE_GMODULE)
-	have_gmodule=yes
-      fi
-    fi
-    AC_SUBST(GLIB_CFLAGS)
-    AC_SUBST(GLIB_LIBS)
+for try in $checks; do
+  glib_config_args=
+  if test $try = 1 -o $try = 3; then
+    glib_modules=gmodule
   else
-    AC_MSG_RESULT([no])
+    echo "*** trying without -lgmodule"
+    glib_modules=
   fi
-])
-
-AC_CHECK_GLIBDIR
-
-if test -z "$GLIB_DIR"; then
-  if test "x$want_glib1" = "xyes"; then
-    dnl * check only for glib1
-    checks="1 2"
+  if test $try = 1 -o $try = 2; then
+    AM_PATH_GLIB(1.2.0,,, $glib_modules)
   else
-    dnl * check glib2 then glib1
-    checks="3 4 1 2"
+    AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
   fi
-
-  for try in $checks; do
-    glib_config_args=
-    if test $try = 1 -o $try = 3; then
-      glib_modules=gmodule
-    else
-      echo "*** trying without -lgmodule"
-      glib_modules=
+  if test "$GLIB_LIBS"; then
+    if test $glib_modules = gmodule; then
+      AC_DEFINE(HAVE_GMODULE)
+      have_gmodule=yes
     fi
-    if test $try = 1 -o $try = 2; then
-      AM_PATH_GLIB(1.2.0,,, $glib_modules)
-    else
-      AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
-    fi
-    if test "$GLIB_LIBS"; then
-      if test $glib_modules = gmodule; then
-        AC_DEFINE(HAVE_GMODULE)
-        have_gmodule=yes
-      fi
-      break
-    fi
-  done
-
-  if test -z "$GLIB_LIBS"; then
-    echo
-    echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org"
-    echo "*** If you can't install GLIB anywhere or if you don't want to,"
-    echo "*** you can just unpack it to Irssi's source directory and"
-    echo "*** Irssi will automatically compile and use it."
-    echo
-
-    glib_url=ftp://ftp.gtk.org/pub/gtk/v2.8/
-    glib_file=glib-2.8.3.tar.gz
-
-    dlcmd=
-    if test -n "`wget --version 2>/dev/null|grep -i wget`"; then
-      dlcmd="wget -c $glib_url$glib_file"
-    elif test -n "`ncftpget --version 2>/dev/null|grep -i ncftp`"; then
-      dlcmd="ncftpget -z $glib_url$glib_file"
-    elif test -n "`lynx --version 2>/dev/null|grep -i lynx`"; then
-      dlcmd="lynx --source $glib_url$glib_file > $glib_file"
-    elif test -n "`curl --version 2>/dev/null|grep -i curl`"; then
-      dlcmd="curl -C - $glib_url$glib_file"
-    fi
-    if test -n "$dlcmd"; then
-      echo "*** I can download GLib for you now. If you don't want to, press CTRL-C now."
-      echo
-      echo "*** Press ENTER to continue"
-      read answer
-      eval $dlcmd
-      if `gunzip $glib_file`; then
-	glib_file=`echo $glib_file|$sedpath s/\.gz$//`
-	if `tar xf $glib_file`; then
-	  rm -f $glib_file
-	  AC_CHECK_GLIBDIR
-	fi
-      fi
-    fi
-
-    if test -z "$GLIB_LIBS"; then
-      AC_ERROR([GLIB is required to build irssi.])
-    fi
+    break
   fi
+done
+
+if test -z "$GLIB_LIBS"; then
+  echo
+  echo "*** If you don't have GLIB, you can get it from ftp://ftp.gtk.org/pub/glib/"
+  echo "*** We recommend you get the latest stable GLIB 2 version."
+  echo "*** Compile and install it, and make sure pkg-config finds it,"
+  echo "*** by adding the path where the .pc file is located to PKG_CONFIG_PATH"
+  echo
+
+  AC_ERROR([GLIB is required to build irssi.])
 fi
 
 LIBS="$LIBS $GLIB_LIBS"

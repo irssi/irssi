@@ -50,6 +50,7 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	  cross-compiling in autoconf-2.50 and higher
 	- Fix failed assertion when the config file is unreadable, patch by
 	  Daniel Koning (Bug 164)
+	- Removed automatic glib downloading and compiling.
 
 v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 
