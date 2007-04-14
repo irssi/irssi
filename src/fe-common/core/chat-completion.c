@@ -579,14 +579,11 @@ GList *completion_get_aliases(const char *word)
 }
 
 static void complete_window_nicks(GList **list, WINDOW_REC *window,
-                                  const char *word, const char *linestart)
+                                  const char *word, const char *nicksuffix)
 {
         CHANNEL_REC *channel;
         GList *tmplist;
         GSList *tmp;
-        const char *nicksuffix;
-
-        nicksuffix = *linestart != '\0' ? NULL : completion_char;
 
         channel = CHANNEL(window->active);
 
@@ -663,7 +660,8 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	} else if (channel != NULL) {
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
-		complete_window_nicks(list, window, word, linestart);
+		const char *suffix = *linestart != '\0' ? NULL : completion_char;
+		complete_window_nicks(list, window, word, suffix);
 	} else if (window->level & MSGLEVEL_MSGS) {
 		/* msgs window, complete /MSG nicks */
                 *list = g_list_concat(completion_msg(server, NULL, word, NULL), *list);
@@ -707,6 +705,8 @@ static void sig_complete_msg(GList **list, WINDOW_REC *window,
 
 	msgserver = line_get_server(line);
 	*list = completion_msg(server, msgserver, word, NULL);
+	if (CHANNEL(window->active) != NULL)
+		complete_window_nicks(list, window, word, NULL);
 	if (*list != NULL) signal_stop();
 }
 
