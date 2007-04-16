@@ -602,11 +602,8 @@ static void sig_print_text(void)
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	/* day changed, print notice about it to every window */
-	/* but only show it if we want it shown */
-	if (!settings_get_bool("hide_daychange")) {
-		for (tmp = windows; tmp != NULL; tmp = tmp->next)
-			window_print_daychange(tmp->data, tm);
-	}
+	for (tmp = windows; tmp != NULL; tmp = tmp->next)
+		window_print_daychange(tmp->data, tm);
 }
 
 static int sig_check_daychange(void)
