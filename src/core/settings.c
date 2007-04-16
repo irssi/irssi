@@ -181,8 +181,10 @@ static void settings_add(const char *module, const char *section,
 				  "setting '%s' with different type.", key);
 			return;
 		}
+		rec->refcount++;
 	} else {
 		rec = g_new(SETTINGS_REC, 1);
+		rec->refcount = 1;
 		rec->module = g_strdup(module);
 		rec->key = g_strdup(key);
 		rec->section = g_strdup(section);
@@ -191,8 +193,6 @@ static void settings_add(const char *module, const char *section,
 		rec->default_value = *default_value;
 		g_hash_table_insert(settings, rec->key, rec);
 	}
-
-        rec->refcount++;
 }
 
 void settings_add_str_module(const char *module, const char *section,
