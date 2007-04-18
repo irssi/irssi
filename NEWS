@@ -29,7 +29,7 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	+ Recognize cursor left and cursor right sequences sent by recent xterm
 	- Fix some UTF-8 issues, bugs #452 (Patch by Yi-Hsuan Hsin), #459, #460
 	- Fixed segfault on quit introduced in 0.8.10
-	- Fixed a bug where tab-complete didn't worked with utf8/big5 properly
+	- Fixed a bug where tab-completion didn't work with utf8/big5 properly
 	- Ignore joins without a nick from broken servers
 	- Fix whois_hide_safe_channel_id: only look at the beginning of a channel
 	  name, not in the middle
@@ -55,7 +55,6 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Fix failed assertion when the config file is unreadable, patch by
 	  Daniel Koning (Bug 164)
 	- Removed automatic glib downloading and compiling.
-	- Recognize UTF-8 0x80-0x9f as control characters
 	- Fix /FORMAT -delete daychange so it doesn't print an empty line
 	- Forbid /WINDOW SHOW when the target window is sticky rather than when
 	  there is a window bound to the container of the target window.
