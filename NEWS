@@ -1,5 +1,5 @@
 v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
-	+ Add completion for /window goto
+	+ Add completion for /WINDOW GOTO
 	+ New crapbuster-like "scrollback levelclear" command
 	+ irssi now aborts a connection when, on an attempt to connect, the server
 	  returns code 432 (Erroneous Nickname), bug #425
@@ -23,6 +23,10 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	+ UPTIME command by Lauri Nurmi with some modifications (Bug 458)
 	+ Remove CR and LF from Perl commands, to make it harder to introduce a
 	  security bug
+	+ Remove bookmark on a line when line is removed (instead of moving it)
+	+ Don't fallback to generic word completer if the command specific
+	  completion list is not empty.
+	+ Recognize cursor left and cursor right sequences sent by recent xterm
 	- Fix some UTF-8 issues, bugs #452 (Patch by Yi-Hsuan Hsin), #459, #460
 	- Fixed segfault on quit introduced in 0.8.10
 	- Fixed a bug where tab-complete didn't worked with utf8/big5 properly
@@ -51,6 +55,13 @@ v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
 	- Fix failed assertion when the config file is unreadable, patch by
 	  Daniel Koning (Bug 164)
 	- Removed automatic glib downloading and compiling.
+	- Recognize UTF-8 0x80-0x9f as control characters
+	- Fix /FORMAT -delete daychange so it doesn't print an empty line
+	- Forbid /WINDOW SHOW when the target window is sticky rather than when
+	  there is a window bound to the container of the target window.
+	- Improve interaction between autolog and non autolog logs
+	- Recognize local oper mode on ircnet (mode +O)
+	- Properly initialize reference count for a new setting (Bug #235)
 
 v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 
