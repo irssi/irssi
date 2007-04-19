@@ -48,7 +48,7 @@ void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 /* Specify which nick in channel is ours */
 void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick);
 
-/* Nick record comparision for sort functions */
+/* Nick record comparison for sort functions */
 #if GLIB_MAJOR_VERSION < 2
 int nicklist_compare_glib1(NICK_REC *p1, NICK_REC *p2);
 #endif

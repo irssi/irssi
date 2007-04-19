@@ -353,7 +353,7 @@ int main(int argc, char **argv)
 
 	/* setlocale() must be called at the beginning before any calls that
 	   affect it, especially regexps seem to break if they're generated
-	   before t his call.
+	   before this call.
 
 	   locales aren't actually used for anything else than autodetection
 	   of UTF-8 currently..  
