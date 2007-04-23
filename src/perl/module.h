@@ -1,3 +1,5 @@
+#include "common.h"
+
 #ifdef NEED_PERL_H
 #  include <EXTERN.h>
 #  ifndef _SEM_SEMUN_UNDEFINED
@@ -15,8 +17,6 @@
 
 extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implementations won't work */
 #endif
-
-#include "common.h"
 
 #define MODULE_NAME "perl/core"
 
