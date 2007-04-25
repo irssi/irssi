@@ -48,29 +48,13 @@ static time_t config_last_mtime;
 static long config_last_size;
 static unsigned int config_last_checksum;
 
-static SETTINGS_REC *settings_find(const char *key)
-{
-	SETTINGS_REC *rec;
-
-	g_return_val_if_fail(key != NULL, NULL);
-
-	rec = g_hash_table_lookup(settings, key);
-	if (rec == NULL) {
-		g_warning("settings_get_default_str(%s) : "
-			  "unknown setting", key);
-		return NULL;
-	}
-
-	return rec;
-}
-
 static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
 	SETTINGS_REC *rec;
 
 	g_return_val_if_fail(key != NULL, NULL);
 
-	rec = settings_find(key);
+	rec = g_hash_table_lookup(settings, key);
 	if (rec == NULL) {
 		g_warning("settings_get(%s) : not found", key);
 		return NULL;
