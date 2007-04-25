@@ -253,6 +253,10 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 	}
 
 	dcc->starttime = time(NULL);
+	if (dcc->size == 0) {
+		dcc_close(DCC(dcc));
+		return;
+	}
 	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
 				   (GInputFunction) sig_dccget_receive, dcc);
 	signal_emit("dcc connected", 1, dcc);
