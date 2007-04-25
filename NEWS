@@ -1,4 +1,4 @@
-v0.8.11 200x-xx-xx  The Irssi team <staff@irssi.org>
+v0.8.11 2007-04-25  The Irssi team <staff@irssi.org>
 	+ Add completion for /WINDOW GOTO
 	+ New crapbuster-like "scrollback levelclear" command
 	+ irssi now aborts a connection when, on an attempt to connect, the server
