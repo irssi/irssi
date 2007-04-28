@@ -102,7 +102,7 @@ static void send_message(SERVER_REC *server, const char *target,
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	char hostname[100], *address, *ptr, *username, *cmd;
+	char *address, *ptr, *username, *cmd;
 	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
@@ -135,9 +135,6 @@ static void server_init(IRC_SERVER_REC *server)
 	g_free(cmd);
 
 	/* send user/realname */
-	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
-		strcpy(hostname, "xx");
-
 	address = server->connrec->address;
         ptr = strrchr(address, ':');
 	if (ptr != NULL) {
@@ -148,29 +145,11 @@ static void server_init(IRC_SERVER_REC *server)
 			address = "x";
 	}
 
-	/* Replace ':' with '_' in our own hostname (the same IPv6 problem) */
-	/* Replace '\n' and '\r' with '\0' in our own hostname to fix multiple PTR addreses */
-	for (ptr = hostname; *ptr != '\0'; ptr++) {
-		if (*ptr == ':') *ptr = '_';
-		if (*ptr == '\n') *ptr = '\0';
-		if (*ptr == '\r') *ptr = '\0';
-	}
-
-	/* don't allow hostname to begin with number or '+', '-'. those
-	   can be interpreted as ircnet ircd's mode parameter.
-
-	   username/hostname parameters should probably be configurable since
-	   they're only needed with some old servers which uses them to count
-	   unique users. */
-	if ((hostname[0] >= '0' && hostname[0] <= '9') ||
-	    hostname[0] == '+' || hostname[0] == '-')
-		hostname[0] = '_';
-
 	username = g_strdup(conn->username);
 	ptr = strchr(username, ' ');
 	if (ptr != NULL) *ptr = '\0';
 
-	cmd = g_strdup_printf("USER %s %s %s :%s", username, hostname, address, conn->realname);
+	cmd = g_strdup_printf("USER %s %s %s :%s", username, username, address, conn->realname);
 	irc_send_cmd_now(server, cmd);
 	g_free(cmd);
 	g_free(username);
