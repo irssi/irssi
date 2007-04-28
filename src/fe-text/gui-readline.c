@@ -415,7 +415,8 @@ static int check_pasting(unichar key, int diff)
 	}
 
 	g_array_append_val(paste_buffer, key);
-	if (key == '\r' || key == '\n') {
+	if ((key == '\r' || key == '\n') &&
+	    (prev_key != '\r' && prev_key != '\n')) {
 		if (paste_state == 1 &&
 		    paste_keycount < paste_detect_keycount) {
 			/* not enough keypresses to determine if this is
@@ -467,6 +468,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 
 	if (check_pasting(key, diff)) {
 		last_keypress = now;
+		prev_key = key;
 		return;
 	}
 
