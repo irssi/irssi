@@ -422,6 +422,7 @@ static int check_pasting(unichar key, int diff)
 			   pasting or not. don't reset paste keycount, but
 			   send this line as non-pasted */
 			g_array_set_size(paste_buffer, 0);
+			*paste_entry = '\0';
 			return FALSE;
 		}
 
