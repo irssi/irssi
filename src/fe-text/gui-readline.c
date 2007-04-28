@@ -398,8 +398,10 @@ static int check_pasting(unichar key, int diff)
 		paste_line_count = 0;
 		paste_keycount = 0;
 		g_array_set_size(paste_buffer, 0);
-		if (prev_key != '\r' && prev_key != '\n')
+		if (prev_key != '\r' && prev_key != '\n') {
+			paste_keycount++;
 			g_array_append_val(paste_buffer, prev_key);
+		}
 	} else if (paste_state > 0 && diff > paste_detect_time &&
 		   paste_line_count == 0) {
 		/* reset paste state */
