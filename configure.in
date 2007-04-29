@@ -31,6 +31,8 @@ AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h sys/resource.h)
 # check posix headers..
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
 
+AC_SYS_LARGEFILE
+
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
 	if test x$withval = xyes; then
@@ -204,12 +206,6 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
-AC_ARG_WITH(file-offset-size,
-[  --with-file-offset-size=BITS  Set size of file offsets. Usually 32 or 64.
-                          (default: 64 if available)],
-	preferred_off_t_bits=$withval,
-	preferred_off_t_bits=64)
-
 AC_ARG_ENABLE(ipv6,
 [  --enable-ipv6           Enable IPv6 support],
 	if test x$enableval = xyes; then
@@ -279,9 +275,6 @@ if test $irssi_cv_type_socklen_t = no; then
 AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
 fi
 AC_MSG_RESULT($irssi_cv_type_socklen_t)
-
-dnl * off_t checks, try to make it 64bit
-AC_DEFINE_UNQUOTED(_FILE_OFFSET_BITS, $preferred_off_t_bits)
 
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
