@@ -69,14 +69,9 @@ void window_item_activity(WI_ITEM_REC *item, int data_level,
 		    GINT_TO_POINTER(old_data_level));
 }
 
-#define hide_target_activity(data_level, target) \
-	((target) != NULL && hide_targets != NULL && \
-	strarray_find(hide_targets, target) != -1)
-
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
 	WI_ITEM_REC *item;
-        char *tagtarget;
 	int data_level;
 
 	if (dest->window == active_win || (dest->level & hide_level))
@@ -89,19 +84,18 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if ((dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
+	if (hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
 		/* check for both target and tag/target */
-		if (hide_target_activity(data_level, dest->target))
+		if (strarray_find(hide_targets, dest->target) != -1)
 			return;
 
-		tagtarget = dest->server_tag == NULL ? NULL :
-			g_strdup_printf("%s/%s", dest->server_tag,
-					dest->target);
-		if (hide_target_activity(data_level, tagtarget)) {
+		if (dest->server_tag != NULL) {
+			char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
+			int ret = strarray_find(hide_targets, tagtarget);
 			g_free(tagtarget);
-			return;
+			if (ret != -1)
+				return;
 		}
-		g_free(tagtarget);
 	}
 
 	if (dest->target != NULL) {
