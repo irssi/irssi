@@ -55,6 +55,7 @@ int settings_get_bool(const char *key);
 int settings_get_time(const char *key); /* as milliseconds */
 int settings_get_level(const char *key);
 int settings_get_size(const char *key); /* as bytes */
+char *settings_get_print(SETTINGS_REC *rec);
 
 /* Functions to add/remove settings */
 void settings_add_str_module(const char *module, const char *section,

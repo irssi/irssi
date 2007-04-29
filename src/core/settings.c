@@ -148,6 +148,27 @@ int settings_get_size(const char *key)
 	return str == NULL ? 0 : bytes;
 }
 
+char *settings_get_print(SETTINGS_REC *rec)
+{
+	char *value;
+
+	switch(rec->type) {
+	case SETTING_TYPE_BOOLEAN:
+		value = g_strdup(settings_get_bool(rec->key) ? "ON" : "OFF");
+		break;
+	case SETTING_TYPE_INT:
+		value = g_strdup_printf("%d", settings_get_int(rec->key));
+		break;
+	case SETTING_TYPE_STRING:
+	case SETTING_TYPE_TIME:
+	case SETTING_TYPE_LEVEL:
+	case SETTING_TYPE_SIZE:
+		value = g_strdup(settings_get_str(rec->key));
+		break;
+	}
+	return value;
+}
+
 static void settings_add(const char *module, const char *section,
 			 const char *key, SettingType type,
 			 const SettingValue *default_value)

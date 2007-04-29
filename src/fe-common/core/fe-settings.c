@@ -33,28 +33,12 @@
 
 static void set_print(SETTINGS_REC *rec)
 {
-	const char *value;
-	char value_int[MAX_INT_STRLEN];
+	char *value;
 
-	switch (rec->type) {
-	case SETTING_TYPE_BOOLEAN:
-		value = settings_get_bool(rec->key) ? "ON" : "OFF";
-		break;
-	case SETTING_TYPE_INT:
-		ltoa(value_int, settings_get_int(rec->key));
-		value = value_int;
-		break;
-	case SETTING_TYPE_STRING:
-	case SETTING_TYPE_TIME:
-	case SETTING_TYPE_LEVEL:
-	case SETTING_TYPE_SIZE:
-		value = settings_get_str(rec->key);
-		break;
-	default:
-		value = "";
-	}
+	value = settings_get_print(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_SET_ITEM,
 		    rec->key, value);
+	g_free(value);
 }
 
 static void set_boolean(const char *key, const char *value)
