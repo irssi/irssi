@@ -134,24 +134,25 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 {
         char *emptystr;
-	static char nickmode[2]; /* FIXME: bad */
+	char *nickmode;
 
 	if (!settings_get_bool("show_nickmode"))
                 return "";
 
         emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
 
-	if (nickrec != NULL && nickrec->other) {
+	if (nickrec == NULL)
+		nickmode = g_strdup(emptystr);
+	else if (nickrec->other) {
+		nickmode = g_malloc(2);
 		nickmode[0] = nickrec->other;
 		nickmode[1] = '\0';
-		return nickmode;
-	}
-
-	return nickrec == NULL ? emptystr :
-		nickrec->op ? "@" :
-		nickrec->halfop ? "%" :
-		nickrec->voice ? "+" :
-		emptystr;
+	} else
+		nickmode = g_strdup(nickrec->op ? "@" :
+				    nickrec->halfop ? "%" :
+				    nickrec->voice ? "+" :
+				    emptystr);
+	return nickmode;
 }
 
 char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
@@ -167,9 +168,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *target, NICK_REC *nickrec)
 {
 	CHANNEL_REC *chanrec;
-	const char *nickmode, *printnick;
+	const char *printnick;
 	int for_me, print_channel, level;
-	char *color, *freemsg = NULL;
+	char *nickmode, *color, *freemsg = NULL;
 	HILIGHT_REC *hilight;
 
 	/* NOTE: this may return NULL if some channel is just closed with
@@ -229,6 +230,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 				    printnick, target, msg, nickmode);
 	}						
 
+	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
 	g_free_not_null(color);
 }
