@@ -661,9 +661,7 @@ static char *reverse_controls(const char *str)
 	out = g_string_new(NULL);
 
 	while (*str != '\0') {
-		if ((unsigned char) *str < 32 ||
-		    (term_type == TERM_TYPE_8BIT &&
-		     (unsigned char) (*str & 0x7f) < 32)) {
+		if (!IS_PRINTABLE((unsigned char) *str)) {
 			/* control char */
 			g_string_sprintfa(out, "%%8%c%%8",
 					  'A'-1 + (*str & 0x7f));

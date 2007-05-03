@@ -232,7 +232,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 
 		if (entry->hidden)
                         term_addch(root_window, ' ');
-		else if (*p >= 32 && (*p < 0x7F || *p > 0x9F))
+		else if (IS_PRINTABLE(*p))
 			term_add_unichar(root_window, *p);
 		else {
 			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);

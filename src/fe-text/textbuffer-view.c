@@ -451,7 +451,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 		xpos += char_width;
 		if (xpos <= term_width) {
-			if ((chr & ~0x80) >= 32) {
+			if (IS_PRINTABLE(chr)) {
 				for (; text < end; text++)
 					term_addch(view->window, *text);
 				term_addch(view->window, *text);

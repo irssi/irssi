@@ -22,6 +22,8 @@ typedef struct _TERM_WINDOW TERM_WINDOW;
 
 typedef guint32 unichar;
 
+#define IS_PRINTABLE(c) (((c) & ~0x80) >= 32)
+
 extern TERM_WINDOW *root_window;
 extern int term_width, term_height;
 extern int term_use_colors, term_type, term_detached;
