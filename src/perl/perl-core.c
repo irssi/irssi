@@ -248,11 +248,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 			g_free(error);
 		}
 	} else if (retcount > 0) {
-		/* if script returns 0, it means the script wanted to die
-		   immediately without any error message */
 		ret = POPs;
-		if (ret != &PL_sv_undef && SvIOK(ret) && SvIV(ret) == 0)
-			error = "";
 	}
 
 	PUTBACK;
