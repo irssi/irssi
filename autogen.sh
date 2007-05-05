@@ -76,53 +76,6 @@ cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!
 echo "Documentation: html -> txt..."
 lynx -dump -nolist docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
 
-echo "Checking auto* tools..."
-
-# *********** a bit modified GNOME's macros/autogen.sh **********
-DIE=0
-
-(autoconf --version) < /dev/null > /dev/null 2>&1 || {
-  echo
-  echo "**Error**: You must have \`autoconf' installed to compile $PKG_NAME."
-  echo "Download the appropriate package for your distribution,"
-  echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-  DIE=1
-}
-
-(grep "^AM_PROG_LIBTOOL" $srcdir/configure.in >/dev/null) && {
-  (libtool --version) < /dev/null > /dev/null 2>&1 || {
-    echo
-    echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
-    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.2d.tar.gz"
-    echo "(or a newer version if it is available)"
-    DIE=1
-  }
-}
-
-(automake --version) < /dev/null > /dev/null 2>&1 || {
-  echo
-  echo "**Error**: You must have \`automake' installed to compile $PKG_NAME."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
-  echo "(or a newer version if it is available)"
-  DIE=1
-  NO_AUTOMAKE=yes
-}
-
-
-# if no automake, don't bother testing for aclocal
-test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
-  echo
-  echo "**Error**: Missing \`aclocal'.  The version of \`automake'"
-  echo "installed doesn't appear recent enough."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
-  echo "(or a newer version if it is available)"
-  DIE=1
-}
-
-if test "$DIE" -eq 1; then
-  exit 1
-fi
-
 if test -z "$*"; then
   echo "**Warning**: I am going to run \`configure' with no arguments."
   echo "If you wish to pass any to it, please specify them on the"
@@ -130,47 +83,11 @@ if test -z "$*"; then
   echo
 fi
 
-case $CC in
-xlc )
-  am_opt=--include-deps;;
-esac
-
 rm -f aclocal.m4 glib.m4 glib-2.0.m4
-if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
-  echo "Running libtoolize..."
-  libtoolize --force --copy
-fi
-aclocalinclude="$ACLOCAL_FLAGS -I ."
-echo "Running aclocal $aclocalinclude ..."
-
-# see if we don't have glib.m4 or glib-2.0.m4 there yet
-error=`aclocal $aclocalinclude 2>&1`
-if test "x`echo $error|grep 'AM_PATH_GLIB[^_]'`" != "x"; then
-  cp glib.m4_ glib.m4
-  error=`aclocal $aclocalinclude 2>&1`
-fi
-if test "x`echo $error|grep AM_PATH_GLIB_2_0`" != "x"; then
-  cp glib-2.0.m4_ glib-2.0.m4
-fi
-
-aclocal $aclocalinclude
-
-# aclocal for some reason doesn't complain about glib2, so we still need
-# to check it later again..
-if grep "^AC_DEFUN.AM_PATH_GLIB_2_0" aclocal.m4 >/dev/null; then :;
-else
-  cp glib-2.0.m4_ glib-2.0.m4
-  aclocal $aclocalinclude
-fi
-
-if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
-  echo "Running autoheader..."
-  autoheader
-fi
-echo "Running autoconf ..."
-autoconf
-echo "Running automake --gnu $am_opt ..."
-automake --add-missing --gnu $am_opt
+cp glib.m4_ glib.m4
+cp glib-2.0.m4_ glib-2.0.m4
+echo "Running autoreconf ..."
+autoreconf -i || exit 1
 
 conf_flags="--enable-maintainer-mode"
 
