@@ -29,6 +29,7 @@
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "servers-redirect.h"
+#include "recode.h"
 
 char *current_server_event;
 static int signal_default_event;
@@ -281,11 +282,22 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 {
         const char *signal;
 	char *event, *args;
+	char *params, *target, *recoded_line, *recoded_nick, *recoded_channel;
 
 	g_return_if_fail(line != NULL);
 
+	params = event_get_params(line, 1, &args);
+	recoded_nick = recode_in(SERVER(server), nick, NULL);
+	if (ischannel(*args) ||
+	    (*args++ == '@' && ischannel(*args)))
+		target = recoded_channel = recode_in(SERVER(server), args, NULL);
+	else {
+		target = recoded_nick;
+		recoded_channel = NULL;
+	}
+	recoded_line = recode_in(SERVER(server), line, target);
 	/* split event / args */
-	event = g_strconcat("event ", line, NULL);
+	event = g_strconcat("event ", recoded_line, NULL);
 	args = strchr(event+6, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
@@ -300,11 +312,15 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 
         /* emit it */
 	current_server_event = event+6;
-	if (!signal_emit(signal, 4, server, args, nick, address))
-		signal_emit_id(signal_default_event, 4, server, line, nick, address);
+	if (!signal_emit(signal, 4, server, args, recoded_nick, address))
+		signal_emit_id(signal_default_event, 4, server, recoded_line, recoded_nick, address);
 	current_server_event = NULL;
 
 	g_free(event);
+	g_free(params);
+	g_free(recoded_line);
+	g_free(recoded_nick);
+	g_free(recoded_channel);
 }
 
 /* Read line from server */

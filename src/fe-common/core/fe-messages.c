@@ -355,7 +355,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	WINDOW_REC *window;
 	GString *chans;
 	GSList *tmp, *windows;
-	char *print_channel, *recoded;
+	char *print_channel;
 	int once, count;
 
 	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
@@ -388,12 +388,10 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
-				recoded = recode_in(server, reason, rec->visible_name);
 				printformat(server, rec->visible_name,
 					    MSGLEVEL_QUITS,
-					    TXT_QUIT, nick, address, recoded,
+					    TXT_QUIT, nick, address, reason,
 					    rec->visible_name);
-				g_free(recoded);
 			}
 		}
 		count++;
@@ -405,10 +403,8 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		   display the quit there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
-			recoded = recode_in(server, reason, nick);
 			printformat(server, nick, MSGLEVEL_QUITS,
-				    TXT_QUIT, nick, address, recoded, "");
-			g_free(recoded);
+				    TXT_QUIT, nick, address, reason, "");
 		}
 	}
 
@@ -416,11 +412,9 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
 		/* at least recode_fallback will be used */
-		recoded = recode_in(server, reason, nick);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
-			    nick, address, recoded, chans->str);
-		g_free(recoded);
+			    nick, address, reason, chans->str);
 	}
 	g_string_free(chans, TRUE);
 }

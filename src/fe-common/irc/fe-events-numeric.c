@@ -24,7 +24,6 @@
 #include "misc.h"
 #include "settings.h"
 #include "levels.h"
-#include "recode.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -106,7 +105,7 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data,
 static void event_who(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
-	char *serv, *recoded;
+	char *serv;
 
 	g_return_if_fail(data != NULL);
 
@@ -119,12 +118,10 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	while (*realname == ' ') realname++;
 	if (realname > hops) realname[-1] = '\0';
 	
-	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
-		    channel, nick, stat, hops, user, host, recoded, serv);
+		    channel, nick, stat, hops, user, host, realname, serv);
 
 	g_free(params);
-	g_free(recoded);
 }
 
 static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
@@ -231,17 +228,15 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *topic, *recoded;
+	char *params, *topic;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &channel, &topic);
-	recoded = recode_in(SERVER(server), topic, channel);
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    IRCTXT_TOPIC, channel, recoded);
+		    IRCTXT_TOPIC, channel, topic);
 	g_free(params);
-	g_free(recoded);
 }
 
 static void event_topic_info(IRC_SERVER_REC *server, const char *data)
@@ -311,12 +306,11 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 
 static void event_away(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg, *recoded;
+	char *params, *nick, *awaymsg;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
-	recoded = recode_in(SERVER(server), awaymsg, nick);
 	if (!settings_get_bool("show_away_once") ||
 	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
 	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {
@@ -328,10 +322,9 @@ static void event_away(IRC_SERVER_REC *server, const char *data)
 		last_away_msg = g_strdup(awaymsg);
 
 		printformat(server, nick, MSGLEVEL_CRAP,
-			    IRCTXT_NICK_AWAY, nick, recoded);
+			    IRCTXT_NICK_AWAY, nick, awaymsg);
 	}
 	g_free(params);
-	g_free(recoded);
 }
 
 static void event_userhost(IRC_SERVER_REC *server, const char *data)
@@ -505,7 +498,7 @@ static void event_numeric(IRC_SERVER_REC *server, const char *data,
 static void print_event_received(IRC_SERVER_REC *server, const char *data,
 				 const char *nick, int target_param)
 {
-	char *target, *args, *ptr, *recoded;
+	char *target, *args, *ptr;
 	int format;
 
 	g_return_if_fail(data != NULL);
@@ -540,14 +533,12 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 			g_memmove(ptr+1, ptr+2, strlen(ptr+1));
 	}
 
-	recoded = recode_in(SERVER(server), args, NULL);
 	format = nick == NULL || server->real_address == NULL ||
 		strcmp(nick, server->real_address) == 0 ?
 		IRCTXT_DEFAULT_EVENT : IRCTXT_DEFAULT_EVENT_SERVER;
 	printformat(server, target, MSGLEVEL_CRAP, format,
-		    nick, recoded, current_server_event);
+		    nick, args, current_server_event);
 
-	g_free(recoded);
 	g_free(args);
 	g_free(target);
 }
