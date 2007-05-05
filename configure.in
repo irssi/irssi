@@ -1,4 +1,5 @@
-AC_INIT(src)
+AC_INIT(irssi, 0.8.11)
+AC_CONFIG_SRCDIR([src])
 AC_PREREQ(2.50)
 
 # we don't want VERSION in our config.h
@@ -7,8 +8,8 @@ if grep '^#undef VERSION' $srcdir/config.h.in >/dev/null; then
   mv -f config.h.in.temp $srcdir/config.h.in
 fi
 
-AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(irssi, 0.8.11)
+AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE([1.9])
 
 AM_MAINTAINER_MODE
 
@@ -827,7 +828,7 @@ VERSION_TIME=`head -n 2 $srcdir/ChangeLog| grep '^r' | awk '{print $6}' | awk -F
 AC_SUBST(VERSION_DATE)
 AC_SUBST(VERSION_TIME)
 
-AC_OUTPUT(
+AC_CONFIG_FILES([
 Makefile
 src/Makefile
 src/core/Makefile
@@ -859,7 +860,10 @@ docs/help/in/Makefile
 irssi-version.h
 stamp.h
 irssi.spec
-irssi-config)
+irssi-config
+])
+
+AC_OUTPUT
 
 dnl ** for building from objdir
 old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
