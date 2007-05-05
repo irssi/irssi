@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I .
+
 # create default-config.h
 config.h: default-config.h default-theme.h
 
