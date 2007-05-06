@@ -282,7 +282,7 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 {
         const char *signal;
 	char *event, *args;
-	char *params, *target, *recoded_line, *recoded_nick, *recoded_channel;
+	char *params, *target, *recoded_line, *recoded_nick;
 
 	g_return_if_fail(line != NULL);
 
@@ -290,10 +290,9 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	recoded_nick = recode_in(SERVER(server), nick, NULL);
 	if (ischannel(*args) ||
 	    (*args++ == '@' && ischannel(*args)))
-		target = recoded_channel = recode_in(SERVER(server), args, NULL);
+		target = args;
 	else {
 		target = recoded_nick;
-		recoded_channel = NULL;
 	}
 	recoded_line = recode_in(SERVER(server), line, target);
 	/* split event / args */
@@ -320,7 +319,6 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(params);
 	g_free(recoded_line);
 	g_free(recoded_nick);
-	g_free(recoded_channel);
 }
 
 /* Read line from server */
