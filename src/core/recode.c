@@ -188,7 +188,7 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		to = iconfig_get_str("conversions", tagtarget, NULL);
 		g_free(tagtarget);
 	}
-	if (to == NULL || *to == '\0')
+	if ((to == NULL || *to == '\0') && target != NULL)
 		to = iconfig_get_str("conversions", target, NULL);
 	if ((to == NULL || *to == '\0') && server != NULL)
 		to = iconfig_get_str("conversions", server->tag, NULL);
