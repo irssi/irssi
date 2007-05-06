@@ -286,7 +286,7 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 
 	g_return_if_fail(line != NULL);
 
-	params = event_get_params(line, 1, &args);
+	params = event_get_params(line, 2, NULL, &args);
 	recoded_nick = recode_in(SERVER(server), nick, NULL);
 	if (ischannel(*args) ||
 	    (*args++ == '@' && ischannel(*args)))
