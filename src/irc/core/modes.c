@@ -251,8 +251,6 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 		       char type, char mode, char *arg, GString *newmode)
 {
 	int umode = (unsigned char) mode;
-	nick_mode_change(channel, arg, channel->server->modes[umode].prefix,
-			 type, setby);
 
 	if (g_strcasecmp(channel->server->nick, arg) == 0) {
 		/* see if we need to update channel->chanop */
@@ -274,6 +272,9 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 				channel->chanop = type == '+';
 		}
 	}
+
+	nick_mode_change(channel, arg, channel->server->modes[umode].prefix,
+			 type, setby);
 }
 
 int channel_mode_is_set(IRC_CHANNEL_REC *channel, char mode)
