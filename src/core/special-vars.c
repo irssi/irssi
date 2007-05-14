@@ -87,27 +87,12 @@ static char *get_argument(char **cmd, char **arglist)
 	return ret;
 }
 
-static char *get_internal_setting(const char *key, int type, int *free_ret)
-{
-	switch (type) {
-	case SETTING_TYPE_BOOLEAN:
-		return settings_get_bool(key) ? "yes" : "no";
-	case SETTING_TYPE_INT:
-		*free_ret = TRUE;
-		return g_strdup_printf("%d", settings_get_int(key));
-	case SETTING_TYPE_STRING:
-		return (char *) settings_get_str(key);
-	}
-
-	return NULL;
-}
-
 static char *get_long_variable_value(const char *key, SERVER_REC *server,
 				     void *item, int *free_ret)
 {
 	EXPANDO_FUNC func;
 	const char *ret;
-	int type;
+	SETTINGS_REC *rec;
 
 	*free_ret = FALSE;
 
@@ -119,9 +104,11 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 	}
 
 	/* internal setting? */
-	type = settings_get_type(key);
-	if (type != -1)
-		return get_internal_setting(key, type, free_ret);
+	rec = settings_get_record(key);
+	if (rec != NULL) {
+		*free_ret = TRUE;
+		return settings_get_print(rec);
+	}
 
 	/* environment variable? */
 	ret = g_getenv(key);
