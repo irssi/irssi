@@ -288,7 +288,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 	server->send_message = send_message;
 	server->query_find_func =
 		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
-	server->nick_comp_func = irc_nickcmp_ascii;
+	server->nick_comp_func = irc_nickcmp_rfc1459;
 
 	server->splits = g_hash_table_new((GHashFunc) g_istr_hash,
 					  (GCompareFunc) g_istr_equal);
