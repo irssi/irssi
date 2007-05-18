@@ -16,8 +16,7 @@ int irc_nickcmp_ascii(const char *, const char *);
 void irc_nicklist_init(void);
 void irc_nicklist_deinit(void);
 
-/* FIXME: to_rfc1459() is missing things */
 #define to_rfc1459(x) ((x) >= 65 && (x) <= 94 ? (x) + 32 : (x))
-#define to_ascii(x) ((x) >= 65 && (x) <= 94 ? (x) + 32 : (x))
+#define to_ascii(x) ((x) >= 65 && (x) <= 90 ? (x) + 32 : (x))
 
 #endif
