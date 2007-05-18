@@ -180,10 +180,10 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
                         continue;
 
 		/* check both !ABCDEchannel and !channel */
-		if (g_strcasecmp(channel, rec->name) == 0)
+		if (IRC_SERVER(server)->nick_comp_func(channel, rec->name) == 0)
 			return rec;
 
-		if (g_strcasecmp(channel, rec->visible_name) == 0)
+		if (IRC_SERVER(server)->nick_comp_func(channel, rec->visible_name) == 0)
 			return rec;
 	}
 
