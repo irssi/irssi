@@ -82,6 +82,22 @@ gboolean is_valid_charset(const char *charset)
 #endif
 }
 
+static char *find_conversion(const SERVER_REC *server, const char *target)
+{
+	char *conv = NULL;
+
+	if (server != NULL && target != NULL) {
+		char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
+		conv = iconfig_get_str("conversions", tagtarget, NULL);
+		g_free(tagtarget);
+	}
+	if (conv == NULL && target != NULL)
+		conv = iconfig_get_str("conversions", target, NULL);
+	if (conv == NULL && server != NULL)
+		conv = iconfig_get_str("conversions", server->tag, NULL);
+	return conv;
+}
+
 char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 {
 #ifdef HAVE_GLIB2
@@ -121,18 +137,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			from = "UTF-8";
 			
 	else {
-		if (server != NULL && server->tag != NULL && target != NULL) {
-			char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
-			from = iconfig_get_str("conversions", tagtarget, NULL);
-			g_free(tagtarget);
-		}
-
-		if (target != NULL && from == NULL)
-			from = iconfig_get_str("conversions", target, NULL);
-
-		if (from == NULL && server != NULL)
-			from = iconfig_get_str("conversions", server->tag, NULL);
-
+		from = find_conversion(server, target);
 	}
 
 	if (translit && !is_translit(to))
@@ -183,16 +188,8 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 
 	translit = settings_get_bool("recode_transliterate");
 
-	if (server != NULL && server->tag != NULL && target != NULL) {
-		char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
-		to = iconfig_get_str("conversions", tagtarget, NULL);
-		g_free(tagtarget);
-	}
-	if ((to == NULL || *to == '\0') && target != NULL)
-		to = iconfig_get_str("conversions", target, NULL);
-	if ((to == NULL || *to == '\0') && server != NULL)
-		to = iconfig_get_str("conversions", server->tag, NULL);
-	if (to == NULL || *to == '\0')
+	to = find_conversion(server, target);
+	if (to == NULL)
 		/* default outgoing charset if set */
 		to = settings_get_str("recode_out_default_charset");
 
