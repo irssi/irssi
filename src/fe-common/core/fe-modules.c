@@ -130,10 +130,11 @@ static char **module_prefixes_get(void)
         char **list, *name;
         int count;
 
-	list = g_new(char *, 2 + 3*g_slist_length(chat_protocols));
+	list = g_new(char *, 3 + 3*g_slist_length(chat_protocols));
 	list[0] = "fe";
+	list[1] = "fe_common";
 
-	count = 1;
+	count = 2;
 	for (tmp = chat_protocols; tmp != NULL; tmp = tmp->next) {
 		CHAT_PROTOCOL_REC *rec = tmp->data;
 
