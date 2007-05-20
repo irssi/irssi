@@ -392,14 +392,20 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
-static void event_no_such_nick(IRC_SERVER_REC *server, const char *data)
+static void event_no_such_nick(IRC_SERVER_REC *server, const char *data,
+				     const char *nick, const char *addr)
 {
-	char *params, *nick;
+	char *params, *unick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
-	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_NO_SUCH_NICK, nick);
+	params = event_get_params(data, 2, NULL, &unick);
+	if (!strcmp(unick, "*"))
+		/* more information will be in the description,
+		 * e.g. * :Target left IRC. Failed to deliver: [hi] */
+		print_event_received(server, data, nick, FALSE);
+	else
+		printformat(server, unick, MSGLEVEL_CRAP, IRCTXT_NO_SUCH_NICK, unick);
 	g_free(params);
 }
 
