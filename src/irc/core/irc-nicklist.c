@@ -212,8 +212,8 @@ static void event_who(SERVER_REC *server, const char *data)
 	/* get hop count */
 	hops = realname;
 	while (*realname != '\0' && *realname != ' ') realname++;
-	*realname++ = '\0';
-	while (*realname == ' ') realname++;
+	if (*realname == ' ')
+		*realname++ = '\0';
 
 	/* update host, realname, hopcount */
 	chanrec = channel_find(server, channel);

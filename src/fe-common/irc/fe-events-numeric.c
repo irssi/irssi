@@ -115,8 +115,8 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	/* split hops/realname */
 	hops = realname;
 	while (*realname != '\0' && *realname != ' ') realname++;
-	while (*realname == ' ') realname++;
-	if (realname > hops) realname[-1] = '\0';
+	if (*realname == ' ')
+		*realname++ = '\0';
 	
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
 		    channel, nick, stat, hops, user, host, realname, serv);
