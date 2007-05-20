@@ -584,13 +584,8 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	chat_type = chat_protocol_lookup(rec->name);
 	g_return_if_fail(chat_type >= 0);
 
-#if GLIB_MAJOR_VERSION < 2
-	name = g_strdup(rec->name);
-	g_strdown(name+1);
-#else
 	name = g_ascii_strdown(rec->name,-1);
 	*name = *(rec->name);
-#endif
 
 	/* window items: channel, query */
 	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");

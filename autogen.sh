@@ -83,8 +83,7 @@ if test -z "$*"; then
   echo
 fi
 
-rm -f aclocal.m4 glib.m4 glib-2.0.m4
-cp glib.m4_ glib.m4
+rm -f aclocal.m4 glib-2.0.m4
 cp glib-2.0.m4_ glib-2.0.m4
 echo "Running autoreconf ..."
 autoreconf -i || exit 1

@@ -123,7 +123,7 @@ if test "x$prefix" != "xNONE"; then
 fi
 
 AC_ARG_WITH(gc,
-[  --with-gc               Use garbage collector, requires GLIB2],
+[  --with-gc               Use garbage collector],
 	if test x$withval = xyes; then
 		want_gc=yes
 	else
@@ -134,19 +134,6 @@ AC_ARG_WITH(gc,
 		fi
 	fi,
 	want_gc=no)
-
-AC_ARG_WITH(glib1,
-[  --with-glib1            Use GLIB 1.2 instead of 2.0 if both exist],
-        if test x$withval = xyes; then
-                want_glib1=yes
-        else
-                if test "x$withval" = xno; then
-                        want_glib1=no
-                else
-                        want_glib1=yes
-                fi
-        fi,
-        want_glib1=no)
 
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
@@ -331,27 +318,14 @@ dnl **
 dnl ** fe-text checks
 dnl **
 
-if test "x$want_glib1" = "xyes"; then
-  dnl * check only for glib1
-  checks="1 2"
-else
-  dnl * check glib2 then glib1
-  checks="3 4 1 2"
-fi
-
-for try in $checks; do
-  glib_config_args=
-  if test $try = 1 -o $try = 3; then
+for try in 1 2; do
+  if test $try = 1; then
     glib_modules=gmodule
   else
     echo "*** trying without -lgmodule"
     glib_modules=
   fi
-  if test $try = 1 -o $try = 2; then
-    AM_PATH_GLIB(1.2.0,,, $glib_modules)
-  else
     AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
-  fi
   if test "$GLIB_LIBS"; then
     if test $glib_modules = gmodule; then
       AC_DEFINE(HAVE_GMODULE)
@@ -398,7 +372,6 @@ dnl **
 dnl ** Garbage Collector
 dnl **
 if test "x$want_gc" = xyes; then
-  if test "$glib_config_major_version" = "2"; then
     AC_CHECK_LIB(gc, GC_malloc, [
       AC_CHECK_HEADER(gc/gc.h, [
         AC_DEFINE(HAVE_GC_GC_H)
@@ -416,20 +389,6 @@ if test "x$want_gc" = xyes; then
     ], [
       want_gc=no
     ])
-  else
-    want_gc=no
-  fi
-fi
-
-dnl **
-dnl ** Recode
-dnl **
-AC_MSG_CHECKING([if we can use recode, requires GLIB2])
-if test "$glib_config_major_version" = "2"; then
-  AC_DEFINE(HAVE_GLIB2)
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no, using glib1])
 fi
 
 dnl **

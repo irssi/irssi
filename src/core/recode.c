@@ -32,11 +32,7 @@ static gboolean recode_get_charset(const char **charset)
 		/* we use the same test as in src/fe-text/term.c:123 */
 		return (g_strcasecmp(*charset, "utf-8") == 0);
 
-#ifdef HAVE_GLIB2
 	return g_get_charset(charset);
-#else
-	return FALSE;
-#endif
 }
 
 gboolean is_utf8(void)
@@ -46,7 +42,6 @@ gboolean is_utf8(void)
 	return recode_get_charset(&charset);
 }
 
-#ifdef HAVE_GLIB2
 static gboolean is_translit(const char *charset)
 {
 	char *pos;
@@ -54,11 +49,9 @@ static gboolean is_translit(const char *charset)
 	pos = stristr(charset, "//translit");
 	return (pos != NULL);
 }
-#endif
 
 gboolean is_valid_charset(const char *charset)
 {
-#ifdef HAVE_GLIB2
 	const char *from="UTF-8";
 	const char *str="irssi";
 	char *recoded, *to = NULL;
@@ -75,11 +68,6 @@ gboolean is_valid_charset(const char *charset)
 	g_free(recoded);
 	g_free(to);
 	return valid;
-#else
-	if (!charset || *charset =='\0')
-		return FALSE;
-	return TRUE;
-#endif
 }
 
 static char *find_conversion(const SERVER_REC *server, const char *target)
@@ -100,7 +88,6 @@ static char *find_conversion(const SERVER_REC *server, const char *target)
 
 char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 {
-#ifdef HAVE_GLIB2
 	const char *from = NULL;
 	const char *to = NULL;
 	char *translit_to = NULL;
@@ -162,14 +149,10 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	}
 	g_free(translit_to);
 	return recoded;
-#else
-	return g_strdup(str);
-#endif
 }
 
 char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 {
-#ifdef HAVE_GLIB2
 	char *recoded = NULL;
 	const char *from = NULL;
 	const char *to = NULL;
@@ -205,9 +188,6 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		recoded = g_strdup(str);
 
 	return recoded;
-#else
-	return g_strdup(str);
-#endif
 }
 
 void recode_init(void)

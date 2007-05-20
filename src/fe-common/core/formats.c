@@ -32,10 +32,8 @@
 #include "formats.h"
 #include "themes.h"
 #include "translation.h"
-#ifdef HAVE_GLIB2
 #include "recode.h"
 #include "utf8.h"
-#endif
 
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";
@@ -299,7 +297,7 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
 }
-#ifdef HAVE_GLIB2
+
 static int advance (char const **str, gboolean utf8)
 {
 	if (utf8) {
@@ -315,21 +313,17 @@ static int advance (char const **str, gboolean utf8)
 		return 1;
 	}
 }
-#endif
+
 /* Return length of text part in string (ie. without % codes) */
 int format_get_length(const char *str)
 {
 	GString *tmp;
 	int len;
-#ifdef HAVE_GLIB2
 	gboolean utf8;
-#endif
 
 	g_return_val_if_fail(str != NULL, 0);
 
-#ifdef HAVE_GLIB2
 	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
-#endif
 
 	tmp = g_string_new(NULL);
 	len = 0;
@@ -346,12 +340,8 @@ int format_get_length(const char *str)
 			if (*str != '%')
 				len++;
 		}
-#ifdef HAVE_GLIB2
+
 		len += advance(&str, utf8);
-#else
-	  len++;
-		str++;
-#endif
 	}
 
 	g_string_free(tmp, TRUE);
@@ -365,16 +355,13 @@ int format_real_length(const char *str, int len)
 {
 	GString *tmp;
 	const char *start;
-#ifdef HAVE_GLIB2
 	const char *oldstr;
 	gboolean utf8;
-#endif
+
 	g_return_val_if_fail(str != NULL, 0);
 	g_return_val_if_fail(len >= 0, 0);
 
-#ifdef HAVE_GLIB2
 	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
-#endif
 
 	start = str;
 	tmp = g_string_new(NULL);
@@ -394,15 +381,10 @@ int format_real_length(const char *str, int len)
 			}
 		}
 
-#ifdef HAVE_GLIB2
 		oldstr = str;
 		len -= advance(&str, utf8);
 		if (len < 0)
 			str = oldstr;
-#else
-	  len--;
-		str++;
-#endif
 	}
 
 	g_string_free(tmp, TRUE);

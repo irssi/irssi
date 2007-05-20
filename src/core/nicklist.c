@@ -356,14 +356,6 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 	return rec.list;
 }
 
-#if GLIB_MAJOR_VERSION < 2
-/* glib1 doesn't have g_slist_sort_with_data, so non-standard prefixes won't be sorted correctly */
-int nicklist_compare_glib1(NICK_REC *p1, NICK_REC *p2)
-{
-	return nicklist_compare(p1, p2, NULL);
-}
-#endif
-
 /* nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 {

@@ -38,7 +38,6 @@ for ((var) = (head);				\
 		 (var);					\
 		 (var) = g_slist_next((var)))
 
-#ifdef HAVE_GLIB2
 char *recode_fallback = NULL;
 char *recode_out_default = NULL;
 char *term_charset = NULL;
@@ -210,27 +209,20 @@ static void read_settings(void)
 	g_free(old_recode_fallback);
 	g_free(old_recode_out_default);
 }
-#endif
 
 void fe_recode_init (void)
 {
-/* FIXME: print this is not supported instead */
-#ifdef HAVE_GLIB2
 	command_bind("recode", NULL, (SIGNAL_FUNC) fe_recode_cmd);
 	command_bind("recode add", NULL, (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_bind("recode remove", NULL, (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	read_settings();
-#endif
 }
 
 void fe_recode_deinit (void)
 {
-/* FIXME: print this is not supported instead */
-#ifdef HAVE_GLIB2
 	command_unbind("recode", (SIGNAL_FUNC) fe_recode_cmd);
 	command_unbind("recode add", (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_unbind("recode remove", (SIGNAL_FUNC) fe_recode_remove_cmd);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-#endif
 }

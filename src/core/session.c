@@ -37,54 +37,6 @@ char *irssi_binary = NULL;
 
 static char **session_args;
 
-#ifndef HAVE_GLIB2
-static char *g_find_program_in_path(const char *path)
-{
-	const char *envpath;
-	char **paths, **tmp;
-        char *str;
-	char *result = NULL;
-
-	if (g_path_is_absolute(path)) {
-                /* full path - easy */
-		if(access(path, X_OK) == -1)
-			return NULL;
-		else
-			return g_strdup(path);
-	}
-
-	if (strchr(path, G_DIR_SEPARATOR) != NULL) {
-		/* relative path */
-                str = g_get_current_dir();
-		result = g_strconcat(str, G_DIR_SEPARATOR_S, path, NULL);
-		g_free(str);
-		if (access(result, X_OK) == -1) {
-			g_free(result);
-			return NULL;
-		}
-		else
-			return result;
-	}
-
-	/* we'll need to find it from path. */
-	envpath = g_getenv("PATH");
-	if (envpath == NULL) return NULL;
-
-	paths = g_strsplit(envpath, ":", -1);
-	for (tmp = paths; *tmp != NULL; tmp++) {
-                str = g_strconcat(*tmp, G_DIR_SEPARATOR_S, path, NULL);
-		if (access(str, X_OK) == 0) {
-			result = str;
-                        break;
-		}
-                g_free(str);
-	}
-	g_strfreev(paths);
-
-	return result;
-}
-#endif
-
 void session_set_binary(const char *path)
 {
 	g_free_and_null(irssi_binary);

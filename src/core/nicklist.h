@@ -49,9 +49,6 @@ void nicklist_update_flags_unique(SERVER_REC *server, void *id,
 void nicklist_set_own(CHANNEL_REC *channel, NICK_REC *nick);
 
 /* Nick record comparison for sort functions */
-#if GLIB_MAJOR_VERSION < 2
-int nicklist_compare_glib1(NICK_REC *p1, NICK_REC *p2);
-#endif
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix);
 
 /* Check is `msg' is meant for `nick'. */
