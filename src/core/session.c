@@ -332,7 +332,7 @@ static void sig_init_finished(void)
 	session_file = NULL;
 }
 
-void session_init(void)
+void session_register_options(void)
 {
 	static struct poptOption options[] = {
 		{ "session", 0, POPT_ARG_STRING, &session_file, 0, "Used by /UPGRADE command", "PATH" },
@@ -341,7 +341,10 @@ void session_init(void)
 
 	session_file = NULL;
 	args_register(options);
+}
 
+void session_init(void)
+{
 	command_bind("upgrade", NULL, (SIGNAL_FUNC) cmd_upgrade);
 
 	signal_add("session save", (SIGNAL_FUNC) sig_session_save);

@@ -154,45 +154,34 @@ static void sig_init_finished(void)
         g_slist_free(dialog_text_queue);
 }
 
-void core_init_paths(int argc, char *argv[])
+static char *fix_path(const char *str)
+{
+	char *new_str = convert_home(str);
+	if (!g_path_is_absolute(new_str)) {
+		char *tmp_str = new_str;
+		new_str = g_strdup_printf("%s/%s", g_get_current_dir(), tmp_str);
+		g_free(tmp_str);
+	}
+	return new_str;
+}
+
+void core_register_options(void)
 {
 	static struct poptOption options[] = {
-		{ "config", 0, POPT_ARG_STRING, NULL, 0, "Configuration file location (~/.irssi/config)", "PATH" },
-		{ "home", 0, POPT_ARG_STRING, NULL, 0, "Irssi home dir location (~/.irssi)", "PATH" },
+		{ "config", 0, POPT_ARG_STRING, &irssi_config_file, 0, "Configuration file location (~/.irssi/config)", "PATH" },
+		{ "home", 0, POPT_ARG_STRING, &irssi_dir, 0, "Irssi home dir location (~/.irssi)", "PATH" },
 		{ NULL, '\0', 0, NULL }
 	};
-	const char *home;
-	char *str;
-	int n, len;
-
-	for (n = 1; n < argc; n++) {
-		if (strncmp(argv[n], "--home=", 7) == 0) {
-                        g_free_not_null(irssi_dir);
-                        irssi_dir = convert_home(argv[n]+7);
-                        len = strlen(irssi_dir);
-			if (irssi_dir[len-1] == G_DIR_SEPARATOR)
-				irssi_dir[len-1] = '\0';
-		} else if (strncmp(argv[n], "--config=", 9) == 0) {
-                        g_free_not_null(irssi_config_file);
-			irssi_config_file = convert_home(argv[n]+9);
-		}
-	}
-
-	if (irssi_dir != NULL && !g_path_is_absolute(irssi_dir)) {
-		str = irssi_dir;
-		irssi_dir = g_strdup_printf("%s/%s", g_get_current_dir(), str);
-		g_free(str);
-	}
-
-	if (irssi_config_file != NULL &&
-	    !g_path_is_absolute(irssi_config_file)) {
-		str = irssi_config_file;
-		irssi_config_file =
-			g_strdup_printf("%s/%s", g_get_current_dir(), str);
-		g_free(str);
-	}
 
 	args_register(options);
+	session_register_options();
+}
+
+void core_preinit(const char *path)
+{
+	const char *home;
+	char *str;
+	int len;
 
 	if (irssi_dir == NULL) {
 		home = g_get_home_dir();
@@ -200,11 +189,23 @@ void core_init_paths(int argc, char *argv[])
 			home = ".";
 
 		irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, home);
+	} else {
+		str = irssi_dir;
+		irssi_dir = fix_path(str);
+		g_free(str);
+		len = strlen(irssi_dir);
+		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
+			irssi_dir[len-1] = '\0';
 	}
 	if (irssi_config_file == NULL)
 		irssi_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG, irssi_dir);
+	else {
+		str = irssi_config_file;
+		irssi_config_file = fix_path(str);
+		g_free(str);
+	}
 
-	session_set_binary(argv[0]);
+	session_set_binary(path);
 }
 
 static void sig_irssi_init_finished(void)

@@ -332,6 +332,11 @@ int main(int argc, char **argv)
 		{ NULL, '\0', 0, NULL }
 	};
 
+	core_register_options();
+	fe_common_core_register_options();
+	args_register(options);
+	args_execute(argc, argv);
+
 #ifdef USE_GC
 	g_mem_set_vtable(&gc_mem_table);
 #endif
@@ -340,7 +345,7 @@ int main(int argc, char **argv)
 
 	dummy = FALSE;
 	quitting = FALSE;
-	core_init_paths(argc, argv);
+	core_preinit(argv[0]);
 
 	check_files();
 
@@ -363,8 +368,6 @@ int main(int argc, char **argv)
 	setlocale(LC_ALL, "");
 
 	textui_init();
-	args_register(options);
-	args_execute(argc, argv);
 
 	if (!dummy && !term_init()) {
 		fprintf(stderr, "Can't initialize screen handling, quitting.\n");

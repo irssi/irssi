@@ -16,8 +16,9 @@ extern int irssi_init_finished; /* TRUE after "irssi init finished" signal is se
 extern int reload_config; /* TRUE after received SIGHUP. */
 extern time_t client_start_time;
 
-void core_init_paths(int argc, char *argv[]);
+void core_preinit(const char *path);
 
+void core_register_options(void);
 void core_init(void);
 void core_deinit(void);
 

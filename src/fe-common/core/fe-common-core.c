@@ -131,7 +131,7 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 	MODULE_DATA_UNSET(channel);
 }
 
-void fe_common_core_init(void)
+void fe_common_core_register_options(void)
 {
 	static struct poptOption version_options[] = {
 		{ NULL, '\0', POPT_ARG_CALLBACK, (void *)&print_version, '\0', NULL },
@@ -158,7 +158,10 @@ void fe_common_core_init(void)
 	cmdline_nick = NULL;
 	cmdline_hostname = NULL;
 	args_register(options);
+}
 
+void fe_common_core_init(void)
+{
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_level("lookandfeel", "timestamp_level", "ALL");
 	settings_add_time("lookandfeel", "timestamp_timeout", "0");
