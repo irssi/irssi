@@ -40,6 +40,7 @@
 #include "statusbar.h"
 #include "gui-windows.h"
 #include "textbuffer-reformat.h"
+#include "irssi-version.h"
 
 #include <signal.h>
 #include <locale.h>
@@ -327,8 +328,10 @@ GMemVTable gc_mem_table = {
 
 int main(int argc, char **argv)
 {
+	static int version = 0;
 	static struct poptOption options[] = {
 		{ "dummy", 'd', POPT_ARG_NONE, &dummy, 0, "Use the dummy terminal mode", NULL },
+		{ "version", 'v', POPT_ARG_NONE, &version, 0, "Display irssi version", NULL },
 		{ NULL, '\0', 0, NULL }
 	};
 
@@ -336,6 +339,12 @@ int main(int argc, char **argv)
 	fe_common_core_register_options();
 	args_register(options);
 	args_execute(argc, argv);
+
+ 	if (version) {
+		printf(PACKAGE" " IRSSI_VERSION" (%d %04d)\n",
+		       IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
+		return 0;
+	}
 
 #ifdef USE_GC
 	g_mem_set_vtable(&gc_mem_table);
