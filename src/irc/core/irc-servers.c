@@ -696,6 +696,39 @@ static void event_channels_formed(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_hosthidden(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *newhost, *p, *newuserhost;
+
+	g_return_if_fail(server != NULL);
+
+	params = event_get_params(data, 2, NULL, &newhost);
+	/* do a sanity check */
+	if (!strchr(newhost, '*') && !strchr(newhost, '?') &&
+			!strchr(newhost, '!') && !strchr(newhost, '#') &&
+			!strchr(newhost, '&') && !strchr(newhost, ' ') &&
+			*newhost != '\0' && *newhost != '@' &&
+			*newhost != ':' && *newhost != '-' &&
+			newhost[strlen(newhost) - 1] != '-') {
+		if (strchr(newhost, '@')) {
+			newuserhost = g_strdup(newhost);
+			g_free(server->userhost);
+			server->userhost = newuserhost;
+		} else if (server->userhost != NULL) {
+			/* no user@, only process if we know the user@
+			 * already
+			 */
+			p = strchr(server->userhost, '@');
+			if (p == NULL)
+				p = server->userhost;
+			newuserhost = g_strdup_printf("%.*s@%s", (int)(p - server->userhost), server->userhost, newhost);
+			g_free(server->userhost);
+			server->userhost = newuserhost;
+		}
+	}
+	g_free(params);
+}
+
 static void event_server_banned(IRC_SERVER_REC *server, const char *data)
 {
 	g_return_if_fail(server != NULL);
@@ -792,6 +825,7 @@ void irc_servers_init(void)
 	signal_add_last("event 376", (SIGNAL_FUNC) event_end_of_motd);
 	signal_add_last("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */
 	signal_add("event 254", (SIGNAL_FUNC) event_channels_formed);
+	signal_add("event 396", (SIGNAL_FUNC) event_hosthidden);
 	signal_add("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_add("event error", (SIGNAL_FUNC) event_error);
 	signal_add("event ping", (SIGNAL_FUNC) event_ping);
@@ -817,6 +851,7 @@ void irc_servers_deinit(void)
 	signal_remove("event 376", (SIGNAL_FUNC) event_end_of_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_end_of_motd); /* no motd */
 	signal_remove("event 254", (SIGNAL_FUNC) event_channels_formed);
+	signal_remove("event 396", (SIGNAL_FUNC) event_hosthidden);
 	signal_remove("event 465", (SIGNAL_FUNC) event_server_banned);
 	signal_remove("event error", (SIGNAL_FUNC) event_error);
 	signal_remove("event ping", (SIGNAL_FUNC) event_ping);
