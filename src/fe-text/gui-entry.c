@@ -460,6 +460,9 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 	if (chr == 0 || chr == 13 || chr == 10)
 		return; /* never insert NUL, CR or LF characters */
 
+	if (entry->utf8 && entry->pos == 0 && mk_wcwidth(chr) == 0)
+		return;
+
         gui_entry_redraw_from(entry, entry->pos);
 
 	entry_text_grow(entry, 1);
