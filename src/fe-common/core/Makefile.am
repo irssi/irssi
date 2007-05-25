@@ -26,6 +26,7 @@ libfe_common_core_a_SOURCES = \
 	fe-server.c \
 	fe-settings.c \
 	utf8.c \
+	wcwidth.c \
 	formats.c \
 	hilight-text.c \
 	keyboard.c \

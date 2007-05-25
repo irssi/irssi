@@ -141,7 +141,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 		if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(*p);
 		else if (entry->utf8)
-			xpos += utf8_width(*p);
+			xpos += mk_wcwidth(*p);
 		else
 			xpos++;
 	}
@@ -158,7 +158,7 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 		if (term_type == TERM_TYPE_BIG5)
 			width = big5_width(*p);
 		else if (entry->utf8)
-			width = utf8_width(*p);
+			width = mk_wcwidth(*p);
 		else
 			width = 1;
 
@@ -223,7 +223,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		else if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(*p);
 		else if (entry->utf8)
-			xpos += utf8_width(*p);
+			xpos += mk_wcwidth(*p);
 		else
 			xpos++;
 
@@ -513,7 +513,7 @@ static size_t cell_width(unichar *buf, int len)
 {
 	unichar *str = buf;
 
-	while (len-- && utf8_width(*str--) == 0);
+	while (len-- && mk_wcwidth(*str--) == 0);
 	return buf - str;
 }
 

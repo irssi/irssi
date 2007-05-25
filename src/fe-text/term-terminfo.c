@@ -425,7 +425,7 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 
 	switch (term_type) {
 	case TERM_TYPE_UTF8:
-	  	term_printed_text(utf8_width(chr));
+	  	term_printed_text(mk_wcwidth(chr));
                 term_addch_utf8(window, chr);
 		break;
 	case TERM_TYPE_BIG5:

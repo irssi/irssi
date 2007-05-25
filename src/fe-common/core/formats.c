@@ -306,7 +306,7 @@ static int advance (char const **str, gboolean utf8)
 		c = g_utf8_get_char(*str);
 		*str = g_utf8_next_char(*str);
 
-		return utf8_width(c);
+		return mk_wcwidth(c);
 	} else {
 		*str += 1;
 

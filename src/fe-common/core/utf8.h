@@ -30,6 +30,6 @@ void utf16_to_utf8_with_pos(const unichar *str, int spos, char *out, int *opos);
 #define is_big5(hi,lo) (is_big5_hi(hi) && is_big5_lo(lo))
 
 /* Returns width for character (0-2). */
-int utf8_width(unichar c);
+int mk_wcwidth(unichar c);
 
 #endif
