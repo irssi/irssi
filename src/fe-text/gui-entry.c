@@ -777,6 +777,13 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 	if (entry->pos + pos >= 0 && entry->pos + pos <= entry->text_len)
 		entry->pos += pos;
 
+	if (entry->utf8) {
+		int step = pos < 0 ? -1 : 1;
+		while(mk_wcwidth(entry->text[entry->pos]) == 0 &&
+		      entry->pos + step >= 0 && entry->pos + step <= entry->text_len)
+			entry->pos += step;
+	}
+
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
