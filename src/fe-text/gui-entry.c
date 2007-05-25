@@ -561,6 +561,25 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 	gui_entry_draw(entry);
 }
 
+void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
+{
+	int size = 1;
+
+	g_return_if_fail(entry != NULL);
+
+	if (entry->utf8)
+		while (entry->pos+size < entry->text_len &&
+		       mk_wcwidth(entry->text[entry->pos+size]) == 0) size++;
+
+	g_memmove(entry->text + entry->pos, entry->text + entry->pos + size,
+		  (entry->text_len-entry->pos-size+1) * sizeof(unichar));
+
+	entry->text_len -= size;
+
+	gui_entry_redraw_from(entry, entry->pos);
+	gui_entry_draw(entry);
+}
+
 void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 {
 	int to;

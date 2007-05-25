@@ -697,8 +697,7 @@ static void key_upcase_word(void)
 static void key_delete_character(void)
 {
 	if (gui_entry_get_pos(active_entry) < active_entry->text_len) {
-		gui_entry_move_pos(active_entry, 1);
-		gui_entry_erase(active_entry, 1, FALSE);
+		gui_entry_erase_cell(active_entry);
 	}
 }
 
