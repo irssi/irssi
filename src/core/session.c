@@ -335,7 +335,7 @@ static void sig_init_finished(void)
 void session_register_options(void)
 {
 	static struct poptOption options[] = {
-		{ "session", 0, POPT_ARG_STRING, &session_file, 0, "Used by /UPGRADE command", "PATH" },
+		{ "session", 0, POPT_ARG_STRING | POPT_ARGFLAG_DOC_HIDDEN, &session_file, 0, "Used by /UPGRADE command", "PATH" },
 		{ NULL, '\0', 0, NULL }
 	};
 
