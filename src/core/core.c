@@ -192,7 +192,6 @@ void core_preinit(const char *path)
 	} else {
 		str = irssi_dir;
 		irssi_dir = fix_path(str);
-		g_free(str);
 		len = strlen(irssi_dir);
 		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
 			irssi_dir[len-1] = '\0';
@@ -202,7 +201,6 @@ void core_preinit(const char *path)
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
-		g_free(str);
 	}
 
 	session_set_binary(path);
