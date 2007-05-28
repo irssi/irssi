@@ -504,7 +504,7 @@ static void event_numeric(IRC_SERVER_REC *server, const char *data,
 static void print_event_received(IRC_SERVER_REC *server, const char *data,
 				 const char *nick, int target_param)
 {
-	char *target, *args, *ptr;
+	char *target, *args, *ptr, *ptr2;
 	int format;
 
 	g_return_if_fail(data != NULL);
@@ -515,17 +515,11 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 		return;
 	ptr++;
 
-	if (!target_param)
+	if (!target_param || *ptr == ':' || (ptr2 = strchr(ptr, ' ')) == NULL)
 		target = NULL;
 	else {
-                /* target parameter */
-		target = ptr;
-		ptr = strchr(target, ' ');
-		if (ptr == NULL)
-			return;
-
-                target = g_strndup(target, (int) (ptr-target));
-		ptr++;
+                /* target parameter expected and present */
+                target = g_strndup(ptr, (int) (ptr2-ptr));
 	}
 
 	/* param1 param2 ... :last parameter */
@@ -621,6 +615,10 @@ void fe_events_numeric_init(void)
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 
         signal_add("default event numeric", (SIGNAL_FUNC) event_numeric);
+	/* Because default event numeric only fires if there is no specific
+	 * event, add all numerics with a handler elsewhere in irssi that
+	 * should not be printed specially here.
+	 */
 	signal_add("event 001", (SIGNAL_FUNC) event_received);
 	signal_add("event 004", (SIGNAL_FUNC) event_received);
 	signal_add("event 005", (SIGNAL_FUNC) event_received);
@@ -636,13 +634,28 @@ void fe_events_numeric_init(void)
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
 	signal_add("event 439", (SIGNAL_FUNC) event_received);
 	signal_add("event 479", (SIGNAL_FUNC) event_received);
-	signal_add("event 482", (SIGNAL_FUNC) event_received);
 
-	signal_add("event 368", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 347", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 349", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 442", (SIGNAL_FUNC) event_target_received);
-	signal_add("event 477", (SIGNAL_FUNC) event_target_received);
+	signal_add("event 344", (SIGNAL_FUNC) event_target_received); /* reop list */
+	signal_add("event 345", (SIGNAL_FUNC) event_target_received); /* end of reop list */
+	signal_add("event 347", (SIGNAL_FUNC) event_target_received); /* end of invite exception list */
+	signal_add("event 349", (SIGNAL_FUNC) event_target_received); /* end of ban exception list */
+	signal_add("event 368", (SIGNAL_FUNC) event_target_received); /* end of ban list */
+	signal_add("event 386", (SIGNAL_FUNC) event_target_received); /* owner list; old rsa challenge (harmless) */
+	signal_add("event 387", (SIGNAL_FUNC) event_target_received); /* end of owner list */
+	signal_add("event 388", (SIGNAL_FUNC) event_target_received); /* protect list */
+	signal_add("event 389", (SIGNAL_FUNC) event_target_received); /* end of protect list */
+	signal_add("event 404", (SIGNAL_FUNC) event_target_received); /* cannot send to channel */
+	signal_add("event 408", (SIGNAL_FUNC) event_target_received); /* cannot send (+c) */
+	signal_add("event 442", (SIGNAL_FUNC) event_target_received); /* you're not on that channel */
+	signal_add("event 477", (SIGNAL_FUNC) event_target_received); /* modeless channel; cannot join/send to channel (+r/+R/+M) */
+	signal_add("event 478", (SIGNAL_FUNC) event_target_received); /* ban list is full */
+	signal_add("event 482", (SIGNAL_FUNC) event_target_received); /* not chanop */
+	signal_add("event 486", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+R) */
+	signal_add("event 489", (SIGNAL_FUNC) event_target_received); /* not chanop or voice */
+	signal_add("event 494", (SIGNAL_FUNC) event_target_received); /* cannot /msg (own +R) */
+	signal_add("event 506", (SIGNAL_FUNC) event_target_received); /* cannot send (+R) */
+	signal_add("event 716", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+g) */
+	signal_add("event 717", (SIGNAL_FUNC) event_target_received); /* +g notified */
 }
 
 void fe_events_numeric_deinit(void)
@@ -705,11 +718,26 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
 	signal_remove("event 439", (SIGNAL_FUNC) event_received);
 	signal_remove("event 479", (SIGNAL_FUNC) event_received);
-	signal_remove("event 482", (SIGNAL_FUNC) event_received);
 
-	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 344", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 345", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 368", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 386", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 387", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 388", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 389", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 404", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 408", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 442", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 477", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 478", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 482", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 486", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 489", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 494", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 506", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 716", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 717", (SIGNAL_FUNC) event_target_received);
 }
