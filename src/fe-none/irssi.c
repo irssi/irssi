@@ -49,16 +49,7 @@ static void sig_reload(void)
 
 void noui_init(void)
 {
-	static struct poptOption options[] = {
-		POPT_AUTOHELP
-		{ "load", 'l', POPT_ARG_STRING, &autoload_module, 0, "Module to load (default = bot)", "MODULE" },
-		{ NULL, '\0', 0, NULL }
-	};
-
 	srand(time(NULL));
-
-	autoload_module = NULL;
-	args_register(options);
 
 	irssi_gui = IRSSI_GUI_NONE;
 	core_init();
@@ -90,13 +81,22 @@ void noui_deinit(void)
 
 int main(int argc, char **argv)
 {
-	core_init_paths(argc, argv);
+	static struct poptOption options[] = {
+		POPT_AUTOHELP
+		{ "load", 'l', POPT_ARG_STRING, &autoload_module, 0, "Module to load (default = bot)", "MODULE" },
+		{ NULL, '\0', 0, NULL }
+	};
+
+	autoload_module = NULL;
+	core_register_options();
+	args_register(options);
+	args_execute(argc, argv);
+	core_preinit(argv[0]);
 
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif
 	noui_init();
-	args_execute(argc, argv);
 
 	if (autoload_module == NULL)
 		autoload_module = "bot";
