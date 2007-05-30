@@ -153,26 +153,27 @@ static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 
 static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel)
 {
-	GList *tmp;
-	int inspos;
+	GList *node;
 
 	g_return_if_fail(window != NULL);
 
+	node = g_list_find(activity_list, window);
+
 	if (settings_get_bool("actlist_moves")) {
 		/* Move the window to the first in the activity list */
-		if (g_list_find(activity_list, window) != NULL)
-			activity_list = g_list_remove(activity_list, window);
+		if (node != NULL)
+			activity_list = g_list_delete_link(activity_list, node);
 		if (window->data_level != 0)
 			activity_list = g_list_prepend(activity_list, window);
 		statusbar_items_redraw("act");
 		return;
 	}
 
-	if (g_list_find(activity_list, window) != NULL) {
+	if (node != NULL) {
 		/* already in activity list */
 		if (window->data_level == 0) {
 			/* remove from activity list */
-			activity_list = g_list_remove(activity_list, window);
+			activity_list = g_list_delete_link(activity_list, node);
 			statusbar_items_redraw("act");
 		} else if (window->data_level != GPOINTER_TO_INT(oldlevel) ||
 			 window->hilight_color != 0) {
@@ -187,18 +188,8 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 		return;
 
 	/* add window to activity list .. */
-	inspos = 0;
-	for (tmp = activity_list; tmp != NULL; tmp = tmp->next, inspos++) {
-		WINDOW_REC *rec = tmp->data;
-
-		if (window->refnum < rec->refnum) {
-			activity_list =
-				g_list_insert(activity_list, window, inspos);
-			break;
-		}
-	}
-	if (tmp == NULL)
-		activity_list = g_list_append(activity_list, window);
+	activity_list = g_list_insert_sorted(activity_list, window, (GCompareFunc)
+					     window_refnum_cmp);
 
 	statusbar_items_redraw("act");
 }
