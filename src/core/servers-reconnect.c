@@ -48,12 +48,11 @@ void reconnect_save_status(SERVER_CONNECT_REC *conn, SERVER_REC *server)
 	if (!server->connected) {
 		/* default to channels/usermode from connect record
 		   since server isn't fully connected yet */
+		/* XXX when is reconnect_save_status() called with
+		 * server->connected==FALSE? */
 		g_free_not_null(conn->channels);
 		conn->channels = server->connrec->no_autojoin_channels ? NULL :
 			g_strdup(server->connrec->channels);
-
-		g_free_not_null(conn->channels);
-		conn->channels = g_strdup(server->connrec->channels);
 	}
 
 	signal_emit("server reconnect save status", 2, conn, server);
