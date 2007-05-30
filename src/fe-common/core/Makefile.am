@@ -53,7 +53,6 @@ pkginc_fe_common_core_HEADERS = \
 	fe-exec.h \
 	fe-messages.h \
 	fe-queries.h \
-	utf8.h \
 	formats.h \
 	hilight-text.h \
 	keyboard.h \
@@ -67,3 +66,6 @@ pkginc_fe_common_core_HEADERS = \
 	window-items.h \
 	windows-layout.h \
 	fe-windows.h
+
+noinst_HEADERS = \
+	utf8.h
