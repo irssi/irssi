@@ -38,7 +38,6 @@ typedef struct
 	GIOChannel *giochan;
 	SSL *ssl;
 	SSL_CTX *ctx;
-	unsigned int got_cert:1;
 	unsigned int verify:1;
 } GIOSSLChannel;
 	
@@ -110,44 +109,10 @@ static GIOStatus ssl_errno(gint e)
 	return G_IO_STATUS_ERROR;
 }
 
-static GIOStatus irssi_ssl_cert_step(GIOSSLChannel *chan)
-{
-	X509 *cert;
-	gint err;
-	switch(err = SSL_do_handshake(chan->ssl))
-	{
-		case 1:
-			if(!(cert = SSL_get_peer_certificate(chan->ssl)))
-			{
-				g_warning("SSL server supplied no certificate");
-				return G_IO_STATUS_ERROR;
-			}
-			if (chan->verify && ! irssi_ssl_verify(chan->ssl, chan->ctx, cert)) {
-				X509_free(cert);
-				return G_IO_STATUS_ERROR;
-			}
-			X509_free(cert);
-			return G_IO_STATUS_NORMAL;
-		default:
-			if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
-				return G_IO_STATUS_AGAIN;
-			return ssl_errno(errno);
-	}
-	/*UNREACH*/
-	return G_IO_STATUS_ERROR;
-}
-
 static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize *ret, GError **gerr)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
-	
-	if(! chan->got_cert)
-	{
-		gint cert_err = irssi_ssl_cert_step(chan);
-		if(cert_err != G_IO_STATUS_NORMAL)
-			return cert_err;
-	}
 	
 	err = SSL_read(chan->ssl, buf, len);
 	if(err < 0)
@@ -170,13 +135,6 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
-
-	if(! chan->got_cert)
-	{
-		gint cert_err = irssi_ssl_cert_step(chan);
-		if(cert_err != G_IO_STATUS_NORMAL)
-			return cert_err;
-	}
 
 	err = SSL_write(chan->ssl, (const char *)buf, len);
 	if(err < 0)
@@ -265,7 +223,6 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 	GIOChannel *gchan;
 	int err, fd;
 	SSL *ssl;
-	X509 *cert = NULL;
 	SSL_CTX *ctx = NULL;
 
 	g_return_val_if_fail(handle != NULL, NULL);
@@ -336,47 +293,11 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 		return NULL;
 	}
 
-	if((err = SSL_connect(ssl)) <= 0)
-	{
-		switch(err = SSL_get_error(ssl, err))
-		{
-			case SSL_ERROR_SYSCALL:
-				if(errno == EINTR || errno == EAGAIN)
-			case SSL_ERROR_WANT_READ:
-			case SSL_ERROR_WANT_WRITE:
-					break;
-			default:
-					SSL_free(ssl);
-					if (ctx != ssl_ctx)
-						SSL_CTX_free(ctx);
-					return NULL;
-		}
-	}
-	else if(!(cert = SSL_get_peer_certificate(ssl)))
-	{
-		g_warning("SSL server supplied no certificate");
-		if (ctx != ssl_ctx)
-			SSL_CTX_free(ctx);
-		SSL_free(ssl);
-		return NULL;
-	}
-	else
-	{
-		if (verify && ! irssi_ssl_verify(ssl, ctx, cert)) {
-			SSL_free(ssl);
-			if (ctx != ssl_ctx)
-				SSL_CTX_free(ctx);
-			return NULL;
-		}
-		X509_free(cert);
-	}
-
 	chan = g_new0(GIOSSLChannel, 1);
 	chan->fd = fd;
 	chan->giochan = handle;
 	chan->ssl = ssl;
 	chan->ctx = ctx;
-	chan->got_cert = cert != NULL;
 	chan->verify = verify;
 
 	gchan = (GIOChannel *)chan;
@@ -395,6 +316,32 @@ GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, const char *
 	if (ssl_handle == NULL)
 		g_io_channel_unref(handle);
 	return ssl_handle;
+}
+
+int irssi_ssl_handshake(GIOChannel *handle)
+{
+	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
+	int ret, err;
+	X509 *cert;
+
+	ret = SSL_connect(chan->ssl);
+	if (ret <= 0) {
+		err = SSL_get_error(chan->ssl, ret);
+		if (err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {
+			g_warning(ERR_reason_error_string(ERR_get_error()));
+			return -1;
+		}
+		return err == SSL_ERROR_WANT_READ ? 1 : 3;
+	}
+
+	cert = SSL_get_peer_certificate(chan->ssl);
+	if (cert == NULL) {
+		g_warning("SSL server supplied no certificate");
+		return -1;
+	}
+	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, cert);
+	X509_free(cert);
+	return ret ? 0 : -1;
 }
 
 #else /* HAVE_OPENSSL */

@@ -167,6 +167,39 @@ static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
 	server_connect_finished(server);
 }
 
+#ifdef HAVE_OPENSSL
+static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *handle)
+{
+	int error;
+
+	g_return_if_fail(IS_SERVER(server));
+
+	error = irssi_ssl_handshake(handle);
+	if (error == -1) {
+		server->connection_lost = TRUE;
+		server_connect_failed(server, NULL);
+		return;
+	}
+	if (error & 1) {
+		if (server->connect_tag != -1)
+			g_source_remove(server->connect_tag);
+		server->connect_tag = g_input_add(handle, error == 1 ? G_INPUT_READ : G_INPUT_WRITE,
+						  (GInputFunction)
+						  server_connect_callback_init_ssl,
+						  server);
+		return;
+	}
+
+	lookup_servers = g_slist_remove(lookup_servers, server);
+	if (server->connect_tag != -1) {
+		g_source_remove(server->connect_tag);
+		server->connect_tag = -1;
+	}
+
+	server_connect_finished(server);
+}
+#endif
+
 static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 				const char *unix_socket)
 {
@@ -218,6 +251,11 @@ server->connrec->ssl_cafile, server->connrec->ssl_capath, server->connrec->ssl_v
 		g_free(errmsg2);
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
+#ifdef HAVE_OPENSSL
+		if (server->connrec->use_ssl)
+			server_connect_callback_init_ssl(server, handle);
+		else
+#endif
 		server->connect_tag =
 			g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
 				    (GInputFunction)
