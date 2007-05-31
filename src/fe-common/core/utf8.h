@@ -32,4 +32,6 @@ void utf16_to_utf8_with_pos(const unichar *str, int spos, char *out, int *opos);
 /* Returns width for character (0-2). */
 int mk_wcwidth(unichar c);
 
+#define unichar_isprint(c) (((c) & ~0x80) >= 32)
+
 #endif

@@ -257,7 +257,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 
 		if (entry->hidden)
                         term_addch(root_window, ' ');
-		else if (IS_PRINTABLE(*p))
+		else if (unichar_isprint(*p))
 			term_add_unichar(root_window, *p);
 		else {
 			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
