@@ -218,7 +218,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			if (get_utf8_char(&next_ptr, char_len, &chr) < 0)
 				char_len = 1;
 			else
-				char_len = mk_wcwidth(chr);
+				char_len = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
 			next_ptr++;
 		}
 
@@ -439,7 +439,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (get_utf8_char(&end, 6, &chr)<0)
 				char_width = 1;
 			else
-				char_width = mk_wcwidth(chr);
+				char_width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
 		} else {
 			if (term_type == TERM_TYPE_BIG5 &&
 			    is_big5(end[0], end[1]))

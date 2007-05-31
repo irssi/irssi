@@ -166,7 +166,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 		if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(*p);
 		else if (entry->utf8)
-			xpos += mk_wcwidth(*p);
+			xpos += unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
 		else
 			xpos++;
 	}
@@ -183,7 +183,7 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 		if (term_type == TERM_TYPE_BIG5)
 			width = big5_width(*p);
 		else if (entry->utf8)
-			width = mk_wcwidth(*p);
+			width = unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
 		else
 			width = 1;
 
@@ -248,7 +248,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		else if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(*p);
 		else if (entry->utf8)
-			xpos += mk_wcwidth(*p);
+			xpos += unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
 		else
 			xpos++;
 
