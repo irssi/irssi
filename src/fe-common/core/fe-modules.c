@@ -152,7 +152,7 @@ static char **module_prefixes_get(void)
 
 static void module_prefixes_free(char **list)
 {
-	char **pos = list+1;
+	char **pos = list+2;
 
 	while (*pos != NULL) {
                 g_free(*pos);
