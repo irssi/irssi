@@ -68,20 +68,23 @@ static REJOIN_REC *rejoin_find(IRC_SERVER_REC *server, const char *channel)
 #define channel_have_key(chan) \
 	((chan) != NULL && (chan)->key != NULL && (chan)->key[0] != '\0')
 
-static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
+static int channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 {
 	IRC_CHANNEL_REC *chanrec;
 	REJOIN_REC *rec;
 
-	g_return_if_fail(IS_IRC_SERVER(server));
-	g_return_if_fail(channel != NULL);
-
-	if (!settings_get_bool("channels_rejoin_unavailable"))
-		return;
+	g_return_val_if_fail(IS_IRC_SERVER(server), 0);
+	g_return_val_if_fail(channel != NULL, 0);
 
 	chanrec = irc_channel_find(server, channel);
-	if (chanrec == NULL || chanrec->joined) return;
+	if (chanrec == NULL || chanrec->joined) return 0;
 
+	if (!settings_get_bool("channels_rejoin_unavailable")) {
+		chanrec->left = TRUE;
+		channel_destroy(CHANNEL(chanrec));
+		return 0;
+	}
+	
 	rec = rejoin_find(server, channel);
 	if (rec != NULL) {
 		/* already exists */
@@ -105,6 +108,7 @@ static void channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 
 	chanrec->left = TRUE;
 	channel_destroy(CHANNEL(chanrec));
+	return 1;
 }
 
 static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
@@ -128,8 +132,9 @@ static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 			   note that this same 407 is sent when trying to
 			   create !!channel that already exists so we don't
 			   want to try rejoining then. */
-			channel_rejoin(server, channel);
-			signal_stop();
+			if (channel_rejoin(server, channel)) {
+				signal_stop();
+			}
 		}
 	}
 
@@ -152,8 +157,9 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 		} else {
 			/* channel is unavailable - try to join again
 			   a bit later */
-			channel_rejoin(server, channel);
-			signal_stop();
+			if (channel_rejoin(server, channel)) {
+				signal_stop();
+			}
 		}
 	}
 

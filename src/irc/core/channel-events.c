@@ -60,7 +60,8 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line)
 	   indicate that the join failed. */
 	params = event_get_params(line, 3, &numeric, NULL, &channel);
 
-	if (numeric[0] == '4')
+	/* 437 is handled specially in src/irc/core/channel-rejoin.c */
+	if (numeric[0] == '4' && (numeric[1] != '3' || numeric[2] != '7'))
 		check_join_failure(server, channel);
 
 	g_free(params);
@@ -112,21 +113,6 @@ static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 			chanrec->left = TRUE;
 			channel_destroy(chanrec);
 		}
-	}
-
-	g_free(params);
-}
-
-static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
-{
-	char *params, *channel;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 2, NULL, &channel);
-	if (ischannel(*channel)) {
-		/* channel is unavailable - try to join again a bit later */
-		check_join_failure(server, channel);
 	}
 
 	g_free(params);
@@ -385,7 +371,6 @@ void channel_events_init(void)
 	signal_add("event invite", (SIGNAL_FUNC) event_invite);
 	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
 	signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
-	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable); /* channel/nick unavailable */
 }
 
 void channel_events_deinit(void)
@@ -401,5 +386,4 @@ void channel_events_deinit(void)
 	signal_remove("event invite", (SIGNAL_FUNC) event_invite);
 	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
 	signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
-	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable); /* channel/nick unavailable */
 }
