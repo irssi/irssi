@@ -105,7 +105,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_channels", "{whois channels %|$1}", 2, { 0, 0 } },
 	{ "whois_away", "{whois away %|$1}", 2, { 0, 0 } },
 	{ "whois_special", "{whois  %|$1}", 2, { 0, 0 } },
-	{ "whois_extra", "{whois  %|$1}", 2, { 0, 0 } },
+	{ "whois_extra", "{whois account %|$1}", 2, { 0, 0 } },
 	{ "end_of_whois", "End of WHOIS", 1, { 0 } },
 	{ "end_of_whowas", "End of WHOWAS", 1, { 0 } },
 	{ "whois_not_found", "There is no such nick $0", 1, { 0 } },
