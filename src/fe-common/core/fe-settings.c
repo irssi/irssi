@@ -41,6 +41,29 @@ static void set_print(SETTINGS_REC *rec)
 	g_free(value);
 }
 
+static void set_print_pattern(const char *pattern)
+{
+	GSList *sets, *tmp;
+	const char *last_section;
+
+	last_section = "";
+	sets = settings_get_sorted();
+	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
+		SETTINGS_REC *rec = tmp->data;
+
+		if (stristr(rec->key, pattern) == NULL)
+			continue;
+		if (strcmp(last_section, rec->section) != 0) {
+			/* print section */
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				    TXT_SET_TITLE, rec->section);
+			last_section = rec->section;
+		}
+		set_print(rec);
+	}
+	g_slist_free(sets);
+}
+
 static void set_boolean(const char *key, const char *value)
 {
 	if (g_strcasecmp(value, "ON") == 0)
@@ -57,11 +80,10 @@ static void set_boolean(const char *key, const char *value)
 static void cmd_set(char *data)
 {
         GHashTable *optlist;
-	GSList *sets, *tmp;
-	const char *last_section;
 	char *key, *value;
 	void *free_arg;
-	int found, clear, set_default;
+	int clear, set_default;
+	SETTINGS_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 			    "set", &optlist, &key, &value))
@@ -73,23 +95,11 @@ static void cmd_set(char *data)
 	if (*key == '\0')
 		clear = set_default = FALSE;
 
-	last_section = ""; found = 0;
-	sets = settings_get_sorted();
-	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
-		SETTINGS_REC *rec = tmp->data;
-
-		if (((clear || set_default || *value != '\0') && g_strcasecmp(rec->key, key) != 0) ||
-		    (*value == '\0' && *key != '\0' && stristr(rec->key, key) == NULL))
-			continue;
-
-		if (strcmp(last_section, rec->section) != 0) {
-			/* print section */
-			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-				    TXT_SET_TITLE, rec->section);
-			last_section = rec->section;
-		}
-
-		if (clear || set_default || *value != '\0') {
+	if (!(clear || set_default || *value != '\0'))
+		set_print_pattern(key);
+	else {
+		rec = settings_get_record(key);
+		if (rec != NULL) {
 			/* change the setting */
 			switch (rec->type) {
 			case SETTING_TYPE_BOOLEAN:
@@ -130,20 +140,13 @@ static void cmd_set(char *data)
 				break;
 			}
 			signal_emit("setup changed", 0);
-		}
-
-                set_print(rec);
-		found = TRUE;
-
-		if (clear || *value != '\0')
-			break;
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				    TXT_SET_TITLE, rec->section);
+			set_print(rec);
+		} else
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    TXT_SET_UNKNOWN, key);
 	}
-	g_slist_free(sets);
-
-        if (!found) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    TXT_SET_UNKNOWN, key);
-	 }
 
         cmd_params_free(free_arg);
 }
