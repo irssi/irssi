@@ -344,7 +344,7 @@ GList *filename_complete(const char *path, const char *default_path)
         return list;
 }
 
-static GList *completion_get_settings(const char *key)
+static GList *completion_get_settings(const char *key, SettingType type)
 {
 	GList *complist;
 	GSList *tmp, *sets;
@@ -359,29 +359,7 @@ static GList *completion_get_settings(const char *key)
 	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
 		SETTINGS_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->key, key, len) == 0)
-			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
-	}
-	g_slist_free(sets);
-	return complist;
-}
-
-static GList *completion_get_bool_settings(const char *key)
-{
-	GList *complist;
-	GSList *tmp, *sets;
-	int len;
-
-	g_return_val_if_fail(key != NULL, NULL);
-
-	sets = settings_get_sorted();
-
-	len = strlen(key);
-	complist = NULL;
-	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
-		SETTINGS_REC *rec = tmp->data;
-
-		if (rec->type == SETTING_TYPE_BOOLEAN &&
+		if ((type == -1 || rec->type == type) &&
 		    g_strncasecmp(rec->key, key, len) == 0)
 			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
 	}
@@ -701,7 +679,7 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 
 	if (*line != '\0') return;
 
-	*list = completion_get_settings(word);
+	*list = completion_get_settings(word, -1);
 	if (*list != NULL) signal_stop();
 }
 
@@ -714,7 +692,7 @@ static void sig_complete_toggle(GList **list, WINDOW_REC *window,
 
 	if (*line != '\0') return;
 
-	*list = completion_get_bool_settings(word);
+	*list = completion_get_settings(word, SETTING_TYPE_BOOLEAN);
 	if (*list != NULL) signal_stop();
 }
 
