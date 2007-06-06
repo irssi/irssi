@@ -802,6 +802,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
         char **nicklist, *spacenicks, *banmasks;
 	void *free_arg;
 	int timeleft;
+	GSList *ptr;
 
         CMD_IRC_SERVER(server);
 
@@ -856,13 +857,20 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	if (*banmasks == '\0')
 		g_free(banmasks);
 	else {
-		/* create knockout record */
-		rec = g_new(KNOCKOUT_REC, 1);
+		/* check if we already have this knockout */
+		for (ptr = server->knockoutlist; ptr != NULL; ptr = ptr->next) {
+			rec = ptr->data;
+			if (channel == rec->channel &&
+					!strcmp(rec->ban, banmasks))
+				break;
+		}
+		if (ptr == NULL) {
+			rec = g_new(KNOCKOUT_REC, 1);
+			rec->channel = channel;
+			rec->ban = banmasks;
+			server->knockoutlist = g_slist_append(server->knockoutlist, rec);
+		}
 		rec->unban_time = time(NULL)+timeleft/1000;
-		rec->channel = channel;
-		rec->ban = banmasks;
-
-		server->knockoutlist = g_slist_append(server->knockoutlist, rec);
 	}
 
 	cmd_params_free(free_arg);
