@@ -137,7 +137,7 @@ static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 	char *nickmode;
 
 	if (!settings_get_bool("show_nickmode"))
-                return "";
+                return g_strdup("");
 
         emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
 
