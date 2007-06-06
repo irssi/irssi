@@ -677,9 +677,18 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
 
-	if (*line != '\0') return;
+	if (*line == '\0' ||
+	    !strcmp("-clear", line) || !strcmp("-default", line))
+		*list = completion_get_settings(word, -1);
+	else if (*line != '\0' && *word == '\0') {
+		SETTINGS_REC *rec = settings_get_record(line);
+		if (rec != NULL) {
+			char *value = settings_get_print(rec);
+			if (value != NULL)
+				*list = g_list_append(*list, value);
+		}
+	}
 
-	*list = completion_get_settings(word, -1);
 	if (*list != NULL) signal_stop();
 }
 
