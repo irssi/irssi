@@ -1,7 +1,7 @@
 
 @SYNTAX:reload@
 
-Reloads the irssi's configuration file.
+Reloads irssi's configuration file.
 
 See also: SAVE
 

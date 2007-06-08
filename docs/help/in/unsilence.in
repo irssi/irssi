@@ -1,7 +1,7 @@
 
 @SYNTAX:unsilence@
 
-Works only in the Undernet and Open Projects (ircu).
+Works only in some IRC networks.
 
 Removes a pattern from your silence list.
 

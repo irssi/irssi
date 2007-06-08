@@ -1,7 +1,8 @@
 
 @SYNTAX:squit@
 
-IRC Operator command. Makes server to quit IRC network.
+IRC Operator command. Splits the given server and all servers
+behind it from your side of the IRC network.
 
-See also: OPER, DIE, RESTART
+See also: SCONNECT, OPER, DIE, RESTART
 

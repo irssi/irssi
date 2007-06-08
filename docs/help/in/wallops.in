@@ -1,9 +1,9 @@
 
 @SYNTAX:wallops@
 
+IRC operator command.
+
 This command sends the given message to everyone on 
-the network who has user mode +w turned on. If you 
-are not an operator, you will probably receive
-an error message when using this command
+the network who has user mode +w turned on.
 
 See also: OPER, WALLOPS

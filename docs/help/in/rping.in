@@ -1,7 +1,7 @@
 
 @SYNTAX:rping@
 
-IRC Operator command.
+IRC Operator command, not available on all networks.
 
 This command works like the PING command (CTCP PING), except 
 it is used on a server instead of a client. As with PING, it 

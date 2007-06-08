@@ -1,8 +1,12 @@
 
 @SYNTAX:trace@
 
-Without a specified server it shows the current connections on
+Without a specified server TRACE shows the current connections on
 the local server.  If you specify a remote server it will show
 all servers between your current server and that remote server
-as well as the connections on that remote server.
+as well as the connections on that remote server. With a nick it
+shows the servers in between and information about that nick.
+
+On some servers, TRACE shows information such as IP addresses
+and idle times.
 

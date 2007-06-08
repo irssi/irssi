@@ -9,7 +9,7 @@ the user. This is aliased to /WII by default.
 
 If given nick is not in the IRC, irssi automatically
 sends a WHOWAS query. Read carefully the reply to see
-if it is a WHOIS or WHOWAS reply. :)
+if it is a WHOIS or WHOWAS reply.
 
 See also: WHO, CHANNEL
 

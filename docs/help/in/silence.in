@@ -1,14 +1,16 @@
 
 @SYNTAX:silence@
 
-Works only in the Undernet and Open Projects (ircu).
+Works only in some IRC networks.
 
 SILENCE is similar in many respects to IGNORE, except that it is 
 server-based. What this means is the server will never even send 
-you messages from anyone you have SILENCEd, whereas it will with 
+you messages from anyone you have silenced, whereas it will with
 IGNORE, where your client is responsible for filtering the messages 
 out. This has the advantage of not bogging your client down with 
-excessive data as it tries to filter out messages. 
+excessive data as it tries to filter out messages. The silence list
+is lost when you disconnect. SILENCE only affects private messages
+and invites.
 
 The default behavior is to SILENCE a nick!user@host pattern, and 
 if such a pattern is not passed as the argument, it must be prepended 

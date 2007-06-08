@@ -1,7 +1,7 @@
 
 @SYNTAX:ison@
 
-Tells whether specified nicks are online.
+Tells whether specified nicks (space-separated) are online.
 
 See also: WHOIS, WHOWAS, NOTIFY
 

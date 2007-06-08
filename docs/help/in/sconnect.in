@@ -1,8 +1,8 @@
 
 @SYNTAX:sconnect@
 
-IRC Operator command. Makes an IRC server to connect
-to another server.
+IRC Operator command. Makes an IRC server connect
+to another server. This is CONNECT on the protocol level.
 
 See also: OPER, SQUIT, RESTART
 

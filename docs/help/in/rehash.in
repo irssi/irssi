@@ -3,9 +3,12 @@
 
 IRC Operator command.
 
-This command is used to force the current server to reload it's
+This command is used to force the current server to reload its
 ircd.conf configuration file. This is useful for effecting
 configuration changes without starting a new server.
+
+Some servers have various types of rehashes, specified by an additional
+parameter.
 
 See also: OPER, RESTART
 

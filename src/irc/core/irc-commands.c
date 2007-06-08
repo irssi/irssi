@@ -1029,7 +1029,7 @@ void irc_commands_init(void)
 	command_bind_irc("map", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: MOTD [<server>|<nick>] */
 	command_bind_irc("motd", NULL, (SIGNAL_FUNC) command_self);
-	/* SYNTAX: REHASH */
+	/* SYNTAX: REHASH [<option>] */
 	command_bind_irc("rehash", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: STATS <type> [<server>] */
 	command_bind_irc("stats", NULL, (SIGNAL_FUNC) command_self);

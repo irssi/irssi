@@ -17,5 +17,5 @@
 This command makes irssi to connect to specified server.
 Current connections are kept and a new one is created.
 
-See also: SERVER, DISCONNECT, RMRECONNS
+See also: SERVER, DISCONNECT, RMRECONNS, SCONNECT
 

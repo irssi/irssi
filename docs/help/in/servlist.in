@@ -1,6 +1,8 @@
 
 @SYNTAX:servlist@
 
+Works only on IRCnet.
+
 SERVLIST gives the list of services currently present on the
 IRC network.  It can take two arguments.
     <mask> limits the output to the services which names matches

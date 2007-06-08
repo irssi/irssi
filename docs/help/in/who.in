@@ -3,15 +3,23 @@
 
 Without parameters, shows all users and their user infos
 on the current channel. If you specify a channel, shows
-the all users of the given channel.
+all users on the given channel.
 
 If you specify an string with wildcards, you will be
 shown all users whose nick, userhost or realname matches
 the wildcard expression.
 
-If a channel is secret or private and you're not on it,
-you will be shown only those channel members, who do not 
-have the invisible (+i) mode set.
+If a channel is secret and you're not on it, you will not
+get any output. Otherwise if you're not on it, you will be
+shown only those channel members who do not have the
+invisible (+i) mode set.
+
+The flags field has the following meaning:
+  H - The user is not away (here).
+  G - The user is set away (gone).
+  * - The user is an IRC operator.
+  @ - The user is a channel op in the channel listed.
+  + - The user is voiced in the channel listed.
 
 Examples:
    /WHO          - Shows users on current channel

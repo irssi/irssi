@@ -2,7 +2,7 @@
 @SYNTAX:invitelist@
 
 Shows the +I modes of the current channel. +I mode
-allows free joins of clients with certain userhost mask
+allows free joins of clients with certain userhost masks
 even if the channel is invite only.
 
 See also: INVITE, MODE

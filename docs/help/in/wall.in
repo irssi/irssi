@@ -1,11 +1,12 @@
 
 @SYNTAX:wall@
 
-This command sends a message to all operators in a channel. This is internal
-irssi command which sends a message separately to each opearator, so this
-may not be very good idea to use in channel with lots of operators.
+This command sends a message to all operators in a channel. If the server
+supports WALLCHOPS or STATUSMSG=@, it sends a notice to @#channel.
+Otherwise it sends a notice separately to each operator, which may not
+be a very good idea to use in a channel with lots of operators.
 
-Some IRC servers support also /MSG @#channel or /WALLCHOPS which you should
+Many IRC servers support also /MSG @#channel or /WALLCHOPS which you should
 use if possible.
 
 See also: WALLCHOPS
