@@ -20,5 +20,5 @@ If you only specify a nickname, you can list the patterns in the
 silence list owned by that nickname. If no arguments are given, your 
 own silence list is displayed. 
  
-See also: IGNORE
+See also: IGNORE, ACCEPT
 

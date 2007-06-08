@@ -40,5 +40,5 @@ Some suggestions for ignoring annoying public aways:
 
 For regular expressions, see `man 7 regex`.
 
-See also: UNIGNORE
+See also: UNIGNORE, SILENCE, ACCEPT
 

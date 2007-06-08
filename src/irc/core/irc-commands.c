@@ -940,6 +940,17 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: ACCEPT [[-]nick,...] */
+static void cmd_accept(const char *data, IRC_SERVER_REC *server)
+{
+        CMD_IRC_SERVER(server);
+
+	if (*data == '\0') 
+		irc_send_cmd(server, "ACCEPT *");
+	else
+		irc_send_cmdv(server, "ACCEPT %s", data);
+}
+
 /* SYNTAX: UNSILENCE <nick!user@host> */
 static void cmd_unsilence(const char *data, IRC_SERVER_REC *server)
 {
@@ -1015,6 +1026,7 @@ void irc_commands_init(void)
 	command_bind_irc("away", NULL, (SIGNAL_FUNC) cmd_away);
 	/* SYNTAX: ISON <nicks> */
 	command_bind_irc("ison", NULL, (SIGNAL_FUNC) command_1self);
+	command_bind_irc("accept", NULL, (SIGNAL_FUNC) cmd_accept);
 	/* SYNTAX: ADMIN [<server>|<nickname>] */
 	command_bind_irc("admin", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: INFO [<server>] */
@@ -1110,6 +1122,7 @@ void irc_commands_deinit(void)
 	command_unbind("kill", (SIGNAL_FUNC) command_2self);
 	command_unbind("away", (SIGNAL_FUNC) cmd_away);
 	command_unbind("ison", (SIGNAL_FUNC) command_1self);
+	command_unbind("accept", (SIGNAL_FUNC) cmd_accept);
 	command_unbind("admin", (SIGNAL_FUNC) command_self);
 	command_unbind("info", (SIGNAL_FUNC) command_self);
     command_unbind("knock", (SIGNAL_FUNC) command_self);

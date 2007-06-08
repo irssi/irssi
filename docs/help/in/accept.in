@@ -1,0 +1,28 @@
+
+@SYNTAX:accept@
+MODE <your nick> <+|->g
+
+Works only in some IRC networks.
+
+ACCEPT allows you to specify who you want to receive private messages
+and notices from while you are in callerid (+g) mode.
+When you have user mode +g enabled, messages from other users are blocked and
+the sender is notified; you are also notified but at most once per minute.
+IRC operators and services can usually send through +g.
+
+The accept list is lost when you disconnect.
+Users are automatically removed from the accept list if they quit, split
+or change nick.
+
+The argument is a comma-separated list of nicks to add or (when prefixed
+with a '-') to remove. No output is returned for users successfully added
+or removed.
+If no arguments are given, your accept list is displayed (ACCEPT * on the
+protocol level). 
+
+Example:
+    /ACCEPT user1,user2,-user3,-user4  - Adds user1 and user2 and removes
+                                         user3 and user4.
+ 
+See also: IGNORE, SILENCE
+

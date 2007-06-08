@@ -195,6 +195,17 @@ static void event_silence_list(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_accept_list(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *accepted;
+
+	g_return_if_fail(data != NULL);
+	g_return_if_fail(server != NULL);
+
+	params = event_get_params(data, 2, NULL, &accepted);
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_ACCEPT_LIST, accepted);
+	g_free(params);
+}
 
 static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
@@ -583,6 +594,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 315", (SIGNAL_FUNC) event_end_of_who);
 	signal_add("event 271", (SIGNAL_FUNC) event_silence_list);
 	signal_add("event 272", (SIGNAL_FUNC) sig_empty);
+	signal_add("event 281", (SIGNAL_FUNC) event_accept_list);
 	signal_add("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_add("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
@@ -671,6 +683,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 315", (SIGNAL_FUNC) event_end_of_who);
 	signal_remove("event 271", (SIGNAL_FUNC) event_silence_list);
 	signal_remove("event 272", (SIGNAL_FUNC) sig_empty);
+	signal_remove("event 281", (SIGNAL_FUNC) event_accept_list);
 	signal_remove("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_remove("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
