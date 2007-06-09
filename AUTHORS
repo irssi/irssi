@@ -9,6 +9,7 @@ Irssi staff (current maintainers) <staff@irssi.org>:
   Jochen Eisinger (c0ffee)
   Geert Hauwaerts
   Emanuele Giaquinta (exg)
+  Jilles Tjoelker
 
 Large feature patches by:
 
@@ -59,7 +60,6 @@ Other patches (grep for "patch" in ChangeLog) by:
   Kjetil Ødegaard
   Chris Moore
   ComradeP
-  Jilles Tjoelker
   Lauri Nurmi
   Mikko Rauhala
   loafier
