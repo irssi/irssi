@@ -279,6 +279,33 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 	return max_win;
 }
 
+static WINDOW_REC *window_find_item_cycle(SERVER_REC *server, const char *name)
+{
+	WINDOW_REC *rec, *win;
+	GSList *tmp;
+
+	win = NULL;
+
+	tmp = g_slist_find(windows, active_win);
+	tmp = tmp->next;
+	for (;; tmp = tmp->next) {
+		if (tmp == NULL)
+			tmp = windows;
+
+		if (tmp->data == active_win)
+			break;
+
+		rec = tmp->data;
+
+		if (window_item_find_window(rec, server, name) != NULL) {
+			win = rec;
+			break;
+		}
+	}
+
+	return win;
+}
+
 /* SYNTAX: WINDOW GOTO active|<number>|<name> */
 static void cmd_window_goto(const char *data)
 {
@@ -298,8 +325,13 @@ static void cmd_window_goto(const char *data)
 
 	if (g_strcasecmp(target, "active") == 0)
                 window = window_highest_activity(active_win);
-	else
-                window = window_find_item(active_win->active_server, target);
+	else {
+		window = window_find_name(target);
+		if (window == NULL && active_win->active_server != NULL)
+			window = window_find_item_cycle(active_win->active_server, target);
+		if (window == NULL)
+			window = window_find_item_cycle(NULL, target);
+	}
 
 	if (window != NULL)
 		window_set_active(window);
