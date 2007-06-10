@@ -76,9 +76,18 @@ static void signal_query_created(QUERY_REC *query, gpointer automatic)
 
 static void signal_query_created_curwin(QUERY_REC *query)
 {
+	WINDOW_REC *window;
+	int refnum;
+
 	g_return_if_fail(IS_QUERY(query));
 
-	window_item_add(active_win, (WI_ITEM_REC *) query, FALSE);
+	window = NULL;
+	refnum = GPOINTER_TO_INT(signal_get_user_data());
+	if (refnum > 0)
+		window = window_find_refnum(refnum);
+	if (window == NULL)
+		window = active_win;
+	window_item_add(window, (WI_ITEM_REC *) query, window != active_win);
 }
 
 static void signal_query_destroyed(QUERY_REC *query)
@@ -226,6 +235,8 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	QUERY_REC *query;
 	char *nick, *msg;
 	void *free_arg;
+	char *arg;
+	int refnum;
 
 	g_return_if_fail(data != NULL);
 
@@ -250,9 +261,11 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (*nick != '=' && (server == NULL || !server->connected))
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	if (g_hash_table_lookup(optlist, "window") != NULL) {
-		signal_add("query created",
-			   (SIGNAL_FUNC) signal_query_created_curwin);
+	arg = g_hash_table_lookup(optlist, "window");
+	if (arg != NULL) {
+		refnum = *arg != '\0' ? atoi(arg) : 0;
+		signal_add_data("query created",
+				(SIGNAL_FUNC) signal_query_created_curwin, GINT_TO_POINTER(refnum));
 	}
 
 	query = query_find(server, nick);
@@ -268,9 +281,9 @@ static void cmd_query(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		window_item_set_active(active_win, (WI_ITEM_REC *) query);
 	}
 
-	if (g_hash_table_lookup(optlist, "window") != NULL) {
-		signal_remove("query created",
-			      (SIGNAL_FUNC) signal_query_created_curwin);
+	if (arg != NULL) {
+		signal_remove_data("query created",
+				   (SIGNAL_FUNC) signal_query_created_curwin, GINT_TO_POINTER(refnum));
 	}
 
 	if (*msg != '\0') {
@@ -373,7 +386,7 @@ void fe_queries_init(void)
 	command_bind("unquery", NULL, (SIGNAL_FUNC) cmd_unquery);
 	command_bind("window server", NULL, (SIGNAL_FUNC) cmd_window_server);
 
-	command_set_options("query", "window");
+	command_set_options("query", "@window");
 }
 
 void fe_queries_deinit(void)
