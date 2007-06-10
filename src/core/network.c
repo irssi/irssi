@@ -590,12 +590,6 @@ const char *net_gethosterror(int error)
 #ifdef HAVE_IPV6
 	g_return_val_if_fail(error != 0, NULL);
 
-	if (error == 1) {
-		/* getnameinfo() failed ..
-		   FIXME: does strerror return the right error message? */
-		return g_strerror(errno);
-	}
-
 	return gai_strerror(error);
 #else
 	switch (error) {
