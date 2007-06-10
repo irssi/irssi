@@ -637,7 +637,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 		if (option == NULL)
 			break;
 
-		if (*optlist[pos] == '@' && !i_isdigit(**data))
+		if (*optlist[pos] == '@' && !is_numeric(*data, ' '))
 			break; /* expected a numeric argument */
 
 		/* save the argument */
