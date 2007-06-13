@@ -14,8 +14,8 @@ the following:
     Custom [nick] [user] [host] [domain]
 
 Examples:
-    /BAN looser       - Bans the nick 'looser'
-    /BAN -host looser - Bans the host of nick 'looser'
+    /BAN loser        - Bans the nick 'loser'
+    /BAN -host loser  - Bans the host of nick 'loser'
     /BAN *!*@*.org    - Bans all the users coming from any .org domain.
 
     /SET ban_type custom nick domain - nick!*@*.domain.net
