@@ -97,7 +97,7 @@ static char *module_get_sub(const char *name, const char *root)
 	    strcmp(name+rootlen, "_core") == 0)
                 return g_strdup("core");
 
-	if (namelen+1 > rootlen && name[namelen-rootlen-1] == '_' &&
+	if (namelen > rootlen && name[namelen-rootlen-1] == '_' &&
 	    strcmp(name+namelen-rootlen, root) == 0)
                 return g_strndup(name, namelen-rootlen-1);
 
