@@ -455,7 +455,7 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 
 	msgprint = FALSE;
 
-	/* Print to each channel/query where the nick is.
+	/* Print to each channel where the nick is.
 	   Don't print more than once to the same window. */
 	windows = NULL;
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
