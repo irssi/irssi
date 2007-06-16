@@ -315,7 +315,7 @@ static void cmd_quit(const char *data)
 	signal_emit("gui exit", 0);
 }
 
-/* SYNTAX: JOIN [-invite] [-<server tag>] <channels> [<keys>] */
+/* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] */
 static void cmd_join(const char *data, SERVER_REC *server)
 {
 	GHashTable *optlist;
