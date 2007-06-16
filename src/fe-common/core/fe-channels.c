@@ -49,18 +49,9 @@ static void signal_channel_created(CHANNEL_REC *channel, void *automatic)
 
 static void signal_channel_created_curwin(CHANNEL_REC *channel)
 {
-	WINDOW_REC *window;
-	int refnum;
-
 	g_return_if_fail(channel != NULL);
 
-	window = NULL;
-	refnum = GPOINTER_TO_INT(signal_get_user_data());
-	if (refnum > 0)
-		window = window_find_refnum(refnum);
-	if (window == NULL)
-		window = active_win;
-	window_item_add(window, (WI_ITEM_REC *) channel, window != active_win);
+	window_item_add(active_win, (WI_ITEM_REC *) channel, FALSE);
 }
 
 static void signal_channel_destroyed(CHANNEL_REC *channel)
@@ -124,7 +115,6 @@ static void cmd_wjoin_pre(const char *data, SERVER_REC *server)
 	GHashTable *optlist;
 	char *nick;
 	void *free_arg;
-	char *arg;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
@@ -137,11 +127,9 @@ static void cmd_wjoin_pre(const char *data, SERVER_REC *server)
             	cmd_params_free(free_arg);
            	return;
         }                    
-	arg = g_hash_table_lookup(optlist, "window");
-	if (arg != NULL) {
-		int refnum = *arg != '\0' ? atoi(arg) : 0;
-		signal_add_data("channel created",
-				(SIGNAL_FUNC) signal_channel_created_curwin, GINT_TO_POINTER(refnum));
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_add("channel created",
+			   (SIGNAL_FUNC) signal_channel_created_curwin);
         }
 	cmd_params_free(free_arg);
 }
@@ -179,18 +167,15 @@ static void cmd_wjoin_post(const char *data)
 	GHashTable *optlist;
 	char *nick;
 	void *free_arg;
-	char *arg;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
 			    "join", &optlist, &nick))
 		return;
 
-	arg = g_hash_table_lookup(optlist, "window");
-	if (arg != NULL) {
-		int refnum = *arg != '\0' ? atoi(arg) : 0;
-		signal_remove_data("channel created",
-				   (SIGNAL_FUNC) signal_channel_created_curwin, GINT_TO_POINTER(refnum));
+	if (g_hash_table_lookup(optlist, "window") != NULL) {
+		signal_remove("channel created",
+			   (SIGNAL_FUNC) signal_channel_created_curwin);
 	}
 	cmd_params_free(free_arg);
 }
@@ -665,7 +650,7 @@ void fe_channels_init(void)
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
 	command_set_options("names", "count ops halfops voices normal");
-	command_set_options("join", "@window");
+	command_set_options("join", "window");
 }
 
 void fe_channels_deinit(void)
