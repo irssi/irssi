@@ -124,7 +124,7 @@ static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 	g_return_if_fail(query != NULL);
 
 	format_create_dest_tag(&dest, query->server, query->server_tag,
-			       query->name, MSGLEVEL_CLIENTNOTICE, NULL);
+			       query->name, MSGLEVEL_NICKS, NULL);
 
 	/* don't print the nick change message if only the case was changed */
 	if (g_strcasecmp(query->name, oldnick) != 0) {
