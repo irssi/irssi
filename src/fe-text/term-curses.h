@@ -4,11 +4,6 @@
 #  include <curses.h>
 #endif
 
-#ifdef HAVE_CUIX
-#include <form.h>
-#include <panel.h>
-#endif
-
 struct _TERM_WINDOW {
 	int x, y;
         int width, height;

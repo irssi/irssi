@@ -99,14 +99,6 @@ AC_ARG_WITH(terminfo,
 	fi,
 	want_terminfo=yes)
 
-AC_ARG_WITH(cuix,
-[  --with-cuix             Use curses ui extended (experimental, not usable)],
-    if test x$withval = xyes; then
-            want_terminfo=no
-            want_cuix=yes
-    fi, want_cuix=no)
-
-
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
 	if test x$withval != xyes -a x$withval != xno; then
@@ -308,10 +300,6 @@ if test "x$want_socks" = "xyes"; then
 			CFLAGS="$CFLAGS -Dconnect=Rconnect -Dgetsockname=Rgetsockname -Dgetpeername=Rgetpeername -Dbind=Rbind -Daccept=Raccept -Dlisten=Rlisten -Dselect=Rselect"
 		])
 	])
-fi
-
-if test "x$want_cuix" = "xyes"; then
-    AC_DEFINE([HAVE_CUIX], [1] ,[Enable cuix support])
 fi
 
 dnl **
@@ -676,7 +664,6 @@ AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
 AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
-AM_CONDITIONAL(USE_CUIX, test "$want_cuix" = "yes")
 
 # move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
 PROG_LIBS=$LIBS

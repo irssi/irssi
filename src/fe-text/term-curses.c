@@ -23,9 +23,6 @@
 
 #include "term.h"
 #include "mainwindows.h"
-#ifdef HAVE_CUIX
-#include "cuix.h"
-#endif
 
 #include "term-curses.h"
 
@@ -352,26 +349,14 @@ void term_refresh_thaw(void)
 
 void term_refresh(TERM_WINDOW *window)
 {
-#ifdef HAVE_CUIX
-    if (!cuix_active) {
-#endif
 	if (window != NULL)
 		wnoutrefresh(window->win);
 
 	if (freeze_refresh == 0) {
 		move(curs_y, curs_x);
 		wnoutrefresh(stdscr);
-#ifdef HAVE_CUIX
-                cuix_refresh ();
-#endif
 		doupdate();
 	}
-#ifdef HAVE_CUIX
-    } else {
-        update_panels ();
-        doupdate ();
-    }
-#endif
 }
 
 void term_stop(void)

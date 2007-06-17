@@ -23,9 +23,6 @@
 #include "module.h"
 #include "textbuffer-view.h"
 #include "utf8.h"
-#ifdef HAVE_CUIX
-#include "cuix.h"
-#endif
 
 typedef struct {
 	char *name;
@@ -1336,9 +1333,6 @@ static int sig_check_linecache(void)
 void textbuffer_view_init(void)
 {
 	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
-#ifdef HAVE_CUIX
-        cuix_active = 0;
-#endif
 }
 
 void textbuffer_view_deinit(void)

@@ -33,11 +33,6 @@ terminfo_sources = \
 curses_sources = \
 	term-curses.c
 
-cuix_sources = \
-	cuix-api.c \
-	cuix-lib.c \
-	cuix.c
-
 if NEED_TPARM
 use_tparm_sources = $(tparm_sources)
 endif
@@ -47,13 +42,6 @@ use_term_sources = $(curses_sources)
 else
 use_term_sources = $(terminfo_sources)
 endif
-
-if USE_CUIX
-use_term_sources += $(cuix_sources)
-irssi_LDADD += -lform -lpanel -lmenu
-INCLUDES += -I$(top_srcdir)/src/irc/core
-endif
-
 
 irssi_SOURCES = \
         gui-entry.c \

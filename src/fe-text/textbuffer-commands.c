@@ -30,9 +30,6 @@
 #include "printtext.h"
 #include "gui-windows.h"
 #include "textbuffer-reformat.h"
-#ifdef HAVE_CUIX
-#include "cuix.h"
-#endif
 
 /* SYNTAX: CLEAR [-all] [<refnum>] */
 static void cmd_clear(const char *data)
@@ -372,23 +369,6 @@ static void sig_away_changed(SERVER_REC *server)
 	}
 }
 
-#ifdef HAVE_CUIX
-static void cmd_cuix(void)
-{
-    if (!cuix_active)
-    {
-        /* textbuffer_view_clear(WINDOW_GUI(active_win)->view); */
-        cuix_active = 1;
-        cuix_create();
-    } else {
-        /* should never been called */
-        /* cuix_destroy (); */
-        cuix_active = 0;
-        /* textbuffer_view_clear(WINDOW_GUI(active_win)->view); */
-    }
-}
-#endif
-
 void textbuffer_commands_init(void)
 {
 	settings_add_level("misc", "scrollback_levelclear_levels", "crap clientcrap");
@@ -402,9 +382,6 @@ void textbuffer_commands_init(void)
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
 	command_bind("scrollback redraw", NULL, (SIGNAL_FUNC) cmd_scrollback_redraw);
 	command_bind("scrollback status", NULL, (SIGNAL_FUNC) cmd_scrollback_status);
-#ifdef HAVE_CUIX
-	command_bind("cuix", NULL, (SIGNAL_FUNC) cmd_cuix);
-#endif
 
 	command_set_options("clear", "all");
 	command_set_options("scrollback clear", "all");
@@ -425,9 +402,6 @@ void textbuffer_commands_deinit(void)
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
 	command_unbind("scrollback redraw", (SIGNAL_FUNC) cmd_scrollback_redraw);
 	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
-#ifdef HAVE_CUIX
-	command_unbind("cuix", (SIGNAL_FUNC) cmd_cuix);
-#endif
 
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }
