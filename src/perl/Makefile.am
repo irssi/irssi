@@ -47,11 +47,11 @@ noinst_HEADERS = \
 libperl_core_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
 
 .libs/libperl_orig.a:
-	if [ ! -d .libs ]; then mkdir .libs; fi
+	$(mkdir_p) .libs
 	rm -f .libs/libperl_orig.a
 	if [ x$(LIBPERL_A) = x ]; then touch .libs/libperl_orig.a; else $(LN_S) $(LIBPERL_A) .libs/libperl_orig.a; fi
 .libs/DynaLoader.a:
-	if [ ! -d .libs ]; then mkdir .libs; fi
+	$(mkdir_p) .libs
 	rm -f .libs/DynaLoader.a
 	$(LN_S) $(DYNALOADER_A) .libs/DynaLoader.a
 
