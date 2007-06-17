@@ -338,8 +338,8 @@ LIBS="$LIBS $GLIB_LIBS"
 
 have_openssl=no
 if test "$enable_ssl" = "yes"; then
-  if pkg-config --exists openssl; then
-    PKG_CHECK_MODULES(SSL, openssl)
+  PKG_CHECK_MODULES(SSL, openssl, :, :)
+  if test "$SSL_LIBS"; then
     CFLAGS="$CFLAGS $SSL_CFLAGS"
     have_openssl=yes
   else
