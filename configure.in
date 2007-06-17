@@ -895,9 +895,6 @@ echo "Building with IPv6 support ....... : $want_ipv6"
 echo "Building with SSL support ........ : ${enable_openssl}"
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $want_gc"
-if test "x$enable_openssl" = "xno" -a "x$ssl_error" != "x"; then
-  echo "  - $ssl_error"
-fi
 
 echo
 echo "If there are any problems, read the INSTALL file."
