@@ -336,21 +336,22 @@ fi
 
 LIBS="$LIBS $GLIB_LIBS"
 
+have_openssl=no
 if test "$enable_ssl" = "yes"; then
   if pkg-config --exists openssl; then
     PKG_CHECK_MODULES(SSL, openssl)
     CFLAGS="$CFLAGS $SSL_CFLAGS"
-    enable_openssl=yes
+    have_openssl=yes
   else
     AC_CHECK_LIB(ssl, SSL_read, [
       AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
         SSL_LIBS="-lssl -lcrypto"
         AC_SUBST(SSL_LIBS)
-	enable_openssl=yes
+	have_openssl=yes
       ])
     ],, -lcrypto)
   fi
-  if test "$enable_openssl" = "yes"; then
+  if test "$have_openssl" = "yes"; then
     AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
     LIBS="$LIBS $SSL_LIBS"
   fi
@@ -359,23 +360,22 @@ fi
 dnl **
 dnl ** Garbage Collector
 dnl **
+have_gc=no
 if test "x$want_gc" = xyes; then
   AC_CHECK_LIB(gc, GC_malloc, [
     AC_CHECK_HEADER(gc/gc.h, [
       AC_DEFINE(HAVE_GC_GC_H)
       AC_DEFINE(USE_GC)
       LIBS="$LIBS -lgc"
+      have_gc=yes
     ], [
       AC_CHECK_HEADER(gc.h, [
 	AC_DEFINE(HAVE_GC_H)
 	AC_DEFINE(USE_GC)
 	LIBS="$LIBS -lgc"
-      ], [
-	want_gc=no
+	have_gc=yes
       ])
     ])
-  ], [
-    want_gc=no
   ])
 fi
 
@@ -747,6 +747,7 @@ dnl **
 dnl ** IPv6 support
 dnl **
 
+have_ipv6=no
 if test "x$want_ipv6" = "xyes"; then
 	AC_MSG_CHECKING([for IPv6])
 	AC_CACHE_VAL(irssi_cv_type_in6_addr,
@@ -757,13 +758,12 @@ if test "x$want_ipv6" = "xyes"; then
 	#include <netdb.h>
 	#include <arpa/inet.h>],
 	[struct in6_addr i;],
-	irssi_cv_type_in6_addr=yes,
-	irssi_cv_type_in6_addr=no,
+	have_ipv6=yes,
 	)])
-	if test $irssi_cv_type_in6_addr = yes; then
+	if test $have_ipv6 = yes; then
 		AC_DEFINE(HAVE_IPV6)
 	fi
-	AC_MSG_RESULT($irssi_cv_type_in6_addr)
+	AC_MSG_RESULT($have_ipv6)
 fi
 
 dnl **
@@ -891,10 +891,10 @@ echo "Install prefix ................... : $prefix"
 
 echo
 
-echo "Building with IPv6 support ....... : $want_ipv6"
-echo "Building with SSL support ........ : ${enable_openssl}"
+echo "Building with IPv6 support ....... : $have_ipv6"
+echo "Building with SSL support ........ : $have_openssl"
 echo "Building with 64bit DCC support .. : $offt_64bit"
-echo "Building with garbage collector .. : $want_gc"
+echo "Building with garbage collector .. : $have_gc"
 
 echo
 echo "If there are any problems, read the INSTALL file."
