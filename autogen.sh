@@ -83,8 +83,7 @@ if test x$NOCONFIGURE = x && test -z "$*"; then
   echo
 fi
 
-rm -f aclocal.m4 glib-2.0.m4
-cp glib-2.0.m4_ glib-2.0.m4
+rm -f aclocal.m4
 echo "Running autoreconf ..."
 autoreconf -i || exit 1
 
