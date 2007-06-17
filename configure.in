@@ -313,7 +313,7 @@ for try in 1 2; do
     echo "*** trying without -lgmodule"
     glib_modules=
   fi
-    AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
+  AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
   if test "$GLIB_LIBS"; then
     if test $glib_modules = gmodule; then
       AC_DEFINE(HAVE_GMODULE)
@@ -360,23 +360,23 @@ dnl **
 dnl ** Garbage Collector
 dnl **
 if test "x$want_gc" = xyes; then
-    AC_CHECK_LIB(gc, GC_malloc, [
-      AC_CHECK_HEADER(gc/gc.h, [
-        AC_DEFINE(HAVE_GC_GC_H)
-	AC_DEFINE(USE_GC)
-        LIBS="$LIBS -lgc"
-      ], [
-	AC_CHECK_HEADER(gc.h, [
-	  AC_DEFINE(HAVE_GC_H)
-	  AC_DEFINE(USE_GC)
-	  LIBS="$LIBS -lgc"
-	], [
-          want_gc=no
-	])
-      ])
+  AC_CHECK_LIB(gc, GC_malloc, [
+    AC_CHECK_HEADER(gc/gc.h, [
+      AC_DEFINE(HAVE_GC_GC_H)
+      AC_DEFINE(USE_GC)
+      LIBS="$LIBS -lgc"
     ], [
-      want_gc=no
+      AC_CHECK_HEADER(gc.h, [
+	AC_DEFINE(HAVE_GC_H)
+	AC_DEFINE(USE_GC)
+	LIBS="$LIBS -lgc"
+      ], [
+	want_gc=no
+      ])
     ])
+  ], [
+    want_gc=no
+  ])
 fi
 
 dnl **
