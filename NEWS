@@ -1,3 +1,24 @@
+v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
+	+ Fix recognition of realnames starting with spaces in /who.
+	+ Show "Target left IRC" error messages fully (instead of reporting
+	  no such nick "*")
+	+ Pick up host changes on charybdis and ircu servers (396 numeric).
+	+ Show various errors such as "cannot send to channel" and "cannot
+	  /msg, user is +g" in the channel or query window, if possible,
+	  and always include the user or channel name.
+	+ Repair channels_rejoin_unavailable. Enabled by default, this retries
+	  joins that failed because of netsplits (channel temporarily
+	  unavailable (437), duplicate channel). A few servers abuse 437 for
+	  juped channels which should not be retried, you should disable
+	  channels_rejoin_unavailable if this is a problem.
+	+ Display 437 and 407 numerics if channels_rejoin_unavailable
+	  is not enabled.
+	+ Don't add the same mask to the /knockout list multiple times.
+	+ Add support for the ACCEPT command, which is part of the CALLERID
+	  server side ignore system in hybrid7 and derived ircds.
+	+ Various improvements to the help files.
+	+ Fix a race condition with parallel builds (patch from Mandriva).
+
 v0.8.11 2007-04-25  The Irssi team <staff@irssi.org>
 	+ Add completion for /WINDOW GOTO
 	+ New crapbuster-like "scrollback levelclear" command
