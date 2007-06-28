@@ -463,7 +463,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(text != NULL, NULL);
 
-	if (regexp) {
+	if (regexp && *text != '\0') {
 #ifdef HAVE_REGEX_H
 		int flags = REG_EXTENDED | REG_NOSUB |
 			(case_sensitive ? 0 : REG_ICASE);
