@@ -741,7 +741,9 @@ static void event_error(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(server != NULL);
 
 	if (!server->connected && (stristr(data, "Unauthorized") != NULL ||
-				   stristr(data, "K-lined") != NULL))
+				   stristr(data, "K-lined") != NULL ||
+				   stristr(data, "Banned") != NULL ||
+				   stristr(data, "Bad user info") != NULL))
 		server->banned = TRUE;
 }
 
