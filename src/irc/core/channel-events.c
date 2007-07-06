@@ -60,8 +60,7 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line)
 	   indicate that the join failed. */
 	params = event_get_params(line, 3, &numeric, NULL, &channel);
 
-	/* 437 is handled specially in src/irc/core/channel-rejoin.c */
-	if (numeric[0] == '4' && (numeric[1] != '3' || numeric[2] != '7'))
+	if (numeric[0] == '4')
 		check_join_failure(server, channel);
 
 	g_free(params);
@@ -360,7 +359,7 @@ void channel_events_init(void)
 {
 	settings_add_bool("misc", "join_auto_chans_on_invite", TRUE);
 
-	signal_add_first("server event", (SIGNAL_FUNC) irc_server_event);
+	signal_add_last("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_add_first("event 403", (SIGNAL_FUNC) event_no_such_channel); /* no such channel */
 	signal_add_first("event 407", (SIGNAL_FUNC) event_duplicate_channel); /* duplicate channel */
 
