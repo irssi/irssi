@@ -493,6 +493,26 @@ static void event_bad_channel_mask(IRC_SERVER_REC *server, const char *data)
 	cannot_join(server, data, IRCTXT_JOINERROR_BAD_MASK);
 }
 
+static void event_477(IRC_SERVER_REC *server, const char *data,
+		      const char *nick)
+{
+	/* Numeric 477 can mean many things:
+	 * modeless channel, cannot join/send to channel (+r/+R/+M).
+	 * If we tried to join this channel, display the error in the
+	 * status window. Otherwise display it in the channel window.
+	 */
+	IRC_CHANNEL_REC *chanrec;
+	char *params, *channel;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &channel);
+
+	chanrec = irc_channel_find(server, channel);
+	print_event_received(server, data, nick, chanrec == NULL || chanrec->joined);
+	g_free(params);
+}
+
 static void event_unknown_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *mode;
@@ -621,6 +641,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 474", (SIGNAL_FUNC) event_banned);
 	signal_add("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_add("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
+	signal_add("event 477", (SIGNAL_FUNC) event_477);
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
 	signal_add("event 376", (SIGNAL_FUNC) event_motd);
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
@@ -659,7 +680,6 @@ void fe_events_numeric_init(void)
 	signal_add("event 404", (SIGNAL_FUNC) event_target_received); /* cannot send to channel */
 	signal_add("event 408", (SIGNAL_FUNC) event_target_received); /* cannot send (+c) */
 	signal_add("event 442", (SIGNAL_FUNC) event_target_received); /* you're not on that channel */
-	signal_add("event 477", (SIGNAL_FUNC) event_target_received); /* modeless channel; cannot join/send to channel (+r/+R/+M) */
 	signal_add("event 478", (SIGNAL_FUNC) event_target_received); /* ban list is full */
 	signal_add("event 482", (SIGNAL_FUNC) event_target_received); /* not chanop */
 	signal_add("event 486", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+R) */
@@ -710,6 +730,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 474", (SIGNAL_FUNC) event_banned);
 	signal_remove("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_remove("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
+	signal_remove("event 477", (SIGNAL_FUNC) event_477);
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 376", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
@@ -744,7 +765,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 404", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 408", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 442", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 477", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 478", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 482", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 486", (SIGNAL_FUNC) event_target_received);
