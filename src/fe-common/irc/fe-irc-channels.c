@@ -39,16 +39,19 @@ static void sig_channel_rejoin(SERVER_REC *server, REJOIN_REC *rec)
 		    IRCTXT_CHANNEL_REJOIN, rec->channel);
 }
 
-static void sig_event_forward(SERVER_REC *server, const char *data)
+static void sig_event_forward(SERVER_REC *server, const char *data,
+			      const char *nick)
 {
 	IRC_CHANNEL_REC *channel;
 	char *params, *from, *to;
 
 	params = event_get_params(data, 3, NULL, &from, &to);
-	channel = irc_channel_find(server, from);
-	if (channel != NULL) {
-		window_bind_add(window_item_window(channel),
-				server->tag, to);
+	if (from != NULL && to != NULL && ischannel(*from) && ischannel(*to)) {
+		channel = irc_channel_find(server, from);
+		if (channel != NULL && irc_channel_find(server, to) == NULL) {
+			window_bind_add(window_item_window(channel),
+					server->tag, to);
+		}
 	}
 	g_free(params);
 }
@@ -56,11 +59,11 @@ static void sig_event_forward(SERVER_REC *server, const char *data)
 void fe_irc_channels_init(void)
 {
 	signal_add("channel rejoin new", (SIGNAL_FUNC) sig_channel_rejoin);
-	signal_add_first("event 379", (SIGNAL_FUNC) sig_event_forward);
+	signal_add_first("event 470", (SIGNAL_FUNC) sig_event_forward);
 }
 
 void fe_irc_channels_deinit(void)
 {
 	signal_remove("channel rejoin new", (SIGNAL_FUNC) sig_channel_rejoin);
-	signal_remove("event 379", (SIGNAL_FUNC) sig_event_forward);
+	signal_remove("event 470", (SIGNAL_FUNC) sig_event_forward);
 }
