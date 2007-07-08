@@ -323,12 +323,14 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	int ret, err;
 	X509 *cert;
+	const char *errstr;
 
 	ret = SSL_connect(chan->ssl);
 	if (ret <= 0) {
 		err = SSL_get_error(chan->ssl, ret);
 		if (err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {
-			g_warning(ERR_reason_error_string(ERR_get_error()));
+			errstr = ERR_reason_error_string(ERR_get_error());
+			g_warning("SSL handshake failed: %s", errstr != NULL ? errstr : "server closed connection");
 			return -1;
 		}
 		return err == SSL_ERROR_WANT_READ ? 1 : 3;
