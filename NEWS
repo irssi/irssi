@@ -1,4 +1,15 @@
 v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
+	+ Remove support for glib 1.x.
+	+ Fix DCC get when file size is 0 (bug #494).
+	+ Ignore empty lines when pasting.
+	+ Do not send our hostname to the server (bug #488).
+	+ Fix large file support on AIX (bug #404).
+	+ Remove broken code that prevents unloading of a script in some cases.
+	+ Fix logging lines with no target to all logs, broken in 0.8.11.
+	+ Add $tag to 'window' item in default configuration.
+	+ Fix casemapping dependent nick and channel matching (bug #436).
+	+ Update chanop flag before emitting nick mode changed signal (patch
+	  by Johan Kiviniemi)
 	+ Fix recognition of realnames starting with spaces in /who.
 	+ Show "Target left IRC" error messages fully (instead of reporting
 	  no such nick "*")
@@ -12,12 +23,24 @@ v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
 	  juped channels which should not be retried, you should disable
 	  channels_rejoin_unavailable if this is a problem.
 	+ Display 437 and 407 numerics if channels_rejoin_unavailable
-	  is not enabled.
-	+ Don't add the same mask to the /knockout list multiple times.
+	  is not enabled (bug #495).
+	+ Channel forwarding in hyperion and charybdis is now recognized
+	  (470 numeric) and the target channel is joined in the window where
+	  the original channel would have been joined.
+	+ Don't add the same mask to the /knockout list multiple times
+	  (bug #510).
 	+ Add support for the ACCEPT command, which is part of the CALLERID
 	  server side ignore system in hybrid7 and derived ircds.
+	+ Make /window goto start searching at the window after the active
+	  one and stop at the one before (bug #332).
+	+ Use again MSGLEVEL_NICKS for printing a nick change in queries,
+	  broken in r2389.
+	+ Fix /lastlog -hilight -after etc.
+	+ Improve completion for /set.
 	+ Various improvements to the help files.
-	+ Fix a race condition with parallel builds (patch from Mandriva).
+	+ Some changes to character set recoding.
+	+ Rewrite SSL connection/handshake code.
+	+ Some fixes to the build system.
 
 v0.8.11 2007-04-25  The Irssi team <staff@irssi.org>
 	+ Add completion for /WINDOW GOTO
