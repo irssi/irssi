@@ -448,7 +448,6 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 	const char *new_key, *new_module;
 	CONFIG_NODE *new_node;
 	char *new_value;
-	int old_value;
 
 	new_value = NULL; new_key = NULL; new_module = NULL;
 
@@ -480,52 +479,6 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 			config_changed = TRUE;
 			return TRUE;
 		}
-	}
-	new_value = NULL, new_key = NULL;
-	/* FIXME: remove later - for 0.8.6 -> */
-	if (node->value == NULL || !is_numeric(node->value, '\0'))
-		return FALSE;
-
-	old_value = atoi(node->value);
-
-	if (strcmp(module, "fe-text") == 0) {
-		if (strcasecmp(node->key, "lag_min_show") == 0)
-			new_value = g_strdup_printf("%dms", old_value*10);
-		else if (strcasecmp(node->key, "scrollback_hours") == 0) {
-			new_value = g_strdup_printf("%dh", old_value);
-			new_key = "scrollback_time";
-		}
-	} else if (strcmp(module, "irc/core") == 0) {
-		if (strcasecmp(node->key, "cmd_queue_speed") == 0)
-			new_value = g_strdup_printf("%dms", old_value);
-	} else if (strcmp(module, "irc/dcc") == 0) {
-		if (strcasecmp(node->key, "dcc_autoget_max_size") == 0)
-			new_value = g_strdup_printf("%dk", old_value);
-	} else if (strcmp(module, "irc/notify") == 0) {
-		if (strcasecmp(node->key, "notify_idle_time") == 0)
-			new_value = g_strdup_printf("%dmin", old_value);
-	} else if (strcmp(module, "core") == 0) {
-		if (strcasecmp(node->key, "write_buffer_mins") == 0) {
-			new_value = g_strdup_printf("%dmin", old_value);
-			new_key = "write_buffer_timeout";
-		} else if (strcasecmp(node->key, "write_buffer_kb") == 0) {
-			new_value = g_strdup_printf("%dk", old_value);
-			new_key = "write_buffer_size";
-		}
-	}
-
-	if (new_key != NULL || new_value != NULL) {
-		config_node_set_str(mainconfig, parent,
-				    new_key != NULL ? new_key : node->key,
-				    new_value != NULL ?
-				    new_value : node->value);
-		if (new_key != NULL) {
-			/* remove old */
-			config_node_set_str(mainconfig, parent,
-					    node->key, NULL);
-		}
-		config_changed = TRUE;
-		g_free(new_value);
 	}
 	return new_key != NULL;
 }
