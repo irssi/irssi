@@ -1,7 +1,7 @@
 
 @SYNTAX:mode@
 
-Irssi knows these channel modes:
+Common channel modes are:
 
      i - Invite only - People can't join to channel without being
          /INVITEd, or being in invite list (+I, see below).
@@ -26,40 +26,25 @@ Irssi knows these channel modes:
                  flooding, like some bot allows max. 5 users to join in
                  one minute or so.
 
-     a - Anonymous - No-one's nick name, host or anything else can be
-         seen. All messages, joins, parts, modes, etc. are seen as coming
-         from nick "anonymous", this could be pretty confusing but nice
-         feature if you want total anonymity. This mode can only be set,
-         never unset. This mode isn't supported by all servers.
-
-         NOTE: there is/was one bug :) Channel operators can guess if some
-         nick might be in the channel and try to kick it. If nick was in
-         channel, everyone will see the nick that was kicked.
-
-     r - Re-op - If a channel becomes opless for longer than LDCTL (5400,
-         by default) seconds, op a random person on the channel (or everyone
-         if channel has less than 6 members). This works only on !channels.
-         This mode can only be set and unset by channel creator.
-
      b - Set/remove ban. For example MODE #channel +b *!*@*.org bans
          everyone from .org domain.
 
          If someone from .org domain was already in channel before the
-         ban was set, he/she couldn't be able to write any messages to
-         channel (doesn't work with all servers).
+         ban was set, he/she cannot send any messages to channel (doesn't
+         work with all servers).
 
-         Ban can also be overridden with /INVITE, although many stupid
+         Bans can also be overridden with /INVITE, although many stupid
          IRC clients automatically kick the user out because they see
          the ban and think that because of it the user shouldn't be in
          the channel (doesn't work with all servers).
 
      e - Ban exceptions. You could for example ban everyone from
-         *!*@*.org but set ban exception to *!*@*.host.org - works only
-         in IRCnet/EFnet servers.
+         *!*@*.org but set ban exception to *!*@*.host.org - does not work
+         with all servers.
 
      I - Invite list. If channel is invite only (+i), people in this
-         list can join it without being /INVITEd - works only in
-         IRCnet servers.
+         list can join it without being /INVITEd - does not work with all
+         servers.
 
          This is excellent for in-country channels that don't want
          foreigners (spammers!) to join the channel, for example setting
@@ -68,13 +53,8 @@ Irssi knows these channel modes:
          in the channels and sending /MSG bot invite command to it
          /INVITEs you to the channel.
 
-         The ':' feature in channel modes is quite similiar, see section
-         6.2.
-
-     O - Channel owner, the nick who creates a !channel receives this
-         mode. It isn't displayed anywhere, you can't pass it to anyone
-         else and you can't regain it again. This is needed for setting
-         +r mode in channel when it's first created.
+         On IRCnet, the ':' feature in channel names can also be used for
+         a similar effect, see section 6.2.
 
      o <nick> - Grant or revoke channel operator status from nick
      v <nick> - Grant or revoke voice status from nick, only people with
@@ -87,12 +67,16 @@ You can send multiple mode changes with one mode command:
 This would set channel's mode to +nt, give ops to nick1, take ops
 from nick2 and give voices to nick3.
 
-You can set only limited number of modes that requires argument in
-one command. In IRCnet it's 3, in EFnet it's 4 and in many others
+You can set only a limited number of modes that require an argument
+in one command. In IRCnet it's 3, in EFnet it's 4 and in many others
 it's 6. If it's not known, Irssi defaults to 3. Irssi will also
-automatically split them, so you can use /MODE +oooooo n1,n2,..
+automatically split them, so you can use /MODE +oooooo n1 n2 ...
 command to op 6 people and Irssi will split it to two commands in
 IRCnet/EFnet.
+
+Many networks have additional modes and/or change the meaning of existing
+modes. Check the documentation for the network or the server software in
+use for details.
 
 See also: OP, DEOP, VOICE, DEVOICE, BAN, UNBAN
 
