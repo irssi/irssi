@@ -42,5 +42,5 @@ Window logging
      ~/irc.log.<windowname> or ~/irc.log.Window<ref#> if window 
      doesn't have a name.
 
-See also: SET CREATE, JOIN, QUERY, LOG, HELP LEVELS
+See also: SET CREATE, JOIN, QUERY, LOG, LEVELS
 
