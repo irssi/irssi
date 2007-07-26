@@ -219,11 +219,14 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 void windows_layout_save(void)
 {
 	CONFIG_NODE *node;
+	GSList *sorted;
 
 	iconfig_set_str(NULL, "windows", NULL);
 	node = iconfig_node_traverse("windows", TRUE);
 
-	g_slist_foreach(windows, (GFunc) window_save, node);
+	sorted = windows_get_sorted();
+	g_slist_foreach(sorted, (GFunc) window_save, node);
+	g_slist_free(sorted);
 	signal_emit("layout save", 0);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
