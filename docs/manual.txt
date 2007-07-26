@@ -594,16 +594,16 @@
 	channel mode character (#+&!) before the channel name, Irssi
 	automatically uses # channels.
 
-	Channel name may contain any characters except SPACE, BELL, NUL,
-	CR, LF or comma (','). You can also restrict the channel to only
-	certain users by adding the hostmask to the end of the channel
-	name separated with a ':' character, like #channel:*!*@*.fi lets
-	only people from .fi domain join the channel. This doesn't work with
-	all IRC servers and it's pretty difficult to use, since everyone
-	will have to always join the #channel:*!*@*.fi channel, #channel or
-	#channel:*!*@*.se channels are different channels. Ban exceptions
-	(+e) and especially invite lists (+I) replace this functionality
-	pretty well, see section 6.5.
+	Channel names may contain any characters except SPACE, BELL, NUL,
+	CR, LF or comma (','). On IRCnet and a few other networks, you can
+	also restrict the channel to only certain servers by adding the
+	mask to the end of the channel name separated with a ':'
+	character, for example #channel:*.fi lets only people on .fi
+	servers join the channel. Other servers will not even know about
+	the channel. This is pretty difficult to use, since everyone will
+	have to always join #channel:*.fi; #channel and #channel:*.fi are
+	different channels. Ban exceptions (+e) and especially invite
+	lists (+I) replace this functionality pretty well, see section 6.5.
 
 	If channel has a password (aka. key), you can join it with
 	/JOIN #channel pass, or multiple channels with passwords with
