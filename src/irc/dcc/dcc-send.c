@@ -408,7 +408,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	fname = g_basename(fname);
 
 	/* Replace all the spaces with underscore so that lesser
-	   intellgent clients can communicate.. */
+	   intelligent clients can communicate.. */
 	if (!settings_get_bool("dcc_send_replace_space_with_underscore"))
 		str = NULL;
 	else {
