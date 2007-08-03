@@ -41,19 +41,6 @@
 #include "printtext.h"
 #include "keyboard.h"
 
-static const char *skip_target(const char *target)
-{
-	if (*target == '@') {
-		/* @#channel, @+#channel - Hybrid6 / Bahamut features */
-		if (target[1] == '+' && ischannel(target[2]))
-			target += 2;
-		else if (ischannel(target[1]))
-			target++;
-	}
-
-	return target;
-}
-
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -103,7 +90,6 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	recoded = recode_out(SERVER(server), text, target);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
 
-	target = skip_target(target);
 	signal_emit("message irc own_action", 3, server, recoded, target);
 
 	g_free(recoded);
@@ -158,8 +144,6 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 		return;
 	}
 
-	target = skip_target(target);
-
 	g_strup(ctcpcmd);
 	signal_emit("message irc own_ctcp", 4,
 		    server, ctcpcmd, ctcpdata, target);
@@ -183,7 +167,6 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	target = skip_target(target);
 	signal_emit("message irc own_notice", 3, server, text, target);
 	cmd_params_free(free_arg);
 }

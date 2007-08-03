@@ -38,15 +38,28 @@
 #include "fe-queries.h"
 #include "window-items.h"
 
-static const char *skip_target(const char *target)
+static const char *skip_target(IRC_SERVER_REC *server, const char *target)
 {
-	if (target != NULL && *target == '@') {
-		/* @#channel, @+#channel - Hybrid6 / Bahamut features */
-		if (target[1] == '+' && ischannel(target[2]))
-			target += 2;
-		else if (ischannel(target[1]))
-			target++;
-	}
+	int i = 0;
+	const char *val, *chars;
+
+	/* Quick check */
+	if (server->prefix[(int)(unsigned char)*target] == 0)
+		return target;
+
+	/* Hack: for bahamut 1.4 which sends neither STATUSMSG nor
+	 * WALLCHOPS in 005, accept @#chan and @+#chan (but not +#chan) */
+	val = g_hash_table_lookup(server->isupport, "STATUSMSG");
+	if (val == NULL && *target != '@')
+		return target;
+	chars = val ? val : "@+";
+	for(i = 0; target[i] != '\0'; i++) {
+		if (strchr(chars, target[i]) == NULL)
+			break;
+	};
+
+	if(ischannel(target[i]))
+		target += i;
 
 	return target;
 }
@@ -58,7 +71,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	char *nickmode, *recoded;
 
 	oldtarget = target;
-	target = skip_target(target);
+	target = skip_target(IRC_SERVER(server), target);
 	if (IS_IRC_SERVER(server) && target != oldtarget) {
 		/* Hybrid 6 / Bahamut feature, send msg to all
 		   ops / ops+voices in channel */
@@ -123,8 +136,11 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
                                    const char *target)
 {
 	void *item;
+	const char *oldtarget;
         char *freemsg = NULL, *recoded;
 
+	oldtarget = target;
+	target = skip_target(IRC_SERVER(server), target);
         if (ischannel(*target))
 		item = irc_channel_find(server, target);
 	else
@@ -139,8 +155,8 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
-		    item != NULL ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
-		    server->nick, recoded, target);
+		    item != NULL && oldtarget == target ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
+		    server->nick, recoded, oldtarget);
         g_free(recoded);
         g_free_not_null(freemsg);
 }
@@ -150,8 +166,12 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	void *item;
+	const char *oldtarget;
         char *freemsg = NULL;
 	int level;
+
+	oldtarget = target;
+	target = skip_target(IRC_SERVER(server), target);
 
 	level = MSGLEVEL_ACTIONS |
 		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
@@ -169,15 +189,15 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 
 	if (ischannel(*target)) {
 		/* channel action */
-		if (window_item_is_active(item)) {
+		if (window_item_is_active(item) && target == oldtarget) {
 			/* message to active channel in window */
 			printformat(server, target, level,
 				    IRCTXT_ACTION_PUBLIC, nick, msg);
 		} else {
-			/* message to not existing/active channel */
+			/* message to not existing/active channel, or to @/+ */
 			printformat(server, target, level,
 				    IRCTXT_ACTION_PUBLIC_CHANNEL,
-				    nick, target, msg);
+				    nick, oldtarget, msg);
 		}
 	} else {
 		/* private action */
@@ -195,7 +215,7 @@ static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
 {
         /* ugly: recode the sent message back for printing */
         char *recoded = recode_in(SERVER(server), msg, target);
-	printformat(server, skip_target(target), MSGLEVEL_NOTICES |
+	printformat(server, skip_target(server, target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_NOTICE, target, recoded);
         g_free(recoded);
@@ -208,7 +228,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 	const char *oldtarget;
 	
 	oldtarget = target;
-	target = skip_target(target);
+	target = skip_target(IRC_SERVER(server), target);
 
 	if (address == NULL || *address == '\0') {
 		/* notice from server */
@@ -241,7 +261,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 static void sig_message_own_ctcp(IRC_SERVER_REC *server, const char *cmd,
 				 const char *data, const char *target)
 {
-	printformat(server, target, MSGLEVEL_CTCPS |
+	printformat(server, skip_target(server, target), MSGLEVEL_CTCPS |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_CTCP, target, cmd, data);
 }
@@ -250,8 +270,12 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
 				 const char *data, const char *nick,
 				 const char *addr, const char *target)
 {
+	const char *oldtarget;
+
+	oldtarget = target;
+	target = skip_target(server, target);
 	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
-		    IRCTXT_CTCP_REQUESTED, nick, addr, cmd, data, target);
+		    IRCTXT_CTCP_REQUESTED, nick, addr, cmd, data, oldtarget);
 }
 
 void fe_irc_messages_init(void)
