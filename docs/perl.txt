@@ -284,7 +284,7 @@ signal_stop_by_name(signal)
   Stop the signal with name `signal' that's currently being emitted.
 
 
-  *** timeouts / IO listener
+  *** timeouts / IO listener / pidwait
 
 timeout_add(msecs, func, data)
   Call `func' every `msecs' milliseconds (1000 = 1 second) with
@@ -306,6 +306,16 @@ input_add(source, condition, func, data)
 input_remove(tag)
   Remove listener with tag.
 
+pidwait_add(pid)
+  Adds `pid' to the list of processes to wait for. The pid must identify
+  a child process of the irssi process. When the process terminates, a
+  "pidwait" signal will be sent with the pid and the status from
+  waitpid(). This is useful to avoid zombies if your script forks.
+
+pidwait_remove(pid)
+  Removes `pid' from the list of processes to wait for. Terminated
+  processes are removed automatically, so it is usually not necessary
+  to call this function.
 
  *** Message levels
 
