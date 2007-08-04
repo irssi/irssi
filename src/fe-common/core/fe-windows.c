@@ -387,7 +387,7 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 	}
 
 	if (item == NULL)
-		return 0;
+		return NULL;
 
 	return window_item_window(item);
 }
