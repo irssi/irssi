@@ -35,7 +35,6 @@ EXTRA_DIST = \
 	irssi.spec.in \
 	$(conf_DATA) \
 	$(theme_DATA) \
-	irssi-config.in \
 	irssi-icon.png \
 	syntax.pl \
 	findsyntax.pl
