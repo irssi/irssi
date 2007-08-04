@@ -909,6 +909,22 @@ Server::ignore_check(nick, host, channel, text, level)
   Return 1 if ignoring matched.
 
 
+ *** /EXEC processes
+
+Process->{}
+  id - ID for the process
+  name - Name for the process (if given)
+  args - The command that is being executed
+
+  pid - PID for the executed command
+  target - send text with /msg <target> ...
+  target_win - print text to this window
+
+  shell - start the program via /bin/sh
+  notice - send text with /notice, not /msg if target is set
+  silent - don't print "process exited with level xx"
+
+
  ***
  *** IRC specific functions. All objects below this are prefixed with Irc::
  ***
@@ -1117,19 +1133,3 @@ Server::notifylist_ison_server(nick)
 
 Notifylist::ircnets_match(ircnet)
   Returns 1 if notify is checked in `ircnet'.
-
-
- *** /EXEC processes
-
-Process->{}
-  id - ID for the process
-  name - Name for the process (if given)
-  args - The command that is being executed
-
-  pid - PID for the executed command
-  target - send text with /msg <target> ...
-  target_win - print text to this window
-
-  shell - start the program via /bin/sh
-  notice - send text with /notice, not /msg if target is set
-  silent - don't print "process exited with level xx"
