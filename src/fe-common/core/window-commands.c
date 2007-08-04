@@ -279,6 +279,17 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 	return max_win;
 }
 
+static inline int is_nearer(int r1, int r2)
+{
+	int a = r2 < active_win->refnum;
+	int b = r1 < r2;
+
+	if (r1 > active_win->refnum)
+		return a || b;
+	else
+		return a && b;
+}
+
 static WINDOW_REC *window_find_item_cycle(SERVER_REC *server, const char *name)
 {
 	WINDOW_REC *rec, *win;
@@ -297,9 +308,10 @@ static WINDOW_REC *window_find_item_cycle(SERVER_REC *server, const char *name)
 
 		rec = tmp->data;
 
-		if (window_item_find_window(rec, server, name) != NULL) {
+		if (window_item_find_window(rec, server, name) != NULL &&
+		    (win == NULL || is_nearer(rec->refnum, win->refnum))) {
 			win = rec;
-			break;
+			if (server != NULL) break;
 		}
 	}
 
