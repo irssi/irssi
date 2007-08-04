@@ -117,6 +117,25 @@ gui_printtext(xpos, ypos, str)
 	int ypos
 	char *str
 
+void
+gui_input_set(str)
+	char *str
+CODE:
+	gui_entry_set_text(active_entry, str);
+
+int
+gui_input_get_pos()
+CODE:
+	RETVAL = gui_entry_get_pos(active_entry);
+OUTPUT:
+	RETVAL
+
+void
+gui_input_set_pos(pos)
+	int pos
+CODE:
+	gui_entry_set_pos(active_entry, pos);
+
 MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Window
 
 void

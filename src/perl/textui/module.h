@@ -6,6 +6,7 @@
 #include "statusbar.h"
 #include "textbuffer.h"
 #include "textbuffer-view.h"
+#include "gui-entry.h"
 
 typedef MAIN_WINDOW_REC *Irssi__TextUI__MainWindow;
 typedef TEXT_BUFFER_REC *Irssi__TextUI__TextBuffer;
