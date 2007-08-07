@@ -106,7 +106,7 @@ static void cmd_version(char *data)
 	if (*data == '\0') {
                 g_snprintf(time, sizeof(time), "%04d", IRSSI_VERSION_TIME);
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "Client: "PACKAGE" " IRSSI_VERSION" (%d %s)",
+			  "Client: "PACKAGE_TARNAME" " PACKAGE_VERSION" (%d %s)",
 			  IRSSI_VERSION_DATE, time);
 	}
 }

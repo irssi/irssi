@@ -45,7 +45,7 @@ void args_execute(int argc, char *argv[])
 	if (iopt_tables == NULL)
 		return;
 
-	con = poptGetContext(PACKAGE, argc, argv,
+	con = poptGetContext(PACKAGE_TARNAME, argc, argv,
 			     (struct poptOption *) (iopt_tables->data), 0);
 	poptReadDefaultConfig(con, TRUE);
 

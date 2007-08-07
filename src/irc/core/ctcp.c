@@ -329,7 +329,7 @@ void ctcp_init(void)
 	ctcp_cmds = NULL;
 
 	settings_add_str("misc", "ctcp_version_reply",
-			 PACKAGE" v$J - running on $sysname $sysarch");
+			 PACKAGE_TARNAME" v$J - running on $sysname $sysarch");
 	settings_add_str("misc", "ctcp_userinfo_reply", "$Y");
 	settings_add_int("flood", "max_ctcp_queue", 5);
 

@@ -243,12 +243,12 @@ void proxy_dump_data(CLIENT_REC *client)
 
 	/* welcome info */
 	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
-	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, IRSSI_VERSION);
+	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, PACKAGE_VERSION);
 	proxy_outdata(client, ":%s 003 %s :This server was created ...\n", client->proxy_address, client->nick);
 	if (client->server == NULL || !client->server->emode_known)
-		proxy_outdata(client, ":%s 004 %s %s %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
+		proxy_outdata(client, ":%s 004 %s %s %s oirw abiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, PACKAGE_VERSION);
 	else
-		proxy_outdata(client, ":%s 004 %s %s %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, IRSSI_VERSION);
+		proxy_outdata(client, ":%s 004 %s %s %s oirw abeIiklmnopqstv\n", client->proxy_address, client->nick, client->proxy_address, PACKAGE_VERSION);
 
 	if (client->server != NULL && client->server->isupport_sent) {
 		isupport_out = g_string_new(NULL);

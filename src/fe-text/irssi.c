@@ -341,7 +341,7 @@ int main(int argc, char **argv)
 	args_execute(argc, argv);
 
  	if (version) {
-		printf(PACKAGE" " IRSSI_VERSION" (%d %04d)\n",
+		printf(PACKAGE_TARNAME" " PACKAGE_VERSION" (%d %04d)\n",
 		       IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 		return 0;
 	}
