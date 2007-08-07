@@ -2,14 +2,8 @@ AC_INIT(irssi, 0.8.12-svn)
 AC_CONFIG_SRCDIR([src])
 AC_PREREQ(2.50)
 
-# we don't want VERSION in our config.h
-if grep '^#undef VERSION' $srcdir/config.h.in >/dev/null; then
-  grep -v '^#undef VERSION' $srcdir/config.h.in > config.h.in.temp
-  mv -f config.h.in.temp $srcdir/config.h.in
-fi
-
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([1.9])
+AM_INIT_AUTOMAKE([1.9 no-define])
 
 AM_MAINTAINER_MODE
 
