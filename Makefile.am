@@ -8,10 +8,6 @@ default-config.h: $(srcdir)/irssi.conf
 default-theme.h: $(srcdir)/default.theme
 	$(srcdir)/file2header.sh $(srcdir)/default.theme default_theme > default-theme.h
 
-if BUILD_PLUGINS
-PLUGINS=plugins
-endif
-
 SUBDIRS = src docs scripts
 
 confdir = $(sysconfdir)
