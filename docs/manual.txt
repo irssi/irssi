@@ -670,25 +670,21 @@
 	- Channel mode
 	- WHO list to get nicks' hosts - useful for /BAN for example
 	- Ban list - useful for allowing /UNBAN to use wildcards
-	- Exception list, Invite list - these are asked only from servers
-	  that support +I and +e modes, mostly just IRCNet and some EFNet
-	  servers. These aren't really needed for anything currenty, except
-	  /INVITELIST and /BANS uses them to display the lists.
 
 	If you have joined many channels at once, Irssi tries to optimize
 	the commands it sends to server. Instead of sending two commands
 	to ask two channels' mode, it just sends MODE #a,#b. Same thing with
-	WHO list and ban/except/invite lists. Some servers do not support
-	this and they reply with different kinds of error messages, Irssi
-	tries to deal with them all right and resend the commands again
-	separately. However, some strange servers sometimes use some weird
-	error replies that Irssi doesn't know about, and the channel never
-	gets synchronized. If this happens with some server you know, please
+	WHO list and ban lists. Some servers do not support this and they
+	reply with different kinds of error messages, Irssi tries to deal
+	with them all right and resend the commands again separately.
+	However, some strange servers sometimes use some weird error replies
+	that Irssi doesn't know about, and the channel never gets
+	synchronized. If this happens with some server you know, please
 	let the Irssi's author know about it.
 
  6.5 Channel modes
 
-	Irssi knows these channel modes:
+	Common channel modes are:
 
 	i - Invite only - People can't join to channel without being
 	    /INVITEd, or being in invite list (+I, see below).
@@ -713,39 +709,25 @@
 	            flooding, like some bot allows max. 5 users to join in
 	            one minute or so.
 
-	a - Anonymous - No-one's nick name, host or anything else can be
-	    seen. All messages, joins, parts, modes, etc. are seen as coming
-	    from nick "anonymous", this could be pretty confusing but nice
-	    feature if you want total anonymity. This mode can only be set,
-	    never unset. This mode isn't supported by all servers.
-
-	    NOTE: there is/was one bug :) Channel operators can guess if some
-	    nick might be in the channel and try to kick it. If nick was in
-	    channel, everyone will see the nick that was kicked.
-
-	r - Re-op - If channel becomes opless for longer than 45 (?) minutes,
-	    op everyone in the channel. This works only in !channels. This
-	    mode can only be set, not unset by channel creator.
-
 	b - Set/remove ban. For example MODE #channel +b *!*@*.org bans
 	    everyone from .org domain.
 
 	    If someone from .org domain was already in channel before the
-	    ban was set, he/she couldn't be able to write any messages to
-	    channel (doesn't work with all servers).
+	    ban was set, he/she cannot send any messages to channel (doesn't
+	    work with all servers).
 
-	    Ban can also be overridden with /INVITE, although many stupid
+	    Bans can also be overridden with /INVITE, although many stupid
 	    IRC clients automatically kick the user out because they see
 	    the ban and think that because of it the user shouldn't be in
 	    the channel (doesn't work with all servers).
 
 	e - Ban exceptions. You could for example ban everyone from
-	    *!*@*.org but set ban exception to *!*@*.host.org - works only
-	    in IRCnet/EFnet servers.
+	    *!*@*.org but set ban exception to *!*@*.host.org - does not work
+	    with all servers.
 
 	I - Invite list. If channel is invite only (+i), people in this
-	    list can join it without being /INVITEd - works only in
-	    IRCnet/EFnet servers.
+	    list can join it without being /INVITEd - does not work with all
+	    servers.
 
 	    This is excellent for in-country channels that don't want
 	    foreigners (spammers!) to join the channel, for example setting
@@ -754,13 +736,8 @@
 	    in the channels and sending /MSG bot invite command to it
 	    /INVITEs you to the channel.
 
-	    The ':' feature in channel modes is quite similiar, see section
-	    6.2.
-
-	O - Channel owner, the nick who creates a !channel receives this
-	    mode. It isn't displayed anywhere, you can't pass it to anyone
-	    else and you can't regain it again. This is needed for setting
-	    +r mode in channel when it's first created.
+	    On IRCnet, the ':' feature in channel names can also be used for
+	    a similar effect, see section 6.2.
 
 	o <nick> - Grant or revoke channel operator status from nick
 	v <nick> - Grant or revoke voice status from nick, only people with
@@ -780,6 +757,10 @@
 	command to op 6 people and Irssi will split it to two commands in
 	IRCnet/EFnet.
 
+	Many networks have additional modes and/or change the meaning of existing
+	modes. Check the documentation for the network or the server software in
+	use for details.
+
 	Instead of manually setting o, v and b modes you probably want to
 	use /OP, /DEOP, /VOICE, /DEVOICE, /BAN and /UNBAN commands.
 
@@ -795,16 +776,16 @@
 	you can simply unban it with /UNBAN *really*
 
 	Using /BAN <nicks>, Irssi will automatically create the mask. You
-	can change the way it's created with /BANTYPE command:
+	can change the way it's created with the ban_type setting:
 
-	/BANTYPE normal|host|domain|custom
+	/SET ban_type normal|host|domain|custom
 
 	Normal - *!user@*.domain.net
 	Host   - *!*@host.domain.net
 	Domain - *!*@*.domain.net
 	Custom [nick] [user] [host] [domain]
-	       eg. /bantype custom nick domain - nick!*@*.domain.net
-	       eg. /bantype custom user host - *!user@host.domain.net
+	       eg. /SET ban_type custom nick domain - nick!*@*.domain.net
+	       eg. /SET ban_type custom user host - *!user@host.domain.net
 
 	Irssi has also a couple of commands to help banning people:
 
