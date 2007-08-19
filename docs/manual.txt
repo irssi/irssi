@@ -532,23 +532,22 @@
 
  5.9 Lag checking
 
-	Irssi will constantly check how big the lag to the server is. It's
-	done by sending IRSSILAG CTCP replies to ourself. Using PING command
-	for this would seem more reasonable, but there was too many problems
-	with it - some servers didn't even know the whole PING command!
+	Irssi will constantly check how big the lag to the server is. It is
+	done by sending PING commands. Lag checking is disabled for broken
+	servers that do not support PING.
 
 	If the lag is too big, Irssi will reconnect to different IRC server.
 	This is sometimes useful if the connection has been stuck for 30
 	minutes but it still hasn't been closed.
 
-	/SET lag_check_time <seconds> - Specifies how often to check the
-	     lag. If it is set to 0, the lag detection is disabled. Default
-	     is 30 seconds.
-	/SET lag_max_before_disconnect <seconds> - Specifies how big the lag
+	/SET lag_check_time <time> - Specifies how often to check the lag.
+	     If it is set to 0, the lag detection is disabled. Default
+	     is 1 minute.
+	/SET lag_max_before_disconnect <time> - Specifies how big the lag
 	     can be before reconnecting to another server. Default is 5
 	     minutes.
-	/SET lag_min_show <100th seconds> - Specifies the minimum lag to
-	     display in status bar. Default is 1 second.
+	/SET lag_min_show <time> - Specifies the minimum lag to display
+	     in status bar. Default is 1 second.
 
  5.10 Raw log
 
