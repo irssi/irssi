@@ -483,25 +483,19 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 		line_matched = (line->info.level & level) != 0 &&
 			(line->info.level & nolevel) == 0;
 
-		if (*text == '\0') {
-                        /* no search word, everything matches */
-			if (line_matched) {
-				textbuffer_line_ref(line);
-				matches = g_list_append(matches, line);
-			}
-			continue;
-		}
+		if (*text != '\0') {
+			textbuffer_line2text(line, FALSE, str);
 
-                textbuffer_line2text(line, FALSE, str);
-
-		if (line_matched)
-		line_matched =
+			if (line_matched)
+			line_matched =
 #ifdef HAVE_REGEX_H
 			regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
 #endif
 			fullword ? strstr_full_case(str->str, text, !case_sensitive) != NULL :
 			case_sensitive ? strstr(str->str, text) != NULL :
 			stristr(str->str, text) != NULL;
+		}
+
 		if (line_matched) {
                         /* add the -before lines */
 			pre_line = line;
