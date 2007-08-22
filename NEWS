@@ -1,46 +1,53 @@
 v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
+	+ Some changes to character set recoding.
+	+ Rewrite SSL connection/handshake code.	
 	+ Remove support for glib 1.x.
-	+ Fix DCC get when file size is 0 (bug #494).
-	+ Ignore empty lines when pasting.
 	+ Do not send our hostname to the server (bug #488).
-	+ Fix large file support on AIX (bug #404).
-	+ Remove broken code that prevents unloading of a script in some cases.
-	+ Fix logging lines with no target to all logs, broken in 0.8.11.
 	+ Add $tag to 'window' item in default configuration.
-	+ Fix casemapping dependent nick and channel matching (bug #436).
-	+ Update chanop flag before emitting nick mode changed signal (patch
-	  by Johan Kiviniemi)
-	+ Fix recognition of realnames starting with spaces in /who.
-	+ Show "Target left IRC" error messages fully (instead of reporting
-	  no such nick "*")
 	+ Pick up host changes on charybdis and ircu servers (396 numeric).
 	+ Show various errors such as "cannot send to channel" and "cannot
 	  /msg, user is +g" in the channel or query window, if possible,
 	  and always include the user or channel name.
-	+ Repair channels_rejoin_unavailable. Enabled by default, this retries
+	+ Channel forwarding in hyperion and charybdis is now recognized
+	  (470 numeric) and the target channel is joined in the window where
+	  the original channel would have been joined.
+	+ Add support for the ACCEPT command, which is part of the CALLERID
+	  server side ignore system in hybrid7 and derived ircds.
+	+ Make /WINDOW GOTO start searching at the window after the active
+	  one and stop at the one before (bug #332).
+	+ Improve completion for /SET.
+	+ Use CASEMAPPING dependent comparison to match channel names.
+	  Patch by Jon Mayo (bug #436).
+	+ Various improvements to the help files.
+	- Fix DCC get when file size is 0 (bug #494).
+	- Ignore empty lines when pasting.
+	- Fix large file support on AIX (bug #404).
+	- Remove broken code that prevents unloading of a script in some cases.
+	- Fix logging lines with no target to all logs, broken in 0.8.11.
+	- Fix casemapping dependent nick and channel matching (bug #436).
+	- Update chanop flag before emitting nick mode changed signal (patch
+	  by Johan Kiviniemi)
+	- Fix recognition of realnames starting with spaces in /WHO.
+	- Show "Target left IRC" error messages fully (instead of reporting
+	  no such nick "*")
+	- Repair channels_rejoin_unavailable. Enabled by default, this retries
 	  joins that failed because of netsplits (channel temporarily
 	  unavailable (437), duplicate channel). A few servers abuse 437 for
 	  juped channels which should not be retried, you should disable
 	  channels_rejoin_unavailable if this is a problem.
-	+ Display 437 and 407 numerics if channels_rejoin_unavailable
+	- Display 437 and 407 numerics if channels_rejoin_unavailable
 	  is not enabled (bug #495).
-	+ Channel forwarding in hyperion and charybdis is now recognized
-	  (470 numeric) and the target channel is joined in the window where
-	  the original channel would have been joined.
-	+ Don't add the same mask to the /knockout list multiple times
+	- Don't add the same mask to the /KNOCKOUT list multiple times
 	  (bug #510).
-	+ Add support for the ACCEPT command, which is part of the CALLERID
-	  server side ignore system in hybrid7 and derived ircds.
-	+ Make /window goto start searching at the window after the active
-	  one and stop at the one before (bug #332).
-	+ Use again MSGLEVEL_NICKS for printing a nick change in queries,
+	- Use MSGLEVEL_NICKS again for printing a nick change in queries,
 	  broken in r2389.
-	+ Fix /lastlog -hilight -after etc.
-	+ Improve completion for /set.
-	+ Various improvements to the help files.
-	+ Some changes to character set recoding.
-	+ Rewrite SSL connection/handshake code.
-	+ Some fixes to the build system.
+	- Fix some /LASTLOG -before/-after issues.
+	- Some fixes to the build system.
+	- Fix paste sending the first line twice (bug #405)
+	- When parsing a numeric option verify that the whole argument, rather
+	  than only the first character, is numeric.
+	- Some fixes for notices, actions and ctcps to @#channel and +#channel
+	  (bug #46)
 
 v0.8.11 2007-04-25  The Irssi team <staff@irssi.org>
 	+ Add completion for /WINDOW GOTO
