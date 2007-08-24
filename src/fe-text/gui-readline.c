@@ -1087,6 +1087,15 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-1;5D", "cleft", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-1;5C", "cright", (SIGNAL_FUNC) key_combo);
 
+	key_bind("key", NULL, "meta2-1;3A", "mup", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;3B", "mdown", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;3D", "mleft", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;3C", "mright", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta-up", "mup", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta-down", "mdown", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta-left", "mleft", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta-right", "mright", (SIGNAL_FUNC) key_combo);
+
 	/* cursor movement */
 	key_bind("backward_character", "", "left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "", "right", NULL, (SIGNAL_FUNC) key_forward_character);
@@ -1132,10 +1141,10 @@ void gui_readline_init(void)
         /* window managing */
 	key_bind("previous_window", "Previous window", "^P", NULL, (SIGNAL_FUNC) key_previous_window);
 	key_bind("next_window", "Next window", "^N", NULL, (SIGNAL_FUNC) key_next_window);
-	key_bind("upper_window", "Upper window", "meta-up", NULL, (SIGNAL_FUNC) key_upper_window);
-	key_bind("lower_window", "Lower window", "meta-down", NULL, (SIGNAL_FUNC) key_lower_window);
-	key_bind("left_window", "Window in left", "meta-left", NULL, (SIGNAL_FUNC) key_left_window);
-	key_bind("right_window", "Window in right", "meta-right", NULL, (SIGNAL_FUNC) key_right_window);
+	key_bind("upper_window", "Upper window", "mup", NULL, (SIGNAL_FUNC) key_upper_window);
+	key_bind("lower_window", "Lower window", "mdown", NULL, (SIGNAL_FUNC) key_lower_window);
+	key_bind("left_window", "Window in left", "mleft", NULL, (SIGNAL_FUNC) key_left_window);
+	key_bind("right_window", "Window in right", "mright", NULL, (SIGNAL_FUNC) key_right_window);
 	key_bind("active_window", "Go to next window with the highest activity", "meta-a", NULL, (SIGNAL_FUNC) key_active_window);
 	key_bind("next_window_item", "Next channel/query", "^X", NULL, (SIGNAL_FUNC) key_next_window_item);
 	key_bind("previous_window_item", "Previous channel/query", NULL, NULL, (SIGNAL_FUNC) key_previous_window_item);
