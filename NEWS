@@ -19,6 +19,8 @@ v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
 	+ Use CASEMAPPING dependent comparison to match channel names.
 	  Patch by Jon Mayo (bug #436).
 	+ Various improvements to the help files.
+	+ Add Perl bindings for some gui_entry methods
+	+ Make alt/meta+arrow keys work in recent versions of xterm (bug #496)
 	- Fix DCC get when file size is 0 (bug #494).
 	- Ignore empty lines when pasting.
 	- Fix large file support on AIX (bug #404).
