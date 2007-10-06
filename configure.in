@@ -1,4 +1,4 @@
-AC_INIT(irssi, 0.8.12-rc1)
+AC_INIT(irssi, 0.8.12)
 AC_CONFIG_SRCDIR([src])
 AC_PREREQ(2.50)
 

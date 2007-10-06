@@ -1,4 +1,4 @@
-v0.8.12 YYYY-YY-YY  The Irssi team <staff@irssi.org>
+v0.8.12 2007-10-06  The Irssi team <staff@irssi.org>
 	+ Some changes to character set recoding.
 	+ Rewrite SSL connection/handshake code.	
 	+ Remove support for glib 1.x.
