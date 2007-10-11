@@ -7,7 +7,7 @@ directories:
  ~/.irssi/modules/
  <install dir, /usr/local or /usr maybe>/lib/irssi/modules/
 
-See plugins page of http://irssi.org/ to see if there's any plugins
+See plugins page of http://www.irssi.org/ to see if there's any plugins
 you'd want to use.
 
 See also: UNLOAD

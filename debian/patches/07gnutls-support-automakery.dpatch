@@ -5698,7 +5698,7 @@ diff -urNad --exclude=CVS --exclude=.svn ./irssi.spec /tmp/dpep-work.mDzhRz/irss
 +specific anymore, there's already a working SILC module available.
 +Support for other protocols like ICQ could be created some day too.
 +
-+More information can be found at http://irssi.org/.
++More information can be found at http://www.irssi.org/.
 +
 +%prep
 +%setup -q
