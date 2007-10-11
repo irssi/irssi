@@ -3,7 +3,7 @@
 
                            text            text            background
    ---------------------------------------------------------------------
-   %k      %K      %0      black           bold black      black
+   %k      %K      %0      black           dark grey       black
    %r      %R      %1      red             bold red        red
    %g      %G      %2      green           bold green      green
    %y      %Y      %3      yellow          bold yellow     yellow
