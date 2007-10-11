@@ -86,7 +86,7 @@ static const char *firsttimer_text =
 	"Looks like this is the first time you've run irssi.\n"
 	"This is just a reminder that you really should go read\n"
 	"startup-HOWTO if you haven't already. You can find it\n"
-	"and more irssi beginner info at http://irssi.org/help/\n"
+	"and more irssi beginner info at http://www.irssi.org\n"
 	"\n"
 	"For the truly impatient people who don't like any automatic\n"
 	"window creation or closing, just type: /MANUAL-WINDOWS";
