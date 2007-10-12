@@ -807,6 +807,32 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 		else
 			server->nick_comp_func = irc_nickcmp_ascii;
 	}
+
+	if ((sptr = g_hash_table_lookup(server->isupport, "TARGMAX"))) {
+		char *p = sptr;
+		server->max_kicks_in_cmd = 1;
+		server->max_msgs_in_cmd = 1;
+		/* Not doing WHOIS here until it is clear what it means. */
+		while (*p != '\0') {
+			if (!strncasecmp(p, "KICK:", 5)) {
+				server->max_kicks_in_cmd = atoi(p + 5);
+				if (server->max_kicks_in_cmd <= 0)
+					server->max_kicks_in_cmd = 30;
+			} else if (!strncasecmp(p, "PRIVMSG:", 8)) {
+				server->max_msgs_in_cmd = atoi(p + 8);
+				if (server->max_msgs_in_cmd <= 0)
+					server->max_msgs_in_cmd = 30;
+			}
+			p = strchr(p, ',');
+			if (p == NULL)
+				break;
+			p++;
+		}
+	} else if ((sptr = g_hash_table_lookup(server->isupport, "MAXTARGETS"))) {
+		server->max_msgs_in_cmd = atoi(sptr);
+		if (server->max_msgs_in_cmd <= 0)
+			server->max_msgs_in_cmd = 1;
+	}
 }
 
 void irc_servers_init(void)
