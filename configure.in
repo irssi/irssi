@@ -798,6 +798,7 @@ docs/help/Makefile
 docs/help/in/Makefile
 irssi-version.h
 irssi.spec
+irssi-config
 ])
 
 AC_OUTPUT
