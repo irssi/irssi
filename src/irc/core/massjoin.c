@@ -85,6 +85,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 				nickrec->last_check = rec->last_check;
 				nickrec->realname = g_strdup(rec->realname);
 				nickrec->gone = rec->gone;
+				nickrec->serverop = rec->serverop;
 				break;
 			}
 		}
