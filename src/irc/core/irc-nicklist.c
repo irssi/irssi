@@ -409,6 +409,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 static void event_userhost(SERVER_REC *server, const char *data)
 {
 	char *params, *hosts, **phosts, **pos, *ptr;
+	int oper;
 
 	g_return_if_fail(data != NULL);
 
@@ -418,10 +419,15 @@ static void event_userhost(SERVER_REC *server, const char *data)
 	phosts = g_strsplit(hosts, " ", -1);
 	for (pos = phosts; *pos != NULL; pos++) {
 		ptr = strchr(*pos, '=');
-		if (ptr == NULL) continue;
+		if (ptr == NULL || ptr == *pos) continue;
+		if (ptr[-1] == '*') {
+			ptr[-1] = '\0';
+			oper = 1;
+		} else
+			oper = 0;
 		*ptr++ = '\0';
 
-		nicklist_update_flags(server, *pos, *ptr == '-', -1);
+		nicklist_update_flags(server, *pos, *ptr == '-', oper);
 	}
 	g_strfreev(phosts);
 	g_free(params);
