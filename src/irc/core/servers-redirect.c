@@ -606,6 +606,8 @@ void servers_redirect_init(void)
                                  "event 401", 1, /* No such nick */
 				 "event 318", 1, /* End of WHOIS */
                                  "event 402", 1, /* No such server */
+                                 "event 431", 1, /* No nickname given */
+                                 "event 461", 1, /* Not enough parameters */
 				 NULL,
 				 "event 318", 1, /* After 401, we should get 318, but in OPN we don't.. */
 				 NULL);
