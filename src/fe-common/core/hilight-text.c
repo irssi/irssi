@@ -480,7 +480,7 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 	}
 
 	if (rec->nickmask) g_string_append(options, "-mask ");
-	if (rec->fullword) g_string_append(options, "-fullword ");
+	if (rec->fullword) g_string_append(options, "-full ");
 	if (rec->regexp) {
 		g_string_append(options, "-regexp ");
 #ifdef HAVE_REGEX_H
