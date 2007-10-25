@@ -7,7 +7,6 @@
 #undef HAVE_GC_H
 #undef HAVE_GC_GC_H
 #undef USE_GC
-#undef HAVE_GLIB2
 
 /* macros/curses checks */
 #undef HAS_CURSES
@@ -26,9 +25,6 @@
 
 /* terminfo/termcap */
 #undef HAVE_TERMINFO
-
-/* If set to 64, enables 64bit off_t for some systems (eg. Linux, Solaris) */
-#undef _FILE_OFFSET_BITS
 
 /* What type should be used for uoff_t */
 #undef UOFF_T_INT
