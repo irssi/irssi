@@ -226,7 +226,13 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 		if (ret != -1) {
 			ret = link(tempfname, dcc->file);
 
-			if (ret == -1 && errno == EPERM) {
+			if (ret == -1 &&
+			    /* Linux */
+			    (errno == EPERM ||
+			     /* FUSE */
+			     errno == ENOSYS ||
+			     /* BSD */
+			     errno == EOPNOTSUPP)) {
 				/* hard links aren't supported - some people
 				   want to download stuff to FAT/NTFS/etc
 				   partitions, so fallback to rename() */
