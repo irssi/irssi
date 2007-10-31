@@ -148,19 +148,14 @@ static void cmd_notify_show(void)
 
 static void notifylist_print(NOTIFYLIST_REC *rec)
 {
-	char idle[10+MAX_INT_STRLEN], *ircnets;
-
-	if (rec->idle_check_time <= 0)
-		idle[0] = '\0';
-	else
-		g_snprintf(idle, sizeof(idle), "-idle %d", rec->idle_check_time/60);
+	char *ircnets;
 
 	ircnets = rec->ircnets == NULL ? NULL :
 		g_strjoinv(",", rec->ircnets);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NOTIFY_LIST,
 		    rec->mask, ircnets != NULL ? ircnets : "",
-		    rec->away_check ? "-away" : "", idle);
+		    rec->away_check ? "-away" : "");
 
 	g_free_not_null(ircnets);
 }
@@ -227,18 +222,6 @@ static void notifylist_away(IRC_SERVER_REC *server, const char *nick,
 	}
 }
 
-static void notifylist_unidle(IRC_SERVER_REC *server, const char *nick,
-			      const char *username, const char *host,
-			      const char *realname, const char *awaymsg)
-{
-	g_return_if_fail(nick != NULL);
-
-	printformat(server, nick, MSGLEVEL_CLIENTNOTICE,
-		    IRCTXT_NOTIFY_UNIDLE, nick, username, host, realname,
-		    awaymsg != NULL ? awaymsg : "",
-		    server->connrec->chatnet == NULL ? "IRC" : server->connrec->chatnet);
-}
-
 void fe_irc_notifylist_init(void)
 {
 	theme_register(fecommon_irc_notifylist_formats);
@@ -247,7 +230,6 @@ void fe_irc_notifylist_init(void)
 	signal_add("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
 	signal_add("notifylist left", (SIGNAL_FUNC) notifylist_left);
 	signal_add("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
-	signal_add("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
 
 	command_set_options("notify", "list");
 
@@ -263,5 +245,4 @@ void fe_irc_notifylist_deinit(void)
 	signal_remove("notifylist joined", (SIGNAL_FUNC) notifylist_joined);
 	signal_remove("notifylist left", (SIGNAL_FUNC) notifylist_left);
 	signal_remove("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
-	signal_remove("notifylist unidle", (SIGNAL_FUNC) notifylist_unidle);
 }

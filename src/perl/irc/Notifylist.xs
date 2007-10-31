@@ -18,6 +18,12 @@ notifylist_add(mask, ircnets, away_check, idle_check_time)
 	char *ircnets
 	int away_check
 	int idle_check_time
+CODE:
+	if (idle_check_time != 0)
+		croak("Notify -idle has been removed");
+	RETVAL = notifylist_add(mask, ircnets, away_check);
+OUTPUT:
+	RETVAL
 
 void
 notifylist_remove(mask)

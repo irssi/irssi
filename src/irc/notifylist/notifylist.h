@@ -7,9 +7,6 @@ typedef struct {
 
 	/* notify when AWAY status changes (uses /USERHOST) */
 	unsigned int away_check:1;
-	/* notify when idle time is reset and it was bigger than this
-	   (uses /WHOIS and PRIVMSG events) */
-	int idle_check_time;
 } NOTIFYLIST_REC;
 
 extern GSList *notifies;
@@ -18,7 +15,7 @@ void notifylist_init(void);
 void notifylist_deinit(void);
 
 NOTIFYLIST_REC *notifylist_add(const char *mask, const char *ircnets,
-			       int away_check, int idle_check_time);
+			       int away_check);
 void notifylist_remove(const char *mask);
 
 IRC_SERVER_REC *notifylist_ison(const char *nick, const char *serverlist);

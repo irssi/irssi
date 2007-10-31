@@ -63,32 +63,7 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 
 		nickrec->away = FALSE;
 		nickrec->host_ok = TRUE;
-		nickrec->idle_ok = TRUE;
 	}
-	g_free(params);
-}
-
-static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
-{
-	NOTIFY_NICK_REC *nickrec;
-	NOTIFYLIST_REC *notify;
-	char *params, *nick, *secstr;
-	long secs;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 3, NULL, &nick, &secstr);
-	secs = atol(secstr);
-
-	notify = notifylist_find(nick, server->connrec->chatnet);
-	nickrec = notify_nick_find(server, nick);
-	if (notify != NULL && nickrec != NULL) {
-		nickrec->idle_changed = secs < nickrec->idle_time &&
-			nickrec->idle_time > notify->idle_check_time;
-
-		nickrec->idle_time = secs;
-	}
-
 	g_free(params);
 }
 
@@ -135,12 +110,9 @@ static void event_whois_end(IRC_SERVER_REC *server, const char *data)
 		event = NULL;
 		if (!rec->join_announced) {
 			rec->join_announced = TRUE;
-			rec->idle_time = 0;
 			if (away_ok) event = "notifylist joined";
 		} else if (notify->away_check && rec->away_ok == rec->away)
 			event = "notifylist away changed";
-		else if (notify->idle_check_time > 0 && rec->idle_changed)
-			event = "notifylist unidle";
 
 		if (event != NULL) {
 			signal_emit(event, 6, server, rec->nick,
@@ -149,9 +121,6 @@ static void event_whois_end(IRC_SERVER_REC *server, const char *data)
 				    rec->realname != NULL ? rec->realname : "??",
 				    rec->awaymsg);
 		}
-		rec->idle_ok = notify->idle_check_time <= 0 ||
-			rec->idle_time <= notify->idle_check_time;
-		rec->idle_changed = FALSE;
                 rec->away_ok = away_ok;
 	}
 }
@@ -168,7 +137,6 @@ void notifylist_whois_init(void)
 
 	signal_add("notifylist event whois", (SIGNAL_FUNC) event_whois);
 	signal_add("notifylist event whois away", (SIGNAL_FUNC) event_whois_away);
-	signal_add("notifylist event whois idle", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("notifylist event whois end", (SIGNAL_FUNC) event_whois_end);
 	expando_create("D", expando_lastnotify,
 		       "notifylist event whois", EXPANDO_ARG_SERVER, NULL);
@@ -180,7 +148,6 @@ void notifylist_whois_deinit(void)
 
 	signal_remove("notifylist event whois", (SIGNAL_FUNC) event_whois);
 	signal_remove("notifylist event whois away", (SIGNAL_FUNC) event_whois_away);
-	signal_remove("notifylist event whois idle", (SIGNAL_FUNC) event_whois_idle);
 	signal_remove("notifylist event whois end", (SIGNAL_FUNC) event_whois_end);
 	expando_destroy("D", expando_lastnotify);
 }

@@ -35,7 +35,7 @@
 GSList *notifies;
 
 NOTIFYLIST_REC *notifylist_add(const char *mask, const char *ircnets,
-			       int away_check, int idle_check_time)
+			       int away_check)
 {
 	NOTIFYLIST_REC *rec;
 
@@ -46,7 +46,6 @@ NOTIFYLIST_REC *notifylist_add(const char *mask, const char *ircnets,
 	rec->ircnets = ircnets == NULL || *ircnets == '\0' ? NULL :
 		g_strsplit(ircnets, " ", -1);
 	rec->away_check = away_check;
-	rec->idle_check_time = idle_check_time;
 
         notifylist_add_config(rec);
 
@@ -138,7 +137,7 @@ int notifylist_ison_server(IRC_SERVER_REC *server, const char *nick)
 	g_return_val_if_fail(IS_IRC_SERVER(server), FALSE);
 
 	rec = notify_nick_find(server, nick);
-	return rec != NULL && rec->host_ok && rec->away_ok && rec->idle_ok;
+	return rec != NULL && rec->host_ok && rec->away_ok;
 }
 
 static IRC_SERVER_REC *notifylist_ison_serverlist(const char *nick, const char *taglist)
@@ -237,24 +236,6 @@ void notifylist_left(IRC_SERVER_REC *server, NOTIFY_NICK_REC *rec)
 	notify_nick_destroy(rec);
 }
 
-static void notifylist_idle_reset(IRC_SERVER_REC *server, const char *nick)
-{
-	NOTIFY_NICK_REC *rec;
-	NOTIFYLIST_REC *notify;
-
-	notify = notifylist_find(nick, server->connrec->chatnet);
-	rec = notify_nick_find(server, nick);
-
-	if (notify != NULL && rec != NULL && notify->idle_check_time > 0 &&
-	    rec->idle_time > notify->idle_check_time) {
-                rec->idle_time = 0;
-		signal_emit("notifylist unidle", 6,
-			    server, rec->nick,
-			    rec->user, rec->host,
-			    rec->realname, rec->awaymsg);
-	}
-}
-
 static void event_quit(IRC_SERVER_REC *server, const char *data,
 		       const char *nick)
 {
@@ -308,7 +289,6 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	if (away != -1) rec->away = away;
 	rec->host_ok = TRUE;
 	rec->join_announced = TRUE;
-	rec->idle_time = 0;
 
 	signal_emit("notifylist joined", 6,
 		    server, rec->nick, rec->user, rec->host, realname, NULL);
@@ -320,7 +300,6 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 {
 	if (nick != NULL) {
 		notifylist_check_join(server, nick, address, "", -1);
-		notifylist_idle_reset(server, nick);
 	}
 }
 

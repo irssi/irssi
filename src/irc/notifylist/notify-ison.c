@@ -181,7 +181,6 @@ static void whois_send(IRC_SERVER_REC *server, const char *nicks,
 			      "event 318", "notifylist event whois end",
 			      "event 311", "notifylist event whois",
 			      "event 301", "notifylist event whois away",
-			      "event 317", "notifylist event whois idle",
 			      "", "event empty", NULL);
 	g_free(str);
 
@@ -247,8 +246,7 @@ static void ison_check_joins(IRC_SERVER_REC *server)
 		char *nick = tmp->data;
 
 		notify = notifylist_find(nick, server->connrec->chatnet);
-		send_whois = notify != NULL &&
-			(notify->away_check || notify->idle_check_time > 0);
+		send_whois = notify != NULL && notify->away_check;
 
 		rec = notify_nick_find(server, nick);
 		if (rec != NULL) {
@@ -261,7 +259,7 @@ static void ison_check_joins(IRC_SERVER_REC *server)
 		}
 
 		if (send_whois) {
-			/* we need away message or idle time -
+			/* we need away message -
 			   send the WHOIS reply to the nick's server */
                         rec->last_whois = now;
 			whois_send_server(server, nick);

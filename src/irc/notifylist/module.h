@@ -6,15 +6,12 @@
 typedef struct {
 	char *nick;
 	char *user, *host, *realname, *awaymsg;
-	int idle_time;
 
 	unsigned int host_ok:1; /* host matches the one in notifylist = this is the right person*/
 	unsigned int away_ok:1; /* not away, or we don't care about it */
-	unsigned int idle_ok:1; /* idle time is low enough, or we don't care about it */
 
 	unsigned int away:1; /* nick is away */
 	unsigned int join_announced:1; /* join to IRC has been announced */
-	unsigned int idle_changed:1; /* idle time is lower than in last check */
 
 	time_t last_whois;
 } NOTIFY_NICK_REC;

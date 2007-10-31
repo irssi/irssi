@@ -37,11 +37,6 @@ void notifylist_add_config(NOTIFYLIST_REC *rec)
 	else
 		iconfig_node_set_str(node, "away_check", NULL);
 
-	if (rec->idle_check_time > 0)
-		iconfig_node_set_int(node, "idle_check_time", rec->idle_check_time/60);
-	else
-		iconfig_node_set_str(node, "idle_check_time", NULL);
-
 	iconfig_node_set_str(node, "ircnets", NULL);
 	if (rec->ircnets != NULL && *rec->ircnets != NULL) {
 		node = config_node_section(node, "ircnets", NODE_TYPE_LIST);
@@ -77,7 +72,6 @@ void notifylist_read_config(void)
 
 		rec->mask = g_strdup(node->key);
 		rec->away_check = config_node_get_bool(node, "away_check", FALSE);
-		rec->idle_check_time = config_node_get_int(node, "idle_check_time", 0)*60;
 
 		node = config_node_section(node, "ircnets", -1);
 		if (node != NULL) rec->ircnets = config_node_get_list(node);

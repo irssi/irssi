@@ -26,13 +26,13 @@
 
 #include "notifylist.h"
 
-/* SYNTAX: NOTIFY [-away] [-idle [<time>]] <mask> [<ircnets>] */
+/* SYNTAX: NOTIFY [-away] <mask> [<ircnets>] */
 static void cmd_notify(gchar *data)
 {
 	GHashTable *optlist;
-	char *mask, *ircnets, *idletime;
+	char *mask, *ircnets;
 	void *free_arg;
-	int away_check, idle_check_time;
+	int away_check;
 
 	g_return_if_fail(data != NULL);
 
@@ -41,19 +41,9 @@ static void cmd_notify(gchar *data)
 		return;
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	idletime = g_hash_table_lookup(optlist, "idle");
-	if (idletime == NULL)
-		idle_check_time = 0;
-	else if (*idletime == '\0')
-		idle_check_time = settings_get_time("notify_idle_time");
-	else {
-		if (!parse_time_interval(idletime, &idle_check_time))
-			cmd_param_error(CMDERR_INVALID_TIME);
-	}
-
 	away_check = g_hash_table_lookup(optlist, "away") != NULL;
 	notifylist_remove(mask);
-	notifylist_add(mask, ircnets, away_check, idle_check_time/1000);
+	notifylist_add(mask, ircnets, away_check);
 
 	cmd_params_free(free_arg);
 }
@@ -77,11 +67,10 @@ static void cmd_unnotify(const char *data)
 
 void notifylist_commands_init(void)
 {
-	settings_add_time("misc", "notify_idle_time", "1hour");
 	command_bind("notify", NULL, (SIGNAL_FUNC) cmd_notify);
 	command_bind("unnotify", NULL, (SIGNAL_FUNC) cmd_unnotify);
 
-	command_set_options("notify", "-idle away");
+	command_set_options("notify", "away");
 }
 
 void notifylist_commands_deinit(void)
