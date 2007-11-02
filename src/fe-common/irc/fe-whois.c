@@ -178,6 +178,31 @@ static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_whois_realhost338(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *arg1, *arg2, *arg3;
+
+	g_return_if_fail(data != NULL);
+
+	/*
+	 * :<server> 338 <yournick> <nick> <user>@<host> <ip> :Actual user@host, actual IP
+	 * (ircu) or
+	 * :<server> 338 <yournick> <nick> <ip> :actually using host
+	 * (ratbox)
+	 */
+	params = event_get_params(data, 5, NULL, &nick, &arg1, &arg2, &arg3);
+	if (*arg3 != '\0') {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_REALHOST, nick, arg1, arg2);
+	} else if (*arg2 != '\0') {
+		printformat(server, nick, MSGLEVEL_CRAP,
+			    IRCTXT_WHOIS_REALHOST, nick, arg1, "");
+	} else {
+		event_whois_special(server, data);
+	}
+	g_free(params);
+}
+
 static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *txt_usermodes, *nick, *usermode;
@@ -340,6 +365,7 @@ static struct whois_event_table events[] = {
 	{ 312, event_whois_server },
 	{ 326, event_whois_usermode326 },
 	{ 327, event_whois_realhost327 },
+	{ 338, event_whois_realhost338 },
 	{ 379, event_whois_modes },
 	{ 378, event_whois_realhost },
 	{ 377, event_whois_usermode },
@@ -381,6 +407,7 @@ void fe_whois_init(void)
 	signal_add("event 379", (SIGNAL_FUNC) event_whois_modes);
 	signal_add("event 327", (SIGNAL_FUNC) event_whois_realhost327);
 	signal_add("event 326", (SIGNAL_FUNC) event_whois_usermode326);
+	signal_add("event 338", (SIGNAL_FUNC) event_whois_realhost338);
 	signal_add("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_add("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("whowas away", (SIGNAL_FUNC) event_whois_away);
@@ -403,6 +430,7 @@ void fe_whois_deinit(void)
 	signal_remove("event 379", (SIGNAL_FUNC) event_whois_modes);
 	signal_remove("event 327", (SIGNAL_FUNC) event_whois_realhost327);
 	signal_remove("event 326", (SIGNAL_FUNC) event_whois_usermode326);
+	signal_remove("event 338", (SIGNAL_FUNC) event_whois_realhost338);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);
 	signal_remove("whois oper", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("whowas away", (SIGNAL_FUNC) event_whois_away);
