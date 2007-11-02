@@ -139,7 +139,9 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
                 if (hostname != NULL) hostname += 5;
 	}
 
-	if (hostname == NULL) {
+	if (hostname != NULL) {
+		if (!strncmp(hostname, "*@", 2))
+			hostname += 2;
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, "");
 	} else {
