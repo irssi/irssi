@@ -134,7 +134,6 @@ static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)
 
 	hv_store(hv, "mask", 4, new_pv(notify->mask), 0);
 	hv_store(hv, "away_check", 10, newSViv(notify->away_check), 0);
-	hv_store(hv, "idle_check_time", 15, newSViv(notify->idle_check_time), 0);
 
 	av = newAV();
 	if (notify->ircnets != NULL) {
