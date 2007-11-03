@@ -99,7 +99,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "whois_idle_signon", "{whois idle %|$1 days $2 hours $3 mins $4 secs {comment signon: $5}}", 6, { 0, 1, 1, 1, 1, 0 } },
 	{ "whois_server", "{whois server %|$1 {comment $2}}", 3, { 0, 0, 0 } },
 	{ "whois_oper", "{whois  {hilight $1}}", 2, { 0, 0 } },
-	{ "whois_modes", " {whois modes $1}", 2, { 0, 0 } },
+	{ "whois_modes", "{whois modes $1}", 2, { 0, 0 } },
 	{ "whois_realhost", "{whois hostname $1-}", 3, { 0, 0, 0 } },
 	{ "whois_usermode", "{whois usermode $1}", 2, { 0, 0 } },
 	{ "whois_channels", "{whois channels %|$1}", 2, { 0, 0 } },
