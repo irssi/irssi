@@ -113,8 +113,10 @@ static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick,
-				  NULL, NULL, NULL, &modes);
+	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
+			NULL, &nick, &modes);
+	if (!strncmp(modes, "is using modes ", 15))
+		modes += 15;
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_MODES, nick, modes);
 	g_free(params);
