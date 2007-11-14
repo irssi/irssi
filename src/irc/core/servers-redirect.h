@@ -64,6 +64,7 @@ void server_redirect_command(IRC_SERVER_REC *server, const char *command,
 /* Returns the redirection signal for specified event.
    This is the function that contains the real redirecting logic. */
 const char *server_redirect_get_signal(IRC_SERVER_REC *server,
+				       const char *prefix,
 				       const char *event,
 				       const char *args);
 /* Returns the redirection signal for specified event.
@@ -72,6 +73,7 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
    `redirected' is set to TRUE, if this event belongs to redirection even
    while there might be no redirection signal. */
 const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
+					const char *prefix,
 					const char *event,
 					const char *args,
 					int *redirected);

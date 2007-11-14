@@ -42,7 +42,7 @@ struct _IRC_SERVER_REC {
 	GSList *redirects;
         GSList *redirect_queue; /* should be updated from redirect_next each time cmdqueue is updated */
         REDIRECT_REC *redirect_next;
-	REDIRECT_REC *redirect_continue;
+	GSList *redirect_active; /* redirects start event has been received for, must have unique prefix */
 
         char *last_nick; /* last /NICK, kept even if it resulted as not valid change */
 

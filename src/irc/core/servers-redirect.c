@@ -46,6 +46,7 @@ struct _REDIRECT_REC {
 	REDIRECT_CMD_REC *cmd;
 	time_t created;
 	int failures;
+	char *prefix;
 
 	unsigned int destroyed:1;
 	unsigned int aborted:1;
@@ -110,6 +111,7 @@ void server_redirect_destroy(REDIRECT_REC *rec)
 {
 	redirect_cmd_unref(rec->cmd);
 
+	g_free_not_null(rec->prefix);
 	g_free_not_null(rec->arg);
         g_free_not_null(rec->failure_signal);
         g_free_not_null(rec->default_signal);
@@ -386,13 +388,29 @@ static const char *redirect_match(REDIRECT_REC *redirect, const char *event,
 		else {
 			cmdpos = redirect_cmd_list_find(redirect->cmd->stop,
 							event);
-			match_list = cmdpos != NULL ? MATCH_STOP : MATCH_NONE;
+			if (cmdpos != NULL)
+				match_list = MATCH_STOP;
+			else if (redirect->default_signal != NULL &&
+					args == NULL &&
+					strncmp(event, "event ", 6) == 0 &&
+					i_isdigit(event[6])) {
+				/* If there is a default signal, the
+				 * redirection has already started and
+				 * this is a numeric, use it */
+				/* XXX this should depend on the
+				 * REDIRECT_CMD_REC, not REDIRECT_REC */
+				if (signal == NULL)
+					signal = redirect->default_signal;
+				match_list = MATCH_START;
+			} else {
+				match_list = MATCH_NONE;
+			}
 		}
 	}
 
 	if (signal == NULL && cmdpos == NULL) {
 		/* event not found from specified redirection events nor
-		   registered command events */
+		   registered command events, and no default signal */
 		return NULL;
 	}
 
@@ -428,8 +446,7 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 		signal_emit(rec->last_signal, 1, server);
 	}
 
-	if (server->redirect_continue == rec)
-		server->redirect_continue = NULL;
+	server->redirect_active = g_slist_remove(server->redirect_active, rec);
 
 	server_redirect_destroy(rec);
 }
@@ -451,6 +468,10 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 	*signal = NULL; redirect = NULL;
 	for (tmp = server->redirects; tmp != NULL; tmp = tmp->next) {
 		REDIRECT_REC *rec = tmp->data;
+
+		/* already active, don't try to start it again */
+		if (g_slist_find(server->redirect_active, rec) != NULL)
+			continue;
 
 		match_signal = redirect_match(rec, event, args, match);
 		if (match_signal != NULL && *match != MATCH_NONE) {
@@ -488,10 +509,13 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
 }
 
 static const char *
-server_redirect_get(IRC_SERVER_REC *server, const char *event,
-		    const char *args, REDIRECT_REC **redirect, int *match)
+server_redirect_get(IRC_SERVER_REC *server, const char *prefix,
+		    const char *event, const char *args,
+		    REDIRECT_REC **redirect, int *match)
 {
         const char *signal;
+	GSList *ptr, *next;
+	REDIRECT_REC *r;
 
         *redirect = NULL;
 	*match = MATCH_NONE;
@@ -499,32 +523,38 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 	if (server->redirects == NULL)
 		return NULL;
 
-	if (server->redirect_continue == NULL) {
-                /* find the redirection */
-		*redirect = redirect_find(server, event, args, &signal, match);
-	} else {
+	for (ptr = server->redirect_active; ptr != NULL; ptr = next) {
+		next = ptr->next;
+		r = ptr->data;
+		if (prefix != NULL && r->prefix != NULL &&
+				strcmp(prefix, r->prefix)) {
+			/* not from this server */
+			continue;
+		}
 		/* redirection is already started, now we'll just need to
 		   keep redirecting until stop-event is found. */
-		*redirect = server->redirect_continue;
+		*redirect = r;
 		signal = redirect_match(*redirect, event, NULL, match);
 		if (signal == NULL) {
-			/* unknown event - redirect to the default signal. */
-			if (strncmp(event, "event ", 6) == 0 &&
-			    i_isdigit(event[6])) {
-				signal = (*redirect)->default_signal;
-                                if (*match == MATCH_NONE)
-					*match = MATCH_START;
-			} else {
-				/* not a numeric, so we've lost the
-				   stop event.. */
-                                (*redirect)->aborted = TRUE;
-				redirect_abort(server, *redirect);
+			/* not a numeric, so we've lost the
+			   stop event.. */
+			(*redirect)->aborted = TRUE;
+			redirect_abort(server, *redirect);
 
-                                *redirect = NULL;
-				signal = NULL;
-			}
+			*redirect = NULL;
 		}
+		if (*redirect != NULL)
+			break;
 	}
+
+	if (*redirect == NULL) {
+                /* find the redirection */
+		*redirect = redirect_find(server, event, args, &signal, match);
+	}
+
+	/* remember which server is replying to our request */
+	if (*redirect != NULL && prefix != NULL && (*redirect)->prefix == NULL)
+		(*redirect)->prefix = g_strdup(prefix);
 
 	if (*redirect != NULL && (*redirect)->first_signal != NULL &&
 	    !(*redirect)->first_signal_sent) {
@@ -537,6 +567,7 @@ server_redirect_get(IRC_SERVER_REC *server, const char *event,
 }
 
 const char *server_redirect_get_signal(IRC_SERVER_REC *server,
+				       const char *prefix,
 				       const char *event,
 				       const char *args)
 {
@@ -544,22 +575,26 @@ const char *server_redirect_get_signal(IRC_SERVER_REC *server,
         const char *signal;
 	int match;
 
-	signal = server_redirect_get(server, event, args, &redirect, &match);
-	if (match != MATCH_STOP || redirect == NULL)
-		server->redirect_continue = redirect;
-	else {
+	signal = server_redirect_get(server, prefix, event, args, &redirect, &match);
+	if (redirect == NULL)
+		;
+	else if (match != MATCH_STOP) {
+		if (g_slist_find(server->redirect_active, redirect) == NULL)
+			server->redirect_active = g_slist_prepend(server->redirect_active, redirect);
+	} else {
 		/* stop event - remove this redirection next time this
 		   function is called (can't destroy now or our return
 		   value would be corrupted) */
                 if (--redirect->count <= 0)
 			redirect->destroyed = TRUE;
-		server->redirect_continue = NULL;
+		server->redirect_active = g_slist_remove(server->redirect_active, redirect);
 	}
 
         return signal;
 }
 
 const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
+					const char *prefix,
 					const char *event,
 					const char *args,
 					int *redirected)
@@ -568,7 +603,7 @@ const char *server_redirect_peek_signal(IRC_SERVER_REC *server,
         const char *signal;
 	int match;
 
-	signal = server_redirect_get(server, event, args, &redirect, &match);
+	signal = server_redirect_get(server, prefix, event, args, &redirect, &match);
 	*redirected = match != MATCH_NONE;
         return signal;
 }
@@ -578,6 +613,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
                 return;
 
+	g_slist_free(server->redirect_active);
+        server->redirect_active = NULL;
 	g_slist_foreach(server->redirects,
 			(GFunc) server_redirect_destroy, NULL);
 	g_slist_free(server->redirects);

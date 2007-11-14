@@ -116,24 +116,26 @@ CODE:
 				   event_hash2list(hvref(signals)));
 
 char *
-server_redirect_get_signal(server, event, args)
+server_redirect_get_signal(server, prefix, event, args)
 	Irssi::Irc::Server server
+	char *prefix
 	char *event
 	char *args
 CODE:
-	RETVAL = (char *) server_redirect_get_signal(server, event, args);
+	RETVAL = (char *) server_redirect_get_signal(server, prefix, event, args);
 OUTPUT:
 	RETVAL
 
 char *
-server_redirect_peek_signal(server, event, args)
+server_redirect_peek_signal(server, prefix, event, args)
 	Irssi::Irc::Server server
+	char *prefix
 	char *event
 	char *args
 PREINIT:
 	int redirection;
 CODE:
-	RETVAL = (char *) server_redirect_peek_signal(server, event, args, &redirection);
+	RETVAL = (char *) server_redirect_peek_signal(server, prefix, event, args, &redirection);
 OUTPUT:
 	RETVAL
 

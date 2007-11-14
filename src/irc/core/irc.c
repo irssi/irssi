@@ -303,7 +303,7 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
         g_strdown(event);
 
         /* check if event needs to be redirected */
-	signal = server_redirect_get_signal(server, event, args);
+	signal = server_redirect_get_signal(server, recoded_nick, event, args);
 	if (signal == NULL)
 		signal = event;
         else
