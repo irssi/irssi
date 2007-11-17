@@ -27,6 +27,7 @@
 
 #include "chat-protocols.h"
 #include "servers.h"
+#include "channels.h"
 #include "queries.h"
 
 #include "module-formats.h"
@@ -165,9 +166,11 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 		iconfig_node_set_str(subnode, "chat_type", proto->name);
 	iconfig_node_set_str(subnode, "name", item->visible_name);
 
-	if (item->server != NULL)
+	if (item->server != NULL) {
 		iconfig_node_set_str(subnode, "tag", item->server->tag);
-	else if (IS_QUERY(item)) {
+		if (IS_CHANNEL(item))
+		    window_bind_add(window, item->server->tag, item->visible_name);
+	} else if (IS_QUERY(item)) {
 		iconfig_node_set_str(subnode, "tag", QUERY(item)->server_tag);
 	}
 }
@@ -210,6 +213,8 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	if (window->theme_name != NULL)
 		iconfig_node_set_str(node, "theme", window->theme_name);
 
+	while (window->bound_items != NULL)
+		window_bind_destroy(window, window->bound_items->data);
 	if (window->items != NULL)
 		window_save_items(window, node);
 
@@ -231,7 +236,6 @@ void windows_layout_save(void)
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_WINDOWS_LAYOUT_SAVED);
-	sig_layout_restore();
 }
 
 void windows_layout_reset(void)
