@@ -504,7 +504,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: PING <nicks> */
+/* SYNTAX: PING [<nick> | <channel> | *] */
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GTimeVal tv;
@@ -512,10 +512,9 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
         CMD_IRC_SERVER(server);
 
-	if (*data == '\0' || strcmp(data, "*") == 0) {
-		if (!IS_IRC_ITEM(item))
-                        cmd_return_error(CMDERR_NOT_JOINED);
-
+	if (*data == '\0') {
+		if (!IS_QUERY(item))
+			cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 		data = window_item_get_target(item);
 	}
 

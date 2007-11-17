@@ -298,7 +298,7 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: VER [<target>] */
+/* SYNTAX: VER [<nick> | <channel> | *] */
 static void cmd_ver(gchar *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	char *str;
