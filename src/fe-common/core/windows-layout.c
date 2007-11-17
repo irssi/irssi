@@ -231,6 +231,7 @@ void windows_layout_save(void)
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_WINDOWS_LAYOUT_SAVED);
+	sig_layout_restore();
 }
 
 void windows_layout_reset(void)
