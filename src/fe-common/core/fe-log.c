@@ -460,6 +460,7 @@ static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 			       const char *target, int level)
 {
 	char **targets, **tmp;
+	const char *deftarget;
 
 	/* FIXME: kind of a kludge, but we don't want to reopen logs when
 	   we're parting the channel with /WINDOW CLOSE.. Maybe a small
@@ -469,10 +470,13 @@ static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 	    (autolog_level & level) == 0 || target == NULL || *target == '\0')
 		return;
 
+	deftarget = server->nick ? server->nick : "unknown";
+
 	/* there can be multiple targets separated with comma */
 	targets = g_strsplit(target, ",", -1);
 	for (tmp = targets; *tmp != NULL; tmp++)
-		autolog_open(server, server_tag, *tmp);
+		autolog_open(server, server_tag,
+				strcmp(*tmp, "*") ? *tmp : deftarget);
 	g_strfreev(targets);
 }
 
