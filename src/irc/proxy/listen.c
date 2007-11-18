@@ -200,6 +200,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
         /* check if the command could be redirected */
 	if (strcmp(cmd, "WHO") == 0)
 		grab_who(client, args);
+	else if (strcmp(cmd, "WHOWAS") == 0)
+		proxy_redirect_event(client, "whowas", 1, args, -1);
 	else if (strcmp(cmd, "WHOIS") == 0) {
 		char *p;
 
