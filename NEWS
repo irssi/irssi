@@ -1,3 +1,17 @@
+v0.8.13
+	+ Support for reading kicks/msgs from TARGMAX/MAXTARGETS 005 tokens.
+	+ Enhancements to the redirections code.
+	+ Support for RPL_WHOISACTUALLY (338 numeric) for both ratbox and ircu
+	  (bug #428).
+	+ -idle option of /notify is gone.
+	+ /layout save now makes window-channel bindings instantly effective
+	  (bug #35).
+	+ /ping without arguments does not send anymore a ctcp ping to a channel
+	  (bug #542).
+	- Fix mode display in whois with unreal (379 numeric) (bug #479).
+	- Fix regressions that prevented external modules from building/working
+	  (bugs #537 #539).
+
 v0.8.12 2007-10-06  The Irssi team <staff@irssi.org>
 	+ Some changes to character set recoding.
 	+ Rewrite SSL connection/handshake code.	
