@@ -470,7 +470,7 @@ static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 	    (autolog_level & level) == 0 || target == NULL || *target == '\0')
 		return;
 
-	deftarget = server->nick ? server->nick : "unknown";
+	deftarget = server ? server->nick : "unknown";
 
 	/* there can be multiple targets separated with comma */
 	targets = g_strsplit(target, ",", -1);
