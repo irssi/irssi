@@ -182,10 +182,8 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 #ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
 #endif
-	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
-		   (char *) &opt, sizeof(opt));
-	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
-		   (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
 
 	/* set our own address */
 	if (my_ip != NULL) {
@@ -293,10 +291,8 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 #ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
 #endif
-	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
-		   (char *) &opt, sizeof(opt));
-	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE,
-		   (char *) &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
 
 	/* specify the address/port we want to listen in */
 	ret = bind(handle, &so.sa, SIZEOF_SOCKADDR(so));
