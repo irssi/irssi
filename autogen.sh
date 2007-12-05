@@ -22,9 +22,6 @@ if test ! -f $srcdir/configure.in; then
     exit 1
 fi
 
-# get versions
-version_date=`date +%Y%m%d`
-
 # create help files
 echo "Creating help files..."
 perl syntax.pl
