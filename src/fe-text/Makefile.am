@@ -5,8 +5,7 @@ INCLUDES = \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/fe-common/core/ \
 	$(GLIB_CFLAGS) \
-	$(CURSES_INCLUDEDIR) \
-	-DLOCALEDIR=\""$(datadir)/locale"\"
+	$(CURSES_INCLUDEDIR)
 
 irssi_DEPENDENCIES = \
 	@COMMON_LIBS@ \
