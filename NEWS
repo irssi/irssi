@@ -14,7 +14,7 @@ v0.8.13
 
 v0.8.12 2007-10-06  The Irssi team <staff@irssi.org>
 	+ Some changes to character set recoding.
-	+ Rewrite SSL connection/handshake code.	
+	+ Rewrite SSL connection/handshake code.
 	+ Remove support for glib 1.x.
 	+ Do not send our hostname to the server (bug #488).
 	+ Add $tag to 'window' item in default configuration.
@@ -159,7 +159,7 @@ v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 	  /WHO list to avoid getting kicked out of server (Max SendQ exceeded).
 	+ /LOAD script.pl loads the perl script
 	+ /IGNORE -network ignores only on specified network
-	+ /SET use_status_window and /SET use_msgs_window make the effects 
+	+ /SET use_status_window and /SET use_msgs_window make the effects
 	  immediately
 	+ Changed the confusing "ircnet" to "network" everywhere
 	+ Don't autoget files sent to channels, unless dcc_autoget_masks is set
@@ -177,7 +177,7 @@ v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 	  /SET recode_fallback <charset> to specify a charset that will be
 	  used when the normal conversion is failing.
 	  /SET recode_transliterate ON to enable character transliteration,
-	  so unavailable characters will be transliterated into something 
+	  so unavailable characters will be transliterated into something
 	  readable
 	  <charset> can be almost everything listed by 'iconv -l'
 	+ Added transpose_words, capitalize_word, downcase_word, upcase_word
@@ -219,7 +219,7 @@ v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 	- Fixed bug with time settings where hours actually returned 60*hours
 	- Fix multiple entries for local IP in /etc/hosts prevents connecting,
 	  patch by eridius (Bug 167)
-	- Fixed a bug with /me, use the right arguments for 
+	- Fixed a bug with /me, use the right arguments for
 	  "message irc own_action"
 	- Update our own nickrec->gone flag on /away <reason> or on /away
 	- Fixed output of /hilight (add a space after -levels if any)
@@ -257,7 +257,7 @@ v0.8.9 2003-12-11  Timo Sirainen <tss@iki.fi>
 
 	+ /SET auto_whowas OFF allows now disabling automatic /whowas when
 	  /whois doesn't find a nick (by Borys)
-	- If pasted line starts with command char, treat it as command always. 
+	- If pasted line starts with command char, treat it as command always.
 	  Paste detection can go on too easily with lagged connections.
 
 v0.8.8 2003-11-23  Timo Sirainen <tss@iki.fi>
@@ -774,7 +774,7 @@ v0.7.96 2000-10-19  Timo Sirainen <tss@iki.fi>
 	  so adding other IRC-like protocols (but not IRC) would be easier.
 	  This was mostly done to make SILC plugin work.
 	* Perl was split to Irssi and Irssi::Irc packages. You'll currently
-	  need to use both of them with perl scripts ("use Irssi; 
+	  need to use both of them with perl scripts ("use Irssi;
 	  use Irssi::Irc;). This might not be needed in future :)
 	* Changes:
 	   - /SET default_nick -> /SET nick
@@ -789,8 +789,8 @@ v0.7.96 2000-10-19  Timo Sirainen <tss@iki.fi>
 	+ Actions will now show up in window activity with hilight or
 	  message-color, not the text-color as before.
 	+ Added tab-completion for /BIND's commands.
-	+ Perl support is now built as runtime loadable module by default. 
-	  You can still build it statically with --enable-perl=static 
+	+ Perl support is now built as runtime loadable module by default.
+	  You can still build it statically with --enable-perl=static
 	  configure option.
 	+ /SET completion_nicks_lowercase - when completing nicks always
 	  write the nick with lowercase (uppercase letters are ugly ;)
@@ -1683,7 +1683,7 @@ v0.7.14 1999-08-22  Timo Sirainen <cras@irccrew.org> [unstable]
 
 	* Irssi uses now libPropList to read and save configuration file, so
 	  you need to have libPropList installed, it's also in different
-	  format so your old config file doesn't work anymore. 
+	  format so your old config file doesn't work anymore.
 
 	  Configuration file is located now in ~/.irssi/config file.
 	  Themes are also now stored in separate files in ~/.irssi/*.theme
@@ -2407,7 +2407,7 @@ v0.3.5 1999-01-26  Timo Sirainen <a@sicom.fi>
           with _HEAVY_ network load (ie. if there's buffer overflows or some
           other weird bugs). It doesn't :)
         + Preferences: Maximum number of channels to display in panel
-        - When leaving from channels, panel didn't redraw it's list correctly        
+        - When leaving from channels, panel didn't redraw it's list correctly
 	- Leaving channels in tabbed window mode crashed
 	- Fixed crash if connection got lost
 
