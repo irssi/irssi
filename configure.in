@@ -340,7 +340,6 @@ if test "$enable_ssl" = "yes"; then
     AC_CHECK_LIB(ssl, SSL_read, [
       AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
         SSL_LIBS="-lssl -lcrypto"
-        AC_SUBST(SSL_LIBS)
 	have_openssl=yes
       ])
     ],, -lcrypto)
