@@ -43,7 +43,7 @@ static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 			       MSGLEVEL_DCCMSGS | MSGLEVEL_NOHILIGHT |
 			       MSGLEVEL_NO_ACT, NULL);
 
-        /* ugly: recode the sent message back for printin */
+        /* ugly: recode the sent message back for printing */
 	recoded = recode_in(SERVER(dcc->server), msg, dcc->target == NULL ? dcc->mynick : dcc->target);
 	printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_QUERY :
 			 IRCTXT_OWN_DCC, dcc->mynick, dcc->id, recoded);
