@@ -250,11 +250,9 @@ static int itemcmp(const char *patt, const char *item)
 {
 	/* returns 0 on match, nonzero otherwise */
 
-	if (item == NULL)
-		return g_strcasecmp(patt, "*") != 0;
-	if (*patt == '*')
+	if (!strcmp(patt, "*"))
 		return 0;
-        return g_strcasecmp(patt, item);
+        return item ? g_strcasecmp(patt, item) : 1;
 }
 
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
