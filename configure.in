@@ -30,66 +30,46 @@ AC_SYS_LARGEFILE
 
 AC_ARG_WITH(socks,
 [  --with-socks            Build with socks support],
-	if test x$withval = xyes; then
-		want_socks=yes
+	if test x$withval = xno; then
+		want_socks=no
 	else
-		if test "x$withval" = xno; then
-			want_socks=no
-		else
-			want_socks=yes
-		fi
+		want_socks=yes
 	fi,
 	want_socks=no)
 
 AC_ARG_WITH(textui,
 [  --with-textui           Build text frontend],
-	if test x$withval = xyes; then
-		want_textui=yes
+	if test x$withval = xno; then
+		want_textui=no
 	else
-		if test "x$withval" = xno; then
-			want_textui=no
-		else
-			want_textui=yes
-		fi
+		want_textui=yes
 	fi,
 	want_textui=yes)
 
 AC_ARG_WITH(bot,
 [  --with-bot              Build irssi-bot],
-	if test x$withval = xyes; then
-		want_irssibot=yes
+	if test x$withval = xno; then
+		want_irssibot=no
 	else
-		if test "x$withval" = xno; then
-			want_irssibot=no
-		else
-			want_irssibot=yes
-		fi
+		want_irssibot=yes
 	fi,
 	want_irssibot=no)
 
 AC_ARG_WITH(proxy,
 [  --with-proxy            Build irssi-proxy],
-	if test x$withval = xyes; then
-		want_irssiproxy=yes
+	if test x$withval = xno; then
+		want_irssiproxy=no
 	else
-		if test "x$withval" = xno; then
-			want_irssiproxy=no
-		else
-			want_irssiproxy=yes
-		fi
+		want_irssiproxy=yes
 	fi,
 	want_irssiproxy=no)
 
 AC_ARG_WITH(terminfo,
 [  --with-terminfo         Use terminfo directly instead of curses],
-	if test x$withval = xyes; then
-		want_terminfo=yes
+	if test x$withval = xno; then
+		want_terminfo=no
 	else
-		if test "x$withval" = xno; then
-			want_terminfo=no
-		else
-			want_terminfo=yes
-		fi
+		want_terminfo=yes
 	fi,
 	want_terminfo=yes)
 
@@ -110,28 +90,20 @@ fi
 
 AC_ARG_WITH(gc,
 [  --with-gc               Use garbage collector],
-	if test x$withval = xyes; then
-		want_gc=yes
+	if test x$withval = xno; then
+		want_gc=no
 	else
-		if test "x$withval" = xno; then
-			want_gc=no
-		else
-			want_gc=yes
-		fi
+		want_gc=yes
 	fi,
 	want_gc=no)
 
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
                           statically in irssi, default is no],
-	if test x$withval = xyes; then
-		want_staticperllib=yes
+	if test x$withval = xno; then
+		want_staticperllib=no
 	else
-		if test "x$withval" = xno; then
-			want_staticperllib=no
-		else
-			want_staticperllib=yes
-		fi
+		want_staticperllib=yes
 	fi,
 	want_staticperllib=no)
 
@@ -182,14 +154,10 @@ AC_ARG_WITH(perl,
 
 AC_ARG_ENABLE(ipv6,
 [  --enable-ipv6           Enable IPv6 support],
-	if test x$enableval = xyes; then
-		want_ipv6=yes
+	if test x$enableval = xno; then
+		want_ipv6=no
 	else
-		if test "x$enableval" = xno; then
-			want_ipv6=no
-		else
-			want_ipv6=yes
-		fi
+		want_ipv6=yes
 	fi,
 	want_ipv6=yes)
 
