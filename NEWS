@@ -8,6 +8,7 @@ v0.8.13
 	  (bug #35).
 	+ /ping without arguments does not send anymore a ctcp ping to a channel
 	  (bug #542).
+	+ Track IRC operator status of nicks a bit better.
 	- Fix mode display in whois with unreal (379 numeric) (bug #479).
 	- Fix regressions that prevented external modules from building/working
 	  (bugs #537 #539).
