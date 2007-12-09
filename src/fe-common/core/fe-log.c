@@ -227,7 +227,8 @@ static void cmd_log_list(void)
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_LOG_LIST,
 			    index, rec->fname, items != NULL ? items : "",
-			    levelstr, rec->autoopen ? " -autoopen" : "");
+			    levelstr, rec->autoopen ? " -autoopen" : "",
+			    rec->handle != -1 ? " active" : "");
 
 		g_free_not_null(items);
 		g_free(levelstr);
