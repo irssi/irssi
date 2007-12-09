@@ -52,10 +52,8 @@ static gboolean is_translit(const char *charset)
 
 gboolean is_valid_charset(const char *charset)
 {
-	const char *from="UTF-8";
-	const char *str="irssi";
-	char *recoded, *to = NULL;
-	gboolean valid;
+	GIConv cd;
+	char *to = NULL;
 
 	if (!charset || *charset == '\0')
 		return FALSE;
@@ -63,11 +61,13 @@ gboolean is_valid_charset(const char *charset)
 	if (settings_get_bool("recode_transliterate") && !is_translit(charset))
 		charset = to = g_strconcat(charset, "//TRANSLIT", NULL);
 
-	recoded = g_convert(str, strlen(str), charset, from, NULL, NULL, NULL);
-	valid = (recoded != NULL);
-	g_free(recoded);
+	cd = g_iconv_open(charset, "UTF-8");
 	g_free(to);
-	return valid;
+	if (cd != (GIConv)-1) {
+		g_iconv_close(cd);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 static char *find_conversion(const SERVER_REC *server, const char *target)
