@@ -40,7 +40,7 @@ if $SVN --version >/dev/null 2>/dev/null; then
 		echo "Getting ChangeLog from svn..."
 		TZ=UTC $SVN log -v > $srcdir/ChangeLog
 	else
-		SVN_VERSION=`$SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
+		SVN_VERSION=`LC_ALL=C $SVN info $srcdir | grep 'Last Changed Rev' | awk '{print $4}'`
 		if test -z "$SVN_VERSION"; then
 			echo "**Warning**: Couldn't get svn revision number. This is probably not an svn checkout."
 		else
