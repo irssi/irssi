@@ -475,34 +475,6 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	return ret;
 }
 
-static int sig_set_user_mode(IRC_SERVER_REC *server)
-{
-	const char *mode;
-	char *newmode, *args;
-
-	if (!IS_IRC_SERVER(server) || g_slist_find(servers, server) == NULL)
-		return 0; /* not an irc server or got disconnected */
-
-	mode = server->connrec->usermode;
-	newmode = server->usermode == NULL ? NULL :
-		modes_join(NULL, server->usermode, mode, FALSE);
-
-	if (newmode == NULL || strcmp(newmode, server->usermode) != 0) {
-		/* change the user mode. we used to do some trickery to
-		   get rid of unwanted modes at reconnect time, but that's
-		   more trouble than worth. (eg. we don't want to remove
-		   some good default server modes, but we don't want to
-		   set back +r, etc..) */
-		args = g_strdup_printf((*mode == '+' || *mode == '-') ? "%s %s" : 
-				       "%s +%s", server->nick, mode);
-		signal_emit("command mode", 3, args, server, NULL);
-		g_free(args);
-	}
-
-	g_free_not_null(newmode);
-	return 0;
-}
-
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
@@ -533,8 +505,15 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	memcpy(&server->wait_cmd, &now, sizeof(GTimeVal));
 
 	if (server->connrec->usermode != NULL) {
-		/* wait a second and then send the user mode */
-		g_timeout_add(1000, (GSourceFunc) sig_set_user_mode, server);
+		/* Send the user mode, before the autosendcmd.
+		 * Do not pass this through cmd_mode because it
+		 * is not known whether the resulting MODE message
+		 * (if any) is the initial umode or a reply to this.
+		 */
+		irc_send_cmdv(server, "MODE %s %s", server->nick,
+				server->connrec->usermode);
+		g_free_not_null(server->wanted_usermode);
+		server->wanted_usermode = g_strdup(server->connrec->usermode);
 	}
 
 	signal_emit("event connected", 1, server);
