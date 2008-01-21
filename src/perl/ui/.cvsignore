@@ -1,7 +1,0 @@
-Makefile
-Makefile.PL
-UI.bs
-*.c
-*.o
-pm_to_blib
-blib
