@@ -338,10 +338,28 @@ static void paste_flush(int send)
 	gui_entry_redraw(active_entry);
 }
 
+static void insert_paste_prompt(void)
+{
+	char *str;
+
+	paste_prompt = TRUE;
+	paste_old_prompt = g_strdup(active_entry->prompt);
+	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+			   TXT_PASTE_WARNING,
+			   paste_line_count,
+			   active_win->active == NULL ? "window" :
+			   active_win->active->visible_name);
+
+	str = format_get_text(MODULE_NAME, active_win, NULL, NULL,
+			      TXT_PASTE_PROMPT, 0, 0);
+	gui_entry_set_prompt(active_entry, str);
+	gui_entry_set_text(active_entry, "");
+	g_free(str);
+}
+
 static gboolean paste_timeout(gpointer data)
 {
 	GTimeVal now;
-	char *str;
 	int diff;
 
 	if (paste_state == 0) {
@@ -363,19 +381,7 @@ static gboolean paste_timeout(gpointer data)
 		/* paste without asking */
 		paste_flush(TRUE);
 	} else if (!paste_prompt) {
-		paste_prompt = TRUE;
-		paste_old_prompt = g_strdup(active_entry->prompt);
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_PASTE_WARNING,
-				   paste_line_count,
-				   active_win->active == NULL ? "window" :
-				   active_win->active->visible_name);
-
-		str = format_get_text(MODULE_NAME, active_win, NULL, NULL,
-				      TXT_PASTE_PROMPT, 0, 0);
-		gui_entry_set_prompt(active_entry, str);
-		gui_entry_set_text(active_entry, "");
-		g_free(str);
+		insert_paste_prompt();
 	}
 	return TRUE;
 }
