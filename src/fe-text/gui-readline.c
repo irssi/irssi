@@ -333,7 +333,6 @@ static void paste_flush(int send)
 
 	paste_line_count = 0;
 	paste_state = 0;
-        paste_keycount = 0;
 
 	gui_entry_redraw(active_entry);
 }
@@ -412,7 +411,6 @@ static int check_pasting(unichar key, int diff)
 		   paste_line_count == 0) {
 		/* reset paste state */
 		paste_state = 0;
-		paste_keycount = 0;
 		return FALSE;
 	}
 
