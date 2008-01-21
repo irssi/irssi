@@ -423,8 +423,8 @@ static int check_pasting(unichar key, int diff)
 	g_array_append_val(paste_buffer, key);
 	if ((key == '\r' || key == '\n') &&
 	    (prev_key != '\r' && prev_key != '\n')) {
-		if (paste_state == 1 &&
-		    paste_keycount < paste_detect_keycount) {
+		if (paste_state == 1) {
+		if (paste_keycount < paste_detect_keycount) {
 			/* not enough keypresses to determine if this is
 			   pasting or not. don't reset paste keycount, but
 			   send this line as non-pasted */
@@ -434,7 +434,6 @@ static int check_pasting(unichar key, int diff)
 		}
 
 		/* newline - assume this line was pasted */
-		if (paste_state == 1) {
 			paste_state = 2;
 			gui_entry_set_text(active_entry, paste_entry);
 			gui_entry_set_pos(active_entry, paste_entry_pos);
