@@ -1,5 +1,6 @@
 AC_INIT(irssi, 0.8.13-svn)
 AC_CONFIG_SRCDIR([src])
+AC_CONFIG_AUX_DIR(build-aux)
 AC_PREREQ(2.50)
 
 AC_CONFIG_HEADERS([config.h])
