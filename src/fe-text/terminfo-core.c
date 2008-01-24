@@ -308,6 +308,11 @@ static void _set_normal(TERM_REC *term)
 	tput(tparm(term->TI_normal));
 }
 
+static void _set_blink(TERM_REC *term)
+{
+	tput(tparm(term->TI_blink));
+}
+
 /* Bold on */
 static void _set_bold(TERM_REC *term)
 {
@@ -589,6 +594,7 @@ static int term_setup(TERM_REC *term)
 		term->repeat = _repeat_manual;
 
 	/* Bold, underline, standout */
+	term->set_blink = term->TI_blink ? _set_blink : _ignore;
 	term->set_bold = term->TI_bold ? _set_bold : _ignore;
 	term->set_uline = term->TI_smul && term->TI_rmul ?
 		_set_uline : _ignore_parm;

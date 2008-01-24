@@ -35,6 +35,7 @@ struct _TERM_REC {
 	void (*set_fg)(TERM_REC *term, int color);
 	void (*set_bg)(TERM_REC *term, int color);
 	void (*set_normal)(TERM_REC *term);
+	void (*set_blink)(TERM_REC *term);
 	void (*set_bold)(TERM_REC *term);
 	void (*set_uline)(TERM_REC *term, int set);
 	void (*set_standout)(TERM_REC *term, int set);
