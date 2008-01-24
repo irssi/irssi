@@ -165,7 +165,6 @@ static void term_move_reset(int x, int y)
 void term_resize(int width, int height)
 {
 	if (width < 0 || height < 0) {
-		terminfo_resize(current_term);
 		width = current_term->width;
                 height = current_term->height;
 	}

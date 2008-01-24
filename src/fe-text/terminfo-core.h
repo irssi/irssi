@@ -93,9 +93,6 @@ void terminfo_core_deinit(TERM_REC *term);
    terminal capabilities don't contain color codes */
 void terminfo_setup_colors(TERM_REC *term, int force);
 
-/* Terminal was resized - ask the width/height from terminfo again */
-void terminfo_resize(TERM_REC *term);
-
 void terminfo_cont(TERM_REC *term);
 void terminfo_stop(TERM_REC *term);
 

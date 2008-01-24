@@ -384,12 +384,6 @@ static void term_fill_capabilities(TERM_REC *term)
 	}
 }
 
-/* Terminal was resized - ask the width/height from terminfo again */
-void terminfo_resize(TERM_REC *term)
-{
-	/* FIXME: is this possible? */
-}
-
 static void terminfo_colors_deinit(TERM_REC *term)
 {
 	int i;
