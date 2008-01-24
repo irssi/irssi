@@ -322,10 +322,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 	}
 
 	/* set background color */
-	if (col & ATTR_BLINK)
-		col |= 0x80;
-	else if (col & 0x80)
+	if (col & 0x80)
 		col |= ATTR_BLINK;
+	if (col & ATTR_BLINK)
+		current_term->set_blink(current_term);
 
 	if ((col & 0xf0) >> 4 != last_bg &&
 	    ((col & 0xf0) != 0 || (col & ATTR_RESETBG) == 0)) {
