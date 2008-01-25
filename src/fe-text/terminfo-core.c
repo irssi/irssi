@@ -89,6 +89,7 @@ static TERMINFO_REC tcaps[] = {
 	{ "rep",     	"rp",	CAP_TYPE_STR,	&temp_term.TI_rep },
 
 	/* Colors */
+	{ "colors",	"Co",   CAP_TYPE_INT,   &temp_term.TI_colors },
 	{ "sgr0",     	"me",	CAP_TYPE_STR,	&temp_term.TI_sgr0 },
 	{ "smul",     	"us",	CAP_TYPE_STR,	&temp_term.TI_smul },
 	{ "rmul",     	"ue",	CAP_TYPE_STR,	&temp_term.TI_rmul },
@@ -334,13 +335,13 @@ static void _set_standout(TERM_REC *term, int set)
 /* Change foreground color */
 static void _set_fg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_fg[color & 0x0f]));
+	tput(tparm(term->TI_fg[color % term->TI_colors]));
 }
 
 /* Change background color */
 static void _set_bg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_bg[color & 0x0f]));
+	tput(tparm(term->TI_bg[color % term->TI_colors]));
 }
 
 /* Beep */
@@ -394,13 +395,13 @@ static void terminfo_colors_deinit(TERM_REC *term)
 	int i;
 
 	if (terminfo_is_colors_set(term)) {
-		for (i = 0; i < 16; i++) {
+		for (i = 0; i < term->TI_colors; i++) {
 			g_free(term->TI_fg[i]);
 			g_free(term->TI_bg[i]);
 		}
 
-                memset(term->TI_fg, 0, sizeof(term->TI_fg));
-                memset(term->TI_bg, 0, sizeof(term->TI_fg));
+		g_free_and_null(term->TI_fg);
+		g_free_and_null(term->TI_bg);
 	}
 }
 
@@ -408,18 +409,36 @@ static void terminfo_colors_deinit(TERM_REC *term)
    terminal capabilities don't contain color codes */
 void terminfo_setup_colors(TERM_REC *term, int force)
 {
-	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
-	const char *bold, *blink;
-	int i;
+	static const char ansitab[16] = {
+		0, 4, 2, 6, 1, 5, 3, 7,
+		8, 12, 10, 14, 9, 13, 11, 15
+	};
+	unsigned int i, color;
 
 	terminfo_colors_deinit(term);
-        term->has_colors = term->TI_setf || term->TI_setaf;
+
+	if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
+		term->TI_colors = 8;
+
+	if ((term->TI_setf || term->TI_setaf || force) &&
+	     term->TI_colors > 0) {
+		term->TI_fg = g_new0(char *, term->TI_colors);
+		term->TI_bg = g_new0(char *, term->TI_colors);
+		term->set_fg = _set_fg;
+		term->set_bg = _set_bg;
+	} else {
+		/* no colors */
+		term->TI_colors = 0;
+		term->set_fg = term->set_bg = _ignore_parm;
+	}
 
 	if (term->TI_setaf) {
-		for (i = 0; i < 8; i++)
-                        term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, ansitab[i], 0));
+		for (i = 0; i < term->TI_colors; i++) {
+			color = i < 16 ? ansitab[i] : i;
+			term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, color, 0));
+		}
 	} else if (term->TI_setf) {
-		for (i = 0; i < 8; i++)
+		for (i = 0; i < term->TI_colors; i++)
                         term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
@@ -427,31 +446,16 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	}
 
 	if (term->TI_setab) {
-		for (i = 0; i < 8; i++)
-                        term->TI_bg[i] = g_strdup(tparm(term->TI_setab, ansitab[i], 0));
+		for (i = 0; i < term->TI_colors; i++) {
+			color = i < 16 ? ansitab[i] : i;
+			term->TI_bg[i] = g_strdup(tparm(term->TI_setab, color, 0));
+		}
 	} else if (term->TI_setb) {
-		for (i = 0; i < 8; i++)
+		for (i = 0; i < term->TI_colors; i++)
                         term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_bg[i] = g_strdup_printf("\033[%dm", 40+ansitab[i]);
-	}
-
-	if (term->TI_setf || term->TI_setaf || force) {
-                term->set_fg = _set_fg;
-                term->set_bg = _set_bg;
-
-		/* bold fg, blink bg */
-		bold = term->TI_bold ? term->TI_bold : "";
-		for (i = 0; i < 8; i++)
-			term->TI_fg[i+8] = g_strconcat(bold, term->TI_fg[i], NULL);
-
-		blink = term->TI_blink ? term->TI_blink : "";
-		for (i = 0; i < 8; i++)
-			term->TI_bg[i+8] = g_strconcat(blink, term->TI_bg[i], NULL);
-	} else {
-		/* no colors */
-                term->set_fg = term->set_bg = _ignore_parm;
 	}
 }
 

@@ -188,7 +188,7 @@ void term_resize_final(int width, int height)
 /* Returns TRUE if terminal has colors */
 int term_has_colors(void)
 {
-        return current_term->has_colors;
+        return current_term->TI_colors > 0;
 }
 
 /* Force the colors on any way you can */
