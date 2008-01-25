@@ -9,5 +9,5 @@ JOIN is aliased to J by default. Example: /j irssi
 
 Description
 
-See also: LEAVE, WINDOW CLOSE
+See also: PART, WINDOW CLOSE
 
