@@ -21,7 +21,7 @@
 #include "module.h"
 #include "args.h"
 
-GArray *iopt_tables = NULL;
+static GArray *iopt_tables = NULL;
 
 void args_register(struct poptOption *options)
 {

@@ -7,8 +7,6 @@
 #  include "lib-popt/popt.h"
 #endif
 
-extern GArray *iopt_tables;
-
 void args_register(struct poptOption *options);
 void args_execute(int argc, char *argv[]);
 
