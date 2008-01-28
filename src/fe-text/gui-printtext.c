@@ -288,7 +288,8 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
 
-        last_fg = last_bg = -1;
+	last_fg = LINE_COLOR_DEFAULT;
+	last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
 	last_flags = 0;
 
 	view = WINDOW_GUI(window)->view;
@@ -308,6 +309,8 @@ static void read_settings(void)
 
 void gui_printtext_init(void)
 {
+	last_fg = LINE_COLOR_DEFAULT;
+	last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
 	next_xpos = next_ypos = -1;
 	default_indent_func = NULL;
 	indent_functions = g_hash_table_new((GHashFunc) g_str_hash,
