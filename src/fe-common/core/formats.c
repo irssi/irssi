@@ -986,8 +986,12 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
 		}
 
-		if (type == '\n')
+		if (type == '\n') {
 			format_newline(dest->window);
+			fgcolor = theme->default_color;
+			bgcolor = -1;
+			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+		}
 
 		if (*ptr == '\0')
 			break;

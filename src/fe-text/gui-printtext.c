@@ -267,8 +267,12 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	insert_after = gui->use_insert_after ?
 		gui->insert_after : view->buffer->cur_line;
 
-	if (flags & GUI_PRINT_FLAG_NEWLINE)
+	if (flags & GUI_PRINT_FLAG_NEWLINE) {
                 view_add_eol(view, &insert_after);
+		last_fg = LINE_COLOR_DEFAULT;
+		last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
+		last_flags = 0;
+	}
 	line_add_colors(view->buffer, &insert_after, fg, bg, flags);
 
 	if (flags & GUI_PRINT_FLAG_INDENT_FUNC) {
