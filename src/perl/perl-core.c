@@ -25,7 +25,6 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
-#include "lib-config/iconfig.h" /* FIXME: remove before .99 */
 
 #include "perl-core.h"
 #include "perl-common.h"
