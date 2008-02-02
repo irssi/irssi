@@ -24,8 +24,11 @@
 #include "term.h"
 #include "mainwindows.h"
 
-#include "term-curses.h"
-
+#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
+#  include <ncurses.h>
+#else
+#  include <curses.h>
+#endif
 #include <termios.h>
 #include <signal.h>
 
@@ -40,6 +43,12 @@
 #ifndef _POSIX_VDISABLE
 #  define _POSIX_VDISABLE 0
 #endif
+
+struct _TERM_WINDOW {
+	int x, y;
+        int width, height;
+	WINDOW *win;
+};
 
 TERM_WINDOW *root_window;
 
