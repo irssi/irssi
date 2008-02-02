@@ -280,8 +280,6 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "set_item", "$0 = $1", 2, { 0, 0 } },
 	{ "set_unknown", "Unknown setting $0", 1, { 0 } },
 	{ "set_not_boolean", "Setting {hilight $0} isn't boolean, use /SET", 1, { 0 } },
-	{ "translation_not_found", "Error opening translation table file $0: $1", 2, { 0, 0 } },
-	{ "translation_file_error", "Error parsing translation table file $0", 1, { 0 } },
 	{ "no_completions", "There's no completions", 0 },
 	{ "completion_removed", "Removed completion $0", 1, { 0 } },
 	{ "completion_header", "%#Key        Value                                    Auto", 0 },

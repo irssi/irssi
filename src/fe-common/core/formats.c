@@ -31,7 +31,6 @@
 #include "window-items.h"
 #include "formats.h"
 #include "themes.h"
-#include "translation.h"
 #include "recode.h"
 #include "utf8.h"
 
@@ -963,8 +962,6 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				*ptr++ = '\0';
 				break;
 			}
-
-			*ptr = (char) translation_in[(int) (unsigned char) *ptr];
 		}
 
 		if (type == 7) {
