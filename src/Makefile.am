@@ -14,4 +14,4 @@ pkginc_srcdir=$(pkgincludedir)/src
 pkginc_src_HEADERS = \
 	common.h
 
-SUBDIRS = lib-popt lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI)
+SUBDIRS = lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI)

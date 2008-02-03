@@ -81,10 +81,9 @@ void noui_deinit(void)
 
 int main(int argc, char **argv)
 {
-	static struct poptOption options[] = {
-		POPT_AUTOHELP
-		{ "load", 'l', POPT_ARG_STRING, &autoload_module, 0, "Module to load (default = bot)", "MODULE" },
-		{ NULL, '\0', 0, NULL }
+	static GOptionEntry options[] = {
+		{ "load", 'l', 0, G_OPTION_ARG_STRING, &autoload_module, "Module to load (default = bot)", "MODULE" },
+		{ NULL }
 	};
 
 	autoload_module = NULL;

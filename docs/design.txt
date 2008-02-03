@@ -22,8 +22,8 @@
         |____|_____|_____|____|
                    |
                  CORE
-                 /  \
-        lib-config  lib-popt
+                 /
+        lib-config
 
 
  (IRC, ICQ, xxx and yyy are chat protocols ..)
@@ -73,12 +73,6 @@
 
  See src/core/signals.h for defination of the signal function, and
  signals.txt for a list of signals.
-
-
- ** lib-popt
-
-   CORE depends on this for command line parameter handling.
-   (distributed with irssi)
 
 
  ** lib-config

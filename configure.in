@@ -276,7 +276,7 @@ for try in 1 2; do
     echo "*** trying without -lgmodule"
     glib_modules=
   fi
-  AM_PATH_GLIB_2_0(2.0.0,,, $glib_modules)
+  AM_PATH_GLIB_2_0(2.6.0,,, $glib_modules)
   if test "$GLIB_LIBS"; then
     if test $glib_modules = gmodule; then
       AC_DEFINE(HAVE_GMODULE)
@@ -648,7 +648,7 @@ dnl ****************************************
 AC_SUBST(CHAT_MODULES)
 AC_SUBST(irc_MODULES)
 
-CORE_LIBS="../core/libcore.a ../lib-config/libirssi_config.a ../lib-popt/libpopt.a"
+CORE_LIBS="../core/libcore.a ../lib-config/libirssi_config.a"
 FE_COMMON_LIBS=""
 
 CHAT_LIBS=""
@@ -753,7 +753,6 @@ src/fe-common/irc/notifylist/Makefile
 src/fe-none/Makefile
 src/fe-text/Makefile
 src/lib-config/Makefile
-src/lib-popt/Makefile
 src/perl/Makefile
 src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL

@@ -269,8 +269,6 @@
     - irssi crashes at quit if perl is loaded as module
     - #1  0x68cc7 in module_file_deinit_gmodule (file=0x110e20) at modules-load.c:356 
     - <dg> i've managed to reproduce the bug, if i make three split windows (/window show 3..5), then set the windows to not be sticky  and go to one of the windows, then alt+number to another window then go back the other window the display prints two windows in the same window
-    - irssi -cserver -nnick -> crashes - lib-popt is buggy!
-        - bug as well but not crash: --config=foo --home=bar -c server
     - /SB CLEAR still crashing sometimes?
     - make sure irssi works with 0x0 sized terminal. 1x1 sized terminal
       doesn't work if we use recreate_windows()

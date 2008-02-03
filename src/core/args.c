@@ -1,5 +1,5 @@
 /*
- args.c : small frontend to libPopt command line argument parser
+ args.c : small frontend to GOption command line argument parser
 
     Copyright (C) 1999-2001 Timo Sirainen
 
@@ -21,46 +21,32 @@
 #include "module.h"
 #include "args.h"
 
-static GArray *iopt_tables = NULL;
+static GOptionContext *context = NULL;
 
-void args_register(struct poptOption *options)
+void args_register(GOptionEntry *options)
 {
-	if (iopt_tables == NULL) {
-		iopt_tables = g_array_new(TRUE, TRUE,
-					  sizeof(struct poptOption));
-	}
+	if (context == NULL)
+		context = g_option_context_new("");
 
-	while (options->longName != NULL || options->shortName != '\0' ||
-	       options->arg != NULL) {
-		g_array_append_val(iopt_tables, *options);
-		options = options+1;
-	}
+	g_option_context_add_main_entries(context, options, PACKAGE_TARNAME);
 }
 
 void args_execute(int argc, char *argv[])
 {
-	poptContext con;
-	int nextopt;
+	GError* error = NULL;
 
-	if (iopt_tables == NULL)
+	if (context == NULL)
 		return;
 
-	con = poptGetContext(PACKAGE_TARNAME, argc, argv,
-			     (struct poptOption *) (iopt_tables->data), 0);
-	poptReadDefaultConfig(con, TRUE);
+	g_option_context_parse(context, &argc, &argv, &error);
+	g_option_context_free(context);
+	context = NULL;
 
-	while ((nextopt = poptGetNextOpt(con)) > 0) ;
-
-	if (nextopt != -1) {
-		printf("Error on option %s: %s.\n"
+	if (error != NULL) {
+		printf("%s\n"
 		       "Run '%s --help' to see a full list of "
 		       "available command line options.\n",
-		       poptBadOption(con, 0), poptStrerror(nextopt), argv[0]);
+		       error->message, argv[0]);
 		exit(1);
 	}
-
-	g_array_free(iopt_tables, TRUE);
-	iopt_tables = NULL;
-
-        poptFreeContext(con);
 }

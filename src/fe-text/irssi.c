@@ -329,10 +329,10 @@ GMemVTable gc_mem_table = {
 int main(int argc, char **argv)
 {
 	static int version = 0;
-	static struct poptOption options[] = {
-		{ "dummy", 'd', POPT_ARG_NONE, &dummy, 0, "Use the dummy terminal mode", NULL },
-		{ "version", 'v', POPT_ARG_NONE, &version, 0, "Display irssi version", NULL },
-		{ NULL, '\0', 0, NULL }
+	static GOptionEntry options[] = {
+		{ "dummy", 'd', 0, G_OPTION_ARG_NONE, &dummy, "Use the dummy terminal mode", NULL },
+		{ "version", 'v', 0, G_OPTION_ARG_NONE, &version, "Display irssi version", NULL },
+		{ NULL }
 	};
 
 	core_register_options();

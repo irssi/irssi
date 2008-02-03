@@ -329,14 +329,13 @@ static void sig_init_finished(void)
 	config_close(session);
 
 	unlink(session_file);
-	session_file = NULL;
 }
 
 void session_register_options(void)
 {
-	static struct poptOption options[] = {
-		{ "session", 0, POPT_ARG_STRING | POPT_ARGFLAG_DOC_HIDDEN, &session_file, 0, "Used by /UPGRADE command", "PATH" },
-		{ NULL, '\0', 0, NULL }
+	static GOptionEntry options[] = {
+		{ "session", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &session_file, "Used by /UPGRADE command", "PATH" },
+		{ NULL }
 	};
 
 	session_file = NULL;

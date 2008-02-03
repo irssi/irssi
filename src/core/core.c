@@ -167,10 +167,10 @@ static char *fix_path(const char *str)
 
 void core_register_options(void)
 {
-	static struct poptOption options[] = {
-		{ "config", 0, POPT_ARG_STRING, &irssi_config_file, 0, "Configuration file location (~/.irssi/config)", "PATH" },
-		{ "home", 0, POPT_ARG_STRING, &irssi_dir, 0, "Irssi home dir location (~/.irssi)", "PATH" },
-		{ NULL, '\0', 0, NULL }
+	static GOptionEntry options[] = {
+		{ "config", 0, 0, G_OPTION_ARG_STRING, &irssi_config_file, "Configuration file location (~/.irssi/config)", "PATH" },
+		{ "home", 0, 0, G_OPTION_ARG_STRING, &irssi_dir, "Irssi home dir location (~/.irssi)", "PATH" },
+		{ NULL }
 	};
 
 	args_register(options);
@@ -192,6 +192,7 @@ void core_preinit(const char *path)
 	} else {
 		str = irssi_dir;
 		irssi_dir = fix_path(str);
+		g_free(str);
 		len = strlen(irssi_dir);
 		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
 			irssi_dir[len-1] = '\0';
@@ -201,6 +202,7 @@ void core_preinit(const char *path)
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
+		g_free(str);
 	}
 
 	session_set_binary(path);

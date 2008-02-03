@@ -124,15 +124,14 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 
 void fe_common_core_register_options(void)
 {
-	static struct poptOption options[] = {
-		POPT_AUTOHELP
-		{ "connect", 'c', POPT_ARG_STRING, &autocon_server, 0, "Automatically connect to server/network", "SERVER" },
-		{ "password", 'w', POPT_ARG_STRING, &autocon_password, 0, "Autoconnect password", "PASSWORD" },
-		{ "port", 'p', POPT_ARG_INT, &autocon_port, 0, "Autoconnect port", "PORT" },
-		{ "noconnect", '!', POPT_ARG_NONE, &no_autoconnect, 0, "Disable autoconnecting", NULL },
-		{ "nick", 'n', POPT_ARG_STRING, &cmdline_nick, 0, "Specify nick to use", NULL },
-		{ "hostname", 'h', POPT_ARG_STRING, &cmdline_hostname, 0, "Specify host name to use", NULL },
-		{ NULL, '\0', 0, NULL }
+	static GOptionEntry options[] = {
+		{ "connect", 'c', 0, G_OPTION_ARG_STRING, &autocon_server, "Automatically connect to server/network", "SERVER" },
+		{ "password", 'w', 0, G_OPTION_ARG_STRING, &autocon_password, "Autoconnect password", "PASSWORD" },
+		{ "port", 'p', 0, G_OPTION_ARG_INT, &autocon_port, "Autoconnect port", "PORT" },
+		{ "noconnect", '!', 0, G_OPTION_ARG_NONE, &no_autoconnect, "Disable autoconnecting", NULL },
+		{ "nick", 'n', 0, G_OPTION_ARG_STRING, &cmdline_nick, "Specify nick to use", NULL },
+		{ "hostname", 'h', 0, G_OPTION_ARG_STRING, &cmdline_hostname, "Specify host name to use", NULL },
+		{ NULL }
 	};
 
 	autocon_server = NULL;
