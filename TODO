@@ -51,7 +51,6 @@ FIXME translate
           decryption key, and it keeps it for the irssi session (lost on 
           /upgrade though), unfortunatly it stays in the command buffer 8]
 
- - ^I in topicbar breaks things
 14:17 <@darix> cras: this doesnt work: /exec  - -o uname -a
 
  - "setup changed", or "setup reread" seems to cause crashes.. (with darix)
@@ -125,10 +124,8 @@ FIXME translate
 
 21.04.2002 11:59 [immy(immy@beanus.org)] GLib warning: signal_free(script 
           destroyed) : signal still has 3 references:
-17:35 <@peder> cras: why isnt 'topic = " {sb_topic $topic}"' in the default 
  - /SB GOTO -<days> <ts>
  - /query -immortal so autoclose_queries wouldn't touch them
- - /SET hiascii_control_chars if 128..128+32 should be treated as control chars
 
 ...
 
