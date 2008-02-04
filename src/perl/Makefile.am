@@ -13,7 +13,8 @@ EXTRA_LTLIBRARIES = \
 libperl_core_la_LDFLAGS = -module -avoid-version -rpath $(moduledir)
 libfe_perl_la_LDFLAGS = -module -avoid-version -rpath $(moduledir)
 
-perl-core.c: perl-signals-list.h irssi-core.pl.h
+perl-core.lo: irssi-core.pl.h
+perl-signals.lo: perl-signals-list.h
 
 INCLUDES = \
 	-I$(top_srcdir)/src \
