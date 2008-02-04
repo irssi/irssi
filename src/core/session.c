@@ -98,7 +98,7 @@ static void session_save_nick(CHANNEL_REC *channel, NICK_REC *nick,
 	config_node_set_bool(config, node, "op", nick->op);
 	config_node_set_bool(config, node, "halfop", nick->halfop);
 	config_node_set_bool(config, node, "voice", nick->voice);
-	
+
 	other[0] = nick->other;
 	other[1] = '\0';
 	config_node_set_str(config, node, "other", other);
@@ -265,7 +265,7 @@ static void session_restore_server(CONFIG_NODE *node)
 		conn->connect_handle = g_io_channel_unix_new(handle);
 
 		server = proto->server_init_connect(conn);
-		server->version = g_strdup(config_node_get_str(node, "version", NULL));		
+		server->version = g_strdup(config_node_get_str(node, "version", NULL));
 		server->session_reconnect = TRUE;
 		signal_emit("session restore server", 2, server, node);
 

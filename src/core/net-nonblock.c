@@ -125,7 +125,7 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 	else {
 		if (rec.host4) {
 			len = strlen(rec.host4) + 1;
-			g_io_channel_write_block(pipe, (void *) &len, 
+			g_io_channel_write_block(pipe, (void *) &len,
 						       sizeof(int));
 			g_io_channel_write_block(pipe, (void *) rec.host4,
 						       len);

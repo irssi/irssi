@@ -451,7 +451,7 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 static void gstring_append_escaped(GString *str, const char *text, int flags)
 {
 	char esc[4], *escpos;
-	
+
 	escpos = esc;
 	if (flags & PARSE_FLAG_ESCAPE_VARS)
 		*escpos++ = '%';
@@ -465,7 +465,7 @@ static void gstring_append_escaped(GString *str, const char *text, int flags)
 		return;
 	}
 
-	*escpos = '\0';	
+	*escpos = '\0';
 	while (*text != '\0') {
 		for (escpos = esc; *escpos != '\0'; escpos++) {
 			if (*text == *escpos) {

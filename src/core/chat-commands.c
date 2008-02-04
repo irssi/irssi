@@ -71,7 +71,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 
 	if (chatnet == NULL)
 		chatnet = g_hash_table_lookup(optlist, "network");
-	
+
 	conn = server_create_conn(proto != NULL ? proto->id : -1, addr,
 				  atoi(portstr), chatnet, password, nick);
 	if (proto == NULL)
@@ -395,7 +395,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		else {
 			/* Need to rely on server_ischannel(). If the protocol
 			   doesn't really know if it's channel or nick based on
-			   the name, it should just assume it's nick, because 
+			   the name, it should just assume it's nick, because
 			   when typing text to channels it's always sent with
 			   /MSG -channel. */
 			target_type = server_ischannel(server, target) ?
@@ -410,7 +410,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
 		    "message own_public" : "message own_private", 4,
 		    server, recoded, target, origtarget);
-		    
+
 	g_free(recoded);
 	if (free_ret && target != NULL) g_free(target);
 	cmd_params_free(free_arg);

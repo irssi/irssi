@@ -1,5 +1,5 @@
 /*
- net-disconnect.c : 
+ net-disconnect.c :
 
     Copyright (C) 1999-2000 Timo Sirainen
 

@@ -40,7 +40,7 @@ typedef struct
 	SSL_CTX *ctx;
 	unsigned int verify:1;
 } GIOSSLChannel;
-	
+
 static SSL_CTX *ssl_ctx = NULL;
 
 static void irssi_ssl_free(GIOChannel *handle)
@@ -113,7 +113,7 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint err;
-	
+
 	err = SSL_read(chan->ssl, buf, len);
 	if(err < 0)
 	{
@@ -205,7 +205,7 @@ static gboolean irssi_ssl_init(void)
 {
 	SSL_library_init();
 	SSL_load_error_strings();
-	
+
 	ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	if(!ssl_ctx)
 	{
@@ -226,14 +226,14 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 	SSL_CTX *ctx = NULL;
 
 	g_return_val_if_fail(handle != NULL, NULL);
-	
+
 	if(!ssl_ctx && !irssi_ssl_init())
 		return NULL;
 
 	if(!(fd = g_io_channel_unix_get_fd(handle)))
 		return NULL;
 
-	if (mycert && *mycert) {	
+	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;
 		if ((ctx = SSL_CTX_new(SSLv23_client_method())) == NULL) {
 			g_error("Could not allocate memory for SSL context");
@@ -277,7 +277,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 
 	if (ctx == NULL)
 		ctx = ssl_ctx;
-	
+
 	if(!(ssl = SSL_new(ctx)))
 	{
 		g_warning("Failed to allocate SSL structure");
@@ -303,7 +303,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 	gchan = (GIOChannel *)chan;
 	gchan->funcs = &irssi_ssl_channel_funcs;
 	g_io_channel_init(gchan);
-	
+
 	return gchan;
 }
 

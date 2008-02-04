@@ -122,14 +122,14 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			return g_strdup(str);
 		else
 			from = "UTF-8";
-			
+
 	else {
 		from = find_conversion(server, target);
 	}
 
 	if (translit && !is_translit(to))
 		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
-		
+
 	if (from)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
@@ -200,6 +200,6 @@ void recode_init(void)
 }
 
 void recode_deinit(void)
-{	
+{
 
 }

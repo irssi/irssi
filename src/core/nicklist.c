@@ -360,7 +360,7 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 {
 	int status1, status2;
-	
+
 	if (p1 == NULL) return -1;
 	if (p2 == NULL) return 1;
 
@@ -392,12 +392,12 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 		status2 = 2;
 	else
 		status2 = 1;
-	
+
 	if (status1 < status2)
 		return 1;
 	else if (status1 > status2)
 		return -1;
-	
+
 	return g_strcasecmp(p1->nick, p2->nick);
 }
 

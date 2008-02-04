@@ -341,7 +341,7 @@ static char *expando_cmdchar(SERVER_REC *server, void *item, int *free_ret)
 
 /* modes of current channel, if any */
 static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
-{ 
+{
 	char *cmode;
 
 	*free_ret = FALSE;
