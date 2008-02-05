@@ -20,7 +20,6 @@
 
 #include "module.h"
 
-#include "net-nonblock.h"
 #include "net-sendbuffer.h"
 #include "line-split.h"
 #include "signals.h"

@@ -23,7 +23,6 @@
 #include "commands.h"
 #include "recode.h"
 #include "network.h"
-#include "net-nonblock.h"
 #include "net-sendbuffer.h"
 #include "line-split.h"
 #include "misc.h"
