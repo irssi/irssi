@@ -247,42 +247,6 @@ static void textui_deinit(void)
 	core_deinit();
 }
 
-static void check_oldcrap(void)
-{
-        FILE *f;
-	char *path, str[256];
-        int found;
-
-        /* check that default.theme is up-to-date */
-	path = g_strdup_printf("%s/default.theme", get_irssi_dir());
-	f = fopen(path, "r+");
-	if (f == NULL) {
-		g_free(path);
-                return;
-	}
-        found = FALSE;
-	while (!found && fgets(str, sizeof(str), f) != NULL)
-                found = strstr(str, "abstracts = ") != NULL;
-	fclose(f);
-
-	if (found) {
-		g_free(path);
-		return;
-	}
-
-	printf("\nYou seem to have an old default.theme in %s/ directory.\n", get_irssi_dir());
-        printf("Themeing system has changed a bit since last irssi release,\n");
-        printf("you should either delete your old default.theme or manually\n");
-        printf("merge it with the new default.theme.\n\n");
-	printf("Do you want to delete the old theme now? (Y/n)\n");
-
-	str[0] = '\0';
-	fgets(str, sizeof(str), stdin);
-	if (i_toupper(str[0]) == 'Y' || str[0] == '\n' || str[0] == '\0')
-                remove(path);
-	g_free(path);
-}
-
 static void check_files(void)
 {
 	struct stat statbuf;
@@ -290,8 +254,6 @@ static void check_files(void)
 	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi doesn't exist, first time running irssi */
 		display_firsttimer = TRUE;
-	} else {
-                check_oldcrap();
 	}
 }
 
