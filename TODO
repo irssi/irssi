@@ -568,8 +568,6 @@ FIXME translate
       signal_add() it
     - Irssi::keyboard_entry_redirect()
     - Irssi::format_get_text()
-    - "use Symbol(delete_package)" doesn't work with perl 5.004 and crashes
-      irssi .. at least remove the crashing!
     - Irssi::signal_remove() could accept hashes
     - /command parameter parser so it'd be easier to handle -options etc.
     - Try to get the Makefiles generated so that compiling with GCC would

@@ -10,11 +10,6 @@
 #  undef _
 #  undef PACKAGE
 
-/* For compatibility with perl 5.004 and older */
-#  ifndef ERRSV
-#    define ERRSV GvSV(errgv)
-#  endif
-
 extern PerlInterpreter *my_perl; /* must be called my_perl or some perl implementations won't work */
 #endif
 

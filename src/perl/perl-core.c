@@ -34,11 +34,6 @@
 #include "XSUB.h"
 #include "irssi-core.pl.h"
 
-/* For compatibility with perl 5.004 and older */
-#ifndef HAVE_PL_PERL
-#  define PL_perl_destruct_level perl_destruct_level
-#endif
-
 GSList *perl_scripts;
 PerlInterpreter *my_perl;
 

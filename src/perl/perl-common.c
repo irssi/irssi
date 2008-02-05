@@ -48,10 +48,6 @@ typedef struct {
         PERL_OBJECT_FUNC fill_func;
 } PERL_OBJECT_REC;
 
-#ifndef HAVE_PL_PERL
-STRLEN PL_na;
-#endif
-
 static GHashTable *iobject_stashes, *plain_stashes;
 static GSList *use_protocols;
 

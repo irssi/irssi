@@ -47,9 +47,6 @@ as well. If you want to use only curses calls for some reason, use
 Perl support generates most of the problems. There's quite a many
 things that can go wrong:
 
- - Perl 5.004 doesn't work by default, you'll need to edit
-   src/perl/irssi-core.pl and remove all lines with "delete_package"
-   in them.
  - Compiling fails if you compile irssi with GCC in a system that has
    perl compiled with some other C compiler. Very common problem with
    non-Linux/BSD systems. You'll need to edit src/perl/*/Makefile files
