@@ -2,11 +2,12 @@
  Irssi installation instructions
  -------------------------------
 
-First of all, you need GLib to compile irssi. If you don't have it
-already, you can either install it or let irssi download & compile it.
-The automatic downloading works only if you have wget or ncftpget
-installed, you can do it manually by unpacking glib sources to irssi's
-root dir.
+To compile irssi you need:
+
+- glib-2.6 or greater
+- pkg-config
+- openssl (for ssl support)
+- perl-5.005 or greater (for perl support)
 
 For most people, this should work just fine:
 
@@ -27,10 +28,9 @@ commonly used ones:
 		    use /SET resolve_prefer_ipv6 ON. You can also override
 		    this with /SERVER -4 or -6 options.
 
-If GLib or ncurses is installed installed in a non-standard path you can
-specify it with --with-glib=/path and --with-ncurses=/path. If anything else
-is in non-standard path, you can just give the paths in CPPFLAGS and LIBS
-environment variable, eg.:
+If ncurses is installed in a non-standard path you can specify it with
+--with-ncurses=/path. If anything else is in non-standard path, you can just
+give the paths in CPPFLAGS and LIBS environment variable, eg.:
 
   CPPFLAGS=-I/opt/openssl/include LDFLAGS=-L/opt/openssl/lib ./configure
 
