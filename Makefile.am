@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I .
 
 # create default-config.h
-config.h: default-config.h default-theme.h
+BUILT_SOURCES = default-config.h default-theme.h
 
 default-config.h: $(srcdir)/irssi.conf
 	$(srcdir)/file2header.sh $(srcdir)/irssi.conf default_config > default-config.h
