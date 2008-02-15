@@ -20,7 +20,7 @@ HISTORY_REC *command_history_current(WINDOW_REC *window);
 void command_history_init(void);
 void command_history_deinit(void);
 
-void command_history_add(HISTORY_REC *window, const char *text);
+void command_history_add(HISTORY_REC *history, const char *text);
 
 const char *command_history_prev(WINDOW_REC *window, const char *text);
 const char *command_history_next(WINDOW_REC *window, const char *text);
