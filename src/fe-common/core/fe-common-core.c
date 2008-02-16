@@ -31,7 +31,6 @@
 #include "servers.h"
 #include "channels.h"
 #include "servers-setup.h"
-#include "recode.h"
 
 #include "autorun.h"
 #include "fe-core-commands.h"

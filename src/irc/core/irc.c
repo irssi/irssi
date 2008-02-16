@@ -50,6 +50,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 {
 	char str[513];
 	int len;
+	char *params, *target, *recoded_line;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(cmd != NULL);
@@ -57,6 +58,8 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	if (server->connection_lost)
 		return;
 
+	params = event_get_params(cmd, 2, NULL, &target);
+	cmd = recoded_line = recode_out(SERVER(server), cmd, target);
 	len = strlen(cmd);
 	server->cmdcount++;
 
@@ -100,6 +103,8 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 						  server->redirect_next);
 	}
         server->redirect_next = NULL;
+	g_free(params);
+	g_free(recoded_line);
 }
 
 /* Send command to IRC server */
