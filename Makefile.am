@@ -27,16 +27,9 @@ EXTRA_DIST = \
 	README \
 	README.cygwin \
 	file2header.sh \
-	irssi.spec \
-	irssi.spec.in \
 	$(conf_DATA) \
 	$(theme_DATA) \
 	irssi-config.in \
 	irssi-icon.png \
 	syntax.pl \
 	findsyntax.pl
-
-## make rpms
-rpm: Makefile
-	$(MAKE) dist
-	rpm -ta --clean $(PACKAGE)-$(VERSION).tar.gz
