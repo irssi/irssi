@@ -16,7 +16,7 @@ conf_DATA = irssi.conf
 themedir = $(datadir)/irssi/themes
 theme_DATA = default.theme colorless.theme
 
-pkginclude_HEADERS = config.h irssi-version.h
+pkginclude_HEADERS = irssi-config.h irssi-version.h
 
 noinst_HEADERS = irssi-version.h.in
 
