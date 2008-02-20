@@ -210,14 +210,20 @@ static void event_accept_list(IRC_SERVER_REC *server, const char *data)
 static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *invite;
+	char *params, *invite, *setby, *tims;
+	long secs;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &channel, &invite);
+	params = event_get_params(data, 5, NULL, &channel, &invite,
+			&setby, &tims);
+	secs = *tims == '\0' ? 0 :
+		(long) (time(NULL) - atol(tims));
+
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    IRCTXT_INVITELIST, channel, invite);
+		    *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG,
+		    channel, invite, setby, secs);
 	g_free(params);
 }
 

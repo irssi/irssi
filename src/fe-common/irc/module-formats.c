@@ -74,6 +74,7 @@ FORMAT_REC fecommon_irc_formats[] = {
         { "ebanlist_long", "{channel $0}: ban exception {ban $1} {comment by {nick $2}, $3 secs ago}", 4, { 0, 0, 0, 1 } },
 	{ "no_invitelist", "Invite list is empty in channel {channel $0}", 1, { 0 } },
 	{ "invitelist", "{channel $0}: invite {ban $1}", 2, { 0, 0 } },
+	{ "invitelist_long", "{channel $0}: invite {ban $1} {comment by {nick $2}, $3 secs ago}", 4, { 0, 0, 0, 1 } },
 	{ "no_such_channel", "{channel $0}: No such channel", 1, { 0 } },
 	{ "channel_synced", "Join to {channel $0} was synced in {hilight $1} secs", 2, { 0, 2 } },
 
