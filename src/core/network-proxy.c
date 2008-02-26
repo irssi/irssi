@@ -18,12 +18,24 @@
 
 #include "network-proxy.h"
 #include <string.h>
+#include "network-proxy-simple.h"
+#include "network-proxy-http.h"
+#include "network-proxy-socks5.h"
 
 struct network_proxy *
 network_proxy_create(char const *type)
 {
 	if (type==NULL)
 		return NULL;
+
+	if (strcmp(type, "simple")==0 || type[0]=='\0')
+		return _network_proxy_simple_create();
+
+	if (strcmp(type, "http")==0)
+		return _network_proxy_http_create();
+
+	if (strcmp(type, "socks5")==0)
+		return _network_proxy_socks5_create();
 
 	g_error("unsupported proxy type '%s'", type);
 	return NULL;
