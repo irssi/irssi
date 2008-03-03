@@ -79,7 +79,7 @@ int dec2octal(int decimal);
 uoff_t str_to_uofft(const char *str);
 
 /* convert all low-ascii (<32) to ^<A..> combinations */
-char *show_lowascii(const char *channel);
+char *show_lowascii(const char *str);
 
 /* Get time in human readable form with localtime() + asctime() */
 char *my_asctime(time_t t);

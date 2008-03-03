@@ -576,23 +576,23 @@ uoff_t str_to_uofft(const char *str)
 }
 
 /* convert all low-ascii (<32) to ^<A..> combinations */
-char *show_lowascii(const char *channel)
+char *show_lowascii(const char *str)
 {
-	char *str, *p;
+	char *ret, *p;
 
-	str = p = g_malloc(strlen(channel)*2+1);
-	while (*channel != '\0') {
-		if ((unsigned char) *channel >= 32)
-			*p++ = *channel;
+	ret = p = g_malloc(strlen(str)*2+1);
+	while (*str != '\0') {
+		if ((unsigned char) *str >= 32)
+			*p++ = *str;
 		else {
 			*p++ = '^';
-			*p++ = *channel + 'A'-1;
+			*p++ = *str + 'A'-1;
 		}
-		channel++;
+		str++;
 	}
 	*p = '\0';
 
-	return str;
+	return ret;
 }
 
 /* Get time in human readable form with localtime() + asctime() */
