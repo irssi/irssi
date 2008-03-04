@@ -158,7 +158,6 @@ int combine_level(int dest, const char *src)
 	list = g_strsplit(src, " ", -1);
 	for (item = list; *item != NULL; item++) {
 		itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
-                g_strup(itemname);
 		itemlevel = level_get(itemname);
 
 		if (strcmp(itemname, "NONE") == 0)
