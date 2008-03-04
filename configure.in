@@ -39,7 +39,7 @@ AC_ARG_WITH(socks,
 	want_socks=no)
 
 AC_ARG_WITH(textui,
-[  --with-textui           Build text frontend],
+[  --without-textui        Build without text frontend],
 	if test x$withval = xno; then
 		want_textui=no
 	else
@@ -66,7 +66,7 @@ AC_ARG_WITH(proxy,
 	want_irssiproxy=no)
 
 AC_ARG_WITH(terminfo,
-[  --with-terminfo         Use terminfo directly instead of curses],
+[  --without-terminfo      Use curses backend instead of terminfo],
 	if test x$withval = xno; then
 		want_terminfo=no
 	else
@@ -154,7 +154,7 @@ AC_ARG_WITH(perl,
 	want_perl=static)
 
 AC_ARG_ENABLE(ipv6,
-[  --enable-ipv6           Enable IPv6 support],
+[  --disable-ipv6          Disable IPv6 support],
 	if test x$enableval = xno; then
 		want_ipv6=no
 	else
