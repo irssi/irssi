@@ -7,7 +7,7 @@
  Index
 
 	0. Generic babbling
-	1. Installation
+	1. Command line parameters
 	2. Message levels
 	3. Flood protection
 	4. Configuration
@@ -132,45 +132,7 @@
 	these features down somewhere so people (and me!) would find them.
 
 
- 1. Installation
-
- 1.1 Configuration
-
-	configure script accepts these parameters:
-
-	--enable-ipv6      Enable IPv6 support
-	--disable-curses-windows  Don't use curses windows. Use this if
-	                   screen drawing seems too slow for some reason.
-			   This option may not work properly with all
-			   curseses (solaris8).
-	--enable-memdebug  Enable memory debugging, great for finding
-	                   memory leaks
-
-	--with-perl=static Build Perl support statically to irssi binary
-	                   (default is to build a module)
-	--with-perl-lib=[site|vendor|DIR]  Specify installation dir for
-	                   Perl libraries. Site is the default (usually
-			   /usr/local/lib/perl/...), vendor uses the path
-			   where the base of the perl is installed
-			   (/usr/lib/perl/...), or DIR specifies exactly
-			   where you want to install it.
-	--without-perl     Disable Perl support
-
-	--with-socks       Build with socks library
-	--with-bot         Build irssi-bot
-	--with-proxy       Build irssi-proxy module
-	--without-textui   Build without text frontend
-	--with-servertest  Build test irc server which you can use to try
-	                   crash irc clients
-
-	In short:
-
-	./configure
-	make
-	make install
-
-
- 1.2 Command line parameters
+ 1. Command line parameters
 
 	--connect -c <server>	Connect to server at startup
 	--port -p <port>	 - specify port

@@ -16,8 +16,7 @@ For most people, this should work just fine:
  su
  make install     (not _really_ required except for perl support)
 
-You may want to give some parameters to configure, here's the most
-commonly used ones:
+configure options
 
   --prefix
 
@@ -35,6 +34,36 @@ commonly used ones:
   IPv6 for hosts that have both v4 and v6 addresses,
   use /SET resolve_prefer_ipv6 ON. You can also override
   this with /SERVER -4 or -6 options.
+
+  --with-perl=static
+
+  Build Perl support statically to irssi binary
+  (default is to build a module)
+
+  --with-perl-lib=[site|vendor|DIR]
+
+  Specify installation dir for
+  Perl libraries. Site is the default (usually
+  /usr/local/lib/perl/...), vendor uses the path
+  where the base of the perl is installed
+  (/usr/lib/perl/...), or DIR specifies exactly
+  where you want to install it.
+
+  --without-perl
+
+  Disable Perl support
+
+  --with-socks
+
+  Build with socks library
+
+  --with-bot
+
+  Build irssi-bot
+
+  --without-textui
+
+  Build without text frontend
 
 If ncurses is installed in a non-standard path you can specify it with
 --with-ncurses=/path. If anything else is in non-standard path, you can just
