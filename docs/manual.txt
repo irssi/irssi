@@ -429,6 +429,9 @@
 	After connected to server, Irssi can automatically change your user
 	mode. You can set it with /SET usermode <mode>, default is +i.
 
+	/SET resolve_prefer_ipv6 - If ON, prefer IPv6 for hosts that
+	     have both v4 and v6 addresses.
+
  5.5 Automatic reconnecting
 
 	If you get disconnected from server, Irssi will try to reconnect

@@ -30,10 +30,7 @@ configure options
 
   --enable-ipv6
 
-  Enable IPv6 support. If you want irssi to prefer
-  IPv6 for hosts that have both v4 and v6 addresses,
-  use /SET resolve_prefer_ipv6 ON. You can also override
-  this with /SERVER -4 or -6 options.
+  Enable IPv6 support.
 
   --with-perl=static
 
