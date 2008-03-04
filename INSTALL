@@ -19,14 +19,22 @@ For most people, this should work just fine:
 You may want to give some parameters to configure, here's the most
 commonly used ones:
 
-  --prefix        - Specifies the path where irssi will be installed.
-                    YES, you can install irssi WITHOUT ROOT permissions
-                    by using --prefix=/home/dir
-  --with-proxy    - Build the irssi proxy (see startup-HOWTO).
-  --enable-ipv6   - Enable IPv6 support. If you want irssi to prefer
-                    IPv6 for hosts that have both v4 and v6 addresses,
-		    use /SET resolve_prefer_ipv6 ON. You can also override
-		    this with /SERVER -4 or -6 options.
+  --prefix
+
+  Specifies the path where irssi will be installed.
+  YES, you can install irssi WITHOUT ROOT permissions
+  by using --prefix=/home/dir
+
+  --with-proxy
+
+  Build the irssi proxy (see startup-HOWTO).
+
+  --enable-ipv6
+
+  Enable IPv6 support. If you want irssi to prefer
+  IPv6 for hosts that have both v4 and v6 addresses,
+  use /SET resolve_prefer_ipv6 ON. You can also override
+  this with /SERVER -4 or -6 options.
 
 If ncurses is installed in a non-standard path you can specify it with
 --with-ncurses=/path. If anything else is in non-standard path, you can just
