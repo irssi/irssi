@@ -4,7 +4,6 @@ man_MANS = \
 	irssi.1
 
 doc_DATA = \
-	botnet.txt \
 	design.txt \
 	formats.txt \
 	manual.txt \
