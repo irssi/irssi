@@ -254,9 +254,8 @@ static void cmd_help(const char *data)
 {
 	char *cmd;
 
-	cmd = g_strdup(data);
+	cmd = g_ascii_strdown(data, -1);
 	g_strchomp(cmd);
-	g_strdown(cmd);
 	show_help(cmd);
         g_free(cmd);
 }

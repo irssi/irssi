@@ -720,8 +720,7 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 	ptr = strchr(cmd, ' ');
 	if (ptr != NULL) *ptr++ = '\0'; else ptr = "";
 
-	cmd = g_strdup(cmd);
-	g_strup(cmd);
+	cmd = g_ascii_strup(cmd, -1);
 
 	g_strdown(event+9);
 	if (!signal_emit(event, 2, dcc, ptr)) {

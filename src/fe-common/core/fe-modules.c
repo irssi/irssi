@@ -138,8 +138,7 @@ static char **module_prefixes_get(void)
 	for (tmp = chat_protocols; tmp != NULL; tmp = tmp->next) {
 		CHAT_PROTOCOL_REC *rec = tmp->data;
 
-		name = g_strdup(rec->name);
-                g_strdown(name);
+		name = g_ascii_strdown(rec->name, -1);
 
 		list[count++] = name;
                 list[count++] = g_strconcat("fe_", name, NULL);

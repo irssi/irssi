@@ -58,8 +58,7 @@ void ctcp_register(const char *name)
 	rec = ctcp_cmd_find(name);
 	if (rec == NULL) {
 		rec = g_new0(CTCP_CMD_REC, 1);
-		rec->name = g_strdup(name);
-		g_strup(rec->name);
+		rec->name = g_ascii_strup(name, -1);
 
 		ctcp_cmds = g_slist_append(ctcp_cmds, rec);
 	}
