@@ -25,7 +25,6 @@ EXTRA_DIST = \
 	autogen.sh \
 	curses.m4 \
 	README \
-	README.cygwin \
 	file2header.sh \
 	$(conf_DATA) \
 	$(theme_DATA) \
