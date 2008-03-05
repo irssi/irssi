@@ -24,7 +24,7 @@
 	13. Themes
 	14. Last log (currently text version only)
 	15. Nick and word completion
-	16. Translation tables
+	16. Recode
 	17. Windowing system (text version)
 	18. Keyboard (text version)
 	19. Perl scripting
@@ -977,6 +977,31 @@ If <color> is a
 
 	You can disable this feature by setting awaylog_level to NONE.
 
+ 16. Recode
+
+	irssi supports selective encoding of incoming/outgoing messages
+	through the recode system. All incoming/outgoing messages can be
+	optionally converted to/from the charset specified by the
+	`term_charset' variable (which defaults to the locale encoding and
+	should _not_ be changed in most cases), by setting the `recode'
+	variable to 'ON'.
+	Since there is no way in IRC to know the encoding associated to a
+	message, for incoming messages irssi uses the following algorithm:
+
+	if `recode_autodetect_utf8' is 'ON' and the message is valid UTF-8 the
+	encoding is assumed to be UTF-8.
+	if an encoding is set for the target (through /recode) use it,
+	otherwise fallback to the value of `recode_fallback'.
+
+	For outgoing messages it is simpler:
+
+	if an encoding is set for the target (through /recode) use it,
+	otherwise fallback to the value of `recode_out_default_charset'.
+
+	/SET recode_transliterate - Append '//TRANSLIT' to the destination
+	encoding for both incoming/outgoing messages. '//TRANSLIT' is a GNU
+	iconv specific extension to peform transliteration (locale dependent)
+	when a character is not representable in the destination encoding.
 
 .. no, the docs end here, I got bored of writing these after a few days and 
 haven't touched these since then.
