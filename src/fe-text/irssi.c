@@ -297,6 +297,10 @@ int main(int argc, char **argv)
 		{ NULL }
 	};
 
+#ifdef USE_GC
+	g_mem_set_vtable(&gc_mem_table);
+#endif
+
 	core_register_options();
 	fe_common_core_register_options();
 	args_register(options);
@@ -307,10 +311,6 @@ int main(int argc, char **argv)
 		       IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 		return 0;
 	}
-
-#ifdef USE_GC
-	g_mem_set_vtable(&gc_mem_table);
-#endif
 
 	srand(time(NULL));
 
