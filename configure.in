@@ -612,7 +612,6 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
-AM_CONDITIONAL(HAVE_STATIC_PERL, test "$want_perl" = "static")
 AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
 AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
 
