@@ -22,7 +22,6 @@
 #include "signals.h"
 #include "commands.h"
 #include "network.h"
-#include "line-split.h"
 #include "misc.h"
 #include "settings.h"
 #include "ignore.h"

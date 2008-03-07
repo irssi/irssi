@@ -21,7 +21,6 @@
 #include "module.h"
 
 #include "net-sendbuffer.h"
-#include "line-split.h"
 #include "signals.h"
 #include "rawlog.h"
 #include "misc.h"
