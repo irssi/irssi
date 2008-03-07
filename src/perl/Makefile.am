@@ -1,5 +1,3 @@
-LIBTOOL = $(PERL_LIBTOOL)
-
 moduledir = $(libdir)/irssi/modules
 
 perl_dirs = common irc ui textui

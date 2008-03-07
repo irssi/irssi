@@ -564,14 +564,12 @@ if test "$want_perl" != "no"; then
 			perl_module_fe_lib=
 			perl_static_lib=libperl_core_static.la
 			perl_static_fe_lib=libfe_perl_static.la
-			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		else
 			dnl * build dynamic library of perl module
 			perl_module_lib=libperl_core.la
 			perl_module_fe_lib=libfe_perl.la
 			perl_static_lib=
 			perl_static_fe_lib=
-			PERL_LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 		fi
 
 		if test "x$want_staticperllib" = "xyes"; then
@@ -595,7 +593,6 @@ if test "$want_perl" != "no"; then
 		AC_SUBST(perl_static_lib)
 		AC_SUBST(perl_module_fe_lib)
 		AC_SUBST(perl_static_fe_lib)
-		AC_SUBST(PERL_LIBTOOL)
 
 		AC_SUBST(PERL_LINK_FLAGS)
 		AC_SUBST(PERL_LINK_LIBS)
