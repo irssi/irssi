@@ -555,18 +555,19 @@ void term_stop(void)
 
 static int input_utf8(const unsigned char *buffer, int size, unichar *result)
 {
-        const unsigned char *end = buffer;
+	unichar c = g_utf8_get_char_validated(buffer, size);
 
-	switch (get_utf8_char(&end, size, result)) {
-	case -2:
+	switch (c) {
+	case (unichar)-1:
 		/* not UTF8 - fallback to 8bit ascii */
 		*result = *buffer;
 		return 1;
-	case -1:
+	case (unichar)-2:
                 /* need more data */
 		return -1;
 	default:
-		return (int) (end-buffer)+1;
+		*result = c;
+		return g_utf8_skip[*buffer];
 	}
 }
 
