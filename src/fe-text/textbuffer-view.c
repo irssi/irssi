@@ -169,7 +169,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
         unsigned char cmd;
 	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
-	int char_len;
+	int char_width;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
 
@@ -216,15 +216,15 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			/* MH */
 			if (term_type != TERM_TYPE_BIG5 ||
 			    ptr[1] == '\0' || !is_big5(ptr[0], ptr[1]))
-				char_len = 1;
+				char_width = 1;
 			else
-				char_len = 2;
-			next_ptr = ptr+char_len;
+				char_width = 2;
+			next_ptr = ptr+char_width;
 		} else {
-			read_unichar(ptr, &next_ptr, &char_len);
+			read_unichar(ptr, &next_ptr, &char_width);
 		}
 
-		if (xpos + char_len > view->width && sub != NULL &&
+		if (xpos + char_width > view->width && sub != NULL &&
 		    (last_space <= indent_pos || last_space <= 10) &&
 		    view->longword_noindent) {
                         /* long word, remove the indentation from this line */
@@ -232,7 +232,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                         sub->indent = 0;
 		}
 
-		if (xpos + char_len > view->width) {
+		if (xpos + char_width > view->width) {
 			xpos = indent_func == NULL ? indent_pos :
 				indent_func(view, line, -1);
 
@@ -260,7 +260,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			continue;
 		}
 
-		if (!view->utf8 && char_len > 1) {
+		if (!view->utf8 && char_width > 1) {
 			last_space = xpos;
 			last_space_ptr = next_ptr;
 			last_color = color;
@@ -270,7 +270,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			last_color = color;
 		}
 
-		xpos += char_len;
+		xpos += char_width;
 		ptr = next_ptr;
 	}
 
