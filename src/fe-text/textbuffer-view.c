@@ -144,6 +144,21 @@ static void update_cmd_color(unsigned char cmd, int *color)
 	}
 }
 
+static inline unichar read_unichar(const char *data, const unsigned char **next, int *width)
+{
+	unichar chr = g_utf8_get_char_validated(data, -1);
+
+	if (chr & 0x80000000) {
+		chr = *data;
+		*next = data + 1;
+		*width = 1;
+	} else {
+		*next = g_utf8_next_char(data);
+		*width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
+	}
+	return chr;
+}
+
 static LINE_CACHE_REC *
 view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
@@ -155,7 +170,6 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
 	int char_len;
-	unichar chr;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
 
@@ -207,16 +221,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				char_len = 2;
 			next_ptr = ptr+char_len;
 		} else {
-			char_len = 1;
-			while (ptr[char_len] != '\0' && char_len < 6)
-				char_len++;
-
-			next_ptr = ptr;
-			if (get_utf8_char(&next_ptr, char_len, &chr) < 0)
-				char_len = 1;
-			else
-				char_len = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
-			next_ptr++;
+			read_unichar(ptr, &next_ptr, &char_len);
 		}
 
 		if (xpos + char_len > view->width && sub != NULL &&
@@ -430,14 +435,12 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			continue;
 		}
 
-		chr = *text;
-		end = text;
 		if (view->utf8) {
-			if (get_utf8_char(&end, 6, &chr)<0)
-				char_width = 1;
-			else
-				char_width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
+			chr = read_unichar(text, &end, &char_width);
+			end--;
 		} else {
+			chr = *text;
+			end = text;
 			if (term_type == TERM_TYPE_BIG5 &&
 			    is_big5(end[0], end[1]))
 				char_width = 2;
