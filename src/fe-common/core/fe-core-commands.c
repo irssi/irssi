@@ -141,9 +141,9 @@ static void cmd_cat(const char *data)
 	buf = g_string_sized_new(512);
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
 		buf->str[tpos] = '\0';
-			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP |
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP |
 			  MSGLEVEL_NEVER, "%s", buf->str);
-		}
+	}
 	g_string_free(buf, TRUE);
 
 	g_io_channel_close(handle);

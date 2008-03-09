@@ -148,7 +148,7 @@ static int show_help_file(const char *file)
 		buf->str[tpos] = '\0';
 		g_string_prepend(buf, "%|");
 		printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, buf->str);
-		}
+	}
 	g_string_free(buf, TRUE);
 
 	g_io_channel_close(handle);
