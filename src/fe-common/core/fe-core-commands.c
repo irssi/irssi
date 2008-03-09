@@ -25,7 +25,6 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
-#include "line-split.h"
 #include "settings.h"
 #include "irssi-version.h"
 #include "servers.h"
@@ -114,11 +113,12 @@ static void cmd_version(char *data)
 /* SYNTAX: CAT <file> */
 static void cmd_cat(const char *data)
 {
-	LINEBUF_REC *buffer = NULL;
 	char *fname, *fposstr;
-	char tmpbuf[1024], *str;
 	void *free_arg;
-	int f, ret, recvlen, fpos;
+	int fpos;
+	GIOChannel *handle;
+	GString *buf;
+	gsize tpos;
 
 	if (!cmd_get_params(data, &free_arg, 2, &fname, &fposstr))
 		return;
@@ -127,29 +127,26 @@ static void cmd_cat(const char *data)
 	fpos = atoi(fposstr);
         cmd_params_free(free_arg);
 
-	f = open(fname, O_RDONLY);
+	handle = g_io_channel_new_file(fname, "r", NULL);
 	g_free(fname);
 
-	if (f == -1) {
+	if (handle == NULL) {
 		/* file not found */
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "%s", g_strerror(errno));
 		return;
 	}
 
-        lseek(f, fpos, SEEK_SET);
-	do {
-		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
-
-		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0) {
+	g_io_channel_seek_position(handle, fpos, G_SEEK_SET, NULL);
+	buf = g_string_sized_new(512);
+	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
+		buf->str[tpos] = '\0';
 			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP |
-				  MSGLEVEL_NEVER, "%s", str);
+			  MSGLEVEL_NEVER, "%s", buf->str);
 		}
-	} while (ret > 0);
-	line_split_free(buffer);
+	g_string_free(buf, TRUE);
 
-	close(f);
+	g_io_channel_close(handle);
 }
 
 /* SYNTAX: BEEP */

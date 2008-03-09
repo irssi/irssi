@@ -23,7 +23,6 @@
 #include "commands.h"
 #include "levels.h"
 #include "misc.h"
-#include "line-split.h"
 #include "settings.h"
 
 #include "printtext.h"
@@ -117,46 +116,42 @@ static void help_category(GSList *cmdlist, int items)
 static int show_help_file(const char *file)
 {
         const char *helppath;
-	char tmpbuf[1024], *str, *path, **paths, **tmp;
-	LINEBUF_REC *buffer = NULL;
-	int f, ret, recvlen;
+	char *path, **paths, **tmp;
+	GIOChannel *handle;
+	GString *buf;
+	gsize tpos;
 
         helppath = settings_get_str("help_path");
 
 	paths = g_strsplit(helppath, ":", -1);
 
-	f = -1;
+	handle = NULL;
 	for (tmp = paths; *tmp != NULL; tmp++) {
 		/* helpdir/command or helpdir/category/command */
 		path = g_strdup_printf("%s/%s", *tmp, file);
-		f = open(path, O_RDONLY);
+		handle = g_io_channel_new_file(path, "r", NULL);
 		g_free(path);
 
-		if (f != -1)
+		if (handle != NULL)
 			break;
 
 	}
 
 	g_strfreev(paths);
 
-	if (f == -1)
+	if (handle == NULL)
 		return FALSE;
 
+	buf = g_string_sized_new(512);
 	/* just print to screen whatever is in the file */
-	do {
-		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
-
-		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0) {
-			str = g_strconcat("%|", str, NULL);
-			printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, str);
-			g_free(str);
+	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
+		buf->str[tpos] = '\0';
+		g_string_prepend(buf, "%|");
+		printtext_string(NULL, NULL, MSGLEVEL_CLIENTCRAP, buf->str);
 		}
-	}
-	while (ret > 0);
-	line_split_free(buffer);
+	g_string_free(buf, TRUE);
 
-	close(f);
+	g_io_channel_close(handle);
 	return TRUE;
 }
 

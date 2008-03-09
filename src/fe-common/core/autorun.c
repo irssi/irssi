@@ -20,37 +20,36 @@
 
 #include "module.h"
 #include "signals.h"
-#include "line-split.h"
 #include "special-vars.h"
 
 #include "fe-windows.h"
 
 void autorun_startup(void)
 {
-	char tmpbuf[1024], *str, *path;
-	LINEBUF_REC *buffer = NULL;
-	int f, ret, recvlen;
+	char *path;
+	GIOChannel *handle;
+	GString *buf;
+	gsize tpos;
 
 	/* open ~/.irssi/startup and run all commands in it */
 	path = g_strdup_printf("%s/startup", get_irssi_dir());
-	f = open(path, O_RDONLY);
+	handle = g_io_channel_new_file(path, "r", NULL);
 	g_free(path);
-	if (f == -1) {
+	if (handle == NULL) {
 		/* file not found */
 		return;
 	}
 
-	do {
-		recvlen = read(f, tmpbuf, sizeof(tmpbuf));
-
-		ret = line_split(tmpbuf, recvlen, &str, &buffer);
-		if (ret > 0 && *str != '#') {
-			eval_special_string(str, "",
+	buf = g_string_sized_new(512);
+	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
+		buf->str[tpos] = '\0';
+		if (buf->str[0] != '#') {
+			eval_special_string(buf->str, "",
 					    active_win->active_server,
 					    active_win->active);
 		}
-	} while (ret > 0);
-	line_split_free(buffer);
+	}
+	g_string_free(buf, TRUE);
 
-	close(f);
+	g_io_channel_close(handle);
 }
