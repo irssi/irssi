@@ -535,13 +535,14 @@ static void sig_gui_key_pressed(gpointer keyp)
 static void key_send_line(void)
 {
 	HISTORY_REC *history;
-        char *str, *add_history;
+	char *str;
+	int add_history;
 
 	str = gui_entry_get_text(active_entry);
 
 	/* we can't use gui_entry_get_text() later, since the entry might
 	   have been destroyed after we get back */
-	add_history = *str == '\0' ? NULL : g_strdup(str);
+	add_history = *str != '\0';
 	history = command_history_current(active_win);
 
 	if (redir == NULL) {
@@ -550,15 +551,14 @@ static void key_send_line(void)
 			    active_win->active);
 	} else {
 		if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-                        g_free_and_null(add_history);
+                        add_history = 0;
 		handle_entry_redirect(str);
 	}
 
-	if (add_history != NULL) {
+	if (add_history) {
 		history = command_history_find(history);
 		if (history != NULL)
-			command_history_add(history, add_history);
-                g_free(add_history);
+			command_history_add(history, str);
 	}
 
 	if (active_entry != NULL)
