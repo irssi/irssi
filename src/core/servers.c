@@ -77,8 +77,8 @@ static char *server_create_address_tag(const char *address)
 	/* try to generate a reasonable server tag */
 	if (strchr(address, '.') == NULL) {
 		start = end = NULL;
-	} else if (g_strncasecmp(address, "irc", 3) == 0 ||
-	    g_strncasecmp(address, "chat", 4) == 0) {
+	} else if (g_ascii_strncasecmp(address, "irc", 3) == 0 ||
+	    g_ascii_strncasecmp(address, "chat", 4) == 0) {
 		/* irc-2.cs.hut.fi -> hut, chat.bt.net -> bt */
 		end = strrchr(address, '.');
 		start = end-1;

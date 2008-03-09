@@ -836,24 +836,24 @@ int parse_time_interval(const char *time, int *msecs)
 			return TRUE;
 		}
 
-		if (g_strncasecmp(desc, "days", len) == 0) {
+		if (g_ascii_strncasecmp(desc, "days", len) == 0) {
 			if (number > 24) {
 				/* would overflow */
 				return FALSE;
 			}
 			*msecs += number * 1000*3600*24;
-		} else if (g_strncasecmp(desc, "hours", len) == 0)
+		} else if (g_ascii_strncasecmp(desc, "hours", len) == 0)
 			*msecs += number * 1000*3600;
-		else if (g_strncasecmp(desc, "minutes", len) == 0 ||
-			 g_strncasecmp(desc, "mins", len) == 0)
+		else if (g_ascii_strncasecmp(desc, "minutes", len) == 0 ||
+			 g_ascii_strncasecmp(desc, "mins", len) == 0)
 			*msecs += number * 1000*60;
-		else if (g_strncasecmp(desc, "seconds", len) == 0 ||
-			 g_strncasecmp(desc, "secs", len) == 0)
+		else if (g_ascii_strncasecmp(desc, "seconds", len) == 0 ||
+			 g_ascii_strncasecmp(desc, "secs", len) == 0)
 			*msecs += number * 1000;
-		else if (g_strncasecmp(desc, "milliseconds", len) == 0 ||
-			 g_strncasecmp(desc, "millisecs", len) == 0 ||
-			 g_strncasecmp(desc, "mseconds", len) == 0 ||
-			 g_strncasecmp(desc, "msecs", len) == 0)
+		else if (g_ascii_strncasecmp(desc, "milliseconds", len) == 0 ||
+			 g_ascii_strncasecmp(desc, "millisecs", len) == 0 ||
+			 g_ascii_strncasecmp(desc, "mseconds", len) == 0 ||
+			 g_ascii_strncasecmp(desc, "msecs", len) == 0)
 			*msecs += number;
 		else {
 			ret = FALSE;
@@ -907,13 +907,13 @@ int parse_size(const char *size, int *bytes)
 			return FALSE;
 		}
 
-		if (g_strncasecmp(desc, "gbytes", len) == 0)
+		if (g_ascii_strncasecmp(desc, "gbytes", len) == 0)
 			*bytes += number * 1024*1024*1024;
-		if (g_strncasecmp(desc, "mbytes", len) == 0)
+		if (g_ascii_strncasecmp(desc, "mbytes", len) == 0)
 			*bytes += number * 1024*1024;
-		if (g_strncasecmp(desc, "kbytes", len) == 0)
+		if (g_ascii_strncasecmp(desc, "kbytes", len) == 0)
 			*bytes += number * 1024;
-		if (g_strncasecmp(desc, "bytes", len) == 0)
+		if (g_ascii_strncasecmp(desc, "bytes", len) == 0)
 			*bytes += number;
 
 		/* skip punctuation */

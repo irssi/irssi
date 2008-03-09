@@ -177,7 +177,7 @@ static void cmd_notify(const char *data)
 		signal_stop();
 	}
 
-	if (g_strncasecmp(data, "-list", 4) == 0) {
+	if (g_ascii_strncasecmp(data, "-list", 4) == 0) {
 		cmd_notifylist_show();
 		signal_stop();
 	}

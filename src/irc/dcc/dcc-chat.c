@@ -539,7 +539,7 @@ static void cmd_mircdcc(const char *data, SERVER_REC *server,
 	if (dcc == NULL) return;
 
 	dcc->mirc_ctcp = i_toupper(*data) != 'N' &&
-		g_strncasecmp(data, "OF", 2) != 0;
+		g_ascii_strncasecmp(data, "OF", 2) != 0;
 }
 
 /* DCC CLOSE CHAT <nick> - check only from chat_ids in open DCC chats,
@@ -553,7 +553,7 @@ static void cmd_dcc_close(char *data, SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strncasecmp(data, "CHAT ", 5) != 0 ||
+	if (g_ascii_strncasecmp(data, "CHAT ", 5) != 0 ||
 	    !cmd_get_params(data, &free_arg, 2, NULL, &nick))
 		return;
 
@@ -694,11 +694,11 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 	g_return_if_fail(msg != NULL);
 
 	reply = FALSE;
-	if (g_strncasecmp(msg, "CTCP_MESSAGE ", 13) == 0) {
+	if (g_ascii_strncasecmp(msg, "CTCP_MESSAGE ", 13) == 0) {
 		/* bitchx (and ircii?) sends this */
 		msg += 13;
 		dcc->mirc_ctcp = FALSE;
-	} else if (g_strncasecmp(msg, "CTCP_REPLY ", 11) == 0) {
+	} else if (g_ascii_strncasecmp(msg, "CTCP_REPLY ", 11) == 0) {
 		/* bitchx (and ircii?) sends this */
 		msg += 11;
 		reply = TRUE;
@@ -761,7 +761,7 @@ static void ctcp_reply_dcc_reject(IRC_SERVER_REC *server, const char *data,
 
 	/* default REJECT handler checks args too -
 	   we don't care about it in DCC chats. */
-	if (g_strncasecmp(data, "CHAT", 4) == 0 &&
+	if (g_ascii_strncasecmp(data, "CHAT", 4) == 0 &&
 	    (data[4] == '\0' || data[4] == ' ')) {
 		dcc = dcc_find_request(DCC_CHAT_TYPE, nick, NULL);
 		if (dcc != NULL) dcc_close(dcc);

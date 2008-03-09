@@ -415,7 +415,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 			cmd_param_error(CMDERR_NOT_CONNECTED);
                 rec = reconnects->data;
 	} else {
-		if (g_strncasecmp(data, "RECON-", 6) == 0)
+		if (g_ascii_strncasecmp(data, "RECON-", 6) == 0)
 			data += 6;
 
 		tagnum = atoi(tag);
@@ -439,7 +439,7 @@ static void cmd_disconnect(const char *data, SERVER_REC *server)
 {
 	RECONNECT_REC *rec;
 
-	if (g_strncasecmp(data, "RECON-", 6) != 0)
+	if (g_ascii_strncasecmp(data, "RECON-", 6) != 0)
 		return; /* handle only reconnection removing */
 
 	rec = reconnect_find_tag(atoi(data+6));

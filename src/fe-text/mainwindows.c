@@ -974,7 +974,7 @@ static void cmd_window_stick(const char *data)
 		while (*data == ' ') data++;
 	}
 
-	if (g_strncasecmp(data, "OF", 2) == 0 || i_toupper(*data) == 'N') {
+	if (g_ascii_strncasecmp(data, "OF", 2) == 0 || i_toupper(*data) == 'N') {
 		/* unset sticky */
 		if (!WINDOW_GUI(win)->sticky) {
 			printformat_window(win, MSGLEVEL_CLIENTERROR,

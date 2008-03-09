@@ -224,7 +224,7 @@ static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
 {
 	char *args, *str;
 
-	if (g_strncasecmp(data, "ACTION ", 7) == 0) {
+	if (g_ascii_strncasecmp(data, "ACTION ", 7) == 0) {
                 /* special treatment for actions */
 		signal_emit("ctcp action", 5, server, data+7,
 			    nick, addr, target);

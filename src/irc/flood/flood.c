@@ -274,7 +274,7 @@ static void flood_ctcp(IRC_SERVER_REC *server, const char *data,
 	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
 		return;
 
-	level = g_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :
+	level = g_ascii_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :
 		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
 	if (!ignore_check(SERVER(server), nick, addr, target, data, level))
 		flood_newmsg(server, level, nick, addr, target);

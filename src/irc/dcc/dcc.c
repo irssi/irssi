@@ -332,7 +332,7 @@ static void sig_server_nick_changed(IRC_SERVER_REC *server)
 static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
 		     const char *nick, const char *addr, const char *target)
 {
-	if (g_strncasecmp(data, "dcc ", 4) != 0)
+	if (g_ascii_strncasecmp(data, "dcc ", 4) != 0)
                 return;
 	data += 4;
 
@@ -345,7 +345,7 @@ static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
 static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr, const char *target)
 {
-	if (g_strncasecmp(data, "dcc ", 4) != 0)
+	if (g_ascii_strncasecmp(data, "dcc ", 4) != 0)
                 return;
 	data += 4;
 

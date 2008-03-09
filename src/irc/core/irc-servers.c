@@ -257,7 +257,7 @@ void irc_server_purge_output(IRC_SERVER_REC *server, const char *target)
                 redirect = tmp->next->data;
 
 		if ((target == NULL || command_has_target(cmd, target)) &&
-		    g_strncasecmp(cmd, "PONG ", 5) != 0) {
+		    g_ascii_strncasecmp(cmd, "PONG ", 5) != 0) {
                         /* remove the redirection */
                         link = tmp->next;
 			server->cmdqueue =

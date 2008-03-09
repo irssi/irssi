@@ -199,7 +199,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 	g_return_if_fail(msg != NULL);
 
 	/* Check for CHAT protocol */
-	if (g_strncasecmp(msg, "100 ", 4) == 0) {
+	if (g_ascii_strncasecmp(msg, "100 ", 4) == 0) {
 		msg += 4;
 		/* Check if this server is accepting chat requests.*/
 		if (dcc->accept_chat) {
@@ -227,7 +227,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 	}
 
 	/* Check for FSERVE protocol */
-	if (g_strncasecmp(msg, "110 ", 4) == 0) {
+	if (g_ascii_strncasecmp(msg, "110 ", 4) == 0) {
 		msg += 4;
 		/* Check if this server is accepting fserve requests.*/
 		if (dcc->accept_fserve) {
@@ -236,7 +236,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 	}
 
 	/* Check for SEND protocol */
-	if (g_strncasecmp(msg, "120 ", 4) == 0) {
+	if (g_ascii_strncasecmp(msg, "120 ", 4) == 0) {
 		msg += 4;
 		/* Check if this server is accepting send requests.*/
 		if (dcc->accept_send) {
@@ -368,7 +368,7 @@ static void cmd_dcc_close(char *data, SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strncasecmp(data, "SERVER ", 7) != 0 ||
+	if (g_ascii_strncasecmp(data, "SERVER ", 7) != 0 ||
 	    !cmd_get_params(data, &free_arg, 2, NULL, &port_str)) {
 		return;
 	}
