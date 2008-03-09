@@ -175,8 +175,8 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 
 	g_return_if_fail(data != NULL);
 
-	type = (g_strncasecmp(data, "hid", 3) == 0 || g_strcasecmp(data, "tab") == 0) ? 1 :
-		(g_strcasecmp(data, "split") == 0 ? 2 : 0);
+	type = (g_ascii_strncasecmp(data, "hid", 3) == 0 || g_ascii_strcasecmp(data, "tab") == 0) ? 1 :
+		(g_ascii_strcasecmp(data, "split") == 0 ? 2 : 0);
 	signal_emit("gui window create override", 1, GINT_TO_POINTER(type));
 
 	window = window_create(NULL, FALSE);
@@ -335,7 +335,7 @@ static void cmd_window_goto(const char *data)
 	if (!cmd_get_params(data, &free_arg, 1, &target))
 		return;
 
-	if (g_strcasecmp(target, "active") == 0)
+	if (g_ascii_strcasecmp(target, "active") == 0)
                 window = window_highest_activity(active_win);
 	else {
 		window = window_find_name(target);
@@ -403,11 +403,11 @@ static void cmd_window_immortal(const char *data)
 
 	if (*data == '\0')
 		set = active_win->immortal;
-	else if (g_strcasecmp(data, "ON") == 0)
+	else if (g_ascii_strcasecmp(data, "ON") == 0)
                 set = TRUE;
-	else if (g_strcasecmp(data, "OFF") == 0)
+	else if (g_ascii_strcasecmp(data, "OFF") == 0)
                 set = FALSE;
-	else if (g_strcasecmp(data, "TOGGLE") == 0)
+	else if (g_ascii_strcasecmp(data, "TOGGLE") == 0)
                 set = !active_win->immortal;
 	else {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,

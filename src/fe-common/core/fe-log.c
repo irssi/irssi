@@ -279,11 +279,11 @@ static void cmd_window_log(const char *data)
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, window, NULL, NULL);
 
         open_log = close_log = FALSE;
-	if (g_strcasecmp(set, "ON") == 0)
+	if (g_ascii_strcasecmp(set, "ON") == 0)
 		open_log = TRUE;
-	else if (g_strcasecmp(set, "OFF") == 0) {
+	else if (g_ascii_strcasecmp(set, "OFF") == 0) {
 		close_log = TRUE;
-	} else if (g_strcasecmp(set, "TOGGLE") == 0) {
+	} else if (g_ascii_strcasecmp(set, "TOGGLE") == 0) {
                 open_log = log == NULL;
                 close_log = log != NULL;
 	} else {

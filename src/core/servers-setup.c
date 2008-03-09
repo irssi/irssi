@@ -399,8 +399,8 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
         rec->chat_type = CHAT_PROTOCOL(chatnetrec)->id;
 	rec->chatnet = chatnetrec == NULL ? NULL : g_strdup(chatnetrec->name);
-	rec->family = g_strcasecmp(family, "inet6") == 0 ? AF_INET6 :
-		(g_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
+	rec->family = g_ascii_strcasecmp(family, "inet6") == 0 ? AF_INET6 :
+		(g_ascii_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 	rec->use_ssl = config_node_get_bool(node, "use_ssl", FALSE);

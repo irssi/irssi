@@ -57,11 +57,11 @@ static void sig_layout_restore_item(WINDOW_REC *window, const char *type,
 	if (name == NULL || tag == NULL)
 		return;
 
-	if (g_strcasecmp(type, "CHANNEL") == 0) {
+	if (g_ascii_strcasecmp(type, "CHANNEL") == 0) {
 		/* bind channel to window */
 		WINDOW_BIND_REC *rec = window_bind_add(window, tag, name);
                 rec->sticky = TRUE;
-	} else if (g_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
+	} else if (g_ascii_strcasecmp(type, "QUERY") == 0 && chat_type != NULL) {
 		CHAT_PROTOCOL_REC *protocol;
 		/* create query immediately */
 		signal_add("query created",

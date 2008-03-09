@@ -392,9 +392,9 @@ static void read_settings(void)
 		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 
 	str = settings_get_str("actlist_sort");
-	if (strcasecmp(str, "recent") == 0)
+	if (g_ascii_strcasecmp(str, "recent") == 0)
 		actlist_sort = 1;
-	else if (strcasecmp(str, "level") == 0)
+	else if (g_ascii_strcasecmp(str, "level") == 0)
 		actlist_sort = 2;
 	else {
 		settings_set_str("actlist_sort", "refnum");

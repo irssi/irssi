@@ -30,7 +30,7 @@ static gboolean recode_get_charset(const char **charset)
 	*charset = settings_get_str("term_charset");
 	if (**charset)
 		/* we use the same test as in src/fe-text/term.c:123 */
-		return (g_strcasecmp(*charset, "utf-8") == 0);
+		return (g_ascii_strcasecmp(*charset, "utf-8") == 0);
 
 	return g_get_charset(charset);
 }

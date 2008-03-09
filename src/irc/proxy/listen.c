@@ -165,7 +165,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	}
 
 	if (strcmp(cmd, "PROXY") == 0) {
-		if (g_strcasecmp(args, "CTCP ON") == 0) {
+		if (g_ascii_strcasecmp(args, "CTCP ON") == 0) {
                         /* client wants all ctcps */
 			client->want_ctcp = 1;
 	                for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
@@ -182,7 +182,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			}
 			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\n",
 				      client->proxy_address, client->nick,client->listen->ircnet);
-		} else if (g_strcasecmp(args, "CTCP OFF") == 0) {
+		} else if (g_ascii_strcasecmp(args, "CTCP OFF") == 0) {
                         /* client wants proxy to handle all ctcps */
 			client->want_ctcp = 0;
 			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\n",

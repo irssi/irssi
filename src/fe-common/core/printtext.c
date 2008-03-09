@@ -462,9 +462,9 @@ static void sig_gui_dialog(const char *type, const char *text)
 {
 	char *format;
 
-	if (g_strcasecmp(type, "warning") == 0)
+	if (g_ascii_strcasecmp(type, "warning") == 0)
 		format = "%_Warning:%_ %s";
-	else if (g_strcasecmp(type, "error") == 0)
+	else if (g_ascii_strcasecmp(type, "error") == 0)
 		format = "%_Error:%_ %s";
 	else
 		format = "%s";

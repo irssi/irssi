@@ -212,7 +212,7 @@ static void dcc_error_close_not_found(const char *type, const char *nick,
 {
 	g_return_if_fail(type != NULL);
 	g_return_if_fail(nick != NULL);
-	if (g_strcasecmp(type, "CHAT") != 0) return;
+	if (g_ascii_strcasecmp(type, "CHAT") != 0) return;
 
 	printformat(NULL, NULL, MSGLEVEL_DCC,
 		    IRCTXT_DCC_CHAT_NOT_FOUND, nick);

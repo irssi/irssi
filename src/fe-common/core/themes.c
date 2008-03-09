@@ -1144,7 +1144,7 @@ static void theme_save(THEME_REC *theme, int save_all)
         if (config != NULL)
                 config_parse(config);
         else {
-                if (g_strcasecmp(theme->name, "default") == 0) {
+                if (g_ascii_strcasecmp(theme->name, "default") == 0) {
                         config = config_open(NULL, -1);
                         config_parse_data(config, default_theme, "internal");
                         config_change_file_name(config, theme->path, 0660);

@@ -106,7 +106,7 @@ static void dcc_error_close_not_found(const char *type, const char *nick,
 	g_return_if_fail(type != NULL);
 	g_return_if_fail(nick != NULL);
 	g_return_if_fail(fname != NULL);
-	if (g_strcasecmp(type, "SEND") != 0) return;
+	if (g_ascii_strcasecmp(type, "SEND") != 0) return;
 
 	if (fname == '\0') fname = "(ANY)";
 	printformat(NULL, NULL, MSGLEVEL_DCC,

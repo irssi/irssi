@@ -71,7 +71,7 @@ static void sig_unknown_command(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &cmd);
-	if (g_strcasecmp(cmd, "PING") == 0) {
+	if (g_ascii_strcasecmp(cmd, "PING") == 0) {
 		/* some servers have disabled PING command, don't bother
 		   trying alternative methods to detect lag with these
 		   servers. */

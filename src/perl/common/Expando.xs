@@ -119,15 +119,15 @@ void expando_signals_add_hash(const char *key, SV *signals)
 		SV *argsv = HeVAL(he);
 		argstr = SvPV(argsv, PL_na);
 
-		if (strcasecmp(argstr, "none") == 0)
+		if (g_ascii_strcasecmp(argstr, "none") == 0)
 			arg = EXPANDO_ARG_NONE;
-		else if (strcasecmp(argstr, "server") == 0)
+		else if (g_ascii_strcasecmp(argstr, "server") == 0)
 			arg = EXPANDO_ARG_SERVER;
-		else if (strcasecmp(argstr, "window") == 0)
+		else if (g_ascii_strcasecmp(argstr, "window") == 0)
 			arg = EXPANDO_ARG_WINDOW;
-		else if (strcasecmp(argstr, "windowitem") == 0)
+		else if (g_ascii_strcasecmp(argstr, "windowitem") == 0)
 			arg = EXPANDO_ARG_WINDOW_ITEM;
-		else if (strcasecmp(argstr, "never") == 0)
+		else if (g_ascii_strcasecmp(argstr, "never") == 0)
 			arg = EXPANDO_NEVER;
 		else {
 			croak("Unknown signal type: %s", argstr);

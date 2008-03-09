@@ -209,17 +209,17 @@ static int signal_name_to_id(const char *name)
 	/* check only the few most common signals, too much job to check
 	   them all. if we sometimes want more, procps-sources/proc/sig.c
 	   would be useful for copypasting */
-	if (g_strcasecmp(name, "hup") == 0)
+	if (g_ascii_strcasecmp(name, "hup") == 0)
                 return SIGHUP;
-	if (g_strcasecmp(name, "int") == 0)
+	if (g_ascii_strcasecmp(name, "int") == 0)
                 return SIGINT;
-	if (g_strcasecmp(name, "term") == 0)
+	if (g_ascii_strcasecmp(name, "term") == 0)
                 return SIGTERM;
-	if (g_strcasecmp(name, "kill") == 0)
+	if (g_ascii_strcasecmp(name, "kill") == 0)
                 return SIGKILL;
-	if (g_strcasecmp(name, "usr1") == 0)
+	if (g_ascii_strcasecmp(name, "usr1") == 0)
                 return SIGUSR1;
-	if (g_strcasecmp(name, "usr2") == 0)
+	if (g_ascii_strcasecmp(name, "usr2") == 0)
                 return SIGUSR2;
         return -1;
 }

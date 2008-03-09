@@ -120,9 +120,9 @@ static void read_settings(void)
 
         /* set terminal type */
 	str = settings_get_str("term_charset");
-	if (g_strcasecmp(str, "utf-8") == 0)
+	if (g_ascii_strcasecmp(str, "utf-8") == 0)
 		term_type = TERM_TYPE_UTF8;
-	else if (g_strcasecmp(str, "big5") == 0)
+	else if (g_ascii_strcasecmp(str, "big5") == 0)
 		term_type = TERM_TYPE_BIG5;
 	else
 		term_type = TERM_TYPE_8BIT;

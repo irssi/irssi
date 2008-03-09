@@ -402,7 +402,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
                 return;
 	}
 
-	if (g_strcasecmp(tag, "all") == 0) {
+	if (g_ascii_strcasecmp(tag, "all") == 0) {
 		/* reconnect all servers in reconnect queue */
                 reconnect_all();
 		cmd_params_free(free_arg);

@@ -453,9 +453,9 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 
 	/* fe-text term_type -> fe-common/core term_charset - for 0.8.10-> */
 	if (strcmp(module, "fe-text") == 0) {
-		if (strcasecmp(node->key, "term_type") == 0 ||
+		if (g_ascii_strcasecmp(node->key, "term_type") == 0 ||
 		    /* kludge for cvs-version where term_charset was in fe-text */
-		    strcasecmp(node->key, "term_charset") == 0) {
+		    g_ascii_strcasecmp(node->key, "term_charset") == 0) {
 			new_module = "fe-common/core";
 			new_key = "term_charset";
 			new_value = !is_valid_charset(node->value) ? NULL :
@@ -472,8 +472,8 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 			g_free(new_value);
 			config_changed = TRUE;
 			return new_key != NULL;
-		} else if (strcasecmp(node->key, "actlist_moves") == 0 &&
-			   node->value != NULL && strcasecmp(node->value, "yes") == 0) {
+		} else if (g_ascii_strcasecmp(node->key, "actlist_moves") == 0 &&
+			   node->value != NULL && g_ascii_strcasecmp(node->value, "yes") == 0) {
 			config_node_set_str(mainconfig, parent, "actlist_sort", "recent");
 			config_node_set_str(mainconfig, parent, node->key, NULL);
 			config_changed = TRUE;

@@ -69,12 +69,12 @@ static void cmd_window_scroll(const char *data)
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(active_win);
-	if (g_strcasecmp(data, "default") == 0) {
+	if (g_ascii_strcasecmp(data, "default") == 0) {
                 gui->use_scroll = FALSE;
-	} else if (g_strcasecmp(data, "on") == 0) {
+	} else if (g_ascii_strcasecmp(data, "on") == 0) {
 		gui->use_scroll = TRUE;
 		gui->scroll = TRUE;
-	} else if (g_strcasecmp(data, "off") == 0) {
+	} else if (g_ascii_strcasecmp(data, "off") == 0) {
 		gui->use_scroll = TRUE;
 		gui->scroll = FALSE;
 	} else if (*data != '\0') {
