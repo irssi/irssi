@@ -412,8 +412,9 @@ static int check_pasting(unichar key, int diff)
 	}
 
 	/* continuing quick hits */
-	if ((key == 11 || key == 3) && paste_prompt) {
-		paste_flush(key == 11);
+	if (paste_prompt) {
+		if (key == 11 || key == 3)
+			paste_flush(key == 11);
 		return TRUE;
 	}
 
