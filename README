@@ -105,12 +105,27 @@ think of currently:
 
  * BUGS / SUGGESTIONS
 
-See TODO file if it is already listed in there - if not send me email..
+See TODO file and http://bugs.irssi.org if it is already listed in there;
+if not open a bugreport on http://bugs.irssi.org or send a mail to
+staff@irssi.org
+
+You can also contact the Irssi developers on #irssi @ EFnet, Freenode, IRCnet,
+Quakenet and Undernet.
 
 
  * AUTHOR
 
- - Timo Sirainen
- - cras@irssi.org
- - cras at ircnet/opn/silc
- - #irssi at ircnet/opn, #irssi.fi, #irssi.de and #irssi.pl at ircnet
+Original code:
+
+  Timo Sirainen <cras@irssi.org>
+
+Irssi staff (current maintainers) <staff@irssi.org>:
+
+  Valentin Batz (senneth, vb)
+  Wouter Coekaerts (coekie)
+  Jochen Eisinger (c0ffee)
+  Geert Hauwaerts
+  Emanuele Giaquinta (exg)
+  Jilles Tjoelker
+
+Check the AUTHORS file for a complete list of developers.
