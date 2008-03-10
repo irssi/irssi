@@ -32,7 +32,6 @@
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7 };
 static int scrollback_lines, scrollback_time, scrollback_burst_remove;
 
-static int last_fg, last_bg, last_flags;
 static int next_xpos, next_ypos;
 
 static GHashTable *indent_functions;
@@ -161,51 +160,6 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
 }
 
-static void line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
-			    int fg, int bg, int flags)
-{
-	unsigned char data[20];
-	int pos;
-
-        /* get the fg & bg command chars */
-	fg = fg < 0 ? LINE_COLOR_DEFAULT : fg & 0x0f;
-	bg = LINE_COLOR_BG | (bg < 0 ? LINE_COLOR_DEFAULT : bg & 0x0f);
-	if (flags & GUI_PRINT_FLAG_BOLD)
-		fg |= LINE_COLOR_BOLD;
-	if (flags & GUI_PRINT_FLAG_BLINK)
-                bg |= LINE_COLOR_BLINK;
-
-	pos = 0;
-	if (fg != last_fg) {
-		last_fg = fg;
-		data[pos++] = 0;
-		data[pos++] = fg == 0 ? LINE_CMD_COLOR0 : fg;
-	}
-	if (bg != last_bg) {
-                last_bg = bg;
-		data[pos++] = 0;
-		data[pos++] = bg;
-	}
-
-	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
-		data[pos++] = 0;
-		data[pos++] = LINE_CMD_UNDERLINE;
-	}
-	if ((flags & GUI_PRINT_FLAG_REVERSE) != (last_flags & GUI_PRINT_FLAG_REVERSE)) {
-		data[pos++] = 0;
-		data[pos++] = LINE_CMD_REVERSE;
-	}
-	if (flags & GUI_PRINT_FLAG_INDENT) {
-		data[pos++] = 0;
-		data[pos++] = LINE_CMD_INDENT;
-	}
-
-        if (pos > 0)
-		*line = textbuffer_insert(buffer, *line, data, pos, NULL);
-
-	last_flags = flags;
-}
-
 static void line_add_indent_func(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 				 const char *function)
 {
@@ -269,11 +223,8 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 
 	if (flags & GUI_PRINT_FLAG_NEWLINE) {
                 view_add_eol(view, &insert_after);
-		last_fg = LINE_COLOR_DEFAULT;
-		last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
-		last_flags = 0;
 	}
-	line_add_colors(view->buffer, &insert_after, fg, bg, flags);
+	textbuffer_line_add_colors(view->buffer, &insert_after, fg, bg, flags);
 
 	if (flags & GUI_PRINT_FLAG_INDENT_FUNC) {
 		/* specify the indentation function */
@@ -292,10 +243,6 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
 
-	last_fg = LINE_COLOR_DEFAULT;
-	last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
-	last_flags = 0;
-
 	view = WINDOW_GUI(window)->view;
 	insert_after = WINDOW_GUI(window)->use_insert_after ?
 		WINDOW_GUI(window)->insert_after : view->buffer->cur_line;
@@ -313,8 +260,6 @@ static void read_settings(void)
 
 void gui_printtext_init(void)
 {
-	last_fg = LINE_COLOR_DEFAULT;
-	last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
 	next_xpos = next_ypos = -1;
 	default_indent_func = NULL;
 	indent_functions = g_hash_table_new((GHashFunc) g_str_hash,

@@ -79,6 +79,9 @@ void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list);
 LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer);
 int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search);
 
+void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
+				int fg, int bg, int flags);
+
 /* Append text to buffer. When \0<EOL> is found at the END OF DATA, a new
    line is created. You must send the EOL command before you can do anything
    else with the buffer. */
