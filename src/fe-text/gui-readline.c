@@ -58,8 +58,8 @@ static GTimeVal last_keypress;
 
 static int paste_detect_time, paste_detect_keycount, paste_verify_line_count;
 static int paste_state, paste_keycount;
-static char *paste_entry, *prev_entry;
-static int paste_entry_pos, prev_entry_pos;
+static char *paste_entry;
+static int paste_entry_pos;
 static GArray *paste_buffer;
 
 static char *paste_old_prompt;
@@ -393,8 +393,8 @@ static int check_pasting(unichar key, int diff)
 			return FALSE;
 
 		g_free(paste_entry);
-		paste_entry = g_strdup(prev_entry);
-		paste_entry_pos = prev_entry_pos;
+		paste_entry = gui_entry_get_text(active_entry);
+		paste_entry_pos = gui_entry_get_pos(active_entry);
 
 		paste_state++;
 		paste_line_count = 0;
@@ -503,10 +503,6 @@ static void sig_gui_key_pressed(gpointer keyp)
 		str[1] = '^';
 		str[2] = '\0';
 	}
-
-	g_free(prev_entry);
-	prev_entry = gui_entry_get_text(active_entry);
-	prev_entry_pos = gui_entry_get_pos(active_entry);
 
 	if (escape_next_key) {
 		escape_next_key = FALSE;
@@ -1022,7 +1018,6 @@ void gui_readline_init(void)
 
         escape_next_key = FALSE;
 	redir = NULL;
-	prev_entry = NULL;
 	paste_state = 0;
         paste_keycount = 0;
 	paste_entry = NULL;
