@@ -1,38 +1,8 @@
-FIXME translate
-19:36 [IRCNet] [muzzy] lis‰‰ bugeja irssiss‰, ilmeisesti 
-          uusin versio:  foo splittaa ulos, bar joinaa sis‰‰n, bar vaihtaa 
-          nicknamen fooksi, foo splittaa uudestaan ulos -> tulee Glib warning 
-          "is already in split list (how?)" .. :)
-22:51 [IRCNet] [zhafte] irssi muuten taitaa bugaa jos 
-          pist‰‰ ACT oikeaan reunaan, vai onkohan se vain mun terminaali?
-22:52 [IRCNet] [zhafte] menev‰t v‰lill‰ p‰‰llekk‰in 
-          numerot
-17.03.2002 22:25 #irssi.fi: <@Ion> cras: Jos sanon dcc chatissa ett‰ /exec - 
-                                   -out cat iso_tiedosto, niin miksi 
-                                   iso_tiedosto j‰‰ kesken? :)
- - %n%_ ei n‰y lastlogissa
- - use_status_window, use_msgs_window sais toimia heti
- - tab completio jos lis‰‰ utf8 juttuja niin ei oikein toimi?
- - jos kickataan nopeasti ja joinaa takas nopeasti chansyncci kaataa
-   /WHOssa.. kts. qrczak logi
- - /set show_server_tags tjsp ett‰ n‰ytt‰is aina (yhdist‰ hide_server_tagsin 
-   kanssa?)
- - /SBAR topic placement bottom ei toimi??
- - /exec -out kanavalla ei pelaa silciss‰
- - /op * valitus vois olla joku parempi kuin "not a good idea"..
- - mitenk‰s tabcompletio completoi taas omaakin nickki‰..?
- - vanhan irssin /upgrades uuteen ennen sit‰ vaihtoi /set autolog_path:iin
-   $1 ja kaatui?..
- - /win hide vois pelata vaikka oliskin stickyj‰ siin‰ ikkunassa
- - /window server -sticky:tetyt ikkunat ei aina meinaa tajuta kun serveri
-   yhdistyy?
- - utf8-tekstitykset bugailee statusbarissa (promptissa)
- - jos /set reuse_unused_windows off, ja ikkuna n‰ytt‰is t‰ysin tyhj‰lle
-   ja niit‰ olis vaan 1, niin sen vois kyll‰ k‰ytt‰‰ silti (?)
- - active_mainwin oli jotenkin NULL ja kaatoi.. /window killi teki sen,
-   liittyy varmaan jotenkin siihen ett‰ window_close() vaihtoi samaan
-   hiddenikkunaan splitti-ikkunan sis‰ll‰ jota oltiin kuitenkin tappamassa
-   kun se ei ollut sticky..
+19:36 [IRCNet] [muzzy] more bugs in irssi, apparently the new version:  foo splits out,
+      	       	       bar joins, bar changes his nick to foo, foo splits again ->
+		       Glib warning "is already in split list (how?)" .. :)
+22:51 [IRCNet] [zhafte] irssi bugs if you put ACT to the right, or maybe it is my terminal?
+22:52 [IRCNet] [zhafte] the numbers tend to go on top of eachother
  
 04:35 [OPN] [slug] was just wondering if you 
           had Irssi::keyboard_entry_redirect() on your TODO somewhere near the 
@@ -51,8 +21,6 @@ FIXME translate
                channels
 
 
-14:59 <@c0ffee> cras, bug report, mode change compression appears not to work: 
-                13:58 -!- mode/#*cut* [-b+ *cut*] by *cut* (i think it was -b+b)
 21:55 <@L> 17:04.11 <L> /eval /last quit;/clear;/sb goto 10:00;/last -clear;/sb end
 21:55 <@L> 17:04.27 <L> wait after it scrolls and press page up :)
 21:55 <@L> 17:04.48 <L> oh, you can make Irssi behave correctly with /clear
@@ -101,8 +69,28 @@ FIXME translate
                 windows, and then that person says something again, I'm brought 
                 to the new query window automatically (that's of course bad).
 
+ - /exec - -out cat file does not send the whole file
+ - %n%_ won't show at lastlog..
+ - use_status_window, use_msgs_window should work instantly..
+ - during fast kicking and the victim quickly rejoins, chansync crashes in /WHO..
+ - /set show_server_tags or something to always show (combine with hide_server_tagsin ?)..
+ - /SBAR topic placement bottom won't work??..
+ - /op * complaining could be better than "not a good idea"..
+ - how did tab completion complete your own nick..?
+ - the old irssi's /upgrades to the new, before it changed to /set autolog_path
+   $1 and crashed?..
+ - /win hide could work even though there are sticky things in that window..
+ - /window server -sticky windows doesn't always realize when a server connects?..
+ - tab completion doesn't work properly if I add utf8 things?..
+ - utf8-texts tend to bug in statusbar (prompt)..
+ - if /set reuse_unused_windows off, and the window seems to be empty,
+   and there would be only one of them it could still be used (?)..
+ - active_mainwin was somehow NULL and crashed.. /window kill did it,
+   probably something to do with window_close() switching to the same
+   hidden window inside the split window, which I was about to kill
+   anyways because it wasn't sticky..
  - /foreach server /disconnect $tag n8 does not work
- - /exec  - -o uname -a does not work (two spaces before the first dash)
+ - /command  -option does not work (two spaces before the dash)
  - /whowas server nick does not work
  - /msg nick@server or nick%host is fully treated as nickname (log, query)
  - max_whois won't stay with reconnects?
@@ -121,7 +109,6 @@ FIXME translate
  - away handling is a bit buggy. you do /away;/away reason, irssi remembers
    the away reason only until it receives "you're no longer away" from the
    first command.. setting it back to away has then lost the reason.
- - crash: /exec -msg safari perl -e 'print "A"x600000'"
  - nick_ nick- _nick nick2 nick3 ...
  - /SAVE -all?
  - /STATUSBAR xx ENABLE|DISABLE recreates all statusbars which is a bit
