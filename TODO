@@ -4,17 +4,6 @@
 22:51 [IRCNet] [zhafte] irssi bugs if you put ACT to the right, or maybe it is my terminal?
 22:52 [IRCNet] [zhafte] the numbers tend to go on top of eachother
  
-04:35 [OPN] [slug] was just wondering if you 
-          had Irssi::keyboard_entry_redirect() on your TODO somewhere near the 
-          top, I'd love the feature
-04:35 [OPN] [slug] or someway to clear the 
-          command buffer, either way is acceptable, just my connection is a 
-          little less than reliable, so I've built myself a script that stores 
-          blowfish passes, all encrypted by one value
-04:36 [OPN] [slug] then I set a single 
-          decryption key, and it keeps it for the irssi session (lost on 
-          /upgrade though), unfortunatly it stays in the command buffer 8]
-
 02:46 <@fuchs> cras, /server foonet.foo.xy and (recognizing it doesn't connect 
                fast enough), and so doing /server barnet.foo.xy (both in the 
                same chatnet) makes irssi joining the net but not rejoining the 
@@ -35,9 +24,6 @@
                query, and displays "< Juerd:> foo" in the status window
 07.06.2002 08:37 #irssi: <@Qrczak> cras: A bug. After /upgrade when being away 
                                    the awaylog is not being written to.
-21:37 < life> Then you connect. The problem is that irssi connects to the proxy 
-              server and directly afterwards send "USER ..."
-21:37 < life> It has to wait for "HTTP 200 ok" *first*
 04.06.2002 08:54 #irssi: <@Garion> cras: i've seen it several times now - a 
                                    line of 79 or 80 chars (my win is 80 wide) 
                                    which has an empty line below it, and that 
@@ -72,25 +58,17 @@
  - /exec - -out cat file does not send the whole file
  - %n%_ won't show at lastlog..
  - use_status_window, use_msgs_window should work instantly..
- - during fast kicking and the victim quickly rejoins, chansync crashes in /WHO..
  - /set show_server_tags or something to always show (combine with hide_server_tagsin ?)..
  - /SBAR topic placement bottom won't work??..
  - /op * complaining could be better than "not a good idea"..
  - how did tab completion complete your own nick..?
- - the old irssi's /upgrades to the new, before it changed to /set autolog_path
-   $1 and crashed?..
  - /win hide could work even though there are sticky things in that window..
  - /window server -sticky windows doesn't always realize when a server connects?..
  - tab completion doesn't work properly if I add utf8 things?..
  - utf8-texts tend to bug in statusbar (prompt)..
  - if /set reuse_unused_windows off, and the window seems to be empty,
    and there would be only one of them it could still be used (?)..
- - active_mainwin was somehow NULL and crashed.. /window kill did it,
-   probably something to do with window_close() switching to the same
-   hidden window inside the split window, which I was about to kill
-   anyways because it wasn't sticky..
  - /foreach server /disconnect $tag n8 does not work
- - /command  -option does not work (two spaces before the dash)
  - /whowas server nick does not work
  - /msg nick@server or nick%host is fully treated as nickname (log, query)
  - max_whois won't stay with reconnects?
@@ -142,7 +120,6 @@
     - /SET autolog -> /LOG OPEN -targets * (internally, at least)
     - /LOG OPEN shouldn't really open the file until first line is 
       written in it
-    - /WINDOW LOG OFF doesn't work
     - autoclosing logs doesn't work too well. Problems are:
 	- after certain inactivity private message logs should be closed
 	- but DCC chats shouldn't be closed until the chat itself is closed
@@ -186,7 +163,6 @@
       future chats for same nick would use the same window
     - /JOIN #foo could *optionally* move the channel to active window
       (default off, it confuses people)
-    - /JOIN -ircnet #foo doesn't jump to #foo like /JOIN #foo does.
 
  - DCC
     - /DCC SEND wildcard support
@@ -240,13 +216,14 @@
     - show in query windows
 
  - Crashes:
-    - irssi crashes at quit if perl is loaded as module
-    - #1  0x68cc7 in module_file_deinit_gmodule (file=0x110e20) at modules-load.c:356 
     - <dg> i've managed to reproduce the bug, if i make three split windows (/window show 3..5), then set the windows to not be sticky  and go to one of the windows, then alt+number to another window then go back the other window the display prints two windows in the same window
-    - /SB CLEAR still crashing sometimes?
-    - make sure irssi works with 0x0 sized terminal. 1x1 sized terminal
-      doesn't work if we use recreate_windows()
-    - /UNLOAD dcc, etc. static modules
+    - during fast kicking and the victim quickly rejoins, chansync crashes in /WHO..
+    - the old irssi's /upgrades to the new, before it changed to /set autolog_path
+      $1 and crashed?..
+    - active_mainwin was somehow NULL and crashed.. /window kill did it,
+      probably something to do with window_close() switching to the same
+      hidden window inside the split window, which I was about to kill
+      anyways because it wasn't sticky..
 
  - Scripts:
     - print whois in active window
@@ -254,7 +231,7 @@
       happens.
     - move into scripts:
        - /SET timestamp_timeout
-       - /MSG completion list should be modifyable from scripts
+       - /MSG completion list should be modifiable from scripts
           - script to remove nick from list after /IGNORE nick
        - nick completion list should be modifyable afterwards:
           - /SET completion_nicks_lowercase (remove from irssi)
@@ -317,8 +294,7 @@
 	  printed as-is (a few /BINDs would do this but...)
 	- Should empty lines be pasted too? Maybe optionally
     - /BIND -askkey command
-    - /BIND -delete doesn't print that it did the deleting
-    - /BIND -deletes should be saved in config
+    - /BIND -delete should be saved in config
     - ^W (and some others) don't update cut buffer.
     - default binds: M-d, M-y
     - /PASSWORD command that asks you to type the password to entry line and
@@ -327,6 +303,7 @@
     - Key to execute the command, but not place it in history
     - Key to remove active entry from command history
     - Optionally save command history between restarts
+    - clear_history
 
  - Notify list:
     - showing who's online and who's offline doesn't work properly.
@@ -606,7 +583,6 @@
  - /HELP <alias> should work
  - /CLEAR -all should clear the window activities as well, leaving hilights
  - support :: properly in IPv6 masks
- - /SET activity_hide_targets ircnet/#irssi
  - when you get disconnected, print your quit message to all channel windows
  - possibility to print rawlog in window
  - should $10 work (in special vars)?
