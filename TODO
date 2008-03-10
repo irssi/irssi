@@ -11,7 +11,6 @@ FIXME translate
                                    -out cat iso_tiedosto, niin miksi 
                                    iso_tiedosto j‰‰ kesken? :)
  - %n%_ ei n‰y lastlogissa
- - darixin se pingiredirectijuttu
  - use_status_window, use_msgs_window sais toimia heti
  - tab completio jos lis‰‰ utf8 juttuja niin ei oikein toimi?
  - jos kickataan nopeasti ja joinaa takas nopeasti chansyncci kaataa
@@ -30,16 +29,11 @@ FIXME translate
  - utf8-tekstitykset bugailee statusbarissa (promptissa)
  - jos /set reuse_unused_windows off, ja ikkuna n‰ytt‰is t‰ysin tyhj‰lle
    ja niit‰ olis vaan 1, niin sen vois kyll‰ k‰ytt‰‰ silti (?)
- - /set beep_msg_level hilight ei toimi jos on /hilight -word
  - active_mainwin oli jotenkin NULL ja kaatoi.. /window killi teki sen,
    liittyy varmaan jotenkin siihen ett‰ window_close() vaihtoi samaan
    hiddenikkunaan splitti-ikkunan sis‰ll‰ jota oltiin kuitenkin tappamassa
    kun se ei ollut sticky..
  
- - /whowas server nick doesn't work
-01:18 <@darix> cras: /foreach server /disconnect $tag n8 <-- doesnt work
- - /hilight -priority is broken
-
 04:35 [OPN] [slug] was just wondering if you 
           had Irssi::keyboard_entry_redirect() on your TODO somewhere near the 
           top, I'd love the feature
@@ -51,9 +45,6 @@ FIXME translate
           decryption key, and it keeps it for the irssi session (lost on 
           /upgrade though), unfortunatly it stays in the command buffer 8]
 
-14:17 <@darix> cras: this doesnt work: /exec  - -o uname -a
-
- - "setup changed", or "setup reread" seems to cause crashes.. (with darix)
 02:46 <@fuchs> cras, /server foonet.foo.xy and (recognizing it doesn't connect 
                fast enough), and so doing /server barnet.foo.xy (both in the 
                same chatnet) makes irssi joining the net but not rejoining the 
@@ -67,9 +58,6 @@ FIXME translate
 21:55 <@L> 17:04.48 <L> oh, you can make Irssi behave correctly with /clear
            again
 
- - /msg nick@server or nick%host is fully treated as nickname (log, query)
- - max_whois won't stay with reconnects?
- - separate format for privmsg/notice massmessages (anything non-yournick)
 20:45 < Juerd> 19:44 -!- Irssi: critical file channels.c: line 122 
                (channel_find): assertion
 20:45 < Juerd>           `name != NULL' failed.
@@ -77,7 +65,6 @@ FIXME translate
 20:46 < Juerd> and it happens in a _query_
 20:47 <@Juerd> cras: for some reason irssi doesn't know this happens in a 
                query, and displays "< Juerd:> foo" in the status window
- - set TOS field for all connections (DCC especially)
 07.06.2002 08:37 #irssi: <@Qrczak> cras: A bug. After /upgrade when being away 
                                    the awaylog is not being written to.
 21:37 < life> Then you connect. The problem is that irssi connects to the proxy 
@@ -107,14 +94,6 @@ FIXME translate
 21:30 < Samus_Aran> it doesnt show any of the queries which i closed, though,
                     jush #channels
 
- - "show statusbar in empty windows" flag?
- - statusbar_item_redraw() should just set the size as dirty and calculate
-   it only when really needed.
- - possible to cache sbar_item->size when nothing else has changed in sbar? 
-   ie. mostly when redrawing.
- - /msg @#chan<tab>
-
- - hilight -priority
 16:39 <@Qrczak> cras: I'm not sure how exactly to reproduce it but it happens 
                 often. When I jump to the window with a query using Alt-a 
                 (after the other person said something), and close the window 
@@ -122,34 +101,42 @@ FIXME translate
                 windows, and then that person says something again, I'm brought 
                 to the new query window automatically (that's of course bad).
 
-21.04.2002 11:59 [immy(immy@beanus.org)] GLib warning: signal_free(script 
-          destroyed) : signal still has 3 references:
+ - /foreach server /disconnect $tag n8 does not work
+ - /exec  - -o uname -a does not work (two spaces before the first dash)
+ - /whowas server nick does not work
+ - /msg nick@server or nick%host is fully treated as nickname (log, query)
+ - max_whois won't stay with reconnects?
+ - separate format for privmsg/notice massmessages (anything non-yournick)
+ - set TOS field for all connections (DCC especially)
+ - "show statusbar in empty windows" flag?
+ - statusbar_item_redraw() should just set the size as dirty and calculate
+   it only when really needed.
+ - possible to cache sbar_item->size when nothing else has changed in sbar? 
+   ie. mostly when redrawing.
+ - /msg @#chan<tab>
  - /SB GOTO -<days> <ts>
- - /query -immortal so autoclose_queries wouldn't touch them
-
-...
-
+ - /query -immortal so autoclose_query wouldn't touch them
+ - autoclose_query is also closing (and finishing) dcc chats (bug #59 ?)
  - write about %[-s] etc. to default.theme
  - away handling is a bit buggy. you do /away;/away reason, irssi remembers
    the away reason only until it receives "you're no longer away" from the
    first command.. setting it back to away has then lost the reason.
  - crash: /exec -msg safari perl -e 'print "A"x600000'"
  - nick_ nick- _nick nick2 nick3 ...
- - /hilight -level "public -actions" or something so it wouldn't match
-   actions.
  - /SAVE -all?
-14.03.2002 19:10 #irssi: <@fantazja> cras: autoclose_query is also closing (and 
-                                     finishing) dcc chats :/
-
  - /STATUSBAR xx ENABLE|DISABLE recreates all statusbars which is a bit
    annoying because some scripts want to do it and input line is cleared
    because of this..
- - move /SET hilight_*color to theme
  - /SET disconnect_timeout - default 2min, 0 = immediately
  - reconnecting messages are a bit confusing. it prints "removed reconnection"
    to the server which it's connecting to next.. maybe the whole reconnecting
    thing should work so that the record stays there until it's connected
    successfully.
+ - /set beep_msg_level hilight won't work if I have /hilight -word
+ - /hilight -priority is broken
+ - /hilight -level "public -actions" or something so it wouldn't match
+   actions.
+ - move /SET hilight_*color to theme
  - /ignore, /hilight and /lastlog could complain immediately if used
    regexp is broken. /hilight list could show also if it's broken like
    /ignore does.
@@ -372,7 +359,6 @@ FIXME translate
     - Show when the nick was last seen
 
  - Ignores:
-    - /IGNORE -ircnet or -tag
     - /IGNORE <nick> -> use hostmasking (related to channel syncing problem,
       see "bigger code changes") with support for -type and /SET ignore_type
     - /IGNORE -strip -pattern away * actions ..
