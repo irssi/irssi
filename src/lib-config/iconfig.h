@@ -131,12 +131,21 @@ char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def);
 int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
 
+/*
+ * key != NULL && value == NULL
+ * remove node with key 'key', equivalent to
+ * config_node_remove(rec, parent, config_node_find(rec, parent, key))
+ * key == NULL && value != NULL
+ * create a new node with type NODE_TYPE_VALUE and value 'value'
+ * key != NULL && value != NULL
+ * if a node with key 'key' exists change its value to 'value',
+ * otherwise create a new node with type NODE_TYPE_KEY, key 'key' and value 'value'
+ * */
 void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
 void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
 void config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
 
-/* Remove one node from block/list.
-   ..set_str() with value = NULL does the same. */
+/* Remove one node from block/list. */
 void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node);
 /* Remove n'th node from a list */
 void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index);
