@@ -14,6 +14,9 @@ enum {
 #define is_node_list(a) \
         ((a)->type == NODE_TYPE_BLOCK || (a)->type == NODE_TYPE_LIST)
 
+typedef struct _CONFIG_NODE CONFIG_NODE;
+typedef struct _CONFIG_REC CONFIG_REC;
+
 struct _CONFIG_NODE {
 	int type;
         char *key;

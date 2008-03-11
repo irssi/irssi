@@ -105,8 +105,6 @@ const char *get_irssi_config(void);
 #define i_isxdigit(x) isxdigit((int) (unsigned char) (x))
 
 typedef struct _IPADDR IPADDR;
-typedef struct _CONFIG_REC CONFIG_REC;
-typedef struct _CONFIG_NODE CONFIG_NODE;
 
 typedef struct _LINEBUF_REC LINEBUF_REC;
 typedef struct _NET_SENDBUF_REC NET_SENDBUF_REC;
