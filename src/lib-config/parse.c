@@ -267,7 +267,6 @@ void config_parse_init(CONFIG_REC *rec, const char *name)
 	scanner->msg_handler = (GScannerMsgFunc) config_parse_error_func;
 }
 
-/* Parse configuration file */
 int config_parse(CONFIG_REC *rec)
 {
 	g_return_val_if_fail(rec != NULL, -1);
@@ -288,8 +287,6 @@ int config_parse(CONFIG_REC *rec)
 	return rec->last_error == NULL ? 0 : -1;
 }
 
-/* Parse configuration found from `data'. `input_name' is specifies the
-   "configuration name" which is displayed in error messages. */
 int config_parse_data(CONFIG_REC *rec, const char *data, const char *input_name)
 {
 	config_parse_init(rec, input_name);
@@ -300,9 +297,6 @@ int config_parse_data(CONFIG_REC *rec, const char *data, const char *input_name)
 	return rec->last_error == NULL ? 0 : -1;
 }
 
-/* Open configuration. The file is created if it doesn't exist, unless
-   `create_mode' is -1. `fname' can be NULL if you just want to use
-   config_parse_data() */
 CONFIG_REC *config_open(const char *fname, int create_mode)
 {
 	CONFIG_REC *rec;
@@ -326,7 +320,6 @@ CONFIG_REC *config_open(const char *fname, int create_mode)
 	return rec;
 }
 
-/* Release all memory used by configuration */
 void config_close(CONFIG_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
@@ -343,7 +336,6 @@ void config_close(CONFIG_REC *rec)
 	g_free(rec);
 }
 
-/* Change file name of config file */
 void config_change_file_name(CONFIG_REC *rec, const char *fname, int create_mode)
 {
 	g_return_if_fail(rec != NULL);

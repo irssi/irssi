@@ -59,7 +59,6 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
         g_free(node);
 }
 
-/* Remove n'th node from a list */
 void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index)
 {
 	CONFIG_NODE *child;
@@ -71,7 +70,6 @@ void config_node_list_remove(CONFIG_REC *rec, CONFIG_NODE *node, int index)
 	if (child != NULL) config_node_remove(rec, node, child);
 }
 
-/* Clear all data inside node, but leave the node */
 void config_node_clear(CONFIG_REC *rec, CONFIG_NODE *node)
 {
 	g_return_if_fail(node != NULL);
@@ -161,7 +159,6 @@ int config_set_bool(CONFIG_REC *rec, const char *section, const char *key, int v
 	return config_set_str(rec, section, key, value ? "yes" : "no");
 }
 
-/* Add all values in `array' to `node' */
 void config_node_add_list(CONFIG_REC *rec, CONFIG_NODE *node, char **array)
 {
 	char **tmp;

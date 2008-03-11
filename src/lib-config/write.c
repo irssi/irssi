@@ -308,7 +308,6 @@ static int config_write_block(CONFIG_REC *rec, CONFIG_NODE *node, int list, int 
 	return 0;
 }
 
-/* Write configuration file. Write to `fname' if it's not NULL. */
 int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 {
 	int ret;
