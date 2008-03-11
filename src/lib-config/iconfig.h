@@ -72,7 +72,7 @@ void config_change_file_name(CONFIG_REC *rec, const char *fname, int create_mode
 
 /* Parse configuration file */
 int config_parse(CONFIG_REC *rec);
-/* Parse configuration found from `data'. `input_name' is specifies the
+/* Parse configuration found from `data'. `input_name' specifies the
    "configuration name" which is displayed in error messages. */
 int config_parse_data(CONFIG_REC *rec, const char *data, const char *input_name);
 
@@ -117,7 +117,7 @@ CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_t
 CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
 				       int index, int new_type);
 /* Find the section with the whole path.
-   Create the path if necessary `create' is TRUE. */
+   Create the path if necessary if `create' is TRUE. */
 CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int create);
 /* Get the value of keys `key' and `key_value' and put them to
    `ret_key' and `ret_value'. Returns -1 if not found. */
