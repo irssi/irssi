@@ -11,7 +11,6 @@ AM_MAINTAINER_MODE
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CPP
-AC_STDC_HEADERS
 AM_PROG_LIBTOOL
 
 AC_PATH_PROG(sedpath, sed)
@@ -22,7 +21,7 @@ if test "x$enable_static" = "xno"; then
 	AC_ERROR([Don't give --disable-static option to configure])
 fi
 
-AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h sys/resource.h)
+AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
