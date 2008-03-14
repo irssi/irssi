@@ -160,12 +160,13 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 			if (len > best_mask) {
 				best_mask = len;
 				best_match = !rec->exception;
-			} else if (len == best_mask && rec->pattern != NULL) {
-				len = strlen(rec->pattern);
+			} else if (len == best_mask) {
+				len = rec->pattern == NULL ? 0 : strlen(rec->pattern);
 				if (len > best_patt) {
 					best_patt = len;
 					best_match = !rec->exception;
-				}
+				} else if (len == best_patt && rec->exception)
+					best_match = 0;
 			}
 		}
 	}
