@@ -252,8 +252,6 @@
 
  - Windows:
      - /WINDOW SIZE -sticky, so f.e. /WINDOW BALANCE wouldn't affect it.
-     - /LAYOUT save|reset doesn't affect anything immediately, only after
-       restart
      - Check that /LAYOUT SAVE works properly with all the different /SETs,
        like reuse_unsued_windows, windows_auto_renumber and autoclose_windows.
        What should it do if some channel is /PARTed with autoclose_windows 

@@ -240,6 +240,14 @@ void windows_layout_save(void)
 
 void windows_layout_reset(void)
 {
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *window = tmp->data;
+		while (window->bound_items != NULL)
+			window_bind_destroy(window, window->bound_items->data);
+	}
+
 	iconfig_set_str(NULL, "windows", NULL);
 	signal_emit("layout reset", 0);
 
