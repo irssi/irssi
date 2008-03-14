@@ -217,7 +217,6 @@
 
  - Crashes:
     - <dg> i've managed to reproduce the bug, if i make three split windows (/window show 3..5), then set the windows to not be sticky  and go to one of the windows, then alt+number to another window then go back the other window the display prints two windows in the same window
-    - during fast kicking and the victim quickly rejoins, chansync crashes in /WHO..
     - the old irssi's /upgrades to the new, before it changed to /set autolog_path
       $1 and crashed?..
     - active_mainwin was somehow NULL and crashed.. /window kill did it,
@@ -247,8 +246,6 @@
 
  - Misc IRC related things:
     - support for mode +q in dancer - also same as +b %xxx modes..
-    - properly support RFC-1459 charset (ircnet specific option), eg.
-      /QUERY p[ and msgs from p{ aren't placed there.
     - /BAN -ip, -time [<time>] (/ALIAS knockout?)
     - /KICKBAN to support same options than /BAN (would /ALIAS kickban work?)
     - ban list prints "x seconds ago" .. should be x days, mins, hours, ..
@@ -280,11 +277,8 @@
       support for vi keys easily.
     - Editor-like (or bash-like) line editor - it would wrap to next line
       instead of scrolling.
-    - When pasting text, irssi could notice it and ask "pasting 30 lines
-      of text, ok?" .. Could send some signal that sends the pasted lines
-      in GList which signal handlers could modify. Also the first pasted
-      line could be somehow buffered so that it isn't sent immediately
-      so these paste handlers could modify it too.
+    - When pasting text, irssi could send some signal that sends the pasted
+      lines in GList which signal handlers could modify.
         - Already existing / at start of line handler should use this
         - Automatically remove empty space at the start/end of lines,
 	  from start of line it would work so that if each line begins with
