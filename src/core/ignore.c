@@ -58,6 +58,10 @@ static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
 	return FALSE;
 }
 
+#define ignore_match_channel(rec, channel) \
+	((rec)->channels == NULL || ((channel) != NULL && \
+		strarray_find((rec)->channels, (channel)) != -1))
+
 static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
 {
 	GSList *tmp;
@@ -70,6 +74,7 @@ static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
 		IGNORE_REC *rec = tmp->data;
 
 		if (rec->mask != NULL && rec->replies &&
+		    ignore_match_channel(rec, chanrec->name) &&
 		    ignore_check_replies_rec(rec, chanrec, text))
 			return TRUE;
 	}
@@ -111,10 +116,6 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 #define ignore_match_server(rec, server) \
 	((rec)->servertag == NULL || \
 	g_strcasecmp((server)->tag, (rec)->servertag) == 0)
-
-#define ignore_match_channel(rec, channel) \
-	((rec)->channels == NULL || ((channel) != NULL && \
-		strarray_find((rec)->channels, (channel)) != -1))
 
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
