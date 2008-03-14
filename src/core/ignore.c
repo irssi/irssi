@@ -116,45 +116,13 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 	((rec)->channels == NULL || ((channel) != NULL && \
 		strarray_find((rec)->channels, (channel)) != -1))
 
-static int ignore_check_without_mask(GSList *list, CHANNEL_REC *channel,
-				     int level, const char *text)
-{
-	GSList *tmp;
-        int len, best_mask, best_match, best_patt;
-
-        best_mask = best_patt = -1; best_match = FALSE;
-	for (tmp = list; tmp != NULL; tmp = tmp->next) {
-		IGNORE_REC *rec = tmp->data;
-
-		if (ignore_match_level(rec, level) &&
-		    ignore_match_pattern(rec, text)) {
-			len = rec->mask == NULL ? 0 : strlen(rec->mask);
-			if (len > best_mask) {
-				best_mask = len;
-				best_match = !rec->exception;
-			} else if (len == best_mask && rec->pattern != NULL) {
-				len = strlen(rec->pattern);
-				if (len > best_patt) {
-					best_patt = len;
-					best_match = !rec->exception;
-				}
-			}
-		}
-	}
-
-	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
-		return best_match;
-
-        return ignore_check_replies(channel, text);
-}
-
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
 {
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
         IGNORE_REC *rec;
-	GSList *tmp, *list;
+	GSList *tmp;
         char *nickmask;
         int len, best_mask, best_match, best_patt;
 
@@ -169,20 +137,24 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		if (nickrec->host == NULL)
 			nicklist_set_host(chanrec, nickrec, host);
 
-		list = nickmatch_find(nickmatch, nickrec);
-		return ignore_check_without_mask(list, chanrec, level, text);
+		tmp = nickmatch_find(nickmatch, nickrec);
+		nickmask = NULL;
+	} else {
+		tmp = ignores;
+		nickmask = g_strconcat(nick, "!", host, NULL);
 	}
 
-	nickmask = g_strconcat(nick, "!", host, NULL);
-
         best_mask = best_patt = -1; best_match = FALSE;
-	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+	for (; tmp != NULL; tmp = tmp->next) {
+		int match = 1;
 		rec = tmp->data;
 
-		if (ignore_match_level(rec, level) &&
-		    ignore_match_server(rec, server) &&
-		    ignore_match_channel(rec, channel) &&
-		    ignore_match_nickmask(rec, nick, nickmask) &&
+		if (nickmask != NULL)
+			match = ignore_match_server(rec, server) &&
+				ignore_match_channel(rec, channel) &&
+				ignore_match_nickmask(rec, nick, nickmask);
+		if (match &&
+		    ignore_match_level(rec, level) &&
 		    ignore_match_pattern(rec, text)) {
 			len = rec->mask == NULL ? 0 : strlen(rec->mask);
 			if (len > best_mask) {
