@@ -791,11 +791,11 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 		server->max_msgs_in_cmd = 1;
 		/* Not doing WHOIS here until it is clear what it means. */
 		while (*p != '\0') {
-			if (!strncasecmp(p, "KICK:", 5)) {
+			if (!g_ascii_strncasecmp(p, "KICK:", 5)) {
 				server->max_kicks_in_cmd = atoi(p + 5);
 				if (server->max_kicks_in_cmd <= 0)
 					server->max_kicks_in_cmd = 30;
-			} else if (!strncasecmp(p, "PRIVMSG:", 8)) {
+			} else if (!g_ascii_strncasecmp(p, "PRIVMSG:", 8)) {
 				server->max_msgs_in_cmd = atoi(p + 8);
 				if (server->max_msgs_in_cmd <= 0)
 					server->max_msgs_in_cmd = 30;
