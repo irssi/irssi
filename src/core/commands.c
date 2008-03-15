@@ -110,7 +110,7 @@ int command_have_sub(const char *command)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, command, len) == 0 &&
 		    rec->cmd[len] == ' ')
 			return TRUE;
 	}
@@ -265,7 +265,7 @@ static const char *command_expand(char *cmd)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, cmd, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0 &&
 		    strchr(rec->cmd+len, ' ') == NULL) {
 			if (rec->cmd[len] == '\0') {
 				/* full match */
@@ -531,7 +531,7 @@ static int option_find(char **array, const char *option)
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
 		const char *text = *tmp + iscmdtype(**tmp);
 
-		if (g_strncasecmp(text, option, len) == 0) {
+		if (g_ascii_strncasecmp(text, option, len) == 0) {
 			if (text[len] == '\0') {
 				/* full match */
 				return index;
@@ -931,7 +931,7 @@ static void event_command(const char *line, SERVER_REC *server, void *item)
 		return;
 	}
 
-	/* same cmdchar twice ignores aliases ignores aliases */
+	/* same cmdchar twice ignores aliases */
 	line++;
 	if (*line == *cmdchar) {
 		line++;
