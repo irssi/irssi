@@ -180,24 +180,24 @@ static void read_settings(void)
 	if (!is_valid_charset(term_charset)) {
 		g_free(term_charset);
 #if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : 
-			       *nl_langinfo(CODESET) != '\0' ? g_strdup(nl_langinfo(CODESET)) : 
+		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) :
+			       *nl_langinfo(CODESET) != '\0' ? g_strdup(nl_langinfo(CODESET)) :
 			       "ISO8859-1";
 #else
 		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : "ISO8859-1";
-#endif		
+#endif
 		settings_set_str("term_charset", term_charset);
-		/* FIXME: move the check of term_charset into fe-text/term.c 
-		          it breaks the proper term_input_type 
+		/* FIXME: move the check of term_charset into fe-text/term.c
+		          it breaks the proper term_input_type
 		          setup and reemitting of the signal is kludgy */
 		if (g_strcasecmp(term_charset, old_term_charset) != 0)
 			signal_emit("setup changed", 0);
 	}
-	
+
 	if (recode_out_default)
 		g_free(recode_out_default);
 	recode_out_default = g_strdup(settings_get_str("recode_out_default_charset"));
-	if (recode_out_default != NULL && *recode_out_default != '\0' && 
+	if (recode_out_default != NULL && *recode_out_default != '\0' &&
 	    !is_valid_charset(recode_out_default)) {
 		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), recode_out_default);
 		g_free(recode_out_default);
