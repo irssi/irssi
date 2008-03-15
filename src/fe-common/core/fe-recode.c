@@ -133,7 +133,7 @@ static void fe_recode_remove_cmd (const char *data, SERVER_REC *server, WI_ITEM_
 
 	if (iconfig_get_str("conversions", target, NULL) == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CONVERSION_NOT_FOUND, target);
-	else	{
+	else {
 		iconfig_set_str("conversions", target, NULL);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CONVERSION_REMOVED, target);
 	}
