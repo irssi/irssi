@@ -65,7 +65,7 @@ int level_get(const char *level)
 	/* partial match allowed, as long as it's the only one that matches */
 	match = 0;
 	for (n = 0; levels[n] != NULL; n++) {
-		if (g_strncasecmp(levels[n], level, len) == 0) {
+		if (g_ascii_strncasecmp(levels[n], level, len) == 0) {
 			if ((int)strlen(levels[n]) == len) {
 				/* full match */
 				return 1L << n;

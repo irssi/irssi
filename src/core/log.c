@@ -55,7 +55,7 @@ static int log_item_str2type(const char *type)
 	int n;
 
 	for (n = 0; log_item_types[n] != NULL; n++) {
-		if (g_strcasecmp(log_item_types[n], type) == 0)
+		if (g_ascii_strcasecmp(log_item_types[n], type) == 0)
 			return n;
 	}
 
