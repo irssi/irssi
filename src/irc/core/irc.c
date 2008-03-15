@@ -291,13 +291,13 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 
 	g_return_if_fail(line != NULL);
 
-	params = event_get_params(line, 2, NULL, &args);
+	params = event_get_params(line, 2, NULL, &target);
 	recoded_nick = recode_in(SERVER(server), nick, NULL);
-	if (ischannel(*args) ||
-	    (*args++ == '@' && ischannel(*args)))
-		target = args;
-	else {
-		target = recoded_nick;
+	if (!ischannel(*target)) {
+		if (*target == '@' && ischannel(target[1]))
+			target++;
+		else
+			target = recoded_nick;
 	}
 	recoded_line = recode_in(SERVER(server), line, target);
 	/* split event / args */
