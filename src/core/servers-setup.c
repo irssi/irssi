@@ -545,13 +545,6 @@ void servers_setup_init(void)
 	settings_add_str("server", "user_name", NULL);
 	settings_add_str("server", "real_name", NULL);
 
-	settings_add_bool("server", "use_ssl", FALSE);
-	settings_add_str("server", "ssl_cert", NULL);
-	settings_add_str("server", "ssl_pkey", NULL);
-	settings_add_bool("server", "ssl_verify", FALSE);
-	settings_add_str("server", "ssl_cafile", NULL);
-	settings_add_str("server", "ssl_cacert", NULL);
-
 	settings_add_bool("proxy", "use_proxy", FALSE);
 	settings_add_str("proxy", "proxy_address", "");
 	settings_add_int("proxy", "proxy_port", 6667);
