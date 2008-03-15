@@ -22,8 +22,6 @@
 20:46 < Juerd> and it happens in a _query_
 20:47 <@Juerd> cras: for some reason irssi doesn't know this happens in a 
                query, and displays "< Juerd:> foo" in the status window
-07.06.2002 08:37 #irssi: <@Qrczak> cras: A bug. After /upgrade when being away 
-                                   the awaylog is not being written to.
 04.06.2002 08:54 #irssi: <@Garion> cras: i've seen it several times now - a 
                                    line of 79 or 80 chars (my win is 80 wide) 
                                    which has an empty line below it, and that 
@@ -31,22 +29,6 @@
                                    window with that line in it, thus keeping 1 
                                    line from the old window in the current 
                                    window. Very confusing
-21:43 [IRCNet] [HiroP-(~HiroP@p508035EC.dip.t-dialin.net)] Hi there. I just 
-          wanted to tell you that there seems to be a problem when joining 
-          large channels (500+ people) while a regexp ignore is active. I had 
-          one to ignore all server ads
-21:43 [IRCNet] [HiroP-(~HiroP@p508035EC.dip.t-dialin.net)] 1 *: ALL -regexp 
-          -pattern .*erver.*nline.*
-21:43 [IRCNet] [HiroP-(~HiroP@p508035EC.dip.t-dialin.net)] After joining, I 
-          could see the nicklist and 1 or 2 lines of what people were saying. 
-          Then irssi either core-dumped, got disconnected or just sat there 
-          apparently without receiving any more data (lag-counter going up to 
-          several minutes). 
-
-21:28 < Samus_Aran> cras: /log also shows #Linuux ... which I typod a couple
-                    days ago
-21:30 < Samus_Aran> it doesnt show any of the queries which i closed, though,
-                    jush #channels
 
 16:39 <@Qrczak> cras: I'm not sure how exactly to reproduce it but it happens 
                 often. When I jump to the window with a query using Alt-a 
@@ -55,6 +37,8 @@
                 windows, and then that person says something again, I'm brought 
                 to the new query window automatically (that's of course bad).
 
+ - lastlog, ignore, hilight and sb levelclear take a list of levels
+   argument in different ways, a uniform way would be better.
  - /exec - -out cat file does not send the whole file
  - %n%_ won't show at lastlog..
  - use_status_window, use_msgs_window should work instantly..
@@ -99,8 +83,6 @@
    successfully.
  - /set beep_msg_level hilight won't work if I have /hilight -word
  - /hilight -priority is broken
- - /hilight -level "public -actions" or something so it wouldn't match
-   actions.
  - move /SET hilight_*color to theme
  - /ignore, /hilight and /lastlog could complain immediately if used
    regexp is broken. /hilight list could show also if it's broken like
@@ -115,7 +97,6 @@
     - reconnections aren't transferred(?)
 
  - Logging:
-    - /LOG OPEN doesn't autocreate directories..
     - /LOG OPEN -targets *!*cras@*.fi
     - /SET autolog -> /LOG OPEN -targets * (internally, at least)
     - /LOG OPEN shouldn't really open the file until first line is 
@@ -153,6 +134,7 @@
       /CATed when setting yourself unaway
     - /AWAYLOG could show the current awaylog and optionally reset it
     - The channel name should be optional there
+    - after /upgrade when being away the awaylog is not being written to.
 
  - Window item placing:
     - !channel vs. !12345channel. it's layout saved with full name, but joined
@@ -161,8 +143,6 @@
       the query window with the dcc chat window.
     - closed DCC chats should add temporary window bind to the dcc chat so
       future chats for same nick would use the same window
-    - /JOIN #foo could *optionally* move the channel to active window
-      (default off, it confuses people)
 
  - DCC
     - /DCC SEND wildcard support
@@ -359,8 +339,6 @@
     - /LAST -since <timestamp>
     - /LAST : use /SET timestamp_format
     - /LAST -allwindows would check the lastlog from all open windows
-    - /SCROLLBACK CLEAR all -public - a bit like /LAST -clear
-      (make /LAST -clear do /SB CLEAR lastlog)
 
  - Formats / themes:
     - scripting for formats (see the themes.txt), and make the default.theme
@@ -561,7 +539,6 @@
     - A way to disable some command entirely? eg. not show in completion
       list or /HELP or anywhere..
 
- - Read server capabilities from 005 numeric
  - extra spaces after commands don't always work, eg /wii  nick, /help  xx
  - hide channel key in statusbar. This would require a $cmode_nokey or
    something..
