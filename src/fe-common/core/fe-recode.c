@@ -33,11 +33,6 @@
 #  include <langinfo.h>
 #endif
 
-#define SLIST_FOREACH(var, head)		\
-for ((var) = (head);				\
-		 (var);					\
-		 (var) = g_slist_next((var)))
-
 char *recode_fallback = NULL;
 char *recode_out_default = NULL;
 char *term_charset = NULL;
@@ -79,8 +74,7 @@ static void fe_recode_cmd (const char *data, SERVER_REC *server, WI_ITEM_REC *wi
 		}
 
 	 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_RECODE_HEADER);
-		SLIST_FOREACH(tmp, sorted)
-		{
+		for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 			CONFIG_NODE *node = tmp->data;
 			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_RECODE_LINE, node->key, node->value);
 		}
