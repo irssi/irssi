@@ -512,6 +512,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	GList *matches;
 	GString *str;
         int i, match_after, line_matched;
+	char * (*match_func)(const char *, const char *);
 
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(text != NULL, NULL);
@@ -532,6 +533,11 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
 	line = startline != NULL ? startline : buffer->first_line;
 
+	if (fullword)
+		match_func = case_sensitive ? strstr_full : stristr_full;
+	else
+		match_func = case_sensitive ? strstr : stristr;
+
 	for (; line != NULL; line = line->next) {
 		line_matched = (line->info.level & level) != 0 &&
 			(line->info.level & nolevel) == 0;
@@ -544,9 +550,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 #ifdef HAVE_REGEX_H
 			regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
 #endif
-			fullword ? strstr_full_case(str->str, text, !case_sensitive) != NULL :
-			case_sensitive ? strstr(str->str, text) != NULL :
-			stristr(str->str, text) != NULL;
+			match_func(str->str, text) != NULL;
 		}
 
 		if (line_matched) {
