@@ -16,11 +16,6 @@ AM_PROG_LIBTOOL
 AC_PATH_PROG(sedpath, sed)
 AC_PATH_PROG(perlpath, perl)
 
-dnl * --disable-static isn't a good idea, complain if it's used
-if test "x$enable_static" = "xno"; then
-	AC_ERROR([Don't give --disable-static option to configure])
-fi
-
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
