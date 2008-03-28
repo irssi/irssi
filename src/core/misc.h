@@ -85,9 +85,7 @@ int strocpy(char *dest, const char *src, size_t dstsize);
 /* strstr() with case-ignoring */
 char *stristr(const char *data, const char *key);
 
-/* like strstr(), but matches only for full words.
-   `icase' specifies if match is case sensitive */
-char *strstr_full_case(const char *data, const char *key, int icase);
+/* like strstr(), but matches only for full words. */
 char *strstr_full(const char *data, const char *key);
 char *stristr_full(const char *data, const char *key);
 

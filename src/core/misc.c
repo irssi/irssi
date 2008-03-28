@@ -308,7 +308,7 @@ char *stristr(const char *data, const char *key)
 	((unsigned char) (c) < 128 && \
 	(i_isspace(c) || i_ispunct(c)))
 
-char *strstr_full_case(const char *data, const char *key, int icase)
+static char *strstr_full_case(const char *data, const char *key, int icase)
 {
 	const char *start, *max;
 	int keylen, datalen, pos, match;
