@@ -558,7 +558,7 @@ static void cmd_hilight(const char *data)
 	if (*text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
-		g_strsplit(replace_chars(chanarg, ',', ' '), " ", -1);
+		g_strsplit(chanarg, ",", -1);
 
 	rec = hilight_find(text, channels);
 	if (rec == NULL) {

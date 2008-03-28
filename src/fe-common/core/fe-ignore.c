@@ -152,7 +152,7 @@ static void cmd_ignore(const char *data)
 		mask = NULL;
 	}
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
-		g_strsplit(replace_chars(chanarg, ',', ' '), " ", -1);
+		g_strsplit(chanarg, ",", -1);
 
 	rec = patternarg != NULL ? NULL: ignore_find(NULL, mask, channels);
 	new_ignore = rec == NULL;
