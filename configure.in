@@ -354,27 +354,15 @@ cat > conftest.c <<EOF
 int modfunc(){return (int)floor(1.2);}
 EOF
 
-./libtool --tag=CC --mode=compile $CC $CFLAGS -c conftest.c 2> /dev/null > /dev/null
-if test ! -s conftest.lo; then
-  AC_ERROR([error compiling test module])
-fi
-
-dnl ** link to library
-./libtool --tag=CC --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la > /dev/null
-if test ! -s .libs/libconftest.a; then
-  AC_ERROR([error, can't even find .a library])
-fi
-
-dnl ** check if dynamic linking worked
-libfile=`grep '^library_names' libconftest.la|$sedpath "s/library_names='\(.*\)'.*/\1/"|$sedpath 's/.* \([[^ ]]*\)$/\1/'`
-if test ! -s .libs/$libfile; then
-  AC_MSG_RESULT([no, error linking test module])
+if ! ./libtool --tag=CC --mode=compile $CC $CFLAGS -c conftest.c >/dev/null 2>&1 || \
+   ! ./libtool --tag=CC --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la >/dev/null 2>&1; then
+  AC_MSG_RESULT([no, error compiling test module])
 else
   cat > conftest.c <<EOF
 #include <gmodule.h>
 main() {
 GModule *m; int (*modfunc)(void);
-m = g_module_open(".libs/$libfile", 0);
+m = g_module_open("libconftest.la", 0);
 if (!m) g_print("error loading: %s", g_module_error());
 else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
   g_print("modfunc() symbol not found from module");
