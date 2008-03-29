@@ -20,9 +20,7 @@
 
 #include "module.h"
 #include "misc.h"
-#include "pidwait.h"
 
-#include <errno.h>
 #ifdef HAVE_REGEX_H
 #  include <regex.h>
 #endif
