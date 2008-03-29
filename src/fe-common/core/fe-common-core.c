@@ -32,7 +32,7 @@
 #include "channels.h"
 #include "servers-setup.h"
 
-#include "autorun.h"
+#include "special-vars.h"
 #include "fe-core-commands.h"
 #include "fe-queries.h"
 #include "hilight-text.h"
@@ -390,6 +390,36 @@ static void sig_setup_changed(void)
 
 	if (changed)
 		create_windows();
+}
+
+static void autorun_startup(void)
+{
+	char *path;
+	GIOChannel *handle;
+	GString *buf;
+	gsize tpos;
+
+	/* open ~/.irssi/startup and run all commands in it */
+	path = g_strdup_printf("%s/startup", get_irssi_dir());
+	handle = g_io_channel_new_file(path, "r", NULL);
+	g_free(path);
+	if (handle == NULL) {
+		/* file not found */
+		return;
+	}
+
+	buf = g_string_sized_new(512);
+	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
+		buf->str[tpos] = '\0';
+		if (buf->str[0] != '#') {
+			eval_special_string(buf->str, "",
+					    active_win->active_server,
+					    active_win->active);
+		}
+	}
+	g_string_free(buf, TRUE);
+
+	g_io_channel_close(handle);
 }
 
 void fe_common_core_finish_init(void)

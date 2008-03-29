@@ -7,7 +7,6 @@ INCLUDES = \
 	-DTHEMESDIR=\""$(datadir)/irssi/themes"\"
 
 libfe_common_core_a_SOURCES = \
-	autorun.c \
 	chat-completion.c \
 	command-history.c \
 	completion.c \
@@ -42,7 +41,6 @@ libfe_common_core_a_SOURCES = \
 
 pkginc_fe_common_coredir=$(pkgincludedir)/src/fe-common/core
 pkginc_fe_common_core_HEADERS = \
-	autorun.h \
 	command-history.h \
 	chat-completion.h \
 	completion.h \
