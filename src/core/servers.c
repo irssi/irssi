@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "line-split.h"
+#include "net-disconnect.h"
 #include "net-nonblock.h"
 #include "net-sendbuffer.h"
 #include "misc.h"

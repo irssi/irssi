@@ -55,9 +55,6 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
 GIOChannel *net_connect_unix(const char *path);
 /* Disconnect socket */
 void net_disconnect(GIOChannel *handle);
-/* Try to let the other side close the connection, if it still isn't
-   disconnected after certain amount of time, close it ourself */
-void net_disconnect_later(GIOChannel *handle);
 
 /* Listen for connections on a socket */
 GIOChannel *net_listen(IPADDR *my_ip, int *port);
