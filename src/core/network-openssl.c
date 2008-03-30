@@ -156,15 +156,15 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 static GIOStatus irssi_ssl_seek(GIOChannel *handle, gint64 offset, GSeekType type, GError **gerr)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
-	return g_io_channel_seek_position(chan->giochan, offset, type, NULL);
+
+	return chan->giochan->funcs->io_seek(handle, offset, type, gerr);
 }
 
 static GIOStatus irssi_ssl_close(GIOChannel *handle, GError **gerr)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
-	g_io_channel_close(chan->giochan);
 
-	return G_IO_STATUS_NORMAL;
+	return chan->giochan->funcs->io_close(handle, gerr);
 }
 
 static GSource *irssi_ssl_create_watch(GIOChannel *handle, GIOCondition cond)
