@@ -301,6 +301,8 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 	gchan = (GIOChannel *)chan;
 	gchan->funcs = &irssi_ssl_channel_funcs;
 	g_io_channel_init(gchan);
+	gchan->is_readable = gchan->is_writeable = TRUE;
+	gchan->use_buffer = FALSE;
 
 	return gchan;
 }
