@@ -114,7 +114,6 @@ int line_split(const char *data, int len, char **output, LINEBUF_REC **buffer)
 			return -1;
 
 		/* no new data got but still something in buffer.. */
-                len = 0;
 		if (linebuf_find(rec, '\n') == NULL) {
 			/* connection closed and last line is missing \n ..
 			   just add it so we can see if it had
