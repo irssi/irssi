@@ -37,6 +37,8 @@
                 windows, and then that person says something again, I'm brought 
                 to the new query window automatically (that's of course bad).
 
+ - import libsoup GnuTLS driver
+   http://svn.gnome.org/viewvc/libsoup/trunk/libsoup/soup-gnutls.c?view=log
  - lastlog, ignore, hilight and sb levelclear take a list of levels
    argument in different ways, a uniform way would be better.
  - /exec - -out cat file does not send the whole file
