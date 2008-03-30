@@ -53,12 +53,7 @@ static void linebuf_append(LINEBUF_REC *rec, const char *data, int len)
 
 static char *linebuf_find(LINEBUF_REC *rec, char chr)
 {
-        int n;
-
-	for (n = 0; n < rec->len; n++)
-		if (rec->str[n] == chr) return rec->str+n;
-
-	return NULL;
+	return memchr(rec->str, chr, rec->len);
 }
 
 static int remove_newline(LINEBUF_REC *rec)
