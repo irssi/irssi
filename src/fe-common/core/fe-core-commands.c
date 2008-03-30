@@ -146,7 +146,7 @@ static void cmd_cat(const char *data)
 	}
 	g_string_free(buf, TRUE);
 
-	g_io_channel_close(handle);
+	g_io_channel_unref(handle);
 }
 
 /* SYNTAX: BEEP */

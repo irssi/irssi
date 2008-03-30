@@ -419,7 +419,7 @@ static void autorun_startup(void)
 	}
 	g_string_free(buf, TRUE);
 
-	g_io_channel_close(handle);
+	g_io_channel_unref(handle);
 }
 
 void fe_common_core_finish_init(void)

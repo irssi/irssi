@@ -151,7 +151,7 @@ static int show_help_file(const char *file)
 	}
 	g_string_free(buf, TRUE);
 
-	g_io_channel_close(handle);
+	g_io_channel_unref(handle);
 	return TRUE;
 }
 
