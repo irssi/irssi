@@ -520,19 +520,19 @@ static int term_setup(TERM_REC *term)
 
 	term_env = getenv("TERM");
 	if (term_env == NULL) {
-		fprintf(term->out, "TERM environment not set\n");
+		fprintf(stderr, "TERM environment not set\n");
                 return 0;
 	}
 
 #ifdef HAVE_TERMINFO
 	if (setupterm(term_env, 1, &err) != 0) {
-		fprintf(term->out, "setupterm() failed for TERM=%s: %d\n", term_env, err);
+		fprintf(stderr, "setupterm() failed for TERM=%s: %d\n", term_env, err);
 		return 0;
 	}
 #else
 	if (tgetent(term->buffer1, term_env) < 1)
 	{
-		fprintf(term->out, "Termcap not found for TERM=%s\n", term_env);
+		fprintf(stderr, "Termcap not found for TERM=%s\n", term_env);
 		return 0;
 	}
 #endif
@@ -545,7 +545,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->TI_hpa && term->TI_vpa)
 		term->move = _move_pa;
 	else {
-                fprintf(term->out, "Terminal doesn't support cursor movement\n");
+                fprintf(stderr, "Terminal doesn't support cursor movement\n");
 		return 0;
 	}
 	term->move_relative = _move_relative;
@@ -562,7 +562,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1))
 		term->scroll = _scroll_line_1;
 	else if (term->scroll == NULL) {
-                fprintf(term->out, "Terminal doesn't support scrolling\n");
+                fprintf(stderr, "Terminal doesn't support scrolling\n");
 		return 0;
 	}
 
@@ -579,7 +579,7 @@ static int term_setup(TERM_REC *term)
 		/* we could do this by line inserts as well, but don't
 		   bother - if some terminal has insert line it most probably
 		   has delete line as well, if not a regular clear screen */
-                fprintf(term->out, "Terminal doesn't support clearing screen\n");
+                fprintf(stderr, "Terminal doesn't support clearing screen\n");
 		return 0;
 	}
 
@@ -587,7 +587,7 @@ static int term_setup(TERM_REC *term)
 	if (term->TI_el)
 		term->clrtoeol = _clrtoeol;
 	else {
-                fprintf(term->out, "Terminal doesn't support clearing to end of line\n");
+                fprintf(stderr, "Terminal doesn't support clearing to end of line\n");
 		return 0;
 	}
 
