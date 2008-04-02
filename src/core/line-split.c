@@ -43,8 +43,7 @@ static void linebuf_append(LINEBUF_REC *rec, const char *data, int len)
 {
 	if (rec->len+len > rec->alloc) {
 		rec->alloc = nearest_power(rec->len+len);;
-		rec->str = rec->str == NULL ? g_malloc(rec->alloc) :
-			g_realloc(rec->str, rec->alloc);
+		rec->str = g_realloc(rec->str, rec->alloc);
 	}
 
 	memcpy(rec->str + rec->len, data, len);
