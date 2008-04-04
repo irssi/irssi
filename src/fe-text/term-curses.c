@@ -308,7 +308,7 @@ void term_move(TERM_WINDOW *window, int x, int y)
         wmove(window->win, y, x);
 }
 
-void term_addch(TERM_WINDOW *window, int chr)
+void term_addch(TERM_WINDOW *window, char chr)
 {
         waddch(window->win, chr);
 }

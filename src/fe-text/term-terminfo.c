@@ -385,7 +385,7 @@ static void term_printed_text(int count)
 		cforcemove = TRUE;
 }
 
-void term_addch(TERM_WINDOW *window, int chr)
+void term_addch(TERM_WINDOW *window, char chr)
 {
 	if (term_detached) return;
 

@@ -289,13 +289,13 @@ static void _clrtoeol(TERM_REC *term)
 }
 
 /* Repeat character (rep / rp) */
-static void _repeat(TERM_REC *term, int chr, int count)
+static void _repeat(TERM_REC *term, char chr, int count)
 {
 	tput(tparm(term->TI_rep, chr, count));
 }
 
 /* Repeat character (manual) */
-static void _repeat_manual(TERM_REC *term, int chr, int count)
+static void _repeat_manual(TERM_REC *term, char chr, int count)
 {
 	while (count > 0) {
 		putc(chr, term->out);

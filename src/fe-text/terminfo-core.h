@@ -30,7 +30,7 @@ struct _TERM_REC {
 
         void (*clear)(TERM_REC *term);
 	void (*clrtoeol)(TERM_REC *term);
-	void (*repeat)(TERM_REC *term, int chr, int count);
+	void (*repeat)(TERM_REC *term, char chr, int count);
 
 	void (*set_fg)(TERM_REC *term, int color);
 	void (*set_bg)(TERM_REC *term, int color);
