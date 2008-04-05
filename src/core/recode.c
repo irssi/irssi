@@ -117,18 +117,17 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	autodetect = settings_get_bool("recode_autodetect_utf8");
 	term_is_utf8 = recode_get_charset(&to);
 
+	if (translit && !is_translit(to))
+		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
+
 	if (autodetect && str_is_utf8)
 		if (term_is_utf8)
 			return g_strdup(str);
 		else
 			from = "UTF-8";
 
-	else {
+	else
 		from = find_conversion(server, target);
-	}
-
-	if (translit && !is_translit(to))
-		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
 
 	if (from)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
