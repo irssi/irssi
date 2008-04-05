@@ -154,8 +154,7 @@ static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 
 static int window_level_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
 {
-	if (w1->data_level > w2->data_level ||
-	    (w1->data_level == w2->data_level && w1->refnum < w2->refnum))
+	if (w1->data_level >= w2->data_level)
 		return -1;
 	else
 		return 1;

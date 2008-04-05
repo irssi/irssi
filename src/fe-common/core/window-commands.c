@@ -249,11 +249,11 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 {
 	WINDOW_REC *rec, *max_win;
 	GSList *tmp;
-	int max_act, max_ref, through;
+	int max_act, through;
 
 	g_return_val_if_fail(window != NULL, NULL);
 
-	max_win = NULL; max_act = 0; max_ref = 0; through = FALSE;
+	max_win = NULL; max_act = 0; through = FALSE;
 
 	tmp = g_slist_find(windows, window);
 	for (;; tmp = tmp->next) {
@@ -267,12 +267,9 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 
 		rec = tmp->data;
 
-		if (rec->data_level > 0 &&
-		    (rec->data_level > max_act ||
-		     (rec->data_level == max_act && rec->refnum < max_ref))) {
+		if (rec->data_level > 0 && max_act < rec->data_level) {
 			max_act = rec->data_level;
 			max_win = rec;
-			max_ref = rec->refnum;
 		}
 	}
 
