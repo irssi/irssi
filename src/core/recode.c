@@ -134,12 +134,13 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
 	if (!recoded) {
-		if (term_is_utf8) {
-			if (!str_is_utf8)
-				from = settings_get_str("recode_fallback");
-
-		} else if (str_is_utf8)
-			from = "UTF-8";
+		if (str_is_utf8)
+			if (term_is_utf8)
+				return g_strdup(str);
+			else
+				from = "UTF-8";
+		else
+			from = settings_get_str("recode_fallback");
 
 		if (from)
 			recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
