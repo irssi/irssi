@@ -216,10 +216,13 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 
 static void sig_statusbar_activity_window_destroyed(WINDOW_REC *window)
 {
+	GList *node;
+
 	g_return_if_fail(window != NULL);
 
-	if (g_list_find(activity_list, window) != NULL)
-		activity_list = g_list_remove(activity_list, window);
+	node = g_list_find(activity_list, window);
+	if (node != NULL)
+		activity_list = g_list_delete_link(activity_list, node);
 	statusbar_items_redraw("act");
 }
 
