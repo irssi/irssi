@@ -180,11 +180,6 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 
 	if (actlist_sort == 2) {
 		if (node != NULL) {
-			if (window->data_level == GPOINTER_TO_INT(oldlevel)) {
-				if (window->hilight_color != 0)
-					statusbar_items_redraw("act");
-				return;
-			}
 			activity_list = g_list_delete_link(activity_list, node);
 		}
 		if (window->data_level != 0)
