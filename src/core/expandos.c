@@ -343,6 +343,7 @@ static char *expando_cmdchar(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
 {
 	char *cmode;
+	char *args;
 
 	*free_ret = FALSE;
 
@@ -354,8 +355,9 @@ static char *expando_chanmode(SERVER_REC *server, void *item, int *free_ret)
 
 	*free_ret = TRUE;
 	cmode = g_strdup(CHANNEL(item)->mode);
-	if (strchr(cmode, ' ') != NULL)
-		*(strchr(cmode, ' ')) = 0;
+	args = strchr(cmode, ' ');
+	if (args != NULL)
+		*args = 0;
 
 	return cmode;
 }
