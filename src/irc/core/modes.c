@@ -88,14 +88,8 @@ static void mode_add_arg(GString *str, int pos, int updating, const char *arg)
                 g_string_erase(str, pos, (int) (p-str->str)-pos);
 	}
 
-	/* .. GLib shouldn't fail when inserting at the end of the string */
-	if (pos == str->len) {
-		g_string_append_c(str, ' ');
-		g_string_append(str, arg);
-	} else {
-		g_string_insert_c(str, pos, ' ');
-		g_string_insert(str, pos+1, arg);
-	}
+	g_string_insert_c(str, pos, ' ');
+	g_string_insert(str, pos+1, arg);
 }
 
 /* Add mode character to list sorted alphabetically */
