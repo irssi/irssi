@@ -86,7 +86,7 @@ void term_stop(void);
 
 /* keyboard input handling */
 void term_set_input_type(int type);
-int term_gets(unichar *buffer, int size);
+void term_gets(void);
 
 /* internal */
 void term_common_init(void);

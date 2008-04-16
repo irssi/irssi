@@ -608,40 +608,40 @@ void term_set_input_type(int type)
 	}
 }
 
-int term_gets(unichar *buffer, int size)
+void term_gets(void)
 {
 	int ret, i, char_len;
 
 	if (term_detached)
-		return 0;
+		return;
 
         /* fread() doesn't work */
-	if (size > sizeof(term_inbuf)-term_inbuf_pos)
-		size = sizeof(term_inbuf)-term_inbuf_pos;
 
 	ret = read(fileno(current_term->in),
-		   term_inbuf + term_inbuf_pos, size);
+		   term_inbuf + term_inbuf_pos, sizeof(term_inbuf)-term_inbuf_pos);
 	if (ret == 0) {
 		/* EOF - terminal got lost */
 		if (auto_detach)
                         term_detach();
+		else
 		ret = -1;
 	} else if (ret == -1 && (errno == EINTR || errno == EAGAIN))
 		ret = 0;
+	if (ret == -1)
+		signal_emit("command quit", 1, "Lost terminal");
 
 	if (ret > 0) {
                 /* convert input to unichars. */
 		term_inbuf_pos += ret;
-                ret = 0;
 		for (i = 0; i < term_inbuf_pos; ) {
+			unichar key;
 			char_len = input_func(term_inbuf+i, term_inbuf_pos-i,
-					      buffer);
+					      &key);
 			if (char_len < 0)
 				break;
+			signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
 
 			i += char_len;
-                        buffer++;
-                        ret++;
 		}
 
 		if (i >= term_inbuf_pos)
@@ -651,6 +651,4 @@ int term_gets(unichar *buffer, int size)
                         term_inbuf_pos -= i;
 		}
 	}
-
-	return ret;
 }

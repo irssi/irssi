@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "signals.h"
 #include "settings.h"
 
 #include "term.h"
@@ -384,16 +385,15 @@ void term_set_input_type(int type)
 {
 }
 
-int term_gets(unichar *buffer, int size)
+void term_gets(void)
 {
-	int count;
 #ifdef WIDEC_CURSES
 	wint_t key;
 #else
 	int key;
 #endif
 
-	for (count = 0; count < size; ) {
+	for (;;) {
 #ifdef WIDEC_CURSES
 		if (get_wch(&key) == ERR)
 #else
@@ -405,8 +405,6 @@ int term_gets(unichar *buffer, int size)
 			continue;
 #endif
 
-		buffer[count++] = key;
+		signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
 	}
-
-	return count;
 }

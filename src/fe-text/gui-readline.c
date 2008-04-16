@@ -722,25 +722,12 @@ static void key_delete_to_next_space(void)
 
 static void sig_input(void)
 {
-        unichar buffer[128];
-	int ret, i;
-
 	if (!active_entry) {
                 /* no active entry yet - wait until we have it */
 		return;
 	}
 
-	ret = term_gets(buffer, sizeof(buffer)/sizeof(buffer[0]));
-	if (ret == -1) {
-		/* lost terminal */
-		if (!term_detached)
-			signal_emit("command quit", 1, "Lost terminal");
-	} else {
-		for (i = 0; i < ret; i++) {
-			signal_emit("gui key pressed", 1,
-				    GINT_TO_POINTER(buffer[i]));
-		}
-	}
+	term_gets();
 }
 
 time_t get_idle_time(void)
