@@ -40,6 +40,8 @@ TEXT_BUFFER_REC *textbuffer_create(void)
 
 	buffer = g_mem_chunk_alloc0(buffer_chunk);
 	buffer->last_eol = TRUE;
+	buffer->last_fg = LINE_COLOR_DEFAULT;
+	buffer->last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
         return buffer;
 }
 
@@ -266,8 +268,6 @@ int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search)
         return FALSE;
 }
 
-static int last_fg, last_bg, last_flags;
-
 void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 				int fg, int bg, int flags)
 {
@@ -283,22 +283,22 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
                 bg |= LINE_COLOR_BLINK;
 
 	pos = 0;
-	if (fg != last_fg) {
-		last_fg = fg;
+	if (fg != buffer->last_fg) {
+		buffer->last_fg = fg;
 		data[pos++] = 0;
 		data[pos++] = fg == 0 ? LINE_CMD_COLOR0 : fg;
 	}
-	if (bg != last_bg) {
-                last_bg = bg;
+	if (bg != buffer->last_bg) {
+                buffer->last_bg = bg;
 		data[pos++] = 0;
 		data[pos++] = bg;
 	}
 
-	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
+	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (buffer->last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_UNDERLINE;
 	}
-	if ((flags & GUI_PRINT_FLAG_REVERSE) != (last_flags & GUI_PRINT_FLAG_REVERSE)) {
+	if ((flags & GUI_PRINT_FLAG_REVERSE) != (buffer->last_flags & GUI_PRINT_FLAG_REVERSE)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_REVERSE;
 	}
@@ -310,7 +310,7 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
         if (pos > 0)
 		*line = textbuffer_insert(buffer, *line, data, pos, NULL);
 
-	last_flags = flags;
+	buffer->last_flags = flags;
 }
 
 LINE_REC *textbuffer_append(TEXT_BUFFER_REC *buffer,
@@ -344,9 +344,9 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 		data[len-2] == 0 && data[len-1] == LINE_CMD_EOL;
 
 	if (buffer->last_eol) {
-		last_fg = LINE_COLOR_DEFAULT;
-		last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
-		last_flags = 0;
+		buffer->last_fg = LINE_COLOR_DEFAULT;
+		buffer->last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
+		buffer->last_flags = 0;
 	}
 
         return line;
@@ -590,8 +590,6 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
 void textbuffer_init(void)
 {
-	last_fg = LINE_COLOR_DEFAULT;
-	last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
 	buffer_chunk = g_mem_chunk_new("text buffer chunk",
 				       sizeof(TEXT_BUFFER_REC),
 				       sizeof(TEXT_BUFFER_REC)*32, G_ALLOC_AND_FREE);
