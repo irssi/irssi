@@ -38,7 +38,7 @@
 
 #define MIN_SCREEN_WIDTH 20
 
-int term_width, term_height, term_detached;
+int term_width, term_height;
 
 int term_use_colors;
 int term_type;
@@ -116,8 +116,6 @@ static void read_settings(void)
 	int old_colors = term_use_colors;
         int old_type = term_type;
 
-        term_auto_detach(settings_get_bool("term_auto_detach"));
-
         /* set terminal type */
 	str = settings_get_str("term_charset");
 	if (g_ascii_strcasecmp(str, "utf-8") == 0)
@@ -150,7 +148,6 @@ void term_common_init(void)
 #endif
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
-        settings_add_bool("lookandfeel", "term_auto_detach", FALSE);
         settings_add_bool("lookandfeel", "mirc_blink_fix", FALSE);
 
 	force_colors = FALSE;

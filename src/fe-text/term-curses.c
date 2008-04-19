@@ -377,10 +377,6 @@ void term_stop(void)
 	irssi_redraw();
 }
 
-void term_auto_detach(int set)
-{
-}
-
 void term_set_input_type(int type)
 {
 }
