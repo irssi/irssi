@@ -43,67 +43,66 @@ typedef struct {
         const char *ti_name; /* terminfo name */
 	const char *tc_name; /* termcap name */
 	int type;
-        void *ptr;
+	unsigned int offset;
 } TERMINFO_REC;
 
 TERM_REC *current_term;
-static TERM_REC temp_term; /* not really used for anything */
 
 /* Define only what we might need */
 static TERMINFO_REC tcaps[] = {
         /* Terminal size */
-	{ "cols",	"co",	CAP_TYPE_INT,	&temp_term.width },
-	{ "lines",	"li",	CAP_TYPE_INT,	&temp_term.height },
+	{ "cols",	"co",	CAP_TYPE_INT,	G_STRUCT_OFFSET(TERM_REC, width) },
+	{ "lines",	"li",	CAP_TYPE_INT,	G_STRUCT_OFFSET(TERM_REC, height) },
 
         /* Cursor movement */
-	{ "smcup",	"ti",	CAP_TYPE_STR,	&temp_term.TI_smcup },
-	{ "rmcup",	"te",	CAP_TYPE_STR,	&temp_term.TI_rmcup },
-	{ "cup",	"cm",	CAP_TYPE_STR,	&temp_term.TI_cup },
-	{ "hpa",	"ch",	CAP_TYPE_STR,	&temp_term.TI_hpa },
-	{ "vpa",	"vh",	CAP_TYPE_STR,	&temp_term.TI_vpa },
-	{ "cub1",	"le",	CAP_TYPE_STR,	&temp_term.TI_cub1 },
-	{ "cuf1",	"nd",	CAP_TYPE_STR,	&temp_term.TI_cuf1 },
-	{ "civis",	"vi",	CAP_TYPE_STR,	&temp_term.TI_civis },
-	{ "cnorm",	"ve",	CAP_TYPE_STR,	&temp_term.TI_cnorm },
+	{ "smcup",	"ti",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_smcup) },
+	{ "rmcup",	"te",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rmcup) },
+	{ "cup",	"cm",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_cup) },
+	{ "hpa",	"ch",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_hpa) },
+	{ "vpa",	"vh",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_vpa) },
+	{ "cub1",	"le",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_cub1) },
+	{ "cuf1",	"nd",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_cuf1) },
+	{ "civis",	"vi",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_civis) },
+	{ "cnorm",	"ve",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_cnorm) },
 
         /* Scrolling */
-	{ "csr",      	"cs",	CAP_TYPE_STR,	&temp_term.TI_csr },
-	{ "wind",      	"wi",	CAP_TYPE_STR,	&temp_term.TI_wind },
-	{ "ri",      	"sr",	CAP_TYPE_STR,	&temp_term.TI_ri },
-	{ "rin",      	"SR",	CAP_TYPE_STR,	&temp_term.TI_rin },
-	{ "ind",      	"sf",	CAP_TYPE_STR,	&temp_term.TI_ind },
-	{ "indn",      	"SF",	CAP_TYPE_STR,	&temp_term.TI_indn },
-	{ "il",      	"AL",	CAP_TYPE_STR,	&temp_term.TI_il },
-	{ "il1",      	"al",	CAP_TYPE_STR,	&temp_term.TI_il1 },
-	{ "dl",      	"DL",	CAP_TYPE_STR,	&temp_term.TI_dl },
-	{ "dl1",      	"dl",	CAP_TYPE_STR,	&temp_term.TI_dl1 },
+	{ "csr",      	"cs",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_csr) },
+	{ "wind",      	"wi",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_wind) },
+	{ "ri",      	"sr",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_ri) },
+	{ "rin",      	"SR",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rin) },
+	{ "ind",      	"sf",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_ind) },
+	{ "indn",      	"SF",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_indn) },
+	{ "il",      	"AL",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_il) },
+	{ "il1",      	"al",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_il1) },
+	{ "dl",      	"DL",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_dl) },
+	{ "dl1",      	"dl",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_dl1) },
 
 	/* Clearing screen */
-	{ "clear",     	"cl",	CAP_TYPE_STR,	&temp_term.TI_clear },
-	{ "ed",     	"cd",	CAP_TYPE_STR,	&temp_term.TI_ed },
+	{ "clear",     	"cl",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_clear) },
+	{ "ed",     	"cd",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_ed) },
 
         /* Clearing to end of line */
-	{ "el",     	"ce",	CAP_TYPE_STR,	&temp_term.TI_el },
+	{ "el",     	"ce",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_el) },
 
         /* Repeating character */
-	{ "rep",     	"rp",	CAP_TYPE_STR,	&temp_term.TI_rep },
+	{ "rep",     	"rp",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rep) },
 
 	/* Colors */
-	{ "colors",	"Co",   CAP_TYPE_INT,   &temp_term.TI_colors },
-	{ "sgr0",     	"me",	CAP_TYPE_STR,	&temp_term.TI_sgr0 },
-	{ "smul",     	"us",	CAP_TYPE_STR,	&temp_term.TI_smul },
-	{ "rmul",     	"ue",	CAP_TYPE_STR,	&temp_term.TI_rmul },
-	{ "smso",     	"so",	CAP_TYPE_STR,	&temp_term.TI_smso },
-	{ "rmso",     	"se",	CAP_TYPE_STR,	&temp_term.TI_rmso },
-	{ "bold",     	"md",	CAP_TYPE_STR,	&temp_term.TI_bold },
-	{ "blink",     	"mb",	CAP_TYPE_STR,	&temp_term.TI_blink },
-	{ "setaf",     	"AF",	CAP_TYPE_STR,	&temp_term.TI_setaf },
-	{ "setab",     	"AB",	CAP_TYPE_STR,	&temp_term.TI_setab },
-	{ "setf",     	"Sf",	CAP_TYPE_STR,	&temp_term.TI_setf },
-	{ "setb",     	"Sb",	CAP_TYPE_STR,	&temp_term.TI_setb },
+	{ "colors",	"Co",   CAP_TYPE_INT,   G_STRUCT_OFFSET(TERM_REC, TI_colors) },
+	{ "sgr0",     	"me",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_sgr0) },
+	{ "smul",     	"us",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_smul) },
+	{ "rmul",     	"ue",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rmul) },
+	{ "smso",     	"so",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_smso) },
+	{ "rmso",     	"se",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rmso) },
+	{ "bold",     	"md",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_bold) },
+	{ "blink",     	"mb",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_blink) },
+	{ "setaf",     	"AF",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setaf) },
+	{ "setab",     	"AB",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setab) },
+	{ "setf",     	"Sf",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setf) },
+	{ "setb",     	"Sb",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setb) },
 
         /* Beep */
-	{ "bel",     	"bl",	CAP_TYPE_STR,	&temp_term.TI_bel },
+	{ "bel",     	"bl",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_bel) },
 };
 
 /* Move cursor (cursor_address / cup) */
@@ -368,7 +367,7 @@ static void term_fill_capabilities(TERM_REC *term)
 	char *tptr = term->buffer2;
 #endif
 	for (i = 0; i < sizeof(tcaps)/sizeof(tcaps[0]); i++) {
-		ptr = (char *) term + (int) ((char *) tcaps[i].ptr - (char *) &temp_term);
+		ptr = G_STRUCT_MEMBER_P(term, tcaps[i].offset);
 
 		switch (tcaps[i].type) {
 		case CAP_TYPE_FLAG:
