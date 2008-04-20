@@ -431,10 +431,9 @@ void term_addstr(TERM_WINDOW *window, const char *str)
 	len = strlen(str); /* FIXME utf8 or big5 */
         term_printed_text(len);
 
-	if (vcy != term_height || vcx != 0)
-		fputs(str, window->term->out);
-	else
-		fwrite(str, 1, len-1, window->term->out);
+	if (vcy == term_height && vcx == 0)
+		len--;
+	fwrite(str, 1, len, window->term->out);
 }
 
 void term_clrtoeol(TERM_WINDOW *window)
