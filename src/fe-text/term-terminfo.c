@@ -373,7 +373,6 @@ void term_addch(TERM_WINDOW *window, char chr)
 {
 	if (vcmove) term_move_real();
 
-	if (vcy < term_height-1 || vcx < term_width-1) {
 		/* With UTF-8, move cursor only if this char is either
 		   single-byte (8. bit off) or beginning of multibyte
 		   (7. bit off) */
@@ -383,7 +382,6 @@ void term_addch(TERM_WINDOW *window, char chr)
 		}
 
 		putc(chr, window->term->out);
-	}
 }
 
 static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
@@ -399,8 +397,6 @@ static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
 void term_add_unichar(TERM_WINDOW *window, unichar chr)
 {
 	if (vcmove) term_move_real();
-	if (vcy == term_height-1 && vcx == term_width-1)
-		return; /* last char in screen */
 
 	switch (term_type) {
 	case TERM_TYPE_UTF8:
@@ -431,8 +427,6 @@ void term_addstr(TERM_WINDOW *window, const char *str)
 	len = strlen(str); /* FIXME utf8 or big5 */
         term_printed_text(len);
 
-	if (vcy == term_height && vcx == 0)
-		len--;
 	fwrite(str, 1, len, window->term->out);
 }
 
