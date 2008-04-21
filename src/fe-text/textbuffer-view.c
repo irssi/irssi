@@ -437,7 +437,6 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 		if (view->utf8) {
 			chr = read_unichar(text, &end, &char_width);
-			end--;
 		} else {
 			chr = *text;
 			end = text;
@@ -446,15 +445,17 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				char_width = 2;
 			else
 				char_width = 1;
-			end += char_width-1;
+			end += char_width;
 		}
 
 		xpos += char_width;
 		if (xpos <= term_width) {
 			if (unichar_isprint(chr)) {
+				if (view->utf8)
+				term_add_unichar(view->window, chr);
+				else
 				for (; text < end; text++)
 					term_addch(view->window, *text);
-				term_addch(view->window, *text);
 			} else {
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
@@ -462,7 +463,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				term_set_color(view->window, color);
 			}
 		}
-		text++;
+		text = end;
 	}
 
 	if (need_clrtoeol && xpos < term_width) {
