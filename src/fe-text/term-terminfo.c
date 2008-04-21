@@ -373,15 +373,15 @@ void term_addch(TERM_WINDOW *window, char chr)
 {
 	if (vcmove) term_move_real();
 
-		/* With UTF-8, move cursor only if this char is either
-		   single-byte (8. bit off) or beginning of multibyte
-		   (7. bit off) */
-		if (term_type != TERM_TYPE_UTF8 ||
-		    (chr & 0x80) == 0 || (chr & 0x40) == 0) {
-			term_printed_text(1);
-		}
+	/* With UTF-8, move cursor only if this char is either
+	   single-byte (8. bit off) or beginning of multibyte
+	   (7. bit off) */
+	if (term_type != TERM_TYPE_UTF8 ||
+	    (chr & 0x80) == 0 || (chr & 0x40) == 0) {
+		term_printed_text(1);
+	}
 
-		putc(chr, window->term->out);
+	putc(chr, window->term->out);
 }
 
 static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
@@ -485,10 +485,10 @@ void term_refresh_thaw(void)
 
 void term_stop(void)
 {
-		terminfo_stop(current_term);
-		kill(getpid(), SIGTSTP);
-		terminfo_cont(current_term);
-		irssi_redraw();
+	terminfo_stop(current_term);
+	kill(getpid(), SIGTSTP);
+	terminfo_cont(current_term);
+	irssi_redraw();
 }
 
 static int input_utf8(const unsigned char *buffer, int size, unichar *result)
