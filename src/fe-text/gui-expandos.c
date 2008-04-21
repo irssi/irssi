@@ -37,6 +37,7 @@ static char *expando_idletime(SERVER_REC *server, void *item, int *free_ret)
 /* current contents of the input line */
 static char *expando_inputline(SERVER_REC *server, void *item, int *free_ret)
 {
+	*free_ret = TRUE;
 	return gui_entry_get_text(active_entry);
 }
 
