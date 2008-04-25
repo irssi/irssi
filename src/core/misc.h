@@ -1,6 +1,9 @@
 #ifndef __MISC_H
 #define __MISC_H
 
+int g_input_add_poll(int fd, int priority, int condition,
+		     GInputFunction function, void *data);
+
 /* `str' should be type char[MAX_INT_STRLEN] */
 #define ltoa(str, num) \
 	g_snprintf(str, sizeof(str), "%d", num)

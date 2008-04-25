@@ -87,6 +87,16 @@ int g_input_add(GIOChannel *source, int condition,
 				function, data);
 }
 
+/* easy way to bypass glib polling of io channel internal buffer */
+int g_input_add_poll(int fd, int priority, int condition,
+		     GInputFunction function, void *data)
+{
+	GIOChannel *source = g_io_channel_unix_new(fd);
+	int ret = g_input_add_full(source, priority, condition, function, data);
+	g_io_channel_unref(source);
+	return ret;
+}
+
 int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2)
 {
 	if (tv1->tv_sec < tv2->tv_sec)

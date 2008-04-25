@@ -70,13 +70,9 @@ static void sig_input(void);
 
 void input_listen_init(int handle)
 {
-        GIOChannel *stdin_channel;
-
-	stdin_channel = g_io_channel_unix_new(handle);
-	readtag = g_input_add_full(stdin_channel,
+	readtag = g_input_add_poll(handle,
 				   G_PRIORITY_HIGH, G_INPUT_READ,
 				   (GInputFunction) sig_input, NULL);
-        g_io_channel_unref(stdin_channel);
 }
 
 void input_listen_deinit(void)
