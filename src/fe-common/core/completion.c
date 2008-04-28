@@ -62,7 +62,7 @@ static const char *completion_find(const char *key, int automatic)
 }
 
 /* Return whole word at specified position in string */
-char *get_word_at(const char *str, int pos, char **startpos)
+static char *get_word_at(const char *str, int pos, char **startpos)
 {
 	const char *start, *end;
 
@@ -255,7 +255,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase)
 	((!g_path_is_absolute(path) || IS_CURRENT_DIR(path)) && \
 	 default_path != NULL)
 
-GList *list_add_file(GList *list, const char *name, const char *default_path)
+static GList *list_add_file(GList *list, const char *name, const char *default_path)
 {
 	struct stat statbuf;
 	char *fname;
@@ -463,7 +463,7 @@ static GList *completion_get_subcommands(const char *cmd)
 	return complist;
 }
 
-GList *completion_get_options(const char *cmd, const char *option)
+static GList *completion_get_options(const char *cmd, const char *option)
 {
 	COMMAND_REC *rec;
 	GList *list;
