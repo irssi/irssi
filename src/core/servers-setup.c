@@ -31,7 +31,7 @@
 
 GSList *setupservers;
 
-char *old_source_host;
+static char *old_source_host;
 int source_host_ok; /* Use source_host_ip .. */
 IPADDR *source_host_ip4, *source_host_ip6; /* Resolved address */
 

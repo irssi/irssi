@@ -33,9 +33,9 @@
 #  include <langinfo.h>
 #endif
 
-char *recode_fallback = NULL;
-char *recode_out_default = NULL;
-char *term_charset = NULL;
+static char *recode_fallback = NULL;
+static char *recode_out_default = NULL;
+static char *term_charset = NULL;
 
 static const char *fe_recode_get_target (WI_ITEM_REC *witem)
 {

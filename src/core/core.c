@@ -49,7 +49,7 @@
 
 #ifdef HAVE_SYS_RESOURCE_H
 #  include <sys/resource.h>
-   struct rlimit orig_core_rlimit;
+   static struct rlimit orig_core_rlimit;
 #endif
 
 void chat_commands_init(void);
