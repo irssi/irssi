@@ -35,7 +35,7 @@ FORMAT_REC fecommon_irc_notifylist_formats[] =
 	{ "notify_unidle", "{nick $0} [$5] [$1@$2] [{hilight $3}] just stopped idling", 6, { 0, 0, 0, 0, 0, 0 } },
 	{ "notify_online", "On $0: {hilight $1}", 2, { 0, 0 } },
 	{ "notify_offline", "Offline: $0", 1, { 0 } },
-	{ "notify_list", "$0: $1 $2 $3", 4, { 0, 0, 0, 0 } },
+	{ "notify_list", "$0: $1 $2", 4, { 0, 0, 0, 0 } },
 	{ "notify_list_empty", "The notify list is empty", 0 },
 
 	{ NULL, NULL, 0 },
