@@ -123,7 +123,6 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
 {
         PERL_SCRIPT_REC *script;
 	PERL_SOURCE_REC *rec;
-	GIOChannel *channel;
         const char *pkg;
 
         pkg = perl_get_package();
@@ -138,10 +137,8 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
 	rec->func = perl_func_sv_inc(func, pkg);
 	rec->data = SvREFCNT_inc(data);
 
-	channel = g_io_channel_unix_new(source);
-	rec->tag = g_input_add(channel, condition,
+	rec->tag = g_input_add_poll(source, G_PRIORITY_DEFAULT, condition,
 			       (GInputFunction) perl_source_event, rec);
-	g_io_channel_unref(channel);
 
 	perl_sources = g_slist_append(perl_sources, rec);
 	return rec->tag;
