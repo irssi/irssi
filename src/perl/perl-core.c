@@ -162,6 +162,7 @@ void perl_scripts_deinit(void)
 	/*perl_eval_pv("eval { foreach my $lib (@DynaLoader::dl_librefs) { DynaLoader::dl_unload_file($lib); } }", TRUE);*/
 
 	/* perl interpreter */
+	PL_perl_destruct_level = 1;
 	perl_destruct(my_perl);
 	perl_free(my_perl);
 	my_perl = NULL;
