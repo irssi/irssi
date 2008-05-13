@@ -45,7 +45,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "windowlist_header", "%#Ref Name                 Active item     Server          Level", 0 },
 	{ "windowlist_line", "%#$[3]0 %|$[20]1 $[15]2 $[15]3 $4", 5, { 1, 0, 0, 0, 0 } },
 	{ "windowlist_footer", "", 0 },
-	{ "windows_layout_saved", "Layout of windows is now remembered next time you start irssi", 0 },
+	{ "windows_layout_saved", "Layout of windows is now remembered", 0 },
 	{ "windows_layout_reset", "Layout of windows reset to defaults", 0 },
 	{ "window_info_header", "", 0 },
 	{ "window_info_footer", "", 0 },
