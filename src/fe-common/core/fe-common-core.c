@@ -24,9 +24,6 @@
 #include "misc.h"
 #include "levels.h"
 #include "settings.h"
-#ifdef HAVE_NL_LANGINFO
-#  include <langinfo.h>
-#endif
 
 #include "servers.h"
 #include "channels.h"
@@ -144,6 +141,8 @@ void fe_common_core_register_options(void)
 
 void fe_common_core_init(void)
 {
+	const char *str;
+
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_level("lookandfeel", "timestamp_level", "ALL");
 	settings_add_time("lookandfeel", "timestamp_timeout", "0");
@@ -159,13 +158,8 @@ void fe_common_core_init(void)
 
 	settings_add_bool("lookandfeel", "use_status_window", TRUE);
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
-#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-	settings_add_str("lookandfeel", "term_charset", 
-			 *nl_langinfo(CODESET) != '\0' ? 
-			 nl_langinfo(CODESET) : "ISO8859-1");
-#else
-	settings_add_str("lookandfeel", "term_charset", "ISO8859-1");
-#endif
+	g_get_charset(&str);
+	settings_add_str("lookandfeel", "term_charset", str);
 	themes_init();
         theme_register(fecommon_core_formats);
 

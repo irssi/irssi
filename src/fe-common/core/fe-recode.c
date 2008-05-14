@@ -29,10 +29,6 @@
 #include "formats.h"
 #include "recode.h"
 
-#ifdef HAVE_NL_LANGINFO
-#  include <langinfo.h>
-#endif
-
 static char *recode_fallback = NULL;
 static char *recode_out_default = NULL;
 static char *term_charset = NULL;
@@ -172,14 +168,11 @@ static void read_settings(void)
 		g_free(term_charset);
 	term_charset = g_strdup(settings_get_str("term_charset"));
 	if (!is_valid_charset(term_charset)) {
+		const char *str;
+
 		g_free(term_charset);
-#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) :
-			       *nl_langinfo(CODESET) != '\0' ? g_strdup(nl_langinfo(CODESET)) :
-			       "ISO8859-1";
-#else
-		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : "ISO8859-1";
-#endif
+		g_get_charset(&str);
+		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : g_strdup(str);
 		settings_set_str("term_charset", term_charset);
 		/* FIXME: move the check of term_charset into fe-text/term.c
 		          it breaks the proper term_input_type
