@@ -211,7 +211,6 @@ notifylist.c:
  "notifylist remove", NOTIFYLIST_REC
  "notifylist joined", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
  "notifylist away changed", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
- "notifylist unidle", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
  "notifylist left", SERVER_REC, char *nick, char *user, char *host, char *realname, char *awaymsg
 
 proxy/listen.c:
