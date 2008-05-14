@@ -26,10 +26,6 @@
 #include "term.h"
 #include "mainwindows.h"
 
-#ifdef HAVE_NL_LANGINFO
-#  include <langinfo.h>
-#endif
-
 #ifdef HAVE_SYS_IOCTL_H
 #  include <sys/ioctl.h>
 #endif
@@ -143,6 +139,7 @@ static void read_settings(void)
 
 void term_common_init(void)
 {
+	const char *dummy;
 #ifdef SIGWINCH
 	struct sigaction act;
 #endif
@@ -154,12 +151,10 @@ void term_common_init(void)
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
         read_settings();
 
-#if defined (HAVE_NL_LANGINFO) && defined(CODESET)
-	if (strcmp(nl_langinfo(CODESET), "UTF-8") == 0) {
+	if (g_get_charset(&dummy)) {
 		term_type = TERM_TYPE_UTF8;
 		term_set_input_type(TERM_TYPE_UTF8);
 	}
-#endif
 
 	signal_add("beep", (SIGNAL_FUNC) term_beep);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
