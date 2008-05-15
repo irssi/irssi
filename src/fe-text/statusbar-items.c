@@ -73,11 +73,13 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 {
         THEME_REC *theme;
 	GString *str;
+	GString *format;
 	GList *tmp;
-        char *ret, *name, *format, *value;
+        char *ret, *name, *value;
         int is_det;
 
 	str = g_string_new(NULL);
+	format = g_string_new(NULL);
 
 	theme = window != NULL && window->active != NULL &&
 		window->active->theme != NULL ?
@@ -114,21 +116,20 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 		}
 
 		if (name != NULL)
-			format = g_strdup_printf(name, window->refnum);
+			g_string_printf(format, name, window->refnum);
 		else
-			format = g_strdup_printf("{sb_act_hilight_color %s %d}",
+			g_string_printf(format, "{sb_act_hilight_color %s %d}",
 						 window->hilight_color,
 						 window->refnum);
 
-		value = theme_format_expand(theme, format);
+		value = theme_format_expand(theme, format->str);
 		g_string_append(str, value);
                 g_free(value);
-
-		g_free(format);
 	}
 
 	ret = str->len == 0 ? NULL : str->str;
         g_string_free(str, ret == NULL);
+	g_string_free(format, TRUE);
         return ret;
 }
 
