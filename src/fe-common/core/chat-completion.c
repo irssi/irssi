@@ -1159,6 +1159,7 @@ void chat_completion_init(void)
 	signal_add("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_add("complete command disconnect", (SIGNAL_FUNC) sig_complete_tag);
 	signal_add("complete command reconnect", (SIGNAL_FUNC) sig_complete_tag);
+	signal_add("complete command window server", (SIGNAL_FUNC) sig_complete_tag);
 	signal_add("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_add("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_add("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
@@ -1197,6 +1198,7 @@ void chat_completion_deinit(void)
 	signal_remove("complete command server", (SIGNAL_FUNC) sig_complete_connect);
 	signal_remove("complete command disconnect", (SIGNAL_FUNC) sig_complete_tag);
 	signal_remove("complete command reconnect", (SIGNAL_FUNC) sig_complete_tag);
+	signal_remove("complete command window server", (SIGNAL_FUNC) sig_complete_tag);
 	signal_remove("complete command topic", (SIGNAL_FUNC) sig_complete_topic);
 	signal_remove("complete command away", (SIGNAL_FUNC) sig_complete_away);
 	signal_remove("complete command unalias", (SIGNAL_FUNC) sig_complete_unalias);
