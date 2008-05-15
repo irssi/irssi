@@ -152,9 +152,18 @@ static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 	g_free_not_null(actlist);
 }
 
-static int window_level_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
+static int window_level_recent_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
 {
 	if (w1->data_level >= w2->data_level)
+		return -1;
+	else
+		return 1;
+}
+
+static int window_level_cmp(WINDOW_REC *w1, WINDOW_REC *w2)
+{
+	if (w1->data_level > w2->data_level ||
+	    (w1->data_level == w2->data_level && w1->refnum < w2->refnum))
 		return -1;
 	else
 		return 1;
@@ -180,11 +189,26 @@ static void sig_statusbar_activity_hilight(WINDOW_REC *window, gpointer oldlevel
 
 	if (actlist_sort == 2) {
 		if (node != NULL) {
+			if (window->data_level == GPOINTER_TO_INT(oldlevel)) {
+				if (window->hilight_color != 0)
+					statusbar_items_redraw("act");
+				return;
+			}
 			activity_list = g_list_delete_link(activity_list, node);
 		}
 		if (window->data_level != 0)
 			activity_list = g_list_insert_sorted(activity_list, window, (GCompareFunc)
 							     window_level_cmp);
+		statusbar_items_redraw("act");
+		return;
+	}
+
+	if (actlist_sort == 3) {
+		if (node != NULL)
+			activity_list = g_list_delete_link(activity_list, node);
+		if (window->data_level != 0)
+			activity_list = g_list_insert_sorted(activity_list, window, (GCompareFunc)
+							     window_level_recent_cmp);
 		statusbar_items_redraw("act");
 		return;
 	}
@@ -393,6 +417,8 @@ static void read_settings(void)
 		actlist_sort = 1;
 	else if (g_ascii_strcasecmp(str, "level") == 0)
 		actlist_sort = 2;
+	else if (g_ascii_strcasecmp(str, "level,recent") == 0)
+		actlist_sort = 3;
 	else {
 		settings_set_str("actlist_sort", "refnum");
 		actlist_sort = 0;
