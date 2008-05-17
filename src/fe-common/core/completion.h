@@ -8,7 +8,7 @@ char *auto_word_complete(const char *line, int *pos);
 /* manual word completion - called when TAB is pressed. if erase is TRUE,
    the word is removed from completion list entirely (if possible) and
    next completion is used */
-char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase);
+char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, int backward);
 
 GList *filename_complete(const char *path, const char *default_path);
 

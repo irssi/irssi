@@ -756,13 +756,13 @@ static void key_change_window(const char *data)
 	signal_emit("command window goto", 3, data, active_win->active_server, active_win->active);
 }
 
-static void key_completion(int erase)
+static void key_completion(int erase, int backward)
 {
 	char *text, *line;
 	int pos;
 
         text = gui_entry_get_text_and_pos(active_entry, &pos);
-	line = word_complete(active_win, text, &pos, erase);
+	line = word_complete(active_win, text, &pos, erase, backward);
 	g_free(text);
 
 	if (line != NULL) {
@@ -772,14 +772,19 @@ static void key_completion(int erase)
 	}
 }
 
+static void key_word_completion_backward(void)
+{
+        key_completion(FALSE, TRUE);
+}
+
 static void key_word_completion(void)
 {
-        key_completion(FALSE);
+        key_completion(FALSE, FALSE);
 }
 
 static void key_erase_completion(void)
 {
-        key_completion(TRUE);
+        key_completion(TRUE, FALSE);
 }
 
 static void key_check_replaces(void)
@@ -1110,6 +1115,7 @@ void gui_readline_init(void)
 
         /* line transmitting */
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
+	key_bind("word_completion_backward", "", NULL, NULL, (SIGNAL_FUNC) key_word_completion_backward);
 	key_bind("word_completion", "", "tab", NULL, (SIGNAL_FUNC) key_word_completion);
 	key_bind("erase_completion", "", "meta-k", NULL, (SIGNAL_FUNC) key_erase_completion);
 	key_bind("check_replaces", "Check word replaces", NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
@@ -1196,6 +1202,7 @@ void gui_readline_deinit(void)
 	key_unbind("upcase_word", (SIGNAL_FUNC) key_upcase_word);
 
 	key_unbind("send_line", (SIGNAL_FUNC) key_send_line);
+	key_unbind("word_completion_backward", (SIGNAL_FUNC) key_word_completion_backward);
 	key_unbind("word_completion", (SIGNAL_FUNC) key_word_completion);
 	key_unbind("erase_completion", (SIGNAL_FUNC) key_erase_completion);
 	key_unbind("check_replaces", (SIGNAL_FUNC) key_check_replaces);

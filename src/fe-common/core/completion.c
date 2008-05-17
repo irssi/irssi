@@ -128,7 +128,7 @@ static void free_completions(void)
 }
 
 /* manual word completion - called when TAB is pressed */
-char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase)
+char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, int backward)
 {
 	static int startpos = 0, wordlen = 0;
         int old_startpos, old_wordlen;
@@ -205,8 +205,12 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase)
 
 	if (continue_complete) {
 		/* complete from old list */
-		complist = complist->next != NULL ? complist->next :
-			g_list_first(complist);
+		if (backward)
+			complist = complist->prev != NULL ? complist->prev :
+				g_list_last(complist);
+		else
+			complist = complist->next != NULL ? complist->next :
+				g_list_first(complist);
 		want_space = last_want_space;
 	} else {
 		/* get new completion list */
