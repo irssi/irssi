@@ -160,7 +160,7 @@ static void read_settings(void)
 	if (!is_valid_charset(recode_fallback)) {
 		signal_emit("error command", 2, GINT_TO_POINTER(CMDERR_INVALID_CHARSET), recode_fallback);
 		g_free(recode_fallback);
-		recode_fallback = is_valid_charset(old_recode_fallback) ? g_strdup(old_recode_fallback) : "ISO8859-1";
+		recode_fallback = is_valid_charset(old_recode_fallback) ? g_strdup(old_recode_fallback) : NULL;
 		settings_set_str("recode_fallback", recode_fallback);
 	}
 
