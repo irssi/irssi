@@ -17,9 +17,8 @@
      -!: don't autojoin channels
      -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
      -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
-     -port: This is pretty much like the port argument later, 
-            except this can be used to modify existing server's 
-            port.
+     -port: Use this only to edit the port number of an existing server,
+            for new servers use the <port> argument
 
 /SERVER disconnects the server in active window and connects 
 to the new one. It will take the same arguments as /CONNECT. 
