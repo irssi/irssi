@@ -1078,69 +1078,69 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta-right", "mright", (SIGNAL_FUNC) key_combo);
 
 	/* cursor movement */
-	key_bind("backward_character", "", "left", NULL, (SIGNAL_FUNC) key_backward_character);
-	key_bind("forward_character", "", "right", NULL, (SIGNAL_FUNC) key_forward_character);
- 	key_bind("backward_word", "", "cleft", NULL, (SIGNAL_FUNC) key_backward_word);
+	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);
+	key_bind("forward_character", "Move the cursor a character forward", "right", NULL, (SIGNAL_FUNC) key_forward_character);
+ 	key_bind("backward_word", "Move the cursor a word backward", "cleft", NULL, (SIGNAL_FUNC) key_backward_word);
  	key_bind("backward_word", NULL, "meta-b", NULL, (SIGNAL_FUNC) key_backward_word);
-	key_bind("forward_word", "", "cright", NULL, (SIGNAL_FUNC) key_forward_word);
+	key_bind("forward_word", "Move the cursor a word forward", "cright", NULL, (SIGNAL_FUNC) key_forward_word);
 	key_bind("forward_word", NULL, "meta-f", NULL, (SIGNAL_FUNC) key_forward_word);
- 	key_bind("backward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_backward_to_space);
-	key_bind("forward_to_space", "", NULL, NULL, (SIGNAL_FUNC) key_forward_to_space);
-	key_bind("beginning_of_line", "", "home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
+ 	key_bind("backward_to_space", "Move the cursor backward to a space", NULL, NULL, (SIGNAL_FUNC) key_backward_to_space);
+	key_bind("forward_to_space", "Move the cursor forward to a space", NULL, NULL, (SIGNAL_FUNC) key_forward_to_space);
+	key_bind("beginning_of_line", "Move the cursor to the beginning of the line", "home", NULL, (SIGNAL_FUNC) key_beginning_of_line);
 	key_bind("beginning_of_line", NULL, "^A", NULL, (SIGNAL_FUNC) key_beginning_of_line);
-	key_bind("end_of_line", "", "end", NULL, (SIGNAL_FUNC) key_end_of_line);
+	key_bind("end_of_line", "Move the cursor to the end of the line", "end", NULL, (SIGNAL_FUNC) key_end_of_line);
 	key_bind("end_of_line", NULL, "^E", NULL, (SIGNAL_FUNC) key_end_of_line);
 
         /* history */
-	key_bind("backward_history", "", "up", NULL, (SIGNAL_FUNC) key_backward_history);
-	key_bind("forward_history", "", "down", NULL, (SIGNAL_FUNC) key_forward_history);
+	key_bind("backward_history", "Go back one line in the history", "up", NULL, (SIGNAL_FUNC) key_backward_history);
+	key_bind("forward_history", "Go forward one line in the history", "down", NULL, (SIGNAL_FUNC) key_forward_history);
 
         /* line editing */
-	key_bind("backspace", "", "backspace", NULL, (SIGNAL_FUNC) key_backspace);
-	key_bind("delete_character", "", "delete", NULL, (SIGNAL_FUNC) key_delete_character);
+	key_bind("backspace", "Delete the previous character", "backspace", NULL, (SIGNAL_FUNC) key_backspace);
+	key_bind("delete_character", "Delete the current character", "delete", NULL, (SIGNAL_FUNC) key_delete_character);
 	key_bind("delete_character", NULL, "^D", NULL, (SIGNAL_FUNC) key_delete_character);
-	key_bind("delete_next_word", "", "meta-d", NULL, (SIGNAL_FUNC) key_delete_next_word);
-	key_bind("delete_previous_word", "", "meta-backspace", NULL, (SIGNAL_FUNC) key_delete_previous_word);
-	key_bind("delete_to_previous_space", "", "^W", NULL, (SIGNAL_FUNC) key_delete_to_previous_space);
-	key_bind("delete_to_next_space", "", "", NULL, (SIGNAL_FUNC) key_delete_to_next_space);
-	key_bind("erase_line", "", "^U", NULL, (SIGNAL_FUNC) key_erase_line);
-	key_bind("erase_to_beg_of_line", "", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
-	key_bind("erase_to_end_of_line", "", "^K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
-	key_bind("yank_from_cutbuffer", "", "^Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
+	key_bind("delete_next_word", "Delete the word after the cursor", "meta-d", NULL, (SIGNAL_FUNC) key_delete_next_word);
+	key_bind("delete_previous_word", "Delete the word before the cursor", "meta-backspace", NULL, (SIGNAL_FUNC) key_delete_previous_word);
+	key_bind("delete_to_previous_space", "Delete up to the previous space", "^W", NULL, (SIGNAL_FUNC) key_delete_to_previous_space);
+	key_bind("delete_to_next_space", "Delete up to the next space", "", NULL, (SIGNAL_FUNC) key_delete_to_next_space);
+	key_bind("erase_line", "Erase the whole input line", "^U", NULL, (SIGNAL_FUNC) key_erase_line);
+	key_bind("erase_to_beg_of_line", "Erase everything before the cursor", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
+	key_bind("erase_to_end_of_line", "Erase everything after the cursor", "^K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
+	key_bind("yank_from_cutbuffer", "\"Undelete\", paste the last deleted text", "^Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
 	key_bind("transpose_characters", "Swap current and previous character", "^T", NULL, (SIGNAL_FUNC) key_transpose_characters);
 	key_bind("transpose_words", "Swap current and previous word", NULL, NULL, (SIGNAL_FUNC) key_transpose_words);
-	key_bind("capitalize_word", "Capitalize word", NULL, NULL, (SIGNAL_FUNC) key_capitalize_word);
-	key_bind("downcase_word", "Downcase word", NULL, NULL, (SIGNAL_FUNC) key_downcase_word);
-	key_bind("upcase_word", "Upcase word", NULL, NULL, (SIGNAL_FUNC) key_upcase_word);
+	key_bind("capitalize_word", "Capitalize the current word", NULL, NULL, (SIGNAL_FUNC) key_capitalize_word);
+	key_bind("downcase_word", "Downcase the current word", NULL, NULL, (SIGNAL_FUNC) key_downcase_word);
+	key_bind("upcase_word", "Upcase the current word", NULL, NULL, (SIGNAL_FUNC) key_upcase_word);
 
         /* line transmitting */
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
 	key_bind("word_completion_backward", "", NULL, NULL, (SIGNAL_FUNC) key_word_completion_backward);
-	key_bind("word_completion", "", "tab", NULL, (SIGNAL_FUNC) key_word_completion);
-	key_bind("erase_completion", "", "meta-k", NULL, (SIGNAL_FUNC) key_erase_completion);
+	key_bind("word_completion", "Complete the current word", "tab", NULL, (SIGNAL_FUNC) key_word_completion);
+	key_bind("erase_completion", "Remove the completion added by word_completion", "meta-k", NULL, (SIGNAL_FUNC) key_erase_completion);
 	key_bind("check_replaces", "Check word replaces", NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
 
         /* window managing */
-	key_bind("previous_window", "Previous window", "^P", NULL, (SIGNAL_FUNC) key_previous_window);
-	key_bind("next_window", "Next window", "^N", NULL, (SIGNAL_FUNC) key_next_window);
-	key_bind("upper_window", "Upper window", "mup", NULL, (SIGNAL_FUNC) key_upper_window);
-	key_bind("lower_window", "Lower window", "mdown", NULL, (SIGNAL_FUNC) key_lower_window);
-	key_bind("left_window", "Window in left", "mleft", NULL, (SIGNAL_FUNC) key_left_window);
-	key_bind("right_window", "Window in right", "mright", NULL, (SIGNAL_FUNC) key_right_window);
+	key_bind("previous_window", "Go to the previous window", "^P", NULL, (SIGNAL_FUNC) key_previous_window);
+	key_bind("next_window", "Go to the next window", "^N", NULL, (SIGNAL_FUNC) key_next_window);
+	key_bind("upper_window", "Go to the split window above", "mup", NULL, (SIGNAL_FUNC) key_upper_window);
+	key_bind("lower_window", "Go to the split window below", "mdown", NULL, (SIGNAL_FUNC) key_lower_window);
+	key_bind("left_window", "Go to the previous window in the current split window", "mleft", NULL, (SIGNAL_FUNC) key_left_window);
+	key_bind("right_window", "Go to the next window in the current split window", "mright", NULL, (SIGNAL_FUNC) key_right_window);
 	key_bind("active_window", "Go to next window with the highest activity", "meta-a", NULL, (SIGNAL_FUNC) key_active_window);
-	key_bind("next_window_item", "Next channel/query", "^X", NULL, (SIGNAL_FUNC) key_next_window_item);
-	key_bind("previous_window_item", "Previous channel/query", NULL, NULL, (SIGNAL_FUNC) key_previous_window_item);
+	key_bind("next_window_item", "Go to the next channel/query. In empty windows change to the next server", "^X", NULL, (SIGNAL_FUNC) key_next_window_item);
+	key_bind("previous_window_item", "Go to the previous channel/query. In empty windows change to the previous server", NULL, NULL, (SIGNAL_FUNC) key_previous_window_item);
 
 	key_bind("refresh_screen", "Redraw screen", "^L", NULL, (SIGNAL_FUNC) irssi_redraw);
-	key_bind("scroll_backward", "Previous page", "prior", NULL, (SIGNAL_FUNC) key_scroll_backward);
+	key_bind("scroll_backward", "Scroll to previous page", "prior", NULL, (SIGNAL_FUNC) key_scroll_backward);
 	key_bind("scroll_backward", NULL, "meta-p", NULL, (SIGNAL_FUNC) key_scroll_backward);
-	key_bind("scroll_forward", "Next page", "next", NULL, (SIGNAL_FUNC) key_scroll_forward);
+	key_bind("scroll_forward", "Scroll to next page", "next", NULL, (SIGNAL_FUNC) key_scroll_forward);
 	key_bind("scroll_forward", NULL, "meta-n", NULL, (SIGNAL_FUNC) key_scroll_forward);
-	key_bind("scroll_start", "Beginning of the window", "", NULL, (SIGNAL_FUNC) key_scroll_start);
-	key_bind("scroll_end", "End of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
+	key_bind("scroll_start", "Scroll to the beginning of the window", "", NULL, (SIGNAL_FUNC) key_scroll_start);
+	key_bind("scroll_end", "Scroll to the end of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
 
         /* inserting special input characters to line.. */
-	key_bind("escape_char", "Escape the next keypress", NULL, NULL, (SIGNAL_FUNC) key_escape);
+	key_bind("escape_char", "Insert the next character exactly as-is to input line", NULL, NULL, (SIGNAL_FUNC) key_escape);
 	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
 
         /* autoreplaces */
