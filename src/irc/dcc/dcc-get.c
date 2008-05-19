@@ -30,8 +30,6 @@
 #include "dcc-get.h"
 #include "dcc-send.h"
 
-static int dcc_file_create_mode;
-
 GET_DCC_REC *dcc_get_create(IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 				   const char *nick, const char *arg)
 {
@@ -206,6 +204,8 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 	}
 
 	if (dcc->get_type != DCC_GET_RESUME) {
+		int dcc_file_create_mode = octal2dec(settings_get_int("dcc_file_create_mode"));
+
 		/* we want to overwrite the file, remove it here.
 		   if it gets created after this, we'll fail. */
 		unlink(dcc->file);
@@ -572,12 +572,6 @@ static void cmd_dcc_get(const char *data)
 	cmd_dcc_receive(data, dcc_get_connect, dcc_get_passive);
 }
 
-static void read_settings(void)
-{
-	dcc_file_create_mode =
-		octal2dec(settings_get_int("dcc_file_create_mode"));
-}
-
 void dcc_get_init(void)
 {
         dcc_register_type("GET");
@@ -585,10 +579,8 @@ void dcc_get_init(void)
 	settings_add_str("dcc", "dcc_download_path", "~");
 	settings_add_int("dcc", "dcc_file_create_mode", 644);
 
-        read_settings();
 	signal_add("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	signal_add("ctcp msg dcc send", (SIGNAL_FUNC) ctcp_msg_dcc_send);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	command_bind("dcc get", NULL, (SIGNAL_FUNC) cmd_dcc_get);
 }
 
@@ -597,6 +589,5 @@ void dcc_get_deinit(void)
         dcc_unregister_type("GET");
 	signal_remove("dcc destroyed", (SIGNAL_FUNC) sig_dcc_destroyed);
 	signal_remove("ctcp msg dcc send", (SIGNAL_FUNC) ctcp_msg_dcc_send);
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	command_unbind("dcc get", (SIGNAL_FUNC) cmd_dcc_get);
 }

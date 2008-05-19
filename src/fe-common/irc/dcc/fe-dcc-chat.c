@@ -38,8 +38,6 @@
 void fe_dcc_chat_messages_init(void);
 void fe_dcc_chat_messages_deinit(void);
 
-static int autocreate_dccquery;
-
 static void dcc_request(CHAT_DCC_REC *dcc)
 {
         if (!IS_DCC_CHAT(dcc)) return;
@@ -62,6 +60,9 @@ static void dcc_connected(CHAT_DCC_REC *dcc)
 		    dcc->id, dcc->addrstr, dcc->port);
 
 	if (query_find(NULL, sender) == NULL) {
+		int level = settings_get_level("autocreate_query_level");
+		int autocreate_dccquery = (level & MSGLEVEL_DCCMSGS) != 0;
+
 		if (!autocreate_dccquery)
 			completion_last_message_add(sender);
 		else
@@ -336,17 +337,8 @@ static void cmd_ctcp(const char *data, SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
-static void read_settings(void)
-{
-	int level;
-
-	level = settings_get_level("autocreate_query_level");
-	autocreate_dccquery = (level & MSGLEVEL_DCCMSGS) != 0;
-}
-
 void fe_dcc_chat_init(void)
 {
-	read_settings();
 	fe_dcc_chat_messages_init();
 
 	signal_add("dcc request", (SIGNAL_FUNC) dcc_request);
@@ -366,7 +358,6 @@ void fe_dcc_chat_init(void)
 	command_bind("action", NULL, (SIGNAL_FUNC) cmd_action);
 	command_bind("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	signal_add("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void fe_dcc_chat_deinit(void)
@@ -390,5 +381,4 @@ void fe_dcc_chat_deinit(void)
 	command_unbind("action", (SIGNAL_FUNC) cmd_action);
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	signal_remove("dcc error close not found", (SIGNAL_FUNC) dcc_error_close_not_found);
-	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }
