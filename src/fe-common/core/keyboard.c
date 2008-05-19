@@ -670,7 +670,7 @@ static void cmd_show_keys(const char *searchkey, int full)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_FOOTER);
 }
 
-/* SYNTAX: BIND [-delete] [<key> [<command> [<data>]]] */
+/* SYNTAX: BIND [-list] [-delete] [<key> [<command> [<data>]]] */
 static void cmd_bind(const char *data)
 {
 	GHashTable *optlist;
@@ -681,6 +681,19 @@ static void cmd_bind(const char *data)
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
 			    "bind", &optlist, &key, &id, &keydata))
 		return;
+
+	if (g_hash_table_lookup(optlist, "list")) {
+		GSList *tmp;
+
+		for (tmp = keyinfos; tmp != NULL; tmp = tmp->next) {
+			KEYINFO_REC *rec = tmp->data;
+
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_COMMAND_LIST,
+				    rec->id, rec->description ? rec->description : "");
+		}
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	if (*key != '\0' && g_hash_table_lookup(optlist, "delete")) {
                 /* delete key */
@@ -840,7 +853,7 @@ void keyboard_init(void)
 	signal_add("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 
 	command_bind("bind", NULL, (SIGNAL_FUNC) cmd_bind);
-	command_set_options("bind", "delete");
+	command_set_options("bind", "delete list");
 }
 
 void keyboard_deinit(void)

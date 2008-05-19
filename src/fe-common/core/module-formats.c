@@ -269,6 +269,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "perl_error", "Perl error: $0", 1, { 0 } },
 	{ "bind_header", "%#Key                  Action", 0 },
 	{ "bind_list", "%#$[!20]0 $1 $2", 3, { 0, 0, 0 } },
+	{ "bind_command_list", "$[!30]0 $1", 2, { 0, 0 } },
 	{ "bind_footer", "", 0 },
 	{ "bind_unknown_id", "Unknown bind action: $0", 1, { 0 } },
 	{ "config_saved", "Saved configuration to file $0", 1, { 0 } },
