@@ -23,7 +23,6 @@
 #include "commands.h"
 #include "network.h"
 #include "net-sendbuffer.h"
-#include "line-split.h"
 #include "misc.h"
 
 #include "irc-servers.h"
@@ -47,7 +46,6 @@ static void sig_dcc_destroyed(SERVER_DCC_REC *dcc)
 
 	if (dcc->sendbuf != NULL)
 		net_sendbuffer_destroy(dcc->sendbuf, FALSE);
-	line_split_free(dcc->readbuf);
 }
 
 /* Start listening for incoming connections */
@@ -65,15 +63,14 @@ static GIOChannel *dcc_listen_port(GIOChannel *iface, IPADDR *ip, int port)
 /* input function: DCC SERVER received some data.. */
 static void dcc_server_input(SERVER_DCC_REC *dcc)
 {
-	char tmpbuf[512], *str;
-	int recvlen, ret;
+	char *str;
+	int ret;
 
 	g_return_if_fail(IS_DCC_SERVER(dcc));
 
 	do {
-		recvlen = net_receive(dcc->handle, tmpbuf, sizeof(tmpbuf));
+		ret = net_sendbuffer_receive_line(dcc->sendbuf, &str, 1);
 
-		ret = line_split(tmpbuf, recvlen, &str, &dcc->readbuf);
 		if (ret == -1) {
 			/* connection lost */
 			dcc_close(DCC(dcc));

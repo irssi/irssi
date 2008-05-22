@@ -22,7 +22,6 @@
 #include "modules.h"
 #include "network.h"
 #include "net-sendbuffer.h"
-#include "line-split.h"
 #include "rawlog.h"
 #include "misc.h"
 
@@ -326,28 +325,6 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(recoded_nick);
 }
 
-/* Read line from server */
-static int irc_receive_line(SERVER_REC *server, char **str, int read_socket)
-{
-	char tmpbuf[512];
-	int recvlen, ret;
-
-	g_return_val_if_fail(server != NULL, -1);
-	g_return_val_if_fail(str != NULL, -1);
-
-	recvlen = !read_socket ? 0 :
-		net_receive(net_sendbuffer_handle(server->handle),
-			    tmpbuf, sizeof(tmpbuf));
-
-	ret = line_split(tmpbuf, recvlen, str, &server->buffer);
-	if (ret == -1) {
-		/* connection lost */
-		server->connection_lost = TRUE;
-		server_disconnect(server);
-	}
-	return ret;
-}
-
 static char *irc_parse_prefix(char *line, char **nick, char **address)
 {
 	char *p;
@@ -403,6 +380,7 @@ static void irc_parse_incoming(SERVER_REC *server)
 {
 	char *str;
 	int count;
+	int ret;
 
 	g_return_if_fail(server != NULL);
 
@@ -412,7 +390,7 @@ static void irc_parse_incoming(SERVER_REC *server)
 	count = 0;
 	server_ref(server);
 	while (!server->disconnected &&
-	       irc_receive_line(server, &str, count < MAX_SOCKET_READS) > 0) {
+	       (ret = net_sendbuffer_receive_line(server->handle, &str, count < MAX_SOCKET_READS)) > 0) {
 		rawlog_input(server->rawlog, str);
 		signal_emit_id(signal_server_incoming, 2, server, str);
 
@@ -420,6 +398,11 @@ static void irc_parse_incoming(SERVER_REC *server)
 			server_disconnect(server);
 
 		count++;
+	}
+	if (ret == -1) {
+		/* connection lost */
+		server->connection_lost = TRUE;
+		server_disconnect(server);
 	}
 	server_unref(server);
 }

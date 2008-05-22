@@ -3,7 +3,6 @@
 #define MODULE_NAME "proxy"
 
 #include "network.h"
-#include "line-split.h"
 #include "irc.h"
 #include "irc-servers.h"
 
@@ -18,8 +17,6 @@ typedef struct {
 } LISTEN_REC;
 
 typedef struct {
-	LINEBUF_REC *buffer;
-
 	char *nick, *host;
 	NET_SENDBUF_REC *handle;
 	int recv_tag;

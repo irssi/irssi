@@ -11,7 +11,6 @@
 
 struct SERVER_DCC_REC {
 #include "dcc-rec.h"
-	LINEBUF_REC *readbuf;
 	NET_SENDBUF_REC *sendbuf;
 
 	unsigned int accept_send:1;   /* Accept SEND connections */

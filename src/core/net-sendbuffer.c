@@ -22,6 +22,7 @@
 
 #include "network.h"
 #include "net-sendbuffer.h"
+#include "line-split.h"
 
 static GSList *buffers;
 
@@ -50,6 +51,7 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close)
 
         if (rec->send_tag != -1) g_source_remove(rec->send_tag);
 	if (close) net_disconnect(rec->handle);
+	if (rec->readbuffer != NULL) line_split_free(rec->readbuffer);
 	g_free_not_null(rec->buffer);
 	g_free(rec);
 }
@@ -140,6 +142,17 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 	}
 
 	return buffer_add(rec, data, size) ? 0 : -1;
+}
+
+int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socket)
+{
+	char tmpbuf[512];
+	int recvlen = 0;
+
+	if (read_socket)
+		recvlen = net_receive(rec->handle, tmpbuf, sizeof(tmpbuf));
+
+	return line_split(tmpbuf, recvlen, str, &rec->readbuffer);
 }
 
 /* Flush the buffer, blocks until finished. */

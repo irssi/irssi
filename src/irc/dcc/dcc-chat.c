@@ -24,7 +24,6 @@
 #include "recode.h"
 #include "network.h"
 #include "net-sendbuffer.h"
-#include "line-split.h"
 #include "misc.h"
 #include "settings.h"
 
@@ -91,7 +90,6 @@ static void sig_dcc_destroyed(CHAT_DCC_REC *dcc)
 	dcc_remove_chat_refs(dcc);
 
 	if (dcc->sendbuf != NULL) net_sendbuffer_destroy(dcc->sendbuf, FALSE);
-	line_split_free(dcc->readbuf);
 	g_free(dcc->id);
 }
 
@@ -297,15 +295,14 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 /* input function: DCC CHAT received some data.. */
 void dcc_chat_input(CHAT_DCC_REC *dcc)
 {
-        char tmpbuf[512], *str;
-	int recvlen, ret;
+	char *str;
+	int ret;
 
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
 	do {
-		recvlen = net_receive(dcc->handle, tmpbuf, sizeof(tmpbuf));
+		ret = net_sendbuffer_receive_line(dcc->sendbuf, &str, 1);
 
-		ret = line_split(tmpbuf, recvlen, &str, &dcc->readbuf);
 		if (ret == -1) {
 			/* connection lost */
                         dcc->connection_lost = TRUE;

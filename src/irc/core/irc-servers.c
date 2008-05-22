@@ -334,7 +334,7 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	char *str;
 
 	if (!IS_IRC_SERVER(server) || server->handle == NULL ||
-	    server->buffer == NULL)
+	    server->handle->readbuffer == NULL)
 		return;
 
 	str = g_strdup_printf("QUIT :%s", msg);

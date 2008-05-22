@@ -27,7 +27,6 @@ int connect_tag;
 int connect_pid;
 
 RAWLOG_REC *rawlog;
-LINEBUF_REC *buffer; /* receive buffer */
 GHashTable *module_data;
 
 char *version; /* server version */

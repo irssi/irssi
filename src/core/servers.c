@@ -21,7 +21,6 @@
 #include "module.h"
 #include "signals.h"
 #include "commands.h"
-#include "line-split.h"
 #include "net-disconnect.h"
 #include "net-nonblock.h"
 #include "net-sendbuffer.h"
@@ -536,7 +535,6 @@ int server_unref(SERVER_REC *server)
         MODULE_DATA_DEINIT(server);
 	server_connect_unref(server->connrec);
 	if (server->rawlog != NULL) rawlog_destroy(server->rawlog);
-	if (server->buffer != NULL) line_split_free(server->buffer);
 	g_free(server->version);
 	g_free(server->away_reason);
 	g_free(server->nick);

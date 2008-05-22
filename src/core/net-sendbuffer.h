@@ -6,6 +6,7 @@
 
 struct _NET_SENDBUF_REC {
         GIOChannel *handle;
+        LINEBUF_REC *readbuffer; /* receive buffer */
 
         int send_tag;
         int bufsize;
@@ -25,6 +26,8 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
    automatically after a while. Returns -1 if some unrecoverable error
    occured. */
 int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size);
+
+int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socket);
 
 /* Flush the buffer, blocks until finished. */
 void net_sendbuffer_flush(NET_SENDBUF_REC *rec);

@@ -50,7 +50,6 @@ static void remove_client(CLIENT_REC *rec)
 	g_free(rec->proxy_address);
 	net_sendbuffer_destroy(rec->handle, TRUE);
 	g_source_remove(rec->recv_tag);
-	line_split_free(rec->buffer);
 	g_free_not_null(rec->nick);
 	g_free_not_null(rec->host);
 	g_free(rec);
@@ -296,14 +295,13 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 
 static void sig_listen_client(CLIENT_REC *client)
 {
-	char tmpbuf[1024], *str, *cmd, *args;
-	int ret, recvlen;
+	char *str, *cmd, *args;
+	int ret;
 
 	g_return_if_fail(client != NULL);
 
 	while (g_slist_find(proxy_clients, client) != NULL) {
-		recvlen = net_receive(client->handle->handle, tmpbuf, sizeof(tmpbuf));
-		ret = line_split(tmpbuf, recvlen, &str, &client->buffer);
+		ret = net_sendbuffer_receive_line(client->handle, &str, 1);
 		if (ret == -1) {
 			/* connection lost */
 			remove_client(client);
