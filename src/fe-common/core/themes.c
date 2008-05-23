@@ -1339,6 +1339,8 @@ static THEME_REC *read_internal_theme(void)
 	THEME_REC *theme;
 
 	theme = theme_create("internal", "_internal");
+	theme->refcount++;
+	theme_destroy(theme);
 
 	config = config_open(NULL, -1);
 	config_parse_data(config, default_theme, "internal");
@@ -1359,7 +1361,6 @@ void themes_init(void)
         init_finished = FALSE;
         init_errors = NULL;
 
-	themes = NULL;
 	themes_reload();
 
 	command_bind("format", NULL, (SIGNAL_FUNC) cmd_format);
