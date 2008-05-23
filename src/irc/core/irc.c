@@ -88,18 +88,18 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
                 irc_server_send_data(server, cmd, len);
 	} else {
 
-	/* add to queue */
-	if (immediate) {
-		server->cmdqueue = g_slist_prepend(server->cmdqueue,
-						   server->redirect_next);
-		server->cmdqueue = g_slist_prepend(server->cmdqueue,
-						   g_strdup(cmd));
-	} else {
-		server->cmdqueue = g_slist_append(server->cmdqueue,
-						  g_strdup(cmd));
-		server->cmdqueue = g_slist_append(server->cmdqueue,
-						  server->redirect_next);
-	}
+		/* add to queue */
+		if (immediate) {
+			server->cmdqueue = g_slist_prepend(server->cmdqueue,
+							   server->redirect_next);
+			server->cmdqueue = g_slist_prepend(server->cmdqueue,
+							   g_strdup(cmd));
+		} else {
+			server->cmdqueue = g_slist_append(server->cmdqueue,
+							  g_strdup(cmd));
+			server->cmdqueue = g_slist_append(server->cmdqueue,
+							  server->redirect_next);
+		}
 	}
         server->redirect_next = NULL;
 	g_free(params);
