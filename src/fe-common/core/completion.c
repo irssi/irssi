@@ -143,6 +143,9 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 	continue_complete = complist != NULL && *pos == last_line_pos &&
 		strcmp(line, last_line) == 0;
 
+	if (erase && !continue_complete)
+		return NULL;
+
 	old_startpos = startpos;
 	old_wordlen = wordlen;
 
@@ -192,9 +195,6 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 
 	if (erase) {
 		signal_emit("complete erase", 3, window, word, linestart);
-
-		if (!continue_complete)
-                        return NULL;
 
                 /* jump to next completion */
 		word = NULL;
