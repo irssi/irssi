@@ -197,8 +197,6 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		signal_emit("complete erase", 3, window, word, linestart);
 
                 /* jump to next completion */
-		word = NULL;
-		linestart = NULL;
                 startpos = old_startpos;
 		wordlen = old_wordlen;
 	}

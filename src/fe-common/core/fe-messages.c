@@ -257,7 +257,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 {
 	WINDOW_REC *window;
 	CHANNEL_REC *channel;
-	const char *nickmode;
+	char *nickmode;
         char *freemsg = NULL;
 	int print_channel;
 	channel = channel_find(server, target);
@@ -287,6 +287,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
 
+	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
 }
 

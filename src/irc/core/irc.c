@@ -86,8 +86,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 
 	if (send_now) {
                 irc_server_send_data(server, cmd, len);
-		return;
-	}
+	} else {
 
 	/* add to queue */
 	if (immediate) {
@@ -100,6 +99,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 						  g_strdup(cmd));
 		server->cmdqueue = g_slist_append(server->cmdqueue,
 						  server->redirect_next);
+	}
 	}
         server->redirect_next = NULL;
 	g_free(params);

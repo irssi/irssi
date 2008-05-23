@@ -228,6 +228,7 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 	if (list->next == NULL) {
                 /* only one way to generate the combo, good */
                 rec = list->data;
+		g_slist_free(list);
 		return expand_key(rec->key, out);
 	}
 
@@ -252,6 +253,7 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 	}
 
         rec = list->data;
+	g_slist_free(list);
 	if (!expand_key(rec->key, out)) {
 		/* illegal key combo, remove from list */
 		expand_out_free(*out);
