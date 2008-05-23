@@ -842,7 +842,7 @@ void keyboard_init(void)
         key_config_frozen = 0;
 	memset(used_keys, 0, sizeof(used_keys));
 
-	key_bind("command", "Run any IRC command", NULL, NULL, (SIGNAL_FUNC) sig_command);
+	key_bind("command", "Run any command", NULL, NULL, (SIGNAL_FUNC) sig_command);
 	key_bind("key", "Specify name for key binding", NULL, NULL, (SIGNAL_FUNC) sig_key);
 	key_bind("multi", "Run multiple commands", NULL, NULL, (SIGNAL_FUNC) sig_multi);
 	key_bind("nothing", "Do nothing", NULL, NULL, (SIGNAL_FUNC) sig_nothing);
