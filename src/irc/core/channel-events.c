@@ -250,7 +250,8 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 		   forgot to send PART between */
 		chanrec->left = TRUE;
 		channel_destroy(CHANNEL(chanrec));
-		chanrec = NULL;	}
+		chanrec = NULL;
+	}
 
 	if (chanrec == NULL) {
 		/* look again, because of the channel name cut issues. */
