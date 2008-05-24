@@ -146,7 +146,7 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 
 int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socket)
 {
-	char tmpbuf[512];
+	char tmpbuf[2048];
 	int recvlen = 0;
 
 	if (read_socket)
