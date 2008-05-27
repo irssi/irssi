@@ -33,13 +33,13 @@ static void sig_activity(WINDOW_REC *window)
 		return;
 
 	window->data_level = 0;
-        window->hilight_color = 0;
+	g_free_and_null(window->hilight_color);
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
 		WI_ITEM_REC *item = tmp->data;
 
 		item->data_level = 0;
-		item->hilight_color = 0;
+		g_free_and_null(item->hilight_color);
 	}
 	signal_stop();
 }
