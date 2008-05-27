@@ -270,7 +270,7 @@ window-activity.c:
  "window hilight", WINDOW_REC
  "window activity", WINDOW_REC, int old_level
  "window item hilight", WI_ITEM_REC
- "window item activity", WI_ITEM_REC, int old_lvel
+ "window item activity", WI_ITEM_REC, int old_level
 
 window-items.c:
  "window item new", WINDOW_REC, WI_ITEM_REC
