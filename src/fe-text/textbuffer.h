@@ -1,7 +1,9 @@
 #ifndef __TEXTBUFFER_H
 #define __TEXTBUFFER_H
 
-#define LINE_TEXT_CHUNK_SIZE 16384
+/* Make sure TEXT_CHUNK_REC is not slightly more than a page, as that
+   wastes a lot of memory. */
+#define LINE_TEXT_CHUNK_SIZE (16384 - 16)
 
 #define LINE_COLOR_BG		0x20
 #define LINE_COLOR_DEFAULT	0x10
