@@ -353,7 +353,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 	} else {
 		/* hilight part of the line */
                 GString *tmp;
-                char *middle, *lastcolor;
+                char *middle;
 		int pos, color_pos, color_len;
 
                 tmp = g_string_new(NULL);
@@ -377,16 +377,13 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		pos = strip_real_length(text, hilight_end,
 					&color_pos, &color_len);
 		if (color_pos > 0)
-			lastcolor = g_strndup(text+color_pos, color_len);
+			g_string_append_len(tmp, text+color_pos, color_len);
                 else {
                         /* no colors in line, change back to default */
-			lastcolor = g_malloc0(3);
-			lastcolor[0] = 4;
-                        lastcolor[1] = FORMAT_STYLE_DEFAULTS;
+			g_string_append_c(tmp, 4);
+			g_string_append_c(tmp, FORMAT_STYLE_DEFAULTS);
 		}
-		g_string_append(tmp, lastcolor);
 		g_string_append(tmp, text+pos);
-		g_free(lastcolor);
 
                 newstr = tmp->str;
                 g_string_free(tmp, FALSE);
