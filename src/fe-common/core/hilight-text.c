@@ -40,7 +40,7 @@ static NICKMATCH_REC *nickmatch;
 static int never_hilight_level, default_hilight_level;
 GSList *hilights;
 
-static void reset_cache(void)
+static void reset_level_cache(void)
 {
 	GSList *tmp;
 
@@ -51,7 +51,11 @@ static void reset_cache(void)
 		if (never_hilight_level & rec->level)
                         never_hilight_level &= ~rec->level;
 	}
+}
 
+static void reset_cache(void)
+{
+	reset_level_cache();
 	nickmatch_rebuild(nickmatch);
 }
 
@@ -672,6 +676,7 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 static void read_settings(void)
 {
 	default_hilight_level = settings_get_level("hilight_level");
+	reset_level_cache();
 }
 
 void hilight_text_init(void)

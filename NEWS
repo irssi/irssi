@@ -19,6 +19,7 @@ v0.8.13
 	- Fix mode display in whois with unreal (379 numeric) (bug #479).
 	- Fix regressions that prevented external modules from building/working
 	  (bugs #537 #539).
+	- Fix /set hilight_level not taking effect immediately (bug #598).
 
 v0.8.12 2007-10-06  The Irssi team <staff@irssi.org>
 	+ Some changes to character set recoding.
