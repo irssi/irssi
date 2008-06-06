@@ -168,11 +168,8 @@ static void read_settings(void)
 		g_free(term_charset);
 	term_charset = g_strdup(settings_get_str("term_charset"));
 	if (!is_valid_charset(term_charset)) {
-		const char *str;
-
 		g_free(term_charset);
-		g_get_charset(&str);
-		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : g_strdup(str);
+		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : NULL;
 		settings_set_str("term_charset", term_charset);
 	}
 
