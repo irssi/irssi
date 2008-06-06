@@ -174,11 +174,6 @@ static void read_settings(void)
 		g_get_charset(&str);
 		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : g_strdup(str);
 		settings_set_str("term_charset", term_charset);
-		/* FIXME: move the check of term_charset into fe-text/term.c
-		          it breaks the proper term_input_type
-		          setup and reemitting of the signal is kludgy */
-		if (g_strcasecmp(term_charset, old_term_charset) != 0)
-			signal_emit("setup changed", 0);
 	}
 
 	if (recode_out_default)
@@ -202,7 +197,7 @@ void fe_recode_init (void)
 	command_bind("recode", NULL, (SIGNAL_FUNC) fe_recode_cmd);
 	command_bind("recode add", NULL, (SIGNAL_FUNC) fe_recode_add_cmd);
 	command_bind("recode remove", NULL, (SIGNAL_FUNC) fe_recode_remove_cmd);
-	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add_first("setup changed", (SIGNAL_FUNC) read_settings);
 	read_settings();
 }
 
