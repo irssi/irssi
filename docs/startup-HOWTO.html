@@ -111,7 +111,7 @@ management (send me a note if you can think of more):</p>
 joining channels)</p>
 
 <pre>
-/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
+/NETWORK ADD -autosendcmd "/^msg nickserv identify pass;wait 2000" OFTC
 </pre>
 
 <p>(NOTE: use /IRCNET with 0.8.9 and older)</p>
@@ -275,7 +275,7 @@ you're connected to some network, use <code>-autosendcmd</code> option.
 
 <pre>
 /NETWORK ADD -autosendcmd '^msg bot invite' IRCnet
-/NETWORK ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
+/NETWORK ADD -autosendcmd "/^msg nickserv identify pass;wait 2000" OFTC
 </pre>
 
 <p>After that you need to add your servers. For example:</p>

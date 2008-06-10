@@ -105,7 +105,7 @@
 <p>(сеть OFTC, идентифицироваться через nickserv и ждать 2 секунды перед заходом на каналы)</p>
 
 <pre>
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
+/IRCNET ADD -autosendcmd "/^msg nickserv identify pass;wait 2000" OFTC
 </pre>
 
 <p>Теперь добавление нескольких серверов к разным сетям (IRC-сеть для них уже установлена),
@@ -243,7 +243,7 @@ Split window 3: win#5 - efnet/#channel1, win#6 - efnet/#channel2
 
 <pre>
 /IRCNET ADD -autosendcmd '^msg bot invite' ircnet
-/IRCNET ADD -autosendcmd "/^msg nickserv ident pass;wait 2000" OFTC
+/IRCNET ADD -autosendcmd "/^msg nickserv identify pass;wait 2000" OFTC
 </pre>
 
 <p>После этого вы должны добавить к этой сети серверы. Например:</p>
