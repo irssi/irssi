@@ -77,6 +77,7 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 	GList *tmp;
         char *ret, *name, *value;
         int is_det;
+	int add_name = settings_get_bool("actlist_names");
 
 	str = g_string_new(NULL);
 	format = g_string_new(NULL);
@@ -102,14 +103,14 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 		switch (window->data_level) {
 		case DATA_LEVEL_NONE:
 		case DATA_LEVEL_TEXT:
-			name = "{sb_act_text %d}";
+			name = "{sb_act_text %d";
 			break;
 		case DATA_LEVEL_MSG:
-			name = "{sb_act_msg %d}";
+			name = "{sb_act_msg %d";
 			break;
 		default:
                         if (window->hilight_color == NULL)
-				name = "{sb_act_hilight %d}";
+				name = "{sb_act_hilight %d";
 			else
                                 name = NULL;
 			break;
@@ -118,9 +119,12 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 		if (name != NULL)
 			g_string_printf(format, name, window->refnum);
 		else
-			g_string_printf(format, "{sb_act_hilight_color %s %d}",
+			g_string_printf(format, "{sb_act_hilight_color %s %d",
 						 window->hilight_color,
 						 window->refnum);
+		if (add_name && window->active != NULL)
+			g_string_append_printf(format, ":%s", window->active->visible_name);
+		g_string_append_c(format, '}');
 
 		value = theme_format_expand(theme, format->str);
 		g_string_append(str, value);
@@ -430,6 +434,7 @@ void statusbar_items_init(void)
 {
 	settings_add_time("misc", "lag_min_show", "1sec");
 	settings_add_str("lookandfeel", "actlist_sort", "refnum");
+	settings_add_bool("lookandfeel", "actlist_names", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);
 	statusbar_item_register("window_empty", NULL, item_window_empty);

@@ -9,6 +9,8 @@ v0.8.13
 	+ /ping without arguments does not send anymore a ctcp ping to a channel
 	  (bug #542).
 	+ Track IRC operator status of nicks a bit better.
+	+ new 'actlist_names' option to add active items names in 'act'
+	  statusbar item.
 	+ new 'word_completion_backward' command to scroll backwards in the
 	  completion list.
 	+ add 'list' option to /bind to print all the available commands.
