@@ -172,6 +172,7 @@ static void read_settings(void)
 		term_charset = is_valid_charset(old_term_charset) ? g_strdup(old_term_charset) : NULL;
 		settings_set_str("term_charset", term_charset);
 	}
+	recode_update_charset();
 
 	if (recode_out_default)
 		g_free(recode_out_default);

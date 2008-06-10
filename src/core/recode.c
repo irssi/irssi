@@ -25,21 +25,12 @@
 #include "lib-config/iconfig.h"
 #include "misc.h"
 
-static gboolean recode_get_charset(const char **charset)
-{
-	*charset = settings_get_str("term_charset");
-	if (**charset)
-		/* we use the same test as in src/fe-text/term.c:123 */
-		return (g_ascii_strcasecmp(*charset, "utf-8") == 0);
-
-	return g_get_charset(charset);
-}
+static char *translit_charset;
+static gboolean term_is_utf8;
 
 gboolean is_utf8(void)
 {
-	const char *charset;
-
-	return recode_get_charset(&charset);
+	return term_is_utf8;
 }
 
 static gboolean is_translit(const char *charset)
@@ -89,10 +80,9 @@ static char *find_conversion(const SERVER_REC *server, const char *target)
 char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 {
 	const char *from = NULL;
-	const char *to = NULL;
-	char *translit_to = NULL;
+	const char *to = translit_charset;
 	char *recoded = NULL;
-	gboolean term_is_utf8, str_is_utf8, translit, recode, autodetect;
+	gboolean str_is_utf8, recode, autodetect;
 	int len;
 	int i;
 
@@ -113,12 +103,7 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 			break;
 		}
 	}
-	translit = settings_get_bool("recode_transliterate");
 	autodetect = settings_get_bool("recode_autodetect_utf8");
-	term_is_utf8 = recode_get_charset(&to);
-
-	if (translit && !is_translit(to))
-		to = translit_to = g_strconcat(to, "//TRANSLIT", NULL);
 
 	if (autodetect && str_is_utf8)
 		if (term_is_utf8)
@@ -149,17 +134,16 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 		if (!recoded)
 			recoded = g_strdup(str);
 	}
-	g_free(translit_to);
 	return recoded;
 }
 
 char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 {
 	char *recoded = NULL;
-	const char *from = NULL;
+	const char *from = translit_charset;
 	const char *to = NULL;
 	char *translit_to = NULL;
-	gboolean translit, term_is_utf8, recode;
+	gboolean translit, recode;
 	int len;
 
 	if (!str)
@@ -182,7 +166,6 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		if (translit && !is_translit(to))
 			to = translit_to = g_strconcat(to ,"//TRANSLIT", NULL);
 
-		term_is_utf8 = recode_get_charset(&from);
 		recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
 	}
 	g_free(translit_to);
@@ -190,6 +173,17 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		recoded = g_strdup(str);
 
 	return recoded;
+}
+
+void recode_update_charset(void)
+{
+	const char *charset = settings_get_str("term_charset");
+	term_is_utf8 = !g_ascii_strcasecmp(charset, "UTF-8");
+	g_free(translit_charset);
+	if (settings_get_bool("recode_transliterate") && !is_translit(charset))
+		translit_charset = g_strconcat(charset, "//TRANSLIT", NULL);
+	else
+		translit_charset = g_strdup(charset);
 }
 
 void recode_init(void)
@@ -203,5 +197,5 @@ void recode_init(void)
 
 void recode_deinit(void)
 {
-
+	g_free(translit_charset);
 }
