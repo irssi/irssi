@@ -330,28 +330,31 @@ static void cmd_scrollback_redraw(void)
 static void cmd_scrollback_status(void)
 {
 	GSList *tmp;
-        int window_kb, total_lines, total_kb;
+        int total_lines;
+	size_t window_mem, total_mem;
 
-        total_lines = 0; total_kb = 0;
+        total_lines = 0; total_mem = 0;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *window = tmp->data;
 		TEXT_BUFFER_VIEW_REC *view;
 
 		view = WINDOW_GUI(window)->view;
 
-		window_kb = g_slist_length(view->buffer->text_chunks)*
-			LINE_TEXT_CHUNK_SIZE/1024;
+		window_mem = sizeof(TEXT_BUFFER_REC);
+		window_mem += g_slist_length(view->buffer->text_chunks) *
+			sizeof(TEXT_CHUNK_REC);
+		window_mem += view->buffer->lines_count * sizeof(LINE_REC);
 		total_lines += view->buffer->lines_count;
-                total_kb += window_kb;
+                total_mem += window_mem;
 		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 			  "Window %d: %d lines, %dkB of data",
 			  window->refnum, view->buffer->lines_count,
-			  window_kb);
+			  (int)(window_mem / 1024));
 	}
 
 	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		  "Total: %d lines, %dkB of data",
-		  total_lines, total_kb);
+		  total_lines, (int)(total_mem / 1024));
 }
 
 static void sig_away_changed(SERVER_REC *server)
