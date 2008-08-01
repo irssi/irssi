@@ -137,6 +137,7 @@ static void cmd_cat(const char *data)
 		return;
 	}
 
+	g_io_channel_set_encoding(handle, NULL, NULL);
 	g_io_channel_seek_position(handle, fpos, G_SEEK_SET, NULL);
 	buf = g_string_sized_new(512);
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {

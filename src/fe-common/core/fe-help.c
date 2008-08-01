@@ -142,6 +142,7 @@ static int show_help_file(const char *file)
 	if (handle == NULL)
 		return FALSE;
 
+	g_io_channel_set_encoding(handle, NULL, NULL);
 	buf = g_string_sized_new(512);
 	/* just print to screen whatever is in the file */
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
