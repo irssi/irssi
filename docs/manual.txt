@@ -205,7 +205,7 @@
 	2.2 seconds by default for each message (helps with some servers).
 	You can change it with /SET cmd_queue_speed <milliseconds>. You can
 	also change the number of commands before flood protection activates
-	(ie. the burst count) with /SET cmd_max_at_once <count>.
+	(ie. the burst count) with /SET cmds_max_at_once <count>.
 
 	IRC servers also have an input buffer where the client's commands
 	are saved before processed. It's size is server specific (can be as
@@ -340,7 +340,7 @@
 	    -modes: Maximum number of mode changes in one /MODE command
 	    -whois: Maximum number of nicks in one /WHOIS command
 	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
-	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+	    -cmdmax: Same as /SET cmds_max_at_once, see section 3.1
 	    -nick, -user, -realname: Specify what nick/user/name to use
 	    -host: Specify what host name to use, if you have multiple
 	    -autosendcmd: Command to send after connecting to a server
@@ -404,7 +404,7 @@
 	    -ircnet: Same as -network. Deprecated. Do not use.
 	    -host: Specify what host name to use, if you have multiple
 	    -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
-	    -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+	    -cmdmax: Same as /SET cmds_max_at_once, see section 3.1
 	    -port: This is pretty much like the port argument later, except
 	           this can be used to modify existing server's port.
 

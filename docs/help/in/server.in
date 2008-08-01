@@ -16,7 +16,7 @@
      -host: Specify what host name to use, if you have multiple
      -!: don't autojoin channels
      -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
-     -cmdmax: Same as /SET cmd_max_at_once, see section 3.1
+     -cmdmax: Same as /SET cmds_max_at_once, see section 3.1
      -port: Use this only to edit the port number of an existing server,
             for new servers use the <port> argument
 
