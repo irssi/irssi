@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "misc.h"
+#include "recode.h"
 #include "special-vars.h"
 #include "settings.h"
 #include "window-item-def.h"
@@ -63,6 +64,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		       WI_ITEM_REC *item)
 {
 	const char *target, *msg;
+	char *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -75,7 +77,9 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	g_string_sprintf(tmpstr, "NOTICE %s :%s", target, msg);
+	recoded = recode_out(SERVER(server), msg, target);
+	g_string_sprintf(tmpstr, "NOTICE %s :%s", target, recoded);
+	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
 
@@ -104,7 +108,11 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 	if (*ctcpdata == '\0')
 		g_string_sprintf(tmpstr, "PRIVMSG %s :\001%s\001", target, ctcpcmd);
 	else {
-		g_string_sprintf(tmpstr, "PRIVMSG %s :\001%s %s\001", target, ctcpcmd, ctcpdata);
+		char *recoded;
+
+		recoded = recode_out(SERVER(server), ctcpdata, target);
+		g_string_sprintf(tmpstr, "PRIVMSG %s :\001%s %s\001", target, ctcpcmd, recoded);
+		g_free(recoded);
 	}
 
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
@@ -117,7 +125,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 		      WI_ITEM_REC *item)
 {
 	const char *target;
-	char *ctcpcmd, *ctcpdata;
+	char *ctcpcmd, *ctcpdata, *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -131,7 +139,9 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	g_strup(ctcpcmd);
-	g_string_sprintf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, ctcpdata);
+	recoded = recode_out(SERVER(server), ctcpdata, target);
+	g_string_sprintf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, recoded);
+	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
 
@@ -143,6 +153,7 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server,
 		     WI_ITEM_REC *item)
 {
 	char *channame, *msg;
+	char *recoded = NULL;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -157,16 +168,19 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server,
         if (server->cmdcount > MAX_COMMANDS_ON_PART_UNTIL_PURGE)
 		irc_server_purge_output(server, channame);
 
-	irc_send_cmdv(server, *msg == '\0' ? "PART %s" : "PART %s :%s",
-		      channame, msg);
+	if (*msg != '\0')
+		recoded = recode_out(SERVER(server), msg, channame);
+	irc_send_cmdv(server, ! recoded ? "PART %s" : "PART %s :%s",
+		      channame, recoded);
 
+	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: KICK [<channel>] <nicks> [<reason>] */
 static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	char *channame, *nicks, *reason;
+	char *channame, *nicks, *reason, *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -179,7 +193,9 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (*channame == '\0' || *nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	if (!ischannel(*channame)) cmd_param_error(CMDERR_NOT_JOINED);
 
-	g_string_sprintf(tmpstr, "KICK %s %s :%s", channame, nicks, reason);
+	recoded = recode_out(SERVER(server), reason, channame);
+	g_string_sprintf(tmpstr, "KICK %s %s :%s", channame, nicks, recoded);
+	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 3, server->max_kicks_in_cmd);
 
@@ -191,7 +207,7 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 {
 	GHashTable *optlist;
 	char *channame, *topic;
-	int set = 0;
+	char *recoded = NULL;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -202,9 +218,10 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 		return;
 
 	if (*topic != '\0' || g_hash_table_lookup(optlist, "delete") != NULL)
-		set = 1;
-	irc_send_cmdv(server, !set ? "TOPIC %s" : "TOPIC %s :%s",
-		      channame, topic);
+		recoded = recode_out(SERVER(server), topic, channame);
+	irc_send_cmdv(server, recoded == NULL ? "TOPIC %s" : "TOPIC %s :%s",
+		      channame, recoded);
+	g_free(recoded);
 
 	cmd_params_free(free_arg);
 }
@@ -608,7 +625,7 @@ static void cmd_wait(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: WALL [<channel>] <message> */
 static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	char *channame, *msg, *args;
+	char *channame, *msg, *args, *recoded;
 	void *free_arg;
 	IRC_CHANNEL_REC *chanrec;
 	GSList *tmp, *nicks;
@@ -638,15 +655,18 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 					   SERVER(server), item, args, NULL, 0);
 		g_free(args);
 
+		recoded = recode_out(SERVER(server), msg, channame);
+
 		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 			NICK_REC *rec = tmp->data;
 
 			if (rec != chanrec->ownnick) {
 				irc_send_cmdv(server, "NOTICE %s :%s",
-					      rec->nick, msg);
+					      rec->nick, recoded);
 			}
 		}
 
+		g_free(recoded);
 		g_free(msg);
 		g_slist_free(nicks);
 	}
@@ -659,7 +679,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
    and it supports NOTICE @#channel anyway */
 static void cmd_wallchops(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	char *channame, *msg;
+	char *channame, *msg, *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -669,8 +689,10 @@ static void cmd_wallchops(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC 
 		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	irc_send_cmdv(server, "WALLCHOPS %s :%s", channame, msg);
+	recoded = recode_out(SERVER(server), msg, channame);
+	irc_send_cmdv(server, "WALLCHOPS %s :%s", channame, recoded);
 
+	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
@@ -679,7 +701,7 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 			WI_ITEM_REC *item)
 {
         IRC_CHANNEL_REC *chanrec;
-	char *channel, *nicks, *reason, *kickcmd, *bancmd;
+	char *channel, *nicks, *reason, *kickcmd, *bancmd, *recoded;
         char **nicklist, *spacenicks;
 	void *free_arg;
 
@@ -702,7 +724,9 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
         spacenicks = g_strjoinv(" ", nicklist);
 	g_strfreev(nicklist);
 
-	kickcmd = g_strdup_printf("%s %s %s", chanrec->name, nicks, reason);
+	recoded = recode_out(SERVER(server), reason, channel);
+	kickcmd = g_strdup_printf("%s %s %s", chanrec->name, nicks, recoded);
+	g_free(recoded);
 
 	bancmd = g_strdup_printf("%s %s", chanrec->name, spacenicks);
         g_free(spacenicks);
@@ -762,7 +786,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 			 IRC_CHANNEL_REC *channel)
 {
 	KNOCKOUT_REC *rec;
-	char *nicks, *reason, *timeoutstr, *kickcmd, *bancmd;
+	char *nicks, *reason, *timeoutstr, *kickcmd, *bancmd, *recoded;
         char **nicklist, *spacenicks, *banmasks;
 	void *free_arg;
 	int timeleft;
@@ -799,7 +823,9 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	banmasks = ban_get_masks(channel, spacenicks, 0);
 	g_free(spacenicks);
 
-	kickcmd = g_strdup_printf("%s %s %s", channel->name, nicks, reason);
+	recoded = recode_out(SERVER(server), reason, channel->name);
+	kickcmd = g_strdup_printf("%s %s %s", channel->name, nicks, recoded);
+	g_free(recoded);
 
 	bancmd = *banmasks == '\0'? NULL :
 		g_strdup_printf("%s %s", channel->name, banmasks);

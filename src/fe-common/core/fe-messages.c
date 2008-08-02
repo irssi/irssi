@@ -31,6 +31,7 @@
 #include "channels.h"
 #include "nicklist.h"
 #include "ignore.h"
+#include "recode.h"
 
 #include "window-items.h"
 #include "fe-queries.h"
@@ -258,7 +259,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	WINDOW_REC *window;
 	CHANNEL_REC *channel;
 	char *nickmode;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 	int print_channel;
 	channel = channel_find(server, target);
 	if (channel != NULL)
@@ -279,14 +280,18 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) channel, msg);
 
+	/* ugly: recode the sent message back for printing */ 
+	recoded = recode_in(server, msg, target);
+	
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG, server->nick, msg, nickmode);
+			    TXT_OWN_MSG, server->nick, recoded, nickmode);
 	} else {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
+			    TXT_OWN_MSG_CHANNEL, server->nick, target, recoded, nickmode);
 	}
 
+	g_free(recoded);
 	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
 }
@@ -295,7 +300,7 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				    const char *target, const char *origtarget)
 {
 	QUERY_REC *query;
-        char *freemsg = NULL;
+        char *freemsg = NULL, *recoded;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(msg != NULL);
@@ -318,11 +323,15 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
 
+	/* ugly: recode the sent message back for printing */
+	recoded = recode_in(server, msg, target);
+
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    query == NULL ? TXT_OWN_MSG_PRIVATE :
-		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		    TXT_OWN_MSG_PRIVATE_QUERY, target, recoded, server->nick);
 
+	g_free(recoded);
 	g_free_not_null(freemsg);
 }
 
@@ -347,7 +356,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	WINDOW_REC *window;
 	GString *chans;
 	GSList *tmp, *windows;
-	char *print_channel;
+	char *print_channel, *recoded;
 	int once, count;
 
 	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
@@ -380,10 +389,12 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
+				recoded = recode_in(server, reason, rec->visible_name);
 				printformat(server, rec->visible_name,
 					    MSGLEVEL_QUITS,
-					    TXT_QUIT, nick, address, reason,
+					    TXT_QUIT, nick, address, recoded,
 					    rec->visible_name);
+				g_free(recoded);
 			}
 		}
 		count++;
@@ -395,17 +406,22 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		   display the quit there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
+			recoded = recode_in(server, reason, nick);
 			printformat(server, nick, MSGLEVEL_QUITS,
-				    TXT_QUIT, nick, address, reason, "");
+				    TXT_QUIT, nick, address, recoded, "");
+			g_free(recoded);
 		}
 	}
 
 	if (once || count == 0) {
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
+		/* at least recode_fallback will be used */
+		recoded = recode_in(server, reason, nick);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
-			    nick, address, reason, chans->str);
+			    nick, address, recoded, chans->str);
+		g_free(recoded);
 	}
 	g_string_free(chans, TRUE);
 }

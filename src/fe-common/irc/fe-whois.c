@@ -6,6 +6,7 @@
 #include "levels.h"
 #include "misc.h"
 #include "settings.h"
+#include "recode.h"
 
 #include "irc-servers.h"
 
@@ -13,15 +14,17 @@
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname;
+	char *params, *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 6, NULL, &nick, &user,
 				  &host, NULL, &realname);
+	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS, nick, user, host, realname);
+		    IRCTXT_WHOIS, nick, user, host, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_whois_special(IRC_SERVER_REC *server, const char *data)
@@ -275,7 +278,7 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 
 static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *chans;
+	char *params, *nick, *chans, *recoded;
 
 	g_return_if_fail(data != NULL);
 
@@ -288,23 +291,27 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 	chans = show_lowascii(chans);
 	if (settings_get_bool("whois_hide_safe_channel_id"))
 		hide_safe_channel_id(server, chans);
+	recoded = recode_in(SERVER(server), chans, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_CHANNELS, nick, chans);
+		    IRCTXT_WHOIS_CHANNELS, nick, recoded);
 	g_free(chans);
 
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg;
+	char *params, *nick, *awaymsg, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	recoded = recode_in(SERVER(server), awaymsg, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOIS_AWAY, nick, awaymsg);
+		    IRCTXT_WHOIS_AWAY, nick, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
@@ -335,15 +342,17 @@ static void event_whois_auth(IRC_SERVER_REC *server, const char *data)
 
 static void event_whowas(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname;
+	char *params, *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 6, NULL, &nick, &user,
 				  &host, NULL, &realname);
+	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
-		    IRCTXT_WHOWAS, nick, user, host, realname);
+		    IRCTXT_WHOWAS, nick, user, host, recoded);
 	g_free(params);
+	g_free(recoded);
 }
 
 static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)

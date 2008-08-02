@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "special-vars.h"
 #include "settings.h"
+#include "recode.h"
 
 #include "chat-protocols.h"
 #include "servers.h"
@@ -349,7 +350,7 @@ static void cmd_join(const char *data, SERVER_REC *server)
 static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
-	char *target, *origtarget, *msg;
+	char *target, *origtarget, *msg, *recoded;
 	void *free_arg;
 	int free_ret, target_type = SEND_TARGET_NICK;
 
@@ -401,14 +402,16 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 				SEND_TARGET_CHANNEL : SEND_TARGET_NICK;
 		}
 	}
+	recoded = recode_out(server, msg, target);
 	if (target != NULL) {
-		signal_emit("server sendmsg", 4, server, target, msg,
+		signal_emit("server sendmsg", 4, server, target, recoded,
 			    GINT_TO_POINTER(target_type));
 	}
 	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
 		    "message own_public" : "message own_private", 4,
-		    server, msg, target, origtarget);
+		    server, recoded, target, origtarget);
 
+	g_free(recoded);
 	if (free_ret && target != NULL) g_free(target);
 	cmd_params_free(free_arg);
 }
