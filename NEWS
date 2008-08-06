@@ -1,4 +1,6 @@
 v0.8.13
+	+ Revert recode changes introduced in 0.8.12.
+	+ Add completion for /WINDOW SERVER.
 	+ Support for reading kicks/msgs from TARGMAX/MAXTARGETS 005 tokens.
 	+ Enhancements to the redirections code.
 	+ Support for RPL_WHOISACTUALLY (338 numeric) for both ratbox and ircu
