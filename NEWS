@@ -14,6 +14,12 @@ v0.8.13
 	+ new 'word_completion_backward' command to scroll backwards in the
 	  completion list.
 	+ add 'list' option to /bind to print all the available commands.
+	+ show setter/time in +I lists
+	+ apply -usermode before -autosendcmd (bug #548).
+	+ reduce memory usage of the scrollback buffer and make the display
+	  in /sb status more accurate (higher).
+	+ fix data getting dropped when a lot is sent at a time (e.g. when
+	  attaching to irssi-proxy, bug #528).
 	- fix leak with $L expando.
 	- fix possible crash with /script reset.
 	- ignore exceptions take precedence over ignores in all cases.
