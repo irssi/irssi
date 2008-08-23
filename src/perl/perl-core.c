@@ -123,7 +123,7 @@ void perl_scripts_init(void)
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
-	perl_parse(my_perl, xs_init, &argc, args, NULL);
+	perl_parse(my_perl, xs_init, argc, args, NULL);
 #if PERL_STATIC_LIBS == 1
 	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
 #endif
