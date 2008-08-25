@@ -203,10 +203,10 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 #define server_should_reconnect(server) \
 	((server)->connection_lost && !(server)->no_reconnect && \
 	((server)->connrec->chatnet != NULL || \
-		(!(server)->banned && !(server)->dns_error)))
+		!(server)->banned))
 
 #define sserver_connect_ok(rec, net) \
-	(!(rec)->banned && !(rec)->dns_error && (rec)->chatnet != NULL && \
+	(!(rec)->banned && (rec)->chatnet != NULL && \
 	g_strcasecmp((rec)->chatnet, (net)) == 0)
 
 static void sig_reconnect(SERVER_REC *server)
