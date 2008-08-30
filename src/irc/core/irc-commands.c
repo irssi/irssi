@@ -354,14 +354,18 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 {
 	char *str, *ret;
 
-	if (strchr(nicks, ',') == NULL) {
+	if (*nicks != '!' && strchr(nicks, ',') == NULL) {
 		*free = FALSE;
 		return (char *) nicks;
 	}
 
 	*free = TRUE;
 
-	str = g_strdup(nicks);
+	/* ratbox-style operspy whois takes !nick, echoes that
+	 * in RPL_ENDOFWHOIS as normal but gives output about the
+	 * plain nick
+	 */
+	str = g_strdup(*nicks == '!' ? nicks + 1 : nicks);
 	g_strdelimit(str, ",", ' ');
 	ret = g_strconcat(str, " ", nicks, NULL);
 	g_free(str);
