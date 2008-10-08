@@ -144,7 +144,7 @@ static void update_cmd_color(unsigned char cmd, int *color)
 	}
 }
 
-static inline unichar read_unichar(const char *data, const unsigned char **next, int *width)
+static inline unichar read_unichar(const unsigned char *data, const unsigned char **next, int *width)
 {
 	unichar chr = g_utf8_get_char_validated(data, -1);
 
