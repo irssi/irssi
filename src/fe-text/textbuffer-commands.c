@@ -129,7 +129,7 @@ static void cmd_scrollback_clear(const char *data)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: SCROLLBACK LEVELCLEAR [-all] [<refnum>] */
+/* SYNTAX: SCROLLBACK LEVELCLEAR [-all] [-level <level>] [<refnum>] */
 static void cmd_scrollback_levelclear(const char *data)
 {
 	WINDOW_REC *window;
@@ -138,13 +138,16 @@ static void cmd_scrollback_levelclear(const char *data)
 	void *free_arg;
 	GSList *tmp;
 	int level;
+	char *levelarg;
 
 	g_return_if_fail(data != NULL);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
 			    "scrollback levelclear", &optlist, &refnum)) return;
 
-	level = settings_get_level("scrollback_levelclear_levels");
+	levelarg = g_hash_table_lookup(optlist, "level");
+	level = (levelarg == NULL || *levelarg == '\0') ? 0 :
+		level2bits(replace_chars(levelarg, ',', ' '));
 	if (level == 0) {
 		cmd_params_free(free_arg);
 		return;
@@ -374,7 +377,6 @@ static void sig_away_changed(SERVER_REC *server)
 
 void textbuffer_commands_init(void)
 {
-	settings_add_level("misc", "scrollback_levelclear_levels", "crap clientcrap");
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 	command_bind("window scroll", NULL, (SIGNAL_FUNC) cmd_window_scroll);
 	command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
@@ -388,7 +390,7 @@ void textbuffer_commands_init(void)
 
 	command_set_options("clear", "all");
 	command_set_options("scrollback clear", "all");
-	command_set_options("scrollback levelclear", "all");
+	command_set_options("scrollback levelclear", "all -level");
 
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
 }

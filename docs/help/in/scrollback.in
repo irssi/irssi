@@ -5,7 +5,7 @@
 
 /SB LEVELCLEAR
    - Remove lines with level matching one of those
-     specified in scrollback_levelclear_levels.
+     specified in the comma-separated list <level>.
 /SB CLEAR
    - Clear screen, free all memory used by texts in window.
 /SB HOME
