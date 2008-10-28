@@ -461,7 +461,8 @@ static void event_too_many_channels(IRC_SERVER_REC *server, const char *data)
 	cannot_join(server, data, IRCTXT_JOINERROR_TOOMANY);
 }
 
-static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
+static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data,
+		const char *nick)
 {
 	char *params, *channel, *p;
 
@@ -476,7 +477,8 @@ static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 	if (channel[0] == '!' && channel[1] == '!') {
 		printformat(server, NULL, MSGLEVEL_CRAP,
 			    IRCTXT_JOINERROR_DUPLICATE, channel+1);
-	}
+	} else
+		print_event_received(server, data, nick, FALSE);
 
 	g_free(params);
 }
