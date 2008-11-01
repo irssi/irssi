@@ -153,7 +153,6 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	if (g_hash_table_lookup(optlist, "count") != NULL) {
 		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 				   TXT_LASTLOG_COUNT, len);
-		textbuffer_line_unref_list(WINDOW_GUI(window)->view->buffer, list);
 		g_list_free(list);
 		return;
 	}
@@ -163,7 +162,6 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		printformat_window(active_win,
 				   MSGLEVEL_CLIENTNOTICE|MSGLEVEL_LASTLOG,
 				   TXT_LASTLOG_TOO_LONG, len);
-		textbuffer_line_unref_list(WINDOW_GUI(window)->view->buffer, list);
 		g_list_free(list);
 		return;
 	}
@@ -221,7 +219,6 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	textbuffer_view_set_bookmark_bottom(WINDOW_GUI(window)->view,
 					    "lastlog_last_check");
 
-        textbuffer_line_unref_list(WINDOW_GUI(window)->view->buffer, list);
 	g_list_free(list);
 }
 

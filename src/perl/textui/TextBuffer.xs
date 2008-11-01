@@ -59,17 +59,6 @@ OUTPUT:
 	RETVAL
 
 void
-textbuffer_line_ref(line)
-	Irssi::TextUI::Line line
-
-void
-textbuffer_line_unref(line, buffer)
-	Irssi::TextUI::Line line
-	Irssi::TextUI::TextBuffer buffer
-CODE:
-	textbuffer_line_unref(buffer, line);
-
-void
 textbuffer_line_get_text(line, coloring)
 	Irssi::TextUI::Line line
 	int coloring

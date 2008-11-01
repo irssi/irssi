@@ -183,7 +183,6 @@ static LINE_REC *textbuffer_line_create(TEXT_BUFFER_REC *buffer)
                 text_chunk_create(buffer);
 
 	rec = g_mem_chunk_alloc(line_chunk);
-        rec->refcount = 1;
 	rec->text = buffer->cur_text->buffer + buffer->cur_text->pos;
 
 	buffer->cur_text->refcount++;
@@ -214,36 +213,6 @@ static LINE_REC *textbuffer_line_insert(TEXT_BUFFER_REC *buffer,
         buffer->lines_count++;
 
         return line;
-}
-
-void textbuffer_line_ref(LINE_REC *line)
-{
-	g_return_if_fail(line != NULL);
-
-	if (++line->refcount == 255)
-                g_error("line reference counter wrapped - shouldn't happen");
-}
-
-void textbuffer_line_unref(TEXT_BUFFER_REC *buffer, LINE_REC *line)
-{
-	g_return_if_fail(buffer != NULL);
-	g_return_if_fail(line != NULL);
-
-	if (--line->refcount == 0) {
-		text_chunk_line_free(buffer, line);
-		g_mem_chunk_free(line_chunk, line);
-	}
-}
-
-void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list)
-{
-	g_return_if_fail(buffer != NULL);
-
-	while (list != NULL) {
-                if (list->data != NULL)
-			textbuffer_line_unref(buffer, list->data);
-                list = list->next;
-	}
 }
 
 LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer)
@@ -372,10 +341,11 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
         line->prev = line->next = NULL;
 
 	buffer->lines_count--;
-        textbuffer_line_unref(buffer, line);
+        text_chunk_line_free(buffer, line);
+	g_mem_chunk_free(line_chunk, line);
 }
 
-/* Removes all lines from buffer, ignoring reference counters */
+/* Removes all lines from buffer */
 void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 {
 	GSList *tmp;
@@ -563,17 +533,14 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
                                 pre_line = pre_line->prev;
 			}
 
-			for (; pre_line != line; pre_line = pre_line->next) {
-				textbuffer_line_ref(pre_line);
+			for (; pre_line != line; pre_line = pre_line->next)
 				matches = g_list_append(matches, pre_line);
-			}
 
 			match_after = after;
 		}
 
 		if (line_matched || match_after > 0) {
 			/* matched */
-                        textbuffer_line_ref(line);
 			matches = g_list_append(matches, line);
 
 			if ((!line_matched && --match_after == 0) ||

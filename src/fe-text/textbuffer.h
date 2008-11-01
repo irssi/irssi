@@ -48,7 +48,6 @@ typedef struct _LINE_REC {
 	struct _LINE_REC *prev, *next;
 
 	unsigned char *text;
-        unsigned char refcount;
         LINE_INFO_REC info;
 } LINE_REC;
 
@@ -76,10 +75,6 @@ typedef struct {
 TEXT_BUFFER_REC *textbuffer_create(void);
 /* Destroy the buffer */
 void textbuffer_destroy(TEXT_BUFFER_REC *buffer);
-
-void textbuffer_line_ref(LINE_REC *line);
-void textbuffer_line_unref(TEXT_BUFFER_REC *buffer, LINE_REC *line);
-void textbuffer_line_unref_list(TEXT_BUFFER_REC *buffer, GList *list);
 
 LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer);
 int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search);
