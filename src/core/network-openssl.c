@@ -93,22 +93,6 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, X509 *cert)
 	return TRUE;
 }
 
-static GIOStatus ssl_errno(gint e)
-{
-	switch(e)
-	{
-		case EINVAL:
-			return G_IO_STATUS_ERROR;
-		case EINTR:
-		case EAGAIN:
-			return G_IO_STATUS_AGAIN;
-		default:
-			return G_IO_STATUS_ERROR;
-	}
-	/*UNREACH*/
-	return G_IO_STATUS_ERROR;
-}
-
 static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize *ret, GError **gerr)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
@@ -118,9 +102,10 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 	if(err < 0)
 	{
 		*ret = 0;
-		if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
+		err = SSL_get_error(chan->ssl, err);
+		if(err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 			return G_IO_STATUS_AGAIN;
-		return ssl_errno(errno);
+		return G_IO_STATUS_ERROR;
 	}
 	else
 	{
@@ -140,9 +125,10 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 	if(err < 0)
 	{
 		*ret = 0;
-		if(SSL_get_error(chan->ssl, err) == SSL_ERROR_WANT_READ)
+		err = SSL_get_error(chan->ssl, err);
+		if(err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 			return G_IO_STATUS_AGAIN;
-		return ssl_errno(errno);
+		return G_IO_STATUS_ERROR;
 	}
 	else
 	{
