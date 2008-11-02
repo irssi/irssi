@@ -49,7 +49,6 @@ static void perl_text_buffer_view_fill_hash(HV *hv, TEXT_BUFFER_VIEW_REC *view)
 
 static void perl_line_fill_hash(HV *hv, LINE_REC *line)
 {
-	hv_store(hv, "refcount", 8, newSViv(line->refcount), 0);
 	hv_store(hv, "info", 4, plain_bless(&line->info, "Irssi::TextUI::LineInfo"), 0);
 }
 
