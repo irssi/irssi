@@ -144,6 +144,19 @@ static void perl_notifylist_fill_hash(HV *hv, NOTIFYLIST_REC *notify)
 	hv_store(hv, "ircnets", 7, newRV_noinc((SV*)av), 0);
 }
 
+static void perl_client_fill_hash(HV *hv, CLIENT_REC *client)
+{
+	hv_store(hv, "nick", 4, new_pv(client->nick), 0);
+	hv_store(hv, "host", 4, new_pv(client->host), 0);
+	hv_store(hv, "proxy_address", 13, new_pv(client->proxy_address), 0);
+	hv_store(hv, "server", 6, iobject_bless(client->server), 0);
+	hv_store(hv, "pass_sent", 9, newSViv(client->pass_sent), 0);
+	hv_store(hv, "user_sent", 9, newSViv(client->user_sent), 0);
+	hv_store(hv, "connected", 9, newSViv(client->connected), 0);
+	hv_store(hv, "want_ctcp", 9, newSViv(client->want_ctcp), 0);
+	hv_store(hv, "ircnet", 6, new_pv(client->listen->ircnet), 0);
+}
+
 static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ "Irssi::Irc::Ban", (PERL_OBJECT_FUNC) perl_ban_fill_hash },
 	{ "Irssi::Irc::Dcc", (PERL_OBJECT_FUNC) perl_dcc_fill_hash },
@@ -151,6 +164,7 @@ static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ "Irssi::Irc::Netsplitserver", (PERL_OBJECT_FUNC) perl_netsplit_server_fill_hash },
 	{ "Irssi::Irc::Netsplitchannel", (PERL_OBJECT_FUNC) perl_netsplit_channel_fill_hash },
 	{ "Irssi::Irc::Notifylist", (PERL_OBJECT_FUNC) perl_notifylist_fill_hash },
+	{ "Irssi::Irc::Client", (PERL_OBJECT_FUNC) perl_client_fill_hash },
 
 	{ NULL, NULL }
 };
@@ -209,3 +223,4 @@ BOOT:
 	irssi_boot(Irc__Notifylist);
 	irssi_boot(Irc__Query);
 	irssi_boot(Irc__Server);
+	irssi_boot(Irc__Client);

@@ -100,6 +100,7 @@ irc_sources = \
 	irc/Modes.xs \
 	irc/Netsplit.xs \
 	irc/Notifylist.xs \
+	irc/Client.xs \
 	irc/Makefile.PL.in \
 	irc/typemap \
 	irc/module.h

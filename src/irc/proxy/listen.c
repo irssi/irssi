@@ -186,6 +186,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			client->want_ctcp = 0;
 			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\n",
 				      client->proxy_address, client->nick, client->listen->ircnet);
+		} else {
+			signal_emit("proxy client command", 3, client, args, data);
 		}
 		return;
 	}
@@ -663,6 +665,14 @@ static void read_settings(void)
 	}
 }
 
+static void sig_dump(CLIENT_REC *client, const char *data)
+{
+	g_return_if_fail(client != NULL);
+	g_return_if_fail(data != NULL);
+
+	proxy_outdata(client, data);
+}
+
 void proxy_listen_init(void)
 {
 	next_line = g_string_new(NULL);
@@ -680,6 +690,8 @@ void proxy_listen_init(void)
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+
+	signal_add("proxy client dump", (SIGNAL_FUNC) sig_dump);
 }
 
 void proxy_listen_deinit(void)
@@ -697,4 +709,6 @@ void proxy_listen_deinit(void)
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("message irc own_action", (SIGNAL_FUNC) sig_message_own_action);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
+	signal_remove("proxy client dump", (SIGNAL_FUNC) sig_dump);
 }

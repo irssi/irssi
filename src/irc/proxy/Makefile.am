@@ -21,7 +21,8 @@ libirc_proxy_la_SOURCES = \
 	listen.c
 
 noinst_HEADERS = \
-	module.h
+	module.h \
+	proxy.h
 
 clean-generic:
 	rm -f libirc_proxy.a

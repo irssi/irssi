@@ -20,6 +20,8 @@
 #include "dcc/dcc-send.h"
 #include "notifylist/notifylist.h"
 
+#include "proxy/proxy.h"
+
 typedef IRC_SERVER_REC *Irssi__Irc__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Irc__Connect;
 typedef IRC_CHANNEL_REC *Irssi__Irc__Channel;
@@ -35,3 +37,5 @@ typedef NETSPLIT_REC *Irssi__Irc__Netsplit;
 typedef NETSPLIT_SERVER_REC *Irssi__Irc__Netsplitserver;
 typedef NETSPLIT_CHAN_REC *Irssi__Irc__Netsplitchannel;
 typedef NOTIFYLIST_REC *Irssi__Irc__Notifylist;
+
+typedef CLIENT_REC *Irssi__Irc__Client;

@@ -42,6 +42,7 @@ while (<STDIN>) {
 	s/DCC_REC[^,]*/siobject/g;
 	s/AUTOIGNORE_REC[^,]*/Irssi::Irc::Autoignore/g;
 	s/NOTIFYLIST_REC[^,]*/Irssi::Irc::Notifylist/g;
+	s/CLIENT_REC[^,]*/Irssi::Irc::Client/g;
 
 	# fe-common
 	s/THEME_REC[^,]*/Irssi::UI::Theme/g;

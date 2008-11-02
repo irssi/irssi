@@ -22,6 +22,8 @@ v0.8.13
 	  in /sb status more accurate (higher).
 	+ fix data getting dropped when a lot is sent at a time (e.g. when
 	  attaching to irssi-proxy, bug #528).
+	+ introduce the type Irssi::Irc::Client and signals to communicate with
+	  proxy clients to allow for scripting parts of the irssi-proxy.
 	- fix leak with $L expando.
 	- fix possible crash with /script reset.
 	- ignore exceptions take precedence over ignores in all cases.
