@@ -105,6 +105,8 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 		err = SSL_get_error(chan->ssl, err);
 		if(err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 			return G_IO_STATUS_AGAIN;
+		*gerr = g_error_new_literal(G_IO_CHANNEL_ERROR, G_IO_CHANNEL_ERROR_FAILED,
+					    ERR_reason_error_string(ERR_get_error()));
 		return G_IO_STATUS_ERROR;
 	}
 	else
@@ -128,6 +130,8 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 		err = SSL_get_error(chan->ssl, err);
 		if(err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 			return G_IO_STATUS_AGAIN;
+		*gerr = g_error_new_literal(G_IO_CHANNEL_ERROR, G_IO_CHANNEL_ERROR_FAILED,
+					    ERR_reason_error_string(ERR_get_error()));
 		return G_IO_STATUS_ERROR;
 	}
 	else
