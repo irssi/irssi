@@ -644,37 +644,36 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	chanrec = irc_channel_find(server, channame);
 	if (chanrec == NULL) cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
+	recoded = recode_out(SERVER(server), msg, channame);
 	/* See if the server has advertised support of wallchops */
 	if (g_hash_table_lookup(chanrec->server->isupport, "statusmsg") ||
 	    g_hash_table_lookup(chanrec->server->isupport, "wallchops"))
-		irc_send_cmdv(server, "NOTICE @%s :%s", chanrec->name, msg);
+		irc_send_cmdv(server, "NOTICE @%s :%s", chanrec->name, recoded);
 	else {
 		/* Fall back to manually noticing each op */
 		nicks = NULL;
 		g_hash_table_foreach(chanrec->nicks,
 				     (GHFunc) cmd_wall_hash, &nicks);
 
-		args = g_strconcat(chanrec->name, " ", msg, NULL);
+		args = g_strconcat(chanrec->name, " ", recoded, NULL);
 		msg = parse_special_string(settings_get_str("wall_format"),
 					   SERVER(server), item, args, NULL, 0);
 		g_free(args);
-
-		recoded = recode_out(SERVER(server), msg, channame);
 
 		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 			NICK_REC *rec = tmp->data;
 
 			if (rec != chanrec->ownnick) {
 				irc_send_cmdv(server, "NOTICE %s :%s",
-					      rec->nick, recoded);
+					      rec->nick, msg);
 			}
 		}
 
-		g_free(recoded);
 		g_free(msg);
 		g_slist_free(nicks);
 	}
 
+	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
