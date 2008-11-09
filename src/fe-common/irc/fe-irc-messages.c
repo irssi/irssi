@@ -24,7 +24,6 @@
 #include "channels.h"
 #include "ignore.h"
 #include "settings.h"
-#include "recode.h"
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -111,21 +110,18 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 static void sig_message_own_wall(SERVER_REC *server, const char *msg,
 				 const char *target)
 {
-        char *nickmode, *optarget, *recoded;
+        char *nickmode, *optarget;
 
 	nickmode = channel_get_nickmode(channel_find(server, target),
 					server->nick);
 
         optarget = g_strconcat("@", target, NULL);
-        /* ugly: recode the sent message back for printing */
-        recoded = recode_in(SERVER(server), msg, target);
 	printformat_module("fe-common/core", server, target,
 			   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 			   MSGLEVEL_NO_ACT,
 			   TXT_OWN_MSG_CHANNEL,
-			   server->nick, optarget, recoded, nickmode);
+			   server->nick, optarget, msg, nickmode);
 	g_free(nickmode);
-        g_free(recoded);
         g_free(optarget);
 }
 
@@ -134,7 +130,7 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 {
 	void *item;
 	const char *oldtarget;
-        char *freemsg = NULL, *recoded;
+        char *freemsg = NULL;
 
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
@@ -146,15 +142,11 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis(item, msg);
 
-	/* ugly: recode the sent message back for printing */
-	recoded = recode_in(SERVER(server), msg, target);
-
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
 		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    item != NULL && oldtarget == target ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
-		    server->nick, recoded, oldtarget);
-        g_free(recoded);
+		    server->nick, msg, oldtarget);
         g_free_not_null(freemsg);
 }
 
@@ -210,12 +202,9 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
-        /* ugly: recode the sent message back for printing */
-        char *recoded = recode_in(SERVER(server), msg, target);
 	printformat(server, skip_target(server, target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    IRCTXT_OWN_NOTICE, target, recoded);
-        g_free(recoded);
+		    IRCTXT_OWN_NOTICE, target, msg);
 }
 
 static void sig_message_irc_notice(SERVER_REC *server, const char *msg,

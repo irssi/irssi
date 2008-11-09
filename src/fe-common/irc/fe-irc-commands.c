@@ -57,7 +57,7 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 	target = window_item_get_target(item);
 	recoded = recode_out(SERVER(server), data, target);
 
-	signal_emit("message irc own_action", 3, server, recoded,
+	signal_emit("message irc own_action", 3, server, data,
 		    item->visible_name);
 
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001",
@@ -90,7 +90,7 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	recoded = recode_out(SERVER(server), text, target);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
 
-	signal_emit("message irc own_action", 3, server, recoded, target);
+	signal_emit("message irc own_action", 3, server, text, target);
 
 	g_free(recoded);
 	cmd_params_free(free_arg);
@@ -100,7 +100,6 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		       WI_ITEM_REC *item)
 {
 	const char *target, *msg;
-	char *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -114,10 +113,8 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (*target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 		
-	recoded = recode_out(SERVER(server), msg, target);
-	signal_emit("message irc own_notice", 3, server, recoded, target);
+	signal_emit("message irc own_notice", 3, server, msg, target);
 	
-	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
