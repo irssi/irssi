@@ -356,7 +356,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	WINDOW_REC *window;
 	GString *chans;
 	GSList *tmp, *windows;
-	char *print_channel, *recoded;
+	char *print_channel;
 	int once, count;
 
 	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
@@ -367,7 +367,6 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 
 	count = 0; windows = NULL;
 	chans = g_string_new(NULL);
-	recoded = recode_in(server, reason, nick);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
@@ -392,7 +391,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 				windows = g_slist_append(windows, window);
 				printformat(server, rec->visible_name,
 					    MSGLEVEL_QUITS,
-					    TXT_QUIT, nick, address, recoded,
+					    TXT_QUIT, nick, address, reason,
 					    rec->visible_name);
 			}
 		}
@@ -406,7 +405,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
 			printformat(server, nick, MSGLEVEL_QUITS,
-				    TXT_QUIT, nick, address, recoded, "");
+				    TXT_QUIT, nick, address, reason, "");
 		}
 	}
 
@@ -415,10 +414,9 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			g_string_truncate(chans, chans->len-1);
 		printformat(server, print_channel, MSGLEVEL_QUITS,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
-			    nick, address, recoded, chans->str);
+			    nick, address, reason, chans->str);
 	}
 	g_string_free(chans, TRUE);
-	g_free(recoded);
 }
 
 static void sig_message_kick(SERVER_REC *server, const char *channel,

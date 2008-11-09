@@ -140,10 +140,14 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 static void event_quit(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
+	char *recoded;
+
 	g_return_if_fail(data != NULL);
 
 	if (*data == ':') data++; /* quit message */
-	signal_emit("message quit", 4, server, nick, addr, data);
+	recoded = recode_in(SERVER(server), data, nick);
+	signal_emit("message quit", 4, server, nick, addr, recoded);
+	g_free(recoded);
 }
 
 static void event_kick(IRC_SERVER_REC *server, const char *data,
