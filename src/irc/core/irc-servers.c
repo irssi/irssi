@@ -79,6 +79,7 @@ static void send_message(SERVER_REC *server, const char *target,
 	IRC_SERVER_REC *ircserver;
 	CHANNEL_REC *channel;
 	char *str;
+	char *recoded;
 
         ircserver = IRC_SERVER(server);
 	g_return_if_fail(ircserver != NULL);
@@ -92,9 +93,11 @@ static void send_message(SERVER_REC *server, const char *target,
 			target = channel->name;
 	}
 
-	str = g_strdup_printf("PRIVMSG %s :%s", target, msg);
+	recoded = recode_out(SERVER(server), msg, target);
+	str = g_strdup_printf("PRIVMSG %s :%s", target, recoded);
 	irc_send_cmd_split(ircserver, str, 2, ircserver->max_msgs_in_cmd);
 	g_free(str);
+	g_free(recoded);
 }
 
 static void server_init(IRC_SERVER_REC *server)

@@ -68,7 +68,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
 {
 	const char *oldtarget;
-	char *nickmode, *recoded;
+	char *nickmode;
 
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
@@ -78,15 +78,12 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		nickmode = channel_get_nickmode(channel_find(server, target),
 						server->nick);
 
-		/* ugly: recode the sent message back for printing */
-                recoded = recode_in(SERVER(server), msg, target);
 		printformat_module("fe-common/core", server, target,
 				   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 				   MSGLEVEL_NO_ACT,
 				   TXT_OWN_MSG_CHANNEL,
-				   server->nick, oldtarget, recoded, nickmode);
+				   server->nick, oldtarget, msg, nickmode);
 		g_free(nickmode);
-                g_free(recoded);
                 signal_stop();
 	}
 	

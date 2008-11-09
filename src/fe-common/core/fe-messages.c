@@ -259,7 +259,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	WINDOW_REC *window;
 	CHANNEL_REC *channel;
 	char *nickmode;
-        char *freemsg = NULL, *recoded;
+        char *freemsg = NULL;
 	int print_channel;
 	channel = channel_find(server, target);
 	if (channel != NULL)
@@ -280,18 +280,14 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) channel, msg);
 
-	/* ugly: recode the sent message back for printing */ 
-	recoded = recode_in(server, msg, target);
-	
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG, server->nick, recoded, nickmode);
+			    TXT_OWN_MSG, server->nick, msg, nickmode);
 	} else {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG_CHANNEL, server->nick, target, recoded, nickmode);
+			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
 
-	g_free(recoded);
 	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
 }
@@ -300,7 +296,7 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 				    const char *target, const char *origtarget)
 {
 	QUERY_REC *query;
-        char *freemsg = NULL, *recoded;
+        char *freemsg = NULL;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(msg != NULL);
@@ -323,15 +319,11 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
 
-	/* ugly: recode the sent message back for printing */
-	recoded = recode_in(server, msg, target);
-
 	printformat(server, target,
 		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    query == NULL ? TXT_OWN_MSG_PRIVATE :
-		    TXT_OWN_MSG_PRIVATE_QUERY, target, recoded, server->nick);
+		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
 
-	g_free(recoded);
 	g_free_not_null(freemsg);
 }
 
