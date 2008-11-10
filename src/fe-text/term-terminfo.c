@@ -389,7 +389,7 @@ static void term_addch_utf8(TERM_WINDOW *window, unichar chr)
 	char buf[10];
 	int i, len;
 
-	len = utf16_char_to_utf8(chr, buf);
+	len = g_unichar_to_utf8(chr, buf);
 	for (i = 0;  i < len; i++)
                 putc(buf[i], window->term->out);
 }

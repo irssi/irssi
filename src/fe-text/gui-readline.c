@@ -295,7 +295,7 @@ static void paste_send(void)
 				    active_win->active);
 			g_string_truncate(str, 0);
 		} else if (active_entry->utf8) {
-			out[utf16_char_to_utf8(arr[i], out)] = '\0';
+			out[g_unichar_to_utf8(arr[i], out)] = '\0';
 			g_string_append(str, out);
 		} else if (term_type == TERM_TYPE_BIG5) {
 			if (arr[i] > 0xff)
@@ -490,7 +490,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 		}
 	} else {
                 /* need to convert to utf8 */
-		str[utf16_char_to_utf8(key, str)] = '\0';
+		str[g_unichar_to_utf8(key, str)] = '\0';
 	}
 
 	if (strcmp(str, "^") == 0) {
