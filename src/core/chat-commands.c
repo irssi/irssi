@@ -24,7 +24,6 @@
 #include "commands.h"
 #include "special-vars.h"
 #include "settings.h"
-#include "recode.h"
 
 #include "chat-protocols.h"
 #include "servers.h"

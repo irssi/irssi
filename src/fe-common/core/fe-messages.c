@@ -31,7 +31,6 @@
 #include "channels.h"
 #include "nicklist.h"
 #include "ignore.h"
-#include "recode.h"
 
 #include "window-items.h"
 #include "fe-queries.h"

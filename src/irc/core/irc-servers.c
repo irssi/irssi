@@ -39,6 +39,7 @@
 #include "modes.h"
 
 #include "settings.h"
+#include "recode.h"
 
 #define DEFAULT_MAX_KICKS 1
 #define DEFAULT_MAX_MODES 3
