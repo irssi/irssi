@@ -340,7 +340,7 @@ command_bind(cmd, func[, category])
   Bind command `cmd' to call function `func'. `category' is the
   category where the command is displayed in /HELP.
 
-command_runsub(cms, data, server, item)
+command_runsub(cmd, data, server, item)
   Run subcommands for `cmd'. First word in `data' is parsed as
   subcommand. `server' is Irssi::Server rec for current
   Irssi::Windowitem `item'.
