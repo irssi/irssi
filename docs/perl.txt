@@ -291,7 +291,7 @@ timeout_add(msecs, func, data)
   parameter `data'. Returns tag which can be used to stop the timeout.
 
 timeout_add_once(msecs, func, data);
-  Call 'func' once after `msecs' milliseconds (1000 = 1 second)
+  Call `func' once after `msecs' milliseconds (1000 = 1 second)
   with parameter `data'. Returns tag which can be used to stop the timeout.
 
 timeout_remove(tag)
@@ -349,7 +349,7 @@ command_runsub(cmd, data, server, item)
   with command_bind("`cmd' `subcmd'", subcmdfunc[, category]);
 
 command_unbind(cmd, func)
-  Unbind command `cmd' from function 'func.
+  Unbind command `cmd' from function `func'.
 
 command_set_options(cmd, data)
   Set options for command `cmd' to `data'. `data' is a string of
