@@ -57,6 +57,14 @@ static void handle_command_bind(int priority, int items, SV *p0, SV *p1, SV *p2)
 	}
 }
 
+static void add_tuple(gpointer key_, gpointer value_, gpointer user_data)
+{
+	HV *hash = user_data;
+	char *key = key_;
+	char *value = value_;
+	hv_store(hash, key, strlen(key), new_pv(value), 0);
+}
+
 MODULE = Irssi::Core  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
@@ -551,6 +559,28 @@ void
 command_set_options(cmd, options)
 	char *cmd
 	char *options
+
+void
+command_parse_options(cmd, data)
+	char *cmd
+	char *data
+PREINIT:
+	HV *hash;
+	GHashTable *optlist;
+	void *free_arg;
+	char *ptr;
+PPCODE:
+	if (cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+			   cmd, &optlist, &ptr)) {
+		hash = newHV();
+		g_hash_table_foreach(optlist, add_tuple, hash);
+		XPUSHs(sv_2mortal(newRV_noinc((SV*)hash)));
+		XPUSHs(sv_2mortal(new_pv(ptr)));
+		cmd_params_free(free_arg);
+	} else {
+		XPUSHs(&PL_sv_undef);
+		XPUSHs(&PL_sv_undef);
+	}
 
 void
 pidwait_add(pid)

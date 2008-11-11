@@ -351,6 +351,20 @@ command_runsub(cmd, data, server, item)
 command_unbind(cmd, func)
   Unbind command `cmd' from function 'func.
 
+command_set_options(cmd, data)
+  Set options for command `cmd' to `data'. `data' is a string of
+  space separated words which specify the options. Each word can be
+  optionally prefixed with one of the following character:
+
+  '-': optional argument
+  '+': argument required
+  '@': optional numeric argument
+
+command_parse_options(cmd, data)
+  Parse options for command `cmd' in `data'. It returns a reference to
+  an hash table with the options and a string with the remaining part
+  of `data'. On error it returns the undefined value.
+
 
  *** Windows
 
