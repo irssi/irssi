@@ -986,7 +986,7 @@ Server::isupport(name)
   script. If the item is not present returns undef, if the item has no value
   then "" is returned use defined $server->isupport("name") if you need to
   check whether a property is present.
-  See http://www.ietf.org/internet-drafts/draft-brocklesby-irc-isupport-01.txt
+  See http://tools.ietf.org/id/draft-brocklesby-irc-isupport-03.txt
   for more information on the ISUPPORT numeric.
 
  *** IRC channels
