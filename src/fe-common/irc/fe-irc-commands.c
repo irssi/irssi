@@ -191,24 +191,6 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server,
 	cmd_params_free(free_arg);
 }
 
-static void cmd_wallchops(const char *data, IRC_SERVER_REC *server,
-			  WI_ITEM_REC *item)
-{
-	char *channame, *msg;
-	void *free_arg;
-
-        CMD_IRC_SERVER(server);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
-			    PARAM_FLAG_GETREST, item, &channame, &msg))
-		return;
-	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	signal_emit("message irc own_wall", 3, server, msg, channame);
-
-	cmd_params_free(free_arg);
-}
-
 static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
 			     WI_ITEM_REC *item)
 {
@@ -439,7 +421,6 @@ void fe_irc_commands_init(void)
 	command_bind_irc("ctcp", NULL, (SIGNAL_FUNC) cmd_ctcp);
 	command_bind_irc("nctcp", NULL, (SIGNAL_FUNC) cmd_nctcp);
 	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
-	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) cmd_wallchops);
 	command_bind_irc("ban", NULL, (SIGNAL_FUNC) cmd_ban);
 	command_bind_irc("ver", NULL, (SIGNAL_FUNC) cmd_ver);
 	command_bind_irc("topic", NULL, (SIGNAL_FUNC) cmd_topic);
@@ -456,7 +437,6 @@ void fe_irc_commands_deinit(void)
 	command_unbind("ctcp", (SIGNAL_FUNC) cmd_ctcp);
 	command_unbind("nctcp", (SIGNAL_FUNC) cmd_nctcp);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
-	command_unbind("wallchops", (SIGNAL_FUNC) cmd_wallchops);
 	command_unbind("ban", (SIGNAL_FUNC) cmd_ban);
 	command_unbind("ver", (SIGNAL_FUNC) cmd_ver);
 	command_unbind("topic", (SIGNAL_FUNC) cmd_topic);

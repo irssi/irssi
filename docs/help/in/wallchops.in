@@ -1,9 +1,0 @@
-
-@SYNTAX:wallchops@
-
-Works only in the Undernet and Open Projects (ircu).
-
-Sends an message to all other channel operators of the current channel.
-
-See also: WALL
-

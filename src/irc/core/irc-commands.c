@@ -663,28 +663,6 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WALLCHOPS <channel> <message> */
-/* ircu is the only major server i can see which supports this 
-   and it supports NOTICE @#channel anyway */
-static void cmd_wallchops(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
-{
-	char *channame, *msg, *recoded;
-	void *free_arg;
-
-        CMD_IRC_SERVER(server);
-
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
-			    PARAM_FLAG_GETREST, item, &channame, &msg))
-		return;
-	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	recoded = recode_out(SERVER(server), msg, channame);
-	irc_send_cmdv(server, "WALLCHOPS %s :%s", channame, recoded);
-
-	g_free(recoded);
-	cmd_params_free(free_arg);
-}
-
 /* SYNTAX: KICKBAN [<channel>] <nicks> <reason> */
 static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 			WI_ITEM_REC *item)
@@ -1054,7 +1032,6 @@ void irc_commands_init(void)
 	command_bind_irc("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind_irc("quote", NULL, (SIGNAL_FUNC) cmd_quote);
 	command_bind_irc("wall", NULL, (SIGNAL_FUNC) cmd_wall);
-	command_bind_irc("wallchops", NULL, (SIGNAL_FUNC) cmd_wallchops);
 	command_bind_irc("wait", NULL, (SIGNAL_FUNC) cmd_wait);
 	/* SYNTAX: WALLOPS <message> */
 	command_bind_irc("wallops", NULL, (SIGNAL_FUNC) command_1self);
@@ -1126,7 +1103,6 @@ void irc_commands_deinit(void)
 	command_unbind("userhost", (SIGNAL_FUNC) command_self);
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);
-	command_unbind("wallchops", (SIGNAL_FUNC) cmd_wallchops);
 	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
 	command_unbind("kickban", (SIGNAL_FUNC) cmd_kickban);

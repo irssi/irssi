@@ -6,7 +6,4 @@ supports WALLCHOPS or STATUSMSG=@, it sends a notice to @#channel.
 Otherwise it sends a notice separately to each operator, which may not
 be a very good idea to use in a channel with lots of operators.
 
-Many IRC servers support also /MSG @#channel or /WALLCHOPS which you should
-use if possible.
-
 See also: WALLCHOPS
