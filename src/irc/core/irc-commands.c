@@ -529,20 +529,6 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	g_free(str);
 }
 
-static void server_send_away(IRC_SERVER_REC *server, const char *reason)
-{
-	if (!IS_IRC_SERVER(server))
-		return;
-
-	if (*reason != '\0' || server->usermode_away) {
-		g_free_and_null(server->away_reason);
-                if (*reason != '\0')
-			server->away_reason = g_strdup(reason);
-
-		irc_send_cmdv(server, "AWAY :%s", reason);
-	}
-}
-
 /* SYNTAX: AWAY [-one | -all] [<reason>] */
 static void cmd_away(const char *data, IRC_SERVER_REC *server)
 {
@@ -556,9 +542,9 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 			    PARAM_FLAG_GETREST, "away", &optlist, &reason)) return;
 
 	if (g_hash_table_lookup(optlist, "one") != NULL)
-		server_send_away(server, reason);
+		irc_server_send_away(server, reason);
 	else
-		g_slist_foreach(servers, (GFunc) server_send_away, reason);
+		g_slist_foreach(servers, (GFunc) irc_server_send_away, reason);
 
 	cmd_params_free(free_arg);
 }

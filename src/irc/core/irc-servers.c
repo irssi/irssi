@@ -346,6 +346,20 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	g_free(str);
 }
 
+void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (*reason != '\0' || server->usermode_away) {
+		g_free_and_null(server->away_reason);
+                if (*reason != '\0')
+			server->away_reason = g_strdup(reason);
+
+		irc_send_cmdv(server, "AWAY :%s", reason);
+	}
+}
+
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 {
 	if (net_sendbuffer_send(server->handle, data, len) == -1) {
