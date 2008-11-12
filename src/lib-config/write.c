@@ -85,20 +85,6 @@ static int config_has_specials(const char *text)
 	return FALSE;
 }
 
-static int get_octal(int decimal)
-{
-	int octal, pos;
-
-	octal = 0; pos = 0;
-	while (decimal > 0) {
-		octal += (decimal & 7)*(pos == 0 ? 1 : pos);
-		decimal /= 8;
-		pos += 10;
-	}
-
-	return octal;
-}
-
 static char *config_escape_string(const char *text)
 {
 	GString *str;
@@ -111,7 +97,7 @@ static char *config_escape_string(const char *text)
 		if (*text == '\\' || *text == '"')
 			g_string_sprintfa(str, "\\%c", *text);
 		else if ((unsigned char) *text < 32)
-			g_string_sprintfa(str, "\\%03d", get_octal(*text));
+			g_string_sprintfa(str, "\\%03o", *text);
 		else
 			g_string_append_c(str, *text);
 		text++;
