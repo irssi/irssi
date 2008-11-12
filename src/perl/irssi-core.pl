@@ -21,6 +21,10 @@ sub eval_data {
   my ($data, $id) = @_;
   destroy("Irssi::Script::$id");
 
+  $SIG{__WARN__} = sub {
+    Irssi::print("Warning in script $id:");
+    print $_[0];
+  };
   my $package = "Irssi::Script::$id";
   my $eval = qq{package $package; %s sub handler { $data; }};
   {
