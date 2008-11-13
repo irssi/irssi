@@ -10,8 +10,33 @@
 # Remember to include the asterisk ('*').
 $SRC_PATH='src';
 
-$FOO = `find src -name '*.c' -exec perl findsyntax.pl \{\} \\; | sed 's/.*SYNTAX: //' > irssi_syntax`;
+@files = `find src -name '*.c'`;
 
+foreach $file (@files) {
+   open (FILE, "$file");
+   while (<FILE>) {
+      chomp;
+      if (m!/\*.SYNTAX\:! || $state) {
+	 s/^\s+/ /;
+	 s/.*SYNTAX: //;
+	 if (/^ [A-Z]+/) {
+	    push @lines, $line;
+	    $line = "";
+	    s/^ //;
+	 }
+	 $line .= $_;
+	 if (m!\*/!) {
+	    $line =~ s!\*/!!;
+	    push @lines, $line;
+	    $line = "";
+	    $state = 0;
+	 } else {
+	    $state = 1;
+	 }
+      }
+   }
+   close (FILE);
+}
 while (<docs/help/in/*.in>) {
    next if (/Makefile/);
 
@@ -21,9 +46,8 @@ while (<docs/help/in/*.in>) {
    $count = 0;
    foreach $DATARIVI (@data) {
       if ($DATARIVI =~ /\@SYNTAX\:(.+)\@/) {
-          $etsittava = "\U$1 ";
-          $SYNTAX = `grep \'^$etsittava\' irssi_syntax`;
-	  $SYNTAX =~ s/\*\///g;
+          $SYNTAX = join "\n", (grep /^\U$1 /, @lines);
+	  $SYNTAX .= "\n" if $SYNTAX;
 	  $SYNTAX =~ s/ *$//; $SYNTAX =~ s/ *\n/\n/g;
 
 	  # add %| after "COMMAND SUB " so parameters will indent correctly
@@ -54,4 +78,3 @@ while (<docs/help/in/*.in>) {
    print NEWFILE @data;
    close (NEWFILE);
 }
-unlink "irssi_syntax";
