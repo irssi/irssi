@@ -698,14 +698,6 @@ if test "x$want_ipv6" = "xyes"; then
 	AC_MSG_RESULT($have_ipv6)
 fi
 
-dnl **
-dnl ** IRSSI_VERSION_DATE and IRSSI_VERSION_TIME
-dnl **
-VERSION_DATE=`head -n 2 $srcdir/ChangeLog| grep '^r' | awk '{print $5}' | tr -d '-'`
-VERSION_TIME=`head -n 2 $srcdir/ChangeLog| grep '^r' | awk '{print $6}' | awk -F: '{printf "%d\n", $1$2}'`
-AC_SUBST(VERSION_DATE)
-AC_SUBST(VERSION_TIME)
-
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -734,7 +726,6 @@ scripts/examples/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
-irssi-version.h
 irssi-config
 ])
 
