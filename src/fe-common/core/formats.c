@@ -1052,13 +1052,6 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					fgcolor = (unsigned char) *ptr-'0';
-					if (fgcolor <= 7)
-						flags &= ~GUI_PRINT_FLAG_BOLD;
-					else {
-						/* bold */
-						if (fgcolor != 8) fgcolor -= 8;
-						flags |= GUI_PRINT_FLAG_BOLD;
-					}
 				}
 				if (ptr[1] == '\0')
 					break;
@@ -1066,13 +1059,6 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				ptr++;
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					bgcolor = *ptr-'0';
-					if (bgcolor <= 7)
-						flags &= ~GUI_PRINT_FLAG_BLINK;
-					else {
-						/* blink */
-						bgcolor -= 8;
-						flags |= GUI_PRINT_FLAG_BLINK;
-					}
 				}
 			}
 			ptr++;

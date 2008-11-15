@@ -7,8 +7,6 @@
 
 #define LINE_COLOR_BG		0x20
 #define LINE_COLOR_DEFAULT	0x10
-#define LINE_COLOR_BOLD		0x08
-#define LINE_COLOR_BLINK       	0x08
 
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
@@ -22,7 +20,9 @@ enum {
 				   text in format <module><format_name><arg><arg2...> - fields are separated
 				   with \0<format> and last argument ends with \0<eol>. \0<continue> is allowed
 				   anywhere */
-	LINE_CMD_FORMAT_CONT    /* multiline format, continues to next line */
+	LINE_CMD_FORMAT_CONT,   /* multiline format, continues to next line */
+	LINE_CMD_BLINK,		/* enable/disable blink */
+	LINE_CMD_BOLD,		/* enable/disable bold */
 };
 
 typedef struct {
@@ -40,8 +40,7 @@ typedef struct _LINE_REC {
 	   Bit:
             5 - Setting a background color
             4 - Use "default terminal color"
-            3 - Bold (fg) / blink (bg) - can be used with 4th bit
-            0-2 - Color
+            0-3 - Color
 
 	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
 	   LINE_CMD_COLOR0 instead. */

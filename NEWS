@@ -1,4 +1,9 @@
 v0.8.13
+	+ Add support for 16 colors. Formats KBGCRMYW and mirc colors are now
+	  mapped to colors 8-15. fe-text translates colors 8-15 to bold/blink+0-7
+	  if the terminal supports only 8 colors. If your theme uses one of
+	  the high color formats and you really want bold you can change
+	  %FMT<string> to %fmt%_<string>%_, it will work fine in all irssi versions.
 	+ Revert recode changes introduced in 0.8.12.
 	+ Add completion for /WINDOW SERVER.
 	+ Support for reading kicks/msgs from TARGMAX/MAXTARGETS 005 tokens.

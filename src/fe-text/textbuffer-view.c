@@ -104,8 +104,8 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
                 textbuffer_cache_destroy(cache);
 }
 
-#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | ATTR_BOLD | 0x0f)
-#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | ATTR_BLINK | 0xf0)
+#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | 0x0f)
+#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | 0xf0)
 
 static void update_cmd_color(unsigned char cmd, int *color)
 {
@@ -117,8 +117,6 @@ static void update_cmd_color(unsigned char cmd, int *color)
 				*color |= (cmd & 0x0f) << 4;
 			else {
 				*color = (*color & FGATTR) | ATTR_RESETBG;
-                                if (cmd & LINE_COLOR_BLINK)
-					*color |= ATTR_BLINK;
 			}
 		} else {
 			/* set foreground color */
@@ -127,8 +125,6 @@ static void update_cmd_color(unsigned char cmd, int *color)
 				*color |= cmd & 0x0f;
 			else {
 				*color = (*color & BGATTR) | ATTR_RESETFG;
-                                if (cmd & LINE_COLOR_BOLD)
-					*color |= ATTR_BOLD;
 			}
 		}
 	} else switch (cmd) {
@@ -137,6 +133,12 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		break;
 	case LINE_CMD_REVERSE:
 		*color ^= ATTR_REVERSE;
+		break;
+	case LINE_CMD_BLINK:
+		*color ^= ATTR_BLINK;
+		break;
+	case LINE_CMD_BOLD:
+		*color ^= ATTR_BOLD;
 		break;
 	case LINE_CMD_COLOR0:
 		*color &= BGATTR;

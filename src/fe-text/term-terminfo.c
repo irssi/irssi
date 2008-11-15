@@ -306,7 +306,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 	}
 
 	/* set background color */
-	if (col & 0x80)
+	if (col & 0x80 && window->term->TI_colors == 8)
 		col |= ATTR_BLINK;
 	if (col & ATTR_BLINK)
 		current_term->set_blink(current_term);
@@ -320,7 +320,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 	}
 
 	/* bold */
-	if (col & 0x08)
+	if (col & 0x08 && window->term->TI_colors == 8)
 		col |= ATTR_BOLD;
 	if (col & ATTR_BOLD)
 		terminfo_set_bold();

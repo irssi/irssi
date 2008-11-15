@@ -246,10 +246,6 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
         /* get the fg & bg command chars */
 	fg = fg < 0 ? LINE_COLOR_DEFAULT : fg & 0x0f;
 	bg = LINE_COLOR_BG | (bg < 0 ? LINE_COLOR_DEFAULT : bg & 0x0f);
-	if (flags & GUI_PRINT_FLAG_BOLD)
-		fg |= LINE_COLOR_BOLD;
-	if (flags & GUI_PRINT_FLAG_BLINK)
-                bg |= LINE_COLOR_BLINK;
 
 	pos = 0;
 	if (fg != buffer->last_fg) {
@@ -270,6 +266,14 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 	if ((flags & GUI_PRINT_FLAG_REVERSE) != (buffer->last_flags & GUI_PRINT_FLAG_REVERSE)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_REVERSE;
+	}
+	if ((flags & GUI_PRINT_FLAG_BLINK) != (buffer->last_flags & GUI_PRINT_FLAG_BLINK)) {
+		data[pos++] = 0;
+		data[pos++] = LINE_CMD_BLINK;
+	}
+	if ((flags & GUI_PRINT_FLAG_BOLD) != (buffer->last_flags & GUI_PRINT_FLAG_BOLD)) {
+		data[pos++] = 0;
+		data[pos++] = LINE_CMD_BOLD;
 	}
 	if (flags & GUI_PRINT_FLAG_INDENT) {
 		data[pos++] = 0;
@@ -371,54 +375,33 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 	buffer->last_eol = TRUE;
 }
 
-static void set_color(GString *str, int cmd, int *last_fg, int *last_bg)
+static void set_color(GString *str, int cmd)
 {
-	if (cmd & LINE_COLOR_DEFAULT) {
-		g_string_sprintfa(str, "\004%c", FORMAT_STYLE_DEFAULTS);
+	int color = -1;
 
-		/* need to reset the fg/bg color */
-		if (cmd & LINE_COLOR_BG) {
-                        *last_bg = -1;
-			if (*last_fg != -1) {
-				g_string_sprintfa(str, "\004%c%c",
-						  *last_fg,
-						  FORMAT_COLOR_NOCHANGE);
-			}
-		} else {
-                        *last_fg = -1;
-			if (*last_bg != -1) {
-				g_string_sprintfa(str, "\004%c%c",
-						  FORMAT_COLOR_NOCHANGE,
-						  *last_bg);
-			}
-		}
-                return;
-	}
+	if (!(cmd & LINE_COLOR_DEFAULT))
+		color = (cmd & 0x0f)+'0';
 
 	if ((cmd & LINE_COLOR_BG) == 0) {
                 /* change foreground color */
-                *last_fg = (cmd & 0x0f)+'0';
-		g_string_sprintfa(str, "\004%c%c", *last_fg,
-				  FORMAT_COLOR_NOCHANGE);
+		g_string_sprintfa(str, "\004%c%c",
+				  color, FORMAT_COLOR_NOCHANGE);
 	} else {
 		/* change background color */
-                *last_bg = (cmd & 0x0f)+'0';
 		g_string_sprintfa(str, "\004%c%c",
-				  FORMAT_COLOR_NOCHANGE, *last_bg);
+				  FORMAT_COLOR_NOCHANGE, color);
 	}
 }
 
 void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 {
         unsigned char cmd, *ptr, *tmp;
-        int last_fg, last_bg;
 
 	g_return_if_fail(line != NULL);
 	g_return_if_fail(str != NULL);
 
         g_string_truncate(str, 0);
 
-        last_fg = last_bg = -1;
 	for (ptr = line->text;;) {
 		if (*ptr != 0) {
 			g_string_append_c(str, (char) *ptr);
@@ -449,13 +432,21 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 
 		if ((cmd & 0x80) == 0) {
 			/* set color */
-                        set_color(str, cmd, &last_fg, &last_bg);
+                        set_color(str, cmd);
 		} else switch (cmd) {
 		case LINE_CMD_UNDERLINE:
 			g_string_append_c(str, 31);
 			break;
 		case LINE_CMD_REVERSE:
 			g_string_append_c(str, 22);
+			break;
+		case LINE_CMD_BLINK:
+			g_string_sprintfa(str, "\004%c",
+					  FORMAT_STYLE_BLINK);
+			break;
+		case LINE_CMD_BOLD:
+			g_string_sprintfa(str, "\004%c",
+					  FORMAT_STYLE_BOLD);
 			break;
 		case LINE_CMD_COLOR0:
 			g_string_sprintfa(str, "\004%c%c",
