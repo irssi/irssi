@@ -11,6 +11,7 @@ script_DATA = \
 	mail.pl \
 	mlock.pl \
 	quitmsg.pl \
+	sb_search.pl \
 	scriptassist.pl \
 	splitlong.pl \
 	usercount.pl
