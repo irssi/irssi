@@ -29,6 +29,7 @@ v0.8.13
 	  attaching to irssi-proxy, bug #528).
 	+ introduce the type Irssi::Irc::Client and signals to communicate with
 	  proxy clients to allow for scripting parts of the irssi-proxy.
+	+ Add sb_search.pl, a script for /SCROLLBACK SEARCH
 	- fix leak with $L expando.
 	- fix possible crash with /script reset.
 	- ignore exceptions take precedence over ignores in all cases.
@@ -37,6 +38,7 @@ v0.8.13
 	- Fix regressions that prevented external modules from building/working
 	  (bugs #537 #539).
 	- Fix /set hilight_level not taking effect immediately (bug #598).
+	- Fix bold, blinking and indentation in /LASTLOG and buf.pl.
 
 v0.8.12 2007-10-06  The Irssi team <staff@irssi.org>
 	+ Some changes to character set recoding.
