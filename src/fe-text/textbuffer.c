@@ -453,6 +453,8 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 					  '0', FORMAT_COLOR_NOCHANGE);
 			break;
 		case LINE_CMD_INDENT:
+			g_string_sprintfa(str, "\004%c",
+					  FORMAT_STYLE_INDENT);
 			break;
 		case LINE_CMD_INDENT_FUNC:
                         ptr += sizeof(void *);
