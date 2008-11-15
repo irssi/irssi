@@ -10,7 +10,9 @@ default-config.h: $(srcdir)/irssi.conf
 default-theme.h: $(srcdir)/default.theme
 	$(srcdir)/file2header.sh $(srcdir)/default.theme default_theme > default-theme.h
 irssi-version.h:
-	$(srcdir)/irssi-version.sh $(srcdir) > $@
+	$(srcdir)/irssi-version.sh $(srcdir) > $@.tmp
+	cmp -s $@.tmp $@ || mv $@.tmp $@
+	rm -f $@.tmp
 
 SUBDIRS = src docs scripts
 
