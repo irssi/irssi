@@ -536,8 +536,6 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 	char *reason;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
-
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
 			    PARAM_FLAG_GETREST, "away", &optlist, &reason)) return;
 
