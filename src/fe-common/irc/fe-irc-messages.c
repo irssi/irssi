@@ -69,9 +69,11 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 	const char *oldtarget;
 	char *nickmode;
 
+	if (!IS_IRC_SERVER(server))
+		return;
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
-	if (IS_IRC_SERVER(server) && target != oldtarget) {
+	if (target != oldtarget) {
 		/* Hybrid 6 / Bahamut feature, send msg to all
 		   ops / ops+voices in channel */
 		nickmode = channel_get_nickmode(channel_find(server, target),
