@@ -110,9 +110,6 @@ int strlen_big5(const unsigned char *str)
 {
 	int len=0;
 
-	if (term_type != TERM_TYPE_BIG5)
-		return strlen(str);
-
 	while (*str != '\0') {
 		if (is_big5(str[0], str[1]))
 			str++;
@@ -449,7 +446,12 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 
         gui_entry_redraw_from(entry, entry->pos);
 
-	len = !entry->utf8 ? strlen_big5(str) : strlen_utf8(str);
+	if (entry->utf8)
+		len = strlen_utf8(str);
+	else if (term_type == TERM_TYPE_BIG5)
+		len = strlen_big5(str);
+	else
+		len = strlen(str);
         entry_text_grow(entry, len);
 
         /* make space for the string */
