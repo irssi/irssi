@@ -253,18 +253,16 @@ static void paste_send(void)
 	HISTORY_REC *history;
 	unichar *arr;
 	GString *str;
-	char out[10];
+	char out[10], *text;
 	unsigned int i;
 
 	if (paste_join_multiline)
 		paste_buffer_join_lines(paste_buffer);
 
 	arr = (unichar *) paste_buffer->data;
-	str = g_string_new(NULL);
 	if (active_entry->text_len == 0)
 		i = 0;
 	else {
-		g_string_append_len(str, paste_entry, paste_entry_pos);
 		/* first line has to be kludged kind of to get pasting in the
 		   middle of line right.. */
 		for (i = 0; i < paste_buffer->len; i++) {
@@ -273,19 +271,20 @@ static void paste_send(void)
 				break;
 			}
 
-			g_string_append_c(str, arr[i]);
+			gui_entry_insert_char(active_entry, arr[i]);
 		}
-		g_string_append(str, paste_entry+paste_entry_pos);
 
+		text = gui_entry_get_text(active_entry);
 		history = command_history_current(active_win);
-		command_history_add(history, str->str);
+		command_history_add(history, text);
 
-		signal_emit("send command", 3, str->str,
+		signal_emit("send command", 3, text,
 			    active_win->active_server, active_win->active);
-		g_string_truncate(str, 0);
+		g_free(text);
 	}
 
 	/* rest of the lines */
+	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
 			history = command_history_current(active_win);
@@ -313,6 +312,9 @@ static void paste_send(void)
 
 static void paste_flush(int send)
 {
+	gui_entry_set_text(active_entry, paste_entry);
+	gui_entry_set_pos(active_entry, paste_entry_pos);
+
 	if (send)
 		paste_send();
 	g_array_set_size(paste_buffer, 0);
@@ -426,6 +428,8 @@ static int check_pasting(unichar key, int diff)
 
 			/* newline - assume this line was pasted */
 			paste_state = 2;
+			gui_entry_set_text(active_entry, paste_entry);
+			gui_entry_set_pos(active_entry, paste_entry_pos);
 			if (paste_verify_line_count > 0)
 				g_timeout_add(100, paste_timeout, NULL);
 		}
