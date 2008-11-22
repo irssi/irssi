@@ -11,7 +11,7 @@
     -new: show only lines since last /LASTLOG
     -regexp: `text' is a regular expression
     -word: `text' must match to full words
-    -level: what levels to check, like -public -msgs (default is all)
+    -<level>: levels to check (default is all; /help levels for details)
     <pattern>: text to search for, or all if empty
     <count>: maximum number of lines to show
     <start>: skip the last `start' lines
