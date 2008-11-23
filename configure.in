@@ -465,23 +465,6 @@ if test "$want_perl" != "no"; then
 			perl_mod_error="Dynamic library dependencies don't work with modules"
 		fi
 
-		if test "$want_perl" != "static"; then
-			dnl * dynaloader.a -> libperl_dynaloader.la
-			DYNALOADER_A=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*([[^ ]]*DynaLoader\.a).*/\2/'`
-		fi
-
-		dnl * don't check libperl.a if dynaloader.a wasn't found..
-		if test -n "$DYNALOADER_A"; then
-			dnl * find either libperl.a or libperl.so
-			LIBPERL_A=`echo "$PERL_LDFLAGS -L/usr/lib"|$perlpath -e 'foreach (split(/ /, <STDIN>)) { if (/^-L(.*)/) { my $dir=$1; if (\`ls $dir/libperl.so* 2>/dev/null\`) { print "-lperl"; last; }; if (-e "$dir/libperl.a") { print "$dir/libperl.a"; last } } };'`
-			if test -z "$LIBPERL_A"; then
-				perl_mod_error="Didn't find location of -lperl"
-				DYNALOADER_A=
-			elif test "$LIBPERL_A" = "-lperl"; then
-				LIBPERL_A=
-			fi
-		fi
-
 		dnl * remove all database stuffs
 		dnl * nsl is already in ldflags
 		dnl * libc is of course linked without needing -lc
@@ -517,20 +500,7 @@ if test "$want_perl" != "no"; then
 	fi
 
 	if test "x$want_perl" != "xno"; then
-		if test "x$want_perl" = "xstatic"; then
-			AC_MSG_RESULT(ok)
-		elif test -z "$DYNALOADER_A"; then
-			AC_MSG_RESULT([error parsing ldopts, building Perl into irssi binary instead of as module])
-			want_perl=static
-		else
-			AC_MSG_RESULT(ok)
-			PERL_LDFLAGS=`echo $PERL_LDFLAGS | $perlpath -pe 's/^(.* )*[[^ ]]*DynaLoader\.a/\1libperl_dynaloader.la/'`
-			if test -n "$LIBPERL_A"; then
-				PERL_LDFLAGS=`echo $PERL_LDFLAGS | $sedpath -e 's/-lperl /libperl_orig.la /' -e 's/-lperl$/libperl_orig.la$/'`
-			fi
-			AC_SUBST(LIBPERL_A)
-			AC_SUBST(DYNALOADER_A)
-		fi
+		AC_MSG_RESULT(ok)
 
 		if test "x$want_perl" = "xstatic"; then
 			dnl * building with static perl support
@@ -739,7 +709,7 @@ if test "x$old_dir" != "x$whole_dir"; then
 		for i in $whole_dir/src/perl/common $whole_dir/src/perl/irc $whole_dir/src/perl/ui $whole_dir/src/perl/textui; do
 			subdirfiles=`echo $subdirfiles $i/typemap $i/module.h $i/*.pm $i/*.xs`
 		done
-		for file in $whole_dir/src/perl/module.h $whole_dir/src/perl/libperl_orig.la $whole_dir/src/perl/libperl_dynaloader.la $subdirfiles; do
+		for file in $whole_dir/src/perl/module.h $subdirfiles; do
 			link=`echo $file|$sedpath "s?$whole_dir/??"`
 			rm -f $link
 			$LN_S $file $link

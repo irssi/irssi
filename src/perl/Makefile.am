@@ -43,17 +43,6 @@ noinst_HEADERS = \
 	perl-signals.h \
 	perl-sources.h
 
-libperl_core_la_DEPENDENCIES = .libs/libperl_orig.a .libs/DynaLoader.a
-
-.libs/libperl_orig.a:
-	$(mkdir_p) .libs
-	rm -f .libs/libperl_orig.a
-	if [ x$(LIBPERL_A) = x ]; then touch .libs/libperl_orig.a; else $(LN_S) $(LIBPERL_A) .libs/libperl_orig.a; fi
-.libs/DynaLoader.a:
-	$(mkdir_p) .libs
-	rm -f .libs/DynaLoader.a
-	$(LN_S) $(DYNALOADER_A) .libs/DynaLoader.a
-
 libperl_core_la_SOURCES = \
 	$(perl_sources)
 
@@ -126,8 +115,6 @@ textui_sources = \
 	textui/module.h
 
 EXTRA_DIST = \
-	libperl_dynaloader.la \
-	libperl_orig.la \
 	get-signals.pl \
 	irssi-core.pl \
 	$(common_sources) \
