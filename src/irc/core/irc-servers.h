@@ -70,10 +70,7 @@ struct _IRC_SERVER_REC {
 	int max_msgs_in_cmd; /* max. number of targets in one /MSG */
 
 	/* Command sending queue */
-	int cmdcount; /* number of commands in `cmdqueue'. Can be more than
-	                 there actually is, to make flood control remember
-			 how many messages can be sent before starting the
-			 flood control */
+	int cmdcount; /* number of commands in `cmdqueue' */
 	GSList *cmdqueue; /* command, redirection, ... */
 	GTimeVal wait_cmd; /* don't send anything to server before this */
 	GTimeVal last_cmd; /* last time command was sent to server */
