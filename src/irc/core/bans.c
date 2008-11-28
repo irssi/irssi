@@ -51,7 +51,11 @@ char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick, int ban_type)
 	g_return_val_if_fail(nick != NULL, NULL);
 
 	rec = nicklist_find(CHANNEL(channel), nick);
-	if (rec == NULL || rec->host == NULL) return NULL;
+	if (rec == NULL) return NULL;
+	if (rec->host == NULL) {
+		g_warning("channel %s is not synced, using nick ban for %s", channel->name, nick);
+		return g_strdup_printf("%s!*@*", nick);
+	}
 
 	if (ban_type <= 0)
 		ban_type = default_ban_type;
@@ -158,6 +162,8 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 			}
 			if (rec != NULL)
 				g_string_sprintfa(str, "%s ", rec->ban);
+			else if (!channel->synced)
+				g_warning("channel %s is not synced", channel->name);
 		}
 	}
 	g_strfreev(banlist);
@@ -191,8 +197,6 @@ static void command_set_ban(const char *data, IRC_SERVER_REC *server,
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL)
 		cmd_param_error(CMDERR_CHAN_NOT_FOUND);
-	if (!chanrec->wholist)
-		cmd_param_error(CMDERR_CHAN_NOT_SYNCED);
 
 	if (set)
 		ban_set(chanrec, nicks, ban_type);

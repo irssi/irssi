@@ -211,9 +211,6 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 	GSList *tmp;
         int counter;
 
-	if (!channel->synced)
-		cmd_return_error(CMDERR_CHAN_NOT_SYNCED);
-
 	if (channel->banlist == NULL) {
 		printformat(server, channel->visible_name,
 			    MSGLEVEL_CLIENTNOTICE,
@@ -265,9 +262,9 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	if (*channel != '\0' && strcmp(channel, "*") != 0)
 		chanrec = irc_channel_find(server, channel);
 
-	if (chanrec == NULL) {
-		/* not joined to such channel,
-		   but ask ban lists from server */
+	if (chanrec == NULL || !chanrec->synced) {
+		/* not joined to such channel or not yet synced,
+		   ask ban lists from server */
 		bans_ask_channel(channel, server, item);
 	} else {
 		bans_show_channel(chanrec, server);
