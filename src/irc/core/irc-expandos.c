@@ -86,18 +86,12 @@ static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_cumode(SERVER_REC *server, void *item, int *free_ret)
 {
 	if (IS_IRC_CHANNEL(item) && CHANNEL(item)->ownnick) {
-		char other = NICK(CHANNEL(item)->ownnick)->other;
-		if (other != '\0') {
-			char *cumode = g_malloc(2);
-			cumode[0] = other;
-			cumode[1] = '\0';
-			*free_ret = TRUE;
-			return cumode;
-		}
-
-		return NICK(CHANNEL(item)->ownnick)->op ? "@" :
-		       NICK(CHANNEL(item)->ownnick)->halfop ? "%" :
-		       NICK(CHANNEL(item)->ownnick)->voice ? "+" : "";
+		char prefix = NICK(CHANNEL(item)->ownnick)->prefixes[0];
+		char *cumode = g_malloc(2);
+		cumode[0] = prefix;
+		cumode[1] = '\0';
+		*free_ret = TRUE;
+		return cumode; /* will be "\0\0" = "" if there is no prefix */
 	}
 	return "";
 }

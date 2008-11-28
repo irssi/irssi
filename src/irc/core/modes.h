@@ -54,6 +54,9 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		      const char *mode);
 
+void prefix_add(char *prefixes, char newprefix, SERVER_REC *server);
+void prefix_del(char *prefixes, char oldprefix);
+
 mode_func_t modes_type_a;
 mode_func_t modes_type_b;
 mode_func_t modes_type_c;

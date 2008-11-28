@@ -359,45 +359,31 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 /* nick record comparision for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 {
-	int status1, status2;
+	int i;
 
 	if (p1 == NULL) return -1;
 	if (p2 == NULL) return 1;
 
-	/* we assign each status (op, halfop, voice, normal) a number
-	 * and compare them. this is easier than 100,000 if's and
-	 * returns :-)
-	 * -- yath */
+	if (p1->prefixes[0] == p2->prefixes[0])
+		return g_strcasecmp(p1->nick, p2->nick);
 
-	if (p1->other) {
-		const char *other = (nick_prefix == NULL) ? NULL : strchr(nick_prefix, p1->other);
-		status1 = (other == NULL) ? 5 : 1000 - (other - nick_prefix);
-	} else if (p1->op)
-		status1 = 4;
-	else if (p1->halfop)
-		status1 = 3;
-	else if (p1->voice)
-		status1 = 2;
-	else
-		status1 = 1;
-
-	if (p2->other) {
-		const char *other = (nick_prefix == NULL) ? NULL : strchr(nick_prefix, p2->other);
-		status2 = (other == NULL) ? 5 : 1000 - (other - nick_prefix);
-	} else if (p2->op)
-		status2 = 4;
-	else if (p2->halfop)
-		status2 = 3;
-	else if (p2->voice)
-		status2 = 2;
-	else
-		status2 = 1;
-
-	if (status1 < status2)
+	if (!p1->prefixes[0])
 		return 1;
-	else if (status1 > status2)
+	if (!p2->prefixes[0])
 		return -1;
 
+	/* They aren't equal.  We've taken care of that already.
+	 * The first one we encounter in this list is the greater.
+	 */
+
+	for (i = 0; nick_prefix[i] != '\0'; i++) {
+		if (p1->prefixes[0] == nick_prefix[i])
+			return -1;
+		if (p2->prefixes[0] == nick_prefix[i])
+			return 1;
+	}
+
+	/* we should never have gotten here... */
 	return g_strcasecmp(p1->nick, p2->nick);
 }
 

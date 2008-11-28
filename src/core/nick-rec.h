@@ -19,7 +19,7 @@ unsigned int send_massjoin:1; /* Waiting to be sent in massjoin signal */
 unsigned int op:1;
 unsigned int halfop:1;
 unsigned int voice:1;
-char other;
+char prefixes[MAX_USER_PREFIXES+1];
 
 /*GHashTable *module_data;*/
 

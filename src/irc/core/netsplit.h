@@ -28,7 +28,7 @@ typedef struct {
 	unsigned int op:1;
 	unsigned int halfop:1;
 	unsigned int voice:1;
-	unsigned int other:7;
+	char prefixes[MAX_USER_PREFIXES+1];
 } NETSPLIT_CHAN_REC;
 
 void netsplit_init(void);

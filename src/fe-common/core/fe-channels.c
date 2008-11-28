@@ -413,14 +413,8 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		if (rec->other)
-			nickmode[0] = rec->other;
-		else if (rec->op)
-			nickmode[0] = '@';
-		else if (rec->halfop)
-			nickmode[0] = '%';
-		else if (rec->voice)
-			nickmode[0] = '+';
+		if (rec->prefixes[0])
+			nickmode[0] = rec->prefixes[0];
 		else
 			nickmode[0] = ' ';
 		

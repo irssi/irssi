@@ -135,7 +135,7 @@ static NETSPLIT_REC *netsplit_add(IRC_SERVER_REC *server, const char *nick,
 		splitchan->op = nickrec->op;
 		splitchan->halfop = nickrec->halfop;
 		splitchan->voice = nickrec->voice;
-		splitchan->other = nickrec->other;
+		memcpy(splitchan->prefixes, nickrec->prefixes, sizeof(splitchan->prefixes));
 
 		rec->channels = g_slist_append(rec->channels, splitchan);
 	}

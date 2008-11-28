@@ -46,13 +46,68 @@ static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 	if (mode == '@') nickrec->op = type == '+';
 	else if (mode == '+') nickrec->voice = type == '+';
 	else if (mode == '%') nickrec->halfop = type == '+';
-	else if (channel->server->prefix[(unsigned char) mode] != '\0')
-		nickrec->other = (type == '+' ? mode : '\0');
+	if (channel->server->prefix[(unsigned char) mode] != '\0') {
+		if (type == '+')
+			prefix_add(nickrec->prefixes, mode, (SERVER_REC *) channel->server);
+		else
+			prefix_del(nickrec->prefixes, mode);
+	}
 
 	modestr[0] = mode; modestr[1] = '\0';
 	typestr[0] = type; typestr[1] = '\0';
 	signal_emit("nick mode changed", 5,
 		    channel, nickrec, setby, modestr, typestr);
+}
+
+void prefix_add(char *prefixes, char newprefix, SERVER_REC *server)
+{
+	const char *prefixlst;
+	char newprefixes[MAX_USER_PREFIXES+1]; /* to hold the new prefixes */
+	unsigned int newpos = 0; /* to hold our position in the new prefixes */
+	unsigned int oldpos = 0; /* to hold our position in the old prefixes */
+
+	prefixlst = server->get_nick_flags(server);
+
+	/* go through the possible prefixes, copy higher ones, and find this one's place
+	 * always leave room for the current prefix to be added, though.
+	 */
+	while (*prefixlst != '\0' && prefixes[oldpos] != '\0' &&
+			newpos < MAX_USER_PREFIXES - 1) {
+		if (prefixes[oldpos] == newprefix)
+			return; /* already inserted.  why are we here? */
+
+		if (*prefixlst == newprefix)
+			break; /* insert the new prefix here */
+		
+		if (*prefixlst == prefixes[oldpos]) {
+			/* this prefix is present.
+			 * the one we are inserting goes after it.
+			 * copy it over, and continue searching.
+			 */
+			newprefixes[newpos++] = prefixes[oldpos++];
+		}
+		prefixlst++;
+	}
+	
+	/* newpos is now the position in which we wish to insert the prefix */
+	newprefixes[newpos++] = newprefix;
+
+	/* finish copying the remaining prefixes */
+	while (prefixes[oldpos] != '\0' && newpos < MAX_USER_PREFIXES)
+		newprefixes[newpos++] = prefixes[oldpos++];
+
+	newprefixes[newpos] = '\0';
+
+	memcpy(prefixes, newprefixes, sizeof(prefixes));
+}
+
+void prefix_del(char *prefixes, char oldprefix)
+{
+	char *todel;
+
+	todel = strchr(prefixes, oldprefix);
+	if (todel)
+		memmove(todel, todel+1, strlen(todel));
 }
 
 static int mode_is_set(const char *str, char mode)

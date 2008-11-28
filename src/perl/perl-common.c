@@ -432,7 +432,8 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	hv_store(hv, "op", 2, newSViv(nick->op), 0);
 	hv_store(hv, "halfop", 6, newSViv(nick->halfop), 0);
 	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
-	hv_store(hv, "other", 5, newSViv(nick->other), 0);
+	hv_store(hv, "other", 5, newSViv(nick->prefixes[0]), 0);
+	hv_store(hv, "prefixes", 8, new_pv(nick->prefixes), 0);
 
 	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
 	hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);

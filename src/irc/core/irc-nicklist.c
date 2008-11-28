@@ -99,7 +99,8 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *rec;
 	char *params, *type, *channel, *names, *ptr;
-        int op, halfop, voice, other;
+        int op, halfop, voice;
+	char prefixes[MAX_USER_PREFIXES+1];
 
 	g_return_if_fail(data != NULL);
 
@@ -137,9 +138,11 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		/* some servers show ".@nick", there's also been talk about
 		   showing "@+nick" and since none of these chars are valid
 		   nick chars, just check them until a non-nickflag char is
-		   found. FIXME: we just ignore owner char now. */
-		op = halfop = voice = other = FALSE;
+		   found. */
+		op = halfop = voice = FALSE;
+		prefixes[0] = '\0';
 		while (isnickflag(server, *ptr)) {
+			prefix_add(prefixes, *ptr, (SERVER_REC *) server);
 			switch (*ptr) {
 			case '@':
                                 op = TRUE;
@@ -150,8 +153,6 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 			case '+':
                                 voice = TRUE;
                                 break;
-			default:
-				other = *ptr;
 			}
                         ptr++;
 		}
@@ -159,8 +160,7 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		if (nicklist_find((CHANNEL_REC *) chanrec, ptr) == NULL) {
 			rec = irc_nicklist_insert(chanrec, ptr, op, halfop,
 						  voice, FALSE);
-			if (other)
-				rec->other = other;
+			memcpy(rec->prefixes, prefixes, sizeof(rec->prefixes));
 		}
 	}
 

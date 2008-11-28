@@ -180,14 +180,8 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 		else
 			g_string_append_c(str, ' ');
 
-		if (nick->other)
-                        g_string_append_c(str, nick->other);
-		else if (nick->op)
-                        g_string_append_c(str, '@');
-		else if (nick->halfop)
-                        g_string_append_c(str, '%');
-		else if (nick->voice)
-                        g_string_append_c(str, '+');
+		if (nick->prefixes[0])
+                        g_string_append_c(str, nick->prefixes[0]);
 		g_string_append(str, nick->nick);
 	}
 	g_slist_free(nicks);

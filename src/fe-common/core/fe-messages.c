@@ -140,17 +140,13 @@ static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 
         emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
 
-	if (nickrec == NULL)
+	if (nickrec == NULL || nickrec->prefixes[0] == '\0')
 		nickmode = g_strdup(emptystr);
-	else if (nickrec->other) {
+	else {
 		nickmode = g_malloc(2);
-		nickmode[0] = nickrec->other;
+		nickmode[0] = nickrec->prefixes[0];
 		nickmode[1] = '\0';
-	} else
-		nickmode = g_strdup(nickrec->op ? "@" :
-				    nickrec->halfop ? "%" :
-				    nickrec->voice ? "+" :
-				    emptystr);
+	}
 	return nickmode;
 }
 

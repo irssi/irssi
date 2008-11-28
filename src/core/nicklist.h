@@ -8,6 +8,8 @@
 #define IS_NICK(server) \
 	(NICK(server) ? TRUE : FALSE)
 
+#define	MAX_USER_PREFIXES 7 /* Max prefixes kept for any user-in-chan. 7+1 is a memory unit */
+
 struct _NICK_REC {
 #include "nick-rec.h"
 };
