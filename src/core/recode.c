@@ -77,6 +77,16 @@ static char *find_conversion(const SERVER_REC *server, const char *target)
 	return conv;
 }
 
+static int str_is_ascii(const char *str)
+{
+	int i;
+
+	for (i = 0; str[i] != '\0'; i++)
+		if (str[i] & 0x80)
+			return 0;
+	return 1;
+}
+
 char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 {
 	const char *from = NULL;
@@ -84,7 +94,6 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	char *recoded = NULL;
 	gboolean str_is_utf8, recode, autodetect;
 	int len;
-	int i;
 
 	if (!str)
 		return NULL;
@@ -97,12 +106,8 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 
 	/* Only validate for UTF-8 if an 8-bit encoding. */
 	str_is_utf8 = 0;
-	for (i = 0; i < len; ++i) {
-		if (str[i] & 0x80) {
-			str_is_utf8 = g_utf8_validate(str, len, NULL);
-			break;
-		}
-	}
+	if (!str_is_ascii(str))
+		str_is_utf8 = g_utf8_validate(str, len, NULL);
 	autodetect = settings_get_bool("recode_autodetect_utf8");
 
 	if (autodetect && str_is_utf8)
