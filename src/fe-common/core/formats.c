@@ -828,7 +828,7 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		}
 		if (**str == ',') {
 			/* background color */
-			if (!i_isdigit(*str[1]))
+			if (!i_isdigit((*str)[1]))
 				bg = -1;
 			else {
 				(*str)++;
