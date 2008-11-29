@@ -419,8 +419,7 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	len = strlen(cmd);
 	irc_server_send_data(server, cmd, len);
 
-	/* add to rawlog without [CR+]LF (/RAWQUOTE might not have
-	   added the CR) */
+	/* add to rawlog without [CR+]LF */
         if (len > 2 && cmd[len-2] == '\r')
 		cmd[len-2] = '\0';
         else if (cmd[len-1] == '\n')
