@@ -108,6 +108,8 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	str_is_utf8 = 0;
 	if (!str_is_ascii(str))
 		str_is_utf8 = g_utf8_validate(str, len, NULL);
+	else if (!strchr(str, '\e'))
+		str_is_utf8 = 1;
 	autodetect = settings_get_bool("recode_autodetect_utf8");
 
 	if (autodetect && str_is_utf8)
