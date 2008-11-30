@@ -32,8 +32,6 @@
 
 #define DEFAULT_LOG_FILE_CREATE_MODE 600
 
-static struct flock lock;
-
 GSList *logs;
 
 static const char *log_item_types[] = {
@@ -100,6 +98,7 @@ static char *log_filename(LOG_REC *log)
 int log_start_logging(LOG_REC *log)
 {
 	char *dir;
+	struct flock lock;
 
 	g_return_val_if_fail(log != NULL, FALSE);
 
@@ -150,6 +149,8 @@ int log_start_logging(LOG_REC *log)
 
 void log_stop_logging(LOG_REC *log)
 {
+	struct flock lock;
+
 	g_return_if_fail(log != NULL);
 
 	if (log->handle == -1)
