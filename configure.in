@@ -178,8 +178,6 @@ case "$host_os" in
 esac
 
 
-AC_CHECK_FUNCS(fcntl)
-
 AC_CHECK_FUNC(socket, [], [
 	AC_CHECK_LIB(socket, socket, [
 		LIBS="$LIBS -lsocket"

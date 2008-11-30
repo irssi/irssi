@@ -32,9 +32,7 @@
 
 #define DEFAULT_LOG_FILE_CREATE_MODE 600
 
-#ifdef HAVE_FCNTL
 static struct flock lock;
-#endif
 
 GSList *logs;
 
@@ -129,7 +127,6 @@ int log_start_logging(LOG_REC *log)
 		log->failed = TRUE;
 		return FALSE;
 	}
-#ifdef HAVE_FCNTL
         memset(&lock, 0, sizeof(lock));
 	lock.l_type = F_WRLCK;
 	if (fcntl(log->handle, F_SETLK, &lock) == -1 && errno == EACCES) {
@@ -139,7 +136,6 @@ int log_start_logging(LOG_REC *log)
 		log->failed = TRUE;
 		return FALSE;
 	}
-#endif
 	lseek(log->handle, 0, SEEK_END);
 
 	log->opened = log->last = time(NULL);
@@ -165,11 +161,9 @@ void log_stop_logging(LOG_REC *log)
 			    settings_get_str("log_close_string"),
 			    "\n", time(NULL));
 
-#ifdef HAVE_FCNTL
         memset(&lock, 0, sizeof(lock));
 	lock.l_type = F_UNLCK;
 	fcntl(log->handle, F_SETLK, &lock);
-#endif
 
 	write_buffer_flush();
 	close(log->handle);
