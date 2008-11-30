@@ -618,28 +618,6 @@ STATUSBAR_REC *statusbar_find(STATUSBAR_GROUP_REC *group, const char *name,
         return NULL;
 }
 
-static char *update_statusbar_bg(const char *str, const char *color)
-{
-	GString *out;
-        char *ret;
-
-	out = g_string_new(color);
-	while (*str != '\0') {
-		if (*str == '%' && str[1] == 'n') {
-                        g_string_append(out, color);
-			str += 2;
-                        continue;
-		}
-
-		g_string_append_c(out, *str);
-                str++;
-	}
-
-        ret = out->str;
-        g_string_free(out, FALSE);
-        return ret;
-}
-
 const char *statusbar_item_get_value(SBAR_ITEM_REC *item)
 {
 	const char *value;
@@ -653,12 +631,11 @@ const char *statusbar_item_get_value(SBAR_ITEM_REC *item)
         return value;
 }
 
-static char *reverse_controls(const char *str)
+static GString *finalize_string(const char *str, const char *color)
 {
 	GString *out;
-        char *ret;
 
-	out = g_string_new(NULL);
+	out = g_string_new(color);
 
 	while (*str != '\0') {
 		if ((unsigned char) *str < 32 ||
@@ -667,6 +644,9 @@ static char *reverse_controls(const char *str)
 			/* control char */
 			g_string_sprintfa(out, "%%8%c%%8",
 					  'A'-1 + (*str & 0x7f));
+		} else if (*str == '%' && str[1] == 'n') {
+			g_string_append(out, color);
+			str++;
 		} else {
 			g_string_append_c(out, *str);
 		}
@@ -674,9 +654,7 @@ static char *reverse_controls(const char *str)
 		str++;
 	}
 
-	ret = out->str;
-        g_string_free(out, FALSE);
-	return ret;
+	return out;
 }
 
 void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
@@ -720,38 +698,30 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 	tmpstr = strip_codes(tmpstr2);
         g_free(tmpstr2);
 
-	/* show all control chars reversed */
-	tmpstr2 = reverse_controls(tmpstr);
-	g_free(tmpstr);
-
-	tmpstr = tmpstr2;
 	if (get_size_only) {
 		item->min_size = item->max_size = format_get_length(tmpstr);
 	} else {
+		GString *out;
+
 		if (item->size < item->min_size) {
                         /* they're forcing us smaller than minimum size.. */
 			len = format_real_length(tmpstr, item->size);
                         tmpstr[len] = '\0';
 		}
+		out = finalize_string(tmpstr, item->bar->color);
 		/* make sure the str is big enough to fill the
 		   requested size, so it won't corrupt screen */
 		len = format_get_length(tmpstr);
 		if (len < item->size) {
-			char *fill;
+			int i;
 
 			len = item->size-len;
-			fill = g_malloc(len + 1);
-			memset(fill, ' ', len); fill[len] = '\0';
-
-			tmpstr2 = g_strconcat(tmpstr, fill, NULL);
-			g_free(fill);
-			g_free(tmpstr);
-			tmpstr = tmpstr2;
+			for (i = 0; i < len; i++)
+				g_string_append_c(out, ' ');
 		}
 
-		tmpstr2 = update_statusbar_bg(tmpstr, item->bar->color);
-		gui_printtext(item->xpos, item->bar->real_ypos, tmpstr2);
-                g_free(tmpstr2);
+		gui_printtext(item->xpos, item->bar->real_ypos, out->str);
+		g_string_free(out, TRUE);
 	}
 	g_free(tmpstr);
 }
