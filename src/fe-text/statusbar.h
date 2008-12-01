@@ -2,13 +2,13 @@
 #define __STATUSBAR_H
 
 #include "mainwindows.h"
+#include "statusbar-item.h"
 
 #define STATUSBAR_PRIORITY_HIGH		100
 #define STATUSBAR_PRIORITY_NORMAL	0
 #define STATUSBAR_PRIORITY_LOW		-100
 
 typedef struct SBAR_ITEM_REC SBAR_ITEM_REC;
-typedef void (*STATUSBAR_FUNC) (SBAR_ITEM_REC *item, int get_size_only);
 
 /* type */
 #define STATUSBAR_TYPE_ROOT	1
@@ -80,10 +80,6 @@ struct SBAR_ITEM_REC {
 extern GSList *statusbar_groups;
 extern STATUSBAR_GROUP_REC *active_statusbar_group;
 
-void statusbar_item_register(const char *name, const char *value,
-			     STATUSBAR_FUNC func);
-void statusbar_item_unregister(const char *name);
-
 STATUSBAR_GROUP_REC *statusbar_group_create(const char *name);
 void statusbar_group_destroy(STATUSBAR_GROUP_REC *rec);
 STATUSBAR_GROUP_REC *statusbar_group_find(const char *name);
@@ -99,14 +95,9 @@ SBAR_ITEM_REC *statusbar_item_create(STATUSBAR_REC *bar,
 				     SBAR_ITEM_CONFIG_REC *config);
 void statusbar_item_destroy(SBAR_ITEM_REC *item);
 
-void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
-				    const char *str, const char *data,
-				    int escape_vars);
-
 /* redraw statusbar, NULL = all */
 void statusbar_redraw(STATUSBAR_REC *bar, int force);
 void statusbar_item_redraw(SBAR_ITEM_REC *item);
-void statusbar_items_redraw(const char *name);
 
 void statusbar_recreate_items(STATUSBAR_REC *bar);
 void statusbars_recreate_items(void);

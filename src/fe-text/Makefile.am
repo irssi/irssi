@@ -66,6 +66,10 @@ irssi_SOURCES = \
         irssi.c \
 	module-formats.c
 
+pkginc_fe_textdir=$(pkgincludedir)/src/fe-text
+pkginc_fe_text_HEADERS = \
+	statusbar-item.h
+
 noinst_HEADERS = \
         gui-entry.h \
         gui-printtext.h \
