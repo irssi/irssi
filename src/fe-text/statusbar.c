@@ -92,6 +92,12 @@ void statusbar_item_unregister(const char *name)
 	}
 }
 
+void statusbar_item_set_size(struct SBAR_ITEM_REC *item, int min_size, int max_size)
+{
+	item->min_size = min_size;
+	item->max_size = max_size;
+}
+
 STATUSBAR_GROUP_REC *statusbar_group_create(const char *name)
 {
 	STATUSBAR_GROUP_REC *rec;
