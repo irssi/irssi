@@ -542,7 +542,10 @@ void settings_check_module(const char *module)
 
 static int settings_compare(SETTINGS_REC *v1, SETTINGS_REC *v2)
 {
-	return strcmp(v1->section, v2->section);
+	int cmp = strcmp(v1->section, v2->section);
+	if (!cmp)
+		cmp = strcmp(v1->key, v2->key);
+	return cmp;
 }
 
 static void settings_hash_get(const char *key, SETTINGS_REC *rec,
