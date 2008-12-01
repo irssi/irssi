@@ -117,6 +117,7 @@ void irc_server_purge_output(IRC_SERVER_REC *server, const char *target);
 char *irc_server_get_channels(IRC_SERVER_REC *server);
 
 /* INTERNAL: */
+void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data);
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason);
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
 void irc_server_init_isupport(IRC_SERVER_REC *server);

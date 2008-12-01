@@ -346,6 +346,15 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	g_free(str);
 }
 
+void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data)
+{
+	char *recoded;
+
+	recoded = recode_out(SERVER(server), data, target);
+	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
+	g_free(recoded);
+}
+
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
 {
 	char *recoded = NULL;

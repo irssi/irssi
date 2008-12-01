@@ -22,7 +22,6 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "misc.h"
-#include "recode.h"
 #include "special-vars.h"
 #include "settings.h"
 
@@ -45,7 +44,6 @@
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	const char *target;
-	char *recoded;
 
         CMD_IRC_SERVER(server);
 	if (!IS_IRC_ITEM(item))
@@ -55,15 +53,10 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	target = window_item_get_target(item);
-	recoded = recode_out(SERVER(server), data, target);
+	irc_server_send_action(server, target, data);
 
 	signal_emit("message irc own_action", 3, server, data,
 		    item->visible_name);
-
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001",
-		      target, recoded);
-
-	g_free(recoded);
 }
 
 /* SYNTAX: ACTION [-<server tag>] <target> <message> */
@@ -71,7 +64,6 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
 	const char *target, *text;
-	char *recoded;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -87,12 +79,10 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	recoded = recode_out(SERVER(server), text, target);
-	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
+	irc_server_send_action(server, target, text);
 
 	signal_emit("message irc own_action", 3, server, text, target);
 
-	g_free(recoded);
 	cmd_params_free(free_arg);
 }
 
