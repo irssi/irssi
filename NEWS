@@ -8,6 +8,7 @@ v0.8.13
 	+ Display 407 numerics other than "duplicate channel".
 	+ Fix display of ratbox-style operspy whois.
 	+ Recode outgoing irc away messages (bug #412).
+	+ Recode outgoing irc quit messages.
 	+ Remove scrollback_levelclear_levels setting and add a 'level' option
 	  to 'sb levelclear' to specify a comma separated list of levels.
 	+ Add perl __WARN__ handler for scripts (bug #427).

@@ -336,14 +336,17 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 {
 	char *str;
+	char *recoded;
 
 	if (!IS_IRC_SERVER(server) || server->handle == NULL ||
 	    server->handle->readbuffer == NULL)
 		return;
 
-	str = g_strdup_printf("QUIT :%s", msg);
+	recoded = recode_out(SERVER(server), msg, NULL);
+	str = g_strdup_printf("QUIT :%s", recoded);
 	irc_send_cmd_now(server, str);
 	g_free(str);
+	g_free(recoded);
 }
 
 void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data)
