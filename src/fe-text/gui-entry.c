@@ -52,8 +52,6 @@ static int i_isalnum(unichar c)
 	return (c >= 0 && c <= 255) ? isalnum(c) : 0;
 }
 
-const unichar empty_str[] = { 0 };
-
 GUI_ENTRY_REC *active_entry;
 
 static void entry_text_grow(GUI_ENTRY_REC *entry, int grow_size)
@@ -156,14 +154,16 @@ void big5_to_unichars(const char *str, unichar *out)
 
 static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 {
-	unichar *p;
+	int i;
 	int xpos = 0;
 
-	for (p = entry->text; p - entry->text < pos; p++) {
+	for (i = 0; i < pos; i++) {
+		unichar c = entry->text[i];
+
 		if (term_type == TERM_TYPE_BIG5)
-			xpos += big5_width(*p);
+			xpos += big5_width(c);
 		else if (entry->utf8)
-			xpos += unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
+			xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
 		else
 			xpos++;
 	}
@@ -174,13 +174,13 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 {
 	int i, width, xpos;
 
-	for (i = 0, xpos = 0; entry->text[i]; i++) {
-		unichar *p = entry->text+i;
+	for (i = 0, xpos = 0; i < entry->text_len; i++) {
+		unichar c = entry->text[i];
 
 		if (term_type == TERM_TYPE_BIG5)
-			width = big5_width(*p);
+			width = big5_width(c);
 		else if (entry->utf8)
-			width = unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
+			width = unichar_isprint(c) ? mk_wcwidth(c) : 1;
 		else
 			width = 1;
 
@@ -223,7 +223,7 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 {
-	const unichar *p;
+	int i;
 	int xpos, end_xpos;
 
 	xpos = entry->xpos + entry->promptlen + 
@@ -237,15 +237,15 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	term_set_color(root_window, ATTR_RESET);
 	term_move(root_window, xpos, entry->ypos);
 
-	p = entry->scrstart + pos < entry->text_len ?
-		entry->text + entry->scrstart + pos : empty_str;
-	for (; *p != '\0'; p++) {
+	for (i = entry->scrstart + pos; i < entry->text_len; i++) {
+		unichar c = entry->text[i];
+
 		if (entry->hidden)
 			xpos++;
 		else if (term_type == TERM_TYPE_BIG5)
-			xpos += big5_width(*p);
+			xpos += big5_width(c);
 		else if (entry->utf8)
-			xpos += unichar_isprint(*p) ? mk_wcwidth(*p) : 1;
+			xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
 		else
 			xpos++;
 
@@ -254,11 +254,11 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 
 		if (entry->hidden)
                         term_addch(root_window, ' ');
-		else if (unichar_isprint(*p))
-			term_add_unichar(root_window, *p);
+		else if (unichar_isprint(c))
+			term_add_unichar(root_window, c);
 		else {
 			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
-			term_addch(root_window, (*p & 127)+'A'-1);
+			term_addch(root_window, (c & 127)+'A'-1);
 			term_set_color(root_window, ATTR_RESET);
 		}
 	}
