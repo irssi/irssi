@@ -539,14 +539,6 @@ void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, int update_cutbuffer)
 	gui_entry_erase(entry, size, update_cutbuffer);
 }
 
-static size_t cell_width(unichar *buf, int len)
-{
-	unichar *str = buf;
-
-	while (len-- && mk_wcwidth(*str--) == 0);
-	return buf - str;
-}
-
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 {
 	size_t w = 0;
@@ -570,7 +562,8 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 	}
 
 	if (entry->utf8)
-		w = cell_width(entry->text + entry->pos - size, entry->pos - size + 1)-1;
+		while (entry->pos-size-w > 0 &&
+		       mk_wcwidth(entry->text[entry->pos-size-w]) == 0) w++;
 
 	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
 		  (entry->text_len-entry->pos+1) * sizeof(unichar));
