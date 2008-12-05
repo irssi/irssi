@@ -270,6 +270,8 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 void term_set_color(TERM_WINDOW *window, int col)
 {
 	int set_normal;
+	int fg = col & 0x0f;
+	int bg = (col & 0xf0) >> 4;
 
         set_normal = ((col & ATTR_RESETFG) && last_fg != -1) ||
 		((col & ATTR_RESETBG) && last_bg != -1);
@@ -297,10 +299,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 		terminfo_set_standout(FALSE);
 
 	/* set foreground color */
-	if ((col & 0x0f) != last_fg &&
-	    ((col & 0x0f) != 0 || (col & ATTR_RESETFG) == 0)) {
+	if (fg != last_fg &&
+	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
                 if (term_use_colors) {
-			last_fg = col & 0x0f;
+			last_fg = fg;
 			terminfo_set_fg(last_fg);
 		}
 	}
@@ -311,10 +313,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 	if (col & ATTR_BLINK)
 		current_term->set_blink(current_term);
 
-	if ((col & 0xf0) >> 4 != last_bg &&
-	    ((col & 0xf0) != 0 || (col & ATTR_RESETBG) == 0)) {
+	if (bg != last_bg &&
+	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
-			last_bg = (col & 0xf0) >> 4;
+			last_bg = bg;
 			terminfo_set_bg(last_bg);
 		}
 	}
