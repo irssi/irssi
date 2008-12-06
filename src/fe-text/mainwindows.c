@@ -356,8 +356,8 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 	GSList *sorted, *tmp;
         int space;
 
+	sorted = mainwindows_get_sorted(TRUE);
 	for (;;) {
-		sorted = mainwindows_get_sorted(TRUE);
 		space = 0;
 		for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 			rec = tmp->data;
