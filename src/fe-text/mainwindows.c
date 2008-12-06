@@ -389,7 +389,7 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 		rec = tmp->data;
 
 		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
-		if (space <= 0) {
+		if (space == 0) {
 			mainwindow_resize(rec, xdiff, 0);
 
 			rec->first_line += ydiff;
@@ -398,7 +398,6 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 			continue;
 		}
 
-		if (space <= 0) space = 1;
 		if (space > -ydiff) space = -ydiff;
 		rec->last_line += ydiff;
 		ydiff += space;
@@ -428,7 +427,7 @@ static void mainwindows_resize_bigger(int xdiff, int ydiff)
 		MAIN_WINDOW_REC *rec = tmp->data;
 
 		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
-		if (ydiff == 0 || (space >= 0 && tmp->next != NULL)) {
+		if (ydiff == 0 || tmp->next != NULL) {
 			mainwindow_resize(rec, xdiff, 0);
 			if (moved > 0) {
 				rec->first_line += moved;
@@ -438,14 +437,8 @@ static void mainwindows_resize_bigger(int xdiff, int ydiff)
 			continue;
 		}
 
-		if (space < 0 && tmp->next != NULL) {
-                        /* space below minimum */
-			space = -space;
-			if (space > ydiff) space = ydiff;
-		} else {
-			/* lowest window - give all the extra space for it */
-			space = ydiff;
-		}
+		/* lowest window - give all the extra space for it */
+		space = ydiff;
 		ydiff -= space;
 		rec->first_line += moved;
                 moved += space;
