@@ -368,6 +368,8 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 			break;
 
 		rec = sorted->data;
+		if (rec == active_mainwin && sorted->next != NULL)
+			rec = sorted->next->data;
 		sorted = g_slist_remove(sorted, rec);
 
 		if (sorted != NULL) {
