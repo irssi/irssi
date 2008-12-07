@@ -419,32 +419,19 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
 static void mainwindows_resize_bigger(int xdiff, int ydiff)
 {
 	GSList *sorted, *tmp;
-        int moved, space;
 
 	sorted = mainwindows_get_sorted(FALSE);
-	moved = 0;
 	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (ydiff == 0 || tmp->next != NULL) {
 			mainwindow_resize(rec, xdiff, 0);
-			if (moved > 0) {
-				rec->first_line += moved;
-				rec->last_line += moved;
-				signal_emit("mainwindow moved", 1, rec);
-			}
 			continue;
 		}
 
 		/* lowest window - give all the extra space for it */
-		space = ydiff;
-		ydiff -= space;
-		rec->first_line += moved;
-                moved += space;
-		rec->last_line += moved;
-
-		mainwindow_resize(rec, xdiff, space);
+		rec->last_line += ydiff;
+		mainwindow_resize(rec, xdiff, ydiff);
 	}
 	g_slist_free(sorted);
 }
