@@ -300,7 +300,7 @@ static int expand_key(const char *key, GSList **out)
 			expand_out_char(*out, *key);
 			expand_out_char(*out, '-');
                         last_hyphen = FALSE; /* optional */
-		} else if (last_hyphen && i_isalnum(*key) && !i_isdigit(*key)) {
+		} else if (last_hyphen && i_isalpha(*key)) {
                         /* possibly beginning of keycombo */
 			start = key;
                         last_hyphen = FALSE;
