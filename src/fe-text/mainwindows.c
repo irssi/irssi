@@ -206,9 +206,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		rec->last_line = rec->first_line + space;
 		rec->height = rec->last_line-rec->first_line+1;
 
-		parent->first_line = rec->last_line+1;
-		parent->height = parent->last_line-parent->first_line+1;
-
+		parent->first_line += space+1;
 		mainwindow_resize(parent, 0, -space-1);
 	}
 
