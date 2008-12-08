@@ -1,6 +1,9 @@
 #ifndef __PERL_SIGNALS_H
 #define __PERL_SIGNALS_H
 
+void perl_signal_args_to_c(void (*callback)(void *, void **), void *cb_arg,
+                           int signal_id, SV **args, size_t n_args);
+
 void perl_signal_add_full(const char *signal, SV *func, int priority);
 
 void perl_signal_remove(const char *signal, SV *func);

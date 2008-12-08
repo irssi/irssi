@@ -70,6 +70,150 @@ static PERL_SIGNAL_ARGS_REC *perl_signal_args_find(int signal_id)
 	return NULL;
 }
 
+void perl_signal_args_to_c(
+        void (*callback)(void *, void **), void *cb_arg,
+        int signal_id, SV **args, size_t n_args)
+{
+        union {
+                int v_int;
+                unsigned long v_ulong;
+                GSList *v_gslist;
+                GList *v_glist;
+        } saved_args[SIGNAL_MAX_ARGUMENTS];
+        void *p[SIGNAL_MAX_ARGUMENTS];
+        PERL_SIGNAL_ARGS_REC *rec;
+        size_t n;
+
+        if (!(rec = perl_signal_args_find(signal_id))) {
+                const char *name = signal_get_id_str(signal_id);
+                if (!name) {
+                        croak("%d is not a known signal id", signal_id);
+                }
+                croak("\"%s\" is not a registered signal", name);
+        }
+
+        for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
+                void *c_arg;
+                SV *arg = args[n];
+
+                if (!SvOK(arg)) {
+                        c_arg = NULL;
+                } else if (strcmp(rec->args[n], "string") == 0) {
+                        c_arg = SvPV_nolen(arg);
+                } else if (strcmp(rec->args[n], "int") == 0) {
+                        c_arg = (void *)SvIV(arg);
+                } else if (strcmp(rec->args[n], "ulongptr") == 0) {
+                        saved_args[n].v_ulong = SvUV(arg);
+                        c_arg = &saved_args[n].v_ulong;
+                } else if (strcmp(rec->args[n], "intptr") == 0) {
+                        saved_args[n].v_int = SvIV(SvRV(arg));
+                        c_arg = &saved_args[n].v_int;
+                } else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+                        GList *gl;
+                        int is_str;
+                        AV *av;
+                        SV *t;
+                        int count;
+
+                        t = SvRV(arg);
+                        if (SvTYPE(t) != SVt_PVAV) {
+                                croak("Not an ARRAY reference");
+                        }
+                        av = (AV *)t;
+
+                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+
+                        gl = NULL;
+                        count = av_len(av) + 1;
+                        while (count-- > 0) {
+                                SV **px = av_fetch(av, count, 0);
+                                SV *x = px ? *px : NULL;
+                                gl = g_list_prepend(
+                                        gl,
+                                        x == NULL ? NULL :
+                                        is_str ? g_strdup(SvPV_nolen(x)) :
+                                        irssi_ref_object(x)
+                                );
+                        }
+                        saved_args[n].v_glist = gl;
+                        c_arg = &saved_args[n].v_glist;
+                } else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+                        GSList *gsl;
+                        AV *av;
+                        SV *t;
+                        int count;
+
+                        t = SvRV(arg);
+                        if (SvTYPE(t) != SVt_PVAV) {
+                                croak("Not an ARRAY reference");
+                        }
+                        av = (AV *)t;
+
+                        gsl = NULL;
+                        count = av_len(av) + 1;
+                        while (count-- > 0) {
+                                SV **x = av_fetch(av, count, 0);
+                                gsl = g_slist_prepend(
+                                        gsl,
+                                        x == NULL ? NULL :
+                                        irssi_ref_object(*x)
+                                );
+                        }
+                        c_arg = saved_args[n].v_gslist = gsl;
+                } else {
+                        c_arg = irssi_ref_object(arg);
+                }
+
+                p[n] = c_arg;
+        }
+
+        for (; n < SIGNAL_MAX_ARGUMENTS; ++n) {
+                p[n] = NULL;
+        }
+
+        callback(cb_arg, p);
+
+        for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
+                SV *arg = args[n];
+
+                if (!SvOK(arg)) {
+                        continue;
+                }
+
+                if (strcmp(rec->args[n], "intptr") == 0) {
+                        SV *t = SvRV(arg);
+                        SvIOK_only(t);
+                        SvIV_set(t, saved_args[n].v_int);
+                } else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+                        g_slist_free(saved_args[n].v_gslist);
+                } else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+                        int is_iobject, is_str;
+                        AV *av;
+                        GList *gl, *tmp;
+
+                        is_iobject = strcmp(rec->args[n]+9, "iobject") == 0;
+                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+
+                        av = (AV *)SvRV(arg);
+                        av_clear(av);
+
+                        gl = saved_args[n].v_glist;
+                        for (tmp = gl; tmp != NULL; tmp = tmp->next) {
+                                av_push(av,
+                                        is_iobject ? iobject_bless((SERVER_REC *)tmp->data) :
+                                        is_str ? new_pv(tmp->data) :
+                                        irssi_bless_plain(rec->args[n]+9, tmp->data)
+                                );
+                        }
+
+                        if (is_str) {
+                                g_list_foreach(gl, (GFunc)g_free, NULL);
+                        }
+                        g_list_free(gl);
+                }
+        }
+}
+
 static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			     int signal_id, gconstpointer *args)
 {
@@ -95,15 +239,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 		    rec != NULL && rec->args[n] != NULL; n++) {
 		arg = (void *) args[n];
 
-		if (strcmp(rec->args[n], "string") == 0)
-			perlarg = new_pv(arg);
-		else if (strcmp(rec->args[n], "int") == 0)
-			perlarg = newSViv((IV)arg);
-		else if (strcmp(rec->args[n], "ulongptr") == 0)
-			perlarg = newSViv(*(unsigned long *) arg);
-		else if (strcmp(rec->args[n], "intptr") == 0)
-			saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
-		else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+                if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
 			/* pointer to linked list - push as AV */
 			GList *tmp, **ptr;
                         int is_iobject, is_str;
@@ -121,7 +257,17 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			}
 
 			saved_args[n] = perlarg = newRV_noinc((SV *) av);
-		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+                } else if (strcmp(rec->args[n], "int") == 0)
+                        perlarg = newSViv((IV)arg);
+                else if (arg == NULL)
+                        perlarg = &PL_sv_undef;
+                else if (strcmp(rec->args[n], "string") == 0)
+                        perlarg = new_pv(arg);
+                else if (strcmp(rec->args[n], "ulongptr") == 0)
+                        perlarg = newSViv(*(unsigned long *) arg);
+                else if (strcmp(rec->args[n], "intptr") == 0)
+                        saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
+                else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			/* linked list - push as AV */
 			GSList *tmp;
 			int is_iobject;
@@ -135,9 +281,6 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			}
 
 			perlarg = newRV_noinc((SV *) av);
-		} else if (arg == NULL) {
-			/* don't bless NULL arguments */
-			perlarg = newSViv(0);
 		} else if (strcmp(rec->args[n], "iobject") == 0) {
 			/* "irssi object" - any struct that has
 			   "int type; int chat_type" as it's first
