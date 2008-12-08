@@ -20,7 +20,7 @@
 	11. Logging
 
 	( not written yet: )
-	12. Aliases
+	12. Commands
 	13. Themes
 	14. Last log (currently text version only)
 	15. Nick and word completion
@@ -976,6 +976,19 @@ If <color> is a
 	/SET awaylog_file <filename> - Default is ~/.irssi/away.log
 
 	You can disable this feature by setting awaylog_level to NONE.
+
+ 12. Commands
+
+	Any char in the `cmdchars' setting can begin a command. The
+	syntax for a command is the following:
+
+	<CMDCHAR>[<CMDCHAR>][^]<DATA>
+
+	If <CMDCHAR> is repeated two times, alias expansion is
+	disabled, enabled otherwise. If `^' is present, command output
+	is disabled. If <DATA> begins with a space, command lookup is
+	inhibited and the data is sent to the active window item
+	(useful to send a line that begins with <CMDCHAR>).
 
  16. Recode
 
