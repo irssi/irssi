@@ -26,7 +26,7 @@ while (<STDIN>) {
 
 	# core
         s/CHATNET_REC[^,]*/iobject/g;
-        s/SERVER_REC[^,]*/iobject/g;
+        s/(?<!_)SERVER_REC[^,]*/iobject/g;
         s/RECONNECT_REC[^,]*/iobject/g;
 	s/CHANNEL_REC[^,]*/iobject/g;
 	s/QUERY_REC[^,]*/iobject/g;
