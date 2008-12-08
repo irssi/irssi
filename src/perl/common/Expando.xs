@@ -100,7 +100,7 @@ static char *sig_perl_expando(SERVER_REC *server, void *item, int *free_ret)
 	return NULL;
 }
 
-void expando_signals_add_hash(const char *key, SV *signals)
+static void expando_signals_add_hash(const char *key, SV *signals)
 {
 	HV *hv;
         HE *he;

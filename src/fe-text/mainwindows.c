@@ -434,7 +434,7 @@ static void mainwindows_resize_bigger(int xdiff, int ydiff)
 	g_slist_free(sorted);
 }
 
-void mainwindows_resize_horiz(int xdiff)
+static void mainwindows_resize_horiz(int xdiff)
 {
 	GSList *tmp;
 

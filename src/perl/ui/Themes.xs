@@ -1,6 +1,6 @@
 #include "module.h"
 
-void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
+static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 {
 	THEME_REC *theme;
 	char *module, *str;

@@ -624,7 +624,7 @@ STATUSBAR_REC *statusbar_find(STATUSBAR_GROUP_REC *group, const char *name,
         return NULL;
 }
 
-const char *statusbar_item_get_value(SBAR_ITEM_REC *item)
+static const char *statusbar_item_get_value(SBAR_ITEM_REC *item)
 {
 	const char *value;
 

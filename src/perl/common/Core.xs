@@ -7,7 +7,7 @@
 
 #define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
 
-void perl_signal_add_hash(int priority, SV *sv)
+static void perl_signal_add_hash(int priority, SV *sv)
 {
 	HV *hv;
         HE *he;
