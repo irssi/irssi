@@ -33,12 +33,6 @@ textbuffer_view_set_scroll(view, scroll)
 	int scroll
 
 void
-textbuffer_view_resize(view, width, height)
-	Irssi::TextUI::TextBufferView view
-	int width
-	int height
-
-void
 textbuffer_view_clear(view)
 	Irssi::TextUI::TextBufferView view
 
