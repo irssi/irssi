@@ -400,10 +400,10 @@ char *gui_entry_get_text(GUI_ENTRY_REC *entry)
 
 	g_return_val_if_fail(entry != NULL, NULL);
 
-	buf = g_malloc(entry->text_len*6 + 1);
 	if (entry->utf8)
-		utf16_to_utf8(entry->text, buf);
+		buf = g_ucs4_to_utf8(entry->text, -1, NULL, NULL, NULL);
 	else {
+		buf = g_malloc(entry->text_len*6 + 1);
 		if (term_type == TERM_TYPE_BIG5)
 			unichars_to_big5(entry->text, buf);
 		else
@@ -420,10 +420,11 @@ char *gui_entry_get_text_and_pos(GUI_ENTRY_REC *entry, int *pos)
 
 	g_return_val_if_fail(entry != NULL, NULL);
 
-	buf = g_malloc(entry->text_len*6 + 1);
-	if (entry->utf8)
-		utf16_to_utf8_with_pos(entry->text, entry->pos, buf, pos);
-	else {
+	if (entry->utf8) {
+		buf = g_ucs4_to_utf8(entry->text, -1, NULL, NULL, NULL);
+		*pos = g_utf8_offset_to_pointer(buf, entry->pos) - buf;
+	} else {
+		buf = g_malloc(entry->text_len*6 + 1);
 		if(term_type==TERM_TYPE_BIG5)
 			unichars_to_big5_with_pos(entry->text, entry->pos, buf, pos);
 		else
@@ -440,15 +441,17 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 {
         unichar chr;
 	int i, len;
+	const char *ptr;
 
         g_return_if_fail(entry != NULL);
 	g_return_if_fail(str != NULL);
 
         gui_entry_redraw_from(entry, entry->pos);
 
-	if (entry->utf8)
-		len = strlen_utf8(str);
-	else if (term_type == TERM_TYPE_BIG5)
+	if (entry->utf8) {
+		g_utf8_validate(str, -1, &ptr);
+		len = g_utf8_pointer_to_offset(str, ptr);
+	} else if (term_type == TERM_TYPE_BIG5)
 		len = strlen_big5(str);
 	else
 		len = strlen(str);
@@ -468,9 +471,11 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 				entry->text[entry->pos + i] = str[i];
 		}
 	} else {
-                chr = entry->text[entry->pos+len];
-		utf8_to_utf16(str, entry->text+entry->pos);
-                entry->text[entry->pos+len] = chr;
+		ptr = str;
+		for (i = 0; i < len; i++) {
+			entry->text[entry->pos + i] = g_utf8_get_char(ptr);
+			ptr = g_utf8_next_char(ptr);
+		}
 	}
 
 	entry->text_len += len;
@@ -516,10 +521,10 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 	if (entry->cutbuffer == NULL)
                 return NULL;
 
-	buf = g_malloc(entry->cutbuffer_len*6 + 1);
 	if (entry->utf8)
-		utf16_to_utf8(entry->cutbuffer, buf);
+		buf = g_ucs4_to_utf8(entry->cutbuffer, -1, NULL, NULL, NULL);
 	else {
+		buf = g_malloc(entry->cutbuffer_len*6 + 1);
 		if (term_type == TERM_TYPE_BIG5)
 			unichars_to_big5(entry->cutbuffer, buf);
 		else
