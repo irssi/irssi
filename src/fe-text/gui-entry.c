@@ -519,11 +519,12 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 	buf = g_malloc(entry->cutbuffer_len*6 + 1);
 	if (entry->utf8)
 		utf16_to_utf8(entry->cutbuffer, buf);
-	else if (term_type == TERM_TYPE_BIG5) {
-		unichars_to_big5(entry->cutbuffer, buf);
-	} else {
-		for (i = 0; i <= entry->cutbuffer_len; i++)
-			buf[i] = entry->cutbuffer[i];
+	else {
+		if (term_type == TERM_TYPE_BIG5)
+			unichars_to_big5(entry->cutbuffer, buf);
+		else
+			for (i = 0; i <= entry->cutbuffer_len; i++)
+				buf[i] = entry->cutbuffer[i];
 	}
 	return buf;
 }
