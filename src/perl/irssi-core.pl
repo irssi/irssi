@@ -8,6 +8,12 @@ package Irssi::Core;
 
 use Symbol;
 
+$SIG{__WARN__} = sub {
+  my @msg = @_;
+  s/%/%%/g for @msg;
+  print @msg;
+};
+
 sub is_static {
   return %d;
 }
@@ -18,37 +24,27 @@ sub destroy {
 }
 
 sub eval_data {
-  my ($data, $id) = @_;
-  destroy("Irssi::Script::$id");
-
-  $SIG{__WARN__} = sub {
-    Irssi::print("Warning in script $id:");
-    print $_[0];
+  my $ret = eval do {
+    my ($data, $id) = @_;
+    destroy("Irssi::Script::$id");
+    my $code = qq{package Irssi::Script::$id; %s $data};
+    $code
   };
-  my $package = "Irssi::Script::$id";
-  my $eval = qq{package $package; %s sub handler { $data; }};
-  {
-      # hide our variables within this block
-      my ($filename, $package, $data);
-      eval $eval;
-  }
-  die $@ if $@;
-
-  my $ret;
-  eval { $ret = $package->handler; };
-  die $@ if $@;
-  return $ret;
+  $@ and die $@;
+  $ret
 }
 
 sub eval_file {
   my ($filename, $id) = @_;
 
-  local *FH;
-  open FH, $filename or die "File not found: $filename";
-  local($/) = undef;
-  my $data = <FH>;
-  close FH;
-  local($/) = "\n";
+  open my $fh, '<', $filename or die "Can't open $filename: $!";
+  my $data = do {local $/; <$fh>};
+  close $fh;
+
+  $filename =~ s/(["\\])/\\$1/g;
+  $filename =~ s/\n/\\n/g;
+
+  $data = qq{\n#line 1 "$filename"\n$data};
 
   eval_data($data, $id);
 }
