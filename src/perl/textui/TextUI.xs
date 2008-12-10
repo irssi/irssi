@@ -138,6 +138,24 @@ CODE:
 MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Window
 
 void
+print_after(window, prev, level, str)
+	Irssi::UI::Window window
+	Irssi::TextUI::Line prev
+	int level
+	char *str
+PREINIT:
+	TEXT_DEST_REC dest;
+	char *text;
+	char *text2;
+CODE:
+	format_create_dest(&dest, NULL, NULL, level, window);
+	text = format_string_expand(str, NULL);
+	text2 = g_strconcat(text, "\n", NULL);
+	gui_printtext_after(&dest, prev, text2);
+	g_free(text);
+	g_free(text2);
+
+void
 gui_printtext_after(window, prev, level, str)
 	Irssi::UI::Window window
 	Irssi::TextUI::Line prev
