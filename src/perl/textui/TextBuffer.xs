@@ -3,41 +3,6 @@
 MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
-Irssi::TextUI::TextBuffer
-textbuffer_create()
-
-#*******************************
-MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
-#*******************************
-
-void
-textbuffer_destroy(buffer)
-	Irssi::TextUI::TextBuffer buffer
-
-Irssi::TextUI::Line
-textbuffer_append(buffer, data, len, info)
-	Irssi::TextUI::TextBuffer buffer
-	char *data
-	int len
-	Irssi::TextUI::LineInfo info
-
-Irssi::TextUI::Line
-textbuffer_insert(buffer, insert_after, data, len, info)
-	Irssi::TextUI::TextBuffer buffer
-	Irssi::TextUI::Line insert_after
-	char *data
-	int len
-	Irssi::TextUI::LineInfo info
-
-void
-textbuffer_remove(buffer, line)
-	Irssi::TextUI::TextBuffer buffer
-	Irssi::TextUI::Line line
-
-void
-textbuffer_remove_all_lines(buffer)
-	Irssi::TextUI::TextBuffer buffer
-
 #*******************************
 MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi::TextUI::Line  PREFIX = textbuffer_line_
 #*******************************
