@@ -37,8 +37,10 @@ typedef struct {
 static int linecache_tag;
 static GSList *views;
 
-#define view_is_bottom(view) \
-        ((view)->ypos >= -1 && (view)->ypos < (view)->height)
+static int view_is_bottom(TEXT_BUFFER_VIEW_REC *view)
+{
+	return view->startline == view->bottom_startline;
+}
 
 #define view_get_linecount(view, line) \
         textbuffer_view_get_line_cache(view, line)->count
@@ -517,17 +519,6 @@ static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 	view->empty_linecount = view->height - total;
 }
 
-static void textbuffer_view_init_ypos(TEXT_BUFFER_VIEW_REC *view)
-{
-        LINE_REC *line;
-
-	g_return_if_fail(view != NULL);
-
-	view->ypos = -view->subline-1;
-	for (line = view->startline; line != NULL; line = line->next)
-		view->ypos += view_get_linecount(view, line);
-}
-
 /* Create new view. */
 TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 					     int width, int height,
@@ -553,8 +544,6 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 	view->startline = view->bottom_startline;
         view->subline = view->bottom_subline;
 	view->bottom = TRUE;
-
-	textbuffer_view_init_ypos(view);
 
 	view->bookmarks = g_hash_table_new((GHashFunc) g_str_hash,
 					   (GCompareFunc) g_str_equal);
@@ -847,7 +836,6 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
                         view->subline = linecount;
 	}
 
-	textbuffer_view_init_ypos(view);
 	if (view->bottom && !view_is_bottom(view)) {
 		/* we scrolled to far up, need to get down. go right over
 		   the empty lines if there's any */
@@ -857,7 +845,6 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 			view_scroll(view, &view->startline, &view->subline,
 				    -view->empty_linecount, FALSE);
 		}
-		textbuffer_view_init_ypos(view);
 	}
 
 	view->bottom = view_is_bottom(view);
@@ -878,7 +865,6 @@ void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 {
         g_return_if_fail(view != NULL);
 
-	view->ypos = -1;
 	view->bottom_startline = view->startline =
 		textbuffer_line_last(view->buffer);
 	view->bottom_subline = view->subline =
@@ -900,7 +886,6 @@ void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 
 	count = view_scroll(view, &view->startline, &view->subline,
 			    lines, TRUE);
-	view->ypos += lines < 0 ? count : -count;
 	view->bottom = view_is_bottom(view);
         if (view->bottom) view->more_text = FALSE;
 
@@ -921,7 +906,6 @@ void textbuffer_view_scroll_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                 view->subline = 0;
 	}
 
-	textbuffer_view_init_ypos(view);
 	view->bottom = view_is_bottom(view);
         if (view->bottom) view->more_text = FALSE;
 
@@ -962,8 +946,9 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	    !textbuffer_line_exists_after(view->bottom_startline, line))
 		return;
 
+	ypos = view->height - view->empty_linecount - 1;
 	linecount = view->cache->last_linecount;
-	view->ypos += linecount;
+	ypos += linecount;
 	if (view->empty_linecount > 0) {
 		view->empty_linecount -= linecount;
 		if (view->empty_linecount >= 0)
@@ -980,17 +965,17 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	}
 
 	if (view->bottom) {
-		if (view->scroll && view->ypos >= view->height) {
-			linecount = view->ypos-view->height+1;
+		if (view->scroll && ypos >= view->height) {
+			linecount = ypos-view->height+1;
 			view_scroll(view, &view->startline,
 				    &view->subline, linecount, FALSE);
-			view->ypos -= linecount;
+			ypos -= linecount;
 		} else {
 			view->bottom = view_is_bottom(view);
 		}
 
 		if (view->window != NULL) {
-			ypos = view->ypos+1 - view->cache->last_linecount;
+			ypos = ypos+1 - view->cache->last_linecount;
 			if (ypos >= 0)
 				subline = 0;
 			else {
@@ -1102,12 +1087,6 @@ static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 				    &view->subline, -scroll, FALSE);
 		}
 	}
-
-	/* FIXME: this is slow and unnecessary, but it's easy and
-	   really works :) */
-	textbuffer_view_init_ypos(view);
-	if (textbuffer_line_exists_after(view->startline, line))
-		view->ypos -= linecount;
 }
 
 static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
@@ -1143,7 +1122,6 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			realcount = view_scroll(view, &view->startline,
 						&view->subline,
 						linecount, FALSE);
-			view->ypos -= realcount;
 			view->empty_linecount += linecount-realcount;
 			if (is_last == 1)
 				view->startline = NULL;
