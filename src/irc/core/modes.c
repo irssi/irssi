@@ -98,7 +98,7 @@ void prefix_add(char *prefixes, char newprefix, SERVER_REC *server)
 
 	newprefixes[newpos] = '\0';
 
-	memcpy(prefixes, newprefixes, sizeof(prefixes));
+	strcpy(prefixes, newprefixes);
 }
 
 void prefix_del(char *prefixes, char oldprefix)
