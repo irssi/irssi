@@ -58,6 +58,7 @@ struct _TEXT_BUFFER_VIEW_REC {
 	unsigned int utf8:1; /* use UTF8 in this view */
 
 	TEXT_BUFFER_CACHE_REC *cache;
+	int ypos; /* cursor position - visible area is 0..height-1 */
 
 	LINE_REC *startline; /* line at the top of the screen */
 	int subline; /* number of "real lines" to skip from `startline' */

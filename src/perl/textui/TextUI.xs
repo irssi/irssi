@@ -35,6 +35,8 @@ static void perl_text_buffer_view_fill_hash(HV *hv, TEXT_BUFFER_VIEW_REC *view)
 	hv_store(hv, "longword_noindent", 17, newSViv(view->longword_noindent), 0);
 	hv_store(hv, "scroll", 6, newSViv(view->scroll), 0);
 
+	hv_store(hv, "ypos", 4, newSViv(view->ypos), 0);
+
 	hv_store(hv, "startline", 9, plain_bless(view->startline, "Irssi::TextUI::Line"), 0);
 	hv_store(hv, "subline", 7, newSViv(view->subline), 0);
 
