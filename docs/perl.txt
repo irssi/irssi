@@ -265,6 +265,9 @@ settings_remove(key)
 signal_emit(signal, ...)
   Send signal `signal'. You can give 6 parameters at maximum.
 
+signal_continue(...)
+  Continue currently emitted signal with different parameters.
+
 signal_add(signal, func)
   Bind `signal' to function `func'.
 
@@ -293,9 +296,8 @@ signal_register(hash)
 
   Any signals that were already registered are unaffected.
 
-  Registration is currently required to get any parameters to
-  signals written in Perl, and may be required in future to emit
-  signals from Perl.
+  Registration is required to get any parameters to signals written in
+  Perl and to emit and continue signals from Perl.
 
   *** timeouts / IO listener / pidwait
 
