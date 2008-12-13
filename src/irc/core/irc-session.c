@@ -113,9 +113,11 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 				     CONFIG_NODE *node)
 {
-	const char *nick;
+	const char *nick, *prefixes;
         int op, halfop, voice;
         NICK_REC *nickrec;
+	char newprefixes[MAX_USER_PREFIXES + 1];
+	int i;
 
 	if (!IS_IRC_CHANNEL(channel))
 		return;
@@ -128,8 +130,24 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
         voice = config_node_get_bool(node, "voice", FALSE);
         halfop = config_node_get_bool(node, "halfop", FALSE);
 	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE);
+	prefixes = config_node_get_str(node, "prefixes", NULL);
+	if (prefixes == NULL || *prefixes == '\0') {
+		/* upgrading from old irssi or from an in-between
+		 * version that did not imply non-present prefixes from
+		 * op/voice/halfop, restore prefixes
+		 */
+		i = 0;
+		if (op)
+			newprefixes[i++] = '@';
+		if (halfop)
+			newprefixes[i++] = '%';
+		if (voice)
+			newprefixes[i++] = '+';
+		newprefixes[i] = '\0';
+		prefixes = newprefixes;
+	}
 	strocpy(nickrec->prefixes,
-		config_node_get_str(node, "prefixes", ""),
+		prefixes,
 		sizeof(nickrec->prefixes));
 }
 
