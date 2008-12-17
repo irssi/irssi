@@ -10,7 +10,7 @@ use Symbol;
 
 $SIG{__WARN__} = sub {
   my @msg = @_;
-  s/%/%%/g for @msg;
+  s/%%/%%%%/g for @msg;
   print @msg;
 };
 
