@@ -24,8 +24,6 @@
 #include "net-sendbuffer.h"
 #include "line-split.h"
 
-static GSList *buffers;
-
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
 NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize)
@@ -40,15 +38,12 @@ NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize)
 	rec->bufsize = bufsize > 0 ? bufsize : DEFAULT_BUFFER_SIZE;
 	rec->def_bufsize = rec->bufsize;
 
-	buffers = g_slist_append(buffers, rec);
 	return rec;
 }
 
 /* Destroy the buffer. `close' specifies if socket handle should be closed. */
 void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close)
 {
-	buffers = g_slist_remove(buffers, rec);
-
         if (rec->send_tag != -1) g_source_remove(rec->send_tag);
 	if (close) net_disconnect(rec->handle);
 	if (rec->readbuffer != NULL) line_split_free(rec->readbuffer);
@@ -184,7 +179,6 @@ GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec)
 
 void net_sendbuffer_init(void)
 {
-	buffers = NULL;
 }
 
 void net_sendbuffer_deinit(void)
