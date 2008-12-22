@@ -35,7 +35,4 @@ void net_sendbuffer_flush(NET_SENDBUF_REC *rec);
 /* Returns the socket handle */
 GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec);
 
-void net_sendbuffer_init(void);
-void net_sendbuffer_deinit(void);
-
 #endif

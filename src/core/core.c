@@ -26,7 +26,6 @@
 #include "misc.h"
 
 #include "net-disconnect.h"
-#include "net-sendbuffer.h"
 #include "signals.h"
 #include "settings.h"
 #include "session.h"
@@ -225,7 +224,6 @@ void core_init(void)
 #endif
 
 	net_disconnect_init();
-	net_sendbuffer_init();
 	signals_init();
 
 	signal_add_first("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
@@ -297,7 +295,6 @@ void core_deinit(void)
 	commands_deinit();
 	settings_deinit();
 	signals_deinit();
-	net_sendbuffer_deinit();
 	net_disconnect_deinit();
 
 #ifndef WIN32

@@ -176,11 +176,3 @@ GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec)
 
 	return rec->handle;
 }
-
-void net_sendbuffer_init(void)
-{
-}
-
-void net_sendbuffer_deinit(void)
-{
-}
