@@ -22,23 +22,38 @@
 #include "signals.h"
 #include "modules.h"
 
-#include <sys/wait.h>
-
+static GHashTable *child_pids;
 static GSList *pids;
 
-static unsigned int childcheck_tag;
 static int signal_pidwait;
+
+static void sig_child(GPid pid, gint status, gpointer data)
+{
+	signal_emit_id(signal_pidwait, 2, GINT_TO_POINTER(pid),
+		       GINT_TO_POINTER(status));
+	g_hash_table_remove(child_pids, GINT_TO_POINTER(pid));
+	pids = g_slist_remove(pids, GINT_TO_POINTER(pid));
+}
 
 /* add a pid to wait list */
 void pidwait_add(int pid)
 {
-	pids = g_slist_append(pids, GINT_TO_POINTER(pid));
+	if (g_hash_table_lookup(child_pids, GINT_TO_POINTER(pid)) == NULL) {
+		int id = g_child_watch_add_full(10, pid, sig_child, NULL, NULL);
+		g_hash_table_insert(child_pids, GINT_TO_POINTER(pid), GINT_TO_POINTER(id));
+		pids = g_slist_append(pids, GINT_TO_POINTER(pid));
+	}
 }
 
 /* remove pid from wait list */
 void pidwait_remove(int pid)
 {
-	pids = g_slist_remove(pids, GINT_TO_POINTER(pid));
+	gpointer id = g_hash_table_lookup(child_pids, GINT_TO_POINTER(pid));
+	if (id != NULL) {
+		g_source_remove(GPOINTER_TO_INT(id));
+		g_hash_table_remove(child_pids, GINT_TO_POINTER(pid));
+		pids = g_slist_remove(pids, GINT_TO_POINTER(pid));
+	}
 }
 
 /* return list of pids that are being waited.
@@ -48,37 +63,16 @@ GSList *pidwait_get_pids(void)
         return pids;
 }
 
-static int child_check(void)
-{
-	GSList *tmp, *next;
-	int status;
-
-	/* wait for each pid.. */
-	for (tmp = pids; tmp != NULL; tmp = next) {
-		int pid = GPOINTER_TO_INT(tmp->data);
-
-		next = tmp->next;
-		if (waitpid(pid, &status, WNOHANG) > 0) {
-			/* process terminated, remove from list */
-			signal_emit_id(signal_pidwait, 2, tmp->data,
-				       GINT_TO_POINTER(status));
-			pids = g_slist_remove(pids, tmp->data);
-		}
-	}
-	return 1;
-}
-
 void pidwait_init(void)
 {
+	child_pids = g_hash_table_new(g_direct_hash, g_direct_equal);
 	pids = NULL;
-	childcheck_tag = g_timeout_add(1000, (GSourceFunc) child_check, NULL);
 
 	signal_pidwait = signal_get_uniq_id("pidwait");
 }
 
 void pidwait_deinit(void)
 {
+	g_hash_table_destroy(child_pids);
 	g_slist_free(pids);
-
-	g_source_remove(childcheck_tag);
 }
