@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "pidwait.h"
 #include "line-split.h"
+#include "network.h"
 #include "net-sendbuffer.h"
 #include "misc.h"
 #include "levels.h"
@@ -350,16 +351,11 @@ static void sig_exec_input_reader(PROCESS_REC *rec)
 {
         char tmpbuf[512], *str;
         gsize recvlen;
-	int err, ret;
+	int ret;
 
 	g_return_if_fail(rec != NULL);
 
-	recvlen = 0;
-	err = g_io_channel_read(rec->in, tmpbuf,
-				sizeof(tmpbuf), &recvlen);
-	if (err != 0 && err != G_IO_ERROR_AGAIN && errno != EINTR)
-		recvlen = -1;
-
+	recvlen = net_receive(rec->in, tmpbuf, sizeof(tmpbuf));
 	do {
 		ret = line_split(tmpbuf, recvlen, &str, &rec->databuf);
 		if (ret == -1) {
