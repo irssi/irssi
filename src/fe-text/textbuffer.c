@@ -217,14 +217,7 @@ static LINE_REC *textbuffer_line_insert(TEXT_BUFFER_REC *buffer,
 
 LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer)
 {
-	LINE_REC *line;
-
-	line = buffer->cur_line;
-	if (line != NULL) {
-		while (line->next != NULL)
-			line = line->next;
-	}
-        return line;
+	return buffer->cur_line;
 }
 
 int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search)
@@ -338,8 +331,7 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		line->next->prev = line->prev;
 
 	if (buffer->cur_line == line) {
-		buffer->cur_line = line->next != NULL ?
-			line->next : line->prev;
+		buffer->cur_line = line->prev;
 	}
 
         line->prev = line->next = NULL;
