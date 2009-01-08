@@ -43,6 +43,15 @@
 #  include <gmodule.h>
 #endif
 
+#if !GLIB_CHECK_VERSION(2,10,0)
+#define g_slice_alloc(size)      g_malloc(size)
+#define g_slice_alloc0(size)     g_malloc0(size)
+#define g_slice_free1(size, mem) g_free(mem)
+#define g_slice_new(type)        g_new(type, 1)
+#define g_slice_new0(type)       g_new0(type, 1)
+#define g_slice_free(type, mem)  g_free(mem)
+#endif
+
 #ifdef USE_GC
 #  define g_free(x) G_STMT_START { (x) = NULL; } G_STMT_END
 #endif
