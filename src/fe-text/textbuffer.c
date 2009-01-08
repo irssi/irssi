@@ -32,13 +32,11 @@
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
-static GMemChunk *buffer_chunk, *line_chunk, *text_chunk;
-
 TEXT_BUFFER_REC *textbuffer_create(void)
 {
 	TEXT_BUFFER_REC *buffer;
 
-	buffer = g_mem_chunk_alloc0(buffer_chunk);
+	buffer = g_slice_new0(TEXT_BUFFER_REC);
 	buffer->last_eol = TRUE;
 	buffer->last_fg = LINE_COLOR_DEFAULT;
 	buffer->last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
@@ -50,7 +48,7 @@ void textbuffer_destroy(TEXT_BUFFER_REC *buffer)
 	g_return_if_fail(buffer != NULL);
 
 	textbuffer_remove_all_lines(buffer);
-        g_mem_chunk_free(buffer_chunk, buffer);
+        g_slice_free(TEXT_BUFFER_REC, buffer);
 }
 
 static TEXT_CHUNK_REC *text_chunk_find(TEXT_BUFFER_REC *buffer,
@@ -79,7 +77,7 @@ static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 	TEXT_CHUNK_REC *rec;
 	unsigned char *buf, *ptr, **pptr;
 
-	rec = g_mem_chunk_alloc(text_chunk);
+	rec = g_slice_new(TEXT_CHUNK_REC);
 	rec->pos = 0;
 	rec->refcount = 0;
 
@@ -108,7 +106,7 @@ static TEXT_CHUNK_REC *text_chunk_create(TEXT_BUFFER_REC *buffer)
 static void text_chunk_destroy(TEXT_BUFFER_REC *buffer, TEXT_CHUNK_REC *chunk)
 {
 	buffer->text_chunks = g_slist_remove(buffer->text_chunks, chunk);
-	g_mem_chunk_free(text_chunk, chunk);
+	g_slice_free(TEXT_CHUNK_REC, chunk);
 }
 
 static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
@@ -182,7 +180,7 @@ static LINE_REC *textbuffer_line_create(TEXT_BUFFER_REC *buffer)
 	if (buffer->cur_text == NULL)
                 text_chunk_create(buffer);
 
-	rec = g_mem_chunk_alloc(line_chunk);
+	rec = g_slice_new(LINE_REC);
 	rec->text = buffer->cur_text->buffer + buffer->cur_text->pos;
 
 	buffer->cur_text->refcount++;
@@ -338,7 +336,7 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 	buffer->lines_count--;
         text_chunk_line_free(buffer, line);
-	g_mem_chunk_free(line_chunk, line);
+	g_slice_free(LINE_REC, line);
 }
 
 /* Removes all lines from buffer */
@@ -350,13 +348,13 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 	g_return_if_fail(buffer != NULL);
 
 	for (tmp = buffer->text_chunks; tmp != NULL; tmp = tmp->next)
-                g_mem_chunk_free(text_chunk, tmp->data);
+                g_slice_free(TEXT_CHUNK_REC, tmp->data);
 	g_slist_free(buffer->text_chunks);
 	buffer->text_chunks = NULL;
 
 	while (buffer->first_line != NULL) {
 		line = buffer->first_line->next;
-		g_mem_chunk_free(line_chunk, buffer->first_line);
+		g_slice_free(LINE_REC, buffer->first_line);
                 buffer->first_line = line;
 	}
 	buffer->lines_count = 0;
@@ -542,18 +540,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
 void textbuffer_init(void)
 {
-	buffer_chunk = g_mem_chunk_new("text buffer chunk",
-				       sizeof(TEXT_BUFFER_REC),
-				       sizeof(TEXT_BUFFER_REC)*32, G_ALLOC_AND_FREE);
-	line_chunk = g_mem_chunk_new("line chunk", sizeof(LINE_REC),
-				     sizeof(LINE_REC)*1024, G_ALLOC_AND_FREE);
-	text_chunk = g_mem_chunk_new("text chunk", sizeof(TEXT_CHUNK_REC),
-				     sizeof(TEXT_CHUNK_REC)*32, G_ALLOC_AND_FREE);
 }
 
 void textbuffer_deinit(void)
 {
-	g_mem_chunk_destroy(buffer_chunk);
-	g_mem_chunk_destroy(line_chunk);
-	g_mem_chunk_destroy(text_chunk);
 }
