@@ -61,7 +61,6 @@ irssi_SOURCES = \
 	$(use_term_sources) \
         textbuffer.c \
         textbuffer-commands.c \
-        textbuffer-reformat.c \
         textbuffer-view.c \
         irssi.c \
 	module-formats.c
@@ -82,7 +81,6 @@ noinst_HEADERS = \
 	terminfo-core.h \
         textbuffer.h \
         textbuffer-view.h \
-        textbuffer-reformat.h \
 	module.h \
 	module-formats.h
 

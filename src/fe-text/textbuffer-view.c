@@ -189,7 +189,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			cmd = *ptr;
                         ptr++;
 
-			if (cmd == LINE_CMD_EOL || cmd == LINE_CMD_FORMAT)
+			if (cmd == LINE_CMD_EOL)
 				break;
 
 			if (cmd == LINE_CMD_CONTINUE) {
@@ -419,7 +419,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		if (*text == '\0') {
 			/* command */
 			text++;
-			if (*text == LINE_CMD_EOL || *text == LINE_CMD_FORMAT)
+			if (*text == LINE_CMD_EOL)
                                 break;
 
 			if (*text == LINE_CMD_CONTINUE) {

@@ -403,7 +403,7 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
                 cmd = *ptr;
 		ptr++;
 
-		if (cmd == LINE_CMD_EOL || cmd == LINE_CMD_FORMAT) {
+		if (cmd == LINE_CMD_EOL) {
                         /* end of line */
 			break;
 		}

@@ -29,7 +29,6 @@
 
 #include "printtext.h"
 #include "gui-windows.h"
-#include "textbuffer-reformat.h"
 
 /* SYNTAX: CLEAR [-all] [<refnum>] */
 static void cmd_clear(const char *data)
@@ -310,26 +309,6 @@ static void cmd_scrollback_end(const char *data)
 	gui_window_scroll(active_win, view->bottom_subline);
 }
 
-/* SYNTAX: SCROLLBACK REDRAW */
-static void cmd_scrollback_redraw(void)
-{
-	GUI_WINDOW_REC *gui;
-	LINE_REC *line, *next;
-
-	gui = WINDOW_GUI(active_win);
-
-	term_refresh_freeze();
-	line = textbuffer_view_get_lines(gui->view);
-	while (line != NULL) {
-		next = line->next;
-		textbuffer_reformat_line(active_win, line);
-                line = next;
-	}
-
-	gui_window_redraw(active_win);
-	term_refresh_thaw();
-}
-
 static void cmd_scrollback_status(void)
 {
 	GSList *tmp;
@@ -385,7 +364,6 @@ void textbuffer_commands_init(void)
 	command_bind("scrollback goto", NULL, (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
-	command_bind("scrollback redraw", NULL, (SIGNAL_FUNC) cmd_scrollback_redraw);
 	command_bind("scrollback status", NULL, (SIGNAL_FUNC) cmd_scrollback_status);
 
 	command_set_options("clear", "all");
@@ -405,7 +383,6 @@ void textbuffer_commands_deinit(void)
 	command_unbind("scrollback goto", (SIGNAL_FUNC) cmd_scrollback_goto);
 	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
-	command_unbind("scrollback redraw", (SIGNAL_FUNC) cmd_scrollback_redraw);
 	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
 
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
