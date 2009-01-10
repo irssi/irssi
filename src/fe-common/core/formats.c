@@ -948,8 +948,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 	int fgcolor, bgcolor;
 	int flags;
 
-	theme = dest->window != NULL && dest->window->theme != NULL ?
-		dest->window->theme : current_theme;
+	theme = window_get_theme(dest->window);
 
 	dup = str = g_strdup(text);
 
