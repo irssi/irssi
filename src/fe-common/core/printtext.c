@@ -49,15 +49,22 @@ void printformat_module_dest_args(const char *module, TEXT_DEST_REC *dest,
 	char *arglist[MAX_FORMAT_PARAMS];
 	char buffer[DEFAULT_FORMAT_ARGLIST_SIZE];
 	FORMAT_REC *formats;
-	THEME_REC *theme;
-	char *str;
-
-	theme = window_get_theme(dest->window);
 
 	formats = g_hash_table_lookup(default_formats, module);
 	format_read_arglist(va, &formats[formatnum],
 			    arglist, sizeof(arglist)/sizeof(char *),
 			    buffer, sizeof(buffer));
+
+	printformat_module_dest_charargs(module, dest, formatnum, arglist);
+}
+
+void printformat_module_dest_charargs(const char *module, TEXT_DEST_REC *dest,
+				      int formatnum, char **arglist)
+{
+	THEME_REC *theme;
+	char *str;
+
+	theme = window_get_theme(dest->window);
 
 	if (!sending_print_starting) {
 		sending_print_starting = TRUE;

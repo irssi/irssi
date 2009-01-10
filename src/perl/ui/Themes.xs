@@ -2,8 +2,7 @@
 
 static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 {
-	THEME_REC *theme;
-	char *module, *str;
+	char *module;
 	int formatnum;
 
 	module = g_strdup(perl_get_package());
@@ -14,14 +13,7 @@ static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
 		return;
 	}
 
-	theme = dest->window->theme == NULL ? current_theme :
-		dest->window->theme;
-	signal_emit("print format", 5, theme, module,
-		    dest, GINT_TO_POINTER(formatnum), arglist);
-
-        str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
-	if (*str != '\0') printtext_dest(dest, "%s", str);
-	g_free(str);
+	printformat_module_dest_charargs(module, dest, formatnum, arglist);
 	g_free(module);
 }
 
