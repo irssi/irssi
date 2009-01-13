@@ -160,21 +160,6 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
 }
 
-static void line_add_indent_func(TEXT_BUFFER_REC *buffer, LINE_REC **line,
-				 const char *function)
-{
-        GSList *list;
-        unsigned char data[1+sizeof(INDENT_FUNC)];
-
-        list = g_hash_table_lookup(indent_functions, function);
-	if (list != NULL) {
-		data[0] = LINE_CMD_INDENT_FUNC;
-		memcpy(data+1, list->data, sizeof(INDENT_FUNC));
-		*line = textbuffer_insert(buffer, *line,
-					  data, sizeof(data), NULL);
-	}
-}
-
 static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
 {
 	static const unsigned char eol[] = { 0, LINE_CMD_EOL };
@@ -226,14 +211,9 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	}
 	textbuffer_line_add_colors(view->buffer, &insert_after, fg, bg, flags);
 
-	if (flags & GUI_PRINT_FLAG_INDENT_FUNC) {
-		/* specify the indentation function */
-                line_add_indent_func(view->buffer, &insert_after, str);
-	} else {
-		insert_after = textbuffer_insert(view->buffer, insert_after,
-						 (unsigned char *) str,
-						 strlen(str), &lineinfo);
-	}
+	insert_after = textbuffer_insert(view->buffer, insert_after,
+					 (unsigned char *) str,
+					 strlen(str), &lineinfo);
 	if (gui->use_insert_after)
                 gui->insert_after = insert_after;
 }
