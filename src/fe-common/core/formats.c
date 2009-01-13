@@ -81,22 +81,6 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 		else if (**format == '-')
 			set = FALSE;
 		else switch (**format) {
-		case 'i':
-			/* indent function */
-			(*format)++;
-			if (**format == '=')
-				(*format)++;
-
-			g_string_append_c(out, 4);
-			g_string_append_c(out, FORMAT_STYLE_INDENT_FUNC);
-			while (**format != ']' && **format != '\0' &&
-			       **format != ',') {
-				g_string_append_c(out, **format);
-				(*format)++;
-			}
-			g_string_append_c(out, ',');
-			(*format)--;
-			break;
 		case 's':
 		case 'S':
 			*flags |= !set ? PRINT_FLAG_UNSET_LINE_START :
@@ -1029,18 +1013,6 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			case FORMAT_STYLE_INDENT:
 				flags |= GUI_PRINT_FLAG_INDENT;
 				break;
-			case FORMAT_STYLE_INDENT_FUNC: {
-				const char *start = ptr;
-				while (*ptr != ',' && *ptr != '\0')
-					ptr++;
-				if (*ptr != '\0') *ptr++ = '\0';
-				ptr--;
-				signal_emit_id(signal_gui_print_text, 6,
-					       dest->window, NULL, NULL,
-					       GINT_TO_POINTER(GUI_PRINT_FLAG_INDENT_FUNC),
-					       start, dest);
-				break;
-			}
 			case FORMAT_STYLE_DEFAULTS:
 				fgcolor = theme->default_color;
 				bgcolor = -1;

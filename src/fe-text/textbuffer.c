@@ -138,8 +138,6 @@ static void text_chunk_line_free(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 				break;
 
 			text = tmp-1;
-		} else if (cmd == LINE_CMD_INDENT_FUNC) {
-			text += sizeof(int (*) ());
 		}
 	}
 }
@@ -445,9 +443,6 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 		case LINE_CMD_INDENT:
 			g_string_sprintfa(str, "\004%c",
 					  FORMAT_STYLE_INDENT);
-			break;
-		case LINE_CMD_INDENT_FUNC:
-                        ptr += sizeof(void *);
 			break;
 		}
 	}

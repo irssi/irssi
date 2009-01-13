@@ -204,11 +204,6 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				/* set indentation position here - don't do
 				   it if we're too close to right border */
 				if (xpos < view->width-5) indent_pos = xpos;
-			} else if (cmd == LINE_CMD_INDENT_FUNC) {
-				memcpy(&indent_func, ptr, sizeof(INDENT_FUNC));
-				ptr += sizeof(INDENT_FUNC);
-				if (indent_func == NULL)
-                                        indent_func = view->default_indent_func;
 			} else
 				update_cmd_color(cmd, &color);
 			continue;
@@ -427,8 +422,6 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				memcpy(&tmp, text+1, sizeof(unsigned char *));
 				text = tmp;
 				continue;
-			} else if (*text == LINE_CMD_INDENT_FUNC) {
-				text += sizeof(INDENT_FUNC);
 			} else {
 				update_cmd_color(*text, &color);
 				term_set_color(view->window, color);
@@ -609,10 +602,6 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
 					INDENT_FUNC indent_func)
 {
-        INDENT_FUNC func;
-	LINE_REC *line;
-        const unsigned char *text, *tmp;
-
 	if (view->default_indent_func == indent_func)
 		view->default_indent_func = NULL;
 
@@ -620,34 +609,6 @@ static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
 	   to the indent function */
 	view_reset_cache(view);
 	view->cache = textbuffer_cache_get(view->siblings, view->width);
-
-        /* remove all references to the indent function from buffer */
-	line = view->buffer->first_line;
-	while (line != NULL) {
-		text = line->text;
-
-		for (text = line->text;; text++) {
-			if (*text != '\0')
-				continue;
-
-                        text++;
-			if (*text == LINE_CMD_EOL)
-				break;
-
-			if (*text == LINE_CMD_INDENT_FUNC) {
-				text++;
-				memcpy(&func, text, sizeof(INDENT_FUNC));
-				if (func == indent_func)
-                                        memset(&func, 0, sizeof(INDENT_FUNC));
-				text += sizeof(INDENT_FUNC);
-			} else if (*text == LINE_CMD_CONTINUE) {
-				memcpy(&tmp, text+1, sizeof(char *));
-				text = tmp-1;
-			}
-		}
-
-		line = line->next;
-	}
 }
 
 void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func)
