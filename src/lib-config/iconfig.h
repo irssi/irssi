@@ -122,9 +122,6 @@ CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
 /* Find the section with the whole path.
    Create the path if necessary if `create' is TRUE. */
 CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int create);
-/* Get the value of keys `key' and `key_value' and put them to
-   `ret_key' and `ret_value'. Returns -1 if not found. */
-int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *value_key, char **ret_key, char **ret_value);
 /* Return all values from the list `node' in a g_strsplit() array */
 char **config_node_get_list(CONFIG_NODE *node);
 /* Add all values in `array' to `node' */

@@ -199,38 +199,6 @@ int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def)
 		(i_toupper(*str) == 'O' && i_toupper(str[1]) == 'N');
 }
 
-int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *value_key, char **ret_key, char **ret_value)
-{
-	CONFIG_NODE *keynode, *valuenode;
-	GSList *tmp;
-
-	g_return_val_if_fail(node != NULL, -1);
-	g_return_val_if_fail(key != NULL, -1);
-	g_return_val_if_fail(value_key != NULL, -1);
-	g_return_val_if_fail(ret_key != NULL, -1);
-	g_return_val_if_fail(ret_value != NULL, -1);
-
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
-		node = tmp->data;
-
-		if (node->type != NODE_TYPE_BLOCK)
-			continue;
-
-		keynode = config_node_find(node, key);
-		if (keynode == NULL || keynode->type != NODE_TYPE_KEY)
-			continue;
-
-		valuenode = config_node_find(node, value_key);
-
-		*ret_key = keynode->key;
-		*ret_value = valuenode != NULL && valuenode->type == NODE_TYPE_KEY ?
-			valuenode->value : NULL;
-		return 0;
-	}
-
-	return -1;
-}
-
 char **config_node_get_list(CONFIG_NODE *node)
 {
 	GString *values;
