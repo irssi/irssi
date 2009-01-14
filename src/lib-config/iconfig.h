@@ -125,7 +125,7 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 /* Get the value of keys `key' and `key_value' and put them to
    `ret_key' and `ret_value'. Returns -1 if not found. */
 int config_node_get_keyvalue(CONFIG_NODE *node, const char *key, const char *value_key, char **ret_key, char **ret_value);
-/* Return all values from from the list `node' in a g_strsplit() array */
+/* Return all values from the list `node' in a g_strsplit() array */
 char **config_node_get_list(CONFIG_NODE *node);
 /* Add all values in `array' to `node' */
 void config_node_add_list(CONFIG_REC *rec, CONFIG_NODE *node, char **array);
@@ -137,7 +137,7 @@ int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
 /*
  * key != NULL && value == NULL
  * remove node with key 'key', equivalent to
- * config_node_remove(rec, parent, config_node_find(rec, parent, key))
+ * config_node_remove(rec, parent, config_node_find(parent, key))
  * key == NULL && value != NULL
  * create a new node with type NODE_TYPE_VALUE and value 'value'
  * key != NULL && value != NULL
