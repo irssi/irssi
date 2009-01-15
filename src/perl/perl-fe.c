@@ -262,6 +262,8 @@ void fe_perl_init(void)
 
 void fe_perl_deinit(void)
 {
+	theme_unregister();
+
 	command_unbind("script", (SIGNAL_FUNC) cmd_script);
 	command_unbind("script exec", (SIGNAL_FUNC) cmd_script_exec);
 	command_unbind("script load", (SIGNAL_FUNC) cmd_script_load);
