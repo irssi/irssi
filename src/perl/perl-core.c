@@ -111,7 +111,8 @@ static void xs_init(pTHX)
 /* Initialize perl interpreter */
 void perl_scripts_init(void)
 {
-	char *args[] = {"", "-e", "0"};
+	char *argarray[] = {"", "-e", "0"};
+	char **args = argarray;
 	int argc = 3;
 	char *code, *use_code;
 
