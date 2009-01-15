@@ -13,7 +13,7 @@
       possibility in listening for remote connections.
 /DCC GET [<nick> [<file>]]
     - Gets the file offered by remote client. The file is downloaded and
-      saved into the current working directory.
+      saved into the directory specified by the `dcc_download_path' setting.
 /DCC SEND [-passive] [-append | -prepend | -flush | -rmtail | -rmhead]
           <nick> <file> [<file> ...]
     - Sends a DCC SEND request to remote client. Remote end has to accept
