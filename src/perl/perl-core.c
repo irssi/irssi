@@ -266,7 +266,7 @@ static PERL_SCRIPT_REC *script_load(char *name, const char *path,
 	/* if there's a script with a same name, destroy it */
 	script = perl_script_find(name);
 	if (script != NULL)
-		perl_script_destroy(script);
+		perl_script_unload(script);
 
 	script = g_new0(PERL_SCRIPT_REC, 1);
 	script->name = name;
