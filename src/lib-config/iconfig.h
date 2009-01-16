@@ -48,7 +48,6 @@ struct _CONFIG_NODE {
 
 struct _CONFIG_REC {
 	char *fname;
-	int handle;
 	int create_mode;
 	int modifycounter; /* increase every time something is changed */
 
@@ -60,6 +59,7 @@ struct _CONFIG_REC {
 	GScanner *scanner;
 
 	/* while writing to configuration file.. */
+	GIOChannel *handle;
 	int tmp_indent_level; /* indentation position */
 	int tmp_last_lf; /* last character was a line feed */
 };

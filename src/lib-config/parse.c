@@ -269,20 +269,21 @@ void config_parse_init(CONFIG_REC *rec, const char *name)
 
 int config_parse(CONFIG_REC *rec)
 {
+	int fd;
+
 	g_return_val_if_fail(rec != NULL, -1);
 	g_return_val_if_fail(rec->fname != NULL, -1);
 
-	rec->handle = open(rec->fname, O_RDONLY);
-	if (rec->handle == -1)
+	fd = open(rec->fname, O_RDONLY);
+	if (fd == -1)
 		return config_error(rec, g_strerror(errno));
 
 	config_parse_init(rec, rec->fname);
-	g_scanner_input_file(rec->scanner, rec->handle);
+	g_scanner_input_file(rec->scanner, fd);
 	config_parse_loop(rec, rec->mainnode, G_TOKEN_EOF);
 	g_scanner_destroy(rec->scanner);
 
-	close(rec->handle);
-	rec->handle = -1;
+	close(fd);
 
 	return rec->last_error == NULL ? 0 : -1;
 }
@@ -310,7 +311,6 @@ CONFIG_REC *config_open(const char *fname, int create_mode)
 
 	rec = g_new0(CONFIG_REC, 1);
 	rec->fname = fname == NULL ? NULL : g_strdup(fname);
-	rec->handle = -1;
 	rec->create_mode = create_mode;
 	rec->mainnode = g_new0(CONFIG_NODE, 1);
 	rec->mainnode->type = NODE_TYPE_BLOCK;
@@ -327,7 +327,6 @@ void config_close(CONFIG_REC *rec)
 	config_nodes_remove_all(rec);
 	g_free(rec->mainnode);
 
-	if (rec->handle != -1) close(rec->handle);
 	g_hash_table_foreach(rec->cache, (GHFunc) g_free, NULL);
 	g_hash_table_destroy(rec->cache);
 	g_hash_table_destroy(rec->cache_nodes);

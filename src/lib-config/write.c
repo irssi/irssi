@@ -32,7 +32,8 @@ static int config_write_indent(CONFIG_REC *rec)
 	int n;
 
 	for (n = 0; n < rec->tmp_indent_level/CONFIG_INDENT_SIZE; n++) {
-		if (write(rec->handle, indent_block, CONFIG_INDENT_SIZE) == -1)
+		if (g_io_channel_write_chars(rec->handle, indent_block, CONFIG_INDENT_SIZE,
+					     NULL, NULL) == G_IO_STATUS_ERROR)
 			return -1;
 	}
 
@@ -57,12 +58,14 @@ static int config_write_str(CONFIG_REC *rec, const char *str)
 
 		p = strchr(strpos, '\n');
 		if (p == NULL) {
-			if (write(rec->handle, strpos, strlen(strpos)) == -1)
+			if (g_io_channel_write_chars(rec->handle, strpos, strlen(strpos),
+						     NULL, NULL) == G_IO_STATUS_ERROR)
 				return -1;
 			strpos = "";
 			rec->tmp_last_lf = FALSE;
 		} else {
-			if (write(rec->handle, strpos, (int) (p-strpos)+1) == -1)
+			if (g_io_channel_write_chars(rec->handle, strpos, (int) (p-strpos)+1,
+						     NULL, NULL) == G_IO_STATUS_ERROR)
 				return -1;
 			strpos = p+1;
 			rec->tmp_last_lf = TRUE;
@@ -297,20 +300,20 @@ static int config_write_block(CONFIG_REC *rec, CONFIG_NODE *node, int list, int 
 int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 {
 	int ret;
+	int fd;
 
 	g_return_val_if_fail(rec != NULL, -1);
         g_return_val_if_fail(fname != NULL || rec->fname != NULL, -1);
         g_return_val_if_fail(create_mode != -1 || rec->create_mode != -1, -1);
 
-	if (rec->handle != -1)
-		close(rec->handle);
-
-	rec->handle = open(fname != NULL ? fname : rec->fname,
+	fd = open(fname != NULL ? fname : rec->fname,
 			   O_WRONLY | O_TRUNC | O_CREAT,
 			   create_mode != -1 ? create_mode : rec->create_mode);
-	if (rec->handle == -1)
+	if (fd == -1)
 		return config_error(rec, g_strerror(errno));
 
+	rec->handle = g_io_channel_unix_new(fd);
+	g_io_channel_set_encoding(rec->handle, NULL, NULL);
 	rec->tmp_indent_level = 0;
 	rec->tmp_last_lf = TRUE;
         ret = config_write_block(rec, rec->mainnode, FALSE, TRUE);
@@ -319,8 +322,8 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 		config_error(rec, errno == 0 ? "bug" : g_strerror(errno));
 	}
 
-	close(rec->handle);
-	rec->handle = -1;
+	g_io_channel_unref(rec->handle);
+	rec->handle = NULL;
 
 	return ret;
 }
