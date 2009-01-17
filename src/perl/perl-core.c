@@ -111,20 +111,17 @@ static void xs_init(pTHX)
 /* Initialize perl interpreter */
 void perl_scripts_init(void)
 {
-	char *argarray[] = {"", "-e", "0"};
-	char **args = argarray;
-	int argc = 3;
+	char *args[] = {"", "-e", "0"};
 	char *code, *use_code;
 
 	perl_scripts = NULL;
         perl_sources_start();
 	perl_signals_start();
 
-	PERL_SYS_INIT3(&argc, &args, &environ);
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
-	perl_parse(my_perl, xs_init, argc, args, NULL);
+	perl_parse(my_perl, xs_init, 3, args, NULL);
 #if PERL_STATIC_LIBS == 1
 	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
 #endif
@@ -168,7 +165,6 @@ void perl_scripts_deinit(void)
 	PL_perl_destruct_level = 1;
 	perl_destruct(my_perl);
 	perl_free(my_perl);
-	PERL_SYS_TERM();
 	my_perl = NULL;
 }
 
