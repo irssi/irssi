@@ -243,6 +243,17 @@ CODE:
 OUTPUT:
 	RETVAL
 
+void
+window_get_history_lines(window)
+	Irssi::UI::Window window
+PREINIT:
+	HISTORY_REC *rec;
+	GList *tmp;
+PPCODE:
+	rec = command_history_current(window);
+	for (tmp = rec->list; tmp != NULL; tmp = tmp->next)
+		XPUSHs(sv_2mortal(new_pv(tmp->data)));
+
 #*******************************
 MODULE = Irssi::UI::Window  PACKAGE = Irssi::Windowitem  PREFIX = window_item_
 #*******************************
