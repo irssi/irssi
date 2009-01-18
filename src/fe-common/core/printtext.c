@@ -345,7 +345,7 @@ void printtext_string(void *server, const char *target, int level, const char *t
 
 	if (!sending_print_starting) {
 		sending_print_starting = TRUE;
-		signal_emit_id(signal_print_starting, 1, dest);
+		signal_emit_id(signal_print_starting, 1, &dest);
                 sending_print_starting = FALSE;
 	}
 
@@ -367,7 +367,7 @@ void printtext_string_window(WINDOW_REC *window, int level, const char *text)
 
 	if (!sending_print_starting) {
 		sending_print_starting = TRUE;
-		signal_emit_id(signal_print_starting, 1, dest);
+		signal_emit_id(signal_print_starting, 1, &dest);
                 sending_print_starting = FALSE;
 	}
 
