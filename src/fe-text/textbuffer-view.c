@@ -151,7 +151,7 @@ static inline unichar read_unichar(const unsigned char *data, const unsigned cha
 	unichar chr = g_utf8_get_char_validated(data, -1);
 
 	if (chr & 0x80000000) {
-		chr = *data;
+		chr = 0xfffd;
 		*next = data + 1;
 		*width = 1;
 	} else {
