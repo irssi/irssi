@@ -403,7 +403,7 @@ static void command_calc_options(COMMAND_REC *rec, const char *options)
 
 		oldopt = optlist_find(list, name);
 		if (oldopt != NULL) {
-                        /* already specified - overwrite old defination */
+                        /* already specified - overwrite old definition */
 			g_free(oldopt->data);
 			oldopt->data = g_strdup(*tmp);
 		} else {
@@ -561,7 +561,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 	char *option, *arg, **optlist;
 	int pos;
 
-	/* get option definations */
+	/* get option definitions */
 	rec = cmd == NULL ? NULL : command_find(cmd);
 	optlist = rec == NULL ? NULL : rec->options;
 

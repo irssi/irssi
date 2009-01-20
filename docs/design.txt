@@ -71,7 +71,7 @@
  signal. Don't bother to do this unless your signal is sent (or could be
  sent) several times in a second.
 
- See src/core/signals.h for defination of the signal function, and
+ See src/core/signals.h for definition of the signal function, and
  signals.txt for a list of signals.
 
 
