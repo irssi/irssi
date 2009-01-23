@@ -38,6 +38,7 @@ GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
 static int print_script_errors;
+static char *perl_args[] = {"", "-e", "0"};
 
 #define IS_PERL_SCRIPT(file) \
 	(strlen(file) > 3 && strcmp(file+strlen(file)-3, ".pl") == 0)
@@ -111,7 +112,6 @@ static void xs_init(pTHX)
 /* Initialize perl interpreter */
 void perl_scripts_init(void)
 {
-	char *args[] = {"", "-e", "0"};
 	char *code, *use_code;
 
 	perl_scripts = NULL;
@@ -121,7 +121,7 @@ void perl_scripts_init(void)
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
-	perl_parse(my_perl, xs_init, 3, args, NULL);
+	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args), perl_args, NULL);
 #if PERL_STATIC_LIBS == 1
 	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
 #endif
@@ -440,6 +440,10 @@ static void sig_autorun(void)
 
 void perl_core_init(void)
 {
+	int argc = G_N_ELEMENTS(perl_args);
+	char **argv = perl_args;
+
+	PERL_SYS_INIT3(&argc, &argv, &environ);
         print_script_errors = 1;
 	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
@@ -465,4 +469,5 @@ void perl_core_deinit(void)
 	perl_signals_deinit();
 
 	signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
+	PERL_SYS_TERM();
 }
