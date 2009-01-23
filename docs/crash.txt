@@ -23,9 +23,13 @@ So, if you have the core file and GNU debugger (gdb), you can get the
 backtrace with:
 
  gdb irssi core
+ set logging file bt.log
+ set logging on
  bt
+ set logging off
+ quit
 
-Paste all the lines starting from line having #0 at the beginning.
+Provide the bt.log file.
 
 Here's an example session:
 
