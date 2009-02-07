@@ -31,6 +31,7 @@
 #include "nicklist.h"
 #include "hilight-text.h"
 #include "formats.h"
+#include "fe-common-core.h"
 
 static char **hide_targets;
 static int hide_level, msg_level, hilight_level;
@@ -86,16 +87,8 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 
 	if (hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
 		/* check for both target and tag/target */
-		if (strarray_find(hide_targets, dest->target) != -1)
+		if (strarray_find_dest(hide_targets, dest))
 			return;
-
-		if (dest->server_tag != NULL) {
-			char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-			int ret = strarray_find(hide_targets, tagtarget);
-			g_free(tagtarget);
-			if (ret != -1)
-				return;
-		}
 	}
 
 	if (dest->target != NULL) {
