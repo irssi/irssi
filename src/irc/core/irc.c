@@ -202,7 +202,7 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	tmp = nicklist;
 	for (;; tmp++) {
 		if (*tmp != NULL) {
-			g_string_sprintfa(nickstr, "%s,", *tmp);
+			g_string_append_printf(nickstr, "%s,", *tmp);
 			if (++count < max_nicks)
 				continue;
 		}

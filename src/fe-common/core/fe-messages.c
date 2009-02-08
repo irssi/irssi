@@ -371,7 +371,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			print_channel = rec->visible_name;
 
 		if (once)
-			g_string_sprintfa(chans, "%s,", rec->visible_name);
+			g_string_append_printf(chans, "%s,", rec->visible_name);
 		else {
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {

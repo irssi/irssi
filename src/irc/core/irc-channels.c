@@ -106,7 +106,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			if (chanrec == NULL) {
 				schannel = channel_setup_find(channel, server->connrec->chatnet);
 
-				g_string_sprintfa(outchans, "%s,", channel);
+				g_string_append_printf(outchans, "%s,", channel);
 				if (*tmpkey != NULL && **tmpkey != '\0')
                         		key = *tmpkey;
 	                        else if (schannel != NULL && schannel->password != NULL) {
@@ -115,7 +115,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 					key = schannel->password;
 				} else key = NULL;
 				
-				g_string_sprintfa(outkeys, "%s,", get_join_key(key));
+				g_string_append_printf(outkeys, "%s,", get_join_key(key));
 				channame = channel + (channel[0] == '!' &&
 						      channel[1] == '!');
 				chanrec = irc_channel_create(server, channame, NULL,

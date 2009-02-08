@@ -206,7 +206,7 @@ static void event_connected(SERVER_REC *server)
 		/* check that we haven't already joined this channel in
 		   same chat network connection.. */
                 if (channel_find_servers(chatnet_servers, rec->name) == NULL)
-			g_string_sprintfa(chans, "%s,", rec->name);
+			g_string_append_printf(chans, "%s,", rec->name);
 	}
         g_slist_free(chatnet_servers);
 

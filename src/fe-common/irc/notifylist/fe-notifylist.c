@@ -71,7 +71,7 @@ static void print_notify_onserver(IRC_SERVER_REC *server, GSList *nicks,
 		if (!notifylist_ison_server(server, nick))
 			continue;
 
-		g_string_sprintfa(str, "%s, ", nick);
+		g_string_append_printf(str, "%s, ", nick);
 		*offline = g_slist_remove(*offline, nick);
 	}
 
@@ -133,7 +133,7 @@ static void cmd_notify_show(void)
 
 		str = g_string_new(NULL);
 		for (tmp = offline; tmp != NULL; tmp = tmp->next)
-			g_string_sprintfa(str, "%s, ", (char *) tmp->data);
+			g_string_append_printf(str, "%s, ", (char *) tmp->data);
 
 		g_string_truncate(str, str->len-2);
 		printformat(NULL,NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NOTIFY_OFFLINE, str->str);

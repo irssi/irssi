@@ -215,11 +215,11 @@ static void server_rejoin_channels(IRC_SERVER_REC *server)
 		}
 
 		rec->joining = TRUE;
-		g_string_sprintfa(channels, "%s,", rec->channel);
+		g_string_append_printf(channels, "%s,", rec->channel);
 		if (rec->key == NULL)
 			g_string_append(keys, "x,");
 		else {
-			g_string_sprintfa(keys, "%s,", rec->key);
+			g_string_append_printf(keys, "%s,", rec->key);
                         use_keys = TRUE;
 		}
 	}
@@ -228,7 +228,7 @@ static void server_rejoin_channels(IRC_SERVER_REC *server)
                 g_string_truncate(channels, channels->len-1);
                 g_string_truncate(keys, keys->len-1);
 
-		if (use_keys) g_string_sprintfa(channels, " %s", keys->str);
+		if (use_keys) g_string_append_printf(channels, " %s", keys->str);
 		server->channels_join(SERVER(server), channels->str, TRUE);
 	}
 

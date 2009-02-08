@@ -577,7 +577,7 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 			g_string_insert(str, modepos, mode);
 		}
 
-		g_string_sprintfa(str, " %s", *nick);
+		g_string_append_printf(str, " %s", *nick);
 
 		if (++num == channel->server->max_modes_in_cmd) {
 			/* max. modes / command reached, send to server */
@@ -659,7 +659,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 			}
 
 			if (*arg != '\0')
-				g_string_sprintfa(targs, " %s", arg);
+				g_string_append_printf(targs, " %s", arg);
 		}
 	}
 
@@ -695,7 +695,7 @@ static int get_wildcard_nicks(GString *output, const char *mask,
 		if (g_strcasecmp(rec->nick, channel->server->nick) == 0)
 			continue;
 
-		g_string_sprintfa(output, "%s ", rec->nick);
+		g_string_append_printf(output, "%s ", rec->nick);
                 count++;
 	}
 	g_slist_free(nicks);
@@ -734,7 +734,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 		if (strchr(*match, '*') == NULL &&
 		    strchr(*match, '?') == NULL) {
 			/* no wildcards */
-                        g_string_sprintfa(str, "%s ", *match);
+                        g_string_append_printf(str, "%s ", *match);
 		} else {
 			count = get_wildcard_nicks(str, *match, channel,
 						   op, voice);

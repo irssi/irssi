@@ -45,33 +45,33 @@ static void cmd_network_list(void)
 
 		g_string_truncate(str, 0);
 		if (rec->nick != NULL)
-			g_string_sprintfa(str, "nick: %s, ", rec->nick);
+			g_string_append_printf(str, "nick: %s, ", rec->nick);
 		if (rec->username != NULL)
-			g_string_sprintfa(str, "username: %s, ", rec->username);
+			g_string_append_printf(str, "username: %s, ", rec->username);
 		if (rec->realname != NULL)
-			g_string_sprintfa(str, "realname: %s, ", rec->realname);
+			g_string_append_printf(str, "realname: %s, ", rec->realname);
 		if (rec->own_host != NULL)
-			g_string_sprintfa(str, "host: %s, ", rec->own_host);
+			g_string_append_printf(str, "host: %s, ", rec->own_host);
 		if (rec->autosendcmd != NULL)
-			g_string_sprintfa(str, "autosendcmd: %s, ", rec->autosendcmd);
+			g_string_append_printf(str, "autosendcmd: %s, ", rec->autosendcmd);
 		if (rec->usermode != NULL)
-			g_string_sprintfa(str, "usermode: %s, ", rec->usermode);
+			g_string_append_printf(str, "usermode: %s, ", rec->usermode);
 
 		if (rec->cmd_queue_speed > 0)
-			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
+			g_string_append_printf(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
 		if (rec->max_cmds_at_once > 0)
-			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
+			g_string_append_printf(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->max_query_chans > 0)
-			g_string_sprintfa(str, "querychans: %d, ", rec->max_query_chans);
+			g_string_append_printf(str, "querychans: %d, ", rec->max_query_chans);
 
 		if (rec->max_kicks > 0)
-			g_string_sprintfa(str, "max_kicks: %d, ", rec->max_kicks);
+			g_string_append_printf(str, "max_kicks: %d, ", rec->max_kicks);
 		if (rec->max_msgs > 0)
-			g_string_sprintfa(str, "max_msgs: %d, ", rec->max_msgs);
+			g_string_append_printf(str, "max_msgs: %d, ", rec->max_msgs);
 		if (rec->max_modes > 0)
-			g_string_sprintfa(str, "max_modes: %d, ", rec->max_modes);
+			g_string_append_printf(str, "max_modes: %d, ", rec->max_modes);
 		if (rec->max_whois > 0)
-			g_string_sprintfa(str, "max_whois: %d, ", rec->max_whois);
+			g_string_append_printf(str, "max_whois: %d, ", rec->max_whois);
 
 		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,

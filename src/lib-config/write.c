@@ -98,9 +98,9 @@ static char *config_escape_string(const char *text)
 	str = g_string_new("\"");
 	while (*text != '\0') {
 		if (*text == '\\' || *text == '"')
-			g_string_sprintfa(str, "\\%c", *text);
+			g_string_append_printf(str, "\\%c", *text);
 		else if ((unsigned char) *text < 32)
-			g_string_sprintfa(str, "\\%03o", *text);
+			g_string_append_printf(str, "\\%03o", *text);
 		else
 			g_string_append_c(str, *text);
 		text++;

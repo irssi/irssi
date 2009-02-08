@@ -236,7 +236,7 @@ char *perl_get_use_list(void)
 		g_string_append(str, "use Irssi::UI;");
 
 	for (tmp = use_protocols; tmp != NULL; tmp = tmp->next)
-		g_string_sprintfa(str, "use Irssi::%s;", (char *) tmp->data);
+		g_string_append_printf(str, "use Irssi::%s;", (char *) tmp->data);
 
 	ret = str->str;
         g_string_free(str, FALSE);

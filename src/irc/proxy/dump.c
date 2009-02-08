@@ -222,9 +222,9 @@ void proxy_client_reset_nick(CLIENT_REC *client)
 static void proxy_dump_data_005(gpointer key, gpointer value, gpointer context)
 {
 	if (*(char *)value != '\0')
-		g_string_sprintfa(context, "%s=%s ", (char *)key, (char *)value);
+		g_string_append_printf(context, "%s=%s ", (char *)key, (char *)value);
 	else
-		g_string_sprintfa(context, "%s ", (char *)key);
+		g_string_append_printf(context, "%s ", (char *)key);
 }
 
 void proxy_dump_data(CLIENT_REC *client)
@@ -259,7 +259,7 @@ void proxy_dump_data(CLIENT_REC *client)
 
 		for (;; tmp++) {
 			if (*tmp != NULL) {
-				g_string_sprintfa(paramstr, "%s ", *tmp);
+				g_string_append_printf(paramstr, "%s ", *tmp);
 				if (++count < 15)
 					continue;
 			}
@@ -267,7 +267,7 @@ void proxy_dump_data(CLIENT_REC *client)
 			count = 0;
 			if (paramstr->len > 0)
 				g_string_truncate(paramstr, paramstr->len-1);
-			g_string_sprintfa(paramstr, " :are supported by this server\n");
+			g_string_append_printf(paramstr, " :are supported by this server\n");
 			proxy_outdata(client, "%s", paramstr->str);
 			g_string_truncate(paramstr, 0);
 			g_string_sprintf(paramstr, ":%s 005 %s ", client->proxy_address, client->nick);

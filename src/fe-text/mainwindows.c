@@ -1028,7 +1028,7 @@ static void windows_print_sticky(WINDOW_REC *win)
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		g_string_sprintfa(str, "#%d, ", rec->refnum);
+		g_string_append_printf(str, "#%d, ", rec->refnum);
 	}
         g_string_truncate(str, str->len-2);
         g_slist_free(list);

@@ -137,7 +137,7 @@ char *bits2level(int bits)
 
 	for (n = 0; levels[n] != NULL; n++) {
 		if (bits & (1L << n))
-			g_string_sprintfa(str, "%s ", levels[n]);
+			g_string_append_printf(str, "%s ", levels[n]);
 	}
         if (str->len > 0)
 		g_string_truncate(str, str->len-1);

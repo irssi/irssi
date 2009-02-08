@@ -207,7 +207,7 @@ static void cmd_channel_list_joined(void)
 		for (ntmp = nicklist; ntmp != NULL; ntmp = ntmp->next) {
 			NICK_REC *rec = ntmp->data;
 
-			g_string_sprintfa(nicks, "%s ", rec->nick);
+			g_string_append_printf(nicks, "%s ", rec->nick);
 		}
 
 		if (nicks->len > 1) g_string_truncate(nicks, nicks->len-1);
@@ -235,9 +235,9 @@ static void cmd_channel_list(void)
 		if (rec->autojoin)
 			g_string_append(str, "autojoin, ");
 		if (rec->botmasks != NULL && *rec->botmasks != '\0')
-			g_string_sprintfa(str, "bots: %s, ", rec->botmasks);
+			g_string_append_printf(str, "bots: %s, ", rec->botmasks);
 		if (rec->autosendcmd != NULL && *rec->autosendcmd != '\0')
-			g_string_sprintfa(str, "botcmd: %s, ", rec->autosendcmd);
+			g_string_append_printf(str, "botcmd: %s, ", rec->autosendcmd);
 
 		if (str->len > 2) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_CHANSETUP_LINE,
@@ -564,7 +564,7 @@ static void cmd_names(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	for (tmp = channels; *tmp != NULL; tmp++) {
 		chanrec = channel_find(server, *tmp);
 		if (chanrec == NULL)
-			g_string_sprintfa(unknowns, "%s,", *tmp);
+			g_string_append_printf(unknowns, "%s,", *tmp);
 		else {
 			fe_channels_nicklist(chanrec, flags);
 			signal_stop();

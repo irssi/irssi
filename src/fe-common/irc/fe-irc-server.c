@@ -109,26 +109,26 @@ static void cmd_server_list(const char *data)
 		if (rec->use_ssl) {
 			g_string_append(str, "ssl, ");
 			if (rec->ssl_cert) {
-				g_string_sprintfa(str, "ssl_cert: %s, ", rec->ssl_cert);
+				g_string_append_printf(str, "ssl_cert: %s, ", rec->ssl_cert);
 				if (rec->ssl_pkey)
-					g_string_sprintfa(str, "ssl_pkey: %s, ", rec->ssl_pkey);
+					g_string_append_printf(str, "ssl_pkey: %s, ", rec->ssl_pkey);
 			}
 			if (rec->ssl_verify)
 				g_string_append(str, "ssl_verify, ");
 			if (rec->ssl_cafile)
-				g_string_sprintfa(str, "ssl_cafile: %s, ", rec->ssl_cafile);
+				g_string_append_printf(str, "ssl_cafile: %s, ", rec->ssl_cafile);
 			if (rec->ssl_capath)
-				g_string_sprintfa(str, "ssl_capath: %s, ", rec->ssl_capath);
+				g_string_append_printf(str, "ssl_capath: %s, ", rec->ssl_capath);
 			
 		}
 		if (rec->max_cmds_at_once > 0)
-			g_string_sprintfa(str, "cmdmax: %d, ", rec->max_cmds_at_once);
+			g_string_append_printf(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)
-			g_string_sprintfa(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
+			g_string_append_printf(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
 		if (rec->max_query_chans > 0)
-			g_string_sprintfa(str, "querychans: %d, ", rec->max_query_chans);
+			g_string_append_printf(str, "querychans: %d, ", rec->max_query_chans);
 		if (rec->own_host != NULL)
-			g_string_sprintfa(str, "host: %s, ", rec->own_host);
+			g_string_append_printf(str, "host: %s, ", rec->own_host);
 
 		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_LINE,

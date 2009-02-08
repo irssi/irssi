@@ -135,7 +135,7 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 		if (cmd->len+len+1 > 510)
                         ison_send(server, cmd);
 
-		g_string_sprintfa(cmd, "%s ", nick);
+		g_string_append_printf(cmd, "%s ", nick);
 		g_free(nick);
 	}
 
@@ -211,7 +211,7 @@ static void whois_list_send(IRC_SERVER_REC *server, GSList *nicks)
 		nick = tmp->data;
 
 		count++;
-		g_string_sprintfa(str, "%s,", nick);
+		g_string_append_printf(str, "%s,", nick);
 
 		if (count >= server->max_whois_in_cmd) {
 			g_string_truncate(str, str->len-1);

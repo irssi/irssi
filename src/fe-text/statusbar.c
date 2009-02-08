@@ -648,7 +648,7 @@ static GString *finalize_string(const char *str, const char *color)
 		    (term_type == TERM_TYPE_8BIT &&
 		     (unsigned char) (*str & 0x7f) < 32)) {
 			/* control char */
-			g_string_sprintfa(out, "%%8%c%%8",
+			g_string_append_printf(out, "%%8%c%%8",
 					  'A'-1 + (*str & 0x7f));
 		} else if (*str == '%' && str[1] == 'n') {
 			g_string_append(out, color);

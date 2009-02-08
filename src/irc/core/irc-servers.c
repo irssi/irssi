@@ -476,8 +476,8 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 
-		g_string_sprintfa(chans, "%s,", channel->name);
-		g_string_sprintfa(keys, "%s,", channel->key == NULL ? "x" :
+		g_string_append_printf(chans, "%s,", channel->name);
+		g_string_append_printf(keys, "%s,", channel->key == NULL ? "x" :
 				  channel->key);
 		if (channel->key != NULL)
 			use_keys = TRUE;
@@ -487,8 +487,8 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	for (tmp = server->rejoin_channels; tmp != NULL; tmp = tmp->next) {
 		REJOIN_REC *rec = tmp->data;
 
-		g_string_sprintfa(chans, "%s,", rec->channel);
-		g_string_sprintfa(keys, "%s,", rec->key == NULL ? "x" :
+		g_string_append_printf(chans, "%s,", rec->channel);
+		g_string_append_printf(keys, "%s,", rec->key == NULL ? "x" :
 				  rec->key);
 		if (rec->key != NULL) use_keys = TRUE;
 	}
@@ -496,7 +496,7 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	if (chans->len > 0) {
 		g_string_truncate(chans, chans->len-1);
 		g_string_truncate(keys, keys->len-1);
-		if (use_keys) g_string_sprintfa(chans, " %s", keys->str);
+		if (use_keys) g_string_append_printf(chans, " %s", keys->str);
 	}
 
 	ret = chans->str;

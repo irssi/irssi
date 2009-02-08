@@ -284,7 +284,7 @@ static void sig_session_save(CONFIG_REC *config)
 	/* save pids */
         str = g_string_new(NULL);
 	for (tmp = pidwait_get_pids(); tmp != NULL; tmp = tmp->next)
-                g_string_sprintfa(str, "%d ", GPOINTER_TO_INT(tmp->data));
+                g_string_append_printf(str, "%d ", GPOINTER_TO_INT(tmp->data));
         config_node_set_str(config, config->mainnode, "pids", str->str);
         g_string_free(str, TRUE);
 }

@@ -200,11 +200,11 @@ static char *log_items_get_list(LOG_REC *log)
 	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
 		rec = tmp->data;
 
-                g_string_sprintfa(str, "%s, ", rec->name);
+                g_string_append_printf(str, "%s, ", rec->name);
 	}
 	g_string_truncate(str, str->len-2);
 	if(rec->servertag != NULL)
-		g_string_sprintfa(str, " (%s)", rec->servertag);
+		g_string_append_printf(str, " (%s)", rec->servertag);
 
 	ret = str->str;
 	g_string_free(str, FALSE);

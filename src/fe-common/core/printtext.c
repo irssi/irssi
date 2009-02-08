@@ -226,31 +226,31 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
 		}
 		case 'd': {
 			int d = (int) va_arg(va, int);
-			g_string_sprintfa(out, "%d", d);
+			g_string_append_printf(out, "%d", d);
 			break;
 		}
 		case 'f': {
 			double f = (double) va_arg(va, double);
-			g_string_sprintfa(out, "%0.2f", f);
+			g_string_append_printf(out, "%0.2f", f);
 			break;
 		}
 		case 'u': {
 			unsigned int d =
 				(unsigned int) va_arg(va, unsigned int);
-			g_string_sprintfa(out, "%u", d);
+			g_string_append_printf(out, "%u", d);
 			break;
                 }
 		case 'l': {
 			long d = (long) va_arg(va, long);
 
 			if (*++str != 'd' && *str != 'u') {
-				g_string_sprintfa(out, "%ld", d);
+				g_string_append_printf(out, "%ld", d);
 				str--;
 			} else {
 				if (*str == 'd')
-					g_string_sprintfa(out, "%ld", d);
+					g_string_append_printf(out, "%ld", d);
 				else
-					g_string_sprintfa(out, "%lu", d);
+					g_string_append_printf(out, "%lu", d);
 			}
 			break;
 		}

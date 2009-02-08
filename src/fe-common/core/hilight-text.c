@@ -491,11 +491,11 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 	}
 
 	if (rec->priority != 0)
-		g_string_sprintfa(options, "-priority %d ", rec->priority);
+		g_string_append_printf(options, "-priority %d ", rec->priority);
 	if (rec->color != NULL)
-		g_string_sprintfa(options, "-color %s ", rec->color);
+		g_string_append_printf(options, "-color %s ", rec->color);
 	if (rec->act_color != NULL)
-		g_string_sprintfa(options, "-actcolor %s ", rec->act_color);
+		g_string_append_printf(options, "-actcolor %s ", rec->act_color);
 
 	chans = rec->channels == NULL ? NULL :
 		g_strjoinv(",", rec->channels);

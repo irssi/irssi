@@ -372,11 +372,11 @@ static void set_color(GString *str, int cmd)
 
 	if ((cmd & LINE_COLOR_BG) == 0) {
                 /* change foreground color */
-		g_string_sprintfa(str, "\004%c%c",
+		g_string_append_printf(str, "\004%c%c",
 				  color, FORMAT_COLOR_NOCHANGE);
 	} else {
 		/* change background color */
-		g_string_sprintfa(str, "\004%c%c",
+		g_string_append_printf(str, "\004%c%c",
 				  FORMAT_COLOR_NOCHANGE, color);
 	}
 }
@@ -429,19 +429,19 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 			g_string_append_c(str, 22);
 			break;
 		case LINE_CMD_BLINK:
-			g_string_sprintfa(str, "\004%c",
+			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_BLINK);
 			break;
 		case LINE_CMD_BOLD:
-			g_string_sprintfa(str, "\004%c",
+			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_BOLD);
 			break;
 		case LINE_CMD_COLOR0:
-			g_string_sprintfa(str, "\004%c%c",
+			g_string_append_printf(str, "\004%c%c",
 					  '0', FORMAT_COLOR_NOCHANGE);
 			break;
 		case LINE_CMD_INDENT:
-			g_string_sprintfa(str, "\004%c",
+			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_INDENT);
 			break;
 		}

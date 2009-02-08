@@ -90,14 +90,14 @@ char *ban_get_masks(IRC_CHANNEL_REC *channel, const char *nicks, int ban_type)
 	for (ban = banlist; *ban != NULL; ban++) {
 		if (strchr(*ban, '!') != NULL) {
 			/* explicit ban */
-			g_string_sprintfa(str, "%s ", *ban);
+			g_string_append_printf(str, "%s ", *ban);
 			continue;
 		}
 
 		/* ban nick */
 		realban = ban_get_mask(channel, *ban, ban_type);
 		if (realban != NULL) {
-			g_string_sprintfa(str, "%s ", realban);
+			g_string_append_printf(str, "%s ", realban);
 			g_free(realban);
 		}
 	}
@@ -143,7 +143,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 			rec = tmp->data;
 
 			if (match_wildcards(*ban, rec->ban)) {
-				g_string_sprintfa(str, "%s ", rec->ban);
+				g_string_append_printf(str, "%s ", rec->ban);
                                 found = TRUE;
 			}
 		}
@@ -161,7 +161,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 							atoi(*ban)-1);
 			}
 			if (rec != NULL)
-				g_string_sprintfa(str, "%s ", rec->ban);
+				g_string_append_printf(str, "%s ", rec->ban);
 			else if (!channel->synced)
 				g_warning("channel %s is not synced", channel->name);
 		}

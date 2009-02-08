@@ -200,7 +200,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 				if (*channel != ' ')
 					g_string_append_c(temp->nicks,
 							  *channel);
-				g_string_sprintfa(temp->nicks, "%s, ",
+				g_string_append_printf(temp->nicks, "%s, ",
 						  rec->nick);
 			}
 

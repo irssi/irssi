@@ -214,7 +214,7 @@ char **config_node_get_list(CONFIG_NODE *node)
 		node = tmp->data;
 
 		if (node->type == NODE_TYPE_VALUE)
-			g_string_sprintfa(values, "%s ", (char *) node->value);
+			g_string_append_printf(values, "%s ", (char *) node->value);
 	}
 
 	/* split the values to **str array */

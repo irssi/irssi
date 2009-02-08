@@ -64,9 +64,9 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	if (rec->fullword) g_string_append(options, "-full ");
 	if (rec->replies) g_string_append(options, "-replies ");
 	if (rec->servertag != NULL) 
-		g_string_sprintfa(options, "-network %s ", rec->servertag);
+		g_string_append_printf(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
-		g_string_sprintfa(options, "-pattern %s ", rec->pattern);
+		g_string_append_printf(options, "-pattern %s ", rec->pattern);
 
 	if (options->len > 1) g_string_truncate(options, options->len-1);
 

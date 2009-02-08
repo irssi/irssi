@@ -515,7 +515,7 @@ void settings_check_module(const char *module)
 			continue;
 
 		if (set == NULL || strcmp(set->module, module) != 0) {
-			g_string_sprintfa(errors, " %s", node->key);
+			g_string_append_printf(errors, " %s", node->key);
                         count++;
 		}
 	}

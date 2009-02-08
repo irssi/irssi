@@ -319,7 +319,7 @@ static void event_list_subcommands(const char *command)
 		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
 		    rec->cmd[len] == ' ' &&
 		    strchr(rec->cmd+len+1, ' ') == NULL) {
-                        g_string_sprintfa(str, "%s ", rec->cmd+len+1);
+                        g_string_append_printf(str, "%s ", rec->cmd+len+1);
 		}
 	}
 
