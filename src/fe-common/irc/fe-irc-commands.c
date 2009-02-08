@@ -187,10 +187,10 @@ static void bans_ask_channel(const char *channel, IRC_SERVER_REC *server,
 	GString *str;
 
 	str = g_string_new(NULL);
-	g_string_sprintf(str, "%s b", channel);
+	g_string_printf(str, "%s b", channel);
 	signal_emit("command mode", 3, str->str, server, item);
 	if (server->emode_known) {
-		g_string_sprintf(str, "%s e", channel);
+		g_string_printf(str, "%s e", channel);
 		signal_emit("command mode", 3, str->str, server, item);
 	}
 	g_string_free(str, TRUE);

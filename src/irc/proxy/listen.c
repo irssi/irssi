@@ -370,7 +370,7 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 	g_return_if_fail(line != NULL);
 
 	/* send server event to all clients */
-	g_string_sprintf(next_line, "%s\n", line);
+	g_string_printf(next_line, "%s\n", line);
 }
 
 static void sig_server_event(IRC_SERVER_REC *server, const char *line,

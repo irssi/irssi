@@ -202,7 +202,7 @@ static char *script_data_get_name(void)
 	name = g_string_new(NULL);
         n = 1;
 	do {
-		g_string_sprintf(name, "data%d", n);
+		g_string_printf(name, "data%d", n);
                 n++;
 	} while (perl_script_find(name->str) != NULL);
 

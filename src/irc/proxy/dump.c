@@ -144,7 +144,7 @@ void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...)
 static void create_names_start(GString *str, IRC_CHANNEL_REC *channel,
 			       CLIENT_REC *client)
 {
-	g_string_sprintf(str, ":%s 353 %s %c %s :",
+	g_string_printf(str, ":%s 353 %s %c %s :",
 			 client->proxy_address, client->nick,
 			 channel_mode_is_set(channel, 'p') ? '*' :
 			 channel_mode_is_set(channel, 's') ? '@' : '=',
@@ -270,7 +270,7 @@ void proxy_dump_data(CLIENT_REC *client)
 			g_string_append_printf(paramstr, " :are supported by this server\n");
 			proxy_outdata(client, "%s", paramstr->str);
 			g_string_truncate(paramstr, 0);
-			g_string_sprintf(paramstr, ":%s 005 %s ", client->proxy_address, client->nick);
+			g_string_printf(paramstr, ":%s 005 %s ", client->proxy_address, client->nick);
 
 			if (*tmp == NULL || tmp[1] == NULL)
 				break;

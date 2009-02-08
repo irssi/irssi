@@ -206,7 +206,7 @@ static void ctcp_clientinfo(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(nick != NULL);
 
 	str = g_string_new(NULL);
-        g_string_sprintf(str, "NOTICE %s :\001CLIENTINFO", nick);
+        g_string_printf(str, "NOTICE %s :\001CLIENTINFO", nick);
 	for (tmp = ctcp_cmds; tmp != NULL; tmp = tmp->next) {
 		CTCP_CMD_REC *rec = tmp->data;
 

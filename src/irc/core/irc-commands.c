@@ -78,7 +78,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	recoded = recode_out(SERVER(server), msg, target);
-	g_string_sprintf(tmpstr, "NOTICE %s :%s", target, recoded);
+	g_string_printf(tmpstr, "NOTICE %s :%s", target, recoded);
 	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
@@ -106,12 +106,12 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 
 	g_strup(ctcpcmd);
 	if (*ctcpdata == '\0')
-		g_string_sprintf(tmpstr, "PRIVMSG %s :\001%s\001", target, ctcpcmd);
+		g_string_printf(tmpstr, "PRIVMSG %s :\001%s\001", target, ctcpcmd);
 	else {
 		char *recoded;
 
 		recoded = recode_out(SERVER(server), ctcpdata, target);
-		g_string_sprintf(tmpstr, "PRIVMSG %s :\001%s %s\001", target, ctcpcmd, recoded);
+		g_string_printf(tmpstr, "PRIVMSG %s :\001%s %s\001", target, ctcpcmd, recoded);
 		g_free(recoded);
 	}
 
@@ -140,7 +140,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 
 	g_strup(ctcpcmd);
 	recoded = recode_out(SERVER(server), ctcpdata, target);
-	g_string_sprintf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, recoded);
+	g_string_printf(tmpstr, "NOTICE %s :\001%s %s\001", target, ctcpcmd, recoded);
 	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_msgs_in_cmd);
@@ -194,7 +194,7 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	if (!ischannel(*channame)) cmd_param_error(CMDERR_NOT_JOINED);
 
 	recoded = recode_out(SERVER(server), reason, channame);
-	g_string_sprintf(tmpstr, "KICK %s %s :%s", channame, nicks, recoded);
+	g_string_printf(tmpstr, "KICK %s %s :%s", channame, nicks, recoded);
 	g_free(recoded);
 
 	irc_send_cmd_split(server, tmpstr->str, 3, server->max_kicks_in_cmd);
@@ -415,9 +415,9 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 
 	event_402 = "event 402";
 	if (*qserver == '\0')
-		g_string_sprintf(tmpstr, "WHOIS %s", query);
+		g_string_printf(tmpstr, "WHOIS %s", query);
 	else {
-		g_string_sprintf(tmpstr, "WHOIS %s %s", qserver, query);
+		g_string_printf(tmpstr, "WHOIS %s %s", qserver, query);
 		if (g_strcasecmp(qserver, query) == 0)
 			event_402 = "whois event not found";
 	}

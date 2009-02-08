@@ -576,7 +576,7 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 	newnick = g_string_new(NULL);
         n = 2;
 	do {
-		g_string_sprintf(newnick, "%s%d", nickhost, n);
+		g_string_printf(newnick, "%s%d", nickhost, n);
                 n++;
 	} while (printnick_exists(firstnick, nick, newnick->str));
 

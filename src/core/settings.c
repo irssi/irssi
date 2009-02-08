@@ -500,7 +500,7 @@ void settings_check_module(const char *module)
 	if (node == NULL) return;
 
         errors = g_string_new(NULL);
-	g_string_sprintf(errors, "Unknown settings in configuration "
+	g_string_printf(errors, "Unknown settings in configuration "
 			 "file for module %s:", module);
 
         count = 0;

@@ -73,7 +73,7 @@ static char *dcc_get_rename_file(const char *fname)
 	newname = g_string_new(NULL);
 	num = 1;
 	do {
-		g_string_sprintf(newname, "%s.%d", fname, num);
+		g_string_printf(newname, "%s.%d", fname, num);
 		num++;
 	} while (stat(newname->str, &statbuf) == 0);
 

@@ -569,7 +569,7 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 
 		if (num == 0)
 		{
-			g_string_sprintf(str, "MODE %s %s",
+			g_string_printf(str, "MODE %s %s",
 					 channel->name, mode);
 			modepos = str->len;
 		} else {

@@ -128,7 +128,7 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 	num = 2;
 	while (server_find_tag(str->str) != NULL ||
 	       server_find_lookup_tag(str->str) != NULL) {
-		g_string_sprintf(str, "%s%d", tag, num);
+		g_string_printf(str, "%s%d", tag, num);
 		num++;
 	}
 	g_free(tag);
