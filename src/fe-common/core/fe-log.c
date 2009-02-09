@@ -36,6 +36,7 @@
 #include "formats.h"
 #include "themes.h"
 #include "printtext.h"
+#include "fe-common-core.h"
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
@@ -49,6 +50,8 @@ static int skip_next_printtext;
 static const char *log_theme_name;
 
 static int log_dir_create_mode;
+
+static char **autolog_ignore_targets;
 
 static char *log_colorizer_strip(const char *str)
 {
@@ -501,6 +504,10 @@ static void log_line(TEXT_DEST_REC *dest, const char *text)
 	if (dest->level == MSGLEVEL_NEVER)
 		return;
 
+	if (autolog_ignore_targets != NULL && dest->target != NULL)
+		if (strarray_find_dest(autolog_ignore_targets, dest))
+			return;
+
 	/* let autolog open the log records */
 	autolog_open_check(dest->server, dest->server_tag,
 			   dest->target, dest->level);
@@ -690,6 +697,11 @@ static void read_settings(void)
         if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
         if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
         if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
+
+	if (autolog_ignore_targets != NULL)
+		g_strfreev(autolog_ignore_targets);
+
+	autolog_ignore_targets = g_strsplit(settings_get_str("autolog_ignore_targets"), " ", -1);
 }
 
 void fe_log_init(void)
@@ -703,6 +715,7 @@ void fe_log_init(void)
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_level("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_str("log", "log_theme", "");
+	settings_add_str("log", "autolog_ignore_targets", "");
 
 	autolog_level = 0;
 	log_theme_name = NULL;
@@ -756,4 +769,7 @@ void fe_log_deinit(void)
 	signal_remove("awaylog show", (SIGNAL_FUNC) sig_awaylog_show);
 	signal_remove("theme destroyed", (SIGNAL_FUNC) sig_theme_destroyed);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+
+	if (autolog_ignore_targets != NULL)
+		g_strfreev(autolog_ignore_targets);
 }
