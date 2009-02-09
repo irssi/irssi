@@ -460,7 +460,6 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 			       const char *target, int level)
 {
-	char **targets, **tmp;
 	const char *deftarget;
 
 	/* FIXME: kind of a kludge, but we don't want to reopen logs when
@@ -473,19 +472,14 @@ static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 
 	deftarget = server ? server->nick : "unknown";
 
-	/* there can be multiple targets separated with comma */
-	targets = g_strsplit(target, ",", -1);
-	for (tmp = targets; *tmp != NULL; tmp++)
-		autolog_open(server, server_tag,
-				strcmp(*tmp, "*") ? *tmp : deftarget);
-	g_strfreev(targets);
+	if (target != NULL)
+		autolog_open(server, server_tag, strcmp(target, "*") ? target : deftarget);
 }
 
 static void log_single_line(WINDOW_REC *window, const char *server_tag,
 			    const char *target, int level, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
-	char **targets, **tmp;
 	LOG_REC *log;
 
 	if (window != NULL) {
@@ -497,15 +491,7 @@ static void log_single_line(WINDOW_REC *window, const char *server_tag,
 			log_write_rec(log, text, level);
 	}
 
-	if (target == NULL)
-		log_file_write(server_tag, NULL, level, text, FALSE);
-	else {
-		/* there can be multiple items separated with comma */
-		targets = g_strsplit(target, ",", -1);
-		for (tmp = targets; *tmp != NULL; tmp++)
-			log_file_write(server_tag, *tmp, level, text, FALSE);
-		g_strfreev(targets);
-	}
+	log_file_write(server_tag, target, level, text, FALSE);
 }
 
 static void log_line(TEXT_DEST_REC *dest, const char *text)
