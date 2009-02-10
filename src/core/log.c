@@ -113,7 +113,7 @@ int log_start_logging(LOG_REC *log)
 	    strcmp(log->real_fname, log->fname) != 0) {
 		/* path may contain variables (%time, $vars),
 		   make sure the directory is created */
-		dir = g_dirname(log->real_fname);
+		dir = g_path_get_dirname(log->real_fname);
 		mkpath(dir, log_dir_create_mode);
 		g_free(dir);
 	}

@@ -301,7 +301,7 @@ GList *filename_complete(const char *path, const char *default_path)
 	}
 
 	/* open directory for reading */
-	dir = g_dirname(realpath);
+	dir = g_path_get_dirname(realpath);
 	dirp = opendir(dir);
 	g_free(dir);
         g_free(realpath);
@@ -309,7 +309,7 @@ GList *filename_complete(const char *path, const char *default_path)
 	if (dirp == NULL)
 		return NULL;
 
-	dir = g_dirname(path);
+	dir = g_path_get_dirname(path);
 	if (*dir == G_DIR_SEPARATOR && dir[1] == '\0') {
                 /* completing file in root directory */
 		*dir = '\0';
