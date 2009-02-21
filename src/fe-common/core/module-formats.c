@@ -215,6 +215,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "chan_not_synced", "Channel not fully synchronized yet, try again after a while", 0 },
 	{ "illegal_proto", "Command isn't designed for the chat protocol of the active server", 0 },
 	{ "not_good_idea", "Doing this is not a good idea. Add -YES option to command if you really mean it", 0 },
+	{ "invalid_number", "Invalid number", 0 },
 	{ "invalid_time", "Invalid timestamp", 0 },
 	{ "invalid_level", "Invalid message level", 0 },
 	{ "invalid_size", "Invalid size", 0 },

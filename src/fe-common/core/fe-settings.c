@@ -76,6 +76,23 @@ static void set_boolean(const char *key, const char *value)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_NOT_TOGGLE);
 }
 
+static void set_int(const char *key, const char *value)
+{
+	char *endp;
+	long longval;
+	int error;
+
+	errno = 0;
+	longval = strtol(value, &endp, 10);
+	error = errno;
+	while (isspace((unsigned char)*endp))
+		endp++;
+	if (error != 0 || *endp != '\0' || longval < INT_MIN || longval > INT_MAX)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_NUMBER);
+	else
+		settings_set_int(key, (int)longval);
+}
+
 /* SYNTAX: SET [-clear | -default] [<key> [<value>]] */
 static void cmd_set(char *data)
 {
@@ -111,9 +128,12 @@ static void cmd_set(char *data)
 					set_boolean(key, value);
 				break;
 			case SETTING_TYPE_INT:
-				settings_set_int(key, clear ? 0 :
-						 set_default ? rec->default_value.v_int :
-						 atoi(value));
+				if (clear)
+					settings_set_int(key, 0);
+				else if (set_default)
+					settings_set_int(key, rec->default_value.v_int);
+				else
+					set_int(key, value);
 				break;
 			case SETTING_TYPE_STRING:
 				settings_set_str(key, clear ? "" :
