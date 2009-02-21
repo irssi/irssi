@@ -576,7 +576,7 @@ static void cmd_hilight(const char *data)
 	}
 
 	rec->level = (levelarg == NULL || *levelarg == '\0') ? 0 :
-		level2bits(replace_chars(levelarg, ',', ' '));
+		level2bits(replace_chars(levelarg, ',', ' '), NULL);
 	rec->priority = priorityarg == NULL ? 0 : atoi(priorityarg);
 
 	if (g_hash_table_lookup(optlist, "line") != NULL) {

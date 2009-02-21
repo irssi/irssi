@@ -81,7 +81,7 @@ static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 
         levelstr = g_hash_table_lookup(optlist, "level");
 	level = levelstr == NULL ? 0 :
-		level2bits(g_hash_table_lookup(optlist, "level"));
+		level2bits(g_hash_table_lookup(optlist, "level"), NULL);
 	if (level == 0) level = MSGLEVEL_CRAP;
 
 	winname = g_hash_table_lookup(optlist, "window");

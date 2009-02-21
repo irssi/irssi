@@ -540,7 +540,7 @@ static void log_read_config(void)
 		log->handle = -1;
 		log->fname = g_strdup(node->key);
 		log->autoopen = config_node_get_bool(node, "auto_open", FALSE);
-		log->level = level2bits(config_node_get_str(node, "level", 0));
+		log->level = level2bits(config_node_get_str(node, "level", 0), NULL);
 
 		signal_emit("log config read", 2, log, node);
 

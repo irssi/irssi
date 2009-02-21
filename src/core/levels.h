@@ -40,7 +40,7 @@ enum {
 };
 
 int level_get(const char *level);
-int level2bits(const char *level);
+int level2bits(const char *level, int *errorp);
 char *bits2level(int bits);
 int combine_level(int dest, const char *src);
 

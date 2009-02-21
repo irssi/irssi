@@ -134,7 +134,7 @@ int settings_get_level(const char *key)
 	const char *str;
 
 	str = settings_get_str_type(key, SETTING_TYPE_LEVEL);
-	return str == NULL ? 0 : level2bits(str);
+	return str == NULL ? 0 : level2bits(str, NULL);
 }
 
 int settings_get_size(const char *key)
@@ -355,6 +355,12 @@ int settings_set_time(const char *key, const char *value)
 
 int settings_set_level(const char *key, const char *value)
 {
+	int iserror;
+
+	(void)level2bits(value, &iserror);
+	if (iserror)
+		return FALSE;
+
         iconfig_node_set_str(settings_get_node(key), key, value);
 	return TRUE;
 }

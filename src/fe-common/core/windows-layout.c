@@ -134,7 +134,7 @@ static void sig_layout_restore(void)
                 window->immortal = config_node_get_bool(node, "immortal", FALSE);
 		window_set_name(window, config_node_get_str(node, "name", NULL));
 		window_set_history(window, config_node_get_str(node, "history_name", NULL));
-		window_set_level(window, level2bits(config_node_get_str(node, "level", "")));
+		window_set_level(window, level2bits(config_node_get_str(node, "level", ""), NULL));
 
 		window->servertag = g_strdup(config_node_get_str(node, "servertag", NULL));
 		window->theme_name = g_strdup(config_node_get_str(node, "theme", NULL));

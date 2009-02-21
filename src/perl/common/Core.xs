@@ -492,6 +492,10 @@ OUTPUT:
 int
 level2bits(str)
 	char *str
+CODE:
+	RETVAL = level2bits(str, NULL);
+OUTPUT:
+	RETVAL
 
 void
 bits2level(bits)

@@ -146,7 +146,7 @@ static void cmd_scrollback_levelclear(const char *data)
 
 	levelarg = g_hash_table_lookup(optlist, "level");
 	level = (levelarg == NULL || *levelarg == '\0') ? 0 :
-		level2bits(replace_chars(levelarg, ',', ' '));
+		level2bits(replace_chars(levelarg, ',', ' '), NULL);
 	if (level == 0) {
 		cmd_params_free(free_arg);
 		return;

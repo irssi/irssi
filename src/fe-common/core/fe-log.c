@@ -92,7 +92,7 @@ static void cmd_log_open(const char *data)
 		return;
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	level = level2bits(levels);
+	level = level2bits(levels, NULL);
 	log = log_create_rec(fname, level != 0 ? level : MSGLEVEL_ALL);
 
 	/* -<server tag> */

@@ -81,10 +81,13 @@ int level_get(const char *level)
 	return match;
 }
 
-int level2bits(const char *level)
+int level2bits(const char *level, int *errorp)
 {
 	char *orig, *str, *ptr;
 	int ret, singlelevel, negative;
+
+	if (errorp != NULL)
+		*errorp = FALSE;
 
 	g_return_val_if_fail(level != NULL, 0);
 
@@ -107,7 +110,8 @@ int level2bits(const char *level)
 		if (singlelevel != 0) {
 			ret = !negative ? (ret | singlelevel) :
 				(ret & ~singlelevel);
-		}
+		} else if (errorp != NULL)
+			*errorp = TRUE;
 
        		while (*str == ' ') str++;
 		if (*str == '\0') break;

@@ -513,7 +513,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	rec->name = g_strdup(g_hash_table_lookup(optlist, "name"));
 
 	level = g_hash_table_lookup(optlist, "level");
-	rec->level = level == NULL ? MSGLEVEL_CLIENTCRAP : level2bits(level);
+	rec->level = level == NULL ? MSGLEVEL_CLIENTCRAP : level2bits(level, NULL);
 
 	rec->read_tag = g_input_add(rec->in, G_INPUT_READ,
 				    (GInputFunction) sig_exec_input_reader,
