@@ -85,7 +85,7 @@ static void set_int(const char *key, const char *value)
 	errno = 0;
 	longval = strtol(value, &endp, 10);
 	error = errno;
-	while (isspace((unsigned char)*endp))
+	while (i_isspace(*endp))
 		endp++;
 	if (error != 0 || *endp != '\0' || longval < INT_MIN || longval > INT_MAX)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_NUMBER);
