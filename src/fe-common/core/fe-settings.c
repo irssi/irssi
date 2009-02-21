@@ -73,7 +73,7 @@ static void set_boolean(const char *key, const char *value)
 	else if (g_ascii_strcasecmp(value, "TOGGLE") == 0)
 		settings_set_bool(key, !settings_get_bool(key));
 	else
-		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_NOT_TOGGLE);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
 }
 
 static void set_int(const char *key, const char *value)
