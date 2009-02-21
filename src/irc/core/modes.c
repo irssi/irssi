@@ -59,7 +59,7 @@ static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,
 		    channel, nickrec, setby, modestr, typestr);
 }
 
-void prefix_add(char *prefixes, char newprefix, SERVER_REC *server)
+void prefix_add(char prefixes[MAX_USER_PREFIXES+1], char newprefix, SERVER_REC *server)
 {
 	const char *prefixlst;
 	char newprefixes[MAX_USER_PREFIXES+1]; /* to hold the new prefixes */
@@ -101,7 +101,7 @@ void prefix_add(char *prefixes, char newprefix, SERVER_REC *server)
 	strcpy(prefixes, newprefixes);
 }
 
-void prefix_del(char *prefixes, char oldprefix)
+void prefix_del(char prefixes[MAX_USER_PREFIXES+1], char oldprefix)
 {
 	char *todel;
 

@@ -2,6 +2,7 @@
 #define __MODES_H
 
 #include "irc-channels.h"
+#include "nicklist.h" /* MAX_USER_PREFIXES */
 
 typedef void mode_func_t(IRC_CHANNEL_REC *, const char *, char, char,
 			 char *, GString *);
@@ -54,8 +55,8 @@ void channel_set_singlemode(IRC_CHANNEL_REC *channel, const char *nicks,
 void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 		      const char *mode);
 
-void prefix_add(char *prefixes, char newprefix, SERVER_REC *server);
-void prefix_del(char *prefixes, char oldprefix);
+void prefix_add(char prefixes[MAX_USER_PREFIXES+1], char newprefix, SERVER_REC *server);
+void prefix_del(char prefixes[MAX_USER_PREFIXES+1], char oldprefix);
 
 mode_func_t modes_type_a;
 mode_func_t modes_type_b;
