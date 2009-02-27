@@ -314,37 +314,6 @@ static void cmd_quit(const char *data)
 	signal_emit("gui exit", 0);
 }
 
-/* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] */
-static void cmd_join(const char *data, SERVER_REC *server)
-{
-	GHashTable *optlist;
-	char *channels;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "join", &optlist, &channels))
-		return;
-
-	/* -<server tag> */
-	server = cmd_options_get_server("join", optlist, server);
-	if (server == NULL || !server->connected)
-                cmd_param_error(CMDERR_NOT_CONNECTED);
-
-	if (g_hash_table_lookup(optlist, "invite"))
-		channels = server->last_invite;
-	else {
-		if (*channels == '\0')
-			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	}
-
-	if (channels != NULL)
-		server->channels_join(server, channels, FALSE);
-	cmd_params_free(free_arg);
-}
-
 /* SYNTAX: MSG [-<server tag>] [-channel | -nick] <targets> <message> */
 static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
@@ -475,7 +444,6 @@ void chat_commands_init(void)
 	command_bind("connect", NULL, (SIGNAL_FUNC) cmd_connect);
 	command_bind("disconnect", NULL, (SIGNAL_FUNC) cmd_disconnect);
 	command_bind("quit", NULL, (SIGNAL_FUNC) cmd_quit);
-	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("msg", NULL, (SIGNAL_FUNC) cmd_msg);
 	command_bind("foreach", NULL, (SIGNAL_FUNC) cmd_foreach);
 	command_bind("foreach server", NULL, (SIGNAL_FUNC) cmd_foreach_server);
@@ -486,7 +454,6 @@ void chat_commands_init(void)
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
 	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey ssl_verify +ssl_cafile +ssl_capath +host noproxy -rawlog");
-	command_set_options("join", "invite");
 	command_set_options("msg", "channel nick");
 }
 
@@ -497,7 +464,6 @@ void chat_commands_deinit(void)
 	command_unbind("connect", (SIGNAL_FUNC) cmd_connect);
 	command_unbind("disconnect", (SIGNAL_FUNC) cmd_disconnect);
 	command_unbind("quit", (SIGNAL_FUNC) cmd_quit);
-	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("msg", (SIGNAL_FUNC) cmd_msg);
 	command_unbind("foreach", (SIGNAL_FUNC) cmd_foreach);
 	command_unbind("foreach server", (SIGNAL_FUNC) cmd_foreach_server);

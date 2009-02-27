@@ -169,30 +169,6 @@ static void cmd_nick(const char *data, SERVER_REC *server)
 	signal_stop();
 }
 
-static void cmd_join(const char *data, SERVER_REC *server)
-{
-	GHashTable *optlist;
-	char *channels;
-	void *free_arg;
-
-	g_return_if_fail(data != NULL);
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "join", &optlist, &channels))
-		return;
-
-	server = cmd_options_get_server("join", optlist, server);
-	if (g_hash_table_lookup(optlist, "invite") &&
-	    server != NULL && server->last_invite == NULL) {
-                /* ..all this trouble just to print this error message */
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_INVITED);
-		signal_stop();
-	}
-
-	cmd_params_free(free_arg);
-}
-
 /* SYNTAX: UPTIME */
 static void cmd_uptime(char *data)
 {
@@ -344,7 +320,6 @@ void fe_core_commands_init(void)
 	command_bind("beep", NULL, (SIGNAL_FUNC) cmd_beep);
 	command_bind("uptime", NULL, (SIGNAL_FUNC) cmd_uptime);
 	command_bind_first("nick", NULL, (SIGNAL_FUNC) cmd_nick);
-	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_join);
 
 	signal_add("send command", (SIGNAL_FUNC) event_command);
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
@@ -363,7 +338,6 @@ void fe_core_commands_deinit(void)
 	command_unbind("beep", (SIGNAL_FUNC) cmd_beep);
 	command_unbind("uptime", (SIGNAL_FUNC) cmd_uptime);
 	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
-	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 
 	signal_remove("send command", (SIGNAL_FUNC) event_command);
 	signal_remove("send command", (SIGNAL_FUNC) event_command_last);

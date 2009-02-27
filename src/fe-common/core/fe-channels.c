@@ -110,47 +110,31 @@ static void sig_channel_joined(CHANNEL_REC *channel)
 		fe_channels_nicklist(channel, CHANNEL_NICKLIST_FLAG_ALL);
 }
 
-static void cmd_wjoin_pre(const char *data, SERVER_REC *server)
-{
-	GHashTable *optlist;
-	char *nick;
-	void *free_arg;
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "join", &optlist, &nick))
-                return;
-
-	/* kludge for /join -invite -window if there is no invite */
-	if (g_hash_table_lookup(optlist, "invite") &&
-            server != NULL && server->last_invite == NULL) {
-            	cmd_params_free(free_arg);
-           	return;
-        }                    
-	if (g_hash_table_lookup(optlist, "window") != NULL) {
-		signal_add("channel created",
-			   (SIGNAL_FUNC) signal_channel_created_curwin);
-        }
-	cmd_params_free(free_arg);
-}
-
+/* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] */
 static void cmd_join(const char *data, SERVER_REC *server)
 {
 	WINDOW_REC *window;
         CHANNEL_REC *channel;
 	GHashTable *optlist;
-	char *channelname;
+	char *pdata;
+	int invite;
+	int samewindow;
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS,
-			    "join", &optlist, &channelname))
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    "join", &optlist, &pdata))
 		return;
+
+	invite = g_hash_table_lookup(optlist, "invite") != NULL;
+	samewindow = g_hash_table_lookup(optlist, "window") != NULL;
+	if (!invite && *pdata == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	/* -<server tag> */
 	server = cmd_options_get_server("join", optlist, server);
-	
-	channel = channel_find(server, channelname);
+
+	channel = channel_find(server, pdata);
 	if (channel != NULL) {
 		/* already joined to channel, set it active */
 		window = window_item_window(channel);
@@ -159,23 +143,25 @@ static void cmd_join(const char *data, SERVER_REC *server)
 
 		window_item_set_active(active_win, (WI_ITEM_REC *) channel);
 	}
-	cmd_params_free(free_arg);
-}
-
-static void cmd_wjoin_post(const char *data)
-{
-	GHashTable *optlist;
-	char *nick;
-	void *free_arg;
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    "join", &optlist, &nick))
-		return;
-
-	if (g_hash_table_lookup(optlist, "window") != NULL) {
-		signal_remove("channel created",
-			   (SIGNAL_FUNC) signal_channel_created_curwin);
+	else {
+		if (server == NULL || !server->connected)
+			cmd_param_error(CMDERR_NOT_CONNECTED);
+		if (invite) {
+			if (server->last_invite == NULL) {
+				printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_NOT_INVITED);
+				signal_stop();
+				cmd_params_free(free_arg);
+				return;
+			}
+			pdata = server->last_invite;
+		}
+		if (samewindow)
+			signal_add("channel created",
+				   (SIGNAL_FUNC) signal_channel_created_curwin);
+		server->channels_join(server, pdata, FALSE);
+		if (samewindow)
+			signal_remove("channel created",
+				      (SIGNAL_FUNC) signal_channel_created_curwin);
 	}
 	cmd_params_free(free_arg);
 }
@@ -632,9 +618,7 @@ void fe_channels_init(void)
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 
-	command_bind_first("join", NULL, (SIGNAL_FUNC) cmd_wjoin_pre);
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
-	command_bind_last("join", NULL, (SIGNAL_FUNC) cmd_wjoin_post);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
@@ -644,7 +628,7 @@ void fe_channels_init(void)
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
 	command_set_options("names", "count ops halfops voices normal");
-	command_set_options("join", "window");
+	command_set_options("join", "invite window");
 }
 
 void fe_channels_deinit(void)
@@ -655,9 +639,7 @@ void fe_channels_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 
-	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_pre);
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
-	command_unbind("join", (SIGNAL_FUNC) cmd_wjoin_post);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
