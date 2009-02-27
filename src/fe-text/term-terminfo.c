@@ -50,7 +50,8 @@ static int curs_x, curs_y;
 
 static int last_fg, last_bg, last_attrs;
 
-static int redraw_needed, redraw_tag;
+static GSource *sigcont_source;
+static volatile sig_atomic_t got_sigcont;
 static int freeze_counter;
 
 static TERM_INPUT_FUNC input_func;
@@ -60,19 +61,42 @@ static int term_inbuf_pos;
 /* SIGCONT handler */
 static void sig_cont(int p)
 {
-        redraw_needed = TRUE;
-	terminfo_cont(current_term);
+        got_sigcont = TRUE;
 }
 
-static int redraw_timeout(void)
+/* SIGCONT GSource */
+static gboolean sigcont_prepare(GSource *source, gint *timeout)
 {
-	if (redraw_needed) {
-		irssi_redraw();
-                redraw_needed = FALSE;
-	}
+	*timeout = -1;
+	return got_sigcont;
+}
+
+static gboolean sigcont_check(GSource *source)
+{
+	return got_sigcont;
+}
+
+static gboolean sigcont_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+{
+	got_sigcont = FALSE;
+	if (callback == NULL)
+		return TRUE;
+	return callback(user_data);
+}
+
+static gboolean do_redraw(gpointer unused)
+{
+	terminfo_cont(current_term);
+	irssi_redraw();
 
         return 1;
 }
+
+static GSourceFuncs sigcont_funcs = {
+	.prepare = sigcont_prepare,
+	.check = sigcont_check,
+	.dispatch = sigcont_dispatch
+};
 
 int term_init(void)
 {
@@ -99,7 +123,9 @@ int term_init(void)
 	act.sa_flags = 0;
 	act.sa_handler = sig_cont;
 	sigaction(SIGCONT, &act, NULL);
-        redraw_tag = g_timeout_add(500, (GSourceFunc) redraw_timeout, NULL);
+	sigcont_source = g_source_new(&sigcont_funcs, sizeof(GSource));
+	g_source_set_callback(sigcont_source, do_redraw, NULL, NULL);
+	g_source_attach(sigcont_source, NULL);
 
 	curs_x = curs_y = 0;
 	term_width = current_term->width;
@@ -118,7 +144,8 @@ void term_deinit(void)
 {
 	if (current_term != NULL) {
 		signal(SIGCONT, SIG_DFL);
-		g_source_remove(redraw_tag);
+		g_source_destroy(sigcont_source);
+		g_source_unref(sigcont_source);
 
 		term_common_deinit();
 		terminfo_core_deinit(current_term);
