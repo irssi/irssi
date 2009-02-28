@@ -71,7 +71,7 @@ void expando_create(const char *key, EXPANDO_FUNC func, ...)
         const char *signal;
 	va_list va;
 
-	g_return_if_fail(key != NULL || *key == '\0');
+	g_return_if_fail(key != NULL && *key != '\0');
 	g_return_if_fail(func != NULL);
 
 	if (key[1] != '\0')
@@ -136,7 +136,7 @@ void expando_destroy(const char *key, EXPANDO_FUNC func)
 	gpointer origkey, value;
         EXPANDO_REC *rec;
 
-	g_return_if_fail(key != NULL || *key == '\0');
+	g_return_if_fail(key != NULL && *key != '\0');
 	g_return_if_fail(func != NULL);
 
 	if (key[1] == '\0') {
