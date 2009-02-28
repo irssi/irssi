@@ -245,7 +245,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 {
 	GIOSSLChannel *chan;
 	GIOChannel *gchan;
-	int err, fd;
+	int fd;
 	SSL *ssl;
 	SSL_CTX *ctx = NULL;
 
@@ -308,7 +308,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 		return NULL;
 	}
 
-	if(!(err = SSL_set_fd(ssl, fd)))
+	if(!SSL_set_fd(ssl, fd))
 	{
 		g_warning("Failed to associate socket to SSL stream");
 		SSL_free(ssl);
