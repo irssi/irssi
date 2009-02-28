@@ -97,9 +97,6 @@ void window_item_remove(WI_ITEM_REC *item)
 
 void window_item_destroy(WI_ITEM_REC *item)
 {
-	WINDOW_REC *window;
-
-	window = window_item_window(item);
         window_item_remove(item);
         item->destroy(item);
 }
