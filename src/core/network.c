@@ -127,11 +127,9 @@ static int sin_get_port(union sockaddr_union *so)
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
 	IPADDR ip4, ip6, *ip;
-        int family;
 
 	g_return_val_if_fail(addr != NULL, NULL);
 
-        family = my_ip == NULL ? 0 : my_ip->family;
 	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
 		return NULL;
 
