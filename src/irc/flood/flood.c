@@ -186,7 +186,8 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
 	MODULE_SERVER_REC *mserver;
 	FLOOD_REC *flood;
 	FLOOD_ITEM_REC *rec;
-	time_t *ttime;
+	time_t now, *ttime;
+	GSList *times, *tnext;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(nick != NULL);
@@ -196,8 +197,19 @@ static void flood_newmsg(IRC_SERVER_REC *server, int level, const char *nick,
 
 	rec = flood == NULL ? NULL : flood_find(flood, level, target);
 	if (rec != NULL) {
+		now = time(NULL);
+		for (times = rec->msgtimes; times != NULL; times = tnext) {
+			time_t *data = times->data;
+			tnext = times->next;
+
+			if (now - *data >= flood_timecheck) {
+				rec->msgtimes = g_slist_remove(rec->msgtimes, data);
+				g_free(data);
+			} else
+				break;
+		}
 		ttime = g_new(time_t, 1);
-		*ttime = time(NULL);
+		*ttime = now;
 		rec->msgtimes = g_slist_append(rec->msgtimes, ttime);
 		if (g_slist_length(rec->msgtimes) > flood_max_msgs) {
 			/* flooding! */
@@ -287,7 +299,7 @@ static void read_settings(void)
 
 	if (flood_timecheck > 0 && flood_max_msgs > 0) {
 		if (flood_tag == -1) {
-			flood_tag = g_timeout_add(500, (GSourceFunc) flood_timeout, NULL);
+			flood_tag = g_timeout_add(5000, (GSourceFunc) flood_timeout, NULL);
 
 			signal_add("event privmsg", (SIGNAL_FUNC) flood_privmsg);
 			signal_add("event notice", (SIGNAL_FUNC) flood_notice);
