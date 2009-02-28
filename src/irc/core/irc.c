@@ -56,6 +56,8 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		return;
 
 	len = strlen(cmd);
+	if (server->cmdcount == 0)
+		irc_servers_start_cmd_timeout();
 	server->cmdcount++;
 
 	if (!raw) {

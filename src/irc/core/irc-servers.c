@@ -398,7 +398,7 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 	}
 }
 
-static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
+static int server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 {
 	REDIRECT_REC *redirect;
         GSList *link;
@@ -407,20 +407,20 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	int len;
 
 	if (!IS_IRC_SERVER(server))
-		return;
+		return 0;
 
 	if (server->cmdcount == 0 && server->cmdqueue == NULL)
-		return;
+		return 0;
 
 	if (g_timeval_cmp(now, &server->wait_cmd) == -1)
-		return;
+		return 1;
 
 	usecs = get_timeval_diff(now, &server->last_cmd);
 	if (usecs < server->cmd_queue_speed)
-		return;
+		return 1;
 
 	server->cmdcount--;
-	if (server->cmdqueue == NULL) return;
+	if (server->cmdqueue == NULL) return 1;
 
         /* get command */
 	cmd = server->cmdqueue->data;
@@ -445,16 +445,33 @@ static void server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
         link = server->cmdqueue;
 	server->cmdqueue = g_slist_remove_link(server->cmdqueue, link);
         g_slist_free_1(link);
+	return 1;
 }
 
 /* check every now and then if there's data to be sent in command buffer */
 static int servers_cmd_timeout(void)
 {
 	GTimeVal now;
+	GSList *tmp;
+	int keep = 0;
 
 	g_get_current_time(&now);
-	g_slist_foreach(servers, (GFunc) server_cmd_timeout, &now);
-	return 1;
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		keep |= server_cmd_timeout(tmp->data, &now);
+	}
+	if (keep)
+		return 1;
+	else {
+		cmd_tag = -1;
+		return 0;
+	}
+}
+
+/* Start the timeout for sending data later and decreasing cmdcount again */
+void irc_servers_start_cmd_timeout(void)
+{
+	if (cmd_tag == -1)
+		cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
 }
 
 /* Return a string of all channels (and keys, if any have them) in server,
@@ -851,7 +868,7 @@ void irc_servers_init(void)
 	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 
-	cmd_tag = g_timeout_add(500, (GSourceFunc) servers_cmd_timeout, NULL);
+	cmd_tag = -1;
 
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
@@ -877,7 +894,8 @@ void irc_servers_init(void)
 
 void irc_servers_deinit(void)
 {
-	g_source_remove(cmd_tag);
+	if (cmd_tag != -1)
+		g_source_remove(cmd_tag);
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
