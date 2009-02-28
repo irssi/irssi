@@ -371,6 +371,7 @@ static void irc_parse_incoming(SERVER_REC *server)
 	   too slowly, so read only a few times from the socket before
 	   letting other tasks to run. */
 	count = 0;
+	ret = 0;
 	server_ref(server);
 	while (!server->disconnected &&
 	       (ret = net_sendbuffer_receive_line(server->handle, &str, count < MAX_SOCKET_READS)) > 0) {
