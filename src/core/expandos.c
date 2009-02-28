@@ -693,7 +693,7 @@ void expandos_init(void)
 
 	read_settings();
 
-        timer_tag = g_timeout_add(500, (GSourceFunc) sig_timer, NULL);
+        timer_tag = g_timeout_add(1000, (GSourceFunc) sig_timer, NULL);
 	signal_add("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add("message own_private", (SIGNAL_FUNC) sig_message_own_private);
