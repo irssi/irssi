@@ -221,7 +221,7 @@ NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server,
 /* check if quit message is a netsplit message */
 int quitmsg_is_split(const char *msg)
 {
-	const char *host1, *host2, *p;
+	const char *host2, *p;
         int prev, len, host1_dot, host2_dot;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
@@ -241,7 +241,7 @@ int quitmsg_is_split(const char *msg)
              - the two hosts can't be identical (probably useless check)
 	     - can't contain ':' or '/' chars (some servers allow URLs)
 	   */
-	host1 = msg; host2 = NULL;
+	host2 = NULL;
 	prev = '\0'; len = 0; host1_dot = host2_dot = 0;
 	while (*msg != '\0') {
 		if (*msg == ' ') {

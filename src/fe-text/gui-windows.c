@@ -68,7 +68,7 @@ static void sig_window_create_override(gpointer tab)
 static void gui_window_created(WINDOW_REC *window, void *automatic)
 {
 	MAIN_WINDOW_REC *parent;
-        int empty_window, new_parent;
+        int new_parent;
 
 	g_return_if_fail(window != NULL);
 
@@ -83,8 +83,6 @@ static void gui_window_created(WINDOW_REC *window, void *automatic)
 		parent = WINDOW_MAIN(active_win);
 	}
 	window_create_override = -1;
-
-        empty_window = parent->active == NULL;
 
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
