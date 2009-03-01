@@ -1,4 +1,6 @@
 v0.8.13
+	+ Add /set autolog_ignore_targets for cherry-picking targets that shouldn't
+	  get logged.
 	+ Add support for 16 colors. Formats KBGCRMYW and mirc colors are now
 	  mapped to colors 8-15. fe-text translates colors 8-15 to bold/blink+0-7
 	  if the terminal supports only 8 colors. If your theme uses one of
