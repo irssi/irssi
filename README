@@ -112,20 +112,4 @@ staff@irssi.org
 You can also contact the Irssi developers on #irssi @ EFnet, Freenode, IRCnet,
 Quakenet and Undernet.
 
-
- * AUTHOR
-
-Original code:
-
-  Timo Sirainen <cras@irssi.org>
-
-Irssi staff (current maintainers) <staff@irssi.org>:
-
-  Valentin Batz (senneth, vb)
-  Wouter Coekaerts (coekie)
-  Jochen Eisinger (c0ffee)
-  Geert Hauwaerts
-  Emanuele Giaquinta (exg)
-  Jilles Tjoelker
-
-Check the AUTHORS file for a complete list of developers.
+The IRCnet channel is for development related questions and discussions.
