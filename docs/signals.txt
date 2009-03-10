@@ -278,6 +278,7 @@ window-activity.c:
 window-items.c:
  "window item new", WINDOW_REC, WI_ITEM_REC
  "window item remove", WINDOW_REC, WI_ITEM_REC
+ "window item moved", WINDOW_REC, WI_ITEM_REC, WINDOW_REC
  "window item changed", WINDOW_REC, WI_ITEM_REC
  "window item server changed", WINDOW_REC, WI_ITEM_REC
 
