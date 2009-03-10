@@ -236,7 +236,7 @@ void proxy_dump_data(CLIENT_REC *client)
 	proxy_client_reset_nick(client);
 
 	/* welcome info */
-	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network\n", client->proxy_address, client->nick);
+	proxy_outdata(client, ":%s 001 %s :Welcome to the Internet Relay Network %s!%s@proxy\n", client->proxy_address, client->nick, client->nick, settings_get_str("user_name"));
 	proxy_outdata(client, ":%s 002 %s :Your host is irssi-proxy, running version %s\n", client->proxy_address, client->nick, PACKAGE_VERSION);
 	proxy_outdata(client, ":%s 003 %s :This server was created ...\n", client->proxy_address, client->nick);
 	if (client->server == NULL || !client->server->emode_known)
