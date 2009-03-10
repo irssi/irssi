@@ -1,4 +1,25 @@
-v0.8.13
+v0.8.13 2009-xx-xx  The Irssi team <staff@irssi.org>
+	+ Reject some obviously invalid values in /set.
+	+ Add perl bindings for Window::get_history_lines
+	+ Use an io channel to write the config file.
+	+ Use memory slices instead of memory chunks for text buffer.
+	+ Remove methods to create/destroy TextBuffer and TextBufferView and low level
+	  api to add/remove lines, scripts should be fine using Window::print_after and
+	  TextBufferView::remove_line.
+	+ Add print_after method to Window perl object analogous to
+	  gui_printtext_after but which also expands formats and forces a full line.
+	+ Better mapping of signal parameters to Perl. All signals used in scripts
+	  now need to be registered with Irssi::signal_register.
+	+ Add public header with interfaces to manage statusbar items (bug #535)
+	+ Recode: assume utf-8 encoding for an ascii string in which no escape
+	  character occurs (bug #392).
+	+ Allow /BAN, /UNBAN, /KICBAN, /KNOCKOUT if channel is not synced.
+	  Requesting ban lists from an unsynced channel will ask
+	  them from the server, banning a user whose u@h irssi
+	  does not know will ban nick!*@* and only bans irssi
+	  knows about can be removed.
+	+ Allow storing multiple "other" prefixes such as +q and +a (original patch
+	  by JasonX)
 	+ Add /set autolog_ignore_targets for cherry-picking targets that shouldn't
 	  get logged.
 	+ Add support for 16 colors. Formats KBGCRMYW and mirc colors are now
@@ -41,6 +62,23 @@ v0.8.13
 	+ introduce the type Irssi::Irc::Client and signals to communicate with
 	  proxy clients to allow for scripting parts of the irssi-proxy.
 	+ Add sb_search.pl, a script for /SCROLLBACK SEARCH
+	- Be more power-friendly: don't run any always-on <1s timers (bug #641).
+	- Don't get confused by a failed /JOIN -window (bug #644).
+	- Properly initialize embedded Perl (PERL_SYS_INIT3).
+	- Replace invalid utf-8 bytes with U+FFFD when drawing a line.
+	- Properly unload the original script when using /script load to reload it.
+	  (bug #525, patch by Lukas Mai)
+	- Clean up script loading in general:
+	   * Don't leak local variables to eval'd code.
+	   * Set filename/line number to get better error messages from perl.
+	   * Use three-arg open and lexical filehandles to avoid surprises.
+	   * Include error reason in message for unopenable scripts.
+	   * Don't wrap script code in sub handler { } - this avoids spurious warnings and
+	     should at least allow __END__ to work properly.
+	  (Patch by Lukas Mai)
+	- Fix NETSPLIT_SERVER_REC in signals for Perl.
+	- Remove buggy /SCROLLBACK redraw and /SET scrollback_save_formats.
+	- Always preserve the active mainwindow when resizing.
 	- Ignore DNS not found errors when considering reconnect.
 	- Do not strip the comma in a mirc color if it is not followed by a digit (bug #250).
 	- Fix building perl module with perl-5.10 (bug #630).

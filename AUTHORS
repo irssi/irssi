@@ -7,9 +7,9 @@ Irssi staff (current maintainers) <staff@irssi.org>:
   Valentin Batz (senneth, vb)
   Wouter Coekaerts (coekie)
   Jochen Eisinger (c0ffee)
-  Geert Hauwaerts
+  Geert Hauwaerts (Geert)
   Emanuele Giaquinta (exg)
-  Jilles Tjoelker
+  Jilles Tjoelker (jilles)
   Alexander Færøy (ahf)
 
 Large feature patches by:
@@ -67,3 +67,7 @@ Other patches (grep for "patch" in ChangeLog) by:
   Nicolas Collignon
   Daniel Koning
   Yi-Hsuan Hsin
+  Jon Mayo
+  Johan Kiviniemi
+  JasonX
+  Lukas Mai
