@@ -62,6 +62,7 @@ v0.8.13 2009-xx-xx  The Irssi team <staff@irssi.org>
 	+ introduce the type Irssi::Irc::Client and signals to communicate with
 	  proxy clients to allow for scripting parts of the irssi-proxy.
 	+ Add sb_search.pl, a script for /SCROLLBACK SEARCH
+	- Fix /NOTIFY list when nick is seen joining (bug #642).
 	- Include hostmask in 001 event sent by proxy (bug #650).
 	- Be more power-friendly: don't run any always-on <1s timers (bug #641).
 	- Don't get confused by a failed /JOIN -window (bug #644).
