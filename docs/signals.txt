@@ -295,6 +295,9 @@ windows.c:
 FE IRC
 ------
 
+fe-events.c:
+ "default event numeric", SERVER_REC, char *data, char *nick, char *address
+
 fe-irc-messages.c:
  "message irc op_public", SERVER_REC, char *msg, char *nick, char *address, char *target
  "message irc own_wall", SERVER_REC, char *msg, char *target
