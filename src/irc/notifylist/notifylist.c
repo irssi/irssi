@@ -289,7 +289,7 @@ static void notifylist_check_join(IRC_SERVER_REC *server, const char *nick,
 	if (away != -1) rec->away = away;
 	rec->host_ok = TRUE;
 	rec->join_announced = TRUE;
-	rec->away_ok = TRUE;
+	rec->away_ok = !notify->away_check || !rec->away;
 
 	signal_emit("notifylist joined", 6,
 		    server, rec->nick, rec->user, rec->host, realname, NULL);
