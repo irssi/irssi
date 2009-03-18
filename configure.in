@@ -1,4 +1,4 @@
-AC_INIT(irssi, 0.8.13-svn)
+AC_INIT(irssi, 0.8.13-rc1)
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_AUX_DIR(build-aux)
 AC_PREREQ(2.50)
