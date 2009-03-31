@@ -1,4 +1,4 @@
-v0.8.13 2009-xx-xx  The Irssi team <staff@irssi.org>
+v0.8.13 2009-04-01  The Irssi team <staff@irssi.org>
 	+ Reject some obviously invalid values in /set.
 	+ Add perl bindings for Window::get_history_lines
 	+ Use an io channel to write the config file.
