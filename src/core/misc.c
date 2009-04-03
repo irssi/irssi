@@ -811,34 +811,45 @@ int nearest_power(int num)
 int parse_time_interval(const char *time, int *msecs)
 {
 	const char *desc;
-	int number, sign, len, ret;
+	int number, sign, len, ret, digits;
 
 	*msecs = 0;
 
 	/* max. return value is around 24 days */
-	number = 0; sign = 1; ret = TRUE;
-	for (;;) {
-		if (*time == '-') {
-			sign = -sign;
+	number = 0; sign = 1; ret = TRUE; digits = FALSE;
+	while (i_isspace(*time))
+		time++;
+	if (*time == '-') {
+		sign = -sign;
+		time++;
+		while (i_isspace(*time))
 			time++;
-			continue;
-		}
-
+	}
+	for (;;) {
 		if (i_isdigit(*time)) {
 			number = number*10 + (*time - '0');
 			time++;
+			digits = TRUE;
 			continue;
 		}
 
+		if (!digits)
+			return FALSE;
+
 		/* skip punctuation */
-		while (*time != '\0' && i_ispunct(*time))
+		while (*time != '\0' && i_ispunct(*time) && *time != '-')
 			time++;
 
 		/* get description */
 		for (len = 0, desc = time; i_isalpha(*time); time++)
 			len++;
 
+		while (i_isspace(*time))
+			time++;
+
 		if (len == 0) {
+			if (*time != '\0')
+				return FALSE;
 			*msecs += number * 1000; /* assume seconds */
 			*msecs *= sign;
 			return TRUE;
@@ -868,13 +879,14 @@ int parse_time_interval(const char *time, int *msecs)
 		}
 
 		/* skip punctuation */
-		while (*time != '\0' && i_ispunct(*time))
+		while (*time != '\0' && i_ispunct(*time) && *time != '-')
 			time++;
 
 		if (*time == '\0')
 			break;
 
 		number = 0;
+		digits = FALSE;
 	}
 
 	*msecs *= sign;
