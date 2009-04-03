@@ -555,13 +555,15 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-        /* skip first param, it's always our nick */
+        /* first param is our nick, "*" or a channel */
 	ptr = strchr(data, ' ');
 	if (ptr == NULL)
 		return;
 	ptr++;
 
-	if (!target_param || *ptr == ':' || (ptr2 = strchr(ptr, ' ')) == NULL)
+	if (ischannel(*data)) /* directed at channel */
+		target = g_strndup(data, (int)(ptr - data - 1));
+	else if (!target_param || *ptr == ':' || (ptr2 = strchr(ptr, ' ')) == NULL)
 		target = NULL;
 	else {
                 /* target parameter expected and present */
