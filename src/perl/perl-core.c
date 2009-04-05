@@ -34,6 +34,8 @@
 #include "XSUB.h"
 #include "irssi-core.pl.h"
 
+extern char **environ;
+
 GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
