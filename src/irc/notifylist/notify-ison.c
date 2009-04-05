@@ -32,11 +32,6 @@
 #define DEFAULT_NOTIFY_CHECK_TIME "1min"
 #define DEFAULT_NOTIFY_WHOIS_TIME "5min"
 
-typedef struct {
-	char *nick;
-	int hostok;
-} ISON_REC;
-
 static int notify_tag;
 static int notify_whois_time;
 
