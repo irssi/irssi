@@ -172,7 +172,7 @@ static void cmd_nick(const char *data, SERVER_REC *server)
 /* SYNTAX: UPTIME */
 static void cmd_uptime(char *data)
 {
-	time_t uptime;
+	long uptime;
 
 	g_return_if_fail(data != NULL);
 
