@@ -660,7 +660,8 @@ void servers_redirect_init(void)
 
 	/* WHO */
 	server_redirect_register("who", FALSE, 0,
-				 "event 352", 1, /* Begins the WHO */
+				 "event 352", 1, /* An element of the WHO */
+				 "event 354", -1, /* WHOX element */
                                  "event 401", 1, /* No such nick/channel */
 				 NULL,
 				 "event 315", 1, /* End of WHO */
