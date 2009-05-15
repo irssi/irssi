@@ -298,7 +298,7 @@ static void event_wallops(IRC_SERVER_REC *server, const char *data, const char *
 
 		tmp = g_strdup(data+8);
 		len = strlen(tmp);
-		if (tmp[len-1] == 1) tmp[len-1] = '\0';
+		if (len >= 1 && tmp[len-1] == 1) tmp[len-1] = '\0';
 		printformat(server, NULL, MSGLEVEL_WALLOPS, IRCTXT_ACTION_WALLOPS, nick, tmp);
 		g_free(tmp);
 	}
