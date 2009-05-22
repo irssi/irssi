@@ -1077,6 +1077,16 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta-left", "mleft", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta-right", "mright", (SIGNAL_FUNC) key_combo);
 
+	key_bind("key", NULL, "meta2-1;5~", "chome", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-7;5~", "chome", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-5H", "chome", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;5H", "chome", (SIGNAL_FUNC) key_combo);
+
+	key_bind("key", NULL, "meta2-4;5~", "cend", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-8;5~", "cend", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-5F", "cend", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-1;5F", "cend", (SIGNAL_FUNC) key_combo);
+
 	/* cursor movement */
 	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "Move the cursor a character forward", "right", NULL, (SIGNAL_FUNC) key_forward_character);
@@ -1136,8 +1146,8 @@ void gui_readline_init(void)
 	key_bind("scroll_backward", NULL, "meta-p", NULL, (SIGNAL_FUNC) key_scroll_backward);
 	key_bind("scroll_forward", "Scroll to next page", "next", NULL, (SIGNAL_FUNC) key_scroll_forward);
 	key_bind("scroll_forward", NULL, "meta-n", NULL, (SIGNAL_FUNC) key_scroll_forward);
-	key_bind("scroll_start", "Scroll to the beginning of the window", "", NULL, (SIGNAL_FUNC) key_scroll_start);
-	key_bind("scroll_end", "Scroll to the end of the window", "", NULL, (SIGNAL_FUNC) key_scroll_end);
+	key_bind("scroll_start", "Scroll to the beginning of the window", "chome", NULL, (SIGNAL_FUNC) key_scroll_start);
+	key_bind("scroll_end", "Scroll to the end of the window", "cend", NULL, (SIGNAL_FUNC) key_scroll_end);
 
         /* inserting special input characters to line.. */
 	key_bind("escape_char", "Insert the next character exactly as-is to input line", NULL, NULL, (SIGNAL_FUNC) key_escape);
