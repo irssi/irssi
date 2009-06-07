@@ -13,7 +13,7 @@ v0.8.13 2009-04-01  The Irssi team <staff@irssi.org>
 	+ Add public header with interfaces to manage statusbar items (bug #535)
 	+ Recode: assume utf-8 encoding for an ascii string in which no escape
 	  character occurs (bug #392).
-	+ Allow /BAN, /UNBAN, /KICBAN, /KNOCKOUT if channel is not synced.
+	+ Allow /BAN, /UNBAN, /KICKBAN, /KNOCKOUT if channel is not synced.
 	  Requesting ban lists from an unsynced channel will ask
 	  them from the server, banning a user whose u@h irssi
 	  does not know will ban nick!*@* and only bans irssi
