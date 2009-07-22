@@ -460,10 +460,13 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 	g_free(fname);
 }
 
-static void autolog_open_check(SERVER_REC *server, const char *server_tag,
-			       const char *target, int level)
+static void autolog_open_check(TEXT_DEST_REC *dest)
 {
 	const char *deftarget;
+	SERVER_REC *server = dest->server;
+	const char *server_tag = dest->server_tag;
+	const char *target = dest->target;
+	int level = dest->level;
 
 	/* FIXME: kind of a kludge, but we don't want to reopen logs when
 	   we're parting the channel with /WINDOW CLOSE.. Maybe a small
@@ -474,6 +477,10 @@ static void autolog_open_check(SERVER_REC *server, const char *server_tag,
 		return;
 
 	deftarget = server ? server->nick : "unknown";
+
+	if (autolog_ignore_targets != NULL &&
+	    strarray_find_dest(autolog_ignore_targets, dest))
+		return;
 
 	if (target != NULL)
 		autolog_open(server, server_tag, strcmp(target, "*") ? target : deftarget);
@@ -504,13 +511,8 @@ static void log_line(TEXT_DEST_REC *dest, const char *text)
 	if (dest->level == MSGLEVEL_NEVER)
 		return;
 
-	if (autolog_ignore_targets != NULL && dest->target != NULL)
-		if (strarray_find_dest(autolog_ignore_targets, dest))
-			return;
-
 	/* let autolog open the log records */
-	autolog_open_check(dest->server, dest->server_tag,
-			   dest->target, dest->level);
+	autolog_open_check(dest);
 
 	if (logs == NULL)
 		return;
