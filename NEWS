@@ -1,3 +1,15 @@
+v0.8.14 2009-07-28  The Irssi team <staff@irssi.org>
+	+ Make /reset an alias for /set -default.
+	+ Make /unset an alias for /set -clear.
+	+ Allow ctrl+home / ctrl+end to go to the beginning / end of scrollback.
+	+ Accept WHOX reply (354 numeric) as a /who reply.
+	+ Show numerics directed at channels in the channel window.
+	+ The time duration parser is more strict now.
+	- Fix out of bounds access in event_wallops().
+	- Build fix for OS X.
+	- Fix the autolog_ignore_targets logic to work correctly with manually
+	  opened log files (see bug #673).
+
 v0.8.13 2009-04-01  The Irssi team <staff@irssi.org>
 	+ Reject some obviously invalid values in /set.
 	+ Add perl bindings for Window::get_history_lines
