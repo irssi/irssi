@@ -32,7 +32,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "netsplit_join", "{netjoin Netsplit} over, joins: $0", 1, { 0 } },
 	{ "netsplit_join_more", "{netjoin Netsplit} over, joins: $0 (+$1 more)", 2, { 0, 1 } },
 	{ "no_netsplits", "There are no net splits", 0 },
-	{ "netsplits_header", "%#Nick      Channel    Server               Splitted server", 0 },
+	{ "netsplits_header", "%#Nick      Channel    Server               Split server", 0 },
 	{ "netsplits_line", "%#$[9]0 $[10]1 $[20]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "netsplits_footer", "", 0 },
 	{ "network_added", "Network $0 saved", 1, { 0 } },
