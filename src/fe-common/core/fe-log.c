@@ -393,14 +393,14 @@ static void autologs_close_all(void)
 	}
 }
 
-/* '%' -> '%%', '/' -> '_' */
+/* '%' -> '%%', badness -> '_' */
 static char *escape_target(const char *target)
 {
 	char *str, *p;
 
 	p = str = g_malloc(strlen(target)*2+1);
 	while (*target != '\0') {
-		if (*target == '/')
+		if (strchr("/\\|*?\"<>:", *target))
 			*p++ = '_';
 		else {
 			if (*target == '%')
@@ -429,6 +429,8 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 
 	/* '/' -> '_' - don't even accidentally try to log to
 	   #../../../file if you happen to join to such channel..
+	   similar for some characters that are metacharacters
+	   and/or illegal in Windows filenames.
 
 	   '%' -> '%%' - so strftime() won't mess with them */
 	fixed_target = escape_target(target);
