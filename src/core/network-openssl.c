@@ -317,6 +317,9 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *mycer
 		return NULL;
 	}
 
+	SSL_set_mode(ssl, SSL_MODE_ENABLE_PARTIAL_WRITE |
+			SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
 	chan = g_new0(GIOSSLChannel, 1);
 	chan->fd = fd;
 	chan->giochan = handle;
