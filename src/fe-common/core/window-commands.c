@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "misc.h"
 #include "servers.h"
+#include "settings.h"
 
 #include "levels.h"
 
@@ -244,16 +245,23 @@ static void cmd_window_refnum(const char *data)
 		window_set_active(window);
 }
 
-/* return the first window number with the highest activity */
-static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
+/**
+ * return the window with the highest activity
+ *
+ * If ignore_refnum is true, the most recently active window with the highest
+ * activity will be returned. If ignore_refnum is false, the refnum will be used
+ * to break ties between windows with equally high activity.
+ */
+static WINDOW_REC *window_highest_activity(WINDOW_REC *window,
+                                           int ignore_refnum)
 {
 	WINDOW_REC *rec, *max_win;
 	GSList *tmp;
-	int max_act, through;
+	int max_act, max_ref, through;
 
 	g_return_val_if_fail(window != NULL, NULL);
 
-	max_win = NULL; max_act = 0; through = FALSE;
+	max_win = NULL; max_act = 0; max_ref = 0; through = FALSE;
 
 	tmp = g_slist_find(windows, window);
 	for (;; tmp = tmp->next) {
@@ -267,9 +275,21 @@ static WINDOW_REC *window_highest_activity(WINDOW_REC *window)
 
 		rec = tmp->data;
 
-		if (rec->data_level > 0 && max_act < rec->data_level) {
+		/* ignore refnum */
+		if (ignore_refnum &&
+		    rec->data_level > 0 && max_act < rec->data_level) {
 			max_act = rec->data_level;
 			max_win = rec;
+		}
+
+		/* windows with lower refnums break ties */
+		else if (!ignore_refnum &&
+		         rec->data_level > 0 &&
+		         (rec->data_level > max_act ||
+		          (rec->data_level == max_act && rec->refnum < max_ref))) {
+			max_act = rec->data_level;
+			max_win = rec;
+			max_ref = rec->refnum;
 		}
 	}
 
@@ -333,7 +353,8 @@ static void cmd_window_goto(const char *data)
 		return;
 
 	if (g_ascii_strcasecmp(target, "active") == 0)
-                window = window_highest_activity(active_win);
+		window = window_highest_activity(active_win,
+			settings_get_bool("active_window_ignore_refnum"));
 	else {
 		window = window_find_name(target);
 		if (window == NULL && active_win->active_server != NULL)
@@ -823,6 +844,8 @@ static void cmd_foreach_window(const char *data)
 
 void window_commands_init(void)
 {
+	settings_add_bool("lookandfeel", "active_window_ignore_refnum", TRUE);
+
 	command_bind("window", NULL, (SIGNAL_FUNC) cmd_window);
 	command_bind("window new", NULL, (SIGNAL_FUNC) cmd_window_new);
 	command_bind("window close", NULL, (SIGNAL_FUNC) cmd_window_close);
