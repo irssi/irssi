@@ -20,6 +20,9 @@ Examples:
 Hilight lines that have "mynick" word:
   /HILIGHT mynick
 
+Hilight all messages from "mynick":
+  /HILIGHT -mask mynick!*@*
+
 Hilight lines that were written by nicks from *.fi with bold green
   /HILIGHT -color %%G -mask *!*@*.fi
 

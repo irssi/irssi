@@ -4,14 +4,15 @@
     -regexp: <pattern> is a regular expression
     -full: <pattern> must match to full words
     -pattern: <pattern> must match to the message's text
+    -except: *DON'T* ignore - overrides an existing ignore.
     -replies: Ignore replies to nick in channels. For example
               "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
               from Finland, but also anyone sending message
               "tofinnishnick: blahblah".
-    -except: *DON'T* ignore - overrides an existing ignore.
     -network: Ignore only on this network.
     -ircnet: Same as -network. Deprecated. Do not use.
     -channels: Ignore only in channels
+    -time: <secs> seconds after the ignore is removed
     <mask>: Either a nick mask or list of channels
     <levels>: List of levels to ignore. You can use -<level> to remove levels
               from ignore.
@@ -28,6 +29,7 @@ The best match always wins, so you can have:
 
 Examples:
 
+    /IGNORE * JOINS                         - ignore joins in all channels
     /IGNORE #channel ALL -PUBLIC -ACTIONS   - ignore all but public/actions
     /IGNORE #channel -JOINS                 - don't ignore joins anymore
     /IGNORE -replies *!user@*.host.org ALL  - ignore user and all replies

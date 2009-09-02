@@ -10,5 +10,7 @@ directories:
 See plugins page of http://www.irssi.org/ to see if there's any plugins
 you'd want to use.
 
+To load a perl script you should use /SCRIPT.
+
 See also: UNLOAD
 

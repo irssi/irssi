@@ -3,7 +3,7 @@
 
 This command "kicks" the specified user off of the specified 
 channel. It is typically used to remove troublemakers, flooders, 
-or people otherwise making a nuisanse of themselves on the channel. 
+or people otherwise making a nuisance of themselves on the channel. 
 The reason for the kick is recommended, but not required by the IRC 
 servers.
 

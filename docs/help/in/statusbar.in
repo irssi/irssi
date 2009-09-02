@@ -1,4 +1,10 @@
 
 @SYNTAX:statusbar@
 
-Commands for modifying statusbar.
+Commands for modifying the statusbar.
+
+/STATUSBAR
+   - Display all statusbars.
+
+/STATUSBAR <name>
+   - display elements of statusbar <name>
