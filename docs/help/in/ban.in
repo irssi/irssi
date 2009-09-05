@@ -13,7 +13,7 @@ the following:
     Domain - *!*@*.domain.net
     Custom [nick] [user] [host] [domain]
 
-If no nick is given the current bans in this channel are displayed.
+If no arguments are given the current bans in this channel are displayed.
 
 Examples:
     /BAN loser        - Bans the nick 'loser'

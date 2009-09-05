@@ -11,7 +11,8 @@
      -window: Move the output of specified process to active window
      -close: Forcibly close (or "forget") a process that doesn't die.
              This only removes all information from irssi concerning the
-             process, it doesn't send SIGKILL or anything the process.
+             process, it doesn't send SIGKILL or any other signal
+             to the process.
      -<signal>: Send a signal to process. <signal> can be either numeric
                 or one of the few most common ones (hup, term, kill, ...)
 
