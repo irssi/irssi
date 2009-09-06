@@ -9,7 +9,7 @@ print "static PERL_SIGNAL_ARGS_REC perl_signal_args[] =\n{\n";
 while (<STDIN>) {
 	chomp;
 
-	next if (!/^ "([^"]*)"(<.*>)?,\s*(.*)/);
+	next if (!/^ "([^"]*)"(<.*>)?(?:,\s*(.*))?/);
 	next if (/\.\.\./);
 	next if (/\(/);
 
@@ -60,7 +60,11 @@ while (<STDIN>) {
 	s/PERL_SCRIPT_REC[^,]*/Irssi::Script/g;
 
 	s/([\w\*:]+)(,|$)/"\1"\2/g;
-	print "    { \"$signal\", { $_, NULL } },\n";
+	if ($_ eq "") {
+		print "    { \"$signal\", { NULL } },\n";
+	} else {
+		print "    { \"$signal\", { $_, NULL } },\n";
+	}
 }
 
 print "\n    { NULL }\n};\n";
