@@ -205,7 +205,8 @@ static void event_accept_list(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 2, NULL, &accepted);
+	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+			NULL, &accepted);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_ACCEPT_LIST, accepted);
 	g_free(params);
 }
