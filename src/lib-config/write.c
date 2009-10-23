@@ -314,6 +314,7 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 
 	rec->handle = g_io_channel_unix_new(fd);
 	g_io_channel_set_encoding(rec->handle, NULL, NULL);
+	g_io_channel_set_close_on_unref(rec->handle, TRUE);
 	rec->tmp_indent_level = 0;
 	rec->tmp_last_lf = TRUE;
         ret = config_write_block(rec, rec->mainnode, FALSE, TRUE);
