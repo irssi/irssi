@@ -1,13 +1,11 @@
 v0.8.15 20xx-xx-xx  The Irssi team <staff@irssi.org>
 	+ Add active_window_ignore_refnum option
-	  With active_window_ignore_refnum = ON, the current behavior for the
-	  active_window key (meta-a by default) is preserved: windows are cycled
-	  in the order of most recent activity, highest activity first.
-	  With active_window_ignore_refnum = OFF, the old behavior is used:
-	  windows are cycled in the order of most recent activity, where ties of
-	  equally high activity are broken by refnums. Windows with lower
-	  refnums and equal activity will be chosen first.
-	  (by Matt Sparks, bug #667)
+	  With active_window_ignore_refnum ON, the current behavior for the
+	  active_window key (meta-a by default) is preserved: it switches to the
+	  window with the highest activity level that was last activated.
+	  With active_window_ignore_refnum OFF, the old behavior is used:
+	  it switches to the window with the highest activity level with the
+	  lowest refnum. (by Matt Sparks, bug #667)
 	- Change some characters illegal in Windows filenames to underscores in
 	  logs
 	- Fix disconnects when sending large amounts of data over SSL
