@@ -224,7 +224,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
 		handle = server->connrec->use_ssl ?
-			net_connect_ip_ssl(ip, port, own_ip, server->connrec->ssl_cert, server->connrec->ssl_pkey,
+			net_connect_ip_ssl(ip, port, server->connrec->address, own_ip, server->connrec->ssl_cert, server->connrec->ssl_pkey,
 server->connrec->ssl_cafile, server->connrec->ssl_capath, server->connrec->ssl_verify) :
 			net_connect_ip(ip, port, own_ip);
 	} else {
