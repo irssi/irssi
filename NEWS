@@ -1,3 +1,25 @@
+v0.8.15 20xx-xx-xx  The Irssi team <staff@irssi.org>
+	+ Add active_window_ignore_refnum option
+	  With active_window_ignore_refnum = ON, the current behavior for the
+	  active_window key (meta-a by default) is preserved: windows are cycled
+	  in the order of most recent activity, highest activity first.
+	  With active_window_ignore_refnum = OFF, the old behavior is used:
+	  windows are cycled in the order of most recent activity, where ties of
+	  equally high activity are broken by refnums. Windows with lower
+	  refnums and equal activity will be chosen first.
+	  (by Matt Sparks, bug #667)
+	- Change some characters illegal in Windows filenames to underscores in
+	  logs
+	- Fix disconnects when sending large amounts of data over SSL
+	- Show all nicks instead of just the first in an /accept * listing
+	  (Bug #704)
+	- Make several signals without parameters available to perl again.
+	  In particular, this includes the "beep" signal
+	  (by Matt Sparks, bug #674)
+	- Close the config file fd after saving (by Sven Wegener)
+	- Check if an SSL certificate matches the hostname of the server we are
+	  connecting to.
+
 v0.8.14 2009-07-28  The Irssi team <staff@irssi.org>
 	+ Make /reset an alias for /set -default.
 	+ Make /unset an alias for /set -clear.
