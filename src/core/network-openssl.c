@@ -43,15 +43,14 @@ typedef struct
 	const char *hostname;
 } GIOSSLChannel;
 
-static SSL_CTX *ssl_ctx = NULL;
+static int ssl_inited = FALSE;
 
 static void irssi_ssl_free(GIOChannel *handle)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	g_io_channel_unref(chan->giochan);
 	SSL_free(chan->ssl);
-	if (chan->ctx != ssl_ctx)
-		SSL_CTX_free(chan->ctx);
+	SSL_CTX_free(chan->ctx);
 	g_free(chan);
 }
 
@@ -375,13 +374,7 @@ static gboolean irssi_ssl_init(void)
 {
 	SSL_library_init();
 	SSL_load_error_strings();
-
-	ssl_ctx = SSL_CTX_new(SSLv23_client_method());
-	if(!ssl_ctx)
-	{
-		g_error("Initialization of the SSL library failed");
-		return FALSE;
-	}
+	ssl_inited = TRUE;
 
 	return TRUE;
 
@@ -397,18 +390,20 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostn
 
 	g_return_val_if_fail(handle != NULL, NULL);
 
-	if(!ssl_ctx && !irssi_ssl_init())
+	if(!ssl_inited && !irssi_ssl_init())
 		return NULL;
 
 	if(!(fd = g_io_channel_unix_get_fd(handle)))
 		return NULL;
 
+	ctx = SSL_CTX_new(SSLv23_client_method());
+	if (ctx == NULL) {
+		g_error("Could not allocate memory for SSL context");
+		return NULL;
+	}
+
 	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;
-		if ((ctx = SSL_CTX_new(SSLv23_client_method())) == NULL) {
-			g_error("Could not allocate memory for SSL context");
-			return NULL;
-		}
 		scert = convert_home(mycert);
 		if (mypkey && *mypkey)
 			spkey = convert_home(mypkey);
@@ -425,10 +420,6 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostn
 	if ((cafile && *cafile) || (capath && *capath)) {
 		char *scafile = NULL;
 		char *scapath = NULL;
-		if (! ctx && (ctx = SSL_CTX_new(SSLv23_client_method())) == NULL) {
-			g_error("Could not allocate memory for SSL context");
-			return NULL;
-		}
 		if (cafile && *cafile)
 			scafile = convert_home(cafile);
 		if (capath && *capath)
@@ -443,14 +434,15 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostn
 		g_free(scafile);
 		g_free(scapath);
 		verify = TRUE;
+	} else {
+		if (!SSL_CTX_set_default_verify_paths(ctx))
+			g_warning("Could not load default certificates");
 	}
-
-	if (ctx == NULL)
-		ctx = ssl_ctx;
 
 	if(!(ssl = SSL_new(ctx)))
 	{
 		g_warning("Failed to allocate SSL structure");
+		SSL_CTX_free(ctx);
 		return NULL;
 	}
 
@@ -458,8 +450,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostn
 	{
 		g_warning("Failed to associate socket to SSL stream");
 		SSL_free(ssl);
-		if (ctx != ssl_ctx)
-			SSL_CTX_free(ctx);
+		SSL_CTX_free(ctx);
 		return NULL;
 	}
 
