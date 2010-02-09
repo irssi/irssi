@@ -16,7 +16,7 @@ scripts.
 Scripts should be placed to ~/.irssi/scripts/ or
 /usr/local/lib/irssi/scripts/ (or depending on where irssi was
 installed) directories. After that /RUN script_name should work, you
-don't need to add the .pl prefix.
+don't need to add the .pl suffix.
 
 
  Irssi's signals
