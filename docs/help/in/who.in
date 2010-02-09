@@ -27,5 +27,5 @@ Examples:
    /WHO timo*    - Shows users whose nick, userhost,
                    or realname begins with string 'timo'
 
-See also: WHOIS, CHANNEL
+See also: WHOIS, NAMES, CHANNEL
 
