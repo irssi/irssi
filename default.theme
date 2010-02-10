@@ -63,7 +63,7 @@ abstracts = {
   ##
 
   # text to insert at the beginning of each non-message line
-  line_start = "%B-%W!%B-%n ";
+  line_start = "%B-%n!%B-%n ";
 
   # timestamp styling, nothing by default
   timestamp = "$*";
@@ -138,7 +138,7 @@ abstracts = {
 
   # $0 = nick mode, $1 = nick
   ownmsgnick = "{msgnick $0 $1-}";
-  ownnick = "%W$*%n";
+  ownnick = "%_$*%n";
 
   # public message in channel, $0 = nick mode, $1 = nick
   pubmsgnick = "{msgnick $0 $1-}";
@@ -163,7 +163,7 @@ abstracts = {
 
   # own private message in query
   ownprivmsgnick = "{msgnick  $*}";
-  ownprivnick = "%W$*%n";
+  ownprivnick = "%_$*%n";
 
   # private message in query
   privmsgnick = "{msgnick  %R$*%n}";
@@ -173,7 +173,7 @@ abstracts = {
   ##
 
   # used internally by this theme
-  action_core = "%W * $*%n";
+  action_core = "%_ * $*%n";
 
   # generic one that's used by most actions
   action = "{action_core $*} ";
@@ -185,7 +185,7 @@ abstracts = {
   ownaction_target = "{action_core $0}%K:%c$1%n ";
 
   # private action sent by others
-  pvtaction = "%W (*) $*%n ";
+  pvtaction = "%_ (*) $*%n ";
   pvtaction_query = "{action $*}";
 
   # public action sent by others
@@ -211,9 +211,9 @@ abstracts = {
   ctcp = "%g$*%n";
 
   # wallops
-  wallop = "%W$*%n: ";
+  wallop = "%_$*%n: ";
   wallop_nick = "%n$*";
-  wallop_action = "%W * $*%n ";
+  wallop_action = "%_ * $*%n ";
 
   # netsplits
   netsplit = "%R$*%n";
@@ -235,14 +235,14 @@ abstracts = {
   # DCC chat, own msg/action
   dccownmsg = "[%r$0%K($1-%K)%n] ";
   dccownnick = "%R$*%n";
-  dccownquerynick = "%W$*%n";
+  dccownquerynick = "%_$*%n";
   dccownaction = "{action $*}";
   dccownaction_target = "{action_core $0}%K:%c$1%n ";
 
   # DCC chat, others
   dccmsg = "[%G$1-%K(%g$0%K)%n] ";
   dccquerynick = "%G$*%n";
-  dccaction = "%W (*dcc*) $*%n %|";
+  dccaction = "%_ (*dcc*) $*%n %|";
 
   ##
   ## statusbar
