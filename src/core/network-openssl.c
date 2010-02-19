@@ -198,12 +198,16 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 
 static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, X509 *cert)
 {
-	if (SSL_get_verify_result(ssl) != X509_V_OK) {
+	long result;
+
+	result = SSL_get_verify_result(ssl);
+	if (result != X509_V_OK) {
 		unsigned char md[EVP_MAX_MD_SIZE];
 		unsigned int n;
 		char *str;
 
-		g_warning("Could not verify SSL servers certificate:");
+		g_warning("Could not verify SSL servers certificate: %s",
+				X509_verify_cert_error_string(result));
 		if ((str = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0)) == NULL)
 			g_warning("  Could not get subject-name from peer certificate");
 		else {
