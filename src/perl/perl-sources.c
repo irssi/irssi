@@ -25,6 +25,7 @@
 #include "perl-core.h"
 #include "perl-common.h"
 #include "perl-sources.h"
+#include "misc.h"
 
 typedef struct {
         PERL_SCRIPT_REC *script;
