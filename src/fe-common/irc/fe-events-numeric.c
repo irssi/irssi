@@ -529,6 +529,25 @@ static void event_477(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
+static void event_target_too_fast(IRC_SERVER_REC *server, const char *data,
+		      const char *nick)
+{
+	/* Target change too fast, could be nick or channel.
+	 * If we tried to join this channel, display the error in the
+	 * status window. Otherwise display it in the channel window.
+	 */
+	IRC_CHANNEL_REC *chanrec;
+	char *params, *channel;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &channel);
+
+	chanrec = irc_channel_find(server, channel);
+	print_event_received(server, data, nick, chanrec == NULL || chanrec->joined);
+	g_free(params);
+}
+
 static void event_unknown_mode(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *mode;
@@ -666,6 +685,8 @@ void fe_events_numeric_init(void)
 	signal_add("event 376", (SIGNAL_FUNC) event_motd);
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
+	signal_add("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_add("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_add("default event numeric", (SIGNAL_FUNC) event_numeric);
 	/* Because default event numeric only fires if there is no specific
@@ -685,7 +706,6 @@ void fe_events_numeric_init(void)
 	signal_add("event 436", (SIGNAL_FUNC) event_received);
 	signal_add("event 438", (SIGNAL_FUNC) event_received);
 	signal_add("event 465", (SIGNAL_FUNC) event_received);
-	signal_add("event 439", (SIGNAL_FUNC) event_received);
 	signal_add("event 470", (SIGNAL_FUNC) event_received);
 	signal_add("event 479", (SIGNAL_FUNC) event_received);
 
@@ -756,6 +776,8 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 376", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
+	signal_remove("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_remove("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_remove("default event numeric", (SIGNAL_FUNC) event_numeric);
 	signal_remove("event 001", (SIGNAL_FUNC) event_received);
@@ -771,7 +793,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 436", (SIGNAL_FUNC) event_received);
 	signal_remove("event 438", (SIGNAL_FUNC) event_received);
 	signal_remove("event 465", (SIGNAL_FUNC) event_received);
-	signal_remove("event 439", (SIGNAL_FUNC) event_received);
 	signal_remove("event 470", (SIGNAL_FUNC) event_received);
 	signal_remove("event 479", (SIGNAL_FUNC) event_received);
 
