@@ -729,6 +729,8 @@ void fe_events_numeric_init(void)
 	signal_add("event 506", (SIGNAL_FUNC) event_target_received); /* cannot send (+R) */
 	signal_add("event 716", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+g) */
 	signal_add("event 717", (SIGNAL_FUNC) event_target_received); /* +g notified */
+	signal_add("event 728", (SIGNAL_FUNC) event_target_received); /* quiet (or other) list */
+	signal_add("event 729", (SIGNAL_FUNC) event_target_received); /* end of quiet (or other) list */
 }
 
 void fe_events_numeric_deinit(void)
@@ -816,4 +818,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 506", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 716", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 717", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 728", (SIGNAL_FUNC) event_target_received);
+	signal_remove("event 729", (SIGNAL_FUNC) event_target_received);
 }
