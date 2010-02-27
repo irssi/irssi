@@ -575,7 +575,7 @@ void term_set_input_type(int type)
 	}
 }
 
-void term_gets(void)
+void term_gets(GArray *buffer, int *line_count)
 {
 	int ret, i, char_len;
 
@@ -600,7 +600,9 @@ void term_gets(void)
 					      &key);
 			if (char_len < 0)
 				break;
-			signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+			g_array_append_val(buffer, key);
+			if (key == '\r' || key == '\n')
+				(*line_count)++;
 
 			i += char_len;
 		}

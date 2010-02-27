@@ -81,7 +81,7 @@ void term_stop(void);
 
 /* keyboard input handling */
 void term_set_input_type(int type);
-void term_gets(void);
+void term_gets(GArray *buffer, int *line_count);
 
 /* internal */
 void term_common_init(void);
