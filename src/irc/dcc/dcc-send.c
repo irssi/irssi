@@ -183,10 +183,12 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	    (chat->mirc_ctcp || g_strcasecmp(nick, chat->nick) != 0))
 		chat = NULL;
 
-	if (!IS_IRC_SERVER(server) || !server->connected)
-		servertag = NULL;
-	else
+	if (IS_IRC_SERVER(server) && server->connected)
 		servertag = server->tag;
+	else if (chat != NULL)
+		servertag = chat->servertag;
+	else
+		servertag = NULL;
 
 	if (servertag == NULL && chat == NULL)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
