@@ -1,4 +1,4 @@
-v0.8.15 20xx-xx-xx  The Irssi team <staff@irssi.org>
+v0.8.15-rc1 2010-03-21  The Irssi team <staff@irssi.org>
 	+ Add active_window_ignore_refnum option
 	  With active_window_ignore_refnum ON, the current behavior for the
 	  active_window key (meta-a by default) is preserved: it switches to the
@@ -6,6 +6,8 @@ v0.8.15 20xx-xx-xx  The Irssi team <staff@irssi.org>
 	  With active_window_ignore_refnum OFF, the old behavior is used:
 	  it switches to the window with the highest activity level with the
 	  lowest refnum. (by Matt Sparks, bug #667)
+	+ Show new Charybdis +q list in channel windows (numerics 728 and 729).
+	+ Allow servers to belong to multiple networks.
 	- Change some characters illegal in Windows filenames to underscores in
 	  logs
 	- Fix disconnects when sending large amounts of data over SSL
@@ -17,6 +19,7 @@ v0.8.15 20xx-xx-xx  The Irssi team <staff@irssi.org>
 	- Close the config file fd after saving (by Sven Wegener)
 	- Check if an SSL certificate matches the hostname of the server we are
 	  connecting to.
+	- Fix bash'isms, use command -v instead of which and use bc -l in /CALC.
 
 v0.8.14 2009-07-28  The Irssi team <staff@irssi.org>
 	+ Make /reset an alias for /set -default.
