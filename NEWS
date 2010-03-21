@@ -8,6 +8,19 @@ v0.8.15-rc1 2010-03-21  The Irssi team <staff@irssi.org>
 	  lowest refnum. (by Matt Sparks, bug #667)
 	+ Show new Charybdis +q list in channel windows (numerics 728 and 729).
 	+ Allow servers to belong to multiple networks.
+	+ Improve paste detection. Irssi now detects a paste if it reads at
+	  least three bytes in a single read; subsequent reads are associated to
+	  the same paste if they happen before 'paste_detect_time' time since
+	  the last read. If no read occurs after 'paste_detect_time' time the
+	  paste buffer is flushed; if there is at least one complete line its
+	  content is sent as a paste, otherwise it is processed normally.
+	+ Show "target changing too fast" messages in the channel/query window.
+	+ Use default trusted CAs if nothing is specified. This allows useful
+	  use of -ssl_verify without -ssl_cafile/-ssl_capath, using OpenSSL's
+	  default trusted CAs.
+	+ Show why an SSL certificate failed validation.
+	+ Make own nick and actions use default colour instead of white
+	  (by Tim Retout).
 	- Change some characters illegal in Windows filenames to underscores in
 	  logs
 	- Fix disconnects when sending large amounts of data over SSL
@@ -20,6 +33,9 @@ v0.8.15-rc1 2010-03-21  The Irssi team <staff@irssi.org>
 	- Check if an SSL certificate matches the hostname of the server we are
 	  connecting to.
 	- Fix bash'isms, use command -v instead of which and use bc -l in /CALC.
+	- Fix a crash with handling the DCC queue.
+	- Fix crash when checking for fuzzy nick match when not on the channel.
+	  Reported by Aurelien Delaitre (SATE 2009).
 
 v0.8.14 2009-07-28  The Irssi team <staff@irssi.org>
 	+ Make /reset an alias for /set -default.
