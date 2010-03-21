@@ -575,9 +575,13 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 	if (fullmatch)
 		return TRUE; /* matched without fuzzyness */
 
-	/* matched with some fuzzyness .. check if there's an exact match
-	   for some other nick in the same channel. */
-        return nick_nfind(channel, msgstart, (int) (msg-msgstart)) == NULL;
+	if (channel != NULL) {
+		/* matched with some fuzzyness .. check if there's an exact match
+		   for some other nick in the same channel. */
+		return nick_nfind(channel, msgstart, (int) (msg-msgstart)) == NULL;
+	} else {
+		return TRUE;
+	}
 }
 
 void nicklist_init(void)
