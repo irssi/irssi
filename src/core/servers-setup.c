@@ -352,15 +352,6 @@ SERVER_SETUP_REC *server_setup_find(const char *address, int port,
 	return server;
 }
 
-/* Find matching server from setup. Ports must match or NULL is returned. */
-SERVER_SETUP_REC *server_setup_find_port(const char *address, int port)
-{
-	SERVER_SETUP_REC *rec;
-
-	rec = server_setup_find(address, port, NULL);
-	return rec == NULL || rec->port != port ? NULL : rec;
-}
-
 static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 {
 	SERVER_SETUP_REC *rec;
@@ -375,14 +366,13 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		return NULL;
 
 	port = config_node_get_int(node, "port", 0);
-	if (server_setup_find_port(server, port) != NULL) {
-		/* already exists - don't let it get there twice or
-		   server reconnects will screw up! */
+	chatnet = config_node_get_str(node, "chatnet", NULL);
+
+	if (server_setup_find(server, port, chatnet) != NULL) {
 		return NULL;
 	}
 
 	rec = NULL;
-	chatnet = config_node_get_str(node, "chatnet", NULL);
 
 	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
 	if (chatnetrec == NULL && chatnet != NULL) {

@@ -30,7 +30,7 @@ where the server is connected (ie. /window new hide;
 /SERVER without any arguments displays the list of connected 
         servers.
 
-/SERVER REMOVE <address> [<port>]
+/SERVER REMOVE <address> [<port>] [<network>]
 
 /SERVER LIST
 

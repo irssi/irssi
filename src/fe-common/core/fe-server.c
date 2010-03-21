@@ -108,7 +108,7 @@ static void cmd_server_add(const char *data)
 {
         GHashTable *optlist;
 	SERVER_SETUP_REC *rec;
-	char *addr, *portstr, *password, *value;
+	char *addr, *portstr, *password, *value, *chatnet;
 	void *free_arg;
 	int port;
 
@@ -119,7 +119,10 @@ static void cmd_server_add(const char *data)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
 
-	rec = server_setup_find_port(addr, port);
+	chatnet = g_hash_table_lookup(optlist, "network");
+
+	rec = server_setup_find(addr, port, chatnet);
+
 	if (rec == NULL) {
 		rec = create_server_setup(optlist);
 		if (rec == NULL) {
@@ -194,21 +197,30 @@ static void cmd_server_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: SERVER REMOVE <address> [<port>] */
+/* SYNTAX: SERVER REMOVE <address> [<port>] [<network>] */
 static void cmd_server_remove(const char *data)
 {
 	SERVER_SETUP_REC *rec;
-	char *addr, *port;
+	char *addr, *port, *chatnet;
 	void *free_arg;
 
-	if (!cmd_get_params(data, &free_arg, 2, &addr, &port))
+	if (!cmd_get_params(data, &free_arg, 3, &addr, &port, &chatnet))
 		return;
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-        if (*port == '\0')
-		rec = server_setup_find(addr, -1, NULL);
+	if (*port == '\0') {
+		if (*chatnet == '\0')
+			rec = server_setup_find(addr, -1, NULL);
+		else
+			rec = server_setup_find(addr, -1, chatnet);
+	}
 	else
-		rec = server_setup_find_port(addr, atoi(port));
+	{
+		if (*chatnet == '\0')
+			rec = server_setup_find(addr, atoi(port), NULL);
+		else
+			rec = server_setup_find(addr, atoi(port), chatnet);
+	}
 
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND, addr, port);
