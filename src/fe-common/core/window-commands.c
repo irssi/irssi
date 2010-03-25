@@ -168,7 +168,7 @@ static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 		command_runsub("window", data, server, item);
 }
 
-/* SYNTAX: WINDOW NEW [hide] */
+/* SYNTAX: WINDOW NEW [HIDDEN|SPLIT] */
 static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 {
 	WINDOW_REC *window;
