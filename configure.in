@@ -334,50 +334,6 @@ if test "x$want_gc" = xyes; then
 fi
 
 dnl **
-dnl ** check if we can link dynamic libraries to modules
-dnl ** also checks if libraries are built to .libs dir
-dnl **
-
-AC_MSG_CHECKING([if we can link dynamic libraries with modules])
-DYNLIB_MODULES=no
-
-dnl ** compile object file
-cat > conftest.c <<EOF
-#include <math.h>
-int modfunc(){return (int)floor(1.2);}
-EOF
-
-if ! ./libtool --tag=CC --mode=compile $CC $CFLAGS -c conftest.c >/dev/null 2>&1 || \
-   ! ./libtool --tag=CC --mode=link $CC $CFLAGS $LDFLAGS -rpath /usr/lib conftest.lo -lm -o libconftest.la >/dev/null 2>&1; then
-  AC_MSG_RESULT([no, error compiling test module])
-else
-  cat > conftest.c <<EOF
-#include <gmodule.h>
-main() {
-GModule *m; int (*modfunc)(void);
-m = g_module_open("libconftest.la", 0);
-if (!m) g_print("error loading: %s", g_module_error());
-else if (!g_module_symbol(m, "modfunc", (gpointer *) &modfunc))
-  g_print("modfunc() symbol not found from module");
-else if (modfunc() == 1) g_print("ok"); else g_print("wrong result?! 1 vs %d", modfunc());
-return 0; }
-EOF
-  $CC $CFLAGS $LDFLAGS conftest.c -o conftest $GLIB_CFLAGS $GLIB_LIBS 2> /dev/null > /dev/null
-  if test ! -s conftest; then
-    AC_MSG_RESULT([no, error compiling test program])
-  else
-    status="`./conftest`"
-    if test "x$status" = "xok"; then
-      DYNLIB_MODULES=yes
-      AC_MSG_RESULT([yes])
-    else
-      AC_MSG_RESULT([no, error running: $status])
-    fi
-  fi
-fi
-rm -rf conftest conftest.* libconftest.* .libs
-
-dnl **
 dnl ** curses checks
 dnl **
 
@@ -456,12 +412,6 @@ if test "$want_perl" != "no"; then
 		want_perl=no
 	else
 		PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
-
-		if test "x$DYNLIB_MODULES" = "xno" -a "$want_perl" != "static"; then
-			dnl * wanted perl as module, won't get it.
-			want_perl=static
-			perl_mod_error="Dynamic library dependencies don't work with modules"
-		fi
 
 		dnl * remove all database stuffs
 		dnl * nsl is already in ldflags
