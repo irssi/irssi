@@ -1,4 +1,4 @@
-v0.8.15 2010-04-02  The Irssi team <staff@irssi.org>
+v0.8.15 2010-04-03  The Irssi team <staff@irssi.org>
 	+ Add active_window_ignore_refnum option
 	  With active_window_ignore_refnum ON, the current behavior for the
 	  active_window key (meta-a by default) is preserved: it switches to the
