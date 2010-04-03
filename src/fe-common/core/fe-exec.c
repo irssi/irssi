@@ -304,9 +304,9 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 
 	if (rec->pid != 0) {
 		/* parent process */
-                GIOChannel *outio = g_io_channel_unix_new(in[1]);
+                GIOChannel *outio = g_io_channel_new(in[1]);
 
-		rec->in = g_io_channel_unix_new(out[0]);
+		rec->in = g_io_channel_new(out[0]);
 		rec->out = net_sendbuffer_create(outio, 0);
 
                 close(out[1]);

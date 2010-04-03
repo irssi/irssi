@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "commands.h"
 #include "args.h"
+#include "network.h"
 #include "net-sendbuffer.h"
 #include "pidwait.h"
 #include "lib-config/iconfig.h"
@@ -259,7 +260,7 @@ static void session_restore_server(CONFIG_NODE *node)
 				  chatnet, password, nick);
 	if (conn != NULL) {
 		conn->reconnection = TRUE;
-		conn->connect_handle = g_io_channel_unix_new(handle);
+		conn->connect_handle = g_io_channel_new(handle);
 
 		server = proto->server_init_connect(conn);
 		server->version = g_strdup(config_node_get_str(node, "version", NULL));

@@ -42,11 +42,18 @@ union sockaddr_union {
 #  define SIZEOF_SOCKADDR(so) (sizeof(so.sin))
 #endif
 
+GIOChannel *g_io_channel_new(int handle)
+{
+	GIOChannel *chan;
 #ifdef WIN32
-#  define g_io_channel_new(handle) g_io_channel_win32_new_stream_socket(handle)
+	chan = g_io_channel_win32_new_socket(handle);
 #else
-#  define g_io_channel_new(handle) g_io_channel_unix_new(handle)
+	chan = g_io_channel_unix_new(handle);
 #endif
+	g_io_channel_set_encoding(chan, NULL, NULL);
+	g_io_channel_set_buffered(chan, FALSE);
+	return chan;
+}
 
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
@@ -341,36 +348,32 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 int net_receive(GIOChannel *handle, char *buf, int len)
 {
         gsize ret;
-	int err;
+	GIOStatus status;
 
 	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(buf != NULL, -1);
 
-	err = g_io_channel_read(handle, buf, len, &ret);
-	if (err == 0 && ret == 0)
+	status = g_io_channel_read_chars(handle, buf, len, &ret, NULL);
+	if (status == G_IO_STATUS_ERROR || status == G_IO_STATUS_EOF)
 		return -1; /* disconnected */
 
-	if (err == G_IO_ERROR_AGAIN || (err != 0 && errno == EINTR))
-		return 0; /* no bytes received */
-
-	return err == 0 ? (int)ret : -1;
+	return ret;
 }
 
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit(GIOChannel *handle, const char *data, int len)
 {
         gsize ret;
-	int err;
+	GIOStatus status;
 
 	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(data != NULL, -1);
 
-	err = g_io_channel_write(handle, (char *) data, len, &ret);
-	if (err == G_IO_ERROR_AGAIN ||
-	    (err != 0 && (errno == EINTR || errno == EPIPE)))
-		return 0;
+	status = g_io_channel_write_chars(handle, (char *) data, len, &ret, NULL);
+	if (status == G_IO_STATUS_ERROR)
+		return -1;
 
-	return err == 0 ? (int)ret : -1;
+	return ret;
 }
 
 /* Get socket address/port */
