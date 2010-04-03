@@ -367,7 +367,7 @@ static void ctcp_msg_dcc(IRC_SERVER_REC *server, const char *data,
 	args = strchr(str+13, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
-	g_strdown(str+13);
+	ascii_strdown(str+13);
 	if (!signal_emit(str, 6, server, args, nick, addr, target, chat)) {
 		signal_emit("default ctcp msg dcc", 6,
 			    server, data, nick, addr, target, chat);
@@ -389,7 +389,7 @@ static void ctcp_reply_dcc(IRC_SERVER_REC *server, const char *data,
 	args = strchr(str+15, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
-	g_strdown(str+15);
+	ascii_strdown(str+15);
 	if (!signal_emit(str, 5, server, args, nick, addr, target)) {
 		signal_emit("default ctcp reply dcc", 5,
 			    server, data, nick, addr, target);
@@ -502,7 +502,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	g_strup(typestr);
+	ascii_strup(typestr);
 	type = dcc_str2type(typestr);
 	if (type == -1) {
 		signal_emit("dcc error unknown type", 1, typestr);

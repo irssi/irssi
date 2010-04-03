@@ -281,7 +281,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server)
 
 	dcc = dcc_chat_find_id(target+1);
 	if (dcc != NULL) {
-		g_strup(ctcpcmd);
+		ascii_strup(ctcpcmd);
 
 		str = g_strconcat(ctcpcmd, " ", ctcpdata, NULL);
 		dcc_ctcp_message(server, dcc->nick, dcc, FALSE, str);
@@ -719,7 +719,7 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 
 	cmd = g_ascii_strup(cmd, -1);
 
-	g_strdown(event+9);
+	ascii_strdown(event+9);
 	if (!signal_emit(event, 2, dcc, ptr)) {
 		signal_emit(reply ? "default dcc reply" :
 			    "default dcc ctcp", 3, dcc, cmd, ptr);

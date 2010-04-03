@@ -131,7 +131,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 		return;
 	}
 
-	g_strup(ctcpcmd);
+	ascii_strup(ctcpcmd);
 	signal_emit("message irc own_ctcp", 4,
 		    server, ctcpcmd, ctcpdata, target);
 

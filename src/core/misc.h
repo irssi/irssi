@@ -92,6 +92,9 @@ char *stristr(const char *data, const char *key);
 char *strstr_full(const char *data, const char *key);
 char *stristr_full(const char *data, const char *key);
 
+char *ascii_strup(char *str);
+char *ascii_strdown(char *str);
+
 /* Escape all '"', "'" and '\' chars with '\' */
 char *escape_string(const char *str);
 

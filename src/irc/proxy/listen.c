@@ -317,7 +317,7 @@ static void sig_listen_client(CLIENT_REC *client)
 		args = strchr(cmd, ' ');
 		if (args != NULL) *args++ = '\0'; else args = "";
 		if (*args == ':') args++;
-		g_strup(cmd);
+		ascii_strup(cmd);
 
 		handle_client_cmd(client, cmd, args, str);
 
@@ -391,7 +391,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	args = strchr(event+6, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
-        g_strdown(event);
+	ascii_strdown(event);
 
 	signal = server_redirect_peek_signal(server, nick, event, args, &redirected);
 	if ((signal != NULL && strncmp(signal, "proxy ", 6) != 0) ||

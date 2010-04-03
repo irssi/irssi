@@ -550,7 +550,7 @@ static void cmd_statusbar(const char *data)
 
 	/* call the subcommand */
 	signal = g_strconcat("command statusbar ", cmd, NULL);
-        g_strdown(signal);
+	ascii_strdown(signal);
 	if (!signal_emit(signal, 4, params, NULL, NULL, node)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    TXT_STATUSBAR_UNKNOWN_COMMAND, cmd);

@@ -290,7 +290,7 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	args = strchr(event+6, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
-        g_strdown(event);
+	ascii_strdown(event);
 
         /* check if event needs to be redirected */
 	signal = server_redirect_get_signal(server, nick, event, args);

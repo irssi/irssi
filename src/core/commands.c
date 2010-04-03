@@ -325,7 +325,7 @@ void command_runsub(const char *cmd, const char *data,
 
 	subcmd = g_strconcat("command ", newcmd, NULL);
 
-	g_strdown(subcmd);
+	ascii_strdown(subcmd);
 	if (!signal_emit(subcmd, 3, args, server, item)) {
 		defcmd = g_strdup_printf("default command %s", cmd);
 		if (!signal_emit(defcmd, 3, data, server, item)) {
@@ -891,7 +891,7 @@ static void parse_command(const char *command, int expand_aliases,
 	}
 
 	cmd = g_strconcat("command ", newcmd, NULL);
-	g_strdown(cmd);
+	ascii_strdown(cmd);
 
 	oldcmd = current_command;
 	current_command = cmd+8;

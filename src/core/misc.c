@@ -943,3 +943,21 @@ int parse_size(const char *size, int *bytes)
 
 	return TRUE;
 }
+
+char *ascii_strup(char *str)
+{
+	char *s;
+
+	for (s = str; *s; s++)
+		*s = g_ascii_toupper (*s);
+	return str;
+}
+
+char *ascii_strdown(char *str)
+{
+	char *s;
+
+	for (s = str; *s; s++)
+		*s = g_ascii_tolower (*s);
+	return str;
+}

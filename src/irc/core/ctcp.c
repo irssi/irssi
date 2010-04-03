@@ -238,7 +238,7 @@ static void ctcp_msg(IRC_SERVER_REC *server, const char *data,
 	args = strchr(str+9, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
-	g_strdown(str+9);
+	ascii_strdown(str+9);
 	if (!signal_emit(str, 5, server, args, nick, addr, target)) {
 		signal_emit("default ctcp msg", 5,
 			    server, data, nick, addr, target);
@@ -258,7 +258,7 @@ static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
 	args = strchr(str+11, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
-	g_strdown(str+11);
+	ascii_strdown(str+11);
 	if (!signal_emit(str, 5, server, args, nick, addr, target)) {
 		signal_emit("default ctcp reply", 5,
 			    server, data, nick, addr, target);
