@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "levels.h"
 #include "settings.h"
+#include "misc.h"
 
 #include "irc.h"
 #include "irc-servers.h"

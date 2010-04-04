@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "levels.h"
 #include "lib-config/iconfig.h"
+#include "misc.h"
 
 #include "statusbar.h"
 #include "printtext.h"
