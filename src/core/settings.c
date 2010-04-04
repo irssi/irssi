@@ -150,7 +150,7 @@ int settings_get_size(const char *key)
 
 char *settings_get_print(SETTINGS_REC *rec)
 {
-	char *value;
+	char *value = NULL;
 
 	switch(rec->type) {
 	case SETTING_TYPE_BOOLEAN:

@@ -513,7 +513,7 @@ server_redirect_get(IRC_SERVER_REC *server, const char *prefix,
 		    const char *event, const char *args,
 		    REDIRECT_REC **redirect, int *match)
 {
-        const char *signal;
+	const char *signal = NULL;
 	GSList *ptr, *next;
 	REDIRECT_REC *r;
 

@@ -352,8 +352,8 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	static char **nested_orig_cmd = NULL; /* FIXME: KLUDGE! */
 	char command, *value;
 
-	char align_pad;
-	int align, align_flags;
+	char align_pad = '\0';
+	int align = 0, align_flags = 0;
 
 	char *nest_value;
 	int brackets, nest_free;
