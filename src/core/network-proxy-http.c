@@ -63,7 +63,7 @@ send_connect(struct _network_proxy_http *proxy, GIOChannel *ch, char const *addr
 	    !_network_proxy_send_all(ch, port_str,   -1) ||
 	    !_network_proxy_send_all(ch, " HTTP/1.0\r\n\r\n", -1) ||
 	    !_network_proxy_flush(ch))
-		return -1;
+		return false;
 
 	return true;
 }
