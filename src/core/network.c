@@ -349,11 +349,16 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 {
         gsize ret;
 	GIOStatus status;
+	GError *err = NULL;
 
 	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(buf != NULL, -1);
 
-	status = g_io_channel_read_chars(handle, buf, len, &ret, NULL);
+	status = g_io_channel_read_chars(handle, buf, len, &ret, &err);
+	if (err != NULL) {
+	        g_warning(err->message);
+	        g_error_free(err);
+	}
 	if (status == G_IO_STATUS_ERROR || status == G_IO_STATUS_EOF)
 		return -1; /* disconnected */
 
@@ -365,11 +370,16 @@ int net_transmit(GIOChannel *handle, const char *data, int len)
 {
         gsize ret;
 	GIOStatus status;
+	GError *err = NULL;
 
 	g_return_val_if_fail(handle != NULL, -1);
 	g_return_val_if_fail(data != NULL, -1);
 
-	status = g_io_channel_write_chars(handle, (char *) data, len, &ret, NULL);
+	status = g_io_channel_write_chars(handle, (char *) data, len, &ret, &err);
+	if (err != NULL) {
+	        g_warning(err->message);
+	        g_error_free(err);
+	}
 	if (status == G_IO_STATUS_ERROR)
 		return -1;
 

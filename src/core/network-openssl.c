@@ -247,6 +247,7 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint ret1, err;
 	const char *errstr;
+	gchar *errmsg;
 
 	ret1 = SSL_read(chan->ssl, buf, len);
 	if(ret1 <= 0)
@@ -271,9 +272,10 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 			if (errstr == NULL)
 				errstr = "unknown SSL error";
 		}
-		g_warning("SSL read error: %s", errstr);
+		errmsg = g_strdup_printf("SSL read error: %s", errstr);
 		*gerr = g_error_new_literal(G_IO_CHANNEL_ERROR, G_IO_CHANNEL_ERROR_FAILED,
-					    errstr);
+					    errmsg);
+		g_free(errmsg);
 		return G_IO_STATUS_ERROR;
 	}
 	else
@@ -290,6 +292,7 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	gint ret1, err;
 	const char *errstr;
+	gchar *errmsg;
 
 	ret1 = SSL_write(chan->ssl, (const char *)buf, len);
 	if(ret1 <= 0)
@@ -314,9 +317,10 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 			if (errstr == NULL)
 				errstr = "unknown SSL error";
 		}
-		g_warning("SSL write error: %s", errstr);
+		errmsg = g_strdup_printf("SSL write error: %s", errstr);
 		*gerr = g_error_new_literal(G_IO_CHANNEL_ERROR, G_IO_CHANNEL_ERROR_FAILED,
-					    errstr);
+					    errmsg);
+		g_free(errmsg);
 		return G_IO_STATUS_ERROR;
 	}
 	else
