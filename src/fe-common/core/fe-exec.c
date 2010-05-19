@@ -529,8 +529,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
 /* SYNTAX: EXEC [-] [-nosh] [-out | -msg <target> | -notice <target>]
 		[-name <name>] <cmd line>
 	   EXEC -out | -window | -msg <target> | -notice <target> |
-		-close | -<signal> <id>
-	   EXEC -in <id> <text to send to process> */
+		-close | -<signal> %<id>
+	   EXEC -in %<id> <text to send to process> */
 static void cmd_exec(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
