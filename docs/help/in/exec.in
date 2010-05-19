@@ -28,7 +28,7 @@ Processes can be accessed either by their ID or name if you named it.
 Process identifier must always begin with '%%' character, like %%0 or
 %%name.
 
-Once the process is started, it's output can still be redirected
+Once the process is started, its output can still be redirected
 elsewhere with the -window, -msg, etc. options. You can send text to
 standard input of the process with -in option.
 
