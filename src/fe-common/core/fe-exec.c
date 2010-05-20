@@ -197,11 +197,16 @@ static void process_destroy(PROCESS_REC *rec, int status)
 static void processes_killall(int signum)
 {
 	GSList *tmp;
+	int kill_ret;
 
 	for (tmp = processes; tmp != NULL; tmp = tmp->next) {
 		PROCESS_REC *rec = tmp->data;
 
-		kill(rec->pid, signum);
+		kill_ret = kill(-rec->pid, signum);
+		if (kill_ret != 0)
+		        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+		                  "Error sending signal %d to pid %d: %s",
+		                  signum, rec->pid, g_strerror(errno));
 	}
 }
 
@@ -378,7 +383,7 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	PROCESS_REC *rec;
 	SERVER_REC *target_server;
         char *target, *level;
-	int notice, signum, interactive, target_nick, target_channel;
+	int notice, signum, interactive, target_nick, target_channel, kill_ret;
 
 	/* check that there's no unknown options. we allowed them
 	   because signals can be used as options, but there should be
@@ -445,8 +450,12 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	}
 
 	if (signum != -1) {
-		/* send a signal to process */
-                kill(rec->pid, signum);
+		/* send a signal to process group */
+                kill_ret = kill(-rec->pid, signum);
+                if (kill_ret != 0)
+                        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+                                  "Error sending signal %d to pid %d: %s",
+                                  signum, rec->pid, g_strerror(errno));
                 return;
 	}
 
