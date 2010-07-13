@@ -154,7 +154,7 @@ static void cmd_ignore(const char *data)
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(chanarg, ",", -1);
 
-	rec = patternarg != NULL ? NULL: ignore_find(NULL, mask, channels);
+	rec = patternarg != NULL ? NULL: ignore_find(servertag, mask, channels);
 	new_ignore = rec == NULL;
 
 	if (rec == NULL) {
