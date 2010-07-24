@@ -129,7 +129,6 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 	op = config_node_get_bool(node, "op", FALSE);
         voice = config_node_get_bool(node, "voice", FALSE);
         halfop = config_node_get_bool(node, "halfop", FALSE);
-	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE);
 	prefixes = config_node_get_str(node, "prefixes", NULL);
 	if (prefixes == NULL || *prefixes == '\0') {
 		/* upgrading from old irssi or from an in-between
@@ -146,9 +145,7 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 		newprefixes[i] = '\0';
 		prefixes = newprefixes;
 	}
-	strocpy(nickrec->prefixes,
-		prefixes,
-		sizeof(nickrec->prefixes));
+	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE, prefixes);
 }
 
 static void session_restore_channel(IRC_CHANNEL_REC *channel)

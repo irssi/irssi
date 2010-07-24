@@ -58,6 +58,6 @@ irc_nick_insert(channel, nick, op, halfop, voice, send_massjoin)
 	int voice
 	int send_massjoin
 CODE:
-	RETVAL = irc_nicklist_insert(channel, nick, op, halfop, voice, send_massjoin);
+	RETVAL = irc_nicklist_insert(channel, nick, op, halfop, voice, send_massjoin, NULL);
 OUTPUT:
 	RETVAL
