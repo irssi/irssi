@@ -97,28 +97,28 @@ static char *tls_text_name(X509_NAME *name, int nid)
 
 	if (name == 0 || (pos = X509_NAME_get_index_by_NID(name, nid, -1)) < 0) {
 		return NULL;
-    }
+	}
 
-    entry = X509_NAME_get_entry(name, pos);
-    g_return_val_if_fail(entry != NULL, NULL);
-    entry_str = X509_NAME_ENTRY_get_data(entry);
-    g_return_val_if_fail(entry_str != NULL, NULL);
+	entry = X509_NAME_get_entry(name, pos);
+	g_return_val_if_fail(entry != NULL, NULL);
+	entry_str = X509_NAME_ENTRY_get_data(entry);
+	g_return_val_if_fail(entry_str != NULL, NULL);
 
-    /* Convert everything into UTF-8. It's up to OpenSSL to do something
+	/* Convert everything into UTF-8. It's up to OpenSSL to do something
 	   reasonable when converting ASCII formats that contain non-ASCII
 	   content. */
-    if ((utf8_length = ASN1_STRING_to_UTF8(&utf8_value, entry_str)) < 0) {
-    	g_warning("Error decoding ASN.1 type=%d", ASN1_STRING_type(entry_str));
-    	return NULL;
-    }
+	if ((utf8_length = ASN1_STRING_to_UTF8(&utf8_value, entry_str)) < 0) {
+		g_warning("Error decoding ASN.1 type=%d", ASN1_STRING_type(entry_str));
+		return NULL;
+	}
 
-    if (has_internal_nul((char *)utf8_value, utf8_length)) {
-    	g_warning("NUL character in hostname in certificate");
-    	OPENSSL_free(utf8_value);
-    	return NULL;
-    }
+	if (has_internal_nul((char *)utf8_value, utf8_length)) {
+		g_warning("NUL character in hostname in certificate");
+		OPENSSL_free(utf8_value);
+		return NULL;
+	}
 
-    result = g_strdup((char *) utf8_value);
+	result = g_strdup((char *) utf8_value);
 	OPENSSL_free(utf8_value);
 	return result;
 }
@@ -168,10 +168,10 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 			if (cert_dns_name && *cert_dns_name) {
 				matched = match_hostname(cert_dns_name, hostname);
 			}
-    	}
+		}
 
-	    /* Free stack *and* member GENERAL_NAME objects */
-	    sk_GENERAL_NAME_pop_free(gens, GENERAL_NAME_free);
+		/* Free stack *and* member GENERAL_NAME objects */
+		sk_GENERAL_NAME_pop_free(gens, GENERAL_NAME_free);
 	}
 
 	if (has_dns_name) {
@@ -182,15 +182,15 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 		return matched;
 	} else { /* No subjectAltNames, look at CommonName */
 		cert_subject_cn = tls_text_name(X509_get_subject_name(cert), NID_commonName);
-	    if (cert_subject_cn && *cert_subject_cn) {
-	    	matched = match_hostname(cert_subject_cn, hostname);
-	    	if (! matched) {
+		if (cert_subject_cn && *cert_subject_cn) {
+			matched = match_hostname(cert_subject_cn, hostname);
+			if (! matched) {
 				g_warning("SSL certificate common name '%s' doesn't match host name '%s'", cert_subject_cn, hostname);
-	    	}
-	    } else {
-	    	g_warning("No subjectAltNames and no valid common name in certificate");
-	    }
-	    free(cert_subject_cn);
+			}
+		} else {
+			g_warning("No subjectAltNames and no valid common name in certificate");
+		}
+		free(cert_subject_cn);
 	}
 
 	return matched;
