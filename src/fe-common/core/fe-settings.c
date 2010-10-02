@@ -66,14 +66,20 @@ static void set_print_pattern(const char *pattern)
 
 static void set_boolean(const char *key, const char *value)
 {
-	if (g_ascii_strcasecmp(value, "ON") == 0)
+	char *stripped_value;
+	stripped_value = g_strdup(value);
+	g_strstrip(stripped_value);
+
+	if (g_ascii_strcasecmp(stripped_value, "ON") == 0)
 		settings_set_bool(key, TRUE);
-	else if (g_ascii_strcasecmp(value, "OFF") == 0)
+	else if (g_ascii_strcasecmp(stripped_value, "OFF") == 0)
 		settings_set_bool(key, FALSE);
-	else if (g_ascii_strcasecmp(value, "TOGGLE") == 0)
+	else if (g_ascii_strcasecmp(stripped_value, "TOGGLE") == 0)
 		settings_set_bool(key, !settings_get_bool(key));
 	else
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
+
+    g_free(stripped_value);
 }
 
 static void set_int(const char *key, const char *value)
