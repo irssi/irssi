@@ -152,6 +152,7 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 	CONFIG_NODE *subnode;
         CHAT_PROTOCOL_REC *proto;
 	const char *type;
+	WINDOW_BIND_REC *rec;
 
 	type = module_find_id_str("WINDOW ITEM TYPE", item->type);
 	if (type == NULL)
@@ -168,8 +169,11 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 
 	if (item->server != NULL) {
 		iconfig_node_set_str(subnode, "tag", item->server->tag);
-		if (IS_CHANNEL(item))
-		    window_bind_add(window, item->server->tag, item->visible_name);
+		if (IS_CHANNEL(item)) {
+			rec = window_bind_add(window, item->server->tag, item->visible_name);
+			if (rec != NULL)
+				rec->sticky = TRUE;
+		}
 	} else if (IS_QUERY(item)) {
 		iconfig_node_set_str(subnode, "tag", QUERY(item)->server_tag);
 	}
