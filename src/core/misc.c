@@ -756,17 +756,22 @@ int expand_escape(const char **data)
                 /* control character (\cA = ^A) */
                 (*data)++;
 		return i_toupper(**data) - 64;
-	default:
-		if (!i_isdigit(**data))
-			return -1;
-
+	case '0': case '1': case '2': case '3':
+	case '4': case '5': case '6': case '7':
                 /* octal */
+		digit[1] = digit[2] = digit[3] = '\0';
                 digit[0] = (*data)[0];
-                digit[1] = (*data)[1];
-		digit[2] = (*data)[2];
-                digit[3] = '\0';
-		*data += 2;
+		if ((*data)[1] >= '0' && (*data)[1] <= '7') {
+			++*data;
+			digit[1] = **data;
+			if ((*data)[1] >= '0' && (*data)[1] <= '7') {
+				++*data;
+				digit[2] = **data;
+			}
+		}
 		return strtol(digit, NULL, 8);
+	default:
+		return -1;
 	}
 }
 
