@@ -568,6 +568,7 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 		"Nick"
 	};
 	static char *find_use_code =
+		"use lib qw(%s);\n"
 		"my $pkg = Irssi::%s; $pkg =~ s/::/\\//;\n"
 		"foreach my $i (@INC) {\n"
 		"  return 1 if (-f \"$i/$pkg.pm\");\n"
@@ -626,7 +627,8 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 		perl_eval_pv(code, TRUE);
 	}
 
-	pcode = g_strdup_printf(find_use_code, name);
+	pcode = g_strdup_printf(find_use_code, 
+	                        settings_get_str("perl_use_lib"), name);
 	sv = perl_eval_pv(pcode, TRUE);
 	g_free(pcode);
 
