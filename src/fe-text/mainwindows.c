@@ -1642,7 +1642,8 @@ static int window_refnum_left(int refnum, int wrap)
 			break;
 
 		window = window_find_refnum(refnum);
-	} while (!WINDOW_STICKY_MATCH(window, find_sticky));
+	} while (!WINDOW_STICKY_MATCH(window, find_sticky) ||
+                 is_window_visible(window));
 
         return refnum;
 }
@@ -1664,7 +1665,8 @@ static int window_refnum_right(int refnum, int wrap)
 			break;
 
 		window = window_find_refnum(refnum);
-	} while (!WINDOW_STICKY_MATCH(window, find_sticky));
+	} while (!WINDOW_STICKY_MATCH(window, find_sticky) ||
+                 is_window_visible(window));
 
         return refnum;
 }
