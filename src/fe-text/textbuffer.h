@@ -8,15 +8,20 @@
 #define LINE_COLOR_BG		0x20
 #define LINE_COLOR_DEFAULT	0x10
 
+/* command values (see _LINE_REC protocol) */
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
 	LINE_CMD_CONTINUE,	/* line continues in next block */
+	/* TODO: no longer needed */
 	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
 	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
 	LINE_CMD_REVERSE,	/* enable/disable reversed text */
 	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
 	LINE_CMD_BLINK,		/* enable/disable blink */
 	LINE_CMD_BOLD,		/* enable/disable bold */
+	LINE_CMD_SELECT_FG,
+	LINE_CMD_SELECT_BG
+
 };
 
 typedef struct {
@@ -24,6 +29,7 @@ typedef struct {
 	time_t time;
 } LINE_INFO_REC;
 
+/* TODO: fixme. */
 typedef struct _LINE_REC {
 	/* Text in the line. \0 means that the next char will be a
 	   color or command.
@@ -38,6 +44,28 @@ typedef struct _LINE_REC {
 
 	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
 	   LINE_CMD_COLOR0 instead. */
+
+
+     /* NEW COLOUR PROTOCOL:
+
+	0x00 - indicates command or colour.
+	0x01 - command follows   (1 byte)
+	-- following may be omitted if LINE_CMD_USE_DEFAULT_[FB}G is set.
+	0x02 - BG colour follows (1 byte)
+	0x04 - FG colour follows (1 byte)
+
+	
+	Things that will need to be fixed:
+
+	* textbuffer-view.c:update_cmd_color()
+	* textbuffer-view.c:view_line_draw()
+	* textbuffer-view.c:view_update_line_cache()
+
+	* textbuffer.c:textbuffer_line2text()
+	* textbuffer.c:mark_temp_eol macro
+	
+	* gui-printtext.c ?
+      */
 	struct _LINE_REC *prev, *next;
 
 	unsigned char *text;

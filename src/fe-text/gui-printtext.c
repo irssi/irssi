@@ -146,24 +146,43 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 static void get_colors(int flags, int *fg, int *bg, int *attr)
 {
 	if (flags & GUI_PRINT_FLAG_MIRC_COLOR) {
+	     g_message( "getcolor: handling mirc colors\n");
+	     
 		/* mirc colors - real range is 0..15, but after 16
 		   colors wrap to 0, 1, ... */
                 if (*bg >= 0) *bg = mirc_colors[*bg % 16];
 		if (*fg >= 0) *fg = mirc_colors[*fg % 16];
+		/*  TODO: What to do here? */
 		if (settings_get_bool("mirc_blink_fix"))
 			*bg &= ~0x08;
 	}
 
-	if (*fg < 0 || *fg > 15)
+	if (*fg < 0 || *fg > 255) {
+	     g_message( "getcolor: fg %d outside range, setting to -1\n", *fg);
 		*fg = -1;
-	if (*bg < 0 || *bg > 15)
+	}
+	if (*bg < 0 || *bg > 255) {
+	     g_message( "getcolor: bf %d outside range, setting to -1\n", *bg);
                 *bg = -1;
+	}
 
 	*attr = 0;
-	if (flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
-	if (flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
-	if (flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
-	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
+	if (flags & GUI_PRINT_FLAG_REVERSE) {
+	     *attr |= ATTR_REVERSE;
+	     g_message( "getcolor: setting flag_reverse\n");
+	}
+	if (flags & GUI_PRINT_FLAG_BOLD) {
+	     *attr |= ATTR_BOLD;
+	     g_message( "getcolor: setting flag_bold\n");
+	}
+	if (flags & GUI_PRINT_FLAG_UNDERLINE) {
+	     *attr |= ATTR_UNDERLINE;
+	     g_message( "getcolor: setting flag_underline\n");
+	}
+	if (flags & GUI_PRINT_FLAG_BLINK) {
+	     *attr |= ATTR_BLINK;
+	     g_message( "getcolor: setting flag_blink\n");
+	}
 }
 
 static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
@@ -184,16 +203,32 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         LINE_INFO_REC lineinfo;
 	int fg, bg, flags, attr;
 
+	attr = 0;
+
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
+
+	g_message( "SGPT str: '%s'\n", str);
+
+
+	g_message( "SGPT start: fg: %d (%02x), bg: %d (%02x) attr: %d (%04x), flags: %d (0x%04x)\n",
+		fg, fg, bg, bg, attr, attr, flags, flags);
+
 	get_colors(flags, &fg, &bg, &attr);
+
+	g_message( "SGPT getcol: fg: %d (%02x), bg: %d (%02x) attr: %d (%04x)\n",
+		fg, fg, (bg << 8), (bg << 8), attr, attr);
 
 	if (window == NULL) {
                 g_return_if_fail(next_xpos != -1);
 
 		attr |= fg >= 0 ? fg : ATTR_RESETFG;
-		attr |= bg >= 0 ? (bg << 4) : ATTR_RESETBG;
+		attr |= bg >= 0 ? (bg << 8) : ATTR_RESETBG;
+		g_message( 
+			"SGPT nowin: fg: %d (%02x), bg: %d (%02x) attr: %d (%04x)\n",
+			fg, fg, (bg << 8), (bg << 8), attr, attr);
+
 		term_set_color(root_window, attr);
 
 		term_move(root_window, next_xpos, next_ypos);

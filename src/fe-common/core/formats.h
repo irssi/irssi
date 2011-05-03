@@ -4,6 +4,12 @@
 #include "themes.h"
 #include "fe-windows.h"
 
+/* various types of colour codings possible. */
+#define MIRC_BOLD_MARKER   ('\002')
+#define MIRC_COLOR_MARKER  ('\003')
+#define LINE_FORMAT_MARKER ('\004')
+
+
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002
 #define GUI_PRINT_FLAG_UNDERLINE     0x0004

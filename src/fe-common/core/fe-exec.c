@@ -348,12 +348,12 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 	if (rec->shell) {
 		execvp(shell_args[0], (char **) shell_args);
 
-		fprintf(stderr, "Exec: /bin/sh: %s\n", g_strerror(errno));
+		g_message( "Exec: /bin/sh: %s\n", g_strerror(errno));
 	} else {
 		args = g_strsplit(cmd, " ", -1);
                 execvp(args[0], args);
 
-		fprintf(stderr, "Exec: %s: %s\n", args[0], g_strerror(errno));
+		g_message( "Exec: %s: %s\n", args[0], g_strerror(errno));
 	}
 
 	_exit(-1);

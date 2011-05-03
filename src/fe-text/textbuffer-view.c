@@ -104,46 +104,63 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
                 textbuffer_cache_destroy(cache);
 }
 
-#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | 0x0f)
-#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | 0xf0)
+#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | 0xff)
+#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | 0xff00)
 
 static void update_cmd_color(unsigned char cmd, int *color)
 {
-	if ((cmd & 0x80) == 0) {
-		if (cmd & LINE_COLOR_BG) {
-			/* set background color */
-			*color &= FGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
-				*color |= (cmd & 0x0f) << 4;
-			else {
-				*color = (*color & FGATTR) | ATTR_RESETBG;
-			}
-		} else {
-			/* set foreground color */
-			*color &= BGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
-				*color |= cmd & 0x0f;
-			else {
-				*color = (*color & BGATTR) | ATTR_RESETFG;
-			}
-		}
-	} else switch (cmd) {
+     static int next_color_bg = 0;
+     g_message( "update_cmd_color() color: 0x%08x, cmd: 0x%08x\n", *color, cmd);
+
+     if (cmd & 0x80) { /* cmd message */
+	  switch (cmd) {
+
 	case LINE_CMD_UNDERLINE:
 		*color ^= ATTR_UNDERLINE;
+	       g_message( "update_cmd_color() toggle underline 0x%08d\n", *color);
+
 		break;
 	case LINE_CMD_REVERSE:
+
 		*color ^= ATTR_REVERSE;
+	       g_message( "update_cmd_color() toggle reverse 0x%08d\n", *color);
+
 		break;
 	case LINE_CMD_BLINK:
+
 		*color ^= ATTR_BLINK;
+	       g_message( "update_cmd_color() toggle blink 0x%08d\n", *color);
+
 		break;
 	case LINE_CMD_BOLD:
+
 		*color ^= ATTR_BOLD;
+	       g_message( "update_cmd_color() toggle bold 0x%08d\n", *color);
+
 		break;
 	case LINE_CMD_COLOR0:
 		*color &= BGATTR;
+	       g_message( "update_cmd_color() set BGATTR RESET 0x%08d\n", *color);
+
+	       break;
+	  case LINE_CMD_SELECT_FG:
+	       next_color_bg = 0;
+	       g_message( "update_cmd_color() Next color will be FG\n");
+
+	       break;
+
+	  case LINE_CMD_SELECT_BG:
+	       next_color_bg = 1;
+	       g_message( "update_cmd_color() Next color will be BG\n");
 		break;
 	}
+     } else {
+	  if (next_color_bg == 1) {
+	       *color = cmd << 8;
+	  } else {
+	       *color = cmd;
+	  }
+     }
 }
 
 static inline unichar read_unichar(const unsigned char *data, const unsigned char **next, int *width)
@@ -356,6 +373,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	xpos = drawcount = 0; first = TRUE;
 	text_newline = text =
 		subline == 0 ? line->text : cache->lines[subline-1].start;
+	g_message( "view_line_draw()\n");
 	for (;;) {
 		if (text == text_newline) {
 			if (need_clrtoeol && xpos < term_width) {
@@ -394,9 +412,11 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 					xpos = indent_func(view, line, ypos);
 			}
 
-			if (need_move || xpos > 0)
+			if (need_move || xpos > 0) {
 				term_move(view->window, xpos, ypos);
+			}
 
+			g_message( "view_line_draw(): color: 0x%08x\n", color);
 			term_set_color(view->window, color);
 
 			if (subline == cache->count-1) {
@@ -424,6 +444,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				continue;
 			} else {
 				update_cmd_color(*text, &color);
+				g_message( "post update_cmd_color: 0x%08x\n",
+					color);
+
 				term_set_color(view->window, color);
 			}
 			text++;
@@ -453,8 +476,12 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 					term_addch(view->window, *text);
 			} else {
 				/* low-ascii */
+			     g_message( "printing inverse char %c\n",
+				     (chr & 127)+'A'-1);
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
 				term_addch(view->window, (chr & 127)+'A'-1);
+				g_message( "setting color back to: 0x%08x\n",
+					color);
 				term_set_color(view->window, color);
 			}
 		}

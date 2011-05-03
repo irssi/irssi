@@ -55,6 +55,9 @@ static int no_autoconnect;
 static char *cmdline_nick;
 static char *cmdline_hostname;
 
+static char *irssi_logfile = NULL;
+static FILE * logfile_FILE = NULL;
+
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
 
@@ -120,13 +123,26 @@ static void sig_channel_destroyed(CHANNEL_REC *channel)
 
 void fe_common_core_register_options(void)
 {
-	static GOptionEntry options[] = {
-		{ "connect", 'c', 0, G_OPTION_ARG_STRING, &autocon_server, "Automatically connect to server/network", "SERVER" },
-		{ "password", 'w', 0, G_OPTION_ARG_STRING, &autocon_password, "Autoconnect password", "PASSWORD" },
-		{ "port", 'p', 0, G_OPTION_ARG_INT, &autocon_port, "Autoconnect port", "PORT" },
-		{ "noconnect", '!', 0, G_OPTION_ARG_NONE, &no_autoconnect, "Disable autoconnecting", NULL },
+	static GOptionEntry options[] 
+	     = {
+	     { "connect", 'c', 0, G_OPTION_ARG_STRING, &autocon_server, 
+	       "Automatically connect to server/network", "SERVER" 
+	     },
+	     { "password", 'w', 0, G_OPTION_ARG_STRING, &autocon_password,
+	       "Autoconnect password", "PASSWORD" 
+	     },
+	     { "port", 'p', 0, G_OPTION_ARG_INT, &autocon_port,
+		  "Autoconnect port", "PORT" },
+	     { "noconnect", '!', 0, G_OPTION_ARG_NONE, &no_autoconnect,
+	       "Disable autoconnecting", NULL },
 		{ "nick", 'n', 0, G_OPTION_ARG_STRING, &cmdline_nick, "Specify nick to use", NULL },
-		{ "hostname", 'h', 0, G_OPTION_ARG_STRING, &cmdline_hostname, "Specify host name to use", NULL },
+	     { "hostname", 'h', 0, G_OPTION_ARG_STRING, &cmdline_hostname,
+	       "Specify host name to use", NULL },
+	     { "logfile", 0, 0, G_OPTION_ARG_FILENAME, &irssi_logfile,
+	       "Logfile to write debugging data which would otherwise be printed " \
+	       "to STDERR or as Irssi internal messages", "PATH"
+	     },
+
 		{ NULL }
 	};
 
@@ -142,6 +158,9 @@ void fe_common_core_register_options(void)
 void fe_common_core_init(void)
 {
 	const char *str;
+
+	logfile_FILE = g_fopen(irssi_logfile, "a");
+	if (logfile_FILE == NULL) irssi_logfile = NULL;
 
 	settings_add_bool("lookandfeel", "timestamps", TRUE);
 	settings_add_level("lookandfeel", "timestamp_level", "ALL");
@@ -243,6 +262,10 @@ void fe_common_core_deinit(void)
         signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
         signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
         signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+
+	if (irssi_logfile && logfile_FILE) {
+	     fclose(logfile_FILE);
+	}
 }
 
 void glog_func(const char *log_domain, GLogLevelFlags log_level,
@@ -257,17 +280,24 @@ void glog_func(const char *log_domain, GLogLevelFlags log_level,
 	case G_LOG_LEVEL_CRITICAL:
                 reason = "critical";
 		break;
+	case G_LOG_LEVEL_MESSAGE:
+	     reason = "msg";
+	     break;
 	default:
 		reason = "error";
                 break;
 	}
 
-	if (windows == NULL)
-		fprintf(stderr, "GLib %s: %s\n", reason, message);
-	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    TXT_GLIB_ERROR, reason, message);
+	if (irssi_logfile != NULL && logfile_FILE != NULL) {
+	     fprintf(logfile_FILE, "GLib: %s: %s", reason, message);
+	     fflush(logfile_FILE);
+	} else { //  if (windows == NULL)
+	     fprintf(stderr, "GLib %s: %s", reason, message);
 	}
+	/* else { */
+	/*      printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, */
+	/* 		 TXT_GLIB_ERROR, reason, message); */
+	/* } */
 }
 
 #define MSGS_WINDOW_LEVELS (MSGLEVEL_MSGS|MSGLEVEL_ACTIONS|MSGLEVEL_DCCMSGS)

@@ -519,19 +519,19 @@ static int term_setup(TERM_REC *term)
 
 	term_env = getenv("TERM");
 	if (term_env == NULL) {
-		fprintf(stderr, "TERM environment not set\n");
+		g_message( "TERM environment not set\n");
                 return 0;
 	}
 
 #ifdef HAVE_TERMINFO
 	if (setupterm(term_env, 1, &err) != 0) {
-		fprintf(stderr, "setupterm() failed for TERM=%s: %d\n", term_env, err);
+		g_message( "setupterm() failed for TERM=%s: %d\n", term_env, err);
 		return 0;
 	}
 #else
 	if (tgetent(term->buffer1, term_env) < 1)
 	{
-		fprintf(stderr, "Termcap not found for TERM=%s\n", term_env);
+		g_message( "Termcap not found for TERM=%s\n", term_env);
 		return 0;
 	}
 #endif
@@ -544,7 +544,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->TI_hpa && term->TI_vpa)
 		term->move = _move_pa;
 	else {
-                fprintf(stderr, "Terminal doesn't support cursor movement\n");
+                g_message( "Terminal doesn't support cursor movement\n");
 		return 0;
 	}
 	term->move_relative = _move_relative;
@@ -561,7 +561,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1))
 		term->scroll = _scroll_line_1;
 	else if (term->scroll == NULL) {
-                fprintf(stderr, "Terminal doesn't support scrolling\n");
+                g_message( "Terminal doesn't support scrolling\n");
 		return 0;
 	}
 
@@ -578,7 +578,7 @@ static int term_setup(TERM_REC *term)
 		/* we could do this by line inserts as well, but don't
 		   bother - if some terminal has insert line it most probably
 		   has delete line as well, if not a regular clear screen */
-                fprintf(stderr, "Terminal doesn't support clearing screen\n");
+                g_message( "Terminal doesn't support clearing screen\n");
 		return 0;
 	}
 
@@ -586,7 +586,7 @@ static int term_setup(TERM_REC *term)
 	if (term->TI_el)
 		term->clrtoeol = _clrtoeol;
 	else {
-                fprintf(stderr, "Terminal doesn't support clearing to end of line\n");
+                g_message( "Terminal doesn't support clearing to end of line\n");
 		return 0;
 	}
 

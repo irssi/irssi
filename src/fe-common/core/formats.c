@@ -66,6 +66,8 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 {
 	int set;
 
+	g_message( "format_expand_codes()\n");
+
 	if (flags == NULL) {
 		/* flags are being ignored - skip the code */
 		while (**format != ']')
@@ -103,9 +105,20 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 
 int format_expand_styles(GString *out, const char **format, int *flags)
 {
+     int retval = 1;
+
 	char *p, fmt;
 
+	/* storage for numerical parsing code for %x/X formats. */
+	unsigned char accum = 0;
+	int tmp, i;
+
+	//memset(num_buf, 0, 4);
+
 	fmt = **format;
+
+	g_message( "format_expand_styles: fmtchar: %c\n", fmt);
+
 	switch (fmt) {
 	case '{':
 	case '}':
@@ -121,6 +134,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 	case '9':
 	case '_':
 		/* bold on/off */
+	     g_message( "setting bold flag: %04x\n", FORMAT_STYLE_BOLD);
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_BOLD);
 		break;
@@ -162,6 +176,46 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		/* code */
 		format_expand_code(format, out, flags);
 		break;
+	case 'x':
+	     tmp = 0;
+	     accum = 0;
+	     for (i = 1; i < 3; i++) {
+		  char fmtchar = (*format)[i];
+		  g_message("Format X: code: %c\n", fmtchar);
+		  tmp = g_ascii_xdigit_value(fmtchar);
+		  if (tmp != -1) {
+		       accum = accum * 16 + tmp;
+		  }	
+	     }
+	     retval += i - 1;
+
+	     g_string_append_c(out, 4);
+	     g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+	     g_string_append_c(out, accum);
+
+	     g_message("Format x: code: %d (0x%02x)\n", accum, accum);
+	     
+	     break;
+	case 'X':
+	     tmp = 0;
+	     accum = 0;
+	     for (i = 1; i < 3; i++) {
+		  char fmtchar = (*format)[i];
+		  g_message("Format X: code: %c\n", fmtchar);
+		  tmp = g_ascii_xdigit_value(fmtchar);
+		  if (tmp != -1) {
+		       accum = accum * 16 + tmp;
+		  }	
+	     }
+	     g_string_append_c(out, 4);
+	     g_string_append_c(out, accum);
+	     g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+	     retval += i - 1;
+
+	     g_message("Format X: code: %d (0x%02x)\n", accum, accum);
+	     
+	     break;
+
 	default:
 		/* check if it's a background color */
 		p = strchr(format_backs, fmt);
@@ -169,6 +223,8 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 			g_string_append_c(out, 4);
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			g_string_append_c(out, (char) ((int) (p-format_backs)+'0'));
+			g_message( "BG: Printing: %d '%s'\n", 
+				((int) (p-format_backs)+'0'), out->str);
 			break;
 		}
 
@@ -176,6 +232,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		if (fmt == 'p') fmt = 'm';
 		p = strchr(format_fores, fmt);
 		if (p != NULL) {
+		     /* color code indicator for format_send_to_gui  */
 			g_string_append_c(out, 4);
 			g_string_append_c(out, (char) ((int) (p-format_fores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
@@ -187,15 +244,16 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		p = strchr(format_boldfores, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
+			/* +8 selects bold version */
 			g_string_append_c(out, (char) (8+(int) (p-format_boldfores)+'0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
 
-		return FALSE;
+		return 0;
 	}
 
-	return TRUE;
+	return retval;
 }
 
 void format_read_arglist(va_list va, FORMAT_REC *format,
@@ -303,6 +361,7 @@ int format_get_length(const char *str)
 	GString *tmp;
 	int len;
 	gboolean utf8;
+	int adv = 0;
 
 	g_return_val_if_fail(str != NULL, 0);
 
@@ -313,10 +372,12 @@ int format_get_length(const char *str)
 	while (*str != '\0') {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' &&
-			    format_expand_styles(tmp, &str, NULL)) {
-				str++;
+			if (*str != '%') {
+			     adv = format_expand_styles(tmp, &str, NULL);
+			     str += adv;
+			     if (adv > 1) {
 				continue;
+			}
 			}
 
 			/* %% or unknown %code, written as-is */
@@ -340,7 +401,7 @@ int format_real_length(const char *str, int len)
 	const char *start;
 	const char *oldstr;
 	gboolean utf8;
-
+	int adv = 0;
 	g_return_val_if_fail(str != NULL, 0);
 	g_return_val_if_fail(len >= 0, 0);
 
@@ -351,10 +412,12 @@ int format_real_length(const char *str, int len)
 	while (*str != '\0' && len > 0) {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' &&
-			    format_expand_styles(tmp, &str, NULL)) {
-				str++;
+			if (*str != '%') {
+			     adv = format_expand_styles(tmp, &str, NULL);
+			     str += adv;
+			     if (adv > 1) {
 				continue;
+			}
 			}
 
 			/* %% or unknown %code, written as-is */
@@ -376,8 +439,11 @@ int format_real_length(const char *str, int len)
 
 char *format_string_expand(const char *text, int *flags)
 {
+     g_message( "format_string_expand: flags: %04x\n", *flags);
+
 	GString *out;
 	char code, *ret;
+	int adv;
 
 	g_return_val_if_fail(text != NULL, NULL);
 
@@ -388,10 +454,13 @@ char *format_string_expand(const char *text, int *flags)
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, &text, flags)) {
+		     adv = format_expand_styles(out, &text, flags);
+		     if (!adv) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
+		     } else {
+			  text += adv -1;
 			}
 			code = 0;
 		} else {
@@ -415,6 +484,7 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	GString *out;
 	char code, *ret;
 	int need_free;
+	int adv;
 
 	out = g_string_new(NULL);
 
@@ -422,10 +492,13 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, &text, &dest->flags)) {
+		     adv = format_expand_styles(out, &text, &dest->flags);
+		     if (!adv) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
+		     } else {
+			  text += adv -1;
 			}
 			code = 0;
 		} else if (code == '$') {
@@ -830,9 +903,13 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 	if (bg_ret) *bg_ret = bg;
 }
 
+/* TODO: What are these magic numbers!?
+ */
 #define IS_COLOR_CODE(c) \
 	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
 	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 31)
+
+//#define IS_COLOR_CODE(c) ((c) < 255)
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
@@ -936,7 +1013,10 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 	dup = str = g_strdup(text);
 
-	flags = 0; fgcolor = theme->default_color; bgcolor = -1;
+	flags = 0;
+	fgcolor = theme->default_color; 
+	bgcolor = -1;
+
 	while (*str != '\0') {
 		type = '\0';
 		for (ptr = str; *ptr != '\0'; ptr++) {
@@ -958,12 +1038,17 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 		if (*str != '\0' || (flags & GUI_PRINT_FLAG_CLRTOEOL)) {
 			/* send the text to gui handler */
+		     g_message("format_send_to_gui: sending: fg: 0x%04x, " \
+			       "bg: 0x%04x flags: 0x%04x\n", fgcolor, bgcolor, flags);
+
 			signal_emit_id(signal_gui_print_text, 6, dest->window,
 				       GINT_TO_POINTER(fgcolor),
 				       GINT_TO_POINTER(bgcolor),
 				       GINT_TO_POINTER(flags), str,
 				       dest);
+
 			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
+		     /* fprintf("format_send_to_gui: resetting flags: 0x%04x\n", flags); */
 		}
 
 		if (type == '\n') {
@@ -978,12 +1063,12 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 		switch (type)
 		{
-		case 2:
+		case MIRC_BOLD_MARKER:
 			/* bold */
 			if (!hide_text_style)
 				flags ^= GUI_PRINT_FLAG_BOLD;
 			break;
-		case 3:
+		case MIRC_COLOR_MARKER:
 			/* MIRC color */
 			get_mirc_color((const char **) &ptr,
 					hide_colors ? NULL : &fgcolor,
@@ -991,7 +1076,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			if (!hide_colors)
 				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
-		case 4:
+		case LINE_FORMAT_MARKER:
 			/* user specific colors */
 			flags &= ~GUI_PRINT_FLAG_MIRC_COLOR;
 			switch (*ptr) {
@@ -1003,7 +1088,12 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				break;
 			case FORMAT_STYLE_BOLD:
 				flags ^= GUI_PRINT_FLAG_BOLD;
+				g_message( 
+					"format bold spotted, flags now: 0x%04x\n",
+					flags);
+
 				break;
+
 			case FORMAT_STYLE_REVERSE:
 				flags ^= GUI_PRINT_FLAG_REVERSE;
 				break;

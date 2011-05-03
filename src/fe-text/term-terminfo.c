@@ -293,75 +293,116 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 		term_lines_empty[window->y+y] = FALSE;
 }
 
-/* Change active color */
 void term_set_color(TERM_WINDOW *window, int col)
 {
 	int set_normal;
-	int fg = col & 0x0f;
-	int bg = (col & 0xf0) >> 4;
 
-        set_normal = ((col & ATTR_RESETFG) && last_fg != -1) ||
-		((col & ATTR_RESETBG) && last_bg != -1);
-	if (((last_attrs & ATTR_BOLD) && (col & ATTR_BOLD) == 0) ||
-	    ((last_attrs & ATTR_BLINK) && (col & ATTR_BLINK) == 0)) {
+    int fg    = (col & FG_MASK);
+    int bg    = (col & BG_MASK) >> 8;
+//    int attrs = (col & 0xff0000) >> 16;
+
+    if (col != ATTR_RESET) { 
+	 g_message( "T-TI: set color called with col: %d (%08x)\n", col, col);
+	 g_message( "T-TI: fg: %d (0x%02x), bg: %d (0x%02x)\n", fg, fg, bg, bg);
+    } else {
+	 //g_message( "T-TI: set color called with col: %d (%08x)\n", col, col);
+    }
+
+    set_normal = ((col & ATTR_RESETFG) && last_fg != ATTR_COLOR_UNDEFINED) ||
+        ((col & ATTR_RESETBG) && last_bg != ATTR_COLOR_UNDEFINED);
+
+    if (((last_attrs & ATTR_BOLD)  && !(col & ATTR_BOLD)) ||
+        ((last_attrs & ATTR_BLINK) && !(col & ATTR_BLINK))) {
 		/* we'll need to get rid of bold/blink - this can only be
 		   done with setting the default color */
 		set_normal = TRUE;
 	}
 
 	if (set_normal) {
-		last_fg = last_bg = -1;
+        last_fg = last_bg = ATTR_COLOR_UNDEFINED;
                 last_attrs = 0;
+	g_message( "setnormal: setting last_* to 0%04x\n", last_fg);
 		terminfo_set_normal();
+        /* terminfo_set_bg(123); */
+        //terminfo_set_fg(47);
 	}
 
-	if (!term_use_colors && (col & 0xf0) != 0)
+    /* if colors are disabled, any background color setting enables
+     * reverse video mode
+     */
+
+    if (!term_use_colors && bg > 0)  {
 		col |= ATTR_REVERSE;
+    }
 
 	/* reversed text (use standout) */
 	if (col & ATTR_REVERSE) {
-		if ((last_attrs & ATTR_REVERSE) == 0)
+        if ((last_attrs & ATTR_REVERSE) == 0) {
+	     g_message( "setreverse: on\n");
 			terminfo_set_standout(TRUE);
-	} else if (last_attrs & ATTR_REVERSE)
+        }
+    } else if (last_attrs & ATTR_REVERSE) {
+	 g_message( "setreverse: off\n");
 		terminfo_set_standout(FALSE);
+    }
 
 	/* set foreground color */
-	if (fg != last_fg &&
-	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
+    if (fg != last_fg && (fg != 0 || (col & ATTR_RESETFG) == 0)) {
                 if (term_use_colors) {
 			last_fg = fg;
 			terminfo_set_fg(last_fg);
+            g_message( "setfg: setting fg to %d (0x%04x)\n", fg, fg);
 		}
 	}
 
 	/* set background color */
-	if (col & 0x80 && window->term->TI_colors == 8)
+    /* TODO: What magic numbers? - originally 0xf0 - 11110000
+     * 
+     */
+    if (col & 0x8000 && window->term->TI_colors == 8) {
+	 g_message( "0x080 match: setting attr_bold\n");
 		col |= ATTR_BLINK;
-	if (col & ATTR_BLINK)
-		current_term->set_blink(current_term);
+    }
 
-	if (bg != last_bg &&
-	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
+    if (col & ATTR_BLINK) {
+	 g_message( "setblink\n");
+		current_term->set_blink(current_term);
+    }
+
+    if (bg != last_bg && (bg != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
 			last_bg = bg;
 			terminfo_set_bg(last_bg);
+            g_message( "setbg: setting bg to %d (0x%04x)\n", bg, bg);
 		}
 	}
 
 	/* bold */
-	if (col & 0x08 && window->term->TI_colors == 8)
+
+    /* TODO: maybe make this fg > 7, since that implies a bright
+     * color,which bold can emulate.     
+     */
+    if (fg > 0 && window->term->TI_colors == 8) {
+	 g_message( "0x080 match: setting attr_bold\n");
 		col |= ATTR_BOLD;
-	if (col & ATTR_BOLD)
+    }
+
+    if (col & ATTR_BOLD) {
+	 g_message("setbold\n");
 		terminfo_set_bold();
+    }
 
 	/* underline */
 	if (col & ATTR_UNDERLINE) {
-		if ((last_attrs & ATTR_UNDERLINE) == 0)
+	 if ((last_attrs & ATTR_UNDERLINE) == 0) {
 			terminfo_set_uline(TRUE);
-	} else if (last_attrs & ATTR_UNDERLINE)
+	 }
+    } else if (last_attrs & ATTR_UNDERLINE) {
 		terminfo_set_uline(FALSE);
+    }
 
-        last_attrs = col & ~0xff;
+    /* update the new attribute settings whilst ignoring color values.  */
+    last_attrs = col & ~( BG_MASK | FG_MASK );
 }
 
 void term_move(TERM_WINDOW *window, int x, int y)
