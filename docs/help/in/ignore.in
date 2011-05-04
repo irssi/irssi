@@ -15,7 +15,7 @@
     -time: <secs> seconds after the ignore is removed
     <mask>: Either a nick mask or list of channels
     <levels>: List of levels to ignore. You can use -<level> to remove levels
-              from ignore.
+              from ignore (/help levels for details).
     <^levels>: List of levels to NOT ignore
                (/ignore -except nick notices = /ignore nick ^notices)
 
