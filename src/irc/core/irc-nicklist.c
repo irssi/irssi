@@ -103,7 +103,7 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *rec;
-	char *params, *type, *channel, *names, *ptr;
+	char *params, *type, *channel, *names, *ptr, *host;
         int op, halfop, voice;
 	char prefixes[MAX_USER_PREFIXES+1];
 
@@ -162,9 +162,15 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
                         ptr++;
 		}
 
+		host = strchr(ptr, '!');
+		if (host != NULL)
+			*host++ = '\0';
+
 		if (nicklist_find((CHANNEL_REC *) chanrec, ptr) == NULL) {
 			rec = irc_nicklist_insert(chanrec, ptr, op, halfop,
 						  voice, FALSE, prefixes);
+			if (host != NULL)
+				nicklist_set_host(CHANNEL(chanrec), rec, host);
 		}
 	}
 
