@@ -12,7 +12,7 @@
    -actcolor: Color to show in statusbar activity, or don't change if %%n.
    -level: Match only for <level> messages, default is
            publics,msgs,notices,actions
-   -channels: Match only in <channels>
+   -channels: Match only in <channels> (comma separated list)
    -priority: Priority to use when multiple hilights match. Default is 0.
 
 Examples:
