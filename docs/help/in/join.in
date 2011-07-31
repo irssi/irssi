@@ -1,6 +1,10 @@
 
 @SYNTAX:join@
 
+   -window: Join channel, placing channel window item in currently active window
+   -invite: Join last invited channel
+   -<server tag>: Join channel on server with specified tag
+
 Joins a specified channel. Channel names usually begin with #-sign,
 which may be omitted here.
 
