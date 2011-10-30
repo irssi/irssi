@@ -355,7 +355,7 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(*outlist, rec->nick) == NULL) {
 			str = g_strconcat(rec->nick, suffix, NULL);
-			if (completion_lowercase) g_strdown(str);
+			if (completion_lowercase) ascii_strdown(str);
 			if (rec->own)
 				ownlist = g_list_append(ownlist, str);
                         else
@@ -407,7 +407,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 		if (g_strncasecmp(str, nick, len) == 0) {
 			tnick = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
-				g_strdown(tnick);
+				ascii_strdown(tnick);
 
 			if (glist_find_icase_string(list, tnick) == NULL)
 				list = g_list_append(list, tnick);
@@ -451,7 +451,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 		    rec != channel->ownnick) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
-				g_strdown(str);
+				ascii_strdown(str);
                         if (glist_find_icase_string(list, str) == NULL)
 				list = g_list_append(list, str);
 			else

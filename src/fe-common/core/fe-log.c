@@ -435,7 +435,7 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 	   '%' -> '%%' - so strftime() won't mess with them */
 	fixed_target = escape_target(target);
 	if (CHAT_PROTOCOL(server)->case_insensitive)
-		g_strdown(fixed_target);
+		ascii_strdown(fixed_target);
 
         /* $0 = target, $1 = server tag */
         params = g_strconcat(fixed_target, " ", server_tag, NULL);
