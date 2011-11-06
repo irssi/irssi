@@ -186,6 +186,7 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 		*attr |= (*bg << BG_SHIFT);
 
 	if (flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
+	if (flags & GUI_PRINT_FLAG_ITALIC) *attr |= ATTR_ITALIC;
 	if (flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
 	if (flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
 	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;

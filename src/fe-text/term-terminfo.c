@@ -346,12 +346,16 @@ void term_set_color(TERM_WINDOW *window, int col)
 #endif
 		((col & BG_MASK) >> BG_SHIFT);
 
+	if (!term_use_colors && bg > 0)
+		col |= ATTR_REVERSE;
+
         set_normal = ((col & ATTR_RESETFG) && last_fg != COLOR_RESET) ||
 		((col & ATTR_RESETBG) && last_bg != COLOR_RESET);
 	if (((last_attrs & ATTR_BOLD) && (col & ATTR_BOLD) == 0) ||
+	    ((last_attrs & ATTR_REVERSE) && (col & ATTR_REVERSE) == 0) ||
 	    ((last_attrs & ATTR_BLINK) && (col & ATTR_BLINK) == 0)) {
-		/* we'll need to get rid of bold/blink - this can only be
-		   done with setting the default color */
+		/* we'll need to get rid of bold/blink/reverse - this
+		   can only be done with setting the default color */
 		set_normal = TRUE;
 	}
 
@@ -360,16 +364,6 @@ void term_set_color(TERM_WINDOW *window, int col)
                 last_attrs = 0;
 		terminfo_set_normal();
 	}
-
-	if (!term_use_colors && bg > 0)
-		col |= ATTR_REVERSE;
-
-	/* reversed text (use standout) */
-	if (col & ATTR_REVERSE) {
-		if ((last_attrs & ATTR_REVERSE) == 0)
-			terminfo_set_standout(TRUE);
-	} else if (last_attrs & ATTR_REVERSE)
-		terminfo_set_standout(FALSE);
 
 	/* set foreground color */
 	if (fg != last_fg &&
@@ -400,6 +394,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 		}
 	}
 
+	/* reversed text */
+	if (col & ATTR_REVERSE)
+		terminfo_set_reverse();
+
 	/* bold */
 	if (window && (term_color256map[fg&0xff]&8) == window->term->TI_colors)
 		col |= ATTR_BOLD;
@@ -412,6 +410,13 @@ void term_set_color(TERM_WINDOW *window, int col)
 			terminfo_set_uline(TRUE);
 	} else if (last_attrs & ATTR_UNDERLINE)
 		terminfo_set_uline(FALSE);
+
+	/* italic */
+	if (col & ATTR_ITALIC) {
+		if ((last_attrs & ATTR_ITALIC) == 0)
+			terminfo_set_italic(TRUE);
+	} else if (last_attrs & ATTR_ITALIC)
+		terminfo_set_italic(FALSE);
 
 	/* update the new attribute settings whilst ignoring color values.  */
 	last_attrs = col & ~( BG_MASK | FG_MASK );
@@ -516,7 +521,7 @@ void term_clrtoeol(TERM_WINDOW *window)
 {
 	/* clrtoeol() doesn't necessarily understand colors */
 	if (last_fg == -1 && last_bg == -1 &&
-	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE)) == 0) {
+	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE|ATTR_ITALIC)) == 0) {
 		if (!term_lines_empty[vcy]) {
 			if (vcmove) term_move_real();
 			terminfo_clrtoeol();

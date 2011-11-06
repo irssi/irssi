@@ -322,6 +322,10 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_BOLD;
 	}
+	if ((flags & GUI_PRINT_FLAG_ITALIC) != (buffer->last_flags & GUI_PRINT_FLAG_ITALIC)) {
+		data[pos++] = 0;
+		data[pos++] = LINE_CMD_ITALIC;
+	}
 	if (flags & GUI_PRINT_FLAG_INDENT) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_INDENT;
@@ -500,6 +504,10 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 		case LINE_CMD_BOLD:
 			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_BOLD);
+			break;
+		case LINE_CMD_ITALIC:
+			g_string_append_printf(str, "\004%c",
+					  FORMAT_STYLE_ITALIC);
 			break;
 		case LINE_CMD_COLOR0:
 			g_string_append_printf(str, "\004%c%c",

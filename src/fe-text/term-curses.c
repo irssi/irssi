@@ -298,6 +298,9 @@ static int get_attr(int color)
 
 	if (color & ATTR_UNDERLINE) attr |= A_UNDERLINE;
 	if (color & ATTR_REVERSE) attr |= A_REVERSE;
+#ifdef A_ITALIC
+	if (color & ATTR_ITALIC) attr |= A_ITALIC;
+#endif
         return attr;
 }
 
