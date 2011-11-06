@@ -77,7 +77,7 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
                         /* make sure we don't get back here */
 			script_unregister_statusbars(script);
 		}
-		signal_emit("script error", 2, script, SvPV(ERRSV, PL_na));
+		signal_emit("script error", 2, script, SvPV_nolen(ERRSV));
 	} else {
 		/* min_size and max_size can be changed, move them to SBAR_ITEM_REC */
 		hv = hvref(item_sv);

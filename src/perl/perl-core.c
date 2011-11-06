@@ -237,7 +237,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 
         error = NULL;
 	if (SvTRUE(ERRSV)) {
-		error = SvPV(ERRSV, PL_na);
+		error = SvPV_nolen(ERRSV);
 
 		if (error != NULL) {
 			error = g_strdup(error);

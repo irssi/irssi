@@ -105,8 +105,8 @@ CODE:
 	formatrecs[0].def = g_strdup("Perl script");
 
         for (fpos = 1, n = 0; n < len; n++, fpos++) {
-		key = SvPV(*av_fetch(av, n, 0), PL_na); n++;
-		value = SvPV(*av_fetch(av, n, 0), PL_na);
+		key = SvPV_nolen(*av_fetch(av, n, 0)); n++;
+		value = SvPV_nolen(*av_fetch(av, n, 0));
 
 		formatrecs[fpos].tag = g_strdup(key);
 		formatrecs[fpos].def = g_strdup(value);
@@ -127,7 +127,7 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 2; n < items && n < MAX_FORMAT_PARAMS+2; n++) {
-		arglist[n-2] = SvPV(ST(n), PL_na);
+		arglist[n-2] = SvPV_nolen(ST(n));
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -148,8 +148,8 @@ CODE:
         	croak("abstracts list is invalid - not divisible by 2 (%d)", len);
 
         for (i = 0; i < len; i++) {
-		key = SvPV(*av_fetch(av, i, 0), PL_na); i++;
-		value = SvPV(*av_fetch(av, i, 0), PL_na);
+		key = SvPV_nolen(*av_fetch(av, i, 0)); i++;
+		value = SvPV_nolen(*av_fetch(av, i, 0));
 
 		theme_set_default_abstract(key, value);
 	}
@@ -176,7 +176,7 @@ CODE:
 	format_create_dest(&dest, server, target, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 4; n < items && n < MAX_FORMAT_PARAMS+4; n++) {
-		arglist[n-4] = SvPV(ST(n), PL_na);
+		arglist[n-4] = SvPV_nolen(ST(n));
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -198,7 +198,7 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 3; n < items && n < MAX_FORMAT_PARAMS+3; n++) {
-		arglist[n-3] = SvPV(ST(n), PL_na);
+		arglist[n-3] = SvPV_nolen(ST(n));
 	}
 
         printformat_perl(&dest, format, arglist);
@@ -220,7 +220,7 @@ CODE:
 	format_create_dest(&dest, item->server, item->visible_name, level, NULL);
 	memset(arglist, 0, sizeof(arglist));
 	for (n = 3; n < items && n < MAX_FORMAT_PARAMS+3; n++) {
-		arglist[n-3] = SvPV(ST(n), PL_na);
+		arglist[n-3] = SvPV_nolen(ST(n));
 	}
 
         printformat_perl(&dest, format, arglist);

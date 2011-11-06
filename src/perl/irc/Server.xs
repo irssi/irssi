@@ -34,7 +34,7 @@ static GSList *event_hash2list(HV *hv)
 	while ((he = hv_iternext(hv)) != NULL) {
 		I32 len;
 		char *key = hv_iterkey(he, &len);
-		char *value = SvPV(HeVAL(he), PL_na);
+		char *value = SvPV_nolen(HeVAL(he));
 
 		list = g_slist_append(list, g_strdup(key));
 		list = g_slist_append(list, g_strdup(value));

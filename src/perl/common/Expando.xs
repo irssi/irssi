@@ -77,7 +77,7 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 		if (rec->script != NULL)
 			script_unregister_expandos(rec->script);
 
-		signal_emit("script error", 2, rec->script, SvPV(ERRSV, PL_na));
+		signal_emit("script error", 2, rec->script, SvPV_nolen(ERRSV));
 	} else if (retcount > 0) {
 		ret = g_strdup(POPp);
 		*free_ret = TRUE;
@@ -117,7 +117,7 @@ static void expando_signals_add_hash(const char *key, SV *signals)
 	hv_iterinit(hv);
 	while ((he = hv_iternext(hv)) != NULL) {
 		SV *argsv = HeVAL(he);
-		argstr = SvPV(argsv, PL_na);
+		argstr = SvPV_nolen(argsv);
 
 		if (g_ascii_strcasecmp(argstr, "none") == 0)
 			arg = EXPANDO_ARG_NONE;

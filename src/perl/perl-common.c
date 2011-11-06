@@ -54,7 +54,7 @@ static GSList *use_protocols;
 /* returns the package who called us */
 const char *perl_get_package(void)
 {
-	return SvPV(perl_eval_pv("caller", TRUE), PL_na);
+	return SvPV_nolen(perl_eval_pv("caller", TRUE));
 }
 
 /* Parses the package part from function name */
@@ -81,7 +81,7 @@ SV *perl_func_sv_inc(SV *func, const char *package)
 	if (SvPOK(func)) {
 		/* prefix with package name */
 		name = g_strdup_printf("%s::%s", package,
-				       (char *) SvPV(func, PL_na));
+				       (char *) SvPV_nolen(func));
 		func = new_pv(name);
                 g_free(name);
 	} else {
