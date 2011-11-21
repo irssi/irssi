@@ -118,12 +118,11 @@ static void sig_connected(SERVER_REC *server)
 
 	g_return_if_fail(IS_SERVER(server));
 
-	if (server->connrec->chatnet == NULL || server->session_reconnect ||
-	    server->connrec->no_autojoin_channels)
+	if (server->connrec->chatnet == NULL || server->session_reconnect)
 		return;
 
 	rec = chatnet_find(server->connrec->chatnet);
-	if (rec != NULL && rec->autosendcmd)
+	if (!server->connrec->no_autosendcmd && rec != NULL && rec->autosendcmd)
 		eval_special_string(rec->autosendcmd, "", server, NULL);
 }
 

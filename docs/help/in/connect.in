@@ -12,6 +12,7 @@
      -ircnet: Same as -network. Deprecated. Do not use.
      -host: the host
      -!: don't autojoin channels
+     -noautosendcmd: don't execute autosendcmd
      -rawlog: immediately open rawlog after connected
 
 This command makes irssi to connect to specified server.
