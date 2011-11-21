@@ -6,7 +6,7 @@
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 			      int op, int halfop, int voice, int send_massjoin,
-			      char *prefixes);
+			      const char *prefixes);
 
 /* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
 char *irc_nick_strip(const char *nick);

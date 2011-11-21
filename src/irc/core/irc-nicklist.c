@@ -32,7 +32,7 @@
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 			      int op, int halfop, int voice, int send_massjoin,
-			      char *prefixes)
+			      const char *prefixes)
 {
 	NICK_REC *rec;
 
