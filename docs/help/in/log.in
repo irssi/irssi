@@ -14,7 +14,7 @@
      <id>: ID number of log.   
 
 /SET log_create_mode <mode> - Specifies what file mode to use with
-     the created log files. Default is 0644.
+     the created log files. Default is 0600.
 
 All of these are parsed with strftime():
 /SET log_timestamp <text> - Specifies the time stamp format.
