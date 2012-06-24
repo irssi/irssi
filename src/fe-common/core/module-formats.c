@@ -282,7 +282,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "set_item", "$0 = $1", 2, { 0, 0 } },
 	{ "set_unknown", "Unknown setting $0", 1, { 0 } },
 	{ "set_not_boolean", "Setting {hilight $0} isn't boolean, use /SET", 1, { 0 } },
-	{ "no_completions", "There's no completions", 0 },
+	{ "no_completions", "There are no completions", 0 },
 	{ "completion_removed", "Removed completion $0", 1, { 0 } },
 	{ "completion_header", "%#Key        Value                                    Auto", 0 },
 	{ "completion_line", "%#$[10]0 $[!40]1 $2", 3, { 0, 0, 0 } },
