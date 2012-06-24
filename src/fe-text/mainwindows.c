@@ -355,6 +355,9 @@ static void mainwindows_resize_smaller(int xdiff, int ydiff)
         int space;
 
 	sorted = mainwindows_get_sorted(TRUE);
+	if (sorted == NULL)
+		return;
+
 	for (;;) {
 		space = 0;
 		for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
