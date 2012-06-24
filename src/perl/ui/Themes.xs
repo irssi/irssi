@@ -90,8 +90,12 @@ PREINIT:
 CODE:
 
         if (!SvROK(formats))
-        	croak("formats is not a reference to list");
+        	croak("formats is not a reference");
+
 	av = (AV *) SvRV(formats);
+	if (SvTYPE(av) != SVt_PVAV)
+        	croak("formats is not a reference to a list");
+
 	len = av_len(av)+1;
 	if (len == 0 || (len & 1) != 0)
         	croak("formats list is invalid - not divisible by 2 (%d)", len);
