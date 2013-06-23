@@ -49,7 +49,7 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
 /* Connect to socket with ip address and SSL*/
-GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, const char* hostname, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify);
+GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
 int irssi_ssl_handshake(GIOChannel *handle);
 /* Connect to socket with ip address */
 GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
