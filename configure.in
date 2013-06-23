@@ -633,7 +633,7 @@ if test "x$want_dane" = "xyes"; then
 		LIBS="$LIBS -lval-threads -lsres"
 		AC_DEFINE([HAVE_DANE], [], [DANE support])
 		have_dane=yes
-	])
+	], [], [-lssl -lcrypto -lsres])
 fi
 
 AC_CONFIG_FILES([
