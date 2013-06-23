@@ -203,7 +203,7 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 	return matched;
 }
 
-static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert)
+static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert, SERVER_REC *server)
 {
 	long result;
 #ifdef HAVE_DANE
@@ -218,23 +218,21 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, i
 	dane_ret = val_getdaneinfo(NULL, hostname, &daneparams, &danestatus);
 
 	if (dane_ret == VAL_DANE_NOERROR) {
-		g_warning("DANE: TLSA record for hostname %s exists", hostname);
-	} else if (dane_ret != VAL_DANE_IGNORE_TLSA) {
-		g_warning("DANE: TLSA record for hostname %s could not be verified", hostname);
+		signal_emit("tlsa available", 1, server);
 	}
 
 	if (danestatus != NULL) {
 		int do_certificate_check = 1;
 
 		if (val_dane_check(NULL, ssl, danestatus, &do_certificate_check) != VAL_DANE_NOERROR) {
-			g_warning("DANE: Failed to verify hostname %s", hostname);
+			g_warning("DANE: TLSA record for hostname %s port %d could not be verified", hostname, port);
+			signal_emit("tlsa verification failed", 1, server);
 			return FALSE;
 		}
 
-		g_warning("DANE: SSL certificate verified using DANE");
+		signal_emit("tlsa verification success", 1, server);
 
 		if (do_certificate_check == 0) {
-			g_warning("DANE: Skipping additional checks");
 			return TRUE;
 		}
 	}
@@ -580,7 +578,7 @@ int irssi_ssl_handshake(GIOChannel *handle)
 		g_warning("SSL server supplied no certificate");
 		return -1;
 	}
-	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert);
+	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server);
 	X509_free(cert);
 	return ret ? 0 : -1;
 }

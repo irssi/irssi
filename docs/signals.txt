@@ -55,6 +55,11 @@ modules.c:
  "module unloaded", MODULE_REC, MODULE_FILE_REC
  "module error", int error, char *text, char *rootmodule, char *submodule
 
+network-openssl.c:
+ "tlsa available", SERVER_REC
+ "tlsa verification success", SERVER_REC
+ "tlsa verification failed", SERVER_REC
+
 nicklist.c:
  "nicklist new", CHANNEL_REC, NICK_REC
  "nicklist remove", CHANNEL_REC, NICK_REC
