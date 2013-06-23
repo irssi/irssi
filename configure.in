@@ -634,6 +634,12 @@ if test "x$want_dane" = "xyes"; then
 		AC_DEFINE([HAVE_DANE], [], [DANE support])
 		have_dane=yes
 	], [], [-lssl -lcrypto -lsres])
+
+	if test x$have_dane = "xyes" ; then
+		if test x$have_openssl = "xno" ; then
+			AC_ERROR([SSL is required to build Irssi with DANE support enabled.])
+		fi
+	fi
 fi
 
 AC_CONFIG_FILES([
