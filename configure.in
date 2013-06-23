@@ -156,6 +156,15 @@ AC_ARG_ENABLE(ipv6,
 	fi,
 	want_ipv6=yes)
 
+AC_ARG_ENABLE(dane,
+[  --enable-dane           Enable DANE support],
+	if test x$enableval = xno ; then
+		want_dane=no
+	else
+		want_dane=yes
+	fi,
+	want_dane=no)
+
 dnl **
 dnl ** SSL Library checks (OpenSSL)
 dnl **
@@ -616,6 +625,17 @@ if test "x$want_ipv6" = "xyes"; then
 	AC_MSG_RESULT($have_ipv6)
 fi
 
+have_dane=no
+if test "x$want_dane" = "xyes"; then
+	AC_MSG_CHECKING([for DANE])
+	AC_CHECK_LIB(val-threads, val_getdaneinfo,
+	[
+		LIBS="$LIBS -lval-threads -lsres"
+		AC_DEFINE([HAVE_DANE], [], [DANE support])
+		have_dane=yes
+	])
+fi
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -733,6 +753,7 @@ echo "Building with IPv6 support ....... : $have_ipv6"
 echo "Building with SSL support ........ : $have_openssl"
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $have_gc"
+echo "Building with DANE support ....... : $have_dane"
 
 echo
 echo "If there are any problems, read the INSTALL file."

@@ -31,6 +31,11 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#ifdef HAVE_DANE
+#include <validator/validator.h>
+#include <validator/val_dane.h>
+#endif
+
 /* ssl i/o channel object */
 typedef struct
 {
@@ -41,6 +46,7 @@ typedef struct
 	SSL_CTX *ctx;
 	unsigned int verify:1;
 	const char *hostname;
+	int port;
 } GIOSSLChannel;
 
 static int ssl_inited = FALSE;
@@ -196,9 +202,42 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 	return matched;
 }
 
-static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, X509 *cert)
+static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert)
 {
 	long result;
+#ifdef HAVE_DANE
+	int dane_ret;
+	struct val_daneparams daneparams;
+	struct val_danestatus *danestatus = NULL;
+
+	// Check if a TLSA record is available.
+	daneparams.port = port;
+	daneparams.proto = DANE_PARAM_PROTO_TCP;
+
+	dane_ret = val_getdaneinfo(NULL, hostname, &daneparams, &danestatus);
+
+	if (dane_ret == VAL_DANE_NOERROR) {
+		g_warning("DANE: TLSA record for hostname %s exists", hostname);
+	} else if (dane_ret != VAL_DANE_IGNORE_TLSA) {
+		g_warning("DANE: TLSA record for hostname %s could not be verified", hostname);
+	}
+
+	if (danestatus != NULL) {
+		int do_certificate_check = 1;
+
+		if (val_dane_check(NULL, ssl, danestatus, &do_certificate_check) != VAL_DANE_NOERROR) {
+			g_warning("DANE: Failed to verify hostname %s", hostname);
+			return FALSE;
+		}
+
+		g_warning("DANE: SSL certificate verified using DANE");
+
+		if (do_certificate_check == 0) {
+			g_warning("DANE: Skipping additional checks");
+			return TRUE;
+		}
+	}
+#endif
 
 	result = SSL_get_verify_result(ssl);
 	if (result != X509_V_OK) {
@@ -389,7 +428,7 @@ static gboolean irssi_ssl_init(void)
 
 }
 
-static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostname, const char *mycert, const char *mypkey, const char *cafile, const char *capath, gboolean verify)
+static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostname, int port, const char *mycert, const char *mypkey, const char *cafile, const char *capath, gboolean verify)
 {
 	GIOSSLChannel *chan;
 	GIOChannel *gchan;
@@ -474,6 +513,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, const char *hostn
 	chan->ctx = ctx;
 	chan->verify = verify;
 	chan->hostname = hostname;
+	chan->port = port;
 
 	gchan = (GIOChannel *)chan;
 	gchan->funcs = &irssi_ssl_channel_funcs;
@@ -491,7 +531,7 @@ GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, const char* hostname, IPADD
 	handle = net_connect_ip(ip, port, my_ip);
 	if (handle == NULL)
 		return NULL;
-	ssl_handle  = irssi_ssl_get_iochannel(handle, hostname, cert, pkey, cafile, capath, verify);
+	ssl_handle  = irssi_ssl_get_iochannel(handle, hostname, port, cert, pkey, cafile, capath, verify);
 	if (ssl_handle == NULL)
 		g_io_channel_unref(handle);
 	return ssl_handle;
@@ -533,7 +573,7 @@ int irssi_ssl_handshake(GIOChannel *handle)
 		g_warning("SSL server supplied no certificate");
 		return -1;
 	}
-	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, chan->hostname, cert);
+	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, chan->hostname, chan->port, cert);
 	X509_free(cert);
 	return ret ? 0 : -1;
 }
