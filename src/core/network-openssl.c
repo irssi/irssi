@@ -227,10 +227,12 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, i
 		if (val_dane_check(NULL, ssl, danestatus, &do_certificate_check) != VAL_DANE_NOERROR) {
 			g_warning("DANE: TLSA record for hostname %s port %d could not be verified", hostname, port);
 			signal_emit("tlsa verification failed", 1, server);
+			val_free_dane(danestatus);
 			return FALSE;
 		}
 
 		signal_emit("tlsa verification success", 1, server);
+		val_free_dane(danestatus);
 
 		if (do_certificate_check == 0) {
 			return TRUE;
