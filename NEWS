@@ -1,4 +1,4 @@
-v0.8.16rc1 2013-06-26  The Irssi team <staff@irssi.org>
+v0.8.16-rc1 2013-06-26  The Irssi team <staff@irssi.org>
 	+ Add -noautosendcmd to /SERVER and /CONNECT. Passing this option will
 	  force Irssi to not execute the content of the autosendcmd chatnet-setting
 	  upon connect.
