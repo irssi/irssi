@@ -7,8 +7,7 @@ v0.8.16-rc1 2013-06-26  The Irssi team <staff@irssi.org>
 	+ Set window binds for channel items as sticky when re-creating window
 	  binds as part of /layout save. This fixes the bug where previously saved
 	  channel windows forgets their window number upon reconnect.
-	+ Add experimental support for DNSSEC DANE validation of certificate
-	  fingerprints.
+	+ Add experimental support for DNSSEC DANE validation of certificates.
 	+ Strip the argument for boolean options (see bug #769).
 	+ Freenode have been readded to the list of networks in the default
 	  configuration file.
