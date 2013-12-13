@@ -39,7 +39,9 @@
 #include "window-items.h"
 
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 GSList *processes;
 static int signal_exec_input;
@@ -322,8 +324,13 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 
 	/* child process, try to clean up everything */
 	setsid();
-	setuid(getuid());
-	setgid(getgid());
+
+	if (setuid(getuid()) != 0)
+		_exit(EXIT_FAILURE);
+
+	if (setgid(getgid()) != 0)
+		_exit(EXIT_FAILURE);
+
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_DFL);
 
