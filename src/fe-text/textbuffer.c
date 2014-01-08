@@ -23,6 +23,7 @@
 #include "module.h"
 #include "misc.h"
 #include "formats.h"
+#include "utf8.h"
 
 #include "textbuffer.h"
 
@@ -154,6 +155,17 @@ static void text_chunk_append(TEXT_BUFFER_REC *buffer,
         chunk = buffer->cur_text;
 	while (chunk->pos + len >= TEXT_CHUNK_USABLE_SIZE) {
 		left = TEXT_CHUNK_USABLE_SIZE - chunk->pos;
+
+		/* don't split utf-8 character. (assume we can split non-utf8 anywhere.) */
+		if (left < len && !is_utf8_leading(data[left])) {
+			int i;
+			for (i = 1; i < 4 && left >= i; i++)
+				if (is_utf8_leading(data[left - i])) {
+					left -= i;
+					break;
+				}
+		}
+
 		if (left > 0 && data[left-1] == 0)
 			left--; /* don't split the commands */
 
