@@ -76,7 +76,7 @@ AC_ARG_WITH(modules,
 
 if test "x$prefix" != "xNONE"; then
 	prefix=`eval echo $prefix`
-	PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=$prefix"
+	PERL_MM_PARAMS="INSTALLDIRS=perl INSTALL_BASE=$prefix"
 	perl_library_dir="PERL_USE_LIB"
 	perl_set_use_lib=yes
 
