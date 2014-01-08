@@ -139,11 +139,12 @@ CODE:
 MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Window
 
 void
-print_after(window, prev, level, str)
+print_after(window, prev, level, str, time = 0)
 	Irssi::UI::Window window
 	Irssi::TextUI::Line prev
 	int level
 	char *str
+	time_t time
 PREINIT:
 	TEXT_DEST_REC dest;
 	char *text;
@@ -152,21 +153,22 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	text = format_string_expand(str, NULL);
 	text2 = g_strconcat(text, "\n", NULL);
-	gui_printtext_after(&dest, prev, text2);
+	gui_printtext_after_time(&dest, prev, text2, time);
 	g_free(text);
 	g_free(text2);
 
 void
-gui_printtext_after(window, prev, level, str)
+gui_printtext_after(window, prev, level, str, time = 0)
 	Irssi::UI::Window window
 	Irssi::TextUI::Line prev
 	int level
 	char *str
+	time_t time
 PREINIT:
 	TEXT_DEST_REC dest;
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
-	gui_printtext_after(&dest, prev, str);
+	gui_printtext_after_time(&dest, prev, str, time);
 
 Irssi::TextUI::Line
 last_line_insert(window)
@@ -179,17 +181,18 @@ OUTPUT:
 MODULE = Irssi::TextUI PACKAGE = Irssi::Server
 
 void
-gui_printtext_after(server, target, prev, level, str)
+gui_printtext_after(server, target, prev, level, str, time = 0)
 	Irssi::Server server
 	char *target
 	Irssi::TextUI::Line prev
 	int level
 	char *str
+	time_t time
 PREINIT:
 	TEXT_DEST_REC dest;
 CODE:
 	format_create_dest(&dest, server, target, level, NULL);
-	gui_printtext_after(&dest, prev, str);
+	gui_printtext_after_time(&dest, prev, str, time);
 
 BOOT:
 	irssi_boot(TextUI__Statusbar);

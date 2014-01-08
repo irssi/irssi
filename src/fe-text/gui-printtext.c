@@ -102,7 +102,7 @@ void gui_printtext(int xpos, int ypos, const char *str)
 	next_xpos = next_ypos = -1;
 }
 
-void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
+void gui_printtext_after_time(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str, time_t time)
 {
 	GUI_WINDOW_REC *gui;
 
@@ -110,8 +110,14 @@ void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
 
 	gui->use_insert_after = TRUE;
 	gui->insert_after = prev;
+	gui->insert_after_time = time;
 	format_send_to_gui(dest, str);
 	gui->use_insert_after = FALSE;
+}
+
+void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
+{
+	gui_printtext_after_time(dest, prev, str, 0);
 }
 
 static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
@@ -199,9 +205,10 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	}
 
 	lineinfo.level = dest == NULL ? 0 : dest->level;
-        lineinfo.time = time(NULL);
-
         gui = WINDOW_GUI(window);
+        lineinfo.time = (gui->use_insert_after && gui->insert_after_time) ?
+		gui->insert_after_time : time(NULL);
+
 	view = gui->view;
 	insert_after = gui->use_insert_after ?
 		gui->insert_after : view->buffer->cur_line;
