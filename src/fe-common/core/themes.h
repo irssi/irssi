@@ -57,10 +57,14 @@ void theme_set_default_abstract(const char *key, const char *value);
 #define EXPAND_FLAG_ROOT		0x10
 #define EXPAND_FLAG_LASTCOLOR_ARG	0x20
 
+typedef struct {
+	char m[8];
+} theme_rm_col;
+
 char *theme_format_expand(THEME_REC *theme, const char *format);
 char *theme_format_expand_data(THEME_REC *theme, const char **format,
-			       char default_fg, char default_bg,
-			       char *save_last_fg, char *save_last_bg,
+			       theme_rm_col default_fg, theme_rm_col default_bg,
+			       theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
 			       int flags);
 
 void themes_reload(void);

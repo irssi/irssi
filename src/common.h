@@ -39,10 +39,6 @@
 #endif
 
 #include <glib.h>
-
-/* TODO: wrap this in some autoconf macro bullocks? */
-#include <glib/gstdio.h>
-
 #ifdef HAVE_GMODULE
 #  include <gmodule.h>
 #endif

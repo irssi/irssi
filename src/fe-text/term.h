@@ -3,30 +3,19 @@
 
 typedef struct _TERM_WINDOW TERM_WINDOW;
 
-/* text attributes */
-
-
 #define FG_MASK        ( 0x00ff )
 #define BG_MASK        ( 0xff00 )
+#define BG_SHIFT       8
 
+/* text attributes */
 #define ATTR_RESETFG	( 0x010000 )
 #define ATTR_RESETBG	( 0x020000 )
 #define ATTR_BOLD	( 0x040000 )
-#define ATTR_BLINK      ( 0x080000 )
+#define ATTR_BLINK	( 0x080000 )
 #define ATTR_UNDERLINE	( 0x100000 )
 #define ATTR_REVERSE	( 0x200000 )
-
-/* can also mean default color, probably. */
-#define ATTR_COLOR_UNDEFINED ( -1 )
-
-#define EXT_COLOR_BLACK   ( 0 )
-#define EXT_COLOR_RED     ( 1 )
-#define EXT_COLOR_GREEN   ( 2 )
-#define EXT_COLOR_YELLOW  ( 3 )
-#define EXT_COLOR_BLUE    ( 4 )
-#define EXT_COLOR_MAGENTA ( 5 )
-#define EXT_COLOR_CYAN    ( 6 )
-#define EXT_COLOR_WHITE   ( 7 )
+#define ATTR_FGCOLOR24	( 0x400000 )
+#define ATTR_BGCOLOR24	( 0x800000 )
 
 #define ATTR_RESET	(ATTR_RESETFG|ATTR_RESETBG)
 
@@ -42,6 +31,8 @@ typedef guint32 unichar;
 extern TERM_WINDOW *root_window;
 extern int term_width, term_height;
 extern int term_use_colors, term_type;
+extern int term_use_colors24;
+extern int term_color256map[];
 
 /* Initialize / deinitialize terminal */
 int term_init(void);
@@ -80,9 +71,8 @@ void term_window_clear(TERM_WINDOW *window);
 /* Scroll window up/down */
 void term_window_scroll(TERM_WINDOW *window, int count);
 
+void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigned int bgcol24);
 void term_set_color(TERM_WINDOW *window, int col);
-
-void term_set_extended_color(TERM_WINDOW *window, int fg, int bg);
 
 void term_move(TERM_WINDOW *window, int x, int y);
 void term_addch(TERM_WINDOW *window, char chr);

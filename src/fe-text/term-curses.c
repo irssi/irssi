@@ -275,21 +275,25 @@ static int get_attr(int color)
 {
 	int attr;
 
+	if ((color & FG_MASK) >> 4)
+		color = (color & ~FG_MASK) | term_color256map[color & FG_MASK];
+	if ((color & BG_MASK) >> (BG_SHIFT + 4))
+		color = (color & ~BG_MASK) | (term_color256map[(color & BG_MASK) >> BG_SHIFT] << BG_SHIFT);
 	if (!term_use_colors)
-		attr = (color & 0x70) ? A_REVERSE : 0;
-	else if ((color & 0xff) == 8 || (color & (0xff | ATTR_RESETFG)) == 0)
+		attr = (color & (0x7 << BG_SHIFT)) ? A_REVERSE : 0;
+	else if ((color & ((0xf << BG_SHIFT) | 0xf)) == 8 || (color & (FG_MASK | BG_MASK | ATTR_RESETFG)) == 0)
 		attr = COLOR_PAIR(63);
-	else if ((color & 0x77) == 0)
+	else if ((color & ((0x7 << BG_SHIFT) | 0x7)) == 0)
 		attr = A_NORMAL;
 	else {
 		if (color & ATTR_RESETFG) {
-			color &= ~0x0f;
+			color &= ~FG_MASK;
 			color |= settings_get_int("default_color");
 		}
-		attr = COLOR_PAIR((color&7) | ((color&0x70)>>1));
+		attr = COLOR_PAIR((color&0x7) | ((color&(0x7<<BG_SHIFT))>>BG_SHIFT<<3));
 	}
 
-	if ((color & 0x08) || (color & ATTR_BOLD)) attr |= A_BOLD;
+	if ((color & 0x8) || (color & ATTR_BOLD)) attr |= A_BOLD;
 	if (color & ATTR_BLINK) attr |= A_BLINK;
 
 	if (color & ATTR_UNDERLINE) attr |= A_UNDERLINE;
@@ -298,6 +302,11 @@ static int get_attr(int color)
 }
 
 /* Change active color */
+void term_set_color2(TERM_WINDOW *window, int col, unsigned int fg_ignore, unsigned int bg_ignore)
+{
+	term_set_color(window, col);
+}
+
 void term_set_color(TERM_WINDOW *window, int col)
 {
 	wattrset(window->win, get_attr(col));

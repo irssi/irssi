@@ -22,9 +22,12 @@
 #include "signals.h"
 #include "term.h"
 #include "terminfo-core.h"
+#include "fe-windows.h"
 #include "utf8.h"
 
 #include <signal.h>
+#include <termios.h>
+#include <stdio.h>
 
 /* returns number of characters in the beginning of the buffer being a
    a single character, or -1 if more input is needed. The character will be
@@ -48,7 +51,8 @@ static int vcmove, vcx, vcy, curs_visible;
 static int crealx, crealy, cforcemove;
 static int curs_x, curs_y;
 
-static int last_fg, last_bg, last_attrs;
+static unsigned int last_fg, last_bg;
+static int last_attrs;
 
 static GSource *sigcont_source;
 static volatile sig_atomic_t got_sigcont;
@@ -293,117 +297,118 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 		term_lines_empty[window->y+y] = FALSE;
 }
 
-void term_set_color(TERM_WINDOW *window, int col)
+inline static int term_putchar(int c)
+{
+        return fputc(c, current_term->out);
+}
+
+/* copied from terminfo-core.c */
+int tputs();
+
+static int term_set_color_24bit(int bg, unsigned int lc)
+{
+	static char buf[20];
+	const unsigned char color[] = { lc >> 16, lc >> 8, lc };
+
+	if (!term_use_colors24) {
+		if (bg)
+			terminfo_set_bg(color_24bit_256(color));
+		else
+			terminfo_set_fg(color_24bit_256(color));
+		return -1;
+	}
+
+	/* \e[x8;2;...;...;...m */
+	sprintf(buf, "\033[%d8;2;%d;%d;%dm", bg ? 4 : 3, color[0], color[1], color[2]);
+	return tputs(buf, 0, term_putchar);
+}
+
+#define COLOR_RESET UINT_MAX
+
+/* Change active color */
+void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigned int bgcol24)
 {
 	int set_normal;
 
-    int fg    = (col & FG_MASK);
-    int bg    = (col & BG_MASK) >> 8;
-//    int attrs = (col & 0xff0000) >> 16;
+	unsigned int fg = (col & ATTR_FGCOLOR24) ? fgcol24 << 8 :  (col & FG_MASK);
+	unsigned int bg = (col & ATTR_BGCOLOR24) ? bgcol24 << 8 : ((col & BG_MASK) >> BG_SHIFT);
 
-    if (col != ATTR_RESET) { 
-	 g_message( "T-TI: set color called with col: %d (%08x)\n", col, col);
-	 g_message( "T-TI: fg: %d (0x%02x), bg: %d (0x%02x)\n", fg, fg, bg, bg);
-    } else {
-	 //g_message( "T-TI: set color called with col: %d (%08x)\n", col, col);
-    }
-
-    set_normal = ((col & ATTR_RESETFG) && last_fg != ATTR_COLOR_UNDEFINED) ||
-        ((col & ATTR_RESETBG) && last_bg != ATTR_COLOR_UNDEFINED);
-
-    if (((last_attrs & ATTR_BOLD)  && !(col & ATTR_BOLD)) ||
-        ((last_attrs & ATTR_BLINK) && !(col & ATTR_BLINK))) {
+        set_normal = ((col & ATTR_RESETFG) && last_fg != COLOR_RESET) ||
+		((col & ATTR_RESETBG) && last_bg != COLOR_RESET);
+	if (((last_attrs & ATTR_BOLD) && (col & ATTR_BOLD) == 0) ||
+	    ((last_attrs & ATTR_BLINK) && (col & ATTR_BLINK) == 0)) {
 		/* we'll need to get rid of bold/blink - this can only be
 		   done with setting the default color */
 		set_normal = TRUE;
 	}
 
 	if (set_normal) {
-        last_fg = last_bg = ATTR_COLOR_UNDEFINED;
+		last_fg = last_bg = COLOR_RESET;
                 last_attrs = 0;
-	g_message( "setnormal: setting last_* to 0%04x\n", last_fg);
 		terminfo_set_normal();
-        /* terminfo_set_bg(123); */
-        //terminfo_set_fg(47);
 	}
 
-    /* if colors are disabled, any background color setting enables
-     * reverse video mode
-     */
-
-    if (!term_use_colors && bg > 0)  {
+	if (!term_use_colors && bg > 0)
 		col |= ATTR_REVERSE;
-    }
 
 	/* reversed text (use standout) */
 	if (col & ATTR_REVERSE) {
-        if ((last_attrs & ATTR_REVERSE) == 0) {
-	     g_message( "setreverse: on\n");
+		if ((last_attrs & ATTR_REVERSE) == 0)
 			terminfo_set_standout(TRUE);
-        }
-    } else if (last_attrs & ATTR_REVERSE) {
-	 g_message( "setreverse: off\n");
+	} else if (last_attrs & ATTR_REVERSE)
 		terminfo_set_standout(FALSE);
-    }
 
 	/* set foreground color */
-    if (fg != last_fg && (fg != 0 || (col & ATTR_RESETFG) == 0)) {
+	if (fg != last_fg &&
+	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
                 if (term_use_colors) {
 			last_fg = fg;
-			terminfo_set_fg(last_fg);
-            g_message( "setfg: setting fg to %d (0x%04x)\n", fg, fg);
+			if (!(fg & 0xff))
+				term_set_color_24bit(0, last_fg >> 8);
+			else
+				terminfo_set_fg(last_fg);
 		}
 	}
 
 	/* set background color */
-    /* TODO: What magic numbers? - originally 0xf0 - 11110000
-     * 
-     */
-    if (col & 0x8000 && window->term->TI_colors == 8) {
-	 g_message( "0x080 match: setting attr_bold\n");
+	if (window && (term_color256map[bg&0xff]&8) == window->term->TI_colors)
 		col |= ATTR_BLINK;
-    }
-
-    if (col & ATTR_BLINK) {
-	 g_message( "setblink\n");
+	if (col & ATTR_BLINK)
 		current_term->set_blink(current_term);
-    }
 
-    if (bg != last_bg && (bg != 0 || (col & ATTR_RESETBG) == 0)) {
+	if (bg != last_bg &&
+	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
 			last_bg = bg;
-			terminfo_set_bg(last_bg);
-            g_message( "setbg: setting bg to %d (0x%04x)\n", bg, bg);
+			if (!(bg & 0xff))
+				term_set_color_24bit(1, last_bg >> 8);
+			else
+				terminfo_set_bg(last_bg);
 		}
 	}
 
 	/* bold */
-
-    /* TODO: maybe make this fg > 7, since that implies a bright
-     * color,which bold can emulate.     
-     */
-    if (fg > 0 && window->term->TI_colors == 8) {
-	 g_message( "0x080 match: setting attr_bold\n");
+	if (window && (term_color256map[fg&0xff]&8) == window->term->TI_colors)
 		col |= ATTR_BOLD;
-    }
-
-    if (col & ATTR_BOLD) {
-	 g_message("setbold\n");
+	if (col & ATTR_BOLD)
 		terminfo_set_bold();
-    }
 
 	/* underline */
 	if (col & ATTR_UNDERLINE) {
-	 if ((last_attrs & ATTR_UNDERLINE) == 0) {
+		if ((last_attrs & ATTR_UNDERLINE) == 0)
 			terminfo_set_uline(TRUE);
-	 }
-    } else if (last_attrs & ATTR_UNDERLINE) {
+	} else if (last_attrs & ATTR_UNDERLINE)
 		terminfo_set_uline(FALSE);
-    }
 
-    /* update the new attribute settings whilst ignoring color values.  */
-    last_attrs = col & ~( BG_MASK | FG_MASK );
+	/* update the new attribute settings whilst ignoring color values.  */
+	last_attrs = col & ~( BG_MASK | FG_MASK );
 }
+
+void term_set_color(TERM_WINDOW *window, int col)
+{
+	term_set_color2(window, col &~(ATTR_FGCOLOR24|ATTR_BGCOLOR24), UINT_MAX, UINT_MAX);
+}
+
 
 void term_move(TERM_WINDOW *window, int x, int y)
 {

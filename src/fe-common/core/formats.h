@@ -4,12 +4,6 @@
 #include "themes.h"
 #include "fe-windows.h"
 
-/* various types of colour codings possible. */
-#define MIRC_BOLD_MARKER   ('\002')
-#define MIRC_COLOR_MARKER  ('\003')
-#define LINE_FORMAT_MARKER ('\004')
-
-
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002
 #define GUI_PRINT_FLAG_UNDERLINE     0x0004
@@ -19,6 +13,8 @@
 #define GUI_PRINT_FLAG_NEWLINE       0x0080
 #define GUI_PRINT_FLAG_CLRTOEOL      0x0100
 #define GUI_PRINT_FLAG_MONOSPACE     0x0200
+#define GUI_PRINT_FLAG_COLOR_24_FG   0x0400
+#define GUI_PRINT_FLAG_COLOR_24_BG   0x0800
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200
@@ -127,6 +123,15 @@ char *strip_codes(const char *input);
 void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 
 #define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
+#define FORMAT_COLOR_EXT1	('0'-2)
+#define FORMAT_COLOR_EXT2	('0'-3)
+#define FORMAT_COLOR_EXT3	('0'-4)
+#define FORMAT_COLOR_EXT1_BG	('0'-5)
+#define FORMAT_COLOR_EXT2_BG	('0'-9)
+#define FORMAT_COLOR_EXT3_BG	('0'-10)
+#ifdef TERM_TRUECOLOR
+#define FORMAT_COLOR_24	('0'-13)
+#endif
 
 #define FORMAT_STYLE_SPECIAL	0x60
 #define FORMAT_STYLE_BLINK	(0x01 + FORMAT_STYLE_SPECIAL)
@@ -138,6 +143,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 #define FORMAT_STYLE_CLRTOEOL	(0x08 + FORMAT_STYLE_SPECIAL)
 #define FORMAT_STYLE_MONOSPACE	(0x09 + FORMAT_STYLE_SPECIAL)
 int format_expand_styles(GString *out, const char **format, int *flags);
+void format_ext_color(GString *out, int bg, int color);
+void format_24bit_color(GString *out, int bg, unsigned int color);
 
 void formats_init(void);
 void formats_deinit(void);

@@ -166,6 +166,15 @@ AC_ARG_ENABLE(dane,
 	fi,
 	want_dane=no)
 
+AC_ARG_ENABLE(true-color,
+[  --enable-true-color     Build with true color support in terminal],
+	if test x$enableval = xno ; then
+		want_truecolor=no
+	else
+		want_truecolor=yes
+	fi,
+	want_truecolor=no)
+
 dnl **
 dnl ** SSL Library checks (OpenSSL)
 dnl **
@@ -643,6 +652,12 @@ if test "x$want_dane" = "xyes"; then
 	fi
 fi
 
+if test "x$want_truecolor" = "xyes" -a "x$want_termcap" != "xyes" -a "x$want_terminfo" = "xyes" ; then
+	AC_DEFINE([TERM_TRUECOLOR], [], [true color support in terminal])
+else
+	want_truecolor=no
+fi
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -761,6 +776,7 @@ echo "Building with SSL support ........ : $have_openssl"
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $have_gc"
 echo "Building with DANE support ....... : $have_dane"
+echo "Building with true color support.. : $want_truecolor"
 
 echo
 echo "If there are any problems, read the INSTALL file."

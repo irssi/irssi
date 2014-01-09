@@ -97,4 +97,6 @@ void window_bind_remove_unsticky(WINDOW_REC *window);
 void windows_init(void);
 void windows_deinit(void);
 
+short color_24bit_256(const unsigned char rgb[]);
+
 #endif

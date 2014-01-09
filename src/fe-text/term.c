@@ -37,6 +37,7 @@
 int term_width, term_height;
 
 int term_use_colors;
+int term_use_colors24;
 int term_type;
 
 static int force_colors;
@@ -106,10 +107,28 @@ static void cmd_redraw(void)
 	irssi_redraw();
 }
 
+int term_color256map[] = {
+	 0, 4, 2, 6, 1, 5, 3, 7, 8,12,10,14, 9,13,11,15,
+	 0, 0, 1, 1, 1, 1, 0, 0, 3, 1, 1, 9, 2, 2, 3, 3, 3, 3,
+	 2, 2, 3, 3, 3, 3, 2, 2, 3, 3, 3,11,10,10, 3, 3,11,11,
+	 0, 0, 5, 1, 1, 9, 0, 8, 8, 8, 9, 9, 2, 8, 8, 8, 9, 9,
+	 2, 8, 8, 8, 9, 9, 2, 8, 8, 3, 3,11,10,10, 3, 3,11,11,
+	 4, 4, 5, 5, 5, 5, 4, 8, 8, 8, 9, 9, 6, 8, 8, 8, 9, 9,
+	 6, 8, 8, 8, 8, 9, 6, 8, 8, 8, 7, 7, 6, 6, 8, 7, 7, 7,
+	 4, 4, 5, 5, 5, 5, 4, 8, 8, 8, 9, 9, 6, 8, 8, 8, 8, 9,
+	 6, 8, 8, 8, 7, 7, 6, 6, 8, 7, 7, 7, 6, 6, 7, 7, 7, 7,
+	 4, 4, 5, 5, 5,13, 4, 8, 8, 5, 5,13, 6, 8, 8, 8, 7, 7,
+	 6, 6, 8, 7, 7, 7, 6, 6, 7, 7, 7, 7,14,14, 7, 7, 7, 7,
+	12,12, 5, 5,13,13,12,12, 5, 5,13,13, 6, 6, 8, 7, 7, 7,
+	 6, 6, 7, 7, 7, 7,14,14, 7, 7, 7, 7,14,14, 7, 7, 7,15,
+	 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	 7, 7, 7, 7, 7, 7, 0 };
+
 static void read_settings(void)
 {
         const char *str;
 	int old_colors = term_use_colors;
+	int old_colors24 = term_use_colors24;
         int old_type = term_type;
 
         /* set terminal type */
@@ -133,7 +152,14 @@ static void read_settings(void)
 	term_use_colors = settings_get_bool("colors") &&
 		(force_colors || term_has_colors());
 
-	if (term_use_colors != old_colors)
+#ifdef TERM_TRUECOLOR
+	term_use_colors24 = settings_get_bool("colors_ansi_24bit") &&
+		(force_colors || term_has_colors());
+#else
+	term_use_colors24 = FALSE;
+#endif
+
+	if (term_use_colors != old_colors || term_use_colors24 != old_colors24)
 		irssi_redraw();
 }
 
@@ -149,6 +175,12 @@ void term_common_init(void)
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
+#ifdef TERM_TRUECOLOR
+	settings_add_bool("lookandfeel", "colors_ansi_24bit", FALSE);
+	term_use_colors24 = term_has_colors() && settings_get_bool("colors_ansi_24bit");
+#else
+	term_use_colors24 = FALSE;
+#endif
         read_settings();
 
 	if (g_get_charset(&dummy)) {

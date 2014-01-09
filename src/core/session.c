@@ -51,7 +51,7 @@ void session_upgrade(void)
                 return;
 
 	execv(session_args[0], session_args);
-	g_message( "exec failed: %s: %s\n",
+	fprintf(stderr, "exec failed: %s: %s\n",
 		session_args[0], g_strerror(errno));
 }
 

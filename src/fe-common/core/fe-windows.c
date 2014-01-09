@@ -588,6 +588,63 @@ static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
 	printtext_string_window(window, MSGLEVEL_NEVER, str);
 }
 
+short color_24bit_256 (const unsigned char rgb[])
+{
+	static const int cstep_size = 40;
+	static const int cstep_start = 0x5f;
+
+	static const int gstep_size = 10;
+	static const int gstep_start = 0x08;
+
+	int dist[3] = {0};
+	int r[3], gr[3];
+
+	size_t i;
+
+	for (i = 0; i < 3; ++i) {
+		const int n = rgb[i];
+		gr[i] = -1;
+		if (n < cstep_start /2) {
+			r[i] = 0;
+			dist[i] = -cstep_size/2;
+		}
+		else {
+			r[i] = 1+((n-cstep_start + cstep_size /2)/cstep_size);
+			dist[i] = ((n-cstep_start + cstep_size /2)%cstep_size - cstep_size/2);
+		}
+		if (n < gstep_start /2) {
+			gr[i] = -1;
+		}
+		else {
+			gr[i] = ((n-gstep_start + gstep_size /2)/gstep_size);
+		}
+	}
+	if (r[0] == r[1] && r[1] == r[2] &&
+	    4*abs(dist[0]) < gstep_size && 4*abs(dist[1]) < gstep_size && 4*abs(dist[2]) < gstep_size) {
+		/* skip gray detection */
+	}
+	else {
+		const int j = r[1] == r[2] ? 0 : 1;
+		if ((r[0] == r[1] || r[j] == r[2]) && abs(r[j]-r[(j+1)%3]) <= 1) {
+			const int k = gr[1] == gr[2] ? 0 : 1;
+			if ((gr[0] == gr[1] || gr[k] == gr[2]) && abs(gr[k]-gr[(k+1)%3]) <= 2) {
+				if (gr[k] < 0) {
+					r[0] = r[1] = r[2] = 0;
+				}
+				else if (gr[k] > 23) {
+					r[0] = r[1] = r[2] = 5;
+				}
+				else {
+					r[0] = 6;
+					r[1] = (gr[k] / 6);
+					r[2] = gr[k]%6;
+				}
+			}
+		}
+	}
+	return 16 + r[0]*36 + r[1] * 6 + r[2];
+}
+
 static void sig_print_text(void)
 {
 	GSList *tmp;

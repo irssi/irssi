@@ -256,12 +256,12 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
 			break;
 		}
 		default:
-		     adv = format_expand_styles(out, &str, &dest->flags);
-		     if (!adv) {
+			adv = format_expand_styles(out, &str, &dest->flags);
+			if (!adv) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *str);
-		     } else {
-			  str += adv -1;
+			} else {
+				str += adv - 1;
 			}
 			break;
 		}
@@ -277,6 +277,7 @@ static char *printtext_expand_formats(const char *str, int *flags)
 	GString *out;
 	char *ret;
 	int adv;
+
 	out = g_string_new(NULL);
 	for (; *str != '\0'; str++) {
 		if (*str != '%') {
@@ -292,7 +293,7 @@ static char *printtext_expand_formats(const char *str, int *flags)
 			g_string_append_c(out, '%');
 			g_string_append_c(out, *str);
 		} else {
-		     str += adv -1;
+		     str += adv - 1;
 		}
 	}
 

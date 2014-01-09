@@ -331,16 +331,29 @@ static void _set_standout(TERM_REC *term, int set)
 	tput(tparm(set ? term->TI_smso : term->TI_rmso));
 }
 
+inline static int color256(const TERM_REC *term, const int color) {
+	if (color < term->TI_colors)
+		return color;
+
+	if (color < 16)
+		return color % term->TI_colors;
+
+	if (color < 256)
+		return term_color256map[color] % term->TI_colors;
+
+	return color % term->TI_colors;
+}
+
 /* Change foreground color */
 static void _set_fg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_fg[color % term->TI_colors]));
+	tput(tparm(term->TI_fg[color256(term, color)]));
 }
 
 /* Change background color */
 static void _set_bg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_bg[color % term->TI_colors]));
+	tput(tparm(term->TI_bg[color256(term, color)]));
 }
 
 /* Beep */
@@ -519,19 +532,19 @@ static int term_setup(TERM_REC *term)
 
 	term_env = getenv("TERM");
 	if (term_env == NULL) {
-		g_message( "TERM environment not set\n");
+		fprintf(stderr, "TERM environment not set\n");
                 return 0;
 	}
 
 #ifdef HAVE_TERMINFO
 	if (setupterm(term_env, 1, &err) != 0) {
-		g_message( "setupterm() failed for TERM=%s: %d\n", term_env, err);
+		fprintf(stderr, "setupterm() failed for TERM=%s: %d\n", term_env, err);
 		return 0;
 	}
 #else
 	if (tgetent(term->buffer1, term_env) < 1)
 	{
-		g_message( "Termcap not found for TERM=%s\n", term_env);
+		fprintf(stderr, "Termcap not found for TERM=%s\n", term_env);
 		return 0;
 	}
 #endif
@@ -544,7 +557,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->TI_hpa && term->TI_vpa)
 		term->move = _move_pa;
 	else {
-                g_message( "Terminal doesn't support cursor movement\n");
+                fprintf(stderr, "Terminal doesn't support cursor movement\n");
 		return 0;
 	}
 	term->move_relative = _move_relative;
@@ -561,7 +574,7 @@ static int term_setup(TERM_REC *term)
 	else if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1))
 		term->scroll = _scroll_line_1;
 	else if (term->scroll == NULL) {
-                g_message( "Terminal doesn't support scrolling\n");
+                fprintf(stderr, "Terminal doesn't support scrolling\n");
 		return 0;
 	}
 
@@ -578,7 +591,7 @@ static int term_setup(TERM_REC *term)
 		/* we could do this by line inserts as well, but don't
 		   bother - if some terminal has insert line it most probably
 		   has delete line as well, if not a regular clear screen */
-                g_message( "Terminal doesn't support clearing screen\n");
+                fprintf(stderr, "Terminal doesn't support clearing screen\n");
 		return 0;
 	}
 
@@ -586,7 +599,7 @@ static int term_setup(TERM_REC *term)
 	if (term->TI_el)
 		term->clrtoeol = _clrtoeol;
 	else {
-                g_message( "Terminal doesn't support clearing to end of line\n");
+                fprintf(stderr, "Terminal doesn't support clearing to end of line\n");
 		return 0;
 	}
 
