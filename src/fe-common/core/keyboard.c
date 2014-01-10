@@ -304,6 +304,20 @@ static int expand_key(const char *key, GSList **out)
                         /* possibly beginning of keycombo */
 			start = key;
                         last_hyphen = FALSE;
+		} else if (g_utf8_validate(key, -1, NULL)) {
+			/* Assume we are looking at the start of a
+			 * multibyte sequence we will receive as-is,
+			 * so add it to the list as-is.
+			 */
+			const char *p, *end = g_utf8_next_char(key);
+			for (p = key; p != end; p++)
+				expand_out_char(*out, *p);
+			expand_out_char(*out, '-');
+			/* The for loop skips past the remaining character.
+			 * Nasty, I know...
+			 */
+			key = end - 1;
+			last_hyphen = FALSE;
 		} else {
 			expand_out_char(*out, *key);
 			expand_out_char(*out, '-');
