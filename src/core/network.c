@@ -356,7 +356,7 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 
 	status = g_io_channel_read_chars(handle, buf, len, &ret, &err);
 	if (err != NULL) {
-	        g_warning(err->message);
+	        g_warning("%s", err->message);
 	        g_error_free(err);
 	}
 	if (status == G_IO_STATUS_ERROR || status == G_IO_STATUS_EOF)
@@ -377,7 +377,7 @@ int net_transmit(GIOChannel *handle, const char *data, int len)
 
 	status = g_io_channel_write_chars(handle, (char *) data, len, &ret, &err);
 	if (err != NULL) {
-	        g_warning(err->message);
+	        g_warning("%s", err->message);
 	        g_error_free(err);
 	}
 	if (status == G_IO_STATUS_ERROR)
