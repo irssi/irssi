@@ -429,6 +429,24 @@ static gboolean irssi_ssl_init(void)
 
 }
 
+static int get_pem_password_callback(char *buffer, int max_length, int rwflag, void *pass)
+{
+	char *password;
+	size_t length;
+
+	if (pass == NULL)
+		return 0;
+
+	password = (char *)pass;
+	length = strlen(pass);
+
+	if (length > max_length)
+		return 0;
+
+	memcpy(buffer, password, length + 1);
+	return length;
+}
+
 static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_REC *server)
 {
 	GIOSSLChannel *chan;
@@ -439,6 +457,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 
 	const char *mycert = server->connrec->ssl_cert;
 	const char *mypkey = server->connrec->ssl_pkey;
+	const char *mypass = server->connrec->ssl_pass;
 	const char *cafile = server->connrec->ssl_cafile;
 	const char *capath = server->connrec->ssl_capath;
 	gboolean verify = server->connrec->ssl_verify;
@@ -457,6 +476,8 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		return NULL;
 	}
 	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
+	SSL_CTX_set_default_passwd_cb(ctx, get_pem_password_callback);
+	SSL_CTX_set_default_passwd_cb_userdata(ctx, mypass);
 
 	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;
@@ -464,9 +485,9 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		if (mypkey && *mypkey)
 			spkey = convert_home(mypkey);
 		if (! SSL_CTX_use_certificate_file(ctx, scert, SSL_FILETYPE_PEM))
-			g_warning("Loading of client certificate '%s' failed", mycert);
+			g_warning("Loading of client certificate '%s' failed: %s", mycert, ERR_reason_error_string(ERR_get_error()));
 		else if (! SSL_CTX_use_PrivateKey_file(ctx, spkey ? spkey : scert, SSL_FILETYPE_PEM))
-			g_warning("Loading of private key '%s' failed", mypkey ? mypkey : mycert);
+			g_warning("Loading of private key '%s' failed: %s", mypkey ? mypkey : mycert, ERR_reason_error_string(ERR_get_error()));
 		else if (! SSL_CTX_check_private_key(ctx))
 			g_warning("Private key does not match the certificate");
 		g_free(scert);

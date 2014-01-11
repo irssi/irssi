@@ -5,6 +5,7 @@
      -ssl: use SSL when connecting
      -ssl_cert: The SSL client certificate file (implies -ssl)
      -ssl_pkey: The SSL client private key (if not included in the certificate file)
+     -ssl_pass: The password for the SSL client private key or certificate.
      -ssl_verify: Verify servers SSL certificate
      -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
      -ssl_capath: Directory with CA certificates (implies -ssl_verify)

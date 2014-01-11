@@ -25,6 +25,7 @@ char *realname;
 
 char *ssl_cert;
 char *ssl_pkey;
+char *ssl_pass;
 char *ssl_cafile;
 char *ssl_capath;
 
