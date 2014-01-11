@@ -29,6 +29,7 @@ struct _HILIGHT_REC {
 	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	regex_t preg;
 #endif
+	char *tag;
 };
 
 extern GSList *hilights;
