@@ -7,8 +7,10 @@ BUILT_SOURCES = default-config.h default-theme.h irssi-version.h
 
 default-config.h: $(srcdir)/irssi.conf
 	$(srcdir)/file2header.sh $(srcdir)/irssi.conf default_config > default-config.h
+
 default-theme.h: $(srcdir)/default.theme
 	$(srcdir)/file2header.sh $(srcdir)/default.theme default_theme > default-theme.h
+
 irssi-version.h:
 	$(srcdir)/irssi-version.sh $(srcdir) | cmp -s - $@ || $(srcdir)/irssi-version.sh $(srcdir) >$@
 
