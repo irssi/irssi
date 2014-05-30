@@ -26,7 +26,8 @@ fi
 echo "Creating help files..."
 perl syntax.pl
 
-$srcdir/update-changelog.sh $srcdir
+echo "Creating ChangeLog..."
+git log > $srcdir/ChangeLog
 
 files=`echo docs/help/in/*.in|sed -e 's,docs/help/in/Makefile.in ,,' -e 's,docs/help/in/,!,g' -e 's/\.in /.in ?/g'`
 cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/in/Makefile.am
