@@ -195,6 +195,8 @@ BOOT:
 	irssi_boot(TextUI__TextBuffer);
 	irssi_boot(TextUI__TextBufferView);
 
+MODULE = Irssi::TextUI  PACKAGE = Irssi
+
 void
 term_refresh_freeze()
 
