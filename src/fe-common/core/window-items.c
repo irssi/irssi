@@ -218,16 +218,10 @@ WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
 		WI_ITEM_REC *rec = tmp->data;
 
 		if ((server == NULL || rec->server == server) &&
-		    g_ascii_strcasecmp(name, rec->visible_name) == 0)
+		    (g_ascii_strcasecmp(name, rec->visible_name) == 0
+		     || (rec->name && g_ascii_strcasecmp(name, rec->name) == 0)))
 			return rec;
 	}
-
-	/* try with channel name too, it's not necessarily
-	   same as visible_name (!channels) */
-	channel = channel_find(server, name);
-	if (channel != NULL && window_item_window(channel) == window)
-		return (WI_ITEM_REC *) channel;
-
 	return NULL;
 }
 

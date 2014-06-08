@@ -7,7 +7,7 @@ GHashTable *module_data;
 void *window;
 STRUCT_SERVER_REC *server;
 char *visible_name;
-
+char *name;
 time_t createtime;
 int data_level;
 char *hilight_color;

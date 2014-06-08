@@ -2,7 +2,6 @@
 
 #include "window-item-rec.h"
 
-char *name;
 char *topic;
 char *topic_by;
 time_t topic_time;
