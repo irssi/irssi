@@ -281,40 +281,26 @@ GSList *nicklist_getnicks(CHANNEL_REC *channel)
 	return list;
 }
 
-typedef struct {
-        CHANNEL_REC *channel;
-	const char *nick;
-	GSList *list;
-} NICKLIST_GET_SAME_REC;
-
-static void get_nicks_same_hash(gpointer key, NICK_REC *nick,
-				NICKLIST_GET_SAME_REC *rec)
-{
-	while (nick != NULL) {
-		if (g_ascii_strcasecmp(nick->nick, rec->nick) == 0) {
-			rec->list = g_slist_append(rec->list, rec->channel);
-			rec->list = g_slist_append(rec->list, nick);
-		}
-
-		nick = nick->next;
-	}
-}
-
 GSList *nicklist_get_same(SERVER_REC *server, const char *nick)
 {
-	NICKLIST_GET_SAME_REC rec;
 	GSList *tmp;
+	GSList *list = NULL;
 
 	g_return_val_if_fail(IS_SERVER(server), NULL);
 
-	rec.nick = nick;
-	rec.list = NULL;
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		rec.channel = tmp->data;
-		g_hash_table_foreach(rec.channel->nicks,
-				     (GHFunc) get_nicks_same_hash, &rec);
+		NICK_REC *nick_rec;
+		CHANNEL_REC *channel = tmp->data;
+
+		for (nick_rec = g_hash_table_lookup(channel->nicks, nick);
+		     nick_rec != NULL;
+		     nick_rec = nick_rec->next) {
+			list = g_slist_append(list, channel);
+			list = g_slist_append(list, nick_rec);
+		}
 	}
-	return rec.list;
+
+	return list;
 }
 
 typedef struct {
