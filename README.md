@@ -100,9 +100,9 @@ think of currently:
 
 ## Bugs / Suggestions
 
-if not open a bugreport on http://bugs.irssi.org or send a mail to
-staff@irssi.org
 See `TODO` file and http://bugs.irssi.org if it is already listed in there;
+if not open a bugreport on http://bugs.irssi.org or [send a mail to
+staff@irssi.org](mailto:staff@irssi.org)
 
 You can also contact the Irssi developers on #irssi @ EFnet, Freenode, IRCnet,
 Quakenet and Undernet.
