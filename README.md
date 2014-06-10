@@ -1,5 +1,3 @@
-
-
 irssi, http://irssi.org
 
 
