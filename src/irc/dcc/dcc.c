@@ -148,7 +148,7 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 		DCC_REC *dcc = tmp->data;
 
 		if (dcc->type == type && !dcc_is_connected(dcc) &&
-		    g_strcasecmp(dcc->nick, nick) == 0 &&
+		    g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
 		    (arg == NULL || strcmp(dcc->arg, arg) == 0))
 			return dcc;
 	}
@@ -287,7 +287,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 		DCC_REC *dcc = tmp->data;
 
 		if (dcc->server == NULL && dcc->servertag != NULL &&
-		    g_strcasecmp(dcc->servertag, server->tag) == 0) {
+		    g_ascii_strcasecmp(dcc->servertag, server->tag) == 0) {
 			dcc->server = server;
 			g_free(dcc->mynick);
 			dcc->mynick = g_strdup(server->nick);
@@ -479,7 +479,7 @@ static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 
 		next = tmp->next;
 		if (!dcc_is_connected(dcc) && dcc->server == server &&
-		    dcc->nick != NULL && g_strcasecmp(dcc->nick, nick) == 0)
+		    dcc->nick != NULL && g_ascii_strcasecmp(dcc->nick, nick) == 0)
 			dcc_close(dcc);
 	}
 
@@ -515,7 +515,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 		DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (dcc->type == type && g_strcasecmp(dcc->nick, nick) == 0 &&
+		if (dcc->type == type && g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
 		    (*arg == '\0' || strcmp(dcc->arg, arg) == 0)) {
 			dcc_reject(dcc, server);
 			found = TRUE;

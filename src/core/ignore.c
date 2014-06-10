@@ -115,7 +115,7 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 
 #define ignore_match_server(rec, server) \
 	((rec)->servertag == NULL || \
-	g_strcasecmp((server)->tag, (rec)->servertag) == 0)
+	g_ascii_strcasecmp((server)->tag, (rec)->servertag) == 0)
 
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
@@ -198,14 +198,14 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 			    (servertag != NULL && rec->servertag == NULL))
 				continue;
 
-			if (servertag != NULL && g_strcasecmp(servertag, rec->servertag) != 0)
+			if (servertag != NULL && g_ascii_strcasecmp(servertag, rec->servertag) != 0)
 				continue;
 		}
 
 		if ((rec->mask == NULL && mask != NULL) ||
 		    (rec->mask != NULL && mask == NULL)) continue;
 
-		if (rec->mask != NULL && g_strcasecmp(rec->mask, mask) != 0)
+		if (rec->mask != NULL && g_ascii_strcasecmp(rec->mask, mask) != 0)
 			continue;
 
 		if ((channels == NULL && rec->channels == NULL))

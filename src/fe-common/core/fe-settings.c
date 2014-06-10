@@ -205,7 +205,7 @@ static void cmd_toggle(const char *data)
 
 static int config_key_compare(CONFIG_NODE *node1, CONFIG_NODE *node2)
 {
-	return g_strcasecmp(node1->key, node2->key);
+	return g_ascii_strcasecmp(node1->key, node2->key);
 }
 
 static void show_aliases(const char *alias)
@@ -228,7 +228,7 @@ static void show_aliases(const char *alias)
 		if (node->type != NODE_TYPE_KEY)
 			continue;
 
-		if (aliaslen != 0 && g_strncasecmp(node->key, alias, aliaslen) != 0)
+		if (aliaslen != 0 && g_ascii_strncasecmp(node->key, alias, aliaslen) != 0)
 			continue;
 
 		list = g_slist_insert_sorted(list, node, (GCompareFunc) config_key_compare);

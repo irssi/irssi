@@ -194,11 +194,11 @@ static void show_help(const char *data)
 			items = 0;
 		}
 
-		if (last != NULL && g_strcasecmp(rec->cmd, last->cmd) == 0)
+		if (last != NULL && g_ascii_strcasecmp(rec->cmd, last->cmd) == 0)
 			continue; /* don't display same command twice */
 
 		if ((int)strlen(rec->cmd) >= findlen &&
-		    g_strncasecmp(rec->cmd, data, findlen) == 0) {
+		    g_ascii_strncasecmp(rec->cmd, data, findlen) == 0) {
 			if (rec->cmd[findlen] == '\0') {
 				fullmatch = TRUE;
 				found = TRUE;

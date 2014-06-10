@@ -105,7 +105,7 @@ CHATNET_REC *chatnet_find(const char *name)
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
 		CHATNET_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0)
+		if (g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
 

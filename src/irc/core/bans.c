@@ -150,7 +150,7 @@ void ban_remove(IRC_CHANNEL_REC *channel, const char *bans)
 
 		if (!found) {
 			rec = NULL;
-			if (!g_strcasecmp(*ban, BAN_LAST)) {
+			if (!g_ascii_strcasecmp(*ban, BAN_LAST)) {
 				/* unnbanning last set ban */
 				rec = g_slist_nth_data(channel->banlist,
 							g_slist_length(channel->banlist) - 1);

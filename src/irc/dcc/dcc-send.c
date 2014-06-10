@@ -180,7 +180,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 	chat = item_get_dcc(item);
 	if (chat != NULL &&
-	    (chat->mirc_ctcp || g_strcasecmp(nick, chat->nick) != 0))
+	    (chat->mirc_ctcp || g_ascii_strcasecmp(nick, chat->nick) != 0))
 		chat = NULL;
 
 	if (IS_IRC_SERVER(server) && server->connected)

@@ -237,7 +237,7 @@ MODULE_REC *module_find(const char *name)
 	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 		MODULE_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0)
+		if (g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
 

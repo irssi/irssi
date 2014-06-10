@@ -362,7 +362,7 @@ static GList *completion_get_settings(const char *key, SettingType type)
 		SETTINGS_REC *rec = tmp->data;
 
 		if ((type == -1 || rec->type == type) &&
-		    g_strncasecmp(rec->key, key, len) == 0)
+		    g_ascii_strncasecmp(rec->key, key, len) == 0)
 			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
 	}
 	g_slist_free(sets);
@@ -391,7 +391,7 @@ static GList *completion_get_aliases(const char *alias, char cmdchar)
 		if (node->type != NODE_TYPE_KEY)
 			continue;
 
-		if (g_strncasecmp(node->key, alias, len) == 0) {
+		if (g_ascii_strncasecmp(node->key, alias, len) == 0) {
 			word = g_strdup_printf("%c%s", cmdchar, node->key);
 			/* add matching alias to completion list, aliases will
 			   be appended after command completions and kept in
@@ -422,7 +422,7 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 		if (strchr(rec->cmd, ' ') != NULL)
 			continue;
 
-		if (g_strncasecmp(rec->cmd, cmd, len) == 0) {
+		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0) {
 			word = cmdchar == '\0' ? g_strdup(rec->cmd) :
 				g_strdup_printf("%c%s", cmdchar, rec->cmd);
 			if (glist_find_icase_string(complist, word) == NULL)
@@ -459,7 +459,7 @@ static GList *completion_get_subcommands(const char *cmd)
 		if (strchr(rec->cmd+len, ' ') != NULL)
 			continue;
 
-		if (g_strncasecmp(rec->cmd, cmd, len) == 0)
+		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0)
 			complist = g_list_insert_sorted(complist, g_strdup(rec->cmd+skip), (GCompareFunc) g_istr_cmp);
 	}
 	return complist;
@@ -483,7 +483,7 @@ static GList *completion_get_options(const char *cmd, const char *option)
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
 		const char *optname = *tmp + iscmdtype(**tmp);
 
-		if (len == 0 || g_strncasecmp(optname, option, len) == 0)
+		if (len == 0 || g_ascii_strncasecmp(optname, option, len) == 0)
                         list = g_list_append(list, g_strconcat("-", optname, NULL));
 	}
 
@@ -805,7 +805,7 @@ static void cmd_completion(const char *data)
 			node = tmp->data;
 
 			if (len == 0 ||
-			    g_strncasecmp(node->key, key, len) == 0) {
+			    g_ascii_strncasecmp(node->key, key, len) == 0) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 					    TXT_COMPLETION_LINE, node->key,
 					    config_node_get_str(node, "value", ""),

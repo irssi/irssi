@@ -301,7 +301,7 @@ void modes_type_prefix(IRC_CHANNEL_REC *channel, const char *setby,
 {
 	int umode = (unsigned char) mode;
 
-	if (g_strcasecmp(channel->server->nick, arg) == 0) {
+	if (g_ascii_strcasecmp(channel->server->nick, arg) == 0) {
 		/* see if we need to update channel->chanop */
 		const char *prefix =
 			g_hash_table_lookup(channel->server->isupport, "PREFIX");
@@ -692,7 +692,7 @@ static int get_wildcard_nicks(GString *output, const char *mask,
 		    (voice == 1 && !rec->voice) || (voice == 0 && rec->voice))
 			continue;
 
-		if (g_strcasecmp(rec->nick, channel->server->nick) == 0)
+		if (g_ascii_strcasecmp(rec->nick, channel->server->nick) == 0)
 			continue;
 
 		g_string_append_printf(output, "%s ", rec->nick);
@@ -859,7 +859,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 	} else if (ischannel(*target))
 		channel_set_mode(server, target, mode);
 	else {
-		if (g_strcasecmp(target, server->nick) == 0) {
+		if (g_ascii_strcasecmp(target, server->nick) == 0) {
 			server_redirect_event(server, "mode user", 1, target, -1, NULL,
 					      "event mode", "requested usermode change", NULL);
 		}

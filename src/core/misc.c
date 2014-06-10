@@ -140,7 +140,7 @@ int find_substr(const char *list, const char *item)
 		ptr = strchr(list, ' ');
 		if (ptr == NULL) ptr = list+strlen(list);
 
-		if (g_strncasecmp(list, item, ptr-list) == 0 &&
+		if (g_ascii_strncasecmp(list, item, ptr-list) == 0 &&
 		    item[ptr-list] == '\0')
 			return TRUE;
 
@@ -174,7 +174,7 @@ int strarray_find(char **array, const char *item)
 
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		if (g_strcasecmp(*tmp, item) == 0)
+		if (g_ascii_strcasecmp(*tmp, item) == 0)
 			return index;
 	}
 
@@ -192,7 +192,7 @@ GSList *gslist_find_string(GSList *list, const char *key)
 GSList *gslist_find_icase_string(GSList *list, const char *key)
 {
 	for (list = list; list != NULL; list = list->next)
-		if (g_strcasecmp(list->data, key) == 0) return list;
+		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
 
 	return NULL;
 }
@@ -277,7 +277,7 @@ GList *glist_find_string(GList *list, const char *key)
 GList *glist_find_icase_string(GList *list, const char *key)
 {
 	for (list = list; list != NULL; list = list->next)
-		if (g_strcasecmp(list->data, key) == 0) return list;
+		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
 
 	return NULL;
 }
@@ -443,12 +443,12 @@ char *convert_home(const char *path)
 
 int g_istr_equal(gconstpointer v, gconstpointer v2)
 {
-	return g_strcasecmp((const char *) v, (const char *) v2) == 0;
+	return g_ascii_strcasecmp((const char *) v, (const char *) v2) == 0;
 }
 
 int g_istr_cmp(gconstpointer v, gconstpointer v2)
 {
-	return g_strcasecmp((const char *) v, (const char *) v2);
+	return g_ascii_strcasecmp((const char *) v, (const char *) v2);
 }
 
 /* a char* hash function from ASU */

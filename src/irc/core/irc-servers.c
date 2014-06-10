@@ -90,7 +90,8 @@ static void send_message(SERVER_REC *server, const char *target,
 	if (*target == '!') {
 		/* !chan -> !12345chan */
 		channel = channel_find(server, target);
-		if (channel != NULL && g_strcasecmp(channel->name, target) != 0)
+		if (channel != NULL &&
+		    g_ascii_strcasecmp(channel->name, target) != 0)
 			target = channel->name;
 	}
 

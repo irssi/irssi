@@ -73,7 +73,7 @@ static GSList *get_source_servers(const char *server, GSList **servers)
 		NETSPLIT_SERVER_REC *rec = tmp->data;
 		next = tmp->next;
 
-		if (g_strcasecmp(rec->server, server) == 0) {
+		if (g_ascii_strcasecmp(rec->server, server) == 0) {
 			rec->prints = 0;
 			list = g_slist_append(list, rec);
 			*servers = g_slist_remove(*servers, rec);
@@ -91,7 +91,7 @@ static TEMP_SPLIT_CHAN_REC *find_split_chan(TEMP_SPLIT_REC *rec,
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		TEMP_SPLIT_CHAN_REC *chanrec = tmp->data;
 
-		if (g_strcasecmp(chanrec->name, name) == 0)
+		if (g_ascii_strcasecmp(chanrec->name, name) == 0)
 			return chanrec;
 	}
 
@@ -292,7 +292,7 @@ static void sig_netsplit_servers(void)
 
 static int split_equal(NETSPLIT_REC *n1, NETSPLIT_REC *n2)
 {
-        return g_strcasecmp(n1->nick, n2->nick);
+        return g_ascii_strcasecmp(n1->nick, n2->nick);
 }
 
 static void split_get(void *key, NETSPLIT_REC *rec, GSList **list)

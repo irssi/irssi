@@ -553,7 +553,7 @@ SERVER_REC *server_find_tag(const char *tag)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *server = tmp->data;
 
-		if (g_strcasecmp(server->tag, tag) == 0)
+		if (g_ascii_strcasecmp(server->tag, tag) == 0)
 			return server;
 	}
 
@@ -570,7 +570,7 @@ SERVER_REC *server_find_lookup_tag(const char *tag)
 	for (tmp = lookup_servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *server = tmp->data;
 
-		if (g_strcasecmp(server->tag, tag) == 0)
+		if (g_ascii_strcasecmp(server->tag, tag) == 0)
 			return server;
 	}
 
@@ -588,7 +588,7 @@ SERVER_REC *server_find_chatnet(const char *chatnet)
 		SERVER_REC *server = tmp->data;
 
 		if (server->connrec->chatnet != NULL &&
-		    g_strcasecmp(server->connrec->chatnet, chatnet) == 0)
+		    g_ascii_strcasecmp(server->connrec->chatnet, chatnet) == 0)
 			return server;
 	}
 

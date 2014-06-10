@@ -282,7 +282,7 @@ create_chatnet_conn(const char *dest, int port,
 		SERVER_SETUP_REC *rec = tmp->data;
 
 		if (rec->chatnet == NULL ||
-		    g_strcasecmp(rec->chatnet, dest) != 0)
+		    g_ascii_strcasecmp(rec->chatnet, dest) != 0)
 			continue;
 
 		if (!rec->last_failed) {
@@ -342,9 +342,9 @@ SERVER_SETUP_REC *server_setup_find(const char *address, int port,
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->address, address) == 0 &&
+		if (g_ascii_strcasecmp(rec->address, address) == 0 &&
 		    (chatnet == NULL || rec->chatnet == NULL ||
-		     g_strcasecmp(rec->chatnet, chatnet) == 0)) {
+		     g_ascii_strcasecmp(rec->chatnet, chatnet) == 0)) {
 			server = rec;
 			if (rec->port == port)
 				break;

@@ -103,7 +103,7 @@ CHAT_DCC_REC *dcc_chat_find_id(const char *id)
 		CHAT_DCC_REC *dcc = tmp->data;
 
 		if (IS_DCC_CHAT(dcc) && dcc->id != NULL &&
-		    g_strcasecmp(dcc->id, id) == 0)
+		    g_ascii_strcasecmp(dcc->id, id) == 0)
 			return dcc;
 	}
 
@@ -121,7 +121,7 @@ static CHAT_DCC_REC *dcc_chat_find_nick(IRC_SERVER_REC *server,
 		CHAT_DCC_REC *dcc = tmp->data;
 
 		if (IS_DCC_CHAT(dcc) && dcc->server == server &&
-		    g_strcasecmp(dcc->nick, nick) == 0)
+		    g_ascii_strcasecmp(dcc->nick, nick) == 0)
 			return dcc;
 	}
 
@@ -562,7 +562,7 @@ static void cmd_dcc_close(char *data, SERVER_REC *server)
 
 		next = tmp->next;
 		if (IS_DCC_CHAT(dcc) && dcc->id != NULL &&
-		    g_strcasecmp(dcc->id, nick) == 0) {
+		    g_ascii_strcasecmp(dcc->id, nick) == 0) {
 			found = TRUE;
 			if (!dcc_is_connected(dcc) && IS_IRC_SERVER(server))
 				dcc_reject(DCC(dcc), IRC_SERVER(server));
@@ -777,7 +777,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(orignick != NULL);
 
 	params = event_get_params(data, 1, &nick);
-	if (g_strcasecmp(nick, orignick) == 0) {
+	if (g_ascii_strcasecmp(nick, orignick) == 0) {
 		/* shouldn't happen, but just to be sure irssi doesn't
 		   get into infinite loop */
                 g_free(params);

@@ -26,6 +26,6 @@ CHANNEL_SETUP_REC *channel_setup_find(const char *channel,
 
 #define channel_chatnet_match(rec, chatnet) \
 	((rec) == NULL || (rec)[0] == '\0' || \
-	 ((chatnet) != NULL && g_strcasecmp(rec, chatnet) == 0))
+	 ((chatnet) != NULL && g_ascii_strcasecmp(rec, chatnet) == 0))
 
 #endif

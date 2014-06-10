@@ -79,7 +79,8 @@ HISTORY_REC *command_history_find_name(const char *name)
 	for (tmp = histories; tmp != NULL; tmp = tmp->next) {
 		HISTORY_REC *rec = tmp->data;
 		
-		if (rec->name != NULL && g_strcasecmp(rec->name, name) == 0)
+		if (rec->name != NULL &&
+		    g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
 	

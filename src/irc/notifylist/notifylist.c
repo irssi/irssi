@@ -94,7 +94,7 @@ int notifylist_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet)
 	if (strcmp(ircnet, "*") == 0) return TRUE;
 
 	for (tmp = rec->ircnets; *tmp != NULL; tmp++) {
-		if (g_strcasecmp(*tmp, ircnet) == 0)
+		if (g_ascii_strcasecmp(*tmp, ircnet) == 0)
 			return TRUE;
 	}
 
@@ -113,7 +113,7 @@ NOTIFYLIST_REC *notifylist_find(const char *mask, const char *ircnet)
 		NOTIFYLIST_REC *rec = tmp->data;
 
 		/* check mask */
-		if (g_strncasecmp(rec->mask, mask, len) != 0 ||
+		if (g_ascii_strncasecmp(rec->mask, mask, len) != 0 ||
 		    (rec->mask[len] != '\0' && rec->mask[len] != '!')) continue;
 
 		/* check ircnet */

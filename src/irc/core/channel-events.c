@@ -199,7 +199,7 @@ static IRC_CHANNEL_REC *channel_find_unjoined(IRC_SERVER_REC *server,
 		if (!IS_IRC_CHANNEL(rec) || rec->joined)
 			continue;
 
-		if (g_strncasecmp(channel, rec->name, len) == 0 &&
+		if (g_ascii_strncasecmp(channel, rec->name, len) == 0 &&
 		    (len > 20 || rec->name[len] == '\0'))
 			return rec;
 	}
@@ -214,7 +214,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strcasecmp(nick, server->nick) != 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) != 0) {
 		/* someone else joined channel, no need to do anything */
 		return;
 	}
@@ -286,7 +286,7 @@ static void event_part(IRC_SERVER_REC *server, const char *data, const char *nic
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strcasecmp(nick, server->nick) != 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) != 0) {
 		/* someone else part, no need to do anything here */
 		return;
 	}
@@ -311,7 +311,7 @@ static void event_kick(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 3, &channel, &nick, &reason);
 
-	if (g_strcasecmp(nick, server->nick) != 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) != 0) {
 		/* someone else was kicked, no need to do anything */
 		g_free(params);
 		return;

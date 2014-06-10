@@ -184,7 +184,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 		chanrec = !group_multi_mode ? NULL :
 			irc_channel_find(server, channel);
 
-		if (chanrec != NULL && g_strcasecmp(nick, server->nick) != 0)
+		if (chanrec != NULL && g_ascii_strcasecmp(nick, server->nick) != 0)
 			msg_multi_mode(chanrec, nick, addr, mode);
 		else {
 			printformat(server, channel, MSGLEVEL_MODES,

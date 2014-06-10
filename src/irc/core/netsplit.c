@@ -43,8 +43,8 @@ static NETSPLIT_SERVER_REC *netsplit_server_find(IRC_SERVER_REC *server,
 	for (tmp = server->split_servers; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_SERVER_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->server, servername) == 0 &&
-		    g_strcasecmp(rec->destserver, destserver) == 0)
+		if (g_ascii_strcasecmp(rec->server, servername) == 0 &&
+		    g_ascii_strcasecmp(rec->destserver, destserver) == 0)
 			return rec;
 	}
 
@@ -191,7 +191,7 @@ NETSPLIT_REC *netsplit_find(IRC_SERVER_REC *server, const char *nick,
 	if (rec == NULL) return NULL;
 
 	return (address == NULL ||
-		g_strcasecmp(rec->address, address) == 0) ? rec : NULL;
+		g_ascii_strcasecmp(rec->address, address) == 0) ? rec : NULL;
 }
 
 NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server,
@@ -211,7 +211,7 @@ NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server,
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_CHAN_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, channel) == 0)
+		if (g_ascii_strcasecmp(rec->name, channel) == 0)
 			return rec;
 	}
 
@@ -315,7 +315,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	/* check if split is over */
 	rec = g_hash_table_lookup(server->splits, nick);
 
-	if (rec != NULL && g_strcasecmp(rec->address, address) == 0) {
+	if (rec != NULL && g_ascii_strcasecmp(rec->address, address) == 0) {
 		/* yep, looks like it is. for same people that had the same
 		   splitted servers set the timeout to one minute.
 
@@ -350,7 +350,7 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	if (*data == ':') data++;
-	if (g_strcasecmp(nick, server->nick) != 0 && quitmsg_is_split(data)) {
+	if (g_ascii_strcasecmp(nick, server->nick) != 0 && quitmsg_is_split(data)) {
 		/* netsplit! */
 		netsplit_add(server, nick, address, data);
 	}

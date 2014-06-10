@@ -58,7 +58,7 @@ static REJOIN_REC *rejoin_find(IRC_SERVER_REC *server, const char *channel)
 	for (tmp = server->rejoin_channels; tmp != NULL; tmp = tmp->next) {
                 REJOIN_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->channel, channel) == 0)
+		if (g_ascii_strcasecmp(rec->channel, channel) == 0)
                         return rec;
 	}
 

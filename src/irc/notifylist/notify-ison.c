@@ -69,7 +69,7 @@ NOTIFY_NICK_REC *notify_nick_find(IRC_SERVER_REC *server, const char *nick)
 	for (tmp = mserver->notify_users; tmp != NULL; tmp = tmp->next) {
 		rec = tmp->data;
 
-		if (g_strcasecmp(rec->nick, nick) == 0)
+		if (g_ascii_strcasecmp(rec->nick, nick) == 0)
 			return rec;
 	}
 

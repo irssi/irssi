@@ -172,7 +172,7 @@ static FLOOD_ITEM_REC *flood_find(FLOOD_REC *flood, int level,
 		FLOOD_ITEM_REC *rec = tmp->data;
 
 		if (rec->level == level &&
-		    g_strcasecmp(rec->target, target) == 0)
+		    g_ascii_strcasecmp(rec->target, target) == 0)
 			return rec;
 	}
 
@@ -245,7 +245,7 @@ static void flood_privmsg(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
+	if (addr == NULL || g_ascii_strcasecmp(nick, server->nick) == 0)
 		return;
 
 	params = event_get_params(data, 2, &target, &text);
@@ -265,7 +265,7 @@ static void flood_notice(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
+	if (addr == NULL || g_ascii_strcasecmp(nick, server->nick) == 0)
 		return;
 
 	params = event_get_params(data, 2, &target, &text);
@@ -283,7 +283,7 @@ static void flood_ctcp(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	if (addr == NULL || g_strcasecmp(nick, server->nick) == 0)
+	if (addr == NULL || g_ascii_strcasecmp(nick, server->nick) == 0)
 		return;
 
 	level = g_ascii_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :

@@ -292,7 +292,7 @@ static void event_list_subcommands(const char *command)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, command, len) == 0 &&
 		    rec->cmd[len] == ' ' &&
 		    strchr(rec->cmd+len+1, ' ') == NULL) {
                         g_string_append_printf(str, "%s ", rec->cmd+len+1);
