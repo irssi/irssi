@@ -1,12 +1,10 @@
-irssi, http://irssi.org
+# irssi, http://irssi.org
 
-
- * INSTALLATION
+## INSTALLATION
 
 See INSTALL file.
 
-
- * FILES
+## FILES
 
  - docs/ directory contains several documents:
     - startup-HOWTO.txt - new users should read this
@@ -17,7 +15,7 @@ See INSTALL file.
     - special_vars.txt - some predefined $variables you can use with irssi
 
 
- * ABOUT
+## ABOUT
 
 Irssi is a modular IRC client that currently has only text mode user
 interface, but 80-90% of the code isn't text mode specific, so other
@@ -26,8 +24,7 @@ specific anymore, there's already a working SILC (http://www.silcnet.org)
 module available. Support for other protocols like ICQ could be created
 some day too.
 
-
- * FEATURES
+## FEATURES
 
 So what's so great about Irssi? Here's a list of some features I can
 think of currently:
@@ -101,7 +98,7 @@ think of currently:
    -topics)
 
 
- * BUGS / SUGGESTIONS
+## BUGS / SUGGESTIONS
 
 See TODO file and http://bugs.irssi.org if it is already listed in there;
 if not open a bugreport on http://bugs.irssi.org or send a mail to
