@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "network.h"
 #include "signals.h"
 #include "commands.h"
 #include "levels.h"
@@ -30,6 +31,12 @@
 #include "default-config.h"
 
 #include <signal.h>
+
+#ifdef WIN32
+#  define g_io_channel_new(handle) g_io_channel_win32_new_stream_socket(handle)
+#else
+#  define g_io_channel_new(handle) g_io_channel_unix_new(handle)
+#endif
 
 #define SETTINGS_AUTOSAVE_TIMEOUT (1000*60*60) /* 1 hour */
 
@@ -47,6 +54,10 @@ static int config_last_modifycounter;
 static time_t config_last_mtime;
 static long config_last_size;
 static unsigned int config_last_checksum;
+
+static int signal_wakeup_pipe[2] = { -1, -1 };
+static GIOChannel *signal_wakeup_read_channel;
+static guint signal_wakeup_event_tag;
 
 static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
@@ -570,16 +581,29 @@ GSList *settings_get_sorted(void)
 	return list;
 }
 
-void sig_term(int n)
+void signal_handler(int signal)
 {
-	/* if we get SIGTERM after this, just die instead of coming back here. */
-	signal(SIGTERM, SIG_DFL);
+	gchar signalNo = (gchar) signal;
+	// write failures silently ignored
+	write(signal_wakeup_pipe[1], &signalNo, 1);
+}
 
-	/* quit from all servers too.. */
-	signal_emit("command quit", 1, "");
+void signal_wakeup_pipe_handler(void *data, GIOChannel *source, int condition) {
+	gchar signalNo;
+	gsize r;
+	GIOStatus status;
 
-	/* and die */
-	raise(SIGTERM);
+	status = g_io_channel_read_chars(signal_wakeup_read_channel, &signalNo, 1, &r, NULL);
+	if (status != G_IO_STATUS_NORMAL || r < 1) {
+		// ignore error conditions
+		return;
+	}
+	switch (signalNo) {
+		case SIGTERM:
+			/* Act as if the user typed "/quit" in the client */
+			signal_emit("command quit", 1, "");
+			break;
+	}
 }
 
 /* Yes, this is my own stupid checksum generator, some "real" algorithm
@@ -675,10 +699,20 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	return config;
 }
 
+static int set_nonblock_flag (int fd)
+{
+	int flags = fcntl (fd, F_GETFL, 0);
+	if (flags == -1)
+		return -1;
+	flags |= O_NONBLOCK;
+	return fcntl (fd, F_SETFL, flags);
+}
+
 static void init_configfile(void)
 {
 	struct stat statbuf;
 	char *str;
+	struct sigaction act;
 
 	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
@@ -702,8 +736,48 @@ static void init_configfile(void)
                 g_free(str);
 	}
 
-	signal(SIGTERM, sig_term);
+	if (pipe(signal_wakeup_pipe)) {
+		g_warning("Failed to create signal wakeup pipe - SIGTERM not attached");
+		signal_wakeup_pipe[0] = 0;
+		return;
+	}
+	if (set_nonblock_flag(signal_wakeup_pipe[0]) || set_nonblock_flag(signal_wakeup_pipe[1])) {
+		g_warning("Failed to configure signal wakeup pipe - SIGTERM not attached");
+		return;
+	}
+
+	signal_wakeup_read_channel = g_io_channel_new(signal_wakeup_pipe[0]);
+	signal_wakeup_event_tag = g_input_add(signal_wakeup_read_channel, G_INPUT_READ, signal_wakeup_pipe_handler, NULL);
+
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = SA_RESETHAND;
+	act.sa_handler = signal_handler;
+	sigaction(SIGTERM, &act, NULL);
 }
+
+static void deinit_configfile(void)
+{
+	struct sigaction act;
+
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = 0;
+	act.sa_handler = SIG_DFL;
+	sigaction(SIGTERM, &act, NULL);
+
+	if (signal_wakeup_event_tag) {
+		g_source_remove(signal_wakeup_event_tag);
+	}
+	if (signal_wakeup_read_channel) {
+		g_io_channel_shutdown(signal_wakeup_read_channel, FALSE, NULL);
+		g_io_channel_unref(signal_wakeup_read_channel);
+	}
+
+	if (signal_wakeup_pipe[0]) {
+		close(signal_wakeup_pipe[0]);
+		close(signal_wakeup_pipe[1]);
+	}
+}
+
 
 int settings_reread(const char *fname)
 {
@@ -817,6 +891,8 @@ void settings_deinit(void)
         g_source_remove(timeout_tag);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_autosave);
+
+	deinit_configfile();
 
 	g_slist_foreach(last_invalid_modules, (GFunc) g_free, NULL);
 	g_slist_free(last_invalid_modules);
