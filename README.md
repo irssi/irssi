@@ -1,25 +1,21 @@
+# irssi, http://irssi.org
+
+## Installation
+
+See `INSTALL` file.
+
+## Files
+
+ - The `docs/` directory contains several documents:
+    - `startup-HOWTO.txt` - new users should read this
+    - `manual.txt` - manual I started writing but didn't get it very far :)
+    - `perl.txt` - Perl scripting help
+    - `formats.txt` - How to use colors, etc. with irssi
+    - `faq.txt` - Frequently Asked Questions
+    - `special_vars.txt` - some predefined $variables you can use with irssi
 
 
-irssi, http://irssi.org
-
-
- * INSTALLATION
-
-See INSTALL file.
-
-
- * FILES
-
- - docs/ directory contains several documents:
-    - startup-HOWTO.txt - new users should read this
-    - manual.txt - manual I started writing but didn't get it very far :)
-    - perl.txt - Perl scripting help
-    - formats.txt - How to use colors, etc. with irssi
-    - faq.txt - Frequently Asked Questions
-    - special_vars.txt - some predefined $variables you can use with irssi
-
-
- * ABOUT
+## About
 
 Irssi is a modular IRC client that currently has only text mode user
 interface, but 80-90% of the code isn't text mode specific, so other
@@ -28,19 +24,18 @@ specific anymore, there's already a working SILC (http://www.silcnet.org)
 module available. Support for other protocols like ICQ could be created
 some day too.
 
-
- * FEATURES
+## Features
 
 So what's so great about Irssi? Here's a list of some features I can
 think of currently:
 
- - Optional automation - There's lots of things Irssi does for you
+ - **Optional automation** - There's lots of things Irssi does for you
    automatically that some people like and others just hate. Things like:
    nick completion, creating new window for newly joined channel, creating
    queries when msgs/notices are received or when you send a msg, closing
    queries when it's been idle for some time, etc.
 
- - Multiserver friendy - I think Irssi has clearly the best support
+ - **Multiserver friendy** - I think Irssi has clearly the best support
    for handling multiple server connections. You can have as many as you
    want in as many ircnets as you want. Having several connections in one
    server works too, for example when you hit the (ircnet's) 10
@@ -53,17 +48,17 @@ think of currently:
    window, if this window gets closed the connection closes" thing that
    ircII based clients have.
 
- - Channel automation - You can specify what channels to join to
+ - **Channel automation** - You can specify what channels to join to
    immediately after connected to some server or IRC network. After joined
    to channel, Irssi can automatically request ops for you (or do
    anything, actually) from channel's bots.
 
- - Window content saving - Say /LAYOUT SAVE when you've put all the
+ - **Window content saving** - Say /LAYOUT SAVE when you've put all the
    channels and queries to their correct place, and after restarting
    Irssi, the channels will be joined back into windows where they were
    saved.
 
- - Tab completing anything - You can complete lots of things with tab:
+ - **Tab completing anything** - You can complete lots of things with tab:
    nicks, commands, command -options, file names, settings, text format
    names, channels and server names. There's also an excellent /msg
    completion that works transparently with multiple IRC networks.
@@ -73,7 +68,7 @@ think of currently:
    the nicks. You can also complete a set of words you've specified, for
    example homepage<tab> changes it to your actual home page URL.
 
- - Excellent logging - You can log any way you want and as easily or
+ - **Excellent logging** - You can log any way you want and as easily or
    hard as you want. With autologging Irssi logs everything to specified
    directory, one file per channel/nick. ircII style /WINDOW LOG ON is
    also supported. There's also the "hard way" of logging - /LOG command
@@ -82,13 +77,13 @@ think of currently:
    specify how often you want it to rotate and what kind of time stamp to
    use.
 
- - Excellent ignoring - You can most probably ignore anything any way
+ - **Excellent ignoring** - You can most probably ignore anything any way
    you want. Nick masks, words, regular expressions. You can add
    exceptions to ignores. You can ignore other people's replies in
    channels to nicks you have ignored. You can also specify that the
    specific ignores work only in specific channel(s).
 
- - Lastlog and scrollback handling - /LASTLOG command has some new
+ - **Lastlog and scrollback handling** - /LASTLOG command has some new
    features: -new option checks only lines that came since you last did
    /LASTLOG command, -away option checks new lines since you last went
    away. Regular expression matches work also, of course. Going to some
@@ -103,11 +98,11 @@ think of currently:
    -topics)
 
 
- * BUGS / SUGGESTIONS
+## Bugs / Suggestions
 
-See TODO file and http://bugs.irssi.org if it is already listed in there;
-if not open a bugreport on http://bugs.irssi.org or send a mail to
-staff@irssi.org
+See `TODO` file and http://bugs.irssi.org if it is already listed in there;
+if not open a bugreport on http://bugs.irssi.org or [send a mail to
+staff@irssi.org](mailto:staff@irssi.org)
 
 You can also contact the Irssi developers on #irssi @ EFnet, Freenode, IRCnet,
 Quakenet and Undernet.
