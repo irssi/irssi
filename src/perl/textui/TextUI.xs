@@ -175,7 +175,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Server
+MODULE = Irssi::TextUI PACKAGE = Irssi::Server
 
 void
 gui_printtext_after(server, target, prev, level, str)
