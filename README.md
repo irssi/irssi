@@ -2,7 +2,7 @@
 
 ## Installation
 
-See `INSTALL` file.
+See the `INSTALL` file.
 
 ## Files
 
@@ -13,7 +13,6 @@ See `INSTALL` file.
     - `formats.txt` - How to use colors, etc. with irssi
     - `faq.txt` - Frequently Asked Questions
     - `special_vars.txt` - some predefined $variables you can use with irssi
-
 
 ## About
 
@@ -97,11 +96,10 @@ think of currently:
    said your name (as seen in awaylog) or topic was changed (/last
    -topics)
 
-
 ## Bugs / Suggestions
 
-See `TODO` file and http://bugs.irssi.org if it is already listed in there;
-if not open a bugreport on http://bugs.irssi.org or [send a mail to
+See the `TODO` file, http://bugs.irssi.org and the GitHub issues if it is
+already listed in there; if not, open an issue on GitHub or [send a mail to
 staff@irssi.org](mailto:staff@irssi.org)
 
-You can also contact the Irssi developers on #irssi on freenode.
+You can also contact the Irssi developers in #irssi on freenode.
