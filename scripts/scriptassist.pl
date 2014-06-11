@@ -94,7 +94,7 @@ sub call_openurl ($) {
     my ($url) = @_;
     no strict "refs";
     # check for a loaded openurl
-    if (defined %{ "Irssi::Script::openurl::" }) {
+    if ( %{ "Irssi::Script::openurl::" }) {
         &{ "Irssi::Script::openurl::launch_url" }($url);
     } else {
         print CLIENTCRAP "%R>>%n Please install openurl.pl";
@@ -204,7 +204,7 @@ sub script_info ($) {
     my %result;
     my $xml = get_scripts();
     foreach (@{$scripts}) {
-	next unless (defined $xml->{$_.".pl"} || (defined %{ 'Irssi::Script::'.$_.'::' } && defined %{ 'Irssi::Script::'.$_.'::IRSSI' }));
+	next unless (defined $xml->{$_.".pl"} || ( %{ 'Irssi::Script::'.$_.'::' } &&  %{ 'Irssi::Script::'.$_.'::IRSSI' }));
 	$result{$_}{version} = get_remote_version($_, $xml);
 	my @headers = ('authors', 'contact', 'description', 'license', 'source');
 	foreach my $entry (@headers) {
@@ -686,8 +686,8 @@ sub list_sbitems ($) {
     my $text;
     foreach (@$scripts) {
 	no strict 'refs';
-	next unless defined %{ "Irssi::Script::${_}::" };
-	next unless defined %{ "Irssi::Script::${_}::IRSSI" };
+	next unless  %{ "Irssi::Script::${_}::" };
+	next unless  %{ "Irssi::Script::${_}::IRSSI" };
 	my %header = %{ "Irssi::Script::${_}::IRSSI" };
 	next unless $header{sbitems};
 	$text .= '%9"'.$_.'"%9 provides the following statusbar item(s):'."\n";
@@ -774,7 +774,7 @@ sub print_update (%) {
 sub contact_author ($) {
     my ($script) = @_;
     no strict 'refs';
-    return unless defined %{ "Irssi::Script::${script}::" };
+    return unless  %{ "Irssi::Script::${script}::" };
     my %header = %{ "Irssi::Script::${script}::IRSSI" };
     if (defined $header{contact}) {
 	my @ads = split(/ |,/, $header{contact});
@@ -854,7 +854,7 @@ sub get_remote_version ($$) {
 sub get_local_version ($) {
     my ($script) = @_;
     no strict 'refs';
-    return unless defined %{ "Irssi::Script::${script}::" };
+    return unless  %{ "Irssi::Script::${script}::" };
     my $version = ${ "Irssi::Script::${script}::VERSION" };
     return $version;
 }
@@ -1087,8 +1087,8 @@ sub sig_command_script_load ($$$) {
     my ($script, $server, $witem) = @_;
     no strict;
     $script = $2 if $script =~ /(.*\/)?(.*?)\.pl$/;
-    if (defined %{ "Irssi::Script::${script}::" }) {
-	if (defined &{ "Irssi::Script::${script}::pre_unload" }) {
+    if ( %{ "Irssi::Script::${script}::" }) {
+	if ( &{ "Irssi::Script::${script}::pre_unload" }) {
 	    print CLIENTCRAP "%R>>%n Triggering pre_unload function of $script...";
 	    &{ "Irssi::Script::${script}::pre_unload" }();
 	}
