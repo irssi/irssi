@@ -98,8 +98,8 @@ think of currently:
 
 ## Bugs / Suggestions
 
-See the `TODO` file and http://bugs.irssi.org if it is already listed in there;
-if not, open an issue on GitHub or [send a mail to
+See the `TODO` file, http://bugs.irssi.org and the GitHub issues if it is
+already listed in there; if not, open an issue on GitHub or [send a mail to
 staff@irssi.org](mailto:staff@irssi.org)
 
 You can also contact the Irssi developers in #irssi on freenode.
