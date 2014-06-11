@@ -923,7 +923,7 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	    !textbuffer_line_exists_after(view->bottom_startline, line))
 		return;
 
-	linecount = view->cache->last_linecount;
+	linecount = view_get_linecount(view, line);
 	view->ypos += linecount;
 	if (view->empty_linecount > 0) {
 		view->empty_linecount -= linecount;
@@ -951,7 +951,7 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 
 		if (view->window != NULL) {
-			ypos = view->ypos+1 - view->cache->last_linecount;
+			ypos = view->ypos+1 - view_get_linecount(view, line);
 			if (ypos >= 0)
 				subline = 0;
 			else {
