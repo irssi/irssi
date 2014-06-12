@@ -1,27 +1,14 @@
-# irssi, http://irssi.org
+# Irssi
+
+Irssi is a modular IRC client that currently has only text mode user interface,
+but 80-90% of the code isn't text mode specific, so other UIs could be created
+pretty easily. Also, Irssi isn't really even IRC specific anymore, there's
+already a working [SILC](http://www.silcnet.org/) module available. Support for
+other protocols like ICQ could be created some day too.
 
 ## Installation
 
 See the `INSTALL` file.
-
-## Files
-
- - The `docs/` directory contains several documents:
-    - `startup-HOWTO.txt` - new users should read this
-    - `manual.txt` - manual I started writing but didn't get it very far :)
-    - `perl.txt` - Perl scripting help
-    - `formats.txt` - How to use colors, etc. with irssi
-    - `faq.txt` - Frequently Asked Questions
-    - `special_vars.txt` - some predefined $variables you can use with irssi
-
-## About
-
-Irssi is a modular IRC client that currently has only text mode user
-interface, but 80-90% of the code isn't text mode specific, so other
-UIs could be created pretty easily. Also, Irssi isn't really even IRC
-specific anymore, there's already a working SILC (http://www.silcnet.org)
-module available. Support for other protocols like ICQ could be created
-some day too.
 
 ## Features
 
@@ -96,10 +83,20 @@ think of currently:
    said your name (as seen in awaylog) or topic was changed (/last
    -topics)
 
+## Files
+
+ - The `docs/` directory contains several documents:
+    - `startup-HOWTO.txt` - new users should read this
+    - `manual.txt` - manual I started writing but didn't get it very far :)
+    - `perl.txt` - Perl scripting help
+    - `formats.txt` - How to use colors, etc. with irssi
+    - `faq.txt` - Frequently Asked Questions
+    - `special_vars.txt` - some predefined $variables you can use with irssi
+
 ## Bugs / Suggestions
 
 See the `TODO` file, http://bugs.irssi.org and the GitHub issues if it is
-already listed in there; if not, open an issue on GitHub or [send a mail to
-staff@irssi.org](mailto:staff@irssi.org)
+already listed in there; if not, open an issue on GitHub or send a mail to
+[staff@irssi.org](mailto:staff@irssi.org).
 
 You can also contact the Irssi developers in #irssi on freenode.
