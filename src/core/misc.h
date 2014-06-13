@@ -115,4 +115,7 @@ uoff_t str_to_uofft(const char *str);
 /* find `item' from a space separated `list' */
 int find_substr(const char *list, const char *item);
 
+/* split `str' into `len' sized substrings */
+char **strsplit_len(const char *str, int len);
+
 #endif

@@ -102,6 +102,30 @@ static void send_message(SERVER_REC *server, const char *target,
 	g_free(recoded);
 }
 
+static char **split_message(SERVER_REC *server, const char *target,
+			    const char *msg)
+{
+	IRC_SERVER_REC *ircserver = IRC_SERVER(server);
+	int userhostlen = 63;  /* Maximum length defined by protocol. */
+
+	g_return_val_if_fail(ircserver != NULL, NULL);
+	g_return_val_if_fail(target != NULL, NULL);
+	g_return_val_if_fail(msg != NULL, NULL);
+
+	/*
+	 * If we have joined a channel, userhost will be set, so we can
+	 * calculate the exact maximum length.
+	 */
+	if (ircserver->userhost != NULL)
+		userhostlen = strlen(ircserver->userhost);
+
+	/* length calculation shamelessly stolen from splitlong.pl */
+	return recode_split(SERVER(server), msg, target,
+			    510 - strlen(":! PRIVMSG  :") -
+			    strlen(ircserver->nick) - userhostlen -
+			    strlen(target));
+}
+
 static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -288,6 +312,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 	server->isnickflag = isnickflag_func;
 	server->ischannel = ischannel_func;
+	server->split_message = split_message;
 	server->send_message = send_message;
 	server->query_find_func =
 		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;

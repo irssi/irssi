@@ -966,3 +966,20 @@ char *ascii_strdown(char *str)
 		*s = g_ascii_tolower (*s);
 	return str;
 }
+
+char **strsplit_len(const char *str, int len)
+{
+	char **ret;
+	int n = strlen(str) / len;
+	int i;
+
+	if (strlen(str) % len)
+		n++;
+
+	ret = g_new(char *, n + 1);
+	for (i = 0; i < n; i++, str += len)
+		ret[i] = g_strndup(str, len);
+	ret[n] = NULL;
+
+	return ret;
+}

@@ -378,12 +378,23 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		}
 	}
 	if (target != NULL) {
-		signal_emit("server sendmsg", 4, server, target, msg,
-			    GINT_TO_POINTER(target_type));
+		char **splitmsgs = server->split_message(server, target, msg);
+		char *m;
+		int n = 0;
+
+		while ((m = splitmsgs[n++])) {
+			signal_emit("server sendmsg", 4, server, target, m,
+				    GINT_TO_POINTER(target_type));
+			signal_emit(target_type == SEND_TARGET_CHANNEL ?
+			            "message own_public" :
+				    "message own_private", 4, server, m,
+				    target, origtarget);
+		}
+		g_strfreev(splitmsgs);
+	} else {
+		signal_emit("message own_private", 4, server, msg, target,
+			    origtarget);
 	}
-	signal_emit(target != NULL && target_type == SEND_TARGET_CHANNEL ?
-		    "message own_public" : "message own_private", 4,
-		    server, msg, target, origtarget);
 
 	if (free_ret && target != NULL) g_free(target);
 	cmd_params_free(free_arg);
