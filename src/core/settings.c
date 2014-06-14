@@ -738,7 +738,7 @@ static void init_configfile(void)
 
 	if (pipe(signal_wakeup_pipe)) {
 		g_warning("Failed to create signal wakeup pipe - SIGTERM not attached");
-		signal_wakeup_pipe[0] = 0;
+		signal_wakeup_pipe[0] = -1;
 		return;
 	}
 	if (set_nonblock_flag(signal_wakeup_pipe[0]) || set_nonblock_flag(signal_wakeup_pipe[1])) {
@@ -772,7 +772,7 @@ static void deinit_configfile(void)
 		g_io_channel_unref(signal_wakeup_read_channel);
 	}
 
-	if (signal_wakeup_pipe[0]) {
+	if (signal_wakeup_pipe[0] != -1) {
 		close(signal_wakeup_pipe[0]);
 		close(signal_wakeup_pipe[1]);
 	}
