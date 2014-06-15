@@ -1,5 +1,7 @@
 # Irssi
 
+[![Build Status](https://travis-ci.org/irssi/irssi.svg?branch=master)](https://travis-ci.org/irssi/irssi)
+
 Irssi is a modular IRC client that currently has only text mode user interface,
 but 80-90% of the code isn't text mode specific, so other UIs could be created
 pretty easily. Also, Irssi isn't really even IRC specific anymore, there's
