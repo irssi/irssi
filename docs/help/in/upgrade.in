@@ -5,3 +5,6 @@ Upgrade irssi to new version on-the-fly without disconnecting from
 server, so other people won't even notice you quit from IRC. This ONLY
 executes the new binary, it does NOT download/compile/whatever irssi.
 
+Warning: This will not work with SSL connections to IRC, you will be
+disconnected.
+
