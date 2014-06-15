@@ -208,7 +208,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 
 #define sserver_connect_ok(rec, net) \
 	(!(rec)->banned && (rec)->chatnet != NULL && \
-	g_strcasecmp((rec)->chatnet, (net)) == 0)
+	g_ascii_strcasecmp((rec)->chatnet, (net)) == 0)
 
 static void sig_reconnect(SERVER_REC *server)
 {
@@ -283,7 +283,7 @@ static void sig_reconnect(SERVER_REC *server)
 		SERVER_SETUP_REC *rec = tmp->data;
 
 		if (!use_next && server->connrec->port == rec->port &&
-		    g_strcasecmp(rec->address, server->connrec->address) == 0)
+		    g_ascii_strcasecmp(rec->address, server->connrec->address) == 0)
 			use_next = TRUE;
 		else if (use_next && sserver_connect_ok(rec, conn->chatnet)) {
 			if (rec == sserver)

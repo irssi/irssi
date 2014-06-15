@@ -161,7 +161,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->text, text) != 0)
+		if (g_ascii_strcasecmp(rec->text, text) != 0)
 			continue;
 
 		if ((channels == NULL && rec->channels == NULL))

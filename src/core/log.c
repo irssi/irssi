@@ -247,7 +247,7 @@ static int itemcmp(const char *patt, const char *item)
 
 	if (!strcmp(patt, "*"))
 		return 0;
-        return item ? g_strcasecmp(patt, item) : 1;
+        return item ? g_ascii_strcasecmp(patt, item) : 1;
 }
 
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
@@ -262,7 +262,7 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 
 		if (rec->type == type && itemcmp(rec->name, item) == 0 &&
 		    (rec->servertag == NULL || (servertag != NULL &&
-		    	g_strcasecmp(rec->servertag, servertag) == 0)))
+		    g_ascii_strcasecmp(rec->servertag, servertag) == 0)))
 			return rec;
 	}
 

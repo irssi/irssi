@@ -55,7 +55,7 @@ int format_find_tag(const char *module, const char *tag)
 
 	for (n = 0; formats[n].def != NULL; n++) {
 		if (formats[n].tag != NULL &&
-		    g_strcasecmp(formats[n].tag, tag) == 0)
+		    g_ascii_strcasecmp(formats[n].tag, tag) == 0)
 			return n;
 	}
 

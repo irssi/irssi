@@ -291,7 +291,7 @@ static void get_nicks_same_hash(gpointer key, NICK_REC *nick,
 				NICKLIST_GET_SAME_REC *rec)
 {
 	while (nick != NULL) {
-		if (g_strcasecmp(nick->nick, rec->nick) == 0) {
+		if (g_ascii_strcasecmp(nick->nick, rec->nick) == 0) {
 			rec->list = g_slist_append(rec->list, rec->channel);
 			rec->list = g_slist_append(rec->list, nick);
 		}
@@ -365,7 +365,7 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 	if (p2 == NULL) return 1;
 
 	if (p1->prefixes[0] == p2->prefixes[0])
-		return g_strcasecmp(p1->nick, p2->nick);
+		return g_ascii_strcasecmp(p1->nick, p2->nick);
 
 	if (!p1->prefixes[0])
 		return 1;
@@ -384,7 +384,7 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 	}
 
 	/* we should never have gotten here... */
-	return g_strcasecmp(p1->nick, p2->nick);
+	return g_ascii_strcasecmp(p1->nick, p2->nick);
 }
 
 static void nicklist_update_flags_list(SERVER_REC *server, int gone,
@@ -516,7 +516,8 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 
 	/* first check for identical match */
 	len = strlen(nick);
-	if (g_strncasecmp(msg, nick, len) == 0 && !isalnumhigh((int) msg[len]))
+	if (g_ascii_strncasecmp(msg, nick, len) == 0 &&
+	    !isalnumhigh((int) msg[len]))
 		return TRUE;
 
 	orignick = nick;

@@ -57,7 +57,7 @@ static LAST_MSG_REC *last_msg_find(GSList *list, const char *nick)
 	while (list != NULL) {
 		LAST_MSG_REC *rec = list->data;
 
-		if (g_strcasecmp(rec->nick, nick) == 0)
+		if (g_ascii_strcasecmp(rec->nick, nick) == 0)
 			return rec;
 		list = list->next;
 	}
@@ -269,7 +269,7 @@ static void completion_msg_server(GSList **list, SERVER_REC *server,
 	for (; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
-		if (len != 0 && g_strncasecmp(rec->nick, nick, len) != 0)
+		if (len != 0 && g_ascii_strncasecmp(rec->nick, nick, len) != 0)
 			continue;
 
 		msg = g_new(LAST_MSG_REC, 1);
@@ -352,7 +352,7 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 	for (tmp = mchannel->lastmsgs; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->nick, nick, len) == 0 &&
 		    glist_find_icase_string(*outlist, rec->nick) == NULL) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase) ascii_strdown(str);
@@ -404,7 +404,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
                 *out = '\0';
 
 		/* add to list if 'cleaned' nick matches */
-		if (g_strncasecmp(str, nick, len) == 0) {
+		if (g_ascii_strncasecmp(str, nick, len) == 0) {
 			tnick = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
 				ascii_strdown(tnick);
@@ -447,7 +447,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->nick, nick, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->nick, nick, len) == 0 &&
 		    rec != channel->ownnick) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
@@ -501,7 +501,7 @@ GList *completion_get_servertags(const char *word)
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
 		SERVER_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->tag, word, len) == 0) {
+		if (g_ascii_strncasecmp(rec->tag, word, len) == 0) {
 			if (rec == active_win->active_server)
 				list = g_list_prepend(list, g_strdup(rec->tag));
 			else
@@ -529,9 +529,9 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	for (; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->visible_name, word, len) == 0)
+		if (g_ascii_strncasecmp(rec->visible_name, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->visible_name));
-		else if (g_strncasecmp(rec->name, word, len) == 0)
+		else if (g_ascii_strncasecmp(rec->name, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->name));
 	}
 
@@ -539,7 +539,7 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_SETUP_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->name, word, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->name, word, len) == 0 &&
 		    glist_find_icase_string(list, rec->name) == NULL)
 			list = g_list_append(list, g_strdup(rec->name));
 
@@ -569,7 +569,7 @@ GList *completion_get_aliases(const char *word)
 		if (node->type != NODE_TYPE_KEY)
 			continue;
 
-		if (len != 0 && g_strncasecmp(node->key, word, len) != 0)
+		if (len != 0 && g_ascii_strncasecmp(node->key, word, len) != 0)
 			continue;
 
 		list = g_list_append(list, g_strdup(node->key));
@@ -655,7 +655,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	channel = CHANNEL(window->active);
 	query = QUERY(window->active);
 	if (channel == NULL && query != NULL &&
-	    g_strncasecmp(word, query->name, strlen(word)) == 0) {
+	    g_ascii_strncasecmp(word, query->name, strlen(word)) == 0) {
 		/* completion in query */
                 *list = g_list_append(*list, g_strdup(query->name));
 	} else if (channel != NULL) {
@@ -737,7 +737,7 @@ static void sig_erase_complete_msg(WINDOW_REC *window, const char *word,
 		for (tmp = mserver->lastmsgs; tmp != NULL; tmp = tmp->next) {
 			LAST_MSG_REC *rec = tmp->data;
 
-			if (g_strcasecmp(rec->nick, word) == 0) {
+			if (g_ascii_strcasecmp(rec->nick, word) == 0) {
 				last_msg_destroy(&mserver->lastmsgs, rec);
                                 break;
 			}
@@ -760,7 +760,7 @@ GList *completion_get_chatnets(const char *word)
 	for (tmp = chatnets; tmp != NULL; tmp = tmp->next) {
 		CHATNET_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->name, word, len) == 0)
+		if (g_ascii_strncasecmp(rec->name, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->name));
 	}
 
@@ -781,7 +781,7 @@ GList *completion_get_servers(const char *word)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->address, word, len) == 0) 
+		if (g_ascii_strncasecmp(rec->address, word, len) == 0) 
 			list = g_list_append(list, g_strdup(rec->address));
 	}
 
@@ -809,7 +809,7 @@ GList *completion_get_targets(const char *word)
 		if (node->type != NODE_TYPE_KEY)
 			continue;
 
-		if (len != 0 && g_strncasecmp(node->key, word, len) != 0)
+		if (len != 0 && g_ascii_strncasecmp(node->key, word, len) != 0)
 			continue;
 
 		list = g_list_append(list, g_strdup(node->key));
@@ -929,9 +929,9 @@ static void sig_complete_window(GList **list, WINDOW_REC *window,
 		win = tmp->data;
 		item = win->active;
 
-		if (win->name != NULL && g_strncasecmp(win->name, word, len) == 0)
+		if (win->name != NULL && g_ascii_strncasecmp(win->name, word, len) == 0)
 			*list = g_list_append(*list, g_strdup(win->name));
-		if (item != NULL && g_strncasecmp(item->visible_name, word, len) == 0)
+		if (item != NULL && g_ascii_strncasecmp(item->visible_name, word, len) == 0)
 			*list = g_list_append(*list, g_strdup(item->visible_name));
 	}
 

@@ -110,7 +110,7 @@ static CHANNEL_REC *channel_find_server(SERVER_REC *server,
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
 
-		if (g_strcasecmp(name, rec->name) == 0)
+		if (g_ascii_strcasecmp(name, rec->name) == 0)
 			return rec;
 	}
 

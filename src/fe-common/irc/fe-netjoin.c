@@ -119,7 +119,7 @@ static NETJOIN_REC *netjoin_find(IRC_SERVER_REC *server, const char *nick)
 	for (tmp = srec->netjoins; tmp != NULL; tmp = tmp->next) {
 		NETJOIN_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->nick, nick) == 0)
+		if (g_ascii_strcasecmp(rec->nick, nick) == 0)
 			return rec;
 	}
 

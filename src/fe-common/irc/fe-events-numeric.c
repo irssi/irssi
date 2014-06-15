@@ -336,8 +336,10 @@ static void event_away(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
 	recoded = recode_in(SERVER(server), awaymsg, nick);
 	if (!settings_get_bool("show_away_once") ||
-	    last_away_nick == NULL || g_strcasecmp(last_away_nick, nick) != 0 ||
-	    last_away_msg == NULL || g_strcasecmp(last_away_msg, awaymsg) != 0) {
+	    last_away_nick == NULL ||
+	    g_ascii_strcasecmp(last_away_nick, nick) != 0 ||
+	    last_away_msg == NULL ||
+	    g_ascii_strcasecmp(last_away_msg, awaymsg) != 0) {
 		/* don't show the same away message
 		   from the same nick all the time */
 		g_free_not_null(last_away_nick);

@@ -262,7 +262,7 @@ CODE:
 
 	for (i = 0; formats[i].def != NULL; i++) {
 		if (formats[i].tag != NULL &&
-		    g_strcasecmp(formats[i].tag, tag) == 0)
+		    g_ascii_strcasecmp(formats[i].tag, tag) == 0)
 			break;
 	}
 

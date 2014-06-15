@@ -178,7 +178,7 @@ static RECONNECT_REC *find_reconnect_server(int chat_type,
 
 		if (rec->conn->chat_type == chat_type) {
 			count++; last_proto_match = rec;
-			if (g_strcasecmp(rec->conn->address, addr) == 0) {
+			if (g_ascii_strcasecmp(rec->conn->address, addr) == 0) {
 				if (rec->conn->port == port)
 					return rec;
 				match = rec;

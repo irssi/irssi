@@ -342,9 +342,9 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 	}
 
 	/* nick already in use - need to change it .. */
-	if (g_strcasecmp(server->nick, server->connrec->nick) == 0 &&
+	if (g_ascii_strcasecmp(server->nick, server->connrec->nick) == 0 &&
 	    server->connrec->alternate_nick != NULL &&
-	    g_strcasecmp(server->connrec->alternate_nick, server->nick) != 0) {
+	    g_ascii_strcasecmp(server->connrec->alternate_nick, server->nick) != 0) {
 		/* first try, so try the alternative nick.. */
 		g_free(server->nick);
 		server->nick = g_strdup(server->connrec->alternate_nick);
@@ -400,10 +400,10 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 1, &nick);
 
-	if (g_strcasecmp(orignick, server->nick) == 0) {
+	if (g_ascii_strcasecmp(orignick, server->nick) == 0) {
 		/* You changed your nick */
 		if (server->last_nick != NULL &&
-		    g_strcasecmp(server->last_nick, nick) == 0) {
+		    g_ascii_strcasecmp(server->last_nick, nick) == 0) {
                         /* changed with /NICK - keep it as wanted nick */
 			g_free(server->connrec->nick);
 			server->connrec->nick = g_strdup(nick);

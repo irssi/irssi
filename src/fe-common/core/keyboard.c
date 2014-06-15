@@ -164,7 +164,7 @@ KEYINFO_REC *key_info_find(const char *id)
 	for (tmp = keyinfos; tmp != NULL; tmp = tmp->next) {
 		KEYINFO_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->id, id) == 0)
+		if (g_ascii_strcasecmp(rec->id, id) == 0)
 			return rec;
 	}
 
@@ -661,7 +661,7 @@ static void cmd_show_keys(const char *searchkey, int full)
 		for (key = rec->keys; key != NULL; key = key->next) {
 			KEY_REC *rec = key->data;
 
-			if ((len == 0 || g_strncasecmp(rec->key, searchkey, len) == 0) &&
+			if ((len == 0 || g_ascii_strncasecmp(rec->key, searchkey, len) == 0) &&
 			    (!full || rec->key[len] == '\0')) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_LIST,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
@@ -739,7 +739,7 @@ static GList *completion_get_keyinfos(const char *info)
 	for (tmp = keyinfos; tmp != NULL; tmp = tmp->next) {
 		KEYINFO_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->id, info, len) == 0)
+		if (g_ascii_strncasecmp(rec->id, info, len) == 0)
                         list = g_list_append(list, g_strdup(rec->id));
 	}
 

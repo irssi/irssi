@@ -152,8 +152,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 
 		params = event_get_params(args, 2, &origin, &target);
 		if (*target == '\0' ||
-		    g_strcasecmp(target, client->proxy_address) == 0 ||
-		    g_strcasecmp(target, client->nick) == 0) {
+		    g_ascii_strcasecmp(target, client->proxy_address) == 0 ||
+		    g_ascii_strcasecmp(target, client->nick) == 0) {
 			proxy_outdata(client, ":%s PONG %s :%s\n",
 				      client->proxy_address,
                                       client->proxy_address, origin);
@@ -169,7 +169,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			client->want_ctcp = 1;
 	                for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 				CLIENT_REC *rec = tmp->data;
-				if ((g_strcasecmp(client->listen->ircnet,rec->listen->ircnet) == 0) &&
+				if ((g_ascii_strcasecmp(client->listen->ircnet,rec->listen->ircnet) == 0) &&
 					/* kludgy way to check if the clients aren't the same */
 					(client->recv_tag != rec->recv_tag)) {
 						if (rec->want_ctcp == 1)
@@ -463,7 +463,7 @@ static void event_connected(IRC_SERVER_REC *server)
 		if (rec->connected && rec->server == NULL &&
 		    (strcmp(rec->listen->ircnet, "*") == 0 ||
 		     (chatnet != NULL &&
-		      g_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
+		      g_ascii_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
@@ -514,7 +514,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	if (g_strcasecmp(orignick, server->nick) != 0)
+	if (g_ascii_strcasecmp(orignick, server->nick) != 0)
 		return;
 
 	if (*data == ':') data++;
@@ -566,7 +566,7 @@ static LISTEN_REC *find_listen(const char *ircnet, int port)
 		LISTEN_REC *rec = tmp->data;
 
 		if (rec->port == port &&
-		    g_strcasecmp(rec->ircnet, ircnet) == 0)
+		    g_ascii_strcasecmp(rec->ircnet, ircnet) == 0)
 			return rec;
 	}
 

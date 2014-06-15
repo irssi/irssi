@@ -102,7 +102,7 @@ CHANNEL_SETUP_REC *channel_setup_find(const char *channel,
 	for (tmp = setupchannels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_SETUP_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, channel) == 0 &&
+		if (g_ascii_strcasecmp(rec->name, channel) == 0 &&
 		    channel_chatnet_match(rec->chatnet, chatnet))
 			return rec;
 	}

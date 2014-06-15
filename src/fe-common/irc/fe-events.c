@@ -209,7 +209,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 1, &newnick);
 
 	/* NOTE: server->nick was already changed in irc/core/irc-nicklist.c */
-	signal_emit(g_strcasecmp(newnick, server->nick) == 0 ?
+	signal_emit(g_ascii_strcasecmp(newnick, server->nick) == 0 ?
 		    "message own_nick" : "message nick", 4,
 		    server, newnick, sender, addr);
 
@@ -330,7 +330,7 @@ static void event_connected(IRC_SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
         nick = server->connrec->nick;
-	if (g_strcasecmp(server->nick, nick) == 0)
+	if (g_ascii_strcasecmp(server->nick, nick) == 0)
 		return;
 
 	/* someone has our nick, find out who. */

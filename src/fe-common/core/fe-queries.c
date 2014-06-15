@@ -127,7 +127,7 @@ static void signal_query_nick_changed(QUERY_REC *query, const char *oldnick)
 			       query->name, MSGLEVEL_NICKS, NULL);
 
 	/* don't print the nick change message if only the case was changed */
-	if (g_strcasecmp(query->name, oldnick) != 0) {
+	if (g_ascii_strcasecmp(query->name, oldnick) != 0) {
 		printformat_dest(&dest,  TXT_NICK_CHANGED, oldnick,
 				 query->name, query->name,
 				 query->address == NULL ? "" : query->address);
@@ -160,7 +160,7 @@ static void sig_server_connected(SERVER_REC *server)
 
 		if (rec->server == NULL &&
 		    (rec->server_tag == NULL ||
-		     g_strcasecmp(rec->server_tag, server->tag) == 0)) {
+		     g_ascii_strcasecmp(rec->server_tag, server->tag) == 0)) {
 			window_item_change_server((WI_ITEM_REC *) rec, server);
 			server->queries = g_slist_append(server->queries, rec);
 		}

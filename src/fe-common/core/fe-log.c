@@ -375,7 +375,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 		logitem = log->items->data;
 		if (logitem->type == LOG_ITEM_TARGET &&
 		    logitem->servertag != NULL &&
-		    g_strcasecmp(logitem->servertag, server->tag) == 0 &&
+		    g_ascii_strcasecmp(logitem->servertag, server->tag) == 0 &&
 		    server_ischannel(server, logitem->name)) /* kludge again.. so we won't close dcc chats */
 			log_close(log);
 	}

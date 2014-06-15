@@ -177,7 +177,7 @@ static void cmd_uptime(char *data)
 	g_return_if_fail(data != NULL);
 
 	if (*data == '\0') {
-		uptime = time(NULL) - client_start_time;
+		uptime = (long)difftime(time(NULL), client_start_time);
 		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			  "Uptime: %ldd %ldh %ldm %lds",
 			  uptime/3600/24, uptime/3600%24,
@@ -292,7 +292,7 @@ static void event_list_subcommands(const char *command)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, command, len) == 0 &&
 		    rec->cmd[len] == ' ' &&
 		    strchr(rec->cmd+len+1, ' ') == NULL) {
                         g_string_append_printf(str, "%s ", rec->cmd+len+1);

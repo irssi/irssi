@@ -44,7 +44,7 @@ static CTCP_CMD_REC *ctcp_cmd_find(const char *name)
 	for (tmp = ctcp_cmds; tmp != NULL; tmp = tmp->next) {
 		CTCP_CMD_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0)
+		if (g_ascii_strcasecmp(rec->name, name) == 0)
                         return rec;
 	}
 

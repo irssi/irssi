@@ -549,7 +549,7 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
 		GET_DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
-		if (IS_DCC_GET(dcc) && g_strcasecmp(dcc->nick, nick) == 0 &&
+		if (IS_DCC_GET(dcc) && g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
 		    (dcc_is_waiting_user(dcc) || dcc->from_dccserver) &&
 		    (*fname == '\0' || strcmp(dcc->arg, fname) == 0)) {
 			found = TRUE;

@@ -42,7 +42,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strcasecmp(nick, server->nick) == 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
 		/* You joined, no need to do anything here */
 		return;
 	}
@@ -104,7 +104,7 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strcasecmp(nick, server->nick) == 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
 		/* you left channel, no need to do anything here */
 		return;
 	}
@@ -140,7 +140,7 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (g_strcasecmp(nick, server->nick) == 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
 		/* you quit, don't do anything here */
 		return;
 	}
@@ -171,7 +171,7 @@ static void event_kick(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 3, &channel, &nick, &reason);
 
-	if (g_strcasecmp(nick, server->nick) == 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
 		/* you were kicked, no need to do anything */
 		g_free(params);
 		return;

@@ -418,7 +418,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 		g_string_printf(tmpstr, "WHOIS %s", query);
 	else {
 		g_string_printf(tmpstr, "WHOIS %s %s", qserver, query);
-		if (g_strcasecmp(qserver, query) == 0)
+		if (g_ascii_strcasecmp(qserver, query) == 0)
 			event_402 = "whois event not found";
 	}
 

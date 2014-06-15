@@ -53,7 +53,7 @@ BAN_REC *banlist_find(GSList *list, const char *ban)
 	for (tmp = list; tmp != NULL; tmp = tmp->next) {
 		BAN_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->ban, ban) == 0)
+		if (g_ascii_strcasecmp(rec->ban, ban) == 0)
 			return rec;
 	}
 

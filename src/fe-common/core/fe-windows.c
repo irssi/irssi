@@ -311,8 +311,8 @@ WINDOW_REC *window_find_closest(void *server, const char *name, int level)
 			   generic msgs window.
 
 	                   And check for prefixed !channel name --Borys  */
-			if (g_strcasecmp(name, item->visible_name) == 0 ||
-			    g_strcasecmp(name, (char *) window_item_get_target((WI_ITEM_REC *) item)) == 0)
+			if (g_ascii_strcasecmp(name, item->visible_name) == 0 ||
+			    g_ascii_strcasecmp(name, (char *) window_item_get_target((WI_ITEM_REC *) item)) == 0)
 				return namewindow;
 		}
 	}
@@ -362,7 +362,8 @@ WINDOW_REC *window_find_name(const char *name)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 
-		if (rec->name != NULL && g_strcasecmp(rec->name, name) == 0)
+		if (rec->name != NULL &&
+		    g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
 
@@ -510,8 +511,8 @@ WINDOW_BIND_REC *window_bind_find(WINDOW_REC *window, const char *servertag,
 	for (tmp = window->bound_items; tmp != NULL; tmp = tmp->next) {
 		WINDOW_BIND_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0 &&
-		    g_strcasecmp(rec->servertag, servertag) == 0)
+		if (g_ascii_strcasecmp(rec->name, name) == 0 &&
+		    g_ascii_strcasecmp(rec->servertag, servertag) == 0)
                         return rec;
 	}
 
@@ -543,7 +544,7 @@ static void sig_server_connected(SERVER_REC *server)
 		WINDOW_REC *rec = tmp->data;
 
 		if ((rec->servertag == NULL ||
-		     g_strcasecmp(rec->servertag, server->tag) == 0) &&
+		     g_ascii_strcasecmp(rec->servertag, server->tag) == 0) &&
 		    (rec->active_server == NULL ||
 		     (rec == active_win && rec->items == NULL)))
 			window_change_server(rec, server);

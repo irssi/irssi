@@ -31,7 +31,7 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
-		if (node->key != NULL && g_strcasecmp(node->key, key) == 0)
+		if (node->key != NULL && g_ascii_strcasecmp(node->key, key) == 0)
 			return node;
 	}
 

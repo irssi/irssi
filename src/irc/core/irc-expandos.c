@@ -116,7 +116,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 {
 	g_return_if_fail(nick != NULL);
 
-	if (g_strcasecmp(nick, server->nick) != 0) {
+	if (g_ascii_strcasecmp(nick, server->nick) != 0) {
 		g_free_not_null(last_join);
 		last_join = g_strdup(nick);
 	}

@@ -47,11 +47,12 @@ int dcc_queue_old(const char *nick, const char *servertag)
 			if (rec == NULL)
 				continue;
 
-			if (*nick != '\0' && g_strcasecmp(nick, rec->nick) != 0)
+			if (*nick != '\0' &&
+			    g_ascii_strcasecmp(nick, rec->nick) != 0)
 				continue;
 
 			if (*servertag != '\0' &&
-			    g_strcasecmp(servertag, rec->servertag) != 0)
+			    g_ascii_strcasecmp(servertag, rec->servertag) != 0)
 				continue;
 
 			/* found a queue matching nick/server! */

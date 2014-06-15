@@ -218,7 +218,7 @@ WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
 		WI_ITEM_REC *rec = tmp->data;
 
 		if ((server == NULL || rec->server == server) &&
-		    g_strcasecmp(name, rec->visible_name) == 0)
+		    g_ascii_strcasecmp(name, rec->visible_name) == 0)
 			return rec;
 	}
 

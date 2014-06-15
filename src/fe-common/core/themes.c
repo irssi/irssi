@@ -799,7 +799,7 @@ static THEME_REC *theme_find(const char *name)
 	for (tmp = themes; tmp != NULL; tmp = tmp->next) {
 		THEME_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0)
+		if (g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
 
@@ -970,7 +970,7 @@ typedef struct {
 
 static int theme_search_equal(THEME_SEARCH_REC *r1, THEME_SEARCH_REC *r2)
 {
-	return g_strcasecmp(r1->short_name, r2->short_name);
+	return g_ascii_strcasecmp(r1->short_name, r2->short_name);
 }
 
 static void theme_get_modules(char *module, FORMAT_REC *formats, GSList **list)
@@ -1001,7 +1001,7 @@ static THEME_SEARCH_REC *theme_search(GSList *list, const char *module)
 	while (list != NULL) {
 		rec = list->data;
 
-		if (g_strcasecmp(rec->short_name, module) == 0)
+		if (g_ascii_strcasecmp(rec->short_name, module) == 0)
 			return rec;
 		list = list->next;
 	}
@@ -1026,7 +1026,7 @@ static void theme_show(THEME_SEARCH_REC *rec, const char *key, const char *value
 
 		if (formats[n].tag == NULL)
 			last_title = text;
-		else if ((value != NULL && key != NULL && g_strcasecmp(formats[n].tag, key) == 0) ||
+		else if ((value != NULL && key != NULL && g_ascii_strcasecmp(formats[n].tag, key) == 0) ||
 			 (value == NULL && (key == NULL || stristr(formats[n].tag, key) != NULL))) {
 			if (first) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_FORMAT_TITLE, rec->short_name, formats[0].def);
@@ -1086,7 +1086,7 @@ static void cmd_format(const char *data)
 	for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 		THEME_SEARCH_REC *rec = tmp->data;
 
-		if (module == NULL || g_strcasecmp(rec->short_name, module) == 0)
+		if (module == NULL || g_ascii_strcasecmp(rec->short_name, module) == 0)
 			theme_show(rec, key, value, reset);
 	}
 	g_slist_foreach(modules, (GFunc) g_free, NULL);
@@ -1207,7 +1207,7 @@ static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList *
 	for (n = 1; formats[n].def != NULL; n++) {
 		const char *item = formats[n].tag;
 
-		if (item != NULL && g_strncasecmp(item, key, len) == 0)
+		if (item != NULL && g_ascii_strncasecmp(item, key, len) == 0)
                         *list = g_list_append(*list, g_strdup(item));
 	}
 }
@@ -1226,7 +1226,7 @@ static GList *completion_get_formats(const char *module, const char *key)
 		for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 			THEME_SEARCH_REC *rec = tmp->data;
 
-			if (*module == '\0' || g_strcasecmp(rec->short_name, module) == 0)
+			if (*module == '\0' || g_ascii_strcasecmp(rec->short_name, module) == 0)
 				complete_format_list(rec, key, &list);
 		}
 	}

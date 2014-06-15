@@ -47,7 +47,7 @@ COMMAND_REC *command_find(const char *cmd)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->cmd, cmd) == 0)
+		if (g_ascii_strcasecmp(rec->cmd, cmd) == 0)
 			return rec;
 	}
 
@@ -65,7 +65,7 @@ static COMMAND_MODULE_REC *command_module_find(COMMAND_REC *rec,
 	for (tmp = rec->modules; tmp != NULL; tmp = tmp->next) {
 		COMMAND_MODULE_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, module) == 0)
+		if (g_ascii_strcasecmp(rec->name, module) == 0)
 			return rec;
 	}
 
@@ -110,7 +110,7 @@ int command_have_sub(const char *command)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, command, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, command, len) == 0 &&
 		    rec->cmd[len] == ' ')
 			return TRUE;
 	}
@@ -265,7 +265,7 @@ static const char *command_expand(char *cmd)
 	for (tmp = commands; tmp != NULL; tmp = tmp->next) {
 		COMMAND_REC *rec = tmp->data;
 
-		if (g_strncasecmp(rec->cmd, cmd, len) == 0 &&
+		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0 &&
 		    strchr(rec->cmd+len, ' ') == NULL) {
 			if (rec->cmd[len] == '\0') {
 				/* full match */
@@ -345,7 +345,7 @@ static GSList *optlist_find(GSList *optlist, const char *option)
 		char *name = optlist->data;
 		if (iscmdtype(*name)) name++;
 
-		if (g_strcasecmp(name, option) == 0)
+		if (g_ascii_strcasecmp(name, option) == 0)
 			return optlist;
 
 		optlist = optlist->next;
@@ -371,7 +371,7 @@ int command_have_option(const char *cmd, const char *option)
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
 		char *name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
 
-		if (g_strcasecmp(name, option) == 0)
+		if (g_ascii_strcasecmp(name, option) == 0)
 			return TRUE;
 	}
 
@@ -531,7 +531,7 @@ static int option_find(char **array, const char *option)
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
 		const char *text = *tmp + iscmdtype(**tmp);
 
-		if (g_strncasecmp(text, option, len) == 0) {
+		if (g_ascii_strncasecmp(text, option, len) == 0) {
 			if (text[len] == '\0') {
 				/* full match */
 				return index;

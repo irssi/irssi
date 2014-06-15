@@ -35,7 +35,7 @@ static QUERY_REC *query_find_address(SERVER_REC *server, const char *address)
 		QUERY_REC *rec = tmp->data;
 
 		if (*rec->name != '=' && rec->address != NULL &&
-		    g_strcasecmp(address, rec->address) == 0)
+		    g_ascii_strcasecmp(address, rec->address) == 0)
 			return rec;
 	}
 
