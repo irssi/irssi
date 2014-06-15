@@ -18,6 +18,9 @@ notifications:
     irc:
         channels:
             - "irc.freenode.net#irssi"
+        template:
+            - "%{repository} (%{commit}: %{author}): %{message}"
+            - "Build details : %{build_url}"
         on_success: always
         on_failure: always
         use_notice: true
