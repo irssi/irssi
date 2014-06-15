@@ -184,15 +184,15 @@ static int module_load_name(const char *path, const char *rootmodule,
 	g_free(initfunc);
 	g_free(deinitfunc);
 
-	module_init = value1;
-	module_deinit = value2;
-
 	if (!found) {
 		module_error(MODULE_ERROR_INVALID, NULL,
 			     rootmodule, submodule);
 		g_module_close(gmodule);
 		return 0;
 	}
+
+	module_init = value1;
+	module_deinit = value2;
 
 	/* Call the module's init() function - it should register itself
 	   with module_register() function, abort if it doesn't. */
