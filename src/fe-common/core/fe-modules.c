@@ -195,6 +195,8 @@ static void cmd_unload(const char *data)
         MODULE_FILE_REC *file;
         char *rootmodule, *submodule;
 	void *free_arg;
+	GSList *tmp;
+	int all_dynamic;
 
 	g_return_if_fail(data != NULL);
 
@@ -204,12 +206,19 @@ static void cmd_unload(const char *data)
 
 	module = module_find(rootmodule);
 	if (module != NULL) {
-		if (*submodule == '\0')
-			module_unload(module);
+		if (*submodule == '\0') {
+			all_dynamic = 1;
+			for (tmp = module->files; tmp != NULL; tmp = tmp->next)
+				all_dynamic &= !MODULE_IS_STATIC((MODULE_FILE_REC*) tmp->data);
+			if (all_dynamic)
+				module_unload(module);
+		}
 		else {
 			file = module_file_find(module, submodule);
-                        if (file != NULL)
-				module_file_unload(file);
+                        if (file != NULL) {
+				if (!MODULE_IS_STATIC(file))
+					module_file_unload(file);
+			}
 			else
                                 module = NULL;
 		}
