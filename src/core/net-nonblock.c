@@ -214,7 +214,7 @@ static void simple_init(SIMPLE_THREAD_REC *rec, GIOChannel *handle)
 
 	if (net_geterror(handle) != 0) {
 		/* failed */
-		g_io_channel_close(handle);
+		g_io_channel_shutdown(handle, TRUE, NULL);
                 g_io_channel_unref(handle);
 		handle = NULL;
 	}
@@ -236,9 +236,9 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
 	net_gethostbyname_return(pipe, &iprec);
 	g_free_not_null(iprec.errorstr);
 
-	g_io_channel_close(rec->pipes[0]);
+	g_io_channel_shutdown(rec->pipes[0], TRUE, NULL);
 	g_io_channel_unref(rec->pipes[0]);
-	g_io_channel_close(rec->pipes[1]);
+	g_io_channel_shutdown(rec->pipes[1], TRUE, NULL);
 	g_io_channel_unref(rec->pipes[1]);
 
 	ip = iprec.ip4.family != 0 ? &iprec.ip4 : &iprec.ip6;

@@ -185,7 +185,7 @@ static void process_destroy(PROCESS_REC *rec, int status)
                 exec_wi_destroy(rec->target_item);
 
 	line_split_free(rec->databuf);
-        g_io_channel_close(rec->in);
+        g_io_channel_shutdown(rec->in, TRUE, NULL);
         g_io_channel_unref(rec->in);
         net_sendbuffer_destroy(rec->out, TRUE);
 
