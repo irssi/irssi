@@ -2,7 +2,6 @@
 
 #include "window-item-rec.h"
 
-char *name;
 char *address;
 char *server_tag;
 time_t last_unread_msg;
