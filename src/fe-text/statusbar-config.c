@@ -338,7 +338,7 @@ static void cmd_statusbar_print_info(const char *name)
 	for (; tmp != NULL; tmp = tmp->next) {
 		STATUSBAR_CONFIG_REC *rec = tmp->data;
 
-		if (g_strcasecmp(rec->name, name) == 0) {
+		if (g_ascii_strcasecmp(rec->name, name) == 0) {
                         statusbar_print(rec);
 			return;
 		}
