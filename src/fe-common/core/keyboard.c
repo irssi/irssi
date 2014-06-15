@@ -374,8 +374,8 @@ static void key_states_rescan(void)
 
 	memset(used_keys, 0, sizeof(used_keys));
 
-	g_tree_traverse(key_states, (GTraverseFunc) key_state_destroy,
-			G_IN_ORDER, NULL);
+	g_tree_foreach(key_states, (GTraverseFunc) key_state_destroy,
+			NULL);
 	g_tree_destroy(key_states);
 	key_states = g_tree_new((GCompareFunc) strcmp);
 
@@ -884,8 +884,8 @@ void keyboard_deinit(void)
 	g_hash_table_destroy(keys);
 	g_hash_table_destroy(default_keys);
 
-	g_tree_traverse(key_states, (GTraverseFunc) key_state_destroy,
-			G_IN_ORDER, NULL);
+	g_tree_foreach(key_states, (GTraverseFunc) key_state_destroy,
+			NULL);
 	g_tree_destroy(key_states);
 
 	signal_remove("irssi init read settings", (SIGNAL_FUNC) read_keyboard_config);
