@@ -260,7 +260,7 @@ void net_disconnect(GIOChannel *handle)
 {
 	g_return_if_fail(handle != NULL);
 
-	g_io_channel_close(handle);
+	g_io_channel_shutdown(handle, TRUE, NULL);
 	g_io_channel_unref(handle);
 }
 

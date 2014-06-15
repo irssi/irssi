@@ -56,9 +56,9 @@ void server_connect_failed(SERVER_REC *server, const char *msg)
 	}
 
 	if (server->connect_pipe[0] != NULL) {
-		g_io_channel_close(server->connect_pipe[0]);
+		g_io_channel_shutdown(server->connect_pipe[0], TRUE, NULL);
 		g_io_channel_unref(server->connect_pipe[0]);
-		g_io_channel_close(server->connect_pipe[1]);
+		g_io_channel_shutdown(server->connect_pipe[1], TRUE, NULL);
 		g_io_channel_unref(server->connect_pipe[1]);
 		server->connect_pipe[0] = NULL;
 		server->connect_pipe[1] = NULL;
@@ -274,9 +274,9 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 
 	net_gethostbyname_return(server->connect_pipe[0], &iprec);
 
-	g_io_channel_close(server->connect_pipe[0]);
+	g_io_channel_shutdown(server->connect_pipe[0], TRUE, NULL);
 	g_io_channel_unref(server->connect_pipe[0]);
-	g_io_channel_close(server->connect_pipe[1]);
+	g_io_channel_shutdown(server->connect_pipe[1], TRUE, NULL);
 	g_io_channel_unref(server->connect_pipe[1]);
 
 	server->connect_pipe[0] = NULL;
