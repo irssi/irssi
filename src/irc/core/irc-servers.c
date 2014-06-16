@@ -74,6 +74,46 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 	return ischannel(*data);
 }
 
+static char **split_line(const SERVER_REC *server, const char *line,
+			 const char *target, int len)
+{
+	const char *start = settings_get_str("split_line_start");
+	const char *end = settings_get_str("split_line_end");
+	char *recoded_start = recode_out(server, start, target);
+	char *recoded_end = recode_out(server, end, target);
+	char **lines;
+	int i;
+
+	/*
+	 * Having the same length limit on all lines will make the first line
+	 * shorter than necessary if `split_line_start' is set, but it makes
+	 * the code much simpler.  It's worth it.
+	 */
+	len -= strlen(recoded_start) + strlen(recoded_end);
+	g_free(recoded_start);
+	g_free(recoded_end);
+	if (len <= 0)
+		return NULL; /* There is no room for anything. */
+
+	lines = recode_split(server, line, target, len);
+	for (i = 0; lines[i] != NULL; i++) {
+		if (i != 0 && *start != '\0') {
+			/* Not the first line. */
+			char *tmp = lines[i];
+			lines[i] = g_strconcat(start, tmp, NULL);
+			g_free(tmp);
+		}
+		if (lines[i + 1] != NULL && *end != '\0') {
+			/* Not the last line. */
+			char *tmp = lines[i];
+			lines[i] = g_strconcat(tmp, end, NULL);
+			g_free(tmp);
+		}
+	}
+
+	return lines;
+}
+
 static void send_message(SERVER_REC *server, const char *target,
 			 const char *msg, int target_type)
 {
@@ -120,10 +160,10 @@ static char **split_message(SERVER_REC *server, const char *target,
 		userhostlen = strlen(ircserver->userhost);
 
 	/* length calculation shamelessly stolen from splitlong.pl */
-	return recode_split(SERVER(server), msg, target,
-			    510 - strlen(":! PRIVMSG  :") -
-			    strlen(ircserver->nick) - userhostlen -
-			    strlen(target));
+	return split_line(SERVER(server), msg, target,
+			  510 - strlen(":! PRIVMSG  :") -
+			  strlen(ircserver->nick) - userhostlen -
+			  strlen(target));
 }
 
 static void server_init(IRC_SERVER_REC *server)
@@ -893,6 +933,8 @@ void irc_servers_init(void)
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
+	settings_add_str("misc", "split_line_start", "");
+	settings_add_str("misc", "split_line_end", "");
 
 	cmd_tag = -1;
 
