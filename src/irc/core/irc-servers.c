@@ -167,7 +167,7 @@ static void server_init(IRC_SERVER_REC *server)
 					    (GCompareFunc) g_istr_equal);
 
 	/* set the standards */
-	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beIqd,k,lfJ,imnpst"));
+	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
 	g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
 
 	server->cmdcount = 0;
