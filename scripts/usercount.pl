@@ -1,21 +1,23 @@
-use Irssi 20020101.0250 ();
-$VERSION = "1.16";
+use Irssi 20040119.2359 ();
+$VERSION = "1.19";
 %IRSSI = (
     authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas',
     contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de',
     name        => 'usercount',
     description => 'Adds a usercount for a channel as a statusbar item',
     license     => 'GNU GPLv2 or later',
-    url         => 'http://irssi.dgl.yi.org/',
+    url         => 'http://irssi.dgl.cx/',
+    changes     => 'Only show halfops if server supports them',
 );
 
 # Once you have loaded this script run the following command:
 # /statusbar window add usercount
 # You can also add -alignment left|right option
 
-# /set usercount_show_zero on or off to show users when 0 users of that type
-# /set usercount_show_ircops (default off)
-# /set usercount_show_halfops (default on)
+# Settings:
+# /toggle usercount_show_zero to show item even when there are no users
+# /toggle usercount_show_ircops (default off)
+# /toggle usercount_show_halfops (default on)
 
 # you can customize the look of this item from theme file:
 #  sb_usercount = "{sb %_$0%_ nicks ($1-)}";
@@ -114,6 +116,7 @@ sub calc_users() {
   }
 
   $total = $ops+$halfops+$voices+$normal;
+  
   if (!Irssi::settings_get_bool('usercount_show_zero')) {
     $ircops = undef if ($ircops == 0);
     $ops = undef if ($ops == 0);
@@ -121,7 +124,14 @@ sub calc_users() {
     $voices = undef if ($voices == 0);
     $normal = undef if ($normal == 0);
   }
-  $halfops = undef unless Irssi::settings_get_bool('usercount_show_halfops');
+
+  # Server doesn't support halfops? 
+  if($server->isupport("PREFIX") !~ /\%/) {
+     $halfops = undef;
+  } else {
+     $halfops = undef unless Irssi::settings_get_bool('usercount_show_halfops');
+  }
+
   $ircops = undef unless Irssi::settings_get_bool('usercount_show_ircops');
 }
 
