@@ -55,10 +55,13 @@ static void sig_dcc_destroyed(GET_DCC_REC *dcc)
 char *dcc_get_download_path(const char *fname)
 {
 	char *str, *downpath;
+	gchar *base;
 
+	base = g_path_get_basename(fname);
 	downpath = convert_home(settings_get_str("dcc_download_path"));
-	str = g_strconcat(downpath, G_DIR_SEPARATOR_S, g_basename(fname), NULL);
+	str = g_strconcat(downpath, G_DIR_SEPARATOR_S, base, NULL);
 	g_free(downpath);
+	g_free(base);
 
 	return str;
 }
