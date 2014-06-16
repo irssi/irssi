@@ -284,9 +284,9 @@ GList *filename_complete(const char *path, const char *default_path)
         GList *list;
 	DIR *dirp;
 	struct dirent *dp;
-	const char *basename;
+	char *basename;
 	char *realpath, *dir, *name;
-	int len;
+	size_t len;
 
 	g_return_val_if_fail(path != NULL, NULL);
 
@@ -319,7 +319,7 @@ GList *filename_complete(const char *path, const char *default_path)
 		g_free_and_null(dir);
 	}
 
-	basename = g_basename(path);
+	basename = g_path_get_basename(path);
 	len = strlen(basename);
 
 	/* add all files in directory to completion list */
@@ -341,6 +341,7 @@ GList *filename_complete(const char *path, const char *default_path)
 		}
 	}
 	closedir(dirp);
+	g_free(basename);
 
 	g_free_not_null(dir);
         return list;
