@@ -82,7 +82,7 @@ static void cmd_network_list(void)
 }
 
 /* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
-                      [-host <host>] [-autosendcmd <cmd>]
+                      [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
 		      [-querychans <count>] [-whois <count>] [-msgs <count>]
 		      [-kicks <count>] [-modes <count>]
 		      [-cmdspeed <ms>] [-cmdmax <count>] <name> */
