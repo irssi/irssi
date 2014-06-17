@@ -450,6 +450,24 @@ void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const ch
 	g_free(recoded);
 }
 
+char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
+			       const char *data)
+{
+	/* See split_message() on how the maximum length is calculated. */
+	int userhostlen = 63 + 10 + 1;
+
+	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(target != NULL, NULL);
+	g_return_val_if_fail(data != NULL, NULL);
+
+	if (server->userhost != NULL)
+		userhostlen = strlen(server->userhost);
+
+	return split_line(SERVER(server), data, target,
+			  510 - strlen(":! PRIVMSG  :\001ACTION \001") -
+			  strlen(server->nick) - userhostlen - strlen(target));
+}
+
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
 {
 	char *recoded = NULL;
