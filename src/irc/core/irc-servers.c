@@ -169,7 +169,11 @@ static char **split_message(SERVER_REC *server, const char *target,
 			    const char *msg)
 {
 	IRC_SERVER_REC *ircserver = IRC_SERVER(server);
-	int userhostlen = 63;  /* Maximum length defined by protocol. */
+	/*
+	 * 63 is the maxmium hostname length defined by the protocol.  10 is
+	 * a common username limit on many networks.  1 is for the `@'.
+	 */
+	int userhostlen = 63 + 10 + 1;
 
 	g_return_val_if_fail(ircserver != NULL, NULL);
 	g_return_val_if_fail(target != NULL, NULL);
