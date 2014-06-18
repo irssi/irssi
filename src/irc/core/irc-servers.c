@@ -87,7 +87,7 @@ static char **split_line(const SERVER_REC *server, const char *line,
 	const char *end = settings_get_str("split_line_end");
 	char *recoded_start = recode_out(server, start, target);
 	char *recoded_end = recode_out(server, end, target);
-	char **lines = NULL;
+	char **lines;
 	int i;
 
 	/*
@@ -96,8 +96,12 @@ static char **split_line(const SERVER_REC *server, const char *line,
 	 * the code much simpler.  It's worth it.
 	 */
 	len -= strlen(recoded_start) + strlen(recoded_end);
-	if (len <= 0)
-		goto out; /* There is no room for anything. */
+	if (len <= 0) {
+		/* There is no room for anything. */
+		g_free(recoded_start);
+		g_free(recoded_end);
+		return NULL;
+	}
 
 	lines = recode_split(server, line, target, len);
 	for (i = 0; lines[i] != NULL; i++) {
@@ -137,7 +141,6 @@ static char **split_line(const SERVER_REC *server, const char *line,
 		}
 	}
 
-out:
 	g_free(recoded_start);
 	g_free(recoded_end);
 	return lines;
