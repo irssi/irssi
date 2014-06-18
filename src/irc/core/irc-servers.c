@@ -976,10 +976,10 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 void irc_servers_init(void)
 {
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
-	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
-	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 	settings_add_str("misc", "split_line_start", "");
 	settings_add_str("misc", "split_line_end", "");
+	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
+	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 
 	cmd_tag = -1;
 
