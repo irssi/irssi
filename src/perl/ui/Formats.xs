@@ -73,17 +73,18 @@ MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::Window
 #*******************************
 
 void
-format_get_text(window, module, server, target, formatnum, ...)
+format_get_text(window, module, server, target, format, ...)
 	Irssi::UI::Window window
 	char *module
 	Irssi::Server server
 	char *target
-	int formatnum
+	char *format
 PREINIT:
 	TEXT_DEST_REC dest;
 	THEME_REC *theme;
 	char **charargs;
 	char *ret;
+	int formatnum;
 	int n;
 PPCODE:
 	charargs = g_new0(char *, items-5+1);
@@ -93,6 +94,7 @@ PPCODE:
 
 	format_create_dest(&dest, server, target, 0, window);
 	theme = window_get_theme(dest.window);
+	formatnum = format_find_tag(module, format);
 
 	ret = format_get_text_theme_charargs(theme, module, &dest, formatnum, charargs);
 	g_free(charargs);
