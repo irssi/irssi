@@ -46,6 +46,7 @@ static const char *levels[] = {
 	"HILIGHTS",
 
 	"NOHILIGHT",
+	"NO_ACT",
 	NULL
 };
 
@@ -58,6 +59,9 @@ int level_get(const char *level)
 
 	if (g_ascii_strcasecmp(level, "NEVER") == 0)
 		return MSGLEVEL_NEVER;
+
+	if (g_ascii_strcasecmp(level, "NO_ACT") == 0)
+		return MSGLEVEL_NO_ACT;
 
 	len = strlen(level);
 	if (len == 0) return 0;
@@ -138,6 +142,9 @@ char *bits2level(int bits)
 	str = g_string_new(NULL);
 	if (bits & MSGLEVEL_NEVER)
 		g_string_append(str, "NEVER ");
+
+	if (bits & MSGLEVEL_NO_ACT)
+		g_string_append(str, "NO_ACT ");
 
 	for (n = 0; levels[n] != NULL; n++) {
 		if (bits & (1L << n))
