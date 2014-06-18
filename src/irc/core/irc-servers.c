@@ -51,6 +51,12 @@
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
 #define DEFAULT_MAX_QUERY_CHANS 1 /* more and more IRC networks are using stupid ircds.. */
 
+/*
+ * 63 is the maximum hostname length defined by the protocol.  10 is a common
+ * username limit on many networks.  1 is for the `@'.
+ */
+#define MAX_USERHOST_LEN (63 + 10 + 1)
+
 void irc_servers_reconnect_init(void);
 void irc_servers_reconnect_deinit(void);
 
@@ -169,11 +175,7 @@ static char **split_message(SERVER_REC *server, const char *target,
 			    const char *msg)
 {
 	IRC_SERVER_REC *ircserver = IRC_SERVER(server);
-	/*
-	 * 63 is the maxmium hostname length defined by the protocol.  10 is
-	 * a common username limit on many networks.  1 is for the `@'.
-	 */
-	int userhostlen = 63 + 10 + 1;
+	int userhostlen = MAX_USERHOST_LEN;
 
 	g_return_val_if_fail(ircserver != NULL, NULL);
 	g_return_val_if_fail(target != NULL, NULL);
@@ -453,8 +455,7 @@ void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const ch
 char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 			       const char *data)
 {
-	/* See split_message() on how the maximum length is calculated. */
-	int userhostlen = 63 + 10 + 1;
+	int userhostlen = MAX_USERHOST_LEN;
 
 	g_return_val_if_fail(server != NULL, NULL);
 	g_return_val_if_fail(target != NULL, NULL);
