@@ -175,7 +175,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
-MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Server
+MODULE = Irssi::TextUI PACKAGE = Irssi::Server
 
 void
 gui_printtext_after(server, target, prev, level, str)
@@ -194,6 +194,8 @@ BOOT:
 	irssi_boot(TextUI__Statusbar);
 	irssi_boot(TextUI__TextBuffer);
 	irssi_boot(TextUI__TextBufferView);
+
+MODULE = Irssi::TextUI  PACKAGE = Irssi
 
 void
 term_refresh_freeze()
