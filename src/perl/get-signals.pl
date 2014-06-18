@@ -24,46 +24,50 @@ while (<STDIN>) {
 	s/int \*[^,]*/intptr/g;
 	s/int [^,]*/int/g;
 
-	# core
-        s/CHATNET_REC[^,]*/iobject/g;
-        s/(?<!_)SERVER_REC[^,]*/iobject/g;
-        s/RECONNECT_REC[^,]*/iobject/g;
-	s/CHANNEL_REC[^,]*/iobject/g;
-	s/QUERY_REC[^,]*/iobject/g;
-	s/COMMAND_REC[^,]*/Irssi::Command/g;
-	s/NICK_REC[^,]*/iobject/g;
-	s/LOG_REC[^,]*/Irssi::Log/g;
-	s/RAWLOG_REC[^,]*/Irssi::Rawlog/g;
-	s/IGNORE_REC[^,]*/Irssi::Ignore/g;
-	s/MODULE_REC[^,]*/Irssi::Module/g;
+	my %map = (
+		# core
+		CHATNET_REC   => 'iobject',
+		SERVER_REC    => 'iobject',
+		RECONNECT_REC => 'iobject',
+		CHANNEL_REC   => 'iobject',
+		QUERY_REC     => 'iobject',
+		COMMAND_REC   => 'Irssi::Command',
+		NICK_REC      => 'iobject',
+		LOG_REC	      => 'Irssi::Log',
+		RAWLOG_REC    => 'Irssi::Rawlog',
+		IGNORE_REC    => 'Irssi::Ignore',
+		MODULE_REC    => 'Irssi::Module',
 
-	# irc
-	s/BAN_REC[^,]*/Irssi::Irc::Ban/g;
-	s/NETSPLIT_REC[^,]*/Irssi::Irc::Netsplit/g;
-	s/NETSPLIT_SERVER_REC[^,]*/Irssi::Irc::Netsplitserver/g;
+		# irc
+		BAN_REC		    => 'Irssi::Irc::Ban',
+		NETSPLIT_REC	    => 'Irssi::Irc::Netsplit',
+		NETSPLIT_SERVER_REC => 'Irssi::Irc::Netsplitserver',
 
-	# irc modules
-	s/DCC_REC[^,]*/siobject/g;
-	s/AUTOIGNORE_REC[^,]*/Irssi::Irc::Autoignore/g;
-	s/NOTIFYLIST_REC[^,]*/Irssi::Irc::Notifylist/g;
-	s/CLIENT_REC[^,]*/Irssi::Irc::Client/g;
+		# irc modules
+		DCC_REC	       => 'siobject',
+		AUTOIGNORE_REC => 'Irssi::Irc::Autoignore',
+		NOTIFYLIST_REC => 'Irssi::Irc::Notifylist',
+		CLIENT_REC     => 'Irssi::Irc::Client',
 
-	# fe-common
-	s/THEME_REC[^,]*/Irssi::UI::Theme/g;
-	s/KEYINFO_REC[^,]*/Irssi::UI::Keyinfo/g;
-	s/PROCESS_REC[^,]*/Irssi::UI::Process/g;
-	s/TEXT_DEST_REC[^,]*/Irssi::UI::TextDest/g;
-	s/WINDOW_REC[^,]*/Irssi::UI::Window/g;
-	s/WI_ITEM_REC[^,]*/iobject/g;
+		# fe-common
+		THEME_REC     => 'Irssi::UI::Theme',
+		KEYINFO_REC   => 'Irssi::UI::Keyinfo',
+		PROCESS_REC   => 'Irssi::UI::Process',
+		TEXT_DEST_REC => 'Irssi::UI::TextDest',
+		WINDOW_REC    => 'Irssi::UI::Window',
+		WI_ITEM_REC   => 'iobject',
 
-	# perl
-	s/PERL_SCRIPT_REC[^,]*/Irssi::Script/g;
+		# perl
+		PERL_SCRIPT_REC => 'Irssi::Script',
+	);
+	my $k = join '|', sort { length $b <=> length $a } keys %map;
+	s/($k)[^,]*/$map{$1}/g;
 
 	s/([\w\*:]+)(,|$)/"\1"\2/g;
 	if ($_ eq "") {
-		print "    { \"$signal\", { NULL } },\n";
+		print "	   { \"$signal\", { NULL } },\n";
 	} else {
-		print "    { \"$signal\", { $_, NULL } },\n";
+		print "	   { \"$signal\", { $_, NULL } },\n";
 	}
 }
 
