@@ -12,5 +12,6 @@
 int mk_wcwidth(unichar c);
 
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
+#define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 
 #endif
