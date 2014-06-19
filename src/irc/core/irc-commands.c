@@ -74,7 +74,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 		return;
 	if (strcmp(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
-	if (*target == '\0' || *msg == '\0')
+	if (target == NULL || *target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	recoded = recode_out(SERVER(server), msg, target);
@@ -101,7 +101,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 		return;
 	if (strcmp(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
-	if (*target == '\0' || *ctcpcmd == '\0')
+	if (target == NULL || *target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	ascii_strup(ctcpcmd);
@@ -135,7 +135,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 		return;
 	if (strcmp(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
-	if (*target == '\0' || *ctcpcmd == '\0')
+	if (target == NULL || *target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	ascii_strup(ctcpcmd);
