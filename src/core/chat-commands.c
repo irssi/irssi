@@ -386,7 +386,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 			signal_emit("server sendmsg", 4, server, target, m,
 				    GINT_TO_POINTER(target_type));
 			signal_emit(target_type == SEND_TARGET_CHANNEL ?
-			            "message own_public" :
+				    "message own_public" :
 				    "message own_private", 4, server, m,
 				    target, origtarget);
 		}
