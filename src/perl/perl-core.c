@@ -217,8 +217,6 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 {
 	dSP;
 	char *error;
-	int retcount;
-	SV *ret;
 
 	ENTER;
 	SAVETMPS;
@@ -229,10 +227,10 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 	XPUSHs(sv_2mortal(new_pv(script->name)));
 	PUTBACK;
 
-	retcount = perl_call_pv(script->path != NULL ?
-				"Irssi::Core::eval_file" :
-				"Irssi::Core::eval_data",
-				G_EVAL|G_SCALAR);
+	perl_call_pv(script->path != NULL ?
+                              "Irssi::Core::eval_file" :
+                              "Irssi::Core::eval_data",
+                              G_EVAL|G_DISCARD);
 	SPAGAIN;
 
         error = NULL;
@@ -244,11 +242,8 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 			signal_emit("script error", 2, script, error);
 			g_free(error);
 		}
-	} else if (retcount > 0) {
-		ret = POPs;
 	}
 
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
