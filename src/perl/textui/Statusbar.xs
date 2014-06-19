@@ -89,7 +89,6 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 		}
 	}
 
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }

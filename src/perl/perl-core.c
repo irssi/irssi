@@ -58,9 +58,6 @@ static void perl_script_destroy_package(PERL_SCRIPT_REC *script)
 
 	perl_call_pv("Irssi::Core::destroy", G_VOID|G_EVAL|G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }

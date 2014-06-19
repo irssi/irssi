@@ -73,6 +73,10 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 
 	ret = NULL;
 	if (SvTRUE(ERRSV)) {
+		(void) POPs;
+		/* call putback before emitting script error signal as that
+		 * could manipulate the perl stack. */
+		PUTBACK;
 		/* make sure we don't get back here */
 		if (rec->script != NULL)
 			script_unregister_expandos(rec->script);
@@ -81,9 +85,9 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 	} else if (retcount > 0) {
 		ret = g_strdup(POPp);
 		*free_ret = TRUE;
+		PUTBACK;
 	}
 
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
