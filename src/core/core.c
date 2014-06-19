@@ -196,9 +196,12 @@ void core_preinit(const char *path)
 		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
 			irssi_dir[len-1] = '\0';
 	}
-	if (irssi_config_file == NULL)
-		irssi_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG, irssi_dir);
-	else {
+	if (irssi_config_file == NULL) {
+        irssi_config_file = g_strdup_printf("%s/irssi/"IRSSI_HOME_CONFIG, g_get_user_config_dir());
+        if (!g_file_test (irssi_config_file, G_FILE_TEST_EXISTS)) {
+            irssi_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG, irssi_dir);
+        }
+	} else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
 		g_free(str);
