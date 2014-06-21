@@ -6,7 +6,7 @@ PKG_NAME="Irssi"
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-if test ! -f $srcdir/configure.in; then
+if test ! -f $srcdir/configure.ac; then
     echo -n "**Error**: Directory \`$srcdir\' does not look like the"
     echo " top-level $PKG_NAME directory"
     exit 1
