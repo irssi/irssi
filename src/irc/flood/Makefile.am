@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libirc_flood.a
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/ \

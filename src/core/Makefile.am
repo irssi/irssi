@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libcore.a
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
 	$(GLIB_CFLAGS) \

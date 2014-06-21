@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libirssi_config.a
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	$(GLIB_CFLAGS)
 
