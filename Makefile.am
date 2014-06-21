@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I .
+ACLOCAL_AMFLAGS = -I m4
 
 # create default-config.h
 BUILT_SOURCES = default-config.h default-theme.h irssi-version.h
