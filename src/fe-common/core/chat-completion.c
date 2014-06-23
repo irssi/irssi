@@ -846,13 +846,15 @@ static void sig_complete_topic(GList **list, WINDOW_REC *window,
 			       int *want_space)
 {
 	const char *topic;
+	int wordlen;
 
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 
-	if (*word == '\0' && IS_CHANNEL(window->active)) {
+	if (IS_CHANNEL(window->active)) {
 		topic = CHANNEL(window->active)->topic;
-		if (topic != NULL) {
+		wordlen = strlen(word);
+		if (topic != NULL && strncmp(topic, word, wordlen) == 0) {
 			*list = g_list_append(NULL, g_strdup(topic));
                         signal_stop();
 		}
