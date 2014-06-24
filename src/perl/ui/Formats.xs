@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "module.h"
 
 static int magic_free_text_dest(pTHX_ SV *sv, MAGIC *mg)

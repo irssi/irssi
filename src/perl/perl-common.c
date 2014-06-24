@@ -19,6 +19,7 @@
 */
 
 #define NEED_PERL_H
+#define PERL_NO_GET_CONTEXT
 #include "module.h"
 #include "modules.h"
 #include "signals.h"
