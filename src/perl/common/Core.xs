@@ -48,11 +48,11 @@ static void handle_command_bind(int priority, int items, SV *p0, SV *p1, SV *p2)
 
 	if (!hash) {
 		category = items < 3 ? DEFAULT_COMMAND_CATEGORY :
-			(char *)SvPV_nolen(p2);
-		perl_command_bind_to((char *)SvPV_nolen(p0), category, p1, priority);
+			SvPV_nolen(p2);
+		perl_command_bind_to(SvPV_nolen(p0), category, p1, priority);
 	} else {
 		category = items < 2 ? DEFAULT_COMMAND_CATEGORY :
-			(char *)SvPV_nolen(p1);
+			SvPV_nolen(p1);
 		perl_command_bind_add_hash(priority, p0, category);
 	}
 }
@@ -116,7 +116,7 @@ CODE:
 	if (items != 1 && items != 2)
 		croak("Usage: Irssi::signal_add(signal, func)");
 	if (items == 2)
-		perl_signal_add_full((char *)SvPV_nolen(ST(0)), ST(1),
+		perl_signal_add_full(SvPV_nolen(ST(0)), ST(1),
 				     SIGNAL_PRIORITY_DEFAULT);
 	else
 		perl_signal_add_hash(SIGNAL_PRIORITY_DEFAULT, ST(0));
@@ -127,7 +127,7 @@ CODE:
 	if (items != 1 && items != 2)
 		croak("Usage: Irssi::signal_add_first(signal, func)");
 	if (items == 2)
-		perl_signal_add_full((char *)SvPV_nolen(ST(0)), ST(1),
+		perl_signal_add_full(SvPV_nolen(ST(0)), ST(1),
 				     SIGNAL_PRIORITY_HIGH);
 	else
 		perl_signal_add_hash(SIGNAL_PRIORITY_HIGH, ST(0));
@@ -138,7 +138,7 @@ CODE:
 	if (items != 1 && items != 2)
 		croak("Usage: Irssi::signal_add_last(signal, func)");
 	if (items == 2)
-		perl_signal_add_full((char *)SvPV_nolen(ST(0)), ST(1),
+		perl_signal_add_full(SvPV_nolen(ST(0)), ST(1),
 				     SIGNAL_PRIORITY_LOW);
 	else
 		perl_signal_add_hash(SIGNAL_PRIORITY_LOW, ST(0));
@@ -149,7 +149,7 @@ CODE:
 	if (items != 2 && items != 3)
 		croak("Usage: Irssi::signal_add_priority(signal, func, priority)");
 	if (items == 3)
-		perl_signal_add_full((char *)SvPV_nolen(ST(0)), ST(1), SvIV(ST(2)));
+		perl_signal_add_full(SvPV_nolen(ST(0)), ST(1), SvIV(ST(2)));
 	else
 		perl_signal_add_hash(SvIV(ST(0)), ST(1));
 

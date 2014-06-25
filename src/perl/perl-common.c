@@ -81,7 +81,7 @@ SV *perl_func_sv_inc(SV *func, const char *package)
 	if (SvPOK(func)) {
 		/* prefix with package name */
 		name = g_strdup_printf("%s::%s", package,
-				       (char *) SvPV_nolen(func));
+				       SvPV_nolen(func));
 		func = new_pv(name);
                 g_free(name);
 	} else {
