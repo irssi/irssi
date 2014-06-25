@@ -19,6 +19,7 @@ typedef struct {
 
 typedef struct {
 	char *nick, *host;
+	int port;
 	NET_SENDBUF_REC *handle;
 	int recv_tag;
 	char *proxy_address;

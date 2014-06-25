@@ -23,6 +23,37 @@
 #include "settings.h"
 #include "levels.h"
 
+#include "fe-common/core/printtext.h"
+
+static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
+{
+	GSList *tmp;
+
+	printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Proxy: Currently connected clients: %d",
+		  g_slist_length(proxy_clients));
+
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "  %s:%d connect%s to %d (%s)",
+			  rec->host, rec->port,
+			  rec->connected ? "ed" : "ing",
+			  rec->listen->port, rec->listen->ircnet);
+	}
+}
+
+static void cmd_proxy(const char *data, IRC_SERVER_REC *server, void *item)
+{
+	if (*data == '\0') {
+		cmd_proxy_status(data, server);
+		return;
+	}
+
+	command_runsub("proxy", data, server, item);
+}
+
 void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
@@ -42,6 +73,9 @@ void irc_proxy_init(void)
 			    "irssiproxy_ports <ircnet>=<port> <ircnet2>=<port2> "
 			    "... to set them.");
 	}
+
+	command_bind("proxy", NULL, (SIGNAL_FUNC) cmd_proxy);
+	command_bind("proxy status", NULL, (SIGNAL_FUNC) cmd_proxy_status);
 
 	proxy_listen_init();
 	settings_check();
