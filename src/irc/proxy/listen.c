@@ -126,6 +126,9 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			/* client didn't send us PASS, kill it */
 			remove_client(client);
 		} else {
+			signal_emit("proxy client connected", 1, client);
+			printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				  "Proxy: Client finished connecting from %s", client->host);
 			client->connected = TRUE;
 			proxy_dump_data(client);
 		}
@@ -361,9 +364,9 @@ static void sig_listen(LISTEN_REC *listen)
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
 	rec->listen->clients = g_slist_prepend(rec->listen->clients, rec);
 
-        signal_emit("proxy client connected", 1, rec);
+        signal_emit("proxy client connecting", 1, rec);
 	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Proxy: Client connected from %s", rec->host);
+		  "Proxy: Client connecting from %s", rec->host);
 }
 
 static void sig_incoming(IRC_SERVER_REC *server, const char *line)
