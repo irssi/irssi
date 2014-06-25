@@ -106,6 +106,7 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 	char *params, *type, *channel, *names, *ptr, *host;
         int op, halfop, voice;
 	char prefixes[MAX_USER_PREFIXES+1];
+	const char *nick_flags, *nick_flag_cur, *nick_flag_op;
 
 	g_return_if_fail(data != NULL);
 
@@ -117,6 +118,8 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		g_free(params);
 		return;
 	}
+	nick_flags = server->get_nick_flags(SERVER(server));
+	nick_flag_op = strchr(nick_flags, '@');
 
 	/* type = '=' = public, '*' = private, '@' = secret.
 
@@ -158,6 +161,15 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 			case '+':
                                 voice = TRUE;
                                 break;
+			default:
+				/* If this flag is listed higher than op (in the
+				 * isupport PREFIX reply), then count this user
+				 * as an op. */
+				nick_flag_cur = strchr(nick_flags, *ptr);
+				if (nick_flag_cur && nick_flag_op && nick_flag_cur < nick_flag_op) {
+					op = TRUE;
+				}
+				break;
 			}
                         ptr++;
 		}
