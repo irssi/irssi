@@ -242,7 +242,7 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 		if (idchan == NULL)
 			return;
 	}
-	nick_flags = server->get_nick_flags(server);
+	nick_flags = server->get_nick_flags(SERVER(server));
 
 	while (*idchan != '\0') {
 		id = *idchan;
