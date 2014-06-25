@@ -115,7 +115,6 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 {
 	const char *nick, *prefixes;
         int op, halfop, voice;
-        NICK_REC *nickrec;
 	char newprefixes[MAX_USER_PREFIXES + 1];
 	int i;
 
@@ -145,7 +144,7 @@ static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,
 		newprefixes[i] = '\0';
 		prefixes = newprefixes;
 	}
-	nickrec = irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE, prefixes);
+	irc_nicklist_insert(channel, nick, op, halfop, voice, FALSE, prefixes);
 }
 
 static void session_restore_channel(IRC_CHANNEL_REC *channel)

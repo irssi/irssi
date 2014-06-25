@@ -211,7 +211,6 @@ void window_item_next(WINDOW_REC *window)
 WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
                                      void *server, const char *name)
 {
-	CHANNEL_REC *channel;
 	GSList *tmp;
 
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next) {
