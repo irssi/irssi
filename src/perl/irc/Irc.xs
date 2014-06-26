@@ -11,6 +11,7 @@ static void perl_irc_connect_fill_hash(HV *hv, IRC_SERVER_CONNECT_REC *conn)
 
 static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
 {
+       	perl_irc_connect_fill_hash(hv, server->connrec);
        	perl_server_fill_hash(hv, (SERVER_REC *) server);
 
        	hv_store(hv, "real_address", 12, new_pv(server->real_address), 0);
