@@ -220,6 +220,7 @@ notifylist.c:
 
 proxy/listen.c:
 
+ "proxy client connecting", CLIENT_REC
  "proxy client connected", CLIENT_REC
  "proxy client disconnected", CLIENT_REC
  "proxy client command", CLIENT_REC, char *args, char *data
