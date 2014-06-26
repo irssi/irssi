@@ -24,6 +24,7 @@
 #include "servers-redirect.h"
 #include "levels.h"
 #include "settings.h"
+#include "misc.h"
 
 #include "irc.h"
 #include "irc-channels.h"
