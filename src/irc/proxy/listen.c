@@ -37,6 +37,8 @@ GSList *proxy_clients;
 static GString *next_line;
 static int ignore_next;
 
+static int enabled = FALSE;
+
 static void remove_client(CLIENT_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
@@ -682,6 +684,11 @@ static void sig_dump(CLIENT_REC *client, const char *data)
 
 void proxy_listen_init(void)
 {
+	if (enabled) {
+		return;
+	}
+	enabled = TRUE;
+
 	next_line = g_string_new(NULL);
 
 	proxy_clients = NULL;
@@ -703,6 +710,11 @@ void proxy_listen_init(void)
 
 void proxy_listen_deinit(void)
 {
+	if (!enabled) {
+		return;
+	}
+	enabled = FALSE;
+
 	while (proxy_listens != NULL)
 		remove_listen(proxy_listens->data);
 	g_string_free(next_line, TRUE);

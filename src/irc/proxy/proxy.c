@@ -27,6 +27,12 @@
 
 static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
 {
+	if (!settings_get_bool("irssiproxy")) {
+		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "Proxy is currently disabled");
+		return;
+	}
+
 	GSList *tmp;
 
 	printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -54,11 +60,21 @@ static void cmd_proxy(const char *data, IRC_SERVER_REC *server, void *item)
 	command_runsub("proxy", data, server, item);
 }
 
+static void irc_proxy_setup_changed(void)
+{
+	if (settings_get_bool("irssiproxy")) {
+		proxy_listen_init();
+	} else {
+		proxy_listen_deinit();
+	}
+}
+
 void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
 	settings_add_str("irssiproxy", "irssiproxy_password", "");
 	settings_add_str("irssiproxy", "irssiproxy_bind", "");
+	settings_add_bool("irssiproxy", "irssiproxy", TRUE);
 
 	if (*settings_get_str("irssiproxy_password") == '\0') {
 		/* no password - bad idea! */
@@ -77,7 +93,11 @@ void irc_proxy_init(void)
 	command_bind("proxy", NULL, (SIGNAL_FUNC) cmd_proxy);
 	command_bind("proxy status", NULL, (SIGNAL_FUNC) cmd_proxy_status);
 
-	proxy_listen_init();
+	signal_add_first("setup changed", (SIGNAL_FUNC) irc_proxy_setup_changed);
+
+	if (settings_get_bool("irssiproxy")) {
+		proxy_listen_init();
+	}
 	settings_check();
         module_register("proxy", "irc");
 }
