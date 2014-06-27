@@ -191,7 +191,7 @@ static char *script_file_get_name(const char *path)
 {
 	char *name;
 
-        name = g_strdup(g_basename(path));
+        name = g_path_get_basename(path);
 	script_fix_name(name);
         return name;
 }

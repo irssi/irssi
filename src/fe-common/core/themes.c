@@ -1138,6 +1138,7 @@ static void theme_save(THEME_REC *theme, int save_all)
 	CONFIG_REC *config;
 	THEME_SAVE_REC data;
 	char *path;
+	char *basename;
 	int ok;
 
 	config = config_open(theme->path, -1);
@@ -1160,10 +1161,11 @@ static void theme_save(THEME_REC *theme, int save_all)
         data.save_all = save_all;
 	g_hash_table_foreach(theme->modules, (GHFunc) module_save, &data);
 
+	basename = g_path_get_basename(theme->path);
         /* always save the theme to ~/.irssi/ */
-	path = g_strdup_printf("%s/%s", get_irssi_dir(),
-			       g_basename(theme->path));
+	path = g_strdup_printf("%s/%s", get_irssi_dir(), basename);
 	ok = config_write(config, path, 0660) == 0;
+	g_free(basename);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    ok ? TXT_THEME_SAVED : TXT_THEME_SAVE_FAILED,
