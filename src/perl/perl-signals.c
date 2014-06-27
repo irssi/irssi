@@ -303,7 +303,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		char *error = g_strdup(SvPV(ERRSV, PL_na));
+		char *error = g_strdup(SvPV_nolen(ERRSV));
 		signal_emit("script error", 2, script, error);
                 g_free(error);
                 rec = NULL;
@@ -324,7 +324,6 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
                         GList **ret = arg;
 			GList *out = NULL;
                         void *val;
-			STRLEN len;
                         int count;
 
 			av = (AV *) SvRV(saved_args[n]);
@@ -332,7 +331,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			while (count-- >= 0) {
 				sv = av_shift(av);
 				if (SvPOKp(sv))
-					val = g_strdup(SvPV(sv, len));
+					val = g_strdup(SvPV_nolen(sv));
 				else
                                         val = GINT_TO_POINTER(SvIV(sv));
 
@@ -436,7 +435,7 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
 
 #define sv_func_cmp(f1, f2) \
 	(f1 == f2 || (SvPOK(f1) && SvPOK(f2) && \
-		strcmp((char *) SvPV_nolen(f1), (char *) SvPV_nolen(f2)) == 0))
+		strcmp(SvPV_nolen(f1), SvPV_nolen(f2)) == 0))
 
 static void perl_signal_remove_list(GSList **list, SV *func)
 {
