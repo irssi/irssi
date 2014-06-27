@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "module.h"
 
 MODULE = Irssi::Masks  PACKAGE = Irssi

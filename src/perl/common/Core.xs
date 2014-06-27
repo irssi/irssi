@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "module.h"
 #include "irssi-version.h"
 #include "core.h"

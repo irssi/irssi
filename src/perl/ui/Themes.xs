@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "module.h"
 
 static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
