@@ -31,6 +31,7 @@
 #include "themes.h"
 #include "fe-windows.h"
 #include "printtext.h"
+#include "window-activity.h"
 
 static int beep_msg_level, beep_when_away, beep_when_window_active;
 
@@ -407,7 +408,8 @@ void printtext_gui(const char *text)
 
 static void msg_beep_check(TEXT_DEST_REC *dest)
 {
-	if (dest->level != 0 && (dest->level & MSGLEVEL_NO_ACT) == 0 &&
+	if (dest->level != 0 && !window_activity_target_is_hidden(dest) &&
+	    (dest->level & MSGLEVEL_NO_ACT) == 0 &&
 	    (beep_msg_level & dest->level) &&
 	    (beep_when_away || (dest->server != NULL &&
 				!dest->server->usermode_away)) &&

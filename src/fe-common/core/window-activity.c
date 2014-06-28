@@ -70,6 +70,13 @@ void window_item_activity(WI_ITEM_REC *item, int data_level,
 		    GINT_TO_POINTER(old_data_level));
 }
 
+int window_activity_target_is_hidden(TEXT_DEST_REC *dest)
+{
+	/* check for both target and tag/target */
+	return hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL &&
+		strarray_find_dest(hide_targets, dest);
+}
+
 static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
 	WI_ITEM_REC *item;
