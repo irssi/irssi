@@ -92,11 +92,8 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if (hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
-		/* check for both target and tag/target */
-		if (strarray_find_dest(hide_targets, dest))
-			return;
-	}
+	if (window_activity_target_is_hidden(dest))
+		return;
 
 	if (dest->target != NULL) {
 		item = window_item_find(dest->server, dest->target);
