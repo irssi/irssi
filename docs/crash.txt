@@ -1,9 +1,11 @@
 How to submit a good bug report?
 
-Send them to bug reporting system in http://bugs.irssi.org/
+Bugs are tracked via the GitHub issue tracker. Open an issue at:
+https://github.com/irssi/irssi/issues
 
 First you should give the following information:
- - irssi version, if CVS (or devel. tarball) then which day?
+ - irssi version, if git (or devel. tarball) then which commit hash (or date
+   from /version)?
  - operating system / distribution and it's version
  - when did it crash? did you do something? can you reproduce the crash?
 
