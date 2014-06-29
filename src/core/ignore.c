@@ -104,8 +104,15 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 		stristr(text, rec->pattern) != NULL;
 }
 
+/* MSGLEVEL_NO_ACT is special in ignores, when provided to ignore_check() it's
+ * used as a flag to indicate it should only look at ignore items with NO_ACT.
+ * However we also want to allow NO_ACT combined with levels, so mask it out and
+ * match levels if set. */
 #define ignore_match_level(rec, level) \
-        ((level & (rec)->level) != 0)
+        (((level & MSGLEVEL_NO_ACT) != 0) ? \
+         ((~MSGLEVEL_NO_ACT & level) & (rec)->level) != 0 : \
+         ((rec)->level & MSGLEVEL_NO_ACT ? 0 : \
+         (level & (rec)->level) != 0))
 
 #define ignore_match_nickmask(rec, nick, nickmask) \
 	((rec)->mask == NULL || \
@@ -180,7 +187,14 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 }
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask,
-			char **channels)
+		char **channels)
+{
+	return ignore_find_noact(servertag, mask, channels, 0);
+}
+
+
+IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask,
+		char **channels, int noact)
 {
 	GSList *tmp;
 	char **chan;
@@ -201,6 +215,12 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 			if (servertag != NULL && g_ascii_strcasecmp(servertag, rec->servertag) != 0)
 				continue;
 		}
+
+		if (noact && (rec->level & MSGLEVEL_NO_ACT) == 0)
+			continue;
+
+		if (!noact && (rec->level & MSGLEVEL_NO_ACT) != 0)
+			continue;
 
 		if ((rec->mask == NULL && mask != NULL) ||
 		    (rec->mask != NULL && mask == NULL)) continue;
