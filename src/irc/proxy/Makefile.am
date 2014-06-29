@@ -1,7 +1,7 @@
 moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libirc_proxy.la
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/ \

@@ -14,7 +14,7 @@ libfe_perl_la_LDFLAGS = -module -avoid-version -rpath $(moduledir)
 perl-core.lo: irssi-core.pl.h
 perl-signals.lo: perl-signals-list.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
 	-I$(top_srcdir)/src/fe-common/core \

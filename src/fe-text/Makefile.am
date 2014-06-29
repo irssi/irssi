@@ -1,6 +1,6 @@
 bin_PROGRAMS = irssi
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/fe-common/core/ \
