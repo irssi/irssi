@@ -170,6 +170,10 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (ignore_check(SERVER(server), nick, address, target, msg, level))
 		return;
 
+	if (ignore_check(SERVER(server), nick, address, target, msg,
+			 level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
+
 	if (ischannel(*target))
 		item = irc_channel_find(server, target);
         else
@@ -214,6 +218,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	const char *oldtarget;
+	int level = MSGLEVEL_NOTICES;
 	
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
@@ -230,18 +235,23 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 
 	if (ignore_check(server, nick, address,
 			 ischannel(*target) ? target : NULL,
-			 msg, MSGLEVEL_NOTICES))
+			 msg, level))
 		return;
+
+	if (ignore_check(server, nick, address,
+			 ischannel(*target) ? target : NULL,
+			 msg, level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
 
         if (ischannel(*target)) {
 		/* notice in some channel */
-		printformat(server, target, MSGLEVEL_NOTICES,
+		printformat(server, target, level,
 			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
 	} else {
 		/* private notice */
 		privmsg_get_query(SERVER(server), nick, FALSE,
 				  MSGLEVEL_NOTICES);
-		printformat(server, nick, MSGLEVEL_NOTICES,
+		printformat(server, nick, level,
 			    IRCTXT_NOTICE_PRIVATE, nick, address, msg);
 	}
 }
