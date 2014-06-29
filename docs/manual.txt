@@ -349,7 +349,7 @@
 	after connecting to the network. This is useful for automatically 
 	identifying yourself to NickServ, for example
 
-	/NETWORK ADD -autosendcmd "/msg NickServ identify secret" freenode
+	/NETWORK ADD -autosendcmd "/^msg NickServ identify secret" freenode
 
 	/NETWORK REMOVE <name>
 
