@@ -249,9 +249,9 @@ void irssi_callXS(void (*subaddr)(pTHX_ CV* cv), CV *cv, SV **mark)
 	dSP;
 
 	PUSHMARK(mark);
-	(*subaddr)(aTHX_ cv);
-
 	PUTBACK;
+
+	(*subaddr)(aTHX_ cv);
 }
 
 void perl_chatnet_fill_hash(HV *hv, CHATNET_REC *chatnet)
