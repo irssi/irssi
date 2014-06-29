@@ -334,6 +334,9 @@ gui-readline.c:
 gui-printtext.c:
  "beep"
 
+textbuffer-view.c
+ "gui textbuffer line removed", TEXTBUFFER_VIEW_REC *view, LINE_REC *line, LINE_REC *prev_line
+
 Perl
 ----
 

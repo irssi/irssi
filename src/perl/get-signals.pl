@@ -57,6 +57,10 @@ while (<STDIN>) {
 		WINDOW_REC    => 'Irssi::UI::Window',
 		WI_ITEM_REC   => 'iobject',
 
+		# fe-text
+		TEXTBUFFER_VIEW_REC => 'Irssi::TextUI::TextBufferView',
+		LINE_REC	    => 'Irssi::TextUI::Line',
+
 		# perl
 		PERL_SCRIPT_REC => 'Irssi::Script',
 	);
