@@ -2,11 +2,16 @@
 
 [![Build Status](https://travis-ci.org/irssi/irssi.svg?branch=master)](https://travis-ci.org/irssi/irssi)
 
-Irssi is a modular IRC client that currently has only text mode user interface,
-but 80-90% of the code isn't text mode specific, so other UIs could be created
-pretty easily. Also, Irssi isn't really even IRC specific anymore, there's
-already a working [SILC](http://www.silcnet.org/) module available. Support for
-other protocols like ICQ could be created some day too.
+Irssi is a modular chat client that is most commonly known for its
+text mode user interface, but 80% of the code isn't text mode
+specific. We have a working but currently unmaintained GTK2 frontend
+called xirssi. Irssi comes with IRC support built in, and there are
+third party [ICB](https://github.com/jperkin/irssi-icb),
+[SILC](http://www.silcnet.org/),
+[XMPP](http://cybione.org/~irssi-xmpp/) (Jabber),
+[PSYC](https://github.com/electric-blue/irssyc) and
+[Quassel](https://github.com/phhusson/quassel-irssi) protocol modules
+available.
 
 ## Installation
 
