@@ -13,8 +13,10 @@
      -autosendcmd: Command to send after connecting to a server
         
 With -autosendcmd argument you can automatically run any commands
-after connecting to network. This is useful for automatically
+after connecting to the network. This is useful for automatically
 identifying yourself to NickServ, for example
+
+   /NETWORK ADD -autosendcmd "/^msg NickServ identify secret" freenode
 
 Shows and changes the settings of defined IRC networks.
 
