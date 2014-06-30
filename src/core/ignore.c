@@ -58,30 +58,6 @@ static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
 	return FALSE;
 }
 
-#define ignore_match_channel(rec, channel) \
-	((rec)->channels == NULL || ((channel) != NULL && \
-		strarray_find((rec)->channels, (channel)) != -1))
-
-static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
-{
-	GSList *tmp;
-
-	if (text == NULL || chanrec == NULL)
-		return FALSE;
-
-        /* check reply ignores */
-	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
-		IGNORE_REC *rec = tmp->data;
-
-		if (rec->mask != NULL && rec->replies &&
-		    ignore_match_channel(rec, chanrec->name) &&
-		    ignore_check_replies_rec(rec, chanrec, text))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 {
 	if (rec->pattern == NULL)
@@ -123,6 +99,31 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 #define ignore_match_server(rec, server) \
 	((rec)->servertag == NULL || \
 	g_ascii_strcasecmp((server)->tag, (rec)->servertag) == 0)
+
+#define ignore_match_channel(rec, channel) \
+	((rec)->channels == NULL || ((channel) != NULL && \
+		strarray_find((rec)->channels, (channel)) != -1))
+
+static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int level)
+{
+	GSList *tmp;
+
+	if (text == NULL || chanrec == NULL)
+		return FALSE;
+
+        /* check reply ignores */
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+		IGNORE_REC *rec = tmp->data;
+
+		if (rec->mask != NULL && rec->replies &&
+		    ignore_match_level(rec, level) &&
+		    ignore_match_channel(rec, chanrec->name) &&
+		    ignore_check_replies_rec(rec, chanrec, text))
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
@@ -183,7 +184,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
 		return best_match;
 
-        return ignore_check_replies(chanrec, text);
+        return ignore_check_replies(chanrec, text, level);
 }
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask,
