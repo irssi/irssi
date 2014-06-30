@@ -49,5 +49,3 @@ src/perl/ui/*.c
 
 .deps
 .libs
-
-docs/help
