@@ -114,3 +114,19 @@ surrounding text will not affect the expression's return value.
    /eval echo foo${N}foo               /* ${N} returns current nickname */
    fooYourNickfoo                      /* returned by above command */
 
+When writing an alias containing a /script exec, special consideration has to be
+taken to $vars and statement delimiters, ie. ;
+/alias tries to evaluate all $vars as expandos, which would mean that what you
+pass on to /script exec isn't necessarily what you intended.
+Compare:
+
+   1. /alias al1 script exec my $var = "Hello"; print $var;
+   2. /alias al2 script exec my $$var = "Hello"\; print $$var;
+   3. /alias al3 script exec my \$var = "Hello"\; print \$var; (Same as nr 2)
+
+In example nr 1 $var would be expanded to an empty string and ; would end
+the /script exec command, leaving print $var as a separate command to be run by
+irssi. In example 2 $$ is evaluated to a literal $ leaving a literal $var to be
+passed on to /script exec. The same goes for \; which is turned into a
+literal ; and thus is passed on to /script exec as a statement delimiter.
+This would mean print $$var is part of the /script exec being evaluated.
