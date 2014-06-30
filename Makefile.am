@@ -27,7 +27,7 @@ pkginclude_HEADERS = irssi-config.h irssi-version.h
 EXTRA_DIST = \
 	ChangeLog \
 	autogen.sh \
-	README \
+	README.md \
 	file2header.sh \
 	$(conf_DATA) \
 	$(theme_DATA) \
