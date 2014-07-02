@@ -56,8 +56,10 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	if (rec->exception) g_string_append(options, "-except ");
 	if (rec->regexp) {
 		g_string_append(options, "-regexp ");
+		if (rec->pattern == NULL)
+			g_string_append(options, "[INVALID! -pattern missing] ");
 #ifdef HAVE_REGEX_H
-		if (!rec->regexp_compiled)
+		else if (!rec->regexp_compiled)
 			g_string_append(options, "[INVALID!] ");
 #endif
 	}
