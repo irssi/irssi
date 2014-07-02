@@ -29,7 +29,14 @@
 #include "gui-printtext.h"
 #include "gui-windows.h"
 
-int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7 };
+int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
+	 /* 16-27 */  52,  94, 100,  58,  22,  29,  23,  24,  17,  54,  53,  89,
+	 /* 28-39 */  88, 130, 142,  64,  28,  35,  30,  25,  18,  91,  90, 125,
+	 /* 40-51 */ 124, 166, 184, 106,  34,  49,  37,  33,  19, 129, 127, 161,
+	 /* 52-63 */ 196, 208, 226, 154,  46,  86,  51,  75,  21, 171, 201, 198,
+	 /* 64-75 */ 203, 215, 227, 191,  83, 122,  87, 111,  63, 177, 207, 205,
+	 /* 76-87 */ 217, 223, 229, 193, 157, 158, 159, 153, 147, 183, 219, 212,
+	 /* 88-98 */  16, 233, 235, 237, 239, 241, 244, 247, 250, 254, 231, -1 };
 static int scrollback_lines, scrollback_time, scrollback_burst_remove;
 
 static int next_xpos, next_ypos;
@@ -145,21 +152,39 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 
 static void get_colors(int flags, int *fg, int *bg, int *attr)
 {
+	*attr = 0;
 	if (flags & GUI_PRINT_FLAG_MIRC_COLOR) {
-		/* mirc colors - real range is 0..15, but after 16
-		   colors wrap to 0, 1, ... */
-                if (*bg >= 0) *bg = mirc_colors[*bg % 16];
-		if (*fg >= 0) *fg = mirc_colors[*fg % 16];
-		if (settings_get_bool("mirc_blink_fix"))
-			*bg &= ~0x08;
+		/* mirc colors - extended colours proposal */
+                if (*bg >= 0) {
+			*bg = mirc_colors[*bg % 100];
+			flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+			if (settings_get_bool("mirc_blink_fix"))
+				*bg = term_color256map[*bg&0xff] & ~0x08;
+		}
+		if (*fg >= 0) {
+			*fg = mirc_colors[*fg % 100];
+			flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+		}
 	}
 
-	if (*fg < 0 || *fg > 15)
+	if (flags & GUI_PRINT_FLAG_COLOR_24_FG)
+		*attr |= ATTR_FGCOLOR24;
+	else if (*fg < 0 || *fg > 255) {
 		*fg = -1;
-	if (*bg < 0 || *bg > 15)
-                *bg = -1;
+		*attr |= ATTR_RESETFG;
+	}
+	else
+		*attr |= *fg;
 
-	*attr = 0;
+	if (flags & GUI_PRINT_FLAG_COLOR_24_BG)
+		*attr |= ATTR_BGCOLOR24;
+	else if (*bg < 0 || *bg > 255) {
+                *bg = -1;
+		*attr |= ATTR_RESETBG;
+	}
+	else
+		*attr |= (*bg << BG_SHIFT);
+
 	if (flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
 	if (flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
 	if (flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
@@ -192,9 +217,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	if (window == NULL) {
                 g_return_if_fail(next_xpos != -1);
 
-		attr |= fg >= 0 ? fg : ATTR_RESETFG;
-		attr |= bg >= 0 ? (bg << 4) : ATTR_RESETBG;
-		term_set_color(root_window, attr);
+		term_set_color2(root_window, attr, fg, bg);
 
 		term_move(root_window, next_xpos, next_ypos);
 		if (flags & GUI_PRINT_FLAG_CLRTOEOL)

@@ -101,9 +101,87 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 	}
 }
 
+void format_ext_color(GString *out, int bg, int color)
+{
+	g_string_append_c(out, 4);
+	if (bg && color < 0x10)
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+	if (color < 0x10)
+		g_string_append_c(out, color+'0');
+	else {
+		if (color < 0x60)
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT1_BG
+					  : FORMAT_COLOR_EXT1);
+		else if (color < 0xb0)
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT2_BG
+					  : FORMAT_COLOR_EXT2);
+		else
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT3_BG
+					  : FORMAT_COLOR_EXT3);
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE + ((color-0x10)%0x50));
+	}
+	if (!bg && color < 0x10)
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+}
+
+#ifdef TERM_TRUECOLOR
+void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *flags)
+{
+	unsigned int color;
+	unsigned char rgbx[4];
+	unsigned int i;
+	for (i = 0; i < 4; ++i) {
+		rgbx[i] = (*ptr)[i + off];
+	}
+	rgbx[3] -= 0x20;
+	*ptr += 4;
+	for (i = 0; i < 3; ++i) {
+		if (rgbx[3] & (0x10 << i))
+			rgbx[i] -= 0x20;
+	}
+	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
+	if (rgbx[3] & 0x1) {
+		*bgcolor = color;
+		*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+	}
+	else {
+		*fgcolor = color;
+		*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+	}
+}
+#endif
+
+void format_24bit_color(GString *out, int bg, unsigned int color)
+{
+	unsigned char rgb[] = { color >> 16, color >> 8, color };
+#ifdef TERM_TRUECOLOR
+	unsigned char x = bg ? 0x1 : 0;
+	unsigned int i;
+	g_string_append_c(out, 4);
+	g_string_append_c(out, FORMAT_COLOR_24);
+	for (i = 0; i < 3; ++i) {
+		if (rgb[i] > 0x20)
+			g_string_append_c(out, rgb[i]);
+		else {
+			g_string_append_c(out, 0x20 + rgb[i]);
+			x |= 0x10 << i;
+		}
+	}
+	g_string_append_c(out, 0x20 + x);
+#else /* !TERM_TRUECOLOR */
+	format_ext_color(out, bg, color_24bit_256(rgb));
+#endif /* TERM_TRUECOLOR */
+}
+
 int format_expand_styles(GString *out, const char **format, int *flags)
 {
+	int retval = 1;
+
 	char *p, fmt;
+
+	/* storage for numerical parsing code for %x/X formats. */
+	int tmp;
+	unsigned int tmp2;
 
 	fmt = **format;
 	switch (fmt) {
@@ -162,6 +240,62 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		/* code */
 		format_expand_code(format, out, flags);
 		break;
+	case 'x':
+	case 'X':
+		if ((*format)[1] < '0' || (*format)[1] > '7')
+			break;
+
+		tmp = 16 + ((*format)[1]-'0'-1)*36;
+		if (tmp > 231) {
+			if (!isalpha((*format)[2]))
+				break;
+
+			tmp += (*format)[2] >= 'a' ? (*format)[2] - 'a' : (*format)[2] - 'A';
+
+			if (tmp > 255)
+				break;
+		}
+		else if (tmp > 0) {
+			if (!isalnum((*format)[2]))
+				break;
+
+			if ((*format)[2] >= 'a')
+				tmp += 10 + (*format)[2] - 'a';
+			else if ((*format)[2] >= 'A')
+				tmp += 10 + (*format)[2] - 'A';
+			else
+				tmp += (*format)[2] - '0';
+		}
+		else {
+			if (!isxdigit((*format)[2]))
+				break;
+
+			tmp = g_ascii_xdigit_value((*format)[2]);
+		}
+
+		retval += 2;
+
+		format_ext_color(out, fmt == 'x', tmp);
+		break;
+	case 'z':
+	case 'Z':
+		tmp2 = 0;
+		for (tmp = 1; tmp < 7; ++tmp) {
+			if (!isxdigit((*format)[tmp])) {
+				tmp2 = UINT_MAX;
+				break;
+			}
+			tmp2 <<= 4;
+			tmp2 |= g_ascii_xdigit_value((*format)[tmp]);
+		}
+
+		if (tmp2 == UINT_MAX)
+			break;
+
+		retval += 6;
+
+		format_24bit_color(out, fmt == 'z', tmp2);
+		break;
 	default:
 		/* check if it's a background color */
 		p = strchr(format_backs, fmt);
@@ -195,7 +329,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		return FALSE;
 	}
 
-	return TRUE;
+	return retval;
 }
 
 void format_read_arglist(va_list va, FORMAT_REC *format,
@@ -303,6 +437,7 @@ int format_get_length(const char *str)
 	GString *tmp;
 	int len;
 	gboolean utf8;
+	int adv = 0;
 
 	g_return_val_if_fail(str != NULL, 0);
 
@@ -313,9 +448,10 @@ int format_get_length(const char *str)
 	while (*str != '\0') {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' &&
-			    format_expand_styles(tmp, &str, NULL)) {
-				str++;
+			if (*str != '%') {
+			     adv = format_expand_styles(tmp, &str, NULL);
+			     str += adv;
+			     if (adv)
 				continue;
 			}
 
@@ -340,7 +476,7 @@ int format_real_length(const char *str, int len)
 	const char *start;
 	const char *oldstr;
 	gboolean utf8;
-
+	int adv = 0;
 	g_return_val_if_fail(str != NULL, 0);
 	g_return_val_if_fail(len >= 0, 0);
 
@@ -351,9 +487,10 @@ int format_real_length(const char *str, int len)
 	while (*str != '\0' && len > 0) {
 		if (*str == '%' && str[1] != '\0') {
 			str++;
-			if (*str != '%' &&
-			    format_expand_styles(tmp, &str, NULL)) {
-				str++;
+			if (*str != '%') {
+			     adv = format_expand_styles(tmp, &str, NULL);
+			     str += adv;
+			     if (adv)
 				continue;
 			}
 
@@ -378,6 +515,7 @@ char *format_string_expand(const char *text, int *flags)
 {
 	GString *out;
 	char code, *ret;
+	int adv;
 
 	g_return_val_if_fail(text != NULL, NULL);
 
@@ -388,10 +526,13 @@ char *format_string_expand(const char *text, int *flags)
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, &text, flags)) {
+			adv = format_expand_styles(out, &text, flags);
+			if (!adv) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
+			} else {
+			  text += adv - 1;
 			}
 			code = 0;
 		} else {
@@ -415,6 +556,7 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	GString *out;
 	char code, *ret;
 	int need_free;
+	int adv;
 
 	out = g_string_new(NULL);
 
@@ -422,10 +564,13 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	while (*text != '\0') {
 		if (code == '%') {
 			/* color code */
-			if (!format_expand_styles(out, &text, &dest->flags)) {
+			adv = format_expand_styles(out, &text, &dest->flags);
+			if (!adv) {
 				g_string_append_c(out, '%');
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
+			} else {
+				text += adv - 1;
 			}
 			code = 0;
 		} else if (code == '$') {
@@ -716,13 +861,22 @@ void format_newline(WINDOW_REC *window)
 		       "", NULL);
 }
 
+#ifndef TERM_TRUECOLOR
+inline static int color_24bit_256_int(unsigned int color)
+{
+	unsigned char rgb[] = { color >> 16, color >> 8, color };
+	return color_24bit_256(rgb);
+}
+#endif /* !TERM_TRUECOLOR */
+
 /* parse ANSI color string */
 static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				  int *fg_ret, int *bg_ret, int *flags_ret)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	const char *start;
-	int fg, bg, flags, num;
+	int fg, bg, flags, num, i;
+	unsigned int num2;
 
 	if (*str != '[')
 		return str;
@@ -749,28 +903,127 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			/* reset colors back to default */
 			fg = theme->default_color;
 			bg = -1;
-			flags &= ~GUI_PRINT_FLAG_INDENT;
+			flags &= ~(GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_INDENT);
 			break;
 		case 1:
 			/* hilight */
 			flags |= GUI_PRINT_FLAG_BOLD;
 			break;
+		case 22:
+			/* normal */
+			flags &= ~GUI_PRINT_FLAG_BOLD;
+			break;
+		case 4:
+			/* underline */
+			flags |= GUI_PRINT_FLAG_UNDERLINE;
+			break;
+		case 24:
+			/* not underline */
+			flags &= ~GUI_PRINT_FLAG_UNDERLINE;
+			break;
 		case 5:
 			/* blink */
 			flags |= GUI_PRINT_FLAG_BLINK;
+			break;
+		case 25:
+			/* steady */
+			flags &= ~GUI_PRINT_FLAG_BLINK;
 			break;
 		case 7:
 			/* reverse */
 			flags |= GUI_PRINT_FLAG_REVERSE;
 			break;
+		case 27:
+			/* positive */
+			flags &= ~GUI_PRINT_FLAG_REVERSE;
+			break;
+		case 39:
+			/* reset fg */
+			flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+			fg = theme->default_color;
+			break;
+		case 49:
+			/* reset bg */
+			bg = -1;
+			flags &= ~(GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_INDENT);
+			break;
+		case 38:
+		case 48:
+			/* ANSI indexed color or RGB color */
+			if (*str != ';') break;
+			str++;
+			for (num2 = 0; i_isdigit(*str); str++)
+				num2 = num2*10 + (*str-'0');
+
+			switch (num2) {
+			case 2:
+				/* RGB */
+				num2 = 0;
+
+				for (i = 0; i < 3; ++i) {
+					num2 <<= 8;
+
+					if (*str != ';' && *str != ':') {
+						i = -1;
+						break;
+					}
+					str++;
+					for (; i_isdigit(*str); str++)
+						num2 = (num2&~0xff) |
+							(((num2&0xff) * 10 + (*str-'0'))&0xff);
+				}
+
+				if (i == -1) break;
+#ifdef TERM_TRUECOLOR
+				if (num == 38) {
+					flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+					fg = num2;
+				} else if (num == 48) {
+					flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+					bg = num2;
+				}
+#else /* !TERM_TRUECOLOR */
+				if (num == 38) {
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+					fg = color_24bit_256_int(num2);
+				} else if (num == 48) {
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+					bg = color_24bit_256_int(num2);
+				}
+#endif
+
+				break;
+			case 5:
+				/* indexed */
+				if (*str != ';') break;
+				str++;
+				for (num2 = 0; i_isdigit(*str); str++)
+					num2 = num2*10 + (*str-'0');
+
+				if (num == 38) {
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+					fg = num2;
+				} else if (num == 48) {
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+					bg = num2;
+				}
+
+				break;
+			}
+			break;
 		default:
 			if (num >= 30 && num <= 37) {
-				if (fg == -1) fg = 0;
-				fg = (fg & 0xf8) | ansitab[num-30];
-			}
-			if (num >= 40 && num <= 47) {
-				if (bg == -1) bg = 0;
-				bg = (bg & 0xf8) | ansitab[num-40];
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				fg = ansitab[num-30];
+			} else if (num >= 40 && num <= 47) {
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				bg = ansitab[num-40];
+			} else if (num >= 90 && num <= 97) {
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				fg = 8 + ansitab[num-90];
+			} else if (num >= 100 && num <= 107) {
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				bg = 8 + ansitab[num-100];
 			}
 			break;
 		}
@@ -858,6 +1111,20 @@ int strip_real_length(const char *str, int len,
 				*last_color_len = (int) (str-mircstart);
 
 		} else if (*str == 4 && str[1] != '\0') {
+#ifdef TERM_TRUECOLOR
+			if (str[1] == FORMAT_COLOR_24 && str[2] != '\0') {
+				if (str[3] == '\0') str++;
+				else if (str[4] == '\0') str += 2;
+				else if (str[5] == '\0') str += 3;
+				else {
+					if (last_color_pos != NULL)
+						*last_color_pos = (int) (str-start);
+					if (last_color_len != NULL)
+						*last_color_len = 6;
+					str+=4;
+				}
+			} else
+#endif
 			if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
 				if (last_color_pos != NULL)
 					*last_color_pos = (int) (str-start);
@@ -907,6 +1174,14 @@ char *strip_codes(const char *input)
 
 			/* irssi color */
 			if (p[2] != '\0') {
+#ifdef TERM_TRUECOLOR
+				if (p[1] == FORMAT_COLOR_24) {
+					if (p[3] == '\0') p += 2;
+					else if (p[4] == '\0') p += 3;
+					else if (p[5] == '\0') p += 4;
+					else p += 5;
+				} else
+#endif /* TERM_TRUECOLOR */
 				p += 2;
 				continue;
 			}
@@ -1020,16 +1295,47 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
 				break;
+			case FORMAT_COLOR_EXT1:
+				fgcolor = 0x10 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				break;
+			case FORMAT_COLOR_EXT1_BG:
+				bgcolor = 0x10 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				break;
+			case FORMAT_COLOR_EXT2:
+				fgcolor = 0x60 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				break;
+			case FORMAT_COLOR_EXT2_BG:
+				bgcolor = 0x60 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				break;
+			case FORMAT_COLOR_EXT3:
+				fgcolor = 0xb0 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				break;
+			case FORMAT_COLOR_EXT3_BG:
+				bgcolor = 0xb0 + *++ptr - FORMAT_COLOR_NOCHANGE;
+				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				break;
+#ifdef TERM_TRUECOLOR
+			case FORMAT_COLOR_24:
+				unformat_24bit_color(&ptr, 1, &fgcolor, &bgcolor, &flags);
+				break;
+#endif
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
-					fgcolor = (unsigned char) *ptr-'0';
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+					fgcolor = *ptr==(char)0xff ? -1 : (unsigned char) *ptr-'0';
 				}
 				if (ptr[1] == '\0')
 					break;
 
 				ptr++;
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
-					bgcolor = *ptr-'0';
+					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+					bgcolor = *ptr==(char)0xff ? -1 : *ptr-'0';
 				}
 			}
 			ptr++;

@@ -331,16 +331,29 @@ static void _set_standout(TERM_REC *term, int set)
 	tput(tparm(set ? term->TI_smso : term->TI_rmso));
 }
 
+inline static int color256(const TERM_REC *term, const int color) {
+	if (color < term->TI_colors)
+		return color;
+
+	if (color < 16)
+		return color % term->TI_colors;
+
+	if (color < 256)
+		return term_color256map[color] % term->TI_colors;
+
+	return color % term->TI_colors;
+}
+
 /* Change foreground color */
 static void _set_fg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_fg[color % term->TI_colors]));
+	tput(tparm(term->TI_fg[color256(term, color)]));
 }
 
 /* Change background color */
 static void _set_bg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_bg[color % term->TI_colors]));
+	tput(tparm(term->TI_bg[color256(term, color)]));
 }
 
 /* Beep */
