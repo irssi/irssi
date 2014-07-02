@@ -1,48 +1,32 @@
 
+Syntax:
+
 @SYNTAX:bind@
 
-Bind some action to specified keystroke. Remember that all characters
-in keystrokes are case-sensitive! Uppercase letter usually means that
-you need to keep SHIFT pressed to get the key to work.
+Parameters:
 
-Most most commonly used keystrokes are:
+    -list:      Displays a list of all the bindable commands.
+    -delete:    Removes the binding,
 
- ^X - Ctrl-X
- meta-x - Meta-x (Meta is quite often Alt-key in PCs, ESC-x works too)
+    A name of the binding and the command to perform.
 
-Irssi has by default also defined several other keys which you can use:
+Details:
 
- return                  - The return/enter key
- space, backspace        - Space / backspace
- up, down, left, right   - Arrow keys
- cleft, cright           - Ctrl-left/right
- home, end, prior, next  - prior = Page Up, next = Page Down
- insert, delete
+    Adds or removes a binding. The binding itself is case-sensitive and may
+    contain as many characters as you want.
 
-The keystroke can contain as many key presses as you want, and you can
-define names for different key sequences to use them more easily (the
-keys above are done like that). For example, you may want to manage
-windows with ^W key, so that ^W^C creates new window, ^W^K kills the
-active window, etc. you may do it like:
-
- /BIND ^W^C /WINDOW NEW HIDE
- /BIND ^W^K /WINDOW KILL
-
-But maybe you wish to give these binds to other people who want to use
-some other key than ^W, then it would be better done as:
-
- /BIND ^W key window
- /BIND window-^C /WINDOW NEW HIDE
- /BIND window-^K /WINDOW KILL
-
-
-To get a list of all bindable commands use /bind -list.
+    Uppercase characters usually indicate that you need to keep the shift-key
+    pressed to use the binding.
 
 Examples:
 
-Clear screen:
-  /BIND meta-c /CLEAR
+    /BIND meta-c /CLEAR
+    /BIND meta-q change_window 16
+    /BIND -delete meta-y
+    /BIND ^W^C /WINDOW NEW HIDE
+    /BIND ^W^K /WINDOW KILL
+    /BIND ^[[11~ command AWAY I'm off for today :)
+    /BIND ^[[12~ command AWAY
 
-People with qwertz layout probably want to swap meta-y and meta-z:
-  /BIND meta-z change_window 16
-  /BIND -delete meta-y
+See also: ALIAS
+

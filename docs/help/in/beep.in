@@ -1,6 +1,15 @@
 
+Syntax:
+
 @SYNTAX:beep@
 
-Outputs the bell-character, usually causing
-your terminal beep.
+Description:
+
+    Outputs the bell-character, usually causing your terminal to beep.
+
+Examples:
+
+    /BEEP
+
+See also: CLEAR
 

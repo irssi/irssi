@@ -1,27 +1,41 @@
 
+Syntax:
+
 @SYNTAX:ban@
 
-Bans the specified nick or userhost mask.
+Parameters:
 
-If nick is given as parameter, the ban type is used to generate the ban
-mask. /SET ban_type specified the default ban type. Ban type is one of
-the following:
+    -normal:    Uses the *!*user@*.domain.net format.
+    -user:      Uses the *!*user@* format.
+    -host:      Uses the *!*@host.domain.net format.
+    -domain:    Uses the *!*@*.domain.net format.
+    -custom:    Uses the custom format.
 
-    Normal - *!*user@*.domain.net
-    User   - *!*user@*
-    Host   - *!*@host.domain.net
-    Domain - *!*@*.domain.net
-    Custom [nick] [user] [host] [domain]
+    A channel and the nicknames or hostnames to ban. If no arguments are given
+    the bans in the active channel are displayed.
 
-If no arguments are given the current bans in this channel are displayed.
+    If no ban format parameter is given, the value of the ban_type setting will
+    be used to generate the hostmask to ban.
+
+Description:
+
+    Adds one or more bans to a channel.
+
+Configuring the custom format:
+
+    You must set the custom ban_type to the format you would like to use. For
+    example, if you set the custom ban_type to "nick domain", it will generate
+    a ban based on the nick!*@*.domain.net format.
 
 Examples:
-    /BAN loser        - Bans the nick 'loser'
-    /BAN -host loser  - Bans the host of nick 'loser'
-    /BAN *!*@*.org    - Bans all the users coming from any .org domain.
 
-    /SET ban_type custom nick domain - nick!*@*.domain.net
-    /SET ban_type custom user host   - *!user@host.domain.net
+    /BAN mike
+    /BAN -host bob
+    /BAN *!*@*.basement.cat
+    /BAN -domain sarah
 
-See also: KNOCKOUT, KICKBAN
+    /SET ban_type custom nick domain
+    /SET ban_type custom user host
+
+See also: KICKBAN, KNOCKOUT
 
