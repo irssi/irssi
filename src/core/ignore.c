@@ -293,10 +293,24 @@ static void ignore_remove_config(IGNORE_REC *rec)
 static void ignore_init_rec(IGNORE_REC *rec)
 {
 #ifdef HAVE_REGEX_H
+	char *errbuf;
+	int errcode, errbuf_len;
+
 	if (rec->regexp_compiled) regfree(&rec->preg);
-	rec->regexp_compiled = !rec->regexp || rec->pattern == NULL ? FALSE :
-		regcomp(&rec->preg, rec->pattern,
-			REG_EXTENDED|REG_ICASE|REG_NOSUB) == 0;
+	rec->regexp_compiled = FALSE;
+	if (rec->regexp && rec->pattern != NULL) {
+		errcode = regcomp(&rec->preg, rec->pattern,
+				REG_EXTENDED|REG_ICASE|REG_NOSUB);
+		if (errcode != 0) {
+			errbuf_len = regerror(errcode, &rec->preg, 0, 0);
+			errbuf = g_malloc(errbuf_len);
+			regerror(errcode, &rec->preg, errbuf, errbuf_len);
+			g_warning("Failed to compile regexp '%s': %s", rec->pattern, errbuf);
+			g_free(errbuf);
+		} else {
+			rec->regexp_compiled = TRUE;
+		}
+	}
 #endif
 }
 
