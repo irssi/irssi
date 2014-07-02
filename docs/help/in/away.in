@@ -1,28 +1,32 @@
 
+Syntax:
+
 @SYNTAX:away@
 
-   -one 
-   -all
+Parameters:
 
-This command marks you as being "away". It is used to tell people that 
-you currently aren't paying attention to your screen. You might use it 
-if you are taking a nap, in the shower, getting some food, or otherwise 
-just aren't there at the moment. When you're "away" you will see "(zZzZ)"
-in your statusbar.
+   -one:    Marks yourself as away on the server you are connected to.
+   -all:    Marks yourself as away on all the servers you are connected to.
 
-Anyone who does a WHOIS on your nickname will see that you are away, 
-as well as your away message. Anyone doing a WHO that returns information 
-about you will also see that you're gone. 
+   You away message; if no argument is given, your away status will be removed.
+   
+Description:
 
-By default, if someone sends you a MSG while you are away, your client 
-will beep. You can turn this off by setting BEEP_WHEN_AWAY to OFF. 
+    Marks yourself as "away"; this method is used to inform people that you
+    are not paying attention to your screen.
 
-If you send a MSG to someone who is away, you will automatically be 
-notified of this. By default, you will only receive this notification 
-once. If you wish to see it every time (to tell when a person is no 
-longer marked away, for instance), change SHOW_AWAY_ONCE to OFF. 
+    You might use it when you are taking a nap, in the shower, getting some
+    food, or otherwise engaged. When you're "away" you will see "(zZzZ)" in
+    your statusbar.
 
-You can remove your away status by using AWAY with no arguments. 
+    Anyone who does a WHOIS on your nickname will see that you are away, as
+    well as your away message.
 
-See also: SET AWAY
+Examples:
+
+    /AWAY I'm getting some food.
+    /AWAY zZzZ
+    /AWAY -one Feeding the cat!
+
+See also: DISCONNECT
 

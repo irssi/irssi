@@ -1,8 +1,22 @@
 
+Syntax:
+
 @SYNTAX:admin@
 
-Displays the administrative details about the given server. If
-no server is specified, the server you are connected to is
-used. If a nickname is supplied then it gives the administrative 
-information for that person's current server.
+Parameters:
+
+    A nickname or server for which you want to know the administrative details;
+    if no argument is given, the server you are connected to will be used.
+
+Description:
+
+    Displays the administrative details of a server.
+
+Examples:
+
+    /ADMIN
+    /ADMIN orwell.freenode.net
+    /ADMIN mike
+
+See also: INFO
 

@@ -1,9 +1,23 @@
 
+Syntax:
+
 @SYNTAX:action@
 
-Same as ME, but gets channel or nick as an additional parameter.
-Example: /ACTION #irssi yawns
-(This outputs the following to #irssi: * Nick yawns)
+Parameters:
+
+    -<server tag>:    The server tag you want to send the action emote to.
+
+    A target nickname or channel and the message.
+
+Description:
+
+    Sends an action emote to a nickname or a channel.
+
+Examples:
+
+    /ACTION #irssi is hungry!
+    /ACTION mike had an awesome day @ work
+    /ACTION -efnet #irssi is happy it's Friday
 
 See also: ME
 

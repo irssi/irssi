@@ -1,22 +1,32 @@
 
+Syntax:
+
 @SYNTAX:alias@
 
-Creates a new alias or shows matching defined aliases. Without
-parameters shows all defined aliases. Multiple commands can be run if
-separated with ';' character. Parameters given to alias are in $0..$9
-variables, if you don't use them in your alias, all parameters are
-automatically appended after it.
+Parameters:
+
+    A name of the alias and the command to execute. You can prepend the alias
+    with the '-' character to remove the alias. If no argument is given, your
+    aliases will be displayed.
+
+Description:
+
+    Creates or updates an alias. You can use the ';' character to separate
+    multiple commands.
+
+    The parametesr given to the alias are expanded in '$[\d]' For example $0,
+    $1, $2, $8, $12, ...
+
+    If you don't use any parameters in your alias, all parameters will be
+    automatically appended after it.
 
 Examples:
 
-/ALIAS w
-   - shows all defined aliases starting with letter w.
+    /ALIAS COMEBACK SAY I was hoping for a battle of wits, but you seem to be unarmed.
+    /ALIAS -COMEBACK
+    /ALIAS ATAG SCRIPT EXEC Irssi::active_win->change_server(Irssi::server_find_tag("$0"));
+    /ALIAS UNACT SCRIPT EXEC foreach $$w (Irssi::windows()) { Irssi::command("window goto $$w->{refnum}")\;} ; WINDOW GOTO $winref
+    /ALIAS QOP ^MSG Q op $C
 
-/ALIAS send echo Sending file $1 to $0;dcc send $0-
-   - creates alias 'send'.
-
-/ALIAS -send
-   - removes alias 'send'.
-
-See also: UNALIAS
+See also: BIND, UNALIAS
 
