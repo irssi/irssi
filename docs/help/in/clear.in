@@ -1,9 +1,19 @@
 
+Syntax:
+
 @SYNTAX:clear@
 
-This command clears the current window of all text. It is useful 
-for wiping a screen that has rendered improperly (such as due 
-to a bad termcap entry) or that contains sensitive information 
-(such as one's OPER password). 
+Parameters:
 
+    -all:    Clear all the windows
+
+    The window number to clear; if no argument is given, the active window
+    is used.
+
+Description:
+
+    Clears the window of all text; you may use this to clear a windows that
+    contains sensitive information or has rendered improperly.
+
+See also: REDRAW
 

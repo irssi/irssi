@@ -1,8 +1,21 @@
 
+Syntax:
+
 @SYNTAX:cat@
 
-Outputs the contents of the specified file. Equivalent to
-UNIX 'cat' command.
+Parameters:
 
-See also: CD
+    The file to display.
+
+Description:
+
+    Displays the contents of the specified file into the active window.
+
+Examples:
+
+    /CAT /etc/network/interfaces
+    /CAT /home/mike/unicorns.txt
+    /CAT kitties.txt
+
+See also: CD,  EXEC
 

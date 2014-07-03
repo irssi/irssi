@@ -1,7 +1,23 @@
 
+Syntax:
+
 @SYNTAX:ctcp@
 
-Sends a CTCP message. For example CTCP ACTION, or CTCP VERSION.
+Parameters:
 
-See also: ME, ACTION
+    A target nickname or channel and a command.
+
+Description:
+
+    Sends a CTCP request towards the given target nickname or channel.
+
+Examples:
+
+    /CTCP mike PING
+    /CTCP #irssi VERSION
+    /CTCP bob USERINFO
+    /CTCP sarah CLIENTINFO
+    /CTCP john TIME
+
+See also: ACTION, ME
 

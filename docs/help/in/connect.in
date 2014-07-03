@@ -1,23 +1,38 @@
 
+Syntax:
+
 @SYNTAX:connect@
 
-     -4, -6: specify explicitly whether to use IPv4 or IPv6 address
-     -ssl: use SSL when connecting
-     -ssl_cert: The SSL client certificate file (implies -ssl)
-     -ssl_pkey: The SSL client private key (if not included in the certificate file)
-     -ssl_pass: The password for the SSL client private key or certificate.
-     -ssl_verify: Verify servers SSL certificate
-     -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
-     -ssl_capath: Directory with CA certificates (implies -ssl_verify)
-     -network: the network this connection belongs to
-     -ircnet: Same as -network. Deprecated. Do not use.
-     -host: the host
-     -!: don't autojoin channels
-     -noautosendcmd: don't execute autosendcmd
-     -rawlog: immediately open rawlog after connected
+Parameters:
 
-This command makes irssi to connect to specified server.
-Current connections are kept and a new one is created.
+    -4:             Connect using IPv4.
+    -6:             Connect using IPv6.
+    -ssl:           Connect using SSL encryption.
+    -ssl_cert:      The SSL client certificate file.
+    -ssl_pkey:      The SSL client private key, if not included in the certificate file.
+    -ssl_verify:    Verify the SSL certificate of the server.
+    -ssl_cafile:    The file with the list of CA certificates.
+    -ssl_capath:    The directory which contains the CA certificates.
+    -noproxy:       Ignore the global proxy configuration.
+    -network:       The network this connection belongs to
+    -host:          The hostname you would like to connect from.
+    -rawlog:        Immediately open rawlog after connecting.
+    -!:             Don't autojoin channels.
+    -noautosendcmd: Don't execute autosendcmd.
 
-See also: SERVER, DISCONNECT, RMRECONNS, SCONNECT
+    A network or server to connect to. You can optionally specify a custom port,
+    password and nickname.
+
+Description:
+
+    Opens a new connection to the specified network or server.
+
+Examples:
+
+    /CONNECT Freenode
+    /CONNECT -6 Freenode
+    /CONNECT -4 -! -host my.cute.hostname.tld -network Freenode orwell.freenode.net
+    /CONNECT kitties.example.com 6667 myPassword BasementCat
+
+See also: DISCONNECT, RMRECONNS, SERVER
 

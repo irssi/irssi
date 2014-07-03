@@ -1,8 +1,22 @@
 
+Syntax:
+
 @SYNTAX:cycle@
 
-Cycles (leaves and joins) the current channel or the specified 
-channel.
+Parameters:
+
+    A channel and the message. If no argument is given, the active channel
+    will be used.
+
+Description:
+
+    Leaves and rejoins a channel.
+
+Examples:
+
+    /CYCLE
+    /CYCLE #irssi
+    /CYCLE #irssi BRB :)
 
 See also: JOIN, PART
 
