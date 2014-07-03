@@ -1,41 +1,49 @@
 
+%9Syntax:%9
+
 @SYNTAX:exec@
 
-     -: Don't print "process terminated ..." message
-     -nosh: Don't start command through /bin/sh
-     -out: Send output to active channel/query
-     -msg: Send output to specified nick/channel
-     -notice: Send output to specified nick/channel as notices
-     -name: Name the process so it could be accessed easier
+%9Parameters:%9
 
-     -window: Move the output of specified process to active window
-     -close: Forcibly close (or "forget") a process that doesn't die.
-             This only removes all information from irssi concerning the
-             process, it doesn't send SIGKILL or any other signal
-             to the process.
-     -<signal>: Send a signal to process. <signal> can be either numeric
-                or one of the few most common ones (hup, term, kill, ...)
+    -:               Suppresses the process termination notification.
+    -nosh:           Doesn't execute the command through /bin/sh.
+    -out:            Sends the output to the active channel or query.
+    -msg:            Sends the output to the specified nickname or channel.
+    -notice:         Sends the output to the specified nickname or channel as notices.
+    -name:           Gives the process the specified name.
+    -window:         Displays the output in the active window.
+    -close:          Forcibly closes a process that doesn't die.
+    -<signal>:       Sends the given signal to the process.
+    -in:             Sends text to the standard input of the process.
+    -interactive:    Executes the process in a new window item.
 
-     -in: Send text to standard input of the specified process
-     -interactive: Creates a query-like window item. Text written to it is
-                   sent to executed process, like /EXEC -in.
+    The command to execute; if no output parameter is given, the active window
+    will be used and if no parameters are given at all, the list of active
+    processes will be displayed.
 
-Execute specified command in background. Output of process is printed
-to active window by default, but can be also sent as messages or
-notices to specified nick or channel.
+%9Description:%9
 
-Processes can be accessed either by their ID or name if you named it.
-Process identifier must always begin with '%%' character, like %%0 or
-%%name.
+    Executes the specified command in the background; the process can be
+    accessed by its id or the name you gave it.
 
-Once the process is started, its output can still be redirected
-elsewhere with the -window, -msg, etc. options. You can send text to
-standard input of the process with -in option.
+    The output of the process can be redirected to various targets, such as
+    a window, a channel, a nickname or a query.
 
--close option shouldn't probably be used if there's a better way to
-kill the process. It is meant to remove the processes that don't die
-even with SIGKILL. This option just closes the pipes used to
-communicate with the process and frees all memory it used.
+    The process identifier must always begin with the "%%" character. For
+    example %%0.
 
-EXEC without any arguments displays the list of started processes.
+    If you remove a process with the close parameter, it will only make Irssi
+    detach from it; the process will keep running until it terminates.
+
+%9Examples:%9
+
+    /EXEC
+    /EXEC ls
+    /EXEC -msg #irssi cat unicorn.txt
+    /EXEC -out cat /etc/passwd | grep $USER | awk -F: '{print $5}'
+    /EXEC -name mailserver -interactive telnet gmail.google.com. 25
+    /EXEC -close mailserver
+    /EXEC -close %%0
+
+%9See also:%9 CAT, CD, ECHO, EVAL
 

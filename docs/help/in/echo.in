@@ -1,5 +1,25 @@
 
+%9Syntax:%9
+
 @SYNTAX:echo@
 
-Prints text into the current window. Useful for scripts.
+%9Parameters:%9
+
+    -current:    Displays the output in the active window.
+    -window:     Displays the ouput in the target window.
+    -level:      Displays the output with a given message level.
+
+    The text ouput; if no target is given, the active window will be used.
+
+%9Description:%9
+
+    Displays the given text.
+
+%9Examples:%9
+
+    /ECHO 1 + 1 = 2 :D
+    /ECHO -current Testing the ECHO command
+    /ECHO -window #irssi Special variables such as ${N} will not be expanded.
+
+%9See also:%9 CAT, EVAL, EXEC, LEVELS
 
