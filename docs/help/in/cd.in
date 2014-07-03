@@ -1,21 +1,21 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:cd@
 
-Parameters:
+%9Parameters:%9
 
     The directory to change into.
 
-Description:
+%9Description:%9
 
     Changes the current active directory.
 
-Examples:
+%9Examples:%9
 
     /CD /home/public_ftp
     /CD /home/mike
     /CD /var/log
 
-See also: CAT
+%9See also:%9 CAT
 

@@ -1,9 +1,9 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:channel@
 
-Parameters:
+%9Parameters:%9
 
     LIST:       Displays the list of configured channels.
     ADD:        Adds a channel to your configuration.
@@ -20,20 +20,19 @@ Parameters:
     If no parameters are given, the list of channels you have joined will be
     displayed.
     
-Description:
+%9Description:%9
 
     Adds, removes or displays the configuration of channels; this method is
     used to automate and simplify your workflow.
 
-Examples:
-
-    /CHANNEL ADD -auto #irssi Freenode
-    /CHANNEL ADD -auto -bots "*!@*.meow.net *!basement@cat.org" -botcmd "msg $0 op myPassword" #hideout Freenode
-    /CHANNEL ADD -auto -bots "Q!TheQBot@CServe.quakenet.org" -botcmd "^MSG Q op #irssi" #irssi Quakenet
+%9Examples:%9
 
     /CHANNEL
     /CHANNEL LIST
+    /CHANNEL ADD -auto #irssi Freenode
+    /CHANNEL ADD -auto -bots "*!@*.google.com *!bot@google.com" -botcmd "msg $0 op WzerTrzq" #hideout Freenode
+    /CHANNEL ADD -auto -bots "Q!TheQBot@CServe.quakenet.org" -botcmd "^MSG Q op #irssi" #irssi Quakenet
     /CHANNEL REMOVE #hideout Freenode
-
-See also: JOIN, TS
+    
+%9See also:%9 JOIN, TS
 

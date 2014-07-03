@@ -1,16 +1,16 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:away@
 
-Parameters:
+%9Parameters:%9
 
-   -one:    Marks yourself as away on the server you are connected to.
+   -one:    Marks yourself as away on the active server.
    -all:    Marks yourself as away on all the servers you are connected to.
 
    You away message; if no argument is given, your away status will be removed.
    
-Description:
+%9Description:%9
 
     Marks yourself as "away"; this method is used to inform people that you
     are not paying attention to your screen.
@@ -22,11 +22,12 @@ Description:
     Anyone who does a WHOIS on your nickname will see that you are away, as
     well as your away message.
 
-Examples:
+%9Examples:%9
 
+    /AWAY
     /AWAY I'm getting some food.
     /AWAY zZzZ
     /AWAY -one Feeding the cat!
 
-See also: DISCONNECT
+%9See also:%9 DISCONNECT
 

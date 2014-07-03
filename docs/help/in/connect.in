@@ -1,38 +1,38 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:connect@
 
-Parameters:
+%9Parameters:%9
 
-    -4:             Connect using IPv4.
-    -6:             Connect using IPv6.
-    -ssl:           Connect using SSL encryption.
+    -4:             Connects using IPv4.
+    -6:             Connects using IPv6.
+    -ssl:           Connects using SSL encryption.
     -ssl_cert:      The SSL client certificate file.
     -ssl_pkey:      The SSL client private key, if not included in the certificate file.
-    -ssl_verify:    Verify the SSL certificate of the server.
+    -ssl_verify:    Verifies the SSL certificate of the server.
     -ssl_cafile:    The file with the list of CA certificates.
     -ssl_capath:    The directory which contains the CA certificates.
-    -noproxy:       Ignore the global proxy configuration.
+    -noproxy:       Ignores the global proxy configuration.
     -network:       The network this connection belongs to
     -host:          The hostname you would like to connect from.
     -rawlog:        Immediately open rawlog after connecting.
-    -!:             Don't autojoin channels.
-    -noautosendcmd: Don't execute autosendcmd.
+    -!:             Doesn't autojoin channels.
+    -noautosendcmd: Doesn't execute autosendcmd.
 
-    A network or server to connect to. You can optionally specify a custom port,
+    A network or server to connect to; you can optionally specify a custom port,
     password and nickname.
 
-Description:
+%9Description:%9
 
     Opens a new connection to the specified network or server.
 
-Examples:
+%9Examples:%9
 
     /CONNECT Freenode
     /CONNECT -6 Freenode
-    /CONNECT -4 -! -host my.cute.hostname.tld -network Freenode orwell.freenode.net
-    /CONNECT kitties.example.com 6667 myPassword BasementCat
+    /CONNECT -4 -! -host office.google.com -network Freenode orwell.freenode.net
+    /CONNECT secure.server.google.com 6667 WzerT8zq mike
 
-See also: DISCONNECT, RMRECONNS, SERVER
+%9See also:%9 DISCONNECT, RMRECONNS, SERVER
 

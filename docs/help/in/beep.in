@@ -1,15 +1,15 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:beep@
 
-Description:
+%9Description:%9
 
     Outputs the bell-character, usually causing your terminal to beep.
 
-Examples:
+%9Examples:%9
 
     /BEEP
 
-See also: CLEAR
+%9See also:%9 CLEAR
 

@@ -1,19 +1,19 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:clear@
 
-Parameters:
+%9Parameters:%9
 
     -all:    Clear all the windows
 
     The window number to clear; if no argument is given, the active window
     is used.
 
-Description:
+%9Description:%9
 
     Clears the window of all text; you may use this to clear a windows that
     contains sensitive information or has rendered improperly.
 
-See also: REDRAW
+%9See also:%9 REDRAW
 

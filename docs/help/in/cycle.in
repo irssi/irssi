@@ -1,22 +1,22 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:cycle@
 
-Parameters:
+%9Parameters:%9
 
     A channel and the message. If no argument is given, the active channel
     will be used.
 
-Description:
+%9Description:%9
 
     Leaves and rejoins a channel.
 
-Examples:
+%9Examples:%9
 
     /CYCLE
     /CYCLE #irssi
     /CYCLE #irssi BRB :)
 
-See also: JOIN, PART
+%9See also:%9 JOIN, PART
 

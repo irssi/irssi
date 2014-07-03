@@ -1,21 +1,21 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:cat@
 
-Parameters:
+%9Parameters:%9
 
     The file to display.
 
-Description:
+%9Description:%9
 
     Displays the contents of the specified file into the active window.
 
-Examples:
+%9Examples:%9
 
     /CAT /etc/network/interfaces
-    /CAT /home/mike/unicorns.txt
-    /CAT kitties.txt
+    /CAT /home/mike/resume.txt
+    /CAT contact_details.txt
 
-See also: CD,  EXEC
+%9See also:%9 CD, EXEC
 

@@ -1,17 +1,17 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:ctcp@
 
-Parameters:
+%9Parameters:%9
 
     A target nickname or channel and a command.
 
-Description:
+%9Description:%9
 
     Sends a CTCP request towards the given target nickname or channel.
 
-Examples:
+%9Examples:%9
 
     /CTCP mike PING
     /CTCP #irssi VERSION
@@ -19,5 +19,5 @@ Examples:
     /CTCP sarah CLIENTINFO
     /CTCP john TIME
 
-See also: ACTION, ME
+%9See also:%9 ACTION, ME
 

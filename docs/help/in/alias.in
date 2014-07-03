@@ -1,32 +1,33 @@
 
-Syntax:
+%9Syntax:%9
 
 @SYNTAX:alias@
 
-Parameters:
+%9Parameters:%9
 
     A name of the alias and the command to execute. You can prepend the alias
-    with the '-' character to remove the alias. If no argument is given, your
+    with the "-" character to remove the alias; if no argument is given, your
     aliases will be displayed.
 
-Description:
+%9Description:%9
 
-    Creates or updates an alias. You can use the ';' character to separate
+    Creates or updates an alias; you can use the ";" character to separate
     multiple commands.
 
-    The parametesr given to the alias are expanded in '$[\d]' For example $0,
+    The parametesr given to the alias are expanded in "$[\d]" For example $0,
     $1, $2, $8, $12, ...
 
     If you don't use any parameters in your alias, all parameters will be
     automatically appended after it.
 
-Examples:
+%9Examples:%9
 
+    /ALIAS
     /ALIAS COMEBACK SAY I was hoping for a battle of wits, but you seem to be unarmed.
     /ALIAS -COMEBACK
     /ALIAS ATAG SCRIPT EXEC Irssi::active_win->change_server(Irssi::server_find_tag("$0"));
-    /ALIAS UNACT SCRIPT EXEC foreach $$w (Irssi::windows()) { Irssi::command("window goto $$w->{refnum}")\;} ; WINDOW GOTO $winref
+    /ALIAS UNACT SCRIPT EXEC foreach $$w (Irssi::windows()) { Irssi::command("window goto $$w->{refnum}")\;}; WINDOW GOTO $winref
     /ALIAS QOP ^MSG Q op $C
 
-See also: BIND, UNALIAS
+%9See also:%9 BIND, UNALIAS
 
