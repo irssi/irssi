@@ -1,10 +1,26 @@
 
+%9Syntax:%9
+
 @SYNTAX:devoice@
 
-Takes off the voice from the specified nick(s). This makes them
-not to be able to send messages to the moderated (+m) channel.
+%9Parameters:%9
 
-Wildcards in the nick are allowed.
+    A list of nicknames to devoice.
 
-See also: VOICE, MODE
+%9Description:%9
+
+    Removes the channel voice privileges from the given nicknames; you
+    may use the wildcard character "*" in a nickname.
+
+    If a channel is moderated, the users will require a voice or op in
+    order to be able to send messages to the channel.
+
+%9Examples:%9
+
+    /DEVOICE mike
+    /DEVOICE bob sarah
+    /DEVOICE jo*n
+    /DEVOICE *
+
+%9See also:%9 DEOP, MODE, OP, VOICE
 

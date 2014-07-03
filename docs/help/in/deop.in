@@ -1,10 +1,23 @@
 
+%9Syntax:%9
+
 @SYNTAX:deop@
 
-Takes off the channel operator privileges from the
-specified nick(s). 
+%9Parameters:%9
 
-Wildcards in the nick are allowed.
+    A list of nicknames to deop.
 
-See also: OP
+%9Description:%9
+
+    Removes the channel operator privileges from the given nicknames; you
+    may use the wildcard character "*" in a nickname.
+
+%9Examples:%9
+
+    /DEOP mike
+    /DEOP bob sarah
+    /DEOP jo*n
+    /DEOP *
+
+%9See also:%9 DEVOICE, MODE, OP, VOICE
 

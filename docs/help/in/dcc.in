@@ -1,37 +1,45 @@
 
+%9Syntax:%9
+
 @SYNTAX:dcc@
 
-/DCC LIST
-    - Shows all the open DCC connections.
-/DCC RESUME [<nick> [<file>]]
-    - Resumes a DCC SEND/GET connection.
-/DCC CHAT [-passive] [<nick>]
-    - Sends a chat connection request to remote client or accepts 
-      a chat connection if the remote end has already sent a request.
-      If -passive is used then the passive DCC protocol is used (as mIRC
-      can do). This is useful to bypass a NAT/firewall which limit your
-      possibility in listening for remote connections.
-/DCC GET [<nick> [<file>]]
-    - Gets the file offered by remote client. The file is downloaded and
-      saved into the directory specified by the `dcc_download_path' setting.
-/DCC SEND [-passive] [-append | -prepend | -flush | -rmtail | -rmhead]
-          <nick> <file> [<file> ...]
-    - Sends a DCC SEND request to remote client. Remote end has to accept
-      the request before the transmission can be started. Giving multiple
-      files queues them. File names may contain shell expansion
-      characters: * ? [] ~ (~ expansion may not be supported on all
-      platforms). Files with spaces in their names need to be quoted (eg.
-      "file name"). If -passive is used then the passive DCC protocol is
-      used (as mIRC and xchat > 2.0.7 can do). This is useful to bypass a
-      NAT/firewall which limit your possibility in  listening for remote
-      connections.
-/DCC SERVER [<+|-scf> <port>]
-    - Starts a DCC SERVER on the specified port. The remote can connect
-      to this server and initiate chat, send and fserve requests. You can
-      specify + or - using any combination of the flags 's' (Send),
-      'c' (Chat), or 'f' (Fserver).
-/DCC CLOSE <type> <nick> [<file>]
-    - Closes a DCC-connection. Type can be either SEND, GET or CHAT.
+%9Parameters:%9
 
-See also: CD
+    CHAT:        Initiates or accept a chat request.
+    GET:         Accepts a file transfer request.
+    RESUME:      Resumes a file transfer.
+    SERVER:      Starts a DCC server.
+    CLOSE:       Closes a DCC connection.
+    LIST:        Displays all the open DCC connections.
+
+    -passive:    Uses the passive DCC protocol.
+    -scf:        Use any combination of the flags to indicate:
+                     's' - send
+                     'c' - chat
+                     'f' - fserver
+
+    The nickname of the person to chat with, or the name of the file to
+    transfer.
+
+%9Description:%9
+
+    The DCC protocol is used to initiate client-to-client chat connections
+    and file transfers.
+
+    If you are behind NAT, or if the firewall is too restrictive, you might
+    want to try if using the passive parameter resolved your conneciton
+    problem.
+
+    You can send files which contain special character or spaces by enclosing
+    the filename within quotes. For example: "my file with spaces.txt".
+
+%9Examples:%9
+
+    /DCC CHAT mike
+    /DCC GET bob "summer vacation.mkv"
+    /DCC SEND sarah documents/resume.pdf
+    /DCC CLOSE mike
+    /DCC CLOSE bob "summer vacation.mkv"
+
+%9See also:%9 CD
 

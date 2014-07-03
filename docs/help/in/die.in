@@ -1,7 +1,15 @@
 
+%9Syntax:%9
+
 @SYNTAX:die@
 
-IRC operator command. Terminates the IRC server.
+%9Description:%9
 
-See also: OPER
+    Terminates the IRC server; this command is reserved for IRC operators.
+
+%9Examples:%9
+
+    /DIE
+
+%9See also:%9 KILL, OPER, WALLOPS
 
