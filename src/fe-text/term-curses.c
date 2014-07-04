@@ -302,11 +302,6 @@ static int get_attr(int color)
 }
 
 /* Change active color */
-void term_set_color2(TERM_WINDOW *window, int col, unsigned int fg_ignore, unsigned int bg_ignore)
-{
-	term_set_color(window, col);
-}
-
 void term_set_color(TERM_WINDOW *window, int col)
 {
 	wattrset(window->win, get_attr(col));

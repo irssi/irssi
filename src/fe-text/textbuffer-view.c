@@ -22,6 +22,7 @@
 
 #include "module.h"
 #include "textbuffer-view.h"
+#include "signals.h"
 #include "utf8.h"
 
 typedef struct {
@@ -150,7 +151,7 @@ static void update_cmd_color(unsigned char cmd, int *color)
 }
 
 #ifdef TERM_TRUECOLOR
-static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, int *fg, int *bg)
+static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, unsigned int *fg, unsigned int *bg)
 {
 	unsigned int color;
 	unsigned char rgbx[4];
@@ -201,7 +202,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
         unsigned char cmd;
 	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
-	int last_bg24, last_fg24, bg24, fg24;
+	unsigned int last_bg24, last_fg24, bg24, fg24;
 	int char_width;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
@@ -209,6 +210,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	color = ATTR_RESETFG | ATTR_RESETBG;
 	xpos = 0; indent_pos = view->default_indent;
 	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
+	last_bg24 = last_fg24 = UINT_MAX;
 
         indent_func = view->default_indent_func;
         linecount = 1;
@@ -387,7 +389,10 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
         const unsigned char *text, *end, *text_newline;
 	unsigned char *tmp;
 	unichar chr;
-	int xpos, color, fg24, bg24, drawcount, first, need_move, need_clrtoeol, char_width;
+	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
+#ifdef TERM_TRUECOLOR
+	unsigned int fg24, bg24;
+#endif
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
                 return 0;
