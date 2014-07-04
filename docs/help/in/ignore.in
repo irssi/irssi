@@ -40,6 +40,19 @@ Some suggestions for ignoring annoying public aways:
     /IGNORE *afk* NICKS
     /IGNORE *away* NICKS
 
+The special level "NO_ACT" can be used to ignore activity ("Act:") but not
+actually ignore the message entirely. It is somewhat special because it is
+allowed in addition to another ignore for the same target.
+
+Examples:
+
+  /IGNORE #channel NO_ACT JOINS PARTS QUITS - hide joins, etc from activity
+  /IGNORE nick NO_ACT -MSGS - ignore activity from nick, except for /MSG
+  /IGNORE -regexp -pattern . -except nick NO_ACT HILIGHT
+    - combined with the ignore above show hilights from this nick (needs to be
+      an except as "PUBLIC HILIGHT" still matches public, the regexp is used to
+      have more than one ignore for "nick").
+
 For regular expressions, see `man 7 regex`.
 
 See also: UNIGNORE, SILENCE, ACCEPT

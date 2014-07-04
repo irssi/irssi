@@ -58,30 +58,6 @@ static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
 	return FALSE;
 }
 
-#define ignore_match_channel(rec, channel) \
-	((rec)->channels == NULL || ((channel) != NULL && \
-		strarray_find((rec)->channels, (channel)) != -1))
-
-static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
-{
-	GSList *tmp;
-
-	if (text == NULL || chanrec == NULL)
-		return FALSE;
-
-        /* check reply ignores */
-	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
-		IGNORE_REC *rec = tmp->data;
-
-		if (rec->mask != NULL && rec->replies &&
-		    ignore_match_channel(rec, chanrec->name) &&
-		    ignore_check_replies_rec(rec, chanrec, text))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 {
 	if (rec->pattern == NULL)
@@ -104,8 +80,15 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 		stristr(text, rec->pattern) != NULL;
 }
 
+/* MSGLEVEL_NO_ACT is special in ignores, when provided to ignore_check() it's
+ * used as a flag to indicate it should only look at ignore items with NO_ACT.
+ * However we also want to allow NO_ACT combined with levels, so mask it out and
+ * match levels if set. */
 #define ignore_match_level(rec, level) \
-        ((level & (rec)->level) != 0)
+        (((level & MSGLEVEL_NO_ACT) != 0) ? \
+         ((~MSGLEVEL_NO_ACT & level) & (rec)->level) != 0 : \
+         ((rec)->level & MSGLEVEL_NO_ACT ? 0 : \
+         (level & (rec)->level) != 0))
 
 #define ignore_match_nickmask(rec, nick, nickmask) \
 	((rec)->mask == NULL || \
@@ -116,6 +99,31 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 #define ignore_match_server(rec, server) \
 	((rec)->servertag == NULL || \
 	g_ascii_strcasecmp((server)->tag, (rec)->servertag) == 0)
+
+#define ignore_match_channel(rec, channel) \
+	((rec)->channels == NULL || ((channel) != NULL && \
+		strarray_find((rec)->channels, (channel)) != -1))
+
+static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int level)
+{
+	GSList *tmp;
+
+	if (text == NULL || chanrec == NULL)
+		return FALSE;
+
+        /* check reply ignores */
+	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
+		IGNORE_REC *rec = tmp->data;
+
+		if (rec->mask != NULL && rec->replies &&
+		    ignore_match_level(rec, level) &&
+		    ignore_match_channel(rec, chanrec->name) &&
+		    ignore_check_replies_rec(rec, chanrec, text))
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
@@ -176,11 +184,18 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
 		return best_match;
 
-        return ignore_check_replies(chanrec, text);
+        return ignore_check_replies(chanrec, text, level);
 }
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask,
-			char **channels)
+		char **channels)
+{
+	return ignore_find_noact(servertag, mask, channels, 0);
+}
+
+
+IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask,
+		char **channels, int noact)
 {
 	GSList *tmp;
 	char **chan;
@@ -201,6 +216,12 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 			if (servertag != NULL && g_ascii_strcasecmp(servertag, rec->servertag) != 0)
 				continue;
 		}
+
+		if (noact && (rec->level & MSGLEVEL_NO_ACT) == 0)
+			continue;
+
+		if (!noact && (rec->level & MSGLEVEL_NO_ACT) != 0)
+			continue;
 
 		if ((rec->mask == NULL && mask != NULL) ||
 		    (rec->mask != NULL && mask == NULL)) continue;
