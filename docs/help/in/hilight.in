@@ -1,32 +1,41 @@
 
+%9Syntax:%9
+
 @SYNTAX:hilight@
 
-   -mask: Match only for nick, <text> is a nick mask
-   -regexp: <text> is a regular expression
-   -full: <text> must match to full words
-   -nick: Hilight only the nick, not the whole line (default)
-   -word: Hilight only the word (default with non-public messages)
-   -line: Hilight the whole line with the hilight color.
-   -color: Print the message with <color>. color is in %%code format
-           (see docs/formats.txt)
-   -actcolor: Color to show in statusbar activity, or don't change if %%n.
-   -level: Match only for <level> messages, default is
-           publics,msgs,notices,actions
-   -channels: Match only in <channels> (comma separated list)
-   -priority: Priority to use when multiple hilights match. Default is 0.
+%9Parameters:%9
 
-Examples:
+    -nick:        Highlights only the nickname and not the whole line.
+    -word:        Highlights only the word and not the whole line.
+    -line:        Highlights the whole line.
+    -mask:        Highlights all messages from users matching the mask.
+    -full:        The text must match the full word.
+    -regexp:      The text is a regular expression.
+    -color:       The color the display the highlight in.
+    -actcolor:    The color to mark the highlight activity in the statusbar.
+    -level:       Matches only on the given message level.
+    -channels:    Matches only on the given channels.
+    -priority:    The priority to use when multiple highlights match.
 
-Hilight lines that have "mynick" word:
-  /HILIGHT mynick
+    The text to highlight on; if no argument is given, the list of highlights
+    will be displayed.
 
-Hilight all messages from "mynick":
-  /HILIGHT -mask mynick!*@*
+%9Description:%9
 
-Hilight lines that were written by nicks from *.fi with bold green
-  /HILIGHT -color %%G -mask *!*@*.fi
+    Highlights the keyword or pattern to make sure that you don't miss any
+    important messages.
 
-For regular expressions, see `man 7 regex`.
+%9Examples:%9
 
-See also: DEHILIGHT, SET HILIGHT
+    /HILIGHT
+    /HILIGHT mike
+    /HILIGHT -regexp mi+ke+
+    /HILIGHT -mask bob!*@*.google.com -color %%G
+    /HILIGHT -full -color %%G -actcolor %%Y redbull
+
+%9References:%9
+
+    https://github.com/irssi/irssi/blob/master/docs/formats.txt
+
+%9See also:%9 DEHILIGHT, LEVELS
 

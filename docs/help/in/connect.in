@@ -25,7 +25,8 @@
 
 %9Description:%9
 
-    Opens a new connection to the specified network or server. Existing connections are kept.
+    Opens a new connection to the specified network or server; existing
+    connections are kept.
 
 %9Examples:%9
 

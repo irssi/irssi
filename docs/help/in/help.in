@@ -1,13 +1,27 @@
 
+%9Syntax:%9
+
 @SYNTAX:help@
 
-Shows help on commands. Try:
-  /HELP command
+%9Parameters:%9
 
-Also try, for example:
-  /SET beep
-or
-  /SET auto
+    The command to display the documentation for; if no argument is given, the
+    list of commands will be displayed.
 
-See also: 
+%9Description:%9
+
+    Displays the documentation for the given command.
+
+%9Examples:%9
+
+    /HELP
+    /HELP AWAY
+    /HELP CONNECT
+
+%9References:%9
+
+    http://www.irssi.org
+    https://github.com/irssi
+
+%9See also:%9 CONNECT, MSG, NETWORK, SERVER
 

@@ -1,10 +1,21 @@
- 
+
+%9Syntax:%9
+
 @SYNTAX:invite@
 
-Invites the specified nick to the current or specified channel.
+%9Parameters:%9
 
-Example:
-   /INVITE buddy #mychannel
+    The nickname to invite and the channel to invite him or her to; if no
+    channel is given, the active channel will be used.
 
-See also: MODE
+%9Description:%9
+
+    Invites the specified nick to a channel.
+
+%9Examples:%9
+
+    /INVITE mike
+    /INVITE bob #irssi
+
+%9See also:%9 MODE, WHOIS
 

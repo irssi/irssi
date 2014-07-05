@@ -1,59 +1,41 @@
 
+%9Syntax:%9
+
 @SYNTAX:ignore@
 
-    -regexp: <pattern> is a regular expression
-    -full: <pattern> must match to full words
-    -pattern: <pattern> must match to the message's text
-    -except: *DON'T* ignore - overrides an existing ignore.
-    -replies: Ignore replies to nick in channels. For example
-              "/IGNORE -replies *!*@*.fi PUBLIC" ignores everyone
-              from Finland, but also anyone sending message
-              "tofinnishnick: blahblah".
-    -network: Ignore only on this network.
-    -ircnet: Same as -network. Deprecated. Do not use.
-    -channels: Ignore only in channels (comma separated list)
-    -time: <secs> seconds after the ignore is removed
-    <mask>: Either a nick mask or list of channels
-    <levels>: List of levels to ignore. You can use -<level> to remove levels
-              from ignore (/help levels for details).
-    <^levels>: List of levels to NOT ignore
-               (/ignore -except nick notices = /ignore nick ^notices)
+%9Parameters:%9
 
+    -regexp:      Indicates that the pattern is a regular expression.
+    -full:        Indicates that the pattern must match a full word.
+    -pattern:     The text pattern to ignore.
+    -except:      Negates the ignore.
+    -replies:     Also ignore nicknames who are talking to anyone who matches the ignore.
+    -network:     Ignores only on a specific network.
+    -channels:    Ignores only on specific channels.
+    -time:        The timeout to automatically remove the ignore.
 
-/IGNORE without any arguments displays list of ignores. If you want to remove
-some levels of the ignore, use /IGNORE <mask> -<level> -<level2> etc
+    The mask, channels and levels to ignore; if no argument is provided, the
+    list of ignores will be displayed.
 
-The best match always wins, so you can have:
+%9Description:%9
+
+    Ignores nicknames or text that matches a pattern.
+
+%9Examples:%9
+
+    /IGNORE
+    /IGNORE * JOINS
     /IGNORE * CTCPS
-    /IGNORE -except *!*@host.org CTCPS
-
-Examples:
-
-    /IGNORE * JOINS                         - ignore joins in all channels
-    /IGNORE #channel ALL -PUBLIC -ACTIONS   - ignore all but public/actions
-    /IGNORE #channel -JOINS                 - don't ignore joins anymore
-    /IGNORE -replies *!user@*.host.org ALL  - ignore user and all replies
-
-Some suggestions for ignoring annoying public aways:
+    /IGNORE -except *!*@*.google.com CTCPS
+    /IGNORE #irssi ALL -PUBLIC -ACTIONS
+    /IGNORE -replies *!*@*.google.com ALL
     /IGNORE -regexp -pattern "is (away|gone|back)" * ACTIONS
     /IGNORE *zzz* NICKS
     /IGNORE *afk* NICKS
     /IGNORE *away* NICKS
+    /IGNORE #irssi NO_ACT JOINS PARTS QUITS
+    /IGNORE mike NO_ACT -MSGS
+    /IGNORE -regexp -pattern
 
-The special level "NO_ACT" can be used to ignore activity ("Act:") but not
-actually ignore the message entirely. It is somewhat special because it is
-allowed in addition to another ignore for the same target.
-
-Examples:
-
-  /IGNORE #channel NO_ACT JOINS PARTS QUITS - hide joins, etc from activity
-  /IGNORE nick NO_ACT -MSGS - ignore activity from nick, except for /MSG
-  /IGNORE -regexp -pattern . -except nick NO_ACT HILIGHT
-    - combined with the ignore above show hilights from this nick (needs to be
-      an except as "PUBLIC HILIGHT" still matches public, the regexp is used to
-      have more than one ignore for "nick").
-
-For regular expressions, see `man 7 regex`.
-
-See also: UNIGNORE, SILENCE, ACCEPT
+%9See also:%9 ACCEPT, SILENCE, UNIGNORE
 

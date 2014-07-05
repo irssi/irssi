@@ -1,9 +1,20 @@
 
-@SYNTAX:invitelist@
+%9Syntax:%9
 
-Shows the +I modes of the current channel. +I mode
-allows free joins of clients with certain userhost masks
-even if the channel is invite only.
+INVITELIST
 
-See also: INVITE, MODE
+%9Description:%9
+
+    Displays the invitelist for the active channel; nicknames who match the
+    masks will be able to join the channel if its invite only.
+
+    This is not a command, but a default alias.
+
+%9Examples:%9
+
+    /INVITELIST
+
+%9References:%9
+
+    /ALIAS INVITELIST MODE $C +I
 
