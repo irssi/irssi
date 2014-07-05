@@ -14,7 +14,7 @@
     -ssl_cafile:    The file with the list of CA certificates.
     -ssl_capath:    The directory which contains the CA certificates.
     -noproxy:       Ignores the global proxy configuration.
-    -network:       The network this connection belongs to
+    -network:       The network this connection belongs to.
     -host:          The hostname you would like to connect from.
     -rawlog:        Immediately open rawlog after connecting.
     -!:             Doesn't autojoin channels.
@@ -25,7 +25,7 @@
 
 %9Description:%9
 
-    Opens a new connection to the specified network or server.
+    Opens a new connection to the specified network or server. Existing connections are kept.
 
 %9Examples:%9
 
