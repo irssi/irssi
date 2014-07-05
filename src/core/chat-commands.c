@@ -378,9 +378,21 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		}
 	}
 	if (target != NULL) {
-		char **splitmsgs = server->split_message(server, target, msg);
+		char **splitmsgs;
+		char **tmp = NULL;
+		char *singlemsg[] = { msg, NULL };
 		char *m;
 		int n = 0;
+
+		/*
+		 * If split_message is NULL, the server doesn't need to split
+		 * long messages.
+		 */
+		if (server->split_message != NULL)
+			splitmsgs = tmp = server->split_message(server, target,
+								msg);
+		else
+			splitmsgs = singlemsg;
 
 		while ((m = splitmsgs[n++])) {
 			signal_emit("server sendmsg", 4, server, target, m,
@@ -390,7 +402,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 				    "message own_private", 4, server, m,
 				    target, origtarget);
 		}
-		g_strfreev(splitmsgs);
+		g_strfreev(tmp);
 	} else {
 		signal_emit("message own_private", 4, server, msg, target,
 			    origtarget);
