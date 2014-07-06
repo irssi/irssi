@@ -22,6 +22,7 @@
 
 #include "module.h"
 #include "textbuffer-view.h"
+#include "signals.h"
 #include "utf8.h"
 
 typedef struct {
@@ -178,14 +179,14 @@ static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *f
 
 static inline unichar read_unichar(const unsigned char *data, const unsigned char **next, int *width)
 {
-	unichar chr = g_utf8_get_char_validated(data, -1);
+	unichar chr = g_utf8_get_char_validated((const char *) data, -1);
 
 	if (chr & 0x80000000) {
 		chr = 0xfffd;
 		*next = data + 1;
 		*width = 1;
 	} else {
-		*next = g_utf8_next_char(data);
+		*next = (unsigned char *)g_utf8_next_char(data);
 		*width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
 	}
 	return chr;

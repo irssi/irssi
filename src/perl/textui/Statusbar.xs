@@ -50,7 +50,6 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 				 int get_size_only)
 {
 	dSP;
-	int retcount;
 	SV *item_sv, **sv;
         HV *hv;
 
@@ -63,7 +62,7 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 	XPUSHs(sv_2mortal(newSViv(get_size_only)));
 	PUTBACK;
 
-	retcount = perl_call_pv(function, G_EVAL|G_DISCARD);
+	perl_call_pv(function, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {

@@ -140,7 +140,7 @@ int term_init(void)
 
         term_set_input_type(TERM_TYPE_8BIT);
 	term_common_init();
-        g_atexit(term_deinit);
+        atexit(term_deinit);
         return TRUE;
 }
 
@@ -568,7 +568,7 @@ void term_stop(void)
 
 static int input_utf8(const unsigned char *buffer, int size, unichar *result)
 {
-	unichar c = g_utf8_get_char_validated(buffer, size);
+	unichar c = g_utf8_get_char_validated((char *)buffer, size);
 
 	switch (c) {
 	case (unichar)-1:

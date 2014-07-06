@@ -60,7 +60,7 @@ GIOChannel *g_io_channel_new(int handle)
 
 IPADDR ip4_any = {
 	AF_INET,
-	{ { { INADDR_ANY } } }
+	{ INADDR_ANY }
 };
 
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
