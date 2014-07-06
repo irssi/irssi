@@ -34,6 +34,7 @@
     -port:             Specifies the port to connect to the server.
     -noproxy:          Ignores the global proxy configuration.
     -rawlog:           Immediately open rawlog after connecting.
+    -noautosendcmd:    Doesn't execute autosendcmd.
 
     The server, port and network to add, modify or remove; if no argument is
     given, the list of servers you are connected to will be returned.
@@ -58,7 +59,7 @@
     /SERVER +chat.freenode.net
     /SERVER CONNECT chat.freenode.net
     /SERVER CONNECT +chat.freenode.net
-    /SERVER ADD -network Freenode orwell.freenode.net
+    /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
     /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
     /SERVER REMOVE -network Freenode orwell.freenode.net
     /SERVER PURGE
