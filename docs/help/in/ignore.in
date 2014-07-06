@@ -29,7 +29,7 @@
     /IGNORE -except *!*@*.google.com CTCPS
     /IGNORE #irssi ALL -PUBLIC -ACTIONS
     /IGNORE -replies *!*@*.google.com ALL
-    /IGNORE -regexp -pattern "is (away|gone|back)" * ACTIONS
+    /IGNORE -regexp -pattern (away|gone|back|playing|returned) * ACTIONS
     /IGNORE *zzz* NICKS
     /IGNORE *afk* NICKS
     /IGNORE *away* NICKS
