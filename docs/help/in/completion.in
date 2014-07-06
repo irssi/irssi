@@ -19,6 +19,9 @@
     When a replacement has been found, Irssi will choose the most probable
     matching word and replaces it; you may press TAB repeatedly to swap between
     matches.
+    
+    If you want to remove a completion which has the auto parameter set, you
+    need to enclose the completion between "'" characters.
 
 %9Examples:%9
 

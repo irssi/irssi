@@ -25,14 +25,22 @@
     Adds, removes or displays the configuration of channels; this method is
     used to automate and simplify your workflow.
 
+    You can use the ADDALLCHANS command, which is a default alias, to add all
+    the channels you are present on into the configuration.
+
 %9Examples:%9
 
     /CHANNEL
     /CHANNEL LIST
     /CHANNEL ADD -auto #irssi Freenode
+    /CHANNEL ADD -auto #google Quakenet secret_lair
     /CHANNEL ADD -auto -bots "*!@*.google.com *!bot@google.com" -botcmd "msg $0 op WzerTrzq" #hideout Freenode
     /CHANNEL ADD -auto -bots "Q!TheQBot@CServe.quakenet.org" -botcmd "^MSG Q op #irssi" #irssi Quakenet
     /CHANNEL REMOVE #hideout Freenode
-    
+
+%9Special Example:%9
+
+    /ADDALLCHANS
+
 %9See also:%9 JOIN, TS
 

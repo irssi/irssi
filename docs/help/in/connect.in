@@ -9,7 +9,8 @@
     -6:             Connects using IPv6.
     -ssl:           Connects using SSL encryption.
     -ssl_cert:      The SSL client certificate file.
-    -ssl_pkey:      The SSL client private key, if not included in the certificate file.
+    -ssl_pkey:      The SSL client private key, if not included in the
+                    certificate file.
     -ssl_verify:    Verifies the SSL certificate of the server.
     -ssl_cafile:    The file with the list of CA certificates.
     -ssl_capath:    The directory which contains the CA certificates.
