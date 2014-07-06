@@ -21,6 +21,10 @@
 
     Ignores nicknames or text that matches a pattern.
 
+    The special level "NO_ACT" can be used to ignore activity in the statusbar
+    without actually ignoring the message; this behaviour is somewhat special
+    because it is allowed in addition to other ignores for the same target.
+
 %9Examples:%9
 
     /IGNORE
@@ -36,6 +40,7 @@
     /IGNORE #irssi NO_ACT JOINS PARTS QUITS
     /IGNORE mike NO_ACT -MSGS
     /IGNORE -regexp -pattern
+    /IGNORE mike NO_ACT -MSGS
 
 %9See also:%9 ACCEPT, SILENCE, UNIGNORE
 
