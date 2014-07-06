@@ -1,10 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:kickban@
 
-Kicks off and bans a nick from the current channel.
-A reason for the kick can be supplied.
+%9Parameters:%9
 
-Default alias for /KICKBAN is /KB.
+    The channel and the nicknames, separated by a comma, to kickban from the
+    channel and the reason thereof; if no channel is given, the active channel
+    will be used.
 
-See also: KNOCKOUT, BANTYPE
+%9Description:%9
+
+    Removes and then bans the given nicknames from the specified channel.
+
+%9Examples:%9
+
+    /KICKBAN mike Please... chill down!
+    /KICKBAN #irssi bob,sarah You guys broke the rules for the last time.
+
+%9See also:%9 BAN, KICK, KNOCKOUT
 

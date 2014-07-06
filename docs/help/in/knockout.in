@@ -1,11 +1,26 @@
 
+%9Syntax:%9
+
 @SYNTAX:knockout@
 
-Kicks user off the channel and bans him/her. Ban
-lasts the given number of seconds or 5 minutes
-by default.
+%9Parameters:%9
 
-Default alias for /KNOCKOUT is /KN.
+    The time, expressed in seconds, the nicknames, separated by a comma, and the
+    reason thereof; if no time is provided, the ban will be lifted after 5
+    minutes.
 
-See also: BAN, KICK
+%9Description:%9
+
+    Removes and then bans the given nicknames from the active channel; the ban
+    will be automatically lifted after the specified time.
+
+    The ban will not be lifted if you leave the channel or disconnect from the
+    network.
+
+%9Examples:%9
+
+    /KNOCKOUT 3600 mike Your connection is unstable.
+    /KNOCKOUT bob,sarah Chill down a bit.
+
+%9See also:%9 BAN, KICK, KICKBAN
 

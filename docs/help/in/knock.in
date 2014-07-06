@@ -1,16 +1,30 @@
 
+%9Syntax:%9
+
 @SYNTAX:knock@
 
-Works only in some IRC networks (hybrid-like ircds).
+%9Parameters:%9
 
-KNOCK is a feature that lets you request access to a channel they cannot join without an invite, a key or a raised limit.
+    The channel you wish to get invited to.
 
-The following conditions must be met for KNOCK to work:
+%9Description:%9
 
- - You are not banned from the channel
- - Channel is not private (+p)
- - You are not already on the channel
- - Channel is invite only (+i), has a key (+k) or limit is full
+    Sends an invitation request to the channel operators of the target channel;
+    this command may not work on all IRC servers.
+    
+    The following conditions must be met:
 
-When successful KNOCK is issued, it sends a notice to channel operators. Use of KNOCK is rate limited by the server.
+        * You are not banned from the channel.
+        * The channel is not private.
+        * You may not be already in the channel.
+        * The channel must be invite only, have a key or has exceeded its user
+          limit.
+
+%9Examples:%9
+
+    /KNOCK #irssi
+    /KNOCK #freenode
+    /KNOCK #github
+
+%9See also:%9 INVITE, JOIN
 
