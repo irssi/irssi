@@ -203,6 +203,7 @@ static void textui_finish_init(void)
 
 	fe_common_core_finish_init();
 	signal_emit("irssi init finished", 0);
+	statusbar_redraw(NULL, TRUE);
 
 	printtext_window(active_win, MSGLEVEL_CRAP,
 				 "%s", banner_text);

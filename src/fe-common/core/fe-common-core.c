@@ -463,7 +463,6 @@ void fe_common_core_finish_init(void)
 	if (setup_changed)
                 signal_emit("setup changed", 0);
 
-	statusbar_redraw(NULL, TRUE);
 	autorun_startup();
 	autoconnect_servers();
 }
