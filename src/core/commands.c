@@ -968,7 +968,9 @@ static void cmd_cd(const char *data)
 	if (*data == '\0') return;
 
 	str = convert_home(data);
-	chdir(str);
+	if (chdir(str) != 0) {
+		g_warning("Failed to chdir(): %s", strerror(errno));
+	}
 	g_free(str);
 }
 

@@ -107,7 +107,9 @@ static int write_buffer_flush_rec(void *handlep, BUFFER_REC *rec)
 	for (tmp = rec->blocks; tmp != NULL; tmp = tmp->next) {
 		size = tmp->data != rec->active_block ? BUFFER_BLOCK_SIZE :
 			rec->active_block_pos;
-		write(handle, tmp->data, size);
+		if (write(handle, tmp->data, size) != size) {
+			g_warning("Failed to write(): %s", strerror(errno));
+		}
 	}
 
         empty_blocks = g_slist_concat(empty_blocks, rec->blocks);

@@ -452,7 +452,7 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 		g_utf8_validate(str, -1, &ptr);
 		len = g_utf8_pointer_to_offset(str, ptr);
 	} else if (term_type == TERM_TYPE_BIG5)
-		len = strlen_big5(str);
+		len = strlen_big5((const unsigned char *)str);
 	else
 		len = strlen(str);
         entry_text_grow(entry, len);
