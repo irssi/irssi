@@ -71,8 +71,13 @@ void term_window_clear(TERM_WINDOW *window);
 /* Scroll window up/down */
 void term_window_scroll(TERM_WINDOW *window, int count);
 
+#ifdef TERM_TRUECOLOR
+#define term_set_color(window, col) term_set_color2(window, (col) &~(ATTR_FGCOLOR24|ATTR_BGCOLOR24), UINT_MAX, UINT_MAX)
 void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigned int bgcol24);
+#else
+#define term_set_color2(window, col, unused1, unused2) term_set_color(window, col)
 void term_set_color(TERM_WINDOW *window, int col);
+#endif
 
 void term_move(TERM_WINDOW *window, int x, int y);
 void term_addch(TERM_WINDOW *window, char chr);

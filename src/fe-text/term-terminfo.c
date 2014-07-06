@@ -305,7 +305,7 @@ inline static int term_putchar(int c)
 /* copied from terminfo-core.c */
 int tputs();
 
-static int term_set_color_24bit(int bg, unsigned int lc)
+static int termctl_set_color_24bit(int bg, unsigned int lc)
 {
 	static char buf[20];
 	const unsigned char color[] = { lc >> 16, lc >> 8, lc };
@@ -326,12 +326,25 @@ static int term_set_color_24bit(int bg, unsigned int lc)
 #define COLOR_RESET UINT_MAX
 
 /* Change active color */
+#ifdef TERM_TRUECOLOR
 void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigned int bgcol24)
+#else
+void term_set_color(TERM_WINDOW *window, int col)
+#endif
 {
 	int set_normal;
 
-	unsigned int fg = (col & ATTR_FGCOLOR24) ? fgcol24 << 8 :  (col & FG_MASK);
-	unsigned int bg = (col & ATTR_BGCOLOR24) ? bgcol24 << 8 : ((col & BG_MASK) >> BG_SHIFT);
+	unsigned int fg =
+#ifdef TERM_TRUECOLOR
+		(col & ATTR_FGCOLOR24) ? fgcol24 << 8 :
+#endif
+		(col & FG_MASK);
+
+	unsigned int bg =
+#ifdef TERM_TRUECOLOR
+		(col & ATTR_BGCOLOR24) ? bgcol24 << 8 :
+#endif
+		((col & BG_MASK) >> BG_SHIFT);
 
         set_normal = ((col & ATTR_RESETFG) && last_fg != COLOR_RESET) ||
 		((col & ATTR_RESETBG) && last_bg != COLOR_RESET);
@@ -364,7 +377,7 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
                 if (term_use_colors) {
 			last_fg = fg;
 			if (!(fg & 0xff))
-				term_set_color_24bit(0, last_fg >> 8);
+				termctl_set_color_24bit(0, last_fg >> 8);
 			else
 				terminfo_set_fg(last_fg);
 		}
@@ -381,7 +394,7 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
                 if (term_use_colors) {
 			last_bg = bg;
 			if (!(bg & 0xff))
-				term_set_color_24bit(1, last_bg >> 8);
+				termctl_set_color_24bit(1, last_bg >> 8);
 			else
 				terminfo_set_bg(last_bg);
 		}
@@ -403,12 +416,6 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 	/* update the new attribute settings whilst ignoring color values.  */
 	last_attrs = col & ~( BG_MASK | FG_MASK );
 }
-
-void term_set_color(TERM_WINDOW *window, int col)
-{
-	term_set_color2(window, col &~(ATTR_FGCOLOR24|ATTR_BGCOLOR24), UINT_MAX, UINT_MAX);
-}
-
 
 void term_move(TERM_WINDOW *window, int x, int y)
 {
