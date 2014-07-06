@@ -26,7 +26,6 @@
     /ALIAS J JOIN
     /ALIAS COMEBACK SAY I was hoping for a battle of wits, but you seem to be unarmed.
     /ALIAS -COMEBACK
-    /ALIAS ATAG SCRIPT EXEC Irssi::active_win->change_server(Irssi::server_find_tag("$0"));
     /ALIAS UNACT SCRIPT EXEC foreach $$w (Irssi::windows()) { Irssi::command("window goto $$w->{refnum}")\;}; WINDOW GOTO $winref
     /ALIAS QOP ^MSG Q op $C
 
