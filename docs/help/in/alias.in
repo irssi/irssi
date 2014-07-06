@@ -26,7 +26,7 @@
     /ALIAS J JOIN
     /ALIAS COMEBACK SAY I was hoping for a battle of wits, but you seem to be unarmed.
     /ALIAS -COMEBACK
-    /ALIAS UNACT SCRIPT EXEC foreach $$w (Irssi::windows()) { Irssi::command("window goto $$w->{refnum}")\;}; WINDOW GOTO $winref
+    /ALIAS UNACT SCRIPT EXEC \$_->activity(0) for Irssi::windows
     /ALIAS QOP ^MSG Q op $C
 
 %9See also:%9 BIND, UNALIAS
