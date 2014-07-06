@@ -33,8 +33,8 @@
 
     /CONNECT Freenode
     /CONNECT -6 Freenode
-    /CONNECT -4 -! -host office.google.com -network Freenode orwell.freenode.net
-    /CONNECT secure.server.google.com 6667 WzerT8zq mike
+    /CONNECT -4 -! -host staff.irssi.org -network Freenode orwell.freenode.net
+    /CONNECT irc.irssi.org 6667 WzerT8zq mike
 
 %9See also:%9 DISCONNECT, RMRECONNS, SERVER
 

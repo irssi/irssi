@@ -59,7 +59,7 @@
     /SERVER CONNECT chat.freenode.net
     /SERVER CONNECT +chat.freenode.net
     /SERVER ADD -network Freenode orwell.freenode.net
-    /SERVER ADD -! -auto -host office.google.com -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
+    /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
     /SERVER REMOVE -network Freenode orwell.freenode.net
     /SERVER PURGE
     /SERVER PURGE orwell.freenode.net

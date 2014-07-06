@@ -30,9 +30,9 @@
     /IGNORE
     /IGNORE * JOINS
     /IGNORE * CTCPS
-    /IGNORE -except *!*@*.google.com CTCPS
+    /IGNORE -except *!*@*.irssi.org CTCPS
     /IGNORE #irssi ALL -PUBLIC -ACTIONS
-    /IGNORE -replies *!*@*.google.com ALL
+    /IGNORE -replies *!*@*.irssi.org ALL
     /IGNORE -regexp -pattern (away|gone|back|playing|returned) * ACTIONS
     /IGNORE *zzz* NICKS
     /IGNORE *afk* NICKS

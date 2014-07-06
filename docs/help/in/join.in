@@ -18,7 +18,7 @@
 %9Examples:%9
 
     /JOIN #irssi
-    /JOIN #google secret_lair
+    /JOIN #basementcat secret_lair
     /JOIN -invite
     /JOIN -freenode #github,#freenode,#irssi
 

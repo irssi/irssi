@@ -32,7 +32,7 @@
     /BAN
     /BAN mike
     /BAN -host bob
-    /BAN *!*@*.google.com
+    /BAN *!*@*.irssi.org
     /BAN -domain sarah
 
     /SET ban_type custom nick domain

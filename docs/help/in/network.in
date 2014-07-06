@@ -50,7 +50,7 @@
 %9Examples:%9
 
     /NETWORK ADD -usermode +giw EFnet
-    /NETWORK ADD -usermode +iw -nick mike -realname "The one and only mike!" -host office.google.com Freenode
+    /NETWORK ADD -usermode +iw -nick mike -realname "The one and only mike!" -host staff.irssi.org Freenode
     /NETWORK ADD -autosendcmd "^MSG NickServ identify WzerT8zq" Freenode
     /NETWORK ADD -autosendcmd "^MSG Q@CServe.quakenet.org AUTH mike WzerT8zq; WAIT 2000; OPER mike WzerT8zq; WAIT 2000; MODE mike +kXP" Quakenet
     /NETWORK REMOVE Freenode
