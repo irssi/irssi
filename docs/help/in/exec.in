@@ -41,7 +41,7 @@
     /EXEC ls
     /EXEC -msg #irssi cat unicorn.txt
     /EXEC -out cat /etc/passwd | grep $USER | awk -F: '{print $5}'
-    /EXEC -name mailserver -interactive telnet gmail.google.com. 25
+    /EXEC -name ssh -nosh -interactive -window ssh office.google.com
     /EXEC -close mailserver
     /EXEC -close %%0
 

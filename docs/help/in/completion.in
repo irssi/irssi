@@ -23,8 +23,8 @@
 %9Examples:%9
 
     /COMPLETION w/h without
-    /COMPLETION -auto compr compromised
-    /COMPLETION -delete 'compr'
+    /COMPLETION -auto anywya anyway
+    /COMPLETION -delete 'anywya'
     /COMPLETION -delete without
 
 %9See also:%9 BIND
