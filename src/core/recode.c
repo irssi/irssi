@@ -198,15 +198,14 @@ char **recode_split(const SERVER_REC *server, const char *str,
 	int n = 0;
 	char **ret;
 
-	if (!str)
-		return NULL;
+	g_return_val_if_fail(str != NULL, NULL);
 
 	if (settings_get_bool("recode")) {
 		to = find_conversion(server, target);
 		if (to == NULL)
 			/* default outgoing charset if set */
 			to = settings_get_str("recode_out_default_charset");
-		if (to && *to != '\0') {
+		if (to != NULL && *to != '\0') {
 			if (settings_get_bool("recode_transliterate") &&
 			    !is_translit(to))
 				to = translit_to = g_strconcat(to,

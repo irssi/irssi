@@ -970,10 +970,11 @@ char *ascii_strdown(char *str)
 char **strsplit_len(const char *str, int len)
 {
 	char **ret;
-	int n = strlen(str) / len;
+	size_t total_len = strlen(str);
+	int n = total_len / len;
 	int i;
 
-	if (strlen(str) % len)
+	if (total_len % len)
 		n++;
 
 	ret = g_new(char *, n + 1);
