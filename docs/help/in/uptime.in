@@ -1,0 +1,15 @@
+
+%9Syntax:%9
+
+@SYNTAX:uptime@
+
+%9Description:%9
+
+    Displays how long Irssi has been running.
+
+%9Examples:%9
+
+    /UPTIME
+
+%9See also:%9 CONNECT, EXIT
+
