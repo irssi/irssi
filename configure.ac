@@ -628,7 +628,7 @@ if test "x$want_ipv6" = "xyes"; then
 	#include <netinet/in.h>
 	#include <netdb.h>
 	#include <arpa/inet.h>],
-	[struct in6_addr i;],
+	[struct in6_addr i = in6addr_any; return &i == &i;],
 	have_ipv6=yes,
 	)])
 	if test $have_ipv6 = yes; then
