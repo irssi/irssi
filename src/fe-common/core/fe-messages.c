@@ -45,15 +45,18 @@
 
 GHashTable *printnicks;
 
-/* convert _underlined_ and *bold* words (and phrases) to use real
+/* convert _underlined_, /italics/, and *bold* words (and phrases) to use real
    underlining or bolding */
 char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 {
 	GString *str;
 	char *ret;
 	int pos;
+	int emphasis_italics;
 
         g_return_val_if_fail(text != NULL, NULL);
+
+	emphasis_italics = settings_get_bool("emphasis_italics");
 
 	str = g_string_new(text);
 
@@ -62,9 +65,11 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 		bgn = str->str + pos;
 
-		if (*bgn == '*') 
+		if (*bgn == '*')
 			type = 2; /* bold */
-		else if (*bgn == '_') 
+		else if (*bgn == '/' && emphasis_italics)
+			type = 29; /* italics */
+		else if (*bgn == '_')
 			type = 31; /* underlined */
 		else
 			continue;
@@ -92,7 +97,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
                         found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end[1] = c;
 			if (found) continue;
-			
+
 			/* check if the whole 'word' (e.g. "_foo_^") is a nick
 			   in "_foo_^ ", end will be the second _, end2 the ^ */
 			end2 = end;
@@ -680,6 +685,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "emphasis", TRUE);
 	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
 	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);
+	settings_add_bool("lookandfeel", "emphasis_italics", FALSE);
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
