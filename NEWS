@@ -4,6 +4,11 @@ v0.8.17-head 2014-xx-xx  The Irssi team <staff@irssi.org>
 	+ Performance enhancement of the nicklist as well as the window_item_find function. See Github PR #24.
 	+ Disallow unloading of static modules.
 	+ Allow UTF-8 characters in /bind. See Github PR #18.
+	+ Split overlong outgoing messages instead of silently truncating them.
+	  Adds two new options: 'split_line_end' and 'split_line_start'.
+	  'split_line_end' contains a string added to the end of line fragments.
+	  'split_line_start' contains a string added to the beginning of line
+	  fragments. See Github PR #29.
 	- Fixed various compiler warnings.
 	- Fixed format_get_text Perl API. See Github PR #23.
 	- Fixed gui_printtext_after and term_refresh_*() visibility. See Github PR #22.
