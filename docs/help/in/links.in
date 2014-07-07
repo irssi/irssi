@@ -1,9 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:links@
 
-Shows the links between the IRC servers of the
-current IRC network. If a wildcard parameter is
-specified, shows only the matching entries.
+%9Parameters:%9
 
-See also: MAP
+    The server to search on and the string to match on; if no arguments are
+    given, the list of links of the active server will be displayed.
+
+%9Description:%9
+
+    Displays the links between an IRC server and its connections.
+
+%9Examples:%9
+
+    /LINKS
+    /LINKS ircsource.irssi.org
+    /LINKS ircsource.irssi.org *.hub
+
+%9See also:%9 LUSERS, MAP
 

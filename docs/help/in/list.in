@@ -1,16 +1,25 @@
 
+%9Syntax:%9
+
 @SYNTAX:list@
 
-Lists the channel names. Trying to list all the channel 
-names usually causes you to be disconnected from the 
-server with the reason "Excess flood", as usually all
-40000 channels form together and server naively attempts
-to send you them.
+%9Parameters:%9
 
-Thus, on IRCNet, you should rather use service ALIS
-(Advanced Listing Service), which will allow you to query
-for channel with specific name, topic, mode or usercount.
-Type /SQUERY ALIS HELP to get more info about it.
+    -yes:    Comfirms that you want to receive a large amount of data.
+
+    The text a channel must match; if no argument is given, the list of all
+    channels will be displayed.
+
+%9Description:%9
+
+    Displays the channel names that match your request; requesting all channels
+    may cause the server to disconnect you for flooding.
+
+%9Examples:%9
+
+    /LIST
+    /LIST -yes
+    /LIST -yes *ubuntu*
 
 See also: SQUERY
 

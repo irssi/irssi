@@ -1,22 +1,37 @@
 
+%9Syntax:%9
+
 @SYNTAX:lastlog@
 
-    -clear: remove all lastlog lines from window
+%9Parameters:%9
 
-    -: don't print the "Lastlog:" and "End of Lastlog" messages.
-    -file: write lastlog to file instead of screen
-    -window: which window's lastlog to check (output is always to active)
-    -case: Case-sensitive matching
-    -force: Force displaying lastlog even if it's longer than 1000 lines
-    -new: show only lines since last /LASTLOG
-    -regexp: `text' is a regular expression
-    -word: `text' must match to full words
-    -<level>: levels to check (default is all; /help levels for details)
-    <pattern>: text to search for, or all if empty
-    <count>: maximum number of lines to show
-    <start>: skip the last `start' lines
+    -:          Doesn't print the "Lastlog:" and "End of Lastlog" messages.
+    -file:      Output the lastlog to a file instead of the active window.
+    -window:    Specifies the window to check.
+    -new:       Only displays results since the previous lastlog.
+    -away:      Only displays results since you previous away status.
+    -level:     Specifies the levels to check.
+    -clear:     Removes the previous results from the active window.
+    -count:     Displays how many lines match.
+    -case:      Performs a case-sensitive matching.
+    -regexp:    The given text pattern is a regular expression.
+    -word:      The text must match full words.
+    -force:     Forces to display the lastlog, even if it exceeds 1000 lines.
+    -after:     Only displays results after the given line number.
+    -before:    Only displays results before the given line number.
 
-Shows the given number of lines of log from the current window.
+    The pattern to search for and the maximum of lines to display; if no
+    parameter is given, the entire window buffer will be displayed.
 
-See also:
+%9Description:%9
+
+    Searches the active window for a pattern and displays the result.
+
+%9Examples:%9
+
+    /LASTLOG holiday
+    /LASTLOG "is on vacation"
+    /LASTLOG -file -force ~/mike.log "mike"
+
+%9See also:%9 HILIGHT, SCROLLBACK
 

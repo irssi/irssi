@@ -1,41 +1,48 @@
 
+%9Syntax:%9
+
 @SYNTAX:log@
 
-     -noopen: Create the entry to log list, but don't start logging
-     -autoopen: Automatically open this log file at startup
-     -<server tag>: Targets are logged only in this server
-     -targets: Log only in specified channels/nicks (space separated list)
-     -window: Log output in the window. Active window is used by default, or
-              you can give the window's refnum in -targets.
-     <filename>: File name where to log, it is parsed with
-                 strftime(), so %%d=day, etc. see "man strftime" for
-                 more info.
-     <levels>: Defaults to ALL
-     <id>: ID number of log.   
+%9Parameters:%9
 
-/SET log_create_mode <mode> - Specifies what file mode to use with
-     the created log files. Default is 0600.
+    OPEN:             Opens a logfile.
+    CLOSE:            Closes a logfile.
+    START:            Starts logging a log entry.
+    STOP:             Stops logging a log entry.
 
-All of these are parsed with strftime():
-/SET log_timestamp <text> - Specifies the time stamp format.
-     Default is "%%H:%%M ".
-/SET log_open_string <text> - Text written to log when it's opened
-/SET log_close_string <text> - Text written to log when it's closed
-/SET log_day_changed <text> - Text written to log when day changes
+    -noopen:          Saves the entry in the configuration, but doesn't actually
+                      start logging.
+    -autoopen:        Automatically opens the log at startup.
+    -window:          Displays the output to the active window, or the window
+                      specified in the targets parameter.
+    -<server tag>:    The server tag the targets must be on.
+    -targets:         Logs the specified nickhames or channels.
+    -colors:          Also log the color codes of the messages.
 
-NOTE: Log files are locked after opened, so two Irssis can't
-accidentally try to write to the same log file.
+    The filename of the log and the levels to match; if no argument is given,
+    the list of open logs will be displayed.
 
-Examples:
-        
-/LOG OPEN -targets cras ~/irclogs/cras.log MSGS
-     - Logs all messages from/to nick `cras'
+%9Description:%9
 
-/LOG OPEN -targets #linux ~/irclogs/linux/linux-%%Y-%%m-%%d
-     - Logs all messages in channel #linux. Log is rotated daily, so
-       logs in 1. May 2000 goes to file "linux-2000-05-01", when the
-       day is changed, Irssi closes the log and starts logging to
-       "linux-2000-05-02" etc.
+    Opens a logfile and stores the messages of the given targets into it; the
+    logfiles will be locked so multiple clients cannot log to the same file.
 
-See also: SET LOG, WINDOW LOG
+    You may use any of the date formats to create a logrotation; we strongly
+    recommend you to enable autolog if you are interested in keeping logs.
+
+%9Examples:%9
+
+    /LOG OPEN -targets mike ~/irclogs/mike.log MSGS
+    /LOG OPEN -targets #irssi-freenode ~/irclogs/freenode/irssi-%%Y-%%m-%%d
+    /LOG CLOSE ~/irclogs/freenode/irssi-%%Y-%%m-%%d
+    /LOG STOP ~/irclogs/freenode/irssi-%%Y-%%m-%%d
+    /LOG START ~/irclogs/freenode/irssi-%%Y-%%m-%%d
+
+    /SET autolog ON
+
+%9References:%9
+
+    https://github.com/irssi/irssi/blob/master/docs/formats.txt
+
+%9See also:%9 SET LOG, WINDOW LOG
 
