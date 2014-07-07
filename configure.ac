@@ -303,6 +303,15 @@ if test -z "$GLIB_LIBS"; then
   echo "*** We recommend you get the latest stable GLIB 2 version."
   echo "*** Compile and install it, and make sure pkg-config finds it,"
   echo "*** by adding the path where the .pc file is located to PKG_CONFIG_PATH"
+  echo -n "*** Or alternatively install your distribution's package"
+  if test -f /etc/debian_version; then
+    echo :
+    echo "*** sudo apt-get install libglib2.0-dev"
+  elif test -f /etc/redhat-release; then
+    echo " (glib2-devel)"
+  else
+    echo .
+  fi
   echo
 
   AC_ERROR([GLIB is required to build irssi.])
@@ -384,7 +393,7 @@ if test "x$want_textui" = "xyes"; then
 		  TEXTUI_LIBS="-ltermcap"
 		  want_termcap=yes
 		], [
-		  AC_ERROR(Terminfo/termcap not found - install ncurses-devel package)
+		  AC_ERROR(Terminfo/termcap not found - install libncurses-dev or ncurses-devel package)
 		  want_textui=no
 		])))
 	fi
@@ -741,6 +750,11 @@ else
 	else
 		echo "Building with Perl support ....... : NO!"
 		echo " - $perl_check_error"
+                if test -f /etc/debian_version; then
+                  echo " - Try: sudo apt-get install libperl-dev"
+                elif test -f /etc/redhat-release; then
+                  echo " - Try installing perl-devel"
+                fi
 	fi
 fi
 
@@ -750,7 +764,7 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 	echo "   $perl_mod_error"
 
 	if test -f /etc/debian_version; then
-		echo " - Try: apt-get install libperl-dev"
+		echo " - Try: sudo apt-get install libperl-dev"
 	fi
 fi
 
@@ -775,6 +789,15 @@ echo
 
 echo "Building with IPv6 support ....... : $have_ipv6"
 echo "Building with SSL support ........ : $have_openssl"
+if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then
+  if test -f /etc/debian_version; then
+    echo " - Try: sudo apt-get install libssl-dev"
+  elif test -f /etc/redhat-release; then
+    echo " - Try installing openssl-devel"
+  else
+    echo " - Try installing OpenSSL development headers"
+  fi
+fi
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $have_gc"
 echo "Building with DANE support ....... : $have_dane"
