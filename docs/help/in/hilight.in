@@ -14,6 +14,7 @@
     -color:       The color the display the highlight in.
     -actcolor:    The color to mark the highlight activity in the statusbar.
     -level:       Matches only on the given message level.
+    -network:     Matches only on the given network.
     -channels:    Matches only on the given channels.
     -priority:    The priority to use when multiple highlights match.
 
