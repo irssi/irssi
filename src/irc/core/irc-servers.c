@@ -51,6 +51,12 @@
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
 #define DEFAULT_MAX_QUERY_CHANS 1 /* more and more IRC networks are using stupid ircds.. */
 
+/*
+ * 63 is the maximum hostname length defined by the protocol.  10 is a common
+ * username limit on many networks.  1 is for the `@'.
+ */
+#define MAX_USERHOST_LEN (63 + 10 + 1)
+
 void irc_servers_reconnect_init(void);
 void irc_servers_reconnect_deinit(void);
 
@@ -72,6 +78,72 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 			return 1;
 	}
 	return ischannel(*data);
+}
+
+static char **split_line(const SERVER_REC *server, const char *line,
+			 const char *target, int len)
+{
+	const char *start = settings_get_str("split_line_start");
+	const char *end = settings_get_str("split_line_end");
+	char *recoded_start = recode_out(server, start, target);
+	char *recoded_end = recode_out(server, end, target);
+	char **lines;
+	int i;
+
+	/*
+	 * Having the same length limit on all lines will make the first line
+	 * shorter than necessary if `split_line_start' is set, but it makes
+	 * the code much simpler.  It's worth it.
+	 */
+	len -= strlen(recoded_start) + strlen(recoded_end);
+	if (len <= 0) {
+		/* There is no room for anything. */
+		g_free(recoded_start);
+		g_free(recoded_end);
+		return NULL;
+	}
+
+	lines = recode_split(server, line, target, len);
+	for (i = 0; lines[i] != NULL; i++) {
+		if (i != 0 && *start != '\0') {
+			/* Not the first line. */
+			char *tmp = lines[i];
+			lines[i] = g_strconcat(start, tmp, NULL);
+			g_free(tmp);
+		}
+		if (lines[i + 1] != NULL && *end != '\0') {
+			/* Not the last line. */
+			char *tmp = lines[i];
+
+			if (lines[i + 2] == NULL) {
+				/* Next to last line.  Check if we have room
+				 * to append the last line to the current line,
+				 * to avoid an unnecessary line break.
+				 */
+				char *recoded_l = recode_out(server,
+							     lines[i+1],
+							     target);
+				if (strlen(recoded_l) <= strlen(recoded_end)) {
+					lines[i] = g_strconcat(tmp, lines[i+1],
+							       NULL);
+					g_free_and_null(lines[i+1]);
+					lines = g_renew(char *, lines, i + 2);
+
+					g_free(recoded_l);
+					g_free(tmp);
+					break;
+				}
+				g_free(recoded_l);
+			}
+
+			lines[i] = g_strconcat(tmp, end, NULL);
+			g_free(tmp);
+		}
+	}
+
+	g_free(recoded_start);
+	g_free(recoded_end);
+	return lines;
 }
 
 static void send_message(SERVER_REC *server, const char *target,
@@ -100,6 +172,30 @@ static void send_message(SERVER_REC *server, const char *target,
 	irc_send_cmd_split(ircserver, str, 2, ircserver->max_msgs_in_cmd);
 	g_free(str);
 	g_free(recoded);
+}
+
+static char **split_message(SERVER_REC *server, const char *target,
+			    const char *msg)
+{
+	IRC_SERVER_REC *ircserver = IRC_SERVER(server);
+	int userhostlen = MAX_USERHOST_LEN;
+
+	g_return_val_if_fail(ircserver != NULL, NULL);
+	g_return_val_if_fail(target != NULL, NULL);
+	g_return_val_if_fail(msg != NULL, NULL);
+
+	/*
+	 * If we have joined a channel, userhost will be set, so we can
+	 * calculate the exact maximum length.
+	 */
+	if (ircserver->userhost != NULL)
+		userhostlen = strlen(ircserver->userhost);
+
+	/* length calculation shamelessly stolen from splitlong.pl */
+	return split_line(SERVER(server), msg, target,
+			  510 - strlen(":! PRIVMSG  :") -
+			  strlen(ircserver->nick) - userhostlen -
+			  strlen(target));
 }
 
 static void server_init(IRC_SERVER_REC *server)
@@ -288,6 +384,7 @@ static void sig_connected(IRC_SERVER_REC *server)
 
 	server->isnickflag = isnickflag_func;
 	server->ischannel = ischannel_func;
+	server->split_message = split_message;
 	server->send_message = send_message;
 	server->query_find_func =
 		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
@@ -356,6 +453,23 @@ void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const ch
 	recoded = recode_out(SERVER(server), data, target);
 	irc_send_cmdv(server, "PRIVMSG %s :\001ACTION %s\001", target, recoded);
 	g_free(recoded);
+}
+
+char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
+			       const char *data)
+{
+	int userhostlen = MAX_USERHOST_LEN;
+
+	g_return_val_if_fail(server != NULL, NULL);
+	g_return_val_if_fail(target != NULL, NULL);
+	g_return_val_if_fail(data != NULL, NULL);
+
+	if (server->userhost != NULL)
+		userhostlen = strlen(server->userhost);
+
+	return split_line(SERVER(server), data, target,
+			  510 - strlen(":! PRIVMSG  :\001ACTION \001") -
+			  strlen(server->nick) - userhostlen - strlen(target));
 }
 
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
@@ -866,6 +980,8 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 void irc_servers_init(void)
 {
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
+	settings_add_str("misc", "split_line_start", "");
+	settings_add_str("misc", "split_line_end", "");
 	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 

@@ -56,8 +56,10 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	if (rec->exception) g_string_append(options, "-except ");
 	if (rec->regexp) {
 		g_string_append(options, "-regexp ");
+		if (rec->pattern == NULL)
+			g_string_append(options, "[INVALID! -pattern missing] ");
 #ifdef HAVE_REGEX_H
-		if (!rec->regexp_compiled)
+		else if (!rec->regexp_compiled)
 			g_string_append(options, "[INVALID!] ");
 #endif
 	}
@@ -118,7 +120,7 @@ static void cmd_ignore(const char *data)
 	char *patternarg, *chanarg, *mask, *levels, *timestr, *servertag;
 	char **channels;
 	void *free_arg;
-	int new_ignore, msecs;
+	int new_ignore, msecs, level;
 
 	if (*data == '\0') {
 		cmd_ignore_show();
@@ -138,6 +140,7 @@ static void cmd_ignore(const char *data)
 	
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
         if (*levels == '\0') levels = "ALL";
+	level = level2bits(levels, NULL);
 
 	msecs = 0;
 	timestr = g_hash_table_lookup(optlist, "time");
@@ -154,7 +157,8 @@ static void cmd_ignore(const char *data)
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(chanarg, ",", -1);
 
-	rec = patternarg != NULL ? NULL: ignore_find(servertag, mask, channels);
+	rec = patternarg != NULL ? NULL: ignore_find_noact(servertag, mask, channels,
+			(level & MSGLEVEL_NO_ACT));
 	new_ignore = rec == NULL;
 
 	if (rec == NULL) {
@@ -169,6 +173,12 @@ static void cmd_ignore(const char *data)
 	}
 
 	rec->level = combine_level(rec->level, levels);
+
+	if (rec->level == MSGLEVEL_NO_ACT) {
+		/* If only NO_ACT was specified add all levels; it makes no
+		 * sense on its own. */
+		rec->level |= MSGLEVEL_ALL;
+	}
 
 	if (new_ignore && rec->level == 0) {
 		/* tried to unignore levels from nonexisting ignore */
@@ -226,7 +236,10 @@ static void cmd_unignore(const char *data)
 			chans[0] = mask;
 			mask = NULL;
 		}
-		rec = ignore_find("*", mask, (char **) chans);
+		rec = ignore_find_noact("*", mask, (char **) chans, 0);
+		if (rec == NULL) {
+			rec = ignore_find_noact("*", mask, (char **) chans, 1);
+		}
 	}
 
 	if (rec != NULL) {

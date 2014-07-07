@@ -44,6 +44,9 @@
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	const char *target;
+	char *subdata;
+	char **splitdata;
+	int n = 0;
 
         CMD_IRC_SERVER(server);
 	if (!IS_IRC_ITEM(item))
@@ -53,10 +56,13 @@ static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 		cmd_return_error(CMDERR_NOT_CONNECTED);
 
 	target = window_item_get_target(item);
-	irc_server_send_action(server, target, data);
-
-	signal_emit("message irc own_action", 3, server, data,
-		    item->visible_name);
+	splitdata = irc_server_split_action(server, target, data);
+	while ((subdata = splitdata[n++])) {
+		irc_server_send_action(server, target, subdata);
+		signal_emit("message irc own_action", 3, server, subdata,
+			    item->visible_name);
+	}
+	g_strfreev(splitdata);
 }
 
 /* SYNTAX: ACTION [-<server tag>] <target> <message> */
@@ -64,6 +70,9 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 {
 	GHashTable *optlist;
 	const char *target, *text;
+	char *subtext;
+	char **splittexts;
+	int n = 0;
 	void *free_arg;
 
         CMD_IRC_SERVER(server);
@@ -79,10 +88,14 @@ static void cmd_action(const char *data, IRC_SERVER_REC *server)
 	if (server == NULL || !server->connected)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
-	irc_server_send_action(server, target, text);
+	splittexts = irc_server_split_action(server, target, text);
+	while ((subtext = splittexts[n++])) {
+		irc_server_send_action(server, target, subtext);
+		signal_emit("message irc own_action", 3, server, subtext,
+			    target);
+	}
 
-	signal_emit("message irc own_action", 3, server, text, target);
-
+	g_strfreev(splittexts);
 	cmd_params_free(free_arg);
 }
 

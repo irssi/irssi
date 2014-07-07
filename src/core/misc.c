@@ -183,7 +183,7 @@ int strarray_find(char **array, const char *item)
 
 GSList *gslist_find_string(GSList *list, const char *key)
 {
-	for (list = list; list != NULL; list = list->next)
+	for (; list != NULL; list = list->next)
 		if (strcmp(list->data, key) == 0) return list;
 
 	return NULL;
@@ -191,7 +191,7 @@ GSList *gslist_find_string(GSList *list, const char *key)
 
 GSList *gslist_find_icase_string(GSList *list, const char *key)
 {
-	for (list = list; list != NULL; list = list->next)
+	for (; list != NULL; list = list->next)
 		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
 
 	return NULL;
@@ -268,7 +268,7 @@ GSList *hashtable_get_keys(GHashTable *hash)
 
 GList *glist_find_string(GList *list, const char *key)
 {
-	for (list = list; list != NULL; list = list->next)
+	for (; list != NULL; list = list->next)
 		if (strcmp(list->data, key) == 0) return list;
 
 	return NULL;
@@ -276,7 +276,7 @@ GList *glist_find_string(GList *list, const char *key)
 
 GList *glist_find_icase_string(GList *list, const char *key)
 {
-	for (list = list; list != NULL; list = list->next)
+	for (; list != NULL; list = list->next)
 		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
 
 	return NULL;
@@ -965,4 +965,22 @@ char *ascii_strdown(char *str)
 	for (s = str; *s; s++)
 		*s = g_ascii_tolower (*s);
 	return str;
+}
+
+char **strsplit_len(const char *str, int len)
+{
+	char **ret;
+	size_t total_len = strlen(str);
+	int n = total_len / len;
+	int i;
+
+	if (total_len % len)
+		n++;
+
+	ret = g_new(char *, n + 1);
+	for (i = 0; i < n; i++, str += len)
+		ret[i] = g_strndup(str, len);
+	ret[n] = NULL;
+
+	return ret;
 }

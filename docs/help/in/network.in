@@ -1,22 +1,59 @@
 
+%9Syntax:%9
+
 @SYNTAX:network@
 
-     -kicks: Maximum number of nicks in one /KICK command
-     -msgs: Maximum number of nicks in one /MSG command
-     -modes: Maximum number of mode changes in one /MODE command
-     -whois: Maximum number of nicks in one /WHOIS command
-     -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
-     -cmdmax: Same as /SET cmds_max_at_once, see section 3.1
-     -nick, -user, -realname: Specify what nick/user/name to use
-     -host: Specify what host name to use, if you have multiple
-     -usermode: Specify what usermode to use on this network
-     -autosendcmd: Command to send after connecting to a server
-        
-With -autosendcmd argument you can automatically run any commands
-after connecting to network. This is useful for automatically
-identifying yourself to NickServ, for example
+%9Parameters:%9
 
-Shows and changes the settings of defined IRC networks.
+    LIST:            Displays the list of configured networks.
+    ADD:             Adds a network to your configuration.
+    REMOVE:          Removes a network from your configuration.
 
-See also: CONNECT
+    -nick:           Specifies the nickname to use.
+    -user:           Specifies the user identity to use.
+    -realname:       Specifies the real name to use.
+    -host:           Specifies the hostname to use.
+    -usermode:       Specifies the user modes to set on yourself.
+    -autosendcmd:    Specifies the commands, separated by the ";" character,
+                     and enclosed within two '"' characters, to perform after
+                     connecting.
+    -querychans:     Specifies the maximum number of channels to put in one MODE
+                     or WHO command when synchronizing.
+    -whois:          Specifies the maximum number of nicknames in one WHOIS
+                     command.
+    -msgs:           Specifies the maximum number of nicknames in one PRIVMSG
+                     command.
+    -kicks:          Specifies the maximum number of nicknames in one KICK
+                     command.
+    -modes:          Specifies the maximum number of nicknames in one MODE
+                     command.
+    -cmdspeed:       Specifies the minimum amount of time, expressed in
+                     milliseconds, that the client must wait before sending
+                     additional commands to the server.
+    -cmxmax:         Specifies the maximum number of commands to perform before
+                     starting the internal flood protection.
+
+    The name of the network to add, edit or remove; if no parameter is given,
+    the list of networks will be displayed.
+
+%9Description:%9
+
+    Displays, adds, modifies or removes the network configuration of IRC
+    networks.
+    
+    When using the ADD parameter on a network that already exists, the
+    configuration will be merged with each other.
+    
+    We recommend using "WAIT 2000" between the automated commands in order to
+    prevent you from being kicked from the network due to flooding commands.
+    
+%9Examples:%9
+
+    /NETWORK ADD -usermode +giw EFnet
+    /NETWORK ADD -usermode +iw -nick mike -realname "The one and only mike!" -host staff.irssi.org Freenode
+    /NETWORK ADD -autosendcmd "^MSG NickServ identify WzerT8zq" Freenode
+    /NETWORK ADD -autosendcmd "^MSG Q@CServe.quakenet.org AUTH mike WzerT8zq; WAIT 2000; OPER mike WzerT8zq; WAIT 2000; MODE mike +kXP" Quakenet
+    /NETWORK REMOVE Freenode
+
+%9See also:%9 CHANNEL, CONNECT, SERVER
 

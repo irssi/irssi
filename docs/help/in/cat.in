@@ -1,8 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:cat@
 
-Outputs the contents of the specified file. Equivalent to
-UNIX 'cat' command.
+%9Parameters:%9
 
-See also: CD
+    The file to display.
+
+%9Description:%9
+
+    Displays the contents of the specified file into the active window.
+
+%9Examples:%9
+
+    /CAT /etc/network/interfaces
+    /CAT /home/mike/resume.txt
+    /CAT contact_details.txt
+
+%9See also:%9 CD, EXEC
 

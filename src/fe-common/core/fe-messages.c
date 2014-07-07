@@ -45,15 +45,18 @@
 
 GHashTable *printnicks;
 
-/* convert _underlined_ and *bold* words (and phrases) to use real
+/* convert _underlined_, /italics/, and *bold* words (and phrases) to use real
    underlining or bolding */
 char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 {
 	GString *str;
 	char *ret;
 	int pos;
+	int emphasis_italics;
 
         g_return_val_if_fail(text != NULL, NULL);
+
+	emphasis_italics = settings_get_bool("emphasis_italics");
 
 	str = g_string_new(text);
 
@@ -62,9 +65,11 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 		bgn = str->str + pos;
 
-		if (*bgn == '*') 
+		if (*bgn == '*')
 			type = 2; /* bold */
-		else if (*bgn == '_') 
+		else if (*bgn == '/' && emphasis_italics)
+			type = 29; /* italics */
+		else if (*bgn == '_')
 			type = 31; /* underlined */
 		else
 			continue;
@@ -92,7 +97,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
                         found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end[1] = c;
 			if (found) continue;
-			
+
 			/* check if the whole 'word' (e.g. "_foo_^") is a nick
 			   in "_foo_^ ", end will be the second _, end2 the ^ */
 			end2 = end;
@@ -190,7 +195,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	if (for_me)
 		level |= MSGLEVEL_HILIGHT;
 
-	if (ignore_check(server, nick, address, target, msg, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, nick, address, target, msg, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	if (settings_get_bool("emphasis"))
@@ -238,13 +243,17 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 {
 	QUERY_REC *query;
         char *freemsg = NULL;
+	int level = MSGLEVEL_MSGS;
 
 	query = query_find(server, nick);
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
 
-	printformat(server, nick, MSGLEVEL_MSGS,
+	if (ignore_check(server, nick, address, NULL, msg, level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
+
+	printformat(server, nick, level,
 		    query == NULL ? TXT_MSG_PRIVATE :
 		    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
 
@@ -330,7 +339,7 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 {
 	int level = MSGLEVEL_JOINS;
 
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
@@ -343,7 +352,7 @@ static void sig_message_part(SERVER_REC *server, const char *channel,
 {
 	int level = MSGLEVEL_PARTS;
 
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
@@ -362,7 +371,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
 		return;
 
-	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, nick, address, NULL, reason, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	print_channel = NULL;
@@ -432,7 +441,7 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 {
 	int level = MSGLEVEL_KICKS;
 
-	if (ignore_check(server, kicker, address, channel, reason, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, kicker, address, channel, reason, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
@@ -453,7 +462,7 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 	level = MSGLEVEL_NICKS;
         if (ownnick) level |= MSGLEVEL_NO_ACT;
 
-	if (!(level & MSGLEVEL_NO_ACT) && ignore_check(server, oldnick, address, channel, newnick, MSGLEVEL_NO_ACT))
+	if (!(level & MSGLEVEL_NO_ACT) && ignore_check(server, oldnick, address, channel, newnick, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
@@ -532,7 +541,7 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 {
 	int level = MSGLEVEL_TOPICS;
 
-	if (ignore_check(server, nick, address, channel, topic, MSGLEVEL_NO_ACT))
+	if (ignore_check(server, nick, address, channel, topic, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
@@ -676,6 +685,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "emphasis", TRUE);
 	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
 	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);
+	settings_add_bool("lookandfeel", "emphasis_italics", FALSE);
 	settings_add_bool("lookandfeel", "show_nickmode", TRUE);
 	settings_add_bool("lookandfeel", "show_nickmode_empty", TRUE);
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);

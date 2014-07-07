@@ -25,6 +25,7 @@
 #include "irc-servers.h"
 #include "irc-queries.h"
 #include "dcc-chat.h"
+#include "ignore.h"
 
 #include "module-formats.h"
 #include "printtext.h"
@@ -86,12 +87,17 @@ static void sig_message_dcc(CHAT_DCC_REC *dcc, const char *msg)
         TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
+	int level = MSGLEVEL_DCCMSGS;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+				level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
+
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
-			       MSGLEVEL_DCCMSGS, NULL);
+			       level, NULL);
 
 	printformat_dest(&dest, query != NULL ? IRCTXT_DCC_MSG_QUERY :
 			 IRCTXT_DCC_MSG, dcc->id, msg);
@@ -103,12 +109,17 @@ static void sig_message_dcc_action(CHAT_DCC_REC *dcc, const char *msg)
         TEXT_DEST_REC dest;
         QUERY_REC *query;
 	char *tag;
+	int level = MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+				level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
+
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
-			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS, NULL);
+			       level, NULL);
 
 	printformat_dest(&dest, query != NULL ? IRCTXT_ACTION_DCC_QUERY :
 			 IRCTXT_ACTION_DCC, dcc->id, msg);
@@ -120,11 +131,16 @@ static void sig_message_dcc_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 {
         TEXT_DEST_REC dest;
 	char *tag;
+	int level = MSGLEVEL_DCCMSGS | MSGLEVEL_CTCPS;
 
 	tag = g_strconcat("=", dcc->id, NULL);
 
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
+				level | MSGLEVEL_NO_ACT))
+		level |= MSGLEVEL_NO_ACT;
+
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
-			       MSGLEVEL_DCC | MSGLEVEL_CTCPS, NULL);
+			       level, NULL);
 
 	printformat_dest(&dest, IRCTXT_DCC_CTCP, dcc->id, cmd, data);
         g_free(tag);

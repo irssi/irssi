@@ -1,44 +1,69 @@
 
+%9Syntax:%9
+
 @SYNTAX:server@
 
-     -4, -6: specify explicitly whether to use IPv4 or IPv6 address
-     -ssl: use SSL when connecting
-     -ssl_cert: The SSL client certificate file (implies -ssl)
-     -ssl_pkey: The SSL client private key (if not included in the certificate file)
-     -ssl_pass: The password for the SSL client private key or certificate.
-     -ssl_verify: Verify servers SSL certificate
-     -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
-     -ssl_capath: Directory with CA certificates (implies -ssl_verify)
-     -noproxy: Ignore the global proxy configuration for this server
-     -auto: Automatically connect to server at startup
-     -noauto: Don't connect to server at startup (default)
-     -network: Specify what IRC network this server belongs to
-     -ircnet: Same as -network. Deprecated. Do not use
-     -host: Specify what host name to use, if you have multiple
-     -!: don't autojoin channels
-     -noautosendcmd: don't execute autosendcmd
-     -cmdspeed: Same as /SET cmd_queue_speed, see section 3.1
-     -cmdmax: Same as /SET cmds_max_at_once, see section 3.1
-     -port: Use this only to edit the port number of an existing server,
-            for new servers use the <port> argument
+%9Parameters:%9
 
-/SERVER disconnects the server in active window and connects 
-to the new one. It will take the same arguments as /CONNECT. 
-If you prefix the address with the + character, Irssi won't 
-disconnect the active server, and it will create a new window 
-where the server is connected (ie. /window new hide;
-/connect address)
+    LIST:              Displays the list of servers you are connected to.
+    CONNECT:           Connects to the given server.
+    ADD:               Adds a server to your configuration.
+    REMOVE:            Removes a server from your configuration.
+    PURGE:             Purges the commands queued to be sent to the server.
 
-/SERVER without any arguments displays the list of connected 
-        servers.
+    -!:                Doesn't autojoin the channels.
+    -4:                Connects using IPv4.
+    -6:                Connects using IPv6.
+    -ssl:              Connects using SSL encryption.
+    -ssl_cert:         The SSL client certificate file.
+    -ssl_pkey:         The SSL client private key, if not included in the
+                       certificate file.
+    -ssl_pass:         Verifies the SSL certificate of the server.
+    -ssl_verify:       Verifies the SSL certificate of the server.
+    -ssl_cafile:       The file with the list of CA certificates.
+    -ssl_capath:       The directory which contains the CA certificates.
+    -auto:             Automatically connects to the server on startup.
+    -noauto:           Doesn't connect to the server on startup.
+    -network:          The network the server belongs to.
+    -host:             The hostname you would like to connect from.
+    -cmdspeed:         Specifies the minimum amount of time, expressed in
+                       milliseconds, that the client must wait before sending
+                       additional commands to the server.
+    -cmxmax:           Specifies the maximum number of commands to perform
+                       before starting the internal flood protection.
+    -port:             Specifies the port to connect to the server.
+    -noproxy:          Ignores the global proxy configuration.
+    -rawlog:           Immediately open rawlog after connecting.
+    -noautosendcmd:    Doesn't execute autosendcmd.
 
-/SERVER REMOVE <address> [<port>] [<network>]
+    The server, port and network to add, modify or remove; if no argument is
+    given, the list of servers you are connected to will be returned.
 
-/SERVER LIST
+%9Description:%9
 
-/SERVER PURGE [<target>] 
+    Displays, adds, modifies or removes the network configuration of IRC 
+    servers.
+    
+    When using the ADD parameter on a server that already exists, the
+    configuration will be merged with each other.
+    
+    When using the command without any of the given parameters, it will
+    connect to the specified server; the server in the active window will be
+    disconnected unless you prepend the server with the "+" character; the same
+    method is applicable to the CONNECT parameter.
 
-Clears the server send queue. Useful if, for example, you accidentally paste lots of text to a channel.
+%9Examples:%9
 
-See also: CONNECT, DISCONNECT, RECONNECT, RMRECONNS
+    /SERVER
+    /SERVER chat.freenode.net
+    /SERVER +chat.freenode.net
+    /SERVER CONNECT chat.freenode.net
+    /SERVER CONNECT +chat.freenode.net
+    /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
+    /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
+    /SERVER REMOVE -network Freenode orwell.freenode.net
+    /SERVER PURGE
+    /SERVER PURGE orwell.freenode.net
+    
+%9See also:%9 CHANNEL, CONNECT, DISCONNECT, NETWORK, RECONNECT, RMRECONNS
 

@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 # create default-config.h
 BUILT_SOURCES = default-config.h default-theme.h irssi-version.h
@@ -27,8 +27,7 @@ pkginclude_HEADERS = irssi-config.h irssi-version.h
 EXTRA_DIST = \
 	ChangeLog \
 	autogen.sh \
-	curses.m4 \
-	README \
+	README.md \
 	file2header.sh \
 	$(conf_DATA) \
 	$(theme_DATA) \

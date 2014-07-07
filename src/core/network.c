@@ -60,7 +60,11 @@ GIOChannel *g_io_channel_new(int handle)
 
 IPADDR ip4_any = {
 	AF_INET,
-	{ { { INADDR_ANY } } }
+#if defined(HAVE_IPV6) && defined(IN6ADDR_ANY_INIT)
+	IN6ADDR_ANY_INIT
+#else
+	{ INADDR_ANY }
+#endif
 };
 
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2)

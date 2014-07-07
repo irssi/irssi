@@ -670,6 +670,8 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 	SERVER_REC *server;
 	WI_ITEM_REC *wiitem; 
 	char *tmpstr, *tmpstr2;
+	theme_rm_col reset;
+	strcpy(reset.m, "n");
 	int len;
 
 	if (str == NULL)
@@ -690,7 +692,7 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 
 	/* expand templates */
 	tmpstr = theme_format_expand_data(current_theme, &str,
-					  'n', 'n',
+					  reset, reset,
 					  NULL, NULL,
 					  EXPAND_FLAG_ROOT |
 					  EXPAND_FLAG_IGNORE_REPLACES |

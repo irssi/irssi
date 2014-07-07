@@ -1,6 +1,25 @@
 
+%9Syntax:%9
+
 @SYNTAX:eval@
 
-Evaluates the given commands and executes them. Internal variables
-are expanded. See the special_vars.txt file in the docs-directory.
+%9Parameters:%9
+
+    The commands to evaluate.
+
+%9Description:%9
+
+    Evaluates the given commands and executes them; you can use internal
+    variables and separate multiple commands by using the ";" character.
+
+%9Examples%9
+
+    /EVAL echo I am connected to ${S} on ${chatnet} as ${N}
+    /EVAL echo My user privileges are +${usermode}; echo Let's party!
+
+%9References:%9
+
+    https://github.com/irssi/irssi/blob/master/docs/special_vars.txt
+
+%9See also:%9 CAT, CD, ECHO, EXEC
 

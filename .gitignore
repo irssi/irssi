@@ -25,6 +25,11 @@ lt~obsolete.m4
 pm_to_blib
 stamp-h1
 
+docs/help/Makefile.am
+docs/help/[a-z]*
+!docs/help/in
+docs/help/in/Makefile.am
+
 src/fe-text/irssi
 
 src/fe-common/irc/irc-modules.c
@@ -37,17 +42,18 @@ src/perl/common/*.c
 src/perl/irc/*.c
 src/perl/textui/*.c
 src/perl/ui/*.c
+src/perl/*/MYMETA.*
+src/perl/*/Makefile.old
 
 *.a
 *.bs
 *.la
 *.lo
 *.o
+*~
 
 *.tar.bz2
 *.tar.gz
 
 .deps
 .libs
-
-docs/help

@@ -22,6 +22,7 @@
 
 #include "module.h"
 #include "textbuffer-view.h"
+#include "signals.h"
 #include "utf8.h"
 
 typedef struct {
@@ -104,8 +105,8 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
                 textbuffer_cache_destroy(cache);
 }
 
-#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | 0x0f)
-#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | 0xf0)
+#define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | FG_MASK | ATTR_FGCOLOR24)
+#define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | BG_MASK | ATTR_BGCOLOR24)
 
 static void update_cmd_color(unsigned char cmd, int *color)
 {
@@ -113,14 +114,16 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		if (cmd & LINE_COLOR_BG) {
 			/* set background color */
 			*color &= FGATTR;
+			*color &= ~ATTR_FGCOLOR24;
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
-				*color |= (cmd & 0x0f) << 4;
+				*color |= (cmd & 0x0f) << BG_SHIFT;
 			else {
 				*color = (*color & FGATTR) | ATTR_RESETBG;
 			}
 		} else {
 			/* set foreground color */
 			*color &= BGATTR;
+			*color &= ~ATTR_BGCOLOR24;
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= cmd & 0x0f;
 			else {
@@ -140,22 +143,53 @@ static void update_cmd_color(unsigned char cmd, int *color)
 	case LINE_CMD_BOLD:
 		*color ^= ATTR_BOLD;
 		break;
+	case LINE_CMD_ITALIC:
+		*color ^= ATTR_ITALIC;
+		break;
 	case LINE_CMD_COLOR0:
 		*color &= BGATTR;
+		*color &= ~ATTR_FGCOLOR24;
 		break;
 	}
 }
 
+#ifdef TERM_TRUECOLOR
+static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, unsigned int *fg, unsigned int *bg)
+{
+	unsigned int color;
+	unsigned char rgbx[4];
+	unsigned int i;
+	for (i = 0; i < 4; ++i) {
+		rgbx[i] = (*ptr)[i + off];
+	}
+	rgbx[3] -= 0x20;
+	*ptr += 4;
+	for (i = 0; i < 3; ++i) {
+		if (rgbx[3] & (0x10 << i))
+			rgbx[i] -= 0x20;
+	}
+	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
+	if (rgbx[3] & 0x1) {
+		*flags = (*flags & FGATTR) | ATTR_BGCOLOR24;
+		*bg = color;
+	}
+	else {
+		*flags = (*flags & BGATTR) | ATTR_FGCOLOR24;
+		*fg = color;
+	}
+}
+#endif
+
 static inline unichar read_unichar(const unsigned char *data, const unsigned char **next, int *width)
 {
-	unichar chr = g_utf8_get_char_validated(data, -1);
+	unichar chr = g_utf8_get_char_validated((const char *) data, -1);
 
 	if (chr & 0x80000000) {
 		chr = 0xfffd;
 		*next = data + 1;
 		*width = 1;
 	} else {
-		*next = g_utf8_next_char(data);
+		*next = (unsigned char *)g_utf8_next_char(data);
 		*width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
 	}
 	return chr;
@@ -171,6 +205,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
         unsigned char cmd;
 	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
+	unsigned int last_bg24, last_fg24, bg24, fg24;
 	int char_width;
 
 	g_return_val_if_fail(line->text != NULL, NULL);
@@ -178,6 +213,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	color = ATTR_RESETFG | ATTR_RESETBG;
 	xpos = 0; indent_pos = view->default_indent;
 	last_space = last_color = 0; last_space_ptr = NULL; sub = NULL;
+	last_bg24 = last_fg24 = UINT_MAX;
 
         indent_func = view->default_indent_func;
         linecount = 1;
@@ -204,7 +240,18 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				/* set indentation position here - don't do
 				   it if we're too close to right border */
 				if (xpos < view->width-5) indent_pos = xpos;
-			} else
+			} else if (cmd == LINE_COLOR_EXT) {
+				color &= ~ATTR_FGCOLOR24;
+				color = (color & BGATTR) | *ptr++;
+			} else if (cmd == LINE_COLOR_EXT_BG) {
+				color &= ~ATTR_BGCOLOR24;
+				color = (color & FGATTR) | (*ptr++ << BG_SHIFT);
+			}
+#ifdef TERM_TRUECOLOR
+			else if (cmd == LINE_COLOR_24)
+				unformat_24bit_line_color(&ptr, 0, &color, &fg24, &bg24);
+#endif
+			else
 				update_cmd_color(cmd, &color);
 			continue;
 		}
@@ -236,7 +283,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			sub = g_new0(LINE_CACHE_SUB_REC, 1);
 			if (last_space > indent_pos && last_space > 10) {
                                 /* go back to last space */
-                                color = last_color;
+                                color = last_color; fg24 = last_fg24; bg24 = last_bg24;
 				ptr = last_space_ptr;
 				while (*ptr == ' ') ptr++;
 			} else if (view->longword_noindent) {
@@ -249,6 +296,9 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			sub->indent = xpos;
                         sub->indent_func = indent_func;
 			sub->color = color;
+#ifdef TERM_TRUECOLOR
+			sub->fg24 = fg24; sub->bg24 = bg24;
+#endif
 
 			lines = g_slist_append(lines, sub);
 			linecount++;
@@ -260,11 +310,11 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		if (!view->utf8 && char_width > 1) {
 			last_space = xpos;
 			last_space_ptr = next_ptr;
-			last_color = color;
+			last_color = color; last_fg24 = fg24; last_bg24 = bg24;
 		} else if (*ptr == ' ') {
 			last_space = xpos;
 			last_space_ptr = ptr;
-			last_color = color;
+			last_color = color; last_fg24 = fg24; last_bg24 = bg24;
 		}
 
 		xpos += char_width;
@@ -343,6 +393,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	unsigned char *tmp;
 	unichar chr;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
+#ifdef TERM_TRUECOLOR
+	unsigned int fg24, bg24;
+#endif
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
                 return 0;
@@ -377,6 +430,10 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				if (indent_func == NULL)
 					xpos = cache->lines[subline-1].indent;
                                 color = cache->lines[subline-1].color;
+#ifdef TERM_TRUECOLOR
+                                fg24 = cache->lines[subline-1].fg24;
+                                bg24 = cache->lines[subline-1].bg24;
+#endif
 			} else {
 				indent_func = NULL;
 			}
@@ -397,7 +454,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (need_move || xpos > 0)
 				term_move(view->window, xpos, ypos);
 
-			term_set_color(view->window, color);
+			term_set_color2(view->window, color, fg24, bg24);
 
 			if (subline == cache->count-1) {
 				text_newline = NULL;
@@ -423,8 +480,17 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				text = tmp;
 				continue;
 			} else {
-				update_cmd_color(*text, &color);
-				term_set_color(view->window, color);
+				if (*text == LINE_COLOR_EXT)
+					color = (color & BGATTR & ~ATTR_FGCOLOR24) | *++text;
+				else if (*text == LINE_COLOR_EXT_BG)
+					color = (color & FGATTR & ~ATTR_BGCOLOR24) | (*++text << BG_SHIFT);
+#ifdef TERM_TRUECOLOR
+				else if (*text == LINE_COLOR_24)
+					unformat_24bit_line_color(&text, 1, &color, &fg24, &bg24);
+#endif
+				else
+					update_cmd_color(*text, &color);
+				term_set_color2(view->window, color, fg24, bg24);
 			}
 			text++;
 			continue;
@@ -455,7 +521,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
 				term_addch(view->window, (chr & 127)+'A'-1);
-				term_set_color(view->window, color);
+				term_set_color2(view->window, color, fg24, bg24);
 			}
 		}
 		text = end;

@@ -81,14 +81,24 @@ static int dirty, full_redraw, dummy;
 static GMainLoop *main_loop;
 int quitting;
 
+static const char *banner_text =
+	" ___           _\n"
+	"|_ _|_ _ _____(_)\n"
+ 	" | || '_(_-<_-< |\n"
+	"|___|_| /__/__/_|\n"
+	"Irssi v" PACKAGE_VERSION " - http://www.irssi.org";
+
 static const char *firsttimer_text =
-	"Looks like this is the first time you've run irssi.\n"
-	"This is just a reminder that you really should go read\n"
-	"startup-HOWTO if you haven't already. You can find it\n"
-	"and more irssi beginner info at http://www.irssi.org\n"
-	"\n"
-	"For the truly impatient people who don't like any automatic\n"
-	"window creation or closing, just type: /MANUAL-WINDOWS";
+	"- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
+	"Hi there! If this is your first time using Irssi, you\n"
+	"might want to go to our website and read the startup\n"
+	"documentation to get you going.\n\n"
+	"Our community and staff are available to assist you or\n"
+	"to answer any questions you may have.\n\n"
+	"Use the HELP command to get detailed information about\n"
+	"the available commands.\n"
+	"- - - - - - - - - - - - - - - - - - - - - - - - - - - -";
+
 static int display_firsttimer = FALSE;
 
 
@@ -193,9 +203,13 @@ static void textui_finish_init(void)
 
 	fe_common_core_finish_init();
 	signal_emit("irssi init finished", 0);
+	statusbar_redraw(NULL, TRUE);
+
+	printtext_window(active_win, MSGLEVEL_CRAP,
+				 "%s", banner_text);
 
 	if (display_firsttimer) {
-		printtext_window(active_win, MSGLEVEL_CLIENTNOTICE,
+		printtext_window(active_win, MSGLEVEL_CRAP,
 				 "%s", firsttimer_text);
 	}
 }

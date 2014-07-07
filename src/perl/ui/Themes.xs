@@ -241,8 +241,11 @@ PPCODE:
 	if (flags == 0) {
 		ret = theme_format_expand(theme, format);
 	} else {
-		ret = theme_format_expand_data(theme, (const char **) &format, 'n', 'n',
-					       NULL, NULL, EXPAND_FLAG_ROOT | flags);
+		theme_rm_col reset;
+		strcpy(reset.m, "n");
+		ret = theme_format_expand_data(theme, (const char **) &format,
+					       reset, reset, NULL, NULL,
+					       EXPAND_FLAG_ROOT | flags);
 	}
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);

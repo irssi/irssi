@@ -136,19 +136,25 @@ char *bits2level(int bits)
 	if (bits == 0)
 		return g_strdup("");
 
-	if (bits == MSGLEVEL_ALL)
-		return g_strdup("ALL");
 
 	str = g_string_new(NULL);
-	if (bits & MSGLEVEL_NEVER)
+	if (bits & MSGLEVEL_NEVER) {
 		g_string_append(str, "NEVER ");
+		bits &= ~MSGLEVEL_NEVER;
+	}
 
-	if (bits & MSGLEVEL_NO_ACT)
+	if (bits & MSGLEVEL_NO_ACT) {
 		g_string_append(str, "NO_ACT ");
+		bits &= ~MSGLEVEL_NO_ACT;
+	}
 
-	for (n = 0; levels[n] != NULL; n++) {
-		if (bits & (1L << n))
-			g_string_append_printf(str, "%s ", levels[n]);
+	if (bits == MSGLEVEL_ALL) {
+		g_string_append(str, "ALL ");
+	} else {
+		for (n = 0; levels[n] != NULL; n++) {
+			if (bits & (1L << n))
+				g_string_append_printf(str, "%s ", levels[n]);
+		}
 	}
         if (str->len > 0)
 		g_string_truncate(str, str->len-1);

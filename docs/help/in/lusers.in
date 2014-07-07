@@ -1,5 +1,24 @@
 
+%9Syntax:%9
+
 @SYNTAX:lusers@
 
-Shows user statistics of the current IRC network.
+%9Parameters:%9
+
+    The server to search on and the remote sever to search on; if no arguments
+    are given, the active server will be used.
+
+%9Description:%9
+
+    Displays the user statistics of the active or remote server.
+
+    The parameters to search on a remote server are no longer supported on most
+    IRC servers; we no longer provide examples for remote LUSERS to avoid all
+    confusion.
+
+%9Examples:%9
+
+    /LUSERS
+
+%9See also:%9 LINKS, MAP
 

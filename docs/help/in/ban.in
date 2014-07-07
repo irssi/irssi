@@ -1,27 +1,42 @@
 
+%9Syntax:%9
+
 @SYNTAX:ban@
 
-Bans the specified nick or userhost mask.
+%9Parameters:%9
 
-If nick is given as parameter, the ban type is used to generate the ban
-mask. /SET ban_type specified the default ban type. Ban type is one of
-the following:
+    -normal:    Uses the *!*user@*.domain.tld format.
+    -user:      Uses the *!*user@* format.
+    -host:      Uses the *!*@host.domain.tld format.
+    -domain:    Uses the *!*@*.domain.tld format.
+    -custom:    Uses the custom format.
 
-    Normal - *!*user@*.domain.net
-    User   - *!*user@*
-    Host   - *!*@host.domain.net
-    Domain - *!*@*.domain.net
-    Custom [nick] [user] [host] [domain]
+    A channel and the nicknames or hostnames to ban; if no arguments are given
+    the bans in the active channel are displayed.
 
-If no arguments are given the current bans in this channel are displayed.
+    If no ban format parameter is given, the value of the ban_type setting will
+    be used to generate the hostmask to ban.
 
-Examples:
-    /BAN loser        - Bans the nick 'loser'
-    /BAN -host loser  - Bans the host of nick 'loser'
-    /BAN *!*@*.org    - Bans all the users coming from any .org domain.
+%9Description:%9
 
-    /SET ban_type custom nick domain - nick!*@*.domain.net
-    /SET ban_type custom user host   - *!user@host.domain.net
+    Adds one or more bans to a channel.
 
-See also: KNOCKOUT, KICKBAN
+%9Configuring the custom format:%9
+
+    You must set the custom ban_type to the format you would like to use. For
+    example, if you set the custom ban_type to "nick domain", it will generate
+    a ban based on the nick!*@*.domain.tld format.
+
+%9Examples:%9
+
+    /BAN
+    /BAN mike
+    /BAN -host bob
+    /BAN *!*@*.irssi.org
+    /BAN -domain sarah
+
+    /SET ban_type custom nick domain
+    /SET ban_type custom user host
+
+%9See also:%9 KICKBAN, KNOCKOUT
 

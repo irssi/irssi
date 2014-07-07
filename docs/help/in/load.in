@@ -1,16 +1,23 @@
 
+%9Syntax:%9
+
 @SYNTAX:load@
 
-Load a plugin. If full path isn't given, irssi searches the plugin from
-directories:
+%9Parameters%9
 
- ~/.irssi/modules/
- <install dir, /usr/local or /usr maybe>/lib/irssi/modules/
+    The name of the module and submodule to load.
 
-See plugins page of http://www.irssi.org/ to see if there's any plugins
-you'd want to use.
+%9Description:%9
 
-To load a perl script you should use /SCRIPT.
+    Loads a plugin; if the full path isn't given, it will attempt to load from
+    common directories in your installation path.
 
-See also: UNLOAD
+    To load a perl script, you must use the SCRIPT command.
+
+%9Examples:%9
+
+    /LOAD fish
+    /LOAD ~/irssi-fish/libfish.so
+
+%9See also:%9 SCRIPT, UNLOAD
 

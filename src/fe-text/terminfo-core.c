@@ -94,8 +94,11 @@ static TERMINFO_REC tcaps[] = {
 	{ "rmul",     	"ue",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rmul) },
 	{ "smso",     	"so",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_smso) },
 	{ "rmso",     	"se",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rmso) },
+	{ "sitm",     	"ZH",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_sitm) },
+	{ "ritm",     	"ZR",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_ritm) },
 	{ "bold",     	"md",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_bold) },
 	{ "blink",     	"mb",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_blink) },
+	{ "rev",     	"mr",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_rev) },
 	{ "setaf",     	"AF",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setaf) },
 	{ "setab",     	"AB",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setab) },
 	{ "setf",     	"Sf",	CAP_TYPE_STR,	G_STRUCT_OFFSET(TERM_REC, TI_setf) },
@@ -313,6 +316,12 @@ static void _set_blink(TERM_REC *term)
 	tput(tparm(term->TI_blink));
 }
 
+/* Reverse on */
+static void _set_reverse(TERM_REC *term)
+{
+	tput(tparm(term->TI_rev));
+}
+
 /* Bold on */
 static void _set_bold(TERM_REC *term)
 {
@@ -331,16 +340,41 @@ static void _set_standout(TERM_REC *term, int set)
 	tput(tparm(set ? term->TI_smso : term->TI_rmso));
 }
 
+/* Italic on/off */
+static void _set_italic(TERM_REC *term, int set)
+{
+	tput(tparm(set ? term->TI_sitm : term->TI_ritm));
+}
+
+/* Standout on (fallback for reverse) */
+static void _set_standout_on(TERM_REC *term)
+{
+	_set_standout(term, TRUE);
+}
+
+inline static int color256(const TERM_REC *term, const int color) {
+	if (color < term->TI_colors)
+		return color;
+
+	if (color < 16)
+		return color % term->TI_colors;
+
+	if (color < 256)
+		return term_color256map[color] % term->TI_colors;
+
+	return color % term->TI_colors;
+}
+
 /* Change foreground color */
 static void _set_fg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_fg[color % term->TI_colors]));
+	tput(tparm(term->TI_fg[color256(term, color)]));
 }
 
 /* Change background color */
 static void _set_bg(TERM_REC *term, int color)
 {
-	tput(tparm(term->TI_bg[color % term->TI_colors]));
+	tput(tparm(term->TI_bg[color256(term, color)]));
 }
 
 /* Beep */
@@ -596,13 +630,17 @@ static int term_setup(TERM_REC *term)
 	else
 		term->repeat = _repeat_manual;
 
-	/* Bold, underline, standout */
+	/* Bold, underline, standout, reverse, italics */
 	term->set_blink = term->TI_blink ? _set_blink : _ignore;
 	term->set_bold = term->TI_bold ? _set_bold : _ignore;
+	term->set_reverse = term->TI_rev ? _set_reverse :
+		term->TI_smso ? _set_standout_on : _ignore;
 	term->set_uline = term->TI_smul && term->TI_rmul ?
 		_set_uline : _ignore_parm;
 	term->set_standout = term->TI_smso && term->TI_rmso ?
 		_set_standout : _ignore_parm;
+	term->set_italic = term->TI_sitm && term->TI_ritm ?
+		_set_italic : _ignore_parm;
 
         /* Create a string to set all attributes off */
         str = g_string_new(NULL);
@@ -612,6 +650,8 @@ static int term_setup(TERM_REC *term)
 		g_string_append(str, term->TI_rmul);
 	if (term->TI_rmso && (term->TI_sgr0 == NULL || strcmp(term->TI_rmso, term->TI_sgr0) != 0))
 		g_string_append(str, term->TI_rmso);
+	if (term->TI_ritm && (term->TI_sgr0 == NULL || strcmp(term->TI_ritm, term->TI_sgr0) != 0))
+		g_string_append(str, term->TI_ritm);
         term->TI_normal = str->str;
 	g_string_free(str, FALSE);
         term->set_normal = _set_normal;

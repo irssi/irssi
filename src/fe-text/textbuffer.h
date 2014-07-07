@@ -17,6 +17,12 @@ enum {
 	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
 	LINE_CMD_BLINK,		/* enable/disable blink */
 	LINE_CMD_BOLD,		/* enable/disable bold */
+	LINE_CMD_ITALIC,	/* enable/disable italic */
+	LINE_COLOR_EXT,		/* extended color */
+	LINE_COLOR_EXT_BG,	/* extended bg */
+#ifdef TERM_TRUECOLOR
+	LINE_COLOR_24,          /* 24bit color */
+#endif
 };
 
 typedef struct {

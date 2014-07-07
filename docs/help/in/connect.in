@@ -1,23 +1,40 @@
 
+%9Syntax:%9
+
 @SYNTAX:connect@
 
-     -4, -6: specify explicitly whether to use IPv4 or IPv6 address
-     -ssl: use SSL when connecting
-     -ssl_cert: The SSL client certificate file (implies -ssl)
-     -ssl_pkey: The SSL client private key (if not included in the certificate file)
-     -ssl_pass: The password for the SSL client private key or certificate.
-     -ssl_verify: Verify servers SSL certificate
-     -ssl_cafile: File with list of CA certificates (implies -ssl_verify)
-     -ssl_capath: Directory with CA certificates (implies -ssl_verify)
-     -network: the network this connection belongs to
-     -ircnet: Same as -network. Deprecated. Do not use.
-     -host: the host
-     -!: don't autojoin channels
-     -noautosendcmd: don't execute autosendcmd
-     -rawlog: immediately open rawlog after connected
+%9Parameters:%9
 
-This command makes irssi to connect to specified server.
-Current connections are kept and a new one is created.
+    -4:             Connects using IPv4.
+    -6:             Connects using IPv6.
+    -ssl:           Connects using SSL encryption.
+    -ssl_cert:      The SSL client certificate file.
+    -ssl_pkey:      The SSL client private key, if not included in the
+                    certificate file.
+    -ssl_verify:    Verifies the SSL certificate of the server.
+    -ssl_cafile:    The file with the list of CA certificates.
+    -ssl_capath:    The directory which contains the CA certificates.
+    -noproxy:       Ignores the global proxy configuration.
+    -network:       The network this connection belongs to.
+    -host:          The hostname you would like to connect from.
+    -rawlog:        Immediately open rawlog after connecting.
+    -!:             Doesn't autojoin channels.
+    -noautosendcmd: Doesn't execute autosendcmd.
 
-See also: SERVER, DISCONNECT, RMRECONNS, SCONNECT
+    A network or server to connect to; you can optionally specify a custom port,
+    password and nickname.
+
+%9Description:%9
+
+    Opens a new connection to the specified network or server; existing
+    connections are kept.
+
+%9Examples:%9
+
+    /CONNECT Freenode
+    /CONNECT -6 Freenode
+    /CONNECT -4 -! -host staff.irssi.org -network Freenode orwell.freenode.net
+    /CONNECT irc.irssi.org 6667 WzerT8zq mike
+
+%9See also:%9 DISCONNECT, RMRECONNS, SERVER
 

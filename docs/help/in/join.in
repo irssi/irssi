@@ -1,15 +1,26 @@
 
+%9Syntax:%9
+
 @SYNTAX:join@
 
-   -window: Join channel, placing channel window item in currently active window
-   -invite: Join last invited channel
-   -<server tag>: Join channel on server with specified tag
+%9Parameters:%9
 
-Joins a specified channel. Channel names usually begin with #-sign,
-which may be omitted here.
+    -window          Joins a channel in the active window.
+    -invite          Joins the channel you were last invited to.
+    -<server tag>    The server tag on which you want to join the channel.
 
-JOIN is aliased to J by default. Example: /j irssi
-(This joins to the channel #irssi)
+    The channel names, separated by a commma, to join and the channel key.
 
-See also: PART, WINDOW CLOSE
+%9Description:%9
+
+    Joins the given channels.
+
+%9Examples:%9
+
+    /JOIN #irssi
+    /JOIN #basementcat secret_lair
+    /JOIN -invite
+    /JOIN -freenode #github,#freenode,#irssi
+
+%9See also:%9 KICK, PART
 

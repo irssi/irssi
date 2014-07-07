@@ -1,7 +1,20 @@
 
+%9Syntax:%9
+
 @SYNTAX:ison@
 
-Tells whether specified nicks (space-separated) are online.
+%9Parameters:%9
 
-See also: WHOIS, WHOWAS, NOTIFY
+    The nicknames, separated by space, to check.
+
+%9Description:%9
+
+    Displays whether the specified nicknames are online.
+
+%9Examples:%9
+
+    /ISON mike
+    /ISON sarah bob
+
+%9See also:%9 NOTIFY, WHOAS, WHOIS
 

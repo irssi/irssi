@@ -1,8 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:cd@
 
-Changes the current working directory. Equivalent to UNIX
-'cd' command.
+%9Parameters:%9
 
-See also: DCC GET
+    The directory to change into.
+
+%9Description:%9
+
+    Changes the current active directory.
+
+%9Examples:%9
+
+    /CD /home/public_ftp
+    /CD /home/mike
+    /CD /var/log
+
+%9See also:%9 CAT
 

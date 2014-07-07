@@ -39,8 +39,8 @@ TEXT_BUFFER_REC *textbuffer_create(void)
 
 	buffer = g_slice_new0(TEXT_BUFFER_REC);
 	buffer->last_eol = TRUE;
-	buffer->last_fg = LINE_COLOR_DEFAULT;
-	buffer->last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
+	buffer->last_fg = -1;
+	buffer->last_bg = -1;
         return buffer;
 }
 
@@ -148,6 +148,7 @@ static void text_chunk_append(TEXT_BUFFER_REC *buffer,
 {
         TEXT_CHUNK_REC *chunk;
 	int left;
+	int i;
 
 	if (len == 0)
                 return;
@@ -166,8 +167,12 @@ static void text_chunk_append(TEXT_BUFFER_REC *buffer,
 				}
 		}
 
-		if (left > 0 && data[left-1] == 0)
-			left--; /* don't split the commands */
+		for (i = 5; i > 0; --i) {
+			if (left >= i && data[left-i] == 0) {
+				left -= i; /* don't split the commands */
+				break;
+			}
+		}
 
 		memcpy(chunk->buffer + chunk->pos, data, left);
 		chunk->pos += left;
@@ -238,26 +243,67 @@ int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search)
         return FALSE;
 }
 
+#ifdef TERM_TRUECOLOR
+static void format_24bit_line_color(unsigned char *out, int *pos, int bg, unsigned int color)
+{
+	unsigned char rgb[] = { color >> 16, color >> 8, color };
+	unsigned char x = bg ? 0x1 : 0;
+	unsigned int i;
+	out[(*pos)++] = LINE_COLOR_24;
+	for (i = 0; i < 3; ++i) {
+		if (rgb[i] > 0x20)
+			out[(*pos)++] = rgb[i];
+		else {
+			out[(*pos)++] = 0x20 + rgb[i];
+			x |= 0x10 << i;
+		}
+	}
+	out[(*pos)++] = 0x20 + x;
+}
+#endif
+
 void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 				int fg, int bg, int flags)
 {
-	unsigned char data[20];
+	unsigned char data[22];
 	int pos;
 
-        /* get the fg & bg command chars */
-	fg = fg < 0 ? LINE_COLOR_DEFAULT : fg & 0x0f;
-	bg = LINE_COLOR_BG | (bg < 0 ? LINE_COLOR_DEFAULT : bg & 0x0f);
-
 	pos = 0;
-	if (fg != buffer->last_fg) {
+	if (fg != buffer->last_fg
+	    || (flags & GUI_PRINT_FLAG_COLOR_24_FG) != (buffer->last_flags & GUI_PRINT_FLAG_COLOR_24_FG)) {
 		buffer->last_fg = fg;
 		data[pos++] = 0;
-		data[pos++] = fg == 0 ? LINE_CMD_COLOR0 : fg;
+#ifdef TERM_TRUECOLOR
+		if (flags & GUI_PRINT_FLAG_COLOR_24_FG)
+			format_24bit_line_color(data, &pos, 0, fg);
+		else
+#endif
+		if (fg < 0)
+			data[pos++] = LINE_COLOR_DEFAULT;
+		else if (fg < 16)
+			data[pos++] = fg == 0 ? LINE_CMD_COLOR0 : fg;
+		else if (fg < 256) {
+			data[pos++] = LINE_COLOR_EXT;
+			data[pos++] = fg;
+		}
 	}
-	if (bg != buffer->last_bg) {
+	if (bg != buffer->last_bg
+	    || (flags & GUI_PRINT_FLAG_COLOR_24_BG) != (buffer->last_flags & GUI_PRINT_FLAG_COLOR_24_BG)) {
                 buffer->last_bg = bg;
 		data[pos++] = 0;
-		data[pos++] = bg;
+#ifdef TERM_TRUECOLOR
+		if (flags & GUI_PRINT_FLAG_COLOR_24_BG)
+			format_24bit_line_color(data, &pos, 1, bg);
+		else
+#endif
+		if (bg < 0)
+			data[pos++] = LINE_COLOR_BG | LINE_COLOR_DEFAULT;
+		else if (bg < 16)
+			data[pos++] = LINE_COLOR_BG | bg;
+		else if (bg < 256) {
+			data[pos++] = LINE_COLOR_EXT_BG;
+			data[pos++] = bg;
+		}
 	}
 
 	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (buffer->last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
@@ -275,6 +321,10 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 	if ((flags & GUI_PRINT_FLAG_BOLD) != (buffer->last_flags & GUI_PRINT_FLAG_BOLD)) {
 		data[pos++] = 0;
 		data[pos++] = LINE_CMD_BOLD;
+	}
+	if ((flags & GUI_PRINT_FLAG_ITALIC) != (buffer->last_flags & GUI_PRINT_FLAG_ITALIC)) {
+		data[pos++] = 0;
+		data[pos++] = LINE_CMD_ITALIC;
 	}
 	if (flags & GUI_PRINT_FLAG_INDENT) {
 		data[pos++] = 0;
@@ -318,8 +368,8 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 		data[len-2] == 0 && data[len-1] == LINE_CMD_EOL;
 
 	if (buffer->last_eol) {
-		buffer->last_fg = LINE_COLOR_DEFAULT;
-		buffer->last_bg = LINE_COLOR_DEFAULT | LINE_COLOR_BG;
+		buffer->last_fg = -1;
+		buffer->last_bg = -1;
 		buffer->last_flags = 0;
 	}
 
@@ -427,10 +477,17 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 
 		if (!coloring) {
 			/* no colors, skip coloring commands */
+			if (cmd == LINE_COLOR_EXT || cmd == LINE_COLOR_EXT_BG)
+				ptr++;
+#ifdef TERM_TRUECOLOR
+			else if (cmd == LINE_COLOR_24)
+				ptr+=4;
+#endif
+
                         continue;
 		}
 
-		if ((cmd & 0x80) == 0) {
+		if ((cmd & LINE_CMD_EOL) == 0) {
 			/* set color */
                         set_color(str, cmd);
 		} else switch (cmd) {
@@ -448,6 +505,10 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_BOLD);
 			break;
+		case LINE_CMD_ITALIC:
+			g_string_append_printf(str, "\004%c",
+					  FORMAT_STYLE_ITALIC);
+			break;
 		case LINE_CMD_COLOR0:
 			g_string_append_printf(str, "\004%c%c",
 					  '0', FORMAT_COLOR_NOCHANGE);
@@ -456,6 +517,17 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 			g_string_append_printf(str, "\004%c",
 					  FORMAT_STYLE_INDENT);
 			break;
+		case LINE_COLOR_EXT:
+			format_ext_color(str, 0, *ptr++);
+			break;
+		case LINE_COLOR_EXT_BG:
+			format_ext_color(str, 1, *ptr++);
+			break;
+#ifdef TERM_TRUECOLOR
+		case LINE_COLOR_24:
+			g_string_append_printf(str, "\004%c", FORMAT_COLOR_24);
+			break;
+#endif
 		}
 	}
 }

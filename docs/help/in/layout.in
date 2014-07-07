@@ -1,13 +1,28 @@
 
+%9Syntax:%9
+
 @SYNTAX:layout@
 
-Saves the current window layout to configuration (yes, you'll still
-need to use /SAVE to save the configuration to file). Next time you run
-irssi, all the channels and queries are exactly in the same windows
-where they were when you called /LAYOUT SAVE.
+%9Parameters:%9
 
-Channels aren't actually joined in those windows immediately, they're
-just marked "next time you join to '#channel' in server that has tag
-'ircnet' place it to this window".
+    SAVE:     Saves your layout to the configuration.
+    RESET:    Removes the saved layout from the configuration.
 
-/LAYOUT RESET removes the saved layout.
+%9Descripton:%9
+
+    Saves the layout of your window configuration; the next time you connect
+    to the server, you will join the channels in the same window as before.
+
+    This method enables you to keep the same window layout when you start Irssi
+    the next time.
+
+    You will need to use the SAVE command to confirm and commit the changes
+    into the configuration file.
+
+%9Examples:%9
+
+    /LAYOUT SAVE
+    /LAYOUT RESET
+
+%9See also:%9 SAVE, WINDOW
+

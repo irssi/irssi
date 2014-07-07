@@ -1,35 +1,46 @@
 
+%9Syntax:%9
+
 @SYNTAX:channel@
 
-Irssi can automatically join to specified channels in specified
-IRC networks. It can also automatically send the password when
-manually joining to channel without specifying the password.
+%9Parameters:%9
 
-/CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-             <channel> <network> [<password>]
+    LIST:       Displays the list of configured channels.
+    ADD:        Adds a channel to your configuration.
+    REMOVE:     Removes a channel from your configuration.
 
-With -bots and -botcmd arguments you can automatically send
-commands to someone in channel. This is useful for automatically
-getting ops for channels, for example
+    -auto:      Automatically join the channel.
+    -noauto:    Don't join the channel automatically.
+    -bots:      The list of hostnames send automated commands to.
+    -botcmd:    The automated commands to perform.
 
-/CHANNEL ADD -auto -bots "*!bot@bothost.org bot*!*@host2.org"
-             -botcmd "msg $0 op mypass" #channel ircnet
+    The channel and network to add to the configuration; you can optionally
+    specify the password of a channel.
 
-You can also use the -botcmd without -bots argument. The command is
-then sent whenever you join the channel.
+    If no parameters are given, the list of channels you have joined will be
+    displayed.
+    
+%9Description:%9
 
-If you want to remove some settings from existing channel record,
-for example bots, just give the -bots "" parameters to it. Password
-can be removed by setting it to - (or actually, "" works too).
+    Adds, removes or displays the configuration of channels; this method is
+    used to automate and simplify your workflow.
 
-You can remove the channels with
-/CHANNEL REMOVE <channel> <network>
+    You can use the ADDALLCHANS command, which is a default alias, to add all
+    the channels you are present on into the configuration.
 
-/CHANNEL LIST displays list of channels with settings.
+%9Examples:%9
 
-/CHANNEL without any arguments displays list of channels you have
-joined. You can also use /CHANNEL to join to channels just as with
-/JOIN, like /CHANNEL #a.
+    /CHANNEL
+    /CHANNEL LIST
+    /CHANNEL ADD -auto #irssi Freenode
+    /CHANNEL ADD -auto #basementcat Quakenet secret_lair
+    /CHANNEL ADD -auto -bots "*!@*.irssi.org *!bot@irssi.org" -botcmd "msg $0 op WzerTrzq" #hideout Freenode
+    /CHANNEL ADD -auto -bots "Q!TheQBot@CServe.quakenet.org" -botcmd "^MSG Q op #irssi" #irssi Quakenet
+    /CHANNEL REMOVE #hideout Freenode
 
-See also: TS, JOIN
+%9Special Example:%9
+
+    /ADDALLCHANS
+
+%9See also:%9 JOIN, TS
 

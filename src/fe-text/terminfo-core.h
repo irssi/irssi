@@ -16,6 +16,8 @@
 #define terminfo_set_bold() current_term->set_bold(current_term)
 #define terminfo_set_uline(set) current_term->set_uline(current_term, set)
 #define terminfo_set_standout(set) current_term->set_standout(current_term, set)
+#define terminfo_set_reverse() current_term->set_reverse(current_term)
+#define terminfo_set_italic(set) current_term->set_italic(current_term, set)
 #define terminfo_is_colors_set(term) (term->TI_fg != NULL)
 #define terminfo_beep(term) current_term->beep(current_term)
 
@@ -37,8 +39,10 @@ struct _TERM_REC {
 	void (*set_normal)(TERM_REC *term);
 	void (*set_blink)(TERM_REC *term);
 	void (*set_bold)(TERM_REC *term);
+	void (*set_reverse)(TERM_REC *term);
 	void (*set_uline)(TERM_REC *term, int set);
 	void (*set_standout)(TERM_REC *term, int set);
+	void (*set_italic)(TERM_REC *term, int set);
 
         void (*beep)(TERM_REC *term);
 
@@ -74,8 +78,9 @@ struct _TERM_REC {
 	int TI_colors; /* numbers of colors in TI_fg[] and TI_bg[] */
 	const char *TI_sgr0; /* turn off all attributes */
 	const char *TI_smul, *TI_rmul; /* underline on/off */
-        const char *TI_smso, *TI_rmso; /* standout on/off */
-        const char *TI_bold, *TI_blink;
+	const char *TI_smso, *TI_rmso; /* standout on/off */
+	const char *TI_sitm, *TI_ritm; /* italic on/off */
+	const char *TI_bold, *TI_blink, *TI_rev;
 	const char *TI_setaf, *TI_setab, *TI_setf, *TI_setb;
 
         /* Colors - generated and dynamically allocated */

@@ -1,6 +1,18 @@
 
+%9Syntax:%9
+
 @SYNTAX:flushbuffer@
 
-If either write_buffer_timeout or write_buffer_size have been set an immediate
-write of the buffers is forced.
+%9Description:%9
+
+    Forces an immediate flush of the buffers if the related settings are enabled.
+
+%9Examples:%9
+
+    /FLUSHBUFFER
+    
+    /SET write_buffer_size
+    /SET write_buffer_timeout
+
+%9See also:%9 REDRAW, SCROLLBACK
 

@@ -1,5 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:hash@
 
-Not available.
+%9Description:%9
+
+    This is an ancient command that is no longer used; if you on an IRC server
+    that supports this command, please contact us to we can update the
+    documentation.
+
+%9Examples:%9
+
+    /HASH
+
+%9References:%9
+
+    http://www.irssi.org
+    https://github.com/irssi
+
+%9See also:%9 DIE, KILL, OPER
 

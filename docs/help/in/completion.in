@@ -1,31 +1,34 @@
 
+%9Syntax:%9
+
 @SYNTAX:completion@
 
-Irssi can "complete" some words for you - you can write just first few letters
-of the word and press TAB (or any other key with action word_completion
-assigned). Then, irssi will choose the most probable matching word and inserts
-it to the command line. You can press TAB repetitively and irssi will replace
-the chosen word with another possible words matching to the letters you wrote.
+%9Parameters:%9
 
-The words chosen usually depend on their context - they can be filenames or
-command names, but most frequently they are nicks of people on same channels as
-you are. However, you can have global list of own completions, which apply to
-all contexts. This command is dedicated to maintaining of such a list.
+    -auto:      Inserts the completion without pressing a word completion character.
+    -delete:    Removes the completion from the configuration.
+    
+    A key and the value to use as a replacement. If no argument is given, the
+    list of completions will be displayed.
 
-Without any parameters, /COMPLETION displays list of all user completions.
+%9Description:%9
 
-/COMPLETION [-auto] <prefix> <string> adds completion which gets triggered when
-you press TAB (or any other key with action word_completion assigned) after
-writing <prefix> specified and which expands to <string>. When -auto is
-specified, the completion gets triggered even when you press SPACE or ENTER (or
-any other key with action check_replaces assigned) after the <prefix>. If
-there's already some <prefix> completion in the list, it will get replaced.
+    Replaces or completed words or letters; you can write just the first few
+    letters of the word and press TAB to insert a replacement.
 
-/COMPLETION -delete <prefix> removes completion of <prefix> from the user
-completion list.
+    When a replacement has been found, Irssi will choose the most probable
+    matching word and replaces it; you may press TAB repeatedly to swap between
+    matches.
+    
+    If you want to remove a completion which has the auto parameter set, you
+    need to enclose the completion between "'" characters.
 
-Note: When -auto is specified for the <prefix> you want to remove you have to 
-quote it like /COMPLETION -delete '<prefix>'. Works with doublequotes aswell.
+%9Examples:%9
 
-See also: BIND
+    /COMPLETION w/h without
+    /COMPLETION -auto anywya anyway
+    /COMPLETION -delete 'anywya'
+    /COMPLETION -delete without
+
+%9See also:%9 BIND
 

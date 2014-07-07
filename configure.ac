@@ -166,6 +166,15 @@ AC_ARG_ENABLE(dane,
 	fi,
 	want_dane=no)
 
+AC_ARG_ENABLE(true-color,
+[  --enable-true-color     Build with true color support in terminal],
+	if test x$enableval = xno ; then
+		want_truecolor=no
+	else
+		want_truecolor=yes
+	fi,
+	want_truecolor=no)
+
 dnl **
 dnl ** SSL Library checks (OpenSSL)
 dnl **
@@ -212,7 +221,7 @@ AC_CACHE_VAL(irssi_cv_type_socklen_t,
 [AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <sys/socket.h>],
-[socklen_t t;],
+[socklen_t t = 0; return((int)t); ],
 irssi_cv_type_socklen_t=yes,
 irssi_cv_type_socklen_t=no,
 )])
@@ -294,6 +303,15 @@ if test -z "$GLIB_LIBS"; then
   echo "*** We recommend you get the latest stable GLIB 2 version."
   echo "*** Compile and install it, and make sure pkg-config finds it,"
   echo "*** by adding the path where the .pc file is located to PKG_CONFIG_PATH"
+  echo -n "*** Or alternatively install your distribution's package"
+  if test -f /etc/debian_version; then
+    echo :
+    echo "*** sudo apt-get install libglib2.0-dev"
+  elif test -f /etc/redhat-release; then
+    echo " (glib2-devel)"
+  else
+    echo .
+  fi
   echo
 
   AC_ERROR([GLIB is required to build irssi.])
@@ -375,7 +393,7 @@ if test "x$want_textui" = "xyes"; then
 		  TEXTUI_LIBS="-ltermcap"
 		  want_termcap=yes
 		], [
-		  AC_ERROR(Terminfo/termcap not found - install ncurses-devel package)
+		  AC_ERROR(Terminfo/termcap not found - install libncurses-dev or ncurses-devel package)
 		  want_textui=no
 		])))
 	fi
@@ -446,8 +464,10 @@ if test "$want_perl" != "no"; then
 		esac
 
 		dnl * check that perl's ldflags actually work
-		echo "main(){perl_alloc(); return 0;}" > conftest.c
-		$CC $CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
+		echo "#include <EXTERN.h>" > conftest.c
+		echo "#include <perl.h>" >> conftest.c
+		echo "int main(){perl_alloc(); return 0;}" >> conftest.c
+		$CC $CFLAGS $PERL_CFLAGS conftest.c -o conftest $LDFLAGS $PERL_LDFLAGS 2> perl.error.tmp > /dev/null
 		if test ! -s conftest -a "x$ignore_perl_errors" = "x"; then
 			perl_check_error="Error linking with perl libraries: $PERL_LDFLAGS: `cat perl.error.tmp`"
 			AC_MSG_RESULT([error linking with perl libraries, building without Perl])
@@ -617,7 +637,7 @@ if test "x$want_ipv6" = "xyes"; then
 	#include <netinet/in.h>
 	#include <netdb.h>
 	#include <arpa/inet.h>],
-	[struct in6_addr i;],
+	[struct in6_addr i = in6addr_any; return &i == &i;],
 	have_ipv6=yes,
 	)])
 	if test $have_ipv6 = yes; then
@@ -641,6 +661,12 @@ if test "x$want_dane" = "xyes"; then
 			AC_ERROR([SSL is required to build Irssi with DANE support enabled.])
 		fi
 	fi
+fi
+
+if test "x$want_truecolor" = "xyes" -a "x$want_termcap" != "xyes" -a "x$want_terminfo" = "xyes" ; then
+	AC_DEFINE([TERM_TRUECOLOR], [], [true color support in terminal])
+else
+	want_truecolor=no
 fi
 
 AC_CONFIG_FILES([
@@ -724,6 +750,11 @@ else
 	else
 		echo "Building with Perl support ....... : NO!"
 		echo " - $perl_check_error"
+                if test -f /etc/debian_version; then
+                  echo " - Try: sudo apt-get install libperl-dev"
+                elif test -f /etc/redhat-release; then
+                  echo " - Try installing perl-devel"
+                fi
 	fi
 fi
 
@@ -733,7 +764,7 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 	echo "   $perl_mod_error"
 
 	if test -f /etc/debian_version; then
-		echo " - Try: apt-get install libperl-dev"
+		echo " - Try: sudo apt-get install libperl-dev"
 	fi
 fi
 
@@ -758,9 +789,19 @@ echo
 
 echo "Building with IPv6 support ....... : $have_ipv6"
 echo "Building with SSL support ........ : $have_openssl"
+if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then
+  if test -f /etc/debian_version; then
+    echo " - Try: sudo apt-get install libssl-dev"
+  elif test -f /etc/redhat-release; then
+    echo " - Try installing openssl-devel"
+  else
+    echo " - Try installing OpenSSL development headers"
+  fi
+fi
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $have_gc"
 echo "Building with DANE support ....... : $have_dane"
+echo "Building with true color support.. : $want_truecolor"
 
 echo
 echo "If there are any problems, read the INSTALL file."
