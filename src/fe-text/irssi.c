@@ -27,6 +27,7 @@
 #include "core.h"
 #include "settings.h"
 #include "session.h"
+#include "servers.h"
 
 #include "printtext.h"
 #include "fe-common-core.h"
@@ -205,8 +206,10 @@ static void textui_finish_init(void)
 	signal_emit("irssi init finished", 0);
 	statusbar_redraw(NULL, TRUE);
 
-	printtext_window(active_win, MSGLEVEL_CRAP,
-				 "%s", banner_text);
+	if (servers == NULL && lookup_servers == NULL) {
+		printtext(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT,
+			  "%s", banner_text);
+	}
 
 	if (display_firsttimer) {
 		printtext_window(active_win, MSGLEVEL_CRAP,
