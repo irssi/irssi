@@ -96,7 +96,7 @@ static const char *firsttimer_text =
 	"documentation to get you going.\n\n"
 	"Our community and staff are available to assist you or\n"
 	"to answer any questions you may have.\n\n"
-	"Use the HELP command to get detailed information about\n"
+	"Use the /HELP command to get detailed information about\n"
 	"the available commands.\n"
 	"- - - - - - - - - - - - - - - - - - - - - - - - - - - -";
 
