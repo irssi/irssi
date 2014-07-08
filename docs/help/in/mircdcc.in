@@ -1,11 +1,28 @@
 
+%9Syntax:%9
+
 @SYNTAX:mircdcc@
 
-Selects whether to send mIRC style CTCPs in DCC chat
-session.
+%9Parameters:%9
 
-If a mIRC user sends first a CTCP, mIRC style CTCPs is
-automatically selected for that DCC Chat session.
+    ON:     Enables mIRC compatibility mode.
+    OFF:    Disables mIRC compatibility mode.
 
-See also: SET MIRC
+%9Description:%9
+
+    After establishing a DCC CHAT connection that you initiated, you might
+    encounter some protocol issues if the target is using mIRC.
+
+    If you or your target sees some unexpected output or behaviour inside a DCC
+    CHAT session, use this command to enable mIRC compatibility mode.
+
+    When receiving a connection from an mIRC user, the compatibility mode will
+    automatically be enabled.
+
+%9Examples:%9
+
+    /MIRCDCC ON
+    /MIRCDCC OFF
+
+%9See also:%9 ACTION, DCC, CTCP
 

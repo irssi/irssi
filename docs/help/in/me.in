@@ -1,8 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:me@
 
-Sends a CTCP ACTION to the current channel or query.
-For example: /me sits back.
+%9Parameters:%9
 
-See also: ACTION, CTCP
+    The message to emote.
+
+%9Description:%9
+
+    Sends an action emote to the active nickname or channel.
+
+%9Examples:%9
+
+    /ME is hungry!
+    /ME had an awesome day @ work
+    /ME is happy it's Friday
+
+%9See also:%9 ACTION, CTCP
 
