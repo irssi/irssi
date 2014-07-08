@@ -27,6 +27,7 @@
 #include "core.h"
 #include "settings.h"
 #include "session.h"
+#include "servers.h"
 
 #include "printtext.h"
 #include "fe-common-core.h"
@@ -95,7 +96,7 @@ static const char *firsttimer_text =
 	"documentation to get you going.\n\n"
 	"Our community and staff are available to assist you or\n"
 	"to answer any questions you may have.\n\n"
-	"Use the HELP command to get detailed information about\n"
+	"Use the /HELP command to get detailed information about\n"
 	"the available commands.\n"
 	"- - - - - - - - - - - - - - - - - - - - - - - - - - - -";
 
@@ -205,12 +206,14 @@ static void textui_finish_init(void)
 	signal_emit("irssi init finished", 0);
 	statusbar_redraw(NULL, TRUE);
 
-	printtext_window(active_win, MSGLEVEL_CRAP,
-				 "%s", banner_text);
+	if (servers == NULL && lookup_servers == NULL) {
+		printtext(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT,
+			  "%s", banner_text);
+	}
 
 	if (display_firsttimer) {
-		printtext_window(active_win, MSGLEVEL_CRAP,
-				 "%s", firsttimer_text);
+		printtext(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT,
+			  "%s", firsttimer_text);
 	}
 }
 
