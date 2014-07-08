@@ -1,7 +1,23 @@
 
+
+%9Syntax:%9
+
 @SYNTAX:motd@
 
-Shows the motd of the current or specified server. This contains
-usually some useful info on the server, administrator and
-the rules.
+%9Parameters:%9
+
+    The server or the server the target nickname is on; if no parameter is
+    given, the active server will be used.
+
+%9Description:%9
+
+    Displays the "Message of the Day" of an IRC server.
+
+%9Examples:%9
+
+    /MOTD
+    /MOTD orwel.freenode.org
+    /MOTD bob
+
+%9See also:%9 ADMIN, INFO, LINKS, MAP
 

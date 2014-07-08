@@ -1,7 +1,16 @@
 
+%9Syntax:%9
+
 @SYNTAX:map@
 
-Works only in some IRC networks and is often restricted to IRC operators.
+%9Description:%9
 
-Shows a graphical map of the IRC network, often with user counts.
+    Displays the network map of an IRC network; this command is usally
+    reserved for IRC operators and does not work on all servers.
+
+%9Examples:%9
+
+    /MAP
+
+%9See also:%9 DIE, LINKS, LUSERS
 
