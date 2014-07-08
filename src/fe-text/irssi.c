@@ -212,8 +212,8 @@ static void textui_finish_init(void)
 	}
 
 	if (display_firsttimer) {
-		printtext_window(active_win, MSGLEVEL_CRAP,
-				 "%s", firsttimer_text);
+		printtext(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT,
+			  "%s", firsttimer_text);
 	}
 }
 
