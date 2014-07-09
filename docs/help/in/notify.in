@@ -1,13 +1,29 @@
 
+%9Syntax:%9
+
 @SYNTAX:notify@
 
-     -away: Notifies about away-status changes
-     -list: Lists the notify list entries with all their settings   
-            <mask>: Either a simple "nick" or "nick!*@*blah.org". 
-            The nick can't contain wildcards, but the user/host can.
-        
-/NOTIFY without any arguments displays if the people in notify
-list are online or offline.
+%9Parameters:%9
 
-See also: UNNOTIFY, SET NOTIFY
+    -away:    Notifies you if the target modifies its away status.
+    -list:    Displays the list of notifications.
+
+    The nickname or mask to get a notification for; if no arguments are given,
+    the current matching notifications will be displayed.
+
+    You may also provide the network that the target must be on.
+
+%9Description:%9
+
+    Notifies you when a nickname or users matching a host on the notification
+    list comes online or offline.
+
+%9Examples:%9
+
+    /NOTIFY -list
+    /NOTIFY -away mike
+    /NOTIFY bob
+    /NOTIFY *!*@staff.irssi.org
+
+%9See also:%9 AWAY, HILIGHT, UNNOTIFY
 

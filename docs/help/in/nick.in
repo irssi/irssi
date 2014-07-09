@@ -1,5 +1,20 @@
 
+%9Syntax:%9
+
 @SYNTAX:nick@
 
-Changes your nick.
+%9Parameters:%9
+
+    Your new nickname.
+
+%9Description:%9
+
+    Changes your nickname on the active server.
+
+%9Examples:%9
+
+    /NICK mike
+    /NICK bob
+
+%9See also:%9 CONNECT, JOIN, MSG, PART
 

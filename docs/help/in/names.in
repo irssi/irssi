@@ -1,21 +1,27 @@
 
+%9Syntax:%9
+
 @SYNTAX:names@
 
-     -ops: show channel operators in list
-     -halfops: show half operators in list
-     -voices: show voiced people in list
-     -normal: show rest of the people in list
+%9Parameters:%9
 
-Shows the names (nicks) in the specified channels. /NAMES ** shows all
-nicks in all channels, you probably don't want to do this.
+    -count:      Displays the amount of users in the channel.
+    -ops:        Displays the channel operators.
+    -halfops:    Displays the channel demi-operators.
+    -voices:     Displays the users who are voiced in a channel.
 
-Examples:
+    The channels to report or ** for all channels you have joined; if no
+    arguments are given, the users in the active channel will be displayed.
 
-/NAMES
-     - shows nicks in the current channel.
+%9Description:%9
 
-/NAMES -ops #c1,#c2
-     - shows operators in channels #c1 and #c2
+    Displays the users who are in a channel; you can provide multiple channels
+    by separating them with the comma "," character.
 
-See also: WHO, CHANNEL
+%9Examples:%9
+
+    /NAMES -ops
+    /NAMES -voices #irssi,#freenode
+
+%9See also:%9 JOIN, PART, WHO, WHOIS
 
