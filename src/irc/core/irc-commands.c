@@ -965,8 +965,6 @@ void irc_commands_init(void)
 	command_bind_irc("who", NULL, (SIGNAL_FUNC) cmd_who);
 	command_bind_irc("names", NULL, (SIGNAL_FUNC) cmd_names);
 	command_bind_irc("nick", NULL, (SIGNAL_FUNC) cmd_nick);
-	/* SYNTAX: NOTE <command> [&<password>] [+|-<flags>] [<arguments>] */
-	command_bind_irc("note", NULL, (SIGNAL_FUNC) command_self);
 	command_bind_irc("whois", NULL, (SIGNAL_FUNC) cmd_whois);
 	command_bind_irc("whowas", NULL, (SIGNAL_FUNC) cmd_whowas);
 	command_bind_irc("ping", NULL, (SIGNAL_FUNC) cmd_ping);
@@ -1062,7 +1060,6 @@ void irc_commands_deinit(void)
 	command_unbind("who", (SIGNAL_FUNC) cmd_who);
 	command_unbind("names", (SIGNAL_FUNC) cmd_names);
 	command_unbind("nick", (SIGNAL_FUNC) cmd_nick);
-	command_unbind("note", (SIGNAL_FUNC) command_self);
 	command_unbind("whois", (SIGNAL_FUNC) cmd_whois);
 	command_unbind("whowas", (SIGNAL_FUNC) cmd_whowas);
 	command_unbind("ping", (SIGNAL_FUNC) cmd_ping);

@@ -1,7 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:nctcp@
 
-Sends a CTCP reply notice to the nick/channel.
+%9Parameters:%9
 
-See also: CTCP, ACTION, MSG, NOTICE
+    A target nickname or channel, a command and the data.
+
+%9Description:%9
+
+    Sends a CTCP reply to a nickname or channel; you can provide multiple
+    targets by separating them with the comma "," character.
+
+%9Examples:%9
+
+    /NCTCP #irssi VERSION King of the Jungle v1.0
+    /NCTCP bob,#freenode USERINFO I am bob :p
+
+%9See also:%9 CTCP
 

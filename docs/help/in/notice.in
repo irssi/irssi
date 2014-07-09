@@ -1,10 +1,24 @@
 
+%9Syntax:%9
+
 @SYNTAX:notice@
 
-Sends a notice to the nick or the channel. Usually notices are 
-used in bots and scripts for different kinds of replies. The 
-IRC protocol states that notices may not generate replies to
-avoid msg loops.
+%9Parameters:%9
 
-See also: NCTCP, MSG
+    The targets and the message to notify.
+
+%9Description:%9
+
+    Sends a notice to the target nickname or channel; these are often used in
+    automated bots or scripts.
+    
+    You can provide multiple targets by separating them with the comma ","
+    character.
+
+%9Examples:%9
+
+    /NOTICE mike You sir, are just awesome!
+    /NOTICE bob,#irssi Fish go blub :p
+
+%9See also:%9 CTCP, MSG, NCTCP
 
