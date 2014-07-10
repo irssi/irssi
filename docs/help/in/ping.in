@@ -1,10 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:ping@
 
-Sends CTCP PING to another IRC client or to an IRC channel.
-This is used to find out the speed of IRC network. When
-the PING reply comes in, irssi shows the interval time
-between sending the request and receiving the reply.
+%9Parameters:%9
 
-See also: CTCP
+    The nickname or channel to ping, you can use the asterisk "*" character to
+    ping every user on a channel.
+
+%9Description:%9
+
+    Sends a CTCP PING request to a nickname or a channel; this is used to find
+    out the latency on the network.
+
+%9Examples:%9
+
+    /PING bob
+    /PING #irssi
+
+%9See also:%9 CTCP, MSG
 
