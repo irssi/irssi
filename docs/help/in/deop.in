@@ -9,8 +9,8 @@
 
 %9Description:%9
 
-    Removes the channel operator privileges from the given nicknames; you
-    may use the wildcard character "*" in a nickname.
+    Removes the channel operator privileges from the given nicknames; you may
+    use the wildcard character "*" in a nickname.
 
 %9Examples:%9
 

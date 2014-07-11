@@ -5,17 +5,19 @@
 
 %9Parameters:%9
 
-    The nicknames, separated by a comma, to grant channel operator status to.
+    A list of nicknames to op.
 
 %9Description:%9
 
-    Grants the given nicknames the status of channel operator; you may use
-    wildcards in the nicknames.
+    Grants the channel operator privileges to the given nicknames; you may use
+    the wildcard character "*" in a nickname.
 
 %9Examples:%9
 
     /OP mike
-    /OP bob,sarah
+    /OP bob sarah
+    /OP jo*n
+    /OP *
 
 %9See also:%9 DEOP, DEVOICE, KICK, MODE, VOICE
 
