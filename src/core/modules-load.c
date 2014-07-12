@@ -163,7 +163,7 @@ static int module_load_name(const char *path, const char *rootmodule,
 	GModule *gmodule;
         MODULE_REC *module;
 	MODULE_FILE_REC *rec;
-	gpointer value1, value2;
+	gpointer value1, value2 = NULL;
 	char *initfunc, *deinitfunc;
         int found;
 
