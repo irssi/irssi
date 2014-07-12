@@ -1,14 +1,24 @@
 
+%9Syntax:%9
+
 @SYNTAX:query@
 
-Starts a private conversation with the nick.  All text you
-type that would normally be sent to your channel now goes to
-the specified nick in the form of MSGs. 
+%9Parameters:%9
 
-Usually this command opens up a new window, too.
+    -window:          Uses the active window instead of opening a new one.
+    -<server tag>:    The server tag the target nickname is on.
 
-Note: It removes the active query from the active window when
-used without parameters, like UNQUERY.
+    The nickname to query and the message.
 
-See also: WINDOW, MSG, SET QUERY, UNQUERY
+%9Description:%9
+
+    Starts a private conversation with a nickname.
+
+%9Examples:%9
+
+    /QUERY mike
+    /QUERY -freenode bob
+    /QUERY -freenode -window sarah
+
+%9See also:%9 MSG, UNQUERY, WINDOW
 

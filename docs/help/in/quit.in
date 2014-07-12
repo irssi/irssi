@@ -1,10 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:quit@
 
-This ends your IRC session. If a quit message is supplied, it 
-will be displayed to anyone else on any channel you were on 
-before quitting. If one isn't specified, the text "Leaving" is
-used.
+%9Parameters:%9
 
-/EXIT does the same.
+    The message to advertise.
+
+%9Description:%9
+
+    Terminates the application and advertises the given message on all the
+    networks you are connected to.
+
+%9Examples:%9
+
+    /QUIT
+    /QUIT <@cartman> Screw you guys, I'm going home!
+
+%9See also:%9 DISCONNECT
 
