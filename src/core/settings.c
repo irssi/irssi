@@ -121,7 +121,7 @@ int settings_get_bool(const char *key)
 int settings_get_time(const char *key)
 {
 	const char *str;
-	int msecs;
+	int msecs = 0;
 
 	str = settings_get_str_type(key, SETTING_TYPE_TIME);
 	if (str != NULL && !parse_time_interval(str, &msecs))
@@ -140,7 +140,7 @@ int settings_get_level(const char *key)
 int settings_get_size(const char *key)
 {
 	const char *str;
-	int bytes;
+	int bytes = 0;
 
 	str = settings_get_str_type(key, SETTING_TYPE_SIZE);
 	if (str != NULL && !parse_size(str, &bytes))
