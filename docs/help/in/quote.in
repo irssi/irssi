@@ -13,7 +13,7 @@
 
 %9Examples:%9
 
-    /QUOTE PRIVMSG mike: Hey, this works!
+    /QUOTE PRIVMSG mike :Hey, this works!
     /QUOTE OPERWALL :Meow!
 
 %9See also:%9 CONNECT, DISCONNECT, JOIN, MSG, PART

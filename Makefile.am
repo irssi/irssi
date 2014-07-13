@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 # create default-config.h
 BUILT_SOURCES = default-config.h default-theme.h irssi-version.h
 
-.PHONY: irssi-version.h
+@MAINTAINER_MODE_TRUE@.PHONY: irssi-version.h
 
 default-config.h: $(srcdir)/irssi.conf
 	$(srcdir)/file2header.sh $(srcdir)/irssi.conf default_config > default-config.h
