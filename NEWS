@@ -9,7 +9,12 @@ v0.8.17-head 2014-xx-xx  The Irssi team <staff@irssi.org>
 	  'split_line_end' contains a string added to the end of line fragments.
 	  'split_line_start' contains a string added to the beginning of line
 	  fragments. See Github PR #29.
-	- Fixed various compiler warnings.
+	+ Added special /ignore NO_ACT level to ignore only activity (see /help ignore).
+	+ Support for 256 and true color terminals (see Github PR #48).
+	+ Support for italtics (see Github PR #58).
+	+ Rewrote many help files.
+	- Fixed various compiler warnings and use of deprecated functions.
+	- Fixed Perl API usage and added PERL_NO_GET_CONTEXT to reduce code size.
 	- Fixed format_get_text Perl API. See Github PR #23.
 	- Fixed gui_printtext_after and term_refresh_*() visibility. See Github PR #22.
 	- Fixed issue where UTF-8 characters was corrupted once for every 32k text. See Github PR #12.
