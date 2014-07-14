@@ -1014,8 +1014,6 @@ void irc_commands_init(void)
 	command_bind_irc("oper", NULL, (SIGNAL_FUNC) cmd_oper);
 	/* SYNTAX: RESTART */
 	command_bind_irc("restart", NULL, (SIGNAL_FUNC) command_self);
-	/* SYNTAX: RPING <server> */
-	command_bind_irc("rping", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: SQUIT <server>|<mask> <reason> */
 	command_bind_irc("squit", NULL, (SIGNAL_FUNC) command_2self);
 	/* SYNTAX: UPING <server> */
@@ -1088,7 +1086,6 @@ void irc_commands_deinit(void)
 	command_unbind("hash", (SIGNAL_FUNC) command_self);
 	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);
 	command_unbind("restart", (SIGNAL_FUNC) command_self);
-	command_unbind("rping", (SIGNAL_FUNC) command_self);
 	command_unbind("squit", (SIGNAL_FUNC) command_2self);
 	command_unbind("uping", (SIGNAL_FUNC) command_self);
 	command_unbind("userhost", (SIGNAL_FUNC) command_self);
