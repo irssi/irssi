@@ -11,7 +11,7 @@ v0.8.17-head 2014-xx-xx  The Irssi team <staff@irssi.org>
 	  fragments. See Github PR #29.
 	+ Added special /ignore NO_ACT level to ignore only activity (see /help ignore).
 	+ Support for 256 and true color terminals (see Github PR #48).
-	+ Support for italtics (see Github PR #58).
+	+ Support for italics (see Github PR #58).
 	+ Rewrote many help files.
 	- Fixed various compiler warnings and use of deprecated functions.
 	- Fixed Perl API usage and added PERL_NO_GET_CONTEXT to reduce code size.
