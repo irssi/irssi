@@ -1,59 +1,39 @@
 
+%9Syntax:%9
+
 @SYNTAX:recode@
 
-RECODE
-    %|List the conversion database
+%9Parameters:%9
 
-RECODE ADD %|[<tag>]|[[<tag>/]<target>] <charset>
-    %|Add an entry to the conversion database (if tag or target is 
-    omitted, the current channel or query will be used). You can specify 
-    the <tag> to have different charsets for the same <target> for
-    different networks. You can omit the target, and specify only the tag
-    if you want to add an entry for the network.
+    ADD:        Adds an entry into the conversion database.
+    REMOVE:     Removes an entry from the conversion database.
 
-RECODE REMOVE %|[<tag>|<target>]
-    %|Remove an entry from the conversion database (if tag or target is
-    omitted, the current channel or query will be used)
+    The network tag and channel or nickname to add or remove; if no target is
+    given, the active nickname or channel will be used.
 
-To specify your local charset you have to set term_charset
+%9Description:%9
 
-Example:
+    Recodes the data transmitted to and received from nicknames and channels
+    into a specific charset.
 
-/SET term_charset <charset>
+    To get a list of supported charsets on your system, you can generally use
+    the "iconv -l" command.
 
-To see the recode settings: /SET recode
+%9Examples:%9
 
-You can change them with /SET 
+    /RECODE
+    /RECODE ADD Freenode/mike utf-8
+    /RECODE ADD #korea euc-kr
+    /RECODE REMOVE #korea
 
-Examples:
+%9Special Examples:%9
 
-/SET recode OFF 
-to turn off recode completely
+    /SET term_charset utf-8
+    /SET recode_fallback ISO-8859-15
+    /SET recode_out_default_charset ISO-8859-15
 
-/SET recode_fallback <charset> 
-to set the fallback charset for incoming events
+    /TOGGLE recode_transliterate
+    /TOGGLE recode_autodetect_utf8
 
-This charset is used if your term_charset is UTF-8
-and the conversion for the target is not set and
-the text is not UTF-8.
-
-/SET recode_out_default_charset <charset> 
-to set the global outgoing charset
-
-When it's set to a charset it will be used
-if no conversion for the target is set.
-
-/SET recode_transliterate ON 
-to enable the global transliteration.
-
-The transliteration is based on your locale settings, 
-if it doesn't work properly your locale settings may be wrong.
-You can enable it per target by adding //TRANSLIT to the <charset>
-
-/SET recode_autodetect_utf8 OFF
-to turn automatic UTF-8 detection off.
-
-Hint: <charset> can be almost everything listed by 'iconv -l'
-
-See also: NETWORK
+%9See also:%9 CONNECT, MSG, NETWORK, SERVER
 

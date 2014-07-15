@@ -1,12 +1,16 @@
 
+%9Syntax:%9
+
 @SYNTAX:restart@
 
-IRC Operator command.
+%9Description:%9
 
-This command is used to completely restart the server, breaking all
-connections. A side effect of this is that the configuration file
-will be read again. However, it is generally more useful for upgrading
-the server software.
+    Restarts the active IRC server; this command is restricted to IRC
+    administrators.
 
-See also: OPER, DIE
+%9Examples:%9
+
+    /RESTART
+
+%9See also:%9 DIE, KILL, OPER, REHASH
 

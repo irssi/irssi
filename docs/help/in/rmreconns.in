@@ -1,7 +1,15 @@
 
+%9Syntax:%9
+
 @SYNTAX:rmreconns@
 
-Removes the pending reconnections from the reconnect list.
+%9Description:%9
 
-See also: CONNECT, RECONNECT, SERVER
+    Removes all active and pending reconnections.
+
+%9Examples:%9
+
+    /RMRECONNS
+
+%9See also:%9 CONNECT, DISCONNECT, NETWORK, SERVER
 

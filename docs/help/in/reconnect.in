@@ -1,10 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:reconnect@
 
-You can reconnect to server with /RECONNECT <n>. 
+%9Parameters:%9
 
-/RECONNECT without any arguments will disconnect from the 
-active server and reconnect back immediately.
+    The network tag and message to advertise; if no arguments are given, the
+    active server and default message will be used.
 
-See also: SERVER, DISCONNECT, RMRECONNS
+%9Description:%9
+
+    Disconnect and reconnect from a network.
+
+%9Examples:%9
+
+    /RECONNECT
+    /RECONNECT Freenode
+    /RECONNECT EFnet BRB :)
+
+%9See also:%9 CONNECT, DISCONNECT, NETWORK, RMRECONNS, SERVER
 

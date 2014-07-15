@@ -1,9 +1,15 @@
 
+%9Syntax:%9
+
 @SYNTAX:rmrejoins@
 
-Removes the pending rejoins from the channel rejoin list in active
-server. Channels are added to rejoin list when join failed because of
-netsplits in server ("Channel is temporarily unavailable").
+%9Description:%9
 
-See also: JOIN
+    Removes all active and pending join requests.
+
+%9Examples:%9
+
+    /RMREJOINS
+
+%9See also:%9 JOIN, PART
 
