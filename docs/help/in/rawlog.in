@@ -1,17 +1,26 @@
 
+%9Syntax:%9
+
 @SYNTAX:rawlog@
 
-All data that is received or sent to server is kept in a raw log
-buffer for a while. Also event redirections are kept there. This is
-very useful for debugging purposes.
+%9Parameters:%9
 
-/RAWLOG SAVE <filename> - Save the current raw log buffer to file 
+    SAVE:     Saves the raw server buffer into a file.
+    OPEN:     Opens a logfile and start logging all raw data.
+    CLOSE:    Closes the logfile
 
-/RAWLOG OPEN <filename> - Like /RAWLOG SAVE, but keep the log file
-                          open and write all new log to it.
+    The filename to store the raw data into.
 
-/RAWLOG CLOSE - Close the open raw log
-        
-/SET rawlog_lines <count> - Specify the number of raw log lines to
-                            keep in memory.
+%9Description:%9
+
+    Saves all the raw data that is received from and transmitted to the active
+    server into a logfile.
+
+%9Examples:%9
+
+    /RAWLOG SAVE ~/server.log
+    /RAWLOG OPEN ~/debug.log
+    /RAWLOG CLOSE
+
+%9See also:%9 LOG
 

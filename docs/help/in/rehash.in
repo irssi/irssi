@@ -1,14 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:rehash@
 
-IRC Operator command.
+%9Parameters:%9
 
-This command is used to force the current server to reload its
-ircd.conf configuration file. This is useful for effecting
-configuration changes without starting a new server.
+    The raw parameters to send to the server, if no arguments are given, none
+    will be sent to the server.
 
-Some servers have various types of rehashes, specified by an additional
-parameter.
+%9Description:%9
 
-See also: OPER, RESTART
+    Reloads the configuration of the IRC server you are are connected to; this
+    command is restricted to IRC operators.
+
+%9Examples:%9
+
+    /REHASH
+
+%9See also:%9 DIE, KILL, OPER
 
