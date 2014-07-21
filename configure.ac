@@ -158,7 +158,7 @@ case "$host_os" in
 esac
 
 
-AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([socket], [network socket])
 
 AC_SEARCH_LIBS([inet_addr], [nsl])
 
