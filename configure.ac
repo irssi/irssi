@@ -200,6 +200,10 @@ esac
 AC_CHECK_FUNC(socket, [], [
 	AC_CHECK_LIB(socket, socket, [
 		LIBS="$LIBS -lsocket"
+	],[
+		AC_CHECK_LIB(network, socket, [
+			LIBS="$LIBS -lnetwork"
+		])
 	])
 ])
 
