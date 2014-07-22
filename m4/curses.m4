@@ -244,6 +244,26 @@ AC_DEFUN([AC_SEARCH_NCURSES], [
 	       [renamed ncurses in /usr/local/include/ncurses])
     AC_NCURSES(/usr/include/ncurses, curses.h, -lncurses, -I/usr/include/ncurses -DRENAMED_NCURSES,
 	       [renamed ncurses in /usr/include/ncurses])
+    AC_NCURSES(/usr/include/ncurses, curses.h, -lncurses, -I/usr/include/ncurses -DRENAMED_NCURSES,
+	       [renamed ncurses in /usr/include/ncurses])
+
+    dnl
+    dnl Try Haiku ncurses
+    dnl Depending if we are building for the primary or secondary arch
+    dnl it can be installed at different locations
+    dnl
+    if $search_ncurses
+    then
+	if test -d /system/develop/headers
+	then
+	    haiku_arch=`getarch`
+	    for haiku_h in `findpaths -a $haiku_arch B_FIND_PATH_HEADERS_DIRECTORY`
+	    do
+		AC_NCURSES($haiku_h, ncurses.h, -lncurses,,
+		    [ncurses in $haiku_h])
+	    done
+        fi
+    fi
 
     dnl
     dnl We couldn't find ncurses, try SysV curses
