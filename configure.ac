@@ -197,17 +197,9 @@ case "$host_os" in
 esac
 
 
-AC_CHECK_FUNC(socket, [], [
-	AC_CHECK_LIB(socket, socket, [
-		LIBS="$LIBS -lsocket"
-	])
-])
+AC_SEARCH_LIBS([socket], [socket])
 
-AC_CHECK_FUNC(inet_addr, [], [
-	AC_CHECK_LIB(nsl, inet_addr, [
-		LIBS="$LIBS -lnsl"
-	])
-])
+AC_SEARCH_LIBS([inet_addr], [nsl])
 
 dnl * gcc specific options
 if test "x$ac_cv_prog_gcc" = "xyes"; then
