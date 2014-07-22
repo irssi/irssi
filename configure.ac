@@ -20,7 +20,7 @@ AC_PATH_PROG(perlpath, perl)
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
-AC_CHECK_HEADERS(sys/time.h sys/utsname.h regex.h)
+AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h regex.h)
 
 AC_SYS_LARGEFILE
 
@@ -206,21 +206,13 @@ if test "x$ac_cv_prog_gcc" = "xyes"; then
   CFLAGS="$CFLAGS -Wall"
 fi
 
-dnl * socklen_t - AC_CHECK_TYPE() would be _really_ useful if it only would
-dnl * accept header files where to find the typedef..
-AC_MSG_CHECKING([for socklen_t])
-AC_CACHE_VAL(irssi_cv_type_socklen_t,
-[AC_TRY_COMPILE([
-#include <sys/types.h>
-#include <sys/socket.h>],
-[socklen_t t = 0; return((int)t); ],
-irssi_cv_type_socklen_t=yes,
-irssi_cv_type_socklen_t=no,
-)])
-if test $irssi_cv_type_socklen_t = no; then
-AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
-fi
-AC_MSG_RESULT($irssi_cv_type_socklen_t)
+AC_CHECK_TYPE(socklen_t, ,
+	[AC_DEFINE([socklen_t], [int], [Define to 'int' if <sys/socket.h> doesn't define.])], [
+AC_INCLUDES_DEFAULT
+#ifdef HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
 
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
