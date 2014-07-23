@@ -355,7 +355,7 @@ void statusbar_item_redraw(SBAR_ITEM_REC *item)
 	if (item->max_size != item->size) {
 		/* item wants a new size - we'll need to redraw
 		   the statusbar to see if this is allowed */
-		statusbar_redraw(item->bar, FALSE);
+		statusbar_redraw(item->bar, item->config->right_alignment);
 	}
 
 	active_win = old_active_win;
