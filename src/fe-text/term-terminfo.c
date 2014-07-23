@@ -370,7 +370,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
                 if (term_use_colors) {
 			last_fg = fg;
-			if (!(fg & 0xff))
+			if (fg && !(fg & 0xff))
 				termctl_set_color_24bit(0, last_fg >> 8);
 			else
 				terminfo_set_fg(last_fg);
@@ -387,7 +387,7 @@ void term_set_color(TERM_WINDOW *window, int col)
 	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
 			last_bg = bg;
-			if (!(bg & 0xff))
+			if (bg && !(bg & 0xff))
 				termctl_set_color_24bit(1, last_bg >> 8);
 			else
 				terminfo_set_bg(last_bg);
