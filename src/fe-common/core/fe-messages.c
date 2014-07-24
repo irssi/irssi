@@ -82,7 +82,9 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			continue;
 		if (!ishighalnum(end[-1]) || ishighalnum(end[1]) ||
 		    end[1] == type || end[1] == '*' || end[1] == '_' ||
-		    (type == 29 && end[1] != '\0' && ishighalnum(end[2])))
+		    /* special case for italics to not emphasise
+		       common paths by skipping /.../.X */
+		    (type == 29 && i_ispunct(end[1]) && ishighalnum(end[2])))
 			continue;
 
 		if (IS_CHANNEL(item)) {
