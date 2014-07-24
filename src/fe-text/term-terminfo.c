@@ -324,6 +324,7 @@ static int termctl_set_color_24bit(int bg, unsigned int lc)
 }
 
 #define COLOR_RESET UINT_MAX
+#define COLOR_BLACK24 COLOR_RESET - 1
 
 /* Change active color */
 #ifdef TERM_TRUECOLOR
@@ -334,17 +335,26 @@ void term_set_color(TERM_WINDOW *window, int col)
 {
 	int set_normal;
 
-	unsigned int fg =
+	unsigned int fg, bg;
 #ifdef TERM_TRUECOLOR
-		(col & ATTR_FGCOLOR24) ? fgcol24 << 8 :
+	if (col & ATTR_FGCOLOR24) {
+		if (fgcol24)
+			fg = fgcol24 << 8;
+		else
+			fg = COLOR_BLACK24;
+	} else
 #endif
-		(col & FG_MASK);
+		fg = (col & FG_MASK);
 
-	unsigned int bg =
 #ifdef TERM_TRUECOLOR
-		(col & ATTR_BGCOLOR24) ? bgcol24 << 8 :
+	if (col & ATTR_BGCOLOR24) {
+		if (bgcol24)
+			bg = bgcol24 << 8;
+		else
+			bg = COLOR_BLACK24;
+	} else
 #endif
-		((col & BG_MASK) >> BG_SHIFT);
+		bg = ((col & BG_MASK) >> BG_SHIFT);
 
 	if (!term_use_colors && bg > 0)
 		col |= ATTR_REVERSE;
@@ -370,8 +380,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
                 if (term_use_colors) {
 			last_fg = fg;
-			if (fg && !(fg & 0xff))
-				termctl_set_color_24bit(0, last_fg >> 8);
+			if (fg >> 8)
+				termctl_set_color_24bit(0,
+							last_fg == COLOR_BLACK24 ? 0
+							: last_fg >> 8);
 			else
 				terminfo_set_fg(last_fg);
 		}
@@ -387,8 +399,10 @@ void term_set_color(TERM_WINDOW *window, int col)
 	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
                 if (term_use_colors) {
 			last_bg = bg;
-			if (bg && !(bg & 0xff))
-				termctl_set_color_24bit(1, last_bg >> 8);
+			if (bg >> 8)
+				termctl_set_color_24bit(1,
+							last_bg == COLOR_BLACK24 ? 0
+							: last_bg >> 8);
 			else
 				terminfo_set_bg(last_bg);
 		}
