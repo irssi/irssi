@@ -30,7 +30,7 @@
     -cmdspeed:       Specifies the minimum amount of time, expressed in
                      milliseconds, that the client must wait before sending
                      additional commands to the server.
-    -cmxmax:         Specifies the maximum number of commands to perform before
+    -cmdmax:         Specifies the maximum number of commands to perform before
                      starting the internal flood protection.
 
     The name of the network to add, edit or remove; if no parameter is given,
