@@ -393,8 +393,8 @@ static void sig_gui_key_pressed(gpointer keyp)
 	}
 
 	if (strcmp(str, "^") == 0) {
-		/* change it as ^^ */
-		str[1] = '^';
+		/* change it as ^-, that is an invalid control char */
+		str[1] = '-';
 		str[2] = '\0';
 	}
 
