@@ -1,20 +1,37 @@
 
+%9Syntax:%9
+
 @SYNTAX:scrollback@
 
-/SCROLLBACK, or the default alias /SB:
+%9Parameters:%9
 
-/SB LEVELCLEAR
-   - Remove lines with level matching one of those
-     specified in the comma-separated list <level>.
-/SB CLEAR
-   - Clear screen, free all memory used by texts in window.
-/SB HOME
-   - Jump to start of the buffer.
-/SB END
-   - Jump to end of the buffer.
-/SB GOTO [[-|+]line#|time]
-   - Jump to specified line or timestamp.
-     time format is [dd[.mm] | -<days ago>] hh:mi[:ss].
+    CLEAR:         Clears the screen and the buffer of all text.
+    LEVELCLEAR:    Clears the screen and the buffer of text matching the given
+                   levels.
+    GOTO:          Go to the given position.
+    HOME:          Go to the start of the buffer.
+    END:           Go to the end of the buffer.
 
-See also: SET SCROLL
+    -all:          Applies to all windows instead of only the active one.
+    -level:        The levels, separated by a comman, to match.
+
+    The line number, timestamp to jump to or the window reference number to
+    clear.
+
+%9Description:%9
+
+    Manipulate the text in the window to go to a to the given line number, or
+    clear the buffers.
+
+    The timestamp format is format is "[dd[.mm] | -<days ago>] hh:mi[:ss]".
+
+%9Examples:%9
+
+    /SCROLLBACK CLEAR
+    /SCROLLBACK LEVELCLEAR -level NOTICES
+    /SCROLLBACK GOTO 100
+    /SCROLLBACK HOME
+    /SCROLLBACK END
+
+%9See also:%9 CLEAR, WINDOW
 

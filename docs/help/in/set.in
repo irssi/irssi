@@ -1,23 +1,33 @@
 
+%9Syntax:%9
+
 @SYNTAX:set@
 
-You can view or change the settings with /SET command.
+%9Parameters:%9
 
-/SET without any arguments displays all the settings.
-/SET <key> displays settings whose key (partly) matches <key>
-/SET <key> <value> sets <key> to <value>
+    -clear:      Removes the setting's value from the configuration.
+    -default:    Restore the setting to its default value.
 
-Boolean settings accept only values ON, OFF and TOGGLE. You can
-also use /TOGGLE command to change them, so /TOGGLE <key> behaves
-like /SET <key> TOGGLE. /TOGGLE also accepts arguments ON and OFF
-when /TOGGLE behaves exactly like /SET.
+    The setting and the value; if no value is given, the list of settings that
+    matched will be returned. If no arguments are given, all the settings will
+    be displayed.
 
-Remember that changes are not saved until you use /SAVE!
+%9Description:%9
 
-Examples:
-   /SET autolog OFF    - Sets value for setting 'autolog'
-   /SET close          - Shows all settings whose variable name
-                         contains 'close'. Very practical.
+    Modifies the value of a setting; boolean settings accept only ON, OFF and
+    TOGGLE.
+    
+    Please remember that you need to use the SAVE command to store the changes
+    into your configuration.
 
-See also: TOGGLE
+%9Examples:%9
+
+    /SET
+    /SET nick mike
+    /SET -clear nick
+    /SET log_timestamp %H:%H:%S
+    /SET -default log_timestamp
+    /SET close
+
+%9See also:%9 SAVE, TOGGLE
 

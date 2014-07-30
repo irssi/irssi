@@ -1,8 +1,20 @@
 
+%9Syntax:%9
+
 @SYNTAX:squit@
 
-IRC Operator command. Splits the given server and all servers
-behind it from your side of the IRC network.
+%9Parameters:%9
 
-See also: SCONNECT, OPER, DIE, RESTART
+    The server and the disconnect reason.
+
+%9Description:%9
+
+    Disconnects a server from the IRC network; this command is restricted to
+    IRC operators.
+
+%9Examples:%9
+
+    /SQUIT ircsource.irssi.org I'm fixing a desync!
+
+%9See also:%9 DIE, OPER, SCONNECT
 

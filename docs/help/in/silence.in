@@ -1,24 +1,29 @@
 
+%9Syntax:%9
+
 @SYNTAX:silence@
 
-Works only in some IRC networks.
+%9Parameters:%9
 
-SILENCE is similar in many respects to IGNORE, except that it is 
-server-based. What this means is the server will never even send 
-you messages from anyone you have silenced, whereas it will with
-IGNORE, where your client is responsible for filtering the messages 
-out. This has the advantage of not bogging your client down with 
-excessive data as it tries to filter out messages. The silence list
-is lost when you disconnect. SILENCE only affects private messages
-and invites.
+    The nickname or hostname to silence; you must prepend it by the "+" or "-"
+    character to indicate whether the entry should be added or removed.
 
-The default behavior is to SILENCE a nick!user@host pattern, and 
-if such a pattern is not passed as the argument, it must be prepended 
-with a plus ('+') to be added to your silence list. If a pattern is 
-prepended with a minus ('-'), it will be removed from your silence list. 
-If you only specify a nickname, you can list the patterns in the 
-silence list owned by that nickname. If no arguments are given, your 
-own silence list is displayed. 
- 
-See also: IGNORE, ACCEPT
+    If no arguments are given, the list of silence entries will be displayed.
+
+%9Description:%9
+
+    Manages the server side ignore list; users or hostnames that match an entry
+    on the list are not able to send you any messages or invites.
+
+    This command does not work on all IRC networks.
+
+%9Examples:%9
+
+    /SILENCE
+    /SILENCE +mike
+    /SILENCE -mike
+    /SILENCE +*!*@*.irssi.org
+    /SILENCE -*!*@*.irssi.org
+
+%9See also:%9 ACCEPT, IGNORE
 
