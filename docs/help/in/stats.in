@@ -1,23 +1,43 @@
 
+%9Syntax:%9
+
 @SYNTAX:stats@
 
-Shows some irc server usage statistics. Available types vary slightly
-per server; some common ones are:
-  c - Shows C and N lines for a given server.  These are 
-      the names of the servers that are allowed to connect.
-  h - Shows H and L lines for a given server (Hubs and Leaves).
-  k - Show K lines for a server.  This shows who is not 
-      allowed to connect and possibly at what time they are
-      not allowed to connect.
-  i - Shows I lines. This is who CAN connect to a server.
-  l - Shows information about amount of information passed
-      to servers and users.
-  m - Shows a count for the number of times the various 
-      commands have been used since the server was booted.
-  o - Shows the list of authorized operators on the server.
-  p - Shows online operators and their idle times.
-  u - Shows the uptime for a server.
-  y - Shows Y lines, which lists the various connection 
-      classes for a given server.
-  ? - Shows information about servers connected to a server.
+%9Parameters:%9
+
+    The statistic identifier and the remote server; if no remote server is
+    given, the active server will be used.
+
+%9Description:%9
+
+    Displays statistics from the IRC server; some statistics require you to have
+    IRC operators privileges and might differ between IRC networks.
+
+    Common statistics:
+
+        C:    Displays the servers the server may connect to.
+        H:    Displays hub server the server may connect to.
+        K:    Displays the permanent blacklist of hostnames which are prohibited
+              from connecting to the server.
+        k:    Displays the temporary blacklist of hostname which are prohibited
+              from connecting to the server.
+        I:    Displays the list of hostnames which are allowed to connect to the
+              server.
+        L:    Displays the list of connected users and servers.
+        M:    Displays the list of commands and how many times they have been
+              issued.
+        O:    Displays the list of hostnames and users which are allowed to
+              become IRC operators.
+        P:    Displays the ports the server is listening on.
+        p:    Displays the IRC operators and their idle time.
+        u:    Displays the uptime of the server.
+        Y:    Displays the list of connection groups users are placed into.
+        ?:    Displays information about the utilized bandwidth.
+
+%9Examples:%9
+
+    /STATS p
+    /STATS I ircsource.irssi.org
+
+%9See also:%9 MOTD, OPER
 

@@ -998,15 +998,11 @@ void irc_commands_init(void)
 	command_bind_irc("trace", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: VERSION [<server>|<nick>] */
 	command_bind_irc("version", NULL, (SIGNAL_FUNC) command_self);
-	/* SYNTAX: SERVLIST [<server mask>] */
-	command_bind_irc("servlist", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: SILENCE [[+|-]<nick!user@host>]
 	           SILENCE [<nick>] */
 	command_bind_irc("silence", NULL, (SIGNAL_FUNC) command_self);
 	command_bind_irc("unsilence", NULL, (SIGNAL_FUNC) cmd_unsilence);
 	command_bind_irc("sconnect", NULL, (SIGNAL_FUNC) cmd_sconnect);
-	/* SYNTAX: SQUERY <service> [<commands>] */
-	command_bind_irc("squery", NULL, (SIGNAL_FUNC) command_2self);
 	/* SYNTAX: DIE */
 	command_bind_irc("die", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: HASH */
@@ -1077,11 +1073,9 @@ void irc_commands_deinit(void)
 	command_unbind("time", (SIGNAL_FUNC) command_self);
 	command_unbind("trace", (SIGNAL_FUNC) command_self);
 	command_unbind("version", (SIGNAL_FUNC) command_self);
-	command_unbind("servlist", (SIGNAL_FUNC) command_self);
 	command_unbind("silence", (SIGNAL_FUNC) command_self);
 	command_unbind("unsilence", (SIGNAL_FUNC) cmd_unsilence);
 	command_unbind("sconnect", (SIGNAL_FUNC) cmd_sconnect);
-	command_unbind("squery", (SIGNAL_FUNC) command_2self);
 	command_unbind("die", (SIGNAL_FUNC) command_self);
 	command_unbind("hash", (SIGNAL_FUNC) command_self);
 	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);

@@ -29,7 +29,7 @@
     -cmdspeed:         Specifies the minimum amount of time, expressed in
                        milliseconds, that the client must wait before sending
                        additional commands to the server.
-    -cmxmax:           Specifies the maximum number of commands to perform
+    -cmdmax:           Specifies the maximum number of commands to perform
                        before starting the internal flood protection.
     -port:             Specifies the port to connect to the server.
     -noproxy:          Ignores the global proxy configuration.

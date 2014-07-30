@@ -1,10 +1,36 @@
 
+%9Syntax:%9
+
 @SYNTAX:statusbar@
 
-Commands for modifying the statusbar.
+%9Parameters:%9
 
-/STATUSBAR
-   - Display all statusbars.
+    ENABLE:       Enables the statusbar.
+    DISABLE:      Disabled the statusbar.
+    RESET:        Restores the default statusbar configuration.
+    TYPE:         Identifies the type of statusbar.
+    PLACEMENT:    Identifies the placement of the statusbar.
+    POSITION:     Identifies the position of the statusbar.
+    VISIBLE:      Identifies the visibility of the statusbar.
+    ADD:          Adds a statusbar into the configuration.
+    REMOVE:       Removes a statusbar from the configuration.
 
-/STATUSBAR <name>
-   - display elements of statusbar <name>
+    The name of the statusbar; if no argument is given, the list of statusbars
+    will be displayed.
+
+%9Description:%9
+
+    Modified the attributes of the statusbar.
+
+%9Examples:%9
+
+    /STATUSBAR
+    /STATUSBAR window
+    /STATUSBAR window REMOVE time
+    /STATUSBAR window ADD time
+    /STATUSBAR window RESET
+    /STATUSBAR topic DISABLE
+    /STATUSBAR topic ENABLE
+
+%9See also:%9 WINDOW
+

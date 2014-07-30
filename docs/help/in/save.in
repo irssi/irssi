@@ -1,10 +1,24 @@
 
+%9Syntax:%9
+
 @SYNTAX:save@
 
-     -formats: Save all /FORMATs into theme file
+%9Parameters:%9
 
-Saves the current Irssi configuration into the configuration
-file.
+    -formats:    Saves all the formats into the theme file.
 
-See also: RELOAD
+    The file to save the configuration or theme into; if no parameter is given,
+    the active configuration or theme file will be used.
+
+%9Description:%9
+
+    Saves the configuration file.
+
+%9Examples:%9
+
+    /SAVE
+    /SAVE -formats
+    /SAVE ~/.irssi/config-new
+
+%9See also:%9 SET, RELOAD
 
