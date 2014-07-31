@@ -158,8 +158,11 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
                 if (*bg >= 0) {
 			*bg = mirc_colors[*bg % 100];
 			flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-			if (settings_get_bool("mirc_blink_fix"))
-				*bg = term_color256map[*bg&0xff] & ~0x08;
+			if (settings_get_bool("mirc_blink_fix")) {
+				if (*bg < 16) /* ansi bit flip :-( */
+					*bg = (*bg&8) | (*bg&4)>>2 | (*bg&2) | (*bg&1)<<2;
+				*bg = term_color256map[*bg&0xff] & 7;
+			}
 		}
 		if (*fg >= 0) {
 			*fg = mirc_colors[*fg % 100];
