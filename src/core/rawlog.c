@@ -102,14 +102,15 @@ void rawlog_redirect(RAWLOG_REC *rawlog, const char *str)
 static void rawlog_dump(RAWLOG_REC *rawlog, int f)
 {
 	GSList *tmp;
-	ssize_t ret = 1;
+	ssize_t ret = 0;
 
-	for (tmp = rawlog->lines; ret && tmp != NULL; tmp = tmp->next) {
+	for (tmp = rawlog->lines; ret != -1 && tmp != NULL; tmp = tmp->next) {
 		ret = write(f, tmp->data, strlen((char *) tmp->data));
-		ret &= write(f, "\n", 1);
-	}
+                if (ret != -1)
+                        ret = write(f, "\n", 1);
+        }
 
-	if (ret <= 0) {
+	if (ret == -1) {
 		g_warning("rawlog write() failed: %s", strerror(errno));
 	}
 }
