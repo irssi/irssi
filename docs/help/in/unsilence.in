@@ -1,9 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:unsilence@
 
-Works only in some IRC networks.
+%9Parameters:%9
 
-Removes a pattern from your silence list.
+    The silence pattern to remove.
 
-See also: SILENCE
+%9Description:%9
+
+    Removes an entry from the silence list. This command does not work on all
+    IRC networks.
+
+%9Examples:%9
+
+    /UNSILENCE mike
+    /UNSILENCE *!*@*.irssi.org
+
+%9See also:%9 ACCEPT, IGNORE, SILENCE
 

@@ -1,31 +1,36 @@
 
+%9Syntax:%9
+
 @SYNTAX:who@
 
-Without parameters, shows all users and their user infos
-on the current channel. If you specify a channel, shows
-all users on the given channel.
+%9Parameters:%9
 
-If you specify an string with wildcards, you will be
-shown all users whose nick, userhost or realname matches
-the wildcard expression.
+    The channel name or output filter; if no arguments are given, the current
+    channel will be used.
 
-If a channel is secret and you're not on it, you will not
-get any output. Otherwise if you're not on it, you will be
-shown only those channel members who do not have the
-invisible (+i) mode set.
+%9Description:%9
 
-The flags field has the following meaning:
-  H - The user is not away (here).
-  G - The user is set away (gone).
-  * - The user is an IRC operator.
-  @ - The user is a channel op in the channel listed.
-  + - The user is voiced in the channel listed.
+    Displays information about users in the specified channel. If you specify a
+    filter, all the users whos nick, userhost or realname matches the filter
+    will be returned.
 
-Examples:
-   /WHO          - Shows users on current channel
-   /WHO #irssi   - Shows users on channel #irssi
-   /WHO timo*    - Shows users whose nick, userhost,
-                   or realname begins with string 'timo'
+    If the channel is secret and you are not on it, you will not receive any
+    output.
 
-See also: WHOIS, NAMES, CHANNEL
+    Common flags:
+
+        H:    The user is available.
+        G:    The user is away.
+        *:    The user is an IRC operator.
+        @:    The user is a channel operator.
+        +:    The user is a channel voice.
+
+%9Examples:%9
+
+    /WHO
+    /WHO #irssi
+    /WHO bob
+    /WHO sar*
+
+%9See also:%9 CHANNEL, NAMES, WHOIS
 

@@ -1,8 +1,20 @@
 
+%9Syntax:%9
+
 @SYNTAX:unignore@
 
-Unignores the specified userhost mask. If you want to unignore only some
-levels, use /IGNORE <mask> -<level>.
+%9Parameters:%9
 
-See also: IGNORE
+    The ignore identifier or pattern to remove.
+
+%9Description:%9
+
+    Removes an entry from the ignore list.
+
+%9Examples:%9
+
+    /UNIGNORE 5
+    /UNIGNORE mike
+
+%9See also:%9 ACCEPT, IGNORE, SILENCE
 

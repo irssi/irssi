@@ -1,8 +1,19 @@
 
+%9Syntax:%9
+
 @SYNTAX:unload@
 
-Unload a running plugin. List of running plugins can be shown with
-/LOAD.
+%9Parameters:%9
 
-See also: LOAD
+    The name of the module to unload.
+
+%9Description:%9
+
+    Removes a module from the memory.
+
+%9Examples:%9
+
+    /UNLOAD fish
+
+%9See also:%9 LOAD, SCRIPT
 

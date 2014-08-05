@@ -1,19 +1,24 @@
 
+%9Syntax:%9
+
 @SYNTAX:whowas@
 
-This command is similar to WHOIS, except it returns information 
-about nicknames that were recently in use. Like WHOIS, it shows 
-the nickname, address, real name, and server. It may also return 
-multiple entries if the nickname has been used recently by several 
-people. These multiples may be limited by specifying a count to show. 
+%9Parameters:%9
 
-WHOWAS will work regardless of whether the queried nick is in use. 
-If no arguments are given, the client's current nickname is used. 
+    The nicknames, the maximum amount of results and the remote server. If no
+    arguments are given, your own nickname will be used. If no remote server is
+    given, the server you are connected to will be used.
 
-Example: To show the last 5 users of the nickname JoeBob: 
+%9Description:%9
 
-/whowas joebob 5 
+    Displays historical user information.
 
+%9Examples:%9
 
-See also: WHOIS
+    /WHOWAS
+    /WHOWAS mike
+    /WHOWAS bob 10
+    /WHOWAS sarah 5 ircsource.irssi.org
+
+%9See also:%9 CHANNEL, NAMES, WHO, WHOIS
 

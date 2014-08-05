@@ -1,11 +1,23 @@
 
+%9Syntax:%9
+
 @SYNTAX:time@
 
-This displays the time of day, local to the server queried (thus,
-the time returned may not be the same as the client's local time). 
+%9Parameters%9
 
-If the server name is omitted, the client's current server is used. 
-If a nickname is given, that client's server is queried.
+    The channel or the nickname; if no argument is given, the active server
+    will be used.
 
-Same as /DATE.
+%9Description:%9
+
+    Displays the local time of a server or the server the target user is
+    connected to.
+
+%9Examples:%9
+
+    /TIME
+    /TIME mike
+    /TIME ircsource.irssi.org
+
+%9See also:%9 MAP, TRACE, WHOIS
 

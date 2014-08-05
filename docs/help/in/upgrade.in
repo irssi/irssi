@@ -1,10 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:upgrade@
 
-Upgrade irssi to new version on-the-fly without disconnecting from
-server, so other people won't even notice you quit from IRC. This ONLY
-executes the new binary, it does NOT download/compile/whatever irssi.
+%9Parameters:%9
 
-Warning: This will not work with SSL connections to IRC, you will be
-disconnected.
+    The location of the new binary; if no arguments are given, the current
+    binary file is used.
+
+%9Description:%9
+
+    Upgrades to a new version without disconnecting from non-SSL servers; please
+    bear in mind that it does not download or compile a new version.
+
+%9Examples:%9
+
+    /UPGRADE
+    /UPGRADE /home/mike/irssi-dev/bin/irssi
+
+%9See also:%9 CONNECT, DISCONNECT, HELP
 

@@ -1,46 +1,71 @@
 
+%9Syntax:%9
+
 @SYNTAX:window@
 
-This command includes various subcommands for handling
-irssi windows.
+%9Parameters:%9
 
-/WINDOW CLOSE
-   - Closes the current window.
-/WINDOW MOVE #NUMBER|LEFT|RIGHT
-   - Moves current window to another position in the
-     window list.
-/WINDOW GOTO #NUMBER
-   - Moves into the specified window.
-/WINDOW GOTO ACTIVE 
-   - finds the first window with the higest
-     activity (msgs to you -> msgs -> rest). Alt-A is 
-     the default shortcut key for this
-/WINDOW GOTO #CHANNEL|NICK|=NICK 
-   - moves you to the window with the channel, query or 
-     dcc chat.
-/WINDOW LEVEL [+/-]PUB/MSGS/...
-   - /window level msgs      - creates messages window
-   - /window level all -msgs - creates status window
-/WINDOW NEW [HIDDEN|SPLIT] 
-   - creates new hidden/splitted window, 
-/WINDOW ITEM MOVE <number>|<name>
-   - with a numeric argument, moves the active window
-     item of the active window to the window with
-     refnum <number>.
-     with a string argument, moves the window item with
-     name <name> to the active window.
+    LOG:          Modifies the logging status.
+    LOGFILE:      Modifies the location to the logfile.
+    NEW:          Creates a new window.
+    CLOSE:        Closes a window.
+    REFNUM:       Go to the window with the given number.
+    GOTO:         Go to the window with the given nickname, channel or number.
+    NEXT:         Go to the next window.
+    LAST:         Go to the last window.
+    PREVIOUS:     Go to the previous window.
+    LEVEL:        Modifies the text levels to display in the window.
+    IMMORTAL:     Modifies the window mortality status.
+    SERVER:       Set the active server of the window.
+    ITEM PREV:    Go to the previous item in the window.
+    ITEM NEXT:    Go to the next item in the window.
+    ITEM GOTO:    Go to the specified nickname, channel or window item number.
+    ITEM MOVE:    Move the active window item to another window.
+    NUMBER:       Move the active window to another position.
+    NAME:         Give the window a name.
+    HISTORY:      Clears the window history buffer.
+    MOVE PREV:    Move the window down.
+    MOVE NEXT:    Move the window up.
+    MOVE FIRST:   Move the window to the first position.
+    MOVE LAST:    Move the window to the last psotion.
+    MOVE:         Move the window.
+    LIST:         List all the windows.
+    THEME:        Applies a theme to the windows.
+    GROW:         Increase the window size when using split windows.
+    SHRINK:       Decrease the window size when using split windows.
+    SIZE:         Modify the window size when using split windows.
+    BALANCE:      Balance the window locations when using split windows.
+    HIDE:         Hide the window when using split windows.
+    SHOW:         Show the window when using split windows.
+    UP:           Go to the window above when using split windows.
+    DOWN:         Go to the window below when using split windows.
+    LEFT:         Go to the previous window.
+    RIGHT:        Go to the next window.
+    STICK:        Make the window sticky.
+    MOVE LEFT:    Move the window to the previous location.
+    MOVE RIGHT:   Move the window to the next location.
+    MOVE UP:      Move the window up when using split windows.
+    MOVE DOWN:    Move the window down when using split windows.
 
-Window logging
-        
-/WINDOW LOG ON|OFF|TOGGLE [<filename>]
-   - Start/stop logging the active window. This works exactly like
-     /LOG OPEN -window.
-/WINDOW LOGFILE <filename> 
-   - Sets the default log file to use in the window, it can be
-     overridden by specifying the file name in /WINDOW LOG. 
-     If no file name is given, Irssi defaults to 
-     ~/irc.log.<windowname> or ~/irc.log.Window<ref#> if window 
-     doesn't have a name.
+   Add the required arguments for the given command.
 
-See also: SET CREATE, JOIN, QUERY, LOG, LEVELS
+%9Description:%9
+
+    Manipulates the window layout and positioning attributes.
+
+%9Examples:%9
+
+    /WINDOW CLOSE
+    /WINDOW ITEM MOVE 10
+    /WINDOW GOTO 15
+    /WINDOW GOTO ACTIVE
+    /WINDOW GOTO mike
+    /WINDOW GOTO #irssi
+    /WINDOW NEW HIDDEN
+    /WINDOW LOG OFF
+    /WINDOW LOG ON ~/logs/debug.log
+    /WINDOW LEVEL -ALL +NOTICES
+    /WINDOW LOGFILE ~/logs/notices.log
+
+%9See also:%9 JOIN, LEVELS, LOG, QUERY
 

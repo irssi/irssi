@@ -38,5 +38,5 @@
     /SET ban_type custom nick domain
     /SET ban_type custom user host
 
-%9See also:%9 KICKBAN, KNOCKOUT
+%9See also:%9 DEOP, KICKBAN, KNOCKOUT, OP, UNBAN
 

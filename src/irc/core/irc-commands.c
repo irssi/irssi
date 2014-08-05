@@ -1012,8 +1012,6 @@ void irc_commands_init(void)
 	command_bind_irc("restart", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: SQUIT <server>|<mask> <reason> */
 	command_bind_irc("squit", NULL, (SIGNAL_FUNC) command_2self);
-	/* SYNTAX: UPING <server> */
-	command_bind_irc("uping", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: USERHOST <nicks> */
 	command_bind_irc("userhost", NULL, (SIGNAL_FUNC) command_self);
 	command_bind_irc("quote", NULL, (SIGNAL_FUNC) cmd_quote);
@@ -1081,7 +1079,6 @@ void irc_commands_deinit(void)
 	command_unbind("oper", (SIGNAL_FUNC) cmd_oper);
 	command_unbind("restart", (SIGNAL_FUNC) command_self);
 	command_unbind("squit", (SIGNAL_FUNC) command_2self);
-	command_unbind("uping", (SIGNAL_FUNC) command_self);
 	command_unbind("userhost", (SIGNAL_FUNC) command_self);
 	command_unbind("quote", (SIGNAL_FUNC) cmd_quote);
 	command_unbind("wall", (SIGNAL_FUNC) cmd_wall);

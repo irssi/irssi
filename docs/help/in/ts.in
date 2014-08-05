@@ -1,7 +1,15 @@
 
+%9Syntax:%9
+
 @SYNTAX:ts@
 
-Shows topics of all channels you're on.
+%9Description:%9
 
-See also: CHANNEL, TOPIC
+    Displays a list of the channels you are on and their topics.
+
+%9Examples:%9
+
+    /TS
+
+%9See also:%9 JOIN, TOPIC
 

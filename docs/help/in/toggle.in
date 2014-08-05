@@ -1,11 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:toggle@
 
-/TOGGLE <key> behaves like /SET <key> TOGGLE. /TOGGLE also 
-accepts arguments ON and OFF when /TOGGLE behaves exactly 
-like /SET.
+%9Parameters%9
 
-Remember that changes are not saved until you use /SAVE!
+   The setting to modify and the new value; if no value is given, its oposite
+   will be used.
 
-See also: SET
+%9Description:%9
+
+    Modifies a setting to its counter value; you can also give ON or OFF as a
+    value.
+
+%9Examples:%9
+
+    /TOGGLE resolve_prefer_ipv6
+    /TOGGLE channels_rejoin_unavailable ON
+
+%9See also:%9 SET
 
