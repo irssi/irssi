@@ -1,12 +1,25 @@
 
+%9Syntax:%9
+
 @SYNTAX:trace@
 
-Without a specified server TRACE shows the current connections on
-the local server.  If you specify a remote server it will show
-all servers between your current server and that remote server
-as well as the connections on that remote server. With a nick it
-shows the servers in between and information about that nick.
+%9Parameters%9
 
-On some servers, TRACE shows information such as IP addresses
-and idle times.
+    The channel or the nickname; if no argument is given, the active server
+    will be used.
+
+%9Description:%9
+
+    Displays the list of servers and users connects to a server, or a list of
+    the servers between yourself and the target user.
+
+    This command is usually restricted to IRC operators.
+
+%9Examples:%9
+
+    /TRACE
+    /TRACE mike
+    /TRACE ircsource.irssi.org
+
+%9See also:%9 MAP, TIME, WHOIS
 

@@ -1,13 +1,45 @@
 
+%9Syntax:%9
+
 @SYNTAX:unban@
 
-Removes the specified ban(s) from the channel.
+%9Parameters:%9
 
-Examples:
-   /UNBAN *!*@*.fi
-   /UNBAN larry!*@* *!me@*.mydomain.net
-   /UNBAN 3                             - removes 3rd ban in list
-   /UNBAN -first                        - removes 1st ban (equal to /UNBAN 1)
-   /UNBAN -last                         - removes last ban in list
-See also: BAN, KNOCKOUT
+    -normal:    Uses the *!*user@*.domain.tld format.
+    -user:      Uses the *!*user@* format.
+    -host:      Uses the *!*@host.domain.tld format.
+    -domain:    Uses the *!*@*.domain.tld format.
+    -custom:    Uses the custom format.
+    -first:     Removes the first ban from the list.
+    -last:      Removes the last ban from the list.
+
+    A channel and the nicknames, hostnames or ban identifier to unban; if no
+    channel is given, the active channel will be used.
+
+    If no ban format parameter is given, the value of the ban_type setting will
+    be used to generate the hostmask to ban.
+
+%9Description:%9
+
+    Removes one or more bans from a channel.
+
+%9Configuring the custom format:%9
+
+    You must set the custom ban_type to the format you would like to use. For
+    example, if you set the custom ban_type to "nick domain", it will generate
+    a ban based on the nick!*@*.domain.tld format.
+
+%9Examples:%9
+
+    /UNBAN mike
+    /UNBAN -host bob
+    /UNBAN *!*@*.irssi.org
+    /UNBAN *!*@*.users.irssi.org *!*@*.staff.irssi.org
+    /UNBAN -first
+    /UNBAN 5
+
+    /SET ban_type custom nick domain
+    /SET ban_type custom user host
+
+%9See also:%9 BAN, DEOP, KICKBAN, KNOCKOUT, OP
 

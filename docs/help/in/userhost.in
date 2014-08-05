@@ -1,7 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:userhost@
 
-Shows the user@host, IRC operator (*) and away (-) status of the specified nick.
+%9Parameters:%9
 
-See also: WHOIS
+    One or more nicknames separated by space.
+
+%9Description:%9
+
+    Displays the user@host for the given nicknames; some common added attributes
+    are '*' to identify an IRC operator, '-' and '+' to indicate whether the
+    nickname is AWAY or available.
+
+%9Examples:%9
+
+    /USERHOST mike
+    /USERHOST bob sarah
+
+%9See also:%9 WHOIS
 

@@ -1,8 +1,25 @@
 
+%9Syntax:%9
+
 @SYNTAX:topic@
 
-   -delete  - Deletes the topic.
+%9Parameters%9
 
-Shows or/and changes the topic of the current or specified 
-channel.
+    -delete:    Removes the topic.
+
+    The channel and topic; if no channel is given, the active channel will be
+    used. If no argument is given, the current topic will be displayed.
+
+%9Description:%9
+
+    Displays or modifies the topic of a channel.
+
+%9Examples:%9
+
+    /TOPIC
+    /TOPIC The robots are taking over!
+    /TOPIC -delete #irssi
+    /TOPIC #shakespeare /bb|[^b]{2}/
+
+%9See also:%9 CHANNEL, DEOP, DEVOICE, JOIN, OP, VOICE
 

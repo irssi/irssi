@@ -1,8 +1,21 @@
 
+%9Syntax:%9
+
 @SYNTAX:version@
 
-Shows the version info of the current or specified
-IRC server.
+%9Parameters:%9
 
-See also: ADMIN, STATS
+    A nickname or server; if no argument is given, the active server is used.
+
+%9Description:%9
+
+    Displays the version and compatibility parameters of the given server, or
+    for the server the target nickname is on.
+
+%9Examples:%9
+
+    /VERSION mike
+    /VERSION ircsource.irssi.org
+
+%9See also:%9 ADMIN, STATS
 

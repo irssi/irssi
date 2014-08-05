@@ -1,9 +1,22 @@
 
+%9Syntax:%9
+
 @SYNTAX:ver@
 
-Sends a CTCP VERSION request to a nick or channel.
-This is used to find out which client and/or
-script the nick is using.
+%9Parameters:%9
 
-See also: CTCP
+    A nickname, channel or the wildcard character '*'.
+
+%9Description:%9
+
+    Send a CTCP VERION request to the target nickname, channel or to all the
+    users on the channel.
+
+%9Examples:%9
+
+    /VER *
+    /VER #irssi
+    /VER mike
+
+%9See also:%9 CTCP
 

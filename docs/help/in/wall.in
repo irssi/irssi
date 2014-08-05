@@ -1,8 +1,23 @@
 
+%9Syntax:%9
+
 @SYNTAX:wall@
 
-This command sends a message to all operators in a channel. If the server
-supports WALLCHOPS or STATUSMSG=@, it sends a notice to @#channel.
-Otherwise it sends a notice separately to each operator, which may not
-be a very good idea to use in a channel with lots of operators.
+%9Parameters:%9
+
+    The channel and the message; if no channel is given, the active channel
+    will be used.
+
+%9Description:%9
+
+    Sends a message to all channel operators. If the server doesn't support
+    WALLCHOPS or STATUSMSG it will send a notice to each channel operator
+    individually.
+
+%9Examples:%9
+
+    /WALL I'm off for today; take care! :)
+    /WALL #irssi I'm feeling supercalifragilisticexpialidocious today :D
+
+%9See also:%9 MSG, NOTICE
 

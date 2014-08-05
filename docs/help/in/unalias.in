@@ -1,7 +1,20 @@
 
+%9Syntax:%9
+
 @SYNTAX:unalias@
 
-Removes an alias.
+%9Parameters%9
 
-See also: ALIAS
+    The name of the alias.
+
+%9Description:%9
+
+    Removes an alias.
+
+%9Examples:%9
+
+    /UNALIAS BAN
+    /UNALIAS K
+
+%9See also:%9 ALIAS
 
