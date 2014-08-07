@@ -5,15 +5,15 @@
 
 %9Parameters:%9
 
-    The network to disconnect from and the message to advertise; if no parameters
-    are given, the active server will be used.
+    The network to disconnect from and the message to advertise; if no
+    parameters are given, the active server will be used.
 
 %9Description:%9
 
     Disconnects from one or more IRC servers; the list of all the servers you
     are connected to can be retrieved via the SERVER command.
 
-    Use the wildcard character "*" if you want to disconnect from all servers.
+    Use the wildcard character '*' if you want to disconnect from all servers.
 
 %9Examples:%9
 

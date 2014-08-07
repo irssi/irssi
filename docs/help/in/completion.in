@@ -5,9 +5,10 @@
 
 %9Parameters:%9
 
-    -auto:      Inserts the completion without pressing a word completion character.
+    -auto:      Inserts the completion without pressing a word completion
+                character.
     -delete:    Removes the completion from the configuration.
-    
+
     A key and the value to use as a replacement. If no argument is given, the
     list of completions will be displayed.
 
@@ -19,7 +20,7 @@
     When a replacement has been found, Irssi will choose the most probable
     matching word and replaces it; you may press TAB repeatedly to swap between
     matches.
-    
+
     If you want to remove a completion which has the auto parameter set, you
     need to enclose the completion between "'" characters.
 

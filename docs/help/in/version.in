@@ -5,7 +5,8 @@
 
 %9Parameters:%9
 
-    A nickname or server; if no argument is given, the active server is used.
+    A nickname or server; if no argument is given, the active server will be
+    used.
 
 %9Description:%9
 

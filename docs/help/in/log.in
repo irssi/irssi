@@ -5,8 +5,8 @@
 
 %9Parameters:%9
 
-    OPEN:             Opens a logfile.
-    CLOSE:            Closes a logfile.
+    OPEN:             Opens a log file.
+    CLOSE:            Closes a log file.
     START:            Starts logging a log entry.
     STOP:             Stops logging a log entry.
 
@@ -16,7 +16,7 @@
     -window:          Displays the output to the active window, or the window
                       specified in the targets parameter.
     -<server tag>:    The server tag the targets must be on.
-    -targets:         Logs the specified nickhames or channels.
+    -targets:         Logs the specified nicknames or channels.
     -colors:          Also log the color codes of the messages.
 
     The filename of the log and the levels to match; if no argument is given,
@@ -24,10 +24,10 @@
 
 %9Description:%9
 
-    Opens a logfile and stores the messages of the given targets into it; the
-    logfiles will be locked so multiple clients cannot log to the same file.
+    Opens a log file and stores the messages of the given targets into it; the
+    log files will be locked so multiple clients cannot log to the same file.
 
-    You may use any of the date formats to create a logrotation; we strongly
+    You may use any of the date formats to create a log rotation; we strongly
     recommend you to enable autolog if you are interested in keeping logs.
 
 %9Examples:%9

@@ -36,5 +36,5 @@
         NOHILIGHT       The text is not highlighted.
 
     When using levels from Irssi scripts, you need to prepend the level with
-    "MSGLEVEL_"; for example "CRAP" will be "MSGLEVEL_CRAP".
+    'MSGLEVEL_'; for example 'CRAP' becomes 'MSGLEVEL_CRAP'.
 

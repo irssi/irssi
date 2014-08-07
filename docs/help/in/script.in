@@ -26,7 +26,7 @@
     /SCRIPT LOAD ~/.irssi/scripts/nickserv.pl
     /SCRIPT UNLOAD nickserv
     /SCRIPT RESET
-    /SCRIPT EXEC foreach my $channel (Irssi::channels()) { Irssi::print($channel->{name} . " @ " . $channel->{server}->{tag}); }
+    /SCRIPT EXEC foreach my $channel (Irssi::channels()) { Irssi::print($channel->{name} . ' @ ' . $channel->{server}->{tag}); }
 
 %9See also:%9 LOAD, SAVE, UNLOAD
 

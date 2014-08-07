@@ -16,7 +16,7 @@
 %9Description:%9
 
     Displays the users who are in a channel; you can provide multiple channels
-    by separating them with the comma "," character.
+    by separating them with a comma.
 
 %9Examples:%9
 

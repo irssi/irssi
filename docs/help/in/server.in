@@ -43,13 +43,13 @@
 
     Displays, adds, modifies or removes the network configuration of IRC 
     servers.
-    
+
     When using the ADD parameter on a server that already exists, the
     configuration will be merged with each other.
-    
+
     When using the command without any of the given parameters, it will
     connect to the specified server; the server in the active window will be
-    disconnected unless you prepend the server with the "+" character; the same
+    disconnected unless you prepend the server with the '+' character; the same
     method is applicable to the CONNECT parameter.
 
 %9Examples:%9
@@ -64,6 +64,6 @@
     /SERVER REMOVE -network Freenode orwell.freenode.net
     /SERVER PURGE
     /SERVER PURGE orwell.freenode.net
-    
+
 %9See also:%9 CHANNEL, CONNECT, DISCONNECT, NETWORK, RECONNECT, RMRECONNS
 

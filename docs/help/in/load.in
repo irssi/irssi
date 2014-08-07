@@ -3,7 +3,7 @@
 
 @SYNTAX:load@
 
-%9Parameters%9
+%9Parameters:%9
 
     The name of the module and submodule to load.
 

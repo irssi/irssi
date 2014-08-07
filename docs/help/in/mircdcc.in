@@ -13,7 +13,7 @@
     After establishing a DCC CHAT connection that you initiated, you might
     encounter some protocol issues if the target is using mIRC.
 
-    If you or your target sees some unexpected output or behaviour inside a DCC
+    If you or your target sees some unexpected output or behavior inside a DCC
     CHAT session, use this command to enable mIRC compatibility mode.
 
     When receiving a connection from an mIRC user, the compatibility mode will
@@ -24,5 +24,5 @@
     /MIRCDCC ON
     /MIRCDCC OFF
 
-%9See also:%9 ACTION, DCC, CTCP
+%9See also:%9 ACTION, CTCP, DCC
 

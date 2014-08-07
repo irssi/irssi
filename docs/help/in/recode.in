@@ -17,7 +17,7 @@
     into a specific charset.
 
     To get a list of supported charsets on your system, you can generally use
-    the "iconv -l" command.
+    the 'iconv -l' command.
 
 %9Examples:%9
 

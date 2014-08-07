@@ -6,15 +6,15 @@
 %9Parameters:%9
 
     A name of the alias and the command to execute. You can prepend the alias
-    with the "-" character to remove the alias; if no argument is given, your
+    with the '-' character to remove the alias; if no argument is given, your
     aliases will be displayed.
 
 %9Description:%9
 
-    Creates or updates an alias; you can use the ";" character to separate
+    Creates or updates an alias; you can use the ';' character to separate
     multiple commands.
 
-    The parametesr given to the alias are expanded in "$[\d]" For example $0,
+    The parameters given to the alias are expanded in '$[\d]'; for example $0,
     $1, $2, $8, $12, ...
 
     If you don't use any parameters in your alias, all parameters will be

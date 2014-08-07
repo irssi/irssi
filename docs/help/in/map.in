@@ -5,7 +5,7 @@
 
 %9Description:%9
 
-    Displays the network map of an IRC network; this command is usally
+    Displays the network map of an IRC network; this command is usually
     reserved for IRC operators and does not work on all servers.
 
 %9Examples:%9

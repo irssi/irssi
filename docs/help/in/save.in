@@ -20,5 +20,5 @@
     /SAVE -formats
     /SAVE ~/.irssi/config-new
 
-%9See also:%9 SET, RELOAD
+%9See also:%9 RELOAD, SET
 

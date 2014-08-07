@@ -3,7 +3,7 @@
 
 @SYNTAX:kick@
 
-%9Parameters%9
+%9Parameters:%9
 
     The channel and the nicknames, separated by a comma, to kick from the
     channel and the reason thereof; if no channel is given, the active channel

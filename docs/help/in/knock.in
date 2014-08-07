@@ -11,7 +11,7 @@
 
     Sends an invitation request to the channel operators of the target channel;
     this command may not work on all IRC servers.
-    
+
     The following conditions must be met:
 
         * You are not banned from the channel.

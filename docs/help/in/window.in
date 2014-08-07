@@ -6,7 +6,7 @@
 %9Parameters:%9
 
     LOG:          Modifies the logging status.
-    LOGFILE:      Modifies the location to the logfile.
+    LOGFILE:      Modifies the location to the log file.
     NEW:          Creates a new window.
     CLOSE:        Closes a window.
     REFNUM:       Go to the window with the given number.
@@ -27,7 +27,7 @@
     MOVE PREV:    Move the window down.
     MOVE NEXT:    Move the window up.
     MOVE FIRST:   Move the window to the first position.
-    MOVE LAST:    Move the window to the last psotion.
+    MOVE LAST:    Move the window to the last position.
     MOVE:         Move the window.
     LIST:         List all the windows.
     THEME:        Applies a theme to the windows.

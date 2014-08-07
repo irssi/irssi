@@ -16,17 +16,17 @@
     Modifies the user or channel modes for which you are privileged to modify.
 
     You can specify multiple modes in one command and prepend them by using the
-    "+" sign to set or "-" sign to unset; modes that require a parameter will be
+    '+' sign to set or '-' sign to unset; modes that require a parameter will be
     retrieved from the argument list.
 
     Some common channel modes are:
 
         b <mask>:        Adds or removes a ban; a ban will prevent a user who
                          matches the given mask from joining the channel unless
-                         he or she is invited or in the excempt list.
+                         he or she is invited or in the exempt list.
         e <mask>:        Adds or removes a ban exception; users who match a mask
-                         on the excempt list are able to join a channel even if
-                         they also match an entry on the banlist.
+                         on the exempt list are able to join a channel even if
+                         they also match an entry on the ban list.
         i:               When enabled, users need to be invited into the channel
                          or have a matching entry in the invite list.
         I <mask>:        Adds or removes an invite; users who match a mask on
@@ -39,7 +39,7 @@
                          that may join the channel.
         m:               When enabled, users who are not opped or voiced cannot
                          send messages to the channel.
-        n:               When enabled, users who are not on the channel cannnot
+        n:               When enabled, users who are not on the channel cannot
                          send messages to it.
         p:               When enabled, the channel will not be displayed in your
                          WHOIS output.
@@ -73,5 +73,5 @@
     /MODE +impsnkl secret_hideout 100
     /MODE mike +iw
 
-%9See also:%9 BAN, DEOP, DEVOICE, UNBAN, OP, VOICE
+%9See also:%9 BAN, DEOP, DEVOICE, OP, UNBAN, VOICE
 

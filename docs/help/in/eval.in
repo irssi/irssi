@@ -10,9 +10,9 @@
 %9Description:%9
 
     Evaluates the given commands and executes them; you can use internal
-    variables and separate multiple commands by using the ";" character.
+    variables and separate multiple commands by using the ';' character.
 
-%9Examples%9
+%9Examples:%9
 
     /EVAL echo I am connected to ${S} on ${chatnet} as ${N}
     /EVAL echo My user privileges are +${usermode}; echo Let's party!

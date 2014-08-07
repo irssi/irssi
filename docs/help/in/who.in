@@ -11,7 +11,7 @@
 %9Description:%9
 
     Displays information about users in the specified channel. If you specify a
-    filter, all the users whos nick, userhost or realname matches the filter
+    filter, all the users whose nick, userhost or realname matches the filter
     will be returned.
 
     If the channel is secret and you are not on it, you will not receive any
