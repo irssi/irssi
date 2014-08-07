@@ -5,7 +5,7 @@
 
 %9Parameters:%9
 
-    The nickname or hostname to silence; you must prepend it by the "+" or "-"
+    The nickname or hostname to silence; you must prepend it by the '+' or '-'
     character to indicate whether the entry should be added or removed.
 
     If no arguments are given, the list of silence entries will be displayed.

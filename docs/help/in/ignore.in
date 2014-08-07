@@ -9,7 +9,8 @@
     -full:        Indicates that the pattern must match a full word.
     -pattern:     The text pattern to ignore.
     -except:      Negates the ignore.
-    -replies:     Also ignore nicknames who are talking to anyone who matches the ignore.
+    -replies:     Also ignore nicknames who are talking to anyone who matches
+                  the ignore.
     -network:     Ignores only on a specific network.
     -channels:    Ignores only on specific channels.
     -time:        The timeout to automatically remove the ignore.
@@ -21,8 +22,8 @@
 
     Ignores nicknames or text that matches a pattern.
 
-    The special level "NO_ACT" can be used to ignore activity in the statusbar
-    without actually ignoring the message; this behaviour is somewhat special
+    The special level 'NO_ACT' can be used to ignore activity in the statusbar
+    without actually ignoring the message; this behavior is somewhat special
     because it is allowed in addition to other ignores for the same target.
 
 %9Examples:%9

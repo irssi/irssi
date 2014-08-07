@@ -10,7 +10,7 @@
 %9Description:%9
 
     Sends a CTCP reply to a nickname or channel; you can provide multiple
-    targets by separating them with the comma "," character.
+    targets by separating them with a comma.
 
 %9Examples:%9
 

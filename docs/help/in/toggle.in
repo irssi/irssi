@@ -3,9 +3,9 @@
 
 @SYNTAX:toggle@
 
-%9Parameters%9
+%9Parameters:%9
 
-   The setting to modify and the new value; if no value is given, its oposite
+   The setting to modify and the new value; if no value is given, its opposite
    will be used.
 
 %9Description:%9

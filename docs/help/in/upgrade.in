@@ -6,7 +6,7 @@
 %9Parameters:%9
 
     The location of the new binary; if no arguments are given, the current
-    binary file is used.
+    binary file will be used.
 
 %9Description:%9
 

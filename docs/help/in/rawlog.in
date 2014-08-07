@@ -6,15 +6,15 @@
 %9Parameters:%9
 
     SAVE:     Saves the raw server buffer into a file.
-    OPEN:     Opens a logfile and start logging all raw data.
-    CLOSE:    Closes the logfile
+    OPEN:     Opens a log file and start logging all raw data.
+    CLOSE:    Closes the log file
 
     The filename to store the raw data into.
 
 %9Description:%9
 
     Saves all the raw data that is received from and transmitted to the active
-    server into a logfile.
+    server into a log file.
 
 %9Examples:%9
 

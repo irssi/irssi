@@ -5,7 +5,7 @@
 
 %9Parameters:%9
 
-    -:          Doesn't print the "Lastlog:" and "End of Lastlog" messages.
+    -:          Doesn't print the 'Lastlog:' and 'End of Lastlog' messages.
     -file:      Output the lastlog to a file instead of the active window.
     -window:    Specifies the window to check.
     -new:       Only displays results since the previous lastlog.
@@ -30,8 +30,8 @@
 %9Examples:%9
 
     /LASTLOG holiday
-    /LASTLOG "is on vacation"
-    /LASTLOG -file -force ~/mike.log "mike"
+    /LASTLOG 'is on vacation'
+    /LASTLOG -file -force ~/mike.log 'mike'
 
 %9See also:%9 HILIGHT, SCROLLBACK
 

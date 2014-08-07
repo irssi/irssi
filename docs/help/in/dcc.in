@@ -27,19 +27,19 @@
     and file transfers.
 
     If you are behind NAT, or if the firewall is too restrictive, you might
-    want to try if using the passive parameter resolved your conneciton
+    want to try if using the passive parameter resolved your connection
     problem.
 
     You can send files which contain special character or spaces by enclosing
-    the filename within quotes. For example: "my file with spaces.txt".
+    the filename within quotes. For example: 'my file with spaces.txt'.
 
 %9Examples:%9
 
     /DCC CHAT mike
-    /DCC GET bob "summer vacation.mkv"
+    /DCC GET bob 'summer vacation.mkv'
     /DCC SEND sarah documents/resume.pdf
     /DCC CLOSE mike
-    /DCC CLOSE bob "summer vacation.mkv"
+    /DCC CLOSE bob 'summer vacation.mkv'
 
 %9See also:%9 CD
 

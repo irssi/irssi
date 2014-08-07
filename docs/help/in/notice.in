@@ -11,9 +11,8 @@
 
     Sends a notice to the target nickname or channel; these are often used in
     automated bots or scripts.
-    
-    You can provide multiple targets by separating them with the comma ","
-    character.
+
+    You can provide multiple targets by separating them with a comma.
 
 %9Examples:%9
 

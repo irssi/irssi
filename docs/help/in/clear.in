@@ -8,7 +8,7 @@
     -all:    Clear all the windows
 
     The window number to clear; if no argument is given, the active window
-    is used.
+    will be used.
 
 %9Description:%9
 

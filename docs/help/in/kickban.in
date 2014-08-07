@@ -5,9 +5,9 @@
 
 %9Parameters:%9
 
-    The channel and the nicknames, separated by a comma, to kickban from the
-    channel and the reason thereof; if no channel is given, the active channel
-    will be used.
+    The channel and the nicknames, separated by a comma, to kick and ban from
+    the channel and the reason thereof; if no channel is given, the active
+    channel will be used.
 
 %9Description:%9
 

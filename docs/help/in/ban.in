@@ -24,7 +24,7 @@
 %9Configuring the custom format:%9
 
     You must set the custom ban_type to the format you would like to use. For
-    example, if you set the custom ban_type to "nick domain", it will generate
+    example, if you set the custom ban_type to 'nick domain', it will generate
     a ban based on the nick!*@*.domain.tld format.
 
 %9Examples:%9

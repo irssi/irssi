@@ -13,7 +13,7 @@
     END:           Go to the end of the buffer.
 
     -all:          Applies to all windows instead of only the active one.
-    -level:        The levels, separated by a comman, to match.
+    -level:        The levels, separated by a comma, to match.
 
     The line number, timestamp to jump to or the window reference number to
     clear.
@@ -23,7 +23,7 @@
     Manipulate the text in the window to go to a to the given line number, or
     clear the buffers.
 
-    The timestamp format is format is "[dd[.mm] | -<days ago>] hh:mi[:ss]".
+    The timestamp format is format is '[dd[.mm] | -<days ago>] hh:mi[:ss]'.
 
 %9Examples:%9
 

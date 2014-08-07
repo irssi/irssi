@@ -3,7 +3,7 @@
 
 @SYNTAX:time@
 
-%9Parameters%9
+%9Parameters:%9
 
     The channel or the nickname; if no argument is given, the active server
     will be used.

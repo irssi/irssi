@@ -9,7 +9,7 @@
     -invite          Joins the channel you were last invited to.
     -<server tag>    The server tag on which you want to join the channel.
 
-    The channel names, separated by a commma, to join and the channel key.
+    The channel names, separated by a comma, to join and the channel key.
 
 %9Description:%9
 

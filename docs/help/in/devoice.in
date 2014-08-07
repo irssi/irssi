@@ -10,7 +10,7 @@
 %9Description:%9
 
     Removes the channel voice privileges from the given nicknames; you may use
-    the wildcard character "*" in a nickname.
+    the wildcard character '*' in a nickname.
 
     If a channel is moderated, the users will require a voice or op in order to
     be able to send messages to the channel.

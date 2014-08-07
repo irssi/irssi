@@ -16,7 +16,7 @@
 
     Modifies the value of a setting; boolean settings accept only ON, OFF and
     TOGGLE.
-    
+
     Please remember that you need to use the SAVE command to store the changes
     into your configuration.
 
@@ -25,7 +25,7 @@
     /SET
     /SET nick mike
     /SET -clear nick
-    /SET log_timestamp %H:%H:%S
+    /SET log_timestamp %%H:%%H:%%S
     /SET -default log_timestamp
     /SET close
 

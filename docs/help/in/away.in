@@ -12,11 +12,11 @@
    
 %9Description:%9
 
-    Marks yourself as "away"; this method is used to inform people that you
+    Marks yourself as 'away'; this method is used to inform people that you
     are not paying attention to your screen.
 
     You might use it when you are taking a nap, in the shower, getting some
-    food, or otherwise engaged. When you're "away" you will see "(zZzZ)" in
+    food, or otherwise engaged. When you're 'away' you will see '(zZzZ)' in
     your statusbar.
 
     Anyone who does a WHOIS on your nickname will see that you are away, as

@@ -6,16 +6,16 @@
 %9Parameters:%9
 
     A name of the alias and the command to execute. You can prepend the alias
-    with the "-" character to remove the alias; if no argument is given, your
+    with the '-' character to remove the alias; if no argument is given, your
     aliases will be displayed.
 
 %9Description:%9
 
-    Creates or updates an alias; you can use the ";" character to separate
+    Creates or updates an alias; you can use the ';' character to separate
     multiple commands.
 
-    The parametesr given to the alias are expanded in "$[\d]" For example $0,
-    $1, $2, $8, $12, ...
+    The parameters given to the alias are expanded in '$[\d]'; for example $0,
+    $1, $2, $8, ..., as well as any other special variable.
 
     If you don't use any parameters in your alias, all parameters will be
     automatically appended after it.
@@ -28,6 +28,10 @@
     /ALIAS -COMEBACK
     /ALIAS UNACT SCRIPT EXEC \$_->activity(0) for Irssi::windows
     /ALIAS QOP ^MSG Q op $C
+
+%9References:%9
+
+    https://github.com/irssi/irssi/blob/master/docs/special_vars.txt
 
 %9See also:%9 BIND, UNALIAS
 

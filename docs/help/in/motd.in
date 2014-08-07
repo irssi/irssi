@@ -1,5 +1,4 @@
 
-
 %9Syntax:%9
 
 @SYNTAX:motd@
@@ -11,7 +10,7 @@
 
 %9Description:%9
 
-    Displays the "Message of the Day" of an IRC server.
+    Displays the welcome message of an IRC server.
 
 %9Examples:%9
 

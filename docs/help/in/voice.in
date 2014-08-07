@@ -10,7 +10,7 @@
 %9Description:%9
 
     Grants the channel voice privileges to the given nicknames; you may use
-    the wildcard character "*" in a nickname.
+    the wildcard character '*' in a nickname.
 
 %9Examples:%9
 

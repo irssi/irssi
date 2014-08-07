@@ -9,7 +9,8 @@
     -nosh:           Doesn't execute the command through /bin/sh.
     -out:            Sends the output to the active channel or query.
     -msg:            Sends the output to the specified nickname or channel.
-    -notice:         Sends the output to the specified nickname or channel as notices.
+    -notice:         Sends the output to the specified nickname or channel as
+                     notices.
     -name:           Gives the process the specified name.
     -window:         Displays the output in the active window.
     -close:          Forcibly closes a process that doesn't die.
@@ -29,7 +30,7 @@
     The output of the process can be redirected to various targets, such as
     a window, a channel, a nickname or a query.
 
-    The process identifier must always begin with the "%%" character. For
+    The process identifier must always begin with the '%%' character. For
     example %%0.
 
     If you remove a process with the close parameter, it will only make Irssi

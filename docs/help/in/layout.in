@@ -8,7 +8,7 @@
     SAVE:     Saves your layout to the configuration.
     RESET:    Removes the saved layout from the configuration.
 
-%9Descripton:%9
+%9Description:%9
 
     Saves the layout of your window configuration; the next time you connect
     to the server, you will join the channels in the same window as before.
