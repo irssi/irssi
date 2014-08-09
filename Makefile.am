@@ -12,7 +12,8 @@ default-theme.h: $(srcdir)/default.theme
 	$(srcdir)/file2header.sh $(srcdir)/default.theme default_theme > default-theme.h
 
 irssi-version.h:
-	$(srcdir)/irssi-version.sh $(srcdir) | cmp -s - $@ || $(srcdir)/irssi-version.sh $(srcdir) >$@
+	VERSION="$(VERSION)" $(srcdir)/irssi-version.sh $(srcdir) | \
+		cmp -s - $@ || VERSION="$(VERSION)" $(srcdir)/irssi-version.sh $(srcdir) >$@
 
 SUBDIRS = src docs scripts
 
