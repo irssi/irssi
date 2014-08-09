@@ -293,7 +293,7 @@ void term_window_scroll(TERM_WINDOW *window, int count)
         term_move_reset(vcx, vcy);
 
         /* set the newly scrolled area dirty */
-	for (y = 0; y < window->height; y++)
+	for (y = 0; (window->y+y) < term_height && y < window->height; y++)
 		term_lines_empty[window->y+y] = FALSE;
 }
 
