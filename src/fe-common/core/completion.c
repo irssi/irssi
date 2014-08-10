@@ -162,7 +162,8 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		if (isseparator(*line)) {
 			/* empty space at the start of line */
 			if (wordstart == line)
-				wordstart += strlen(wordstart);
+				while (wordstart != '\0' && isseparator(wordstart))
+					wordstart++;
 		} else {
 			while (wordstart > line && isseparator(wordstart[-1]))
 				wordstart--;
