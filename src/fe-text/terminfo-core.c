@@ -453,6 +453,8 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 		term->TI_colors = 256;
 	else if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
 		term->TI_colors = 8;
+	else /* if we turn off force we'll need to restore the real setting */
+		term->TI_colors = term_getnum(tcaps[25]);
 
 	if ((term->TI_setf || term->TI_setaf || force) &&
 	     term->TI_colors > 0) {
