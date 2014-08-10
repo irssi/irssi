@@ -449,13 +449,10 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	unsigned int i, color;
 
 	terminfo_colors_deinit(term);
-
-	if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
-#ifdef HACK_FORCE_256COLOR
+	if (force == 256)
 		term->TI_colors = 256;
-#else
+	else if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
 		term->TI_colors = 8;
-#endif
 
 	if ((term->TI_setf || term->TI_setaf || force) &&
 	     term->TI_colors > 0) {
@@ -468,19 +465,15 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 		term->TI_colors = 0;
 		term->set_fg = term->set_bg = _ignore_parm;
 	}
-#ifdef HACK_FORCE_256COLOR
-	/* force 256-color escapes for base colors also, lets you have bold
-	 * font in konsole without bright
-	 */
-	if (force) {
+	if (force == 256) {
+		/* force 256-color escapes for base colors as well, lets you
+		 * have bold font in konsole without bright.
+		 */
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_fg[i] = g_strdup_printf("\033[38;5;%dm", color);
 		}
 	} else if (term->TI_setaf) {
-#else
-	if (term->TI_setaf) {
-#endif
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, color, 0));
@@ -488,24 +481,16 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	} else if (term->TI_setf) {
 		for (i = 0; i < term->TI_colors; i++)
                         term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0));
-#ifdef HACK_FORCE_256COLOR
-	}
-#else
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_fg[i] = g_strdup_printf("\033[%dm", 30+ansitab[i]);
 	}
-#endif
-#ifdef HACK_FORCE_256COLOR
-	if (force) {
+	if (force == 256) {
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_bg[i] = g_strdup_printf("\033[48;5;%dm", color);
 		}
 	} else if (term->TI_setab) {
-#else
-	if (term->TI_setab) {
-#endif
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_bg[i] = g_strdup(tparm(term->TI_setab, color, 0));
@@ -513,14 +498,10 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	} else if (term->TI_setb) {
 		for (i = 0; i < term->TI_colors; i++)
                         term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0));
-#ifdef HACK_FORCE_256COLOR
-	}
-#else
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_bg[i] = g_strdup_printf("\033[%dm", 40+ansitab[i]);
 	}
-#endif /* HACK_FORCE_256COLOR */
 }
 
 static void terminfo_input_init(TERM_REC *term)

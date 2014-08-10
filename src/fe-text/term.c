@@ -130,6 +130,7 @@ static void read_settings(void)
 	int old_colors = term_use_colors;
 	int old_colors24 = term_use_colors24;
         int old_type = term_type;
+	int old_forced = force_colors;
 
         /* set terminal type */
 	str = settings_get_str("term_charset");
@@ -144,8 +145,14 @@ static void read_settings(void)
                 term_set_input_type(term_type);
 
         /* change color stuff */
-	if (force_colors != settings_get_bool("term_force_colors")) {
+	if (settings_get_bool("term_force_256colors")) {
+		force_colors = 256;
+	}
+	else if (force_colors != settings_get_bool("term_force_colors")) {
 		force_colors = settings_get_bool("term_force_colors");
+	}
+
+	if (old_forced != force_colors) {
 		term_force_colors(force_colors);
 	}
 
@@ -171,7 +178,8 @@ void term_common_init(void)
 #endif
 	settings_add_bool("lookandfeel", "colors", TRUE);
 	settings_add_bool("lookandfeel", "term_force_colors", FALSE);
-        settings_add_bool("lookandfeel", "mirc_blink_fix", FALSE);
+	settings_add_bool("lookandfeel", "mirc_blink_fix", FALSE);
+	settings_add_bool("lookandfeel", "term_force_256colors", FALSE);
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
