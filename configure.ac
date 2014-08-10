@@ -175,6 +175,15 @@ AC_ARG_ENABLE(true-color,
 	fi,
 	want_truecolor=no)
 
+AC_ARG_ENABLE(force-256color,
+[  --enable-force-256color Force using 256-color escapes],
+	if text x$enableval = xno ; then
+		want_force256color=no
+	else
+		want_force256color=yes
+	fi,
+	want_force256color=no)
+
 dnl **
 dnl ** SSL Library checks (OpenSSL)
 dnl **
@@ -669,6 +678,12 @@ else
 	want_truecolor=no
 fi
 
+if test "x$want_force256color" = "xyes" ; then
+	AC_DEFINE([HACK_FORCE_256COLOR], [], [force 256color escapes in terminal])
+else
+	want_force256color=no
+fi
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -802,6 +817,7 @@ echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with garbage collector .. : $have_gc"
 echo "Building with DANE support ....... : $have_dane"
 echo "Building with true color support.. : $want_truecolor"
+echo "Building with force 256color hack. : $want_force256color"
 
 echo
 echo "If there are any problems, read the INSTALL file."
