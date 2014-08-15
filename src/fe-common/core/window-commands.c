@@ -842,6 +842,16 @@ static void cmd_foreach_window(const char *data)
 		active_win = old;
 }
 
+void window_console(void)
+{
+	WINDOW_REC *window;
+
+	window = window_find_console();
+	if (!window)
+		return;
+	window_set_active(window);
+}
+
 void window_commands_init(void)
 {
 	settings_add_bool("lookandfeel", "active_window_ignore_refnum", TRUE);
