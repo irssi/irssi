@@ -360,8 +360,6 @@ static void ignore_destroy(IGNORE_REC *rec, int send_signal)
 	g_free_not_null(rec->servertag);
 	g_free_not_null(rec->pattern);
 	g_free(rec);
-
-	nickmatch_rebuild(nickmatch);
 }
 
 void ignore_update_rec(IGNORE_REC *rec)
@@ -380,8 +378,8 @@ void ignore_update_rec(IGNORE_REC *rec)
 
                 ignore_init_rec(rec);
 		signal_emit("ignore changed", 1, rec);
-		nickmatch_rebuild(nickmatch);
 	}
+        nickmatch_rebuild(nickmatch);
 }
 
 static int unignore_timeout(void)
