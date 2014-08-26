@@ -333,6 +333,7 @@ gui-readline.c:
 
 gui-printtext.c:
  "beep"
+ "gui print text after finished", WINDOW_REC, LINE_REC *line, LINE_REC *prev_line
 
 textbuffer-view.c
  "gui textbuffer line removed", TEXTBUFFER_VIEW_REC *view, LINE_REC *line, LINE_REC *prev_line
