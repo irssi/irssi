@@ -1,4 +1,4 @@
-v0.8.17-rc2 2014-08-31  The Irssi team <staff@irssi.org>
+v0.8.17-head 2014-XX-XX  The Irssi team <staff@irssi.org>
 	+ Document that SSL connections aren't properly handled during /UPGRADE. See Github PR #39.
 	+ Synchronize scripts with scripts.irssi.org.
 	+ Performance enhancement of the nicklist as well as the window_item_find function. See Github PR #24.
