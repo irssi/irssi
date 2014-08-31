@@ -1,4 +1,4 @@
-v0.8.17-head 2014-xx-xx  The Irssi team <staff@irssi.org>
+v0.8.17-head 2014-XX-XX  The Irssi team <staff@irssi.org>
 	+ Document that SSL connections aren't properly handled during /UPGRADE. See Github PR #39.
 	+ Synchronize scripts with scripts.irssi.org.
 	+ Performance enhancement of the nicklist as well as the window_item_find function. See Github PR #24.
@@ -18,6 +18,7 @@ v0.8.17-head 2014-xx-xx  The Irssi team <staff@irssi.org>
 	- Fixed format_get_text Perl API. See Github PR #23.
 	- Fixed gui_printtext_after and term_refresh_*() visibility. See Github PR #22.
 	- Fixed issue where UTF-8 characters was corrupted once for every 32k text. See Github PR #12.
+	- Fixed redrawing issue with right-aligned statusbar.
 
 v0.8.16 2014-05-28  The Irssi team <staff@irssi.org>
 	+ Add -noautosendcmd to /SERVER and /CONNECT. Passing this option will
