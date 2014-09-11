@@ -94,7 +94,7 @@ static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 		return 0;
 
 	fileparams = get_file_params_count_resume(params, paramcount);
-    
+
 	if (paramcount >= fileparams + 2) {
 		port = atoi(params[fileparams]);
 		*size = str_to_uofft(params[fileparams+1]);

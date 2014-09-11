@@ -409,7 +409,7 @@ void fe_whois_init(void)
 
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
-	/* readding this events fixes the printing of /whois -yes * 
+	/* readding this events fixes the printing of /whois -yes *
 	   Bug http://bugs.irssi.org/?do=details&id=123 */
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);

@@ -1228,7 +1228,7 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level)
 {
 	LINE_REC *line, *next;
-	
+
 	term_refresh_freeze();
 	line = textbuffer_view_get_lines(view);
 

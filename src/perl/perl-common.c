@@ -629,7 +629,7 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 		perl_eval_pv(code, TRUE);
 	}
 
-	pcode = g_strdup_printf(find_use_code, 
+	pcode = g_strdup_printf(find_use_code,
 	                        settings_get_str("perl_use_lib"), name);
 	sv = perl_eval_pv(pcode, TRUE);
 	g_free(pcode);

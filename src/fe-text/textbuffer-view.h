@@ -72,7 +72,7 @@ struct _TEXT_BUFFER_VIEW_REC {
 
 	/* how many empty lines are in screen. a screenful when started
 	   or used /CLEAR */
-	int empty_linecount; 
+	int empty_linecount;
         /* window is at the bottom of the text buffer */
 	unsigned int bottom:1;
         /* if !bottom - new text has been printed since we were at bottom */

@@ -118,7 +118,7 @@ static void event_who(IRC_SERVER_REC *server, const char *data)
 	while (*realname != '\0' && *realname != ' ') realname++;
 	if (*realname == ' ')
 		*realname++ = '\0';
-	
+
 	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_WHO,
 		    channel, nick, stat, hops, user, host, recoded, serv);

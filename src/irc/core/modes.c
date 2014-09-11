@@ -78,7 +78,7 @@ void prefix_add(char prefixes[MAX_USER_PREFIXES+1], char newprefix, SERVER_REC *
 
 		if (*prefixlst == newprefix)
 			break; /* insert the new prefix here */
-		
+
 		if (*prefixlst == prefixes[oldpos]) {
 			/* this prefix is present.
 			 * the one we are inserting goes after it.
@@ -88,7 +88,7 @@ void prefix_add(char prefixes[MAX_USER_PREFIXES+1], char newprefix, SERVER_REC *
 		}
 		prefixlst++;
 	}
-	
+
 	/* newpos is now the position in which we wish to insert the prefix */
 	newprefixes[newpos++] = newprefix;
 
@@ -274,7 +274,7 @@ void modes_type_b(IRC_CHANNEL_REC *channel, const char *setby, char type,
 				channel->key = g_strdup(arg);
 		}
 	}
-	
+
 	mode_set_arg(channel->server, newmode, type, mode, arg, FALSE);
 }
 
@@ -285,7 +285,7 @@ void modes_type_c(IRC_CHANNEL_REC *channel, const char *setby,
 	if (mode == 'l') {
 		channel->limit = type == '-' ? 0 : atoi(arg);
 	}
-	
+
 	mode_set_arg(channel->server, newmode, type, mode, arg, FALSE);
 }
 

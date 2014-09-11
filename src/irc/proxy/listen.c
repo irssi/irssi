@@ -178,7 +178,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 			                                      rec->proxy_address, rec->nick, rec->listen->ircnet);
 						rec->want_ctcp = 0;
 		                }
-						                                      
+
 			}
 			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\n",
 				      client->proxy_address, client->nick,client->listen->ircnet);
@@ -421,7 +421,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		/* CTCP - either answer ourself or forward it to one client */
 		for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 	        	CLIENT_REC *rec = tmp->data;
-		                        
+
 			if (rec->want_ctcp == 1) {
                         	/* only CTCP for the chatnet where client is connected to will be forwarded */
                         	if (strstr(rec->proxy_address, server->connrec->chatnet) != NULL) {

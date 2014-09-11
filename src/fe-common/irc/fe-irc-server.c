@@ -63,7 +63,7 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 	char *value;
 
 	value = g_hash_table_lookup(optlist, "network");
-	/* For backwards compatibility, also allow the old name 'ircnet'. 
+	/* For backwards compatibility, also allow the old name 'ircnet'.
 	   But of course only if -network was not given. */
 	if (!value)
 		value = g_hash_table_lookup(optlist, "ircnet");
@@ -121,7 +121,7 @@ static void cmd_server_list(const char *data)
 				g_string_append_printf(str, "ssl_cafile: %s, ", rec->ssl_cafile);
 			if (rec->ssl_capath)
 				g_string_append_printf(str, "ssl_capath: %s, ", rec->ssl_capath);
-			
+
 		}
 		if (rec->max_cmds_at_once > 0)
 			g_string_append_printf(str, "cmdmax: %d, ", rec->max_cmds_at_once);

@@ -668,7 +668,7 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 				    int escape_vars)
 {
 	SERVER_REC *server;
-	WI_ITEM_REC *wiitem; 
+	WI_ITEM_REC *wiitem;
 	char *tmpstr, *tmpstr2;
 	theme_rm_col reset;
 	strcpy(reset.m, "n");
