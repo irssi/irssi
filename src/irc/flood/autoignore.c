@@ -38,7 +38,7 @@ void autoignore_update(IGNORE_REC *rec, int level)
 	ignore_update_rec(rec);
 }
 
-void autoignore_add(IRC_SERVER_REC *server, char *mask, int level) 
+void autoignore_add(IRC_SERVER_REC *server, char *mask, int level)
 {
 	IGNORE_REC *rec;
 

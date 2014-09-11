@@ -84,7 +84,7 @@ static int channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 		channel_destroy(CHANNEL(chanrec));
 		return 0;
 	}
-	
+
 	rec = rejoin_find(server, channel);
 	if (rec != NULL) {
 		/* already exists */

@@ -69,7 +69,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
         isupport = config_node_section(node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
         isupport_data.node = isupport;
-		        
+
         g_hash_table_foreach(server->isupport, (GHFunc) session_isupport_foreach, &isupport_data);
 }
 

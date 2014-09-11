@@ -226,8 +226,8 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	int i;
 	int xpos, end_xpos;
 
-	xpos = entry->xpos + entry->promptlen + 
-		pos2scrpos(entry, pos + entry->scrstart) - 
+	xpos = entry->xpos + entry->promptlen +
+		pos2scrpos(entry, pos + entry->scrstart) -
 		pos2scrpos(entry, entry->scrstart);
         end_xpos = entry->xpos + entry->width;
 
@@ -730,7 +730,7 @@ void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
 		g_free(second);
 
 	}
-	
+
 	gui_entry_redraw_from(entry, spos1);
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);

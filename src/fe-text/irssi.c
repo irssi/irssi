@@ -346,9 +346,9 @@ int main(int argc, char **argv)
 	   before this call.
 
 	   locales aren't actually used for anything else than autodetection
-	   of UTF-8 currently..  
+	   of UTF-8 currently..
 
-	   furthermore to get the users's charset with g_get_charset() properly 
+	   furthermore to get the users's charset with g_get_charset() properly
 	   you have to call setlocale(LC_ALL, "") */
 	setlocale(LC_ALL, "");
 

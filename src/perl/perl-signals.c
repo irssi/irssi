@@ -475,7 +475,7 @@ void perl_command_bind_to(const char *cmd, const char *category,
 	g_free(signal);
 }
 
-void perl_command_runsub(const char *cmd, const char *data, 
+void perl_command_runsub(const char *cmd, const char *data,
 			 SERVER_REC *server, WI_ITEM_REC *item)
 {
 	command_runsub(cmd, data, server, item);

@@ -45,7 +45,7 @@ void command_history_add(HISTORY_REC *history, const char *text)
 	if (link != NULL && strcmp(link->data, text) == 0)
 	  return; /* same as previous entry */
 
-	if (settings_get_int("max_command_history") < 1 || 
+	if (settings_get_int("max_command_history") < 1 ||
 	    history->lines < settings_get_int("max_command_history"))
 		history->lines++;
 	else {
@@ -78,12 +78,12 @@ HISTORY_REC *command_history_find_name(const char *name)
 
 	for (tmp = histories; tmp != NULL; tmp = tmp->next) {
 		HISTORY_REC *rec = tmp->data;
-		
+
 		if (rec->name != NULL &&
 		    g_ascii_strcasecmp(rec->name, name) == 0)
 			return rec;
 	}
-	
+
 	return NULL;
 }
 
@@ -135,7 +135,7 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 	GList *pos;
 
 	history = command_history_current(window);
-	pos = history->pos; 
+	pos = history->pos;
 
 	if (pos != NULL)
 		history->pos = history->pos->next;
@@ -160,21 +160,21 @@ void command_history_clear_pos_func(HISTORY_REC *history, gpointer user_data)
 
 void command_history_clear_pos(WINDOW_REC *window)
 {
-	g_slist_foreach(histories, 
+	g_slist_foreach(histories,
 		       (GFunc) command_history_clear_pos_func, NULL);
 }
 
 HISTORY_REC *command_history_create(const char *name)
 {
 	HISTORY_REC *rec;
-	
+
 	rec = g_new0(HISTORY_REC, 1);
-	
+
 	if (name != NULL)
 		rec->name = g_strdup(name);
 
 	histories = g_slist_append(histories, rec);
-	
+
 	return rec;
 }
 

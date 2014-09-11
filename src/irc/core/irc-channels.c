@@ -114,7 +114,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
                 	                use_keys = TRUE;
 					key = schannel->password;
 				} else key = NULL;
-				
+
 				g_string_append_printf(outkeys, "%s,", get_join_key(key));
 				channame = channel + (channel[0] == '!' &&
 						      channel[1] == '!');
@@ -126,11 +126,11 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 
 			if (*tmpkey != NULL)
                 	        tmpkey++;
-	
+
 			tmpstr = tmp;
 			tmpstr++;
 			cmdlen = outchans->len-1;
-			
+
 			if (use_keys)
 				cmdlen += outkeys->len;
 			if (*tmpstr != NULL)
@@ -138,8 +138,8 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 					  strlen(*tmpstr)+1;
 			if (*tmpkey != NULL)
 				cmdlen += strlen(*tmpkey);
-				
-			/* don't try to send too long lines 
+
+			/* don't try to send too long lines
 			   make sure it's not longer than 510
 			   so 510 - strlen("JOIN ") = 505 */
 			if (cmdlen < 505)

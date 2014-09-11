@@ -385,7 +385,7 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 						 &dummy, &dummy, 0);
 			continue;
 		}
-		
+
 		if (braces == 0) {
 			(*format)++;
 			break;

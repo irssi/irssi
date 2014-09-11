@@ -90,9 +90,9 @@ void dcc_init_rec(DCC_REC *dcc, IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 
 	dcc->servertag = server != NULL ? g_strdup(server->tag) :
 		(chat == NULL ? NULL : g_strdup(chat->servertag));
-	
+
 	dcc->pasv_id = -1; /* Not a passive DCC */
-	
+
 	dcc_conns = g_slist_append(dcc_conns, dcc);
 	signal_emit("dcc created", 1, dcc);
 }
@@ -454,8 +454,8 @@ static int dcc_timeout_func(void)
 			/* Timed out - don't send DCC REJECT CTCP so CTCP
 			   flooders won't affect us and it really doesn't
 			   matter that much anyway if the other side doen't
-			   get it.. 
-			   
+			   get it..
+
 			   We don't want dcc servers to time out. */
 			dcc_close(dcc);
 		}

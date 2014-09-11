@@ -454,7 +454,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		g_memmove(fname, fname+1, len);
                 quoted = TRUE;
 	}
-    
+
 	if (passive && port != 0) {
 		/* This is NOT a DCC SEND request! This is a reply to our
 		   passive request. We MUST check the IDs and then connect to
@@ -501,7 +501,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 
 	if (passive && port == 0)
 		dcc->pasv_id = p_id; /* Assign the ID to the DCC */
-    
+
 	memcpy(&dcc->addr, &ip, sizeof(ip));
 	if (dcc->addr.family == AF_INET)
 		net_ip2host(&dcc->addr, dcc->addrstr);

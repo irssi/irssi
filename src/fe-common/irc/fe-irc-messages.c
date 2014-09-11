@@ -87,7 +87,7 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		g_free(nickmode);
                 signal_stop();
 	}
-	
+
 }
 
 /* received msg to all ops in channel */
@@ -201,7 +201,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 			    IRCTXT_ACTION_PRIVATE_QUERY,
 			    nick, address == NULL ? "" : address, msg);
 	}
-	
+
 	g_free_not_null(freemsg);
 }
 
@@ -219,7 +219,7 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 {
 	const char *oldtarget;
 	int level = MSGLEVEL_NOTICES;
-	
+
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
 
