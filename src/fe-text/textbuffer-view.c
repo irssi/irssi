@@ -146,6 +146,9 @@ static void update_cmd_color(unsigned char cmd, int *color)
 	case LINE_CMD_ITALIC:
 		*color ^= ATTR_ITALIC;
 		break;
+	case LINE_CMD_MONOSPACE:
+		/* ignored */
+		break;
 	case LINE_CMD_COLOR0:
 		*color &= BGATTR;
 		*color &= ~ATTR_FGCOLOR24;
