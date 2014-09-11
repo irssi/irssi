@@ -529,7 +529,7 @@ static void cmd_window_item_goto(const char *data, SERVER_REC *server)
 	GSList *tmp;
 	void *free_arg;
 	char *target;
-	
+
 	if (!cmd_get_params(data, &free_arg, 1, &target))
 		return;
 

@@ -403,7 +403,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 			nickmode[0] = rec->prefixes[0];
 		else
 			nickmode[0] = ' ';
-		
+
 		if (linebuf_size < columns[col]-item_extra+1) {
 			linebuf_size = (columns[col]-item_extra+1)*2;
                         linebuf = g_realloc(linebuf, linebuf_size);

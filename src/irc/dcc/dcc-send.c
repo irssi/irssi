@@ -194,7 +194,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	passive = g_hash_table_lookup(optlist, "passive") != NULL;
-    
+
 	if (g_hash_table_lookup(optlist, "rmhead") != NULL) {
 		queue = dcc_queue_old(nick, servertag);
 		if (queue != -1)
@@ -217,7 +217,7 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 
 		if (*fileargs == '\0')
 			cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-        
+
 		dcc_send_add(servertag, chat, nick, fileargs, mode, passive);
 	}
 
@@ -434,11 +434,11 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	if (passive) {
 		dcc->pasv_id = rand() % 64;
 	}
-    
+
 	/* send DCC request */
 	signal_emit("dcc request send", 1, dcc);
 
-    
+
 	dcc_ip2str(&own_ip, host);
 	if (passive == FALSE) {
 		str = g_strdup_printf(dcc->file_quoted ?

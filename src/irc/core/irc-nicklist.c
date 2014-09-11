@@ -195,7 +195,7 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *ownnick;
 	int nicks;
-	
+
 	g_return_if_fail(server != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
@@ -384,7 +384,7 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 
 	cmd = g_strdup_printf("NICK %s", server->nick);
 	irc_send_cmd_now(server, cmd);
-	g_free(cmd);	
+	g_free(cmd);
 }
 
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)

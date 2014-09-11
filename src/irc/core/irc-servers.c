@@ -753,7 +753,7 @@ static void event_isupport(IRC_SERVER_REC *server, const char *data)
 	char **item, *sptr, *eptr;
 	char **isupport;
 	gpointer key, value;
-   
+
 	g_return_if_fail(server != NULL);
 
 	server->isupport_sent = TRUE;

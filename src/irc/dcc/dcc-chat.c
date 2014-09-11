@@ -428,7 +428,7 @@ static void dcc_chat_passive(CHAT_DCC_REC *dcc)
 	dcc_ip2str(&own_ip, host);
 	irc_send_cmdv(dcc->server, "PRIVMSG %s :\001DCC CHAT CHAT %s %d %d\001",
 		      dcc->nick, host, port, dcc->pasv_id);
-         
+
 }
 
 /* SYNTAX: DCC CHAT [-passive] [<nick>] */
@@ -615,7 +615,7 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 	char **params;
 	int paramcount;
         int passive, autoallow = FALSE;
-	
+
         /* CHAT <unused> <address> <port> */
 	/* CHAT <unused> <address> 0 <id> (DCC CHAT passive protocol) */
 	params = g_strsplit(data, " ", -1);
@@ -656,14 +656,14 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 			}
 		}
 	}
-	
+
 	dcc = dcc_chat_create(server, chat, nick, params[0]);
 	dcc->target = g_strdup(target);
 	dcc->port = atoi(params[2]);
-	
+
 	if (passive)
 		dcc->pasv_id = atoi(params[3]);
-	
+
 	dcc_str2ip(params[1], &dcc->addr);
 	net_ip2host(&dcc->addr, dcc->addrstr);
 

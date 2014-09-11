@@ -574,7 +574,7 @@ GList *completion_get_aliases(const char *word)
 
 		list = g_list_append(list, g_strdup(node->key));
 	}
-	
+
 	return list;
 }
 
@@ -781,7 +781,7 @@ GList *completion_get_servers(const char *word)
 	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
 		SERVER_SETUP_REC *rec = tmp->data;
 
-		if (g_ascii_strncasecmp(rec->address, word, len) == 0) 
+		if (g_ascii_strncasecmp(rec->address, word, len) == 0)
 			list = g_list_append(list, g_strdup(rec->address));
 	}
 
@@ -814,12 +814,12 @@ GList *completion_get_targets(const char *word)
 
 		list = g_list_append(list, g_strdup(node->key));
 	}
-	
+
 	return list;
 }
 
 static void sig_complete_connect(GList **list, WINDOW_REC *window,
-				 const char *word, const char *line, 
+				 const char *word, const char *line,
 				 int *want_space)
 {
 	g_return_if_fail(list != NULL);
@@ -895,7 +895,7 @@ static void sig_complete_alias(GList **list, WINDOW_REC *window,
 				int *want_space)
 {
 	const char *definition;
-	
+
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
@@ -905,7 +905,7 @@ static void sig_complete_alias(GList **list, WINDOW_REC *window,
 			*list = g_list_append(NULL, g_strdup(definition));
 			signal_stop();
 		}
-	} else {	
+	} else {
 		*list = completion_get_aliases(word);
 		if (*list != NULL) signal_stop();
 	}
@@ -965,7 +965,7 @@ static void sig_complete_target(GList **list, WINDOW_REC *window,
 				int *want_space)
 {
 	const char *definition;
-	
+
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
@@ -975,7 +975,7 @@ static void sig_complete_target(GList **list, WINDOW_REC *window,
 			*list = g_list_append(NULL, g_strdup(definition));
 			signal_stop();
 		}
-	} else {	
+	} else {
 		*list = completion_get_targets(word);
 		if (*list != NULL) signal_stop();
 	}

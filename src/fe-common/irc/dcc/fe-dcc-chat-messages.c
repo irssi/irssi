@@ -60,7 +60,7 @@ static void sig_message_dcc_own_action(CHAT_DCC_REC *dcc, const char *msg)
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       MSGLEVEL_DCCMSGS | MSGLEVEL_ACTIONS |
 			       MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, NULL);
-        
+
         printformat_dest(&dest, query != NULL ? IRCTXT_OWN_DCC_ACTION_QUERY :
 			 IRCTXT_OWN_DCC_ACTION, dcc->mynick, dcc->id, msg);
         g_free(tag);

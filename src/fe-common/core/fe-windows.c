@@ -184,7 +184,7 @@ void window_change_server(WINDOW_REC *window, void *server)
 	if (window->active_server != active) {
 		window->active_server = active;
 		signal_emit("window server changed", 2, window, active);
-	} 
+	}
 }
 
 void window_set_refnum(WINDOW_REC *window, int refnum)

@@ -68,7 +68,7 @@ static void sig_layout_restore_item(WINDOW_REC *window, const char *type,
 			   (SIGNAL_FUNC) signal_query_created_curwin);
 
                 restore_win = window;
-		
+
 		protocol = chat_protocol_find(chat_type);
 		if (protocol == NULL)
 			window_bind_add(window, tag, name);

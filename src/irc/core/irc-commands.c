@@ -790,7 +790,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 
 	bancmd = *banmasks == '\0'? NULL :
 		g_strdup_printf("%s %s", channel->name, banmasks);
-	
+
         if (settings_get_bool("kick_first_on_kickban")) {
 		signal_emit("command kick", 3, kickcmd, server, channel);
 		if (bancmd != NULL)
@@ -894,7 +894,7 @@ static void cmd_accept(const char *data, IRC_SERVER_REC *server)
 {
         CMD_IRC_SERVER(server);
 
-	if (*data == '\0') 
+	if (*data == '\0')
 		irc_send_cmd(server, "ACCEPT *");
 	else
 		irc_send_cmdv(server, "ACCEPT %s", data);
@@ -905,7 +905,7 @@ static void cmd_unsilence(const char *data, IRC_SERVER_REC *server)
 {
         CMD_IRC_SERVER(server);
 
-	if (*data == '\0') 
+	if (*data == '\0')
 		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	irc_send_cmdv(server, "SILENCE -%s", data);
