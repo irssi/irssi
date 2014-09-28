@@ -43,11 +43,11 @@
 
 static int autolog_level;
 static int autoremove_tag;
-static const char *autolog_path;
+static char *autolog_path;
 
 static THEME_REC *log_theme;
 static int skip_next_printtext;
-static const char *log_theme_name;
+static char *log_theme_name;
 
 static int log_dir_create_mode;
 
@@ -675,9 +675,11 @@ static void sig_theme_destroyed(THEME_REC *theme)
 static void read_settings(void)
 {
 	int old_autolog = autolog_level;
-        int log_file_create_mode;
+	int log_file_create_mode;
 
-	autolog_path = settings_get_str("autolog_path");
+	g_free_not_null(autolog_path);
+	autolog_path = g_strdup(settings_get_str("autolog_path"));
+
 	autolog_level = !settings_get_bool("autolog") ? 0 :
 		settings_get_level("autolog_level");
 
@@ -687,9 +689,14 @@ static void read_settings(void)
 	/* write to log files with different theme? */
 	if (log_theme_name != NULL)
 		signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
-	log_theme_name = settings_get_str("log_theme");
-	if (*log_theme_name == '\0')
+
+	g_free_not_null(log_theme_name);
+	log_theme_name = g_strdup(settings_get_str("log_theme"));
+
+	if (*log_theme_name == '\0') {
+		g_free(log_theme_name);
 		log_theme_name = NULL;
+	}
 	else
 		signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 
@@ -752,7 +759,7 @@ void fe_log_deinit(void)
 {
 	g_source_remove(autoremove_tag);
 	if (log_theme_name != NULL)
-                signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
+		signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 
 	command_unbind("log", (SIGNAL_FUNC) cmd_log);
 	command_unbind("log open", (SIGNAL_FUNC) cmd_log_open);
@@ -776,4 +783,7 @@ void fe_log_deinit(void)
 
 	if (autolog_ignore_targets != NULL)
 		g_strfreev(autolog_ignore_targets);
+
+	g_free_not_null(autolog_path);
+	g_free_not_null(log_theme_name);
 }
