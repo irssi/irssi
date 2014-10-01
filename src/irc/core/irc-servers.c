@@ -178,23 +178,15 @@ static char **split_message(SERVER_REC *server, const char *target,
 			    const char *msg)
 {
 	IRC_SERVER_REC *ircserver = IRC_SERVER(server);
-	int userhostlen = MAX_USERHOST_LEN;
 
 	g_return_val_if_fail(ircserver != NULL, NULL);
 	g_return_val_if_fail(target != NULL, NULL);
 	g_return_val_if_fail(msg != NULL, NULL);
 
-	/*
-	 * If we have joined a channel, userhost will be set, so we can
-	 * calculate the exact maximum length.
-	 */
-	if (ircserver->userhost != NULL)
-		userhostlen = strlen(ircserver->userhost);
-
-	/* length calculation shamelessly stolen from splitlong.pl */
+	/* length calculation shamelessly stolen from splitlong_safe.pl */
 	return split_line(SERVER(server), msg, target,
 			  510 - strlen(":! PRIVMSG  :") -
-			  strlen(ircserver->nick) - userhostlen -
+			  strlen(ircserver->nick) - MAX_USERHOST_LEN -
 			  strlen(target));
 }
 
@@ -458,18 +450,14 @@ void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const ch
 char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 			       const char *data)
 {
-	int userhostlen = MAX_USERHOST_LEN;
-
 	g_return_val_if_fail(server != NULL, NULL);
 	g_return_val_if_fail(target != NULL, NULL);
 	g_return_val_if_fail(data != NULL, NULL);
 
-	if (server->userhost != NULL)
-		userhostlen = strlen(server->userhost);
-
 	return split_line(SERVER(server), data, target,
 			  510 - strlen(":! PRIVMSG  :\001ACTION \001") -
-			  strlen(server->nick) - userhostlen - strlen(target));
+			  strlen(server->nick) - MAX_USERHOST_LEN -
+			  strlen(target));
 }
 
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
@@ -484,9 +472,11 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
                 if (*reason != '\0') {
 			server->away_reason = g_strdup(reason);
 			reason = recoded = recode_out(SERVER(server), reason, NULL);
+			irc_send_cmdv(server, "AWAY :%s", reason);
+		} else {
+			irc_send_cmdv(server, "AWAY");
 		}
 
-		irc_send_cmdv(server, "AWAY :%s", reason);
 	}
 	g_free(recoded);
 }
