@@ -484,9 +484,11 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
                 if (*reason != '\0') {
 			server->away_reason = g_strdup(reason);
 			reason = recoded = recode_out(SERVER(server), reason, NULL);
+			irc_send_cmdv(server, "AWAY :%s", reason);
+		} else {
+			irc_send_cmdv(server, "AWAY");
 		}
 
-		irc_send_cmdv(server, "AWAY :%s", reason);
 	}
 	g_free(recoded);
 }
