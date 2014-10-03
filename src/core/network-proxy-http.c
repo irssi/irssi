@@ -58,9 +58,9 @@ static bool send_connect(struct _network_proxy_http *proxy, GIOChannel *ch,
 	sprintf(port_str, "%u", port);
 
 	if (!_network_proxy_send_all(ch, "CONNECT ", -1) ||
-	    !_network_proxy_send_all(ch, address,    -1) ||
-	    !_network_proxy_send_all(ch, ":",        -1) ||
-	    !_network_proxy_send_all(ch, port_str,   -1) ||
+	    !_network_proxy_send_all(ch, address, -1) ||
+	    !_network_proxy_send_all(ch, ":", -1) ||
+	    !_network_proxy_send_all(ch, port_str, -1) ||
 	    !_network_proxy_send_all(ch, " HTTP/1.0\r\n\r\n", -1) ||
 	    !_network_proxy_flush(ch))
 		return false;
@@ -96,7 +96,7 @@ static int read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
 		if (state==0) {
 			if (g_str_has_prefix(line.str, "HTTP/1.0 ")) {
 				resp = g_strndup(line.str+9, line.len-9-2);
-				rc   = g_ascii_strtoull(resp, NULL, 10);
+				rc = g_ascii_strtoull(resp, NULL, 10);
 			} else {
 				g_warning("unexpected HTTP response: '%s'", line.str);
 				goto err;

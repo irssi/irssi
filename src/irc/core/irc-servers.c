@@ -196,11 +196,11 @@ static void server_init(IRC_SERVER_REC *server)
 	IRC_SERVER_CONNECT_REC *conn;
 	char *address, *ptr, *username, *cmd;
 	GTimeVal now;
-	struct network_proxy_send_string_info const	send_info = {
-		.host	=  server->connrec->address,
-		.port	=  server->connrec->port,
-		.func	=  irc_send_cmd_now_wrapper,
-		.obj    =  server
+	const struct network_proxy_send_string_info send_info = {
+		.host = server->connrec->address,
+		.port = server->connrec->port,
+		.func = irc_send_cmd_now_wrapper,
+		.obj = server
 	};
 
 	g_return_if_fail(server != NULL);

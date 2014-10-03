@@ -228,8 +228,8 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 }
 
 /* Connect to socket */
-GIOChannel *net_connect_proxy(struct network_proxy const *proxy,
-			      char const *host, int port, IPADDR *ip, IPADDR *my_ip)
+GIOChannel *net_connect_proxy(const struct network_proxy *proxy,
+			      const char *host, int port, IPADDR *ip, IPADDR *my_ip)
 {
 	if (proxy)
 		return proxy->connect(proxy, ip, host, port);
