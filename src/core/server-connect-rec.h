@@ -5,7 +5,7 @@ int chat_type; /* chat_protocol_lookup(xx) */
 
 int refcount;
 
-struct network_proxy	*proxy;
+struct network_proxy *proxy;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
 char *tag; /* try to keep this tag when connected to server */

@@ -1,19 +1,3 @@
-/*	--*- c -*--
- * Copyright (C) 2008 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 and/or 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef H_IRSSI_SRC_CORE_PROXY_PRIV_H
 #define H_IRSSI_SRC_CORE_PROXY_PRIV_H
 
@@ -26,38 +10,34 @@
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
 
-inline static void
-_network_proxy_create(struct network_proxy *dst)
+inline static void _network_proxy_create(struct network_proxy *dst)
 {
-	dst->port  = settings_get_int("proxy_port");
-	dst->host  = g_strdup(settings_get_str("proxy_address"));
+	dst->port = settings_get_int("proxy_port");
+	dst->host = g_strdup(settings_get_str("proxy_address"));
 }
 
-inline static void
-_network_proxy_clone(struct network_proxy *dst, struct network_proxy const *src)
+inline static void _network_proxy_clone(struct network_proxy *dst, const struct network_proxy *src)
 {
-	dst->host  = g_strdup(src->host);
-	dst->port  = src->port;
+	dst->host = g_strdup(src->host);
+	dst->port = src->port;
 
 	dst->destroy = src->destroy;
 	dst->connect = src->connect;
-	dst->clone   = src->clone;
+	dst->clone = src->clone;
 }
 
-inline static void
-_network_proxy_destroy(struct network_proxy *proxy)
+inline static void _network_proxy_destroy(struct network_proxy *proxy)
 {
 	g_free((void *)proxy->host);
 }
 
 
 
-inline static bool
-_network_proxy_send_all(GIOChannel *ch, void const *buf, ssize_t len)
+inline static bool _network_proxy_send_all(GIOChannel *ch, const void *buf, ssize_t len)
 {
-	GError				*err = NULL;
-	gsize				written;
-	GIOStatus			status;
+	GError *err = NULL;
+	gsize written;
+	GIOStatus status;
 
 	while ((status=g_io_channel_write_chars(ch, buf, len, &written,
 						&err))==G_IO_STATUS_AGAIN)
@@ -74,15 +54,14 @@ _network_proxy_send_all(GIOChannel *ch, void const *buf, ssize_t len)
 	return false;
 }
 
-inline static bool
-_network_proxy_recv_all(GIOChannel *ch, void *buf_v, size_t len)
+inline static bool _network_proxy_recv_all(GIOChannel *ch, void *buf_v, size_t len)
 {
-	GError				*err = NULL;
-	gchar				*buf = buf_v;
+	GError *err = NULL;
+	gchar *buf = buf_v;
 
 	while (len>0) {
-		GIOStatus		status;
-		gsize			l;
+		GIOStatus status;
+		gsize l;
 
 		status = g_io_channel_read_chars(ch, buf, len, &l, &err);
 		if (status==G_IO_STATUS_AGAIN)
@@ -105,11 +84,10 @@ _network_proxy_recv_all(GIOChannel *ch, void *buf_v, size_t len)
 	return false;
 }
 
-inline static bool
-_network_proxy_flush(GIOChannel *ch)
+inline static bool _network_proxy_flush(GIOChannel *ch)
 {
-	GError			*err = NULL;
-	GIOStatus		status;
+	GError *err = NULL;
+	GIOStatus status;
 
 	while ((status=g_io_channel_flush(ch, &err))==G_IO_STATUS_AGAIN)
 		continue;
@@ -125,4 +103,4 @@ _network_proxy_flush(GIOChannel *ch)
 	return false;
 }
 
-#endif	/* H_IRSSI_SRC_CORE_PROXY_PRIV_H */
+#endif

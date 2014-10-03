@@ -231,13 +231,11 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 GIOChannel *net_connect_proxy(struct network_proxy const *proxy,
 			      char const *host, int port, IPADDR *ip, IPADDR *my_ip)
 {
-
 	if (proxy)
 		return proxy->connect(proxy, ip, host, port);
 	else
 		return net_connect_ip(ip, port, my_ip);
 }
-
 
 /* Connect to named UNIX socket */
 GIOChannel *net_connect_unix(const char *path)

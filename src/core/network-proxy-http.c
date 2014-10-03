@@ -1,18 +1,20 @@
-/*	--*- c -*--
- * Copyright (C) 2008 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 and/or 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+ network-proxy-http.c : irssi
+
+    Copyright (C) 2008 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 and/or 3 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "module.h"
 #include "network-proxy-http.h"
@@ -25,10 +27,9 @@
 #include "network.h"
 #include "network-proxy-priv.h"
 
-static void
-network_proxy_http_destroy(struct network_proxy *proxy)
+static void network_proxy_http_destroy(struct network_proxy *proxy)
 {
-	struct _network_proxy_http	*self = container_of(proxy, struct _network_proxy_http, proxy);
+	struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
 
 	g_free((void *)self->password);
 	_network_proxy_destroy(proxy);
@@ -36,11 +37,10 @@ network_proxy_http_destroy(struct network_proxy *proxy)
 	g_free(self);
 }
 
-static struct network_proxy *
-network_proxy_http_clone(struct network_proxy const *proxy)
+static struct network_proxy *network_proxy_http_clone(const struct network_proxy *proxy)
 {
-	struct _network_proxy_http	*self = container_of(proxy, struct _network_proxy_http, proxy);
-	struct _network_proxy_http	*res;
+	struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+	struct _network_proxy_http *res;
 
 	res = g_malloc0(sizeof *res);
 
@@ -49,10 +49,10 @@ network_proxy_http_clone(struct network_proxy const *proxy)
 	return &res->proxy;
 }
 
-static bool
-send_connect(struct _network_proxy_http *proxy, GIOChannel *ch, char const *address, uint16_t port)
+static bool send_connect(struct _network_proxy_http *proxy, GIOChannel *ch,
+			 const char *address, uint16_t port)
 {
-	char				port_str[6];
+	char port_str[6];
 
 	(void)proxy;
 	sprintf(port_str, "%u", port);
@@ -68,16 +68,15 @@ send_connect(struct _network_proxy_http *proxy, GIOChannel *ch, char const *addr
 	return true;
 }
 
-static int
-read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
+static int read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
 {
-	GIOStatus			status;
-	GString				line = { .str = NULL };
-	gsize				term_pos;
-	GError				*err = NULL;
-	int				state = 0;
-	int				rc = 0;
-	gchar				*resp = NULL;
+	GIOStatus status;
+	GString line = { .str = NULL };
+	gsize term_pos;
+	GError *err = NULL;
+	int state = 0;
+	int rc = 0;
+	gchar *resp = NULL;
 
 	(void)proxy;
 	for (;;) {
@@ -125,16 +124,15 @@ err:
 	return -1;
 }
 
-static GIOChannel *
-network_proxy_http_connect(struct network_proxy const *proxy, IPADDR const *hint_ip,
-			   char const *address, int port)
+static GIOChannel *network_proxy_http_connect(const struct network_proxy *proxy, const IPADDR *hint_ip,
+					      const char *address, int port)
 {
-	struct _network_proxy_http	*self = container_of(proxy, struct _network_proxy_http, proxy);
-	GIOChannel			*ch;
-	GIOFlags			old_flags;
-	GError				*err = NULL;
-	gchar const			*line_term;
-	gint				line_term_sz;
+	struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+	GIOChannel *ch;
+	GIOFlags old_flags;
+	GError *err = NULL;
+	const gchar *line_term;
+	gint line_term_sz;
 
 	if (hint_ip)
 		ch = net_connect_ip(hint_ip, self->proxy.port, NULL);
@@ -171,23 +169,20 @@ err:
 
 	net_disconnect(ch);
 	return NULL;
-
 }
 
-
-struct network_proxy *
-_network_proxy_http_create(void)
+struct network_proxy *_network_proxy_http_create(void)
 {
-	struct _network_proxy_http	*res;
+	struct _network_proxy_http *res;
 
 	res = g_malloc0(sizeof *res);
 
 	_network_proxy_create(&res->proxy);
-	res->password    = g_strdup(settings_get_str("proxy_password"));
+	res->password = g_strdup(settings_get_str("proxy_password"));
 
 	res->proxy.destroy = network_proxy_http_destroy;
 	res->proxy.connect = network_proxy_http_connect;
-	res->proxy.clone   = network_proxy_http_clone;
+	res->proxy.clone = network_proxy_http_clone;
 
 	return &res->proxy;
 }
