@@ -51,7 +51,7 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
 /* Connect to socket with ip address and SSL*/
 GIOChannel *net_connect_ip(IPADDR const *ip, int port, IPADDR *my_ip);
-GIOChannel *net_connect_proxy_ssl(struct network_proxy const *proxy, char const *host, int port, IPADDR *ip, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify);
+GIOChannel *net_connect_proxy_ssl(struct network_proxy const *proxy, char const *host, int port, IPADDR *ip, IPADDR *my_ip, SERVER_REC *server);
 int irssi_ssl_handshake(GIOChannel *handle);
 /* Connect to socket with ip address */
 GIOChannel *net_connect_proxy(struct network_proxy const *proxy, char const *host, int port, IPADDR *ip, IPADDR *my_ip);

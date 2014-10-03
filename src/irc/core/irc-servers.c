@@ -313,6 +313,11 @@ void irc_server_connect(SERVER_REC *server)
 	}
 }
 
+void irc_send_cmd_now_wrapper(void *server, const char *cmd)
+{
+	return irc_send_cmd_now((IRC_SERVER_REC *)server, cmd);
+}
+
 /* Returns TRUE if `command' is sent to `target' */
 static int command_has_target(const char *cmd, const char *target)
 {

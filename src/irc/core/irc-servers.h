@@ -109,6 +109,7 @@ struct _IRC_SERVER_REC {
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn);
 void irc_server_connect(SERVER_REC *server);
 
+
 /* Purge server output, either all or for specified target */
 void irc_server_purge_output(IRC_SERVER_REC *server, const char *target);
 
@@ -124,6 +125,8 @@ char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason);
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
 void irc_server_init_isupport(IRC_SERVER_REC *server);
+
+void irc_send_cmd_now_wrapper(void *server, const char *cmd);
 
 void irc_servers_start_cmd_timeout(void);
 

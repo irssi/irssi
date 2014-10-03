@@ -551,8 +551,8 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 
 	return gchan;
 }
-
-GIOChannel *net_connect_proxy_ssl(struct network_proxy const *proxy, char const *host, int port, IPADDR *ip, IPADDR *my_ip, const char *cert, const char *pkey, const char *cafile, const char *capath, gboolean verify)
+GIOChannel *net_connect_proxy_ssl(struct network_proxy const *proxy, char const *host, int port,
+                                  IPADDR *ip, IPADDR *my_ip, SERVER_REC *server)
 {
 	GIOChannel *handle, *ssl_handle;
 
