@@ -29,25 +29,25 @@ struct network_proxy {
 	 * \arg address   the hostname where proxy shall connect to
 	 * \arg port      port address where proxy shall connect to
 	 */
-	GIOChannel *(*connect)(const struct *network_proxy, const IPADDR *hint_ip,
+	GIOChannel *(*connect)(const struct network_proxy *, const IPADDR *hint_ip,
 			       const char *address, int port);
 
 	/* clones the given network_proxy object; this memberfunction is
 	 * mandatory */
-	struct network_proxy *(*clone)(const struct *network_proxy);
+	struct network_proxy *(*clone)(const struct network_proxy *);
 
 
 	/* sends a string after connection has been established but before IRC
 	 * authentication begins; this memberfunction is optional
 	 */
-	void (*send_string)(const struct *network_proxy,
-			    const struct *network_proxy_send_string_info);
+	void (*send_string)(const struct network_proxy *,
+			    const struct network_proxy_send_string_info *);
 
 	/* sends a string after connection IRC authentication suceeded; this
 	 * memberfunction is optional
 	 */
-	void (*send_string_after)(const struct *network_proxy,
-				  const struct *network_proxy_send_string_info);
+	void (*send_string_after)(const struct network_proxy *,
+				  const struct network_proxy_send_string_info *);
 
 	/* hostname of proxy host */
 	const char *host;
