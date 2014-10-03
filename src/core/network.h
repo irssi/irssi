@@ -54,7 +54,7 @@ GIOChannel *net_connect_proxy_ssl(const struct network_proxy *proxy, const char 
 				  IPADDR *ip, IPADDR *my_ip, SERVER_REC *server);
 int irssi_ssl_handshake(GIOChannel *handle);
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_ip(const IPADDR *ip, int port, IPADDR *my_ip);
 GIOChannel *net_connect_proxy(const struct network_proxy *proxy, const char *host, int port,
 			      IPADDR *ip, IPADDR *my_ip);
 /* Connect to named UNIX socket */

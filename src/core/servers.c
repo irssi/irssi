@@ -227,7 +227,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			net_connect_proxy_ssl(server->connrec->proxy,
 					      server->connrec->address, port,
 					      ip, own_ip,
-					      server->connrec) :
+					      server) :
 			net_connect_proxy(server->connrec->proxy,
 					  server->connrec->address, port,
 					  ip, own_ip);
