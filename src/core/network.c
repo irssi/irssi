@@ -170,7 +170,7 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 }
 
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR const *ip, int port, IPADDR *my_ip)
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
