@@ -5,7 +5,7 @@
 
 struct _network_proxy_http {
 	struct network_proxy proxy;
-	const char *password;
+	char *password;
 };
 
 struct network_proxy *_network_proxy_http_create(void);

@@ -28,7 +28,7 @@ inline static void _network_proxy_clone(struct network_proxy *dst, const struct 
 
 inline static void _network_proxy_destroy(struct network_proxy *proxy)
 {
-	g_free((void *)proxy->host);
+	g_free(proxy->host);
 }
 
 

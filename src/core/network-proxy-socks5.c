@@ -67,8 +67,8 @@ static void network_proxy_socks5_destroy(struct network_proxy *proxy)
 {
 	struct _network_proxy_socks5 *self = container_of(proxy, struct _network_proxy_socks5, proxy);
 
-	g_free((void *)self->password);
-	g_free((void *)self->username);
+	g_free(self->password);
+	g_free(self->username);
 	_network_proxy_destroy(proxy);
 	g_free(self);
 }

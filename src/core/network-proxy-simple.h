@@ -6,9 +6,9 @@
 struct _network_proxy_simple {
 	struct network_proxy proxy;
 
-	const char *string_after;
-	const char *string;
-	const char *password;
+	char *string_after;
+	char *string;
+	char *password;
 };
 
 struct network_proxy *_network_proxy_simple_create(void);

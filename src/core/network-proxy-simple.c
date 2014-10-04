@@ -26,9 +26,9 @@ static void network_proxy_simple_destroy(struct network_proxy *proxy)
 {
 	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
 
-	g_free((void *)self->password);
-	g_free((void *)self->string_after);
-	g_free((void *)self->string);
+	g_free(self->password);
+	g_free(self->string_after);
+	g_free(self->string);
 
 	_network_proxy_destroy(proxy);
 

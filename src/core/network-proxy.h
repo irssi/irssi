@@ -50,7 +50,7 @@ struct network_proxy {
 				  const struct network_proxy_send_string_info *);
 
 	/* hostname of proxy host */
-	const char *host;
+	char *host;
 
 	/* portnumber of proxy */
 	int port;

@@ -31,7 +31,7 @@ static void network_proxy_http_destroy(struct network_proxy *proxy)
 {
 	struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
 
-	g_free((void *)self->password);
+	g_free(self->password);
 	_network_proxy_destroy(proxy);
 
 	g_free(self);
