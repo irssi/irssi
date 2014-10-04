@@ -30,13 +30,13 @@ struct network_proxy *network_proxy_create(const char *type)
 		return NULL;
 
 	if (strcmp(type, "simple")==0 || type[0]=='\0')
-		return _network_proxy_simple_create();
+		return network_proxy_simple_create();
 
 	if (strcmp(type, "http")==0)
-		return _network_proxy_http_create();
+		return network_proxy_http_create();
 
 	if (strcmp(type, "socks5")==0)
-		return _network_proxy_socks5_create();
+		return network_proxy_socks5_create();
 
 	g_error("unsupported proxy type '%s'", type);
 	return NULL;

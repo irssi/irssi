@@ -18,6 +18,9 @@ struct network_proxy_send_string_info {
 };
 
 struct network_proxy {
+	/* Contains private data for the chosen proxy type */
+	void *privdata;
+
 	/* destroys the network_proxy structure which must not be used anymore
 	 * after; this memberfunction is mandatory */
 	void (*destroy)(struct network_proxy *);

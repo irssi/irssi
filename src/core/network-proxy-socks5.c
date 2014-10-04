@@ -65,25 +65,30 @@ struct server_response
 
 static void network_proxy_socks5_destroy(struct network_proxy *proxy)
 {
-	struct _network_proxy_socks5 *self = container_of(proxy, struct _network_proxy_socks5, proxy);
+	struct network_proxy_socks5 *self = (struct network_proxy_socks5 *)proxy->privdata;
 
 	g_free(self->password);
 	g_free(self->username);
-	_network_proxy_destroy(proxy);
 	g_free(self);
+	_network_proxy_destroy(proxy);
+	g_free(proxy);
 }
 
 static struct network_proxy *network_proxy_socks5_clone(const struct network_proxy *proxy)
 {
-	struct _network_proxy_socks5 *self = container_of(proxy, struct _network_proxy_socks5, proxy);
-	struct _network_proxy_socks5 *res;
+	struct network_proxy_socks5 *self = (struct network_proxy_socks5 *)proxy->privdata;
+	struct network_proxy_socks5 *priv;
+	struct network_proxy *res;
 
-	res = g_malloc0(sizeof *res);
+	res = g_malloc0(sizeof(struct network_proxy));
+	_network_proxy_clone(res, proxy);
 
-	_network_proxy_clone(&res->proxy, &self->proxy);
-	res->username = g_strdup(self->username);
-	res->password = g_strdup(self->password);
-	return &res->proxy;
+	priv = g_malloc0(sizeof(struct network_proxy_socks5));
+	res->privdata = (void *)priv;
+
+	priv->username = g_strdup(self->username);
+	priv->password = g_strdup(self->password);
+	return res;
 }
 
 static bool socks5_connect_unauthorized(GIOChannel *ch)
@@ -94,9 +99,9 @@ static bool socks5_connect_unauthorized(GIOChannel *ch)
 }
 
 /* TODO: test this method! */
-static bool socks5_connect_plain(const struct _network_proxy_socks5 *proxy, GIOChannel *ch)
+static bool socks5_connect_plain(const struct network_proxy_socks5 *proxy, GIOChannel *ch)
 {
-	uint8_t	ver  = 0x01;
+	uint8_t	ver = 0x01;
 	uint8_t	ulen = strlen(proxy->username);
 	uint8_t	plen = proxy->password ? strlen(proxy->password) : 0;
 	struct server_response_plain resp;
@@ -124,7 +129,7 @@ static bool socks5_connect_plain(const struct _network_proxy_socks5 *proxy, GIOC
 	return true;
 }
 
-static bool socks5_connect(const struct _network_proxy_socks5 *proxy, GIOChannel *ch,
+static bool socks5_connect(const struct network_proxy_socks5 *proxy, GIOChannel *ch,
 			   const char *address, uint16_t port)
 {
 	bool rc;
@@ -267,7 +272,7 @@ err:
 static GIOChannel *network_proxy_socks5_connect(const struct network_proxy *proxy, const IPADDR *hint_ip,
 						const char *address, int port)
 {
-	struct _network_proxy_socks5 *self = container_of(proxy, struct _network_proxy_socks5, proxy);
+	struct network_proxy_socks5 *self = (struct network_proxy_socks5 *)proxy->privdata;
 	GIOChannel *ch;
 
 	GIOFlags old_flags;
@@ -276,9 +281,9 @@ static GIOChannel *network_proxy_socks5_connect(const struct network_proxy *prox
 	GError *err = NULL;
 
 	if (hint_ip)
-		ch = net_connect_ip(hint_ip, self->proxy.port, NULL);
+		ch = net_connect_ip(hint_ip, proxy->port, NULL);
 	else
-		ch = net_connect(self->proxy.host, self->proxy.port, NULL);
+		ch = net_connect(proxy->host, proxy->port, NULL);
 
 	if (!ch)
 		return NULL;
@@ -315,19 +320,24 @@ err:
 	return NULL;
 }
 
-struct network_proxy *_network_proxy_socks5_create(void)
+struct network_proxy *network_proxy_socks5_create(void)
 {
-	struct _network_proxy_socks5 *res;
+	struct network_proxy *res;
+	struct network_proxy_socks5 *priv;
 
-	res = g_malloc0(sizeof *res);
+	res = g_malloc0(sizeof(struct network_proxy));
 
-	_network_proxy_create(&res->proxy);
-	res->username = g_strdup(settings_get_str("proxy_username"));
-	res->password = g_strdup(settings_get_str("proxy_password"));
+	_network_proxy_create(res);
 
-	res->proxy.destroy = network_proxy_socks5_destroy;
-	res->proxy.connect = network_proxy_socks5_connect;
-	res->proxy.clone = network_proxy_socks5_clone;
+	priv = g_malloc0(sizeof(struct network_proxy_socks5));
+	res->privdata = (void *)priv;
 
-	return &res->proxy;
+	priv->username = g_strdup(settings_get_str("proxy_username"));
+	priv->password = g_strdup(settings_get_str("proxy_password"));
+
+	res->destroy = network_proxy_socks5_destroy;
+	res->connect = network_proxy_socks5_connect;
+	res->clone = network_proxy_socks5_clone;
+
+	return res;
 }

@@ -3,13 +3,11 @@
 
 #include "network-proxy.h"
 
-struct _network_proxy_socks5 {
-	struct network_proxy proxy;
-
+struct network_proxy_socks5 {
 	char *username;
 	char *password;
 };
 
-struct network_proxy *_network_proxy_socks5_create(void);
+struct network_proxy *network_proxy_socks5_create(void);
 
 #endif

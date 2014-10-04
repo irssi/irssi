@@ -24,49 +24,54 @@
 
 static void network_proxy_simple_destroy(struct network_proxy *proxy)
 {
-	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
+	struct network_proxy_simple *self = (struct network_proxy_simple *)proxy->privdata;
 
 	g_free(self->password);
 	g_free(self->string_after);
 	g_free(self->string);
 
+	g_free(self);
+
 	_network_proxy_destroy(proxy);
 
-	g_free(self);
+	// We are responsible for the whole proxy struct
+	g_free(proxy);
 }
 
 static struct network_proxy *network_proxy_simple_clone(const struct network_proxy *proxy)
 {
-	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
-	struct _network_proxy_simple *res;
+	struct network_proxy_simple *self = (struct network_proxy_simple *)proxy->privdata;
+	struct network_proxy *res;
+	struct network_proxy_simple *newself;
 
-	res = g_malloc0(sizeof *res);
+	// First make and set the parent struct
+	res = g_malloc0(sizeof(struct network_proxy));
+	_network_proxy_clone(res, proxy);
 
-	_network_proxy_clone(&res->proxy, &self->proxy);
+	// Then allocate and set the private data
+	newself = g_malloc0(sizeof(struct network_proxy_simple));
+	res->privdata = (void *)newself;
 
-	res->string = g_strdup(self->string);
-	res->string_after = g_strdup(self->string_after);
-	res->password = g_strdup(self->password);
-	return &res->proxy;
+	newself->string = g_strdup(self->string);
+	newself->string_after = g_strdup(self->string_after);
+	newself->password = g_strdup(self->password);
+
+	return res;
 }
 
-static GIOChannel *network_proxy_simple_connect(const struct network_proxy *proxy, const IPADDR *hint_ip,
-						char const *address, int port)
+static GIOChannel *network_proxy_simple_connect(const struct network_proxy *proxy,
+						const IPADDR *hint_ip, char const *address, int port)
 {
-	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
-
-	(void)address;
-	(void)port;
 	if (hint_ip)
-		return net_connect_ip(hint_ip, self->proxy.port, NULL);
+		return net_connect_ip(hint_ip, proxy->port, NULL);
 	else
-		return net_connect(self->proxy.host, self->proxy.port, NULL);
+		return net_connect(proxy->host, proxy->port, NULL);
 }
 
 static void network_proxy_simple_send_string(const struct network_proxy *proxy,
 					     const struct network_proxy_send_string_info *info)
 {
-	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
+	struct network_proxy_simple *self = (struct network_proxy_simple *)proxy->privdata;
 	char *cmd;
 
 	if (self->password && self->password[0]) {
@@ -85,7 +90,7 @@ static void network_proxy_simple_send_string(const struct network_proxy *proxy,
 static void network_proxy_simple_send_string_after(const struct network_proxy *proxy,
 						   const struct network_proxy_send_string_info *info)
 {
-	struct _network_proxy_simple *self = container_of(proxy, struct _network_proxy_simple, proxy);
+	struct network_proxy_simple *self = (struct network_proxy_simple *)proxy->privdata;
 	char *cmd;
 
 	if (self->string_after && self->string_after[0]) {
@@ -95,23 +100,29 @@ static void network_proxy_simple_send_string_after(const struct network_proxy *p
 	}
 }
 
-struct network_proxy *_network_proxy_simple_create(void)
+struct network_proxy *network_proxy_simple_create(void)
 {
-	struct _network_proxy_simple *res;
+	struct network_proxy *proxy;
+	struct network_proxy_simple *self;
 
-	res = g_malloc0(sizeof *res);
+	proxy = g_malloc0(sizeof(struct network_proxy));
 
-	_network_proxy_create(&res->proxy);
-	res->string = g_strdup(settings_get_str("proxy_string"));
-	res->string_after = g_strdup(settings_get_str("proxy_string_after"));
-	res->password = g_strdup(settings_get_str("proxy_password"));
+	// assume it could reset every variable to a known state
+	_network_proxy_create(proxy);
 
-	res->proxy.destroy = network_proxy_simple_destroy;
-	res->proxy.connect = network_proxy_simple_connect;
-	res->proxy.clone = network_proxy_simple_clone;
+	self = g_malloc0(sizeof(struct network_proxy_simple));
+	proxy->privdata = (void *)self;
 
-	res->proxy.send_string = network_proxy_simple_send_string;
-	res->proxy.send_string_after = network_proxy_simple_send_string_after;
+	self->string = g_strdup(settings_get_str("proxy_string"));
+	self->string_after = g_strdup(settings_get_str("proxy_string_after"));
+	self->password = g_strdup(settings_get_str("proxy_password"));
 
-	return &res->proxy;
+	proxy->destroy = network_proxy_simple_destroy;
+	proxy->connect = network_proxy_simple_connect;
+	proxy->clone = network_proxy_simple_clone;
+
+	proxy->send_string = network_proxy_simple_send_string;
+	proxy->send_string_after = network_proxy_simple_send_string_after;
+
+	return proxy;
 }
