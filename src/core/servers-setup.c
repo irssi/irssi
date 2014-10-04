@@ -541,6 +541,7 @@ void servers_setup_init(void)
 	settings_add_int("proxy", "proxy_port", 6667);
 	settings_add_str("proxy", "proxy_string", "CONNECT %s %d");
 	settings_add_str("proxy", "proxy_string_after", "");
+	settings_add_str("proxy", "proxy_username", "");
 	settings_add_str("proxy", "proxy_password", "");
 	settings_add_str("proxy", "proxy_type", "simple");
 
