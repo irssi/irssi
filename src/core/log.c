@@ -41,7 +41,7 @@ static const char *log_item_types[] = {
 	NULL
 };
 
-const char *log_timestamp;
+static char *log_timestamp;
 static int log_file_create_mode;
 static int log_dir_create_mode;
 static int rotate_tag;
@@ -558,13 +558,15 @@ static void log_read_config(void)
 
 static void read_settings(void)
 {
-	log_timestamp = settings_get_str("log_timestamp");
+	g_free_not_null(log_timestamp);
+	log_timestamp = g_strdup(settings_get_str("log_timestamp"));
+
 	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
 
-        log_dir_create_mode = log_file_create_mode;
-        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
-        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
-        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
+	log_dir_create_mode = log_file_create_mode;
+	if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
+	if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
+	if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
 }
 
 void log_init(void)
@@ -595,7 +597,9 @@ void log_deinit(void)
 	while (logs != NULL)
 		log_close(logs->data);
 
+	g_free_not_null(log_timestamp);
+
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-        signal_remove("setup reread", (SIGNAL_FUNC) log_read_config);
-        signal_remove("irssi init finished", (SIGNAL_FUNC) log_read_config);
+	signal_remove("setup reread", (SIGNAL_FUNC) log_read_config);
+	signal_remove("irssi init finished", (SIGNAL_FUNC) log_read_config);
 }
