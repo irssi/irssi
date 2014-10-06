@@ -57,7 +57,7 @@ static char *last_sent_msg, *last_sent_msg_body;
 static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease, *sysarch;
 
-static const char *timestamp_format;
+static char *timestamp_format;
 static int timestamp_seconds;
 static time_t last_timestamp;
 
@@ -567,7 +567,9 @@ static int sig_timer(void)
 
 static void read_settings(void)
 {
-	timestamp_format = settings_get_str("timestamp_format");
+	g_free_not_null(timestamp_format);
+	timestamp_format = g_strdup(settings_get_str("timestamp_format"));
+
 	timestamp_seconds =
 		strstr(timestamp_format, "%r") != NULL ||
 		strstr(timestamp_format, "%s") != NULL ||
@@ -708,14 +710,18 @@ void expandos_deinit(void)
 		g_free_not_null(char_expandos[n]);
 
 	g_hash_table_foreach_remove(expandos, free_expando, NULL);
-        g_hash_table_destroy(expandos);
+	g_hash_table_destroy(expandos);
 
-	g_free_not_null(last_sent_msg); g_free_not_null(last_sent_msg_body);
-	g_free_not_null(last_privmsg_from); g_free_not_null(last_public_from);
-	g_free_not_null(sysname); g_free_not_null(sysrelease);
-        g_free_not_null(sysarch);
+	g_free_not_null(last_sent_msg);
+	g_free_not_null(last_sent_msg_body);
+	g_free_not_null(last_privmsg_from);
+	g_free_not_null(last_public_from);
+	g_free_not_null(sysname);
+	g_free_not_null(sysrelease);
+	g_free_not_null(sysarch);
+	g_free_not_null(timestamp_format);
 
-        g_source_remove(timer_tag);
+	g_source_remove(timer_tag);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
