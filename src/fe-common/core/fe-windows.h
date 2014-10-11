@@ -35,6 +35,7 @@ struct _WINDOW_REC {
 	unsigned int immortal:1;
 	unsigned int sticky_refnum:1;
 	unsigned int destroying:1;
+	unsigned int console:1;
 
 	/* window-specific command line history */
 	HISTORY_REC *history;
@@ -75,6 +76,7 @@ const char *window_get_active_name(WINDOW_REC *window);
 WINDOW_REC *window_find_level(void *server, int level);
 WINDOW_REC *window_find_closest(void *server, const char *name, int level);
 WINDOW_REC *window_find_refnum(int refnum);
+WINDOW_REC *window_find_console(void);
 WINDOW_REC *window_find_name(const char *name);
 WINDOW_REC *window_find_item(SERVER_REC *server, const char *name);
 

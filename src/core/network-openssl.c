@@ -37,6 +37,8 @@
 #include <validator/val_dane.h>
 #endif
 
+void window_console(void);
+
 /* ssl i/o channel object */
 typedef struct
 {
@@ -434,6 +436,7 @@ static int get_pem_password_callback(char *buffer, int max_length, int rwflag, v
 	char *password;
 	size_t length;
 
+	/* should not happen but better leave it */
 	if (pass == NULL)
 		return 0;
 
@@ -446,6 +449,35 @@ static int get_pem_password_callback(char *buffer, int max_length, int rwflag, v
 	memcpy(buffer, password, length + 1);
 	return length;
 }
+
+static int prompt_pem_password_callback(char *buffer, int max_length, int rwflag, void *pem_cert)
+{
+	char *password, prompt[256];
+	size_t length;
+
+	window_console();
+
+	/* should not happen but better leave it */
+	if (pem_cert == NULL)
+		return 0;
+
+	snprintf(prompt, 256, "Enter Passphrase for %s:", (char *) pem_cert);
+	password = getpass(prompt);
+
+	if (!password)
+		return 0;
+
+	length = strlen(password);
+
+	if (length > max_length)
+		return 0;
+
+	strncpy(buffer, password, length);
+	irssi_redraw();
+
+	return length;
+}
+
 
 static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_REC *server)
 {
@@ -476,8 +508,13 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		return NULL;
 	}
 	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-	SSL_CTX_set_default_passwd_cb(ctx, get_pem_password_callback);
-	SSL_CTX_set_default_passwd_cb_userdata(ctx, (void *)mypass);
+	if (mypass) {
+		SSL_CTX_set_default_passwd_cb(ctx, get_pem_password_callback);
+		SSL_CTX_set_default_passwd_cb_userdata(ctx, (void *)mypass);
+	} else if (mycert && *mycert) {
+		SSL_CTX_set_default_passwd_cb(ctx, prompt_pem_password_callback);
+		SSL_CTX_set_default_passwd_cb_userdata(ctx, (void *)mycert);
+	}
 
 	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;

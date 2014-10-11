@@ -70,6 +70,8 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 
 	rec = g_new0(WINDOW_REC, 1);
 	rec->refnum = window_get_new_refnum();
+	if (rec->refnum == 1)
+		rec->console = 1;
 	rec->level = settings_get_level("window_default_level");
 
 	windows = g_slist_prepend(windows, rec);
@@ -347,6 +349,20 @@ WINDOW_REC *window_find_refnum(int refnum)
 		WINDOW_REC *rec = tmp->data;
 
 		if (rec->refnum == refnum)
+			return rec;
+	}
+
+	return NULL;
+}
+
+WINDOW_REC *window_find_console(void)
+{
+	GSList *tmp;
+
+	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
+		WINDOW_REC *rec = tmp->data;
+
+		if (rec->console)
 			return rec;
 	}
 
