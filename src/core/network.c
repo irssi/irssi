@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "network.h"
+#include "network-proxy.h"
 
 #include <sys/un.h>
 
@@ -169,7 +170,7 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 }
 
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+GIOChannel *net_connect_ip(const IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -224,6 +225,16 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	}
 
 	return g_io_channel_new(handle);
+}
+
+/* Connect to socket */
+GIOChannel *net_connect_proxy(const struct network_proxy *proxy,
+			      const char *host, int port, IPADDR *ip, IPADDR *my_ip)
+{
+	if (proxy)
+		return proxy->connect(proxy, ip, host, port);
+	else
+		return net_connect_ip(ip, port, my_ip);
 }
 
 /* Connect to named UNIX socket */

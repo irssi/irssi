@@ -125,6 +125,8 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason);
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
 void irc_server_init_isupport(IRC_SERVER_REC *server);
 
+void irc_send_cmd_now_wrapper(void *server, const char *cmd);
+
 void irc_servers_start_cmd_timeout(void);
 
 void irc_servers_init(void);

@@ -34,6 +34,7 @@
 #include "servers-setup.h"
 #include "channels.h"
 #include "queries.h"
+#include "network-proxy.h"
 
 GSList *servers, *lookup_servers;
 
@@ -221,10 +222,15 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		own_ip = ip == NULL ? NULL :
 			(IPADDR_IS_V6(ip) ? server->connrec->own_ip6 :
 			 server->connrec->own_ip4);
-		port = server->connrec->proxy != NULL ?
-			server->connrec->proxy_port : server->connrec->port;
+		port = server->connrec->port;
 		handle = server->connrec->use_ssl ?
-			net_connect_ip_ssl(ip, port, own_ip, server) : net_connect_ip(ip, port, own_ip);
+			net_connect_proxy_ssl(server->connrec->proxy,
+					      server->connrec->address, port,
+					      ip, own_ip,
+					      server) :
+			net_connect_proxy(server->connrec->proxy,
+					  server->connrec->address, port,
+					  ip, own_ip);
 	} else {
 		handle = net_connect_unix(unix_socket);
 	}
@@ -421,7 +427,7 @@ int server_start_connect(SERVER_REC *server)
 		server->connect_pipe[1] = g_io_channel_new(fd[1]);
 
 		connect_address = server->connrec->proxy != NULL ?
-			server->connrec->proxy : server->connrec->address;
+			server->connrec->proxy->host : server->connrec->address;
 		server->connect_pid =
 			net_gethostbyname_nonblock(connect_address,
 						   server->connect_pipe[1],
@@ -616,10 +622,8 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	if (conn->connect_handle != NULL)
 		net_disconnect(conn->connect_handle);
 
-	g_free_not_null(conn->proxy);
-	g_free_not_null(conn->proxy_string);
-	g_free_not_null(conn->proxy_string_after);
-	g_free_not_null(conn->proxy_password);
+	if (conn->proxy)
+		conn->proxy->destroy(conn->proxy);
 
 	g_free_not_null(conn->tag);
 	g_free_not_null(conn->address);

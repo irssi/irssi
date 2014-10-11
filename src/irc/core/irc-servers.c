@@ -37,6 +37,7 @@
 #include "servers-reconnect.h"
 #include "servers-redirect.h"
 #include "modes.h"
+#include "network-proxy.h"
 
 #include "settings.h"
 #include "recode.h"
@@ -195,23 +196,19 @@ static void server_init(IRC_SERVER_REC *server)
 	IRC_SERVER_CONNECT_REC *conn;
 	char *address, *ptr, *username, *cmd;
 	GTimeVal now;
+	const struct network_proxy_send_string_info send_info = {
+		.host = server->connrec->address,
+		.port = server->connrec->port,
+		.func = irc_send_cmd_now_wrapper,
+		.obj = server
+	};
 
 	g_return_if_fail(server != NULL);
 
 	conn = server->connrec;
 
-	if (conn->proxy != NULL && conn->proxy_password != NULL &&
-	    *conn->proxy_password != '\0') {
-		cmd = g_strdup_printf("PASS %s", conn->proxy_password);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
-
-	if (conn->proxy != NULL && conn->proxy_string != NULL) {
-		cmd = g_strdup_printf(conn->proxy_string, conn->address, conn->port);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
+	if (conn->proxy && conn->proxy->send_string)
+		conn->proxy->send_string(conn->proxy, &send_info);
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
@@ -245,11 +242,8 @@ static void server_init(IRC_SERVER_REC *server)
 	g_free(cmd);
 	g_free(username);
 
-	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
-		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
+	if (conn->proxy && conn->proxy->send_string_after)
+		conn->proxy->send_string_after(conn->proxy, &send_info);
 
 	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
 					    (GCompareFunc) g_istr_equal);
@@ -317,6 +311,11 @@ void irc_server_connect(SERVER_REC *server)
                 server_connect_unref(server->connrec);
 		g_free(server);
 	}
+}
+
+void irc_send_cmd_now_wrapper(void *server, const char *cmd)
+{
+	return irc_send_cmd_now((IRC_SERVER_REC *)server, cmd);
 }
 
 /* Returns TRUE if `command' is sent to `target' */

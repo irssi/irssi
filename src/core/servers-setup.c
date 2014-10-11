@@ -28,6 +28,7 @@
 #include "chatnets.h"
 #include "servers.h"
 #include "servers-setup.h"
+#include "network-proxy.h"
 
 GSList *setupservers;
 
@@ -126,15 +127,6 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	conn->username = g_strdup(settings_get_str("user_name"));
 	conn->realname = g_strdup(settings_get_str("real_name"));
 
-	/* proxy settings */
-	if (settings_get_bool("use_proxy")) {
-		conn->proxy = g_strdup(settings_get_str("proxy_address"));
-		conn->proxy_port = settings_get_int("proxy_port");
-		conn->proxy_string = g_strdup(settings_get_str("proxy_string"));
-		conn->proxy_string_after = g_strdup(settings_get_str("proxy_string_after"));
-		conn->proxy_password = g_strdup(settings_get_str("proxy_password"));
-	}
-
 	/* source IP */
 	if (source_host_ip4 != NULL) {
 		conn->own_ip4 = g_new(IPADDR, 1);
@@ -144,6 +136,10 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 		conn->own_ip6 = g_new(IPADDR, 1);
 		memcpy(conn->own_ip6, source_host_ip6, sizeof(IPADDR));
 	}
+
+	/* proxy settings */
+	if (settings_get_bool("use_proxy"))
+		conn->proxy = network_proxy_create(settings_get_str("proxy_type"));
 
 	signal_emit("server setup fill connect", 1, conn);
 }
@@ -545,7 +541,9 @@ void servers_setup_init(void)
 	settings_add_int("proxy", "proxy_port", 6667);
 	settings_add_str("proxy", "proxy_string", "CONNECT %s %d");
 	settings_add_str("proxy", "proxy_string_after", "");
+	settings_add_str("proxy", "proxy_username", "");
 	settings_add_str("proxy", "proxy_password", "");
+	settings_add_str("proxy", "proxy_type", "simple");
 
         setupservers = NULL;
 	source_host_ip4 = source_host_ip6 = NULL;

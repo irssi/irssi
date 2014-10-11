@@ -551,12 +551,12 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 
 	return gchan;
 }
-
-GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server)
+GIOChannel *net_connect_proxy_ssl(const struct network_proxy *proxy, const char *host, int port,
+				  IPADDR *ip, IPADDR *my_ip, SERVER_REC *server)
 {
 	GIOChannel *handle, *ssl_handle;
 
-	handle = net_connect_ip(ip, port, my_ip);
+	handle = net_connect_proxy(proxy, host, port, ip, my_ip);
 	if (handle == NULL)
 		return NULL;
 	ssl_handle  = irssi_ssl_get_iochannel(handle, port, server);
