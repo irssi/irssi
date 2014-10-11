@@ -967,19 +967,30 @@ char *ascii_strdown(char *str)
 	return str;
 }
 
-char **strsplit_len(const char *str, int len)
+char **strsplit_len(const char *str, int len, gboolean onspace)
 {
-	char **ret;
-	size_t total_len = strlen(str);
-	int n = total_len / len;
-	int i;
+	char **ret = g_new(char *, 1);
+	int n;
+	int offset;
 
-	if (total_len % len)
-		n++;
-
-	ret = g_new(char *, n + 1);
-	for (i = 0; i < n; i++, str += len)
-		ret[i] = g_strndup(str, len);
+	for (n = 0; *str != '\0'; n++, str += MIN(len - offset, strlen(str))) {
+		offset = 0;
+		if (onspace) {
+			/*
+			 * Try to find a space to split on and leave
+			 * the space on the previous line.
+			 */
+			int i;
+			for (i = 0; i < len; i++) {
+				if (str[len-1-i] == ' ') {
+					offset = i;
+					break;
+				}
+			}
+		}
+		ret[n] = g_strndup(str, len - offset);
+		ret = g_renew(char *, ret, n + 2);
+	}
 	ret[n] = NULL;
 
 	return ret;

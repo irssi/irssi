@@ -116,6 +116,6 @@ uoff_t str_to_uofft(const char *str);
 int find_substr(const char *list, const char *item);
 
 /* split `str' into `len' sized substrings */
-char **strsplit_len(const char *str, int len);
+char **strsplit_len(const char *str, int len, gboolean onspace);
 
 #endif

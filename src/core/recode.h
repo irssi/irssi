@@ -4,7 +4,7 @@
 char *recode_in (const SERVER_REC *server, const char *str, const char *target);
 char *recode_out (const SERVER_REC *server, const char *str, const char *target);
 char **recode_split(const SERVER_REC *server, const char *str,
-		    const char *target, int len);
+		    const char *target, int len, gboolean onspace);
 gboolean is_valid_charset(const char *charset);
 gboolean is_utf8(void);
 void recode_update_charset(void);

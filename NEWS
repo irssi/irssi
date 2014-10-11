@@ -1,5 +1,7 @@
 v0.8.18-head 2014-XX-YY  The Irssi team <staff@irssi.org>
 	+ Disable SSLv3 due to the POODLE vulnerability.
+	+ Try to split long lines on spaces to avoid words being splitted. Adds
+	  a new option: 'split_line_on_space' which defaults to on.
 
 v0.8.17 2014-10-11  The Irssi team <staff@irssi.org>
 	+ Document that SSL connections aren't properly handled during /UPGRADE. See Github PR #39.
