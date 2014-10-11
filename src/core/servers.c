@@ -218,9 +218,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		return;
 
 	if (ip != NULL) {
-		own_ip = ip == NULL ? NULL :
-			(IPADDR_IS_V6(ip) ? server->connrec->own_ip6 :
-			 server->connrec->own_ip4);
+		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
 		handle = server->connrec->use_ssl ?
