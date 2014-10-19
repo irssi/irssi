@@ -4,7 +4,7 @@ use Irssi;
 use File::Basename;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = '0.03';
+$VERSION = '0.05';
 %IRSSI = (
   authors     => 'lasers',
   contact     => 'lasers on freenode',
@@ -13,16 +13,25 @@ $VERSION = '0.03';
   license     => 'Public Domain',
 );
 
-# ──── USAGE: ─────
+# ──── USAGE ────
 # Outside irssi:
-#     Remove ~/.irssi/scripts/autorun
-#     Add "script load scriptsave" to ~/.irssi/startup
+#   Remove ~/.irssi/scripts/autorun
+#   Add "script load scriptsave" to ~/.irssi/startup
 #
 # Inside irssi:
-#     /script save
+#   /help script
+#   /script save
 #
-# ──── NOTE: ────
+# ──── NOTE ────
 # Scripts will be saved to ~/.irssi/config.scriptsave
+#
+# ──── LIMITATIONS ────
+# This script will not work for scripts with a dash
+# in their filenames. If possible, omit them or replace
+# them with an underscore.
+#   ✖ Script-name.pl
+#   ✔ Script_name.pl
+#   ✔ Scriptname.pl
 
 my $name = basename(__FILE__);
 $name =~ s/\.[^.]+$//;
@@ -43,7 +52,7 @@ sub cmd_save_scripts {
   unlink $lst;
   foreach (sort grep(s/::$//, keys %Irssi::Script::)){
     open(my $fh, ">>", $lst);
-      if ($_ ne $name){
+      if (($_ ne $name) && ($_ !~ m/data+(\d)/)){
         print $fh "$_\n";
       }
     close $fh;
