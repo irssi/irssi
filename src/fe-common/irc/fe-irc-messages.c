@@ -160,6 +160,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	const char *oldtarget;
         char *freemsg = NULL;
 	int level;
+	int own = FALSE;
 
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
@@ -174,10 +175,12 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 			 level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-	if (ischannel(*target))
+	if (ischannel(*target)) {
 		item = irc_channel_find(server, target);
-        else
-		item = privmsg_get_query(SERVER(server), nick, FALSE, level);
+	} else {
+		own = (!strcmp(nick, server->nick));
+		item = privmsg_get_query(SERVER(server), own ? nick : target, FALSE, level);
+	}
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis(item, msg);
@@ -195,11 +198,19 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 				    nick, oldtarget, msg);
 		}
 	} else {
-		/* private action */
-		printformat(server, nick, MSGLEVEL_ACTIONS | MSGLEVEL_MSGS,
-			    item == NULL ? IRCTXT_ACTION_PRIVATE :
-			    IRCTXT_ACTION_PRIVATE_QUERY,
-			    nick, address == NULL ? "" : address, msg);
+		if (own) {
+			/* own action bounced */
+			printformat(server, target,
+				    MSGLEVEL_ACTIONS | MSGLEVEL_MSGS,
+				    item != NULL && oldtarget == target ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
+				    server->nick, msg, oldtarget);
+		} else {
+			/* private action */
+			printformat(server, nick, MSGLEVEL_ACTIONS | MSGLEVEL_MSGS,
+				    item == NULL ? IRCTXT_ACTION_PRIVATE :
+				    IRCTXT_ACTION_PRIVATE_QUERY,
+				    nick, address == NULL ? "" : address, msg);
+		}
 	}
 
 	g_free_not_null(freemsg);

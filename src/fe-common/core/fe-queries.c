@@ -326,12 +326,15 @@ static int sig_query_autoclose(void)
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,
-				const char *nick, const char *address)
+				const char *nick, const char *address, const char *target)
 {
 	QUERY_REC *query;
 
+	/* own message returned by bouncer? */
+	int own = (!strcmp(nick, server->nick));
+
 	/* create query window if needed */
-	query = privmsg_get_query(server, nick, FALSE, MSGLEVEL_MSGS);
+	query = privmsg_get_query(server, own ? target : nick, FALSE, MSGLEVEL_MSGS);
 
 	/* reset the query's last_unread_msg timestamp */
         if (query != NULL)
