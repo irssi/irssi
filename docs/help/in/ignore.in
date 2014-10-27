@@ -41,7 +41,6 @@
     /IGNORE #irssi NO_ACT JOINS PARTS QUITS
     /IGNORE mike NO_ACT -MSGS
     /IGNORE -regexp -pattern
-    /IGNORE mike NO_ACT -MSGS
 
 %9See also:%9 ACCEPT, SILENCE, UNIGNORE
 
