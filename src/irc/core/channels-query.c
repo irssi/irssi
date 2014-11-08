@@ -311,7 +311,7 @@ static void channel_checksync(IRC_CHANNEL_REC *channel)
 	signal_emit("channel sync", 1, channel);
 }
 
-/* Error occured when trying to execute query - abort and try again. */
+/* Error occurred when trying to execute query - abort and try again. */
 static void query_current_error(IRC_SERVER_REC *server)
 {
 	SERVER_QUERY_REC *rec;

@@ -342,7 +342,7 @@ GSList *nicklist_get_same_unique(SERVER_REC *server, void *id)
 	return rec.list;
 }
 
-/* nick record comparision for sort functions */
+/* nick record comparison for sort functions */
 int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix)
 {
 	int i;

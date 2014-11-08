@@ -158,7 +158,7 @@ char *cmd_get_quoted_param(char **data);
 /* get parameters from command - you should point free_me somewhere and
    cmd_params_free() it after you don't use any of the parameters anymore.
 
-   Returns TRUE if all ok, FALSE if error occured. */
+   Returns TRUE if all ok, FALSE if error occurred. */
 int cmd_get_params(const char *data, gpointer *free_me, int count, ...);
 
 void cmd_params_free(void *free_me);

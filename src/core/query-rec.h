@@ -7,5 +7,5 @@ char *server_tag;
 time_t last_unread_msg;
 
 unsigned int unwanted:1; /* TRUE if the other side closed or
-			    some error occured (DCC chats!) */
+			    some error occurred (DCC chats!) */
 unsigned int destroying:1;
