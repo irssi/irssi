@@ -172,6 +172,7 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 	if (conn->ssl_pass == NULL && sserver->ssl_pass != NULL && sserver->ssl_pass[0] != '\0')
 		conn->ssl_pass = g_strdup(sserver->ssl_pass);
 	conn->ssl_verify = sserver->ssl_verify;
+	conn->ssl_self_signed = sserver->ssl_self_signed;
 	if (conn->ssl_cafile == NULL && sserver->ssl_cafile != NULL && sserver->ssl_cafile[0] != '\0')
 		conn->ssl_cafile = g_strdup(sserver->ssl_cafile);
 	if (conn->ssl_capath == NULL && sserver->ssl_capath != NULL && sserver->ssl_capath[0] != '\0')
@@ -400,6 +401,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->ssl_pkey = g_strdup(config_node_get_str(node, "ssl_pkey", NULL));
 	rec->ssl_pass = g_strdup(config_node_get_str(node, "ssl_pass", NULL));
 	rec->ssl_verify = config_node_get_bool(node, "ssl_verify", FALSE);
+	rec->ssl_self_signed = config_node_get_bool(node, "ssl_self_signed", FALSE);
 	rec->ssl_cafile = g_strdup(config_node_get_str(node, "ssl_cafile", NULL));
 	rec->ssl_capath = g_strdup(config_node_get_str(node, "ssl_capath", NULL));
 	if (rec->ssl_cafile || rec->ssl_capath)
@@ -440,6 +442,7 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	iconfig_node_set_str(node, "ssl_pkey", rec->ssl_pkey);
 	iconfig_node_set_str(node, "ssl_pass", rec->ssl_pass);
 	iconfig_node_set_bool(node, "ssl_verify", rec->ssl_verify);
+	iconfig_node_set_bool(node, "ssl_self_signed", rec->ssl_self_signed);
 	iconfig_node_set_str(node, "ssl_cafile", rec->ssl_cafile);
 	iconfig_node_set_str(node, "ssl_capath", rec->ssl_capath);
 	iconfig_node_set_str(node, "own_host", rec->own_host);

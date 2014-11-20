@@ -102,6 +102,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		conn->ssl_pass = g_strdup(tmp);
 	if (g_hash_table_lookup(optlist, "ssl_verify") != NULL)
 		conn->ssl_verify = TRUE;
+	if (g_hash_table_lookup(optlist, "ssl_self_signed") != NULL)
+		conn->ssl_self_signed = TRUE;
 	if ((tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
 		conn->ssl_cafile = g_strdup(tmp);
 	if ((tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
@@ -137,7 +139,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 }
 
 /* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
-                   [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                   [-ssl_verify] [-ssl_self_signed] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                    [-!] [-noautosendcmd]
 		   [-noproxy] [-network <network>] [-host <hostname>]
 		   [-rawlog <file>]
@@ -243,7 +245,7 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
 }
 
 /* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
-                  [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                  [-ssl_verify] [-ssl_self_signed] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                   [-!] [-noautosendcmd]
 		  [-noproxy] [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
@@ -483,7 +485,7 @@ void chat_commands_init(void)
 	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +host noproxy -rawlog noautosendcmd");
+	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify ssl_self_signed +ssl_cafile +ssl_capath +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 
