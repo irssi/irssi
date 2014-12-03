@@ -122,6 +122,9 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	conn->address = g_strdup(address);
 	if (port > 0) conn->port = port;
 
+	if (strchr(address, '/') != NULL)
+		conn->unix_socket = TRUE;
+
 	if (!conn->nick) conn->nick = g_strdup(settings_get_str("nick"));
 	conn->username = g_strdup(settings_get_str("user_name"));
 	conn->realname = g_strdup(settings_get_str("real_name"));

@@ -253,6 +253,9 @@ static void sig_reconnect(SERVER_REC *server)
 		conn->port = server->connrec->port;
 		conn->password = g_strdup(server->connrec->password);
 
+		if (strchr(conn->address, '/') != NULL)
+			conn->unix_socket = TRUE;
+
 		server_reconnect_add(conn, (server->connect_time == 0 ? time(NULL) :
 					    server->connect_time) + reconnect_time);
 		server_connect_unref(conn);
