@@ -242,13 +242,16 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,
-				const char *nick, const char *address)
+				const char *nick, const char *address, const char *target)
 {
 	QUERY_REC *query;
         char *freemsg = NULL;
 	int level = MSGLEVEL_MSGS;
 
-	query = query_find(server, nick);
+	/* own message returned by bouncer? */
+	int own = (!strcmp(nick, server->nick));
+
+	query = query_find(server, own ? target : nick);
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
@@ -256,9 +259,15 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	if (ignore_check(server, nick, address, NULL, msg, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-	printformat(server, nick, level,
-		    query == NULL ? TXT_MSG_PRIVATE :
-		    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
+	if (own) {
+		printformat(server, target, level,
+			    query == NULL ? TXT_OWN_MSG_PRIVATE :
+			    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+	} else {
+		printformat(server, nick, level,
+			    query == NULL ? TXT_MSG_PRIVATE :
+			    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
+	}
 
 	g_free_not_null(freemsg);
 }
