@@ -92,7 +92,7 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 3, NULL, &nick, &type);
 
-	/* Bugfix: http://bugs.irssi.org/?do=details&id=99
+	/* Bugfix: http://bugs.irssi.org/?do=details&task_id=99
 	 * Author: Geert Hauwaerts <geert@irssi.org>
 	 * Date:   Wed Sep 15 20:17:24 CEST 2004
 	 */
@@ -410,7 +410,7 @@ void fe_whois_init(void)
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
 	/* readding this events fixes the printing of /whois -yes *
-	   Bug http://bugs.irssi.org/?do=details&id=123 */
+	   Bug http://bugs.irssi.org/?do=details&task_id=123 */
 	signal_add("event 317", (SIGNAL_FUNC) event_whois_idle);
 	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_add("event 313", (SIGNAL_FUNC) event_whois_oper);
