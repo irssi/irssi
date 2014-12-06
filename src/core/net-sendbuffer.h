@@ -24,7 +24,7 @@ void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
 
 /* Send data, if all of it couldn't be sent immediately, it will be resent
    automatically after a while. Returns -1 if some unrecoverable error
-   occured. */
+   occurred. */
 int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size);
 
 int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socket);

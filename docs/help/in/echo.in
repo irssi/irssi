@@ -6,10 +6,10 @@
 %9Parameters:%9
 
     -current:    Displays the output in the active window.
-    -window:     Displays the ouput in the target window.
+    -window:     Displays the output in the target window.
     -level:      Displays the output with a given message level.
 
-    The text ouput; if no target is given, the active window will be used.
+    The text output; if no target is given, the active window will be used.
 
 %9Description:%9
 

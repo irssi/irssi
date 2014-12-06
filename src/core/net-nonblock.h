@@ -29,7 +29,7 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 			       int reverse_lookup);
 /* Get host's name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data);
-/* get the resolved IP address. returns -1 if some error occured with read() */
+/* get the resolved IP address. returns -1 if some error occurred with read() */
 int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec);
 
 /* Connect to server, call func when finished */

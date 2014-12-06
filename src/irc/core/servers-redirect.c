@@ -734,7 +734,7 @@ void servers_redirect_init(void)
 				 "event 403", 1, /* no such channel */
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-				 "event 472", -1, /* unknown mode (you should check e-mode's existance from 004 event instead of relying on this) */
+				 "event 472", -1, /* unknown mode (you should check e-mode's existence from 004 event instead of relying on this) */
 				 NULL,
 				 NULL);
 
@@ -747,7 +747,7 @@ void servers_redirect_init(void)
 				 "event 403", 1, /* no such channel */
 				 "event 442", 1, /* "you're not on that channel" */
 				 "event 479", 1, /* "Cannot join channel (illegal name)" IMHO this is not a logical reply from server. */
-				 "event 472", -1, /* unknown mode (you should check I-mode's existance from 004 event instead of relying on this) */
+				 "event 472", -1, /* unknown mode (you should check I-mode's existence from 004 event instead of relying on this) */
 				 NULL,
 				 NULL);
 

@@ -368,7 +368,7 @@ v0.8.10 2005-12-11  The Irssi team <staff@irssi.org>
 	  <charset> can be almost everything listed by 'iconv -l'
 	+ Added transpose_words, capitalize_word, downcase_word, upcase_word
 	  key bindings
-	+ Avoid accidentaly /VER in a channel, by requiring parameter
+	+ Avoid accidentally /VER in a channel, by requiring parameter
 	- Pasted lines weren't added to command history. Some other paste
 	  detection fixes
 	- Fixed /BIND escape_char
@@ -1905,7 +1905,7 @@ v0.7.14 1999-08-22  Timo Sirainen <cras@irccrew.org> [unstable]
 	- /msg <tab> completion was a bit buggy, if someone sent you multiple
 	  messages, you had to press tab multiple times until the nick changed
 	  to someone else..
-	- Defaut format for signon time in whois displayed nick instead of
+	- Default format for signon time in whois displayed nick instead of
 	  the signon time..
 	- Disconnecting server while it was still trying to connect hung irssi
 	- If old configuration file wasn't found, irssi (could have?) crashed
@@ -2189,7 +2189,7 @@ v0.7.9 1999-04-22  Timo Sirainen <a@sicom.fi> [unstable]
           that matched the parameters
         - Commented out all GUI_INPUT_EXCEPTIONs .. I don't even know when
           exceptions are sent and why (I thought that only when some error
-          occured..), Linux doesn't seem to send them ever? IRIX however sends
+          occurred..), Linux doesn't seem to send them ever? IRIX however sends
           them all the time which made irssi eating all cpu.
         - Fixed compiling gui-text with systems that had only slang/slang.h
         - gui_widget_depends() had some bugs
@@ -2635,7 +2635,7 @@ v0.3.2 1999-01-22  Timo Sirainen <a@sicom.fi> [unstable]
 
 v0.3.1 1999-01-22  Timo Sirainen <a@sicom.fi>
 
-	* 4 days since last relase. too long :) I'm now starting to create
+	* 4 days since last release. too long :) I'm now starting to create
           "unstable" versions of irssi. They have the latest and greatest
           features while they might not build/work too well. Check
           http://www.sicom.fi/~ikioma/irssi-download.html, new versions will

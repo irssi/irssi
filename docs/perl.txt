@@ -796,7 +796,7 @@ Query->{}
   address - Host address of the queries nick
   server_tag - Server tag used for this nick (doesn't get erased if
                server gets disconnected)
-  unwanted - 1 if the other side closed or some error occured (DCC chats)
+  unwanted - 1 if the other side closed or some error occurred (DCC chats)
 
 Query
 query_create(chat_type, server_tag, nick, automatic)
@@ -1123,7 +1123,7 @@ Netsplit->{}
 
 Netsplitserver->{}
   server - The server nick was in
-  destserver - The other server where split occured.
+  destserver - The other server where split occurred.
   count - Number of splits in server
 
 Netsplitchannel->{}

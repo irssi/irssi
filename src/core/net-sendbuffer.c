@@ -109,7 +109,7 @@ static int buffer_add(NET_SENDBUF_REC *rec, const void *data, int size)
 
 /* Send data, if all of it couldn't be sent immediately, it will be resent
    automatically after a while. Returns -1 if some unrecoverable error
-   occured. */
+   occurred. */
 int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 {
 	int ret;
