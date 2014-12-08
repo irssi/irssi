@@ -11,6 +11,9 @@
 
     The target nickname or channel and the message to send.
 
+    Use the wildcard character '*' if you want to use the active nickname or
+    channel.
+
 %9Description:%9
 
     Sends a message to a nickname or channel.
@@ -19,6 +22,7 @@
 
     /MSG mike Hi, what's up?
     /MSG #irssi I am awesome :)
+    /MSG * Do you want to build a snowman?
 
 %9See also:%9 ACTION, DCC, JOIN
 

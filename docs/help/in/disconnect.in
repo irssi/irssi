@@ -10,10 +10,11 @@
 
 %9Description:%9
 
-    Disconnects from one or more IRC servers; the list of all the servers you
-    are connected to can be retrieved via the SERVER command.
+    Disconnects from an IRC server; the list of all the servers you are
+    connected to can be retrieved via the SERVER command.
 
-    Use the wildcard character '*' if you want to disconnect from all servers.
+    Use the wildcard character '*' if you want to disconnect from the active
+    server.
 
 %9Examples:%9
 

@@ -321,7 +321,7 @@ static void cmd_quit(const char *data)
 	signal_emit("gui exit", 0);
 }
 
-/* SYNTAX: MSG [-<server tag>] [-channel | -nick] <targets> <message> */
+/* SYNTAX: MSG [-<server tag>] [-channel | -nick] *|<targets> <message> */
 static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
