@@ -39,6 +39,7 @@ unsigned int no_autosendcmd:1; /* don't execute autosendcmd */
 unsigned int unix_socket:1; /* Connect using named unix socket */
 unsigned int use_ssl:1; /* this connection uses SSL */
 unsigned int ssl_verify:1;
+unsigned int ssl_self_signed:1;
 unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
 char *channels;
 char *away_reason;

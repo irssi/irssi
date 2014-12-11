@@ -20,6 +20,7 @@
                        certificate file.
     -ssl_pass:         The password for the SSL client private key or certificate.
     -ssl_verify:       Verifies the SSL certificate of the server.
+    -ssl_self_signed:  OK if verified certificate is self signed.
     -ssl_cafile:       The file with the list of CA certificates.
     -ssl_capath:       The directory which contains the CA certificates.
     -auto:             Automatically connects to the server on startup.

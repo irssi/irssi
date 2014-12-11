@@ -195,6 +195,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->ssl_cert = g_strdup(src->ssl_cert);
 	dest->ssl_pkey = g_strdup(src->ssl_pkey);
 	dest->ssl_verify = src->ssl_verify;
+	dest->ssl_self_signed = src->ssl_self_signed;
 	dest->ssl_cafile = g_strdup(src->ssl_cafile);
 	dest->ssl_capath = g_strdup(src->ssl_capath);
 

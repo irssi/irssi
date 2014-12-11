@@ -46,6 +46,7 @@ typedef struct
 	SSL *ssl;
 	SSL_CTX *ctx;
 	unsigned int verify:1;
+	unsigned int self_signed:1;
 	SERVER_REC *server;
 	int port;
 } GIOSSLChannel;
@@ -206,6 +207,7 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert, SERVER_REC *server)
 {
 	long result;
+	gboolean self_signed = server->connrec->ssl_self_signed;
 #ifdef HAVE_DANE
 	int dane_ret;
 	struct val_daneparams daneparams;
@@ -242,6 +244,8 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, i
 
 	result = SSL_get_verify_result(ssl);
 	if (result != X509_V_OK) {
+		if ((result != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT && !self_signed) || 
+				(result != X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN && !self_signed)) {
 		unsigned char md[EVP_MAX_MD_SIZE];
 		unsigned int n;
 		char *str;
@@ -276,6 +280,9 @@ static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, i
 			}
 		}
 		return FALSE;
+		} else {
+			g_warning("  WARNING:  Accepting self signed Certificate");
+		}
 	} else if (! irssi_ssl_verify_hostname(cert, hostname)){
 		return FALSE;
 	}
@@ -461,6 +468,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	const char *cafile = server->connrec->ssl_cafile;
 	const char *capath = server->connrec->ssl_capath;
 	gboolean verify = server->connrec->ssl_verify;
+	gboolean self_signed = server->connrec->ssl_self_signed;
 
 	g_return_val_if_fail(handle != NULL, NULL);
 
@@ -542,6 +550,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	chan->server = server;
 	chan->port = port;
 	chan->verify = verify;
+	chan->self_signed = self_signed;
 
 	gchan = (GIOChannel *)chan;
 	gchan->funcs = &irssi_ssl_channel_funcs;
