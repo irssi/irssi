@@ -1,15 +1,22 @@
-language: c
-compiler:
-    - gcc
-    - clang
+language: perl
+perl:
+    - "5.20-shrplib"
+    - "5.18-shrplib"
+    - "system-perl"
+env:
+    - CC=clang
+    - CC=gcc
 
 before_install:
     - sudo apt-get update -qq
+    - perl -V
     - sudo apt-get build-dep -qq irssi
     - sudo apt-get install -qq lynx
 
+install: true
+
 script:
-    - ./autogen.sh --with-proxy --with-bot
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module
     - cat config.log
     - make
     - sudo make install
