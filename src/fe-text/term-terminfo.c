@@ -390,7 +390,8 @@ void term_set_color(TERM_WINDOW *window, int col)
 	}
 
 	/* set background color */
-	if (window && (term_color256map[bg&0xff]&8) == window->term->TI_colors)
+	if (window && window->term->TI_colors &&
+	    (term_color256map[bg&0xff]&8) == window->term->TI_colors)
 		col |= ATTR_BLINK;
 	if (col & ATTR_BLINK)
 		current_term->set_blink(current_term);
@@ -413,7 +414,8 @@ void term_set_color(TERM_WINDOW *window, int col)
 		terminfo_set_reverse();
 
 	/* bold */
-	if (window && (term_color256map[fg&0xff]&8) == window->term->TI_colors)
+	if (window && window->term->TI_colors &&
+	    (term_color256map[fg&0xff]&8) == window->term->TI_colors)
 		col |= ATTR_BOLD;
 	if (col & ATTR_BOLD)
 		terminfo_set_bold();
