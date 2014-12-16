@@ -368,7 +368,7 @@ static void sig_listen(LISTEN_REC *listen)
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
 	rec->listen->clients = g_slist_prepend(rec->listen->clients, rec);
 
-        signal_emit("proxy client connecting", 1, rec);
+	signal_emit("proxy client connecting", 1, rec);
 	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
 		  "Proxy: New client %s:%d on port %d (%s)",
 		  rec->host, rec->port, listen->port, listen->ircnet);
