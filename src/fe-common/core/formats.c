@@ -905,10 +905,13 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 
 		switch (num) {
 		case 0:
-			/* reset colors back to default */
+			/* reset colors and attributes back to default */
 			fg = theme->default_color;
 			bg = -1;
-			flags &= ~(GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_INDENT);
+			flags &= ~(GUI_PRINT_FLAG_INDENT |
+				   GUI_PRINT_FLAG_BOLD | GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
+				   GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
+				   GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
 			break;
 		case 1:
 			/* hilight */
