@@ -135,7 +135,7 @@ SV *irssi_bless_iobject(int type, int chat_type, void *object)
 	stash = gv_stashpv(rec->stash, 1);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
+	(void) hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
         rec->fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), stash);
 }
@@ -148,7 +148,7 @@ SV *irssi_bless_plain(const char *stash, void *object)
 	fill_func = g_hash_table_lookup(plain_stashes, stash);
 
 	hv = newHV();
-	hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
+	(void) hv_store(hv, "_irssi", 6, create_sv_ptr(object), 0);
 	if (fill_func != NULL)
 		fill_func(hv, object);
 	return sv_bless(newRV_noinc((SV*)hv), gv_stashpv((char *)stash, 1));
@@ -264,17 +264,17 @@ void perl_chatnet_fill_hash(HV *hv, CHATNET_REC *chatnet)
 	type = "CHATNET";
 	chat_type = (char *) chat_protocol_find_id(chatnet->chat_type)->name;
 
-	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
-	hv_store(hv, "name", 4, new_pv(chatnet->name), 0);
+	(void) hv_store(hv, "name", 4, new_pv(chatnet->name), 0);
 
-	hv_store(hv, "nick", 4, new_pv(chatnet->nick), 0);
-	hv_store(hv, "username", 8, new_pv(chatnet->username), 0);
-	hv_store(hv, "realname", 8, new_pv(chatnet->realname), 0);
+	(void) hv_store(hv, "nick", 4, new_pv(chatnet->nick), 0);
+	(void) hv_store(hv, "username", 8, new_pv(chatnet->username), 0);
+	(void) hv_store(hv, "realname", 8, new_pv(chatnet->realname), 0);
 
-	hv_store(hv, "own_host", 8, new_pv(chatnet->own_host), 0);
-	hv_store(hv, "autosendcmd", 11, new_pv(chatnet->autosendcmd), 0);
+	(void) hv_store(hv, "own_host", 8, new_pv(chatnet->own_host), 0);
+	(void) hv_store(hv, "autosendcmd", 11, new_pv(chatnet->autosendcmd), 0);
 }
 
 void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
@@ -287,25 +287,25 @@ void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 	type = "SERVER CONNECT";
 	chat_type = (char *) chat_protocol_find_id(conn->chat_type)->name;
 
-	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
-	hv_store(hv, "tag", 3, new_pv(conn->tag), 0);
-	hv_store(hv, "address", 7, new_pv(conn->address), 0);
-	hv_store(hv, "port", 4, newSViv(conn->port), 0);
-	hv_store(hv, "chatnet", 7, new_pv(conn->chatnet), 0);
+	(void) hv_store(hv, "tag", 3, new_pv(conn->tag), 0);
+	(void) hv_store(hv, "address", 7, new_pv(conn->address), 0);
+	(void) hv_store(hv, "port", 4, newSViv(conn->port), 0);
+	(void) hv_store(hv, "chatnet", 7, new_pv(conn->chatnet), 0);
 
-	hv_store(hv, "password", 8, new_pv(conn->password), 0);
-	hv_store(hv, "wanted_nick", 11, new_pv(conn->nick), 0);
-	hv_store(hv, "username", 8, new_pv(conn->username), 0);
-	hv_store(hv, "realname", 8, new_pv(conn->realname), 0);
+	(void) hv_store(hv, "password", 8, new_pv(conn->password), 0);
+	(void) hv_store(hv, "wanted_nick", 11, new_pv(conn->nick), 0);
+	(void) hv_store(hv, "username", 8, new_pv(conn->username), 0);
+	(void) hv_store(hv, "realname", 8, new_pv(conn->realname), 0);
 
-	hv_store(hv, "reconnection", 12, newSViv(conn->reconnection), 0);
-	hv_store(hv, "no_autojoin_channels", 20, newSViv(conn->no_autojoin_channels), 0);
-	hv_store(hv, "no_autosendcmd", 14, newSViv(conn->no_autosendcmd), 0);
-	hv_store(hv, "unix_socket", 11, newSViv(conn->unix_socket), 0);
-	hv_store(hv, "use_ssl", 7, newSViv(conn->use_ssl), 0);
-	hv_store(hv, "no_connect", 10, newSViv(conn->no_connect), 0);
+	(void) hv_store(hv, "reconnection", 12, newSViv(conn->reconnection), 0);
+	(void) hv_store(hv, "no_autojoin_channels", 20, newSViv(conn->no_autojoin_channels), 0);
+	(void) hv_store(hv, "no_autosendcmd", 14, newSViv(conn->no_autosendcmd), 0);
+	(void) hv_store(hv, "unix_socket", 11, newSViv(conn->unix_socket), 0);
+	(void) hv_store(hv, "use_ssl", 7, newSViv(conn->use_ssl), 0);
+	(void) hv_store(hv, "no_connect", 10, newSViv(conn->no_connect), 0);
 }
 
 void perl_server_fill_hash(HV *hv, SERVER_REC *server)
@@ -319,28 +319,28 @@ void perl_server_fill_hash(HV *hv, SERVER_REC *server)
 	perl_connect_fill_hash(hv, server->connrec);
 
 	type = "SERVER";
-	hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
 
-	hv_store(hv, "connect_time", 12, newSViv(server->connect_time), 0);
-	hv_store(hv, "real_connect_time", 17, newSViv(server->real_connect_time), 0);
+	(void) hv_store(hv, "connect_time", 12, newSViv(server->connect_time), 0);
+	(void) hv_store(hv, "real_connect_time", 17, newSViv(server->real_connect_time), 0);
 
-	hv_store(hv, "tag", 3, new_pv(server->tag), 0);
-	hv_store(hv, "nick", 4, new_pv(server->nick), 0);
+	(void) hv_store(hv, "tag", 3, new_pv(server->tag), 0);
+	(void) hv_store(hv, "nick", 4, new_pv(server->nick), 0);
 
-	hv_store(hv, "connected", 9, newSViv(server->connected), 0);
-	hv_store(hv, "connection_lost", 15, newSViv(server->connection_lost), 0);
+	(void) hv_store(hv, "connected", 9, newSViv(server->connected), 0);
+	(void) hv_store(hv, "connection_lost", 15, newSViv(server->connection_lost), 0);
 
 	stash = gv_stashpv("Irssi::Rawlog", 0);
-	hv_store(hv, "rawlog", 6, sv_bless(newRV_noinc(newSViv((IV)server->rawlog)), stash), 0);
+	(void) hv_store(hv, "rawlog", 6, sv_bless(newRV_noinc(newSViv((IV)server->rawlog)), stash), 0);
 
-	hv_store(hv, "version", 7, new_pv(server->version), 0);
-	hv_store(hv, "away_reason", 11, new_pv(server->away_reason), 0);
-	hv_store(hv, "last_invite", 11, new_pv(server->last_invite), 0);
-	hv_store(hv, "server_operator", 15, newSViv(server->server_operator), 0);
-	hv_store(hv, "usermode_away", 13, newSViv(server->usermode_away), 0);
-	hv_store(hv, "banned", 6, newSViv(server->banned), 0);
+	(void) hv_store(hv, "version", 7, new_pv(server->version), 0);
+	(void) hv_store(hv, "away_reason", 11, new_pv(server->away_reason), 0);
+	(void) hv_store(hv, "last_invite", 11, new_pv(server->last_invite), 0);
+	(void) hv_store(hv, "server_operator", 15, newSViv(server->server_operator), 0);
+	(void) hv_store(hv, "usermode_away", 13, newSViv(server->usermode_away), 0);
+	(void) hv_store(hv, "banned", 6, newSViv(server->banned), 0);
 
-	hv_store(hv, "lag", 3, newSViv(server->lag), 0);
+	(void) hv_store(hv, "lag", 3, newSViv(server->lag), 0);
 }
 
 void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
@@ -353,17 +353,17 @@ void perl_window_item_fill_hash(HV *hv, WI_ITEM_REC *item)
 	type = (char *) module_find_id_str("WINDOW ITEM TYPE", item->type);
 	chat_type = (char *) chat_protocol_find_id(item->chat_type)->name;
 
-	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
 	if (item->server != NULL) {
-		hv_store(hv, "server", 6, iobject_bless(item->server), 0);
+		(void) hv_store(hv, "server", 6, iobject_bless(item->server), 0);
 	}
-	hv_store(hv, "visible_name", 12, new_pv(item->visible_name), 0);
+	(void) hv_store(hv, "visible_name", 12, new_pv(item->visible_name), 0);
 
-	hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
-	hv_store(hv, "data_level", 10, newSViv(item->data_level), 0);
-	hv_store(hv, "hilight_color", 13, new_pv(item->hilight_color), 0);
+	(void) hv_store(hv, "createtime", 10, newSViv(item->createtime), 0);
+	(void) hv_store(hv, "data_level", 10, newSViv(item->data_level), 0);
+	(void) hv_store(hv, "hilight_color", 13, new_pv(item->hilight_color), 0);
 }
 
 void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
@@ -374,26 +374,26 @@ void perl_channel_fill_hash(HV *hv, CHANNEL_REC *channel)
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) channel);
 
         if (channel->ownnick != NULL)
-		hv_store(hv, "ownnick", 7, iobject_bless(channel->ownnick), 0);
+		(void) hv_store(hv, "ownnick", 7, iobject_bless(channel->ownnick), 0);
 
-	hv_store(hv, "name", 4, new_pv(channel->name), 0);
-	hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
-	hv_store(hv, "topic_by", 8, new_pv(channel->topic_by), 0);
-	hv_store(hv, "topic_time", 10, newSViv(channel->topic_time), 0);
+	(void) hv_store(hv, "name", 4, new_pv(channel->name), 0);
+	(void) hv_store(hv, "topic", 5, new_pv(channel->topic), 0);
+	(void) hv_store(hv, "topic_by", 8, new_pv(channel->topic_by), 0);
+	(void) hv_store(hv, "topic_time", 10, newSViv(channel->topic_time), 0);
 
-	hv_store(hv, "no_modes", 8, newSViv(channel->no_modes), 0);
-	hv_store(hv, "mode", 4, new_pv(channel->mode), 0);
-	hv_store(hv, "limit", 5, newSViv(channel->limit), 0);
-	hv_store(hv, "key", 3, new_pv(channel->key), 0);
+	(void) hv_store(hv, "no_modes", 8, newSViv(channel->no_modes), 0);
+	(void) hv_store(hv, "mode", 4, new_pv(channel->mode), 0);
+	(void) hv_store(hv, "limit", 5, newSViv(channel->limit), 0);
+	(void) hv_store(hv, "key", 3, new_pv(channel->key), 0);
 
-	hv_store(hv, "chanop", 6, newSViv(channel->chanop), 0);
-	hv_store(hv, "names_got", 9, newSViv(channel->names_got), 0);
-	hv_store(hv, "wholist", 7, newSViv(channel->wholist), 0);
-	hv_store(hv, "synced", 6, newSViv(channel->synced), 0);
+	(void) hv_store(hv, "chanop", 6, newSViv(channel->chanop), 0);
+	(void) hv_store(hv, "names_got", 9, newSViv(channel->names_got), 0);
+	(void) hv_store(hv, "wholist", 7, newSViv(channel->wholist), 0);
+	(void) hv_store(hv, "synced", 6, newSViv(channel->synced), 0);
 
-	hv_store(hv, "joined", 6, newSViv(channel->joined), 0);
-	hv_store(hv, "left", 4, newSViv(channel->left), 0);
-	hv_store(hv, "kicked", 6, newSViv(channel->kicked), 0);
+	(void) hv_store(hv, "joined", 6, newSViv(channel->joined), 0);
+	(void) hv_store(hv, "left", 4, newSViv(channel->left), 0);
+	(void) hv_store(hv, "kicked", 6, newSViv(channel->kicked), 0);
 }
 
 void perl_query_fill_hash(HV *hv, QUERY_REC *query)
@@ -403,11 +403,11 @@ void perl_query_fill_hash(HV *hv, QUERY_REC *query)
 
 	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) query);
 
-	hv_store(hv, "name", 4, new_pv(query->name), 0);
-	hv_store(hv, "last_unread_msg", 15, newSViv(query->last_unread_msg), 0);
-	hv_store(hv, "address", 7, new_pv(query->address), 0);
-	hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
-	hv_store(hv, "unwanted", 8, newSViv(query->unwanted), 0);
+	(void) hv_store(hv, "name", 4, new_pv(query->name), 0);
+	(void) hv_store(hv, "last_unread_msg", 15, newSViv(query->last_unread_msg), 0);
+	(void) hv_store(hv, "address", 7, new_pv(query->address), 0);
+	(void) hv_store(hv, "server_tag", 10, new_pv(query->server_tag), 0);
+	(void) hv_store(hv, "unwanted", 8, newSViv(query->unwanted), 0);
 }
 
 void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
@@ -420,31 +420,31 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	type = "NICK";
 	chat_type = (char *) chat_protocol_find_id(nick->chat_type)->name;
 
-	hv_store(hv, "type", 4, new_pv(type), 0);
-	hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "chat_type", 9, new_pv(chat_type), 0);
 
-	hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
-	hv_store(hv, "host", 4, new_pv(nick->host), 0);
-	hv_store(hv, "realname", 8, new_pv(nick->realname), 0);
-	hv_store(hv, "hops", 4, newSViv(nick->hops), 0);
+	(void) hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
+	(void) hv_store(hv, "host", 4, new_pv(nick->host), 0);
+	(void) hv_store(hv, "realname", 8, new_pv(nick->realname), 0);
+	(void) hv_store(hv, "hops", 4, newSViv(nick->hops), 0);
 
-	hv_store(hv, "gone", 4, newSViv(nick->gone), 0);
-	hv_store(hv, "serverop", 8, newSViv(nick->serverop), 0);
+	(void) hv_store(hv, "gone", 4, newSViv(nick->gone), 0);
+	(void) hv_store(hv, "serverop", 8, newSViv(nick->serverop), 0);
 
-	hv_store(hv, "op", 2, newSViv(nick->op), 0);
-	hv_store(hv, "halfop", 6, newSViv(nick->halfop), 0);
-	hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
-	hv_store(hv, "other", 5, newSViv(nick->prefixes[0]), 0);
-	hv_store(hv, "prefixes", 8, new_pv(nick->prefixes), 0);
+	(void) hv_store(hv, "op", 2, newSViv(nick->op), 0);
+	(void) hv_store(hv, "halfop", 6, newSViv(nick->halfop), 0);
+	(void) hv_store(hv, "voice", 5, newSViv(nick->voice), 0);
+	(void) hv_store(hv, "other", 5, newSViv(nick->prefixes[0]), 0);
+	(void) hv_store(hv, "prefixes", 8, new_pv(nick->prefixes), 0);
 
-	hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
-	hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);
+	(void) hv_store(hv, "last_check", 10, newSViv(nick->last_check), 0);
+	(void) hv_store(hv, "send_massjoin", 13, newSViv(nick->send_massjoin), 0);
 }
 
 static void perl_command_fill_hash(HV *hv, COMMAND_REC *cmd)
 {
-	hv_store(hv, "category", 8, new_pv(cmd->category), 0);
-	hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
+	(void) hv_store(hv, "category", 8, new_pv(cmd->category), 0);
+	(void) hv_store(hv, "cmd", 3, new_pv(cmd->cmd), 0);
 }
 
 static void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
@@ -452,22 +452,22 @@ static void perl_ignore_fill_hash(HV *hv, IGNORE_REC *ignore)
 	AV *av;
 	char **tmp;
 
-	hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
-	hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
+	(void) hv_store(hv, "mask", 4, new_pv(ignore->mask), 0);
+	(void) hv_store(hv, "servertag", 9, new_pv(ignore->servertag), 0);
 	av = newAV();
 	if (ignore->channels != NULL) {
 		for (tmp = ignore->channels; *tmp != NULL; tmp++) {
 			av_push(av, new_pv(*tmp));
 		}
 	}
-	hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
-	hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
+	(void) hv_store(hv, "channels", 8, newRV_noinc((SV*)av), 0);
+	(void) hv_store(hv, "pattern", 7, new_pv(ignore->pattern), 0);
 
-	hv_store(hv, "level", 5, newSViv(ignore->level), 0);
+	(void) hv_store(hv, "level", 5, newSViv(ignore->level), 0);
 
-	hv_store(hv, "exception", 9, newSViv(ignore->exception), 0);
-	hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
-	hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
+	(void) hv_store(hv, "exception", 9, newSViv(ignore->exception), 0);
+	(void) hv_store(hv, "regexp", 6, newSViv(ignore->regexp), 0);
+	(void) hv_store(hv, "fullword", 8, newSViv(ignore->fullword), 0);
 }
 
 static void perl_log_fill_hash(HV *hv, LOG_REC *log)
@@ -475,33 +475,33 @@ static void perl_log_fill_hash(HV *hv, LOG_REC *log)
 	AV *av;
 	GSList *tmp;
 
-	hv_store(hv, "fname", 5, new_pv(log->fname), 0);
-	hv_store(hv, "real_fname", 10, new_pv(log->real_fname), 0);
-	hv_store(hv, "opened", 6, newSViv(log->opened), 0);
-	hv_store(hv, "level", 5, newSViv(log->level), 0);
-	hv_store(hv, "last", 4, newSViv(log->last), 0);
-	hv_store(hv, "autoopen", 8, newSViv(log->autoopen), 0);
-	hv_store(hv, "failed", 6, newSViv(log->failed), 0);
-	hv_store(hv, "temp", 4, newSViv(log->temp), 0);
+	(void) hv_store(hv, "fname", 5, new_pv(log->fname), 0);
+	(void) hv_store(hv, "real_fname", 10, new_pv(log->real_fname), 0);
+	(void) hv_store(hv, "opened", 6, newSViv(log->opened), 0);
+	(void) hv_store(hv, "level", 5, newSViv(log->level), 0);
+	(void) hv_store(hv, "last", 4, newSViv(log->last), 0);
+	(void) hv_store(hv, "autoopen", 8, newSViv(log->autoopen), 0);
+	(void) hv_store(hv, "failed", 6, newSViv(log->failed), 0);
+	(void) hv_store(hv, "temp", 4, newSViv(log->temp), 0);
 
 	av = newAV();
 	for (tmp = log->items; tmp != NULL; tmp = tmp->next) {
 		av_push(av, plain_bless(tmp->data, "Irssi::Logitem"));
 	}
-	hv_store(hv, "items", 5, newRV_noinc((SV*)av), 0);
+	(void) hv_store(hv, "items", 5, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
 {
-	hv_store(hv, "type", 4, newSViv(item->type), 0);
-	hv_store(hv, "name", 4, new_pv(item->name), 0);
-	hv_store(hv, "servertag", 9, new_pv(item->servertag), 0);
+	(void) hv_store(hv, "type", 4, newSViv(item->type), 0);
+	(void) hv_store(hv, "name", 4, new_pv(item->name), 0);
+	(void) hv_store(hv, "servertag", 9, new_pv(item->servertag), 0);
 }
 
 static void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 {
-	hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
-	hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
+	(void) hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
+	(void) hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
 }
 
 static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
@@ -511,18 +511,18 @@ static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
 	perl_connect_fill_hash(hv, reconnect->conn);
 
 	type = "RECONNECT";
-	hv_store(hv, "type", 4, new_pv(type), 0);
+	(void) hv_store(hv, "type", 4, new_pv(type), 0);
 
-	hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
-	hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
+	(void) hv_store(hv, "tag", 3, newSViv(reconnect->tag), 0);
+	(void) hv_store(hv, "next_connect", 12, newSViv(reconnect->next_connect), 0);
 }
 
 static void perl_script_fill_hash(HV *hv, PERL_SCRIPT_REC *script)
 {
-	hv_store(hv, "name", 4, new_pv(script->name), 0);
-	hv_store(hv, "package", 7, new_pv(script->package), 0);
-	hv_store(hv, "path", 4, new_pv(script->path), 0);
-	hv_store(hv, "data", 4, new_pv(script->data), 0);
+	(void) hv_store(hv, "name", 4, new_pv(script->name), 0);
+	(void) hv_store(hv, "package", 7, new_pv(script->package), 0);
+	(void) hv_store(hv, "path", 4, new_pv(script->path), 0);
+	(void) hv_store(hv, "data", 4, new_pv(script->data), 0);
 }
 
 static void remove_newlines(char *str)
