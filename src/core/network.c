@@ -45,6 +45,39 @@ GIOChannel *g_io_channel_new(int handle)
 	return chan;
 }
 
+int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
+{
+	gsize ret;
+	int sent;
+	GIOStatus status;
+
+	sent = 0;
+	do {
+		status = g_io_channel_write_chars(channel, (char *) data + sent, len - sent, &ret, NULL);
+		sent += ret;
+	} while (sent < len && status != G_IO_STATUS_ERROR);
+
+	return sent < len ? -1 : 0;
+}
+
+int g_io_channel_read_block(GIOChannel *channel, void *data, int len)
+{
+	time_t maxwait;
+	gsize ret;
+	int received;
+	GIOStatus status;
+
+	maxwait = time(NULL)+2;
+	received = 0;
+	do {
+		status = g_io_channel_read_chars(channel, (char *) data + received, len - received, &ret, NULL);
+		received += ret;
+	} while (received < len && time(NULL) < maxwait &&
+		status != G_IO_STATUS_ERROR && status != G_IO_STATUS_EOF);
+
+	return received < len ? -1 : 0;
+}
+
 /* Cygwin need this, don't know others.. */
 /*#define BLOCKING_SOCKETS 1*/
 

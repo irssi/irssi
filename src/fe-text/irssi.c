@@ -53,6 +53,11 @@ void fe_perl_init(void);
 void fe_perl_deinit(void);
 #endif
 
+#ifdef HAVE_STATIC_OTR
+void otr_core_init(void);
+void otr_core_deinit(void);
+#endif
+
 void irc_init(void);
 void irc_deinit(void);
 
@@ -192,6 +197,10 @@ static void textui_finish_init(void)
 	fe_perl_init();
 #endif
 
+#ifdef HAVE_STATIC_OTR
+	otr_core_init();
+#endif
+
 	dirty_check();
 
 	fe_common_core_finish_init();
@@ -218,11 +227,15 @@ static void textui_deinit(void)
 		module_unload(modules->data);
 
 #ifdef HAVE_STATIC_PERL
-        perl_core_deinit();
-        fe_perl_deinit();
+	perl_core_deinit();
+	fe_perl_deinit();
 #endif
 
-        dirty_check(); /* one last time to print any quit messages */
+#ifdef HAVE_STATIC_OTR
+	otr_core_deinit();
+#endif
+
+	dirty_check(); /* one last time to print any quit messages */
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
 	lastlog_deinit();

@@ -33,6 +33,9 @@ extern IPADDR ip4_any;
 
 GIOChannel *g_io_channel_new(int handle);
 
+int g_io_channel_write_block(GIOChannel *channel, void *data, int len);
+int g_io_channel_read_block(GIOChannel *channel, void *data, int len);
+
 /* returns 1 if IPADDRs are the same */
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 

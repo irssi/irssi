@@ -135,6 +135,21 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
+AC_ARG_WITH(otr,
+[  --with-otr[=yes|no|module]   Build with OTR support - also specifies
+                                if it should be built into the main irssi
+                                binary (static, default) or as a module],
+	if test x$withval = xyes; then
+		want_otr=static
+	elif test x$withval = xstatic; then
+		want_otr=static
+	elif test x$withval = xmodule; then
+		want_otr=module
+	else
+		want_otr=no
+	fi,
+	want_otr=static)
+
 AC_ARG_ENABLE(true-color,
 [  --enable-true-color     Build with true color support in terminal],
 	if test x$enableval = xno ; then
@@ -444,11 +459,56 @@ if test "$want_perl" != "no"; then
 	fi
 fi
 
+dnl **
+dnl ** OTR checks
+dnl **
+
+have_otr=no
+if test "x$want_otr" != "xno"; then
+	AM_PATH_LIBGCRYPT(1:1.2.0, [], [AC_ERROR(libgcrypt 1.2.0 or newer is required.)])
+	AM_PATH_LIBOTR(4.0.0, [], [AC_ERROR([libotr 4.0.0 or newer is required.])])
+
+	OTR_CFLAGS="$LIBOTR_CFLAGS $LIBGCRYPT_CFLAGS"
+	OTR_LDFLAGS="$LIBOTR_LIBS $LIBGCRYPT_LIBS"
+
+	AC_SUBST(otr_module_lib)
+	AC_SUBST(otr_static_lib)
+
+	if test "x$want_otr" != "xno"; then
+		if test "x$want_otr" = "xstatic"; then
+			otr_module_lib=
+			otr_static_lib=libotr_core_static.la
+
+			OTR_LINK_LIBS="../otr/libotr_core_static.la"
+			OTR_LINK_FLAGS="$OTR_LDFLAGS"
+
+			AC_DEFINE(HAVE_STATIC_OTR)
+		else
+			otr_module_lib=libotr_core.la
+			otr_static_lib=
+		fi
+	fi
+
+	AC_SUBST(otr_module_lib)
+	AC_SUBST(otr_static_lib)
+
+	AC_SUBST(OTR_CFLAGS)
+	AC_SUBST(OTR_LDFLAGS)
+
+	AC_SUBST(OTR_LINK_LIBS)
+	AC_SUBST(OTR_LINK_FLAGS)
+
+	have_otr=yes
+fi
+
 dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
+AM_CONDITIONAL(HAVE_OTR, test "$have_otr" != "no")
+AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
+AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
 
 # move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
 PROG_LIBS=$LIBS
@@ -565,6 +625,7 @@ src/perl/common/Makefile.PL
 src/perl/irc/Makefile.PL
 src/perl/ui/Makefile.PL
 src/perl/textui/Makefile.PL
+src/otr/Makefile
 scripts/Makefile
 scripts/examples/Makefile
 docs/Makefile
@@ -648,6 +709,15 @@ echo
 
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
+
+if test "x$want_otr" = "xstatic"; then
+	echo "Building with OTR support ........ : static (in irssi binary)"
+elif test "x$want_otr" = "xmodule"; then
+	echo "Building with OTR support ........ : module"
+else
+	echo "Building with OTR support ........ : no"
+fi
+
 
 echo
 echo "If there are any problems, read the INSTALL file."

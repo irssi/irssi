@@ -1,0 +1,34 @@
+README for the OTR Merge Project
+================================
+
+This file is used to track the progress of merging Irssi-OTR into the Irssi
+source code tree.
+
+## Testing
+
+ 1. Install the requirements listed at https://github.com/cryptodotis/irssi-otr
+ 2. git clone https://github.com/ahf/irssi.git irssi-native-otr
+ 3. cd irssi-native-otr
+ 4. git checkout native-otr
+ 5. ./autogen.sh --with-otr && make
+ 6. Start irssi using: ./src/fe-text/irssi --home=~/.irssi-otr-native/ -!
+ 8. Use the OTR support like you'd normally and report any issues and crashes
+    here on Github or to ahf on IRC (in #irssi on freenode or #otr on OFTC).
+
+## TODO
+
+1. Add setting: autolog_ignore_otr (default: true) and required API in the
+   autolog subsystem. We want to ensure that by default Irssi shouldn't log
+   anything between users using OTR.
+
+2. Fuzzy matching of fingerprints in OTR commands that accepts a fingerprint.
+3. Bring OTR statusbar back to life.
+4. Make '/otr' context sensitive: '/otr' is an alias for '/otr init' in an insecure query window, otherwise it's an alias for '/otr info'.
+
+## Notes from #OTR @ OFTC
+
+1. so first to authq, how do you handle a secret with spaces?
+2. for the fp token, good idea, more usable that way and if collision, you present the FPs
+3. also would be great to be able to do like "/otr trust dgoulet@irc.freenode.net" you know ;)
+4. have a /otr msg <target> <message>, which would be like /query <target> <message> but with an /otr init before.
+5. to that extent, having an option to specify the key you want to use would be useful, like "/otr init --key dgoulet@mynetwork"
