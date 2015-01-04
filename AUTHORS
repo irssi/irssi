@@ -27,6 +27,8 @@ Large feature patches by:
   Heikki Orsila : DCC SEND queueing
   Mark Trumbull : DCC SERVER
   Francesco Fracassi : Passive DCC
+  Uli Meis : OTR support
+  David Goulet : OTR support
 
 Other patches (grep for "patch" in ChangeLog) by:
 

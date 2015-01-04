@@ -350,3 +350,9 @@ Perl
 ----
 
 "script error", PERL_SCRIPT_REC, char *errormsg
+
+OTR Core
+--------
+
+otr.c:
+ "otr event", SERVER_REC, char *nick, char *status
