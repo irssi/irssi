@@ -85,6 +85,7 @@ static char **split_line(const SERVER_REC *server, const char *line,
 {
 	const char *start = settings_get_str("split_line_start");
 	const char *end = settings_get_str("split_line_end");
+	gboolean onspace = settings_get_bool("split_line_on_space");
 	char *recoded_start = recode_out(server, start, target);
 	char *recoded_end = recode_out(server, end, target);
 	char **lines;
@@ -103,7 +104,7 @@ static char **split_line(const SERVER_REC *server, const char *line,
 		return NULL;
 	}
 
-	lines = recode_split(server, line, target, len);
+	lines = recode_split(server, line, target, len, onspace);
 	for (i = 0; lines[i] != NULL; i++) {
 		if (i != 0 && *start != '\0') {
 			/* Not the first line. */
@@ -972,6 +973,7 @@ void irc_servers_init(void)
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_str("misc", "split_line_start", "");
 	settings_add_str("misc", "split_line_end", "");
+	settings_add_bool("misc", "split_line_on_space", TRUE);
 	settings_add_time("flood", "cmd_queue_speed", DEFAULT_CMD_QUEUE_SPEED);
 	settings_add_int("flood", "cmds_max_at_once", DEFAULT_CMDS_MAX_AT_ONCE);
 

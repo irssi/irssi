@@ -183,7 +183,7 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 }
 
 char **recode_split(const SERVER_REC *server, const char *str,
-		    const char *target, int len)
+		    const char *target, int len, gboolean onspace)
 {
 	GIConv cd = (GIConv)-1;
 	const char *from = translit_charset;
@@ -219,7 +219,7 @@ char **recode_split(const SERVER_REC *server, const char *str,
 	cd = g_iconv_open(to, from);
 	if (cd == (GIConv)-1) {
 		/* Fall back to splitting by byte. */
-		ret = strsplit_len(str, len);
+		ret = strsplit_len(str, len, onspace);
 		goto out;
 	}
 
@@ -235,11 +235,25 @@ char **recode_split(const SERVER_REC *server, const char *str,
 			 */
 			ret[n] = NULL;
 			g_strfreev(ret);
-			ret = strsplit_len(str, len);
+			ret = strsplit_len(str, len, onspace);
 			goto out;
 		}
 
 		/* Outbuf overflowed, split the input string. */
+		if (onspace) {
+			/*
+			 * Try to find a space to split on and leave
+			 * the space on the previous line.
+			 */
+			int i;
+			for (i = 0; i < inbuf - previnbuf; i++) {
+				if (previnbuf[inbuf-previnbuf-1-i] == ' ') {
+					inbuf -= i;
+					inbytesleft += i;
+					break;
+				}
+			}
+		}
 		ret[n++] = g_strndup(previnbuf, inbuf - previnbuf);
 		ret = g_renew(char *, ret, n + 1);
 		previnbuf = inbuf;
