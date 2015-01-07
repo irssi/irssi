@@ -179,6 +179,7 @@ static void sig_layout_restore(void)
 	lower_window = NULL; lower_size = 0;
 	for (i = 0, tmp = sorted_config; i < windows_count; tmp = tmp->next, i++) {
 		CONFIG_NODE *node = tmp->data;
+		if (node->key == NULL) continue;
 
 		/* create a new window + mainwindow */
 		signal_emit("gui window create override", 1,

@@ -127,6 +127,7 @@ static void sig_layout_restore(void)
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
+		if (node->key == NULL) continue;
 		window = window_find_refnum(atoi(node->key));
 		if (window == NULL)
 			window = window_create(NULL, TRUE);
