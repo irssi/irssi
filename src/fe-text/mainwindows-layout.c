@@ -70,7 +70,7 @@ static void main_window_save(MAIN_WINDOW_REC *window, CONFIG_NODE *node)
         char num[MAX_INT_STRLEN];
 
         ltoa(num, window->active->refnum);
-	node = config_node_section(node, num, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, num, NODE_TYPE_BLOCK);
 
 	iconfig_node_set_int(node, "first_line", window->first_line);
 	iconfig_node_set_int(node, "lines", window->height);

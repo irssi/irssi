@@ -116,8 +116,8 @@ int config_set_bool(CONFIG_REC *rec, const char *section, const char *key, int v
 CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key);
 /* Find the section from node - if not found create it unless new_type is -1.
    You can also specify in new_type if it's NODE_TYPE_LIST or NODE_TYPE_BLOCK */
-CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type);
-CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
+CONFIG_NODE *config_node_section(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int new_type);
+CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key,
 				       int index, int new_type);
 /* Find the section with the whole path.
    Create the path if necessary if `create' is TRUE. */

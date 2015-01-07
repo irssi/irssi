@@ -38,12 +38,12 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
 	return NULL;
 }
 
-CONFIG_NODE *config_node_section(CONFIG_NODE *parent, const char *key, int new_type)
+CONFIG_NODE *config_node_section(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int new_type)
 {
-        return config_node_section_index(parent, key, -1, new_type);
+	return config_node_section_index(rec, parent, key, -1, new_type);
 }
 
-CONFIG_NODE *config_node_section_index(CONFIG_NODE *parent, const char *key,
+CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key,
 				       int index, int new_type)
 {
 	CONFIG_NODE *node;
@@ -101,7 +101,7 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 		is_list = **tmp == '(';
 		if (create) new_type = is_list ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
 
-		node = config_node_section(node, *tmp + is_list, new_type);
+		node = config_node_section(rec, node, *tmp + is_list, new_type);
 		if (node == NULL) {
 			g_strfreev(list);
 			return NULL;

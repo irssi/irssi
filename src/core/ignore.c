@@ -263,7 +263,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 		return;
 
 	node = iconfig_node_traverse("(ignores", TRUE);
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 
 	if (rec->mask != NULL) iconfig_node_set_str(node, "mask", rec->mask);
 	if (rec->level) {
@@ -281,7 +281,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	iconfig_node_set_str(node, "servertag", rec->servertag);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
-		node = config_node_section(node, "channels", NODE_TYPE_LIST);
+		node = iconfig_node_section(node, "channels", NODE_TYPE_LIST);
 		iconfig_node_add_list(node, rec->channels);
 	}
 }
@@ -436,7 +436,7 @@ static void read_ignores(void)
 		rec->unignore_time = config_node_get_int(node, "unignore_time", 0);
 		rec->servertag = g_strdup(config_node_get_str(node, "servertag", 0));
 
-		node = config_node_section(node, "channels", -1);
+		node = iconfig_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
 
 		ignore_init_rec(rec);

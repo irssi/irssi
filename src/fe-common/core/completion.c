@@ -51,7 +51,7 @@ static const char *completion_find(const char *key, int automatic)
 	if (node == NULL || node->type != NODE_TYPE_BLOCK)
 		return NULL;
 
-	node = config_node_section(node, key, -1);
+	node = iconfig_node_section(node, key, -1);
 	if (node == NULL)
 		return NULL;
 
@@ -785,7 +785,7 @@ static void cmd_completion(const char *data)
 	} else if (*key != '\0' && *value != '\0') {
 		int automatic = g_hash_table_lookup(optlist, "auto") != NULL;
 
-		node = config_node_section(node, key, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(node, key, NODE_TYPE_BLOCK);
 		iconfig_node_set_str(node, "value", value);
 		if (automatic)
 			iconfig_node_set_bool(node, "auto", TRUE);

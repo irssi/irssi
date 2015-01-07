@@ -30,7 +30,7 @@ void notifylist_add_config(NOTIFYLIST_REC *rec)
 	CONFIG_NODE *node;
 
 	node = iconfig_node_traverse("notifies", TRUE);
-	node = config_node_section(node, rec->mask, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, rec->mask, NODE_TYPE_BLOCK);
 
 	if (rec->away_check)
 		iconfig_node_set_bool(node, "away_check", TRUE);
@@ -39,7 +39,7 @@ void notifylist_add_config(NOTIFYLIST_REC *rec)
 
 	iconfig_node_set_str(node, "ircnets", NULL);
 	if (rec->ircnets != NULL && *rec->ircnets != NULL) {
-		node = config_node_section(node, "ircnets", NODE_TYPE_LIST);
+		node = iconfig_node_section(node, "ircnets", NODE_TYPE_LIST);
 		iconfig_node_add_list(node, rec->ircnets);
 	}
 }
@@ -73,7 +73,7 @@ void notifylist_read_config(void)
 		rec->mask = g_strdup(node->key);
 		rec->away_check = config_node_get_bool(node, "away_check", FALSE);
 
-		node = config_node_section(node, "ircnets", -1);
+		node = iconfig_node_section(node, "ircnets", -1);
 		if (node != NULL) rec->ircnets = config_node_get_list(node);
 	}
 }

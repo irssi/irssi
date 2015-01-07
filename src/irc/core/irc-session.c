@@ -66,7 +66,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_bool(config, node, "emode_known", server->emode_known);
 
 	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
-        isupport = config_node_section(node, "isupport", NODE_TYPE_BLOCK);
+	isupport = config_node_section(config, node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
         isupport_data.node = isupport;
 
@@ -95,7 +95,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 						    (GCompareFunc) g_istr_equal);
 	}
 
-	node = config_node_section(node, "isupport", -1);
+	node = config_node_section(NULL, node, "isupport", -1);
 	tmp = node == NULL ? NULL : config_node_first(node->value);
 
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {

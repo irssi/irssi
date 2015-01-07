@@ -430,7 +430,7 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	parentnode = iconfig_node_traverse("(servers", TRUE);
 	node = config_node_nth(parentnode, index);
 	if (node == NULL)
-		node = config_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_clear(node);
 	iconfig_node_set_str(node, "address", rec->address);
