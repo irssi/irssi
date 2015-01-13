@@ -13,7 +13,6 @@ script_DATA = \
 	quitmsg.pl \
 	sb_search.pl \
 	scriptassist.pl \
-	splitlong.pl \
 	usercount.pl
 
 EXTRA_DIST = $(script_DATA)
