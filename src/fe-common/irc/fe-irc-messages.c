@@ -179,7 +179,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 		item = irc_channel_find(server, target);
 	} else {
 		own = (!strcmp(nick, server->nick));
-		item = privmsg_get_query(SERVER(server), own ? nick : target, FALSE, level);
+		item = privmsg_get_query(SERVER(server), own ? target : nick, FALSE, level);
 	}
 
 	if (settings_get_bool("emphasis"))
