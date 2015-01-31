@@ -10,7 +10,7 @@
     -window:    Specifies the window to check.
     -new:       Only displays results since the previous lastlog.
     -away:      Only displays results since you previous away status.
-    -level:     Specifies the levels to check.
+    -<level>:   Specifies the levels to check (e.g. -joins -quits -hilight)
     -clear:     Removes the previous results from the active window.
     -count:     Displays how many lines match.
     -case:      Performs a case-sensitive matching.
@@ -32,6 +32,7 @@
     /LASTLOG holiday
     /LASTLOG 'is on vacation'
     /LASTLOG -file -force ~/mike.log 'mike'
+    /LASTLOG -hilight
 
 %9See also:%9 HILIGHT, SCROLLBACK
 
