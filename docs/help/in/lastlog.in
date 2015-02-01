@@ -17,8 +17,11 @@
     -regexp:    The given text pattern is a regular expression.
     -word:      The text must match full words.
     -force:     Forces to display the lastlog, even if it exceeds 1000 lines.
-    -after:     Only displays results after the given line number.
-    -before:    Only displays results before the given line number.
+    -after:     Include this many lines of content after the match.
+    -before:    Include this many lines of content before the match.
+    -<#>:       Include this many lines of content around the match.
+    <count>:    Display a maximum number of `count' lines.
+    <start>:    Skip the last `start' lines.
 
     The pattern to search for and the maximum of lines to display; if no
     parameter is given, the entire window buffer will be displayed.
@@ -30,9 +33,10 @@
 %9Examples:%9
 
     /LASTLOG holiday
-    /LASTLOG 'is on vacation'
+    /LASTLOG 'is on vacation' 10
     /LASTLOG -file -force ~/mike.log 'mike'
     /LASTLOG -hilight
+    /LASTLOG -5 searchterm
 
 %9See also:%9 HILIGHT, SCROLLBACK
 
