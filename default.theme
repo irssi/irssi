@@ -120,7 +120,7 @@ abstracts = {
   # the basic styling of how to print message, $0 = nick mode, $1 = nick
   msgnick = "%K<%n$0$1-%K>%n %|";
 
-  # message from you is printed. "msgownnick" specifies the styling of the
+  # message from you is printed. "ownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
   # whole line.
 
