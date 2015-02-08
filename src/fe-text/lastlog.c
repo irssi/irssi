@@ -74,6 +74,17 @@ int cmd_options_get_level(const char *cmd, GHashTable *optlist)
 	return retlevel;
 }
 
+static void prepend_date(LINE_REC *rec, GString *line)
+{
+	struct tm *tm = localtime(&rec->info.time);
+	char timestamp[12];
+
+	g_snprintf(timestamp, sizeof(timestamp),
+		   "%04d-%02d-%02d ",
+		   tm->tm_year+1900, tm->tm_mon, tm->tm_mday);
+	g_string_prepend(line, timestamp);
+}
+
 static void show_lastlog(const char *searchtext, GHashTable *optlist,
 			 int start, int count, FILE *fhandle)
 {
@@ -82,7 +93,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 	GList *list, *tmp;
 	GString *line;
         char *str;
-	int level, before, after, len;
+	int level, before, after, len, date = FALSE;
 
         level = cmd_options_get_level("lastlog", optlist);
 	if (level == -1) return; /* error in options */
@@ -131,6 +142,9 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		after = str == NULL ? 0 : *str != '\0' ?
 			atoi(str) : DEFAULT_LASTLOG_AFTER;
 	}
+
+	if (g_hash_table_lookup(optlist, "date") != NULL)
+		date = TRUE;
 
 	list = textbuffer_find_text(WINDOW_GUI(window)->view->buffer, startline,
 				    level, MSGLEVEL_LASTLOG,
@@ -199,6 +213,9 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
                         g_string_prepend(line, timestamp);
 		}
 
+		if (date == TRUE)
+			prepend_date(rec, line);
+
                 /* write to file/window */
 		if (fhandle != NULL) {
 			fwrite(line->str, line->len, 1, fhandle);
@@ -223,7 +240,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 }
 
 /* SYNTAX: LASTLOG [-] [-file <filename>] [-window <ref#|name>] [-new | -away]
-		   [-<level> -<level...>] [-clear] [-count] [-case]
+		   [-<level> -<level...>] [-clear] [-count] [-case] [-date]
 		   [-regexp | -word] [-before [<#>]] [-after [<#>]]
 		   [-<# before+after>] [<pattern>] [<count> [<start>]] */
 static void cmd_lastlog(const char *data)
@@ -285,7 +302,7 @@ void lastlog_init(void)
 {
 	command_bind("lastlog", NULL, (SIGNAL_FUNC) cmd_lastlog);
 
-	command_set_options("lastlog", "!- # force clear -file -window new away word regexp case count @a @after @before");
+	command_set_options("lastlog", "!- # force clear -file -window new away word regexp case count date @a @after @before");
 }
 
 void lastlog_deinit(void)
