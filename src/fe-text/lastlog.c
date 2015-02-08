@@ -74,15 +74,23 @@ int cmd_options_get_level(const char *cmd, GHashTable *optlist)
 	return retlevel;
 }
 
-static void prepend_date(LINE_REC *rec, GString *line)
+static void prepend_date(WINDOW_REC *window, LINE_REC *rec, GString *line)
 {
+        THEME_REC *theme = NULL;
+        TEXT_DEST_REC dest = {0};
+        char *format = NULL, datestamp[20] = {0};
 	struct tm *tm = localtime(&rec->info.time);
-	char timestamp[12];
+	int ret = 0;
 
-	g_snprintf(timestamp, sizeof(timestamp),
-		   "%04d-%02d-%02d ",
-		   tm->tm_year+1900, tm->tm_mon, tm->tm_mday);
-	g_string_prepend(line, timestamp);
+        theme = window->theme != NULL ? window->theme : current_theme;
+        format_create_dest(&dest, NULL, NULL, MSGLEVEL_LASTLOG, window);
+        format = format_get_text_theme(theme, MODULE_NAME, &dest, TXT_LASTLOG_DATE);
+ 
+	ret = strftime(datestamp, sizeof(datestamp), format, tm);
+        g_free(format);
+        if (ret <= 0) return;
+
+	g_string_prepend(line, datestamp);
 }
 
 static void show_lastlog(const char *searchtext, GHashTable *optlist,
@@ -214,7 +222,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		}
 
 		if (date == TRUE)
-			prepend_date(rec, line);
+			prepend_date(window, rec, line);
 
                 /* write to file/window */
 		if (fhandle != NULL) {

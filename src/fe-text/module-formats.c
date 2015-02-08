@@ -33,6 +33,7 @@ FORMAT_REC gui_text_formats[] =
 	{ "lastlog_start", "{hilight Lastlog}:", 0 },
 	{ "lastlog_end", "{hilight End of Lastlog}", 0 },
 	{ "lastlog_separator", "--", 0 },
+	{ "lastlog_date", "%%F ", 0 },
 
 	/* ---- */
 	{ NULL, "Windows", 0 },
