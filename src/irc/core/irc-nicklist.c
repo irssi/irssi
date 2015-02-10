@@ -343,7 +343,7 @@ static void event_nick_invalid(IRC_SERVER_REC *server, const char *data)
 
 static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 {
-	char *str, *cmd;
+	char *str, *cmd, *params, *nick;
 	int n;
 
 	g_return_if_fail(data != NULL);
@@ -352,6 +352,14 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 		/* Already connected, no need to handle this anymore. */
 		return;
 	}
+
+	params = event_get_params(data, 2, NULL, &nick);
+	if (g_ascii_strcasecmp(server->nick, nick) != 0) {
+		/* the server uses a nick different from the one we send */
+		g_free(server->nick);
+		server->nick = g_strdup(nick);
+	}
+	g_free(params);
 
 	/* nick already in use - need to change it .. */
 	if (g_ascii_strcasecmp(server->nick, server->connrec->nick) == 0 &&
