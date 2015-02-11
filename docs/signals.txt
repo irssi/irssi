@@ -131,6 +131,11 @@ irc-nicklist.c:
 irc-servers.c:
  "event connected", SERVER_REC
 
+irc-cap.c
+ "server cap ack "<cmd>, SERVER_REC
+ "server cap nak "<cmd>, SERVER_REC
+ "server cap end", SERVER_REC
+
 irc.c:
 
  "server event", SERVER_REC, char *data, char *sender_nick, char *sender_address

@@ -26,6 +26,7 @@ libirc_core_a_SOURCES = \
         irc-servers-reconnect.c \
         irc-servers-setup.c \
         irc-session.c \
+        irc-cap.c \
         lag.c \
         massjoin.c \
         modes.c \
@@ -48,6 +49,7 @@ pkginc_irc_core_HEADERS = \
         irc-queries.h \
         irc-servers.h \
         irc-servers-setup.h \
+        irc-cap.h \
         modes.h \
         mode-lists.h \
 	module.h \
