@@ -292,12 +292,18 @@ static int expand_key(const char *key, GSList **out)
 			}
 			last_hyphen = !last_hyphen;
 		} else if (*key == '^') {
-                        /* ctrl-code */
-			if (key[1] != '\0')
-				key++;
-
 			expand_out_char(*out, '^');
-			expand_out_char(*out, *key);
+
+                        /* ctrl-code */
+			if (key[1] != '\0' && key[1] != '-') {
+				key++;
+				expand_out_char(*out, *key);
+			}
+			else {
+				/* escaped syntax for ^, see gui-readline.c */
+				expand_out_char(*out, '-');
+			}
+
 			expand_out_char(*out, '-');
                         last_hyphen = FALSE; /* optional */
 		} else if (last_hyphen && i_isalpha(*key)) {
