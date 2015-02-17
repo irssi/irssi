@@ -8,10 +8,19 @@ env:
     - CC=gcc
 
 before_install:
+    - |
+      if [ "$CC" = "gcc" ]; then
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        export CC="gcc-4.8"
+      fi
     - sudo apt-get update -qq
     - perl -V
     - sudo apt-get build-dep -qq irssi
     - sudo apt-get install -qq lynx
+    - |
+      case "$CC" in gcc-*) :
+        sudo apt-get install -qq $CC
+      esac
 
 install: true
 
