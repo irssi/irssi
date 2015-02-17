@@ -54,7 +54,6 @@ CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, con
 
 	node = key == NULL ? NULL : config_node_find(parent, key);
 	if (node != NULL) {
-		g_return_val_if_fail(new_type == -1 || new_type == node->type, NULL);
 		nindex = g_slist_index(parent->value, node);
 		if (index >= 0 && nindex != index &&
 		    nindex <= g_slist_length(parent->value)) {
@@ -62,7 +61,25 @@ CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, con
 			parent->value = g_slist_remove(parent->value, node);
 			parent->value = g_slist_insert(parent->value, node, index);
 		}
-		return node;
+		if (!is_node_list(node)) {
+			int show_error = 0;
+
+			if (new_type != -1) {
+				config_node_remove(rec, parent, node);
+				node = NULL;
+				show_error = 1;
+			} else if (!g_hash_table_contains(rec->cache_nodes, node)) {
+				g_hash_table_insert(rec->cache_nodes, node, NULL);
+				show_error = 1;
+			}
+			if (show_error)
+				g_critical("Expected %s node at `..%s/%s' was of scalar type. Corrupt config?",
+						   new_type == NODE_TYPE_LIST ? "list" : new_type == NODE_TYPE_BLOCK ? "block" : "section",
+						   parent->key, key);
+		} else {
+			g_return_val_if_fail(new_type == -1 || new_type == node->type, NULL);
+			return node;
+		}
 	}
 
 	if (new_type == -1)
@@ -91,7 +108,21 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 
 	/* check if it already exists in cache */
 	node = g_hash_table_lookup(rec->cache, section);
-	if (node != NULL) return node;
+	if (node != NULL) {
+		if (create) {
+			const char *path = strrchr(section, '/');
+			if (path == NULL) path = section;
+			else path++;
+			new_type = *path == '(' ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
+			if (node->type != new_type) {
+				g_critical("Expected %s node at `%s' was of %s type. Corrupt config?",
+						   new_type == NODE_TYPE_LIST ? "list" : "block", section,
+						   node->type == NODE_TYPE_LIST ? "list" : "block");
+				node->type = new_type;
+			}
+		}
+		return node;
+	}
 
         new_type = -1;
 
@@ -99,7 +130,16 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 	list = g_strsplit(section, "/", -1);
 	for (tmp = list; *tmp != NULL; tmp++) {
 		is_list = **tmp == '(';
-		if (create) new_type = is_list ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
+		if (create) {
+			CONFIG_NODE *tmpnode;
+
+			new_type = is_list ? NODE_TYPE_LIST : NODE_TYPE_BLOCK;
+			tmpnode = config_node_find(node, *tmp + is_list);
+			if (tmpnode != NULL && tmpnode->type != new_type) {
+				g_critical("Expected %s node at `%s' was of scalar type. Corrupt config?", is_list ? "list" : "block", section);
+				config_node_remove(rec, node, tmpnode);
+			}
+		}
 
 		node = config_node_section(rec, node, *tmp + is_list, new_type);
 		if (node == NULL) {
