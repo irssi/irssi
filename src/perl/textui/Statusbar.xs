@@ -160,5 +160,5 @@ CODE:
 				       *str == '\0' ? NULL : str,
 				       data, escape_vars);
 	hv = hvref(ST(0));
-	hv_store(hv, "min_size", 8, newSViv(item->min_size), 0);
-	hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);
+	(void) hv_store(hv, "min_size", 8, newSViv(item->min_size), 0);
+	(void) hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);

@@ -8,72 +8,72 @@ static int initialized = FALSE;
 
 static void perl_main_window_fill_hash(HV *hv, MAIN_WINDOW_REC *window)
 {
-	hv_store(hv, "active", 6, plain_bless(window->active, "Irssi::UI::Window"), 0);
+	(void) hv_store(hv, "active", 6, plain_bless(window->active, "Irssi::UI::Window"), 0);
 
-	hv_store(hv, "first_line", 10, newSViv(window->first_line), 0);
-	hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
-	hv_store(hv, "width", 5, newSViv(window->width), 0);
-	hv_store(hv, "height", 6, newSViv(window->height), 0);
+	(void) hv_store(hv, "first_line", 10, newSViv(window->first_line), 0);
+	(void) hv_store(hv, "last_line", 9, newSViv(window->last_line), 0);
+	(void) hv_store(hv, "width", 5, newSViv(window->width), 0);
+	(void) hv_store(hv, "height", 6, newSViv(window->height), 0);
 
-	hv_store(hv, "statusbar_lines", 15, newSViv(window->statusbar_lines), 0);
+	(void) hv_store(hv, "statusbar_lines", 15, newSViv(window->statusbar_lines), 0);
 }
 
 static void perl_text_buffer_fill_hash(HV *hv, TEXT_BUFFER_REC *buffer)
 {
-	hv_store(hv, "first_line", 10, plain_bless(buffer->first_line, "Irssi::TextUI::Line"), 0);
-	hv_store(hv, "lines_count", 11, newSViv(buffer->lines_count), 0);
-	hv_store(hv, "cur_line", 8, plain_bless(buffer->cur_line, "Irssi::TextUI::Line"), 0);
-	hv_store(hv, "last_eol", 8, newSViv(buffer->last_eol), 0);
+	(void) hv_store(hv, "first_line", 10, plain_bless(buffer->first_line, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "lines_count", 11, newSViv(buffer->lines_count), 0);
+	(void) hv_store(hv, "cur_line", 8, plain_bless(buffer->cur_line, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "last_eol", 8, newSViv(buffer->last_eol), 0);
 }
 
 static void perl_text_buffer_view_fill_hash(HV *hv, TEXT_BUFFER_VIEW_REC *view)
 {
-	hv_store(hv, "buffer", 6, plain_bless(view->buffer, "Irssi::TextUI::TextBuffer"), 0);
-	hv_store(hv, "width", 5, newSViv(view->width), 0);
-	hv_store(hv, "height", 6, newSViv(view->height), 0);
+	(void) hv_store(hv, "buffer", 6, plain_bless(view->buffer, "Irssi::TextUI::TextBuffer"), 0);
+	(void) hv_store(hv, "width", 5, newSViv(view->width), 0);
+	(void) hv_store(hv, "height", 6, newSViv(view->height), 0);
 
-	hv_store(hv, "default_indent", 14, newSViv(view->default_indent), 0);
-	hv_store(hv, "longword_noindent", 17, newSViv(view->longword_noindent), 0);
-	hv_store(hv, "scroll", 6, newSViv(view->scroll), 0);
+	(void) hv_store(hv, "default_indent", 14, newSViv(view->default_indent), 0);
+	(void) hv_store(hv, "longword_noindent", 17, newSViv(view->longword_noindent), 0);
+	(void) hv_store(hv, "scroll", 6, newSViv(view->scroll), 0);
 
-	hv_store(hv, "ypos", 4, newSViv(view->ypos), 0);
+	(void) hv_store(hv, "ypos", 4, newSViv(view->ypos), 0);
 
-	hv_store(hv, "startline", 9, plain_bless(view->startline, "Irssi::TextUI::Line"), 0);
-	hv_store(hv, "subline", 7, newSViv(view->subline), 0);
+	(void) hv_store(hv, "startline", 9, plain_bless(view->startline, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "subline", 7, newSViv(view->subline), 0);
 
-	hv_store(hv, "bottom_startline", 16, plain_bless(view->bottom_startline, "Irssi::TextUI::Line"), 0);
-	hv_store(hv, "bottom_subline", 14, newSViv(view->bottom_subline), 0);
+	(void) hv_store(hv, "bottom_startline", 16, plain_bless(view->bottom_startline, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "bottom_subline", 14, newSViv(view->bottom_subline), 0);
 
-	hv_store(hv, "empty_linecount", 15, newSViv(view->empty_linecount), 0);
-	hv_store(hv, "bottom", 6, newSViv(view->bottom), 0);
+	(void) hv_store(hv, "empty_linecount", 15, newSViv(view->empty_linecount), 0);
+	(void) hv_store(hv, "bottom", 6, newSViv(view->bottom), 0);
 }
 
 static void perl_line_fill_hash(HV *hv, LINE_REC *line)
 {
-	hv_store(hv, "info", 4, plain_bless(&line->info, "Irssi::TextUI::LineInfo"), 0);
+	(void) hv_store(hv, "info", 4, plain_bless(&line->info, "Irssi::TextUI::LineInfo"), 0);
 }
 
 static void perl_line_cache_fill_hash(HV *hv, LINE_CACHE_REC *cache)
 {
-	hv_store(hv, "last_access", 11, newSViv(cache->last_access), 0);
-	hv_store(hv, "count", 5, newSViv(cache->count), 0);
+	(void) hv_store(hv, "last_access", 11, newSViv(cache->last_access), 0);
+	(void) hv_store(hv, "count", 5, newSViv(cache->count), 0);
 	/*LINE_CACHE_SUB_REC lines[1];*/
 }
 
 static void perl_line_info_fill_hash(HV *hv, LINE_INFO_REC *info)
 {
-	hv_store(hv, "level", 5, newSViv(info->level), 0);
-	hv_store(hv, "time", 4, newSViv(info->time), 0);
+	(void) hv_store(hv, "level", 5, newSViv(info->level), 0);
+	(void) hv_store(hv, "time", 4, newSViv(info->time), 0);
 }
 
 static void perl_statusbar_item_fill_hash(HV *hv, SBAR_ITEM_REC *item)
 {
-	hv_store(hv, "min_size", 8, newSViv(item->min_size), 0);
-	hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);
-	hv_store(hv, "xpos", 4, newSViv(item->xpos), 0);
-	hv_store(hv, "size", 4, newSViv(item->size), 0);
+	(void) hv_store(hv, "min_size", 8, newSViv(item->min_size), 0);
+	(void) hv_store(hv, "max_size", 8, newSViv(item->max_size), 0);
+	(void) hv_store(hv, "xpos", 4, newSViv(item->xpos), 0);
+	(void) hv_store(hv, "size", 4, newSViv(item->size), 0);
 	if (item->bar->parent_window != NULL)
-		hv_store(hv, "window", 6, plain_bless(item->bar->parent_window->active, "Irssi::UI::Window"), 0);
+		(void) hv_store(hv, "window", 6, plain_bless(item->bar->parent_window->active, "Irssi::UI::Window"), 0);
 }
 
 static PLAIN_OBJECT_INIT_REC textui_plains[] = {
