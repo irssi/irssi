@@ -109,9 +109,9 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 	}
 	g_strfreev(list);
 
-        if (!is_node_list(node)) {
+	if (!is_node_list(node)) {
 		/* Will die. Better to not corrupt the config further in this case. */
-		g_error("Attempt to use non-list node as list. Corrupt config?");
+		g_critical("Attempt to use non-list node `%s' as list. Corrupt config?", section);
 		return NULL;
 	}
 
