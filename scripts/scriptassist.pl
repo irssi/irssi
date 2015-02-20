@@ -1088,7 +1088,7 @@ sub sig_command_script_load ($$$) {
     no strict;
     $script = $2 if $script =~ /(.*\/)?(.*?)\.pl$/;
     if ( %{ "Irssi::Script::${script}::" }) {
-	if ( &{ "Irssi::Script::${script}::pre_unload" }) {
+	if (defined &{ "Irssi::Script::${script}::pre_unload" }) {
 	    print CLIENTCRAP "%R>>%n Triggering pre_unload function of $script...";
 	    &{ "Irssi::Script::${script}::pre_unload" }();
 	}
