@@ -7,19 +7,21 @@
 
     -yes:    Confirms that you want to receive a large amount of data.
 
-    The text a channel must match; if no argument is given, the list of all
-    channels will be displayed.
+    If the exact name of a channel is given, then only information about this
+    channel is requested. Otherwise, the list of all channels will be displayed.
 
 %9Description:%9
 
-    Displays the channel names that match your request; requesting all channels
-    may cause the server to disconnect you for flooding.
+    Requesting all channels may cause the server to disconnect you for flooding,
+    so it is protected by -yes. Not all networks support server side filtering.
+    Some may provide a service bot instead, try /quote squery alis :help or /msg alis help
 
 %9Examples:%9
 
-    /LIST
     /LIST -yes
-    /LIST -yes *ubuntu*
+    /LIST #ubuntu
+    /LIST #*ubuntu*,>1
+    
 
 %9See also:%9 QUOTE, STATS, WHOIS
 
