@@ -25,6 +25,7 @@
 
 #include "fe-common/core/printtext.h"
 
+/* SYNTAX: PROXY STATUS */
 static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
 {
 	if (!settings_get_bool("irssiproxy")) {
@@ -50,6 +51,7 @@ static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
 	}
 }
 
+/* SYNTAX: PROXY */
 static void cmd_proxy(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	if (*data == '\0') {
