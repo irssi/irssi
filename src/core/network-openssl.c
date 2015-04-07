@@ -531,6 +531,10 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		return NULL;
 	}
 
+#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
+	SSL_set_tlsext_host_name(ssl, server->connrec->address);
+#endif
+
 	SSL_set_mode(ssl, SSL_MODE_ENABLE_PARTIAL_WRITE |
 			SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
