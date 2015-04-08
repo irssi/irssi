@@ -201,10 +201,10 @@ IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask,
 	char **chan;
 	int ignore_servertag;
 
-	if (mask != NULL && (*mask == '\0' || strcmp(mask, "*") == 0))
+	if (mask != NULL && (*mask == '\0' || g_strcmp0(mask, "*") == 0))
 		mask = NULL;
 
-	ignore_servertag = servertag != NULL && strcmp(servertag, "*") == 0;
+	ignore_servertag = servertag != NULL && g_strcmp0(servertag, "*") == 0;
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
@@ -232,7 +232,7 @@ IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask,
 		if ((channels == NULL && rec->channels == NULL))
 			return rec; /* no channels - ok */
 
-		if (channels != NULL && strcmp(*channels, "*") == 0)
+		if (channels != NULL && g_strcmp0(*channels, "*") == 0)
 			return rec; /* ignore channels */
 
 		if (channels == NULL || rec->channels == NULL)

@@ -485,7 +485,7 @@ static void autolog_open_check(TEXT_DEST_REC *dest)
 		return;
 
 	if (target != NULL)
-		autolog_open(server, server_tag, strcmp(target, "*") ? target : deftarget);
+		autolog_open(server, server_tag, g_strcmp0(target, "*") ? target : deftarget);
 }
 
 static void log_single_line(WINDOW_REC *window, const char *server_tag,
@@ -629,7 +629,7 @@ static void sig_log_create_failed(LOG_REC *log)
 static void sig_log_new(LOG_REC *log)
 {
 	if (!settings_get_bool("awaylog_colors") &&
-	    strcmp(log->fname, settings_get_str("awaylog_file")) == 0)
+	    g_strcmp0(log->fname, settings_get_str("awaylog_file")) == 0)
                 log->colorizer = log_colorizer_strip;
 }
 

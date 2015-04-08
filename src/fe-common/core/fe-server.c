@@ -185,7 +185,7 @@ static void cmd_server_add(const char *data)
 	if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
 	if (g_hash_table_lookup(optlist, "noproxy")) rec->no_proxy = TRUE;
 
-	if (*password != '\0' && strcmp(password, "-") != 0) rec->password = g_strdup(password);
+	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 	value = g_hash_table_lookup(optlist, "host");
 	if (value != NULL && *value != '\0') {
 		rec->own_host = g_strdup(value);
@@ -264,7 +264,7 @@ static void cmd_server_connect(const char *data)
 			    "connect", &optlist, &addr))
 		return;
 
-	if (*addr == '\0' || strcmp(addr, "+") == 0)
+	if (*addr == '\0' || g_strcmp0(addr, "+") == 0)
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	if (*addr == '+') window_create(NULL, FALSE);
 

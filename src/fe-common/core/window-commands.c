@@ -127,7 +127,7 @@ static void cmd_window_info(WINDOW_REC *win)
 				   win->active_server->tag : "NONE");
 	} else {
 		if (win->active_server != NULL &&
-		    strcmp(win->active_server->tag, win->servertag) != 0)
+		    g_strcmp0(win->active_server->tag, win->servertag) != 0)
                         g_warning("Active server isn't the sticky server!");
 
 		printformat_window(win, MSGLEVEL_CLIENTCRAP,
@@ -609,7 +609,7 @@ static void cmd_window_name(const char *data)
 	if (win == NULL || win == active_win)
 		window_set_name(active_win, data);
 	else if (active_win->name == NULL ||
-		 strcmp(active_win->name, data) != 0) {
+		 g_strcmp0(active_win->name, data) != 0) {
 		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 				   TXT_WINDOW_NAME_NOT_UNIQUE, data);
 	}

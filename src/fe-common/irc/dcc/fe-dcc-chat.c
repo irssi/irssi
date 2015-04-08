@@ -243,7 +243,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 
 	/* handle only DCC messages */
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		dcc = item_get_dcc(item);
 	else if (*target == '=')
 		dcc = dcc_chat_find_id(target+1);

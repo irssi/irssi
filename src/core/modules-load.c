@@ -78,7 +78,7 @@ static char *module_get_root(const char *name, char **prefixes)
 
 	/* skip the _core part */
         len = strlen(name);
-	if (len > 5 && strcmp(name+len-5, "_core") == 0)
+	if (len > 5 && g_strcmp0(name+len-5, "_core") == 0)
 		return g_strndup(name, len-5);
 
         return g_strdup(name);
@@ -94,11 +94,11 @@ static char *module_get_sub(const char *name, const char *root)
         g_return_val_if_fail(namelen >= rootlen, g_strdup(name));
 
 	if (strncmp(name, root, rootlen) == 0 &&
-	    strcmp(name+rootlen, "_core") == 0)
+	    g_strcmp0(name+rootlen, "_core") == 0)
                 return g_strdup("core");
 
 	if (namelen > rootlen && name[namelen-rootlen-1] == '_' &&
-	    strcmp(name+namelen-rootlen, root) == 0)
+	    g_strcmp0(name+namelen-rootlen, root) == 0)
                 return g_strndup(name, namelen-rootlen-1);
 
         return g_strdup(name);
@@ -140,10 +140,10 @@ static GModule *module_open(const char *name, int *found)
 static char *module_get_func(const char *rootmodule, const char *submodule,
 			     const char *function)
 {
-	if (strcmp(submodule, "core") == 0)
+	if (g_strcmp0(submodule, "core") == 0)
 		return g_strconcat(rootmodule, "_core_", function, NULL);
 
-	if (strcmp(rootmodule, submodule) == 0)
+	if (g_strcmp0(rootmodule, submodule) == 0)
 		return g_strconcat(rootmodule, "_", function, NULL);
 
 	return g_strconcat(submodule, "_", rootmodule, "_", function, NULL);
@@ -200,7 +200,7 @@ static int module_load_name(const char *path, const char *rootmodule,
 
 	module = module_find(rootmodule);
 	rec = module == NULL ? NULL :
-                strcmp(rootmodule, submodule) == 0 ?
+                g_strcmp0(rootmodule, submodule) == 0 ?
 		module_file_find(module, "core") :
 		module_file_find(module, submodule);
 	if (rec == NULL) {
@@ -277,7 +277,7 @@ static int module_load_full(const char *path, const char *rootmodule,
 		return FALSE;
 
 	module = module_find(rootmodule);
-	if (module != NULL && (strcmp(submodule, rootmodule) == 0 ||
+	if (module != NULL && (g_strcmp0(submodule, rootmodule) == 0 ||
 			       module_file_find(module, submodule) != NULL)) {
                 /* module is already loaded */
 		module_error(MODULE_ERROR_ALREADY_LOADED, NULL,
@@ -286,7 +286,7 @@ static int module_load_full(const char *path, const char *rootmodule,
 	}
 
 	/* check if the given module exists.. */
-	try_prefixes = strcmp(rootmodule, submodule) == 0;
+	try_prefixes = g_strcmp0(rootmodule, submodule) == 0;
 	status = module_load_name(path, rootmodule, submodule, try_prefixes);
 	if (status == -1 && try_prefixes) {
 		/* nope, try loading the module_core,
@@ -340,7 +340,7 @@ int module_load_sub(const char *path, const char *submodule, char **prefixes)
 	g_free(name);
 
         full_path = g_string_new(exppath);
-	if (strcmp(submodule, "core") == 0)
+	if (g_strcmp0(submodule, "core") == 0)
 		g_string_insert(full_path, end, "_core");
 	else {
 		g_string_insert_c(full_path, start, '_');

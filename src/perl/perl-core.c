@@ -44,7 +44,7 @@ static int print_script_errors;
 static char *perl_args[] = {"", "-e", "0"};
 
 #define IS_PERL_SCRIPT(file) \
-	(strlen(file) > 3 && strcmp(file+strlen(file)-3, ".pl") == 0)
+	(strlen(file) > 3 && g_strcmp0(file+strlen(file)-3, ".pl") == 0)
 
 static void perl_script_destroy_package(PERL_SCRIPT_REC *script)
 {
@@ -314,7 +314,7 @@ PERL_SCRIPT_REC *perl_script_find(const char *name)
 	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
 		PERL_SCRIPT_REC *rec = tmp->data;
 
-		if (strcmp(rec->name, name) == 0)
+		if (g_strcmp0(rec->name, name) == 0)
                         return rec;
 	}
 
@@ -331,7 +331,7 @@ PERL_SCRIPT_REC *perl_script_find_package(const char *package)
 	for (tmp = perl_scripts; tmp != NULL; tmp = tmp->next) {
 		PERL_SCRIPT_REC *rec = tmp->data;
 
-		if (strcmp(rec->package, package) == 0)
+		if (g_strcmp0(rec->package, package) == 0)
                         return rec;
 	}
 

@@ -384,7 +384,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
 		return;
 
-	if (*tag != '\0' && strcmp(tag, "*") != 0)
+	if (*tag != '\0' && g_strcmp0(tag, "*") != 0)
 		server = server_find_tag(tag);
 
 	if (server != NULL) {

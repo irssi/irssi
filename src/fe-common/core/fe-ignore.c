@@ -165,7 +165,7 @@ static void cmd_ignore(const char *data)
 		rec = g_new0(IGNORE_REC, 1);
 
 		rec->mask = mask == NULL || *mask == '\0' ||
-			strcmp(mask, "*") == 0 ? NULL : g_strdup(mask);
+			g_strcmp0(mask, "*") == 0 ? NULL : g_strdup(mask);
 		rec->channels = channels;
 	} else {
                 g_free_and_null(rec->pattern);

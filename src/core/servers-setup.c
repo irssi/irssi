@@ -526,7 +526,7 @@ static void read_servers(void)
 static void read_settings(void)
 {
 	if (old_source_host == NULL ||
-	    strcmp(old_source_host, settings_get_str("hostname")) != 0) {
+	    g_strcmp0(old_source_host, settings_get_str("hostname")) != 0) {
                 g_free_not_null(old_source_host);
 		old_source_host = g_strdup(settings_get_str("hostname"));
 

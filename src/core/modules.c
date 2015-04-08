@@ -44,7 +44,7 @@ void *module_check_cast_module(void *object, int type_pos,
 
 	str = module_find_id_str(module,
 				 G_STRUCT_MEMBER(int, object, type_pos));
-	return str == NULL || strcmp(str, id) != 0 ? NULL : object;
+	return str == NULL || g_strcmp0(str, id) != 0 ? NULL : object;
 }
 
 /* return unique number across all modules for `id' */
@@ -251,7 +251,7 @@ MODULE_FILE_REC *module_file_find(MODULE_REC *module, const char *name)
 	for (tmp = module->files; tmp != NULL; tmp = tmp->next) {
 		MODULE_FILE_REC *rec = tmp->data;
 
-		if (strcmp(rec->name, name) == 0)
+		if (g_strcmp0(rec->name, name) == 0)
                         return rec;
 	}
 

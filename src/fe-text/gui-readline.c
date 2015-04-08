@@ -392,7 +392,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 		str[g_unichar_to_utf8(key, str)] = '\0';
 	}
 
-	if (strcmp(str, "^") == 0) {
+	if (g_strcmp0(str, "^") == 0) {
 		/* change it as ^-, that is an invalid control char */
 		str[1] = '-';
 		str[2] = '\0';

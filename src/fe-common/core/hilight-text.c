@@ -168,7 +168,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 		if ((channels == NULL && rec->channels == NULL))
 			return rec; /* no channels - ok */
 
-		if (channels != NULL && strcmp(*channels, "*") == 0)
+		if (channels != NULL && g_strcmp0(*channels, "*") == 0)
 			return rec; /* ignore channels */
 
 		if (channels == NULL || rec->channels == NULL)
@@ -306,7 +306,7 @@ void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 		dest->hilight_priority = rec->priority;
 
 	g_free_and_null(dest->hilight_color);
-	if (rec->act_color != NULL && strcmp(rec->act_color, "%n") == 0)
+	if (rec->act_color != NULL && g_strcmp0(rec->act_color, "%n") == 0)
 		dest->level |= MSGLEVEL_NO_ACT;
         else
 		dest->hilight_color = hilight_get_act_color(rec);

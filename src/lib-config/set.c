@@ -105,7 +105,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 	}
 
 	if (node != NULL) {
-		if (strcmp(node->value, value) == 0)
+		if (g_strcmp0(node->value, value) == 0)
 			return;
                 g_free(node->value);
 	} else {

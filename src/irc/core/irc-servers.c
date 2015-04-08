@@ -638,7 +638,7 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 
 	params = event_get_params(data, 1, &nick);
 
-	if (strcmp(server->nick, nick) != 0) {
+	if (g_strcmp0(server->nick, nick) != 0) {
 		/* nick changed unexpectedly .. connected via proxy, etc. */
 		g_free(server->nick);
 		server->nick = g_strdup(nick);

@@ -135,7 +135,7 @@ static void msg_multi_mode(IRC_CHANNEL_REC *channel, const char *sender,
 		signal_add("print starting", (SIGNAL_FUNC) sig_print_starting);
 
 	rec = mode_find_channel(channel);
-	if (rec != NULL && strcmp(rec->mode, mode) != 0) {
+	if (rec != NULL && g_strcmp0(rec->mode, mode) != 0) {
 		/* different mode than last time, show and remove the old */
 		print_mode(rec);
 		mode_destroy(rec);

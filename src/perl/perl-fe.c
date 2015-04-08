@@ -170,7 +170,7 @@ static void cmd_load(const char *data, SERVER_REC *server, void *item)
 		return;
 
 	len = strlen(rootmodule);
-	if (len > 3 && strcmp(rootmodule + len - 3, ".pl") == 0) {
+	if (len > 3 && g_strcmp0(rootmodule + len - 3, ".pl") == 0) {
 		/* make /LOAD script.pl work as expected */
 		signal_stop();
 		cmd_script_load(data);

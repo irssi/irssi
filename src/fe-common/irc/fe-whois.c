@@ -134,8 +134,8 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
         /* <yournick> real hostname <nick> <hostname> */
 	params = event_get_params(data, 5, NULL, &nick, &txt_real,
 				  &txt_hostname, &hostname);
-	if (strcmp(txt_real, "real") != 0 ||
-	    strcmp(txt_hostname, "hostname") != 0) {
+	if (g_strcmp0(txt_real, "real") != 0 ||
+	    g_strcmp0(txt_hostname, "hostname") != 0) {
 		/* <yournick> <nick> :... from <hostname> */
                 g_free(params);
 		params = event_get_params(data, 3, NULL, &nick, &hostname);
@@ -219,7 +219,7 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 4, NULL, &txt_usermodes,
 				  &nick, &usermode);
 
-	if (strcmp(txt_usermodes, "usermodes") == 0) {
+	if (g_strcmp0(txt_usermodes, "usermodes") == 0) {
 		/* <yournick> usermodes <nick> usermode */
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_USERMODE, nick, usermode);
