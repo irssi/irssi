@@ -337,14 +337,14 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 
 	old_level = dest->level;
 	if (!nick_match || (dest->level & MSGLEVEL_HILIGHT)) {
-		/* update the level / hilight info */
-		hilight_update_text_dest(dest, hilight);
 		/* Remove NO_ACT, this means explicitly defined hilights will bypass
 		 * /IGNORE ... NO_ACT.
 		 * (It's still possible to use /hilight -actcolor %n to hide
 		 * hilight/beep).
 		 */
 		dest->level &= ~MSGLEVEL_NO_ACT;
+		/* update the level / hilight info */
+		hilight_update_text_dest(dest, hilight);
 	}
 
 	if (nick_match)
