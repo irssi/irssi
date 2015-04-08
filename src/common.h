@@ -52,6 +52,10 @@
 #define g_slice_free(type, mem)  g_free(mem)
 #endif
 
+#if !GLIB_CHECK_VERSION(2,16,0)
+#define g_strcmp0(str1, str2) strcmp(str1, str2)
+#endif
+
 #ifdef USE_GC
 #  define g_free(x) G_STMT_START { (x) = NULL; } G_STMT_END
 #endif
