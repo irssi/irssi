@@ -53,7 +53,7 @@
 #endif
 
 #if !GLIB_CHECK_VERSION(2,16,0)
-#define g_strcmp0(str1, str2) strcmp(str1, str2)
+#define g_strcmp0(a, b) (!a ? -(a != b) : (!b ? (a != b) : strcmp(a, b)))
 #endif
 
 #ifdef USE_GC
