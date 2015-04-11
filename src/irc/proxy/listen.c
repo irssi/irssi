@@ -37,6 +37,8 @@ GSList *proxy_clients;
 static GString *next_line;
 static int ignore_next;
 
+static int enabled = FALSE;
+
 static void remove_client(CLIENT_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
@@ -45,8 +47,8 @@ static void remove_client(CLIENT_REC *rec)
 	rec->listen->clients = g_slist_remove(rec->listen->clients, rec);
 
 	signal_emit("proxy client disconnected", 1, rec);
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Proxy: Client disconnected from %s", rec->host);
+	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Proxy: Client %s:%d disconnected", rec->host, rec->port);
 
 	g_free(rec->proxy_address);
 	net_sendbuffer_destroy(rec->handle, TRUE);
@@ -126,6 +128,10 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			/* client didn't send us PASS, kill it */
 			remove_client(client);
 		} else {
+			signal_emit("proxy client connected", 1, client);
+			printtext(client->server, NULL, MSGLEVEL_CLIENTNOTICE,
+				  "Proxy: Client %s:%d connected",
+				  client->host, client->port);
 			client->connected = TRUE;
 			proxy_dump_data(client);
 		}
@@ -347,6 +353,7 @@ static void sig_listen(LISTEN_REC *listen)
 	rec->listen = listen;
 	rec->handle = sendbuf;
         rec->host = g_strdup(host);
+	rec->port = port;
 	if (strcmp(listen->ircnet, "*") == 0) {
 		rec->proxy_address = g_strdup("irc.proxy");
 		rec->server = servers == NULL ? NULL : IRC_SERVER(servers->data);
@@ -361,9 +368,10 @@ static void sig_listen(LISTEN_REC *listen)
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
 	rec->listen->clients = g_slist_prepend(rec->listen->clients, rec);
 
-        signal_emit("proxy client connected", 1, rec);
-	printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Proxy: Client connected from %s", rec->host);
+	signal_emit("proxy client connecting", 1, rec);
+	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Proxy: New client %s:%d on port %d (%s)",
+		  rec->host, rec->port, listen->port, listen->ircnet);
 }
 
 static void sig_incoming(IRC_SERVER_REC *server, const char *line)
@@ -676,6 +684,11 @@ static void sig_dump(CLIENT_REC *client, const char *data)
 
 void proxy_listen_init(void)
 {
+	if (enabled) {
+		return;
+	}
+	enabled = TRUE;
+
 	next_line = g_string_new(NULL);
 
 	proxy_clients = NULL;
@@ -697,6 +710,11 @@ void proxy_listen_init(void)
 
 void proxy_listen_deinit(void)
 {
+	if (!enabled) {
+		return;
+	}
+	enabled = FALSE;
+
 	while (proxy_listens != NULL)
 		remove_listen(proxy_listens->data);
 	g_string_free(next_line, TRUE);
