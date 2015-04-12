@@ -484,6 +484,11 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
 
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 {
+	if (server->send_data_func != NULL) {
+		server->send_data_func(server, data, len);
+		return;
+	}
+
 	if (net_sendbuffer_send(server->handle, data, len) == -1) {
 		/* something bad happened */
 		server->connection_lost = TRUE;
