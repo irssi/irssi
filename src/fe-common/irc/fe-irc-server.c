@@ -52,6 +52,7 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 }
 /* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                       [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                      [-ssl_ciphers <list>]
                       [-auto | -noauto] [-network <network>] [-host <hostname>]
                       [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
                       <address> [<port> [<password>]] */
@@ -121,6 +122,8 @@ static void cmd_server_list(const char *data)
 				g_string_append_printf(str, "ssl_cafile: %s, ", rec->ssl_cafile);
 			if (rec->ssl_capath)
 				g_string_append_printf(str, "ssl_capath: %s, ", rec->ssl_capath);
+			if (rec->ssl_ciphers)
+				g_string_append_printf(str, "ssl_ciphers: %s, ", rec->ssl_ciphers);
 
 		}
 		if (rec->max_cmds_at_once > 0)

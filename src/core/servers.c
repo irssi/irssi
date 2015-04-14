@@ -636,6 +636,7 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->ssl_pass);
 	g_free_not_null(conn->ssl_cafile);
 	g_free_not_null(conn->ssl_capath);
+	g_free_not_null(conn->ssl_ciphers);
 
 	g_free_not_null(conn->channels);
         g_free_not_null(conn->away_reason);

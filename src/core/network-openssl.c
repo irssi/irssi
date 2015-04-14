@@ -460,6 +460,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	const char *mypass = server->connrec->ssl_pass;
 	const char *cafile = server->connrec->ssl_cafile;
 	const char *capath = server->connrec->ssl_capath;
+	const char *ciphers = server->connrec->ssl_ciphers;
 	gboolean verify = server->connrec->ssl_verify;
 
 	g_return_val_if_fail(handle != NULL, NULL);
@@ -478,6 +479,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 	SSL_CTX_set_default_passwd_cb(ctx, get_pem_password_callback);
 	SSL_CTX_set_default_passwd_cb_userdata(ctx, (void *)mypass);
+	SSL_CTX_set_cipher_list(ctx, ciphers);
 
 	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;
