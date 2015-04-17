@@ -106,6 +106,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		conn->ssl_cafile = g_strdup(tmp);
 	if ((tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
 		conn->ssl_capath = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
+		conn->ssl_ciphers = g_strdup(tmp);
 	if ((conn->ssl_capath != NULL && conn->ssl_capath[0] != '\0')
 	||  (conn->ssl_cafile != NULL && conn->ssl_cafile[0] != '\0'))
 		conn->ssl_verify = TRUE;
@@ -138,6 +140,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 
 /* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                    [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                   [-ssl_ciphers <list>]
                    [-!] [-noautosendcmd]
 		   [-noproxy] [-network <network>] [-host <hostname>]
 		   [-rawlog <file>]
@@ -244,6 +247,7 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
 
 /* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                   [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                  [-ssl_ciphers <list>]
                   [-!] [-noautosendcmd]
 		  [-noproxy] [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
@@ -483,7 +487,7 @@ void chat_commands_init(void)
 	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +host noproxy -rawlog noautosendcmd");
+	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 

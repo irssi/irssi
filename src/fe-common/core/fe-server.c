@@ -173,6 +173,10 @@ static void cmd_server_add(const char *data)
 	if (value != NULL && *value != '\0')
 		rec->ssl_capath = g_strdup(value);
 
+	value = g_hash_table_lookup(optlist, "ssl_ciphers");
+	if (value != NULL && *value != '\0')
+		rec->ssl_ciphers = g_strdup(value);
+
 	if ((rec->ssl_cafile != NULL && rec->ssl_cafile[0] != '\0')
 	||  (rec->ssl_capath != NULL && rec->ssl_capath[0] != '\0'))
 		rec->ssl_verify = TRUE;
@@ -387,7 +391,7 @@ void fe_server_init(void)
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
-	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

@@ -28,6 +28,7 @@ char *ssl_pkey;
 char *ssl_pass;
 char *ssl_cafile;
 char *ssl_capath;
+char *ssl_ciphers;
 
 GIOChannel *connect_handle; /* connect using this handle */
 
