@@ -674,7 +674,7 @@ get_optional_channel(WI_ITEM_REC *active_item, char **data, int require_name)
 	origtmp = tmp = g_strdup(*data);
 	channel = cmd_get_param(&tmp);
 
-	if (strcmp(channel, "*") == 0 && !require_name) {
+	if (g_strcmp0(channel, "*") == 0 && !require_name) {
                 /* "*" means active channel */
 		cmd_get_param(data);
 		ret = window_item_get_target(active_item);

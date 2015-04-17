@@ -72,7 +72,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &msg))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
 	if (target == NULL || *target == '\0' || *msg == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -99,7 +99,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
 	if (target == NULL || *target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -133,7 +133,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
 	if (target == NULL || *target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -238,7 +238,7 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 		return;
 
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	if (*channame == '\0' || strcmp(channame, "*") == 0) {
+	if (*channame == '\0' || g_strcmp0(channame, "*") == 0) {
 		if (!IS_IRC_CHANNEL(item))
 			cmd_param_error(CMDERR_NOT_JOINED);
 
@@ -284,13 +284,13 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channel, &rest))
 		return;
 
-	if (strcmp(channel, "*") == 0 || *channel == '\0') {
+	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_IRC_CHANNEL(item))
                         cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = IRC_CHANNEL(item)->name;
 	}
-	if (strcmp(channel, "**") == 0) {
+	if (g_strcmp0(channel, "**") == 0) {
 		/* ** displays all nicks.. */
 		*channel = '\0';
 	}
@@ -313,14 +313,14 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server,
 			    PARAM_FLAG_GETREST, "names", &optlist, &channel))
 		return;
 
-	if (strcmp(channel, "*") == 0 || *channel == '\0') {
+	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_IRC_CHANNEL(item))
                         cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = IRC_CHANNEL(item)->name;
 	}
 
-	if (strcmp(channel, "**") == 0) {
+	if (g_strcmp0(channel, "**") == 0) {
 		/* ** displays all nicks.. */
                 irc_send_cmd(server, "NAMES");
 	} else {
@@ -409,7 +409,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 			query = qserver = queryitem->name;
 	}
 
-	if (strcmp(query, "*") == 0 &&
+	if (g_strcmp0(query, "*") == 0 &&
 	    g_hash_table_lookup(optlist, "yes") == NULL)
 		cmd_param_error(CMDERR_NOT_GOOD_IDEA);
 
@@ -810,7 +810,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 		for (ptr = server->knockoutlist; ptr != NULL; ptr = ptr->next) {
 			rec = ptr->data;
 			if (channel == rec->channel &&
-					!strcmp(rec->ban, banmasks))
+					!g_strcmp0(rec->ban, banmasks))
 				break;
 		}
 		if (ptr == NULL) {

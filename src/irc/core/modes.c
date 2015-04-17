@@ -398,7 +398,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 		old_key = NULL;
 	}
 
-	if (strcmp(newmode->str, channel->mode) != 0) {
+	if (g_strcmp0(newmode->str, channel->mode) != 0) {
 		g_free(channel->mode);
 		channel->mode = g_strdup(newmode->str);
 
@@ -842,7 +842,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 			return;
 	}
 
-	if (strcmp(target, "*") == 0) {
+	if (g_strcmp0(target, "*") == 0) {
 		if (!IS_IRC_CHANNEL(channel))
 			cmd_param_error(CMDERR_NOT_JOINED);
 

@@ -45,7 +45,7 @@ static const char *fe_recode_get_target (WI_ITEM_REC *witem)
 
 static int fe_recode_compare_func (CONFIG_NODE *node1, CONFIG_NODE *node2)
 {
-	return strcmp(node1->key, node2->key);
+	return g_strcmp0(node1->key, node2->key);
 }
 
 /* SYNTAX: RECODE */

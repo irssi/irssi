@@ -295,7 +295,7 @@ void settings_remove(const char *key)
 static int settings_remove_hash(const char *key, SETTINGS_REC *rec,
 				const char *module)
 {
-	if (strcmp(rec->module, module) == 0) {
+	if (g_strcmp0(rec->module, module) == 0) {
 		settings_unref(rec, FALSE);
                 return TRUE;
 	}
@@ -428,7 +428,7 @@ static void settings_clean_invalid_module(const char *module)
                 next = config_node_next(tmp);
 
 		set = g_hash_table_lookup(settings, subnode->key);
-		if (set == NULL || strcmp(set->module, module) != 0)
+		if (set == NULL || g_strcmp0(set->module, module) != 0)
                         iconfig_node_remove(node, subnode);
 	}
 }
@@ -458,7 +458,7 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 	new_value = NULL; new_key = NULL; new_module = NULL;
 
 	/* fe-text term_type -> fe-common/core term_charset - for 0.8.10-> */
-	if (strcmp(module, "fe-text") == 0) {
+	if (g_strcmp0(module, "fe-text") == 0) {
 		if (g_ascii_strcasecmp(node->key, "term_type") == 0 ||
 		    /* kludge for cvs-version where term_charset was in fe-text */
 		    g_ascii_strcasecmp(node->key, "term_charset") == 0) {
@@ -520,7 +520,7 @@ void settings_check_module(const char *module)
 		if (backwards_compatibility(module, node, parent))
 			continue;
 
-		if (set == NULL || strcmp(set->module, module) != 0) {
+		if (set == NULL || g_strcmp0(set->module, module) != 0) {
 			g_string_append_printf(errors, " %s", node->key);
                         count++;
 		}
@@ -548,9 +548,9 @@ void settings_check_module(const char *module)
 
 static int settings_compare(SETTINGS_REC *v1, SETTINGS_REC *v2)
 {
-	int cmp = strcmp(v1->section, v2->section);
+	int cmp = g_strcmp0(v1->section, v2->section);
 	if (!cmp)
-		cmp = strcmp(v1->key, v2->key);
+		cmp = g_strcmp0(v1->key, v2->key);
 	return cmp;
 }
 

@@ -178,7 +178,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (ischannel(*target)) {
 		item = irc_channel_find(server, target);
 	} else {
-		own = (!strcmp(nick, server->nick));
+		own = (!g_strcmp0(nick, server->nick));
 		item = privmsg_get_query(SERVER(server), own ? target : nick, FALSE, level);
 	}
 

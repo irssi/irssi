@@ -191,7 +191,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 
 	/* handle only DCC messages */
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		dcc = item_get_dcc(item);
 	else if (*target == '=')
 		dcc = dcc_chat_find_id(target+1);
@@ -625,7 +625,7 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 		g_strfreev(params);
 		return;
 	}
-	passive = paramcount == 4 && strcmp(params[2], "0") == 0;
+	passive = paramcount == 4 && g_strcmp0(params[2], "0") == 0;
 
 	dcc = DCC_CHAT(dcc_find_request(DCC_CHAT_TYPE, nick, NULL));
 	if (dcc != NULL) {

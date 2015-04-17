@@ -184,7 +184,7 @@ int strarray_find(char **array, const char *item)
 GSList *gslist_find_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
-		if (strcmp(list->data, key) == 0) return list;
+		if (g_strcmp0(list->data, key) == 0) return list;
 
 	return NULL;
 }
@@ -269,7 +269,7 @@ GSList *hashtable_get_keys(GHashTable *hash)
 GList *glist_find_string(GList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
-		if (strcmp(list->data, key) == 0) return list;
+		if (g_strcmp0(list->data, key) == 0) return list;
 
 	return NULL;
 }

@@ -895,7 +895,7 @@ THEME_REC *theme_load(const char *setname)
 
         name = g_strdup(setname);
 	p = strrchr(name, '.');
-	if (p != NULL && strcmp(p, ".theme") == 0) {
+	if (p != NULL && g_strcmp0(p, ".theme") == 0) {
 		/* remove the trailing .theme */
                 *p = '\0';
 	}
@@ -1358,9 +1358,9 @@ static void read_settings(void)
 
 	theme = settings_get_str("theme");
 	len = strlen(current_theme->name);
-	if (strcmp(current_theme->name, theme) != 0 &&
+	if (g_strcmp0(current_theme->name, theme) != 0 &&
 	    (strncmp(current_theme->name, theme, len) != 0 ||
-	     strcmp(theme+len, ".theme") != 0))
+	     g_strcmp0(theme+len, ".theme") != 0))
 		change_theme(theme, TRUE);
 }
 

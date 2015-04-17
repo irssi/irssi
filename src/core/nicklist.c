@@ -478,7 +478,7 @@ static NICK_REC *nick_nfind(CHANNEL_REC *channel, const char *nick, int len)
 	if (rec != NULL) {
 		/* if there's multiple, get the one with identical case */
 		while (rec->next != NULL) {
-			if (strcmp(rec->nick, tmpnick) == 0)
+			if (g_strcmp0(rec->nick, tmpnick) == 0)
 				break;
                         rec = rec->next;
 		}

@@ -110,7 +110,7 @@ int log_start_logging(LOG_REC *log)
 	log->real_fname = log_filename(log);
 
 	if (log->real_fname != NULL &&
-	    strcmp(log->real_fname, log->fname) != 0) {
+	    g_strcmp0(log->real_fname, log->fname) != 0) {
 		/* path may contain variables (%time, $vars),
 		   make sure the directory is created */
 		dir = g_path_get_dirname(log->real_fname);
@@ -181,7 +181,7 @@ static void log_rotate_check(LOG_REC *log)
 		return;
 
 	new_fname = log_filename(log);
-	if (strcmp(new_fname, log->real_fname) != 0) {
+	if (g_strcmp0(new_fname, log->real_fname) != 0) {
 		/* rotate log */
 		log_stop_logging(log);
 		signal_emit("log rotated", 1, log);
@@ -245,7 +245,7 @@ static int itemcmp(const char *patt, const char *item)
 {
 	/* returns 0 on match, nonzero otherwise */
 
-	if (!strcmp(patt, "*"))
+	if (!g_strcmp0(patt, "*"))
 		return 0;
         return item ? g_ascii_strcasecmp(patt, item) : 1;
 }
@@ -320,7 +320,7 @@ LOG_REC *log_find(const char *fname)
 	for (tmp = logs; tmp != NULL; tmp = tmp->next) {
 		LOG_REC *rec = tmp->data;
 
-		if (strcmp(rec->fname, fname) == 0)
+		if (g_strcmp0(rec->fname, fname) == 0)
 			return rec;
 	}
 

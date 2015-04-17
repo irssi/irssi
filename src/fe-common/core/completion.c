@@ -141,7 +141,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 	g_return_val_if_fail(pos != NULL, NULL);
 
 	continue_complete = complist != NULL && *pos == last_line_pos &&
-		strcmp(line, last_line) == 0;
+		g_strcmp0(line, last_line) == 0;
 
 	if (erase && !continue_complete)
 		return NULL;
@@ -681,7 +681,7 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 	g_return_if_fail(line != NULL);
 
 	if (*line == '\0' ||
-	    !strcmp("-clear", line) || !strcmp("-default", line))
+	    !g_strcmp0("-clear", line) || !g_strcmp0("-default", line))
 		*list = completion_get_settings(word, -1);
 	else if (*line != '\0' && *word == '\0') {
 		SETTINGS_REC *rec = settings_get_record(line);

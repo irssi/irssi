@@ -646,11 +646,11 @@ static int term_setup(TERM_REC *term)
         str = g_string_new(NULL);
 	if (term->TI_sgr0)
 		g_string_append(str, term->TI_sgr0);
-	if (term->TI_rmul && (term->TI_sgr0 == NULL || strcmp(term->TI_rmul, term->TI_sgr0) != 0))
+	if (term->TI_rmul && (term->TI_sgr0 == NULL || g_strcmp0(term->TI_rmul, term->TI_sgr0) != 0))
 		g_string_append(str, term->TI_rmul);
-	if (term->TI_rmso && (term->TI_sgr0 == NULL || strcmp(term->TI_rmso, term->TI_sgr0) != 0))
+	if (term->TI_rmso && (term->TI_sgr0 == NULL || g_strcmp0(term->TI_rmso, term->TI_sgr0) != 0))
 		g_string_append(str, term->TI_rmso);
-	if (term->TI_ritm && (term->TI_sgr0 == NULL || strcmp(term->TI_ritm, term->TI_sgr0) != 0))
+	if (term->TI_ritm && (term->TI_sgr0 == NULL || g_strcmp0(term->TI_ritm, term->TI_sgr0) != 0))
 		g_string_append(str, term->TI_ritm);
         term->TI_normal = str->str;
 	g_string_free(str, FALSE);

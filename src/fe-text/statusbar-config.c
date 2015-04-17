@@ -95,7 +95,7 @@ statusbar_config_find(STATUSBAR_GROUP_REC *group, const char *name)
 	for (tmp = group->config_bars; tmp != NULL; tmp = tmp->next) {
 		STATUSBAR_CONFIG_REC *config = tmp->data;
 
-		if (strcmp(config->name, name) == 0)
+		if (g_strcmp0(config->name, name) == 0)
                         return config;
 	}
 
@@ -137,7 +137,7 @@ static void statusbar_read_item(STATUSBAR_CONFIG_REC *bar, CONFIG_NODE *node)
 	int priority, right_alignment;
 
 	priority = config_node_get_int(node, "priority", 0);
-	right_alignment = strcmp(config_node_get_str(node, "alignment", ""), "right") == 0;
+	right_alignment = g_strcmp0(config_node_get_str(node, "alignment", ""), "right") == 0;
 	statusbar_item_config_create(bar, node->key,
 				     priority, right_alignment);
 }

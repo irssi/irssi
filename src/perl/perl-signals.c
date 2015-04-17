@@ -99,14 +99,14 @@ void perl_signal_args_to_c(
 
                 if (!SvOK(arg)) {
                         c_arg = NULL;
-                } else if (strcmp(rec->args[n], "string") == 0) {
+                } else if (g_strcmp0(rec->args[n], "string") == 0) {
                         c_arg = SvPV_nolen(arg);
-                } else if (strcmp(rec->args[n], "int") == 0) {
+                } else if (g_strcmp0(rec->args[n], "int") == 0) {
                         c_arg = (void *)SvIV(arg);
-                } else if (strcmp(rec->args[n], "ulongptr") == 0) {
+                } else if (g_strcmp0(rec->args[n], "ulongptr") == 0) {
                         saved_args[n].v_ulong = SvUV(arg);
                         c_arg = &saved_args[n].v_ulong;
-                } else if (strcmp(rec->args[n], "intptr") == 0) {
+                } else if (g_strcmp0(rec->args[n], "intptr") == 0) {
                         saved_args[n].v_int = SvIV(SvRV(arg));
                         c_arg = &saved_args[n].v_int;
                 } else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
@@ -122,7 +122,7 @@ void perl_signal_args_to_c(
                         }
                         av = (AV *)t;
 
-                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
 
                         gl = NULL;
                         count = av_len(av) + 1;
@@ -181,7 +181,7 @@ void perl_signal_args_to_c(
                         continue;
                 }
 
-                if (strcmp(rec->args[n], "intptr") == 0) {
+                if (g_strcmp0(rec->args[n], "intptr") == 0) {
                         SV *t = SvRV(arg);
                         SvIOK_only(t);
                         SvIV_set(t, saved_args[n].v_int);
@@ -192,8 +192,8 @@ void perl_signal_args_to_c(
                         AV *av;
                         GList *gl, *tmp;
 
-                        is_iobject = strcmp(rec->args[n]+9, "iobject") == 0;
-                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+                        is_iobject = g_strcmp0(rec->args[n]+9, "iobject") == 0;
+                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
 
                         av = (AV *)SvRV(arg);
                         av_clear(av);
@@ -245,8 +245,8 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			GList *tmp, **ptr;
                         int is_iobject, is_str;
 
-                        is_iobject = strcmp(rec->args[n]+9, "iobject") == 0;
-                        is_str = strcmp(rec->args[n]+9, "char*") == 0;
+                        is_iobject = g_strcmp0(rec->args[n]+9, "iobject") == 0;
+                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
 			av = newAV();
 
 			ptr = arg;
@@ -258,22 +258,22 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			}
 
 			saved_args[n] = perlarg = newRV_noinc((SV *) av);
-                } else if (strcmp(rec->args[n], "int") == 0)
+                } else if (g_strcmp0(rec->args[n], "int") == 0)
                         perlarg = newSViv((IV)arg);
                 else if (arg == NULL)
                         perlarg = &PL_sv_undef;
-                else if (strcmp(rec->args[n], "string") == 0)
+                else if (g_strcmp0(rec->args[n], "string") == 0)
                         perlarg = new_pv(arg);
-                else if (strcmp(rec->args[n], "ulongptr") == 0)
+                else if (g_strcmp0(rec->args[n], "ulongptr") == 0)
                         perlarg = newSViv(*(unsigned long *) arg);
-                else if (strcmp(rec->args[n], "intptr") == 0)
+                else if (g_strcmp0(rec->args[n], "intptr") == 0)
                         saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
                 else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			/* linked list - push as AV */
 			GSList *tmp;
 			int is_iobject;
 
-                        is_iobject = strcmp(rec->args[n]+7, "iobject") == 0;
+                        is_iobject = g_strcmp0(rec->args[n]+7, "iobject") == 0;
 			av = newAV();
 			for (tmp = arg; tmp != NULL; tmp = tmp->next) {
 				sv = is_iobject ? iobject_bless((SERVER_REC *) tmp->data) :
@@ -282,12 +282,12 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			}
 
 			perlarg = newRV_noinc((SV *) av);
-		} else if (strcmp(rec->args[n], "iobject") == 0) {
+		} else if (g_strcmp0(rec->args[n], "iobject") == 0) {
 			/* "irssi object" - any struct that has
 			   "int type; int chat_type" as it's first
 			   variables (server, channel, ..) */
 			perlarg = iobject_bless((SERVER_REC *) arg);
-		} else if (strcmp(rec->args[n], "siobject") == 0) {
+		} else if (g_strcmp0(rec->args[n], "siobject") == 0) {
 			/* "simple irssi object" - any struct that has
 			   int type; as it's first variable (dcc) */
 			perlarg = simple_iobject_bless((SERVER_REC *) arg);
@@ -317,7 +317,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 		if (saved_args[n] == NULL)
                         continue;
 
-		if (strcmp(rec->args[n], "intptr") == 0) {
+		if (g_strcmp0(rec->args[n], "intptr") == 0) {
 			int *val = arg;
 			*val = SvIV(SvRV(saved_args[n]));
 		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
@@ -338,7 +338,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 				out = g_list_append(out, val);
 			}
 
-			if (strcmp(rec->args[n]+9, "char*") == 0)
+			if (g_strcmp0(rec->args[n]+9, "char*") == 0)
                                 g_list_foreach(*ret, (GFunc) g_free, NULL);
 			g_list_free(*ret);
                         *ret = out;
@@ -434,7 +434,7 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
 
 #define sv_func_cmp(f1, f2) \
 	(f1 == f2 || (SvPOK(f1) && SvPOK(f2) && \
-		strcmp(SvPV_nolen(f1), SvPV_nolen(f2)) == 0))
+		g_strcmp0(SvPV_nolen(f1), SvPV_nolen(f2)) == 0))
 
 static void perl_signal_remove_list(GSList **list, SV *func)
 {

@@ -167,7 +167,7 @@ static GSList *servers_find_chatnet_except(SERVER_REC *server)
 		SERVER_REC *rec = tmp->data;
 
 		if (server != rec && rec->connrec->chatnet != NULL &&
-		    strcmp(server->connrec->chatnet,
+		    g_strcmp0(server->connrec->chatnet,
 			   rec->connrec->chatnet) == 0) {
 			/* chatnets match */
 			list = g_slist_append(list, rec);

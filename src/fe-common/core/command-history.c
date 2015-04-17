@@ -42,7 +42,7 @@ void command_history_add(HISTORY_REC *history, const char *text)
 	g_return_if_fail(text != NULL);
 
 	link = g_list_last(history->list);
-	if (link != NULL && strcmp(link->data, text) == 0)
+	if (link != NULL && g_strcmp0(link->data, text) == 0)
 	  return; /* same as previous entry */
 
 	if (settings_get_int("max_command_history") < 1 ||
@@ -121,7 +121,7 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 	}
 
 	if (*text != '\0' &&
-	    (pos == NULL || strcmp(pos->data, text) != 0)) {
+	    (pos == NULL || g_strcmp0(pos->data, text) != 0)) {
 		/* save the old entry to history */
 		command_history_add(history, text);
 	}
@@ -145,7 +145,7 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 	}
 
 	if (*text != '\0' &&
-	    (pos == NULL || strcmp(pos->data, text) != 0)) {
+	    (pos == NULL || g_strcmp0(pos->data, text) != 0)) {
 		/* save the old entry to history */
 		command_history_add(history, text);
 	}
