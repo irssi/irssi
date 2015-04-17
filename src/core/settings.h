@@ -36,6 +36,8 @@ typedef struct {
 #define iconfig_set_int(a, b, c) config_set_int(mainconfig, a, b, c)
 #define iconfig_set_bool(a, b, c) config_set_bool(mainconfig, a, b, c)
 
+#define iconfig_node_section(a, b, c) config_node_section(mainconfig, a, b, c)
+#define iconfig_node_section_index(a, b, c, d) config_node_section_index(mainconfig, a, b, c, d)
 #define iconfig_node_traverse(a, b) config_node_traverse(mainconfig, a, b)
 #define iconfig_node_set_str(a, b, c) config_node_set_str(mainconfig, a, b, c)
 #define iconfig_node_set_int(a, b, c) config_node_set_int(mainconfig, a, b, c)

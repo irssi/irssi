@@ -310,6 +310,7 @@ int main(int argc, char **argv)
 		{ "version", 'v', 0, G_OPTION_ARG_NONE, &version, "Display irssi version", NULL },
 		{ NULL }
 	};
+	int loglev;
 
 #ifdef USE_GC
 	g_mem_set_vtable(&gc_mem_table);
@@ -352,6 +353,7 @@ int main(int argc, char **argv)
 	   you have to call setlocale(LC_ALL, "") */
 	setlocale(LC_ALL, "");
 
+	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
 	textui_init();
 
 	if (!dummy && !term_init()) {
@@ -360,6 +362,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	g_log_set_always_fatal(loglev);
 	textui_finish_init();
 	main_loop = g_main_new(TRUE);
 

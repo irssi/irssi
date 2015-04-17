@@ -135,7 +135,7 @@ static void keyconfig_save(const char *id, const char *key, const char *data)
 	node = key_config_find(key);
 	if (node == NULL) {
 		node = iconfig_node_traverse("(keyboard", TRUE);
-		node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 	}
 
 	iconfig_node_set_str(node, "key", key);

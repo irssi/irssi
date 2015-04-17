@@ -739,7 +739,7 @@ static void theme_read_formats(THEME_REC *theme, const char *module,
 
 	node = config_node_traverse(config, "formats", FALSE);
 	if (node == NULL) return;
-	node = config_node_section(node, module, -1);
+	node = config_node_section(config, node, module, -1);
 	if (node == NULL) return;
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
@@ -1177,7 +1177,7 @@ static void module_save(const char *module, MODULE_THEME_REC *rec,
 
 	fnode = config_node_traverse(data->config, "formats", TRUE);
 
-	node = config_node_section(fnode, rec->name, NODE_TYPE_BLOCK);
+	node = config_node_section(data->config, fnode, rec->name, NODE_TYPE_BLOCK);
 	for (n = 1; formats[n].def != NULL; n++) {
                 if (rec->formats[n] != NULL) {
                         config_node_set_str(data->config, node, formats[n].tag,

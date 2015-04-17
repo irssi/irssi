@@ -40,7 +40,7 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 	parentnode = iconfig_node_traverse("(channels", TRUE);
 	node = config_node_nth(parentnode, index);
 	if (node == NULL)
-		node = config_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_clear(node);
 	iconfig_node_set_str(node, "name", channel->name);

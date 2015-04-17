@@ -92,7 +92,7 @@ static void cmd_upgrade(const char *data)
 static void session_save_nick(CHANNEL_REC *channel, NICK_REC *nick,
 			      CONFIG_REC *config, CONFIG_NODE *node)
 {
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	node = config_node_section(config, node, NULL, NODE_TYPE_BLOCK);
 
 	config_node_set_str(config, node, "nick", nick->nick);
 	config_node_set_bool(config, node, "op", nick->op);
@@ -109,7 +109,7 @@ static void session_save_channel_nicks(CHANNEL_REC *channel, CONFIG_REC *config,
 {
 	GSList *tmp, *nicks;
 
-	node = config_node_section(node, "nicks", NODE_TYPE_LIST);
+	node = config_node_section(config, node, "nicks", NODE_TYPE_LIST);
         nicks = nicklist_getnicks(channel);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next)
 		session_save_nick(channel, tmp->data, config, node);
@@ -119,7 +119,7 @@ static void session_save_channel_nicks(CHANNEL_REC *channel, CONFIG_REC *config,
 static void session_save_channel(CHANNEL_REC *channel, CONFIG_REC *config,
 				 CONFIG_NODE *node)
 {
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	node = config_node_section(config, node, NULL, NODE_TYPE_BLOCK);
 
 	config_node_set_str(config, node, "name", channel->name);
 	config_node_set_str(config, node, "visible_name", channel->visible_name);
@@ -138,7 +138,7 @@ static void session_save_server_channels(SERVER_REC *server,
 	GSList *tmp;
 
 	/* save channels */
-        node = config_node_section(node, "channels", NODE_TYPE_LIST);
+	node = config_node_section(config, node, "channels", NODE_TYPE_LIST);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next)
 		session_save_channel(tmp->data, config, node);
 }
@@ -148,7 +148,7 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 {
 	int handle;
 
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	node = config_node_section(config, node, NULL, NODE_TYPE_BLOCK);
 
 	config_node_set_str(config, node, "chat_type",
 			    chat_protocol_find_id(server->chat_type)->name);
@@ -188,7 +188,7 @@ static void session_restore_channel_nicks(CHANNEL_REC *channel,
 	GSList *tmp;
 
 	/* restore nicks */
-	node = config_node_section(node, "nicks", -1);
+	node = config_node_section(NULL, node, "nicks", -1);
 	if (node != NULL && node->type == NODE_TYPE_LIST) {
 		tmp = config_node_first(node->value);
 		for (; tmp != NULL; tmp = config_node_next(tmp)) {
@@ -224,7 +224,7 @@ static void session_restore_server_channels(SERVER_REC *server,
 	GSList *tmp;
 
 	/* restore channels */
-	node = config_node_section(node, "channels", -1);
+	node = config_node_section(NULL, node, "channels", -1);
 	if (node != NULL && node->type == NODE_TYPE_LIST) {
 		tmp = config_node_first(node->value);
 		for (; tmp != NULL; tmp = config_node_next(tmp))
