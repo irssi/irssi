@@ -15,7 +15,7 @@
     -ssl_verify:    Verifies the SSL certificate of the server.
     -ssl_cafile:    The file with the list of CA certificates.
     -ssl_capath:    The directory which contains the CA certificates.
-    -ssl_ciphers:   SSL cipher suite preference lists
+    -ssl_ciphers:   SSL cipher suite preference lists.
     -noproxy:       Ignores the global proxy configuration.
     -network:       The network this connection belongs to.
     -host:          The hostname you would like to connect from.
