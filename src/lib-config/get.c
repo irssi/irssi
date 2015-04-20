@@ -68,7 +68,7 @@ CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, con
 				config_node_remove(rec, parent, node);
 				node = NULL;
 				show_error = 1;
-			} else if (!g_hash_table_contains(rec->cache_nodes, node)) {
+			} else if (!g_hash_table_lookup_extended(rec->cache_nodes, node, NULL, NULL)) {
 				g_hash_table_insert(rec->cache_nodes, node, NULL);
 				show_error = 1;
 			}
