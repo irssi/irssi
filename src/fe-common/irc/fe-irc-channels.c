@@ -46,7 +46,7 @@ static void sig_event_forward(SERVER_REC *server, const char *data,
 	char *params, *from, *to;
 
 	params = event_get_params(data, 3, NULL, &from, &to);
-	if (from != NULL && to != NULL && ischannel(*from) && ischannel(*to)) {
+	if (from != NULL && to != NULL && server_ischannel(server, *from) && server_ischannel(server, *to)) {
 		channel = irc_channel_find(server, from);
 		if (channel != NULL && irc_channel_find(server, to) == NULL) {
 			window_bind_add(window_item_window(channel),

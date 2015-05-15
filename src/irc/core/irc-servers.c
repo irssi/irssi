@@ -71,13 +71,20 @@ static int isnickflag_func(SERVER_REC *server, char flag)
 
 static int ischannel_func(SERVER_REC *server, const char *data)
 {
-	if (*data == '@') {
-		/* @#channel, @+#channel */
-		data++;
-		if (*data == '+' && ischannel(data[1]))
-			return 1;
-	}
-	return ischannel(*data);
+	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
+	char *chantypes;
+
+	chantypes = g_hash_table_lookup(irc_server->isupport, "chantypes");
+	if (chantypes == NULL)
+		chantypes = "#&!+"; /* normal, local, secure, modeless */
+
+	/* @#channel, @+#channel */
+	if (data[0] == '@' && data[1] == '+')
+		data += 2;
+	else if (data[0] == '@')
+		data += 1;
+
+	return strchr(chantypes, *data) != NULL;
 }
 
 static char **split_line(const SERVER_REC *server, const char *line,

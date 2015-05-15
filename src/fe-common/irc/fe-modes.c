@@ -168,7 +168,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 			 mode, MSGLEVEL_MODES))
 		return;
 
-	if (!ischannel(*channel)) {
+	if (!server_ischannel(SERVER(server), channel)) {
 		/* user mode change */
 		printformat(server, NULL, MSGLEVEL_MODES,
 			    IRCTXT_USERMODE_CHANGE, mode, channel);

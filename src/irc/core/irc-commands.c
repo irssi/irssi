@@ -191,7 +191,7 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 		return;
 
 	if (*channame == '\0' || *nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	if (!ischannel(*channame)) cmd_param_error(CMDERR_NOT_JOINED);
+	if (!server_ischannel(SERVER(server), channame)) cmd_param_error(CMDERR_NOT_JOINED);
 
 	recoded = recode_out(SERVER(server), reason, channame);
 	g_string_printf(tmpstr, "KICK %s %s :%s", channame, nicks, recoded);

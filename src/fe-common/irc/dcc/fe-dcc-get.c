@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "levels.h"
+#include "servers.h"
 
 #include "irc.h"
 #include "dcc-file.h"
@@ -35,12 +36,12 @@ static void dcc_request(GET_DCC_REC *dcc)
 {
 	char *sizestr;
 
-        if (!IS_DCC_GET(dcc)) return;
+	if (!IS_DCC_GET(dcc)) return;
 
 	sizestr = dcc_get_size_str(dcc->size);
 
 	printformat(dcc->server, NULL, MSGLEVEL_DCC,
-		    ischannel(*dcc->target) ? IRCTXT_DCC_SEND_CHANNEL :
+		    server_ischannel(SERVER(dcc->server), dcc->target) ? IRCTXT_DCC_SEND_CHANNEL :
 		    IRCTXT_DCC_SEND, dcc->nick, dcc->addrstr,
 		    dcc->port, dcc->arg, sizestr, dcc->target);
 

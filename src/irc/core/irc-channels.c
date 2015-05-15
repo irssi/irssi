@@ -99,7 +99,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	tmp = chanlist;
 	for (;; tmp++) {
 		if (*tmp !=  NULL) {
-			channel = ischannel(**tmp) ? g_strdup(*tmp) :
+			channel = server_ischannel(SERVER(server), *tmp) ? g_strdup(*tmp) :
 			g_strdup_printf("#%s", *tmp);
 
 			chanrec = irc_channel_find(server, channel);
@@ -134,7 +134,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			if (use_keys)
 				cmdlen += outkeys->len;
 			if (*tmpstr != NULL)
-				cmdlen += ischannel(**tmpstr) ? strlen(*tmpstr) :
+				cmdlen += server_ischannel(SERVER(server), *tmpstr) ? strlen(*tmpstr) :
 					  strlen(*tmpstr)+1;
 			if (*tmpkey != NULL)
 				cmdlen += strlen(*tmpkey);

@@ -57,7 +57,7 @@ static const char *skip_target(IRC_SERVER_REC *server, const char *target)
 			break;
 	};
 
-	if(ischannel(target[i]))
+	if(server_ischannel(SERVER(server), &target[i]))
 		target += i;
 
 	return target;
@@ -136,7 +136,7 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 
 	oldtarget = target;
 	target = skip_target(IRC_SERVER(server), target);
-        if (ischannel(*target))
+	if (server_ischannel(SERVER(server), target))
 		item = irc_channel_find(server, target);
 	else
 		item = irc_query_find(server, target);
@@ -146,7 +146,7 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 
 	printformat(server, target,
 		    MSGLEVEL_ACTIONS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT |
-		    (ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
+		    (server_ischannel(SERVER(server), target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS),
 		    item != NULL && oldtarget == target ? IRCTXT_OWN_ACTION : IRCTXT_OWN_ACTION_TARGET,
 		    server->nick, msg, oldtarget);
         g_free_not_null(freemsg);
@@ -166,7 +166,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	target = skip_target(IRC_SERVER(server), target);
 
 	level = MSGLEVEL_ACTIONS |
-		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
+		(server_ischannel(SERVER(server), target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
 
 	if (ignore_check(SERVER(server), nick, address, target, msg, level))
 		return;
@@ -175,7 +175,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 			 level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-	if (ischannel(*target)) {
+	if (server_ischannel(SERVER(server), target)) {
 		item = irc_channel_find(server, target);
 	} else {
 		own = (!g_strcmp0(nick, server->nick));
@@ -185,7 +185,7 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis(item, msg);
 
-	if (ischannel(*target)) {
+	if (server_ischannel(SERVER(server), target)) {
 		/* channel action */
 		if (window_item_is_active(item) && target == oldtarget) {
 			/* message to active channel in window */
@@ -245,16 +245,16 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 	}
 
 	if (ignore_check(server, nick, address,
-			 ischannel(*target) ? target : NULL,
+			 server_ischannel(SERVER(server), target) ? target : NULL,
 			 msg, level))
 		return;
 
 	if (ignore_check(server, nick, address,
-			 ischannel(*target) ? target : NULL,
+			 server_ischannel(SERVER(server), target) ? target : NULL,
 			 msg, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-        if (ischannel(*target)) {
+        if (server_ischannel(SERVER(server), target)) {
 		/* notice in some channel */
 		printformat(server, target, level,
 			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
@@ -283,7 +283,7 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
 
 	oldtarget = target;
 	target = skip_target(server, target);
-	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
+	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
 		    IRCTXT_CTCP_REQUESTED, nick, addr, cmd, data, oldtarget);
 }
 
