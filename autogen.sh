@@ -25,7 +25,7 @@ cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr
 files=`echo $files|sed 's/\.in//g'`
 cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/Makefile.am
 
-# .html -> .txt with lynx or elinks
+# .html -> .txt with lynx, elinks or w3m
 echo "Documentation: html -> txt..."
 if type lynx >/dev/null 2>&1 ; then
   LC_ALL=C lynx -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
@@ -33,8 +33,10 @@ elif type elinks >/dev/null 2>&1 ; then
   elinks -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
 elif type links >/dev/null 2>&1 ; then
   links -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
+elif type w3m >/dev/null 2>&1 ; then
+  w3m -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
 else
-  echo "**Error**: No lynx or elinks present"
+  echo "**Error**: No lynx, elinks or w3m present"
   exit 1
 fi
 
