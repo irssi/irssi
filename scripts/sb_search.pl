@@ -22,7 +22,7 @@ use Irssi;
 use Irssi::TextUI;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = '1.0';
+$VERSION = '1.1';
 %IRSSI = (
 	authors     => 'Wouter Coekaerts, Emanuele Giaquinta',
 	contact     => 'wouter@coekaerts.be, exg@irssi.org',
@@ -40,49 +40,66 @@ sub cmd_help {
 
 SCROLLBACK SEARCH [-level <level>] [-regexp] [-case] [-word] [-forward] [-all] [<pattern>]
 
-    -level: only search for lines with the given level. see /help levels
-    -regexp: the pattern is a regular expression
-    -case: search case sensitive
-    -word: pattern must match to full words
-    -forward: search forwards (default is backwards)
-    -all: search in all windows
-    <pattern>: text to search for
+    SEARCH:     Search for text in the scrollback buffer.
+
+    -regexp:    The given text pattern is a regular expression.
+    -case:      Performs a case-sensitive matching.
+    -word:      The text must match full words.
+    -forward:   Search forwards (default is backwards).
+    -all:       Search in all windows.
+
+    Without arguments, the last search is repeated.
 SCRIPTHELP_EOF
 			,MSGLEVEL_CLIENTCRAP);
 	}
 }
 
+my $regex;
+my $all;
+my $level;
 
-sub cmd_sb_search ($$$) {
+sub cmd_sb_search {
 	my ($args, $server, $witem) = @_;
 	
 	### handle options
 	
 	my ($options, $pattern) = Irssi::command_parse_options('scrollback search', $args);
 
-	my $level;
+	my $forward = defined(delete $options->{forward});
+
+	if (!%$options && !$pattern) {
+		return if !$regex && !defined $level;
+	} else {
+		$all = defined($options->{all});
+		$level = MSGLEVEL_ALL;
+		undef $regex;
+	}
+
 	if (defined($options->{level})) {
 		$level = $options->{level};
 		$level =~ y/,/ /;
 		$level = Irssi::combine_level(0, $level);
-	} else {
-		return if (!$pattern);
-		$level = MSGLEVEL_ALL;
 	}
 	
-	my $regex;
 	if ($pattern) {
 		my $flags = defined($options->{case}) ? '' : '(?i)';
 		my $b = defined($options->{word}) ? '\b' : '';
 		if (defined($options->{regexp})) {
-			$regex = qr/$flags$b$pattern$b/;
+			local $@;
+			eval {
+				$regex = qr/$flags$b$pattern$b/;
+			};
+			if ($@) {
+				my ($err) = $@ =~ /^(.*)/;
+				$err =~ s/\sat .* line \d+\.$//;
+				print CLIENTERROR $err;
+				return;
+			}
 		} else {
 			$regex = qr/$flags$b\Q$pattern\E$b/;
 		}
 	}
 	
-	my $forward = defined($options->{forward});
-	my $all = defined($options->{all});
 
 	### determine window(s) to search in
 	
