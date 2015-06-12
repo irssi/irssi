@@ -1,3 +1,5 @@
+docdir = $(datadir)/doc/irssi
+
 man_MANS = \
 	irssi.1
 
