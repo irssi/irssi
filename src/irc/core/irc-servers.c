@@ -314,6 +314,8 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 
 void irc_server_connect(SERVER_REC *server)
 {
+	g_return_if_fail(server != NULL);
+
 	if (!server_start_connect(server)) {
                 server_connect_unref(server->connrec);
 		g_free(server);
