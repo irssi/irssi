@@ -5,13 +5,13 @@ use Irssi;
 use strict;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "1.00";
+$VERSION = "1.10";
 %IRSSI = (
-    authors     => 'Timo Sirainen',
+    authors     => 'Timo Sirainen & Jostein Kjønigsen',
     name        => 'autoop',
     description => 'Simple auto-op script',
     license     => 'Public Domain',
-    changed	=> 'Sun Mar 10 23:18 EET 2002'
+    changed	=> 'Fri Nov 24 12:55 GMT+1 2014'
 );
 
 my (%opnicks, %temp_opped);
@@ -64,7 +64,7 @@ sub autoop {
 
                 if (!$temp_opped{$nick} &&
 		    $server->masks_match($masks, $nick, $host)) {
-			$channel->command("op $nick");
+			$channel->command("/op $nick");
 			$temp_opped{$nick} = 1;
 		}
 	}
@@ -89,3 +89,68 @@ sub event_massjoin {
 
 Irssi::command_bind('autoop', 'cmd_autoop');
 Irssi::signal_add_last('massjoin', 'event_massjoin');
+
+sub load_autoops {
+    my($file) = Irssi::get_irssi_dir."/autoop";
+    my($count) = 0;
+    local(*CONF);
+    
+    %opnicks = ();
+    open(CONF, "<", "$file") or return;
+    while (my $line = <CONF>) {
+	if ($line !=~ /^\s*$/) {
+	    cmd_autoop($line);
+	    $count++;
+	}
+    }
+    close(CONF);
+    
+    Irssi::print("Loaded $count channels from $file");
+}
+
+# --------[ save_autoops ]------------------------------------------------
+
+sub save_autoops {
+    my($auto) = @_;
+    my($file) = Irssi::get_irssi_dir."/autoop";
+    my($count) = 0;
+    my($channel) = "";
+    local(*CONF);
+    
+    return if $auto;
+    
+    open(CONF, ">", "$file");
+    foreach $channel (keys %opnicks) {
+	my $masks = $opnicks{$channel};
+	print CONF "$channel\t$masks\n";
+	$count++;
+    }
+    close(CONF);
+    
+    Irssi::print("Saved $count channels to $file")
+	unless $auto;
+}
+
+
+# --------[ sig_setup_reread ]------------------------------------------
+
+# main setup is reread, so let us do it too
+sub sig_setup_reread {
+    load_autoops;
+}
+
+# --------[ sig_setup_save ]--------------------------------------------
+
+# main config is saved, and so we should save too
+sub sig_setup_save {
+    my($mainconf,$auto) = @_;
+    save_autoops($auto);
+}
+
+# persistance
+
+Irssi::signal_add('setup saved', 'sig_setup_save');
+Irssi::signal_add('setup reread', 'sig_setup_reread');
+
+# ensure we load persisted values on start
+load_autoops;

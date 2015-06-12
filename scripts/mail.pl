@@ -1,3 +1,5 @@
+use strict;
+use vars qw($VERSION %IRSSI);
 $VERSION = "2.92";
 %IRSSI = (
     authors     => "Timo Sirainen, Matti Hiljanen, Joost Vunderink, Bart Matthaei",
@@ -114,7 +116,7 @@ sub mbox_count {
 	$last_mtime = $mtime;
 
 	my $f = gensym;
-	return 0 if (!open($f, $mailfile));
+	return 0 if (!open($f, "<", $mailfile));
 
 	# count new mails only
 	my $internal_removed = 0;
