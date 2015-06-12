@@ -35,7 +35,7 @@
 
     /LASTLOG holiday
     /LASTLOG 'is on vacation' 10
-    /LASTLOG -file -force ~/mike.log 'mike'
+    /LASTLOG -force -file ~/mike.log 'mike'
     /LASTLOG -hilight
     /LASTLOG -5 searchterm
 
