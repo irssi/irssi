@@ -1,12 +1,13 @@
-.TH Irssi 1 "September 2002" "Irssi IRC client"
+.TH Irssi 1 "June 2015" "Irssi IRC client"
 .SH NAME
 Irssi \- a modular IRC client for UNIX
 .SH SYNOPSIS
 .B irssi
-[-dv!?] [-c server] [-p port] [-n nickname] [-w password] [-h hostname]
+[--config=PATH] [--home=PATH] [-dv!?] [-c server] [-p port] [-n nickname]
+[-w password] [-h hostname]
 .SH DESCRIPTION
 .B Irssi
-is a modular Internet Relay Chat client. It is highly extensible and
+is a modular Internet Relay Chat client; it is highly extensible and
 very secure. Being a fullscreen, termcap based client with many
 features,
 .B Irssi
@@ -16,16 +17,15 @@ is easily extensible through scripts and modules.
 .BI "\-\-config="FILE
 use 
 .I FILE
-instead of ~/.irssi/config.
+instead of ~/.irssi/config
 .TP
 .BI "\-\-home="PATH
 .I PATH 
-specifies the home directory of Irssi.
-Default is 
+specifies the home directory of Irssi; default is 
 .BR ~/.irssi
 .TP
 .BI "\-c, \-\-connect="SERVER
-connects to 
+connect to 
 .I SERVER
 .TP
 .BI "\-w, \-\-password="PASSWORD
@@ -39,71 +39,53 @@ automatically connect to
 on server.
 .TP
 .BI "\-!, \-\-noconnect"
-disables autoconnecting.
+disable autoconnecting of servers
 .TP
 .BI "\-n, \-\-nick="NICKNAME
 specify 
 .I NICKNAME 
-as your nick.
+as your nick
 .TP
 .BI "\-h, \-\-hostname="HOSTNAME
 use
 .I HOSTNAME
-for your irc session.
+for your irc session
 .TP
 .BI "\-d, \-\-dummy"
-use dummy terminal mode.
+use dummy terminal mode
 .TP
 .BI "\-v, \-\-version"
-display the version of Irssi.
+display the version of Irssi
 .TP
 .BI "\-?, \-\-help"
-show a help message.
+show a help message
 .SH SEE ALSO
 .B Irssi
-has been supplied with a huge amount of documentation. Check /help or look
-at the files contained by /usr/share/doc/irssi*
+has a solid amount of documentation available; check /HELP or look online
+at http://www.irssi.org
 .SH FILES
 .TP
-.I /etc/irssi.conf
-Global configuration file
-.TP
 .I ~/.irssi/config
-Personal configuration file
+personal configuration file
 .TP
 .I ~/.irssi/config.autosave
-Automatic save of the personal config file when it was changed externally
+automatic save of the personal config file when it was changed externally
 .TP
 .I ~/.irssi/default.theme
-Default irssi theme
+default irssi theme
 .TP
 .I ~/.irssi/away.log
-Logged messages in away status
-.TP
-.I /usr/share/irssi/help/
-Directory including many help files
-.TP
-.I /usr/share/irssi/scripts/
-Global scripts directory
-.TP
-.I /usr/share/irssi/themes/
-Global themes directory
+logged messages in away status
 .TP
 .I ~/.irssi/scripts/
-Default scripts directory
+default scripts directory
 .TP
 .I ~/.irssi/scripts/autorun/
-Directory containing links to scripts that should be loaded
+directory containing links to scripts that should be loaded
 automatically on startup
 .TP
 .I ~/.irssi/startup
-File containing a list of commands to execute on startup
+file containing a list of commands to execute on startup
 .SH AUTHORS/CREDITS
 .B Irssi
-was written by Timo Sirainen
-.B <cras@irssi.org>
-.sp
-This manpage was written by Istvan Sebestyen
-.BR <stevee@alphanet.ch>
-and Stefan Tomanek
-.BR <stefan@pico.ruhr.de>
+was written by Timo Sirainen; this manpage was written by Istvan Sebestyen, Stefan Tomanek, Geert Hauwaerts.
