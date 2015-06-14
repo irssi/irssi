@@ -45,4 +45,4 @@ Once everything is set up, you can enable / disable the proxy:
 When the proxy is configured and running, the following command will
 show all the currently connected clients:
 
-  /PROXY status
+  /IRSSIPROXY status

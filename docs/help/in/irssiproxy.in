@@ -1,0 +1,14 @@
+
+@SYNTAX:irssiproxy@
+
+%9Description:%9
+
+    Displays the list of clients connected to irssiproxy.
+
+%9Examples:%9
+
+    /IRSSIPROXY
+    /IRSSIPROXY STATUS
+
+%9See also:%9 LOAD PROXY, SET irssiproxy
+

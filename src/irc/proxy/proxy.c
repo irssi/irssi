@@ -25,8 +25,8 @@
 
 #include "fe-common/core/printtext.h"
 
-/* SYNTAX: PROXY STATUS */
-static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
+/* SYNTAX: IRSSIPROXY STATUS */
+static void cmd_irssiproxy_status(const char *data, IRC_SERVER_REC *server)
 {
 	if (!settings_get_bool("irssiproxy")) {
 		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
@@ -51,15 +51,15 @@ static void cmd_proxy_status(const char *data, IRC_SERVER_REC *server)
 	}
 }
 
-/* SYNTAX: PROXY */
-static void cmd_proxy(const char *data, IRC_SERVER_REC *server, void *item)
+/* SYNTAX: IRSSIPROXY */
+static void cmd_irssiproxy(const char *data, IRC_SERVER_REC *server, void *item)
 {
 	if (*data == '\0') {
-		cmd_proxy_status(data, server);
+		cmd_irssiproxy_status(data, server);
 		return;
 	}
 
-	command_runsub("proxy", data, server, item);
+	command_runsub("irssiproxy", data, server, item);
 }
 
 static void irc_proxy_setup_changed(void)
@@ -92,8 +92,8 @@ void irc_proxy_init(void)
 			    "... to set them.");
 	}
 
-	command_bind("proxy", NULL, (SIGNAL_FUNC) cmd_proxy);
-	command_bind("proxy status", NULL, (SIGNAL_FUNC) cmd_proxy_status);
+	command_bind("irssiproxy", NULL, (SIGNAL_FUNC) cmd_irssiproxy);
+	command_bind("irssiproxy status", NULL, (SIGNAL_FUNC) cmd_irssiproxy_status);
 
 	signal_add_first("setup changed", (SIGNAL_FUNC) irc_proxy_setup_changed);
 
