@@ -95,7 +95,7 @@ statusbar_config_find(STATUSBAR_GROUP_REC *group, const char *name)
 	for (tmp = group->config_bars; tmp != NULL; tmp = tmp->next) {
 		STATUSBAR_CONFIG_REC *config = tmp->data;
 
-		if (strcmp(config->name, name) == 0)
+		if (g_strcmp0(config->name, name) == 0)
                         return config;
 	}
 
@@ -137,7 +137,7 @@ static void statusbar_read_item(STATUSBAR_CONFIG_REC *bar, CONFIG_NODE *node)
 	int priority, right_alignment;
 
 	priority = config_node_get_int(node, "priority", 0);
-	right_alignment = strcmp(config_node_get_str(node, "alignment", ""), "right") == 0;
+	right_alignment = g_strcmp0(config_node_get_str(node, "alignment", ""), "right") == 0;
 	statusbar_item_config_create(bar, node->key,
 				     priority, right_alignment);
 }
@@ -177,7 +177,7 @@ static void statusbar_read(STATUSBAR_GROUP_REC *group, CONFIG_NODE *node)
                 bar->placement = STATUSBAR_TOP;
 	bar->position = config_node_get_int(node, "position", 0);
 
-	node = config_node_section(node, "items", -1);
+	node = iconfig_node_section(node, "items", -1);
 	if (node != NULL) {
                 /* we're overriding the items - destroy the old */
                 while (bar->items != NULL)
@@ -227,7 +227,7 @@ static void read_statusbar_config_from_node(CONFIG_NODE *node)
 	CONFIG_NODE *items;
 	GSList *tmp;
 
-	items = config_node_section(node, "items", -1);
+	items = iconfig_node_section(node, "items", -1);
 	if (items != NULL)
 		statusbar_read_items(items);
 
@@ -369,7 +369,7 @@ static void cmd_statusbar_reset(const char *data, void *server,
 	CONFIG_NODE *parent;
 
 	parent = iconfig_node_traverse("statusbar", TRUE);
-	parent = config_node_section(parent, active_statusbar_group->name,
+	parent = iconfig_node_section(parent, active_statusbar_group->name,
 				     NODE_TYPE_BLOCK);
 
         iconfig_node_set_str(parent, node->key, NULL);
@@ -432,7 +432,7 @@ static CONFIG_NODE *statusbar_items_section(CONFIG_NODE *parent)
         CONFIG_NODE *node;
         GSList *tmp;
 
-	node = config_node_section(parent, "items", -1);
+	node = iconfig_node_section(parent, "items", -1);
 	if (node != NULL)
 		return node;
 
@@ -446,11 +446,11 @@ static CONFIG_NODE *statusbar_items_section(CONFIG_NODE *parent)
 
 	/* since items list in config file overrides defaults,
 	   we'll need to copy the whole list. */
-	parent = config_node_section(parent, "items", NODE_TYPE_BLOCK);
+	parent = iconfig_node_section(parent, "items", NODE_TYPE_BLOCK);
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_CONFIG_REC *rec = tmp->data;
 
-		node = config_node_section(parent, rec->name,
+		node = iconfig_node_section(parent, rec->name,
 					   NODE_TYPE_BLOCK);
 		if (rec->priority != 0)
                         iconfig_node_set_int(node, "priority", rec->priority);
@@ -487,7 +487,7 @@ static void cmd_statusbar_add(const char *data, void *server,
 	if (value != NULL) index = config_node_index(node, value)+1;
 
         /* create/move item */
-	node = config_node_section_index(node, name, index, NODE_TYPE_BLOCK);
+	node = iconfig_node_section_index(node, name, index, NODE_TYPE_BLOCK);
 
         /* set the options */
         value = g_hash_table_lookup(optlist, "priority");
@@ -511,7 +511,7 @@ static void cmd_statusbar_remove(const char *data, void *server,
 	if (node == NULL)
                 return;
 
-	if (config_node_section(node, data, -1) != NULL)
+	if (iconfig_node_section(node, data, -1) != NULL)
 		iconfig_node_set_str(node, data, NULL);
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
@@ -545,9 +545,9 @@ static void cmd_statusbar(const char *data)
 
         /* lookup/create the statusbar node */
 	node = iconfig_node_traverse("statusbar", TRUE);
-	node = config_node_section(node, active_statusbar_group->name,
+	node = iconfig_node_section(node, active_statusbar_group->name,
 				   NODE_TYPE_BLOCK);
-	node = config_node_section(node, name, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, name, NODE_TYPE_BLOCK);
 
 	/* call the subcommand */
 	signal = g_strconcat("command statusbar ", cmd, NULL);

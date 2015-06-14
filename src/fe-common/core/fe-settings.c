@@ -53,7 +53,7 @@ static void set_print_pattern(const char *pattern)
 
 		if (stristr(rec->key, pattern) == NULL)
 			continue;
-		if (strcmp(last_section, rec->section) != 0) {
+		if (g_strcmp0(last_section, rec->section) != 0) {
 			/* print section */
 			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 				    TXT_SET_TITLE, rec->section);

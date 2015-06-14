@@ -249,7 +249,7 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	int level = MSGLEVEL_MSGS;
 
 	/* own message returned by bouncer? */
-	int own = (!strcmp(nick, server->nick));
+	int own = (!g_strcmp0(nick, server->nick));
 
 	query = query_find(server, own ? target : nick);
 
@@ -323,8 +323,8 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 		/* this should only happen if some special target failed and
 		   we should display some error message. currently the special
 		   targets are only ',' and '.'. */
-		g_return_if_fail(strcmp(origtarget, ",") == 0 ||
-				 strcmp(origtarget, ".") == 0);
+		g_return_if_fail(g_strcmp0(origtarget, ",") == 0 ||
+				 g_strcmp0(origtarget, ".") == 0);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    *origtarget == ',' ? TXT_NO_MSGS_GOT :
@@ -569,7 +569,7 @@ static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
 	while (first != NULL) {
 		if (first != ignore) {
 			printnick = g_hash_table_lookup(printnicks, first);
-			if (printnick != NULL && strcmp(printnick, nick) == 0)
+			if (printnick != NULL && g_strcmp0(printnick, nick) == 0)
 				return TRUE;
 		}
 

@@ -110,7 +110,7 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &msg))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? "" : window_item_get_target(item);
 
 	if (*target == '\0' || *msg == '\0')
@@ -133,7 +133,7 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
 			    &target, &ctcpcmd, &ctcpdata))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? "" : window_item_get_target(item);
 	if (*target == '\0' || *ctcpcmd == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -162,7 +162,7 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &target, &text))
 		return;
-	if (strcmp(target, "*") == 0)
+	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? "" : window_item_get_target(item);
 	if (*target == '\0' || *text == '\0')
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -262,7 +262,7 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 	if (chanrec == NULL && *channel == '\0')
 		cmd_param_error(CMDERR_NOT_JOINED);
 
-	if (*channel != '\0' && strcmp(channel, "*") != 0)
+	if (*channel != '\0' && g_strcmp0(channel, "*") != 0)
 		chanrec = irc_channel_find(server, channel);
 
 	if (chanrec == NULL || !chanrec->synced) {

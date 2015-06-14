@@ -197,6 +197,7 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->ssl_verify = src->ssl_verify;
 	dest->ssl_cafile = g_strdup(src->ssl_cafile);
 	dest->ssl_capath = g_strdup(src->ssl_capath);
+	dest->ssl_ciphers = g_strdup(src->ssl_ciphers);
 
 	return dest;
 }
@@ -384,7 +385,7 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &tag, &msg))
 		return;
 
-	if (*tag != '\0' && strcmp(tag, "*") != 0)
+	if (*tag != '\0' && g_strcmp0(tag, "*") != 0)
 		server = server_find_tag(tag);
 
 	if (server != NULL) {

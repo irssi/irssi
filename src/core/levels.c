@@ -54,7 +54,7 @@ int level_get(const char *level)
 {
 	int n, len, match;
 
-	if (g_ascii_strcasecmp(level, "ALL") == 0 || strcmp(level, "*") == 0)
+	if (g_ascii_strcasecmp(level, "ALL") == 0 || g_strcmp0(level, "*") == 0)
 		return MSGLEVEL_ALL;
 
 	if (g_ascii_strcasecmp(level, "NEVER") == 0)
@@ -177,7 +177,7 @@ int combine_level(int dest, const char *src)
 		itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
 		itemlevel = level_get(itemname);
 
-		if (strcmp(itemname, "NONE") == 0)
+		if (g_strcmp0(itemname, "NONE") == 0)
                         dest = 0;
 		else if (**item == '-')
 			dest &= ~(itemlevel);

@@ -270,7 +270,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data, const char *nic
 	}
 
 	chanrec->joined = TRUE;
-	if (strcmp(chanrec->name, channel) != 0) {
+	if (g_strcmp0(chanrec->name, channel) != 0) {
                 g_free(chanrec->name);
 		chanrec->name = g_strdup(channel);
 	}

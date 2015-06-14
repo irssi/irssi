@@ -66,7 +66,7 @@ static void hilight_add_config(HILIGHT_REC *rec)
 	g_return_if_fail(rec != NULL);
 
 	node = iconfig_node_traverse("(hilights", TRUE);
-	node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_set_str(node, "text", rec->text);
         if (rec->level > 0) iconfig_node_set_int(node, "level", rec->level);
@@ -81,7 +81,7 @@ static void hilight_add_config(HILIGHT_REC *rec)
         if (rec->servertag) iconfig_node_set_str(node, "servertag", rec->servertag);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
-		node = config_node_section(node, "channels", NODE_TYPE_LIST);
+		node = iconfig_node_section(node, "channels", NODE_TYPE_LIST);
 		iconfig_node_add_list(node, rec->channels);
 	}
 }
@@ -168,7 +168,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 		if ((channels == NULL && rec->channels == NULL))
 			return rec; /* no channels - ok */
 
-		if (channels != NULL && strcmp(*channels, "*") == 0)
+		if (channels != NULL && g_strcmp0(*channels, "*") == 0)
 			return rec; /* ignore channels */
 
 		if (channels == NULL || rec->channels == NULL)
@@ -306,7 +306,7 @@ void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 		dest->hilight_priority = rec->priority;
 
 	g_free_and_null(dest->hilight_color);
-	if (rec->act_color != NULL && strcmp(rec->act_color, "%n") == 0)
+	if (rec->act_color != NULL && g_strcmp0(rec->act_color, "%n") == 0)
 		dest->level |= MSGLEVEL_NO_ACT;
         else
 		dest->hilight_color = hilight_get_act_color(rec);
@@ -337,14 +337,14 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 
 	old_level = dest->level;
 	if (!nick_match || (dest->level & MSGLEVEL_HILIGHT)) {
-		/* update the level / hilight info */
-		hilight_update_text_dest(dest, hilight);
 		/* Remove NO_ACT, this means explicitly defined hilights will bypass
 		 * /IGNORE ... NO_ACT.
 		 * (It's still possible to use /hilight -actcolor %n to hide
 		 * hilight/beep).
 		 */
 		dest->level &= ~MSGLEVEL_NO_ACT;
+		/* update the level / hilight info */
+		hilight_update_text_dest(dest, hilight);
 	}
 
 	if (nick_match)
@@ -471,7 +471,7 @@ static void read_hilight_config(void)
 		rec->servertag = config_node_get_str(node, "servertag", NULL);
 		hilight_init_rec(rec);
 
-		node = config_node_section(node, "channels", -1);
+		node = iconfig_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
 	}
 

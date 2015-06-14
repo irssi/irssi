@@ -739,7 +739,7 @@ static void theme_read_formats(THEME_REC *theme, const char *module,
 
 	node = config_node_traverse(config, "formats", FALSE);
 	if (node == NULL) return;
-	node = config_node_section(node, module, -1);
+	node = config_node_section(config, node, module, -1);
 	if (node == NULL) return;
 
 	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
@@ -895,7 +895,7 @@ THEME_REC *theme_load(const char *setname)
 
         name = g_strdup(setname);
 	p = strrchr(name, '.');
-	if (p != NULL && strcmp(p, ".theme") == 0) {
+	if (p != NULL && g_strcmp0(p, ".theme") == 0) {
 		/* remove the trailing .theme */
                 *p = '\0';
 	}
@@ -1177,7 +1177,7 @@ static void module_save(const char *module, MODULE_THEME_REC *rec,
 
 	fnode = config_node_traverse(data->config, "formats", TRUE);
 
-	node = config_node_section(fnode, rec->name, NODE_TYPE_BLOCK);
+	node = config_node_section(data->config, fnode, rec->name, NODE_TYPE_BLOCK);
 	for (n = 1; formats[n].def != NULL; n++) {
                 if (rec->formats[n] != NULL) {
                         config_node_set_str(data->config, node, formats[n].tag,
@@ -1358,9 +1358,9 @@ static void read_settings(void)
 
 	theme = settings_get_str("theme");
 	len = strlen(current_theme->name);
-	if (strcmp(current_theme->name, theme) != 0 &&
+	if (g_strcmp0(current_theme->name, theme) != 0 &&
 	    (strncmp(current_theme->name, theme, len) != 0 ||
-	     strcmp(theme+len, ".theme") != 0))
+	     g_strcmp0(theme+len, ".theme") != 0))
 		change_theme(theme, TRUE);
 }
 

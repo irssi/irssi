@@ -118,7 +118,7 @@ static CONFIG_NODE *key_config_find(const char *key)
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		node = tmp->data;
 
-		if (strcmp(config_node_get_str(node, "key", ""), key) == 0)
+		if (g_strcmp0(config_node_get_str(node, "key", ""), key) == 0)
                         return node;
 	}
 
@@ -135,7 +135,7 @@ static void keyconfig_save(const char *id, const char *key, const char *data)
 	node = key_config_find(key);
 	if (node == NULL) {
 		node = iconfig_node_traverse("(keyboard", TRUE);
-		node = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 	}
 
 	iconfig_node_set_str(node, "key", key);
@@ -211,7 +211,7 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 	for (tmp = info->keys; tmp != NULL; tmp = tmp->next) {
 		KEY_REC *rec = tmp->data;
 
-		if (strcmp(rec->data, str) == 0)
+		if (g_strcmp0(rec->data, str) == 0)
                         list = g_slist_append(list, rec);
 	}
 
@@ -347,7 +347,7 @@ static void key_states_scan_key(const char *key, KEY_REC *rec)
 {
 	GSList *tmp, *out;
 
-	if (strcmp(rec->info->id, "key") == 0)
+	if (g_strcmp0(rec->info->id, "key") == 0)
 		return;
 
         out = g_slist_append(NULL, g_string_new(NULL));
@@ -383,7 +383,7 @@ static void key_states_rescan(void)
 	g_tree_foreach(key_states, (GTraverseFunc) key_state_destroy,
 			NULL);
 	g_tree_destroy(key_states);
-	key_states = g_tree_new((GCompareFunc) strcmp);
+	key_states = g_tree_new((GCompareFunc) g_strcmp0);
 
         temp = g_string_new(NULL);
 	g_hash_table_foreach(keys, (GHFunc) key_states_scan_key, temp);
@@ -860,7 +860,7 @@ void keyboard_init(void)
 	default_keys = g_hash_table_new((GHashFunc) g_str_hash,
 					(GCompareFunc) g_str_equal);
 	keyinfos = NULL;
-	key_states = g_tree_new((GCompareFunc) strcmp);
+	key_states = g_tree_new((GCompareFunc) g_strcmp0);
         key_config_frozen = 0;
 	memset(used_keys, 0, sizeof(used_keys));
 

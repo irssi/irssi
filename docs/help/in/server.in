@@ -22,6 +22,7 @@
     -ssl_verify:       Verifies the SSL certificate of the server.
     -ssl_cafile:       The file with the list of CA certificates.
     -ssl_capath:       The directory which contains the CA certificates.
+    -ssl_ciphers:      SSL cipher suite preference lists.
     -auto:             Automatically connects to the server on startup.
     -noauto:           Doesn't connect to the server on startup.
     -network:          The network the server belongs to.

@@ -209,7 +209,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 void proxy_client_reset_nick(CLIENT_REC *client)
 {
 	if (client->server == NULL ||
-	    strcmp(client->nick, client->server->nick) == 0)
+	    g_strcmp0(client->nick, client->server->nick) == 0)
 		return;
 
 	proxy_outdata(client, ":%s!proxy NICK :%s\n",

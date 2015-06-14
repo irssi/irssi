@@ -14,6 +14,7 @@
     -clear:     Removes the previous results from the active window.
     -count:     Displays how many lines match.
     -case:      Performs a case-sensitive matching.
+    -date:      Prepends each row with the message's date
     -regexp:    The given text pattern is a regular expression.
     -word:      The text must match full words.
     -force:     Forces to display the lastlog, even if it exceeds 1000 lines.
@@ -34,7 +35,7 @@
 
     /LASTLOG holiday
     /LASTLOG 'is on vacation' 10
-    /LASTLOG -file -force ~/mike.log 'mike'
+    /LASTLOG -force -file ~/mike.log 'mike'
     /LASTLOG -hilight
     /LASTLOG -5 searchterm
 

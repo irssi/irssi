@@ -36,7 +36,7 @@ static void chatnet_config_save(CHATNET_REC *chatnet)
 	CONFIG_NODE *node;
 
 	node = iconfig_node_traverse("chatnets", TRUE);
-	node = config_node_section(node, chatnet->name, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, chatnet->name, NODE_TYPE_BLOCK);
 	iconfig_node_clear(node);
 
 	iconfig_node_set_str(node, "type", chat_protocol_find_id(chatnet->chat_type)->name);

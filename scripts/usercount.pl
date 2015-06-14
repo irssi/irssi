@@ -1,4 +1,6 @@
+use strict;
 use Irssi 20040119.2359 ();
+use vars qw($VERSION %IRSSI);
 $VERSION = "1.19";
 %IRSSI = (
     authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas',
@@ -29,7 +31,6 @@ $VERSION = "1.19";
 #  sb_uc_space = " ";
 
 
-use strict;
 use Irssi::TextUI;
 
 my ($ircops, $ops, $halfops, $voices, $normal, $total);

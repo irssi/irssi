@@ -129,7 +129,7 @@ STATUSBAR_GROUP_REC *statusbar_group_find(const char *name)
 	for (tmp = statusbar_groups; tmp != NULL; tmp = tmp->next) {
 		STATUSBAR_GROUP_REC *rec = tmp->data;
 
-		if (strcmp(rec->name, name) == 0)
+		if (g_strcmp0(rec->name, name) == 0)
                         return rec;
 	}
 
@@ -617,7 +617,7 @@ STATUSBAR_REC *statusbar_find(STATUSBAR_GROUP_REC *group, const char *name,
 		STATUSBAR_REC *rec = tmp->data;
 
 		if (rec->parent_window == window &&
-		    strcmp(rec->config->name, name) == 0)
+		    g_strcmp0(rec->config->name, name) == 0)
                         return rec;
 	}
 

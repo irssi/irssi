@@ -57,7 +57,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 	/* don't autoget files beginning with a dot, if download dir is
 	   our home dir (stupid kludge for stupid people) */
 	if (*dcc->arg == '.' &&
-	    strcmp(settings_get_str("dcc_download_path"), "~") == 0)
+	    g_strcmp0(settings_get_str("dcc_download_path"), "~") == 0)
 		return;
 
 	/* check file size limit, NOTE: it's still possible to send a

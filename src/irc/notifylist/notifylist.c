@@ -91,7 +91,7 @@ int notifylist_ircnets_match(NOTIFYLIST_REC *rec, const char *ircnet)
 
 	if (rec->ircnets == NULL) return TRUE;
 	if (ircnet == NULL) return FALSE;
-	if (strcmp(ircnet, "*") == 0) return TRUE;
+	if (g_strcmp0(ircnet, "*") == 0) return TRUE;
 
 	for (tmp = rec->ircnets; *tmp != NULL; tmp++) {
 		if (g_ascii_strcasecmp(*tmp, ircnet) == 0)

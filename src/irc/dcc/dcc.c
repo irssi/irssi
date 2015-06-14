@@ -149,7 +149,7 @@ DCC_REC *dcc_find_request(int type, const char *nick, const char *arg)
 
 		if (dcc->type == type && !dcc_is_connected(dcc) &&
 		    g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
-		    (arg == NULL || strcmp(dcc->arg, arg) == 0))
+		    (arg == NULL || g_strcmp0(dcc->arg, arg) == 0))
 			return dcc;
 	}
 
@@ -516,7 +516,7 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 
 		next = tmp->next;
 		if (dcc->type == type && g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
-		    (*arg == '\0' || strcmp(dcc->arg, arg) == 0)) {
+		    (*arg == '\0' || g_strcmp0(dcc->arg, arg) == 0)) {
 			dcc_reject(dcc, server);
 			found = TRUE;
 		}

@@ -7,8 +7,8 @@
 
     -yes:    Confirms that you want to receive a large amount of data.
 
-    The text a channel must match; if no argument is given, the list of all
-    channels will be displayed.
+    If the exact name of a channel is given, the only information about this
+    channel is requested; otherwise, a list of all channels will be displayed.
 
 %9Description:%9
 
@@ -19,7 +19,16 @@
 
     /LIST
     /LIST -yes
-    /LIST -yes *ubuntu*
+    /LIST #ubuntu
+    /LIST #*ubuntu*,>1
+
+%9Remarks:%9
+
+    Not all networks support server-side filtering and may provide a network
+    service instead; on IRCnet, you may use the ALIS service:
+
+    /QUOTE SQUERY ALIS :HELP
+    /MSG ALIS HELP
 
 %9See also:%9 QUOTE, STATS, WHOIS
 

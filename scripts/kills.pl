@@ -10,6 +10,7 @@
 # There's a pretty good explanation of (ircnet) ircd's server kills in
 # http://www.irc.org/tech_docs/ircnet/kills.html
 
+use strict;
 use Irssi;
 use vars qw($VERSION %IRSSI);
 
@@ -47,13 +48,13 @@ sub msg_quit {
   my @printargs = ();
   if ($killmsg =~ /([^ ]*) != (.*)/) {
     # 1 != 2
-    my $server1 = $1, $server2 = $2;
+    my $server1 = $1, my $server2 = $2;
 
     $server1 =~ s/([^\[]*)\[([^\]]*)\]/\1/;
     $msg .= "$2 != $server2";
   } elsif ($killmsg =~ /([^ ]*) <- (.*)/) {
     # 1 <- 2
-    my $server1 = $1, $server2 = $2;
+    my $server1 = $1, my $server2 = $2;
 
     if ($server1 =~ /^\(/) {
       # (addr1)server1 <- (add2)server2
@@ -84,9 +85,9 @@ sub msg_quit {
     $msg = $killmsg;
   }
 
-  @list = $server->nicks_get_same($nick);
+  my @list = $server->nicks_get_same($nick);
   while (@list) {
-    $channel = $list[0];
+    my $channel = $list[0];
     shift @list;
     # skip nick record
     shift @list;

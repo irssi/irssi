@@ -37,12 +37,12 @@ static int commands_equal(COMMAND_REC *rec, COMMAND_REC *rec2)
 	if (rec2->category == NULL && rec->category != NULL)
 		return 1;
 	if (rec->category != NULL && rec2->category != NULL) {
-		i = strcmp(rec->category, rec2->category);
+		i = g_strcmp0(rec->category, rec2->category);
 		if (i != 0)
 			return i;
 	}
 
-	return strcmp(rec->cmd, rec2->cmd);
+	return g_strcmp0(rec->cmd, rec2->cmd);
 }
 
 static int get_cmd_length(void *data)
@@ -176,7 +176,7 @@ static void show_help(const char *data)
 
 		if (last != NULL && rec->category != NULL &&
 		    (last->category == NULL ||
-		     strcmp(rec->category, last->category) != 0)) {
+		     g_strcmp0(rec->category, last->category) != 0)) {
 			/* category changed */
 			if (items > 0) {
 				if (!header) {

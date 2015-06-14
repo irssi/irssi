@@ -161,7 +161,7 @@ static PROCESS_REC *process_find(const char *name, int verbose)
 	for (tmp = processes; tmp != NULL; tmp = tmp->next) {
 		PROCESS_REC *rec = tmp->data;
 
-		if (rec->name != NULL && strcmp(rec->name, name) == 0)
+		if (rec->name != NULL && g_strcmp0(rec->name, name) == 0)
 			return rec;
 	}
 

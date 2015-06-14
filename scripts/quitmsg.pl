@@ -21,7 +21,7 @@ sub cmd_quit {
 	my ($data, $server, $channel) = @_;
 	return if ($data ne "");
 
-	open (f, $quitfile) || return;
+	open (f, "<", $quitfile) || return;
 	my $lines = 0; while(<f>) { $lines++; };
 
 	my $line = int(rand($lines))+1;
@@ -38,7 +38,7 @@ sub cmd_quit {
 	close(f);
 
 	foreach my $server (Irssi::servers) {
-		$server->command("disconnect ".$server->{tag}." $quitmsg");
+		$server->command("/disconnect ".$server->{tag}." $quitmsg");
 	}
 }
 

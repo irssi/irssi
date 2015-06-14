@@ -113,7 +113,7 @@ sub mlock_check_mode {
 	}
 
 	if ($modecmd ne "") {
-		$channel->{server}->command("mode $channame $modecmd$extracmd");
+		$channel->{server}->command("/mode $channame $modecmd$extracmd");
 	}
 }
 

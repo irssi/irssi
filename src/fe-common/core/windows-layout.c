@@ -127,6 +127,7 @@ static void sig_layout_restore(void)
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {
 		CONFIG_NODE *node = tmp->data;
 
+		if (node->key == NULL) continue;
 		window = window_find_refnum(atoi(node->key));
 		if (window == NULL)
 			window = window_create(NULL, TRUE);
@@ -143,7 +144,7 @@ static void sig_layout_restore(void)
 		if (window->theme_name != NULL)
 			window->theme = theme_load(window->theme_name);
 
-		window_add_items(window, config_node_section(node, "items", -1));
+		window_add_items(window, iconfig_node_section(node, "items", -1));
 		signal_emit("layout restore window", 2, window, node);
 	}
 }
@@ -160,7 +161,7 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 	if (type == NULL)
 		return;
 
-	subnode = config_node_section(node, NULL, NODE_TYPE_BLOCK);
+	subnode = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 
 	iconfig_node_set_str(subnode, "type", type);
 	proto = item->chat_type == 0 ? NULL :
@@ -185,7 +186,7 @@ static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	GSList *tmp;
 
-	node = config_node_section(node, "items", NODE_TYPE_LIST);
+	node = iconfig_node_section(node, "items", NODE_TYPE_LIST);
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next)
 		signal_emit("layout save item", 3, window, tmp->data, node);
 }
@@ -195,7 +196,7 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	char refnum[MAX_INT_STRLEN];
 
         ltoa(refnum, window->refnum);
-	node = config_node_section(node, refnum, NODE_TYPE_BLOCK);
+	node = iconfig_node_section(node, refnum, NODE_TYPE_BLOCK);
 
 	if (window->sticky_refnum)
 		iconfig_node_set_bool(node, "sticky_refnum", TRUE);

@@ -331,7 +331,7 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 	QUERY_REC *query;
 
 	/* own message returned by bouncer? */
-	int own = (!strcmp(nick, server->nick));
+	int own = (!g_strcmp0(nick, server->nick));
 
 	/* create query window if needed */
 	query = privmsg_get_query(server, own ? target : nick, FALSE, MSGLEVEL_MSGS);

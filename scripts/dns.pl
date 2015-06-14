@@ -1,18 +1,24 @@
 # /DNS <nick>|<host>|<ip> ...
+# version 2.1.1
+# 
+# updated the script to fix a bug where the script would let
+# a trailing whitespace go through (ex: tab completion)
+# - inch <inch@stmpd.net>
 
-use Irssi;
 use strict;
 use Socket;
 use POSIX;
 
 use vars qw($VERSION %IRSSI); 
-$VERSION = "2.1";
+$VERSION = "2.1.1";
 %IRSSI = (
-    authors	=> 'Timo Sirainen',
-    name	=> 'dns',
-    description	=> '/DNS <nick>|<host>|<ip> ...',
-    license	=> 'Public Domain',
-    changed	=> 'Sun Mar 10 23:23 EET 2002'
+    authors	=> "Timo \'cras\' Sirainen",
+    contact	=> "tss\@iki.fi", 
+    name	=> "dns",
+    description	=> "/DNS <nick>|<host>|<ip> ...",
+    license	=> "Public Domain",
+    url		=> "http://irssi.org/",
+    changed	=> "2002-03-04T22:47+0100"
 );
 
 my (%resolve_hosts, %resolve_nicks, %resolve_print); # resolve queues
@@ -28,7 +34,7 @@ my $pipe_tag;
 sub cmd_dns {
   my ($nicks, $server) = @_;
   return if !$nicks;
-
+  $nicks =~ s/\s+$//; 
   # get list of nicks/hosts we want to know
   my $tag = !$server ? undef : $server->{tag};
   my $ask_nicks = "";

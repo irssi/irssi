@@ -173,7 +173,7 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		if (key == NULL && node->type != NODE_TYPE_LIST)
 			return G_TOKEN_ERROR;
 
-		newnode = config_node_section(node, key, NODE_TYPE_BLOCK);
+		newnode = config_node_section(rec, node, key, NODE_TYPE_BLOCK);
 		config_parse_loop(rec, newnode, (GTokenType) '}');
 		g_free_not_null(key);
 
@@ -188,7 +188,7 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		/* list */
 		if (key == NULL)
 			return G_TOKEN_ERROR;
-		newnode = config_node_section(node, key, NODE_TYPE_LIST);
+		newnode = config_node_section(rec, node, key, NODE_TYPE_LIST);
 		config_parse_loop(rec, newnode, (GTokenType) ')');
 		g_free_not_null(key);
 

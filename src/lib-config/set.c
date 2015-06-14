@@ -104,8 +104,14 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 		return;
 	}
 
+	if (node != NULL && !has_node_value(node)) {
+		g_critical("Expected scalar node at `..%s/%s' was of complex type. Corrupt config?",
+				   parent->key, key);
+		config_node_remove(rec, parent, node);
+		node = NULL;
+	}
 	if (node != NULL) {
-		if (strcmp(node->value, value) == 0)
+		if (g_strcmp0(node->value, value) == 0)
 			return;
                 g_free(node->value);
 	} else {

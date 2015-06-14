@@ -40,7 +40,7 @@ use Data::Dumper;
 my %suppress;
 
 sub upgrade {
-    open BUF, sprintf('>%s/scrollbuffer', get_irssi_dir) or die $!;
+    open BUF, q{>}, sprintf('%s/scrollbuffer', get_irssi_dir) or die $!;
     print BUF join("\0", map $_->{server}->{address} . $_->{name}, channels), "\n";
     for my $window (windows) {
 	next unless defined $window;
@@ -66,7 +66,7 @@ sub upgrade {
 }
 
 sub restore {
-    open BUF, sprintf('<%s/scrollbuffer', get_irssi_dir) or die $!;
+    open BUF, q{<}, sprintf('%s/scrollbuffer', get_irssi_dir) or die $!;
     my @suppress = split /\0/, <BUF>;
     if (settings_get_bool 'upgrade_suppress_join') {
 	chomp $suppress[-1];
@@ -98,14 +98,13 @@ sub restore {
 
 sub suppress {
     my ($first, $second) = @_;
-    return
-	unless scalar keys %suppress
-	and settings_get_bool 'upgrade_suppress_join';
-    my $key = $first->{address} . 
-	(grep { (s/^://, /^[#!+&]/) } split ' ', $second)[0];
+    return unless scalar keys %suppress and settings_get_bool 'upgrade_suppress_join';
+    my $key_part = (grep { /^:?[#!+&]/ } split ' ', $second)[0];
+    $key_part =~ s/^://;
+    my $key = $first->{address} . $key_part;
     if (exists $suppress{$key} and $suppress{$key}--) {
-	signal_stop();
-	delete $suppress{$key} unless $suppress{$key};
+    	signal_stop();
+        delete $suppress{$key} unless $suppress{$key};
     }
 }
 
