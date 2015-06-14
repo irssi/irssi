@@ -642,7 +642,8 @@ static void remove_listen(LISTEN_REC *rec)
 static void read_settings(void)
 {
 	LISTEN_REC *rec;
-	GSList *remove_listens;
+	GSList *remove_listens = NULL;
+	GSList *add_listens = NULL;
 	char **ports, **tmp, *ircnet, *port;
 	int portnum;
 
@@ -661,17 +662,30 @@ static void read_settings(void)
 			continue;
 
 		rec = find_listen(ircnet, portnum);
-		if (rec == NULL)
-			add_listen(ircnet, portnum);
-		else
+		if (rec == NULL) {
+			rec = g_new0(LISTEN_REC, 1);
+			rec->ircnet = ircnet; /* borrow */
+			rec->port = portnum;
+			add_listens = g_slist_prepend(add_listens, rec);
+		} else {
+			/* remove from the list of listens to remove == keep it */
 			remove_listens = g_slist_remove(remove_listens, rec);
+		}
 	}
-	g_strfreev(ports);
 
 	while (remove_listens != NULL) {
-                remove_listen(remove_listens->data);
+		remove_listen(remove_listens->data);
 		remove_listens = g_slist_remove(remove_listens, remove_listens->data);
 	}
+
+	while (add_listens != NULL) {
+		rec = add_listens->data;
+		add_listen(rec->ircnet, rec->port);
+		g_free(rec);
+		add_listens = g_slist_remove(add_listens, add_listens->data);
+	}
+
+	g_strfreev(ports);
 }
 
 static void sig_dump(CLIENT_REC *client, const char *data)
