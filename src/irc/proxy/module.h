@@ -24,3 +24,6 @@ void proxy_outdata_all(IRC_SERVER_REC *server, const char *data, ...);
 void proxy_outserver(CLIENT_REC *client, const char *data, ...);
 void proxy_outserver_all(IRC_SERVER_REC *server, const char *data, ...);
 void proxy_outserver_all_except(CLIENT_REC *client, const char *data, ...);
+
+void proxy_send(CLIENT_REC *client, char *d, int l);
+int proxy_readline(CLIENT_REC *client, char **str);

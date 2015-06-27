@@ -78,6 +78,11 @@ void irc_proxy_init(void)
 	settings_add_str("irssiproxy", "irssiproxy_bind", "");
 	settings_add_bool("irssiproxy", "irssiproxy", TRUE);
 
+#ifdef HAVE_OPENSSL
+	SSL_load_error_strings();
+	OpenSSL_add_ssl_algorithms();
+#endif
+
 	if (*settings_get_str("irssiproxy_password") == '\0') {
 		/* no password - bad idea! */
 		signal_emit("gui dialog", 2, "warning",
@@ -87,9 +92,16 @@ void irc_proxy_init(void)
 	}
 	if (*settings_get_str("irssiproxy_ports") == '\0') {
 		signal_emit("gui dialog", 2, "warning",
-			    "No proxy ports specified. Use /SET "
+			    "No proxy ports specified. Use /set "
+#ifdef HAVE_OPENSSL
+			    "irssiproxy_ports <ircnet>=<port> <ircnet2>=<port2>:<sslcert> "
+			    "... to set them. You can add :filename.pem to secure the proxy with SSL."
+			    " (Should contain a cert and key in PEM format)");
+#else
 			    "irssiproxy_ports <ircnet>=<port> <ircnet2>=<port2> "
 			    "... to set them.");
+#endif
+
 	}
 
 	command_bind("irssiproxy", NULL, (SIGNAL_FUNC) cmd_irssiproxy);
@@ -101,7 +113,7 @@ void irc_proxy_init(void)
 		proxy_listen_init();
 	}
 	settings_check();
-        module_register("proxy", "irc");
+	module_register("proxy", "irc");
 }
 
 void irc_proxy_deinit(void)

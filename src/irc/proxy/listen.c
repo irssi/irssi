@@ -50,6 +50,11 @@ static void remove_client(CLIENT_REC *rec)
 	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
 		  "Proxy: Client %s:%d disconnected", rec->host, rec->port);
 
+#ifdef HAVE_OPENSSL
+	if(rec->listen->use_ssl) {
+		SSL_free(rec->ssl);	
+	}
+#endif
 	g_free(rec->proxy_address);
 	net_sendbuffer_destroy(rec->handle, TRUE);
 	g_source_remove(rec->recv_tag);
@@ -133,6 +138,13 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 				  "Proxy: Client %s:%d connected",
 				  client->host, client->port);
 			client->connected = TRUE;
+#ifdef HAVE_OPENSSL
+	if(client->listen->use_ssl) {
+		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "Proxy: Client connected from %s using encryption %s and logged in!", client->host, SSL_get_cipher(client->ssl));
+	}
+#endif
+
 			proxy_dump_data(client);
 		}
 	}
@@ -310,7 +322,7 @@ static void sig_listen_client(CLIENT_REC *client)
 	g_return_if_fail(client != NULL);
 
 	while (g_slist_find(proxy_clients, client) != NULL) {
-		ret = net_sendbuffer_receive_line(client->handle, &str, 1);
+		ret = proxy_readline(client, &str);
 		if (ret == -1) {
 			/* connection lost */
 			remove_client(client);
@@ -350,6 +362,26 @@ static void sig_listen(LISTEN_REC *listen)
 	net_ip2host(&ip, host);
 	sendbuf = net_sendbuffer_create(handle, 0);
 	rec = g_new0(CLIENT_REC, 1);
+	
+#ifdef HAVE_OPENSSL
+	if(listen->use_ssl) {
+		rec->ssl = SSL_new(listen->ssl_ctx);
+		SSL_set_fd(rec->ssl, g_io_channel_unix_get_fd(handle));
+		int sslerror = SSL_accept(rec->ssl); /* handle error! */
+		if(sslerror <= 0) {
+			/* The Handshake might take longer and the client might not be ready yet
+			   so if such an error occurs, we just ignore it, SSL_read and SSL_write
+			   should continue with the handshake. */
+			if(SSL_get_error(rec->ssl, sslerror) != SSL_ERROR_WANT_READ) {
+				printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+				    "Proxy: An error occured while accepting SSL connection!");
+				g_free(rec);
+				return;  
+			}
+		}
+	}
+#endif
+		
 	rec->listen = listen;
 	rec->handle = sendbuf;
         rec->host = g_strdup(host);
@@ -416,7 +448,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		if (sscanf(signal+6, "%p", &client) == 1) {
 			/* send it to specific client only */
 			if (g_slist_find(proxy_clients, client) != NULL)
-				net_sendbuffer_send(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
+				proxy_send((CLIENT_REC *) client, next_line->str, next_line->len);
 			g_free(event);
                         signal_stop();
 			return;
@@ -433,7 +465,7 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			if (rec->want_ctcp == 1) {
                         	/* only CTCP for the chatnet where client is connected to will be forwarded */
                         	if (strstr(rec->proxy_address, server->connrec->chatnet) != NULL) {
-					net_sendbuffer_send(rec->handle,
+					proxy_send(rec,
 							    next_line->str, next_line->len);
 					signal_stop();
 				}
@@ -582,7 +614,7 @@ static LISTEN_REC *find_listen(const char *ircnet, int port)
 	return NULL;
 }
 
-static void add_listen(const char *ircnet, int port)
+static void add_listen(const char *ircnet, int port, char *sslcert)
 {
 	LISTEN_REC *rec;
 	IPADDR ip4, ip6, *my_ip;
@@ -620,6 +652,51 @@ static void add_listen(const char *ircnet, int port)
 		return;
 	}
 
+	if(sslcert != NULL) {
+#ifdef HAVE_OPENSSL
+		rec->use_ssl = TRUE;
+		rec->ssl_method = SSLv3_server_method(); /* let's start with 3 */
+		rec->ssl_ctx = SSL_CTX_new(rec->ssl_method);
+		if(rec->ssl_ctx == NULL) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			  "Proxy: Error setting up SSL Context for port %d failed.",
+			  rec->port);
+			g_free(rec->ircnet);
+            g_free(rec);
+            return;
+		}
+		
+		if(SSL_CTX_use_certificate_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading certificate.");
+			SSL_CTX_free(rec->ssl_ctx);
+			g_free(rec->ircnet);
+            g_free(rec);
+            return;
+		}
+		
+		if(SSL_CTX_use_PrivateKey_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading private key.");
+			SSL_CTX_free(rec->ssl_ctx);	
+			g_free(rec->ircnet);
+            g_free(rec);
+            return;
+   		}
+		
+		if(!SSL_CTX_check_private_key(rec->ssl_ctx)) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading checking certificate agains private key.");
+			SSL_CTX_free(rec->ssl_ctx);	
+			g_free(rec->ircnet);
+            g_free(rec);
+            return;
+		}
+
+#else
+		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			"Proxy: Specified SSL certificate/private key but irssi compiled WITHOUT OpenSSL!");
+#endif
+
+	}
+
 	rec->tag = g_input_add(rec->handle, G_INPUT_READ,
 			       (GInputFunction) sig_listen, rec);
 
@@ -634,6 +711,11 @@ static void remove_listen(LISTEN_REC *rec)
 		remove_client(rec->clients->data);
 
 	net_disconnect(rec->handle);
+#ifdef HAVE_OPENSSL
+	if(rec->use_ssl) {
+		SSL_CTX_free(rec->ssl_ctx);	
+	}
+#endif
 	g_source_remove(rec->tag);
 	g_free(rec->ircnet);
 	g_free(rec);
@@ -644,7 +726,7 @@ static void read_settings(void)
 	LISTEN_REC *rec;
 	GSList *remove_listens = NULL;
 	GSList *add_listens = NULL;
-	char **ports, **tmp, *ircnet, *port;
+	char **ports, **tmp, *ircnet, *port, *sslfile;
 	int portnum;
 
 	remove_listens = g_slist_copy(proxy_listens);
@@ -657,6 +739,13 @@ static void read_settings(void)
 			continue;
 
 		*port++ = '\0';
+		
+		sslfile = strchr(port, ':');
+		
+		if (sslfile != NULL) {
+			*sslfile++ = '\0';	
+		}
+		
 		portnum = atoi(port);
 		if (portnum <=  0)
 			continue;
@@ -680,7 +769,7 @@ static void read_settings(void)
 
 	while (add_listens != NULL) {
 		rec = add_listens->data;
-		add_listen(rec->ircnet, rec->port);
+		add_listen(rec->ircnet, rec->port, sslfile);
 		g_free(rec);
 		add_listens = g_slist_remove(add_listens, add_listens->data);
 	}
