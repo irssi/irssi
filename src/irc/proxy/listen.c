@@ -654,33 +654,22 @@ static void add_listen(const char *ircnet, int port, char *sslcert)
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "Proxy: Error setting up SSL Context for port %d failed.",
 			  rec->port);
-			g_free(rec->ircnet);
-			g_free(rec);
-			return;
+			goto error;
 		}
 
 		if(SSL_CTX_use_certificate_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading certificate.");
-			SSL_CTX_free(rec->ssl_ctx);
-			g_free(rec->ircnet);
-			g_free(rec);
-			return;
+			goto error;
 		}
 
 		if(SSL_CTX_use_PrivateKey_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading private key.");
-			SSL_CTX_free(rec->ssl_ctx);
-			g_free(rec->ircnet);
-			g_free(rec);
-			return;
+			goto error;
 		}
 
 		if(!SSL_CTX_check_private_key(rec->ssl_ctx)) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading checking certificate agains private key.");
-			SSL_CTX_free(rec->ssl_ctx);
-			g_free(rec->ircnet);
-			g_free(rec);
-			return;
+			goto error;
 		}
 	}
 
@@ -688,6 +677,14 @@ static void add_listen(const char *ircnet, int port, char *sslcert)
 			       (GInputFunction) sig_listen, rec);
 
         proxy_listens = g_slist_append(proxy_listens, rec);
+
+	return;
+error:
+	if (rec->ssl_ctx != NULL) {
+		SSL_CTX_free(rec->ssl_ctx);
+	}
+	g_free(rec->ircnet);
+	g_free(rec);
 }
 
 static void remove_listen(LISTEN_REC *rec)
