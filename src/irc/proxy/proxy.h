@@ -24,7 +24,6 @@ typedef struct {
 	GSList *clients;
 	unsigned int use_ssl;
 	SSL_CTX *ssl_ctx;
-	SSL_METHOD *ssl_method;
 } LISTEN_REC;
 
 typedef struct {

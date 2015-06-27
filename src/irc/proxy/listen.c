@@ -648,14 +648,14 @@ static void add_listen(const char *ircnet, int port, char *sslcert)
 
 	if(sslcert != NULL) {
 		rec->use_ssl = TRUE;
-		rec->ssl_method = SSLv3_server_method(); /* let's start with 3 */
-		rec->ssl_ctx = SSL_CTX_new(rec->ssl_method);
+		rec->ssl_ctx = SSL_CTX_new(SSLv23_server_method());
 		if(rec->ssl_ctx == NULL) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			  "Proxy: Error setting up SSL Context for port %d failed.",
 			  rec->port);
 			goto error;
 		}
+		SSL_CTX_set_options(rec->ssl_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 
 		if(SSL_CTX_use_certificate_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading certificate.");
