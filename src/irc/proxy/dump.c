@@ -33,37 +33,34 @@
 
 void proxy_send(CLIENT_REC *client, char *d, int l)
 {
-#ifdef HAVE_OPENSSL
 	if(client->listen->use_ssl) {
 		SSL_write(client->ssl, d, l);
-	} else 
-#endif
-		net_sendbuffer_send(client->handle, d, l);
+		return;
+	}
+	net_sendbuffer_send(client->handle, d, l);
 }
 
 int proxy_readline(CLIENT_REC *client, char **str)
 {
-#ifdef HAVE_OPENSSL
 	if(client->listen->use_ssl) {
 		char tmpbuf[2048];
 		int recvlen = 0;
-        
+
 		recvlen = SSL_read(client->ssl, tmpbuf, sizeof(tmpbuf));
 		if(recvlen > 0) {
 			return line_split(tmpbuf, recvlen, str, &client->handle->readbuffer);
 		} else {
 			int err;
 			err = SSL_get_error(client->ssl, recvlen);
-			/* READ/WRITE are not really errors, they just indicate that atm 
+			/* READ/WRITE are not really errors, they just indicate that atm
 			   OpenSSL is waiting for more data */
 			if(err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
 				return line_split(tmpbuf, 0, str, &client->handle->readbuffer);
 			}
 			return recvlen; /* if any other error occurs, this will quit the connection */
 		}
-	} else 
-#endif
-		return net_sendbuffer_receive_line(client->handle, str, 1);
+	}
+	return net_sendbuffer_receive_line(client->handle, str, 1);
 }
 
 void proxy_outdata(CLIENT_REC *client, const char *data, ...)

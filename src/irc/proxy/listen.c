@@ -50,11 +50,9 @@ static void remove_client(CLIENT_REC *rec)
 	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
 		  "Proxy: Client %s:%d disconnected", rec->host, rec->port);
 
-#ifdef HAVE_OPENSSL
 	if(rec->listen->use_ssl) {
-		SSL_free(rec->ssl);	
+		SSL_free(rec->ssl);
 	}
-#endif
 	g_free(rec->proxy_address);
 	net_sendbuffer_destroy(rec->handle, TRUE);
 	g_source_remove(rec->recv_tag);
@@ -138,12 +136,10 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 				  "Proxy: Client %s:%d connected",
 				  client->host, client->port);
 			client->connected = TRUE;
-#ifdef HAVE_OPENSSL
-	if(client->listen->use_ssl) {
-		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "Proxy: Client connected from %s using encryption %s and logged in!", client->host, SSL_get_cipher(client->ssl));
-	}
-#endif
+			if(client->listen->use_ssl) {
+				printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+					  "Proxy: Client connected from %s using encryption %s and logged in!", client->host, SSL_get_cipher(client->ssl));
+			}
 
 			proxy_dump_data(client);
 		}
@@ -362,8 +358,7 @@ static void sig_listen(LISTEN_REC *listen)
 	net_ip2host(&ip, host);
 	sendbuf = net_sendbuffer_create(handle, 0);
 	rec = g_new0(CLIENT_REC, 1);
-	
-#ifdef HAVE_OPENSSL
+
 	if(listen->use_ssl) {
 		rec->ssl = SSL_new(listen->ssl_ctx);
 		SSL_set_fd(rec->ssl, g_io_channel_unix_get_fd(handle));
@@ -376,12 +371,11 @@ static void sig_listen(LISTEN_REC *listen)
 				printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 				    "Proxy: An error occured while accepting SSL connection!");
 				g_free(rec);
-				return;  
+				return;
 			}
 		}
 	}
-#endif
-		
+
 	rec->listen = listen;
 	rec->handle = sendbuf;
         rec->host = g_strdup(host);
@@ -653,7 +647,6 @@ static void add_listen(const char *ircnet, int port, char *sslcert)
 	}
 
 	if(sslcert != NULL) {
-#ifdef HAVE_OPENSSL
 		rec->use_ssl = TRUE;
 		rec->ssl_method = SSLv3_server_method(); /* let's start with 3 */
 		rec->ssl_ctx = SSL_CTX_new(rec->ssl_method);
@@ -662,39 +655,33 @@ static void add_listen(const char *ircnet, int port, char *sslcert)
 			  "Proxy: Error setting up SSL Context for port %d failed.",
 			  rec->port);
 			g_free(rec->ircnet);
-            g_free(rec);
-            return;
+			g_free(rec);
+			return;
 		}
-		
+
 		if(SSL_CTX_use_certificate_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading certificate.");
 			SSL_CTX_free(rec->ssl_ctx);
 			g_free(rec->ircnet);
-            g_free(rec);
-            return;
+			g_free(rec);
+			return;
 		}
-		
+
 		if(SSL_CTX_use_PrivateKey_file(rec->ssl_ctx, sslcert, SSL_FILETYPE_PEM) <= 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading private key.");
-			SSL_CTX_free(rec->ssl_ctx);	
+			SSL_CTX_free(rec->ssl_ctx);
 			g_free(rec->ircnet);
-            g_free(rec);
-            return;
-   		}
-		
-		if(!SSL_CTX_check_private_key(rec->ssl_ctx)) {
-			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading checking certificate agains private key.");
-			SSL_CTX_free(rec->ssl_ctx);	
-			g_free(rec->ircnet);
-            g_free(rec);
-            return;
+			g_free(rec);
+			return;
 		}
 
-#else
-		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			"Proxy: Specified SSL certificate/private key but irssi compiled WITHOUT OpenSSL!");
-#endif
-
+		if(!SSL_CTX_check_private_key(rec->ssl_ctx)) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Proxy: Error loading checking certificate agains private key.");
+			SSL_CTX_free(rec->ssl_ctx);
+			g_free(rec->ircnet);
+			g_free(rec);
+			return;
+		}
 	}
 
 	rec->tag = g_input_add(rec->handle, G_INPUT_READ,
@@ -711,11 +698,9 @@ static void remove_listen(LISTEN_REC *rec)
 		remove_client(rec->clients->data);
 
 	net_disconnect(rec->handle);
-#ifdef HAVE_OPENSSL
 	if(rec->use_ssl) {
-		SSL_CTX_free(rec->ssl_ctx);	
+		SSL_CTX_free(rec->ssl_ctx);
 	}
-#endif
 	g_source_remove(rec->tag);
 	g_free(rec->ircnet);
 	g_free(rec);
@@ -739,13 +724,13 @@ static void read_settings(void)
 			continue;
 
 		*port++ = '\0';
-		
+
 		sslfile = strchr(port, ':');
-		
+
 		if (sslfile != NULL) {
-			*sslfile++ = '\0';	
+			*sslfile++ = '\0';
 		}
-		
+
 		portnum = atoi(port);
 		if (portnum <=  0)
 			continue;
