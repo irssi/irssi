@@ -316,6 +316,10 @@ static void sig_server_connected(SERVER_REC *server)
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_CONNECTION_ESTABLISHED, server->connrec->address);
+
+	if(server->connrec->use_ssl)
+		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			"Using ciphersuite %s", server->connrec->ssl_current_cipher);
 }
 
 static void sig_connect_failed(SERVER_REC *server, gchar *msg)
