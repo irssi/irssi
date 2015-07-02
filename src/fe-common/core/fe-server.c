@@ -318,7 +318,7 @@ static void sig_server_connected(SERVER_REC *server)
 		    TXT_CONNECTION_ESTABLISHED, server->connrec->address);
 
 	if(server->connrec->use_ssl)
-		printtext(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
 			"Using ciphersuite %s", server->connrec->ssl_current_cipher);
 }
 
