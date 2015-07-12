@@ -10,7 +10,7 @@
 # Remember to include the asterisk ('*').
 $SRC_PATH='src';
 
-@files = `find src -name '*.c'`;
+@files = sort `find src -name '*.c'`;
 
 foreach $file (@files) {
    open (FILE, "$file");
