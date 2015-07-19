@@ -76,6 +76,29 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 	return g_strconcat(username, "@", hostname, NULL);;
 }
 
+/* your hostname address (host) */
+static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
+{
+	IRC_SERVER_REC *ircserver;
+	char hostname[100];
+	char **list;
+
+	ircserver = IRC_SERVER(server);
+
+	/* prefer the _real_ /userhost reply */
+	if (ircserver != NULL && ircserver->userhost != NULL) {
+		list = g_strsplit(ircserver->userhost, "@", -1);
+		return list[1];
+	}
+
+	/* haven't received userhost reply yet. guess something */
+	*free_ret = TRUE;
+
+	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
+		strcpy(hostname, "??");
+	return g_strconcat(hostname, NULL);
+}
+
 /* user mode in active server */
 static char *expando_usermode(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -136,6 +159,9 @@ void irc_expandos_init(void)
 	expando_create("X", expando_userhost,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("x", expando_hostname,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 	expando_create("usermode", expando_usermode,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW,
@@ -164,6 +190,7 @@ void irc_expandos_deinit(void)
 	expando_destroy("H", expando_server_numeric);
 	expando_destroy("S", expando_servername);
 	expando_destroy("X", expando_userhost);
+	expando_destroy("x", expando_hostname);
 	expando_destroy("usermode", expando_usermode);
 	expando_destroy("cumode", expando_cumode);
 
