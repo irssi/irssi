@@ -155,7 +155,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		if (*target == '\0' ||
 		    g_ascii_strcasecmp(target, client->proxy_address) == 0 ||
 		    g_ascii_strcasecmp(target, client->nick) == 0) {
-			proxy_outdata(client, ":%s PONG %s :%s\n",
+			proxy_outdata(client, ":%s PONG %s :%s\r\n",
 				      client->proxy_address,
                                       client->proxy_address, origin);
 			g_free(params);
@@ -174,18 +174,18 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 					/* kludgy way to check if the clients aren't the same */
 					(client->recv_tag != rec->recv_tag)) {
 						if (rec->want_ctcp == 1)
-							proxy_outdata(rec, ":%s NOTICE %s :Another client is now receiving CTCPs sent to %s\n",
+							proxy_outdata(rec, ":%s NOTICE %s :Another client is now receiving CTCPs sent to %s\r\n",
 			                                      rec->proxy_address, rec->nick, rec->listen->ircnet);
 						rec->want_ctcp = 0;
 		                }
 
 			}
-			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\n",
+			proxy_outdata(client, ":%s NOTICE %s :You're now receiving CTCPs sent to %s\r\n",
 				      client->proxy_address, client->nick,client->listen->ircnet);
 		} else if (g_ascii_strcasecmp(args, "CTCP OFF") == 0) {
                         /* client wants proxy to handle all ctcps */
 			client->want_ctcp = 0;
-			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\n",
+			proxy_outdata(client, ":%s NOTICE %s :Proxy is now handling itself CTCPs sent to %s\r\n",
 				      client->proxy_address, client->nick, client->listen->ircnet);
 		} else {
 			signal_emit("proxy client command", 3, client, args, data);
@@ -194,7 +194,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	}
 
 	if (client->server == NULL || !client->server->connected) {
-		proxy_outdata(client, ":%s NOTICE %s :Not connected to server\n",
+		proxy_outdata(client, ":%s NOTICE %s :Not connected to server\r\n",
 			      client->proxy_address, client->nick);
                 return;
 	}
@@ -371,7 +371,7 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 	g_return_if_fail(line != NULL);
 
 	/* send server event to all clients */
-	g_string_printf(next_line, "%s\n", line);
+	g_string_printf(next_line, "%s\r\n", line);
 }
 
 static void sig_server_event(IRC_SERVER_REC *server, const char *line,
@@ -465,7 +465,7 @@ static void event_connected(IRC_SERVER_REC *server)
 		    (g_strcmp0(rec->listen->ircnet, "*") == 0 ||
 		     (chatnet != NULL &&
 		      g_ascii_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
-			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\n",
+			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\r\n",
 				      rec->proxy_address, rec->nick);
 			rec->server = server;
 			proxy_client_reset_nick(rec);
@@ -478,7 +478,7 @@ static void proxy_server_disconnected(CLIENT_REC *client,
 {
 	GSList *tmp;
 
-	proxy_outdata(client, ":%s NOTICE %s :Connection lost to server %s\n",
+	proxy_outdata(client, ":%s NOTICE %s :Connection lost to server %s\r\n",
 		      client->proxy_address, client->nick,
 		      server->connrec->address);
 
