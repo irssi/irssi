@@ -32,6 +32,7 @@
 #include "irc-queries.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
+#include "channels-setup.h"
 #include "channel-rejoin.h"
 #include "servers-idle.h"
 #include "servers-reconnect.h"
@@ -586,36 +587,64 @@ void irc_servers_start_cmd_timeout(void)
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
 char *irc_server_get_channels(IRC_SERVER_REC *server)
 {
+	g_return_val_if_fail(server != NULL, FALSE);
+
 	GSList *tmp;
 	GString *chans, *keys;
 	char *ret;
-	int use_keys;
 
-	g_return_val_if_fail(server != NULL, FALSE);
+	int use_keys;
+	char *rejoin_channels_mode = g_strdup(settings_get_str("rejoin_channels_on_reconnect"));
+
+	if (rejoin_channels_mode == NULL ||
+	    (g_ascii_strcasecmp(rejoin_channels_mode, "on") != 0 &&
+	     g_ascii_strcasecmp(rejoin_channels_mode, "off") != 0 &&
+	     g_ascii_strcasecmp(rejoin_channels_mode, "auto") != 0)) {
+		g_warning("Invalid value for 'rejoin_channels_on_reconnect', valid values are 'on', 'off', 'auto', using 'on' as default value.");
+		rejoin_channels_mode = g_strdup("on");
+	}
 
 	chans = g_string_new(NULL);
 	keys = g_string_new(NULL);
 	use_keys = FALSE;
 
+	/* do we want to rejoin channels in the first place? */
+	if(g_ascii_strcasecmp(rejoin_channels_mode, "off") == 0) {
+		g_string_free(chans, TRUE);
+		g_string_free(keys, TRUE);
+		g_free(rejoin_channels_mode);
+		return g_strdup("");
+	}
+
 	/* get currently joined channels */
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
-
-		g_string_append_printf(chans, "%s,", channel->name);
-		g_string_append_printf(keys, "%s,", channel->key == NULL ? "x" :
-				  channel->key);
-		if (channel->key != NULL)
-			use_keys = TRUE;
+		CHANNEL_SETUP_REC *setup = channel_setup_find(channel->name,
+							channel->server->connrec->chatnet);
+		if ((setup != NULL && setup->autojoin && g_ascii_strcasecmp(rejoin_channels_mode, "auto") == 0) ||
+		    g_ascii_strcasecmp(rejoin_channels_mode, "on") == 0) {
+			g_string_append_printf(chans, "%s,", channel->name);
+			g_string_append_printf(keys, "%s,", channel->key == NULL ? "x" :
+										channel->key);
+			if (channel->key != NULL)
+				use_keys = TRUE;
+		}
 	}
 
 	/* get also the channels that are in rejoin list */
 	for (tmp = server->rejoin_channels; tmp != NULL; tmp = tmp->next) {
 		REJOIN_REC *rec = tmp->data;
+		CHANNEL_SETUP_REC *setup = channel_setup_find(rec->channel,
+							server->tag);
 
-		g_string_append_printf(chans, "%s,", rec->channel);
-		g_string_append_printf(keys, "%s,", rec->key == NULL ? "x" :
-				  rec->key);
-		if (rec->key != NULL) use_keys = TRUE;
+		if ((setup != NULL && setup->autojoin && g_ascii_strcasecmp(rejoin_channels_mode, "auto") == 0) ||
+		    g_ascii_strcasecmp(rejoin_channels_mode, "on") == 0) {
+			g_string_append_printf(chans, "%s,", rec->channel);
+			g_string_append_printf(keys, "%s,", rec->key == NULL ? "x" :
+									rec->key);
+
+			if (rec->key != NULL) use_keys = TRUE;
+		}
 	}
 
 	if (chans->len > 0) {
@@ -627,6 +656,7 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	ret = chans->str;
 	g_string_free(chans, FALSE);
 	g_string_free(keys, TRUE);
+	g_free(rejoin_channels_mode);
 
 	return ret;
 }
@@ -972,6 +1002,7 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 
 void irc_servers_init(void)
 {
+	settings_add_str("servers", "rejoin_channels_on_reconnect", "on");
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_str("misc", "split_line_start", "");
 	settings_add_str("misc", "split_line_end", "");
