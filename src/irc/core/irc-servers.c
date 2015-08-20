@@ -202,8 +202,6 @@ static void server_init(IRC_SERVER_REC *server)
 
 	conn = server->connrec;
 
-	irc_send_cmd_now(server, "CAP LS");
-
 	if (conn->proxy != NULL && conn->proxy_password != NULL &&
 	    *conn->proxy_password != '\0') {
 		cmd = g_strdup_printf("PASS %s", conn->proxy_password);
@@ -216,6 +214,8 @@ static void server_init(IRC_SERVER_REC *server)
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
 	}
+
+	irc_send_cmd_now(server, "CAP LS");
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
