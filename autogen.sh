@@ -18,6 +18,10 @@ perl syntax.pl
 
 echo "Creating ChangeLog..."
 git log > $srcdir/ChangeLog
+if test "$?" -ne 0; then
+    echo "**Error**: ${PKG_NAME} Autogen must be run in a git clone, cannot proceed."
+    exit 1
+fi
 
 files=`echo docs/help/in/*.in|sed -e 's,docs/help/in/Makefile.in ,,' -e 's,docs/help/in/,!,g' -e 's/\.in /.in ?/g'`
 cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/in/Makefile.am
