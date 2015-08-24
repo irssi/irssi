@@ -211,6 +211,30 @@ void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data
 	return NULL;
 }
 
+void gslist_free_full (GSList *list, GDestroyNotify free_func)
+{
+	GSList *tmp;
+
+	if (!list)
+		return;
+
+	for (tmp = list; tmp != NULL; tmp = tmp->next)
+		free_func(tmp->data);
+
+	g_slist_free(list);
+}
+
+GSList *gslist_remove_string (GSList *list, const char *str)
+{
+	GSList *l;
+
+	l = g_slist_find_custom(list, str, (GCompareFunc) g_strcmp0);
+	if (l != NULL)
+		return g_slist_remove_link(list, l);
+
+	return list;
+}
+
 /* `list' contains pointer to structure with a char* to string. */
 char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 {
