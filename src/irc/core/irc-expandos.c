@@ -82,13 +82,16 @@ static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 	IRC_SERVER_REC *ircserver;
 	char hostname[100];
 	char **list;
+	char *hostname_split;
 
 	ircserver = IRC_SERVER(server);
 
 	/* prefer the _real_ /userhost reply */
 	if (ircserver != NULL && ircserver->userhost != NULL) {
 		list = g_strsplit(ircserver->userhost, "@", -1);
-		return list[1];
+		hostname_split = g_strdup(list[1]);
+		g_strfreev(list);
+		return hostname_split;
 	}
 
 	/* haven't received userhost reply yet. guess something */
@@ -96,7 +99,7 @@ static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
 		strcpy(hostname, "??");
-	return g_strconcat(hostname, NULL);
+	return g_strdup(hostname);
 }
 
 /* user mode in active server */
