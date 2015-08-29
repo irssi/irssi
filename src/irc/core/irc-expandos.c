@@ -72,7 +72,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 		username = ircserver->connrec->username;
 
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
-		strcpy(hostname, "??");
+		strcpy(hostname, "(none)");
 	return g_strconcat(username, "@", hostname, NULL);;
 }
 
@@ -98,7 +98,7 @@ static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 
 	/* haven't received userhost reply yet. guess something */
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
-		strcpy(hostname, "??");
+		strcpy(hostname, "(none)");
 	return g_strdup(hostname);
 }
 
