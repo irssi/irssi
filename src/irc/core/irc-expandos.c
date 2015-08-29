@@ -58,7 +58,6 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 	const char *username;
 	char hostname[HOST_NAME_MAX];
 
-
 	ircserver = IRC_SERVER(server);
 
 	/* prefer the _real_ /userhost reply */
