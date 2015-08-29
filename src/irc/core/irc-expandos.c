@@ -86,6 +86,8 @@ static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 
 	ircserver = IRC_SERVER(server);
 
+	*free_ret = TRUE;
+
 	/* prefer the _real_ /userhost reply */
 	if (ircserver != NULL && ircserver->userhost != NULL) {
 		list = g_strsplit(ircserver->userhost, "@", -1);
@@ -95,8 +97,6 @@ static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 	}
 
 	/* haven't received userhost reply yet. guess something */
-	*free_ret = TRUE;
-
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
 		strcpy(hostname, "??");
 	return g_strdup(hostname);
