@@ -121,4 +121,7 @@ int find_substr(const char *list, const char *item);
 /* split `str' into `len' sized substrings */
 char **strsplit_len(const char *str, int len, gboolean onspace);
 
+/* trim trailing whitespace */
+void strchomp(char *str);
+
 #endif
