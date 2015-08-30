@@ -857,7 +857,12 @@ static void parse_command(const char *command, int expand_aliases,
 
 	cmd = orig = g_strconcat("command ", command, NULL);
 	args = strchr(cmd+8, ' ');
-	if (args != NULL) *args++ = '\0'; else args = "";
+	if (args == NULL)
+		args = "";
+	else {
+		*args++ = '\0';
+		strchomp(args);
+	}
 
 	/* check if there's an alias for command. Don't allow
 	   recursive aliases */

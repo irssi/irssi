@@ -1019,3 +1019,12 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 
 	return ret;
 }
+
+void strchomp(char *str) {
+	char *i, *j;
+
+	for (i = j = str; *i; i++)
+		if (!isspace(*i)) *j++ = *i;
+
+	*j = '\0';
+}
