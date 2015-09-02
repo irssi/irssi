@@ -42,6 +42,9 @@
 #include "fe-windows.h"
 #include "fe-irc-server.h"
 
+int fe_channel_is_opchannel(IRC_SERVER_REC *server, const char *target);
+const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target);
+
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
@@ -52,12 +55,14 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 	if (nick == NULL) nick = server->real_address;
 	if (addr == NULL) addr = "";
-	if (*target == '@' && server_ischannel(SERVER(server), &target[1])) {
+
+	if (fe_channel_is_opchannel(server, target)) {
 		/* Hybrid 6 feature, send msg to all ops in channel */
-		recoded = recode_in(SERVER(server), msg, target+1);
+		target = (char *)fe_channel_skip_prefix(server, target);
+		recoded = recode_in(SERVER(server), msg, target);
 		signal_emit("message irc op_public", 5,
 			    server, recoded, nick, addr,
-			    get_visible_target(server, target+1));
+			    get_visible_target(server, target));
 	} else {
 		recoded = recode_in(SERVER(server), msg, server_ischannel(SERVER(server), target) ? target : nick);
 		signal_emit(server_ischannel(SERVER(server), target) ?
