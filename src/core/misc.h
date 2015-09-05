@@ -21,6 +21,9 @@ GSList *gslist_find_string(GSList *list, const char *key);
 GSList *gslist_find_icase_string(GSList *list, const char *key);
 GList *glist_find_string(GList *list, const char *key);
 GList *glist_find_icase_string(GList *list, const char *key);
+GSList *gslist_remove_string (GSList *list, const char *str);
+
+void gslist_free_full (GSList *list, GDestroyNotify free_func);
 
 void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data);
 

@@ -32,6 +32,7 @@
 #include "irc-queries.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
+#include "irc-cap.h"
 #include "channel-rejoin.h"
 #include "servers-idle.h"
 #include "servers-reconnect.h"
@@ -213,6 +214,8 @@ static void server_init(IRC_SERVER_REC *server)
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
 	}
+
+	irc_send_cmd_now(server, "CAP LS");
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
@@ -411,7 +414,16 @@ static void sig_disconnected(IRC_SERVER_REC *server)
                         server_redirect_destroy(tmp->next->data);
 	}
 	g_slist_free(server->cmdqueue);
-        server->cmdqueue = NULL;
+	server->cmdqueue = NULL;
+
+	gslist_free_full(server->cap_active, (GDestroyNotify) g_free);
+	server->cap_active = NULL;
+
+	gslist_free_full(server->cap_supported, (GDestroyNotify) g_free);
+	server->cap_supported = NULL;
+
+	gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+	server->cap_queue = NULL;
 
 	/* these are dynamically allocated only if isupport was sent */
 	g_hash_table_foreach(server->isupport,
