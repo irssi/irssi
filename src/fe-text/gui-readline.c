@@ -66,6 +66,7 @@ static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
 static int paste_join_multiline;
 static int paste_timeout_id;
+static int paste_use_bracketed_mode;
 static int paste_bracketed_mode;
 
 /* Terminal sequences that surround the input when the terminal has the
@@ -662,11 +663,11 @@ static void sig_input(void)
 	} else {
 		term_gets(paste_buffer, &paste_line_count);
 
-		/* use the bracketed paste mode to detect when the user has
-		 * pasted some text into the field. */
-		if (paste_buffer->len > 12) {
+		/* use the bracketed paste mode to detect when the user pastes
+		 * some text into the entry */
+		if (paste_use_bracketed_mode != FALSE && paste_buffer->len > 12) {
 			/* try to find the start/end sequence */
-			int seq_start = memmem(paste_buffer->data, 
+			int seq_start = memmem(paste_buffer->data,
 					       paste_buffer->len * g_array_get_element_size(paste_buffer),
 					       bp_start, sizeof(bp_start)) != NULL,
 			    seq_end   = memmem(paste_buffer->data,
@@ -678,7 +679,7 @@ static void sig_input(void)
 			if (seq_start) {
 				paste_bracketed_mode = TRUE;
 				/* remove the leading sequence chars */
-				memmove(paste_buffer->data, paste_buffer->data + sizeof(bp_start), 
+				memmove(paste_buffer->data, paste_buffer->data + sizeof(bp_start),
 					paste_buffer->len * g_array_get_element_size(paste_buffer) - sizeof(bp_start));
 				g_array_set_size(paste_buffer, paste_buffer->len - 6);
 			}
@@ -969,6 +970,7 @@ static void setup_changed(void)
 
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
+	paste_use_bracketed_mode = settings_get_bool("paste_use_bracketed_mode");
 }
 
 void gui_readline_init(void)
@@ -990,6 +992,7 @@ void gui_readline_init(void)
 
 	settings_add_str("history", "scroll_page_count", "/2");
 	settings_add_time("misc", "paste_detect_time", "5msecs");
+	settings_add_bool("misc", "paste_use_bracketed_mode", FALSE);
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
