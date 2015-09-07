@@ -37,6 +37,7 @@
 #include "gui-windows.h"
 #include "utf8.h"
 
+#include <string.h>
 #include <signal.h>
 
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
@@ -65,6 +66,13 @@ static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
 static int paste_join_multiline;
 static int paste_timeout_id;
+static int paste_bracketed_mode;
+
+/* Terminal sequences that surround the input when the terminal has the
+ * bracketed paste mode active. Fror more details see
+ * https://cirw.in/blog/bracketed-paste */
+static const unichar bp_start[] = { 0x1b, '[', '2', '0', '0', '~' };
+static const unichar bp_end[]   = { 0x1b, '[', '2', '0', '1', '~' };
 
 static void sig_input(void);
 
@@ -647,12 +655,43 @@ static void sig_input(void)
 		unichar key;
 		term_gets(buffer, &line_count);
 		key = g_array_index(buffer, unichar, 0);
+		/* Either Ctrl-k or Ctrl-c is pressed */
 		if (key == 11 || key == 3)
 			paste_flush(key == 11);
 		g_array_free(buffer, TRUE);
 	} else {
 		term_gets(paste_buffer, &paste_line_count);
-		if (paste_detect_time > 0 && paste_buffer->len >= 3) {
+
+		/* use the bracketed paste mode to detect when the user has
+		 * pasted some text into the field. */
+		if (paste_buffer->len > 12) {
+			/* try to find the start/end sequence */
+			int seq_start = memmem(paste_buffer->data, 
+					       paste_buffer->len * g_array_get_element_size(paste_buffer),
+					       bp_start, sizeof(bp_start)) != NULL,
+			    seq_end   = memmem(paste_buffer->data,
+					       paste_buffer->len * g_array_get_element_size(paste_buffer),
+					       bp_end, sizeof(bp_end)) != NULL;
+
+			g_warning("found sequences : start %d end %d", seq_start, seq_end);
+
+			if (seq_start) {
+				paste_bracketed_mode = TRUE;
+				/* remove the leading sequence chars */
+				memmove(paste_buffer->data, paste_buffer->data + sizeof(bp_start), 
+					paste_buffer->len * g_array_get_element_size(paste_buffer) - sizeof(bp_start));
+				g_array_set_size(paste_buffer, paste_buffer->len - 6);
+			}
+
+			if (seq_end) {
+				paste_bracketed_mode = FALSE;
+				/* remove the trailing sequence chars */
+				g_array_set_size(paste_buffer, paste_buffer->len - 6);
+				/* decide what to do with the buffer */
+				paste_timeout(NULL);
+			}
+		}
+		else if (paste_detect_time > 0 && paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
@@ -945,6 +984,7 @@ void gui_readline_init(void)
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
         paste_old_prompt = NULL;
 	paste_timeout_id = -1;
+	paste_bracketed_mode = FALSE;
 	g_get_current_time(&last_keypress);
         input_listen_init(STDIN_FILENO);
 
