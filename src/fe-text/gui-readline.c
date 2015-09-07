@@ -679,9 +679,7 @@ static void sig_input(void)
 			if (seq_start) {
 				paste_bracketed_mode = TRUE;
 				/* remove the leading sequence chars */
-				memmove(paste_buffer->data, paste_buffer->data + sizeof(bp_start),
-					paste_buffer->len * g_array_get_element_size(paste_buffer) - sizeof(bp_start));
-				g_array_set_size(paste_buffer, paste_buffer->len - 6);
+				g_array_remove_range(paste_buffer, 0, 6);
 			}
 
 			if (seq_end) {
