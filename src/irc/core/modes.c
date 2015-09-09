@@ -488,7 +488,7 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &mode);
 
-	if (!ischannel(*channel)) {
+	if (!server_ischannel(SERVER(server), channel)) {
 		/* user mode change */
 		parse_user_mode(server, mode);
 	} else {
@@ -536,7 +536,7 @@ static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &target, &mode);
-	if (!ischannel(*target)) {
+	if (!server_ischannel(SERVER(server), target)) {
                 /* we requested a user mode change, save this */
 		mode = modes_join(NULL, server->wanted_usermode, mode, FALSE);
                 g_free_not_null(server->wanted_usermode);
@@ -856,7 +856,7 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 			target = chanrec->name;
 
 		irc_send_cmdv(server, "MODE %s", target);
-	} else if (ischannel(*target))
+	} else if (server_ischannel(SERVER(server), target))
 		channel_set_mode(server, target, mode);
 	else {
 		if (g_ascii_strcasecmp(target, server->nick) == 0) {

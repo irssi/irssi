@@ -262,7 +262,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 
 		ignore_next = TRUE;
 		if (*msg != '\001' || msg[strlen(msg)-1] != '\001') {
-	        	signal_emit(ischannel(*target) ?
+			signal_emit(server_ischannel(SERVER(client->server), target) ?
 				    "message own_public" : "message own_private", 4,
 				    client->server, msg, target, target);
 		} else if (strncmp(msg+1, "ACTION ", 7) == 0) {

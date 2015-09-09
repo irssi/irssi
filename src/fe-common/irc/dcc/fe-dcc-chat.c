@@ -44,7 +44,7 @@ static void dcc_request(CHAT_DCC_REC *dcc)
         if (!IS_DCC_CHAT(dcc)) return;
 
 	printformat(dcc->server, NULL, MSGLEVEL_DCC,
-		    ischannel(*dcc->target) ? IRCTXT_DCC_CHAT_CHANNEL :
+		    server_ischannel(SERVER(dcc->server), dcc->target) ? IRCTXT_DCC_CHAT_CHANNEL :
 		    IRCTXT_DCC_CHAT, dcc->id, dcc->addrstr,
 		    dcc->port, dcc->target);
 }

@@ -51,7 +51,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 
 	/* Unless specifically said in dcc_autoget_masks, don't do autogets
 	   sent to channels. */
-	if (*masks == '\0' && dcc->target != NULL && ischannel(*dcc->target))
+	if (*masks == '\0' && dcc->target != NULL && server_ischannel(SERVER(dcc->server), dcc->target))
 		return;
 
 	/* don't autoget files beginning with a dot, if download dir is

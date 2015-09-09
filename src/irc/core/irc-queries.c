@@ -60,8 +60,8 @@ static void check_query_changes(IRC_SERVER_REC *server, const char *nick,
 {
 	QUERY_REC *query;
 
-	if (ischannel(*target))
-                return;
+	if (server_ischannel(SERVER(server), target))
+		return;
 
 	query = irc_query_find(server, nick);
 	if (query == NULL)
