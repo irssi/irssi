@@ -969,6 +969,9 @@ static void setup_changed(void)
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
 	paste_use_bracketed_mode = settings_get_bool("paste_use_bracketed_mode");
+
+	/* Enable the bracketed paste mode on demand */
+	term_set_bracketed_paste_mode(paste_use_bracketed_mode);
 }
 
 void gui_readline_init(void)
