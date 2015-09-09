@@ -215,7 +215,7 @@ void gslist_free_full (GSList *list, GDestroyNotify free_func)
 {
 	GSList *tmp;
 
-	if (!list)
+	if (list == NULL)
 		return;
 
 	for (tmp = list; tmp != NULL; tmp = tmp->next)
