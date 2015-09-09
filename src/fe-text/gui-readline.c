@@ -666,15 +666,11 @@ static void sig_input(void)
 		/* use the bracketed paste mode to detect when the user pastes
 		 * some text into the entry */
 		if (paste_use_bracketed_mode != FALSE && paste_buffer->len > 12) {
-			/* try to find the start/end sequence */
-			int seq_start = memmem(paste_buffer->data,
-					       paste_buffer->len * g_array_get_element_size(paste_buffer),
-					       bp_start, sizeof(bp_start)) != NULL,
-			    seq_end   = memmem(paste_buffer->data,
-					       paste_buffer->len * g_array_get_element_size(paste_buffer),
-					       bp_end, sizeof(bp_end)) != NULL;
-
-			g_warning("found sequences : start %d end %d", seq_start, seq_end);
+			/* try to find the start/end sequence, we know that we
+			 * either find those at the start/end of the buffer or
+			 * we don't find those at all. */
+			int seq_start = !memcmp(paste_buffer->data, bp_start, sizeof(bp_start)),
+			    seq_end = !memcmp(paste_buffer->data + paste_buffer->len * g_array_get_element_size(paste_buffer) - sizeof(bp_end), bp_end, sizeof(bp_end));
 
 			if (seq_start) {
 				paste_bracketed_mode = TRUE;
