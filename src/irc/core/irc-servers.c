@@ -33,6 +33,7 @@
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
 #include "irc-cap.h"
+#include "sasl.h"
 #include "channel-rejoin.h"
 #include "servers-idle.h"
 #include "servers-reconnect.h"
@@ -214,6 +215,9 @@ static void server_init(IRC_SERVER_REC *server)
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
 	}
+
+	if (conn->sasl_mechanism != SASL_MECHANISM_NONE)
+		cap_toggle(server, "sasl", TRUE);
 
 	irc_send_cmd_now(server, "CAP LS");
 

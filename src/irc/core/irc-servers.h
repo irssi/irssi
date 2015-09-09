@@ -27,6 +27,10 @@ struct _IRC_SERVER_CONNECT_REC {
 	char *usermode;
 	char *alternate_nick;
 
+	int sasl_mechanism;
+	char *sasl_username;
+	char *sasl_password;
+
 	int max_cmds_at_once;
 	int cmd_queue_speed;
 	int max_query_chans;
