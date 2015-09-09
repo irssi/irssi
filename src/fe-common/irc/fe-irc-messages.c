@@ -37,51 +37,6 @@
 #include "fe-queries.h"
 #include "window-items.h"
 
-int fe_channel_is_opchannel(IRC_SERVER_REC *server, const char *target)
-{
-	const char *statusmsg;
-
-	/* Quick check */
-	if (server == NULL || server->prefix[(int)(unsigned char)*target] == 0)
-		return FALSE;
-
-	statusmsg = g_hash_table_lookup(server->isupport, "statusmsg");
-	if (statusmsg == NULL)
-		statusmsg = "@+";
-
-	return strchr(statusmsg, *target) != NULL;
-}
-
-const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target)
-{
-	const char *statusmsg;
-
-	/* Quick check */
-	if (server == NULL || server->prefix[(int)(unsigned char)*target] == 0)
-		return target;
-
-	/* Exit early if target doesn't name a channel */
-	if (server_ischannel(SERVER(server), target) == FALSE)
-		return FALSE;
-
-	statusmsg = g_hash_table_lookup(server->isupport, "statusmsg");
-
-	/* Hack: for bahamut 1.4 which sends neither STATUSMSG nor
-	 * WALLCHOPS in 005, accept @#chan and @+#chan (but not +#chan) */
-	if (statusmsg == NULL && *target != '@')
-		return target;
-
-	if (statusmsg == NULL)
-		statusmsg = "@+";
-
-	/* Strip the leading statusmsg prefixes */
-	while (strchr(statusmsg, *target) != NULL) {
-		target++;
-	}
-
-	return target;
-}
-
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
 {

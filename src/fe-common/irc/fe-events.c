@@ -42,9 +42,6 @@
 #include "fe-windows.h"
 #include "fe-irc-server.h"
 
-int fe_channel_is_opchannel(IRC_SERVER_REC *server, const char *target);
-const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target);
-
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {

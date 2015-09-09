@@ -28,12 +28,10 @@
 
 #include "themes.h"
 #include "fe-irc-server.h"
+#include "fe-irc-channels.h"
 
 void fe_irc_modules_init(void);
 void fe_irc_modules_deinit(void);
-
-void fe_irc_channels_init(void);
-void fe_irc_channels_deinit(void);
 
 void fe_irc_queries_init(void);
 void fe_irc_queries_deinit(void);
