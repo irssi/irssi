@@ -16,7 +16,9 @@ static gboolean sasl_timeout (IRC_SERVER_REC *server)
 	irc_send_cmd_now(server, "AUTHENTICATE *");
 	cap_finish_negotiation(server);
 
-	return G_SOURCE_REMOVE;
+  server->sasl_timeout = -1;
+
+	return FALSE;
 }
 
 static void sasl_start (IRC_SERVER_REC *server, const char *data, const char *from)
@@ -40,7 +42,10 @@ static void sasl_start (IRC_SERVER_REC *server, const char *data, const char *fr
 static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	/* Stop any pending timeout, if any */
-	g_source_remove(server->sasl_timeout);
+  if (server->sasl_timeout != -1) {
+    g_source_remove(server->sasl_timeout);
+    server->sasl_timeout = -1;
+  }
 
 	g_critical("Authentication failed, make sure your credentials are correct and that the mechanism "
 	           "you have selected is supported by this server.");
@@ -51,7 +56,10 @@ static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *fro
 
 static void sasl_already (IRC_SERVER_REC *server, const char *data, const char *from)
 {
-	g_source_remove(server->sasl_timeout);
+  if (server->sasl_timeout != -1) {
+    g_source_remove(server->sasl_timeout);
+    server->sasl_timeout = -1;
+  }
 
 	/* We're already authenticated, do nothing */
 	cap_finish_negotiation(server);
@@ -59,7 +67,10 @@ static void sasl_already (IRC_SERVER_REC *server, const char *data, const char *
 
 static void sasl_success (IRC_SERVER_REC *server, const char *data, const char *from)
 {
-	g_source_remove(server->sasl_timeout);
+  if (server->sasl_timeout != -1) {
+    g_source_remove(server->sasl_timeout);
+    server->sasl_timeout = -1;
+  }
 
 	/* The authentication succeeded, time to finish the CAP negotiation */
 	g_warning("SASL authentication succeeded");
@@ -75,7 +86,10 @@ static void sasl_step (IRC_SERVER_REC *server, const char *data, const char *fro
 	conn = server->connrec;
 
 	/* Stop the timer */
-	g_source_remove(server->sasl_timeout);
+  if (server->sasl_timeout != -1) {
+    g_source_remove(server->sasl_timeout);
+    server->sasl_timeout = -1;
+  }
 
 	switch (conn->sasl_mechanism) {
 		case SASL_MECHANISM_PLAIN:

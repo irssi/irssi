@@ -60,7 +60,7 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 		return;
 
 	if (rec->usermode != NULL)
-                iconfig_node_set_str(node, "usermode", rec->usermode);
+		iconfig_node_set_str(node, "usermode", rec->usermode);
 
 	if (rec->max_cmds_at_once > 0)
 		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
@@ -77,6 +77,13 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 		iconfig_node_set_int(node, "max_modes", rec->max_modes);
 	if (rec->max_whois > 0)
 		iconfig_node_set_int(node, "max_whois", rec->max_whois);
+
+	if (rec->sasl_mechanism != NULL)
+		iconfig_node_set_str(node, "sasl_mechanism", rec->sasl_mechanism);
+	if (rec->sasl_username != NULL)
+		iconfig_node_set_str(node, "sasl_username", rec->sasl_username);
+	if (rec->sasl_password != NULL)
+		iconfig_node_set_str(node, "sasl_password", rec->sasl_password);
 }
 
 static void sig_chatnet_destroyed(IRC_CHATNET_REC *rec)
