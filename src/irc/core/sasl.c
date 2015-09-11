@@ -41,16 +41,22 @@ static void sasl_start (IRC_SERVER_REC *server, const char *data, const char *fr
 
 static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *from)
 {
+	char *params, *error;
+
 	/* Stop any pending timeout, if any */
 	if (server->sasl_timeout != -1) {
 		g_source_remove(server->sasl_timeout);
 		server->sasl_timeout = -1;
 	}
 
-	g_critical("Authentication failed with reason \"%s\"", data);
+	params = event_get_params(data, 2, NULL, &error);
+
+	g_critical("Authentication failed with reason \"%s\"", error);
 
 	/* Terminate the negotiation */
 	cap_finish_negotiation(server);
+
+	g_free(params);
 }
 
 static void sasl_already (IRC_SERVER_REC *server, const char *data, const char *from)
