@@ -132,7 +132,9 @@ void sasl_init(void)
 	signal_add_first("event 902", (SIGNAL_FUNC) sasl_fail);
 	signal_add_first("event 904", (SIGNAL_FUNC) sasl_fail);
 	signal_add_first("event 905", (SIGNAL_FUNC) sasl_fail);
+	signal_add_first("event 906", (SIGNAL_FUNC) sasl_fail);
 	signal_add_first("event 907", (SIGNAL_FUNC) sasl_already);
+	signal_add_first("event 908", (SIGNAL_FUNC) sasl_fail);
 }
 
 void sasl_deinit(void)
@@ -143,5 +145,7 @@ void sasl_deinit(void)
 	signal_remove("event 902", (SIGNAL_FUNC) sasl_fail);
 	signal_remove("event 904", (SIGNAL_FUNC) sasl_fail);
 	signal_remove("event 905", (SIGNAL_FUNC) sasl_fail);
+	signal_remove("event 906", (SIGNAL_FUNC) sasl_fail);
 	signal_remove("event 907", (SIGNAL_FUNC) sasl_already);
+	signal_remove("event 908", (SIGNAL_FUNC) sasl_fail);
 }
