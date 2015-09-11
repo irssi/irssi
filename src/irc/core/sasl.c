@@ -47,8 +47,7 @@ static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *fro
 		server->sasl_timeout = -1;
 	}
 
-	g_critical("Authentication failed, make sure your credentials are correct and that the mechanism "
-	           "you have selected is supported by this server.");
+	g_critical("Authentication failed with reason \"%s\"", data);
 
 	/* Terminate the negotiation */
 	cap_finish_negotiation(server);
@@ -93,15 +92,15 @@ static void sasl_step (IRC_SERVER_REC *server, const char *data, const char *fro
 
 	switch (conn->sasl_mechanism) {
 		case SASL_MECHANISM_PLAIN:
-			/* At this point we assume that conn->{username, password} are non-NULL.
+			/* At this point we assume that conn->sasl_{username, password} are non-NULL.
 			 * The PLAIN mechanism expects a NULL-separated string composed by the authorization identity, the
 			 * authentication identity and the password.
-			 * The authorization identity field is optional and can be omitted, the server will derive the
-			 * identity by looking at the credentials provided.
+			 * The authorization identity field is explicitly set to the user provided username.
 			 * The whole request is then encoded in base64. */
 
 			req = g_string_new(NULL);
 
+			g_string_append(req, conn->sasl_username);
 			g_string_append_c(req, '\0');
 			g_string_append(req, conn->sasl_username);
 			g_string_append_c(req, '\0');
