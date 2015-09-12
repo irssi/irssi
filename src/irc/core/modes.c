@@ -340,7 +340,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 {
 	IRC_SERVER_REC *server = channel->server;
         GString *newmode;
-	char *dup, *modestr, *arg, *curmode, type, *old_key;
+	char *modestr, *arg, *curmode, type, *old_key;
 	int umode;
 
 	g_return_if_fail(IS_IRC_CHANNEL(channel));
@@ -350,7 +350,7 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 	newmode = g_string_new(channel->mode);
 	old_key = update_key ? NULL : g_strdup(channel->key);
 
-	dup = modestr = g_strdup(mode);
+	modestr = g_strdup(mode);
 	curmode = cmd_get_param(&modestr);
 	while (*curmode != '\0') {
 		if (HAS_MODE_ARG(server, type, *curmode)) {
@@ -381,7 +381,6 @@ void parse_channel_modes(IRC_CHANNEL_REC *channel, const char *setby,
 
 		curmode++;
 	}
-	g_free(dup);
 
 	if (channel->key != NULL &&
 	    strchr(channel->mode, 'k') == NULL &&
@@ -416,14 +415,14 @@ char *modes_join(IRC_SERVER_REC *server, const char *old,
 		 const char *mode, int channel)
 {
 	GString *newmode;
-	char *dup, *modestr, *curmode, type;
+	char *modestr, *curmode, type;
 
         g_return_val_if_fail(mode != NULL, NULL);
 
 	type = '+';
 	newmode = g_string_new(old);
 
-	dup = modestr = g_strdup(mode);
+	modestr = g_strdup(mode);
 	curmode = cmd_get_param(&modestr);
 	while (*curmode != '\0' && *curmode != ' ') {
 		if (*curmode == '+' || *curmode == '-') {
@@ -441,7 +440,6 @@ char *modes_join(IRC_SERVER_REC *server, const char *old,
 
 		curmode++;
 	}
-	g_free(dup);
 
 	modestr = newmode->str;
 	g_string_free(newmode, FALSE);
@@ -467,25 +465,23 @@ static void parse_user_mode(IRC_SERVER_REC *server, const char *modestr)
 
 static void event_user_mode(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *mode;
+	char *nick, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &mode);
+	event_get_params(data, 3, NULL, &nick, &mode);
 	parse_user_mode(server, mode);
-
-	g_free(params);
 }
 
 static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick)
 {
 	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel, *mode;
+	char *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &mode);
 
 	if (!server_ischannel(SERVER(server), channel)) {
@@ -497,8 +493,6 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 		if (chanrec != NULL)
 			parse_channel_modes(chanrec, nick, mode, TRUE);
 	}
-
-	g_free(params);
 }
 
 static void event_oper(IRC_SERVER_REC *server, const char *data)
@@ -530,11 +524,11 @@ static void event_unaway(IRC_SERVER_REC *server, const char *data)
 static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data,
 				    const char *nick, const char *addr)
 {
-	char *params, *target, *mode;
+	char *target, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &target, &mode);
 	if (!server_ischannel(SERVER(server), target)) {
                 /* we requested a user mode change, save this */
@@ -542,8 +536,6 @@ static void sig_req_usermode_change(IRC_SERVER_REC *server, const char *data,
                 g_free_not_null(server->wanted_usermode);
 		server->wanted_usermode = mode;
 	}
-
-	g_free(params);
 
 	signal_emit("event mode", 4, server, data, nick, addr);
 }
@@ -596,7 +588,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 {
 	IRC_CHANNEL_REC *chanrec;
 	GString *tmode, *targs;
-	char *modestr, *curmode, *orig, type, prevtype;
+	char *modestr, *curmode, type, prevtype;
 	int count;
 
 	g_return_if_fail(IS_IRC_SERVER(server));
@@ -610,7 +602,7 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 	if (chanrec != NULL)
 		channel = chanrec->name;
 
-	orig = modestr = g_strdup(mode);
+	modestr = g_strdup(mode);
 
         type = '+'; prevtype = '\0';
 	curmode = cmd_get_param(&modestr);
@@ -670,7 +662,6 @@ void channel_set_mode(IRC_SERVER_REC *server, const char *channel,
 
 	g_string_free(tmode, TRUE);
 	g_string_free(targs, TRUE);
-	g_free(orig);
 }
 
 static int get_wildcard_nicks(GString *output, const char *mask,

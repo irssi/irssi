@@ -652,12 +652,12 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
-	char *params, *nick;
+	char *nick;
 	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 1, &nick);
+	event_get_params(data, 1, &nick);
 
 	if (g_strcmp0(server->nick, nick) != 0) {
 		/* nick changed unexpectedly .. connected via proxy, etc. */
@@ -692,16 +692,15 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	}
 
 	signal_emit("event connected", 1, server);
-	g_free(params);
 }
 
 static void event_server_info(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *ircd_version, *usermodes, *chanmodes;
+	char *ircd_version, *usermodes, *chanmodes;
 
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 5, NULL, NULL, &ircd_version, &usermodes, &chanmodes);
+	event_get_params(data, 5, NULL, NULL, &ircd_version, &usermodes, &chanmodes);
 
 	/* check if server understands I and e channel modes */
 	if (strchr(chanmodes, 'I') && strchr(chanmodes, 'e'))
@@ -710,8 +709,6 @@ static void event_server_info(IRC_SERVER_REC *server, const char *data)
 	/* save server version */
 	g_free_not_null(server->version);
 	server->version = g_strdup(ircd_version);
-
-	g_free(params);
 }
 
 static void parse_chanmodes(IRC_SERVER_REC *server, const char *sptr)
@@ -841,22 +838,22 @@ static void event_end_of_motd(IRC_SERVER_REC *server, const char *data)
 
 static void event_channels_formed(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channels;
+	char *channels;
 
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 2, NULL, &channels);
+	event_get_params(data, 2, NULL, &channels);
         server->channels_formed = atoi(channels);
-	g_free(params);
 }
 
 static void event_hosthidden(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *newhost, *p, *newuserhost;
+	char *newhost, *p, *newuserhost;
 
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 2, NULL, &newhost);
+	event_get_params(data, 2, NULL, &newhost);
+
 	/* do a sanity check */
 	if (!strchr(newhost, '*') && !strchr(newhost, '?') &&
 			!strchr(newhost, '!') && !strchr(newhost, '#') &&
@@ -880,7 +877,6 @@ static void event_hosthidden(IRC_SERVER_REC *server, const char *data)
 			server->userhost = newuserhost;
 		}
 	}
-	g_free(params);
 }
 
 static void event_server_banned(IRC_SERVER_REC *server, const char *data)
@@ -903,14 +899,13 @@ static void event_error(IRC_SERVER_REC *server, const char *data)
 
 static void event_ping(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *origin, *target, *str;
+	char *origin, *target, *str;
 
-	params = event_get_params(data, 2, &origin, &target);
+	event_get_params(data, 2, &origin, &target);
 	str = *target == '\0' ? g_strconcat("PONG :", origin, NULL) :
 		g_strdup_printf("PONG %s :%s", target, origin);
 	irc_send_cmd_now(server, str);
         g_free(str);
-	g_free(params);
 }
 
 static void event_empty(void)
