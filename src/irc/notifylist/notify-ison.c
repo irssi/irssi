@@ -285,19 +285,17 @@ static void ison_check_parts(IRC_SERVER_REC *server)
 static void event_ison(IRC_SERVER_REC *server, const char *data)
 {
 	MODULE_SERVER_REC *mserver;
-	char *params, *online;
+	char *online;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 2, NULL, &online);
+	event_get_params(data, 2, NULL, &online);
 
 	mserver = MODULE_DATA(server);
 	ison_save_users(mserver, online);
 
 	if (--mserver->ison_count > 0) {
-		/* wait for the rest of the /ISON replies */
-		g_free(params);
                 return;
 	}
 
@@ -308,8 +306,6 @@ static void event_ison(IRC_SERVER_REC *server, const char *data)
 	g_slist_foreach(mserver->ison_tempusers, (GFunc) g_free, NULL);
 	g_slist_free(mserver->ison_tempusers);
 	mserver->ison_tempusers = NULL;
-
-	g_free(params);
 }
 
 static void read_settings(void)
