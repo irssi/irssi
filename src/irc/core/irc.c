@@ -248,16 +248,16 @@ char *event_get_param(char **data)
 }
 
 /* Get count parameters from data */
-char *event_get_params(const char *data, int count, ...)
+void event_get_params(const char *data, int count, ...)
 {
-	char **str, *tmp, *duprec, *datad;
+	char **str, *tmp, *datad;
 	gboolean rest;
 	va_list args;
 
 	g_return_val_if_fail(data != NULL, NULL);
 
 	va_start(args, count);
-	duprec = datad = g_strdup(data);
+	datad = g_strdup(data);
 
 	rest = count & PARAM_FLAG_GETREST;
 	count = PARAM_WITHOUT_FLAGS(count);
@@ -273,8 +273,6 @@ char *event_get_params(const char *data, int count, ...)
 		if (str != NULL) *str = tmp;
 	}
 	va_end(args);
-
-	return duprec;
 }
 
 static void irc_server_event(IRC_SERVER_REC *server, const char *line,

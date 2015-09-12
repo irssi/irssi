@@ -51,7 +51,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 /* Get count parameters from data */
 #include "commands.h"
 char *event_get_param(char **data);
-char *event_get_params(const char *data, int count, ...);
+void event_get_params(const char *data, int count, ...);
 
 void irc_irc_init(void);
 void irc_irc_deinit(void);
