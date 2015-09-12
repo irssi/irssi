@@ -466,12 +466,12 @@ static int dcc_timeout_func(void)
 
 static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 {
-	char *params, *nick;
+	char *nick;
 	GSList *tmp, *next;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 
 	/* check if we've send any dcc requests to this nick.. */
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
@@ -482,8 +482,6 @@ static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 		    dcc->nick != NULL && g_ascii_strcasecmp(dcc->nick, nick) == 0)
 			dcc_close(dcc);
 	}
-
-	g_free(params);
 }
 
 /* SYNTAX: DCC CLOSE <type> <nick> [<file>] */

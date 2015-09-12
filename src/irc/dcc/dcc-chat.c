@@ -771,16 +771,15 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 {
         QUERY_REC *query;
         CHAT_DCC_REC *dcc;
-	char *params, *nick, *tag;
+	char *nick, *tag;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(orignick != NULL);
 
-	params = event_get_params(data, 1, &nick);
+	event_get_params(data, 1, &nick);
 	if (g_ascii_strcasecmp(nick, orignick) == 0) {
 		/* shouldn't happen, but just to be sure irssi doesn't
 		   get into infinite loop */
-                g_free(params);
 		return;
 	}
 
@@ -803,8 +802,6 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
                         g_free(tag);
 		}
 	}
-
-	g_free(params);
 }
 
 void dcc_chat_init(void)
