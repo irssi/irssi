@@ -88,9 +88,9 @@ static void sig_event_forward(SERVER_REC *server, const char *data,
 			      const char *nick)
 {
 	IRC_CHANNEL_REC *channel;
-	char *params, *from, *to;
+	char *from, *to;
 
-	params = event_get_params(data, 3, NULL, &from, &to);
+	event_get_params(data, 3, NULL, &from, &to);
 	if (from != NULL && to != NULL && server_ischannel(server, from) && server_ischannel(server, to)) {
 		channel = irc_channel_find(server, from);
 		if (channel != NULL && irc_channel_find(server, to) == NULL) {
@@ -98,7 +98,6 @@ static void sig_event_forward(SERVER_REC *server, const char *data,
 					server->tag, to);
 		}
 	}
-	g_free(params);
 }
 
 void fe_irc_channels_init(void)

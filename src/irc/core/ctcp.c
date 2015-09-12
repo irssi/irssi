@@ -269,12 +269,12 @@ static void ctcp_reply(IRC_SERVER_REC *server, const char *data,
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
-	char *params, *target, *msg;
+	char *target, *msg;
 	int len;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, &target, &msg);
+	event_get_params(data, 2, &target, &msg);
 
 	/* handle only ctcp messages.. */
 	if (*msg == 1) {
@@ -287,18 +287,16 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 		signal_emit("ctcp msg", 5, server, msg, nick, addr, target);
 		signal_stop();
 	}
-
-	g_free(params);
 }
 
 static void event_notice(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
-	char *params, *target, *ptr, *msg;
+	char *target, *ptr, *msg;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, &target, &msg);
+	event_get_params(data, 2, &target, &msg);
 
 	/* handle only ctcp replies */
 	if (*msg == 1) {
@@ -308,8 +306,6 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 		signal_emit("ctcp reply", 5, server, msg, nick, addr, target);
 		signal_stop();
 	}
-
-	g_free(params);
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)

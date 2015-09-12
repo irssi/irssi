@@ -66,11 +66,11 @@ static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
 
 static void sig_unknown_command(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *cmd;
+	char *cmd;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &cmd);
+	event_get_params(data, 2, NULL, &cmd);
 	if (g_ascii_strcasecmp(cmd, "PING") == 0) {
 		/* some servers have disabled PING command, don't bother
 		   trying alternative methods to detect lag with these
@@ -79,7 +79,6 @@ static void sig_unknown_command(IRC_SERVER_REC *server, const char *data)
 		server->lag_sent.tv_sec = 0;
                 server->lag = 0;
 	}
-	g_free(params);
 }
 
 static int sig_check_lag(void)

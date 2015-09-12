@@ -103,19 +103,18 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *rec;
-	char *params, *type, *channel, *names, *ptr, *host;
+	char *type, *channel, *names, *ptr, *host;
         int op, halfop, voice;
 	char prefixes[MAX_USER_PREFIXES+1];
 	const char *nick_flags, *nick_flag_cur, *nick_flag_op;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 4, NULL, &type, &channel, &names);
+	event_get_params(data, 4, NULL, &type, &channel, &names);
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL || chanrec->names_got) {
 		/* unknown channel / names list already read */
-		g_free(params);
 		return;
 	}
 	nick_flags = server->get_nick_flags(SERVER(server));
@@ -185,20 +184,18 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 				nicklist_set_host(CHANNEL(chanrec), rec, host);
 		}
 	}
-
-	g_free(params);
 }
 
 static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel;
+	char *channel;
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *ownnick;
 	int nicks;
 
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL && !chanrec->names_got) {
@@ -216,20 +213,18 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 		chanrec->names_got = TRUE;
 		signal_emit("channel joined", 1, chanrec);
 	}
-
-	g_free(params);
 }
 
 static void event_who(SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
+	char *nick, *channel, *user, *host, *stat, *realname, *hops;
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 8, NULL, &channel, &user, &host,
-				  NULL, &nick, &stat, &realname);
+	event_get_params(data, 8, NULL, &channel, &user, &host,
+			 NULL, &nick, &stat, &realname);
 
 	/* get hop count */
 	hops = realname;
@@ -255,13 +250,11 @@ static void event_who(SERVER_REC *server, const char *data)
 	nicklist_update_flags(server, nick,
 			      strchr(stat, 'G') != NULL, /* gone */
 			      strchr(stat, '*') != NULL); /* ircop */
-
-	g_free(params);
 }
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *realname;
+	char *nick, *realname;
 	GSList *nicks, *tmp;
 	NICK_REC *rec;
 
@@ -269,8 +262,8 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 
 	/* first remove the gone-flag, if user is gone
 	   it will be set later.. */
-	params = event_get_params(data, 6, NULL, &nick, NULL,
-				  NULL, NULL, &realname);
+	event_get_params(data, 6, NULL, &nick, NULL,
+			 NULL, NULL, &realname);
 
 	nicks = nicklist_get_same(SERVER(server), nick);
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
@@ -284,55 +277,50 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 	/* reset gone and ircop status, we'll handle them in the following
 	   WHOIS replies */
 	nicklist_update_flags(SERVER(server), nick, FALSE, FALSE);
-	g_free(params);
 }
 
 static void event_whois_away(SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg;
+	char *nick, *awaymsg;
 
 	g_return_if_fail(data != NULL);
 
 	/* set user's gone flag.. */
-	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	event_get_params(data, 3, NULL, &nick, &awaymsg);
 	nicklist_update_flags(server, nick, TRUE, -1);
-	g_free(params);
 }
 
 static void event_own_away(SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
 	/* set user's gone flag.. */
-	params = event_get_params(data, 2, &nick, NULL);
+	event_get_params(data, 2, &nick, NULL);
 	nicklist_update_flags(server, nick, TRUE, -1);
-	g_free(params);
 }
 
 static void event_own_unaway(SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
 	/* set user's gone flag.. */
-	params = event_get_params(data, 2, &nick, NULL);
+	event_get_params(data, 2, &nick, NULL);
 	nicklist_update_flags(server, nick, FALSE, -1);
-	g_free(params);
 }
 
 static void event_whois_ircop(SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg;
+	char *nick, *awaymsg;
 
 	g_return_if_fail(data != NULL);
 
 	/* set user's gone flag.. */
-	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	event_get_params(data, 3, NULL, &nick, &awaymsg);
 	nicklist_update_flags(server, nick, -1, TRUE);
-	g_free(params);
 }
 
 static void event_nick_invalid(IRC_SERVER_REC *server, const char *data)
@@ -389,28 +377,26 @@ static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
 
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel;
+	char *channel;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 	if (!server_ischannel(SERVER(server), channel)) {
 		/* nick is unavailable. */
 		event_nick_in_use(server, data);
 	}
-
-	g_free(params);
 }
 
 static void event_nick(IRC_SERVER_REC *server, const char *data,
 		       const char *orignick)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(orignick != NULL);
 
-	params = event_get_params(data, 1, &nick);
+	event_get_params(data, 1, &nick);
 
 	if (g_ascii_strcasecmp(orignick, server->nick) == 0) {
 		/* You changed your nick */
@@ -425,18 +411,17 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	}
 
         nicklist_rename(SERVER(server), orignick, nick);
-	g_free(params);
 }
 
 static void event_userhost(SERVER_REC *server, const char *data)
 {
-	char *params, *hosts, **phosts, **pos, *ptr;
+	char *hosts, **phosts, **pos, *ptr;
 	int oper;
 
 	g_return_if_fail(data != NULL);
 
 	/* set user's gone flag.. */
-	params = event_get_params(data, 2, NULL, &hosts);
+	event_get_params(data, 2, NULL, &hosts);
 
 	phosts = g_strsplit(hosts, " ", -1);
 	for (pos = phosts; *pos != NULL; pos++) {
@@ -452,7 +437,6 @@ static void event_userhost(SERVER_REC *server, const char *data)
 		nicklist_update_flags(server, *pos, *ptr == '-', oper);
 	}
 	g_strfreev(phosts);
-	g_free(params);
 }
 
 static void sig_usermode(SERVER_REC *server)

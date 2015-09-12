@@ -35,7 +35,7 @@ static int massjoin_max_joins;
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
-	char *params, *channel, *ptr;
+	char *channel, *ptr;
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	GSList *nicks, *tmp;
@@ -47,13 +47,12 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	params = event_get_params(data, 1, &channel);
+	event_get_params(data, 1, &channel);
 	ptr = strchr(channel, 7); /* ^G does something weird.. */
 	if (ptr != NULL) *ptr = '\0';
 
 	/* find channel */
 	chanrec = irc_channel_find(server, channel);
-	g_free(params);
 	if (chanrec == NULL) return;
 
 	/* check that the nick isn't already in nicklist. seems to happen
@@ -98,7 +97,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *channel, *reason;
+	char *channel, *reason;
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 
@@ -109,12 +108,11 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	params = event_get_params(data, 2, &channel, &reason);
+	event_get_params(data, 2, &channel, &reason);
 
 	/* find channel */
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec == NULL) {
-		g_free(params);
 		return;
 	}
 
@@ -128,7 +126,6 @@ static void event_part(IRC_SERVER_REC *server, const char *data,
 		}
 		nicklist_remove(CHANNEL(chanrec), nickrec);
 	}
-	g_free(params);
 }
 
 static void event_quit(IRC_SERVER_REC *server, const char *data,
@@ -163,17 +160,16 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 
 static void event_kick(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel, *nick, *reason;
+	char *channel, *nick, *reason;
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, &channel, &nick, &reason);
+	event_get_params(data, 3, &channel, &nick, &reason);
 
 	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
 		/* you were kicked, no need to do anything */
-		g_free(params);
 		return;
 	}
 
@@ -190,8 +186,6 @@ static void event_kick(IRC_SERVER_REC *server, const char *data)
 		}
 		nicklist_remove(CHANNEL(chanrec), nickrec);
 	}
-
-	g_free(params);
 }
 
 static void massjoin_send_hash(gpointer key, NICK_REC *nick, GSList **list)

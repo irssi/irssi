@@ -182,7 +182,7 @@ static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post,
 void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 			int nickarg, int max_nicks)
 {
-	char *str, *pre, *post, *nicks;
+	char *pre, *post, *nicks;
 	char **nicklist, **tmp;
 	GString *nickstr;
 	int count;
@@ -190,10 +190,9 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(cmd != NULL);
 
-	str = split_nicks(cmd, &pre, &nicks, &post, nickarg);
+	split_nicks(cmd, &pre, &nicks, &post, nickarg);
 	if (nicks == NULL) {
                 /* no nicks given? */
-		g_free(str);
 		return;
 	}
 
@@ -221,8 +220,6 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	}
 	g_strfreev(nicklist);
 	g_string_free(nickstr, TRUE);
-
-	g_free(str);
 }
 
 /* Get next parameter */

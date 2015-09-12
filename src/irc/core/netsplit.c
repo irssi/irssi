@@ -359,9 +359,9 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 static void event_nick(IRC_SERVER_REC *server, const char *data)
 {
 	NETSPLIT_REC *rec;
-	char *params, *nick;
+	char *nick;
 
-	params = event_get_params(data, 1, &nick);
+	event_get_params(data, 1, &nick);
 
 	/* remove nick from split list when somebody changed
 	   nick to this one during split */
@@ -370,8 +370,6 @@ static void event_nick(IRC_SERVER_REC *server, const char *data)
 	        g_hash_table_remove(server->splits, rec->nick);
 		netsplit_destroy(server, rec);
 	}
-
-        g_free(params);
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)

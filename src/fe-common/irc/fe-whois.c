@@ -14,40 +14,38 @@
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname, *recoded;
+	char *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user,
-				  &host, NULL, &realname);
+	event_get_params(data, 6, NULL, &nick, &user,
+			 &host, NULL, &realname);
 	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS, nick, user, host, recoded);
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_whois_special(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *str;
+	char *nick, *str;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &nick, &str);
+	event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &nick, &str);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_SPECIAL, nick, str);
-	g_free(params);
 }
 
 static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *secstr, *signonstr, *rest, *timestr;
+	char *nick, *secstr, *signonstr, *rest, *timestr;
 	long days, hours, mins, secs;
 	time_t signon;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 5 | PARAM_FLAG_GETREST, NULL,
+	event_get_params(data, 5 | PARAM_FLAG_GETREST, NULL,
 				  &nick, &secstr, &signonstr, &rest);
 
 	secs = atol(secstr);
@@ -69,28 +67,26 @@ static void event_whois_idle(IRC_SERVER_REC *server, const char *data)
 			    nick, days, hours, mins, secs, timestr);
 		g_free(timestr);
 	}
-	g_free(params);
 }
 
 static void event_whois_server(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *whoserver, *desc;
+	char *nick, *whoserver, *desc;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 4, NULL, &nick, &whoserver, &desc);
+	event_get_params(data, 4, NULL, &nick, &whoserver, &desc);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_SERVER, nick, whoserver, desc);
-	g_free(params);
 }
 
 static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *type;
+	char *nick, *type;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &type);
+	event_get_params(data, 3, NULL, &nick, &type);
 
 	/* Bugfix: http://bugs.irssi.org/?do=details&task_id=99
 	 * Author: Geert Hauwaerts <geert@irssi.org>
@@ -107,38 +103,34 @@ static void event_whois_oper(IRC_SERVER_REC *server, const char *data)
 
 	printformat(server, nick, MSGLEVEL_CRAP,
 		IRCTXT_WHOIS_OPER, nick, type);
-	g_free(params);
 }
 
 static void event_whois_modes(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *modes;
+	char *nick, *modes;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
-			NULL, &nick, &modes);
+	event_get_params(data, 3 | PARAM_FLAG_GETREST, NULL, &nick, &modes);
 	if (!strncmp(modes, "is using modes ", 15))
 		modes += 15;
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_MODES, nick, modes);
-	g_free(params);
 }
 
 static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *txt_real, *txt_hostname, *hostname;
+	char *nick, *txt_real, *txt_hostname, *hostname;
 
 	g_return_if_fail(data != NULL);
 
         /* <yournick> real hostname <nick> <hostname> */
-	params = event_get_params(data, 5, NULL, &nick, &txt_real,
-				  &txt_hostname, &hostname);
+	event_get_params(data, 5, NULL, &nick, &txt_real,
+			 &txt_hostname, &hostname);
 	if (g_strcmp0(txt_real, "real") != 0 ||
 	    g_strcmp0(txt_hostname, "hostname") != 0) {
 		/* <yournick> <nick> :... from <hostname> */
-                g_free(params);
-		params = event_get_params(data, 3, NULL, &nick, &hostname);
+		event_get_params(data, 3, NULL, &nick, &hostname);
 
 		hostname = strstr(hostname, "from ");
                 if (hostname != NULL) hostname += 5;
@@ -152,42 +144,39 @@ static void event_whois_realhost(IRC_SERVER_REC *server, const char *data)
 	} else {
 		event_whois_special(server, data);
 	}
-	g_free(params);
 }
 
 static void event_whois_usermode326(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *usermode;
+	char *nick, *usermode;
 
 	g_return_if_fail(data != NULL);
 
         /* <yournick> <nick> :has oper privs: <mode> */
-	params = event_get_params(data, 3, NULL, &nick, &usermode);
+	event_get_params(data, 3, NULL, &nick, &usermode);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_USERMODE, nick, usermode);
-        g_free(params);
 }
 
 static void event_whois_realhost327(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *hostname, *ip, *text;
+	char *nick, *hostname, *ip, *text;
 
 	g_return_if_fail(data != NULL);
 
 	/* <yournick> <hostname> <ip> :Real hostname/IP */
-	params = event_get_params(data, 5, NULL, &nick, &hostname, &ip, &text);
+	event_get_params(data, 5, NULL, &nick, &hostname, &ip, &text);
 	if (*text != '\0') {
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, hostname, ip);
 	} else {
 		event_whois_special(server, data);
 	}
-	g_free(params);
 }
 
 static void event_whois_realhost338(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *arg1, *arg2, *arg3;
+	char *nick, *arg1, *arg2, *arg3;
 
 	g_return_if_fail(data != NULL);
 
@@ -197,7 +186,7 @@ static void event_whois_realhost338(IRC_SERVER_REC *server, const char *data)
 	 * :<server> 338 <yournick> <nick> <ip> :actually using host
 	 * (ratbox)
 	 */
-	params = event_get_params(data, 5, NULL, &nick, &arg1, &arg2, &arg3);
+	event_get_params(data, 5, NULL, &nick, &arg1, &arg2, &arg3);
 	if (*arg3 != '\0') {
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_WHOIS_REALHOST, nick, arg1, arg2);
@@ -207,16 +196,15 @@ static void event_whois_realhost338(IRC_SERVER_REC *server, const char *data)
 	} else {
 		event_whois_special(server, data);
 	}
-	g_free(params);
 }
 
 static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *txt_usermodes, *nick, *usermode;
+	char *txt_usermodes, *nick, *usermode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 4, NULL, &txt_usermodes,
+	event_get_params(data, 4, NULL, &txt_usermodes,
 				  &nick, &usermode);
 
 	if (g_strcmp0(txt_usermodes, "usermodes") == 0) {
@@ -226,7 +214,6 @@ static void event_whois_usermode(IRC_SERVER_REC *server, const char *data)
 	} else {
 		event_whois_special(server, data);
 	}
-	g_free(params);
 }
 
 static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
@@ -278,11 +265,11 @@ static void hide_safe_channel_id(IRC_SERVER_REC *server, char *chans)
 
 static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *chans, *recoded;
+	char *nick, *chans, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &chans);
+	event_get_params(data, 3, NULL, &nick, &chans);
 
 	/* sure - we COULD print the channel names as-is, but since the
 	   colors, bolds, etc. are mostly just to fool people, I think we
@@ -296,77 +283,71 @@ static void event_whois_channels(IRC_SERVER_REC *server, const char *data)
 		    IRCTXT_WHOIS_CHANNELS, nick, recoded);
 	g_free(chans);
 
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *awaymsg, *recoded;
+	char *nick, *awaymsg, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	event_get_params(data, 3, NULL, &nick, &awaymsg);
 	recoded = recode_in(SERVER(server), awaymsg, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_AWAY, nick, recoded);
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_end_of_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 	if (server->whois_found) {
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_END_OF_WHOIS, nick);
 	}
-	g_free(params);
 }
 
 static void event_whois_auth(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *text;
+	char *nick, *text;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &text);
+	event_get_params(data, 3, NULL, &nick, &text);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOIS_EXTRA, nick, text);
-	g_free(params);
 }
 
 static void event_whowas(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname, *recoded;
+	char *nick, *user, *host, *realname, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user,
-				  &host, NULL, &realname);
+	event_get_params(data, 6, NULL, &nick, &user,
+			 &host, NULL, &realname);
 	recoded = recode_in(SERVER(server), realname, nick);
 	printformat(server, nick, MSGLEVEL_CRAP,
 		    IRCTXT_WHOWAS, nick, user, host, recoded);
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_end_of_whowas(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 	if (server->whowas_found) {
 		printformat(server, nick, MSGLEVEL_CRAP,
 			    IRCTXT_END_OF_WHOWAS, nick);
 	}
-	g_free(params);
 }
 
 struct whois_event_table {
